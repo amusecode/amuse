@@ -8,7 +8,7 @@ AMUSE_DIR?=../../../..
 # all compiles must use MPICXX, not CXX.
 
 ALL	 = keplerorbiters_worker
-OPT	  =-fopenmp # -O4 don't use O4 it is not defined on normal gcc, but has special meaning on LLVM/clang gcc
+OPT	  = $(OPENMP_CFLAGS) # -O4 don't use O4 it is not defined on normal gcc, but has special meaning on LLVM/clang gcc
 #OPT	  =
 
 MPICXX   ?= mpicxx

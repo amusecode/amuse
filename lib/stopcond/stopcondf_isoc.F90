@@ -147,13 +147,13 @@ module StoppingConditions
         integer(c_int) function set_stopping_condition_out_of_box_use_center_of_mass_parameter_(v) &
             bind(c, name='set_stopping_condition_out_of_box_use_center_of_mass_parameter')
             use iso_c_binding
-            integer (c_int), value :: v
+            logical (c_bool), value :: v
         end function
 ! int get_stopping_condition_out_of_box_use_center_of_mass_parameter(int *value);
         integer(c_int) function get_stopping_condition_out_of_box_use_center_of_mass_parameter_(v) &
             bind(c, name='get_stopping_condition_out_of_box_use_center_of_mass_parameter')
             use iso_c_binding
-            integer (c_int) :: v
+            logical (c_bool) :: v
         end function
 
 ! int is_any_condition_set();
@@ -201,18 +201,19 @@ module StoppingConditions
 contains 
 
     function set_stopping_condition_out_of_box_use_center_of_mass_parameter(v) result(ret)
+        use iso_c_binding
         logical :: v
-        integer :: ret,cv
-        cv=0
-        if(v) cv=1
+        logical (c_bool) :: cv
+        integer :: ret
+        cv=v
         ret=set_stopping_condition_out_of_box_use_center_of_mass_parameter_(cv)
     end function
     function get_stopping_condition_out_of_box_use_center_of_mass_parameter(v) result(ret)
+        use iso_c_binding
         logical :: v
-        integer :: ret,cv
+        logical(c_bool) :: cv
         ret=get_stopping_condition_out_of_box_use_center_of_mass_parameter_(cv)
-        v=.TRUE.
-        if(cv.EQ.0) v=.FALSE.
+        v=cv
     end function
     
     

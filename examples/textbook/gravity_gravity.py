@@ -1,10 +1,11 @@
 #from __future__ import print_function
 import numpy
 from amuse.units import units
+from amuse.units import quantities
 from amuse.units import constants
 from amuse.units import nbody_system
 from amuse.ext.bridge import bridge
-from amuse.community.phiGRAPE.interface import PhiGRAPE
+from amuse.community.phigrape.interface import PhiGRAPE
 from amuse.community.ph4.interface import ph4
 from amuse.community.fi.interface import Fi
 from amuse.community.bhtree.interface import BHTree
@@ -97,7 +98,7 @@ def evolve_cluster_in_galaxy(N, W0, Rinit, tend, timestep, M, R):
     system.add_system(galaxy_code, (cluster_code,))
     system.timestep = 0.1*timestep
 
-    times=numpy.arange(0|units.Myr, tend, timestep)
+    times = quantities.arange(0|units.Myr, tend, timestep)
     for i,t in enumerate(times):
         print "Time=", t.in_(units.Myr)
         channe_to_galaxy.copy()

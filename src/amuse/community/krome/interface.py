@@ -164,21 +164,21 @@ class Krome(CommonCode):
 #        self.set_data_directory(self.data_directory())
 #        self.set_output_directory(self.output_directory())
                   
-    def define_properties(self, object):
-        object.add_property('get_time', public_name = "model_time")
+    def define_properties(self, handler):
+        handler.add_property('get_time', public_name = "model_time")
 
-    def define_methods(self, object):
-        CommonCode.define_methods(self, object)
-        object.add_method(
+    def define_methods(self, handler):
+        CommonCode.define_methods(self, handler)
+        handler.add_method(
             'evolve_model', 
             (
                 units.s,
             ), 
             (
-                object.ERROR_CODE,
+                handler.ERROR_CODE,
             )
         )
-        object.add_method(
+        handler.add_method(
             "new_particle",
             (
                 units.cm**-3,
@@ -186,109 +186,109 @@ class Krome(CommonCode):
                 units.s**-1,
             ),
             (
-                object.INDEX,
-                object.ERROR_CODE,
+                handler.INDEX,
+                handler.ERROR_CODE,
             )
         )
-        object.add_method(
+        handler.add_method(
             "set_state",
             (
-                object.NO_UNIT,
+                handler.NO_UNIT,
                 units.cm**-3,
                 units.K,
                 units.s**-1,
             ),
             (
-                object.ERROR_CODE,
+                handler.ERROR_CODE,
             )
         )
-        object.add_method(
+        handler.add_method(
             "get_state",
             (
-                object.INDEX,
+                handler.INDEX,
             ),
             (
                 units.cm**-3,
                 units.K,
                 units.s**-1,
-                object.ERROR_CODE,
+                handler.ERROR_CODE,
             )
         )
-        object.add_method(
+        handler.add_method(
             "get_abundance",
             (
-                object.INDEX,
-                object.INDEX,
+                handler.INDEX,
+                handler.INDEX,
             ),
             (
-                object.NO_UNIT,
-                object.ERROR_CODE,
+                handler.NO_UNIT,
+                handler.ERROR_CODE,
             )
         )
-        object.add_method(
+        handler.add_method(
             "set_abundance",
             (
-                object.INDEX,
-                object.INDEX,
-                object.NO_UNIT,
+                handler.INDEX,
+                handler.INDEX,
+                handler.NO_UNIT,
             ),
             (
-                object.ERROR_CODE,
+                handler.ERROR_CODE,
             )
         )
-        object.add_method(
+        handler.add_method(
             "delete_particle",
             (
-                object.INDEX,
+                handler.INDEX,
             ),
             (
-                object.ERROR_CODE,
+                handler.ERROR_CODE,
             )
         )
-        object.add_method(
+        handler.add_method(
             "get_firstlast_abundance",
             (
             ),
             (
-                object.NO_UNIT,
-                object.NO_UNIT,
-                object.ERROR_CODE,
+                handler.NO_UNIT,
+                handler.NO_UNIT,
+                handler.ERROR_CODE,
             )
         )
-        object.add_method(
+        handler.add_method(
             "get_time",
             (
             ),
             (
                 units.s,
-                object.ERROR_CODE,
+                handler.ERROR_CODE,
             )
         )
 
-    def define_particle_sets(self, object):
-        object.define_set('particles', 'id')
-        object.set_new('particles', 'new_particle')
-        object.set_delete('particles', 'delete_particle')
-        object.add_setter('particles', 'set_state')
-        object.add_getter('particles', 'get_state')
-        object.add_gridded_getter('particles', 'get_abundance','get_firstlast_abundance', names = ('abundances',))
-        object.add_gridded_setter('particles', 'set_abundance','get_firstlast_abundance', names = ('abundances',))
+    def define_particle_sets(self, handler):
+        handler.define_set('particles', 'id')
+        handler.set_new('particles', 'new_particle')
+        handler.set_delete('particles', 'delete_particle')
+        handler.add_setter('particles', 'set_state')
+        handler.add_getter('particles', 'get_state')
+        handler.add_gridded_getter('particles', 'get_abundance','get_firstlast_abundance', names = ('abundances',))
+        handler.add_gridded_setter('particles', 'set_abundance','get_firstlast_abundance', names = ('abundances',))
 
-    def define_state(self, object):
-        CommonCode.define_state(self, object)
-        object.add_transition('INITIALIZED','EDIT','commit_parameters')
-        object.add_transition('RUN','PARAMETER_CHANGE_A','invoke_state_change2')
-        object.add_transition('EDIT','PARAMETER_CHANGE_B','invoke_state_change2')
-        object.add_transition('PARAMETER_CHANGE_A','RUN','recommit_parameters')
-        object.add_transition('PARAMETER_CHANGE_B','EDIT','recommit_parameters')
-        object.add_method('EDIT', 'new_particle')
-        object.add_method('EDIT', 'delete_particle')
-        object.add_transition('EDIT', 'RUN', 'commit_particles')
-        object.add_transition('RUN', 'UPDATE', 'new_particle', False)
-        object.add_transition('RUN', 'UPDATE', 'delete_particle', False)
-        object.add_transition('UPDATE', 'RUN', 'recommit_particles')
-        object.add_method('RUN', 'evolve_model')
-        object.add_method('RUN', 'get_state')
-        object.add_method('RUN', 'get_abundance')
+    def define_state(self, handler):
+        CommonCode.define_state(self, handler)
+        handler.add_transition('INITIALIZED','EDIT','commit_parameters')
+        handler.add_transition('RUN','PARAMETER_CHANGE_A','invoke_state_change2')
+        handler.add_transition('EDIT','PARAMETER_CHANGE_B','invoke_state_change2')
+        handler.add_transition('PARAMETER_CHANGE_A','RUN','recommit_parameters')
+        handler.add_transition('PARAMETER_CHANGE_B','EDIT','recommit_parameters')
+        handler.add_method('EDIT', 'new_particle')
+        handler.add_method('EDIT', 'delete_particle')
+        handler.add_transition('EDIT', 'RUN', 'commit_particles')
+        handler.add_transition('RUN', 'UPDATE', 'new_particle', False)
+        handler.add_transition('RUN', 'UPDATE', 'delete_particle', False)
+        handler.add_transition('UPDATE', 'RUN', 'recommit_particles')
+        handler.add_method('RUN', 'evolve_model')
+        handler.add_method('RUN', 'get_state')
+        handler.add_method('RUN', 'get_abundance')
 
 

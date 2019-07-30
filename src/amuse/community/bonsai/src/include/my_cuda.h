@@ -252,6 +252,7 @@ namespace my_dev {
     {
       switch(ccMajor)
       {
+        /*
         case 1:
           switch(ccMinor)
           {
@@ -269,6 +270,7 @@ namespace my_dev {
               break;              
           }
           break;
+       */
        case 2:
           switch(ccMinor)
           {

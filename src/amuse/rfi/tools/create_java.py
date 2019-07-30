@@ -1,5 +1,5 @@
 from amuse.support.core import late
-from amuse.support import exceptions
+from amuse.support import exceptions, options
 from amuse import config
 from amuse.rfi.tools.create_code import GenerateASourcecodeString
 from amuse.rfi.tools.create_code import GenerateASourcecodeStringFromASpecificationClass
@@ -286,10 +286,11 @@ AMUSE_MESSAGE_CLASS_CODE_STRING = """
 
                 stringHeader.put(0, bytes.length);
 
-                ensureStringsCapacity();
+                ensureStringsCapacity(0);
 
                 stringBytes[0].clear();
                 stringBytes[0].put(bytes);
+                stringBytes[0].put( (byte) 0); // add extra zero
             } catch (UnsupportedEncodingException e) {
                 System.err.println("could not set error: " + e);
                 stringHeader.put(0, 0);
@@ -330,10 +331,11 @@ AMUSE_MESSAGE_CLASS_CODE_STRING = """
                 stringHeader.put(position, bytes.length);
 
                 // make sure there is space for the string
-                ensureStringsCapacity();
+                ensureStringsCapacity(position);
 
                 stringBytes[position].clear();
                 stringBytes[position].put(bytes);
+                stringBytes[position].put( (byte) 0); // add extra zero
 
             } catch (UnsupportedEncodingException e) {
                 System.err.println("ERROR! UTF-8 not supported by the JVM!");
@@ -356,10 +358,11 @@ AMUSE_MESSAGE_CLASS_CODE_STRING = """
                 stringHeader.put(index, bytes.length);
 
                 // make sure there is space for the string
-                ensureStringsCapacity();
+                ensureStringsCapacity(index);
 
                 stringBytes[index].clear();
                 stringBytes[index].put(bytes);
+                stringBytes[index].put( (byte) 0); // add extra zero
 
             } catch (UnsupportedEncodingException e) {
                 System.err.println("ERROR! UTF-8 not supported by the JVM!");
@@ -431,7 +434,7 @@ AMUSE_MESSAGE_CLASS_CODE_STRING = """
             }
             byte[] bytes = new byte[utf8length];
             stringBytes[index].position(0);
-            stringBytes[index].limit(utf8length);
+            stringBytes[index].limit(utf8length+1); // account for extra zero
             stringBytes[index].get(bytes);
 
             return new String(bytes, 0, utf8length, "UTF-8");
@@ -488,7 +491,7 @@ AMUSE_MESSAGE_CLASS_CODE_STRING = """
             for (int i = 0; i < getStringCount(); i++) {
                 int utf8Length = stringHeader.get(i);
 
-                stringBytes[i].clear().limit(utf8Length);
+                stringBytes[i].clear().limit(utf8Length + 1); // account for extra zero
             }
 
             // set the limit of the rest of the string bytes to 0
@@ -611,7 +614,7 @@ AMUSE_MESSAGE_CLASS_CODE_STRING = """
             }
 
             for (int i = 0; i < getStringCount(); i++) {
-                int stringLength = stringHeader.get(i);
+                int stringLength = stringHeader.get(i) +1; // account for extra zero
                 if (stringBytes[i] == null || stringLength > stringBytes[i].capacity()) {
 
                     stringBytes[i] = ByteBuffer.allocateDirect(stringLength);
@@ -633,6 +636,49 @@ AMUSE_MESSAGE_CLASS_CODE_STRING = """
                 
                 //System.err.println("ensureStringsCapacity() Updated buffers to " + Arrays.toString(byteBuffers));
             }
+
+            return buffersUpdated;
+        }
+
+        public boolean ensureStringsCapacity(int index) {
+            // checking if the string header is big enough is checked above, so
+            // we
+            // only check if all strings listed in the header
+            boolean buffersUpdated = false;
+
+            if (stringBytes.length < getStringCount()) {
+                ByteBuffer[] oldStringBytes = stringBytes;
+                stringBytes = new ByteBuffer[getStringCount()];
+                for (int i = 0; i < oldStringBytes.length; i++) {
+                    stringBytes[i] = oldStringBytes[i];
+                }
+                buffersUpdated = true;
+            }
+
+            if (buffersUpdated) {
+                // update byte buffers array
+                ByteBuffer[] newByteBuffers = new ByteBuffer[allButStringByteBuffers.length + stringBytes.length];
+                for (int i = 0; i < allButStringByteBuffers.length; i++) {
+                    newByteBuffers[i] = allButStringByteBuffers[i];
+                }
+                for (int i = 0; i < stringBytes.length; i++) {
+                    newByteBuffers[allButStringByteBuffers.length + i] = stringBytes[i];
+                }
+                byteBuffers = newByteBuffers;
+
+                
+                //System.err.println("ensureStringsCapacity() Updated buffers to " + Arrays.toString(byteBuffers));
+            }
+
+            {
+              int stringLength = stringHeader.get(index) +1; // account for extra zero
+              if (stringBytes[index] == null || stringLength > stringBytes[index].capacity()) {
+  
+                  stringBytes[index] = ByteBuffer.allocateDirect(stringLength);
+                  byteBuffers[allButStringByteBuffers.length + index] = stringBytes[index];
+              }
+            }
+
 
             return buffersUpdated;
         }
@@ -1424,21 +1470,12 @@ class GenerateAJavaWorkerScript(GenerateASourcecodeString):
 
     @late
     def amuse_root_dir(self):
-        if 'AMUSE_DIR' in os.environ:
-            return os.environ['AMUSE_DIR']    
-        previous = None
-        result = os.path.abspath(__file__)
-        while not os.path.exists(os.path.join(result,'build.py')):
-            result = os.path.dirname(result)
-            if result == previous:
-                return os.path.dirname(os.path.dirname(__file__))
-            previous = result
-        return result
-
+        return os.path.abspath(options.GlobalOptions.instance().amuse_rootdirectory)
 
     @late
     def code_dir(self):
-        return os.getcwd()
+        codedir=os.path.split(self.code_directory())[-1]
+        return os.path.join("community", codedir)
 
     @late
     def java(self):
@@ -1460,12 +1497,7 @@ class GenerateAJavaWorkerScript(GenerateASourcecodeString):
     
     @staticmethod
     def classpath(classpath, code_dir):
-        result = ''
-        
-        for element in classpath:
-            result = result + ":" + code_dir + "/" + element
-            
-        return result 
+        return ":".join([os.path.join(code_dir, x) for x in classpath])
     
     def script_string(self):
         return self.template_string.format(
@@ -1477,9 +1509,9 @@ class GenerateAJavaWorkerScript(GenerateASourcecodeString):
             )
 
 
-    #def code_directory(self):
-        #interface_module = inspect.getmodule(self.specification_class).__name__
-        #return os.path.dirname(inspect.getfile(self.specification_class))
+    def code_directory(self):
+        interface_module = inspect.getmodule(self.specification_class).__name__
+        return os.path.dirname(inspect.getfile(self.specification_class))
     
     def start(self):
         self.out + self.script_string()

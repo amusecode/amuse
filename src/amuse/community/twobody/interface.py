@@ -551,22 +551,22 @@ class TwoBody(GravitationalDynamics, GravityFieldCode):
             **options
         )     
         
-    def define_state(self, object):
-        GravitationalDynamics.define_state(self, object)
-        GravityFieldCode.define_state(self, object)
+    def define_state(self, handler):
+        GravitationalDynamics.define_state(self, handler)
+        GravityFieldCode.define_state(self, handler)
     
     def get_epsilon_squared(self):
         return zero
     
-    def define_parameters(self, object):
-        object.add_method_parameter(
+    def define_parameters(self, handler):
+        handler.add_method_parameter(
             "get_epsilon_squared",
             None, 
             "epsilon_squared", 
             "smoothing parameter for gravity calculations", 
             default_value = zero
         )
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_begin_time",
             "set_begin_time",
             "begin_time",

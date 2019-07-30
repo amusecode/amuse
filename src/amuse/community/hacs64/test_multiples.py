@@ -80,7 +80,7 @@ def run_smallN(
 
     print "\nadding particles to smallN"
     sys.stdout.flush()
-    gravity.set_time(time);
+    gravity.set_time(time)
     gravity.particles.add_particles(particles)
     print "committing particles to smallN"
     gravity.commit_particles()
@@ -916,13 +916,13 @@ def run_multiples(infile = None,
     root_index = len(stars) + 10000
     #-----------------------------------------------------------------
     
-    gravity.parameters.nmax    = nmax;
-    gravity.parameters.dtmax   = dt_max;
+    gravity.parameters.nmax    = nmax
+    gravity.parameters.dtmax   = dt_max
 #    gravity.parameters.n_ngb   = n_ngb;
-    gravity.parameters.eta_irr = eta_irr;
-    gravity.parameters.eta_reg = eta_reg;
+    gravity.parameters.eta_irr = eta_irr
+    gravity.parameters.eta_reg = eta_reg
     gravity.parameters.eps2    = softening_length**2
-    gravity.commit_parameters();
+    gravity.commit_parameters()
 
     print "adding particles"
     # print stars

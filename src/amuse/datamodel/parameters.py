@@ -18,11 +18,15 @@ class Parameters(object):
         object.__setattr__(self, '_mapping_from_name_to_definition', OrderedDictionary())
         object.__setattr__(self, '_mapping_from_name_to_parameter', OrderedDictionary())
 
-        for x in definitions:
-            self._mapping_from_name_to_definition[x.name] = x
-        
-        
+        self.update()
 
+    def update(self):
+        for x in self._definitions:
+            self._mapping_from_name_to_definition[x.name] = x
+
+        if len(self._definitions)!=len(self._mapping_from_name_to_definition):
+            raise Exception("Duplicate parameters detected")
+ 
     def __getattr__(self, name):
         #if name.startswith('__'):
         #    return object.__getattribute__(self, name)
@@ -74,7 +78,10 @@ class Parameters(object):
 
         for name in sorted(self.names()):
             output += name + ": "
-            output += str(getattr(self, name))+"\n"
+            output += str(getattr(self, name))
+            if self.get_parameter(name).is_readonly():
+                output += "  (read only)"
+            output += "\n"
 
         return output
 
@@ -379,19 +386,28 @@ class AbstractParameterDefinition(object):
 
 class AliasParameterDefinition(AbstractParameterDefinition):
     
-    def __init__(self, name, aliased_name, description):
+    def __init__(self, name, aliased_name, description, alias_set=None):
         AbstractParameterDefinition.__init__(self, name, description)
         self.aliased_name = aliased_name
+        self.alias_set = alias_set
         self.default_value = None
     
     def get_default_value(self, parameter_set):
         return parameter_set.get_parameter(self.aliased_name).definition.get_default_value(parameter_set)
         
     def get_value(self, parameter, object):
-        return getattr(parameter.parameter_set, self.aliased_name)
+        if self.alias_set:
+            parameter_set=getattr(object, self.alias_set)
+        else:
+            parameter_set=parameter.parameter_set
+        return getattr(parameter_set, self.aliased_name)
 
     def set_value(self, parameter, object, quantity):
-        return setattr(parameter.parameter_set, self.aliased_name, quantity)
+        if self.alias_set:
+            parameter_set=getattr(object, self.alias_set)
+        else:
+            parameter_set=parameter.parameter_set
+        return setattr(parameter_set, self.aliased_name, quantity)
 
     def set_default_value(self, parameter, object):
         pass
@@ -438,8 +454,6 @@ class ParameterDefinition(AbstractParameterDefinition):
 class InterfaceParameterDefinition(ParameterDefinition):
     def __init__(self, name, description, default_value,state_guard=None):
         AbstractParameterDefinition.__init__(self, name, description)
-        if default_value is None:
-          raise Exception("interface parameters need default value")
         self.default_value = default_value
         self.must_set_before_get = False
         self.value=default_value
@@ -453,12 +467,12 @@ class InterfaceParameterDefinition(ParameterDefinition):
         return x
         
     def set_value(self, parameter, object, quantity):
-        if self.state_guard:
-          getattr(object, self.state_guard)()
         try:
           self.value=quantity.copy()
         except:
           self.value=quantity
+        if self.state_guard:
+          getattr(object, self.state_guard)()
 
     def must_set_to_default_if_not_set(self):
         return False

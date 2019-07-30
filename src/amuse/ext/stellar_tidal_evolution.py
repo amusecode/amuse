@@ -232,7 +232,7 @@ class TidalEvolution(literature.LiteratureReferencesMixIn):
         return edot
 
     def Omegadot_planet(self, a, Ms, Rs, Mp, Rp, Omega_s, Omega_p, e):
-        T_p =  Tp(Ms, Mp, Rp, a)
+        T_p =  self.Tp(Ms, Mp, Rp, a)
         omega = angular_frequency(Ms, Mp, a)
         gamma = J_orb(Ms, Mp, a, e)/self.J_planet(Mp, Rp, Omega_p)
         return gamma/2. * Omega_p/T_p * (self.f5(e) - Omega_p/omega * self.f6(e))

@@ -130,7 +130,7 @@ class GetCodeFromHttp(object):
                 counter += 1
                 if counter > 100:
                     print "too many backup directories"
-                    break;
+                    break
             os.rename('src', 'src.{0}'.format(counter))
         
         os.mkdir('src')

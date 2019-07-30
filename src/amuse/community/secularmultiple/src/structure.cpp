@@ -126,24 +126,11 @@ int determine_binary_parents_and_levels(ParticlesMap *particlesMap, int *N_bodie
 //        }
     }
 
-    /* write highest level to all particles -- needed for function set_binary_masses_from_body_masses */
-    /* also determine total system mass -- needed for hyperbolic external orbits */
-    double total_system_mass;
-    for (it_p = particlesMap->begin(); it_p != particlesMap->end(); it_p++)
-    {
-        Particle *P_p = (*it_p).second;
-        if (P_p->level==0) /* lowest-level binary */
-        {
-            total_system_mass = P_p->child1_mass + P_p->child2_mass;
-            break;
-        }
-    }
-    
+    /* write highest level to all particles -- needed for function set_binary_masses_from_body_masses */    
     for (it_p = particlesMap->begin(); it_p != particlesMap->end(); it_p++)
     {
         Particle *P_p = (*it_p).second;
         
-        P_p->total_system_mass = total_system_mass;
         P_p->highest_level = highest_level;
     }
 
@@ -189,4 +176,24 @@ void set_binary_masses_from_body_masses(ParticlesMap *particlesMap)
         }
         level--;
     }
+
+    /* determine total system mass -- needed for hyperbolic external orbits */
+    double total_system_mass;
+    for (it_p = particlesMap->begin(); it_p != particlesMap->end(); it_p++)
+    {
+        Particle *P_p = (*it_p).second;
+        if (P_p->level==0) /* lowest-level binary */
+        {
+            total_system_mass = P_p->child1_mass + P_p->child2_mass;
+            break;
+        }
+    }
+
+    for (it_p = particlesMap->begin(); it_p != particlesMap->end(); it_p++)
+    {
+        Particle *P_p = (*it_p).second;
+        
+        P_p->total_system_mass = total_system_mass;
+    }
+
 }

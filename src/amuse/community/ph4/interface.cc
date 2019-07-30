@@ -87,7 +87,7 @@ int initialize_code()
     jd = new jdata;
 
 #ifndef NOMPI
-    jd->setup_mpi(MPI::COMM_WORLD);
+    jd->setup_mpi(MPI_COMM_WORLD);
 #endif
     //PRL(2);
     jd->setup_gpu();
@@ -692,8 +692,8 @@ int evolve_model(double to_time)
 	// int dtotal = jd->total_steps - ns;
 	block_steps += jd->block_steps - nb;
 	total_steps += jd->total_steps - ns;
-	PRL(jd->system_time); //PRC(dblock); PRL(dtotal);
-	s->print(true);
+	// PRL(jd->system_time); //PRC(dblock); PRL(dtotal);
+	// s->print(true);
     }
 
     return 0;

@@ -1,14 +1,16 @@
 import os
 
-from amuse.support.options import option
+from amuse.support.options import option, GlobalOptions
 from amuse.support.options import OptionalAttributes
 
-
+import warnings
 """
 Support Code
 
 
 """
+
+GlobalOptions=GlobalOptions.instance()
 
 class _Defaults(OptionalAttributes):
     
@@ -16,14 +18,11 @@ class _Defaults(OptionalAttributes):
     def amuse_root_dir(self):
         if 'AMUSE_DIR' in os.environ:
             return os.environ['AMUSE_DIR']    
-        previous = None
-        result = os.path.abspath(__file__)
-        while not os.path.exists(os.path.join(result,'build.py')):
-            result = os.path.dirname(result)
-            if result == previous:
-                raise exceptions.AmuseException("Could not locate AMUSE root directory!")
-            previous = result
-        return result
+
+        return GlobalOptions.amuse_data_location
 
 def get_amuse_root_dir():
+    return _Defaults().amuse_root_dir
+
+def get_amuse_data_dir():
     return _Defaults().amuse_root_dir

@@ -1242,64 +1242,64 @@ class Gadget2(GravitationalDynamics, GravityFieldCode):
         return self.overridden().commit_parameters()
         
     
-    def define_properties(self, object):
-        object.add_property("get_kinetic_energy")
-        object.add_property("get_potential_energy")
-        object.add_property("get_thermal_energy")
-        object.add_property("get_total_radius")
-        object.add_property("get_center_of_mass_position")
-        object.add_property("get_center_of_mass_velocity")
-        object.add_property("get_total_mass")
-        object.add_property('get_time', public_name = "model_time")
-        object.add_property('get_redshift', public_name = "model_redshift")
+    def define_properties(self, handler):
+        handler.add_property("get_kinetic_energy")
+        handler.add_property("get_potential_energy")
+        handler.add_property("get_thermal_energy")
+        handler.add_property("get_total_radius")
+        handler.add_property("get_center_of_mass_position")
+        handler.add_property("get_center_of_mass_velocity")
+        handler.add_property("get_total_mass")
+        handler.add_property('get_time', public_name = "model_time")
+        handler.add_property('get_redshift', public_name = "model_redshift")
     
-    def define_state(self, object):
-        GravitationalDynamics.define_state(self, object)
-        GravityFieldCode.define_state(self, object)
+    def define_state(self, handler):
+        GravitationalDynamics.define_state(self, handler)
+        GravityFieldCode.define_state(self, handler)
         
-        object.add_method('EDIT', 'before_new_set_instance')
-        object.add_method('EDIT', 'new_dm_particle')
-        object.add_method('UPDATE', 'new_dm_particle')
-        object.add_transition('RUN', 'UPDATE', 'new_dm_particle', False)
-        object.add_method('EDIT', 'new_sph_particle')
-        object.add_method('UPDATE', 'new_sph_particle')
-        object.add_transition('RUN', 'UPDATE', 'new_sph_particle', False)
-        object.add_transition('RUN', 'EVOLVED', 'evolve_to_redshift', False)
-        object.add_method('EVOLVED', 'evolve_to_redshift')
-        object.add_method('RUN', 'get_state_sph')
-        object.add_method('RUN', 'get_acceleration')
-        object.add_method('RUN', 'get_internal_energy')
-        object.add_method('RUN', 'get_smoothing_length')
-        object.add_method('RUN', 'get_density')
-        object.add_method('RUN', 'get_alpha_visc')
-        object.add_method('RUN', 'get_dalphadt_visc')
-        object.add_method('RUN', 'get_pressure')
-        object.add_method('RUN', 'get_d_internal_energy_dt')
-        object.add_method('RUN', 'get_n_neighbours')
-        object.add_method('RUN', 'get_epsilon_dm_part')
-        object.add_method('RUN', 'get_epsilon_gas_part')
-        object.add_method('RUN', 'set_state')
-        object.add_method('RUN', 'set_state_sph')
-        object.add_method('RUN', 'set_mass')
-        object.add_method('RUN', 'set_position')
-        object.add_method('RUN', 'set_velocity')
-        object.add_method('RUN', 'set_internal_energy')
+        handler.add_method('EDIT', 'before_new_set_instance')
+        handler.add_method('EDIT', 'new_dm_particle')
+        handler.add_method('UPDATE', 'new_dm_particle')
+        handler.add_transition('RUN', 'UPDATE', 'new_dm_particle', False)
+        handler.add_method('EDIT', 'new_sph_particle')
+        handler.add_method('UPDATE', 'new_sph_particle')
+        handler.add_transition('RUN', 'UPDATE', 'new_sph_particle', False)
+        handler.add_transition('RUN', 'EVOLVED', 'evolve_to_redshift', False)
+        handler.add_method('EVOLVED', 'evolve_to_redshift')
+        handler.add_method('RUN', 'get_state_sph')
+        handler.add_method('RUN', 'get_acceleration')
+        handler.add_method('RUN', 'get_internal_energy')
+        handler.add_method('RUN', 'get_smoothing_length')
+        handler.add_method('RUN', 'get_density')
+        handler.add_method('RUN', 'get_alpha_visc')
+        handler.add_method('RUN', 'get_dalphadt_visc')
+        handler.add_method('RUN', 'get_pressure')
+        handler.add_method('RUN', 'get_d_internal_energy_dt')
+        handler.add_method('RUN', 'get_n_neighbours')
+        handler.add_method('RUN', 'get_epsilon_dm_part')
+        handler.add_method('RUN', 'get_epsilon_gas_part')
+        handler.add_method('RUN', 'set_state')
+        handler.add_method('RUN', 'set_state_sph')
+        handler.add_method('RUN', 'set_mass')
+        handler.add_method('RUN', 'set_position')
+        handler.add_method('RUN', 'set_velocity')
+        handler.add_method('RUN', 'set_internal_energy')
         
-        object.add_method('RUN', 'get_kinetic_energy')
-        object.add_method('RUN', 'get_potential_energy')
-        object.add_method('RUN', 'get_thermal_energy')
-        object.add_method('RUN', 'get_total_radius')
-        object.add_method('RUN', 'get_center_of_mass_position')
-        object.add_method('RUN', 'get_center_of_mass_velocity')
-        object.add_method('RUN', 'get_total_mass')
-        object.add_method('RUN', 'get_hydro_state_at_point')
+        handler.add_method('RUN', 'get_kinetic_energy')
+        handler.add_method('RUN', 'get_potential_energy')
+        handler.add_method('RUN', 'get_thermal_energy')
+        handler.add_method('RUN', 'get_total_radius')
+        handler.add_method('RUN', 'get_center_of_mass_position')
+        handler.add_method('RUN', 'get_center_of_mass_velocity')
+        handler.add_method('RUN', 'get_total_mass')
+        handler.add_method('RUN', 'get_hydro_state_at_point')
         
         
-        self.stopping_conditions.define_state(object)
+        self.stopping_conditions.define_state(handler)
     
 
-    def define_parameters(self, object):
-        object.add_method_parameter(
+    def define_parameters(self, handler):
+        handler.add_method_parameter(
             "get_epsilon_squared", 
             "set_epsilon_squared",
             "epsilon_squared", 
@@ -1307,7 +1307,7 @@ class Gadget2(GravitationalDynamics, GravityFieldCode):
             default_value = 0.0001 | generic_unit_system.length * generic_unit_system.length
         )
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_time_step", 
             None,
             "timestep", 
@@ -1315,7 +1315,7 @@ class Gadget2(GravitationalDynamics, GravityFieldCode):
             default_value = 1.0 | generic_unit_system.time
         ) 
         
-        object.add_boolean_parameter(
+        handler.add_boolean_parameter(
             "get_nogravity",
             None,
             "no_gravity_flag",
@@ -1324,7 +1324,7 @@ class Gadget2(GravitationalDynamics, GravityFieldCode):
             False
         )
         
-        object.add_boolean_parameter(
+        handler.add_boolean_parameter(
             "get_gdgop",
             "set_gdgop",
             "gadget_cell_opening_flag",
@@ -1332,7 +1332,7 @@ class Gadget2(GravitationalDynamics, GravityFieldCode):
             True
         )
         
-        object.add_boolean_parameter(
+        handler.add_boolean_parameter(
             "get_isotherm",
             None,
             "isothermal_flag",
@@ -1341,7 +1341,7 @@ class Gadget2(GravitationalDynamics, GravityFieldCode):
             False
         )
         
-        object.add_boolean_parameter(
+        handler.add_boolean_parameter(
             "get_eps_is_h",
             None,
             "eps_is_h_flag",
@@ -1350,7 +1350,7 @@ class Gadget2(GravitationalDynamics, GravityFieldCode):
             False
         )
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_nsmooth", 
             "set_nsmooth",
             "n_smooth", 
@@ -1358,7 +1358,7 @@ class Gadget2(GravitationalDynamics, GravityFieldCode):
             default_value = 50
         )
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_unit_mass", 
             None,
             "code_mass_unit", 
@@ -1366,7 +1366,7 @@ class Gadget2(GravitationalDynamics, GravityFieldCode):
             default_value = 1.989e43 | units.g
         )
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_unit_length", 
             None,
             "code_length_unit", 
@@ -1374,7 +1374,7 @@ class Gadget2(GravitationalDynamics, GravityFieldCode):
             default_value = 3.085678e21 | units.cm
         )
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_unit_time", 
             None,
             "code_time_unit", 
@@ -1382,7 +1382,7 @@ class Gadget2(GravitationalDynamics, GravityFieldCode):
             default_value = 3.085678e16 | units.s
         )
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_unit_velocity", 
             None,
             "code_velocity_unit", 
@@ -1391,7 +1391,7 @@ class Gadget2(GravitationalDynamics, GravityFieldCode):
         )
         
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_bh_tol", 
             "set_bh_tol",
             "opening_angle", 
@@ -1399,7 +1399,7 @@ class Gadget2(GravitationalDynamics, GravityFieldCode):
             default_value = 0.5
         )
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_gdgtol", 
             "set_gdgtol",
             "gadget_cell_opening_constant", 
@@ -1407,7 +1407,7 @@ class Gadget2(GravitationalDynamics, GravityFieldCode):
             default_value = 0.005
         )
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_epsgas", 
             "set_epsgas",
             "gas_epsilon", 
@@ -1415,7 +1415,7 @@ class Gadget2(GravitationalDynamics, GravityFieldCode):
             default_value = 0.01 | generic_unit_system.length
         )
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_gamma", 
             None,
             "polytropic_index_gamma", 
@@ -1424,7 +1424,7 @@ class Gadget2(GravitationalDynamics, GravityFieldCode):
             default_value = (5.0/3)
         )
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_alpha", 
             "set_alpha",
             "artificial_viscosity_alpha", 
@@ -1433,7 +1433,7 @@ class Gadget2(GravitationalDynamics, GravityFieldCode):
         )
  
 
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_beta", 
             "set_beta",
             "artificial_viscosity_beta", 
@@ -1441,7 +1441,7 @@ class Gadget2(GravitationalDynamics, GravityFieldCode):
             default_value = 1.0
         )
        
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_courant", 
             "set_courant",
             "courant", 
@@ -1450,7 +1450,7 @@ class Gadget2(GravitationalDynamics, GravityFieldCode):
             default_value = 0.3
         )
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_nsmtol", 
             "set_nsmtol",
             "n_smooth_tol", 
@@ -1458,7 +1458,7 @@ class Gadget2(GravitationalDynamics, GravityFieldCode):
             default_value = 0.1
         )
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_gadget_output_directory", 
             "set_gadget_output_directory",
             "gadget_output_directory", 
@@ -1466,7 +1466,7 @@ class Gadget2(GravitationalDynamics, GravityFieldCode):
             default_value = ""
         )
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_viscosity_switch", 
             None,
             "viscosity_switch", 
@@ -1475,7 +1475,7 @@ class Gadget2(GravitationalDynamics, GravityFieldCode):
         )
 
 
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_energy_file", 
             "set_energy_file",
             "energy_file", 
@@ -1483,7 +1483,7 @@ class Gadget2(GravitationalDynamics, GravityFieldCode):
             default_value = "energy.txt"
         )
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_info_file", 
             "set_info_file",
             "info_file", 
@@ -1491,7 +1491,7 @@ class Gadget2(GravitationalDynamics, GravityFieldCode):
             default_value = "info.txt"
         )
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_timings_file", 
             "set_timings_file",
             "timings_file", 
@@ -1499,7 +1499,7 @@ class Gadget2(GravitationalDynamics, GravityFieldCode):
             default_value = "timings.txt"
         )
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_cpu_file", 
             "set_cpu_file",
             "cpu_file", 
@@ -1507,7 +1507,7 @@ class Gadget2(GravitationalDynamics, GravityFieldCode):
             default_value = "cpu.txt"
         )
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_time_limit_cpu", 
             "set_time_limit_cpu",
             "time_limit_cpu", 
@@ -1515,7 +1515,7 @@ class Gadget2(GravitationalDynamics, GravityFieldCode):
             default_value = 36000 | units.s
         )
         
-        object.add_boolean_parameter(
+        handler.add_boolean_parameter(
             "get_comoving_integration_flag",
             "set_comoving_integration_flag",
             "comoving_integration_flag",
@@ -1523,7 +1523,7 @@ class Gadget2(GravitationalDynamics, GravityFieldCode):
             False
         )
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_type_of_timestep_criterion", 
             "set_type_of_timestep_criterion",
             "type_of_timestep_criterion", 
@@ -1531,7 +1531,7 @@ class Gadget2(GravitationalDynamics, GravityFieldCode):
             default_value = 0
         )
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_begin_time",
             "set_begin_time",
             "begin_time",
@@ -1539,7 +1539,7 @@ class Gadget2(GravitationalDynamics, GravityFieldCode):
             default_value = 0.0 | nbody_system.time
         )
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_time_max", 
             "set_time_max",
             "time_max", 
@@ -1547,7 +1547,7 @@ class Gadget2(GravitationalDynamics, GravityFieldCode):
             default_value = 100.0 | generic_unit_system.time
         )
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_redshift_begin", 
             "set_redshift_begin",
             "redshift_begin", 
@@ -1555,7 +1555,7 @@ class Gadget2(GravitationalDynamics, GravityFieldCode):
             default_value = 20.0
         )
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_redshift_max", 
             "set_redshift_max",
             "redshift_max", 
@@ -1563,7 +1563,7 @@ class Gadget2(GravitationalDynamics, GravityFieldCode):
             default_value = 0.0
         )
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_omega_zero", 
             "set_omega_zero",
             "omega_zero", 
@@ -1571,7 +1571,7 @@ class Gadget2(GravitationalDynamics, GravityFieldCode):
             default_value = 0.0
         )
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_omega_lambda", 
             "set_omega_lambda",
             "omega_lambda", 
@@ -1579,7 +1579,7 @@ class Gadget2(GravitationalDynamics, GravityFieldCode):
             default_value = 0.0
         )
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_omega_baryon", 
             "set_omega_baryon",
             "omega_baryon", 
@@ -1587,7 +1587,7 @@ class Gadget2(GravitationalDynamics, GravityFieldCode):
             default_value = 0.0
         )
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_hubble_param", 
             "set_hubble_param",
             "hubble_parameter", 
@@ -1595,7 +1595,7 @@ class Gadget2(GravitationalDynamics, GravityFieldCode):
             default_value = 0.7
         )
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_err_tol_int_accuracy", 
             "set_err_tol_int_accuracy",
             "timestep_accuracy_parameter", 
@@ -1603,7 +1603,7 @@ class Gadget2(GravitationalDynamics, GravityFieldCode):
             default_value = 0.025
         )
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_max_size_timestep", 
             "set_max_size_timestep",
             "max_size_timestep", 
@@ -1611,7 +1611,7 @@ class Gadget2(GravitationalDynamics, GravityFieldCode):
             default_value = 0.01 | generic_unit_system.time
         )
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_min_size_timestep", 
             "set_min_size_timestep",
             "min_size_timestep", 
@@ -1619,7 +1619,7 @@ class Gadget2(GravitationalDynamics, GravityFieldCode):
             default_value = 0.0 | generic_unit_system.time
         )
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_tree_domain_update_frequency", 
             "set_tree_domain_update_frequency",
             "tree_domain_update_frequency", 
@@ -1627,7 +1627,7 @@ class Gadget2(GravitationalDynamics, GravityFieldCode):
             default_value = 0.05
         )
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_time_between_statistics", 
             "set_time_between_statistics",
             "time_between_statistics", 
@@ -1635,7 +1635,7 @@ class Gadget2(GravitationalDynamics, GravityFieldCode):
             default_value = 0.1 | generic_unit_system.time
         )
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_min_gas_temp", 
             "set_min_gas_temp",
             "min_gas_temp", 
@@ -1643,7 +1643,7 @@ class Gadget2(GravitationalDynamics, GravityFieldCode):
             default_value = 0.0 | units.K
         )
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_min_gas_hsmooth_fractional", 
             "set_min_gas_hsmooth_fractional",
             "min_gas_hsmooth_fractional", 
@@ -1651,7 +1651,7 @@ class Gadget2(GravitationalDynamics, GravityFieldCode):
             default_value = 0.0
         )
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_softening_gas_max_phys", 
             "set_softening_gas_max_phys",
             "softening_gas_max_phys", 
@@ -1659,7 +1659,7 @@ class Gadget2(GravitationalDynamics, GravityFieldCode):
             default_value = 0.0 | generic_unit_system.length
         )
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_softening_halo_max_phys", 
             "set_softening_halo_max_phys",
             "softening_halo_max_phys", 
@@ -1667,7 +1667,7 @@ class Gadget2(GravitationalDynamics, GravityFieldCode):
             default_value = 0.0 | generic_unit_system.length
         )
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_box_size", 
             "set_box_size",
             "periodic_box_size", 
@@ -1675,7 +1675,7 @@ class Gadget2(GravitationalDynamics, GravityFieldCode):
             default_value = 1.0 | generic_unit_system.length
         )
         
-        object.add_boolean_parameter(
+        handler.add_boolean_parameter(
             "get_periodic_boundaries_flag",
             None,
             "periodic_boundaries_flag",
@@ -1683,7 +1683,7 @@ class Gadget2(GravitationalDynamics, GravityFieldCode):
             False
         )
         
-        object.add_boolean_parameter(
+        handler.add_boolean_parameter(
             "get_interpret_kicks_as_feedback_flag",
             "set_interpret_kicks_as_feedback_flag",
             "interpret_kicks_as_feedback",
@@ -1691,7 +1691,7 @@ class Gadget2(GravitationalDynamics, GravityFieldCode):
             False
         )
         
-        object.add_boolean_parameter(
+        handler.add_boolean_parameter(
             "get_interpret_heat_as_feedback_flag",
             "set_interpret_heat_as_feedback_flag",
             "interpret_heat_as_feedback",
@@ -1699,74 +1699,74 @@ class Gadget2(GravitationalDynamics, GravityFieldCode):
             True
         )
         
-        self.stopping_conditions.define_parameters(object)        
+        self.stopping_conditions.define_parameters(handler)        
         
     
-    def define_particle_sets(self, object):
-        object.define_super_set('particles', ['dm_particles','gas_particles'], 
+    def define_particle_sets(self, handler):
+        handler.define_super_set('particles', ['dm_particles','gas_particles'], 
             index_to_default_set = 0)
         
-        object.define_set('dm_particles', 'index_of_the_particle')
-        object.set_new('dm_particles', 'new_dm_particle')
-        object.set_delete('dm_particles', 'delete_particle')
-        object.add_setter('dm_particles', 'set_state')
-        object.add_getter('dm_particles', 'get_state')
-        object.add_setter('dm_particles', 'set_mass')
-        object.add_getter('dm_particles', 'get_mass', names = ('mass',))
-        object.add_setter('dm_particles', 'set_position')
-        object.add_getter('dm_particles', 'get_position')
-        object.add_setter('dm_particles', 'set_velocity')
-        object.add_getter('dm_particles', 'get_velocity')
-        object.add_getter('dm_particles', 'get_acceleration')
-        object.add_getter('dm_particles', 'get_epsilon_dm_part', names = ('radius',))
-        object.add_getter('dm_particles', 'get_epsilon_dm_part', names = ('epsilon',))
+        handler.define_set('dm_particles', 'index_of_the_particle')
+        handler.set_new('dm_particles', 'new_dm_particle')
+        handler.set_delete('dm_particles', 'delete_particle')
+        handler.add_setter('dm_particles', 'set_state')
+        handler.add_getter('dm_particles', 'get_state')
+        handler.add_setter('dm_particles', 'set_mass')
+        handler.add_getter('dm_particles', 'get_mass', names = ('mass',))
+        handler.add_setter('dm_particles', 'set_position')
+        handler.add_getter('dm_particles', 'get_position')
+        handler.add_setter('dm_particles', 'set_velocity')
+        handler.add_getter('dm_particles', 'get_velocity')
+        handler.add_getter('dm_particles', 'get_acceleration')
+        handler.add_getter('dm_particles', 'get_epsilon_dm_part', names = ('radius',))
+        handler.add_getter('dm_particles', 'get_epsilon_dm_part', names = ('epsilon',))
         
-        object.define_set('gas_particles', 'index_of_the_particle',state_guard="before_new_set_instance")
-        object.set_new('gas_particles', 'new_sph_particle')
-        object.set_delete('gas_particles', 'delete_particle')
-        object.add_setter('gas_particles', 'set_state_sph')
-        object.add_getter('gas_particles', 'get_state_sph')
-        object.add_setter('gas_particles', 'set_mass')
-        object.add_getter('gas_particles', 'get_mass', names = ('mass',))
-        object.add_setter('gas_particles', 'set_position')
-        object.add_getter('gas_particles', 'get_position')
-        object.add_setter('gas_particles', 'set_velocity')
-        object.add_getter('gas_particles', 'get_velocity')
-        object.add_getter('gas_particles', 'get_acceleration')
-        object.add_setter('gas_particles', 'set_internal_energy')
-        object.add_getter('gas_particles', 'get_internal_energy')
-        object.add_getter('gas_particles', 'get_smoothing_length')
-        object.add_getter('gas_particles', 'get_density', names = ('rho',))
-        object.add_getter('gas_particles', 'get_density', names = ('density',))
-        object.add_getter('gas_particles', 'get_pressure')
-        object.add_getter('gas_particles', 'get_d_internal_energy_dt')
-        object.add_getter('gas_particles', 'get_n_neighbours')
-        object.add_getter('gas_particles', 'get_epsilon_gas_part', names = ('radius',))
-        object.add_getter('gas_particles', 'get_epsilon_gas_part', names = ('epsilon',))
+        handler.define_set('gas_particles', 'index_of_the_particle',state_guard="before_new_set_instance")
+        handler.set_new('gas_particles', 'new_sph_particle')
+        handler.set_delete('gas_particles', 'delete_particle')
+        handler.add_setter('gas_particles', 'set_state_sph')
+        handler.add_getter('gas_particles', 'get_state_sph')
+        handler.add_setter('gas_particles', 'set_mass')
+        handler.add_getter('gas_particles', 'get_mass', names = ('mass',))
+        handler.add_setter('gas_particles', 'set_position')
+        handler.add_getter('gas_particles', 'get_position')
+        handler.add_setter('gas_particles', 'set_velocity')
+        handler.add_getter('gas_particles', 'get_velocity')
+        handler.add_getter('gas_particles', 'get_acceleration')
+        handler.add_setter('gas_particles', 'set_internal_energy')
+        handler.add_getter('gas_particles', 'get_internal_energy')
+        handler.add_getter('gas_particles', 'get_smoothing_length')
+        handler.add_getter('gas_particles', 'get_density', names = ('rho',))
+        handler.add_getter('gas_particles', 'get_density', names = ('density',))
+        handler.add_getter('gas_particles', 'get_pressure')
+        handler.add_getter('gas_particles', 'get_d_internal_energy_dt')
+        handler.add_getter('gas_particles', 'get_n_neighbours')
+        handler.add_getter('gas_particles', 'get_epsilon_gas_part', names = ('radius',))
+        handler.add_getter('gas_particles', 'get_epsilon_gas_part', names = ('epsilon',))
 
-        self.stopping_conditions.define_particle_set(object)
+        self.stopping_conditions.define_particle_set(handler)
 
-    def define_additional_particle_attributes(self, object):
+    def define_additional_particle_attributes(self, handler):
         if self.parameters.viscosity_switch=="Morris & Monaghan 1997":
-            object.add_getter('gas_particles', 'get_alpha_visc', names = ('viscosity_alpha',))
-            object.add_getter('gas_particles', 'get_dalphadt_visc', names = ('viscosity_dalphadt',))
+            handler.add_getter('gas_particles', 'get_alpha_visc', names = ('viscosity_alpha',))
+            handler.add_getter('gas_particles', 'get_dalphadt_visc', names = ('viscosity_dalphadt',))
               
-    def define_errorcodes(self, object):
-        object.add_errorcode(-1, 'Unspecified, other error.')
-        object.add_errorcode(-2, 'Called function is not implemented.')
-        object.add_errorcode(-3, 'A particle with the given index was not found.')
-        object.add_errorcode(-4, 'Parameter check failed.')
-        object.add_errorcode(-5, 'CPU-time limit reached.')
-        object.add_errorcode(-6, "Can't evolve backwards in time.")
-        object.add_errorcode(-7, "Can't evolve further than time_max.")
-        object.add_errorcode(-8, "A particle was assigned a timestep of size zero. The code_time_unit used may be too large.")
-        object.add_errorcode(-9, "This function should not be used with the current value of comoving_integration_flag")
+    def define_errorcodes(self, handler):
+        handler.add_errorcode(-1, 'Unspecified, other error.')
+        handler.add_errorcode(-2, 'Called function is not implemented.')
+        handler.add_errorcode(-3, 'A particle with the given index was not found.')
+        handler.add_errorcode(-4, 'Parameter check failed.')
+        handler.add_errorcode(-5, 'CPU-time limit reached.')
+        handler.add_errorcode(-6, "Can't evolve backwards in time.")
+        handler.add_errorcode(-7, "Can't evolve further than time_max.")
+        handler.add_errorcode(-8, "A particle was assigned a timestep of size zero. The code_time_unit used may be too large.")
+        handler.add_errorcode(-9, "This function should not be used with the current value of comoving_integration_flag")
     
-    def define_methods(self, object):
-        GravitationalDynamics.define_methods(self, object)
-        object.add_method('evolve_model', (generic_unit_system.time,), ( object.ERROR_CODE, ))
-        object.add_method('evolve_to_redshift', (object.NO_UNIT,), ( object.ERROR_CODE, ))
-        object.add_method(
+    def define_methods(self, handler):
+        GravitationalDynamics.define_methods(self, handler)
+        handler.add_method('evolve_model', (generic_unit_system.time,), ( handler.ERROR_CODE, ))
+        handler.add_method('evolve_to_redshift', (handler.NO_UNIT,), ( handler.ERROR_CODE, ))
+        handler.add_method(
             "new_particle",
             (
                 generic_unit_system.mass,
@@ -1778,23 +1778,23 @@ class Gadget2(GravitationalDynamics, GravityFieldCode):
                 generic_unit_system.speed,
             ),
             (
-                object.INDEX,
-                object.ERROR_CODE,
+                handler.INDEX,
+                handler.ERROR_CODE,
             )
         )
-        object.add_method(
+        handler.add_method(
             "delete_particle",
             (
-                object.NO_UNIT,
+                handler.NO_UNIT,
             ),
             (
-                object.ERROR_CODE,
+                handler.ERROR_CODE,
             )
         )
-        object.add_method(
+        handler.add_method(
             "get_state",
             (
-                object.NO_UNIT,
+                handler.NO_UNIT,
             ),
             (
                 generic_unit_system.mass,
@@ -1804,13 +1804,13 @@ class Gadget2(GravitationalDynamics, GravityFieldCode):
                 generic_unit_system.speed,
                 generic_unit_system.speed,
                 generic_unit_system.speed,
-                object.ERROR_CODE
+                handler.ERROR_CODE
             )
         )
-        object.add_method(
+        handler.add_method(
             "set_state",
             (
-                object.NO_UNIT,
+                handler.NO_UNIT,
                 generic_unit_system.mass,
                 generic_unit_system.length,
                 generic_unit_system.length,
@@ -1820,120 +1820,120 @@ class Gadget2(GravitationalDynamics, GravityFieldCode):
                 generic_unit_system.speed,
             ),
             (
-                object.ERROR_CODE
+                handler.ERROR_CODE
             )
         )
-        object.add_method(
+        handler.add_method(
             "set_mass",
             (
-                object.NO_UNIT,
+                handler.NO_UNIT,
                 generic_unit_system.mass,
             ),
             (
-                object.ERROR_CODE
+                handler.ERROR_CODE
             )
         )
-        object.add_method(
+        handler.add_method(
             "get_mass",
             (
-                object.NO_UNIT,
+                handler.NO_UNIT,
             ),
             (
                 generic_unit_system.mass,
-                object.ERROR_CODE
+                handler.ERROR_CODE
             )
         )
-        object.add_method(
+        handler.add_method(
             "set_radius",
             (
-                object.NO_UNIT,
+                handler.NO_UNIT,
                 generic_unit_system.length,
             ),
             (
-                object.ERROR_CODE
+                handler.ERROR_CODE
             )
         )
-        object.add_method(
+        handler.add_method(
             "get_radius",
             (
-                object.NO_UNIT,
+                handler.NO_UNIT,
             ),
             (
                 generic_unit_system.length,
-                object.ERROR_CODE
+                handler.ERROR_CODE
             )
         )
-        object.add_method(
+        handler.add_method(
             "set_position",
             (
-                object.NO_UNIT,
+                handler.NO_UNIT,
                 generic_unit_system.length,
                 generic_unit_system.length,
                 generic_unit_system.length,
             ),
             (
-                object.ERROR_CODE
+                handler.ERROR_CODE
             )
         )
-        object.add_method(
+        handler.add_method(
             "get_position",
             (
-                object.NO_UNIT,
+                handler.NO_UNIT,
             ),
             (
                 generic_unit_system.length,
                 generic_unit_system.length,
                 generic_unit_system.length,
-                object.ERROR_CODE
+                handler.ERROR_CODE
             )
         )
-        object.add_method(
+        handler.add_method(
             "set_velocity",
             (
-                object.INDEX,
+                handler.INDEX,
                 generic_unit_system.speed,
                 generic_unit_system.speed,
                 generic_unit_system.speed,
             ),
             (
-                object.ERROR_CODE
+                handler.ERROR_CODE
             )
         )
-        object.add_method(
+        handler.add_method(
             "get_velocity",
             (
-                object.INDEX,
+                handler.INDEX,
             ),
             (
                 generic_unit_system.speed,
                 generic_unit_system.speed,
                 generic_unit_system.speed,
-                object.ERROR_CODE
+                handler.ERROR_CODE
             )
         )
-        object.add_method(
+        handler.add_method(
             "get_acceleration",
             (
-                object.INDEX,
+                handler.INDEX,
             ),
             (
                 generic_unit_system.acceleration,
                 generic_unit_system.acceleration,
                 generic_unit_system.acceleration,
-                object.ERROR_CODE
+                handler.ERROR_CODE
             )
         )
-        object.add_method(
+        handler.add_method(
             "get_potential",
             (
-                object.NO_UNIT,
+                handler.NO_UNIT,
             ),
             (
                 generic_unit_system.potential,
-                object.ERROR_CODE
+                handler.ERROR_CODE
             )
         )
-        object.add_method(
+        handler.add_method(
             "new_dm_particle",
             (
                 generic_unit_system.mass,
@@ -1945,11 +1945,11 @@ class Gadget2(GravitationalDynamics, GravityFieldCode):
                 generic_unit_system.speed,
             ),
             (
-                object.INDEX,
-                object.ERROR_CODE,
+                handler.INDEX,
+                handler.ERROR_CODE,
             )
         )
-        object.add_method(
+        handler.add_method(
             "new_sph_particle",
             (
                 generic_unit_system.mass,
@@ -1962,14 +1962,14 @@ class Gadget2(GravitationalDynamics, GravityFieldCode):
                 generic_unit_system.specific_energy,
             ),
             (
-                object.INDEX,
-                object.ERROR_CODE,
+                handler.INDEX,
+                handler.ERROR_CODE,
             )
         )
-        object.add_method(
+        handler.add_method(
             "get_state_sph",
             (
-                object.INDEX,
+                handler.INDEX,
             ),
             (
                 generic_unit_system.mass,
@@ -1980,13 +1980,13 @@ class Gadget2(GravitationalDynamics, GravityFieldCode):
                 generic_unit_system.speed,
                 generic_unit_system.speed,
                 generic_unit_system.specific_energy,
-                object.ERROR_CODE
+                handler.ERROR_CODE
             )
         )
-        object.add_method(
+        handler.add_method(
             "set_state_sph",
             (
-                object.INDEX,
+                handler.INDEX,
                 generic_unit_system.mass,
                 generic_unit_system.length,
                 generic_unit_system.length,
@@ -1997,575 +1997,574 @@ class Gadget2(GravitationalDynamics, GravityFieldCode):
                 generic_unit_system.specific_energy,
             ),
             (
-                object.ERROR_CODE,
+                handler.ERROR_CODE,
             )
         )
-        object.add_method(
+        handler.add_method(
             "set_internal_energy",
             (
-                object.INDEX,
+                handler.INDEX,
                 generic_unit_system.specific_energy,
             ),
             (
-                object.ERROR_CODE,
+                handler.ERROR_CODE,
             )
         )
-        object.add_method(
+        handler.add_method(
             "get_internal_energy",
             (
-                object.INDEX,
+                handler.INDEX,
             ),
             (
                 generic_unit_system.specific_energy,
-                object.ERROR_CODE
+                handler.ERROR_CODE
             )
         )
-        object.add_method(
+        handler.add_method(
             "get_smoothing_length",
-            (object.INDEX,),
-            (generic_unit_system.length, object.ERROR_CODE)
+            (handler.INDEX,),
+            (generic_unit_system.length, handler.ERROR_CODE)
         )
-        object.add_method(
+        handler.add_method(
             "get_density",
-            (object.INDEX,),
-            (generic_unit_system.density, object.ERROR_CODE)
+            (handler.INDEX,),
+            (generic_unit_system.density, handler.ERROR_CODE)
         )
-        object.add_method(
+        handler.add_method(
             "get_pressure",
-            (object.INDEX,),
-            (generic_unit_system.pressure, object.ERROR_CODE)
+            (handler.INDEX,),
+            (generic_unit_system.pressure, handler.ERROR_CODE)
         )
-        object.add_method(
+        handler.add_method(
             "get_d_internal_energy_dt",
-            (object.INDEX,),
-            (generic_unit_system.specific_energy / generic_unit_system.time, object.ERROR_CODE)
+            (handler.INDEX,),
+            (generic_unit_system.specific_energy / generic_unit_system.time, handler.ERROR_CODE)
         )
-        object.add_method(
+        handler.add_method(
             "get_n_neighbours",
-            (object.INDEX,),
-            (object.NO_UNIT, object.ERROR_CODE)
+            (handler.INDEX,),
+            (handler.NO_UNIT, handler.ERROR_CODE)
         )
-        object.add_method(
+        handler.add_method(
             "get_epsilon_dm_part",
-            (object.INDEX,),
-            (generic_unit_system.length, object.ERROR_CODE)
+            (handler.INDEX,),
+            (generic_unit_system.length, handler.ERROR_CODE)
         )
-        object.add_method(
+        handler.add_method(
             "get_epsilon_gas_part",
-            (object.INDEX,),
-            (generic_unit_system.length, object.ERROR_CODE)
+            (handler.INDEX,),
+            (generic_unit_system.length, handler.ERROR_CODE)
         )
         
        
-        object.add_method(
+        handler.add_method(
             'get_hydro_state_at_point',
             (generic_unit_system.length, generic_unit_system.length, generic_unit_system.length,
                 generic_unit_system.speed, generic_unit_system.speed, generic_unit_system.speed),
             (generic_unit_system.density, generic_unit_system.momentum_density, generic_unit_system.momentum_density, 
-                generic_unit_system.momentum_density, generic_unit_system.energy_density, object.ERROR_CODE)
+                generic_unit_system.momentum_density, generic_unit_system.energy_density, handler.ERROR_CODE)
         )
         
-        object.add_method(
+        handler.add_method(
             "get_epsilon_squared",
             (),
-            (generic_unit_system.length * generic_unit_system.length, object.ERROR_CODE,)
+            (generic_unit_system.length * generic_unit_system.length, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "set_epsilon_squared",
             (generic_unit_system.length * generic_unit_system.length, ),
-            (object.ERROR_CODE,)
+            (handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "get_time_step",
             (),
-            (generic_unit_system.time, object.ERROR_CODE,)
+            (generic_unit_system.time, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "get_nsmooth",
             (),
-            (object.NO_UNIT, object.ERROR_CODE,)
+            (handler.NO_UNIT, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "set_nsmooth",
-            (object.NO_UNIT, ),
-            (object.ERROR_CODE,)
+            (handler.NO_UNIT, ),
+            (handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "get_unit_mass",
             (),
-            (units.g, object.ERROR_CODE,)
+            (units.g, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "get_unit_length",
             (),
-            (units.cm, object.ERROR_CODE,)
+            (units.cm, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "get_unit_time",
             (),
-            (units.s, object.ERROR_CODE,)
+            (units.s, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "get_unit_velocity",
             (),
-            (units.cm / units.s, object.ERROR_CODE,)
+            (units.cm / units.s, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "get_bh_tol",
             (),
-            (object.NO_UNIT, object.ERROR_CODE,)
+            (handler.NO_UNIT, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "set_bh_tol",
-            (object.NO_UNIT, ),
-            (object.ERROR_CODE,)
+            (handler.NO_UNIT, ),
+            (handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "get_gdgtol",
             (),
-            (object.NO_UNIT, object.ERROR_CODE,)
+            (handler.NO_UNIT, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "set_gdgtol",
-            (object.NO_UNIT, ),
-            (object.ERROR_CODE,)
+            (handler.NO_UNIT, ),
+            (handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "get_epsgas",
             (),
-            (generic_unit_system.length, object.ERROR_CODE,)
+            (generic_unit_system.length, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "set_epsgas",
             (generic_unit_system.length, ),
-            (object.ERROR_CODE,)
+            (handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "get_gamma",
             (),
-            (object.NO_UNIT, object.ERROR_CODE,)
+            (handler.NO_UNIT, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "get_alpha",
             (),
-            (object.NO_UNIT, object.ERROR_CODE,)
+            (handler.NO_UNIT, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "set_alpha",
-            (object.NO_UNIT, ),
-            (object.ERROR_CODE,)
+            (handler.NO_UNIT, ),
+            (handler.ERROR_CODE,)
         )
 
 
-        object.add_method(
+        handler.add_method(
             "get_beta",
             (),
-            (object.NO_UNIT, object.ERROR_CODE,)
+            (handler.NO_UNIT, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "set_beta",
-            (object.NO_UNIT, ),
-            (object.ERROR_CODE,)
+            (handler.NO_UNIT, ),
+            (handler.ERROR_CODE,)
         )
 
 
-        object.add_method(
+        handler.add_method(
             "get_courant",
             (),
-            (object.NO_UNIT, object.ERROR_CODE,)
+            (handler.NO_UNIT, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "set_courant",
-            (object.NO_UNIT, ),
-            (object.ERROR_CODE,)
+            (handler.NO_UNIT, ),
+            (handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "get_nsmtol",
             (),
-            (object.NO_UNIT, object.ERROR_CODE,)
+            (handler.NO_UNIT, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "set_nsmtol",
-            (object.NO_UNIT, ),
-            (object.ERROR_CODE,)
+            (handler.NO_UNIT, ),
+            (handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "get_gadget_output_directory",
             (),
-            (object.NO_UNIT, object.ERROR_CODE,)
+            (handler.NO_UNIT, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "set_gadget_output_directory",
-            (object.NO_UNIT,),
-            (object.ERROR_CODE,)
+            (handler.NO_UNIT,),
+            (handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "get_energy_file",
             (),
-            (object.NO_UNIT, object.ERROR_CODE,)
+            (handler.NO_UNIT, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "set_energy_file",
-            (object.NO_UNIT,),
-            (object.ERROR_CODE,)
+            (handler.NO_UNIT,),
+            (handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "get_info_file",
             (),
-            (object.NO_UNIT, object.ERROR_CODE,)
+            (handler.NO_UNIT, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "set_info_file",
-            (object.NO_UNIT,),
-            (object.ERROR_CODE,)
+            (handler.NO_UNIT,),
+            (handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "get_timings_file",
             (),
-            (object.NO_UNIT, object.ERROR_CODE,)
+            (handler.NO_UNIT, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "set_timings_file",
-            (object.NO_UNIT,),
-            (object.ERROR_CODE,)
+            (handler.NO_UNIT,),
+            (handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "get_cpu_file",
             (),
-            (object.NO_UNIT, object.ERROR_CODE,)
+            (handler.NO_UNIT, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "set_cpu_file",
-            (object.NO_UNIT,),
-            (object.ERROR_CODE,)
+            (handler.NO_UNIT,),
+            (handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "get_time_limit_cpu",
             (),
-            (units.s, object.ERROR_CODE,)
+            (units.s, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "set_time_limit_cpu",
             (units.s, ),
-            (object.ERROR_CODE,)
+            (handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "get_type_of_timestep_criterion",
             (),
-            (object.NO_UNIT, object.ERROR_CODE,)
+            (handler.NO_UNIT, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "set_type_of_timestep_criterion",
-            (object.NO_UNIT, ),
-            (object.ERROR_CODE,)
+            (handler.NO_UNIT, ),
+            (handler.ERROR_CODE,)
         )
         
         
-        object.add_method(
+        handler.add_method(
             "get_begin_time",
             (),
-            (generic_unit_system.time, object.ERROR_CODE,)
+            (generic_unit_system.time, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "set_begin_time",
             (generic_unit_system.time, ),
-            (object.ERROR_CODE,)
+            (handler.ERROR_CODE,)
         )
         
         
-        object.add_method(
+        handler.add_method(
             "get_time_max",
             (),
-            (generic_unit_system.time, object.ERROR_CODE,)
+            (generic_unit_system.time, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "set_time_max",
             (generic_unit_system.time, ),
-            (object.ERROR_CODE,)
+            (handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "get_redshift_begin",
             (),
-            (object.NO_UNIT, object.ERROR_CODE,)
+            (handler.NO_UNIT, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "set_redshift_begin",
-            (object.NO_UNIT, ),
-            (object.ERROR_CODE,)
+            (handler.NO_UNIT, ),
+            (handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "get_redshift_max",
             (),
-            (object.NO_UNIT, object.ERROR_CODE,)
+            (handler.NO_UNIT, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "set_redshift_max",
-            (object.NO_UNIT, ),
-            (object.ERROR_CODE,)
+            (handler.NO_UNIT, ),
+            (handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "get_omega_zero",
             (),
-            (object.NO_UNIT, object.ERROR_CODE,)
+            (handler.NO_UNIT, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "set_omega_zero",
-            (object.NO_UNIT, ),
-            (object.ERROR_CODE,)
+            (handler.NO_UNIT, ),
+            (handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "get_omega_lambda",
             (),
-            (object.NO_UNIT, object.ERROR_CODE,)
+            (handler.NO_UNIT, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "set_omega_lambda",
-            (object.NO_UNIT, ),
-            (object.ERROR_CODE,)
+            (handler.NO_UNIT, ),
+            (handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "get_omega_baryon",
             (),
-            (object.NO_UNIT, object.ERROR_CODE,)
+            (handler.NO_UNIT, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "set_omega_baryon",
-            (object.NO_UNIT, ),
-            (object.ERROR_CODE,)
+            (handler.NO_UNIT, ),
+            (handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "get_hubble_param",
             (),
-            (object.NO_UNIT, object.ERROR_CODE,)
+            (handler.NO_UNIT, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "set_hubble_param",
-            (object.NO_UNIT, ),
-            (object.ERROR_CODE,)
+            (handler.NO_UNIT, ),
+            (handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "get_err_tol_int_accuracy",
             (),
-            (object.NO_UNIT, object.ERROR_CODE,)
+            (handler.NO_UNIT, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "set_err_tol_int_accuracy",
-            (object.NO_UNIT, ),
-            (object.ERROR_CODE,)
+            (handler.NO_UNIT, ),
+            (handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "get_max_size_timestep",
             (),
-            (generic_unit_system.time, object.ERROR_CODE,)
+            (generic_unit_system.time, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "set_max_size_timestep",
             (generic_unit_system.time, ),
-            (object.ERROR_CODE,)
+            (handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "get_min_size_timestep",
             (),
-            (generic_unit_system.time, object.ERROR_CODE,)
+            (generic_unit_system.time, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "set_min_size_timestep",
             (generic_unit_system.time, ),
-            (object.ERROR_CODE,)
+            (handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "get_tree_domain_update_frequency",
             (),
-            (object.NO_UNIT, object.ERROR_CODE,)
+            (handler.NO_UNIT, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "set_tree_domain_update_frequency",
-            (object.NO_UNIT, ),
-            (object.ERROR_CODE,)
+            (handler.NO_UNIT, ),
+            (handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "get_time_between_statistics",
             (),
-            (generic_unit_system.time, object.ERROR_CODE,)
+            (generic_unit_system.time, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "set_time_between_statistics",
             (generic_unit_system.time, ),
-            (object.ERROR_CODE,)
+            (handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "get_min_gas_temp",
             (),
-            (units.K, object.ERROR_CODE,)
+            (units.K, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "set_min_gas_temp",
             (units.K, ),
-            (object.ERROR_CODE,)
+            (handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "get_min_gas_hsmooth_fractional",
             (),
-            (object.NO_UNIT, object.ERROR_CODE,)
+            (handler.NO_UNIT, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "set_min_gas_hsmooth_fractional",
-            (object.NO_UNIT, ),
-            (object.ERROR_CODE,)
+            (handler.NO_UNIT, ),
+            (handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "get_softening_gas_max_phys",
             (),
-            (generic_unit_system.length, object.ERROR_CODE,)
+            (generic_unit_system.length, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "set_softening_gas_max_phys",
             (generic_unit_system.length, ),
-            (object.ERROR_CODE,)
+            (handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "get_softening_halo_max_phys",
             (),
-            (generic_unit_system.length, object.ERROR_CODE,)
+            (generic_unit_system.length, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "set_softening_halo_max_phys",
             (generic_unit_system.length, ),
-            (object.ERROR_CODE,)
+            (handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "get_box_size",
             (),
-            (generic_unit_system.length, object.ERROR_CODE,)
+            (generic_unit_system.length, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "set_box_size",
             (generic_unit_system.length, ),
-            (object.ERROR_CODE,)
+            (handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "get_kinetic_energy",
             (),
-            (generic_unit_system.energy, object.ERROR_CODE,)
+            (generic_unit_system.energy, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "get_potential_energy",
             (),
-            (generic_unit_system.energy, object.ERROR_CODE,)
+            (generic_unit_system.energy, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "get_thermal_energy",
             (),
-            (generic_unit_system.energy, object.ERROR_CODE,)
+            (generic_unit_system.energy, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "get_total_radius",
             (),
-            (generic_unit_system.length, object.ERROR_CODE,)
+            (generic_unit_system.length, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "get_center_of_mass_position",
             (),
-            (generic_unit_system.length,generic_unit_system.length,generic_unit_system.length, object.ERROR_CODE,)
+            (generic_unit_system.length,generic_unit_system.length,generic_unit_system.length, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "get_center_of_mass_velocity",
             (),
-            (generic_unit_system.speed,generic_unit_system.speed,generic_unit_system.speed, object.ERROR_CODE,)
+            (generic_unit_system.speed,generic_unit_system.speed,generic_unit_system.speed, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "get_total_mass",
             (),
-            (generic_unit_system.mass, object.ERROR_CODE,)
+            (generic_unit_system.mass, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             'get_time',
             (),
-            (generic_unit_system.time, object.ERROR_CODE,)
+            (generic_unit_system.time, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             'get_redshift',
             (),
-            (object.NO_UNIT, object.ERROR_CODE,)
+            (handler.NO_UNIT, handler.ERROR_CODE,)
         )
         
-        self.stopping_conditions.define_methods(object)
-
+        self.stopping_conditions.define_methods(handler)

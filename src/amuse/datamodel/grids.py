@@ -4,8 +4,10 @@ from amuse.units import units
 from amuse.units import generic_unit_system
 from amuse.units import quantities
 from amuse.units.quantities import Quantity
+from amuse.units.quantities import VectorQuantity
 from amuse.units.quantities import new_quantity
 from amuse.units.quantities import zero
+from amuse.units.quantities import column_stack
 from amuse.support import exceptions
 from amuse.datamodel.base import *
 from amuse.datamodel.memory_storage import *
@@ -44,8 +46,12 @@ class AbstractGrid(AbstractSet):
         
         
     def savepoint(self, timestamp=None, **attributes):
-        instance = type(self)()
-        instance._private.attribute_storage = self._private.attribute_storage.copy()
+        try:
+            instance = type(self)()
+            instance._private.attribute_storage = self._private.attribute_storage.copy()
+        except:
+            instance=self.copy() # for the case of subgrid, maybe always ok
+
         instance.collection_attributes.timestamp = timestamp
         
         for name, value in attributes.iteritems():
@@ -98,17 +104,22 @@ class AbstractGrid(AbstractSet):
         result._private.collection_attributes = self._private.collection_attributes._copy_for_collection(result)
         return result
         
-    def samplePoint(self, position, must_return_values_on_cell_center = False):
-        if must_return_values_on_cell_center:
-            return SamplePointOnCellCenter(self, position)
+    def samplePoint(self, position=None, method="nearest", **kwargs):
+        if method in ["nearest"]:
+            return SamplePointOnCellCenter(self, position=position, **kwargs)
+        elif method in ["interpolation", "linear"]:
+            return SamplePointWithInterpolation(self, position=position, **kwargs)
         else:
-            return SamplePointWithIntepolation(self, position)
+            raise Exception("unknown sample method")
         
-    def samplePoints(self, positions, must_return_values_on_cell_center = False):
-        if must_return_values_on_cell_center:
-            return SamplePointsOnGrid(self, positions, SamplePointOnCellCenter)
+    def samplePoints(self, positions=None, method="nearest", **kwargs):
+        if method in ["nearest"]:
+            return SamplePointsOnGrid(self, positions, SamplePointOnCellCenter, **kwargs)
+        elif method in ["interpolation", "linear"]:
+            return SamplePointsOnGrid(self, positions, SamplePointWithInterpolation, **kwargs)
         else:
-            return SamplePointsOnGrid(self, positions, SamplePointWithIntepolation)
+            raise Exception("unknown sample method")
+
     
     def __len__(self):
         return self.shape[0]
@@ -125,12 +136,36 @@ class AbstractGrid(AbstractSet):
         
     def __str__(self):
         dimensionstr = ' x '.join(([str(x) for x in self.shape]))
-        attrstr= ', '.join(self.get_attribute_names_defined_in_store())
-        return "{0} ({1}) ({2})".format(
+        attributes=self.get_attribute_names_defined_in_store()
+        settable=self.get_defined_settable_attribute_names()
+        strings=[a if a in settable else a+" (ro)" for a in attributes]
+        attrstr= ', '.join(strings)
+        return "{0}({1}) ( {2} )".format(
             self.__class__.__name__, 
             dimensionstr,
             attrstr
         )
+
+    def iter_history(self):
+        raise Exception("not implemented")
+        
+    @property
+    def history(self):
+        return reversed(list(self.iter_history()))
+
+    def get_timeline_of_attribute(self, attribute):
+        timeline = []
+        for x in self.history:
+            timeline.append((x.collection_attributes.timestamp, getattr(x,attribute)))
+        return timeline
+
+    def get_timeline_of_attribute_as_vector(self, attribute):
+        timestamps = AdaptingVectorQuantity()
+        timeline = AdaptingVectorQuantity()
+        for x in self.history:
+            timestamps.append(x.collection_attributes.timestamp)
+            timeline.append(getattr(x,attribute))
+        return timestamps,timeline
         
 class BaseGrid(AbstractGrid):
     def __init__(self, *args, **kwargs):
@@ -149,6 +184,10 @@ class BaseGrid(AbstractGrid):
                 
     def get_values_in_store(self, indices, attributes, by_key = True):
         result = self._private.attribute_storage.get_values_in_store(indices, attributes)
+        return result
+
+    def get_values_in_store_async(self, indices, attributes, by_key = True):
+        result = self._private.attribute_storage.get_values_in_store_async(indices, attributes)
         return result
         
     def set_values_in_store(self, indices, attributes, values, by_key = True):
@@ -212,14 +251,22 @@ class BaseGrid(AbstractGrid):
             yield current
             current = current._private.previous
     
-    @property
-    def history(self):
-        return reversed(list(self.iter_history()))
-
     @classmethod
     def create(cls,*args,**kwargs):
         print ("Grid.create deprecated, use new_regular_grid instead")
         return new_regular_grid(*args,**kwargs)
+
+    def get_axes_names(self):
+        if "position" in self.GLOBAL_DERIVED_ATTRIBUTES:
+            result=self.GLOBAL_DERIVED_ATTRIBUTES["position"].attribute_names
+        elif "position" in self._derived_attributes:
+            result=self._derived_attributes["position"].attribute_names
+        else:
+            try:
+              result=self._axes_names
+            except:
+              raise Exception("do not know how to find axes_names")
+        return list(result)
 
 class UnstructuredGrid(BaseGrid):
     GLOBAL_DERIVED_ATTRIBUTES=CompositeDictionary(BaseGrid.GLOBAL_DERIVED_ATTRIBUTES)
@@ -241,8 +288,9 @@ class CartesianGrid(CartesianBaseGrid):
     GLOBAL_DERIVED_ATTRIBUTES=CompositeDictionary(CartesianBaseGrid.GLOBAL_DERIVED_ATTRIBUTES)
 
 # maintains compatibility with previous def.
-Grid=RegularGrid
-
+class Grid(RegularGrid):
+    GLOBAL_DERIVED_ATTRIBUTES=CompositeDictionary(RegularBaseGrid.GLOBAL_DERIVED_ATTRIBUTES)
+    
 def new_cartesian_grid(shape, cellsize, axes_names = "xyz",offset=None):
         """Returns a cartesian grid with cells of size cellsize.
         """
@@ -297,16 +345,25 @@ def new_regular_grid(shape, lengths, axes_names = "xyz",offset=None):
        
         return result
 
-def new_rectilinear_grid(shape, axes_cell_boundaries, axes_names = "xyz",offset=None):
+def new_rectilinear_grid(shape, axes_cell_boundaries=None, cell_centers=None, axes_names = "xyz",offset=None):
         """Returns a rectilinear grid with cells at positions midway given cell boundaries.
         """
         if len(axes_names)<len(shape):
             raise Exception("provide enough axes names")
-        if len(axes_cell_boundaries)!=len(shape):
+        if not (axes_cell_boundaries or cell_centers):
+            raise Exception("provide cell boundaries or cell_centers")
+        if axes_cell_boundaries and len(axes_cell_boundaries)!=len(shape):
             raise Exception("length of shape and axes positions do not conform")
-        for s,b in zip(shape,axes_cell_boundaries):
-            if len(b)!=s+1:
-                raise Exception("number of cell boundaries error (must be {0} instead of {1})".format(s+1,len(b)))
+        if axes_cell_boundaries:
+            for s,b in zip(shape,axes_cell_boundaries):
+                if len(b)!=s+1:
+                    raise Exception("number of cell boundary arrays error (must be {0} instead of {1})".format(s+1,len(b)))
+        if cell_centers and len(cell_centers)!=len(shape):
+            raise Exception("length of shape and axes positions do not conform")
+        if cell_centers:
+            for s,b in zip(shape,cell_centers):
+                if len(b)!=s:
+                    raise Exception("number of cell_center arrays error (must be {0} instead of {1})".format(s+1,len(b)))
 
         result = RectilinearGrid(*shape)
 
@@ -314,7 +371,10 @@ def new_rectilinear_grid(shape, axes_cell_boundaries, axes_names = "xyz",offset=
     
         #~ axes_cell_boundaries=[numpy.sort(b) for b in axes_cell_boundaries]
     
-        positions=[(b[1:]+b[:-1])/2 for b in axes_cell_boundaries]
+        if axes_cell_boundaries:
+            positions=[(b[1:]+b[:-1])/2 for b in axes_cell_boundaries]
+        if cell_centers:
+            positions=cell_centers
         
         if offset is None:
             offset=[0.*l[0] for l in positions]
@@ -326,6 +386,7 @@ def new_rectilinear_grid(shape, axes_cell_boundaries, axes_names = "xyz",offset=
         
         object.__setattr__(result,"_grid_type","rectilinear")
         object.__setattr__(result,"_axes_cell_boundaries",axes_cell_boundaries)
+        object.__setattr__(result,"_cell_centers",cell_centers)
        
         return result
 
@@ -430,16 +491,33 @@ class SubGrid(AbstractGrid):
     def __init__(self, grid, indices):
         AbstractGrid.__init__(self, grid)
         
+        self._private.previous=None
         self._private.grid = grid
         self._private.indices = indexing.normalize_slices(grid.shape,indices)
-    
+        self._private.collection_attributes=grid.collection_attributes
+        
     def _original_set(self):
         return self._private.grid
+    
+    def previous_state(self):
+        previous=self._private.previous
+        if previous:
+            return previous
+        previous=self._private.grid.previous_state()
+        if previous:
+            return previous[self._private.indices]
+        return previous
         
     def get_values_in_store(self, indices, attributes, by_key = True):
         normalized_indices = indexing.normalize_slices(self.shape,indices)
         combined_index = indexing.combine_indices(self._private.indices, normalized_indices)
         result = self._private.grid.get_values_in_store(combined_index, attributes)
+        return result
+
+    def get_values_in_store_async(self, indices, attributes, by_key = True):
+        normalized_indices = indexing.normalize_slices(self.shape,indices)
+        combined_index = indexing.combine_indices(self._private.indices, normalized_indices)
+        result = self._private.grid.get_values_in_store_async(combined_index, attributes)
         return result
     
     def set_values_in_store(self, indices, attributes, values, by_key = True):
@@ -490,6 +568,19 @@ class SubGrid(AbstractGrid):
 
     def _factory_for_new_collection(self):
         return Grid
+
+    def iter_history(self):
+        if self._private.previous:
+            current = self._private.previous
+            while not current is None:
+                yield current
+                current = current._private.previous
+            return
+
+        current = self._original_set().previous_state()
+        while not current is None:
+            yield current[self._private.indices]
+            current = current.previous_state()
         
 class GridPoint(object):
 
@@ -515,6 +606,32 @@ class GridPoint(object):
     
     def get_containing_set(self):
         return self.grid
+
+    def iter_history(self):
+        current = self.get_containing_set().previous_state()
+        while not current is None:
+            yield current[self.index]
+            current = current.previous_state()
+
+    @property
+    def history(self):
+        return reversed(list(self.iter_history()))
+
+    def get_timeline_of_attribute(self, attribute):
+        timeline = []
+        for x in self.history:
+            timeline.append((x.grid.collection_attributes.timestamp, getattr(x,attribute)))
+        return timeline
+
+    def get_timeline_of_attribute_as_vector(self, attribute):
+        timestamps = AdaptingVectorQuantity()
+        timeline = AdaptingVectorQuantity()
+        for x in self.history:
+            timestamps.append(x.grid.collection_attributes.timestamp)
+            timeline.append(getattr(x,attribute))
+        return timestamps,timeline
+
+
         
 def new_subgrid_from_index(grid, index):
     if indexing.number_of_dimensions_after_index(grid.number_of_dimensions(), index) == 0:
@@ -653,9 +770,9 @@ class GridInformationChannel(object):
         self.target.set_values_in_store(self.index, target, converted)        
 
 class SamplePointOnCellCenter(object):
-    def __init__(self, grid, point):
+    def __init__(self, grid, point=None, **kwargs):
         self.grid = grid
-        self.point = point
+        self.point = self.grid._get_array_of_positions_from_arguments(pos=point, **kwargs)
         
     @late
     def position(self):
@@ -663,15 +780,13 @@ class SamplePointOnCellCenter(object):
     
     @late
     def index(self):
-        offset = self.point - self.grid.get_minimum_position()
-        indices = (offset / self.grid.cellsize())
-        return numpy.floor(indices).astype(numpy.int)
+        return self.grid.get_index(self.point)
         
     @late
     def isvalid(self):
         return numpy.logical_and(
-            numpy.all(self.index >= self.grid.get_minimum_index()),
-            numpy.all(self.index <= self.grid.get_maximum_index())
+            numpy.all(self.index >= self.grid.get_minimum_index()[:len(self.index)]),
+            numpy.all(self.index <= self.grid.get_maximum_index()[:len(self.index)])
         )
     
     @late
@@ -684,7 +799,7 @@ class SamplePointOnCellCenter(object):
     def __getattr__(self, name_of_the_attribute):
         return self.get_value_of_attribute(name_of_the_attribute)
 
-class SamplePointWithIntepolation(object):
+class SamplePointWithInterpolation(object):
     """
     Vxyz =
     V000 (1 - x) (1 - y) (1 - z) +
@@ -697,9 +812,9 @@ class SamplePointWithIntepolation(object):
     V111 x y z
     """
     
-    def __init__(self, grid, point):
+    def __init__(self, grid, point=None, **kwargs):
         self.grid = grid
-        self.point = point
+        self.point = self.grid._get_array_of_positions_from_arguments(pos=point, **kwargs)
         
     @late
     def position(self):
@@ -707,10 +822,8 @@ class SamplePointWithIntepolation(object):
     
     @late
     def index(self):
-        offset = self.point - self.grid.get_minimum_position()
-        indices = (offset / self.grid.cellsize())
-        return numpy.floor(indices)
-        
+        return self.grid.get_index(self.point)
+                
     @late
     def index_for_000_cell(self):
         offset = self.point - self.grid[0,0,0].position
@@ -769,8 +882,8 @@ class SamplePointWithIntepolation(object):
     @late
     def isvalid(self):
         return numpy.logical_and(
-            numpy.all(self.index_for_000_cell >= self.grid.get_minimum_index()),
-            numpy.all(self.index_for_111_cell <= self.grid.get_maximum_index())
+            numpy.all(self.index_for_000_cell >= self.grid.get_minimum_index()[:len(self.index)]),
+            numpy.all(self.index_for_111_cell <= self.grid.get_maximum_index()[:len(self.index)])
         )
         
     def get_values_of_attribute(self, name_of_the_attribute):
@@ -787,8 +900,9 @@ class SamplePointWithIntepolation(object):
 
 class SamplePointsOnGrid(object):
     
-    def __init__(self, grid, points, samples_factory = SamplePointWithIntepolation):
+    def __init__(self, grid, points=None, samples_factory = SamplePointWithInterpolation, **kwargs):
         self.grid = grid
+        points=self.grid._get_array_of_positions_from_arguments(pos=points,**kwargs)
         self.samples = [samples_factory(grid, x) for x in points]
         self.samples = [x for x in self.samples if x.isvalid ]
         
@@ -820,7 +934,7 @@ class SamplePointsOnGrid(object):
 
 class SamplePointsOnMultipleGrids(object):
     
-    def __init__(self, grids, points, samples_factory = SamplePointWithIntepolation, index_factory = None):
+    def __init__(self, grids, points, samples_factory = SamplePointWithInterpolation, index_factory = None):
         self.grids = grids
         self.points = points
         self.samples_factory = samples_factory
@@ -959,3 +1073,16 @@ class NonOverlappingGridsIndexer(object):
         index = numpy.floor(index).astype(numpy.int)
         index_of_grid = self.grids_on_index[tuple(index)]
         return self.grids[index_of_grid]
+
+
+# convenience function to convert input arguments to positions (or vector of "points")
+def _get_array_of_positions_from_arguments(axes_names, **kwargs):
+    if kwargs.get('pos',None):
+        return kwargs['pos']
+    if kwargs.get('position',None):
+        return kwargs['position']
+    
+    coordinates=[kwargs[x] for x in axes_names]
+    if numpy.ndim(coordinates[0])==0:
+      return VectorQuantity.new_from_scalar_quantities(*coordinates)
+    return column_stack(coordinates)

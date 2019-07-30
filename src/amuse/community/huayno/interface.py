@@ -225,11 +225,11 @@ class Huayno(GravitationalDynamics,GravityFieldCode):
             **options
         )
 
-    def define_parameters(self, object):
+    def define_parameters(self, handler):
 
-        self.stopping_conditions.define_parameters(object)
+        self.stopping_conditions.define_parameters(handler)
 
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_eps2",
             "set_eps2",
             "epsilon_squared",
@@ -237,7 +237,7 @@ class Huayno(GravitationalDynamics,GravityFieldCode):
             default_value = 0.0 | nbody_system.length * nbody_system.length
         )
 
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_timestep_parameter",
             "set_timestep_parameter",
             "timestep_parameter",
@@ -245,7 +245,7 @@ class Huayno(GravitationalDynamics,GravityFieldCode):
             default_value = 0.03
         )
 
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_timestep",
             "set_timestep",
             "timestep",
@@ -253,7 +253,7 @@ class Huayno(GravitationalDynamics,GravityFieldCode):
             default_value = 0.0 | nbody_system.time
         )
 
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_verbosity_parameter",
             "set_verbosity_parameter",
             "verbosity_parameter",
@@ -261,7 +261,7 @@ class Huayno(GravitationalDynamics,GravityFieldCode):
             default_value = 0
         )
 
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_inttype_parameter",
             "set_inttype_parameter",
             "inttype_parameter",
@@ -269,7 +269,7 @@ class Huayno(GravitationalDynamics,GravityFieldCode):
             default_value = 8
         )
 
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_begin_time",
             "set_begin_time",
             "begin_time",
@@ -280,67 +280,67 @@ class Huayno(GravitationalDynamics,GravityFieldCode):
 
 
 
-    def define_methods(self, object):
-        GravitationalDynamics.define_methods(self, object)
+    def define_methods(self, handler):
+        GravitationalDynamics.define_methods(self, handler)
 
-        object.add_method(
+        handler.add_method(
             "get_eps2",
             (),
-            (nbody_system.length * nbody_system.length, object.ERROR_CODE,)
+            (nbody_system.length * nbody_system.length, handler.ERROR_CODE,)
         )
 
-        object.add_method(
+        handler.add_method(
             "set_eps2",
             (nbody_system.length * nbody_system.length, ),
-            (object.ERROR_CODE,)
+            (handler.ERROR_CODE,)
         )
 
-        object.add_method(
+        handler.add_method(
             "get_timestep_parameter",
             (),
-            (object.NO_UNIT, object.ERROR_CODE,)
+            (handler.NO_UNIT, handler.ERROR_CODE,)
         )
 
-        object.add_method(
+        handler.add_method(
             "set_timestep_parameter",
-            (object.NO_UNIT, ),
-            (object.ERROR_CODE,)
+            (handler.NO_UNIT, ),
+            (handler.ERROR_CODE,)
         )
 
-        object.add_method(
+        handler.add_method(
             "get_timestep",
             (),
-            (nbody_system.time, object.ERROR_CODE,)
+            (nbody_system.time, handler.ERROR_CODE,)
         )
 
-        object.add_method(
+        handler.add_method(
             "set_timestep",
             (nbody_system.time, ),
-            (object.ERROR_CODE,)
+            (handler.ERROR_CODE,)
         )
 
 
-        object.add_method(
+        handler.add_method(
             "get_inttype_parameter",
             (),
-            (object.NO_UNIT, object.ERROR_CODE,)
+            (handler.NO_UNIT, handler.ERROR_CODE,)
         )
 
-        object.add_method(
+        handler.add_method(
             "set_inttype_parameter",
-            (object.NO_UNIT, ),
-            (object.ERROR_CODE,)
+            (handler.NO_UNIT, ),
+            (handler.ERROR_CODE,)
         )
-        self.stopping_conditions.define_methods(object)
+        self.stopping_conditions.define_methods(handler)
 
-    def define_particle_sets(self, object):
-        GravitationalDynamics.define_particle_sets(self, object)
-        self.stopping_conditions.define_particle_set(object)
+    def define_particle_sets(self, handler):
+        GravitationalDynamics.define_particle_sets(self, handler)
+        self.stopping_conditions.define_particle_set(handler)
 
-    def define_state(self, object):
-        GravitationalDynamics.define_state(self, object)
+    def define_state(self, handler):
+        GravitationalDynamics.define_state(self, handler)
 
-        object.add_method('RUN', 'get_kinetic_energy')
-        object.add_method('RUN', 'get_potential_energy')
+        handler.add_method('RUN', 'get_kinetic_energy')
+        handler.add_method('RUN', 'get_potential_energy')
 
-        self.stopping_conditions.define_state(object)
+        self.stopping_conditions.define_state(handler)

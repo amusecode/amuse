@@ -11,6 +11,7 @@
 	#include <netinet/in.h>
 	#include <netdb.h>
 	#include <netinet/tcp.h>
+	#include <arpa/inet.h>
 #endif
 
 int32_t socketfd;

@@ -18,7 +18,7 @@ dtype_to_spec = DTypeToSpecDictionary({
     'float64' : DTypeSpec('doubles_in', 'doubles_out',
                     'HEADER_DOUBLE_COUNT', 'double', 'MPI_DOUBLE'),
     'bool' : DTypeSpec('booleans_in', 'booleans_out',
-                    'HEADER_BOOLEAN_COUNT', 'int', 'MPI_INTEGER'),
+                    'HEADER_BOOLEAN_COUNT', 'bool', 'MPI_C_BOOL'),
     'string' : DTypeSpec('strings_in', 'strings_out',
                     'HEADER_STRING_COUNT', 'int', 'MPI_INTEGER'),
 })
@@ -81,8 +81,8 @@ static float * floats_out;
 static double * doubles_in;
 static double * doubles_out;
 
-static int * booleans_in;
-static int * booleans_out;
+static bool * booleans_in;
+static bool * booleans_out;
 
 /* sizes of strings */
 static int * string_sizes_in;
@@ -150,8 +150,8 @@ int internal__accept_on_port(char * port_identifier, int * comm_identifier)
         MPI_Comm_accept(port_identifier, MPI_INFO_NULL, 0,  MPI_COMM_SELF, &communicator);
         MPI_Intercomm_merge(communicator, 0, &merged);
         MPI_Intercomm_create(MPI_COMM_WORLD,0,merged, 1, 65, &communicators[lastid]);
-        MPI_Comm_disconnect(&merged);
-        MPI_Comm_disconnect(&communicator);
+        MPI_Comm_free(&merged);
+        MPI_Comm_free(&communicator);
     } else {
         MPI_Intercomm_create(MPI_COMM_WORLD,0, MPI_COMM_NULL, 1, 65, &communicators[lastid]);
     }
@@ -179,8 +179,8 @@ int internal__connect_to_port(char * port_identifier, int * comm_identifier)
         MPI_Comm_connect(port_identifier, MPI_INFO_NULL, 0,  MPI_COMM_SELF, &communicator);
         MPI_Intercomm_merge(communicator, 1, &merged);
         MPI_Intercomm_create(MPI_COMM_WORLD, 0, merged, 0, 65, &communicators[lastid]);
-        MPI_Comm_disconnect(&merged);
-        MPI_Comm_disconnect(&communicator);
+        MPI_Comm_free(&merged);
+        MPI_Comm_free(&communicator);
     } else {
         MPI_Intercomm_create(MPI_COMM_WORLD, 0, MPI_COMM_NULL, 1, 65, &communicators[lastid]);
     }
@@ -350,8 +350,8 @@ void new_arrays(int max_call_count) {
   doubles_in = new double[ max_call_count * MAX_DOUBLES_IN];
   doubles_out = new double[ max_call_count * MAX_DOUBLES_OUT];
   
-  booleans_in = new int[ max_call_count * MAX_BOOLEANS_IN];
-  booleans_out = new int[ max_call_count * MAX_BOOLEANS_OUT];
+  booleans_in = new bool[ max_call_count * MAX_BOOLEANS_IN];
+  booleans_out = new bool[ max_call_count * MAX_BOOLEANS_OUT];
   
   string_sizes_in = new int[ max_call_count * MAX_STRINGS_IN];
   string_sizes_out = new int[ max_call_count * MAX_STRINGS_OUT];
@@ -442,7 +442,7 @@ void run_mpi(int argc, char *argv[]) {
     }
     
     if(header_in[HEADER_BOOLEAN_COUNT] > 0) {
-      MPI_Bcast(booleans_in, header_in[HEADER_BOOLEAN_COUNT], MPI_INTEGER, 0, parent);
+      MPI_Bcast(booleans_in, header_in[HEADER_BOOLEAN_COUNT], MPI_C_BOOL, 0, parent);
     }
     
     if(header_in[HEADER_STRING_COUNT] > 0) {
@@ -499,7 +499,7 @@ void run_mpi(int argc, char *argv[]) {
         MPI_Send(doubles_out, header_out[HEADER_DOUBLE_COUNT], MPI_DOUBLE, 0, 999, parent);
       }
       if(header_out[HEADER_BOOLEAN_COUNT] > 0) {
-        MPI_Send(booleans_out, header_out[HEADER_BOOLEAN_COUNT], MPI_INTEGER, 0, 999, parent);
+        MPI_Send(booleans_out, header_out[HEADER_BOOLEAN_COUNT], MPI_C_BOOL, 0, 999, parent);
       }
       if(header_out[HEADER_STRING_COUNT] > 0) {
         int offset = 0;
@@ -641,23 +641,28 @@ void run_sockets_mpi(int argc, char *argv[], int port, char *host) {
     }
     
     if(header_in[HEADER_BOOLEAN_COUNT] > 0) {
-      //receive_array_sockets(booleans_in, header_in[HEADER_BOOLEAN_COUNT], socketfd , rank);
-      for (int i = 0; i < header_in[HEADER_BOOLEAN_COUNT]; i++) {
-        booleans_in[i] = 0;
-        receive_array_sockets(&booleans_in[i], 1, socketfd , rank);
-      }
-      MPI_Bcast(booleans_in, header_in[HEADER_BOOLEAN_COUNT], MPI_INTEGER, 0, MPI_COMM_WORLD);
+      receive_array_sockets(booleans_in, header_in[HEADER_BOOLEAN_COUNT] * sizeof(bool), socketfd , rank);
+      MPI_Bcast(booleans_in, header_in[HEADER_BOOLEAN_COUNT], MPI_C_BOOL, 0, MPI_COMM_WORLD);
     }
     
     if(header_in[HEADER_STRING_COUNT] > 0) {
       receive_array_sockets(string_sizes_in, header_in[HEADER_STRING_COUNT] * sizeof(int), socketfd, rank);
       MPI_Bcast(string_sizes_in, header_in[HEADER_STRING_COUNT], MPI_INT, 0, MPI_COMM_WORLD);
-      for (int i = 0; i < header_in[HEADER_STRING_COUNT]; i++) {
-        strings_in[i] = new char[string_sizes_in[i] + 1];
-        receive_array_sockets(strings_in[i], string_sizes_in[i], socketfd, rank);
-        MPI_Bcast(strings_in[i], string_sizes_in[i], MPI_CHARACTER, 0, MPI_COMM_WORLD);
-        strings_in[i][string_sizes_in[i]] = '\\0';
+      
+      int total_string_size = 0;
+      for (int i = 0; i < header_in[HEADER_STRING_COUNT];i++) {
+        total_string_size += string_sizes_in[i] + 1;
       }
+      
+      characters_in = new char[total_string_size];
+      receive_array_sockets(characters_in, total_string_size, socketfd, rank);
+      MPI_Bcast(characters_in, total_string_size, MPI_CHARACTER, 0, MPI_COMM_WORLD);
+
+      int offset = 0;
+      for (int i = 0 ; i <  header_in[HEADER_STRING_COUNT];i++) {
+          strings_in[i] = characters_in + offset;
+          offset += string_sizes_in[i] + 1;
+      } 
     }
     
     header_out[HEADER_FLAGS] = 0;
@@ -701,29 +706,40 @@ void run_sockets_mpi(int argc, char *argv[], int port, char *host) {
       }
           
       if(header_out[HEADER_BOOLEAN_COUNT] > 0) {
-          for (int i = 0; i < header_out[HEADER_BOOLEAN_COUNT]; i++) {
-            if (booleans_out[i]) {
-              send_array_sockets(&TRUE_BYTE, 1, socketfd, 0);
-            } else {
-              send_array_sockets(&FALSE_BYTE, 1, socketfd, 0);
-            }
-         }
+        send_array_sockets(booleans_out, header_out[HEADER_BOOLEAN_COUNT] * sizeof(bool), socketfd, 0);
       }
           
       if(header_out[HEADER_STRING_COUNT] > 0) {
-        for (int i = 0; i < header_out[HEADER_STRING_COUNT]; i++) {
-          string_sizes_out[i] = strlen(strings_out[i]);
+        int offset = 0;
+        for( int i = 0; i < header_out[HEADER_STRING_COUNT] ; i++) {          
+          int length = strlen(strings_out[i]);
+          string_sizes_out[i] = length;
+          offset += length + 1;
         }
+        
+        characters_out = new char[offset + 1];
+        offset = 0;
+        
+        for( int i = 0; i < header_out[HEADER_STRING_COUNT]  ; i++) {
+          strcpy(characters_out+offset, strings_out[i]);
+          offset += string_sizes_out[i] + 1;
+        }
+        
         send_array_sockets(string_sizes_out, header_out[HEADER_STRING_COUNT] * sizeof(int), socketfd, 0);
-          
-        for (int i = 0; i < header_out[HEADER_STRING_COUNT]; i++) {
-          send_array_sockets(strings_out[i], string_sizes_out[i] * sizeof(char), socketfd, 0);
-        }
+        send_array_sockets(characters_out, offset * sizeof(char), socketfd, 0);
       }
         
       //fprintf(stderr, "sockets_mpicall done\\n");
     }
-
+    if (characters_in) { 
+        delete[] characters_in;
+        characters_in = 0;
+    }
+    
+    if (characters_out) {
+        delete[] characters_out;
+        characters_out = 0;
+    }
   }
   delete_arrays();
   
@@ -832,20 +848,25 @@ void run_sockets(int port, char *host) {
     }
     
     if(header_in[HEADER_BOOLEAN_COUNT] > 0) {
-      //receive_array_sockets(booleans_in, header_in[HEADER_BOOLEAN_COUNT], socketfd , 0);
-      for (int i = 0; i < header_in[HEADER_BOOLEAN_COUNT]; i++) {
-        booleans_in[i] = 0;
-        receive_array_sockets(&booleans_in[i], 1, socketfd , 0);
-      }
+      receive_array_sockets(booleans_in, header_in[HEADER_BOOLEAN_COUNT] * sizeof(bool), socketfd , 0);
     }
     
     if(header_in[HEADER_STRING_COUNT] > 0) {
       receive_array_sockets(string_sizes_in, header_in[HEADER_STRING_COUNT] * sizeof(int), socketfd, 0);
-      for (int i = 0; i < header_in[HEADER_STRING_COUNT]; i++) {
-        strings_in[i] = new char[string_sizes_in[i] + 1];
-        receive_array_sockets(strings_in[i], string_sizes_in[i], socketfd, 0);
-        strings_in[i][string_sizes_in[i]] = '\\0';
+      
+      int total_string_size = 0;
+      for (int i = 0; i < header_in[HEADER_STRING_COUNT];i++) {
+        total_string_size += string_sizes_in[i] + 1;
       }
+      
+      characters_in = new char[total_string_size];
+      receive_array_sockets(characters_in, total_string_size, socketfd, 0);
+
+      int offset = 0;
+      for (int i = 0 ; i <  header_in[HEADER_STRING_COUNT];i++) {
+          strings_in[i] = characters_in + offset;
+          offset += string_sizes_in[i] + 1;
+      } 
     }
     
     header_out[HEADER_FLAGS] = 0;
@@ -886,26 +907,38 @@ void run_sockets(int port, char *host) {
     }
       
     if(header_out[HEADER_BOOLEAN_COUNT] > 0) {
-        for (int i = 0; i < header_out[HEADER_BOOLEAN_COUNT]; i++) {
-          if (booleans_out[i]) {
-            send_array_sockets(&TRUE_BYTE, 1, socketfd, 0);
-          } else {
-            send_array_sockets(&FALSE_BYTE, 1, socketfd, 0);
-          }
-       }
+        send_array_sockets(booleans_out, header_out[HEADER_BOOLEAN_COUNT] * sizeof(bool), socketfd, 0);
     }
       
     if(header_out[HEADER_STRING_COUNT] > 0) {
-      for (int i = 0; i < header_out[HEADER_STRING_COUNT]; i++) {
-        string_sizes_out[i] = strlen(strings_out[i]);
-      }
-      send_array_sockets(string_sizes_out, header_out[HEADER_STRING_COUNT] * sizeof(int), socketfd, 0);
-      
-      for (int i = 0; i < header_out[HEADER_STRING_COUNT]; i++) {
-        send_array_sockets(strings_out[i], string_sizes_out[i] * sizeof(char), socketfd, 0);
-      }
+        int offset = 0;
+        for( int i = 0; i < header_out[HEADER_STRING_COUNT] ; i++) {          
+          int length = strlen(strings_out[i]);
+          string_sizes_out[i] = length;
+          offset += length + 1;
+        }
+        
+        characters_out = new char[offset + 1];
+        offset = 0;
+        
+        for( int i = 0; i < header_out[HEADER_STRING_COUNT]  ; i++) {
+          strcpy(characters_out+offset, strings_out[i]);
+          offset += string_sizes_out[i] + 1;
+        }
+        
+        send_array_sockets(string_sizes_out, header_out[HEADER_STRING_COUNT] * sizeof(int), socketfd, 0);
+        send_array_sockets(characters_out, offset * sizeof(char), socketfd, 0);
     }
     
+    if (characters_in) { 
+        delete[] characters_in;
+        characters_in = 0;
+    }
+    
+    if (characters_out) {
+        delete[] characters_out;
+        characters_out = 0;
+    }    
     //fprintf(stderr, "call done\\n");
   }
   delete_arrays();
@@ -1285,7 +1318,9 @@ class GenerateACHeaderStringFromASpecificationClass\
     def output_sourcecode_for_function(self):
         return GenerateACHeaderDefinitionStringFromAFunctionSpecification()
         
-    def start(self):  
+    def start(self):
+        self.out + '#include "stdbool.h"'  
+        self.out.lf()
         if self.make_extern_c:
             self.out + "#ifdef __cplusplus"
             self.out.lf() + 'extern "C" {'

@@ -1,8 +1,8 @@
 from amuse.test.amusetest import TestWithMPI
 
 from amuse.community.bhtree.interface import BHTree
-from amuse.community.hermite0.interface import Hermite
-from amuse.community.phiGRAPE.interface import PhiGRAPE
+from amuse.community.hermite.interface import Hermite
+from amuse.community.phigrape.interface import PhiGRAPE
 from amuse.community.gadget2.interface import Gadget2
 from amuse.community.fi.interface import Fi
 from amuse.community.ph4.interface import ph4

@@ -22,7 +22,7 @@ class UpdatedParticle {
   public:
 
     int index_of_particle;
-    int status;		// 1 ==> deleted, 2 ==> added
+    int status;			// 1 ==> deleted, 2 ==> added
     
     UpdatedParticle():index_of_particle(-1),status(0) {}
     UpdatedParticle(int i, int s):index_of_particle(i), status(s) {}
@@ -183,7 +183,7 @@ int commit_parameters()
 {
     // Perform any needed setup after initial code parameters have been set.
 
-    if( b->get_system_time() == 0) {
+    if (b->get_system_time() == 0) {
         b->set_system_time(begin_time);
     }
     return 0;
@@ -245,8 +245,10 @@ int get_index_of_next_particle(int index_of_the_particle,
 			       int * index_of_the_next_particle)
 {
     hdyn *bb = particle_with_index(b, index_of_the_particle);
-    if (!bb) return -1;
-    else if (!bb->get_younger_sister()) return 1;
+    if (!bb)
+	return -1;
+    else if (!bb->get_younger_sister())
+	return 1;
     else
 	 *index_of_the_next_particle = bb->get_younger_sister()->get_index();
     return 0;
@@ -430,6 +432,7 @@ int evolve_model(double to_time)
     // On return, system_time will be greater than or equal to the
     // specified time.  All particles j will have time[j] <=
     // system_time < time[j] + timestep[j].
+
     reset_stopping_conditions();    
     UpdatedParticles.clear();
 
@@ -560,7 +563,7 @@ int get_total_radius(double * radius)
     return 0;
 }
 
-// Optional (not implemented):
+// Optional (not implemented; needed for bridge):
 
 int get_potential_at_point(double eps,
 			   double x, double y, double z, 

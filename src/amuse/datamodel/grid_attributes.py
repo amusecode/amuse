@@ -1,12 +1,14 @@
-from amuse.units.quantities import zero
+from amuse.units.quantities import zero, as_vector_quantity, column_stack
 
 import numpy
 
 from amuse.datamodel import base
 from amuse.datamodel import grids
-grids.AbstractGrid.add_global_vector_attribute("position", ["x","y","z"])
-grids.AbstractGrid.add_global_vector_attribute("momentum", ["rhovx","rhovy","rhovz"])
-grids.AbstractGrid.add_global_vector_attribute("magnetic_field", ["B1i","B2i","B3i"])
+
+# maintain for backwards compatibility, these should go..
+grids.Grid.add_global_vector_attribute("position", ["x","y","z"])
+grids.Grid.add_global_vector_attribute("momentum", ["rhovx","rhovy","rhovz"])
+grids.Grid.add_global_vector_attribute("magnetic_field", ["B1i","B2i","B3i"])
 
 @grids.BaseGrid.caching_function_for_set
 def cellsize(grid):
@@ -17,14 +19,14 @@ def cellsize(grid):
     """Returns the lenght of each direction in the grid.
     Works for regular and cartesian grids.
     """
-    result = grid[grid.get_minimum_index()].position*0.
-    Ndim=len(grid.shape)
+    result = []
+    Ndim= len(grid.shape)
     cell1 = grid[(0,)*Ndim]
-    for i in range(len(result)):
+    for i in range(len( grid[grid.get_minimum_index()].position )): # shape of position not necessarily same as shape of the grid?
         if grid.shape[i] > 1:
             cell2=grid[(0,)*i+(1,)+(0,)*(Ndim-1-i)]
-            result[i:i+1]=(cell2.position-cell1.position)[i]      
-    return result
+            result.append((cell2.position-cell1.position)[i])      
+    return as_vector_quantity(result)
 
 @grids.BaseGrid.caching_function_for_set
 def get_minimum_index(grid):
@@ -104,6 +106,7 @@ def points(grid):
             else:
                 slicing.append(slice(None,-1))
                 offset.append(-1)
+                        
         result[slicing]=cell_centers+dx*numpy.asarray(offset)    
 
     return result
@@ -202,4 +205,22 @@ def get_overlap_with(grid, grid1,eps=None):
 #    coordinates fully inside the grid """
 #    gridminx,gridminy=sys.grid.get_minimum_position()
 #    gridmaxx,gridmaxy=sys.grid.get_maximum_position()
+
+@grids.BaseGrid.function_for_set
+def get_index(grid, pos=None, **kwargs):
+    raise Exception("not implemented for a {0} grid".format(grid.__class__.__name__))
+
+@grids.RegularBaseGrid.function_for_set
+def get_index(grid, pos=None, **kwargs):
+    pos=grid._get_array_of_positions_from_arguments(pos=pos,**kwargs)
+    offset = pos - grid.get_minimum_position()
+    indices = (offset / grid.cellsize())
+    return numpy.floor(indices).astype(numpy.int)
+
+@grids.BaseGrid.function_for_set
+def _get_array_of_positions_from_arguments(grid, **kwargs):
+    return grids._get_array_of_positions_from_arguments(grid.get_axes_names(), **kwargs)
+
+           
+      
 

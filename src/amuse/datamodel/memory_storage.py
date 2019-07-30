@@ -8,6 +8,7 @@ from amuse.units.quantities import VectorQuantity
 from amuse.units.quantities import is_quantity
 from amuse.datamodel.base import *
 from amuse.support import exceptions
+from amuse.rfi.async_request import FakeASyncRequest
 
 try:
   if numpy.uintp().itemsize<8: raise Exception()
@@ -110,7 +111,6 @@ class InMemoryAttributeStorage(AttributeStorage):
         return results
     
     def get_values_in_store_async(self, indices, attributes):
-        from amuse.rfi.channel import FakeASyncRequest
         result = self.get_values_in_store(indices, attributes)
         return FakeASyncRequest(result)
         
@@ -129,22 +129,23 @@ class InMemoryAttributeStorage(AttributeStorage):
                 # hack to set values between 
                 # with quanities with units.none
                 # and when values are stored without units
-                # need to be removed when units.none is completely gone
+                # note an alternative might be to store always with units.none
+                # but have the getitem remove the unit, caveat: maintaining compatibility in fileformat?
                 if is_quantity(values_to_set) and not storage.has_units():
                     if not values_to_set.unit.base:
                         storage.set_values(indices, values_to_set.value_in(units.none))
                     else:
                         raise AttributeError("exception in setting attribute '{0}', error was '{1}'".format(attribute, ex)) 
-                elif not is_quantity(values_to_set) and storage.has_units():
-                    if not storage.quantity.unit.base:
-                        storage.set_values(indices, units.none.new_quantity(values_to_set))
-                    else:
-                        raise AttributeError("exception in setting attribute '{0}', error was '{1}'".format(attribute, ex)) 
+                # this is no longer necessary:
+                #~ elif not is_quantity(values_to_set) and storage.has_units():
+                    #~ if not storage.quantity.unit.base:
+                        #~ storage.set_values(indices, units.none.new_quantity(values_to_set))
+                    #~ else:
+                        #~ raise AttributeError("exception in setting attribute '{0}', error was '{1}'".format(attribute, ex)) 
                 else:
                     raise AttributeError("exception in setting attribute '{0}', error was '{1}'".format(attribute, ex))
 
     def set_values_in_store_async(self, indices, attributes, list_of_values_to_set):
-        from amuse.rfi.channel import FakeASyncRequest
         result = self.set_values_in_store(indices, attributes, list_of_values_to_set)
         return FakeASyncRequest(result)
                 
@@ -277,7 +278,22 @@ class InMemoryGridAttributeStorage(object):
                 #    dtype = numpy.asanyarray(values_to_set).dtype
                 #    attribute_values = numpy.zeros((self.storage_shape()), dtype = dtype)
                     
-            storage.set_values(indices, values_to_set)
+            try:
+                storage.set_values(indices, values_to_set)
+            except ValueError as ex:
+                # hack to set values between 
+                # with quanities with units.none
+                # and when values are stored without units
+                # note an alternative might be to store always with units.none
+                # but have the getitem remove the unit, caveat: maintaining compatibility in fileformat?
+                if is_quantity(values_to_set) and not storage.has_units():
+                    if not values_to_set.unit.base:
+                        storage.set_values(indices, values_to_set.value_in(units.none))
+                    else:
+                        raise AttributeError("exception in setting attribute '{0}', error was '{1}'".format(attribute, ex)) 
+                else:
+                    raise AttributeError("exception in setting attribute '{0}', error was '{1}'".format(attribute, ex))
+
      
     def has_key_in_store(self, key):
         return key in self.mapping_from_particle_to_index

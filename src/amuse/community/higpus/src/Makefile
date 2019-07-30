@@ -11,30 +11,20 @@ MPICXX    ?= mpicxx
 MPICC     ?= mpicc
 CXX	  ?= mpicxx
 
-CUDA_INSTALL_PATH := /usr/local/cuda
-MPI_INSTALL_PATH := /usr/lib64/openmpi/1.4-gcc
-
 NVCC ?= /usr/local/cuda/bin/nvcc
 
 #possible options : -DCHECK_ERRORS -DCHECK_TIMES -DPLUMMER -DUNROLL
 MYOPTS := -DUNROLL -DCHECK_ERRORS
 
-CUDAINCLUDE := -I$(CUDA_INSTALL_PATH)/include
-CUDALIB := -L$(CUDA_INSTALL_PATH)/lib64
-
-MPIINCLUDE := -I$(MPI_INSTALL_PATH)/include
-MPILIB := -L$(MPI_INSTALL_PATH)/lib
-
-MPI_CXXFLAGS ?= $(MPIINCLUDE)
-MPI_CXXLIBS ?= $(MPILIB) -lmpi -lmpi_cxx
+CUDAINCLUDE ?= -I$(CUDA_TK)/include
 
 MYINCLUDE := -I./lib/
 
-LIBS := -lcuda -lcudart -lmpi -lmpi_cxx -lm -fopenmp
+LIBS := -lm -fopenmp
 
 GXXOPTS := -O3 -fopenmp -Wall -W
-NVCCFLAGS := -O3 --compiler-bindir=/usr/bin/$(CXX) -Xcompiler "$(GXXOPTS) $(MYOPTS) $(MPI_CXXFLAGS)" -arch sm_13 $(CUDAINCLUDE) $(MYINCLUDE)
-CXXFLAGS += $(GXXOPTS) $(MYOPTS) $(CUDAINCLUDE) $(MPI_CXXFLAGS) $(MYINCLUDE)
+NVCCFLAGS := -O3 --compiler-bindir=/usr/bin/$(CXX) -Xcompiler "$(GXXOPTS) $(MYOPTS) $(MPI_FCFLAGS)" $(CUDAINCLUDE) $(MYINCLUDE)
+CXXFLAGS += $(GXXOPTS) $(MYOPTS) $(CUDAINCLUDE) $(MYINCLUDE) $(MPI_CLIBS)
 
 CUDAOBJS = 	./src/cuda/main.cu.o \
                 ./src/cuda/cpu_func.cu.o \
@@ -59,7 +49,7 @@ AR = ar ruv
 RANLIB = ranlib
 RM = rm
 
-LINKLINE = $(CXX) -o $(TARGET) $(CODEOBJS) $(CUDALIB) $(LIBS) $(MPI_CXXLIBS)
+LINKLINE = $(CXX) -o $(TARGET) $(CODEOBJS) $(CUDA_LIBS) $(LIBS) $(MPI_CLIBS)
 
 all: $(CODELIB)
 
@@ -73,7 +63,7 @@ $(CODELIB): $(CODEOBJS)
 	$(NVCC) $(NVCCFLAGS) -c $< -o $@
 
 %.cpp.o: %.cpp
-	$(CXX) $(CXXFLAGS) -c $< -o $@
+	$(CXX) $(CXXFLAGS) $(MPI_FCFLAGS) -c $< -o $@
 
 exec: $(TARGET)
 

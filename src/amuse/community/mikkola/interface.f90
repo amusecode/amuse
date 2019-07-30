@@ -239,6 +239,8 @@ FUNCTION get_begin_time(time)
 END FUNCTION
 
 FUNCTION evolve_model(end_time)
+
+  use StoppingConditions 
   IMPLICIT NONE
   INTEGER :: evolve_model
   REAL*8 :: end_time
@@ -247,13 +249,16 @@ FUNCTION evolve_model(end_time)
   INTEGER :: nmergers
   REAL*8  :: VEL(3,maximum_number_of_particles*3)
   REAL*8  :: BODY(maximum_number_of_particles*3)
+  REAL*8  :: RADIUS(maximum_number_of_particles*3)
+  INTEGER :: COLI(maximum_number_of_particles*3)
+  INTEGER :: COLJ(maximum_number_of_particles*3)
   INTEGER :: INDEX(maximum_number_of_particles*3), REVERSE_INDEX(maximum_number_of_particles*3)
   REAL*8  :: IWRR, DELTAT, TEND, soft, cmet(3)
   REAL*8  :: BHspin(3)
   INTEGER :: stepr, i, j, Mikkola_ARWV
   INTEGER :: Np, Nbh, Ixc, error
   INTEGER :: idparent, idchild1, idchild2, new_index
-  
+  LOGICAL :: do_collision_detection
   j = 1
   Np = 0
   REVERSE_INDEX = 0
@@ -268,12 +273,15 @@ FUNCTION evolve_model(end_time)
          VEL(2,j) = particle_vy(i) 
          VEL(3,j) = particle_vz(i)
          BODY(j) = particle_m(i) 
+         RADIUS(j) = particle_radius(i)
          j = j + 1
          Np = Np + 1
      ENDIF
   ENDDO
   
   
+  error=reset_stopping_conditions();
+    
   Nbh = Np
   IWRR = -0 !?
   DELTAT = MIN(timestep, end_time - current_time) ! Initial timestep, not used according to Mikkola
@@ -292,11 +300,15 @@ FUNCTION evolve_model(end_time)
   else
     Ixc=1
   endif
+  error = is_stopping_condition_enabled(COLLISION_DETECTION, I);
+  do_collision_detection = I.EQ.1;
   BHspin=[0.0, 0.0, 0.0] !spin of the first black hole (between 0 and 1) 
+  COLI = 0
+  COLJ = 0
   evolve_model = Mikkola_ARWV(current_time, BODY, POS,VEL,INDEX, &
 &                IWRR,Np,DELTAT,end_time,stepr,soft,cmet,  &
 &                lightspeed,Ixc,Nbh,BHspin,tolerance, &
-&                mergers, nmergers) 
+&                mergers, nmergers, RADIUS, COLI, COLJ, do_collision_detection) 
   j = 1
 ! this print statement is needed for gfortran 4.8.x 
 ! otherwise nmergers seems to optimized out
@@ -336,6 +348,18 @@ FUNCTION evolve_model(end_time)
     particle_is_child(REVERSE_INDEX(idchild1)) = .TRUE.
     particle_is_child(REVERSE_INDEX(idchild2)) = .TRUE.
   ENDDO
+  
+  if(do_collision_detection) then 
+    DO i=1, Np
+      if(COLI(I).EQ.0) then
+        exit
+      end if
+      J=next_index_for_stopping_condition()
+      error = set_stopping_condition_info(J, COLLISION_DETECTION);
+      error = set_stopping_condition_particle_index(J, 0, REVERSE_INDEX(COLI(I)));
+      error = set_stopping_condition_particle_index(J, 1, REVERSE_INDEX(COLJ(I)));
+    ENDDO
+  end if
   ! current_time = end_time
 END FUNCTION
 
@@ -626,8 +650,13 @@ FUNCTION recommit_parameters()
 END FUNCTION
 
 FUNCTION initialize_code()
+  use StoppingConditions
   IMPLICIT NONE
-  INTEGER :: initialize_code
+  INTEGER :: initialize_code, error
+  
+  call initialize_stopping_conditions();
+  error = set_support_for_condition(COLLISION_DETECTION);
+  
   maximum_number_of_particles = 100
   initialize_code=0
   current_time = 0

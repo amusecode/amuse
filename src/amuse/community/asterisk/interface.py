@@ -508,93 +508,93 @@ class Asterisk(CommonCode):
     def store_view(self, description=""):
         self.overridden().store_view(str(description))
 
-    def define_properties(self, object):
-        object.add_property("get_current_rotation")
-        object.add_property("get_current_translation")
-        object.add_property("get_current_rotation", public_name = "rotation")
-        object.add_property("get_current_translation", public_name = "translation")
+    def define_properties(self, handler):
+        handler.add_property("get_current_rotation")
+        handler.add_property("get_current_translation")
+        handler.add_property("get_current_rotation", public_name = "rotation")
+        handler.add_property("get_current_translation", public_name = "translation")
         
-    def define_particle_sets(self, object):
-        object.define_super_set('particles', ['star_particles', 'gas_particles', 'sphere_particles', 'marker_particles'], 
+    def define_particle_sets(self, handler):
+        handler.define_super_set('particles', ['star_particles', 'gas_particles', 'sphere_particles', 'marker_particles'], 
             index_to_default_set = 0)
         
-        object.define_set('star_particles', 'index_of_the_particle')
-        object.set_new('star_particles', 'new_star_particle')
-        object.set_delete('star_particles', 'delete_particle')
+        handler.define_set('star_particles', 'index_of_the_particle')
+        handler.set_new('star_particles', 'new_star_particle')
+        handler.set_delete('star_particles', 'delete_particle')
         
-        object.define_set('gas_particles', 'index_of_the_particle')
-        object.set_new('gas_particles', 'new_gas_particle')
-        object.set_delete('gas_particles', 'delete_particle')
+        handler.define_set('gas_particles', 'index_of_the_particle')
+        handler.set_new('gas_particles', 'new_gas_particle')
+        handler.set_delete('gas_particles', 'delete_particle')
         
-        object.define_set('sphere_particles', 'index_of_the_particle')
-        object.set_new('sphere_particles', 'new_sphere_particle')
-        object.set_delete('sphere_particles', 'delete_particle')
+        handler.define_set('sphere_particles', 'index_of_the_particle')
+        handler.set_new('sphere_particles', 'new_sphere_particle')
+        handler.set_delete('sphere_particles', 'delete_particle')
         
-        object.define_set('marker_particles', 'index_of_the_particle')
-        object.set_new('marker_particles', 'new_marker_particle')
-        object.set_delete('marker_particles', 'delete_particle')
+        handler.define_set('marker_particles', 'index_of_the_particle')
+        handler.set_new('marker_particles', 'new_marker_particle')
+        handler.set_delete('marker_particles', 'delete_particle')
         
         for particle_set_name in ['star_particles', 'gas_particles', 'sphere_particles', 'marker_particles']:
-            object.add_getter(particle_set_name, 'get_position')
-            object.add_setter(particle_set_name, 'set_position')
-            object.add_getter(particle_set_name, 'get_color')
-            object.add_setter(particle_set_name, 'set_color')
-            object.add_getter(particle_set_name, 'get_opacity')
-            object.add_setter(particle_set_name, 'set_opacity')
-            object.add_getter(particle_set_name, 'get_radius')
-            object.add_setter(particle_set_name, 'set_radius')
+            handler.add_getter(particle_set_name, 'get_position')
+            handler.add_setter(particle_set_name, 'set_position')
+            handler.add_getter(particle_set_name, 'get_color')
+            handler.add_setter(particle_set_name, 'set_color')
+            handler.add_getter(particle_set_name, 'get_opacity')
+            handler.add_setter(particle_set_name, 'set_opacity')
+            handler.add_getter(particle_set_name, 'get_radius')
+            handler.add_setter(particle_set_name, 'set_radius')
 
-    def define_state(self, object): 
-        CommonCode.define_state(self, object)   
-        object.add_transition('END', 'INITIALIZED', 'initialize_code', False)    
+    def define_state(self, handler): 
+        CommonCode.define_state(self, handler)   
+        handler.add_transition('END', 'INITIALIZED', 'initialize_code', False)    
         
-        object.add_transition('INITIALIZED','EDIT','commit_parameters')
-        object.add_transition('RUN','CHANGE_PARAMETERS_RUN','before_set_parameter', False)
-        object.add_transition('EDIT','CHANGE_PARAMETERS_EDIT','before_set_parameter', False)
-        object.add_transition('UPDATE','CHANGE_PARAMETERS_UPDATE','before_set_parameter', False)
-        object.add_transition('CHANGE_PARAMETERS_RUN','RUN','recommit_parameters')
-        object.add_transition('CHANGE_PARAMETERS_EDIT','EDIT','recommit_parameters')
-        object.add_transition('CHANGE_PARAMETERS_UPDATE','UPDATE','recommit_parameters')
+        handler.add_transition('INITIALIZED','EDIT','commit_parameters')
+        handler.add_transition('RUN','CHANGE_PARAMETERS_RUN','before_set_parameter', False)
+        handler.add_transition('EDIT','CHANGE_PARAMETERS_EDIT','before_set_parameter', False)
+        handler.add_transition('UPDATE','CHANGE_PARAMETERS_UPDATE','before_set_parameter', False)
+        handler.add_transition('CHANGE_PARAMETERS_RUN','RUN','recommit_parameters')
+        handler.add_transition('CHANGE_PARAMETERS_EDIT','EDIT','recommit_parameters')
+        handler.add_transition('CHANGE_PARAMETERS_UPDATE','UPDATE','recommit_parameters')
         
-        object.add_method('CHANGE_PARAMETERS_RUN', 'before_set_parameter')
-        object.add_method('CHANGE_PARAMETERS_EDIT', 'before_set_parameter')
-        object.add_method('CHANGE_PARAMETERS_UPDATE','before_set_parameter')
+        handler.add_method('CHANGE_PARAMETERS_RUN', 'before_set_parameter')
+        handler.add_method('CHANGE_PARAMETERS_EDIT', 'before_set_parameter')
+        handler.add_method('CHANGE_PARAMETERS_UPDATE','before_set_parameter')
         
-        object.add_method('CHANGE_PARAMETERS_RUN', 'before_get_parameter')
-        object.add_method('CHANGE_PARAMETERS_EDIT', 'before_get_parameter')
-        object.add_method('CHANGE_PARAMETERS_UPDATE','before_get_parameter')
-        object.add_method('RUN', 'before_get_parameter')
-        object.add_method('EDIT', 'before_get_parameter')
-        object.add_method('UPDATE','before_get_parameter')
+        handler.add_method('CHANGE_PARAMETERS_RUN', 'before_get_parameter')
+        handler.add_method('CHANGE_PARAMETERS_EDIT', 'before_get_parameter')
+        handler.add_method('CHANGE_PARAMETERS_UPDATE','before_get_parameter')
+        handler.add_method('RUN', 'before_get_parameter')
+        handler.add_method('EDIT', 'before_get_parameter')
+        handler.add_method('UPDATE','before_get_parameter')
         
-        object.add_method('EDIT', 'new_star_particle')
-        object.add_method('EDIT', 'new_gas_particle')
-        object.add_method('EDIT', 'new_sphere_particle')
-        object.add_method('EDIT', 'new_marker_particle')
-        object.add_method('EDIT', 'delete_particle')
-        object.add_method('UPDATE', 'new_star_particle')
-        object.add_method('UPDATE', 'new_gas_particle')
-        object.add_method('UPDATE', 'new_sphere_particle')
-        object.add_method('UPDATE', 'new_marker_particle')
-        object.add_method('UPDATE', 'delete_particle')
-        object.add_transition('EDIT', 'RUN', 'commit_particles')
-        object.add_transition('RUN', 'UPDATE', 'new_star_particle', False)
-        object.add_transition('RUN', 'UPDATE', 'new_gas_particle', False)
-        object.add_transition('RUN', 'UPDATE', 'new_sphere_particle', False)
-        object.add_transition('RUN', 'UPDATE', 'new_marker_particle', False)
-        object.add_transition('RUN', 'UPDATE', 'delete_particle', False)
-        object.add_transition('UPDATE', 'RUN', 'recommit_particles')
+        handler.add_method('EDIT', 'new_star_particle')
+        handler.add_method('EDIT', 'new_gas_particle')
+        handler.add_method('EDIT', 'new_sphere_particle')
+        handler.add_method('EDIT', 'new_marker_particle')
+        handler.add_method('EDIT', 'delete_particle')
+        handler.add_method('UPDATE', 'new_star_particle')
+        handler.add_method('UPDATE', 'new_gas_particle')
+        handler.add_method('UPDATE', 'new_sphere_particle')
+        handler.add_method('UPDATE', 'new_marker_particle')
+        handler.add_method('UPDATE', 'delete_particle')
+        handler.add_transition('EDIT', 'RUN', 'commit_particles')
+        handler.add_transition('RUN', 'UPDATE', 'new_star_particle', False)
+        handler.add_transition('RUN', 'UPDATE', 'new_gas_particle', False)
+        handler.add_transition('RUN', 'UPDATE', 'new_sphere_particle', False)
+        handler.add_transition('RUN', 'UPDATE', 'new_marker_particle', False)
+        handler.add_transition('RUN', 'UPDATE', 'delete_particle', False)
+        handler.add_transition('UPDATE', 'RUN', 'recommit_particles')
         
-        object.add_method('RUN', 'store_view')
-        object.add_method('RUN', 'set_position')
-        object.add_method('RUN', 'set_color')
-        object.add_method('RUN', 'set_opacity')
-        object.add_method('RUN', 'get_position')
-        object.add_method('RUN', 'get_color')
-        object.add_method('RUN', 'get_opacity')
+        handler.add_method('RUN', 'store_view')
+        handler.add_method('RUN', 'set_position')
+        handler.add_method('RUN', 'set_color')
+        handler.add_method('RUN', 'set_opacity')
+        handler.add_method('RUN', 'get_position')
+        handler.add_method('RUN', 'get_color')
+        handler.add_method('RUN', 'get_opacity')
         
-    def define_parameters(self, object):
-        object.add_boolean_parameter(
+    def define_parameters(self, handler):
+        handler.add_boolean_parameter(
             "get_use_star_shader_flag",
             "set_use_star_shader_flag",
             "use_star_shader",
@@ -602,66 +602,66 @@ class Asterisk(CommonCode):
             True
         )
 
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_x_rotation",
             "set_x_rotation", 
             "x_rotation", 
             "Rotation of the scene about the x axis (degrees)", 
             default_value = 15.0
         )
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_y_rotation",
             "set_y_rotation", 
             "y_rotation", 
             "Rotation of the scene about the y axis (degrees)", 
             default_value = -15.0
         )
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_z_rotation",
             "set_z_rotation", 
             "z_rotation", 
             "Rotation of the scene about the z axis (degrees)", 
             default_value = 0.0
         )
-        object.add_vector_parameter(
+        handler.add_vector_parameter(
             "rotation",
             "Rotation of the scene about the x, y, and z axes (degrees)",
             ("x_rotation", "y_rotation","z_rotation")
         )
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_x_translation",
             "set_x_translation", 
             "x_translation", 
             "Translation of the scene, corresponding to a rotation of the scene w.r.t. the view point (degrees)", 
             default_value = 0.0
         )
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_y_translation",
             "set_y_translation", 
             "y_translation", 
             "Translation of the scene, corresponding to a rotation of the scene w.r.t. the view point (degrees)", 
             default_value = 0.0
         )
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_z_translation",
             "set_z_translation", 
             "z_translation", 
             "Translation of the scene, corresponding to a rotation of the scene w.r.t. the view point (degrees)", 
             default_value = 0.0
         )
-        object.add_vector_parameter(
+        handler.add_vector_parameter(
             "translation",
             "Translation of the scene, corresponding to a rotation of the scene w.r.t. the view point (degrees)",
             ("x_translation", "y_translation","z_translation")
         )
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_camera_distance",
             "set_camera_distance", 
             "camera_distance", 
             "Distance from the view point to the scene", 
             default_value = 2 | nbody_system.length
         )
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_scene_number",
             "set_scene", 
             "scene", 
@@ -669,7 +669,7 @@ class Asterisk(CommonCode):
             default_value = 0
         )
     
-    def define_converter(self, object):
+    def define_converter(self, handler):
         if not self.unit_converter is None:
-            object.set_converter(self.unit_converter.as_converter_from_si_to_generic())
+            handler.set_converter(self.unit_converter.as_converter_from_si_to_generic())
             

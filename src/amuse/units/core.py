@@ -262,7 +262,7 @@ class unit(object):
                     if not n2 == n1:
                         return False
                     found = True
-                    break;
+                    break
             if not found:
                 return False
         return True
@@ -279,11 +279,11 @@ class unit(object):
                 continue
             else:
                 if abs(n1 - n2) < eps:
-                    continue;
+                    continue
                 if abs(n2) > abs(n1):
-                    relativeError = abs((n1 - n2) * 1.0 / n2);
+                    relativeError = abs((n1 - n2) * 1.0 / n2)
                 else:
-                    relativeError = abs((n1 - n2) * 1.0 / n1);
+                    relativeError = abs((n1 - n2) * 1.0 / n1)
                 if relativeError <= eps:
                     continue
                 else:
@@ -867,6 +867,9 @@ class named_unit(unit):
     @late
     def base(self):
         return self.local_unit.base
+        
+    def is_none(self):
+        return self.local_unit.is_none()
 
 class derived_unit(unit):
     """

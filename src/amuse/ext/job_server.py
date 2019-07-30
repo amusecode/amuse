@@ -30,7 +30,7 @@ derived from the main module. Easy way to achieve this is to import them from a 
 """
 from amuse.rfi.core import *
 import cPickle as pickle
-from amuse.rfi.channel import AsyncRequestsPool
+from amuse.rfi.async_request import AsyncRequestsPool
 import inspect
 from collections import deque
 import threading
@@ -76,10 +76,10 @@ class RemoteCodeImplementation(object):
        return dump_and_encode(None)
      except Exception as ex:
        return dump_and_encode(RemoteCodeException(ex))
-   def _func(self,f,argin,kwargin,argout):
+   def _func(self,func,argin,kwargin,argout):
      try:
-       self.scope.update(dict(f=f,argin=argin,kwargin=kwargin))
-       exec "func=decode_and_load(f)" in self.scope
+       self.scope.update(dict(func=func,argin=argin,kwargin=kwargin))
+       exec "func=decode_and_load(func)" in self.scope
        exec "arg=decode_and_load(argin)" in self.scope
        exec "kwarg=decode_and_load(kwargin)" in self.scope
        exec "result=func(*arg,**kwarg)" in self.scope
@@ -153,7 +153,7 @@ class RemoteCodeInterface(PythonCodeInterface):
         return decode_and_load(result)
 
     def async_func(self,f,*args,**kwargs):
-        request=self._func.async(dump_and_encode(f),
+        request=self._func.asynchronous(dump_and_encode(f),
                                  dump_and_encode(args),
                                  dump_and_encode(kwargs) )
         def f(x):
@@ -300,8 +300,14 @@ class JobServer(object):
         return True
 
     def waitall(self):
-      while self.wait():
-        pass
+        while len(self.pool)==0 and self.job_list:
+            if self.number_available_codes>0:
+                raise Exception("JobServer: this should not happen")    
+            if self.number_starting_codes==0:
+                raise Exception("JobServer: no codes available")
+        while len(self.pool)>0 or self.job_list:        
+            self.pool.wait()
+            self.last_finished_job=self._finished_jobs[-1]
     
     @property
     def finished_jobs(self):

@@ -30,7 +30,8 @@
         FUNCTION Mikkola_ARWV(TIME,BODY,POS,VEL,INDEX, 
      &                   IWRR,Np,DELTAT,TMAX,stepr,soft,cmet,
      &                   lightspeed,Ixc,Nbh,BHspin,tolerance, 
-     &                   mergers, nmergers) 
+     &                   mergers, nmergers, radius, coli, colj, 
+     &                   detect_collisions) 
         include 'ARCCOM2e2.CH'
         COMMON/DIAGNOSTICS/GAMMA,H,IWR
         common/justforfun/Tkin,Upot,dSkin,dSpot ! used in diagno
@@ -39,16 +40,27 @@
         INTEGER Np
         INTEGER INDEX(Np), Nbh
         REAL*8 BODY(Np), POS(3,Np), VEL(3,Np), BHspin(3)
+        REAL*8 radius(Np)
+        INTEGER COLI(Np), COLJ(Np)
         INTEGER Mergers(3, Np),nmergers
         real*8 lightspeed, tolerance
+        LOGICAL detect_collisions
         REAL*8 G0(3),G(3),cmet(3),xw(3),vw(3),xwr(NMX3)!,dum(3)
      &   ,ai(NMX),ei(NMX),unci(NMX),Omi(NMX),ooi(NMX),cmxx(3),cmvx(3)
         LOGICAL NEWREG
         CHARACTER*22 outfile
         common/collision/icollision,ione,itwo,iwarning
+        
+        REAL*8 radii(NMX3)
+        INTEGER indexi(NMX3), indexj(NMX3)
+        LOGICAL do_detect, has_collision
+        common/DC/radii, indexi, indexj, do_detect, has_collision
         Mikkola_ARWV = 0
         EPS=tolerance
         sp0 = 0
+        radii = radius
+        do_detect = detect_collisions
+        has_collision = .FALSE.
 666     CONTINUE ! jump here to start a new simulation in the same run. 
           outfile = "orbit.data"
           icollision=0
@@ -77,6 +89,8 @@ c                                          stepr is now obsolete
           Clight = lightspeed
           N = Np
           MASS = 0
+          indexi = 0
+          indexj = 0
           DO i=1,3
              spin(i) = BHspin(i)
           end do
@@ -88,7 +102,8 @@ c                                          stepr is now obsolete
              DO K=1,3
                 X(L+K) = POS(K,i)
                 V(L+K) = VEL(K,i)
-             END DO      
+             END DO   
+             
           END DO
           N_ini=N
           call Reduce2cm(x,m,N,cmxx) ! in this version output is in cm anyway
@@ -201,6 +216,16 @@ c           end if ! abs(moi)>2.5
             Mikkola_ARWV = -4
             goto 999 
          end if
+         
+         if(do_detect .and. has_collision) then
+            Mikkola_ARWV = 0
+            do i=1,N
+              COLI(I) = indexi(I)
+              COLJ(I) = indexj(I)
+            end do
+            goto 999 
+         end if
+         
          IF(TIME.LT.TMAX)then
           GOTO 100
          else
@@ -650,6 +675,11 @@ c           if(1.eq.2)then
          COMMON/DerOfTime/GTIME
                  COMMON/collision/icollision,Ione,Itwo,iwarning
          REAL*8 Y(1500),SY(1500),Y0(*)
+         
+        REAL*8 radii(NMX3)
+        INTEGER indexi(NMX3), indexj(NMX3)
+        LOGICAL do_detect,has_collision
+        common/DC/radii, indexi, indexj, do_detect,has_collision
          data tiny/1.d-6/
          save
          iskeleita=0
@@ -696,6 +726,7 @@ c                   it=it+1
 222               continue
                    call Put Y to XC WC  (Y,Nvar)
                  call UPDATE X AND V
+                 
                  fnew=chtime-deltaT
                  dfnew=gtime
 c         keep it bracketed
@@ -708,7 +739,27 @@ c         keep it bracketed
             d1=dfnew
             x1=xnew
            end if
-        if((abs(deltaT-chtime).gt.1.e-5*deltat).and.(it.lt.100))
+c COLLISION DETECTION!
+         if(do_detect) then
+          k = 1
+          do i=1,N-1
+          do j=i+1,N
+            rij2=SQUARE(X(3*I-2),X(3*J-2))-ee
+            r2 = (radii(I) + radii(J)) ** 2.0
+              write (*,*) "NCOL", K, I, J, rij2, r2
+            if (rij2<r2) then
+              indexi(K) = I
+              indexj(K) = J
+              has_collision = .TRUE.
+              K = K + 1
+              write (*,*) "NCOL", K, I, J, rij2, r2
+            end if
+          end do
+          end do
+         end if
+           
+        if(.not.has_collision .and. 
+     &     (abs(deltaT-chtime).gt.1.e-5*deltat).and.(it.lt.100))
      &     goto 1111
 c ONE FINAL STEP SHOULD BE HERE (if above not-so-accurate test)          
 c--------------------------------------------------------------------

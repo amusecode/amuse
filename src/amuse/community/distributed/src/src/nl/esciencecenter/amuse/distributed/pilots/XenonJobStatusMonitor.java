@@ -14,10 +14,9 @@
  * limitations under the License.
  */
 package nl.esciencecenter.amuse.distributed.pilots;
+import nl.esciencecenter.xenon.schedulers.JobStatus;
+import nl.esciencecenter.xenon.XenonException;
 
-import nl.esciencecenter.xenon.Xenon;
-import nl.esciencecenter.xenon.jobs.Job;
-import nl.esciencecenter.xenon.jobs.JobStatus;
 
 /**
  * @author Niels Drost
@@ -31,10 +30,8 @@ public class XenonJobStatusMonitor extends Thread {
     private final int JOB_UPDATE_DELAY = 5000;
 
     private final PilotSet pilotSet;
-    private final Xenon xenon;
 
-    XenonJobStatusMonitor(PilotSet pilotSet, Xenon xenon) {
-        this.xenon = xenon;
+    XenonJobStatusMonitor(PilotSet pilotSet) {
         this.pilotSet = pilotSet;
 
         setName("Xenon Job Status monitor");
@@ -52,7 +49,8 @@ public class XenonJobStatusMonitor extends Thread {
             PilotManager[] pilots = pilotSet.getPilots();
 
             //Create a list of xenon jobs.
-            Job[] jobs = new Job[pilots.length];
+            String[] jobs = new String[pilots.length];
+
 
             //Only add jobs for pilots which are still running.
             for (int i = 0; i < pilots.length; i++) {
@@ -67,7 +65,20 @@ public class XenonJobStatusMonitor extends Thread {
             }
 
             //Fetch all statuses from xenon
-            JobStatus[] statuses = xenon.jobs().getJobStatuses(jobs);
+            JobStatus[] statuses = new JobStatus[ pilots.length];
+            try {
+                for (int i = 0; i < pilots.length; i++) {
+                    if (jobs[i] != null) {
+                        statuses[i]=pilots[i].getResource().getScheduler().getJobStatus(jobs[i]);
+                    } else {
+                        statuses[i]=null;
+                    }
+                }
+            } catch (XenonException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+            
 
             //Forward resulting statuses (if one is availabe) to the pilots
             for (int i = 0; i < pilots.length; i++) {
