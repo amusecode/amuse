@@ -701,14 +701,16 @@ GSL_LIBS
 GSL_CFLAGS
 GSL_FLAGS
 PIC_FLAGS
-NETCDFF_PREFIX
-NETCDFF_LIBS
-NETCDFF_FLAGS
-NETCDF_PREFIX
-NETCDF_LIBS
-NETCDF_FLAGS
-FOUND_NETCDF
-NF_CONFIG
+NETCDF4_FLIBS
+NETCDF4_FFLAGS
+NETCDF4_FC
+NETCDF4_LIBS
+NETCDF4_LDFLAGS
+NETCDF4_CFLAGS
+NETCDF4_PREFIX
+NETCDF4_CC
+NETCDF4_VERSION
+NC_CONFIG
 HDF5_TYPE
 HDF5_FLIBS
 HDF5_FFLAGS
@@ -856,7 +858,7 @@ with_fftw
 with_gmp
 with_mpfr
 with_hdf5
-with_netcdf
+with_netcdf4
 enable_pic
 with_gsl_prefix
 with_gsl_exec_prefix
@@ -1531,7 +1533,8 @@ Optional Packages:
   --with-gmp=PFX          Prefix where GMP has been installed
   --with-mpfr=PFX         Prefix where MPFR has been installed
   --with-hdf5=yes/no/PATH location of h5cc or h5pcc for HDF5 configuration
-  --with-netcdf=PFX       Prefix where NETCDF has been installed
+  --with-netcdf4=yes/no/PATH
+                          base directory of NetCDF4 installation
   --with-gsl-prefix=PFX   Prefix where GSL is installed (optional)
   --with-gsl-exec-prefix=PFX Exec prefix where GSL is installed (optional)
 
@@ -8229,175 +8232,65 @@ fi
 
 
 
-# Check whether --with-netcdf was given.
-if test "${with_netcdf+set}" = set; then :
-  withval=$with_netcdf;
-                test "$withval" = no && { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: netcdf is optional" >&5
-$as_echo "$as_me: WARNING: netcdf is optional" >&2;}
-                test "$withval" = yes || netcdf_prefix="$withval"
-                with_netcdf=$withval
+
+
+
+
+if   test "" = ""        ; then
+    netcdf4_requested_mode="serial"
+elif test "" = "serial"  ; then
+    netcdf4_requested_mode="serial"
+elif test "" = "parallel"; then
+    netcdf4_requested_mode="parallel"
 else
-   with_netcdf=yes
+    as_fn_error $? "
+Unrecognized value for AX_LIB_NETCDF4 within configure.ac.
+If supplied, argument 1 must be either 'serial' or 'parallel'.
+" "$LINENO" 5
+fi
+
+
+# Check whether --with-netcdf4 was given.
+if test "${with_netcdf4+set}" = set; then :
+  withval=$with_netcdf4; if test "$withval" = "no"; then
+     with_netcdf4="no"
+   elif test "$withval" = "yes"; then
+     with_netcdf4="yes"
+   else
+     with_netcdf4="yes"
+     NETCDF4_PREFIX="${withval}"
+     NC_CONFIG="${withval}/bin/nc-config"
+   fi
+else
+  with_netcdf4="yes"
 
 fi
 
 
-        if test "x$with_netcdf" != xno ; then :
+NETCDF4_CC=""
+NETCDF4_VERSION=""
+NETCDF4_CFLAGS=""
+NETCDF4_CPPFLAGS=""
+NETCDF4_LDFLAGS=""
+NETCDF4_LIBS=""
+NETCDF4_FC=""
+NETCDF4_FFLAGS=""
+NETCDF4_FLIBS=""
 
-            #user override
-            if test "x$NETCDF_LIBS" != x && test "x$NETCDF_FLAGS" != x ; then :
-
-                have_netcdf=yes
-                FOUND_NETCDF="yes"
-
-else
-
-                saved_LIBS="$LIBS"
-                saved_CXXFLAGS="$CXXFLAGS"
-                NETCDF_PREFIX=""
-                NETCDF_LIBS=""
-                NETCDF_FLAGS=""
-                FOUND_NETCDF="no"
-                if test x$netcdf_prefix == x; then
-                   if test x$PREFIX != x; then
-		                netcdf_prefix=$PREFIX
-                   fi
-                fi
-                if test x$netcdf_prefix != x; then
-                    ac_NETCDF_CFLAGS="-I$netcdf_prefix/include"
-                    ac_NETCDF_LDOPTS="-L$netcdf_prefix/lib"
-
-
-                    save_CFLAGS="$CFLAGS"
-                    save_CPPFLAGS="$CPPFLAGS"
-                    CFLAGS="$ac_NETCDF_CFLAGS $save_CFLAGS"
-                    CPPFLAGS="$ac_NETCDF_CFLAGS $save_CPPFLAGS"
-                    ac_fn_c_check_header_mongrel "$LINENO" "netcdf.h" "ac_cv_header_netcdf_h" "$ac_includes_default"
-if test "x$ac_cv_header_netcdf_h" = xyes; then :
-  NETCDF_FLAGS="$ac_NETCDF_CFLAGS"
-                        NETCDF_PREFIX="$netcdf_prefix"
-                        FOUND_NETCDF="yes"
-else
-  { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: Cannot find headers (netcdf.h) of the library NETCDF in $netcdf_prefix/include." >&5
-$as_echo "$as_me: WARNING: Cannot find headers (netcdf.h) of the library NETCDF in $netcdf_prefix/include." >&2;}
-
-fi
-
-
-                    CFLAGS="$save_CFLAGS"
-                    CPPFLAGS="$save_CPPFLAGS"
-
-
-                    ac_ext=${ac_fc_srcext-f}
-ac_compile='$FC -c $FCFLAGS $ac_fcflags_srcext conftest.$ac_ext >&5'
-ac_link='$FC -o conftest$ac_exeext $FCFLAGS $LDFLAGS $ac_fcflags_srcext conftest.$ac_ext $LIBS >&5'
-ac_compiler_gnu=$ac_cv_fc_compiler_gnu
-
-                    save_FCFLAGS="$FCFLAGS"
-                    FCFLAGS="$ac_NETCDF_CFLAGS $save_FCFLAGS"
-                    LIBS="$ac_NETCDF_LDOPTS -lnetcdf -lnetcdff"
-                    { $as_echo "$as_me:${as_lineno-$LINENO}: checking Fortran netcdf presence" >&5
-$as_echo_n "checking Fortran netcdf presence... " >&6; }
-                    cat > conftest.$ac_ext <<_ACEOF
-
-
-                            program conftest
-                            use netcdf
-                            include "netcdf.inc"
-
-                            character, dimension(80) :: n
-                            n=nf_inq_libvers()
-                            end
-
-
-_ACEOF
-if ac_fn_fc_try_link "$LINENO"; then :
-
-                        NETCDFF_FLAGS="$ac_NETCDF_CFLAGS"
-                        NETCDFF_LIBS="$ac_NETCDF_LDOPTS -lnetcdf -lnetcdff"
-                        NETCDFF_PREFIX="$netcdf_prefix"
-                        FOUND_NETCDFF="yes"
-                        { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-$as_echo "yes" >&6; }
-
-else
-
-                        { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: Cannot compile or link against library Fortran NETCDF in $netcdf_prefix" >&5
-$as_echo "$as_me: WARNING: Cannot compile or link against library Fortran NETCDF in $netcdf_prefix" >&2;}
-
-fi
-rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext conftest.$ac_ext
-                    FCFLAGS="$save_FCFLAGS"
-                    ac_ext=c
-ac_cpp='$CPP $CPPFLAGS'
-ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
-ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
-ac_compiler_gnu=$ac_cv_c_compiler_gnu
-
-
-                    save_LIBS="$LIBS"
-                    LIBS="$ac_NETCDF_LDOPTS -lnetcdf  $save_LIBS"
-                    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for nc_inq_libvers in -lnetcdf" >&5
-$as_echo_n "checking for nc_inq_libvers in -lnetcdf... " >&6; }
-if ${ac_cv_lib_netcdf_nc_inq_libvers+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  ac_check_lib_save_LIBS=$LIBS
-LIBS="-lnetcdf  $LIBS"
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-/* Override any GCC internal prototype to avoid an error.
-   Use char because int might match the return type of a GCC
-   builtin and then its argument prototype would still apply.  */
-#ifdef __cplusplus
-extern "C"
-#endif
-char nc_inq_libvers ();
-int
-main ()
-{
-return nc_inq_libvers ();
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_link "$LINENO"; then :
-  ac_cv_lib_netcdf_nc_inq_libvers=yes
-else
-  ac_cv_lib_netcdf_nc_inq_libvers=no
-fi
-rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext conftest.$ac_ext
-LIBS=$ac_check_lib_save_LIBS
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_netcdf_nc_inq_libvers" >&5
-$as_echo "$ac_cv_lib_netcdf_nc_inq_libvers" >&6; }
-if test "x$ac_cv_lib_netcdf_nc_inq_libvers" = xyes; then :
-  NETCDF_LIBS="$ac_NETCDF_LDOPTS -lnetcdf"
-else
-  { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: libnetcdf : library missing. (Cannot find symbol nc_inq_libvers) in $netcdf_prefix. Check if libnetcdf3 is installed and if the version is correct" >&5
-$as_echo "$as_me: WARNING: libnetcdf : library missing. (Cannot find symbol nc_inq_libvers) in $netcdf_prefix. Check if libnetcdf3 is installed and if the version is correct" >&2;}
-
-fi
-
-                    LIBS="$save_LIBS"
-	fi
-	if test x$FOUND_NETCDF != xyes; then
-                    if test x$PREFIX != x; then
-                        netcdf_prefix=$PREFIX
-                    else
-                        # Extract the first word of "nf-config", so it can be a program name with args.
-set dummy nf-config; ac_word=$2
+if test "$with_netcdf4" = "yes"; then
+    if test -z "$NC_CONFIG"; then
+                for ac_prog in nc-config
+do
+  # Extract the first word of "$ac_prog", so it can be a program name with args.
+set dummy $ac_prog; ac_word=$2
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
 $as_echo_n "checking for $ac_word... " >&6; }
-if ${ac_cv_path_NF_CONFIG+:} false; then :
+if ${ac_cv_path_NC_CONFIG+:} false; then :
   $as_echo_n "(cached) " >&6
 else
-  case $NF_CONFIG in
+  case $NC_CONFIG in
   [\\/]* | ?:[\\/]*)
-  ac_cv_path_NF_CONFIG="$NF_CONFIG" # Let the user override the test with a path.
+  ac_cv_path_NC_CONFIG="$NC_CONFIG" # Let the user override the test with a path.
   ;;
   *)
   as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
@@ -8407,7 +8300,7 @@ do
   test -z "$as_dir" && as_dir=.
     for ac_exec_ext in '' $ac_executable_extensions; do
   if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
-    ac_cv_path_NF_CONFIG="$as_dir/$ac_word$ac_exec_ext"
+    ac_cv_path_NC_CONFIG="$as_dir/$ac_word$ac_exec_ext"
     $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
     break 2
   fi
@@ -8415,41 +8308,260 @@ done
   done
 IFS=$as_save_IFS
 
-  test -z "$ac_cv_path_NF_CONFIG" && ac_cv_path_NF_CONFIG="no"
   ;;
 esac
 fi
-NF_CONFIG=$ac_cv_path_NF_CONFIG
-if test -n "$NF_CONFIG"; then
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $NF_CONFIG" >&5
-$as_echo "$NF_CONFIG" >&6; }
+NC_CONFIG=$ac_cv_path_NC_CONFIG
+if test -n "$NC_CONFIG"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $NC_CONFIG" >&5
+$as_echo "$NC_CONFIG" >&6; }
 else
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
 fi
 
 
-                        if test x$NF_CONFIG != xno; then
-                           netcdf_prefix=`nf-config --prefix`
-                        else
-                           netcdf_prefix="/usr"
-                        fi
-                    fi
-                    ac_fn_c_check_header_mongrel "$LINENO" "netcdf.h" "ac_cv_header_netcdf_h" "$ac_includes_default"
-if test "x$ac_cv_header_netcdf_h" = xyes; then :
-  NETCDF_FLAGS=""
-                        NETCDF_PREFIX=""
-                        FOUND_NETCDF="yes"
-else
-  { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: Cannot find headers (netcdf.h) of the library NETCDF in $netcdf_prefix/include." >&5
-$as_echo "$as_me: WARNING: Cannot find headers (netcdf.h) of the library NETCDF in $netcdf_prefix/include." >&2;}
+  test -n "$NC_CONFIG" && break
+done
 
+        NETCDF4_PREFIX=$($as_dirname -- $($as_dirname -- "$NC_CONFIG" ||
+$as_expr X"$NC_CONFIG" : 'X\(.*[^/]\)//*[^/][^/]*/*$' \| \
+	 X"$NC_CONFIG" : 'X\(//\)[^/]' \| \
+	 X"$NC_CONFIG" : 'X\(//\)$' \| \
+	 X"$NC_CONFIG" : 'X\(/\)' \| . 2>/dev/null ||
+$as_echo X"$NC_CONFIG" |
+    sed '/^X\(.*[^/]\)\/\/*[^/][^/]*\/*$/{
+	    s//\1/
+	    q
+	  }
+	  /^X\(\/\/\)[^/].*/{
+	    s//\1/
+	    q
+	  }
+	  /^X\(\/\/\)$/{
+	    s//\1/
+	    q
+	  }
+	  /^X\(\/\).*/{
+	    s//\1/
+	    q
+	  }
+	  s/.*/./; q') ||
+$as_expr X$($as_dirname -- "$NC_CONFIG" ||
+$as_expr X"$NC_CONFIG" : 'X\(.*[^/]\)//*[^/][^/]*/*$' \| \
+	 X"$NC_CONFIG" : 'X\(//\)[^/]' \| \
+	 X"$NC_CONFIG" : 'X\(//\)$' \| \
+	 X"$NC_CONFIG" : 'X\(/\)' \| . 2>/dev/null ||
+$as_echo X"$NC_CONFIG" |
+    sed '/^X\(.*[^/]\)\/\/*[^/][^/]*\/*$/{
+	    s//\1/
+	    q
+	  }
+	  /^X\(\/\/\)[^/].*/{
+	    s//\1/
+	    q
+	  }
+	  /^X\(\/\/\)$/{
+	    s//\1/
+	    q
+	  }
+	  /^X\(\/\).*/{
+	    s//\1/
+	    q
+	  }
+	  s/.*/./; q') : 'X\(.*[^/]\)//*[^/][^/]*/*$' \| \
+	 X$($as_dirname -- "$NC_CONFIG" ||
+$as_expr X"$NC_CONFIG" : 'X\(.*[^/]\)//*[^/][^/]*/*$' \| \
+	 X"$NC_CONFIG" : 'X\(//\)[^/]' \| \
+	 X"$NC_CONFIG" : 'X\(//\)$' \| \
+	 X"$NC_CONFIG" : 'X\(/\)' \| . 2>/dev/null ||
+$as_echo X"$NC_CONFIG" |
+    sed '/^X\(.*[^/]\)\/\/*[^/][^/]*\/*$/{
+	    s//\1/
+	    q
+	  }
+	  /^X\(\/\/\)[^/].*/{
+	    s//\1/
+	    q
+	  }
+	  /^X\(\/\/\)$/{
+	    s//\1/
+	    q
+	  }
+	  /^X\(\/\).*/{
+	    s//\1/
+	    q
+	  }
+	  s/.*/./; q') : 'X\(//\)[^/]' \| \
+	 X$($as_dirname -- "$NC_CONFIG" ||
+$as_expr X"$NC_CONFIG" : 'X\(.*[^/]\)//*[^/][^/]*/*$' \| \
+	 X"$NC_CONFIG" : 'X\(//\)[^/]' \| \
+	 X"$NC_CONFIG" : 'X\(//\)$' \| \
+	 X"$NC_CONFIG" : 'X\(/\)' \| . 2>/dev/null ||
+$as_echo X"$NC_CONFIG" |
+    sed '/^X\(.*[^/]\)\/\/*[^/][^/]*\/*$/{
+	    s//\1/
+	    q
+	  }
+	  /^X\(\/\/\)[^/].*/{
+	    s//\1/
+	    q
+	  }
+	  /^X\(\/\/\)$/{
+	    s//\1/
+	    q
+	  }
+	  /^X\(\/\).*/{
+	    s//\1/
+	    q
+	  }
+	  s/.*/./; q') : 'X\(//\)$' \| \
+	 X$($as_dirname -- "$NC_CONFIG" ||
+$as_expr X"$NC_CONFIG" : 'X\(.*[^/]\)//*[^/][^/]*/*$' \| \
+	 X"$NC_CONFIG" : 'X\(//\)[^/]' \| \
+	 X"$NC_CONFIG" : 'X\(//\)$' \| \
+	 X"$NC_CONFIG" : 'X\(/\)' \| . 2>/dev/null ||
+$as_echo X"$NC_CONFIG" |
+    sed '/^X\(.*[^/]\)\/\/*[^/][^/]*\/*$/{
+	    s//\1/
+	    q
+	  }
+	  /^X\(\/\/\)[^/].*/{
+	    s//\1/
+	    q
+	  }
+	  /^X\(\/\/\)$/{
+	    s//\1/
+	    q
+	  }
+	  /^X\(\/\).*/{
+	    s//\1/
+	    q
+	  }
+	  s/.*/./; q') : 'X\(/\)' \| . 2>/dev/null ||
+$as_echo X$($as_dirname -- "$NC_CONFIG" ||
+$as_expr X"$NC_CONFIG" : 'X\(.*[^/]\)//*[^/][^/]*/*$' \| \
+	 X"$NC_CONFIG" : 'X\(//\)[^/]' \| \
+	 X"$NC_CONFIG" : 'X\(//\)$' \| \
+	 X"$NC_CONFIG" : 'X\(/\)' \| . 2>/dev/null ||
+$as_echo X"$NC_CONFIG" |
+    sed '/^X\(.*[^/]\)\/\/*[^/][^/]*\/*$/{
+	    s//\1/
+	    q
+	  }
+	  /^X\(\/\/\)[^/].*/{
+	    s//\1/
+	    q
+	  }
+	  /^X\(\/\/\)$/{
+	    s//\1/
+	    q
+	  }
+	  /^X\(\/\).*/{
+	    s//\1/
+	    q
+	  }
+	  s/.*/./; q') |
+    sed '/^X\(.*[^/]\)\/\/*[^/][^/]*\/*$/{
+	    s//\1/
+	    q
+	  }
+	  /^X\(\/\/\)[^/].*/{
+	    s//\1/
+	    q
+	  }
+	  /^X\(\/\/\)$/{
+	    s//\1/
+	    q
+	  }
+	  /^X\(\/\).*/{
+	    s//\1/
+	    q
+	  }
+	  s/.*/./; q')
+    else
+        { $as_echo "$as_me:${as_lineno-$LINENO}: checking Using provided NetCDF4 prefix" >&5
+$as_echo_n "checking Using provided NetCDF4 prefix... " >&6; }
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: $NC_CONFIG" >&5
+$as_echo "$NC_CONFIG" >&6; }
+    fi
+
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for NetCDF4 libraries" >&5
+$as_echo_n "checking for NetCDF4 libraries... " >&6; }
+
+    if test ! -f "$NC_CONFIG" || test ! -x "$NC_CONFIG"; then
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+        { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING:
+
+Unable to locate NetCDF4 compilation helper script 'nc-config'.
+Please specify --with-netcdf4=<LOCATION> as the full path prefix
+where NetCDF4 has been installed.
+NetCDF4 support is being disabled (equivalent to --with-netcdf4=no).
+" >&5
+$as_echo "$as_me: WARNING:
+
+Unable to locate NetCDF4 compilation helper script 'nc-config'.
+Please specify --with-netcdf4=<LOCATION> as the full path prefix
+where NetCDF4 has been installed.
+NetCDF4 support is being disabled (equivalent to --with-netcdf4=no).
+" >&2;}
+        with_netcdf4="no"
+        with_netcdf4_fortran="no"
+    else
+                NETCDF4_CC=$(eval $NC_CONFIG --cc | $AWK '{print $1}')
+        if test "$NETCDF4_CC" = "ccache"; then
+            NETCDF4_CC=$(eval $NC_CONFIG --cc | $AWK '{print $2}')
+        fi
+
+                NETCDF4_VERSION=$(eval $NC_CONFIG --version | $AWK '{print $2}')
+
+                NETCDF4_CFLAGS=$(eval $NC_CONFIG --cflags)
+
+                NETCDF4_tmp_clibs=$(eval $NC_CONFIG --libs)
+
+                for arg in $NETCDF4_tmp_clibs ; do
+          case "$arg" in
+            -L*) echo $NETCDF4_LDFLAGS | $GREP -e "$arg" 2>&1 >/dev/null \
+                   || NETCDF4_LDFLAGS="$arg $NETCDF4_LDFLAGS"
+              ;;
+            -l*) echo $NETCDF4_LIBS | $GREP -e "$arg" 2>&1 >/dev/null \
+                   || NETCDF4_LIBS="$arg $NETCDF4_LIBS"
+              ;;
+          esac
+        done
+
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes (version $NETCDF4_VERSION)" >&5
+$as_echo "yes (version $NETCDF4_VERSION)" >&6; }
+
+                if test "$netcdf4_requested_mode" = "parallel" ; then
+            with_netcdf4_parallel=$(eval $NC_CONFIG --has-pnetcdf)
+            if test "$with_netcdf4_parallel" = "no" ; then
+                as_fn_error $? "
+parallel NetCDF4 is not supported (while it was requested)
+" "$LINENO" 5
+            fi
+        fi
+
+                ax_lib_netcdf4_save_CC=$CC
+        ax_lib_netcdf4_save_CPPFLAGS=$CPPFLAGS
+        ax_lib_netcdf4_save_LIBS=$LIBS
+        ax_lib_netcdf4_save_LDFLAGS=$LDFLAGS
+        CC=$NETCDF4_CC
+        CFLAGS=$NETCDF4_CFLAGS
+        LIBS=$NETCDF4_LIBS
+        LDFLAGS=$NETCDF4_LDFLAGS
+        ac_fn_c_check_header_mongrel "$LINENO" "netcdf.h" "ac_cv_header_netcdf_h" "$ac_includes_default"
+if test "x$ac_cv_header_netcdf_h" = xyes; then :
+  ac_cv_netcdf4_h=yes
+else
+  ac_cv_netcdf4_h=no
 fi
 
 
-                    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for nc_inq_libvers in -lnetcdf" >&5
-$as_echo_n "checking for nc_inq_libvers in -lnetcdf... " >&6; }
-if ${ac_cv_lib_netcdf_nc_inq_libvers+:} false; then :
+        { $as_echo "$as_me:${as_lineno-$LINENO}: checking for nc_create in -lnetcdf" >&5
+$as_echo_n "checking for nc_create in -lnetcdf... " >&6; }
+if ${ac_cv_lib_netcdf_nc_create+:} false; then :
   $as_echo_n "(cached) " >&6
 else
   ac_check_lib_save_LIBS=$LIBS
@@ -8463,100 +8575,90 @@ cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 #ifdef __cplusplus
 extern "C"
 #endif
-char nc_inq_libvers ();
+char nc_create ();
 int
 main ()
 {
-return nc_inq_libvers ();
+return nc_create ();
   ;
   return 0;
 }
 _ACEOF
 if ac_fn_c_try_link "$LINENO"; then :
-  ac_cv_lib_netcdf_nc_inq_libvers=yes
+  ac_cv_lib_netcdf_nc_create=yes
 else
-  ac_cv_lib_netcdf_nc_inq_libvers=no
+  ac_cv_lib_netcdf_nc_create=no
 fi
 rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
 LIBS=$ac_check_lib_save_LIBS
 fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_netcdf_nc_inq_libvers" >&5
-$as_echo "$ac_cv_lib_netcdf_nc_inq_libvers" >&6; }
-if test "x$ac_cv_lib_netcdf_nc_inq_libvers" = xyes; then :
-  NETCDF_LIBS="-lnetcdf"
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_netcdf_nc_create" >&5
+$as_echo "$ac_cv_lib_netcdf_nc_create" >&6; }
+if test "x$ac_cv_lib_netcdf_nc_create" = xyes; then :
+  ac_cv_libnetcdf4=yes
 else
-
-                        FOUND_NETCDF="no"
-                        { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: libnetcdf : library missing. (Cannot find symbol nc_inq_libvers). Check if libnetcdf is installed and if the version is correct" >&5
-$as_echo "$as_me: WARNING: libnetcdf : library missing. (Cannot find symbol nc_inq_libvers). Check if libnetcdf is installed and if the version is correct" >&2;}
-
+  ac_cv_libnetcdf4=no
 fi
 
+        if test "$ac_cv_netcdf4_h" = "no" && \
+           test "$ac_cv_libnetcdf4" = "no" ; then
+            { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: Unable to compile NetCDF4 test program" >&5
+$as_echo "$as_me: WARNING: Unable to compile NetCDF4 test program" >&2;}
+        fi
 
-                    ac_ext=${ac_fc_srcext-f}
-ac_compile='$FC -c $FCFLAGS $ac_fcflags_srcext conftest.$ac_ext >&5'
-ac_link='$FC -o conftest$ac_exeext $FCFLAGS $LDFLAGS $ac_fcflags_srcext conftest.$ac_ext $LIBS >&5'
-ac_compiler_gnu=$ac_cv_fc_compiler_gnu
-
-                    save_FCFLAGS="$FCFLAGS"
-                    FCFLAGS="-I$netcdf_prefix/include $save_FCFLAGS"
-                    LIBS="-lnetcdf -lnetcdff"
-                    { $as_echo "$as_me:${as_lineno-$LINENO}: checking Fortran netcdf presence" >&5
-$as_echo_n "checking Fortran netcdf presence... " >&6; }
-                    cat > conftest.$ac_ext <<_ACEOF
+        CC=$ax_lib_netcdf4_save_CC
+        CFLAGS=$ax_lib_netcdf4_save_CFLAGS
+        LIBS=$ax_lib_netcdf4_save_LIBS
+        LDFLAGS=$ax_lib_hdf5_save_LDFLAGS
 
 
-                            program conftest
-                            use netcdf
-                            include "netcdf.inc"
+        { $as_echo "$as_me:${as_lineno-$LINENO}: checking for matching NetCDF4 Fortran libraries" >&5
+$as_echo_n "checking for matching NetCDF4 Fortran libraries... " >&6; }
+        NF_CONFIG="${NETCDF4_PREFIX}/bin/nf-config"
+        if test ! -f "$NF_CONFIG" || test ! -x "$NF_CONFIG"; then
+            { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+            with_netcdf4_fortran="no"
+        else
+            NETCDF_FVERSION=$(eval $NF_CONFIG --version | $AWK '{print $2}')
+            { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes (version $NETCDF_FVERSION)" >&5
+$as_echo "yes (version $NETCDF_FVERSION)" >&6; }
+            NETCDF4_FC=$(eval $NF_CONFIG --fc | $AWK '{print $1}')
+            if test "$NETCDF4_FC" = "ccache"; then
+                NETCDF4_FC=$(eval $NF_CONFIG --fc | $AWK '{print $2}')
+            fi
+                        NETCDF4_FFLAGS=$(eval $NC_CONFIG --fflags)
 
-                            character, dimension(80) :: n
-                            n=nf_inq_libvers()
-                            end
+                        NETCDF4_tmp_flibs=$(eval $NC_CONFIG --flibs)
+
+                        for arg in $NETCDF4_tmp_flibs ; do
+              case "$arg" in
+                -L*) echo $NETCDF4_LDFLAGS | $GREP -e "$arg" 2>&1 >/dev/null \
+                       || NETCDF4_LDFLAGS="$arg $NETCDF4_LDFLAGS"
+                  ;;
+                -l*) echo $NETCDF4_FLIBS | $GREP -e "$arg" 2>&1 >/dev/null \
+                       || NETCDF4_FLIBS="$arg $NETCDF4_FLIBS"
+                  ;;
+               esac
+            done
+            with_netcdf4_fortran="yes"
+        fi
 
 
-_ACEOF
-if ac_fn_fc_try_link "$LINENO"; then :
 
-                        NETCDFF_FLAGS="-I$netcdf_prefix/include "
-                        NETCDFF_LIBS="-lnetcdf -lnetcdff"
-                        NETCDFF_PREFIX=$netcdf_prefix
-                        FOUND_NETCDFF="yes"
-                        { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-$as_echo "yes" >&6; }
 
-else
 
-                        { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: Cannot compile or link against library Fortran NETCDF in $netcdf_prefix/" >&5
-$as_echo "$as_me: WARNING: Cannot compile or link against library Fortran NETCDF in $netcdf_prefix/" >&2;}
 
+
+
+
+
+
+$as_echo "#define HAVE_NETCDF4 1" >>confdefs.h
+
+    fi
 fi
-rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext conftest.$ac_ext
-                    FCFLAGS="$save_FCFLAGS"
-                    ac_ext=c
-ac_cpp='$CPP $CPPFLAGS'
-ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
-ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
-ac_compiler_gnu=$ac_cv_c_compiler_gnu
-
-		fi
-
-
-
-fi
-
-fi
-
-
-
-
-
-
-
-
-
 
 
 
