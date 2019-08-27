@@ -145,8 +145,8 @@ FUNCTION internal__accept_on_port(port_identifier, comm_identifier)
         call MPI_Comm_accept(port_identifier, MPI_INFO_NULL, 0,  MPI_COMM_SELF, communicator, ierror)
         call MPI_Intercomm_merge(communicator, 0, mcommunicator, ierror)
         call MPI_Intercomm_create(MPI_COMM_WORLD, 0, mcommunicator, 1, 65, communicators(last_communicator_id), ierror)
-        call MPI_Comm_disconnect(mcommunicator, ierror)
-        call MPI_Comm_disconnect(communicator, ierror)
+        call MPI_Comm_free(mcommunicator, ierror)
+        call MPI_Comm_free(communicator, ierror)
     ELSE
         call MPI_Intercomm_create(MPI_COMM_WORLD,0, MPI_COMM_NULL, 1, 65, communicators(last_communicator_id), ierror)
     END IF
@@ -176,8 +176,8 @@ FUNCTION internal__connect_to_port(port_identifier, comm_identifier)
         call MPI_Comm_connect(port_identifier, MPI_INFO_NULL, 0,  MPI_COMM_SELF, communicator, ierror)
         call MPI_Intercomm_merge(communicator, 1, mcommunicator, ierror)
         call MPI_Intercomm_create(MPI_COMM_WORLD, 0, mcommunicator, 0, 65, communicators(last_communicator_id), ierror)
-        call MPI_Comm_disconnect(mcommunicator, ierror)
-        call MPI_Comm_disconnect(communicator, ierror)
+        call MPI_Comm_free(mcommunicator, ierror)
+        call MPI_Comm_free(communicator, ierror)
     ELSE
         call MPI_Intercomm_create(MPI_COMM_WORLD,0, MPI_COMM_NULL, 1, 65, communicators(last_communicator_id), ierror)
     END IF

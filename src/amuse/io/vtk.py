@@ -166,7 +166,7 @@ class VtkStructuredGrid(base.FileFormatProcessor):
             self.stream.write(' Name="{0}"'.format(name))
         
         self.stream.write('>')
-        self.stream.write(' '.join(map(self.convert_number_to_string, iter(array.flatten()))));
+        self.stream.write(' '.join(map(self.convert_number_to_string, iter(array.flatten()))))
         self.stream.write('</DataArray>\n')
         
     def convert_number_to_string(self, number):
@@ -403,7 +403,7 @@ class VtkUnstructuredGrid(base.FileFormatProcessor):
             self.stream.write(' Name="{0}"'.format(name))
         
         self.stream.write('>')
-        self.stream.write(' '.join(map(self.convert_number_to_string, iter(array.flatten()))));
+        self.stream.write(' '.join(map(self.convert_number_to_string, iter(array.flatten()))))
         self.stream.write('</DataArray>\n')
         
     
@@ -414,7 +414,7 @@ class VtkUnstructuredGrid(base.FileFormatProcessor):
             self.stream.write(' Name="{0}"'.format(name))
         
         self.stream.write('>')
-        self.stream.write(' '.join(map(self.convert_number_to_string, iter(array.flatten()))));
+        self.stream.write(' '.join(map(self.convert_number_to_string, iter(array.flatten()))))
         self.stream.write('</DataArray>\n')
         
     def convert_number_to_string(self, number):

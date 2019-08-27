@@ -25,7 +25,7 @@ from amuse.ext.orbital_elements import orbital_elements_from_binary
 from amuse.community.symple.interface import symple	# symplectic
 from amuse.community.huayno.interface import Huayno	# symplectic
 from amuse.community.smalln.interface import SmallN	# time reversible
-from amuse.community.hermite0.interface import Hermite	# not symplectic
+from amuse.community.hermite.interface import Hermite	# not symplectic
 from amuse.community.seba.interface import SeBa
 from amuse.community.sse.interface import SSE
 

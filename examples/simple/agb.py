@@ -1,8 +1,8 @@
+# -*- coding: ascii -*-
 """
 Evolves an the sun in it's AGB star phase using SSE
 """
 from __future__ import print_function
-
 import numpy
 from matplotlib import pyplot
 

@@ -1,3 +1,5 @@
+import os
+
 from amuse.test.amusetest import TestWithMPI
 from amuse.ext import concurrent
 
@@ -133,6 +135,9 @@ class TestMPIConcurrentProcesses(TestWithMPI):
 
     def setUp(self):
         pass
+
+    def tearDown(self):
+        os.remove("test_concurrent")
 
     def test1(self):
         x = ConcurrentTestingInterface(implementation_factory = Test1Implementation)

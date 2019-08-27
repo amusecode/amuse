@@ -21,13 +21,13 @@ class TestCDistributedImplementationInterface(test_c_implementation.TestCImpleme
     def setUp(self):
         self.check_not_in_mpiexec()
         super(TestCDistributedImplementationInterface, self).setUp()
-        print "Setting up distributed code"
+        #~ print "Setting up distributed code"
         #instance = DistributedAmuse(redirection='none')
         self.distinstance = self.new_instance_of_an_optional_code(DistributedAmuse)#, redirection='none')
         self.distinstance.parameters.debug = False
 
-        print "Resources:"
-        print self.distinstance.resources
+        #~ print "Resources:"
+        #~ print self.distinstance.resources
 
         pilot = Pilot()
         pilot.resource_name='local'
@@ -36,15 +36,15 @@ class TestCDistributedImplementationInterface(test_c_implementation.TestCImpleme
         pilot.slots_per_node=2
         pilot.label='local'
         self.distinstance.pilots.add_pilot(pilot)
-        print "Pilots:"
-        print self.distinstance.pilots
+        #~ print "Pilots:"
+        #~ print self.distinstance.pilots
 
-        print "Waiting for pilots"
+        #~ print "Waiting for pilots"
         self.distinstance.wait_for_pilots()
         self.distinstance.use_for_all_workers()
 
     def tearDown(self):
-        print "Stopping distributed code"
+        #~ print "Stopping distributed code"
         self.distinstance.stop()
 
     def check_not_in_mpiexec(self):

@@ -4,14 +4,16 @@
 // calling process and the number of sister processes on the same node
 // (as defined by the HOST or HOSTNAME environment variables).
 
-void get_local_rank(MPI::Intracomm comm,
+void get_local_rank(MPI_Intracomm comm,
 		    int& mylocalrank, int& mylocalsize,
 		    bool verbose = false)
 {
-    comm.Barrier();
+    MPI_Barrier(comm);
 
-    int rank = comm.Get_rank();
-    int size = comm.Get_size();
+    int rank;
+    MPI_Comm_rank(comm, &rank);
+    int size;
+    MPI_Comm_size(comm, &size);
 
     // Get my hostname.
 
@@ -29,13 +31,13 @@ void get_local_rank(MPI::Intracomm comm,
 	// Send my hostname to process 0.
 
 	int nh = strlen(hostname);
-	comm.Send(&nh, 1, MPI_INT, 0, 990);
-	comm.Send(hostname, strlen(hostname), MPI_CHAR, 0, 991);
+	MPI_Send( &nh, 1, MPI_INT, 0, 990, comm);
+	MPI_Send( hostname, strlen(hostname), MPI_CHAR, 0, 991, comm);
 
 	// Get my local size and rank from process 0.
 
-	comm.Recv(&mylocalrank, 1, MPI_INT, 0, 992);
-	comm.Recv(&mylocalsize, 1, MPI_INT, 0, 993);
+	MPI_Recv(&mylocalrank, 1, MPI_INT, 0, 992, comm);
+	MPI_Recv(&mylocalsize, 1, MPI_INT, 0, 993, comm);
 
     } else {
 
@@ -48,8 +50,8 @@ void get_local_rank(MPI::Intracomm comm,
 	hostnames[0][nh] = '\0';
 
 	for (int ip = 1; ip < size; ip++) {
-	    comm.Recv(&nh, 1, MPI_INT, ip, 990);
-	    comm.Recv(hostnames[ip], nh, MPI_CHAR, ip, 991);
+	    MPI_Recv( &nh, 1, MPI_INT, ip, 990, comm);
+	    MPI_Recv( hostnames[ip], nh, MPI_CHAR, ip, 991, comm);
 	    hostnames[ip][nh] = '\0';	    
 	}
 
@@ -91,25 +93,27 @@ void get_local_rank(MPI::Intracomm comm,
 	// Distribute localsize and localrank to all processes.
 
 	for (int ip = 1; ip < size; ip++) {
-	    comm.Send(localrank+ip, 1, MPI_INT, ip, 992);
-	    comm.Send(localsize+ip, 1, MPI_INT, ip, 993);
+	    MPI_Send( localrank+ip, 1, MPI_INT, ip, 992, comm);
+	    MPI_Send( localsize+ip, 1, MPI_INT, ip, 993, comm);
 	}
     }
 
-    comm.Barrier();
+    MPI_Barrier(comm);
 }
 
 void run_test(bool verbose = false)
 {
-    MPI::Intracomm comm = MPI::COMM_WORLD;
+    MPI_Intracomm comm = MPI_COMM_WORLD;
     int mylocalrank, mylocalsize;
     get_local_rank(comm, mylocalrank, mylocalsize, verbose);
-    PRC(MPI::COMM_WORLD.Get_rank()); PRL(mylocalrank);
+    int rank;
+    MPI_Comm_rank(MPI_COMM_WORLD, & rank)
+    PRC(rank); PRL(mylocalrank);
 }
 
 int main(int argc, char *argv[])
 {
-    MPI::Init(argc, argv);
+    MPI_Init(&argc, &argv);
     run_test();
     MPI_Finalize();
 }

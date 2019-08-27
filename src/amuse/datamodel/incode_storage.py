@@ -103,7 +103,7 @@ from amuse.datamodel import Particle
 from amuse.datamodel import Grid
 from amuse.datamodel import AttributeStorage
 
-from amuse.rfi.channel import ASyncRequestSequence
+from amuse.rfi.async_request import ASyncRequestSequence, PoolDependentASyncRequest
 
 class ParticleMappingMethod(AbstractCodeMethodWrapper):
     def __init__(self, method, attribute_names = None):
@@ -203,7 +203,7 @@ class ParticleGetAttributesMethod(ParticleMappingMethod):
         try:
             return_value = self.method(*indices, **storage.extra_keyword_arguments_for_getters_and_setters)
         except:
-            print self.method
+            print(self.method)
             raise
         return self.convert_return_value(return_value, storage, attributes_to_return)
     
@@ -250,7 +250,7 @@ class ParticleGetGriddedAttributesMethod(ParticleGetAttributesMethod):
         try:
             return_value = self.method(*one_dimensional_arrays_of_indices, **storage.extra_keyword_arguments_for_getters_and_setters)
         except:
-            print self.method
+            print(self.method)
             raise
             
         mapping_from_name_to_value = self.convert_return_value(return_value, storage, attributes_to_return)
@@ -709,7 +709,7 @@ class AbstractInCodeAttributeStorage(base.AttributeStorage):
         
         self.getters = list(getters)
         self.setters = setters
-        
+                
         self.attributes = set([])
         for x in self.getters:
             self.attributes |= set(x.attribute_names)
@@ -1139,6 +1139,29 @@ class InCodeGridAttributeStorage(AbstractInCodeAttributeStorage):
             
         return results
         
+    def get_values_in_store_async(self, indices, attributes):
+        array_of_indices = self._to_arrays_of_indices(indices)
+        mapping_from_attribute_to_result = {}    
+        one_dimensional_array_of_indices = [x.reshape(-1) for x in array_of_indices]
+        pool=None
+        for getter in self.select_getters_for(attributes):
+            request = getter.get_attribute_values_async(self, attributes, *one_dimensional_array_of_indices)
+            def result_handler(inner, mapping):
+                mapping.update(inner())
+            request.add_result_handler(result_handler, (mapping_from_attribute_to_result,))
+            pool=request.join(pool) # requests can join with None!
+                
+        def all_handler(inner, mapping):
+            inner()
+            results = []
+            for attribute in attributes:
+                results.append(mapping[attribute])
+            return results
+            
+        request=PoolDependentASyncRequest(pool)    
+        request.add_result_handler(all_handler, (mapping_from_attribute_to_result,))
+        return request
+            
     def set_values_in_store(self,  indices, attributes, quantities):
         array_of_indices = self._to_arrays_of_indices(indices)
         one_dimensional_array_of_indices = [x.reshape(-1) for x in array_of_indices]

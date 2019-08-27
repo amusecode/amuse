@@ -2,7 +2,7 @@ import numpy
 from matplotlib import pyplot
 from amuse.plot import xlabel, ylabel, effective_iso_potential_plot
 from amuse.units import units, constants, nbody_system
-from amuse.community.hermite0.interface import Hermite
+from amuse.community.hermite.interface import Hermite
 from amuse.datamodel import Particles
 
 def new_sun_earth_system():

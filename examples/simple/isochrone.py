@@ -1,6 +1,8 @@
+# -*- coding: ascii -*-
 """
 Generates an isochrone of a cluster of stars in a Hertzsprung-Russell diagram
 """
+from __future__ import print_function
 from matplotlib import pyplot
 from amuse.units import units
 from amuse.datamodel import Particles
@@ -26,12 +28,11 @@ def plot_isochrone(particles):
     pyplot.title('Hertzsprung-Russell diagram', fontsize=12)
 
     pyplot.scatter(
-        particles.temperature.value_in(units.K),
-        particles.luminosity.value_in(units.LSun),
-        s=particles.radius.maximum(0.1 | units.RSun).value_in(units.RSun)*100,
-        c=particles.color,
-        edgecolors="none",
-    )
+        particles.temperature.value_in(
+            units.K), particles.luminosity.value_in(
+            units.LSun), s=particles.radius.maximum(
+                0.1 | units.RSun).value_in(
+                    units.RSun) * 100, c=particles.color, edgecolors="none", )
     pyplot.xlabel('Effective Temperature (K)')
     pyplot.ylabel('Luminosity (L$_{\odot}$)')
     pyplot.xscale('log')

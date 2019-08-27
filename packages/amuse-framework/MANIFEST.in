@@ -1,0 +1,21 @@
+include configure
+include README.md
+include config.mk.in
+include bin/amusifier.in
+include pyproject.toml
+include support/configpy.in
+
+recursive-include src/amuse *
+recursive-include lib *
+recursive-include support *
+
+recursive-exclude src/amuse/community *
+
+include src/amuse/community/__init__.py
+recursive-include src/amuse/community/interface *
+
+recursive-exclude src *.pyc *.o *~ .pc ccache *.a *.so *.mod
+recursive-exclude lib *.pyc *.o *~ ccache *.a *.so *.mod
+recursive-exclude support *.pyc *.o *~ ccache *.a
+
+

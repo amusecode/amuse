@@ -185,6 +185,10 @@ class BaseGrid(AbstractGrid):
     def get_values_in_store(self, indices, attributes, by_key = True):
         result = self._private.attribute_storage.get_values_in_store(indices, attributes)
         return result
+
+    def get_values_in_store_async(self, indices, attributes, by_key = True):
+        result = self._private.attribute_storage.get_values_in_store_async(indices, attributes)
+        return result
         
     def set_values_in_store(self, indices, attributes, values, by_key = True):
         self._private.attribute_storage.set_values_in_store(indices, attributes, values)
@@ -509,6 +513,12 @@ class SubGrid(AbstractGrid):
         combined_index = indexing.combine_indices(self._private.indices, normalized_indices)
         result = self._private.grid.get_values_in_store(combined_index, attributes)
         return result
+
+    def get_values_in_store_async(self, indices, attributes, by_key = True):
+        normalized_indices = indexing.normalize_slices(self.shape,indices)
+        combined_index = indexing.combine_indices(self._private.indices, normalized_indices)
+        result = self._private.grid.get_values_in_store_async(combined_index, attributes)
+        return result
     
     def set_values_in_store(self, indices, attributes, values, by_key = True):
         normalized_indices = indexing.normalize_slices(self.shape,indices)
@@ -775,8 +785,8 @@ class SamplePointOnCellCenter(object):
     @late
     def isvalid(self):
         return numpy.logical_and(
-            numpy.all(self.index >= self.grid.get_minimum_index()),
-            numpy.all(self.index <= self.grid.get_maximum_index())
+            numpy.all(self.index >= self.grid.get_minimum_index()[:len(self.index)]),
+            numpy.all(self.index <= self.grid.get_maximum_index()[:len(self.index)])
         )
     
     @late
@@ -872,8 +882,8 @@ class SamplePointWithInterpolation(object):
     @late
     def isvalid(self):
         return numpy.logical_and(
-            numpy.all(self.index_for_000_cell >= self.grid.get_minimum_index()),
-            numpy.all(self.index_for_111_cell <= self.grid.get_maximum_index())
+            numpy.all(self.index_for_000_cell >= self.grid.get_minimum_index()[:len(self.index)]),
+            numpy.all(self.index_for_111_cell <= self.grid.get_maximum_index()[:len(self.index)])
         )
         
     def get_values_of_attribute(self, name_of_the_attribute):

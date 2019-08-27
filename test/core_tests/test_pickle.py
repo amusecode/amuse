@@ -99,15 +99,17 @@ class TestPicklingOfUnitsAndQuantities(amusetest.TestCase):
 
     def test9(self):
         quantity = 1.3 | nbody_system.time
-        with open("test9.pickle", "wb") as stream: 
+        path=os.path.abspath(os.path.join(self.get_path_to_results(), "test9.pickle"))
+
+        with open(path, "wb") as stream: 
             pickle.dump(quantity, stream)
         
         pythonpath = os.pathsep.join(sys.path)
         env = os.environ.copy()
         env['PYTHONPATH'] = pythonpath
-        code = "import pickle;stream = open('test9.pickle', 'rb'); print str(pickle.load(stream));stream.close()"
+        code = "import pickle;stream = open('{0}', 'rb'); print str(pickle.load(stream));stream.close()".format(path)
         if sys.hexversion > 0x03000000:
-            code = "import pickle;stream = open('test9.pickle', 'rb'); print(str(pickle.load(stream)));stream.close()"
+            code = "import pickle;stream = open('{0}', 'rb'); print(str(pickle.load(stream)));stream.close()".format(path)
        
         process = subprocess.Popen([
                 sys.executable,
@@ -125,15 +127,16 @@ class TestPicklingOfUnitsAndQuantities(amusetest.TestCase):
         
     def test10(self):
         quantity = 1  | parsec
-        with open("test10.pickle", "wb") as stream: 
+        path=os.path.abspath(os.path.join(self.get_path_to_results(), "test10.pickle"))
+        with open(path, "wb") as stream: 
             pickle.dump(quantity, stream)
                
         pythonpath = os.pathsep.join(sys.path)
         env = os.environ.copy()
         env['PYTHONPATH'] = pythonpath
-        code = "import pickle;stream = open('test10.pickle', 'rb'); print str(pickle.load(stream));stream.close()"
+        code = "import pickle;stream = open('{0}', 'rb'); print str(pickle.load(stream));stream.close()".format(path)
         if sys.hexversion > 0x03000000:
-            code = "import pickle;stream = open('test10.pickle', 'rb'); print(str(pickle.load(stream)));stream.close()"
+            code = "import pickle;stream = open('{path}', 'rb'); print(str(pickle.load(stream)));stream.close()".format(path)
        
         process = subprocess.Popen([
                 sys.executable,

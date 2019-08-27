@@ -1042,7 +1042,7 @@ class HandleEncounterWithSmallN(AbstractHandleEncounter):
         resolve_collision_code.reset()
 
         time = 0 * end_time
-        resolve_collision_code.set_time(time);
+        resolve_collision_code.set_time(time)
         resolve_collision_code.particles.add_particles(self.all_singles_in_evolve)
         resolve_collision_code.commit_particles()
     #self.particles_before_scaling = self.all_singles_in_evolve.copy()

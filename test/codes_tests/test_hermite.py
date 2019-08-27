@@ -4,7 +4,7 @@ import sys
 import numpy
 import math
 
-from amuse.community.hermite0.interface import HermiteInterface, Hermite
+from amuse.community.hermite.interface import HermiteInterface, Hermite
 
 from amuse.units import nbody_system
 from amuse.units import units

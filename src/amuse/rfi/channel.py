@@ -3,7 +3,6 @@ import numpy
 import os.path
 import cPickle as pickle
 
-
 import sys
 import struct
 import threading
@@ -36,536 +35,12 @@ except ImportError:
 from amuse.support.options import OptionalAttributes, option, GlobalOptions
 from amuse.support.core import late
 from amuse.support import exceptions
+from amuse.support import get_amuse_root_dir
 from amuse.rfi import run_command_redirected
 
 from amuse.rfi import slurm
 
-class AbstractASyncRequest(object):
-    def __nonzero__(self):
-        return self.is_finished
-
-    def waitone(self):
-        return self.wait()
-
-    def waitall(self):
-        while not self.is_finished:
-            self.wait()
-
-    def wait(self):
-        raise Exception("not implemented")
-
-    def is_result_available(self):
-        raise Exception("not implemented")
-
-    def result(self):
-        raise Exception("not implemented")
-
-    @property
-    def results(self):
-        return [self.result()]
-
-    def add_result_handler(self, function, args = ()):
-        self.result_handlers.append([function,args])
-
-    def is_mpi_request(self):
-        return False
-
-    def is_socket_request(self):
-        return False
- 
-    def is_other(self):
-        return not self.is_mpi_request() and not self.is_socket_request()
-        
-    def get_mpi_request(self):
-        raise Exception("not implemented")
-
-    def get_socket(self):
-        raise Exception("not implemented")
-        
-    #~ def is_pool(self):
-        #~ return False
-        
-    def join(self, other):
-        pool = AsyncRequestsPool()
-        pool.add_request(self, lambda x: x.result())
-        pool.add_request(other, lambda x: x.result())
-        return pool
-
-    def waits_for(self):
-        return self
-
-class DependentASyncRequest(AbstractASyncRequest):
-    def __init__(self, parent, request_factory):
-        
-        self.request=None
-        self.parent=parent
-        
-        def handler(arg):
-            result=arg()
-            self.request=request_factory()
-            for h in self.result_handlers:
-                self.request.add_result_handler(*h)
-            return result
-
-        self.parent.add_result_handler(handler)
-        
-        self.result_handlers = []
-
-    def wait(self):
-        if self.is_finished:
-            return
-    
-        self.parent.wait()
-        if self.request is None:
-            raise Exception("something went wrong (exception of parent?)")
-        self.request.wait()
-
-    def is_result_available(self):
-        if self.is_finished:
-            return True
-
-        if not self.parent.is_finished:
-            return False
-
-        if self.request is None:
-            raise Exception("something went wrong (exception of parent?)")
-            
-        return self.request.is_result_available()
-
-    @property
-    def is_finished(self):
-        if self.request is None:
-            return False
-        return self.request.is_finished
-
-    def result(self):
-        self.wait()
-        return self.request._result
-
-    @property
-    def results(self):
-        return self.parent.results+[self.result()]        
-
-    def is_mpi_request(self):
-        if self.request is None:
-            return self.parent.is_mpi_request()
-        else:
-            return self.request.is_mpi_request()
-    
-    def is_socket_request(self):
-        if self.request is None:
-            return self.parent.is_socket_request()
-        else:
-            return self.request.is_socket_request()
-
-    def waits_for(self):
-        if self.request is not None:
-            return self.request
-        else:
-            return self.parent.waits_for()
-
-class ASyncRequest(AbstractASyncRequest):
-        
-    def __init__(self, request, message, comm, header):
-        self.request = request
-        self.message = message
-        self.header = header
-        self.comm = comm
-        self.is_finished = False
-        self.is_set = False
-        self._result = None
-        self.result_handlers = []
-
-    def wait(self):
-        if self.is_finished:
-            return
-    
-        self.request.Wait()
-
-        if not self.is_set:
-            self._set_result()
-
-        self.is_finished = True
-    
-    def is_result_available(self):
-        if self.is_finished:
-            return True
-            
-        self.is_finished = self.request.Test()
-        return self.is_finished
-
-    def get_message(self):
-        return self.message
-        
-    def _set_result(self):
-        class CallingChain(object):
-            def __init__(self, outer, args,  inner):
-                self.outer = outer
-                self.inner = inner
-                self.args = args
-                
-            def __call__(self):
-                return self.outer(self.inner, *self.args)
-                
-        self.message.receive_content(self.comm, self.header)
-        
-        current = self.get_message
-        for x, args in self.result_handlers:
-            current = CallingChain(x, args, current)
-        
-        self._result = current()
-        
-        self.is_set = True
-        
-    def result(self):
-        self.wait()
-        
-        if not self.is_set:
-            self._set_result()
-        
-        return self._result
-
-    def is_mpi_request(self):
-        return True
-
-class ASyncSocketRequest(AbstractASyncRequest):
-        
-    def __init__(self, message, socket):
-        self.message = message
-        self.socket = socket
-        
-        self.is_finished = False
-        self.is_set = False
-        self._result = None
-        self.result_handlers = []
-
-    def wait(self):
-        if self.is_finished:
-            return
-    
-        while True:
-            readables, _r, _x = select.select([self.socket], [], [])
-            if len(readables) == 1:
-                break
-        
-        self.is_finished = True
-    
-    def is_result_available(self):
-        if self.is_finished:
-            return True
-            
-        readables, _r, _x = select.select([self.socket], [], [], 0.001)
-        
-        self.is_finished = len(readables) == 1
-        return self.is_finished
-            
-    def get_message(self):
-        return self.message
-        
-    def _set_result(self):
-        class CallingChain(object):
-            def __init__(self, outer, args, inner):
-                self.outer = outer
-                self.inner = inner
-                self.args=args
-                
-            def __call__(self):
-                return self.outer(self.inner, *self.args)
-                
-        self.message.receive(self.socket)
-        
-        current = self.get_message
-        for x,args in self.result_handlers:
-            current = CallingChain(x, args, current)
-        
-        self._result = current()
-        
-        self.is_set = True
-        
-    def result(self):
-        self.wait()
-        
-        if not self.is_set:
-            self._set_result()
-        
-        return self._result
-
-    def is_socket_request(self):
-        return True
-
-class FakeASyncRequest(AbstractASyncRequest):
-        
-    def __init__(self, result):
-        self.is_finished = False
-        self.is_set = False
-        self.__result = result
-        self.result_handlers = []
-
-    def wait(self):
-        if self.is_finished:
-            return
-    
-        if not self.is_set:
-            self._set_result()
-
-        self.is_finished = True
-
-    def waitone(self):
-        return self.wait()
-    
-    def is_result_available(self):
-        return True
-            
-    def _set_result(self):
-        class CallingChain(object):
-            def __init__(self, outer, args,  inner):
-                self.outer = outer
-                self.inner = inner
-                self.args = args
-                
-            def __call__(self):
-                return self.outer(self.inner, *self.args)
-                
-        
-        current = lambda : self.__result
-
-        for x, args in self.result_handlers:
-            current = CallingChain(x, args, current)
-        
-        self._result = current()
-        
-        self.is_set = True
-        
-    def result(self):
-        self.wait()
-        
-        if not self.is_set:
-            self._set_result()
-        
-        return self._result
-
-class ASyncRequestSequence(AbstractASyncRequest):
-        
-    def __init__(self, create_next_request, args = ()):
-        self.create_next_request = create_next_request
-        self.args = args
-        self.index = 0
-        self.current_async_request = self.create_next_request(self.index, *self.args)
-        self.request = self.current_async_request.request
-        self.is_finished = False
-        self.is_set = False
-        self._result = None
-        self.result_handlers = []
-        self._results = []
-
-    def wait(self):
-        if self.is_finished:
-            return
-            
-        while not self.is_finished:
-            self.current_async_request.wait()
-        
-            self.is_result_available()
-
-        if not self.is_set:
-            self._set_result()
-
-    def waitone(self):
-        if self.is_finished:
-            return
-
-        self.current_async_request.wait()
-        
-        self.is_result_available()
-
-    @property
-    def results(self):
-        return self._results
-            
-    def is_result_available(self):
-        if self.is_finished:
-            return True
-        
-        if self.current_async_request.is_result_available():
-            self._results.append(self.current_async_request.result())
-            self.index += 1
-            self.current_async_request = self.create_next_request(self.index, *self.args)
-            if not self.current_async_request is None:
-                self.request = self.current_async_request.request
-            
-        self.is_finished =  self.current_async_request is None
-        return self.is_finished
-        
-    def add_result_handler(self, function, args = ()):
-        self.result_handlers.append([function,args])
-    
-    def get_message(self):
-        return self._results
-        
-    def _set_result(self):
-        class CallingChain(object):
-            def __init__(self, outer, args,  inner):
-                self.outer = outer
-                self.inner = inner
-                self.args = args
-                
-            def __call__(self):
-                return self.outer(self.inner, *self.args)
-                
-        current = self.get_message
-        for x, args in self.result_handlers:
-            current = CallingChain(x, args, current)
-        
-        self._result = current()
-        
-        self.is_set = True
-        
-    def result(self):
-        self.wait()
-        
-        if not self.is_set:
-            self._set_result()
-        
-        return self._result
-
-    def is_mpi_request(self):
-        return self.current_async_request.is_mpi_request()
-
-    def is_socket_request(self):
-        return self.current_async_request.is_socket_request()
-
-class AsyncRequestWithHandler(object):
-    
-    def __init__(self, pool, async_request, result_handler, args=(), kwargs={}):
-        self.async_request = async_request
-        if result_handler is None:
-            def empty(request):
-                return request.result()
-            result_handler = empty
-        self.result_handler = result_handler
-        self.args = args
-        self.kwargs = kwargs
-        self.pool = pool
-    
-
-    def run(self):
-        self.result_handler(self.async_request, *self.args, **self.kwargs)
-        
-class AsyncRequestsPool(object):
-    
-    def __init__(self, *requests):
-        self.requests_and_handlers = []
-        self.registered_requests = set([])
-        self.result_handlers = []
-        for x in requests:
-            self.add_request(x)
-        
-    def add_request(self, async_request, result_handler = None, args=(), kwargs={}):
-        if async_request is None:
-            return
-        if async_request in self.registered_requests:
-            raise Exception("Request is already registered, cannot register a request more than once")
-            
-        self.registered_requests.add(async_request)
-        
-        self.requests_and_handlers.append(
-            AsyncRequestWithHandler(
-                self,
-                async_request,
-                result_handler,
-                args,
-                kwargs
-            )
-        )
-    
-
-    def waitall(self):
-        while len(self) > 0:
-            self.wait()
-
-    def waitone(self):
-        return self.wait()
-        
-    def wait(self):
-        
-        # TODO need to cleanup this code
-        #        
-        while len(self.requests_and_handlers) > 0:
-            requests = [x.async_request.waits_for() for x in self.requests_and_handlers if x.async_request.is_other()]
-            indices = [i for i, x in enumerate(self.requests_and_handlers) if x.async_request.is_other()]
-            
-            if len(requests) > 0:
-                for index, x in zip(indices, requests):
-                    x.wait_for().waitone()
-
-                    request_and_handler = self.requests_and_handlers[index]
-                    if request_and_handler.async_request.is_result_available():
-                        self.registered_requests.remove(request_and_handler.async_request)
-                    
-                        self.requests_and_handlers.pop(index)
-                    
-                        request_and_handler.run()
-                        break
-
-            requests = [x.async_request.waits_for().request for x in self.requests_and_handlers if x.async_request.is_mpi_request()]
-            indices = [i for i, x in enumerate(self.requests_and_handlers) if x.async_request.is_mpi_request()]
-            if len(requests) > 0:
-                index = MPI.Request.Waitany(requests)
-                
-                index = indices[index]
-                
-                request_and_handler = self.requests_and_handlers[index]
-                
-                request_and_handler.async_request.waits_for().waitone()  # will set the finished flag
-                
-                if request_and_handler.async_request.is_result_available():
-                    self.registered_requests.remove(request_and_handler.async_request)
-                    
-                    self.requests_and_handlers.pop(index)
-                    
-                    request_and_handler.run()
-                    break
-                            
-            sockets = [x.async_request.waits_for().socket for x in self.requests_and_handlers if x.async_request.is_socket_request()]
-            indices = [i for i, x in enumerate(self.requests_and_handlers) if x.async_request.is_socket_request()]
-            if len(sockets) > 0:
-                readable, _, _ = select.select(sockets, [], [])
-                indices_to_delete = []
-                for read_socket in readable:
-                    
-                    index = sockets.index(read_socket)
-                    
-                    index = indices[index]
-                    
-                    request_and_handler = self.requests_and_handlers[index]
-
-                    request_and_handler.async_request.waits_for().waitone()  # will set the finished flag
-
-                    if request_and_handler.async_request.is_result_available():
-  
-                        self.registered_requests.remove(request_and_handler.async_request)
-                    
-                        indices_to_delete.append(index)
-                    
-                        request_and_handler.run()
-                    
-                for x in reversed(list(sorted(indices_to_delete))):
-                    
-                    self.requests_and_handlers.pop(x)
-                
-                if len(indices_to_delete) > 0:
-                    break
-
-    def join(self, other):
-        if isinstance(other, AbstractASyncRequest):
-            self.add_request(other, lambda x: x.result())
-        return self
-            
-    def __len__(self):
-        return len(self.requests_and_handlers)
-        
-    def __nonzero__(self):
-        return len(self)==0
+import async_request
 
 class AbstractMessage(object):
     
@@ -683,7 +158,7 @@ class MPIMessage(AbstractMessage):
     def nonblocking_receive(self, comm):
         header = numpy.zeros(11, dtype='i')
         request = self.mpi_nonblocking_receive(comm, [header, MPI.INT])
-        return ASyncRequest(request, self, comm, header)
+        return async_request.ASyncRequest(request, self, comm, header)
     
     def receive_doubles(self, comm, total):
         if total > 0:
@@ -1134,17 +609,8 @@ class AbstractMessageChannel(OptionalAttributes):
         return self.amuse_root_dir
     
     @option(type="string", sections=('data',))
-    def amuse_root_dir(self):
-        if 'AMUSE_DIR' in os.environ:
-            return os.environ['AMUSE_DIR']    
-        previous = None
-        result = os.path.abspath(__file__)
-        while not os.path.exists(os.path.join(result,'build.py')):
-            result = os.path.dirname(result)
-            if result == previous:
-                raise exceptions.AmuseException("Could not locate AMUSE root directory!")
-            previous = result
-        return result
+    def amuse_root_dir(self):  # needed for location of data, so same as in support.__init__
+        return get_amuse_root_dir()
     
     def check_if_worker_is_up_to_date(self, object):
         if not self.must_check_if_worker_is_up_to_date:
@@ -1191,41 +657,39 @@ Please do a 'make clean; make' in the root directory.
                 raise Exception("Must provide a worker_code_directory")
 
         tried_workers = []
-        found = False
+
+        directory = os.path.dirname(inspect.getfile(type))
+        full_name_of_the_worker = os.path.join(directory, '..','..','_workers', exe_name)
+        full_name_of_the_worker = os.path.normpath(os.path.abspath(full_name_of_the_worker))
+        if os.path.exists(full_name_of_the_worker):
+            return full_name_of_the_worker
+        tried_workers.append(full_name_of_the_worker)
                 
         if len(self.worker_code_directory) > 0:
             full_name_of_the_worker = os.path.join(self.worker_code_directory, exe_name)
             full_name_of_the_worker = os.path.normpath(os.path.abspath(full_name_of_the_worker))
-            found = os.path.exists(full_name_of_the_worker)
-            if not found:
-                tried_workers.append(full_name_of_the_worker)
-                
+            if os.path.exists(full_name_of_the_worker):
+                return full_name_of_the_worker
+            tried_workers.append(full_name_of_the_worker)
+                        
+        directory_of_this_module = os.path.dirname(os.path.dirname(__file__))
+        full_name_of_the_worker = os.path.join(directory_of_this_module, '_workers', exe_name)
+        full_name_of_the_worker = os.path.normpath(os.path.abspath(full_name_of_the_worker))
+        if os.path.exists(full_name_of_the_worker):
+            return full_name_of_the_worker
+        tried_workers.append(full_name_of_the_worker)
+
         current_type = type
-        while not found:
+        while not current_type.__bases__[0] is object:
             directory_of_this_module = os.path.dirname(inspect.getfile(current_type))
             full_name_of_the_worker = os.path.join(directory_of_this_module, exe_name)
             full_name_of_the_worker = os.path.normpath(os.path.abspath(full_name_of_the_worker))
-            found = os.path.exists(full_name_of_the_worker)
-            if not found:
-                tried_workers.append(full_name_of_the_worker)
-                current_type = current_type.__bases__[0]
-                if current_type.__bases__[0] is object:
-                    break
-            else:
-                found = True
-        
-        if not found:
-            directory_of_this_module = os.path.dirname(os.path.dirname(__file__))
-            full_name_of_the_worker = os.path.join(directory_of_this_module, '_workers', exe_name)
-            full_name_of_the_worker = os.path.normpath(os.path.abspath(full_name_of_the_worker))
-            
-            found = os.path.exists(full_name_of_the_worker)
-            if not found:
-                raise exceptions.CodeException("The worker application does not exist, it should be at: \n{0}".format('\n'.join(tried_workers)))
-            else:
-                found = True
-            
-        return full_name_of_the_worker
+            if os.path.exists(full_name_of_the_worker):
+                return full_name_of_the_worker
+            tried_workers.append(full_name_of_the_worker)
+            current_type = current_type.__bases__[0]
+
+        raise exceptions.CodeException("The worker application does not exist, it should be at: \n{0}".format('\n'.join(tried_workers)))
     
     def send_message(self, call_id=0, function_id=-1, dtype_to_arguments={}, encoded_units = None):
         pass
@@ -2133,12 +1597,12 @@ class SocketMessage(AbstractMessage):
             return []
             
     def nonblocking_receive(self, socket):
-        return ASyncSocketRequest(self, socket)
+        return async_request.ASyncSocketRequest(self, socket)
     
     
     def send(self, socket):
         
-        flags = numpy.array([self.big_endian, False, len(self.encoded_units) > 0, False], dtype="b")
+        flags = numpy.array([self.big_endian, self.error, len(self.encoded_units) > 0, False], dtype="b")
 
         header = numpy.array([
             self.call_id,
@@ -2194,7 +1658,7 @@ class SocketMessage(AbstractMessage):
             if len(chars) != lengths.sum()+len(lengths):
                 raise Exception("send_strings size mismatch {0} vs {1}".format( len(chars) , lengths.sum()+len(lengths) ))
 
-            self.send_ints(socket, lengths);
+            self.send_ints(socket, lengths)
             socket.sendall(chars)
         
     def send_booleans(self, socket, array):
@@ -2474,7 +1938,7 @@ class SocketChannel(AbstractMessageChannel):
         
 
 
-    def nonblocking_recv_message(self, call_id, function_id, handle_as_array):
+    def nonblocking_recv_message(self, call_id, function_id, handle_as_array, has_units=False):
         request = SocketMessage().nonblocking_receive(self.socket)
     
         def handle_result(function):
@@ -2493,7 +1957,10 @@ class SocketChannel(AbstractMessageChannel):
             if message.error:
                 raise exceptions.CodeException("Error in (asynchronous) communication with worker: " + message.strings[0])
         
-            return message.to_result(handle_as_array)
+            if has_units:
+                return message.to_result(handle_as_array), message.encoded_units
+            else:
+                return message.to_result(handle_as_array)
 
         request.add_result_handler(handle_result)
     
@@ -2684,7 +2151,7 @@ class DistributedChannel(AbstractMessageChannel):
         
         arguments = {'string': [self.executable, self.redirect_stdout_file, self.redirect_stderr_file, self.label, self.worker_dir], 'int32': [self.number_of_workers, self.number_of_threads], 'bool': [ self.dynamic_python_code]}
         
-        message = SocketMessage(call_id=1, function_id=10101010, call_count=1, dtype_to_arguments=arguments);
+        message = SocketMessage(call_id=1, function_id=10101010, call_count=1, dtype_to_arguments=arguments)
 
         message.send(self.socket)
         
@@ -2785,11 +2252,14 @@ class DistributedChannel(AbstractMessageChannel):
         if message.error:
             raise exceptions.CodeException("Error in worker: " + message.strings[0])
         
-        return message.to_result(handle_as_array)
+        if has_units:
+            return message.to_result(handle_as_array), message.encoded_units
+        else:
+            return message.to_result(handle_as_array)
     
     
 
-    def nonblocking_recv_message(self, call_id, function_id, handle_as_array):
+    def nonblocking_recv_message(self, call_id, function_id, handle_as_array, has_units=False):
         #       raise exceptions.CodeException("Nonblocking receive not supported by DistributedChannel")
         request = SocketMessage().nonblocking_receive(self.socket)
         
@@ -2809,7 +2279,10 @@ class DistributedChannel(AbstractMessageChannel):
             if message.error:
                 raise exceptions.CodeException("Error in (asynchronous) communication with worker: " + message.strings[0])
         
-            return message.to_result(handle_as_array)
+            if has_units:
+                return message.to_result(handle_as_array), message.encoded_units
+            else:
+                return message.to_result(handle_as_array)
 
         request.add_result_handler(handle_result)
             

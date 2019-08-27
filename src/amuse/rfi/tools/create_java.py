@@ -1,5 +1,5 @@
 from amuse.support.core import late
-from amuse.support import exceptions
+from amuse.support import exceptions, options
 from amuse import config
 from amuse.rfi.tools.create_code import GenerateASourcecodeString
 from amuse.rfi.tools.create_code import GenerateASourcecodeStringFromASpecificationClass
@@ -1470,21 +1470,12 @@ class GenerateAJavaWorkerScript(GenerateASourcecodeString):
 
     @late
     def amuse_root_dir(self):
-        if 'AMUSE_DIR' in os.environ:
-            return os.environ['AMUSE_DIR']    
-        previous = None
-        result = os.path.abspath(__file__)
-        while not os.path.exists(os.path.join(result,'build.py')):
-            result = os.path.dirname(result)
-            if result == previous:
-                return os.path.dirname(os.path.dirname(__file__))
-            previous = result
-        return result
-
+        return os.path.abspath(options.GlobalOptions.instance().amuse_rootdirectory)
 
     @late
     def code_dir(self):
-        return os.getcwd()
+        codedir=os.path.split(self.code_directory())[-1]
+        return os.path.join("community", codedir)
 
     @late
     def java(self):
@@ -1506,12 +1497,7 @@ class GenerateAJavaWorkerScript(GenerateASourcecodeString):
     
     @staticmethod
     def classpath(classpath, code_dir):
-        result = ''
-        
-        for element in classpath:
-            result = result + ":" + code_dir + "/" + element
-            
-        return result 
+        return ":".join([os.path.join(code_dir, x) for x in classpath])
     
     def script_string(self):
         return self.template_string.format(
@@ -1523,9 +1509,9 @@ class GenerateAJavaWorkerScript(GenerateASourcecodeString):
             )
 
 
-    #def code_directory(self):
-        #interface_module = inspect.getmodule(self.specification_class).__name__
-        #return os.path.dirname(inspect.getfile(self.specification_class))
+    def code_directory(self):
+        interface_module = inspect.getmodule(self.specification_class).__name__
+        return os.path.dirname(inspect.getfile(self.specification_class))
     
     def start(self):
         self.out + self.script_string()

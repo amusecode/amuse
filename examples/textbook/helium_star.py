@@ -92,7 +92,7 @@ def plot_tracks(temperatures_original, luminosities_original,
 
     save_file = 'HertzsprungRussel_HeliumStar.png'
     pyplot.savefig(save_file)
-    print '\nSaved figure in file', save_file,'\n'
+    print('\nSaved figure in file', save_file,'\n')
     pyplot.show()
 
 if __name__ == "__main__":       

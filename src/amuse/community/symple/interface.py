@@ -217,42 +217,42 @@ class symple(GravitationalDynamics, GravityFieldCode):
             **options
         )
 
-    def define_state(self, object):
-        GravitationalDynamics.define_state(self, object)
-        GravityFieldCode.define_state(self, object)
-        self.stopping_conditions.define_state(object)
+    def define_state(self, handler):
+        GravitationalDynamics.define_state(self, handler)
+        GravityFieldCode.define_state(self, handler)
+        self.stopping_conditions.define_state(handler)
         
-    def define_parameters(self, object):
+    def define_parameters(self, handler):
 
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_integrator",
             "set_integrator", 
             "integrator", 
             "integrator for gravity calculations", 
             default_value = 2
         )
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_eps2",
             "set_eps2", 
             "epsilon_squared", 
             "smoothing parameter for gravity calculations", 
             default_value = 0.0 | nbody_system.length * nbody_system.length
         )
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_timestep",
             "set_timestep",
             "timestep",
             "fixed timestep", 
             default_value = 0.01 | nbody_system.time
         )
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_timestep_parameter",
             "set_timestep_parameter",
             "timestep_parameter",
             "timestep scaling parameter", 
             default_value = 0.05
         )
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_begin_time",
             "set_begin_time",
             "begin_time",
@@ -260,96 +260,96 @@ class symple(GravitationalDynamics, GravityFieldCode):
             default_value = 0.0 | nbody_system.time
         )
 
-        self.stopping_conditions.define_parameters(object)
+        self.stopping_conditions.define_parameters(handler)
 
-    def define_methods(self, object):
-        GravitationalDynamics.define_methods(self, object)
+    def define_methods(self, handler):
+        GravitationalDynamics.define_methods(self, handler)
         
-        object.add_method(
+        handler.add_method(
             "set_integrator",
-            (object.NO_UNIT,),
-            (object.ERROR_CODE,)
+            (handler.NO_UNIT,),
+            (handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "set_eps2",
             (nbody_system.length * nbody_system.length,),
-            (object.ERROR_CODE,)
+            (handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "set_timestep_parameter",
-            (object.NO_UNIT,),
-            (object.ERROR_CODE,)
+            (handler.NO_UNIT,),
+            (handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "set_time",
             (nbody_system.time,),
-            (object.ERROR_CODE,)
+            (handler.ERROR_CODE,)
         )
 
-        object.add_method(
+        handler.add_method(
             "set_timestep",
             (nbody_system.time,),
-            (object.ERROR_CODE,)
+            (handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "set_dmdt",
-            (object.NO_UNIT,
+            (handler.NO_UNIT,
              nbody_system.mass / nbody_system.time,),
-            (object.ERROR_CODE,)
+            (handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "get_integrator",
             (),
-            (object.NO_UNIT,
-             object.ERROR_CODE,)
+            (handler.NO_UNIT,
+             handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "get_eps2",
             (),
             (nbody_system.length * nbody_system.length,
-             object.ERROR_CODE,)
+             handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "get_timestep_parameter",
             (),
-            (object.NO_UNIT,
-             object.ERROR_CODE,)
+            (handler.NO_UNIT,
+             handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "get_time",
             (),
             (nbody_system.time,
-             object.ERROR_CODE,)
+             handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "get_timestep",
             (),
             (nbody_system.time,
-             object.ERROR_CODE,)
+             handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "get_dmdt",
-            (object.NO_UNIT,),
+            (handler.NO_UNIT,),
             (nbody_system.mass / nbody_system.time,
-             object.ERROR_CODE,)
+             handler.ERROR_CODE,)
         )
 
-        self.stopping_conditions.define_methods(object)
+        self.stopping_conditions.define_methods(handler)
     
-    def define_particle_sets(self, object):
-        GravitationalDynamics.define_particle_sets(self, object)
+    def define_particle_sets(self, handler):
+        GravitationalDynamics.define_particle_sets(self, handler)
 
-        object.add_setter('particles', 'set_dmdt')
-        object.add_getter('particles', 'get_dmdt')
+        handler.add_setter('particles', 'set_dmdt')
+        handler.add_getter('particles', 'get_dmdt')
 
-        self.stopping_conditions.define_particle_set(object)
+        self.stopping_conditions.define_particle_set(handler)

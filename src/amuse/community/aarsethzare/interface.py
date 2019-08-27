@@ -68,12 +68,12 @@ class AarsethZare(InCodeComponentImplementation):
         InCodeComponentImplementation.__init__(self,  AarsethZareInterface(**keyword_arguments))
         
         
-    def define_converter(self, object):
+    def define_converter(self, handler):
         if not self.unit_converter is None:
-            object.set_converter(self.unit_converter.as_converter_from_si_to_generic())
+            handler.set_converter(self.unit_converter.as_converter_from_si_to_generic())
             
-    def define_particle_sets(self, object):
-        object.define_inmemory_set('particles')
+    def define_particle_sets(self, handler):
+        handler.define_inmemory_set('particles')
         
     def define_methods(self, handler):
         handler.add_method(

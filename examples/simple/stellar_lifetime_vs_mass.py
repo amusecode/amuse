@@ -1,9 +1,10 @@
+# -*- coding: ascii -*-
 """
 Calculates the stellar lifetime in a range of masses between
 Mmax and Mmin using SSE (or another stellar evolution code)
 and an analytic expression.
 """
-
+from __future__ import print_function
 import numpy
 from optparse import OptionParser
 from amuse.units import units
@@ -16,8 +17,7 @@ se = None
 
 
 def stellar_remnant_state(star):
-    return 10 <= star.stellar_type.value_in(units.stellar_type) and \
-        star.stellar_type.value_in(units.stellar_type) < 16
+    return 10 <= star.stellar_type.value_in(units.stellar_type) < 16
 
 
 def stellar_lifetime(mZAMS, z=0.02):
@@ -35,11 +35,11 @@ def stellar_lifetime(mZAMS, z=0.02):
 
 
 def power_law_fit_to_main_sequence_lifetime(mZAMS):
-    return 2 + 1.0E+4/pow(mZAMS.value_in(units.MSun), 2.5) | units.Myr
+    return 2 + 1.0E+4 / pow(mZAMS.value_in(units.MSun), 2.5) | units.Myr
 
 
 def main(n=10, mmin=1.0, mmax=100, z=0.02):
-    dm = (mmax-mmin)/n
+    dm = (mmax - mmin) / n
     mZAMS = numpy.arange(mmin, mmax, dm) | units.MSun
     mmin = mmin | units.MSun
     mmax = mmax | units.MSun
@@ -53,7 +53,7 @@ def main(n=10, mmin=1.0, mmax=100, z=0.02):
     plot(mZAMS, t_analytic, label="analytic")
     plt.loglog()
     plt.legend()
-    plt.title("comparison between SSE and analytic with z="+str(z))
+    plt.title("comparison between SSE and analytic with z=" + str(z))
     plt.show()
 
 

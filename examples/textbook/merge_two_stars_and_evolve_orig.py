@@ -7,8 +7,8 @@ import numpy
 from matplotlib import pyplot
 
 from amuse.lab import *
-from amuse.community.mmams.interface import MakeMeAMassiveStarInterface
-from amuse.community.mmams.interface import MakeMeAMassiveStar
+from amuse.community.mmams.interface import MMAMSInterface
+from amuse.community.mmams.interface import MMAMS
 from amuse.couple.collision_handler import CollisionHandler
 
 from prepare_figure import single_frame
@@ -69,7 +69,7 @@ def merge_two_stars(Mprim, Msec, tcoll, tend):
     n_shell = min(stellar_evolution.particles[0].get_number_of_zones(),
                   stellar_evolution.particles[1].get_number_of_zones())
 
-    merger = MakeMeAMassiveStar(**default_options)
+    merger = MMAMS(**default_options)
     merger.parameters.target_n_shells = n_shell
     merger.parameters.dump_mixed_flag = True
     merger.parameters.do_shock_heating_flag = True

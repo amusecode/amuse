@@ -30,14 +30,14 @@ def density_estimators(n_points, r, mass, dims=3):
     mrho= N.sum(mass[jmin+1:jmax])
 
     if dims==3:
-      Vrj = 4.0/3.0 * N.pi * (r[jmax]**3 - r[jmin]**3);
+      Vrj = 4.0/3.0 * N.pi * (r[jmax]**3 - r[jmin]**3)
     elif dims==2:
       Vrj = N.pi*(r[jmax]**2- r[jmin]**2)
 
-    rhoj[i,1]= mrho/Vrj;
+    rhoj[i,1]= mrho/Vrj
     rhoj[i,0]= r[i]
 
-  return(rhoj);
+  return(rhoj)
 
 def core_radius(rhoj):
   """

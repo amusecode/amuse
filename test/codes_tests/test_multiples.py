@@ -8,7 +8,7 @@ import numpy
 import time
 import math
 
-from amuse.community.hermite0.interface import Hermite
+from amuse.community.hermite.interface import Hermite
 from amuse.community.kepler.interface import Kepler
 from amuse.community.smalln.interface import SmallN
 

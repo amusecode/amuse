@@ -111,13 +111,13 @@ class Sakura(GravitationalDynamics):
         self.parameters.sakura_output_directory = self.output_directory
         return result
     
-    def define_parameters(self, object):
-        GravitationalDynamics.define_parameters(self, object)
-        self.stopping_conditions.define_parameters(object)
+    def define_parameters(self, handler):
+        GravitationalDynamics.define_parameters(self, handler)
+        self.stopping_conditions.define_parameters(handler)
         
         ####################################################
 
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_t_begin", 
             "set_t_begin",
             "begin_time", 
@@ -125,7 +125,7 @@ class Sakura(GravitationalDynamics):
             default_value = 0.0 | nbody_system.time
         )
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_dt", 
             "set_dt",
             "timestep", 
@@ -133,7 +133,7 @@ class Sakura(GravitationalDynamics):
             default_value = 1e-3 | nbody_system.time
         )
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_t", 
             "set_t",
             "current_time", 
@@ -141,7 +141,7 @@ class Sakura(GravitationalDynamics):
             default_value = 0.0 | nbody_system.time
         )
 
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_sakura_output_directory", 
             "set_sakura_output_directory",
             "sakura_output_directory", 
@@ -151,30 +151,30 @@ class Sakura(GravitationalDynamics):
 
         ####################################################
 
-    def define_methods(self, object):
-        GravitationalDynamics.define_methods(self, object)
-        self.stopping_conditions.define_methods(object)
+    def define_methods(self, handler):
+        GravitationalDynamics.define_methods(self, handler)
+        self.stopping_conditions.define_methods(handler)
         
         ####################################################
 
-        object.add_method("get_t_begin", (), (nbody_system.time, object.ERROR_CODE,))
-        object.add_method("set_t_begin", (nbody_system.time, ), (object.ERROR_CODE,))
+        handler.add_method("get_t_begin", (), (nbody_system.time, handler.ERROR_CODE,))
+        handler.add_method("set_t_begin", (nbody_system.time, ), (handler.ERROR_CODE,))
     
-        object.add_method("get_dt", (), (nbody_system.time, object.ERROR_CODE,))
-        object.add_method("set_dt", (nbody_system.time, ), (object.ERROR_CODE,))
+        handler.add_method("get_dt", (), (nbody_system.time, handler.ERROR_CODE,))
+        handler.add_method("set_dt", (nbody_system.time, ), (handler.ERROR_CODE,))
 
-        object.add_method("get_t", (), (nbody_system.time, object.ERROR_CODE,))
-        object.add_method("set_t", (nbody_system.time, ), (object.ERROR_CODE,))
+        handler.add_method("get_t", (), (nbody_system.time, handler.ERROR_CODE,))
+        handler.add_method("set_t", (nbody_system.time, ), (handler.ERROR_CODE,))
 
         ####################################################
     
-    def define_particle_sets(self, object):
-        GravitationalDynamics.define_particle_sets(self, object)
-        self.stopping_conditions.define_particle_set(object)
+    def define_particle_sets(self, handler):
+        GravitationalDynamics.define_particle_sets(self, handler)
+        self.stopping_conditions.define_particle_set(handler)
 
 
-    def define_state(self, object):
-        GravitationalDynamics.define_state(self, object)
+    def define_state(self, handler):
+        GravitationalDynamics.define_state(self, handler)
         
-        self.stopping_conditions.define_state(object)
+        self.stopping_conditions.define_state(handler)
 

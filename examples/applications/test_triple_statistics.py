@@ -14,7 +14,7 @@ import sys
 from amuse.units import nbody_system, units
 from amuse.units.quantities import AdaptingVectorQuantity
 from amuse.datamodel import Particles
-from amuse.community.hermite0.interface import Hermite
+from amuse.community.hermite.interface import Hermite
 from amuse.rfi import channel
 
 # from multiprocessing import Process, Queue

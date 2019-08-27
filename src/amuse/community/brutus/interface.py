@@ -188,11 +188,11 @@ class Brutus(GravitationalDynamics):
         self.parameters.brutus_output_directory = self.output_directory
         return result
     
-    def define_parameters(self, object):
-        GravitationalDynamics.define_parameters(self, object)
-        self.stopping_conditions.define_parameters(object)
+    def define_parameters(self, handler):
+        GravitationalDynamics.define_parameters(self, handler)
+        self.stopping_conditions.define_parameters(handler)
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_bs_tolerance", 
             "set_bs_tolerance",
             "bs_tolerance", 
@@ -200,7 +200,7 @@ class Brutus(GravitationalDynamics):
             default_value = 1.0e-8
         )
 
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_word_length", 
             "set_word_length",
             "word_length", 
@@ -208,7 +208,7 @@ class Brutus(GravitationalDynamics):
             default_value = 72
         )
                 
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_eta", 
             "set_eta",
             "dt_param", 
@@ -216,7 +216,7 @@ class Brutus(GravitationalDynamics):
             default_value = 0.24
         )
             
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_brutus_output_directory", 
             "set_brutus_output_directory",
             "brutus_output_directory", 
@@ -224,24 +224,24 @@ class Brutus(GravitationalDynamics):
             default_value = "./"
         )
         
-    def define_methods(self, object):
-        GravitationalDynamics.define_methods(self, object)
-        self.stopping_conditions.define_methods(object)
+    def define_methods(self, handler):
+        GravitationalDynamics.define_methods(self, handler)
+        self.stopping_conditions.define_methods(handler)
         
-        object.add_method("get_bs_tolerance", (), (object.NO_UNIT, object.ERROR_CODE,))
-        object.add_method("set_bs_tolerance", (object.NO_UNIT, ), (object.ERROR_CODE,))
+        handler.add_method("get_bs_tolerance", (), (handler.NO_UNIT, handler.ERROR_CODE,))
+        handler.add_method("set_bs_tolerance", (handler.NO_UNIT, ), (handler.ERROR_CODE,))
  
-        object.add_method("get_word_length", (), (object.NO_UNIT, object.ERROR_CODE,))
-        object.add_method("set_word_length", (object.NO_UNIT, ), (object.ERROR_CODE,))
+        handler.add_method("get_word_length", (), (handler.NO_UNIT, handler.ERROR_CODE,))
+        handler.add_method("set_word_length", (handler.NO_UNIT, ), (handler.ERROR_CODE,))
 
-        object.add_method("get_eta", (), (object.NO_UNIT, object.ERROR_CODE,))
-        object.add_method("set_eta", (object.NO_UNIT, ), (object.ERROR_CODE,))
+        handler.add_method("get_eta", (), (handler.NO_UNIT, handler.ERROR_CODE,))
+        handler.add_method("set_eta", (handler.NO_UNIT, ), (handler.ERROR_CODE,))
         
-        object.add_method("get_brutus_output_directory", (), (object.NO_UNIT, object.ERROR_CODE,))
-        object.add_method("set_brutus_output_directory", (object.NO_UNIT, ), (object.ERROR_CODE,))
+        handler.add_method("get_brutus_output_directory", (), (handler.NO_UNIT, handler.ERROR_CODE,))
+        handler.add_method("set_brutus_output_directory", (handler.NO_UNIT, ), (handler.ERROR_CODE,))
             
-    def define_particle_sets(self, object):
-        GravitationalDynamics.define_particle_sets(self, object)
-        self.stopping_conditions.define_particle_set(object)
+    def define_particle_sets(self, handler):
+        GravitationalDynamics.define_particle_sets(self, handler)
+        self.stopping_conditions.define_particle_set(handler)
 
 
