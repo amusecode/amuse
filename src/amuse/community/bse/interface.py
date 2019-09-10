@@ -33,8 +33,10 @@ class BSEInterface(CodeInterface, common.CommonCodeInterface , LiteratureReferen
     
         .. [#] Hurley J.R., Tout C.A., & Pols O.R., 2002, MNRAS, 329, 897:
         .. [#] ... Evolution of binary stars and the effect of tides on binary populations
+        .. [#] [2002MNRAS.329..897H]
         .. [#] Hurley J.R., Pols O.R., Tout C.A., 2000, MNRAS, 315, 543:
         .. [#] ... Comprehensive analytic formulae for stellar evolution as a function of mass and metallicity
+        .. [#] [2000MNRAS.315..543H]
     """
     def __init__(self, **options):
         CodeInterface.__init__(self, name_of_the_worker="bse_worker", **options)

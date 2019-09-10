@@ -24,12 +24,15 @@ class MOBSEInterface(CodeInterface, common.CommonCodeInterface , LiteratureRefer
 
         .. [#] Nicola Giacobbo, Michela Mapelli & Mario Spera, 2018, MNRAS, 474, 2959:
         .. [#] ... Merging black hole binaries: the effects of progenitor s metallicity, mass-loss rate and Eddington factor
+        .. [#] [2018MNRAS.474.2959G]
 
-    Instead, the details about BSE can be found in the BSE paper:
+    The details about BSE can be found in the BSE paper:
         ..  Hurley J.R., Tout C.A., & Pols O.R., 2002, MNRAS, 329, 897:
         ..  ... Evolution of binary stars and the effect of tides on binary populations
+        ..  [2002MNRAS.329..897H]
         ..  Hurley J.R., Pols O.R., Tout C.A., 2000, MNRAS, 315, 543:
         ..  ... Comprehensive analytic formulae for stellar evolution as a function of mass and metallicity
+        ..  [2000MNRAS.315..543H]
     """
     def __init__(self, **options):
         CodeInterface.__init__(self, name_of_the_worker="mobse_worker", **options)
