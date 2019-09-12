@@ -13,7 +13,7 @@ class PikachuInterface(CodeInterface, GravitationalDynamicsInterface, Literature
     
     .. [#] Iwasawa, M., Portegies Zwart, S., Makino, J., GPU-enabled particle-particle particle-tree 
     scheme for simulating dense stellar cluster system, *Computational Astrophysics and Cosmology*,
-    **2**, 6 (2015)
+    **2**, 6 (2015) [2015ComAC...2....6I]
     
     """
     include_headers = ['worker_code.h', 'stopcond.h', 'interface.h']

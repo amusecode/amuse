@@ -25,7 +25,7 @@ class MESAInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolutionIn
     about 0.1 to 100 Msun.
     
     References:
-        .. [#] Paxton, Bildsten, Dotter, Herwig, Lesaffre & Timmes 2010, ApJS submitted, arXiv:1009.1622
+        .. [#] Paxton, Bildsten, Dotter, Herwig, Lesaffre & Timmes 2011, ApJS, arXiv:1009.1622 [2011ApJS..192....3P]
         .. [#] http://mesa.sourceforge.net/
     """
     def __init__(self, **options):
