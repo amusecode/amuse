@@ -23,13 +23,15 @@ OBJS = interface.o
 CODEDIR = src/FDPS
 
 INC = -I$(CODEDIR)/src
-# INC += -I$(CODEDIR)/sample/c++/nbody+sph
+INC += -I$(CODEDIR)/sample/c++/nbody+sph
 
 DOWNLOAD_FROM_WEB = $(PYTHON) ./download_http.py
 
 CODE_GENERATOR = $(AMUSE_DIR)/build.py
 
-OBJS = src/physical_constants.o src/mathematical_constants.o interface.o
+OBJS = $(CODEDIR)/sample/c++/nbody+sph/physical_constants.o \
+	   $(CODEDIR)/sample/c++/nbody+sph/mathematical_constants.o \
+	   interface.o
 
 all: fdpssn_worker
 

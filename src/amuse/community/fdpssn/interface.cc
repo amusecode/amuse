@@ -19,12 +19,12 @@
 #include <gp5util.h>
 #endif
 // Include user-defined headers
-#include "src/macro_defs.hpp"
-#include "src/mathematical_constants.h"
-#include "src/physical_constants.h"
-#include "src/user_defined.hpp"
-//#include "src/ic.hpp"
-#include "src/leapfrog.hpp"
+#include "macro_defs.hpp"
+#include "mathematical_constants.h"
+#include "physical_constants.h"
+#include "user_defined.hpp"
+//#include "ic.hpp"
+#include "leapfrog.hpp"
 
 #include <map>
 
