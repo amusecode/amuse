@@ -447,7 +447,19 @@ class AbstractMessageChannel(OptionalAttributes):
         
         command = 'xterm'
         return command, arguments
-        
+
+    @classmethod
+    def LLDB(cls, full_name_of_the_worker, channel, interpreter_executable=None):
+        arguments = ['-hold', '-display', os.environ['DISPLAY'], '-e', 'lldb', '--']
+
+        if not interpreter_executable is None:
+            arguments.append(interpreter_executable)
+
+        arguments.append(full_name_of_the_worker)
+
+        command = 'xterm'
+        return command, arguments
+
     @classmethod
     def DDD(cls, full_name_of_the_worker, channel, interpreter_executable=None):
         if os.name == 'nt':
@@ -785,6 +797,7 @@ Please do a 'make clean; make' in the root directory.
 AbstractMessageChannel.DEBUGGERS = {
     "none":None,
     "gdb":AbstractMessageChannel.GDB,
+    "lldb":AbstractMessageChannel.LLDB,
     "ddd":AbstractMessageChannel.DDD,
     "xterm":AbstractMessageChannel.XTERM,
     "gdb-remote":AbstractMessageChannel.GDBR,
