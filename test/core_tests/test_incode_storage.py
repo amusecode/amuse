@@ -49,8 +49,8 @@ class TestParticles(amusetest.TestCase):
             name_of_the_index = "index"
         )
         
-        self.assertEquals(len(storage), 0)
-        self.assertEquals(storage.get_defined_attribute_names(), ["x","y","z"])
+        self.assertEqual(len(storage), 0)
+        self.assertEqual(storage.get_defined_attribute_names(), ["x","y","z"])
         
         self.assertFalse(code.get_position_called)
         storage.get_values_in_store([],["x","y","z"])
@@ -66,7 +66,7 @@ class TestParticles(amusetest.TestCase):
             ]
         )
         
-        self.assertEquals(len(storage), 4)
+        self.assertEqual(len(storage), 4)
     
     def test2(self):
         class Code(object):
@@ -133,9 +133,9 @@ class TestParticles(amusetest.TestCase):
             ]
         )
         
-        self.assertEquals(len(storage), 4)
+        self.assertEqual(len(storage), 4)
         
-        self.assertEquals(storage.get_defined_attribute_names(), [ "mass", "x","y","z"])
+        self.assertEqual(storage.get_defined_attribute_names(), [ "mass", "x","y","z"])
         
         self.assertFalse(code.get_position_called)
         self.assertFalse(code.get_mass_called)
@@ -143,8 +143,8 @@ class TestParticles(amusetest.TestCase):
         x,y,mass = storage.get_values_in_store(indices,["x","y","mass"])
         self.assertTrue(code.get_position_called)
         self.assertTrue(code.get_mass_called)
-        self.assertEquals(x[1], 3 | units.m)
-        self.assertEquals(mass[1], 15 | units.kg)
+        self.assertEqual(x[1], 3 | units.m)
+        self.assertEqual(mass[1], 15 | units.kg)
         
 
     def test3(self):
@@ -193,17 +193,17 @@ class TestParticles(amusetest.TestCase):
             ]
         )
         
-        self.assertEquals(len(storage), 4)
+        self.assertEqual(len(storage), 4)
         
-        self.assertEquals(storage.get_defined_attribute_names(), ["mass",])
+        self.assertEqual(storage.get_defined_attribute_names(), ["mass",])
         
         indices = storage.get_indices_of([2,3])
         index,mass = storage.get_values_in_store(indices,["index_in_code","mass"])
         self.assertTrue(code.get_mass_called)
-        self.assertEquals(index[0], 1)
-        self.assertEquals(mass[0],  2 | units.kg)
-        self.assertEquals(index[1], 2)
-        self.assertEquals(mass[1],  3 | units.kg)
+        self.assertEqual(index[0], 1)
+        self.assertEqual(mass[0],  2 | units.kg)
+        self.assertEqual(index[1], 2)
+        self.assertEqual(mass[1],  3 | units.kg)
     
     def test4(self):
         class Code(object):
@@ -253,45 +253,45 @@ class TestParticles(amusetest.TestCase):
             ]
         )
         
-        self.assertEquals(len(storage), 4)
+        self.assertEqual(len(storage), 4)
         
         storage._remove_indices([1,2,])
         code.number_of_particles = 2
         indices = storage.get_indices_of([1,4])
         index,mass = storage.get_values_in_store(indices,["index_in_code","mass"])
         
-        self.assertEquals(index[0], 0)
-        self.assertEquals(index[1], 3)
-        self.assertEquals(mass[0],  1 | units.kg)
-        self.assertEquals(mass[1],  4 | units.kg)
+        self.assertEqual(index[0], 0)
+        self.assertEqual(index[1], 3)
+        self.assertEqual(mass[0],  1 | units.kg)
+        self.assertEqual(mass[1],  4 | units.kg)
         
         
-        self.assertEquals(len(storage), 2)
+        self.assertEqual(len(storage), 2)
         
         storage._add_indices([4,5])
         code.data = numpy.concatenate((code.data, [5, 6]))
         
         code.number_of_particles = 4
-        self.assertEquals(len(storage), 4)
+        self.assertEqual(len(storage), 4)
         
         indices = storage.get_indices_of(storage.particle_keys)
         mass, = storage.get_values_in_store(indices,["mass"])
         
-        self.assertEquals(mass[0],  1 | units.kg)
-        self.assertEquals(mass[1],  4 | units.kg)
-        self.assertEquals(mass[2],  5 | units.kg)
-        self.assertEquals(mass[3],  6 | units.kg)
+        self.assertEqual(mass[0],  1 | units.kg)
+        self.assertEqual(mass[1],  4 | units.kg)
+        self.assertEqual(mass[2],  5 | units.kg)
+        self.assertEqual(mass[3],  6 | units.kg)
         
         storage._remove_indices([4,])
         code.number_of_particles = 3
-        self.assertEquals(len(storage), 3)
+        self.assertEqual(len(storage), 3)
         
         indices = storage.get_indices_of(storage.particle_keys)
         mass, = storage.get_values_in_store(indices,["mass"])
         
-        self.assertEquals(mass[0],  1 | units.kg)
-        self.assertEquals(mass[1],  4 | units.kg)
-        self.assertEquals(mass[2],  6 | units.kg)
+        self.assertEqual(mass[0],  1 | units.kg)
+        self.assertEqual(mass[1],  4 | units.kg)
+        self.assertEqual(mass[2],  6 | units.kg)
     
     def test5(self):
         class Code(object):
@@ -344,12 +344,12 @@ class TestParticles(amusetest.TestCase):
             ]
         )
         
-        self.assertEquals(len(storage), 4)
+        self.assertEqual(len(storage), 4)
     
         indices = storage.get_indices_of([100,400])
         mass = storage.get_values_in_store(indices,["mass",])[0]
-        self.assertEquals(mass[0], 1.0 | units.kg)
-        self.assertEquals(mass[1], 4.0 | units.kg)
+        self.assertEqual(mass[0], 1.0 | units.kg)
+        self.assertEqual(mass[1], 4.0 | units.kg)
     
         code.data[0][1] = 1
         code.data[0][2] = 2
@@ -357,8 +357,8 @@ class TestParticles(amusetest.TestCase):
         indices = storage.get_indices_of([100])
         child1,child2 = storage.get_values_in_store(indices,['child1', 'child2'])
     
-        self.assertEquals(child1[0].number, 200)
-        self.assertEquals(child2[0].number, 300)
+        self.assertEqual(child1[0].number, 200)
+        self.assertEqual(child2[0].number, 300)
       
     def test7(self):
         class Code(object):
@@ -430,9 +430,9 @@ class TestParticles(amusetest.TestCase):
             ]
         )
         
-        self.assertEquals(len(storage), 4)
+        self.assertEqual(len(storage), 4)
         
-        self.assertEquals(storage.get_defined_attribute_names(), [ "mass", "x","y","z"])
+        self.assertEqual(storage.get_defined_attribute_names(), [ "mass", "x","y","z"])
         
         self.assertFalse(code.get_position_called)
         self.assertFalse(code.get_mass_called)
@@ -440,13 +440,13 @@ class TestParticles(amusetest.TestCase):
         x,y,mass = storage.get_values_in_store(indices,["x","y","mass"])
         self.assertTrue(code.get_position_called)
         self.assertTrue(code.get_mass_called)
-        self.assertEquals(x[1], 3 | units.m)
-        self.assertEquals(mass[1], 15 )
-        self.assertEquals(mass[0], 14 )
+        self.assertEqual(x[1], 3 | units.m)
+        self.assertEqual(mass[1], 15 )
+        self.assertEqual(mass[0], 14 )
         storage.set_values_in_store(indices,["x","y", "z", "mass"], [[10,11] | units.m , [12,14] | units.m, [12,14] | units.m, [40.0, 50.0]])
         x,y,mass = storage.get_values_in_store(indices,["x","y","mass"])
-        self.assertEquals(mass[1], 50 )
-        self.assertEquals(mass[0], 40 )
+        self.assertEqual(mass[1], 50 )
+        self.assertEqual(mass[0], 40 )
         
     
         
@@ -471,17 +471,17 @@ class TestGrids(amusetest.TestCase):
             [ParticleGetAttributesMethod(code.get_ijk,("i","j","k")),],
         )
         
-        self.assertEquals(storage.storage_shape(), (10, 4, 4))
-        self.assertEquals(storage.get_defined_attribute_names(), ["i","j","k"])
+        self.assertEqual(storage.storage_shape(), (10, 4, 4))
+        self.assertEqual(storage.get_defined_attribute_names(), ["i","j","k"])
         
         values = storage.get_values_in_store((0,1,1), ("i",))
-        self.assertEquals(len(values), 1)
-        self.assertEquals(values[0], 1 | units.m)
+        self.assertEqual(len(values), 1)
+        self.assertEqual(values[0], 1 | units.m)
         
         values = storage.get_values_in_store((0,1,1), ("k","j","i",))
-        self.assertEquals(values[0], 4 | units.m)
-        self.assertEquals(values[1], 3 | units.m)
-        self.assertEquals(values[2], 1 | units.m)
+        self.assertEqual(values[0], 4 | units.m)
+        self.assertEqual(values[1], 3 | units.m)
+        self.assertEqual(values[2], 1 | units.m)
     
     
     def test2(self):
@@ -501,11 +501,11 @@ class TestGrids(amusetest.TestCase):
             [ParticleGetAttributesMethod(code.get_ijk,("i","j","k")),],
         )
         values = storage.get_values_in_store(numpy.s_[0:2], ("i",))
-        self.assertEquals(len(values), 1)
-        self.assertEquals(len(values[0]), 2)
-        self.assertEquals(values[0].number.shape, (2,4,4))
-        self.assertEquals(values[0][0][0][0], 1 | units.m)
-        self.assertEquals(values[0][1][0][0], 2 | units.m)
+        self.assertEqual(len(values), 1)
+        self.assertEqual(len(values[0]), 2)
+        self.assertEqual(values[0].number.shape, (2,4,4))
+        self.assertEqual(values[0][0][0][0], 1 | units.m)
+        self.assertEqual(values[0][1][0][0], 2 | units.m)
     
     def test3(self):
         
@@ -544,10 +544,10 @@ class TestGrids(amusetest.TestCase):
         self.assertTrue(numpy.all(values[0].value_in(units.m) == code.storage))
         #self.assertTrue(False)
         values = storage.get_values_in_store((0,0,0), ("a",))
-        self.assertEquals(values[0], 0 | units.m)
+        self.assertEqual(values[0], 0 | units.m)
         storage.set_values_in_store((0,0,0), ("a",), [11.0 | units.m,])
         values = storage.get_values_in_store((0,0,0), ("a",))
-        self.assertEquals(values[0], 11.0 | units.m)
+        self.assertEqual(values[0], 11.0 | units.m)
         values = storage.get_values_in_store((0,0), ("a",))
         storage.set_values_in_store((0,0), ("a",), [[11.0, 12.0, 13.0, 14.0, 15.0]| units.m,])
         self.assertTrue(numpy.all(code.storage[0][0] == [11.0, 12.0, 13.0, 14.0, 15.0]))
@@ -571,17 +571,17 @@ class TestGrids(amusetest.TestCase):
             extra_keyword_arguments_for_getters_and_setters = {'d':1, 'l':2},
         )
         
-        self.assertEquals(storage.storage_shape(), (10, 4, 4))
-        self.assertEquals(storage.get_defined_attribute_names(), ["i","j","k"])
+        self.assertEqual(storage.storage_shape(), (10, 4, 4))
+        self.assertEqual(storage.get_defined_attribute_names(), ["i","j","k"])
         
         values = storage.get_values_in_store((0,1,1), ("i",))
-        self.assertEquals(len(values), 1)
-        self.assertEquals(values[0], 1 | units.m)
+        self.assertEqual(len(values), 1)
+        self.assertEqual(values[0], 1 | units.m)
         
         values = storage.get_values_in_store((0,1,1), ("k","j","i",))
-        self.assertEquals(values[0], 4 | units.m)
-        self.assertEquals(values[1], 2 | units.m)
-        self.assertEquals(values[2], 1 | units.m)
+        self.assertEqual(values[0], 4 | units.m)
+        self.assertEqual(values[1], 2 | units.m)
+        self.assertEqual(values[2], 1 | units.m)
     
     
         
@@ -603,12 +603,12 @@ class TestGrids(amusetest.TestCase):
             [ParticleGetAttributesMethod(code.get_ijk,("i","j","k")),],
         )
         
-        self.assertEquals(storage.storage_shape(), (10, 4, 4))
-        self.assertEquals(storage.get_defined_attribute_names(), ["i","j","k"])
+        self.assertEqual(storage.storage_shape(), (10, 4, 4))
+        self.assertEqual(storage.get_defined_attribute_names(), ["i","j","k"])
         
         values = storage.get_values_in_store(None, ("i",))
-        self.assertEquals(len(values), 1)
-        self.assertEquals(values[0].number.ndim, 3)
+        self.assertEqual(len(values), 1)
+        self.assertEqual(values[0].number.ndim, 3)
         
     
     def test6(self):
@@ -647,10 +647,10 @@ class TestGrids(amusetest.TestCase):
         values = storage.get_values_in_store(None, ("a",))
         self.assertTrue(numpy.all(values[0] == code.storage))
         values = storage.get_values_in_store((0,0,0), ("a",))
-        self.assertEquals(values[0], 0)
+        self.assertEqual(values[0], 0)
         storage.set_values_in_store((0,0,0), ("a",), [11.0,])
         values = storage.get_values_in_store((0,0,0), ("a",))
-        self.assertEquals(values[0], 11.0)
+        self.assertEqual(values[0], 11.0)
         values = storage.get_values_in_store((0,0), ("a",))[0]
         self.assertTrue(numpy.all(values == [11.0, 1.0, 2.0, 3.0, 4.0]))
         storage.set_values_in_store((0,0), ("a",), [[11.0, 12.0, 13.0, 14.0, 15.0],])
@@ -716,12 +716,12 @@ class TestGrids(amusetest.TestCase):
             [ParticleGetAttributesMethod(code.get_a,("a",)),],
         )
         
-        self.assertEquals(storage.storage_shape(), ())
-        self.assertEquals(storage.get_defined_attribute_names(), ['a'])
+        self.assertEqual(storage.storage_shape(), ())
+        self.assertEqual(storage.get_defined_attribute_names(), ['a'])
         
         values = storage.get_values_in_store((), ("a",))
-        self.assertEquals(len(values), 1)
-        print values,"<"
-        self.assertEquals(values[0], 1 | units.m)
+        self.assertEqual(len(values), 1)
+        print(values,"<")
+        self.assertEqual(values[0], 1 | units.m)
         
     

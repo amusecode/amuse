@@ -67,10 +67,10 @@ def set_rpaths(name, rpaths, dryrun = True):
         
     arguments = ['patchelf', '--set-rpath', rpath, name]
     if dryrun == True:
-        print ' '.join(arguments)
+        print(' '.join(arguments))
     else:
         outputstring = check_output(arguments)
-        print outputstring
+        print(outputstring)
 
 def main(libpath='../lib', binpath='.', rpath='', dryrun = True):
     
@@ -82,7 +82,7 @@ def main(libpath='../lib', binpath='.', rpath='', dryrun = True):
         if len(rpath) == 0:
             absbinpath = os.path.abspath(name)
             relpath = os.path.relpath(abslibpath, os.path.dirname(absbinpath))
-            print relpath, abslibpath
+            print(relpath, abslibpath)
             if not relpath or relpath == '.':
                 newrpath = '$ORIGIN'
             else:
@@ -90,16 +90,16 @@ def main(libpath='../lib', binpath='.', rpath='', dryrun = True):
         else:
             newrpath = rpath
             
-        print "file:", name
+        print("file:", name)
         if dryrun:
             currentpaths = get_rpaths(name)
             if len(currentpaths) > 0:
-                print "CURRENT RPATHS(s):"
+                print("CURRENT RPATHS(s):")
             for x in get_rpaths(name):
-                print " ** ",x
+                print(" ** ",x)
         
         if newrpath == '$ORIGIN' and len(get_rpaths(name)) == 0:
-            print " NOT SETTING RPATH FOR: ",name
+            print(" NOT SETTING RPATH FOR: ",name)
             continue
         #, '$ORIGIN'
         set_rpaths(name, [newrpath], dryrun)

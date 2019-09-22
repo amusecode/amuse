@@ -443,7 +443,7 @@ def build_java_worker(codestring, path_to_results, specification_class):
     )
         
     if returncode != 0:
-        print "Could not compile worker"
+        print("Could not compile worker")
 
 #make jar file
 
@@ -453,7 +453,7 @@ def build_java_worker(codestring, path_to_results, specification_class):
     )
         
     if returncode != 0:
-        print "Could not compile worker"
+        print("Could not compile worker")
 
     #generate worker script
 
@@ -465,7 +465,7 @@ def build_java_worker(codestring, path_to_results, specification_class):
     with open(exefile, "w") as f:
         f.write(worker_script)
 
-    os.chmod(exefile, 0777)
+    os.chmod(exefile, 0o777)
 
     return exefile
 

@@ -36,7 +36,7 @@ def LagrangianRadii(stars, verbose=False, massf=MassFraction):
     # old but slow: d2 = numpy.array([distance_sq(star) for star in stars])
     d2 = distance_sq(stars, com)
     m = stars.mass / stars.mass.sum()
-    d2m = zip(d2, m)
+    d2m = list(zip(d2, m))
     d2m.sort(key=operator.itemgetter(0))
 
     iL = 0
@@ -47,8 +47,8 @@ def LagrangianRadii(stars, verbose=False, massf=MassFraction):
         while mt >= massf[iL]:
             Lagrad.append(d2i.sqrt())
             if verbose:
-                print "Lagrangian Radius M= ", mt, \
-                      "(iL=", iL, ") at d= ", Lagrad[-1]
+                print("Lagrangian Radius M= ", mt, \
+                      "(iL=", iL, ") at d= ", Lagrad[-1])
             iL += 1
             if iL >= len(massf):
                 break
@@ -86,7 +86,7 @@ def main():
     else:
         convert_nbody = nbody_system.nbody_to_si(m_tot, r_vir)
         convert_nbody.set_as_default()
-        print m_tot
+        print(m_tot)
 
     stars = new_plummer_model(nstars, convert_nbody, random_state=seed)
     stars.mass = masses 

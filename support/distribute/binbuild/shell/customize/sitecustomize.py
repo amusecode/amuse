@@ -1,6 +1,6 @@
 import sys
 import os.path
-from StringIO import StringIO
+from io import StringIO
 
 from amuse.support import options
 

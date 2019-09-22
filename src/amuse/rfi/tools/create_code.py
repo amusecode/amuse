@@ -71,7 +71,7 @@ class GenerateASourcecodeStringFromASpecificationClass(GenerateASourcecodeString
             if result is None:
                 result = local
             else:
-                for key, count in local.iteritems():
+                for key, count in local.items():
                     previous_count = result.get(key, 0)
                     result[key] = max(count, previous_count)
                     
@@ -93,7 +93,7 @@ class GenerateASourcecodeStringFromASpecificationClass(GenerateASourcecodeString
             if result is None:
                 result = local
             else:
-                for key, count in local.iteritems():
+                for key, count in local.items():
                     previous_count = result.get(key, 0)
                     result[key] = max(count, previous_count)
                     
@@ -120,7 +120,7 @@ class DTypeToSpecDictionary(object):
     
     def __init__(self, dict):
         self.mapping = {}
-        for datatype, value in dict.iteritems():
+        for datatype, value in dict.items():
             self.mapping[datatype] = value
         
     def __getitem__(self, datatype):
@@ -130,9 +130,9 @@ class DTypeToSpecDictionary(object):
         return len(self.mapping)
         
     def values(self):
-        return self.mapping.values()
+        return list(self.mapping.values())
         
     def keys(self):
-        return self.mapping.keys()
+        return list(self.mapping.keys())
         
         

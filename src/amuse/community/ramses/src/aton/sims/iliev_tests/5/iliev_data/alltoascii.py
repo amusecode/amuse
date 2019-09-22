@@ -16,5 +16,5 @@ for name, label in datasets:
     file2 = '%s_add%s.bin' % (name, label)
     out = '%s%s.txt' % (name, label)
     command = 'python toascii.py "%s" "%s" > %s' % (file1, file2, out)
-    print command
+    print(command)
     os.system(command)

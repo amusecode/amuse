@@ -7,7 +7,7 @@ import numpy
 from amuse.units import units, constants, quantities
 from amuse.datamodel import Particle, Particles
 from amuse.support.exceptions import AmuseException
-from StringIO import StringIO 
+from io import StringIO 
 
 class Abstract_Potential(object):
     def get_gravity_at_point(self, eps, x,y,z):

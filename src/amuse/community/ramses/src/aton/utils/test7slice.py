@@ -36,7 +36,7 @@ N = 2**int(info['levelmin'])
 points = []
 
 for line in sys.stdin:
-    x, y, z, dx, icpu, ilevel, v1, v2, v3, v4, v5, v6 = map(float, line.split())
+    x, y, z, dx, icpu, ilevel, v1, v2, v3, v4, v5, v6 = list(map(float, line.split()))
 
     if (z < 0.5 - 0.5/N) or (z > 0.5 + 0.5/N):
         continue
@@ -73,6 +73,6 @@ points.sort(yisoline_order)
 lasty = None
 for p in points:
     if p[1] != lasty:
-        print
-    print ' '.join(map(str, p))
+        print()
+    print(' '.join(map(str, p)))
     lasty = p[1]

@@ -54,7 +54,7 @@ class AbstractGrid(AbstractSet):
 
         instance.collection_attributes.timestamp = timestamp
         
-        for name, value in attributes.iteritems():
+        for name, value in attributes.items():
             setattr(instance.collection_attributes, name, value)
             
         instance._private.previous = self._private.previous

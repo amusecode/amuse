@@ -72,7 +72,7 @@ def print_binaries(pre, stars, kT, limit):	# print all bound pairs with
 
     Ntop = 0
     Etop = 0.0
-    print 'bound top-level pairs:'
+    print('bound top-level pairs:')
     for i in range(n):
         dx[:,:] = pos[:,:] - pos[i,:]
         dv[:,:] = vel[:,:] - vel[i,:]
@@ -89,17 +89,17 @@ def print_binaries(pre, stars, kT, limit):	# print all bound pairs with
         jw = np.arange(n)[w]
         if len(jw) > 0:
             for j in jw:
-                print '   ', stars.id[i], stars.id[j], de[j]/kT.number, 'kT'
+                print('   ', stars.id[i], stars.id[j], de[j]/kT.number, 'kT')
                 Ntop += 1
                 Etop += de[j]
 
     if Ntop == 0:
-        print '(none)'
+        print('(none)')
 
-    print ''
-    print pre, 'Ntop =', Ntop
-    print pre, 'Etop =', Etop
-    print pre, 'Etop/kT =', Etop/kT.number
+    print('')
+    print(pre, 'Ntop =', Ntop)
+    print(pre, 'Etop =', Etop)
+    print(pre, 'Etop/kT =', Etop/kT.number)
 
 def print_log(pre, time, gravity, E0 = 0.0 | nbody_system.energy, cpu0 = 0.0):
     cpu = clock()
@@ -131,52 +131,52 @@ def print_log(pre, time, gravity, E0 = 0.0 | nbody_system.energy, cpu0 = 0.0):
         cmx,cmy,cmz = dcen
         lagr,mf = pa.LagrangianRadii(gravity.particles, cm=dcen)  # no units!
 
-    print ''
-    print pre+"time=", time.number
-    print pre+"CPU=", cpu - cpu0
-    print pre+"Ntot=", N
-    print pre+"mass=", M.number
-    print pre+"Etot=", Etot.number
-    print pre+"Etop=", Etop.number
-    print pre+"Eext=", Eext.number
-    print pre+"Eint=", Eint.number
-    print pre+"Eerr=", Eerr.number
-    print pre+"Edel=", Edel.number
-    print pre+"Ecor=", Ecor.number
-    print pre+"dE=", Ecor.number - E0.number
-    print pre+"dE/E=", Ecor/E0 - 1
-    print pre+"Rvir=", Rvir.number
-    print pre+"Qvir=", Q
+    print('')
+    print(pre+"time=", time.number)
+    print(pre+"CPU=", cpu - cpu0)
+    print(pre+"Ntot=", N)
+    print(pre+"mass=", M.number)
+    print(pre+"Etot=", Etot.number)
+    print(pre+"Etop=", Etop.number)
+    print(pre+"Eext=", Eext.number)
+    print(pre+"Eint=", Eint.number)
+    print(pre+"Eerr=", Eerr.number)
+    print(pre+"Edel=", Edel.number)
+    print(pre+"Ecor=", Ecor.number)
+    print(pre+"dE=", Ecor.number - E0.number)
+    print(pre+"dE/E=", Ecor/E0 - 1)
+    print(pre+"Rvir=", Rvir.number)
+    print(pre+"Qvir=", Q)
     cmx,cmy,cmz = com
-    print pre+"cmpos[3]= %.8f %.8f %.8f" % (cmx.number, cmy.number, cmz.number)
+    print(pre+"cmpos[3]= %.8f %.8f %.8f" % (cmx.number, cmy.number, cmz.number))
     cmx,cmy,cmz = comv
-    print pre+"cmvel[3]= %.8f %.8f %.8f" % (cmx.number, cmy.number, cmz.number)
+    print(pre+"cmvel[3]= %.8f %.8f %.8f" % (cmx.number, cmy.number, cmz.number))
 
     if N >= 100:
         cmx,cmy,cmz = dcen
-        print pre+"dcpos[3]= %.8f %.8f %.8f" \
-            		% (cmx.number, cmy.number, cmz.number)
-        print pre+"Rcore=", rcore.number
-        print pre+"Mcore=", (rhocore*rcore**3).number	# fake...
-        print pre+"Mlagr[9]=",
-        for m in mf: print "%.4f" % (m),
-        print ''
-        print pre+"Rlagr[9]=",
-        for r in lagr.number: print "%.8f" % (r),
-        print ''
+        print(pre+"dcpos[3]= %.8f %.8f %.8f" \
+            		% (cmx.number, cmy.number, cmz.number))
+        print(pre+"Rcore=", rcore.number)
+        print(pre+"Mcore=", (rhocore*rcore**3).number)	# fake...
+        print(pre+"Mlagr[9]=", end=' ')
+        for m in mf: print("%.4f" % (m), end=' ')
+        print('')
+        print(pre+"Rlagr[9]=", end=' ')
+        for r in lagr.number: print("%.8f" % (r), end=' ')
+        print('')
 
     kT = 2*T/(3.*N)	# 3/2 N kT = total KE, by definition
     kT0 = -2*E0/(3.*N)
-    print pre+"kT= %.8f" % (kT.number)
+    print(pre+"kT= %.8f" % (kT.number))
     Nmul,Nbin,Emul = gravity.print_multiples2(pre, kT, dcen)
-    print pre+"Nmul=", Nmul
-    print pre+"Nbin=", Nbin
-    print pre+"Emul= %.5f" % (Emul.number)
-    print pre+"Emul2= %.5f" % (Emul2.number)
-    print pre+"Emul/kT= %.5f" % (Emul/kT)
-    print pre+"Emul/kT0= %.5f" % (Emul/kT0)
-    print pre+"Emul/E= %.5f" % (Emul/Etot)
-    print ''
+    print(pre+"Nmul=", Nmul)
+    print(pre+"Nbin=", Nbin)
+    print(pre+"Emul= %.5f" % (Emul.number))
+    print(pre+"Emul2= %.5f" % (Emul2.number))
+    print(pre+"Emul/kT= %.5f" % (Emul/kT))
+    print(pre+"Emul/kT0= %.5f" % (Emul/kT0))
+    print(pre+"Emul/E= %.5f" % (Emul/Etot))
+    print('')
 
     stars = gravity.particles.copy()
     schannel = gravity.particles.new_channel_to(stars)
@@ -220,7 +220,7 @@ def write_state_to_file(time, stars_python, gravity_code, multiples_code,
                   'root_index': multiples.root_index
         }
         
-        for root, tree in multiples_code.root_to_tree.iteritems():
+        for root, tree in multiples_code.root_to_tree.items():
             root_in_particles = root.as_particle_in_set(particles)
             subset = tree.get_tree_subset().copy()
             if root_in_particles is not None:
@@ -253,7 +253,7 @@ def write_state_to_file(time, stars_python, gravity_code, multiples_code,
                 pickle.dump(params, f)
                 f.close()
 
-        print "\nwrote state to file ", write_file, 'at time', time
+        print("\nwrote state to file ", write_file, 'at time', time)
 
 
 # Restore code from Brewer.
@@ -300,8 +300,8 @@ def read_state_from_file(restart_file, gravity_code, kep, MT=0):
     multiples.root_index = params['root_index']
     multiples_code.root_to_tree = root_to_tree
 
-    print "\nread state from file ", restart_file, \
-          'at time', params['model_time']
+    print("\nread state from file ", restart_file, \
+          'at time', params['model_time'])
 
     return stars_python, params['model_time'], params['delta_t'], \
 		params['EZero'], params['CPUZero'], multiples_code

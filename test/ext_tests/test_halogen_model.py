@@ -10,9 +10,9 @@ class NewHalogenModelTests(TestWithMPI):
         number_of_particles = 100
         particles = new_halogen_model(number_of_particles, alpha = 2.0, beta = 5.0, gamma = 0.0, random_seed = 1.0)
         
-        self.assertEquals(len(particles), number_of_particles)
-        self.assertAlmostEquals(particles.total_mass(), 1.0 | nbody_system.mass)
-        self.assertAlmostEquals(particles.kinetic_energy(), 
+        self.assertEqual(len(particles), number_of_particles)
+        self.assertAlmostEqual(particles.total_mass(), 1.0 | nbody_system.mass)
+        self.assertAlmostEqual(particles.kinetic_energy(), 
             0.17345836639 | nbody_system.energy) # for number_of_particles = 100
         
         self.assertRaises(AmuseException, new_halogen_model, number_of_particles, expected_message = 
@@ -34,9 +34,9 @@ class NewHalogenModelTests(TestWithMPI):
             black_hole_mass=black_hole_mass, total_mass=stellar_mass,
             cutoff_radius=10.0*scale_radius, scale_radius=scale_radius)
         
-        self.assertEquals(len(particles), number_of_particles + 1)
-        self.assertAlmostEquals(particles[-1].mass, black_hole_mass)
-        self.assertAlmostEquals(particles.total_mass(), black_hole_mass + stellar_mass)
+        self.assertEqual(len(particles), number_of_particles + 1)
+        self.assertAlmostEqual(particles[-1].mass, black_hole_mass)
+        self.assertAlmostEqual(particles.total_mass(), black_hole_mass + stellar_mass)
         self.assertAlmostRelativeEquals(particles.kinetic_energy(), 
             2.27538127277e+43 | units.J, 10)
     

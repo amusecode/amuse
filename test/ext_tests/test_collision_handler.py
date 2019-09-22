@@ -51,7 +51,7 @@ class StellarEvolutionCodeForTesting(object):
     
     def __init__(self, particles=Particles(6)):
         particles.mass = 1 | units.MSun
-        particles.radius = range(1, len(particles)+1) | units.RSun
+        particles.radius = list(range(1, len(particles)+1)) | units.RSun
         self.particles = particles
     
 
@@ -59,7 +59,7 @@ class StellarEvolutionCodeWithInternalStructureForTesting(object):
     
     def __init__(self, particles=Particles(6)):
         particles.mass = 1 | units.MSun
-        particles.radius = range(1, len(particles)+1) | units.RSun
+        particles.radius = list(range(1, len(particles)+1)) | units.RSun
         particles.type = "native star" 
         self.particles = particles
     
@@ -75,7 +75,7 @@ class StellarEvolutionCodeWithInternalStructureForTesting(object):
 class TestCollisionHandler(TestCase):
     
     def test1(self):
-        print "Test CollisionHandler with collision code class (creates new instance for each collision)"
+        print("Test CollisionHandler with collision code class (creates new instance for each collision)")
         colliders = Particles(2)
         handler = CollisionHandler(CollisionCodeForTesting)
         
@@ -87,7 +87,7 @@ class TestCollisionHandler(TestCase):
         self.assertEqual(result.mass, 1 | units.kg)
     
     def test2(self):
-        print "Test CollisionHandler with collision code instance (same instance for each collision)"
+        print("Test CollisionHandler with collision code instance (same instance for each collision)")
         colliders = Particles(2)
         handler = CollisionHandler(CollisionCodeForTesting())
         
@@ -99,7 +99,7 @@ class TestCollisionHandler(TestCase):
         self.assertEqual(result.mass, 2 | units.kg)
     
     def test3(self):
-        print "Test CollisionHandler with collision code class, arguments and parameters"
+        print("Test CollisionHandler with collision code class, arguments and parameters")
         colliders = Particles(2)
         handler = CollisionHandler(
             CollisionCodeForTesting, 
@@ -123,7 +123,7 @@ class TestCollisionHandler(TestCase):
         self.assertTrue(result.mass.unit is units.MSun)
     
     def test4(self):
-        print "Test handle_collisions"
+        print("Test handle_collisions")
         colliders = Particles(8)
         handler = CollisionHandler(CollisionCodeForTesting)
         
@@ -133,7 +133,7 @@ class TestCollisionHandler(TestCase):
         self.assertEqual(result.mass, [1, 1, 1, 1] | units.kg)
     
     def test5(self):
-        print "Test CollisionHandler with gravity code"
+        print("Test CollisionHandler with gravity code")
         gravity = GravityCodeForTesting()
         self.assertEqual(len(gravity.particles), 6)
         
@@ -152,7 +152,7 @@ class TestCollisionHandler(TestCase):
             [[0.5, 0.5, 0.5], [2.5, 6.5, 17.5], [4.5, 20.5, 94.5]] | units.km / units.s)
     
     def test6(self):
-        print "Test CollisionHandler with stellar evolution code, type I"
+        print("Test CollisionHandler with stellar evolution code, type I")
         stellar_evolution = StellarEvolutionCodeForTesting()
         self.assertEqual(len(stellar_evolution.particles), 6)
         
@@ -174,7 +174,7 @@ class TestCollisionHandler(TestCase):
         self.assertEqual(stellar_evolution.particles.radius, [3, 7, 11] | units.RSun)
     
     def test7(self):
-        print "Test CollisionHandler with stellar evolution code, type II"
+        print("Test CollisionHandler with stellar evolution code, type II")
         stellar_evolution = StellarEvolutionCodeWithInternalStructureForTesting()
         self.assertEqual(len(stellar_evolution.particles), 6)
         self.assertEqual(stellar_evolution.particles.type, ["native star"]*6 )
@@ -198,7 +198,7 @@ class TestCollisionHandler(TestCase):
         self.assertEqual(stellar_evolution.particles.type, ["new particle from model"]*3 )
     
     def test8(self):
-        print "Test CollisionHandler with stellar evolution and gravity code"
+        print("Test CollisionHandler with stellar evolution and gravity code")
         gravity = GravityCodeForTesting()
         self.assertEqual(len(gravity.particles), 6)
         
@@ -235,11 +235,11 @@ class TestCollisionHandler(TestCase):
             [[0.5, 0.5, 0.5], [2.5, 6.5, 17.5], [4.5, 20.5, 94.5]] | units.km / units.s)
     
     def test9(self):
-        print "Test CollisionHandler with gravity code and StickySpheres collision code"
+        print("Test CollisionHandler with gravity code and StickySpheres collision code")
         gravity = GravityCodeForTesting()
         self.assertEqual(len(gravity.particles), 6)
         gravity.particles.mass = [1, 1, 2, 2, 3, 3,] | units.MSun
-        gravity.particles.radius = range(101, 107) | units.RSun
+        gravity.particles.radius = list(range(101, 107)) | units.RSun
         
         collision_code = StickySpheres(mass_loss=0.1)
         

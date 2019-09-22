@@ -31,7 +31,7 @@ def apply_patches_using_patch():
     run_patch('ifort91', 'ifort91.diff')
         
 def main(undo_patches = False):
-    print "applying ifort91 patches to source code"
+    print("applying ifort91 patches to source code")
     apply_patches_using_patch()
     
 if __name__ == '__main__':

@@ -74,4 +74,4 @@ if __name__ == '__main__':
     
     figure.savefig("speed.svg")    
     
-    print measurements
+    print(measurements)

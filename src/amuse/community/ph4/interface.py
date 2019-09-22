@@ -636,7 +636,7 @@ class ph4(GravitationalDynamics,GravityFieldCode):
         if number_of_updated_particles == 0:
             return
         
-        indices_in_update_list = range(number_of_updated_particles)
+        indices_in_update_list = list(range(number_of_updated_particles))
         particle_indices, updates \
             = self.get_id_of_updated_particle(indices_in_update_list)
         
@@ -650,9 +650,9 @@ class ph4(GravitationalDynamics,GravityFieldCode):
             elif status == 2:                        # addition
                 indices_to_add.append(index)
 
-        print ''
-        print "indices_to_remove:", indices_to_remove
-        print "indices_to_add:", indices_to_add
+        print('')
+        print("indices_to_remove:", indices_to_remove)
+        print("indices_to_add:", indices_to_add)
 
         if len(indices_to_remove) > 0:
             incode_storage._remove_indices(indices_to_remove)

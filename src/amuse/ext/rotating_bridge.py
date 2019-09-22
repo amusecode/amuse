@@ -62,11 +62,11 @@ class Rotating_Bridge(bridge):
         ay= quantities.zero
         az= quantities.zero
         if(self.verbose):  
-            print system.__class__.__name__,"receives kick from",
+            print(system.__class__.__name__,"receives kick from", end=' ')
         for y in partners:
             if system is not y:
                 if(self.verbose):  
-                    print y.__class__.__name__,
+                    print(y.__class__.__name__, end=' ')
                 _ax,_ay,_az= y.get_gravity_at_point(parts.radius,parts.x,parts.y,parts.z)
                 ax+=_ax
                 ay+=_ay
@@ -89,16 +89,16 @@ class Rotating_Bridge(bridge):
         channel=parts.new_channel_to(system.particles)
         channel.copy_attributes(["vx","vy","vz"])   
         if(self.verbose):
-            print ".. done"
+            print(".. done")
             
     def kick_systems(self,dt):
 
         for x in self.systems:
             if self.do_sync[x]:
                 if hasattr(x,"synchronize_model"):
-                    if(self.verbose): print x.__class__.__name__,"is synchronizing",
+                    if(self.verbose): print(x.__class__.__name__,"is synchronizing", end=' ')
                     x.synchronize_model()    
-                    if(self.verbose):  print ".. done"
+                    if(self.verbose):  print(".. done")
         for x in self.systems:
             if hasattr(x,"particles"):
                         self.kick_system_rotational(x, self.partners[x], dt)

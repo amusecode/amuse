@@ -24,18 +24,18 @@ class HiGPUsInterfaceTests(TestWithMPI):
         instance.set_number_of_GPU(1)
         error = instance.commit_parameters()
         index, error = instance.new_particle(1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
-        self.assertEquals(error, 0)
-        self.assertEquals(index, 0)
+        self.assertEqual(error, 0)
+        self.assertEqual(index, 0)
         index, error = instance.new_particle(0.000003003, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0)
-        self.assertEquals(error, 0)
-        self.assertEquals(index, 1)
+        self.assertEqual(error, 0)
+        self.assertEqual(index, 1)
         error = instance.commit_particles()
-        self.assertEquals(error, 0)
+        self.assertEqual(error, 0)
         retrieved_state = instance.get_state(index)
-        self.assertEquals(retrieved_state['__result'], 0)
-        self.assertEquals(0.000003003,  retrieved_state['mass'])
-        self.assertEquals(0.0, retrieved_state['radius'])
-        self.assertEquals(instance.get_number_of_particles()['number_of_particles'], 2)
+        self.assertEqual(retrieved_state['__result'], 0)
+        self.assertEqual(0.000003003,  retrieved_state['mass'])
+        self.assertEqual(0.0, retrieved_state['radius'])
+        self.assertEqual(instance.get_number_of_particles()['number_of_particles'], 2)
         instance.cleanup_code()
         instance.stop()
     
@@ -44,10 +44,10 @@ class HiGPUsInterfaceTests(TestWithMPI):
         instance.initialize_code()
         for x in [0.101, 4.0]:
             error = instance.set_eta4(x)
-            self.assertEquals(error, 0)            
+            self.assertEqual(error, 0)            
             value, error = instance.get_eta4()
-            self.assertEquals(error, 0)
-            self.assertEquals(x, value)
+            self.assertEqual(error, 0)
+            self.assertEqual(x, value)
         instance.cleanup_code()
         instance.stop()
 
@@ -68,10 +68,10 @@ class HiGPUsInterfaceTests(TestWithMPI):
             [2.6,3.6,4.6,5.6])
         error = instance.commit_particles()
         retrieved_state = instance.get_state(0)
-        self.assertEquals(11.0,  retrieved_state['mass'])
+        self.assertEqual(11.0,  retrieved_state['mass'])
         retrieved_state = instance.get_state([2,3,4])
-        self.assertEquals(14.0,  retrieved_state['mass'][1])
-        self.assertEquals(instance.get_number_of_particles()['number_of_particles'], 4)
+        self.assertEqual(14.0,  retrieved_state['mass'][1])
+        self.assertEqual(instance.get_number_of_particles()['number_of_particles'], 4)
         instance.cleanup_code()
         instance.stop()
     
@@ -88,9 +88,9 @@ class HiGPUsInterfaceTests(TestWithMPI):
         instance.new_particle(values, values, values, values, values, values, values)
         error = instance.commit_particles()
         retrieved_state = instance.get_state(0)
-        self.assertEquals(1.0,  retrieved_state['mass'])
+        self.assertEqual(1.0,  retrieved_state['mass'])
         retrieved_state = instance.get_state(3998)
-        self.assertEquals(3999.0,  retrieved_state['mass'])
+        self.assertEqual(3999.0,  retrieved_state['mass'])
         instance.cleanup_code()
         instance.stop()
         
@@ -144,7 +144,7 @@ class HiGPUsInterfaceTests(TestWithMPI):
         
         instance.commit_particles()
         potential, errorcode = instance.get_potential(id1)
-        self.assertEquals(errorcode, 0)
+        self.assertEqual(errorcode, 0)
         self.assertAlmostRelativeEquals(potential,  -10.0 / (2.0**2 + 0.1**2)**0.5, 2)
         total_potential, errorcode = instance.get_potential_energy()
         potentials, errorcode = instance.get_potential([id1, id2])
@@ -168,11 +168,11 @@ class HiGPUsInterfaceTests(TestWithMPI):
         
         instance.commit_particles()
         potential, errorcode = instance.get_potential(id1)
-        self.assertEquals(errorcode, 0)
+        self.assertEqual(errorcode, 0)
         self.assertAlmostRelativeEquals(potential,  -1.0 / numpy.sqrt(2.0**2), 8)
         
         potential, errorcode = instance.get_potential(id2)
-        self.assertEquals(errorcode, 0)
+        self.assertEqual(errorcode, 0)
         self.assertAlmostRelativeEquals(potential,  -10.0 / numpy.sqrt(2.0**2), 8)
         
         total_potential, errorcode = instance.get_potential_energy()
@@ -249,7 +249,7 @@ class TestHiGPUs(TestWithMPI):
         instance.commit_parameters()
     
         particles = datamodel.Particles(2)
-        self.assertEquals(len(instance.particles), 0)
+        self.assertEqual(len(instance.particles), 0)
         
         particles.mass = [15.0, 30.0] | units.kg
         particles.radius =  [10.0, 20.0] | units.m
@@ -258,14 +258,14 @@ class TestHiGPUs(TestWithMPI):
 
         
         instance.particles.add_particles(particles)
-        self.assertEquals(len(instance.particles), 2)
+        self.assertEqual(len(instance.particles), 2)
          
         instance.particles.mass =  [17.0, 33.0] | units.kg
         
         instance.commit_particles()
 
-        self.assertEquals(instance.get_mass(0), 17.0| units.kg) 
-        self.assertEquals(instance.get_mass(1), 33.0| units.kg)  
+        self.assertEqual(instance.get_mass(0), 17.0| units.kg) 
+        self.assertEqual(instance.get_mass(1), 33.0| units.kg)  
         
         instance.cleanup_code()
         instance.stop()
@@ -276,7 +276,7 @@ class TestHiGPUs(TestWithMPI):
         instance.parameters.eps = 0.0 | nbody_system.length
         instance.commit_parameters()  
         particles = datamodel.Particles(6)
-        particles.mass = nbody_system.mass.new_quantity(range(1,7))
+        particles.mass = nbody_system.mass.new_quantity(list(range(1,7)))
         particles.radius =   0.00001 | nbody_system.length
         particles.position = [[-1.0,0.0,0.0],[1.0,0.0,0.0],[0.0,-1.0,0.0],[0.0,1.0,0.0],[0.0,0.0,-1.0],[0.0,0.0,1.0]] | nbody_system.length
         particles.velocity = [[0.0,0.0,0.0],[0.0,0.0,0.0],[0.0,0.0,0.0],[0.0,0.0,0.0],[0.0,0.0,0.0],[0.0,0.0,0.0]] | nbody_system.speed
@@ -289,7 +289,7 @@ class TestHiGPUs(TestWithMPI):
         instance.cleanup_code()
         instance.stop()
         
-        self.assertEquals(2 | nbody_system.mass, copyof[1].mass)  
+        self.assertEqual(2 | nbody_system.mass, copyof[1].mass)  
         
         
     def test4(self):
@@ -379,27 +379,27 @@ class TestHiGPUs(TestWithMPI):
         particle.velocity = [-1.0, 0.0, 0.0] | nbody_system.speed
         
         instance = self.new_instance_of_an_optional_code(HiGPUs)
-        self.assertEquals(instance.get_name_of_current_state(), 'UNINITIALIZED')
+        self.assertEqual(instance.get_name_of_current_state(), 'UNINITIALIZED')
         instance.initialize_code()
-        self.assertEquals(instance.get_name_of_current_state(), 'INITIALIZED')
+        self.assertEqual(instance.get_name_of_current_state(), 'INITIALIZED')
         instance.commit_parameters()
-        self.assertEquals(instance.get_name_of_current_state(), 'EDIT')
+        self.assertEqual(instance.get_name_of_current_state(), 'EDIT')
         instance.particles.add_particles(particles)
         instance.commit_particles()
-        self.assertEquals(instance.get_name_of_current_state(), 'RUN')
+        self.assertEqual(instance.get_name_of_current_state(), 'RUN')
         instance.evolve_model(1 | nbody_system.time)
-        self.assertEquals(instance.get_name_of_current_state(), 'EVOLVED')
+        self.assertEqual(instance.get_name_of_current_state(), 'EVOLVED')
         instance.particles.remove_particle(particles[1])
         instance.particles.add_particle(particle)
-        self.assertEquals(instance.get_name_of_current_state(), 'UPDATE')
+        self.assertEqual(instance.get_name_of_current_state(), 'UPDATE')
         instance.recommit_particles()
-        self.assertEquals(instance.get_name_of_current_state(), 'RUN')
+        self.assertEqual(instance.get_name_of_current_state(), 'RUN')
         instance.evolve_model(1 | nbody_system.time)
-        self.assertEquals(instance.get_name_of_current_state(), 'EVOLVED')
+        self.assertEqual(instance.get_name_of_current_state(), 'EVOLVED')
         instance.synchronize_model()
-        self.assertEquals(instance.get_name_of_current_state(), 'RUN')
+        self.assertEqual(instance.get_name_of_current_state(), 'RUN')
         instance.cleanup_code()
-        self.assertEquals(instance.get_name_of_current_state(), 'END')
+        self.assertEqual(instance.get_name_of_current_state(), 'END')
         instance.stop()
 
 
@@ -410,17 +410,17 @@ class TestHiGPUs(TestWithMPI):
         
         instance.commit_parameters()        
         
-        self.assertEquals( instance.parameters.eta6 ,  0.5 )
-        self.assertEquals( instance.parameters.eta4 ,  0.01)
-        self.assertEquals( instance.parameters.begin_time ,  0.0 | nbody_system.time) 
-        self.assertEquals( instance.parameters.r_core_plummer ,  0.0 | nbody_system.length)
-        self.assertEquals( instance.parameters.mass_plummer ,  0.0 | nbody_system.mass)
-        self.assertEquals( instance.parameters.Threads ,  128)
-        self.assertEquals( instance.parameters.n_Print ,  1000000)
-        self.assertEquals( instance.parameters.dt_Print ,  1000000.0 | nbody_system.time)
-        self.assertEquals( instance.parameters.max_step ,  pow(2.,-3.0) | nbody_system.time)
-        self.assertEquals( instance.parameters.min_step ,  pow(2.,-30.0) | nbody_system.time)
-        self.assertEquals( instance.parameters.gpu_name ,  "")
-        self.assertEquals( instance.parameters.n_gpu ,  2)
+        self.assertEqual( instance.parameters.eta6 ,  0.5 )
+        self.assertEqual( instance.parameters.eta4 ,  0.01)
+        self.assertEqual( instance.parameters.begin_time ,  0.0 | nbody_system.time) 
+        self.assertEqual( instance.parameters.r_core_plummer ,  0.0 | nbody_system.length)
+        self.assertEqual( instance.parameters.mass_plummer ,  0.0 | nbody_system.mass)
+        self.assertEqual( instance.parameters.Threads ,  128)
+        self.assertEqual( instance.parameters.n_Print ,  1000000)
+        self.assertEqual( instance.parameters.dt_Print ,  1000000.0 | nbody_system.time)
+        self.assertEqual( instance.parameters.max_step ,  pow(2.,-3.0) | nbody_system.time)
+        self.assertEqual( instance.parameters.min_step ,  pow(2.,-30.0) | nbody_system.time)
+        self.assertEqual( instance.parameters.gpu_name ,  "")
+        self.assertEqual( instance.parameters.n_gpu ,  2)
         instance.cleanup_code()
         instance.stop()

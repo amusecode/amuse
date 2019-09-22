@@ -852,7 +852,7 @@ class AcceleratingWind(SimpleWind):
 
         super(AcceleratingWind, self).__init__(*args, **kwargs)
 
-        if isinstance(acc_func, basestring):
+        if isinstance(acc_func, str):
             acc_func = self.acc_functions[acc_func]
 
         self.acc_function = acc_func(**acc_func_args)
@@ -953,7 +953,7 @@ class AcceleratingWind(SimpleWind):
 
     def radial_velocities(self, gas, star):
         rad_velocity = [] | units.ms
-        pos_vel = zip(gas.position-star.position, gas.velocity-star.velocity)
+        pos_vel = list(zip(gas.position-star.position, gas.velocity-star.velocity))
         for pos, vel in pos_vel:
             rad_direction = pos/pos.length()
             scalar_projection = vel.dot(rad_direction)

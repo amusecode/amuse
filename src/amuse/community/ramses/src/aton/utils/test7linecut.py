@@ -36,7 +36,7 @@ N = 2**int(info['levelmin'])
 points = []
 
 for line in sys.stdin:
-    x, y, z, dx, icpu, ilevel, v1, v2, v3, v4, v5, v6 = map(float, line.split())
+    x, y, z, dx, icpu, ilevel, v1, v2, v3, v4, v5, v6 = list(map(float, line.split()))
 
     mid = (0.5*N + 0.5)/N
     d = math.sqrt((y-mid)**2 + (z-mid)**2)
@@ -67,4 +67,4 @@ for line in sys.stdin:
 
 points.sort()
 for p in points:
-    print ' '.join(map(str, p))
+    print(' '.join(map(str, p)))

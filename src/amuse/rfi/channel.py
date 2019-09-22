@@ -1,7 +1,7 @@
 import inspect
 import numpy
 import os.path
-import cPickle as pickle
+import pickle as pickle
 
 import sys
 import struct
@@ -40,7 +40,7 @@ from amuse.rfi import run_command_redirected
 
 from amuse.rfi import slurm
 
-import async_request
+from . import async_request
 
 class AbstractMessage(object):
     
@@ -382,11 +382,11 @@ MAPPING = {}
 
 def pack_array(array, length, dtype):
     if dtype == 'string':
-        if length == 1 and len(array) > 0 and isinstance(array[0], basestring):
+        if length == 1 and len(array) > 0 and isinstance(array[0], str):
             return array
         result = []
         for x in array:
-            if isinstance(x, basestring):
+            if isinstance(x, str):
                 for _ in range(length):
                     result.append(x)
             elif len(x) == 1 and length > 1:
@@ -413,7 +413,7 @@ def pack_array(array, length, dtype):
 def unpack_array(array, length, dtype=None):
     result = []
     total = len(array) // length
-    for i in xrange(total):
+    for i in range(total):
         offset = i * length
         result.append(array[offset:offset + length])
     return result
@@ -736,7 +736,7 @@ Please do a 'make clean; make' in the root directory.
                 result = 1
                 for argument_value in argument_values:
                     try:
-                        if not isinstance(argument_value, basestring):
+                        if not isinstance(argument_value, str):
                             result = max(result, len(argument_value))
                     except:
                         result = max(result, 1)
@@ -744,7 +744,7 @@ Please do a 'make clean; make' in the root directory.
                
                
         
-        lengths = map(get_length, dtype_to_arguments.items())
+        lengths = list(map(get_length, list(dtype_to_arguments.items())))
         if len(lengths) == 0:
             return 1
             
@@ -760,7 +760,7 @@ Please do a 'make clean; make' in the root directory.
         ndone=0
         while ndone<call_count:
             split_dtype_to_argument = {}
-            for key, value in dtype_to_arguments.iteritems():
+            for key, value in dtype_to_arguments.items():
                 split_dtype_to_argument[key] = \
                   [tmp[ndone:ndone+self.max_message_length] if hasattr(tmp, '__iter__') else tmp for tmp in value]
 
@@ -772,7 +772,7 @@ Please do a 'make clean; make' in the root directory.
             )
             
             partial_dtype_to_result = self.recv_message(call_id, function_id, True)
-            for datatype, value in partial_dtype_to_result.iteritems():
+            for datatype, value in partial_dtype_to_result.items():
                 if not datatype in dtype_to_result:
                     dtype_to_result[datatype] = [] 
                     for j, element in enumerate(value):
@@ -975,7 +975,7 @@ class MpiChannel(AbstractMessageChannel):
     def hostname(self):
         return None
         
-    @option(choices=AbstractMessageChannel.DEBUGGERS.keys(), sections=("channel",))
+    @option(choices=list(AbstractMessageChannel.DEBUGGERS.keys()), sections=("channel",))
     def debugger(self):
         """Name of the debugger to use when starting the code"""
         return "none"
@@ -1077,7 +1077,7 @@ class MpiChannel(AbstractMessageChannel):
         def get_length(x):
             if x:
                 try:
-                    if not isinstance(x[0], basestring):
+                    if not isinstance(x[0], str):
                         return len(x[0])
                 except:
                     return 1
@@ -1085,7 +1085,7 @@ class MpiChannel(AbstractMessageChannel):
                
                
         
-        lengths = map(get_length, dtype_to_arguments.values())
+        lengths = list(map(get_length, list(dtype_to_arguments.values())))
         if len(lengths) == 0:
             return 1
             
@@ -1245,7 +1245,7 @@ class MpiChannel(AbstractMessageChannel):
             cls._scheduler_nodes = all_nodes
             cls._scheduler_index = 1     # start at 1 assumes that the python script is running on the first node as the first task
             cls._scheduler_initialized = True
-            print "NODES:", cls._scheduler_nodes
+            print("NODES:", cls._scheduler_nodes)
         hostnames = []
         count = 0
         while count < number_of_workers:
@@ -1255,7 +1255,7 @@ class MpiChannel(AbstractMessageChannel):
                 if cls._scheduler_index >= len(cls._scheduler_nodes):
                     cls._scheduler_index  = 0
         host = ','.join(hostnames)
-        print "HOST:", host, cls._scheduler_index, os.environ['SLURM_TASKS_PER_NODE']
+        print("HOST:", host, cls._scheduler_index, os.environ['SLURM_TASKS_PER_NODE'])
         info = MPI.Info.Create()
         info['host'] = host                                                     #actually in mpich and openmpi, the host parameter is interpreted as a comma separated list of host names,
         return info
@@ -1443,7 +1443,7 @@ m.run_mpi_channel('{2}')"""
             
 
 
-    @option(choices=AbstractMessageChannel.DEBUGGERS.keys(), sections=("channel",))
+    @option(choices=list(AbstractMessageChannel.DEBUGGERS.keys()), sections=("channel",))
     def debugger(self):
         """Name of the debugger to use when starting the code"""
         return "none"
@@ -1835,7 +1835,7 @@ class SocketChannel(AbstractMessageChannel):
 
 
 
-    @option(choices=AbstractMessageChannel.DEBUGGERS.keys(), sections=("channel",))
+    @option(choices=list(AbstractMessageChannel.DEBUGGERS.keys()), sections=("channel",))
     def debugger(self):
         """Name of the debugger to use when starting the code"""
         return "none"
@@ -1882,7 +1882,7 @@ class SocketChannel(AbstractMessageChannel):
                 result = 1
                 for argument_value in argument_values:
                     try:
-                        if not isinstance(argument_value, basestring):
+                        if not isinstance(argument_value, str):
                             result = max(result, len(argument_value))
                     except:
                         result = max(result, 1)
@@ -1890,7 +1890,7 @@ class SocketChannel(AbstractMessageChannel):
                
                
         
-        lengths = map(get_length, dtype_to_arguments.items())
+        lengths = list(map(get_length, list(dtype_to_arguments.items())))
         if len(lengths) == 0:
             return 1
             
@@ -2183,7 +2183,7 @@ class DistributedChannel(AbstractMessageChannel):
         logger.info("worker %s initialized", self.name_of_the_worker)
         logger.info("worker remote amuse dir = %s", self.remote_amuse_dir)
         
-    @option(choices=AbstractMessageChannel.DEBUGGERS.keys(), sections=("channel",))
+    @option(choices=list(AbstractMessageChannel.DEBUGGERS.keys()), sections=("channel",))
     def debugger(self):
         """Name of the debugger to use when starting the code"""
         return "none"
@@ -2222,7 +2222,7 @@ class DistributedChannel(AbstractMessageChannel):
                
                
         
-        lengths = map(get_length, dtype_to_arguments.values())
+        lengths = list(map(get_length, list(dtype_to_arguments.values())))
         if len(lengths) == 0:
             return 1
             
@@ -2335,11 +2335,11 @@ class LocalChannel(AbstractMessageChannel):
         pass
    
     def start(self):
-        import import_module
-        import python_code
+        from . import import_module
+        from . import python_code
         
         module = import_module.import_unique(self.package + "." + self.so_module)
-        print module, self.package + "." + self.so_module
+        print(module, self.package + "." + self.so_module)
         module.set_comm_world(MPI.COMM_SELF)
         self.local_implementation = python_code.CythonImplementation(module, self.legacy_interface_type)
         self.module = module
@@ -2347,7 +2347,7 @@ class LocalChannel(AbstractMessageChannel):
 
 
     def stop(self):
-        import import_module
+        from . import import_module
         import_module.cleanup_module(self.module)
         self.module = None
         
@@ -2390,7 +2390,7 @@ class LocalChannel(AbstractMessageChannel):
         def get_length(x):
             if x:
                 try:
-                    if not isinstance(x[0], basestring):
+                    if not isinstance(x[0], str):
                         return len(x[0])
                 except:
                     return 1
@@ -2398,7 +2398,7 @@ class LocalChannel(AbstractMessageChannel):
                
                
         
-        lengths = map(get_length, dtype_to_arguments.values())
+        lengths = list(map(get_length, list(dtype_to_arguments.values())))
         if len(lengths) == 0:
             return 1
             

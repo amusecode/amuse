@@ -83,13 +83,13 @@ class TestGravitationalDynamics(TestWithMPI):
             __doc__ = CodeDocStringProperty()
             
             
-        self.assertEquals("orignal doc", WithLegacyDocStringProperty.__doc__)
+        self.assertEqual("orignal doc", WithLegacyDocStringProperty.__doc__)
         instance = WithLegacyDocStringProperty()
         instance_documentation =  WithLegacyDocStringProperty().__doc__
         self.assertTrue(instance_documentation.find('FUNCTION test(one)') >= 0)
         
     def test6(self):
-        print "Testing description of Legacy Function with output parameter"
+        print("Testing description of Legacy Function with output parameter")
         specification = LegacyFunctionSpecification()
         specification.name ='test'
         specification.addParameter('one','d',specification.OUT, 'first parameter')
@@ -104,7 +104,7 @@ class TestGravitationalDynamics(TestWithMPI):
         self.assertTrue(x.out.string.find(':returns:') > 0)
         
     def test7(self):
-        print "Testing __str__ of Legacy Function"
+        print("Testing __str__ of Legacy Function")
         specification = LegacyFunctionSpecification()
         specification.name ='test'
         specification.addParameter('one','f',specification.IN, 'first parameter, type: float')
@@ -112,5 +112,5 @@ class TestGravitationalDynamics(TestWithMPI):
         specification.result_type = 'i'
         specification.result_doc = 'an integer'
         specification.description = 'Example function'
-        self.assertEquals(str(specification),"function: int test(float one)\noutput: double two, int __result")
+        self.assertEqual(str(specification),"function: int test(float one)\noutput: double two, int __result")
         

@@ -20,7 +20,7 @@ def average(output_dir, label):
 f = file('map_history.txt', 'w')
 for i, output_dir, info in reader.scan_outputs('.'):
     if i == 1: continue
-    print output_dir
+    print(output_dir)
 
     reader.amr2map(output_dir, os.path.join(output_dir, 'temperature_map.txt'), 8)
 
@@ -33,5 +33,5 @@ for i, output_dir, info in reader.scan_outputs('.'):
 
     z = info['z']
 
-    print >>f, z, avg_xion_volume, avg_xion_mass, avg_T2, avg_density
+    print(z, avg_xion_volume, avg_xion_mass, avg_T2, avg_density, file=f)
     f.flush()

@@ -48,7 +48,7 @@ class FiInterface(
     def __init__(self, mode = MODE_NORMAL,  **options):
         self.mode = mode
         
-        if options.has_key("number_of_workers") and options["number_of_workers"]!=1:
+        if "number_of_workers" in options and options["number_of_workers"]!=1:
           raise Exception("Fi expects number_of_workers to be 1,\nfor multiple processors use mode='openmp' and set the OMP_NUM_THREADS environment variable") 
         
         CodeInterface.__init__(self, name_of_the_worker = self.name_of_the_worker(mode), **options)
@@ -3289,7 +3289,7 @@ class Fi(GravitationalDynamics, GravityFieldCode):
         if number_of_removed_particles == 0:
             return
         
-        indices_in_update_list = range(number_of_removed_particles)
+        indices_in_update_list = list(range(number_of_removed_particles))
         indices_to_remove = self.get_id_of_removed_sph_particle(indices_in_update_list)
         
         incode_storage = self.gas_particles._remove_indices_in_attribute_storage(indices_to_remove)

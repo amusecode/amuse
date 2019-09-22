@@ -193,7 +193,7 @@ class PowerLawCutoff_profile(LiteratureReferencesMixIn):
         self.G = G
         self.rho0_r0_to_alpha = self.rho0*self.r0**self.alpha
         
-        if 3.<=self.alpha: print "Warning: power-law index must be less than 3."
+        if 3.<=self.alpha: print("Warning: power-law index must be less than 3.")
     
     def get_potential_at_point(self,eps,x,y,z):
         if scipy_imported == False:

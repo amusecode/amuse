@@ -38,8 +38,8 @@ class TestAarsethZareInterface(TestWithMPI):
             [1.0,1.0,1.0]
         )
         
-        print time, x, y, z, vx, vy, vz, error
-        self.assertEquals(error, 0)
+        print(time, x, y, z, vx, vy, vz, error)
+        self.assertEqual(error, 0)
         self.assertAlmostRelativeEquals(y, [0,0,0])
         self.assertAlmostRelativeEquals(z, [0,0,0])
         self.assertAlmostRelativeEquals(x[-1], -x[0], 10)
@@ -65,7 +65,7 @@ class TestAarsethZareInterface(TestWithMPI):
             [1.0]
         )
         
-        self.assertEquals(error, -1)
+        self.assertEqual(error, -1)
 
 class TestAarsethZare(TestWithMPI):
     def new_system_of_sun_and_earth_and_moon(self):

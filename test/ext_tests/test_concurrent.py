@@ -82,12 +82,12 @@ class Test3Implementation(Test1Implementation):
             processes.on_root(self.create_particles)
             shared_particles = processes.share(self.particles)
             shared_particles.distribute()
-            test.assertEquals(len(shared_particles), 100)
+            test.assertEqual(len(shared_particles), 100)
             test.assertAlmostRelativeEquals(shared_particles.mass.sum() , 1.0 | nbody_system.mass)
             output.value = str('success')
             result = 0
         except Exception as ex:
-            print ex
+            print(ex)
             output.value = str(ex)
             result = -1
         
@@ -125,7 +125,7 @@ class Test4Implementation(Test1Implementation):
             output.value = str('success')
             result = 0
         except Exception as ex:
-            print ex
+            print(ex)
             output.value = str(ex)
             result = -1
         

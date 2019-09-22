@@ -14,8 +14,8 @@ class TestPlummer(TestData):
         #print numpy.random.get_state()
         m = MakePlummerModel(2)
         m1, p, v = m.new_model()
-        self.assertEquals(m1[0,0], 0.5)
-        self.assertEquals(m1[1,0], 0.5)
+        self.assertEqual(m1[0,0], 0.5)
+        self.assertEqual(m1[1,0], 0.5)
         self.assertAlmostEqual(p[0,0], -0.729636617171, 5)
         self.assertAlmostEqual(p[1,0], -0.713272921751 , 5)
         self.assertAlmostEqual(p[0,1],  0.379570256435, 5)
@@ -24,13 +24,13 @@ class TestPlummer(TestData):
     def test2(self):
         convert_nbody = nbody_system.nbody_to_si(6|units.kg, 7 | units.m) 
         stars =  new_plummer_model(2, convert_nbody)
-        self.assertEquals(stars[0].mass.value_in(units.kg), 3.0)
-        self.assertEquals(stars[1].mass.value_in(units.kg), 3.0)
+        self.assertEqual(stars[0].mass.value_in(units.kg), 3.0)
+        self.assertEqual(stars[1].mass.value_in(units.kg), 3.0)
         
     def test3(self):
         stars =  new_plummer_model(2, None)
-        self.assertEquals(stars[0].mass.value_in(nbody_system.mass), 0.5)
-        self.assertEquals(stars[1].mass.value_in(nbody_system.mass), 0.5)
+        self.assertEqual(stars[0].mass.value_in(nbody_system.mass), 0.5)
+        self.assertEqual(stars[1].mass.value_in(nbody_system.mass), 0.5)
         
     def test4(self):
         stars = new_plummer_model(2, do_scale = True)

@@ -18,10 +18,10 @@ ilevel = int(f.readline())
 if (ndim != 2):
 	raise "Only works for ndim=2!"
 
-print 'ndim   = ',ndim
-print 'myid   = ',myid
-print 'myid   = ',myid,'/',ncpu
-print 'ilevel = ',ilevel
+print('ndim   = ',ndim)
+print('myid   = ',myid)
+print('myid   = ',myid,'/',ncpu)
+print('ilevel = ',ilevel)
 
 # Loop over levels
 for i in range(1,ilevel):

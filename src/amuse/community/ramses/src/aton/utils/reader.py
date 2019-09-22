@@ -72,7 +72,7 @@ def exists(path):
     try:
         s = os.stat(path)
         return True
-    except OSError, e:
+    except OSError as e:
         return False
 
 def amr2map(output_dir, out_txt, type):
@@ -85,9 +85,9 @@ def amr2map(output_dir, out_txt, type):
         'typ': str(type)  # ionized fraction
         }
     amr2map_command = amr2map_bin
-    for param in amr2map_params.items():
+    for param in list(amr2map_params.items()):
         amr2map_command += ' -%s %s' % param
-    print >>sys.stderr, 'running:', amr2map_command
+    print('running:', amr2map_command, file=sys.stderr)
     assert os.system(amr2map_command) == 0
 
 def part2map(output_dir, out_txt, stars):
@@ -100,9 +100,9 @@ def part2map(output_dir, out_txt, stars):
         'str': stars and 'true' or 'false',
         }
     part2map_command = part2map_bin
-    for param in part2map_params.items():
+    for param in list(part2map_params.items()):
         part2map_command += ' -%s %s' % param
-    print >>sys.stderr, 'running:', part2map_command
+    print('running:', part2map_command, file=sys.stderr)
     assert os.system(part2map_command) == 0
 
 def histo(output_dir, out_txt, extra_params={}):
@@ -115,9 +115,9 @@ def histo(output_dir, out_txt, extra_params={}):
         }
     histo_params.update(extra_params)
     histo_command = histo_bin
-    for param in histo_params.items():
+    for param in list(histo_params.items()):
         histo_command += ' -%s %s' % param
-        print >>sys.stderr, 'running:', histo_command
+        print('running:', histo_command, file=sys.stderr)
     assert os.system(histo_command) == 0
 
 def getstarlist(output_dir, out_txt):
@@ -128,16 +128,16 @@ def getstarlist(output_dir, out_txt):
         'out': out_txt,
         }
     getstarlist_command = getstarlist_bin
-    for param in getstarlist_params.items():
+    for param in list(getstarlist_params.items()):
         getstarlist_command += ' -%s %s' % param
-    print >>sys.stderr, 'running:', getstarlist_command
+    print('running:', getstarlist_command, file=sys.stderr)
     assert os.system(getstarlist_command) == 0
 
 def gnuplot(script):
     tmp_gp = 'tmp.gp'
     file(tmp_gp, 'w').write(script)
     gnuplot_command = 'gnuplot %s' % tmp_gp
-    print >>sys.stderr, 'running:', gnuplot_command
+    print('running:', gnuplot_command, file=sys.stderr)
     return os.system(gnuplot_command)
 
 def scan_outputs(prefix):
@@ -147,11 +147,11 @@ def scan_outputs(prefix):
         dir = '/output_'
         j = output_dir.rfind('/output_')
         if j == -1:
-            print 'skipping', output_dir
+            print('skipping', output_dir)
             continue
         i = int(output_dir[j + len(dir):])
         info = load_info(output_dir)
         if not info:
-            print 'skipping', output_dir
+            print('skipping', output_dir)
             continue
         yield i, output_dir, info

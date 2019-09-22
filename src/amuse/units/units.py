@@ -1,5 +1,5 @@
 import numpy
-import quantities
+from . import quantities
 from amuse.units.si import *
 from amuse.units.derivedsi import *
 from amuse.units import constants

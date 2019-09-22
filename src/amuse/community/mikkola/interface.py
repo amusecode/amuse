@@ -389,7 +389,7 @@ class Mikkola(GravitationalDynamics):
         if number_of_added_particles == 0:
             return
         
-        indices_in_update_list = range(number_of_added_particles)
+        indices_in_update_list = list(range(number_of_added_particles))
         indices_to_add = self.get_id_of_added_particle(indices_in_update_list)
         
         incode_storage = self.particles._private.attribute_storage

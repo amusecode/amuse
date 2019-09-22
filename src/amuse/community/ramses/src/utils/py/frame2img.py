@@ -34,7 +34,7 @@ def main():
 	try:
 		infile  = args[0]
 	except:
-		print parser.print_help()
+		print(parser.print_help())
 		return 1
 
 	if(opts.outfile==None):
@@ -49,7 +49,7 @@ def main():
 		endianness = "="
 
 	# Read image data
-	print "Reading raw Fortran data..."
+	print("Reading raw Fortran data...")
 	f = fortranfile.FortranFile(infile)
 	[t,dx,dy,dz] = f.read_fortran_record('f8', endian=endianness)
 	[nx,ny] = f.read_fortran_record('i4', endian=endianness)
@@ -61,10 +61,10 @@ def main():
 
 	rawmin = numpy.amin(dat)
 	rawmax = numpy.amax(dat)
-	print '    Image map size  : ',(nx, ny)
-	print '    Data bounds     : ',(rawmin,rawmax)
+	print('    Image map size  : ',(nx, ny))
+	print('    Data bounds     : ',(rawmin,rawmax))
 
-	print "Scaling data and processing colormap..."
+	print("Scaling data and processing colormap...")
 
 	# Bounds
 	if opts.min==None:
@@ -87,7 +87,7 @@ def main():
 
 	# Auto-adjust dynamic range?
 	if(opts.autorange):
-		print "Computing dynamic range..."
+		print("Computing dynamic range...")
 		# Overrides any provided bounds
 		NBINS = 200
 		# Compute histogram
@@ -104,9 +104,9 @@ def main():
 		dat = 0.5*dat/plotmax
 
 	if(opts.logscale):
-		print '    Color bounds    : ',(10**plotmin,10**plotmax)
+		print('    Color bounds    : ',(10**plotmin,10**plotmax))
 	else:
-		print '    Color bounds    : ',(plotmin,plotmax)
+		print('    Color bounds    : ',(plotmin,plotmax))
 
 	# Apply chosen color map
 	color_map = pylab.cm.get_cmap(opts.cmap_str)
@@ -116,7 +116,7 @@ def main():
 	dat = numpy.array(dat, dtype='i')
 
 	# Output to file
-	print "Saving image to file..."
+	print("Saving image to file...")
 	R_band = Image.new("L",(nx,ny))
 	R_band.putdata(dat[:,0])
 	G_band = Image.new("L",(nx,ny))

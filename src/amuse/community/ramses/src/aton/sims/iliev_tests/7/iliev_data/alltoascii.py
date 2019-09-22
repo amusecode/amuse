@@ -18,5 +18,5 @@ for name, label in datasets:
     out_slice = '%s_slice%s.txt' % (name, label)
     command = 'python toascii.py "%s" "%s" "%s" "%s"' % (
         file1, file2, out_profile, out_slice)
-    print command
+    print(command)
     os.system(command)

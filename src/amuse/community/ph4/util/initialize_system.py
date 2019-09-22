@@ -46,7 +46,7 @@ def make_nbody(number_of_stars = 100, time = 0.0,
         numpy.random.seed()
         random_seed = numpy.random.randint(1, pow(2,31)-1)
     numpy.random.seed(random_seed)
-    print "random seed =", random_seed
+    print("random seed =", random_seed)
 
     init_smalln()
 
@@ -74,19 +74,19 @@ def make_nbody(number_of_stars = 100, time = 0.0,
 
     # Make a standard N-body system.
 
-    print "making a Plummer model"
+    print("making a Plummer model")
     stars = new_plummer_model(number_of_stars)
 
     id = numpy.arange(number_of_stars)
     stars.id = id+1
 
-    print "setting particle masses and radii"
+    print("setting particle masses and radii")
     if salpeter == 0:
-        print 'equal masses'
+        print('equal masses')
         total_mass = 1.0 | nbody_system.mass
         scaled_mass = total_mass / number_of_stars
     else:
-        print 'salpeter mass function'
+        print('salpeter mass function')
         mmin = 0.5 | nbody_system.mass
         mmax = 10.0 | nbody_system.mass
         scaled_mass = new_salpeter_mass_distribution_nbody(number_of_stars,
@@ -95,9 +95,9 @@ def make_nbody(number_of_stars = 100, time = 0.0,
         
     stars.mass = scaled_mass
 
-    print "centering stars"
+    print("centering stars")
     stars.move_to_center()
-    print "scaling stars to virial equilibrium"
+    print("scaling stars to virial equilibrium")
     stars.scale_to_standard(smoothing_length_squared
                             = gravity.parameters.epsilon_squared)
 
@@ -123,7 +123,7 @@ def make_nbody(number_of_stars = 100, time = 0.0,
     time = 0.0 | nbody_system.time
     # print "IDs:", stars.id.number
 
-    print "recentering stars"
+    print("recentering stars")
     stars.move_to_center()
     sys.stdout.flush()
 
@@ -135,21 +135,21 @@ def make_nbody(number_of_stars = 100, time = 0.0,
 
         softening_length = 0.5*float(number_of_stars)**(-0.3333333) \
 				| nbody_system.length
-    print 'softening length =', softening_length
+    print('softening length =', softening_length)
 
     gravity.parameters.timestep_parameter = timestep_parameter
     gravity.parameters.epsilon_squared = softening_length*softening_length
     gravity.parameters.use_gpu = use_gpu
 
-    print ''
-    print "adding particles"
+    print('')
+    print("adding particles")
     # print stars
     sys.stdout.flush()
     gravity.particles.add_particles(stars)
     gravity.commit_particles()
 
-    print ''
-    print "number_of_stars =", number_of_stars
+    print('')
+    print("number_of_stars =", number_of_stars)
     sys.stdout.flush()
 
     # Channel to copy values from the code to the set in memory.
@@ -168,23 +168,23 @@ def make_nbody(number_of_stars = 100, time = 0.0,
     multiples_code.neighbor_perturbation_limit = 0.1
     multiples_code.neighbor_veto = True
 
-    print ''
-    print 'multiples_code.initial_scale_factor =', \
-        multiples_code.initial_scale_factor
-    print 'multiples_code.neighbor_perturbation_limit =', \
-        multiples_code.neighbor_perturbation_limit
-    print 'multiples_code.neighbor_veto =', \
-        multiples_code.neighbor_veto
-    print 'multiples_code.final_scale_factor =', \
-        multiples_code.final_scale_factor
-    print 'multiples_code.initial_scatter_factor =', \
-        multiples_code.initial_scatter_factor
-    print 'multiples_code.final_scatter_factor =', \
-        multiples_code.final_scatter_factor
-    print 'multiples_code.retain_binary_apocenter =', \
-        multiples_code.retain_binary_apocenter
-    print 'multiples_code.wide_perturbation_limit =', \
-        multiples_code.wide_perturbation_limit
+    print('')
+    print('multiples_code.initial_scale_factor =', \
+        multiples_code.initial_scale_factor)
+    print('multiples_code.neighbor_perturbation_limit =', \
+        multiples_code.neighbor_perturbation_limit)
+    print('multiples_code.neighbor_veto =', \
+        multiples_code.neighbor_veto)
+    print('multiples_code.final_scale_factor =', \
+        multiples_code.final_scale_factor)
+    print('multiples_code.initial_scatter_factor =', \
+        multiples_code.initial_scatter_factor)
+    print('multiples_code.final_scatter_factor =', \
+        multiples_code.final_scatter_factor)
+    print('multiples_code.retain_binary_apocenter =', \
+        multiples_code.retain_binary_apocenter)
+    print('multiples_code.wide_perturbation_limit =', \
+        multiples_code.wide_perturbation_limit)
 
     # Take a dummy step, just in case...
 
@@ -217,7 +217,7 @@ def make_nbody(number_of_stars = 100, time = 0.0,
     gravity.stop()
     kep.stop()
     stop_smalln()
-    print ''
+    print('')
 
 
 if __name__ == '__main__':
@@ -237,8 +237,8 @@ if __name__ == '__main__':
 
     try:
         opts, args = getopt.getopt(sys.argv[1:], "n:st:")
-    except getopt.GetoptError, err:
-        print str(err)
+    except getopt.GetoptError as err:
+        print(str(err))
         sys.exit(1)
 
     for o, a in opts:
@@ -249,7 +249,7 @@ if __name__ == '__main__':
         elif o == "-t":
             time = float(a) | nbody_system.time
         else:
-            print "unexpected argument", o
+            print("unexpected argument", o)
 
     assert is_mpd_running()
 

@@ -6,7 +6,7 @@ from support.setup_codes import setup_commands
 from support.misc import find_data_files
 
 name = 'amuse'
-version = "12.0"
+version = "13.0.0a1"
 author = 'The AMUSE team'
 author_email = 'info@amusecode.org'
 license_ = "Apache License 2.0"
@@ -32,8 +32,6 @@ classifiers = [
     'License :: OSI Approved :: Apache Software License',
     'Operating System :: MacOS :: MacOS X',
     'Operating System :: POSIX',
-    'Programming Language :: Python :: 2.6',
-    'Programming Language :: Python :: 2.7',
     'Programming Language :: Python :: 3',
     'Programming Language :: C',
     'Programming Language :: C++',

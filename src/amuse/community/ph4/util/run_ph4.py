@@ -29,12 +29,12 @@ from amuse import io
 from utils import *
 
 def handle_callback (time, star1, star2):
-    print ''
-    print '    callback'
-    print '   ', time
-    print '   ', star1
-    print '   ', star2
-    print ''
+    print('')
+    print('    callback')
+    print('   ', time)
+    print('   ', star1)
+    print('   ', star2)
+    print('')
     return True		# NOTE: returning False will skip this encounter
 
 def run_ph4(initial_file = None,
@@ -56,14 +56,14 @@ def run_ph4(initial_file = None,
     # take a step, but still print out the log info.  (Hence run_ph4
     # also functions like Starlab sys_stats.)
 
-    print "initial_file =", initial_file
-    print "end_time =", end_time.number
-    print "n_workers =", n_workers
-    print "use_gpu =", use_gpu
-    print "use_multiples =", use_multiples
-    print "save_restart =", save_restart
-    print "strict_restart =", strict_restart
-    print "\ninitializing the gravity module"
+    print("initial_file =", initial_file)
+    print("end_time =", end_time.number)
+    print("n_workers =", n_workers)
+    print("use_gpu =", use_gpu)
+    print("use_multiples =", use_multiples)
+    print("save_restart =", save_restart)
+    print("strict_restart =", strict_restart)
+    print("\ninitializing the gravity module")
     sys.stdout.flush()
 
     init_smalln()
@@ -102,47 +102,47 @@ def run_ph4(initial_file = None,
 
     if input_delta_t.number > 0:
         if input_delta_t != delta_t:
-            print 'modifying delta_t from stored', delta_t, \
-		  'to input', input_delta_t
+            print('modifying delta_t from stored', delta_t, \
+		  'to input', input_delta_t)
             delta_t = input_delta_t
     else:
-        print "using stored delta_t =", delta_t
+        print("using stored delta_t =", delta_t)
 
-    print input_timestep_parameter
-    print gravity.parameters.timestep_parameter
+    print(input_timestep_parameter)
+    print(gravity.parameters.timestep_parameter)
 
     if input_timestep_parameter > 0:
         if input_timestep_parameter != gravity.parameters.timestep_parameter:
-            print 'modifying timestep_parameter from stored', \
+            print('modifying timestep_parameter from stored', \
             	  gravity.parameters.timestep_parameter, \
-		  'to input', input_timestep_parameter
+		  'to input', input_timestep_parameter)
             gravity.parameters.timestep_parameter \
 		= input_timestep_parameter
     else:
-        print 'timestep_parameter =', gravity.parameters.timestep_parameter
+        print('timestep_parameter =', gravity.parameters.timestep_parameter)
 
     if input_softening_length.number >= 0:
         if input_softening_length*input_softening_length \
 		!= gravity.parameters.epsilon_squared:
-            print 'modifying softening_length from stored', \
+            print('modifying softening_length from stored', \
             	  gravity.parameters.epsilon_squared.sqrt(), \
-		  'to input', input_softening_length
+		  'to input', input_softening_length)
             gravity.parameters.epsilon_squared \
                 = softening_length*softening_length
     else:
-        print 'softening length =', gravity.parameters.epsilon_squared.sqrt()
+        print('softening length =', gravity.parameters.epsilon_squared.sqrt())
 
     gravity.parameters.use_gpu = use_gpu
     gravity.parameters.begin_time = time
 
     if 0:
-        print ''
-        print gravity.parameters.begin_time
-        print stars.mass
+        print('')
+        print(gravity.parameters.begin_time)
+        print(stars.mass)
         #print stars.position
         for s in stars:
-            print '%.18e %.18e %.18e' % (s.x.number, s.y.number, s.z.number)
-        print stars.velocity
+            print('%.18e %.18e %.18e' % (s.x.number, s.y.number, s.z.number))
+        print(stars.velocity)
 
     channel = gravity.particles.new_channel_to(stars)
 
@@ -198,13 +198,13 @@ def run_ph4(initial_file = None,
 
 
 def print_help():
-    print "Options:"
-    print "    -d set log output interval [1.0]"
-    print "    -h print this help message"
-    print "    -i set initial file name [t=0000.0]"
-    print "    -m suppress multiples  [False]"
-    print "    -s save restart files [False]"
-    print "    -t set final time [0.0]"
+    print("Options:")
+    print("    -d set log output interval [1.0]")
+    print("    -h print this help message")
+    print("    -i set initial file name [t=0000.0]")
+    print("    -m suppress multiples  [False]")
+    print("    -s save restart files [False]")
+    print("    -t set final time [0.0]")
 
 if __name__ == '__main__':
 
@@ -224,8 +224,8 @@ if __name__ == '__main__':
 
     try:
         opts, args = getopt.getopt(sys.argv[1:], "d:D:hi:msSt:")
-    except getopt.GetoptError, err:
-        print str(err)
+    except getopt.GetoptError as err:
+        print(str(err))
         sys.exit(1)
 
     for o, a in opts:
@@ -249,7 +249,7 @@ if __name__ == '__main__':
         elif o == "-t":
             t_end = float(a) | nbody_system.time
         else:
-            print "unexpected argument", o
+            print("unexpected argument", o)
             print_help()
             sys.exit(1)
 
@@ -263,7 +263,7 @@ if __name__ == '__main__':
     if math.fmod(Delta_t.number, delta_t.number) != 0:
         x = math.floor(Delta_t/delta_t)
         Delta_t = x*delta_t
-        print 'reset Delta_t to', Delta_t
+        print('reset Delta_t to', Delta_t)
 
     assert is_mpd_running()
 
@@ -289,4 +289,4 @@ if __name__ == '__main__':
             delta_t = 0.0 | nbody_system.time
             timestep_parameter = -1
             softening_length = -1  | nbody_system.length
-            print ''
+            print('')

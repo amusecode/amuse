@@ -4,23 +4,23 @@ import subprocess
 import os
 import sys
 import time
-import urllib
+import urllib.request, urllib.parse, urllib.error
 
-class MyFancyUrlopener(urllib.FancyURLopener):
+class MyFancyUrlopener(urllib.request.FancyURLopener):
     def retrieve(self, url, filename=None, reporthook=None, data=None):
         """retrieve(url) returns (filename, headers) for a local object
         or (tempfilename, headers) for a remote object."""
         url = urllib.unwrap(urllib.toBytes(url))
         if self.tempcache and url in self.tempcache:
             return self.tempcache[url]
-        type, url1 = urllib.splittype(url)
+        type, url1 = urllib.parse.splittype(url)
         if filename is None and (not type or type == 'file'):
             try:
                 fp = self.open_local_file(url1)
                 hdrs = fp.info()
                 del fp
-                return urllib.url2pathname(urllib.splithost(url1)[1]), hdrs
-            except IOError, msg:
+                return urllib.request.url2pathname(urllib.parse.splithost(url1)[1]), hdrs
+            except IOError as msg:
                 pass
         fp = self.open(url, data)
         try:
@@ -30,10 +30,10 @@ class MyFancyUrlopener(urllib.FancyURLopener):
                 tfp = open(filename, 'wb')
             else:
                 import tempfile
-                garbage, path = urllib.splittype(url)
-                garbage, path = urllib.splithost(path or "")
-                path, garbage = urllib.splitquery(path or "")
-                path, garbage = urllib.splitattr(path or "")
+                garbage, path = urllib.parse.splittype(url)
+                garbage, path = urllib.parse.splithost(path or "")
+                path, garbage = urllib.parse.splitquery(path or "")
+                path, garbage = urllib.parse.splitattr(path or "")
                 suffix = os.path.splitext(path)[1]
                 (fd, filename) = tempfile.mkstemp(suffix)
                 self.__tempfiles.append(filename)
@@ -68,7 +68,7 @@ class MyFancyUrlopener(urllib.FancyURLopener):
 
         # raise exception if actual size does not match content-length header
         if size >= 0 and read < size:
-            raise urllib.ContentTooShortError("retrieval incomplete: got only %i out "
+            raise urllib.error.ContentTooShortError("retrieval incomplete: got only %i out "
                                        "of %i bytes" % (read, size), result)
 
         return result
@@ -87,14 +87,14 @@ class DownloadAthenaFromWebpage(object):
         return os.path.join(self.directory(), 'src')
         
     def unpack_downloaded_file(self, filename):
-        print "unpacking", filename
+        print("unpacking", filename)
         arguments = ['tar', '-xf']
         arguments.append(filename)
         subprocess.call(
             arguments, 
             cwd = os.path.join(self.src_directory())
         )
-        print "done"
+        print("done")
         
         
     def start(self):
@@ -103,7 +103,7 @@ class DownloadAthenaFromWebpage(object):
             while os.path.exists('src.{0}'.format(counter)):
                 counter += 1
                 if counter > 100:
-                    print "too many backup directories"
+                    print("too many backup directories")
                     break
             os.rename('src', 'src.{0}'.format(counter))
         
@@ -111,7 +111,7 @@ class DownloadAthenaFromWebpage(object):
         
         url = self.url_template.format(version = self.version)
         filename = self.filename_template.format(version = self.version)
-        print "downloading version",self.version,"from", url, "to", filename
+        print("downloading version",self.version,"from", url, "to", filename)
         opener = MyFancyUrlopener()
         filename, httpmessage, code = opener.retrieve(url, filename = os.path.join(self.src_directory(),filename))
         if code == 404:
@@ -119,7 +119,7 @@ class DownloadAthenaFromWebpage(object):
             url = self.backup_url_template.format(version = self.version)
             filename, httpmessage, code = opener.retrieve(url, filename = os.path.join(self.src_directory(),filename))
             
-        print "downloading finished"
+        print("downloading finished")
         self.unpack_downloaded_file(filename)
     
 if __name__ == '__main__':

@@ -109,7 +109,7 @@ class ReboundInterface(CodeInterface,
     
     def get_integrator(self, code_index = 0):
         value, error = self._get_integrator(code_index)
-        for key, index in self.INTEGRATORS.iteritems():
+        for key, index in self.INTEGRATORS.items():
             if value == index:
                 return key
         return "none"
@@ -140,7 +140,7 @@ class ReboundInterface(CodeInterface,
     
     def get_solver(self, code_index = 0):
         value, error = self._get_solver(code_index)
-        for key, index in self.SOLVERS.iteritems():
+        for key, index in self.SOLVERS.items():
             if value == index:
                 return key
         return "none"
@@ -228,7 +228,7 @@ class ReboundInterface(CodeInterface,
     
     def get_boundary(self, code_index = 0):
         value, error = self._get_boundary(code_index)
-        for key, index in self.BOUNDARIES.iteritems():
+        for key, index in self.BOUNDARIES.items():
             if value == index:
                 return key
         return "none"

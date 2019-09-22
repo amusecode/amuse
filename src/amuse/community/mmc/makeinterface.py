@@ -367,7 +367,7 @@ if __name__ == '__main__':
         h.write("    function.result_type = 'int32'\n")
         h.write("    return function\n\n")
 
-        print "mmc.set_{0}()".format(i)
+        print("mmc.set_{0}()".format(i))
 
     f.write("END MODULE\n")
 

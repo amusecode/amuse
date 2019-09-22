@@ -14,8 +14,8 @@ from amuse.rfi import python_code
 from amuse.rfi.core import *
 from amuse.rfi.async_request import AsyncRequestsPool
 
-import test_python_implementation
-import test_python_implementation_mpi
+from . import test_python_implementation
+from . import test_python_implementation_mpi
                         
 class TestInterfaceSockets(test_python_implementation.TestInterface):
     def setUp(self):
@@ -55,10 +55,10 @@ class TestInterfaceSockets(test_python_implementation.TestInterface):
         
         x.handle_message(input_message, output_message)
         
-        self.assertEquals(len(output_message.ints), 1)
-        self.assertEquals(len(output_message.doubles), 1)
-        self.assertEquals(output_message.ints[0], 0)
-        self.assertEquals(output_message.doubles[0], 0.0)
+        self.assertEqual(len(output_message.ints), 1)
+        self.assertEqual(len(output_message.doubles), 1)
+        self.assertEqual(output_message.ints[0], 0)
+        self.assertEqual(output_message.doubles[0], 0.0)
         
     def test3(self):
         implementation = test_python_implementation.ForTestingImplementation()
@@ -72,10 +72,10 @@ class TestInterfaceSockets(test_python_implementation.TestInterface):
         
         x.handle_message(input_message, output_message)
         
-        self.assertEquals(len(output_message.ints), 1)
-        self.assertEquals(len(output_message.doubles), 0)
-        self.assertEquals(output_message.ints[0], 0)
-        self.assertEquals(implementation.masses[1], 12.0)
+        self.assertEqual(len(output_message.ints), 1)
+        self.assertEqual(len(output_message.doubles), 0)
+        self.assertEqual(output_message.ints[0], 0)
+        self.assertEqual(implementation.masses[1], 12.0)
         
     
     def test4(self):
@@ -90,14 +90,14 @@ class TestInterfaceSockets(test_python_implementation.TestInterface):
         
         x.handle_message(input_message, output_message)
         
-        self.assertEquals(len(output_message.ints), 4)
-        self.assertEquals(len(output_message.doubles), 0)
-        self.assertEquals(output_message.ints[0], 0)
-        self.assertEquals(output_message.ints[3], 0)
-        self.assertEquals(implementation.masses[1], 12.0)
-        self.assertEquals(implementation.masses[2], 13.0)
-        self.assertEquals(implementation.masses[3], 14.0)
-        self.assertEquals(implementation.masses[4], 15.0)
+        self.assertEqual(len(output_message.ints), 4)
+        self.assertEqual(len(output_message.doubles), 0)
+        self.assertEqual(output_message.ints[0], 0)
+        self.assertEqual(output_message.ints[3], 0)
+        self.assertEqual(implementation.masses[1], 12.0)
+        self.assertEqual(implementation.masses[2], 13.0)
+        self.assertEqual(implementation.masses[3], 14.0)
+        self.assertEqual(implementation.masses[4], 15.0)
         
     
     def test8(self):
@@ -111,9 +111,9 @@ class TestInterfaceSockets(test_python_implementation.TestInterface):
         
         x.handle_message(input_message, output_message)
         
-        self.assertEquals(len(output_message.ints), 2)
-        self.assertEquals(output_message.ints[0], 0)
-        self.assertEquals(output_message.ints[1], 20)
+        self.assertEqual(len(output_message.ints), 2)
+        self.assertEqual(output_message.ints[0], 0)
+        self.assertEqual(output_message.ints[1], 20)
         
     def test27(self):
         pass # skip because only supported for mpi channel

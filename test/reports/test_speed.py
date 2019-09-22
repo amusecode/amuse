@@ -307,7 +307,7 @@ class RunSpeedTests(object):
         for number_of_points_in_one_dimension in self.number_of_gridpoints:
             result = self.run(number_of_points_in_one_dimension)
     
-            print ', '.join(map(lambda x: str(x), result))
+            print(', '.join([str(x) for x in result]))
                 
     def run(self, number_of_points_in_one_dimension):
     
@@ -316,11 +316,11 @@ class RunSpeedTests(object):
         total_number_of_points = number_of_points_in_one_dimension ** 3
         number_of_bytes = 4 + 8 + 8 + 8
         total_number_of_bytes = total_number_of_points * (number_of_bytes + 4)
-        indices = numpy.array(range(total_number_of_points), dtype='int32')
+        indices = numpy.array(list(range(total_number_of_points)), dtype='int32')
 
-        data_x = numpy.array(range(total_number_of_points), dtype='float64')
-        data_y = numpy.array(range(total_number_of_points), dtype='float64')
-        data_z = numpy.array(range(total_number_of_points), dtype='float64')
+        data_x = numpy.array(list(range(total_number_of_points)), dtype='float64')
+        data_y = numpy.array(list(range(total_number_of_points)), dtype='float64')
+        data_z = numpy.array(list(range(total_number_of_points)), dtype='float64')
 
         errorcode = instance.set_number_of_points_in_one_dimension(number_of_points_in_one_dimension)
         if errorcode < 0:

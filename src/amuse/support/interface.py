@@ -110,7 +110,7 @@ class LinkMethodArgumentOrResultType(MethodArgumentOrResultType):
         try:
             return getattr(definition.wrapped_object, self.linked_set_name)
         except Exception as ex:
-            print ex
+            print(ex)
             raise ex
         
     def convert_result_value(self, method, definition, value):
@@ -214,7 +214,7 @@ class HandleConvertUnits(HandleCodeInterfaceAttributeAccess, CodeMethodWrapperDe
             result = CodeMethodWrapper(attribute, self)
         elif isinstance(attribute, parameters.Parameters):
             result = parameters.new_parameters_with_units_converted_instance_with_docs(attribute, self.converter)
-        elif isinstance(attribute, basestring):
+        elif isinstance(attribute, str):
             result = attribute
         elif isinstance(attribute, bytearray):
             result = attribute
@@ -254,7 +254,7 @@ class HandleConvertUnits(HandleCodeInterfaceAttributeAccess, CodeMethodWrapperDe
                 converted_list_arguments.append(x)
         
         converted_keyword_arguments = {}
-        for key, value in keyword_arguments.iteritems():
+        for key, value in keyword_arguments.items():
             converted_keyword_arguments[key] = self.from_source_to_target(value)
 
         return converted_list_arguments, converted_keyword_arguments
@@ -274,7 +274,7 @@ class HandleConvertUnits(HandleCodeInterfaceAttributeAccess, CodeMethodWrapperDe
                 return x
             else:
                 return self.converter.from_target_to_source(x)
-        elif isinstance(x, basestring):
+        elif isinstance(x, str):
             return x
         elif isinstance(x, numpy.ndarray):
             return x
@@ -333,7 +333,7 @@ class StateMethodDefinition(CodeMethodWrapperDefinition):
             try:
                 transition_path = self.state_machine._get_state_transition_path_to(from_state)
                 possible_paths.append([transition_path, to_state])
-            except Exception, ex:
+            except Exception as ex:
                 pass
         
         if len(possible_paths) == 0:            
@@ -570,7 +570,7 @@ class MethodWithUnitsDefinition(CodeMethodWrapperDefinition):
                 return_value = [return_value]
                 
             result = []
-            for value, unit in itertools.izip(return_value, self.return_units):
+            for value, unit in zip(return_value, self.return_units):
                 unit.append_result_value(method, self, value, result)
                     
             if len(result) == 1:                
@@ -648,7 +648,7 @@ class MethodWithUnitsDefinition(CodeMethodWrapperDefinition):
                         if unit._returns_result:
                             nresult+=1
                 
-                return range(nresult)
+                return list(range(nresult))
 
     @late
     def has_same_name_as_original(self):
@@ -657,18 +657,18 @@ class MethodWithUnitsDefinition(CodeMethodWrapperDefinition):
 
     @late
     def index_input_attributes(self):
-        return map(lambda x : x == self.INDEX, self.units)
+        return [x == self.INDEX for x in self.units]
 
     @late
     def nbody_input_attributes(self):
-        return map(lambda x : isinstance(x, UnitMethodArgumentOrResultType) or isinstance(x, unit) and generic_unit_system.is_generic_unit(x), self.units)
+        return [isinstance(x, UnitMethodArgumentOrResultType) or isinstance(x, unit) and generic_unit_system.is_generic_unit(x) for x in self.units]
 
     @late
     def index_output_attributes(self):
         if not hasattr(self.return_units, '__iter__'):
             return [self.return_units == self.INDEX]
         else:
-            return map(lambda x : x == self.INDEX, self.return_units)
+            return [x == self.INDEX for x in self.return_units]
 
 
     def check_inputs_of_method(self, method):
@@ -886,7 +886,7 @@ class HandleParameters(HandleCodeInterfaceAttributeAccess):
         self.parameters = {}
 
     def supports(self, name, was_found):
-        return name in self.definitions.keys()
+        return name in list(self.definitions.keys())
 
     def get_attribute(self, name, value):
         # note: parameters can be added after init, not yet removed
@@ -1553,11 +1553,11 @@ class InCodeComponentImplementation(OldObjectsBindingMixin, OptionalAttributes):
 
     def data_store_names(self):
         self.before_get_data_store_names()
-        return self.get_handler('PARTICLES').mapping_from_name_to_set_definition.keys()
+        return list(self.get_handler('PARTICLES').mapping_from_name_to_set_definition.keys())
 
     def parameter_set_names(self):
         #~ self.before_get_data_store_names()
-        return self.get_handler('PARAMETER').definitions.keys()
+        return list(self.get_handler('PARAMETER').definitions.keys())
 
     
 class IncorrectMethodDefinition(IncorrectWrappedMethodException):

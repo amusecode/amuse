@@ -34,7 +34,7 @@ assert n3 == 128
 float_size = struct.calcsize('f')
 array_stride = (2*width + n1*n2*n3) * float_size
 
-print '# x, rho, xneutral, pressure, temperature, mach, xion'
+print('# x, rho, xneutral, pressure, temperature, mach, xion')
 
 bins = [[0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0] for i in range(128)]
 
@@ -75,4 +75,4 @@ for i in range(len(bins)):
     v = bins[i][1:]
     for j in range(len(v)):
         v[j] = str(v[j] / bins[i][0])
-    print r, ' '.join(v)
+    print(r, ' '.join(v))

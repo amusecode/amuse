@@ -55,20 +55,20 @@ def get_quantities(i, j, k):
 
     return rho, xneutral, pressure, temperature, mach, xion
 
-print >>profile_out, '# x, rho, xneutral, pressure, temperature, mach, xion'
+print('# x, rho, xneutral, pressure, temperature, mach, xion', file=profile_out)
 for i in range(n1):
     j = n2/2
     k = n2/2
     x = i / 128.0
     q = get_quantities(i, j, k)
-    print >>profile_out, x, ' '.join(map(str, q))
+    print(x, ' '.join(map(str, q)), file=profile_out)
 
-print >>slice_out, '# x, y, rho, xneutral, pressure, temperature, mach, xion'
+print('# x, y, rho, xneutral, pressure, temperature, mach, xion', file=slice_out)
 for j in range(n2):
     for i in range(n1):
         k = n2/2
         x = i / 128.0
         y = j / 128.0
         q = get_quantities(i, j, k)
-        print >>slice_out, x, y, ' '.join(map(str, q))
-    print >>slice_out
+        print(x, y, ' '.join(map(str, q)), file=slice_out)
+    print(file=slice_out)

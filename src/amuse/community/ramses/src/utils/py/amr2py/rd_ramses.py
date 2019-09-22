@@ -1,4 +1,4 @@
-from f90 import rd_data
+from .f90 import rd_data
 
 class RamsesData:
 

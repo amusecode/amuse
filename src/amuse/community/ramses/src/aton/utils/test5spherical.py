@@ -25,7 +25,7 @@ scale_T2 = mH/kB * scale_v**2
 scale_pressure = scale_d * scale_v**2
 
 for line in sys.stdin:
-    x, y, z, dx, icpu, ilevel, v1, v2, v3, v4, v5, v6 = map(float, line.split())
+    x, y, z, dx, icpu, ilevel, v1, v2, v3, v4, v5, v6 = list(map(float, line.split()))
 
     # The vi is related to uold(i) as follows:
     #   v1 = uold(1)
@@ -64,4 +64,4 @@ for i in range(N):
         bins[i][j] /= bins[i][0]
 
     r = float(i)/N
-    print r, ' '.join(map(str, bins[i][1:]))
+    print(r, ' '.join(map(str, bins[i][1:])))
