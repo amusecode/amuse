@@ -96,7 +96,7 @@ class MyFancyUrlopener(FancyURLopener):
 class GetCodeFromHttp(object):
     url_template = "https://github.com/FDPS/FDPS/archive/v{version}.zip"
     filename_template = "v{version}.zip"
-    version = "5.0e"
+    version = "5.0g"
 
     def directory(self):
         return os.path.abspath(os.path.dirname(__file__))
@@ -161,7 +161,7 @@ def new_option_parser():
 
     result.add_option(
         "--version",
-        default='5.0e',
+        default='5.0g',
         dest="version",
         help="release to download from github",
         type="string"
