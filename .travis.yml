@@ -2,7 +2,7 @@ env:
   global:
     - OMPI_MCA_rmaps_base_oversubscribe=yes
     - MINICONDA_VERSION="latest"
-    - MINICONDA_PYTHON_MAJOR=2
+    - MINICONDA_PYTHON_MAJOR=3
     - MINICONDA_LINUX="Linux-x86_64"
     - MINICONDA_OSX="MacOSX-x86_64"
 
@@ -13,7 +13,7 @@ matrix:
   - name: "linux MPICH"
     language: python
     python:
-    - '2.7'
+    - '3.6'
     compiler: gcc
     before_install:
     - pip install numpy scipy matplotlib nose docutils mpi4py h5py Cython
@@ -39,7 +39,7 @@ matrix:
   - name: "linux openmpi"
     language: python
     python:
-    - '2.7'
+    - '3.6'
     compiler: gcc
     before_install:
     - pip install numpy scipy matplotlib nose docutils mpi4py h5py Cython
