@@ -1085,7 +1085,7 @@ class MpiChannel(AbstractMessageChannel):
                
                
         
-        lengths = list(map(get_length, list(dtype_to_arguments.values())))
+        lengths = [get_length(x) for x in dtype_to_arguments.values()]
         if len(lengths) == 0:
             return 1
             
@@ -1443,7 +1443,7 @@ m.run_mpi_channel('{2}')"""
             
 
 
-    @option(choices=list(AbstractMessageChannel.DEBUGGERS.keys()), sections=("channel",))
+    @option(choices=AbstractMessageChannel.DEBUGGERS.keys(), sections=("channel",))
     def debugger(self):
         """Name of the debugger to use when starting the code"""
         return "none"
@@ -1835,7 +1835,7 @@ class SocketChannel(AbstractMessageChannel):
 
 
 
-    @option(choices=list(AbstractMessageChannel.DEBUGGERS.keys()), sections=("channel",))
+    @option(choices=AbstractMessageChannel.DEBUGGERS.keys(), sections=("channel",))
     def debugger(self):
         """Name of the debugger to use when starting the code"""
         return "none"
@@ -1890,7 +1890,7 @@ class SocketChannel(AbstractMessageChannel):
                
                
         
-        lengths = list(map(get_length, list(dtype_to_arguments.items())))
+        lengths = [get_length(x) for x in dtype_to_arguments.items()]
         if len(lengths) == 0:
             return 1
             
@@ -2183,7 +2183,7 @@ class DistributedChannel(AbstractMessageChannel):
         logger.info("worker %s initialized", self.name_of_the_worker)
         logger.info("worker remote amuse dir = %s", self.remote_amuse_dir)
         
-    @option(choices=list(AbstractMessageChannel.DEBUGGERS.keys()), sections=("channel",))
+    @option(choices=AbstractMessageChannel.DEBUGGERS.keys(), sections=("channel",))
     def debugger(self):
         """Name of the debugger to use when starting the code"""
         return "none"
@@ -2222,7 +2222,7 @@ class DistributedChannel(AbstractMessageChannel):
                
                
         
-        lengths = list(map(get_length, list(dtype_to_arguments.values())))
+        lengths = [get_length(x) for x in dtype_to_arguments.values()]
         if len(lengths) == 0:
             return 1
             
@@ -2398,7 +2398,7 @@ class LocalChannel(AbstractMessageChannel):
                
                
         
-        lengths = list(map(get_length, list(dtype_to_arguments.values())))
+        lengths = [get_length(x) for x in dtype_to_arguments.values()]
         if len(lengths) == 0:
             return 1
             
