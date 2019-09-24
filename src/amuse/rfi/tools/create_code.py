@@ -130,9 +130,9 @@ class DTypeToSpecDictionary(object):
         return len(self.mapping)
         
     def values(self):
-        return list(self.mapping.values())
+        return list(self.mapping.values()) # python3: maybe remove list
         
     def keys(self):
-        return list(self.mapping.keys())
+        return list(self.mapping.keys()) # python3: maybe remove list
         
         
