@@ -923,7 +923,7 @@ def connected_components(parts, threshold=None, distfunc=None, verbose=False):
          p=stack.pop()
          
          d=distfunc(parts[p],parts[tocheck]).value_in(threshold.unit)
-         toadd=[ tocheck.pop(i) for i in reversed(list(range(len(tocheck)))) if d[i] < threshold.number ]
+         toadd=[ tocheck.pop(i) for i in reversed(range(len(tocheck))) if d[i] < threshold.number ]
          stack.extend(toadd)
          currentcc.extend(toadd)
        cc.append(parts[currentcc])  
