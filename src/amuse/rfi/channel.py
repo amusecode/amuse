@@ -975,7 +975,7 @@ class MpiChannel(AbstractMessageChannel):
     def hostname(self):
         return None
         
-    @option(choices=list(AbstractMessageChannel.DEBUGGERS.keys()), sections=("channel",))
+    @option(choices=AbstractMessageChannel.DEBUGGERS.keys(), sections=("channel",))
     def debugger(self):
         """Name of the debugger to use when starting the code"""
         return "none"
