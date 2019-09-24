@@ -467,7 +467,7 @@ class PythonImplementation(object):
         result = factor
         system_index = floats[1]
         unit_system = None
-        for x in list(core.system.ALL.values()):
+        for x in core.system.ALL.values():
             if x.index == system_index:
                 unit_system = x
                 break
