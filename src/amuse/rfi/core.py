@@ -428,17 +428,17 @@ def get_function_specification(name,in_arg,out_arg,must_handle_array=False,
         function.result_type='i'
         function.result_unit=None            
     inout_arg=dict()
-    for arg in list(in_arg.keys()):
+    for arg in in_arg.keys():
         if arg in out_arg:
             inout_arg[arg]=in_arg.pop(arg)
             out_arg.pop(arg)     
-    for arg,value in list(in_arg.items()):
+    for arg,value in in_arg.items():
         dtype,unit,default=derive_dtype_unit_and_default(value)
         function.addParameter(arg, dtype=dtype, direction=function.IN ,unit=unit,default=default)
-    for arg,value in list(inout_arg.items()):
+    for arg,value in inout_arg.items():
         dtype,unit,default=derive_dtype_unit_and_default(value)
         function.addParameter(arg, dtype=dtype, direction=function.INOUT ,unit=unit,default=default)
-    for arg,value in list(out_arg.items()):
+    for arg,value in out_arg.items():
         dtype,unit,default=derive_dtype_unit_and_default(value)
         function.addParameter(arg, dtype=dtype, direction=function.OUT ,unit=unit,default=default)
     if function.must_handle_array:
@@ -465,7 +465,7 @@ def simplified_function_specification(must_handle_array=False,can_handle_array=F
         def returns(**kwargs):
             start=flatsrc.find("returns(")
             order=lambda k: flatsrc.find(k[0]+"=",start)
-            out_arg.extend(sorted(list(kwargs.items()),key=order))
+            out_arg.extend(sorted(kwargs.items(),key=order))
         f.__globals__['returns']=returns
         f(*argspec.args)
         out_arg_mapping=OrderedDictionary()
@@ -1236,7 +1236,7 @@ class CodeFunctionWithUnits(CodeFunction):
     
 
     def must_handle_as_array(self, keyword_arguments):
-        for argument_type, argument_values in list(keyword_arguments.items()):
+        for argument_type, argument_values in keyword_arguments.items():
             if argument_values:
                 count = 0
                 for argument_value in argument_values:
@@ -1265,7 +1265,7 @@ class CodeFunctionWithUnits(CodeFunction):
         if number_of_outputs == 1 \
             and result_type is None:
             
-            for value in list(dtype_to_result.values()):
+            for value in dtype_to_result.values():
                 if len(value) == 1:
                     if must_handle_as_array:
                         return value
@@ -1378,7 +1378,7 @@ class CodeFunctionWithUnits(CodeFunction):
         result = factor
         system_index = floats[1]
         unit_system = None
-        for x in list(core.system.ALL.values()):
+        for x in core.system.ALL.values():
             if x.index == system_index:
                 unit_system = x
                 break
