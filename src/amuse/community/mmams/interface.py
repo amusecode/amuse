@@ -471,14 +471,14 @@ class MMAMS(CommonCode):
         if hasattr(particle, "get_mass_profile"):
             mass_profile        = particle.get_mass_profile(number_of_zones = number_of_zones)* particle.mass
         else:
-            print "mass profile from density and radius"
+            print("mass profile from density and radius")
             radii_cubed = radius_profile**3
             radii_cubed.prepend(0|units.m**3)
             mass_profile = (4.0/3.0 * numpy.pi) * density_profile * (radii_cubed[1:] - radii_cubed[:-1])
         if hasattr(particle, "get_cumulative_mass_profile"):
             cumul_mass_profile  = particle.get_cumulative_mass_profile(number_of_zones = number_of_zones) * particle.mass
         else:
-            print "cumulative mass profile from mass profile"
+            print("cumulative mass profile from mass profile")
             cumul_mass_profile  = mass_profile.accumulate()
         
         temperature_profile = particle.get_temperature_profile(number_of_zones = number_of_zones)

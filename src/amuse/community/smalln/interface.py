@@ -422,7 +422,7 @@ class SmallN(GravitationalDynamics):
         if number_of_updated_particles == 0:
             return
         
-        indices_in_update_list = range(number_of_updated_particles)
+        indices_in_update_list = list(range(number_of_updated_particles))
         indices_to_add = self.get_id_of_added_particle(indices_in_update_list)
         #print "indices_to_add:", indices_to_add, indices_in_update_list
         
@@ -432,11 +432,11 @@ class SmallN(GravitationalDynamics):
             if len(indices_to_add) > 0:
                 incode_storage._add_indices(indices_to_add)
         except:
-            print "Crash while adding indicies to incode_storage."
-            print "indices_to_add=", indices_to_add
-            print "number_of_updated_particles=", number_of_updated_particles
-            print "incode_storage=", incode_storage
-            print "dir(incode_storage)=", dir(incode_storage)
+            print("Crash while adding indicies to incode_storage.")
+            print("indices_to_add=", indices_to_add)
+            print("number_of_updated_particles=", number_of_updated_particles)
+            print("incode_storage=", incode_storage)
+            print("dir(incode_storage)=", dir(incode_storage))
             raise
 
     def define_state(self, handler):

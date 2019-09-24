@@ -42,7 +42,7 @@ class MI6Interface(
         elif mode == self.MODE_GPU:
             return 'mi6_worker_gpu'
         else:
-            print "Warning: unknown mode: '{0}' - using default ('{1}').".format(mode, self.MODE_CPU)
+            print("Warning: unknown mode: '{0}' - using default ('{1}').".format(mode, self.MODE_CPU))
             return 'mi6_worker'
 
    

@@ -210,7 +210,7 @@ class Huayno(GravitationalDynamics,GravityFieldCode):
 
         @classmethod
         def _list(cls):
-              return set([x for x in cls.__dict__.keys() if not x.startswith('_')])
+              return set([x for x in list(cls.__dict__.keys()) if not x.startswith('_')])
 
 
     def __init__(self, convert_nbody = None, **options):

@@ -260,9 +260,9 @@ class GaslactICsImplementation(object):
             self._cwd = dbh_dir
             if not is_new:
                 return 0
-            print "Writing output to:", self._cwd
+            print("Writing output to:", self._cwd)
 
-            print "\n running dbh \n\n"
+            print("\n running dbh \n\n")
             
             proc=Popen([os.path.join(self._bin_path, "dbh")], 
                 cwd = self._cwd, stdin = PIPE, stdout = sys.stdout, stderr = sys.stderr)
@@ -272,7 +272,7 @@ class GaslactICsImplementation(object):
             else:
               raise Exception("dbh fail")
 
-            print "\n running getfreqs \n\n"
+            print("\n running getfreqs \n\n")
             
             proc=Popen([os.path.join(self._bin_path, "getfreqs")], 
                 cwd = self._cwd, stdin = PIPE, stdout = sys.stdout, stderr = sys.stderr)
@@ -282,7 +282,7 @@ class GaslactICsImplementation(object):
             else:
               raise Exception("getfreqs fail")
 
-            print "\n running diskdf \n\n"
+            print("\n running diskdf \n\n")
 
             if self._disk_type_parameter in [1,3]:
               proc=Popen([os.path.join(self._bin_path, "diskdf")], 
@@ -295,7 +295,7 @@ class GaslactICsImplementation(object):
                                 
             return 0
         except Exception as ex:
-            print "Exception occurred in commit_parameters:", ex
+            print("Exception occurred in commit_parameters:", ex)
             return -1
     
     def recommit_parameters(self):
@@ -318,9 +318,9 @@ class GaslactICsImplementation(object):
                     cwd = self._cwd, stdin = PIPE, stdout = PIPE, stderr = PIPE)
                 out,err=process.communicate(in_disk)
                 if process.returncode != 0:
-                    print "error:", err
+                    print("error:", err)
                     return -2
-                print err ," ****"
+                print(err ," ****")
                 disk_data=numpy.frombuffer(out,dtype="float32")
             else:
                 disk_data=numpy.array([])    
@@ -331,7 +331,7 @@ class GaslactICsImplementation(object):
                     cwd = self._cwd, stdin = PIPE, stdout = PIPE, stderr = PIPE)
                 out,err=process.communicate(in_gas)
                 if process.returncode != 0:
-                    print "error:", err
+                    print("error:", err)
                     return -2
                 gas_data=numpy.frombuffer(out,dtype="float32")
             else:
@@ -343,7 +343,7 @@ class GaslactICsImplementation(object):
                     cwd = self._cwd, stdin = PIPE, stdout = PIPE, stderr = PIPE)
                 out,err=process.communicate(in_bulge)
                 if process.returncode != 0:
-                    print "error:", err
+                    print("error:", err)
                     return -3 
                 bulge_data=numpy.frombuffer(out,dtype="float32")
             else:
@@ -355,7 +355,7 @@ class GaslactICsImplementation(object):
                     cwd = self._cwd, stdin = PIPE, stdout = PIPE, stderr = PIPE)
                 out, err = process.communicate(in_halo)
                 if process.returncode != 0:
-                    print "error:", err
+                    print("error:", err)
                     return -4 
                 halo_data=numpy.frombuffer(out,dtype="float32")
             else:
@@ -376,7 +376,7 @@ class GaslactICsImplementation(object):
             self._particles_generated = True
             return 0
         except Exception as ex:
-            print "Exception occurred in generate_particles:", ex
+            print("Exception occurred in generate_particles:", ex)
             return -1
     
     def get_number_of_particles(self,nhalo,nbulge,ndisk,ngas):
@@ -741,12 +741,12 @@ class GaslactICs(CommonCode):
 
     def commit_parameters(self):
         if not self.model_present():
-          print "generating galaxy model, this may take a while..."
+          print("generating galaxy model, this may take a while...")
         self.overridden().commit_parameters()  
 
     def recommit_parameters(self):
         if not self.model_present():
-          print "(re)generating galaxy model, this may take a while..."
+          print("(re)generating galaxy model, this may take a while...")
         self.overridden().recommit_parameters()  
 
     def generate_particles(self):
@@ -764,11 +764,11 @@ class GaslactICs(CommonCode):
         number_of_updated_particles,number_of_updated_gas_particles = self.get_number_of_particles_updated()
         if number_of_updated_particles:
             self.particles._private.attribute_storage._add_indices(
-                range(number_of_updated_gas_particles,number_of_updated_particles)
+                list(range(number_of_updated_gas_particles,number_of_updated_particles))
             ) # this should generate disjoint sets (gas_particles not in particles) 
         if number_of_updated_gas_particles:
             self.gas_particles._private.attribute_storage._add_indices(
-                range(number_of_updated_gas_particles)
+                list(range(number_of_updated_gas_particles))
             )
 
     def clear_particle_set(self):

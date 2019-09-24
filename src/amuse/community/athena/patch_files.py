@@ -65,26 +65,26 @@ def apply_patches_using_patch():
         run_patch(patch, path)
         
 def main(undo_patches = False):
-    print "checking if quilt is installed ... "
+    print("checking if quilt is installed ... ")
     if not is_quilt_installed():
-        print "... no"
+        print("... no")
         
         if undo_patches:
-            print "quilt is not installed, cannot undo the patches"
+            print("quilt is not installed, cannot undo the patches")
             sys.exit(1)
         else:
-            print "applying patches to source code"
+            print("applying patches to source code")
             apply_patches_using_patch()
     else:
-        print "... yes"
+        print("... yes")
         
         if undo_patches:
-            print "quilt is install, will try to undo the patches"
+            print("quilt is install, will try to undo the patches")
             undo_patches_using_quilt()
         else:
-            print "applying patches to source code"
+            print("applying patches to source code")
             apply_patches_using_quilt()
-            print "all patches applied"
+            print("all patches applied")
     
 if __name__ == '__main__':
     main()

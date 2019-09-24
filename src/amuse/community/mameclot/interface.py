@@ -101,13 +101,13 @@ class mameclot(LiteratureReferencesMixIn):
     
         call=[self._exec]+self.arguments()
         
-        print call
+        print(call)
         
         mameclot=Popen(call, stdout=PIPE,stderr=PIPE,executable=os.path.join(self._bin_path,self._exec))
         
         (out,err)=mameclot.communicate()
  
-        print err
+        print(err)
         
         outsplit=out.strip().split("\n")
         errsplit=err.strip().split("\n")
@@ -129,7 +129,7 @@ class mameclot(LiteratureReferencesMixIn):
           N2=int(n2line[2])
           mscale=(float(mline[4])/float(mline[2])) | units.MSun
           rscale=(float(rline[4])/float(mline[2])) | units.parsec
-        print N1,N2
+        print(N1,N2)
         
         N=len( outsplit)
         
@@ -156,8 +156,8 @@ class mameclot(LiteratureReferencesMixIn):
         parts.move_to_center()
   
         if self.convert_to_physical:
-            print "mass scale:", mscale
-            print "length scale:", rscale  
+            print("mass scale:", mscale)
+            print("length scale:", rscale)  
 
             convert_nbody=nbody_system.nbody_to_si(mscale,rscale)
             parts = ParticlesWithUnitsConverted(parts, convert_nbody.as_converter_from_si_to_generic())
@@ -222,8 +222,8 @@ if __name__=="__main__":
     
     clusters,cluster1,cluster2=mameclot(mass_ratio=0.25,convert_to_physical=False).result_split
     
-    print cluster1.total_mass()
-    print len(cluster2)
+    print(cluster1.total_mass())
+    print(len(cluster2))
     
     pyplot.plot(cluster1.x.number,cluster1.y.number,"r.")
     pyplot.plot(cluster2.x.number,cluster2.y.number,"g.")

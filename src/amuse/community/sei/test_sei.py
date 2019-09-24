@@ -20,7 +20,7 @@ class TestSeiInterface(TestWithMPI):
         instance.set_state(0,1,0,0,0,0,0)
         for i in range(0,10):
             instance.evolve(i)
-            print instance.get_state(0)
+            print(instance.get_state(0))
         instance.stop()
     
 class TestSei(TestWithMPI):
@@ -34,7 +34,7 @@ class TestSei(TestWithMPI):
         sei = Sei(convert_nbody)
         sei.initialization()
         sei.particles.add_particles(particle)
-        print sei.particles.position.x.value_in(units.AU)
+        print(sei.particles.position.x.value_in(units.AU))
         for i in range(365):
             sei.evolve_model(i|units.day)
-            print sei.particles.position.x.value_in(units.AU)
+            print(sei.particles.position.x.value_in(units.AU))

@@ -232,22 +232,22 @@ class GalactICsImplementation(object):
             in_diskdf = self.generate_in_diskdf_string()
             dbh_dir, is_new = self._location_dbh_dat(in_dbh, in_diskdf)
             self._cwd = dbh_dir
-            print dbh_dir
+            print(dbh_dir)
             if not is_new:
                 return 0
-            print "Writing output to:", self._cwd
+            print("Writing output to:", self._cwd)
             
             proc=Popen([os.path.join(self._bin_path, "dbh")], 
                 cwd = self._cwd, stdin = PIPE, stdout = PIPE, stderr = PIPE)
             stdout,stderr=proc.communicate(in_dbh.encode('UTF-8'))
-            print "(stdout, stderr) =", stdout,stderr
+            print("(stdout, stderr) =", stdout,stderr)
             if proc.returncode==0:
               open(os.path.join(dbh_dir,"dbh.finished"),'a').close()
             
             proc=Popen([os.path.join(self._bin_path, "getfreqs")], 
                 cwd = self._cwd, stdin = PIPE, stdout = PIPE, stderr = PIPE)
             stdout,stderr=proc.communicate()
-            print "(stdout, stderr) =", stdout,stderr
+            print("(stdout, stderr) =", stdout,stderr)
             if proc.returncode==0:
               open(os.path.join(dbh_dir,"getfreqs.finished"),'a').close()
 
@@ -255,13 +255,13 @@ class GalactICsImplementation(object):
               proc=Popen([os.path.join(self._bin_path, "diskdf")], 
                       cwd = self._cwd, stdin = PIPE, stdout = PIPE, stderr = PIPE)
               stdout,stderr=proc.communicate(in_diskdf.encode('UTF-8'))
-              print "(stdout, stderr) =", stdout,stderr
+              print("(stdout, stderr) =", stdout,stderr)
               if proc.returncode==0:
                 open(os.path.join(dbh_dir,"diskdf.finished"),'a').close()
                                 
             return 0
         except Exception as ex:
-            print "Exception occurred in commit_parameters:", ex
+            print("Exception occurred in commit_parameters:", ex)
             raise
     
     def recommit_parameters(self):
@@ -283,7 +283,7 @@ class GalactICsImplementation(object):
                     cwd = self._cwd, stdin = PIPE, stdout = PIPE, stderr = PIPE)
                 out,err=process.communicate(in_disk.encode('UTF-8'))
                 if process.returncode != 0:
-                    print "error:", err
+                    print("error:", err)
                     return -2
                 disk_data=numpy.frombuffer(out,dtype="float32")
             else:
@@ -295,7 +295,7 @@ class GalactICsImplementation(object):
                     cwd = self._cwd, stdin = PIPE, stdout = PIPE, stderr = PIPE)
                 out,err=process.communicate(in_bulge.encode('UTF-8'))
                 if process.returncode != 0:
-                    print "error:", err
+                    print("error:", err)
                     return -3 
                 bulge_data=numpy.frombuffer(out,dtype="float32")
             else:
@@ -307,7 +307,7 @@ class GalactICsImplementation(object):
                     cwd = self._cwd, stdin = PIPE, stdout = PIPE, stderr = PIPE)
                 out, err = process.communicate(in_halo.encode('UTF-8'))
                 if process.returncode != 0:
-                    print "error:", err
+                    print("error:", err)
                     return -4 
                 halo_data=numpy.frombuffer(out,dtype="float32")
             else:
@@ -322,7 +322,7 @@ class GalactICsImplementation(object):
             self._particles_generated = True
             return 0
         except Exception as ex:
-            print "Exception occurred in generate_particles:", ex
+            print("Exception occurred in generate_particles:", ex)
             return -1
     
     def get_number_of_particles(self,nhalo,nbulge,ndisk):
@@ -894,7 +894,7 @@ class GalactICs(CommonCode):
         number_of_updated_particles = self.get_number_of_particles_updated()
         if number_of_updated_particles:
             self.particles._private.attribute_storage._add_indices(
-                range(number_of_updated_particles)
+                list(range(number_of_updated_particles))
             )
     
     def clear_particle_set(self):

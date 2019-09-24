@@ -4,7 +4,7 @@ import re
 
 if __name__ == '__main__':
     if len(sys.argv) != 3:
-        print "usage: python binary_hist.py <input filename> <time of histogram>"
+        print("usage: python binary_hist.py <input filename> <time of histogram>")
         sys.exit(1)
     else:
         fname = sys.argv[1]
@@ -28,5 +28,5 @@ if __name__ == '__main__':
             hist(EkTs)
             show()
         else:
-            print "No binaries found at time = %f." % time
+            print("No binaries found at time = %f." % time)
     
