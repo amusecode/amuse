@@ -1574,7 +1574,7 @@ class GenerateAFortranSourcecodeStringFromASpecificationClass(GenerateASourcecod
         self.out.lf() + 'MAX_BOOLEANS_IN,MAX_BOOLEANS_OUT, MAX_STRINGS_IN, MAX_STRINGS_OUT'
         self.out.lf()
 
-        for dtype in list(self.dtype_to_spec.keys()):
+        for dtype in self.dtype_to_spec.keys():
             dtype_spec = self.dtype_to_spec[dtype]
             maximum = self.mapping_from_dtype_to_maximum_number_of_inputvariables.get(dtype,0)
 
