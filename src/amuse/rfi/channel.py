@@ -744,7 +744,7 @@ Please do a 'make clean; make' in the root directory.
                
                
         
-        lengths = list(map(get_length, list(dtype_to_arguments.items())))
+        lengths = [get_length(x) for x in dtype_to_arguments.items()]
         if len(lengths) == 0:
             return 1
             
