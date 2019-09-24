@@ -72,7 +72,7 @@ def _typecode_to_datatype(typecode):
     if typecode in mapping:
         return mapping[typecode]
     
-    values = list(mapping.values())
+    values = mapping.values()
     if typecode in values:
         return typecode
     
@@ -176,7 +176,7 @@ class CodeFunction(object):
         return request
     
     def must_handle_as_array(self, keyword_arguments):
-        for argument_type, argument_values in list(keyword_arguments.items()):
+        for argument_type, argument_values in keyword_arguments.items():
             if argument_values:
                 count = 0
                 for argument_value in argument_values:
@@ -215,7 +215,7 @@ class CodeFunction(object):
         if number_of_outputs == 1 \
             and result_type is None:
             
-            for value in list(dtype_to_result.values()):
+            for value in dtype_to_result.values():
                 if len(value) == 1:
                     if must_handle_as_array:
                         return value
