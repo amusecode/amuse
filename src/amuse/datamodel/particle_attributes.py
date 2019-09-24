@@ -17,6 +17,7 @@ from amuse.ext.basicgraph import Graph, MinimumSpanningTreeFromEdges, MinimumSpa
 from amuse.datamodel import base
 from amuse.datamodel import rotation
 from amuse.datamodel import ParticlesWithUnitsConverted, AbstractParticleSet, Particle
+from functools import reduce
 
 def move_to_center(particles):
     """
@@ -535,7 +536,7 @@ def densitycentre_coreradius_coredens(particles, unit_converter=None, number_of_
         hop = hop.code
     try:
         hop.particles.add_particles(particles)
-    except Exception, ex:
+    except Exception as ex:
         hop.stop()
         raise exceptions.AmuseException(str(ex)+" (note: check whether Hop needs a converter here)")
     hop.parameters.density_method=2
@@ -668,7 +669,7 @@ def mass_segregation_Gini_coefficient(particles, unit_converter=None, density_we
     a=numpy.argsort(r2)
     m=particles.mass.number[a]
     
-    nf=1.*numpy.array(range(len(m)))/(len(m)-1.)
+    nf=1.*numpy.array(list(range(len(m))))/(len(m)-1.)
     mf=m.cumsum()
     mf=mf/mf[-1]
     
@@ -911,7 +912,7 @@ def connected_components(parts, threshold=None, distfunc=None, verbose=False):
         return (((p.x-q.x)**2+(p.y-q.y)**2+(p.z-q.z)**2)**0.5)
   
     if verbose: print("making CC")
-    tocheck=range(len(parts))
+    tocheck=list(range(len(parts)))
     cc=[]
     while len(tocheck)>0:
        p=tocheck.pop()
@@ -922,7 +923,7 @@ def connected_components(parts, threshold=None, distfunc=None, verbose=False):
          p=stack.pop()
          
          d=distfunc(parts[p],parts[tocheck]).value_in(threshold.unit)
-         toadd=[ tocheck.pop(i) for i in reversed(range(len(tocheck))) if d[i] < threshold.number ]
+         toadd=[ tocheck.pop(i) for i in reversed(list(range(len(tocheck)))) if d[i] < threshold.number ]
          stack.extend(toadd)
          currentcc.extend(toadd)
        cc.append(parts[currentcc])  
