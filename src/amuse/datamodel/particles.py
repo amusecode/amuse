@@ -281,20 +281,20 @@ class AbstractParticleSet(AbstractSet):
                 if isinstance(quantity, LinkedArray):
                     values_to_show = list(map(format_str11,quantity[:split_at].to_print_list()))
                     values_to_show.append(format_str11('...'))
-                    values_to_show.extend(list(map(format_str11,quantity[-split_at:].to_print_list())))
+                    values_to_show.extend(map(format_str11,quantity[-split_at:].to_print_list()))
                 elif hasattr(quantity, 'dtype'):
                     if numpy.issubdtype(quantity.dtype, numpy.floating):
                         values_to_show = list(map(format_float,quantity[:split_at]))
                         values_to_show.append(format_str11('...'))
-                        values_to_show.extend(list(map(format_float,quantity[-split_at:])))
+                        values_to_show.extend(map(format_float,quantity[-split_at:]))
                     else:
                         values_to_show = list(map(format_str11,quantity[:split_at]))
                         values_to_show.append(format_str11('...'))
-                        values_to_show.extend(list(map(format_str11,quantity[-split_at:])))
+                        values_to_show.extend(map(format_str11,quantity[-split_at:]))
                 else:
                     values_to_show = list(map(format_str11,quantity[:split_at]))
                     values_to_show.append(format_str11('...'))
-                    values_to_show.extend(list(map(format_str11,quantity[-split_at:])))
+                    values_to_show.extend(map(format_str11,quantity[-split_at:]))
             else:
                 if isinstance(quantity, LinkedArray):
                     values_to_show = list(map(format_str11,quantity.to_print_list()))
@@ -319,7 +319,7 @@ class AbstractParticleSet(AbstractSet):
         if len(particle_keys) > split_at * 2:
             values_to_show = list(map(format_str20, particle_keys[:split_at]))
             values_to_show.append(format_str20('...'))
-            values_to_show.extend(list(map(format_str20, particle_keys[-split_at:])))
+            values_to_show.extend(map(format_str20, particle_keys[-split_at:]))
         else:
             values_to_show = list(map(format_str20,particle_keys))
 
@@ -1636,7 +1636,7 @@ class ParticlesSuperset(AbstractParticleSet):
 
             for setindex, x in enumerate(self._private.particle_sets):
                 split_sets[setindex].extend(x.get_all_keys_in_store())
-                split_indices[setindex].extend(list(range(offset, offset + len(x))))
+                split_indices[setindex].extend(range(offset, offset + len(x)))
                 offset = offset + len(x)
 
         else:
