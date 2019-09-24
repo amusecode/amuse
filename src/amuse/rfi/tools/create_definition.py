@@ -201,7 +201,7 @@ class CreateFortranStub(object):
         
 
     def output_parameter_type_definiton_lines(self):
-        for dtype,parameters in self.dtype_to_parameters.iteritems():
+        for dtype,parameters in self.dtype_to_parameters.items():
             typestring = self.dtype_to_fortrantype[dtype]
             first = True
             
