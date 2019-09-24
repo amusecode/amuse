@@ -1,6 +1,6 @@
 import numpy
 
-from ConfigParser import ConfigParser
+from configparser import ConfigParser
 
 try:
     import f90nml
@@ -22,7 +22,7 @@ class CodeWithNamelistParameters(object):
         self._namelist_parameters=dict([((x["short"].lower(),x["group_name"]),x) for x in namelist_parameters])
     
     def define_parameters(self,handler):
-        for p in self._namelist_parameters.values():
+        for p in list(self._namelist_parameters.values()):
             if p["ptype"] in ["nml", "nml+normal"]:
                 parameter_set_name=p.get("set_name", "parameters_"+p["group_name"])
                 handler.add_interface_parameter( p["name"], p["description"], p["default"], "before_set_interface_parameter", parameter_set=parameter_set_name)
@@ -32,8 +32,8 @@ class CodeWithNamelistParameters(object):
         self._nml_file=inputfile
         self._nml_params = f90nml.read(inputfile)
 
-        for group, d in self._nml_params.iteritems():
-            for short, val in d.iteritems():
+        for group, d in self._nml_params.items():
+            for short, val in d.items():
                 key=(short.lower(),group.upper())
                 if key in self._namelist_parameters:
                     group_name=self._namelist_parameters[key]["group_name"]
@@ -45,11 +45,11 @@ class CodeWithNamelistParameters(object):
                     else:
                         setattr(parameter_set, name, val )
                 else:
-                    print "'%s' of group '%s' not in the namelist_parameters"%(short, group)
+                    print("'%s' of group '%s' not in the namelist_parameters"%(short, group))
 
     def write_namelist_parameters(self, outputfile, do_patch=False, nml_file=None):
         patch=defaultdict( dict )
-        for p in self._namelist_parameters.values():
+        for p in list(self._namelist_parameters.values()):
             name=p["name"]
             group_name=p["group_name"]
             group=patch[group_name]
@@ -78,7 +78,7 @@ class CodeWithIniFileParameters(object):
         
     def define_parameters(self, handler):
         _tmp=dict()
-        for p in self._inifile_parameters.values():
+        for p in list(self._inifile_parameters.values()):
             if p["ptype"] in ["ini", "ini+normal"]:
                 parameter_set_name=p.get("set_name", p["group_name"])
                 if parameter_set_name not in _tmp:
@@ -90,7 +90,7 @@ class CodeWithIniFileParameters(object):
         self.set_parameters()
 
     def set_parameters(self):
-        for p in self._inifile_parameters.values():
+        for p in list(self._inifile_parameters.values()):
               parameter_set_name=p.get("set_name", None) or p["group_name"]
               parameter_set=getattr(self, parameter_set_name)
               name=p["name"]
@@ -153,7 +153,7 @@ class CodeWithIniFileParameters(object):
         parser=ConfigParser()
         parser.optionxform=self._optionxform
 
-        for p in self._inifile_parameters.values():
+        for p in list(self._inifile_parameters.values()):
             name=p["name"]
             group_name=p["group_name"]
             short=p["short"]

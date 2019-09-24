@@ -42,7 +42,7 @@ class AbstractCodeMethodWrapper(object):
         if self.method_is_code:
             return self.method.method_input_argument_names
         elif self.method_is_legacy:
-            return map(lambda x : x.name, self.method.specification.input_parameters)
+            return [x.name for x in self.method.specification.input_parameters]
         else:
             args = inspect.getargspec(self.method).args
             if args:
@@ -55,7 +55,7 @@ class AbstractCodeMethodWrapper(object):
         if self.method_is_code:
             return self.method.optional_method_input_argument_names
         elif self.method_is_legacy:
-            return map(lambda x : x.name, self.method.specification.iter_optional_input_parameters())
+            return [x.name for x in self.method.specification.iter_optional_input_parameters()]
         else:
             argspec = inspect.getargspec(self.method)
             defaults = argspec.defaults
@@ -70,7 +70,7 @@ class AbstractCodeMethodWrapper(object):
         if self.method_is_code:
             return self.method.method_output_argument_names
         elif self.method_is_legacy:
-            return map(lambda x : x.name, self.method.specification.output_parameters)
+            return [x.name for x in self.method.specification.output_parameters]
         else:
             return ()
            
@@ -114,7 +114,7 @@ class CodeMethodWrapper(AbstractCodeMethodWrapper):
             for arg in list_arguments:
                 if isinstance(arg, AbstractASyncRequest):
                         async_dependency=arg.join(async_dependency)              
-            for key,arg in keyword_arguments.items():
+            for key,arg in list(keyword_arguments.items()):
                 if isinstance(arg, AbstractASyncRequest):
                         async_dependency=arg.join(async_dependency)              
 
@@ -132,7 +132,7 @@ class CodeMethodWrapper(AbstractCodeMethodWrapper):
                         list_arguments_.append(arg.result())
                     else:
                         list_arguments_.append(arg)                    
-                for key,arg in keyword_arguments.items():
+                for key,arg in list(keyword_arguments.items()):
                     if isinstance(arg, AbstractASyncRequest):
                         keyword_arguments_[key]=arg.result()
                     else:
@@ -239,7 +239,7 @@ class CodeMethodWrapperDefinition(object):
         return result
 
     def convert_result_index(self, method):
-        return range(len(method.method_output_argument_names))
+        return list(range(len(method.method_output_argument_names)))
         
     
     

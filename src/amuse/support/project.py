@@ -19,7 +19,7 @@ def new_working_directory(script_filename=None, sub_directories=[]):
         i += 1
     new_directory = "run_{0:=03}".format(i)
     os.mkdir(new_directory)
-    print "Created new directory for output:", new_directory
+    print("Created new directory for output:", new_directory)
     for sub_directory in sub_directories:
         os.mkdir(os.path.join(new_directory, sub_directory))
     if not script_filename is None:
