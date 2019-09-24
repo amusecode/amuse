@@ -1,4 +1,4 @@
-import urllib2, urllib
+import urllib.request, urllib.error, urllib.parse, urllib.request, urllib.parse, urllib.error
 import difflib
 import os.path
 import re
@@ -40,7 +40,7 @@ class GetConstantsFromFiles(object):
         self.directory = os.path.dirname(__file__)
 
     def get_table_from_url(self):
-        f = urllib2.urlopen(NIST_URL)
+        f = urllib.request.urlopen(NIST_URL)
         self.nist_table = f.read()
         f.close()
 
