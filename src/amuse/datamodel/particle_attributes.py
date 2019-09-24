@@ -910,7 +910,7 @@ def connected_components(parts, threshold=None, distfunc=None, verbose=False):
       def distfunc(p,q):
         return (((p.x-q.x)**2+(p.y-q.y)**2+(p.z-q.z)**2)**0.5)
   
-    if verbose: print "making CC"
+    if verbose: print("making CC")
     tocheck=range(len(parts))
     cc=[]
     while len(tocheck)>0:
@@ -927,8 +927,8 @@ def connected_components(parts, threshold=None, distfunc=None, verbose=False):
          currentcc.extend(toadd)
        cc.append(parts[currentcc])  
          
-    if verbose: print "done"
-    if verbose: print "number of CC:",len(cc)
+    if verbose: print("done")
+    if verbose: print("number of CC:",len(cc))
     return cc
 
 def minimum_spanning_tree_length(particles):

@@ -141,11 +141,11 @@ class Parameters(object):
             try:
                 value = x.get_value()
             except:
-                print "could not get value for:", x.definition.name, default_value
+                print("could not get value for:", x.definition.name, default_value)
                 continue
-            print x.definition.name, value, default_value
+            print(x.definition.name, value, default_value)
             if not value == default_value:
-               print "!default value is not equal to value in code: {0}".format(x.definition.name)
+               print("!default value is not equal to value in code: {0}".format(x.definition.name))
             
 
     def copy(self):
@@ -354,11 +354,11 @@ class ParametersWithUnitsConverted(object):
             try:
                 value = x.get_value()
             except:
-                print "could not get value for:", x.definition.name, default_value
+                print("could not get value for:", x.definition.name, default_value)
                 continue
-            print x.definition.name, value, default_value
+            print(x.definition.name, value, default_value)
             if not value == default_value:
-                print "default value is not equal to value in code: {0}".format(x.definition.name)
+                print("default value is not equal to value in code: {0}".format(x.definition.name))
             
 
 class AbstractParameterDefinition(object):

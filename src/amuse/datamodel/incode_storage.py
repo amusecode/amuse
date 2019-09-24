@@ -203,7 +203,7 @@ class ParticleGetAttributesMethod(ParticleMappingMethod):
         try:
             return_value = self.method(*indices, **storage.extra_keyword_arguments_for_getters_and_setters)
         except:
-            print(self.method)
+            print((self.method))
             raise
         return self.convert_return_value(return_value, storage, attributes_to_return)
     
@@ -250,7 +250,7 @@ class ParticleGetGriddedAttributesMethod(ParticleGetAttributesMethod):
         try:
             return_value = self.method(*one_dimensional_arrays_of_indices, **storage.extra_keyword_arguments_for_getters_and_setters)
         except:
-            print(self.method)
+            print((self.method))
             raise
             
         mapping_from_name_to_value = self.convert_return_value(return_value, storage, attributes_to_return)
