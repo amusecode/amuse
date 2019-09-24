@@ -614,7 +614,7 @@ class AbstractParticleSet(AbstractSet):
         indices = particles.get_all_indices_in_store()
         keys =  particles.get_all_keys_in_store()
         values = particles.get_values_in_store(indices, attributes)
-        values = list(map(self._convert_from_entities_or_quantities, values))
+        values = map(self._convert_from_entities_or_quantities, values)
         converted = []
         for x in values:
             if isinstance(x, LinkedArray):
