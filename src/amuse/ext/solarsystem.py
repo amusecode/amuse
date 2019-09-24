@@ -53,7 +53,7 @@ def _planets_only(define_mercury_attributes = False):
     
     planets = Particles(len(_solsysdat))
     planets.name = list(data['name'])
-    print planets.name.dtype
+    print(planets.name.dtype)
     planets.mass = units.MSun.new_quantity(data['mass'])
     density = (units.g/units.cm**3).new_quantity(data['density'])
     planets.radius = ((planets.mass/density) ** (1/3.0)).as_quantity_in(units.km)
@@ -335,6 +335,6 @@ def new_option_parser():
 if __name__ in ('__main__', '__plot__'):
   o, arguments  = new_option_parser().parse_args()
   solar_system = new_solar_system(o.Julian_date)
-  print solar_system
+  print(solar_system)
 
 

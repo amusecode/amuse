@@ -16,7 +16,7 @@ from amuse.ext.sobol import i4_sobol_generate
 class uniform_random_unit_cube(object):
     def __init__(self,targetN):
         self.targetN=targetN
-        self.par=long(targetN)
+        self.par=int(targetN)
     def make_xyz(self):
         x=numpy.random.uniform(-1.,1.,self.par)
         y=numpy.random.uniform(-1.,1.,self.par)
@@ -33,7 +33,7 @@ class sobol_unit_cube(object):
 class regular_grid_unit_cube(object):
     def __init__(self,targetN):
         self.targetN=targetN
-        self.par=long(float(targetN)**(1./3.)+1.5) 
+        self.par=int(float(targetN)**(1./3.)+1.5) 
     def make_xyz(self):
         nf=self.par
         dnf=1./(nf)
@@ -46,7 +46,7 @@ class regular_grid_unit_cube(object):
 class body_centered_grid_unit_cube(object):
     def __init__(self,targetN):
         self.targetN=targetN
-        self.par=long(float(targetN/2.)**(1./3.)+1.5)   
+        self.par=int(float(targetN/2.)**(1./3.)+1.5)   
 
     def make_xyz(self):
         nf=self.par
@@ -68,9 +68,9 @@ class glass_unit_cube(object):
         self.targetN=targetN
         self.target_rms=target_rms
         if target_rms < 0.0001:
-            print "warning: target_rms may not succeed"
+            print("warning: target_rms may not succeed")
         if targetN < 1000:
-            print "warning: not enough particles"  
+            print("warning: not enough particles")  
           
     def make_xyz(self):
         from amuse.community.fi.interface import Fi
@@ -126,10 +126,10 @@ class glass_unit_cube(object):
             rms=rho.std()/rho.mean()
             minrms=min(minrms,rms)
             if rms>2.*minrms or i>300:
-                print " RMS(rho) convergence warning:", i, rms,minrms
+                print(" RMS(rho) convergence warning:", i, rms,minrms)
             if i>100000:
-                print "i> 100k steps - not sure about this..."
-                print " rms:", rms
+                print("i> 100k steps - not sure about this...")
+                print(" rms:", rms)
                 break
 
 
@@ -271,4 +271,4 @@ def new_evrard_gas_sphere(target_number_of_particles, *list_arguments, **keyword
 
 if __name__=="__main__":
     x,y,z=uniform_unit_sphere(10000).make_xyz()
-    print len(x)
+    print(len(x))

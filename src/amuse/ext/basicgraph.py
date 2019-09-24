@@ -78,7 +78,7 @@ class UnionFind(object):
       sets={}
       for v in self.parents:
         sets.setdefault(self[v],set()).add(v)
-      return sets.values()
+      return list(sets.values())
 
                 
 
@@ -180,11 +180,11 @@ if __name__=="__main__":
   graph.add_edge(4, 5, 1.0)
   graph.add_edge(5, 3, 1.0)
   
-  print graph[0]
+  print(graph[0])
   
   first, second = ConnectedComponents(graph)
-  print first
-  print second
+  print(first)
+  print(second)
   
-  print MinimumSpanningTree(graph)
+  print(MinimumSpanningTree(graph))
   
