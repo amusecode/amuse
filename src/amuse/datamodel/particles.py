@@ -1156,7 +1156,7 @@ class Particles(AbstractParticleSet):
             self.add_particles_to_store(keys)
         elif len(attributes) > 0:
             number_of_attributes = 0
-            for attributevalue in list(attributes.values()):
+            for attributevalue in attributes.values():
                 if is_quantity(attributevalue):
                     if attributevalue.is_scalar():
                         number_of_attributes = max(number_of_attributes, 1)
