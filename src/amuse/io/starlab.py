@@ -138,8 +138,8 @@ class Xml2Particles(object):
                     self._recursive_parse_node_into_particles(subnode, particle_or_particleset) 
                 elif subnode.tagName == "Particle":
                     self.add_particle_with_parameters(subnode, parent)
-                elif subnode.tagName == u"pm":                                
-                    key = subnode.attributes.keys()[0]
+                elif subnode.tagName == "pm":                                
+                    key = list(subnode.attributes.keys())[0]
                     value = subnode.getAttribute(key)
                     self.copy_starlab_parameter_to_star(key, value, particle_or_particleset)
                 
@@ -153,7 +153,7 @@ class Xml2Particles(object):
             self.time_scale = float(value)
         elif key == 'system_time':
             self.timestamp = float(value)|self.dynamics_time_units
-        elif key in self.translator.keys():                                     
+        elif key in list(self.translator.keys()):                                     
             amuse_attribute_name, conversion_function = self.translator[key]   
             setattr(particle,  amuse_attribute_name, conversion_function(value)) 
         
@@ -236,7 +236,7 @@ class Xml2Particles(object):
             Convert System to xml string and dump it on the screen
         """
         self.makexml()
-        print self.xmls
+        print(self.xmls)
 
     def savexml(self, file):
         """

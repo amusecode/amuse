@@ -81,7 +81,7 @@ class FiFileFormatProcessor(base.FortranFileFormatProcessor):
         self.convert=nbody_system.nbody_to_si( self.unitm_in_msun | units.MSun, self.unitl_in_kpc | units.kpc)
         
         
-        print self.unitl_in_kpc,numpy.log10(self.unitl_in_kpc)
+        print(self.unitl_in_kpc,numpy.log10(self.unitl_in_kpc))
         self.flxscale=-41.282-2*numpy.log10(self.unitl_in_kpc)
         self.heatconst=2.0693e14*self.unitl_in_kpc**2.5/self.unitm_in_msun**1.5
         
@@ -159,7 +159,7 @@ def parse_old_runinfo_file(path):
                 value = lineSplt[0]
                 key = '-'.join(lineSplt[1::])
                 
-            print value, key
+            print(value, key)
 
             dict_ret[key] = value
     
@@ -168,6 +168,6 @@ def parse_old_runinfo_file(path):
         
 if __name__=="__main__":
     p=base.read_set_from_file("test2",format=FiFileFormatProcessor)  
-    print p[0]
-    print len(p[0]),len(p[1]),len(p[2])
+    print(p[0])
+    print(len(p[0]),len(p[1]),len(p[2]))
 

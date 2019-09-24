@@ -65,12 +65,12 @@ class LoadStar(object):
         if at_date.toordinal()<self.max:
             indices = [i for i, j in enumerate(self.ordinal) if j==at_date.toordinal()]
             if len(indices)==0:
-                print "no ordinal index found"
+                print("no ordinal index found")
                 return [0,0,0],[0,0,0]
             else:
                 return self.r[indices[0]], self.v[indices[0]]
         else:
-            print "horizons indexing ERROR"
+            print("horizons indexing ERROR")
             return self.r[-1],self.v[-1]
 
 class NewStar(LoadStar):

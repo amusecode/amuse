@@ -398,7 +398,7 @@ class HDF5AttributeStorage(AttributeStorage):
         return result
         
     def get_defined_attribute_names(self):
-        return self.attributesgroup.keys()
+        return list(self.attributesgroup.keys())
         
     def get_defined_settable_attribute_names(self):
         return self.get_defined_attribute_names()
@@ -471,7 +471,7 @@ class HDF5GridAttributeStorage(AttributeStorage):
         return eval(dataset.attrs["units"], core.__dict__) 
         
     def get_defined_attribute_names(self):
-        return self.attributesgroup.keys()
+        return list(self.attributesgroup.keys())
         
     def get_values_in_store(self, indices, attributes):
             
@@ -688,7 +688,7 @@ class StoreHDF(object):
         arguments_and_attributes.update(collection_attributes)
         arguments_and_attributes.update(extra_attributes)
         
-        for name, quantity in arguments_and_attributes.iteritems():
+        for name, quantity in arguments_and_attributes.items():
             if quantity is None:
                 continue 
             if is_quantity(quantity):
@@ -699,7 +699,7 @@ class StoreHDF(object):
                 group.attrs[name+"_unit"] = "none"
             
     def load_collection_attributes(self, container, group):
-        names = group.attrs.keys()
+        names = list(group.attrs.keys())
         attributenames = [x for x in names if x + '_unit' in group.attrs]
         for name in attributenames:
             unit_string = group.attrs[name+"_unit"]
@@ -785,7 +785,7 @@ class StoreHDF(object):
     def load_container(self, container_group, default_type):
         number_of_saved_containers= len(container_group)
         all_containers = [None] * number_of_saved_containers
-        for group_index in container_group.keys():
+        for group_index in list(container_group.keys()):
             group = container_group[group_index]
             container = self.load_from_group(group, default_type)
             if self.copy_history:
