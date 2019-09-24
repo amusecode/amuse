@@ -13,8 +13,8 @@ if __name__ == "__main__":
                 filehash += '.0'
                 hash_filename = os.path.join(dirname, filehash)
                 if os.path.exists(hash_filename):
-                    print x, filehash
+                    print(x, filehash)
                     os.remove(hash_filename)
                 os.symlink(x, hash_filename)
             except:
-                print "error in handling file:", filename
+                print("error in handling file:", filename)

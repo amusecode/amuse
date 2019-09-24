@@ -1,11 +1,11 @@
-from __future__ import print_function
+
 
 import subprocess
 import socket, os
 
 import time
 try:  # Python 3
-    import urlparse
+    import urllib.parse
 except ImportError:
     from urllib import parse as urlparse
 import threading
@@ -27,7 +27,7 @@ import pickle
 import textwrap
 
 try:  # Python 2
-    from Queue import Queue
+    from queue import Queue
 except ImportError:  # Python 3
     from queue import Queue
 
@@ -50,7 +50,7 @@ class SendAnEmail(object):
     
     def __init__(self, **keyword_arguments):
         if len(keyword_arguments) > 0:
-            for key, value in keyword_arguments.items():
+            for key, value in list(keyword_arguments.items()):
                 setattr(self, key, value)
                 self.start()
 
@@ -165,7 +165,7 @@ class RequestACodeReview(object):
     
     def __init__(self, **keyword_arguments):
         if len(keyword_arguments) > 0:
-            for key, value in keyword_arguments.items():
+            for key, value in list(keyword_arguments.items()):
                 setattr(self, key, value)
                 self.start()
 
@@ -522,7 +522,7 @@ class RunAllTestsOnASvnCommit(object):
 class HandleRequest(webserver.HandleRequest):
    
     def do_check_svn_commit(self):
-        parameters = urlparse.parse_qs(self.parsed_path.query)
+        parameters = urllib.parse.parse_qs(self.parsed_path.query)
         revision = parameters['rev'][0]
         
         

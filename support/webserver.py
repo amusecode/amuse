@@ -8,11 +8,11 @@ import linecache
 import inspect
 import os.path
 try:  # Python 2
-    import Queue as queue
-    import urlparse
-    from StringIO import StringIO
-    from BaseHTTPServer import HTTPServer, BaseHTTPRequestHandler
-    import SocketServer as socketserver
+    import queue as queue
+    import urllib.parse
+    from io import StringIO
+    from http.server import HTTPServer, BaseHTTPRequestHandler
+    import socketserver as socketserver
 except ImportError:  # Python 3
     import queue
     from urllib import parse as urlparse
@@ -81,7 +81,7 @@ class HandleRequest(BaseHTTPRequestHandler):
    
     
     def do_GET(self):
-        self.parsed_path = urlparse.urlparse(self.path)
+        self.parsed_path = urllib.parse.urlparse(self.path)
         path = self.parsed_path.path[1:]
         method_name = 'do_' + path
         if hasattr(self, method_name):
@@ -161,7 +161,7 @@ class HandleRequest(BaseHTTPRequestHandler):
         return string, content_type
         
     def do_open_file(self):
-        parameters = urlparse.parse_qs(self.parsed_path.query)
+        parameters = urllib.parse.parse_qs(self.parsed_path.query)
         path = parameters['path'][0]
         lineno = int(parameters['lineno'][0])
         open_file(path, lineno)

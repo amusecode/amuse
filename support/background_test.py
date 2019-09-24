@@ -1,4 +1,4 @@
-from __future__ import print_function
+
 
 import time
 import traceback
@@ -7,8 +7,8 @@ import linecache
 import inspect
 import os.path
 try:  # Python 2
-    import Queue as queue
-    from StringIO import StringIO
+    import queue as queue
+    from io import StringIO
     func_code_attr = 'func_code'
 except ImportError:  # Python 3
     import queue
@@ -92,7 +92,7 @@ def extract_tb(tb, limit = None):
         linecache.checkcache(filename)
         line = ""
         if '__file__' in f.f_globals:
-            for global_name, x in f.f_globals.items():
+            for global_name, x in list(f.f_globals.items()):
                 if global_name.startswith('_'):
                     continue
 
@@ -253,7 +253,7 @@ class MakeAReportOfATestRun(object):
 
     def __getstate__(self):
         result = {}
-        for key, value in self.__dict__.iteritems():
+        for key, value in self.__dict__.items():
             if not key.startswith('_'):
                 result[key] = value
         return result
@@ -320,7 +320,7 @@ class MakeAReportOfATestRun(object):
     def begin(self):
         self.start_time = time.time()
         self.end_time = 0
-        for x in self.address_to_report.values():
+        for x in list(self.address_to_report.values()):
             x.errored = False
             x.failed = False
             x.skipped = False

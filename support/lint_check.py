@@ -1,4 +1,4 @@
-from __future__ import print_function
+
 
 import subprocess
 import xml.dom
@@ -12,7 +12,7 @@ from . import monitor
 from . import  webserver
 import json
 try:
-    import urlparse
+    import urllib.parse
 except ImportError:
     from urllib import parse as urlparse
 import threading
@@ -42,7 +42,7 @@ class PylintReport(object):
                 )
             )
             report.state_to_number_of_messages[message.state] += 1
-        return sorted(filename_to_report.values(), key=lambda x : x.filename)
+        return sorted(list(filename_to_report.values()), key=lambda x : x.filename)
         
     def get_messages_of_file(self, filename):
         result = []
@@ -264,7 +264,7 @@ class HandleRequest(webserver.HandleRequest):
         return 'null', 'text/javascript'
     
     def do_show_file(self):
-        parameters = urlparse.parse_qs(self.parsed_path.query)
+        parameters = urllib.parse.parse_qs(self.parsed_path.query)
         filename = parameters['path'][0]
         messages = self.server.last_report.get_messages_of_file(filename)
         x = MakeHTMLDomFromFile(filename, messages)

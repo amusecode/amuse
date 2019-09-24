@@ -50,7 +50,7 @@ def help():
         commandname = sys.argv[1]
         for x in _commands:
             if x.__name__ == commandname:
-                print textwrap.dedent(x.__doc__).strip()
+                print(textwrap.dedent(x.__doc__).strip())
     else:
         usage()
 
@@ -60,14 +60,14 @@ def usage():
     
     Type 'amuse-admin help <subcommand>' for help on a specific subcommand.
     """
-    print textwrap.dedent(usage.__doc__).strip()
-    print
+    print(textwrap.dedent(usage.__doc__).strip())
+    print()
     show_available_subcommands()
     
 def show_available_subcommands():
-    print "Available subcommands:"
+    print("Available subcommands:")
     for x in _commands:
-        print "    {0}".format(x.__name__)
+        print("    {0}".format(x.__name__))
     
 
 def main():
