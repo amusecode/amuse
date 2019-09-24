@@ -55,13 +55,13 @@ class CollisionHandler(object):
         colliders.add_particle(secondary)
         
         if self.verbose:
-            print "Handling collision between stars with masses {0}.".format(colliders.mass)
+            print("Handling collision between stars with masses {0}.".format(colliders.mass))
         
         if inspect.isclass(self.collision_code):
             collision_code = self.collision_code(**self.collision_code_arguments)
             if hasattr(collision_code, "initialize_code"):
                 collision_code.initialize_code()
-            for par, value in self.collision_code_parameters.iteritems():
+            for par, value in self.collision_code_parameters.items():
                 setattr(collision_code.parameters, par, value)
             if hasattr(collision_code, "commit_parameters"):
                 collision_code.commit_parameters()
@@ -77,7 +77,7 @@ class CollisionHandler(object):
         merge_products = collision_code.handle_collision(primary, secondary, **handle_collision_args)
         
         if self.verbose:
-            print "{0} concluded with return value:\n{1}".format(self.collision_code_name, merge_products)
+            print("{0} concluded with return value:\n{1}".format(self.collision_code_name, merge_products))
         
         if not self.stellar_evolution_code is None:
             if (hasattr(self.stellar_evolution_code, "new_particle_from_model") and 
@@ -92,7 +92,7 @@ class CollisionHandler(object):
                 self.stellar_evolution_code.particles.add_particles(merge_products)
             self.stellar_evolution_code.particles.remove_particles(colliders)
             if self.verbose:
-                print "Colliders have been replaced by merge product in {0}.".format(self.stellar_evolution_code.__class__.__name__)
+                print("Colliders have been replaced by merge product in {0}.".format(self.stellar_evolution_code.__class__.__name__))
         
         if inspect.isclass(self.collision_code):
             merge_products = merge_products.copy()
@@ -121,7 +121,7 @@ class CollisionHandler(object):
             self.gravity_code.particles.add_particle(new_grav_particles)
             self.gravity_code.particles.remove_particles(colliders)
             if self.verbose:
-                print "Colliders have been replaced by merge product in {0}.".format(self.gravity_code.__class__.__name__)
+                print("Colliders have been replaced by merge product in {0}.".format(self.gravity_code.__class__.__name__))
         
         return merge_products
     
