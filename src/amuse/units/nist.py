@@ -68,7 +68,7 @@ class GetConstantsFromFiles(object):
         self.nist_table.lstrip('\n')
         mydiff = difflib.unified_diff(self.nist_table.splitlines(1), self.local_table.splitlines(1))
         for i in list(mydiff):
-            print i
+            print(i)
             
     def get_translator(self):
         f = open(os.path.join(self.directory, 'translator.txt'), 'r')     
@@ -103,7 +103,7 @@ class Constants(object):
         for i,line in enumerate(lines):
             if i>80:
                 break
-            print re.findall(regexp, line)
+            print(re.findall(regexp, line))
 
     def translate(self, to_translate):
         list = [s[1] for s in self.translator if to_translate == s[0]]
@@ -196,6 +196,6 @@ class Constants(object):
         f.close()
 
 if __name__  == "__main__":
-    print "Generating constants.py...",
+    print("Generating constants.py...", end=' ')
     Constants().generate_constants()
-    print " done!"
+    print(" done!")
