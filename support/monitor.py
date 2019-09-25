@@ -1,12 +1,8 @@
 
 
 import time
-try:  # Python 2
-    import urllib.parse
-    from io import StringIO
-except ImportError:  # Python 3
-    from urllib import parse as urlparse
-    from io import StringIO
+import urllib.parse
+from io import StringIO
 import threading
 import traceback
 import json

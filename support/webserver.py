@@ -7,18 +7,11 @@ import sys
 import linecache
 import inspect
 import os.path
-try:  # Python 2
-    import queue as queue
-    import urllib.parse
-    from io import StringIO
-    from http.server import HTTPServer, BaseHTTPRequestHandler
-    import socketserver as socketserver
-except ImportError:  # Python 3
-    import queue
-    from urllib import parse as urlparse
-    from io import StringIO
-    from http.server import HTTPServer, BaseHTTPRequestHandler
-    import socketserver
+import queue as queue
+import urllib.parse
+from io import StringIO
+from http.server import HTTPServer, BaseHTTPRequestHandler
+import socketserver as socketserver
 
 from mpi4py import MPI
 from nose.plugins.capture import Capture

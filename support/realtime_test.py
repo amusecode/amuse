@@ -1,10 +1,7 @@
 
 
 import time
-try:  # Python 2
-    import urllib.parse
-except ImportError:  # Python 3
-    from urllib import parse as urlparse
+import urllib.parse
 import threading
 import json
 import os.path
@@ -54,7 +51,7 @@ class RunAllTestsWhenAChangeHappens(object):
                     for element in monitor_directories.updated_elements:
                         if not element.is_file():
                             continue
-                        for x in list(self.server.last_report.address_to_report.values()):
+                        for x in self.server.last_report.address_to_report.values():
                             path, module, testcase =  x.address
                             if path == element.path:
                                 x.reset_timing()

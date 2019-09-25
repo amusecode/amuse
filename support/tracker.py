@@ -4,10 +4,7 @@ import subprocess
 import socket, os
 
 import time
-try:  # Python 3
-    import urllib.parse
-except ImportError:
-    from urllib import parse as urlparse
+import urllib.parse
 import threading
 import json
 import os
@@ -26,10 +23,7 @@ from . import project
 import pickle
 import textwrap
 
-try:  # Python 2
-    from queue import Queue
-except ImportError:  # Python 3
-    from queue import Queue
+from queue import Queue
 
 background_test.RunTests.instance = background_test.RunTests()
 
@@ -50,7 +44,7 @@ class SendAnEmail(object):
     
     def __init__(self, **keyword_arguments):
         if len(keyword_arguments) > 0:
-            for key, value in list(keyword_arguments.items()):
+            for key, value in keyword_arguments.items():
                 setattr(self, key, value)
                 self.start()
 
@@ -165,7 +159,7 @@ class RequestACodeReview(object):
     
     def __init__(self, **keyword_arguments):
         if len(keyword_arguments) > 0:
-            for key, value in list(keyword_arguments.items()):
+            for key, value in keyword_arguments.items():
                 setattr(self, key, value)
                 self.start()
 

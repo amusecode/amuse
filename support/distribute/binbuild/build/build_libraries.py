@@ -756,7 +756,7 @@ setenv F77 gfortran
     skip = []
     
     for x in sys.argv:
-        if x in list(_commands.keys()):
+        if x in _commands.keys():
             do.append(x)
             flag = True
         else:

@@ -9,12 +9,9 @@ import os.path
 from optparse import OptionParser
 from collections import namedtuple
 from . import monitor
-from . import  webserver
+from . import webserver
 import json
-try:
-    import urllib.parse
-except ImportError:
-    from urllib import parse as urlparse
+import urllib.parse
 import threading
 
 ReportMessageLine = namedtuple('ReportMessageLine', 'filename lineno state message_id method_id message_string')
@@ -42,7 +39,7 @@ class PylintReport(object):
                 )
             )
             report.state_to_number_of_messages[message.state] += 1
-        return sorted(list(filename_to_report.values()), key=lambda x : x.filename)
+        return sorted(filename_to_report.values(), key=lambda x : x.filename)
         
     def get_messages_of_file(self, filename):
         result = []
