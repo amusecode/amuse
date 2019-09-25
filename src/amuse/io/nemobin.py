@@ -165,7 +165,7 @@ class SetItem(NemoItem):
             subitem = nemofile.read_item()
     
     def write(self, nemofile):
-        for x in list(self.data.values()):
+        for x in self.data.values():
             nemofile.write_item(x)
         nemofile.write_item(TesItem(self.tagstring, [1]))
         
@@ -199,7 +199,7 @@ class StoryItem(NemoItem):
             subitem = nemofile.read_item()
             
     def write(self, nemofile):
-        for x in list(self.data.values()):
+        for x in self.data.values():
             nemofile.write_item(x)
         nemofile.write_item(YrotsItem(self.tagstring, [1]))
     
@@ -346,7 +346,7 @@ class NemoBinaryFile(object):
     
     
     def write(self, data):
-        for x in list(data.values()):
+        for x in data.values():
             self.write_item(x)
     
     
