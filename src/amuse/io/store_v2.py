@@ -928,7 +928,7 @@ class StoreHDF(object):
                 group.attrs[name+"_unit"] = "none"
             
     def load_collection_attributes(self, container, group):
-        names = list(group.attrs.keys())
+        names = group.attrs.keys()
         attributenames = [x for x in names if x + '_unit' in group.attrs]
         for name in attributenames:
             unit_string = group.attrs[name+"_unit"]
@@ -957,7 +957,7 @@ class StoreHDF(object):
             return self.load_container(self.data_group())
         else:
             result = {}
-            for x in list(self.hdf5file.keys()):
+            for x in self.hdf5file.keys():
                 if x == 'AMUSE_INF':
                     continue
                 result[x] = self.load_container(self.named_group(x))
@@ -1039,7 +1039,7 @@ class StoreHDF(object):
         number_of_saved_containers= len(container_group)
         print(number_of_saved_containers, container_group)
         all_containers = [None] * number_of_saved_containers
-        for group_index in list(container_group.keys()):
+        for group_index in container_group.keys():
             group = container_group[group_index]
             container = self.load_from_group(group)
             if self.copy_history:
