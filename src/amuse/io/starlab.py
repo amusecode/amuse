@@ -153,7 +153,7 @@ class Xml2Particles(object):
             self.time_scale = float(value)
         elif key == 'system_time':
             self.timestamp = float(value)|self.dynamics_time_units
-        elif key in list(self.translator.keys()):                                     
+        elif key in self.translator.keys():                                     
             amuse_attribute_name, conversion_function = self.translator[key]   
             setattr(particle,  amuse_attribute_name, conversion_function(value)) 
         
