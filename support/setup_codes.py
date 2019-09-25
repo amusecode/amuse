@@ -15,12 +15,8 @@ try:
 except ImportError:
     warnings.warn( "numpy etc needed during build; operation may fail" )
 
-try:
-    import configparser as configparser
-    from io import StringIO
-except ImportError:
-    import configparser
-    from io import StringIO
+import configparser
+from io import StringIO
 
 from stat import ST_MODE
 from distutils import sysconfig
@@ -703,10 +699,10 @@ class CodeCommand(Command):
         if not os.path.exists('amuse.cfg'):
             config = configparser.RawConfigParser()
             config.add_section('environment')
-            for name, value in list(self.environment.items()):
+            for name, value in self.environment.items():
                 config.set('environment', name, value)
                 
-            for name, value in list(self.environment_notset.items()):
+            for name, value in self.environment_notset.items():
                 config.set('environment', name, '')
             
             with open('amuse.cfg', 'w') as f:
