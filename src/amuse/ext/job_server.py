@@ -29,7 +29,7 @@ derived from the main module. Easy way to achieve this is to import them from a 
 
 """
 from amuse.rfi.core import *
-import pickle as pickle
+import pickle
 from amuse.rfi.async_request import AsyncRequestsPool
 import inspect
 from collections import deque
