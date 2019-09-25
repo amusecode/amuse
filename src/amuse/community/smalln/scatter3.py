@@ -105,15 +105,15 @@ def set_outer_orbit(init, kep):
         sintheta = math.sqrt(max(0, 1-costheta**2))
         phi = 2*math.pi*numpy.random.random()
         long = [sintheta*math.cos(phi), sintheta*math.sin(phi), costheta]
-        kep.set_longitudinal_unit_vector(int[0],
-                                         int[1],
-                                         int[2])
-        if abs(int[0]) < 0.5:
+        kep.set_longitudinal_unit_vector(long[0],
+                                         long[1],
+                                         long[2])
+        if abs(long[0]) < 0.5:
             temp = [1, 0, 0]
         else:
             temp = [0, 1, 0]
-        trans = normalized(cross(int, temp))
-        normal = cross(int, trans)
+        trans = normalized(cross(long, temp))
+        normal = cross(long, trans)
         psi = 2*math.pi*numpy.random.random()
         cospsi = math.cos(psi)
         sinpsi = math.sin(psi)
