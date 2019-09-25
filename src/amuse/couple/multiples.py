@@ -92,7 +92,7 @@ def assign_id_to_root(tree):
 
     global known_roots
     my_name = name_object(tree)
-    if my_name in list(known_roots.keys()):
+    if my_name in known_roots.keys():
         return known_roots[my_name]
     else:
         new_root_id = new_root_index()
@@ -376,7 +376,7 @@ class Multiples(object):
         Nbin = 0
         Nmul = 0
         Emul = zero
-        for x in list(self.root_to_tree.values()):	# loop over top-level trees
+        for x in self.root_to_tree.values():	# loop over top-level trees
             Nmul += 1
             nb,E = get_multiple_energy(x, self.kepler)
             Nbin += nb
@@ -389,7 +389,7 @@ class Multiples(object):
         Nbin = 0
         Nmul = 0
         Emul = zero
-        for x in list(self.root_to_tree.values()):	# loop over top-level trees
+        for x in self.root_to_tree.values():	# loop over top-level trees
             Nmul += 1
             nb,E = get_multiple_energy2(x, self.gravity_constant)
             Nbin += nb
@@ -403,7 +403,7 @@ class Multiples(object):
         # print_multiple_simple() to format the output.
 
         if self.global_debug > 0:
-            for x in list(self.root_to_tree.values()):
+            for x in self.root_to_tree.values():
                 print_multiple_simple(x, self.kepler)
 
     def print_multiples2(self, pre, kT, dcen):	# uses kepler
@@ -416,7 +416,7 @@ class Multiples(object):
         Nbin = 0
         Nmul = 0
         Emul = zero
-        for x in list(self.root_to_tree.values()):
+        for x in self.root_to_tree.values():
             Nmul += 1
             nb,E = print_multiple_detailed(x, self.kepler, pre, kT, dcen)
             Nbin += nb
