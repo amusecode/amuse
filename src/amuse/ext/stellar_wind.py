@@ -953,7 +953,7 @@ class AcceleratingWind(SimpleWind):
 
     def radial_velocities(self, gas, star):
         rad_velocity = [] | units.ms
-        pos_vel = list(zip(gas.position-star.position, gas.velocity-star.velocity))
+        pos_vel = zip(gas.position-star.position, gas.velocity-star.velocity)
         for pos, vel in pos_vel:
             rad_direction = pos/pos.length()
             scalar_projection = vel.dot(rad_direction)
