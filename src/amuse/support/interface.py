@@ -886,7 +886,7 @@ class HandleParameters(HandleCodeInterfaceAttributeAccess):
         self.parameters = {}
 
     def supports(self, name, was_found):
-        return name in list(self.definitions.keys())
+        return name in self.definitions.keys()
 
     def get_attribute(self, name, value):
         # note: parameters can be added after init, not yet removed
