@@ -271,8 +271,8 @@ class TableFormattedText(base.FileFormatProcessor):
                     raise base.IoException(
                         "Number of values on line '{0}' is {1}, expected {2}".format(self.cursor.line(), len(columns), len(self.attribute_names)))
 
-                list(map(lambda value_string, list_of_values, conv: list_of_values.append(conv(value_string)),
-                    columns, values, string_converters))
+                for value_string, list_of_values, conv in zip(columns, values, string_converters):
+                    list_of_values.append(conv(value_string))
 
                 number_of_particles += 1
             self.cursor.forward()
