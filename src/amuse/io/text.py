@@ -341,7 +341,8 @@ class TableFormattedText(base.FileFormatProcessor):
 
         while offset < max_row:
 
-            numbers = list(map(lambda quantity, unit: quantity[offset:offset+block_size] if unit is None else quantity[offset:offset+block_size].value_in(unit), quantities, units))
+            numbers = map(lambda quantity, unit: quantity[offset:offset+block_size] if unit is None else 
+                          quantity[offset:offset+block_size].value_in(unit), quantities, units)
 
             columns = []
 
@@ -367,8 +368,8 @@ class TableFormattedText(base.FileFormatProcessor):
 
     def write_row(self, row):
         units = self.attribute_types
-        row = list(map(lambda quantity, unit: quantity if unit is None else quantity.value_in(unit), row, units))
-        row = list(map(self.convert_number_to_string, row))
+        row = map(lambda quantity, unit: quantity if unit is None else quantity.value_in(unit), row, units)
+        row = map(self.convert_number_to_string, row)
         line = self.column_separator.join(row)
         self.stream.write(line)
         self.stream.write('\n')
@@ -520,7 +521,7 @@ class TableFormattedText(base.FileFormatProcessor):
         result = factor
         system_index = int(floats[1])
         unit_system = None
-        for x in list(core.system.ALL.values()):
+        for x in core.system.ALL.values():
             if x.index == system_index:
                 unit_system = x
                 break
