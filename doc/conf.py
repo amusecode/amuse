@@ -256,3 +256,4 @@ pdf_documents = [
    u'The AMUSE Team', 'howto'),
 ]
 
+# html_baseurl = "https://amusecode.github.io/documentation/"
