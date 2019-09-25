@@ -114,7 +114,7 @@ class CodeMethodWrapper(AbstractCodeMethodWrapper):
             for arg in list_arguments:
                 if isinstance(arg, AbstractASyncRequest):
                         async_dependency=arg.join(async_dependency)              
-            for key,arg in list(keyword_arguments.items()):
+            for key,arg in keyword_arguments.items():
                 if isinstance(arg, AbstractASyncRequest):
                         async_dependency=arg.join(async_dependency)              
 
@@ -132,7 +132,7 @@ class CodeMethodWrapper(AbstractCodeMethodWrapper):
                         list_arguments_.append(arg.result())
                     else:
                         list_arguments_.append(arg)                    
-                for key,arg in list(keyword_arguments.items()):
+                for key,arg in keyword_arguments.items():
                     if isinstance(arg, AbstractASyncRequest):
                         keyword_arguments_[key]=arg.result()
                     else:
