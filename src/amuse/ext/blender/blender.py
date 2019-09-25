@@ -1,9 +1,9 @@
 
 try:
-    from . import Blender
+    import Blender
     import bpy
     import pylab as pl
-    from .Blender import Mesh
+    from Blender import Mesh
     BLENDER_AVAILABLE = True
 except ImportError as ex:
     Mesh = None
