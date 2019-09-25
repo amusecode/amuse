@@ -699,7 +699,7 @@ class StoreHDF(object):
                 group.attrs[name+"_unit"] = "none"
             
     def load_collection_attributes(self, container, group):
-        names = list(group.attrs.keys())
+        names = group.attrs.keys()
         attributenames = [x for x in names if x + '_unit' in group.attrs]
         for name in attributenames:
             unit_string = group.attrs[name+"_unit"]
@@ -785,7 +785,7 @@ class StoreHDF(object):
     def load_container(self, container_group, default_type):
         number_of_saved_containers= len(container_group)
         all_containers = [None] * number_of_saved_containers
-        for group_index in list(container_group.keys()):
+        for group_index in container_group.keys():
             group = container_group[group_index]
             container = self.load_from_group(group, default_type)
             if self.copy_history:
