@@ -5,7 +5,7 @@ try:
     import pylab as pl
     from Blender import Mesh
     BLENDER_AVAILABLE = True
-except ImportError, ex:
+except ImportError as ex:
     Mesh = None
     BLENDER_AVAILABLE = False
 

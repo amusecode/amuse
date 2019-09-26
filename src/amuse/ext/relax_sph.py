@@ -12,8 +12,8 @@ def monitor_energy(system, i_step, time, n_steps):
     U = system.potential_energy.value_in(unit)
     Q = system.thermal_energy.value_in(unit)
     K = system.kinetic_energy.value_in(unit)
-    print "Step {0}, t={1}: U={2:.2e}, Q={3:.2e}, K={4:.2e} {5}".format(
-        i_step, time.as_quantity_in(units.yr), U, Q, K, unit)
+    print("Step {0}, t={1}: U={2:.2e}, Q={3:.2e}, K={4:.2e} {5}".format(
+        i_step, time.as_quantity_in(units.yr), U, Q, K, unit))
 
 class Memory:
     pass

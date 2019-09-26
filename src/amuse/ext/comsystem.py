@@ -52,7 +52,7 @@ if __name__=="__main__":
   
   grav.evolve_model(1| nbody_system.time)
   
-  print grav.particles
+  print(grav.particles)
   
   
   
