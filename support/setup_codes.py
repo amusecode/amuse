@@ -28,9 +28,6 @@ from distutils import log
 from distutils import spawn
 from distutils import file_util
 from distutils.errors import DistutilsError
-if sys.hexversion > 0x03000000:
-    from distutils.util import run_2to3
-    from distutils.command.build_py import build_py_2to3
 from distutils.command.build import build
 from distutils.command.clean import clean
 from distutils.command.install import install
@@ -59,11 +56,6 @@ def pyfiles_in_build_dir(builddir):
     for x in module_files:
         result.append(os.path.abspath(x))
     return result
-
-def run_2to3_on_build_dirs(paths, target, src):
-    for dir in paths:
-        buildir = os.path.join(target,  os.path.relpath(dir, src))
-        run_2to3(pyfiles_in_build_dir(buildir))
 
 class InstallLibraries(Command):
     user_options = [
@@ -920,8 +912,6 @@ class BuildCodes(CodeCommand):
         if not self.lib_dir == self.lib_src_dir:
             self.copy_build_prereq_to_build_dir()
             self.copy_lib_to_build_dir()
-            if sys.hexversion > 0x03000000:
-                run_2to3_on_build_dirs(self.makefile_paths(self.lib_src_dir), self.lib_dir,self.lib_src_dir)
                           
         for x in self.makefile_paths(self.lib_dir):
             
@@ -945,8 +935,6 @@ class BuildCodes(CodeCommand):
             
         if not self.codes_dir == self.codes_src_dir:
             self.copy_codes_to_build_dir()
-            if sys.hexversion > 0x03000000:
-                run_2to3_on_build_dirs(self.makefile_paths(self.codes_src_dir), self.codes_dir,self.codes_src_dir)
         
         #environment.update(self.environment)
         makefile_paths = list(self.makefile_paths(self.codes_dir))
@@ -1268,9 +1256,6 @@ def setup_commands():
         'develop' : Develop,
         'develop_build' : BuildCodes_inplace
     }
-    
-    if sys.hexversion > 0x03000000:
-        mapping_from_command_name_to_command_class['build_py'] = build_py_2to3
     
     build.sub_commands.append(('build_codes', None))
     Clean.sub_commands.append(('clean_codes', None))
