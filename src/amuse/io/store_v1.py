@@ -20,19 +20,11 @@ from amuse.datamodel import Particles
 from amuse.datamodel import LinkedArray
 from amuse.datamodel import AttributeStorage
 
-if sys.hexversion > 0x03000000:
-    def pickle_to_string(value):
-        return numpy.void(pickle.dumps(value, protocol=0))
+def pickle_to_string(value):
+    return numpy.void(pickle.dumps(value, protocol=0))
         
-        
-    def unpickle_from_string(value):
-        return pickle.loads(value, encoding='bytes')
-else:
-    def pickle_to_string(value):
-        return pickle.dumps(value)
-        
-    def unpickle_from_string(value):
-        return pickle.loads(value)
+def unpickle_from_string(value):
+    return pickle.loads(value, encoding='bytes')
 
 class HDF5Attribute(object):
     
