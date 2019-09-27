@@ -326,11 +326,11 @@ class ForTestingImplementation(object):
         return 0
         
     def print_string(self, string_in):
-        print string_in
+        print(string_in)
         return 0
         
     def print_error_string(self, string_in):
-        print >> sys.stderr, string_in
+        print(string_in, file=sys.stderr)
         return 0
         
     def echo_strings(self, string_inout1, string_inout2):
@@ -437,7 +437,7 @@ class TestCreatePythonWorker(TestCase):
         self.assertTrue(script_string.find('PythonImplementation(instance, ForTestingInterface)')>0)
         try:
             st = compile(script_string, 'test.py', 'exec')
-        except SyntaxError, ex:
+        except SyntaxError as ex:
             self.fail("Compilation error {0}".format(ex))
             
     def test2(self):
@@ -455,7 +455,7 @@ class TestCreatePythonWorker(TestCase):
         self.assertTrue(script_string.find('start_socket')>0)
         try:
             st = compile(script_string, 'test.py', 'exec')
-        except SyntaxError, ex:
+        except SyntaxError as ex:
             self.fail("Compilation error {0}".format(ex))
             
 class TestInterface(TestWithMPI):
@@ -478,10 +478,10 @@ class TestInterface(TestWithMPI):
         
         x.handle_message(input_message, output_message)
         
-        self.assertEquals(len(output_message.ints), 1)
-        self.assertEquals(len(output_message.doubles), 1)
-        self.assertEquals(output_message.ints[0], 0)
-        self.assertEquals(output_message.doubles[0], 0.0)
+        self.assertEqual(len(output_message.ints), 1)
+        self.assertEqual(len(output_message.doubles), 1)
+        self.assertEqual(output_message.ints[0], 0)
+        self.assertEqual(output_message.doubles[0], 0.0)
         
     def test3(self):
         implementation = ForTestingImplementation()
@@ -495,10 +495,10 @@ class TestInterface(TestWithMPI):
         
         x.handle_message(input_message, output_message)
         
-        self.assertEquals(len(output_message.ints), 1)
-        self.assertEquals(len(output_message.doubles), 0)
-        self.assertEquals(output_message.ints[0], 0)
-        self.assertEquals(implementation.masses[1], 12.0)
+        self.assertEqual(len(output_message.ints), 1)
+        self.assertEqual(len(output_message.doubles), 0)
+        self.assertEqual(output_message.ints[0], 0)
+        self.assertEqual(implementation.masses[1], 12.0)
         
     
     def test4(self):
@@ -513,24 +513,24 @@ class TestInterface(TestWithMPI):
         
         x.handle_message(input_message, output_message)
         
-        self.assertEquals(len(output_message.ints), 4)
-        self.assertEquals(len(output_message.doubles), 0)
-        self.assertEquals(output_message.ints[0], 0)
-        self.assertEquals(output_message.ints[3], 0)
-        self.assertEquals(implementation.masses[1], 12.0)
-        self.assertEquals(implementation.masses[2], 13.0)
-        self.assertEquals(implementation.masses[3], 14.0)
-        self.assertEquals(implementation.masses[4], 15.0)
+        self.assertEqual(len(output_message.ints), 4)
+        self.assertEqual(len(output_message.doubles), 0)
+        self.assertEqual(output_message.ints[0], 0)
+        self.assertEqual(output_message.ints[3], 0)
+        self.assertEqual(implementation.masses[1], 12.0)
+        self.assertEqual(implementation.masses[2], 13.0)
+        self.assertEqual(implementation.masses[3], 14.0)
+        self.assertEqual(implementation.masses[4], 15.0)
         
     def test5(self):
         x = self.ForTestingInterface()
         
         error = x.set_mass(1, 10.0)
-        self.assertEquals(error, 0)
+        self.assertEqual(error, 0)
         
         answer, error = x.get_mass(1)
-        self.assertEquals(error, 0)
-        self.assertEquals(answer, 10.0)
+        self.assertEqual(error, 0)
+        self.assertEqual(answer, 10.0)
         x.stop()
         
         
@@ -539,13 +539,13 @@ class TestInterface(TestWithMPI):
         x = self.ForTestingInterface()
         
         errors = x.set_mass([1,2], [10.0,11.0])
-        self.assertEquals(errors[0], 0)
-        self.assertEquals(errors[1], 0)
+        self.assertEqual(errors[0], 0)
+        self.assertEqual(errors[1], 0)
         
         answer, errors = x.get_mass([1,2])
-        self.assertEquals(errors[0], 0)
-        self.assertEquals(answer[0], 10.0)
-        self.assertEquals(answer[1], 11.0)
+        self.assertEqual(errors[0], 0)
+        self.assertEqual(answer[0], 10.0)
+        self.assertEqual(answer[1], 11.0)
         x.stop()
         
         x.stop()
@@ -554,8 +554,8 @@ class TestInterface(TestWithMPI):
         x = self.ForTestingInterface()
         
         int_out, error = x.echo_int(20)
-        self.assertEquals(error, 0)
-        self.assertEquals(int_out, 20)
+        self.assertEqual(error, 0)
+        self.assertEqual(int_out, 20)
         x.stop()
         
         x.stop()
@@ -572,64 +572,64 @@ class TestInterface(TestWithMPI):
         
         x.handle_message(input_message, output_message)
         
-        self.assertEquals(len(output_message.ints), 2)
-        self.assertEquals(output_message.ints[0], 0)
-        self.assertEquals(output_message.ints[1], 20)
+        self.assertEqual(len(output_message.ints), 2)
+        self.assertEqual(output_message.ints[0], 0)
+        self.assertEqual(output_message.ints[1], 20)
         
     
     def test9(self):
         x = self.ForTestingInterface()
         string_out, error = x.echo_string("1234567")
-        self.assertEquals(error, 0)
-        self.assertEquals(string_out, "1234567")
+        self.assertEqual(error, 0)
+        self.assertEqual(string_out, "1234567")
         x.stop()
         
     def test10(self):
         x = self.ForTestingInterface()
         string_out, error = x.echo_string(["aaaaa", "bbbb"])
-        self.assertEquals(error[0], 0)
-        self.assertEquals(len(string_out), 2)
-        self.assertEquals(string_out[0], "aaaaa")
-        self.assertEquals(string_out[1], "bbbb")
+        self.assertEqual(error[0], 0)
+        self.assertEqual(len(string_out), 2)
+        self.assertEqual(string_out[0], "aaaaa")
+        self.assertEqual(string_out[1], "bbbb")
         x.stop()
         
     def test11(self):
         x = self.ForTestingInterface()
         string_out, error = x.echo_string(["", "bbbb"])
-        self.assertEquals(error[0], 0)
-        self.assertEquals(len(string_out), 2)
-        self.assertEquals(string_out[0], "")
-        self.assertEquals(string_out[1], "bbbb")
+        self.assertEqual(error[0], 0)
+        self.assertEqual(len(string_out), 2)
+        self.assertEqual(string_out[0], "")
+        self.assertEqual(string_out[1], "bbbb")
         x.stop()
         
     def test12(self):
         x = self.ForTestingInterface()
         str1_out, str2_out, error = x.echo_strings("abc", "def")
-        self.assertEquals(error, 0)
-        self.assertEquals(str1_out, "cba")
-        self.assertEquals(str2_out, "fed")
+        self.assertEqual(error, 0)
+        self.assertEqual(str1_out, "cba")
+        self.assertEqual(str2_out, "fed")
         x.stop()
         
         
     def test13(self):
         x = self.ForTestingInterface()
         str1_out, str2_out, error = x.echo_strings(["abc", "def"], ["ghi", "jkl"])
-        self.assertEquals(error[0], 0)
-        self.assertEquals(error[1], 0)
-        self.assertEquals(str1_out[0], "cba")
-        self.assertEquals(str1_out[1], "fed")
-        self.assertEquals(str2_out[0], "ihg")
-        self.assertEquals(str2_out[1], "lkj")
+        self.assertEqual(error[0], 0)
+        self.assertEqual(error[1], 0)
+        self.assertEqual(str1_out[0], "cba")
+        self.assertEqual(str1_out[1], "fed")
+        self.assertEqual(str2_out[0], "ihg")
+        self.assertEqual(str2_out[1], "lkj")
         x.stop()
         
     def test14(self):
         x = self.ForTestingInterface()
         result = x.sleep(2)
-        self.assertEquals(result, 0)
+        self.assertEqual(result, 0)
         request = x.sleep.asynchronous(0.01)
         request.wait()
         result = request.result()
-        self.assertEquals(result, 0)
+        self.assertEqual(result, 0)
         x.stop()
         
     def test15(self):
@@ -643,8 +643,8 @@ class TestInterface(TestWithMPI):
         self.assertTrue(request1.is_result_available())
         self.assertTrue(request2.is_result_available())
         
-        self.assertEquals(request1.result(), 0)
-        self.assertEquals(request2.result(), 0)
+        self.assertEqual(request1.result(), 0)
+        self.assertEqual(request2.result(), 0)
         
         y.stop()
         x.stop()
@@ -668,32 +668,32 @@ class TestInterface(TestWithMPI):
         request= x.sleep.asynchronous(0.2 | units.s)
         request.wait()
         result = request.result()
-        self.assertEquals(result, [])
+        self.assertEqual(result, [])
         x.stop()
     
     def test18(self):
-        print "Testing the splitting of very long MPI messages into blocks"
+        print("Testing the splitting of very long MPI messages into blocks")
         x = self.ForTesting(max_message_length=10)
         N = 100
         doubles = x.echo_double([1.0*i for i in range(N)])
         self.assertTrue(list(doubles) == [1.0*i for i in range(N)])
         sums = x.sum_doubles([1.0*i for i in range(N)],[1.0*i for i in range(N)])
         self.assertTrue(list(sums) == [2.0*i for i in range(N)])
-        products = x.multiply_ints(range(N),range(N))
+        products = x.multiply_ints(list(range(N)),list(range(N)))
         self.assertTrue(list(products) == [i*i for i in range(N)])
         N = 101
         doubles = x.echo_double([1.0*i for i in range(N)])
         self.assertTrue(list(doubles) == [1.0*i for i in range(N)])
         sums = x.sum_doubles([1.0*i for i in range(N)],[1.0*i for i in range(N)])
         self.assertTrue(list(sums) == [2.0*i for i in range(N)])
-        products = x.multiply_ints(range(N),range(N))
+        products = x.multiply_ints(list(range(N)),list(range(N)))
         self.assertTrue(list(products) == [i*i for i in range(N)])
         x.stop()
         
         
     
     def test19(self):
-        print "Testing the splitting of very long MPI messages into blocks II: strings"
+        print("Testing the splitting of very long MPI messages into blocks II: strings")
         x = self.ForTesting(max_message_length=10)
         N = 100
         strings1, strings2 = x.echo_strings(['REDRUM' for i in range(N)],['stressed' for i in range(N)])
@@ -726,12 +726,12 @@ class TestInterface(TestWithMPI):
         self.assertTrue(os.path.exists("pout.000"))
         with open("pout.000","r") as f:
             content = f.read()
-        self.assertEquals(content.strip(), "abc")
+        self.assertEqual(content.strip(), "abc")
         
         self.assertTrue(os.path.exists("perr.000"))
         with open("perr.000","r") as f:
             content = f.read()
-        self.assertEquals(content.strip(), "exex")
+        self.assertEqual(content.strip(), "exex")
         
         x = self.ForTesting(redirect_stderr_file = 'pout', redirect_stdout_file = 'pout', redirection="file")
         x.print_string("def")
@@ -743,32 +743,32 @@ class TestInterface(TestWithMPI):
         self.assertTrue(os.path.exists("pout.000"))
         with open("pout.000","r") as f:
             content = f.read()
-        self.assertEquals(content.strip(), "abc\ndef\nexex")
+        self.assertEqual(content.strip(), "abc\ndef\nexex")
     
     def test21(self):
-        print "Testing must_handle_array for Python codes"
+        print("Testing must_handle_array for Python codes")
         instance = self.ForTestingInterface()
         
-        x,y,z,err = instance.get_position(range(100))
-        self.assertEquals(err, 0)
-        self.assertEquals(x, numpy.arange(0.0, 300.0, 3.0))
-        self.assertEquals(y, numpy.arange(1.0, 300.0, 3.0))
-        self.assertEquals(z, numpy.arange(2.0, 300.0, 3.0))
-        x,y,z,err = instance.get_position(range(101))
-        self.assertEquals(err, -1)
-        self.assertEquals(instance.get_position(1).values(), [3.0, 4.0, 5.0, 0])
+        x,y,z,err = instance.get_position(list(range(100)))
+        self.assertEqual(err, 0)
+        self.assertEqual(x, numpy.arange(0.0, 300.0, 3.0))
+        self.assertEqual(y, numpy.arange(1.0, 300.0, 3.0))
+        self.assertEqual(z, numpy.arange(2.0, 300.0, 3.0))
+        x,y,z,err = instance.get_position(list(range(101)))
+        self.assertEqual(err, -1)
+        self.assertEqual(list(instance.get_position(1).values()), [3.0, 4.0, 5.0, 0])
         
-        err = instance.set_position(range(100), numpy.arange(100.0), numpy.arange(100.0, 200.0), numpy.arange(200.0, 300.0))
-        self.assertEquals(err, 0)
-        err = instance.set_position(range(101), numpy.arange(101.0), numpy.arange(101.0, 202.0), numpy.arange(202.0, 303.0))
-        self.assertEquals(err, -1)
+        err = instance.set_position(list(range(100)), numpy.arange(100.0), numpy.arange(100.0, 200.0), numpy.arange(200.0, 300.0))
+        self.assertEqual(err, 0)
+        err = instance.set_position(list(range(101)), numpy.arange(101.0), numpy.arange(101.0, 202.0), numpy.arange(202.0, 303.0))
+        self.assertEqual(err, -1)
         err = instance.set_position(0, -1.0, -2.0, -3.0)
         
-        x,y,z,err = instance.get_position(range(100))
-        self.assertEquals(err, 0)
-        self.assertEquals(x, numpy.concatenate(([-1.0], numpy.arange(1.0, 100.0))))
-        self.assertEquals(y, numpy.concatenate(([-2.0], numpy.arange(101.0, 200.0))))
-        self.assertEquals(z, numpy.concatenate(([-3.0], numpy.arange(201.0, 300.0))))
+        x,y,z,err = instance.get_position(list(range(100)))
+        self.assertEqual(err, 0)
+        self.assertEqual(x, numpy.concatenate(([-1.0], numpy.arange(1.0, 100.0))))
+        self.assertEqual(y, numpy.concatenate(([-2.0], numpy.arange(101.0, 200.0))))
+        self.assertEqual(z, numpy.concatenate(([-3.0], numpy.arange(201.0, 300.0))))
 
         instance.stop()
     
@@ -791,18 +791,18 @@ class TestInterface(TestWithMPI):
         pool.add_request(request2, handle_result, [2])
         
         pool.wait()
-        self.assertEquals(len(finished_requests), 1)
-        self.assertEquals(len(pool), 1)
+        self.assertEqual(len(finished_requests), 1)
+        self.assertEqual(len(pool), 1)
         
         pool.wait()
-        self.assertEquals(len(finished_requests), 2)
-        self.assertEquals(len(pool), 0)
+        self.assertEqual(len(finished_requests), 2)
+        self.assertEqual(len(pool), 0)
         
         self.assertTrue(request1.is_result_available())
         self.assertTrue(request2.is_result_available())
         
-        self.assertEquals(request1.result(), 0)
-        self.assertEquals(request2.result(), 0)
+        self.assertEqual(request1.result(), 0)
+        self.assertEqual(request2.result(), 0)
         
         y.stop()
         x.stop()
@@ -826,18 +826,18 @@ class TestInterface(TestWithMPI):
         with open(exe, 'w') as f:
             f.write(string)
             
-        os.chmod(exe, 0777)
+        os.chmod(exe, 0o777)
         
         
         instance = self.ForTestingInterface(
             use_python_interpreter = True,
             python_interpreter = exe
         )
-        x,y,z,err = instance.get_position(range(100))
-        self.assertEquals(err, 0)
-        self.assertEquals(x, numpy.arange(0.0, 300.0, 3.0))
-        self.assertEquals(y, numpy.arange(1.0, 300.0, 3.0))
-        self.assertEquals(z, numpy.arange(2.0, 300.0, 3.0))
+        x,y,z,err = instance.get_position(list(range(100)))
+        self.assertEqual(err, 0)
+        self.assertEqual(x, numpy.arange(0.0, 300.0, 3.0))
+        self.assertEqual(y, numpy.arange(1.0, 300.0, 3.0))
+        self.assertEqual(z, numpy.arange(2.0, 300.0, 3.0))
         
         instance.stop()
         time.sleep(0.3)
@@ -847,7 +847,7 @@ class TestInterface(TestWithMPI):
         with open(log, 'r') as f:
             loglines = f.read().splitlines()
             
-        self.assertEquals(len(loglines), 2)
+        self.assertEqual(len(loglines), 2)
             
         self.assertTrue(loglines[0].startswith('start '))
         self.assertTrue(loglines[1].startswith('end '))
@@ -871,7 +871,7 @@ class TestInterface(TestWithMPI):
         with open(exe, 'w') as f:
             f.write(string)
             
-        os.chmod(exe, 0777)
+        os.chmod(exe, 0o777)
         
         
         instance = self.ForTestingInterface(
@@ -879,11 +879,11 @@ class TestInterface(TestWithMPI):
             python_interpreter = exe,
             redirection="none"
         )
-        x,y,z,err = instance.get_position(range(100))
-        self.assertEquals(err, 0)
-        self.assertEquals(x, numpy.arange(0.0, 300.0, 3.0))
-        self.assertEquals(y, numpy.arange(1.0, 300.0, 3.0))
-        self.assertEquals(z, numpy.arange(2.0, 300.0, 3.0))
+        x,y,z,err = instance.get_position(list(range(100)))
+        self.assertEqual(err, 0)
+        self.assertEqual(x, numpy.arange(0.0, 300.0, 3.0))
+        self.assertEqual(y, numpy.arange(1.0, 300.0, 3.0))
+        self.assertEqual(z, numpy.arange(2.0, 300.0, 3.0))
         
         instance.stop()
         time.sleep(0.3)
@@ -893,7 +893,7 @@ class TestInterface(TestWithMPI):
         with open(log, 'r') as f:
             loglines = f.read().splitlines()
             
-        self.assertEquals(len(loglines), 2)
+        self.assertEqual(len(loglines), 2)
             
         self.assertTrue(loglines[0].startswith('start '))
         self.assertTrue(loglines[1].startswith('end '))
@@ -903,16 +903,16 @@ class TestInterface(TestWithMPI):
         instance = self.ForTestingInterface(polling_interval_in_milliseconds = 100)
         (output1, error1) = instance.internal__get_message_polling_interval()
         instance.stop()
-        self.assertEquals(error1, 0)
-        self.assertEquals(output1, 100000)
+        self.assertEqual(error1, 0)
+        self.assertEqual(output1, 100000)
     
 
     def test25(self):
         instance = self.ForTestingInterface(polling_interval_in_milliseconds = 100)
         (output1, error1) = instance.internal__get_message_polling_interval()
         instance.stop()
-        self.assertEquals(error1, 0)
-        self.assertEquals(output1, 100000)
+        self.assertEqual(error1, 0)
+        self.assertEqual(output1, 100000)
         
         
     def test26(self):
@@ -921,7 +921,7 @@ class TestInterface(TestWithMPI):
         instance2 = self.ForTestingInterface()
         portname, error = instance1.internal__open_port()
         self.assertTrue(len(portname) > 0)
-        self.assertEquals(error, 0)
+        self.assertEqual(error, 0)
         request1 = instance1.internal__accept_on_port.asynchronous(portname)
         request2 = instance2.internal__connect_to_port.asynchronous(portname)
         request1.wait()
@@ -930,8 +930,8 @@ class TestInterface(TestWithMPI):
         port_id2, error2 = request2.result()
         self.assertTrue(port_id1 >= 0)
         self.assertTrue(port_id2 >= 0)
-        self.assertEquals(error1, 0)
-        self.assertEquals(error2, 0)
+        self.assertEqual(error1, 0)
+        self.assertEqual(error2, 0)
         
         
         
@@ -954,15 +954,15 @@ class TestInterface(TestWithMPI):
         instance2.copy_over_interface(port_id2, pickle.dumps(instance1,0).decode('latin-1'))
         instance1.internal__activate_communicator(port_id1)
         result, errorcode = instance2.deep_echo_string("hello")
-        self.assertEquals(errorcode, 0)
-        self.assertEquals(result, "olleh")
+        self.assertEqual(errorcode, 0)
+        self.assertEqual(result, "olleh")
         result, errorcode = instance2.deep_echo_string("world")
-        self.assertEquals(errorcode, 0)
-        self.assertEquals(result, "dlrow")
+        self.assertEqual(errorcode, 0)
+        self.assertEqual(result, "dlrow")
         instance2.return_control()
         result, errorcode = instance1.echo_string("world")
-        self.assertEquals(errorcode, 0)
-        self.assertEquals(result, "world")
+        self.assertEqual(errorcode, 0)
+        self.assertEqual(result, "world")
         
 
     def test28(self):
@@ -978,7 +978,7 @@ class TestInterface(TestWithMPI):
         sequence.wait()
         self.assertTrue(sequence.is_finished)
         result = sequence.result()
-        self.assertEquals(len(result), 3)
+        self.assertEqual(len(result), 3)
         x.stop()
         
         
@@ -1009,22 +1009,22 @@ class TestInterface(TestWithMPI):
         pool.add_request(request2, handle_result, [2])
         
         pool.wait()
-        self.assertEquals(len(finished_requests), 1)
-        self.assertEquals(len(pool), 1)
-        self.assertEquals(finished_requests, [2])
+        self.assertEqual(len(finished_requests), 1)
+        self.assertEqual(len(pool), 1)
+        self.assertEqual(finished_requests, [2])
         self.assertTrue(len(sequenced_requests_indices)> 0)
         
         pool.wait()
-        self.assertEquals(len(finished_requests), 2)
-        self.assertEquals(len(pool), 0)
+        self.assertEqual(len(finished_requests), 2)
+        self.assertEqual(len(pool), 0)
         x.sleep(0.1)
-        self.assertEquals(sequenced_requests_indices, [0,1,2,3])
+        self.assertEqual(sequenced_requests_indices, [0,1,2,3])
         
         self.assertTrue(request1.is_result_available())
         self.assertTrue(request2.is_result_available())
         
-        self.assertEquals(request1.result(), [0,0,0,0])
-        self.assertEquals(request2.result(), 0)
+        self.assertEqual(request1.result(), [0,0,0,0])
+        self.assertEqual(request2.result(), 0)
         
         y.stop()
         x.stop()
@@ -1052,19 +1052,19 @@ class TestInterface(TestWithMPI):
     def test32(self):
         x = self.ForTestingInterface()
         quantity_out, error = x.echo_quantity(20.0 | units.m)
-        self.assertEquals(error, 0)
-        self.assertEquals(quantity_out, 200 | (units.m/units.s))
+        self.assertEqual(error, 0)
+        self.assertEqual(quantity_out, 200 | (units.m/units.s))
         quantity_out, error = x.echo_quantity(30)
-        self.assertEquals(error, 0)
-        self.assertEquals(quantity_out, 300 | (1.0/units.s))
+        self.assertEqual(error, 0)
+        self.assertEqual(quantity_out, 300 | (1.0/units.s))
         x.stop()
 
 
     def test33(self):
         x = self.ForTestingInterface()
         quantity_out, error = x.echo_quantity([20, 30, 40] | units.m)
-        self.assertEquals(error, 0)
-        self.assertEquals(quantity_out, [200, 300, 400] | (units.m/units.s))
+        self.assertEqual(error, 0)
+        self.assertEqual(quantity_out, [200, 300, 400] | (units.m/units.s))
         x.stop()
 
 
@@ -1072,8 +1072,8 @@ class TestInterface(TestWithMPI):
         x = self.ForTestingInterface()
         #self.assertException(x.echo_quantities_error, [20, 30, 40] | units.m)
         quantity_out, error = x.echo_quantities([20, 30, 40] | units.m)
-        self.assertEquals(error, 0)
-        self.assertEquals(quantity_out, [200, 300, 400] | (units.m/units.s))
+        self.assertEqual(error, 0)
+        self.assertEqual(quantity_out, [200, 300, 400] | (units.m/units.s))
         x.stop()
 
 
@@ -1109,13 +1109,13 @@ class TestInterface(TestWithMPI):
         x = self.ForTestingInterface()
         request = x.echo_quantity.asynchronous([20, 30, 40] | units.m)
         quantity_out, error = request.result()
-        self.assertEquals(error, 0)
-        self.assertEquals(quantity_out, [200, 300, 400] | (units.m/units.s))
+        self.assertEqual(error, 0)
+        self.assertEqual(quantity_out, [200, 300, 400] | (units.m/units.s))
         x.stop()
 
     def test40(self):
         x = self.ForTesting()
         out = x.echo_bool([True, False, True])
-        self.assertEquals(out, [True, False, True])
+        self.assertEqual(out, [True, False, True])
         x.stop()
 
