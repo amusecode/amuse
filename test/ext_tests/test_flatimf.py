@@ -35,7 +35,7 @@ class FlatIMFTests(amusetest.TestCase):
         self.assertAlmostEqual(instance.mass(0.5),   set_of_masses.median(), 1)
     
     def test4(self):
-        print "Test 4: testing user interface (SI units)"
+        print("Test 4: testing user interface (SI units)")
         numpy.random.seed(345672)
         masses = new_flat_mass_distribution(10000)
         
@@ -46,7 +46,7 @@ class FlatIMFTests(amusetest.TestCase):
         self.assertAlmostEqual(masses.amax(), 124.94980234 | units.MSun)
     
     def test5(self):
-        print "Test 5: testing user interface (SI units), optional args"
+        print("Test 5: testing user interface (SI units), optional args")
         numpy.random.seed(345672)
         masses = new_flat_mass_distribution(10000, 
             mass_min=10.0|units.MSun, mass_max=100.0|units.MSun)
@@ -59,7 +59,7 @@ class FlatIMFTests(amusetest.TestCase):
         self.assertAlmostEqual(masses.amax(), 99.9870310764 | units.MSun)
     
     def test6(self):
-        print "Test 6: testing user interface (nbody units)"
+        print("Test 6: testing user interface (nbody units)")
         numpy.random.seed(345672)
         n = 10000
         masses = new_flat_mass_distribution_nbody(n)
@@ -71,7 +71,7 @@ class FlatIMFTests(amusetest.TestCase):
         self.assertAlmostEqual(masses.amax(), 124.94980234 / 17.5145247111 / n | nbody_system.mass)
     
     def test7(self):
-        print "Test 7: testing user interface (nbody units), optional args"
+        print("Test 7: testing user interface (nbody units), optional args")
         numpy.random.seed(345672)
         n = 10000
         masses = new_flat_mass_distribution_nbody(n, 

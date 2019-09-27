@@ -225,11 +225,11 @@ class Test(amusetest.TestCase):
 
         All = I.Particles
 
-        self.assertEquals(len(All), 7)
-        self.assertEquals(len(All[0].descendents()),6)
-        self.assertEquals(All[0].children().mass.value_in(nbody_system.mass)[0], 8.0)
-        self.assertEquals(All[1].children().mass.value_in(nbody_system.mass)[0], 4.0)
-        self.assertEquals(All[5].children().mass.value_in(nbody_system.mass)[0], 2.0)
+        self.assertEqual(len(All), 7)
+        self.assertEqual(len(All[0].descendents()),6)
+        self.assertEqual(All[0].children().mass.value_in(nbody_system.mass)[0], 8.0)
+        self.assertEqual(All[1].children().mass.value_in(nbody_system.mass)[0], 4.0)
+        self.assertEqual(All[5].children().mass.value_in(nbody_system.mass)[0], 2.0)
 
     def test2(self):
         directory = os.path.dirname(__file__)
@@ -239,22 +239,22 @@ class Test(amusetest.TestCase):
 
         All = I.Particles
 
-        self.assertEquals(len(All), 7)
-        self.assertEquals(len(All[0].descendents()),6)
-        self.assertEquals(All[0].children().mass.value_in(units.kg)[0], 8.0)
-        self.assertEquals(All[1].children().mass.value_in(units.kg)[0], 4.0)
-        self.assertEquals(All[5].children().mass.value_in(units.kg)[0], 2.0)
+        self.assertEqual(len(All), 7)
+        self.assertEqual(len(All[0].descendents()),6)
+        self.assertEqual(All[0].children().mass.value_in(units.kg)[0], 8.0)
+        self.assertEqual(All[1].children().mass.value_in(units.kg)[0], 4.0)
+        self.assertEqual(All[5].children().mass.value_in(units.kg)[0], 2.0)
         
     def test3(self):
         directory = os.path.dirname(__file__)
         set = io.read_set_from_file(os.path.join(directory, 'plummer.dyn'), 'starlab')
-        self.assertEquals(len(set), 10)
+        self.assertEqual(len(set), 10)
         self.assertAlmostRelativeEquals(set.mass, 0.1 | nbody_system.mass)
         
     def test4(self):
         set = starlab.StarlabFileFormatProcessor().load_string(plummer_scaled_content)
-        self.assertEquals(len(set), 5)
-        print set.mass.as_quantity_in(units.MSun)
+        self.assertEqual(len(set), 5)
+        print(set.mass.as_quantity_in(units.MSun))
         self.assertTrue(numpy.all(set.mass > 0.2 |units.MSun))
         self.assertTrue(numpy.all(set.mass < 1.1 |units.MSun))
         self.assertTrue(numpy.all(set.x > -1 | units.parsec))
@@ -266,7 +266,7 @@ class Test(amusetest.TestCase):
         
     def test5(self):
         set = starlab.StarlabFileFormatProcessor().load_string(with_stellar_structure)
-        self.assertEquals(len(set), 2)
+        self.assertEqual(len(set), 2)
         self.assertAlmostRelativeEquals(set[0].envelope_mass, 0.0946766969331061387 | units.MSun)
         self.assertAlmostRelativeEquals(set[0].core_mass, 0.0100000000000000002 | units.MSun)
         self.assertAlmostRelativeEquals(set[0].relative_mass,  set[0].mass, 10)
@@ -278,7 +278,7 @@ class Test(amusetest.TestCase):
     def test6(self):
         directory = os.path.dirname(__file__)
         set = io.read_set_from_file(os.path.join(directory, 'evolved.dyn'), 'starlab')
-        self.assertEquals(len(set), 20)
+        self.assertEqual(len(set), 20)
         
         self.assertAlmostRelativeEquals(set.time, set.age, 4) #only accurate to 4, starlab stellar evolution time scale?
         
@@ -294,9 +294,9 @@ class Test(amusetest.TestCase):
     def test7(self):
         directory = os.path.dirname(__file__)
         set, converter = io.read_set_from_file(os.path.join(directory, 'evolved.dyn'), 'starlab', return_converter = True)
-        self.assertEquals(len(set), 20)
+        self.assertEqual(len(set), 20)
         
         unconverted_set = io.read_set_from_file(os.path.join(directory, 'evolved.dyn'), 'starlab', must_scale = False)
-        self.assertEquals(len(unconverted_set), 20)
+        self.assertEqual(len(unconverted_set), 20)
         self.assertAlmostRelativeEquals(converter.to_nbody(set.x), unconverted_set.x)
         

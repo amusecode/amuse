@@ -70,7 +70,7 @@ class TestGalacticCenterPotential(amusetest.TestCase):
                   [1e3,0,1e2],
                   ] | units.parsec
         grav = static_potential.get_gravity_at_point(0, *points.transpose()).transpose()
-        print grav
+        print(grav)
         self.assertAlmostEqual(grav[0], [-5.6003771, 0, 0]|1e-7*units.m/units.s**2, 6)
         self.assertAlmostEqual(grav[1], [0, -2.6887222, 0]|1e-8*units.m/units.s**2, 6)
         self.assertAlmostEqual(grav[2], [-4.7661597, 0, -1.200846]|1e-10*units.m/units.s**2, 6)

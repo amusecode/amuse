@@ -30,22 +30,22 @@ class TestRocheRadius(amusetest.TestCase):
         roche_orbit = Roche_Orbit()
         roche_orbit.semimajor_axis = 1 | units.AU
 
-        print roche_orbit.eggleton_roche_radius().as_quantity_in(units.RSun)
-        self.assertAlmostEquals(roche_orbit.eggleton_roche_radius(), 81.5 | units.RSun, places=2)
-        self.assertAlmostEquals(roche_orbit.sepinsky_roche_radius(), 81.32 | units.RSun, places=2)
+        print(roche_orbit.eggleton_roche_radius().as_quantity_in(units.RSun))
+        self.assertAlmostEqual(roche_orbit.eggleton_roche_radius(), 81.5 | units.RSun, places=2)
+        self.assertAlmostEqual(roche_orbit.sepinsky_roche_radius(), 81.32 | units.RSun, places=2)
 
         roche_orbit.eccentricity = 0.5
 
-        self.assertAlmostEquals(roche_orbit.eggleton_roche_radius(), 40.75 | units.RSun, places=2)
-        self.assertAlmostEquals(roche_orbit.sepinsky_roche_radius(), 39.62 | units.RSun, places=2)
+        self.assertAlmostEqual(roche_orbit.eggleton_roche_radius(), 40.75 | units.RSun, places=2)
+        self.assertAlmostEqual(roche_orbit.sepinsky_roche_radius(), 39.62 | units.RSun, places=2)
 
         roche_orbit.semimajor_axis = 20.0 | units.AU
         roche_orbit.mass_2 = 10000.0 | units.MSun
         roche_orbit.eccentricity = 0.95
         roche_orbit.angular_velocity_ratio = 0.1
 
-        self.assertAlmostEquals(roche_orbit.eggleton_roche_radius(), 4.87 | units.RSun, places=2)
-        self.assertAlmostEquals(roche_orbit.sepinsky_roche_radius(), 5.39 | units.RSun, places=2)
+        self.assertAlmostEqual(roche_orbit.eggleton_roche_radius(), 4.87 | units.RSun, places=2)
+        self.assertAlmostEqual(roche_orbit.sepinsky_roche_radius(), 5.39 | units.RSun, places=2)
 
         roche_orbit.eccentricity = numpy.array([0.0, 0.5, 0.95])
-        self.assertAlmostEquals(roche_orbit.sepinsky_roche_radius(), [107.92, 53.93, 5.39] | units.RSun, places=2)
+        self.assertAlmostEqual(roche_orbit.sepinsky_roche_radius(), [107.92, 53.93, 5.39] | units.RSun, places=2)

@@ -79,7 +79,7 @@ class TestUnitConversions(amusetest.TestCase):
         f = (hbar*c*4.*numpy.pi* eps0)**-1
         fine_structure_constant_calculated = (b * f)
         fine_structure_constant = 7.297352537650e-3
-        self.assertAlmostEquals(fine_structure_constant_calculated, fine_structure_constant, 5)
+        self.assertAlmostEqual(fine_structure_constant_calculated, fine_structure_constant, 5)
         
     
 
@@ -89,19 +89,19 @@ class TestUnitConversions(amusetest.TestCase):
             expected_message = "Cannot express m / s in s / m, the units do not have the same bases")
     
     def test12(self):
-        self.assertEquals((1234 | g).as_string_in(g), '1234 g')
-        self.assertEquals((1234 | g).as_string_in(kg), '1.234 kg')
-        self.assertEquals((1.234 | kg).as_string_in(g), '1234.0 g')
-        self.assertEquals((1.0 | km * s**-1).as_string_in(m / s), '1000.0 m / s')
-        self.assertEquals((1.0 | km * s**-1).as_string_in(s**-1 * m), '1000.0 s**-1 * m')
-        self.assertEquals((1.0 | km / s).as_string_in((10*J/g)**0.5), '10.0 (10 * J / g)**0.5')
+        self.assertEqual((1234 | g).as_string_in(g), '1234 g')
+        self.assertEqual((1234 | g).as_string_in(kg), '1.234 kg')
+        self.assertEqual((1.234 | kg).as_string_in(g), '1234.0 g')
+        self.assertEqual((1.0 | km * s**-1).as_string_in(m / s), '1000.0 m / s')
+        self.assertEqual((1.0 | km * s**-1).as_string_in(s**-1 * m), '1000.0 s**-1 * m')
+        self.assertEqual((1.0 | km / s).as_string_in((10*J/g)**0.5), '10.0 (10 * J / g)**0.5')
 
     def test13(self):
         self.assertAlmostRelativeEquals((1234 | km ** (5/3.)).value_in( (km ** 5.0) ** (1.0/3.0) ), 1234.0, 12)
         self.assertAlmostRelativeEquals((1234 | km ** (5/3.)).value_in( (m ** 5.0) ** (1.0/3.0) ), 123400000.0)
         
     def test15(self):
-        print (m / s).to_array_of_floats()
+        print((m / s).to_array_of_floats())
         self.assertAlmostRelativeEquals( (m / s).to_array_of_floats(), [1, 1,  1, 0, -1, 0, 0, 0, 0])
         self.assertAlmostRelativeEquals( (s / m).to_array_of_floats(), [1, 1, -1, 0, 1, 0, 0, 0, 0])
         self.assertAlmostRelativeEquals( (kg ** 2/ s).to_array_of_floats(), [1, 1,  0, 2, -1, 0, 0, 0, 0])
@@ -116,7 +116,7 @@ class TestNonNumericUnits(amusetest.TestCase):
 
     def test2(self):
         x = "test" | string
-        self.assertEquals("test", x.value_in(string))  
+        self.assertEqual("test", x.value_in(string))  
             
     def test3(self):
         test_unit = core.enumeration_unit(
@@ -126,8 +126,8 @@ class TestNonNumericUnits(amusetest.TestCase):
             ["one", "two", "three"]
         )
         x = 1 | test_unit
-        self.assertEquals(1, x.value_in(test_unit))    
-        self.assertEquals("one", str(x))  
+        self.assertEqual(1, x.value_in(test_unit))    
+        self.assertEqual("one", str(x))  
         self.assertRaises(Exception, lambda: 4 | test_unit, 
             expected_message = "<4> is not a valid value for unit<test>")
     
@@ -142,9 +142,9 @@ class TestNonNumericUnits(amusetest.TestCase):
             [1,2,3],
             ["one", "two", "three"]
         )
-        self.assertEquals(3, len(list(test_unit.quantities())))  
+        self.assertEqual(3, len(list(test_unit.quantities())))  
         for x, y in  zip(test_unit.quantities(), ["one", "two", "three"]):
-            self.assertEquals(str(x), y)
+            self.assertEqual(str(x), y)
     
        
     def test6(self):
@@ -153,9 +153,9 @@ class TestNonNumericUnits(amusetest.TestCase):
             "test",
             [1,4,7]
         )
-        self.assertEquals(3, len(list(test_unit.quantities())))  
+        self.assertEqual(3, len(list(test_unit.quantities())))  
         for x, y in  zip(test_unit.quantities(), ["1", "4", "7"]):
-            self.assertEquals(str(x), y)
+            self.assertEqual(str(x), y)
     
     def test7(self):
         test_unit = core.enumeration_unit(
@@ -163,8 +163,8 @@ class TestNonNumericUnits(amusetest.TestCase):
             "test",
             range(5)
         )
-        self.assertEquals(5, len(list(test_unit.quantities())))
-        self.assertEquals(1 | test_unit, 1 | test_unit)
+        self.assertEqual(5, len(list(test_unit.quantities())))
+        self.assertEqual(1 | test_unit, 1 | test_unit)
         self.assertTrue (1 | test_unit == 1 | test_unit)
         self.assertFalse(1 | test_unit == 2 | test_unit)
         self.assertTrue (1 | test_unit != 2 | test_unit)

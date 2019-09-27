@@ -74,8 +74,8 @@ class TestNbodyUnits(amusetest.TestCase):
         
         
     def test10(self):
-        self.assertEquals((time / length).to_array_of_floats(), [1,2,-1, 1, 0, 0, 0, 0, 0])
-        self.assertEquals((time / (length * mass ** 2)).to_array_of_floats(), [1,2,-1, 1, -2, 0, 0, 0, 0])
+        self.assertEqual((time / length).to_array_of_floats(), [1,2,-1, 1, 0, 0, 0, 0, 0])
+        self.assertEqual((time / (length * mass ** 2)).to_array_of_floats(), [1,2,-1, 1, -2, 0, 0, 0, 0])
         
         
 

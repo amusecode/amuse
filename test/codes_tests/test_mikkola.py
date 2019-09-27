@@ -23,8 +23,8 @@ class MikkolaInterfaceTests(TestWithMPI):
         res1 = instance.new_particle(mass = 1.0, radius = 0, x = 0.0, y = 0.0, z = 0.0, vx = 0.0, vy = 0.0, vz = 0.0)
         res2 = instance.new_particle(mass = 0.001, radius = 0, x = 1.0, y = 0.0, z = 0.0, vx = 0.0, vy = 1.0, vz = 0.0)
         
-        self.assertEquals(1, res1['index_of_the_particle'])
-        self.assertEquals(2, res2['index_of_the_particle'])
+        self.assertEqual(1, res1['index_of_the_particle'])
+        self.assertEqual(2, res2['index_of_the_particle'])
     
         retrieved_state1 = instance.get_state(1)
         retrieved_state2 = instance.get_state(2)
@@ -41,48 +41,48 @@ class MikkolaInterfaceTests(TestWithMPI):
         instance.commit_parameters()
 
         index1, error = instance.new_particle(mass = 1.0, radius = 0.1, x = 1.0, y = 2.0, z = 3.0, vx = 1.1, vy = 2.2, vz = 3.3)
-        self.assertEquals(error, 0)
+        self.assertEqual(error, 0)
         index2, error = instance.new_particle(mass = 0.001, radius = 0.2, x = 3.0, y = 4.0, z = 5.0, vx = 3.3, vy = 4.4, vz = 5.5)
-        self.assertEquals(error, 0)
+        self.assertEqual(error, 0)
         
-        self.assertEquals(1, index1)
-        self.assertEquals(2, index2)
+        self.assertEqual(1, index1)
+        self.assertEqual(2, index2)
         
         mass,error = instance.get_mass(1)
-        self.assertEquals(error, 0)
-        self.assertEquals(mass, 1.0)
+        self.assertEqual(error, 0)
+        self.assertEqual(mass, 1.0)
                 
         mass,error = instance.get_mass(2)
-        self.assertEquals(error, 0)
-        self.assertEquals(mass, 0.001)
+        self.assertEqual(error, 0)
+        self.assertEqual(mass, 0.001)
         
         
         radius,error = instance.get_radius(1)
-        self.assertEquals(error, 0)
-        self.assertEquals(radius, 0.1)
+        self.assertEqual(error, 0)
+        self.assertEqual(radius, 0.1)
                 
         radius,error = instance.get_radius(2)
-        self.assertEquals(error, 0)
-        self.assertEquals(radius, 0.2)
+        self.assertEqual(error, 0)
+        self.assertEqual(radius, 0.2)
         
         
         x,y,z,error = instance.get_position(1)
-        self.assertEquals(error, 0)
-        self.assertEquals(x, 1.0)
-        self.assertEquals(y, 2.0)
-        self.assertEquals(z, 3.0)
+        self.assertEqual(error, 0)
+        self.assertEqual(x, 1.0)
+        self.assertEqual(y, 2.0)
+        self.assertEqual(z, 3.0)
                 
         x,y,z,error = instance.get_position(2)
-        self.assertEquals(error, 0)
-        self.assertEquals(x, 3.0)
-        self.assertEquals(y, 4.0)
-        self.assertEquals(z, 5.0)
+        self.assertEqual(error, 0)
+        self.assertEqual(x, 3.0)
+        self.assertEqual(y, 4.0)
+        self.assertEqual(z, 5.0)
         
         vx,vy,vz,error = instance.get_velocity(1)
-        self.assertEquals(error, 0)
-        self.assertEquals(vx, 1.1)
-        self.assertEquals(vy, 2.2)
-        self.assertEquals(vz, 3.3)
+        self.assertEqual(error, 0)
+        self.assertEqual(vx, 1.1)
+        self.assertEqual(vy, 2.2)
+        self.assertEqual(vz, 3.3)
     
         instance.cleanup_code()
         instance.stop()
@@ -94,36 +94,36 @@ class MikkolaInterfaceTests(TestWithMPI):
         instance.commit_parameters()
 
         index1, error = instance.new_particle(mass = 1.0, radius = 0, x = 1.0, y = 2.0, z = 3.0, vx = 1.1, vy = 2.2, vz = 3.3)
-        self.assertEquals(error, 0)
+        self.assertEqual(error, 0)
         index2, error = instance.new_particle(mass = 0.001, radius = 0, x = 3.0, y = 4.0, z = 5.0, vx = 3.3, vy = 4.4, vz = 5.5)
-        self.assertEquals(error, 0)
+        self.assertEqual(error, 0)
         
-        self.assertEquals(1, index1)
-        self.assertEquals(2, index2)
+        self.assertEqual(1, index1)
+        self.assertEqual(2, index2)
         
         mass,error = instance.get_mass(1)
-        self.assertEquals(error, 0)
-        self.assertEquals(mass, 1.0)
+        self.assertEqual(error, 0)
+        self.assertEqual(mass, 1.0)
                 
         mass,error = instance.get_mass(2)
-        self.assertEquals(error, 0)
-        self.assertEquals(mass, 0.001)
+        self.assertEqual(error, 0)
+        self.assertEqual(mass, 0.001)
         
         error  = instance.delete_particle(1)
         mass,error = instance.get_mass(1)
-        self.assertEquals(error, -1)
+        self.assertEqual(error, -1)
         
         index1, error = instance.new_particle(mass = 2.0, radius = 0, x = 1.0, y = 2.0, z = 3.0, vx = 1.1, vy = 2.2, vz = 3.3)
-        self.assertEquals(error, 0)
-        self.assertEquals(1, index1)
+        self.assertEqual(error, 0)
+        self.assertEqual(1, index1)
         
         mass,error = instance.get_mass(1)
-        self.assertEquals(error, 0)
-        self.assertEquals(mass, 2.0)
+        self.assertEqual(error, 0)
+        self.assertEqual(mass, 2.0)
                 
         mass,error = instance.get_mass(2)
-        self.assertEquals(error, 0)
-        self.assertEquals(mass, 0.001)
+        self.assertEqual(error, 0)
+        self.assertEqual(mass, 0.001)
         
     def test4(self):
         instance = MikkolaInterface()
@@ -132,23 +132,23 @@ class MikkolaInterfaceTests(TestWithMPI):
         instance.commit_parameters()
 
         index1, error = instance.new_particle(mass = 1.0, radius = 0, x = 1.0, y = 2.0, z = 3.0, vx = 1.1, vy = 2.2, vz = 3.3)
-        self.assertEquals(error, 0)
-        self.assertEquals(index1, 1)
+        self.assertEqual(error, 0)
+        self.assertEqual(index1, 1)
         
         instance.commit_particles()
         
         error = instance.cleanup_code()
-        self.assertEquals(error, 0)
+        self.assertEqual(error, 0)
         
         mass,error = instance.get_mass(1)
-        self.assertEquals(error, -1)
+        self.assertEqual(error, -1)
         instance.commit_parameters()
         index1, error = instance.new_particle(mass = 1.0, radius = 0, x = 1.0, y = 2.0, z = 3.0, vx = 1.1, vy = 2.2, vz = 3.3)
-        self.assertEquals(error, 0)
-        self.assertEquals(index1, 1)
+        self.assertEqual(error, 0)
+        self.assertEqual(index1, 1)
         instance.commit_particles()
         error = instance.cleanup_code()
-        self.assertEquals(error, 0)
+        self.assertEqual(error, 0)
         
         
         
@@ -311,7 +311,7 @@ class TestMikkola(TestWithMPI):
 
         postion_after_full_rotation = Taylor.position.value_in(units.AU)[0]
        
-        print "Time=", instance.model_time, period_HTpulsar
+        print("Time=", instance.model_time, period_HTpulsar)
         self.assertAlmostEqual(postion_at_start, postion_after_full_rotation, 3)
         
         instance.stop()
@@ -325,18 +325,18 @@ class TestMikkola(TestWithMPI):
         instance.particles.add_particles(stars)
         
         instance.commit_particles()
-        self.assertEquals(len(instance.particles), 2)
+        self.assertEqual(len(instance.particles), 2)
         instance.cleanup_code()
-        self.assertEquals(len(instance.particles), 0)
+        self.assertEqual(len(instance.particles), 0)
         
         instance.initialize_code()
         instance.particles.add_particles(stars)
-        self.assertEquals(len(instance.particles), 2)
+        self.assertEqual(len(instance.particles), 2)
         
         instance.commit_particles()
-        self.assertEquals(len(instance.particles), 2)
+        self.assertEqual(len(instance.particles), 2)
         instance.cleanup_code()
-        self.assertEquals(len(instance.particles), 0)
+        self.assertEqual(len(instance.particles), 0)
 
     def test5(self):
         convert_nbody=nbody_system.nbody_to_si(1.0|units.MSun, 1.0|units.yr/(2.0*pi))
@@ -365,9 +365,9 @@ class TestMikkola(TestWithMPI):
         
         instance.evolve_model(0.25 | units.yr)
         
-        self.assertEquals(instance.get_number_of_particles_added(), 1)
+        self.assertEqual(instance.get_number_of_particles_added(), 1)
         self.assertRaises(Exception, instance.get_id_of_added_particle, [2])
-        self.assertEquals(instance.get_id_of_added_particle(0), 4)
+        self.assertEqual(instance.get_id_of_added_particle(0), 4)
         self.assertAlmostRelativeEquals(instance.get_mass(4), 2 | units.MSun)
         self.assertAlmostRelativeEquals(instance.get_mass(1), 1 | units.MSun)
         self.assertAlmostRelativeEquals(instance.get_mass(2), 1 | units.MSun)
@@ -375,20 +375,20 @@ class TestMikkola(TestWithMPI):
         pos2 = quantities.as_vector_quantity(instance.get_position(2))
         posmerger = quantities.as_vector_quantity(instance.get_position(4))
         
-        print pos1
-        print pos2
-        print posmerger
+        print(pos1)
+        print(pos2)
+        print(posmerger)
         distance = (pos1-pos2).length()
         self.assertTrue(distance < 1e-4 | units.RSun)
         self.assertTrue(distance > 1e-6 | units.RSun)
         distance = (pos1-posmerger).length()
-        print distance.as_quantity_in(units.RSun)
+        print(distance.as_quantity_in(units.RSun))
         self.assertAlmostRelativeEquals(distance,0.718548184852 | units.RSun, 5)
         distance = (pos2-posmerger).length()
-        print distance.as_quantity_in(units.RSun)
+        print(distance.as_quantity_in(units.RSun))
         self.assertAlmostRelativeEquals(distance,0.718548184852 | units.RSun, 5)
         instance.update_particle_set()
-        print instance.particles[0].mass.as_quantity_in(units.MSun)
+        print(instance.particles[0].mass.as_quantity_in(units.MSun))
         #self.assertEquals(len(instance.particles), 4)
 
     def test6(self):
@@ -422,14 +422,14 @@ class TestMikkola(TestWithMPI):
         
         instance.evolve_model(0.25 | units.yr)
         
-        self.assertEquals(instance.get_number_of_particles_added(), 2)
+        self.assertEqual(instance.get_number_of_particles_added(), 2)
         self.assertRaises(Exception, instance.get_id_of_added_particle, [2])
-        self.assertEquals(instance.get_id_of_added_particle(0), 5)
-        self.assertEquals(instance.get_id_of_added_particle(1), 6)
+        self.assertEqual(instance.get_id_of_added_particle(0), 5)
+        self.assertEqual(instance.get_id_of_added_particle(1), 6)
         self.assertAlmostRelativeEquals(instance.get_mass(6), 3 | units.MSun)
         self.assertAlmostRelativeEquals(instance.get_mass(5), 2 | units.MSun)
         instance.update_particle_set()
-        print instance.particles[0].mass.as_quantity_in(units.MSun)
+        print(instance.particles[0].mass.as_quantity_in(units.MSun))
         #self.assertEquals(len(instance.particles), 4)
         
     
@@ -460,15 +460,15 @@ class TestMikkola(TestWithMPI):
         
         instance.evolve_model(0.25 | units.yr)
         
-        self.assertEquals(instance.get_number_of_particles_added(), 1)
-        self.assertEquals(instance.get_id_of_added_particle(0), 4)
+        self.assertEqual(instance.get_number_of_particles_added(), 1)
+        self.assertEqual(instance.get_id_of_added_particle(0), 4)
         child1, child2 = instance.get_children_of_particle([4])
-        self.assertEquals(child1[0], instance.particles[0])
-        self.assertEquals(child2[0], instance.particles[1])
+        self.assertEqual(child1[0], instance.particles[0])
+        self.assertEqual(child2[0], instance.particles[1])
         for i in range(3):
             child1, child2 = instance.get_children_of_particle([i+1])
-            self.assertEquals(child1[0], None)
-            self.assertEquals(child2[0], None)
+            self.assertEqual(child1[0], None)
+            self.assertEqual(child2[0], None)
             
     
     def test8(self):
@@ -507,15 +507,15 @@ class TestMikkola(TestWithMPI):
         instance2.evolve_model(0.15 | units.yr)
         self.assertAlmostRelativeEquals(instance2.model_time,0.15 | units.yr, 3)
         instance2.evolve_model(0.3 | units.yr)
-        print instance2.model_time.as_quantity_in(units.yr)
+        print(instance2.model_time.as_quantity_in(units.yr))
         self.assertAlmostRelativeEquals(instance2.model_time, 0.45| units.yr, 3)
         
         pos21 = quantities.as_vector_quantity(instance2.get_position(1))
         pos22 = quantities.as_vector_quantity(instance2.get_position(2))
         posmerger2 = quantities.as_vector_quantity(instance2.get_position(4))
-        print pos11, pos21
-        print pos12, pos22
-        print posmerger1, posmerger2
+        print(pos11, pos21)
+        print(pos12, pos22)
+        print(posmerger1, posmerger2)
         instance2.stop()
         
         self.assertAlmostRelativeEquals(pos11, pos21)
@@ -554,17 +554,17 @@ class TestMikkola(TestWithMPI):
         
         instance.evolve_model(0.15 | units.yr)
         instance.update_particle_set()
-        self.assertEquals(instance.get_id_of_added_particle(0), 5)
-        self.assertEquals(instance.get_id_of_added_particle(1), 6)
+        self.assertEqual(instance.get_id_of_added_particle(0), 5)
+        self.assertEqual(instance.get_id_of_added_particle(1), 6)
         instance.evolve_model(0.30 | units.yr)
         instance.update_particle_set()
-        self.assertEquals(instance.get_number_of_particles_added(), 0)
+        self.assertEqual(instance.get_number_of_particles_added(), 0)
         child1, child2 = instance.get_children_of_particle([5])
-        self.assertEquals(child1[0], instance.particles[0])
-        self.assertEquals(child2[0], instance.particles[1])
+        self.assertEqual(child1[0], instance.particles[0])
+        self.assertEqual(child2[0], instance.particles[1])
         child1, child2 = instance.get_children_of_particle([6])
-        self.assertEquals(child2[0], instance.particles[2])
-        self.assertEquals(child1[0], instance.particles[4])
+        self.assertEqual(child2[0], instance.particles[2])
+        self.assertEqual(child1[0], instance.particles[4])
     
     def test10(self):
         convert_nbody=nbody_system.nbody_to_si(1.0|units.MSun, 1.0|units.yr/(2.0*pi))
@@ -622,9 +622,9 @@ class TestMikkola(TestWithMPI):
         instance.parameters.evolve_to_exact_time = False
         self.assertFalse(instance.parameters.evolve_to_exact_time)
         
-        self.assertEquals(instance.parameters.maximum_number_of_particles, 100)
+        self.assertEqual(instance.parameters.maximum_number_of_particles, 100)
         instance.parameters.maximum_number_of_particles = 200
-        self.assertEquals(instance.parameters.maximum_number_of_particles, 200)
+        self.assertEqual(instance.parameters.maximum_number_of_particles, 200)
         
         
         self.assertAlmostRelativeEquals(instance.parameters.tolerance, 1e-13, 6)
@@ -665,18 +665,18 @@ class TestMikkola(TestWithMPI):
         
         instance.evolve_model(0.000001 | units.yr)
         instance.update_particle_set()
-        self.assertEquals(instance.get_number_of_particles_added(), 1)
-        self.assertEquals(instance.get_id_of_added_particle(0), 5)
+        self.assertEqual(instance.get_number_of_particles_added(), 1)
+        self.assertEqual(instance.get_id_of_added_particle(0), 5)
         instance.evolve_model(0.30 | units.yr)
-        self.assertEquals(instance.get_number_of_particles_added(), 1)
-        self.assertEquals(instance.get_id_of_added_particle(0), 6)
+        self.assertEqual(instance.get_number_of_particles_added(), 1)
+        self.assertEqual(instance.get_id_of_added_particle(0), 6)
         instance.update_particle_set()
         child1, child2 = instance.get_children_of_particle([5])
-        self.assertEquals(child1[0], instance.particles[0])
-        self.assertEquals(child2[0], instance.particles[1])
+        self.assertEqual(child1[0], instance.particles[0])
+        self.assertEqual(child2[0], instance.particles[1])
         child1, child2 = instance.get_children_of_particle([6])
-        self.assertEquals(child1[0], instance.particles[2])
-        self.assertEquals(child2[0], instance.particles[4])
+        self.assertEqual(child1[0], instance.particles[2])
+        self.assertEqual(child2[0], instance.particles[4])
         
     
     def test13(self):
@@ -697,12 +697,12 @@ class TestMikkola(TestWithMPI):
         
         instance.particles.add_particles(stars)
         self.assertRaises(exceptions.AmuseException, instance.evolve_model, 0.3 | units.yr)  
-        self.assertEquals(instance.get_number_of_particles_added(), 1) 
-        self.assertEquals(instance.get_id_of_added_particle(0), 3)
+        self.assertEqual(instance.get_number_of_particles_added(), 1) 
+        self.assertEqual(instance.get_id_of_added_particle(0), 3)
         instance.update_particle_set()
         child1, child2 = instance.get_children_of_particle([3])
-        self.assertEquals(child1[0], instance.particles[0])
-        self.assertEquals(child2[0], instance.particles[1])
+        self.assertEqual(child1[0], instance.particles[0])
+        self.assertEqual(child2[0], instance.particles[1])
         self.assertAlmostRelativeEquals(instance.get_mass(3), 2 | units.MSun)
     
     def test14(self):
@@ -778,7 +778,7 @@ class TestMikkola(TestWithMPI):
         try:
             instance.evolve_model(0.3 | units.yr)  
         except exceptions.AmuseException as ex:
-            self.assertEquals(ex.errorcode, -4)
+            self.assertEqual(ex.errorcode, -4)
             
     def test16(self):
         particles = datamodel.Particles(3)
@@ -797,13 +797,13 @@ class TestMikkola(TestWithMPI):
         collisions = instance.stopping_conditions.collision_detection
         collisions.enable()
         instance.evolve_model(10.0 | nbody_system.time)
-        print instance.particles.position
+        print(instance.particles.position)
         self.assertTrue(collisions.is_set())
-        print instance.model_time
-        print len(collisions.particles(0))
+        print(instance.model_time)
+        print(len(collisions.particles(0)))
         self.assertTrue(instance.model_time < 2 | nbody_system.time)
-        print collisions.particles(0).key
-        print collisions.particles(1).key
-        self.assertEquals(len(collisions.particles(0)), 1)
-        self.assertEquals(len(collisions.particles(1)), 1)
+        print(collisions.particles(0).key)
+        print(collisions.particles(1).key)
+        self.assertEqual(len(collisions.particles(0)), 1)
+        self.assertEqual(len(collisions.particles(1)), 1)
         instance.stop()

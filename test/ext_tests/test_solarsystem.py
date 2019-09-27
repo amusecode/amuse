@@ -8,7 +8,7 @@ from amuse.units import constants
 class TestSolarSystem(TestCase):
     
     def test1(self):
-        print "Test 1: testing new_solar_system_for_mercury"
+        print("Test 1: testing new_solar_system_for_mercury")
         sun, orbiters = new_solar_system_for_mercury()
         
         expected_attributes = set(["name", "mass", "radius", "j2", "j4", "j6", "lx", "ly", "lz"])
@@ -18,9 +18,9 @@ class TestSolarSystem(TestCase):
         self.assertEqual(set(orbiters.get_attribute_names_defined_in_store()), expected_attributes)
     
     def test2(self):
-        print "Test 2: testing new_solar_system"
+        print("Test 2: testing new_solar_system")
         particles = new_solar_system()
-        print particles
+        print(particles)
         
         expected_attributes = set(["name", "mass", "radius", "x", "y", "z", "vx", "vy", "vz"])
         self.assertEqual(set(particles.get_attribute_names_defined_in_store()), expected_attributes)

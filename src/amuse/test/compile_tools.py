@@ -443,7 +443,7 @@ def build_java_worker(codestring, path_to_results, specification_class):
     )
         
     if returncode != 0:
-        print "Could not compile worker"
+        print("Could not compile worker")
 
 #make jar file
 
@@ -453,7 +453,7 @@ def build_java_worker(codestring, path_to_results, specification_class):
     )
         
     if returncode != 0:
-        print "Could not compile worker"
+        print("Could not compile worker")
 
     #generate worker script
 
