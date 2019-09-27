@@ -91,7 +91,7 @@ class PythonImplementation(object):
                         #for type, attribute in self.dtype_to_message_attribute.iteritems():
                         #    setattr(result_message, attribute, [])
                             
-                        for type, attribute in self.dtype_to_message_attribute.iteritems():
+                        for type, attribute in self.dtype_to_message_attribute.items():
                             array = getattr(result_message, attribute)
                             packed = pack_array(array, result_message.call_count, type)
                             setattr(result_message, attribute, packed)
@@ -131,7 +131,7 @@ class PythonImplementation(object):
                     except  BaseException as ex:
                         traceback.print_exc()
                         result_message.set_error(ex.__str__())
-                        for type, attribute in self.dtype_to_message_attribute.iteritems():
+                        for type, attribute in self.dtype_to_message_attribute.items():
                             array = getattr(result_message, attribute)
                             packed = pack_array(array, result_message.call_count, type)
                             setattr(result_message, attribute, packed)
@@ -171,7 +171,7 @@ class PythonImplementation(object):
                     except  BaseException as ex:
                         traceback.print_exc()
                         result_message.set_error(ex.__str__())
-                        for type, attribute in self.dtype_to_message_attribute.iteritems():
+                        for type, attribute in self.dtype_to_message_attribute.items():
                             array = getattr(result_message, attribute)
                             packed = pack_array(array, result_message.call_count, type)
                             setattr(result_message, attribute, packed)
@@ -202,7 +202,7 @@ class PythonImplementation(object):
         else:
             input_units = ()
         
-        for type, attribute in self.dtype_to_message_attribute.iteritems():
+        for type, attribute in self.dtype_to_message_attribute.items():
             count = dtype_to_count.get(type,0)
             for x in range(count):
                 if type == 'string':
@@ -210,7 +210,7 @@ class PythonImplementation(object):
                 else:
                     getattr(output_message, attribute).append(numpy.zeros(output_message.call_count, dtype=type))
 
-        for type, attribute in self.dtype_to_message_attribute.iteritems():
+        for type, attribute in self.dtype_to_message_attribute.items():
             array = getattr(input_message, attribute)
             unpacked = unpack_array(array, input_message.call_count, type)
             setattr(input_message,attribute, unpacked)
@@ -220,7 +220,7 @@ class PythonImplementation(object):
             keyword_arguments = self.new_keyword_arguments_from_message(input_message, None,  specification, input_units)
             try: 
                 result = method(**keyword_arguments)
-            except TypeError, ex:
+            except TypeError as ex:
                 warnings.warn("mismatch in python function specification(?): "+str(ex))
                 result = method(*list(keyword_arguments))
             self.fill_output_message(output_message, None, result, keyword_arguments, specification, units)
@@ -231,7 +231,7 @@ class PythonImplementation(object):
                     result = method(**keyword_arguments)
                     if result < 0:
                         warnings.warn("result <0 detected: "+str( (result, keyword_arguments) ))
-                except TypeError, ex:
+                except TypeError as ex:
                     warnings.warn("mismatch in python function specification(?): "+str(ex))
                     result = method(*list(keyword_arguments))
                     if result < 0:
@@ -239,7 +239,7 @@ class PythonImplementation(object):
                 self.fill_output_message(output_message, index, result, keyword_arguments, specification, units)
         
             
-        for type, attribute in self.dtype_to_message_attribute.iteritems():
+        for type, attribute in self.dtype_to_message_attribute.items():
             array = getattr(output_message, attribute)
             packed = pack_array(array, input_message.call_count, type)
             setattr(output_message, attribute, packed)
@@ -543,7 +543,7 @@ class CythonImplementation(PythonImplementation):
         else:
             input_units = ()
         
-        for type, attribute in self.dtype_to_message_attribute.iteritems():
+        for type, attribute in self.dtype_to_message_attribute.items():
             count = dtype_to_count.get(type,0)
             for x in range(count):
                 if type == 'string':
@@ -551,7 +551,7 @@ class CythonImplementation(PythonImplementation):
                 else:
                     getattr(output_message, attribute).append(numpy.zeros(output_message.call_count, dtype=type))
 
-        for type, attribute in self.dtype_to_message_attribute.iteritems():
+        for type, attribute in self.dtype_to_message_attribute.items():
             array = getattr(input_message, attribute)
             unpacked = unpack_array(array, input_message.call_count, type)
             setattr(input_message,attribute, unpacked)
@@ -572,7 +572,7 @@ class CythonImplementation(PythonImplementation):
                 self.fill_output_message(output_message, index, result, keyword_arguments, specification, units)
         
             
-        for type, attribute in self.dtype_to_message_attribute.iteritems():
+        for type, attribute in self.dtype_to_message_attribute.items():
             array = getattr(output_message, attribute)
             packed = pack_array(array, input_message.call_count, type)
             setattr(output_message, attribute, packed)

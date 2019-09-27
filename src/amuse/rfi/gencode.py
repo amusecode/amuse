@@ -392,7 +392,7 @@ def amusifier():
     uc.start()
     
     if uc.options.get_amuse_dir:
-        print(get_amuse_root_dir())
+        print((get_amuse_root_dir()))
         exit(0)
     elif uc.options.mode == 'dir':
         make_directory(uc)
