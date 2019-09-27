@@ -1,3 +1,4 @@
+# -*- coding: ascii -*-
 """
 Integrates a stellar orbit in the galactic potential
 
@@ -5,7 +6,7 @@ This example illustrates the use of a simple external potential and simple
 integrator, no
 amuse community code is used.
 """
-
+from __future__ import print_function
 # import numpy
 from amuse.units.optparse import OptionParser
 from math import atan
@@ -18,6 +19,7 @@ from amuse.plot import plot
 
 
 class MilkyWay_galaxy(object):
+
     def __init__(self, potential="point_particle", M=1.6e10 | units.MSun):
         print("pot=", potential)
         if potential.find("Milky") >= 0:
@@ -31,12 +33,12 @@ class MilkyWay_galaxy(object):
     def get_gravity_at_point(self, pos):
         phi_0 = self.get_potential_at_point(pos)
         grav = AdaptingVectorQuantity()
-        dpos = 0.001*pos.length()
+        dpos = 0.001 * pos.length()
         for ii in range(len(pos)):
-            ppos = 1.0*pos
+            ppos = 1.0 * pos
             ppos[ii] += dpos
             phi_1 = self.get_potential_at_point(ppos)
-            grav.append((phi_1 - phi_0)/dpos)
+            grav.append((phi_1 - phi_0) / dpos)
         return grav
 
     def get_potential_at_point(self, pos):
@@ -50,18 +52,19 @@ class MilkyWay_galaxy(object):
         return self.Power_law_potential(mass, pos, eps2=eps2, eta=1)
 
     def Power_law_potential(self, mass, pos, eps2=0.0 | units.kpc**2, eta=1):
-        return constants.G*mass/(pos.length()**2+eps2)**(eta/2.)
+        return constants.G * mass / (pos.length()**2 + eps2)**(eta / 2.)
 
     def disk_and_bulge_potentials(self, pos, a, b, mass):
-        r = (pos.x**2+pos.y**2).sqrt()
+        r = (pos.x**2 + pos.y**2).sqrt()
         return constants.G * mass /\
             (r**2 + (a + (pos.z**2 + b**2).sqrt())**2).sqrt()
 
     def halo_potential(
             self, pos, Mc=5.0E+10 | units.MSun, Rc=1.0 | units.kpc**2):
         r = pos.length()
-        rr = (r/Rc)
-        return -constants.G * (Mc/Rc)*(0.5*log(1 + rr**2) + atan(rr)/rr)
+        rr = (r / Rc)
+        return -constants.G * (Mc / Rc) * \
+            (0.5 * log(1 + rr**2) + atan(rr) / rr)
 
     # 1990ApJ...348..485P
     def Milky_Way_potential(self, pos):
@@ -88,12 +91,12 @@ def new_single_star(mass, pos, vel):
 
 def evolve_particle_in_potential(single_star, potential, t_end):
     time = 0 | units.Myr
-    dt_min = 0.1*t_end
+    dt_min = 0.1 * t_end
     while time < t_end:
         acc = potential.get_gravity_at_point(single_star.position)
-        dt = min(dt_min, 0.1*single_star.velocity.length()/acc.length())
-        single_star.velocity += acc*dt
-        single_star.position += single_star.velocity*dt
+        dt = min(dt_min, 0.1 * single_star.velocity.length() / acc.length())
+        single_star.velocity += acc * dt
+        single_star.position += single_star.velocity * dt
         time += dt
 
 
@@ -107,8 +110,8 @@ def evolve_particle_trajectory_in_potential(
         evolve_particle_in_potential(single_star, potential, dt_diag)
         time += dt_diag
         print(
-                "time=", time,
-                single_star.position.length().as_quantity_in(units.AU))
+            "time=", time,
+            single_star.position.length().as_quantity_in(units.AU))
         x.append(single_star.x)
         y.append(single_star.y)
         z.append(single_star.y)
@@ -141,11 +144,11 @@ def new_option_parser():
     result.add_option("-z", dest="z", type="float", default=0,
                       unit=units.parsec, help="z-position [%unit]")
     result.add_option("--vx", dest="vx", type="float", default=0,
-                      unit=units.km/units.s, help="x-velocity [%unit]")
+                      unit=units.km / units.s, help="x-velocity [%unit]")
     result.add_option("--vy", dest="vy", type="float", default=220,
-                      unit=units.km/units.s, help="y-velocity [%unit]")
+                      unit=units.km / units.s, help="y-velocity [%unit]")
     result.add_option("--vz", dest="vz", type="float", default=0,
-                      unit=units.km/units.s, help="z-velocity [%unit]")
+                      unit=units.km / units.s, help="z-velocity [%unit]")
     return result
 
 
@@ -153,7 +156,7 @@ if __name__ == "__main__":
     o, arguments = new_option_parser().parse_args()
 
     t_end = o.t_end
-    dt_diag = min(o.dt_diag, 0.1*o.t_end)
+    dt_diag = min(o.dt_diag, 0.1 * o.t_end)
     size_unit = units.parsec
     mass = 1.0
     pos = [o.x, o.y, o.z]

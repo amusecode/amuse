@@ -3,8 +3,8 @@ import sys
 
 from amuse.test import amusetest
 from amuse.community.bhtree.interface import BHTreeInterface, BHTree
-from amuse.community.hermite0.interface import HermiteInterface, Hermite
-from amuse.community.phiGRAPE.interface import PhiGRAPEInterface, PhiGRAPE
+from amuse.community.hermite.interface import HermiteInterface, Hermite
+from amuse.community.phigrape.interface import PhiGRAPEInterface, PhiGRAPE
 from amuse.units import nbody_system
 from amuse.units import units
 from amuse import datamodel

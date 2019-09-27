@@ -276,112 +276,112 @@ class MI6(GravitationalDynamics, GravityFieldCode):
             **options
         )
         
-    def define_state(self, object):
-        GravitationalDynamics.define_state(self, object)
-        GravityFieldCode.define_state(self, object)
-        self.stopping_conditions.define_state(object)
+    def define_state(self, handler):
+        GravitationalDynamics.define_state(self, handler)
+        GravityFieldCode.define_state(self, handler)
+        self.stopping_conditions.define_state(handler)
 
 
-    def define_parameters(self, object):
-        GravitationalDynamics.define_parameters(self, object)
-        self.stopping_conditions.define_parameters(object)
-        object.add_alias_parameter(
+    def define_parameters(self, handler):
+        GravitationalDynamics.define_parameters(self, handler)
+        self.stopping_conditions.define_parameters(handler)
+        handler.add_alias_parameter(
             "epsilon_squared", 
             "epsilon_squared_star_star", 
             "smoothing parameter for gravity calculations - star-star interactions only (alias for epsilon_squared_star_star)"
         )
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_eps2_fs_fs",
             "set_eps2_fs_fs", 
             "epsilon_squared_star_star", 
             "smoothing parameter for gravity calculations - star-star interactions only", 
             default_value = 0.0 | nbody_system.length * nbody_system.length
         )
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_eps2_fs_bh",
             "set_eps2_fs_bh", 
             "epsilon_squared_star_blackhole", 
             "smoothing parameter for gravity calculations - star-blackhole interactions only", 
             default_value = 0.0 | nbody_system.length * nbody_system.length
         )
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_eps2_bh_bh",
             "set_eps2_bh_bh", 
             "epsilon_squared_blackhole_blackhole", 
             "smoothing parameter for gravity calculations - blackhole-blackhole interactions only", 
             default_value = 0.0 | nbody_system.length * nbody_system.length
         )
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_eta_s",
             "set_eta_s", 
             "initial_timestep_parameter", 
             "initial timestep parameter (eta)", 
             default_value = 1.0e-4
         )
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_eta_fs",
             "set_eta_fs", 
             "timestep_parameter", 
             "timestep parameter (eta) for field stars (alias for timestep_parameter_stars)", 
             default_value = 0.1
         )
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_eta_fs",
             "set_eta_fs", 
             "timestep_parameter_stars", 
             "timestep parameter (eta) for field stars", 
             default_value = 0.1
         )
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_eta_smbh",
             "set_eta_smbh", 
             "timestep_parameter_supermassive_black_holes", 
             "timestep parameter (eta) for supermassive black holes", 
             default_value = 0.4
         )
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_eta_imbh",
             "set_eta_imbh", 
             "timestep_parameter_intermediate_mass_black_holes", 
             "timestep parameter (eta) for intermediate mass black holes", 
             default_value = 0.4
         )
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_drink",
             None, 
             "drink", 
             "Order a drink at MI6", 
             default_value = ""
         )
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_max_relative_energy_error",
             "set_max_relative_energy_error", 
             "max_relative_energy_error", 
             "the maximum relative energy error per full step", 
             default_value = 5e-5 # or nbody_system.time**-1 ??? why /dt_max ???
         )
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_maximum_timestep",
             "set_maximum_timestep", 
             "maximum_timestep", 
             "the maximum timestep a particle may take", 
             default_value = 1.0/1024.0 | nbody_system.time
         )
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_smbh_mass",
             "set_smbh_mass", 
             "smbh_mass", 
             "the mass of the supermassive black hole at the center", 
             default_value = 1.0 | nbody_system.mass
         )
-        object.add_boolean_parameter(
+        handler.add_boolean_parameter(
             "get_include_smbh_flag",
             "set_include_smbh_flag",
             "include_smbh",
             "Flag that specifies whether to include a supermassive black hole at the center",
             False
         )
-        object.add_boolean_parameter(
+        handler.add_boolean_parameter(
             "get_calculate_postnewtonian",
             "set_calculate_postnewtonian",
             "calculate_postnewtonian",
@@ -389,7 +389,7 @@ class MI6(GravitationalDynamics, GravityFieldCode):
                 "supermassive black hole at the center (has no effect when include_smbh is False)",
             True
         )
-        object.add_boolean_parameter(
+        handler.add_boolean_parameter(
             "get_calculate_postnewtonian_only_first_order",
             "set_calculate_postnewtonian_only_first_order",
             "calculate_postnewtonian_only_first_order",
@@ -397,7 +397,7 @@ class MI6(GravitationalDynamics, GravityFieldCode):
                 "supermassive black hole at the center (has no effect when include_smbh is False)",
             False
         )
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_lightspeed", 
             "set_lightspeed",
             "lightspeed", 
@@ -408,40 +408,40 @@ class MI6(GravitationalDynamics, GravityFieldCode):
     def get_drink(self):
         return "Vodka martini. Shaken, not stirred."
     
-    def define_methods(self, object):
-        GravitationalDynamics.define_methods(self, object)
-        self.stopping_conditions.define_methods(object)
+    def define_methods(self, handler):
+        GravitationalDynamics.define_methods(self, handler)
+        self.stopping_conditions.define_methods(handler)
         
-        object.add_method("get_eps2", (), (nbody_system.length**2, object.ERROR_CODE))
-        object.add_method("set_eps2", (nbody_system.length**2,), (object.ERROR_CODE,))
-        object.add_method("get_eps2_fs_fs", (), (nbody_system.length**2, object.ERROR_CODE))
-        object.add_method("set_eps2_fs_fs", (nbody_system.length**2,), (object.ERROR_CODE,))
-        object.add_method("get_eps2_fs_bh", (), (nbody_system.length**2, object.ERROR_CODE))
-        object.add_method("set_eps2_fs_bh", (nbody_system.length**2,), (object.ERROR_CODE,))
-        object.add_method("get_eps2_bh_bh", (), (nbody_system.length**2, object.ERROR_CODE))
-        object.add_method("set_eps2_bh_bh", (nbody_system.length**2,), (object.ERROR_CODE,))
+        handler.add_method("get_eps2", (), (nbody_system.length**2, handler.ERROR_CODE))
+        handler.add_method("set_eps2", (nbody_system.length**2,), (handler.ERROR_CODE,))
+        handler.add_method("get_eps2_fs_fs", (), (nbody_system.length**2, handler.ERROR_CODE))
+        handler.add_method("set_eps2_fs_fs", (nbody_system.length**2,), (handler.ERROR_CODE,))
+        handler.add_method("get_eps2_fs_bh", (), (nbody_system.length**2, handler.ERROR_CODE))
+        handler.add_method("set_eps2_fs_bh", (nbody_system.length**2,), (handler.ERROR_CODE,))
+        handler.add_method("get_eps2_bh_bh", (), (nbody_system.length**2, handler.ERROR_CODE))
+        handler.add_method("set_eps2_bh_bh", (nbody_system.length**2,), (handler.ERROR_CODE,))
         
-        object.add_method("get_eta_s", (), (object.NO_UNIT, object.ERROR_CODE))
-        object.add_method("set_eta_s", (object.NO_UNIT,), (object.ERROR_CODE,))
-        object.add_method("get_eta_fs", (), (object.NO_UNIT, object.ERROR_CODE))
-        object.add_method("set_eta_fs", (object.NO_UNIT,), (object.ERROR_CODE,))
-        object.add_method("get_eta_smbh", (), (object.NO_UNIT, object.ERROR_CODE))
-        object.add_method("set_eta_smbh", (object.NO_UNIT,), (object.ERROR_CODE,))
-        object.add_method("get_eta_imbh", (), (object.NO_UNIT, object.ERROR_CODE))
-        object.add_method("set_eta_imbh", (object.NO_UNIT,), (object.ERROR_CODE,))
+        handler.add_method("get_eta_s", (), (handler.NO_UNIT, handler.ERROR_CODE))
+        handler.add_method("set_eta_s", (handler.NO_UNIT,), (handler.ERROR_CODE,))
+        handler.add_method("get_eta_fs", (), (handler.NO_UNIT, handler.ERROR_CODE))
+        handler.add_method("set_eta_fs", (handler.NO_UNIT,), (handler.ERROR_CODE,))
+        handler.add_method("get_eta_smbh", (), (handler.NO_UNIT, handler.ERROR_CODE))
+        handler.add_method("set_eta_smbh", (handler.NO_UNIT,), (handler.ERROR_CODE,))
+        handler.add_method("get_eta_imbh", (), (handler.NO_UNIT, handler.ERROR_CODE))
+        handler.add_method("set_eta_imbh", (handler.NO_UNIT,), (handler.ERROR_CODE,))
         
-        object.add_method("get_max_relative_energy_error", (), (object.NO_UNIT, object.ERROR_CODE))
-        object.add_method("set_max_relative_energy_error", (object.NO_UNIT,), (object.ERROR_CODE,))
-        object.add_method("get_maximum_timestep", (), (nbody_system.time, object.ERROR_CODE))
-        object.add_method("set_maximum_timestep", (nbody_system.time,), (object.ERROR_CODE,))
+        handler.add_method("get_max_relative_energy_error", (), (handler.NO_UNIT, handler.ERROR_CODE))
+        handler.add_method("set_max_relative_energy_error", (handler.NO_UNIT,), (handler.ERROR_CODE,))
+        handler.add_method("get_maximum_timestep", (), (nbody_system.time, handler.ERROR_CODE))
+        handler.add_method("set_maximum_timestep", (nbody_system.time,), (handler.ERROR_CODE,))
         
-        object.add_method("get_smbh_mass", (), (nbody_system.mass, object.ERROR_CODE))
-        object.add_method("set_smbh_mass", (nbody_system.mass,), (object.ERROR_CODE,))
+        handler.add_method("get_smbh_mass", (), (nbody_system.mass, handler.ERROR_CODE))
+        handler.add_method("set_smbh_mass", (nbody_system.mass,), (handler.ERROR_CODE,))
         
-        object.add_method("get_lightspeed", (), (nbody_system.speed, object.ERROR_CODE))
-        object.add_method("set_lightspeed", (nbody_system.speed,), (object.ERROR_CODE,))
+        handler.add_method("get_lightspeed", (), (nbody_system.speed, handler.ERROR_CODE))
+        handler.add_method("set_lightspeed", (nbody_system.speed,), (handler.ERROR_CODE,))
         
     
-    def define_particle_sets(self, object):
-        GravitationalDynamics.define_particle_sets(self, object)
-        self.stopping_conditions.define_particle_set(object)
+    def define_particle_sets(self, handler):
+        GravitationalDynamics.define_particle_sets(self, handler)
+        self.stopping_conditions.define_particle_set(handler)

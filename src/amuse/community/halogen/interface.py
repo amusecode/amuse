@@ -312,8 +312,8 @@ class Halogen(CommonCode):
         self.parameters.set_defaults()
         self.parameters.output_directory = self.get_output_directory()
     
-    def define_parameters(self, object):
-        object.add_method_parameter(
+    def define_parameters(self, handler):
+        handler.add_method_parameter(
             "get_model_alpha",
             "set_model_alpha",
             "alpha",
@@ -321,7 +321,7 @@ class Halogen(CommonCode):
             default_value = -1.0
         )
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_model_beta",
             "set_model_beta",
             "beta",
@@ -329,7 +329,7 @@ class Halogen(CommonCode):
             default_value = -1.0
         )
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_model_gamma",
             "set_model_gamma",
             "gamma",
@@ -337,7 +337,7 @@ class Halogen(CommonCode):
             default_value = -1.0
         )
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_total_mass",
             "set_total_mass",
             "total_mass",
@@ -345,7 +345,7 @@ class Halogen(CommonCode):
             default_value = 1.0 | nbody_system.mass
         )
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_scale_radius",
             "set_scale_radius",
             "scale_radius",
@@ -353,7 +353,7 @@ class Halogen(CommonCode):
             default_value = 1.0 | nbody_system.length
         )
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_cutoff_radius",
             "set_cutoff_radius",
             "cutoff_radius",
@@ -361,7 +361,7 @@ class Halogen(CommonCode):
             default_value = -1.0 | nbody_system.length
         )
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_target_number_of_particles",
             "set_target_number_of_particles",
             "number_of_particles",
@@ -369,7 +369,7 @@ class Halogen(CommonCode):
             default_value = -1
         )
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_black_hole_mass",
             "set_black_hole_mass",
             "black_hole_mass",
@@ -377,7 +377,7 @@ class Halogen(CommonCode):
             default_value = 0.0 | nbody_system.mass
         )
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_random_seed",
             "set_random_seed",
             "random_seed",
@@ -385,7 +385,7 @@ class Halogen(CommonCode):
             default_value = 42
         )
         
-        object.add_boolean_parameter(
+        handler.add_boolean_parameter(
             "get_do_exact_virial_radius_flag",
             "set_do_exact_virial_radius_flag",
             "do_exact_virial_radius_flag",
@@ -393,7 +393,7 @@ class Halogen(CommonCode):
             False
         )
         
-        object.add_boolean_parameter(
+        handler.add_boolean_parameter(
             "get_outputgridr_flag",
             "set_outputgridr_flag",
             "outputgridr_flag",
@@ -401,7 +401,7 @@ class Halogen(CommonCode):
             False
         )
         
-        object.add_boolean_parameter(
+        handler.add_boolean_parameter(
             "get_outputgriddf_flag",
             "set_outputgriddf_flag",
             "outputgriddf_flag",
@@ -409,7 +409,7 @@ class Halogen(CommonCode):
             False
         )
         
-        object.add_boolean_parameter(
+        handler.add_boolean_parameter(
             "get_write_output_flag",
             "set_write_output_flag",
             "write_output_flag",
@@ -417,7 +417,7 @@ class Halogen(CommonCode):
             False
         )
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_output_path", 
             "set_output_path",
             "output_directory", 
@@ -425,7 +425,7 @@ class Halogen(CommonCode):
             default_value = "./"
         )
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_output_basename", 
             "set_output_basename",
             "output_basename", 
@@ -433,101 +433,101 @@ class Halogen(CommonCode):
             default_value = "halogen"
         )
     
-    def define_errorcodes(self, object):
-        object.add_errorcode(-1, 'Unspecified, other error.')
-        object.add_errorcode(-2, 'Missing or bad parameter for halo (see amuse/community/halogen/src/doc for details on required parameters).')
+    def define_errorcodes(self, handler):
+        handler.add_errorcode(-1, 'Unspecified, other error.')
+        handler.add_errorcode(-2, 'Missing or bad parameter for halo (see amuse/community/halogen/src/doc for details on required parameters).')
     
-    def define_methods(self, object):
-        CommonCode.define_methods(self, object)
-        object.add_method("generate_particles", (), (object.ERROR_CODE,))
-        object.add_method("get_number_of_particles_updated", (), (object.NO_UNIT, object.ERROR_CODE,))
+    def define_methods(self, handler):
+        CommonCode.define_methods(self, handler)
+        handler.add_method("generate_particles", (), (handler.ERROR_CODE,))
+        handler.add_method("get_number_of_particles_updated", (), (handler.NO_UNIT, handler.ERROR_CODE,))
         
-        object.add_method("get_mass", (object.INDEX,), 
-            (nbody_system.mass, object.ERROR_CODE)
+        handler.add_method("get_mass", (handler.INDEX,), 
+            (nbody_system.mass, handler.ERROR_CODE)
         )
-        object.add_method("get_position", (object.INDEX,), 
-            (nbody_system.length, nbody_system.length, nbody_system.length, object.ERROR_CODE)
+        handler.add_method("get_position", (handler.INDEX,), 
+            (nbody_system.length, nbody_system.length, nbody_system.length, handler.ERROR_CODE)
         )
-        object.add_method("get_velocity", (object.INDEX,), 
-            (nbody_system.speed, nbody_system.speed, nbody_system.speed, object.ERROR_CODE)
+        handler.add_method("get_velocity", (handler.INDEX,), 
+            (nbody_system.speed, nbody_system.speed, nbody_system.speed, handler.ERROR_CODE)
         )
         
-        object.add_method("get_model_alpha", (), (object.NO_UNIT, object.ERROR_CODE,))
-        object.add_method("set_model_alpha", (object.NO_UNIT, ), (object.ERROR_CODE,))
+        handler.add_method("get_model_alpha", (), (handler.NO_UNIT, handler.ERROR_CODE,))
+        handler.add_method("set_model_alpha", (handler.NO_UNIT, ), (handler.ERROR_CODE,))
         
-        object.add_method("get_model_beta", (), (object.NO_UNIT, object.ERROR_CODE,))
-        object.add_method("set_model_beta", (object.NO_UNIT, ), (object.ERROR_CODE,))
+        handler.add_method("get_model_beta", (), (handler.NO_UNIT, handler.ERROR_CODE,))
+        handler.add_method("set_model_beta", (handler.NO_UNIT, ), (handler.ERROR_CODE,))
         
-        object.add_method("get_model_gamma", (), (object.NO_UNIT, object.ERROR_CODE,))
-        object.add_method("set_model_gamma", (object.NO_UNIT, ), (object.ERROR_CODE,))
+        handler.add_method("get_model_gamma", (), (handler.NO_UNIT, handler.ERROR_CODE,))
+        handler.add_method("set_model_gamma", (handler.NO_UNIT, ), (handler.ERROR_CODE,))
         
-        object.add_method("get_total_mass", (), (nbody_system.mass, object.ERROR_CODE,))
-        object.add_method("set_total_mass", (nbody_system.mass, ), (object.ERROR_CODE,))
+        handler.add_method("get_total_mass", (), (nbody_system.mass, handler.ERROR_CODE,))
+        handler.add_method("set_total_mass", (nbody_system.mass, ), (handler.ERROR_CODE,))
         
-        object.add_method("get_scale_radius", (), (nbody_system.length, object.ERROR_CODE,))
-        object.add_method("set_scale_radius", (nbody_system.length, ), (object.ERROR_CODE,))
+        handler.add_method("get_scale_radius", (), (nbody_system.length, handler.ERROR_CODE,))
+        handler.add_method("set_scale_radius", (nbody_system.length, ), (handler.ERROR_CODE,))
         
-        object.add_method("get_cutoff_radius", (), (nbody_system.length, object.ERROR_CODE,))
-        object.add_method("set_cutoff_radius", (nbody_system.length, ), (object.ERROR_CODE,))
+        handler.add_method("get_cutoff_radius", (), (nbody_system.length, handler.ERROR_CODE,))
+        handler.add_method("set_cutoff_radius", (nbody_system.length, ), (handler.ERROR_CODE,))
         
-        object.add_method("get_target_number_of_particles", (), (object.NO_UNIT, object.ERROR_CODE,))
-        object.add_method("set_target_number_of_particles", (object.NO_UNIT, ), (object.ERROR_CODE,))
+        handler.add_method("get_target_number_of_particles", (), (handler.NO_UNIT, handler.ERROR_CODE,))
+        handler.add_method("set_target_number_of_particles", (handler.NO_UNIT, ), (handler.ERROR_CODE,))
         
-        object.add_method("get_black_hole_mass", (), (nbody_system.mass, object.ERROR_CODE,))
-        object.add_method("set_black_hole_mass", (nbody_system.mass, ), (object.ERROR_CODE,))
+        handler.add_method("get_black_hole_mass", (), (nbody_system.mass, handler.ERROR_CODE,))
+        handler.add_method("set_black_hole_mass", (nbody_system.mass, ), (handler.ERROR_CODE,))
         
-        object.add_method("get_random_seed", (), (object.NO_UNIT, object.ERROR_CODE,))
-        object.add_method("set_random_seed", (object.NO_UNIT, ), (object.ERROR_CODE,))
+        handler.add_method("get_random_seed", (), (handler.NO_UNIT, handler.ERROR_CODE,))
+        handler.add_method("set_random_seed", (handler.NO_UNIT, ), (handler.ERROR_CODE,))
         
-        object.add_method("get_output_path", (), (object.NO_UNIT, object.ERROR_CODE,))
-        object.add_method("set_output_path", (object.NO_UNIT,), (object.ERROR_CODE,))
+        handler.add_method("get_output_path", (), (handler.NO_UNIT, handler.ERROR_CODE,))
+        handler.add_method("set_output_path", (handler.NO_UNIT,), (handler.ERROR_CODE,))
         
-        object.add_method("get_output_basename", (), (object.NO_UNIT, object.ERROR_CODE,))
-        object.add_method("set_output_basename", (object.NO_UNIT,), (object.ERROR_CODE,))
+        handler.add_method("get_output_basename", (), (handler.NO_UNIT, handler.ERROR_CODE,))
+        handler.add_method("set_output_basename", (handler.NO_UNIT,), (handler.ERROR_CODE,))
 
-    def define_converter(self, object):
+    def define_converter(self, handler):
         if not self.unit_converter is None:
-            object.set_converter(self.unit_converter.as_converter_from_si_to_generic())
+            handler.set_converter(self.unit_converter.as_converter_from_si_to_generic())
     
-    def define_particle_sets(self, object):
-        object.define_set('particles', 'index_of_the_particle')
-        object.set_new('particles', 'new_particle')
-        object.set_delete('particles', 'delete_particle')
-        object.add_getter('particles', 'get_mass')
-        object.add_getter('particles', 'get_position')
-        object.add_getter('particles', 'get_velocity')
+    def define_particle_sets(self, handler):
+        handler.define_set('particles', 'index_of_the_particle')
+        handler.set_new('particles', 'new_particle')
+        handler.set_delete('particles', 'delete_particle')
+        handler.add_getter('particles', 'get_mass')
+        handler.add_getter('particles', 'get_position')
+        handler.add_getter('particles', 'get_velocity')
     
-    def define_state(self, object):
-        CommonCode.define_state(self, object)
-        object.add_transition('INITIALIZED','EDIT','commit_parameters')
-        object.add_transition('RUN','CHANGE_PARAMETERS_RUN','before_set_parameter', False)
-        object.add_transition('EDIT','CHANGE_PARAMETERS_EDIT','before_set_parameter', False)
-        object.add_transition('UPDATE','CHANGE_PARAMETERS_UPDATE','before_set_parameter', False)
-        object.add_transition('CHANGE_PARAMETERS_RUN','RUN','recommit_parameters')
-        object.add_transition('CHANGE_PARAMETERS_EDIT','EDIT','recommit_parameters')
-        object.add_transition('CHANGE_PARAMETERS_UPDATE','UPDATE','recommit_parameters')
+    def define_state(self, handler):
+        CommonCode.define_state(self, handler)
+        handler.add_transition('INITIALIZED','EDIT','commit_parameters')
+        handler.add_transition('RUN','CHANGE_PARAMETERS_RUN','before_set_parameter', False)
+        handler.add_transition('EDIT','CHANGE_PARAMETERS_EDIT','before_set_parameter', False)
+        handler.add_transition('UPDATE','CHANGE_PARAMETERS_UPDATE','before_set_parameter', False)
+        handler.add_transition('CHANGE_PARAMETERS_RUN','RUN','recommit_parameters')
+        handler.add_transition('CHANGE_PARAMETERS_EDIT','EDIT','recommit_parameters')
+        handler.add_transition('CHANGE_PARAMETERS_UPDATE','UPDATE','recommit_parameters')
         
-        object.add_method('CHANGE_PARAMETERS_RUN', 'before_set_parameter')
-        object.add_method('CHANGE_PARAMETERS_EDIT', 'before_set_parameter')
-        object.add_method('CHANGE_PARAMETERS_UPDATE','before_set_parameter')
+        handler.add_method('CHANGE_PARAMETERS_RUN', 'before_set_parameter')
+        handler.add_method('CHANGE_PARAMETERS_EDIT', 'before_set_parameter')
+        handler.add_method('CHANGE_PARAMETERS_UPDATE','before_set_parameter')
         
-        object.add_method('CHANGE_PARAMETERS_RUN', 'before_get_parameter')
-        object.add_method('CHANGE_PARAMETERS_EDIT', 'before_get_parameter')
-        object.add_method('CHANGE_PARAMETERS_UPDATE','before_get_parameter')
-        object.add_method('RUN', 'before_get_parameter')
-        object.add_method('EDIT', 'before_get_parameter')
-        object.add_method('UPDATE','before_get_parameter')
+        handler.add_method('CHANGE_PARAMETERS_RUN', 'before_get_parameter')
+        handler.add_method('CHANGE_PARAMETERS_EDIT', 'before_get_parameter')
+        handler.add_method('CHANGE_PARAMETERS_UPDATE','before_get_parameter')
+        handler.add_method('RUN', 'before_get_parameter')
+        handler.add_method('EDIT', 'before_get_parameter')
+        handler.add_method('UPDATE','before_get_parameter')
         
-        object.add_transition('EDIT', 'UPDATE', 'generate_particles', False)
-        object.add_transition('UPDATE', 'RUN', 'update_particle_set')
-        object.add_transition('RUN', 'EDIT', 'clear_particle_set')
-        object.add_method('RUN', 'invoke_state_change_updated')
-        object.add_method('EDIT', 'get_number_of_particles_updated')
-        object.add_method('UPDATE', 'get_number_of_particles_updated')
-        object.add_method('RUN', 'get_number_of_particles_updated')
-        object.add_method('RUN', 'get_mass')
-        object.add_method('RUN', 'get_position')
-        object.add_method('RUN', 'get_velocity')
+        handler.add_transition('EDIT', 'UPDATE', 'generate_particles', False)
+        handler.add_transition('UPDATE', 'RUN', 'update_particle_set')
+        handler.add_transition('RUN', 'EDIT', 'clear_particle_set')
+        handler.add_method('RUN', 'invoke_state_change_updated')
+        handler.add_method('EDIT', 'get_number_of_particles_updated')
+        handler.add_method('UPDATE', 'get_number_of_particles_updated')
+        handler.add_method('RUN', 'get_number_of_particles_updated')
+        handler.add_method('RUN', 'get_mass')
+        handler.add_method('RUN', 'get_position')
+        handler.add_method('RUN', 'get_velocity')
     
     def generate_particles(self):
         result = self.overridden().generate_particles()

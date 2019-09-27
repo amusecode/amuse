@@ -35,6 +35,7 @@ except ImportError:
 from amuse.support.options import OptionalAttributes, option, GlobalOptions
 from amuse.support.core import late
 from amuse.support import exceptions
+from amuse.support import get_amuse_root_dir
 from amuse.rfi import run_command_redirected
 
 from amuse.rfi import slurm
@@ -446,7 +447,19 @@ class AbstractMessageChannel(OptionalAttributes):
         
         command = 'xterm'
         return command, arguments
-        
+
+    @classmethod
+    def LLDB(cls, full_name_of_the_worker, channel, interpreter_executable=None):
+        arguments = ['-hold', '-display', os.environ['DISPLAY'], '-e', 'lldb', '--']
+
+        if not interpreter_executable is None:
+            arguments.append(interpreter_executable)
+
+        arguments.append(full_name_of_the_worker)
+
+        command = 'xterm'
+        return command, arguments
+
     @classmethod
     def DDD(cls, full_name_of_the_worker, channel, interpreter_executable=None):
         if os.name == 'nt':
@@ -608,17 +621,8 @@ class AbstractMessageChannel(OptionalAttributes):
         return self.amuse_root_dir
     
     @option(type="string", sections=('data',))
-    def amuse_root_dir(self):
-        if 'AMUSE_DIR' in os.environ:
-            return os.environ['AMUSE_DIR']    
-        previous = None
-        result = os.path.abspath(__file__)
-        while not os.path.exists(os.path.join(result,'build.py')):
-            result = os.path.dirname(result)
-            if result == previous:
-                raise exceptions.AmuseException("Could not locate AMUSE root directory!")
-            previous = result
-        return result
+    def amuse_root_dir(self):  # needed for location of data, so same as in support.__init__
+        return get_amuse_root_dir()
     
     def check_if_worker_is_up_to_date(self, object):
         if not self.must_check_if_worker_is_up_to_date:
@@ -665,41 +669,39 @@ Please do a 'make clean; make' in the root directory.
                 raise Exception("Must provide a worker_code_directory")
 
         tried_workers = []
-        found = False
+
+        directory = os.path.dirname(inspect.getfile(type))
+        full_name_of_the_worker = os.path.join(directory, '..','..','_workers', exe_name)
+        full_name_of_the_worker = os.path.normpath(os.path.abspath(full_name_of_the_worker))
+        if os.path.exists(full_name_of_the_worker):
+            return full_name_of_the_worker
+        tried_workers.append(full_name_of_the_worker)
                 
         if len(self.worker_code_directory) > 0:
             full_name_of_the_worker = os.path.join(self.worker_code_directory, exe_name)
             full_name_of_the_worker = os.path.normpath(os.path.abspath(full_name_of_the_worker))
-            found = os.path.exists(full_name_of_the_worker)
-            if not found:
-                tried_workers.append(full_name_of_the_worker)
-                
+            if os.path.exists(full_name_of_the_worker):
+                return full_name_of_the_worker
+            tried_workers.append(full_name_of_the_worker)
+                        
+        directory_of_this_module = os.path.dirname(os.path.dirname(__file__))
+        full_name_of_the_worker = os.path.join(directory_of_this_module, '_workers', exe_name)
+        full_name_of_the_worker = os.path.normpath(os.path.abspath(full_name_of_the_worker))
+        if os.path.exists(full_name_of_the_worker):
+            return full_name_of_the_worker
+        tried_workers.append(full_name_of_the_worker)
+
         current_type = type
-        while not found:
+        while not current_type.__bases__[0] is object:
             directory_of_this_module = os.path.dirname(inspect.getfile(current_type))
             full_name_of_the_worker = os.path.join(directory_of_this_module, exe_name)
             full_name_of_the_worker = os.path.normpath(os.path.abspath(full_name_of_the_worker))
-            found = os.path.exists(full_name_of_the_worker)
-            if not found:
-                tried_workers.append(full_name_of_the_worker)
-                current_type = current_type.__bases__[0]
-                if current_type.__bases__[0] is object:
-                    break
-            else:
-                found = True
-        
-        if not found:
-            directory_of_this_module = os.path.dirname(os.path.dirname(__file__))
-            full_name_of_the_worker = os.path.join(directory_of_this_module, '_workers', exe_name)
-            full_name_of_the_worker = os.path.normpath(os.path.abspath(full_name_of_the_worker))
-            
-            found = os.path.exists(full_name_of_the_worker)
-            if not found:
-                raise exceptions.CodeException("The worker application does not exist, it should be at: \n{0}".format('\n'.join(tried_workers)))
-            else:
-                found = True
-            
-        return full_name_of_the_worker
+            if os.path.exists(full_name_of_the_worker):
+                return full_name_of_the_worker
+            tried_workers.append(full_name_of_the_worker)
+            current_type = current_type.__bases__[0]
+
+        raise exceptions.CodeException("The worker application does not exist, it should be at: \n{0}".format('\n'.join(tried_workers)))
     
     def send_message(self, call_id=0, function_id=-1, dtype_to_arguments={}, encoded_units = None):
         pass
@@ -795,6 +797,7 @@ Please do a 'make clean; make' in the root directory.
 AbstractMessageChannel.DEBUGGERS = {
     "none":None,
     "gdb":AbstractMessageChannel.GDB,
+    "lldb":AbstractMessageChannel.LLDB,
     "ddd":AbstractMessageChannel.DDD,
     "xterm":AbstractMessageChannel.XTERM,
     "gdb-remote":AbstractMessageChannel.GDBR,
@@ -1612,7 +1615,7 @@ class SocketMessage(AbstractMessage):
     
     def send(self, socket):
         
-        flags = numpy.array([self.big_endian, False, len(self.encoded_units) > 0, False], dtype="b")
+        flags = numpy.array([self.big_endian, self.error, len(self.encoded_units) > 0, False], dtype="b")
 
         header = numpy.array([
             self.call_id,
@@ -1948,7 +1951,7 @@ class SocketChannel(AbstractMessageChannel):
         
 
 
-    def nonblocking_recv_message(self, call_id, function_id, handle_as_array):
+    def nonblocking_recv_message(self, call_id, function_id, handle_as_array, has_units=False):
         request = SocketMessage().nonblocking_receive(self.socket)
     
         def handle_result(function):
@@ -1967,7 +1970,10 @@ class SocketChannel(AbstractMessageChannel):
             if message.error:
                 raise exceptions.CodeException("Error in (asynchronous) communication with worker: " + message.strings[0])
         
-            return message.to_result(handle_as_array)
+            if has_units:
+                return message.to_result(handle_as_array), message.encoded_units
+            else:
+                return message.to_result(handle_as_array)
 
         request.add_result_handler(handle_result)
     
@@ -2259,11 +2265,14 @@ class DistributedChannel(AbstractMessageChannel):
         if message.error:
             raise exceptions.CodeException("Error in worker: " + message.strings[0])
         
-        return message.to_result(handle_as_array)
+        if has_units:
+            return message.to_result(handle_as_array), message.encoded_units
+        else:
+            return message.to_result(handle_as_array)
     
     
 
-    def nonblocking_recv_message(self, call_id, function_id, handle_as_array):
+    def nonblocking_recv_message(self, call_id, function_id, handle_as_array, has_units=False):
         #       raise exceptions.CodeException("Nonblocking receive not supported by DistributedChannel")
         request = SocketMessage().nonblocking_receive(self.socket)
         
@@ -2283,7 +2292,10 @@ class DistributedChannel(AbstractMessageChannel):
             if message.error:
                 raise exceptions.CodeException("Error in (asynchronous) communication with worker: " + message.strings[0])
         
-            return message.to_result(handle_as_array)
+            if has_units:
+                return message.to_result(handle_as_array), message.encoded_units
+            else:
+                return message.to_result(handle_as_array)
 
         request.add_result_handler(handle_result)
             

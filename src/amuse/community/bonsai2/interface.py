@@ -237,8 +237,8 @@ class Bonsai2(GravitationalDynamics):
             **options
         )
     
-    def define_parameters(self, object):
-        object.add_method_parameter(
+    def define_parameters(self, handler):
+        handler.add_method_parameter(
             "get_eps2", 
             "set_eps2",
             "epsilon_squared", 
@@ -246,7 +246,7 @@ class Bonsai2(GravitationalDynamics):
             default_value = 0.05**2 | nbody_system.length**2
         )
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_time_step", 
             "set_time_step", 
             "timestep", 
@@ -254,7 +254,7 @@ class Bonsai2(GravitationalDynamics):
             default_value = 1.0 / 64 | nbody_system.time
         )
 
-#        object.add_method_parameter(
+#        handler.add_method_parameter(
 #            "get_eta", 
 #            "set_eta", 
 #            "timestep_parameter", 
@@ -262,7 +262,7 @@ class Bonsai2(GravitationalDynamics):
 #            default_value = 0.1
 #        )
 
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_theta_for_tree",
             "set_theta_for_tree",
             "opening_angle", 
@@ -270,58 +270,58 @@ class Bonsai2(GravitationalDynamics):
             default_value = 0.75
         )
  
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_begin_time",
             "set_begin_time",
             "begin_time",
             "model time to start the simulation at",
             default_value = 0.0 | nbody_system.time
         )
-        self.stopping_conditions.define_parameters(object)
+        self.stopping_conditions.define_parameters(handler)
     
-    def define_methods(self, object):
-        GravitationalDynamics.define_methods(self, object)
-        object.add_method(
+    def define_methods(self, handler):
+        GravitationalDynamics.define_methods(self, handler)
+        handler.add_method(
             "set_time",
             (nbody_system.time,),
-            (object.ERROR_CODE,)
+            (handler.ERROR_CODE,)
         )
-        object.add_method(
+        handler.add_method(
             "set_time_step",
             (nbody_system.time,),
-            (object.ERROR_CODE,)
+            (handler.ERROR_CODE,)
         )
-        object.add_method(
+        handler.add_method(
             "get_eps2",
             (),
-            (nbody_system.length**2, object.ERROR_CODE,)
+            (nbody_system.length**2, handler.ERROR_CODE,)
         )
-        object.add_method(
+        handler.add_method(
             "get_time",
             (),
-            (nbody_system.time, object.ERROR_CODE,)
+            (nbody_system.time, handler.ERROR_CODE,)
         )
-        object.add_method(
+        handler.add_method(
             "set_eps2",
             (nbody_system.length**2,),
-            (object.ERROR_CODE,)
+            (handler.ERROR_CODE,)
         )
-        self.stopping_conditions.define_methods(object)
+        self.stopping_conditions.define_methods(handler)
         
-    def define_particle_sets(self, object):
-        GravitationalDynamics.define_particle_sets(self, object)
+    def define_particle_sets(self, handler):
+        GravitationalDynamics.define_particle_sets(self, handler)
         
-        self.stopping_conditions.define_particle_set(object)
+        self.stopping_conditions.define_particle_set(handler)
     
-    def define_errorcodes(self, object):
-        object.add_errorcode(-1, 'Unspecified, other error.')
-        object.add_errorcode(-2, 'Called function is not implemented.')
-        object.add_errorcode(-3, 'A particle with the given index was not found.')
-        object.add_errorcode(-4, 'The tree has become too deep, consider the removal of far away particles to prevent a too large box.')
+    def define_errorcodes(self, handler):
+        handler.add_errorcode(-1, 'Unspecified, other error.')
+        handler.add_errorcode(-2, 'Called function is not implemented.')
+        handler.add_errorcode(-3, 'A particle with the given index was not found.')
+        handler.add_errorcode(-4, 'The tree has become too deep, consider the removal of far away particles to prevent a too large box.')
     
 
-    def define_state(self, object):
-        GravitationalDynamics.define_state(self, object)
+    def define_state(self, handler):
+        GravitationalDynamics.define_state(self, handler)
           
-        self.stopping_conditions.define_state(object)         
+        self.stopping_conditions.define_state(handler)         
 

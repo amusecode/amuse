@@ -1,9 +1,10 @@
+# -*- coding: ascii -*-
 """
 Calculates the mean mass of a stellar popultion as a function of time.
 This routine was used to measure the <m> of a star cluster in order to
 incorporate <m>(t) and d<m>/dt in a parametrized cluster evolution code.
 """
-
+from __future__ import print_function
 # import sys
 # import numpy
 # from matplotlib import pyplot
@@ -56,16 +57,16 @@ if __name__ == "__main__":
     stars = stellar_evolution.particles.add_particles(stars)
     stellar_evolution.commit_particles()
     t = 0 | units.Myr
-    mm = stars.mass.sum()/len(stars)
+    mm = stars.mass.sum() / len(stars)
     while t < t_end:
         mm_last = mm
         t += dt
         stellar_evolution.evolve_model(t)
-        mm = stars.mass.sum()/len(stars)
-        dmm_dt = (mm_last-mm)/dt
+        mm = stars.mass.sum() / len(stars)
+        dmm_dt = (mm_last - mm) / dt
         if o.verbose:
             print("t = ", t, "<m>=", mm.as_quantity_in(units.MSun),
-                  " d<m>/dt = ", dmm_dt.as_quantity_in(units.MSun/units.Myr))
+                  " d<m>/dt = ", dmm_dt.as_quantity_in(units.MSun / units.Myr))
         else:
             print("\t", t, "\t", mm.as_quantity_in(units.MSun),
-                  " \t ", dmm_dt.as_quantity_in(units.MSun/units.Myr))
+                  " \t ", dmm_dt.as_quantity_in(units.MSun / units.Myr))

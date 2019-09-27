@@ -22,7 +22,7 @@ RANLIB = ranlib
 RM = rm
 
 
-%.o : ../../ph4/src/%.cc
+%.o : %.cc
 	$(CXX) $(CXXFLAGS) -c -o $@ $^ 
 
 all: $(CODELIB) 
@@ -37,8 +37,8 @@ $(CODELIB): $(CODEOBJS)
 
 #-----------------------------------------------------------------------
 
-kepler-lib.o:	../../ph4/src/kepler.cc
-	$(MPICXX) $(CFLAGS) -c ../../ph4/src/kepler.cc -o kepler-lib.o
+kepler-lib.o:	kepler.cc
+	$(MPICXX) $(CFLAGS) -c kepler.cc -o kepler-lib.o
 
 #-----------------------------------------------------------------------
 

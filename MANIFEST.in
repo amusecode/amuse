@@ -2,10 +2,8 @@ include Makefile
 include configure
 include README.txt
 include config.mk.in
-include build.py.in
+include bin/amusifier.in
 include amuserc.example
-include ez_setup.py
-include support/configpy.in
 
 recursive-include src *
 recursive-include test *

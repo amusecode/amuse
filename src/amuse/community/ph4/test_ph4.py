@@ -234,7 +234,7 @@ def run_ph4(infile = None, number_of_stars = 40,
 
         ls = len(stars)
 
-    # Update the bookkeeping: synchronize stars with the module data.
+        # Update the bookkeeping: synchronize stars with the module data.
 
         try:
             gravity.update_particle_set()
@@ -283,7 +283,7 @@ def run_ph4(infile = None, number_of_stars = 40,
 if __name__ == '__main__':
 
     infile = None
-    N = 100
+    N = 250
     t_end = 5.0 | nbody_system.time
     delta_t = 1.0 | nbody_system.time
     n_workers = 1

@@ -1,3 +1,4 @@
+# -*- coding: ascii -*-
 """
 Evolves the steady state solution of a star irridiating a H2 region.
 """
@@ -34,7 +35,7 @@ def make_grid(
 
 def setup_abundancies(code):
     table = code.abundancies_table()
-    for atom in table.keys():
+    for atom in list(table.keys()):
         table[atom] = 0.0
     table['H'] = 1.0
     table['He'] = 0.1
@@ -122,10 +123,10 @@ def main(number_of_grid_cells=15, min_convergence=20):
 
         percentage_converged = radiative_transfer.get_percentage_converged()
         print(
-                "percentage converged :", percentage_converged,
-                ", step :", i,
-                ", photons:",
-                radiative_transfer.parameters.total_number_of_photons)
+            "percentage converged :", percentage_converged,
+            ", step :", i,
+            ", photons:",
+            radiative_transfer.parameters.total_number_of_photons)
 
         if percentage_converged >= min_convergence:
             break
@@ -133,11 +134,11 @@ def main(number_of_grid_cells=15, min_convergence=20):
         if previous_percentage_converged > 5 and percentage_converged < 95:
             convergence_increase = (
                 percentage_converged - previous_percentage_converged
-                ) / previous_percentage_converged
+            ) / previous_percentage_converged
             if (
                     convergence_increase < 0.2
                     and radiative_transfer.parameters.total_number_of_photons < max_number_of_photons
-                    ):
+            ):
                 radiative_transfer.parameters.total_number_of_photons *= 2
 
         previous_percentage_converged = percentage_converged
@@ -163,12 +164,12 @@ def new_option_parser():
         type="int"
     )
     result.add_option(
-        "-c", "--min-convergence",
+        "-c",
+        "--min-convergence",
         default=60,
         dest="min_convergence",
         help="stop the iteratation when the solution is converged to the given percentage (in whole numbers between 10 and 100)",
-        type="int"
-    )
+        type="int")
 
     return result
 

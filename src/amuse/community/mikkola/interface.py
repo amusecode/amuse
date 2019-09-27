@@ -285,38 +285,38 @@ class Mikkola(GravitationalDynamics):
 
         return result
         
-    def define_parameters(self, object):
-        GravitationalDynamics.define_parameters(self, object)
+    def define_parameters(self, handler):
+        GravitationalDynamics.define_parameters(self, handler)
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_time_step",
             "set_time_step",
             "timestep",
             "initial timestep for iteration", 
             default_value = 1.0 | nbody_system.time
         )
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_lightspeed", 
             "set_lightspeed",
             "lightspeed", 
             "lightspeed used in the code", 
             default_value = 1.0 | nbody_system.length / nbody_system.time
         )
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_tolerance", 
             "set_tolerance",
             "tolerance", 
             "tolerance used in the code", 
             default_value = 1e-13
         )
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_maximum_number_of_particles", 
             "set_maximum_number_of_particles",
             "maximum_number_of_particles", 
             "the code will evolve this number of particles, please be sure to account for mergers", 
             default_value = 100
         )
-        object.add_boolean_parameter(
+        handler.add_boolean_parameter(
             "get_evolve_to_exact_time", 
             "set_evolve_to_exact_time",
             "evolve_to_exact_time", 
@@ -324,56 +324,56 @@ class Mikkola(GravitationalDynamics):
             True
         )
         
-    def define_methods(self, object):
-        GravitationalDynamics.define_methods(self, object)
+    def define_methods(self, handler):
+        GravitationalDynamics.define_methods(self, handler)
         
-        object.add_method(
+        handler.add_method(
             "set_lightspeed",
             ( nbody_system.length / nbody_system.time, ),
-            (object.ERROR_CODE,)
+            (handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "get_lightspeed",
             ( ),
-            (nbody_system.length / nbody_system.time, object.ERROR_CODE,)
+            (nbody_system.length / nbody_system.time, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "set_time_step",
             (nbody_system.time, ),
-            (object.ERROR_CODE,)
+            (handler.ERROR_CODE,)
         )
 
-        object.add_method(
+        handler.add_method(
             "set_tolerance",
-            (object.NO_UNIT, ),
-            (object.ERROR_CODE,)
+            (handler.NO_UNIT, ),
+            (handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "get_tolerance",
             ( ),
-            (object.NO_UNIT, object.ERROR_CODE,)
+            (handler.NO_UNIT, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "get_radiated_gravitational_energy",
             (),
-            (nbody_system.mass * nbody_system.length ** 2  * nbody_system.time ** -2, object.ERROR_CODE,)
+            (nbody_system.mass * nbody_system.length ** 2  * nbody_system.time ** -2, handler.ERROR_CODE,)
         )
 
 
-        object.add_method(
+        handler.add_method(
             "get_total_energy",
             (),
-            (nbody_system.mass * nbody_system.length ** 2  * nbody_system.time ** -2, object.ERROR_CODE,)
+            (nbody_system.mass * nbody_system.length ** 2  * nbody_system.time ** -2, handler.ERROR_CODE,)
         )
 
-    def define_properties(self, object):
+    def define_properties(self, handler):
         
-        GravitationalDynamics.define_properties(self, object)
-        object.add_property("get_radiated_gravitational_energy")
+        GravitationalDynamics.define_properties(self, handler)
+        handler.add_property("get_radiated_gravitational_energy")
     
     def update_particle_set(self):
         """
@@ -398,7 +398,7 @@ class Mikkola(GravitationalDynamics):
             incode_storage._add_indices(indices_to_add)
 
 
-    def define_particle_sets(self, object):
-        GravitationalDynamics.define_particle_sets(self, object)
-        self.stopping_conditions.define_particle_set(object)
+    def define_particle_sets(self, handler):
+        GravitationalDynamics.define_particle_sets(self, handler)
+        self.stopping_conditions.define_particle_set(handler)
         

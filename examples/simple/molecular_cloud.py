@@ -1,3 +1,4 @@
+# -*- coding: ascii -*-
 """
 Evolves a molecular cloud with explictly split gravtiy evolution
 
@@ -7,7 +8,7 @@ code.
 Initial condition is a smooth spherical cloud with random velocities as in
 Bonnell et al. (2003)
 """
-
+from __future__ import print_function
 import numpy
 
 from matplotlib import pyplot
@@ -53,8 +54,8 @@ def run_mc(N=5000, Mcloud=10000. | units.MSun, Rcloud=1. | units.parsec):
     time_end = 0.36 | units.Myr
 
     parts = molecular_cloud(
-            targetN=N, convert_nbody=conv,
-            base_grid=body_centered_grid_unit_cube).result
+        targetN=N, convert_nbody=conv,
+        base_grid=body_centered_grid_unit_cube).result
 
     sph = Fi(conv)
 
@@ -70,7 +71,7 @@ def run_mc(N=5000, Mcloud=10000. | units.MSun, Rcloud=1. | units.parsec):
 
     # setting the hydro timestep is important
     # the sph code will take 2 timesteps every interaction timestep
-    sph.parameters.timestep = interaction_timestep/2
+    sph.parameters.timestep = interaction_timestep / 2
 
     sph.gas_particles.add_particles(parts)
 
@@ -99,7 +100,7 @@ def run_mc(N=5000, Mcloud=10000. | units.MSun, Rcloud=1. | units.parsec):
 
     ncolumn = 2
     nrow = 2
-    nplot = ncolumn*nrow
+    nplot = ncolumn * nrow
 
     grid_size = 3 | units.parsec
     extent = (grid_size * (-0.5, 0.5, -0.5, 0.5)).value_in(units.parsec)
@@ -110,14 +111,14 @@ def run_mc(N=5000, Mcloud=10000. | units.MSun, Rcloud=1. | units.parsec):
         plot_timestep = time_end
 
     for i in range(nplot):
-        ttarget = i*plot_timestep
+        ttarget = i * plot_timestep
         print("evolving to time:", ttarget.as_quantity_in(units.Myr))
         bridged_system.evolve_model(ttarget)
 
         rho = make_map(sph, N=200, grid_size=grid_size)
-        subplot = fig.add_subplot(ncolumn, nrow, i+1)
+        subplot = fig.add_subplot(ncolumn, nrow, i + 1)
         subplot.imshow(
-            numpy.log10(1.e-5+rho.value_in(units.amu/units.cm**3)),
+            numpy.log10(1.e-5 + rho.value_in(units.amu / units.cm**3)),
             extent=extent,
             vmin=1,
             vmax=5

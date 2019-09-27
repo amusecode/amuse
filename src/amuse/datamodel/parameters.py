@@ -20,11 +20,15 @@ class Parameters(object):
         object.__setattr__(self, '_mapping_from_name_to_definition', OrderedDictionary())
         object.__setattr__(self, '_mapping_from_name_to_parameter', OrderedDictionary())
 
-        for x in definitions:
-            self._mapping_from_name_to_definition[x.name] = x
-        
-        
+        self.update()
 
+    def update(self):
+        for x in self._definitions:
+            self._mapping_from_name_to_definition[x.name] = x
+
+        if len(self._definitions)!=len(self._mapping_from_name_to_definition):
+            raise Exception("Duplicate parameters detected")
+ 
     def __getattr__(self, name):
         #if name.startswith('__'):
         #    return object.__getattribute__(self, name)
@@ -466,12 +470,12 @@ class InterfaceParameterDefinition(ParameterDefinition):
         return x
         
     def set_value(self, parameter, object, quantity):
-        if self.state_guard:
-          getattr(object, self.state_guard)()
         try:
           self.value=quantity.copy()
         except:
           self.value=quantity
+        if self.state_guard:
+          getattr(object, self.state_guard)()
 
     def must_set_to_default_if_not_set(self):
         return False

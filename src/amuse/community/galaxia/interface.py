@@ -960,8 +960,8 @@ class BarAndSpirals3D(CommonCode, GravityFieldCode):
       self.interface_doc = legacy_interface.__doc__
       CommonCode.__init__(self, legacy_interface, **options)
       
-   def define_parameters(self, object):
-      object.add_method_parameter(
+   def define_parameters(self, handler):
+      handler.add_method_parameter(
          "get_time",
          "set_time",
          "time",
@@ -969,7 +969,7 @@ class BarAndSpirals3D(CommonCode, GravityFieldCode):
          default_value = 0 | 97781310.5721*units.yr
          )
 
-      object.add_method_parameter(
+      handler.add_method_parameter(
          "get_omega_sys",
          None,
          "omega_system",
@@ -977,14 +977,14 @@ class BarAndSpirals3D(CommonCode, GravityFieldCode):
          default_value = 0 | 10*units.km/(units.s*units.kpc)
          )
       
-      object.add_method_parameter(
+      handler.add_method_parameter(
          "get_initial_phase",
          None,
          "initial_phase",
          "phase of the system. To convert between inertial and rotating frames",
          default_value = 0 # | units.rad
          )
-      object.add_method_parameter(
+      handler.add_method_parameter(
          "get_flag",
          "set_flag",
          "xflag",
@@ -993,7 +993,7 @@ class BarAndSpirals3D(CommonCode, GravityFieldCode):
          )
       
       # BAR
-      object.add_method_parameter(
+      handler.add_method_parameter(
          "get_bar_phase",
          "set_bar_phase",
          "bar_phase",
@@ -1001,7 +1001,7 @@ class BarAndSpirals3D(CommonCode, GravityFieldCode):
          default_value = 0 #| units.rad
          )
        
-      object.add_method_parameter(
+      handler.add_method_parameter(
          "get_mass_bar",
          "set_mass_bar",
          "mass_bar",
@@ -1009,7 +1009,7 @@ class BarAndSpirals3D(CommonCode, GravityFieldCode):
          default_value = 431 | 2.32e7*units.MSun
          )
       
-      object.add_method_parameter(
+      handler.add_method_parameter(
          "get_aaxis_bar",
          "set_aaxis_bar",
          "aaxis_bar",
@@ -1017,7 +1017,7 @@ class BarAndSpirals3D(CommonCode, GravityFieldCode):
          default_value = 3.13 | units.kpc
          )
       
-      object.add_method_parameter(
+      handler.add_method_parameter(
          "get_axis_ratio_bar",
          "set_axis_ratio_bar",
          "axis_ratio_bar",
@@ -1025,7 +1025,7 @@ class BarAndSpirals3D(CommonCode, GravityFieldCode):
          default_value = 0.32
          )
       
-      object.add_method_parameter(
+      handler.add_method_parameter(
          "get_caxis_bar",
          "set_caxis_bar",
          "caxis_bar",
@@ -1033,7 +1033,7 @@ class BarAndSpirals3D(CommonCode, GravityFieldCode):
          default_value = 0 | units.kpc
          )
       
-      object.add_method_parameter(
+      handler.add_method_parameter(
          "get_omega_bar",
          "set_omega_bar",
          "omega_bar",
@@ -1041,7 +1041,7 @@ class BarAndSpirals3D(CommonCode, GravityFieldCode):
          default_value = 5 | 10.*units.km/(units.s*units.kpc)
          )
       
-      object.add_method_parameter(
+      handler.add_method_parameter(
          "get_nbt",
          "set_nbt",
          "nbt",
@@ -1049,7 +1049,7 @@ class BarAndSpirals3D(CommonCode, GravityFieldCode):
          default_value = 0
          )
 
-      object.add_method_parameter(
+      handler.add_method_parameter(
          "get_tgrowth",
          None,
          "tgrowth_bar",
@@ -1058,7 +1058,7 @@ class BarAndSpirals3D(CommonCode, GravityFieldCode):
          )
       
       # SPIRAL 
-      object.add_method_parameter(
+      handler.add_method_parameter(
          "get_spiral_phase",
          "set_spiral_phase",
          "spiral_phase",
@@ -1067,7 +1067,7 @@ class BarAndSpirals3D(CommonCode, GravityFieldCode):
          )
       
 
-      object.add_method_parameter(
+      handler.add_method_parameter(
          "get_N",
          "set_N",
          "N",
@@ -1075,7 +1075,7 @@ class BarAndSpirals3D(CommonCode, GravityFieldCode):
          default_value = 100
          )
 
-      object.add_method_parameter(
+      handler.add_method_parameter(
          "get_tan_pitch_angle",
          "set_tan_pitch_angle",
          "tan_pitch_angle",
@@ -1083,7 +1083,7 @@ class BarAndSpirals3D(CommonCode, GravityFieldCode):
          default_value = 0.277
          )
 
-      object.add_method_parameter(
+      handler.add_method_parameter(
          "get_rsp",
          "set_rsp",
          "rsp",
@@ -1092,7 +1092,7 @@ class BarAndSpirals3D(CommonCode, GravityFieldCode):
          )
 
 
-      object.add_method_parameter(
+      handler.add_method_parameter(
          "get_amplitude",
          "set_amplitude",
          "amplitude",
@@ -1100,7 +1100,7 @@ class BarAndSpirals3D(CommonCode, GravityFieldCode):
          default_value = 8.5 | 100*units.kms**2/units.kpc
          )
 
-      object.add_method_parameter(
+      handler.add_method_parameter(
          "get_r_sigma",
          "set_r_sigma",
          "r_sigma",
@@ -1108,7 +1108,7 @@ class BarAndSpirals3D(CommonCode, GravityFieldCode):
          default_value = 2.5 | units.kpc
          )
 
-      object.add_method_parameter(
+      handler.add_method_parameter(
          "get_omega_spiral",
          "set_omega_spiral",
          "omega_spiral",
@@ -1116,7 +1116,7 @@ class BarAndSpirals3D(CommonCode, GravityFieldCode):
          default_value = 2. | 10.*units.kms/units.kpc
          )
 
-      object.add_method_parameter(
+      handler.add_method_parameter(
          "get_m",
          "set_m",
          "m",
@@ -1128,7 +1128,7 @@ class BarAndSpirals3D(CommonCode, GravityFieldCode):
       # CG02 3D spiral model
       #  default values set as in onriginal CG02 paper
       
-      object.add_method_parameter(
+      handler.add_method_parameter(
          "get_spiral_density_amplitude",
          "set_spiral_density_amplitude",
          "spiral_density_amplitude",
@@ -1136,7 +1136,7 @@ class BarAndSpirals3D(CommonCode, GravityFieldCode):
          default_value = 1.35633 | 2.32e7*units.MSun/units.kpc**3
          )
       
-      object.add_method_parameter(
+      handler.add_method_parameter(
          "get_fiducial_radius",
          "set_fiducial_radius",
          "fiducial_radius",
@@ -1144,7 +1144,7 @@ class BarAndSpirals3D(CommonCode, GravityFieldCode):
          default_value = 8.0 | units.kpc
          )
       
-      object.add_method_parameter(
+      handler.add_method_parameter(
          "get_scale_height",
          "set_scale_height",
          "scale_height",
@@ -1154,7 +1154,7 @@ class BarAndSpirals3D(CommonCode, GravityFieldCode):
       
       # transcient structure
       
-      object.add_method_parameter(
+      handler.add_method_parameter(
           "get_sigma_s",
           "set_sigma_s",
           "sigma_s",
@@ -1162,7 +1162,7 @@ class BarAndSpirals3D(CommonCode, GravityFieldCode):
           default_value = 1.02269032206 | 97781310.5721*units.yr
           )
 
-      object.add_method_parameter(
+      handler.add_method_parameter(
           "get_t_sim",
           "set_t_sim",
           "t_sim",
@@ -1172,7 +1172,7 @@ class BarAndSpirals3D(CommonCode, GravityFieldCode):
 
 
       # LEPINE MODEL
-      object.add_method_parameter(
+      handler.add_method_parameter(
          "get_spiral_model",
          "set_spiral_model",
          "spiral_model",
@@ -1180,7 +1180,7 @@ class BarAndSpirals3D(CommonCode, GravityFieldCode):
          default_value = 0 
          )
       
-      object.add_method_parameter(
+      handler.add_method_parameter(
          "get_omega_spiral2",
          "set_omega_spiral2",
          "omega_spiral2",
@@ -1188,7 +1188,7 @@ class BarAndSpirals3D(CommonCode, GravityFieldCode):
          default_value = 2. | 10.*units.kms/units.kpc
          )
 
-      object.add_method_parameter(
+      handler.add_method_parameter(
          "get_amplitude2",
          "set_amplitude2",
          "amplitude2",
@@ -1196,7 +1196,7 @@ class BarAndSpirals3D(CommonCode, GravityFieldCode):
          default_value = 6.8 | 100*units.kms**2/units.kpc
          )
       
-      object.add_method_parameter(
+      handler.add_method_parameter(
          "get_tan_pitch_angle2",
          "set_tan_pitch_angle2",
          "tan_pitch_angle2",
@@ -1204,7 +1204,7 @@ class BarAndSpirals3D(CommonCode, GravityFieldCode):
          default_value = -0.1227845
          )
       
-      object.add_method_parameter(
+      handler.add_method_parameter(
          "get_m2",
          "set_m2",
          "m2",
@@ -1212,7 +1212,7 @@ class BarAndSpirals3D(CommonCode, GravityFieldCode):
          default_value = 2 
          )
 
-      object.add_method_parameter(
+      handler.add_method_parameter(
         "get_phi21",
         "set_phi21",
         "phi21_spiral",
@@ -1222,7 +1222,7 @@ class BarAndSpirals3D(CommonCode, GravityFieldCode):
 
       
       # AXI
-      object.add_method_parameter(
+      handler.add_method_parameter(
          "get_mass_bulge",
          "set_mass_bulge",
          "mass_bulge",
@@ -1230,7 +1230,7 @@ class BarAndSpirals3D(CommonCode, GravityFieldCode):
          default_value = 606 | 2.32e7*units.MSun
          )
       
-      object.add_method_parameter(
+      handler.add_method_parameter(
          "get_b_bulge",
          "set_b_bulge",
          "b_bulge",
@@ -1238,7 +1238,7 @@ class BarAndSpirals3D(CommonCode, GravityFieldCode):
          default_value = 0.3873 | units.kpc
          )
       
-      object.add_method_parameter(
+      handler.add_method_parameter(
          "get_mass_disk",
          "set_mass_disk",
          "mass_disk",
@@ -1246,7 +1246,7 @@ class BarAndSpirals3D(CommonCode, GravityFieldCode):
          default_value = 3690 | 2.32e7*units.MSun
          )
       
-      object.add_method_parameter(
+      handler.add_method_parameter(
          "get_a_disk",
          "set_a_disk",
          "a_disk",
@@ -1254,7 +1254,7 @@ class BarAndSpirals3D(CommonCode, GravityFieldCode):
          default_value = 5.3178 | units.kpc
          )
 
-      object.add_method_parameter(
+      handler.add_method_parameter(
          "get_b_disk",
          "set_b_disk",
          "b_disk",
@@ -1262,7 +1262,7 @@ class BarAndSpirals3D(CommonCode, GravityFieldCode):
          default_value = 0.25 | units.kpc
          )
 
-      object.add_method_parameter(
+      handler.add_method_parameter(
          "get_mass_halo",
          "set_mass_halo",
          "mass_halo",
@@ -1270,7 +1270,7 @@ class BarAndSpirals3D(CommonCode, GravityFieldCode):
          default_value = 4615 | 2.32e7*units.MSun
          )
       
-      object.add_method_parameter(
+      handler.add_method_parameter(
          "get_a_halo",
          "set_a_halo",
          "a_halo",
@@ -1279,14 +1279,14 @@ class BarAndSpirals3D(CommonCode, GravityFieldCode):
          )
 
       
-      object.add_boolean_parameter(
+      handler.add_boolean_parameter(
          "get_spiral_contribution",
          "set_spiral_contribution",
          "spiral_contribution",
          "Flag whether to include a spiral in the model",
          False
          )
-      object.add_boolean_parameter(
+      handler.add_boolean_parameter(
          "get_bar_contribution",
          "set_bar_contribution",
          "bar_contribution",
@@ -1294,7 +1294,7 @@ class BarAndSpirals3D(CommonCode, GravityFieldCode):
          False
          )
 
-      object.add_boolean_parameter(
+      handler.add_boolean_parameter(
          "get_transient_spiral",
          "set_transient_spiral",
          "transient_spiral",
@@ -1302,22 +1302,22 @@ class BarAndSpirals3D(CommonCode, GravityFieldCode):
          False
          )
      
-   def define_state(self, object):
-      CommonCode.define_state(self, object)
-      object.add_transition('INITIALIZED', 'RUN', 'commit_parameters')
-      object.add_transition('RUN', 'CHANGE_PARAMETERS_RUN', 'before_set_parameter', False)
-      object.add_transition('CHANGE_PARAMETERS_RUN', 'RUN', 'recommit_parameters')
-      object.add_method('CHANGE_PARAMETERS_RUN', 'before_set_parameter')
-      object.add_method('CHANGE_PARAMETERS_RUN', 'before_get_parameter')
-      object.add_method('RUN', 'before_get_parameter')
-      GravityFieldCode.define_state(self, object)
-      object.add_method('RUN', 'get_local_density')
-      object.add_method('RUN', 'get_velcirc')
-      object.add_method('RUN', 'get_epifreq')
-      object.add_method('RUN', 'get_spiral_density')
-      object.add_method('RUN', 'get_tidal_tensor')
-      object.add_method('RUN', 'get_eigen_values')
-      object.add_method('RUN', 'get_tidal_radius')
+   def define_state(self, handler):
+      CommonCode.define_state(self, handler)
+      handler.add_transition('INITIALIZED', 'RUN', 'commit_parameters')
+      handler.add_transition('RUN', 'CHANGE_PARAMETERS_RUN', 'before_set_parameter', False)
+      handler.add_transition('CHANGE_PARAMETERS_RUN', 'RUN', 'recommit_parameters')
+      handler.add_method('CHANGE_PARAMETERS_RUN', 'before_set_parameter')
+      handler.add_method('CHANGE_PARAMETERS_RUN', 'before_get_parameter')
+      handler.add_method('RUN', 'before_get_parameter')
+      GravityFieldCode.define_state(self, handler)
+      handler.add_method('RUN', 'get_local_density')
+      handler.add_method('RUN', 'get_velcirc')
+      handler.add_method('RUN', 'get_epifreq')
+      handler.add_method('RUN', 'get_spiral_density')
+      handler.add_method('RUN', 'get_tidal_tensor')
+      handler.add_method('RUN', 'get_eigen_values')
+      handler.add_method('RUN', 'get_tidal_radius')
 
    def before_set_parameter(self):
       pass

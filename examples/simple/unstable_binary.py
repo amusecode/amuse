@@ -1,3 +1,4 @@
+# -*- coding: ascii -*-
 """
 Evolves two stars dynamically (hermit, nbody code) each star will
 lose mass during the evolution (evtwin, stellar evolution code)
@@ -7,7 +8,7 @@ stars start orbiting with a stable kepler orbit.
 After 2 orbital periods the stars will begin to lose mass and the binary
 will become unstable.
 """
-
+from __future__ import print_function
 from amuse.plot import xlabel, ylabel, plot
 from matplotlib import pyplot
 from math import pi
@@ -18,7 +19,7 @@ from amuse.units import constants
 from amuse.units.nbody_system import nbody_to_si
 from amuse.community.evtwin.interface import EVtwin
 # from amuse.community.sse.interface import SSE
-from amuse.community.hermite0.interface import Hermite
+from amuse.community.hermite.interface import Hermite
 
 from amuse.datamodel import Particles
 
@@ -31,16 +32,16 @@ def set_up_initial_conditions(orbital_period, kinetic_to_potential_ratio):
     stars.position = [0.0, 0.0, 0.0] | units.AU
     stars.velocity = [0.0, 0.0, 0.0] | units.km / units.s
 
-    print("Binary with masses: "+str(stars.mass) +
+    print("Binary with masses: " + str(stars.mass) +
           ", and orbital period: ", orbital_period)
     semimajor_axis = ((constants.G * stars.total_mass() *
-                       (orbital_period / (2 * pi))**2.0)**(1.0/3.0))
+                       (orbital_period / (2 * pi))**2.0)**(1.0 / 3.0))
     separation = 2 * semimajor_axis * (1 - kinetic_to_potential_ratio)
     print("Initial separation:", separation.as_quantity_in(units.AU))
     relative_velocity = (
-            (kinetic_to_potential_ratio / (1.0 - kinetic_to_potential_ratio))
-            * constants.G * stars.total_mass() / semimajor_axis
-            ).sqrt()
+        (kinetic_to_potential_ratio / (1.0 - kinetic_to_potential_ratio))
+        * constants.G * stars.total_mass() / semimajor_axis
+    ).sqrt()
     print("Initial relative velocity:",
           relative_velocity.as_quantity_in(units.km / units.s))
 
@@ -55,7 +56,8 @@ def set_up_stellar_evolution_code(stars):
     stellar_evolution.initialize_code()
     # if you run with mesa, you can play with the wind efficiency
     # stellar_evolution.parameters.RGB_wind_scheme = 1
-    # stellar_evolution.parameters.reimers_wind_efficiency = 1.0e6 # ridiculous, but instructive
+    # stellar_evolution.parameters.reimers_wind_efficiency = 1.0e6 #
+    # ridiculous, but instructive
     stellar_evolution.particles.add_particles(stars)
     return stellar_evolution
 
@@ -92,15 +94,15 @@ def simulate_binary_evolution(binary, orbital_period, t_offset_stars, t_end):
         separation = (
             gravitational_dynamics.particles[0].position
             - gravitational_dynamics.particles[1].position
-            ).length()
+        ).length()
         distance.append(separation)
         mass.append(primary.mass)
         time.append(current_time)
         print(
-                "System evolved to time: ", current_time,
-                ", primary mass:", primary.mass.as_quantity_in(
-                    units.MSun),
-                ", separation:", separation.as_quantity_in(units.AU))
+            "System evolved to time: ", current_time,
+            ", primary mass:", primary.mass.as_quantity_in(
+                units.MSun),
+            ", separation:", separation.as_quantity_in(units.AU))
 
     print("Evolution done")
     return distance, mass, time
@@ -126,7 +128,7 @@ def main(
         kinetic_to_potential_ratio=0.8,
         periods=10,
         age=10 | units.Myr
-        ):
+):
     t_offset_stars = age
     t_end = periods * orbital_period
 
@@ -149,12 +151,12 @@ def new_option_parser():
     )
 
     result.add_option(
-        "-k", "--kpratio",
+        "-k",
+        "--kpratio",
         default=0.8,
         dest="kinetic_to_potential_ratio",
         help="kinetec to potential energy ratio, values less than 1.0 correspond to bound systems",
-        type="float"
-    )
+        type="float")
     result.add_option(
         "--periods",
         default=10,

@@ -218,7 +218,7 @@ HostError Hermite6th(const double TTIME, double* GTIME, double* ATIME, double* l
 		HostSafeCall(CheckHDDMemory(cleanstop, path));
 
 	MPISafeCall(MPI_Barrier(MPI_COMM_WORLD));
-   MPISafeCall(MPI_Bcast(cleanstop, 1, MPI::BOOL, 0, MPI_COMM_WORLD));
+   MPISafeCall(MPI_Bcast(cleanstop, 1, MPI_C_BOOL, 0, MPI_COMM_WORLD));
 
 	if(*cleanstop)
 		return HNoError;
@@ -556,7 +556,7 @@ HostError Hermite6th(const double TTIME, double* GTIME, double* ATIME, double* l
 			}
 
 			MPISafeCall(MPI_Barrier(MPI_COMM_WORLD));
-		   MPISafeCall(MPI_Bcast(cleanstop, 1, MPI::BOOL, 0, MPI_COMM_WORLD));
+		   MPISafeCall(MPI_Bcast(cleanstop, 1, MPI_C_BOOL, 0, MPI_COMM_WORLD));
 
 			if(*cleanstop)
 				return HNoError;

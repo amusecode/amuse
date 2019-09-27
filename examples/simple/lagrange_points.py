@@ -1,15 +1,16 @@
+# -*- coding: ascii -*-
 """
 Make a contour plot of the effective potential of the Sun-Earth system (left)
 and a system with a 10000 times more massive Earth with the Lagrangian points
 visible.
 """
-
+from __future__ import print_function
 # import numpy
 from matplotlib import pyplot
 from amuse.plot import xlabel, ylabel, effective_iso_potential_plot
 
 from amuse.units import units, constants, nbody_system
-from amuse.community.hermite0.interface import Hermite
+from amuse.community.hermite.interface import Hermite
 from amuse.datamodel import Particles
 
 

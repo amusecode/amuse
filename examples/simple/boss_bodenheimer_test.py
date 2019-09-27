@@ -1,3 +1,4 @@
+# -*- coding: ascii -*-
 """
 Fragmentation in a rotating protostar -- Boss & Bodenheimer (1979, BB79,
   http://adsabs.harvard.edu/abs/1979ApJ...234..289B)
@@ -84,7 +85,7 @@ def plot_sph_rho(sph, N=100, grid_size=1 | units.parsec,
     # plotting
     extent = (grid_size * (-0.5, 0.5, -0.5, 0.5)).value_in(units.parsec)
     pyplot.figure(figsize=(5, 5.2))
-    pyplot.imshow(numpy.log10(rho.value_in(units.amu/units.cm**3)),
+    pyplot.imshow(numpy.log10(rho.value_in(units.amu / units.cm**3)),
                   extent=extent)
     pyplot.title(plot_title)
     # pyplot.xlabel('x [pc]')
@@ -103,15 +104,15 @@ def plot_sph_rho(sph, N=100, grid_size=1 | units.parsec,
 def bb79_cloud_evolve(N=50000,
                       Mcloud=1. | units.MSun,
                       Rcloud=3.2e16 | units.cm,
-                      omega=1.56e-12 | units.rad/units.s,
+                      omega=1.56e-12 | units.rad / units.s,
                       density_perturb=0.5,
                       t_total=8.3e11 | units.s):
 
     # mean density of the cloud
-    rho_uni = Mcloud / (4./3.*numpy.pi*Rcloud**3)
-    print(" ** mean density = ", rho_uni.in_(units.g/units.cm**3))
+    rho_uni = Mcloud / (4. / 3. * numpy.pi * Rcloud**3)
+    print(" ** mean density = ", rho_uni.in_(units.g / units.cm**3))
     # free fall time of the cloud
-    t_ff = numpy.sqrt(3.*numpy.pi / (32.*units.constants.G*rho_uni))
+    t_ff = numpy.sqrt(3. * numpy.pi / (32. * units.constants.G * rho_uni))
     print(" ** free-fall time = ", t_ff.in_(units.yr))
 
     conv = nbody_system.nbody_to_si(Mcloud, Rcloud)
@@ -129,10 +130,10 @@ def bb79_cloud_evolve(N=50000,
     sph.parameters.integrate_entropy_flag = False
     sph.parameters.gamma = 1
     sph.parameters.verbosity = 0
-    sph.parameters.timestep = 0.1*t_ff
+    sph.parameters.timestep = 0.1 * t_ff
 
     print(
-        "**evolving to time: (end time = ~ {0:.3f} t_ff)".format(t_total/t_ff))
+        "**evolving to time: (end time = ~ {0:.3f} t_ff)".format(t_total / t_ff))
 
     # setting snapshots to be plotted
     nplot = 10
@@ -143,7 +144,7 @@ def bb79_cloud_evolve(N=50000,
 
     # evolution of the cloud
     for i in range(nplot):
-        ttarget = i*plot_timestep
+        ttarget = i * plot_timestep
         t_tff = ttarget / t_ff
 
         sph.evolve_model(ttarget)
@@ -164,6 +165,6 @@ if __name__ == "__main__":
     bb79_cloud_evolve(N=50000,
                       Mcloud=1. | units.MSun,
                       Rcloud=3.2e16 | units.cm,
-                      omega=1.56e-12 | units.rad/units.s,
+                      omega=1.56e-12 | units.rad / units.s,
                       density_perturb=0.5,
                       t_total=8.3e11 | units.s)  # ~1.5*t_ff

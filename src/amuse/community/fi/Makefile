@@ -1,6 +1,6 @@
 # standard amuse configuration include
 # config.mk will be made after ./configure has run
-AMUSE_DIR?=../../../..
+AMUSE_DIR?=$(realpath ../../../..)
 -include ${AMUSE_DIR}/config.mk
 
 MPIFC ?= mpif90

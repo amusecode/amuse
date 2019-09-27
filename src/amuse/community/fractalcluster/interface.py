@@ -114,8 +114,8 @@ class FractalCluster(CommonCode):
     def recommit_parameters(self):
         pass
     
-    def define_parameters(self, object):
-        object.add_method_parameter(
+    def define_parameters(self, handler):
+        handler.add_method_parameter(
             "get_nstar",
             "set_nstar",
             "number_of_particles",
@@ -123,7 +123,7 @@ class FractalCluster(CommonCode):
             default_value = 0
         )
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_fractal_dimension",
             "set_fractal_dimension",
             "fractal_dimension",
@@ -131,7 +131,7 @@ class FractalCluster(CommonCode):
             default_value = 1.6
         )
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_random_seed",
             "set_random_seed",
             "random_seed",
@@ -139,51 +139,51 @@ class FractalCluster(CommonCode):
             default_value = 1234321
         )
     
-    def define_methods(self, object):
-        CommonCode.define_methods(self, object)
-        object.add_method("generate_particles", (), (object.ERROR_CODE,))
-        object.add_method("get_number_of_particles_updated", (), (object.NO_UNIT, object.ERROR_CODE,))
+    def define_methods(self, handler):
+        CommonCode.define_methods(self, handler)
+        handler.add_method("generate_particles", (), (handler.ERROR_CODE,))
+        handler.add_method("get_number_of_particles_updated", (), (handler.NO_UNIT, handler.ERROR_CODE,))
         
-        object.add_method("get_state", (object.INDEX,), 
-            [nbody_system.length]*3 + [nbody_system.speed]*3 + [object.ERROR_CODE]
+        handler.add_method("get_state", (handler.INDEX,), 
+            [nbody_system.length]*3 + [nbody_system.speed]*3 + [handler.ERROR_CODE]
         )
         
-        object.add_method("get_target_number_of_particles", (), (object.NO_UNIT, object.ERROR_CODE,))
-        object.add_method("set_target_number_of_particles", (object.NO_UNIT, ), (object.ERROR_CODE,))
+        handler.add_method("get_target_number_of_particles", (), (handler.NO_UNIT, handler.ERROR_CODE,))
+        handler.add_method("set_target_number_of_particles", (handler.NO_UNIT, ), (handler.ERROR_CODE,))
         
-        object.add_method("get_fractal_dimension", (), (object.NO_UNIT, object.ERROR_CODE,))
-        object.add_method("set_fractal_dimension", (object.NO_UNIT, ), (object.ERROR_CODE,))
+        handler.add_method("get_fractal_dimension", (), (handler.NO_UNIT, handler.ERROR_CODE,))
+        handler.add_method("set_fractal_dimension", (handler.NO_UNIT, ), (handler.ERROR_CODE,))
         
-        object.add_method("get_random_seed", (), (object.NO_UNIT, object.ERROR_CODE,))
-        object.add_method("set_random_seed", (object.NO_UNIT, ), (object.ERROR_CODE,))
+        handler.add_method("get_random_seed", (), (handler.NO_UNIT, handler.ERROR_CODE,))
+        handler.add_method("set_random_seed", (handler.NO_UNIT, ), (handler.ERROR_CODE,))
 
-    def define_converter(self, object):
+    def define_converter(self, handler):
         if not self.unit_converter is None:
-            object.set_converter(self.unit_converter.as_converter_from_si_to_generic())
+            handler.set_converter(self.unit_converter.as_converter_from_si_to_generic())
     
-    def define_particle_sets(self, object):
-        object.define_set('particles', 'index_of_the_particle')
-        object.set_new('particles', 'new_particle')
-        object.set_delete('particles', 'delete_particle')
-        object.add_getter('particles', 'get_state')
+    def define_particle_sets(self, handler):
+        handler.define_set('particles', 'index_of_the_particle')
+        handler.set_new('particles', 'new_particle')
+        handler.set_delete('particles', 'delete_particle')
+        handler.add_getter('particles', 'get_state')
     
-    def define_state(self, object):
-        CommonCode.define_state(self, object)
-        object.add_transition('INITIALIZED','EDIT','commit_parameters')
-        object.add_transition('EDIT','CHANGE_PARAMETERS_EDIT','before_set_parameter', False)
-        object.add_transition('CHANGE_PARAMETERS_EDIT','EDIT','recommit_parameters')
+    def define_state(self, handler):
+        CommonCode.define_state(self, handler)
+        handler.add_transition('INITIALIZED','EDIT','commit_parameters')
+        handler.add_transition('EDIT','CHANGE_PARAMETERS_EDIT','before_set_parameter', False)
+        handler.add_transition('CHANGE_PARAMETERS_EDIT','EDIT','recommit_parameters')
         
-        object.add_method('CHANGE_PARAMETERS_EDIT', 'before_set_parameter')
+        handler.add_method('CHANGE_PARAMETERS_EDIT', 'before_set_parameter')
         
-        object.add_method('CHANGE_PARAMETERS_EDIT', 'before_get_parameter')
-        object.add_method('RUN', 'before_get_parameter')
-        object.add_method('EDIT', 'before_get_parameter')
+        handler.add_method('CHANGE_PARAMETERS_EDIT', 'before_get_parameter')
+        handler.add_method('RUN', 'before_get_parameter')
+        handler.add_method('EDIT', 'before_get_parameter')
         
-        object.add_transition('EDIT', 'RUN', 'generate_particles', False)
-        object.add_transition('RUN', 'EDIT', 'clear_particle_set')
-        object.add_method('EDIT', 'get_number_of_particles_updated')
-        object.add_method('RUN', 'get_number_of_particles_updated')
-        object.add_method('RUN', 'get_state')
+        handler.add_transition('EDIT', 'RUN', 'generate_particles', False)
+        handler.add_transition('RUN', 'EDIT', 'clear_particle_set')
+        handler.add_method('EDIT', 'get_number_of_particles_updated')
+        handler.add_method('RUN', 'get_number_of_particles_updated')
+        handler.add_method('RUN', 'get_state')
     
     def generate_particles(self):
         result = self.overridden().generate_particles()

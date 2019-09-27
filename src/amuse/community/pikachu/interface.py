@@ -334,125 +334,125 @@ class Pikachu(GravitationalDynamics, GravityFieldCode):
             **options
         )
         
-    def define_state(self, object):
-        GravitationalDynamics.define_state(self, object)
-        GravityFieldCode.define_state(self, object)
-        self.stopping_conditions.define_state(object)
+    def define_state(self, handler):
+        GravitationalDynamics.define_state(self, handler)
+        GravityFieldCode.define_state(self, handler)
+        self.stopping_conditions.define_state(handler)
 
 
 
-    def define_parameters(self, object):
-        GravitationalDynamics.define_parameters(self, object)
-        self.stopping_conditions.define_parameters(object)
-        object.add_method_parameter(
+    def define_parameters(self, handler):
+        GravitationalDynamics.define_parameters(self, handler)
+        self.stopping_conditions.define_parameters(handler)
+        handler.add_method_parameter(
             "get_kernel_directory", 
             "set_kernel_directory",
             "kernel_directory", 
             "Name of the Sequoia kernel directory", 
             default_value = self.default_kernel_directory
         )
-        object.add_alias_parameter(
+        handler.add_alias_parameter(
             "epsilon_squared", 
             "epsilon_squared_star_star", 
             "smoothing parameter for gravity calculations - star-star interactions only (alias for epsilon_squared_star_star)"
         )
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_eps2_fs_fs",
             "set_eps2_fs_fs", 
             "epsilon_squared_star_star", 
             "smoothing parameter for gravity calculations - star-star interactions only", 
             default_value = 1.0e-8 | nbody_system.length * nbody_system.length
         )
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_eps2_fs_bh",
             "set_eps2_fs_bh", 
             "epsilon_squared_star_blackhole", 
             "smoothing parameter for gravity calculations - star-blackhole interactions only", 
             default_value = 1.0e-8 | nbody_system.length * nbody_system.length
         )
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_eps2_bh_bh",
             "set_eps2_bh_bh", 
             "epsilon_squared_blackhole_blackhole", 
             "smoothing parameter for gravity calculations - blackhole-blackhole interactions only", 
             default_value = 0.0 | nbody_system.length * nbody_system.length
         )
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_eta_s",
             "set_eta_s", 
             "initial_timestep_parameter", 
             "initial timestep parameter (eta)", 
             default_value = 0.005
         )
-        object.add_alias_parameter(
+        handler.add_alias_parameter(
             "timestep_parameter", 
             "timestep_parameter_stars", 
             "timestep parameter (eta) for field stars (alias for timestep_parameter_stars)"
         )
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_eta_fs",
             "set_eta_fs", 
             "timestep_parameter_stars", 
             "timestep parameter (eta) for field stars", 
             default_value = 0.025
         )
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_eta_smbh",
             "set_eta_smbh", 
             "timestep_parameter_black_holes", 
             "timestep parameter (eta) for black holes", 
             default_value = 0.025
         )
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_time_step",
             "set_time_step",
             "timestep",
             "global timestep for iteration", 
             default_value = 1.0 / 2048.0 | nbody_system.time
         )
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_theta_for_tree",
             "set_theta_for_tree",
             "opening_angle", 
             "opening angle, theta, for building the tree: between 0 and 1", 
             default_value = 0.4
         )
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_search_factor",
             "set_search_factor",
             "search_factor", 
             "search factor, if positive, determines rsearch = rcut_out + search_factor * velocity_dispersion * timestep", 
             default_value = 3.0
         )
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_vel_disp",
             "set_vel_disp",
             "velocity_dispersion", 
             "velocity dispersion assumed when calculating rsearch", 
             default_value = 0.707106781 | nbody_system.speed
         )
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_rcut_out_FS_FS",
             "set_rcut_out_FS_FS",
             "rcut_out_star_star", 
             "cut-off radius beyond which direct force calculations smoothly transition into tree approximations", 
             default_value = 2.0e-3 | nbody_system.length
         )
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_rcut_out_FS_BH",
             "set_rcut_out_FS_BH",
             "rcut_out_star_blackhole", 
             "cut-off radius beyond which direct force calculations smoothly transition into tree approximations", 
             default_value = 2.0e-2 | nbody_system.length
         )
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_rcut_out_BH_BH",
             "set_rcut_out_BH_BH",
             "rcut_out_blackhole_blackhole", 
             "cut-off radius beyond which direct force calculations smoothly transition into tree approximations", 
             default_value = 1.0e5 | nbody_system.length
         )
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_rsearch_FS_FS",
             "set_rsearch_FS_FS",
             "rsearch_star_star", 
@@ -461,7 +461,7 @@ class Pikachu(GravitationalDynamics, GravityFieldCode):
             "only effective if search_factor <= 0", 
             default_value = 0.0 | nbody_system.length
         )
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_rsearch_FS_BH",
             "set_rsearch_FS_BH",
             "rsearch_star_blackhole", 
@@ -470,7 +470,7 @@ class Pikachu(GravitationalDynamics, GravityFieldCode):
             "only effective if search_factor <= 0", 
             default_value = 0.0 | nbody_system.length
         )
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_rsearch_BH_BH",
             "set_rsearch_BH_BH",
             "rsearch_blackhole_blackhole", 
@@ -479,7 +479,7 @@ class Pikachu(GravitationalDynamics, GravityFieldCode):
             "only effective if search_factor <= 0", 
             default_value = 0.0 | nbody_system.length
         )
-        object.add_boolean_parameter(
+        handler.add_boolean_parameter(
             "get_calculate_quadrupole_moments",
             "set_calculate_quadrupole_moments",
             "calculate_quadrupole_moments",
@@ -487,10 +487,10 @@ class Pikachu(GravitationalDynamics, GravityFieldCode):
             False
         )
     
-    def define_methods(self, object):
-        GravitationalDynamics.define_methods(self, object)
-        self.stopping_conditions.define_methods(object)
+    def define_methods(self, handler):
+        GravitationalDynamics.define_methods(self, handler)
+        self.stopping_conditions.define_methods(handler)
     
-    def define_particle_sets(self, object):
-        GravitationalDynamics.define_particle_sets(self, object)
-        self.stopping_conditions.define_particle_set(object)
+    def define_particle_sets(self, handler):
+        GravitationalDynamics.define_particle_sets(self, handler)
+        self.stopping_conditions.define_particle_set(handler)

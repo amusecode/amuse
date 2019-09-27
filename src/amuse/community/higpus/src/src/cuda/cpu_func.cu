@@ -9,6 +9,7 @@
 #include <my_errors.h>
 #include <utilis.h>
 #include <mpi_types.h>
+#include <unistd.h>
 
 #include "sys/time.h"
 
@@ -660,22 +661,22 @@ HostError __MPIbcast_otherparams(bool *warm_start, bool *VIR, bool *setdev, doub
 
 
    MPISafeCall(MPI_Barrier(MPI_COMM_WORLD));
-   MPISafeCall(MPI_Bcast(warm_start, 1, MPI::BOOL, 0, MPI_COMM_WORLD));
-   MPISafeCall(MPI_Bcast(VIR, 1, MPI::BOOL, 0, MPI_COMM_WORLD));
-   MPISafeCall(MPI_Bcast(setdev, 1, MPI::BOOL, 0, MPI_COMM_WORLD));
+   MPISafeCall(MPI_Bcast(warm_start, 1, MPI_C_BOOL, 0, MPI_COMM_WORLD));
+   MPISafeCall(MPI_Bcast(VIR, 1, MPI_C_BOOL, 0, MPI_COMM_WORLD));
+   MPISafeCall(MPI_Bcast(setdev, 1, MPI_C_BOOL, 0, MPI_COMM_WORLD));
    MPISafeCall(MPI_Bcast(plummer_core, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD));
    MPISafeCall(MPI_Bcast(plummer_mass, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD));
 	MPISafeCall(MPI_Bcast(rscale, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD));
    MPISafeCall(MPI_Bcast(mscale, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD));
-   MPISafeCall(MPI_Bcast(ratio, 1, MPI::DOUBLE, 0, MPI_COMM_WORLD));
-   MPISafeCall(MPI_Bcast(&size_dev, 1, MPI::INT, 0, MPI_COMM_WORLD));
+   MPISafeCall(MPI_Bcast(ratio, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD));
+   MPISafeCall(MPI_Bcast(&size_dev, 1, MPI_INT, 0, MPI_COMM_WORLD));
 
    if(local_rank != 0){
       for(unsigned int i = 0; i < size_dev; i++) dev.push_back(0);
    }
 
    for(unsigned int i = 0; i < size_dev; i++){
-      MPISafeCall(MPI_Bcast(&dev[i], 1, MPI::INT, 0, MPI_COMM_WORLD));
+      MPISafeCall(MPI_Bcast(&dev[i], 1, MPI_INT, 0, MPI_COMM_WORLD));
    }
 
    return HNoError;

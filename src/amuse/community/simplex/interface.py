@@ -627,12 +627,12 @@ class SimpleX(CommonCode):
         self.set_simplex_output_directory(self.output_directory)
         self.set_simplex_data_directory(self.data_directory)
 
-    def define_properties(self, object):
-        object.add_property('get_time', public_name = "model_time")
+    def define_properties(self, handler):
+        handler.add_property('get_time', public_name = "model_time")
     
-    def define_parameters(self, object):
+    def define_parameters(self, handler):
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_timestep",
             "set_timestep", 
             "timestep", 
@@ -640,7 +640,7 @@ class SimpleX(CommonCode):
             default_value = 0.05 | units.Myr
         )
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_source_Teff",
             "set_source_Teff", 
             "source_effective_T", 
@@ -649,7 +649,7 @@ class SimpleX(CommonCode):
         )
 
 
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_hilbert_order",
             "set_hilbert_order", 
             "hilbert_order", 
@@ -657,7 +657,7 @@ class SimpleX(CommonCode):
             default_value = 1
         )
 
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_number_frequency_bins",
             "set_number_frequency_bins", 
             "number_of_freq_bins", 
@@ -665,7 +665,7 @@ class SimpleX(CommonCode):
             default_value = 1
         )
 
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_thermal_evolution",
             "set_thermal_evolution", 
             "thermal_evolution_flag", 
@@ -673,7 +673,7 @@ class SimpleX(CommonCode):
             default_value = 0
         )
 
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_metal_cooling",
             "set_metal_cooling", 
             "metal_cooling_flag", 
@@ -681,7 +681,7 @@ class SimpleX(CommonCode):
             default_value = 0
         )
 
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_recombination_radiation",
             "set_recombination_radiation", 
             "recombination_radiation_flag", 
@@ -689,7 +689,7 @@ class SimpleX(CommonCode):
             default_value = 0
         )
 
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_blackbody_spectrum",
             "set_blackbody_spectrum", 
             "blackbody_spectrum_flag", 
@@ -697,7 +697,7 @@ class SimpleX(CommonCode):
             default_value = 0
         )
 
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_collisional_ionization",
             "set_collisional_ionization", 
             "collisional_ionization_flag", 
@@ -705,7 +705,7 @@ class SimpleX(CommonCode):
             default_value = 0
         )
 
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_box_size",
             "set_box_size", 
             "box_size", 
@@ -713,14 +713,14 @@ class SimpleX(CommonCode):
             default_value = 13200. | units.parsec
         )
 
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_simplex_data_directory", 
             "set_simplex_data_directory",
             "simplex_data_directory", 
             "Name of the SimpleX data directory", 
             default_value = "."
         )
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_number_of_border_sites", 
             "set_number_of_border_sites",
             "number_of_border_sites", 
@@ -728,10 +728,10 @@ class SimpleX(CommonCode):
             default_value = 25000
         )
         
-    def define_methods(self, object):
-        CommonCode.define_methods(self, object)
-        object.add_method('evolve_model', (units.Myr,), ( object.ERROR_CODE, ))
-        object.add_method(
+    def define_methods(self, handler):
+        CommonCode.define_methods(self, handler)
+        handler.add_method('evolve_model', (units.Myr,), ( handler.ERROR_CODE, ))
+        handler.add_method(
             "new_particle",
             (
                 units.parsec,
@@ -739,29 +739,29 @@ class SimpleX(CommonCode):
                 units.parsec,
                 units.amu / units.cm**3,
                 1.0e48 / units.s,
-                object.NO_UNIT,
+                handler.NO_UNIT,
                 units.cm**2 / units.s**2,
-                object.NO_UNIT
+                handler.NO_UNIT
                 ),
             (
-                object.INDEX,
-                object.ERROR_CODE,
+                handler.INDEX,
+                handler.ERROR_CODE,
                 )
             )
         
-        object.add_method(
+        handler.add_method(
             "delete_particle",
             (
-                object.NO_UNIT,
+                handler.NO_UNIT,
                 ),
             (
-                object.ERROR_CODE,
+                handler.ERROR_CODE,
                 )
             )
-        object.add_method(
+        handler.add_method(
             "get_state",
             (
-                object.NO_UNIT,
+                handler.NO_UNIT,
                 ),
             (
                 units.parsec,
@@ -769,431 +769,431 @@ class SimpleX(CommonCode):
                 units.parsec,
                 units.amu / units.cm**3,
                 1.0e48 / units.s,
-                object.NO_UNIT,
+                handler.NO_UNIT,
                 units.cm**2 / units.s**2,
-                object.NO_UNIT,
-                object.ERROR_CODE
+                handler.NO_UNIT,
+                handler.ERROR_CODE
                 )
             )
-        object.add_method(
+        handler.add_method(
             "set_state",
             (
-                object.NO_UNIT,
+                handler.NO_UNIT,
                 units.parsec,
                 units.parsec,
                 units.parsec,
                 units.amu / units.cm**3,
                 1.0e48 / units.s,
-                object.NO_UNIT,
+                handler.NO_UNIT,
                 units.cm**2 / units.s**2,
-                object.NO_UNIT
+                handler.NO_UNIT
                 ),
             (
-                object.ERROR_CODE
+                handler.ERROR_CODE
                 )
             )
-        object.add_method(
+        handler.add_method(
             "get_internal_energy",
             (
-                object.NO_UNIT,
+                handler.NO_UNIT,
                 ),
             (
                 units.cm**2 / units.s**2,
-                object.ERROR_CODE
+                handler.ERROR_CODE
                 )
             )
-        object.add_method(
+        handler.add_method(
             "set_internal_energy",
             (
-                object.NO_UNIT,
+                handler.NO_UNIT,
                 units.cm**2 / units.s**2,
                 ),
             (
-                object.ERROR_CODE
+                handler.ERROR_CODE
                 )
             )
-        object.add_method(
+        handler.add_method(
             "get_dinternal_energy_dt",
             (
-                object.NO_UNIT,
+                handler.NO_UNIT,
                 ),
             (
                 units.cm**2 / units.s**3,
-                object.ERROR_CODE
+                handler.ERROR_CODE
                 )
             )
-        object.add_method(
+        handler.add_method(
             "set_dinternal_energy_dt",
             (
-                object.NO_UNIT,
+                handler.NO_UNIT,
                 units.cm**2 / units.s**3,
                 ),
             (
-                object.ERROR_CODE
+                handler.ERROR_CODE
                 )
             )
-        object.add_method(
+        handler.add_method(
             "set_position",
             (
-                object.NO_UNIT,
+                handler.NO_UNIT,
                 units.parsec,
                 units.parsec,
                 units.parsec,
                 ),
             (
-                object.ERROR_CODE
+                handler.ERROR_CODE
                 )
             )
-        object.add_method(
+        handler.add_method(
             "get_position",
             (
-                object.NO_UNIT,
+                handler.NO_UNIT,
                 ),
             (
                 units.parsec,
                 units.parsec,
                 units.parsec,
-                object.ERROR_CODE
+                handler.ERROR_CODE
                 )
             )
-        object.add_method(
+        handler.add_method(
             "set_density",
             (
-                object.NO_UNIT,
+                handler.NO_UNIT,
                 units.amu / units.cm**3,
             ),
             (
-                object.ERROR_CODE
+                handler.ERROR_CODE
             )
         )
-        object.add_method(
+        handler.add_method(
             "get_density",
             (
-                object.NO_UNIT,
+                handler.NO_UNIT,
             ),
             (
                 units.amu / units.cm**3,
-                object.ERROR_CODE
+                handler.ERROR_CODE
             )
         )
-        object.add_method(
+        handler.add_method(
             "set_flux",
             (
-                object.NO_UNIT,
+                handler.NO_UNIT,
                 1.0e48 / units.s,
             ),
             (
-                object.ERROR_CODE
+                handler.ERROR_CODE
             )
         )
-        object.add_method(
+        handler.add_method(
             "get_flux",
             (
-                object.NO_UNIT,
+                handler.NO_UNIT,
             ),
             (
                 1.0e48 / units.s,
-                object.ERROR_CODE
+                handler.ERROR_CODE
             )
         )
-        object.add_method(
+        handler.add_method(
             "get_mean_intensity",
             (
-                object.NO_UNIT,
+                handler.NO_UNIT,
             ),
             (
                 1.0e48 / units.s,
-                object.ERROR_CODE
+                handler.ERROR_CODE
             )
         )
-        object.add_method(
+        handler.add_method(
             "get_diffuse_intensity",
             (
-                object.NO_UNIT,
+                handler.NO_UNIT,
             ),
             (
                 1.0e48 / units.s,
-                object.ERROR_CODE
+                handler.ERROR_CODE
             )
         )        
-        object.add_method(
+        handler.add_method(
             "set_ionisation",
             (
-                object.NO_UNIT,
-                object.NO_UNIT
+                handler.NO_UNIT,
+                handler.NO_UNIT
             ),
             (
-                object.ERROR_CODE
+                handler.ERROR_CODE
             )
         )
-        object.add_method(
+        handler.add_method(
             "get_ionisation",
             (
-                object.NO_UNIT,
+                handler.NO_UNIT,
             ),
             (
-                object.NO_UNIT,
-                object.ERROR_CODE
+                handler.NO_UNIT,
+                handler.ERROR_CODE
             )
         )
-        object.add_method(
+        handler.add_method(
             "set_metallicity",
             (
-                object.NO_UNIT,
-                object.NO_UNIT
+                handler.NO_UNIT,
+                handler.NO_UNIT
             ),
             (
-                object.ERROR_CODE
+                handler.ERROR_CODE
             )
         )
-        object.add_method(
+        handler.add_method(
             "get_metallicity",
             (
-                object.NO_UNIT,
+                handler.NO_UNIT,
             ),
             (
-                object.NO_UNIT,
-                object.ERROR_CODE
+                handler.NO_UNIT,
+                handler.ERROR_CODE
             )
         )
-        object.add_method(
+        handler.add_method(
             'commit_particles',
             (),
-            (object.ERROR_CODE)
+            (handler.ERROR_CODE)
         )
-        object.add_method(
+        handler.add_method(
             'recommit_particles',
             (),
-            (object.ERROR_CODE)
+            (handler.ERROR_CODE)
         )
     
-        object.add_method(
+        handler.add_method(
             "get_timestep",
             (),
-            (units.Myr, object.ERROR_CODE,)
+            (units.Myr, handler.ERROR_CODE,)
         )
     
-        object.add_method(
+        handler.add_method(
             "set_timestep",
             (units.Myr, ),
-            (object.ERROR_CODE,)
+            (handler.ERROR_CODE,)
         )
 
-        object.add_method(
+        handler.add_method(
             "get_source_Teff",
             (),
-            (units.K, object.ERROR_CODE,)
+            (units.K, handler.ERROR_CODE,)
         )
     
-        object.add_method(
+        handler.add_method(
             "set_source_Teff",
             (units.K, ),
-            (object.ERROR_CODE,)
+            (handler.ERROR_CODE,)
         )
 
     
-        object.add_method(
+        handler.add_method(
             "get_hilbert_order",
             (),
-            (object.NO_UNIT, object.ERROR_CODE,)
+            (handler.NO_UNIT, handler.ERROR_CODE,)
         )
     
-        object.add_method(
+        handler.add_method(
             "set_hilbert_order",
-            (object.NO_UNIT, ),
-            (object.ERROR_CODE,)
+            (handler.NO_UNIT, ),
+            (handler.ERROR_CODE,)
         )
     
-        object.add_method(
+        handler.add_method(
             "set_blackbody_spectrum",
-            (object.NO_UNIT, ),
-            (object.ERROR_CODE,)
+            (handler.NO_UNIT, ),
+            (handler.ERROR_CODE,)
         )
 
-        object.add_method(
+        handler.add_method(
             "get_blackbody_spectrum",
             (),
-            (object.NO_UNIT, object.ERROR_CODE,)
+            (handler.NO_UNIT, handler.ERROR_CODE,)
         )
 
 
-        object.add_method(
+        handler.add_method(
             "get_thermal_evolution",
             (),
-            (object.NO_UNIT, object.ERROR_CODE,)
+            (handler.NO_UNIT, handler.ERROR_CODE,)
         )
     
-        object.add_method(
+        handler.add_method(
             "set_thermal_evolution",
-            (object.NO_UNIT, ),
-            (object.ERROR_CODE,)
+            (handler.NO_UNIT, ),
+            (handler.ERROR_CODE,)
         )
 
-        object.add_method(
+        handler.add_method(
             "get_collisional_ionization",
             (),
-            (object.NO_UNIT, object.ERROR_CODE,)
+            (handler.NO_UNIT, handler.ERROR_CODE,)
         )
     
-        object.add_method(
+        handler.add_method(
             "set_collisional_ionization",
-            (object.NO_UNIT, ),
-            (object.ERROR_CODE,)
+            (handler.NO_UNIT, ),
+            (handler.ERROR_CODE,)
         )
 
-        object.add_method(
+        handler.add_method(
             "get_number_frequency_bins",
             (),
-            (object.NO_UNIT, object.ERROR_CODE,)
+            (handler.NO_UNIT, handler.ERROR_CODE,)
         )
     
-        object.add_method(
+        handler.add_method(
             "set_number_frequency_bins",
-            (object.NO_UNIT, ),
-            (object.ERROR_CODE,)
+            (handler.NO_UNIT, ),
+            (handler.ERROR_CODE,)
         )
 
 
-        object.add_method(
+        handler.add_method(
             "get_metal_cooling",
             (),
-            (object.NO_UNIT, object.ERROR_CODE,)
+            (handler.NO_UNIT, handler.ERROR_CODE,)
         )
     
-        object.add_method(
+        handler.add_method(
             "set_metal_cooling",
-            (object.NO_UNIT, ),
-            (object.ERROR_CODE,)
+            (handler.NO_UNIT, ),
+            (handler.ERROR_CODE,)
         )
 
         
-        object.add_method(
+        handler.add_method(
             "get_recombination_radiation",
             (),
-            (object.NO_UNIT, object.ERROR_CODE,)
+            (handler.NO_UNIT, handler.ERROR_CODE,)
         )
     
-        object.add_method(
+        handler.add_method(
             "set_recombination_radiation",
-            (object.NO_UNIT, ),
-            (object.ERROR_CODE,)
+            (handler.NO_UNIT, ),
+            (handler.ERROR_CODE,)
         )
     
-        object.add_method(
+        handler.add_method(
             "get_box_size",
             (),
-            (units.parsec, object.ERROR_CODE,)
+            (units.parsec, handler.ERROR_CODE,)
         )
     
-        object.add_method(
+        handler.add_method(
             "set_box_size",
             (units.parsec, ),
-            (object.ERROR_CODE,)
+            (handler.ERROR_CODE,)
         )
 
-        object.add_method(
+        handler.add_method(
             'get_time',
             (),
-            (units.s,object.ERROR_CODE,)
+            (units.s,handler.ERROR_CODE,)
         )
-        object.add_method(
+        handler.add_method(
             'set_time',
             (units.s,),
-            (object.ERROR_CODE,)
+            (handler.ERROR_CODE,)
         )
 
-        object.add_method(
+        handler.add_method(
             "get_simplex_data_directory",
             (),
-            (object.NO_UNIT, object.ERROR_CODE,)
+            (handler.NO_UNIT, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "set_simplex_data_directory",
-            (object.NO_UNIT,),
-            (object.ERROR_CODE,)
+            (handler.NO_UNIT,),
+            (handler.ERROR_CODE,)
         )
     
-    def define_particle_sets(self, object):
-        object.define_set('particles', 'index_of_the_particle')
-        object.set_new('particles', 'new_particle')
-        object.set_delete('particles', 'delete_particle')
-        object.add_setter('particles', 'set_state')
-        object.add_getter('particles', 'get_state')
-        object.add_setter('particles', 'set_position')
-        object.add_getter('particles', 'get_position')
-        object.add_setter('particles', 'set_density')
-        object.add_getter('particles', 'get_density')
-        object.add_setter('particles', 'set_flux')
-        object.add_getter('particles', 'get_flux')
-        object.add_getter('particles', 'get_mean_intensity')
-        object.add_getter('particles', 'get_diffuse_intensity')
-        object.add_setter('particles', 'set_ionisation')
-        object.add_getter('particles', 'get_ionisation')
-        object.add_setter('particles', 'set_metallicity')
-        object.add_getter('particles', 'get_metallicity')
-        object.add_setter('particles', 'set_internal_energy')
-        object.add_getter('particles', 'get_internal_energy')
-        object.add_setter('particles', 'set_dinternal_energy_dt')
-        object.add_getter('particles', 'get_dinternal_energy_dt')
+    def define_particle_sets(self, handler):
+        handler.define_set('particles', 'index_of_the_particle')
+        handler.set_new('particles', 'new_particle')
+        handler.set_delete('particles', 'delete_particle')
+        handler.add_setter('particles', 'set_state')
+        handler.add_getter('particles', 'get_state')
+        handler.add_setter('particles', 'set_position')
+        handler.add_getter('particles', 'get_position')
+        handler.add_setter('particles', 'set_density')
+        handler.add_getter('particles', 'get_density')
+        handler.add_setter('particles', 'set_flux')
+        handler.add_getter('particles', 'get_flux')
+        handler.add_getter('particles', 'get_mean_intensity')
+        handler.add_getter('particles', 'get_diffuse_intensity')
+        handler.add_setter('particles', 'set_ionisation')
+        handler.add_getter('particles', 'get_ionisation')
+        handler.add_setter('particles', 'set_metallicity')
+        handler.add_getter('particles', 'get_metallicity')
+        handler.add_setter('particles', 'set_internal_energy')
+        handler.add_getter('particles', 'get_internal_energy')
+        handler.add_setter('particles', 'set_dinternal_energy_dt')
+        handler.add_getter('particles', 'get_dinternal_energy_dt')
 
     
-    def define_state(self, object):
-        CommonCode.define_state(self, object)
-        object.add_transition('INITIALIZED','EDIT','commit_parameters')
-        object.add_transition('RUN','CHANGE_PARAMETERS_RUN','before_set_parameter')
-        object.add_transition('EDIT','CHANGE_PARAMETERS_EDIT','before_set_parameter')
-        object.add_transition('UPDATE','CHANGE_PARAMETERS_UPDATE','before_set_parameter')
-        object.add_transition('CHANGE_PARAMETERS_RUN','RUN','recommit_parameters')
-        object.add_transition('CHANGE_PARAMETERS_EDIT','EDIT','recommit_parameters')
-        object.add_transition('CHANGE_PARAMETERS_UPDATE','UPDATE','recommit_parameters')
+    def define_state(self, handler):
+        CommonCode.define_state(self, handler)
+        handler.add_transition('INITIALIZED','EDIT','commit_parameters')
+        handler.add_transition('RUN','CHANGE_PARAMETERS_RUN','before_set_parameter')
+        handler.add_transition('EDIT','CHANGE_PARAMETERS_EDIT','before_set_parameter')
+        handler.add_transition('UPDATE','CHANGE_PARAMETERS_UPDATE','before_set_parameter')
+        handler.add_transition('CHANGE_PARAMETERS_RUN','RUN','recommit_parameters')
+        handler.add_transition('CHANGE_PARAMETERS_EDIT','EDIT','recommit_parameters')
+        handler.add_transition('CHANGE_PARAMETERS_UPDATE','UPDATE','recommit_parameters')
         
-        object.add_method('CHANGE_PARAMETERS_RUN', 'before_set_parameter')
-        object.add_method('CHANGE_PARAMETERS_EDIT', 'before_set_parameter')
-        object.add_method('CHANGE_PARAMETERS_UPDATE','before_set_parameter')
+        handler.add_method('CHANGE_PARAMETERS_RUN', 'before_set_parameter')
+        handler.add_method('CHANGE_PARAMETERS_EDIT', 'before_set_parameter')
+        handler.add_method('CHANGE_PARAMETERS_UPDATE','before_set_parameter')
         
-        object.add_method('CHANGE_PARAMETERS_RUN', 'before_get_parameter')
-        object.add_method('CHANGE_PARAMETERS_EDIT', 'before_get_parameter')
-        object.add_method('CHANGE_PARAMETERS_UPDATE','before_get_parameter')
-        object.add_method('RUN', 'before_get_parameter')
-        object.add_method('EDIT', 'before_get_parameter')
-        object.add_method('UPDATE','before_get_parameter')
-        object.add_method('EVOLVED','before_get_parameter')
+        handler.add_method('CHANGE_PARAMETERS_RUN', 'before_get_parameter')
+        handler.add_method('CHANGE_PARAMETERS_EDIT', 'before_get_parameter')
+        handler.add_method('CHANGE_PARAMETERS_UPDATE','before_get_parameter')
+        handler.add_method('RUN', 'before_get_parameter')
+        handler.add_method('EDIT', 'before_get_parameter')
+        handler.add_method('UPDATE','before_get_parameter')
+        handler.add_method('EVOLVED','before_get_parameter')
         
         
-        object.add_method('EDIT', 'new_particle')
-        object.add_method('EDIT', 'delete_particle')
-        object.add_transition('EDIT', 'RUN', 'commit_particles')
-        object.add_transition('RUN', 'UPDATE', 'new_particle', False)
-        object.add_transition('RUN', 'UPDATE', 'delete_particle', False)
-        object.add_transition('UPDATE', 'RUN', 'recommit_particles')
-        object.add_transition('RUN', 'EVOLVED', 'evolve_model', False)
-        object.add_method('EVOLVED', 'evolve_model')
-        object.add_transition('EVOLVED','RUN', 'synchronize_model')
-        object.add_method('RUN', 'synchronize_model')
-        object.add_method('RUN', 'get_state')
-        object.add_method('RUN', 'get_density')
-        object.add_method('RUN', 'get_position')
-        object.add_method('RUN', 'get_flux')
-        object.add_method('RUN', 'get_mean_intensity')
-        object.add_method('RUN', 'get_diffuse_intensity')
-        object.add_method('RUN', 'get_ionisation')
-        object.add_method('RUN', 'get_internal_energy')
-        object.add_method('RUN', 'set_dinternal_energy_dt')
-        object.add_method('RUN', 'get_dinternal_energy_dt')
-        object.add_method('UPDATE', 'set_dinternal_energy_dt')
-        object.add_method('UPDATE', 'get_dinternal_energy_dt')
+        handler.add_method('EDIT', 'new_particle')
+        handler.add_method('EDIT', 'delete_particle')
+        handler.add_transition('EDIT', 'RUN', 'commit_particles')
+        handler.add_transition('RUN', 'UPDATE', 'new_particle', False)
+        handler.add_transition('RUN', 'UPDATE', 'delete_particle', False)
+        handler.add_transition('UPDATE', 'RUN', 'recommit_particles')
+        handler.add_transition('RUN', 'EVOLVED', 'evolve_model', False)
+        handler.add_method('EVOLVED', 'evolve_model')
+        handler.add_transition('EVOLVED','RUN', 'synchronize_model')
+        handler.add_method('RUN', 'synchronize_model')
+        handler.add_method('RUN', 'get_state')
+        handler.add_method('RUN', 'get_density')
+        handler.add_method('RUN', 'get_position')
+        handler.add_method('RUN', 'get_flux')
+        handler.add_method('RUN', 'get_mean_intensity')
+        handler.add_method('RUN', 'get_diffuse_intensity')
+        handler.add_method('RUN', 'get_ionisation')
+        handler.add_method('RUN', 'get_internal_energy')
+        handler.add_method('RUN', 'set_dinternal_energy_dt')
+        handler.add_method('RUN', 'get_dinternal_energy_dt')
+        handler.add_method('UPDATE', 'set_dinternal_energy_dt')
+        handler.add_method('UPDATE', 'get_dinternal_energy_dt')
 
-        object.add_method('INITIALIZED', 'set_hilbert_order')
-        object.add_method('INITIALIZED', 'set_box_size')
-        object.add_method('INITIALIZED', 'set_timestep')
-        object.add_method('INITIALIZED', 'set_source_Teff')
-        object.add_method('INITIALIZED', 'set_number_frequency_bins')
-        object.add_method('INITIALIZED', 'set_thermal_evolution')
-        object.add_method('INITIALIZED', 'set_blackbody_spectrum')
-        object.add_method('INITIALIZED', 'set_metal_cooling')
-        object.add_method('INITIALIZED', 'set_recombination_radiation')
-        object.add_method('INITIALIZED', 'set_collisional_ionization')
+        handler.add_method('INITIALIZED', 'set_hilbert_order')
+        handler.add_method('INITIALIZED', 'set_box_size')
+        handler.add_method('INITIALIZED', 'set_timestep')
+        handler.add_method('INITIALIZED', 'set_source_Teff')
+        handler.add_method('INITIALIZED', 'set_number_frequency_bins')
+        handler.add_method('INITIALIZED', 'set_thermal_evolution')
+        handler.add_method('INITIALIZED', 'set_blackbody_spectrum')
+        handler.add_method('INITIALIZED', 'set_metal_cooling')
+        handler.add_method('INITIALIZED', 'set_recombination_radiation')
+        handler.add_method('INITIALIZED', 'set_collisional_ionization')
 
 
     
@@ -1258,63 +1258,63 @@ class SimpleXSplitSet(SimpleX):
         self.overridden().evolve_model(tend)
         self.simplex_to_gas_channel.copy_attributes(["xion","u","metallicity"])
         
-    def define_state(self, object):
-        CommonCode.define_state(self, object)
+    def define_state(self, handler):
+        CommonCode.define_state(self, handler)
         
-        object.add_transition('INITIALIZED','EDIT','commit_parameters')
-        object.add_transition('RUN','CHANGE_PARAMETERS_RUN','before_set_parameter', False)
-        object.add_transition('EDIT','CHANGE_PARAMETERS_EDIT','before_set_parameter', False)
-        object.add_transition('UPDATE','CHANGE_PARAMETERS_UPDATE','before_set_parameter', False)
-        object.add_transition('CHANGE_PARAMETERS_RUN','RUN','recommit_parameters')
-        object.add_transition('CHANGE_PARAMETERS_EDIT','EDIT','recommit_parameters')
-        object.add_transition('CHANGE_PARAMETERS_UPDATE','UPDATE','recommit_parameters')
+        handler.add_transition('INITIALIZED','EDIT','commit_parameters')
+        handler.add_transition('RUN','CHANGE_PARAMETERS_RUN','before_set_parameter', False)
+        handler.add_transition('EDIT','CHANGE_PARAMETERS_EDIT','before_set_parameter', False)
+        handler.add_transition('UPDATE','CHANGE_PARAMETERS_UPDATE','before_set_parameter', False)
+        handler.add_transition('CHANGE_PARAMETERS_RUN','RUN','recommit_parameters')
+        handler.add_transition('CHANGE_PARAMETERS_EDIT','EDIT','recommit_parameters')
+        handler.add_transition('CHANGE_PARAMETERS_UPDATE','UPDATE','recommit_parameters')
         
-        object.add_method('CHANGE_PARAMETERS_RUN', 'before_set_parameter')
-        object.add_method('CHANGE_PARAMETERS_EDIT', 'before_set_parameter')
-        object.add_method('CHANGE_PARAMETERS_UPDATE','before_set_parameter')
+        handler.add_method('CHANGE_PARAMETERS_RUN', 'before_set_parameter')
+        handler.add_method('CHANGE_PARAMETERS_EDIT', 'before_set_parameter')
+        handler.add_method('CHANGE_PARAMETERS_UPDATE','before_set_parameter')
         
-        object.add_method('CHANGE_PARAMETERS_RUN', 'before_get_parameter')
-        object.add_method('CHANGE_PARAMETERS_EDIT', 'before_get_parameter')
-        object.add_method('CHANGE_PARAMETERS_UPDATE','before_get_parameter')
-        object.add_method('RUN', 'before_get_parameter')
-        object.add_method('EDIT', 'before_get_parameter')
-        object.add_method('UPDATE','before_get_parameter')
-        object.add_method('EVOLVED','before_get_parameter')
-        object.add_method('RUNCOMMIT','before_get_parameter')
+        handler.add_method('CHANGE_PARAMETERS_RUN', 'before_get_parameter')
+        handler.add_method('CHANGE_PARAMETERS_EDIT', 'before_get_parameter')
+        handler.add_method('CHANGE_PARAMETERS_UPDATE','before_get_parameter')
+        handler.add_method('RUN', 'before_get_parameter')
+        handler.add_method('EDIT', 'before_get_parameter')
+        handler.add_method('UPDATE','before_get_parameter')
+        handler.add_method('EVOLVED','before_get_parameter')
+        handler.add_method('RUNCOMMIT','before_get_parameter')
         
         
         
-        object.add_method('EDIT', 'new_particle')
-        object.add_method('EDIT', 'delete_particle')
-        object.add_transition('EDIT', 'RUNCOMMIT', 'commit_particles')
-        object.add_transition('RUN', 'UPDATE', 'new_particle', False)
-        object.add_transition('RUN', 'UPDATE', 'delete_particle', False)
-        object.add_transition('UPDATE', 'RUN', 'recommit_particles')
-        object.add_transition('RUN','RUNCOMMIT', 'recommit_particles')
-        object.add_transition('RUNCOMMIT','RUN', 'auto_go_to_run')
-        object.add_transition('RUNCOMMIT', 'EVOLVED', 'evolve_model', False)
-#        object.add_method('EVOLVED', 'evolve_model')
-        object.define_state('RUNCOMMIT')
-        object.add_transition('EVOLVED','RUN', 'synchronize_model')
-        object.add_method('RUN', 'synchronize_model')
-        object.add_method('RUN', 'get_state')
-        object.add_method('RUN', 'get_density')
-        object.add_method('RUN', 'get_position')
-        object.add_method('RUN', 'get_flux')
-        object.add_method('RUN', 'get_ionisation')
-        object.add_method('RUN', 'get_internal_energy')
-        object.add_method('RUN', 'set_dinternal_energy_dt')
-        object.add_method('RUN', 'get_dinternal_energy_dt')
-        object.add_method('UPDATE', 'set_dinternal_energy_dt')
-        object.add_method('UPDATE', 'get_dinternal_energy_dt')
+        handler.add_method('EDIT', 'new_particle')
+        handler.add_method('EDIT', 'delete_particle')
+        handler.add_transition('EDIT', 'RUNCOMMIT', 'commit_particles')
+        handler.add_transition('RUN', 'UPDATE', 'new_particle', False)
+        handler.add_transition('RUN', 'UPDATE', 'delete_particle', False)
+        handler.add_transition('UPDATE', 'RUN', 'recommit_particles')
+        handler.add_transition('RUN','RUNCOMMIT', 'recommit_particles')
+        handler.add_transition('RUNCOMMIT','RUN', 'auto_go_to_run')
+        handler.add_transition('RUNCOMMIT', 'EVOLVED', 'evolve_model', False)
+#        handler.add_method('EVOLVED', 'evolve_model')
+        handler.define_state('RUNCOMMIT')
+        handler.add_transition('EVOLVED','RUN', 'synchronize_model')
+        handler.add_method('RUN', 'synchronize_model')
+        handler.add_method('RUN', 'get_state')
+        handler.add_method('RUN', 'get_density')
+        handler.add_method('RUN', 'get_position')
+        handler.add_method('RUN', 'get_flux')
+        handler.add_method('RUN', 'get_ionisation')
+        handler.add_method('RUN', 'get_internal_energy')
+        handler.add_method('RUN', 'set_dinternal_energy_dt')
+        handler.add_method('RUN', 'get_dinternal_energy_dt')
+        handler.add_method('UPDATE', 'set_dinternal_energy_dt')
+        handler.add_method('UPDATE', 'get_dinternal_energy_dt')
 
-        object.add_method('INITIALIZED', 'set_hilbert_order')
-        object.add_method('INITIALIZED', 'set_box_size')
-        object.add_method('INITIALIZED', 'set_timestep')
-        object.add_method('INITIALIZED', 'set_source_Teff')
-        object.add_method('INITIALIZED', 'set_number_frequency_bins')
-        object.add_method('INITIALIZED', 'set_thermal_evolution')
-        object.add_method('INITIALIZED', 'set_blackbody_spectrum')
-        object.add_method('INITIALIZED', 'set_metal_cooling')
-        object.add_method('INITIALIZED', 'set_recombination_radiation')
-        object.add_method('INITIALIZED', 'set_collisional_ionization')
+        handler.add_method('INITIALIZED', 'set_hilbert_order')
+        handler.add_method('INITIALIZED', 'set_box_size')
+        handler.add_method('INITIALIZED', 'set_timestep')
+        handler.add_method('INITIALIZED', 'set_source_Teff')
+        handler.add_method('INITIALIZED', 'set_number_frequency_bins')
+        handler.add_method('INITIALIZED', 'set_thermal_evolution')
+        handler.add_method('INITIALIZED', 'set_blackbody_spectrum')
+        handler.add_method('INITIALIZED', 'set_metal_cooling')
+        handler.add_method('INITIALIZED', 'set_recombination_radiation')
+        handler.add_method('INITIALIZED', 'set_collisional_ionization')

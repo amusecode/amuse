@@ -1,3 +1,4 @@
+# -*- coding: ascii -*-
 """
     Evolve the orbital evolution in the galactic center potential
     with different N-body codes.
@@ -150,7 +151,7 @@ def evolve_bridged_orbit_in_potential(potential, cluster, code, timestep,
     print(current_age, "->", orbit.particle.position)
     # Evolving backward
     gravity.particles.velocity *= -1
-    while bridge.model_time < current_age-(timestep/2.):
+    while bridge.model_time < current_age - (timestep / 2.):
         # print bridge.model_time, "-", gravity.particles.position[0]
         bridge.evolve_model(bridge.model_time + timestep)
         gravity_to_orbit.copy()
@@ -168,7 +169,7 @@ def evolve_bridged_orbit_in_potential(potential, cluster, code, timestep,
 
     # Evolving forward
     full_orbit = Particles()
-    while bridge.model_time < current_age-(timestep/2.):
+    while bridge.model_time < current_age - (timestep / 2.):
         full_orbit.add_particle(orbit.particle.copy())
         bridge.evolve_model(bridge.model_time + timestep)
         gravity_to_orbit.copy()
@@ -208,7 +209,7 @@ def parse_arguments():
     parser.add_option("-c", dest="codes", action="append", type="string",
                       help="The code to evolve the particle (can be used"
                       "multiple times). Available codes: {}."
-                      .format(codelist.keys()))
+                      .format(list(codelist.keys())))
     parser.add_option("-f", dest="filename", type="string", default=None,
                       help="Save the plot in a file with 'name'"
                       "[show matplotlib if not given].")

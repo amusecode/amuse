@@ -95,38 +95,38 @@ class CommonCodeInterface(object):
 
 class CommonCode(InCodeComponentImplementation):
 
-    def define_state(self, object):
-        object.set_initial_state('UNINITIALIZED')
-        object.add_transition('UNINITIALIZED', 'INITIALIZED', 'initialize_code')
-        object.add_method('INITIALIZED', 'before_get_parameter')
-        object.add_method('INITIALIZED', 'before_set_parameter')
-        object.add_method('END', 'before_get_parameter')
-        object.add_transition('!UNINITIALIZED!STOPPED', 'END', 'cleanup_code')
-        object.add_transition('END', 'STOPPED', 'stop', False)
-        object.add_method('STOPPED', 'stop')
+    def define_state(self, handler):
+        handler.set_initial_state('UNINITIALIZED')
+        handler.add_transition('UNINITIALIZED', 'INITIALIZED', 'initialize_code')
+        handler.add_method('INITIALIZED', 'before_get_parameter')
+        handler.add_method('INITIALIZED', 'before_set_parameter')
+        handler.add_method('END', 'before_get_parameter')
+        handler.add_transition('!UNINITIALIZED!STOPPED', 'END', 'cleanup_code')
+        handler.add_transition('END', 'STOPPED', 'stop', False)
+        handler.add_method('STOPPED', 'stop')
     
-    def define_methods(self, object):
-        object.add_method(
+    def define_methods(self, handler):
+        handler.add_method(
             'initialize_code',
             (),
-            (object.ERROR_CODE)
+            (handler.ERROR_CODE)
         )
         
-        object.add_method(
+        handler.add_method(
             'cleanup_code',
             (),
-            (object.ERROR_CODE)
+            (handler.ERROR_CODE)
         )
         
-        object.add_method(
+        handler.add_method(
             'commit_parameters',
             (),
-            (object.ERROR_CODE)
+            (handler.ERROR_CODE)
         )
         
-        object.add_method(
+        handler.add_method(
             'recommit_parameters',
             (),
-            (object.ERROR_CODE)
+            (handler.ERROR_CODE)
         )
     

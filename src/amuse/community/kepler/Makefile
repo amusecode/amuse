@@ -15,7 +15,7 @@ AM_CFLAGS = -I$(AMUSE_DIR)/lib/amuse_mpi
 
 MPICXX   ?= mpicxx
 
-CFLAGS   += $(OPT) -I../../ph4/src -I../ph4/src
+CFLAGS   += $(OPT) -Isrc
 CXXFLAGS += $(CFLAGS) 
 LDFLAGS  += -lm $(MUSE_LD_FLAGS)
 
@@ -64,3 +64,5 @@ clean:
 	$(RM) -f *~ kepler_worker worker_code.cc kepler_worker_sockets worker_code-sockets.cc
 	$(RM) -f kepler_worker_cython*
 	make -C src clean
+
+distclean: clean

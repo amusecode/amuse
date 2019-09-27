@@ -59,7 +59,7 @@ endif
 
 
 tupan_worker: interface.py
-	$(CODE_GENERATOR) --type=py --mode=mpi -x amuse.community.tupan.interface TupanInterface TupanImplementation -o $@
+	$(CODE_GENERATOR) --type=py --mode=mpi -x interface TupanInterface TupanImplementation -o $@
 	
 
 clean:

@@ -121,15 +121,15 @@ class Etics(GravitationalDynamics):
         legacy_interface = EticsInterface(**keyword_arguments)
         GravitationalDynamics.__init__(self, legacy_interface, convert_nbody, **keyword_arguments)
 
-    def define_parameters(self, object):
-        object.add_method_parameter(
+    def define_parameters(self, handler):
+        handler.add_method_parameter(
             'get_begin_time',
             'set_begin_time',
             'begin_time',
             'model time to start the simulation at',
             default_value = 0.0 | nbody_system.time
         )
-        object.add_method_parameter(
+        handler.add_method_parameter(
             'get_time_step',
             'set_time_step',
             'time_step',
@@ -137,24 +137,24 @@ class Etics(GravitationalDynamics):
             default_value = 0.001953125 | nbody_system.time
         )
 
-    def define_methods(self, object):
-        GravitationalDynamics.define_methods(self, object)
+    def define_methods(self, handler):
+        GravitationalDynamics.define_methods(self, handler)
         # Define some shortcuts for better readability.
         M = nbody_system.mass
         L = nbody_system.length
         V = nbody_system.speed
         T = nbody_system.time
-        object.add_method('new_particle', (M,L,L,L,V,V,V,L), (object.INDEX, object.ERROR_CODE))
-        object.add_method('set_state', (object.INDEX, M,L,L,L,L,V,V,V), (object.ERROR_CODE))
-        object.add_method('get_state', (object.INDEX), (M,L,L,L,L,V,V,V, object.ERROR_CODE))
-        object.add_method('set_time_begin', (T), (object.ERROR_CODE))
-        object.add_method('get_time_begin', (), (T, object.ERROR_CODE))
-        object.add_method('get_number_of_particles', (), (units.none, object.ERROR_CODE))
-        object.add_method('get_time_step', (), (T, object.ERROR_CODE))
-        object.add_method('set_time_step', (T), (object.ERROR_CODE))
-        object.add_method('update_force_potential_arrays', (T), (object.ERROR_CODE))
+        handler.add_method('new_particle', (M,L,L,L,V,V,V,L), (handler.INDEX, handler.ERROR_CODE))
+        handler.add_method('set_state', (handler.INDEX, M,L,L,L,L,V,V,V), (handler.ERROR_CODE))
+        handler.add_method('get_state', (handler.INDEX), (M,L,L,L,L,V,V,V, handler.ERROR_CODE))
+        handler.add_method('set_time_begin', (T), (handler.ERROR_CODE))
+        handler.add_method('get_time_begin', (), (T, handler.ERROR_CODE))
+        handler.add_method('get_number_of_particles', (), (units.none, handler.ERROR_CODE))
+        handler.add_method('get_time_step', (), (T, handler.ERROR_CODE))
+        handler.add_method('set_time_step', (T), (handler.ERROR_CODE))
+        handler.add_method('update_force_potential_arrays', (T), (handler.ERROR_CODE))
 
-    def define_particle_sets(self, object):
-        GravitationalDynamics.define_particle_sets(self, object)
+    def define_particle_sets(self, handler):
+        GravitationalDynamics.define_particle_sets(self, handler)
 
 

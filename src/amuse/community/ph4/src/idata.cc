@@ -258,7 +258,8 @@ void idata::get_acc_and_jerk()
 
 #ifndef NOMPI
     //cout << "idata Barrier 1 for " << jdat->mpi_rank << endl << flush;
-    jdat->mpi_comm.Barrier();
+    //jdat->mpi_comm.Barrier();
+    MPI_Barrier(jdat->mpi_comm);
     //cout << "idata Barrier 1a for " << jdat->mpi_rank << endl << flush;
 #endif
 
@@ -268,14 +269,17 @@ void idata::get_acc_and_jerk()
 	// If size = 1, the data have already been saved in ipot, etc.
 
 #ifndef NOMPI
-	jdat->mpi_comm.Allreduce(ppot, ipot, ni, MPI_DOUBLE, MPI_SUM);
-	jdat->mpi_comm.Allreduce(pacc, iacc, 3*ni, MPI_DOUBLE, MPI_SUM);
-	jdat->mpi_comm.Allreduce(pjerk, ijerk, 3*ni, MPI_DOUBLE, MPI_SUM);
+	//jdat->mpi_comm.Allreduce(ppot, ipot, ni, MPI_DOUBLE, MPI_SUM);
+	//jdat->mpi_comm.Allreduce(pacc, iacc, 3*ni, MPI_DOUBLE, MPI_SUM);
+	//jdat->mpi_comm.Allreduce(pjerk, ijerk, 3*ni, MPI_DOUBLE, MPI_SUM);
 
+	MPI_Allreduce(ppot, ipot, ni, MPI_DOUBLE, MPI_SUM, jdat->mpi_comm);
+	MPI_Allreduce(pacc, iacc, 3*ni, MPI_DOUBLE, MPI_SUM, jdat->mpi_comm);
+	MPI_Allreduce(pjerk, ijerk, 3*ni, MPI_DOUBLE, MPI_SUM, jdat->mpi_comm);
 	// Update and distribute the nn pointers.  Start by determining
 	// the global nearest neighbor distances.
 
-	jdat->mpi_comm.Allreduce(pdnn, idnn, ni, MPI_DOUBLE, MPI_MIN);
+	MPI_Allreduce(pdnn, idnn, ni, MPI_DOUBLE, MPI_MIN, jdat->mpi_comm);
 #else
     for(int i = 0; i < ni; i++)
     {
@@ -297,7 +301,8 @@ void idata::get_acc_and_jerk()
 	    if (pdnn[i] > idnn[i]) pnn[i] = 0;
 
 #ifndef NOMPI
-	jdat->mpi_comm.Allreduce(pnn, inn, ni, MPI_INT, MPI_SUM);
+	//jdat->mpi_comm.Allreduce(pnn, inn, ni, MPI_INT, MPI_SUM);
+	MPI_Allreduce(pnn, inn, ni, MPI_INT, MPI_SUM, jdat->mpi_comm);
 #else
     for(int i = 0; i < ni; i++)
     {
@@ -308,7 +313,8 @@ void idata::get_acc_and_jerk()
 
 #ifndef NOMPI
     //cout << "idata Barrier 2 for " << jdat->mpi_rank << endl << flush;
-    jdat->mpi_comm.Barrier();
+    //jdat->mpi_comm->Barrier();
+    MPI_Barrier(jdat->mpi_comm);
     //cout << "idata Barrier 2a for " << jdat->mpi_rank << endl << flush;
 #endif
 }

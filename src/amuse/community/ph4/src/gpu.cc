@@ -37,7 +37,7 @@ void jdata::initialize_gpu(bool reinitialize)	// default = false
 {
 #ifdef GPU
 #ifndef NOMPI
-    clusterid = MPI::COMM_WORLD.Get_rank();
+    MPI_Comm_rank(MPI_COMM_WORLD, &clusterid);
 #endif
     const char *in_function = "jdata::initialize_gpu";
     if (DEBUG > 2 && mpi_rank == 0) PRL(in_function);
@@ -780,7 +780,7 @@ void jdata::get_densities_on_gpu()	// under development
     }
 
 #ifndef NOMPI
-    mpi_comm.Barrier();
+    MPI_Barrier(mpi_comm);
 #endif
 
     // Each process now has a partial (p)neighbor list for all nj
@@ -807,8 +807,8 @@ void jdata::get_densities_on_gpu()	// under development
 #ifndef NOMPI
 	    cout << mpi_rank << " sending neighbors to" << mpi_rank-offset
 		 << endl << flush;
-	    mpi_comm.Send(pneighbors, nj*knn, MPI_INT,
-			  mpi_rank-offset, 42);
+	    MPI_Send(pneighbors, nj*knn, MPI_INT,
+			  mpi_rank-offset, 42, mpi_comm);
 	    cout << mpi_rank << " send done" << endl << flush;
 #endif
 
@@ -826,8 +826,11 @@ void jdata::get_densities_on_gpu()	// under development
         cout << mpi_rank << " receiving neighbors from"
 		     << mpi_rank+offset
 		     << endl << flush;
-		mpi_comm.Recv(pneighbors+nj*knn, nj*knn, MPI_INT,
-			      mpi_rank+offset, 42);
+    {
+    MPI_Status *status;
+		MPI_Recv(pneighbors+nj*knn, nj*knn, MPI_INT,
+			      mpi_rank+offset, 42, mpi_comm, status);
+    }
 		cout << mpi_rank << " receive done" << endl << flush;
 #endif
 
@@ -854,7 +857,7 @@ void jdata::get_densities_on_gpu()	// under development
 
 	PRC(mpi_rank); PRL(s);
 #ifndef NOMPI
-	mpi_comm.Barrier();
+	MPI_Barrier(mpi_comm);
 #endif
     }
 #endif

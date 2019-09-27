@@ -1,3 +1,4 @@
+# -*- coding: ascii -*-
 """
 Evolves a molecular cloud with chemical evolution
 
@@ -7,6 +8,7 @@ an isothermal cloud (hence passive chemical evolution).
 Initial condition is a smooth spherical cloud with random velocities as in
 Bonnell et al. (2003)
 """
+from __future__ import print_function
 import numpy
 
 from matplotlib import pyplot
@@ -25,8 +27,8 @@ def update_chem(sph_parts, chem_parts):
     parts = sph_parts.empty_copy()
     channel = sph_parts.new_channel_to(parts)
     channel.copy_attributes(["density", "u"])
-    parts.number_density = parts.density/meanmwt
-    parts.temperature = ((gamma-1)*meanmwt*parts.u/constants.kB)
+    parts.number_density = parts.density / meanmwt
+    parts.temperature = ((gamma - 1) * meanmwt * parts.u / constants.kB)
     parts.ionrate = 2.e-17 | units.s**-1
     channel = parts.new_channel_to(chem_parts)
     channel.copy_attributes(["number_density", "temperature", "ionrate"])
@@ -46,9 +48,9 @@ def run_mc(N=5000, Mcloud=10000. | units.MSun, Rcloud=1. | units.parsec):
     parts = molecular_cloud(targetN=N, convert_nbody=conv,
                             ethep_ratio=0.05, ekep_ratio=0.5).result
 
-    rho_cloud = Mcloud/(4/3.*numpy.pi*Rcloud**3)
+    rho_cloud = Mcloud / (4 / 3. * numpy.pi * Rcloud**3)
 
-    tff = 1/(4*numpy.pi*constants.G*rho_cloud)**0.5
+    tff = 1 / (4 * numpy.pi * constants.G * rho_cloud)**0.5
     parts.density = rho_cloud
 
     update_chem(parts, parts)
@@ -67,7 +69,7 @@ def run_mc(N=5000, Mcloud=10000. | units.MSun, Rcloud=1. | units.parsec):
     sph.parameters.gamma = 1
     sph.parameters.verbosity = 0
 
-    sph.parameters.timestep = timestep/2
+    sph.parameters.timestep = timestep / 2
 
     sph.gas_particles.add_particles(parts)
     chem.particles.add_particles(parts)
@@ -79,13 +81,13 @@ def run_mc(N=5000, Mcloud=10000. | units.MSun, Rcloud=1. | units.parsec):
     pyplot.show()
 
     i = 0
-    while i < (end_time/timestep+0.5):
-        evolve_sph_with_chemistry(sph, chem, i*timestep)
+    while i < (end_time / timestep + 0.5):
+        evolve_sph_with_chemistry(sph, chem, i * timestep)
         tnow = sph.model_time
         print("done with step:", i, tnow.in_(units.Myr))
         i += 1
 
-        n = (sph.particles.density/meanmwt).value_in(units.cm**-3)
+        n = (sph.particles.density / meanmwt).value_in(units.cm**-3)
         fh2 = chem.particles.abundances[:, chem.species["H2"]]
         co = chem.particles.abundances[:, chem.species["CO"]]
 

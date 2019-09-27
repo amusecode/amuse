@@ -267,22 +267,23 @@ class TableFormattedTextTests(amusetest.TestCase):
         daltons.name = ["Joe", "William", "Jack", "Averell"]
         daltons.length = [1.1, 1.4, 1.7, 2.0] | core.unit_with_specific_dtype(units.m, "float32")
         daltons.age = [21, 20, 19, 18] | core.unit_with_specific_dtype(units.yr, "int32")
+        path=os.path.abspath(os.path.join(self.get_path_to_results(), "daltons.txt"))
         io.write_set_to_file(
             daltons, 
-            "daltons.txt",
+            path,
             "txt", 
             attribute_names = ('name', 'length', 'age'),
             attribute_types = (None, units.m, units.yr),
             maximum_number_of_lines_buffered = 2,
             key_in_column = 0
         )
-        with open("daltons.txt", "r") as f:
+        with open(path, "r") as f:
             contents = f.read()
         expected_contents = '#name length age\n#- m yr\n30 Joe 1.1 21\n31 William 1.4 20\n32 Jack 1.7 19\n33 Averell 2.0 18\n'
         self.assertEquals(expected_contents, contents)
         
         read = io.read_set_from_file(
-            "daltons.txt",
+            path,
             "txt", 
             attribute_names = ('name', 'length', 'age'),
             attribute_types = (None, units.m, units.yr),
@@ -303,16 +304,18 @@ class TableFormattedTextTests(amusetest.TestCase):
         p = datamodel.Particles(100)
         p.a = numpy.arange(0,1,0.01) | units.m
         
+        path=os.path.abspath(os.path.join(self.get_path_to_results(), "test.csv"))
+
         io.write_set_to_file(
             p, 
-            "test.csv",
+            path,
             "amuse-txt", 
             attribute_names = ('a'),
             maximum_number_of_lines_buffered = 10,
             key_in_column = 0
         )
         p2 = io.read_set_from_file(
-            "test.csv",
+            path,
             "txt", 
             maximum_number_of_lines_buffered = 10,
             key_in_column = 0

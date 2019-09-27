@@ -188,7 +188,10 @@ class CodeMethodWrapper(AbstractCodeMethodWrapper):
             result = function()
 
             result = self.convert_result(result)
-        
+
+            # currently handled after call (on a wait)
+            # alternatively, this (probably) works for current implemted postcalls
+            # this could be done immediately
             self.postcall(object)
                         
             return result
@@ -234,6 +237,10 @@ class CodeMethodWrapperDefinition(object):
     
     def convert_result(self, method, result):
         return result
+
+    def convert_result_index(self, method):
+        return range(len(method.method_output_argument_names))
+        
     
     
         

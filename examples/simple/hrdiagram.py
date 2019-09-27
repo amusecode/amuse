@@ -1,3 +1,4 @@
+# -*- coding: ascii -*-
 """
 Generates a Hertzsprung-Russell diagram for a single star
 """

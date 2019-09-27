@@ -67,3 +67,4 @@ worker_code.f90: interface.py
 %.o: %.f90
 	$(FORTRAN) $(FFLAGS)  $(FCFLAGS) -c -o $@ $<
 
+distclean: clean

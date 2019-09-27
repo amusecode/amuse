@@ -1,0 +1,31 @@
+#!@PYTHON@
+
+import sys
+import subprocess
+import inspect
+import os.path
+from amuse.rfi import gencode
+
+# I am not sure this is necessary anymore?
+def run_through_subprocess():
+    try:
+        from amuse import config
+        pythonexe = config.interpreters.python
+    except ImportError as ex:
+        pythonexe = sys.executable
+    except AttributeError as ex:
+        pythonexe = sys.executable
+        
+    gencodepy = inspect.getsourcefile(gencode)
+    
+    arguments = [pythonexe, gencodepy]
+    arguments.extend(sys.argv[1:])
+    
+    returncode = subprocess.call(arguments, executable = pythonexe)
+    sys.exit(returncode)
+    
+    #os.execv(pythonexe, arguments)
+
+if __name__ == "__main__":
+    gencode.amusifier()
+    

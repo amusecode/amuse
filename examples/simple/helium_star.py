@@ -1,3 +1,4 @@
+# -*- coding: ascii -*-
 """
 Creates a helium burning star from the inner shells of a main sequence star.
 """
@@ -24,8 +25,8 @@ def main():
     se_star = stellar_evolution.particles.add_particle(star)
 
     print(
-            "Evolving a", star.mass,
-            "star with", stellar_evolution.__class__.__name__, end=' ')
+        "Evolving a", star.mass,
+        "star with", stellar_evolution.__class__.__name__, end=' ')
     print("until its radius exceeds", stop_radius)
     while (se_star.radius < stop_radius):
         se_star.evolve_one_step()
@@ -39,7 +40,7 @@ def main():
     index = (composition[0] > 1.0e-9).nonzero()[0][0]
 
     print("Creating helium star, from the inner", index,
-          "(out of", str(number_of_zones)+") shells.")
+          "(out of", str(number_of_zones) + ") shells.")
     helium_star = stellar_evolution.new_particle_from_model(dict(
         mass=(se_star.get_cumulative_mass_profile(
             number_of_zones=number_of_zones) * se_star.mass)[:index],
@@ -58,8 +59,8 @@ def main():
         X_O=composition[5][:index],
         X_Ne=composition[6][:index],
         X_Mg=composition[7][:index],
-        X_Si=composition[7][:index]*0.0,
-        X_Fe=composition[7][:index]*0.0), 0.0 | units.Myr)
+        X_Si=composition[7][:index] * 0.0,
+        X_Fe=composition[7][:index] * 0.0), 0.0 | units.Myr)
 
     print("\nStar properties before helium star evolution:\n",
           stellar_evolution.particles)
@@ -72,9 +73,9 @@ def main():
 
     stellar_evolution.stop()
     return (
-            temperatures_original, luminosities_original, temperatures_helium,
-            luminosities_helium
-            )
+        temperatures_original, luminosities_original, temperatures_helium,
+        luminosities_helium
+    )
 
 
 def plot_tracks(
@@ -95,6 +96,6 @@ def plot_tracks(
 
 if __name__ == "__main__":
     temperatures_original, luminosities_original, temperatures_helium, \
-            luminosities_helium = main()
+        luminosities_helium = main()
     plot_tracks(temperatures_original, luminosities_original,
                 temperatures_helium, luminosities_helium)
