@@ -41,6 +41,10 @@ HEADER_CODE_STRING = """
 	#include <netinet/tcp.h>
   #include <arpa/inet.h>
 #endif
+#if _POSIX_VERSION >= 1
+#define _POSIX_C_SOURCE 1
+	#include <signal.h>
+#endif
 """
 
 CONSTANTS_AND_GLOBAL_VARIABLES_STRING = """
@@ -96,7 +100,6 @@ static char * * strings_out;
 static char * characters_in = 0;
 static char * characters_out = 0;
 """
-
 
 POLLING_FUNCTIONS_STRING = """
 static int polling_interval = 0;
@@ -377,6 +380,32 @@ void delete_arrays() {
   delete[] strings_out;
 }
 
+#if !defined(NOMPI) && _POSIX_VERSION >= 1
+void abort_mpi_on_signal(int signo)
+{
+    MPI_Comm parent;
+    MPI_Request req;
+    MPI_Comm_get_parent(&parent);
+
+    header_out[HEADER_FLAGS] = ERROR_FLAG;
+    header_out[HEADER_CALL_ID] = 0;
+    header_out[HEADER_FUNCTION_ID] = 0;
+    header_out[HEADER_CALL_COUNT] = 0;
+    header_out[HEADER_INTEGER_COUNT] = 0;
+    header_out[HEADER_LONG_COUNT] = 0;
+    header_out[HEADER_FLOAT_COUNT] = 0;
+    header_out[HEADER_DOUBLE_COUNT] = 0;
+    header_out[HEADER_BOOLEAN_COUNT] = 0;
+    header_out[HEADER_STRING_COUNT] = 0;
+    header_out[HEADER_UNITS_COUNT] = 0;
+
+    MPI_Isend(header_out, HEADER_SIZE, MPI_INT, 0, 999, parent, &req);
+
+    MPI_Comm_disconnect(&parent);
+    MPI_Abort(MPI_COMM_WORLD, -1);
+}
+#endif
+
 void run_mpi(int argc, char *argv[]) {
 #ifndef NOMPI
   int provided;
@@ -387,6 +416,25 @@ void run_mpi(int argc, char *argv[]) {
   //fprintf(stderr, "C worker: running in mpi mode\\n");
   
   MPI_Init_thread(&argc, &argv, MPI_THREAD_MULTIPLE, &provided);
+#if _POSIX_VERSION >= 1
+  if (provided == MPI_THREAD_MULTIPLE) {
+    int abort_signals[] = {
+        SIGABRT, SIGBUS, SIGILL, SIGINT, SIGQUIT, SIGSEGV, SIGTERM
+    };
+    struct sigaction handler;
+    handler.sa_handler = abort_mpi_on_signal;
+    sigemptyset(&handler.sa_mask);
+    handler.sa_flags = 0;
+
+    for (int i = 0; i < (sizeof abort_signals) / (sizeof abort_signals[0]); i++) {
+        int result = sigaction(abort_signals[i], &handler, nullptr);
+        if (result == -1) {
+            perror("Error installing signal handler");
+            exit(EXIT_FAILURE);
+        }
+    }
+  }
+#endif
   MPI_Comm parent;
   MPI_Comm_get_parent(&communicators[0]);
   lastid += 1;
