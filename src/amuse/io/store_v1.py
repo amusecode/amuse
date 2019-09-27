@@ -22,11 +22,11 @@ from amuse.datamodel import AttributeStorage
 
 if sys.hexversion > 0x03000000:
     def pickle_to_string(value):
-        return numpy.void(pickle.dumps(value))
+        return numpy.void(pickle.dumps(value, protocol=0))
         
         
     def unpickle_from_string(value):
-        return pickle.loads(value.tostring())
+        return pickle.loads(value, encoding='bytes')
 else:
     def pickle_to_string(value):
         return pickle.dumps(value)
@@ -599,7 +599,7 @@ class StoreHDF(object):
             parent = self.particles_group()
             
         group = self.new_group(parent)
-        group.attrs["type"] = 'particles'
+        group.attrs["type"] = 'particles'.encode("ascii")
         self.mapping_from_groupid_to_set[group.id] = particles._original_set()
         
         
@@ -633,7 +633,7 @@ class StoreHDF(object):
             parent = self.grids_group()
         group = self.new_group(parent)
         
-        group.attrs["type"] = 'grid'
+        group.attrs["type"] = 'grid'.encode("ascii")
         group.attrs["class_of_the_container"] = pickle_to_string(grid._factory_for_new_collection())
         group.create_dataset("shape", data=numpy.asarray(grid.shape))
     
@@ -661,7 +661,7 @@ class StoreHDF(object):
                 links.append([subgroup, quantity.as_set()._original_set()])
                 subgroup.create_dataset('keys', data=keys)
                 subgroup.create_dataset('masked', data=masked)
-                subgroup.attrs["units"] = "object"
+                subgroup.attrs["units"] = "object".encode("ascii")
             else:
                 dtype = numpy.asanyarray(quantity).dtype
                 if dtype.kind == 'U':
@@ -678,7 +678,7 @@ class StoreHDF(object):
         quantity = container.get_timestamp()
         if not quantity is None:
             group.attrs["timestamp"] = quantity.value_in(quantity.unit)
-            group.attrs["timestamp_unit"] = quantity.unit.reference_string()
+            group.attrs["timestamp_unit"] = quantity.unit.reference_string().encode("ascii")
     
     
     
@@ -693,20 +693,20 @@ class StoreHDF(object):
                 continue 
             if is_quantity(quantity):
                 group.attrs[name] = quantity.value_in(quantity.unit)
-                group.attrs[name+"_unit"] = quantity.unit.reference_string()
+                group.attrs[name+"_unit"] = quantity.unit.reference_string().encode("ascii")
             else:
                 group.attrs[name] = quantity
-                group.attrs[name+"_unit"] = "none"
+                group.attrs[name+"_unit"] = "none".encode("ascii")
             
     def load_collection_attributes(self, container, group):
         names = group.attrs.keys()
         attributenames = [x for x in names if x + '_unit' in group.attrs]
         for name in attributenames:
-            unit_string = group.attrs[name+"_unit"]
+            unit_string = group.attrs[name+"_unit"] if isinstance(group.attrs[name+"_unit"],str) else group.attrs[name+"_unit"].decode("ascii")
             if unit_string == 'none':
                 quantity = group.attrs[name]
             else:
-                unit = eval(group.attrs[name+"_unit"], core.__dict__) 
+                unit = eval(unit_string, core.__dict__) 
                 quantity = unit.new_quantity(group.attrs[name])
             setattr(container.collection_attributes, name, quantity)
                 
@@ -759,7 +759,7 @@ class StoreHDF(object):
     
     def load_from_group(self, group, default_type = 'particles'):
         if 'type' in group.attrs:
-            container_type = group.attrs['type']
+            container_type = group.attrs['type'] if isinstance(group.attrs['type'], str) else group.attrs['type'].decode('ascii') 
         else:
             container_type = default_type
         

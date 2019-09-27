@@ -29,11 +29,11 @@ import warnings
 
 if sys.hexversion > 0x03000000:
     def pickle_to_string(value):
-        return numpy.void(pickle.dumps(value))
+        return numpy.void(pickle.dumps(value, protocol=0))
         
         
     def unpickle_from_string(value):
-        return pickle.loads(value.tostring())
+        return pickle.loads(value, encoding='bytes')
 else:
     def pickle_to_string(value):
         return pickle.dumps(value)
@@ -931,7 +931,7 @@ class StoreHDF(object):
         names = group.attrs.keys()
         attributenames = [x for x in names if x + '_unit' in group.attrs]
         for name in attributenames:
-            unit_string = group.attrs[name+"_unit"]
+            unit_string = group.attrs[name+"_unit"] if isinstance(group.attrs[name+"_unit"],str) else group.attrs[name+"_unit"].decode("ascii")
             if unit_string == 'none':
                 quantity = group.attrs[name]
             elif unit_string == 'particle':
@@ -1012,7 +1012,7 @@ class StoreHDF(object):
         return container
     
     def load_from_group(self, group):
-        container_type = group.attrs['type']
+        container_type = group.attrs['type'] if isinstance(group.attrs['type'], str) else group.attrs['type'].decode('ascii') 
         
         if container_type == 'particles':
             return self.load_particles_from_group(group)
@@ -1037,7 +1037,7 @@ class StoreHDF(object):
         
     def load_container(self, container_group):
         number_of_saved_containers= len(container_group)
-        print number_of_saved_containers, container_group
+        #~ print number_of_saved_containers, container_group
         all_containers = [None] * number_of_saved_containers
         for group_index in container_group.keys():
             group = container_group[group_index]
