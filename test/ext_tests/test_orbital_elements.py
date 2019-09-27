@@ -32,7 +32,7 @@ class KeplerTests(amusetest.TestCase):
             1 | nbody_system.length
         )
 
-        self.assertEquals(len(binary), 2)
+        self.assertEqual(len(binary), 2)
 
         binary.position -= binary[0].position
         binary.velocity -= binary[0].velocity
@@ -63,7 +63,7 @@ class KeplerTests(amusetest.TestCase):
             true_anomaly=90,
         )
 
-        self.assertEquals(len(binary), 2)
+        self.assertEqual(len(binary), 2)
 
         binary.position -= binary[0].position
         binary.velocity -= binary[0].velocity
@@ -89,7 +89,7 @@ class KeplerTests(amusetest.TestCase):
             true_anomaly=180,
         )
 
-        self.assertEquals(len(binary), 2)
+        self.assertEqual(len(binary), 2)
 
         binary.position -= binary[0].position
         binary.velocity -= binary[0].velocity
@@ -111,7 +111,7 @@ class KeplerTests(amusetest.TestCase):
             true_anomaly = 270,
         )
         
-        self.assertEquals(len(binary), 2)
+        self.assertEqual(len(binary), 2)
 
         binary.position-=binary[0].position
         binary.velocity-=binary[0].velocity
@@ -129,7 +129,7 @@ class KeplerTests(amusetest.TestCase):
             true_anomaly = 45,
         )
         
-        self.assertEquals(len(binary), 2)
+        self.assertEqual(len(binary), 2)
 
         binary.position-=binary[0].position
         binary.velocity-=binary[0].velocity
@@ -151,7 +151,7 @@ class KeplerTests(amusetest.TestCase):
             eccentricity = 0.
         )
         
-        self.assertEquals(len(binary), 2)
+        self.assertEqual(len(binary), 2)
         self.assertAlmostRelativeEquals(binary[0].position, [-0.5,0,0] | nbody_system.length)
         self.assertAlmostRelativeEquals(binary[1].position, [0.5,0,0] | nbody_system.length)
         self.assertAlmostRelativeEquals(binary[0].velocity, [0,-1/numpy.sqrt(2),0] | nbody_system.speed)
@@ -178,7 +178,7 @@ class KeplerTests(amusetest.TestCase):
             arg_ = orbital_elements(
                     new_binary_from_orbital_elements(*arg))
             for i, (copy, org) in enumerate(zip(arg_, arg)):
-                self.assertAlmostEquals(copy, org)
+                self.assertAlmostEqual(copy, org)
 
     def test5(self):
         numpy.random.seed(4567893)
@@ -203,7 +203,7 @@ class KeplerTests(amusetest.TestCase):
                 new_binary_from_orbital_elements(*arg, G=constants.G),
                 G=constants.G)
             for i, (copy, org) in enumerate(zip(arg_, arg)):
-                self.assertAlmostEquals(copy, org)
+                self.assertAlmostEqual(copy, org)
     
     def test6(self):
         """
@@ -660,6 +660,6 @@ class KeplerTests(amusetest.TestCase):
         ta=[180,180,20,30,0]| units.deg
         primaries,secondaries=generate_binaries(m1,m2,a,eccentricity=ecc,true_anomaly=ta)
         m1_,m2_,a_,ecc_,ta_,i_,lasc_,ap_= get_orbital_elements_from_binaries(primaries,secondaries)
-        self.assertAlmostEquals(ecc,ecc_)
+        self.assertAlmostEqual(ecc,ecc_)
       
       

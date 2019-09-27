@@ -17,137 +17,137 @@ class TestTupanInterface(TestWithMPI):
     def test01(self):
         if MODULES_MISSING:
             self.skip("Failed to import a module required for Tupan")
-        print "Test TupanInterface initialization"
+        print("Test TupanInterface initialization")
         instance = self.new_instance_of_an_optional_code(TupanInterface)
-        self.assertEquals(0, instance.initialize_code())
-        self.assertEquals(0, instance.commit_parameters())
-        self.assertEquals(0, instance.cleanup_code())
+        self.assertEqual(0, instance.initialize_code())
+        self.assertEqual(0, instance.commit_parameters())
+        self.assertEqual(0, instance.cleanup_code())
         instance.stop()
 
     def test02(self):
         if MODULES_MISSING:
             self.skip("Failed to import a module required for Tupan")
-        print "Test TupanInterface new_particle / get_state"
+        print("Test TupanInterface new_particle / get_state")
         instance = self.new_instance_of_an_optional_code(TupanInterface)
-        self.assertEquals(0, instance.initialize_code())
-        self.assertEquals(0, instance.commit_parameters())
+        self.assertEqual(0, instance.initialize_code())
+        self.assertEqual(0, instance.commit_parameters())
 
         id, error = instance.new_particle(mass = 11.0, radius = 2.0, x = 0.0, y = 0.0, z = 0.0, vx = 0.0, vy = 0.0, vz = 0.0)
-        self.assertEquals(0, error)
-        self.assertEquals(0, id)
+        self.assertEqual(0, error)
+        self.assertEqual(0, id)
         id, error = instance.new_particle(mass = 21.0, radius = 5.0, x = 10.0, y = 0.0, z = 0.0, vx = 10.0, vy = 0.0, vz = 0.0)
-        self.assertEquals(0, error)
-        self.assertEquals(1, id)
-        self.assertEquals(0, instance.commit_particles())
+        self.assertEqual(0, error)
+        self.assertEqual(1, id)
+        self.assertEqual(0, instance.commit_particles())
 
         retrieved_state1 = instance.get_state(0)
         retrieved_state2 = instance.get_state(1)
-        self.assertEquals(0,  retrieved_state1['__result'])
-        self.assertEquals(0,  retrieved_state2['__result'])
-        self.assertEquals(11.0,  retrieved_state1['mass'])
-        self.assertEquals(21.0,  retrieved_state2['mass'])
-        self.assertEquals( 0.0,  retrieved_state1['x'])
-        self.assertEquals(10.0,  retrieved_state2['x'])
+        self.assertEqual(0,  retrieved_state1['__result'])
+        self.assertEqual(0,  retrieved_state2['__result'])
+        self.assertEqual(11.0,  retrieved_state1['mass'])
+        self.assertEqual(21.0,  retrieved_state2['mass'])
+        self.assertEqual( 0.0,  retrieved_state1['x'])
+        self.assertEqual(10.0,  retrieved_state2['x'])
 
-        self.assertEquals(0, instance.cleanup_code())
+        self.assertEqual(0, instance.cleanup_code())
         instance.stop()
 
     def test03(self):
         if MODULES_MISSING:
             self.skip("Failed to import a module required for Tupan")
-        print "Test TupanInterface particle property getters/setters"
+        print("Test TupanInterface particle property getters/setters")
         instance = self.new_instance_of_an_optional_code(TupanInterface)
-        self.assertEquals(0, instance.initialize_code())
-        self.assertEquals(0, instance.commit_parameters())
-        self.assertEquals([0, 0], instance.new_particle(0.01,  1, 0, 0,  0, 1, 0, 0.1).values())
-        self.assertEquals([1, 0], instance.new_particle(0.02, -1, 0, 0,  0,-1, 0, 0.1).values())
+        self.assertEqual(0, instance.initialize_code())
+        self.assertEqual(0, instance.commit_parameters())
+        self.assertEqual([0, 0], instance.new_particle(0.01,  1, 0, 0,  0, 1, 0, 0.1).values())
+        self.assertEqual([1, 0], instance.new_particle(0.02, -1, 0, 0,  0,-1, 0, 0.1).values())
 ####        self.assertEquals(-1, instance.get_mass(1)['__result']) # Have to commit first
-        self.assertEquals(0, instance.commit_particles())
+        self.assertEqual(0, instance.commit_particles())
 
         # getters
         mass, result = instance.get_mass(0)
-        self.assertAlmostEquals(0.01, mass)
-        self.assertEquals(0,result)
+        self.assertAlmostEqual(0.01, mass)
+        self.assertEqual(0,result)
         radius, result = instance.get_radius(1)
-        self.assertAlmostEquals(0.1, radius)
-        self.assertEquals(0,result)
-        self.assertEquals(-1, instance.get_mass(2)['__result']) # Particle not found
-        self.assertEquals([ 1, 0, 0,  0], instance.get_position(0).values())
-        self.assertEquals([-1, 0, 0,  0], instance.get_position(1).values())
-        self.assertEquals([ 0, 1, 0,  0], instance.get_velocity(0).values())
-        self.assertEquals([ 0,-1, 0,  0], instance.get_velocity(1).values())
+        self.assertAlmostEqual(0.1, radius)
+        self.assertEqual(0,result)
+        self.assertEqual(-1, instance.get_mass(2)['__result']) # Particle not found
+        self.assertEqual([ 1, 0, 0,  0], instance.get_position(0).values())
+        self.assertEqual([-1, 0, 0,  0], instance.get_position(1).values())
+        self.assertEqual([ 0, 1, 0,  0], instance.get_velocity(0).values())
+        self.assertEqual([ 0,-1, 0,  0], instance.get_velocity(1).values())
 
         # setters
-        self.assertEquals(0, instance.set_state(0, 0.01, 1,2,3, 4,5,6, 0.1))
-        self.assertEquals([0.01, 1.0,2.0,3.0, 4.0,5.0,6.0, 0.1, 0], instance.get_state(0).values())
-        self.assertEquals(0, instance.set_mass(0, 0.02))
-        self.assertEquals([0.02, 1.0,2.0,3.0, 4.0,5.0,6.0, 0.1, 0], instance.get_state(0).values())
-        self.assertEquals(0, instance.set_radius(0, 0.2))
-        self.assertEquals([0.02, 1.0,2.0,3.0, 4.0,5.0,6.0, 0.2, 0], instance.get_state(0).values())
-        self.assertEquals(0, instance.set_position(0, 10,20,30))
-        self.assertEquals([0.02, 10.0,20.0,30.0, 4.0,5.0,6.0, 0.2, 0], instance.get_state(0).values())
-        self.assertEquals(0, instance.set_velocity(0, 40,50,60))
-        self.assertEquals([0.02, 10.0,20.0,30.0, 40.0,50.0,60.0, 0.2, 0], instance.get_state(0).values())
+        self.assertEqual(0, instance.set_state(0, 0.01, 1,2,3, 4,5,6, 0.1))
+        self.assertEqual([0.01, 1.0,2.0,3.0, 4.0,5.0,6.0, 0.1, 0], instance.get_state(0).values())
+        self.assertEqual(0, instance.set_mass(0, 0.02))
+        self.assertEqual([0.02, 1.0,2.0,3.0, 4.0,5.0,6.0, 0.1, 0], instance.get_state(0).values())
+        self.assertEqual(0, instance.set_radius(0, 0.2))
+        self.assertEqual([0.02, 1.0,2.0,3.0, 4.0,5.0,6.0, 0.2, 0], instance.get_state(0).values())
+        self.assertEqual(0, instance.set_position(0, 10,20,30))
+        self.assertEqual([0.02, 10.0,20.0,30.0, 4.0,5.0,6.0, 0.2, 0], instance.get_state(0).values())
+        self.assertEqual(0, instance.set_velocity(0, 40,50,60))
+        self.assertEqual([0.02, 10.0,20.0,30.0, 40.0,50.0,60.0, 0.2, 0], instance.get_state(0).values())
 
-        self.assertEquals(0, instance.cleanup_code())
+        self.assertEqual(0, instance.cleanup_code())
         instance.stop()
 
     def test04(self):
         if MODULES_MISSING:
             self.skip("Failed to import a module required for Tupan")
-        print "Test TupanInterface parameters"
+        print("Test TupanInterface parameters")
         instance = self.new_instance_of_an_optional_code(TupanInterface)
-        self.assertEquals(0, instance.initialize_code())
+        self.assertEqual(0, instance.initialize_code())
 
-        self.assertEquals([0.03125, 0], instance.get_eta().values())
-        self.assertEquals(0, instance.set_eta(0.001))
-        self.assertEquals([0.001, 0], instance.get_eta().values())
+        self.assertEqual([0.03125, 0], instance.get_eta().values())
+        self.assertEqual(0, instance.set_eta(0.001))
+        self.assertEqual([0.001, 0], instance.get_eta().values())
 
-        self.assertEquals([0.0, 0], instance.get_begin_time().values())
-        self.assertEquals(0, instance.set_begin_time(1.0))
-        self.assertEquals([1.0, 0], instance.get_begin_time().values())
+        self.assertEqual([0.0, 0], instance.get_begin_time().values())
+        self.assertEqual(0, instance.set_begin_time(1.0))
+        self.assertEqual([1.0, 0], instance.get_begin_time().values())
 
-        self.assertEquals(["sia21h.dkd", 0], instance.get_integrator_method().values())
-        self.assertEquals(0, instance.set_integrator_method("bogus"))
-        self.assertEquals(["bogus", 0], instance.get_integrator_method().values())
-        self.assertEquals(-1, instance.commit_parameters())
-        self.assertEquals(0, instance.set_integrator_method("sakura"))
-        self.assertEquals(["sakura", 0], instance.get_integrator_method().values())
+        self.assertEqual(["sia21h.dkd", 0], instance.get_integrator_method().values())
+        self.assertEqual(0, instance.set_integrator_method("bogus"))
+        self.assertEqual(["bogus", 0], instance.get_integrator_method().values())
+        self.assertEqual(-1, instance.commit_parameters())
+        self.assertEqual(0, instance.set_integrator_method("sakura"))
+        self.assertEqual(["sakura", 0], instance.get_integrator_method().values())
 
-        self.assertEquals(0, instance.commit_parameters())
+        self.assertEqual(0, instance.commit_parameters())
 
-        self.assertEquals(0, instance.set_pn_order(7))
-        self.assertEquals([7, 0], instance.get_pn_order().values())
-        self.assertEquals(-1, instance.commit_parameters())
-        self.assertEquals(0, instance.set_clight(1024))
-        self.assertEquals([1024, 0], instance.get_clight().values())
+        self.assertEqual(0, instance.set_pn_order(7))
+        self.assertEqual([7, 0], instance.get_pn_order().values())
+        self.assertEqual(-1, instance.commit_parameters())
+        self.assertEqual(0, instance.set_clight(1024))
+        self.assertEqual([1024, 0], instance.get_clight().values())
 
-        self.assertEquals(0, instance.commit_parameters())
-        self.assertEquals(0, instance.cleanup_code())
+        self.assertEqual(0, instance.commit_parameters())
+        self.assertEqual(0, instance.cleanup_code())
         instance.stop()
 
     def test05(self):
         if MODULES_MISSING:
             self.skip("Failed to import a module required for Tupan")
-        print "Test TupanInterface evolve_model, binary"
+        print("Test TupanInterface evolve_model, binary")
         instance = self.new_instance_of_an_optional_code(TupanInterface)
-        self.assertEquals(0, instance.initialize_code())
-        self.assertEquals(0, instance.commit_parameters())
+        self.assertEqual(0, instance.initialize_code())
+        self.assertEqual(0, instance.commit_parameters())
 
-        self.assertEquals([0, 0], instance.new_particle(0.5,  0.5, 0, 0,  0, 0.5, 0, 0.001).values())
-        self.assertEquals([1, 0], instance.new_particle(0.5, -0.5, 0, 0,  0,-0.5, 0, 0.001).values())
-        self.assertEquals(0, instance.commit_particles())
+        self.assertEqual([0, 0], instance.new_particle(0.5,  0.5, 0, 0,  0, 0.5, 0, 0.001).values())
+        self.assertEqual([1, 0], instance.new_particle(0.5, -0.5, 0, 0,  0,-0.5, 0, 0.001).values())
+        self.assertEqual(0, instance.commit_particles())
 
         P = 2 * math.pi
-        self.assertEquals(0, instance.evolve_model(P / 2)) # half an orbit
+        self.assertEqual(0, instance.evolve_model(P / 2)) # half an orbit
         for result, expected in zip(instance.get_position(0).values(), [-0.5, 0.0, 0.0, 0]):
-            self.assertAlmostEquals(result, expected, 2)
+            self.assertAlmostEqual(result, expected, 2)
 
-        self.assertEquals(0, instance.evolve_model(P)) # full orbit
+        self.assertEqual(0, instance.evolve_model(P)) # full orbit
         for result, expected in zip(instance.get_position(0).values(), [0.5, 0.0, 0.0, 0]):
-            self.assertAlmostEquals(result, expected, 2)
+            self.assertAlmostEqual(result, expected, 2)
 
-        self.assertEquals(0, instance.cleanup_code())
+        self.assertEqual(0, instance.cleanup_code())
         instance.stop()
 
 
@@ -168,7 +168,7 @@ class TestTupan(TestWithMPI):
     def test01(self):
         if MODULES_MISSING:
             self.skip("Failed to import a module required for Tupan")
-        print "Testing Tupan initialization"
+        print("Testing Tupan initialization")
         instance = self.new_instance_of_an_optional_code(Tupan, self.default_converter)
         instance.initialize_code()
         instance.commit_parameters()
@@ -178,13 +178,13 @@ class TestTupan(TestWithMPI):
     def xtest02(self):
         if MODULES_MISSING:
             self.skip("Failed to import a module required for Tupan")
-        print "Testing Tupan parameters"
+        print("Testing Tupan parameters")
         instance = self.new_instance_of_an_optional_code(Tupan, self.default_converter)
         instance.initialize_code()
 
-        self.assertEquals(instance.parameters.epsilon_squared,
+        self.assertEqual(instance.parameters.epsilon_squared,
             instance.unit_converter.to_si(0.0 | nbody_system.length**2))
-        self.assertEquals(instance.parameters.timestep_parameter, 0.125)
+        self.assertEqual(instance.parameters.timestep_parameter, 0.125)
 
         for par, value in [('epsilon_squared_star_star', 0.0 | nbody_system.length**2),
                 ('epsilon_squared_star_blackhole', 0.0 | nbody_system.length**2),
@@ -196,49 +196,49 @@ class TestTupan(TestWithMPI):
                 ('max_relative_energy_error', 5.0e-5),
                 ('maximum_timestep', 1.0/1024.0 | nbody_system.time),
                 ('smbh_mass', 1.0 | nbody_system.mass)]:
-            self.assertEquals(instance.unit_converter.to_si(value),
+            self.assertEqual(instance.unit_converter.to_si(value),
                 getattr(instance.parameters, par))
             setattr(instance.parameters, par, 3.0 | value.unit)
-            self.assertEquals(instance.unit_converter.to_si(3.0 | value.unit),
+            self.assertEqual(instance.unit_converter.to_si(3.0 | value.unit),
                 getattr(instance.parameters, par))
 
         # epsilon_squared is an alias for epsilon_squared_star_star, so epsilon_squared also has become 3:
-        self.assertEquals(instance.parameters.epsilon_squared,
+        self.assertEqual(instance.parameters.epsilon_squared,
             instance.unit_converter.to_si(3.0 | nbody_system.length**2))
         instance.parameters.epsilon_squared = 0.1 | nbody_system.length**2
-        self.assertEquals(instance.parameters.epsilon_squared,
+        self.assertEqual(instance.parameters.epsilon_squared,
             instance.unit_converter.to_si(0.1 | nbody_system.length**2))
         # timestep_parameter is an alias for timestep_parameter_stars, so timestep_parameter also has become 3:
-        self.assertEquals(instance.parameters.timestep_parameter, 3.0)
+        self.assertEqual(instance.parameters.timestep_parameter, 3.0)
         instance.parameters.timestep_parameter = 0.01
-        self.assertEquals(instance.parameters.timestep_parameter, 0.01)
+        self.assertEqual(instance.parameters.timestep_parameter, 0.01)
 
-        self.assertEquals(instance.parameters.include_smbh, False)
+        self.assertEqual(instance.parameters.include_smbh, False)
         instance.parameters.include_smbh = True
-        self.assertEquals(instance.parameters.include_smbh, True)
-        self.assertEquals(instance.parameters.calculate_postnewtonian, True)
+        self.assertEqual(instance.parameters.include_smbh, True)
+        self.assertEqual(instance.parameters.calculate_postnewtonian, True)
         instance.parameters.calculate_postnewtonian = False
-        self.assertEquals(instance.parameters.calculate_postnewtonian, False)
+        self.assertEqual(instance.parameters.calculate_postnewtonian, False)
 
-        self.assertEquals(instance.parameters.drink, "Vodka martini. Shaken, not stirred.")
+        self.assertEqual(instance.parameters.drink, "Vodka martini. Shaken, not stirred.")
 
         instance.stop()
 
     def test03(self):
         if MODULES_MISSING:
             self.skip("Failed to import a module required for Tupan")
-        print "Testing Tupan particles"
+        print("Testing Tupan particles")
         instance = self.new_instance_of_an_optional_code(Tupan, self.default_converter)
         instance.initialize_code()
         instance.commit_parameters()
         instance.particles.add_particles(self.new_sun_earth_system())
         instance.commit_particles()
 
-        self.assertAlmostEquals(instance.particles.mass, [1.0, 3.0037e-6] | units.MSun)
-        self.assertAlmostEquals(instance.particles.radius, 1.0 | units.RSun)
-        self.assertAlmostEquals(instance.particles.position,
+        self.assertAlmostEqual(instance.particles.mass, [1.0, 3.0037e-6] | units.MSun)
+        self.assertAlmostEqual(instance.particles.radius, 1.0 | units.RSun)
+        self.assertAlmostEqual(instance.particles.position,
             [[0.0, 0.0, 0.0], [1.0, 0.0, 0.0]] | units.AU)
-        self.assertAlmostEquals(instance.particles.velocity,
+        self.assertAlmostEqual(instance.particles.velocity,
             [[0.0, 0.0, 0.0], [0.0, 29.7885, 0.0]] | units.km / units.s, 3)
 
         instance.cleanup_code()
@@ -247,7 +247,7 @@ class TestTupan(TestWithMPI):
     def xtest04(self):
         if MODULES_MISSING:
             self.skip("Failed to import a module required for Tupan")
-        print "Testing Tupan evolve_model, 2 particles orbiting the SMBH"
+        print("Testing Tupan evolve_model, 2 particles orbiting the SMBH")
         particles = Particles(2)
         particles.mass = 1.0 | units.MSun
         particles.radius = 1.0 | units.RSun
@@ -256,7 +256,7 @@ class TestTupan(TestWithMPI):
         particles[1].vy = ((constants.G * (10001.0 | units.MSun) / (1.0 | units.AU)).sqrt() +
                            (constants.G * (10000.0 | units.MSun) / (1.0 | units.AU)).sqrt())
         particles.move_to_center()
-        print particles
+        print(particles)
 
         instance = self.new_instance_of_an_optional_code(Tupan, self.default_converter)
         instance.initialize_code()
@@ -285,7 +285,7 @@ class TestTupan(TestWithMPI):
     def test05(self):
         if MODULES_MISSING:
             self.skip("Failed to import a module required for Tupan")
-        print "Testing Tupan evolve_model, 2 particles, no SMBH"
+        print("Testing Tupan evolve_model, 2 particles, no SMBH")
         particles = Particles(2)
         particles.mass = 1.0 | units.MSun
         particles.radius = 1.0 | units.RSun
@@ -293,7 +293,7 @@ class TestTupan(TestWithMPI):
         particles.velocity = [[0.0, 0.0, 0.0], [0.0, 0.0, 0.0]] | units.km / units.s
         particles[1].vy = (constants.G * (2.0 | units.MSun) / (2.0 | units.AU)).sqrt()
         particles.move_to_center()
-        print particles
+        print(particles)
 
         converter = nbody_system.nbody_to_si(1.0 | units.MSun, 1.0 | units.AU)
         instance = self.new_instance_of_an_optional_code(Tupan, converter)
@@ -322,7 +322,7 @@ class TestTupan(TestWithMPI):
     def test06(self):
         if MODULES_MISSING:
             self.skip("Failed to import a module required for Tupan")
-        print "Testing Tupan evolve_model, earth-sun system, no SMBH"
+        print("Testing Tupan evolve_model, earth-sun system, no SMBH")
         converter = nbody_system.nbody_to_si(1.0 | units.MSun, 1.0 | units.AU)
         instance = self.new_instance_of_an_optional_code(Tupan, converter, )
         instance.initialize_code()
@@ -348,14 +348,14 @@ class TestTupan(TestWithMPI):
     def test07(self):
         if MODULES_MISSING:
             self.skip("Failed to import a module required for Tupan")
-        print "Testing effect of Tupan parameter epsilon_squared"
+        print("Testing effect of Tupan parameter epsilon_squared")
         converter = nbody_system.nbody_to_si(1.0 | units.MSun, 1.0 | units.AU)
         particles = self.new_sun_earth_system()
         particles.rotate(0.0, 0.0, -math.pi/4)
         particles.move_to_center()
 
         tan_initial_direction = particles[1].vy/particles[1].vx
-        self.assertAlmostEquals(tan_initial_direction, math.tan(math.pi/4))
+        self.assertAlmostEqual(tan_initial_direction, math.tan(math.pi/4))
         tan_final_direction =  []
         for log_eps2 in range(-9,10,2):
             instance = self.new_instance_of_an_optional_code(Tupan, converter)
@@ -371,17 +371,17 @@ class TestTupan(TestWithMPI):
             instance.cleanup_code()
             instance.stop()
         # Small values of epsilon_squared should result in normal earth-sun dynamics: rotation of 90 degrees
-        self.assertAlmostEquals(tan_final_direction[0], math.tan(3 * math.pi / 4.0), 2)
+        self.assertAlmostEqual(tan_final_direction[0], math.tan(3 * math.pi / 4.0), 2)
         # Large values of epsilon_squared should result in ~ no interaction
-        self.assertAlmostEquals(tan_final_direction[-1], tan_initial_direction, 2)
+        self.assertAlmostEqual(tan_final_direction[-1], tan_initial_direction, 2)
         # Outcome is most sensitive to epsilon_squared when epsilon_squared = d(earth, sun)^2
         delta = [abs(tan_final_direction[i+1]-tan_final_direction[i]) for i in range(len(tan_final_direction)-1)]
-        self.assertEquals(delta[len(tan_final_direction)/2 -1], max(delta))
+        self.assertEqual(delta[len(tan_final_direction)/2 -1], max(delta))
 
     def xtest08(self):
         if MODULES_MISSING:
             self.skip("Failed to import a module required for Tupan")
-        print "Testing Tupan get_gravity_at_point and get_potential_at_point"
+        print("Testing Tupan get_gravity_at_point and get_potential_at_point")
         instance = self.new_instance_of_an_optional_code(Tupan)
         instance.initialize_code()
         instance.parameters.epsilon_squared = 0.0 | nbody_system.length**2
@@ -423,7 +423,7 @@ class TestTupan(TestWithMPI):
     def test09(self):
         if MODULES_MISSING:
             self.skip("Failed to import a module required for Tupan")
-        print "Testing Tupan evolve_model and getters energy, plummer sphere, no SMBH"
+        print("Testing Tupan evolve_model and getters energy, plummer sphere, no SMBH")
         converter = nbody_system.nbody_to_si(1.0e2 | units.MSun, 1.0 | units.parsec)
         instance = self.new_instance_of_an_optional_code(Tupan, converter)
         instance.parameters.timestep_parameter = 1.0/256
@@ -454,7 +454,7 @@ class TestTupan(TestWithMPI):
     def xtest10(self):
         if MODULES_MISSING:
             self.skip("Failed to import a module required for Tupan")
-        print "Testing Tupan collision_detection"
+        print("Testing Tupan collision_detection")
         particles = Particles(7)
         particles.mass = 0.00000001 | nbody_system.mass
         particles.radius = 0.01 | nbody_system.length
@@ -473,10 +473,10 @@ class TestTupan(TestWithMPI):
 
         self.assertTrue(collisions.is_set())
         self.assertTrue(instance.model_time < 0.5 | nbody_system.time)
-        self.assertEquals(len(collisions.particles(0)), 3)
-        self.assertEquals(len(collisions.particles(1)), 3)
-        self.assertEquals(len(particles - collisions.particles(0) - collisions.particles(1)), 1)
-        self.assertEquals(abs(collisions.particles(0).x - collisions.particles(1).x) <
+        self.assertEqual(len(collisions.particles(0)), 3)
+        self.assertEqual(len(collisions.particles(1)), 3)
+        self.assertEqual(len(particles - collisions.particles(0) - collisions.particles(1)), 1)
+        self.assertEqual(abs(collisions.particles(0).x - collisions.particles(1).x) <
                 (collisions.particles(0).radius + collisions.particles(1).radius),
                 [True, True, True])
 
@@ -487,21 +487,21 @@ class TestTupan(TestWithMPI):
             merged.position = (p1 + p2).center_of_mass()
             merged.velocity = (p1 + p2).center_of_mass_velocity()
 
-        print instance.model_time
-        print instance.particles
+        print(instance.model_time)
+        print(instance.particles)
         instance.particles.remove_particles(collisions.particles(0) + collisions.particles(1))
         instance.particles.add_particles(sticky_merged)
 
         instance.evolve_model(1.0 | nbody_system.time)
-        print
-        print instance.model_time
-        print instance.particles
+        print()
+        print(instance.model_time)
+        print(instance.particles)
         self.assertTrue(collisions.is_set())
         self.assertTrue(instance.model_time < 1.0 | nbody_system.time)
-        self.assertEquals(len(collisions.particles(0)), 1)
-        self.assertEquals(len(collisions.particles(1)), 1)
-        self.assertEquals(len(instance.particles - collisions.particles(0) - collisions.particles(1)), 2)
-        self.assertEquals(abs(collisions.particles(0).x - collisions.particles(1).x) <
+        self.assertEqual(len(collisions.particles(0)), 1)
+        self.assertEqual(len(collisions.particles(1)), 1)
+        self.assertEqual(len(instance.particles - collisions.particles(0) - collisions.particles(1)), 2)
+        self.assertEqual(abs(collisions.particles(0).x - collisions.particles(1).x) <
                 (collisions.particles(0).radius + collisions.particles(1).radius),
                 [True])
         instance.stop()
@@ -509,7 +509,7 @@ class TestTupan(TestWithMPI):
     def test11(self):
         if MODULES_MISSING:
             self.skip("Failed to import a module required for Tupan")
-        print "Testing Tupan properties"
+        print("Testing Tupan properties")
         numpy.random.seed(12345)
         particles = new_plummer_model(100, do_scale=True)
         particles.position += [1, 2, 3] | nbody_system.length

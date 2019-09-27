@@ -55,7 +55,7 @@ class TestUniformSphericalDistribution(TestCase):
         self.assertAlmostEqual(min(r_squared), min_r_squared)
     
     def test6(self):
-        print "Test new_uniform_spherical_particle_distribution"
+        print("Test new_uniform_spherical_particle_distribution")
         particles = new_uniform_spherical_particle_distribution(14321, 1 | units.m, 1 | units.kg, type="cubic")
         self.assertEqual(len(particles), 14321)
         r_squared = particles.position.lengths_squared()
@@ -67,7 +67,7 @@ class TestUniformSphericalDistribution(TestCase):
         self.assertAlmostEqual(particles.center_of_mass(), [0.0, 0.0, 0.0] | units.m, places=2)
     
     def test7(self):
-        print "Test new_spherical_particle_distribution with total_mass specified"
+        print("Test new_spherical_particle_distribution with total_mass specified")
         particles = new_spherical_particle_distribution(4200, radii = [2,4,3,1] | units.m, 
             densities = [80, 30, 50, 100] | (units.kg/units.m**3), total_mass = 10000 | units.kg)
         self.assertEqual(len(particles), 4200)
@@ -78,7 +78,7 @@ class TestUniformSphericalDistribution(TestCase):
         self.assertAlmostEqual(particles.center_of_mass(), [0.0, 0.0, 0.0] | units.m, places=2)
     
     def test8(self):
-        print "Test new_spherical_particle_distribution without radii, densities tables"
+        print("Test new_spherical_particle_distribution without radii, densities tables")
         
         def my_density_func(radius):
             return (1 + radius.value_in(units.m)**2)**-2.5 | units.kg/units.m**3
@@ -88,7 +88,7 @@ class TestUniformSphericalDistribution(TestCase):
             "Using an arbitrary radial density function is not yet supported. Radius and density tables must be passed instead.")
     
     def test9(self):
-        print "Test new_spherical_particle_distribution without total_mass"
+        print("Test new_spherical_particle_distribution without total_mass")
         rad = [2,4,3,1] | units.m
         rho = [80, 30, 50, 100] | (units.kg/units.m**3)
         
@@ -111,7 +111,7 @@ class TestUniformSphericalDistribution(TestCase):
         self.assertAlmostEqual(particles.center_of_mass(), [0.0, 0.0, 0.0] | units.m, places=2)
         
     def test10(self):
-        print "Test new_uniform_spherical_particle_distribution, glass"
+        print("Test new_uniform_spherical_particle_distribution, glass")
         numpy.random.seed(12345)
         # setting target_rms to 30% for test speed-up
         particles = new_uniform_spherical_particle_distribution(1421, 1|units.m, 1|units.kg, 
@@ -122,7 +122,7 @@ class TestUniformSphericalDistribution(TestCase):
         self.assertAlmostEqual(r_squared.amin(), 0.0 | units.m**2, places=1)
     
     def test11(self):
-        print "Test new_uniform_spherical_particle_distribution, sobol sequence"
+        print("Test new_uniform_spherical_particle_distribution, sobol sequence")
         particles = new_uniform_spherical_particle_distribution(14321, 1 | units.m, 1 | units.kg, type="sobol")
         self.assertEqual(len(particles), 14321)
         r_squared = particles.position.lengths_squared()
@@ -134,7 +134,7 @@ class TestUniformSphericalDistribution(TestCase):
         self.assertAlmostEqual(particles.center_of_mass(), [0.0, 0.0, 0.0] | units.m, places=2)
     
     def test12(self):
-        print "Test new_uniform_spherical_particle_distribution, face-centered cubic"
+        print("Test new_uniform_spherical_particle_distribution, face-centered cubic")
         particles = new_uniform_spherical_particle_distribution(14321, 1|units.m, 1|units.kg, type="fcc")
         self.assertEqual(len(particles), 14321)
         r_squared = particles.position.lengths_squared()
@@ -146,7 +146,7 @@ class TestUniformSphericalDistribution(TestCase):
         self.assertAlmostEqual(particles.center_of_mass(), [0.0, 0.0, 0.0] | units.m, places=2)
     
     def test13(self):
-        print "Test new_spherical_particle_distribution, particle at the origin"
+        print("Test new_spherical_particle_distribution, particle at the origin")
         particles = new_spherical_particle_distribution(14321, radii = [2,4,3,1] | units.m, 
             densities = [80, 30, 50, 100] | (units.kg/units.m**3), 
             type="bcc", offset=[0,0,0])
@@ -157,7 +157,7 @@ class TestUniformSphericalDistribution(TestCase):
         self.assertEqual(particles[0].position, [0.0, 0.0, 0.0] | units.m)
     
     def test14(self):
-        print "Test new_plummer_spatial_distribution"
+        print("Test new_plummer_spatial_distribution")
         particles = new_plummer_spatial_distribution(1401, type="fcc")
         self.assertEqual(len(particles), 1401)
         r_halfmass_plummer = 3*numpy.pi/16.0*(0.5**(-2/3.)-1)**-0.5 | nbody_system.length
@@ -167,7 +167,7 @@ class TestUniformSphericalDistribution(TestCase):
         self.assertAlmostEqual(particles.center_of_mass(), [0.0, 0.0, 0.0] | nbody_system.length, places=1)
     
     def test15(self):
-        print "Test new_plummer_spatial_distribution, SI units"
+        print("Test new_plummer_spatial_distribution, SI units")
         particles = new_plummer_spatial_distribution(1401, 
             virial_radius = 3 | units.m, 
             total_mass = 7 | units.kg, 
@@ -179,7 +179,7 @@ class TestUniformSphericalDistribution(TestCase):
         self.assertAlmostEqual(particles.virial_radius(), 3|units.m, places=2)
     
     def test16(self):
-        print "Test new_plummer_spatial_distribution, mass_cutoff"
+        print("Test new_plummer_spatial_distribution, mass_cutoff")
         numpy.random.seed(12345)
         particles = new_plummer_spatial_distribution(1001, mass_cutoff=0.5, type="random")
         r_squared = particles.position.lengths_squared()
@@ -194,7 +194,7 @@ class TestUniformSphericalDistribution(TestCase):
         self.assertAlmostEqual(particles.center_of_mass(), [0.0, 0.0, 0.0] | nbody_system.length, places=1)
     
     def test17(self):
-        print "Test new_gas_plummer_distribution"
+        print("Test new_gas_plummer_distribution")
         particles = new_gas_plummer_distribution(1401, type="fcc")
         self.assertEqual(len(particles), 1401)
         r_halfmass_plummer = 3*numpy.pi/16.0*(0.5**(-2/3.)-1)**-0.5 | nbody_system.length
@@ -206,7 +206,7 @@ class TestUniformSphericalDistribution(TestCase):
         self.assertAlmostEqual(particles.thermal_energy(), 0.25 | nbody_system.energy)
     
     def test18(self):
-        print "Test new_gas_plummer_distribution, SI units"
+        print("Test new_gas_plummer_distribution, SI units")
         particles = new_gas_plummer_distribution(1801,
             virial_radius = 0.36 | units.m, 
             total_mass = 6 | units.kg, 
@@ -221,7 +221,7 @@ class TestUniformSphericalDistribution(TestCase):
         self.assertAlmostEqual(particles.thermal_energy()/constants.G, 0.25 | (units.kg**2 / units.cm))
     
     def test19(self):
-        print "Test new_plummer_distribution"
+        print("Test new_plummer_distribution")
         numpy.random.seed(12345)
         particles = new_plummer_distribution(1401, type="fcc")
         self.assertEqual(len(particles), 1401)
@@ -234,7 +234,7 @@ class TestUniformSphericalDistribution(TestCase):
         self.assertAlmostEqual(particles.kinetic_energy(), 0.25 | nbody_system.energy)
     
     def test20(self):
-        print "Test new_plummer_distribution, SI units"
+        print("Test new_plummer_distribution, SI units")
         numpy.random.seed(12345)
         particles = new_plummer_distribution(1401, 
             virial_radius = 0.025 | units.kpc, 
@@ -249,7 +249,7 @@ class TestUniformSphericalDistribution(TestCase):
         self.assertAlmostEqual(particles.kinetic_energy()/constants.G, 0.25 | (units.MSun**2 / units.parsec))
     
     def test21(self):
-        print "Test docs"
+        print("Test docs")
         self.assertTrue("face_centered_cubic" in new_uniform_spherical_particle_distribution.__doc__)
         self.assertTrue("face_centered_cubic" in new_spherical_particle_distribution.__doc__)
         self.assertTrue("face_centered_cubic" in new_plummer_spatial_distribution.__doc__)

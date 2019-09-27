@@ -16,7 +16,7 @@ from amuse.datamodel import particle_attributes
 class TestParticlesAttributes(amusetest.TestCase):
     
     def test1(self):
-        print "Test basic particle attributes and scale_to_standard - nbody units"
+        print("Test basic particle attributes and scale_to_standard - nbody units")
         particles = Particles(2)
         particles.position = [[-1, 0, 0], [1,0,0]] | nbody_system.length
         particles.velocity = [[-1, 0, 0], [1,0,0]] | nbody_system.length/nbody_system.time
@@ -39,7 +39,7 @@ class TestParticlesAttributes(amusetest.TestCase):
         self.assertAlmostRelativeEquals(particles.potential_energy(G=nbody_system.G), -0.5 | nbody_system.energy)
     
     def test2(self):
-        print "Test basic particle attributes and scale_to_standard - SI units"
+        print("Test basic particle attributes and scale_to_standard - SI units")
         convert_nbody = nbody_system.nbody_to_si(1 | units.MSun, 1 | units.parsec)
         particles = Particles(2)
         particles.position = [[-1, 0, 0], [1,0,0]] | units.parsec
@@ -65,7 +65,7 @@ class TestParticlesAttributes(amusetest.TestCase):
         self.assertAlmostRelativeEquals(particles.potential_energy(), -0.5 * constants.G * (1 | units.MSun**2 / units.parsec))
     
     def test7(self):
-        print "Test minimum_spanning_tree_length"
+        print("Test minimum_spanning_tree_length")
         particles = Particles(6)
         particles.position = [[-5,0,0], [-1,0,0], [0,0,0], [0,1,0], [0,-2,0], [-1,0.1,0]] | units.m
         self.assertEqual(particles[:1].minimum_spanning_tree_length(), 0 | units.m)
@@ -76,7 +76,7 @@ class TestParticlesAttributes(amusetest.TestCase):
         self.assertEqual(particles[:6].minimum_spanning_tree_length(), 8.1 | units.m)
     
     def test8(self):
-        print "Test mass_segregation_ratio"
+        print("Test mass_segregation_ratio")
         numpy.random.seed(123)
         random.seed(456)
         number_of_particles = 10000
@@ -88,19 +88,19 @@ class TestParticlesAttributes(amusetest.TestCase):
         MSR = sorted.mass_segregation_ratio(number_of_particles=10, number_of_random_sets=10)
         
         if sys.hexversion > 0x03000000:
-            self.assertAlmostEquals(MSR, 0.7160, 3)
+            self.assertAlmostEqual(MSR, 0.7160, 3)
         else:
-            self.assertAlmostEquals(MSR, 0.8877, 3)
+            self.assertAlmostEqual(MSR, 0.8877, 3)
                 
         random.seed(456)
         result = sorted.mass_segregation_ratio(number_of_particles=10, number_of_random_sets=10, also_compute_uncertainty=True)
         self.assertTrue(isinstance(result, particle_attributes.MassSegregationRatioResults))
         if sys.hexversion > 0x03000000:
-            self.assertAlmostEquals(result.mass_segregation_ratio, 0.7160, 3)
-            self.assertAlmostEquals(result.uncertainty, 0.2321, 3)
+            self.assertAlmostEqual(result.mass_segregation_ratio, 0.7160, 3)
+            self.assertAlmostEqual(result.uncertainty, 0.2321, 3)
         else:
-            self.assertAlmostEquals(result.mass_segregation_ratio, 0.8877, 3)
-            self.assertAlmostEquals(result.uncertainty, 0.2482, 3)
+            self.assertAlmostEqual(result.mass_segregation_ratio, 0.8877, 3)
+            self.assertAlmostEqual(result.uncertainty, 0.2482, 3)
         MSR, sigma = sorted.mass_segregation_ratio(number_of_particles=10, number_of_random_sets=50, also_compute_uncertainty=True)
         self.assertTrue(MSR - sigma < 1.0 < MSR + sigma)
         
@@ -117,7 +117,7 @@ class TestParticlesAttributes(amusetest.TestCase):
         self.assertTrue(sigma < MSR)
     
     def test9(self):
-        print "Test __doc__ and help for particle attributes"
+        print("Test __doc__ and help for particle attributes")
         particles = Particles(2)
         self.assertTrue("Returns the total kinetic energy of the\n    particles in the particles set." in particles.kinetic_energy.__doc__)
         self.assertEqual(particles.kinetic_energy.__class__.__name__, "BoundParticlesFunctionAttribute")
@@ -142,21 +142,21 @@ class TestParticlesAttributes(amusetest.TestCase):
         particles.velocity = [[3, 0, 0], [4,0,0]] | units.m / units.s
         particles.mass = 1 | units.kg
         
-        self.assertEquals(particles.total_mass(), 2 | units.kg)
-        self.assertEquals(particles.total_momentum(), [7, 0, 0] | units.kg * units.m / units.s)
-        self.assertEquals(particles.total_momentum(), particles.total_mass() * particles.center_of_mass_velocity())
-        self.assertEquals(particles.total_radius(), 0.5 | units.m)
+        self.assertEqual(particles.total_mass(), 2 | units.kg)
+        self.assertEqual(particles.total_momentum(), [7, 0, 0] | units.kg * units.m / units.s)
+        self.assertEqual(particles.total_momentum(), particles.total_mass() * particles.center_of_mass_velocity())
+        self.assertEqual(particles.total_radius(), 0.5 | units.m)
         
         convert_nbody = nbody_system.nbody_to_si(1000 | units.kg, 1e-6 | units.m)
         numpy.random.seed(123)
         field = new_plummer_sphere(10000, convert_nbody) # small clump of particles, can be regarded as point mass
         self.assertAlmostRelativeEquals(particles.potential_energy_in_field(field), -constants.G * (1500 | units.kg**2 / units.m), 5)
-        self.assertAlmostEquals(particles.potential_energy_in_field(field), -1.001142 | 1e-7 * units.kg * units.m**2 / units.s**2, 5)
+        self.assertAlmostEqual(particles.potential_energy_in_field(field), -1.001142 | 1e-7 * units.kg * units.m**2 / units.s**2, 5)
         
         field.position *= ((5 | units.m) / field.position.lengths()).reshape((-1, 1)) # spherical shell around particles
         potential_energy = particles.potential_energy_in_field(field)
         particles.position += [0, 1, 2] | units.m # as long as particles remain inside the shell, the potential doesn't change
-        self.assertAlmostEquals(particles.potential_energy_in_field(field), potential_energy, 5)
+        self.assertAlmostEqual(particles.potential_energy_in_field(field), potential_energy, 5)
         
         particles.mass = [1, 2] | units.kg
         self.assertAlmostRelativeEquals(particles.potential(), -constants.G * ([2, 1] | units.kg / units.m))
@@ -164,7 +164,7 @@ class TestParticlesAttributes(amusetest.TestCase):
         self.assertAlmostRelativeEquals(particles.potential()[1], particles[1].potential())
     
     def test11(self):
-        print "Test nearest_neighbour"
+        print("Test nearest_neighbour")
         particles = Particles(21)
         particles.x = numpy.logspace(0.0, 2.0, 21) | units.m
         particles.y = 0.0 | units.m
@@ -212,7 +212,7 @@ class TestParticlesAttributes(amusetest.TestCase):
         return x, y
     
     def test12(self):
-        print "Test correlation_dimension"
+        print("Test correlation_dimension")
         # Particles distributed uniformly in 3D
         particles = Particles(729)
         particles.position = numpy.mgrid[0:9.0, 0:9.0, 0:9.0].reshape(3, -1).transpose() | units.m
@@ -247,7 +247,7 @@ class TestParticlesAttributes(amusetest.TestCase):
         self.assertAlmostRelativeEquals(dimension, particles.correlation_dimension(), 10)
     
     def test13(self):
-        print "Test box_counting_dimension"
+        print("Test box_counting_dimension")
         # Particles distributed uniformly in 3D
         particles = Particles(4096)
         particles.position = numpy.mgrid[0:16.0, 0:16.0, 0:16.0].reshape(3, -1).transpose() | units.m
@@ -282,7 +282,7 @@ class TestParticlesAttributes(amusetest.TestCase):
         self.assertAlmostRelativeEquals(dimension, particles.box_counting_dimension(), 10)
     
     def test14(self):
-        print "Test mass_segregation_from_nearest_neighbour"
+        print("Test mass_segregation_from_nearest_neighbour")
         numpy.random.seed(123)
         random.seed(4567)
         number_of_particles = 1000
@@ -294,11 +294,11 @@ class TestParticlesAttributes(amusetest.TestCase):
         MSR, sigma = sorted.mass_segregation_from_nearest_neighbour(number_of_particles=10, also_compute_uncertainty=True)
         
         if sys.hexversion > 0x03000000:
-            self.assertAlmostEquals(MSR, 1.72632, 3)
-            self.assertAlmostEquals(sigma, 0.4127, 3)
+            self.assertAlmostEqual(MSR, 1.72632, 3)
+            self.assertAlmostEqual(sigma, 0.4127, 3)
         else:
-            self.assertAlmostEquals(MSR, 1.7355, 3)
-            self.assertAlmostEquals(sigma, 0.3969, 3)
+            self.assertAlmostEqual(MSR, 1.7355, 3)
+            self.assertAlmostEqual(sigma, 0.3969, 3)
                 
         random.seed(456)
         MSR_of_nonsegregated_systems = []
@@ -306,8 +306,8 @@ class TestParticlesAttributes(amusetest.TestCase):
             sorted.mass = numpy.random.uniform(1.0, 2.0, number_of_particles) | nbody_system.mass
             MSR = sorted.mass_segregation_from_nearest_neighbour(number_of_particles=10, number_of_random_sets=50)
             MSR_of_nonsegregated_systems.append(MSR)
-        self.assertAlmostEquals((MSR_of_nonsegregated_systems|units.none).mean(), 1.0, 1)
-        self.assertAlmostEquals((MSR_of_nonsegregated_systems|units.none).std(), 0.3, 1)
+        self.assertAlmostEqual((MSR_of_nonsegregated_systems|units.none).mean(), 1.0, 1)
+        self.assertAlmostEqual((MSR_of_nonsegregated_systems|units.none).std(), 0.3, 1)
         
         sorted.mass = numpy.linspace(2.0, 1.0, number_of_particles) | nbody_system.mass
         MSR, sigma = sorted.mass_segregation_from_nearest_neighbour(number_of_particles=10, number_of_random_sets=20, 
@@ -315,9 +315,9 @@ class TestParticlesAttributes(amusetest.TestCase):
         self.assertTrue(MSR > 5.0)
         
         if sys.hexversion > 0x03000000:
-            self.assertAlmostEquals(sigma, 0.3, 1)
+            self.assertAlmostEqual(sigma, 0.3, 1)
         else:
-            self.assertAlmostEquals(sigma, 0.4, 1)
+            self.assertAlmostEqual(sigma, 0.4, 1)
 
     def test15(self):
         scale_R = 1.0 | units.parsec
@@ -373,11 +373,11 @@ class TestParticlesDomainAttributes(amusetest.TestCase):
         particles.a.foo = 1 | units.m
         particles.b.bar = 2 | units.kg
         particles.foo = 3 | units.s
-        self.assertEquals(
+        self.assertEqual(
             sorted(particles.a.get_attribute_names_defined_in_store()), 
             ['foo']
         )
-        self.assertEquals(
+        self.assertEqual(
             sorted(particles.b.get_attribute_names_defined_in_store()), 
             ['bar']
         )

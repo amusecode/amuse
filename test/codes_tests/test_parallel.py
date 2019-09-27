@@ -45,7 +45,7 @@ class TestAmuseInterface(TestWithMPI):
         channel.MpiChannel.ensure_mpi_initialized()
         is_threaded = channel.MpiChannel.is_threaded()
         is_multithreading_supported = channel.MpiChannel.is_multithreading_supported()
-        self.assertEquals(is_threaded, is_multithreading_supported)
+        self.assertEqual(is_threaded, is_multithreading_supported)
 
     def test2(self):
         convert_nbody = nbody_system.nbody_to_si(1.0 | units.MSun, 149.5e6 | units.km)

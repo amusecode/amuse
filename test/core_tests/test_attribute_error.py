@@ -54,7 +54,7 @@ class TestAttributeError(amusetest.TestCase):
         return Particles(storage = storage)
     
     def test1(self):
-        print "Test1: Should get error when accessing non-existent attributes (InMemoryAttributeStorage)."
+        print("Test1: Should get error when accessing non-existent attributes (InMemoryAttributeStorage).")
         particles = Particles(4)
         particle  = Particle()
         subset    = particles[:2]
@@ -65,12 +65,12 @@ class TestAttributeError(amusetest.TestCase):
         lengths = [4, 1, 2, 5]
         for i, x in enumerate(instances):
             self.assertTrue(isinstance(x, classes[i]))
-            self.assertEquals(len(x.as_set()), lengths[i])
+            self.assertEqual(len(x.as_set()), lengths[i])
             self.assertRaises(AttributeError, lambda: x.bogus, expected_message = 
                 "You tried to access attribute 'bogus' but this attribute is not defined for this set.")
                 
     def test2(self):
-        print "Test2: Should get error when accessing non-existent attributes (in Legacy code storage)."
+        print("Test2: Should get error when accessing non-existent attributes (in Legacy code storage).")
         particles = Particles(4)
         particle  = Particle()
         subset    = particles[:2]
@@ -88,7 +88,7 @@ class TestAttributeError(amusetest.TestCase):
                 "You tried to access attribute 'bogus' but this attribute is not defined for this set.")
     
     def test3(self):
-        print "Test3: Should get error when accessing non-existent attributes (HDF5 storage)."
+        print("Test3: Should get error when accessing non-existent attributes (HDF5 storage).")
         particles = Particles(4)
         particle  = Particle()
         subset    = particles[:2]
@@ -102,7 +102,7 @@ class TestAttributeError(amusetest.TestCase):
         lengths = [4, 1, 2]
         for i, x in enumerate(instances):
             self.assertTrue(isinstance(x, classes[i]))
-            self.assertEquals(len(x.as_set()), lengths[i])
+            self.assertEqual(len(x.as_set()), lengths[i])
             if os.path.exists(output_file):
                 os.remove(output_file)
             HDFstorage = store.StoreHDF(output_file)
@@ -119,7 +119,7 @@ class TestAttributeError(amusetest.TestCase):
         x.mass = 1.0
     
     def xtest4(self):
-        print "Test4: Should get error when setting attributes with non-quantities (InMemoryAttributeStorage)."
+        print("Test4: Should get error when setting attributes with non-quantities (InMemoryAttributeStorage).")
         particles = Particles(4)
         particle  = Particle()
         subset    = particles[:2]
@@ -130,12 +130,12 @@ class TestAttributeError(amusetest.TestCase):
         lengths = [4, 1, 2, 5]
         for i, x in enumerate(instances):
             self.assertTrue(isinstance(x, classes[i]))
-            self.assertEquals(len(x.as_set()), lengths[i])
+            self.assertEqual(len(x.as_set()), lengths[i])
             self.assertRaises(AttributeError, self.bogus_func, x, expected_message = 
                 "Can only assign quantities or other particles to an attribute.")
     
     def xtest5(self):
-        print "Test5: Should get error when setting attributes with non-quantities (in code storage)."        
+        print("Test5: Should get error when setting attributes with non-quantities (in code storage).")        
         particles = Particles(4)
         particle  = Particle()
         subset    = particles[:2]
@@ -153,7 +153,7 @@ class TestAttributeError(amusetest.TestCase):
             #    "Can only assign quantities or other particles to an attribute.")
     
     def xtest6(self):
-        print "Test6: Should get error when setting attributes with non-quantities (HDF5 storage)."
+        print("Test6: Should get error when setting attributes with non-quantities (HDF5 storage).")
         particles = Particles(4)
         particle  = Particle()
         subset    = particles[:2]
@@ -166,7 +166,7 @@ class TestAttributeError(amusetest.TestCase):
         lengths = [4, 1, 2]
         for i, x in enumerate(instances):
             self.assertTrue(isinstance(x, classes[i]))
-            self.assertEquals(len(x.as_set()), lengths[i])
+            self.assertEqual(len(x.as_set()), lengths[i])
             if os.path.exists(output_file):
                 os.remove(output_file)
             HDFstorage = store.StoreHDF(output_file)
@@ -180,7 +180,7 @@ class TestAttributeError(amusetest.TestCase):
             del HDFstorage
     
     def test7(self):
-        print "Test7: testing whether nonexistent particle attribute access raises correct error"
+        print("Test7: testing whether nonexistent particle attribute access raises correct error")
         p=Particles(2)
         q=p[0]
         p.remove_particle(p[0])

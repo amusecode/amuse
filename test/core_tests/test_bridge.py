@@ -22,7 +22,7 @@ class TestCalculateFieldForParticles(amusetest.TestCase):
         instance = bridge.CalculateFieldForParticles(particles = particles, gravity_constant = nbody_system.G)
         
         zero = 0.0 | nbody_system.length
-        print instance.get_gravity_at_point([zero], [1.0] | nbody_system.length, [zero], [zero])
+        print(instance.get_gravity_at_point([zero], [1.0] | nbody_system.length, [zero], [zero]))
         fx, fy, fz = instance.get_gravity_at_point([zero], [1.0] | nbody_system.length, [zero], [zero])
         self.assertAlmostEqual(fx, [0.0] | nbody_system.acceleration, 6)
         self.assertAlmostEqual(fy, [0.0] | nbody_system.acceleration, 6)
@@ -47,7 +47,7 @@ class TestCalculateFieldForParticles(amusetest.TestCase):
             self.assertAlmostEqual(potential0, potential1, 6)
     
     def test2(self):
-        print "CalculateFieldForParticles, nbody units, no gravity_constant exceptions"
+        print("CalculateFieldForParticles, nbody units, no gravity_constant exceptions")
         stars = new_plummer_model(100)
         self.assertRaises(AmuseException, bridge.CalculateFieldForParticles, stars, 
             expected_message = "For generic units the gravity_constant must be specified")
@@ -56,7 +56,7 @@ class TestCalculateFieldForParticles(amusetest.TestCase):
         instance = bridge.CalculateFieldForParticles(particles = stars, gravity_constant = nbody_system.G)
     
     def test3(self):
-        print "CalculateFieldForParticles get_potential_at_point, no softening"
+        print("CalculateFieldForParticles get_potential_at_point, no softening")
         epsilon = 0 | units.m
         
         convert = nbody_system.nbody_to_si(1.e5 | units.MSun, 1.0 | units.parsec)
@@ -81,7 +81,7 @@ class TestCalculateFieldForParticles(amusetest.TestCase):
             self.assertAlmostRelativeEqual(a_calculate_field, a_code, 12)
     
     def test4(self):
-        print "CalculateFieldForParticles get_potential_at_point, with softening"
+        print("CalculateFieldForParticles get_potential_at_point, with softening")
         epsilon = 0.5 | units.parsec
         
         convert = nbody_system.nbody_to_si(1.e5 | units.MSun, 1.0 | units.parsec)
@@ -106,7 +106,7 @@ class TestCalculateFieldForParticles(amusetest.TestCase):
             self.assertAlmostRelativeEqual(a_calculate_field, a_code, 12)
     
     def test5(self):
-        print "CalculateFieldForParticles get_potential_at_point, with individual softening"
+        print("CalculateFieldForParticles get_potential_at_point, with individual softening")
         epsilon = 0.5 | units.parsec
         
         convert = nbody_system.nbody_to_si(1.e5 | units.MSun, 1.0 | units.parsec)
@@ -270,7 +270,7 @@ def system_from_particles(base_class, kwargs, particles, eps=None):
 class TestBridge(amusetest.TestCase):
     
     def test1(self):
-        print "Bridge potential energy with code's epsilon_squared as softening length"
+        print("Bridge potential energy with code's epsilon_squared as softening length")
         convert = nbody_system.nbody_to_si(1.e5 | units.MSun, 1.0 | units.parsec)
         epsilon = 1.0e-2 | units.parsec
         test_class=ExampleGravityCodeInterface
@@ -294,7 +294,7 @@ class TestBridge(amusetest.TestCase):
         self.assertAlmostRelativeEqual(cluster.kinetic_energy, bridgesys.kinetic_energy)
     
     def test2(self):
-        print "Bridge potential energy with radius as softening length"
+        print("Bridge potential energy with radius as softening length")
         convert = nbody_system.nbody_to_si(1.e5 | units.MSun, 1.0 | units.parsec)
         epsilon = 0.1 | units.parsec
         test_class=ExampleGravityCodeInterface
@@ -319,7 +319,7 @@ class TestBridge(amusetest.TestCase):
         self.assertAlmostRelativeEqual(cluster.kinetic_energy, bridgesys.kinetic_energy)
     
     def test3(self):
-        print "Bridge potential energy with radius as softening length"
+        print("Bridge potential energy with radius as softening length")
         convert = nbody_system.nbody_to_si(1.e5 | units.MSun, 1.0 | units.parsec)
         epsilon = 0.1 | units.parsec
         test_class=ExampleGravityCodeInterface
@@ -344,7 +344,7 @@ class TestBridge(amusetest.TestCase):
         self.assertAlmostRelativeEqual(cluster.kinetic_energy, bridgesys.kinetic_energy)
     
     def test4(self):
-        print "Bridge evolve_model"
+        print("Bridge evolve_model")
         convert = nbody_system.nbody_to_si(1.e5 | units.MSun, 1.0 | units.parsec)
         epsilon = 1.0e-2 | units.parsec
         test_class=ExampleGravityCodeInterface

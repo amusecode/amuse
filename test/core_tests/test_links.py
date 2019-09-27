@@ -24,10 +24,10 @@ class TestParticleLinkToParticle(amusetest.TestCase):
         parent.child2 = child2
         child1.sibling = child2
         
-        self.assertEquals(len(particles.child1), 3)
-        self.assertEquals(len(particles.child1.as_set().compressed()), 1)
-        self.assertEquals(len(particles.child2), 3)
-        self.assertEquals(len(particles.child2.as_set().compressed()), 1)
+        self.assertEqual(len(particles.child1), 3)
+        self.assertEqual(len(particles.child1.as_set().compressed()), 1)
+        self.assertEqual(len(particles.child2), 3)
+        self.assertEqual(len(particles.child2.as_set().compressed()), 1)
         
         self.assertAlmostRelativeEqual(parent.child1.mass, 3 | units.kg)
 
@@ -51,10 +51,10 @@ class TestParticleLinkToParticle(amusetest.TestCase):
             particles, 
             convert_nbody.as_converter_from_generic_to_si()
         )
-        self.assertEquals(len(particles.child1), 3)
-        self.assertEquals(len(particles.child1.as_set().compressed()), 1)
-        self.assertEquals(len(particles.child2), 3)
-        self.assertEquals(len(particles.child2.as_set().compressed()), 1)
+        self.assertEqual(len(particles.child1), 3)
+        self.assertEqual(len(particles.child1.as_set().compressed()), 1)
+        self.assertEqual(len(particles.child2), 3)
+        self.assertEqual(len(particles.child2.as_set().compressed()), 1)
         
         self.assertAlmostRelativeEqual(particles[0].child1.mass, 0.3 | nbody_system.mass)
         self.assertAlmostRelativeEqual(particles[0].child1.mass, 0.3 | nbody_system.mass)
@@ -208,8 +208,8 @@ class TestParticleLinkToParticle(amusetest.TestCase):
         
         particles1_copy = particles1.copy()
         
-        self.assertEquals(particles1_copy[0].particle2.key,  13)
-        self.assertEquals(particles1_copy[1].particle2.key,  13)
+        self.assertEqual(particles1_copy[0].particle2.key,  13)
+        self.assertEqual(particles1_copy[1].particle2.key,  13)
         
         particles1_copy[0].particle2.mass = 30 | units.kg
         
@@ -227,8 +227,8 @@ class TestParticleLinkToParticles(amusetest.TestCase):
         x = numpy.empty((10,), dtype=numpy.object)
         index = numpy.asarray([1])
         x[index] = particles1
-        print x
-        self.assertEquals(len(x[1]), 4)
+        print(x)
+        self.assertEqual(len(x[1]), 4)
         
     def test1(self):
         particles1 = datamodel.Particles(keys=[9,10,11,12])
@@ -236,9 +236,9 @@ class TestParticleLinkToParticles(amusetest.TestCase):
         particles2 = datamodel.Particles(keys=[13,14])
         particles2.mass = [20,21] | units.kg
         particles1[1].particles2 = particles2
-        self.assertEquals(particles1[1].particles2.key,  [13,14])
+        self.assertEqual(particles1[1].particles2.key,  [13,14])
         self.assertAlmostRelativeEquals(particles1[1].particles2.mass, [20,21] | units.kg)
-        self.assertEquals(particles1[0].particles2, None)
+        self.assertEqual(particles1[0].particles2, None)
         
     def test2(self):
         particles1 = datamodel.Particles(keys=[9,10,11,12])
@@ -246,9 +246,9 @@ class TestParticleLinkToParticles(amusetest.TestCase):
         particles2 = datamodel.Particles(keys=[13,14])
         particles2.mass = [20,21] | units.kg
         particles1[1].particles2 = particles2
-        self.assertEquals(len(particles1.particles2), 4)
-        self.assertEquals(particles1.particles2[1].key,  [13,14])
-        self.assertEquals(particles1.particles2[0],  None)
+        self.assertEqual(len(particles1.particles2), 4)
+        self.assertEqual(particles1.particles2[1].key,  [13,14])
+        self.assertEqual(particles1.particles2[0],  None)
         
     def test3(self):
         particles1 = datamodel.Particles(keys=[9,10,11,12])
@@ -258,10 +258,10 @@ class TestParticleLinkToParticles(amusetest.TestCase):
         particles1[1].particles2 = particles2
         
         particles1_copy = particles1.copy()
-        self.assertEquals(particles1_copy[1].particles2.key,  [13,14])
+        self.assertEqual(particles1_copy[1].particles2.key,  [13,14])
         self.assertAlmostRelativeEquals(particles1_copy[1].particles2.mass, [20,21] | units.kg)
-        self.assertEquals(particles1_copy[0].particles2, None)
-        self.assertNotEquals(id(particles1_copy[1].particles2), id(particles1[1].particles2))
+        self.assertEqual(particles1_copy[0].particles2, None)
+        self.assertNotEqual(id(particles1_copy[1].particles2), id(particles1[1].particles2))
         
     
     def test4(self):
@@ -276,10 +276,10 @@ class TestParticleLinkToParticles(amusetest.TestCase):
         channel = particles1.new_channel_to(particles1_copy)
         channel.copy()
         
-        self.assertEquals(particles1_copy[1].particles2.key,  [13,14])
+        self.assertEqual(particles1_copy[1].particles2.key,  [13,14])
         self.assertAlmostRelativeEquals(particles1_copy[1].particles2.mass, [20,21] | units.kg)
-        self.assertEquals(particles1_copy[0].particles2, None)
-        self.assertEquals(id(particles1_copy[1].particles2), id(particles1[1].particles2))
+        self.assertEqual(particles1_copy[0].particles2, None)
+        self.assertEqual(id(particles1_copy[1].particles2), id(particles1[1].particles2))
         
     def test5(self):
         particles1 = datamodel.Particles(keys=[9,10,11,12])
@@ -289,12 +289,12 @@ class TestParticleLinkToParticles(amusetest.TestCase):
         particles2.mass = [20,21] | units.kg
         particles1.particles2 = [None, particles2, None, particles2[0]]
         
-        self.assertEquals(particles1[1].particles2.key,  [13,14])
-        self.assertEquals(particles1[1].particles2.mass, [20,21] | units.kg)
+        self.assertEqual(particles1[1].particles2.key,  [13,14])
+        self.assertEqual(particles1[1].particles2.mass, [20,21] | units.kg)
         self.assertAlmostRelativeEquals(particles1[3].particles2.key,  13)
         self.assertAlmostRelativeEquals(particles1[3].particles2.mass, 20 | units.kg)
-        self.assertEquals(particles1[0].particles2, None)
-        self.assertEquals(particles1[2].particles2, None)
+        self.assertEqual(particles1[0].particles2, None)
+        self.assertEqual(particles1[2].particles2, None)
         
     
     def test6(self):
@@ -308,8 +308,8 @@ class TestParticleLinkToParticles(amusetest.TestCase):
         
         particles1_copy = particles1.copy(keep_structure=False)
         
-        self.assertEquals(particles1_copy[0].particles2.key,  [13,14])
-        self.assertEquals(particles1_copy[1].particles2.key,  [14,15])
+        self.assertEqual(particles1_copy[0].particles2.key,  [13,14])
+        self.assertEqual(particles1_copy[1].particles2.key,  [14,15])
         
         particles1_copy[0].particles2[1].mass = 30 | units.kg
         
@@ -318,8 +318,8 @@ class TestParticleLinkToParticles(amusetest.TestCase):
         
         particles1_copy = particles1.copy(keep_structure=True)
         
-        self.assertEquals(particles1_copy[0].particles2.key,  [13,14])
-        self.assertEquals(particles1_copy[1].particles2.key,  [14,15])
+        self.assertEqual(particles1_copy[0].particles2.key,  [13,14])
+        self.assertEqual(particles1_copy[1].particles2.key,  [14,15])
         
         particles1_copy[0].particles2[1].mass = 30 | units.kg
         
@@ -446,8 +446,8 @@ class TestGridPointLinkToParticle(amusetest.TestCase):
         grid[0][0].particle = particles[1]
         
         self.assertAlmostRelativeEquals(grid[0][0].particle.mass, 3 | units.kg)
-        self.assertEquals(grid[0][0].particle, particles[1])
-        self.assertEquals(grid[1][1].particle, None)
+        self.assertEqual(grid[0][0].particle, particles[1])
+        self.assertEqual(grid[1][1].particle, None)
 
     def test2(self):
         
@@ -461,8 +461,8 @@ class TestGridPointLinkToParticle(amusetest.TestCase):
         grid_copy = grid.copy()
         
         self.assertAlmostRelativeEquals(grid_copy[0][0].particle.mass, 3 | units.kg)
-        self.assertEquals(grid_copy[0][0].particle, particles[1])
-        self.assertEquals(grid_copy[1][1].particle, None)
+        self.assertEqual(grid_copy[0][0].particle, particles[1])
+        self.assertEqual(grid_copy[1][1].particle, None)
 
         grid[0][0].particle.mass = 5 | units.kg
         
@@ -484,8 +484,8 @@ class TestGridPointLinkToParticle(amusetest.TestCase):
         channel.copy()
         
         self.assertAlmostRelativeEquals(grid_copy[0][0].particle.mass, 3 | units.kg)
-        self.assertEquals(grid_copy[0][0].particle, particles[1])
-        self.assertEquals(grid_copy[1][1].particle, None)
+        self.assertEqual(grid_copy[0][0].particle, particles[1])
+        self.assertEqual(grid_copy[1][1].particle, None)
 
 class TestGridPointLinkToParticles(amusetest.TestCase):
     """
@@ -501,8 +501,8 @@ class TestGridPointLinkToParticles(amusetest.TestCase):
         grid[0][0].particles = particles
         
         self.assertAlmostRelativeEquals(grid[0][0].particles[1].mass, 3 | units.kg)
-        self.assertEquals(grid[0][0].particles[1], particles[1])
-        self.assertEquals(grid[1][1].particles, None)
+        self.assertEqual(grid[0][0].particles[1], particles[1])
+        self.assertEqual(grid[1][1].particles, None)
         
     
     def test2(self):
@@ -555,8 +555,8 @@ class TestGridPointLinkToGridPoint(amusetest.TestCase):
         grid[0][0].neighbour = grid[0][1]
         
         self.assertAlmostRelativeEquals(grid[0][0].neighbour.rho, 3  | units.kg / units.m**3)
-        self.assertEquals(grid[0][0].neighbour, grid[0][1])
-        self.assertEquals(grid[1][1].neighbour, None)
+        self.assertEqual(grid[0][0].neighbour, grid[0][1])
+        self.assertEqual(grid[1][1].neighbour, None)
 
     def test2(self):
         
@@ -568,8 +568,8 @@ class TestGridPointLinkToGridPoint(amusetest.TestCase):
         grid_copy = grid.copy()
         
         self.assertAlmostRelativeEquals(grid_copy[0][0].neighbour.rho, 3  | units.kg / units.m**3)
-        self.assertEquals(grid_copy[0][0].neighbour, grid_copy[0][1])
-        self.assertEquals(grid_copy[1][1].neighbour, None)
+        self.assertEqual(grid_copy[0][0].neighbour, grid_copy[0][1])
+        self.assertEqual(grid_copy[1][1].neighbour, None)
 
         grid[0][0].neighbour.rho = 5  | units.kg / units.m**3
         
@@ -596,8 +596,8 @@ class TestGridPointLinkToGridPoint(amusetest.TestCase):
         
         
         self.assertAlmostRelativeEquals(grid_copy[0][0].neighbour.rho, 3  | units.kg / units.m**3)
-        self.assertEquals(grid_copy[0][0].neighbour, grid_copy[0][1])
-        self.assertEquals(grid_copy[1][1].neighbour, None)
+        self.assertEqual(grid_copy[0][0].neighbour, grid_copy[0][1])
+        self.assertEqual(grid_copy[1][1].neighbour, None)
 
         grid[0][0].neighbour.rho = 5  | units.kg / units.m**3
         
@@ -620,8 +620,8 @@ class TestGridPointLinkToGrid(amusetest.TestCase):
         grid[0][0].container = grid
         
         self.assertAlmostRelativeEquals(grid[0][0].container[0][1].rho, 3  | units.kg / units.m**3)
-        self.assertEquals(grid[0][0].container[0][1], grid[0][1])
-        self.assertEquals(grid[1][1].container, None)
+        self.assertEqual(grid[0][0].container[0][1], grid[0][1])
+        self.assertEqual(grid[1][1].container, None)
 
     def test2(self):
         
@@ -634,8 +634,8 @@ class TestGridPointLinkToGrid(amusetest.TestCase):
         
         
         self.assertAlmostRelativeEquals(grid_copy[0][0].container[0][1].rho, 3  | units.kg / units.m**3)
-        self.assertEquals(grid_copy[0][0].container[0][1], grid_copy[0][1])
-        self.assertEquals(grid_copy[1][1].container, None)
+        self.assertEqual(grid_copy[0][0].container[0][1], grid_copy[0][1])
+        self.assertEqual(grid_copy[1][1].container, None)
 
 
         grid[0][0].container[0][1].rho = 5  | units.kg / units.m**3
@@ -663,8 +663,8 @@ class TestGridPointLinkToGrid(amusetest.TestCase):
         
         
         self.assertAlmostRelativeEquals(grid_copy[0][0].container[0][1].rho, 3  | units.kg / units.m**3)
-        self.assertEquals(grid_copy[0][0].container[0][1], grid_copy[0][1])
-        self.assertEquals(grid_copy[1][1].container, None)
+        self.assertEqual(grid_copy[0][0].container[0][1], grid_copy[0][1])
+        self.assertEqual(grid_copy[1][1].container, None)
 
         grid[0][0].container[0][1].rho = 5  | units.kg / units.m**3
         
@@ -682,10 +682,10 @@ class TestGridPointLinkToGrid(amusetest.TestCase):
         
         grid[...,0].container = grid
 
-        self.assertEquals(id(grid[0][0].container), id(grid))
-        self.assertEquals(id(grid[1][0].container), id(grid)) 
-        self.assertEquals(grid[0][1].container, None)
-        self.assertEquals(grid[1][1].container, None)
+        self.assertEqual(id(grid[0][0].container), id(grid))
+        self.assertEqual(id(grid[1][0].container), id(grid)) 
+        self.assertEqual(grid[0][1].container, None)
+        self.assertEqual(grid[1][1].container, None)
         
     
     def test5(self):
@@ -696,5 +696,5 @@ class TestGridPointLinkToGrid(amusetest.TestCase):
         grid.container = grid
 
         for index in numpy.ndindex(*grid.shape):
-            self.assertEquals(id(grid[index].container), id(grid))
-            self.assertEquals(grid[index].rho, (index[0] * 3 + index[1] + 2) | units.kg / units.m**3) 
+            self.assertEqual(id(grid[index].container), id(grid))
+            self.assertEqual(grid[index].rho, (index[0] * 3 + index[1] + 2) | units.kg / units.m**3) 

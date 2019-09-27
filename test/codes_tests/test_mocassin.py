@@ -19,14 +19,14 @@ class TestMocassinInterface(TestWithMPI):
         
         instance.setup_mesh(11,11,11, 100,100,100)
         instance.setup_abundancies()
-        print instance.get_default_input_directory()
+        print(instance.get_default_input_directory())
         instance.set_input_directory(instance.get_default_input_directory())
         instance.set_constant_hydrogen_density(900.0)
         instance.commit_parameters()
         indices_x = list(range(1,12,1))
         x,y,z,error = instance.get_position_of_index(indices_x,[1]*len(indices_x), [1]*len(indices_x))
     
-        self.assertEquals(error, 0)
+        self.assertEqual(error, 0)
         for index, expected_x in enumerate(list(range(-100, 120, 20))):
             self.assertAlmostRelativeEqual(x[index], expected_x, 6)
             self.assertAlmostRelativeEqual(y[index], -100)
@@ -60,30 +60,30 @@ class TestMocassinInterface(TestWithMPI):
         instance.commit_grid()
         
         x, error = instance.get_number_of_elements_used()
-        self.assertEquals(0, error)
-        self.assertEquals(x, 7)
+        self.assertEqual(0, error)
+        self.assertEqual(x, 7)
         indices_x = list(range(1,12,1))
         is_active,error = instance.get_grid_active(indices_x,[1]*len(indices_x), [1]*len(indices_x), 1)
-        self.assertEquals(0, error)
+        self.assertEqual(0, error)
         is_active=numpy.array(is_active,dtype=bool)
-        self.assertEquals([True,True,True,True,True,True,True,True,True,True,True] , is_active)
+        self.assertEqual([True,True,True,True,True,True,True,True,True,True,True] , is_active)
         
         
         indices_x = list(range(5,12,1))
         temperatures,error = instance.get_grid_electron_temperature(indices_x,[1]*len(indices_x), [1]*len(indices_x), 1)
-        self.assertEquals(0, error)
-        self.assertEquals([6000.0] * len(indices_x), temperatures)
+        self.assertEqual(0, error)
+        self.assertEqual([6000.0] * len(indices_x), temperatures)
         indices_x = list(range(1,5,1))
         temperatures,error = instance.get_grid_electron_temperature(indices_x,[1]*len(indices_x), [1]*len(indices_x), 1)
-        self.assertEquals(0, error)
-        self.assertEquals([6000.0] * len(indices_x), temperatures)
+        self.assertEqual(0, error)
+        self.assertEqual([6000.0] * len(indices_x), temperatures)
         
         ni, nj, nk, error = instance.get_max_indices(1)
-        self.assertEquals(0, error)
+        self.assertEqual(0, error)
         
-        self.assertEquals(ni, 13)
-        self.assertEquals(nj, 13)
-        self.assertEquals(nj, 13)
+        self.assertEqual(ni, 13)
+        self.assertEqual(nj, 13)
+        self.assertEqual(nj, 13)
         instance.stop()
         
         
@@ -114,16 +114,16 @@ class TestMocassinInterface(TestWithMPI):
         instance.commit_grid()
         
         x, error = instance.get_number_of_elements_used()
-        self.assertEquals(0, error)
-        self.assertEquals(x, 7)
+        self.assertEqual(0, error)
+        self.assertEqual(x, 7)
         
         instance.iterate()
         
         
         indices_x = list(range(1,12,1))
         temperatures,error = instance.get_grid_electron_temperature(indices_x,[1]*len(indices_x), [1]*len(indices_x), 1)
-        self.assertEquals(0, error)
-        print temperatures
+        self.assertEqual(0, error)
+        print(temperatures)
         instance.stop()
 
 
@@ -148,53 +148,53 @@ class TestMocassinInterface(TestWithMPI):
         instance.commit_parameters()
 
         error=instance.define_stars(0.0, 0.0, 0.0, 20000, 6003.6396)
-        self.assertEquals(error, 0)
+        self.assertEqual(error, 0)
         
         instance.set_grid_hydrogen_density(1,1,1, 100)
     
         value,error = instance.get_grid_hydrogen_density(1,1,1)
     
-        self.assertEquals(error, 0)
-        self.assertEquals(value, 100)
+        self.assertEqual(error, 0)
+        self.assertEqual(value, 100)
     
         is_active,error = instance.get_grid_active(1,1,1)
-        self.assertEquals(error, 0)
+        self.assertEqual(error, 0)
         self.assertFalse(is_active)
         
         is_active,error = instance.get_grid_active(1,2,1)
     
-        self.assertEquals(error, 0)
+        self.assertEqual(error, 0)
         self.assertFalse(is_active)
         
         value,error = instance.get_grid_hydrogen_density(1,2,1,1)
     
-        self.assertEquals(error, 0)
-        self.assertEquals(value, 0)
+        self.assertEqual(error, 0)
+        self.assertEqual(value, 0)
     
         instance.commit_particles()
         instance.commit_grid()
         
         is_active,error = instance.get_grid_active(1,1,1)
     
-        self.assertEquals(error, 0)
+        self.assertEqual(error, 0)
         self.assertTrue(is_active)
     
         value,error = instance.get_grid_hydrogen_density(1,1,1)
-        self.assertEquals(error, 0)
-        self.assertEquals(value, 100)
+        self.assertEqual(error, 0)
+        self.assertEqual(value, 100)
         
         value,error = instance.get_grid_ion_density(1,1,1,1,1)
-        self.assertEquals(error, 0)
+        self.assertEqual(error, 0)
         self.assertAlmostRelativeEquals(value, 1e-5, 6)
     
         is_active,error = instance.get_grid_active(1,2,1)
     
-        self.assertEquals(error, 0)
+        self.assertEqual(error, 0)
         self.assertFalse(is_active)
         
         value,error = instance.get_grid_hydrogen_density(1,2,1)
-        self.assertEquals(error, 0)
-        self.assertEquals(value, 0)
+        self.assertEqual(error, 0)
+        self.assertEqual(value, 0)
     
     
         instance.stop()
@@ -205,14 +205,14 @@ class TestMocassin(TestWithMPI):
         instance=self.new_instance_of_an_optional_code(Mocassin)
         instance.initialize_code()
         
-        self.assertEquals(0.0 | units.cm**-3, instance.parameters.constant_hydrogen_density)
-        print instance.parameters.abundancies_filename
+        self.assertEqual(0.0 | units.cm**-3, instance.parameters.constant_hydrogen_density)
+        print(instance.parameters.abundancies_filename)
         instance.parameters.constant_hydrogen_density = 100.0 | units.cm**-3
-        self.assertEquals(100.0 | units.cm**-3, instance.parameters.constant_hydrogen_density)
+        self.assertEqual(100.0 | units.cm**-3, instance.parameters.constant_hydrogen_density)
         
-        self.assertEquals(10000 | units.K, instance.parameters.initial_nebular_temperature)
+        self.assertEqual(10000 | units.K, instance.parameters.initial_nebular_temperature)
         
-        self.assertEquals("", instance.parameters.abundancies_filename)
+        self.assertEqual("", instance.parameters.abundancies_filename)
         instance.stop()
         
         
@@ -233,9 +233,9 @@ class TestMocassin(TestWithMPI):
         instance.parameters.length_z = 1 | units.km
         
         instance.commit_parameters()
-        self.assertEquals(instance.grid.shape[0], 11)
-        self.assertEquals(instance.grid.shape[1], 12)
-        self.assertEquals(instance.grid.shape[2], 13)
+        self.assertEqual(instance.grid.shape[0], 11)
+        self.assertEqual(instance.grid.shape[1], 12)
+        self.assertEqual(instance.grid.shape[2], 13)
         instance.stop()
         
     def test3(self):
@@ -251,7 +251,7 @@ class TestMocassin(TestWithMPI):
         instance.parameters.ny = 7
         instance.parameters.nz = 7
         
-        print (0.95E+19 | units.cm).value_in(units.parsec)
+        print((0.95E+19 | units.cm).value_in(units.parsec))
         instance.parameters.length_x = 0.95E+19 | units.cm
         instance.parameters.length_y = 0.95E+19 | units.cm
         instance.parameters.length_z = 0.95E+19 | units.cm
@@ -282,7 +282,7 @@ class TestMocassin(TestWithMPI):
         
         instance.step()
 
-        print instance.grid.electron_density.mean()
+        print(instance.grid.electron_density.mean())
                         
         self.assertAlmostRelativeEquals(0.0,  instance.get_percentage_converged())
         self.assertGreater(instance.grid.electron_density.mean(), 65. | units.cm**-3)

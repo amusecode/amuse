@@ -16,7 +16,7 @@ class TestRotations(amusetest.TestCase):
         self.assertAlmostRelativeEquals(x, ((1,0,0),(0,1,0),(0,0,1)))
 
         x = rotation.new_rotation_matrix(numpy.pi,0,0)
-        print x
+        print(x)
         self.assertAlmostRelativeEquals(x, ((1,0,0),(0,-1,0),(0,0,-1)))
         x = rotation.new_rotation_matrix(0,numpy.pi,0)
         self.assertAlmostRelativeEquals(x, ((-1,0,0),(0,1,0),(0,0,-1)))
@@ -24,28 +24,28 @@ class TestRotations(amusetest.TestCase):
         self.assertAlmostRelativeEquals(x, ((-1,0,0),(0,-1,0),(0,0,1)))
     def test02(self):
         x = rotation.new_rotation_matrix(numpy.pi / 2.0,0,0)
-        print x
+        print(x)
         self.assertAlmostRelativeEquals(x, ((1,0,0),(0,0, -1),(0,1,0)))
         x = rotation.new_rotation_matrix(0,numpy.pi / 2.0,0)
-        print x
+        print(x)
         self.assertAlmostRelativeEquals(x, ((0,0,1),(0,1,0),(-1,0,0)))
         x = rotation.new_rotation_matrix(0, 0, numpy.pi / 2.0)
-        print x
+        print(x)
         self.assertAlmostRelativeEquals(x, ((0,-1,0),(1,0,0),(0,0,1)))
         x = rotation.new_rotation_matrix(numpy.pi / 2.0,numpy.pi / 2.0,0)
-        print x
+        print(x)
         self.assertAlmostRelativeEquals(x, ((0,1,0),(0,0,-1),(-1,0,0)))
 
     def test03(self):
         positions = [ [1.0, 2.0, 3.0 ] ] | units.m
         rotated = rotation.rotated(positions, 0.0, 0.0, 0.0)
     
-        print rotated
+        print(rotated)
     
         self.assertAlmostRelativeEquals(rotated, [ [1.0, 2.0, 3.0 ] ] | units.m)
         rotated = rotation.rotated(positions, numpy.pi, 0.0, 0.0)
     
-        print rotated
+        print(rotated)
     
         self.assertAlmostRelativeEquals(rotated, [ [1.0, -2.0, -3.0 ] ] | units.m)
 
@@ -53,12 +53,12 @@ class TestRotations(amusetest.TestCase):
         positions = [ [1.0, 2.0, 3.0 ] , [4.0, 5.0, 6.0] ] | units.m
         rotated = rotation.rotated(positions, 0.0, 0.0, 0.0)
     
-        print rotated
+        print(rotated)
     
         self.assertAlmostRelativeEquals(rotated, [ [1.0, 2.0, 3.0 ], [4.0, 5.0, 6.0] ] | units.m)
     
         rotated = rotation.rotated(positions, numpy.pi, 0.0, 0.0)
-        print rotated
+        print(rotated)
     
         self.assertAlmostRelativeEquals(rotated, [ [1.0, -2.0, -3.0 ], [4.0, -5.0, -6.0] ] | units.m)
 
@@ -66,7 +66,7 @@ class TestRotations(amusetest.TestCase):
         positions = [ [1.0, 2.0, 3.0 ] , [4.0, 5.0, 6.0] ] | units.m
         rotated = rotation.rotated(positions,  numpy.pi/2, 0.0, 0.0)
     
-        print rotated
+        print(rotated)
     
         self.assertAlmostRelativeEquals(rotated, [ [1.0, -3.0, 2.0 ], [4.0, -6.0, 5.0] ] | units.m)
 
@@ -113,7 +113,7 @@ class TestRotations(amusetest.TestCase):
         self.assertAlmostRelativeEquals(potential_energy1, potential_energy0)
     
     def test09(self):
-        print "Test add_spin particle attribute, to add rigid body rotation"
+        print("Test add_spin particle attribute, to add rigid body rotation")
         numpy.random.seed(123456)
         particles = new_plummer_model(1000)
         kinetic_energy0 = particles.kinetic_energy()
@@ -133,8 +133,8 @@ class TestRotations(amusetest.TestCase):
         spin_direction /= spin_direction.length()
         R = r - r*spin_direction
         omega = ((R).cross(v) / R.lengths_squared().reshape((-1,1))).mean(axis=0).length()
-        self.assertAlmostEquals(spin_direction, [0, 0, 1.0], 1)
-        self.assertAlmostEquals(omega, 3.0 | nbody_system.time**-1, 1)
+        self.assertAlmostEqual(spin_direction, [0, 0, 1.0], 1)
+        self.assertAlmostEqual(omega, 3.0 | nbody_system.time**-1, 1)
         
         particles.add_spin([1.0, 0, -3.0] | nbody_system.time**-1)
         v = particles.velocity - particles.center_of_mass_velocity()
@@ -142,10 +142,10 @@ class TestRotations(amusetest.TestCase):
         spin_direction /= spin_direction.length()
         R = r - r*spin_direction
         omega = ((R).cross(v) / R.lengths_squared().reshape((-1,1))).mean(axis=0).length()
-        self.assertAlmostEquals(omega, 1.0 | nbody_system.time**-1, 1)
+        self.assertAlmostEqual(omega, 1.0 | nbody_system.time**-1, 1)
  
     def test10(self):
-        print "test conservation of dot, transformation of cross"
+        print("test conservation of dot, transformation of cross")
         p=particles.Particles(1)
         p.position=[1.,2.,3.]
         p.velocity=[-4,5,6.]
@@ -163,7 +163,7 @@ class TestRotations(amusetest.TestCase):
         self.assertAlmostRelativeEquals(cross2,cross1.dot(numpy.linalg.inv(rm)))
 
     def test11(self):
-        print "test conservation of dot, transformation of cross with units"
+        print("test conservation of dot, transformation of cross with units")
         p=particles.Particles(5)
         p.position=[1.,2.,3.] | units.km
         p.velocity=[-4,5,6.] | units.kms

@@ -26,16 +26,16 @@ class TwoBodyInterfaceTests(TestWithMPI):
         res1 = instance.new_particle(mass = 11.0, radius = 2.0, x = 0.0, y = 0.0, z = 0.0, vx = 0.0, vy = 0.0, vz = 0.0)
         res2 = instance.new_particle(mass = 21.0, radius = 5.0, x = 10.0, y = 0.0, z = 0.0, vx = 10.0, vy = 0.0, vz = 0.0)
         
-        self.assertEquals(0, res1['index_of_the_particle'])
-        self.assertEquals(1, res2['index_of_the_particle'])
+        self.assertEqual(0, res1['index_of_the_particle'])
+        self.assertEqual(1, res2['index_of_the_particle'])
 
         retrieved_state1 = instance.get_state(0)
         retrieved_state2 = instance.get_state(1)
 
-        self.assertEquals(11.0,  retrieved_state1['mass'])
-        self.assertEquals(21.0,  retrieved_state2['mass'])
-        self.assertEquals(0.0,  retrieved_state1['x'])
-        self.assertEquals(10.0,  retrieved_state2['x'])
+        self.assertEqual(11.0,  retrieved_state1['mass'])
+        self.assertEqual(21.0,  retrieved_state2['mass'])
+        self.assertEqual(0.0,  retrieved_state1['x'])
+        self.assertEqual(10.0,  retrieved_state2['x'])
 
         instance.stop()
         
@@ -50,10 +50,10 @@ class TwoBodyInterfaceTests(TestWithMPI):
         ep=-(10*10/2)
         
         e,err=instance.get_kinetic_energy()
-        self.assertEquals(ek,e)
+        self.assertEqual(ek,e)
         
         e,err=instance.get_potential_energy()
-        self.assertEquals(ep,e)
+        self.assertEqual(ep,e)
 
         instance.stop()
 
@@ -176,7 +176,7 @@ class TwoBodyTests(TestWithMPI):
         instance.stop()
     
     def test7(self):
-        print "Test 7: get_gravity_at_point"
+        print("Test 7: get_gravity_at_point")
         instance = interface.TwoBody()
         p = datamodel.Particles(2)
 
@@ -213,7 +213,7 @@ class TwoBodyTests(TestWithMPI):
         instance.stop()
     
     def test8(self):
-        print "Test 8: get_potential_at_point"
+        print("Test 8: get_potential_at_point")
         instance = interface.TwoBody()
         p = datamodel.Particles(2)
 
@@ -237,7 +237,7 @@ class TwoBodyTests(TestWithMPI):
         instance.stop()
     
     def test9(self):
-        print "Test 9: TwoBody parameters"
+        print("Test 9: TwoBody parameters")
         instance = interface.TwoBody()
         
         self.assertEqual(instance.parameters.epsilon_squared, zero)
@@ -254,11 +254,11 @@ class TwoBodyTests(TestWithMPI):
         instance = interface.TwoBody(convert_nbody)
         
         value = instance.get_begin_time()
-        self.assertEquals(0.0| units.yr, value)
-        self.assertAlmostEquals(0.0 | units.yr, instance.parameters.begin_time, in_units=units.yr)
+        self.assertEqual(0.0| units.yr, value)
+        self.assertAlmostEqual(0.0 | units.yr, instance.parameters.begin_time, in_units=units.yr)
         for x in [1.0, 10.0, 100.0]:
             instance.parameters.begin_time = x | units.yr
-            self.assertAlmostEquals(x | units.yr, instance.parameters.begin_time, in_units=units.yr)
+            self.assertAlmostEqual(x | units.yr, instance.parameters.begin_time, in_units=units.yr)
         instance.stop()
         
     def test11(self):

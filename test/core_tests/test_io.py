@@ -59,22 +59,22 @@ class FrameworkTests(amusetest.TestCase):
     def test3(self):
         TestFileFormatProcessor.register()
         documentation =  base.write_set_to_file.__doc__
-        print documentation
+        print(documentation)
         self.assertTrue("**123**,\n      Save files in a test format" in documentation)
     
     def test4(self):
         options = base.get_options_for_format('123')
         options.sort(key = lambda x: x[0])
         for x in options:
-            print x
+            print(x)
         name, description, default = options[0]
-        self.assertEquals(name, 'add_comma')
-        self.assertEquals(description, 'if True will add a comma between each value')
-        self.assertEquals(default, True)
+        self.assertEqual(name, 'add_comma')
+        self.assertEqual(description, 'if True will add a comma between each value')
+        self.assertEqual(default, True)
         name, description, default = options[2]
-        self.assertEquals(name, 'save_fast')
-        self.assertEquals(description, 'if True will save faster but less accurate')
-        self.assertEquals(default, False)
+        self.assertEqual(name, 'save_fast')
+        self.assertEqual(description, 'if True will save faster but less accurate')
+        self.assertEqual(default, False)
     
     def test5(self):
         self.assertRaises(AmuseException, io.read_set_from_file, "non_existent","test", 
@@ -101,10 +101,10 @@ class FormatTests(amusetest.TestCase):
         io.write_set_to_file(x, "test.tsf","tsf")
         y = io.read_set_from_file("test.tsf","tsf")
         
-        self.assertAlmostEquals(x.mass, y.mass, 8)
+        self.assertAlmostEqual(x.mass, y.mass, 8)
 #        self.assertAlmostEquals(x.radius, y.radius, 8)
-        self.assertAlmostEquals(x.position, y.position,8)
-        self.assertAlmostEquals(x.velocity, y.velocity,8)
+        self.assertAlmostEqual(x.position, y.position,8)
+        self.assertAlmostEqual(x.velocity, y.velocity,8)
 
         os.remove("test.tsf")
         
@@ -118,9 +118,9 @@ class FormatTests(amusetest.TestCase):
         io.write_set_to_file(x, "test.dyn","dyn")
         y = io.read_set_from_file("test.dyn","dyn")
         
-        self.assertAlmostEquals(x.mass, y.mass, 8)
-        self.assertAlmostEquals(x.position, y.position,8)
-        self.assertAlmostEquals(x.velocity, y.velocity,8)
+        self.assertAlmostEqual(x.mass, y.mass, 8)
+        self.assertAlmostEqual(x.position, y.position,8)
+        self.assertAlmostEqual(x.velocity, y.velocity,8)
         self.assertRaises(AttributeError, lambda: y.radius, 
             expected_message = "You tried to access attribute 'radius' but this "
                 "attribute is not defined for this set.")
@@ -137,9 +137,9 @@ class FormatTests(amusetest.TestCase):
         io.write_set_to_file(x, "test_unit.dyn","dyn", nbody_to_si_converter = convert)
         y = io.read_set_from_file("test_unit.dyn","dyn", nbody_to_si_converter = convert)
         
-        self.assertAlmostEquals(x.mass, y.mass, 8)
-        self.assertAlmostEquals(x.position, y.position,8)
-        self.assertAlmostEquals(x.velocity, y.velocity,8)
+        self.assertAlmostEqual(x.mass, y.mass, 8)
+        self.assertAlmostEqual(x.position, y.position,8)
+        self.assertAlmostEqual(x.velocity, y.velocity,8)
         self.assertRaises(AttributeError, lambda: y.radius, 
             expected_message = "You tried to access attribute 'radius' but this "
                 "attribute is not defined for this set.")
@@ -158,9 +158,9 @@ class FormatTests(amusetest.TestCase):
         io.write_set_to_file(x, "test_unit.tsf","tsf", nbody_to_si_converter = convert)
         y = io.read_set_from_file("test_unit.tsf","tsf", nbody_to_si_converter = convert)
         
-        self.assertAlmostEquals(x.mass, y.mass, 8)
-        self.assertAlmostEquals(x.position, y.position,8)
-        self.assertAlmostEquals(x.velocity, y.velocity,8)
+        self.assertAlmostEqual(x.mass, y.mass, 8)
+        self.assertAlmostEqual(x.position, y.position,8)
+        self.assertAlmostEqual(x.velocity, y.velocity,8)
         self.assertRaises(AttributeError, lambda: y.radius, 
             expected_message = "You tried to access attribute 'radius' but this "
                 "attribute is not defined for this set.")
@@ -168,7 +168,7 @@ class FormatTests(amusetest.TestCase):
         os.remove("test_unit.tsf")
     
     def test5(self):
-        print "Testing HDF5 io"
+        print("Testing HDF5 io")
         if os.path.exists("test_unit.hdf5"):
             os.remove("test_unit.hdf5")
         x = datamodel.Particles(2)
@@ -179,15 +179,15 @@ class FormatTests(amusetest.TestCase):
         io.write_set_to_file(x, "test_unit.hdf5","hdf5")
         y = io.read_set_from_file("test_unit.hdf5","hdf5")
         
-        self.assertAlmostEquals(x.mass, y.mass, 8)
-        self.assertAlmostEquals(x.radius, y.radius, 8)
-        self.assertAlmostEquals(x.position, y.position,8)
-        self.assertAlmostEquals(x.velocity, y.velocity,8)
+        self.assertAlmostEqual(x.mass, y.mass, 8)
+        self.assertAlmostEqual(x.radius, y.radius, 8)
+        self.assertAlmostEqual(x.position, y.position,8)
+        self.assertAlmostEqual(x.velocity, y.velocity,8)
         
         os.remove("test_unit.hdf5")
         
     def test6(self):
-        print "Testing HDF5 io, with options"
+        print("Testing HDF5 io, with options")
         if os.path.exists("test_unit.hdf5"):
             os.remove("test_unit.hdf5")
         x = datamodel.Particles(2)
@@ -199,20 +199,20 @@ class FormatTests(amusetest.TestCase):
         io.write_set_to_file(x, "test_unit.hdf5","hdf5")
         y = io.read_set_from_file("test_unit.hdf5","hdf5")
         y = y.previous_state()
-        self.assertAlmostEquals(x.mass, y.mass, 8)
-        self.assertAlmostEquals([10.0, 20.0] | units.kg, y.previous_state().mass, 8)
-        self.assertAlmostEquals([1.0, 2.0] | units.kg, y.previous_state().previous_state().mass, 8)
+        self.assertAlmostEqual(x.mass, y.mass, 8)
+        self.assertAlmostEqual([10.0, 20.0] | units.kg, y.previous_state().mass, 8)
+        self.assertAlmostEqual([1.0, 2.0] | units.kg, y.previous_state().previous_state().mass, 8)
         self.assertEqual(y.previous_state().previous_state().previous_state(), None)
         
         io.write_set_to_file(x, "test_unit.hdf5","hdf5", append_to_file=False)
         y = io.read_set_from_file("test_unit.hdf5","hdf5")
-        self.assertAlmostEquals(x.mass, y.mass, 8)
+        self.assertAlmostEqual(x.mass, y.mass, 8)
         self.assertEqual(y.previous_state().previous_state(), None)
         
         os.remove("test_unit.hdf5")
         
     def test7(self):
-        print "Testing HDF5 io with a ParticlesSuperset"
+        print("Testing HDF5 io with a ParticlesSuperset")
         if os.path.exists("test_unit.hdf5"):
             os.remove("test_unit.hdf5")
         set1 = datamodel.Particles(2)
@@ -225,10 +225,10 @@ class FormatTests(amusetest.TestCase):
         io.write_set_to_file(superset, "test_unit.hdf5","hdf5")
         y = io.read_set_from_file("test_unit.hdf5","hdf5")
         
-        self.assertAlmostEquals(superset.mass, y.mass, 8)
-        self.assertAlmostEquals(superset.radius, y.radius, 8)
-        self.assertAlmostEquals(superset.position, y.position,8)
-        self.assertAlmostEquals(superset.velocity, y.velocity,8)
+        self.assertAlmostEqual(superset.mass, y.mass, 8)
+        self.assertAlmostEqual(superset.radius, y.radius, 8)
+        self.assertAlmostEqual(superset.position, y.position,8)
+        self.assertAlmostEqual(superset.velocity, y.velocity,8)
         
         os.remove("test_unit.hdf5")
     
@@ -236,22 +236,22 @@ class FormatTests(amusetest.TestCase):
         options = base.get_options_for_format('tsf')
         options.sort(key = lambda x: x[0])
         name, description, default = options[1]
-        self.assertEquals(name, 'nbody_to_si_converter')
-        self.assertEquals(description, 'NEMO datafiles store nbody data, provide a '
+        self.assertEqual(name, 'nbody_to_si_converter')
+        self.assertEqual(description, 'NEMO datafiles store nbody data, provide a '
             'converter to store si data (None means no converter)')
-        self.assertEquals(default, None)
+        self.assertEqual(default, None)
         options = base.get_options_for_format('dyn')
         options.sort(key = lambda x: x[0])
         name, description, default = options[1]
-        self.assertEquals(name, 'dynamics_mass_units')
+        self.assertEqual(name, 'dynamics_mass_units')
         
         options = base.get_options_for_format('hdf5')
         options.sort(key = lambda x: x[0])
         name, description, default = options[1]
-        self.assertEquals(name, 'append_to_file')
+        self.assertEqual(name, 'append_to_file')
         self.assertTrue(description.find('If set to True, new data is appended to HDF5 files.') >= 0)
         self.assertTrue(description.find('If set to False, the existing file is removed and overwritten.') >= 0)
-        self.assertEquals(default, True)
+        self.assertEqual(default, True)
     
     def test9(self):
         x = datamodel.Particles(2)
@@ -261,7 +261,7 @@ class FormatTests(amusetest.TestCase):
                 ", but this format is not in the supported formats list")
     
     def test10(self):
-        print "Testing saving/loading timestamp in Starlab"
+        print("Testing saving/loading timestamp in Starlab")
         x = datamodel.Particles(2)
         convert = nbody_system.nbody_to_si(1 | units.kg, 2 | units.m)
         x.mass = [1.0, 2.0] | units.kg
@@ -270,10 +270,10 @@ class FormatTests(amusetest.TestCase):
         current_time = 1.0 | units.Myr
         io.write_set_to_file(x.savepoint(current_time), "time_test_unit.dyn","dyn", nbody_to_si_converter = convert)
         y = io.read_set_from_file("time_test_unit.dyn","dyn", nbody_to_si_converter = convert)
-        self.assertAlmostEquals(current_time, y.previous_state().get_timestamp(), 8, in_units=units.Myr)
-        self.assertAlmostEquals(x.mass, y.mass, 8)
-        self.assertAlmostEquals(x.position, y.position,8)
-        self.assertAlmostEquals(x.velocity, y.velocity,8)
+        self.assertAlmostEqual(current_time, y.previous_state().get_timestamp(), 8, in_units=units.Myr)
+        self.assertAlmostEqual(x.mass, y.mass, 8)
+        self.assertAlmostEqual(x.position, y.position,8)
+        self.assertAlmostEqual(x.velocity, y.velocity,8)
         
         x = datamodel.Particles(2)
         x.mass = [1.0, 2.0] | nbody_system.mass
@@ -283,15 +283,15 @@ class FormatTests(amusetest.TestCase):
         io.write_set_to_file(x.savepoint(current_time), "time_test_unit.dyn","dyn")
         y = io.read_set_from_file("time_test_unit.dyn","dyn")
 
-        self.assertAlmostEquals(current_time, y.previous_state().get_timestamp(), 8, in_units=nbody_system.time)
-        self.assertAlmostEquals(x.mass, y.mass, 8)
-        self.assertAlmostEquals(x.position, y.position,8)
-        self.assertAlmostEquals(x.velocity, y.velocity,8)
+        self.assertAlmostEqual(current_time, y.previous_state().get_timestamp(), 8, in_units=nbody_system.time)
+        self.assertAlmostEqual(x.mass, y.mass, 8)
+        self.assertAlmostEqual(x.position, y.position,8)
+        self.assertAlmostEqual(x.velocity, y.velocity,8)
         
         os.remove("time_test_unit.dyn")
     
     def test11(self):
-        print "Testing saving/loading timestamp in NEMO"
+        print("Testing saving/loading timestamp in NEMO")
         x = datamodel.Particles(2)
         convert = nbody_system.nbody_to_si(1 | units.kg, 2 | units.m)
         x.mass = [1.0, 2.0] | units.kg
@@ -301,10 +301,10 @@ class FormatTests(amusetest.TestCase):
         io.write_set_to_file(x.savepoint(current_time), "time_test_unit.tsf","tsf", nbody_to_si_converter = convert)
         y = io.read_set_from_file("time_test_unit.tsf","tsf", nbody_to_si_converter = convert)
         
-        self.assertAlmostEquals(current_time, y.previous_state().get_timestamp(), 8, in_units=units.Myr)
-        self.assertAlmostEquals(x.mass, y.mass, 8)
-        self.assertAlmostEquals(x.position, y.position,8)
-        self.assertAlmostEquals(x.velocity, y.velocity,8)
+        self.assertAlmostEqual(current_time, y.previous_state().get_timestamp(), 8, in_units=units.Myr)
+        self.assertAlmostEqual(x.mass, y.mass, 8)
+        self.assertAlmostEqual(x.position, y.position,8)
+        self.assertAlmostEqual(x.velocity, y.velocity,8)
         
         x = datamodel.Particles(2)
         x.mass = [1.0, 2.0] | nbody_system.mass
@@ -314,10 +314,10 @@ class FormatTests(amusetest.TestCase):
         io.write_set_to_file(x.savepoint(current_time), "time_test_unit.tsf","tsf")
         y = io.read_set_from_file("time_test_unit.tsf","tsf")
 
-        self.assertAlmostEquals(current_time, y.previous_state().get_timestamp(), 8, in_units=nbody_system.time)
-        self.assertAlmostEquals(x.mass, y.mass, 8)
-        self.assertAlmostEquals(x.position, y.position,8)
-        self.assertAlmostEquals(x.velocity, y.velocity,8)
+        self.assertAlmostEqual(current_time, y.previous_state().get_timestamp(), 8, in_units=nbody_system.time)
+        self.assertAlmostEqual(x.mass, y.mass, 8)
+        self.assertAlmostEqual(x.position, y.position,8)
+        self.assertAlmostEqual(x.velocity, y.velocity,8)
         
         os.remove("time_test_unit.tsf")
         

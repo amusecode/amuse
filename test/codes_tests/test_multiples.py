@@ -136,8 +136,8 @@ class TestSimpleMultiples(TestWithMPI):
         multiples_code.particles.add_particles(stars)
         multiples_code.commit_particles()
         multiples_code.evolve_model(0.6|nbody_system.time)
-        self.assertEquals(len(multiples_code.multiples), 1)
-        self.assertEquals(len(multiples_code.binaries), 1)
+        self.assertEqual(len(multiples_code.multiples), 1)
+        self.assertEqual(len(multiples_code.binaries), 1)
         
         
     def test1(self):
@@ -171,18 +171,18 @@ class TestSimpleMultiples(TestWithMPI):
         multiples_code.commit_particles()
         
         multiples_code.evolve_model(0.6|nbody_system.time)
-        self.assertEquals(len(multiples_code.multiples), 1)
-        self.assertEquals(len(multiples_code.binaries), 1)
+        self.assertEqual(len(multiples_code.multiples), 1)
+        self.assertEqual(len(multiples_code.binaries), 1)
         
         self.assertAlmostRelativeEquals(multiples_code.particles[:-1].radius, 0.5 | nbody_system.length)
         self.assertAlmostRelativeEquals(multiples_code.particles[-1].radius, 0.4446| nbody_system.length, 3)
         multiples_code.evolve_model(2|nbody_system.time)
-        self.assertEquals(len(multiples_code.multiples), 1)
-        self.assertEquals(len(multiples_code.binaries), 1)
+        self.assertEqual(len(multiples_code.multiples), 1)
+        self.assertEqual(len(multiples_code.binaries), 1)
         multiples_code.evolve_model(3|nbody_system.time)
-        self.assertEquals(len(multiples_code.multiples), 1)
-        self.assertEquals(len(multiples_code.particles), 2)
-        self.assertEquals(len(multiples_code.binaries), 1)
+        self.assertEqual(len(multiples_code.multiples), 1)
+        self.assertEqual(len(multiples_code.particles), 2)
+        self.assertEqual(len(multiples_code.binaries), 1)
         
 
     def test2(self):
@@ -216,12 +216,12 @@ class TestSimpleMultiples(TestWithMPI):
         multiples_code.commit_particles()
         
         multiples_code.evolve_model(3|nbody_system.time)
-        self.assertEquals(len(multiples_code.multiples), 1)
-        print multiples_code.multiples[0].components
-        self.assertEquals(len(multiples_code.multiples[0].components), 2)
-        self.assertEquals(len(multiples_code.particles), 3)
-        self.assertEquals(len(multiples_code.binaries), 1)
-        self.assertEquals(len(multiples_code.singles), 2)
+        self.assertEqual(len(multiples_code.multiples), 1)
+        print(multiples_code.multiples[0].components)
+        self.assertEqual(len(multiples_code.multiples[0].components), 2)
+        self.assertEqual(len(multiples_code.particles), 3)
+        self.assertEqual(len(multiples_code.binaries), 1)
+        self.assertEqual(len(multiples_code.singles), 2)
     
     
     def test3(self):
@@ -250,13 +250,13 @@ class TestSimpleMultiples(TestWithMPI):
         multiples_code.singles_in_binaries.add_particles(particles_in_binary)
         multiples_code.binaries.add_particle(binary)
         
-        self.assertEquals(len(multiples_code.singles_in_binaries), 2)
-        self.assertEquals(id(multiples_code.binaries[0].child1.particles_set), id(multiples_code.singles_in_binaries))
+        self.assertEqual(len(multiples_code.singles_in_binaries), 2)
+        self.assertEqual(id(multiples_code.binaries[0].child1.particles_set), id(multiples_code.singles_in_binaries))
         
         multiples_code.commit_particles()
         
-        self.assertEquals(len(multiples_code.multiples), 1)
-        self.assertEquals(len(multiples_code.components_of_multiples), 2)
+        self.assertEqual(len(multiples_code.multiples), 1)
+        self.assertEqual(len(multiples_code.components_of_multiples), 2)
         
         
     
@@ -295,25 +295,25 @@ class TestSimpleMultiples(TestWithMPI):
         multiples_code.evolve_model(3|nbody_system.time)
         self.assertTrue(stopping_condition.is_set())
         self.assertAlmostRelativeEquals(multiples_code.model_time , 0.0075 | nbody_system.time, 4)
-        self.assertEquals(len(stopping_condition.particles(0)), 1)
-        self.assertEquals(len(stopping_condition.particles(1)), 0)
+        self.assertEqual(len(stopping_condition.particles(0)), 1)
+        self.assertEqual(len(stopping_condition.particles(1)), 0)
         
-        self.assertEquals(len(multiples_code.multiples), 1)
-        self.assertEquals(len(multiples_code.multiples[0].components), 2)
-        self.assertEquals(len(multiples_code.particles), 3) # 1 multiples with 2 singles, plus 2 singles free
-        self.assertEquals(len(multiples_code.binaries), 1)
-        self.assertEquals(len(multiples_code.singles), 2)
+        self.assertEqual(len(multiples_code.multiples), 1)
+        self.assertEqual(len(multiples_code.multiples[0].components), 2)
+        self.assertEqual(len(multiples_code.particles), 3) # 1 multiples with 2 singles, plus 2 singles free
+        self.assertEqual(len(multiples_code.binaries), 1)
+        self.assertEqual(len(multiples_code.singles), 2)
         
         multiples_code.evolve_model(3|nbody_system.time)
         self.assertTrue(stopping_condition.is_set())
         self.assertAlmostRelativeEquals(multiples_code.model_time , 1.2195 | nbody_system.time, 4)
-        self.assertEquals(len(stopping_condition.particles(0)), 1) # 1 new multiple
-        self.assertEquals(len(stopping_condition.particles(1)), 1) # 1 dissolved multiple
+        self.assertEqual(len(stopping_condition.particles(0)), 1) # 1 new multiple
+        self.assertEqual(len(stopping_condition.particles(1)), 1) # 1 dissolved multiple
         
-        self.assertEquals(len(multiples_code.multiples[0].components), 3)
-        self.assertEquals(len(multiples_code.particles), 2) # 1 multiple, plus 1 single free
-        self.assertEquals(len(multiples_code.binaries), 1)
-        self.assertEquals(len(multiples_code.singles), 1)
+        self.assertEqual(len(multiples_code.multiples[0].components), 3)
+        self.assertEqual(len(multiples_code.particles), 2) # 1 multiple, plus 1 single free
+        self.assertEqual(len(multiples_code.binaries), 1)
+        self.assertEqual(len(multiples_code.singles), 1)
     
     def test5(self):
         converter = nbody_system.nbody_to_si(units.MSun, units.parsec)
@@ -349,11 +349,11 @@ class TestSimpleMultiples(TestWithMPI):
         multiples_code.commit_particles()
         multiples_code.evolve_model(end_time)
         
-        self.assertEquals(len(multiples_code.particles),1) # 1 multiples with 2 singles
-        self.assertEquals(len(multiples_code.multiples), 1)
-        self.assertEquals(len(multiples_code.multiples[0].components), 2)
-        self.assertEquals(len(multiples_code.binaries), 1)
-        self.assertEquals(len(multiples_code.singles), 0)
+        self.assertEqual(len(multiples_code.particles),1) # 1 multiples with 2 singles
+        self.assertEqual(len(multiples_code.multiples), 1)
+        self.assertEqual(len(multiples_code.multiples[0].components), 2)
+        self.assertEqual(len(multiples_code.binaries), 1)
+        self.assertEqual(len(multiples_code.singles), 0)
         
         
     
@@ -398,21 +398,21 @@ class TestSimpleMultiples(TestWithMPI):
         stopping_condition.enable()
         
         end_time = converter.to_si(3.0|nbody_system.time)
-        print end_time.as_quantity_in(units.Myr)
+        print(end_time.as_quantity_in(units.Myr))
         multiples_code.evolve_model(end_time)
         self.assertTrue(stopping_condition.is_set())
-        print multiples_code.model_time.as_quantity_in(units.Myr)
+        print(multiples_code.model_time.as_quantity_in(units.Myr))
         self.assertAlmostRelativeEquals(multiples_code.model_time , 7.99844 | units.Myr, 4)
-        self.assertEquals(len(stopping_condition.particles(0)), 2)
-        self.assertEquals(len(stopping_condition.particles(1)), 0)
+        self.assertEqual(len(stopping_condition.particles(0)), 2)
+        self.assertEqual(len(stopping_condition.particles(1)), 0)
         
-        self.assertEquals(len(multiples_code.particles), 2)             # 1 multiples with 2 singles
-        self.assertEquals(len(multiples_code.multiples), 2)
-        self.assertEquals(len(multiples_code.binaries), 2)
-        self.assertEquals(len(multiples_code.multiples[0].components), 2)
-        self.assertEquals(len(multiples_code.multiples[1].components), 2)
-        self.assertEquals(len(multiples_code.singles), 0)
-        self.assertEquals(len(multiples_code.all_singles), 4)
+        self.assertEqual(len(multiples_code.particles), 2)             # 1 multiples with 2 singles
+        self.assertEqual(len(multiples_code.multiples), 2)
+        self.assertEqual(len(multiples_code.binaries), 2)
+        self.assertEqual(len(multiples_code.multiples[0].components), 2)
+        self.assertEqual(len(multiples_code.multiples[1].components), 2)
+        self.assertEqual(len(multiples_code.singles), 0)
+        self.assertEqual(len(multiples_code.all_singles), 4)
 
     
     def test7(self):
@@ -453,16 +453,16 @@ class TestSimpleMultiples(TestWithMPI):
         stopping_condition.enable()
         
         end_time = converter.to_si(3.0|nbody_system.time)
-        print end_time.as_quantity_in(units.Myr)
+        print(end_time.as_quantity_in(units.Myr))
         multiples_code.evolve_model(end_time)
         self.assertTrue(stopping_condition.is_set())
-        print multiples_code.model_time.as_quantity_in(units.Myr)
+        print(multiples_code.model_time.as_quantity_in(units.Myr))
         #self.assertAlmostRelativeEquals(multiples_code.model_time , 5.96955 | units.Myr, 4)
-        self.assertEquals(len(stopping_condition.particles(0)), 1)
+        self.assertEqual(len(stopping_condition.particles(0)), 1)
         model = stopping_condition.particles(0)[0]
         
-        self.assertEquals(len(model.particles_before_encounter), 2)
-        self.assertEquals(len(model.particles_after_encounter), 2)
+        self.assertEqual(len(model.particles_before_encounter), 2)
+        self.assertEqual(len(model.particles_after_encounter), 2)
         
         
         before = model.particles_before_encounter
@@ -516,16 +516,16 @@ class TestSimpleMultiples(TestWithMPI):
         
         multiples_code.singles.add_particle(field_particle)
         
-        self.assertEquals(len(multiples_code.singles_in_binaries), 2)
-        self.assertEquals(id(multiples_code.binaries[0].child1.particles_set), id(multiples_code.singles_in_binaries))
+        self.assertEqual(len(multiples_code.singles_in_binaries), 2)
+        self.assertEqual(id(multiples_code.binaries[0].child1.particles_set), id(multiples_code.singles_in_binaries))
         
         multiples_code.commit_particles()
         multiples_code.multiples.radius =  0.5 | nbody_system.length
         initial_energy = multiples_code.get_total_energy()
         
-        self.assertEquals(len(multiples_code.multiples), 1)
-        self.assertEquals(len(multiples_code.components_of_multiples), 2)
-        self.assertEquals(len(multiples_code.particles), 2)
+        self.assertEqual(len(multiples_code.multiples), 1)
+        self.assertEqual(len(multiples_code.components_of_multiples), 2)
+        self.assertEqual(len(multiples_code.particles), 2)
         
         stopping_condition = multiples_code.stopping_conditions.encounter_detection
         stopping_condition.enable()
@@ -587,11 +587,11 @@ class TestSimpleMultiples(TestWithMPI):
         
         multiples_code.commit_particles()
         
-        self.assertEquals(len(multiples_code.multiples), 1)
-        self.assertEquals(len(multiples_code.components_of_multiples), 2)
-        self.assertEquals(len(multiples_code.singles), 3)
-        self.assertEquals(len(multiples_code.particles), 4)
-        self.assertEquals(len(code.particles), 4)
+        self.assertEqual(len(multiples_code.multiples), 1)
+        self.assertEqual(len(multiples_code.components_of_multiples), 2)
+        self.assertEqual(len(multiples_code.singles), 3)
+        self.assertEqual(len(multiples_code.particles), 4)
+        self.assertEqual(len(code.particles), 4)
         
         self.assertAlmostRelativeEquals(multiples_code.particles[-1].mass,0.2 | nbody_system.mass)
         self.assertAlmostRelativeEquals(code.particles[-1].mass,0.2 | nbody_system.mass)
@@ -609,11 +609,11 @@ class TestSimpleMultiples(TestWithMPI):
         
         multiples_code.update_model()
         
-        print code.particles.mass
+        print(code.particles.mass)
         self.assertAlmostRelativeEquals(multiples_code.particles[-1].mass, 0.3 | nbody_system.mass)
         self.assertAlmostRelativeEquals(code.particles[-1].mass, 0.3 | nbody_system.mass)
-        print code.particles[-1].position
-        print code.particles[-1].velocity
+        print(code.particles[-1].position)
+        print(code.particles[-1].velocity)
         self.assertAlmostRelativeEquals(code.particles[-1].position, [0.00166666666667,0,0] | nbody_system.length, 6)
         self.assertAlmostRelativeEquals(code.particles[-1].velocity, [0, 0.7453559925, 0] | nbody_system.speed, 6)
         
@@ -658,16 +658,16 @@ class TestSimpleMultiples(TestWithMPI):
         multiples_code.commit_particles()
         multiples_code.evolve_model(1 | nbody_system.time)
         
-        self.assertEquals(len(multiples_code.multiples), 1)
-        self.assertEquals(len(multiples_code.components_of_multiples), 2)
-        self.assertEquals(len(multiples_code.singles), 3)
-        self.assertEquals(len(multiples_code.particles), 4)
-        self.assertEquals(len(code.particles), 4)
+        self.assertEqual(len(multiples_code.multiples), 1)
+        self.assertEqual(len(multiples_code.components_of_multiples), 2)
+        self.assertEqual(len(multiples_code.singles), 3)
+        self.assertEqual(len(multiples_code.particles), 4)
+        self.assertEqual(len(code.particles), 4)
         
-        self.assertEquals(id(multiples_code.singles_in_binaries), id(multiples_code.binaries[0].child1.particles_set))
-        self.assertEquals(id(multiples_code.components_of_multiples), id(multiples_code.multiples[0].components[0].particles_set))
+        self.assertEqual(id(multiples_code.singles_in_binaries), id(multiples_code.binaries[0].child1.particles_set))
+        self.assertEqual(id(multiples_code.components_of_multiples), id(multiples_code.multiples[0].components[0].particles_set))
         #multiples_code.singles_in_binaries[0].mass = 0.2 | nbody_system.mass
-        print multiples_code.particles.mass
+        print(multiples_code.particles.mass)
         self.assertAlmostRelativeEquals(multiples_code.particles[-1].mass, 1.1 | nbody_system.mass)
         self.assertAlmostRelativeEquals(multiples_code.particles.mass.sum(), 0.1 + 0.1 + 3.0 | nbody_system.mass)
         multiples_code.update_model()
@@ -725,28 +725,28 @@ class TestSimpleMultiples(TestWithMPI):
         
         multiples_code.commit_particles()   
         multiples_code.evolve_model(1 | nbody_system.time)
-        self.assertEquals(len(multiples_code.multiples), 1)        
-        self.assertEquals(len(multiples_code.binaries), 1)
-        self.assertEquals(len(multiples_code.components_of_multiples), 2)
-        self.assertEquals(len(multiples_code.singles), 3)
-        self.assertEquals(len(multiples_code.particles), 4)
-        self.assertEquals(len(code.particles), 4)
+        self.assertEqual(len(multiples_code.multiples), 1)        
+        self.assertEqual(len(multiples_code.binaries), 1)
+        self.assertEqual(len(multiples_code.components_of_multiples), 2)
+        self.assertEqual(len(multiples_code.singles), 3)
+        self.assertEqual(len(multiples_code.particles), 4)
+        self.assertEqual(len(code.particles), 4)
         self.assertTrue(stopping_condition.is_set())
         multiples_code.particles[-1].velocity = [0, 0, 0] | nbody_system.speed
         multiples_code.update_model()
-        print multiples_code.particles.key
+        print(multiples_code.particles.key)
         
-        self.assertEquals(len(stopping_condition.particles(0)), 1)
-        self.assertEquals(len(stopping_condition.particles(1)), 0)
-        self.assertEquals(len(stopping_condition.particles(2)), 0)
+        self.assertEqual(len(stopping_condition.particles(0)), 1)
+        self.assertEqual(len(stopping_condition.particles(1)), 0)
+        self.assertEqual(len(stopping_condition.particles(2)), 0)
         self.assertAlmostRelativeEquals(multiples_code.multiples[0].mass, 2.0 | nbody_system.mass)
         self.assertAlmostRelativeEquals(multiples_code.particles.mass.sum(), 2.6 | nbody_system.mass)
-        print multiples_code.particles.velocity
+        print(multiples_code.particles.velocity)
         multiples_code.evolve_model(2 | nbody_system.time)
         self.assertTrue(stopping_condition.is_set())
-        self.assertEquals(len(stopping_condition.particles(0)), 0)
-        self.assertEquals(len(stopping_condition.particles(1)), 0)
-        self.assertEquals(len(stopping_condition.particles(2)), 1)
+        self.assertEqual(len(stopping_condition.particles(0)), 0)
+        self.assertEqual(len(stopping_condition.particles(1)), 0)
+        self.assertEqual(len(stopping_condition.particles(2)), 1)
         self.assertAlmostRelativeEquals(multiples_code.multiples[0].mass, 2.0 | nbody_system.mass)
         self.assertAlmostRelativeEquals(multiples_code.particles.mass.sum(), 2.6 | nbody_system.mass)
     
@@ -788,8 +788,8 @@ class TestSimpleMultiples(TestWithMPI):
         multiples_code.singles_in_binaries.add_particles(particles_in_binary)
         multiples_code.binaries.add_particle(binary)
         multiples_code.commit_particles()   
-        print multiples_code.particles
-        self.assertEquals(len(multiples_code.particles), 4)
+        print(multiples_code.particles)
+        self.assertEqual(len(multiples_code.particles), 4)
         self.assertAlmostRelativeEquals(multiples_code.particles[-1].position,  [1,0,1] | nbody_system.length)
         
         
@@ -829,22 +829,22 @@ class TestSimpleMultiples(TestWithMPI):
         stopping_condition = multiples_code.stopping_conditions.binaries_change_detection
         stopping_condition.enable()
         for x in multiples_code.binaries:
-            print x.key, x.child1.key, x.child2.key
+            print(x.key, x.child1.key, x.child2.key)
 
         multiples_code.evolve_model(1 | nbody_system.time)
         self.assertTrue(stopping_condition.is_set())
         for x in multiples_code.binaries:
-            print x.key, x.child1.key, x.child2.key
+            print(x.key, x.child1.key, x.child2.key)
         for x in stopping_condition.particles(0):
-            print "NEW:", x.key, x.child1.key, x.child2.key
+            print("NEW:", x.key, x.child1.key, x.child2.key)
         for x in stopping_condition.particles(1):
-            print "REMOVED:", x.key, x.child1.key, x.child2.key
+            print("REMOVED:", x.key, x.child1.key, x.child2.key)
         for x in stopping_condition.particles(2):
-            print "UPDATED:", x.key, x.child1.key, x.child2.key
+            print("UPDATED:", x.key, x.child1.key, x.child2.key)
         for x in multiples_code.singles:
-            print x.key, x.mass
-        self.assertEquals(len(multiples_code.singles_in_binaries) + len(multiples_code.singles), 2*len(center_of_mass_particles))
-        self.assertEquals(len(multiples_code.binaries) - len(stopping_condition.particles(0)) + len(stopping_condition.particles(1)),  len(center_of_mass_particles))
+            print(x.key, x.mass)
+        self.assertEqual(len(multiples_code.singles_in_binaries) + len(multiples_code.singles), 2*len(center_of_mass_particles))
+        self.assertEqual(len(multiples_code.binaries) - len(stopping_condition.particles(0)) + len(stopping_condition.particles(1)),  len(center_of_mass_particles))
     
     def test14(self):
         code = Hermite()
@@ -880,22 +880,22 @@ class TestSimpleMultiples(TestWithMPI):
         stopping_condition = multiples_code.stopping_conditions.binaries_change_detection
         stopping_condition.enable()
         for x in multiples_code.binaries:
-            print x.key, x.child1.key, x.child2.key
+            print(x.key, x.child1.key, x.child2.key)
 
         multiples_code.evolve_model(2 | nbody_system.time)
         self.assertTrue(stopping_condition.is_set())
         for x in multiples_code.binaries:
-            print x.key, x.child1.key, x.child2.key
+            print(x.key, x.child1.key, x.child2.key)
         for x in stopping_condition.particles(0):
-            print "NEW:", x.key, x.child1.key, x.child2.key
+            print("NEW:", x.key, x.child1.key, x.child2.key)
         for x in stopping_condition.particles(1):
-            print "REMOVED:", x.key, x.child1.key, x.child2.key
+            print("REMOVED:", x.key, x.child1.key, x.child2.key)
         for x in stopping_condition.particles(2):
-            print "UPDATED:", x.key, x.child1.key, x.child2.key
+            print("UPDATED:", x.key, x.child1.key, x.child2.key)
         for x in multiples_code.singles:
-            print x.key, x.mass
-        self.assertEquals(len(multiples_code.singles_in_binaries) + len(multiples_code.singles), 2*len(center_of_mass_particles))
-        self.assertEquals(len(multiples_code.binaries) - len(stopping_condition.particles(0)) + len(stopping_condition.particles(1)),  len(center_of_mass_particles))
+            print(x.key, x.mass)
+        self.assertEqual(len(multiples_code.singles_in_binaries) + len(multiples_code.singles), 2*len(center_of_mass_particles))
+        self.assertEqual(len(multiples_code.binaries) - len(stopping_condition.particles(0)) + len(stopping_condition.particles(1)),  len(center_of_mass_particles))
         
     def test15(self):
         code = Hermite()
@@ -930,21 +930,21 @@ class TestSimpleMultiples(TestWithMPI):
         stopping_condition = multiples_code.stopping_conditions.binaries_change_detection
         stopping_condition.enable()
         for x in multiples_code.binaries:
-            print x.key, x.child1.key, x.child2.key
+            print(x.key, x.child1.key, x.child2.key)
 
         multiples_code.evolve_model(2 | nbody_system.time)
         self.assertTrue(stopping_condition.is_set())
         for x in multiples_code.binaries:
-            print x.key, x.child1.key, x.child2.key
+            print(x.key, x.child1.key, x.child2.key)
         for x in stopping_condition.particles(0):
-            print "NEW:", x.key, x.child1.key, x.child2.key
+            print("NEW:", x.key, x.child1.key, x.child2.key)
         for x in stopping_condition.particles(1):
-            print "REMOVED:", x.key, x.child1.key, x.child2.key
+            print("REMOVED:", x.key, x.child1.key, x.child2.key)
         for x in stopping_condition.particles(2):
-            print "UPDATED:", x.key, x.child1.key, x.child2.key
+            print("UPDATED:", x.key, x.child1.key, x.child2.key)
         for x in multiples_code.singles:
-            print x.key, x.mass
-        self.assertEquals(len(multiples_code.binaries) - len(stopping_condition.particles(0)) + len(stopping_condition.particles(1)),  len(center_of_mass_particles))
+            print(x.key, x.mass)
+        self.assertEqual(len(multiples_code.binaries) - len(stopping_condition.particles(0)) + len(stopping_condition.particles(1)),  len(center_of_mass_particles))
      
     
     def test16(self):
@@ -968,14 +968,14 @@ class TestSimpleMultiples(TestWithMPI):
         multiples_code.commit_particles()   
         
         multiples_code.evolve_model(1 | nbody_system.time)
-        print len(multiples_code.multiples)
-        self.assertEquals(len(multiples_code.multiples), 1)
-        self.assertEquals(len(multiples_code.particles), 9)
-        self.assertEquals(len(multiples_code.singles), 8)
-        self.assertEquals(len(multiples_code.binaries), 1)
-        self.assertEquals(len(multiples_code.singles_in_binaries), 2)
-        self.assertEquals(id(multiples_code.components_of_multiples), id(multiples_code.multiples[0].components[0].particles_set))
-        print multiples_code.multiples[0].components
+        print(len(multiples_code.multiples))
+        self.assertEqual(len(multiples_code.multiples), 1)
+        self.assertEqual(len(multiples_code.particles), 9)
+        self.assertEqual(len(multiples_code.singles), 8)
+        self.assertEqual(len(multiples_code.binaries), 1)
+        self.assertEqual(len(multiples_code.singles_in_binaries), 2)
+        self.assertEqual(id(multiples_code.components_of_multiples), id(multiples_code.multiples[0].components[0].particles_set))
+        print(multiples_code.multiples[0].components)
         io.write_set_to_file(
             (
                 multiples_code.singles, 
@@ -1019,10 +1019,10 @@ class TestSimpleMultiples(TestWithMPI):
                 "multiples"
             )
         )
-        self.assertEquals(len(multiples), 1)
-        self.assertEquals(len(singles), 8)
-        self.assertEquals(len(binaries), 1)
-        self.assertEquals(len(singles_in_binaries), 2)
+        self.assertEqual(len(multiples), 1)
+        self.assertEqual(len(singles), 8)
+        self.assertEqual(len(binaries), 1)
+        self.assertEqual(len(singles_in_binaries), 2)
         #self.assertEquals(id(components_of_multiples), id(multiples[0].components[0].particles_set))
         
         multiples_code_loaded.singles.add_particles(singles)
@@ -1033,11 +1033,11 @@ class TestSimpleMultiples(TestWithMPI):
         
         multiples_code_loaded.commit_particles()   
         
-        self.assertEquals(len(multiples_code_loaded.multiples), 1)
-        self.assertEquals(len(multiples_code_loaded.particles), 9)
-        self.assertEquals(len(multiples_code_loaded.singles), 8)
-        self.assertEquals(len(multiples_code_loaded.binaries), 1)
-        self.assertEquals(len(multiples_code_loaded.singles_in_binaries), 2)
+        self.assertEqual(len(multiples_code_loaded.multiples), 1)
+        self.assertEqual(len(multiples_code_loaded.particles), 9)
+        self.assertEqual(len(multiples_code_loaded.singles), 8)
+        self.assertEqual(len(multiples_code_loaded.binaries), 1)
+        self.assertEqual(len(multiples_code_loaded.singles_in_binaries), 2)
         #self.assertEquals(id(multiples_code_loaded.components_of_multiples), id(multiples_code_loaded.multiples[0].components[0].particles_set))
        
         multiples_code.evolve_model(4 | nbody_system.time)
@@ -1046,15 +1046,15 @@ class TestSimpleMultiples(TestWithMPI):
         multiples_code_loaded.evolve_model(3.0 | nbody_system.time)
         
 
-        print len(multiples_code.multiples), multiples_code.particles
-        print multiples_code.particles.position - multiples_code_loaded.particles.position
+        print(len(multiples_code.multiples), multiples_code.particles)
+        print(multiples_code.particles.position - multiples_code_loaded.particles.position)
         self.assertAlmostRelativeEquals(multiples_code.particles.position - multiples_code_loaded.particles.position, [0,0,0] | nbody_system.length)
         
         for code in [multiples_code, multiples_code_loaded]:
-            self.assertEquals(len(code.multiples), 1)
-            self.assertEquals(len(code.particles), 8)
-            self.assertEquals(len(code.singles), 7)
-            self.assertEquals(len(code.binaries), 1)
-            self.assertEquals(len(code.singles_in_binaries), 2)
-            self.assertEquals(len(code.components_of_multiples), 3)
-            self.assertEquals(id(code.components_of_multiples), id(code.multiples[0].components[0].particles_set))
+            self.assertEqual(len(code.multiples), 1)
+            self.assertEqual(len(code.particles), 8)
+            self.assertEqual(len(code.singles), 7)
+            self.assertEqual(len(code.binaries), 1)
+            self.assertEqual(len(code.singles_in_binaries), 2)
+            self.assertEqual(len(code.components_of_multiples), 3)
+            self.assertEqual(id(code.components_of_multiples), id(code.multiples[0].components[0].particles_set))
