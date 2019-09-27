@@ -15,13 +15,7 @@
 AMUSE_DIR?=../..
 -include ${AMUSE_DIR}/config.mk
 
-#
-# change this variable to point to your nbconvert directory
-#
-NBCONVERTDIR=/net/biesbosch/data2/vanelteren/develop/python/nbconvert
-#NBCONVERTDIR=$(HOME)/amuse/nbconvert
-
-NBCONVERT=$(PYTHON) $(NBCONVERTDIR)/nbconvert.py
+NBCONVERT=jupyter nbconvert
 
 PYTHONPATH=$(AMUSE_DIR)/src
 
@@ -35,7 +29,7 @@ PAGES=\
 	07-Channels.ipynb\
 	08-Grids.ipynb\
 
-RSTPAGES=$(PAGES:.ipynb=.txt)
+RSTPAGES=$(PAGES:.ipynb=.rst)
 RSTFILES=$(PAGES:.ipynb=_files)
 
 all: $(RSTPAGES)
@@ -52,4 +46,4 @@ clean:
 	cat "$<" >> "$@"
 
 notebook:
-	ipython notebook --pylab inline
+	jupyter notebook --pylab inline
