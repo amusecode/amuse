@@ -1,7 +1,7 @@
 import numpy
 import struct
 
-from interface import Kepler
+from .interface import Kepler
 
 from amuse.units import nbody_system
 from amuse.units import units,constants
@@ -68,13 +68,13 @@ def test_kepler(N=10000, tend=1.| units.yr,method=0):
 
 
 #  print code.orbiters.x[0]
-  print orbital_elements_from_binary(code.particles[0:2],constants.G)
+  print(orbital_elements_from_binary(code.particles[0:2],constants.G))
 
   t1=time.time()
   code.evolve_model(tend)
   t2=time.time()
 
-  print orbital_elements_from_binary(code.particles[0:2],constants.G)
+  print(orbital_elements_from_binary(code.particles[0:2],constants.G))
 #  print code.orbiters.x[0]
 
 
@@ -86,17 +86,17 @@ def test_kepler(N=10000, tend=1.| units.yr,method=0):
   deps=abs(eps-eps0)/eps0
 
   dev=numpy.where(da > 0.00001)[0]
-  print len(dev)
+  print(len(dev))
 
-  print a0[dev].value_in(units.AU)
-  print eps0[dev]
+  print(a0[dev].value_in(units.AU))
+  print(eps0[dev])
 
 #  pyplot.plot(a0[dev].value_in(units.AU),eps0[dev],"ro")
 #  pyplot.plot(a[dev].value_in(units.AU),eps[dev],"g+")
 
-  print "max da,deps:",da.max(), deps.max()
+  print("max da,deps:",da.max(), deps.max())
 
-  print "time:",t2-t1
+  print("time:",t2-t1)
 
 #  pyplot.show()
 
@@ -113,7 +113,7 @@ def test_kepler_almost_parabolic( tend=1,method=0):
   eccentricity=0.9999999
   p=2*numpy.pi*(semimajor_axis**3/nbody_system.G/mass1)**0.5
   tend=tend*p
-  print tend
+  print(tend)
   parts=new_binary_from_orbital_elements(
           mass1,
           mass2,
@@ -128,15 +128,15 @@ def test_kepler_almost_parabolic( tend=1,method=0):
   a0,eps0=elements(mass1,code.orbiters.x,code.orbiters.y,code.orbiters.z,
                      code.orbiters.vx,code.orbiters.vy,code.orbiters.vz,G=nbody_system.G)
 
-  print orbital_elements_from_binary(code.particles[0:2])
+  print(orbital_elements_from_binary(code.particles[0:2]))
 
   t1=time.time()
   code.evolve_model(tend)
   t2=time.time()
 
-  print orbital_elements_from_binary(code.particles[0:2])
+  print(orbital_elements_from_binary(code.particles[0:2]))
 
-  print code.orbiters.position
+  print(code.orbiters.position)
 
   a,eps=elements(mass1,code.orbiters.x,code.orbiters.y,code.orbiters.z,
                      code.orbiters.vx,code.orbiters.vy,code.orbiters.vz,G=nbody_system.G)
@@ -144,8 +144,8 @@ def test_kepler_almost_parabolic( tend=1,method=0):
   da=abs((a-a0)/a0)
   deps=abs(eps-eps0)/eps0
 
-  print da,deps
-  print "time:",t2-t1
+  print(da,deps)
+  print("time:",t2-t1)
 
 def test_kepler_parabolic( tend=1,method=0, sign=+1):
   code=Kepler(redirection="none")
@@ -171,7 +171,7 @@ def test_kepler_parabolic( tend=1,method=0, sign=+1):
   comet.vz=0. | nbody_system.speed
 
   tend=tend | nbody_system.time
-  print tend
+  print(tend)
 
   code.central_particle.add_particle(sun)
   code.orbiters.add_particle(comet)
@@ -179,15 +179,15 @@ def test_kepler_parabolic( tend=1,method=0, sign=+1):
   a0,eps0=elements(sun.mass,code.orbiters.x,code.orbiters.y,code.orbiters.z,
                      code.orbiters.vx,code.orbiters.vy,code.orbiters.vz,G=nbody_system.G)
 
-  print orbital_elements_from_binary(code.particles[0:2])
+  print(orbital_elements_from_binary(code.particles[0:2]))
 
   t1=time.time()
   code.evolve_model(tend)
   t2=time.time()
 
-  print orbital_elements_from_binary(code.particles[0:2])
+  print(orbital_elements_from_binary(code.particles[0:2]))
 
-  print code.orbiters.position
+  print(code.orbiters.position)
 
   a,eps=elements(sun.mass,code.orbiters.x,code.orbiters.y,code.orbiters.z,
                      code.orbiters.vx,code.orbiters.vy,code.orbiters.vz,G=nbody_system.G)
@@ -195,8 +195,8 @@ def test_kepler_parabolic( tend=1,method=0, sign=+1):
   da=abs((a-a0)/a0)
   deps=abs(eps-eps0)/eps0
 
-  print da,deps
-  print "time:",t2-t1
+  print(da,deps)
+  print("time:",t2-t1)
 
 def crash_test(method=1):
   code=Kepler(redirection="none")
@@ -232,7 +232,7 @@ def crash_test(method=1):
   comet.vz=0. | nbody_system.speed
 
   tend=(smudt/smu) | nbody_system.time
-  print tend
+  print(tend)
 
   code.central_particle.add_particle(sun)
   code.orbiters.add_particle(comet)
@@ -240,15 +240,15 @@ def crash_test(method=1):
   a0,eps0=elements(sun.mass,code.orbiters.x,code.orbiters.y,code.orbiters.z,
                      code.orbiters.vx,code.orbiters.vy,code.orbiters.vz,G=nbody_system.G)
 
-  print orbital_elements_from_binary(code.particles[0:2])
+  print(orbital_elements_from_binary(code.particles[0:2]))
 
   t1=time.time()
   code.evolve_model(tend)
   t2=time.time()
 
-  print orbital_elements_from_binary(code.particles[0:2])
+  print(orbital_elements_from_binary(code.particles[0:2]))
 
-  print code.orbiters.position
+  print(code.orbiters.position)
 
   a,eps=elements(sun.mass,code.orbiters.x,code.orbiters.y,code.orbiters.z,
                      code.orbiters.vx,code.orbiters.vy,code.orbiters.vz,G=nbody_system.G)
@@ -256,8 +256,8 @@ def crash_test(method=1):
   da=abs((a-a0)/a0)
   deps=abs(eps-eps0)/eps0
 
-  print da,deps
-  print "time:",t2-t1
+  print(da,deps)
+  print("time:",t2-t1)
 
 
 def crash_test2(method=1):
@@ -303,7 +303,7 @@ def crash_test2(method=1):
   comet.vz=vel3 | nbody_system.speed
 
   tend=dt | nbody_system.time
-  print tend,mu
+  print(tend,mu)
 
   code.central_particle.add_particle(sun)
   code.orbiters.add_particle(comet)
@@ -311,15 +311,15 @@ def crash_test2(method=1):
   a0,eps0=elements(sun.mass,code.orbiters.x,code.orbiters.y,code.orbiters.z,
                      code.orbiters.vx,code.orbiters.vy,code.orbiters.vz,G=nbody_system.G)
 
-  print orbital_elements_from_binary(code.particles[0:2])
+  print(orbital_elements_from_binary(code.particles[0:2]))
 
   t1=time.time()
   code.evolve_model(tend)
   t2=time.time()
 
-  print orbital_elements_from_binary(code.particles[0:2])
+  print(orbital_elements_from_binary(code.particles[0:2]))
 
-  print code.orbiters.position
+  print(code.orbiters.position)
 
   a,eps=elements(sun.mass,code.orbiters.x,code.orbiters.y,code.orbiters.z,
                      code.orbiters.vx,code.orbiters.vy,code.orbiters.vz,G=nbody_system.G)
@@ -327,8 +327,8 @@ def crash_test2(method=1):
   da=abs((a-a0)/a0)
   deps=abs(eps-eps0)/eps0
 
-  print da,deps
-  print "time:",t2-t1
+  print(da,deps)
+  print("time:",t2-t1)
 
 def test_softening(method=1):
   code=Kepler(redirection="none")
@@ -364,7 +364,7 @@ def test_softening(method=1):
   comet.vz=vel3 | nbody_system.speed
 
   tend=dt | nbody_system.time
-  print tend,mu
+  print(tend,mu)
 
   code.central_particle.add_particle(sun)
   code.orbiters.add_particle(comet)
@@ -374,15 +374,15 @@ def test_softening(method=1):
   a0,eps0=elements(sun.mass,code.orbiters.x,code.orbiters.y,code.orbiters.z,
                      code.orbiters.vx,code.orbiters.vy,code.orbiters.vz,G=nbody_system.G)
 
-  print orbital_elements_from_binary(code.particles[0:2])
+  print(orbital_elements_from_binary(code.particles[0:2]))
 
   t1=time.time()
   code.evolve_model(tend)
   t2=time.time()
 
-  print orbital_elements_from_binary(code.particles[0:2])
+  print(orbital_elements_from_binary(code.particles[0:2]))
 
-  print code.orbiters.position
+  print(code.orbiters.position)
 
   a,eps=elements(sun.mass,code.orbiters.x,code.orbiters.y,code.orbiters.z,
                      code.orbiters.vx,code.orbiters.vy,code.orbiters.vz,G=nbody_system.G)
@@ -390,8 +390,8 @@ def test_softening(method=1):
   da=abs((a-a0)/a0)
   deps=abs(eps-eps0)/eps0
 
-  print da,deps
-  print "time:",t2-t1
+  print(da,deps)
+  print("time:",t2-t1)
 
 def t_linear(tend=1,N=100,method=0):
   code=Kepler(redirection="none")
@@ -408,8 +408,8 @@ def t_linear(tend=1,N=100,method=0):
 
   p=2*numpy.pi*(semimajor_axis**3/nbody_system.G/mass)**0.5
 
-  print semimajor_axis
-  print p
+  print(semimajor_axis)
+  print(p)
 
   tend=tend*p
   dt=p/N
@@ -438,7 +438,7 @@ def t_linear(tend=1,N=100,method=0):
   a0,eps0=elements(sun.mass,code.orbiters.x,code.orbiters.y,code.orbiters.z,
                      code.orbiters.vx,code.orbiters.vy,code.orbiters.vz,G=nbody_system.G)
 
-  print orbital_elements_from_binary(code.particles[0:2])
+  print(orbital_elements_from_binary(code.particles[0:2]))
 
   #pyplot.ion()
   #f=pyplot.figure(figsize=(8,6))
@@ -449,7 +449,7 @@ def t_linear(tend=1,N=100,method=0):
   xs=[]
   while tnow<tend:
     tnow+=dt
-    print tnow,int(tnow/dt)
+    print(tnow,int(tnow/dt))
     code.evolve_model(tnow)
     #f.clf()
     time.append(tnow/tend)
@@ -459,9 +459,9 @@ def t_linear(tend=1,N=100,method=0):
   #pyplot.ylim(-1.1,3.1)
   #pyplot.draw()
 
-  print orbital_elements_from_binary(code.particles[0:2])
+  print(orbital_elements_from_binary(code.particles[0:2]))
 
-  print code.orbiters.position
+  print(code.orbiters.position)
 
   a,eps=elements(sun.mass,code.orbiters.x,code.orbiters.y,code.orbiters.z,
                      code.orbiters.vx,code.orbiters.vy,code.orbiters.vz,G=nbody_system.G)
@@ -469,65 +469,65 @@ def t_linear(tend=1,N=100,method=0):
   da=abs((a-a0)/a0)
   deps=abs(eps-eps0)/eps0
 
-  print da,deps
-  raw_input()
+  print(da,deps)
+  input()
 
 
 if __name__=="__main__":
 
   for method in [1,0]:
       t_linear(N=100,method=method)
-      print
+      print()
 
-  print "-"*10
-  print
+  print("-"*10)
+  print()
 
 
   tend = 1.0
 
   for method in [1,0]:
       crash_test(method=method)
-      print
+      print()
 
-  print "-"*10
-  print
+  print("-"*10)
+  print()
 
   for method in [1,0]:
       crash_test2(method=method)
-      print
+      print()
 
-  print "-"*10
-  print
+  print("-"*10)
+  print()
 
   for method in [1,0]:
     test_kepler_parabolic(tend=tend,method=method, sign=+1)
-    print
+    print()
 
-  print "-"*10
-  print
+  print("-"*10)
+  print()
 
   for method in [1,0]:
     test_kepler_parabolic(tend=tend,method=method, sign=-1)
-    print
+    print()
 
-  print "-"*10
-  print
+  print("-"*10)
+  print()
 
   for method in [1,0]:
     test_kepler_almost_parabolic(tend=tend,method=method)
-    print
+    print()
 
-  print "-"*10
-  print
+  print("-"*10)
+  print()
 
   for method in [1,0]:
     test_kepler(N=10000,tend=tend | units.yr,method=method)
-    print
+    print()
 
-  print "-"*10
-  print
+  print("-"*10)
+  print()
 
   for method in [0,]:
       test_softening(method=method)
-      print
+      print()
 

@@ -32,7 +32,7 @@ class PikachuInterface(CodeInterface, GravitationalDynamicsInterface, Literature
         elif mode == self.MODE_LARGE_N:
             return 'pikachu_worker_large_n'
         else:
-            print "Warning: unknown mode: '{0}' - using default ('{1}').".format(mode, self.MODE_NORMAL)
+            print("Warning: unknown mode: '{0}' - using default ('{1}').".format(mode, self.MODE_NORMAL))
             return 'pikachu_worker'
     
     @option(type="string", sections=('data',))

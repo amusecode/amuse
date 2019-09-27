@@ -8,7 +8,7 @@ def read_log(filename):
     line = line.split()			# distinguish columns
     data.append(line)  			# put data in container
   infile.close()			# close file
-  data = zip(*data)			# inverse rows and columns
+  data = list(zip(*data))			# inverse rows and columns
   return data[2]			# return data
 
 def read_out(filename):
@@ -59,9 +59,9 @@ def read_xy(filename):
 
   infile.close()			# close file
 
-  data1 = zip(*data1)
-  data2 = zip(*data2)
-  data3 = zip(*data3)
+  data1 = list(zip(*data1))
+  data2 = list(zip(*data2))
+  data3 = list(zip(*data3))
 
   x1 = data1[1]
   y1 = data1[2]

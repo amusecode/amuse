@@ -45,31 +45,31 @@ def print_log(pre, time, gravity, E0 = 0.0 | nbody_system.energy,
         cmx,cmy,cmz = dcen
         lagr,mf = pa.LagrangianRadii(gravity.particles, cm=dcen)  # no units!
 
-    print ''
-    print pre+"time=", time.number
-    print pre+"cpu=", cpu-cpu0
-    print pre+"wall=", wall-wall0
-    print pre+"Ntot=", N
-    print pre+"mass=", M.number
-    print pre+"Etot=", E.number
-    print pre+"dE/E=", E/E0 - 1
-    print pre+"Rvir=", Rvir.number
-    print pre+"Qvir=", Q
+    print('')
+    print(pre+"time=", time.number)
+    print(pre+"cpu=", cpu-cpu0)
+    print(pre+"wall=", wall-wall0)
+    print(pre+"Ntot=", N)
+    print(pre+"mass=", M.number)
+    print(pre+"Etot=", E.number)
+    print(pre+"dE/E=", E/E0 - 1)
+    print(pre+"Rvir=", Rvir.number)
+    print(pre+"Qvir=", Q)
     cmx,cmy,cmz = com
-    print pre+"cmpos[3]= %.8f %.8f %.8f" % (cmx.number, cmy.number, cmz.number)
+    print(pre+"cmpos[3]= %.8f %.8f %.8f" % (cmx.number, cmy.number, cmz.number))
     cmx,cmy,cmz = comv
-    print pre+"cmvel[3]= %.8f %.8f %.8f" % (cmx.number, cmy.number, cmz.number)
+    print(pre+"cmvel[3]= %.8f %.8f %.8f" % (cmx.number, cmy.number, cmz.number))
     if N >= 100:
         cmx,cmy,cmz = dcen
-        print pre+"dcpos[3]= %.8f %.8f %.8f" \
-            		% (cmx.number, cmy.number, cmz.number)
-        print pre+"Rcore=", rcore.number
-        print pre+"Mlagr[9]=",
-        for m in mf: print "%.4f" % (m),
-        print ''
-        print pre+"Rlagr[9]=",
-        for r in lagr.number: print "%.8f" % (r),
-        print ''
+        print(pre+"dcpos[3]= %.8f %.8f %.8f" \
+            		% (cmx.number, cmy.number, cmz.number))
+        print(pre+"Rcore=", rcore.number)
+        print(pre+"Mlagr[9]=", end=' ')
+        for m in mf: print("%.4f" % (m), end=' ')
+        print('')
+        print(pre+"Rlagr[9]=", end=' ')
+        for r in lagr.number: print("%.8f" % (r), end=' ')
+        print('')
 
     sys.stdout.flush()
     return E,cpu,wall
@@ -82,13 +82,13 @@ def run_ph4(infile = None, number_of_stars = 40,
              softening_length = -1 | nbody_system.length,
              manage_encounters = 1):
 
-    if infile != None: print "input file =", infile
-    print "end_time =", end_time.number
-    print "delta_t =", delta_t.number
-    print "n_workers =", n_workers
-    print "use_gpu =", use_gpu
-    print "manage_encounters =", manage_encounters
-    print "initializing the gravity module"
+    if infile != None: print("input file =", infile)
+    print("end_time =", end_time.number)
+    print("delta_t =", delta_t.number)
+    print("n_workers =", n_workers)
+    print("use_gpu =", use_gpu)
+    print("manage_encounters =", manage_encounters)
+    print("initializing the gravity module")
     sys.stdout.flush()
 
     # Note that there are actually really three GPU options to test:
@@ -107,8 +107,7 @@ def run_ph4(infile = None, number_of_stars = 40,
             #              debugger='valgrind')
             gpu = 1
         except Exception as ex:
-            print \
-                '*** GPU worker code not found. Reverting to non-GPU code. ***'
+            print('*** GPU worker code not found. Reverting to non-GPU code. ***')
             gpu = 0
 
     if gpu == 0:
@@ -128,23 +127,23 @@ def run_ph4(infile = None, number_of_stars = 40,
 
     #print "4"; sys.stdout.flush()
 
-    print "making a Plummer model"
+    print("making a Plummer model")
     stars = new_plummer_model(number_of_stars)
 
     id = numpy.arange(number_of_stars)
     stars.id = id+1
 
-    print "setting particle masses and radii"
+    print("setting particle masses and radii")
     stars.mass = (1.0 / number_of_stars) | nbody_system.mass
     if 0:
         scaled_mass = new_salpeter_mass_distribution_nbody(number_of_stars) 
         stars.mass = scaled_mass
     stars.radius = 0.0 | nbody_system.length
 
-    print "centering stars"
+    print("centering stars")
     stars.move_to_center()
     if 0:
-        print "scaling stars to virial equilibrium"
+        print("scaling stars to virial equilibrium")
         stars.scale_to_standard(smoothing_length_squared
                                 = gravity.parameters.epsilon_squared)
 
@@ -166,14 +165,14 @@ def run_ph4(infile = None, number_of_stars = 40,
     gravity.parameters.use_gpu = use_gpu
     gravity.parameters.manage_encounters = manage_encounters
 
-    print "adding particles"
+    print("adding particles")
     # print stars
     sys.stdout.flush()
     gravity.particles.add_particles(stars)
     gravity.commit_particles()
 
-    print ''
-    print "number_of_stars =", number_of_stars
+    print('')
+    print("number_of_stars =", number_of_stars)
     sys.stdout.flush()
 
     E0,cpu0,wall0 = print_log('', time, gravity)
@@ -197,7 +196,7 @@ def run_ph4(infile = None, number_of_stars = 40,
     for t in times:
         time = t|nbody_system.time
 
-        print "\nEvolving to time", time
+        print("\nEvolving to time", time)
         sys.stdout.flush()
 
         gravity.parameters.block_steps = 0
@@ -237,41 +236,41 @@ def run_ph4(infile = None, number_of_stars = 40,
         if stopping_condition.is_set():
             star1 = stopping_condition.particles(0)[0]
             star2 = stopping_condition.particles(1)[0]
-            print '\nstopping condition set at time', \
-                gravity.get_time().number,'for:\n'
-            print star1
-            print ''
-            print star2
-            print ''
+            print('\nstopping condition set at time', \
+                gravity.get_time().number,'for:\n')
+            print(star1)
+            print('')
+            print(star2)
+            print('')
             raise Exception("no encounter handling")
 
         if len(stars) != ls:
             if 0:
-                print "stars:"
+                print("stars:")
                 for s in stars:
-                    print " ", s.id.number, s.mass.number, \
-			       s.x.number, s.y.number, s.z.number
+                    print(" ", s.id.number, s.mass.number, \
+			       s.x.number, s.y.number, s.z.number)
             else:
-                print "number of stars =", len(stars)
+                print("number of stars =", len(stars))
             sys.stdout.flush()
 
         print_log('', time, gravity, E0, cpu0, wall0)
 
-        print '@@@'
-        print '@@@ t =', time.number, ' dt =', dt
-        print '@@@ sync_time =', gravity.parameters.sync_time.number
-        print '@@@ dcpu/dt =', dcpu/dt
+        print('@@@')
+        print('@@@ t =', time.number, ' dt =', dt)
+        print('@@@ sync_time =', gravity.parameters.sync_time.number)
+        print('@@@ dcpu/dt =', dcpu/dt)
         nb = gravity.parameters.block_steps
         ns = gravity.parameters.total_steps
-        print '@@@ d(block_steps) =', nb, ' #/dt =', nb/dt
-        print '@@@ d(total steps) =', ns, ' #/dt =', ns/dt
+        print('@@@ d(block_steps) =', nb, ' #/dt =', nb/dt)
+        print('@@@ d(total steps) =', ns, ' #/dt =', ns/dt)
 
         #print stars
         sys.stdout.flush()
 
     #-----------------------------------------------------------------
 
-    print ''
+    print('')
     gravity.stop()
 
 if __name__ == '__main__':
@@ -291,8 +290,8 @@ if __name__ == '__main__':
 
     try:
         opts, args = getopt.getopt(sys.argv[1:], "a:c:d:e:f:gGi:n:s:t:w:")
-    except getopt.GetoptError, err:
-        print str(err)
+    except getopt.GetoptError as err:
+        print(str(err))
         sys.exit(1)
 
     for o, a in opts:
@@ -322,13 +321,13 @@ if __name__ == '__main__':
         elif o == "-w":
             n_workers = int(a)
         else:
-            print "unexpected argument", o
+            print("unexpected argument", o)
 
     if random_seed <= 0:
         numpy.random.seed()
         random_seed = numpy.random.randint(1, pow(2,31)-1)
     numpy.random.seed(random_seed)
-    print "random seed =", random_seed
+    print("random seed =", random_seed)
 
 
     #os.system('env')

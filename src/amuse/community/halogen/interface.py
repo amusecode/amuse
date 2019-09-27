@@ -544,7 +544,7 @@ class Halogen(CommonCode):
         number_of_updated_particles = self.get_number_of_particles_updated()
         if number_of_updated_particles:
             self.particles._private.attribute_storage._add_indices(
-                range(number_of_updated_particles)
+                list(range(number_of_updated_particles))
             )
     
     def clear_particle_set(self):

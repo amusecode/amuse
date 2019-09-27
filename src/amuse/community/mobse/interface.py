@@ -214,7 +214,7 @@ class MOBSEStars(Particles):
             all_attributes.append("initial_mass")
             all_values.append(values[index_of_mass_attibute] * 1.0)
         
-        for attribute, default_value in mapping_from_attribute_to_default_value.iteritems():
+        for attribute, default_value in mapping_from_attribute_to_default_value.items():
             if not attribute in given_attributes:
                 all_attributes.append(attribute)
                 all_values.append(default_value.as_vector_with_length(len(keys)))
@@ -260,7 +260,7 @@ class MOBSEBinaries(Particles):
         
         
         
-        for attribute, default_value in mapping_from_attribute_to_default_value.iteritems():
+        for attribute, default_value in mapping_from_attribute_to_default_value.items():
             if not attribute in given_attributes:
                 all_attributes.append(attribute)
                 all_values.append(default_value.as_vector_with_length(len(keys)))

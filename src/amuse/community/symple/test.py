@@ -1,5 +1,5 @@
 from amuse.lab import *
-from interface import symple
+from .interface import symple
 from matplotlib import pyplot as plt
 import sys, math
 
@@ -35,10 +35,10 @@ mu = p[0].mass*p[1].mass/M
 ee = E0/mu
 h = L/mu
 e = math.sqrt(1+2*ee*h**2/GM**2)
-print 'E =', E0
-print 'a =', a
-print 'P =', P
-print 'e =', e
+print('E =', E0)
+print('a =', a)
+print('P =', P)
+print('e =', e)
 
 # Include mass loss.
 
@@ -51,7 +51,7 @@ g.parameters.timestep = P/128		# power of 2 seems to work best
 #g.parameters.timestep_parameter = 0.2	# timestep and timestep_parameter are
 					# mutually exclusive -- no longer
                                         # symplectic if timestep_parameter > 0
-print g.parameters
+print(g.parameters)
 
 time = 0.|nbody_system.time
 dt = P/64
@@ -71,7 +71,7 @@ while time < t_end:
     dE = E1/E0 - 1
     e.append(dE)
     
-print 'dE/E =', dE
+print('dE/E =', dE)
 
 if 0:
     plt.figure(figsize=(6,6))
