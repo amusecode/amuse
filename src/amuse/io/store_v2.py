@@ -1037,7 +1037,7 @@ class StoreHDF(object):
         
     def load_container(self, container_group):
         number_of_saved_containers= len(container_group)
-        print number_of_saved_containers, container_group
+        #~ print number_of_saved_containers, container_group
         all_containers = [None] * number_of_saved_containers
         for group_index in container_group.keys():
             group = container_group[group_index]
