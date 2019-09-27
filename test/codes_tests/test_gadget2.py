@@ -38,116 +38,116 @@ class TestGadget2Interface(TestWithMPI):
 
     def test1(self):
         instance = Gadget2Interface(**default_options)
-        self.assertEquals(0, instance.initialize_code())
-        self.assertEquals(0, instance.set_gadget_output_directory(instance.get_output_directory()))
-        self.assertEquals(0, instance.commit_parameters())
-        self.assertEquals(0, instance.cleanup_code())
+        self.assertEqual(0, instance.initialize_code())
+        self.assertEqual(0, instance.set_gadget_output_directory(instance.get_output_directory()))
+        self.assertEqual(0, instance.commit_parameters())
+        self.assertEqual(0, instance.cleanup_code())
         instance.stop()
 
     def test2(self):
         instance = Gadget2Interface(**default_options)
-        self.assertEquals(0, instance.initialize_code())
-        self.assertEquals(0, instance.set_gadget_output_directory(instance.get_output_directory()))
-        self.assertEquals(0, instance.commit_parameters())
-        self.assertEquals([1.989000e43, 0], instance.get_unit_mass().values())
-        self.assertEquals([3.085678e21, 0], instance.get_unit_length().values())
-        self.assertEquals([3.085678e16, 0], instance.get_unit_time().values())
-        self.assertEquals(0, instance.cleanup_code())
+        self.assertEqual(0, instance.initialize_code())
+        self.assertEqual(0, instance.set_gadget_output_directory(instance.get_output_directory()))
+        self.assertEqual(0, instance.commit_parameters())
+        self.assertEqual([1.989000e43, 0], list(instance.get_unit_mass().values()))
+        self.assertEqual([3.085678e21, 0], list(instance.get_unit_length().values()))
+        self.assertEqual([3.085678e16, 0], list(instance.get_unit_time().values()))
+        self.assertEqual(0, instance.cleanup_code())
         instance.stop()
 
     def test3(self):
         instance = Gadget2Interface(**few_particles_default_options)
-        self.assertEquals(0, instance.initialize_code())
-        self.assertEquals(0, instance.set_gadget_output_directory(instance.get_output_directory()))
-        self.assertEquals(0, instance.commit_parameters())
-        self.assertEquals([1, 0], instance.new_dm_particle(0.01,  1, 0, 0,  0, 1, 0).values())
-        self.assertEquals([2, 0], instance.new_dm_particle(0.01, -1, 0, 0,  0,-1, 0).values())
-        self.assertEquals(-1, instance.get_index_of_first_particle()['__result'])
-        self.assertEquals(0, instance.commit_particles())
-        self.assertEquals([1, 0], instance.get_index_of_first_particle().values())
-        self.assertEquals([2, 1], instance.get_index_of_next_particle(1).values())
-        self.assertEquals(-1, instance.get_index_of_next_particle(2)['__result'])
-        self.assertEquals(0, instance.evolve_model(0.01))
-        self.assertEquals(0, instance.cleanup_code())
+        self.assertEqual(0, instance.initialize_code())
+        self.assertEqual(0, instance.set_gadget_output_directory(instance.get_output_directory()))
+        self.assertEqual(0, instance.commit_parameters())
+        self.assertEqual([1, 0], list(instance.new_dm_particle(0.01,  1, 0, 0,  0, 1, 0).values()))
+        self.assertEqual([2, 0], list(instance.new_dm_particle(0.01, -1, 0, 0,  0,-1, 0).values()))
+        self.assertEqual(-1, instance.get_index_of_first_particle()['__result'])
+        self.assertEqual(0, instance.commit_particles())
+        self.assertEqual([1, 0], list(instance.get_index_of_first_particle().values()))
+        self.assertEqual([2, 1], list(instance.get_index_of_next_particle(1).values()))
+        self.assertEqual(-1, instance.get_index_of_next_particle(2)['__result'])
+        self.assertEqual(0, instance.evolve_model(0.01))
+        self.assertEqual(0, instance.cleanup_code())
         instance.stop()
 
     def test3a(self):
         instance = Gadget2Interface(**few_particles_default_options)
-        self.assertEquals(0, instance.initialize_code())
-        self.assertEquals(0, instance.set_gadget_output_directory(instance.get_output_directory()))
+        self.assertEqual(0, instance.initialize_code())
+        self.assertEqual(0, instance.set_gadget_output_directory(instance.get_output_directory()))
         #cgs
         instance.set_unit_mass(0.001)
         instance.set_unit_length(1.0)
         instance.set_unit_time(122404.614048)
-        self.assertEquals(0, instance.commit_parameters())
-        self.assertEquals([1, 0], instance.new_dm_particle(1.,  1, 0, 0,  0, 0, 0).values())
-        self.assertEquals([2, 0], instance.new_dm_particle(1., -1, 0, 0,  0, 0, 0).values())
-        self.assertEquals(0, instance.commit_particles())
+        self.assertEqual(0, instance.commit_parameters())
+        self.assertEqual([1, 0], list(instance.new_dm_particle(1.,  1, 0, 0,  0, 0, 0).values()))
+        self.assertEqual([2, 0], list(instance.new_dm_particle(1., -1, 0, 0,  0, 0, 0).values()))
+        self.assertEqual(0, instance.commit_particles())
         if testing_isotherm_no_gravity:
             self.assertAlmostEqual(0.000 , instance.get_potential(1)['Potential'], places=1)
         else:
             self.assertAlmostEqual(-0.500 , instance.get_potential(1)['Potential'], places=1)
-        self.assertEquals(0, instance.cleanup_code())
+        self.assertEqual(0, instance.cleanup_code())
         instance.stop()
 
     def test4(self):
         instance = Gadget2Interface(**few_particles_default_options)
-        self.assertEquals(0, instance.initialize_code())
-        self.assertEquals(0, instance.set_gadget_output_directory(instance.get_output_directory()))
-        self.assertEquals(0, instance.commit_parameters())
-        self.assertEquals([1, 0], instance.new_dm_particle(0.01,  1, 0, 0,  0, 1, 0).values())
-        self.assertEquals([2, 0], instance.new_dm_particle(0.02, -1, 0, 0,  0,-1, 0).values())
-        self.assertEquals(-3, instance.get_mass(1)['__result'])
-        self.assertEquals(0, instance.commit_particles())
+        self.assertEqual(0, instance.initialize_code())
+        self.assertEqual(0, instance.set_gadget_output_directory(instance.get_output_directory()))
+        self.assertEqual(0, instance.commit_parameters())
+        self.assertEqual([1, 0], list(instance.new_dm_particle(0.01,  1, 0, 0,  0, 1, 0).values()))
+        self.assertEqual([2, 0], list(instance.new_dm_particle(0.02, -1, 0, 0,  0,-1, 0).values()))
+        self.assertEqual(-3, instance.get_mass(1)['__result'])
+        self.assertEqual(0, instance.commit_particles())
 
         mass, result = instance.get_mass(1)
-        self.assertAlmostEquals(0.01,mass)
-        self.assertEquals(0,result)
+        self.assertAlmostEqual(0.01,mass)
+        self.assertEqual(0,result)
         mass, result = instance.get_mass(2)
-        self.assertAlmostEquals(0.02,mass)
-        self.assertEquals(0,result)
-        self.assertEquals(-3, instance.get_mass(3)['__result'])
+        self.assertAlmostEqual(0.02,mass)
+        self.assertEqual(0,result)
+        self.assertEqual(-3, instance.get_mass(3)['__result'])
         for result,expected in zip(instance.get_position(1),[1,0,0, 0]):
-            self.assertAlmostEquals(result,expected)
+            self.assertAlmostEqual(result,expected)
         for result,expected in zip(instance.get_position(2),[-1,0,0, 0]):
-            self.assertAlmostEquals(result,expected)
+            self.assertAlmostEqual(result,expected)
         for result,expected in zip(instance.get_velocity(1),[0,1,0, 0]):
-            self.assertAlmostEquals(result,expected)
+            self.assertAlmostEqual(result,expected)
         for result,expected in zip(instance.get_velocity(2),[0,-1,0, 0]):
-            self.assertAlmostEquals(result,expected)
+            self.assertAlmostEqual(result,expected)
         
-        self.assertEquals(0, instance.set_state(1, 0.01, 1,2,3, 4,5,6))
-        self.assertEquals([0.01, 1.0,2.0,3.0, 4.0,5.0,6.0, 0], instance.get_state(1).values())
+        self.assertEqual(0, instance.set_state(1, 0.01, 1,2,3, 4,5,6))
+        self.assertEqual([0.01, 1.0,2.0,3.0, 4.0,5.0,6.0, 0], list(instance.get_state(1).values()))
 
-        self.assertEquals(0, instance.evolve_model(0.01))
+        self.assertEqual(0, instance.evolve_model(0.01))
         mass, result = instance.get_mass(1)
-        self.assertAlmostEquals(0.01,mass)
-        self.assertEquals(0,result)
-        self.assertEquals(0, instance.cleanup_code())
+        self.assertAlmostEqual(0.01,mass)
+        self.assertEqual(0,result)
+        self.assertEqual(0, instance.cleanup_code())
         instance.stop()
 
     def test5(self):
         instance = Gadget2Interface(**default_options)
-        self.assertEquals(0, instance.initialize_code())
-        self.assertEquals(0, instance.set_gadget_output_directory(instance.get_output_directory()))
-        self.assertEquals(0, instance.commit_parameters())
+        self.assertEqual(0, instance.initialize_code())
+        self.assertEqual(0, instance.set_gadget_output_directory(instance.get_output_directory()))
+        self.assertEqual(0, instance.commit_parameters())
         target_number_of_particles = 100
         evrard = MakeEvrardTest(target_number_of_particles)
         mass, x,y,z, vx,vy,vz, u = evrard.new_model()
         number_of_particles = len(mass)
         indices, results = instance.new_sph_particle(mass,x,y,z,vx,vy,vz,u)
-        self.assertEquals([0 for i in range(number_of_particles)], list(results))
-        self.assertEquals([i+1 for i in range(number_of_particles)], list(indices))
-        self.assertEquals(0, instance.commit_particles())
-        self.assertEquals(0, instance.evolve_model(0.00005))
-        self.assertEquals(0, instance.cleanup_code())
+        self.assertEqual([0 for i in range(number_of_particles)], list(results))
+        self.assertEqual([i+1 for i in range(number_of_particles)], list(indices))
+        self.assertEqual(0, instance.commit_particles())
+        self.assertEqual(0, instance.evolve_model(0.00005))
+        self.assertEqual(0, instance.cleanup_code())
         instance.stop()
 
     def test6(self):
         instance = Gadget2Interface(**default_options)
-        self.assertEquals(0, instance.initialize_code())
-        self.assertEquals(0, instance.set_gadget_output_directory(instance.get_output_directory()))
-        self.assertEquals(0, instance.commit_parameters())
+        self.assertEqual(0, instance.initialize_code())
+        self.assertEqual(0, instance.set_gadget_output_directory(instance.get_output_directory()))
+        self.assertEqual(0, instance.commit_parameters())
         target_number_of_particles = 100
         evrard = MakeEvrardTest(target_number_of_particles)
         mass, x,y,z, vx,vy,vz, u = evrard.new_model()
@@ -155,115 +155,115 @@ class TestGadget2Interface(TestWithMPI):
         first_half = number_of_particles//2
         indices, results = instance.new_sph_particle(mass[:first_half],x[:first_half],y[:first_half],z[:first_half],
             vx[:first_half],vy[:first_half],vz[:first_half],u[:first_half])
-        self.assertEquals([0 for i in range(first_half)], list(results))
-        self.assertEquals([i+1 for i in range(first_half)], list(indices))
-        self.assertEquals([number_of_particles/2+1, 0], instance.new_dm_particle(0.01,  1, 0, 0,  0, 1, 0).values())
-        self.assertEquals([number_of_particles/2+2, 0], instance.new_dm_particle(0.02, -1, 0, 0,  0,-1, 0).values())
+        self.assertEqual([0 for i in range(first_half)], list(results))
+        self.assertEqual([i+1 for i in range(first_half)], list(indices))
+        self.assertEqual([number_of_particles/2+1, 0], list(instance.new_dm_particle(0.01,  1, 0, 0,  0, 1, 0).values()))
+        self.assertEqual([number_of_particles/2+2, 0], list(instance.new_dm_particle(0.02, -1, 0, 0,  0,-1, 0).values()))
         indices, results = instance.new_sph_particle(mass[first_half:],x[first_half:],y[first_half:],z[first_half:],
             vx[first_half:],vy[first_half:],vz[first_half:],u[first_half:])
-        self.assertEquals([0 for i in range(number_of_particles-first_half)], list(results))
-        self.assertEquals([first_half+i+1+2 for i in range(number_of_particles-first_half)], list(indices))
-        self.assertEquals(0, instance.commit_particles())
+        self.assertEqual([0 for i in range(number_of_particles-first_half)], list(results))
+        self.assertEqual([first_half+i+1+2 for i in range(number_of_particles-first_half)], list(indices))
+        self.assertEqual(0, instance.commit_particles())
 
         mass_list = [x for sublist in [mass[:first_half], [0.01, 0.02], mass[first_half:]] for x in sublist]
-        first_index, result = instance.get_index_of_first_particle().values()
-        self.assertEquals([1, 0], [first_index, result])
+        first_index, result = list(instance.get_index_of_first_particle().values())
+        self.assertEqual([1, 0], [first_index, result])
         for i in range(first_index, number_of_particles+2):
             index, result = instance.get_index_of_next_particle(i)
-            self.assertEquals([i+1, 0 if (i < number_of_particles+1) else 1], [index, result])
+            self.assertEqual([i+1, 0 if (i < number_of_particles+1) else 1], [index, result])
             mass, result = instance.get_mass(index)
-            self.assertEquals(0, result)
-            self.assertAlmostEquals(mass_list[i], mass)
+            self.assertEqual(0, result)
+            self.assertAlmostEqual(mass_list[i], mass)
 
-        self.assertEquals(0, instance.evolve_model(0.0001))
-        self.assertEquals(0, instance.cleanup_code())
+        self.assertEqual(0, instance.evolve_model(0.0001))
+        self.assertEqual(0, instance.cleanup_code())
         instance.stop()
 
     def test7(self):
         instance = Gadget2Interface(**default_options)
-        self.assertEquals(0, instance.initialize_code())
-        self.assertEquals(0, instance.set_gadget_output_directory(instance.get_output_directory()))
-        self.assertEquals(0, instance.commit_parameters())
+        self.assertEqual(0, instance.initialize_code())
+        self.assertEqual(0, instance.set_gadget_output_directory(instance.get_output_directory()))
+        self.assertEqual(0, instance.commit_parameters())
         target_number_of_particles = 100
         evrard = MakeEvrardTest(target_number_of_particles)
         mass, x,y,z, vx,vy,vz, u = evrard.new_model()
         number_of_particles = len(mass)
         indices, results = instance.new_sph_particle(mass,x,y,z,vx,vy,vz,u)
-        self.assertEquals([0 for i in range(number_of_particles)], list(results))
-        self.assertEquals([i+1 for i in range(number_of_particles)], list(indices))
-        self.assertEquals([number_of_particles+1, 0], instance.new_dm_particle(0.01,  1, 0, 0,  0, 1, 0).values())
-        self.assertEquals([number_of_particles+2, 0], instance.new_dm_particle(0.02, -1, 0, 0,  0,-1, 0).values())
-        self.assertEquals(0, instance.commit_particles())
-        self.assertEquals(0, instance.evolve_model(0.001))
-        self.assertEquals(0, instance.delete_particle(number_of_particles-1))
-        self.assertEquals(0, instance.delete_particle(number_of_particles+1))
-        self.assertEquals(-3, instance.delete_particle(number_of_particles-1))
+        self.assertEqual([0 for i in range(number_of_particles)], list(results))
+        self.assertEqual([i+1 for i in range(number_of_particles)], list(indices))
+        self.assertEqual([number_of_particles+1, 0], list(instance.new_dm_particle(0.01,  1, 0, 0,  0, 1, 0).values()))
+        self.assertEqual([number_of_particles+2, 0], list(instance.new_dm_particle(0.02, -1, 0, 0,  0,-1, 0).values()))
+        self.assertEqual(0, instance.commit_particles())
+        self.assertEqual(0, instance.evolve_model(0.001))
+        self.assertEqual(0, instance.delete_particle(number_of_particles-1))
+        self.assertEqual(0, instance.delete_particle(number_of_particles+1))
+        self.assertEqual(-3, instance.delete_particle(number_of_particles-1))
         indices, results = instance.new_sph_particle(mass,x,y,z,vx,vy,vz,u)
-        self.assertEquals([2*number_of_particles+3, 0], instance.new_dm_particle(0.02, -1, 0, 0,  0,-1, 0).values())
-        self.assertEquals(0, instance.recommit_particles())
+        self.assertEqual([2*number_of_particles+3, 0], list(instance.new_dm_particle(0.02, -1, 0, 0,  0,-1, 0).values()))
+        self.assertEqual(0, instance.recommit_particles())
         mass_list = [x for sublist in [mass[:number_of_particles-2], [mass[number_of_particles-1], 0.02],
             mass, [0.02]] for x in sublist]
-        index_list = [x for sublist in [range(1,number_of_particles-1), [number_of_particles],
-            range(number_of_particles+2,2*number_of_particles+4)] for x in sublist]
-        index, result = instance.get_index_of_first_particle().values()
-        self.assertEquals([index_list[0], 0], [index, result])
+        index_list = [x for sublist in [list(range(1,number_of_particles-1)), [number_of_particles],
+            list(range(number_of_particles+2,2*number_of_particles+4))] for x in sublist]
+        index, result = list(instance.get_index_of_first_particle().values())
+        self.assertEqual([index_list[0], 0], [index, result])
         for i in range(1, 2*number_of_particles+1):
             index, result = instance.get_index_of_next_particle(index)
-            self.assertEquals([index_list[i], 0 if (i < 2*number_of_particles) else 1], [index, result])
+            self.assertEqual([index_list[i], 0 if (i < 2*number_of_particles) else 1], [index, result])
             mass, result = instance.get_mass(index)
-            self.assertEquals(0, result)
-            self.assertAlmostEquals(mass_list[i], mass)
+            self.assertEqual(0, result)
+            self.assertAlmostEqual(mass_list[i], mass)
 
-        self.assertEquals(0, instance.evolve_model(0.001))
-        self.assertEquals(0, instance.cleanup_code())
+        self.assertEqual(0, instance.evolve_model(0.001))
+        self.assertEqual(0, instance.cleanup_code())
         instance.stop()
     
     def test8(self):
         instance = Gadget2Interface(**few_particles_default_options)
-        self.assertEquals(0, instance.initialize_code())
-        self.assertEquals(0, instance.set_gadget_output_directory(instance.get_output_directory()))
-        self.assertEquals(0, instance.commit_parameters())
+        self.assertEqual(0, instance.initialize_code())
+        self.assertEqual(0, instance.set_gadget_output_directory(instance.get_output_directory()))
+        self.assertEqual(0, instance.commit_parameters())
         for i in range(1,10):
-            self.assertEquals([i, 0], instance.new_dm_particle(i*0.01,  i, -i, 0,  -i*10, i*10, 0).values())
-        self.assertEquals(0, instance.commit_particles())
+            self.assertEqual([i, 0], list(instance.new_dm_particle(i*0.01,  i, -i, 0,  -i*10, i*10, 0).values()))
+        self.assertEqual(0, instance.commit_particles())
         
         for i in range(1,10):
             mass, result = instance.get_mass(i)
-            self.assertAlmostEquals(0.01*i,mass)
-            self.assertEquals(0,result)
+            self.assertAlmostEqual(0.01*i,mass)
+            self.assertEqual(0,result)
             
             x, y, z, result = instance.get_position(i)
-            self.assertAlmostEquals(i, x)
-            self.assertAlmostEquals(-i, y)
-            self.assertAlmostEquals(0, z)
-            self.assertEquals(0,result)
+            self.assertAlmostEqual(i, x)
+            self.assertAlmostEqual(-i, y)
+            self.assertAlmostEqual(0, z)
+            self.assertEqual(0,result)
             
             vx, vy, vz, result = instance.get_velocity(i)
-            self.assertAlmostEquals(-i*10, vx)
-            self.assertAlmostEquals(i*10, vy)
-            self.assertAlmostEquals(0, vz)
-            self.assertEquals(0,result)
+            self.assertAlmostEqual(-i*10, vx)
+            self.assertAlmostEqual(i*10, vy)
+            self.assertAlmostEqual(0, vz)
+            self.assertEqual(0,result)
             
-            self.assertEquals(0, instance.set_mass(i, i*0.1))
+            self.assertEqual(0, instance.set_mass(i, i*0.1))
             mass, result = instance.get_mass(i)
-            self.assertAlmostEquals(0.1*i,mass)
-            self.assertEquals(0,result)
+            self.assertAlmostEqual(0.1*i,mass)
+            self.assertEqual(0,result)
             
-            self.assertEquals(0, instance.set_position(i, 2*i, -2*i, 0))
+            self.assertEqual(0, instance.set_position(i, 2*i, -2*i, 0))
             x, y, z, result = instance.get_position(i)
-            self.assertAlmostEquals(2*i, x)
-            self.assertAlmostEquals(-2*i, y)
-            self.assertAlmostEquals(0, z)
-            self.assertEquals(0,result)
+            self.assertAlmostEqual(2*i, x)
+            self.assertAlmostEqual(-2*i, y)
+            self.assertAlmostEqual(0, z)
+            self.assertEqual(0,result)
             
-            self.assertEquals(0, instance.set_velocity(i, -i*20, i*20, 0))
+            self.assertEqual(0, instance.set_velocity(i, -i*20, i*20, 0))
             vx, vy, vz, result = instance.get_velocity(i)
-            self.assertAlmostEquals(-i*20, vx)
-            self.assertAlmostEquals(i*20, vy)
-            self.assertAlmostEquals(0, vz)
-            self.assertEquals(0,result)
+            self.assertAlmostEqual(-i*20, vx)
+            self.assertAlmostEqual(i*20, vy)
+            self.assertAlmostEqual(0, vz)
+            self.assertEqual(0,result)
         
-        self.assertEquals(0, instance.cleanup_code())
+        self.assertEqual(0, instance.cleanup_code())
         instance.stop()
 
 
@@ -323,40 +323,40 @@ class TestGadget2Interface(TestWithMPI):
     
     def test10(self):
         instance = Gadget2Interface(**few_particles_default_options)
-        self.assertEquals(0, instance.initialize_code())
-        self.assertEquals(0, instance.set_gadget_output_directory(instance.get_output_directory()))
-        self.assertEquals(0, instance.commit_parameters())
+        self.assertEqual(0, instance.initialize_code())
+        self.assertEqual(0, instance.set_gadget_output_directory(instance.get_output_directory()))
+        self.assertEqual(0, instance.commit_parameters())
         
         indices_and_value = []
         for i in range(10):
             index, error = instance.new_sph_particle(0.1, i,0,0, 0,0,0, 0.0)
-            self.assertEquals(0, error)
+            self.assertEqual(0, error)
             indices_and_value.append((index, i))
             
         instance.commit_particles()
         for i, value in indices_and_value:
             x, y, z, error = instance.get_position(i)
-            self.assertEquals(0, error)
-            self.assertEquals(x, value)
-            self.assertEquals(y, 0)
-            self.assertEquals(z, 0)
+            self.assertEqual(0, error)
+            self.assertEqual(x, value)
+            self.assertEqual(y, 0)
+            self.assertEqual(z, 0)
         
         
-        self.assertEquals(0, error)
+        self.assertEqual(0, error)
         for i in range(10,20):
             index, error = instance.new_sph_particle(0.1, i,0,0, 0,0,0, 0.0)
-            self.assertEquals(0, error)
+            self.assertEqual(0, error)
             indices_and_value.append((index, i))
             
         error = instance.recommit_particles()
-        self.assertEquals(0, error)
+        self.assertEqual(0, error)
         
         for i, value in indices_and_value:
             x, y, z, error = instance.get_position(i)
-            self.assertEquals(0, error)
-            self.assertEquals(x, value)
-            self.assertEquals(y, 0)
-            self.assertEquals(z, 0)
+            self.assertEqual(0, error)
+            self.assertEqual(x, value)
+            self.assertEqual(y, 0)
+            self.assertEqual(z, 0)
             
         instance.stop()
     
@@ -375,7 +375,7 @@ class TestGadget2(TestWithMPI):
     three_particles_IC.mass = 1.0e10 | units.MSun
     
     def test1(self):
-        print "Testing Gadget initialization"
+        print("Testing Gadget initialization")
         instance = Gadget2(self.default_converter, **default_options)
         instance.initialize_code()
         self.assertTrue(os.path.join("gadget2","output") in str(instance.parameters.gadget_output_directory))
@@ -384,24 +384,24 @@ class TestGadget2(TestWithMPI):
         instance.stop()
 
     def test2(self):
-        print "Testing Gadget parameters"
+        print("Testing Gadget parameters")
         instance = Gadget2(self.default_converter, **default_options)
         instance.initialize_code()
-        self.assertAlmostEquals(instance.parameters.epsilon_squared, (0.01 | units.kpc)**2)
+        self.assertAlmostEqual(instance.parameters.epsilon_squared, (0.01 | units.kpc)**2)
         self.assertAlmostRelativeEquals(instance.parameters.code_mass_unit, self.UnitMass, 7)
         self.assertAlmostRelativeEquals(instance.parameters.code_time_unit, 3.085678e16 | units.s, 7)
         self.assertAlmostRelativeEquals(instance.parameters.code_length_unit, self.UnitLength, 7)
         instance.parameters.epsilon_squared = 0.01 | units.kpc**2
         instance.parameters.opening_angle = 0.4
         instance.commit_parameters()
-        self.assertAlmostEquals(instance.parameters.epsilon_squared, 0.01 | units.kpc**2)
-        self.assertAlmostEquals(instance.parameters.opening_angle, 0.4)
+        self.assertAlmostEqual(instance.parameters.epsilon_squared, 0.01 | units.kpc**2)
+        self.assertAlmostEqual(instance.parameters.opening_angle, 0.4)
         self.assertAlmostRelativeEquals(instance.parameters.code_mass_unit, 1.989e43 | units.g, 7)
         self.assertAlmostRelativeEquals(instance.parameters.code_time_unit, 3.085678e16 | units.s, 7)
         instance.stop()
 
     def test3(self):
-        print "Testing Gadget, 2 nbody particles"
+        print("Testing Gadget, 2 nbody particles")
         # No default_options since this test fails for (number_of_workers > 1):
         instance = Gadget2(self.default_converter, **few_particles_default_options)
         instance.initialize_code()
@@ -415,11 +415,11 @@ class TestGadget2(TestWithMPI):
 
         instance.dm_particles.add_particles(dark)
         instance.evolve_model(1.0 | units.Myr)
-        self.assertAlmostEquals(instance.model_time, 1.0 | units.Myr, 3)
+        self.assertAlmostEqual(instance.model_time, 1.0 | units.Myr, 3)
         instance.stop()
 
     def test4(self):
-        print "Testing Gadget, 100 nbody particles"
+        print("Testing Gadget, 100 nbody particles")
         instance = Gadget2(self.default_converter, **default_options)
         instance.initialize_code()
         convert_nbody = nbody_system.nbody_to_si(1.0e9 | units.MSun, 1.0 | units.kpc)
@@ -433,7 +433,7 @@ class TestGadget2(TestWithMPI):
         instance.stop()
 
     def test5(self):
-        print "Test 5: testing SPH particles"
+        print("Test 5: testing SPH particles")
         target_number_sph_particles = 100
         gas = new_evrard_gas_sphere(target_number_sph_particles, self.default_convert_nbody, seed = 1234)
         instance = Gadget2(self.default_converter, **default_options)
@@ -443,7 +443,7 @@ class TestGadget2(TestWithMPI):
         instance.stop()
 
     def test6(self):
-        print "Test 6: testing dark matter + SPH particles"
+        print("Test 6: testing dark matter + SPH particles")
         target_number_sph_particles = 100
         gas = new_evrard_gas_sphere(target_number_sph_particles, self.default_convert_nbody, seed = 1234)
 
@@ -459,7 +459,7 @@ class TestGadget2(TestWithMPI):
         instance.stop()
 
     def test7(self):
-        print "Testing more Gadget parameters"
+        print("Testing more Gadget parameters")
         instance = Gadget2(self.default_converter, **default_options)
         instance.initialize_code()
         
@@ -472,9 +472,9 @@ class TestGadget2(TestWithMPI):
             self.assertFalse(value is getattr(instance.parameters, par))
         
         for par, value in [('time_limit_cpu', 36000 | units.s), ('min_gas_temp', 0.0 | units.K)]:
-            self.assertEquals(value, getattr(instance.parameters, par))
+            self.assertEqual(value, getattr(instance.parameters, par))
             setattr(instance.parameters, par, 2 * value)
-            self.assertEquals(2 * value, getattr(instance.parameters, par))
+            self.assertEqual(2 * value, getattr(instance.parameters, par))
         
         for par, value in [('n_smooth_tol',0.1), ('n_smooth',50), ('opening_angle',0.5),
                 ('gadget_cell_opening_constant',0.005), ('artificial_viscosity_alpha',0.5),
@@ -482,9 +482,9 @@ class TestGadget2(TestWithMPI):
                 ('omega_zero',0.0), ('omega_lambda',0.0), ('omega_baryon',0.0), 
                 ('min_gas_hsmooth_fractional',0.0), ('timestep_accuracy_parameter',0.025), 
                 ('tree_domain_update_frequency',0.05),('artificial_viscosity_beta',1.0)]:
-            self.assertEquals(value, getattr(instance.parameters, par))
+            self.assertEqual(value, getattr(instance.parameters, par))
             setattr(instance.parameters, par, 1)
-            self.assertEquals(1, getattr(instance.parameters, par))
+            self.assertEqual(1, getattr(instance.parameters, par))
         
         for par, value in [('gas_epsilon', 0.01 | generic_unit_system.length), 
                 ('begin_time', 0.0 | generic_unit_system.time), 
@@ -495,23 +495,23 @@ class TestGadget2(TestWithMPI):
                 ('time_between_statistics', 0.1 | generic_unit_system.time),
                 ('softening_gas_max_phys', 0.0 | generic_unit_system.length),
                 ('softening_halo_max_phys', 0.0 | generic_unit_system.length)]:
-            self.assertEquals(instance.unit_converter.to_si(value), 
+            self.assertEqual(instance.unit_converter.to_si(value), 
                 getattr(instance.parameters, par))
             setattr(instance.parameters, par, 3.0 | value.unit)
-            self.assertEquals(instance.unit_converter.to_si(3.0 | value.unit),
+            self.assertEqual(instance.unit_converter.to_si(3.0 | value.unit),
                 getattr(instance.parameters, par))
         
         for par, value in [('energy_file',"energy.txt"),('info_file',"info.txt"),
                 ('timings_file',"timings.txt"),('cpu_file',"cpu.txt")]:
-            self.assertEquals(value, getattr(instance.parameters, par))
+            self.assertEqual(value, getattr(instance.parameters, par))
             setattr(instance.parameters, par, 'test.txt')
-            self.assertEquals("test.txt", getattr(instance.parameters, par))
+            self.assertEqual("test.txt", getattr(instance.parameters, par))
         
         
         instance.stop()
 
     def test8(self):
-        print "Testing read-only Gadget parameters"
+        print("Testing read-only Gadget parameters")
         
         def try_set_parameter(par, value, instance):
             setattr(instance.parameters, par, value)
@@ -527,7 +527,7 @@ class TestGadget2(TestWithMPI):
                             ('code_time_unit',     self.default_converter.to_si(generic_unit_system.time)),
                             ('code_velocity_unit', self.default_converter.to_si(generic_unit_system.speed)),
                             ('polytropic_index_gamma', (1.0 if testing_isotherm_no_gravity else 5.0/3))]:
-            self.assertEquals(value, getattr(instance.parameters, par))
+            self.assertEqual(value, getattr(instance.parameters, par))
             self.assertRaises(AmuseException, try_set_parameter, par, value, instance,
                 expected_message = "Could not set value for parameter '"+par+"' of a 'Gadget2' object, "
                     "parameter is read-only")
@@ -535,33 +535,33 @@ class TestGadget2(TestWithMPI):
         
         instance = Gadget2(self.default_converter, mode="nogravity", **default_options)
         instance.initialize_code()
-        self.assertEquals(instance.parameters.no_gravity_flag, True)
+        self.assertEqual(instance.parameters.no_gravity_flag, True)
         self.assertRaises(AmuseException, try_set_parameter, 'no_gravity_flag', False, instance,
             expected_message = "Could not set value for parameter 'no_gravity_flag' of a 'Gadget2' object, "
                 "parameter is read-only")
         instance.stop()
 
     def test9(self):
-        print "Testing Gadget properties"
+        print("Testing Gadget properties")
         target_number_of_particles = 100
         gas = new_evrard_gas_sphere(target_number_of_particles, self.default_convert_nbody, do_scale=True, seed = 1234)
         instance = Gadget2(self.default_converter, **default_options)
         instance.gas_particles.add_particles(gas)
-        self.assertEquals(instance.model_time,                        0.0 | units.s)
+        self.assertEqual(instance.model_time,                        0.0 | units.s)
         if testing_isotherm_no_gravity:
-            self.assertAlmostEquals(instance.potential_energy,            0.0 | 1e+50*units.J)
+            self.assertAlmostEqual(instance.potential_energy,            0.0 | 1e+50*units.J)
         else:
-            self.assertAlmostEquals(instance.potential_energy, -4.27843220393 | 1e+50*units.J)
-        self.assertAlmostEquals(instance.kinetic_energy,              0.0 | 1e+49*units.J)
-        self.assertAlmostEquals(instance.thermal_energy,    4.27851824913 | 1e+49*units.J)
-        self.assertAlmostEquals(instance.total_radius,      3.96592921066 | 1e+19*units.m)
-        self.assertAlmostEquals(instance.center_of_mass_position, [0, 0, 0] | 1e+19*units.m)
-        self.assertAlmostEquals(instance.center_of_mass_velocity, [0, 0, 0] | units.m/units.s)
-        self.assertAlmostEquals(instance.total_mass,                1.989 | 1e+40*units.kg)
+            self.assertAlmostEqual(instance.potential_energy, -4.27843220393 | 1e+50*units.J)
+        self.assertAlmostEqual(instance.kinetic_energy,              0.0 | 1e+49*units.J)
+        self.assertAlmostEqual(instance.thermal_energy,    4.27851824913 | 1e+49*units.J)
+        self.assertAlmostEqual(instance.total_radius,      3.96592921066 | 1e+19*units.m)
+        self.assertAlmostEqual(instance.center_of_mass_position, [0, 0, 0] | 1e+19*units.m)
+        self.assertAlmostEqual(instance.center_of_mass_velocity, [0, 0, 0] | units.m/units.s)
+        self.assertAlmostEqual(instance.total_mass,                1.989 | 1e+40*units.kg)
         instance.stop()
 
     def test10(self):
-        print "Testing Gadget states"
+        print("Testing Gadget states")
         target_number_sph_particles = 100
         gas = new_evrard_gas_sphere(target_number_sph_particles, self.default_convert_nbody, seed = 1234)
         dark = Particles(2)
@@ -569,41 +569,41 @@ class TestGadget2(TestWithMPI):
         dark.position = [[0.0,0.0,0.0], [1.0,0.0,0.0]] | units.kpc
         dark.velocity = [[100.0,100.0,100.0], [1.0,1.0,1.0]] | units.km / units.s
 
-        print "First do everything manually:"
+        print("First do everything manually:")
         instance = Gadget2(self.default_converter, **default_options)
-        self.assertEquals(instance.get_name_of_current_state(), 'UNINITIALIZED')
+        self.assertEqual(instance.get_name_of_current_state(), 'UNINITIALIZED')
         instance.initialize_code()
-        self.assertEquals(instance.get_name_of_current_state(), 'INITIALIZED')
+        self.assertEqual(instance.get_name_of_current_state(), 'INITIALIZED')
         instance.commit_parameters()
-        self.assertEquals(instance.get_name_of_current_state(), 'EDIT')
+        self.assertEqual(instance.get_name_of_current_state(), 'EDIT')
         instance.gas_particles.add_particles(gas)
         instance.commit_particles()
-        self.assertEquals(instance.get_name_of_current_state(), 'RUN')
+        self.assertEqual(instance.get_name_of_current_state(), 'RUN')
         mass = instance.gas_particles[0].mass
         instance.evolve_model(0.001 | generic_unit_system.time)
-        self.assertEquals(instance.get_name_of_current_state(), 'EVOLVED')
+        self.assertEqual(instance.get_name_of_current_state(), 'EVOLVED')
         instance.cleanup_code()
-        self.assertEquals(instance.get_name_of_current_state(), 'END')
+        self.assertEqual(instance.get_name_of_current_state(), 'END')
         instance.stop()
 
-        print "commit_parameters(), (re)commit_particles(), and cleanup_code() should be called " \
-            "automatically before new_xx_particle(), get_xx(), and stop():"
+        print("commit_parameters(), (re)commit_particles(), and cleanup_code() should be called " \
+            "automatically before new_xx_particle(), get_xx(), and stop():")
         instance = Gadget2(self.default_converter, **default_options)
-        self.assertEquals(instance.get_name_of_current_state(), 'UNINITIALIZED')
+        self.assertEqual(instance.get_name_of_current_state(), 'UNINITIALIZED')
         instance.initialize_code()
-        self.assertEquals(instance.get_name_of_current_state(), 'INITIALIZED')
+        self.assertEqual(instance.get_name_of_current_state(), 'INITIALIZED')
         instance.gas_particles.add_particles(gas)
-        self.assertEquals(instance.get_name_of_current_state(), 'EDIT')
+        self.assertEqual(instance.get_name_of_current_state(), 'EDIT')
         mass = instance.gas_particles[0].mass
-        self.assertEquals(instance.get_name_of_current_state(), 'RUN')
+        self.assertEqual(instance.get_name_of_current_state(), 'RUN')
         instance.dm_particles.add_particles(dark)
-        self.assertEquals(instance.get_name_of_current_state(), 'UPDATE')
+        self.assertEqual(instance.get_name_of_current_state(), 'UPDATE')
         mass = instance.gas_particles[0].mass
-        self.assertEquals(instance.get_name_of_current_state(), 'RUN')
+        self.assertEqual(instance.get_name_of_current_state(), 'RUN')
         instance.evolve_model(0.001 | generic_unit_system.time)
-        self.assertEquals(instance.get_name_of_current_state(), 'EVOLVED')
+        self.assertEqual(instance.get_name_of_current_state(), 'EVOLVED')
         instance.stop()
-        self.assertEquals(instance.get_name_of_current_state(), 'STOPPED')
+        self.assertEqual(instance.get_name_of_current_state(), 'STOPPED')
 
     def test11(self):
         particles = Particles(2)
@@ -620,7 +620,7 @@ class TestGadget2(TestWithMPI):
         instance = Gadget2(self.default_converter, **few_particles_default_options)
         instance.initialize_code()
         instance.parameters.stopping_conditions_number_of_steps = 2
-        self.assertEquals(instance.parameters.stopping_conditions_number_of_steps, 2)
+        self.assertEqual(instance.parameters.stopping_conditions_number_of_steps, 2)
         instance.parameters.epsilon_squared = (0.01 | generic_unit_system.length)**2
         instance.particles.add_particles(particles)
         instance.stopping_conditions.number_of_steps_detection.enable()
@@ -631,7 +631,7 @@ class TestGadget2(TestWithMPI):
         instance.stop()
     
     def test12(self):
-        print "Testing Gadget get_hydro_state_at_point"
+        print("Testing Gadget get_hydro_state_at_point")
         number_sph_particles = 100
         gas = new_evrard_gas_sphere(number_sph_particles, self.default_convert_nbody, seed = 1234)
         instance = Gadget2(self.default_converter, **default_options)
@@ -664,7 +664,7 @@ class TestGadget2(TestWithMPI):
         instance.stop()
     
     def test13(self):
-        print "Testing Gadget get_hydro_state_at_point II: uniform sphere"
+        print("Testing Gadget get_hydro_state_at_point II: uniform sphere")
         number_sph_particles = 1000
         gas = new_uniform_spherical_particle_distribution(number_sph_particles, self.UnitLength, self.UnitMass)
         gas.velocity = [10.0, 20.0, 30.0] | units.km / units.s
@@ -698,7 +698,7 @@ class TestGadget2(TestWithMPI):
         instance.stop()
     
     def test14(self):
-        print "Testing Gadget SPH particle properties"
+        print("Testing Gadget SPH particle properties")
         number_sph_particles = 1000
         gas = new_evrard_gas_sphere(number_sph_particles, self.default_convert_nbody, seed = 1234)
         instance = Gadget2(self.default_converter, **default_options)
@@ -733,13 +733,13 @@ class TestGadget2(TestWithMPI):
         instance.stop()
     
     def test15a(self):
-        print "Test Gadget2 in periodic nogravity mode"
+        print("Test Gadget2 in periodic nogravity mode")
         instance = Gadget2(mode = Gadget2Interface.MODE_PERIODIC_NOGRAVITY, 
             **few_particles_default_options)
-        self.assertEquals(instance.get_name_of_current_state(), 'UNINITIALIZED')
+        self.assertEqual(instance.get_name_of_current_state(), 'UNINITIALIZED')
         # 'False' is default, but getting parameters implicitly calls initialize_code()...
         self.assertEqual(instance.parameters.periodic_boundaries_flag, True)
-        self.assertEquals(instance.get_name_of_current_state(), 'INITIALIZED')
+        self.assertEqual(instance.get_name_of_current_state(), 'INITIALIZED')
         self.assertEqual(instance.parameters.no_gravity_flag, True)
         instance.parameters.periodic_box_size = 2.0 | generic_unit_system.length
         self.assertAlmostEqual(instance.parameters.periodic_box_size, 2.0 | units.kpc, places=6)
@@ -762,7 +762,7 @@ class TestGadget2(TestWithMPI):
         instance.stop()
         
     def test15b(self):
-        print "Test Gadget2 in nogravity mode"
+        print("Test Gadget2 in nogravity mode")
         instance = Gadget2(mode="nogravity", **few_particles_default_options)
         self.assertEqual(instance.parameters.no_gravity_flag, True)
         self.assertEqual(instance.parameters.periodic_boundaries_flag, False)
@@ -785,7 +785,7 @@ class TestGadget2(TestWithMPI):
         instance.stop()
         
     def test15c(self):
-        print "Test Gadget2 in periodic mode"
+        print("Test Gadget2 in periodic mode")
         converter = generic_unit_converter.ConvertBetweenGenericAndSiUnits(1.0|units.yr, 1.0|units.MSun, 1.0|units.AU)
         instance = Gadget2(converter, mode = Gadget2Interface.MODE_PERIODIC_BOUNDARIES,
             **few_particles_default_options)
@@ -829,7 +829,7 @@ class TestGadget2(TestWithMPI):
         instance.stop()
     
     def test17(self):
-        print "Testing Gadget parameters further"
+        print("Testing Gadget parameters further")
         target_number_of_particles = 100
         gas = new_evrard_gas_sphere(target_number_of_particles, self.default_convert_nbody, seed = 1234)
         instance = Gadget2(self.default_converter, **default_options)
@@ -843,7 +843,7 @@ class TestGadget2(TestWithMPI):
         instance.stop()
     
     def test18(self):
-        print "Testing Gadget parameters further"
+        print("Testing Gadget parameters further")
         instance = Gadget2(mode = Gadget2Interface.MODE_PERIODIC_NOGRAVITY,
             **few_particles_default_options)
         instance.parameters.periodic_box_size = 2.0 | generic_unit_system.length # implicitly calls initialize_code()...
@@ -897,7 +897,7 @@ class TestGadget2(TestWithMPI):
             self.assertAlmostRelativeEqual(expected_positions[:,2], positions_per_workers[index][:,2])
     
     def test20(self):
-        print "Testing zero timestep exceptions"
+        print("Testing zero timestep exceptions")
         number_sph_particles = 1000
         gas = new_evrard_gas_sphere(number_sph_particles, self.default_convert_nbody, seed = 1234)
         
@@ -925,7 +925,7 @@ class TestGadget2(TestWithMPI):
         instance.stop()
     
     def test21(self):
-        print "Testing other evolve_model exceptions"
+        print("Testing other evolve_model exceptions")
         number_sph_particles = 1000
         gas = new_evrard_gas_sphere(number_sph_particles, self.default_convert_nbody, seed = 1234)
         
@@ -942,16 +942,16 @@ class TestGadget2(TestWithMPI):
         instance.stop()
     
     def test22(self):
-        print "Testing Gadget timestep limiter (Durier & Dalla Vecchia 2011)"
+        print("Testing Gadget timestep limiter (Durier & Dalla Vecchia 2011)")
         number_sph_particles = 1000
         numpy.random.seed(345672)
         gas = new_plummer_gas_model(number_sph_particles, self.default_convert_nbody, base_grid = body_centered_grid_unit_cube)
         
         n_timescales = 0.025
         t_end = (n_timescales * self.default_convert_nbody.to_si(1.0 | nbody_system.time)).as_quantity_in(units.Myr)
-        print "Evolving to ("+str(n_timescales), "nbody timescales): ", t_end
+        print("Evolving to ("+str(n_timescales), "nbody timescales): ", t_end)
         n_steps = 5
-        times = (t_end * (range(1, n_steps+1)) / (1.0 * n_steps)).as_quantity_in(units.Myr)
+        times = (t_end * (list(range(1, n_steps+1))) / (1.0 * n_steps)).as_quantity_in(units.Myr)
         
         instance = Gadget2(self.default_converter, **default_options)
         instance.parameters.max_size_timestep = t_end
@@ -966,14 +966,14 @@ class TestGadget2(TestWithMPI):
             potential_energies.append( instance.potential_energy)
             kinetic_energies.append(   instance.kinetic_energy)
             thermal_energies.append(   instance.thermal_energy)
-            print str(time)+": E =", potential_energies[-1] + kinetic_energies[-1] + thermal_energies[-1]
+            print(str(time)+": E =", potential_energies[-1] + kinetic_energies[-1] + thermal_energies[-1])
         
         central_particle = gas.select_array(lambda x, y, z : (x**2 + y**2 + z**2) == min(x**2 + y**2 + z**2), ["x", "y", "z"])
-        print "Initial internal energy central particle:", central_particle[0].u.as_quantity_in(units.erg / units.g)
+        print("Initial internal energy central particle:", central_particle[0].u.as_quantity_in(units.erg / units.g))
         delta_E = abs(instance.potential_energy) - central_particle[0].u * central_particle[0].mass
         central_particle.u = abs(instance.potential_energy) / central_particle.mass
-        print "New internal energy central particle:", central_particle[0].u.as_quantity_in(units.erg / units.g)
-        print "Changed total energy to:", potential_energies[-1] + kinetic_energies[-1] + thermal_energies[-1] + delta_E
+        print("New internal energy central particle:", central_particle[0].u.as_quantity_in(units.erg / units.g))
+        print("Changed total energy to:", potential_energies[-1] + kinetic_energies[-1] + thermal_energies[-1] + delta_E)
         
         self.assertAlmostRelativeEqual(
             instance.potential_energy + instance.kinetic_energy + instance.thermal_energy, 
@@ -987,7 +987,7 @@ class TestGadget2(TestWithMPI):
             potential_energies.append( instance.potential_energy)
             kinetic_energies.append(   instance.kinetic_energy)
             thermal_energies.append(   instance.thermal_energy)
-            print str(time)+": E =", potential_energies[-1] + kinetic_energies[-1] + thermal_energies[-1]
+            print(str(time)+": E =", potential_energies[-1] + kinetic_energies[-1] + thermal_energies[-1])
         instance.stop()
         
         total_energies = potential_energies + kinetic_energies + thermal_energies
@@ -997,7 +997,7 @@ class TestGadget2(TestWithMPI):
         self.assertIsOfOrder(total_energies[4], total_energies[3])
     
     def slowtest22b(self):
-        print "Testing Gadget timestep limiter (Durier & Dalla Vecchia 2011)"
+        print("Testing Gadget timestep limiter (Durier & Dalla Vecchia 2011)")
         number_sph_particles = 10000
         numpy.random.seed(345672)
         gas = new_plummer_gas_model(number_sph_particles, self.default_convert_nbody, base_grid = body_centered_grid_unit_cube)
@@ -1005,9 +1005,9 @@ class TestGadget2(TestWithMPI):
         n_pixels = 100
         n_timescales = 0.5
         t_end = (n_timescales * self.default_convert_nbody.to_si(1.0 | nbody_system.time)).as_quantity_in(units.Myr)
-        print "Evolving to ("+str(n_timescales), "nbody timescales): ", t_end
+        print("Evolving to ("+str(n_timescales), "nbody timescales): ", t_end)
         n_steps = 100
-        times = (t_end * (range(1, n_steps+1)) / (1.0 * n_steps)).as_quantity_in(units.Myr)
+        times = (t_end * (list(range(1, n_steps+1))) / (1.0 * n_steps)).as_quantity_in(units.Myr)
         
         instance = Gadget2(self.default_converter, **default_options)
         instance.parameters.max_size_timestep = t_end
@@ -1022,11 +1022,11 @@ class TestGadget2(TestWithMPI):
             potential_energies.append( instance.potential_energy)
             kinetic_energies.append(   instance.kinetic_energy)
             thermal_energies.append(   instance.thermal_energy)
-            print time, potential_energies[-1] + kinetic_energies[-1] + thermal_energies[-1]
+            print(time, potential_energies[-1] + kinetic_energies[-1] + thermal_energies[-1])
         
         view = ([-0.5, 0.5, -0.5, 0.5] * (2.0 | units.none) * 
             self.default_convert_nbody.to_si(1.0 | nbody_system.length)).as_quantity_in(units.kpc)
-        print "Physical size of window for hydro_plot:", view
+        print("Physical size of window for hydro_plot:", view)
         hydro_plot(
             view,
             instance,
@@ -1034,13 +1034,13 @@ class TestGadget2(TestWithMPI):
             "gadget2_slowtest22b_hydro_image{0:=03}.png".format(0)
         )
         central_particle = gas.select_array(lambda x, y, z : (x**2 + y**2 + z**2) == min(x**2 + y**2 + z**2), ["x", "y", "z"])
-        print "Position central particle:", central_particle.position.as_quantity_in(units.kpc)
-        print "Center of mass, virial radius of system:", gas.center_of_mass().as_quantity_in(units.kpc), gas.virial_radius().as_quantity_in(units.kpc)
-        print "Initial internal energy central particle:", central_particle[0].u.as_quantity_in(units.erg / units.g)
+        print("Position central particle:", central_particle.position.as_quantity_in(units.kpc))
+        print("Center of mass, virial radius of system:", gas.center_of_mass().as_quantity_in(units.kpc), gas.virial_radius().as_quantity_in(units.kpc))
+        print("Initial internal energy central particle:", central_particle[0].u.as_quantity_in(units.erg / units.g))
         delta_E = abs(instance.potential_energy) - central_particle[0].u * central_particle[0].mass
         central_particle.u = abs(instance.potential_energy) / central_particle.mass
-        print "New internal energy central particle:", central_particle[0].u.as_quantity_in(units.erg / units.g)
-        print "Changed total energy to:", potential_energies[-1] + kinetic_energies[-1] + thermal_energies[-1] + delta_E
+        print("New internal energy central particle:", central_particle[0].u.as_quantity_in(units.erg / units.g))
+        print("Changed total energy to:", potential_energies[-1] + kinetic_energies[-1] + thermal_energies[-1] + delta_E)
         
         self.assertAlmostRelativeEqual(
             instance.potential_energy + instance.kinetic_energy + instance.thermal_energy, 
@@ -1048,7 +1048,7 @@ class TestGadget2(TestWithMPI):
         potential_energies[-1] = instance.potential_energy
         kinetic_energies[-1]   = instance.kinetic_energy
         thermal_energies[-1]   = instance.thermal_energy
-        print potential_energies[-1] + kinetic_energies[-1] + thermal_energies[-1]
+        print(potential_energies[-1] + kinetic_energies[-1] + thermal_energies[-1])
         
         for i_step, time in enumerate(times[3:]):
             if i_step < 20:
@@ -1062,7 +1062,7 @@ class TestGadget2(TestWithMPI):
             potential_energies.append( instance.potential_energy)
             kinetic_energies.append(   instance.kinetic_energy)
             thermal_energies.append(   instance.thermal_energy)
-            print time, potential_energies[-1] + kinetic_energies[-1] + thermal_energies[-1]
+            print(time, potential_energies[-1] + kinetic_energies[-1] + thermal_energies[-1])
         instance.stop()
         
         total_energies = potential_energies + kinetic_energies + thermal_energies
@@ -1077,7 +1077,7 @@ class TestGadget2(TestWithMPI):
             figname = "gadget2_slowtest22b_energy.png")
     
     def test23(self):
-        print "Testing Gadget2 density_limit_detection"
+        print("Testing Gadget2 density_limit_detection")
         number_gas_particles = 1000
         gas = new_evrard_gas_sphere(number_gas_particles, self.default_convert_nbody, do_scale=True, seed=12345)
         
@@ -1094,29 +1094,29 @@ class TestGadget2(TestWithMPI):
         density_limit_detection.enable()
         
         instance.evolve_model(10.0 | units.Myr)
-        print instance.model_time.as_quantity_in(units.Myr)
-        print instance.stopping_conditions
+        print(instance.model_time.as_quantity_in(units.Myr))
+        print(instance.stopping_conditions)
         self.assertTrue(density_limit_detection.is_set())
         self.assertTrue(instance.model_time < 10.0 | units.Myr)
-        self.assertEquals(len(density_limit_detection.particles()), 1)
+        self.assertEqual(len(density_limit_detection.particles()), 1)
         self.assertTrue(density_limit_detection.particles().density > 
                 10 * self.UnitMass / self.UnitLength**3)
         
         instance.particles.remove_particles(density_limit_detection.particles())
         
         instance.evolve_model(10.0 | units.Myr)
-        print instance.model_time.as_quantity_in(units.Myr)
-        print instance.stopping_conditions
+        print(instance.model_time.as_quantity_in(units.Myr))
+        print(instance.stopping_conditions)
         self.assertTrue(density_limit_detection.is_set())
         self.assertTrue(instance.model_time < 10.0 | units.Myr)
         
-        self.assertEquals(len(density_limit_detection.particles()), 2)
-        self.assertEquals((density_limit_detection.particles().density > 
+        self.assertEqual(len(density_limit_detection.particles()), 2)
+        self.assertEqual((density_limit_detection.particles().density > 
                 10 * self.UnitMass / self.UnitLength**3), [True, True])
         instance.stop()
     
     def test24(self):
-        print "Testing Gadget2 internal_energy_limit_detection"
+        print("Testing Gadget2 internal_energy_limit_detection")
         number_gas_particles = 1000
         gas = new_evrard_gas_sphere(number_gas_particles, self.default_convert_nbody, do_scale=True, seed=12345)
         initial_internal_energy = 0.05 * constants.G * self.UnitMass / self.UnitLength
@@ -1131,28 +1131,28 @@ class TestGadget2(TestWithMPI):
         internal_energy_limit_detection.enable()
         
         instance.evolve_model(10.0 | units.Myr)
-        print instance.model_time.as_quantity_in(units.Myr)
-        print instance.stopping_conditions
+        print(instance.model_time.as_quantity_in(units.Myr))
+        print(instance.stopping_conditions)
         self.assertTrue(internal_energy_limit_detection.is_set())
         self.assertTrue(instance.model_time < 10.0 | units.Myr)
-        self.assertEquals(len(internal_energy_limit_detection.particles()), 4)
-        self.assertEquals((internal_energy_limit_detection.particles().u > 
+        self.assertEqual(len(internal_energy_limit_detection.particles()), 4)
+        self.assertEqual((internal_energy_limit_detection.particles().u > 
                 10 * initial_internal_energy), [True, True, True, True])
         
         instance.particles.remove_particles(internal_energy_limit_detection.particles())
         
         instance.evolve_model(10.0 | units.Myr)
-        print instance.model_time.as_quantity_in(units.Myr)
-        print instance.stopping_conditions
+        print(instance.model_time.as_quantity_in(units.Myr))
+        print(instance.stopping_conditions)
         self.assertTrue(internal_energy_limit_detection.is_set())
         self.assertTrue(instance.model_time < 10.0 | units.Myr)
-        self.assertEquals(len(internal_energy_limit_detection.particles()), 3)
-        self.assertEquals((internal_energy_limit_detection.particles().u > 
+        self.assertEqual(len(internal_energy_limit_detection.particles()), 3)
+        self.assertEqual((internal_energy_limit_detection.particles().u > 
                 10 * initial_internal_energy), [True, True, True])
         instance.stop()
     
     def test25(self):
-        print "Testing Gadget2 comoving_integration_flag"
+        print("Testing Gadget2 comoving_integration_flag")
         particles = new_plummer_model(100, self.default_convert_nbody, do_scale=True)
         instance = Gadget2(self.default_converter, **default_options)
         instance.initialize_code()
@@ -1179,7 +1179,7 @@ class TestGadget2(TestWithMPI):
         instance.stop()
     
     def xtest26(self):
-        print "Testing Gadget2 comoving_integration_flag validation (WIP)"
+        print("Testing Gadget2 comoving_integration_flag validation (WIP)")
         particles = read_set_from_file("cluster_littleendian.dat", "gadget")
         particles = ParticlesSuperset(particles[1:4])
         instance = Gadget2(self.default_converter, redirection="none", **default_options)
@@ -1209,7 +1209,7 @@ class TestGadget2(TestWithMPI):
         instance.stop()
     
     def xtest27(self):
-        print "Testing Gadget2 comoving_integration_flag validation II (WIP)"
+        print("Testing Gadget2 comoving_integration_flag validation II (WIP)")
         particles = read_set_from_file("lcdm_gas_littleendian.dat", "gadget")
         gas = particles[0]
         mu = constants.proton_mass * 4.0 / (1.0 + 3.0 * 0.76)
@@ -1255,7 +1255,7 @@ class TestGadget2(TestWithMPI):
         instance.stop()
     
     def test28(self):
-        print "Testing Gadget get_hydro_state_at_point in periodic mode"
+        print("Testing Gadget get_hydro_state_at_point in periodic mode")
         gas = Particles(8000)
         gas.mass = 1.0/8000 | generic_unit_system.mass
         x,y,z = numpy.mgrid[-1:0.9:20j, -1:0.9:20j, -1:0.9:20j] | units.kpc
@@ -1317,7 +1317,7 @@ def energy_evolution_plot(time, kinetic, potential, thermal, figname):
     ylabel('Energy')
     pyplot.legend(prop={'size':"x-small"}, loc=4)
     pyplot.savefig(figname)
-    print "\nPlot of energy evolution was saved to:", figname
+    print("\nPlot of energy evolution was saved to:", figname)
     pyplot.close()
     
 
@@ -1367,5 +1367,5 @@ def hydro_plot(view, hydro_code, image_size, figname):
     im = pyplot.figimage(rgba, origin='lower')
     
     pyplot.savefig(figname, transparent=True, dpi = 100)
-    print "\nHydroplot was saved to: ", figname
+    print("\nHydroplot was saved to: ", figname)
     pyplot.close()

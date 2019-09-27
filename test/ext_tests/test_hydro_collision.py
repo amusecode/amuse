@@ -26,7 +26,7 @@ class TestStellarEncounterInHydrodynamics(TestWithMPI):
         return colliders
     
     def test1(self):
-        print "Test collect_required_attributes"
+        print("Test collect_required_attributes")
         in_memory = self.new_colliders()
         gravity = BHTree(nbody_system.nbody_to_si(1|units.MSun, 1.0|units.RSun))
         gravity.particles.add_particles(in_memory)
@@ -54,7 +54,7 @@ class TestStellarEncounterInHydrodynamics(TestWithMPI):
         self.assertAlmostEqual(from_stellar.velocity, in_memory.velocity)
     
     def test2(self):
-        print "Test backtrack_particles"
+        print("Test backtrack_particles")
         colliders = self.new_colliders()
         colliders.radius = [1, 2] | units.RSun
         
@@ -76,7 +76,7 @@ class TestStellarEncounterInHydrodynamics(TestWithMPI):
         self.assertAlmostRelativeEqual(total_energy_after, total_energy_before, 7)
     
     def test3(self):
-        print "Test convert_stars"
+        print("Test convert_stars")
         colliders = self.new_colliders()
         colliders.position = [[-100.0, 0.0, 0.0], [100.0, 0.0, 0.0]] | units.RSun
         stellar = EVtwin()
@@ -101,7 +101,7 @@ class TestStellarEncounterInHydrodynamics(TestWithMPI):
             gas_particles[:500].center_of_mass_velocity().y, 2000.0 | units.km / units.s)
     
     def test4(self):
-        print "Test binary_will_collide"
+        print("Test binary_will_collide")
         collision = StellarEncounterInHydrodynamics(None, None, verbose=True)
         collision.dynamical_timescale = zero
         collision.start_kepler(7 | units.MSun, 10 | units.RSun)
@@ -124,7 +124,7 @@ class TestStellarEncounterInHydrodynamics(TestWithMPI):
         collision.kepler.stop()
     
     def test5(self):
-        print "Test group_bound_particles"
+        print("Test group_bound_particles")
         colliders = self.new_colliders()
         colliders.position = [[0.0, 0.0, 0.0], [1.1, 0.0, 0.0]] | units.RSun
         colliders.velocity = [[0.0, 0.0, 0.0], [10000, 0.0, 0.0]] | units.km / units.s
@@ -153,7 +153,7 @@ class TestStellarEncounterInHydrodynamics(TestWithMPI):
         self.assertIsOfOrder(groups[1].center_of_mass_velocity()[0], 10000 | units.km / units.s)
     
     def test6(self):
-        print "Test handle_collision"
+        print("Test handle_collision")
         position_offset = [100.0, 200.0, 300.0] | units.RSun
         velocity_offset = [10000.0, 20000.0, 30000.0] | units.km / units.s
         colliders = self.new_colliders()
@@ -177,7 +177,7 @@ class TestStellarEncounterInHydrodynamics(TestWithMPI):
         collision.dynamical_timescales_per_step = 1.3 # ... but then we need to evolve a bit longer in the first step
         result = collision.handle_collision(colliders[0], colliders[1], gravity_code=gravity, stellar_evolution_code=stellar)
         stellar.stop()
-        print result
+        print(result)
         self.assertTrue(isinstance(result, Particles))
         self.assertEqual(len(result), 2)
         self.assertAlmostEqual(result.mass, [5.0, 2.0] | units.MSun, 1)
@@ -185,7 +185,7 @@ class TestStellarEncounterInHydrodynamics(TestWithMPI):
         self.assertAlmostRelativeEqual(result.center_of_mass_velocity(), velocity_offset, 2)
     
     def slowtest7(self):
-        print "Test handle_collision"
+        print("Test handle_collision")
         position_offset = [100.0, 200.0, 300.0] | units.RSun
         velocity_offset = [10000.0, 20000.0, 30000.0] | units.km / units.s
         colliders = self.new_colliders()
@@ -213,7 +213,7 @@ class TestStellarEncounterInHydrodynamics(TestWithMPI):
         )
         result = collision.handle_collision(colliders[0], colliders[1], gravity_code=gravity, stellar_evolution_code=stellar)
         stellar.stop()
-        print result
+        print(result)
         self.assertTrue(isinstance(result, Particles))
         self.assertEqual(len(result), 2)
         self.assertTrue((result.mass < [5.0, 2.0] | units.MSun).all())

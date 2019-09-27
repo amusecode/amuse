@@ -53,7 +53,7 @@ class TestStoppingCondition(amusetest.TestCase):
             is_enabled = 0
             
             def is_stopping_condition_enabled(self, sc_type):
-                print sc_type, self.is_enabled
+                print(sc_type, self.is_enabled)
                 return self.is_enabled if sc_type == 0 else 0
             
             def has_stopping_condition(self, sc_type):
@@ -77,7 +77,7 @@ class TestStoppingCondition(amusetest.TestCase):
             is_enabled = 0
             
             def is_stopping_condition_enabled(self, sc_type):
-                print sc_type, self.is_enabled
+                print(sc_type, self.is_enabled)
                 return self.is_enabled if sc_type == 0 else 0
             
             def has_stopping_condition(self, sc_type):
@@ -144,8 +144,8 @@ class TestStoppingCondition(amusetest.TestCase):
         )
         self.assertTrue(instance.collision_detection.is_set())
         particles = instance.collision_detection.particles(0)
-        self.assertEquals(len(particles),1)
-        print particles[0]
+        self.assertEqual(len(particles),1)
+        print(particles[0])
         self.assertAlmostRelativeEqual(particles[0].mass, 1|units.kg)
         
     
@@ -177,10 +177,10 @@ class TestStoppingCondition(amusetest.TestCase):
         )
         self.assertTrue(instance.collision_detection.is_set())
         particles = instance.collision_detection.particles(0)
-        self.assertEquals(len(particles),1)
+        self.assertEqual(len(particles),1)
         particles = instance.collision_detection.particles(1)
-        self.assertEquals(len(particles),1)
+        self.assertEqual(len(particles),1)
         particles = instance.collision_detection.particles(2)
-        self.assertEquals(len(particles),1)
+        self.assertEqual(len(particles),1)
         particles = instance.collision_detection.particles(3)
-        self.assertEquals(len(particles),0)
+        self.assertEqual(len(particles),0)

@@ -22,10 +22,10 @@ class TestParticlesProperties(amusetest.TestCase):
         self.assertTrue(hasattr(particles, 'collection_attributes'))
         
         particles.collection_attributes.timestamp = 1 | units.yr
-        self.assertEquals(particles.collection_attributes.timestamp,  1 | units.yr)
+        self.assertEqual(particles.collection_attributes.timestamp,  1 | units.yr)
         
         particles.collection_attributes.a  = 2
-        self.assertEquals(particles.collection_attributes.a,  2)
+        self.assertEqual(particles.collection_attributes.a,  2)
     
     
     def test2(self):
@@ -33,10 +33,10 @@ class TestParticlesProperties(amusetest.TestCase):
         particles = datamodel.Particles(2)
         particles.collection_attributes.timestamp = 1 | units.yr
         
-        self.assertEquals(str(particles.collection_attributes), "timestamp: 1 yr")
+        self.assertEqual(str(particles.collection_attributes), "timestamp: 1 yr")
         
         particles.collection_attributes.a = 2
-        self.assertEquals(str(particles.collection_attributes), "timestamp: 1 yr\na: 2")
+        self.assertEqual(str(particles.collection_attributes), "timestamp: 1 yr\na: 2")
         
     def test3(self):
         
@@ -45,9 +45,9 @@ class TestParticlesProperties(amusetest.TestCase):
         particles1.collection_attributes.a = 2
         particles2 = particles1.copy()
         
-        self.assertEquals(particles2.collection_attributes.timestamp,  1 | units.yr)
-        self.assertEquals(particles2.collection_attributes.a,  2)
-        self.assertEquals(str(particles2.collection_attributes), "timestamp: 1 yr\na: 2")
+        self.assertEqual(particles2.collection_attributes.timestamp,  1 | units.yr)
+        self.assertEqual(particles2.collection_attributes.a,  2)
+        self.assertEqual(str(particles2.collection_attributes), "timestamp: 1 yr\na: 2")
         
     def test4(self):
         
@@ -56,8 +56,8 @@ class TestParticlesProperties(amusetest.TestCase):
         particles1.collection_attributes.a = 2
         pickled_string = pickle.dumps(particles1)
         particles2 = pickle.loads(pickled_string)
-        self.assertEquals(particles2.collection_attributes.timestamp,  1 | units.yr)
-        self.assertEquals(particles2.collection_attributes.a,  2)
+        self.assertEqual(particles2.collection_attributes.timestamp,  1 | units.yr)
+        self.assertEqual(particles2.collection_attributes.a,  2)
         
         
         

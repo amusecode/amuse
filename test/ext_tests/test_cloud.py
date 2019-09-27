@@ -34,8 +34,8 @@ class CloudTests(amusetest.TestCase):
             energy = 1.0 | units.kg / ((units.s**2) * units.m)
         )
         
-        self.assertEquals(grid.shape, (10,10,10))
-        self.assertEquals(grid.rho[5][5][5], 1.0 | units.kg / units.m**3)
+        self.assertEqual(grid.shape, (10,10,10))
+        self.assertEqual(grid.rho[5][5][5], 1.0 | units.kg / units.m**3)
         
         #from mpl_toolkits.axes_grid1 import ImageGrid
         #from matplotlib import pyplot
@@ -46,10 +46,10 @@ class CloudTests(amusetest.TestCase):
         #    grids[i].imshow(z)
         #figure.savefig('ax.png')
         
-        self.assertEquals(grid.rho[5][6][5], 0.828125| units.kg / units.m**3)
-        self.assertEquals(grid.rho[5][3][5], 0.828125| units.kg / units.m**3)
-        self.assertEquals(grid.rho[5][5][6], 0.828125| units.kg / units.m**3)
-        self.assertEquals(grid.rho[5][5][3], 0.828125| units.kg / units.m**3)
+        self.assertEqual(grid.rho[5][6][5], 0.828125| units.kg / units.m**3)
+        self.assertEqual(grid.rho[5][3][5], 0.828125| units.kg / units.m**3)
+        self.assertEqual(grid.rho[5][5][6], 0.828125| units.kg / units.m**3)
+        self.assertEqual(grid.rho[5][5][3], 0.828125| units.kg / units.m**3)
 
 
     def test2(self):

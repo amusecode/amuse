@@ -13,7 +13,7 @@ from amuse.rfi.tools import create_c
 from amuse.rfi import async_request
 from amuse.rfi.core import *
 
-import test_c_implementation
+from . import test_c_implementation
 
 from amuse.test import compile_tools
 
@@ -126,21 +126,21 @@ class TestASync(TestWithMPI):
 
     def setUp(self):
         super(TestASync, self).setUp()
-        print "building...",
+        print("building...", end=' ')
         self.check_can_compile_modules()
         try:
             self.exefile = compile_tools.build_worker(codestring, self.get_path_to_results(), ForTestingInterface)
         except Exception as ex:
-            print ex
+            print(ex)
             raise
-        print "done"
+        print("done")
         
     def test1(self):
         instance = ForTestingInterface(self.exefile)
         int_out, error = instance.echo_int(10)
         instance.stop()
-        self.assertEquals(int_out, 10)
-        self.assertEquals(error, 0)
+        self.assertEqual(int_out, 10)
+        self.assertEqual(error, 0)
 
     def test2(self):
         instance = ForTestingInterface(self.exefile)
@@ -148,8 +148,8 @@ class TestASync(TestWithMPI):
         self.assertEqual(request, instance.async_request)
         request.wait()
         int_out,error=request.result()
-        self.assertEquals(int_out, 10)
-        self.assertEquals(error, 0)
+        self.assertEqual(int_out, 10)
+        self.assertEqual(error, 0)
         instance.stop()
 
     def test3(self):
@@ -159,8 +159,8 @@ class TestASync(TestWithMPI):
         self.assertEqual(request2, instance.async_request)
         request2.wait()
         int_out,error=request2.result()
-        self.assertEquals(int_out, 10)
-        self.assertEquals(error, 0)
+        self.assertEqual(int_out, 10)
+        self.assertEqual(error, 0)
         instance.stop()
 
     def test4(self):
@@ -170,7 +170,7 @@ class TestASync(TestWithMPI):
         self.assertEqual(request2, instance.async_request)
         instance.async_request.wait()
         int_out=request2.result()
-        self.assertEquals(int_out, 10)
+        self.assertEqual(int_out, 10)
         instance.stop()
 
     def test5(self):
@@ -181,7 +181,7 @@ class TestASync(TestWithMPI):
             requests.append(instance.echo_int(x, return_request=True))
         instance.async_request.wait()
         for i,x in enumerate(requests):
-            self.assertEquals(x.result(), i)
+            self.assertEqual(x.result(), i)
         instance.stop()
 
     def test6(self):
@@ -191,7 +191,7 @@ class TestASync(TestWithMPI):
             requests.append(instance.echo_int(x, return_request=True))
         instance.async_request.wait()
         for i,x in enumerate(requests):
-            self.assertEquals(x.result(), i)
+            self.assertEqual(x.result(), i)
         instance.stop()
 
     def test7(self):
@@ -213,7 +213,7 @@ class TestASync(TestWithMPI):
         t2=time.time()
 
         for x in requests:
-            self.assertEquals(x[0].result(), x[1])
+            self.assertEqual(x[0].result(), x[1])
         instance1.stop()
         instance2.stop()
         self.assertTrue(t2-t1 < 2.)
@@ -245,7 +245,7 @@ class TestASync(TestWithMPI):
         t2=time.time()
 
         for x in requests:
-            self.assertEquals(x[0].result(), x[1])
+            self.assertEqual(x[0].result(), x[1])
         instance1.stop()
         instance2.stop()
         self.assertTrue(t2-t1 < 2.)
@@ -255,7 +255,7 @@ class TestASync(TestWithMPI):
         for x in range(10):
             instance.echo_int(x, return_request=True)
         results=instance.async_request.results
-        self.assertEquals(results, range(10))
+        self.assertEqual(results, list(range(10)))
         instance.stop()
 
     def test10(self):
@@ -372,9 +372,9 @@ class TestASync(TestWithMPI):
 
         request2=instance2.echo_2_int(request1[0], request1[1], return_request=True)
         
-        print "do...wait..."
+        print("do...wait...")
         request2.wait()
-        print "done", request2.result()
+        print("done", request2.result())
 
         self.assertEqual( request2.result()[0], 1 | units.m)
         self.assertEqual( request2.result()[1], 2 | units.kg)
@@ -464,8 +464,8 @@ class TestASync(TestWithMPI):
         r1=result[0]
         r2=result[1]
         
-        self.assertEquals(r1.result(),[11,12,13] | units.m)
-        self.assertEquals(r2.result(),[3,2,1] | units.kg)
+        self.assertEqual(r1.result(),[11,12,13] | units.m)
+        self.assertEqual(r2.result(),[3,2,1] | units.kg)
         
         instance.stop()
 
@@ -478,8 +478,8 @@ class TestASync(TestWithMPI):
         r1=request["int_out1"]
         r2=request["int_out2"]
         
-        self.assertEquals(r1.result(),[11,12,13] )
-        self.assertEquals(r2.result(),[3,2,1] )
+        self.assertEqual(r1.result(),[11,12,13] )
+        self.assertEqual(r2.result(),[3,2,1] )
         
 
         instance.stop()
@@ -628,7 +628,7 @@ class TestASync(TestWithMPI):
         request1=instance1.echo_2_int(a , b, return_request=True)
         
         request2=(3*request1[1]/(2.*request1[0])+(55. | units.kg/units.m))
-        self.assertEquals( request2.result(), (3*b/(2.*a)+(55. | units.kg/units.m)) )
+        self.assertEqual( request2.result(), (3*b/(2.*a)+(55. | units.kg/units.m)) )
         
         instance1.stop()
 
@@ -642,7 +642,7 @@ class TestASync(TestWithMPI):
         #~ instance1.do_sleep(1, return_request=True)
         a_,b_=instance1.echo_2_int(a , b, return_request=True)
         
-        self.assertEquals( (3*b_/(2.*a_)+(55. | units.kg/units.m)).result(), (3*b/(2.*a)+(55. | units.kg/units.m)) )
+        self.assertEqual( (3*b_/(2.*a_)+(55. | units.kg/units.m)).result(), (3*b/(2.*a)+(55. | units.kg/units.m)) )
         
         instance1.stop()
 
@@ -659,8 +659,8 @@ class TestASync(TestWithMPI):
         a_,b_, err= res
       
 
-        self.assertEquals( a,a_.result() )
-        self.assertEquals( b,b_.result() )
+        self.assertEqual( a,a_.result() )
+        self.assertEqual( b,b_.result() )
         
         instance1.stop()
 
@@ -716,28 +716,28 @@ class TestASync(TestWithMPI):
     def test30(self):
         """ test a grid attribute request """
         instance1 = ForTesting(self.exefile, redirection="none")
-        self.assertEquals(instance1.grid.x, numpy.arange(1,11) |units.m)
+        self.assertEqual(instance1.grid.x, numpy.arange(1,11) |units.m)
         instance1.do_sleep(1, return_request=True)
         t1=time.time()
         request=instance1.grid.request.x
         t2=time.time()
         self.assertLess(t2-t1, 0.5)
-        self.assertEquals(request.result(), numpy.arange(1,11) | units.m)
+        self.assertEqual(request.result(), numpy.arange(1,11) | units.m)
         t2=time.time()
         self.assertGreater(t2-t1, 1.)
         
     def test31(self):
         """ test a grid attribute request, subgrids """
         instance1 = ForTesting(self.exefile, redirection="none")
-        self.assertEquals(instance1.grid.x, numpy.arange(1,11) |units.m)
+        self.assertEqual(instance1.grid.x, numpy.arange(1,11) |units.m)
         instance1.do_sleep(1, return_request=True)
         t1=time.time()
         request=instance1.grid[:5].request.x
         request2=instance1.grid[5:].request.x
         t2=time.time()
         self.assertLess(t2-t1, 0.5)
-        self.assertEquals(request.result(), numpy.arange(1,6) | units.m)
-        self.assertEquals(request2.result(), numpy.arange(6,11) | units.m)
+        self.assertEqual(request.result(), numpy.arange(1,6) | units.m)
+        self.assertEqual(request2.result(), numpy.arange(6,11) | units.m)
         t2=time.time()
         self.assertGreater(t2-t1, 1.)
 
@@ -745,7 +745,7 @@ class TestASync(TestWithMPI):
         """ test a grid attribute request setter """
         instance1 = ForTesting(self.exefile, redirection="none")
         instance1.grid.x=(66.+numpy.arange(1,11)) |units.m
-        self.assertEquals(instance1.grid.x, (66.+numpy.arange(1,11)) |units.m)
+        self.assertEqual(instance1.grid.x, (66.+numpy.arange(1,11)) |units.m)
 
         t1=time.time()
         instance1.do_sleep(1, return_request=True)
@@ -756,14 +756,14 @@ class TestASync(TestWithMPI):
         t2=time.time()
         self.assertGreater(t2-t1, 1.)
         t1=time.time()
-        self.assertEquals(instance1.grid.x, (11.+numpy.arange(1,11)) | units.m)
+        self.assertEqual(instance1.grid.x, (11.+numpy.arange(1,11)) | units.m)
         t2=time.time()
         self.assertLess(t2-t1, 0.5)
 
     def test33(self):
         """ test a grid attribute request, subgrids """
         instance1 = ForTesting(self.exefile, redirection="none")
-        self.assertEquals(instance1.grid.x, numpy.arange(1,11) |units.m)
+        self.assertEqual(instance1.grid.x, numpy.arange(1,11) |units.m)
 
         t1=time.time()
         instance1.do_sleep(1, return_request=True)
@@ -773,24 +773,24 @@ class TestASync(TestWithMPI):
         instance1.async_request.wait()
         t2=time.time()
         self.assertGreater(t2-t1, 1.)
-        self.assertEquals(instance1.grid.x[::2], (11.+numpy.arange(1,11,2)) | units.m)
-        self.assertEquals(instance1.grid.x[1::2], (numpy.arange(2,11,2)) | units.m)
+        self.assertEqual(instance1.grid.x[::2], (11.+numpy.arange(1,11,2)) | units.m)
+        self.assertEqual(instance1.grid.x[1::2], (numpy.arange(2,11,2)) | units.m)
 
     def test34(self):
         """ test a grid attribute request, subgrids """
         instance1 = ForTesting(self.exefile, redirection="none")
         grid=instance1.grid.copy()
         request=instance1.grid.request.x
-        self.assertEquals(request.result(), numpy.arange(1,11) | units.m)
+        self.assertEqual(request.result(), numpy.arange(1,11) | units.m)
 
     def test35(self):
         """ test a grid attribute request setter with state"""
         instance1 = ForTestingWithState(self.exefile, redirection="none")
         t1=time.time()
         instance1.do_sleep(1, return_request=True)
-        self.assertEquals(instance1.get_name_of_current_state(), '1')
+        self.assertEqual(instance1.get_name_of_current_state(), '1')
         instance1.grid.request.x=(11.+numpy.arange(1,11)) |units.m
-        self.assertEquals(instance1.get_name_of_current_state(), '2')
+        self.assertEqual(instance1.get_name_of_current_state(), '2')
         t2=time.time()
         self.assertGreater(t2-t1, 1.)   # first time, state calls dummy (blocking) -> wait
 
@@ -804,19 +804,19 @@ class TestASync(TestWithMPI):
         t2=time.time()
         self.assertGreater(t2-t1, 1.)
         t1=time.time()
-        self.assertEquals(instance1.grid.x, (12. +numpy.arange(1,11)) | units.m)
+        self.assertEqual(instance1.grid.x, (12. +numpy.arange(1,11)) | units.m)
         t2=time.time()
         self.assertLess(t2-t1, 0.5)
 
     def test36(self):
         """ more state tests"""
         instance1 = ForTestingWithState(self.exefile, redirection="none")
-        self.assertEquals(instance1.get_name_of_current_state(), '1')
+        self.assertEqual(instance1.get_name_of_current_state(), '1')
         # this documents current behaviour:
         instance1.dummy(return_request=True)
-        self.assertEquals(instance1.get_name_of_current_state(), '1')
+        self.assertEqual(instance1.get_name_of_current_state(), '1')
         instance1.async_request.wait() 
-        self.assertEquals(instance1.get_name_of_current_state(), '2')
+        self.assertEqual(instance1.get_name_of_current_state(), '2')
         # ie state changes upon completion of call at wait. This is 
         # sort of ok, alternatively state could be changed immediately...
 

@@ -26,9 +26,9 @@ class _AbstractTestInMemoryAttributeStorage(amusetest.TestCase):
         
         indices = instance.add_particles_to_store(keys, attributes, values)
         
-        self.assertEquals(len(indices), len(keys))
-        self.assertEquals(2.0 | units.m, instance.get_value_in_store(indices[1], "a"))
-        self.assertEquals(2.0 | units.m, instance.get_value_of(indices[1], "a"))
+        self.assertEqual(len(indices), len(keys))
+        self.assertEqual(2.0 | units.m, instance.get_value_in_store(indices[1], "a"))
+        self.assertEqual(2.0 | units.m, instance.get_value_of(indices[1], "a"))
         
 
     def test2(self):
@@ -49,7 +49,7 @@ class _AbstractTestInMemoryAttributeStorage(amusetest.TestCase):
         ])
         
         for index, wanted in zip(indices, [indices_stored[2],indices_stored[1],indices_stored[0]]):
-            self.assertEquals(index,wanted)
+            self.assertEqual(index,wanted)
     
     def test2b(self):
         keys =  4, 5, 6
@@ -60,7 +60,7 @@ class _AbstractTestInMemoryAttributeStorage(amusetest.TestCase):
         ]
         
         instance = self.new_inmemory_storage()
-        print instance.add_particles_to_store(keys, attributes, values)
+        print(instance.add_particles_to_store(keys, attributes, values))
         indices = instance.get_indices_of([
             keys[2],
             keys[0]
@@ -70,10 +70,10 @@ class _AbstractTestInMemoryAttributeStorage(amusetest.TestCase):
             ["b","a"]
         )
         
-        self.assertEquals(all_values[0][0],6.0 | units.g)
-        self.assertEquals(all_values[0][1],4.0 | units.g)
-        self.assertEquals(all_values[1][0],0.003 | units.km)
-        self.assertEquals(all_values[1][1],0.001 | units.km)
+        self.assertEqual(all_values[0][0],6.0 | units.g)
+        self.assertEqual(all_values[0][1],4.0 | units.g)
+        self.assertEqual(all_values[1][0],0.003 | units.km)
+        self.assertEqual(all_values[1][1],0.001 | units.km)
         
     
     def test3(self):
@@ -86,7 +86,7 @@ class _AbstractTestInMemoryAttributeStorage(amusetest.TestCase):
         
         instance = self.new_inmemory_storage()
         instance.add_particles_to_store(keys, attributes, values)
-        self.assertEquals(values[0][0], 1.0 | units.m)
+        self.assertEqual(values[0][0], 1.0 | units.m)
         
         indices = instance.get_indices_of([
             keys[0],
@@ -101,10 +101,10 @@ class _AbstractTestInMemoryAttributeStorage(amusetest.TestCase):
             ]
         )
         values = instance.get_values_in_store(None, ["a", "b"])
-        self.assertEquals(values[0][0], 1000.0 | units.m)
-        self.assertEquals(values[0][2], 2000.0 | units.m)
-        self.assertEquals(values[1][0], 9.0 | units.kg)
-        self.assertEquals(values[1][2], 11.0 | units.kg)
+        self.assertEqual(values[0][0], 1000.0 | units.m)
+        self.assertEqual(values[0][2], 2000.0 | units.m)
+        self.assertEqual(values[1][0], 9.0 | units.kg)
+        self.assertEqual(values[1][2], 11.0 | units.kg)
         
     
     def test4(self):
@@ -122,10 +122,10 @@ class _AbstractTestInMemoryAttributeStorage(amusetest.TestCase):
             keys[2],
             keys[0]
         ])
-        print indices
+        print(indices)
         instance.remove_particles_from_store(indices)
         
-        self.assertEquals(len(instance), 2)
+        self.assertEqual(len(instance), 2)
       
         indices = instance.get_indices_of([
             keys[1],
@@ -135,10 +135,10 @@ class _AbstractTestInMemoryAttributeStorage(amusetest.TestCase):
             indices,
             ["a","b"]
         )
-        self.assertEquals(all_values[0][0], 0.002 | units.km)
-        self.assertEquals(all_values[0][1], 0.004 | units.km)
-        self.assertEquals(all_values[1][0], 5.0 | units.g)
-        self.assertEquals(all_values[1][1], 7.0 | units.g)
+        self.assertEqual(all_values[0][0], 0.002 | units.km)
+        self.assertEqual(all_values[0][1], 0.004 | units.km)
+        self.assertEqual(all_values[1][0], 5.0 | units.g)
+        self.assertEqual(all_values[1][1], 7.0 | units.g)
         
     
     def test5(self):
@@ -152,29 +152,29 @@ class _AbstractTestInMemoryAttributeStorage(amusetest.TestCase):
         instance = self.new_inmemory_storage()
         indices1 = instance.add_particles_to_store(keys, attributes, values)
         
-        self.assertEquals(len(instance), 4)
+        self.assertEqual(len(instance), 4)
         
         keys = 20,21,22,23
         indices2 = instance.add_particles_to_store(keys, attributes, values)
         
-        self.assertEquals(len(instance), 8)
+        self.assertEqual(len(instance), 8)
         
         indices = instance.get_indices_of([5,21])
         all_values = instance.get_values_in_store(indices, ["a"])
         
-        self.assertEquals(all_values[0][0], 2.0 | units.m)
-        self.assertEquals(all_values[0][1], 2.0 | units.m)
+        self.assertEqual(all_values[0][0], 2.0 | units.m)
+        self.assertEqual(all_values[0][1], 2.0 | units.m)
         
         indices = instance.get_indices_of([10, 20])
         instance.remove_particles_from_store(indices)
         
-        self.assertEquals(len(instance), 6)
+        self.assertEqual(len(instance), 6)
         
         indices = instance.get_indices_of([5,21])
         all_values = instance.get_values_in_store(indices, ["a"])
         
-        self.assertEquals(all_values[0][0], 2.0 | units.m)
-        self.assertEquals(all_values[0][1], 2.0 | units.m)
+        self.assertEqual(all_values[0][0], 2.0 | units.m)
+        self.assertEqual(all_values[0][1], 2.0 | units.m)
         
     def test6(self):
         keys = 10, 5, 6, 7
@@ -187,45 +187,45 @@ class _AbstractTestInMemoryAttributeStorage(amusetest.TestCase):
         instance = self.new_inmemory_storage(False)
         instance.add_particles_to_store(keys, attributes, values)
         
-        self.assertEquals(len(instance), 4)
+        self.assertEqual(len(instance), 4)
         
         particles = [4,5,6,7]
         keys = 20,21,22,23
         instance.add_particles_to_store(keys, attributes, values)
         
-        self.assertEquals(len(instance), 8)
+        self.assertEqual(len(instance), 8)
         
         indices = instance.get_indices_of([5,21])
         all_values = instance.get_values_in_store(indices, ["a"])
         
-        self.assertEquals(all_values[0][0], 2.0)
-        self.assertEquals(all_values[0][1], 2.0)
+        self.assertEqual(all_values[0][0], 2.0)
+        self.assertEqual(all_values[0][1], 2.0)
         
         indices = instance.get_indices_of([10,20])
         instance.remove_particles_from_store(indices)
         
-        self.assertEquals(len(instance), 6)
+        self.assertEqual(len(instance), 6)
         
         indices = instance.get_indices_of([5,21])
         all_values = instance.get_values_in_store(indices, ["a"])
         
-        self.assertEquals(all_values[0][0], 2.0)
-        self.assertEquals(all_values[0][1], 2.0)
+        self.assertEqual(all_values[0][0], 2.0)
+        self.assertEqual(all_values[0][1], 2.0)
         instance.set_values_in_store(indices, ["a", "b"], [[4.0, 5.0], [77,88]])
         all_values = instance.get_values_in_store(indices, ["a"])[0]
-        self.assertEquals(all_values[0], 4.0)
-        self.assertEquals(all_values[1], 5.0)
+        self.assertEqual(all_values[0], 4.0)
+        self.assertEqual(all_values[1], 5.0)
         
         if hasattr(instance, "copy"):
             instance2 = instance.copy()
             indices = instance2.get_indices_of([5,21])
             instance2.set_values_in_store(indices, ["a"], [[3.0, 1.0]])
             all_values = instance2.get_values_in_store(indices, ["a"])[0]
-            self.assertEquals(all_values[0], 3.0)
-            self.assertEquals(all_values[1], 1.0)
+            self.assertEqual(all_values[0], 3.0)
+            self.assertEqual(all_values[1], 1.0)
             all_values = instance.get_values_in_store(indices, ["a"])[0]
-            self.assertEquals(all_values[0], 4.0)
-            self.assertEquals(all_values[1], 5.0)
+            self.assertEqual(all_values[0], 4.0)
+            self.assertEqual(all_values[1], 5.0)
         
     def test7(self):
         
@@ -254,8 +254,8 @@ class _AbstractTestInMemoryAttributeStorage(amusetest.TestCase):
         instance = self.new_inmemory_storage()
         indices = instance.add_particles_to_store(keys, attributes, values)
         
-        self.assertEquals(instance.get_all_indices_in_store(),indices)
-        self.assertEquals(instance.get_indices_of(keys),indices) 
+        self.assertEqual(instance.get_all_indices_in_store(),indices)
+        self.assertEqual(instance.get_indices_of(keys),indices) 
         
     def test9(self):
         
@@ -303,23 +303,23 @@ class _AbstractTestInMemoryAttributeStorage(amusetest.TestCase):
         instance = self.new_inmemory_storage()
         instance.add_particles_to_store(keys, attributes, values)
         
-        self.assertEquals(len(instance), 2)
+        self.assertEqual(len(instance), 2)
         
         keys = 7,6
         instance.add_particles_to_store(keys, attributes, values)
         
-        self.assertEquals(len(instance), 4)
+        self.assertEqual(len(instance), 4)
         
         indices = instance.get_all_indices_in_store()[0]
         instance.remove_particles_from_store([indices])
         
-        self.assertEquals(len(instance), 3)
+        self.assertEqual(len(instance), 3)
         
-        self.assertEquals(instance.get_all_keys_in_store(), [5,7,6])
+        self.assertEqual(instance.get_all_keys_in_store(), [5,7,6])
         
         indices = instance.get_all_indices_in_store()[1]
         instance.remove_particles_from_store([indices])
-        self.assertEquals(instance.get_all_keys_in_store(), [5,6])
+        self.assertEqual(instance.get_all_keys_in_store(), [5,6])
         
 class TestSortedKeysInMemoryAttributeStorage(_AbstractTestInMemoryAttributeStorage):
       

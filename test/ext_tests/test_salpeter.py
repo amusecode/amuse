@@ -35,7 +35,7 @@ class SalpeterIMFTests(amusetest.TestCase):
         self.assertAlmostEqual(instance.mass_mean(), 0.353943475903 | units.MSun)
     
     def test5(self):
-        print "Test 5: testing user interface (SI units)"
+        print("Test 5: testing user interface (SI units)")
         numpy.random.seed(345672)
         masses = new_salpeter_mass_distribution(1000)
         
@@ -46,7 +46,7 @@ class SalpeterIMFTests(amusetest.TestCase):
         self.assertAlmostEqual(masses.amax(), 19.7132849297 | units.MSun)
     
     def test6(self):
-        print "Test 6: testing user interface (nbody units)"
+        print("Test 6: testing user interface (nbody units)")
         numpy.random.seed(345672)
         masses = new_salpeter_mass_distribution_nbody(1000)
         

@@ -38,13 +38,13 @@ class TestsForTicket208(amusetest.TestCase):
         instance.particles.add_particles(particles)
         instance.commit_particles()
         
-        self.assertEquals(len(instance.particles), 10)
+        self.assertEqual(len(instance.particles), 10)
         self.assertAlmostRelativeEquals(instance.particles.mass.as_quantity_in(mass_unit), list(numpy.arange(1,11)) | mass_unit)
                 
         instance.particles.remove_particle(particles[2])
         instance.particles.remove_particle(particles[5])
         
-        self.assertEquals(len(instance.particles), 8)
+        self.assertEqual(len(instance.particles), 8)
         self.assertAlmostRelativeEquals(instance.particles.mass.as_quantity_in(mass_unit), [1,2,4,5,7,8,9,10] | mass_unit)
         
         particles_new = datamodel.Particles(1)
@@ -58,7 +58,7 @@ class TestsForTicket208(amusetest.TestCase):
         particles_new.vz = 27 | speed_unit
         
         instance.particles.add_particles(particles_new)
-        self.assertEquals(len(instance.particles), 9)
+        self.assertEqual(len(instance.particles), 9)
         
         self.assertAlmostRelativeEquals(instance.particles.mass.as_quantity_in(mass_unit), [1,2,4,5,7,8,9,10,20] | mass_unit)
         self.assertAlmostRelativeEquals(instance.particles.x.as_quantity_in(length_unit), [1,2,4,5,7,8,9,10,22] | length_unit)

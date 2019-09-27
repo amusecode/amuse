@@ -53,7 +53,7 @@ class TestParameterDoc(amusetest.TestCase):
         phigrape.parameters.epsilon_squared = 10 | units.km**2
 
         docstring =  phigrape.parameters.__doc__
-        print docstring
+        print(docstring)
         self.assertTrue("smoothing parameter for gravity calculations (default value:0.0 m**2)" in docstring)
         self.assertTrue("timestep parameter (default value:0.02" in docstring)
         self.assertTrue("parameter to determine the initial timestep (default value:0.01" in docstring)
