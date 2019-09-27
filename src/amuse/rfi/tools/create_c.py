@@ -42,7 +42,9 @@ HEADER_CODE_STRING = """
   #include <arpa/inet.h>
 #endif
 #if _POSIX_VERSION >= 1
+#ifndef _POSIX_C_SOURCE
 #define _POSIX_C_SOURCE 1
+#endif
 	#include <signal.h>
 #endif
 """
