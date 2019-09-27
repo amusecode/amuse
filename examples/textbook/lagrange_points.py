@@ -50,7 +50,7 @@ def make_effective_iso_potential_plot(gravity_code):
     
     save_file = 'lagrange_points.png'
     pyplot.savefig(save_file)
-    print "\nOutput saved in", save_file
+    print("\nOutput saved in", save_file)
     pyplot.show()
     
 if __name__ == "__main__":

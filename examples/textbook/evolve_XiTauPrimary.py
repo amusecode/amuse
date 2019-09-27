@@ -21,12 +21,12 @@ if __name__ in ('__main__', '__plot__'):
     stellar.particles.add_particle(Particle(mass = o.mass))
     XiTau = stellar.particles[0]
     while XiTau.radius<=o.radius:
-        print "Time=", stellar.model_time.in_(units.Myr), stellar.particles.radius.in_(units.AU), stellar.particles.stellar_type
+        print("Time=", stellar.model_time.in_(units.Myr), stellar.particles.radius.in_(units.AU), stellar.particles.stellar_type)
         stellar.evolve_model()
 
     target_core_mass = XiTau.core_mass
-    print XiTau
-    print "Core mass:", XiTau.core_mass.in_(units.MSun)
+    print(XiTau)
+    print("Core mass:", XiTau.core_mass.in_(units.MSun))
     sph_model = convert_stellar_model_to_SPH(
         XiTau, 
         o.Nsph,
@@ -38,7 +38,7 @@ if __name__ in ('__main__', '__plot__'):
     core_particle = sph_model.core_particle.as_set()
     gas_particles = sph_model.gas_particles
 
-    print "Ngas=", len(gas_particles), "Ncore=", core_particle
+    print("Ngas=", len(gas_particles), "Ncore=", core_particle)
     write_set_to_file(core_particle, "Hydro_PrimaryStar_XiTau.amuse", "amuse", append_to_file=False)
     write_set_to_file(gas_particles, "Hydro_PrimaryStar_XiTau.amuse", "amuse")
     stellar.stop()

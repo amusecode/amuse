@@ -14,9 +14,9 @@ def collide_two_stars(t_end, distance, offset, v_vesc, nsteps):
         Nsph = 1000
         pstar, pcore = evolve_star_and_convert_to_sph(mass, age, omega, Nsph)
 
-    print pstar
+    print(pstar)
     pmass = pstar.mass.sum()
-    print pmass.in_(units.MSun)
+    print(pmass.in_(units.MSun))
 
     filename = "Hydro_BM06MSun.h5"
     try:
@@ -28,9 +28,9 @@ def collide_two_stars(t_end, distance, offset, v_vesc, nsteps):
         omega = 0|units.s**-1
         Nsph = 1000
         sstar, score = evolve_star_and_convert_to_sph(mass, age, omega, Nsph)
-    print sstar
+    print(sstar)
     smass = sstar.mass.sum()
-    print smass.in_(units.MSun)
+    print(smass.in_(units.MSun))
 
     import numpy
     v_esc = numpy.sqrt(2*constants.G*pmass/distance)
@@ -61,7 +61,7 @@ def collide_two_stars(t_end, distance, offset, v_vesc, nsteps):
     time = 0.0 | t_end.unit
     while time < t_end:
         time += dt
-        print time
+        print(time)
         hydro.evolve_model(time)
         to_framework.copy()
 

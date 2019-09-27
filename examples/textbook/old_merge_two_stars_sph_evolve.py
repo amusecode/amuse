@@ -21,7 +21,7 @@ def plot_clumps(groups):
 #        fraction = (group.mass.sum()/total_mass)
 #        fraction_of_mass_in_group.append(fraction)
     
-    print "N=", len(groups)
+    print("N=", len(groups))
     ci = ['r', 'b', 'g', 'k']
     figure = pyplot.figure(figsize=(12,6))
     i = 0
@@ -80,8 +80,8 @@ def evolve_single_star(mass, tend):
             temperature.append(stellar_evolution.particles[0].temperature)
             luminosity.append(stellar_evolution.particles[0].luminosity)
             stellar_type.append(stellar_evolution.particles[0].stellar_type)
-            print "Time=", time[-1], stellar_type[-1], mass[-1], radius[-1], \
-                  temperature[-1].in_(units.K), luminosity[-1].in_(units.LSun)
+            print("Time=", time[-1], stellar_type[-1], mass[-1], radius[-1], \
+                  temperature[-1].in_(units.K), luminosity[-1].in_(units.LSun))
             if stellar_type[-1] >= 4 | units.stellar_type:
                 break
 
@@ -108,15 +108,15 @@ def merge_two_stars_sph_and_evolve(Mprim, Msec, tcoll, tend):
         radius.append(stellar.particles[0].radius)
         temperature.append(stellar.particles[0].temperature)
         luminosity.append(stellar.particles[0].luminosity)
-        print "Time=", time[-1], mass[-1], radius[-1], \
-              temperature[-1].in_(units.K), luminosity[-1].in_(units.LSun)
+        print("Time=", time[-1], mass[-1], radius[-1], \
+              temperature[-1].in_(units.K), luminosity[-1].in_(units.LSun))
     n_normal = len(time)
 
-    print stars
+    print(stars)
     Nprim = int(100*stellar.particles[0].mass.value_in(units.MSun))
     mgas = stellar.particles[0].mass/Nprim
     Nsec = int(stellar.particles[1].mass/mgas)
-    print "N gas=", Nprim, Nsec
+    print("N gas=", Nprim, Nsec)
     sph_primary = convert_stellar_model_to_SPH(
         stellar.particles[0],
         Nprim, 
@@ -148,22 +148,22 @@ def merge_two_stars_sph_and_evolve(Mprim, Msec, tcoll, tend):
                                                              sph_particles)
     hydrodynamics.stop()
 
-    print "N all=", len(sph_particles)
+    print("N all=", len(sph_particles))
     clumps = find_clumps(sph_particles, converter)
     #sph_particles = clumps[0]
-    print "N blob=", len(sph_particles)
+    print("N blob=", len(sph_particles))
     #plot_clumps(clumps)
     #sph_merger = sph_particles[0]
 
-    print "convert SPH to stellar model"
+    print("convert SPH to stellar model")
     merged_star = convert_SPH_to_stellar_model(sph_particles)
 
-    print "initiate stellar evolution model"
+    print("initiate stellar evolution model")
     #stellar_evolution = MESA()
     stellar_evolution = EVtwin(redirect="none")    
     stellar_evolution.new_particle_from_model(merged_star, 0.0|units.Myr)
-    print "star:", stellar_evolution.particles
-    print "evolve star"
+    print("star:", stellar_evolution.particles)
+    print("evolve star")
     #stellar_evolution.evolve_model(tend)
     while stellar_evolution.model_time<(tend-tcoll):
         stellar_evolution.evolve_model()
@@ -172,10 +172,10 @@ def merge_two_stars_sph_and_evolve(Mprim, Msec, tcoll, tend):
         radius.append(stellar_evolution.particles[0].radius)
         temperature.append(stellar_evolution.particles[0].temperature)
         luminosity.append(stellar_evolution.particles[0].luminosity)
-        print "Time=", time[-1], mass[-1], radius[-1], \
-              temperature[-1].in_(units.K), luminosity[-1].in_(units.LSun)
+        print("Time=", time[-1], mass[-1], radius[-1], \
+              temperature[-1].in_(units.K), luminosity[-1].in_(units.LSun))
 
-    print stellar_evolution.particles
+    print(stellar_evolution.particles)
     stellar_evolution.stop()
     
     return time, mass, radius, temperature, luminosity, n_normal
@@ -226,7 +226,7 @@ if __name__ == "__main__":
     color = get_distinct(4)
     pyplot.xlim(5.e+4, 1.e+3)
 
-    print "Evolve single star of M=", (Mprim).in_(units.MSun)
+    print("Evolve single star of M=", (Mprim).in_(units.MSun))
     time, stp, mass, radius, temperature, luminosity \
         = evolve_single_star(Mprim, tend)
 
@@ -237,7 +237,7 @@ if __name__ == "__main__":
                    luminosity[0].value_in(units.LSun),
                    c=color[0], s=150, marker="^")
 
-    print "Evolve single star of M=", (Mprim).in_(units.MSun)+(0.2|units.MSun)
+    print("Evolve single star of M=", (Mprim).in_(units.MSun)+(0.2|units.MSun))
     time, stp, mass, radius, temperature, luminosity \
         = evolve_single_star(Mprim+(0.2|units.MSun), tend)
 
@@ -248,8 +248,8 @@ if __name__ == "__main__":
                    luminosity[0].value_in(units.LSun),
                    c=color[1], s=150, marker="^")
 
-    print "Evolve single star of M=", \
-        	(Mprim+Msec).in_(units.MSun) + (0.4|units.MSun)
+    print("Evolve single star of M=", \
+        	(Mprim+Msec).in_(units.MSun) + (0.4|units.MSun))
     time, stp, mass, radius, temperature, luminosity \
         = evolve_single_star(Mprim+(0.4|units.MSun), tend)
 
@@ -266,9 +266,9 @@ if __name__ == "__main__":
             tms = time[i]
     if tms <= 1|units.Myr:
         tms = 10|units.Myr
-    print "Main-sequence age:", tms.in_(units.Myr)
+    print("Main-sequence age:", tms.in_(units.Myr))
     tend = tms
-    print "Main sequence lifetime of star=", tms.in_(units.Myr)
+    print("Main sequence lifetime of star=", tms.in_(units.Myr))
 
     #tcoll = 0.5*tms
     time, mass, radius, temperature, luminosity, n \

@@ -27,10 +27,10 @@ def convert_star_to_hydro_model(M, t_end):
     stellar_evolution = EVtwin()
     se_star = stellar_evolution.particles.add_particle(star)
     
-    print "Evolving", star.mass, "star with", stellar_evolution.__class__.__name__, "up to", t_end.in_(units.Myr)
+    print("Evolving", star.mass, "star with", stellar_evolution.__class__.__name__, "up to", t_end.in_(units.Myr))
     stellar_evolution.evolve_model(t_end)
     
-    print "Creating SPH particles from the (1D) stellar evolution model"
+    print("Creating SPH particles from the (1D) stellar evolution model")
     sph_particles = convert_stellar_model_to_SPH(
         se_star, 
         10000
@@ -42,11 +42,11 @@ def stellar_model(N, M, t=0.0|units.Myr):
     star =  Particle(mass=M)
     stellar_evolution = EVtwin()
     se_star = stellar_evolution.particles.add_particle(star)
-    print "Evolving", star.mass, "star with", stellar_evolution.__class__.__name__, "to t=", t.in_(units.Myr)
+    print("Evolving", star.mass, "star with", stellar_evolution.__class__.__name__, "to t=", t.in_(units.Myr))
     stellar_evolution.evolve_model(t)
-    print "Stellar type:", stellar_evolution.particles.stellar_type
+    print("Stellar type:", stellar_evolution.particles.stellar_type)
     
-    print "Creating SPH particles from the (1D) stellar evolution model"
+    print("Creating SPH particles from the (1D) stellar evolution model")
     sph_particles = convert_stellar_model_to_SPH(se_star, N).gas_particles
     stellar_evolution.stop()
     return sph_particles

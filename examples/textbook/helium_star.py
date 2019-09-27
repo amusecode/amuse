@@ -1,7 +1,7 @@
 """
 Creates a helium burning star from the inner shells of a main sequence star.
 """
-from __future__ import print_function
+
 
 from amuse.units import units
 from amuse.datamodel import Particle

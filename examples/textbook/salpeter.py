@@ -34,7 +34,7 @@ def plot_mass_function(masses, ximf):
     
     save_file = "salpeter.png"
     pyplot.savefig(save_file)
-    print '\nSaved figure in file', save_file,'\n'
+    print('\nSaved figure in file', save_file,'\n')
     pyplot.show()
 ###BOOKLISTSTOP###
 

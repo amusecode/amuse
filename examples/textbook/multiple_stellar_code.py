@@ -15,7 +15,7 @@ def evolve_with_different_stellar_model():
         channel.copy()
 
     for time, star in zip(times, stars):
-        print "Time=", time, "M=", star.mass
+        print("Time=", time, "M=", star.mass)
         stellar.stop()
 ###BOOKLISTSTOP###
 
@@ -29,8 +29,8 @@ def evolve_with_same_stellar_model():
         si.evolve_for(ti)
         channel.copy()
 
-    print "Time=", stellar.model_time, "age=", stars.age, \
-          "\n\tmass=", stars.mass
+    print("Time=", stellar.model_time, "age=", stars.age, \
+          "\n\tmass=", stars.mass)
     stellar.stop()
 
 if __name__ in ('__main__', '__plot__'):

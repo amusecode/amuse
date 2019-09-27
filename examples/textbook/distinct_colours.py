@@ -35,7 +35,7 @@ def get_distinct(nr):
     # check if nr is in correct range
     
     if nr < 1 or nr > 12:
-        print "wrong nr of distinct colours!"
+        print("wrong nr of distinct colours!")
         return
 
     # get list of indices
@@ -64,14 +64,14 @@ if __name__ == '__main__':
     import matplotlib.mlab as mlab
     import matplotlib.pyplot as plt
 
-    print __doc__
-    print "usage examples: "
-    print "print distinct_colours.get_distinct(2)"
-    print get_distinct(2)
-    print "print distinct_colours.greysafecols"
-    print greysafecols
+    print(__doc__)
+    print("usage examples: ")
+    print("print distinct_colours.get_distinct(2)")
+    print(get_distinct(2))
+    print("print distinct_colours.greysafecols")
+    print(greysafecols)
 
-    print "generating example plot: distinct_colours_example.png"
+    print("generating example plot: distinct_colours_example.png")
     plt.close()
     t = np.arange(0.0, 2.0, 0.01)
     n = 12

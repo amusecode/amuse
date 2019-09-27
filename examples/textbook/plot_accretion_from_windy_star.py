@@ -16,7 +16,7 @@ def Bondi_Hoyle_Littleton_accretion_rate(Mb, vs, a0, Mdot_donor):
     c = ((10|units.kms)/vs)**4
     d = ((100|units.AU)/a0)**2
     e = (Mdot_donor/(1.e-4 | units.MSun/units.yr))
-    print a, b, c, d, e
+    print(a, b, c, d, e)
     Mdot_BHL = a*b*c*d*e
     #Mdot_BHL = (3.e-7 | units.MSun/units.yr) * (Mb/(1|units.MSun))**2 ((10|units.kms)/vs)**4 * ((100|units.AU)/a0)**2 * (Mdot_donor/(1.e-4 | units.MSun/units.yr))
     return Mdot_BHL
@@ -26,7 +26,7 @@ def read_accretion_rate(filename):
     t = [] | units.yr
     m = [] | units.MSun
     n = []
-    for line in open(filename).xreadlines():
+    for line in open(filename):
         if "N accreted:" in  line:
             l = line.split()
             t.append(float(l[2])|units.Myr)
@@ -45,9 +45,9 @@ def plot_accretion_from_wind(filename, color):
 #    pyplot.show()
 
 def v_terminal_teff(temperature):
-  print numpy.log10(temperature.value_in(units.K))-3.
+  print(numpy.log10(temperature.value_in(units.K))-3.)
   t4=(numpy.log10(temperature.value_in(units.K))-4.).clip(0.,1.)
-  print t4
+  print(t4)
   return (30 | units.km/units.s) + ((4000 | units.km/units.s)*t4)
 
 def main():
@@ -72,17 +72,17 @@ def main():
 #    vs = 18. | units.kms
     vs = 17.26 | units.kms
     vorb = numpy.sqrt(constants.G*Mb/a0)
-    print "vorb=", vorb.in_(units.kms)
+    print("vorb=", vorb.in_(units.kms))
     k = vorb/vs
     m1 = 1.924785833858|units.MSun
     m2 = 1.|units.MSun
     mu = m2/(m1+m2)
     Mdot_donor  = 0.11 |units.MSun/units.Myr
     cvw = 0.
-    print "k and mu:", k, mu
+    print("k and mu:", k, mu)
     Mdot = Mdot_donor  * mu**2 * k**4/(1 + k**2 + cvw**2)**(3./2.)
 #    print "Mdot:", Mdot.in_(units.MEarth/units.yr)
-    print "Mdot:", Mdot.in_(units.MSun/units.Myr)
+    print("Mdot:", Mdot.in_(units.MSun/units.Myr))
 
     t = numpy.arange(0, 3, 0.1) | units.yr
     mdot = Mdot*t 
@@ -95,7 +95,7 @@ def main():
     figure = single_frame(x_label, y_label, logy=False, xsize=14, ysize=10)
     filename = "hydro_give_or_take.data"
 
-    print t, mdot.value_in(units.MSun)
+    print(t, mdot.value_in(units.MSun))
     mdot /= (1.e-9|units.MSun)
     pyplot.plot(t.value_in(units.yr), mdot, c=c[2])
 

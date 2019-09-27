@@ -33,7 +33,7 @@ def main():
     planet = ss[1]
     moon = ss[2]
 
-    print moon
+    print(moon)
     converter=nbody_system.nbody_to_si(star.mass, 1|units.AU)
     star_gravity = ph4(converter)
     star_gravity.particles.add_particle(star)
@@ -80,9 +80,9 @@ def main():
         Etot = Ekin + Epot
         DDE = (Etot_prev-Etot)/Etot
         DDE_max = max(abs(DDE_max), abs(DDE))
-        print "T=", time, 
-        print "E= ", Etot, "Q= ", Ekin/Epot,
-        print "dE=", (Etot_init-Etot)/Etot, "ddE=", DDE, "dde_min=", DDE_max
+        print("T=", time, end=' ') 
+        print("E= ", Etot, "Q= ", Ekin/Epot, end=' ')
+        print("dE=", (Etot_init-Etot)/Etot, "ddE=", DDE, "dde_min=", DDE_max)
         Etot_prev = Etot
     gravity.stop()
 

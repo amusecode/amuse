@@ -85,12 +85,12 @@ def plot_single_image(planets, debris, disk, shell, figfile=None):
 #        xion_min = xion_max/100.
 #        xs += xion_min
 #        xion_max += xion_min
-    print "u=", u_min, u_max
+    print("u=", u_min, u_max)
     Ts = mu() / constants.kB * disk.u
     T_min = max(20|units.K, mu() / constants.kB * u_min)
     T_max = min(1800|units.K, mu() / constants.kB * u_max)
-    print "T=", T_min, T_max
-    print "X=", xion_min, xion_max
+    print("T=", T_min, T_max)
+    print("X=", xion_min, xion_max)
 
     log_u = numpy.log((us / u_min)) / numpy.log((u_max / u_min))
     clipped_log_u = numpy.minimum(numpy.ones_like(log_u), numpy.maximum(numpy.zeros_like(log_u), log_u))
@@ -168,7 +168,7 @@ def plot_view(x, y, z, xlim, ylim, levels=4):
 #    xi = numpy.linspace(-xlim,xlim,xlim)
 #    yi = numpy.linspace(-ylim,ylim,ylim)
     # grid the data.
-    print len(x), len(y), len(z)
+    print(len(x), len(y), len(z))
     zi = griddata((x, y), z, (xi[None,:], yi[:,None]), method='linear')
     # contour the gridded data, plotting dots at the randomly spaced data points.
 #    CS = pyplot.contourf(xi,yi,zi,levels,cmap=pyplot.cm.plasma,
@@ -217,7 +217,7 @@ def plot_temperature_image(planets, debris, disk, shell, figfile="fig_disk_top_v
     y = disk.y.value_in(units.AU)
     z = disk.z.value_in(units.AU)
     T = disk.temperature.value_in(units.K)
-    print "min temp=", T.min()
+    print("min temp=", T.min())
 
     import numpy as np
     import matplotlib.pyplot as plt
@@ -320,10 +320,10 @@ def plot_projected_density_image(planets, debris, disk, shell):
         y = y[selection]
         z = z[selection]
         T = T[selection]
-        print "After slicing the data: N=", len(x)
+        print("After slicing the data: N=", len(x))
     
     rho = numpy.log10(disk.rho.value_in(units.g/units.cm**3))
-    print "Density=", rho.min(), rho.max(), "in log(g/cm^3)"
+    print("Density=", rho.min(), rho.max(), "in log(g/cm^3)")
     #-12.9251289255 -9.9657991654 in log(g/cm^3)
 
     import numpy as np
@@ -393,7 +393,7 @@ def plot_projected_density_image(planets, debris, disk, shell):
 def main(filename=None, pp=False):
 
     source, planets, debris, disk, shell = read_planetary_system(filename)
-    print "N=", len(source), len(planets), len(debris), len(disk), len(shell)
+    print("N=", len(source), len(planets), len(debris), len(disk), len(shell))
     figfile = filename.split(".amuse")[0] + ".pdf"
     if pp:
         plot_temperature_image(planets, debris, disk, shell, figfile)
@@ -421,7 +421,7 @@ def read_planetary_system(filename): #lim, snapshot_id):
     time = 0 | units.yr
     bodies = read_set_from_file(filename, "amuse")
     for bi in bodies.history:
-      print bi
+      print(bi)
       if len(bi)>0:
         if "gas" in bi.name:
             gas.add_particles(bi.copy())
@@ -433,15 +433,15 @@ def read_planetary_system(filename): #lim, snapshot_id):
             shell.add_particles(bi.copy())
         else:
             source.add_particles(bi.copy())
-    print len(gas), len(shell)
+    print(len(gas), len(shell))
 #    print gas[1]
 #    print shell[1]
             
 #    shell = gas.select(lambda n: "shell" in n,["name"])
 #    gas -= shell
 #    print shell[1]
-    print "N=", len(source), len(planets), len(debris), len(gas), len(shell)
-    print "Read planetary system at time", time.in_(units.yr)
+    print("N=", len(source), len(planets), len(debris), len(gas), len(shell))
+    print("Read planetary system at time", time.in_(units.yr))
     return source, planets, debris, gas, shell
 
 def output_single_image(filename): #lim, snapshot_id):
@@ -464,7 +464,7 @@ def output_single_image(filename): #lim, snapshot_id):
         else:
             planets = bi.copy()
             time = bi.get_timestamp()
-            print "Orbits at t=", time, planets.name, planets.semimajor_axis.in_(units.AU), planets.eccentricity
+            print("Orbits at t=", time, planets.name, planets.semimajor_axis.in_(units.AU), planets.eccentricity)
 
 def output_multiple_images(lim):
     snapshot_id = 0
@@ -475,16 +475,16 @@ def output_multiple_images(lim):
             if len(bi)<=20:
                 planets = bi.copy()
                 time = bi.get_timestamp()
-                print "Orbits at t=", time, planets.semimajor_axis.in_(units.AU), planets.eccentricity
+                print("Orbits at t=", time, planets.semimajor_axis.in_(units.AU), planets.eccentricity)
             else:
                 disk = bi.copy()
 
                 time = bi.get_timestamp()
-                print "Snapshot=", snapshot_id, time
+                print("Snapshot=", snapshot_id, time)
                 if image_id<0 or image_id == snapshot_id:
                     plot_single_image(planets, disk, lim.value_in(units.AU), snapshot_id)
                 if image_id == snapshot_id:
-                    print "Stop plotting"
+                    print("Stop plotting")
                     break
         snapshot_id += 1
         filename = "planetary_system_i{0:04}.amuse".format(snapshot_id)

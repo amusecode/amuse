@@ -84,7 +84,7 @@ def main(filename, lim=-1|units.parsec, image_id=-1):
     for si in mc.history:
         snapshot_id += 1
         time = si.get_timestamp()
-        print "Snapshot=", snapshot_id, time.in_(units.Gyr)
+        print("Snapshot=", snapshot_id, time.in_(units.Gyr))
         if image_id<0 or image_id == snapshot_id:
             m = 1
             plot_single_image(si, lim.value_in(units.kpc))

@@ -21,7 +21,7 @@ def setup_sph_code(sph_code, N, L, rho, u):
     plummer = new_plummer_gas_model(N, convert_nbody=converter)    
     plummer = plummer.select(lambda r: r.length()<0.5*L,["position"])
     N = len(plummer)
-    print "N=", len(plummer)
+    print("N=", len(plummer))
     plummer.mass = (rho * L**3) / N
     gas = Particles(N)
     gas.mass = 0.01*(rho * L**3) / N
@@ -51,7 +51,7 @@ def main(N, Mtot, Rvir, t_end):
     sph_code = setup_sph_code(Fi, N, Rvir, rho, u)    
 
     grid = convert_SPH_to_grid(sph_code, (10, 10, 10), do_scale = True)
-    print grid
+    print(grid)
     sph_code.stop()
     plot_grid(grid)
     xxx
@@ -73,8 +73,8 @@ def main(N, Mtot, Rvir, t_end):
     Q = (Ekin+Eth)/Epot
     dE = (Etot_init-Etot)/Etot
     com = hydro.gas_particles.center_of_mass()
-    print "T=", hydro.get_time(), "M=", hydro.gas_particles.mass.sum(), 
-    print "E= ", Etot, "Q= ", Q, "dE=", dE, "CoM=", com.in_(units.RSun)
+    print("T=", hydro.get_time(), "M=", hydro.gas_particles.mass.sum(), end=' ') 
+    print("E= ", Etot, "Q= ", Q, "dE=", dE, "CoM=", com.in_(units.RSun))
 
     hydro.stop()
     

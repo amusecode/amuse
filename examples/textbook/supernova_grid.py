@@ -15,7 +15,7 @@ def plot_grid(grid, time= 0.0|units.day):
 
     halfway = len(grid.rho[...,0,0])/2 
     rho = grid.rho[:,:,halfway].value_in(units.g/units.cm**3)
-    print "Extrema density:", halfway, rho.min(), rho.max()
+    print("Extrema density:", halfway, rho.min(), rho.max())
     max_dens = rho.max()
 #    max_dens = 32
 
@@ -43,7 +43,7 @@ def setup_sph_code(sph_code, N, L, rho, u):
     plummer = new_plummer_gas_model(N, convert_nbody=converter)    
     plummer = plummer.select(lambda r: r.length()<0.5*L,["position"])
     N = len(plummer)
-    print "N=", len(plummer)
+    print("N=", len(plummer))
     plummer.mass = (rho * L**3) / N
     gas = Particles(N)
     gas.mass = 0.001*(rho * L**3) / N
@@ -153,7 +153,7 @@ def run_grid_code(hydro, grid, t_end, dt):
     plot_grid(grid)
         
     while hydro.model_time<t_end:
-        print "Time=", hydro.model_time.in_(units.s)
+        print("Time=", hydro.model_time.in_(units.s))
         hydro.evolve_model(hydro.model_time + dt)
         ctg.copy()
         plot_grid(grid, hydro.model_time)

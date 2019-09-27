@@ -26,9 +26,9 @@ def virial_ratio_evolution(code, bodies, Q_init, t_end):
         Epot = gravity.potential_energy
         Etot = Ekin + Epot
         Q.append(-1*Ekin/Epot)
-        print "T=", time[-1], "Q= ", Q[-1],
-        print "M=", bodies.mass.sum(), "E= ", Etot,
-        print "dE=", (Etot_init-Etot)/Etot, "ddE=", (Etot_prev-Etot)/Etot 
+        print("T=", time[-1], "Q= ", Q[-1], end=' ')
+        print("M=", bodies.mass.sum(), "E= ", Etot, end=' ')
+        print("dE=", (Etot_init-Etot)/Etot, "ddE=", (Etot_prev-Etot)/Etot) 
         Etot_prev = Etot
     gravity.stop()
     return time, Q
@@ -55,7 +55,7 @@ def main(N, t_end):
 
     save_file = 'gravity_to_virial.png'
     pyplot.savefig(save_file)
-    print "\nOutput saved in", save_file, '\n'
+    print("\nOutput saved in", save_file, '\n')
     pyplot.show()
     
 def new_option_parser():

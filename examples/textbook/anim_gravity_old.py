@@ -10,7 +10,7 @@ def animate(i):
     try:
         amusedir = os.environ['AMUSE_DIR']
     except:
-        print 'Environment variable AMUSE_DIR not set'
+        print('Environment variable AMUSE_DIR not set')
         amusedir = '.'
     filename = amusedir+'/examples/textbook/'+'gravity.h5'
     particles = read_set_from_file(filename, "hdf5")

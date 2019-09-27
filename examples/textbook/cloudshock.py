@@ -156,21 +156,21 @@ class CalculateCloudShock(object):
         self.store_grids(instance.itergrids(), 0)
         
         if time > 0.0 | generic_unit_system.time:
-            print "start evolve"
+            print("start evolve")
             dt = time / 10.0
             t = dt
             step = 1
             while t <= time:
                 instance.evolve_model(t)
                 
-                print "time : ", t
+                print("time : ", t)
                 
                 #self.store_grids(instance.itergrids(), step)
                     
                 t += dt
                 step += 1
         
-        print "sampling results"
+        print("sampling results")
         r = 4
         sample = datamodel.Grid.create(
             (1000,1000*r),
@@ -184,7 +184,7 @@ class CalculateCloudShock(object):
         sample.rhovy = rhovy.reshape(sample.shape)
         sample.rhovz = rhovx.reshape(sample.shape)
         sample.energy = rhoen.reshape(sample.shape)
-        print "terminating code"
+        print("terminating code")
         instance.stop()
 
         return sample
@@ -208,7 +208,7 @@ def main():
     
         rho = result.rho.value_in(generic_unit_system.density)
     
-        print "done"
+        print("done")
     
         if not IS_PLOT_AVAILABLE:
             return

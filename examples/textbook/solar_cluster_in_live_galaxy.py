@@ -63,7 +63,7 @@ def main(N=1000, n=100, W0=7.0, t_end=10|units.Myr, dt_diag=1|units.Myr, filenam
     
     converter=nbody_system.nbody_to_si(2.067352e+11|units.MSun,1|units.kpc)
     galaxy = initialize_galaxy_model(N=N, converter=converter)
-    print len(galaxy)
+    print(len(galaxy))
     galaxy_gravity = BHTree(converter)
     galaxy_gravity.parameters.timestep_parameter = 0.1
     galaxy_gravity.parameters.epsilon_squared = (100|units.parsec)**2
@@ -104,9 +104,9 @@ def main(N=1000, n=100, W0=7.0, t_end=10|units.Myr, dt_diag=1|units.Myr, filenam
         Ekin = gravity.kinetic_energy 
         Epot = gravity.potential_energy
         Etot = Ekin + Epot
-        print "T=", time, 
-        print "E= ", Etot, "Q= ", Ekin/Epot,
-        print "dE=", (Etot_init-Etot)/Etot, "ddE=", (Etot_prev-Etot)/Etot 
+        print("T=", time, end=' ') 
+        print("E= ", Etot, "Q= ", Ekin/Epot, end=' ')
+        print("dE=", (Etot_init-Etot)/Etot, "ddE=", (Etot_prev-Etot)/Etot) 
         Etot_prev = Etot
 
     gravity.stop()

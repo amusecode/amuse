@@ -18,7 +18,7 @@ def plot_clumps(groups):
 #        fraction = (group.mass.sum()/total_mass)
 #        fraction_of_mass_in_group.append(fraction)
     
-    print "N=", len(groups)
+    print("N=", len(groups))
     ci = ['r', 'b', 'g', 'k']
     figure = pyplot.figure(figsize= (12,6))
     i = 0
@@ -84,7 +84,7 @@ if __name__ == "__main__":
 
     o, arguments = new_option_parser().parse_args()
 
-    print "initialize star"
+    print("initialize star")
     stellar_evolution = EVtwin()
     stellar_evolution.particles.add_particle(Particle(mass=o.Mprim))
     stellar_evolution.evolve_model(o.time)
@@ -96,7 +96,7 @@ if __name__ == "__main__":
     stellar_evolution.stop()
     from amuse.units.generic_unit_converter import ConvertBetweenGenericAndSiUnits
 
-    print "convert star to SPH"
+    print("convert star to SPH")
     converter = nbody_system.nbody_to_si(1|units.hour, 1|units.RSun)
     hydrodynamics = Gadget2(converter)
     hydrodynamics.gas_particles.add_particles(particles)
@@ -104,17 +104,17 @@ if __name__ == "__main__":
     hydrodynamics.gas_particles.copy_values_of_attributes_to(["density", "u", "pressure"], particles)
     hydrodynamics.stop()
 
-    print "convert SPH to stellar model"
+    print("convert SPH to stellar model")
     model = convert_SPH_to_stellar_model(particles)
 
     #stellar_evolution = MESA()
-    print "initiate stellar evolution model"
+    print("initiate stellar evolution model")
     stellar_evolution = EVtwin(redirect="none")    
     stellar_evolution.new_particle_from_model(model, 0.0|units.Myr)
-    print "star:", stellar_evolution.particles
-    print "evolve star"
+    print("star:", stellar_evolution.particles)
+    print("evolve star")
     stellar_evolution.evolve_model(2*o.time)
-    print stellar_evolution.particles
+    print(stellar_evolution.particles)
 
     
 

@@ -74,7 +74,7 @@ def plot_cluster(x, y):
 
     save_file = 'Arches Fig. 7.1.png'
     pyplot.savefig(save_file)
-    print '\nSaved figure in file', save_file, '\n'
+    print('\nSaved figure in file', save_file, '\n')
     pyplot.show()
 
 def evolve_cluster_in_galaxy(N, W0, Rinit, tend, timestep, M, R):
