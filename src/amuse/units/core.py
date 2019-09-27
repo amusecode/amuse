@@ -975,7 +975,15 @@ class mul_unit(derived_unit):
     @late
     def base(self):
         return tuple(
-            [x for x in [(x[0] + x[1], x[2]) for x in self.combine_bases(self.left_hand.base, self.right_hand.base)] if x[0] != 0])
+            [
+                x
+                for x in [
+                    (x[0] + x[1], x[2])
+                    for x in self.combine_bases(self.left_hand.base, self.right_hand.base)
+                ]
+                if x[0] != 0
+            ]
+        )
     
     def get_parts_with_power(self):        
         lhs_parts = list(self.left_hand.get_parts_with_power())
@@ -1042,7 +1050,15 @@ class pow_unit(derived_unit):
     @late
     def base(self):
         return tuple(
-            [x for x in [(x[0] * self.power, x[1]) for x in self.local_unit.base] if x[0] != 0])
+            [
+                x
+                for x in [
+                    (x[0] * self.power, x[1])
+                    for x in self.local_unit.base
+                ]
+                if x[0] != 0
+            ]
+        )
         
     @late
     def factor(self):
@@ -1098,7 +1114,15 @@ class div_unit(derived_unit):
     @late
     def base(self):
         return tuple(
-                    [x for x in [(x[0] - x[1], x[2]) for x in self.combine_bases(self.left_hand.base, self.right_hand.base)] if x[0] != 0])
+            [
+                x
+                for x in [
+                    (x[0] - x[1], x[2])
+                    for x in self.combine_bases(self.left_hand.base, self.right_hand.base)
+                ]
+                if x[0] != 0
+            ]
+        )
     
     
     def get_parts_with_power(self):        
