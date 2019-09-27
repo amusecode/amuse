@@ -702,7 +702,7 @@ class StoreHDF(object):
         names = group.attrs.keys()
         attributenames = [x for x in names if x + '_unit' in group.attrs]
         for name in attributenames:
-            unit_string = group.attrs[name+"_unit"].decode("ascii")
+            unit_string = group.attrs[name+"_unit"] if isinstance(group.attrs[name+"_unit"],str) else group.attrs[name+"_unit"].decode("ascii")
             if unit_string == 'none':
                 quantity = group.attrs[name]
             else:
@@ -759,7 +759,7 @@ class StoreHDF(object):
     
     def load_from_group(self, group, default_type = 'particles'):
         if 'type' in group.attrs:
-            container_type = group.attrs['type'].decode('ascii')
+            container_type = group.attrs['type'] if isinstance(group.attrs['type'], str) else group.attrs['type'].decode('ascii') 
         else:
             container_type = default_type
         
