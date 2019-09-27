@@ -29,7 +29,7 @@ import warnings
 
 if sys.hexversion > 0x03000000:
     def pickle_to_string(value):
-        return numpy.void(pickle.dumps(value), protocol=0)
+        return numpy.void(pickle.dumps(value, protocol=0))
         
         
     def unpickle_from_string(value):
