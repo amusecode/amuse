@@ -123,7 +123,7 @@ def len(iterable):
         if sys.version >= '3.0':
             return len(str)
         else:
-            return len(unicode(iterable, 'utf'))
+            return len(str(iterable, 'utf'))
     except:
         return iterable.__len__()
 
@@ -322,7 +322,7 @@ class Texttable:
         #     usable code for python 2.1
         if header:
             if hasattr(rows, '__iter__') and hasattr(rows, 'next'):
-                self.header(rows.next())
+                self.header(next(rows))
             else:
                 self.header(rows[0])
                 rows = rows[1:]
@@ -558,13 +558,13 @@ class Texttable:
                     if sys.version >= '3.0':
                         c = str(c)
                     else:
-                        c = unicode(c, 'utf')
+                        c = str(c, 'utf')
                 except UnicodeDecodeError as strerror:
                     sys.stderr.write("UnicodeDecodeError exception for string '%s': %s\n" % (c, strerror))
                     if sys.version >= '3.0':
                         c = str(c, 'utf', 'replace')
                     else:
-                        c = unicode(c, 'utf', 'replace')
+                        c = str(c, 'utf', 'replace')
                 array.extend(textwrap.wrap(c, width))
             line_wrapped.append(array)
         max_cell_lines = reduce(max, list(map(len, line_wrapped)))
@@ -589,7 +589,7 @@ if __name__ == '__main__':
     table.add_rows([["Name", "Age", "Nickname"],
                     ["Mr\nXavier\nHuon", 32, "Xav'"],
                     ["Mr\nBaptiste\nClement", 1, "Baby"]])
-    print(table.draw() + "\n")
+    print((table.draw() + "\n"))
 
     table = Texttable()
     table.set_deco(Texttable.HEADER)
@@ -604,4 +604,4 @@ if __name__ == '__main__':
                     ["efghijk", 67.5434, .654,  89.6,  12800000000000000000000.00023],
                     ["lmn",     5e-78,   5e-78, 89.4,  .000000000000128],
                     ["opqrstu", .023,    5e+78, 92.,   12800000000000000000000]])
-    print(table.draw())
+    print((table.draw()))

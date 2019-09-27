@@ -1,8 +1,8 @@
-import ConfigParser
+import configparser
 import os.path
 import os
 import platform
-from StringIO import StringIO
+from io import StringIO
 
 from amuse.support.core import late
 from amuse.support import exceptions
@@ -16,7 +16,7 @@ class GlobalOptions(object):
     INSTANCE = None
     
     def __init__(self):
-        self.config=ConfigParser.RawConfigParser()
+        self.config=configparser.RawConfigParser()
         self.overriden_options = {}
     
     def load(self, preloadfp = None):
@@ -300,7 +300,7 @@ class OptionalAttributes(object):
     option_sections = ()
     
     def __init__(self, **optional_keyword_arguments):
-        for key, value in optional_keyword_arguments.iteritems():
+        for key, value in optional_keyword_arguments.items():
             if self.hasoption(key):
                 setattr(self, key, value)
         

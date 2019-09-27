@@ -1,6 +1,6 @@
 import numpy
 
-from ConfigParser import ConfigParser
+from configparser import ConfigParser
 
 try:
     import f90nml
@@ -32,8 +32,8 @@ class CodeWithNamelistParameters(object):
         self._nml_file=inputfile
         self._nml_params = f90nml.read(inputfile)
 
-        for group, d in self._nml_params.iteritems():
-            for short, val in d.iteritems():
+        for group, d in self._nml_params.items():
+            for short, val in d.items():
                 key=(short.lower(),group.upper())
                 if key in self._namelist_parameters:
                     group_name=self._namelist_parameters[key]["group_name"]
@@ -45,7 +45,7 @@ class CodeWithNamelistParameters(object):
                     else:
                         setattr(parameter_set, name, val )
                 else:
-                    print "'%s' of group '%s' not in the namelist_parameters"%(short, group)
+                    print("'%s' of group '%s' not in the namelist_parameters"%(short, group))
 
     def write_namelist_parameters(self, outputfile, do_patch=False, nml_file=None):
         patch=defaultdict( dict )
