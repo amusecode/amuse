@@ -44,8 +44,8 @@ class CodeInterfaceWithConvertedUnitsTests(amusetest.TestCase):
         handler = instance.get_handler('METHOD')
         handler.add_method('add_to_length', (nbody_system.length,), nbody_system.length)
         
-        print instance.mass
-        self.assertAlmostEquals(instance.mass.value_in(units.kg), 100.0, 10)
+        print(instance.mass)
+        self.assertAlmostEqual(instance.mass.value_in(units.kg), 100.0, 10)
         
         
     def test2(self):
@@ -64,7 +64,7 @@ class CodeInterfaceWithConvertedUnitsTests(amusetest.TestCase):
         handler = instance.get_handler('METHOD')
         handler.add_method('add_to_length', (nbody_system.length,), nbody_system.length)
                 
-        self.assertAlmostEquals(instance.add_to_length(5|units.m).value_in(units.m), 55.0, 10)
+        self.assertAlmostEqual(instance.add_to_length(5|units.m).value_in(units.m), 55.0, 10)
         
 
     def test3(self):
@@ -84,7 +84,7 @@ class CodeInterfaceWithConvertedUnitsTests(amusetest.TestCase):
         handler = instance.get_handler('METHOD')
         handler.add_method('return_an_errorcode', (handler.NO_UNIT,), handler.ERROR_CODE)
            
-        self.assertEquals(instance.return_an_errorcode(0), None)
+        self.assertEqual(instance.return_an_errorcode(0), None)
         self.assertRaises(Exception, lambda : instance.return_an_errorcode(-1),
             expected_message="Error when calling 'return_an_errorcode' of a 'InCodeComponentImplementation', errorcode is -1"
         )
@@ -204,10 +204,10 @@ class CodeInterfaceWithMethodsAndPropertiesTests(amusetest.TestCase):
         handler = instance.get_handler('METHOD')
         handler.add_method('add_10_to_length', (units.m,), units.m)
         
-        self.assertEquals(20.0, original.add_10_to_length(10.0))
+        self.assertEqual(20.0, original.add_10_to_length(10.0))
         
-        self.assertEquals(20.0 | units.m, instance.add_10_to_length(10.0 | units.m))
-        self.assertEquals(1010.0 | units.m, instance.add_10_to_length(1.0| units.km))
+        self.assertEqual(20.0 | units.m, instance.add_10_to_length(10.0 | units.m))
+        self.assertEqual(1010.0 | units.m, instance.add_10_to_length(1.0| units.km))
         
         
     def test2(self):
@@ -219,8 +219,8 @@ class CodeInterfaceWithMethodsAndPropertiesTests(amusetest.TestCase):
         handler = instance.get_handler('METHOD')
         handler.add_method('add_10_to_length', (units.m,), units.m, public_name = 'add_10')
            
-        self.assertEquals(20.0 | units.m, instance.add_10(10.0 | units.m))
-        self.assertEquals(1010.0 | units.m, instance.add_10(1.0| units.km))
+        self.assertEqual(20.0 | units.m, instance.add_10(10.0 | units.m))
+        self.assertEqual(1010.0 | units.m, instance.add_10(1.0| units.km))
         
     def test3(self):
         original = self.TestClass()
@@ -231,7 +231,7 @@ class CodeInterfaceWithMethodsAndPropertiesTests(amusetest.TestCase):
         handler = instance.get_handler('PROPERTY')
         handler.add_property('get_one', units.m)
         
-        self.assertEquals(1.0 | units.m, instance.one)
+        self.assertEqual(1.0 | units.m, instance.one)
         
     def test4(self):
         original = self.TestClass()
@@ -242,7 +242,7 @@ class CodeInterfaceWithMethodsAndPropertiesTests(amusetest.TestCase):
         handler = instance.get_handler('PROPERTY')
         handler.add_property('get_one', units.m, public_name = 'get_one')
         
-        self.assertEquals(1.0 | units.m, instance.get_one)
+        self.assertEqual(1.0 | units.m, instance.get_one)
         
     
     def test5(self):
@@ -254,9 +254,9 @@ class CodeInterfaceWithMethodsAndPropertiesTests(amusetest.TestCase):
         handler.add_method('get_state', (handler.NO_UNIT,), (units.m, units.m, units.kg, handler.ERROR_CODE))
         
         result = instance.get_state(1)
-        self.assertEquals(3, len(result))
-        self.assertEquals(1.0 | units.m, result[0])
-        self.assertEquals(3.0 | units.kg, result[2])
+        self.assertEqual(3, len(result))
+        self.assertEqual(1.0 | units.m, result[0])
+        self.assertEqual(3.0 | units.kg, result[2])
         
     
     def test6(self):
@@ -319,7 +319,7 @@ class CodeInterfaceTests(amusetest.TestCase):
         
         self.assertTrue(instance.always_works())
         instance.move_to_state_1()
-        self.assertEquals(1, instance.returns_1())
+        self.assertEqual(1, instance.returns_1())
         
     def test2(self):
         original = ClassWithState()
@@ -333,11 +333,11 @@ class CodeInterfaceTests(amusetest.TestCase):
             
         
         self.assertTrue(instance.always_works())
-        self.assertEquals(instance.get_name_of_current_state(), 'ZERO')
+        self.assertEqual(instance.get_name_of_current_state(), 'ZERO')
         instance.move_to_state_1()
         
-        self.assertEquals(instance.get_name_of_current_state(), 'ONE')
-        self.assertEquals(instance.returns_1(), 1)
+        self.assertEqual(instance.get_name_of_current_state(), 'ONE')
+        self.assertEqual(instance.returns_1(), 1)
         
     
     def test3(self):
@@ -359,9 +359,9 @@ class CodeInterfaceTests(amusetest.TestCase):
             
         
         
-        self.assertEquals(instance.get_name_of_current_state(), 'ZERO')
-        self.assertEquals(instance.returns_1(), 1)
-        self.assertEquals(instance.get_name_of_current_state(), 'ONE')
+        self.assertEqual(instance.get_name_of_current_state(), 'ZERO')
+        self.assertEqual(instance.returns_1(), 1)
+        self.assertEqual(instance.get_name_of_current_state(), 'ONE')
         self.assertTrue(instance.traced)
         
         
@@ -377,9 +377,9 @@ class CodeInterfaceTests(amusetest.TestCase):
         handler.set_initial_state('ZERO')
         
         
-        self.assertEquals(instance.get_name_of_current_state(), 'ZERO')
-        self.assertEquals(instance.returns_1(), 1)    
-        self.assertEquals(instance.get_name_of_current_state(), 'ONE')
+        self.assertEqual(instance.get_name_of_current_state(), 'ZERO')
+        self.assertEqual(instance.returns_1(), 1)    
+        self.assertEqual(instance.get_name_of_current_state(), 'ONE')
         
     def test5(self):
         original = ClassWithState()
@@ -394,9 +394,9 @@ class CodeInterfaceTests(amusetest.TestCase):
         handler.set_initial_state('ZERO')
         
         
-        self.assertEquals(instance.get_name_of_current_state(), 'ZERO')
-        self.assertEquals(instance.returns_2(), 2)    
-        self.assertEquals(instance.get_name_of_current_state(), 'TWO')
+        self.assertEqual(instance.get_name_of_current_state(), 'ZERO')
+        self.assertEqual(instance.returns_2(), 2)    
+        self.assertEqual(instance.get_name_of_current_state(), 'TWO')
         
     def test6(self):
         original = ClassWithState()
@@ -417,17 +417,17 @@ class CodeInterfaceTests(amusetest.TestCase):
         handler.set_initial_state('ZERO')
         
         
-        self.assertEquals(instance.get_name_of_current_state(), 'ZERO')
-        self.assertEquals(instance.returns_4(), 4)    
-        self.assertEquals(instance.get_name_of_current_state(), 'FOUR')
+        self.assertEqual(instance.get_name_of_current_state(), 'ZERO')
+        self.assertEqual(instance.returns_4(), 4)    
+        self.assertEqual(instance.get_name_of_current_state(), 'FOUR')
         
         
         handler.set_initial_state('ZERO')
-        self.assertEquals(instance.get_name_of_current_state(), 'ZERO')
-        self.assertEquals(instance.returns_3(), 3)    
-        self.assertEquals(instance.get_name_of_current_state(), 'THREE')
-        self.assertEquals(instance.returns_4(), 4)    
-        self.assertEquals(instance.get_name_of_current_state(), 'FOUR')
+        self.assertEqual(instance.get_name_of_current_state(), 'ZERO')
+        self.assertEqual(instance.returns_3(), 3)    
+        self.assertEqual(instance.get_name_of_current_state(), 'THREE')
+        self.assertEqual(instance.returns_4(), 4)    
+        self.assertEqual(instance.get_name_of_current_state(), 'FOUR')
         
     
     def test7(self):
@@ -450,19 +450,19 @@ class CodeInterfaceTests(amusetest.TestCase):
         handler.do_automatic_state_transitions(False)
         
         
-        self.assertEquals(instance.get_name_of_current_state(), 'ZERO')
+        self.assertEqual(instance.get_name_of_current_state(), 'ZERO')
         try:
-            self.assertEquals(instance.returns_4(), 4)
+            self.assertEqual(instance.returns_4(), 4)
             self.fail("Automatic state transitions is OFF, this method should fail")
         except Exception, ex:
-            print ex
+            print(ex)
             
-            self.assertEquals(len(ex.transitions), 3)
+            self.assertEqual(len(ex.transitions), 3)
             
             for x in ex.transitions:
                 x.do()
             
-            self.assertEquals(instance.returns_4(), 4)
+            self.assertEqual(instance.returns_4(), 4)
             
     
     def test8(self):
@@ -480,8 +480,8 @@ class CodeInterfaceTests(amusetest.TestCase):
         handler.set_initial_state('ZERO')
         
         
-        self.assertEquals(instance.get_name_of_current_state(), 'ZERO')
-        self.assertEquals(instance.returns_2(), 2)
+        self.assertEqual(instance.get_name_of_current_state(), 'ZERO')
+        self.assertEqual(instance.returns_2(), 2)
         self.assertRaises(Exception, instance.returns_3, 
             expected_message = "While calling returns_3 of InCodeComponentImplementation: No transition from current state state 'TWO' to state 'THREE' possible")
         
@@ -503,17 +503,17 @@ class CodeInterfaceTests(amusetest.TestCase):
         handler.set_initial_state('ZERO')
         
         
-        self.assertEquals(instance.get_name_of_current_state(), 'ZERO')
+        self.assertEqual(instance.get_name_of_current_state(), 'ZERO')
         instance.move_to_state_1()
-        self.assertEquals(instance.get_name_of_current_state(), 'ONE')
+        self.assertEqual(instance.get_name_of_current_state(), 'ONE')
         instance.move_to_state_2()
-        self.assertEquals(instance.get_name_of_current_state(), 'TWO')
+        self.assertEqual(instance.get_name_of_current_state(), 'TWO')
         instance.move_to_state_1()
-        self.assertEquals(instance.get_name_of_current_state(), 'THREE')
+        self.assertEqual(instance.get_name_of_current_state(), 'THREE')
         instance.move_to_state_1()
-        self.assertEquals(instance.get_name_of_current_state(), 'ONE')
+        self.assertEqual(instance.get_name_of_current_state(), 'ONE')
         
-        self.assertEquals(instance.returns_3(), 1)
+        self.assertEqual(instance.returns_3(), 1)
         
 
 
@@ -536,13 +536,13 @@ class CodeInterfaceTests(amusetest.TestCase):
         handler.set_initial_state('ZERO')
         
         self.assertTrue(instance.state_machine.is_enabled)
-        self.assertEquals(instance.state_machine.get_name_of_current_state(), 'ZERO')
+        self.assertEqual(instance.state_machine.get_name_of_current_state(), 'ZERO')
         instance.move_to_state_1()
-        self.assertEquals(instance.get_name_of_current_state(), 'ONE')
+        self.assertEqual(instance.get_name_of_current_state(), 'ONE')
         instance.state_machine.disable()
         self.assertFalse(instance.state_machine.is_enabled)
         instance.move_to_state_2()
-        self.assertEquals(instance.get_name_of_current_state(), 'ONE')
+        self.assertEqual(instance.get_name_of_current_state(), 'ONE')
         
     def test11(self):
         original = ClassWithState()
@@ -557,12 +557,12 @@ class CodeInterfaceTests(amusetest.TestCase):
         handler.set_initial_state('ZERO')
             
         
-        self.assertEquals(instance.get_name_of_current_state(), 'ZERO')
+        self.assertEqual(instance.get_name_of_current_state(), 'ZERO')
         instance.returns_1()
         
-        self.assertEquals(instance.get_name_of_current_state(), 'TWO')
-        self.assertEquals(instance.number_of_times_move_to_state_1_called, 1)
-        self.assertEquals(instance.number_of_times_move_to_state_2_called, 1)
+        self.assertEqual(instance.get_name_of_current_state(), 'TWO')
+        self.assertEqual(instance.number_of_times_move_to_state_1_called, 1)
+        self.assertEqual(instance.number_of_times_move_to_state_2_called, 1)
     
     
         
@@ -580,14 +580,14 @@ class CodeInterfaceTests(amusetest.TestCase):
         handler.set_initial_state('ZERO')
             
         
-        self.assertEquals(instance.get_name_of_current_state(), 'ZERO')
+        self.assertEqual(instance.get_name_of_current_state(), 'ZERO')
         instance.returns_1()
         
-        self.assertEquals(instance.get_name_of_current_state(), 'TWO')
-        self.assertEquals(instance.number_of_times_move_to_state_1_called, 1)
-        self.assertEquals(instance.number_of_times_move_to_state_2_called, 1)
-        self.assertEquals(instance.number_of_times_move_to_state_3_called, 1)
-        self.assertEquals(instance.number_of_times_move_to_state_4_called, 1)
+        self.assertEqual(instance.get_name_of_current_state(), 'TWO')
+        self.assertEqual(instance.number_of_times_move_to_state_1_called, 1)
+        self.assertEqual(instance.number_of_times_move_to_state_2_called, 1)
+        self.assertEqual(instance.number_of_times_move_to_state_3_called, 1)
+        self.assertEqual(instance.number_of_times_move_to_state_4_called, 1)
         
     
         
@@ -604,19 +604,19 @@ class CodeInterfaceTests(amusetest.TestCase):
         handler.set_initial_state('ZERO')
             
         
-        self.assertEquals(instance.get_name_of_current_state(), 'ZERO')
+        self.assertEqual(instance.get_name_of_current_state(), 'ZERO')
         instance.returns_1()
         
-        self.assertEquals(instance.get_name_of_current_state(), 'ONE')
-        self.assertEquals(instance.number_of_times_move_to_state_1_called, 1)
-        self.assertEquals(instance.number_of_times_move_to_state_2_called, 0)
-        self.assertEquals(instance.number_of_times_move_to_state_3_called, 0)
-        self.assertEquals(instance.number_of_times_move_to_state_4_called, 0)
+        self.assertEqual(instance.get_name_of_current_state(), 'ONE')
+        self.assertEqual(instance.number_of_times_move_to_state_1_called, 1)
+        self.assertEqual(instance.number_of_times_move_to_state_2_called, 0)
+        self.assertEqual(instance.number_of_times_move_to_state_3_called, 0)
+        self.assertEqual(instance.number_of_times_move_to_state_4_called, 0)
         instance.move_to_state_2()
-        self.assertEquals(instance.get_name_of_current_state(), 'TWO')
+        self.assertEqual(instance.get_name_of_current_state(), 'TWO')
         instance.returns_1()
         
-        self.assertEquals(instance.get_name_of_current_state(), 'TWO')
+        self.assertEqual(instance.get_name_of_current_state(), 'TWO')
     
     def test14(self):
         original = ClassWithState()
@@ -635,9 +635,9 @@ class CodeInterfaceTests(amusetest.TestCase):
         handler.remove_transition('ONE', 'TWO', 'move_to_state_2')
         handler.add_transition('ZERO', 'TWO', 'move_to_state_1')
         
-        self.assertEquals(instance.get_name_of_current_state(), 'ZERO')
+        self.assertEqual(instance.get_name_of_current_state(), 'ZERO')
         instance.returns_2()
-        self.assertEquals(instance.get_name_of_current_state(), 'TWO')
+        self.assertEqual(instance.get_name_of_current_state(), 'TWO')
     
     def test15(self):
         original = ClassWithState()
@@ -657,9 +657,9 @@ class CodeInterfaceTests(amusetest.TestCase):
         handler.set_initial_state('ZERO')
         
         
-        self.assertEquals(instance.get_name_of_current_state(), 'ZERO')
-        self.assertEquals(instance.returns_1(), 1)    
-        self.assertEquals(instance.get_name_of_current_state(), 'ONE')
+        self.assertEqual(instance.get_name_of_current_state(), 'ZERO')
+        self.assertEqual(instance.returns_1(), 1)    
+        self.assertEqual(instance.get_name_of_current_state(), 'ONE')
         
     
     def test9(self):
@@ -679,16 +679,16 @@ class CodeInterfaceTests(amusetest.TestCase):
         handler.add_method('ONE', 'returns_1')
         handler.set_initial_state('ZERO')
         
-        self.assertEquals(instance.get_name_of_current_state(), 'ZERO')
-        self.assertEquals(instance.returns_1(), 1)    
-        self.assertEquals(instance.get_name_of_current_state(), 'ONE')
+        self.assertEqual(instance.get_name_of_current_state(), 'ZERO')
+        self.assertEqual(instance.returns_1(), 1)    
+        self.assertEqual(instance.get_name_of_current_state(), 'ONE')
         
         pickled_instance = pickle.dumps(instance)
         unpickled_instance = pickle.loads(pickled_instance)
-        self.assertEquals(unpickled_instance.get_name_of_current_state(), 'ONE')
-        self.assertEquals(unpickled_instance.returns_2(), 2)    
-        self.assertEquals(unpickled_instance.get_name_of_current_state(), 'TWO')
-        self.assertEquals(instance.get_name_of_current_state(), 'ONE')
+        self.assertEqual(unpickled_instance.get_name_of_current_state(), 'ONE')
+        self.assertEqual(unpickled_instance.returns_2(), 2)    
+        self.assertEqual(unpickled_instance.get_name_of_current_state(), 'TWO')
+        self.assertEqual(instance.get_name_of_current_state(), 'ONE')
 
     def test10(self):
         original = ClassWithState()
@@ -704,7 +704,7 @@ class CodeInterfaceTests(amusetest.TestCase):
         handler.set_initial_state('ZERO')
         
         
-        self.assertEquals(instance.get_name_of_current_state(), 'ZERO')
+        self.assertEqual(instance.get_name_of_current_state(), 'ZERO')
         self.assertRaises( Exception, instance.returns_2, expected_message=
          "While calling returns_2 of InCodeComponentImplementation: No transition from current state state 'ZERO' to state 'TWO' possible")
 
@@ -736,7 +736,7 @@ class CodeInterfaceWithUnitsAndStateTests(amusetest.TestCase):
         handler.add_transition('ZERO', 'ONE', 'move_to_20')
         handler.add_method('ONE', 'add_to_length')
         
-        self.assertEquals(40.0 | units.m, instance.add_to_length(20.0 | units.m))
+        self.assertEqual(40.0 | units.m, instance.add_to_length(20.0 | units.m))
         
     def test2(self):
         original = self.TestClass()
@@ -753,7 +753,7 @@ class CodeInterfaceWithUnitsAndStateTests(amusetest.TestCase):
         handler.add_transition('ZERO', 'ONE', 'move_to_20')
         handler.add_method('ONE', 'add_to_length')
         
-        self.assertEquals(40.0 | units.m, instance.add(20.0 | units.m))
+        self.assertEqual(40.0 | units.m, instance.add(20.0 | units.m))
         
     def test3(self):
         original = self.TestClass()
@@ -770,7 +770,7 @@ class CodeInterfaceWithUnitsAndStateTests(amusetest.TestCase):
         handler.add_transition('ZERO', 'ONE', 'move_to_20')
         handler.add_method('ONE', 'add')
         
-        self.assertEquals(40.0 | units.m, instance.add(20.0 | units.m))
+        self.assertEqual(40.0 | units.m, instance.add(20.0 | units.m))
         
 
 class CodeInterfaceWithErrorHandlingTests(amusetest.TestCase):
@@ -794,7 +794,7 @@ class CodeInterfaceWithErrorHandlingTests(amusetest.TestCase):
         handler.add_errorcode(-2, "no such method")
         handler.add_errorcode(-3, "not available")
         
-        self.assertEquals(instance.get_mass(), 10.0 | units.m)
+        self.assertEqual(instance.get_mass(), 10.0 | units.m)
         original.errorcode = -2
         self.assertRaises(AmuseException, instance.get_mass, expected_message = 
             "Error when calling 'get_mass' of a 'InCodeComponentImplementation', errorcode is -2, error is 'no such method'")
@@ -961,12 +961,12 @@ class TestParticlesWithBinding(amusetest.TestCase):
         remote_particles = instance.particles
         remote_particles.add_particles(local_particles)
         
-        self.assertEquals(len(original.masses), 4)
-        self.assertEquals(original.masses[0], 3.0)
-        self.assertEquals(original.masses[3], 6.0)
+        self.assertEqual(len(original.masses), 4)
+        self.assertEqual(original.masses[0], 3.0)
+        self.assertEqual(original.masses[3], 6.0)
         
-        self.assertEquals(len(instance.particles), 4)
-        self.assertEquals(instance.particles[0].mass, 3.0 | units.kg)
+        self.assertEqual(len(instance.particles), 4)
+        self.assertEqual(instance.particles[0].mass, 3.0 | units.kg)
         
     def test2(self):
         original = ParticlesWithBindingInterface()
@@ -1000,9 +1000,9 @@ class TestParticlesWithBinding(amusetest.TestCase):
         
         colliding_particles = instance.particles.select_colliding()
         
-        self.assertEquals(len(colliding_particles), 2)
-        self.assertEquals(colliding_particles.mass[0], 4.0 | units.kg)
-        self.assertEquals(colliding_particles.mass[1], 5.0 | units.kg)
+        self.assertEqual(len(colliding_particles), 2)
+        self.assertEqual(colliding_particles.mass[0], 4.0 | units.kg)
+        self.assertEqual(colliding_particles.mass[1], 5.0 | units.kg)
         
         attribute_names = dir(instance)
         
@@ -1037,11 +1037,11 @@ class TestParticlesWithBinding(amusetest.TestCase):
         remote_particles = instance.particles
         remote_particles.add_particles(local_particles)
         
-        self.assertEquals(len(instance.particles), 4)
-        self.assertEquals(instance.particles[0].next_particle, instance.particles[1])
-        self.assertEquals(instance.particles[1].next_particle, instance.particles[2])
-        self.assertEquals(instance.particles[2].next_particle, instance.particles[3])
-        self.assertEquals(instance.particles[3].next_particle, None)
+        self.assertEqual(len(instance.particles), 4)
+        self.assertEqual(instance.particles[0].next_particle, instance.particles[1])
+        self.assertEqual(instance.particles[1].next_particle, instance.particles[2])
+        self.assertEqual(instance.particles[2].next_particle, instance.particles[3])
+        self.assertEqual(instance.particles[3].next_particle, None)
         
         
     def test4(self):
@@ -1074,12 +1074,12 @@ class TestParticlesWithBinding(amusetest.TestCase):
         remote_particles = instance.particles
         remote_particles.add_particles(local_particles)
         
-        self.assertEquals(len(instance.particles), 4)
-        self.assertEquals(instance.particles.mass, units.kg.new_quantity([3.0, 4.0, 5.0, 6.0]))
+        self.assertEqual(len(instance.particles), 4)
+        self.assertEqual(instance.particles.mass, units.kg.new_quantity([3.0, 4.0, 5.0, 6.0]))
         instance.particles[0].add_one()
-        self.assertEquals(instance.particles.mass, units.kg.new_quantity([4.0, 4.0, 5.0, 6.0]))
+        self.assertEqual(instance.particles.mass, units.kg.new_quantity([4.0, 4.0, 5.0, 6.0]))
         instance.particles.add_one()
-        self.assertEquals(instance.particles.mass, units.kg.new_quantity([5.0, 5.0, 6.0, 7.0]))
+        self.assertEqual(instance.particles.mass, units.kg.new_quantity([5.0, 5.0, 6.0, 7.0]))
         
         
     def test5(self):
@@ -1113,12 +1113,12 @@ class TestParticlesWithBinding(amusetest.TestCase):
         remote_particles = instance.particles
         remote_particles.add_particles(local_particles)
         
-        self.assertEquals(len(original.masses), 4)
-        self.assertAlmostEquals(original.masses[0], 0.3, 5)
-        self.assertAlmostEquals(original.masses[3], 0.6, 5)
+        self.assertEqual(len(original.masses), 4)
+        self.assertAlmostEqual(original.masses[0], 0.3, 5)
+        self.assertAlmostEqual(original.masses[3], 0.6, 5)
         
-        self.assertEquals(len(instance.particles), 4)
-        self.assertEquals(instance.particles[0].mass, 3.0 | units.kg)
+        self.assertEqual(len(instance.particles), 4)
+        self.assertEqual(instance.particles[0].mass, 3.0 | units.kg)
         
         
         
@@ -1156,16 +1156,16 @@ class TestParticlesWithBinding(amusetest.TestCase):
         remote_particles = instance.particles
         remote_particles.add_particles(local_particles)
         
-        self.assertEquals(len(instance.particles), 4)
-        self.assertEquals(instance.particles[0].mass, 3.0 | units.kg)
+        self.assertEqual(len(instance.particles), 4)
+        self.assertEqual(instance.particles[0].mass, 3.0 | units.kg)
         subset = instance.particles.heaviest()
-        self.assertEquals(len(subset), 1)
-        self.assertEquals(subset[0], local_particles[2])
+        self.assertEqual(len(subset), 1)
+        self.assertEqual(subset[0], local_particles[2])
         
         subset = instance.particles.lightest()
-        self.assertEquals(len(subset), 2)
-        self.assertEquals(subset[0], local_particles[0])
-        self.assertEquals(subset[1], local_particles[1])
+        self.assertEqual(len(subset), 2)
+        self.assertEqual(subset[0], local_particles[0])
+        self.assertEqual(subset[1], local_particles[1])
     
 
     def test7(self):
@@ -1200,12 +1200,12 @@ class TestParticlesWithBinding(amusetest.TestCase):
         remote_particles = instance.particles
         remote_particles.add_particles(local_particles)
         
-        self.assertEquals(len(instance.particles), 4)
-        self.assertEquals(instance.particles[1].mass, 4.0 | units.kg)
+        self.assertEqual(len(instance.particles), 4)
+        self.assertEqual(instance.particles[1].mass, 4.0 | units.kg)
         subset = instance.particles[1].samemass()
-        self.assertEquals(len(subset), 2)
-        self.assertEquals(subset[0], local_particles[0])
-        self.assertEquals(subset[1], local_particles[3])
+        self.assertEqual(len(subset), 2)
+        self.assertEqual(subset[0], local_particles[0])
+        self.assertEqual(subset[1], local_particles[3])
     
     def test8(self):
         original = ParticlesWithBindingInterface()
@@ -1252,15 +1252,15 @@ class TestParticlesWithBinding(amusetest.TestCase):
         remote_particles = instance.particles
         remote_particles.add_particles(local_particles)
         
-        self.assertEquals(len(original.masses), 4)
-        self.assertEquals(original.masses[0], 3.0)
-        self.assertEquals(original.masses[3], 6.0)
+        self.assertEqual(len(original.masses), 4)
+        self.assertEqual(original.masses[0], 3.0)
+        self.assertEqual(original.masses[3], 6.0)
         
         pickled_instance = pickle.dumps(instance)
         unpickled_instance = pickle.loads(pickled_instance)
        
-        self.assertEquals(len(unpickled_instance.particles), 4)
-        self.assertEquals(unpickled_instance.particles[1].mass, 4.0 | units.kg)
+        self.assertEqual(len(unpickled_instance.particles), 4)
+        self.assertEqual(unpickled_instance.particles[1].mass, 4.0 | units.kg)
         
         
 class TestGridWithBinding(amusetest.TestCase):
@@ -1288,7 +1288,7 @@ class TestGridWithBinding(amusetest.TestCase):
             for i,j,k in zip(i_s, j_s, k_s):
                 self.storage[i][j][k] = values[index].value_in(units.m)
                 index += 1
-                print index
+                print(index)
         
             
         
@@ -1302,10 +1302,10 @@ class TestGridWithBinding(amusetest.TestCase):
         handler.add_method('get_a',(handler.INDEX, handler.INDEX,handler.INDEX,), (units.kg,))
         handler.add_method('set_a',(handler.INDEX, handler.INDEX,handler.INDEX, units.kg,), ())
       
-        print instance.get_a([1],[2],[3])
-        print [38] | units.kg
+        print(instance.get_a([1],[2],[3]))
+        print([38] | units.kg)
         
-        self.assertEquals(instance.get_a([1],[2],[3]), [38] | units.kg)
+        self.assertEqual(instance.get_a([1],[2],[3]), [38] | units.kg)
         
         handler = instance.get_handler('PARTICLES')
         handler.define_grid('grid',)
@@ -1315,9 +1315,9 @@ class TestGridWithBinding(amusetest.TestCase):
         grid = instance.grid
         
         
-        self.assertEquals(grid[1][2][3].mass, 38 | units.kg)
-        self.assertEquals(grid[0:2][1][2][3].mass, 38 | units.kg)
-        self.assertEquals(len(grid[1][2].mass), 5)
+        self.assertEqual(grid[1][2][3].mass, 38 | units.kg)
+        self.assertEqual(grid[0:2][1][2][3].mass, 38 | units.kg)
+        self.assertEqual(len(grid[1][2].mass), 5)
         self.assertTrue(numpy.all(grid[1][2].mass == [35,36,37,38,39] | units.kg))
         
     
@@ -1337,12 +1337,12 @@ class TestGridWithBinding(amusetest.TestCase):
         grid = instance.grid
         
         
-        self.assertEquals(grid[1][2][3].position, [1,2] |units.m)
-        self.assertEquals(grid[1][2][1].position, [1,2] |units.m)
-        self.assertEquals(grid[1][2][2].position, [1,2] |units.m)
-        self.assertEquals(grid[1][2][0].position, [1,2] |units.m)
-        self.assertEquals(grid[1][2].position, [[1,2],[1,2],[1,2],[1,2],[1,2]] |units.m)
-        self.assertEquals(grid[0][1][1].position, [0,1] |units.m)
+        self.assertEqual(grid[1][2][3].position, [1,2] |units.m)
+        self.assertEqual(grid[1][2][1].position, [1,2] |units.m)
+        self.assertEqual(grid[1][2][2].position, [1,2] |units.m)
+        self.assertEqual(grid[1][2][0].position, [1,2] |units.m)
+        self.assertEqual(grid[1][2].position, [[1,2],[1,2],[1,2],[1,2],[1,2]] |units.m)
+        self.assertEqual(grid[0][1][1].position, [0,1] |units.m)
 
     def test3(self):
         original = self.TestInterface()
@@ -1413,9 +1413,9 @@ class TestGridWithBinding2(amusetest.TestCase):
         handler.add_method('get_a',(handler.INDEX, handler.INDEX,), (units.kg,))
         handler.add_method('set_a',(handler.INDEX, handler.INDEX, units.kg,), ())
       
-        print instance.get_a([1],[2])
+        print(instance.get_a([1],[2]))
         
-        self.assertEquals(instance.get_a([1],[2]), [7] | units.kg)
+        self.assertEqual(instance.get_a([1],[2]), [7] | units.kg)
         
         handler = instance.get_handler('PARTICLES')
         handler.define_grid('grid',)
@@ -1424,14 +1424,14 @@ class TestGridWithBinding2(amusetest.TestCase):
         
         grid = instance.grid
   
-        self.assertEquals(grid[1,2].mass, original.storage[1,2] | units.kg)
-        self.assertEquals(len(grid[1].mass), len(original.storage[1]))
+        self.assertEqual(grid[1,2].mass, original.storage[1,2] | units.kg)
+        self.assertEqual(len(grid[1].mass), len(original.storage[1]))
   
-        print    grid[1,1:].mass   
+        print(grid[1,1:].mass)   
         grid[1,1:].mass=[5. | units.kg]*4
 
-        self.assertEquals(original.storage[1,1:],5)
-        self.assertEquals(grid[1,1:].mass, original.storage[1,1:] | units.kg)
+        self.assertEqual(original.storage[1,1:],5)
+        self.assertEqual(grid[1,1:].mass, original.storage[1,1:] | units.kg)
 
 class TestGridWithBinding3(amusetest.TestCase):
     class TestInterface(object):
@@ -1463,7 +1463,7 @@ class TestGridWithBinding3(amusetest.TestCase):
         handler.add_method('get_a',(handler.INDEX, handler.INDEX,), (units.kg,))
         handler.add_method('set_a',(handler.INDEX, handler.INDEX, units.kg,), ())
               
-        self.assertEquals(instance.get_a([1],[2]), [7] | units.kg)
+        self.assertEqual(instance.get_a([1],[2]), [7] | units.kg)
         
         handler = instance.get_handler('PARTICLES')
         handler.define_grid('grid',)
@@ -1472,17 +1472,17 @@ class TestGridWithBinding3(amusetest.TestCase):
         
         grid = instance.grid
   
-        self.assertEquals(grid[1].mass, original.storage[1] | units.kg)
-        self.assertEquals(len(grid[1].mass), len(original.storage[1]))
+        self.assertEqual(grid[1].mass, original.storage[1] | units.kg)
+        self.assertEqual(len(grid[1].mass), len(original.storage[1]))
 
-        self.assertEquals(grid[2:4].mass, original.storage[2:4] | units.kg)
+        self.assertEqual(grid[2:4].mass, original.storage[2:4] | units.kg)
 
-        self.assertEquals(grid[-3:].mass, original.storage[-3:] | units.kg)
+        self.assertEqual(grid[-3:].mass, original.storage[-3:] | units.kg)
   
         grid[1].mass=[5.]*5 | units.kg
 
-        self.assertEquals(original.storage[1],5)
-        self.assertEquals(grid[1].mass, original.storage[1] | units.kg)
+        self.assertEqual(original.storage[1],5)
+        self.assertEqual(grid[1].mass, original.storage[1] | units.kg)
 
 class TestGridWithBinding4(amusetest.TestCase):
     class TestInterface(object):
@@ -1514,7 +1514,7 @@ class TestGridWithBinding4(amusetest.TestCase):
         handler.add_method('get_a',(handler.INDEX, handler.INDEX, handler.INDEX,), (units.kg,))
         handler.add_method('set_a',(handler.INDEX, handler.INDEX,handler.INDEX, units.kg,), ())
               
-        self.assertEquals(instance.get_a([1],[2],[3]), [33] | units.kg)
+        self.assertEqual(instance.get_a([1],[2],[3]), [33] | units.kg)
         
         handler = instance.get_handler('PARTICLES')
         handler.define_grid('grid',)
@@ -1523,16 +1523,16 @@ class TestGridWithBinding4(amusetest.TestCase):
         
         grid = instance.grid
   
-        self.assertEquals(grid[1,1].mass, original.storage[1,1] | units.kg)
-        self.assertEquals(grid[0:2,1:3].mass, original.storage[0:2,1:3] | units.kg)
-        self.assertEquals(len(grid[1].mass), len(original.storage[1]))
-        self.assertEquals(grid[2:4].mass, original.storage[2:4] | units.kg)
-        self.assertEquals(grid[-3:].mass, original.storage[-3:] | units.kg)
+        self.assertEqual(grid[1,1].mass, original.storage[1,1] | units.kg)
+        self.assertEqual(grid[0:2,1:3].mass, original.storage[0:2,1:3] | units.kg)
+        self.assertEqual(len(grid[1].mass), len(original.storage[1]))
+        self.assertEqual(grid[2:4].mass, original.storage[2:4] | units.kg)
+        self.assertEqual(grid[-3:].mass, original.storage[-3:] | units.kg)
   
         grid[1].mass=numpy.ones((4,5))*5 | units.kg
 
-        self.assertEquals(original.storage[1],5)
-        self.assertEquals(grid[1].mass, original.storage[1] | units.kg)
+        self.assertEqual(original.storage[1],5)
+        self.assertEqual(grid[1].mass, original.storage[1] | units.kg)
 
 class TestGridWithBinding5(amusetest.TestCase):
     class TestInterface(object):
@@ -1564,7 +1564,7 @@ class TestGridWithBinding5(amusetest.TestCase):
         handler.add_method('get_a',(handler.INDEX, handler.INDEX,handler.INDEX,handler.INDEX,), (units.kg,))
         handler.add_method('set_a',(handler.INDEX, handler.INDEX,handler.INDEX,handler.INDEX, units.kg,), ())
               
-        self.assertEquals(instance.get_a([1],[2],[3],[4]), original.storage[1,2,3,4] | units.kg)
+        self.assertEqual(instance.get_a([1],[2],[3],[4]), original.storage[1,2,3,4] | units.kg)
         
         handler = instance.get_handler('PARTICLES')
         handler.define_grid('grid',)
@@ -1573,16 +1573,16 @@ class TestGridWithBinding5(amusetest.TestCase):
         
         grid = instance.grid
   
-        self.assertEquals(grid[1,1].mass, original.storage[1,1] | units.kg)
-        self.assertEquals(grid[0:2,1:3].mass, original.storage[0:2,1:3] | units.kg)
-        self.assertEquals(len(grid[1].mass), len(original.storage[1]))
-        self.assertEquals(grid[2:4].mass, original.storage[2:4] | units.kg)
-        self.assertEquals(grid[-3:].mass, original.storage[-3:] | units.kg)
+        self.assertEqual(grid[1,1].mass, original.storage[1,1] | units.kg)
+        self.assertEqual(grid[0:2,1:3].mass, original.storage[0:2,1:3] | units.kg)
+        self.assertEqual(len(grid[1].mass), len(original.storage[1]))
+        self.assertEqual(grid[2:4].mass, original.storage[2:4] | units.kg)
+        self.assertEqual(grid[-3:].mass, original.storage[-3:] | units.kg)
   
         grid[1].mass=numpy.ones((4,5,6))*5 | units.kg
 
-        self.assertEquals(original.storage[1],5)
-        self.assertEquals(grid[1].mass, original.storage[1] | units.kg)
+        self.assertEqual(original.storage[1],5)
+        self.assertEqual(grid[1].mass, original.storage[1] | units.kg)
 
 # attempt to test string returns, needs improvement
 class TestGridWithBinding6(amusetest.TestCase):
@@ -1615,7 +1615,7 @@ class TestGridWithBinding6(amusetest.TestCase):
         handler.add_method('get_a',(handler.INDEX, handler.INDEX,handler.INDEX,handler.INDEX,), (handler.NO_UNIT,))
         handler.add_method('set_a',(handler.INDEX, handler.INDEX,handler.INDEX,handler.INDEX, handler.NO_UNIT,), ())
               
-        self.assertEquals(instance.get_a([1],[2],[3],[4]), original.storage[1,2,3,4] )
+        self.assertEqual(instance.get_a([1],[2],[3],[4]), original.storage[1,2,3,4] )
         
         handler = instance.get_handler('PARTICLES')
         handler.define_grid('grid',)
@@ -1624,16 +1624,16 @@ class TestGridWithBinding6(amusetest.TestCase):
         
         grid = instance.grid
   
-        self.assertEquals(grid[1,1].mass, original.storage[1,1] )
-        self.assertEquals(grid[0:2,1:3].mass, original.storage[0:2,1:3])
-        self.assertEquals(len(grid[1].mass), len(original.storage[1]))
-        self.assertEquals(grid[2:4].mass, original.storage[2:4] )
-        self.assertEquals(grid[-3:].mass, original.storage[-3:] )
+        self.assertEqual(grid[1,1].mass, original.storage[1,1] )
+        self.assertEqual(grid[0:2,1:3].mass, original.storage[0:2,1:3])
+        self.assertEqual(len(grid[1].mass), len(original.storage[1]))
+        self.assertEqual(grid[2:4].mass, original.storage[2:4] )
+        self.assertEqual(grid[-3:].mass, original.storage[-3:] )
   
         grid[1].mass=numpy.ones((4,5,6))*5 
 
 #        self.assertEquals(original.storage[1],'5')
-        self.assertEquals(grid[1].mass, original.storage[1])
+        self.assertEqual(grid[1].mass, original.storage[1])
 
 class TestGridWithBinding7(amusetest.TestCase):
     class TestInterface(object):
@@ -1667,7 +1667,7 @@ class TestGridWithBinding7(amusetest.TestCase):
         handler.add_getter('grid', 'get_a', names = ('mass',))
         
         grid = instance.grid
-        self.assertEquals(grid.mass, 123 | units.kg)
+        self.assertEqual(grid.mass, 123 | units.kg)
 
     def test2(self):
         original = self.TestInterface()
@@ -1686,8 +1686,8 @@ class TestGridWithBinding7(amusetest.TestCase):
         grid = instance.grid
 
         grid.mass=321| units.kg
-        self.assertEquals(original.storage,321)
-        self.assertEquals(grid.mass, 321 | units.kg)
+        self.assertEqual(original.storage,321)
+        self.assertEqual(grid.mass, 321 | units.kg)
 
 class TestGridWithBinding8(amusetest.TestCase):
     class TestInterface(object):
@@ -1723,8 +1723,8 @@ class TestGridWithBinding8(amusetest.TestCase):
         handler.add_getter('grid', 'get_a', names = ('mass','l'))
         
         grid = instance.grid
-        self.assertEquals(grid.mass, 12 | units.kg)
-        self.assertEquals(grid.l, 123 | units.m)
+        self.assertEqual(grid.mass, 12 | units.kg)
+        self.assertEqual(grid.l, 123 | units.m)
 
     def test2(self):
         original = self.TestInterface()
@@ -1749,10 +1749,10 @@ class TestGridWithBinding8(amusetest.TestCase):
         
         grid1.new_channel_to(grid).copy_all_attributes()
         
-        self.assertEquals(original.storage1,321)
-        self.assertEquals(original.storage2,32)
-        self.assertEquals(grid.mass, 321 | units.kg)
-        self.assertEquals(grid.l, 32 | units.m)
+        self.assertEqual(original.storage1,321)
+        self.assertEqual(original.storage2,32)
+        self.assertEqual(grid.mass, 321 | units.kg)
+        self.assertEqual(grid.l, 32 | units.m)
         
         
 

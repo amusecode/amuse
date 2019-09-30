@@ -99,7 +99,7 @@ class TestAbstractHandleEncounter(amusetest.TestWithMPI):
         self.assertAlmostRelativeEqual(x.large_scale_of_particles_in_the_encounter, 1.0 | nbody_system.length)
         self.assertAlmostRelativeEqual(x.small_scale_of_particles_in_the_encounter, 3.0 | nbody_system.length)
         
-        self.assertEquals(len(x.particles_close_to_encounter), 3)
+        self.assertEqual(len(x.particles_close_to_encounter), 3)
         self.assertAlmostRelativeEqual(x.particles_close_to_encounter.mass, [2,3,4] | nbody_system.mass)
         
     def test2(self):
@@ -140,18 +140,18 @@ class TestAbstractHandleEncounter(amusetest.TestWithMPI):
         
         x.execute()
         
-        self.assertEquals(len(x.all_singles_in_encounter), 3)
-        self.assertEquals(len(x.all_singles_in_evolve), 4)
+        self.assertEqual(len(x.all_singles_in_encounter), 3)
+        self.assertEqual(len(x.all_singles_in_evolve), 4)
         
         
         self.assertAlmostRelativeEqual(x.all_singles_in_evolve.mass, [0.5, 0.5, 1.0, 2.0]| nbody_system.mass)
         
-        self.assertEquals(len(x.released_singles), 2)
-        print x.particles_after_encounter
+        self.assertEqual(len(x.released_singles), 2)
+        print(x.particles_after_encounter)
         child1 = x.particles_after_encounter[-2]
         child2 = x.particles_after_encounter[-1]
-        print child1.position
-        print child2.position
+        print(child1.position)
+        print(child2.position)
         self.assertAlmostRelativeEqual(child1.position, [1,0.1,0]| nbody_system.length)
         self.assertAlmostRelativeEqual(child1.velocity, [0,0.5,0.2]| nbody_system.speed)
         self.assertAlmostRelativeEqual(child2.position, [1,-0.1,0]| nbody_system.length)
@@ -216,10 +216,10 @@ class TestAbstractHandleEncounter(amusetest.TestWithMPI):
         x.determine_structure_of_the_evolved_state = lambda : 1
         
         x.execute()
-        self.assertEquals(len(x.new_multiples), 1)
-        self.assertEquals(len(x.new_binaries), 1)
+        self.assertEqual(len(x.new_multiples), 1)
+        self.assertEqual(len(x.new_binaries), 1)
         multiple = x.new_multiples[0]
-        self.assertEquals(len(multiple.components), 2)
+        self.assertEqual(len(multiple.components), 2)
         
         self.assertAlmostRelativeEqual(multiple.components[0].position, simple_binary[0].position)
         self.assertAlmostRelativeEqual(multiple.components[1].position, simple_binary[1].position) 
@@ -289,10 +289,10 @@ class TestAbstractHandleEncounter(amusetest.TestWithMPI):
         x.determine_structure_of_the_evolved_state = lambda : 1
         
         x.execute()
-        self.assertEquals(len(x.new_multiples), 1)
-        self.assertEquals(len(x.new_binaries), 0)
-        self.assertEquals(len(x.updated_binaries), 1)
-        self.assertEquals(x.updated_binaries[0], binaries[0])
+        self.assertEqual(len(x.new_multiples), 1)
+        self.assertEqual(len(x.new_binaries), 0)
+        self.assertEqual(len(x.updated_binaries), 1)
+        self.assertEqual(x.updated_binaries[0], binaries[0])
 
 
 
@@ -359,8 +359,8 @@ class TestAbstractHandleEncounter(amusetest.TestWithMPI):
         
         # no multiples as the binary is larger than the 
         # hard binary scale
-        self.assertEquals(len(x.new_multiples), 0)
-        self.assertEquals(len(x.new_binaries), 0)
+        self.assertEqual(len(x.new_multiples), 0)
+        self.assertEqual(len(x.new_binaries), 0)
         
 
     def test6(self):
@@ -437,10 +437,10 @@ class TestAbstractHandleEncounter(amusetest.TestWithMPI):
         
         # no multiples as the binary is larger than the 
         # hard binary scale
-        self.assertEquals(len(x.new_multiples), 1)
-        self.assertEquals(len(x.new_binaries), 1)
+        self.assertEqual(len(x.new_multiples), 1)
+        self.assertEqual(len(x.new_binaries), 1)
         multiple = x.new_multiples[0]
-        self.assertEquals(len(multiple.components), 2)
+        self.assertEqual(len(multiple.components), 2)
         self.assertAlmostRelativeEqual(multiple.components[0].key, particles_in_encounter[0].key)
         self.assertAlmostRelativeEqual(multiple.components[1].key, particles_in_encounter[1].key)
     
@@ -479,7 +479,7 @@ class TestAbstractHandleEncounter(amusetest.TestWithMPI):
             
             particles = x.singles_and_multiples_after_evolve
             particles.add_particles(x.all_singles_in_encounter)
-            print particles
+            print(particles)
             particles.child1 = None
             particles.child2 = None
         
@@ -493,10 +493,10 @@ class TestAbstractHandleEncounter(amusetest.TestWithMPI):
         
         # no multiples as the binary is larger than the 
         # hard binary scale
-        self.assertEquals(len(x.new_multiples), 0)
-        self.assertEquals(len(x.new_binaries), 0)
-        self.assertEquals(len(x.dissolved_multiples), 1)
-        self.assertEquals(len(x.released_singles), 2)
+        self.assertEqual(len(x.new_multiples), 0)
+        self.assertEqual(len(x.new_binaries), 0)
+        self.assertEqual(len(x.dissolved_multiples), 1)
+        self.assertEqual(len(x.released_singles), 2)
         self.assertTrue(particle_in_multiples.components[0] in x.released_singles)
         self.assertTrue(particle_in_multiples.components[1] in x.released_singles)
         
@@ -697,11 +697,11 @@ class TestAbstractHandleEncounter(amusetest.TestWithMPI):
         )
         
         x.parameters.hard_binary_factor = 1
-        self.assertEquals(x.parameters.hard_binary_factor, 1)
-        self.assertEquals(x.parameters.scatter_factor, 10)
+        self.assertEqual(x.parameters.hard_binary_factor, 1)
+        self.assertEqual(x.parameters.scatter_factor, 10)
         x.parameters.scatter_factor = 2
-        self.assertEquals(x.parameters.scatter_factor, 2)
-        self.assertEquals(x.get_scatter_factor(), 2)
+        self.assertEqual(x.parameters.scatter_factor, 2)
+        self.assertEqual(x.get_scatter_factor(), 2)
         
 class TestKeplerOrbits(amusetest.TestWithMPI):
     
@@ -829,7 +829,7 @@ class TestScaleSystem(amusetest.TestWithMPI):
         self.assertTrue((binary[0].position - binary[1].position).length() > 1.5 | nbody_system.length)
         x.scale_particles_to_sphere(binary, 0.75 | nbody_system.length)
         self.assertTrue((binary[0].position - binary[1].position).length() <= 1.6 | nbody_system.length)
-        print (binary[0].position - binary[1].position).length()
+        print((binary[0].position - binary[1].position).length())
         self.assertTrue((binary[0].position - binary[1].position).length() >= (1.5 - 1e-6)| nbody_system.length )
         
     
@@ -849,7 +849,7 @@ class TestScaleSystem(amusetest.TestWithMPI):
         self.assertTrue((binary[0].position - binary[1].position).length() < 1.5 | nbody_system.length)
         x.scale_particles_to_sphere(binary, 0.75 | nbody_system.length)
         self.assertTrue((binary[0].position - binary[1].position).length() <= 1.6 | nbody_system.length)
-        print (binary[0].position - binary[1].position).length()
+        print((binary[0].position - binary[1].position).length())
         self.assertTrue((binary[0].position - binary[1].position).length() >= (1.5 - 1e-6)| nbody_system.length )
         
       
@@ -870,13 +870,13 @@ class TestScaleSystem(amusetest.TestWithMPI):
         
         x = encounters.ScaleSystem(kepler)
         
-        print (particles[0].position - particles[1].position).length()     
+        print((particles[0].position - particles[1].position).length())     
         self.assertTrue((particles[0].position - particles[1].position).length() > 1.5 | nbody_system.length)
         
         x.scale_particles_to_sphere(particles, 0.75 | nbody_system.length)
         
         self.assertTrue((particles[0].position - particles[1].position).length() <= 1.6 | nbody_system.length)
-        print particles
+        print(particles)
         self.assertTrue((particles[0].position - particles[1].position).length() >= (1.5 - 1e-6)| nbody_system.length )
         self.assertAlmostRelativeEquals(particles[0].position,  [0.75,0,0] | nbody_system.length)
         self.assertAlmostRelativeEquals(particles[1].position,  [-0.75,0,0] | nbody_system.length)
@@ -984,14 +984,14 @@ class TestHandleEncounter(amusetest.TestWithMPI):
         x.particles_in_encounter.add_particles(particles_in_encounter)
         
         x.execute()
-        self.assertEquals(len(x.new_multiples), 1)
-        self.assertEquals(len(x.new_binaries), 1)
+        self.assertEqual(len(x.new_multiples), 1)
+        self.assertEqual(len(x.new_binaries), 1)
         multiple = x.new_multiples[0]
-        self.assertEquals(len(multiple.components), 2)
+        self.assertEqual(len(multiple.components), 2)
         self.assertAlmostRelativeEqual(multiple.components[0].key, particles_in_encounter[0].key)
         self.assertAlmostRelativeEqual(multiple.components[1].key, particles_in_encounter[1].key)
-        self.assertEquals(len(x.captured_singles), 2)
-        self.assertEquals(x.captured_singles.key, [1,2])
+        self.assertEqual(len(x.captured_singles), 2)
+        self.assertEqual(x.captured_singles.key, [1,2])
     
 
     def test2(self):
@@ -1046,19 +1046,19 @@ class TestHandleEncounter(amusetest.TestWithMPI):
         
         
         x.execute()
-        self.assertEquals(len(x.new_multiples), 2)
-        self.assertEquals(len(x.new_binaries), 2)
-        self.assertEquals(len(x.captured_singles), 0)
-        self.assertEquals(len(x.released_singles), 0)
+        self.assertEqual(len(x.new_multiples), 2)
+        self.assertEqual(len(x.new_binaries), 2)
+        self.assertEqual(len(x.captured_singles), 0)
+        self.assertEqual(len(x.released_singles), 0)
         
         multiple = x.new_multiples[0]
-        self.assertEquals(len(multiple.components), 2)
+        self.assertEqual(len(multiple.components), 2)
     
     
         self.assertAlmostRelativeEqual(multiple.components[0].key, binaries[0].child1.key)
         self.assertAlmostRelativeEqual(multiple.components[1].key, binaries[1].child1.key)
         multiple = x.new_multiples[1]
-        self.assertEquals(len(multiple.components), 2)
+        self.assertEqual(len(multiple.components), 2)
         self.assertAlmostRelativeEqual(multiple.components[0].key, binaries[0].child2.key)
         self.assertAlmostRelativeEqual(multiple.components[1].key, binaries[1].child2.key)
 
@@ -1101,16 +1101,16 @@ class TestHandleEncounter(amusetest.TestWithMPI):
         
         x.execute()
         
-        self.assertEquals(len(x.new_multiples), 1)
-        self.assertEquals(len(x.dissolved_multiples), 1)
-        self.assertEquals(len(x.new_binaries), 1)
-        self.assertEquals(len(x.captured_singles), 1)
-        self.assertEquals(len(x.released_singles), 1)
+        self.assertEqual(len(x.new_multiples), 1)
+        self.assertEqual(len(x.dissolved_multiples), 1)
+        self.assertEqual(len(x.new_binaries), 1)
+        self.assertEqual(len(x.captured_singles), 1)
+        self.assertEqual(len(x.released_singles), 1)
         
         multiple = x.new_multiples[0]
-        print multiple.child1
-        self.assertEquals(len(multiple.components), 2)
-        print multiple.components
+        print(multiple.child1)
+        self.assertEqual(len(multiple.components), 2)
+        print(multiple.components)
         
     def test4(self):
         particles_in_encounter = Particles(keys=(1,2))
@@ -1133,14 +1133,14 @@ class TestHandleEncounter(amusetest.TestWithMPI):
         
         x.execute()
         
-        self.assertEquals(len(x.new_multiples), 0)
-        self.assertEquals(len(x.dissolved_multiples), 0)
-        self.assertEquals(len(x.new_binaries), 0)
-        self.assertEquals(len(x.captured_singles), 0)
-        self.assertEquals(len(x.released_singles), 0)
+        self.assertEqual(len(x.new_multiples), 0)
+        self.assertEqual(len(x.dissolved_multiples), 0)
+        self.assertEqual(len(x.new_binaries), 0)
+        self.assertEqual(len(x.captured_singles), 0)
+        self.assertEqual(len(x.released_singles), 0)
         r_before = (particles_in_encounter[0].position - particles_in_encounter[1].position ).length()
         r_after = (x.particles_after_encounter[0].position - x.particles_after_encounter[1].position).length()
-        print r_before, r_after
+        print(r_before, r_after)
         self.assertFalse(r_after > (10 * r_before))
         
     def test5(self):
@@ -1163,14 +1163,14 @@ class TestHandleEncounter(amusetest.TestWithMPI):
         
         x.execute()
         
-        self.assertEquals(len(x.new_multiples), 0)
-        self.assertEquals(len(x.dissolved_multiples), 0)
-        self.assertEquals(len(x.new_binaries), 0)
-        self.assertEquals(len(x.captured_singles), 0)
-        self.assertEquals(len(x.released_singles), 0)
+        self.assertEqual(len(x.new_multiples), 0)
+        self.assertEqual(len(x.dissolved_multiples), 0)
+        self.assertEqual(len(x.new_binaries), 0)
+        self.assertEqual(len(x.captured_singles), 0)
+        self.assertEqual(len(x.released_singles), 0)
         r_before = (particles_in_encounter[0].position - particles_in_encounter[1].position ).length()
         r_after = (x.particles_after_encounter[0].position - x.particles_after_encounter[1].position).length()
-        print r_before, r_after
+        print(r_before, r_after)
         self.assertFalse(r_after > (10 * r_before))
             
     
@@ -1206,11 +1206,11 @@ class TestHandleEncounter(amusetest.TestWithMPI):
         
         x.execute()
         
-        self.assertEquals(len(x.new_multiples), 1)
-        self.assertEquals(len(x.dissolved_multiples), 0)
-        self.assertEquals(len(x.new_binaries), 1)
-        self.assertEquals(len(x.captured_singles), 2)
-        self.assertEquals(len(x.released_singles), 0)
+        self.assertEqual(len(x.new_multiples), 1)
+        self.assertEqual(len(x.dissolved_multiples), 0)
+        self.assertEqual(len(x.new_binaries), 1)
+        self.assertEqual(len(x.captured_singles), 2)
+        self.assertEqual(len(x.released_singles), 0)
         
     
     def test7(self):
@@ -1256,13 +1256,13 @@ class TestHandleEncounter(amusetest.TestWithMPI):
         
         
         x.execute()
-        self.assertEquals(len(x.new_multiples), 1)
-        self.assertEquals(len(x.new_binaries), 1)
-        self.assertEquals(len(x.captured_singles), 1)
-        self.assertEquals(len(x.released_singles), 1)
+        self.assertEqual(len(x.new_multiples), 1)
+        self.assertEqual(len(x.new_binaries), 1)
+        self.assertEqual(len(x.captured_singles), 1)
+        self.assertEqual(len(x.released_singles), 1)
         
         multiple = x.new_multiples[0]
-        self.assertEquals(len(multiple.components), 2)
+        self.assertEqual(len(multiple.components), 2)
     
         self.assertAlmostRelativeEqual(multiple.components[0].key, binaries[0].child1.key)
         self.assertAlmostRelativeEqual(multiple.components[1].key, particles_in_encounter[1].key)
@@ -1315,18 +1315,18 @@ class TestHandleEncounter(amusetest.TestWithMPI):
         
         
         x.execute()
-        self.assertEquals(len(x.new_multiples), 0)
-        self.assertEquals(len(x.updated_multiples), 1)
-        self.assertEquals(len(x.new_binaries), 0)
-        self.assertEquals(len(x.captured_singles), 0)
-        self.assertEquals(len(x.released_singles), 0)
+        self.assertEqual(len(x.new_multiples), 0)
+        self.assertEqual(len(x.updated_multiples), 1)
+        self.assertEqual(len(x.new_binaries), 0)
+        self.assertEqual(len(x.captured_singles), 0)
+        self.assertEqual(len(x.released_singles), 0)
         
         multiple = x.updated_multiples[0]
-        self.assertEquals(len(multiple.components), 2)
-        self.assertEquals(multiple.key, multiples[0].key)
+        self.assertEqual(len(multiple.components), 2)
+        self.assertEqual(multiple.key, multiples[0].key)
     
-        self.assertEquals(multiple.components[0].key, binaries[0].child1.key)
-        self.assertEquals(multiple.components[1].key, binaries[0].child2.key)
+        self.assertEqual(multiple.components[0].key, binaries[0].child1.key)
+        self.assertEqual(multiple.components[1].key, binaries[0].child2.key)
         self.assertAlmostRelativeEqual(x.initial_multiple_energy, -50 | nbody_system.energy)
         self.assertAlmostRelativeEqual(x.final_multiple_energy,  -56.2906032319 | nbody_system.energy, 4)
         
@@ -1351,14 +1351,14 @@ class TestStickyHandleEncounter(amusetest.TestWithMPI):
         x.particles_in_encounter.add_particles(particles_in_encounter)
         
         x.execute()
-        self.assertEquals(len(x.new_multiples), 1)
-        self.assertEquals(len(x.new_binaries), 1)
+        self.assertEqual(len(x.new_multiples), 1)
+        self.assertEqual(len(x.new_binaries), 1)
         multiple = x.new_multiples[0]
-        self.assertEquals(len(multiple.components), 2)
+        self.assertEqual(len(multiple.components), 2)
         self.assertAlmostRelativeEqual(multiple.components[0].key, particles_in_encounter[0].key)
         self.assertAlmostRelativeEqual(multiple.components[1].key, particles_in_encounter[1].key)
-        self.assertEquals(len(x.captured_singles), 2)
-        self.assertEquals(x.captured_singles.key, [1,2])
+        self.assertEqual(len(x.captured_singles), 2)
+        self.assertEqual(x.captured_singles.key, [1,2])
         self.assertAlmostRelativeEqual(multiple.velocity, [-0.5,0.0,0] | nbody_system.speed)
         self.assertAlmostRelativeEqual(multiple.mass, 2 |  nbody_system.mass)
         self.assertAlmostRelativeEqual(multiple.radius, 0.5 |  nbody_system.length)

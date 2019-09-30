@@ -181,7 +181,7 @@ def create_nested_multiple(N,masses,semimajor_axes,eccentricities,inclinations,a
 class TestSecularMultiple(TestWithMPI):
     def test0(self):
         instance = SecularMultiple()
-        print instance.parameters
+        print(instance.parameters)
 
 
     def test1(self):
@@ -201,7 +201,7 @@ class TestSecularMultiple(TestWithMPI):
 
 
         channel_to_code.copy()
-        self.assertEquals(0.6, code.particles[particles.is_binary][1].eccentricity)
+        self.assertEqual(0.6, code.particles[particles.is_binary][1].eccentricity)
 
         t = 0.0 | units.Myr
         dt = 1.0e-2 | units.Myr
@@ -218,7 +218,7 @@ class TestSecularMultiple(TestWithMPI):
             t+=dt
             N+=1
             code.evolve_model(t)
-            print 't/Myr = ',code.model_time.value_in(units.Myr)
+            print('t/Myr = ',code.model_time.value_in(units.Myr))
 
             channel_from_code.copy()
             t_print_array.append(t)
@@ -276,7 +276,7 @@ class TestSecularMultiple(TestWithMPI):
 
             channel_from_code.copy()
 
-            print 't/Myr',t.value_in(units.Myr),'omega',binaries[0].argument_of_pericenter | units.none
+            print('t/Myr',t.value_in(units.Myr),'omega',binaries[0].argument_of_pericenter | units.none)
             t_print_array.append(t)
             a_print_array.append(binaries[0].semimajor_axis)
             e_print_array.append(binaries[0].eccentricity | units.none)
@@ -351,7 +351,7 @@ class TestSecularMultiple(TestWithMPI):
             flag = code.flag
 
             if flag == 2:
-                print 'root found'
+                print('root found')
                 break
 
             channel_from_code.copy()
@@ -360,7 +360,7 @@ class TestSecularMultiple(TestWithMPI):
             e_print_array.append(binaries[0].eccentricity | units.none)
             AP_print_array.append(binaries[0].argument_of_pericenter | units.none)
 
-            print 'e',binaries.eccentricity,'a/AU',binaries.semimajor_axis.value_in(units.AU),'rp/AU',(binaries.semimajor_axis*(1.0-binaries.eccentricity)).value_in(units.AU)
+            print('e',binaries.eccentricity,'a/AU',binaries.semimajor_axis.value_in(units.AU),'rp/AU',(binaries.semimajor_axis*(1.0-binaries.eccentricity)).value_in(units.AU))
 
         if HAS_MATPLOTLIB == True:
             fig = pyplot.figure(figsize=(16,10))
@@ -451,7 +451,7 @@ class TestSecularMultiple(TestWithMPI):
         while (t<tend):
             t+=dt
             code.evolve_model(t)
-            print 'flag',code.flag,t,'a/AU',binaries[0].semimajor_axis,'e',binaries[0].eccentricity
+            print('flag',code.flag,t,'a/AU',binaries[0].semimajor_axis,'e',binaries[0].eccentricity)
 
             channel_from_code.copy()
 
@@ -464,10 +464,10 @@ class TestSecularMultiple(TestWithMPI):
 
             binaries = particles[particles.is_binary]
             bodies = particles - binaries
-            print 'S_x',bodies.spin_vec_x.value_in(1.0/units.day)
-            print 'S_y',bodies.spin_vec_y.value_in(1.0/units.day)
-            print 'S_z',bodies.spin_vec_z.value_in(1.0/units.day)
-            print '='*50
+            print('S_x',bodies.spin_vec_x.value_in(1.0/units.day))
+            print('S_y',bodies.spin_vec_y.value_in(1.0/units.day))
+            print('S_z',bodies.spin_vec_z.value_in(1.0/units.day))
+            print('='*50)
 
         if HAS_MATPLOTLIB == True:
             fig = pyplot.figure()
@@ -549,7 +549,7 @@ class TestSecularMultiple(TestWithMPI):
         while (t<tend):
             t+=dt
             code.evolve_model(t)
-            print 'flag',code.flag,t,binaries[0].semimajor_axis,binaries[0].eccentricity
+            print('flag',code.flag,t,binaries[0].semimajor_axis,binaries[0].eccentricity)
 
             channel_from_code.copy()
 
@@ -640,17 +640,17 @@ class TestSecularMultiple(TestWithMPI):
 
         Omega_vec = [particles[1].spin_vec_x,particles[1].spin_vec_y,particles[1].spin_vec_z]
         Omega = numpy.sqrt(Omega_vec[0]**2 + Omega_vec[1]**2 + Omega_vec[2]**2)
-        print 'Omega/n',Omega/n0
+        print('Omega/n',Omega/n0)
 
         g_dot_rot = n0*(1.0 + m_per/M)*k_AM*pow(R/a0,5.0)*(Omega/n0)**2/((1.0-e0**2)**2)
         t_rot = 2.0*numpy.pi/g_dot_rot
-        print 't_rot/Myr',t_rot.value_in(units.Myr)
+        print('t_rot/Myr',t_rot.value_in(units.Myr))
 
         N=0
         while (t<tend):
             t+=dt
             code.evolve_model(t)
-            print 'flag',code.flag,t,binaries[0].semimajor_axis,binaries[0].eccentricity
+            print('flag',code.flag,t,binaries[0].semimajor_axis,binaries[0].eccentricity)
 
             channel_from_code.copy()
 
@@ -719,16 +719,16 @@ class TestSecularMultiple(TestWithMPI):
             flag = code.flag
             channel_from_code.copy()
 
-            print 'secular_breakdown_has_occurred',binaries.secular_breakdown_has_occurred
-            print 'dynamical_instability_has_occurred',binaries.dynamical_instability_has_occurred
-            print 'physical_collision_or_orbit_crossing_has_occurred',binaries.physical_collision_or_orbit_crossing_has_occurred
-            print 'minimum_periapse_distance_has_occurred',binaries.minimum_periapse_distance_has_occurred
-            print 'RLOF_at_pericentre_has_occurred',binaries.RLOF_at_pericentre_has_occurred
+            print('secular_breakdown_has_occurred',binaries.secular_breakdown_has_occurred)
+            print('dynamical_instability_has_occurred',binaries.dynamical_instability_has_occurred)
+            print('physical_collision_or_orbit_crossing_has_occurred',binaries.physical_collision_or_orbit_crossing_has_occurred)
+            print('minimum_periapse_distance_has_occurred',binaries.minimum_periapse_distance_has_occurred)
+            print('RLOF_at_pericentre_has_occurred',binaries.RLOF_at_pericentre_has_occurred)
 
             if flag == 2:
-                print 'root found'
+                print('root found')
                 break
-            print 't_end',code.model_time.value_in(units.Myr)
+            print('t_end',code.model_time.value_in(units.Myr))
 
             t_print_array.append(t)
             a_print_array.append(binaries[0].semimajor_axis)
@@ -780,16 +780,16 @@ class TestSecularMultiple(TestWithMPI):
             flag = code.flag
             channel_from_code.copy()
 
-            print 'secular_breakdown_has_occurred',binaries.secular_breakdown_has_occurred
-            print 'dynamical_instability_has_occurred',binaries.dynamical_instability_has_occurred
-            print 'physical_collision_or_orbit_crossing_has_occurred',binaries.physical_collision_or_orbit_crossing_has_occurred
-            print 'minimum_periapse_distance_has_occurred',binaries.minimum_periapse_distance_has_occurred
-            print 'RLOF_at_pericentre_has_occurred',binaries.RLOF_at_pericentre_has_occurred
+            print('secular_breakdown_has_occurred',binaries.secular_breakdown_has_occurred)
+            print('dynamical_instability_has_occurred',binaries.dynamical_instability_has_occurred)
+            print('physical_collision_or_orbit_crossing_has_occurred',binaries.physical_collision_or_orbit_crossing_has_occurred)
+            print('minimum_periapse_distance_has_occurred',binaries.minimum_periapse_distance_has_occurred)
+            print('RLOF_at_pericentre_has_occurred',binaries.RLOF_at_pericentre_has_occurred)
 
             if flag == 2:
-                print 'root found'
+                print('root found')
                 break
-            print 't_end',code.model_time.value_in(units.Myr)
+            print('t_end',code.model_time.value_in(units.Myr))
 
             t_print_array.append(t)
             a_print_array.append(binaries[0].semimajor_axis)

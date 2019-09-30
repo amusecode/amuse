@@ -47,7 +47,7 @@ class TestGenericUnits(amusetest.TestCase):
         self.assertAlmostRelativeEqual(L_in_si, 3.085678e19 | units.m, 3)
     
     def test4(self):
-        print "Generic units and vector quantities"
+        print("Generic units and vector quantities")
         UnitLength_in_cm = 3.085678e21 | units.cm# 1.0 kpc
         UnitMass_in_g = 1.989e43 | units.g    # 1.0e10 solar masses
         UnitVelocity_in_cm_per_s = 1e5 | units.cm / units.s# 1 km/sec

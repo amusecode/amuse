@@ -53,7 +53,7 @@ def plot_speed_report(input_filename = None, output_filename = None, cols = '0-'
             data.append(list(select(numbers, cols)))
     x = numpy.asarray(x)
     data = numpy.asarray(data)
-    print data.shape
+    print(data.shape)
     
     figure = pyplot.figure(figsize=(9, 4))
     subplot = pyplot.subplot(1,2,1)

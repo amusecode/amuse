@@ -37,7 +37,7 @@ class TestGrid2SPH(TestWithMPI):
         return test_grid
     
     def test0(self):
-        print "Testing the simple example grid"
+        print("Testing the simple example grid")
         test_grid = self.setup_simple_grid()
         self.assertEqual(test_grid.position[ 0][ 0][ 0],  [1.0/8.0, 1.0/6.0, 1.0/4.0] | units.m)
         self.assertEqual(test_grid.position[-1][-1][-1],  [7.0/8.0, 5.0/6.0, 3.0/4.0] | units.m)
@@ -47,7 +47,7 @@ class TestGrid2SPH(TestWithMPI):
         self.assertEqual(test_grid.energy[-1][-1][-1], 27.0 | (units.J/units.m**3))
         
     def test1(self):
-        print "Testing the converter"
+        print("Testing the converter")
         number_of_particles = 10000
         test_grid = self.setup_simple_grid()
         converter = Grid2SPH(test_grid, number_of_particles)
@@ -77,7 +77,7 @@ class TestGrid2SPH(TestWithMPI):
         )
     
     def test2(self):
-        print "Testing the user interface"
+        print("Testing the user interface")
         number_of_particles = 10000
         test_grid = self.setup_simple_grid()
         sph_particles = convert_grid_to_SPH(test_grid, number_of_particles)
@@ -95,7 +95,7 @@ class TestGrid2SPH(TestWithMPI):
         self.assertAlmostEqual(sph_particles.h_smooth,  (50.0/number_of_particles)**(1.0/3) | units.m)
     
     def test3(self):
-        print "Testing the user interface, random base_distribution_type"
+        print("Testing the user interface, random base_distribution_type")
         number_of_particles = 10000
         test_grid = self.setup_simple_grid()
         sph_particles = convert_grid_to_SPH(test_grid, number_of_particles, 
@@ -121,7 +121,7 @@ class TestGrid2SPH(TestWithMPI):
         self.assertAlmostEqual(sph_particles.h_smooth,  (50.0/number_of_particles)**(1.0/3) | units.m)
     
     def test4(self):
-        print "Testing exceptions"
+        print("Testing exceptions")
         number_of_particles = 10000
         test_grid = self.setup_simple_grid()
         self.assertEqual(test_grid[0].number_of_dimensions(), 2)

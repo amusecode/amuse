@@ -97,28 +97,28 @@ class TestCImplementationInterface(TestWithMPI):
 
     def setUp(self):
         super(TestCImplementationInterface, self).setUp()
-        print "building...",
+        print("building...", end=' ')
         self.check_can_compile_modules()
         try:
             self.build_worker()
         except Exception as ex:
-            print ex
+            print(ex)
             raise
-        print "done"
+        print("done")
         
     def test1(self):
         instance = ForTestingInterface(self.exefile)
         error = instance.set0(1)
         a_out, error = instance.get0()
         instance.stop()
-        self.assertEquals(a_out, 1)
-        self.assertEquals(error, 0)
+        self.assertEqual(a_out, 1)
+        self.assertEqual(error, 0)
         
     def test2(self):
         instance = ForTesting(self.exefile)
-        print instance.grid0
+        print(instance.grid0)
         instance.grid0.a=12. | units.m
-        self.assertEquals(instance.grid0.a,12.| units.m)
+        self.assertEqual(instance.grid0.a,12.| units.m)
         instance.stop()
 
     def test3(self):
@@ -126,6 +126,6 @@ class TestCImplementationInterface(TestWithMPI):
         instance2 = ForTesting(self.exefile)
         instance1.grid0.a=12. | units.m
         instance1.grid0.new_channel_to(instance2.grid0).copy_all_attributes()
-        self.assertEquals(instance2.grid0.a,12.| units.m)
+        self.assertEqual(instance2.grid0.a,12.| units.m)
         instance1.stop()
         instance2.stop()

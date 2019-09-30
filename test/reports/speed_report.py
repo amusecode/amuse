@@ -104,24 +104,24 @@ class RunSpeedTests(object):
                 if x != self.name_of_the_method:
                     continue
             method = getattr(self, x)
-            print >> sys.stderr, self.row_formatters[0](method), '...',
+            print(self.row_formatters[0](method), '...', end=' ', file=sys.stderr)
             try:        
                 method()
             except TimeoutException, ex:
-                print >> sys.stderr, "timed out,", ex
+                print("timed out,", ex, file=sys.stderr)
                 continue
             except SkipException, ex:
-                print >> sys.stderr, "skipped,", ex
+                print("skipped,", ex, file=sys.stderr)
                 continue
             except Exception, ex:
-                print ex
+                print(ex)
                 traceback.print_exc()
                 self.t1=-1
                 self.t0=0
                 pass
             delta_time = self.t1-self.t0
             self.total_time = self.total_time + delta_time
-            print >> sys.stderr, self.row_formatters[1](delta_time)
+            print(self.row_formatters[1](delta_time), file=sys.stderr)
             self.report_lines.append((method,delta_time))
         
         if self.csv_output:
@@ -135,14 +135,14 @@ class RunSpeedTests(object):
         line.append('M')
         for x in self.report_lines:
             line.append(self.method_to_action(x[0]))
-        print '#' + ','.join(line)
+        print('#' + ','.join(line))
         
         line = []
         line.append(str(self.total_number_of_points))
         line.append(str(self.subset_number_of_points))
         for x in self.report_lines:
             line.append(str(x[1]))
-        print ','.join(line)
+        print(','.join(line))
         
     def output_table(self):
         lines = []
@@ -155,7 +155,7 @@ class RunSpeedTests(object):
         lines.append('')
         
         for x in lines:
-            print x
+            print(x)
             
         table = texttable.Texttable()
         #table.set_deco(texttable.Texttable.HEADER)
@@ -168,7 +168,7 @@ class RunSpeedTests(object):
         rows.append(self.header_line)
         rows.extend(self.report_lines_as_strings)
         table.add_rows(rows)
-        print table.draw()
+        print(table.draw())
         
             
     def names_of_testing_methods(self):

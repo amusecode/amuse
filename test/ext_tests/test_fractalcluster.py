@@ -7,13 +7,13 @@ from amuse.ic.fractalcluster import new_fractal_cluster_model
 class TestFractalCluster(amusetest.TestCase):
     
     def test1(self):
-        print "First test: making a fractal cluster."
+        print("First test: making a fractal cluster.")
         target_number_of_particles = 100
         parts = new_fractal_cluster_model(N=target_number_of_particles)
-        self.assertEquals(len(parts), 100)
+        self.assertEqual(len(parts), 100)
 
     def test2(self):
-        print "test 2: test energy."
+        print("test 2: test energy.")
         target_number_of_particles = 100
         parts = new_fractal_cluster_model(N=target_number_of_particles)
         ek=parts.kinetic_energy()
@@ -22,7 +22,7 @@ class TestFractalCluster(amusetest.TestCase):
         self.assertAlmostRelativeEqual(ep, -0.5 | nbody_system.energy, 12)
     
     def test3(self):
-        print "test 3: test energy physical units."
+        print("test 3: test energy physical units.")
         target_number_of_particles = 100
         convert_nbody = nbody_system.nbody_to_si(1000 | units.MSun, 1 | units.parsec) 
         parts = new_fractal_cluster_model(N=target_number_of_particles,convert_nbody=convert_nbody)
@@ -32,7 +32,7 @@ class TestFractalCluster(amusetest.TestCase):
         self.assertAlmostRelativeEqual(ep, -0.5 * constants.G * (1000|units.MSun)**2 / (1.0|units.parsec), 12)
     
     def test4(self):
-        print "Test with masses"
+        print("Test with masses")
         target_number_of_particles = 100
         masses = (range(1,11) | units.MSun) * 1.0
         convert_nbody = nbody_system.nbody_to_si(1000 | units.MSun, 1 | units.parsec) 
@@ -40,7 +40,7 @@ class TestFractalCluster(amusetest.TestCase):
         
         ek = particles.kinetic_energy()
         ep = particles.potential_energy()
-        self.assertEquals(len(particles), 10)
+        self.assertEqual(len(particles), 10)
         self.assertAlmostEqual(particles.total_mass(), 1000 | units.MSun) # Note: total_mass == converter's mass unit!
         self.assertAlmostEqual(masses.sum(), 55 | units.MSun) # Note: total_mass != masses.sum()
         self.assertAlmostEqual(particles.center_of_mass(), [0, 0, 0] | units.parsec)
@@ -49,7 +49,7 @@ class TestFractalCluster(amusetest.TestCase):
         self.assertAlmostRelativeEqual(ek, (0.25 * constants.G * (1000|units.MSun)**2 / (1.0|units.parsec)).as_quantity_in(ek.unit), 12)
     
     def test5(self):
-        print "Test with masses, with correct mass unit in converter"
+        print("Test with masses, with correct mass unit in converter")
         target_number_of_particles = 100
         masses = (range(1,11) | units.MSun) * 1.0
         convert_nbody = nbody_system.nbody_to_si(masses.sum(), 1 | units.parsec) 
@@ -57,7 +57,7 @@ class TestFractalCluster(amusetest.TestCase):
         
         ek = particles.kinetic_energy()
         ep = particles.potential_energy()
-        self.assertEquals(len(particles), 10)
+        self.assertEqual(len(particles), 10)
         self.assertAlmostEqual(particles.total_mass(), 55 | units.MSun) # Note: total_mass == converter's mass unit!
         self.assertAlmostEqual(particles.center_of_mass(), [0, 0, 0] | units.parsec)
         self.assertAlmostEqual(particles.center_of_mass_velocity(), [0, 0, 0] | units.km / units.s)
@@ -65,7 +65,7 @@ class TestFractalCluster(amusetest.TestCase):
         self.assertAlmostRelativeEqual(ek, (0.25 * constants.G * (55|units.MSun)**2 / (1.0|units.parsec)).as_quantity_in(ek.unit), 12)
     
     def test6(self):
-        print "Test fractal dimension."
+        print("Test fractal dimension.")
         number_of_particles = 1000
         for target_fractal_dimension in [1.6, 2.0, 2.5, 3.0]:
             particles = new_fractal_cluster_model(

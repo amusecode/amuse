@@ -16,7 +16,7 @@ class TestPrintingStrategy(amusetest.TestCase):
         set_printing_strategy("default")
  
     def test1(self):
-        print "Testing get/set of printing strategy"
+        print("Testing get/set of printing strategy")
         self.assertEqual(get_current_printing_strategy(), console.DefaultPrintingStrategy)
         set_printing_strategy("no_unit")
         self.assertEqual(get_current_printing_strategy(), console.NoUnitsPrintingStrategy)
@@ -36,7 +36,7 @@ class TestPrintingStrategy(amusetest.TestCase):
         self.assertEqual(get_current_printing_strategy(), console.DefaultPrintingStrategy)
     
     def test2(self):
-        print "Testing no units printing strategy with SI quantities"
+        print("Testing no units printing strategy with SI quantities")
         mass     = 1.0 | units.kg
         acc      = 9.8 | units.m / units.s**2
         position = [1, 2.0, 3] | units.m
@@ -59,7 +59,7 @@ class TestPrintingStrategy(amusetest.TestCase):
         set_printing_strategy("default")
     
     def test3(self):
-        print "Testing no units printing strategy with N-body quantities"
+        print("Testing no units printing strategy with N-body quantities")
         mass     = 1.0 | nbody_system.mass
         acc      = 9.8 | nbody_system.acceleration
         position = [1, 2, 3] | nbody_system.length
@@ -75,7 +75,7 @@ class TestPrintingStrategy(amusetest.TestCase):
         set_printing_strategy("default")
     
     def test4(self):
-        print "Testing formal printing strategy"
+        print("Testing formal printing strategy")
         mass     = 1.0 | units.kg
         acc      = 9.8 | units.m / units.s**2
         position = [1, 2.0, 3] | nbody_system.length
@@ -91,7 +91,7 @@ class TestPrintingStrategy(amusetest.TestCase):
         set_printing_strategy("default")
     
     def test5(self):
-        print "Testing nbody printing strategy"
+        print("Testing nbody printing strategy")
         mass     = 1.0 | nbody_system.mass
         acc      = 9.8 | nbody_system.length / units.s**2
         position = [1, 2, 3] | units.m
@@ -119,7 +119,7 @@ class TestPrintingStrategy(amusetest.TestCase):
         set_printing_strategy("default")
     
     def test6(self):
-        print "Testing astro printing strategy without units printed"
+        print("Testing astro printing strategy without units printed")
         mass     = 2.0 | 0.5 * units.MSun
         acc      = (0.0098 | nbody_system.length) * (1 | units.Myr**-2).as_quantity_in(units.s**-2)
         position = [0.1, 0.2, 0.3] | nbody_system.length
@@ -144,7 +144,7 @@ class TestPrintingStrategy(amusetest.TestCase):
         set_printing_strategy("default")
     
     def test7(self):
-        print "Testing astro printing strategy with units printed"
+        print("Testing astro printing strategy with units printed")
         mass     = 2.0 | 0.5 * units.MSun
         acc      = (0.0097 | nbody_system.length) * (1 | units.Myr**-2).as_quantity_in(units.s**-2)
         position = [0.1, 0.2, 0.3] | nbody_system.length
@@ -174,7 +174,7 @@ class TestPrintingStrategy(amusetest.TestCase):
         set_printing_strategy("default")
     
     def test8(self):
-        print "Testing SI printing strategy"
+        print("Testing SI printing strategy")
         mass     = 2.0 | 0.5 * units.MSun
         acc      = 0.0098 | nbody_system.length / units.Myr**2
         position = [0.1, 0.2, 0.3] | nbody_system.length
@@ -203,7 +203,7 @@ class TestPrintingStrategy(amusetest.TestCase):
         set_printing_strategy("default")
     
     def test9(self):
-        print "Testing custom printing strategy"
+        print("Testing custom printing strategy")
         mass     = 2.0 | 0.5 * units.MSun
         acc      = (0.0098 | nbody_system.length) * (1 | units.Myr**-2).as_quantity_in(units.s**-2)
         position = [0.1, 0.2, 0.3] | nbody_system.length
@@ -226,7 +226,7 @@ class TestPrintingStrategy(amusetest.TestCase):
         set_printing_strategy("default")
     
     def test10(self):
-        print "Testing custom printing strategy with precision keyword"
+        print("Testing custom printing strategy with precision keyword")
         mass     = 2.0 | 0.5 * units.MSun
         acc      = 0.23456 | 0.54321 * units.m * units.s**-2
         velocity = [-0.12345]*3 | units.km / units.s

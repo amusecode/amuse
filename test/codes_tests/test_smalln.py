@@ -32,18 +32,18 @@ class TestSmallNInterface(TestWithMPI):
         res1 = instance.new_particle(mass = 11.0, radius = 2.0, x = 0.0, y = 0.0, z = 0.0, vx = 0.0, vy = 0.0, vz = 0.0)
         res2 = instance.new_particle(mass = 21.0, radius = 5.0, x = 10.0, y = 0.0, z = 0.0, vx = 10.0, vy = 0.0, vz = 0.0)
         
-        self.assertEquals(1, res1['index_of_the_particle'])
-        self.assertEquals(2, res2['index_of_the_particle'])
+        self.assertEqual(1, res1['index_of_the_particle'])
+        self.assertEqual(2, res2['index_of_the_particle'])
     
         retrieved_state1 = instance.get_state(1)
         retrieved_state2 = instance.get_state(2)
     
-        self.assertEquals(11.0,  retrieved_state1['mass'])
-        self.assertEquals(21.0,  retrieved_state2['mass'])
-        self.assertEquals(0.0,  retrieved_state1['x'])
-        self.assertEquals(10.0,  retrieved_state2['x'])
-        self.assertEquals(2.0,  retrieved_state1['radius'])
-        self.assertEquals(5.0,  retrieved_state2['radius'])
+        self.assertEqual(11.0,  retrieved_state1['mass'])
+        self.assertEqual(21.0,  retrieved_state2['mass'])
+        self.assertEqual(0.0,  retrieved_state1['x'])
+        self.assertEqual(10.0,  retrieved_state2['x'])
+        self.assertEqual(2.0,  retrieved_state1['radius'])
+        self.assertEqual(5.0,  retrieved_state2['radius'])
     
         instance.cleanup_code()
         instance.stop()
@@ -54,18 +54,18 @@ class TestSmallNInterface(TestWithMPI):
         self.skip("index of the next particle not implemented correctly yet")
         for i in [0, 1, 2]:
             temp_particle = instance.new_particle(mass = i, radius = 1.0, x = 0.0, y = 0.0, z = 0.0, vx = 0.0, vy = 0.0, vz = 0.0)
-            self.assertEquals(i+1, temp_particle['index_of_the_particle'])
+            self.assertEqual(i+1, temp_particle['index_of_the_particle'])
             
         instance.delete_particle(2)
       
-        self.assertEquals(2, instance.get_number_of_particles()['number_of_particles'])
+        self.assertEqual(2, instance.get_number_of_particles()['number_of_particles'])
         
-        self.assertEquals(1, instance.get_index_of_first_particle()['index_of_the_particle'])
+        self.assertEqual(1, instance.get_index_of_first_particle()['index_of_the_particle'])
         
-        self.assertEquals(2, instance.get_index_of_next_particle(1)['index_of_the_next_particle'])
-        self.assertEquals(0, instance.get_index_of_next_particle(1)['__result'])
-        self.assertEquals(-1, instance.get_index_of_next_particle(3)['__result'])
-        self.assertEquals(1, instance.get_index_of_next_particle(2)['__result'])
+        self.assertEqual(2, instance.get_index_of_next_particle(1)['index_of_the_next_particle'])
+        self.assertEqual(0, instance.get_index_of_next_particle(1)['__result'])
+        self.assertEqual(-1, instance.get_index_of_next_particle(3)['__result'])
+        self.assertEqual(1, instance.get_index_of_next_particle(2)['__result'])
         instance.cleanup_code()
         instance.stop()
         
@@ -77,12 +77,12 @@ class TestSmallNInterface(TestWithMPI):
         smalln.new_particle([10,20],[0,0],[0,0], [0,0], [0,0], [0,0], [0,0],[1,1])
         retrieved_state = smalln.get_state(1)
         
-        self.assertEquals(10.0,  retrieved_state['mass'])
-        self.assertEquals(1, retrieved_state['radius'])
+        self.assertEqual(10.0,  retrieved_state['mass'])
+        self.assertEqual(1, retrieved_state['radius'])
     
         retrieved_state = smalln.get_state([1,2])
-        self.assertEquals(20.0,  retrieved_state['mass'][1])
-        self.assertEquals(smalln.get_number_of_particles()['number_of_particles'], 2)
+        self.assertEqual(20.0,  retrieved_state['mass'][1])
+        self.assertEqual(smalln.get_number_of_particles()['number_of_particles'], 2)
         smalln.cleanup_code() 
         smalln.stop()
 
@@ -109,11 +109,11 @@ class TestSmallNInterface(TestWithMPI):
         
         instance.commit_particles()
         potential, errorcode = instance.get_potential(id1)
-        self.assertEquals(errorcode, 0)
+        self.assertEqual(errorcode, 0)
         self.assertAlmostRelativeEquals(potential,  -10.0 / numpy.sqrt(2.0**2 + 0.1**2), 8)
         
         potential, errorcode = instance.get_potential(id2)
-        self.assertEquals(errorcode, 0)
+        self.assertEqual(errorcode, 0)
         self.assertAlmostRelativeEquals(potential,  -10.0 / numpy.sqrt(2.0**2 + 0.1**2), 8)
         
         total_potential, errorcode = instance.get_potential_energy()
@@ -133,7 +133,7 @@ class TestSmallNInterface(TestWithMPI):
         
         instance.commit_particles()
         potential, errorcode = instance.get_potential(id1)
-        self.assertEquals(errorcode, 0)
+        self.assertEqual(errorcode, 0)
         self.assertAlmostRelativeEquals(potential,  -1.0 / numpy.sqrt(2.0**2), 8)
         total_potential, errorcode = instance.get_potential_energy()
         potentials, errorcode = instance.get_potential([id1, id2])
@@ -144,24 +144,24 @@ class TestSmallNInterface(TestWithMPI):
         
     
     def test9(self):
-        print "Test SmallNInterface evolve_model"
+        print("Test SmallNInterface evolve_model")
         instance = SmallNInterface()
-        self.assertEquals(0, instance.initialize_code())
-        self.assertEquals(0, instance.set_eta(0.001))
-        self.assertEquals(0, instance.commit_parameters())
+        self.assertEqual(0, instance.initialize_code())
+        self.assertEqual(0, instance.set_eta(0.001))
+        self.assertEqual(0, instance.commit_parameters())
         
         # Set up an equal-mass binary on a circular orbit:
-        self.assertEquals([1, 0], instance.new_particle(0.5,  0.5, 0, 0,  0, 0.5, 0, 0.01).values())
-        self.assertEquals([2, 0], instance.new_particle(0.5,  -0.5, 0, 0,  0,-0.5, 0, 0.01).values())
-        self.assertEquals(0, instance.commit_particles())
+        self.assertEqual([1, 0], instance.new_particle(0.5,  0.5, 0, 0,  0, 0.5, 0, 0.01).values())
+        self.assertEqual([2, 0], instance.new_particle(0.5,  -0.5, 0, 0,  0,-0.5, 0, 0.01).values())
+        self.assertEqual(0, instance.commit_particles())
         
-        self.assertEquals(0, instance.evolve_model(math.pi))
+        self.assertEqual(0, instance.evolve_model(math.pi))
         for result, expected in zip(instance.get_position(1).values(), [-0.5, 0.0, 0.0, 0]):
-            self.assertAlmostEquals(result, expected, 3)
+            self.assertAlmostEqual(result, expected, 3)
         for result, expected in zip(instance.get_position(2).values(), [0.5, 0.0, 0.0, 0]):
-            self.assertAlmostEquals(result, expected, 3)
+            self.assertAlmostEqual(result, expected, 3)
         
-        self.assertEquals(0, instance.evolve_model(2 * math.pi))
+        self.assertEqual(0, instance.evolve_model(2 * math.pi))
         #print instance.get_time()
         #print instance.get_position(1), instance.get_velocity(1)
         #print instance.get_position(2)
@@ -170,7 +170,7 @@ class TestSmallNInterface(TestWithMPI):
         #for result, expected in zip(instance.get_position(2).values(), [-0.5, 0.0, 0.0, 0]):
         #    self.assertAlmostEquals(result, expected, 3)
         
-        self.assertEquals(0, instance.cleanup_code())
+        self.assertEqual(0, instance.cleanup_code())
         instance.cleanup_code()
         instance.stop()
     
@@ -308,7 +308,7 @@ class TestSmallN(TestWithMPI):
         instance.initialize_code()
         
         particles = datamodel.Particles(2)
-        self.assertEquals(len(instance.particles), 0)
+        self.assertEqual(len(instance.particles), 0)
         
         particles.mass = [15.0, 30.0] | units.kg
         particles.radius =  [10.0, 20.0] | units.m
@@ -317,13 +317,13 @@ class TestSmallN(TestWithMPI):
 
         
         instance.particles.add_particles(particles)
-        self.assertEquals(len(instance.particles), 2)
+        self.assertEqual(len(instance.particles), 2)
         
         instance.particles.mass =  [17.0, 33.0] | units.kg
         
         
-        self.assertEquals(instance.get_mass(1), 17.0| units.kg) 
-        self.assertEquals(instance.get_mass(2), 33.0| units.kg)  
+        self.assertEqual(instance.get_mass(1), 17.0| units.kg) 
+        self.assertEqual(instance.get_mass(2), 33.0| units.kg)  
         instance.stop()
 
     def test5(self):
@@ -333,7 +333,7 @@ class TestSmallN(TestWithMPI):
         instance.initialize_code()
         
         particles = datamodel.Particles(2)
-        self.assertEquals(len(instance.particles), 0)
+        self.assertEqual(len(instance.particles), 0)
         
         particles.mass = [15.0, 30.0] | units.kg
         particles.radius =  [10.0, 20.0] | units.m
@@ -342,7 +342,7 @@ class TestSmallN(TestWithMPI):
 
         
         instance.particles.add_particles(particles)
-        self.assertEquals(len(instance.particles), 2)
+        self.assertEqual(len(instance.particles), 2)
         instance.set_state(1, 16|units.kg, 
                            20.0|units.m, 40.0|units.m, 60.0|units.m, 
                            1.0|units.ms, 1.0|units.ms, 1.0|units.ms , 
@@ -356,32 +356,32 @@ class TestSmallN(TestWithMPI):
             self.assertAlmostRelativeEquals(expected, actual)
         instance.stop()
         
-        self.assertEquals(curr_state[0], 16|units.kg, 8)
+        self.assertEqual(curr_state[0], 16|units.kg, 8)
     
     def test6(self):
-        print "Test6: Testing SmallN parameters"
+        print("Test6: Testing SmallN parameters")
         convert_nbody = nbody_system.nbody_to_si(1.0 | units.yr, 1.0 | units.AU)
         instance = SmallN(convert_nbody)
         instance.initialize_code()
         
        
         value = instance.get_eta()
-        self.assertEquals(0.14, value)
-        self.assertAlmostEquals(0.14, instance.parameters.timestep_parameter)
+        self.assertEqual(0.14, value)
+        self.assertAlmostEqual(0.14, instance.parameters.timestep_parameter)
         for x in [0.001, 0.01, 0.1]:
             instance.parameters.timestep_parameter = x
-            self.assertAlmostEquals(x, instance.parameters.timestep_parameter)
+            self.assertAlmostEqual(x, instance.parameters.timestep_parameter)
         
         
         value = instance.get_time()
-        self.assertEquals(0| units.yr, value)
+        self.assertEqual(0| units.yr, value)
         
         value = instance.get_gamma()
-        self.assertEquals(1e-6, value)
-        self.assertAlmostEquals(1e-6, instance.parameters.unperturbed_threshold)
+        self.assertEqual(1e-6, value)
+        self.assertAlmostEqual(1e-6, instance.parameters.unperturbed_threshold)
         for x in [0.001, 0.01, 0.1]:
             instance.parameters.unperturbed_threshold = x
-            self.assertAlmostEquals(x, instance.parameters.unperturbed_threshold)
+            self.assertAlmostEqual(x, instance.parameters.unperturbed_threshold)
         instance.stop()
     
 
@@ -398,7 +398,7 @@ class TestSmallN(TestWithMPI):
         instance = SmallN()
         instance.particles.add_particles(particles) 
         instance.commit_particles()
-        self.assertEquals(instance.particles[0].radius, 0.0 | nbody_system.length)
+        self.assertEqual(instance.particles[0].radius, 0.0 | nbody_system.length)
         p = datamodel.Particle(
             x = 1.0  | nbody_system.length,
             y = 2.0 | nbody_system.length,
@@ -410,16 +410,16 @@ class TestSmallN(TestWithMPI):
             radius = 4.0 | nbody_system.length,
         )
         instance.particles.add_particle(p) 
-        self.assertEquals(instance.particles[0].radius, 0.0 | nbody_system.length)
-        self.assertEquals(instance.particles[1].radius, 0.0 | nbody_system.length)
-        self.assertEquals(instance.particles[2].radius, 4.0 | nbody_system.length)
+        self.assertEqual(instance.particles[0].radius, 0.0 | nbody_system.length)
+        self.assertEqual(instance.particles[1].radius, 0.0 | nbody_system.length)
+        self.assertEqual(instance.particles[2].radius, 4.0 | nbody_system.length)
         
         instance.stop()
 
     def assertEarthAndMoonWasDetectedAsBinary(self, set, stars):
         alltrees = trees.BinaryTreesOnAParticleSet(set, 'child1', 'child2')
         roots = list(alltrees.iter_roots())
-        self.assertEquals(len(roots), 1)
+        self.assertEqual(len(roots), 1)
         root = roots[0].particle
         earth_and_moon = None
         if not root.child1.child1 is None:
@@ -456,7 +456,7 @@ class TestSmallN(TestWithMPI):
         smalln.update_particle_set()
         
 
-        self.assertEquals(len(smalln.particles), 5)
+        self.assertEqual(len(smalln.particles), 5)
         
         self.assertEarthAndMoonWasDetectedAsBinary(smalln.particles, stars)
         
@@ -507,10 +507,10 @@ class TestSmallN(TestWithMPI):
         self.assertTrue(collisions.is_set())
         self.assertTrue(instance.model_time < 0.5 | nbody_system.time)
         
-        self.assertEquals(len(collisions.particles(0)), 3)
-        self.assertEquals(len(collisions.particles(1)), 3)
-        self.assertEquals(len(particles - collisions.particles(0) - collisions.particles(1)), 1)
-        self.assertEquals(abs(collisions.particles(0).x - collisions.particles(1).x) <= 
+        self.assertEqual(len(collisions.particles(0)), 3)
+        self.assertEqual(len(collisions.particles(1)), 3)
+        self.assertEqual(len(particles - collisions.particles(0) - collisions.particles(1)), 1)
+        self.assertEqual(abs(collisions.particles(0).x - collisions.particles(1).x) <= 
                 (collisions.particles(0).radius + collisions.particles(1).radius),
                 [True, True, True])
         instance.stop()

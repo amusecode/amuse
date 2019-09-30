@@ -68,26 +68,26 @@ class TestStellarWind(amusetest.TestCase):
 class TestStarsWithMassLoss(TestStellarWind):
     def test_add_particles(self):
         star_particles = self.create_star(2)
-        print "created parts"
+        print("created parts")
         stars = stellar_wind.StarsWithMassLoss()
-        print "created stars"
+        print("created stars")
         stars.add_particles(star_particles)
-        print "added", stars
+        print("added", stars)
 
-        self.assertEquals(stars.lost_mass, [0, 0] | units.MSun)
-        self.assertEquals(stars.wind_release_time, [0, 0] | units.yr)
+        self.assertEqual(stars.lost_mass, [0, 0] | units.MSun)
+        self.assertEqual(stars.wind_release_time, [0, 0] | units.yr)
 
-        self.assertAlmostEquals(stars.mu[0], 1.145934546 | units.amu)
+        self.assertAlmostEqual(stars.mu[0], 1.145934546 | units.amu)
 
     def test_add_particle(self):
         star_particles = self.create_star(1)
         stars = stellar_wind.StarsWithMassLoss()
         star = stars.add_particle(star_particles[0])
 
-        self.assertEquals(star.lost_mass, 0 | units.MSun)
-        self.assertEquals(star.wind_release_time, 0 | units.yr)
+        self.assertEqual(star.lost_mass, 0 | units.MSun)
+        self.assertEqual(star.wind_release_time, 0 | units.yr)
 
-        self.assertAlmostEquals(star.mu, 1.145934546 | units.amu)
+        self.assertAlmostEqual(star.mu, 1.145934546 | units.amu)
 
         attrs = stars.get_attribute_names_defined_in_store()
         self.assertFalse("mechanical_energy" in attrs)
@@ -99,7 +99,7 @@ class TestStarsWithMassLoss(TestStellarWind):
         stars.track_mechanical_energy()
         star = stars.add_particle(star_particles[0])
 
-        self.assertEquals(star.mechanical_energy, 0 | units.J)
+        self.assertEqual(star.mechanical_energy, 0 | units.J)
 
     def test_add_particle_later(self):
         star_particles = self.create_star(2)
@@ -109,7 +109,7 @@ class TestStarsWithMassLoss(TestStellarWind):
         stars.evolve_mass_loss(1 | units.yr)
 
         new_star = stars.add_particle(star_particles[1])
-        self.assertAlmostEquals(new_star.wind_release_time, 1 | units.yr)
+        self.assertAlmostEqual(new_star.wind_release_time, 1 | units.yr)
 
     def test_superfluous_attributes(self):
         star_particles = self.create_star(2)
@@ -156,7 +156,7 @@ class TestPositionGenerator(TestStellarWind):
         numpy.random.seed(1232367)
         gen = stellar_wind.PositionGenerator(grid_type="regular")
         cube = gen.cube_generator(25)
-        print cube
+        print(cube)
         self.assertEqual(cube.shape, (25, 3))
         self.assertAlmostEqual(cube.min(), -2./3.)
         self.assertAlmostEqual(cube.max(), 2./3.)
@@ -203,13 +203,13 @@ class TestPositionGenerator(TestStellarWind):
         p, _ = gen.generate_positions(N, rmin, rmax)
         r = p.lengths()
 
-        print 'rmin', r.min()
-        print 'rmax', r.max()
-        print r.mean()
-        self.assertEquals(len(r), N)
+        print('rmin', r.min())
+        print('rmax', r.max())
+        print(r.mean())
+        self.assertEqual(len(r), N)
         self.assertGreaterEqual(r.min(), rmin)
         self.assertLessEqual(r.max(), rmax)
-        self.assertAlmostEquals(r.mean(), 5.49955427602 | units.RSun)
+        self.assertAlmostEqual(r.mean(), 5.49955427602 | units.RSun)
 
         return
 
@@ -256,11 +256,11 @@ class TestPositionGenerator(TestStellarWind):
         p, _ = gen.generate_positions(N, rmin, rmax, func, star)
         r = p.lengths()
 
-        self.assertEquals(len(r), N)
+        self.assertEqual(len(r), N)
         self.assertGreaterEqual(r.min(), rmin)
         self.assertLessEqual(r.max(), rmax)
-        print r.mean()
-        self.assertAlmostEquals(r.mean(), 4.00196447056 | units.RSun)
+        print(r.mean())
+        self.assertAlmostEqual(r.mean(), 4.00196447056 | units.RSun)
 
         return
 
@@ -279,8 +279,8 @@ class TestPositionGenerator(TestStellarWind):
         numpy.random.seed(1232367)
         gen = stellar_wind.PositionGenerator()
         axis, angle = gen.random_rotation()
-        print axis
-        print angle
+        print(axis)
+        print(angle)
         self.assertEqual(len(axis), 3)
         self.assertAlmostEqual((axis**2).sum(), 1.)
         self.assertGreaterEqual(angle, 0.)
@@ -291,7 +291,7 @@ class TestPositionGenerator(TestStellarWind):
         axis = [0, 0, 1]
         angle = numpy.pi
         matrix = gen.rotation_matrix(axis, angle)
-        print numpy.rint(matrix)
+        print(numpy.rint(matrix))
 
         expected = [[-1, 0, 0], [0, -1, 0], [0, 0, 1]]
         self.assertAlmostEqual(matrix, expected)
@@ -302,7 +302,7 @@ class TestPositionGenerator(TestStellarWind):
         angle = numpy.pi
         positions = [[0.5, 0.5, 0.5], [0.2, -0.5, 1.3]]
         rotated = gen.rotate_positions(positions, axis, angle)
-        print rotated
+        print(rotated)
         expected = [[-0.5, 0.5, -0.5], [-0.2, -0.5, -1.3]]
         self.assertAlmostEqual(rotated, expected)
 
@@ -384,11 +384,11 @@ class TestSimpleWind(TestStellarWind):
         r_sort = radii.argsort()
         v_sorted = wind_velocities[r_sort]
 
-        print v_sorted
+        print(v_sorted)
         self.assertDecreasing(v_sorted)
 
-        self.assertAlmostEquals(v_sorted[0], 615.945250201 | units.kms)
-        self.assertAlmostEquals(v_sorted[-1], 176.050310315 | units.kms)
+        self.assertAlmostEqual(v_sorted[0], 615.945250201 | units.kms)
+        self.assertAlmostEqual(v_sorted[-1], 176.050310315 | units.kms)
 
         return
 
@@ -580,20 +580,20 @@ class TestAccelerationFunctions(TestStellarWind):
         star.terminal_wind_velocity = 20 | units.kms
 
         times = [0., 25., 100.] | units.yr
-        print "times", times
+        print("times", times)
         radii = func.radius_from_time(times, star)
-        print "radii", radii
+        print("radii", radii)
 
-        self.assertAlmostEquals(radii[0], 312. | units.RSun)
-        self.assertAlmostEquals(radii[1], 22644.6086263 | units.RSun)
-        self.assertAlmostEquals(radii[2], 90704.1183516 | units.RSun)
+        self.assertAlmostEqual(radii[0], 312. | units.RSun)
+        self.assertAlmostEqual(radii[1], 22644.6086263 | units.RSun)
+        self.assertAlmostEqual(radii[2], 90704.1183516 | units.RSun)
 
         return
 
         times = numpy.linspace(0., 1, 100) | units.yr
         radii = func.radius_from_time(times, star)
 
-        print radii
+        print(radii)
         from matplotlib import pyplot
         from amuse import plot as aplot
         aplot.plot(times, radii/star.radius)
@@ -611,7 +611,7 @@ class TestAccelerationFunctions(TestStellarWind):
 
         func = stellar_wind.RSquaredAcceleration()
         radius = func.radius_from_number(x, r_max, star)
-        self.assertAlmostEquals(radius,  10.6029030808 | units.RSun)
+        self.assertAlmostEqual(radius,  10.6029030808 | units.RSun)
 
 
 class TestAcceleratingWind(TestStellarWind):
@@ -729,7 +729,7 @@ class TestAcceleratingWind(TestStellarWind):
 
         distances = [2, 4, 5, 10] | units.RSun
         accelerations = star_wind.acceleration(star, distances)
-        print accelerations
+        print(accelerations)
         expected = ([-0.0187296577097, -0.00371643479392, -0.00220802076676,
                      -0.000438126811] | units.m/units.s**2)
 
@@ -770,7 +770,7 @@ class TestAcceleratingWind(TestStellarWind):
                     [0.0, 1.23562185478e-05, 0.0],
                     [0.0, 3.40573571553e-06, 3.97335833479e-06],
                     [-5.49165268791e-06, 0.0, 0.0]] | units.m / units.s**2
-        self.assertAlmostEquals(result, expected)
+        self.assertAlmostEqual(result, expected)
 
 
 class TestHeatingWind(TestStellarWind):
@@ -796,7 +796,7 @@ class TestHeatingWind(TestStellarWind):
         self.assertEqual(len(wind), 9)
         max_dist = (wind.position - star.position).lengths().max()
         self.assertLessEqual(max_dist, r_max + star.radius)
-        self.assertAlmostEquals(max_dist, 8.69397162579 | units.RSun)
+        self.assertAlmostEqual(max_dist, 8.69397162579 | units.RSun)
 
         self.assertAllAlmostEqual(wind.u, expected_u)
 
@@ -857,7 +857,7 @@ class TestHeatingWind(TestStellarWind):
                 wind_2 = wind - wind_1
                 wind_N.append([len(wind_1), len(wind_2)])
                 if len(wind_2) > 0:
-                    print "time", t, "wind energy", (wind_2.u * wind_2.mass).sum()
+                    print("time", t, "wind energy", (wind_2.u * wind_2.mass).sum())
             else:
                 wind_N.append([0, 0])
 
@@ -893,7 +893,7 @@ class TestHeatingWind(TestStellarWind):
                 key = stev.stopping_conditions.supernova_detection.particles(0)[0].key
                 star = star_wind.particles._get_particle(key)
                 star.mass_loss_type = "supernova"
-                print "supernova detected at time", t, stev.model_time
+                print("supernova detected at time", t, stev.model_time)
 
             star_wind.evolve_model(t)
 
@@ -902,12 +902,12 @@ class TestHeatingWind(TestStellarWind):
                 wind_2 = wind[wind.source == stars[1].key]
                 wind_N.append(len(wind_2))
                 wind_E.append((wind_2.u * wind_2.mass).sum())
-                print len(wind), len(wind_2)
+                print(len(wind), len(wind_2))
 
             if not stev.stopping_conditions.supernova_detection.is_set():
                 t += dt
 
-        print wind_N
-        print wind_E
+        print(wind_N)
+        print(wind_E)
         self.assertEqual(wind_N[-2:], [606194, 0])
         self.assertAlmostRelativeEqual(wind_E[-2:], [1.e49, 0] | units.erg,7)

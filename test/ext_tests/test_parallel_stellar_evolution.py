@@ -23,14 +23,14 @@ class TestParallelStellarEvolution(TestCase):
     code_factory = SSE
     
     def test1(self):
-        print "Testing ParallelStellarEvolution initialization"
+        print("Testing ParallelStellarEvolution initialization")
         instance = ParallelStellarEvolution(self.code_factory, number_of_workers=3, **default_options)
         instance.initialize_code()
         instance.cleanup_code()
         instance.stop()
     
     def test2(self):
-        print "Testing ParallelStellarEvolution particles"
+        print("Testing ParallelStellarEvolution particles")
         instance = ParallelStellarEvolution(self.code_factory, number_of_workers=2, **default_options)
         instance.initialize_code()
         instance.commit_parameters()
@@ -40,14 +40,14 @@ class TestParallelStellarEvolution(TestCase):
         incode = instance.particles.add_particles(particles)
         instance.commit_particles()
         self.assertAlmostEqual(incode.mass, range(1, 1+len(particles)) | units.MSun)
-        print "Note that the order of instance.particles is different from the",
-        print "original particle order, since particles are distributed over 2 processes"
+        print("Note that the order of instance.particles is different from the", end=' ')
+        print("original particle order, since particles are distributed over 2 processes")
         self.assertAlmostEqual(instance.particles.mass, [1,3,5, 2,4] | units.MSun)
         
         instance.stop()
         
     def slowtest3(self):
-        print "Testing ParallelStellarEvolution evolve_model"
+        print("Testing ParallelStellarEvolution evolve_model")
         particles = Particles(4)
         particles.mass = range(1, 1+len(particles)) | units.MSun
         
@@ -71,7 +71,7 @@ class TestParallelStellarEvolution(TestCase):
         parallel.stop()
     
     def test4(self):
-        print "Testing ParallelStellarEvolution parameters"
+        print("Testing ParallelStellarEvolution parameters")
         parallel = ParallelStellarEvolution(self.code_factory, number_of_workers=3, **default_options)
         parallel.parameters.metallicity = 0.01
         self.assertEqual(parallel.parameters.metallicity, 0.01)
@@ -80,7 +80,7 @@ class TestParallelStellarEvolution(TestCase):
         parallel.stop()
     
     def test5(self):
-        print "Testing ParallelStellarEvolution individual options"
+        print("Testing ParallelStellarEvolution individual options")
         base_name = os.path.join(get_path_to_results(), "parallel_stellar_evolution_out_")
         for filename in [base_name+str(i) for i in range(3)]:
             if os.path.exists(filename):
@@ -95,7 +95,7 @@ class TestParallelStellarEvolution(TestCase):
         parallel.stop()
     
     def xtest6(self):
-        print "Testing ParallelStellarEvolution exception handling"
+        print("Testing ParallelStellarEvolution exception handling")
         self.code_factory = EVtwin
         if self.code_factory == MESA:
             expected_message = ("Error when calling 'evolve_for' of a 'MESA', errorcode is -12, error is 'Evolve terminated: Maximum age reached.'")

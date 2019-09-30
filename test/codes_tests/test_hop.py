@@ -10,33 +10,33 @@ from amuse.community.hop.interface import HopInterface, Hop
 
 class TestHopInterface(TestCase):
     def test1(self):
-        print "First test: adding particles, setting and getting."
+        print("First test: adding particles, setting and getting.")
         hop = HopInterface()
         hop.initialize_code()
         n, err = hop.get_number_of_particles()
-        self.assertEquals(n, 0)
-        self.assertEquals(err, 0)
+        self.assertEqual(n, 0)
+        self.assertEqual(err, 0)
         
         for i in range(6):
             id, err = hop.new_particle(0, i*i, 0, 0)
             n, err = hop.get_number_of_particles()
-            self.assertEquals(n, i+1)
-            self.assertEquals(err, 0)
+            self.assertEqual(n, i+1)
+            self.assertEqual(err, 0)
         
         for i in range(6):
             x, y, z, err = hop.get_position(i)
-            self.assertEquals(x, i*i)
-            self.assertEquals(y, 0)
-            self.assertEquals(z, 0)
-            self.assertEquals(err, 0)
+            self.assertEqual(x, i*i)
+            self.assertEqual(y, 0)
+            self.assertEqual(z, 0)
+            self.assertEqual(err, 0)
             
             hop.set_position(i, x, i*i, 0)
         
         for i in range(6):
             x, y, z, err  = hop.get_position(i)
-            self.assertEquals(x, y)
-            self.assertEquals(z, 0)
-            self.assertEquals(err, 0)
+            self.assertEqual(x, y)
+            self.assertEqual(z, 0)
+            self.assertEqual(err, 0)
         
         hop.stop()
     
@@ -55,8 +55,8 @@ class TestHopInterface(TestCase):
         )
         
         n, err = hop.get_number_of_particles()
-        self.assertEquals(n, 1000)
-        self.assertEquals(err, 0)
+        self.assertEqual(n, 1000)
+        self.assertEqual(err, 0)
         
         #distance_to_center = (particles.position - particles.center_of_mass()).lengths()
         
@@ -75,7 +75,7 @@ class TestHopInterface(TestCase):
     
         random.seed(1001)
         
-        print "Third test: densest neighbors and groups."
+        print("Third test: densest neighbors and groups.")
                 
         hop = HopInterface()
         hop.initialize_code()
@@ -115,58 +115,58 @@ class TestHopInterface(TestCase):
         hop.do_hop()
         
         n, err = hop.get_group_id(ids1)
-        self.assertEquals(n, 2)
-        self.assertEquals(err, 0)
+        self.assertEqual(n, 2)
+        self.assertEqual(err, 0)
         n, err = hop.get_group_id(ids2)
-        self.assertEquals(err, 0)
+        self.assertEqual(err, 0)
         n, err = hop.get_group_id(ids3)
-        self.assertEquals(err, 0)
+        self.assertEqual(err, 0)
         
         n, err = hop.get_densest_particle_in_group(2)
-        self.assertEquals(n, 7)
+        self.assertEqual(n, 7)
         for i in range(3):
             n, err = hop.get_number_of_particles_in_group(0)
-            self.assertEquals(err, 0)
-            self.assertEquals(n, 10)
+            self.assertEqual(err, 0)
+            self.assertEqual(n, 10)
             
         n, err = hop.get_number_of_groups()
-        self.assertEquals(n, 3)
+        self.assertEqual(n, 3)
         
         n, err = hop.get_densest_neighbor(ids1)
-        self.assertEquals(n, [7,7,12,0,7,7,7,7,12,7])
+        self.assertEqual(n, [7,7,12,0,7,7,7,7,12,7])
         hop.stop()
     
     def test4(self):
         hop = HopInterface()
         hop.initialize_code()
         value, error = hop.get_nDens()
-        self.assertEquals(error,0)
-        self.assertEquals(value,64)
+        self.assertEqual(error,0)
+        self.assertEqual(value,64)
         error = hop.set_nDens(7)
-        self.assertEquals(error,0)
+        self.assertEqual(error,0)
         value, error = hop.get_nDens()
-        self.assertEquals(value,7)
+        self.assertEqual(value,7)
         
         value, error = hop.get_nHop()
-        self.assertEquals(error,0)
-        self.assertEquals(value, -1)
+        self.assertEqual(error,0)
+        self.assertEqual(value, -1)
         error = hop.set_nHop(7)
-        self.assertEquals(error,0)
+        self.assertEqual(error,0)
         value, error = hop.get_nHop()
-        self.assertEquals(value,7)
+        self.assertEqual(value,7)
         
         value, error = hop.get_nBucket()
-        self.assertEquals(error,0)
-        self.assertEquals(value, 16)
+        self.assertEqual(error,0)
+        self.assertEqual(value, 16)
         error = hop.set_nHop(7)
-        self.assertEquals(error,0)
+        self.assertEqual(error,0)
         value, error = hop.get_nHop()
-        self.assertEquals(value,7)
+        self.assertEqual(value,7)
         hop.stop()
     
 class TestHop(TestCase):
     def test1(self):
-        print "First test: adding particles, setting and getting."
+        print("First test: adding particles, setting and getting.")
         hop = Hop()
         particles = Particles(6)
         particles.mass = 1.0 | nbody_system.mass
@@ -179,9 +179,9 @@ class TestHop(TestCase):
         positions = hop.particles.position
         for i in range(6):
             x, y, z = positions[i]
-            self.assertEquals(x, i*i | nbody_system.length)
-            self.assertEquals(y, 0 | nbody_system.length)
-            self.assertEquals(z, 0 | nbody_system.length)
+            self.assertEqual(x, i*i | nbody_system.length)
+            self.assertEqual(y, 0 | nbody_system.length)
+            self.assertEqual(z, 0 | nbody_system.length)
             
         hop.stop()
     
@@ -214,7 +214,7 @@ class TestHop(TestCase):
     
         random.seed(1001)
         
-        print "Third test: densest neighbors and groups."
+        print("Third test: densest neighbors and groups.")
                 
         hop = Hop()
         hop.parameters.number_of_neighbors_for_local_density = 5
@@ -234,24 +234,24 @@ class TestHop(TestCase):
         hop.calculate_densities()
         hop.do_hop()
         
-        print hop.particles.group_id
+        print(hop.particles.group_id)
         
         groups = list(hop.groups())
         
-        self.assertEquals(len(groups), 3)
+        self.assertEqual(len(groups), 3)
         
-        self.assertEquals(hop.get_number_of_particles_outside_groups(), 0)
+        self.assertEqual(hop.get_number_of_particles_outside_groups(), 0)
         
         #densities = (0,0,0) | nbody_system.density
         for index, group in enumerate(groups):
-            self.assertEquals(len(group), 10)
-            self.assertEquals(group.id_of_group(), index)
+            self.assertEqual(len(group), 10)
+            self.assertEqual(group.id_of_group(), index)
             #self.assertEquals(group.get_density_of_group(), densities[index])
         hop.stop()
     
     def test4(self):
         random.seed(1001)
-        print "Test 4: complicated density field."
+        print("Test 4: complicated density field.")
         
         # A separate group below peak_density_threshold -> should be dropped
         particles0 = new_plummer_model(90, convert_nbody=nbody_system.nbody_to_si(0.9 | units.MSun, 1.0 | units.RSun))
@@ -286,18 +286,18 @@ class TestHop(TestCase):
         hop.do_hop()
         groups = list(hop.groups())
         
-        self.assertEquals(len(hop.particles), 1070)
-        self.assertEquals(len(groups), 2)
-        self.assertEquals(hop.particles.select(lambda x: x < 5|units.RSun, "x").group_id, -1)
-        self.assertEquals(hop.get_number_of_particles_outside_groups(), 299)
-        self.assertEquals(1070 - len(groups[0]) - len(groups[1]), 299)
+        self.assertEqual(len(hop.particles), 1070)
+        self.assertEqual(len(groups), 2)
+        self.assertEqual(hop.particles.select(lambda x: x < 5|units.RSun, "x").group_id, -1)
+        self.assertEqual(hop.get_number_of_particles_outside_groups(), 299)
+        self.assertEqual(1070 - len(groups[0]) - len(groups[1]), 299)
         
         expected_size = [477, 294] # Less than [580, 400], because particles below outer_density_threshold are excluded
         expected_average_x = [11.0, 20] | units.RSun
         for index, group in enumerate(groups):
-            self.assertEquals(group.id_of_group(), index)
-            self.assertAlmostEquals(group.center_of_mass()[0], expected_average_x[index], 1)
-            self.assertEquals(len(group), expected_size[index])
+            self.assertEqual(group.id_of_group(), index)
+            self.assertAlmostEqual(group.center_of_mass()[0], expected_average_x[index], 1)
+            self.assertEqual(len(group), expected_size[index])
         
         if False: # Make a plot
             original = hop.particles.copy()
@@ -312,7 +312,7 @@ class TestHop(TestCase):
         hop.stop()
     
     def test5(self):
-        print "Test error codes"
+        print("Test error codes")
         unit_converter = nbody_system.nbody_to_si(1.0 | units.MSun, 1.0 | units.AU)
         particles = new_plummer_model(200, convert_nbody=unit_converter)
         hop = Hop(unit_converter=unit_converter)#, redirection="none")
@@ -333,15 +333,15 @@ class TestHop(TestCase):
         hop.stop()
     
     def test6(self):
-        print "Test with different masses"
+        print("Test with different masses")
         # Particles on a cubic grid with masses according to a gaussian density profile
         grid = numpy.mgrid[-1:1:21j, -1:1:21j, -1:1:21j] | units.m
         particles = Particles(9261, x=grid[0].flatten(), y=grid[1].flatten(), z=grid[2].flatten())
         peak_positions = [[0.2, -0.4, 0.3], [-0.6, 0.2, 0.7]] | units.m
         particles.mass = 2*numpy.exp(-(particles.position-peak_positions[0]).lengths_squared() / (0.1|units.m**2)) | units.kg
         particles.mass += numpy.exp(-(particles.position-peak_positions[1]).lengths_squared() / (0.1|units.m**2)) | units.kg
-        self.assertAlmostEquals(particles.position[particles.mass.argmax()], peak_positions[0])
-        self.assertAlmostEquals(particles[:4000].position[particles[:4000].mass.argmax()], peak_positions[1])
+        self.assertAlmostEqual(particles.position[particles.mass.argmax()], peak_positions[0])
+        self.assertAlmostEqual(particles[:4000].position[particles[:4000].mass.argmax()], peak_positions[1])
         
         hop = Hop(unit_converter=nbody_system.nbody_to_si(particles.mass.sum(), 1.0 | units.m))#, redirection="none")
         hop.parameters.density_method = 2
@@ -350,56 +350,56 @@ class TestHop(TestCase):
         hop.commit_parameters()
         hop.particles.add_particles(particles)
         hop.calculate_densities()
-        self.assertAlmostEquals(hop.particles.position[hop.particles.density.argmax()], peak_positions[0])
-        self.assertAlmostEquals(hop.particles[:4000].position[hop.particles[:4000].density.argmax()], peak_positions[1])
+        self.assertAlmostEqual(hop.particles.position[hop.particles.density.argmax()], peak_positions[0])
+        self.assertAlmostEqual(hop.particles[:4000].position[hop.particles[:4000].density.argmax()], peak_positions[1])
         hop.do_hop()
         groups = list(hop.groups())
-        self.assertEquals(len(groups), 2)
+        self.assertEqual(len(groups), 2)
         for group, peak_position in zip(groups, peak_positions):
-            self.assertAlmostEquals(group.center_of_mass(), peak_position, 1)
+            self.assertAlmostEqual(group.center_of_mass(), peak_position, 1)
         hop.stop()
     
     def test7(self):
-        print "Testing Hop states"
+        print("Testing Hop states")
         unit_converter = nbody_system.nbody_to_si(1.0 | units.MSun, 1.0 | units.AU)
         particles = new_plummer_model(200, convert_nbody=unit_converter)
         
-        print "First do everything manually:",
+        print("First do everything manually:", end=' ')
         instance = Hop(unit_converter=unit_converter)
-        self.assertEquals(instance.get_name_of_current_state(), 'UNINITIALIZED')
+        self.assertEqual(instance.get_name_of_current_state(), 'UNINITIALIZED')
         instance.initialize_code()
-        self.assertEquals(instance.get_name_of_current_state(), 'INITIALIZED')
+        self.assertEqual(instance.get_name_of_current_state(), 'INITIALIZED')
         instance.commit_parameters()
-        self.assertEquals(instance.get_name_of_current_state(), 'EDIT')
+        self.assertEqual(instance.get_name_of_current_state(), 'EDIT')
         instance.particles.add_particles(particles)
         instance.commit_particles()
-        self.assertEquals(instance.get_name_of_current_state(), 'RUN')
+        self.assertEqual(instance.get_name_of_current_state(), 'RUN')
         instance.cleanup_code()
-        self.assertEquals(instance.get_name_of_current_state(), 'END')
+        self.assertEqual(instance.get_name_of_current_state(), 'END')
         instance.stop()
-        print "ok"
+        print("ok")
 
-        print "initialize_code(), commit_parameters(), (re)commit_particles(), " \
-            "and cleanup_code() should be called automatically:",
+        print("initialize_code(), commit_parameters(), (re)commit_particles(), " \
+            "and cleanup_code() should be called automatically:", end=' ')
         instance = Hop(unit_converter=unit_converter)
-        self.assertEquals(instance.get_name_of_current_state(), 'UNINITIALIZED')
+        self.assertEqual(instance.get_name_of_current_state(), 'UNINITIALIZED')
         instance.parameters.number_of_neighbors_for_local_density = 50
-        self.assertEquals(instance.get_name_of_current_state(), 'INITIALIZED')
+        self.assertEqual(instance.get_name_of_current_state(), 'INITIALIZED')
         instance.particles.add_particles(particles[:100])
-        self.assertEquals(instance.get_name_of_current_state(), 'EDIT')
+        self.assertEqual(instance.get_name_of_current_state(), 'EDIT')
         mass = instance.particles[0].mass
-        self.assertEquals(instance.get_name_of_current_state(), 'RUN')
+        self.assertEqual(instance.get_name_of_current_state(), 'RUN')
         instance.particles.add_particles(particles[100:])
-        self.assertEquals(instance.get_name_of_current_state(), 'UPDATE')
+        self.assertEqual(instance.get_name_of_current_state(), 'UPDATE')
         mass = instance.particles[100].mass
-        self.assertEquals(instance.get_name_of_current_state(), 'RUN')
+        self.assertEqual(instance.get_name_of_current_state(), 'RUN')
         instance.stop()
-        self.assertEquals(instance.get_name_of_current_state(), 'STOPPED')
-        print "ok"
+        self.assertEqual(instance.get_name_of_current_state(), 'STOPPED')
+        print("ok")
     
     def test8(self):
         random.seed(1001)
-        print "Test 8: SI vs nbody units."
+        print("Test 8: SI vs nbody units.")
         converter = nbody_system.nbody_to_si(1.0 | units.MSun, 1.0 | units.RSun)
         numpy.random.seed(1234)
         particles = new_plummer_model(1000, convert_nbody=converter)
@@ -410,10 +410,10 @@ class TestHop(TestCase):
         hop.do_hop()
         groups = list(hop.groups())
         
-        self.assertEquals(len(hop.particles), 1000)
-        self.assertEquals(len(groups), 1)
-        self.assertEquals(len(groups[0]), 511)
-        self.assertEquals(len(hop.no_group()), 489)
+        self.assertEqual(len(hop.particles), 1000)
+        self.assertEqual(len(groups), 1)
+        self.assertEqual(len(groups[0]), 511)
+        self.assertEqual(len(hop.no_group()), 489)
         hop.stop()
         
         numpy.random.seed(1234)
@@ -425,10 +425,10 @@ class TestHop(TestCase):
         hop.do_hop()
         groups = list(hop.groups())
         
-        self.assertEquals(len(hop.particles), 1000)
-        self.assertEquals(len(groups), 1)
-        self.assertEquals(len(groups[0]), 511)
-        self.assertEquals(len(hop.no_group()), 489)
+        self.assertEqual(len(hop.particles), 1000)
+        self.assertEqual(len(groups), 1)
+        self.assertEqual(len(groups[0]), 511)
+        self.assertEqual(len(hop.no_group()), 489)
         hop.stop()
     
 

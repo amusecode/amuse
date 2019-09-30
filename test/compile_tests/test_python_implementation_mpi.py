@@ -97,8 +97,8 @@ class TestInterface(TestWithMPI):
         interface=self.ForTesting(redirection="none",number_of_workers=1)        
         x=interface.grid.x
         dens=interface.grid.dens
-        self.assertEquals(x,numpy.arange(60)/60.)
-        self.assertEquals(dens,x**2)
+        self.assertEqual(x,numpy.arange(60)/60.)
+        self.assertEqual(dens,x**2)
         interface.stop()
     
     def test2(self):
@@ -106,7 +106,7 @@ class TestInterface(TestWithMPI):
             interface=self.ForTesting(redirection="none",number_of_workers=n)        
             x=interface.grid.x
             dens=interface.grid.dens
-            self.assertEquals(x,numpy.arange(60)/60.)
-            self.assertEquals(dens,x**2)
+            self.assertEqual(x,numpy.arange(60)/60.)
+            self.assertEqual(dens,x**2)
             interface.stop()
 
