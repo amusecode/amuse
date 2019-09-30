@@ -12,7 +12,7 @@ from amuse import datamodel
 from amuse.rfi import channel
 from amuse.rfi.core import *
 
-from test_fortran_implementation import codestring, ForTestingInterface
+from .test_fortran_implementation import codestring, ForTestingInterface
 
 
 class ForTesting(InCodeComponentImplementation):

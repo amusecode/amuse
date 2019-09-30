@@ -54,8 +54,8 @@ class TestBrutusInterface(TestWithMPI):
         self.assertEqual(0, instance.set_brutus_output_directory(instance.output_directory))
         self.assertEqual(0, instance.commit_parameters())
 
-        self.assertEqual([0, 0], instance.new_particle(0.01,  1, 0, 0,  0, 1, 0, 0.1).values())
-        self.assertEqual([1, 0], instance.new_particle(0.02, -1, 0, 0,  0,-1, 0, 0.1).values())
+        self.assertEqual([0, 0], list(instance.new_particle(0.01,  1, 0, 0,  0, 1, 0, 0.1).values()))
+        self.assertEqual([1, 0], list(instance.new_particle(0.02, -1, 0, 0,  0,-1, 0, 0.1).values()))
         self.assertEqual(0, instance.commit_particles())
         
         # getters
@@ -66,22 +66,22 @@ class TestBrutusInterface(TestWithMPI):
         self.assertAlmostEqual(0.1, radius)
         self.assertEqual(0,result)
         #self.assertEquals(-3, instance.get_mass(2)['__result']) # Particle not found
-        self.assertEqual([ 1, 0, 0,  0], instance.get_position(0).values())
-        self.assertEqual([-1, 0, 0,  0], instance.get_position(1).values())
-        self.assertEqual([ 0, 1, 0,  0], instance.get_velocity(0).values())
-        self.assertEqual([ 0,-1, 0,  0], instance.get_velocity(1).values())
+        self.assertEqual([ 1, 0, 0,  0], list(instance.get_position(0).values()))
+        self.assertEqual([-1, 0, 0,  0], list(instance.get_position(1).values()))
+        self.assertEqual([ 0, 1, 0,  0], list(instance.get_velocity(0).values()))
+        self.assertEqual([ 0,-1, 0,  0], list(instance.get_velocity(1).values()))
         
         # setters
         self.assertEqual(0, instance.set_state(0, 0.01, 1,2,3, 4,5,6, 0.1))
-        self.assertEqual([0.01, 1.0,2.0,3.0, 4.0,5.0,6.0, 0.1, 0], instance.get_state(0).values())
+        self.assertEqual([0.01, 1.0,2.0,3.0, 4.0,5.0,6.0, 0.1, 0], list(instance.get_state(0).values()))
         self.assertEqual(0, instance.set_mass(0, 0.02))
-        self.assertEqual([0.02, 1.0,2.0,3.0, 4.0,5.0,6.0, 0.1, 0], instance.get_state(0).values())
+        self.assertEqual([0.02, 1.0,2.0,3.0, 4.0,5.0,6.0, 0.1, 0], list(instance.get_state(0).values()))
         self.assertEqual(0, instance.set_radius(0, 0.2))
-        self.assertEqual([0.02, 1.0,2.0,3.0, 4.0,5.0,6.0, 0.2, 0], instance.get_state(0).values())
+        self.assertEqual([0.02, 1.0,2.0,3.0, 4.0,5.0,6.0, 0.2, 0], list(instance.get_state(0).values()))
         self.assertEqual(0, instance.set_position(0, 10,20,30))
-        self.assertEqual([0.02, 10.0,20.0,30.0, 4.0,5.0,6.0, 0.2, 0], instance.get_state(0).values())
+        self.assertEqual([0.02, 10.0,20.0,30.0, 4.0,5.0,6.0, 0.2, 0], list(instance.get_state(0).values()))
         self.assertEqual(0, instance.set_velocity(0, 40,50,60))
-        self.assertEqual([0.02, 10.0,20.0,30.0, 40.0,50.0,60.0, 0.2, 0], instance.get_state(0).values())
+        self.assertEqual([0.02, 10.0,20.0,30.0, 40.0,50.0,60.0, 0.2, 0], list(instance.get_state(0).values()))
 
         self.assertEqual(0, instance.cleanup_code())
         instance.stop()
@@ -92,14 +92,14 @@ class TestBrutusInterface(TestWithMPI):
         self.assertEqual(0, instance.initialize_code())
         
         # word length
-        self.assertEqual([64, 0], instance.get_word_length().values())
+        self.assertEqual([64, 0], list(instance.get_word_length().values()))
         self.assertEqual(0, instance.set_word_length(80))
-        self.assertEqual([80, 0], instance.get_word_length().values())
+        self.assertEqual([80, 0], list(instance.get_word_length().values()))
 
         # bs tolerance, default (double) implementation
-        self.assertEqual([1.0e-6, 0], instance.get_bs_tolerance().values())
+        self.assertEqual([1.0e-6, 0], list(instance.get_bs_tolerance().values()))
         self.assertEqual(0, instance.set_bs_tolerance(1.0e-8))
-        self.assertEqual([1.0e-8, 0], instance.get_bs_tolerance().values())
+        self.assertEqual([1.0e-8, 0], list(instance.get_bs_tolerance().values()))
 
         # bs tolerance, string implementation for values requiring higher precision (note: actual accuracy depends on word_length)
         #self.assertEquals(1e-8, eval(instance.get_bs_tolerance_string()[""]))
@@ -107,21 +107,21 @@ class TestBrutusInterface(TestWithMPI):
         #self.assertEquals(["1e-10", 0], instance.get_bs_tolerance_string().values())
 
         # eta, float64
-        self.assertEqual([0.24, 0], instance.get_eta().values())
+        self.assertEqual([0.24, 0], list(instance.get_eta().values()))
         self.assertEqual(0, instance.set_eta(0.10))
-        self.assertEqual([0.10, 0], instance.get_eta().values())
+        self.assertEqual([0.10, 0], list(instance.get_eta().values()))
 
         # eta, string
         #self.assertEquals(["0.10", 0], instance.get_eta_string().values())
         self.assertEqual(0, instance.set_eta_string("0.20"))
-        self.assertEqual(["0.2", 0], instance.get_eta_string().values())
+        self.assertEqual(["0.2", 0], list(instance.get_eta_string().values()))
 
         # output dir
         #self.assertEquals(["./", 0], instance.get_brutus_output_directory().values())
         self.assertEqual(0, instance.set_brutus_output_directory("./out"))
-        self.assertEqual(["./out/", 0], instance.get_brutus_output_directory().values())
+        self.assertEqual(["./out/", 0], list(instance.get_brutus_output_directory().values()))
         self.assertEqual(0, instance.set_brutus_output_directory(instance.output_directory))
-        self.assertEqual([instance.output_directory+"/", 0], instance.get_brutus_output_directory().values())
+        self.assertEqual([instance.output_directory+"/", 0], list(instance.get_brutus_output_directory().values()))
         
         self.assertEqual(0, instance.commit_parameters())
         self.assertEqual(0, instance.cleanup_code())
@@ -138,16 +138,16 @@ class TestBrutusInterface(TestWithMPI):
 
         self.assertEqual(0, instance.commit_parameters())
         
-        self.assertEqual([0, 0], instance.new_particle(0.5,  0.5, 0, 0,  0, 0.5, 0).values())
-        self.assertEqual([1, 0], instance.new_particle(0.5, -0.5, 0, 0,  0,-0.5, 0).values())
+        self.assertEqual([0, 0], list(instance.new_particle(0.5,  0.5, 0, 0,  0, 0.5, 0).values()))
+        self.assertEqual([1, 0], list(instance.new_particle(0.5, -0.5, 0, 0,  0,-0.5, 0).values()))
         self.assertEqual(0, instance.commit_particles())
 
         self.assertEqual(0, instance.evolve_model(math.pi)) # half an orbit
-        for result, expected in zip(instance.get_position(0).values(), [-0.5, 0.0, 0.0, 0]):
+        for result, expected in zip(list(instance.get_position(0).values()), [-0.5, 0.0, 0.0, 0]):
             self.assertAlmostEqual(result, expected, 5)
 
         self.assertEqual(0, instance.evolve_model(2 * math.pi)) # full orbit
-        for result, expected in zip(instance.get_position(0).values(), [0.5, 0.0, 0.0, 0]):
+        for result, expected in zip(list(instance.get_position(0).values()), [0.5, 0.0, 0.0, 0]):
             self.assertAlmostEqual(result, expected, 5)
 
         self.assertEqual(0, instance.cleanup_code())
@@ -164,16 +164,16 @@ class TestBrutusInterface(TestWithMPI):
 
         self.assertEqual(0, instance.commit_parameters())
 
-        self.assertEqual([0, 0], instance.new_particle("3",  "1",  "3", "0", "0", "0", "0").values())
-        self.assertEqual([1, 0], instance.new_particle("4", "-2", "-1", "0", "0", "0", "0").values())
-        self.assertEqual([2, 0], instance.new_particle("5",  "1", "-1", "0", "0", "0", "0").values())
+        self.assertEqual([0, 0], list(instance.new_particle("3",  "1",  "3", "0", "0", "0", "0").values()))
+        self.assertEqual([1, 0], list(instance.new_particle("4", "-2", "-1", "0", "0", "0", "0").values()))
+        self.assertEqual([2, 0], list(instance.new_particle("5",  "1", "-1", "0", "0", "0", "0").values()))
 
         self.assertEqual(0, instance.commit_particles())
 
         self.assertEqual(0, instance.evolve_model(10))
         
         ## add a check for assertequal final coordinates
-        for result, expected in zip(instance.get_position(0).values(), [0.778480410138085492274810667212415, 0.141392300290086165745727207379442, 0, 0]):
+        for result, expected in zip(list(instance.get_position(0).values()), [0.778480410138085492274810667212415, 0.141392300290086165745727207379442, 0, 0]):
             self.assertAlmostEqual(result, expected, 3)
 
         self.assertEqual(0, instance.cleanup_code())

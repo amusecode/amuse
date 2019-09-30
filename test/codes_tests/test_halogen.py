@@ -40,16 +40,16 @@ class HalogenInterfaceTests(TestWithMPI):
         self.assertEqual(instance.set_black_hole_mass(9.0), 0)
         self.assertEqual(instance.set_do_exact_virial_radius_flag(1.0), 0)
         
-        self.assertEqual([2.0, 0], instance.get_model_alpha().values())
-        self.assertEqual([5.0, 0], instance.get_model_beta().values())
-        self.assertEqual([0.0, 0], instance.get_model_gamma().values())
-        self.assertEqual([100, 0], instance.get_target_number_of_particles().values())
-        self.assertEqual([1, 0], instance.get_random_seed().values())
-        self.assertEqual([9.0, 0], instance.get_total_mass().values())
-        self.assertEqual([9.0, 0], instance.get_scale_radius().values())
-        self.assertEqual([9.0, 0], instance.get_cutoff_radius().values())
-        self.assertEqual([9.0, 0], instance.get_black_hole_mass().values())
-        self.assertEqual([1.0, 0], instance.get_do_exact_virial_radius_flag().values())
+        self.assertEqual([2.0, 0], list(instance.get_model_alpha().values()))
+        self.assertEqual([5.0, 0], list(instance.get_model_beta().values()))
+        self.assertEqual([0.0, 0], list(instance.get_model_gamma().values()))
+        self.assertEqual([100, 0], list(instance.get_target_number_of_particles().values()))
+        self.assertEqual([1, 0], list(instance.get_random_seed().values()))
+        self.assertEqual([9.0, 0], list(instance.get_total_mass().values()))
+        self.assertEqual([9.0, 0], list(instance.get_scale_radius().values()))
+        self.assertEqual([9.0, 0], list(instance.get_cutoff_radius().values()))
+        self.assertEqual([9.0, 0], list(instance.get_black_hole_mass().values()))
+        self.assertEqual([1.0, 0], list(instance.get_do_exact_virial_radius_flag().values()))
         
         self.assertEqual(instance.cleanup_code(), 0)
         instance.stop()
@@ -67,22 +67,22 @@ class HalogenInterfaceTests(TestWithMPI):
         self.assertEqual(instance.set_output_path(instance.get_output_directory()), 0)
         self.assertEqual(instance.commit_parameters(), 0)
         
-        self.assertEqual(instance.get_number_of_particles_updated().values(), [0, 0])
+        self.assertEqual(list(instance.get_number_of_particles_updated().values()), [0, 0])
         self.assertEqual(instance.generate_particles(), 0)
-        self.assertEqual(instance.get_number_of_particles_updated().values(), [number_of_particles, 0])
+        self.assertEqual(list(instance.get_number_of_particles_updated().values()), [number_of_particles, 0])
         
-        masses, errors = instance.get_mass(range(number_of_particles))
+        masses, errors = instance.get_mass(list(range(number_of_particles)))
         self.assertEqual(errors, numpy.zeros(number_of_particles))
         self.assertEqual(masses, numpy.ones(number_of_particles)/number_of_particles)
         
-        x_positions, y_positions, z_positions, errors = instance.get_position(range(number_of_particles))
+        x_positions, y_positions, z_positions, errors = instance.get_position(list(range(number_of_particles)))
         self.assertEqual(errors, numpy.zeros(number_of_particles))
         self.assertAlmostEqual(numpy.array([numpy.mean(x_positions), numpy.mean(y_positions), 
             numpy.mean(z_positions)]), numpy.array([0.0]*3))
         self.assertAlmostEqual(numpy.array([numpy.mean(abs(x_positions)), numpy.mean(abs(y_positions)), 
             numpy.mean(abs(z_positions))]), numpy.array([1.0]*3), 1)
         
-        x_velocities, y_velocities, z_velocities, errors = instance.get_velocity(range(number_of_particles))
+        x_velocities, y_velocities, z_velocities, errors = instance.get_velocity(list(range(number_of_particles)))
         self.assertEqual(errors, numpy.zeros(number_of_particles))
         self.assertAlmostEqual(numpy.array([numpy.mean(x_velocities), numpy.mean(y_velocities), 
             numpy.mean(z_velocities)]), numpy.array([0.0]*3))
@@ -104,19 +104,19 @@ class HalogenInterfaceTests(TestWithMPI):
         self.assertEqual(instance.set_random_seed(1), 0)
         self.assertEqual(instance.set_write_output_flag(1.0), 0)
         
-        self.assertEqual(instance.get_output_basename().values(), ["halogen", 0])
-        self.assertEqual(instance.get_output_path().values(), ["./", 0])
+        self.assertEqual(list(instance.get_output_basename().values()), ["halogen", 0])
+        self.assertEqual(list(instance.get_output_path().values()), ["./", 0])
         
         self.assertEqual(instance.set_output_basename("oops_this_output_basename_is_way_too_long"*2), -1)
-        self.assertEqual(instance.get_output_basename().values(), ["halogen", 0])
+        self.assertEqual(list(instance.get_output_basename().values()), ["halogen", 0])
         self.assertEqual(instance.set_output_path("/oops/this/output/path/has/way/too/many/subdirs"*6), -1)
-        self.assertEqual(instance.get_output_path().values(), ["./", 0])
+        self.assertEqual(list(instance.get_output_path().values()), ["./", 0])
         
         self.assertEqual(instance.set_output_basename("test"), 0)
         self.assertEqual(instance.set_output_path(instance.get_output_directory()), 0)
         
-        self.assertEqual(instance.get_output_basename().values(), ["test", 0])
-        self.assertEqual(instance.get_output_path().values(), 
+        self.assertEqual(list(instance.get_output_basename().values()), ["test", 0])
+        self.assertEqual(list(instance.get_output_path().values()), 
             [os.path.join(instance.get_output_directory(), ""), 0])
         
         self.assertEqual(instance.commit_parameters(), 0)

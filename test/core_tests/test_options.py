@@ -1,6 +1,6 @@
 from amuse.support import options
 from amuse.test import amusetest
-import StringIO
+import io
 import textwrap
 import os
 
@@ -35,7 +35,7 @@ class OptionsTests(amusetest.TestCase):
     
     def test1(self):
         global_options = options.GlobalOptions()
-        global_options.config.readfp(StringIO.StringIO(self.ini_contents))
+        global_options.config.readfp(io.StringIO(self.ini_contents))
         instance = OptionsTestsClass()
         
         option = options.option(OptionsTestsClass.string_option, global_options=global_options)
@@ -43,7 +43,7 @@ class OptionsTests(amusetest.TestCase):
         
     def test2(self):
         global_options = options.GlobalOptions()
-        global_options.config.readfp(StringIO.StringIO(self.ini_contents))
+        global_options.config.readfp(io.StringIO(self.ini_contents))
         instance = OptionsTestsClass()
         
         option = options.option(OptionsTestsClass.int_option, type="int", global_options=global_options)
@@ -57,7 +57,7 @@ class OptionsTests(amusetest.TestCase):
         
     def test3(self):
         global_options = options.GlobalOptions()
-        global_options.config.readfp(StringIO.StringIO(self.ini_contents))
+        global_options.config.readfp(io.StringIO(self.ini_contents))
         instance = OptionsTestsClass()
         instance.option_sections =('unknown')
         
@@ -76,7 +76,7 @@ class OptionsTests(amusetest.TestCase):
     
     def test4(self):
         global_options = options.GlobalOptions()
-        global_options.config.readfp(StringIO.StringIO(self.ini_contents))
+        global_options.config.readfp(io.StringIO(self.ini_contents))
         instance = OptionsTestsClass()
         
         option = options.option(OptionsTestsClass.int_option, type="int", sections=("bhtree",), global_options=global_options)
@@ -89,7 +89,7 @@ class OptionsTests(amusetest.TestCase):
     
     def test5(self):
         global_options = options.GlobalOptions()
-        global_options.config.readfp(StringIO.StringIO(self.ini_contents))
+        global_options.config.readfp(io.StringIO(self.ini_contents))
         instance = OptionsTestsClass()
         instance.option_sections =('unknown')
         
@@ -100,7 +100,7 @@ class OptionsTests(amusetest.TestCase):
         
     def test6(self):
         global_options = options.GlobalOptions()
-        global_options.config.readfp(StringIO.StringIO(self.ini_contents))
+        global_options.config.readfp(io.StringIO(self.ini_contents))
         class DecoratedMethods(options.OptionalAttributes):
             option_sections =('unknown')
             
@@ -115,7 +115,7 @@ class OptionsTests(amusetest.TestCase):
         
     def test7(self):
         global_options = options.GlobalOptions()
-        global_options.config.readfp(StringIO.StringIO(self.ini_contents))
+        global_options.config.readfp(io.StringIO(self.ini_contents))
         class DecoratedMethods(options.OptionalAttributes):
             option_sections =('unknown')
             i = 8
@@ -138,7 +138,7 @@ class OptionsTests(amusetest.TestCase):
 
     def test8(self):
         global_options = options.GlobalOptions()
-        global_options.config.readfp(StringIO.StringIO(self.ini_contents))
+        global_options.config.readfp(io.StringIO(self.ini_contents))
         class A(options.OptionalAttributes):
             option_sections = ('amuse')
             
@@ -172,7 +172,7 @@ class OptionsTests(amusetest.TestCase):
         
     def test9(self):
         global_options = options.GlobalOptions()
-        global_options.config.readfp(StringIO.StringIO(self.ini_contents))
+        global_options.config.readfp(io.StringIO(self.ini_contents))
         class A(options.OptionalAttributes):
             option_sections = ('amuse')
             
@@ -223,7 +223,7 @@ class OptionsTests(amusetest.TestCase):
     
     def test11(self):
         global_options = options.GlobalOptions()
-        global_options.config.readfp(StringIO.StringIO(self.ini_contents))
+        global_options.config.readfp(io.StringIO(self.ini_contents))
         class DecoratedMethods(options.OptionalAttributes):
             option_sections =('amuse',)
            

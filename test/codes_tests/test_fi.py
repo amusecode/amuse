@@ -168,7 +168,7 @@ class TestFiInterface(TestWithMPI):
         x, y, z = gas.x.value_in(units.kpc), gas.y.value_in(units.kpc), gas.z.value_in(units.kpc)
         vx, vy, vz = [[0.0] * number_sph_particles] * 3
         u = [0.05] * number_sph_particles
-        indices = range(1,number_sph_particles+1)
+        indices = list(range(1,number_sph_particles+1))
         
         instance=FiInterface()
         instance.initialize_code()
@@ -297,7 +297,7 @@ class TestEvrard(TestWithMPI):
         nb.commit_parameters()
         
         ids,error = nb.new_sph_particle(mass,smooth,x,y,z,vx,vy,vz,u)
-        if filter(lambda x: x != 0, error) != []: raise Exception
+        if [x for x in error if x != 0] != []: raise Exception
         
         nb.initialize_particles(0.0)
         nb.synchronize_model()
@@ -1031,7 +1031,7 @@ class TestFi(TestWithMPI):
 
     def test18(self):
         particles = datamodel.Particles(10)
-        particles.x = (numpy.array(range(10)) * 1.0) | nbody_system.length
+        particles.x = (numpy.array(list(range(10))) * 1.0) | nbody_system.length
         particles.y = 0 | nbody_system.length
         particles.z = 0 | nbody_system.length
         particles.radius = 0.001 | nbody_system.length

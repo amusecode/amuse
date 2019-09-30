@@ -728,12 +728,12 @@ class _AbstractTestStoreHDF(amusetest.TestCase):
 
         particles = Grid(10)
         particles.attribute1 = "normal"
-        particles.attribute2 = u"unicode"
+        particles.attribute2 = "unicode"
 
         io.write_set_to_file(particles,output_file, format='amuse', version = self.store_version())
         
         output = io.read_set_from_file(output_file, format='amuse')
-        self.assertEqual(output[0].attribute2, u"unicode")
+        self.assertEqual(output[0].attribute2, "unicode")
         
 
 
@@ -753,7 +753,7 @@ class _AbstractTestStoreHDF(amusetest.TestCase):
         output.new_attribute= 2 * output.mass
 
         self.assertEqual(output.new_attribute, 2 * output.mass)
-        output = output.iter_history().next()
+        output = next(output.iter_history())
         output.new_attribute= 2 * output.mass
 
         self.assertEqual(output.new_attribute, 2 * output.mass)
@@ -1054,7 +1054,7 @@ class TestStoreHDFV2(_AbstractTestStoreHDF):
         x = Particles(10)
         x.mass = 1 | units.kg
         y = Particles(20)
-        y.id = range(20)
+        y.id = list(range(20))
         x[0].y = y[5:7]
 
         io.write_set_to_file(x, output_file,"amuse", version=self.store_version())

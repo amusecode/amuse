@@ -454,7 +454,7 @@ class CodeInterfaceTests(amusetest.TestCase):
         try:
             self.assertEqual(instance.returns_4(), 4)
             self.fail("Automatic state transitions is OFF, this method should fail")
-        except Exception, ex:
+        except Exception as ex:
             print(ex)
             
             self.assertEqual(len(ex.transitions), 3)
@@ -876,7 +876,7 @@ class ParticlesWithBindingInterface(object):
         
     
     def get_next(self, id):
-        return (map(lambda x : x+1, id), map(lambda x : 0, id))
+        return ([x+1 for x in id], [0 for x in id])
         
     def add_1_to_mass(self, id):
         if isinstance(id, (int, numpy.int64, numpy.int32)):
@@ -884,13 +884,13 @@ class ParticlesWithBindingInterface(object):
             return [0]
         for i in id:
             self.masses[i] += 1.0
-        return map(lambda x : 0, id)
+        return [0 for x in id]
     
 
     def get_heaviest_particle(self):
         max = -1
         id = -1
-        for index, mass in self.masses.iteritems():
+        for index, mass in self.masses.items():
             if mass > max:
                 id = index
                 max = mass
@@ -900,7 +900,7 @@ class ParticlesWithBindingInterface(object):
         return 2
         
     def get_lightest_particles(self, offset):
-        sorted_masses = sorted(list(self.masses.iteritems()), key = lambda x : x[1])
+        sorted_masses = sorted(list(self.masses.items()), key = lambda x : x[1])
         return [sorted_masses[x][0] for x in offset]
         
     def get_number_of_particles_with_same_mass(self, id):
@@ -909,7 +909,7 @@ class ParticlesWithBindingInterface(object):
             mass = self.masses[index]
             count = 0
         
-            for otherindex, m in self.masses.iteritems():
+            for otherindex, m in self.masses.items():
                 if otherindex == index:
                     continue
                 if abs(m - mass) < 1.0:
@@ -922,7 +922,7 @@ class ParticlesWithBindingInterface(object):
         for index, index_in_list in zip(id, offset):
             mass = self.masses[index]
             count = 0
-            for otherindex, m in self.masses.iteritems():
+            for otherindex, m in self.masses.items():
                 if otherindex == index:
                     continue
                 if abs(m - mass) < 1.0:

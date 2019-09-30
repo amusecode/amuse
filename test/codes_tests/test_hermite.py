@@ -73,17 +73,17 @@ class TestHermiteInterface(TestWithMPI):
     def test3(self):
         hermite = HermiteInterface()
         self.assertEqual(0, hermite.set_eps2(0.101))
-        self.assertEqual([0.101, 0], hermite.get_eps2().values())
+        self.assertEqual([0.101, 0], list(hermite.get_eps2().values()))
         self.assertEqual(0, hermite.set_eps2(0.2))
-        self.assertEqual([0.2, 0], hermite.get_eps2().values())
+        self.assertEqual([0.2, 0], list(hermite.get_eps2().values()))
         hermite.cleanup_code()
         hermite.stop()
 
     def test4(self):
         hermite = HermiteInterface()
-        self.assertEqual([0, 0], hermite.get_is_time_reversed_allowed().values())
+        self.assertEqual([0, 0], list(hermite.get_is_time_reversed_allowed().values()))
         self.assertEqual(0, hermite.set_is_time_reversed_allowed(1))
-        self.assertEqual([1, 0], hermite.get_is_time_reversed_allowed().values())
+        self.assertEqual([1, 0], list(hermite.get_is_time_reversed_allowed().values()))
         hermite.cleanup_code()
         hermite.stop()
 
@@ -169,20 +169,20 @@ class TestHermiteInterface(TestWithMPI):
         self.assertEqual(0, instance.commit_parameters())
         
         # Set up an equal-mass binary on a circular orbit:
-        self.assertEqual([0, 0], instance.new_particle(0.5,  0.5, 0, 0,  0, 0.5, 0, 0.01).values())
-        self.assertEqual([1, 0], instance.new_particle(0.5,  -0.5, 0, 0,  0,-0.5, 0, 0.01).values())
+        self.assertEqual([0, 0], list(instance.new_particle(0.5,  0.5, 0, 0,  0, 0.5, 0, 0.01).values()))
+        self.assertEqual([1, 0], list(instance.new_particle(0.5,  -0.5, 0, 0,  0,-0.5, 0, 0.01).values()))
         self.assertEqual(0, instance.commit_particles())
         
         self.assertEqual(0, instance.evolve_model(math.pi))
-        for result, expected in zip(instance.get_position(0).values(), [-0.5, 0.0, 0.0, 0]):
+        for result, expected in zip(list(instance.get_position(0).values()), [-0.5, 0.0, 0.0, 0]):
             self.assertAlmostEqual(result, expected, 3)
-        for result, expected in zip(instance.get_position(1).values(), [0.5, 0.0, 0.0, 0]):
+        for result, expected in zip(list(instance.get_position(1).values()), [0.5, 0.0, 0.0, 0]):
             self.assertAlmostEqual(result, expected, 3)
         
         self.assertEqual(0, instance.evolve_model(2 * math.pi))
-        for result, expected in zip(instance.get_position(0).values(), [0.5, 0.0, 0.0, 0]):
+        for result, expected in zip(list(instance.get_position(0).values()), [0.5, 0.0, 0.0, 0]):
             self.assertAlmostEqual(result, expected, 3)
-        for result, expected in zip(instance.get_position(1).values(), [-0.5, 0.0, 0.0, 0]):
+        for result, expected in zip(list(instance.get_position(1).values()), [-0.5, 0.0, 0.0, 0]):
             self.assertAlmostEqual(result, expected, 3)
         
         self.assertEqual(0, instance.cleanup_code())
@@ -269,8 +269,8 @@ class TestHermite(TestWithMPI):
             x_points = earth.get_timeline_of_attribute("x")
             y_points = earth.get_timeline_of_attribute("y")
             
-            x_points_in_AU = map(lambda (t,x) : x.value_in(units.AU), x_points)
-            y_points_in_AU = map(lambda (t,x) : x.value_in(units.AU), y_points)
+            x_points_in_AU = [t_x[1].value_in(units.AU) for t_x in x_points]
+            y_points_in_AU = [t_x1[1].value_in(units.AU) for t_x1 in y_points]
             
             plot.scatter(x_points_in_AU,y_points_in_AU, color = "b", marker = 'o')
             

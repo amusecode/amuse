@@ -13,7 +13,7 @@ from amuse.rfi.tools import create_c
 from amuse.rfi import async_request
 from amuse.rfi.core import *
 
-import test_c_implementation
+from . import test_c_implementation
 
 from amuse.test import compile_tools
 
@@ -255,7 +255,7 @@ class TestASync(TestWithMPI):
         for x in range(10):
             instance.echo_int(x, return_request=True)
         results=instance.async_request.results
-        self.assertEqual(results, range(10))
+        self.assertEqual(results, list(range(10)))
         instance.stop()
 
     def test10(self):

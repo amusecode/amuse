@@ -200,19 +200,19 @@ class TestHacs64Interface(TestWithMPI):
         self.assertEqual(0, instance.commit_parameters())
         
         # Set up an equal-mass binary on a circular orbit:
-        self.assertEqual([0, 0], instance.new_particle(0.5,  0.5, 0, 0,  0, 0.5, 0, 0.01).values())
-        self.assertEqual([1, 0], instance.new_particle(0.5, -0.5, 0, 0,  0,-0.5, 0, 0.01).values())
+        self.assertEqual([0, 0], list(instance.new_particle(0.5,  0.5, 0, 0,  0, 0.5, 0, 0.01).values()))
+        self.assertEqual([1, 0], list(instance.new_particle(0.5, -0.5, 0, 0,  0,-0.5, 0, 0.01).values()))
         self.assertEqual(0, instance.commit_particles())
         self.assertEqual(0, instance.evolve_model(math.pi))
-        for result, expected in zip(instance.get_position(0).values(), [-0.5, -0.007, 0.0, 0]):
+        for result, expected in zip(list(instance.get_position(0).values()), [-0.5, -0.007, 0.0, 0]):
             self.assertAlmostEqual(result, expected, 3)
-        for result, expected in zip(instance.get_position(1).values(), [0.5, 0.007, 0.0, 0]):
+        for result, expected in zip(list(instance.get_position(1).values()), [0.5, 0.007, 0.0, 0]):
             self.assertAlmostEqual(result, expected, 3)
         
         self.assertEqual(0, instance.evolve_model(2 * math.pi))
-        for result, expected in zip(instance.get_position(0).values(), [0.5, 0.0147, 0.0, 0]):
+        for result, expected in zip(list(instance.get_position(0).values()), [0.5, 0.0147, 0.0, 0]):
             self.assertAlmostEqual(result, expected, 3)
-        for result, expected in zip(instance.get_position(1).values(), [-0.5, -0.0147, 0.0, 0]):
+        for result, expected in zip(list(instance.get_position(1).values()), [-0.5, -0.0147, 0.0, 0]):
             self.assertAlmostEqual(result, expected, 3)
         
         self.assertEqual(0, instance.cleanup_code())
@@ -299,8 +299,8 @@ class _TestHacs64(TestWithMPI):
             x_points = earth.get_timeline_of_attribute("x")
             y_points = earth.get_timeline_of_attribute("y")
             
-            x_points_in_AU = map(lambda (t,x) : x.value_in(units.AU), x_points)
-            y_points_in_AU = map(lambda (t,x) : x.value_in(units.AU), y_points)
+            x_points_in_AU = [t_x[1].value_in(units.AU) for t_x in x_points]
+            y_points_in_AU = [t_x1[1].value_in(units.AU) for t_x1 in y_points]
             
             plot.scatter(x_points_in_AU,y_points_in_AU, color = "b", marker = 'o')
             
