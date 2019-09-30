@@ -143,7 +143,7 @@ class TestBrutusInterface(TestWithMPI):
         self.assertEqual(0, instance.commit_particles())
 
         self.assertEqual(0, instance.evolve_model(math.pi)) # half an orbit
-        for result, expected in zip(list(instance.get_position(0).values()), [-0.5, 0.0, 0.0, 0]):
+        for result, expected in zip(instance.get_position(0).values(), [-0.5, 0.0, 0.0, 0]):
             self.assertAlmostEqual(result, expected, 5)
 
         self.assertEqual(0, instance.evolve_model(2 * math.pi)) # full orbit
