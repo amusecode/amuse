@@ -63,7 +63,7 @@ class HDF5Attribute(object):
             if not hasattr(shape, '__iter__'): 
                 shape = shape,
             dataset = group.create_dataset(name, shape=shape, dtype=input.number.dtype)
-            dataset.attrs["units"] = input.unit.to_simple_form().reference_string()
+            dataset.attrs["units"] = input.unit.to_simple_form().reference_string().encode("ascii")
             return HDF5VectorQuantityAttribute(name, dataset, input.unit)                                 
         elif hasattr(input, 'as_set'):
             subgroup = group.create_group(name)
@@ -75,21 +75,21 @@ class HDF5Attribute(object):
             if dtype.kind == 'U':
                 new_dtype = numpy.dtype('S' + dtype.itemsize * 4)
                 dataset = group.create_dataset(name, shape=shape, dtype=dtype)
-                dataset.attrs["units"] = "UNICODE"
+                dataset.attrs["units"] = "UNICODE".encode('ascii')
                 return HDF5UnicodeAttribute(name, dataset)
             else:
                 if not hasattr(shape, '__iter__'): 
                     shape = shape,
                 dtype = numpy.asanyarray(input).dtype
                 dataset = group.create_dataset(name, shape=shape, dtype=dtype)
-                dataset.attrs["units"] = "none"
+                dataset.attrs["units"] = "none".encode("ascii")
                 return HDF5UnitlessAttribute(name, dataset)
 
 
 
     @classmethod
     def load_attribute(cls, name, dataset, loader):
-        units_string = dataset.attrs["units"]
+        units_string = dataset.attrs["units"] if isinstance(dataset.attrs["units"], str) else dataset.attrs["units"].decode("ascii")
         if units_string == "none":
             return HDF5UnitlessAttribute(name, dataset)
         elif units_string == "object":
@@ -468,7 +468,8 @@ class HDF5GridAttributeStorage(AttributeStorage):
         
     def get_unit_of(self, attribute):
         dataset = self.attributesgroup[attribute]
-        return eval(dataset.attrs["units"], core.__dict__) 
+        decoded=dataset.attrs["units"] if isinstance(dataset.attrs["units"], str) else dataset.attrs["units"].decode("ascii")
+        return eval(decoded, core.__dict__) 
         
     def get_defined_attribute_names(self):
         return self.attributesgroup.keys()
@@ -509,7 +510,7 @@ class HDF5GridAttributeStorage(AttributeStorage):
                 dataset = self.attributesgroup[attribute]
             else:
                 dataset = self.attributesgroup.create_dataset(attribute, shape=self.shape, dtype=quantity.number.dtype)
-                dataset["unit"] =  quantity.unit.to_simple_form().reference_string()
+                dataset["unit"] =  quantity.unit.to_simple_form().reference_string().encode("ascii")
             dataset[indices] = quantity.value_in(self.get_unit_of(attribute))
         
         
@@ -652,7 +653,7 @@ class StoreHDF(object):
             if is_quantity(quantity):
                 value = quantity.value_in(quantity.unit)
                 dataset = attributes_group.create_dataset(attribute, data=value)
-                dataset.attrs["units"] = quantity.unit.to_simple_form().reference_string()
+                dataset.attrs["units"] = quantity.unit.to_simple_form().reference_string().encode("ascii")
             elif hasattr(quantity, 'as_set'):
                 quantity = quantity.as_set()
                 subgroup = attributes_group.create_group(attribute)
@@ -666,10 +667,10 @@ class StoreHDF(object):
                 dtype = numpy.asanyarray(quantity).dtype
                 if dtype.kind == 'U':
                     dataset = attributes_group.create_dataset(attribute, data=numpy.char.encode(quantity,  'UTF-32BE'))
-                    dataset.attrs["units"] = "UNICODE"
+                    dataset.attrs["units"] = "UNICODE".encode("ascii")
                 else:
                     dataset = attributes_group.create_dataset(attribute, data=quantity)
-                    dataset.attrs["units"] = "none"
+                    dataset.attrs["units"] = "none".encode("ascii")
                 
             
     
