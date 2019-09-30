@@ -1,5 +1,5 @@
 from amuse.test import amusetest
-from StringIO import StringIO
+from io import StringIO
 import textwrap
 import os
 import numpy

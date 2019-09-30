@@ -18,7 +18,7 @@ from amuse.rfi.tools import create_c
 from amuse.rfi import channel
 from amuse.rfi.core import *
 
-import test_c_implementation
+from . import test_c_implementation
 from amuse.rfi.tools import create_cython
 
 codestring = """
@@ -38,7 +38,7 @@ int echo_int(int int_in, int * int_out) {
 import shlex
 from amuse.test.amusetest import get_amuse_root_dir
 
-import test_fortran_implementation
+from . import test_fortran_implementation
 
 from amuse.rfi.tools import create_fortran
 
@@ -213,7 +213,7 @@ class TestCythonImplementationInterface(test_c_implementation.TestCImplementatio
         with open(self.exefile, "w") as f:
             f.write(script)
 
-        os.chmod(self.exefile, 0777)
+        os.chmod(self.exefile, 0o777)
         
         import mpi4py
         process, stdout, stderr = compile_tools.open_subprocess([config.compilers.cython, 
@@ -325,7 +325,7 @@ class TestCythonFortranImplementationInterface(test_fortran_implementation.TestI
         with open(self.exefile, "w") as f:
             f.write(script)
 
-        os.chmod(self.exefile, 0777)
+        os.chmod(self.exefile, 0o777)
 
         import mpi4py
         process, stdout, stderr = compile_tools.open_subprocess([config.compilers.cython, 

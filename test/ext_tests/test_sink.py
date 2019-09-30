@@ -60,7 +60,7 @@ class TestSinkParticles(TestCase):
         self.assertRaises(AttributeError, SinkParticles, particles[[4, 7]], expected_message=
             "You tried to access attribute 'radius' but this attribute is not defined for this set.")
         particles.radius = 42.0 | units.RSun
-        particles.mass = range(1,11) | units.MSun
+        particles.mass = list(range(1,11)) | units.MSun
         particles.position = [[i, 2*i, 3*i] for i in range(10)] | units.parsec
 
         sinks = SinkParticles(particles[[4]])
@@ -84,10 +84,10 @@ class TestSinkParticles(TestCase):
         print("Testing SinkParticles accrete")
         particles = Particles(10)
         particles.radius = 42.0 | units.RSun
-        particles.mass = range(1,11) | units.MSun
+        particles.mass = list(range(1,11)) | units.MSun
         particles.position = [[i, 2*i, 3*i] for i in range(10)] | units.parsec
         particles.velocity = [[i, 0, -i] for i in range(10)] | units.km/units.s
-        particles.age = range(10) | units.Myr
+        particles.age = list(range(10)) | units.Myr
 
         copy = particles.copy()
 
@@ -125,10 +125,10 @@ class TestSinkParticles(TestCase):
         print("Testing SinkParticles accrete, one particle within two sinks' radii")
         particles = Particles(10)
         particles.radius = 42.0 | units.RSun
-        particles.mass = range(1,11) | units.MSun
+        particles.mass = list(range(1,11)) | units.MSun
         particles.position = [[i, 2*i, 3*i] for i in range(10)] | units.parsec
         particles.velocity = [[i, 0, -i] for i in range(10)] | units.km/units.s
-        particles.age = range(10) | units.Myr
+        particles.age = list(range(10)) | units.Myr
         copy = particles.copy()
 
         sinks = SinkParticles(particles[[3, 7]], sink_radius=[4,12]|units.parsec,looping_over=self.looping_over)
@@ -458,7 +458,7 @@ class StubInterface(object):
         return [6]*len(sc_indices), [1]*len(sc_indices)
 
     def get_stopping_condition_particle_index(self, sc_index, sc_sub_index):
-        return range(len(self._gas_particles) + 1000000 - len(sc_index), len(self._gas_particles) + 1000000)
+        return list(range(len(self._gas_particles) + 1000000 - len(sc_index), len(self._gas_particles) + 1000000))
 
     def enable_stopping_condition(self, type):
         pass

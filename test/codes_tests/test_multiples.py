@@ -65,7 +65,7 @@ class TestSimpleMultiples(TestWithMPI):
         mass_fraction_particle_1 = mass1 / (total_mass)
     
         if keyoffset >= 0:
-            binary = datamodel.Particles(keys=range(keyoffset, keyoffset+2))
+            binary = datamodel.Particles(keys=list(range(keyoffset, keyoffset+2)))
         else:
             binary = datamodel.Particles(2)
             
@@ -804,7 +804,7 @@ class TestSimpleMultiples(TestWithMPI):
             resolve_collision_code = self.new_smalln(),
         )
         center_of_mass_particles = datamodel.Particles(5)
-        center_of_mass_particles.position = (numpy.asarray(range(5))).reshape(5,1) * ([1.0, 0.0, 0.0] | nbody_system.length)
+        center_of_mass_particles.position = (numpy.asarray(list(range(5)))).reshape(5,1) * ([1.0, 0.0, 0.0] | nbody_system.length)
         center_of_mass_particles.velocity = [0.0, 0.0, 0.0] | nbody_system.speed
         center_of_mass_particles.radius  = 0.05 | nbody_system.length
         binaries, singles_in_binaries = self.create_binaries(
@@ -855,7 +855,7 @@ class TestSimpleMultiples(TestWithMPI):
             resolve_collision_code = self.new_smalln(),
         )
         center_of_mass_particles = datamodel.Particles(5)
-        center_of_mass_particles.position = (numpy.asarray(range(5))).reshape(5,1) * ([1.0, 0.0, 0.0] | nbody_system.length)
+        center_of_mass_particles.position = (numpy.asarray(list(range(5)))).reshape(5,1) * ([1.0, 0.0, 0.0] | nbody_system.length)
         center_of_mass_particles.velocity = [0.0, 0.0, 0.0] | nbody_system.speed
         center_of_mass_particles.radius  = 0.05 | nbody_system.length
         binaries, singles_in_binaries = self.create_binaries(
@@ -952,7 +952,7 @@ class TestSimpleMultiples(TestWithMPI):
         
         
         n = 10
-        singles = datamodel.Particles(keys = range(1,n+1))
+        singles = datamodel.Particles(keys = list(range(1,n+1)))
         singles.mass = 1 | nbody_system.mass
         for x in range(n):
             singles[x].position = [x*x, 0, 0] | nbody_system.length

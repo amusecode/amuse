@@ -511,7 +511,7 @@ class TestGrids(amusetest.TestCase):
 
     def test40b(self):
         grid = datamodel.new_regular_grid((50,), [1.0] | units.m)
-        for index in [ [0], [0,3,4], [1,2,2],[[2,3]],[[0,1],[2,3]],range(50) ]:
+        for index in [ [0], [0,3,4], [1,2,2],[[2,3]],[[0,1],[2,3]],list(range(50)) ]:
           i=numpy.array(index)
           self.assertEqual(grid[i].x, grid.x[ i ])
           self.assertEqual(grid[i][1:].x, grid.x[ i ][1:])

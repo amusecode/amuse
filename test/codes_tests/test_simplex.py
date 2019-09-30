@@ -37,7 +37,7 @@ class TestSimpleXInterface(TestWithMPI):
         number_of_particles = len(x)
         indices, errors = instance.new_particle(x, y, z, n_H, flux, X_ion,u)
         self.assertEqual(errors, [0]*number_of_particles)
-        self.assertEqual(indices, range(number_of_particles))
+        self.assertEqual(indices, list(range(number_of_particles)))
         self.assertEqual(0, instance.commit_particles())
         x_out, y_out, z_out, n_H_out, flux_out, X_ion_out,u_out, metallicity_out, error = instance.get_state(indices)
 
@@ -100,7 +100,7 @@ class TestSimpleXInterface(TestWithMPI):
         number_of_particles = len(x)
         indices, errors = instance.new_particle(x, y, z, n_H, flux, X_ion,u)
         self.assertEqual(errors, [0]*number_of_particles)
-        self.assertEqual(indices, range(number_of_particles))
+        self.assertEqual(indices, list(range(number_of_particles)))
         
         self.assertEqual(0, instance.commit_particles())
         
@@ -173,7 +173,7 @@ class TestSimpleXInterface(TestWithMPI):
         number_of_particles = len(x)
         indices, errors = instance.new_particle(x, y, z, n_H, flux, X_ion,u)
         self.assertEqual(errors, [0]*number_of_particles)
-        self.assertEqual(indices, range(number_of_particles))
+        self.assertEqual(indices, list(range(number_of_particles)))
         error=instance.delete_particle(indices[0])
         self.assertEqual(error, -1)
         instance.commit_particles()

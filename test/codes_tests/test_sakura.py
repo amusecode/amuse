@@ -58,8 +58,8 @@ class TestSakuraInterface(TestWithMPI):
         instance = SakuraInterface()
         self.assertEqual(0, instance.initialize_code())
         self.assertEqual(0, instance.commit_parameters())
-        self.assertEqual([0, 0], instance.new_particle(0.01,  1, 0, 0,  0, 1, 0, 0.1).values())
-        self.assertEqual([1, 0], instance.new_particle(0.02, -1, 0, 0,  0,-1, 0, 0.1).values())
+        self.assertEqual([0, 0], list(instance.new_particle(0.01,  1, 0, 0,  0, 1, 0, 0.1).values()))
+        self.assertEqual([1, 0], list(instance.new_particle(0.02, -1, 0, 0,  0,-1, 0, 0.1).values()))
 ####        self.assertEquals(-1, instance.get_mass(1)['__result']) # Have to commit first
         self.assertEqual(0, instance.commit_particles())
 
@@ -71,22 +71,22 @@ class TestSakuraInterface(TestWithMPI):
         self.assertAlmostEqual(0.1, radius)
         self.assertEqual(0,result)
         self.assertEqual(-1, instance.get_mass(2)['__result']) # Particle not found
-        self.assertEqual([ 1, 0, 0,  0], instance.get_position(0).values())
-        self.assertEqual([-1, 0, 0,  0], instance.get_position(1).values())
-        self.assertEqual([ 0, 1, 0,  0], instance.get_velocity(0).values())
-        self.assertEqual([ 0,-1, 0,  0], instance.get_velocity(1).values())
+        self.assertEqual([ 1, 0, 0,  0], list(instance.get_position(0).values()))
+        self.assertEqual([-1, 0, 0,  0], list(instance.get_position(1).values()))
+        self.assertEqual([ 0, 1, 0,  0], list(instance.get_velocity(0).values()))
+        self.assertEqual([ 0,-1, 0,  0], list(instance.get_velocity(1).values()))
 
         # setters
         self.assertEqual(0, instance.set_state(0, 0.01, 1,2,3, 4,5,6, 0.1))
-        self.assertEqual([0.01, 1.0,2.0,3.0, 4.0,5.0,6.0, 0.1, 0], instance.get_state(0).values())
+        self.assertEqual([0.01, 1.0,2.0,3.0, 4.0,5.0,6.0, 0.1, 0], list(instance.get_state(0).values()))
         self.assertEqual(0, instance.set_mass(0, 0.02))
-        self.assertEqual([0.02, 1.0,2.0,3.0, 4.0,5.0,6.0, 0.1, 0], instance.get_state(0).values())
+        self.assertEqual([0.02, 1.0,2.0,3.0, 4.0,5.0,6.0, 0.1, 0], list(instance.get_state(0).values()))
         self.assertEqual(0, instance.set_radius(0, 0.2))
-        self.assertEqual([0.02, 1.0,2.0,3.0, 4.0,5.0,6.0, 0.2, 0], instance.get_state(0).values())
+        self.assertEqual([0.02, 1.0,2.0,3.0, 4.0,5.0,6.0, 0.2, 0], list(instance.get_state(0).values()))
         self.assertEqual(0, instance.set_position(0, 10,20,30))
-        self.assertEqual([0.02, 10.0,20.0,30.0, 4.0,5.0,6.0, 0.2, 0], instance.get_state(0).values())
+        self.assertEqual([0.02, 10.0,20.0,30.0, 4.0,5.0,6.0, 0.2, 0], list(instance.get_state(0).values()))
         self.assertEqual(0, instance.set_velocity(0, 40,50,60))
-        self.assertEqual([0.02, 10.0,20.0,30.0, 40.0,50.0,60.0, 0.2, 0], instance.get_state(0).values())
+        self.assertEqual([0.02, 10.0,20.0,30.0, 40.0,50.0,60.0, 0.2, 0], list(instance.get_state(0).values()))
 
         self.assertEqual(0, instance.cleanup_code())
         instance.stop()
@@ -98,17 +98,17 @@ class TestSakuraInterface(TestWithMPI):
         instance = SakuraInterface()
         self.assertEqual(0, instance.initialize_code())
 
-        self.assertEqual([0.001, 0], instance.get_dt().values())
+        self.assertEqual([0.001, 0], list(instance.get_dt().values()))
         self.assertEqual(0, instance.set_dt(0.01))
-        self.assertEqual([0.01, 0], instance.get_dt().values())
+        self.assertEqual([0.01, 0], list(instance.get_dt().values()))
 
-        self.assertEqual([0.0, 0], instance.get_t_begin().values())
+        self.assertEqual([0.0, 0], list(instance.get_t_begin().values()))
         self.assertEqual(0, instance.set_t_begin(1.0))
-        self.assertEqual([1.0, 0], instance.get_t_begin().values())
+        self.assertEqual([1.0, 0], list(instance.get_t_begin().values()))
 
-        self.assertEqual([0.0, 0], instance.get_t().values())
+        self.assertEqual([0.0, 0], list(instance.get_t().values()))
         self.assertEqual(0, instance.set_t(1.0))
-        self.assertEqual([1.0, 0], instance.get_t().values())
+        self.assertEqual([1.0, 0], list(instance.get_t().values()))
 
         #self.assertEquals(["sakura", 0], instance.get_integrator_method().values())
         #self.assertEquals(0, instance.set_integrator_method("bogus"))
@@ -137,16 +137,16 @@ class TestSakuraInterface(TestWithMPI):
         self.assertEqual(0, instance.initialize_code())
         self.assertEqual(0, instance.commit_parameters())
 
-        self.assertEqual([0, 0], instance.new_particle(0.5,  0.5, 0, 0,  0, 0.5, 0, 0.001).values())
-        self.assertEqual([1, 0], instance.new_particle(0.5, -0.5, 0, 0,  0,-0.5, 0, 0.001).values())
+        self.assertEqual([0, 0], list(instance.new_particle(0.5,  0.5, 0, 0,  0, 0.5, 0, 0.001).values()))
+        self.assertEqual([1, 0], list(instance.new_particle(0.5, -0.5, 0, 0,  0,-0.5, 0, 0.001).values()))
         self.assertEqual(0, instance.commit_particles())
 
         P = 2 * math.pi
         self.assertEqual(0, instance.evolve_model(P / 2)) # half an orbit
-        for result, expected in zip(instance.get_position(0).values(), [-0.5, 0.0, 0.0, 0]):
+        for result, expected in zip(list(instance.get_position(0).values()), [-0.5, 0.0, 0.0, 0]):
             self.assertAlmostEqual(result, expected, 2)
         self.assertEqual(0, instance.evolve_model(P)) # full orbit
-        for result, expected in zip(instance.get_position(0).values(), [0.5, 0.0, 0.0, 0]):
+        for result, expected in zip(list(instance.get_position(0).values()), [0.5, 0.0, 0.0, 0]):
             self.assertAlmostEqual(result, expected, 2)
         self.assertEqual(0, instance.cleanup_code())
         instance.stop()

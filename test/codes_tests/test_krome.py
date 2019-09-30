@@ -427,7 +427,7 @@ class TestKrome(TestWithMPI):
         parts.abundances=numpy.zeros((5,N))        
 
         for i in range(5):
-          parts[i].abundances=(numpy.array(range(N))+1)/(N+1.)
+          parts[i].abundances=(numpy.array(list(range(N)))+1)/(N+1.)
  
         instance.particles.add_particles(parts)
 

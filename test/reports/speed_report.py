@@ -107,13 +107,13 @@ class RunSpeedTests(object):
             print(self.row_formatters[0](method), '...', end=' ', file=sys.stderr)
             try:        
                 method()
-            except TimeoutException, ex:
+            except TimeoutException as ex:
                 print("timed out,", ex, file=sys.stderr)
                 continue
-            except SkipException, ex:
+            except SkipException as ex:
                 print("skipped,", ex, file=sys.stderr)
                 continue
-            except Exception, ex:
+            except Exception as ex:
                 print(ex)
                 traceback.print_exc()
                 self.t1=-1
@@ -186,7 +186,7 @@ class RunSpeedTests(object):
     
     def iter_report_lines_as_strings(self):
         for line in self.report_lines:
-            yield map(lambda x, formatter : formatter(x), line, self.row_formatters)
+            yield list(map(lambda x, formatter : formatter(x), line, self.row_formatters))
         
     def speed_make_plummer_sphere(self):
         """plummer sphere"""

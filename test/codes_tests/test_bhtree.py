@@ -266,8 +266,8 @@ class TestBHTree(TestWithMPI):
             x_points = earth.get_timeline_of_attribute("x")
             y_points = earth.get_timeline_of_attribute("y")
             
-            x_points_in_AU = map(lambda (t,x) : x.value_in(units.AU), x_points)
-            y_points_in_AU = map(lambda (t,x) : x.value_in(units.AU), y_points)
+            x_points_in_AU = [t_x[1].value_in(units.AU) for t_x in x_points]
+            y_points_in_AU = [t_x1[1].value_in(units.AU) for t_x1 in y_points]
             
             plot.scatter(x_points_in_AU,y_points_in_AU, color = "b", marker = 'o')
             

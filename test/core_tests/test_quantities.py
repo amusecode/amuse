@@ -52,8 +52,8 @@ class TestQuantities(amusetest.TestCase):
             star.position = units.km.new_quantity([float(i+1), float((i+1)*2), float(-1 * (i+1))])
 
 
-        minpos = [float(sys.maxint)] * 3 | units.m
-        maxpos = [-float(sys.maxint)] * 3 | units.m
+        minpos = [float(sys.maxsize)] * 3 | units.m
+        maxpos = [-float(sys.maxsize)] * 3 | units.m
         for star in stars:
             for i in range(3):
                 if star.position[i] < minpos[i]:
@@ -202,8 +202,8 @@ class TestQuantities(amusetest.TestCase):
     def test18(self):
         quantity = 'string'
         self.assertEqual(quantity ,  'string')
-        quantity = u'string'
-        self.assertEqual(quantity , u'string')
+        quantity = 'string'
+        self.assertEqual(quantity , 'string')
 
     def test19(self):
         x = 1.0 | si.kg
@@ -385,8 +385,8 @@ class TestQuantities(amusetest.TestCase):
         flat1=b.flat
         flat2=a.flat
         self.assertEqual(flat1[2:5],flat2[2:5].number)
-        flat1.next()
-        flat2.next()
+        next(flat1)
+        next(flat2)
         self.assertEqual(flat1.index,flat2.index)
         self.assertEqual(flat1.base,flat2.base.number)
         self.assertEqual(flat1.copy(),flat2.copy().number)        
