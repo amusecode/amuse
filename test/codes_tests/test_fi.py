@@ -1031,7 +1031,7 @@ class TestFi(TestWithMPI):
 
     def test18(self):
         particles = datamodel.Particles(10)
-        particles.x = (numpy.array(list(range(10))) * 1.0) | nbody_system.length
+        particles.x = (numpy.array(range(10)) * 1.0) | nbody_system.length
         particles.y = 0 | nbody_system.length
         particles.z = 0 | nbody_system.length
         particles.radius = 0.001 | nbody_system.length
