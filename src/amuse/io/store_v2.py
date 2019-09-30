@@ -62,7 +62,7 @@ class HDF5Attribute(object):
             if not hasattr(shape, '__iter__'): 
                 shape = shape,
             dataset = group.create_dataset(name, shape=shape, dtype=input.number.dtype)
-            dataset.attrs["units"] = input.unit.to_simple_form().reference_string()
+            dataset.attrs["units"] = input.unit.to_simple_form().reference_string().encode('ascii')
             return HDF5VectorQuantityAttribute(name, dataset, input.unit)                                     
         elif hasattr(input, 'as_set'):
             raise Exception("adding a linked attribute to a set stored in a HDF file is not supported, alternative is to copy the set and save it")
@@ -75,20 +75,20 @@ class HDF5Attribute(object):
             if dtype.kind == 'U':
                 new_dtype = numpy.dtype('S' + dtype.itemsize * 4)
                 dataset = group.create_dataset(name, shape=shape, dtype=dtype)
-                dataset.attrs["units"] = "UNICODE"
+                dataset.attrs["units"] = "UNICODE".encode('ascii')
                 return HDF5UnicodeAttribute(name, dataset)
             else:
                 if not hasattr(shape, '__iter__'): 
                     shape = shape,
                 dataset = group.create_dataset(name, shape=shape, dtype=dtype)
-                dataset.attrs["units"] = "none"
+                dataset.attrs["units"] = "none".encode('ascii')
                 return HDF5UnitlessAttribute(name, dataset)
 
 
 
     @classmethod
     def load_attribute(cls, name, dataset, loader):
-        units_string = dataset.attrs["units"]
+        units_string = dataset.attrs["units"] if isinstance(dataset.attrs["units"], str) else dataset.attrs["units"].decode("ascii") 
         if units_string == "none":
             return HDF5UnitlessAttribute(name, dataset)
         elif units_string == "link":
@@ -532,7 +532,8 @@ class HDF5GridAttributeStorage(AttributeStorage):
         
     def get_unit_of(self, attribute):
         dataset = self.attributesgroup[attribute]
-        return eval(dataset.attrs["units"], core.__dict__) 
+        decoded = dataset.attrs["units"] if isinstance(dataset.attrs["units"], str) else dataset.attrs["units"].decode("ascii")
+        return eval(decoded, core.__dict__) 
         
     def get_defined_attribute_names(self):
         return list(self.attributesgroup.keys())
@@ -729,7 +730,7 @@ class StoreHDF(object):
             parent = self.data_group()
             
         group = self.new_version(parent)
-        group.attrs["type"] = 'particles'
+        group.attrs["type"] = 'particles'.encode("ascii")
         self.mapping_from_groupid_to_set[group.id] = particles
         
         
@@ -753,7 +754,7 @@ class StoreHDF(object):
             
         group = self.new_version(parent)
         
-        group.attrs["type"] = 'grid'
+        group.attrs["type"] = 'grid'.encode("ascii")
         group.attrs["class_of_the_container"] = pickle_to_string(grid._factory_for_new_collection())
         group.create_dataset("shape", data=numpy.asarray(grid.shape))
     
@@ -786,17 +787,17 @@ class StoreHDF(object):
             if is_quantity(quantity):
                 value = quantity.value_in(quantity.unit)
                 dataset = attributes_group.create_dataset(attribute, data=value)
-                dataset.attrs["units"] = quantity.unit.to_simple_form().reference_string()
+                dataset.attrs["units"] = quantity.unit.to_simple_form().reference_string().encode("ascii")
             elif isinstance(quantity, LinkedArray):
                 self.store_linked_array(attribute, attributes_group, quantity, group, links)
             else:
                 dtype = numpy.asanyarray(quantity).dtype
                 if dtype.kind == 'U':
                     dataset = attributes_group.create_dataset(attribute, data=numpy.char.encode(quantity,  'UTF-32BE'))
-                    dataset.attrs["units"] = "UNICODE"
+                    dataset.attrs["units"] = "UNICODE".encode('ascii')
                 else:
                     dataset = attributes_group.create_dataset(attribute, data=quantity)
-                    dataset.attrs["units"] = "none"
+                    dataset.attrs["units"] = "none".encode('ascii')
                 
     
 
@@ -866,14 +867,14 @@ class StoreHDF(object):
             
         subgroup.create_dataset('keys', data=key_array)
         subgroup.create_dataset('kind', data=kind_array)
-        subgroup.attrs["units"] = "link"
+        subgroup.attrs["units"] = "link".encode("ascii")
     
 
     def store_timestamp(self, container, group):
         quantity = container.get_timestamp()
         if not quantity is None:
             group.attrs["timestamp"] = quantity.value_in(quantity.unit)
-            group.attrs["timestamp_unit"] = quantity.unit.reference_string()
+            group.attrs["timestamp_unit"] = quantity.unit.reference_string().encode("ascii")
     
     
     
@@ -888,11 +889,11 @@ class StoreHDF(object):
                 continue 
             if is_quantity(quantity):
                 group.attrs[name] = quantity.value_in(quantity.unit)
-                group.attrs[name+"_unit"] = quantity.unit.reference_string()
+                group.attrs[name+"_unit"] = quantity.unit.reference_string().encode("ascii")
             elif isinstance(quantity, Particle):
                 #group.attrs[name] = ref_dtype(None)
                 group.attrs[name+"_key"] = quantity.key
-                group.attrs[name+"_unit"] = "particle"
+                group.attrs[name+"_unit"] = "particle".encode("ascii")
                 links.append(UneresolvedAttributeLink(
                     group,
                     name,
@@ -901,7 +902,7 @@ class StoreHDF(object):
             elif isinstance(quantity, GridPoint):
                 #group.attrs[name] = ref_dtype(None)
                 group.attrs[name+"_index"] = quantity.index
-                group.attrs[name+"_unit"] = "gridpoint"
+                group.attrs[name+"_unit"] = "gridpoint".encode("ascii")
                 links.append(UneresolvedAttributeLink(
                     group, 
                     name, 
@@ -909,7 +910,7 @@ class StoreHDF(object):
                 ))
             elif isinstance(quantity, AbstractSet):
                 #group.attrs[name] = ref_dtype(None)
-                group.attrs[name+"_unit"] = "set"
+                group.attrs[name+"_unit"] = "set".encode("ascii")
                 links.append(UneresolvedAttributeLink(
                     group, 
                     name,
@@ -917,7 +918,7 @@ class StoreHDF(object):
                 ))
             else:
                 group.attrs[name] = quantity
-                group.attrs[name+"_unit"] = "none"
+                group.attrs[name+"_unit"] = "none".encode("ascii")
             
     def load_collection_attributes(self, container, group):
         names = group.attrs.keys()
@@ -940,7 +941,7 @@ class StoreHDF(object):
                 reference = group.attrs[name]
                 quantity = self.get_set_from_reference(reference)
             else:
-                unit = eval(group.attrs[name+"_unit"], core.__dict__) 
+                unit = eval(unit_string, core.__dict__) 
                 quantity = unit.new_quantity(group.attrs[name])
             setattr(container.collection_attributes, name, quantity)
                 
