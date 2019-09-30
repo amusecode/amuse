@@ -394,7 +394,7 @@ class TestHuayno(TestWithMPI):
            
             @classmethod
             def _list(cls):
-                  return set([x for x in list(cls.__dict__.keys()) if not x.startswith('_')])
+                  return set([x for x in cls.__dict__.keys() if not x.startswith('_')])
 
         for itype in sorted(inttypes._list()):
             if itype in ("KEPLER"): continue
