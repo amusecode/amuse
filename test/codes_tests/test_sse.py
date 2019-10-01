@@ -617,9 +617,9 @@ class TestSSE(TestWithMPI):
         
         class notsorandom(object):
             def random(self,N):
-                return numpy.array(list(range(N)))/(N-1.)
+                return numpy.array(range(N))/(N-1.)
             def random_sample(self,N):
-                return numpy.array(list(range(N)))/(N-1.)
+                return numpy.array(range(N))/(N-1.)
 
         masses = new_salpeter_mass_distribution(
             number_of_stars, 
@@ -647,9 +647,9 @@ class TestSSE(TestWithMPI):
         
         class notsorandom(object):
             def random(self,N):
-                return numpy.array(list(range(N)))/(N-1.)
+                return numpy.array(range(N))/(N-1.)
             def random_sample(self,N):
-                return numpy.array(list(range(N)))/(N-1.)
+                return numpy.array(range(N))/(N-1.)
 
         masses = new_salpeter_mass_distribution(
             number_of_stars, 
