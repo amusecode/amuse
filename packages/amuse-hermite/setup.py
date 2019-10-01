@@ -32,7 +32,10 @@ extensions = []
 
 all_data_files = []
 
-packages = ['amuse.community.hermite0']
+packages = [
+    'amuse.community.hermite',
+    'amuse.community.hermite0',
+]
 
 package_data = {
 }
@@ -53,7 +56,10 @@ setup(
     install_requires=install_requires,
     cmdclass=mapping_from_command_name_to_command_class,
     ext_modules=extensions,
-    package_dir={'amuse.community.hermite0': 'src/amuse/community/hermite0'},
+    package_dir={
+        'amuse.community.hermite': 'src/amuse/community/hermite',
+        'amuse.community.hermite0': 'src/amuse/community/hermite0'
+    },
     packages=packages,
     package_data=package_data,
     data_files=all_data_files,
