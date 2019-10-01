@@ -11,6 +11,7 @@ from amuse.community.interface.gd import GravityFieldCode
 # *** MAKE SURE TO SAVE IT SOMEWHERE, as build.py can overwrite it!
 
 class ph4Interface(CodeInterface,
+                   LiteratureReferencesMixIn,
                    GravitationalDynamicsInterface,
                    StoppingConditionInterface,
                    GravityFieldInterface):
@@ -32,6 +33,7 @@ class ph4Interface(CodeInterface,
             name_of_the_worker=self.name_of_the_muse_worker(mode),
             **options
         )
+        LiteratureReferencesMixIn.__init__(self)
 
     # Interface functions:
     @legacy_function
