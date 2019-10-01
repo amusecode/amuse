@@ -811,7 +811,7 @@ class TestMMAMS(TestWithMPI):
         
         stellar_models = []
         crashed = False
-        for (index_1, index_2) in itertools.combinations(list(range(number_of_stars)), 2):
+        for (index_1, index_2) in itertools.combinations(range(number_of_stars), 2):
             print()
             print(masses[index_1], masses[index_2])
             print()
