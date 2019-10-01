@@ -156,9 +156,9 @@ class TestSmallNInterface(TestWithMPI):
         self.assertEqual(0, instance.commit_particles())
         
         self.assertEqual(0, instance.evolve_model(math.pi))
-        for result, expected in zip(list(instance.get_position(1).values()), [-0.5, 0.0, 0.0, 0]):
+        for result, expected in zip(instance.get_position(1).values(), [-0.5, 0.0, 0.0, 0]):
             self.assertAlmostEqual(result, expected, 3)
-        for result, expected in zip(list(instance.get_position(2).values()), [0.5, 0.0, 0.0, 0]):
+        for result, expected in zip(instance.get_position(2).values(), [0.5, 0.0, 0.0, 0]):
             self.assertAlmostEqual(result, expected, 3)
         
         self.assertEqual(0, instance.evolve_model(2 * math.pi))
