@@ -176,11 +176,11 @@ class TestMI6Interface(TestWithMPI):
         self.assertEqual(0, instance.commit_particles())
         
         self.assertEqual(0, instance.evolve_model(math.pi)) # half an orbit
-        for result, expected in zip(list(instance.get_position(1).values()), [-1.0, 0.0, 0.0, 0]):
+        for result, expected in zip(instance.get_position(1).values(), [-1.0, 0.0, 0.0, 0]):
             self.assertAlmostEqual(result, expected, 4)
         
         self.assertEqual(0, instance.evolve_model(2 * math.pi)) # full orbit
-        for result, expected in zip(list(instance.get_position(1).values()), [1.0, 0.0, 0.0, 0]):
+        for result, expected in zip(instance.get_position(1).values(), [1.0, 0.0, 0.0, 0]):
             self.assertAlmostEqual(result, expected, 4)
         
         self.assertEqual(0, instance.cleanup_code())
@@ -202,11 +202,11 @@ class TestMI6Interface(TestWithMPI):
         
         P = 2 * math.pi / (1 + dv)
         self.assertEqual(0, instance.evolve_model(P / 2)) # half an orbit
-        for result, expected in zip(list(instance.get_position(1).values()), [-1.0, 0.0, 0.0, 0]):
+        for result, expected in zip(instance.get_position(1).values(), [-1.0, 0.0, 0.0, 0]):
             self.assertAlmostEqual(result, expected, 4)
         
         self.assertEqual(0, instance.evolve_model(P)) # full orbit
-        for result, expected in zip(list(instance.get_position(1).values()), [1.0, 0.0, 0.0, 0]):
+        for result, expected in zip(instance.get_position(1).values(), [1.0, 0.0, 0.0, 0]):
             self.assertAlmostEqual(result, expected, 4)
         
         self.assertEqual(0, instance.cleanup_code())
