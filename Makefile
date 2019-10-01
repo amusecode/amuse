@@ -16,20 +16,12 @@ python_version_patch := $(word 3,${python_version_full})
 all: build.py
 	@-mkdir -p test_results
 	$(PYTHON) setup.py generate_main
-ifneq ($(python_version_major),2)
-	$(PYTHON) setup.py build
-else
 	$(PYTHON) setup.py build_codes --inplace
-endif
 
 framework: build.py
 	@-mkdir -p test_results
 	$(PYTHON) setup.py generate_main
-ifneq ($(python_version_major),2)
-	$(PYTHON) setup.py build_libraries
-else
 	$(PYTHON) setup.py build_libraries --inplace
-endif
 
 build.py:
 	$(error the code is not configured, please run configure first)
@@ -126,17 +118,9 @@ debian:
 
 %.code:
 ifneq (,$(findstring s,$(MAKEFLAGS)))
-ifeq ($(python_version_major),2)
 	$(PYTHON) setup.py build_code --inplace --clean=$(CLEAN) --code-name=$*
 else
-	$(PYTHON) setup.py build_code --clean=$(CLEAN) --code-name=$*
-endif
-else
-ifeq ($(python_version_major),2)
 	$(PYTHON) setup.py -v build_code --inplace --clean=$(CLEAN) --code-name=$*
-else
-	$(PYTHON) setup.py -v build_code --clean=$(CLEAN) --code-name=$*
-endif
 endif
 
 %.ocode: | src/omuse
@@ -149,11 +133,7 @@ endif
 omuse: build.py  | src/omuse
 	@-mkdir -p test_results
 	$(PYTHON) setup.py generate_main
-ifneq ($(python_version_major),3)
 	$(PYTHON) setup.py build_codes --inplace --codes-dir=src/omuse/community
-else
-	$(error you cannot build the omuse codes in the source directories with Python 3 yet)
-endif
 
 src/omuse:
 	@echo "src/omuse not present"
