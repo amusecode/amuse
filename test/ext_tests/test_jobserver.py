@@ -96,17 +96,17 @@ class TestJobServer(amusetest.TestCase):
     def test1(self):
                   
       result=example_parallel_jobs(10)
-      for arg,res in list(result.items()):
+      for arg,res in result.items():
         self.assertEqual(arg,len(res))
 
     def test2(self):
                   
       result=example_parallel_jobs(10,4)
-      for arg,res in list(result.items()):
+      for arg,res in result.items():
         self.assertEqual(arg,len(res))
 
     def test3(self):
                   
       result=example_parallel_jobs2(10,4)
-      for arg,res in list(result.items()):
+      for arg,res in result.items():
         self.assertEqual(arg,len(res))
