@@ -592,14 +592,14 @@ class TestHuayno(TestWithMPI):
         p1=plummer.new_plummer_model(N)
         p2=plummer.new_plummer_model(N)
         h1=Huayno()
-        h1.particles.add_particles(p1[:N/2])
-        h1.particles.add_particles(p2[-N/2:])
+        h1.particles.add_particles(p1[:N//2])
+        h1.particles.add_particles(p2[-N//2:])
 
         h2=Huayno()
         h2.particles.add_particles(p1)
-        h2.particles.remove_particles(p1[N/2:])
+        h2.particles.remove_particles(p1[N//2:])
         h2.particles.add_particles(p2)
-        h2.particles.remove_particles(p2[:-N/2])
+        h2.particles.remove_particles(p2[:-N//2])
         
         self.assertEqual(len(h1.particles),len(h2.particles))
         self.assertAlmostEqual(h1.kinetic_energy,h2.kinetic_energy,15)
