@@ -7,10 +7,10 @@ from amuse.community.interface.common import CommonCode
 from amuse.support import options
 from amuse.rfi.channel import DistributedChannel
 
-from .distributed_datamodel import Resources, Resource
-from .distributed_datamodel import Pilots, Pilot
-from .distributed_datamodel import ScriptJobs, ScriptJob
-from .distributed_datamodel import FunctionJobs, FunctionJob
+from distributed_datamodel import Resources, Resource
+from distributed_datamodel import Pilots, Pilot
+from distributed_datamodel import ScriptJobs, ScriptJob
+from distributed_datamodel import FunctionJobs, FunctionJob
 
 import pickle
 
