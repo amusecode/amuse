@@ -143,10 +143,10 @@ class TestSakuraInterface(TestWithMPI):
 
         P = 2 * math.pi
         self.assertEqual(0, instance.evolve_model(P / 2)) # half an orbit
-        for result, expected in zip(list(instance.get_position(0).values()), [-0.5, 0.0, 0.0, 0]):
+        for result, expected in zip(instance.get_position(0).values(), [-0.5, 0.0, 0.0, 0]):
             self.assertAlmostEqual(result, expected, 2)
         self.assertEqual(0, instance.evolve_model(P)) # full orbit
-        for result, expected in zip(list(instance.get_position(0).values()), [0.5, 0.0, 0.0, 0]):
+        for result, expected in zip(instance.get_position(0).values(), [0.5, 0.0, 0.0, 0]):
             self.assertAlmostEqual(result, expected, 2)
         self.assertEqual(0, instance.cleanup_code())
         instance.stop()
