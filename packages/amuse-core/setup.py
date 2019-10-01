@@ -14,7 +14,6 @@ url = 'http://www.amusecode.org/'
 install_requires = [
     'setuptools>=41.0.0',
     'pip>=19.0.0',
-    'wheel>=0.32',
     'docutils>=0.6',
     'numpy>=1.2.2',
     'nose>=0.11.1',
@@ -50,7 +49,7 @@ package_data = {
     ]
 }
 
-mapping_from_command_name_to_command_class=setup_commands()
+# mapping_from_command_name_to_command_class=setup_commands()
 
 setup(
     name=name,
@@ -64,7 +63,7 @@ setup(
     long_description=long_description,
     long_description_content_type=long_description_content_type,
     install_requires=install_requires,
-    cmdclass=mapping_from_command_name_to_command_class,
+    # cmdclass=mapping_from_command_name_to_command_class,
     ext_modules=extensions,
     package_dir={'': 'src'},
     packages=packages,
