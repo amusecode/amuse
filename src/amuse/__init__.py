@@ -38,4 +38,4 @@ numpy_fix()
 try:
     from . import config
 except:
-    raise ImportError("amuse is not configured correctly")
+    print("amuse is not configured correctly")  
