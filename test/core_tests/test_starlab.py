@@ -1,5 +1,5 @@
 import os.path
-import StringIO
+import io
 import numpy
 
 from amuse import io

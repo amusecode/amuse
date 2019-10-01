@@ -78,8 +78,8 @@ class TestMI6Interface(TestWithMPI):
         instance = MI6Interface(**default_options)
         self.assertEqual(0, instance.initialize_code())
         self.assertEqual(0, instance.commit_parameters())
-        self.assertEqual([1, 0], instance.new_particle(0.01,  1, 0, 0,  0, 1, 0, 0.1).values())
-        self.assertEqual([2, 0], instance.new_particle(0.02, -1, 0, 0,  0,-1, 0, 0.1).values())
+        self.assertEqual([1, 0], list(instance.new_particle(0.01,  1, 0, 0,  0, 1, 0, 0.1).values()))
+        self.assertEqual([2, 0], list(instance.new_particle(0.02, -1, 0, 0,  0,-1, 0, 0.1).values()))
         self.assertEqual(-3, instance.get_mass(1)['__result']) # Have to commit first
         self.assertEqual(0, instance.commit_particles())
         
@@ -91,22 +91,22 @@ class TestMI6Interface(TestWithMPI):
         self.assertAlmostEqual(0.1, radius)
         self.assertEqual(0,result)
         self.assertEqual(-3, instance.get_mass(3)['__result']) # Particle not found
-        self.assertEqual([ 1, 0, 0,  0], instance.get_position(1).values())
-        self.assertEqual([-1, 0, 0,  0], instance.get_position(2).values())
-        self.assertEqual([ 0, 1, 0,  0], instance.get_velocity(1).values())
-        self.assertEqual([ 0,-1, 0,  0], instance.get_velocity(2).values())
+        self.assertEqual([ 1, 0, 0,  0], list(instance.get_position(1).values()))
+        self.assertEqual([-1, 0, 0,  0], list(instance.get_position(2).values()))
+        self.assertEqual([ 0, 1, 0,  0], list(instance.get_velocity(1).values()))
+        self.assertEqual([ 0,-1, 0,  0], list(instance.get_velocity(2).values()))
         
         # setters
         self.assertEqual(0, instance.set_state(1, 0.01, 1,2,3, 4,5,6, 0.1))
-        self.assertEqual([0.01, 1.0,2.0,3.0, 4.0,5.0,6.0, 0.1, 0], instance.get_state(1).values())
+        self.assertEqual([0.01, 1.0,2.0,3.0, 4.0,5.0,6.0, 0.1, 0], list(instance.get_state(1).values()))
         self.assertEqual(0, instance.set_mass(1, 0.02))
-        self.assertEqual([0.02, 1.0,2.0,3.0, 4.0,5.0,6.0, 0.1, 0], instance.get_state(1).values())
+        self.assertEqual([0.02, 1.0,2.0,3.0, 4.0,5.0,6.0, 0.1, 0], list(instance.get_state(1).values()))
         self.assertEqual(0, instance.set_radius(1, 0.2))
-        self.assertEqual([0.02, 1.0,2.0,3.0, 4.0,5.0,6.0, 0.2, 0], instance.get_state(1).values())
+        self.assertEqual([0.02, 1.0,2.0,3.0, 4.0,5.0,6.0, 0.2, 0], list(instance.get_state(1).values()))
         self.assertEqual(0, instance.set_position(1, 10,20,30))
-        self.assertEqual([0.02, 10.0,20.0,30.0, 4.0,5.0,6.0, 0.2, 0], instance.get_state(1).values())
+        self.assertEqual([0.02, 10.0,20.0,30.0, 4.0,5.0,6.0, 0.2, 0], list(instance.get_state(1).values()))
         self.assertEqual(0, instance.set_velocity(1, 40,50,60))
-        self.assertEqual([0.02, 10.0,20.0,30.0, 40.0,50.0,60.0, 0.2, 0], instance.get_state(1).values())
+        self.assertEqual([0.02, 10.0,20.0,30.0, 40.0,50.0,60.0, 0.2, 0], list(instance.get_state(1).values()))
 
         self.assertEqual(0, instance.cleanup_code())
         instance.stop()
@@ -117,47 +117,47 @@ class TestMI6Interface(TestWithMPI):
         self.assertEqual(0, instance.initialize_code())
         
         # MI6 has separate epsilon_squared parameters for different interactions!
-        self.assertEqual([0, 0], instance.get_eps2_fs_fs().values())
-        self.assertEqual([0, 0], instance.get_eps2_fs_bh().values())
-        self.assertEqual([0, 0], instance.get_eps2_bh_bh().values())
+        self.assertEqual([0, 0], list(instance.get_eps2_fs_fs().values()))
+        self.assertEqual([0, 0], list(instance.get_eps2_fs_bh().values()))
+        self.assertEqual([0, 0], list(instance.get_eps2_bh_bh().values()))
         self.assertEqual(-2, instance.get_eps2()['__result']) # Not implemented (would be ambiguous)
         
         self.assertEqual(0, instance.set_eps2_fs_fs(0.2))
-        self.assertEqual([0.2, 0], instance.get_eps2_fs_fs().values())
+        self.assertEqual([0.2, 0], list(instance.get_eps2_fs_fs().values()))
         self.assertEqual(0, instance.set_eps2_fs_bh(0.3))
-        self.assertEqual([0.3, 0], instance.get_eps2_fs_bh().values())
+        self.assertEqual([0.3, 0], list(instance.get_eps2_fs_bh().values()))
         self.assertEqual(0, instance.set_eps2_bh_bh(0.4))
-        self.assertEqual([0.4, 0], instance.get_eps2_bh_bh().values())
+        self.assertEqual([0.4, 0], list(instance.get_eps2_bh_bh().values()))
         self.assertEqual(-2, instance.set_eps2(0.1)) # Not implemented (would be ambiguous)
         
-        self.assertEqual([1.0e-4, 0], instance.get_eta_s().values())
-        self.assertEqual([0.1, 0], instance.get_eta_fs().values())
-        self.assertEqual([0.4, 0], instance.get_eta_smbh().values())
-        self.assertEqual([0.4, 0], instance.get_eta_imbh().values())
+        self.assertEqual([1.0e-4, 0], list(instance.get_eta_s().values()))
+        self.assertEqual([0.1, 0], list(instance.get_eta_fs().values()))
+        self.assertEqual([0.4, 0], list(instance.get_eta_smbh().values()))
+        self.assertEqual([0.4, 0], list(instance.get_eta_imbh().values()))
         
         self.assertEqual(0, instance.set_eta_s(0.01))
-        self.assertEqual([0.01, 0], instance.get_eta_s().values())
+        self.assertEqual([0.01, 0], list(instance.get_eta_s().values()))
         self.assertEqual(0, instance.set_eta_fs(0.02))
-        self.assertEqual([0.02, 0], instance.get_eta_fs().values())
+        self.assertEqual([0.02, 0], list(instance.get_eta_fs().values()))
         self.assertEqual(0, instance.set_eta_smbh(0.03))
-        self.assertEqual([0.03, 0], instance.get_eta_smbh().values())
+        self.assertEqual([0.03, 0], list(instance.get_eta_smbh().values()))
         self.assertEqual(0, instance.set_eta_imbh(0.04))
-        self.assertEqual([0.04, 0], instance.get_eta_imbh().values())
+        self.assertEqual([0.04, 0], list(instance.get_eta_imbh().values()))
         
         self.assertEqual(0, instance.set_max_relative_energy_error(1.0e-6))
-        self.assertEqual([1.0e-6, 0], instance.get_max_relative_energy_error().values())
+        self.assertEqual([1.0e-6, 0], list(instance.get_max_relative_energy_error().values()))
         self.assertEqual(0, instance.set_maximum_timestep(1.0e-6))
-        self.assertEqual([1.0e-6, 0], instance.get_maximum_timestep().values())
+        self.assertEqual([1.0e-6, 0], list(instance.get_maximum_timestep().values()))
         
         self.assertEqual(0, instance.set_smbh_mass(0.1))
-        self.assertEqual([0.1, 0], instance.get_smbh_mass().values())
+        self.assertEqual([0.1, 0], list(instance.get_smbh_mass().values()))
         
-        self.assertEqual([0, 0], instance.get_include_smbh_flag().values())
+        self.assertEqual([0, 0], list(instance.get_include_smbh_flag().values()))
         self.assertEqual(0, instance.set_include_smbh_flag(1))
-        self.assertEqual([1, 0], instance.get_include_smbh_flag().values())
-        self.assertEqual([1, 0], instance.get_calculate_postnewtonian().values())
+        self.assertEqual([1, 0], list(instance.get_include_smbh_flag().values()))
+        self.assertEqual([1, 0], list(instance.get_calculate_postnewtonian().values()))
         self.assertEqual(0, instance.set_calculate_postnewtonian(0))
-        self.assertEqual([0, 0], instance.get_calculate_postnewtonian().values())
+        self.assertEqual([0, 0], list(instance.get_calculate_postnewtonian().values()))
         
         self.assertEqual(0, instance.commit_parameters())
         self.assertEqual(0, instance.cleanup_code())
@@ -172,7 +172,7 @@ class TestMI6Interface(TestWithMPI):
         self.assertEqual(0, instance.commit_parameters())
         
         # Set up a light particle on a circular orbit around the SMBH:
-        self.assertEqual([1, 0], instance.new_particle(1.0e-4,  1.0, 0, 0,  0, 1.0, 0, 0.001).values())
+        self.assertEqual([1, 0], list(instance.new_particle(1.0e-4,  1.0, 0, 0,  0, 1.0, 0, 0.001).values()))
         self.assertEqual(0, instance.commit_particles())
         
         self.assertEqual(0, instance.evolve_model(math.pi)) # half an orbit
@@ -196,8 +196,8 @@ class TestMI6Interface(TestWithMPI):
         # Set up a light binary on circular orbits around the SMBH:
         mass = 1.0e-4
         dv = 0.5 * (math.sqrt(1.0 + 0.5*mass) - 1.0)
-        self.assertEqual([1, 0], instance.new_particle(mass,  1.0, 0, 0,  0, 1.0+dv, 0, 0.001).values())
-        self.assertEqual([2, 0], instance.new_particle(mass, -1.0, 0, 0,  0,-1.0-dv, 0, 0.001).values())
+        self.assertEqual([1, 0], list(instance.new_particle(mass,  1.0, 0, 0,  0, 1.0+dv, 0, 0.001).values()))
+        self.assertEqual([2, 0], list(instance.new_particle(mass, -1.0, 0, 0,  0,-1.0-dv, 0, 0.001).values()))
         self.assertEqual(0, instance.commit_particles())
         
         P = 2 * math.pi / (1 + dv)
@@ -221,13 +221,13 @@ class TestMI6Interface(TestWithMPI):
         self.assertEqual(0, instance.commit_parameters())
         # Set up a light binary on circular orbits around the SMBH:
         mass = 1.0e-6
-        self.assertEqual([1, 0], instance.new_particle(mass,  1.0, 0, 0,  0, 1.0, 0, 0.001).values())
-        self.assertEqual([2, 0], instance.new_particle(mass, -1.0, 0, 0,  0,-1.0, 0, 0.001).values())
+        self.assertEqual([1, 0], list(instance.new_particle(mass,  1.0, 0, 0,  0, 1.0, 0, 0.001).values()))
+        self.assertEqual([2, 0], list(instance.new_particle(mass, -1.0, 0, 0,  0,-1.0, 0, 0.001).values()))
         self.assertEqual(0, instance.commit_particles())
         
         self.assertEqual(0, instance.evolve_model(0.00001))
-        result1 = instance.get_position(1).values()
-        result2 = instance.get_position(2).values()
+        result1 = list(instance.get_position(1).values())
+        result2 = list(instance.get_position(2).values())
         print(result1)
         print(result2)
         

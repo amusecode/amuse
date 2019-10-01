@@ -706,8 +706,7 @@ class CodeCommand(Command):
     def get_special_targets(self, name, directory, environment):
         process = Popen(['make','-qp', '-C', directory], env = environment, stdout = PIPE, stderr = PIPE)
         stdoutstring, stderrstring = process.communicate()
-        if sys.hexversion > 0x03000000:
-            stdoutstring = str(stdoutstring, 'utf-8')
+        stdoutstring = str(stdoutstring, 'utf-8')
         lines = stdoutstring.splitlines()
         result = []
         for line in lines:
@@ -753,10 +752,7 @@ class CodeCommand(Command):
             if not buildlogfile is None:
                 buildlogfile.write(line)
             self.announce(line[:-1], log.DEBUG)
-            if sys.hexversion > 0x03000000:
-                stringio.write(str(line, 'utf-8'))
-            else:
-                stringio.write(line)
+            stringio.write(str(line, 'utf-8'))
             
         result = process.wait()
         content = stringio.getvalue()

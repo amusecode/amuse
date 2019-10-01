@@ -437,7 +437,7 @@ class TestCreatePythonWorker(TestCase):
         self.assertTrue(script_string.find('PythonImplementation(instance, ForTestingInterface)')>0)
         try:
             st = compile(script_string, 'test.py', 'exec')
-        except SyntaxError, ex:
+        except SyntaxError as ex:
             self.fail("Compilation error {0}".format(ex))
             
     def test2(self):
@@ -455,7 +455,7 @@ class TestCreatePythonWorker(TestCase):
         self.assertTrue(script_string.find('start_socket')>0)
         try:
             st = compile(script_string, 'test.py', 'exec')
-        except SyntaxError, ex:
+        except SyntaxError as ex:
             self.fail("Compilation error {0}".format(ex))
             
 class TestInterface(TestWithMPI):
@@ -679,14 +679,14 @@ class TestInterface(TestWithMPI):
         self.assertTrue(list(doubles) == [1.0*i for i in range(N)])
         sums = x.sum_doubles([1.0*i for i in range(N)],[1.0*i for i in range(N)])
         self.assertTrue(list(sums) == [2.0*i for i in range(N)])
-        products = x.multiply_ints(range(N),range(N))
+        products = x.multiply_ints(list(range(N)),list(range(N)))
         self.assertTrue(list(products) == [i*i for i in range(N)])
         N = 101
         doubles = x.echo_double([1.0*i for i in range(N)])
         self.assertTrue(list(doubles) == [1.0*i for i in range(N)])
         sums = x.sum_doubles([1.0*i for i in range(N)],[1.0*i for i in range(N)])
         self.assertTrue(list(sums) == [2.0*i for i in range(N)])
-        products = x.multiply_ints(range(N),range(N))
+        products = x.multiply_ints(list(range(N)),list(range(N)))
         self.assertTrue(list(products) == [i*i for i in range(N)])
         x.stop()
         
@@ -749,22 +749,22 @@ class TestInterface(TestWithMPI):
         print("Testing must_handle_array for Python codes")
         instance = self.ForTestingInterface()
         
-        x,y,z,err = instance.get_position(range(100))
+        x,y,z,err = instance.get_position(list(range(100)))
         self.assertEqual(err, 0)
         self.assertEqual(x, numpy.arange(0.0, 300.0, 3.0))
         self.assertEqual(y, numpy.arange(1.0, 300.0, 3.0))
         self.assertEqual(z, numpy.arange(2.0, 300.0, 3.0))
-        x,y,z,err = instance.get_position(range(101))
+        x,y,z,err = instance.get_position(list(range(101)))
         self.assertEqual(err, -1)
-        self.assertEqual(instance.get_position(1).values(), [3.0, 4.0, 5.0, 0])
+        self.assertEqual(list(instance.get_position(1).values()), [3.0, 4.0, 5.0, 0])
         
-        err = instance.set_position(range(100), numpy.arange(100.0), numpy.arange(100.0, 200.0), numpy.arange(200.0, 300.0))
+        err = instance.set_position(list(range(100)), numpy.arange(100.0), numpy.arange(100.0, 200.0), numpy.arange(200.0, 300.0))
         self.assertEqual(err, 0)
-        err = instance.set_position(range(101), numpy.arange(101.0), numpy.arange(101.0, 202.0), numpy.arange(202.0, 303.0))
+        err = instance.set_position(list(range(101)), numpy.arange(101.0), numpy.arange(101.0, 202.0), numpy.arange(202.0, 303.0))
         self.assertEqual(err, -1)
         err = instance.set_position(0, -1.0, -2.0, -3.0)
         
-        x,y,z,err = instance.get_position(range(100))
+        x,y,z,err = instance.get_position(list(range(100)))
         self.assertEqual(err, 0)
         self.assertEqual(x, numpy.concatenate(([-1.0], numpy.arange(1.0, 100.0))))
         self.assertEqual(y, numpy.concatenate(([-2.0], numpy.arange(101.0, 200.0))))
@@ -826,14 +826,14 @@ class TestInterface(TestWithMPI):
         with open(exe, 'w') as f:
             f.write(string)
             
-        os.chmod(exe, 0777)
+        os.chmod(exe, 0o777)
         
         
         instance = self.ForTestingInterface(
             use_python_interpreter = True,
             python_interpreter = exe
         )
-        x,y,z,err = instance.get_position(range(100))
+        x,y,z,err = instance.get_position(list(range(100)))
         self.assertEqual(err, 0)
         self.assertEqual(x, numpy.arange(0.0, 300.0, 3.0))
         self.assertEqual(y, numpy.arange(1.0, 300.0, 3.0))
@@ -871,7 +871,7 @@ class TestInterface(TestWithMPI):
         with open(exe, 'w') as f:
             f.write(string)
             
-        os.chmod(exe, 0777)
+        os.chmod(exe, 0o777)
         
         
         instance = self.ForTestingInterface(
@@ -879,7 +879,7 @@ class TestInterface(TestWithMPI):
             python_interpreter = exe,
             redirection="none"
         )
-        x,y,z,err = instance.get_position(range(100))
+        x,y,z,err = instance.get_position(list(range(100)))
         self.assertEqual(err, 0)
         self.assertEqual(x, numpy.arange(0.0, 300.0, 3.0))
         self.assertEqual(y, numpy.arange(1.0, 300.0, 3.0))

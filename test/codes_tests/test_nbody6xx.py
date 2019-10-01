@@ -55,9 +55,9 @@ class Nbody6xxInterfaceTests(TestWithMPI):
         self.assertEqual(0, instance.commit_parameters())
         
         # Set up an equal-mass binary on a circular orbit:
-        self.assertEqual([1, 0], instance.new_particle(0.5,  0.5, 0, 0,  0, 0.5, 0, 0.01).values())
-        self.assertEqual([2, 0], instance.new_particle(0.5,  -0.5, 0, 0,  0,-0.5, 0, 0.01).values())
-        self.assertEqual([3, 0], instance.new_particle(100.5,  -0.5, 0, 0,  0,-0.5, 0, 0.01).values())
+        self.assertEqual([1, 0], list(instance.new_particle(0.5,  0.5, 0, 0,  0, 0.5, 0, 0.01).values()))
+        self.assertEqual([2, 0], list(instance.new_particle(0.5,  -0.5, 0, 0,  0,-0.5, 0, 0.01).values()))
+        self.assertEqual([3, 0], list(instance.new_particle(100.5,  -0.5, 0, 0,  0,-0.5, 0, 0.01).values()))
         self.assertEqual(0, instance.commit_particles())
         
         self.assertEqual(0, instance.evolve_model(math.pi))

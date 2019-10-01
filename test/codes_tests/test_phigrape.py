@@ -295,8 +295,8 @@ class TestPhigrape(TestWithMPI):
             x_points = earth.get_timeline_of_attribute("x")
             y_points = earth.get_timeline_of_attribute("y")
             
-            x_points_in_AU = map(lambda (t,x) : x.value_in(units.AU), x_points)
-            y_points_in_AU = map(lambda (t,x) : x.value_in(units.AU), y_points)
+            x_points_in_AU = [t_x[1].value_in(units.AU) for t_x in x_points]
+            y_points_in_AU = [t_x1[1].value_in(units.AU) for t_x1 in y_points]
             
             plot.scatter(x_points_in_AU,y_points_in_AU, color = "b", marker = 'o')
             
@@ -383,7 +383,7 @@ class TestPhigrape(TestWithMPI):
         instance.parameters.set_defaults()
         
         particles = datamodel.Particles(6)
-        particles.mass = nbody_system.mass.new_quantity(range(1,7))
+        particles.mass = nbody_system.mass.new_quantity(list(range(1,7)))
         particles.radius =   0.00001 | nbody_system.length
         particles.position = [[-1.0,0.0,0.0],[1.0,0.0,0.0],[0.0,-1.0,0.0],[0.0,1.0,0.0],[0.0,0.0,-1.0],[0.0,0.0,1.0]] | nbody_system.length
         particles.velocity = [[0.0,0.0,0.0],[0.0,0.0,0.0],[0.0,0.0,0.0],[0.0,0.0,0.0],[0.0,0.0,0.0],[0.0,0.0,0.0]] | nbody_system.speed
@@ -432,7 +432,7 @@ class TestPhigrape(TestWithMPI):
         
     def test8(self):
         particles = datamodel.Particles(6)
-        particles.mass = nbody_system.mass.new_quantity(range(1,7))
+        particles.mass = nbody_system.mass.new_quantity(list(range(1,7)))
         particles.radius =   0.00001 | nbody_system.length
         particles.position = [[-1.0,0.0,0.0],[1.0,0.0,0.0],[0.0,-1.0,0.0],[0.0,1.0,0.0],[0.0,0.0,-1.0],[0.0,0.0,1.0]] | nbody_system.length
         particles.velocity = [[0.0,0.0,0.0],[0.0,0.0,0.0],[0.0,0.0,0.0],[0.0,0.0,0.0],[0.0,0.0,0.0],[0.0,0.0,0.0]] | nbody_system.speed
@@ -775,12 +775,12 @@ class TestPhigrape(TestWithMPI):
         number_of_initial_deletes = 3
         
         particles = datamodel.Particles(number_of_particles)
-        particles.mass = range(1, number_of_particles + 1) | nbody_system.mass
+        particles.mass = list(range(1, number_of_particles + 1)) | nbody_system.mass
         particles.radius = 0.01 | nbody_system.length
-        particles.x = range(number_of_particles) | nbody_system.length
+        particles.x = list(range(number_of_particles)) | nbody_system.length
         particles.y = 0 | nbody_system.length
         particles.z = 0 | nbody_system.length
-        particles.vx = range(number_of_particles) | nbody_system.speed
+        particles.vx = list(range(number_of_particles)) | nbody_system.speed
         particles.vy = 0 | nbody_system.speed
         particles.vz = 0 | nbody_system.speed
         

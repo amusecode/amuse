@@ -167,9 +167,9 @@ class TestIndexing(amusetest.TestCase):
         self.assertEqual(shape,(2,))
 
     def xtest22(self):
-        tiny=range(2)
-        small=range(10)
-        big=range(1000)
+        tiny=list(range(2))
+        small=list(range(10))
+        big=list(range(1000))
         
         # combining slicings w negative stops not possible! e.g. ((7,-1),(2,3),(9,10,1))
         # (without normalize)
@@ -205,9 +205,9 @@ class TestIndexing(amusetest.TestCase):
     def xtest23(self):
         import random
         random.seed(123456)
-        tiny=range(2)
-        small=range(20)
-        big=range(2000)
+        tiny=list(range(2))
+        small=list(range(20))
+        big=list(range(2000))
         
         Ntest=1000
         start0=[random.randint(0,20) for x in range(Ntest)]        
@@ -233,9 +233,9 @@ class TestIndexing(amusetest.TestCase):
     def test24(self):
         import random
         random.seed(123456)
-        tiny=range(2)
-        small=range(20)
-        big=range(2000)
+        tiny=list(range(2))
+        small=list(range(20))
+        big=list(range(2000))
         
         Ntest=1000
         stop0=[random.randint(0,20) for x in range(Ntest)]        
@@ -267,9 +267,9 @@ class TestIndexing(amusetest.TestCase):
     def test25(self):
         import random
         random.seed(123456)
-        tiny=range(2)
-        small=range(20)
-        big=range(2000)
+        tiny=list(range(2))
+        small=list(range(20))
+        big=list(range(2000))
         
         Ntest=1000
         stop0=[random.randint(0,20) for x in range(Ntest)]        

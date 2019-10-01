@@ -14,8 +14,8 @@ from amuse.rfi import python_code
 from amuse.rfi.core import *
 from amuse.rfi.async_request import AsyncRequestsPool
 
-import test_python_implementation
-import test_python_implementation_mpi
+from . import test_python_implementation
+from . import test_python_implementation_mpi
                         
 class TestInterfaceSockets(test_python_implementation.TestInterface):
     def setUp(self):

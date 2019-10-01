@@ -31,9 +31,9 @@ class TestFastKickInterface(TestWithMPI):
     def test2(self):
         fastkick = FastKickInterface(mode=self.mode, number_of_workers=self.number_of_workers)
         self.assertEqual(0, fastkick.set_eps2(0.101))
-        self.assertEqual([0.101, 0], fastkick.get_eps2().values())
+        self.assertEqual([0.101, 0], list(fastkick.get_eps2().values()))
         self.assertEqual(0, fastkick.set_eps2(0.2))
-        self.assertEqual([0.2, 0], fastkick.get_eps2().values())
+        self.assertEqual([0.2, 0], list(fastkick.get_eps2().values()))
         fastkick.cleanup_code()
         fastkick.stop()
     
@@ -42,8 +42,8 @@ class TestFastKickInterface(TestWithMPI):
         fastkick.initialize_code()
         fastkick.new_particle([10,10],[-1,1],[0,0], [0,0])
         self.assertEqual(0, fastkick.commit_particles())
-        self.assertEqual([-20.0, 0], fastkick.get_potential_at_point(0, 0,0,0).values())
-        self.assertAlmostEqual(-10.0*math.sqrt(2.0), fastkick.get_potential_at_point(1.0, 0,0,0).values()[0], 4)
+        self.assertEqual([-20.0, 0], list(fastkick.get_potential_at_point(0, 0,0,0).values()))
+        self.assertAlmostEqual(-10.0*math.sqrt(2.0), list(fastkick.get_potential_at_point(1.0, 0,0,0).values())[0], 4)
         fastkick.cleanup_code()
         fastkick.stop()
     

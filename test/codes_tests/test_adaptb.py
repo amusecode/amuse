@@ -55,8 +55,8 @@ class TestAdaptbInterface(TestWithMPI):
         self.assertEqual(0, instance.initialize_code())
         self.assertEqual(0, instance.set_adaptb_output_directory(instance.output_directory))
         self.assertEqual(0, instance.commit_parameters())
-        self.assertEqual([0, 0], instance.new_particle(0.01,  1, 0, 0,  0, 1, 0, 0.1).values())
-        self.assertEqual([1, 0], instance.new_particle(0.02, -1, 0, 0,  0,-1, 0, 0.1).values())
+        self.assertEqual([0, 0], list(instance.new_particle(0.01,  1, 0, 0,  0, 1, 0, 0.1).values()))
+        self.assertEqual([1, 0], list(instance.new_particle(0.02, -1, 0, 0,  0,-1, 0, 0.1).values()))
         self.assertEqual(0, instance.commit_particles())
         
         # getters
@@ -67,22 +67,22 @@ class TestAdaptbInterface(TestWithMPI):
         self.assertAlmostEqual(0.1, radius)
         self.assertEqual(0,result)
         self.assertEqual(-3, instance.get_mass(2)['__result']) # Particle not found
-        self.assertEqual([ 1, 0, 0,  0], instance.get_position(0).values())
-        self.assertEqual([-1, 0, 0,  0], instance.get_position(1).values())
-        self.assertEqual([ 0, 1, 0,  0], instance.get_velocity(0).values())
-        self.assertEqual([ 0,-1, 0,  0], instance.get_velocity(1).values())
+        self.assertEqual([ 1, 0, 0,  0], list(instance.get_position(0).values()))
+        self.assertEqual([-1, 0, 0,  0], list(instance.get_position(1).values()))
+        self.assertEqual([ 0, 1, 0,  0], list(instance.get_velocity(0).values()))
+        self.assertEqual([ 0,-1, 0,  0], list(instance.get_velocity(1).values()))
         
         # setters
         self.assertEqual(0, instance.set_state(0, 0.01, 1,2,3, 4,5,6, 0.1))
-        self.assertEqual([0.01, 1.0,2.0,3.0, 4.0,5.0,6.0, 0.1, 0], instance.get_state(0).values())
+        self.assertEqual([0.01, 1.0,2.0,3.0, 4.0,5.0,6.0, 0.1, 0], list(instance.get_state(0).values()))
         self.assertEqual(0, instance.set_mass(0, 0.02))
-        self.assertEqual([0.02, 1.0,2.0,3.0, 4.0,5.0,6.0, 0.1, 0], instance.get_state(0).values())
+        self.assertEqual([0.02, 1.0,2.0,3.0, 4.0,5.0,6.0, 0.1, 0], list(instance.get_state(0).values()))
         self.assertEqual(0, instance.set_radius(0, 0.2))
-        self.assertEqual([0.02, 1.0,2.0,3.0, 4.0,5.0,6.0, 0.2, 0], instance.get_state(0).values())
+        self.assertEqual([0.02, 1.0,2.0,3.0, 4.0,5.0,6.0, 0.2, 0], list(instance.get_state(0).values()))
         self.assertEqual(0, instance.set_position(0, 10,20,30))
-        self.assertEqual([0.02, 10.0,20.0,30.0, 4.0,5.0,6.0, 0.2, 0], instance.get_state(0).values())
+        self.assertEqual([0.02, 10.0,20.0,30.0, 4.0,5.0,6.0, 0.2, 0], list(instance.get_state(0).values()))
         self.assertEqual(0, instance.set_velocity(0, 40,50,60))
-        self.assertEqual([0.02, 10.0,20.0,30.0, 40.0,50.0,60.0, 0.2, 0], instance.get_state(0).values())
+        self.assertEqual([0.02, 10.0,20.0,30.0, 40.0,50.0,60.0, 0.2, 0], list(instance.get_state(0).values()))
 
         self.assertEqual(0, instance.cleanup_code())
         instance.stop()
@@ -93,42 +93,42 @@ class TestAdaptbInterface(TestWithMPI):
         self.assertEqual(0, instance.initialize_code())
         
         # word length
-        self.assertEqual([64, 0], instance.get_word_length().values())
+        self.assertEqual([64, 0], list(instance.get_word_length().values()))
         self.assertEqual(0, instance.set_word_length(80))
-        self.assertEqual([80, 0], instance.get_word_length().values())
+        self.assertEqual([80, 0], list(instance.get_word_length().values()))
 
         # bs tolerance, default (double) implementation
-        self.assertEqual([1.0e-6, 0], instance.get_bs_tolerance_float64().values())
+        self.assertEqual([1.0e-6, 0], list(instance.get_bs_tolerance_float64().values()))
         self.assertEqual(0, instance.set_bs_tolerance_float64(1.0e-8))
-        self.assertEqual([1.0e-8, 0], instance.get_bs_tolerance_float64().values())
+        self.assertEqual([1.0e-8, 0], list(instance.get_bs_tolerance_float64().values()))
         # bs tolerance, string implementation for values requiring higher precision (note: actual accuracy depends on word_length)
         self.assertEqual(1e-8, eval(instance.get_bs_tolerance_string()["bs_tolerance"]))
         self.assertEqual(0, instance.set_bs_tolerance_string("1e-10"))
-        self.assertEqual([1e-10,0], instance.get_bs_tolerance_float64().values())
+        self.assertEqual([1e-10,0], list(instance.get_bs_tolerance_float64().values()))
         # new mpreal 1e-10 prints as 9.99999...e-11
         # self.assertEquals(["1e-10", 0], instance.get_bs_tolerance_string().values())
         
         # softening
-        self.assertEqual([0.0, 0], instance.get_eps2().values())
+        self.assertEqual([0.0, 0], list(instance.get_eps2().values()))
         self.assertEqual(0, instance.set_eps2(2e-1))
-        self.assertEqual([0.2, 0], instance.get_eps2().values())
+        self.assertEqual([0.2, 0], list(instance.get_eps2().values()))
         
         # print intervals
-        self.assertEqual([1e-1, 0], instance.get_dt_print().values())
+        self.assertEqual([1e-1, 0], list(instance.get_dt_print().values()))
         self.assertEqual(0, instance.set_dt_print(1e-2))
-        self.assertEqual([1e-2, 0], instance.get_dt_print().values())
+        self.assertEqual([1e-2, 0], list(instance.get_dt_print().values()))
 
         # max cpu time
-        self.assertEqual([3600, 0], instance.get_max_cpu_time().values())
+        self.assertEqual([3600, 0], list(instance.get_max_cpu_time().values()))
         self.assertEqual(0, instance.set_max_cpu_time(120))
-        self.assertEqual([120, 0], instance.get_max_cpu_time().values())
+        self.assertEqual([120, 0], list(instance.get_max_cpu_time().values()))
         
         # output dir
-        self.assertEqual(["./", 0], instance.get_adaptb_output_directory().values())
+        self.assertEqual(["./", 0], list(instance.get_adaptb_output_directory().values()))
         self.assertEqual(0, instance.set_adaptb_output_directory("./out"))
-        self.assertEqual(["./out/", 0], instance.get_adaptb_output_directory().values())
+        self.assertEqual(["./out/", 0], list(instance.get_adaptb_output_directory().values()))
         self.assertEqual(0, instance.set_adaptb_output_directory(instance.output_directory))
-        self.assertEqual([instance.output_directory+"/", 0], instance.get_adaptb_output_directory().values())
+        self.assertEqual([instance.output_directory+"/", 0], list(instance.get_adaptb_output_directory().values()))
         
         self.assertEqual(0, instance.commit_parameters())
         self.assertEqual(0, instance.cleanup_code())
@@ -144,16 +144,16 @@ class TestAdaptbInterface(TestWithMPI):
         self.assertEqual(0, instance.set_adaptb_output_directory(instance.output_directory))
         self.assertEqual(0, instance.commit_parameters())
         
-        self.assertEqual([0, 0], instance.new_particle(0.5,  0.5, 0, 0,  0, 0.5, 0).values())
-        self.assertEqual([1, 0], instance.new_particle(0.5, -0.5, 0, 0,  0,-0.5, 0).values())
+        self.assertEqual([0, 0], list(instance.new_particle(0.5,  0.5, 0, 0,  0, 0.5, 0).values()))
+        self.assertEqual([1, 0], list(instance.new_particle(0.5, -0.5, 0, 0,  0,-0.5, 0).values()))
         self.assertEqual(0, instance.commit_particles())
         
         self.assertEqual(0, instance.evolve_model(math.pi)) # half an orbit
-        for result, expected in zip(instance.get_position(0).values(), [-0.5, 0.0, 0.0, 0]):
+        for result, expected in zip(list(instance.get_position(0).values()), [-0.5, 0.0, 0.0, 0]):
             self.assertAlmostEqual(result, expected, 5)
         
         self.assertEqual(0, instance.evolve_model(2 * math.pi)) # full orbit
-        for result, expected in zip(instance.get_position(0).values(), [0.5, 0.0, 0.0, 0]):
+        for result, expected in zip(list(instance.get_position(0).values()), [0.5, 0.0, 0.0, 0]):
             self.assertAlmostEqual(result, expected, 5)
         
         self.assertEqual(0, instance.cleanup_code())
@@ -169,9 +169,9 @@ class TestAdaptbInterface(TestWithMPI):
         self.assertEqual(0, instance.set_adaptb_output_directory(instance.output_directory))
         self.assertEqual(0, instance.commit_parameters())
 
-        self.assertEqual([0, 0], instance.new_particle("3",  "1",  "3", "0", "0", "0", "0").values())
-        self.assertEqual([1, 0], instance.new_particle("4", "-2", "-1", "0", "0", "0", "0").values())
-        self.assertEqual([2, 0], instance.new_particle("5",  "1", "-1", "0", "0", "0", "0").values())
+        self.assertEqual([0, 0], list(instance.new_particle("3",  "1",  "3", "0", "0", "0", "0").values()))
+        self.assertEqual([1, 0], list(instance.new_particle("4", "-2", "-1", "0", "0", "0", "0").values()))
+        self.assertEqual([2, 0], list(instance.new_particle("5",  "1", "-1", "0", "0", "0", "0").values()))
         self.assertEqual(0, instance.commit_particles())
         self.assertEqual(0, instance.evolve_model(100))
         
@@ -191,9 +191,9 @@ class TestAdaptbInterface(TestWithMPI):
             self.assertEqual(0, instance.set_word_length(word_len))
             self.assertEqual(0, instance.set_adaptb_output_directory(instance.output_directory))
             self.assertEqual(0, instance.commit_parameters())
-            self.assertEqual([0, 0], instance.new_particle("3", "0",  "1",  "3", "0", "0", "0", "0").values())
-            self.assertEqual([1, 0], instance.new_particle("4", "0", "-2", "-1", "0", "0", "0", "0").values())
-            self.assertEqual([2, 0], instance.new_particle("5", "0",  "1", "-1", "0", "0", "0", "0").values())
+            self.assertEqual([0, 0], list(instance.new_particle("3", "0",  "1",  "3", "0", "0", "0", "0").values()))
+            self.assertEqual([1, 0], list(instance.new_particle("4", "0", "-2", "-1", "0", "0", "0", "0").values()))
+            self.assertEqual([2, 0], list(instance.new_particle("5", "0",  "1", "-1", "0", "0", "0", "0").values()))
             self.assertEqual(0, instance.commit_particles())
             self.assertEqual(0, instance.evolve_model(100))
             self.assertEqual(0, instance.cleanup_code())
@@ -233,9 +233,9 @@ class TestAdaptbInterface(TestWithMPI):
             self.assertEqual(0, instance.set_adaptb_output_directory(instance.output_directory))
             self.assertEqual(0, instance.commit_parameters())
             
-            self.assertEqual([0, 0], instance.new_particle("3", "0",  "1",  "3", "0", "0", "0", "0").values())
-            self.assertEqual([1, 0], instance.new_particle("4", "0", "-2", "-1", "0", "0", "0", "0").values())
-            self.assertEqual([2, 0], instance.new_particle("5", "0",  "1", "-1", "0", "0", "0", "0").values())
+            self.assertEqual([0, 0], list(instance.new_particle("3", "0",  "1",  "3", "0", "0", "0", "0").values()))
+            self.assertEqual([1, 0], list(instance.new_particle("4", "0", "-2", "-1", "0", "0", "0", "0").values()))
+            self.assertEqual([2, 0], list(instance.new_particle("5", "0",  "1", "-1", "0", "0", "0", "0").values()))
             self.assertEqual(0, instance.commit_particles())
             
             self.assertEqual(0, instance.evolve_model(100))

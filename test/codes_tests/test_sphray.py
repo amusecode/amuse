@@ -41,14 +41,14 @@ class TestSPHRayInterface(TestWithMPI):
         number_of_gas_particles = len(x)
         indices, errors = instance.new_gas_particle(mass, hsml, x, y, z, rho, xe, u)
         self.assertEqual(errors, [0]*number_of_gas_particles)
-        self.assertEqual(indices, range(1,number_of_gas_particles+1))
+        self.assertEqual(indices, list(range(1,number_of_gas_particles+1)))
         
         input_file = os.path.join(os.path.dirname(__file__), "test_sphray_data_sources_001.1")
         L, xs, ys, zs, spctype = self.read_src_file(input_file)
         number_of_src_particles = len(xs)
         s_indices, errors = instance.new_src_particle(L, xs, ys, zs, spctype)
         self.assertEqual(errors, [0]*number_of_src_particles)
-        self.assertEqual(s_indices, range(number_of_gas_particles+1,number_of_src_particles+number_of_gas_particles+1))
+        self.assertEqual(s_indices, list(range(number_of_gas_particles+1,number_of_src_particles+number_of_gas_particles+1)))
        
         self.assertEqual(0, instance.commit_particles())
         mass2, hsml2, x2, y2, z2, rho2, xe2, u2 , error = instance.get_state_gas(indices)
@@ -84,14 +84,14 @@ class TestSPHRayInterface(TestWithMPI):
         number_of_gas_particles = len(x)
         indices, errors = instance.new_gas_particle(mass, hsml, x, y, z, rho, xe, u)
         self.assertEqual(errors, [0]*number_of_gas_particles)
-        self.assertEqual(indices, range(1,number_of_gas_particles+1))
+        self.assertEqual(indices, list(range(1,number_of_gas_particles+1)))
         
         input_file = os.path.join(os.path.dirname(__file__), "test_sphray_data_sources_001.1")
         L, xs, ys, zs, spctype = self.read_src_file(input_file)
         number_of_src_particles = len(xs)
         s_indices, errors = instance.new_src_particle(L, xs, ys, zs, spctype)
         self.assertEqual(errors, [0]*number_of_src_particles)
-        self.assertEqual(s_indices, range(number_of_gas_particles+1,number_of_src_particles+number_of_gas_particles+1))
+        self.assertEqual(s_indices, list(range(number_of_gas_particles+1,number_of_src_particles+number_of_gas_particles+1)))
        
         self.assertEqual(0, instance.commit_particles())
         mass2, hsml2, x2, y2, z2, rho2, xe2, u2 , error = instance.get_state_gas(indices)
@@ -174,14 +174,14 @@ class TestSPHRayInterface(TestWithMPI):
         number_of_gas_particles = len(x)
         indices, errors = instance.new_gas_particle(mass, hsml, x, y, z, rho, xe, u)
         self.assertEqual(errors, [0]*number_of_gas_particles)
-        self.assertEqual(indices, range(1,number_of_gas_particles+1))
+        self.assertEqual(indices, list(range(1,number_of_gas_particles+1)))
         
         input_file = os.path.join(os.path.dirname(__file__), "test_sphray_data_sources_001.1")
         L, xs, ys, zs, spctype = self.read_src_file(input_file)
         number_of_src_particles = len(xs)
         s_indices, errors = instance.new_src_particle(L, xs, ys, zs, spctype)
         self.assertEqual(errors, [0]*number_of_src_particles)
-        self.assertEqual(s_indices, range(number_of_gas_particles+1,number_of_src_particles+number_of_gas_particles+1))
+        self.assertEqual(s_indices, list(range(number_of_gas_particles+1,number_of_src_particles+number_of_gas_particles+1)))
        
         self.assertEqual(0, instance.commit_particles())
         
@@ -249,14 +249,14 @@ class TestSPHRayInterface(TestWithMPI):
         number_of_gas_particles = len(x)
         indices, errors = instance.new_gas_particle(mass, hsml, x, y, z, rho, xe, u,vx,vy,vz)
         self.assertEqual(errors, [0]*number_of_gas_particles)
-        self.assertEqual(indices, range(1,number_of_gas_particles+1))
+        self.assertEqual(indices, list(range(1,number_of_gas_particles+1)))
         
         input_file = os.path.join(os.path.dirname(__file__), "test_sphray_data_sources_001.1")
         L, xs, ys, zs, spctype = self.read_src_file(input_file)
         number_of_src_particles = len(xs)
         s_indices, errors = instance.new_src_particle(L, xs, ys, zs, spctype)
         self.assertEqual(errors, [0]*number_of_src_particles)
-        self.assertEqual(s_indices, range(number_of_gas_particles+1,number_of_src_particles+number_of_gas_particles+1))
+        self.assertEqual(s_indices, list(range(number_of_gas_particles+1,number_of_src_particles+number_of_gas_particles+1)))
        
         self.assertEqual(0, instance.commit_particles())
         mass2, hsml2, x2, y2, z2, rho2, xe2, u2 , error = instance.get_state_gas(indices)

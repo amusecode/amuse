@@ -479,7 +479,7 @@ class DistributedParticlesImplementation(object):
 def generate_set_example_function(start,end,*args,**kwargs):
     from amuse.datamodel import Particles
     p=Particles(end-start)
-    p.index=range(start,end)
+    p.index=list(range(start,end))
     return p
 
 def distributed_king_generator(start,end,*args,**kwargs):
@@ -624,14 +624,14 @@ class TestDistributedParticles(TestWithMPI):
             number_of_workers = 4
         )
         self.assertEqual(len(x) , 40)
-        x.mass = range(40) 
+        x.mass = list(range(40)) 
         self.assertEqual(len(x[15:25]), 10)
-        self.assertEqual(x[15:25].mass, range(15,25))
-        x[15:25].mass = range(10)
-        self.assertEqual(x[15:25].mass, range(10))
+        self.assertEqual(x[15:25].mass, list(range(15,25)))
+        x[15:25].mass = list(range(10))
+        self.assertEqual(x[15:25].mass, list(range(10)))
             
     def test11(self):
-        from test_distributed_particles import generate_set_example_function
+        from .test_distributed_particles import generate_set_example_function
         y=generate_set_example_function(0,10)
         
         x = DistributedParticles(
@@ -642,8 +642,8 @@ class TestDistributedParticles(TestWithMPI):
         self.assertEqual(y.index,x.index)
 
     def test12(self):
-        from test_distributed_particles import generate_set_example_function
-        from test_distributed_particles import select_example_function
+        from .test_distributed_particles import generate_set_example_function
+        from .test_distributed_particles import select_example_function
         y=generate_set_example_function(0,10)
         
         x = DistributedParticles(
@@ -805,7 +805,7 @@ class TestDistributedParticles(TestWithMPI):
         self.assertEqual(x.mass, z.mass )        
 
     def test19(self):
-        from test_distributed_particles import distributed_king_generator
+        from .test_distributed_particles import distributed_king_generator
         from amuse.ic.kingmodel import MakeKingModel
         
         N=100

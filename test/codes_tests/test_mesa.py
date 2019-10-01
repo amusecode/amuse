@@ -94,14 +94,14 @@ class TestMESAInterface(TestWithMPI):
         
         initial_dt = 1.0e5
         dt_factor = 1.2
-        self.assertEqual([initial_dt, 0], instance.get_time_step(index_of_the_star).values())
+        self.assertEqual([initial_dt, 0], list(instance.get_time_step(index_of_the_star).values()))
         self.assertEqual(0, instance.evolve_one_step(index_of_the_star))
-        self.assertEqual([initial_dt, 0], instance.get_age(index_of_the_star).values())
+        self.assertEqual([initial_dt, 0], list(instance.get_age(index_of_the_star).values()))
         
         target_end_time = 3.0e5 # (years)
         self.assertEqual(0, instance.evolve_for(index_of_the_star, target_end_time-initial_dt))
-        self.assertEqual([initial_dt*(1 + dt_factor + dt_factor**2), 0], instance.get_age(index_of_the_star).values())
-        self.assertEqual([round(initial_dt*dt_factor**3), 0], instance.get_time_step(index_of_the_star).values())
+        self.assertEqual([initial_dt*(1 + dt_factor + dt_factor**2), 0], list(instance.get_age(index_of_the_star).values()))
+        self.assertEqual([round(initial_dt*dt_factor**3), 0], list(instance.get_time_step(index_of_the_star).values()))
         self.assertTrue(instance.get_age(index_of_the_star)['age'] >= target_end_time)
         
         (L_of_the_star, error) = instance.get_luminosity(index_of_the_star)

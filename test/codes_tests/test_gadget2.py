@@ -49,9 +49,9 @@ class TestGadget2Interface(TestWithMPI):
         self.assertEqual(0, instance.initialize_code())
         self.assertEqual(0, instance.set_gadget_output_directory(instance.get_output_directory()))
         self.assertEqual(0, instance.commit_parameters())
-        self.assertEqual([1.989000e43, 0], instance.get_unit_mass().values())
-        self.assertEqual([3.085678e21, 0], instance.get_unit_length().values())
-        self.assertEqual([3.085678e16, 0], instance.get_unit_time().values())
+        self.assertEqual([1.989000e43, 0], list(instance.get_unit_mass().values()))
+        self.assertEqual([3.085678e21, 0], list(instance.get_unit_length().values()))
+        self.assertEqual([3.085678e16, 0], list(instance.get_unit_time().values()))
         self.assertEqual(0, instance.cleanup_code())
         instance.stop()
 
@@ -60,12 +60,12 @@ class TestGadget2Interface(TestWithMPI):
         self.assertEqual(0, instance.initialize_code())
         self.assertEqual(0, instance.set_gadget_output_directory(instance.get_output_directory()))
         self.assertEqual(0, instance.commit_parameters())
-        self.assertEqual([1, 0], instance.new_dm_particle(0.01,  1, 0, 0,  0, 1, 0).values())
-        self.assertEqual([2, 0], instance.new_dm_particle(0.01, -1, 0, 0,  0,-1, 0).values())
+        self.assertEqual([1, 0], list(instance.new_dm_particle(0.01,  1, 0, 0,  0, 1, 0).values()))
+        self.assertEqual([2, 0], list(instance.new_dm_particle(0.01, -1, 0, 0,  0,-1, 0).values()))
         self.assertEqual(-1, instance.get_index_of_first_particle()['__result'])
         self.assertEqual(0, instance.commit_particles())
-        self.assertEqual([1, 0], instance.get_index_of_first_particle().values())
-        self.assertEqual([2, 1], instance.get_index_of_next_particle(1).values())
+        self.assertEqual([1, 0], list(instance.get_index_of_first_particle().values()))
+        self.assertEqual([2, 1], list(instance.get_index_of_next_particle(1).values()))
         self.assertEqual(-1, instance.get_index_of_next_particle(2)['__result'])
         self.assertEqual(0, instance.evolve_model(0.01))
         self.assertEqual(0, instance.cleanup_code())
@@ -80,8 +80,8 @@ class TestGadget2Interface(TestWithMPI):
         instance.set_unit_length(1.0)
         instance.set_unit_time(122404.614048)
         self.assertEqual(0, instance.commit_parameters())
-        self.assertEqual([1, 0], instance.new_dm_particle(1.,  1, 0, 0,  0, 0, 0).values())
-        self.assertEqual([2, 0], instance.new_dm_particle(1., -1, 0, 0,  0, 0, 0).values())
+        self.assertEqual([1, 0], list(instance.new_dm_particle(1.,  1, 0, 0,  0, 0, 0).values()))
+        self.assertEqual([2, 0], list(instance.new_dm_particle(1., -1, 0, 0,  0, 0, 0).values()))
         self.assertEqual(0, instance.commit_particles())
         if testing_isotherm_no_gravity:
             self.assertAlmostEqual(0.000 , instance.get_potential(1)['Potential'], places=1)
@@ -95,8 +95,8 @@ class TestGadget2Interface(TestWithMPI):
         self.assertEqual(0, instance.initialize_code())
         self.assertEqual(0, instance.set_gadget_output_directory(instance.get_output_directory()))
         self.assertEqual(0, instance.commit_parameters())
-        self.assertEqual([1, 0], instance.new_dm_particle(0.01,  1, 0, 0,  0, 1, 0).values())
-        self.assertEqual([2, 0], instance.new_dm_particle(0.02, -1, 0, 0,  0,-1, 0).values())
+        self.assertEqual([1, 0], list(instance.new_dm_particle(0.01,  1, 0, 0,  0, 1, 0).values()))
+        self.assertEqual([2, 0], list(instance.new_dm_particle(0.02, -1, 0, 0,  0,-1, 0).values()))
         self.assertEqual(-3, instance.get_mass(1)['__result'])
         self.assertEqual(0, instance.commit_particles())
 
@@ -117,7 +117,7 @@ class TestGadget2Interface(TestWithMPI):
             self.assertAlmostEqual(result,expected)
         
         self.assertEqual(0, instance.set_state(1, 0.01, 1,2,3, 4,5,6))
-        self.assertEqual([0.01, 1.0,2.0,3.0, 4.0,5.0,6.0, 0], instance.get_state(1).values())
+        self.assertEqual([0.01, 1.0,2.0,3.0, 4.0,5.0,6.0, 0], list(instance.get_state(1).values()))
 
         self.assertEqual(0, instance.evolve_model(0.01))
         mass, result = instance.get_mass(1)
@@ -157,8 +157,8 @@ class TestGadget2Interface(TestWithMPI):
             vx[:first_half],vy[:first_half],vz[:first_half],u[:first_half])
         self.assertEqual([0 for i in range(first_half)], list(results))
         self.assertEqual([i+1 for i in range(first_half)], list(indices))
-        self.assertEqual([number_of_particles/2+1, 0], instance.new_dm_particle(0.01,  1, 0, 0,  0, 1, 0).values())
-        self.assertEqual([number_of_particles/2+2, 0], instance.new_dm_particle(0.02, -1, 0, 0,  0,-1, 0).values())
+        self.assertEqual([number_of_particles/2+1, 0], list(instance.new_dm_particle(0.01,  1, 0, 0,  0, 1, 0).values()))
+        self.assertEqual([number_of_particles/2+2, 0], list(instance.new_dm_particle(0.02, -1, 0, 0,  0,-1, 0).values()))
         indices, results = instance.new_sph_particle(mass[first_half:],x[first_half:],y[first_half:],z[first_half:],
             vx[first_half:],vy[first_half:],vz[first_half:],u[first_half:])
         self.assertEqual([0 for i in range(number_of_particles-first_half)], list(results))
@@ -166,7 +166,7 @@ class TestGadget2Interface(TestWithMPI):
         self.assertEqual(0, instance.commit_particles())
 
         mass_list = [x for sublist in [mass[:first_half], [0.01, 0.02], mass[first_half:]] for x in sublist]
-        first_index, result = instance.get_index_of_first_particle().values()
+        first_index, result = list(instance.get_index_of_first_particle().values())
         self.assertEqual([1, 0], [first_index, result])
         for i in range(first_index, number_of_particles+2):
             index, result = instance.get_index_of_next_particle(i)
@@ -191,21 +191,21 @@ class TestGadget2Interface(TestWithMPI):
         indices, results = instance.new_sph_particle(mass,x,y,z,vx,vy,vz,u)
         self.assertEqual([0 for i in range(number_of_particles)], list(results))
         self.assertEqual([i+1 for i in range(number_of_particles)], list(indices))
-        self.assertEqual([number_of_particles+1, 0], instance.new_dm_particle(0.01,  1, 0, 0,  0, 1, 0).values())
-        self.assertEqual([number_of_particles+2, 0], instance.new_dm_particle(0.02, -1, 0, 0,  0,-1, 0).values())
+        self.assertEqual([number_of_particles+1, 0], list(instance.new_dm_particle(0.01,  1, 0, 0,  0, 1, 0).values()))
+        self.assertEqual([number_of_particles+2, 0], list(instance.new_dm_particle(0.02, -1, 0, 0,  0,-1, 0).values()))
         self.assertEqual(0, instance.commit_particles())
         self.assertEqual(0, instance.evolve_model(0.001))
         self.assertEqual(0, instance.delete_particle(number_of_particles-1))
         self.assertEqual(0, instance.delete_particle(number_of_particles+1))
         self.assertEqual(-3, instance.delete_particle(number_of_particles-1))
         indices, results = instance.new_sph_particle(mass,x,y,z,vx,vy,vz,u)
-        self.assertEqual([2*number_of_particles+3, 0], instance.new_dm_particle(0.02, -1, 0, 0,  0,-1, 0).values())
+        self.assertEqual([2*number_of_particles+3, 0], list(instance.new_dm_particle(0.02, -1, 0, 0,  0,-1, 0).values()))
         self.assertEqual(0, instance.recommit_particles())
         mass_list = [x for sublist in [mass[:number_of_particles-2], [mass[number_of_particles-1], 0.02],
             mass, [0.02]] for x in sublist]
-        index_list = [x for sublist in [range(1,number_of_particles-1), [number_of_particles],
-            range(number_of_particles+2,2*number_of_particles+4)] for x in sublist]
-        index, result = instance.get_index_of_first_particle().values()
+        index_list = [x for sublist in [list(range(1,number_of_particles-1)), [number_of_particles],
+            list(range(number_of_particles+2,2*number_of_particles+4))] for x in sublist]
+        index, result = list(instance.get_index_of_first_particle().values())
         self.assertEqual([index_list[0], 0], [index, result])
         for i in range(1, 2*number_of_particles+1):
             index, result = instance.get_index_of_next_particle(index)
@@ -224,7 +224,7 @@ class TestGadget2Interface(TestWithMPI):
         self.assertEqual(0, instance.set_gadget_output_directory(instance.get_output_directory()))
         self.assertEqual(0, instance.commit_parameters())
         for i in range(1,10):
-            self.assertEqual([i, 0], instance.new_dm_particle(i*0.01,  i, -i, 0,  -i*10, i*10, 0).values())
+            self.assertEqual([i, 0], list(instance.new_dm_particle(i*0.01,  i, -i, 0,  -i*10, i*10, 0).values()))
         self.assertEqual(0, instance.commit_particles())
         
         for i in range(1,10):
@@ -951,7 +951,7 @@ class TestGadget2(TestWithMPI):
         t_end = (n_timescales * self.default_convert_nbody.to_si(1.0 | nbody_system.time)).as_quantity_in(units.Myr)
         print("Evolving to ("+str(n_timescales), "nbody timescales): ", t_end)
         n_steps = 5
-        times = (t_end * (range(1, n_steps+1)) / (1.0 * n_steps)).as_quantity_in(units.Myr)
+        times = (t_end * (list(range(1, n_steps+1))) / (1.0 * n_steps)).as_quantity_in(units.Myr)
         
         instance = Gadget2(self.default_converter, **default_options)
         instance.parameters.max_size_timestep = t_end
@@ -1007,7 +1007,7 @@ class TestGadget2(TestWithMPI):
         t_end = (n_timescales * self.default_convert_nbody.to_si(1.0 | nbody_system.time)).as_quantity_in(units.Myr)
         print("Evolving to ("+str(n_timescales), "nbody timescales): ", t_end)
         n_steps = 100
-        times = (t_end * (range(1, n_steps+1)) / (1.0 * n_steps)).as_quantity_in(units.Myr)
+        times = (t_end * (list(range(1, n_steps+1))) / (1.0 * n_steps)).as_quantity_in(units.Myr)
         
         instance = Gadget2(self.default_converter, **default_options)
         instance.parameters.max_size_timestep = t_end
