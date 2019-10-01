@@ -493,8 +493,8 @@ class TestAdaptingVectorQuantities(amusetest.TestCase):
     def test6(self):
         x =  6 | units.kg
         y =  5 | units.kg
-        self.assertEqual(x/y, 1) 
-        self.assertEqual(x//y, 1) 
+        self.assertEqual(x/y, 6/5) 
+        self.assertEqual(x//y, 6//5) 
         self.assertEqual(operator.__truediv__(x,y), 1.2)
 
 class TestNumpyFunctionWithUnits(amusetest.TestCase):

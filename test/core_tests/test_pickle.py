@@ -136,7 +136,7 @@ class TestPicklingOfUnitsAndQuantities(amusetest.TestCase):
         env['PYTHONPATH'] = pythonpath
         code = "import pickle;stream = open('{0}', 'rb'); print str(pickle.load(stream));stream.close()".format(path)
         if sys.hexversion > 0x03000000:
-            code = "import pickle;stream = open('{path}', 'rb'); print(str(pickle.load(stream)));stream.close()".format(path)
+            code = "import pickle;stream = open('{0}', 'rb'); print(str(pickle.load(stream)));stream.close()".format(path)
        
         process = subprocess.Popen([
                 sys.executable,
