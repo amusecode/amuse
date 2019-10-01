@@ -119,7 +119,8 @@ def open_subprocess(arguments, stdin=None):
         arguments,
         stdin=subprocess.PIPE,
         stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE
+        stderr=subprocess.PIPE,
+        universal_newlines=True
     )
     stdout, stderr = process.communicate(input=stdin)
     return process, stdout, stderr
