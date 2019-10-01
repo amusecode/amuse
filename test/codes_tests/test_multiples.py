@@ -804,7 +804,7 @@ class TestSimpleMultiples(TestWithMPI):
             resolve_collision_code = self.new_smalln(),
         )
         center_of_mass_particles = datamodel.Particles(5)
-        center_of_mass_particles.position = (numpy.asarray(list(range(5)))).reshape(5,1) * ([1.0, 0.0, 0.0] | nbody_system.length)
+        center_of_mass_particles.position = (numpy.asarray(range(5))).reshape(5,1) * ([1.0, 0.0, 0.0] | nbody_system.length)
         center_of_mass_particles.velocity = [0.0, 0.0, 0.0] | nbody_system.speed
         center_of_mass_particles.radius  = 0.05 | nbody_system.length
         binaries, singles_in_binaries = self.create_binaries(
@@ -855,7 +855,7 @@ class TestSimpleMultiples(TestWithMPI):
             resolve_collision_code = self.new_smalln(),
         )
         center_of_mass_particles = datamodel.Particles(5)
-        center_of_mass_particles.position = (numpy.asarray(list(range(5)))).reshape(5,1) * ([1.0, 0.0, 0.0] | nbody_system.length)
+        center_of_mass_particles.position = (numpy.asarray(range(5))).reshape(5,1) * ([1.0, 0.0, 0.0] | nbody_system.length)
         center_of_mass_particles.velocity = [0.0, 0.0, 0.0] | nbody_system.speed
         center_of_mass_particles.radius  = 0.05 | nbody_system.length
         binaries, singles_in_binaries = self.create_binaries(
