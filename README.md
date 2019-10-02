@@ -1,5 +1,6 @@
 # AMUSE: The Astrophysical Multipurpose Software Environment
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3466805.svg)](https://doi.org/10.5281/zenodo.3466805)
+[![PyPI version](https://badge.fury.io/py/amuse.svg)](https://badge.fury.io/py/amuse)
 
 This repository contains the AMUSE software. With AMUSE you can write
 scripts to simulate astrophysical problems in different domains.
