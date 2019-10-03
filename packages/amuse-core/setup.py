@@ -4,6 +4,9 @@ from support.version import version
 from support.classifiers import classifiers
 
 from setuptools import setup, find_packages
+
+import support
+support.use("core_install_mode")
 from support.setup_codes import setup_commands
 
 name = 'amuse-core'
@@ -49,7 +52,7 @@ package_data = {
     ]
 }
 
-# mapping_from_command_name_to_command_class=setup_commands()
+mapping_from_command_name_to_command_class=setup_commands()
 
 setup(
     name=name,
@@ -63,7 +66,7 @@ setup(
     long_description=long_description,
     long_description_content_type=long_description_content_type,
     install_requires=install_requires,
-    # cmdclass=mapping_from_command_name_to_command_class,
+    cmdclass=mapping_from_command_name_to_command_class,
     ext_modules=extensions,
     package_dir={'': 'src'},
     packages=packages,

@@ -42,7 +42,7 @@ from setuptools.command.develop import develop
 
 from subprocess import call, Popen, PIPE, STDOUT
 
-if supportrc["framework_install"]:
+if supportrc["install_mode"] in ["framework"]:
     from .generate_main import generate_main
     from .build_latex import build_latex
     from .run_tests import run_tests
@@ -255,7 +255,10 @@ class CodeCommand(Command):
 
         self.config=None
 
-        if supportrc["framework_install"]:
+        if supportrc["install_mode"] in ["core"]:
+            raise Exception("core install should not get here")
+
+        if supportrc["install_mode"] in ["framework"]:
             try:
                 from . import config
                 self.config=config
@@ -320,7 +323,7 @@ class CodeCommand(Command):
         if 'MSYSCON' in os.environ:
             pass
         else:
-            if not supportrc["framework_install"]:
+            if supportrc["install_mode"] in ["package"]:
                 try:
                     from amuse.support import get_amuse_root_dir
                 except ImportError:
@@ -547,7 +550,7 @@ class CodeCommand(Command):
         if not os.path.exists(self.build_temp):
             self.mkpath(self.build_temp)
 
-        if supportrc["framework_install"]:
+        if supportrc["install_mode"] in ["framework"]:
             configpath=os.path.abspath(os.getcwd())
             self.copy_file(os.path.join(configpath,"config.mk"), self.build_temp) 
             self.copy_file(os.path.join(configpath,"build.py"), self.build_temp) 
@@ -1276,13 +1279,14 @@ def setup_commands():
     if sys.hexversion > 0x03000000:
         mapping_from_command_name_to_command_class['build_py'] = build_py_2to3
     
-    build.sub_commands.append(('build_codes', None))
-    Clean.sub_commands.append(('clean_codes', None))
-    Clean.sub_commands.append(('clean_python', None))
-    Install.sub_commands.append(('install_libraries', None))
-    Develop.sub_commands.append(('build_libraries_in_place', None))
+    if supportrc["install_mode"] in ["framework", "package"]:
+        build.sub_commands.append(('build_codes', None))
+        Clean.sub_commands.append(('clean_codes', None))
+        Clean.sub_commands.append(('clean_python', None))
+        Install.sub_commands.append(('install_libraries', None))
+        Develop.sub_commands.append(('build_libraries_in_place', None))
     
-    if supportrc["framework_install"]:
+    if supportrc["install_mode"] in ["framework"]:
         mapping_from_command_name_to_command_class.update(
             {
                 'configure_codes': ConfigureCodes,

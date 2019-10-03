@@ -1,12 +1,14 @@
-supportrc=dict(framework_install=True, package_name="amuse", allow_build_failures='some')
+supportrc=dict(install_mode="framework", package_name="amuse", allow_build_failures='some')
 
 def use(arg):
-    if arg == "package":
-        supportrc["framework_install"]=True
+    if arg in ["framework_install_mode"):
+        supportrc["install_mode"]="framework"
+    elif arg in ["core_install_mode"]:
+        supportrc["install_mode"]="core"
     else:
-        if arg not in ["system","installed","environment"]:
-            warnings.warn(" assuming framework already installed")
-        supportrc["framework_install"]=False
+        if arg not in ["package_install_mode"]:
+            warnings.warn("package_install_mode: assuming framework already installed")
+        supportrc["install_mode"]="package"
 
 def set_package_name(arg):
     supportrc["package_name"]=arg
