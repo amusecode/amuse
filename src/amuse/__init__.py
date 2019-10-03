@@ -35,7 +35,15 @@ def numpy_fix():
       
 numpy_fix()
 
+class NoConfig(object):
+    def __init__(self, message):
+        self._message=message
+    def __getattr__(self, attr):
+        raise Exception(self._message)
+
 try:
     from . import config
-except:
-    raise ImportError("amuse is not configured correctly")
+except Exception as ex:
+    message="Configuration not read in - or configuration invalid, exception:\n"+str(ex)
+    config=NoConfig(message)
+    
