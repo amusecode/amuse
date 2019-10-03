@@ -1,7 +1,7 @@
 supportrc=dict(install_mode="framework", package_name="amuse", allow_build_failures='some')
 
 def use(arg):
-    if arg in ["framework_install_mode"):
+    if arg in ["framework_install_mode"]:
         supportrc["install_mode"]="framework"
     elif arg in ["core_install_mode"]:
         supportrc["install_mode"]="core"
