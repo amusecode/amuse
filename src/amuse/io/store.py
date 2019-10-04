@@ -154,7 +154,7 @@ class HDF5FileFormatProcessor(base.FileFormatProcessor):
     def version(self):
         """AMUSE storage version to use, needs to be >= '2.0' if you want
         to store links between particles and grids (default: '1.0')"""
-        return '1.0'
+        return '2.0'
 
     @base.format_option
     def return_working_copy(self):
