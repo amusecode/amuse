@@ -20,6 +20,7 @@ install_requires = [
     'nose>=0.11.1',
     'mpi4py>=1.1.0',
     'h5py>=1.1.0',
+    'amuse-core>=12.1.0',
 ]
 description = 'The Astrophysical Multipurpose Software Environment'
 with open("README.md", "r") as fh:
@@ -31,7 +32,8 @@ extensions = []
 all_data_files = []
 all_data_files.append(('share/amuse', ['./config.mk', './build.py']))
 
-packages = find_packages('src', exclude=["amuse.community.*"])
+#packages = find_packages('src', exclude=["amuse.*"])
+packages=[]
 packages.append("amuse.community.interface")
 
 package_data = {

@@ -5,13 +5,12 @@ include bin/amusifier.in
 include pyproject.toml
 include support/configpy.in
 
-recursive-include src/amuse *
 recursive-include lib *
 recursive-include support *
 
-recursive-exclude src/amuse/community *
+recursive-exclude src/amuse *
 
-include src/amuse/community/__init__.py
+include src/amuse/__init__.py
 recursive-include src/amuse/community/interface *
 
 recursive-exclude src *.pyc *.o *~ .pc ccache *.a *.so *.mod
