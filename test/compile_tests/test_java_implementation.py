@@ -352,7 +352,8 @@ class ForTesting(InCodeComponentImplementation):
 
 class TestInterface(TestWithMPI):
     
-    def check_not_in_mpiexec(self):
+    @classmethod
+    def check_not_in_mpiexec(cls):
         """
         The tests will fork another process, if the test run 
         is itself an mpi process, the tests may fail.
@@ -363,10 +364,10 @@ class TestInterface(TestWithMPI):
         if 'HYDI_CONTROL_FD' in os.environ:
             return # can run in modern mpiexec.hydra                 
         if 'HYDRA_CONTROL_FD' in os.environ or 'PMI_FD' in os.environ:
-            self.skip('cannot run the socket tests under mpi process manager')
+            cls.skip('cannot run the socket tests under mpi process manager')
          
-    
-    def check_has_java(self):
+    @classmethod
+    def check_has_java(cls):
         """
         The tests will fork another process, if the test run 
         is itself an mpi process, the tests may fail.
@@ -376,21 +377,21 @@ class TestInterface(TestWithMPI):
         """
                  
         if not config.java.is_enabled:
-            self.skip("java not enabled")
+            cls.skip("java not enabled")
 
         javac = config.java.javac
         if not os.path.exists(javac):
-            self.skip("java compiler not available")         
+            cls.skip("java compiler not available")         
     
-    def setUp(self):
-        self.check_not_in_mpiexec()
-        self.check_has_java()
-        super(TestInterface, self).setUp()
-        self.check_can_compile_modules()
+    @classmethod
+    def setup_class(cls):
+        cls.check_not_in_mpiexec()
+        cls.check_has_java()
+        cls.check_can_compile_modules()
         try:
-            self.exefile=compile_tools.build_java_worker(codestring, self.get_path_to_results(),ForTestingInterface)
+            cls.exefile=compile_tools.build_java_worker(codestring, cls.get_path_to_results(),ForTestingInterface)
         except Exception as ex:
-            print ex
+            print(ex)
             raise
         
     def test1(self):
