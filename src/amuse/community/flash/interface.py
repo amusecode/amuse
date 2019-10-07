@@ -333,23 +333,23 @@ class FlashInterface(CodeInterface, HydrodynamicsInterface):
         
     @legacy_function
     def initialize_restart():
-		function = LegacyFunctionSpecification()
-		function.result_type='i'
-		return function
-		
+        function = LegacyFunctionSpecification()
+        function.result_type='i'
+        return function
+        
     @legacy_function
     def get_restart():
-		function = LegacyFunctionSpecification()
-		function.addParameter('value', dtype='b', direction=function.OUT)
-		function.result_type='i'
-		return function
-		
+        function = LegacyFunctionSpecification()
+        function.addParameter('value', dtype='b', direction=function.OUT)
+        function.result_type='i'
+        return function
+        
     @legacy_function
     def set_restart():
-		function = LegacyFunctionSpecification()
-		function.addParameter('value', dtype='b', direction=function.IN)
-		function.result_type='i'
-		return function
+        function = LegacyFunctionSpecification()
+        function.addParameter('value', dtype='b', direction=function.IN)
+        function.result_type='i'
+        return function
         
     @legacy_function    
     def get_hydro_state_at_point():
