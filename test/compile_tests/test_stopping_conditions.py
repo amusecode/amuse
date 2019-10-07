@@ -237,20 +237,22 @@ class ForTesting(InCodeComponentImplementation):
      
         
 class _AbstractTestInterface(TestWithMPI):
-    def get_libname(self):
+
+    @classmethod
+    def get_libname(cls):
         return "stopcond"
         
-    def setUp(self):
-        super(_AbstractTestInterface, self).setUp()
-        print("building")
-        self.check_can_compile_modules()
-        self.exefile=compile_tools.build_worker(codestring, 
-            self.get_path_to_results(), 
-            self.get_interface_class(), write_header=False, 
-            extra_args=["-L"+get_amuse_root_dir()+"/lib/stopcond", "-l" + self.get_libname()]
+    @classmethod
+    def setup_class(cls):
+        cls.check_can_compile_modules()
+        cls.exefile=compile_tools.build_worker(codestring, 
+            cls.get_path_to_results(), 
+            cls.get_interface_class(), write_header=False, 
+            extra_args=["-L"+get_amuse_root_dir()+"/lib/stopcond", "-l" + cls.get_libname()]
             )
         
-    def get_interface_class(self):
+    @classmethod
+    def get_interface_class(cls):
         return ForTestingInterface
         
 class TestInterface(_AbstractTestInterface):
@@ -371,13 +373,15 @@ class TestInterface(_AbstractTestInterface):
         instance.stop()
     
 class TestInterfaceMP(_AbstractTestInterface):
-    
+
+    @classmethod    
     def get_interface_class(self):
         return ForTestingInterfaceFortranModule
         
     def get_number_of_workers(self):
         return 3
     
+    @classmethod
     def get_libname(self):
         return "stopcondmpi"
         
@@ -559,29 +563,32 @@ class TestInterfaceMP(_AbstractTestInterface):
 
 class _AbstractTestInterfaceFortran(TestWithMPI):
     
-    def get_libname(self):
+    @classmethod
+    def get_libname(cls):
         return 'stopcond'
     
-    def get_mpidir(self):
+    @classmethod
+    def get_mpidir(cls):
         return ''
         
-    def get_codestring(self):
+    @classmethod
+    def get_codestring(cls):
         return CodeStringF
-        
-    def get_interface_class(self):
+
+    @classmethod        
+    def get_interface_class(cls):
         return ForTestingInterface
     
     def get_number_of_workers(self):
         return 1
         
-    def setUp(self):
-        super(_AbstractTestInterfaceFortran, self).setUp()
-        print("building")
-        self.check_can_compile_modules()
-        self.exefile=compile_tools.build_fortran_worker(self.get_codestring(),
-            self.get_path_to_results(), self.get_interface_class(), needs_mpi= True, 
+    @classmethod
+    def setup_class(cls):
+        cls.check_can_compile_modules()
+        cls.exefile=compile_tools.build_fortran_worker(cls.get_codestring(),
+            cls.get_path_to_results(), cls.get_interface_class(), needs_mpi= True, 
             extra_fflags = ["-I","{0}/lib/stopcond".format( get_amuse_root_dir())],
-            extra_ldflags = ["-L{0}/lib/stopcond".format(get_amuse_root_dir()), "-l"+self.get_libname()] )
+            extra_ldflags = ["-L{0}/lib/stopcond".format(get_amuse_root_dir()), "-l"+cls.get_libname()] )
 
 
 class _TestInterfaceFortranSingleProcess(_AbstractTestInterfaceFortran):
@@ -701,40 +708,50 @@ class _TestInterfaceFortranSingleProcess(_AbstractTestInterfaceFortran):
 
 class TestInterfaceFortran(_TestInterfaceFortranSingleProcess):
     
-    def get_libname(self):
+    @classmethod
+    def get_libname(cls):
         return 'stopcond'
-        
-    def get_codestring(self):
+    
+    @classmethod
+    def get_codestring(cls):
         return codestringF
-        
-    def get_interface_class(self):
+
+    @classmethod        
+    def get_interface_class(cls):
         return ForTestingInterface
     
 class TestInterfaceFortranModule(_TestInterfaceFortranSingleProcess):
     
-    def get_libname(self):
+    @classmethod
+    def get_libname(cls):
         return 'stopcond'
-        
-    def get_codestring(self):
+
+    @classmethod        
+    def get_codestring(cls):
         return codestringFModule
-        
-    def get_interface_class(self):
+
+    @classmethod        
+    def get_interface_class(cls):
         return ForTestingInterfaceFortranModule
     
 class TestInterfaceFortranModuleMultiprocess(_AbstractTestInterfaceFortran):
     
-    def get_libname(self):
+    @classmethod
+    def get_libname(cls):
         return 'stopcondmpi'
-        
-    def get_codestring(self):
+
+    @classmethod        
+    def get_codestring(cls):
         return codestringFModule
         
-    def get_interface_class(self):
+    @classmethod
+    def get_interface_class(cls):
         return ForTestingInterfaceFortranModule
     
     def get_number_of_workers(self):
         return 3
     
+    @classmethod
     def get_mpidir(self):
         return ''
         
