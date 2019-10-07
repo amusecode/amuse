@@ -823,6 +823,7 @@ class StoreHDF(object):
             self.hdf5file.flush()
             self.hdf5file.close()
             self.hdf5file = None
+
 class HDF5UnicodeAttribute(HDF5UnitlessAttribute):
     
     def __init__(self, name, dataset):

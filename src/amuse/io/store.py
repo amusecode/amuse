@@ -74,6 +74,17 @@ class HDF5FileFormatProcessor(base.FileFormatProcessor):
                     copy_history = self.copy_history,
                     return_working_copy = self.return_working_copy
                 )
+                if not processor.is_correct_version():
+                
+                    processor.close()
+                    processor = store_v1.StoreHDF(
+                        self.filename, 
+                        open_for_writing = self.allow_writing, 
+                        append_to_file = self.append_to_file, 
+                        copy_history = self.copy_history,
+                    )
+
+
      
         if len(self.names) > 0:
             result = processor.load_sets(self.names)
