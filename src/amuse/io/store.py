@@ -74,6 +74,7 @@ class HDF5FileFormatProcessor(base.FileFormatProcessor):
                     copy_history = self.copy_history,
                     return_working_copy = self.return_working_copy
                 )
+
                 if not processor.is_correct_version():
                 
                     processor.close()

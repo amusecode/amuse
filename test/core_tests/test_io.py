@@ -192,13 +192,37 @@ class FormatTests(amusetest.TestCase):
             os.remove("test_unit.hdf5")
         x = datamodel.Particles(2)
         x.mass = [1.0, 2.0] | units.kg
+        io.write_set_to_file(x, "test_unit.hdf5","hdf5", version="1.0")
+        x.mass = [10.0, 20.0] | units.kg
+        io.write_set_to_file(x, "test_unit.hdf5","hdf5", append_to_file=True, version="1.0")
+        x.mass = [100.0, 200.0] | units.kg
+        io.write_set_to_file(x, "test_unit.hdf5","hdf5", version="1.0")
+        y = io.read_set_from_file("test_unit.hdf5","hdf5")
+        y = y.previous_state() # weirdness for version="1.0"
+        self.assertAlmostEquals(x.mass, y.mass, 8)
+        self.assertAlmostEquals([10.0, 20.0] | units.kg, y.previous_state().mass, 8)
+        self.assertAlmostEquals([1.0, 2.0] | units.kg, y.previous_state().previous_state().mass, 8)
+        self.assertEqual(y.previous_state().previous_state().previous_state(), None)
+        
+        io.write_set_to_file(x, "test_unit.hdf5","hdf5", append_to_file=False, version="1.0")
+        y = io.read_set_from_file("test_unit.hdf5","hdf5")
+        self.assertAlmostEquals(x.mass, y.mass, 8)
+        self.assertEqual(y.previous_state().previous_state(), None)
+        
+        os.remove("test_unit.hdf5")
+
+    def test6b(self):
+        print "Testing HDF5 io, with options, version=2.0"
+        if os.path.exists("test_unit.hdf5"):
+            os.remove("test_unit.hdf5")
+        x = datamodel.Particles(2)
+        x.mass = [1.0, 2.0] | units.kg
         io.write_set_to_file(x, "test_unit.hdf5","hdf5")
         x.mass = [10.0, 20.0] | units.kg
         io.write_set_to_file(x, "test_unit.hdf5","hdf5", append_to_file=True)
         x.mass = [100.0, 200.0] | units.kg
         io.write_set_to_file(x, "test_unit.hdf5","hdf5")
         y = io.read_set_from_file("test_unit.hdf5","hdf5")
-        y = y.previous_state()
         self.assertAlmostEquals(x.mass, y.mass, 8)
         self.assertAlmostEquals([10.0, 20.0] | units.kg, y.previous_state().mass, 8)
         self.assertAlmostEquals([1.0, 2.0] | units.kg, y.previous_state().previous_state().mass, 8)
@@ -207,10 +231,10 @@ class FormatTests(amusetest.TestCase):
         io.write_set_to_file(x, "test_unit.hdf5","hdf5", append_to_file=False)
         y = io.read_set_from_file("test_unit.hdf5","hdf5")
         self.assertAlmostEquals(x.mass, y.mass, 8)
-        self.assertEqual(y.previous_state().previous_state(), None)
+        self.assertEqual(y.previous_state(), None)
         
         os.remove("test_unit.hdf5")
-        
+
     def test7(self):
         print "Testing HDF5 io with a ParticlesSuperset"
         if os.path.exists("test_unit.hdf5"):
