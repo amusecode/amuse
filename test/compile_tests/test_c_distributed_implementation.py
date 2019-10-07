@@ -18,16 +18,17 @@ from . import test_c_implementation
 
 class TestCDistributedImplementationInterface(test_c_implementation.TestCImplementationInterface):
 
-    def setUp(self):
-        self.check_not_in_mpiexec()
-        super(TestCDistributedImplementationInterface, self).setUp()
+    @classmethod
+    def setup_class(cls):
+        cls.check_not_in_mpiexec()
+        super(TestCDistributedImplementationInterface, cls).setup_class()
         #~ print "Setting up distributed code"
         #instance = DistributedAmuse(redirection='none')
-        self.distinstance = self.new_instance_of_an_optional_code(DistributedAmuse)#, redirection='none')
-        self.distinstance.parameters.debug = False
+        cls.distinstance = cls.new_instance_of_an_optional_code(DistributedAmuse)#, redirection='none')
+        cls.distinstance.parameters.debug = False
 
         #~ print "Resources:"
-        #~ print self.distinstance.resources
+        #~ print cls.distinstance.resources
 
         pilot = Pilot()
         pilot.resource_name='local'
@@ -35,19 +36,21 @@ class TestCDistributedImplementationInterface(test_c_implementation.TestCImpleme
         pilot.time= 2|units.hour
         pilot.slots_per_node=2
         pilot.label='local'
-        self.distinstance.pilots.add_pilot(pilot)
+        cls.distinstance.pilots.add_pilot(pilot)
         #~ print "Pilots:"
-        #~ print self.distinstance.pilots
+        #~ print cls.distinstance.pilots
 
         #~ print "Waiting for pilots"
-        self.distinstance.wait_for_pilots()
-        self.distinstance.use_for_all_workers()
+        cls.distinstance.wait_for_pilots()
+        cls.distinstance.use_for_all_workers()
 
-    def tearDown(self):
+    @classmethod
+    def tearDown(cls):
         #~ print "Stopping distributed code"
-        self.distinstance.stop()
+        cls.distinstance.stop()
 
-    def check_not_in_mpiexec(self):
+    @classmethod
+    def check_not_in_mpiexec(cls):
         """
         The tests will fork another process, if the test run
         is itself an mpi process, the tests may fail. 
@@ -58,7 +61,8 @@ class TestCDistributedImplementationInterface(test_c_implementation.TestCImpleme
         if 'HYDI_CONTROL_FD' in os.environ:
             return
         if 'HYDRA_CONTROL_FD' in os.environ or 'PMI_FD' in os.environ:
-            self.skip('cannot run the socket tests under hydra process manager')
+            cls.skip('cannot run the socket tests under hydra process manager')
+
     def test22(self):
         self.skip("this test uses mpi internals, skip here")
 

@@ -266,12 +266,12 @@ class TestWithMPI(TestCase):
                 raise
             self.skip("Tried to instantiate a new object of the code with type '{0}', but this code is not available".format(factory))
 
-
-    def new_instance_of_an_optional_code(self, factory, *arguments, **kwarguments):
+    @classmethod
+    def new_instance_of_an_optional_code(cls, factory, *arguments, **kwarguments):
         try:
             return factory(*arguments, **kwarguments)
         except Exception as message:
-            self.skip("Tried to instantiate a new object of the optional code with type '{0}', but this code is not available".format(factory))
+            cls.skip("Tried to instantiate a new object of the optional code with type '{0}', but this code is not available".format(factory))
 
 
     @staticmethod
