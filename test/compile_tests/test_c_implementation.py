@@ -363,7 +363,7 @@ class TestCImplementationInterface(TestWithMPI):
 
     @classmethod
     def setup_class(cls):
-        print("building...", end=' ')
+        print("building...")
         cls.check_can_compile_modules()
         try:
             cls.exefile = compile_tools.build_worker(codestring, cls.get_path_to_results(), ForTestingInterface)

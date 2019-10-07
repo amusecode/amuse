@@ -22,19 +22,22 @@ class ForTesting(InCodeComponentImplementation):
 
 
 class TestInterface(TestWithMPI):
-        
-    def setUp(self):
-        super(TestInterface, self).setUp()
+
+    @classmethod
+    def setup_class(cls):
         print("building")
-        self.check_can_compile_modules()
-        self.check_fortran_version()
-        self.check_not_in_mpiexec()
-        self.exefile=compile_tools.build_fortran_worker(codestring, self.get_path_to_results(), ForTestingInterface)
+        cls.check_can_compile_modules()
+        cls.check_fortran_version()
+        cls.check_not_in_mpiexec()
+        cls.exefile=compile_tools.build_fortran_worker(codestring, cls.get_path_to_results(), ForTestingInterface)
+        print("done")
         
+    @classmethod
     def check_fortran_version(self):
         pass
         
-    def check_not_in_mpiexec(self):
+    @classmethod
+    def check_not_in_mpiexec(cls):
         """
         The tests will fork another process, if the test run
         is itself an mpi process, the tests may fail. 
@@ -45,7 +48,7 @@ class TestInterface(TestWithMPI):
         if 'HYDI_CONTROL_FD' in os.environ:
             return # can run in modern mpiexec.hydra
         if 'HYDRA_CONTROL_FD' in os.environ or 'PMI_FD' in os.environ:
-            self.skip('cannot run the socket tests under hydra process manager')
+            cls.skip('cannot run the socket tests under hydra process manager')
     
         
     def test1(self):
