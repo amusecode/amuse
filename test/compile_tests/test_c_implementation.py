@@ -361,12 +361,12 @@ class ForTesting(InCodeComponentImplementation):
 
 class TestCImplementationInterface(TestWithMPI):
 
-    def setUp(self):
-        super(TestCImplementationInterface, self).setUp()
+    @classmethod
+    def setup_class(cls):
         print("building...", end=' ')
-        self.check_can_compile_modules()
+        cls.check_can_compile_modules()
         try:
-            self.exefile = compile_tools.build_worker(codestring, self.get_path_to_results(), ForTestingInterface)
+            cls.exefile = compile_tools.build_worker(codestring, cls.get_path_to_results(), ForTestingInterface)
         except Exception as ex:
             print(ex)
             raise

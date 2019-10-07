@@ -224,8 +224,8 @@ class TestCase(unittest.TestCase):
         finally:
             result.stopTest(self)
 
-
-    def skip(self, reason):
+    @staticmethod
+    def skip(reason):
         try:
             from nose.plugins import skip
             raise skip.SkipTest(reason)
@@ -235,10 +235,12 @@ class TestCase(unittest.TestCase):
             else:
                 raise SkipTest(reason)
 
-    def get_path_to_results(self):
+    @staticmethod
+    def get_path_to_results():
         return get_path_to_results()
 
-    def get_amuse_root_dir(self):
+    @staticmethod
+    def get_amuse_root_dir():
         return get_amuse_root_dir()
 
 
@@ -272,22 +274,22 @@ class TestWithMPI(TestCase):
             self.skip("Tried to instantiate a new object of the optional code with type '{0}', but this code is not available".format(factory))
 
 
-    def can_compile_modules(self):
+    @staticmethod
+    def can_compile_modules():
         return TestDefaults().can_run_tests_to_compile_modules
 
-    def check_can_compile_modules(self):
-        if not self.can_compile_modules():
-            self.skip('will not run tests that compile codes')
+    @classmethod
+    def check_can_compile_modules(cls):
+        if not cls.can_compile_modules():
+            cls.skip('will not run tests that compile codes')
 
+    @classmethod
+    def check_for_mpi(cls):
+        if not cls.is_mpi_enabled():
+            cls.skip('mpi is not enabled')
 
-    def check_for_mpi(self):
-        if not self.is_mpi_enabled():
-            self.skip('mpi is not enabled')
-
-
-
-
-    def is_mpi_enabled(self):
+    @staticmethod
+    def is_mpi_enabled():
         try:
             from amuse import config
             if hasattr(config,'mpi'):
