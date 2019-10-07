@@ -124,12 +124,12 @@ class ForTestingWithState(ForTesting):
 
 class TestASync(TestWithMPI):
 
-    def setUp(self):
-        super(TestASync, self).setUp()
-        print("building...", end=' ')
-        self.check_can_compile_modules()
+    @classmethod
+    def setup_class(cls):
+        print("building...")
+        cls.check_can_compile_modules()
         try:
-            self.exefile = compile_tools.build_worker(codestring, self.get_path_to_results(), ForTestingInterface)
+            cls.exefile = compile_tools.build_worker(codestring, cls.get_path_to_results(), ForTestingInterface)
         except Exception as ex:
             print(ex)
             raise
@@ -823,15 +823,15 @@ class TestASync(TestWithMPI):
 
 class TestASyncDistributed(TestASync):
 
-    def setUp(self):
-        self.check_not_in_mpiexec()
-        super(TestASyncDistributed, self).setUp()
-        #instance = DistributedAmuse(redirection='none')
-        self.distinstance = self.new_instance_of_an_optional_code(DistributedAmuse)#, redirection='none')
-        self.distinstance.parameters.debug = False
+    @classmethod
+    def setup_class(cls):
+        cls.check_not_in_mpiexec()
+        super(TestASyncDistributed, cls).setup_class()
+        cls.distinstance = cls.new_instance_of_an_optional_code(DistributedAmuse)#, redirection='none')
+        cls.distinstance.parameters.debug = False
 
         #~ print "Resources:"
-        #~ print self.distinstance.resources
+        #~ print cls.distinstance.resources
 
         pilot = Pilot()
         pilot.resource_name='local'
@@ -839,19 +839,21 @@ class TestASyncDistributed(TestASync):
         pilot.time= 2|units.hour
         pilot.slots_per_node=8
         pilot.label='local'
-        self.distinstance.pilots.add_pilot(pilot)
+        cls.distinstance.pilots.add_pilot(pilot)
         #~ print "Pilots:"
-        #~ print self.distinstance.pilots
+        #~ print cls.distinstance.pilots
 
         #~ print "Waiting for pilots"
-        self.distinstance.wait_for_pilots()
-        self.distinstance.use_for_all_workers()
+        cls.distinstance.wait_for_pilots()
+        cls.distinstance.use_for_all_workers()
 
-    def tearDown(self):
+    @classmethod
+    def tearDown(cls):
         #~ print "Stopping distributed code"
-        self.distinstance.stop()
+        cls.distinstance.stop()
 
-    def check_not_in_mpiexec(self):
+    @classmethod
+    def check_not_in_mpiexec(cls):
         """
         The tests will fork another process, if the test run
         is itself an mpi process, the tests may fail. 
@@ -862,6 +864,6 @@ class TestASyncDistributed(TestASync):
         if 'HYDI_CONTROL_FD' in os.environ:
             return
         if 'HYDRA_CONTROL_FD' in os.environ or 'PMI_FD' in os.environ:
-            self.skip('cannot run the socket tests under hydra process manager')
+            cls.skip('cannot run the socket tests under hydra process manager')
 
 
