@@ -408,12 +408,12 @@ def new_structured_grid(shape, cell_corners, cell_positions=None, axes_names = "
               for cc in cell_corners:
                   cp=numpy.zeros(shape) * cc.flat[0]
                   for i in range(2**len(shape)):
-                      slicing=[]
+                      slicing=()
                       for j in range(len(shape)):
                           if i & 2**j:
-                              slicing.append(slice(1,None)) 
+                              slicing+=(slice(1,None),) 
                           else:
-                              slicing.append(slice(None,-1))
+                              slicing+=(slice(None,-1),)
                       cp=cp+cc[slicing]              
                   cell_positions.append(cp/2**len(shape))          
 
