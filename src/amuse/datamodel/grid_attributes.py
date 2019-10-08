@@ -97,14 +97,14 @@ def points(grid):
     result = numpy.zeros(shape_with_boundary)* cell_centers.flat[0]
     
     for i in range(2**len(shape)):
-        slicing=[]
+        slicing=()
         offset=[]
         for j in range(len(shape)):
             if i & 2**j:
-                slicing.append(slice(1,None)) 
+                slicing+=(slice(1,None),) 
                 offset.append(1)
             else:
-                slicing.append(slice(None,-1))
+                slicing+=(slice(None,-1),)
                 offset.append(-1)
                         
         result[slicing]=cell_centers+dx*numpy.asarray(offset)    
@@ -127,19 +127,19 @@ def connectivity(grid):
     result = numpy.zeros(shape, dtype = numpy.int)
 
     for i in range(2**dim):
-        slicing1=[]
-        slicing2=[]
+        slicing1=()
+        slicing2=()
         for j in range(dim):
             if i & 2**j:
-                slicing2.append(slice(1,None)) 
+                slicing2+=(slice(1,None),) 
                 if len(slicing1) == 0 or slicing1[-1] is not Ellipsis:
-                    slicing1.append(Ellipsis)
+                    slicing1+=(Ellipsis,)
             else:
-                slicing2.append(slice(None,-1))
+                slicing2+=(slice(None,-1),)
                 if len(slicing1) == 0 or slicing1[-1] is not Ellipsis:
-                    slicing1.append(Ellipsis)
+                    slicing1+=(Ellipsis,)
 
-        slicing1.append(i)
+        slicing1+=(i,)
 
         result[slicing1]=indices[slicing2]    
 

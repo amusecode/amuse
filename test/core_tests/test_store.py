@@ -956,8 +956,8 @@ class TestStoreHDFV2(_AbstractTestStoreHDF):
         
         attributes = loaded_particles.collection_attributes
         self.assertAlmostRelativeEquals(attributes.particle.mass, loaded_particles[1].mass)
-        self.assertAlmostRelativeEquals(attributes.particle.key, loaded_particles[1].key)
-        self.assertEqual(id(attributes.particles), id(loaded_particles))
+        self.assertEquals(attributes.particle.key, loaded_particles[1].key)
+        self.assertEquals(id(attributes.particles), id(loaded_particles))
         self.assertAlmostRelativeEquals(attributes.gridpoint.y, 1.0 | units.km)
         self.assertAlmostRelativeEquals(attributes.grid[0][0].y, 1.0 | units.km)
 

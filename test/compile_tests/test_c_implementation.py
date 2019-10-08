@@ -762,7 +762,7 @@ class TestCImplementationInterface(TestWithMPI):
         x.stop()
         
     def test32(self):
-        for i in range(100):
+        for i in range(5):
           instance = ForTestingInterface(self.exefile)
           instance.stop()
 
