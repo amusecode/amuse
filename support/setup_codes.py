@@ -15,8 +15,12 @@ try:
 except ImportError:
     warnings.warn( "numpy etc needed during build; operation may fail" )
 
-import configparser
-from io import StringIO
+try:
+    import configparser
+    from io import StringIO
+except ImportError:
+    import ConfigParser as configparser
+    from StringIO import StringIO
 
 from stat import ST_MODE
 from distutils import sysconfig
