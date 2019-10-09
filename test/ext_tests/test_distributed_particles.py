@@ -21,10 +21,12 @@ try:
 except ImportError:
     MPI = None
     
+import base64
+
 def dump_and_encode(x):
-  return pickle.dumps(x,0) # -1 does not work with sockets channel
+  return base64.b64encode(pickle.dumps(x,0)).decode("ascii") # -1 does not work with sockets channel
 def decode_and_load(x):
-  return pickle.loads(x.encode("latin-1"))
+  return pickle.loads(base64.b64decode(x.encode("ascii")))
 
 class DistributedParticlesInterface(PythonCodeInterface):
     
@@ -42,7 +44,7 @@ class DistributedParticlesInterface(PythonCodeInterface):
     @legacy_function
     def do_init():
         function = LegacyFunctionSpecification()  
-        function.addParameter('input', dtype='int64', direction=function.IN)
+        function.addParameter('size', dtype='int64', direction=function.IN)
         function.addParameter('reference_out', dtype='int64', direction=function.OUT)
         function.result_type = 'int32'
         return function
@@ -50,7 +52,7 @@ class DistributedParticlesInterface(PythonCodeInterface):
     @legacy_function
     def do_set_attribute():
         function = LegacyFunctionSpecification()  
-        function.addParameter('reference_in', dtype='int64', direction=function.IN)
+        function.addParameter('reference', dtype='int64', direction=function.IN)
         function.addParameter('name_of_the_attribute', dtype='string', direction=function.IN)
         function.addParameter('pickled_value', dtype='string', direction=function.IN)
         function.result_type = 'int32'
@@ -59,9 +61,9 @@ class DistributedParticlesInterface(PythonCodeInterface):
     @legacy_function
     def do_get_attribute():
         function = LegacyFunctionSpecification()  
-        function.addParameter('reference_in', dtype='int64', direction=function.IN)
+        function.addParameter('reference', dtype='int64', direction=function.IN)
         function.addParameter('name_of_the_attribute', dtype='string', direction=function.IN)
-        function.addParameter('pickled_value', dtype='string', direction=function.OUT)
+        function.addParameter('output', dtype='string', direction=function.OUT)
         function.result_type = 'int32'
         return function
         
@@ -70,8 +72,8 @@ class DistributedParticlesInterface(PythonCodeInterface):
         function = LegacyFunctionSpecification()  
         function.addParameter('reference_in', dtype='int64', direction=function.IN)
         function.addParameter('pickled_index', dtype='string', direction=function.IN)
-        function.addParameter('is_particle', dtype='bool', direction=function.OUT)
-        function.addParameter('reference', dtype='int64', direction=function.OUT)
+        function.addParameter('is_particle_out', dtype='bool', direction=function.OUT)
+        function.addParameter('reference_out', dtype='int64', direction=function.OUT)
         function.result_type = 'int32'
         return function
 
@@ -151,7 +153,8 @@ class DistributedParticles(object):
         )
         
     def __getattr__(self, name_of_the_attribute):
-        return decode_and_load(self.code.do_get_attribute(self.reference,name_of_the_attribute))
+        result=self.code.do_get_attribute(self.reference,name_of_the_attribute)
+        return decode_and_load(result)
         
     def __getitem__(self, index):
         is_particle, reference = self.code.do_getitem(
@@ -230,7 +233,7 @@ class DistributedParticlesImplementation(object):
         self.mpi_comm = MPI.COMM_WORLD
         self.rank =  MPI.COMM_WORLD.Get_rank()
         self.number_of_processes = MPI.COMM_WORLD.Get_size()
-        local_size  = size / self.number_of_processes 
+        local_size  = size // self.number_of_processes 
         left_over = size - (local_size * self.number_of_processes)
         if self.rank == 0:
             local_size += left_over
@@ -440,7 +443,7 @@ class DistributedParticlesImplementation(object):
         return 0        
 
     def read_set_from_file(self, reference_in, filenames_in, fileformat):
-        ceil=lambda x,y: (x/y+(x%y>0))
+        ceil=lambda x,y: (x//y+(x%y>0))
         
         filenames=decode_and_load(filenames_in)
         if reference_in!=0:
@@ -559,6 +562,7 @@ class TestDistributedParticles(TestWithMPI):
         y.mass = 10 | units.MSun
         self.assertEqual(y.mass, 10 | units.MSun)
         self.assertEqual(x.mass, [1,10,3]| units.MSun)
+
         
     def test5(self):
         x = DistributedParticles(
