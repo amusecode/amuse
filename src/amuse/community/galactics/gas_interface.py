@@ -266,7 +266,7 @@ class GaslactICsImplementation(object):
             
             proc=Popen([os.path.join(self._bin_path, "dbh")], 
                 cwd = self._cwd, stdin = PIPE, stdout = sys.stdout, stderr = sys.stderr)
-            proc.communicate(in_dbh)
+            proc.communicate(in_dbh.encode())
             if proc.returncode==0:
               open(os.path.join(dbh_dir,"dbh.finished"),'a').close()
             else:
@@ -287,7 +287,7 @@ class GaslactICsImplementation(object):
             if self._disk_type_parameter in [1,3]:
               proc=Popen([os.path.join(self._bin_path, "diskdf")], 
                       cwd = self._cwd, stdin = PIPE, stdout = sys.stdout, stderr = sys.stderr)
-              proc.communicate(in_diskdf)
+              proc.communicate(in_diskdf.encode())
               if proc.returncode==0:
                 open(os.path.join(dbh_dir,"diskdf.finished"),'a').close()
               else:
@@ -316,7 +316,7 @@ class GaslactICsImplementation(object):
                 in_disk  = self.generate_in_disk_string()
                 process = Popen([os.path.join(self._bin_path, "gendisk")], 
                     cwd = self._cwd, stdin = PIPE, stdout = PIPE, stderr = PIPE)
-                out,err=process.communicate(in_disk)
+                out,err=process.communicate(in_disk.encode())
                 if process.returncode != 0:
                     print("error:", err)
                     return -2
@@ -329,7 +329,7 @@ class GaslactICsImplementation(object):
                 in_gas  = self.generate_in_gas_string()
                 process = Popen([os.path.join(self._bin_path, "gengas")], 
                     cwd = self._cwd, stdin = PIPE, stdout = PIPE, stderr = PIPE)
-                out,err=process.communicate(in_gas)
+                out,err=process.communicate(in_gas.encode())
                 if process.returncode != 0:
                     print("error:", err)
                     return -2
@@ -341,7 +341,7 @@ class GaslactICsImplementation(object):
                 in_bulge = self.generate_in_bulge_string()
                 process = Popen([os.path.join(self._bin_path, "genbulge")], 
                     cwd = self._cwd, stdin = PIPE, stdout = PIPE, stderr = PIPE)
-                out,err=process.communicate(in_bulge)
+                out,err=process.communicate(in_bulge.encode())
                 if process.returncode != 0:
                     print("error:", err)
                     return -3 
@@ -353,7 +353,7 @@ class GaslactICsImplementation(object):
                 in_halo  = self.generate_in_halo_string()
                 process = Popen([os.path.join(self._bin_path, "genhalo")], 
                     cwd = self._cwd, stdin = PIPE, stdout = PIPE, stderr = PIPE)
-                out, err = process.communicate(in_halo)
+                out, err = process.communicate(in_halo.encode())
                 if process.returncode != 0:
                     print("error:", err)
                     return -4 
@@ -361,13 +361,13 @@ class GaslactICsImplementation(object):
             else:
                 halo_data=numpy.array([])    
                         
-            self._number_of_particles_updated = len(gas_data)/8+(len(halo_data)+len(bulge_data)+len(disk_data))/7
-            self._number_of_gas_particles_updated = len(gas_data)/8
-            self._number_of_halo_particles=len(halo_data)/7
-            self._number_of_bulge_particles=len(bulge_data)/7
-            self._number_of_disk_particles=len(disk_data)/7
-            self._number_of_gas_particles=len(gas_data)/8
-            gas_posdata=gas_data[8*numpy.arange(self._number_of_gas_particles*7)/7]
+            self._number_of_particles_updated = len(gas_data)//8+(len(halo_data)+len(bulge_data)+len(disk_data))//7
+            self._number_of_gas_particles_updated = len(gas_data)//8
+            self._number_of_halo_particles=len(halo_data)//7
+            self._number_of_bulge_particles=len(bulge_data)//7
+            self._number_of_disk_particles=len(disk_data)//7
+            self._number_of_gas_particles=len(gas_data)//8
+            gas_posdata=gas_data[8*numpy.arange(self._number_of_gas_particles*7)//7]
             
             gammafactor=1. if self._gas_disk_gamma==1 else 1/self._gas_disk_gamma/(self._gas_disk_gamma-1)
             self._gas_internal_energy=gammafactor*gas_data[8*numpy.arange(self._number_of_gas_particles)+7]**2

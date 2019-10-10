@@ -109,8 +109,8 @@ class mameclot(LiteratureReferencesMixIn):
  
         print(err)
         
-        outsplit=out.strip().split("\n")
-        errsplit=err.strip().split("\n")
+        outsplit=out.decode().strip().split("\n")
+        errsplit=err.decode().strip().split("\n")
         
         if self.mass_ratio==0:
           nline=errsplit[6].split()

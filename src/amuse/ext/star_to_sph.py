@@ -128,7 +128,7 @@ class StellarModel2SPH(object):
             raise AmuseException("Requested target_core_mass of {0} is out of range.".format(self.target_core_mass))
 
         while max_i - min_i > 1:
-            next_i = (max_i + min_i)/2
+            next_i = (max_i + min_i)//2
             enclosed_mass_edge = interpolator.enclosed_mass[next_i+1]
             enclosed_mass_residual = self.construct_model_with_core(next_i, enclosed_mass_edge, self.gamma)
             if enclosed_mass_residual >= zero:
