@@ -24,9 +24,9 @@ except ImportError:
 import base64
 
 def dump_and_encode(x):
-  return base64.b64encode(pickle.dumps(x,0)).decode("ascii") # -1 does not work with sockets channel
+  return base64.b64encode(pickle.dumps(x)).decode()
 def decode_and_load(x):
-  return pickle.loads(base64.b64decode(x.encode("ascii")))
+  return pickle.loads(base64.b64decode(x.encode()))
 
 class DistributedParticlesInterface(PythonCodeInterface):
     
@@ -36,8 +36,8 @@ class DistributedParticlesInterface(PythonCodeInterface):
     @legacy_function
     def get_length():
         function = LegacyFunctionSpecification()  
-        function.addParameter('reference_in', dtype='int64', direction=function.IN)
-        function.addParameter('output', dtype='int64', direction=function.OUT)
+        function.addParameter('reference', dtype='int64', direction=function.IN)
+        function.addParameter('len_out', dtype='int64', direction=function.OUT)
         function.result_type = 'int32'
         return function
         

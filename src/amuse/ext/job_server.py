@@ -37,10 +37,12 @@ import threading
 from time import sleep
 import warnings
 
+import base64
+
 def dump_and_encode(x):
-  return pickle.dumps(x,0) # -1 does not work with sockets channel
+  return base64.b64encode(pickle.dumps(x)).decode()
 def decode_and_load(x):
-  return pickle.loads(x.encode("latin-1"))
+  return pickle.loads(base64.b64decode(x.encode()))
 
 class RemoteCodeException(Exception):
     def __init__(self,ex=None):
@@ -54,16 +56,16 @@ class RemoteCodeImplementation(object):
      self.scope['dump_and_encode']=dump_and_encode
      self.scope['decode_and_load']=decode_and_load
 
-   def _exec(self,express):
+   def _exec(self,arg):
      try:
-       exec(express, self.scope)
+       exec(arg, self.scope)
        return dump_and_encode(None)
      except Exception as ex:
        return dump_and_encode(RemoteCodeException(ex))
-   def _eval(self,express,argout):
+   def _eval(self,arg,argout):
      try:
-       self.scope.update(dict(express=express))
-       exec("argout="+express, self.scope)
+       self.scope.update(dict(arg=arg))
+       exec("argout="+arg, self.scope)
        argout.value=eval("dump_and_encode(argout)",self.scope)
        return dump_and_encode(None)
      except Exception as ex:
