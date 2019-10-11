@@ -112,7 +112,7 @@ class Sakura(GravitationalDynamics):
         return result
     
     def define_parameters(self, handler):
-        GravitationalDynamics.define_parameters(self, handler)
+        #~ GravitationalDynamics.define_parameters(self, handler)
         self.stopping_conditions.define_parameters(handler)
         
         ####################################################

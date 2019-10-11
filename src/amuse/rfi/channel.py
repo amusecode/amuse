@@ -1146,6 +1146,13 @@ class MpiChannel(AbstractMessageChannel):
         finally:
             self.inuse_semaphore.release()
 
+        if message.error:
+            error_message=message.strings[0] if len(message.strings)>0 else "no error message"
+            if message.call_id != call_id or message.function_id != function_id:
+                self.stop() 
+                error_message+=" - code probably died, sorry."
+            raise exceptions.CodeException("Error in code: " + error_message)
+
         if message.call_id != call_id:
             self.stop()
             raise exceptions.CodeException('Received reply for call id {0} but expected {1}'.format(message.call_id, call_id))
@@ -1153,14 +1160,6 @@ class MpiChannel(AbstractMessageChannel):
             self.stop()
             raise exceptions.CodeException('Received reply for function id {0} but expected {1}'.format(message.function_id, function_id))
         
-        if message.error:
-                logger.info("error message!")
-                raise exceptions.CodeException("Error in code: " + message.strings[0])
-#        if message.tag == -1:
-#            raise exceptions.CodeException("Not a valid message, message is not understood by legacy code")
-#        elif message.tag == -2:
-#            self.stop()
-#            raise exceptions.CodeException("Fatal error in code, code has exited")
         if has_units:
             return message.to_result(handle_as_array), message.encoded_units
         else:
@@ -1173,6 +1172,13 @@ class MpiChannel(AbstractMessageChannel):
             self._is_inuse = False
         
             message = function()
+
+            if message.error:
+                error_message=message.strings[0] if len(message.strings)>0 else "no error message"
+                if message.call_id != call_id or message.function_id != function_id:
+                    self.stop() 
+                    error_message+=" - code probably died, sorry."
+                raise exceptions.CodeException("Error in (asynchronous) communication with worker: " + error_message)
             
             if message.call_id != call_id:
                 self.stop()
@@ -1181,10 +1187,7 @@ class MpiChannel(AbstractMessageChannel):
             if message.function_id != function_id:
                 self.stop()
                 raise exceptions.CodeException('Received reply for function id {0} but expected {1}'.format(message.function_id, function_id))
-            
-            if message.error:
-                raise exceptions.CodeException("Error in (asynchronous) communication with worker: " + message.strings[0])
-                
+                            
             if has_units:
                 return message.to_result(handle_as_array), message.encoded_units
             else:
@@ -1933,6 +1936,13 @@ class SocketChannel(AbstractMessageChannel):
         
         message.receive(self.socket)
 
+        if message.error:
+            error_message=message.strings[0] if len(message.strings)>0 else "no error message"
+            if message.call_id != call_id or message.function_id != function_id:
+                self.stop() 
+                error_message+=" - code probably died, sorry."
+            raise exceptions.CodeException("Error in code: " + error_message)
+
         if message.call_id != call_id:
             self.stop()
             raise exceptions.CodeException('Received reply for call id {0} but expected {1}'.format(message.call_id, call_id))
@@ -1940,10 +1950,6 @@ class SocketChannel(AbstractMessageChannel):
             self.stop()
             raise exceptions.CodeException('Received reply for function id {0} but expected {1}'.format(message.function_id, function_id))
         
-        if message.error:
-            logger.info("error message!")
-            raise exceptions.CodeException("Error in code: " + message.strings[0])
-
         if has_units:
             return message.to_result(handle_as_array), message.encoded_units
         else:
@@ -1958,6 +1964,13 @@ class SocketChannel(AbstractMessageChannel):
             self._is_inuse = False
     
             message = function()
+
+            if message.error:
+                error_message=message.strings[0] if len(message.strings)>0 else "no error message"
+                if message.call_id != call_id or message.function_id != function_id:
+                    self.stop() 
+                    error_message+=" - code probably died, sorry."
+                raise exceptions.CodeException("Error in (asynchronous) communication with worker: " + error_message)
         
             if message.call_id != call_id:
                 self.stop()
@@ -1966,10 +1979,7 @@ class SocketChannel(AbstractMessageChannel):
             if message.function_id != function_id:
                 self.stop()
                 raise exceptions.CodeException('Received reply for function id {0} but expected {1}'.format(message.function_id, function_id))
-        
-            if message.error:
-                raise exceptions.CodeException("Error in (asynchronous) communication with worker: " + message.strings[0])
-        
+                
             if has_units:
                 return message.to_result(handle_as_array), message.encoded_units
             else:
@@ -2261,10 +2271,14 @@ class DistributedChannel(AbstractMessageChannel):
         message = SocketMessage()
         
         message.receive(self.socket)
-        
+
         if message.error:
-            raise exceptions.CodeException("Error in worker: " + message.strings[0])
-        
+            error_message=message.strings[0] if len(message.strings)>0 else "no error message"
+            if message.call_id != call_id or message.function_id != function_id:
+                #~ self.stop() 
+                error_message+=" - code probably died, sorry."
+            raise exceptions.CodeException("Error in worker: " + error_message)
+
         if has_units:
             return message.to_result(handle_as_array), message.encoded_units
         else:
@@ -2280,6 +2294,13 @@ class DistributedChannel(AbstractMessageChannel):
             self._is_inuse = False
         
             message = function()
+
+            if message.error:
+                error_message=message.strings[0] if len(message.strings)>0 else "no error message"
+                if message.call_id != call_id or message.function_id != function_id:
+                    self.stop() 
+                    error_message+=" - code probably died, sorry."
+                raise exceptions.CodeException("Error in (asynchronous) communication with worker: " + error_message)
             
             if message.call_id != call_id:
                 self.stop()
@@ -2288,10 +2309,7 @@ class DistributedChannel(AbstractMessageChannel):
             if message.function_id != function_id:
                 self.stop()
                 raise exceptions.CodeException('Received reply for function id {0} but expected {1}'.format(message.function_id, function_id))
-        
-            if message.error:
-                raise exceptions.CodeException("Error in (asynchronous) communication with worker: " + message.strings[0])
-        
+                
             if has_units:
                 return message.to_result(handle_as_array), message.encoded_units
             else:
