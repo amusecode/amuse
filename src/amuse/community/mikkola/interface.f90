@@ -111,7 +111,13 @@ FUNCTION get_mass(index_of_the_particle, mass)
   INTEGER :: get_mass
   INTEGER :: index_of_the_particle
   DOUBLE PRECISION :: mass
-  IF ( (.NOT. ALLOCATED(particle_id)) .OR. (particle_id(index_of_the_particle).EQ.-1) ) THEN
+! this condition is split over two if statements (instead of one with or .OR.) since on gfortran 9.1.1
+! this generated an seg fault  
+  IF ( (.NOT. ALLOCATED(particle_id))) THEN
+      get_mass = -1
+      RETURN
+  ENDIF
+  IF ( (particle_id(index_of_the_particle).EQ.-1) ) THEN
       get_mass = -1
       RETURN
   ENDIF
@@ -124,10 +130,15 @@ FUNCTION get_velocity(index_of_the_particle, vx, vy, vz)
   INTEGER :: get_velocity
   INTEGER :: index_of_the_particle
   DOUBLE PRECISION :: vx, vy, vz
-  IF ( (.NOT. ALLOCATED(particle_id)) .OR. (particle_id(index_of_the_particle).EQ.-1) ) THEN
+  IF ( (.NOT. ALLOCATED(particle_id)) ) THEN
       get_velocity = -1
       RETURN
   ENDIF
+  IF ( (particle_id(index_of_the_particle).EQ.-1) ) THEN
+      get_velocity = -1
+      RETURN
+  ENDIF
+
   vx = particle_vx(index_of_the_particle)
   vy = particle_vy(index_of_the_particle)
   vz = particle_vz(index_of_the_particle)
@@ -139,7 +150,11 @@ FUNCTION set_velocity(index_of_the_particle, vx, vy, vz)
   INTEGER :: set_velocity
   INTEGER :: index_of_the_particle
   DOUBLE PRECISION :: vx, vy, vz
-  IF ( (.NOT. ALLOCATED(particle_id)) .OR. (particle_id(index_of_the_particle).EQ.-1) ) THEN
+  IF ( (.NOT. ALLOCATED(particle_id)) ) THEN
+      set_velocity = -1
+      RETURN
+  ENDIF
+  IF ( (particle_id(index_of_the_particle).EQ.-1) ) THEN
       set_velocity = -1
       RETURN
   ENDIF
@@ -154,7 +169,11 @@ FUNCTION get_position(index_of_the_particle, x, y, z)
   INTEGER :: get_position
   INTEGER :: index_of_the_particle
   DOUBLE PRECISION :: x, y, z
-  IF ( (.NOT. ALLOCATED(particle_id)) .OR. (particle_id(index_of_the_particle).EQ.-1) ) THEN
+  IF ( (.NOT. ALLOCATED(particle_id)) ) THEN
+      get_position = -1
+      RETURN
+  ENDIF
+  IF ( (particle_id(index_of_the_particle).EQ.-1) ) THEN
       get_position = -1
       RETURN
   ENDIF
@@ -169,7 +188,11 @@ FUNCTION set_position(index_of_the_particle, x, y, z)
   INTEGER :: set_position
   INTEGER :: index_of_the_particle
   DOUBLE PRECISION :: x, y, z
-  IF ( (.NOT. ALLOCATED(particle_id)) .OR. (particle_id(index_of_the_particle).EQ.-1) ) THEN
+  IF ( (.NOT. ALLOCATED(particle_id)) ) THEN
+      set_position = -1
+      RETURN
+  ENDIF
+  IF ( (particle_id(index_of_the_particle).EQ.-1) ) THEN
       set_position = -1
       RETURN
   ENDIF
@@ -185,7 +208,11 @@ FUNCTION get_state(index_of_the_particle, mass, x, y, z, vx, vy,  &
   INTEGER :: get_state
   INTEGER :: index_of_the_particle
   DOUBLE PRECISION :: mass, radius, x, y, z, vx, vy, vz
-  IF ( (.NOT. ALLOCATED(particle_id)) .OR. (particle_id(index_of_the_particle).EQ.-1) ) THEN
+  IF ( (.NOT. ALLOCATED(particle_id)) ) THEN
+      get_state = -1
+      RETURN
+  ENDIF
+  IF ( (particle_id(index_of_the_particle).EQ.-1) ) THEN
       get_state = -1
       RETURN
   ENDIF
@@ -206,7 +233,11 @@ FUNCTION set_mass(index_of_the_particle, mass)
   INTEGER :: set_mass
   INTEGER :: index_of_the_particle
   DOUBLE PRECISION :: mass
-  IF ( (.NOT. ALLOCATED(particle_id)) .OR. (particle_id(index_of_the_particle).EQ.-1) ) THEN
+  IF ( (.NOT. ALLOCATED(particle_id)) ) THEN
+      set_mass = -1
+      RETURN
+  ENDIF
+  IF ( (particle_id(index_of_the_particle).EQ.-1) ) THEN
       set_mass = -1
       RETURN
   ENDIF
@@ -466,7 +497,11 @@ FUNCTION delete_particle(index_of_the_particle)
   IMPLICIT NONE
   INTEGER :: delete_particle
   INTEGER :: index_of_the_particle
-  IF ( (.NOT. ALLOCATED(particle_id)) .OR. (particle_id(index_of_the_particle).EQ.-1) ) THEN
+  IF ( (.NOT. ALLOCATED(particle_id)) ) THEN
+      delete_particle = -1
+      RETURN
+  ENDIF
+  IF ( (particle_id(index_of_the_particle).EQ.-1) ) THEN
       delete_particle = -1
       RETURN
   ENDIF
@@ -495,7 +530,11 @@ FUNCTION set_state(index_of_the_particle, mass, x, y, z, vx, vy,  &
   INTEGER :: set_state
   INTEGER :: index_of_the_particle
   DOUBLE PRECISION :: mass, radius, x, y, z, vx, vy, vz
-  IF ( (.NOT. ALLOCATED(particle_id)) .OR. (particle_id(index_of_the_particle).EQ.-1) ) THEN
+  IF ( (.NOT. ALLOCATED(particle_id)) ) THEN
+      set_state = -1
+      RETURN
+  ENDIF
+  IF ( (particle_id(index_of_the_particle).EQ.-1) ) THEN
       set_state = -1
       RETURN
   ENDIF
@@ -592,7 +631,11 @@ FUNCTION get_radius(index_of_the_particle, radius)
   INTEGER :: get_radius
   INTEGER :: index_of_the_particle
   DOUBLE PRECISION :: radius
-  IF ( (.NOT. ALLOCATED(particle_id)) .OR. (particle_id(index_of_the_particle).EQ.-1) ) THEN
+  IF ( (.NOT. ALLOCATED(particle_id)) ) THEN
+      get_radius = -1
+      RETURN
+  ENDIF
+  IF ( (particle_id(index_of_the_particle).EQ.-1) ) THEN
       get_radius = -1
       RETURN
   ENDIF
@@ -605,11 +648,14 @@ FUNCTION set_radius(index_of_the_particle, radius)
   INTEGER :: set_radius
   INTEGER :: index_of_the_particle
   DOUBLE PRECISION :: radius
-  IF ( (.NOT. ALLOCATED(particle_id)) .OR. (particle_id(index_of_the_particle).EQ.-1) ) THEN
+  IF ( (.NOT. ALLOCATED(particle_id)) ) THEN
       set_radius = -1
       RETURN
   ENDIF
-  
+  IF ( (particle_id(index_of_the_particle).EQ.-1) ) THEN
+      set_radius = -1
+      RETURN
+  ENDIF  
   particle_radius(index_of_the_particle) = radius
   set_radius=0
 END FUNCTION
@@ -742,7 +788,12 @@ FUNCTION get_children_of_particle(index_of_the_particle, child1, child2)
   IMPLICIT NONE
   INTEGER :: get_children_of_particle
   INTEGER :: index_of_the_particle, child1, child2
-  IF ( (.NOT. ALLOCATED(particle_id)) .OR. (particle_id(index_of_the_particle).EQ.-1) ) THEN
+  IF ( (.NOT. ALLOCATED(particle_id)) ) THEN
+      child1 = 0
+      child2 = 0
+      RETURN
+  ENDIF
+  IF ( (particle_id(index_of_the_particle).EQ.-1) ) THEN
       get_children_of_particle = -1
       child1 = 0
       child2 = 0
