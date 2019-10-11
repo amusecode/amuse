@@ -16,7 +16,7 @@ class NemoItemType(type):
     def __new__(metaclass, name, bases, dict):
         if 'datatype' in dict:
             if not dict['datatype'] is None:
-                dict['datatype'] = numpy.dtype((dict['datatype'], 1,))
+                dict['datatype'] = numpy.dtype(dict['datatype'])
         result =  type.__new__(metaclass, name, bases, dict)
         if 'typecharacter' in dict:
             metaclass.mapping[dict['typecharacter']] = result
@@ -83,20 +83,20 @@ class AnyItem(NemoItem):
 class CharItem(NemoItem):
     """printable chars"""
     typecharacter = "c"
-    datatype = numpy.character
+    datatype = numpy.byte
     
     def postprocess(self):
         self.data = self.data[:-1].tostring().decode('latin_1')
         
     def preprocess(self):
-        result = numpy.array(list(self.data), numpy.character)
+        result = numpy.array(list(self.data), numpy.byte)
         result = numpy.append(result, '\x00')
         return result
         
 class ByteItem(NemoItem):
     """unprintable chars"""
     typecharacter = "b"
-    datatype = numpy.character
+    datatype = numpy.byte
     
         
     def postprocess(self):
