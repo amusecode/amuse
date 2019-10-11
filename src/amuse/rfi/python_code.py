@@ -229,14 +229,9 @@ class PythonImplementation(object):
                 keyword_arguments = self.new_keyword_arguments_from_message(input_message, index,  specification, input_units)
                 try:
                     result = method(**keyword_arguments)
-                    #~ print("result:", result)
-                    #~ if result < 0:
-                        #~ warnings.warn("result <0 detected: "+str( (result, keyword_arguments) ))
                 except TypeError as ex:
                     warnings.warn("mismatch in python function specification(?): "+str(ex))
                     result = method(*list(keyword_arguments))
-                    #~ if result < 0:
-                        #~ warnings.warn("result <0 detected: list "+str( (result, keyword_arguments) ))
                 self.fill_output_message(output_message, index, result, keyword_arguments, specification, units)
         
             
