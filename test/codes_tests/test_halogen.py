@@ -153,6 +153,7 @@ class HalogenInterfaceTests(TestWithMPI):
         )
         stdoutput = subprocess.Popen(["diff", "test.out", "test_stand_alone.out"], 
             cwd = instance.get_output_directory(), stdout = subprocess.PIPE).communicate()[0]
+        stdoutput=stdoutput.decode()
         self.assertTrue("< N/A (executed by AMUSE)" in stdoutput)
         self.assertTrue("halogen4muse -a 2 -b 5 -c 0 -N 1000 -name test_stand_alone -randomseed 1" in stdoutput)
         
