@@ -940,9 +940,9 @@ class TestSodShocktube(TestWithMPI):
         
         instance=CapreoleInterface()
         instance.initialize_code()
-        instance.setup_mesh(N,N/10,N/10,1.,0.1,0.1)
+        instance.setup_mesh(N,N//10,N//10,1.,0.1,0.1)
         instance.commit_parameters()
-        x,y,z=numpy.indices( (N,N/10,N/10) )
+        x,y,z=numpy.indices( (N,N//10,N//10) )
         x=x.flatten()+1
         y=y.flatten()+1
         z=z.flatten()+1
@@ -954,7 +954,7 @@ class TestSodShocktube(TestWithMPI):
         en=(0.1/(gamma-1))*numpy.ones_like(x)
         instance.set_grid_state(x,y,z,rho,rhvx,rhvy,rhvz,en)
     
-        x,y,z=numpy.indices( (N/2,N/10,N/10) )
+        x,y,z=numpy.indices( (N//2,N//10,N//10) )
         x=x.flatten()+1
         y=y.flatten()+1
         z=z.flatten()+1
