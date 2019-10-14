@@ -85,14 +85,14 @@ class AnyItem(NemoItem):
 class CharItem(NemoItem):
     """printable chars"""
     typecharacter = "c"
-    datatype = numpy.byte
+    datatype = "c"
     
     def postprocess(self):
         self.data = self.data[:-1].tostring().decode('latin_1')
         
     def preprocess(self):
-        result = numpy.array(list(self.data), numpy.byte)
-        result = numpy.append(result, '\x00')
+        result = numpy.array(list(self.data), "c")
+        result = numpy.append(result, b'\x00')
         return result
         
 class ByteItem(NemoItem):
