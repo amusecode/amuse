@@ -491,11 +491,11 @@ class MercuryInterface(CodeInterface, CommonCodeInterface, CodeWithDataDirectori
     def get_rmax():
         """
         Retrieve the maximal radius (rmax) -- heliocentric distance at 
-        which handlers are considered ejected.
+        which objects are considered ejected.
         """
         function = LegacyFunctionSpecification()
         function.addParameter('rmax', dtype='float64', direction=function.OUT,
-            description = "heliocentric distance at which handlers are considered ejected", unit=units.AU)
+            description = "heliocentric distance at which objects are considered ejected", unit=units.AU)
         function.result_type = 'int32'
         return function
         
@@ -503,11 +503,11 @@ class MercuryInterface(CodeInterface, CommonCodeInterface, CodeWithDataDirectori
     def set_rmax():
         """
         Set the maximal radius (rmax) -- heliocentric distance at 
-        which handlers are considered ejected.
+        which objects are considered ejected.
         """
         function = LegacyFunctionSpecification()
         function.addParameter('rmax', dtype='float64', direction=function.IN,
-            description = "heliocentric distance at which handlers are considered ejected", unit=units.AU)
+            description = "heliocentric distance at which objects are considered ejected", unit=units.AU)
         function.result_type = 'int32'
         return function
         
@@ -1498,6 +1498,7 @@ class Mercury(MercuryWayWard):
         handler.add_transition('RUN', 'UPDATE', 'new_central_particle', False)
         handler.add_transition('RUN', 'UPDATE', 'new_orbiter', False)
         handler.add_method('RUN', 'recommit_particles')
+
     def cleanup_code(self):
         self._particles=Particles(0)
         self.model_time=0.|units.s

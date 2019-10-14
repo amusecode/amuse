@@ -72,8 +72,8 @@ class RandomNumberUniqueKeyGenerator(KeyGenerator):
         try:
             minint = -2** ((self.number_of_bits // 2) - 1)
             maxint = 2** ((self.number_of_bits // 2) - 1)
-            low = self.random.random_integers(minint,maxint,length)
-            high = self.random.random_integers(minint,maxint,length)
+            low = self.random.randint(minint,maxint+1,length)
+            high = self.random.randint(minint,maxint+1,length)
             return numpy.array(low + (high << 32), dtype=numpy.uint64)
         except:
              return numpy.array([random.getrandbits(self.number_of_bits) for i in range(length)], dtype='uint64')
