@@ -760,7 +760,7 @@ class TestMercury(TestWithMPI):
 
         mercury.stop()
 
-    def test22(self):
+    def xtest22(self):
         """ collision test hangs or fails if internal collision detection is enabled """
          
         def collision():
@@ -809,8 +809,8 @@ class TestMercury(TestWithMPI):
             
             return sys
   
-        code=Mercury()#debugger="gdb")
-        
+        code=Mercury()
+                
         sys=collision()
         
         code.particles.add_particles(sys)
