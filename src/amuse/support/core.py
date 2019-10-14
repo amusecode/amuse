@@ -2,7 +2,7 @@
 
 """
 import types 
-import collections
+import collections.abc
 import re
 
 def compare_version_strings(version1, version2):
@@ -432,7 +432,7 @@ class CompositeDictionary(object):
         result.mapping = self.mapping.copy()
         return result
             
-class OrderedSet(collections.MutableSet):
+class OrderedSet(collections.abc.MutableSet):
     class Node(object):
         __slots__ = ['key', 'next', 'previous']
         
