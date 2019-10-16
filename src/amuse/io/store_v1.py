@@ -268,6 +268,9 @@ class HDF5LinkedAttribute(HDF5Attribute):
             linked_set = self.loader.load_particles_from_group(referenced_group)
         else:
             linked_set = mapping_from_groupid_to_set[referenced_group.id]
+
+        if indices is None: 
+            indices=slice(None)
         
         keys = self.keys[:][indices]
         mask = self.masked[:][indices]

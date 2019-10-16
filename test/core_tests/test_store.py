@@ -393,8 +393,8 @@ class _AbstractTestStoreHDF(amusetest.TestCase):
         
     def test16(self):
         import h5py
-        print h5py.version.version
-        print h5py
+        #~ print h5py.version.version
+        #~ print h5py
         test_results_path = self.get_path_to_results()
         output_file = os.path.join(test_results_path, "test16"+self.store_version()+".hdf5")
         if os.path.exists(output_file):
@@ -758,6 +758,24 @@ class _AbstractTestStoreHDF(amusetest.TestCase):
 
         self.assertEquals(output.new_attribute, 2 * output.mass)
         
+    def test31(self):
+        test_results_path = self.get_path_to_results()
+        output_file = os.path.join(test_results_path, "test31"+self.store_version()+".h5")
+        if os.path.exists(output_file):
+            os.remove(output_file)
+
+        p=Particles(10)
+        p.mass=numpy.arange(10)
+        q=Particles(3)
+        q[0].link=p[1]
+        q[1].link=p[3]
+        q[2].link=p[4]
+        io.write_set_to_file(q,output_file,"amuse",version=self.store_version())
+        r=io.read_set_from_file(output_file,"amuse")
+        self.assertEqual(len(r.link.shape),1)
+        self.assertEqual(r[0].link.mass,1)
+        self.assertEqual(r[1].link.mass,3)
+        self.assertEqual(r[2].link.mass,4)
 
 
 
@@ -1064,3 +1082,5 @@ class TestStoreHDFV2(_AbstractTestStoreHDF):
 
         os.remove(output_file)
 
+        
+        
