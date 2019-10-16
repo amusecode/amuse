@@ -21,7 +21,7 @@
 //	void idata::advance(real tnext, real eta)
 //
 // OpenMP acceleration in get_partial_acc_and_jerk is for the purpose
-// of illustration/experimentation.  Preferably use GPU acceleration
+// of illustration/experimentation.  Preferable to use GPU acceleration
 // for prediction and j-force calculation.
 
 #include "jdata.h"
@@ -33,8 +33,10 @@ void idata::set_ni(int n)
     const char *in_function = "idata::set_ni";
     if (DEBUG > 2) PRL(in_function);
 
-    if (n > 0) {
+    if (n > 0) {		// remove old array first
+
 	cleanup();
+
 	iid = new int[n];
 	ilist = new int[n];
 	inn = new int[n]();
@@ -65,14 +67,17 @@ void idata::setup()
 {
     const char *in_function = "idata::setup";
     if (DEBUG > 2 && jdat && jdat->mpi_rank == 0) PRL(in_function);
+
     if (jdat) {
-	ti = jdat->system_time;
+	jdat->idat = this;
+	
 	set_ni(jdat->nj);
+
+	ti = jdat->system_time;
 	set_list_all();
 	gather();
 	get_acc_and_jerk();			// set i pot, acc, jerk
 	scatter();				// set j pot, acc, jerk
-	jdat->idat = this;
     } else
 	cout << "idata::setup: jdata pointer is NULL" << endl << flush;
 }
