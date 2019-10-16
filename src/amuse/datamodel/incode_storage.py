@@ -105,6 +105,11 @@ from amuse.datamodel import AttributeStorage
 
 from amuse.rfi.async_request import ASyncRequestSequence, PoolDependentASyncRequest
 
+try:
+    from types import EllipsisType
+except:
+    EllipsisType = type(Ellipsis)
+
 class ParticleMappingMethod(AbstractCodeMethodWrapper):
     def __init__(self, method, attribute_names = None):
         AbstractCodeMethodWrapper.__init__(self, method)
@@ -898,7 +903,7 @@ class InCodeAttributeStorage(AbstractInCodeAttributeStorage):
    
     def get_values_in_store(self, indices_in_the_code, attributes):
 
-        if indices_in_the_code is None:
+        if indices_in_the_code is None or isinstance(indices_in_the_code, EllipsisType):
             indices_in_the_code = self.code_indices
             
         if len(indices_in_the_code) == 0:

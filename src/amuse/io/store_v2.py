@@ -282,6 +282,8 @@ class HDF5LinkedAttribute(HDF5Attribute):
         self.loader = loader
 
     def get_values(self, indices):
+        if indices is None: 
+            indices=slice(None)
         kinds = self.kind_dataset[:][indices]
         references = self.ref_dataset[:][indices]
         keys = self.keys_dataset[:][indices]
