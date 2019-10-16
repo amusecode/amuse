@@ -146,11 +146,6 @@ class Multiples(object):
         self.channel_from_code_to_memory = \
             self.gravity_code.particles.new_channel_to(self._inmemory_particles)
 
-        # FLASH interface needs a channel the other way also.
-        self.channel_from_memory_to_code = \
-            self._inmemory_particles.new_channel_to(self.gravity_code.particles)
-
-        
         self.resolve_collision_code_creation_function \
             = resolve_collision_code_creation_function
         self.kepler = kepler_code
@@ -163,7 +158,7 @@ class Multiples(object):
         if gravity_constant is None:		# default is N-body units
             gravity_constant = nbody_system.G
         
-        self.multiples = Particles()
+        #self.multiples = Particles()		# not used?
         self.gravity_constant = gravity_constant
         self.debug_encounters = False
 
@@ -273,9 +268,6 @@ class Multiples(object):
         for root, tree in self.root_to_tree.iteritems():
             root_particle = root.as_particle_in_set(self._inmemory_particles)
             result.remove_particle(root)
-
-            # This returns a pointer to the actual leaves - Josh.
-
             leaves = tree.get_leafs_subset()
       
             original_star = tree.particle
@@ -286,12 +278,7 @@ class Multiples(object):
             dvx = root_particle.vx - original_star.vx
             dvy = root_particle.vy - original_star.vy
             dvz = root_particle.vz - original_star.vz
-
-            # Note that here we add leaves to another particle set,
-            # and this becomes its own deep copy of leaves.  So
-            # changes to leaves_in_result have no effect on leaves -
-            # Josh.
-
+            
             leaves_in_result = result.add_particles(leaves)
             leaves_in_result.x += dx
             leaves_in_result.y += dy
@@ -299,82 +286,7 @@ class Multiples(object):
             leaves_in_result.vx += dvx
             leaves_in_result.vy += dvy
             leaves_in_result.vz += dvz
-
         return result
-
-    def update_leaves_pos_vel(self):
-
-        # The FLASH interface needs a function that updates the
-        # properties of the leaves from the properties of the
-        # particles in the gravity code - Josh.
-    
-        # NOTE: Unlike multiples.stars, this actually moves the real
-        # leaves, not a copy of the leaf particles.  So tree.particle
-        # also then needs to be updated - Josh.
-
-        local_debug = False
-        self.channel_from_code_to_memory.copy() # update the copy in memory
-                                                # from the gravity code - Josh
-
-        for root, tree in self.root_to_tree.iteritems():
-            root_particle = root.as_particle_in_set(self._inmemory_particles)
-
-            leaves = tree.get_leafs_subset()
-            original_star = tree.particle
-
-            if (local_debug):
-                old_leaves_x = leaves.x
-
-                print "In update_leaves_pos_vel before update."
-                print "Tree pos =", tree.particle.position.in_(units.cm)
-                print "Root pos =", root.position.in_(units.cm)
-                print "Leaf pos =", leaves.position.in_(units.cm)
-
-            dx = root_particle.x - original_star.x
-            dy = root_particle.y - original_star.y
-            dz = root_particle.z - original_star.z
-            dvx = root_particle.vx - original_star.vx
-            dvy = root_particle.vy - original_star.vy
-            dvz = root_particle.vz - original_star.vz
-
-            leaves.x  += dx
-            leaves.y  += dy
-            leaves.z  += dz
-            leaves.vx += dvx
-            leaves.vy += dvy
-            leaves.vz += dvz
-
-            # Update the original particle info stored in
-            # tree.particle - Josh.
-
-            original_star.x = root_particle.x
-            original_star.y = root_particle.y
-            original_star.z = root_particle.z
-
-            original_star.vx = root_particle.vx
-            original_star.vy = root_particle.vy
-            original_star.vz = root_particle.vz
-
-            if (local_debug):
-                new_leaves = tree.get_leafs_subset()
-                leaves_dx  = leaves.x - old_leaves_x
-
-                if (leaves_dx[0].number == 0.0):
-                    print "These leaves aren't moving!"
-                elif (leaves_dx[0].number == dx[0].number):
-                    print "These leaves arrived precisely when they meant to!"
-                else:
-                    print "I have no idea what these damn leaves are doing!"
-                    print "leaves_dx =", leaves_dx
-                    print "dx =", dx
-
-            if (local_debug):
-                print "In update_leaves_pos_vel after update."
-                print "Tree pos =", tree.particle.position.in_(units.cm)
-                print "Root pos =", root.position.in_(units.cm)
-                print "Leaf pos =", leaves.position.in_(units.cm)
-
-        return
 
     def create_binary(self, star1, star2):
 
@@ -923,13 +835,6 @@ class Multiples(object):
 
             max_pert = sorted_perturbations[0]/fac12
             largest_perturbers = [sorted_stars[0]]
-            
-            # This should be replaced with something faster using
-            # numpy, like:
-            #
-            # largest_perturbers = sorted_stars[np.greater(sorted_perturbations,
-            #     0.025*sorted_perturbations[0])] - Josh.
-
             for i in range(1, len(sorted_stars)):
                 if sorted_perturbations[i] > 0.025*sorted_perturbations[0]:
                     largest_perturbers.append(sorted_stars[i])
@@ -1039,11 +944,6 @@ class Multiples(object):
         # 3. Create a particle set to perform the close encounter
         #    calculation.
 
-        # Note this has to delete the root_to_tree particle in
-        # multiples as we have no idea what the end product of the
-        # encounter will be.  So deleting in expand_encounter really
-        # is a feature, not a bug.  Don't mess with it! - Josh
-        
         particles_in_encounter, Emul_init \
                 = self.expand_encounter(scattering_stars)
 
@@ -1608,13 +1508,6 @@ class Multiples(object):
                 multiples_particles.id 
             
         # 7d. Store all trees in memory for later reference.
-
-        # Note this is actually where the trees get added to the
-        # multiples module, and is the appropriate place to modify any
-        # of the leaves / roots in the module.  Also this is what was
-        # getting deleted in a call to expand encounter, but
-        # unmodified in a call to stars - Josh.
-        
         for tree in binaries.iter_binary_trees():
             self.root_to_tree[tree.particle] = tree.copy()
 
