@@ -44,6 +44,7 @@ myr = named('million year', 'Myr', 1000000 * yr)
 Myr = myr
 gyr = named('giga (billion) year', 'Gyr', 1000000000 * yr)
 Gyr = gyr
+pc = parsec
 
 # cgs units
 g = named('gram','g', 1e-3 * kg)
