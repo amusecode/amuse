@@ -1242,7 +1242,9 @@ def as_vector_quantity(value):
     if is_quantity(value): 
         return value
     else:
-        if isinstance(value, __array_like):
+        if isinstance(value, numpy.ndarray) and  numpy.issubdtype(value.dtype, numpy.number):
+            return new_quantity(value, none)
+        if isinstance(value, __array_like): # its not a homogeneous numpy array, this can be slow
             result = AdaptingVectorQuantity()
             for subvalue in value:
                 result.append(as_vector_quantity(subvalue))
