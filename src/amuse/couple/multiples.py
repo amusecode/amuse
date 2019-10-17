@@ -316,7 +316,7 @@ class Multiples(object):
         self.channel_from_code_to_memory.copy() # update the copy in memory
                                                 # from the gravity code - Josh
 
-        for root, tree in self.root_to_tree.iteritems():
+        for root, tree in self.root_to_tree.items():
             root_particle = root.as_particle_in_set(self._inmemory_particles)
 
             leaves = tree.get_leafs_subset()
@@ -325,10 +325,10 @@ class Multiples(object):
             if (local_debug):
                 old_leaves_x = leaves.x
 
-                print "In update_leaves_pos_vel before update."
-                print "Tree pos =", tree.particle.position.in_(units.cm)
-                print "Root pos =", root.position.in_(units.cm)
-                print "Leaf pos =", leaves.position.in_(units.cm)
+                print("In update_leaves_pos_vel before update.")
+                print("Tree pos =", tree.particle.position.in_(units.cm))
+                print("Root pos =", root.position.in_(units.cm))
+                print("Leaf pos =", leaves.position.in_(units.cm))
 
             dx = root_particle.x - original_star.x
             dy = root_particle.y - original_star.y
@@ -360,19 +360,19 @@ class Multiples(object):
                 leaves_dx  = leaves.x - old_leaves_x
 
                 if (leaves_dx[0].number == 0.0):
-                    print "These leaves aren't moving!"
+                    print("These leaves aren't moving!")
                 elif (leaves_dx[0].number == dx[0].number):
-                    print "These leaves arrived precisely when they meant to!"
+                    print("These leaves arrived precisely when they meant to!")
                 else:
-                    print "I have no idea what these damn leaves are doing!"
-                    print "leaves_dx =", leaves_dx
-                    print "dx =", dx
+                    print("I have no idea what these damn leaves are doing!")
+                    print("leaves_dx =", leaves_dx)
+                    print("dx =", dx)
 
             if (local_debug):
-                print "In update_leaves_pos_vel after update."
-                print "Tree pos =", tree.particle.position.in_(units.cm)
-                print "Root pos =", root.position.in_(units.cm)
-                print "Leaf pos =", leaves.position.in_(units.cm)
+                print("In update_leaves_pos_vel after update.")
+                print("Tree pos =", tree.particle.position.in_(units.cm))
+                print("Root pos =", root.position.in_(units.cm))
+                print("Leaf pos =", leaves.position.in_(units.cm))
 
         return
 
@@ -1351,7 +1351,7 @@ class Multiples(object):
 
         modified_list = False
 
-        for root in list(roots_of_trees):
+        for root in roots_of_trees:
             comp1 = root.child1
             comp2 = root.child2
 
