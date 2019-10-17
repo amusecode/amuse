@@ -318,6 +318,8 @@ int commit_particles()
 {
     // Complete the initialization, after all particles have been loaded.
 
+    // cout << "recommit_particles" << endl << flush;
+
     sync_times();
 
     jd->initialize_arrays();
@@ -346,26 +348,32 @@ int commit_particles()
 int recommit_particles()
 {
     // Reinitialize/reset the system after particles have been added
-    // or removed.  The system should be synchronized at some reasonable
-    // system_time, so we just need to recompute forces and update the
-    // GPU and scheduler.  Note that we don't resize the jdata or
-    // idata arrays.  To resize idata, just delete and create a new
-    // one.  Resizing jdata is more complicated -- defer for now.
+    // or removed.  The system should be synchronized at some
+    // reasonable system_time, so we just need to recompute forces and
+    // update the GPU and scheduler.  The jdata arrays should already
+    // be updated.  The idata arrays are resized and updated here.
 
-    //cout << "recommit_particles" << endl << flush;
+    // cout << "recommit_particles" << endl << flush;
 
-    if (!jd->use_gpu)
+    if (!jd->use_gpu) {
+        // cout << "jd->predict_all" << endl << flush;
 	jd->predict_all(jd->system_time, true);	// set pred quantities
-    else
+    } else
 	jd->initialize_gpu(true);		// reload the GPU
-    id->setup();				// compute acc and jerk
+
+    // Reset all idata arrays and recompute iacc and ijerk.
+  
+    id->setup();
 
     jd->force_initial_timestep(initial_timestep_fac,  // set timesteps
 			       initial_timestep_limit,
 			       initial_timestep_median);
 
+
+    // cout << "s->initialize()" << endl << flush;
     s->initialize();				// reconstruct the scheduler
     // s->print();
+
     return 0;
 }
 
@@ -382,12 +390,18 @@ int recompute_timesteps()
     else
 	jd->initialize_gpu(true);		// reload the GPU
 
-    id->setup();				// compute acc and jerk
+    // Reset all idata arrays and recompute iacc and ijerk.
+  
+    id->setup();
+
     jd->force_initial_timestep(initial_timestep_fac,  // set timesteps
 			       initial_timestep_limit,
 			       initial_timestep_median);
+
+    // cout << "s->initialize()" << endl << flush;
     s->initialize();				// reconstruct the scheduler
     // s->print();
+
     return 0;
 }
 

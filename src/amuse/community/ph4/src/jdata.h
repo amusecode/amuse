@@ -136,7 +136,7 @@ class jdata {
 
     jdata() {
 	nj = 0;
-	njbuf = 0;
+	njbuf = 0;	// buffers have zero length until particles are added
 #ifndef NOMPI
 	mpi_comm = NULL;
 	mpi_size = 0;
@@ -188,6 +188,7 @@ class jdata {
 		     int pid = -1, real dt = -1);
     void remove_particle(int j);
     void initialize_arrays();
+    void initialize_work_arrays();
     int get_inverse_id(int i);
     void check_inverse_id(const char *s = NULL);
     void set_initial_timestep(real fac = 0.0625, real limit = 0.03125,
