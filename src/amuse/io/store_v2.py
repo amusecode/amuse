@@ -61,7 +61,8 @@ class HDF5Attribute(object):
         if is_quantity(input):
             if not hasattr(shape, '__iter__'): 
                 shape = shape,
-            dataset = group.create_dataset(name, shape=shape, dtype=input.number.dtype)
+            dtype = numpy.asanyarray(input.number).dtype
+            dataset = group.create_dataset(name, shape=shape, dtype=dtype)
             dataset.attrs["units"] = input.unit.to_simple_form().reference_string().encode('ascii')
             return HDF5VectorQuantityAttribute(name, dataset, input.unit)                                     
         elif hasattr(input, 'as_set'):
