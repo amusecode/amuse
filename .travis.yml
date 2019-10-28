@@ -1,3 +1,4 @@
+codecov: true
 env:
   global:
     - OMPI_MCA_rmaps_base_oversubscribe=yes
