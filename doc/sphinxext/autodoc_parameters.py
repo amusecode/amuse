@@ -49,8 +49,7 @@ class ParametersAttributeDocumenter(AttributeDocumenter):
             
         if self.analyzer:
             # prevent encoding errors when the file name is non-ASCII
-            filename = str(self.analyzer.srcname,
-                               sys.getfilesystemencoding(), 'replace')
+            filename = str(self.analyzer.srcname)
             sourcename = '%s:docstring of %s' % (filename, self.fullname)
         else:
             sourcename = 'docstring of %s' % self.fullname
