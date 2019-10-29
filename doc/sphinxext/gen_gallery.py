@@ -106,16 +106,16 @@ def gen_gallery(app, doctree):
         try:
             import multiprocessing
             app.builder.info("generating thumbnails... ", nonl=True)
-            print  list(thumbnails.iteritems())
+            print(list(thumbnails.items()))
             pool = multiprocessing.Pool()
-            pool.map(make_thumbnail, thumbnails.iteritems())
+            pool.map(make_thumbnail, iter(thumbnails.items()))
             pool.close()
             pool.join()
             app.builder.info("done")
     
         except ImportError:
             for key in app.builder.status_iterator(
-                thumbnails.iterkeys(), "generating thumbnails... ",
+                iter(thumbnails.keys()), "generating thumbnails... ",
                 length=len(thumbnails)):
                 image.thumbnail(key, thumbnails[key], 0.3)
 
