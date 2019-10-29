@@ -7,11 +7,11 @@ scripts to simulate astrophysical problems in different domains.
 
 The project website is:
 
-* http://www.amusecode.org
+* www.amusecode.org
 
 an the documentation can be found at:
 
-* https://amusecode.github.io/amuse/
+* amusecode.github.io/amuse/
 
 Getting Started
 ===============
