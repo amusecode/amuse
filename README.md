@@ -5,9 +5,13 @@
 This repository contains the AMUSE software. With AMUSE you can write
 scripts to simulate astrophysical problems in different domains.
 
-The documentation and more info can be found at:
+The project website is:
 
-* http://www.amusecode.org
+* www.amusecode.org
+
+an the documentation can be found at:
+
+* amusecode.github.io/amuse
 
 Getting Started
 ===============
