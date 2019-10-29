@@ -39,7 +39,7 @@ class NoConfig(object):
     def __init__(self, message):
         self._message=message
     def __getattr__(self, attr):
-        raise Exception(self._message)
+        raise AttributeError(self._message)
 
 try:
     from . import config
