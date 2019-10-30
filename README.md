@@ -11,7 +11,7 @@ The project website is:
 
 an the documentation can be found at:
 
-* amusecode.github.io/amuse
+* http://amusecode.github.io/amuse
 
 Getting Started
 ===============
