@@ -66,6 +66,9 @@ setup(
     long_description=long_description,
     long_description_content_type=long_description_content_type,
     install_requires=install_requires,
+    extras_require = {
+        "MPI" : ["mpi4py>=1.1.0"]
+    },
     cmdclass=mapping_from_command_name_to_command_class,
     ext_modules=extensions,
     package_dir={'': 'src'},
