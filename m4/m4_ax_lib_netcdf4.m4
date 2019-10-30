@@ -210,6 +210,7 @@ parallel NetCDF4 is not supported (while it was requested)
 
         dnl See if we can compile
         ax_lib_netcdf4_save_CC=$CC
+        ax_lib_netcdf4_save_CFLAGS=$CFLAGS
         ax_lib_netcdf4_save_CPPFLAGS=$CPPFLAGS
         ax_lib_netcdf4_save_LIBS=$LIBS
         ax_lib_netcdf4_save_LDFLAGS=$LDFLAGS
@@ -228,7 +229,7 @@ parallel NetCDF4 is not supported (while it was requested)
         CC=$ax_lib_netcdf4_save_CC
         CFLAGS=$ax_lib_netcdf4_save_CFLAGS
         LIBS=$ax_lib_netcdf4_save_LIBS
-        LDFLAGS=$ax_lib_hdf5_save_LDFLAGS
+        LDFLAGS=$ax_lib_netcdf4_save_LDFLAGS
 
 
         AC_MSG_CHECKING([for matching NetCDF4 Fortran libraries])
