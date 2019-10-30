@@ -73,10 +73,10 @@ class MyFancyUrlopener(urllib.request.FancyURLopener):
 
         return result
     
-class DownloadAthenaFromWebpage(object):
+class DownloadMocassinFromWebpage(object):
     url_template = "http://www.ast.cam.ac.uk/~be/transit/mocassin.{version}.tar.gz"
     backup_url_template = "http://www.amusecode.org/codes/mocassin.{version}.tar.gz"
-    url_template = "http://www.amusecode.org/codes/mocassin.{version}.tar.gz"
+    url_template = "https://home.strw.leidenuniv.nl/~rieder/amuse_codes/mocassin.{version}.tar.gz"
     filename_template = "mocassin.{version}.tar.gz"
     version = "2.02.69"
     
@@ -123,7 +123,7 @@ class DownloadAthenaFromWebpage(object):
         self.unpack_downloaded_file(filename)
     
 if __name__ == '__main__':
-    instance = DownloadAthenaFromWebpage()
+    instance = DownloadMocassinFromWebpage()
     if len(sys.argv) > 1:
         instance.version = sys.argv[1]
     instance.start()
