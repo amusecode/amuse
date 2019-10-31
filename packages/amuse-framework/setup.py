@@ -18,7 +18,6 @@ install_requires = [
     'docutils>=0.6',
     'numpy>=1.2.2',
     'nose>=0.11.1',
-    'mpi4py>=1.1.0',
     'h5py>=1.1.0',
 ]
 description = 'The Astrophysical Multipurpose Software Environment'
