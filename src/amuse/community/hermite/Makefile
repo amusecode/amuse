@@ -33,7 +33,7 @@ worker_code.h: interface.py
 	$(CODE_GENERATOR) --type=h -i amuse.support.codes.stopping_conditions.StoppingConditionInterface interface.py HermiteInterface -o $@
 
 hermite_worker:	worker_code.cc worker_code.h $(A_OBJS)
-	$(MPICXX) $(CXXFLAGS) $(SC_FLAGS) $(AM_CFLAGS) $(LDFLAGS) $< $(A_OBJS) -o $@ $(SC_MPI_CLIBS)  $(LIBS)  $(AM_LIBS)
+	$(MPICXX) $(CXXFLAGS) $(SC_FLAGS) $(AM_CFLAGS) $(LDFLAGS) $< $(A_OBJS) -o $@ $(SC_MPI_CLIBS)  $(LIBS)
 
 hermite_worker_cython: hermite_cython.so
 	$(CODE_GENERATOR) --type=cython -m script -x amuse.community.hermite.interface HermiteInterface -o $@ --cython-import hermite_cython
