@@ -589,7 +589,9 @@ int main(int argc, char *argv[]){
   }
   //for(int j=0; j<Ntot; j++){prt[j].copyold();}
 
+#ifndef NOMPI
   MPI_Finalize();
+#endif
 
   return 0;
 }
