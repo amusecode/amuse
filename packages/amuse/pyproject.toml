@@ -1,6 +1,6 @@
 [build-system]
 requires = [
-    'amuse-framework>=12.0.0rc3',
+    'amuse-framework>=12.0.0rc3[MPI]',
     'amuse-athena>=12.0.0rc3',
     'amuse-bhtree>=12.0.0rc3',
     'amuse-brutus>=12.0.0rc3',
