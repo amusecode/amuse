@@ -45,6 +45,7 @@ setup(
     long_description=long_description,
     long_description_content_type=long_description_content_type,
     install_requires=install_requires,
+    python_requires=">=3.5",
     cmdclass=mapping_from_command_name_to_command_class,
     ext_modules=extensions,
     package_dir={'amuse.community.evtwin': 'src/amuse/community/evtwin'},

@@ -65,6 +65,7 @@ setup(
     long_description=long_description,
     long_description_content_type=long_description_content_type,
     install_requires=install_requires,
+    python_requires=">=3.5",
     extras_require = {
         "MPI" : ["mpi4py>=1.1.0"]
     },
@@ -75,5 +76,4 @@ setup(
     package_data=package_data,
     data_files=all_data_files,
     scripts=[ "bin/amusifier" ],
-    python_requires=">=3.5",
 )
