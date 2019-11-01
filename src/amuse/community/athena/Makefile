@@ -97,7 +97,7 @@ endif
 	cd $(BUILDDIR); make all CC=$(MPICC) LDR=$(MPICC) OPT="$(CXXFLAGS)"
 
 athena_worker: worker_code.cc worker_code.h $(CODELIB) $(AMUSE_OBJS)
-	$(MPICXX) $(CXXFLAGS) $(SC_FLAGS) $(LDFLAGS) worker_code.cc $(AMUSE_OBJS) $(CODELIB) $(LDFLAGS) -o $@ $(SC_CLIBS)  $(LIBS) $(AM_LIBS)
+	$(MPICXX) $(CXXFLAGS) $(SC_FLAGS) $(LDFLAGS) worker_code.cc $(AMUSE_OBJS) $(CODELIB) $(LDFLAGS) -o $@ $(SC_CLIBS)  $(LIBS)
 
 athena_worker_cython: athena_cython.so
 	$(CODE_GENERATOR) --type=cython -m script -x amuse.community.athena.interface AthenaInterface -o $@ --cython-import athena_cython
@@ -130,7 +130,7 @@ endif
 	cd $(SELFGRAV_BUILDDIR); make all CC=$(MPICC) LDR=$(MPICC)  OPT="$(CXXFLAGS)"
 	
 athena_worker_selfgrav: worker_code.cc worker_code.h $(SELFGRAV_CODELIB) $(SELFGRAV_AMUSE_OBJS)
-	$(MPICXX) $(CXXFLAGS) $(FFTW_FLAGS) $(SC_FLAGS) $(LDFLAGS) worker_code.cc $(SELFGRAV_AMUSE_OBJS) $(SELFGRAV_CODELIB) $(LDFLAGS) -o $@ $(SC_CLIBS) $(AM_LIBS) $(FFTWLIB)  $(LIBS)
+	$(MPICXX) $(CXXFLAGS) $(FFTW_FLAGS) $(SC_FLAGS) $(LDFLAGS) worker_code.cc $(SELFGRAV_AMUSE_OBJS) $(SELFGRAV_CODELIB) $(LDFLAGS) -o $@ $(SC_CLIBS) $(FFTWLIB)  $(LIBS)
 
 $(MHD_BUILDDIR)/Makefile: $(ATHENA_DIR)/Makefile.in
 	cp -r $(ATHENA_DIR) $(MHD_BUILDDIR)
@@ -148,7 +148,7 @@ endif
 	cd $(MHD_BUILDDIR); make all CC=$(MPICC) LDR=$(MPICC)  OPT="$(CXXFLAGS)"
 
 athena_worker_mhd: worker_code.cc worker_code.h $(MHD_CODELIB) $(MHD_AMUSE_OBJS)
-	$(MPICXX) $(CXXFLAGS) $(SC_FLAGS) $(LDFLAGS) worker_code.cc $(MHD_AMUSE_OBJS) $(MHD_CODELIB) $(LDFLAGS) -o $@ $(SC_CLIBS) $(AM_LIBS)  $(LIBS)
+	$(MPICXX) $(CXXFLAGS) $(SC_FLAGS) $(LDFLAGS) worker_code.cc $(MHD_AMUSE_OBJS) $(MHD_CODELIB) $(LDFLAGS) -o $@ $(SC_CLIBS)  $(LIBS)
 
 
 $(SCALAR_BUILDDIR)/Makefile: $(ATHENA_DIR)/Makefile.in
@@ -167,7 +167,7 @@ endif
 	cd $(SCALAR_BUILDDIR); make all CC=$(MPICC) LDR=$(MPICC)  OPT="$(CXXFLAGS)"
 
 athena_worker_scalar: worker_code.cc worker_code.h $(SCALAR_CODELIB) $(SCALAR_AMUSE_OBJS)
-	$(MPICXX) $(CXXFLAGS) $(SC_FLAGS) $(LDFLAGS) worker_code.cc $(SCALAR_AMUSE_OBJS) $(SCALAR_CODELIB) $(LDFLAGS) -o $@ $(SC_CLIBS)  $(AM_LIBS)  $(LIBS)
+	$(MPICXX) $(CXXFLAGS) $(SC_FLAGS) $(LDFLAGS) worker_code.cc $(SCALAR_AMUSE_OBJS) $(SCALAR_CODELIB) $(LDFLAGS) -o $@ $(SC_CLIBS)  $(LIBS)
 
 $(BUILDDIR)/%.o: %.c
 	$(CC) $(CXXFLAGS) -I$(BUILDDIR)/src $(SC_FLAGS) -c -o $@ $< 

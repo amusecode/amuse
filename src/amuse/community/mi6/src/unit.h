@@ -2,6 +2,7 @@
 #define UNIT_H
 
 #include<sys/time.h>
+#include <cstddef>
 
 /////////// astrophisical constant (MKS) //////////////
 const double Gsi = 6.67259E-11; // m^3/kg/sec^2
