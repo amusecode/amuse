@@ -117,7 +117,6 @@ int initialize_code(){
     MPI_Comm_rank(GADGET_WORLD, &ThisTask);
     MPI_Comm_size(GADGET_WORLD, &NTask);
 #else
-    GADGET_WORLD = 0;
     ThisTask = 0;
     NTask = 1;
 #endif
@@ -2287,11 +2286,15 @@ int get_alpha_visc(int *index, double *alpha_visc, int length){
         }
     }
     if(ThisTask) {
+#ifndef NOMPI
         MPI_Reduce(buffer, NULL, length, MPI_DOUBLE, MPI_SUM, 0, GADGET_WORLD);
         MPI_Reduce(count, NULL, length, MPI_INT, MPI_SUM, 0, GADGET_WORLD);
+#endif
     } else {
+#ifndef NOMPI
         MPI_Reduce(MPI_IN_PLACE, buffer, length, MPI_DOUBLE, MPI_SUM, 0, GADGET_WORLD);
         MPI_Reduce(MPI_IN_PLACE, count, length, MPI_INT, MPI_SUM, 0, GADGET_WORLD);
+#endif
         for (int i = 0; i < length; i++){
             if (count[i] != 1){
                 errors++;
@@ -2329,11 +2332,15 @@ int get_dalphadt_visc(int *index, double *dalphadt_visc, int length){
         }
     }
     if(ThisTask) {
+#ifndef NOMPI
         MPI_Reduce(buffer, NULL, length, MPI_DOUBLE, MPI_SUM, 0, GADGET_WORLD);
         MPI_Reduce(count, NULL, length, MPI_INT, MPI_SUM, 0, GADGET_WORLD);
+#endif
     } else {
+#ifndef NOMPI
         MPI_Reduce(MPI_IN_PLACE, buffer, length, MPI_DOUBLE, MPI_SUM, 0, GADGET_WORLD);
         MPI_Reduce(MPI_IN_PLACE, count, length, MPI_INT, MPI_SUM, 0, GADGET_WORLD);
+#endif
         for (int i = 0; i < length; i++){
             if (count[i] != 1){
                 errors++;
