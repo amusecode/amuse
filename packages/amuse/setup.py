@@ -36,7 +36,8 @@ install_requires = [
     'amuse-phigrape>=%s' % main_version,
     'amuse-seba>=%s' % main_version,
     'amuse-secularmultiple>=%s' % main_version,
-    'amuse-simplex>=%s' % main_version,
+# until C++ MPI code is replaced/fixed
+#    'amuse-simplex>=%s' % main_version,
     'amuse-smalln>=%s' % main_version,
     'amuse-sphray>=%s' % main_version,
     'amuse-sse>=%s' % main_version,
