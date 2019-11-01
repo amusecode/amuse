@@ -17,7 +17,7 @@ matrix:
     - '3.6'
     compiler: gcc
     before_install:
-    - pip install numpy scipy matplotlib nose docutils mpi4py h5py Cython
+    - pip install numpy scipy matplotlib nose docutils mpi4py h5py Cython codecov
     install:
     - ./configure
     - make framework

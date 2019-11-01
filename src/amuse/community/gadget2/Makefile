@@ -23,10 +23,10 @@ GSL_FLAGS ?= $(shell gsl-config --cflags)
 GSL_LIBS ?= $(shell gsl-config --libs)
 GSL_INCL = $(GSL_FLAGS)
 
-
+ifeq ($(MPI_ENABLED),yes)
 AM_LIBS = -L$(AMUSE_DIR)/lib/amuse_mpi -lamuse_mpi
 AM_CFLAGS = -I$(AMUSE_DIR)/lib/amuse_mpi
-
+endif
 
 LIBFILES = $(SRCDIR)/run.c  $(SRCDIR)/predict.c  $(SRCDIR)/begrun.c \
 	$(SRCDIR)/endrun.c  $(SRCDIR)/global.c  \
