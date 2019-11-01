@@ -18,7 +18,6 @@ install_requires = [
     'docutils>=0.6',
     'numpy>=1.2.2',
     'nose>=0.11.1',
-    'mpi4py>=1.1.0',
     'h5py>=1.1.0',
 ]
 description = 'The Astrophysical Multipurpose Software Environment'
@@ -66,6 +65,9 @@ setup(
     long_description=long_description,
     long_description_content_type=long_description_content_type,
     install_requires=install_requires,
+    extras_require = {
+        "MPI" : ["mpi4py>=1.1.0"]
+    },
     cmdclass=mapping_from_command_name_to_command_class,
     ext_modules=extensions,
     package_dir={'': 'src'},
