@@ -15,7 +15,6 @@ author_email = 'info@amusecode.org'
 license_ = "Apache License 2.0"
 url = 'http://www.amusecode.org/'
 install_requires = [
-    'mpi4py>=1.1.0',
     'amuse-framework>=%s' % main_version,
 ]
 description = 'The Astrophysical Multipurpose Software Environment - Gadget2'
