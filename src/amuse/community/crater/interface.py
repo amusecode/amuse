@@ -1,11 +1,17 @@
 from amuse.community import *
 
-class CraterInterface(CodeInterface):
+class CraterInterface(CodeInterface, LiteratureReferencesMixIn):
+    """
+    Calculating the size of a crater as a function of impact and target objects.
+        .. [#] ... Collins, G. S.; Melosh, H. J.; Marcus, R. A. 2005, M&PS 40, 718 [2005M&PS...40..817C]
+    """
     
     use_modules = ['CraterRadius']
     
     def __init__(self, **keyword_arguments):
         CodeInterface.__init__(self, name_of_the_worker="crater_worker", **keyword_arguments)
+        LiteratureReferencesMixIn.__init__(self)
+        
 
     @legacy_function
     def set_target_type():
