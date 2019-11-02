@@ -466,7 +466,7 @@ class Crater(InCodeComponentImplementation):
     def define_methods(self, handler):
         handler.add_method(
             "crater_radius",
-            (units.kg/units.m**3, units.km, units.kms, units.deg, units.kg/units.m**3, units.m/units.s**2, handler.NO_UNIT),
+            (units.kg/units.m**3, units.m, units.kms, units.deg, units.kg/units.m**3, units.m/units.s**2, handler.NO_UNIT),
             (handler.NO_UNIT, handler.NO_UNIT, handler.NO_UNIT, handler.NO_UNIT, units.km, handler.NO_UNIT, handler.NO_UNIT, handler.ERROR_CODE,)
             )
         handler.add_method(

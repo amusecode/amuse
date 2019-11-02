@@ -42,10 +42,6 @@ c     Initialize constants in AMUSE
       Dt = 0.0
       crater = 1
 
-      write (*,*) "all parameters:", rhoproj, L, v,
-     &   theta, rhotarget, g, targtype, cratertype, Dyield,
-     &   Dgault, Tform, Dfinal, Lyield,
-     &   Lgault      
 c    constants for the Schmidt-Holsapple pi scaling,
 c    gravity conversion factors and simple/complex
 c    transition (see Johnson et al 2016)
