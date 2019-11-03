@@ -9,9 +9,9 @@ The project website is:
 
 * www.amusecode.org
 
-an the documentation can be found at:
+and the documentation can be found at:
 
-* http://amusecode.github.io/amuse
+* https://amuse.readthedocs.io
 
 Getting Started
 ===============
