@@ -384,8 +384,9 @@ class CodeCommand(Command):
         
         if fcompiler:    
             compiler = fcompiler.new_fcompiler(requiref90=True)
-            fortran_executable = compiler.executables['compiler_f90'][0]
-            self.environment['FORTRAN'] = fortran_executable
+            if compiler is not None:
+                fortran_executable = compiler.executables['compiler_f90'][0]
+                self.environment['FORTRAN'] = fortran_executable
     
     
     
