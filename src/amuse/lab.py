@@ -29,7 +29,7 @@ from amuse.io import ReportTable
 from amuse.ext.solarsystem import new_solar_system_for_mercury, new_solar_system
 try:
     from amuse.ext.halogen_model import new_halogen_model
-except ModuleNotFoundError:
+except ImportError:
     def new_halogen_model():
         print(
             "Error - Halogen not installed. Install it with 'pip install amuse-halogen'."
@@ -37,7 +37,7 @@ except ModuleNotFoundError:
         return -1
 try:
     from amuse.ext.galactics_model import new_galactics_model
-except ModuleNotFoundError:
+except ImportError:
     def new_galactics_model():
         print(
             "Error - Galactics not installed. Install it with 'pip install amuse-galactics'."
@@ -46,7 +46,7 @@ except ModuleNotFoundError:
 from amuse.ext.spherical_model import new_uniform_spherical_particle_distribution, new_spherical_particle_distribution
 try:
     from amuse.ext.star_to_sph import convert_stellar_model_to_SPH, pickle_stellar_model
-except ModuleNotFoundError:
+except ImportError:
     def convert_stellar_model_to_SPH():
         print(
             "Error - Gadget2 not installed. Install it with 'pip install amuse-gadget2'."
