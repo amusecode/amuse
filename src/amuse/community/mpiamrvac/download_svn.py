@@ -111,7 +111,7 @@ class MyFancyUrlopener(urllib.request.FancyURLopener):
         return result
     
 class GetCodeFromHttp(object):
-    url_template = "http://home.strw.leidenuniv.nl/~rieder/amuse_codes/mpiamrvac-r{version}.tgz"
+    url_template = "http://amuse.strw.leidenuniv.nl/codes/mpiamrvac-r{version}.tgz"
     filename_template = "mpiamrvac-r{version}.tgz"
     version = "187"
     

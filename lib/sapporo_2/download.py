@@ -80,7 +80,7 @@ class MyFancyUrlopener(urllib.FancyURLopener):
     
 class GetCodeFromHttp(object):
     url = "https://github.com/treecode/sapporo2/tarball/master"
-    alternative_url = "http://home.strw.leidenuniv.nl/~rieder/amuse_codes/sapporo2-598e88c.tgz"
+    alternative_url = "http://amuse.strw.leidenuniv.nl/codes/sapporo2-598e88c.tgz"
     filename = "master.tgz"
     
     def directory(self):
