@@ -3967,8 +3967,6 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 
 
-#AS_IF([test "x$PYTHON" = "x"], [PYTHON=python])
-if test "x$PYTHON" = "x"; then :
 
 
 
@@ -4230,7 +4228,6 @@ $as_echo "$am_cv_python_pyexecdir" >&6; }
   fi
 
 
-fi
 
 # Extract the first word of "$PYTHON", so it can be a program name with args.
 set dummy $PYTHON; ac_word=$2
