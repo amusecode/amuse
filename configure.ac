@@ -20,8 +20,7 @@ AC_ARG_VAR([PYTHON], [Python interpreter])
 
 AC_SUBST(FC_ISO_C_BINDINGS)
 
-#AS_IF([test "x$PYTHON" = "x"], [PYTHON=python])
-AS_IF([test "x$PYTHON" = "x"], [AM_PATH_PYTHON([3.5])])
+AM_PATH_PYTHON([3.5])
 
 AC_PATH_PROG([PYTHON], [$PYTHON], [])
 AC_ARG_VAR([NVCC], [CUDA compiler command])
