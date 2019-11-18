@@ -55,7 +55,7 @@ def main(T, a, e, i, o, O, t, P, M, m):
     o *= pi/180.
     O *= pi/180.
     r, v = orbital_elements_to_pos_and_vel(T, a, e, i, o, O, t, P, M, m)
-    print "r=", r.in_(units.AU), "v=", v.in_(units.kms)
+    print("r=", r.in_(units.AU), "v=", v.in_(units.kms))
 
 def new_option_parser():
     from optparse import OptionParser
