@@ -15,7 +15,7 @@ class TestSeBaInterface(TestWithMPI):
         instance = self.new_instance_of_an_optional_code(SeBaInterface)
 
         endtime, mass, radius, luminosity, temperature, time_step, stellar_type, error = instance.evolve_star(1, 4600, 0.02)
-        self.assertEquals(error, 0)
+        self.assertEqual(error, 0)
         self.assertTrue( endtime <= 4600.0)
         self.assertAlmostRelativeEqual(endtime, 4600.0, 4)
         self.assertAlmostRelativeEqual(mass, 1.0, 6)
@@ -30,109 +30,109 @@ class TestSeBaInterface(TestWithMPI):
     def test2(self):
         instance = SeBaInterface() #self.new_instance_of_an_optional_code(SeBaInterface)
         error = instance.initialize_code()
-        self.assertEquals(error, 0)
+        self.assertEqual(error, 0)
 
         index,error = instance.new_particle(1.)
-        self.assertEquals(error, 0)
-        self.assertEquals(index, 1)
+        self.assertEqual(error, 0)
+        self.assertEqual(index, 1)
         mass, error = instance.get_mass(index)
-        self.assertEquals(error, 0)
+        self.assertEqual(error, 0)
         self.assertAlmostRelativeEqual(mass, 1.0, 6)
         value, error = instance.get_radius(index)
-        self.assertEquals(error, 0)
+        self.assertEqual(error, 0)
         self.assertAlmostRelativeEqual(value, 0.88824945029751212, 6)
 
         stellar_type, error = instance.get_stellar_type(index)
-        self.assertEquals(error, 0)
-        self.assertEquals(stellar_type, 1)
+        self.assertEqual(error, 0)
+        self.assertEqual(stellar_type, 1)
 
         instance.stop()
 
     def test3(self):
         instance = SeBaInterface() #self.new_instance_of_an_optional_code(SeBaInterface)
         error = instance.initialize_code()
-        self.assertEquals(error, 0)
+        self.assertEqual(error, 0)
 
         index,error = instance.new_particle(1.)
-        self.assertEquals(error, 0)
-        self.assertEquals(index, 1)
+        self.assertEqual(error, 0)
+        self.assertEqual(index, 1)
         error = instance.evolve_model(4600)
-        self.assertEquals(error, 0)
+        self.assertEqual(error, 0)
 
         mass, error = instance.get_mass(index)
-        self.assertEquals(error, 0)
+        self.assertEqual(error, 0)
         self.assertAlmostRelativeEqual(mass, 1.0, 6)
         value, error = instance.get_radius(index)
-        self.assertEquals(error, 0)
+        self.assertEqual(error, 0)
         self.assertAlmostRelativeEqual(value, 0.9856, 4)
         value, error = instance.get_temperature(index)
-        self.assertEquals(error, 0)
+        self.assertEqual(error, 0)
         self.assertAlmostRelativeEqual(value, 5751, 4)
         value, error = instance.get_time_step(index)
-        self.assertEquals(error, 0)
+        self.assertEqual(error, 0)
         self.assertAlmostRelativeEqual(value, 1089.3, 4)
 
         stellar_type, error = instance.get_stellar_type(index)
-        self.assertEquals(error, 0)
-        self.assertEquals(stellar_type, 1)
+        self.assertEqual(error, 0)
+        self.assertEqual(stellar_type, 1)
 
         instance.stop()
 
     def test4(self):
         instance = SeBaInterface() #self.new_instance_of_an_optional_code(SeBaInterface)
         error = instance.initialize_code()
-        self.assertEquals(error, 0)
+        self.assertEqual(error, 0)
 
         index,error = instance.new_particle(1.)
-        self.assertEquals(error, 0)
-        self.assertEquals(index, 1)
+        self.assertEqual(error, 0)
+        self.assertEqual(index, 1)
         for t in range(46):
             error = instance.evolve_model((t+1) * 100)
-            self.assertEquals(error, 0)
+            self.assertEqual(error, 0)
 
         mass, error = instance.get_mass(index)
-        self.assertEquals(error, 0)
+        self.assertEqual(error, 0)
         self.assertAlmostRelativeEqual(mass, 1.0, 6)
         value, error = instance.get_radius(index)
-        self.assertEquals(error, 0)
+        self.assertEqual(error, 0)
         self.assertAlmostRelativeEqual(value, 0.9856, 4)
         value, error = instance.get_temperature(index)
-        self.assertEquals(error, 0)
+        self.assertEqual(error, 0)
         self.assertAlmostRelativeEqual(value, 5751, 4)
         value, error = instance.get_time_step(index)
-        self.assertEquals(error, 0)
+        self.assertEqual(error, 0)
         self.assertAlmostRelativeEqual(value, 1089.3, 4)
 
         stellar_type, error = instance.get_stellar_type(index)
-        self.assertEquals(error, 0)
-        self.assertEquals(stellar_type, 1)
+        self.assertEqual(error, 0)
+        self.assertEqual(stellar_type, 1)
 
         instance.stop()
 
     def test5(self):
         instance = SeBaInterface() #self.new_instance_of_an_optional_code(SeBaInterface)
         error = instance.initialize_code()
-        self.assertEquals(error, 0)
+        self.assertEqual(error, 0)
 
         index,error = instance.new_particle([1., 2., 3.])
-        self.assertEquals(error, 0)
-        self.assertEquals(index, [1,2,3])
+        self.assertEqual(error, 0)
+        self.assertEqual(index, [1,2,3])
 
         mass, error = instance.get_mass(2)
-        self.assertEquals(error, 0)
+        self.assertEqual(error, 0)
         self.assertAlmostRelativeEqual(mass, 2 , 6)
 
         mass, error = instance.get_mass(3)
-        self.assertEquals(error, 0)
+        self.assertEqual(error, 0)
         self.assertAlmostRelativeEqual(mass, 3, 6)
 
 
         error = instance.evolve_model(4600)
-        self.assertEquals(error, 0)
+        self.assertEqual(error, 0)
 
         mass, error = instance.get_mass(index)
-        print mass
-        self.assertEquals(error, 0)
+        print(mass)
+        self.assertEqual(error, 0)
         self.assertAlmostRelativeEqual(mass[0], 1.0, 6)
         self.assertAlmostRelativeEqual(mass[1], 0.62973, 4)
         self.assertAlmostRelativeEqual(mass[2], 0.75012, 4)
@@ -143,19 +143,19 @@ class TestSeBaInterface(TestWithMPI):
     def test6(self):
         instance = SeBaInterface() #self.new_instance_of_an_optional_code(SeBaInterface)
         error = instance.initialize_code()
-        self.assertEquals(error, 0)
+        self.assertEqual(error, 0)
 
         index,error = instance.new_particle([1., 2., 3.])
-        self.assertEquals(error, 0)
-        self.assertEquals(index, [1,2,3])
+        self.assertEqual(error, 0)
+        self.assertEqual(index, [1,2,3])
 
         for t in range(46):
             error = instance.evolve_model((t+1) * 100)
-            self.assertEquals(error, 0)
+            self.assertEqual(error, 0)
 
         mass, error = instance.get_mass(index)
-        print mass
-        self.assertEquals(error, 0)
+        print(mass)
+        self.assertEqual(error, 0)
         self.assertAlmostRelativeEqual(mass, [1.0, 0.62973, 0.75072], 4)
 
         instance.stop()
@@ -163,90 +163,90 @@ class TestSeBaInterface(TestWithMPI):
     def test7(self):
         instance = SeBaInterface() #self.new_instance_of_an_optional_code(SeBaInterface)
         error = instance.initialize_code()
-        self.assertEquals(error, 0)
+        self.assertEqual(error, 0)
 
         index,error = instance.new_particle([1., 2., 3.])
-        self.assertEquals(error, 0)
-        self.assertEquals(index, [1,2,3])
+        self.assertEqual(error, 0)
+        self.assertEqual(index, [1,2,3])
 
         mass, error = instance.get_mass(2)
-        self.assertEquals(error, 0)
+        self.assertEqual(error, 0)
         self.assertAlmostRelativeEqual(mass, 2 , 6)
 
         mass, error = instance.get_mass(3)
-        self.assertEquals(error, 0)
+        self.assertEqual(error, 0)
         self.assertAlmostRelativeEqual(mass, 3, 6)
 
         mass, error = instance.get_mass(4)
-        self.assertEquals(error, -1)
+        self.assertEqual(error, -1)
 
         error = instance.delete_star(2)
-        self.assertEquals(error, 0)
+        self.assertEqual(error, 0)
 
         mass, error = instance.get_mass(2)
-        self.assertEquals(error, -1)
+        self.assertEqual(error, -1)
 
         mass, error = instance.get_mass(3)
-        self.assertEquals(error, 0)
+        self.assertEqual(error, 0)
         self.assertAlmostRelativeEqual(mass, 3, 6)
 
         index, error = instance.new_particle(4.)
-        self.assertEquals(error, 0)
-        self.assertEquals(index, 4)
+        self.assertEqual(error, 0)
+        self.assertEqual(index, 4)
 
         instance.stop()
 
     def test8(self):
         instance = SeBaInterface() #self.new_instance_of_an_optional_code(SeBaInterface)
         error = instance.initialize_code()
-        self.assertEquals(error, 0)
+        self.assertEqual(error, 0)
 
         index,error = instance.new_particle([3.0,1.0,2.0])
-        self.assertEquals(error, 0)
-        self.assertEquals(index, [1,2,3])
+        self.assertEqual(error, 0)
+        self.assertEqual(index, [1,2,3])
 
         error = instance.delete_star(1)
-        self.assertEquals(error, 0)
+        self.assertEqual(error, 0)
 
         error = instance.evolve_model(4600);
 
         mass, error = instance.get_mass(2)
-        self.assertEquals(error, 0)
+        self.assertEqual(error, 0)
         self.assertAlmostRelativeEqual(mass, 1, 6)
 
         error = instance.delete_star(3)
-        self.assertEquals(error, 0)
+        self.assertEqual(error, 0)
 
 
         index,error = instance.new_particle([5.0])
-        self.assertEquals(error, 0)
+        self.assertEqual(error, 0)
 
         mass, error = instance.get_mass(index)
-        self.assertEquals(error, 0)
+        self.assertEqual(error, 0)
         self.assertAlmostRelativeEqual(mass, 5.0, 6)
         error = instance.evolve_model(5000);
 
 
         mass, error = instance.get_mass(index)
-        self.assertEquals(error, 0)
+        self.assertEqual(error, 0)
         self.assertAlmostRelativeEqual(mass, 0.99057, 4)
 
         error = instance.delete_star(2)
-        self.assertEquals(error, 0)
+        self.assertEqual(error, 0)
         error = instance.delete_star(index)
-        self.assertEquals(error, 0)
+        self.assertEqual(error, 0)
 
         for i in range(4):
             mass, error = instance.get_mass(index+1)
-            self.assertEquals(error, -1)
+            self.assertEqual(error, -1)
 
         index,error = instance.new_particle([5.0])
-        self.assertEquals(error, 0)
+        self.assertEqual(error, 0)
 
         error = instance.evolve_model(10000);
 
         mass, error = instance.get_mass(index)
-        self.assertEquals(error, 0)
+        self.assertEqual(error, 0)
         self.assertAlmostRelativeEqual(mass, 0.99057, 4)
 
         instance.stop()
@@ -254,17 +254,17 @@ class TestSeBaInterface(TestWithMPI):
     def test9(self):
         instance = SeBaInterface() #self.new_instance_of_an_optional_code(SeBaInterface)
         error = instance.initialize_code()
-        self.assertEquals(error, 0)
+        self.assertEqual(error, 0)
         instance.set_metallicity(0.001)
 
         index,error = instance.new_particle([3.0,0.3])
-        self.assertEquals(error, 0)
-        self.assertEquals(index, [1,2])
+        self.assertEqual(error, 0)
+        self.assertEqual(index, [1,2])
 
         mu = (3.3 | units.MSun) * constants.G
         orbital_period = 200.0 | units.day
         semi_major_axis = (((orbital_period / 2.0 * numpy.pi)**2)*mu)**(1.0/3.0)
-        print semi_major_axis.value_in(units.RSun)
+        print(semi_major_axis.value_in(units.RSun))
 
 
         eccentricity = 0.5
@@ -274,48 +274,48 @@ class TestSeBaInterface(TestWithMPI):
             index[0],
             index[1]
         )
-        self.assertEquals(error, 0)
-        self.assertEquals(index, 3)
+        self.assertEqual(error, 0)
+        self.assertEqual(index, 3)
 
         mass, error = instance.get_mass(index)
-        self.assertEquals(error, 0)
+        self.assertEqual(error, 0)
         self.assertAlmostRelativeEqual(mass, 3.3, 4)
         mass, error = instance.get_mass(2)
-        self.assertEquals(error, 0)
+        self.assertEqual(error, 0)
         self.assertAlmostRelativeEqual(mass, 0.3, 4)
 
         error = instance.evolve_model(300)
-        self.assertEquals(error, 0)
+        self.assertEqual(error, 0)
         mass, error = instance.get_mass(1)
-        self.assertEquals(error, 0)
+        self.assertEqual(error, 0)
         self.assertAlmostRelativeEqual(mass, 2.98777, 4)
         mass, error = instance.get_mass(2)
-        self.assertEquals(error, 0)
+        self.assertEqual(error, 0)
         self.assertAlmostRelativeEqual(mass, 0.29999, 4)
 
 
         error = instance.evolve_model(400)
-        self.assertEquals(error, 0)
+        self.assertEqual(error, 0)
         mass, error = instance.get_mass(1)
-        self.assertEquals(error, 0)
+        self.assertEqual(error, 0)
         self.assertAlmostRelativeEqual(mass, 0.86679, 4)
         mass, error = instance.get_mass(2)
-        self.assertEquals(error, 0)
+        self.assertEqual(error, 0)
         self.assertAlmostRelativeEqual(mass, 0.3, 4)
 
         error = instance.delete_binary(index)
-        self.assertEquals(error, 0)
+        self.assertEqual(error, 0)
         mass, error = instance.get_mass(index)
-        self.assertEquals(error, -1)
+        self.assertEqual(error, -1)
 
         # check if singles are still in the mode and evolve
         value, error = instance.get_age([1,2])
-        self.assertEquals(error, 0)
+        self.assertEqual(error, 0)
         self.assertAlmostRelativeEqual(value, 400, 4)
         error = instance.evolve_model(500)
-        self.assertEquals(error, 0)
+        self.assertEqual(error, 0)
         value, error = instance.get_age([1,2])
-        self.assertEquals(error, 0)
+        self.assertEqual(error, 0)
         self.assertAlmostRelativeEqual(value, 500, 4)
 
 class TestSeBa(TestWithMPI):
@@ -344,12 +344,12 @@ class TestSeBa(TestWithMPI):
 
         p = instance.particles.add_particle(p)
         instance.evolve_model(130 | units.Myr)
-        print p
+        print(p)
 
         self.assertAlmostRelativeEqual(p.mass, 0.9906 | units.MSun, 4)
 
     def test3(self):
-        print "Testing evolution of a close binary system..."
+        print("Testing evolution of a close binary system...")
         instance = self.new_instance_of_an_optional_code(SeBa)
         instance.commit_parameters()
         stars =  Particles(2)
@@ -397,7 +397,7 @@ class TestSeBa(TestWithMPI):
 
         self.assertEqual(len(results), 6)
         for x in results:
-            print x
+            print(x)
 
         types = (
             "Hertzsprung Gap",
@@ -410,7 +410,7 @@ class TestSeBa(TestWithMPI):
 
 
         for result, expected in zip(results, types):
-            self.assertEquals(str(result[2]), expected)
+            self.assertEqual(str(result[2]), expected)
 
         times = (
             377.6369 | units.Myr,
@@ -485,15 +485,15 @@ class TestSeBa(TestWithMPI):
 
         p = instance.particles.add_particle(p)
         instance.evolve_model(614 | units.Myr)
-        print p.stellar_type
-        self.assertEquals(str(p.stellar_type),'Black Hole')
+        print(p.stellar_type)
+        self.assertEqual(str(p.stellar_type),'Black Hole')
         self.assertAlmostRelativeEqual(p.mass, 0.9906 | units.MSun, 4)
 
     def test8(self):
         instance = self.new_instance_of_an_optional_code(SeBa)
         instance.parameters.supernova_kick_velocity = 0 | units.kms
         instance.commit_parameters()
-        print "v_kick=", instance.parameters.supernova_kick_velocity
+        print("v_kick=", instance.parameters.supernova_kick_velocity)
         stars =  Particles(2)
         stars[0].mass = 10.0 | units.MSun
         stars[1].mass = 9 | units.MSun
@@ -512,8 +512,8 @@ class TestSeBa(TestWithMPI):
 
         instance.binaries.add_particles(binaries)
         instance.evolve_model(30|units.Myr)
-        print instance.particles
-        print instance.binaries
+        print(instance.particles)
+        print(instance.binaries)
 
         self.assertAlmostRelativeEquals(instance.binaries[0].eccentricity, 0.7872, 4)
 
@@ -536,8 +536,8 @@ class TestSeBa(TestWithMPI):
 
         instance.particles.add_particles(stars)
         instance.evolve_model(60|units.Myr)
-        print instance.particles.age
-        print instance.particles.mass
+        print(instance.particles.age)
+        print(instance.particles.mass)
         self.assertAlmostRelativeEquals(instance.model_time, 60 | units.Myr)
         self.assertAlmostRelativeEquals(instance.particles.age, [60,60,30,30] |units.Myr)
         self.assertAlmostRelativeEquals(instance.particles[2].mass, 1.2263 | units.MSun, 4)
@@ -555,8 +555,8 @@ class TestSeBa(TestWithMPI):
         p = instance.particles.add_particle(p)
         instance.set_supernova_kick_velocity(0.0|units.kms)
         instance.evolve_model(30 | units.Myr)
-        self.assertEquals(instance.stopping_conditions.supernova_detection.is_set(), True)
-        self.assertEquals(instance.stopping_conditions.supernova_detection.particles(0)[0].key, p.key)
+        self.assertEqual(instance.stopping_conditions.supernova_detection.is_set(), True)
+        self.assertEqual(instance.stopping_conditions.supernova_detection.particles(0)[0].key, p.key)
 
         self.assertAlmostRelativeEqual(p.age, 27.35866 | units.Myr, 4)
 
@@ -583,11 +583,11 @@ class TestSeBa(TestWithMPI):
         instance.binaries.add_particles(binaries)
 
         instance.evolve_model(30 | units.Myr)
-        self.assertEquals(instance.stopping_conditions.supernova_detection.is_set(), True)
-        self.assertEquals(instance.stopping_conditions.supernova_detection.particles(0)[0].key, instance.binaries[0].child1.key)
-        self.assertEquals(instance.stopping_conditions.supernova_detection.particles(0)[0].key, instance.particles[0].key)
+        self.assertEqual(instance.stopping_conditions.supernova_detection.is_set(), True)
+        self.assertEqual(instance.stopping_conditions.supernova_detection.particles(0)[0].key, instance.binaries[0].child1.key)
+        self.assertEqual(instance.stopping_conditions.supernova_detection.particles(0)[0].key, instance.particles[0].key)
 
-        print instance.parameters
+        print(instance.parameters)
         self.assertAlmostRelativeEqual(instance.particles[0].age, 27.35866 | units.Myr, 4)
         self.assertAlmostRelativeEqual(instance.particles[1].age, 27.35866 | units.Myr, 4)
         self.assertAlmostRelativeEqual(instance.particles[0].mass, 1.22632 | units.MSun, 4)
@@ -613,8 +613,8 @@ class TestSeBa(TestWithMPI):
 
 
         instance.evolve_model(30 | units.Myr)
-        self.assertEquals(instance.stopping_conditions.supernova_detection.is_set(), True)
-        self.assertEquals(instance.stopping_conditions.supernova_detection.particles(0)[0].key, instance.particles[0].key)
+        self.assertEqual(instance.stopping_conditions.supernova_detection.is_set(), True)
+        self.assertEqual(instance.stopping_conditions.supernova_detection.particles(0)[0].key, instance.particles[0].key)
 
         self.assertAlmostRelativeEqual(instance.particles[0].age, 27.35866 | units.Myr, 4)
         self.assertAlmostRelativeEqual(instance.particles[1].age, 27.35866 | units.Myr, 4)
@@ -637,8 +637,8 @@ class TestSeBa(TestWithMPI):
 
 
         instance.evolve_model(30 | units.Myr)
-        self.assertEquals(instance.stopping_conditions.supernova_detection.is_set(), True)
-        self.assertEquals(instance.stopping_conditions.supernova_detection.particles(0)[0].key, instance.particles[1].key)
+        self.assertEqual(instance.stopping_conditions.supernova_detection.is_set(), True)
+        self.assertEqual(instance.stopping_conditions.supernova_detection.particles(0)[0].key, instance.particles[1].key)
 
         self.assertAlmostRelativeEqual(instance.particles[0].age, 23.08688 | units.Myr, 4)
         self.assertAlmostRelativeEqual(instance.particles[1].age, 23.08688 | units.Myr, 4)
@@ -649,8 +649,8 @@ class TestSeBa(TestWithMPI):
 #        self.assertAlmostRelativeEqual(instance.particles[0].natal_kick_velocity, [0,0,0] | units.kms, 4)
 
         instance.evolve_model(30 | units.Myr)
-        self.assertEquals(instance.stopping_conditions.supernova_detection.is_set(), True)
-        self.assertEquals(instance.stopping_conditions.supernova_detection.particles(0)[0].key, instance.particles[0].key)
+        self.assertEqual(instance.stopping_conditions.supernova_detection.is_set(), True)
+        self.assertEqual(instance.stopping_conditions.supernova_detection.particles(0)[0].key, instance.particles[0].key)
 
         self.assertAlmostRelativeEqual(instance.particles[0].age, 27.35866 | units.Myr, 4)
         self.assertAlmostRelativeEqual(instance.particles[1].age, 27.35866 | units.Myr, 4)
@@ -673,10 +673,10 @@ class TestSeBa(TestWithMPI):
 
 
         instance.evolve_model(30 | units.Myr)
-        self.assertEquals(instance.stopping_conditions.supernova_detection.is_set(), True)
-        self.assertEquals(len(instance.stopping_conditions.supernova_detection.particles(0)), 2)
-        self.assertEquals(instance.stopping_conditions.supernova_detection.particles(0)[0].key, instance.particles[0].key)
-        self.assertEquals(instance.stopping_conditions.supernova_detection.particles(0)[1].key, instance.particles[1].key)
+        self.assertEqual(instance.stopping_conditions.supernova_detection.is_set(), True)
+        self.assertEqual(len(instance.stopping_conditions.supernova_detection.particles(0)), 2)
+        self.assertEqual(instance.stopping_conditions.supernova_detection.particles(0)[0].key, instance.particles[0].key)
+        self.assertEqual(instance.stopping_conditions.supernova_detection.particles(0)[1].key, instance.particles[1].key)
 
         self.assertAlmostRelativeEqual(instance.particles[0].age, 27.35866 | units.Myr, 4)
         self.assertAlmostRelativeEqual(instance.particles[1].age, 27.35866 | units.Myr, 4)
@@ -689,7 +689,7 @@ class TestSeBa(TestWithMPI):
 #        self.assertAlmostRelativeEqual(instance.particles[1].natal_kick_velocity, [0,0,0] | units.kms, 4)
 
         instance.evolve_model(30 | units.Myr)
-        self.assertEquals(instance.stopping_conditions.supernova_detection.is_set(), False)
+        self.assertEqual(instance.stopping_conditions.supernova_detection.is_set(), False)
 
         self.assertAlmostRelativeEqual(instance.particles[0].age, 30. | units.Myr, 4)
         self.assertAlmostRelativeEqual(instance.particles[1].age, 30. | units.Myr, 4)

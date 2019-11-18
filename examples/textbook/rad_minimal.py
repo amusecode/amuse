@@ -11,7 +11,7 @@ def binned_mean_data(r, x):
     N = numpy.zeros(len(R))
     for i in range(len(R)-1):
         for j in range(len(r)):
-            if r[j]>=R[i] and r[j]>=R[i+1]:
+            if r[j]>=R[i] and r[j]<=R[i+1]:
                 X[i] += x[j]
                 N[i] += 1.
     for i in range(len(X)):

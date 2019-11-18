@@ -1,5 +1,5 @@
 import numpy
-import quantities
+from . import quantities
 from amuse.units.si import *
 from amuse.units.derivedsi import *
 from amuse.units import constants
@@ -44,6 +44,7 @@ myr = named('million year', 'Myr', 1000000 * yr)
 Myr = myr
 gyr = named('giga (billion) year', 'Gyr', 1000000000 * yr)
 Gyr = gyr
+pc = parsec
 
 # cgs units
 g = named('gram','g', 1e-3 * kg)

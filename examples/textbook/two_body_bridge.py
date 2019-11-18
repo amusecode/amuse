@@ -24,7 +24,7 @@ def main():
     gravity.add_system(planet_gravity, (star_gravity,) )
 ###BOOKLISTSTOP###
 
-    write_set_to_file(ss, filename, 'hdf5', append_to_file=Fale)
+    write_set_to_file(ss, filename, 'hdf5', append_to_file=False)
 
     Etot_init = gravity.kinetic_energy + gravity.potential_energy
     Etot_prev = Etot_init

@@ -5,7 +5,7 @@
 //
 // Global functions:
 //
-//	void jdata::setup_mpi(MPI::Intracomm comm)
+//	void jdata::setup_mpi(MPI_Intracomm comm)
 //	void jdata::setup_gpu()
 //	void jdata::set_manage_encounters(int m)
 //	int  jdata::add_particle(real pmass, real pradius,
@@ -40,14 +40,16 @@
 #include <stopcond.h>
 
 #ifndef NOMPI
-void jdata::setup_mpi(MPI::Intracomm comm)
+void jdata::setup_mpi(MPI_Comm comm)
 {
     const char *in_function = "jdata::setup_mpi";
     if (DEBUG > 2 && mpi_rank == 0) PRL(in_function);
 
     mpi_comm = comm;
-    mpi_size = mpi_comm.Get_size();
-    mpi_rank = mpi_comm.Get_rank();
+    //mpi_size = mpi_comm.Get_size();
+    //mpi_rank = mpi_comm.Get_rank();
+    MPI_Comm_size(mpi_comm, &mpi_size);
+    MPI_Comm_rank(mpi_comm, &mpi_rank);
 }
 #endif
 
@@ -146,8 +148,9 @@ int jdata::add_particle(real pmass, real pradius,
 	if (dnjbuf < njbuf/4) dnjbuf = njbuf/4;
 	njbuf += dnjbuf;
 
-	// Must preserve name, id, mass, radius, pos, vel already set.
-	// All other arrays will be created at the end.
+	// Must preserve name, id, mass, radius, time, timestep, pos,
+	// vel already set.  All other arrays will be recreated at the
+	// end.
 
 	string *name0 = name;
 	int *id0 = id;
@@ -185,6 +188,10 @@ int jdata::add_particle(real pmass, real pradius,
 	if (timestep0) delete [] timestep0;
 	if (pos0) delete [] pos0;
 	if (vel0) delete [] vel0;
+
+	// Recreate remaining arrays.
+
+	initialize_work_arrays();
     }
 
     // If a particle ID is specified, check that it isn't already in
@@ -266,7 +273,7 @@ int jdata::add_particle(real pmass, real pradius,
 
     // Return the particle id.
 
-    return pid;    
+    return pid;
 }
 
 void jdata::remove_particle(int j)
@@ -373,6 +380,25 @@ void jdata::remove_particle(int j)
     }
 }
 
+void jdata::initialize_work_arrays()
+{
+    if (nn) delete [] nn;
+    if (dnn) delete [] dnn;
+    if (pot) delete [] pot;
+    if (acc) delete [] acc;
+    if (jerk) delete [] jerk;
+    if (pred_pos) delete [] pred_pos;
+    if (pred_vel) delete [] pred_vel;
+
+    nn = new int[njbuf];			// scatter
+    dnn = new real[njbuf];			// scatter
+    pot = new real[njbuf];			// scatter
+    acc = new real[njbuf][3];			// gather, scatter
+    jerk = new real[njbuf][3];			// gather, scatter
+    pred_pos = new real[njbuf][3];		// gather, scatter
+    pred_vel = new real[njbuf][3];		// gather, scatter
+}
+
 void jdata::initialize_arrays()
 {
     const char *in_function = "jdata::initialize_arrays";
@@ -380,13 +406,7 @@ void jdata::initialize_arrays()
 
     // Complete the initialization of all arrays used in the calculation.
 
-    nn = new int[njbuf];			// scatter
-    pot = new real[njbuf];			// scatter
-    dnn = new real[njbuf];			// scatter
-    acc = new real[njbuf][3];			// gather, scatter
-    jerk = new real[njbuf][3];			// gather, scatter
-    pred_pos = new real[njbuf][3];		// gather, scatter
-    pred_vel = new real[njbuf][3];		// gather, scatter
+    initialize_work_arrays();
 
     for (int j = 0; j < nj; j++) {
 	nn[j] = 0;
@@ -595,7 +615,8 @@ real jdata::get_pot(bool reeval)		// default = false
 	}
 
 #ifndef NOMPI
-	mpi_comm.Allreduce(&mypot, &total_pot, 1, MPI_DOUBLE, MPI_SUM);
+	//mpi_comm.Allreduce(&mypot, &total_pot, 1, MPI_DOUBLE, MPI_SUM);
+    MPI_Allreduce(&mypot, &total_pot, 1, MPI_DOUBLE, MPI_SUM, mpi_comm);
 #else
     total_pot = mypot;
 #endif
@@ -718,7 +739,7 @@ void jdata::predict_all(real t,
     predict_time = t;
 }
 
-void jdata::advance()
+void jdata::advance(bool zero_step_mode)	// default = false
 {
     const char *in_function = "jdata::advance";
     if (DEBUG > 2 && mpi_rank == 0) PRL(in_function);
@@ -732,7 +753,11 @@ void jdata::advance()
     //		correct the i-list
     //		scatter the i-list
 
-    real tnext = idat->set_list();	// determine next time, make ilist
+    real tnext = system_time;
+    if (!zero_step_mode)
+	tnext = idat->set_list();	// determine next time, make ilist
+    else
+	idat->set_list_all();		// zero-advance all stars
 
     if (!use_gpu) {
 
@@ -744,25 +769,30 @@ void jdata::advance()
 
     // All of the actual work is done by idata::advance.
 
-    idat->advance(tnext);
-    block_steps += 1;
-    total_steps += idat->ni;
+    idat->advance(tnext, zero_step_mode);
 
-    // Note that system_time remains unchanged until the END of the step.
+    if (!zero_step_mode) {
+	block_steps += 1;
+	total_steps += idat->ni;
 
-    system_time = tnext;
-    sched->update();
+	// Note that system_time remains unchanged until the END of the step.
+
+	system_time = tnext;
+	sched->update();
+    }
 }
 
 #define EPS 0.001	// see couple/multiples.py
 
-bool jdata::advance_and_check_encounter()
+bool jdata::advance_and_check_encounter(bool zero_step_mode) // default = false
 {
     bool status = false;
     int collision_detection_enabled;
 
     //cout << "advance..." << endl << flush;
-    advance();
+
+    advance(zero_step_mode);
+
     //int p = cout.precision(16);
     //cout << "time = " << system_time << endl << flush;
     //cout.precision(p);
@@ -805,6 +835,7 @@ bool jdata::advance_and_check_encounter()
 		set_stopping_condition_particle_index(stopping_index, 0, coll1);
 		set_stopping_condition_particle_index(stopping_index, 1, coll2);
 		status = true;
+
 // 		PRC(j1); PRL(j2);
 // 		PRC(id[j1]); PRL(id[j2]);
 // 		cout << "set stopping condition " << coll1 << " " << coll2

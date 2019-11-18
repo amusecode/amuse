@@ -8,11 +8,12 @@ import pydoc
 import traceback
 import random
 import sys
+import warnings
 
 import inspect
 import functools
 
-#from collections import OrderedDict
+# from collections import OrderedDict
 
 from subprocess import Popen, PIPE
 
@@ -27,6 +28,7 @@ from amuse.rfi.channel import MultiprocessingMPIChannel
 from amuse.rfi.channel import DistributedChannel
 from amuse.rfi.channel import SocketChannel
 from amuse.rfi.channel import is_mpd_running
+from amuse.rfi.async_request import DependentASyncRequest
 
 try:
     from amuse import config
@@ -97,6 +99,12 @@ class CodeFunction(object):
         self.specification = specification
     
     def __call__(self, *arguments_list, **keyword_arguments):
+        if self.interface.async_request:
+            try:
+                self.interface.async_request.wait()
+            except Exception as ex:
+                warnings.warn("Ignored exception in async call: " + str(ex))
+            
         dtype_to_values = self.converted_keyword_and_list_arguments( arguments_list, keyword_arguments)
         
         handle_as_array = self.must_handle_as_array(dtype_to_values)
@@ -110,7 +118,7 @@ class CodeFunction(object):
             self.interface.channel.send_message(call_id, self.specification.id, dtype_to_arguments = dtype_to_values)
             
             dtype_to_result = self.interface.channel.recv_message(call_id, self.specification.id, handle_as_array)
-        except Exception, ex:
+        except Exception as ex:
             CODE_LOG.info("Exception when calling function '{0}', of code '{1}', exception was '{2}'".format(self.specification.name, type(self.interface).__name__, ex))
             raise exceptions.CodeException("Exception when calling function '{0}', of code '{1}', exception was '{2}'".format(self.specification.name, type(self.interface).__name__, ex))
         
@@ -121,9 +129,7 @@ class CodeFunction(object):
         
         return result
     
-
-
-    def async(self, *arguments_list, **keyword_arguments):
+    def _async_request(self, *arguments_list, **keyword_arguments):
         dtype_to_values = self.converted_keyword_and_list_arguments( arguments_list, keyword_arguments)
         
         handle_as_array = self.must_handle_as_array(dtype_to_values)
@@ -133,18 +139,41 @@ class CodeFunction(object):
         self.interface.channel.send_message(call_id, self.specification.id, dtype_to_arguments = dtype_to_values)
         
         request = self.interface.channel.nonblocking_recv_message(call_id, self.specification.id, handle_as_array)
-        
+
         def handle_result(function):
             try:
                 dtype_to_result = function()
-            except Exception, ex:
+            except Exception as ex:
                 raise exceptions.CodeException("Exception when calling legacy code '{0}', exception was '{1}'".format(self.specification.name, ex))
-            return self.converted_results(dtype_to_result, handle_as_array)
+            result=self.converted_results(dtype_to_result, handle_as_array)
+            return result
             
         request.add_result_handler(handle_result)
+        
         return request
-        
-        
+
+    def asynchronous(self, *arguments_list, **keyword_arguments):
+        if self.interface.async_request is not None:
+            def factory():
+              return self._async_request(*arguments_list, **keyword_arguments)
+            request=DependentASyncRequest( self.interface.async_request, factory) 
+        else:
+            request=self._async_request(*arguments_list, **keyword_arguments)
+
+        request._result_index=self.result_index()
+
+        def handle_result(function):
+
+            result=function()
+            if  self.interface.async_request==request:
+                self.interface.async_request=None
+            return result
+
+        request.add_result_handler(handle_result)
+
+        self.interface.async_request=request
+
+        return request
     
     def must_handle_as_array(self, keyword_arguments):
         for argument_type, argument_values in keyword_arguments.items():
@@ -152,13 +181,24 @@ class CodeFunction(object):
                 count = 0
                 for argument_value in argument_values:
                     try:
-                        if not isinstance(argument_value, basestring):
+                        if not isinstance(argument_value, str):
                             count = max(count, len(argument_value))
                     except:
                         count = max(count, 0)
                 if count > 0:
                     return True
         return False
+    
+    """
+    Get list of result keys
+    """
+    def result_index(self):
+        index=[]
+        for parameter in self.specification.output_parameters:
+            index.append(parameter.name)
+        if not self.specification.result_type is None:
+            index.append("__result")
+        return index
         
     """
     Convert results from an MPI message to a return value.
@@ -185,7 +225,7 @@ class CodeFunction(object):
         result = OrderedDictionary()
         dtype_to_array = {}
         
-        for key, value in dtype_to_result.iteritems():
+        for key, value in dtype_to_result.items():
             dtype_to_array[key] = list(reversed(value))
         
         if not result_type is None:
@@ -205,7 +245,7 @@ class CodeFunction(object):
     def converted_keyword_and_list_arguments(self, arguments_list, keyword_arguments):
         dtype_to_values = self.specification.new_dtype_to_values()
         
-        input_parameters_seen = set(map(lambda x : x.name, self.specification.input_parameters))
+        input_parameters_seen = set([x.name for x in self.specification.input_parameters])
         names_in_argument_list = set([])
         for index, argument in enumerate(arguments_list):
             parameter = self.specification.input_parameters[index]
@@ -297,7 +337,7 @@ class legacy_function(object):
         return result
     
     def is_compiled_file_up_to_date(self, time_of_the_compiled_file):
-        name_of_defining_file = self.specification_function.func_code.co_filename
+        name_of_defining_file = self.specification_function.__code__.co_filename
         if os.path.exists(name_of_defining_file):
             time_of_defining_file = os.stat(name_of_defining_file).st_mtime
             return time_of_defining_file <= time_of_the_compiled_file
@@ -362,11 +402,11 @@ def derive_dtype_unit_and_default(value):
               default=number
           if isinstance(number, bool):
               dtype="b"
-          elif isinstance(number,(int,long)):
+          elif isinstance(number,int):
               dtype="i"
-          elif isinstance(number,(float,)):
+          elif isinstance(number,float):
               dtype="d"
-          elif isinstance(number,(str,unicode)):
+          elif isinstance(number,str):
               dtype="s"
           else:
               raise Exception("undetectable type")
@@ -426,13 +466,13 @@ def simplified_function_specification(must_handle_array=False,can_handle_array=F
             start=flatsrc.find("returns(")
             order=lambda k: flatsrc.find(k[0]+"=",start)
             out_arg.extend(sorted(kwargs.items(),key=order))
-        f.func_globals['returns']=returns
+        f.__globals__['returns']=returns
         f(*argspec.args)
         out_arg_mapping=OrderedDictionary()
         for x in out_arg:
             out_arg_mapping[x[0]] = x[1]
             
-        function=get_function_specification(f.func_name,in_arg,out_arg_mapping,
+        function=get_function_specification(f.__name__,in_arg,out_arg_mapping,
             must_handle_array,can_handle_array,length_arguments)
         def g():
             return function
@@ -556,7 +596,7 @@ class LegacyFunctionSpecification(object):
             self.add_output_parameter(parameter)
             
     def add_input_parameter(self, parameter):
-        has_default_parameters = any(map(lambda x : x.has_default_value(), self.input_parameters))
+        has_default_parameters = any([x.has_default_value() for x in self.input_parameters])
         if has_default_parameters and not parameter.has_default_value():
             raise exceptions.AmuseException("non default argument '{0}' follows default argument".format(parameter.name))
         self.input_parameters.append(parameter)
@@ -577,12 +617,12 @@ class LegacyFunctionSpecification(object):
    
     def new_dtype_to_values(self):
         result = {}
-        for dtype, parameters in self.dtype_to_input_parameters.iteritems():
+        for dtype, parameters in self.dtype_to_input_parameters.items():
             result[dtype] =  [None] * len(parameters)   
         return result
     
     def prepare_output_parameters(self):
-        for dtype, parameters in self.dtype_to_output_parameters.iteritems():
+        for dtype, parameters in self.dtype_to_output_parameters.items():
             if dtype == self.result_type:
                 offset = 1
             else:
@@ -643,7 +683,7 @@ class LegacyFunctionSpecification(object):
             if x.has_default_value():
                 yield x
                 
-    result_type = property(_get_result_type, _set_result_type);
+    result_type = property(_get_result_type, _set_result_type)
 
 
 
@@ -695,8 +735,9 @@ class CodeInterface(OptionalAttributes):
         :argument hostname: Start the worker on the node with this name
         """
         OptionalAttributes.__init__(self, **options)
-           
-       
+        
+        self.async_request=None
+
         self.instances.append(weakref.ref(self))
         #
         #ave: no more redirection in the code
@@ -747,6 +788,9 @@ class CodeInterface(OptionalAttributes):
             if self.polling_interval_in_milliseconds > 0:
                 self.internal__set_message_polling_interval(int(self.polling_interval_in_milliseconds * 1000))
         
+    def wait(self):
+        if self.async_request is not None:
+            self.async_request.wait()
 
     @option(type="int", sections=("channel",))
     def polling_interval_in_milliseconds(self):
@@ -956,7 +1000,13 @@ class CodeInterface(OptionalAttributes):
         (Can be) called everytime just before a new set is created
         """
         pass    
-    
+
+    def before_get_data_store_names(self):
+        """
+        called before getting data store names (for state model) - should eventually 
+        not be necessary
+        """
+        pass    
 
     @option(type='string', sections=("channel",))
     def interpreter(self):
@@ -1064,14 +1114,13 @@ class PythonCodeInterface(CodeInterface):
     
     def __init__(self, implementation_factory = None, name_of_the_worker = None, **options):
         if self.channel_type == 'distributed':
-            print "Warning! Distributed channel not fully supported by PythonCodeInterface yet"
+            print("Warning! Distributed channel not fully supported by PythonCodeInterface yet")
         self.implementation_factory = implementation_factory
+        self.worker_dir=options.get("worker_dir",None)
         
-        CodeInterface.__init__(self, name_of_the_worker, **options)
+        CodeInterface.__init__(self, name_of_the_worker, **options)        
     
     def _start(self, name_of_the_worker = 'worker_code', **options):
-
-
 
         if name_of_the_worker is None:
             if self.implementation_factory is None:
@@ -1092,6 +1141,8 @@ class PythonCodeInterface(CodeInterface):
         from amuse.rfi.tools.create_python_worker import CreateAPythonWorker
         
         x = CreateAPythonWorker()
+        if self.worker_dir:
+            x.worker_dir=self.worker_dir
         x.channel_type = self.channel_type
         x.interface_class = type(self)
         x.implementation_factory = implementation_factory
@@ -1146,7 +1197,7 @@ class CodeFunctionWithUnits(CodeFunction):
             self.interface.channel.send_message(call_id, self.specification.id, dtype_to_arguments = dtype_to_values, encoded_units = encoded_units)
             
             dtype_to_result , output_encoded_units = self.interface.channel.recv_message(call_id, self.specification.id, handle_as_array, has_units = True)
-        except Exception, ex:
+        except Exception as ex:
             CODE_LOG.info("Exception when calling function '{0}', of code '{1}', exception was '{2}'".format(self.specification.name, type(self.interface).__name__, ex))
             raise exceptions.CodeException("Exception when calling function '{0}', of code '{1}', exception was '{2}'".format(self.specification.name, type(self.interface).__name__, ex))
         
@@ -1158,7 +1209,7 @@ class CodeFunctionWithUnits(CodeFunction):
         
         return result
     
-    def async(self, *arguments_list, **keyword_arguments):
+    def _async_request(self, *arguments_list, **keyword_arguments):
         dtype_to_values, units = self.converted_keyword_and_list_arguments( arguments_list, keyword_arguments)
         encoded_units = self.convert_input_units_to_floats(units)
         
@@ -1173,7 +1224,7 @@ class CodeFunctionWithUnits(CodeFunction):
         def handle_result(function):
             try:
                 dtype_to_result, output_encoded_units = function()
-            except Exception, ex:
+            except Exception as ex:
                 raise exceptions.CodeException("Exception when calling legacy code '{0}', exception was '{1}'".format(self.specification.name, ex))
             output_units = self.convert_floats_to_units(output_encoded_units)
             return self.converted_results(dtype_to_result, handle_as_array, output_units)
@@ -1190,7 +1241,7 @@ class CodeFunctionWithUnits(CodeFunction):
                 count = 0
                 for argument_value in argument_values:
                     try:
-                        if not isinstance(argument_value, basestring):
+                        if not isinstance(argument_value, str):
                             count = max(count, len(argument_value))
                     except:
                         count = max(count, 0)
@@ -1224,7 +1275,7 @@ class CodeFunctionWithUnits(CodeFunction):
         result = OrderedDictionary()
         dtype_to_array = {}
         
-        for key, value in dtype_to_result.iteritems():
+        for key, value in dtype_to_result.items():
             dtype_to_array[key] = list(reversed(value))
         
         if not result_type is None:
@@ -1249,7 +1300,7 @@ class CodeFunctionWithUnits(CodeFunction):
         dtype_to_values = self.specification.new_dtype_to_values()
         units = [None] * len(self.specification.input_parameters)
         
-        input_parameters_seen = set(map(lambda x : x.name, self.specification.input_parameters))
+        input_parameters_seen = set([x.name for x in self.specification.input_parameters])
         names_in_argument_list = set([])
         for index, argument in enumerate(arguments_list):
             parameter = self.specification.input_parameters[index]

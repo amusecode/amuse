@@ -19,8 +19,8 @@ class Test(amusetest.TestCase):
         
         particles = instance.convert_to_particles(self.p10_string)
                                
-        self.assertEquals(instance.number_of_particles, 10)
-        self.assertEquals(particles.mass[0], 0.1|nbody_system.mass)
+        self.assertEqual(instance.number_of_particles, 10)
+        self.assertEqual(particles.mass[0], 0.1|nbody_system.mass)
 
     def test2(self):
         convert_nbody = nbody_system.nbody_to_si(1|units.g, 1|units.m)
@@ -38,8 +38,8 @@ class Test(amusetest.TestCase):
         particles = reader.convert_to_particles(self.p10_string)
         writer = nemotsf.Particles2Tsf()
         string = writer.convert_to_string(particles)
-        print string
-        print self.p10_string
+        print(string)
+        print(self.p10_string)
         self.assertTrue("double PhaseSpace[10][2][3]" in string)
         self.assertTrue("double Mass[10]" in string)
         

@@ -1,5 +1,7 @@
+
+
 import time
-import urlparse
+import urllib.parse
 import threading
 import json
 import os.path
@@ -53,15 +55,15 @@ class RunAllTestsWhenAChangeHappens(object):
                             path, module, testcase =  x.address
                             if path == element.path:
                                 x.reset_timing()
-                                print "will rerun: ", module, testcase
-                        
-                
-                print "Changed files:"
+                                print("will rerun: ", module, testcase)
+
+
+                print("Changed files:")
                 number_of_changed_files = 0
                 for element in monitor_directories.updated_elements:
                     if not element.is_file():
                         continue
-                    print element.path
+                    print(element.path)
                     number_of_changed_files += 1
                     
                 if number_of_changed_files > 0 or self.server.last_report is None:
@@ -104,7 +106,7 @@ class HandleRequest(webserver.HandleRequest):
         return string, content_type
     
     def do_run_test(self):
-        parameters = urlparse.parse_qs(self.parsed_path.query)
+        parameters = urllib.parse.parse_qs(self.parsed_path.query)
         a0 = parameters['a0'][0]
         a1 = parameters['a1'][0]
         a2 = parameters['a2'][0]
@@ -208,9 +210,9 @@ if __name__ == '__main__':
       type="string")
       
     (options, args) = parser.parse_args()
-    
-    print "starting server on port: ", options.serverport
-    print "will use editor: ", options.editor
+
+    print("starting server on port: ", options.serverport)
+    print("will use editor: ", options.editor)
     webserver.EDITOR = options.editor
     
     if options.startbrowser == "yes":

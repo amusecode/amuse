@@ -44,13 +44,13 @@ class VtkStructuredGrid(base.FileFormatProcessor):
         if self.set is None:
             return []
         else:
-            return map(lambda x:getattr(self.set, x),self.attribute_names)
+            return [getattr(self.set, x) for x in self.attribute_names]
 
     @base.format_option
     def attribute_names(self):
         "list of the names of the attributes to load or store"
         if self.set is None:
-            return map(lambda x : "col({0})".format(x), range(len(self.quantities)))
+            return ["col({0})".format(x) for x in range(len(self.quantities))]
         else:
             all_attributes = self.set.get_attribute_names_defined_in_store()
             return [ x for x in all_attributes if x not in set(['x','y','z'])]
@@ -60,9 +60,9 @@ class VtkStructuredGrid(base.FileFormatProcessor):
         "list of the types of the attributes to store"
         quantities = self.quantities
         if self.quantities:
-            return map(lambda x : x.unit.to_simple_form(), quantities)
+            return [x.unit.to_simple_form() for x in quantities]
         elif self.set is None:
-            return map(lambda x : units.none, self.attribute_names)
+            return [units.none for x in self.attribute_names]
     
 
     @base.format_option
@@ -166,7 +166,7 @@ class VtkStructuredGrid(base.FileFormatProcessor):
             self.stream.write(' Name="{0}"'.format(name))
         
         self.stream.write('>')
-        self.stream.write(' '.join(map(self.convert_number_to_string, iter(array.flatten()))));
+        self.stream.write(' '.join(map(self.convert_number_to_string, iter(array.flatten()))))
         self.stream.write('</DataArray>\n')
         
     def convert_number_to_string(self, number):
@@ -223,13 +223,13 @@ class VtkUnstructuredGrid(base.FileFormatProcessor):
         elif self.is_multiple:
             return []
         else:
-            return map(lambda x:getattr(self.set, x),self.attribute_names)
+            return [getattr(self.set, x) for x in self.attribute_names]
 
     @base.format_option
     def attribute_names(self):
         "list of the names of the attributes to load or store"
         if self.set is None:
-            return map(lambda x : "col({0})".format(x), range(len(self.quantities)))
+            return ["col({0})".format(x) for x in range(len(self.quantities))]
         elif self.is_multiple:
             all_attributes = self.set[0].get_attribute_names_defined_in_store()
             return [ x for x in all_attributes if x not in set(['x','y','z'])]
@@ -242,11 +242,11 @@ class VtkUnstructuredGrid(base.FileFormatProcessor):
         "list of the types of the attributes to store"
         quantities = self.quantities
         if self.is_multiple:
-            return map(lambda x : getattr(self.set[0], x).unit.to_simple_form(),self.attribute_names)
+            return [getattr(self.set[0], x).unit.to_simple_form() for x in self.attribute_names]
         elif self.quantities:
-            return map(lambda x : x.unit.to_simple_form(), quantities)
+            return [x.unit.to_simple_form() for x in quantities]
         elif self.set is None:
-            return map(lambda x : units.none, self.attribute_names)
+            return [units.none for x in self.attribute_names]
     
 
     @base.format_option
@@ -403,7 +403,7 @@ class VtkUnstructuredGrid(base.FileFormatProcessor):
             self.stream.write(' Name="{0}"'.format(name))
         
         self.stream.write('>')
-        self.stream.write(' '.join(map(self.convert_number_to_string, iter(array.flatten()))));
+        self.stream.write(' '.join(map(self.convert_number_to_string, iter(array.flatten()))))
         self.stream.write('</DataArray>\n')
         
     
@@ -414,7 +414,7 @@ class VtkUnstructuredGrid(base.FileFormatProcessor):
             self.stream.write(' Name="{0}"'.format(name))
         
         self.stream.write('>')
-        self.stream.write(' '.join(map(self.convert_number_to_string, iter(array.flatten()))));
+        self.stream.write(' '.join(map(self.convert_number_to_string, iter(array.flatten()))))
         self.stream.write('</DataArray>\n')
         
     def convert_number_to_string(self, number):

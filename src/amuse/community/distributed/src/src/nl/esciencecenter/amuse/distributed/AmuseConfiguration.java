@@ -42,7 +42,7 @@ public class AmuseConfiguration {
 
             if (line == null) {
                 return;
-            } else if (line.trim().isEmpty() || line.startsWith("#") || line.startsWith("export")) {
+            } else if ( ( ! line.contains("=") ) || line.startsWith("#")) {
                 //SKIP
             } else {
                 String[] elements = line.split("=", 2);
@@ -77,6 +77,15 @@ public class AmuseConfiguration {
         config = new HashMap<String, String>();
 
         File configFile = new File(amuseHome, "config.mk");
+        
+        if(!configFile.isFile())
+            configFile = new File(amuseHome.toPath().resolve("../../../../share/amuse/config.mk").toString());
+        if(!configFile.isFile())
+            configFile = new File(amuseHome.toPath().resolve("../../../../../share/amuse/config.mk").toString());
+        if(!configFile.isFile())
+            configFile = new File(amuseHome.toPath().resolve("../../config.mk").toString());
+        if(!configFile.isFile())
+            throw new DistributedAmuseException("cannot find config file: " + configFile);
 
         try (BufferedReader reader = new BufferedReader(new FileReader(configFile))) {
             parseConfig(reader);

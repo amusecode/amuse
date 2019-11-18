@@ -1,8 +1,8 @@
 from amuse.test.amusetest import TestWithMPI
 
 from amuse.community.bhtree.interface import BHTree
-from amuse.community.hermite0.interface import Hermite
-from amuse.community.phiGRAPE.interface import PhiGRAPE
+from amuse.community.hermite.interface import Hermite
+from amuse.community.phigrape.interface import PhiGRAPE
 from amuse.community.gadget2.interface import Gadget2
 from amuse.community.fi.interface import Fi
 from amuse.community.ph4.interface import ph4
@@ -35,17 +35,17 @@ class _TestGravityCodes(TestWithMPI):
         particles.move_to_center()
         instance.particles.add_particles(particles)
         instance.commit_particles()
-        self.assertEquals(len(instance.particles), 100)
+        self.assertEqual(len(instance.particles), 100)
         outer = particles.select(lambda r: r.length() > (0.5 | self.length_unit), ["position"])
-        print len(outer)
+        print(len(outer))
         self.assertTrue(len(outer) > 0)
         self.assertTrue(len(outer) < 100)
         instance.synchronize_model()
         instance.particles.remove_particles(outer)
         instance.recommit_particles()
-        self.assertEquals(len(instance.particles), 100-len(outer))
+        self.assertEqual(len(instance.particles), 100-len(outer))
         number_of_particles_in_module = instance.legacy_interface.get_number_of_particles()['number_of_particles']
-        self.assertEquals(number_of_particles_in_module, 100-len(outer))
+        self.assertEqual(number_of_particles_in_module, 100-len(outer))
         instance.stop()
             
     def getset_attribute(self, attributename, attributevalue1, attributevalue2):
@@ -63,7 +63,7 @@ class _TestGravityCodes(TestWithMPI):
             self.assertAlmostRelativeEqual(actual, attributevalue1)
             setattr(instance.particles, attributename, attributevalue2)
             actual = getattr(instance.particles, attributename)
-            print actual.as_quantity_in(attributevalue2.unit)
+            print(actual.as_quantity_in(attributevalue2.unit))
             self.assertAlmostRelativeEqual(actual, attributevalue2)
         finally:
             instance.stop()
@@ -93,21 +93,21 @@ class _TestGravityCodes(TestWithMPI):
             
             instance.particles.add_particles(particles)
             instance.commit_particles()
-            self.assertEquals(len(instance.particles), 100)
+            self.assertEqual(len(instance.particles), 100)
             instance.synchronize_model()
             instance.particles.add_particles(more_particles)
             instance.recommit_particles()
             number_of_particles_in_module = instance.legacy_interface.get_number_of_particles()['number_of_particles']
-            self.assertEquals(len(instance.particles), 150)
-            self.assertEquals(number_of_particles_in_module, 150)
+            self.assertEqual(len(instance.particles), 150)
+            self.assertEqual(number_of_particles_in_module, 150)
             instance.synchronize_model()
             instance.particles.remove_particles(particles)
-            self.assertEquals(len(instance.particles), 50)
+            self.assertEqual(len(instance.particles), 50)
             instance.recommit_particles()
             instance.synchronize_model()
             number_of_particles_in_module = instance.legacy_interface.get_number_of_particles()['number_of_particles']
-            self.assertEquals(len(instance.particles), 50)
-            self.assertEquals(number_of_particles_in_module, 50)
+            self.assertEqual(len(instance.particles), 50)
+            self.assertEqual(number_of_particles_in_module, 50)
         finally:
             instance.stop()
     
@@ -121,12 +121,12 @@ class _TestGravityCodes(TestWithMPI):
             instance.particles.add_particles(particles)
             instance.commit_particles()
             
-            self.assertEquals(len(instance.particles), 100)
+            self.assertEqual(len(instance.particles), 100)
             instance.synchronize_model()
             instance.particles.remove_particle(particles[40])
             instance.particles.remove_particle(particles[70])
             instance.particles.add_particle(new_particles[0])
-            print new_particles[0].key
+            print(new_particles[0].key)
             instance.recommit_particles()
             # test the get_mass, get_position and get_velocity functions
             # if they are implemented for the code, otherwise will call
@@ -136,8 +136,8 @@ class _TestGravityCodes(TestWithMPI):
             #self.assertAlmostRelativeEqual(instance.particles[-1].velocity, new_particles[0].velocity)
             #self.assertAlmostRelativeEqual(instance.particles[-1].position, new_particles[0].position)
             instance.particles.synchronize_to(particles)
-            self.assertEquals(len(particles), 99)
-            self.assertEquals(particles[-1], new_particles[0])
+            self.assertEqual(len(particles), 99)
+            self.assertEqual(particles[-1], new_particles[0])
         finally:
             instance.stop()
             
@@ -150,7 +150,7 @@ class _TestGravityCodes(TestWithMPI):
         particles.radius = 0.2 | self.length_unit
         particles.move_to_center()
         instance.particles.add_particles(particles)
-        self.assertEquals(len(instance.particles), 10)
+        self.assertEqual(len(instance.particles), 10)
         collision_detection = instance.stopping_conditions.collision_detection
         collision_detection.enable()
         instance.evolve_model(1 | self.time_unit)
@@ -174,9 +174,9 @@ class _TestGravityCodes(TestWithMPI):
         stopping_condition = instance.stopping_conditions.out_of_box_detection
         stopping_condition.enable()
         instance.evolve_model(1 | self.time_unit)
-        print instance.particles
-        print instance.particles.center_of_mass()
-        print (instance.particles.position - instance.particles.center_of_mass()).lengths()
+        print(instance.particles)
+        print(instance.particles.center_of_mass())
+        print((instance.particles.position - instance.particles.center_of_mass()).lengths())
         self.assertTrue(stopping_condition.is_set())
         instance.stop()
     
@@ -260,11 +260,11 @@ class TestPhiGRAPEGravityCode(_TestGravityCodes):
             
             instance.particles.add_particles(particles)
             instance.commit_particles()
-            self.assertEquals(len(instance.particles), n)
+            self.assertEqual(len(instance.particles), n)
             instance.synchronize_model()
             for t in range(1, 101):
                 instance.evolve_model((t * 0.01) | self.time_unit)
-                print sc.is_set()
+                print(sc.is_set())
                 if sc.is_set():
                     particle1 = sc.particles(0)[0]
                     particle2 = sc.particles(1)[0] 
@@ -276,7 +276,7 @@ class TestPhiGRAPEGravityCode(_TestGravityCodes):
                     instance.particles.remove_particle(particle1)
                     instance.particles.remove_particle(particle2)
                     merged = instance.particles.add_particles(newparticle)
-                    print 'Remnant:\n',merged
+                    print('Remnant:\n',merged)
             
         finally:
             instance.stop()

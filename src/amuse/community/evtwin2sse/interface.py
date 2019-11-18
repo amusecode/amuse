@@ -114,19 +114,19 @@ class EVtwin2SSE:
                 self.EVtwinAgeAtSwitch = self._EVtwin.particles.age
                 self.EVtwinException = ex
                 self.ActiveModel = self._SSE
-                print "Evtwin2SSE switching models, EVtwin (age = %s) threw exception: %s" % (self._EVtwin.particles.age, self.EVtwinException)
+                print("Evtwin2SSE switching models, EVtwin (age = %s) threw exception: %s" % (self._EVtwin.particles.age, self.EVtwinException))
 
                 # run SSE for just long enough to get data for the RMS search
                 while not _sse_search_endpoint_reached(self._SSE.particles):
                     self._SSE.evolve_model()
                     self._SSETimeseries.add_timepoint()
-                print "Evtwin2SSE switch: evolved SSE to: %s " % (self._SSE.particles.age,)
+                print("Evtwin2SSE switch: evolved SSE to: %s " % (self._SSE.particles.age,))
 
                 for evtwin_star, sse_track in zip(self._EVtwin.particles, self._SSETimeseries.particles):
                     self._SSE_rms_search(evtwin_star, sse_track)
                     # TODO: Add ModelSwitchFailed exception when RMS statistics is above some threshold?
-                    print ("Evtwin2SSE switch parameters: %s %s %s %s" %  
-                            (sse_track.SSEIndexAtSwitch, sse_track.SSENextStateIndex, sse_track.SSEAgeAtSwitch, sse_track.RMSErrorAtSwitch))
+                    print(("Evtwin2SSE switch parameters: %s %s %s %s" %  
+                            (sse_track.SSEIndexAtSwitch, sse_track.SSENextStateIndex, sse_track.SSEAgeAtSwitch, sse_track.RMSErrorAtSwitch)))
 
                 self._evolve_model_SSE()
 
@@ -229,7 +229,7 @@ if __name__ == '__main__':
     stopped_evolving = False
 
     stellar_remnant_counter = 10
-    print "%s\t%s\t%s\t%s\t%s\t%s" % (star.age, star.mass, star.radius, star.luminosity, star.stellar_type, stellar_evolution.activeModel)
+    print("%s\t%s\t%s\t%s\t%s\t%s" % (star.age, star.mass, star.radius, star.luminosity, star.stellar_type, stellar_evolution.activeModel))
     while stellar_remnant_counter > 0 and not stopped_evolving:
 
         if (is_remnant_stellar_type( star.stellar_type )):
@@ -245,7 +245,7 @@ if __name__ == '__main__':
 #			print str(ex)
 #			stopped_evolving = True
 
-        print "%s\t%s\t%s\t%s\t%s\t%s" % (star.age, star.mass, star.radius, star.luminosity, star.stellar_type, stellar_evolution.activeModel)
+        print("%s\t%s\t%s\t%s\t%s\t%s" % (star.age, star.mass, star.radius, star.luminosity, star.stellar_type, stellar_evolution.activeModel))
 
     stellar_evolution.particles.remove_particle(star)
     stellar_evolution.stop()

@@ -29,18 +29,20 @@ derived from the main module. Easy way to achieve this is to import them from a 
 
 """
 from amuse.rfi.core import *
-import cPickle as pickle
-from amuse.rfi.channel import AsyncRequestsPool
+import pickle
+from amuse.rfi.async_request import AsyncRequestsPool
 import inspect
 from collections import deque
 import threading
 from time import sleep
 import warnings
 
+import base64
+
 def dump_and_encode(x):
-  return pickle.dumps(x,0) # -1 does not work with sockets channel
+  return base64.b64encode(pickle.dumps(x)).decode()
 def decode_and_load(x):
-  return pickle.loads(x.encode("latin-1"))
+  return pickle.loads(base64.b64decode(x.encode()))
 
 class RemoteCodeException(Exception):
     def __init__(self,ex=None):
@@ -54,16 +56,16 @@ class RemoteCodeImplementation(object):
      self.scope['dump_and_encode']=dump_and_encode
      self.scope['decode_and_load']=decode_and_load
 
-   def _exec(self,express):
+   def _exec(self,arg):
      try:
-       exec express in self.scope
+       exec(arg, self.scope)
        return dump_and_encode(None)
      except Exception as ex:
        return dump_and_encode(RemoteCodeException(ex))
-   def _eval(self,express,argout):
+   def _eval(self,arg,argout):
      try:
-       self.scope.update(dict(express=express))
-       exec "argout="+express in self.scope
+       self.scope.update(dict(arg=arg))
+       exec("argout="+arg, self.scope)
        argout.value=eval("dump_and_encode(argout)",self.scope)
        return dump_and_encode(None)
      except Exception as ex:
@@ -72,17 +74,17 @@ class RemoteCodeImplementation(object):
    def _assign(self,lhs,argin):
      try:
        self.scope.update(dict(argin=argin))
-       exec lhs+"=decode_and_load(argin)" in self.scope
+       exec(lhs+"=decode_and_load(argin)", self.scope)
        return dump_and_encode(None)
      except Exception as ex:
        return dump_and_encode(RemoteCodeException(ex))
-   def _func(self,f,argin,kwargin,argout):
+   def _func(self,func,argin,kwargin,argout):
      try:
-       self.scope.update(dict(f=f,argin=argin,kwargin=kwargin))
-       exec "func=decode_and_load(f)" in self.scope
-       exec "arg=decode_and_load(argin)" in self.scope
-       exec "kwarg=decode_and_load(kwargin)" in self.scope
-       exec "result=func(*arg,**kwarg)" in self.scope
+       self.scope.update(dict(func=func,argin=argin,kwargin=kwargin))
+       exec("func=decode_and_load(func)", self.scope)
+       exec("arg=decode_and_load(argin)", self.scope)
+       exec("kwarg=decode_and_load(kwargin)", self.scope)
+       exec("result=func(*arg,**kwarg)", self.scope)
        argout.value=eval("dump_and_encode(result)",self.scope)
        return dump_and_encode(None)
      except Exception as ex:
@@ -153,7 +155,7 @@ class RemoteCodeInterface(PythonCodeInterface):
         return decode_and_load(result)
 
     def async_func(self,f,*args,**kwargs):
-        request=self._func.async(dump_and_encode(f),
+        request=self._func.asynchronous(dump_and_encode(f),
                                  dump_and_encode(args),
                                  dump_and_encode(kwargs) )
         def f(x):
@@ -194,7 +196,7 @@ class JobServer(object):
       self.use_threading=use_threading
       self.verbose=verbose
       if self.verbose:
-          print "AMUSE JobServer launching"
+          print("AMUSE JobServer launching")
 
       self.add_hosts(hosts=hosts,channel_type=channel_type)
 
@@ -206,7 +208,7 @@ class JobServer(object):
     def add_hosts(self,hosts=[],channel_type="mpi"):
       self.hosts.append(hosts)
       if self.verbose:
-        print "JobServer: connecting %i hosts"%len(hosts)
+        print("JobServer: connecting %i hosts"%len(hosts))
       if not self.use_threading:
         for host in hosts:
           self.number_starting_codes+=1
@@ -224,28 +226,28 @@ class JobServer(object):
           thread.start()
         if not self.no_wait:  
           if self.verbose:
-            print "... waiting"
+            print("... waiting")
           for thread in threads:
             thread.join()
         else:
           if self.verbose:
-            print "... waiting for first available host"
+            print("... waiting for first available host")
           while self.number_available_codes==0 and self.number_starting_codes>0:
             sleep(0.1)
       if self.no_wait:
         if self.verbose:
-          print "JobServer: launched"
+          print("JobServer: launched")
       else:    
         if self.verbose:
-          print "JobServer: launched with", len(self.idle_codes),"hosts"
+          print("JobServer: launched with", len(self.idle_codes),"hosts")
     
     def _startup(self, *args,**kwargs):
       try: 
         code=RemoteCodeInterface(*args,**kwargs) 
       except Exception as ex:
         self.number_starting_codes-=1
-        print "JobServer: startup failed on", kwargs['hostname'] or "default"
-        print ex
+        print("JobServer: startup failed on", kwargs['hostname'] or "default")
+        print(ex)
       else:
         if self.preamble is not None:
           code.execute(self.preamble)
@@ -255,10 +257,10 @@ class JobServer(object):
         if self.no_wait:
           if self.number_available_codes & (self.number_available_codes-1) ==0:
             if self.verbose:
-              print "JobServer: hosts now available:",self.number_available_codes
+              print("JobServer: hosts now available:",self.number_available_codes)
           if self.number_starting_codes==0:
             if self.verbose:
-              print "JobServer: hosts in total:", self.number_available_codes
+              print("JobServer: hosts in total:", self.number_available_codes)
         if self.job_list: 
           self._add_job(self.job_list.popleft(), code)
         else:
@@ -274,7 +276,7 @@ class JobServer(object):
     def submit_job(self,f,args=(),kwargs={}):
       if len(self.pool)==0 and not self.job_list:
         if self.verbose:
-          print "JobServer: submitting first job on queue"
+          print("JobServer: submitting first job on queue")
       job=Job(f,args,kwargs)
       self.job_list.append( job)
       if self.idle_codes: 
@@ -287,7 +289,7 @@ class JobServer(object):
         return True
       elif len(self.pool)==0 and not self.job_list:
         if self.verbose:
-          print "JobServer: no more jobs on queue or running"        
+          print("JobServer: no more jobs on queue or running")        
         return False
       else:
         while len(self.pool)==0 and self.job_list:
@@ -300,8 +302,14 @@ class JobServer(object):
         return True
 
     def waitall(self):
-      while self.wait():
-        pass
+        while len(self.pool)==0 and self.job_list:
+            if self.number_available_codes>0:
+                raise Exception("JobServer: this should not happen")    
+            if self.number_starting_codes==0:
+                raise Exception("JobServer: no codes available")
+        while len(self.pool)>0 or self.job_list:        
+            self.pool.wait()
+            self.last_finished_job=self._finished_jobs[-1]
     
     @property
     def finished_jobs(self):
@@ -327,7 +335,7 @@ class JobServer(object):
         self._add_job( self.job_list.popleft(), self.idle_codes.pop())
         if not self.job_list:
           if self.verbose:
-            print "JobServer: last job dispatched"
+            print("JobServer: last job dispatched")
       self._finished_jobs.append(job)
     
     def _add_job(self,job,code):

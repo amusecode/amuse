@@ -1,7 +1,7 @@
 from amuse.community import *
 from amuse.test.amusetest import TestWithMPI
 
-from interface import supportInterface
+from .interface import supportInterface
 import numpy as np
 
 
@@ -18,7 +18,7 @@ if __name__ == '__main__':
     z1 = R.z
 
     for i, v in enumerate(x):
-        print x1[i], y1[i], z1[i]
+        print(x1[i], y1[i], z1[i])
 
     instance.stop()
 

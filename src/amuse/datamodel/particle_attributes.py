@@ -17,6 +17,7 @@ from amuse.ext.basicgraph import Graph, MinimumSpanningTreeFromEdges, MinimumSpa
 from amuse.datamodel import base
 from amuse.datamodel import rotation
 from amuse.datamodel import ParticlesWithUnitsConverted, AbstractParticleSet, Particle
+from functools import reduce
 
 def move_to_center(particles):
     """
@@ -533,7 +534,11 @@ def densitycentre_coreradius_coredens(particles, unit_converter=None, number_of_
     if isinstance(hop, HopContainer):
         hop.initialize(unit_converter)
         hop = hop.code
-    hop.particles.add_particles(particles)
+    try:
+        hop.particles.add_particles(particles)
+    except Exception as ex:
+        hop.stop()
+        raise exceptions.AmuseException(str(ex)+" (note: check whether Hop needs a converter here)")
     hop.parameters.density_method=2
     hop.parameters.number_of_neighbors_for_local_density=number_of_neighbours
     hop.calculate_densities()
@@ -664,7 +669,7 @@ def mass_segregation_Gini_coefficient(particles, unit_converter=None, density_we
     a=numpy.argsort(r2)
     m=particles.mass.number[a]
     
-    nf=1.*numpy.array(range(len(m)))/(len(m)-1.)
+    nf=1.*numpy.array(list(range(len(m))))/(len(m)-1.)
     mf=m.cumsum()
     mf=mf/mf[-1]
     
@@ -820,14 +825,14 @@ def nearest_neighbour(particles, neighbours=None, max_array_length=10000000):
         for indices in indices_in_each_batch:
             distances_squared = particles[indices].distances_squared(other_particles)
             if neighbours is None:
-                diagonal_indices = [numpy.arange(len(indices)), indices]
+                diagonal_indices = (numpy.arange(len(indices)), indices)
                 distances_squared.number[diagonal_indices] = numpy.inf # can't be your own neighbour
             neighbour_indices.append(distances_squared.argmin(axis=1))
         return other_particles[numpy.concatenate(neighbour_indices)]
     
     distances_squared = particles.distances_squared(other_particles)
     if neighbours is None:
-        diagonal_indices = [numpy.arange(len(particles))]*2
+        diagonal_indices = numpy.diag_indices(len(particles))
         distances_squared.number[diagonal_indices] = numpy.inf # can't be your own neighbour
     return other_particles[distances_squared.argmin(axis=1)]
     
@@ -906,8 +911,8 @@ def connected_components(parts, threshold=None, distfunc=None, verbose=False):
       def distfunc(p,q):
         return (((p.x-q.x)**2+(p.y-q.y)**2+(p.z-q.z)**2)**0.5)
   
-    if verbose: print "making CC"
-    tocheck=range(len(parts))
+    if verbose: print("making CC")
+    tocheck=list(range(len(parts)))
     cc=[]
     while len(tocheck)>0:
        p=tocheck.pop()
@@ -923,8 +928,8 @@ def connected_components(parts, threshold=None, distfunc=None, verbose=False):
          currentcc.extend(toadd)
        cc.append(parts[currentcc])  
          
-    if verbose: print "done"
-    if verbose: print "number of CC:",len(cc)
+    if verbose: print("done")
+    if verbose: print("number of CC:",len(cc))
     return cc
 
 def minimum_spanning_tree_length(particles):
@@ -1030,14 +1035,14 @@ def correlation_dimension(particles, max_array_length=10000000):
         indices_in_each_batch.append(numpy.arange(indices_in_each_batch[-1][-1]+1, len(particles)))
         for indices in indices_in_each_batch:
             distances_squared = particles[indices].distances_squared(particles)
-            diagonal_indices = [numpy.arange(len(indices)), indices]
+            diagonal_indices = (numpy.arange(len(indices)), indices)
             distances_squared.number[diagonal_indices] = numpy.inf # can't be your own neighbour
             
             counts_per_batch.append([(distances_squared < eps2).sum() for eps2 in eps2_range])
         number_of_close_pairs = numpy.array(counts_per_batch).sum(axis=0)
     else:
         distances_squared = particles.distances_squared(particles)
-        diagonal_indices = [numpy.arange(len(particles))]*2
+        diagonal_indices = numpy.diag_indices(len(particles))
         distances_squared.number[diagonal_indices] = numpy.inf # can't be your own neighbour
         number_of_close_pairs = numpy.array([(distances_squared < eps2).sum() for eps2 in eps2_range])
     

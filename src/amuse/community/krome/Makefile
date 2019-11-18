@@ -9,7 +9,7 @@ CODE_GENERATOR = $(AMUSE_DIR)/build.py
 
 CLASSNAME=KromeInterface
 
-FFLAGS += $(FCFLAGS) -O2
+FFLAGS += $(FCFLAGS) -O2 -ffree-line-length-none
 INCL = -I./src/ -I./src/krome/build/
 
 all: src/krome src/libchem.a test krome_worker

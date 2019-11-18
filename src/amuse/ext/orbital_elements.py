@@ -539,7 +539,7 @@ def get_orbital_elements_from_arrays(
             e_vecs[filter_non0_ecc],
             e_vecs_norm[filter_non0_ecc]
             )
-    cos_arg_per = (
+    cos_arg_per[filter_non0_ecc] = (
             e_vecs_unit[filter_non0_ecc]
             * asc_node_matrix_unit[filter_non0_ecc]
             ).sum(axis=-1)
@@ -556,7 +556,9 @@ def get_orbital_elements_from_arrays(
                 * e_cross_an[filter_non0_e_cross_an]
                 ).sum(axis=-1)
             )
+    # note change in size in sin_arg_per and cos_arg_per; they are not used further        
     sin_arg_per = ss*e_cross_an_norm[filter_non0_e_cross_an]
+    cos_arg_per = cos_arg_per[filter_non0_e_cross_an]
     arg_per_mat[filter_non0_e_cross_an] = arctan2(sin_arg_per, cos_arg_per)
 
     # in case longitude of ascending node is 0, omega=arctan2(e_y,e_x)

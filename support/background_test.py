@@ -1,10 +1,14 @@
+
+
 import time
 import traceback
 import sys
 import linecache
 import inspect
 import os.path
-import Queue as queue
+import queue
+from io import StringIO
+func_code_attr = '__code__'
 import subprocess
 import threading
 import tempfile
@@ -18,9 +22,6 @@ from nose.plugins.skip import Skip, SkipTest
 from nose.plugins.doctests import Doctest
 
 from multiprocessing import Process, Queue
-from Queue import Empty
-
-from StringIO import StringIO
 
 from . import project
 
@@ -68,7 +69,7 @@ def find_method_in_class(name_of_the_method, code, class_to_search):
     if name_of_the_method in class_to_search.__dict__:
         member =  class_to_search.__dict__[name_of_the_method]
         if inspect.isfunction(member):
-            if member.func_code == code:
+            if getattr(member, func_code_attr) == code:
                 return member
         if inspect.ismethoddescriptor(member):
             pass
@@ -86,12 +87,12 @@ def extract_tb(tb, limit = None):
         linecache.checkcache(filename)
         line = ""
         if '__file__' in f.f_globals:
-            for global_name, x in f.f_globals.iteritems():
+            for global_name, x in f.f_globals.items():
                 if global_name.startswith('_'):
                     continue
-                   
+
                 if inspect.isfunction(x):
-                    if global_name == name and x.func_code == co:
+                    if global_name == name and get(x, func_code_attr) == co:
                         args, varargs, varkw, defaults = inspect.getargspec(x)
                         name += inspect.formatargspec(args, varargs, varkw, defaults)
                 elif inspect.isclass(x):
@@ -131,7 +132,7 @@ class TestCaseReport(object):
             self.lineno = test.test._dt_test.lineno
         elif hasattr(test.test, "_testMethodName"):
             method = getattr(test.test, getattr(test.test, "_testMethodName"))
-            self.lineno = method.func_code.co_firstlineno
+            self.lineno = method.getattr(func_code_attr).co_firstlineno
         else:
             self.lineno = test.test.descriptor.compat_co_firstlineno
             
@@ -247,7 +248,7 @@ class MakeAReportOfATestRun(object):
 
     def __getstate__(self):
         result = {}
-        for key, value in self.__dict__.iteritems():
+        for key, value in self.__dict__.items():
             if not key.startswith('_'):
                 result[key] = value
         return result
@@ -322,7 +323,7 @@ class MakeAReportOfATestRun(object):
         
     def finalize(self, x):    
         self.end_time = time.time()
-        for key, report in list(self.address_to_report.iteritems()):
+        for key, report in list(self.address_to_report.items()):
             if not report.found:
                 del self.address_to_report[key]        
 
@@ -428,9 +429,9 @@ class MakeAReportOfATestRun(object):
                 x.address[0] = ''
                 
         testcases.sort(key=lambda x: os.path.basename(x.address[0]))
-        result['testcases'] = map(lambda x: x.to_dict(),testcases )
-        
-        return result  
+        result['testcases'] = [x.to_dict() for x in testcases]
+
+        return result
 
 
 
@@ -514,7 +515,7 @@ class RunTests(object):
 
     def _perform_one_test(self, directories, results_queue, address):
         try:
-            print "start test run"
+            print("start test run")
             null_device = open('/dev/null')
             os.stdin = null_device
             select = SelectOneTestAndStoreOutput(address)
@@ -545,7 +546,7 @@ class RunTests(object):
         finally:
             results_queue.put(None)
             MPI.Finalize()
-            print "calling finalize done"
+            print("calling finalize done")
 
     def run_test_with_address(self, address):
         typestring, result = self.run_in_another_process(self._perform_one_test, address)
@@ -554,7 +555,7 @@ class RunTests(object):
     def run_tests(self, previous_report):
         typestring, result = self.run_in_another_process(self._perform_the_testrun, previous_report)
         if typestring == 'test-error':
-            print result
+            print(result)
             raise Exception(result)
         else:
             return result  
@@ -591,9 +592,9 @@ class RunTests(object):
             
             temp_stdout = tempfile.NamedTemporaryFile('w')
             temp_stderr = temp_stdout
-            
-            print temp_stdout.name
-            
+
+            print(temp_stdout.name)
+
             sys.stdout = temp_stdout
             sys.stderr = temp_stderr
             
@@ -607,21 +608,21 @@ class RunTests(object):
                 if message is None:
                     break;
                 if message[0] == 'unit-report':
-                    print message[1]
+                    print(message[1])
                     self.report_info = message[2]
                     if(message[1]['failed'] or message[1]['errored']):
                         self.report_queue.put(message[1])
                    
                 if message[0] == 'start-report':
                     self.last_test_started = message[1]
-                    print self.last_test_started
+                    print(self.last_test_started)
                     continue
                     
                 last_message = message
             result = last_message
             self.last_test_started = None
-        except Empty:
-            print "No message recieved from process for 60 seconds"
+        except queue.Empty:
+            print("No message recieved from process for 60 seconds")
             report = MakeAReportOfATestRun()
             report.last_test_run = self.last_test_started
             report.start_time = report.end_time = time.time()

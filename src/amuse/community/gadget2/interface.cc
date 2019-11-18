@@ -117,7 +117,6 @@ int initialize_code(){
     MPI_Comm_rank(GADGET_WORLD, &ThisTask);
     MPI_Comm_size(GADGET_WORLD, &NTask);
 #else
-    GADGET_WORLD = 0;
     ThisTask = 0;
     NTask = 1;
 #endif
@@ -1116,12 +1115,12 @@ int set_time_limit_cpu(double time_limit_cpu){
     All.TimeLimitCPU = time_limit_cpu;
     return 0;
 }
-int get_comoving_integration_flag(int *comoving_integration_flag){
+int get_comoving_integration_flag(bool *comoving_integration_flag){
     if (ThisTask) {return 0;}
     *comoving_integration_flag = All.ComovingIntegrationOn;
     return 0;
 }
-int set_comoving_integration_flag(int comoving_integration_flag){
+int set_comoving_integration_flag(bool comoving_integration_flag){
     All.ComovingIntegrationOn = comoving_integration_flag;
     return 0;
 }
@@ -1301,39 +1300,39 @@ int set_box_size(double value)
     return 0;
 }
 
-int get_periodic_boundaries_flag(int *value)
+int get_periodic_boundaries_flag(bool *value)
 {
     if (ThisTask) {return 0;}
     *value = All.PeriodicBoundariesOn;
     return 0;
 }
 
-int set_periodic_boundaries_flag(int value)
+int set_periodic_boundaries_flag(bool value)
 {
 // All.PeriodicBoundariesOn is read only because compile time determined
     return -2;
 }
 
-int get_interpret_kicks_as_feedback_flag(int *value)
+int get_interpret_kicks_as_feedback_flag(bool *value)
 {
     if (ThisTask) {return 0;}
     *value = interpret_kicks_as_feedback;
     return 0;
 }
 
-int set_interpret_kicks_as_feedback_flag(int value)
+int set_interpret_kicks_as_feedback_flag(bool value)
 {
     interpret_kicks_as_feedback = value;
     return 0;
 }
 
-int get_interpret_heat_as_feedback_flag(int *value) {
+int get_interpret_heat_as_feedback_flag(bool *value) {
     if (ThisTask) {return 0;}
     *value = interpret_heat_as_feedback;
     return 0;
 }
 
-int set_interpret_heat_as_feedback_flag(int value) {
+int set_interpret_heat_as_feedback_flag(bool value) {
     interpret_heat_as_feedback = value;
     return 0;
 }
@@ -2287,11 +2286,15 @@ int get_alpha_visc(int *index, double *alpha_visc, int length){
         }
     }
     if(ThisTask) {
+#ifndef NOMPI
         MPI_Reduce(buffer, NULL, length, MPI_DOUBLE, MPI_SUM, 0, GADGET_WORLD);
         MPI_Reduce(count, NULL, length, MPI_INT, MPI_SUM, 0, GADGET_WORLD);
+#endif
     } else {
+#ifndef NOMPI
         MPI_Reduce(MPI_IN_PLACE, buffer, length, MPI_DOUBLE, MPI_SUM, 0, GADGET_WORLD);
         MPI_Reduce(MPI_IN_PLACE, count, length, MPI_INT, MPI_SUM, 0, GADGET_WORLD);
+#endif
         for (int i = 0; i < length; i++){
             if (count[i] != 1){
                 errors++;
@@ -2329,11 +2332,15 @@ int get_dalphadt_visc(int *index, double *dalphadt_visc, int length){
         }
     }
     if(ThisTask) {
+#ifndef NOMPI
         MPI_Reduce(buffer, NULL, length, MPI_DOUBLE, MPI_SUM, 0, GADGET_WORLD);
         MPI_Reduce(count, NULL, length, MPI_INT, MPI_SUM, 0, GADGET_WORLD);
+#endif
     } else {
+#ifndef NOMPI
         MPI_Reduce(MPI_IN_PLACE, buffer, length, MPI_DOUBLE, MPI_SUM, 0, GADGET_WORLD);
         MPI_Reduce(MPI_IN_PLACE, count, length, MPI_INT, MPI_SUM, 0, GADGET_WORLD);
+#endif
         for (int i = 0; i < length; i++){
             if (count[i] != 1){
                 errors++;

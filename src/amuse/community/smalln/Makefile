@@ -1,6 +1,6 @@
 # standard amuse configuration include
 # config.mk will be made after ./configure has run
-AMUSE_DIR?=../../../..
+AMUSE_DIR?=$(realpath ../../../..)
 -include ${AMUSE_DIR}/config.mk
 
 # Makefile to build the worker code.  First draft was auto-generated;
@@ -14,7 +14,7 @@ MPICXX   ?= mpicxx
 SC_FLAGS ?= -I$(AMUSE_DIR)/lib/stopcond
 SC_CLIBS  ?=  -L$(AMUSE_DIR)/lib/stopcond -lstopcondmpi 
 
-CFLAGS   += -Wall -g $(OPT) -I../../ph4/src -I../ph4/src
+CFLAGS   += -Wall -g $(OPT) -Isrc
 CXXFLAGS += $(CFLAGS) $(SC_FLAGS)
 LDFLAGS  += $(SC_CLIBS) -lm $(MUSE_LD_FLAGS)
 
@@ -67,3 +67,5 @@ clean:
 	$(RM) -f *~ smallN_worker worker_code.cc
 	$(RM) -f smalln_worker_cython smalln_cython.so smalln_cython.o smalln_cython.c smalln_cython.pyx
 	make -C src clean
+
+distclean: clean

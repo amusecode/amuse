@@ -4,7 +4,7 @@ import sys
 import numpy
 import math
 
-from amuse.community.hermite0.interface import HermiteInterface, Hermite
+from amuse.community.hermite.interface import HermiteInterface, Hermite
 
 from amuse.units import nbody_system
 from amuse.units import units
@@ -33,18 +33,18 @@ class TestHermiteInterface(TestWithMPI):
         res1 = instance.new_particle(mass = 11.0, radius = 2.0, x = 0.0, y = 0.0, z = 0.0, vx = 0.0, vy = 0.0, vz = 0.0)
         res2 = instance.new_particle(mass = 21.0, radius = 5.0, x = 10.0, y = 0.0, z = 0.0, vx = 10.0, vy = 0.0, vz = 0.0)
         
-        self.assertEquals(0, res1['index_of_the_particle'])
-        self.assertEquals(1, res2['index_of_the_particle'])
+        self.assertEqual(0, res1['index_of_the_particle'])
+        self.assertEqual(1, res2['index_of_the_particle'])
     
         retrieved_state1 = instance.get_state(0)
         retrieved_state2 = instance.get_state(1)
     
-        self.assertEquals(11.0,  retrieved_state1['mass'])
-        self.assertEquals(21.0,  retrieved_state2['mass'])
-        self.assertEquals(0.0,  retrieved_state1['x'])
-        self.assertEquals(10.0,  retrieved_state2['x'])
-        self.assertEquals(2.0,  retrieved_state1['radius'])
-        self.assertEquals(5.0,  retrieved_state2['radius'])
+        self.assertEqual(11.0,  retrieved_state1['mass'])
+        self.assertEqual(21.0,  retrieved_state2['mass'])
+        self.assertEqual(0.0,  retrieved_state1['x'])
+        self.assertEqual(10.0,  retrieved_state2['x'])
+        self.assertEqual(2.0,  retrieved_state1['radius'])
+        self.assertEqual(5.0,  retrieved_state2['radius'])
     
         instance.cleanup_code()
         instance.stop()
@@ -55,35 +55,35 @@ class TestHermiteInterface(TestWithMPI):
 
         for i in [0, 1, 2]:
             temp_particle = instance.new_particle(mass = i, radius = 1.0, x = 0.0, y = 0.0, z = 0.0, vx = 0.0, vy = 0.0, vz = 0.0)
-            self.assertEquals(i, temp_particle['index_of_the_particle'])
+            self.assertEqual(i, temp_particle['index_of_the_particle'])
             
         instance.delete_particle(1)
       
-        self.assertEquals(2, instance.get_number_of_particles()['number_of_particles'])
+        self.assertEqual(2, instance.get_number_of_particles()['number_of_particles'])
         
-        self.assertEquals(0, instance.get_index_of_first_particle()['index_of_the_particle'])
+        self.assertEqual(0, instance.get_index_of_first_particle()['index_of_the_particle'])
         
-        self.assertEquals(2, instance.get_index_of_next_particle(0)['index_of_the_next_particle'])
-        self.assertEquals(0, instance.get_index_of_next_particle(0)['__result'])
-        self.assertEquals(-1, instance.get_index_of_next_particle(1)['__result'])
-        self.assertEquals(1, instance.get_index_of_next_particle(2)['__result'])
+        self.assertEqual(2, instance.get_index_of_next_particle(0)['index_of_the_next_particle'])
+        self.assertEqual(0, instance.get_index_of_next_particle(0)['__result'])
+        self.assertEqual(-1, instance.get_index_of_next_particle(1)['__result'])
+        self.assertEqual(1, instance.get_index_of_next_particle(2)['__result'])
         instance.cleanup_code()
         instance.stop()
         
     def test3(self):
         hermite = HermiteInterface()
-        self.assertEquals(0, hermite.set_eps2(0.101))
-        self.assertEquals([0.101, 0], hermite.get_eps2().values())
-        self.assertEquals(0, hermite.set_eps2(0.2))
-        self.assertEquals([0.2, 0], hermite.get_eps2().values())
+        self.assertEqual(0, hermite.set_eps2(0.101))
+        self.assertEqual([0.101, 0], list(hermite.get_eps2().values()))
+        self.assertEqual(0, hermite.set_eps2(0.2))
+        self.assertEqual([0.2, 0], list(hermite.get_eps2().values()))
         hermite.cleanup_code()
         hermite.stop()
 
     def test4(self):
         hermite = HermiteInterface()
-        self.assertEquals([0, 0], hermite.get_is_time_reversed_allowed().values())
-        self.assertEquals(0, hermite.set_is_time_reversed_allowed(1))
-        self.assertEquals([1, 0], hermite.get_is_time_reversed_allowed().values())
+        self.assertEqual([0, 0], list(hermite.get_is_time_reversed_allowed().values()))
+        self.assertEqual(0, hermite.set_is_time_reversed_allowed(1))
+        self.assertEqual([1, 0], list(hermite.get_is_time_reversed_allowed().values()))
         hermite.cleanup_code()
         hermite.stop()
 
@@ -94,12 +94,12 @@ class TestHermiteInterface(TestWithMPI):
         hermite.new_particle([10,20],[0,0],[0,0], [0,0], [0,0], [0,0], [0,0],[1,1])
         retrieved_state = hermite.get_state(0)
         
-        self.assertEquals(10.0,  retrieved_state['mass'])
-        self.assertEquals(1, retrieved_state['radius'])
+        self.assertEqual(10.0,  retrieved_state['mass'])
+        self.assertEqual(1, retrieved_state['radius'])
     
         retrieved_state = hermite.get_state([0,1])
-        self.assertEquals(20.0,  retrieved_state['mass'][1])
-        self.assertEquals(hermite.get_number_of_particles()['number_of_particles'], 2)
+        self.assertEqual(20.0,  retrieved_state['mass'][1])
+        self.assertEqual(hermite.get_number_of_particles()['number_of_particles'], 2)
         hermite.cleanup_code() 
         hermite.stop()
 
@@ -125,11 +125,11 @@ class TestHermiteInterface(TestWithMPI):
         
         instance.commit_particles()
         potential, errorcode = instance.get_potential(id1)
-        self.assertEquals(errorcode, 0)
+        self.assertEqual(errorcode, 0)
         self.assertAlmostRelativeEquals(potential,  -10.0 / numpy.sqrt(2.0**2 + 0.1**2), 8)
         
         potential, errorcode = instance.get_potential(id2)
-        self.assertEquals(errorcode, 0)
+        self.assertEqual(errorcode, 0)
         self.assertAlmostRelativeEquals(potential,  -10.0 / numpy.sqrt(2.0**2 + 0.1**2), 8)
         
         total_potential, errorcode = instance.get_potential_energy()
@@ -150,7 +150,7 @@ class TestHermiteInterface(TestWithMPI):
         
         instance.commit_particles()
         potential, errorcode = instance.get_potential(id1)
-        self.assertEquals(errorcode, 0)
+        self.assertEqual(errorcode, 0)
         self.assertAlmostRelativeEquals(potential,  -1.0 / numpy.sqrt(2.0**2), 8)
         total_potential, errorcode = instance.get_potential_energy()
         potentials, errorcode = instance.get_potential([id1, id2])
@@ -161,31 +161,31 @@ class TestHermiteInterface(TestWithMPI):
         
     
     def test9(self):
-        print "Test HermiteInterface evolve_model"
+        print("Test HermiteInterface evolve_model")
         instance = HermiteInterface()
-        self.assertEquals(0, instance.initialize_code())
-        self.assertEquals(0, instance.set_dt_param(0.001))
-        self.assertEquals(0, instance.set_end_time_accuracy_factor(0.0))
-        self.assertEquals(0, instance.commit_parameters())
+        self.assertEqual(0, instance.initialize_code())
+        self.assertEqual(0, instance.set_dt_param(0.001))
+        self.assertEqual(0, instance.set_end_time_accuracy_factor(0.0))
+        self.assertEqual(0, instance.commit_parameters())
         
         # Set up an equal-mass binary on a circular orbit:
-        self.assertEquals([0, 0], instance.new_particle(0.5,  0.5, 0, 0,  0, 0.5, 0, 0.01).values())
-        self.assertEquals([1, 0], instance.new_particle(0.5,  -0.5, 0, 0,  0,-0.5, 0, 0.01).values())
-        self.assertEquals(0, instance.commit_particles())
+        self.assertEqual([0, 0], list(instance.new_particle(0.5,  0.5, 0, 0,  0, 0.5, 0, 0.01).values()))
+        self.assertEqual([1, 0], list(instance.new_particle(0.5,  -0.5, 0, 0,  0,-0.5, 0, 0.01).values()))
+        self.assertEqual(0, instance.commit_particles())
         
-        self.assertEquals(0, instance.evolve_model(math.pi))
-        for result, expected in zip(instance.get_position(0).values(), [-0.5, 0.0, 0.0, 0]):
-            self.assertAlmostEquals(result, expected, 3)
-        for result, expected in zip(instance.get_position(1).values(), [0.5, 0.0, 0.0, 0]):
-            self.assertAlmostEquals(result, expected, 3)
+        self.assertEqual(0, instance.evolve_model(math.pi))
+        for result, expected in zip(list(instance.get_position(0).values()), [-0.5, 0.0, 0.0, 0]):
+            self.assertAlmostEqual(result, expected, 3)
+        for result, expected in zip(list(instance.get_position(1).values()), [0.5, 0.0, 0.0, 0]):
+            self.assertAlmostEqual(result, expected, 3)
         
-        self.assertEquals(0, instance.evolve_model(2 * math.pi))
-        for result, expected in zip(instance.get_position(0).values(), [0.5, 0.0, 0.0, 0]):
-            self.assertAlmostEquals(result, expected, 3)
-        for result, expected in zip(instance.get_position(1).values(), [-0.5, 0.0, 0.0, 0]):
-            self.assertAlmostEquals(result, expected, 3)
+        self.assertEqual(0, instance.evolve_model(2 * math.pi))
+        for result, expected in zip(list(instance.get_position(0).values()), [0.5, 0.0, 0.0, 0]):
+            self.assertAlmostEqual(result, expected, 3)
+        for result, expected in zip(list(instance.get_position(1).values()), [-0.5, 0.0, 0.0, 0]):
+            self.assertAlmostEqual(result, expected, 3)
         
-        self.assertEquals(0, instance.cleanup_code())
+        self.assertEqual(0, instance.cleanup_code())
         instance.cleanup_code()
         instance.stop()
 
@@ -269,8 +269,8 @@ class TestHermite(TestWithMPI):
             x_points = earth.get_timeline_of_attribute("x")
             y_points = earth.get_timeline_of_attribute("y")
             
-            x_points_in_AU = map(lambda (t,x) : x.value_in(units.AU), x_points)
-            y_points_in_AU = map(lambda (t,x) : x.value_in(units.AU), y_points)
+            x_points_in_AU = [t_x[1].value_in(units.AU) for t_x in x_points]
+            y_points_in_AU = [t_x1[1].value_in(units.AU) for t_x1 in y_points]
             
             plot.scatter(x_points_in_AU,y_points_in_AU, color = "b", marker = 'o')
             
@@ -327,7 +327,7 @@ class TestHermite(TestWithMPI):
         instance.initialize_code()
         
         particles = datamodel.Particles(2)
-        self.assertEquals(len(instance.particles), 0)
+        self.assertEqual(len(instance.particles), 0)
         
         particles.mass = [15.0, 30.0] | units.kg
         particles.radius =  [10.0, 20.0] | units.m
@@ -336,13 +336,13 @@ class TestHermite(TestWithMPI):
 
         
         instance.particles.add_particles(particles)
-        self.assertEquals(len(instance.particles), 2)
+        self.assertEqual(len(instance.particles), 2)
         
         instance.particles.mass =  [17.0, 33.0] | units.kg
         
         
-        self.assertEquals(instance.get_mass(0), 17.0| units.kg) 
-        self.assertEquals(instance.get_mass(1), 33.0| units.kg)  
+        self.assertEqual(instance.get_mass(0), 17.0| units.kg) 
+        self.assertEqual(instance.get_mass(1), 33.0| units.kg)  
         
         instance.stop()
 
@@ -353,7 +353,7 @@ class TestHermite(TestWithMPI):
         instance.initialize_code()
         
         particles = datamodel.Particles(2)
-        self.assertEquals(len(instance.particles), 0)
+        self.assertEqual(len(instance.particles), 0)
         
         particles.mass = [15.0, 30.0] | units.kg
         particles.radius =  [10.0, 20.0] | units.m
@@ -362,7 +362,7 @@ class TestHermite(TestWithMPI):
 
         
         instance.particles.add_particles(particles)
-        self.assertEquals(len(instance.particles), 2)
+        self.assertEqual(len(instance.particles), 2)
         instance.set_state(1, 16|units.kg, 
                            20.0|units.m, 40.0|units.m, 60.0|units.m, 
                            1.0|units.ms, 1.0|units.ms, 1.0|units.ms , 
@@ -376,44 +376,44 @@ class TestHermite(TestWithMPI):
             self.assertAlmostRelativeEquals(expected, actual)
         instance.stop()
         
-        self.assertEquals(curr_state[0], 16|units.kg, 8)
+        self.assertEqual(curr_state[0], 16|units.kg, 8)
     
     def test6(self):
-        print "Test6: Testing Hermite parameters"
+        print("Test6: Testing Hermite parameters")
         convert_nbody = nbody_system.nbody_to_si(1.0 | units.yr, 1.0 | units.AU)
         instance = Hermite(convert_nbody)
         
         value = instance.get_eps2()
-        self.assertEquals(0.0 | units.AU**2 , value)
-        self.assertAlmostEquals(0.0 | units.AU**2, instance.parameters.epsilon_squared, in_units=units.AU**2)
+        self.assertEqual(0.0 | units.AU**2 , value)
+        self.assertAlmostEqual(0.0 | units.AU**2, instance.parameters.epsilon_squared, in_units=units.AU**2)
         for x in [0.01, 0.1, 0.2]:
             instance.parameters.epsilon_squared = x | units.AU**2
-            self.assertAlmostEquals(x | units.AU**2, instance.parameters.epsilon_squared, in_units=units.AU**2)
+            self.assertAlmostEqual(x | units.AU**2, instance.parameters.epsilon_squared, in_units=units.AU**2)
         
         value = instance.get_dt_param()
-        self.assertEquals(0.03 , value)
-        self.assertAlmostEquals(0.03 , instance.parameters.dt_param)
+        self.assertEqual(0.03 , value)
+        self.assertAlmostEqual(0.03 , instance.parameters.dt_param)
         for x in [0.001, 0.01, 0.1]:
             instance.parameters.dt_param = x
-            self.assertAlmostEquals(x, instance.parameters.dt_param)
+            self.assertAlmostEqual(x, instance.parameters.dt_param)
         
         value = instance.get_dt_dia()
-        self.assertAlmostEquals(1.0 | units.yr, value)
-        self.assertAlmostEquals(1.0 | units.yr, instance.parameters.dt_dia, in_units=units.yr)
+        self.assertAlmostEqual(1.0 | units.yr, value)
+        self.assertAlmostEqual(1.0 | units.yr, instance.parameters.dt_dia, in_units=units.yr)
         for x in [0.1, 10.0, 100.0]:
             instance.parameters.dt_dia = x | units.yr
-            self.assertAlmostEquals(x | units.yr, instance.parameters.dt_dia, in_units=units.yr)
+            self.assertAlmostEqual(x | units.yr, instance.parameters.dt_dia, in_units=units.yr)
         
         value = instance.get_begin_time()
-        self.assertEquals(0.0| units.yr, value)
-        self.assertAlmostEquals(0.0 | units.yr, instance.parameters.begin_time, in_units=units.yr)
+        self.assertEqual(0.0| units.yr, value)
+        self.assertAlmostEqual(0.0 | units.yr, instance.parameters.begin_time, in_units=units.yr)
         for x in [1.0, 10.0, 100.0]:
             instance.parameters.begin_time = x | units.yr
-            self.assertAlmostEquals(x | units.yr, instance.parameters.begin_time, in_units=units.yr)
+            self.assertAlmostEqual(x | units.yr, instance.parameters.begin_time, in_units=units.yr)
         instance.stop()
     
     def test7(self):
-        print "Test7: Testing effect of Hermite parameter epsilon_squared"
+        print("Test7: Testing effect of Hermite parameter epsilon_squared")
         convert_nbody = nbody_system.nbody_to_si(1.0 | units.MSun, 1.0 | units.AU)
         
         particles = datamodel.Particles(2)
@@ -442,15 +442,15 @@ class TestHermite(TestWithMPI):
                 instance.particles[1].velocity[1])))
             instance.stop()
         # Small values of epsilon_squared should result in normal earth-sun dynamics: rotation of 90 degrees
-        self.assertAlmostEquals(abs(final_direction[0]), abs(initial_direction+math.pi/2.0), 2)
+        self.assertAlmostEqual(abs(final_direction[0]), abs(initial_direction+math.pi/2.0), 2)
         # Large values of epsilon_squared should result in ~ no interaction
-        self.assertAlmostEquals(final_direction[-1], initial_direction, 2)
+        self.assertAlmostEqual(final_direction[-1], initial_direction, 2)
         # Outcome is most sensitive to epsilon_squared when epsilon_squared = d(earth, sun)^2
         delta = [abs(final_direction[i+1]-final_direction[i]) for i in range(len(final_direction)-1)]
-        self.assertEquals(delta[len(final_direction)//2 -1], max(delta))
+        self.assertEqual(delta[len(final_direction)//2 -1], max(delta))
         
     def test8(self):
-        print "Testing Hermite collision_detection"
+        print("Testing Hermite collision_detection")
         particles = datamodel.Particles(7)
         particles.mass = 0.001 | nbody_system.mass
         particles.radius = 0.01 | nbody_system.length
@@ -469,10 +469,10 @@ class TestHermite(TestWithMPI):
         
         self.assertTrue(collisions.is_set())
         self.assertTrue(instance.model_time < 0.5 | nbody_system.time)
-        self.assertEquals(len(collisions.particles(0)), 3)
-        self.assertEquals(len(collisions.particles(1)), 3)
-        self.assertEquals(len(particles - collisions.particles(0) - collisions.particles(1)), 1)
-        self.assertEquals(abs(collisions.particles(0).x - collisions.particles(1).x) <= 
+        self.assertEqual(len(collisions.particles(0)), 3)
+        self.assertEqual(len(collisions.particles(1)), 3)
+        self.assertEqual(len(particles - collisions.particles(0) - collisions.particles(1)), 1)
+        self.assertEqual(abs(collisions.particles(0).x - collisions.particles(1).x) <= 
                 (collisions.particles(0).radius + collisions.particles(1).radius),
                 [True, True, True])
         
@@ -483,21 +483,21 @@ class TestHermite(TestWithMPI):
             merged.position = (p1 + p2).center_of_mass()
             merged.velocity = (p1 + p2).center_of_mass_velocity()
         
-        print instance.model_time
-        print instance.particles
+        print(instance.model_time)
+        print(instance.particles)
         instance.particles.remove_particles(collisions.particles(0) + collisions.particles(1))
         instance.particles.add_particles(sticky_merged)
         
         instance.evolve_model(1.0 | nbody_system.time)
-        print
-        print instance.model_time
-        print instance.particles
+        print()
+        print(instance.model_time)
+        print(instance.particles)
         self.assertTrue(collisions.is_set())
         self.assertTrue(instance.model_time < 1.0 | nbody_system.time)
-        self.assertEquals(len(collisions.particles(0)), 1)
-        self.assertEquals(len(collisions.particles(1)), 1)
-        self.assertEquals(len(instance.particles - collisions.particles(0) - collisions.particles(1)), 2)
-        self.assertEquals(abs(collisions.particles(0).x - collisions.particles(1).x) <= 
+        self.assertEqual(len(collisions.particles(0)), 1)
+        self.assertEqual(len(collisions.particles(1)), 1)
+        self.assertEqual(len(instance.particles - collisions.particles(0) - collisions.particles(1)), 2)
+        self.assertEqual(abs(collisions.particles(0).x - collisions.particles(1).x) <= 
                 (collisions.particles(0).radius + collisions.particles(1).radius),
                 [True])
         instance.stop()
@@ -510,7 +510,7 @@ class TestHermite(TestWithMPI):
         instance.initialize_code()
         instance.parameters.epsilon_squared = 0.0 | units.AU**2
         instance.parameters.stopping_conditions_number_of_steps = 10
-        self.assertEquals(instance.parameters.stopping_conditions_number_of_steps,10)
+        self.assertEqual(instance.parameters.stopping_conditions_number_of_steps,10)
     
         stars = self.new_system_of_sun_and_earth()
         earth = stars[1]
@@ -539,7 +539,7 @@ class TestHermite(TestWithMPI):
         instance = Hermite()
         instance.initialize_code()
         instance.parameters.stopping_conditions_number_of_steps = 2
-        self.assertEquals(instance.parameters.stopping_conditions_number_of_steps, 2)
+        self.assertEqual(instance.parameters.stopping_conditions_number_of_steps, 2)
         instance.particles.add_particles(particles) 
         instance.stopping_conditions.number_of_steps_detection.enable()
         instance.evolve_model(10 | nbody_system.time)
@@ -562,7 +562,7 @@ class TestHermite(TestWithMPI):
         instance = Hermite()
         instance.initialize_code()
         instance.parameters.stopping_conditions_out_of_box_size = .5 | nbody_system.length
-        self.assertEquals(instance.parameters.stopping_conditions_out_of_box_size, .5 | nbody_system.length)
+        self.assertEqual(instance.parameters.stopping_conditions_out_of_box_size, .5 | nbody_system.length)
         instance.particles.add_particles(particles) 
         instance.stopping_conditions.out_of_box_detection.enable()
         instance.evolve_model(0.1 | nbody_system.time)
@@ -648,7 +648,7 @@ class TestHermite(TestWithMPI):
         instance = Hermite()
         instance.particles.add_particles(particles) 
         instance.commit_particles()
-        self.assertEquals(instance.particles[0].radius, 0.0 | nbody_system.length)
+        self.assertEqual(instance.particles[0].radius, 0.0 | nbody_system.length)
         p = datamodel.Particle(
             x = 1.0  | nbody_system.length,
             y = 2.0 | nbody_system.length,
@@ -660,9 +660,9 @@ class TestHermite(TestWithMPI):
             radius = 4.0 | nbody_system.length,
         )
         instance.particles.add_particle(p) 
-        self.assertEquals(instance.particles[0].radius, 0.0 | nbody_system.length)
-        self.assertEquals(instance.particles[1].radius, 0.0 | nbody_system.length)
-        self.assertEquals(instance.particles[2].radius, 4.0 | nbody_system.length)
+        self.assertEqual(instance.particles[0].radius, 0.0 | nbody_system.length)
+        self.assertEqual(instance.particles[1].radius, 0.0 | nbody_system.length)
+        self.assertEqual(instance.particles[2].radius, 4.0 | nbody_system.length)
         
         instance.stop()
         
@@ -698,14 +698,14 @@ class TestHermite(TestWithMPI):
         instance = Hermite()
         instance.parameters.epsilon_squared = 0.22000 | nbody_system.length**2
         instance.particles.add_particles(particles)
-        self.assertEquals(len(instance.particles), 50)
+        self.assertEqual(len(instance.particles), 50)
         
         instance.reset()
         
         self.assertAlmostRelativeEquals(instance.parameters.epsilon_squared , 0.22000 | nbody_system.length**2)
-        self.assertEquals(len(instance.particles), 0)
+        self.assertEqual(len(instance.particles), 0)
         instance.particles.add_particles(particles)
-        self.assertEquals(len(instance.particles), 50)
+        self.assertEqual(len(instance.particles), 50)
         instance.stop()
     
         
@@ -722,7 +722,7 @@ class TestHermite(TestWithMPI):
         instance = Hermite()
         instance.particles.add_particles(particles) 
         instance.commit_particles()
-        self.assertEquals(instance.particles[0].radius, 0.0 | nbody_system.length)
+        self.assertEqual(instance.particles[0].radius, 0.0 | nbody_system.length)
         instance.parameters.end_time_accuracy_factor = 1.0
         instance.evolve_model(0.1 | nbody_system.time)
         self.assertAlmostRelativeEquals(instance.model_time, 0.10563767746 |nbody_system.time, 5)
@@ -755,7 +755,7 @@ class TestHermite(TestWithMPI):
         instance = Hermite()
         instance.particles.add_particles(particles) 
         instance.commit_particles()
-        self.assertEquals(instance.particles[0].radius, 0.0 | nbody_system.length)
+        self.assertEqual(instance.particles[0].radius, 0.0 | nbody_system.length)
         instance.parameters.end_time_accuracy_factor = 0.0
         instance.evolve_model(0.1 | nbody_system.time)
         self.assertAlmostRelativeEquals(instance.model_time, 0.1 |nbody_system.time, 5)
@@ -823,12 +823,12 @@ class TestHermite(TestWithMPI):
         hermite.parameters.stopping_conditions_out_of_box_size = 2 | nbody_system.length
         hermite.parameters.stopping_conditions_out_of_box_use_center_of_mass = False
         hermite.evolve_model(1 | nbody_system.time)
-        print hermite.particles.x
-        print hermite.particles.key, particles[1].key
-        print hermite.stopping_conditions.out_of_box_detection.particles(0)
+        print(hermite.particles.x)
+        print(hermite.particles.key, particles[1].key)
+        print(hermite.stopping_conditions.out_of_box_detection.particles(0))
         self.assertTrue(hermite.stopping_conditions.out_of_box_detection.is_set())
-        self.assertEquals(len(hermite.stopping_conditions.out_of_box_detection.particles(0)), 1)
-        self.assertEquals(hermite.stopping_conditions.out_of_box_detection.particles(0)[0].key, particles[1].key)
+        self.assertEqual(len(hermite.stopping_conditions.out_of_box_detection.particles(0)), 1)
+        self.assertEqual(hermite.stopping_conditions.out_of_box_detection.particles(0)[0].key, particles[1].key)
         hermite.stop()
         
 
@@ -844,11 +844,11 @@ class TestHermite(TestWithMPI):
                 
         hermite.particles.add_particles(particles)
         hermite.evolve_model(1 | nbody_system.time)
-        print hermite.particles.x
+        print(hermite.particles.x)
         self.assertAlmostRelativeEquals(hermite.model_time, 1 | nbody_system.time)
         self.assertAlmostRelativeEquals(hermite.particles[0].x, 1 | nbody_system.length)
         hermite.evolve_model(1.5 | nbody_system.time)
-        print hermite.particles.x
+        print(hermite.particles.x)
         self.assertAlmostRelativeEquals(hermite.model_time, 1.5 | nbody_system.time)
         self.assertAlmostRelativeEquals(hermite.particles[0].x, 1.5 | nbody_system.length)
         hermite.stop()
@@ -861,7 +861,7 @@ class TestHermite(TestWithMPI):
         hermite = Hermite(reuse_worker = True)
         channel2 = hermite.legacy_interface.channel
         hermite.stop()
-        self.assertEquals(id(channel1), id(channel2))
+        self.assertEqual(id(channel1), id(channel2))
 
     def test25(self):
         hermite = Hermite()
@@ -879,37 +879,37 @@ class TestHermite(TestWithMPI):
 
         request = hermite.particles.get_values_in_store_async(None, ["x"])
         request.wait()
-        print request.result()
-        self.assertEquals(request.result()[0], particles.x)
+        print(request.result())
+        self.assertEqual(request.result()[0], particles.x)
         request = hermite.particles.get_values_in_store_async(None, ["x", "vx"])
         request.wait()
-        print request.result()
-        self.assertEquals(request.result()[0], particles.x)
-        self.assertEquals(request.result()[1], particles.vx)
+        print(request.result())
+        self.assertEqual(request.result()[0], particles.x)
+        self.assertEqual(request.result()[1], particles.vx)
         p = particles.copy()
         channel = hermite.particles.new_channel_to(p)
         p.x = 0 | nbody_system.length
         p.vx = 0 | nbody_system.speed
         request = channel.copy_attributes_async(("x","vx",), async_get = True)
         request.wait()
-        self.assertEquals(p.x, particles.x)
-        self.assertEquals(p.vx, particles.vx)
+        self.assertEqual(p.x, particles.x)
+        self.assertEqual(p.vx, particles.vx)
         p.x = 0 | nbody_system.length
         p.vx = 0 | nbody_system.speed
         channel = p.new_channel_to(hermite.particles)
         request = channel.copy_attributes_async(("x", "y", "z","vx","vy","vz"), async_get = False, async_set = True)
         request.wait()
-        self.assertEquals(p.x, hermite.particles.x)
-        self.assertEquals(p.vx, hermite.particles.vx)
+        self.assertEqual(p.x, hermite.particles.x)
+        self.assertEqual(p.vx, hermite.particles.vx)
         channel = p.new_channel_to(particles)
         request = channel.copy_attributes_async(("x", "y", "z","vx","vy","vz"), async_get = False, async_set = True)
         request.wait()
-        self.assertEquals(p.x, particles.x)
-        self.assertEquals(p.vx, particles.vx)
+        self.assertEqual(p.x, particles.x)
+        self.assertEqual(p.vx, particles.vx)
         request = channel.copy_attributes_async(("x", "y", "z","vx","vy","vz"), async_get = True, async_set = False)
         request.wait()
-        self.assertEquals(p.x, particles.x)
-        self.assertEquals(p.vx, particles.vx)
+        self.assertEqual(p.x, particles.x)
+        self.assertEqual(p.vx, particles.vx)
 
         
 

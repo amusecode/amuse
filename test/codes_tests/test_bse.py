@@ -40,7 +40,7 @@ class TestBSEInterface(TestWithMPI):
             self.eccentricity = 0.0
         
     def test1(self):
-        print "Test initialization..."
+        print("Test initialization...")
         instance = BSEInterface()
         metallicity = 0.02
         neta = 0.5
@@ -76,7 +76,7 @@ class TestBSEInterface(TestWithMPI):
         instance.stop()
         
     def test2(self):
-        print "Test basic operations (legacy functions evolve & get_time_step)..."
+        print("Test basic operations (legacy functions evolve & get_time_step)...")
         instance = BSEInterface()
         status = instance.initialize(0.02, 0.5, 0.0, 0.5, 1.0, 0.5, 0, 1, 0, 1, 0, 1, 3.0, 
             29769, 0.05, 0.01, 0.02, 190.0, 1.0/8.0, 1.0, 3.0/2.0, 0.001, 1.0, -1.0)
@@ -134,7 +134,7 @@ class TestBSEInterface(TestWithMPI):
             #print "'%s' : '%s'," % (x, getattr(updated_state, x).hex())
             self.assertAlmostRelativeEqual(float.fromhex(expected[x]),getattr(updated_state, x))
             
-        self.assertEquals(updated_state.end_time, 1e-06)
+        self.assertEqual(updated_state.end_time, 1e-06)
         dt = instance.get_time_step(updated_state.type1, updated_state.type2,
             updated_state.initial_mass1, updated_state.initial_mass2, updated_state.mass1,
             updated_state.mass2, updated_state.t_ms1, updated_state.t_ms2,
@@ -143,7 +143,7 @@ class TestBSEInterface(TestWithMPI):
         instance.stop()
      
     def test3(self):
-        print "Test whether the interface can handle arrays..."
+        print("Test whether the interface can handle arrays...")
         instance = BSEInterface()
         status = instance.initialize(0.02, 0.5, 0.0, 0.5, 1.0, 0.5, 0, 1, 0, 1, 0, 1, 3.0, 
             29769, 0.05, 0.01, 0.02, 190.0, 1.0/8.0, 1.0, 3.0/2.0, 0.001, 1.0, -1.0)
@@ -176,7 +176,7 @@ class TestBSEInterface(TestWithMPI):
         instance.stop()
         
     def test4(self):
-        print "Test large number of particles..."
+        print("Test large number of particles...")
         number_of_particles = 2000
         instance = BSEInterface()
         status = instance.initialize(0.02, 0.5, 0.0, 0.5, 1.0, 0.5, 0, 1, 0, 1, 0, 1, 3.0, 
@@ -205,14 +205,14 @@ class TestBSEInterface(TestWithMPI):
             epoch1, epoch2, t_ms1, t_ms2, 
             bse_age, orbital_periods, eccentricities, end_time
         )
-        self.assertEquals(len(result['mass1']), number_of_particles)
+        self.assertEqual(len(result['mass1']), number_of_particles)
         instance.stop()
 
         
 class TestBSE(TestWithMPI):
     
     def test1(self):
-        print "Testing evolution of a close binary system..."
+        print("Testing evolution of a close binary system...")
         instance = BSE()
         instance.initialize_code()
         instance.parameters.metallicity = 0.001
@@ -271,7 +271,7 @@ class TestBSE(TestWithMPI):
         )
         
         for result, expected in zip(results, types):
-            self.assertEquals(str(result[2]), expected)
+            self.assertEqual(str(result[2]), expected)
         
         times = ( 
             284.8516 | units.Myr, 
@@ -298,7 +298,7 @@ class TestBSE(TestWithMPI):
         instance.stop()
             
     def test2(self):
-        print "Testing evolution of a wide binary system."
+        print("Testing evolution of a wide binary system.")
         instance = BSE()
         instance.parameters.metallicity = 0.001
         instance.parameters.common_envelope_efficiency = 3.0
@@ -343,7 +343,7 @@ class TestBSE(TestWithMPI):
             if not binary.child1.stellar_type == previous_type:
                 results.append((binary.age, binary.child1.mass, binary.child1.stellar_type))
                 previous_type = binary.child1.stellar_type
-        print results
+        print(results)
         self.assertEqual(len(results), 6)
         
         times = ( 
@@ -378,12 +378,12 @@ class TestBSE(TestWithMPI):
         )
         
         for result, expected in zip(results, types):
-            self.assertEquals(str(result[2]), expected)
+            self.assertEqual(str(result[2]), expected)
         
         instance.stop()
             
     def test3(self):
-        print "Testing standard BSE example 2..."
+        print("Testing standard BSE example 2...")
         instance = BSE()
         instance.parameters.common_envelope_efficiency = 3.0
         instance.parameters.Eddington_mass_transfer_limit_factor = 10.0
@@ -431,7 +431,7 @@ class TestBSE(TestWithMPI):
                 previous_type2 = binary.child2.stellar_type
         
             
-        print '\n'.join(map(str, results))
+        print('\n'.join(map(str, results)))
         self.assertEqual(len(results), 13)
         times = ( 
             38.9708 | units.Myr, 
@@ -468,7 +468,7 @@ class TestBSE(TestWithMPI):
         )
         
         for result, expected in zip(results, types):
-            self.assertEquals(result[1], expected)
+            self.assertEqual(result[1], expected)
         
         self.assertAlmostEqual(binary.child1.mass.value_in(units.MSun), 1.304, 3)
         self.assertAlmostEqual(binary.child2.mass.value_in(units.MSun), 0.800, 3)
@@ -476,7 +476,7 @@ class TestBSE(TestWithMPI):
         instance.stop()
         
     def test4(self):
-        print "Quick testing standard BSE example 2..."
+        print("Quick testing standard BSE example 2...")
         instance = BSE()
         instance.parameters.common_envelope_efficiency = 3.0
         instance.parameters.Eddington_mass_transfer_limit_factor = 10.0
@@ -512,13 +512,13 @@ class TestBSE(TestWithMPI):
 
         self.assertAlmostEqual(binary.child1.mass.value_in(units.MSun), 1.304, 3)
         self.assertAlmostEqual(binary.child2.mass.value_in(units.MSun), 0.800, 3)
-        self.assertEquals(str(binary.child1.stellar_type), "Neutron Star")
-        self.assertEquals(str(binary.child2.stellar_type), "Carbon/Oxygen White Dwarf")
+        self.assertEqual(str(binary.child1.stellar_type), "Neutron Star")
+        self.assertEqual(str(binary.child2.stellar_type), "Carbon/Oxygen White Dwarf")
 
         instance.stop()
     
     def test5(self):
-        print "Testing stellar collision..."
+        print("Testing stellar collision...")
         instance = BSE()
         instance.parameters.common_envelope_efficiency = 3.0
         instance.parameters.Eddington_mass_transfer_limit_factor = 10.0
@@ -552,17 +552,17 @@ class TestBSE(TestWithMPI):
         
         from_bse_to_model.copy()
         from_bse_to_model_binaries.copy()
-        print binaries
+        print(binaries)
         self.assertAlmostEqual(binary.child1.mass.value_in(units.MSun), 3.300, 3)
         self.assertAlmostEqual(binary.child2.mass.value_in(units.MSun), 0.000, 3)
-        self.assertEquals(str(binary.child1.stellar_type), "Main Sequence star")
-        self.assertEquals(str(binary.child2.stellar_type), "Massless Supernova")
+        self.assertEqual(str(binary.child1.stellar_type), "Main Sequence star")
+        self.assertEqual(str(binary.child2.stellar_type), "Massless Supernova")
 
         instance.stop()
         
     
     def test6(self):
-        print "Testing additional parameters for initialization..."
+        print("Testing additional parameters for initialization...")
         instance = BSE()
         instance.initialize_code()
         self.assertEqual(instance.parameters.reimers_mass_loss_coefficient, 0.5)
@@ -583,7 +583,7 @@ class TestBSE(TestWithMPI):
         instance.stop()
     
     def test7(self):
-        print "Test evolve_model optional arguments: end_time and keep_synchronous"
+        print("Test evolve_model optional arguments: end_time and keep_synchronous")
 
         instance = BSE()
         instance.commit_parameters()
@@ -613,19 +613,19 @@ class TestBSE(TestWithMPI):
         self.assertAlmostEqual(instance.binaries.age, [0.0, 0.0, 0.0] | units.yr)
         self.assertAlmostEqual(instance.binaries.time_step, [550.1565, 58.2081, 18.8768] | units.Myr, 3)
         
-        print "evolve_model without arguments: use shared timestep = min(particles.time_step)"
+        print("evolve_model without arguments: use shared timestep = min(particles.time_step)")
         instance.evolve_model()
         self.assertAlmostEqual(instance.binaries.age, [18.8768, 18.8768, 18.8768] | units.Myr, 3)
         self.assertAlmostEqual(instance.binaries.time_step, [550.1565, 58.2081, 18.8768] | units.Myr, 3)
         self.assertAlmostEqual(instance.model_time, 18.8768 | units.Myr, 3)
         
-        print "evolve_model with end_time: take timesteps, until end_time is reached exactly"
+        print("evolve_model with end_time: take timesteps, until end_time is reached exactly")
         instance.evolve_model(100 | units.Myr)
         self.assertAlmostEqual(instance.binaries.age, [100.0, 100.0, 100.0] | units.Myr, 3)
         self.assertAlmostEqual(instance.binaries.time_step, [550.1565, 58.2081, 18.8768] | units.Myr, 3)
         self.assertAlmostEqual(instance.model_time, 100.0 | units.Myr, 3)
         
-        print "evolve_model with keep_synchronous: use non-shared timestep, particle ages will typically diverge"
+        print("evolve_model with keep_synchronous: use non-shared timestep, particle ages will typically diverge")
         instance.evolve_model(keep_synchronous = False)
         self.assertAlmostEqual(instance.binaries.age, (100 | units.Myr) + ([550.1565, 58.2081, 18.8768] | units.Myr), 3)
         self.assertAlmostEqual(instance.binaries.time_step, [550.1565, 58.2081, 18.8768] | units.Myr, 3)
@@ -633,7 +633,7 @@ class TestBSE(TestWithMPI):
         instance.stop()
         
     def test8(self):
-        print "Testing adding and removing particles from stellar evolution code..."
+        print("Testing adding and removing particles from stellar evolution code...")
         
         instance = BSE()
         instance.initialize_code()
@@ -655,22 +655,22 @@ class TestBSE(TestWithMPI):
         binaries.semi_major_axis = semi_major_axis
 
         instance.commit_parameters()
-        self.assertEquals(len(instance.particles), 0)
-        self.assertEquals(len(instance.binaries), 0) # before creation
+        self.assertEqual(len(instance.particles), 0)
+        self.assertEqual(len(instance.binaries), 0) # before creation
         instance.particles.add_particles(stars)
         instance.binaries.add_particles(binaries[:-1])
         instance.commit_particles()
         instance.evolve_model(1.0 | units.Myr)
-        self.assertEquals(len(instance.binaries), 2) # before remove
+        self.assertEqual(len(instance.binaries), 2) # before remove
         self.assertAlmostEqual(instance.binaries.age, 1.0 | units.Myr)
         
         instance.binaries.remove_particle(binaries[0])
-        self.assertEquals(len(instance.binaries), 1)
+        self.assertEqual(len(instance.binaries), 1)
         instance.evolve_model(2.0 | units.Myr)
         self.assertAlmostEqual(instance.binaries[0].age, 2.0 | units.Myr)
         
         instance.binaries.add_particles(binaries[::2])
-        self.assertEquals(len(instance.binaries), 3) # it's back...
+        self.assertEqual(len(instance.binaries), 3) # it's back...
         self.assertAlmostEqual(instance.binaries[0].age, 2.0 | units.Myr)
         self.assertAlmostEqual(instance.binaries[1].age, 0.0 | units.Myr)
         self.assertAlmostEqual(instance.binaries[2].age, 0.0 | units.Myr) # ... and rejuvenated.
@@ -682,7 +682,7 @@ class TestBSE(TestWithMPI):
         instance.stop()
     
     def test9(self):
-        print "Testing BSE states"
+        print("Testing BSE states")
         instance = BSE()
         
         stars =  Particles(2)
@@ -696,27 +696,27 @@ class TestBSE(TestWithMPI):
         binaries[0].child1 = stars[0]
         binaries[0].child2 = stars[1]
         
-        print "First do everything manually:",
-        self.assertEquals(instance.get_name_of_current_state(), 'UNINITIALIZED')
+        print("First do everything manually:", end=' ')
+        self.assertEqual(instance.get_name_of_current_state(), 'UNINITIALIZED')
         instance.initialize_code()
-        self.assertEquals(instance.get_name_of_current_state(), 'INITIALIZED')
+        self.assertEqual(instance.get_name_of_current_state(), 'INITIALIZED')
         instance.commit_parameters()
-        self.assertEquals(instance.get_name_of_current_state(), 'RUN')
+        self.assertEqual(instance.get_name_of_current_state(), 'RUN')
         instance.cleanup_code()
-        self.assertEquals(instance.get_name_of_current_state(), 'END')
+        self.assertEqual(instance.get_name_of_current_state(), 'END')
         instance.stop()
-        print "ok"
+        print("ok")
 
-        print "initialize_code(), commit_parameters(), " \
-            "and cleanup_code() should be called automatically:",
+        print("initialize_code(), commit_parameters(), " \
+            "and cleanup_code() should be called automatically:", end=' ')
         instance = BSE()
-        self.assertEquals(instance.get_name_of_current_state(), 'UNINITIALIZED')
+        self.assertEqual(instance.get_name_of_current_state(), 'UNINITIALIZED')
         instance.parameters.reimers_mass_loss_coefficient = 0.5
-        self.assertEquals(instance.get_name_of_current_state(), 'INITIALIZED')
+        self.assertEqual(instance.get_name_of_current_state(), 'INITIALIZED')
         instance.particles.add_particles(stars)
         instance.binaries.add_particles(binaries)
-        self.assertEquals(instance.get_name_of_current_state(), 'RUN')
+        self.assertEqual(instance.get_name_of_current_state(), 'RUN')
         instance.stop()
-        self.assertEquals(instance.get_name_of_current_state(), 'STOPPED')
-        print "ok"
+        self.assertEqual(instance.get_name_of_current_state(), 'STOPPED')
+        print("ok")
 

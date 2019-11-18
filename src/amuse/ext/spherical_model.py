@@ -166,9 +166,9 @@ class UniformSphericalDistribution(object):
         from amuse.community.fi.interface import Fi
         
         if self.target_rms < 0.0001:
-            print "warning: target_rms may not succeed"
+            print("warning: target_rms may not succeed")
         if self.number_of_particles < 1000:
-            print "warning: not enough particles"
+            print("warning: not enough particles")
         
         N = 2 * self.number_of_particles
         L = 1 | nbody_system.length
@@ -218,10 +218,10 @@ class UniformSphericalDistribution(object):
             rms = rho.std()/rho.mean()
             minrms = min(minrms, rms)
             if (rms > 2.0*minrms) or (i > 300):
-                print " RMS(rho) convergence warning:", i, rms, minrms
+                print(" RMS(rho) convergence warning:", i, rms, minrms)
             if i > 100000:
-                print "i> 100k steps - not sure about this..."
-                print " rms:", rms
+                print("i> 100k steps - not sure about this...")
+                print(" rms:", rms)
                 break
         
         x = sph.particles.x.value_in(nbody_system.length)

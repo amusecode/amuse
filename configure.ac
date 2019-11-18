@@ -1,11 +1,14 @@
-AC_INIT([amuse], [3.1])
+AC_INIT([amuse],  m4_esyscmd_s([python support/version.py]))
 AC_CONFIG_SRCDIR([src/amuse/__init__.py])
 
-AC_CONFIG_FILES([src/amuse/config.py:support/configpy.in])
-AC_CONFIG_FILES([support/config.py:support/configpy.in])
-AC_CONFIG_FILES([support3/config.py:support3/configpy.in])
 AC_CONFIG_FILES([config.mk])
-AC_CONFIG_FILES([build.py],[chmod +x build.py])
+AC_CONFIG_FILES([build.py:bin/amusifier.in],[chmod +x build.py])
+AC_CONFIG_FILES([bin/amusifier:build.py],[chmod +x bin/amusifier])
+
+#CODE_GENERATOR="\${AMUSE_DIR}/build.py"
+CODE_GENERATOR=amusifier
+
+AC_SUBST(CODE_GENERATOR)
 
 AC_PROG_CC()
 AC_PROG_CXX()
@@ -17,7 +20,7 @@ AC_ARG_VAR([PYTHON], [Python interpreter])
 
 AC_SUBST(FC_ISO_C_BINDINGS)
 
-AS_IF([test "x$PYTHON" = "x"], [PYTHON=python])
+AM_PATH_PYTHON([3.5])
 
 AC_PATH_PROG([PYTHON], [$PYTHON], [])
 AC_ARG_VAR([NVCC], [CUDA compiler command])
@@ -40,10 +43,10 @@ AC_ARG_ENABLE(mpi,
     [AS_HELP_STRING([--enable-mpi],[Enable MPI support for communicating with codes, by default enabled])],
     [WITH_MPI=no
     AS_IF([test "x$enable_mpi" != "xno"], [
-	    WITH_MPI=yes
+	    AX_MPI([WITH_MPI=yes], [AC_MSG_ERROR([MPI enabled, but no MPI found])] )
     ])
     ],
-    [WITH_MPI=yes]
+    [AX_MPI([WITH_MPI=yes],[WITH_MPI=no])]
 )
 
 AC_SUBST(WITH_MPI)
@@ -190,19 +193,19 @@ save_CPPFLAGS="$CPPFLAGS"
 CFLAGS="$MPFR_FLAGS $save_CFLAGS"
 CPPFLAGS="$MPFR_FLAGS $save_CPPFLAGS"
 cache_var=AS_TR_SH([ac_cv_header_mpfr.h])
-AC_CHECK_HEADER(
-    [mpreal.h],
-    [],
-    [AC_MSG_WARN([Cannot find header (mpreal.h) of the library MPFR with MPFR_FLAGS $MPFR_FLAGS.])]
-)
+#AC_CHECK_HEADER(
+#    [mpreal.h],
+#    [],
+#    [AC_MSG_WARN([Cannot find header (mpreal.h) of the library MPFR with MPFR_FLAGS $MPFR_FLAGS.])]
+#)
 $as_unset $cache_var
 CFLAGS="$save_CFLAGS"
 CPPFLAGS="$save_CPPFLAGS"
 AC_LANG(C)
     
-AX_HDF5()
+AX_LIB_HDF5()
 
-AX_NETCDF()
+AX_LIB_NETCDF4()
 
 DETECT_PIC_FLAGS()
 CFLAGS="$CFLAGS $PIC_FLAGS"
@@ -228,11 +231,12 @@ AS_VERSION_COMPARE([$PYTHON_numpy_VERSION], [1.2.1],
 AS_IF([test x"$WITH_MPI" != xno],[
     AC_CHECK_PYTHON_MODULE(mpi4py, __version__)
     AS_IF([test x"$PYTHON_mpi4py" != x1],
-        [AC_MSG_ERROR([mpi4py not found, please install mpi4py first])]
+        [AC_MSG_WARN([mpi4py not found, please install mpi4py first])]
     )
-
-    AS_VERSION_COMPARE([$PYTHON_mpi4py_VERSION], [1.1],
-            [AC_MSG_ERROR([numpy version $PYTHON_mpi4py_VERSION found, but at least 1.1.0 needed])]
+    AS_IF([test x"$PYTHON_mpi4py" == x1],
+        [AS_VERSION_COMPARE([$PYTHON_mpi4py_VERSION], [1.1],
+            [AC_MSG_ERROR([mpi4py version $PYTHON_mpi4py_VERSION found, but at least 1.1.0 needed])]
+        )]
     )
 ])
 
@@ -267,3 +271,5 @@ AC_CHECK_PYTHON_MODULE(matplotlib)
 #        [AC_MSG_WARN([Cython version $PYTHON_Cython_VERSION found, but at least 0.13 needed])]
 #)
 AC_OUTPUT()
+
+ AC_MSG_NOTICE( Configuration done. Configuration written to config.mk )

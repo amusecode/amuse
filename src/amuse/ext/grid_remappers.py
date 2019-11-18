@@ -9,6 +9,8 @@ from amuse.datamodel import UnstructuredGrid, StructuredGrid,StructuredBaseGrid
 try:
   import matplotlib
   from matplotlib import tri
+  if not hasattr(tri, "LinearTriInterpolator"):
+      raise Exception("LinearTriInterpolator not in matplotlib.tri")
   matplotlib_available=True
 except:
   matplotlib_available=False

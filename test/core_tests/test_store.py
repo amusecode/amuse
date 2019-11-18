@@ -48,7 +48,7 @@ class _AbstractTestStoreHDF(amusetest.TestCase):
         loaded_mass_in_kg = loaded_particles.mass.value_in(units.kg)
         previous_mass_in_kg = p.mass.value_in(units.kg)
         for expected, actual in zip(previous_mass_in_kg, loaded_mass_in_kg):
-            self.assertEquals(expected, actual)
+            self.assertEqual(expected, actual)
         
         instance.close()
 
@@ -73,7 +73,7 @@ class _AbstractTestStoreHDF(amusetest.TestCase):
         self.assertAlmostRelativeEquals(self.get_version_in_store(loaded_particles).get_timestamp(), 2 | units.Myr)
         self.assertAlmostRelativeEquals(self.get_version_in_store(loaded_particles).previous_state().get_timestamp(), 1 | units.Myr)
         masses = loaded_particles[1].get_timeline_of_attribute("mass")
-        self.assertEquals(len(masses), 2)
+        self.assertEqual(len(masses), 2)
 
         instance.close()
 
@@ -137,12 +137,12 @@ class _AbstractTestStoreHDF(amusetest.TestCase):
 
         loaded_grid = instance.load_grid()
 
-        self.assertEquals(loaded_grid.shape, shape)
+        self.assertEqual(loaded_grid.shape, shape)
         
         loaded_mass_in_kg = loaded_grid.mass.value_in(units.kg)
         previous_mass_in_kg = p.mass.value_in(units.kg)
         for expected, actual in zip(previous_mass_in_kg, loaded_mass_in_kg):
-            self.assertEquals(expected, actual)
+            self.assertEqual(expected, actual)
         
         instance.close()
     
@@ -164,8 +164,8 @@ class _AbstractTestStoreHDF(amusetest.TestCase):
         
         self.assertAlmostRelativeEquals(loaded_grid.get_timestamp(), 1| units.Myr)
         
-        self.assertEquals(loaded_grid.shape, shape)
-        self.assertEquals(loaded_grid[0][0][0].mass, 0 | units.kg)
+        self.assertEqual(loaded_grid.shape, shape)
+        self.assertEqual(loaded_grid[0][0][0].mass, 0 | units.kg)
         self.assertAlmostRelativeEquals(loaded_grid[...,1,1].mass, p[...,1,1].mass)
 
         instance.close()
@@ -196,7 +196,7 @@ class _AbstractTestStoreHDF(amusetest.TestCase):
         loaded_particles = instance.load()
         loaded_mass_in_kg = loaded_particles.mass.value_in(units.kg)
         for expected, actual in zip(previous_mass_in_kg, loaded_mass_in_kg):
-            self.assertEquals(expected, actual)
+            self.assertEqual(expected, actual)
         
         instance.close()
         
@@ -206,7 +206,7 @@ class _AbstractTestStoreHDF(amusetest.TestCase):
         instance.close()
         instance = self.store_factory()(output_file)
         loaded_particles = self.get_version_in_store(instance.load())
-        self.assertEquals( 44 | units.kg, loaded_particles[2].mass)
+        self.assertEqual( 44 | units.kg, loaded_particles[2].mass)
         instance.close()
         
     def test8(self):
@@ -338,13 +338,13 @@ class _AbstractTestStoreHDF(amusetest.TestCase):
         io.write_set_to_file(stars, output_file, "hdf5", version = self.store_version())
         
         loaded = io.read_set_from_file(output_file, "hdf5", version = self.store_version())
-        self.assertEquals(loaded[0].md, [1,2,3] | units.km)
-        self.assertEquals(loaded[1].md, [4,5,6] | units.km)
+        self.assertEqual(loaded[0].md, [1,2,3] | units.km)
+        self.assertEqual(loaded[1].md, [4,5,6] | units.km)
         
-        self.assertEquals(loaded.md[0], [1,2,3] | units.km)
-        self.assertEquals(loaded.md[1], [4,5,6] | units.km)
+        self.assertEqual(loaded.md[0], [1,2,3] | units.km)
+        self.assertEqual(loaded.md[1], [4,5,6] | units.km)
          
-        self.assertEquals(self.get_version_in_store(loaded)[0].md, [1,2,3] | units.km)
+        self.assertEqual(self.get_version_in_store(loaded)[0].md, [1,2,3] | units.km)
         #self.assertEquals(self.get_version_in_store(loaded)[0].md,  [7,8,9] | units.km)
     
       
@@ -362,11 +362,11 @@ class _AbstractTestStoreHDF(amusetest.TestCase):
         io.write_set_to_file(stars, output_file, "hdf5", version = self.store_version())
         
         loaded = io.read_set_from_file(output_file, "hdf5", version = self.store_version())
-        self.assertEquals(loaded[0].md, [[1,3],[2,4],[3,5]])
-        self.assertEquals(loaded[1].md, [[4,6],[5,7],[6,8]])
+        self.assertEqual(loaded[0].md, [[1,3],[2,4],[3,5]])
+        self.assertEqual(loaded[1].md, [[4,6],[5,7],[6,8]])
         
-        self.assertEquals(loaded.md[0], [[1,3],[2,4],[3,5]])
-        self.assertEquals(loaded.md[1], [[4,6],[5,7],[6,8]])
+        self.assertEqual(loaded.md[0], [[1,3],[2,4],[3,5]])
+        self.assertEqual(loaded.md[1], [[4,6],[5,7],[6,8]])
     
     def test15(self):
         
@@ -384,17 +384,17 @@ class _AbstractTestStoreHDF(amusetest.TestCase):
         processor = self.store_factory()(output_file, True, open_for_writing = True)
         loaded = processor.load()
         self.get_version_in_store(loaded)[0].md = [[3,1],[3,4],[5,2]] 
-        self.assertEquals(self.get_version_in_store(loaded)[0].md, [[3,1],[3,4],[5,2]] )
+        self.assertEqual(self.get_version_in_store(loaded)[0].md, [[3,1],[3,4],[5,2]] )
         processor.close()
         
         loaded = io.read_set_from_file(output_file, "hdf5", version = self.store_version())
-        self.assertEquals(loaded[0].md, [[3,1],[3,4],[5,2]])
-        self.assertEquals(loaded[1].md, [[4,6],[5,7],[6,8]])
+        self.assertEqual(loaded[0].md, [[3,1],[3,4],[5,2]])
+        self.assertEqual(loaded[1].md, [[4,6],[5,7],[6,8]])
         
     def test16(self):
         import h5py
-        print h5py.version.version
-        print h5py
+        #~ print h5py.version.version
+        #~ print h5py
         test_results_path = self.get_path_to_results()
         output_file = os.path.join(test_results_path, "test16"+self.store_version()+".hdf5")
         if os.path.exists(output_file):
@@ -556,11 +556,11 @@ class _AbstractTestStoreHDF(amusetest.TestCase):
        
         loaded = io.read_set_from_file(output_file, "hdf5", close_file = True, version = self.store_version())
         
-        self.assertEquals(loaded[0].md, [[1,3],[2,4],[3,5]])
-        self.assertEquals(loaded[1].md, [[4,6],[5,7],[6,8]])
+        self.assertEqual(loaded[0].md, [[1,3],[2,4],[3,5]])
+        self.assertEqual(loaded[1].md, [[4,6],[5,7],[6,8]])
         
         previous = loaded.previous_state()
-        self.assertEquals(previous, None)
+        self.assertEqual(previous, None)
 
 
     def test22(self):
@@ -581,8 +581,8 @@ class _AbstractTestStoreHDF(amusetest.TestCase):
        
         loaded = io.read_set_from_file(output_file, "hdf5", close_file = True, version = self.store_version())
         
-        self.assertEquals(loaded[0].x,  1.0 | units.km)
-        self.assertEquals(loaded[1].y,  2.0 | units.km)
+        self.assertEqual(loaded[0].x,  1.0 | units.km)
+        self.assertEqual(loaded[1].y,  2.0 | units.km)
         
     
     def test23(self):
@@ -597,7 +597,7 @@ class _AbstractTestStoreHDF(amusetest.TestCase):
 
         particles_from_file = io.read_set_from_file(output_file, format='amuse', version = self.store_version())
         
-        self.assertEquals(len(particles_from_file), 0)
+        self.assertEqual(len(particles_from_file), 0)
     
     def test24(self):
         test_results_path = self.get_path_to_results()
@@ -616,10 +616,10 @@ class _AbstractTestStoreHDF(amusetest.TestCase):
         
         particles_from_file = io.read_set_from_file(output_file, format='amuse', version = self.store_version())
         os.remove(output_file)
-        self.assertEquals(len(list(particles_from_file.history)), 10)
+        self.assertEqual(len(list(particles_from_file.history)), 10)
         for i, snap in enumerate(particles_from_file.history):
-            self.assertEquals(len(snap), 20)
-            self.assertEquals((i+1) * ([1.0, 2.0, 3.0] | units.m), snap.center_of_mass())
+            self.assertEqual(len(snap), 20)
+            self.assertEqual((i+1) * ([1.0, 2.0, 3.0] | units.m), snap.center_of_mass())
             
     def test25(self):
         test_results_path = self.get_path_to_results()
@@ -639,11 +639,11 @@ class _AbstractTestStoreHDF(amusetest.TestCase):
         particles_from_file = io.read_set_from_file(output_file, format='amuse', version = self.store_version(), copy_history = True, close_file = True)
         
         history = list(particles_from_file.history)
-        self.assertEquals(len(history), 10)
+        self.assertEqual(len(history), 10)
         self.assertFalse("HDF" in str(type(history[1]._private.attribute_storage)))
         for i, snap in enumerate(particles_from_file.history):
-            self.assertEquals(len(snap), 20)
-            self.assertEquals((i+1) * ([1.0, 2.0, 3.0] | units.m), snap.center_of_mass())
+            self.assertEqual(len(snap), 20)
+            self.assertEqual((i+1) * ([1.0, 2.0, 3.0] | units.m), snap.center_of_mass())
         os.remove(output_file)
         
     def test26(self):
@@ -674,12 +674,12 @@ class _AbstractTestStoreHDF(amusetest.TestCase):
 
         loaded_grid = instance.load_grid()
 
-        self.assertEquals(loaded_grid.shape, shape)
+        self.assertEqual(loaded_grid.shape, shape)
         
         loaded_mass_in_kg = loaded_grid.mass.value_in(units.kg)
         previous_mass_in_kg = p.mass.value_in(units.kg)
         for expected, actual in zip(previous_mass_in_kg, loaded_mass_in_kg):
-            self.assertEquals(expected, actual)
+            self.assertEqual(expected, actual)
         
         instance.close()
 
@@ -728,12 +728,12 @@ class _AbstractTestStoreHDF(amusetest.TestCase):
 
         particles = Grid(10)
         particles.attribute1 = "normal"
-        particles.attribute2 = u"unicode"
+        particles.attribute2 = "unicode"
 
         io.write_set_to_file(particles,output_file, format='amuse', version = self.store_version())
         
         output = io.read_set_from_file(output_file, format='amuse')
-        self.assertEquals(output[0].attribute2, u"unicode")
+        self.assertEqual(output[0].attribute2, "unicode")
         
 
 
@@ -752,12 +752,30 @@ class _AbstractTestStoreHDF(amusetest.TestCase):
         output = io.read_set_from_file(output_file, format='amuse', allow_writing = True)
         output.new_attribute= 2 * output.mass
 
-        self.assertEquals(output.new_attribute, 2 * output.mass)
-        output = output.iter_history().next()
+        self.assertEqual(output.new_attribute, 2 * output.mass)
+        output = next(output.iter_history())
         output.new_attribute= 2 * output.mass
 
-        self.assertEquals(output.new_attribute, 2 * output.mass)
+        self.assertEqual(output.new_attribute, 2 * output.mass)
         
+    def test31(self):
+        test_results_path = self.get_path_to_results()
+        output_file = os.path.join(test_results_path, "test31"+self.store_version()+".h5")
+        if os.path.exists(output_file):
+            os.remove(output_file)
+
+        p=Particles(10)
+        p.mass=numpy.arange(10)
+        q=Particles(3)
+        q[0].link=p[1]
+        q[1].link=p[3]
+        q[2].link=p[4]
+        io.write_set_to_file(q,output_file,"amuse",version=self.store_version())
+        r=io.read_set_from_file(output_file,"amuse")
+        self.assertEqual(len(r.link.shape),1)
+        self.assertEqual(r[0].link.mass,1)
+        self.assertEqual(r[1].link.mass,3)
+        self.assertEqual(r[2].link.mass,4)
 
 
 
@@ -803,9 +821,9 @@ class TestStoreHDFV2(_AbstractTestStoreHDF):
         
         loaded_stars = io.read_set_from_file(output_file, "hdf5", version = self.store_version())
         
-        self.assertEquals(loaded_stars[0].gas[0].key,gas[0].key)
+        self.assertEqual(loaded_stars[0].gas[0].key,gas[0].key)
         self.assertAlmostRelativeEquals(loaded_stars[0].gas[0].y,1.0 | units.km)
-        self.assertEquals(loaded_stars[1].gas, None)
+        self.assertEqual(loaded_stars[1].gas, None)
 
         
     def test53(self):
@@ -828,7 +846,7 @@ class TestStoreHDFV2(_AbstractTestStoreHDF):
         
         self.assertAlmostRelativeEquals(loaded_stars[0].gas[0][0].y,1.0 | units.km)
         self.assertAlmostRelativeEquals(loaded_stars[0].gas[0][2].y,3.0 | units.km)
-        self.assertEquals(loaded_stars[1].gas, None)
+        self.assertEqual(loaded_stars[1].gas, None)
 
     def test54(self):
         test_results_path = self.get_path_to_results()
@@ -884,7 +902,7 @@ class TestStoreHDFV2(_AbstractTestStoreHDF):
         self.assertAlmostRelativeEquals(loaded_gas[0][0].particle.x, 1.0 | units.km)
         self.assertAlmostRelativeEquals(loaded_gas[1][2].particle.x, 1.0 | units.km)
         self.assertAlmostRelativeEquals(loaded_gas[1][0].particle.x, 2.0 | units.km)
-        self.assertEquals(id(loaded_gas[0][0].particle.get_containing_set()), id(loaded_gas[1][2].particle.get_containing_set()))
+        self.assertEqual(id(loaded_gas[0][0].particle.get_containing_set()), id(loaded_gas[1][2].particle.get_containing_set()))
         
         self.assertEqual(loaded_gas.particle.shape, loaded_gas.shape)
                 
@@ -956,7 +974,7 @@ class TestStoreHDFV2(_AbstractTestStoreHDF):
         
         attributes = loaded_particles.collection_attributes
         self.assertAlmostRelativeEquals(attributes.particle.mass, loaded_particles[1].mass)
-        self.assertAlmostRelativeEquals(attributes.particle.key, loaded_particles[1].key)
+        self.assertEquals(attributes.particle.key, loaded_particles[1].key)
         self.assertEquals(id(attributes.particles), id(loaded_particles))
         self.assertAlmostRelativeEquals(attributes.gridpoint.y, 1.0 | units.km)
         self.assertAlmostRelativeEquals(attributes.grid[0][0].y, 1.0 | units.km)
@@ -1054,13 +1072,15 @@ class TestStoreHDFV2(_AbstractTestStoreHDF):
         x = Particles(10)
         x.mass = 1 | units.kg
         y = Particles(20)
-        y.id = range(20)
+        y.id = list(range(20))
         x[0].y = y[5:7]
 
         io.write_set_to_file(x, output_file,"amuse", version=self.store_version())
         z = io.read_set_from_file(output_file,"amuse")
-        self.assertEquals(x[0].y[0].id, 5)
-        self.assertEquals(z[0].y[0].id, 5)
+        self.assertEqual(x[0].y[0].id, 5)
+        self.assertEqual(z[0].y[0].id, 5)
 
         os.remove(output_file)
 
+        
+        

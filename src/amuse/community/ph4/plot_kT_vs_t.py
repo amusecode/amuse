@@ -14,8 +14,8 @@ if  __name__ == '__main__':
     
     try:
         opts, args = getopt.getopt(sys.argv[1:], "f:lq:t:")
-    except getopt.GetoptError, err:
-        print str(err)
+    except getopt.GetoptError as err:
+        print(str(err))
         sys.exit(1)
     
     infile = ''
@@ -33,7 +33,7 @@ if  __name__ == '__main__':
         elif o == "-t":
             lt = a
         else:
-            print "unexpected argument", o
+            print("unexpected argument", o)
     
     #if infile == '' or quantity == '':
         #print 'plotq -f file -q quantity -t linetype'
@@ -53,7 +53,7 @@ if  __name__ == '__main__':
                 elif cols[1] == 'Multiple':
                     bin_id = int(cols[2])
                     #if log: q = log10(q)
-                strsplit = cols[11].split('=');
+                strsplit = cols[11].split('=')
                 if len(strsplit) == 2:
                     mykT = float(strsplit[1])
                     mydata = [tlist[len(tlist)-1], bin_id, mykT]
@@ -109,10 +109,10 @@ if  __name__ == '__main__':
     
     i=0
     while i<len(myxdata):
-      print myxdata[i]
+      print(myxdata[i])
     
       i += 1
-    print counter
+    print(counter)
 
 """
 if len(qlist) > 0:

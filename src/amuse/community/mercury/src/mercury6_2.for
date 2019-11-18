@@ -1449,8 +1449,7 @@ c If the minimum separation qualifies as an encounter or if a collision
 c is in progress, store details
             if ((d2min.le.d2ce.and.d0t*h.le.0.and.d1t*h.ge.0)
      %        .or.(d2min.le.d2hit)) then
-              nclo = nclo + 1
-              if (nclo.gt.CMAX) then
+              if (nclo.ge.CMAX) then
                 pos = 'append'
                 if(trim(outfile).EQ.'/dev/null') then
                     pos = 'asis'
@@ -1461,6 +1460,7 @@ c is in progress, store details
      %            mem(132)(1:lmem(132)),mem(82)(1:lmem(82))
                 close (23)
               else
+                nclo = nclo + 1
                 tclo(nclo) = tmin + time
                 dclo(nclo) = sqrt (max(0.d0,d2min))
                 iclo(nclo) = i
@@ -6329,7 +6329,7 @@ c
       implicit none
 c
 c Input/Output
-      integer len,nsub,delimit(2,100)
+      integer len,nsub,delimit(2,*)
       character*1 string(len)
 c
 c Local

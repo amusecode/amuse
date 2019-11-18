@@ -11,6 +11,7 @@ from amuse.community.interface.gd import GravityFieldCode
 # *** MAKE SURE TO SAVE IT SOMEWHERE, as build.py can overwrite it!
 
 class ph4Interface(CodeInterface,
+                   LiteratureReferencesMixIn,
                    GravitationalDynamicsInterface,
                    StoppingConditionInterface,
                    GravityFieldInterface):
@@ -32,6 +33,7 @@ class ph4Interface(CodeInterface,
             name_of_the_worker=self.name_of_the_muse_worker(mode),
             **options
         )
+        LiteratureReferencesMixIn.__init__(self)
 
     # Interface functions:
     @legacy_function
@@ -227,6 +229,28 @@ class ph4Interface(CodeInterface,
         """
         function = LegacyFunctionSpecification()
         function.addParameter('manage_encounters', dtype='int32',
+                              direction=function.OUT)
+        function.result_type = 'int32'
+        return function
+
+    @legacy_function
+    def set_zero_step_mode():
+        """
+        Set the value of zero_step_mode.
+        """
+        function = LegacyFunctionSpecification()
+        function.addParameter('zero_step_mode', dtype='int32',
+                              direction=function.IN)
+        function.result_type = 'int32'
+        return function
+
+    @legacy_function
+    def get_zero_step_mode():
+        """
+        Get the value of zero_step_mode.
+        """
+        function = LegacyFunctionSpecification()
+        function.addParameter('zero_step_mode', dtype='int32',
                               direction=function.OUT)
         function.result_type = 'int32'
         return function
@@ -453,31 +477,31 @@ class ph4(GravitationalDynamics,GravityFieldCode):
                                        convert_nbody,
                                        **keyword_arguments)
                                        
-    def define_state(self, object):
-        GravitationalDynamics.define_state(self, object)
-        object.add_method('RUN', 'get_particle_timestep')
-        GravityFieldCode.define_state(self, object)
+    def define_state(self, handler):
+        GravitationalDynamics.define_state(self, handler)
+        handler.add_method('RUN', 'get_particle_timestep')
+        GravityFieldCode.define_state(self, handler)
         
-        object.add_method('EDIT', 'set_state')
-        object.add_method('EDIT', 'set_velocity')
-        object.add_method('EDIT', 'set_mass')
-        object.add_method('EDIT', 'set_position')
-        object.add_method('CHANGED','before_get_parameter')
+        handler.add_method('EDIT', 'set_state')
+        handler.add_method('EDIT', 'set_velocity')
+        handler.add_method('EDIT', 'set_mass')
+        handler.add_method('EDIT', 'set_position')
+        handler.add_method('CHANGED','before_get_parameter')
         
-        object.add_transition('RUN', 'CHANGED', 'set_state', False)
-        object.add_transition('RUN', 'CHANGED', 'set_velocity', False)
-        object.add_transition('RUN', 'CHANGED', 'set_mass', False)
-        object.add_transition('RUN', 'CHANGED', 'set_position', False)
-        object.add_transition('CHANGED', 'RUN', 'synchronize_model')
-        object.add_method('CHANGED', 'get_state')
-        object.add_method('CHANGED', 'get_mass')
-        object.add_method('CHANGED', 'get_position')
-        object.add_method('CHANGED', 'get_velocity')
-        object.add_method('CHANGED', 'get_particle_timestep')
+        handler.add_transition('RUN', 'CHANGED', 'set_state', False)
+        handler.add_transition('RUN', 'CHANGED', 'set_velocity', False)
+        handler.add_transition('RUN', 'CHANGED', 'set_mass', False)
+        handler.add_transition('RUN', 'CHANGED', 'set_position', False)
+        handler.add_transition('CHANGED', 'RUN', 'synchronize_model')
+        handler.add_method('CHANGED', 'get_state')
+        handler.add_method('CHANGED', 'get_mass')
+        handler.add_method('CHANGED', 'get_position')
+        handler.add_method('CHANGED', 'get_velocity')
+        handler.add_method('CHANGED', 'get_particle_timestep')
         
-        self.stopping_conditions.define_state(object)
+        self.stopping_conditions.define_state(handler)
 
-    def define_parameters(self, object):
+    def define_parameters(self, handler):
 
         # Set/get parameters specific to the module, not part of the
         # standard interface.  Accessors used here must be defined
@@ -486,7 +510,7 @@ class ph4(GravitationalDynamics,GravityFieldCode):
         #
         #        ph4.parameters.timestep_parameter = xxx
 
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_eta",                   # getter name in interface.cc
             "set_eta",                   # setter name in interface.cc
             "timestep_parameter",        # python parameter name
@@ -494,7 +518,7 @@ class ph4(GravitationalDynamics,GravityFieldCode):
             default_value = 0.14
         )
 
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_eps2",                  # already defined in standard interface
             "set_eps2",                  # already defined in standard interface
             "epsilon_squared", 
@@ -502,7 +526,7 @@ class ph4(GravitationalDynamics,GravityFieldCode):
             default_value = 0.0 | nbody_system.length * nbody_system.length
         )
 
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_gpu",                   # getter name in interface.cc
             "set_gpu",                   # setter name in interface.cc
             "use_gpu",                   # python parameter name
@@ -510,7 +534,7 @@ class ph4(GravitationalDynamics,GravityFieldCode):
             default_value = 1
         )
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_gpu_id",                # getter name in interface.cc
             "set_gpu_id",                # setter name in interface.cc
             "gpu_id",                    # python parameter name
@@ -518,7 +542,7 @@ class ph4(GravitationalDynamics,GravityFieldCode):
             default_value = -1
         )
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_manage_encounters",     # getter name in interface.cc
             "set_manage_encounters",     # setter name in interface.cc
             "manage_encounters",	 # python parameter name
@@ -526,7 +550,7 @@ class ph4(GravitationalDynamics,GravityFieldCode):
             default_value = 4
         )
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_begin_time",
             "set_begin_time",
             "begin_time",
@@ -534,7 +558,7 @@ class ph4(GravitationalDynamics,GravityFieldCode):
             default_value = 0.0 | nbody_system.time
         )
 
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_sync_time",
             "set_sync_time",
             "sync_time",
@@ -542,7 +566,15 @@ class ph4(GravitationalDynamics,GravityFieldCode):
             default_value = 0.0 | nbody_system.time
         )
 
-        object.add_method_parameter(
+        handler.add_method_parameter(
+            "get_zero_step_mode",
+            "set_zero_step_mode",
+            "zero_step_mode",
+            "force evolve_model to take zero-length steps",
+            default_value = 0
+        )
+
+        handler.add_method_parameter(
             "get_force_sync",
             "set_force_sync",
             "force_sync",
@@ -550,7 +582,7 @@ class ph4(GravitationalDynamics,GravityFieldCode):
             default_value = 0
         )
 
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_block_steps",
             "set_block_steps",
             "block_steps",
@@ -558,7 +590,7 @@ class ph4(GravitationalDynamics,GravityFieldCode):
             default_value = 0
         )
 
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_total_steps",
             "set_total_steps",
             "total_steps",
@@ -566,7 +598,7 @@ class ph4(GravitationalDynamics,GravityFieldCode):
             default_value = 0
         )
 
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_initial_timestep_fac",  # getter name in interface.cc
             "set_initial_timestep_fac",  # setter name in interface.cc
             "initial_timestep_fac",      # python parameter name
@@ -574,7 +606,7 @@ class ph4(GravitationalDynamics,GravityFieldCode):
             default_value = 0.0625
         )
 
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_initial_timestep_limit", # getter name in interface.cc
             "set_initial_timestep_limit", # setter name in interface.cc
             "initial_timestep_limit",     # python parameter name
@@ -582,7 +614,7 @@ class ph4(GravitationalDynamics,GravityFieldCode):
             default_value = 0.03125
         )
 
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_initial_timestep_median", # getter name in interface.cc
             "set_initial_timestep_median", # setter name in interface.cc
             "initial_timestep_median",     # python parameter name
@@ -590,7 +622,7 @@ class ph4(GravitationalDynamics,GravityFieldCode):
             default_value = 8.0
         )
 
-        self.stopping_conditions.define_parameters(object)
+        self.stopping_conditions.define_parameters(handler)
         
     def update_particle_set(self):
         """
@@ -606,7 +638,7 @@ class ph4(GravitationalDynamics,GravityFieldCode):
         if number_of_updated_particles == 0:
             return
         
-        indices_in_update_list = range(number_of_updated_particles)
+        indices_in_update_list = list(range(number_of_updated_particles))
         particle_indices, updates \
             = self.get_id_of_updated_particle(indices_in_update_list)
         
@@ -620,20 +652,20 @@ class ph4(GravitationalDynamics,GravityFieldCode):
             elif status == 2:                        # addition
                 indices_to_add.append(index)
 
-        print ''
-        print "indices_to_remove:", indices_to_remove
-        print "indices_to_add:", indices_to_add
+        print('')
+        print("indices_to_remove:", indices_to_remove)
+        print("indices_to_add:", indices_to_add)
 
         if len(indices_to_remove) > 0:
             incode_storage._remove_indices(indices_to_remove)
         if len(indices_to_add) > 0:
             incode_storage._add_indices(indices_to_add)
         
-    def define_methods(self, object):
-        GravitationalDynamics.define_methods(self, object)
+    def define_methods(self, handler):
+        GravitationalDynamics.define_methods(self, handler)
 
         # Turn interface functions into methods.
-        object.add_method(
+        handler.add_method(
             "new_particle",
             (
                 nbody_system.mass,
@@ -644,41 +676,41 @@ class ph4(GravitationalDynamics,GravityFieldCode):
                 nbody_system.speed,
                 nbody_system.speed,
                 nbody_system.length,
-                object.NO_UNIT
+                handler.NO_UNIT
             ),
             (
-                object.INDEX,
-                object.ERROR_CODE
+                handler.INDEX,
+                handler.ERROR_CODE
             )
         )
 
-        object.add_method(
+        handler.add_method(
             "set_eps2",
             (
                 nbody_system.length * nbody_system.length
             ),
             (
-                object.ERROR_CODE
+                handler.ERROR_CODE
             )
         )
 
-        object.add_method(
+        handler.add_method(
             "get_eps2",
             (),
             (
                 nbody_system.length * nbody_system.length,
-                object.ERROR_CODE
+                handler.ERROR_CODE
             )
         )
 
-        self.stopping_conditions.define_methods(object)
+        self.stopping_conditions.define_methods(handler)
 
-    def define_particle_sets(self, object):
-        GravitationalDynamics.define_particle_sets(self, object)
+    def define_particle_sets(self, handler):
+        GravitationalDynamics.define_particle_sets(self, handler)
         
-        object.add_getter('particles', 'get_particle_timestep',
+        handler.add_getter('particles', 'get_particle_timestep',
                           names = ('timestep',))
-        object.add_getter('particles', 'get_potential',
+        handler.add_getter('particles', 'get_potential',
                           names=('potential_in_code',))
         
-        self.stopping_conditions.define_particle_set(object)
+        self.stopping_conditions.define_particle_set(handler)

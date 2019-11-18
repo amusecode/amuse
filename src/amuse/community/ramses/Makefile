@@ -64,11 +64,11 @@ $(CODELIB2D): $(BUILDDIR2D)/bin/Makefile
 $(CODELIB1D): $(BUILDDIR1D)/bin/Makefile
 	make -C $(BUILDDIR1D)/bin all F90="$(FC)" FFLAGS="$(FFLAGS1D)"
 
-ramses_worker: worker_code.f90 $(CODELIB) $(OBJS)
+ramses_worker: worker_code.f90 $(CODELIB) $(OBJS) data
 	$(MPIFC) -I$(SRC) $(SC_FLAGS) $(FS_FLAGS) $(LDFLAGS) worker_code.f90 -o $@ $(OBJS) $(CODELIB) $(SC_CLIBS) $(FS_LIBS)  $(LIBS)
-ramses_worker_2d: worker_code.f90 $(CODELIB2D) $(OBJS2D)
+ramses_worker_2d: worker_code.f90 $(CODELIB2D) $(OBJS2D) data
 	$(MPIFC) -I$(SRC) $(SC_FLAGS) $(FS_FLAGS) $(LDFLAGS) worker_code.f90 -o $@ $(OBJS2D) $(CODELIB2D) $(SC_CLIBS) $(FS_LIBS)  $(LIBS)
-ramses_worker_1d: worker_code.f90 $(CODELIB1D) $(OBJS1D)
+ramses_worker_1d: worker_code.f90 $(CODELIB1D) $(OBJS1D) data
 	$(MPIFC) -I$(SRC) $(SC_FLAGS) $(FS_FLAGS) $(LDFLAGS) worker_code.f90 -o $@ $(OBJS1D) $(CODELIB1D) $(SC_CLIBS) $(FS_LIBS)   $(LIBS)
 
 $(OBJS): interface.f90 $(CODELIB)
@@ -81,11 +81,20 @@ $(OBJS1D): interface.f90 $(CODELIB1D)
 worker_code.f90: interface.py 
 	$(CODE_GENERATOR) --type=f90 $< $(CLASSNAME) -o $@
 
+data:
+	mkdir -p data/namelist
+	cp src/namelist/* data/namelist/
+
 clean:
 	rm -f *.o *.pyc
 	rm -f worker_code.f90
-	rm -f ramses_worker ramses_worker_mpi
+	rm -f ramses_worker
+	rm -f ramses_worker_*
 	rm -Rf $(BUILDDIR)
 	rm -Rf $(BUILDDIR2D)
 	rm -Rf $(BUILDDIR1D)
 	make -C $(SRC) clean
+
+distclean: clean
+	rm -rf data
+

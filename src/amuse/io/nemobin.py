@@ -16,7 +16,7 @@ class NemoItemType(type):
     def __new__(metaclass, name, bases, dict):
         if 'datatype' in dict:
             if not dict['datatype'] is None:
-                dict['datatype'] = numpy.dtype((dict['datatype'], 1,))
+                dict['datatype'] = numpy.dtype(dict['datatype'])
         result =  type.__new__(metaclass, name, bases, dict)
         if 'typecharacter' in dict:
             metaclass.mapping[dict['typecharacter']] = result
@@ -26,9 +26,7 @@ class NemoItemType(type):
     def new_item(metaclass, typecharacter, tagstring, dimensions, mustswap = False):
         return metaclass.mapping[typecharacter](tagstring, dimensions, mustswap = mustswap)
         
-class NemoItem(object):
-    __metaclass__ = NemoItemType
-    
+class NemoItem(object, metaclass=NemoItemType):
     def __init__(self, tagstring, dimensions = [1], data = None, mustswap = False):
         self.tagstring = tagstring
         self.dimensions = dimensions 
@@ -85,20 +83,20 @@ class AnyItem(NemoItem):
 class CharItem(NemoItem):
     """printable chars"""
     typecharacter = "c"
-    datatype = numpy.character
+    datatype = "c"
     
     def postprocess(self):
         self.data = self.data[:-1].tostring().decode('latin_1')
         
     def preprocess(self):
-        result = numpy.array(list(self.data), numpy.character)
-        result = numpy.append(result, '\x00')
+        result = numpy.array(list(self.data), "c")
+        result = numpy.append(result, b'\x00')
         return result
         
 class ByteItem(NemoItem):
     """unprintable chars"""
     typecharacter = "b"
-    datatype = numpy.character
+    datatype = numpy.byte
     
         
     def postprocess(self):
@@ -220,8 +218,8 @@ class NemoBinaryFile(object):
     def __init__(self, file):
         self.file = file
     
-    SingMagic  = ((011<<8) + 0222)
-    PlurMagic  = ((013<<8) + 0222)
+    SingMagic  = ((0o11<<8) + 0o222)
+    PlurMagic  = ((0o13<<8) + 0o222)
 
     def _byteswap(self, value, type = 'H'):
         x = array.array('H', [value])

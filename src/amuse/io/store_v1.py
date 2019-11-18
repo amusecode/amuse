@@ -20,19 +20,11 @@ from amuse.datamodel import Particles
 from amuse.datamodel import LinkedArray
 from amuse.datamodel import AttributeStorage
 
-if sys.hexversion > 0x03000000:
-    def pickle_to_string(value):
-        return numpy.void(pickle.dumps(value))
+def pickle_to_string(value):
+    return numpy.void(pickle.dumps(value, protocol=0))
         
-        
-    def unpickle_from_string(value):
-        return pickle.loads(value.tostring())
-else:
-    def pickle_to_string(value):
-        return pickle.dumps(value)
-        
-    def unpickle_from_string(value):
-        return pickle.loads(value)
+def unpickle_from_string(value):
+    return pickle.loads(value, encoding='bytes')
 
 class HDF5Attribute(object):
     
@@ -63,7 +55,7 @@ class HDF5Attribute(object):
             if not hasattr(shape, '__iter__'): 
                 shape = shape,
             dataset = group.create_dataset(name, shape=shape, dtype=input.number.dtype)
-            dataset.attrs["units"] = input.unit.to_simple_form().reference_string()
+            dataset.attrs["units"] = input.unit.to_simple_form().reference_string().encode("ascii")
             return HDF5VectorQuantityAttribute(name, dataset, input.unit)                                 
         elif hasattr(input, 'as_set'):
             subgroup = group.create_group(name)
@@ -75,21 +67,21 @@ class HDF5Attribute(object):
             if dtype.kind == 'U':
                 new_dtype = numpy.dtype('S' + dtype.itemsize * 4)
                 dataset = group.create_dataset(name, shape=shape, dtype=dtype)
-                dataset.attrs["units"] = "UNICODE"
+                dataset.attrs["units"] = "UNICODE".encode('ascii')
                 return HDF5UnicodeAttribute(name, dataset)
             else:
                 if not hasattr(shape, '__iter__'): 
                     shape = shape,
                 dtype = numpy.asanyarray(input).dtype
                 dataset = group.create_dataset(name, shape=shape, dtype=dtype)
-                dataset.attrs["units"] = "none"
+                dataset.attrs["units"] = "none".encode("ascii")
                 return HDF5UnitlessAttribute(name, dataset)
 
 
 
     @classmethod
     def load_attribute(cls, name, dataset, loader):
-        units_string = dataset.attrs["units"]
+        units_string = dataset.attrs["units"] if isinstance(dataset.attrs["units"], str) else dataset.attrs["units"].decode("ascii")
         if units_string == "none":
             return HDF5UnitlessAttribute(name, dataset)
         elif units_string == "object":
@@ -268,6 +260,9 @@ class HDF5LinkedAttribute(HDF5Attribute):
             linked_set = self.loader.load_particles_from_group(referenced_group)
         else:
             linked_set = mapping_from_groupid_to_set[referenced_group.id]
+
+        if indices is None: 
+            indices=slice(None)
         
         keys = self.keys[:][indices]
         mask = self.masked[:][indices]
@@ -398,7 +393,7 @@ class HDF5AttributeStorage(AttributeStorage):
         return result
         
     def get_defined_attribute_names(self):
-        return self.attributesgroup.keys()
+        return list(self.attributesgroup.keys())
         
     def get_defined_settable_attribute_names(self):
         return self.get_defined_attribute_names()
@@ -468,10 +463,11 @@ class HDF5GridAttributeStorage(AttributeStorage):
         
     def get_unit_of(self, attribute):
         dataset = self.attributesgroup[attribute]
-        return eval(dataset.attrs["units"], core.__dict__) 
+        decoded=dataset.attrs["units"] if isinstance(dataset.attrs["units"], str) else dataset.attrs["units"].decode("ascii")
+        return eval(decoded, core.__dict__) 
         
     def get_defined_attribute_names(self):
-        return self.attributesgroup.keys()
+        return list(self.attributesgroup.keys())
         
     def get_values_in_store(self, indices, attributes):
             
@@ -509,7 +505,7 @@ class HDF5GridAttributeStorage(AttributeStorage):
                 dataset = self.attributesgroup[attribute]
             else:
                 dataset = self.attributesgroup.create_dataset(attribute, shape=self.shape, dtype=quantity.number.dtype)
-                dataset["unit"] =  quantity.unit.to_simple_form().reference_string()
+                dataset["unit"] =  quantity.unit.to_simple_form().reference_string().encode("ascii")
             dataset[indices] = quantity.value_in(self.get_unit_of(attribute))
         
         
@@ -599,7 +595,7 @@ class StoreHDF(object):
             parent = self.particles_group()
             
         group = self.new_group(parent)
-        group.attrs["type"] = 'particles'
+        group.attrs["type"] = 'particles'.encode("ascii")
         self.mapping_from_groupid_to_set[group.id] = particles._original_set()
         
         
@@ -633,7 +629,7 @@ class StoreHDF(object):
             parent = self.grids_group()
         group = self.new_group(parent)
         
-        group.attrs["type"] = 'grid'
+        group.attrs["type"] = 'grid'.encode("ascii")
         group.attrs["class_of_the_container"] = pickle_to_string(grid._factory_for_new_collection())
         group.create_dataset("shape", data=numpy.asarray(grid.shape))
     
@@ -652,7 +648,7 @@ class StoreHDF(object):
             if is_quantity(quantity):
                 value = quantity.value_in(quantity.unit)
                 dataset = attributes_group.create_dataset(attribute, data=value)
-                dataset.attrs["units"] = quantity.unit.to_simple_form().reference_string()
+                dataset.attrs["units"] = quantity.unit.to_simple_form().reference_string().encode("ascii")
             elif hasattr(quantity, 'as_set'):
                 quantity = quantity.as_set()
                 subgroup = attributes_group.create_group(attribute)
@@ -661,15 +657,15 @@ class StoreHDF(object):
                 links.append([subgroup, quantity.as_set()._original_set()])
                 subgroup.create_dataset('keys', data=keys)
                 subgroup.create_dataset('masked', data=masked)
-                subgroup.attrs["units"] = "object"
+                subgroup.attrs["units"] = "object".encode("ascii")
             else:
                 dtype = numpy.asanyarray(quantity).dtype
                 if dtype.kind == 'U':
                     dataset = attributes_group.create_dataset(attribute, data=numpy.char.encode(quantity,  'UTF-32BE'))
-                    dataset.attrs["units"] = "UNICODE"
+                    dataset.attrs["units"] = "UNICODE".encode("ascii")
                 else:
                     dataset = attributes_group.create_dataset(attribute, data=quantity)
-                    dataset.attrs["units"] = "none"
+                    dataset.attrs["units"] = "none".encode("ascii")
                 
             
     
@@ -678,7 +674,7 @@ class StoreHDF(object):
         quantity = container.get_timestamp()
         if not quantity is None:
             group.attrs["timestamp"] = quantity.value_in(quantity.unit)
-            group.attrs["timestamp_unit"] = quantity.unit.reference_string()
+            group.attrs["timestamp_unit"] = quantity.unit.reference_string().encode("ascii")
     
     
     
@@ -688,25 +684,25 @@ class StoreHDF(object):
         arguments_and_attributes.update(collection_attributes)
         arguments_and_attributes.update(extra_attributes)
         
-        for name, quantity in arguments_and_attributes.iteritems():
+        for name, quantity in arguments_and_attributes.items():
             if quantity is None:
                 continue 
             if is_quantity(quantity):
                 group.attrs[name] = quantity.value_in(quantity.unit)
-                group.attrs[name+"_unit"] = quantity.unit.reference_string()
+                group.attrs[name+"_unit"] = quantity.unit.reference_string().encode("ascii")
             else:
                 group.attrs[name] = quantity
-                group.attrs[name+"_unit"] = "none"
+                group.attrs[name+"_unit"] = "none".encode("ascii")
             
     def load_collection_attributes(self, container, group):
         names = group.attrs.keys()
         attributenames = [x for x in names if x + '_unit' in group.attrs]
         for name in attributenames:
-            unit_string = group.attrs[name+"_unit"]
+            unit_string = group.attrs[name+"_unit"] if isinstance(group.attrs[name+"_unit"],str) else group.attrs[name+"_unit"].decode("ascii")
             if unit_string == 'none':
                 quantity = group.attrs[name]
             else:
-                unit = eval(group.attrs[name+"_unit"], core.__dict__) 
+                unit = eval(unit_string, core.__dict__) 
                 quantity = unit.new_quantity(group.attrs[name])
             setattr(container.collection_attributes, name, quantity)
                 
@@ -759,7 +755,7 @@ class StoreHDF(object):
     
     def load_from_group(self, group, default_type = 'particles'):
         if 'type' in group.attrs:
-            container_type = group.attrs['type']
+            container_type = group.attrs['type'] if isinstance(group.attrs['type'], str) else group.attrs['type'].decode('ascii') 
         else:
             container_type = default_type
         
@@ -822,6 +818,7 @@ class StoreHDF(object):
             self.hdf5file.flush()
             self.hdf5file.close()
             self.hdf5file = None
+
 class HDF5UnicodeAttribute(HDF5UnitlessAttribute):
     
     def __init__(self, name, dataset):

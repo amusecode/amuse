@@ -78,7 +78,7 @@ class jdata {
     int njbuf;
 
 #ifndef NOMPI
-    MPI::Intracomm mpi_comm;		// communicator for the N-body system
+    MPI_Comm mpi_comm;		// communicator for the N-body system
 #endif
 
     int mpi_size;
@@ -136,7 +136,7 @@ class jdata {
 
     jdata() {
 	nj = 0;
-	njbuf = 0;
+	njbuf = 0;	// buffers have zero length until particles are added
 #ifndef NOMPI
 	mpi_comm = NULL;
 	mpi_size = 0;
@@ -179,7 +179,7 @@ class jdata {
     void set_manage_encounters(int m);
 
 #ifndef NOMPI
-    void setup_mpi(MPI::Intracomm comm);
+    void setup_mpi(MPI_Comm comm);
 #endif
     int define_domain(int& j_start, int& j_end);
     void setup_gpu();
@@ -188,6 +188,7 @@ class jdata {
 		     int pid = -1, real dt = -1);
     void remove_particle(int j);
     void initialize_arrays();
+    void initialize_work_arrays();
     int get_inverse_id(int i);
     void check_inverse_id(const char *s = NULL);
     void set_initial_timestep(real fac = 0.0625, real limit = 0.03125,
@@ -200,8 +201,8 @@ class jdata {
     real get_total_mass();
     void predict(int j, real t);
     void predict_all(real t, bool full_range = false);
-    void advance();
-    bool advance_and_check_encounter();
+    void advance(bool zero_step_mode = false);
+    bool advance_and_check_encounter(bool zero_step_mode = false);
     void synchronize_all(bool reinit_sched = true);
     void synchronize_list(int jlist[], int njlist);
     void update_merger_energy(real dEmerge);

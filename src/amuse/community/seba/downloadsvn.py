@@ -24,7 +24,7 @@ class DownloadFromRemoteSvn(object):
             arguments, 
             cwd = self.directory()
         )
-        print "Donwloaded sourcecode from svn"
+        print("Donwloaded sourcecode from svn")
         time.sleep(5) #sleeping 5 seconds, make failed because files were not added to library (assume clock failure)
     
 

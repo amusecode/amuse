@@ -107,7 +107,7 @@ class TestMiyamotoNagaiProfile(amusetest.TestCase):
         
         ax_nm,ay_nm,az_nm = nm_profile.get_gravity_at_point(0.|units.m,b*0.1,b*5.,b*0.1)
         ax_p,ay_p,az_p = plummer_profile.get_gravity_at_point(0.|units.m,b*0.1,b*5.,b*0.1)
-        print ax_nm.in_(units.parsec/units.Myr**2), ax_p.in_(units.parsec/units.Myr**2)
+        print(ax_nm.in_(units.parsec/units.Myr**2), ax_p.in_(units.parsec/units.Myr**2))
         self.assertAlmostEqual(ax_nm.in_(units.parsec/units.Myr**2),ax_p.in_(units.parsec/units.Myr**2), 12)
         self.assertAlmostEqual(ay_nm.in_(units.parsec/units.Myr**2),ay_p.in_(units.parsec/units.Myr**2), 12)
         self.assertAlmostEqual(az_nm.in_(units.parsec/units.Myr**2),az_p.in_(units.parsec/units.Myr**2), 12)
@@ -132,13 +132,38 @@ class TestPowerLawCutoff_profile(amusetest.TestCase):
         m_r = power_law.enclosed_mass(100.*r0).in_(units.MSun)
         
         self.assertAlmostEqual(r_force, -3.08704194743 |units.parsec/units.Myr**2, 10)
-        self.assertAlmostEqual(potential, -3.8425981846|1.e-5*units.kpc**2/units.Myr**2, 10)
+        self.assertAlmostEqual(potential, -5.91677122595e-06 |units.kpc**2/units.Myr**2, 10)
         self.assertAlmostEqual(ax, -0.00585557189412|units.parsec/units.Myr**2, 10)
         self.assertAlmostEqual(ay, -0.292778594706|units.parsec/units.Myr**2, 10)
         self.assertAlmostEqual(az, -0.0292778594706|units.parsec/units.Myr**2, 10)
         self.assertAlmostEqual(density, 0.585867989506 |units.MSun/units.parsec**3, 10)
         self.assertAlmostEqual(vc, 1.0891472277|units.kms, 10)
         self.assertAlmostEqual(m_r, 2.71756907682 |1.e5*units.MSun, 9)
+
+    def test2(self):
+        rho0 = 12.|units.MSun/units.parsec**3
+        r0 = 1.6|units.parsec
+        alpha = 1.6
+        rc = 0.66|units.kpc
+        power_law = PowerLawCutoff_profile(rho0,r0,alpha,rc)
+        
+        r=2*rc*numpy.arange(100001)/100000.
+        
+        pot=power_law.get_potential_at_point(0. | units.kpc, r, 0.*r,0*r)
+        rho=power_law.mass_density( r)
+        
+        d=r[1]-r[0]
+        rpot=r*pot
+        lapl=(rpot[2:]-2*rpot[1:-1]+rpot[:-2])/d**2/r[1:-1]
+        rcheck=r[1:-1]
+        
+        rho1=(-lapl/(4*units.pi*constants.G))
+        rho2=rho[1:-1]
+        d=((rho1[1:]-rho2[1:])/rho2[1:])
+        # seems to be ok:        
+        self.assertTrue(d.max()< 0.025)
+        self.assertTrue(d.mean()< 1.e-6)
+      
         
     def setUp(self):
         if not scipy_imported:
@@ -163,7 +188,7 @@ class TestMWpotentialBovy2015(amusetest.TestCase):
         
         # mass enclosed in 60kpc
         mass_in_60 = mw.enclosed_mass(60.|units.kpc)
-        print mass_in_60.in_(units.MSun)
+        print(mass_in_60.in_(units.MSun))
         self.assertAlmostEqual((mass_in_60/1.e11).in_(units.MSun), 4.08|units.MSun, 2)
         
         # normalization factor for bulge
@@ -177,7 +202,7 @@ class TestMWpotentialBovy2015(amusetest.TestCase):
         
         # normalization factor for halo
         fr_r0_halo = -mw.halo.radial_force(r0)
-        print fr_r0_halo/fr_r0_v0
+        print(fr_r0_halo/fr_r0_v0)
         self.assertAlmostEqual(fr_r0_halo/fr_r0_v0, 0.35, 3)
         
     def setUp(self):

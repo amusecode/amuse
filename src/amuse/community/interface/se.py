@@ -12,8 +12,9 @@ from amuse.community.interface import common
 
 from amuse.rfi.core import legacy_function
 from amuse.rfi.core import LegacyFunctionSpecification
-class StellarEvolutionInterface(common.CommonCodeInterface):
 
+
+class StellarEvolutionInterface(common.CommonCodeInterface):
 
     @legacy_function   
     def delete_star():
@@ -369,115 +370,115 @@ class StellarEvolution(common.CommonCode):
                 while particle.age < end_time:
                     particle.evolve_one_step()
     
-    def define_state(self, object):
-        common.CommonCode.define_state(self, object)
+    def define_state(self, handler):
+        common.CommonCode.define_state(self, handler)
         
-        object.add_transition('INITIALIZED','EDIT','commit_parameters')
-        object.add_transition('RUN','CHANGE_PARAMETERS_RUN','before_set_parameter', False)
-        object.add_transition('EDIT','CHANGE_PARAMETERS_EDIT','before_set_parameter', False)
-        object.add_transition('UPDATE','CHANGE_PARAMETERS_UPDATE','before_set_parameter', False)
-        object.add_transition('CHANGE_PARAMETERS_RUN','RUN','recommit_parameters')
-        object.add_transition('CHANGE_PARAMETERS_EDIT','EDIT','recommit_parameters')
-        object.add_transition('CHANGE_PARAMETERS_UPDATE','UPDATE','recommit_parameters')
-        object.add_method('CHANGE_PARAMETERS_RUN', 'before_set_parameter')
-        object.add_method('CHANGE_PARAMETERS_EDIT', 'before_set_parameter')
-        object.add_method('CHANGE_PARAMETERS_UPDATE','before_set_parameter')
+        handler.add_transition('INITIALIZED','EDIT','commit_parameters')
+        handler.add_transition('RUN','CHANGE_PARAMETERS_RUN','before_set_parameter', False)
+        handler.add_transition('EDIT','CHANGE_PARAMETERS_EDIT','before_set_parameter', False)
+        handler.add_transition('UPDATE','CHANGE_PARAMETERS_UPDATE','before_set_parameter', False)
+        handler.add_transition('CHANGE_PARAMETERS_RUN','RUN','recommit_parameters')
+        handler.add_transition('CHANGE_PARAMETERS_EDIT','EDIT','recommit_parameters')
+        handler.add_transition('CHANGE_PARAMETERS_UPDATE','UPDATE','recommit_parameters')
+        handler.add_method('CHANGE_PARAMETERS_RUN', 'before_set_parameter')
+        handler.add_method('CHANGE_PARAMETERS_EDIT', 'before_set_parameter')
+        handler.add_method('CHANGE_PARAMETERS_UPDATE','before_set_parameter')
         
-        object.add_method('CHANGE_PARAMETERS_RUN', 'before_get_parameter')
-        object.add_method('CHANGE_PARAMETERS_EDIT', 'before_get_parameter')
-        object.add_method('CHANGE_PARAMETERS_UPDATE','before_get_parameter')
-        object.add_method('RUN', 'before_get_parameter')
-        object.add_method('EDIT', 'before_get_parameter')
-        object.add_method('UPDATE','before_get_parameter')
-        object.add_method('EVOLVED','before_get_parameter')
+        handler.add_method('CHANGE_PARAMETERS_RUN', 'before_get_parameter')
+        handler.add_method('CHANGE_PARAMETERS_EDIT', 'before_get_parameter')
+        handler.add_method('CHANGE_PARAMETERS_UPDATE','before_get_parameter')
+        handler.add_method('RUN', 'before_get_parameter')
+        handler.add_method('EDIT', 'before_get_parameter')
+        handler.add_method('UPDATE','before_get_parameter')
+        handler.add_method('EVOLVED','before_get_parameter')
         
         
         
-        object.add_method('EDIT', 'new_particle')
-        object.add_method('EDIT', 'delete_star')
-        object.add_method('UPDATE', 'new_particle')
-        object.add_method('UPDATE', 'delete_star')
-        object.add_transition('EDIT', 'RUN', 'commit_particles')
-        object.add_transition('RUN', 'UPDATE', 'new_particle', False)
-        object.add_transition('RUN', 'UPDATE', 'finalize_stellar_model', False)
-        object.add_transition('RUN', 'UPDATE', 'delete_star', False)
-        object.add_transition('UPDATE', 'RUN', 'recommit_particles')
-        object.add_method('RUN', 'evolve_model')
-        object.add_method('RUN', 'evolve_for')
-        object.add_method('RUN', 'evolve_one_step')
-        object.add_method('RUN', 'get_age')
-        object.add_method('RUN', 'get_mass')
-        object.add_method('RUN', 'get_luminosity')
-        object.add_method('RUN', 'get_radius')
-        object.add_method('RUN', 'get_stellar_type')
-        object.add_method('RUN', 'get_temperature')
+        handler.add_method('EDIT', 'new_particle')
+        handler.add_method('EDIT', 'delete_star')
+        handler.add_method('UPDATE', 'new_particle')
+        handler.add_method('UPDATE', 'delete_star')
+        handler.add_transition('EDIT', 'RUN', 'commit_particles')
+        handler.add_transition('RUN', 'UPDATE', 'new_particle', False)
+        handler.add_transition('RUN', 'UPDATE', 'finalize_stellar_model', False)
+        handler.add_transition('RUN', 'UPDATE', 'delete_star', False)
+        handler.add_transition('UPDATE', 'RUN', 'recommit_particles')
+        handler.add_method('RUN', 'evolve_model')
+        handler.add_method('RUN', 'evolve_for')
+        handler.add_method('RUN', 'evolve_one_step')
+        handler.add_method('RUN', 'get_age')
+        handler.add_method('RUN', 'get_mass')
+        handler.add_method('RUN', 'get_luminosity')
+        handler.add_method('RUN', 'get_radius')
+        handler.add_method('RUN', 'get_stellar_type')
+        handler.add_method('RUN', 'get_temperature')
     
-    def define_methods(self, object):
-        common.CommonCode.define_methods(self, object)
-        object.add_method(
+    def define_methods(self, handler):
+        common.CommonCode.define_methods(self, handler)
+        handler.add_method(
             "evolve_one_step",
-            (object.INDEX,),
-            (object.ERROR_CODE,)
+            (handler.INDEX,),
+            (handler.ERROR_CODE,)
         )
-        object.add_method(
+        handler.add_method(
             "evolve_for",
-            (object.INDEX, units.yr),
-            (object.ERROR_CODE,)
+            (handler.INDEX, units.yr),
+            (handler.ERROR_CODE,)
         )
-        object.add_method(
+        handler.add_method(
             "new_particle",
             (units.MSun),
-            (object.INDEX, object.ERROR_CODE)
+            (handler.INDEX, handler.ERROR_CODE)
         )
-        object.add_method(
+        handler.add_method(
             "delete_star",
-            (object.INDEX,),
-            (object.ERROR_CODE,)
+            (handler.INDEX,),
+            (handler.ERROR_CODE,)
         )
-        object.add_method(
+        handler.add_method(
             "get_mass",
-            (object.INDEX,),
-            (units.MSun, object.ERROR_CODE,)
+            (handler.INDEX,),
+            (units.MSun, handler.ERROR_CODE,)
         )
-        object.add_method(
+        handler.add_method(
             "get_radius",
-            (object.INDEX,),
-            (units.RSun, object.ERROR_CODE,)
+            (handler.INDEX,),
+            (units.RSun, handler.ERROR_CODE,)
         )
-        object.add_method(
+        handler.add_method(
             "get_stellar_type",
-            (object.INDEX,),
-            (units.stellar_type, object.ERROR_CODE,)
+            (handler.INDEX,),
+            (units.stellar_type, handler.ERROR_CODE,)
         )
-        object.add_method(
+        handler.add_method(
             "get_age", 
-            (object.INDEX,), 
-            (units.yr, object.ERROR_CODE,)
+            (handler.INDEX,), 
+            (units.yr, handler.ERROR_CODE,)
         )
-        object.add_method(
+        handler.add_method(
             "get_luminosity", 
-            (object.INDEX,), 
-            (units.LSun, object.ERROR_CODE,)
+            (handler.INDEX,), 
+            (units.LSun, handler.ERROR_CODE,)
         )
-        object.add_method(
+        handler.add_method(
             "get_temperature", 
-            (object.INDEX,), 
-            (units.K, object.ERROR_CODE,)
+            (handler.INDEX,), 
+            (units.K, handler.ERROR_CODE,)
         )
-        object.add_method(
+        handler.add_method(
             "get_time_step", 
-            (object.INDEX,), 
-            (units.yr, object.ERROR_CODE,)
+            (handler.INDEX,), 
+            (units.yr, handler.ERROR_CODE,)
         )
-        object.add_method(
+        handler.add_method(
             "get_metallicity", 
             (), 
-            (object.NO_UNIT, object.ERROR_CODE,)
+            (handler.NO_UNIT, handler.ERROR_CODE,)
         )
-        object.add_method(
+        handler.add_method(
             "set_metallicity", 
-            (object.NO_UNIT, ), 
-            (object.ERROR_CODE,)
+            (handler.NO_UNIT, ), 
+            (handler.ERROR_CODE,)
         )
 
 
@@ -807,103 +808,102 @@ class InternalStellarStructureInterface(object):
         return function
     
 
-
 class InternalStellarStructure(object): 
 
-    def define_particle_sets(self, object, set_name = 'particles'):
-        object.add_method(set_name, 'get_number_of_zones')
-        object.add_method(set_name, 'get_density_profile')
-        object.add_method(set_name, 'set_density_profile')
-        object.add_method(set_name, 'get_radius_profile')
-        object.add_method(set_name, 'set_radius_profile')
-        object.add_method(set_name, 'get_temperature_profile')
-        object.add_method(set_name, 'set_temperature_profile')
-        object.add_method(set_name, 'get_pressure_profile')
-        object.add_method(set_name, 'get_mu_profile')
-        object.add_method(set_name, 'get_number_of_species')
-        object.add_method(set_name, 'get_names_of_species')
-        object.add_method(set_name, 'get_chemical_abundance_profiles')
-        object.add_method(set_name, 'set_chemical_abundance_profiles')
-        object.add_method(set_name, 'calculate_core_mass')
-        object.add_method(set_name, 'calculate_helium_exhausted_core_mass')
-        object.add_getter(set_name, 'get_central_temperature', names = ('central_temperature',))
-        object.add_getter(set_name, 'get_central_density', names = ('central_density',))
+    def define_particle_sets(self, handler, set_name = 'particles'):
+        handler.add_method(set_name, 'get_number_of_zones')
+        handler.add_method(set_name, 'get_density_profile')
+        handler.add_method(set_name, 'set_density_profile')
+        handler.add_method(set_name, 'get_radius_profile')
+        handler.add_method(set_name, 'set_radius_profile')
+        handler.add_method(set_name, 'get_temperature_profile')
+        handler.add_method(set_name, 'set_temperature_profile')
+        handler.add_method(set_name, 'get_pressure_profile')
+        handler.add_method(set_name, 'get_mu_profile')
+        handler.add_method(set_name, 'get_number_of_species')
+        handler.add_method(set_name, 'get_names_of_species')
+        handler.add_method(set_name, 'get_chemical_abundance_profiles')
+        handler.add_method(set_name, 'set_chemical_abundance_profiles')
+        handler.add_method(set_name, 'calculate_core_mass')
+        handler.add_method(set_name, 'calculate_helium_exhausted_core_mass')
+        handler.add_getter(set_name, 'get_central_temperature', names = ('central_temperature',))
+        handler.add_getter(set_name, 'get_central_density', names = ('central_density',))
     
-    def define_errorcodes(self, object):
-        object.add_errorcode(-21, 'Specified particle does not exist.')
-        object.add_errorcode(-22, 'Specified zone is undefined for this particle.')
-        object.add_errorcode(-23, 'Specified chemical species is undefined for this particle.')
+    def define_errorcodes(self, handler):
+        handler.add_errorcode(-21, 'Specified particle does not exist.')
+        handler.add_errorcode(-22, 'Specified zone is undefined for this particle.')
+        handler.add_errorcode(-23, 'Specified chemical species is undefined for this particle.')
     
-    def define_methods(self, object):
-        object.add_method(
+    def define_methods(self, handler):
+        handler.add_method(
             "set_mass",
-            (object.INDEX, units.MSun,),
-            (object.ERROR_CODE,)
+            (handler.INDEX, units.MSun,),
+            (handler.ERROR_CODE,)
         )
-        object.add_method(
+        handler.add_method(
             "get_number_of_zones", 
-            (object.INDEX,), 
-            (object.NO_UNIT, object.ERROR_CODE,)
+            (handler.INDEX,), 
+            (handler.NO_UNIT, handler.ERROR_CODE,)
         )
-        object.add_method(
+        handler.add_method(
             "get_temperature_at_zone", 
-            (object.INDEX,object.NO_UNIT,), 
-            (units.K, object.ERROR_CODE,)
+            (handler.INDEX, handler.NO_UNIT,), 
+            (units.K, handler.ERROR_CODE,)
         )
-        object.add_method(
+        handler.add_method(
             "set_temperature_at_zone", 
-            (object.INDEX, object.NO_UNIT, units.K,), 
-            (object.ERROR_CODE,)
+            (handler.INDEX, handler.NO_UNIT, units.K,), 
+            (handler.ERROR_CODE,)
         )
-        object.add_method(
+        handler.add_method(
             "get_density_at_zone", 
-            (object.INDEX,object.NO_UNIT,), 
-            (units.g/units.cm**3, object.ERROR_CODE,)
+            (handler.INDEX, handler.NO_UNIT,), 
+            (units.g/units.cm**3, handler.ERROR_CODE,)
         )
-        object.add_method(
+        handler.add_method(
             "set_density_at_zone", 
-            (object.INDEX, object.NO_UNIT, units.g/units.cm**3,),
-            (object.ERROR_CODE,)
+            (handler.INDEX, handler.NO_UNIT, units.g/units.cm**3,),
+            (handler.ERROR_CODE,)
         )
-        object.add_method(
+        handler.add_method(
             "get_radius_at_zone", 
-            (object.INDEX,object.NO_UNIT,), 
-            (units.cm, object.ERROR_CODE,)
+            (handler.INDEX, handler.NO_UNIT,), 
+            (units.cm, handler.ERROR_CODE,)
         )
-        object.add_method(
+        handler.add_method(
             "set_radius_at_zone", 
-            (object.INDEX, object.NO_UNIT, units.cm,), 
-            (object.ERROR_CODE,)
+            (handler.INDEX, handler.NO_UNIT, units.cm,), 
+            (handler.ERROR_CODE,)
         )
-        object.add_method(
+        handler.add_method(
             "get_pressure_at_zone", 
-            (object.INDEX, object.NO_UNIT,), 
-            (units.barye, object.ERROR_CODE,)
+            (handler.INDEX, handler.NO_UNIT,), 
+            (units.barye, handler.ERROR_CODE,)
         )
-        object.add_method(
+        handler.add_method(
             "get_mu_at_zone", 
-            (object.INDEX, object.NO_UNIT,), 
-            (units.amu, object.ERROR_CODE,)
+            (handler.INDEX, handler.NO_UNIT,), 
+            (units.amu, handler.ERROR_CODE,)
         )
-        object.add_method(
+        handler.add_method(
             "get_number_of_species", 
-            (object.INDEX,), 
-            (object.NO_UNIT, object.ERROR_CODE,)
+            (handler.INDEX,), 
+            (handler.NO_UNIT, handler.ERROR_CODE,)
         )
-        object.add_method(
+        handler.add_method(
             "get_name_of_species", 
-            (object.INDEX, object.NO_UNIT,), 
-            (object.NO_UNIT, object.ERROR_CODE,)
+            (handler.INDEX, handler.NO_UNIT,), 
+            (handler.NO_UNIT, handler.ERROR_CODE,)
         )
-        object.add_method(
+        handler.add_method(
             "get_mass_fraction_of_species_at_zone", 
-            (object.INDEX, object.NO_UNIT, object.NO_UNIT,), 
-            (object.NO_UNIT, object.ERROR_CODE,)
+            (handler.INDEX, handler.NO_UNIT, handler.NO_UNIT,), 
+            (handler.NO_UNIT, handler.ERROR_CODE,)
         )
-        object.add_method(
+        handler.add_method(
             "set_mass_fraction_of_species_at_zone", 
-            (object.INDEX, object.NO_UNIT, object.NO_UNIT, object.NO_UNIT,), 
-            (object.ERROR_CODE,)
+            (handler.INDEX, handler.NO_UNIT, handler.NO_UNIT, handler.NO_UNIT,), 
+            (handler.ERROR_CODE,)
         )
     
     def _check_supplied_values(self, number_of_values, expected_number, type_string = "mesh zones"):
@@ -922,7 +922,7 @@ class InternalStellarStructure(object):
         indices_of_the_stars = self._check_number_of_indices(indices_of_the_stars, action_string = "Querying density profiles")
         if number_of_zones is None:
             number_of_zones = self.get_number_of_zones(indices_of_the_stars)
-        return self.get_density_at_zone([indices_of_the_stars]*number_of_zones, range(number_of_zones) | units.none)
+        return self.get_density_at_zone([indices_of_the_stars]*number_of_zones, list(range(number_of_zones)) | units.none)
     
     def get_central_density(self, indices_of_the_stars):
         return self.get_density_at_zone(indices_of_the_stars, 0)
@@ -932,7 +932,7 @@ class InternalStellarStructure(object):
         if number_of_zones is None:
             number_of_zones = self.get_number_of_zones(indices_of_the_stars)
         self._check_supplied_values(len(values), number_of_zones)
-        self.set_density_at_zone([indices_of_the_stars]*number_of_zones, range(number_of_zones) | units.none, values)
+        self.set_density_at_zone([indices_of_the_stars]*number_of_zones, list(range(number_of_zones)) | units.none, values)
         if hasattr(self, "_erase_memory"):
             self._erase_memory(indices_of_the_stars)
     
@@ -940,14 +940,14 @@ class InternalStellarStructure(object):
         indices_of_the_stars = self._check_number_of_indices(indices_of_the_stars, action_string = "Querying radius profiles")
         if number_of_zones is None:
             number_of_zones = self.get_number_of_zones(indices_of_the_stars)
-        return self.get_radius_at_zone([indices_of_the_stars]*number_of_zones, range(number_of_zones) | units.none)
+        return self.get_radius_at_zone([indices_of_the_stars]*number_of_zones, list(range(number_of_zones)) | units.none)
     
     def set_radius_profile(self, indices_of_the_stars, values, number_of_zones = None):
         indices_of_the_stars = self._check_number_of_indices(indices_of_the_stars, action_string = "Setting radius profiles")
         if number_of_zones is None:
             number_of_zones = self.get_number_of_zones(indices_of_the_stars)
         self._check_supplied_values(len(values), number_of_zones)
-        self.set_radius_at_zone([indices_of_the_stars]*number_of_zones, range(number_of_zones) | units.none, values)
+        self.set_radius_at_zone([indices_of_the_stars]*number_of_zones, list(range(number_of_zones)) | units.none, values)
         if hasattr(self, "_erase_memory"):
             self._erase_memory(indices_of_the_stars)
     
@@ -955,7 +955,7 @@ class InternalStellarStructure(object):
         indices_of_the_stars = self._check_number_of_indices(indices_of_the_stars, action_string = "Querying temperature profiles")
         if number_of_zones is None:
             number_of_zones = self.get_number_of_zones(indices_of_the_stars)
-        return self.get_temperature_at_zone([indices_of_the_stars]*number_of_zones, range(number_of_zones) | units.none)
+        return self.get_temperature_at_zone([indices_of_the_stars]*number_of_zones, list(range(number_of_zones)) | units.none)
     
     def get_central_temperature(self, indices_of_the_stars):
         return self.get_temperature_at_zone(indices_of_the_stars, 0)
@@ -965,7 +965,7 @@ class InternalStellarStructure(object):
         if number_of_zones is None:
             number_of_zones = self.get_number_of_zones(indices_of_the_stars)
         self._check_supplied_values(len(values), number_of_zones)
-        self.set_temperature_at_zone([indices_of_the_stars]*number_of_zones, range(number_of_zones) | units.none, values)
+        self.set_temperature_at_zone([indices_of_the_stars]*number_of_zones, list(range(number_of_zones)) | units.none, values)
         if hasattr(self, "_erase_memory"):
             self._erase_memory(indices_of_the_stars)
     
@@ -973,13 +973,13 @@ class InternalStellarStructure(object):
         indices_of_the_stars = self._check_number_of_indices(indices_of_the_stars, action_string = "Querying pressure profiles")
         if number_of_zones is None:
             number_of_zones = self.get_number_of_zones(indices_of_the_stars)
-        return self.get_pressure_at_zone([indices_of_the_stars]*number_of_zones, range(number_of_zones) | units.none)
+        return self.get_pressure_at_zone([indices_of_the_stars]*number_of_zones, list(range(number_of_zones)) | units.none)
     
     def get_mu_profile(self, indices_of_the_stars, number_of_zones = None):
         indices_of_the_stars = self._check_number_of_indices(indices_of_the_stars, action_string = "Querying mean-molecular-weight profiles")
         if number_of_zones is None:
             number_of_zones = self.get_number_of_zones(indices_of_the_stars)
-        return self.get_mu_at_zone([indices_of_the_stars]*number_of_zones, range(number_of_zones) | units.none)
+        return self.get_mu_at_zone([indices_of_the_stars]*number_of_zones, list(range(number_of_zones)) | units.none)
     
     def get_names_of_species(self, indices_of_the_stars, number_of_species = None):
         indices_of_the_stars = self._check_number_of_indices(indices_of_the_stars, action_string = "Querying chemical abundance names")
@@ -987,7 +987,7 @@ class InternalStellarStructure(object):
             number_of_species = self.get_number_of_species(indices_of_the_stars)
         return list(self.get_name_of_species(
             [indices_of_the_stars]*number_of_species, 
-            range(1,number_of_species+1) | units.none
+            list(range(1,number_of_species+1)) | units.none
         ))
 
     def get_chemical_abundance_profiles(self, indices_of_the_stars, number_of_zones = None, number_of_species = None):
@@ -1084,7 +1084,7 @@ def merge_colliding_in_stellar_evolution_code(stellar_evolution_code, primaries,
     primaries = primaries.as_set()
     secondaries = secondaries.as_set()
     star_collider = collision_code(**code_options)
-    for (par_name, value) in code_parameters.iteritems():
+    for (par_name, value) in code_parameters.items():
         setattr(star_collider.parameters, par_name, value)
     star_collider.commit_parameters()
     star_collider.particles.add_particles(primaries)
@@ -1140,6 +1140,6 @@ def merge_colliding_in_stellar_evolution_code(stellar_evolution_code, primaries,
         elif type == "gd":
             result.append(gd_merge_products)
         else:
-            print "Unexpected value in return_merge_products, must be 'gd' (gravity particles) or 'se' (stellar evolution particles):", type
+            print("Unexpected value in return_merge_products, must be 'gd' (gravity particles) or 'se' (stellar evolution particles):", type)
     return result
 

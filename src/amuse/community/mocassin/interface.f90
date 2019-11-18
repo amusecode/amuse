@@ -759,12 +759,12 @@ CONTAINS
         IMPLICIT NONE
         INTEGER :: i, j, k, index_of_grid, get_position_of_index
         DOUBLE PRECISION :: x, y, z
-        PRINT *, "ngrids", nGrids
+!~         PRINT *, "ngrids", nGrids
         IF(index_of_grid .GT. nGrids) THEN
             get_position_of_index = -1
             return
         END IF
-        PRINT *, index_of_grid, grid3D(index_of_grid)%nx
+!~         PRINT *, index_of_grid, grid3D(index_of_grid)%nx
         IF(i .GT. grid3D(index_of_grid)%nx .OR. i .LT. 1) THEN
             get_position_of_index = -2
             return

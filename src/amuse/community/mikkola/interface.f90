@@ -111,7 +111,13 @@ FUNCTION get_mass(index_of_the_particle, mass)
   INTEGER :: get_mass
   INTEGER :: index_of_the_particle
   DOUBLE PRECISION :: mass
-  IF ( (.NOT. ALLOCATED(particle_id)) .OR. (particle_id(index_of_the_particle).EQ.-1) ) THEN
+! this condition is split over two if statements (instead of one with or .OR.) since on gfortran 9.1.1
+! this generated an seg fault  
+  IF ( (.NOT. ALLOCATED(particle_id))) THEN
+      get_mass = -1
+      RETURN
+  ENDIF
+  IF ( (particle_id(index_of_the_particle).EQ.-1) ) THEN
       get_mass = -1
       RETURN
   ENDIF
@@ -124,10 +130,15 @@ FUNCTION get_velocity(index_of_the_particle, vx, vy, vz)
   INTEGER :: get_velocity
   INTEGER :: index_of_the_particle
   DOUBLE PRECISION :: vx, vy, vz
-  IF ( (.NOT. ALLOCATED(particle_id)) .OR. (particle_id(index_of_the_particle).EQ.-1) ) THEN
+  IF ( (.NOT. ALLOCATED(particle_id)) ) THEN
       get_velocity = -1
       RETURN
   ENDIF
+  IF ( (particle_id(index_of_the_particle).EQ.-1) ) THEN
+      get_velocity = -1
+      RETURN
+  ENDIF
+
   vx = particle_vx(index_of_the_particle)
   vy = particle_vy(index_of_the_particle)
   vz = particle_vz(index_of_the_particle)
@@ -139,7 +150,11 @@ FUNCTION set_velocity(index_of_the_particle, vx, vy, vz)
   INTEGER :: set_velocity
   INTEGER :: index_of_the_particle
   DOUBLE PRECISION :: vx, vy, vz
-  IF ( (.NOT. ALLOCATED(particle_id)) .OR. (particle_id(index_of_the_particle).EQ.-1) ) THEN
+  IF ( (.NOT. ALLOCATED(particle_id)) ) THEN
+      set_velocity = -1
+      RETURN
+  ENDIF
+  IF ( (particle_id(index_of_the_particle).EQ.-1) ) THEN
       set_velocity = -1
       RETURN
   ENDIF
@@ -154,7 +169,11 @@ FUNCTION get_position(index_of_the_particle, x, y, z)
   INTEGER :: get_position
   INTEGER :: index_of_the_particle
   DOUBLE PRECISION :: x, y, z
-  IF ( (.NOT. ALLOCATED(particle_id)) .OR. (particle_id(index_of_the_particle).EQ.-1) ) THEN
+  IF ( (.NOT. ALLOCATED(particle_id)) ) THEN
+      get_position = -1
+      RETURN
+  ENDIF
+  IF ( (particle_id(index_of_the_particle).EQ.-1) ) THEN
       get_position = -1
       RETURN
   ENDIF
@@ -169,7 +188,11 @@ FUNCTION set_position(index_of_the_particle, x, y, z)
   INTEGER :: set_position
   INTEGER :: index_of_the_particle
   DOUBLE PRECISION :: x, y, z
-  IF ( (.NOT. ALLOCATED(particle_id)) .OR. (particle_id(index_of_the_particle).EQ.-1) ) THEN
+  IF ( (.NOT. ALLOCATED(particle_id)) ) THEN
+      set_position = -1
+      RETURN
+  ENDIF
+  IF ( (particle_id(index_of_the_particle).EQ.-1) ) THEN
       set_position = -1
       RETURN
   ENDIF
@@ -185,7 +208,11 @@ FUNCTION get_state(index_of_the_particle, mass, x, y, z, vx, vy,  &
   INTEGER :: get_state
   INTEGER :: index_of_the_particle
   DOUBLE PRECISION :: mass, radius, x, y, z, vx, vy, vz
-  IF ( (.NOT. ALLOCATED(particle_id)) .OR. (particle_id(index_of_the_particle).EQ.-1) ) THEN
+  IF ( (.NOT. ALLOCATED(particle_id)) ) THEN
+      get_state = -1
+      RETURN
+  ENDIF
+  IF ( (particle_id(index_of_the_particle).EQ.-1) ) THEN
       get_state = -1
       RETURN
   ENDIF
@@ -206,7 +233,11 @@ FUNCTION set_mass(index_of_the_particle, mass)
   INTEGER :: set_mass
   INTEGER :: index_of_the_particle
   DOUBLE PRECISION :: mass
-  IF ( (.NOT. ALLOCATED(particle_id)) .OR. (particle_id(index_of_the_particle).EQ.-1) ) THEN
+  IF ( (.NOT. ALLOCATED(particle_id)) ) THEN
+      set_mass = -1
+      RETURN
+  ENDIF
+  IF ( (particle_id(index_of_the_particle).EQ.-1) ) THEN
       set_mass = -1
       RETURN
   ENDIF
@@ -239,6 +270,8 @@ FUNCTION get_begin_time(time)
 END FUNCTION
 
 FUNCTION evolve_model(end_time)
+
+  use StoppingConditions 
   IMPLICIT NONE
   INTEGER :: evolve_model
   REAL*8 :: end_time
@@ -247,13 +280,16 @@ FUNCTION evolve_model(end_time)
   INTEGER :: nmergers
   REAL*8  :: VEL(3,maximum_number_of_particles*3)
   REAL*8  :: BODY(maximum_number_of_particles*3)
+  REAL*8  :: RADIUS(maximum_number_of_particles*3)
+  INTEGER :: COLI(maximum_number_of_particles*3)
+  INTEGER :: COLJ(maximum_number_of_particles*3)
   INTEGER :: INDEX(maximum_number_of_particles*3), REVERSE_INDEX(maximum_number_of_particles*3)
   REAL*8  :: IWRR, DELTAT, TEND, soft, cmet(3)
   REAL*8  :: BHspin(3)
   INTEGER :: stepr, i, j, Mikkola_ARWV
   INTEGER :: Np, Nbh, Ixc, error
   INTEGER :: idparent, idchild1, idchild2, new_index
-  
+  LOGICAL :: do_collision_detection
   j = 1
   Np = 0
   REVERSE_INDEX = 0
@@ -268,12 +304,15 @@ FUNCTION evolve_model(end_time)
          VEL(2,j) = particle_vy(i) 
          VEL(3,j) = particle_vz(i)
          BODY(j) = particle_m(i) 
+         RADIUS(j) = particle_radius(i)
          j = j + 1
          Np = Np + 1
      ENDIF
   ENDDO
   
   
+  error=reset_stopping_conditions();
+    
   Nbh = Np
   IWRR = -0 !?
   DELTAT = MIN(timestep, end_time - current_time) ! Initial timestep, not used according to Mikkola
@@ -292,11 +331,15 @@ FUNCTION evolve_model(end_time)
   else
     Ixc=1
   endif
+  error = is_stopping_condition_enabled(COLLISION_DETECTION, I);
+  do_collision_detection = I.EQ.1;
   BHspin=[0.0, 0.0, 0.0] !spin of the first black hole (between 0 and 1) 
+  COLI = 0
+  COLJ = 0
   evolve_model = Mikkola_ARWV(current_time, BODY, POS,VEL,INDEX, &
 &                IWRR,Np,DELTAT,end_time,stepr,soft,cmet,  &
 &                lightspeed,Ixc,Nbh,BHspin,tolerance, &
-&                mergers, nmergers) 
+&                mergers, nmergers, RADIUS, COLI, COLJ, do_collision_detection) 
   j = 1
 ! this print statement is needed for gfortran 4.8.x 
 ! otherwise nmergers seems to optimized out
@@ -336,6 +379,18 @@ FUNCTION evolve_model(end_time)
     particle_is_child(REVERSE_INDEX(idchild1)) = .TRUE.
     particle_is_child(REVERSE_INDEX(idchild2)) = .TRUE.
   ENDDO
+  
+  if(do_collision_detection) then 
+    DO i=1, Np
+      if(COLI(I).EQ.0) then
+        exit
+      end if
+      J=next_index_for_stopping_condition()
+      error = set_stopping_condition_info(J, COLLISION_DETECTION);
+      error = set_stopping_condition_particle_index(J, 0, REVERSE_INDEX(COLI(I)));
+      error = set_stopping_condition_particle_index(J, 1, REVERSE_INDEX(COLJ(I)));
+    ENDDO
+  end if
   ! current_time = end_time
 END FUNCTION
 
@@ -442,7 +497,11 @@ FUNCTION delete_particle(index_of_the_particle)
   IMPLICIT NONE
   INTEGER :: delete_particle
   INTEGER :: index_of_the_particle
-  IF ( (.NOT. ALLOCATED(particle_id)) .OR. (particle_id(index_of_the_particle).EQ.-1) ) THEN
+  IF ( (.NOT. ALLOCATED(particle_id)) ) THEN
+      delete_particle = -1
+      RETURN
+  ENDIF
+  IF ( (particle_id(index_of_the_particle).EQ.-1) ) THEN
       delete_particle = -1
       RETURN
   ENDIF
@@ -471,7 +530,11 @@ FUNCTION set_state(index_of_the_particle, mass, x, y, z, vx, vy,  &
   INTEGER :: set_state
   INTEGER :: index_of_the_particle
   DOUBLE PRECISION :: mass, radius, x, y, z, vx, vy, vz
-  IF ( (.NOT. ALLOCATED(particle_id)) .OR. (particle_id(index_of_the_particle).EQ.-1) ) THEN
+  IF ( (.NOT. ALLOCATED(particle_id)) ) THEN
+      set_state = -1
+      RETURN
+  ENDIF
+  IF ( (particle_id(index_of_the_particle).EQ.-1) ) THEN
       set_state = -1
       RETURN
   ENDIF
@@ -568,7 +631,11 @@ FUNCTION get_radius(index_of_the_particle, radius)
   INTEGER :: get_radius
   INTEGER :: index_of_the_particle
   DOUBLE PRECISION :: radius
-  IF ( (.NOT. ALLOCATED(particle_id)) .OR. (particle_id(index_of_the_particle).EQ.-1) ) THEN
+  IF ( (.NOT. ALLOCATED(particle_id)) ) THEN
+      get_radius = -1
+      RETURN
+  ENDIF
+  IF ( (particle_id(index_of_the_particle).EQ.-1) ) THEN
       get_radius = -1
       RETURN
   ENDIF
@@ -581,11 +648,14 @@ FUNCTION set_radius(index_of_the_particle, radius)
   INTEGER :: set_radius
   INTEGER :: index_of_the_particle
   DOUBLE PRECISION :: radius
-  IF ( (.NOT. ALLOCATED(particle_id)) .OR. (particle_id(index_of_the_particle).EQ.-1) ) THEN
+  IF ( (.NOT. ALLOCATED(particle_id)) ) THEN
       set_radius = -1
       RETURN
   ENDIF
-  
+  IF ( (particle_id(index_of_the_particle).EQ.-1) ) THEN
+      set_radius = -1
+      RETURN
+  ENDIF  
   particle_radius(index_of_the_particle) = radius
   set_radius=0
 END FUNCTION
@@ -626,8 +696,13 @@ FUNCTION recommit_parameters()
 END FUNCTION
 
 FUNCTION initialize_code()
+  use StoppingConditions
   IMPLICIT NONE
-  INTEGER :: initialize_code
+  INTEGER :: initialize_code, error
+  
+  call initialize_stopping_conditions();
+  error = set_support_for_condition(COLLISION_DETECTION);
+  
   maximum_number_of_particles = 100
   initialize_code=0
   current_time = 0
@@ -713,7 +788,12 @@ FUNCTION get_children_of_particle(index_of_the_particle, child1, child2)
   IMPLICIT NONE
   INTEGER :: get_children_of_particle
   INTEGER :: index_of_the_particle, child1, child2
-  IF ( (.NOT. ALLOCATED(particle_id)) .OR. (particle_id(index_of_the_particle).EQ.-1) ) THEN
+  IF ( (.NOT. ALLOCATED(particle_id)) ) THEN
+      child1 = 0
+      child2 = 0
+      RETURN
+  ENDIF
+  IF ( (particle_id(index_of_the_particle).EQ.-1) ) THEN
       get_children_of_particle = -1
       child1 = 0
       child2 = 0

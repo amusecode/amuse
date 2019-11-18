@@ -176,7 +176,7 @@ class StateMachine(OptionalAttributes):
             to_state.remove_to_transition(from_state)
             
     def iter_states(self):
-        return iter(self.states.values())
+        return self.states.values()
 
     def new_state(self, name):
         if name is None:
@@ -200,9 +200,9 @@ class StateMachine(OptionalAttributes):
     
 
     def _get_transitions_path_from_to(self, from_state, to_state):
-        transitions = filter(lambda x : x.is_auto, to_state.get_to_transitions())
+        transitions = [x for x in to_state.get_to_transitions() if x.is_auto]
     
-        paths = map(lambda x : [x], transitions)
+        paths = [[x] for x in transitions]
     
         def has_no_circle(path):
             seen_states = set([])
@@ -222,8 +222,8 @@ class StateMachine(OptionalAttributes):
             elif first.from_state.matches(from_state):
                 yield current
             else:
-                transitions = filter(lambda x : x.is_auto, first.from_state.get_to_transitions())
-                new_paths = map(lambda x : [x], transitions)
+                transitions = [x for x in first.from_state.get_to_transitions() if x.is_auto]
+                new_paths = [[x] for x in transitions]
     
                 for new_path in new_paths:
                     new_path.extend(current)
@@ -236,7 +236,7 @@ class StateMachine(OptionalAttributes):
     
     
     def _get_state_transition_path_to(self, state):
-        all_transitions = list(self._get_transitions_path_from_to(self._current_state, state))
+        all_transitions = self._get_transitions_path_from_to(self._current_state, state)
         transitions = []
         for x in all_transitions:
             if len(transitions) == 0 or len(x) < len(transitions):
@@ -245,7 +245,7 @@ class StateMachine(OptionalAttributes):
         if len(transitions) == 0:
             raise Exception("No transition from current state {0} to {1} possible".format(self._current_state, state))
         
-        transitions_with_methods = filter(lambda x : not x.method is None,transitions)
+        transitions_with_methods = [x for x in transitions if not x.method is None]
         if not self._do_automatic_state_transitions and len(transitions_with_methods) > 0:
             lines = []
             lines.append("Interface is not in {0}, should transition from {1} to {0} first.\n". format(state, self._current_state))
@@ -270,7 +270,7 @@ class StateMachine(OptionalAttributes):
         lines.append('@startuml')
         initial_state = self._initial_state
         lines.append('[*] --> {0}'.format(initial_state.name))
-        statenames = list(sorted(self.states.keys()))
+        statenames = sorted(self.states.keys())
         merged_transitions = {}
         for name in statenames:
             state = self.states[name]
@@ -339,7 +339,7 @@ class StateMachine(OptionalAttributes):
         ignore_states = set(ignore_states)
         initial_state = self._initial_state
         lines.append('Initial state: {0}'.format(initial_state.name))
-        statenames = list(sorted(self.states.keys()))
+        statenames = sorted(self.states.keys())
         merged_transitions = {}
         for name in statenames:
             state = self.states[name]
@@ -446,8 +446,8 @@ class StateMachine(OptionalAttributes):
         
         
         fromstates = [x for x in selectedstates if not x in endstates]
-        fromstates = list(sorted(fromstates, key = lambda x :  -(state_to_distance_from_end[x] * len(state_to_distance_from_start)) + state_to_distance_from_start[x]))
-        tostates = list(sorted(tostates, key = lambda x :  -(state_to_distance_from_end[x] * len(state_to_distance_from_start)) + state_to_distance_from_start[x]))
+        fromstates = sorted(fromstates, key = lambda x :  -(state_to_distance_from_end[x] * len(state_to_distance_from_start)) + state_to_distance_from_start[x])
+        tostates = sorted(tostates, key = lambda x :  -(state_to_distance_from_end[x] * len(state_to_distance_from_start)) + state_to_distance_from_start[x])
             
         if split:
             table = Texttable(max_width = -1)

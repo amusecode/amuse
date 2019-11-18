@@ -56,9 +56,9 @@ class MakeKingModel(object):
         max_steps = 50
         previous_sum = -1.0e30
         for i in range(max_steps):
-            sum = self.trapint_gaus2(a, b, i, previous_sum);
+            sum = self.trapint_gaus2(a, b, i, previous_sum)
             if (abs(sum - previous_sum) < eps * abs(previous_sum)): return sum
-            previous_sum = sum;
+            previous_sum = sum
         return 0.0
         
     # Integrate func from a to b in n steps, using the trapezoid rule.
@@ -73,7 +73,7 @@ class MakeKingModel(object):
             for i in range(base):
                 sum = sum + self.gaus2(x)
                 x = x + dx
-            return 0.5 * (previous_sum + (b - a)/base * sum);
+            return 0.5 * (previous_sum + (b - a)/base * sum)
             
     def gaus2(self, x):
         return x*x*math.exp(-x*x)
@@ -391,7 +391,7 @@ class MakeKingModel(object):
         if not (len(zm) == nprof+1 and len(d) == nprof+1 and 
             len(rr) == nprof+1 and len(v2) == nprof+1 and 
             len(psi) == nprof+1):
-            print len(zm), len(d), len(rr), len(v2), len(psi), nprof+1
+            print(len(zm), len(d), len(rr), len(v2), len(psi), nprof+1)
             raise exceptions.AmuseException("Error in result of Poisson")
         #    // Determine statistics and characteristic scales of the King model.
         rho0 = 1 / zm[nprof]#	 // Central density for total mass = 1
@@ -432,10 +432,10 @@ class MakeKingModel(object):
         rvirial = -0.5/pot
         #    // Initialize the N-body system.
         if self.verbose:
-            print " King model, w0 = ",self.W0,", Rt/Rc = ",rr[nprof],", Rh/Rc = ",rhalf,", Mc/M = ", zmcore
+            print(" King model, w0 = ",self.W0,", Rt/Rc = ",rr[nprof],", Rh/Rc = ",rhalf,", Mc/M = ", zmcore)
             #    // Write essential model information
-            print "initial_mass", 1.0
-            print "initial_rtidal_over_rvirial",  rr[nprof] / (0.25/kin)
+            print("initial_mass", 1.0)
+            print("initial_rtidal_over_rvirial",  rr[nprof] / (0.25/kin))
         #    // Assign positions and velocities. Note that it may actually
         #    // be preferable to do this in layers instead.
         masses = numpy.zeros(self.number_of_particles) + (1.0 / self.number_of_particles)

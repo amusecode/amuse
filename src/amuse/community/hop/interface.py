@@ -678,17 +678,17 @@ class Hop(CommonCode):
         
         InCodeComponentImplementation.__init__(self,  HopInterface(**options), **options)
     
-    def define_converter(self, object):
+    def define_converter(self, handler):
         if self.unit_converter is None:
             return
-        object.set_converter(self.unit_converter.as_converter_from_si_to_generic())
+        handler.set_converter(self.unit_converter.as_converter_from_si_to_generic())
     
-    def define_errorcodes(self, object):
-        object.add_errorcode(-1, 'Something went wrong...')
-        object.add_errorcode(-2, 'Not implemented.')
-        object.add_errorcode(-3, 'A particle with the given index was not found.')
-        object.add_errorcode(-4, 'Negative density encountered.')
-        object.add_errorcode(-5, 'Too few particles.')
+    def define_errorcodes(self, handler):
+        handler.add_errorcode(-1, 'Something went wrong...')
+        handler.add_errorcode(-2, 'Not implemented.')
+        handler.add_errorcode(-3, 'A particle with the given index was not found.')
+        handler.add_errorcode(-4, 'Negative density encountered.')
+        handler.add_errorcode(-5, 'Too few particles.')
     
     def define_methods(self, builder):
         
@@ -838,15 +838,15 @@ class Hop(CommonCode):
             (builder.ERROR_CODE,)
         )
         
-    def define_parameters(self, object):
-        object.add_method_parameter(
+    def define_parameters(self, handler):
+        handler.add_method_parameter(
             "get_fDensThresh", 
             "set_fDensThresh",
             "outer_density_threshold", 
             "the density below which particles are not assigned to any group", 
             default_value = -1.0 | generic_unit_system.density
         )
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_saddle_densthresh", 
             "set_saddle_densthresh",
             "saddle_density_threshold", 
@@ -854,7 +854,7 @@ class Hop(CommonCode):
             "threshold (DEFAULT: 1.75 * outer_density_threshold)",
             default_value = -1.0 | generic_unit_system.density
         )
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_peak_densthresh", 
             "set_peak_densthresh",
             "peak_density_threshold", 
@@ -862,7 +862,7 @@ class Hop(CommonCode):
             "other (proper) groups, or dropped (DEFAULT: max(saddle_density_threshold, 2.0 * outer_density_threshold))",
             default_value = -1.0 | generic_unit_system.density
         )
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_saddle_density_threshold_factor", 
             "set_saddle_density_threshold_factor",
             "saddle_density_threshold_factor", 
@@ -870,7 +870,7 @@ class Hop(CommonCode):
             "factor times the lowest of the two peak densities (set relative_saddle_density_threshold to True)",
             default_value = 0.80
         )
-        object.add_boolean_parameter(
+        handler.add_boolean_parameter(
             "get_relative_saddle_density_threshold",
             "set_relative_saddle_density_threshold",
             "relative_saddle_density_threshold",
@@ -879,7 +879,7 @@ class Hop(CommonCode):
             False
         )
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_nHop", 
             "set_nHop",
             "number_of_neighbors_for_hop", 
@@ -887,7 +887,7 @@ class Hop(CommonCode):
             default_value = 64
         )
 
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_density_method", 
             "set_density_method",
             "density_method", 
@@ -896,7 +896,7 @@ class Hop(CommonCode):
         )
 
 
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_nDens", 
             "set_nDens",
             "number_of_neighbors_for_local_density", 
@@ -904,7 +904,7 @@ class Hop(CommonCode):
             default_value = 64
         )
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_nBucket", 
             "set_nBucket",
             "number_of_buckets", 
@@ -912,7 +912,7 @@ class Hop(CommonCode):
             default_value = 16
         )
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_nMerge", 
             "set_nMerge",
             "number_of_particles_per_group_pair_boundary", 
@@ -932,41 +932,41 @@ class Hop(CommonCode):
         #builder.add_getter('particles', 'get_densest_neighbor')
         builder.add_getter('particles', 'get_group_id', names=('group_id',))
     
-    def define_state(self, object):
-        CommonCode.define_state(self, object)
-        object.add_transition('INITIALIZED','EDIT','commit_parameters')
-        object.add_transition('RUN','CHANGE_PARAMETERS_RUN','before_set_parameter', False)
-        object.add_transition('EDIT','CHANGE_PARAMETERS_EDIT','before_set_parameter', False)
-        object.add_transition('UPDATE','CHANGE_PARAMETERS_UPDATE','before_set_parameter', False)
-        object.add_transition('CHANGE_PARAMETERS_RUN','RUN','recommit_parameters')
-        object.add_transition('CHANGE_PARAMETERS_EDIT','EDIT','recommit_parameters')
-        object.add_transition('CHANGE_PARAMETERS_UPDATE','UPDATE','recommit_parameters')
+    def define_state(self, handler):
+        CommonCode.define_state(self, handler)
+        handler.add_transition('INITIALIZED','EDIT','commit_parameters')
+        handler.add_transition('RUN','CHANGE_PARAMETERS_RUN','before_set_parameter', False)
+        handler.add_transition('EDIT','CHANGE_PARAMETERS_EDIT','before_set_parameter', False)
+        handler.add_transition('UPDATE','CHANGE_PARAMETERS_UPDATE','before_set_parameter', False)
+        handler.add_transition('CHANGE_PARAMETERS_RUN','RUN','recommit_parameters')
+        handler.add_transition('CHANGE_PARAMETERS_EDIT','EDIT','recommit_parameters')
+        handler.add_transition('CHANGE_PARAMETERS_UPDATE','UPDATE','recommit_parameters')
         
-        object.add_method('CHANGE_PARAMETERS_RUN', 'before_set_parameter')
-        object.add_method('CHANGE_PARAMETERS_EDIT', 'before_set_parameter')
-        object.add_method('CHANGE_PARAMETERS_UPDATE','before_set_parameter')
+        handler.add_method('CHANGE_PARAMETERS_RUN', 'before_set_parameter')
+        handler.add_method('CHANGE_PARAMETERS_EDIT', 'before_set_parameter')
+        handler.add_method('CHANGE_PARAMETERS_UPDATE','before_set_parameter')
         
-        object.add_method('CHANGE_PARAMETERS_RUN', 'before_get_parameter')
-        object.add_method('CHANGE_PARAMETERS_EDIT', 'before_get_parameter')
-        object.add_method('CHANGE_PARAMETERS_UPDATE','before_get_parameter')
-        object.add_method('RUN', 'before_get_parameter')
-        object.add_method('EDIT', 'before_get_parameter')
-        object.add_method('UPDATE','before_get_parameter')
+        handler.add_method('CHANGE_PARAMETERS_RUN', 'before_get_parameter')
+        handler.add_method('CHANGE_PARAMETERS_EDIT', 'before_get_parameter')
+        handler.add_method('CHANGE_PARAMETERS_UPDATE','before_get_parameter')
+        handler.add_method('RUN', 'before_get_parameter')
+        handler.add_method('EDIT', 'before_get_parameter')
+        handler.add_method('UPDATE','before_get_parameter')
         
-        object.add_method('EDIT', 'new_particle')
-        object.add_method('EDIT', 'delete_particle')
-        object.add_method('UPDATE', 'new_particle')
-        object.add_method('UPDATE', 'delete_particle')
-        object.add_transition('EDIT', 'RUN', 'commit_particles')
-        object.add_transition('RUN', 'UPDATE', 'new_particle', False)
-        object.add_transition('RUN', 'UPDATE', 'delete_particle', False)
-        object.add_transition('UPDATE', 'RUN', 'recommit_particles')
-        object.add_method('RUN', 'calculate_densities')
-        object.add_method('RUN', 'do_hop')
-        object.add_method('RUN', 'get_mass')
-        object.add_method('RUN', 'get_position')
-        object.add_method('RUN', 'get_density')
-        object.add_method('RUN', 'get_group_id')
+        handler.add_method('EDIT', 'new_particle')
+        handler.add_method('EDIT', 'delete_particle')
+        handler.add_method('UPDATE', 'new_particle')
+        handler.add_method('UPDATE', 'delete_particle')
+        handler.add_transition('EDIT', 'RUN', 'commit_particles')
+        handler.add_transition('RUN', 'UPDATE', 'new_particle', False)
+        handler.add_transition('RUN', 'UPDATE', 'delete_particle', False)
+        handler.add_transition('UPDATE', 'RUN', 'recommit_particles')
+        handler.add_method('RUN', 'calculate_densities')
+        handler.add_method('RUN', 'do_hop')
+        handler.add_method('RUN', 'get_mass')
+        handler.add_method('RUN', 'get_position')
+        handler.add_method('RUN', 'get_density')
+        handler.add_method('RUN', 'get_group_id')
     
     def no_group(self):
         return self.particles.select(lambda group_id: group_id == -1, ["group_id"])

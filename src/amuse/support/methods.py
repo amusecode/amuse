@@ -2,6 +2,8 @@ from amuse.support.core import late
 from amuse.support import exceptions
 from amuse.units import nbody_system
 
+from amuse.rfi.async_request import DependentASyncRequest, AbstractASyncRequest, FakeASyncRequest
+
 import inspect
 
 class AbstractCodeMethodWrapper(object):
@@ -40,9 +42,9 @@ class AbstractCodeMethodWrapper(object):
         if self.method_is_code:
             return self.method.method_input_argument_names
         elif self.method_is_legacy:
-            return map(lambda x : x.name, self.method.specification.input_parameters)
+            return [x.name for x in self.method.specification.input_parameters]
         else:
-            args = inspect.getargspec(self.method).args
+            args = inspect.getfullargspec(self.method).args
             if args:
                 if args[0] == 'self' or args[0] == 'cls':
                     return args[1:]
@@ -53,7 +55,7 @@ class AbstractCodeMethodWrapper(object):
         if self.method_is_code:
             return self.method.optional_method_input_argument_names
         elif self.method_is_legacy:
-            return map(lambda x : x.name, self.method.specification.iter_optional_input_parameters())
+            return [x.name for x in self.method.specification.iter_optional_input_parameters()]
         else:
             argspec = inspect.getargspec(self.method)
             defaults = argspec.defaults
@@ -68,7 +70,7 @@ class AbstractCodeMethodWrapper(object):
         if self.method_is_code:
             return self.method.method_output_argument_names
         elif self.method_is_legacy:
-            return map(lambda x : x.name, self.method.specification.output_parameters)
+            return [x.name for x in self.method.specification.output_parameters]
         else:
             return ()
            
@@ -102,6 +104,64 @@ class CodeMethodWrapper(AbstractCodeMethodWrapper):
         self.definition.check_wrapped_method(self)
     
     def __call__(self, *list_arguments, **keyword_arguments):
+        async_dependency=keyword_arguments.pop("async_dependency", None)
+        return_request=keyword_arguments.pop("return_request", False)
+        
+        if any(isinstance(x, AbstractASyncRequest) for x in list_arguments) or \
+           any(isinstance(x, AbstractASyncRequest) for x in keyword_arguments):
+            list_arguments_=[]
+            keyword_arguments_=dict()
+            for arg in list_arguments:
+                if isinstance(arg, AbstractASyncRequest):
+                        async_dependency=arg.join(async_dependency)              
+            for key,arg in keyword_arguments.items():
+                if isinstance(arg, AbstractASyncRequest):
+                        async_dependency=arg.join(async_dependency)              
+
+            def dummy_factory():
+                return FakeASyncRequest()
+
+            # need this step in between to make sure results are available
+            request=DependentASyncRequest(async_dependency, dummy_factory)
+
+            def factory():
+                list_arguments_=[]
+                keyword_arguments_=dict()
+                for arg in list_arguments:
+                    if isinstance(arg, AbstractASyncRequest):
+                        list_arguments_.append(arg.result())
+                    else:
+                        list_arguments_.append(arg)                    
+                for key,arg in keyword_arguments.items():
+                    if isinstance(arg, AbstractASyncRequest):
+                        keyword_arguments_[key]=arg.result()
+                    else:
+                        keyword_arguments_[key]=arg
+                  
+                return self.asynchronous(*list_arguments_, **keyword_arguments_)
+
+            request=DependentASyncRequest(request, factory)
+            if return_request:
+                request._result_index=self.convert_result_index()
+                return request
+            else:
+                return request.result()
+
+        if async_dependency is not None:
+            def factory():
+                return self.asynchronous(*list_arguments, **keyword_arguments)
+            request = DependentASyncRequest(async_dependency, factory)
+            if return_request:
+                request._result_index=self.convert_result_index()
+                return request
+            else:
+                return request.result()
+
+        if return_request:
+            request = self.asynchronous(*list_arguments, **keyword_arguments)
+            request._result_index=self.convert_result_index()
+            return request
+
         object = self.precall()
         list_arguments, keyword_arguments = self.convert_arguments(list_arguments, keyword_arguments)
         result = self.method(*list_arguments, **keyword_arguments)
@@ -112,25 +172,28 @@ class CodeMethodWrapper(AbstractCodeMethodWrapper):
         
         return result
     
-    def async(self, *list_arguments, **keyword_arguments):
+    def asynchronous(self, *list_arguments, **keyword_arguments):
         if not self.is_async_supported:
-            raise exceptions.AmuseException("async call is not supported for this method")
+            raise exceptions.AmuseException("asynchronous call is not supported for this method")
         
         
         object = self.precall()
         
         list_arguments, keyword_arguments = self.convert_arguments(list_arguments, keyword_arguments)
         
-        request = self.method.async(*list_arguments, **keyword_arguments)
+        request = self.method.asynchronous(*list_arguments, **keyword_arguments)
         
         def handle_result(function):
             
             result = function()
-            
+
             result = self.convert_result(result)
-        
+
+            # currently handled after call (on a wait)
+            # alternatively, this (probably) works for current implemted postcalls
+            # this could be done immediately
             self.postcall(object)
-            
+                        
             return result
         
         request.add_result_handler(handle_result)
@@ -143,6 +206,9 @@ class CodeMethodWrapper(AbstractCodeMethodWrapper):
     
     def convert_result(self, result):
         return self.definition.convert_result(self, result)
+
+    def convert_result_index(self):
+        return self.definition.convert_result_index(self)
     
     def precall(self):
         return self.definition.precall(self)
@@ -171,6 +237,10 @@ class CodeMethodWrapperDefinition(object):
     
     def convert_result(self, method, result):
         return result
+
+    def convert_result_index(self, method):
+        return list(range(len(method.method_output_argument_names)))
+        
     
     
         
@@ -195,8 +265,8 @@ class ProxyingMethodWrapper(AbstractCodeMethodWrapper):
     def __call__(self, *list_arguments, **keyword_arguments):
         return self.method(*list_arguments, **keyword_arguments)
     
-    def async(self, *list_arguments, **keyword_arguments):
-        return self.method.async(*list_arguments, **keyword_arguments)
+    def asynchronous(self, *list_arguments, **keyword_arguments):
+        return self.method.asynchronous(*list_arguments, **keyword_arguments)
 
     def __str__(self):
         return 'wrapped<{0}>'.format(self.method)

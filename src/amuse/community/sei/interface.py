@@ -110,24 +110,24 @@ class Sei(common.CommonCode):
         self.unit_converter = unit_converter
         InCodeComponentImplementation.__init__(self, legacy_interface, **options)
         
-    def define_particle_sets(self, object):
-        object.define_set('particles', 'index_of_the_particle')
-        object.set_new('particles', 'new_particle')
-        object.set_delete('particles', 'delete_particle')
-        object.add_setter('particles', 'set_state')
-        object.add_getter('particles', 'get_state')
+    def define_particle_sets(self, handler):
+        handler.define_set('particles', 'index_of_the_particle')
+        handler.set_new('particles', 'new_particle')
+        handler.set_delete('particles', 'delete_particle')
+        handler.add_setter('particles', 'set_state')
+        handler.add_getter('particles', 'get_state')
 
-    def define_methods(self, object):
-        #GravitationalDynamics.define_methods(self, object)
+    def define_methods(self, handler):
+        #GravitationalDynamics.define_methods(self, handler)
         
-        common.CommonCode.define_methods(self, object)
-        object.add_method(
+        common.CommonCode.define_methods(self, handler)
+        handler.add_method(
             'evolve',
             (nbody_system.time,),
             public_name = 'evolve_model'
         )
 
-        object.add_method(
+        handler.add_method(
             "new_particle",
             (
                 nbody_system.length,
@@ -138,24 +138,24 @@ class Sei(common.CommonCode):
                 nbody_system.speed,
             ),
             (
-                object.INDEX,
-                object.ERROR_CODE,
+                handler.INDEX,
+                handler.ERROR_CODE,
             )
         )
 
-        object.add_method(
+        handler.add_method(
             "delete_particle",
             (
-                object.INDEX
+                handler.INDEX
             ),
             (
-                object.ERROR_CODE
+                handler.ERROR_CODE
             )
         )
-        object.add_method(
+        handler.add_method(
             "get_state",
             (
-                object.INDEX,
+                handler.INDEX,
             ),
             (
                 nbody_system.length,
@@ -164,13 +164,13 @@ class Sei(common.CommonCode):
                 nbody_system.speed,
                 nbody_system.speed,
                 nbody_system.speed,
-                object.ERROR_CODE
+                handler.ERROR_CODE
             )
         )
-        object.add_method(
+        handler.add_method(
             "set_state",
             (
-                object.INDEX,
+                handler.INDEX,
                 nbody_system.length,
                 nbody_system.length,
                 nbody_system.length,
@@ -179,11 +179,11 @@ class Sei(common.CommonCode):
                 nbody_system.speed,
             ),
             (
-                object.ERROR_CODE
+                handler.ERROR_CODE
             )
         )
 
 
-    def define_converter(self, object):
+    def define_converter(self, handler):
         if not self.unit_converter is None:
-            object.set_converter(self.unit_converter.as_converter_from_si_to_generic())
+            handler.set_converter(self.unit_converter.as_converter_from_si_to_generic())

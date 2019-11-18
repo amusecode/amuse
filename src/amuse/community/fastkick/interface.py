@@ -140,78 +140,78 @@ class FastKick(CommonCode, GravityFieldCode):
         self.legacy_doc = legacy_interface.__doc__
         CommonCode.__init__(self, legacy_interface, **options)
 
-    def define_methods(self, object):
-        CommonCode.define_methods(self, object)
-        object.add_method("new_particle", [nbody_system.mass] + [nbody_system.length]*3,
-            (object.INDEX, object.ERROR_CODE))
-        object.add_method(
+    def define_methods(self, handler):
+        CommonCode.define_methods(self, handler)
+        handler.add_method("new_particle", [nbody_system.mass] + [nbody_system.length]*3,
+            (handler.INDEX, handler.ERROR_CODE))
+        handler.add_method(
             "get_eps2",
             (),
-            (nbody_system.length * nbody_system.length, object.ERROR_CODE,)
+            (nbody_system.length * nbody_system.length, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "set_eps2",
             (nbody_system.length * nbody_system.length, ),
-            (object.ERROR_CODE,)
+            (handler.ERROR_CODE,)
         )
     
-        object.add_method(
+        handler.add_method(
             "set_mass",
             (
-                object.NO_UNIT,
+                handler.NO_UNIT,
                 nbody_system.mass,
             ),
             (
-                object.ERROR_CODE
+                handler.ERROR_CODE
             )
         )
-        object.add_method(
+        handler.add_method(
             "get_mass",
             (
-                object.NO_UNIT,
+                handler.NO_UNIT,
             ),
             (
                 nbody_system.mass,
-                object.ERROR_CODE
+                handler.ERROR_CODE
             )
         )
-    def define_state(self, object): 
-        CommonCode.define_state(self, object)   
-        object.add_transition('END', 'INITIALIZED', 'initialize_code', False)    
-        object.add_transition('INITIALIZED', 'EDIT', 'commit_parameters')
-        object.add_transition('RUN', 'CHANGE_PARAMETERS_RUN', 'before_set_parameter', False)
-        object.add_transition('EDIT', 'CHANGE_PARAMETERS_EDIT', 'before_set_parameter', False)
-        object.add_transition('UPDATE', 'CHANGE_PARAMETERS_UPDATE', 'before_set_parameter', False)
-        object.add_transition('CHANGE_PARAMETERS_RUN', 'RUN', 'recommit_parameters')
-        object.add_transition('CHANGE_PARAMETERS_EDIT', 'EDIT', 'recommit_parameters')
-        object.add_transition('CHANGE_PARAMETERS_UPDATE', 'UPDATE', 'recommit_parameters')
+    def define_state(self, handler): 
+        CommonCode.define_state(self, handler)   
+        handler.add_transition('END', 'INITIALIZED', 'initialize_code', False)    
+        handler.add_transition('INITIALIZED', 'EDIT', 'commit_parameters')
+        handler.add_transition('RUN', 'CHANGE_PARAMETERS_RUN', 'before_set_parameter', False)
+        handler.add_transition('EDIT', 'CHANGE_PARAMETERS_EDIT', 'before_set_parameter', False)
+        handler.add_transition('UPDATE', 'CHANGE_PARAMETERS_UPDATE', 'before_set_parameter', False)
+        handler.add_transition('CHANGE_PARAMETERS_RUN', 'RUN', 'recommit_parameters')
+        handler.add_transition('CHANGE_PARAMETERS_EDIT', 'EDIT', 'recommit_parameters')
+        handler.add_transition('CHANGE_PARAMETERS_UPDATE', 'UPDATE', 'recommit_parameters')
         
-        object.add_method('CHANGE_PARAMETERS_RUN', 'before_set_parameter')
-        object.add_method('CHANGE_PARAMETERS_EDIT', 'before_set_parameter')
-        object.add_method('CHANGE_PARAMETERS_UPDATE', 'before_set_parameter')
-        object.add_method('CHANGE_PARAMETERS_RUN', 'before_get_parameter')
-        object.add_method('CHANGE_PARAMETERS_EDIT', 'before_get_parameter')
-        object.add_method('CHANGE_PARAMETERS_UPDATE', 'before_get_parameter')
-        object.add_method('RUN', 'before_get_parameter')
-        object.add_method('EDIT', 'before_get_parameter')
-        object.add_method('UPDATE','before_get_parameter')
+        handler.add_method('CHANGE_PARAMETERS_RUN', 'before_set_parameter')
+        handler.add_method('CHANGE_PARAMETERS_EDIT', 'before_set_parameter')
+        handler.add_method('CHANGE_PARAMETERS_UPDATE', 'before_set_parameter')
+        handler.add_method('CHANGE_PARAMETERS_RUN', 'before_get_parameter')
+        handler.add_method('CHANGE_PARAMETERS_EDIT', 'before_get_parameter')
+        handler.add_method('CHANGE_PARAMETERS_UPDATE', 'before_get_parameter')
+        handler.add_method('RUN', 'before_get_parameter')
+        handler.add_method('EDIT', 'before_get_parameter')
+        handler.add_method('UPDATE','before_get_parameter')
         
-        object.add_method('EDIT', 'new_particle')
-        object.add_method('EDIT', 'delete_particle')
-        object.add_method('UPDATE', 'new_particle')
-        object.add_method('UPDATE', 'delete_particle')
-        object.add_transition('EDIT', 'RUN', 'commit_particles')
-        object.add_transition('RUN', 'UPDATE', 'new_particle', False)
-        object.add_transition('RUN', 'UPDATE', 'delete_particle', False)
-        object.add_transition('UPDATE', 'RUN', 'recommit_particles')
+        handler.add_method('EDIT', 'new_particle')
+        handler.add_method('EDIT', 'delete_particle')
+        handler.add_method('UPDATE', 'new_particle')
+        handler.add_method('UPDATE', 'delete_particle')
+        handler.add_transition('EDIT', 'RUN', 'commit_particles')
+        handler.add_transition('RUN', 'UPDATE', 'new_particle', False)
+        handler.add_transition('RUN', 'UPDATE', 'delete_particle', False)
+        handler.add_transition('UPDATE', 'RUN', 'recommit_particles')
         
-        GravityFieldCode.define_state(self, object)
-        object.add_method('RUN', 'get_potential_energy')
+        GravityFieldCode.define_state(self, handler)
+        handler.add_method('RUN', 'get_potential_energy')
         
-    def define_converter(self, object):
+    def define_converter(self, handler):
         if not self.unit_converter is None:
-            object.set_converter(self.unit_converter.as_converter_from_si_to_generic())
+            handler.set_converter(self.unit_converter.as_converter_from_si_to_generic())
             
     def commit_parameters(self):
         self.parameters.send_not_set_parameters_to_code()
@@ -229,8 +229,8 @@ class FastKick(CommonCode, GravityFieldCode):
         self.initialize_code()
         self.parameters.reset_from_memento(parameters)
     
-    def define_parameters(self, object):
-        object.add_method_parameter(
+    def define_parameters(self, handler):
+        handler.add_method_parameter(
             "get_eps2",
             "set_eps2", 
             "epsilon_squared", 
@@ -238,12 +238,12 @@ class FastKick(CommonCode, GravityFieldCode):
             default_value = 0.0 | nbody_system.length * nbody_system.length
         )
     
-    def define_particle_sets(self, object):
-        object.define_set('particles', 'index_of_the_particle')
-        object.set_new('particles', 'new_particle')
-        object.set_delete('particles', 'delete_particle')
-        object.add_setter('particles', 'set_mass')
-        object.add_getter('particles', 'get_mass', names = ('mass',))
+    def define_particle_sets(self, handler):
+        handler.define_set('particles', 'index_of_the_particle')
+        handler.set_new('particles', 'new_particle')
+        handler.set_delete('particles', 'delete_particle')
+        handler.add_setter('particles', 'set_mass')
+        handler.add_getter('particles', 'get_mass', names = ('mass',))
     
-    def define_properties(self, object):
-        object.add_property("get_potential_energy")
+    def define_properties(self, handler):
+        handler.add_property("get_potential_energy")

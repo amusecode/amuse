@@ -1,11 +1,12 @@
+
+
 import subprocess
 import socket, os
 
 import time
-import urlparse
+import urllib.parse
 import threading
 import json
-import os.path
 import os
 import sys
 import re
@@ -22,7 +23,7 @@ from . import project
 import pickle
 import textwrap
 
-import Queue
+from queue import Queue
 
 background_test.RunTests.instance = background_test.RunTests()
 
@@ -43,7 +44,7 @@ class SendAnEmail(object):
     
     def __init__(self, **keyword_arguments):
         if len(keyword_arguments) > 0:
-            for key, value in keyword_arguments.iteritems():
+            for key, value in keyword_arguments.items():
                 setattr(self, key, value)
                 self.start()
 
@@ -52,7 +53,7 @@ class SendAnEmail(object):
         call = ['mail','-s',self.subject, '-r', self.sender_email_address]
         call.extend(self.recipients)
         
-        print call
+        print(call)
         
         process = subprocess.Popen(
             call,
@@ -148,17 +149,17 @@ success_email_subject = """For revision revision {revision}, all {number_of_test
 
 
 def run_command(arguments):
-    print "running :" + ' '.join(arguments)
+    print("running :" + ' '.join(arguments))
     process = subprocess.Popen(arguments, stdout = subprocess.PIPE, stderr = subprocess.PIPE)
     stdoutstr, stderrstr = process.communicate()
-    print stderrstr
+    print(stderrstr)
     return stdoutstr
 
 class RequestACodeReview(object):
     
     def __init__(self, **keyword_arguments):
         if len(keyword_arguments) > 0:
-            for key, value in keyword_arguments.iteritems():
+            for key, value in keyword_arguments.items():
                 setattr(self, key, value)
                 self.start()
 
@@ -195,7 +196,7 @@ class RequestACodeReview(object):
         if len(self.review_identifier_argument) == 0:
             arguments += [self.summary_argument, description]
         
-        print run_command(arguments)
+        print(run_command(arguments))
         
     @late
     def svn_repository_url(self):
@@ -254,7 +255,7 @@ class RunAllTestsOnASvnCommit(object):
     DEFAULT = None
     
     def __init__(self):
-        self.queue =  Queue.Queue()
+        self.queue =  Queue()
         self.must_run = False
 
     @classmethod
@@ -302,7 +303,7 @@ class RunAllTestsOnASvnCommit(object):
     def get_author_date_and_msg_for(self, revision):
         process = subprocess.Popen(['svn','log', '-r', revision, '--xml'], cwd = self.working_directory, stdout = subprocess.PIPE)
         result, ignore = process.communicate()
-        print result
+        print(result)
         if not process.returncode == 0:
             raise Exception("could not retrieve log for revision {0}" + revision)
             
@@ -515,7 +516,7 @@ class RunAllTestsOnASvnCommit(object):
 class HandleRequest(webserver.HandleRequest):
    
     def do_check_svn_commit(self):
-        parameters = urlparse.parse_qs(self.parsed_path.query)
+        parameters = urllib.parse.parse_qs(self.parsed_path.query)
         revision = parameters['rev'][0]
         
         
@@ -572,7 +573,7 @@ if __name__ == '__main__':
       
     (options, args) = parser.parse_args()
     
-    print "starting server on port: ", options.serverport
+    print("starting server on port: ", options.serverport)
       
     server = ContinuosTestWebServer(options.serverport)
     

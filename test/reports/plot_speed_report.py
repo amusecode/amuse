@@ -13,7 +13,7 @@ except ImportError:
 
 def select(row, cols_spec):
     subspecs = cols_spec.split(',')
-    subspecs = map(str.strip, subspecs)
+    subspecs = list(map(str.strip, subspecs))
     cols = []
     for subspec in subspecs:
         parts = subspec.split('-')
@@ -26,7 +26,7 @@ def select(row, cols_spec):
                 end = int(parts[1])
                 if end < 0:
                     end = len(row) + end
-            cols.extend(range(int(parts[0]), end))
+            cols.extend(list(range(int(parts[0]), end)))
     for index in cols:
         yield row[index]
         
@@ -45,15 +45,15 @@ def plot_speed_report(input_filename = None, output_filename = None, cols = '0-'
                     raise Exception("data does not have same header")
             header = header_for_next_line
         else:
-            parts = map(str.strip, line.split(','))
+            parts = list(map(str.strip, line.split(',')))
             if parts[0]== '':
                 continue
             x.append(int(parts[0]))
-            numbers = map(lambda x : float(x), parts[2:])
+            numbers = [float(x) for x in parts[2:]]
             data.append(list(select(numbers, cols)))
     x = numpy.asarray(x)
     data = numpy.asarray(data)
-    print data.shape
+    print(data.shape)
     
     figure = pyplot.figure(figsize=(9, 4))
     subplot = pyplot.subplot(1,2,1)

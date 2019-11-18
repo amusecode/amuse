@@ -1,0 +1,6 @@
+The following are known issues:
+
+- the ssh libraries can be rather easily confused if multiple ssh key files
+are present.
+- gateways are not working (needs xenon 2 update)
+

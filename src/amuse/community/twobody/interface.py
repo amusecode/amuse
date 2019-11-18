@@ -12,6 +12,7 @@ from amuse.units.quantities import zero
 
 from amuse.datamodel import Particles
 from amuse.rfi.core import *
+from functools import reduce
 def stumpff_C(z):
     if(z==0): 
         return 1/2.
@@ -67,7 +68,7 @@ def universal_kepler_dxidxi(xi,r0,vr0,smu,alpha):
       
 def newton(f,x0,fprime=None,args=(),tol=1.48e-8,maxiter=50):
     if fprime is None:
-        print "provide fprime"
+        print("provide fprime")
         return x0
     i=0
     x=x0
@@ -85,10 +86,10 @@ def newton(f,x0,fprime=None,args=(),tol=1.48e-8,maxiter=50):
 
 def laguerre(f,x0,fprime=None,fprimeprime=None,args=(),order=4,tol=1.e-14,maxiter=50):
     if fprime is None:
-        print "provide fprime"
+        print("provide fprime")
         return x0
     if fprimeprime is None:
-        print "provide fprimeprime"
+        print("provide fprimeprime")
         return x0
     i=0
     x=x0
@@ -551,22 +552,22 @@ class TwoBody(GravitationalDynamics, GravityFieldCode):
             **options
         )     
         
-    def define_state(self, object):
-        GravitationalDynamics.define_state(self, object)
-        GravityFieldCode.define_state(self, object)
+    def define_state(self, handler):
+        GravitationalDynamics.define_state(self, handler)
+        GravityFieldCode.define_state(self, handler)
     
     def get_epsilon_squared(self):
         return zero
     
-    def define_parameters(self, object):
-        object.add_method_parameter(
+    def define_parameters(self, handler):
+        handler.add_method_parameter(
             "get_epsilon_squared",
             None, 
             "epsilon_squared", 
             "smoothing parameter for gravity calculations", 
             default_value = zero
         )
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_begin_time",
             "set_begin_time",
             "begin_time",

@@ -121,9 +121,9 @@ class StellarEncounterInHydrodynamics(object):
         
         initial_separation = self.initial_separation * particles.radius.sum()
         if self.verbose:
-            print "Particles at collision:"
-            print particles
-            print "Backtrack particles to initial separation", initial_separation.as_string_in(units.RSun)
+            print("Particles at collision:")
+            print(particles)
+            print("Backtrack particles to initial separation", initial_separation.as_string_in(units.RSun))
         
         self.start_kepler(particles.total_mass(), initial_separation)
         kepler = self.initialize_binary_in_kepler(particles[0], particles[1])
@@ -138,14 +138,14 @@ class StellarEncounterInHydrodynamics(object):
         particles[0].velocity = [0, 0, 0] | units.m / units.s
         particles.move_to_center()
         if self.verbose:
-            print "Backtracking particles done. Initial conditions:"
-            print particles
+            print("Backtracking particles done. Initial conditions:")
+            print(particles)
     
     def convert_stars(self, particles, stellar_evolution_code):
         n_particles = self.divide_number_of_particles(particles)
         se_colliders = particles.get_intersecting_subset_in(stellar_evolution_code.particles)
         if self.verbose:
-            print "Converting stars of {0} to SPH models of {1} particles, respectively.".format(particles.mass, n_particles)
+            print("Converting stars of {0} to SPH models of {1} particles, respectively.".format(particles.mass, n_particles))
         sph_models = (
             self.relax(convert_stellar_model_to_SPH(se_colliders[0], n_particles[0], **self.star_to_sph_arguments)),
             self.relax(convert_stellar_model_to_SPH(se_colliders[1], n_particles[1], **self.star_to_sph_arguments))
@@ -156,9 +156,9 @@ class StellarEncounterInHydrodynamics(object):
             sph_model.velocity += particle.velocity
             gas_particles.add_particles(sph_model)
         if self.verbose:
-            print "Converting stars to SPH particles done"
+            print("Converting stars to SPH particles done")
         if self.debug:
-            print gas_particles
+            print(gas_particles)
         return gas_particles
     
     def divide_number_of_particles(self, particles):
@@ -179,10 +179,10 @@ class StellarEncounterInHydrodynamics(object):
         n_steps = 100
         velocity_damp_factor = 1.0 - (2.0*numpy.pi*t_end_in_t_dyn)/n_steps # Critical damping
         if self.verbose:
-            print "Relaxing SPH model with {0} for {1} ({2} dynamical timescales).".format(
+            print("Relaxing SPH model with {0} for {1} ({2} dynamical timescales).".format(
                 self.hydrodynamics.__name__, 
                 (t_end_in_t_dyn*dynamical_timescale).as_string_in(units.day),
-                t_end_in_t_dyn)
+                t_end_in_t_dyn))
         for i_step, time in enumerate(t_end_in_t_dyn*dynamical_timescale * numpy.linspace(1.0/n_steps, 1.0, n_steps)):
             hydro.evolve_model(time)
             channel_from_hydro.copy_attributes(["mass","x","y","z","vx","vy","vz","u"])
@@ -191,7 +191,7 @@ class StellarEncounterInHydrodynamics(object):
             channel_to_hydro.copy_attributes(["x","y","z","vx","vy","vz"])
             if self.debug:
                 K, U, Q = hydro.kinetic_energy, hydro.potential_energy, hydro.thermal_energy
-                print "t, K, U, Q:", time, K, U, Q
+                print("t, K, U, Q:", time, K, U, Q)
                 monitor["time"].append(time)
                 monitor["kinetic"].append(K)
                 monitor["potential"].append(U)
@@ -208,7 +208,7 @@ class StellarEncounterInHydrodynamics(object):
     def new_hop(self, particles):
         converter = nbody_system.nbody_to_si(particles.total_mass(), 1.0 | units.RSun)
         if self.debug:
-            print "Output of Hop is redirected to hop_out.log"
+            print("Output of Hop is redirected to hop_out.log")
             options = dict(redirection="file", redirect_file="hop_out.log")
         else:
             options = dict()
@@ -222,7 +222,7 @@ class StellarEncounterInHydrodynamics(object):
         unit_converter = nbody_system.nbody_to_si(gas_particles.total_mass(), self.dynamical_timescale)
         hydro = self.hydrodynamics(unit_converter, **self.hydrodynamics_arguments)
         hydro.initialize_code()
-        for par, value in self.hydrodynamics_parameters.iteritems():
+        for par, value in self.hydrodynamics_parameters.items():
             setattr(hydro.parameters, par, value)
         hydro.commit_parameters()
         hydro.gas_particles.add_particles(gas_particles)
@@ -235,10 +235,10 @@ class StellarEncounterInHydrodynamics(object):
         channel = hydro.gas_particles.new_channel_to(gas_particles)
         
         if self.verbose:
-            print "Simulating collision with {0} from {1} to {2}.".format(
+            print("Simulating collision with {0} from {1} to {2}.".format(
                 self.hydrodynamics.__name__, 
                 self.begin_time.as_string_in(units.day), 
-                (self.dynamical_timescales_per_step * self.dynamical_timescale).as_string_in(units.day))
+                (self.dynamical_timescales_per_step * self.dynamical_timescale).as_string_in(units.day)))
         
         hydro.evolve_model(self.dynamical_timescales_per_step * self.dynamical_timescale - self.begin_time)
         channel.copy_attributes(["x","y","z","vx","vy","vz","pressure","density","u"])
@@ -247,14 +247,14 @@ class StellarEncounterInHydrodynamics(object):
             if self.encounter_is_over(gas_particles):
                 extra_steps_counter += 1
                 if extra_steps_counter > self.extra_steps_when_encounter_is_over:
-                    print "Encounter is over and finished extra steps."
+                    print("Encounter is over and finished extra steps.")
                     break
                 else:
-                    print "Encounter is over. Now performing step {0} out of {1} extra steps".format(
-                        extra_steps_counter, self.extra_steps_when_encounter_is_over)
+                    print("Encounter is over. Now performing step {0} out of {1} extra steps".format(
+                        extra_steps_counter, self.extra_steps_when_encounter_is_over))
             else:
                 extra_steps_counter = 0
-            print "Continuing to {0}.".format((hydro.model_time + self.next_dt + self.begin_time).as_string_in(units.day))
+            print("Continuing to {0}.".format((hydro.model_time + self.next_dt + self.begin_time).as_string_in(units.day)))
             if self.continue_with_kepler:
                 self.evolve_with_kepler(hydro)
             hydro.evolve_model(hydro.model_time + self.next_dt)
@@ -275,12 +275,12 @@ class StellarEncounterInHydrodynamics(object):
             # escaping star + binary, etc.
             # For now we only check whether the two most massive groups will (re)collide
             a, b = stars.sorted_by_attribute("mass")[-2:]
-            if self.debug: print "System consists of {0} groups. The two most massive are: {1} and {2}.".format(len(stars), a.mass.as_string_in(units.MSun), b.mass.as_string_in(units.MSun))
+            if self.debug: print("System consists of {0} groups. The two most massive are: {1} and {2}.".format(len(stars), a.mass.as_string_in(units.MSun), b.mass.as_string_in(units.MSun)))
             if self.binary_will_collide(a, b):
                 return False
         
         if self.verbose:
-            print "Encounter is over, {0} stars after encounter.".format(len(groups))
+            print("Encounter is over, {0} stars after encounter.".format(len(groups)))
         return True
     
     def group_bound_particles(self, gas_particles):
@@ -305,14 +305,14 @@ class StellarEncounterInHydrodynamics(object):
     
     def analyze_particle_distribution(self, gas_particles):
         if self.verbose:
-            print "Analyzing particle distribution using Hop"
+            print("Analyzing particle distribution using Hop")
         if "density" in gas_particles.get_attribute_names_defined_in_store():
-            if self.debug: print "Using the original particles' density"
+            if self.debug: print("Using the original particles' density")
             self.hop.parameters.outer_density_threshold = 0.5 * gas_particles.density.mean()
             self.hop.particles.add_particles(gas_particles)
             gas_particles.copy_values_of_attribute_to("density", self.hop.particles)
         else:
-            if self.debug: print "Using Hop to calculate the density"
+            if self.debug: print("Using Hop to calculate the density")
             self.hop.particles.add_particles(gas_particles)
             self.hop.calculate_densities()
             self.hop.parameters.outer_density_threshold = 0.5 * self.hop.particles.density.mean()
@@ -347,22 +347,22 @@ class StellarEncounterInHydrodynamics(object):
     def binary_will_collide(self, a, b):
         self.continue_with_kepler = False
         if self.verbose:
-            print "Using Kepler to check whether the two stars will (re)collide."
+            print("Using Kepler to check whether the two stars will (re)collide.")
         kepler = self.initialize_binary_in_kepler(a, b)
         
         true_anomaly = kepler.get_angles()[1]
         eccentricity = kepler.get_elements()[1]
         if true_anomaly > 0.0 and eccentricity >= 1.0:
             if self.verbose:
-                print "Stars are on hyperbolic/parabolic orbits and moving away from each other, interaction is over."
+                print("Stars are on hyperbolic/parabolic orbits and moving away from each other, interaction is over.")
             return False
         
         periastron = kepler.get_periastron()
         will_collide = periastron < a.radius + b.radius
         if self.verbose:
-            print "Stars {0} collide. Distance at periastron: {1}, sum of radii: {2}".format(
+            print("Stars {0} collide. Distance at periastron: {1}, sum of radii: {2}".format(
                 "will" if will_collide else "won't",
-                periastron.as_string_in(units.RSun), (a.radius + b.radius).as_string_in(units.RSun))
+                periastron.as_string_in(units.RSun), (a.radius + b.radius).as_string_in(units.RSun)))
         
         if will_collide:
             # 1) check whether the stars are still relaxing: less than ~3 t_dyn passed since last moment of contact --> relax
@@ -371,14 +371,14 @@ class StellarEncounterInHydrodynamics(object):
             kepler.advance_to_periastron()
             self.next_dt = kepler.get_time() + self.dynamical_timescales_per_step * self.dynamical_timescale
             if self.debug:
-                print "Time to collision: {0}, next_dt: {1}".format(
-                    kepler.get_time().as_string_in(units.day), self.next_dt.as_string_in(units.day))
+                print("Time to collision: {0}, next_dt: {1}".format(
+                    kepler.get_time().as_string_in(units.day), self.next_dt.as_string_in(units.day)))
             if kepler.get_time() > 3 * self.dynamical_timescale and kepler.get_apastron() > 2.0 * self.initial_separation * (a.radius + b.radius):
                 # evolve for 3 * self.dynamical_timescale and skip the rest until ~initial_separation
                 kepler.return_to_apastron()
                 kepler.return_to_radius(a.radius + b.radius)
                 if -kepler.get_time() > 2.9 * self.dynamical_timescale: # If ~3 t_dyn have passed since the end of the collision
-                    if self.verbose: print "~3 t_dyn have passed since the end of the collision -> skip to next collision"
+                    if self.verbose: print("~3 t_dyn have passed since the end of the collision -> skip to next collision")
                     self.continue_with_kepler = True
                     kepler.advance_to_apastron()
                     kepler.advance_to_radius(2.0 * self.initial_separation * (a.radius + b.radius))
@@ -391,7 +391,7 @@ class StellarEncounterInHydrodynamics(object):
         return will_collide
     
     def evolve_with_kepler(self, hydro):
-        if self.verbose: print "evolve_with_kepler"
+        if self.verbose: print("evolve_with_kepler")
         indices_two_most_massive = self.stars_after_encounter.mass.argsort()[-2:]
         groups = [self.groups_after_encounter[i] for i in indices_two_most_massive]
         old_particles = self.stars_after_encounter[indices_two_most_massive]
@@ -401,7 +401,7 @@ class StellarEncounterInHydrodynamics(object):
         new_particles.move_to_center()
         for group, old_particle, new_particle in zip(groups, old_particles, new_particles):
             in_hydro = group.get_intersecting_subset_in(hydro.gas_particles)
-            if self.verbose: print in_hydro.center_of_mass().as_quantity_in(units.RSun), old_particle.position.as_quantity_in(units.RSun), new_particle.position.as_quantity_in(units.RSun)
+            if self.verbose: print(in_hydro.center_of_mass().as_quantity_in(units.RSun), old_particle.position.as_quantity_in(units.RSun), new_particle.position.as_quantity_in(units.RSun))
             in_hydro.position += new_particle.position - old_particle.position
             in_hydro.velocity += new_particle.velocity - old_particle.velocity
     

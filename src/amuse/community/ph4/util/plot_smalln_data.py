@@ -39,7 +39,7 @@ def read_data(filename, dt, N, have_mass):
 
     # Read in the data file.  Format is defined in smalln.
 
-    print 'reading data from', filename
+    print('reading data from', filename)
     sys.stdout.flush()
 
     f = open(filename)
@@ -47,7 +47,7 @@ def read_data(filename, dt, N, have_mass):
     f.close()
 
     nt = len(ll)
-    print nt, 'records read'
+    print(nt, 'records read')
     sys.stdout.flush()
 
     # Do some preliminary analysis.
@@ -58,7 +58,7 @@ def read_data(filename, dt, N, have_mass):
     else:
         nq = 4
     np = (len(r)-1)/nq
-    print 'np =', np, 'nq =', nq
+    print('np =', np, 'nq =', nq)
     
     tt, ii, mm, xx, yy, zz = unpack_line(r, np, nq)
     tnext = tt
@@ -69,7 +69,7 @@ def read_data(filename, dt, N, have_mass):
         pdt = False
         if dt > 0: pdt = True
         dt = (tlast-tt)/N
-        if pdt: print 'resetting dt =', dt
+        if pdt: print('resetting dt =', dt)
 
     t = []
     i = []
@@ -144,26 +144,26 @@ def read_data(filename, dt, N, have_mass):
     za = numpy.array(z)
 
     nt = len(ta)
-    print 'nt =', nt
-    print short, 'short records'
+    print('nt =', nt)
+    print(short, 'short records')
     #print 'xa.shape =', xa.shape	# should be nt x np
     return nt, ta, ia, ma, xa, ya, za
 
 def print_help():
-    print 'keyboard controls:'
-    print '    space    pause/resume'
-    print '    a        expand view to contain all particl;es'
-    print '    h        print this message'
-    print '    q        quit'
-    print '    z        zoom in'
-    print '    Z        zoom out'
-    print '    right    pan right'
-    print '    left     pan left'
-    print '    up       pan up'
-    print '    down     pan down'
-    print '    <        first frame'
-    print '    >        last frame'
-    print 'mouse click reverses direction'
+    print('keyboard controls:')
+    print('    space    pause/resume')
+    print('    a        expand view to contain all particl;es')
+    print('    h        print this message')
+    print('    q        quit')
+    print('    z        zoom in')
+    print('    Z        zoom out')
+    print('    right    pan right')
+    print('    left     pan left')
+    print('    up       pan up')
+    print('    down     pan down')
+    print('    <        first frame')
+    print('    >        last frame')
+    print('mouse click reverses direction')
 
 # We seem to need some of these global for the animate functions to work...
 
@@ -182,7 +182,7 @@ def animate_data(t, m, x, y, id, lx, ly, scale, delay):
 
     global xmin, xmax, ymin, ymax
 
-    print 'animating data'
+    print('animating data')
     colormap = ['r', 'y', 'b', 'm', 'g', 'c', 'k', 'k', 'k', 'k', 'k', 'k']
 
     # Determine length scales.
@@ -221,7 +221,7 @@ def animate_data(t, m, x, y, id, lx, ly, scale, delay):
     smin = numpy.min(s)
     smax = numpy.max(s)
     s = 5 + 25*(s-smin)/(smax-smin)    # sizes logarithmic in mass, range 5-30
-    print 's =', s
+    print('s =', s)
     nt,np = x.shape
     fig = plt.figure()
     
@@ -353,7 +353,7 @@ def animate_data(t, m, x, y, id, lx, ly, scale, delay):
         elif event.key == 'h':
             print_help()
         else:
-            print 'key =', event.key
+            print('key =', event.key)
 
     fig.canvas.mpl_connect('key_press_event', onKey)
     fig.canvas.mpl_connect('button_press_event', onClick)
@@ -394,8 +394,8 @@ if __name__ == '__main__':
 
     try:
         opts, args = getopt.getopt(sys.argv[1:], "ad:D:f:mN:o:p:s:")
-    except getopt.GetoptError, err:
-        print str(err)
+    except getopt.GetoptError as err:
+        print(str(err))
         sys.exit(1)
 
     for o, a in opts:
@@ -418,7 +418,7 @@ if __name__ == '__main__':
         elif o == "-s":
             scale = float(a)
         else:
-            print "unexpected argument", o
+            print("unexpected argument", o)
             sys.exit(1)
 
     nt, t, i, m, x, y, z = read_data(file, dt, N, have_mass)

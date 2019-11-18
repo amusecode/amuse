@@ -24,9 +24,9 @@ class TestCapreoleInterface(TestWithMPI):
         instance.initialize_code()
         instance.setup_mesh(50,40,30,1.,1.,1.)
         nx,ny,nz, error = instance.get_mesh_size()
-        self.assertEquals(nx, 50)
-        self.assertEquals(ny, 40)
-        self.assertEquals(nz, 30)
+        self.assertEqual(nx, 50)
+        self.assertEqual(ny, 40)
+        self.assertEqual(nz, 30)
         instance.stop()
     
     def test2(self):
@@ -241,23 +241,23 @@ class TestCapreoleInterface(TestWithMPI):
         instance.commit_parameters()
         
         minx, maxx, miny, maxy, minz, maxz, error = instance.get_boundary_index_range_inclusive(1)
-        self.assertEquals(error, 0)
-        self.assertEquals(minx, 1)
-        self.assertEquals(maxx, 2)
-        self.assertEquals(miny, 1)
-        self.assertEquals(maxy, 5)
-        self.assertEquals(minz, 1)
-        self.assertEquals(maxz, 5)
+        self.assertEqual(error, 0)
+        self.assertEqual(minx, 1)
+        self.assertEqual(maxx, 2)
+        self.assertEqual(miny, 1)
+        self.assertEqual(maxy, 5)
+        self.assertEqual(minz, 1)
+        self.assertEqual(maxz, 5)
         
         for i in range(2,7):
             minx, maxx, miny, maxy, minz, maxz, error = instance.get_boundary_index_range_inclusive(i)
-            self.assertEquals(error, 0)
-            self.assertEquals(minx, 1)
-            self.assertEquals(maxx, 1)
-            self.assertEquals(miny, 1)
-            self.assertEquals(maxy, 1)
-            self.assertEquals(minz, 1)
-            self.assertEquals(maxz, 1)
+            self.assertEqual(error, 0)
+            self.assertEqual(minx, 1)
+            self.assertEqual(maxx, 1)
+            self.assertEqual(miny, 1)
+            self.assertEqual(maxy, 1)
+            self.assertEqual(minz, 1)
+            self.assertEqual(maxz, 1)
     
     def test11(self):
         instance=self.new_instance(CapreoleInterface)
@@ -269,22 +269,22 @@ class TestCapreoleInterface(TestWithMPI):
         
         for i in range(1,7):
             minx, maxx, miny, maxy, minz, maxz, error = instance.get_boundary_index_range_inclusive(i)
-            self.assertEquals(error, 0),
-            self.assertEquals(minx, 1)
-            self.assertEquals(miny, 1)
-            self.assertEquals(minz, 1)
+            self.assertEqual(error, 0),
+            self.assertEqual(minx, 1)
+            self.assertEqual(miny, 1)
+            self.assertEqual(minz, 1)
             if i == 1 or i == 2:
-                self.assertEquals(maxx, 2)
-                self.assertEquals(maxy, 5)
-                self.assertEquals(maxz, 6)
+                self.assertEqual(maxx, 2)
+                self.assertEqual(maxy, 5)
+                self.assertEqual(maxz, 6)
             elif i == 3 or i == 4:
-                self.assertEquals(maxx, 100+4)
-                self.assertEquals(maxy, 2)
-                self.assertEquals(maxz, 6)
+                self.assertEqual(maxx, 100+4)
+                self.assertEqual(maxy, 2)
+                self.assertEqual(maxz, 6)
             elif i == 5 or i == 6:
-                self.assertEquals(maxx, 100+4)
-                self.assertEquals(maxy, 5+4)
-                self.assertEquals(maxz, 2)
+                self.assertEqual(maxx, 100+4)
+                self.assertEqual(maxy, 5+4)
+                self.assertEqual(maxz, 2)
     
     def test12(self):
         instance=self.new_instance(CapreoleInterface)
@@ -301,13 +301,13 @@ class TestCapreoleInterface(TestWithMPI):
                 5.0 * (i+1),         #  energy
                 1                    #  boundary
             )
-            self.assertEquals(error, 0)
+            self.assertEqual(error, 0)
             rho, rhovx, rhovy, rhovz, rhoen, error = instance.get_boundary_state(
                 i, 1, 1,
                 1
             )
-            print rho, rhovx, rhovy, rhovz, rhoen, error 
-            self.assertEquals(error, 0)
+            print(rho, rhovx, rhovy, rhovz, rhoen, error) 
+            self.assertEqual(error, 0)
             self.assertAlmostRelativeEquals(rho, 1.0 * (i+1))
             self.assertAlmostRelativeEquals(rhovx, 2.0 * (i+1))
             self.assertAlmostRelativeEquals(rhovy, 3.0 * (i+1))
@@ -330,13 +330,13 @@ class TestCapreoleInterface(TestWithMPI):
                     5.0 * (i+1),         #  energy
                     j    #  boundary 
                 )
-                self.assertEquals(error, 0)
+                self.assertEqual(error, 0)
                 rho, rhovx, rhovy, rhovz, rhoen, error = instance.get_boundary_state(
                     i, 1,1,
                     j
                 )
-                print j
-                self.assertEquals(error, 0)
+                print(j)
+                self.assertEqual(error, 0)
                 
                 self.assertAlmostRelativeEquals(rho, 1.0 * (i+1))
                 self.assertAlmostRelativeEquals(rhovx, 2.0 * (i+1))
@@ -360,7 +360,7 @@ class TestCapreoleInterface(TestWithMPI):
                 for j0 in range(xrange[1]):
                     for k0 in range(xrange[2]):
                         i = (i0 * (xrange[2] * xrange[1])) + (j0 * xrange[2]) + k0
-                        print "boundary:", j, i0+1, j0+1, k0+1
+                        print("boundary:", j, i0+1, j0+1, k0+1)
                         error = instance.set_boundary_state(
                             i0+1, j0+1, k0+1,       #  index
                             1.0 * (i+1),         #  density
@@ -368,12 +368,12 @@ class TestCapreoleInterface(TestWithMPI):
                             5.0 * (i+1),         #  energy
                             j
                         )
-                        self.assertEquals(error, 0)
+                        self.assertEqual(error, 0)
                         rho, rhovx, rhovy, rhovz, rhoen, error = instance.get_boundary_state(
                             i0+1, j0+1, k0+1,       #  index
                             j
                         )
-                        self.assertEquals(error, 0)
+                        self.assertEqual(error, 0)
                         
                         self.assertAlmostRelativeEquals(rho, 1.0 * (i+1))
                         self.assertAlmostRelativeEquals(rhovx, 2.0 * (i+1))
@@ -397,7 +397,7 @@ class TestCapreoleInterface(TestWithMPI):
                 i, 1, 1,
                 1
             )
-            self.assertEquals(error, 0)
+            self.assertEqual(error, 0)
             self.assertAlmostRelativeEquals(x, (0.5 * dx) - (i * dx))
             self.assertAlmostRelativeEquals(y, (0.5 * dy))
             self.assertAlmostRelativeEquals(z, (0.5 * dz))
@@ -418,7 +418,7 @@ class TestCapreoleInterface(TestWithMPI):
                 i,1,1,
                 2
             )
-            self.assertEquals(error, 0)
+            self.assertEqual(error, 0)
             self.assertAlmostRelativeEquals(x, 100.0 + (0.5 * dx) + ((i-1) * dx))
             self.assertAlmostRelativeEquals(y, (0.5 * dy))
             self.assertAlmostRelativeEquals(z, (0.5 * dz))
@@ -440,7 +440,7 @@ class TestCapreoleInterface(TestWithMPI):
                     i, j, 1, 
                     2
                 )
-                self.assertEquals(error, 0)
+                self.assertEqual(error, 0)
                 self.assertAlmostRelativeEquals(x, 100.0 + (0.5 * dx) + ((i-1) * dx))
                 self.assertAlmostRelativeEquals(y, (0.5 * dy) + ((j-1) * dy))
                 self.assertAlmostRelativeEquals(z, (0.5 * dz))
@@ -451,7 +451,7 @@ class TestCapreoleInterface(TestWithMPI):
                     i, j, 1, 
                     3
                 )
-                self.assertEquals(error, 0)
+                self.assertEqual(error, 0)
                 self.assertAlmostRelativeEquals(x, (0.5 * dx) + ((i-2-1) * dx))
                 self.assertAlmostRelativeEquals(y, 0.0 - ((0.5 * dy) + ((j-1) * dy)))
                 self.assertAlmostRelativeEquals(z, (0.5 * dz))
@@ -461,7 +461,7 @@ class TestCapreoleInterface(TestWithMPI):
                     i, j, 1, 
                     4
                 )
-                self.assertEquals(error, 0)
+                self.assertEqual(error, 0)
                 self.assertAlmostRelativeEquals(x, (0.5 * dx) + ((i-2-1) * dx))
                 self.assertAlmostRelativeEquals(y, 100.0 + (0.5 * dy) + ((j-1) * dy))
                 self.assertAlmostRelativeEquals(z, (0.5 * dz))
@@ -483,7 +483,7 @@ class TestCapreoleInterface(TestWithMPI):
                         i, j, k, 
                         2
                     )
-                    self.assertEquals(error, 0)
+                    self.assertEqual(error, 0)
                     self.assertAlmostRelativeEquals(x, 6.0 + (0.5 * dx) + ((i-1) * dx))
                     self.assertAlmostRelativeEquals(y, (0.5 * dy) + ((j-1) * dy))
                     self.assertAlmostRelativeEquals(z, (0.5 * dz) + ((k-1) * dz))
@@ -495,7 +495,7 @@ class TestCapreoleInterface(TestWithMPI):
                         i, j, k, 
                         3
                     )
-                    self.assertEquals(error, 0)
+                    self.assertEqual(error, 0)
                     self.assertAlmostRelativeEquals(x, (0.5 * dx) + ((i-2-1) * dx))
                     self.assertAlmostRelativeEquals(y, 0.0 - ((0.5 * dy) + ((j-1) * dy)))
                     self.assertAlmostRelativeEquals(z, (0.5 * dz) + ((k-1) * dz))
@@ -505,7 +505,7 @@ class TestCapreoleInterface(TestWithMPI):
                         i, j, k, 
                         4
                     )
-                    self.assertEquals(error, 0)
+                    self.assertEqual(error, 0)
                     self.assertAlmostRelativeEquals(x, (0.5 * dx) + ((i-2-1) * dx))
                     self.assertAlmostRelativeEquals(y, 12.0 + (0.5 * dy) + ((j-1) * dy))
                     self.assertAlmostRelativeEquals(z, (0.5 * dz) + ((k-1) * dz))
@@ -517,7 +517,7 @@ class TestCapreoleInterface(TestWithMPI):
                         i, j, k, 
                         5 
                     )
-                    self.assertEquals(error, 0)
+                    self.assertEqual(error, 0)
                     self.assertAlmostRelativeEquals(x, (0.5 * dx) + ((i-2-1) * dx))
                     self.assertAlmostRelativeEquals(y, (0.5 * dy) + ((j-2-1) * dy))
                     self.assertAlmostRelativeEquals(z,  0.0 - ((0.5 * dz) + ((k-1) * dz)))
@@ -527,7 +527,7 @@ class TestCapreoleInterface(TestWithMPI):
                         i, j, k, 
                         6
                     )
-                    self.assertEquals(error, 0)
+                    self.assertEqual(error, 0)
                     self.assertAlmostRelativeEquals(x, (0.5 * dx) + ((i-2-1) * dx))
                     self.assertAlmostRelativeEquals(y, (0.5 * dy) + ((j-2-1) * dy))
                     self.assertAlmostRelativeEquals(z, 18.0 + (0.5 * dz) + ((k-1) * dz))
@@ -538,12 +538,12 @@ class TestCapreoleInterface(TestWithMPI):
         instance.initialize_code()
         instance.commit_parameters()
         nx, ny, nz, error = instance.get_parallel_decomposition()
-        self.assertEquals(error, 0)
-        self.assertEquals(nx, 1)
-        self.assertEquals(ny, 1)
-        self.assertEquals(nz, 1)
+        self.assertEqual(error, 0)
+        self.assertEqual(nx, 1)
+        self.assertEqual(ny, 1)
+        self.assertEqual(nz, 1)
         error = instance.set_parallel_decomposition(2,1,1)
-        self.assertEquals(error, -1)
+        self.assertEqual(error, -1)
         
    
     def test20(self):
@@ -551,26 +551,26 @@ class TestCapreoleInterface(TestWithMPI):
         instance=self.new_instance(CapreoleInterface, number_of_workers = 4)
         instance.initialize_code()
         nx, ny, nz, error = instance.get_parallel_decomposition()
-        self.assertEquals(error, 0)
-        self.assertEquals(nx, 0)
-        self.assertEquals(ny, 0)
-        self.assertEquals(nz, 0)
+        self.assertEqual(error, 0)
+        self.assertEqual(nx, 0)
+        self.assertEqual(ny, 0)
+        self.assertEqual(nz, 0)
         error = instance.set_parallel_decomposition(2,1,2)
-        self.assertEquals(error, 0)
+        self.assertEqual(error, 0)
         nx, ny, nz, error = instance.get_parallel_decomposition()
-        self.assertEquals(error, 0)
-        self.assertEquals(nx, 2)
-        self.assertEquals(ny, 1)
-        self.assertEquals(nz, 2)
+        self.assertEqual(error, 0)
+        self.assertEqual(nx, 2)
+        self.assertEqual(ny, 1)
+        self.assertEqual(nz, 2)
         error = instance.set_parallel_decomposition(10,3,2)
-        self.assertEquals(error, -1)
+        self.assertEqual(error, -1)
         
     def test21(self):
         results = []
         instance=self.new_instance(CapreoleInterface, number_of_workers = 2)
         instance.initialize_code()
         error = instance.set_parallel_decomposition(1,2,1)
-        self.assertEquals(error, 0)
+        self.assertEqual(error, 0)
         instance.setup_mesh(10,30,10,100.0, 300.0, 100.0)
         instance.set_boundary("interface","interface","periodic","periodic","periodic","periodic")
         instance.commit_parameters()
@@ -587,12 +587,12 @@ class TestCapreoleInterface(TestWithMPI):
                         5.0 * (i+1),         #  energy
                         boundary_index     #  boundary 
                     )
-                    self.assertEquals(error, 0)
+                    self.assertEqual(error, 0)
                     rho, rhovx, rhovy, rhovz, rhoen, error = instance.get_boundary_state(
                         i0, j0, 1,
                         boundary_index
                     )
-                    self.assertEquals(error, 0)
+                    self.assertEqual(error, 0)
                     
                     self.assertAlmostRelativeEquals(rho, 1.0 * (i+1))
                     self.assertAlmostRelativeEquals(rhovx, 2.0 * (i+1))
@@ -605,7 +605,7 @@ class TestCapreoleInterface(TestWithMPI):
         instance=self.new_instance(CapreoleInterface, number_of_workers = 2)
         instance.initialize_code()
         error = instance.set_parallel_decomposition(2,1,1)
-        self.assertEquals(error, 0)
+        self.assertEqual(error, 0)
         instance.setup_mesh(10,30,10,100.0, 300.0, 100.0)
         instance.set_boundary("interface","interface","periodic","periodic","periodic","periodic")
         instance.commit_parameters()
@@ -622,12 +622,12 @@ class TestCapreoleInterface(TestWithMPI):
                         5.0 * (i+1),         #  energy
                         boundary_index     #  boundary 
                     )
-                    self.assertEquals(error, 0)
+                    self.assertEqual(error, 0)
                     rho, rhovx, rhovy, rhovz, rhoen, error = instance.get_boundary_state(
                         i0, j0, 1,
                         boundary_index
                     )
-                    self.assertEquals(error, 0)
+                    self.assertEqual(error, 0)
                     
                     self.assertAlmostRelativeEquals(rho, 1.0 * (i+1))
                     self.assertAlmostRelativeEquals(rhovx, 2.0 * (i+1))
@@ -640,7 +640,7 @@ class TestCapreoleInterface(TestWithMPI):
         instance=self.new_instance(CapreoleInterface, number_of_workers = 3)
         instance.initialize_code()
         error = instance.set_parallel_decomposition(3,1,1)
-        self.assertEquals(error, 0)
+        self.assertEqual(error, 0)
         instance.setup_mesh(12,20,10,100.0, 300.0, 100.0)
         
         instance.set_boundary("interface","interface","interface","interface","periodic","periodic")
@@ -658,13 +658,13 @@ class TestCapreoleInterface(TestWithMPI):
                         5.0 * (i+1),         #  energy
                         boundaryindex    #  boundary
                     )
-                    print i0, j0
-                    self.assertEquals(error, 0)
+                    print(i0, j0)
+                    self.assertEqual(error, 0)
                     rho, rhovx, rhovy, rhovz, rhoen, error = instance.get_boundary_state(
                         i0, j0, 1,
                         boundaryindex
                     )
-                    self.assertEquals(error, 0)
+                    self.assertEqual(error, 0)
                     
                     self.assertAlmostRelativeEquals(rho, 1.0 * (i+1))
                     self.assertAlmostRelativeEquals(rhovx, 2.0 * (i+1))
@@ -677,7 +677,7 @@ class TestCapreoleInterface(TestWithMPI):
         instance=self.new_instance(CapreoleInterface, number_of_workers = 3)
         instance.initialize_code()
         error = instance.set_parallel_decomposition(1,3,1)
-        self.assertEquals(error, 0)
+        self.assertEqual(error, 0)
         instance.setup_mesh(12,30,10,100.0, 300.0, 100.0)
         
         instance.set_boundary("interface","interface","interface","interface","periodic","periodic")
@@ -695,13 +695,13 @@ class TestCapreoleInterface(TestWithMPI):
                         5.0 * (i+1),         #  energy
                         boundaryindex    #  boundary
                     )
-                    print i0, j0
-                    self.assertEquals(error, 0)
+                    print(i0, j0)
+                    self.assertEqual(error, 0)
                     rho, rhovx, rhovy, rhovz, rhoen, error = instance.get_boundary_state(
                         i0, j0, 1,
                         boundaryindex
                     )
-                    self.assertEquals(error, 0)
+                    self.assertEqual(error, 0)
                     
                     self.assertAlmostRelativeEquals(rho, 1.0 * (i+1))
                     self.assertAlmostRelativeEquals(rhovx, 2.0 * (i+1))
@@ -714,7 +714,7 @@ class TestCapreoleInterface(TestWithMPI):
         instance=self.new_instance(CapreoleInterface, number_of_workers = 3)
         instance.initialize_code()
         error = instance.set_parallel_decomposition(1,3,1)
-        self.assertEquals(error, 0)
+        self.assertEqual(error, 0)
         instance.setup_mesh(6,5,5,6.0,5.0,5.0)
         instance.set_boundary("interface","interface","interface","interface","interface","interface")
         instance.commit_parameters()
@@ -732,13 +732,13 @@ class TestCapreoleInterface(TestWithMPI):
                             5.0 * (i+1),         #  energy
                             boundaryindex     #  boundary 
                         )
-                        self.assertEquals(error, 0)
+                        self.assertEqual(error, 0)
                         rho, rhovx, rhovy, rhovz, rhoen, error = instance.get_boundary_state(
                             i0, j0, z0,
                             boundaryindex
                         
                         )
-                        self.assertEquals(error, 0)
+                        self.assertEqual(error, 0)
                         
                         self.assertAlmostRelativeEquals(rho, 1.0 * (i+1))
                         self.assertAlmostRelativeEquals(rhovx, 2.0 * (i+1))
@@ -752,7 +752,7 @@ class TestCapreoleInterface(TestWithMPI):
         instance.initialize_code()
         error = instance.set_parallel_decomposition(3,3,1)
         instance.setup_mesh(6,6,5,6.0,6.0,5.0)
-        self.assertEquals(error, 0)
+        self.assertEqual(error, 0)
         instance.set_boundary("interface","interface","interface","interface","interface","interface")
         instance.commit_parameters()
         
@@ -769,12 +769,12 @@ class TestCapreoleInterface(TestWithMPI):
                             5.0 * (i+1),         #  energy
                             boundaryindex        #  boundary 
                         )
-                        self.assertEquals(error, 0)
+                        self.assertEqual(error, 0)
                         rho, rhovx, rhovy, rhovz, rhoen, error = instance.get_boundary_state(
                             i0, j0, z0,
                             boundaryindex
                         )
-                        self.assertEquals(error, 0)
+                        self.assertEqual(error, 0)
                         
                         self.assertAlmostRelativeEquals(rho, 1.0 * (i+1))
                         self.assertAlmostRelativeEquals(rhovx, 2.0 * (i+1))
@@ -789,7 +789,7 @@ class TestCapreoleInterface(TestWithMPI):
         self.assertAlmostRelativeEquals(gamma, 5.0 / 3.0)
         instance.set_gamma(1.3)
         gamma, error = instance.get_gamma()
-        self.assertEquals(error, 0)
+        self.assertEqual(error, 0)
         self.assertAlmostRelativeEquals(gamma, 1.3)
         instance.stop()
         
@@ -798,8 +798,8 @@ class TestCapreoleInterface(TestWithMPI):
         instance=CapreoleInterface()
         instance.initialize_code()
         timestep, error = instance.get_timestep()
-        self.assertEquals(timestep, 0.0)
-        self.assertEquals(error, 0)
+        self.assertEqual(timestep, 0.0)
+        self.assertEqual(error, 0)
         instance.setup_mesh(10,10,10,1.,1.,1.)
         instance.commit_parameters()
         x,y,z=numpy.indices( (10,10,10) )
@@ -813,17 +813,17 @@ class TestCapreoleInterface(TestWithMPI):
         en=0.1*numpy.ones_like(x)
         instance.set_grid_state(x,y,z,rho,rhvx,rhvy,rhvz,en)
         timestep, error = instance.get_timestep()
-        self.assertEquals(timestep, 0.0)
-        self.assertEquals(error, 0)
+        self.assertEqual(timestep, 0.0)
+        self.assertEqual(error, 0)
         instance.initialize_grid()
         timestep, error = instance.get_timestep()
         self.assertAlmostRelativeEquals(timestep, 0.03795, 4)
-        self.assertEquals(error, 0)
+        self.assertEqual(error, 0)
         error = instance.set_timestep(0.25)
-        self.assertEquals(error, 0)
+        self.assertEqual(error, 0)
         timestep, error = instance.get_timestep()
-        self.assertEquals(timestep, 0.25)
-        self.assertEquals(error, 0)
+        self.assertEqual(timestep, 0.25)
+        self.assertEqual(error, 0)
         
         instance.stop()
         
@@ -833,7 +833,7 @@ class TestCapreoleInterface(TestWithMPI):
         self.check_extended_grid(instance)
         
     def xtest30(self):
-        print "Broken as capreole cannot do periodic boundaries with multiple workers!"
+        print("Broken as capreole cannot do periodic boundaries with multiple workers!")
         instance = CapreoleInterface(redirection="none", number_of_workers = 8)
         self.check_extended_grid(instance)
     
@@ -843,86 +843,86 @@ class TestCapreoleInterface(TestWithMPI):
         instance.setup_mesh(8, 8, 8, 1.0, 1.0, 1.0)
         instance.set_boundary("periodic","periodic","periodic","periodic","periodic","periodic")
         result = instance.commit_parameters()
-        self.assertEquals(result, 0)
+        self.assertEqual(result, 0)
         time, error = instance.get_time()
-        self.assertEquals(error,0)
-        self.assertEquals(time, 0.0)
+        self.assertEqual(error,0)
+        self.assertEqual(time, 0.0)
         for i in range(8):
             error = instance.set_grid_state(i+1,1,1,0.1 * (i+1), 0.2 * (i+1), 0.3 * (i+1), 0.4 * (i+1), 0.5 * (i+1))
-            self.assertEquals(error, 0)
+            self.assertEqual(error, 0)
             
             error = instance.set_grid_state(1,i+1,1,0.1 * (i+1), 0.2 * (i+1), 0.3 * (i+1), 0.4 * (i+1), 0.5 * (i+1))
-            self.assertEquals(error, 0)
+            self.assertEqual(error, 0)
             
             error = instance.set_grid_state(1,1,i+1,0.1 * (i+1), 0.2 * (i+1), 0.3 * (i+1), 0.4 * (i+1), 0.5 * (i+1))
-            self.assertEquals(error, 0)
+            self.assertEqual(error, 0)
         
         instance.initialize_grid()
         
         
         for i in range(8):
             rho, rhovx, rhovy, rhovz, energy, error = instance.get_grid_state(i+1,1,1)
-            self.assertEquals(error, 0)
+            self.assertEqual(error, 0)
             self.assertAlmostRelativeEquals(rho, (i+1) * 0.1)
             rho, rhovx, rhovy, rhovz, energy, error = instance.get_grid_state(1,i+1,1)
-            self.assertEquals(error, 0)
+            self.assertEqual(error, 0)
             self.assertAlmostRelativeEquals(rho, (i+1) * 0.1)
             rho, rhovx, rhovy, rhovz, energy, error = instance.get_grid_state(1,1,i+1)
-            self.assertEquals(error, 0)
+            self.assertEqual(error, 0)
             self.assertAlmostRelativeEquals(rho, (i+1) * 0.1)
             
         for i in range(2):
             rho, rhovx, rhovy, rhovz, energy, error = instance.get_grid_state(-(i),1,1)
-            self.assertEquals(error, 0)
+            self.assertEqual(error, 0)
             self.assertAlmostRelativeEquals(rho, 0.8 - (i * 0.1))
             
             rho, rhovx, rhovy, rhovz, energy, error = instance.get_grid_state(-2,1,1)
-            self.assertEquals(error, -1)
+            self.assertEqual(error, -1)
             self.assertAlmostRelativeEquals(rho, 0.0)
             
             rho, rhovx, rhovy, rhovz, energy, error = instance.get_grid_state(8 + i+1,1,1)
-            self.assertEquals(error, 0)
+            self.assertEqual(error, 0)
             self.assertAlmostRelativeEquals(rho, (i+1) * 0.1)
             
             rho, rhovx, rhovy, rhovz, energy, error = instance.get_grid_state(8 + 3,1,1)
-            self.assertEquals(error, -1)
+            self.assertEqual(error, -1)
             self.assertAlmostRelativeEquals(rho, 0.0)
             
             # 2 dimension
             
             rho, rhovx, rhovy, rhovz, energy, error = instance.get_grid_state(1, -i,1)
-            self.assertEquals(error, 0)
+            self.assertEqual(error, 0)
             self.assertAlmostRelativeEquals(rho, 0.8 - (i * 0.1))
             
             rho, rhovx, rhovy, rhovz, energy, error = instance.get_grid_state(1,-3, 1)
-            self.assertEquals(error, -1)
+            self.assertEqual(error, -1)
             self.assertAlmostRelativeEquals(rho, 0.0)
             
             
             rho, rhovx, rhovy, rhovz, energy, error = instance.get_grid_state(1,8 + i + 1,1)
-            self.assertEquals(error, 0)
+            self.assertEqual(error, 0)
             self.assertAlmostRelativeEquals(rho, (i+1) * 0.1)
             
             rho, rhovx, rhovy, rhovz, energy, error = instance.get_grid_state(1,8+3, 1)
-            self.assertEquals(error, -1)
+            self.assertEqual(error, -1)
             self.assertAlmostRelativeEquals(rho, 0.0)
             
             # 3 dimension
             rho, rhovx, rhovy, rhovz, energy, error = instance.get_grid_state(1, 1, -i)
-            self.assertEquals(error, 0)
+            self.assertEqual(error, 0)
             self.assertAlmostRelativeEquals(rho, 0.8 - (i * 0.1))
             
             rho, rhovx, rhovy, rhovz, energy, error = instance.get_grid_state(1,-3, 1)
-            self.assertEquals(error, -1)
+            self.assertEqual(error, -1)
             self.assertAlmostRelativeEquals(rho, 0.0)
             
             
             rho, rhovx, rhovy, rhovz, energy, error = instance.get_grid_state(1, 1,8 + i + 1)
-            self.assertEquals(error, 0)
+            self.assertEqual(error, 0)
             self.assertAlmostRelativeEquals(rho, (i+1) * 0.1)
             
             rho, rhovx, rhovy, rhovz, energy, error = instance.get_grid_state(1, 1, 8+3)
-            self.assertEquals(error, -1)
+            self.assertEqual(error, -1)
             self.assertAlmostRelativeEquals(rho, 0.0)
             
         
@@ -940,9 +940,9 @@ class TestSodShocktube(TestWithMPI):
         
         instance=CapreoleInterface()
         instance.initialize_code()
-        instance.setup_mesh(N,N/10,N/10,1.,0.1,0.1)
+        instance.setup_mesh(N,N//10,N//10,1.,0.1,0.1)
         instance.commit_parameters()
-        x,y,z=numpy.indices( (N,N/10,N/10) )
+        x,y,z=numpy.indices( (N,N//10,N//10) )
         x=x.flatten()+1
         y=y.flatten()+1
         z=z.flatten()+1
@@ -954,7 +954,7 @@ class TestSodShocktube(TestWithMPI):
         en=(0.1/(gamma-1))*numpy.ones_like(x)
         instance.set_grid_state(x,y,z,rho,rhvx,rhvy,rhvz,en)
     
-        x,y,z=numpy.indices( (N/2,N/10,N/10) )
+        x,y,z=numpy.indices( (N//2,N//10,N//10) )
         x=x.flatten()+1
         y=y.flatten()+1
         z=z.flatten()+1
@@ -1005,7 +1005,7 @@ class TestCapreole(TestWithMPI):
         instance.parameters.z_boundary_conditions = "periodic","periodic"
         
     
-        self.assertEquals(len(list(instance.itergrids())),1)
+        self.assertEqual(len(list(instance.itergrids())),1)
         grid = datamodel.Grid(10,10,10)
         grid.rho = 0.4 | generic_unit_system.density
         grid.rhovx = 0.1 | generic_unit_system.momentum_density
@@ -1021,9 +1021,9 @@ class TestCapreole(TestWithMPI):
         channel = instance.grid.new_channel_to(grid)
         channel.copy()
         
-        self.assertEquals(grid[1][1][0].rho, 0.4 | generic_unit_system.density)
+        self.assertEqual(grid[1][1][0].rho, 0.4 | generic_unit_system.density)
         for x in grid[1].rho.value_in(generic_unit_system.density).flatten():
-            self.assertEquals(x, 0.4)
+            self.assertEqual(x, 0.4)
             
         #instance.evolve_model(0.12 | generic_unit_system.time)
         
@@ -1057,19 +1057,19 @@ class TestCapreole(TestWithMPI):
         channel.copy()
             
         
-        print instance.grid[1].rho
-        self.assertEquals(instance.grid[1][1][0].rho, 0.1 | generic_unit_system.density)
+        print(instance.grid[1].rho)
+        self.assertEqual(instance.grid[1][1][0].rho, 0.1 | generic_unit_system.density)
         for x in instance.grid[1].rho.value_in(generic_unit_system.density).flatten():
             self.assertEqual(x, 0.1)
             
         instance.evolve_model(1.0 | generic_unit_system.time)
         
         for x in instance.grid.rho.value_in(generic_unit_system.density).flatten():
-            self.assertEquals(x, 0.1)
+            self.assertEqual(x, 0.1)
     
         instance.evolve_model(10.0 | generic_unit_system.time)
         for x in instance.grid.rho.value_in(generic_unit_system.density).flatten():
-            self.assertEquals(x, 0.1)
+            self.assertEqual(x, 0.1)
         instance.stop()
     
     def test3(self):
@@ -1093,7 +1093,7 @@ class TestCapreole(TestWithMPI):
         channel = grid.new_channel_to(instance.grid)
         channel.copy()
         
-        self.assertEquals((5,5,5), instance.acceleration_grid.shape)
+        self.assertEqual((5,5,5), instance.acceleration_grid.shape)
         
         acc_grid = datamodel.Grid(5,5,5)
         acc_grid.ax = 1 | generic_unit_system.acceleration
@@ -1112,7 +1112,7 @@ class TestCapreole(TestWithMPI):
         self.assertAlmostRelativeEquals(instance.grid.rhovz, 0.1 * 1.0 * 0.1 | generic_unit_system.momentum_density);
 
         instance.evolve_model(0.3 | generic_unit_system.time)
-        print instance.model_time
+        print(instance.model_time)
         self.assertAlmostRelativeEquals(instance.grid.rho, grid.rho);
         self.assertAlmostRelativeEquals(instance.grid.rhovx, grid.rho *  instance.model_time * acc_grid.ax,2);
         self.assertAlmostRelativeEquals(instance.grid.rhovy, grid.rho *  instance.model_time * acc_grid.ay,2);
@@ -1147,7 +1147,7 @@ class TestCapreole(TestWithMPI):
         channel.copy()
             
         
-        print instance.grid[1].rho
+        print(instance.grid[1].rho)
         self.assertAlmostRelativeEquals(instance.grid[1][1][0].rho, 0.1 | density)
         for x in instance.grid[1].rho.value_in(density).flatten():
             self.assertAlmostRelativeEquals(x, 0.1)
@@ -1199,7 +1199,7 @@ class TestCapreole(TestWithMPI):
         #instance.grid.boundaries.left.
         
         xbound1 = instance.get_boundary_grid('xbound1')
-        self.assertEquals(xbound1.shape, (2,4,4))
+        self.assertEqual(xbound1.shape, (2,4,4))
         memxbound1 = xbound1.copy()
         memxbound1.rho = 0.02 | density
         memxbound1.rhovx = 0.2 | momentum
@@ -1214,8 +1214,8 @@ class TestCapreole(TestWithMPI):
         self.assertTrue(instance.stopping_conditions.number_of_steps_detection.is_set())
         
         rho = instance.grid.rho[...,0,0]
-        print rho
-        print instance.model_time
+        print(rho)
+        print(instance.model_time)
         self.assertAlmostRelativeEquals(rho[-1], 0.01 | density)
         self.assertTrue(rho[0] > 0.01 | density)
         self.assertTrue(instance.grid.rhovx[0,0,0] > 0.1 | momentum)
@@ -1223,12 +1223,12 @@ class TestCapreole(TestWithMPI):
         
         instance.stopping_conditions.number_of_steps_detection.disable()
         instance.evolve_model(1.0 | generic_unit_system.time)
-        print instance.model_time
+        print(instance.model_time)
         rho = instance.grid.rho[...,0,0]
-        print rho
+        print(rho)
         self.assertAlmostRelativeEquals(rho, 0.02 | density, 8)
         self.assertAlmostRelativeEquals(instance.grid.rhovx[...,0,0], 0.2 | momentum, 8)
-        print instance.model_time
+        print(instance.model_time)
         
         instance.stop()
     
@@ -1266,7 +1266,7 @@ class TestCapreole(TestWithMPI):
         
         #instance.grid.boundaries.left.
         xbound = instance.get_boundary_grid('xbound2')
-        self.assertEquals(xbound.shape, (2,4,4))
+        self.assertEqual(xbound.shape, (2,4,4))
         memxbound = xbound.copy()
         memxbound.rho = 0.02 | density
         memxbound.rhovx = -0.2 | momentum
@@ -1281,8 +1281,8 @@ class TestCapreole(TestWithMPI):
         
         self.assertTrue(instance.stopping_conditions.number_of_steps_detection.is_set())
         rho = instance.grid.rho[...,0,0]
-        print rho
-        print instance.model_time
+        print(rho)
+        print(instance.model_time)
         self.assertAlmostRelativeEquals(rho[0], 0.01 | density)
         self.assertTrue(rho[-1] > 0.01 | density)
         self.assertTrue(instance.grid.rhovx[-1,0,0] < -0.1 | momentum)
@@ -1293,7 +1293,7 @@ class TestCapreole(TestWithMPI):
         rho = instance.grid.rho[...,0,0]
         self.assertAlmostRelativeEquals(rho, 0.02 | density, 8)
         self.assertAlmostRelativeEquals(instance.grid.rhovx[...,0,0], -0.2 | momentum, 8)
-        print instance.model_time
+        print(instance.model_time)
         
         instance.stop()
     
@@ -1333,7 +1333,7 @@ class TestCapreole(TestWithMPI):
         #instance.grid.boundaries.left.
         
         xbound1 = instance.get_boundary_grid('xbound1')
-        self.assertEquals(xbound1.shape, (2,4,4))
+        self.assertEqual(xbound1.shape, (2,4,4))
         memxbound1 = xbound1.copy()
         memxbound1.rho = 0.02 | density
         memxbound1.rhovx = 0.2 | momentum
@@ -1348,8 +1348,8 @@ class TestCapreole(TestWithMPI):
         self.assertTrue(instance.stopping_conditions.number_of_steps_detection.is_set())
         
         rho = instance.grid.rho[...,0,0]
-        print rho
-        print instance.model_time
+        print(rho)
+        print(instance.model_time)
         self.assertAlmostRelativeEquals(rho[-1], 0.01 | density)
         self.assertTrue(rho[0] > 0.01 | density)
         self.assertTrue(instance.grid.rhovx[0,0,0] > 0.1 | momentum)
@@ -1357,12 +1357,12 @@ class TestCapreole(TestWithMPI):
         
         instance.stopping_conditions.number_of_steps_detection.disable()
         instance.evolve_model(1.0 | generic_unit_system.time)
-        print instance.model_time
+        print(instance.model_time)
         rho = instance.grid.rho[...,0,0]
-        print rho
+        print(rho)
         self.assertAlmostRelativeEquals(rho, 0.02 | density, 8)
         self.assertAlmostRelativeEquals(instance.grid.rhovx[...,0,0], 0.2 | momentum, 8)
-        print instance.model_time
+        print(instance.model_time)
         
         instance.stop()
 
@@ -1401,7 +1401,7 @@ class TestCapreole(TestWithMPI):
         instance.stopping_conditions.number_of_steps_detection.enable()
         
         ybound = instance.get_boundary_grid('ybound1')
-        self.assertEquals(ybound.shape, (4+4,2,4))
+        self.assertEqual(ybound.shape, (4+4,2,4))
         memybound = ybound.copy()
         memybound.rho = 0.02 | density
         memybound.rhovx = 0.0 | momentum
@@ -1414,22 +1414,22 @@ class TestCapreole(TestWithMPI):
         channel.copy()
             
         instance.evolve_model(1.0 | generic_unit_system.time)
-        print instance.stopping_conditions.number_of_steps_detection.is_set()
+        print(instance.stopping_conditions.number_of_steps_detection.is_set())
         
-        print instance.grid.rho[0,...,0]
+        print(instance.grid.rho[0,...,0])
         rho = instance.grid.rho[0,...,0]
         self.assertAlmostRelativeEquals(rho[-1], 0.01 | density)
         self.assertTrue(rho[0] > 0.01 | density)
         self.assertTrue(instance.grid.rhovy[0,0,0] > 0.1 | momentum)
         self.assertAlmostRelativeEquals(instance.grid.rhovy[0,-1,0] , 0.1 | momentum)
-        print instance.model_time
+        print(instance.model_time)
         
         instance.stopping_conditions.number_of_steps_detection.disable()
         instance.evolve_model(1.0 | generic_unit_system.time)
         rho = instance.grid.rho[0,...,0]
         self.assertAlmostRelativeEquals(rho, 0.02 | density, 8)
         self.assertAlmostRelativeEquals(instance.grid.rhovy[0,...,0], 0.2 | momentum, 8)
-        print instance.model_time
+        print(instance.model_time)
         
         instance.stop()
 
@@ -1469,7 +1469,7 @@ class TestCapreole(TestWithMPI):
         instance.stopping_conditions.number_of_steps_detection.enable()
         
         ybound = instance.get_boundary_grid('ybound2')
-        self.assertEquals(ybound.shape, (4+4,2,4))
+        self.assertEqual(ybound.shape, (4+4,2,4))
         memybound = ybound.copy()
         memybound.rho = 0.02 | density
         memybound.rhovx = 0.0 | momentum
@@ -1482,21 +1482,21 @@ class TestCapreole(TestWithMPI):
         channel.copy()
             
         instance.evolve_model(1.0 | generic_unit_system.time)
-        print instance.stopping_conditions.number_of_steps_detection.is_set()
-        print instance.grid.rho[0,...,0]
+        print(instance.stopping_conditions.number_of_steps_detection.is_set())
+        print(instance.grid.rho[0,...,0])
         rho = instance.grid.rho[0,...,0]
         self.assertAlmostRelativeEquals(rho[0], 0.01 | density)
         self.assertTrue(rho[-1] > 0.01 | density)
         self.assertTrue(instance.grid.rhovy[0,-1,0] < 0.1 | momentum)
         self.assertAlmostRelativeEquals(instance.grid.rhovy[0,0,0] , -0.1 | momentum)
-        print instance.model_time
+        print(instance.model_time)
         
         instance.stopping_conditions.number_of_steps_detection.disable()
         instance.evolve_model(1.0 | generic_unit_system.time)
         rho = instance.grid.rho[0,...,0]
         self.assertAlmostRelativeEquals(rho, 0.02 | density, 8)
         self.assertAlmostRelativeEquals(instance.grid.rhovy[0,...,0], -0.2 | momentum, 8)
-        print instance.model_time
+        print(instance.model_time)
         
         instance.stop()
     
@@ -1535,7 +1535,7 @@ class TestCapreole(TestWithMPI):
         instance.stopping_conditions.number_of_steps_detection.enable()
         
         ybound = instance.get_boundary_grid('zbound1')
-        self.assertEquals(ybound.shape, (4+4,4+4,2))
+        self.assertEqual(ybound.shape, (4+4,4+4,2))
         memybound = ybound.copy()
         memybound.rho = 0.02 | density
         memybound.rhovx = 0.0 | momentum
@@ -1551,19 +1551,19 @@ class TestCapreole(TestWithMPI):
         self.assertTrue(instance.stopping_conditions.number_of_steps_detection.is_set())
         
         rho = instance.grid.rho[0,0,...]
-        print rho
+        print(rho)
         self.assertAlmostRelativeEquals(rho[-1], 0.01 | density)
         self.assertTrue(rho[0] > 0.01 | density)
         self.assertTrue(instance.grid.rhovz[0,0,0] > 0.1 | momentum)
         self.assertAlmostRelativeEquals(instance.grid.rhovz[0,0,-1] , 0.1 | momentum)
-        print instance.model_time
+        print(instance.model_time)
         
         instance.stopping_conditions.number_of_steps_detection.disable()
         instance.evolve_model(1.0 | generic_unit_system.time)
         rho = instance.grid.rho[0,0,...]
         self.assertAlmostRelativeEquals(rho, 0.02 | density, 8)
         self.assertAlmostRelativeEquals(instance.grid.rhovz[0,...,0], 0.2 | momentum, 8)
-        print instance.model_time
+        print(instance.model_time)
         
         instance.stop()
 
@@ -1603,7 +1603,7 @@ class TestCapreole(TestWithMPI):
         instance.stopping_conditions.number_of_steps_detection.enable()
         
         ybound = instance.get_boundary_grid('zbound2')
-        self.assertEquals(ybound.shape, (4+4,4+4,2))
+        self.assertEqual(ybound.shape, (4+4,4+4,2))
         memybound = ybound.copy()
         memybound.rho = 0.02 | density
         memybound.rhovx = 0.0 | momentum
@@ -1622,14 +1622,14 @@ class TestCapreole(TestWithMPI):
         self.assertTrue(rho[-1] > 0.01 | density)
         self.assertTrue(instance.grid.rhovz[0,0,-1] < 0.1 | momentum)
         self.assertAlmostRelativeEquals(instance.grid.rhovz[0,0,0] , -0.1 | momentum)
-        print instance.model_time
+        print(instance.model_time)
         
         instance.stopping_conditions.number_of_steps_detection.disable()
         instance.evolve_model(1.0 | generic_unit_system.time)
         rho = instance.grid.rho[0,0,...]
         self.assertAlmostRelativeEquals(rho, 0.02 | density, 8)
         self.assertAlmostRelativeEquals(instance.grid.rhovz[0,0,...], -0.2 | momentum, 8)
-        print instance.model_time
+        print(instance.model_time)
         
         instance.stop()
         
@@ -1650,10 +1650,10 @@ class TestCapreole(TestWithMPI):
             inmem.energy =  1.0 | generic_unit_system.energy_density
             from_model_to_code = inmem.new_channel_to(x)
             from_model_to_code.copy()
-            print inmem.rho
+            print(inmem.rho)
         rho, rhovx, rhovy, rhovx, rhoenergy = instance.get_hydro_state_at_point(0.5| generic_unit_system.length,0.0| generic_unit_system.length,0.0| generic_unit_system.length)
         
-        self.assertEquals(rho , 0.5 | generic_unit_system.density)
+        self.assertEqual(rho , 0.5 | generic_unit_system.density)
         
         for value in numpy.arange(0.5, 19.6, 0.1):
             
@@ -1707,10 +1707,10 @@ class TestCapreole(TestWithMPI):
             inmem.energy =  1.0 | generic_unit_system.energy_density
             from_model_to_code = inmem.new_channel_to(x)
             from_model_to_code.copy()
-            print inmem.rho[0], inmem.y[0], inmem.x[0]
+            print(inmem.rho[0], inmem.y[0], inmem.x[0])
         rho, rhovx, rhovy, rhovx, rhoenergy = instance.get_hydro_state_at_point(0.5| generic_unit_system.length,0.5| generic_unit_system.length,0.0| generic_unit_system.length)
         
-        self.assertEquals(rho , 0.5 | generic_unit_system.density)
+        self.assertEqual(rho , 0.5 | generic_unit_system.density)
         
         for value in numpy.arange(0.5, 19.6, 0.1):
             
@@ -1758,7 +1758,7 @@ class TestCapreole(TestWithMPI):
             from_model_to_code.copy()
         rho, rhovx, rhovy, rhovx, rhoenergy = instance.get_hydro_state_at_point(0.5| generic_unit_system.length,0.5| generic_unit_system.length,0.5| generic_unit_system.length)
         
-        self.assertEquals(rho , 0.5 | generic_unit_system.density)
+        self.assertEqual(rho , 0.5 | generic_unit_system.density)
         
         for value in numpy.arange(0.5, 19.6, 0.1):
             
@@ -1817,11 +1817,11 @@ class TestCapreole(TestWithMPI):
             inmem.energy =  1.0 | generic_unit_system.energy_density
             from_model_to_code = inmem.new_channel_to(x)
             from_model_to_code.copy()
-            print inmem.rho
+            print(inmem.rho)
             
         grid = instance.get_extended_grid()
-        self.assertEquals(grid.shape, (12,1,1))
+        self.assertEqual(grid.shape, (12,1,1))
         instance.initialize_grid()
-        self.assertEquals(grid.rho[...,0,0] , [6.5,7.5,0.5,1.5,2.5,3.5,4.5,5.5,6.5,7.5,0.5,1.5] | generic_unit_system.density)
+        self.assertEqual(grid.rho[...,0,0] , [6.5,7.5,0.5,1.5,2.5,3.5,4.5,5.5,6.5,7.5,0.5,1.5] | generic_unit_system.density)
         
         

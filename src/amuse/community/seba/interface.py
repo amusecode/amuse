@@ -725,186 +725,186 @@ class SeBa(se.StellarEvolution):
         self.model_time = tsn
         self.evolve_model(tsn)
 
-    def define_properties(self, object):
-        se.StellarEvolution.define_properties(self, object)
-        object.add_property('get_time', public_name = "model_time")
+    def define_properties(self, handler):
+        se.StellarEvolution.define_properties(self, handler)
+        handler.add_property('get_time', public_name = "model_time")
 
 
-    def define_methods(self, object):
-        se.StellarEvolution.define_methods(self, object)
+    def define_methods(self, handler):
+        se.StellarEvolution.define_methods(self, handler)
 
-        object.add_method(
+        handler.add_method(
             "evolve_for",
-            (object.INDEX, units.Myr),
-            (object.ERROR_CODE,)
+            (handler.INDEX, units.Myr),
+            (handler.ERROR_CODE,)
         )
-        object.add_method(
+        handler.add_method(
             "evolve_star",
             (units.MSun, units.Myr, units.none),
-            (units.Myr, units.MSun, units.RSun, units.LSun, units.K, units.Myr,units.stellar_type, object.ERROR_CODE)
+            (units.Myr, units.MSun, units.RSun, units.LSun, units.K, units.Myr,units.stellar_type, handler.ERROR_CODE)
         )
-        object.add_method(
+        handler.add_method(
             "evolve_system",
             (units.Myr,),
-            (object.ERROR_CODE,)
+            (handler.ERROR_CODE,)
         )
-        object.add_method(
+        handler.add_method(
             "new_binary",
-            (units.RSun, object.NO_UNIT, object.LINK('particles'), object.LINK('particles')),
-            (object.INDEX, object.ERROR_CODE,)
+            (units.RSun, handler.NO_UNIT, handler.LINK('particles'), handler.LINK('particles')),
+            (handler.INDEX, handler.ERROR_CODE,)
         )
-        object.add_method(
+        handler.add_method(
             "delete_binary",
-            (object.INDEX,),
-            (object.ERROR_CODE,)
+            (handler.INDEX,),
+            (handler.ERROR_CODE,)
         )
-        object.add_method(
+        handler.add_method(
             "get_eccentricity",
-            (object.INDEX,),
-            (object.NO_UNIT, object.ERROR_CODE,)
+            (handler.INDEX,),
+            (handler.NO_UNIT, handler.ERROR_CODE,)
         )
-        object.add_method(
+        handler.add_method(
             "get_semi_major_axis",
-            (object.INDEX,),
-            (units.RSun, object.ERROR_CODE,)
+            (handler.INDEX,),
+            (units.RSun, handler.ERROR_CODE,)
         )
-        object.add_method(
+        handler.add_method(
             "get_core_mass",
-            (object.INDEX,),
-            (units.MSun, object.ERROR_CODE,)
+            (handler.INDEX,),
+            (units.MSun, handler.ERROR_CODE,)
         )
-        object.add_method(
+        handler.add_method(
             "get_COcore_mass",
-            (object.INDEX,),
-            (units.MSun, object.ERROR_CODE,)
+            (handler.INDEX,),
+            (units.MSun, handler.ERROR_CODE,)
         )
-        object.add_method(
+        handler.add_method(
             "change_mass",
-            (object.INDEX,units.MSun,units.Myr),
-            (object.ERROR_CODE,)
+            (handler.INDEX,units.MSun,units.Myr),
+            (handler.ERROR_CODE,)
         )
-        object.add_method(
+        handler.add_method(
             "merge_the_binary",
-            (object.INDEX,object.LINK('particles'),object.LINK('particles')),
-            (object.ERROR_CODE,)
+            (handler.INDEX,handler.LINK('particles'),handler.LINK('particles')),
+            (handler.ERROR_CODE,)
         )
-        object.add_method(
+        handler.add_method(
             "merge_with_other_star",
-            (object.INDEX,object.LINK('particles')),
-            (object.ERROR_CODE,)
+            (handler.INDEX,handler.LINK('particles')),
+            (handler.ERROR_CODE,)
         )
-        object.add_method(
+        handler.add_method(
             "refresh_memory",
-            (object.INDEX),
-            (object.ERROR_CODE,)
+            (handler.INDEX),
+            (handler.ERROR_CODE,)
         )
-        object.add_method(
+        handler.add_method(
             "recall_memory_one_step",
-            (object.INDEX),
-            (object.ERROR_CODE,)
+            (handler.INDEX),
+            (handler.ERROR_CODE,)
         )
-        object.add_method(
+        handler.add_method(
             "get_envelope_mass",
-            (object.INDEX,),
-            (units.MSun, object.ERROR_CODE,)
+            (handler.INDEX,),
+            (units.MSun, handler.ERROR_CODE,)
         )
-        object.add_method(
+        handler.add_method(
             "get_core_radius",
-            (object.INDEX,),
-            (units.RSun, object.ERROR_CODE,)
+            (handler.INDEX,),
+            (units.RSun, handler.ERROR_CODE,)
         )
-        object.add_method(
+        handler.add_method(
             "set_semi_major_axis",
-            (object.INDEX, units.RSun,),
-            (object.ERROR_CODE,)
+            (handler.INDEX, units.RSun,),
+            (handler.ERROR_CODE,)
         )
-        object.add_method(
+        handler.add_method(
             "get_age",
-            (object.INDEX,),
-            (units.Myr, object.ERROR_CODE,)
+            (handler.INDEX,),
+            (units.Myr, handler.ERROR_CODE,)
         )
-        object.add_method(
+        handler.add_method(
             "get_time_step",
-            (object.INDEX,),
-            (units.Myr, object.ERROR_CODE,)
+            (handler.INDEX,),
+            (units.Myr, handler.ERROR_CODE,)
         )
-        object.add_method(
+        handler.add_method(
             "get_supernova_kick_velocity",
             (),
-            (units.kms, object.ERROR_CODE,)
+            (units.kms, handler.ERROR_CODE,)
         )
-        object.add_method(
+        handler.add_method(
             "set_supernova_kick_velocity",
             (units.kms,),
-            (object.ERROR_CODE,)
+            (handler.ERROR_CODE,)
         )
-        object.add_method(
+        handler.add_method(
             "get_gyration_radius_sq",
-            (object.INDEX,),
-            (units.none, object.ERROR_CODE,)
+            (handler.INDEX,),
+            (units.none, handler.ERROR_CODE,)
         )
-        object.add_method(
+        handler.add_method(
             "get_relative_age",
-            (object.INDEX,),
-            (units.Myr, object.ERROR_CODE,)
+            (handler.INDEX,),
+            (units.Myr, handler.ERROR_CODE,)
         )
-        object.add_method(
+        handler.add_method(
             "get_natal_kick_velocity",
-            (object.INDEX,),
-            (units.kms, units.kms, units.kms, object.ERROR_CODE,)
+            (handler.INDEX,),
+            (units.kms, units.kms, units.kms, handler.ERROR_CODE,)
         )
-        object.add_method(
+        handler.add_method(
             "get_relative_mass",
-            (object.INDEX,),
-            (units.MSun, object.ERROR_CODE,)
+            (handler.INDEX,),
+            (units.MSun, handler.ERROR_CODE,)
         )
-        object.add_method(
+        handler.add_method(
             "get_effective_radius",
-            (object.INDEX,),
-            (units.RSun, object.ERROR_CODE,)
+            (handler.INDEX,),
+            (units.RSun, handler.ERROR_CODE,)
         )
-        object.add_method(
+        handler.add_method(
             "get_convective_envelope_mass",
-            (object.INDEX,),
-            (units.MSun, object.ERROR_CODE,)
+            (handler.INDEX,),
+            (units.MSun, handler.ERROR_CODE,)
         )
-        object.add_method(
+        handler.add_method(
             "get_convective_envelope_radius",
-            (object.INDEX,),
-            (units.RSun, object.ERROR_CODE,)
+            (handler.INDEX,),
+            (units.RSun, handler.ERROR_CODE,)
         )
-        object.add_method(
+        handler.add_method(
             "get_time",
             (),
-            (units.Myr,object.ERROR_CODE,)
+            (units.Myr,handler.ERROR_CODE,)
         )
-        object.add_method(
+        handler.add_method(
             "get_wind_mass_loss_rate",
-            (object.INDEX,),
-            (units.MSun/units.yr, object.ERROR_CODE,)
+            (handler.INDEX,),
+            (units.MSun/units.yr, handler.ERROR_CODE,)
         )
-        self.stopping_conditions.define_methods(object)
+        self.stopping_conditions.define_methods(handler)
 
     def update_time_steps(self):
         pass
 
-    def define_parameters(self, object):
-        object.add_method_parameter(
+    def define_parameters(self, handler):
+        handler.add_method_parameter(
             "get_metallicity",
             "set_metallicity",
             "metallicity",
             "Metallicity of all stats",
             default_value = 0.02
         )
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_supernova_kick_velocity",
             "set_supernova_kick_velocity",
             "supernova_kick_velocity",
-            "Kick velocity to compact object formed in supernova",
+            "Kick velocity to compact handler formed in supernova",
             default_value = 600 | units.kms
         )
 
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_is_logging_of_evolve_enabled",
             "set_is_logging_of_evolve_enabled",
             "is_logging_of_evolve_enabled",
@@ -912,58 +912,58 @@ class SeBa(se.StellarEvolution):
             default_value = False
         )
 
-        self.stopping_conditions.define_parameters(object)
+        self.stopping_conditions.define_parameters(handler)
 
 
-    def define_particle_sets(self, object):
+    def define_particle_sets(self, handler):
 
-        object.define_set('particles', 'index_of_the_star')
-        object.set_new('particles', 'new_particle')
-        object.set_delete('particles', 'delete_star')
+        handler.define_set('particles', 'index_of_the_star')
+        handler.set_new('particles', 'new_particle')
+        handler.set_delete('particles', 'delete_star')
 
-        object.add_getter('particles', 'get_radius', names = ('radius',))
-        object.add_getter('particles', 'get_stellar_type', names = ('stellar_type',))
-        object.add_getter('particles', 'get_mass', names = ('mass',))
-        object.add_getter('particles', 'get_core_mass', names = ('core_mass',))
-        object.add_getter('particles', 'get_COcore_mass', names = ('CO_core_mass',))
-        object.add_getter('particles', 'get_envelope_mass', names = ('envelope_mass',))
-        object.add_getter('particles', 'get_core_radius', names = ('core_radius',))
-        object.add_getter('particles', 'get_age', names = ('age',))
-        object.add_getter('particles', 'get_time_step', names = ('time_step',))
-        #object.add_getter('particles', 'get_spin', names = ('spin',))
-        object.add_getter('particles', 'get_luminosity', names = ('luminosity',))
-        object.add_getter('particles', 'get_temperature', names = ('temperature',))
-        object.add_getter('particles', 'get_natal_kick_velocity', names = ('natal_kick_x','natal_kick_y','natal_kick_z'))
-        object.add_getter('particles', 'get_convective_envelope_mass', names = ('convective_envelope_mass',))
-        object.add_getter('particles', 'get_convective_envelope_radius', names = ('convective_envelope_radius',))
-        object.add_getter('particles', 'get_gyration_radius_sq', names = ('gyration_radius_sq',))
-        object.add_getter('particles', 'get_relative_age', names = ('relative_age',))
-        object.add_getter('particles', 'get_relative_mass', names = ('relative_mass',))
-        object.add_getter('particles', 'get_wind_mass_loss_rate', names = ('wind_mass_loss_rate',))
-        object.add_getter('particles', 'get_effective_radius', names = ('effective_radius',))
+        handler.add_getter('particles', 'get_radius', names = ('radius',))
+        handler.add_getter('particles', 'get_stellar_type', names = ('stellar_type',))
+        handler.add_getter('particles', 'get_mass', names = ('mass',))
+        handler.add_getter('particles', 'get_core_mass', names = ('core_mass',))
+        handler.add_getter('particles', 'get_COcore_mass', names = ('CO_core_mass',))
+        handler.add_getter('particles', 'get_envelope_mass', names = ('envelope_mass',))
+        handler.add_getter('particles', 'get_core_radius', names = ('core_radius',))
+        handler.add_getter('particles', 'get_age', names = ('age',))
+        handler.add_getter('particles', 'get_time_step', names = ('time_step',))
+        #handler.add_getter('particles', 'get_spin', names = ('spin',))
+        handler.add_getter('particles', 'get_luminosity', names = ('luminosity',))
+        handler.add_getter('particles', 'get_temperature', names = ('temperature',))
+        handler.add_getter('particles', 'get_natal_kick_velocity', names = ('natal_kick_x','natal_kick_y','natal_kick_z'))
+        handler.add_getter('particles', 'get_convective_envelope_mass', names = ('convective_envelope_mass',))
+        handler.add_getter('particles', 'get_convective_envelope_radius', names = ('convective_envelope_radius',))
+        handler.add_getter('particles', 'get_gyration_radius_sq', names = ('gyration_radius_sq',))
+        handler.add_getter('particles', 'get_relative_age', names = ('relative_age',))
+        handler.add_getter('particles', 'get_relative_mass', names = ('relative_mass',))
+        handler.add_getter('particles', 'get_wind_mass_loss_rate', names = ('wind_mass_loss_rate',))
+        handler.add_getter('particles', 'get_effective_radius', names = ('effective_radius',))
 
-        object.add_method('particles', 'evolve_one_step')
-        object.add_method('particles', 'evolve_for')
-        object.add_method('particles', 'change_mass')
-        object.add_method('particles', 'refresh_memory')
-        object.add_method('particles', 'recall_memory_one_step')
-        object.add_method('particles', 'merge_with_other_star')
+        handler.add_method('particles', 'evolve_one_step')
+        handler.add_method('particles', 'evolve_for')
+        handler.add_method('particles', 'change_mass')
+        handler.add_method('particles', 'refresh_memory')
+        handler.add_method('particles', 'recall_memory_one_step')
+        handler.add_method('particles', 'merge_with_other_star')
 
-        object.define_set('binaries', 'index_of_the_star')
-        object.set_new('binaries', 'new_binary')
-        object.set_delete('binaries', 'delete_binary')
+        handler.define_set('binaries', 'index_of_the_star')
+        handler.set_new('binaries', 'new_binary')
+        handler.set_delete('binaries', 'delete_binary')
 
-        object.add_getter('binaries', 'get_semi_major_axis', names = ('semi_major_axis',))
-        object.add_getter('binaries', 'get_eccentricity', names = ('eccentricity',))
-        object.add_getter('binaries', 'get_mass', names = ('mass',))
-        object.add_getter('binaries', 'get_time_step', names = ('time_step',))
-        object.add_getter('binaries', 'get_age', names = ('age',))
-        object.add_getter("binaries", 'get_children_of_binary')
-        object.add_setter('binaries', 'set_semi_major_axis', names = ('semi_major_axis',))
-        object.add_setter('binaries', 'set_eccentricity', names = ('eccentricity',))
-        object.add_method('binaries', 'merge_the_binary')
-    def define_state(self, object):
-        se.StellarEvolution.define_state(self, object)
+        handler.add_getter('binaries', 'get_semi_major_axis', names = ('semi_major_axis',))
+        handler.add_getter('binaries', 'get_eccentricity', names = ('eccentricity',))
+        handler.add_getter('binaries', 'get_mass', names = ('mass',))
+        handler.add_getter('binaries', 'get_time_step', names = ('time_step',))
+        handler.add_getter('binaries', 'get_age', names = ('age',))
+        handler.add_getter("binaries", 'get_children_of_binary')
+        handler.add_setter('binaries', 'set_semi_major_axis', names = ('semi_major_axis',))
+        handler.add_setter('binaries', 'set_eccentricity', names = ('eccentricity',))
+        handler.add_method('binaries', 'merge_the_binary')
+    def define_state(self, handler):
+        se.StellarEvolution.define_state(self, handler)
         
-        self.stopping_conditions.define_state(object)
+        self.stopping_conditions.define_state(handler)
 

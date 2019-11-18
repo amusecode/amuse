@@ -4,10 +4,10 @@ import subprocess
 import os
 import sys
 import time
-import urllib
+import urllib.request, urllib.parse, urllib.error
 
 class DownloadAthenaFromWebpage(object):
-    url_template = "http://www.amusecode.org/codes/athena{version}.tar.gz"
+    url_template = "http://amuse.strw.leidenuniv.nl/codes/athena{version}.tar.gz"
     url_template_original = "http://www.astro.princeton.edu/~jstone/downloads/athena/athena{version}.tar.gz"
     filename_template = "athena{version}.tar.gz"
     version = "4.0"
@@ -19,14 +19,14 @@ class DownloadAthenaFromWebpage(object):
         return os.path.join(self.directory(), 'src')
         
     def unpack_downloaded_file(self, filename):
-        print "unpacking", filename
+        print("unpacking", filename)
         arguments = ['tar', '-xf']
         arguments.append(filename)
         subprocess.call(
             arguments, 
             cwd = os.path.join(self.src_directory())
         )
-        print "done"
+        print("done")
         
         
     def start(self):
@@ -43,9 +43,9 @@ class DownloadAthenaFromWebpage(object):
         
         url = self.url_template.format(version = self.version)
         filename = self.filename_template.format(version = self.version)
-        print "downloading athena version",self.version,"from", url, "to", filename
-        urllib.urlretrieve(url, filename = os.path.join(self.src_directory(),filename))
-        print "downloading finished"
+        print("downloading athena version",self.version,"from", url, "to", filename)
+        urllib.request.urlretrieve(url, filename = os.path.join(self.src_directory(),filename))
+        print("downloading finished")
         self.unpack_downloaded_file(filename)
     
 if __name__ == '__main__':

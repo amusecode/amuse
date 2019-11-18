@@ -34,3 +34,16 @@ def numpy_fix():
       pass
       
 numpy_fix()
+
+class NoConfig(object):
+    def __init__(self, message):
+        self._message=message
+    def __getattr__(self, attr):
+        raise AttributeError(self._message)
+
+try:
+    from . import config
+except Exception as ex:
+    message="Configuration not read in - or configuration invalid, exception:\n"+str(ex)
+    config=NoConfig(message)
+    

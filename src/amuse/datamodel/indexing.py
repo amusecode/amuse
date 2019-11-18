@@ -91,7 +91,7 @@ def combine_indices(index0, index1):
             offset=0
             array_offset=None
             for i0 in index0:
-                if isinstance(i0, (int,long,numpy.integer)):
+                if isinstance(i0, (int,numpy.integer)):
                   result.append(i0)
                 elif isinstance(i0, numpy.ndarray) and i0.dtype != "bool":
                   if array_offset is None:
@@ -110,7 +110,7 @@ def combine_indices(index0, index1):
             index = 0
             for i, x in enumerate(index0):
                 index = i
-                if isinstance(x, (int, long,numpy.integer)):
+                if isinstance(x, (int,numpy.integer)):
                     continue
                 elif isinstance(x, slice):
                     break
@@ -128,13 +128,13 @@ def combine_indices(index0, index1):
             result.extend(index0[index+1:])
             return tuple(result)
         
-    if isinstance(index0, (int,long,numpy.integer)):
+    if isinstance(index0, (int,numpy.integer)):
         if isinstance(index1, tuple):
             return (index0,)+index1
         else:
             return (index0, index1)
     elif isinstance(index0, slice):
-        if isinstance(index1, (int, long, numpy.integer)):
+        if isinstance(index1, (int, numpy.integer)):
             start,stop,step = unpack_slice(index0)
             if index1>=0:
               return start + (index1 * step)
@@ -161,7 +161,7 @@ def combine_indices(index0, index1):
             return index1
         elif isinstance(index1, EllipsisType):
             return index0
-        elif isinstance(index1, (int, long, numpy.integer)):
+        elif isinstance(index1, (int, numpy.integer)):
             return index1
         else:
             raise Exception("not handled yet")
@@ -181,7 +181,7 @@ def combine_indices(index0, index1):
 
 def is_all_int(sequence):
     for x in sequence:
-        if not (isinstance(x, (int, long, numpy.integer))):
+        if not (isinstance(x, (int, numpy.integer))):
             return False
     return True
     
@@ -212,7 +212,7 @@ def number_of_dimensions_after_index(number_of_dimensions, index):
                 result+=b.nd
             return result
                     
-    elif isinstance(index, (int,long,numpy.integer)):
+    elif isinstance(index, (int,numpy.integer)):
         return number_of_dimensions - 1
     elif isinstance(index, slice):
         return number_of_dimensions
@@ -239,7 +239,7 @@ def normalize_slices(shape,index):
         else:
             result = []
             first_ellipsis = True
-            arrays = filter(lambda x: isinstance(x,numpy.ndarray), index)
+            arrays = [x for x in index if isinstance(x,numpy.ndarray)]
             for length,x in zip(shape,index):
                 if isinstance(x, slice):
                     result.append( slice(*resolve_slice(x,length)) )
@@ -257,7 +257,7 @@ def normalize_slices(shape,index):
             return tuple(result)
                     
     if isinstance(index, slice):
-        if isinstance(shape,(int,long,numpy.integer)):
+        if isinstance(shape,(int,numpy.integer)):
             return slice(*resolve_slice(index,shape))
         else:   
             return normalize_slices(shape,(index,))
@@ -276,7 +276,7 @@ def shape_after_index(shape, index):
 
             shape_as_list = list(shape)
             result = []
-            arrays = filter(lambda x: isinstance(x,numpy.ndarray), index)
+            arrays = [x for x in index if isinstance(x,numpy.ndarray)]
             for i,x in enumerate(index):
                 if isinstance(x, slice):
                     start,stop,step = resolve_slice(x, shape_as_list[i])
@@ -293,7 +293,7 @@ def shape_after_index(shape, index):
                 else:
                     pass
             return tuple(result)
-    elif isinstance(index, (int,long,numpy.integer)):
+    elif isinstance(index, (int,numpy.integer)):
         return tuple(shape[1:])
     elif isinstance(index, slice):
         return shape_after_index(shape,(index,))
@@ -329,7 +329,7 @@ def split_numpy_index_over_dimensions(index, dimension_values):
     per dimension, return the selected values per dimension, values are always 
     arrays"""
     result = list(dimension_values)
-    if isinstance(index, (int,long,numpy.integer)):
+    if isinstance(index, (int,numpy.integer)):
         result[0] = result[0][index]
         return result
     elif isinstance(index, slice):
@@ -344,7 +344,7 @@ def split_numpy_index_over_dimensions(index, dimension_values):
             number_of_indices = len(index)
             i = 0
             for x in index:
-                if isinstance(x, (int,long,numpy.integer)):
+                if isinstance(x, (int,numpy.integer)):
                     result[i] = result[i][x]
                 elif x is Ellipsis:
                     result[i] = result[i]
