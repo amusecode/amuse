@@ -41,7 +41,7 @@ def stellar_core_temperature_and_density(M, z=0.02, t_max=10|units.Myr):
         Tc = star.get_temperature_profile(nzones)[0]
 
 ###BOOKLISTSTOP1###
-	rho_core.append(rhoc.number)
+        rho_core.append(rhoc.number)
         T_core.append(Tc.number)
         color.append(get_color_from_stellar_type(star.stellar_type))
 
