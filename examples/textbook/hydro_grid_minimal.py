@@ -1,22 +1,24 @@
+import numpy
 from amuse.lab import *
+from amuse.units import units, constants
 from amuse.ext.sph_to_grid import convert_SPH_to_grid
-from amuse.community.capreole.interface import Capreole
 from amuse.units.generic_unit_converter import ConvertBetweenGenericAndSiUnits
+
 
 def plot_grid(grid):
     from matplotlib import pyplot
-    density = units.g/units.cm**3
-    rho = grid.rho[...,...,0].value_in(density)
-    figure = pyplot.figure(figsize=(6,6))
-    plot = figure.add_subplot(1,1,1)
-    plot.imshow(rho, origin = 'lower')
+    density = units.g / units.cm**3
+    rho = grid.rho[:, :, 0].value_in(density)
+    figure = pyplot.figure(figsize=(6, 6))
+    plot = figure.add_subplot(1, 1, 1)
+    plot.imshow(rho, origin='lower')
     figure.savefig('kelvin_helmholtz.png')
     pyplot.show()
 
-import numpy
+
 def setup_sph_code(sph_code, N, L, rho, u):
     converter = ConvertBetweenGenericAndSiUnits(L, rho, constants.G)
-    sph_code = sph_code(converter, mode = 'periodic')#, redirection = 'none')
+    sph_code = sph_code(converter, mode='periodic')
     sph_code.parameters.periodic_box_size = 10.0 | units.parsec
     plummer = new_plummer_gas_model(N, convert_nbody=converter)    
     plummer = plummer.select(lambda r: r.length()<0.5*L,["position"])
@@ -43,7 +45,8 @@ def setup_sph_code(sph_code, N, L, rho, u):
     sph_code.gas_particles.add_particles(plummer)
     sph_code.commit_particles()
     return sph_code
-    
+
+
 def main(N, Mtot, Rvir, t_end):
 
     rho = 1.14 | units.amu/units.cm**3
@@ -54,7 +57,8 @@ def main(N, Mtot, Rvir, t_end):
     print(grid)
     sph_code.stop()
     plot_grid(grid)
-    xxx
+    exit()
+    # xxx
     hydro = Athena(converter)
     hydro.parameters.gamma = 1.4
     hydro.parameters.courant_number=0.8
