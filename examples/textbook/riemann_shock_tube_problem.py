@@ -455,7 +455,7 @@ def main(**options):
     
     if IS_PLOT_AVAILABLE:
         print("plotting solution")
-        from prepare_figure import *
+        from prepare_figure import single_frame
         from distinct_colours import get_distinct
         x_label = "[length]"
         y_label = "[mass/length$^3$]"
