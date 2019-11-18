@@ -189,13 +189,13 @@ class Hydro:
                 
             if len(self.star_particles)>0:
                 sinks = new_sink_particles(self.star_particles)
-	        sinks.accrete(self.gas_particles)
+                sinks.accrete(self.gas_particles)
                 for si in range(len(self.star_particles)):
                     self.star_particles[si].Lx += sinks[si].angular_momentum[0]
                     self.star_particles[si].Ly += sinks[si].angular_momentum[1]
                     self.star_particles[si].Lz += sinks[si].angular_momentum[2]
 
-	        self.gas_particles.synchronize_to(self.code.gas_particles)
+                self.gas_particles.synchronize_to(self.code.gas_particles)
                 # make sure that the accreted mass is copied to the Hydro code..+++
                 self.channel_from_stars.copy()
                 
