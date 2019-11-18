@@ -18,13 +18,13 @@ except:
     dir = './'
 
 filename = dir+'Obs_Trapezium_disksizes.pkl'
-filepointer = open(filename, 'r')
-(R_obs, yc_obs) = pickle.load(filepointer)
+filepointer = open(filename, 'rb')
+(R_obs, yc_obs) = pickle.load(filepointer, encoding="bytes")
 filepointer.close()
 
 filename = dir+'Tr_N2000_R0.5pc_Q0.5_F1.6.pkl'
-filepointer = open(filename, 'r')
-(R_sim, yc_sim) = pickle.load(filepointer)
+filepointer = open(filename, 'rb')
+(R_sim, yc_sim) = pickle.load(filepointer, encoding="bytes")
 filepointer.close()
 
 print(len(R_obs), len(yc_obs))
