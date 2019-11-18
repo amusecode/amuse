@@ -15,7 +15,7 @@ from amuse.ext.sobol import i4_sobol_generate
 
 class uniform_random_unit_cube(object):
     def __init__(self,targetN):
-        self.targetN=targetN
+        self.targetN = int(targetN)
         self.par=int(targetN)
     def make_xyz(self):
         x=numpy.random.uniform(-1.,1.,self.par)
@@ -25,14 +25,14 @@ class uniform_random_unit_cube(object):
 
 class sobol_unit_cube(object):
     def __init__(self,targetN):
-        self.targetN=targetN
+        self.targetN=int(targetN)
     def make_xyz(self):
         x, y, z = i4_sobol_generate(3, self.targetN, 3) * 2.0 - 1.0        
         return x,y,z
 
 class regular_grid_unit_cube(object):
     def __init__(self,targetN):
-        self.targetN=targetN
+        self.targetN=int(targetN)
         self.par=int(float(targetN)**(1./3.)+1.5) 
     def make_xyz(self):
         nf=self.par
@@ -45,7 +45,7 @@ class regular_grid_unit_cube(object):
 
 class body_centered_grid_unit_cube(object):
     def __init__(self,targetN):
-        self.targetN=targetN
+        self.targetN=int(targetN)
         self.par=int(float(targetN/2.)**(1./3.)+1.5)   
 
     def make_xyz(self):
@@ -65,7 +65,7 @@ class body_centered_grid_unit_cube(object):
 
 class glass_unit_cube(object):
     def __init__(self,targetN,target_rms=0.01):
-        self.targetN=targetN
+        self.targetN=int(targetN)
         self.target_rms=target_rms
         if target_rms < 0.0001:
             print("warning: target_rms may not succeed")
@@ -149,7 +149,7 @@ def uniform_unit_cube(targetN, base_grid=None):
 class uniform_unit_sphere(object):
     def __init__(self,targetN, base_grid=None):
         cube_sphere_ratio=4/3.*numpy.pi*0.5**3
-        self.targetN=targetN
+        self.targetN=int(targetN)
         self.estimatedN=targetN/cube_sphere_ratio
         if base_grid is None:
             self.base_grid=uniform_random_unit_cube
@@ -179,7 +179,7 @@ class MakeEvrardTest(object):
     def __init__(self, targetN, base_grid=None, size=1.,
                    mass=1.,internal_energy=0.05,seed=345672):
         numpy.random.seed(seed)
-        self.targetN = targetN
+        self.targetN = int(targetN)
         self.size=size
         self.mass=mass
         self.internal_energy=internal_energy
