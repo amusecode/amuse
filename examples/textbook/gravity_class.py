@@ -62,7 +62,7 @@ def print_diagnostics(model_time, particles, converter):
     stars = particles[1]
     for si in stars:
         a, e, m0, m1 = calculate_orbital_parameters(bh[0], si, converter)
-        print "Orbital elements for star ", si.name, model_time.in_(units.yr), a.in_(units.AU), e, bh[0].mass.in_(units.MSun), si.mass.in_(units.MSun)
+        print("Orbital elements for star ", si.name, model_time.in_(units.yr), a.in_(units.AU), e, bh[0].mass.in_(units.MSun), si.mass.in_(units.MSun))
 
 def main(t_end=1687|units.yr, n_steps=1, filename=None):
     black_hole, stars = initialize_sstars(2012|units.yr, S_name, S_a_arcsec, S_ecc, S_inc, S_omra, S_Omega, S_tperi, S_Period)
