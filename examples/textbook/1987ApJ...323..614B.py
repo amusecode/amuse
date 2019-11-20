@@ -22,12 +22,13 @@ def collide_two_stars(t_end, distance, offset, v_vesc, nsteps):
     try:
         sstar = read_set_from_file(filename, format='hdf5')
     except:
-        from local_star_to_sph import evolve_star_and_convert_to_sph
+        from local_star_to_sph import evolve_star_and_convert_to_sph, evolve_star
         mass = 0.6|units.MSun
         age = 8 | units.Gyr
         omega = 0|units.s**-1
         Nsph = 1000
-        sstar, score = evolve_star_and_convert_to_sph(mass, age, omega, Nsph)
+        stellar = evolve_star(mass, age)
+        sstar, score = evolve_star_and_convert_to_sph(stellar, omega, Nsph)
     print(sstar)
     smass = sstar.mass.sum()
     print(smass.in_(units.MSun))
