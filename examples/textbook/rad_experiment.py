@@ -31,7 +31,7 @@ def new_disk_with_bump(Mstar = 1|units.MSun,
     com = bodies.center_of_mass()
 
     mm = Mdisk/float(Ndisk)
-    Nbump = Mbump/mm
+    Nbump = int(Mbump/mm)
     bump = new_plummer_gas_model(Nbump, convert_nbody=nbody_system.nbody_to_si(Mbump, Rbump))
 
     bump.x += abump
