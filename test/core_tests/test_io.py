@@ -217,18 +217,18 @@ class FormatTests(amusetest.TestCase):
             os.remove("test_unit.hdf5")
         x = datamodel.Particles(2)
         x.mass = [1.0, 2.0] | units.kg
-        io.write_set_to_file(x, "test_unit.hdf5","hdf5")
+        io.write_set_to_file(x, "test_unit.hdf5","hdf5", version="2.0")
         x.mass = [10.0, 20.0] | units.kg
-        io.write_set_to_file(x, "test_unit.hdf5","hdf5", append_to_file=True)
+        io.write_set_to_file(x, "test_unit.hdf5","hdf5", append_to_file=True, version="2.0")
         x.mass = [100.0, 200.0] | units.kg
-        io.write_set_to_file(x, "test_unit.hdf5","hdf5")
+        io.write_set_to_file(x, "test_unit.hdf5","hdf5", version="2.0")
         y = io.read_set_from_file("test_unit.hdf5","hdf5")
         self.assertAlmostEqual(x.mass, y.mass, 8)
         self.assertAlmostEqual([10.0, 20.0] | units.kg, y.previous_state().mass, 8)
         self.assertAlmostEqual([1.0, 2.0] | units.kg, y.previous_state().previous_state().mass, 8)
         self.assertEqual(y.previous_state().previous_state().previous_state(), None)
         
-        io.write_set_to_file(x, "test_unit.hdf5","hdf5", append_to_file=False)
+        io.write_set_to_file(x, "test_unit.hdf5","hdf5", append_to_file=False, version="2.0")
         y = io.read_set_from_file("test_unit.hdf5","hdf5")
         self.assertAlmostEqual(x.mass, y.mass, 8)
         self.assertEqual(y.previous_state(), None)
