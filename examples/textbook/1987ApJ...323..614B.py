@@ -7,7 +7,7 @@ def collide_two_stars(t_end, distance, offset, v_vesc, nsteps):
     try:
         pstar = read_set_from_file(filename, format='hdf5')
     except:
-        from local_star_to_sph import evolve_star_and_convert_to_sph
+        from star_to_sph import evolve_star_and_convert_to_sph
         mass = 0.6|units.MSun
         age = 8 | units.Gyr
         omega = 0|units.s**-1
