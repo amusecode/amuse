@@ -145,9 +145,9 @@ class Hydro:
     def model_time(self):
         return self.code.model_time
 
-    @property
-    def gas_particles(self):
-        return self.code.gas_particles
+    # @property
+    # def gas_particles(self):
+    #     return self.code.gas_particles
 
     @property
     def stop(self):
