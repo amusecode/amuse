@@ -58,7 +58,7 @@ def main(N, Mtot, Rvir, t_end):
     sph_code.stop()
     plot_grid(grid)
     exit()
-    # xxx
+    # the code below is not yet used, to be fixed?
     hydro = Athena(converter)
     hydro.parameters.gamma = 1.4
     hydro.parameters.courant_number=0.8
