@@ -50,7 +50,7 @@ if __name__ == "__main__":
         for mi in range(len(m)):
             if m[mi]>mlim:
                 mlim += dm
-                print mi, len(L), len(rho)
+                print(mi, len(L), len(rho))
                 pyplot.scatter(L[mi].value_in(units.LSun),
                                rho[mi].value_in(units.g/units.cm**3),
                                c=color[imass], s=150, marker=symbol[imass],
@@ -64,5 +64,5 @@ if __name__ == "__main__":
 
     save_file = 'fig_1_5_10_MSun_stellar_core_luminosity'
     pyplot.savefig(save_file)
-    print '\nSaved figure in file', save_file,'\n'
+    print('\nSaved figure in file', save_file,'\n')
     pyplot.show()

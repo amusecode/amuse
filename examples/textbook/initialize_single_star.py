@@ -24,7 +24,7 @@ def initialize_single_star(M, z):
     
     save_file = 'initialize_single_star.png'
     pyplot.savefig(save_file)
-    print '\nSaved figure in file', save_file,'\n'
+    print('\nSaved figure in file', save_file,'\n')
     pyplot.show()
 
 def new_option_parser():

@@ -10,10 +10,10 @@ def resolve_close_encounter(time, bodies):
     a = orbital_elements[2]
     e = orbital_elements[3]
     p = a*(1-e)
-    print "Close encounter at t=",  time.in_(units.Myr), \
+    print("Close encounter at t=",  time.in_(units.Myr), \
           "a=", a.in_(units.AU), "e=", e, "p=", p.in_(units.AU), \
           "M=", bodies.mass.max().in_(units.MSun), \
-          bodies.mass.min().in_(units.MSun) 
+          bodies.mass.min().in_(units.MSun)) 
     truncate_disks_due_to_encounter(bodies, p)
 
 def truncate_disks_due_to_encounter(bodies, p):
@@ -68,8 +68,8 @@ def evolve_system_to(time, gravity, bodies, stopping_condition,
                 = bodies_in_enc.get_intersecting_subset_in(bodies)
 
             resolve_close_encounter(gravity.model_time, local_bodies_in_enc)
-            print "At time=", gravity.model_time.value_in(units.Myr), \
-                "Rdisk=", local_bodies_in_enc.disk_radius.in_(units.AU)
+            print("At time=", gravity.model_time.value_in(units.Myr), \
+                "Rdisk=", local_bodies_in_enc.disk_radius.in_(units.AU))
             channel_to_gravity.copy_attributes(["radius"])
             assert abs(Ek_enc - gravity.kinetic_energy) < energy_tolerance
             assert abs(Ep_enc - gravity.potential_energy) < energy_tolerance
@@ -117,10 +117,10 @@ def main(N, Rvir, Qvir, Fd, t_end, filename):
         write_set_to_file(bodies.savepoint(gravity.model_time),
                           filename, 'hdf5')
         Etot = gravity.kinetic_energy + gravity.potential_energy
-        print "T=", gravity.model_time, 
-        print "E= ", Etot, "Q= ", \
-              gravity.kinetic_energy/gravity.potential_energy
-        print "dE=", (Etot-Etot_init)/Etot, "ddE=", (Etot-Etot_prev)/Etot
+        print("T=", gravity.model_time, end=' ') 
+        print("E= ", Etot, "Q= ", \
+              gravity.kinetic_energy/gravity.potential_energy)
+        print("dE=", (Etot-Etot_init)/Etot, "ddE=", (Etot-Etot_prev)/Etot)
         Etot_init -= (Etot_prev-Etot)
         Etot_prev = Etot
 

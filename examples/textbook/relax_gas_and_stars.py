@@ -1,5 +1,5 @@
 import numpy
-import cPickle
+import pickle
 from amuse.lab import *
 from amuse.community.fastkick.interface import FastKick
 from amuse.ext.relax_sph import relax
@@ -12,8 +12,8 @@ def check_energy_conservation(system, i_step, time, n_steps):
     U = system.potential_energy.value_in(unit)
     Q = system.thermal_energy.value_in(unit)
     K = system.kinetic_energy.value_in(unit)
-    print "Step {0} of {1}, t={2}: U={3:.2e}, Q={4:.2e}, K={5:.2e} {5}" \
-          .format(i_step, n_steps, time.as_quantity_in(units.yr), U, Q, K, unit)
+    print("Step {0} of {1}, t={2}: U={3:.2e}, Q={4:.2e}, K={5:.2e} {5}" \
+          .format(i_step, n_steps, time.as_quantity_in(units.yr), U, Q, K, unit))
 ###BOOKLISTSTOP1###
 
 from amuse.couple.bridge import Bridge
@@ -103,12 +103,12 @@ def generate_initial_conditions(
                                   do_scale=False)
     stars.mass = masses
     stars.move_to_center()
-    print "scaling positions to match virial_radius"
+    print("scaling positions to match virial_radius")
     stars.position *= virial_radius / stars.virial_radius()
-    print "scaling velocities to match virial_ratio"
+    print("scaling velocities to match virial_ratio")
     stars.velocity *= numpy.sqrt(virial_ratio * converter.to_si(0.5|nbody_system.energy) * star_formation_efficiency / stars.kinetic_energy())
     
-    print "new_gas_plummer_distribution"
+    print("new_gas_plummer_distribution")
     gas = new_gas_plummer_distribution(
         number_of_gas_particles, 
         total_mass = (total_mass - total_stellar_mass), 
@@ -117,7 +117,7 @@ def generate_initial_conditions(
     gas.h_smooth = 0.0 | units.parsec
     # eat away gas.
     mgas = gas[0].mass
-    print "Ngas=", len(gas)
+    print("Ngas=", len(gas))
     for si in stars:
         m = si.mass
         nremoved = 0
@@ -126,18 +126,18 @@ def generate_initial_conditions(
             nremoved += 1
             m-= gi.mass
             gas -= gi
-        print "removed:", nremoved, si.mass.in_(units.MSun)
-    print "Ngas=", len(gas)
+        print("removed:", nremoved, si.mass.in_(units.MSun))
+    print("Ngas=", len(gas))
         
     filename = "YSC_{0}_stars{1}_gas{2}k_" \
                  .format("fractal" if use_fractal else "plummer",
         number_of_stars, number_of_gas_particles/1000)
-    print "Writing initial conditions to", filename, "+ stars/gas.amuse"
+    print("Writing initial conditions to", filename, "+ stars/gas.amuse")
     write_set_to_file(stars, filename+"stars.amuse", "amuse",
                       append_to_file=False)
     write_set_to_file(gas, filename+"gas.amuse", "amuse", append_to_file=False)
     with open(filename+"info.pkl", "wb") as outfile:
-        cPickle.dump([converter], outfile)
+        pickle.dump([converter], outfile)
     return stars, gas, filename             
 
 def make_map(sph,N=100,L=1):
@@ -186,7 +186,7 @@ def plot_hydro_and_stars(hydro, stars):
 
     save_file = 'plot_relaxed_gas_and_star.png'
     pyplot.savefig(save_file)
-    print '\nSaved figure in file', save_file,'\n'
+    print('\nSaved figure in file', save_file,'\n')
     pyplot.show()
     
 if __name__ == "__main__":

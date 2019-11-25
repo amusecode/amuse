@@ -27,7 +27,7 @@ def main(filename = "hydro.hdf5", lim=None, image_id=-1, nice_plot=1):
     y_label = 'y'
     figure = single_frame(x_label, y_label, logy=False, xsize=14, ysize=10)
     stars = read_set_from_file(filename, "hdf5")
-    print stars
+    print(stars)
     snapshot_id = 0
     isgas = True
     snapshot_id = 0

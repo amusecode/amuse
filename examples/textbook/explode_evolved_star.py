@@ -27,8 +27,7 @@ def setup_stellar_evolution_model():
                                    "super_giant_stellar_structure.pkl")
     if os.path.exists(out_pickle_file):
         return out_pickle_file
-
-    print "Creating initial conditions from a MESA stellar evolution model..."
+    print("Creating initial conditions from a MESA stellar evolution model...")
 
     stellar_evolution = MESA(redirection = "none")
     stars =  Particles(1)
@@ -46,9 +45,9 @@ def inject_supernova_energy(gas_particles):
     Rinner = 10|units.RSun
     inner = gas_particles.select(
         lambda pos : pos.length_squared() < Rinner**2, ["position"])
-    print "Adding", (1.0e51 | units.erg) / inner.total_mass(),
-    print "to each of", len(inner), "innermost particles"
-    print "    of the exploding star"
+    print("Adding", (1.0e51 | units.erg) / inner.total_mass(), end=' ')
+    print("to each of", len(inner), "innermost particles")
+    print("    of the exploding star")
     inner.u += (1.0e51 | units.erg) / inner.total_mass()
 
 from prepare_figure import single_frame, figure_frame, set_tickmarks
@@ -113,8 +112,8 @@ def hydro_plot(view, hydro_code, image_size, time, figname):
     
     pyplot.savefig(figname, transparent=True, dpi = 100,
                    facecolor='k', edgecolor='k')
-    print "Saved hydroplot at time", time, "in file"
-    print '   ', figname
+    print("Saved hydroplot at time", time, "in file")
+    print('   ', figname)
     pyplot.close()
 
 def energy_plot(time, E_kin, E_pot, E_therm, figname):
@@ -136,7 +135,7 @@ def energy_plot(time, E_kin, E_pot, E_therm, figname):
     pyplot.legend(loc='best')
     pyplot.savefig(figname)
     
-    print '\nSaved energy evolution figure in file', figname, '\n'
+    print('\nSaved energy evolution figure in file', figname, '\n')
     pyplot.show()
     pyplot.close()
 
@@ -153,13 +152,13 @@ def run_supernova():
                                          pickle_file = pickle_file,
                                          with_core_particle = True,
                                          target_core_mass = 1.4|units.MSun)
-    print "model=", model.core_particle
+    print("model=", model.core_particle)
     core, gas_without_core, core_radius \
         = model.core_particle, model.gas_particles, model.core_radius
     
     inject_supernova_energy(gas_without_core)
     
-    print "\nEvolving (SPH) to:", t_end
+    print("\nEvolving (SPH) to:", t_end)
     n_steps = 100
     
     unit_converter = ConvertBetweenGenericAndSiUnits(1.0 | units.RSun,
@@ -200,14 +199,14 @@ def run_supernova():
     hydro_code.stop()
     
 if __name__ == "__main__":
-    print "Test run to mimic a supernova in SPH"
-    print "Details:"
-    print "    A high-mass star is evolved to the supergiant phase using MESA."
-    print "    Then it is converted to SPH particles using", \
-          "convert_stellar_model_to_SPH"
-    print "    (with a non-SPH 'core' particle).", \
-          "Finally the internal energies of"
-    print "    the innermost particles are increased so that the star gains the"
-    print "    10^51 erg released in a typical supernova explosion."
+    print("Test run to mimic a supernova in SPH")
+    print("Details:")
+    print("    A high-mass star is evolved to the supergiant phase using MESA.")
+    print("    Then it is converted to SPH particles using", \
+          "convert_stellar_model_to_SPH")
+    print("    (with a non-SPH 'core' particle).", \
+          "Finally the internal energies of")
+    print("    the innermost particles are increased so that the star gains the")
+    print("    10^51 erg released in a typical supernova explosion.")
 
     run_supernova()

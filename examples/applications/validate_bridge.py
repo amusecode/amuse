@@ -135,13 +135,13 @@ def validate_bridge():
     tc = cluster.model_time
     tg = galaxy.model_time
 
-    print convert_gal.to_nbody(tg)
-    print 0.
+    print(convert_gal.to_nbody(tg))
+    print(0.)
     # print Ep0,Ek0
     # print Esp0,Esk0
     for x in cluster.get_center_of_mass_position():
-        print convert_gal.to_nbody(x),
-    print
+        print(convert_gal.to_nbody(x), end=' ')
+    print()    
 
     part = bridgesys.particles.copy()
     part.savepoint(tg)
@@ -159,12 +159,12 @@ def validate_bridge():
         Esk = cluster.potential_energy
         tc = cluster.model_time
         tg = galaxy.model_time
-        print convert_gal.to_nbody(tg)
-        print (Ep+Ek-Ep0-Ek0)/(Ep0+Ek0)
+        print(convert_gal.to_nbody(tg))
+        print((Ep+Ek-Ep0-Ek0)/(Ep0+Ek0))
         # print (Esp+Esk-Esp0-Esk0)/(Esp0+Esk0)
         for x in cluster.get_center_of_mass_position():
-            print convert_gal.to_nbody(x),
-        print
+            print(convert_gal.to_nbody(x), end=' ')
+        print()  
 
         part = bridgesys.particles.copy()
         part.savepoint(tg)

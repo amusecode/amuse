@@ -9,7 +9,7 @@ def get_density_profile(code=MESA, M=1.0|units.MSun, z=0.02):
     stellar = code()
     stellar.parameters.metallicity = z
     stellar.particles.add_particle(Particle(mass=M))
-    print "Nzones=", stellar.particles.get_number_of_zones()
+    print("Nzones=", stellar.particles.get_number_of_zones())
     radius = stellar.particles[0].get_radius_profile()
     rho    = stellar.particles[0].get_density_profile()
     stellar.stop()

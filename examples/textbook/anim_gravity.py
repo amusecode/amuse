@@ -37,12 +37,12 @@ if __name__ in ('__main__'):
         amusedir = os.environ['AMUSE_DIR']
         dir = amusedir+'/examples/textbook/'
     except:
-        print 'Environment variable AMUSE_DIR not set'
+        print('Environment variable AMUSE_DIR not set')
         dir = './'
     
     filename = dir+'gravity.h5'
     particles = read_set_from_file(filename, "hdf5")
-    print particles.history
+    print(particles.history)
 
     x = []
     y = []

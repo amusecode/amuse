@@ -1,6 +1,7 @@
 """
    example code for bridging a gravity solver with a hydrodynamics solver
 """
+from __future__ import print_function
 import numpy
 from amuse.lab import *
 from amuse.couple import bridge
@@ -14,14 +15,14 @@ def new_sph_particles_from_stellar_wind(stars, mgas):
         p = si.position
         v = si.velocity
         Ngas = int(-si.Mwind/mgas)
-        print "new Ngas=", si.mass, Ngas,
+        print("new Ngas=", si.mass, Ngas, end=' ')
         if Ngas==0:
           continue 
         Mgas = mgas*Ngas
         si.Mwind += Mgas
 #        Ngas = 10
 #        mgas = Mgas/10. 
-        print "new Ngas=", Ngas, mgas
+        print("new Ngas=", Ngas, mgas)
         add=datamodel.Particles(Ngas)
         add.mass = mgas
         add.h_smooth=0. | units.parsec
@@ -52,7 +53,7 @@ def get_kepler_elements(model_time, bh, star, converter):
     kep.initialize_code()
     pos = bh.position - star.position
     vel = bh.velocity - star.velocity
-    print "Kep:", bh.mass + star.mass, pos[0], pos[1], pos[2], vel[0], vel[1], vel[2]
+    print("Kep:", bh.mass + star.mass, pos[0], pos[1], pos[2], vel[0], vel[1], vel[2])
     kep.initialize_from_dyn(bh.mass + star.mass, pos[0], pos[1], pos[2], vel[0], vel[1], vel[2])
     a,e = kep.get_elements()
     kep.stop()
@@ -67,16 +68,16 @@ def gravity_hydro_bridge(a, ecc, t_end, n_steps, Rgas, Mgas, Ngas):
     stellar_to_framework = stellar.particles.new_channel_to(stars)
     stellar.evolve_model(26|units.Myr)
     stellar_to_framework.copy_attributes(["mass","radius","temperature"])
-    print "stars=", stars
+    print("stars=", stars)
     stellar.evolve_model(26.1|units.Myr)
     stars.dmdt = (stellar.particles.mass-stars.mass)/(0.1|units.Myr)
     stars.Mwind = 0 | units.MSun
     stars.terminal_wind_velocity=v_terminal_teff(stars)
     stellar.stop()
-    print "dmdt=", stars.dmdt
+    print("dmdt=", stars.dmdt)
     dt = 0.1|units.day
     mgas =  0.1*abs(stars.dmdt.sum()*dt)
-    print "mgas=", mgas.value_in(units.MJupiter), stars.dmdt/mgas
+    print("mgas=", mgas.value_in(units.MJupiter), stars.dmdt/mgas)
 
     vc = constants.G*stars.mass.sum()/a
     Porb = 2*numpy.pi*(a**3/(constants.G*stars.mass.sum())).sqrt()
@@ -151,33 +152,33 @@ def gravity_hydro_bridge(a, ecc, t_end, n_steps, Rgas, Mgas, Ngas):
     while model_time < t_end:
         model_time += dt
         a, e = get_kepler_elements(gravity.model_time, stars[0], stars[1], converter) 
-        print "AB: time=", model_time, a, e
+        print("AB: time=", model_time, a, e)
         com_star = Particles(1)
         com_star.mass = stars[:2].mass.sum()
         com_star.position = stars[:2].center_of_mass()
         com_star.velocity = stars[:2].center_of_mass_velocity()
         a, e = get_kepler_elements(gravity.model_time, com_star[0], stars[2], converter) 
-        print "(AB)C: time=", model_time, a, e
+        print("(AB)C: time=", model_time, a, e)
 
         stars.Mwind += stars.dmdt*dt
-        print "Mw=", stars.Mwind, stars.Mwind/mgas
+        print("Mw=", stars.Mwind, stars.Mwind/mgas)
         new_sph = new_sph_particles_from_stellar_wind(stars, mgas)
-        print "Ngas=", len(new_sph), len(ism), len(hydro.gas_particles)
+        print("Ngas=", len(new_sph), len(ism), len(hydro.gas_particles))
 
         if len(new_sph)>0: # and len(bodies)<4000:
             ism.add_particles(new_sph)
             ism.synchronize_to(hydro.gas_particles)
 
         if len(ism)>100:
-            print "t=", hydro.model_time, dt
+            print("t=", hydro.model_time, dt)
             gravhydro.evolve_model(model_time)
             channel_from_gravity.copy()
             channel_from_hydro.copy()
             channel_from_hydro.copy_attributes(["u"])
-            print "N=", len(hydro.particles)
+            print("N=", len(hydro.particles))
             Ed_tot = gravity.kinetic_energy + gravity.potential_energy
             Eh_tot = hydro.kinetic_energy + hydro.potential_energy + hydro.thermal_energy
-            print "Energies:", Ed_tot/Ed0_tot, Eh_tot/Eh0_tot
+            print("Energies:", Ed_tot/Ed0_tot, Eh_tot/Eh0_tot)
 
             if istep%10==0:
                 write_set_to_file(moving_bodies, filename, 'hdf5')

@@ -29,7 +29,7 @@ def get_ionization_fraction1d(ism):
     for p in ism:
         r.append(p.position.length())
         x.append(p.xion)
-    r, x = zip(*sorted(zip(r.value_in(units.parsec), x)))
+    r, x = list(zip(*sorted(zip(r.value_in(units.parsec), x))))
     R, X = binned_mean_data(r, x)
 
     return r, x, R, X
@@ -109,7 +109,7 @@ def plot_ionization(ism, N, which, rmax, t_end, rS, ip):
 
     savefile = 'fig_ionization_of_GMC_'+id_string+param_string+'.png'
     pyplot.savefig(savefile, dpi=300)
-    print 'Figure saved in file', savefile
+    print('Figure saved in file', savefile)
     
     if ip == 0: pyplot.show()
 
@@ -137,9 +137,9 @@ def generate_ism_initial_conditions(N, M=10|units.MSun, R=3|units.parsec,
     rho0 = 3*M/(4*numpy.pi*a**3)	# Plummer model central density
     rhp = 1.3*a				# Plummer model half-mass radius
 
-    print 'a =', a.in_(units.parsec)
-    print 'rhp =', rhp.in_(units.parsec)
-    print 'rho0 =', rho0.in_(units.MSun/units.parsec**3)
+    print('a =', a.in_(units.parsec))
+    print('rhp =', rhp.in_(units.parsec))
+    print('rho0 =', rho0.in_(units.MSun/units.parsec**3))
 
     if which == 0:
         rmax = boxsize
@@ -151,20 +151,20 @@ def generate_ism_initial_conditions(N, M=10|units.MSun, R=3|units.parsec,
                                                       4*numpy.pi*rho0*Ru**3/3,
                                                           type="random")
         rhu = Ru/3**0.5
-        print 'rhu =', rhu.in_(units.parsec)
+        print('rhu =', rhu.in_(units.parsec))
         ism.vx = 0.|units.kms
         ism.vy = 0.|units.kms
         ism.vz = 0.|units.kms
         ism.u = (0.075|units.kms)**2
         
-        print 'M =', ism.mass.sum().in_(units.MSun)
+        print('M =', ism.mass.sum().in_(units.MSun))
 
     #print 'mean u =', ism.u.sum().in_(units.kms**2)/N
     #print 'max u =', ism.u.max().in_(units.kms**2)
 
     rr = ((ism.position)**2).sum(axis=1).sqrt().value_in(units.parsec)
     ii = numpy.argsort(rr)
-    print 'rh =', rr[ii[N/2]], 'parsec'
+    print('rh =', rr[ii[N/2]], 'parsec')
 
     ism.flux = 0. | units.s**-1
     ism.xion = 0.0
@@ -184,8 +184,8 @@ def generate_ism_initial_conditions(N, M=10|units.MSun, R=3|units.parsec,
     #print 'max density =', ism.rho.max().in_(units.MSun/units.parsec**3)
     rc = a/3.
     cent = ism.select(lambda r: r.length() < rc, ["position"])
-    print 'approximate central density =', \
-        (3*cent.mass.sum()/(4*numpy.pi*rc**3)).in_(units.MSun/units.parsec**3)
+    print('approximate central density =', \
+        (3*cent.mass.sum()/(4*numpy.pi*rc**3)).in_(units.MSun/units.parsec**3))
 
     ism = ism.select(lambda r: r.length() < 0.5*boxsize, ["position"])
     #print "max density in box =", \
@@ -220,7 +220,7 @@ def radius_containing(mass, ism):
 def main(N, Lstar, boxsize, t_end, which, np):
     ism,rho0,a,M,rmax \
         = generate_ism_initial_conditions(N, boxsize=boxsize, which=which)
-    print 'particles in box =', len(ism)
+    print('particles in box =', len(ism))
 
     source = Particle()
     source.position = (0, 0, 0) |units.parsec
@@ -230,25 +230,25 @@ def main(N, Lstar, boxsize, t_end, which, np):
     source.u = (9.|units.kms)**2	# = kT/m
 
     S = source.flux.in_(units.s**-1)
-    print 'ionizing flux =', S
-    print 'central density =', rho0.in_(units.MSun/units.parsec**3)
+    print('ionizing flux =', S)
+    print('central density =', rho0.in_(units.MSun/units.parsec**3))
     n = rho0/(1|units.amu)
-    print 'number density =', n.in_(units.cm**-3)
+    print('number density =', n.in_(units.cm**-3))
     T = source.u*(1|units.amu)/constants.kB
-    print 'temperature =', T.in_(units.K)
+    print('temperature =', T.in_(units.K))
     alpha = (2.e-16*T.value_in(units.K)**-0.75)|(units.m**3/units.s)
-    print 'alpha =', alpha.in_(units.m**3/units.s)
+    print('alpha =', alpha.in_(units.m**3/units.s))
     trec = 1/(n*alpha)
-    print 'recombination time =', trec.in_(units.Myr)
+    print('recombination time =', trec.in_(units.Myr))
     MS = (S*trec)*1|units.amu
     if which == 0:
         rS = a/((M/MS)**(2./3) - 1.)**0.5		# Plummer
     else:
         rS = (3*S/(4*numpy.pi*n**2*alpha))**(1./3)	# Homogeneous
 
-    print 'Stromgren radius (analytic) =', rS.in_(units.parsec)
+    print('Stromgren radius (analytic) =', rS.in_(units.parsec))
     rS1 = radius_containing(MS, ism)
-    print 'Stromgren radius (measured) =', rS1.in_(units.parsec)
+    print('Stromgren radius (measured) =', rS1.in_(units.parsec))
 
     radiative = SimpleX(redirection='none')
     radiative.parameters.box_size = boxsize
@@ -263,15 +263,15 @@ def main(N, Lstar, boxsize, t_end, which, np):
     ip = 0
     for t in tlist:
         radiative.evolve_model(t)
-        print 't =', t, \
-              'model_time =', radiative.model_time.in_(units.Myr)
+        print('t =', t, \
+              'model_time =', radiative.model_time.in_(units.Myr))
 
         radiative.particles.new_channel_to(ism).copy()
 
-        print ''
-        print "min ionization:", ism.xion.min()
-        print "average ionization:", ism.xion.mean()
-        print "max ionization:", ism.xion.max()
+        print('')
+        print("min ionization:", ism.xion.min())
+        print("average ionization:", ism.xion.mean())
+        print("max ionization:", ism.xion.max())
 
         if np > 1: ip += 1
         plot_ionization(ism, N, which,

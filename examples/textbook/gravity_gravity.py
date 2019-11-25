@@ -66,10 +66,10 @@ def evolve_cluster_in_galaxy(N, W0, Rinit, tend, timestep, M, R):
     converter=nbody_system.nbody_to_si(M_galaxy, R_galaxy)
     galaxy=new_plummer_model(10000,convert_nbody=converter)
 
-    print "com:", galaxy.center_of_mass().in_(units.kpc)
-    print "comv:", galaxy.center_of_mass_velocity().in_(units.kms)
+    print("com:", galaxy.center_of_mass().in_(units.kpc))
+    print("comv:", galaxy.center_of_mass_velocity().in_(units.kms))
    
-    print len(galaxy)
+    print(len(galaxy))
     galaxy_code = BHTree(converter, number_of_workers=2)
     galaxy_code.parameters.epsilon_squared = (0.01 | units.kpc)**2
     channe_to_galaxy = galaxy_code.particles.new_channel_to(galaxy)
@@ -77,8 +77,8 @@ def evolve_cluster_in_galaxy(N, W0, Rinit, tend, timestep, M, R):
     galaxy_code.particles.add_particles(galaxy)
     inner_stars = galaxy.select(lambda r: r.length()<Rinit,["position"])
     Minner = inner_stars.mass.sum()
-    print "Minner=", Minner.in_(units.MSun)
-    print "Ninner=", len(inner_stars)
+    print("Minner=", Minner.in_(units.MSun))
+    print("Ninner=", len(inner_stars))
     vc_inner = (constants.G*Minner/Rinit).sqrt()
 
     converter=nbody_system.nbody_to_si(Mcluster,Rcluster)
@@ -100,12 +100,12 @@ def evolve_cluster_in_galaxy(N, W0, Rinit, tend, timestep, M, R):
 
     times = quantities.arange(0|units.Myr, tend, timestep)
     for i,t in enumerate(times):
-        print "Time=", t.in_(units.Myr)
+        print("Time=", t.in_(units.Myr))
         channe_to_galaxy.copy()
         channel_to_stars.copy()
 
         inner_stars =  galaxy.select(lambda r: r.length()<Rinit,["position"])
-        print "Minner=", inner_stars.mass.sum().in_(units.MSun)
+        print("Minner=", inner_stars.mass.sum().in_(units.MSun))
 
         system.evolve_model(t,timestep=timestep)
     plot_galaxy_and_stars(galaxy, stars)

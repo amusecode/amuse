@@ -30,9 +30,9 @@ def single_star_evolution(M, z, model_time):
         T.append(stellar.particles[0].temperature)
 
     final_luminosity = stellar.particles.luminosity
-    print "L(t=0)=", initial_luminosity, \
+    print("L(t=0)=", initial_luminosity, \
           ", L (t=", stellar.particles.age, ")=", \
-        final_luminosity, stellar.particles.radius
+        final_luminosity, stellar.particles.radius)
     stellar.stop()
     return L, T
 
@@ -77,5 +77,5 @@ if __name__ in ('__main__', '__plot__'):
 
     save_file = 'fig_M67withBSS_tracks.png'
     pyplot.savefig(save_file)
-    print '\nSaved figure in file', save_file,'\n'
+    print('\nSaved figure in file', save_file,'\n')
     pyplot.show()

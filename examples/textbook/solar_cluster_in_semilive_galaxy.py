@@ -151,8 +151,8 @@ def plot(stars, GMCs):
     figure = figure_frame("X [kpc]", "Y [kpc]", xsize=8, ysize=8)
     colors = get_distinct(2)
 
-    print numpy.mean(stars.mass.value_in(units.MSun))
-    print numpy.mean(GMCs.mass.value_in(units.MSun))
+    print(numpy.mean(stars.mass.value_in(units.MSun)))
+    print(numpy.mean(GMCs.mass.value_in(units.MSun)))
     size = stars.mass/(0.1 |units.MSun)
     pyplot.scatter(stars.x.value_in(units.kpc), stars.y.value_in(units.kpc),
                    s=size, c=colors[0])
@@ -200,9 +200,9 @@ def evolve_cluster_in_potential(gravity, t_end, dt,
         Ekin = gravity.kinetic_energy 
         Epot = gravity.potential_energy
         Etot = Ekin + Epot
-        print "T=", time, 
-        print "E= ", Etot, "Q= ", Ekin/Epot,
-        print "dE=", (Etot_init-Etot)/Etot, "ddE=", (Etot_prev-Etot)/Etot 
+        print("T=", time, end=' ') 
+        print("E= ", Etot, "Q= ", Ekin/Epot, end=' ')
+        print("dE=", (Etot_init-Etot)/Etot, "ddE=", (Etot_prev-Etot)/Etot) 
         Etot_prev = Etot
 
     return x, y
@@ -258,7 +258,7 @@ def initialize_sun_in_milky_way():
     sun.velocity= [11.352, (12.24+vc.value_in(units.kms)), 7.41] | units.kms
     current_sun = sun.copy()
     sun.velocity *= -1
-    print "current:", sun
+    print("current:", sun)
     return sun
 
 def make_giant_molecular_clouds(Ngmc):
@@ -275,8 +275,8 @@ def make_giant_molecular_clouds(Ngmc):
     MWG = MilkyWay_galaxy()    
     v_inner = MWG.vel_circ(Rout)
     MGalaxy = v_inner**2*Rout/constants.G
-    print "Masses:", MGMCs.in_(units.MSun), MGalaxy.in_(units.MSun), \
-          MGMCs/MGalaxy
+    print("Masses:", MGMCs.in_(units.MSun), MGalaxy.in_(units.MSun), \
+          MGMCs/MGalaxy)
     GMCs = ProtoPlanetaryDisk(len(masses), convert_nbody=converter,
                               Rmin=Rin.value_in(units.kpc), 
                               Rmax=Rout.value_in(units.kpc),
@@ -298,8 +298,8 @@ def make_giant_molecular_clouds(Ngmc):
     GMCs.mass = new_powerlaw_mass_distribution(len(GMCs), alpha=-1.6,
                                                  mass_min=1.e+3|units.MSun,
                                                  mass_max=1.0e+8|units.MSun)
-    print "v=", v_inner.in_(units.kms)
-    print "GMC mass=", GMCs.mass.sum().in_(units.MSun)
+    print("v=", v_inner.in_(units.kms))
+    print("GMC mass=", GMCs.mass.sum().in_(units.MSun))
     for gi in range(len(GMCs)):
         r = GMCs[gi].position.length()
         vc = MWG.vel_circ(r)
@@ -327,10 +327,10 @@ def main(Ngmc, Ncl, W0, t_end, n_steps, filename, Rvir):
 
     sun = initialize_sun_in_milky_way()
 
-    print "Find birth location of the Sun."
+    print("Find birth location of the Sun.")
     x, y = integrate_single_particle_in_potential(sun, t_end, dt)
     sun.velocity *= -1
-    print "Birth location of the Sun:", sun
+    print("Birth location of the Sun:", sun)
 
     GMCs = make_giant_molecular_clouds(Ngmc)
     cluster = make_new_cluster(Ncl, Rvir, W0, sun)

@@ -205,7 +205,7 @@ class CalculateSolutionIn3D(object):
     
     def __init__(self, **keyword_arguments):
         for x in keyword_arguments:
-            print x, keyword_arguments[x]
+            print(x, keyword_arguments[x])
             setattr(self, x, keyword_arguments[x])
             
         self.dimensions_of_mesh = (
@@ -345,13 +345,13 @@ class CalculateSolutionIn3D(object):
         self.set_parameters(instance)
         self.set_initial_conditions(instance)
         
-        print "start evolve"
+        print("start evolve")
         instance.evolve_model(time)
         
-        print "copying results"
+        print("copying results")
         result = self.copy_results(instance)
         
-        print "terminating code"
+        print("terminating code")
         instance.stop()
         
         return result
@@ -429,33 +429,33 @@ def test_riemann_shocktube_problem():
     
     
 def main(**options):
-    print "calculating shock using exact solution"
+    print("calculating shock using exact solution")
     exact = CalculateExactSolutionIn1D()
     xpositions, rho, p, u = exact.get_solution_at_time(0.12 | time)
     
-    print "calculating shock using code"
+    print("calculating shock using code")
     model = CalculateSolutionIn3D(**options)
     grids = model.get_solution_at_time(0.12 | time)
     
-    print "sampling grid"
+    print("sampling grid")
     if model.name_of_the_code in model.sph_hydro_codes:
         samples = grids
     else:
         samplepoints = [(x, 0.5, 0.5) | length for x in numpy.linspace(0.0, 1.0, 2000)]
-        print len(grids)
+        print(len(grids))
         samples = SamplePointsOnMultipleGrids(grids, samplepoints, SamplePointOnCellCenter)
-        print len(samples)
+        print(len(samples))
         samples.filterout_duplicate_indices()
-        print len(samples)
+        print(len(samples))
     
-    print "saving data"
+    print("saving data")
     filename = "riemann_shock_tube_rho_"+model.name_of_the_code
     store_attributes(xpositions,rho,u,p,filename=filename+"_exact.csv")
     store_attributes(samples.x,samples.rho,samples.rhovx,samples.energy,filename=filename+".csv")
     
     if IS_PLOT_AVAILABLE:
-        print "plotting solution"
-        from prepare_figure import *
+        print("plotting solution")
+        from prepare_figure import single_frame
         from distinct_colours import get_distinct
         x_label = "[length]"
         y_label = "[mass/length$^3$]"

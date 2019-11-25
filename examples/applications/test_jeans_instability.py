@@ -122,7 +122,7 @@ class JeansInstability(object):
                 plot = figure.add_subplot(1, 1, 1)
                 plot.imshow(phi.value_in(units.m**2 / units.s**2))
                 pyplot.show()
-                print phi[:, 1][0:10]
+                print(phi[:, 1][0:10])
                 self.P0 = phi
 
             # self.update_potential_grid()
@@ -226,8 +226,11 @@ class JeansInstability(object):
             plot.imshow(
                 (phi - self.P0).value_in(units.m**2 / units.s**2)[1:, 1:])
             pyplot.show()
-            print phi[:, 1][0:10]
-            print (phi[:, 1][0:10] - self.P0[:, 1][0:10]) / phi[:, 1][0:10]
+            print(phi[:, 1][0:10])
+            print(
+                (phi[:, 1][0:10] - self.P0[:, 1][0:10])
+                / phi[:, 1][0:10]
+            )
 
     def gravity_for_code(self, field, grid):
         x = field.x.flatten()
@@ -297,7 +300,7 @@ if __name__ == '__main__':
         run.evolve_model(t)
         x.append(t)
         y.append(run.code.grid[2, 2, 0].rho)
-        print "evolved to", t, run.code.grid[2, 2, 0].rho
+        print("evolved to", t, run.code.grid[2, 2, 0].rho)
 
     if IS_PLOT_AVAILABLE:
         figure = pyplot.figure(figsize=(10, 5))

@@ -41,7 +41,7 @@ def stellar_core_temperature_and_density(M, z=0.02, t_max=10|units.Myr):
         Tc = star.get_temperature_profile(nzones)[0]
 
 ###BOOKLISTSTOP1###
-	rho_core.append(rhoc.number)
+        rho_core.append(rhoc.number)
         T_core.append(Tc.number)
         color.append(get_color_from_stellar_type(star.stellar_type))
 
@@ -56,7 +56,7 @@ def stellar_core_temperature_and_density(M, z=0.02, t_max=10|units.Myr):
             if stop: break
 
 ###BOOKLISTSTART2###
-        print star.age.in_(units.Myr), rhoc, Tc, star.stellar_type
+        print(star.age.in_(units.Myr), rhoc, Tc, star.stellar_type)
 
     stellar.stop()
 ###BOOKLISTSTOP2###
@@ -73,7 +73,7 @@ if __name__ in ('__main__'):
         M = Mlist[i]
         rhoc, Tc, color = stellar_core_temperature_and_density(M, z, tmax[i])
         size = 4*(math.log10(M.value_in(units.MSun))+1)
-        print 'size =', size
+        print('size =', size)
         pyplot.scatter(rhoc, Tc, c=color, s=size)
 
     fontsize = 12
@@ -90,5 +90,5 @@ if __name__ in ('__main__'):
 
     save_file = 'plot_core_temperature_density.png'
     pyplot.savefig(save_file)
-    print '\nSaved figure in file', save_file,'\n'
+    print('\nSaved figure in file', save_file,'\n')
     #pyplot.show()

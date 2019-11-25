@@ -28,9 +28,9 @@ def main(N, Mtot, Rvir, rsink):
     sink.velocity = (0, 0, 0) | units.kms
 
     accreted = hydro_sink_particles(sink, bodies)
-    print "Particles in sink: N=", len(accreted), " M=", sink.mass
-    print "sink position=", sink.position.as_quantity_in(units.AU)
-    print "sink velocity=", sink.velocity.as_quantity_in(units.kms)
+    print("Particles in sink: N=", len(accreted), " M=", sink.mass)
+    print("sink position=", sink.position.as_quantity_in(units.AU))
+    print("sink velocity=", sink.velocity.as_quantity_in(units.kms))
     
 def new_option_parser():
     from amuse.units.optparse import OptionParser

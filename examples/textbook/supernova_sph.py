@@ -91,7 +91,7 @@ def plot_sph(time, sph, gas, i=1, L=10):
 
 #    rho=make_map(sph,N=200,L=L)
     rho_e=make_e_map(sph,N=200,L=L)
-    print "extrema:", rho_e.value_in(units.erg/units.RSun**3).min(), rho_e.value_in(units.erg/units.RSun**3).max()
+    print("extrema:", rho_e.value_in(units.erg/units.RSun**3).min(), rho_e.value_in(units.erg/units.RSun**3).max())
 #    pyplot.imshow(numpy.log10(rho_e.value_in(units.erg/units.RSun**3)), extent=[-L/2,L/2,-L/2,L/2],vmin=23,vmax=40)
     pyplot.imshow(numpy.log10(rho_e.value_in(units.erg/units.RSun**3)), extent=[-L/2,L/2,-L/2,L/2],vmin=23,vmax=40, interpolation='bicubic', origin = 'lower', cmap="hot")
 #    cax = plot.imshow(rho, interpolation='bicubic', origin = 'lower', extent=[-5, 5, -5, 5], cmap="hot")
@@ -117,7 +117,7 @@ def XX_plot_sph(time, sph, gas, i=1, L=10):
     rho_e=make_e_map(sph,N=200,L=L)
 #    pyplot.hist(numpy.log10(rho_e.value_in(units.erg/units.RSun**3)))
 #    pyplot.show()
-    print "extrema:", rho_e.value_in(units.erg/units.RSun**3).min(), rho_e.value_in(units.erg/units.RSun**3).max()
+    print("extrema:", rho_e.value_in(units.erg/units.RSun**3).min(), rho_e.value_in(units.erg/units.RSun**3).max())
 #    pyplot.imshow(numpy.log10(1.e-8+rho.value_in(units.amu/units.cm**3)), extent=[-L/2,L/2,-L/2,L/2],vmin=1,vmax=5)
     pyplot.imshow(numpy.log10(rho_e.value_in(units.erg/units.RSun**3)), extent=[-L/2,L/2,-L/2,L/2],vmin=23,vmax=40)
 #    pyplot.imshow(numpy.log10(1.e-5+rho.value_in(units.amu/units.cm**3)), extent=[-L/2,L/2,-L/2,L/2],vmin=1,vmax=5)
@@ -143,7 +143,7 @@ def X_plot_sph(particles, time= 0.0|units.day):
     min_dens = z.min()
     mid_dens = 0.5*(max_dens+min_dens)
     #    cbar = pyplot.colorbar()
-    print "dens=", min_dens, mid_dens, max_dens
+    print("dens=", min_dens, mid_dens, max_dens)
 
 #    cbar = figure.colorbar(cax, ticks=[min_dens, mid_dens, max_dens], orientation='vertical', fraction=0.045)
 
@@ -166,7 +166,7 @@ def setup_sph_code(sph_code, N, L, rho, u):
     plummer = new_plummer_gas_model(N, convert_nbody=converter)    
     plummer = plummer.select(lambda r: r.length()<0.5*L,["position"])
     N = len(plummer)
-    print "N=", len(plummer)
+    print("N=", len(plummer))
     plummer.mass = (rho * L**3) / N
     gas = Particles(N)
     gas.mass = 0.001*(rho * L**3) / N
@@ -212,7 +212,7 @@ def main(stellar_mass, stellar_radius, core_mass, core_radius, t_end, dt_diag, r
         #R = 1|units.RSun
         #particles = particles.select(lambda x, y, z: x>R and y>R and z>R,["x", "y", "z"])
         #print particles
-        print "N=", len(particles)
+        print("N=", len(particles))
 
         run_sph_code(hydro, particles, t_end, dt_diag)
     
@@ -293,7 +293,7 @@ def run_grid_code(hydro, grid, t_end, dt_diag):
     channel = hydro.grid.new_channel_to(grid)
     dt = 0.2*t_end
     while hydro.model_time<t_end:
-        print "Time=", hydro.model_time.in_(units.s)
+        print("Time=", hydro.model_time.in_(units.s))
         hydro.evolve_model(hydro.model_time + dt)
         channel.copy()
         plot_grid(hydro.grid, hydro.model_time)
@@ -308,7 +308,7 @@ def run_sph_code(hydro, particles, t_end, dt):
     channel = hydro.gas_particles.new_channel_to(particles)
     while hydro.model_time<t_end:
         index += 1
-        print "Time=", hydro.model_time.in_(units.s)
+        print("Time=", hydro.model_time.in_(units.s))
         hydro.evolve_model(hydro.model_time + dt)
         channel.copy_attributes(["x", "y", "z", "rho", "u"])
         #plot_sph(particles, hydro.model_time)

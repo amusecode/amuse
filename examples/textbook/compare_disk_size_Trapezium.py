@@ -14,25 +14,25 @@ try:
     amusedir = os.environ['AMUSE_DIR']
     dir = amusedir+'/examples/textbook/'
 except:
-    print 'Environment variable AMUSE_DIR not set'
+    print('Environment variable AMUSE_DIR not set')
     dir = './'
 
 filename = dir+'Obs_Trapezium_disksizes.pkl'
-filepointer = open(filename, 'r')
-(R_obs, yc_obs) = pickle.load(filepointer)
+filepointer = open(filename, 'rb')
+(R_obs, yc_obs) = pickle.load(filepointer, encoding="bytes")
 filepointer.close()
 
 filename = dir+'Tr_N2000_R0.5pc_Q0.5_F1.6.pkl'
-filepointer = open(filename, 'r')
-(R_sim, yc_sim) = pickle.load(filepointer)
+filepointer = open(filename, 'rb')
+(R_sim, yc_sim) = pickle.load(filepointer, encoding="bytes")
 filepointer.close()
 
-print len(R_obs), len(yc_obs)
-print len(R_sim), len(yc_sim)
+print(len(R_obs), len(yc_obs))
+print(len(R_sim), len(yc_sim))
 
 from scipy import stats
 ks = stats.ks_2samp(R_obs, R_sim)
-print "Perform KS test on both sambles:", ks
+print("Perform KS test on both sambles:", ks)
 
 color = get_distinct(2)
 
@@ -45,6 +45,6 @@ pyplot.plot(R_sim, 95*yc_sim, c=color[1], ls="--")
 
 save_file = 'Tr_N2000_R05pc_Q05_F16_r1.png'
 pyplot.savefig(save_file)
-print '\nSaved figure in file', save_file,'\n'
+print('\nSaved figure in file', save_file,'\n')
 pyplot.show()
 

@@ -51,9 +51,9 @@ def run_evrard(x):
     # nb.set_gdgop(1)
     nb.set_uentropy(0)
     # nb.set_verbosity(0)
-
-    ids, error = nb.new_sph_particle(mass, smooth, x, y, z, vx, vy, vz, u)
-    if filter(lambda x: x != 0, error) != []: raise Exception
+      
+    ids,error = nb.new_sph_particle(mass,smooth,x,y,z,vx,vy,vz,u)
+    if [x for x in error if x != 0] != []: raise Exception
     nb.commit_particles()
 
     if hasattr(nb, "viewer"):

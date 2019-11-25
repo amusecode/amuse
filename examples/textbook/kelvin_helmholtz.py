@@ -33,7 +33,7 @@ def new_instance_of_capreole_code(number_of_workers=1):
 def new_instance_of_mpiamrvac_code(number_of_workers=1):
     from amuse.community.mpiamrvac.interface import MpiAmrVac
     #result=MpiAmrVac(number_of_workers=number_of_workers) #, redirection="none")
-    result=MpiAmrVac(mode="2d", number_of_workers=self.number_of_workers)
+    result=MpiAmrVac(mode="2d", number_of_workers=number_of_workers)
     result.set_parameters_filename(result.default_parameters_filename)
     result.initialize_code()
     result.parameters.maximum_number_of_grid_levels = 3
@@ -132,7 +132,7 @@ def simulate_kelvin_helmholtz_instability(end_time):
     while t < end_time:
         instance.evolve_model(t)
         
-        print("time : ", t)
+        print(("time : ", t))
         t += dt
     
     print("copying results")

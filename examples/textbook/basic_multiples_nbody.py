@@ -29,14 +29,14 @@ def print_diagnostics(grav, E0=None):
     ke = grav.kinetic_energy
     pe = grav.potential_energy
     Nmul, Nbin, Emul = grav.get_total_multiple_energy()
-    print ''
-    print 'Time =', grav.get_time()
-    print '    top-level kinetic energy =', ke
-    print '    top-level potential energy =', pe
-    print '    total top-level energy =', ke + pe
-    print '   ', Nmul, 'multiples,', 'total energy =', Emul
+    print('')
+    print('Time =', grav.get_time())
+    print('    top-level kinetic energy =', ke)
+    print('    top-level potential energy =', pe)
+    print('    total top-level energy =', ke + pe)
+    print('   ', Nmul, 'multiples,', 'total energy =', Emul)
     E = ke + pe + Emul
-    print '    uncorrected total energy =', E
+    print('    uncorrected total energy =', E)
     
     # Apply known corrections.
     
@@ -45,9 +45,9 @@ def print_diagnostics(grav, E0=None):
     Eerr = grav.multiples_integration_energy_error	# integration error
 
     E -= Etid + Eerr
-    print '    corrected total energy =', E
+    print('    corrected total energy =', E)
 
-    if E0 is not None: print '    relative energy error=', (E-E0)/E0
+    if E0 is not None: print('    relative energy error=', (E-E0)/E0)
     
     return E
 
@@ -88,15 +88,15 @@ def integrate_system(N, t_end, seed=None):
     #	               2: debugging output
     #	               3: even more output
 
-    print ''
-    print 'multiples_code.neighbor_veto =', \
-        multiples_code.neighbor_veto
-    print 'multiples_code.neighbor_perturbation_limit =', \
-        multiples_code.neighbor_perturbation_limit
-    print 'multiples_code.retain_binary_apocenter =', \
-        multiples_code.retain_binary_apocenter
-    print 'multiples_code.wide_perturbation_limit =', \
-        multiples_code.wide_perturbation_limit
+    print('')
+    print('multiples_code.neighbor_veto =', \
+        multiples_code.neighbor_veto)
+    print('multiples_code.neighbor_perturbation_limit =', \
+        multiples_code.neighbor_perturbation_limit)
+    print('multiples_code.retain_binary_apocenter =', \
+        multiples_code.retain_binary_apocenter)
+    print('multiples_code.wide_perturbation_limit =', \
+        multiples_code.wide_perturbation_limit)
 
     # Advance the system.
 

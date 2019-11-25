@@ -52,7 +52,7 @@ def plot_single_image(planets, disk, lim, index):
     alpha = 0.01
     us        = disk.u
     u_min, u_max = min(us), max(us)
-    print "u=", u_min, u_max
+    print("u=", u_min, u_max)
     log_u = numpy.log((us / u_min)) / numpy.log((u_max / u_min))
     clipped_log_u = numpy.minimum(numpy.ones_like(log_u),
                                   numpy.maximum(numpy.zeros_like(log_u), log_u))
@@ -108,12 +108,12 @@ def XX_main(filename, lim=-1|units.AU, image_id=-1):
     for si, ssi in zip(mc.history, star.history):
         snapshot_id += 1
         time = si.get_timestamp()
-        print "Snapshot=", snapshot_id, time
+        print("Snapshot=", snapshot_id, time)
         if image_id < 0 or image_id == snapshot_id:
             m = 1
             plot_single_image(si, ssi, lim.value_in(units.AU), snapshot_id)
         if image_id == snapshot_id:
-            print "Stop plotting"
+            print("Stop plotting")
             break
         if image_id<0:
             pyplot.draw()
@@ -140,12 +140,12 @@ def output_single_image(lim, snapshot_id):
         if len(bi)<=20:
             planets = bi.copy()
             time = bi.get_timestamp()
-            print "Orbits at t=", time, planets.semimajor_axis.in_(units.AU), \
-                  planets.eccentricity
+            print("Orbits at t=", time, planets.semimajor_axis.in_(units.AU), \
+                  planets.eccentricity)
         else:
             disk = bi.copy()
             time = bi.get_timestamp()
-            print "Snapshot=", snapshot_id, time
+            print("Snapshot=", snapshot_id, time)
             plot_single_image(planets, disk, lim.value_in(units.AU),
                               snapshot_id)
 
@@ -158,18 +158,18 @@ def output_multiple_images(lim):
             if len(bi) <= 20:
                 planets = bi.copy()
                 time = bi.get_timestamp()
-                print "Orbits at t=", time, \
-                    planets.semimajor_axis.in_(units.AU), planets.eccentricity
+                print("Orbits at t=", time, \
+                    planets.semimajor_axis.in_(units.AU), planets.eccentricity)
             else:
                 disk = bi.copy()
 
                 time = bi.get_timestamp()
-                print "Snapshot=", snapshot_id, time
+                print("Snapshot=", snapshot_id, time)
                 if image_id < 0 or image_id == snapshot_id:
                     plot_single_image(planets, disk, lim.value_in(units.AU),
                                       snapshot_id)
                 if image_id == snapshot_id:
-                    print "Stop plotting"
+                    print("Stop plotting")
                     break
         snapshot_id += 1
         filename = "planetary_system_i{0:04}.amuse".format(snapshot_id)

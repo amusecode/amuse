@@ -182,15 +182,15 @@ def main(N, W0, t_end, n_steps, filename, Mtot, Rvir, rgc, vgc):
     sun.velocity = [11.352, (12.24+vc.value_in(units.kms)), 7.41] | units.kms
     sun.velocity *= -1
 
-    print "Current Sun:"
-    print sun
+    print("Current Sun:")
+    print(sun)
 
-    print "\nFinding birth location of the Sun..."
+    print("\nFinding birth location of the Sun...")
     x, y = integrate_single_particle_in_potential(sun, t_end, dt, converter)
     pyplot.plot(x, y, lw=4, alpha=0.2, c=colors[1])
 
-    print "Initial Sun:"
-    print sun
+    print("Initial Sun:")
+    print(sun)
     sun.velocity *= -1
 
     cluster = new_king_model(N, W0=3, convert_nbody=converter)
@@ -207,7 +207,7 @@ def main(N, W0, t_end, n_steps, filename, Mtot, Rvir, rgc, vgc):
     pyplot.scatter(cluster.x.value_in(units.kpc),
                    cluster.y.value_in(units.kpc),
                    s=10, c=colors[3])
-    print '\nTracking', N, 'siblings'
+    print('\nTracking', N, 'siblings')
     x, y = integrate_single_particle_in_potential(cluster, t_end, dt,
                                                   converter)
     size = cluster.mass/(0.1 |units.MSun)
@@ -223,7 +223,7 @@ def main(N, W0, t_end, n_steps, filename, Mtot, Rvir, rgc, vgc):
 
     save_file = 'SolarClusterInPotential.png'
     pyplot.savefig(save_file)
-    print '\nSaved figure in file', save_file,'\n'
+    print('\nSaved figure in file', save_file,'\n')
     pyplot.show()
 
 def new_option_parser():

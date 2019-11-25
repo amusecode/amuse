@@ -75,7 +75,7 @@ def integrate_solar_system(particles, end_time):
 
     file = 'EarthOrbitVariation.png'
     pyplot.savefig(file)
-    print '\nSaved figure in file', file,'\n'
+    print('\nSaved figure in file', file,'\n')
     pyplot.show()
 
     return

@@ -147,12 +147,12 @@ class EvolveHydrodynamicsCodeWithAmusePeriodicBoundariesAndNCodes(object):
         for index in range(0, len(self.codes)):
             instance = self.codes[index]
             nx, ny, nz = instance.grid.shape
-            print nx, ny, nz
+            print(nx,ny,nz)
             xbound1 = instance.get_boundary_grid('xbound1')
             xbound2 = instance.get_boundary_grid('xbound2')
             xbound1_nghost_x, _, ybound1_nghost_z = xbound1.shape
             xbound2_nghost_x, _, ybound2_nghost_z = xbound2.shape
-            print xbound1_nghost_x, xbound2_nghost_x
+            print(xbound1_nghost_x,xbound2_nghost_x)
             ybound1 = instance.get_boundary_grid('ybound1')
             ybound2 = instance.get_boundary_grid('ybound2')
             ybound1_nghost_x, ybound1_nghost_y, ybound1_nghost_z = ybound1.shape
@@ -168,8 +168,8 @@ class EvolveHydrodynamicsCodeWithAmusePeriodicBoundariesAndNCodes(object):
                 instance11 = self.codes[-1]
             else:
                 instance11 = self.codes[index-1]
-            print ybound1[ybound1_nghost_x:nx+ybound1_nghost_x, ..., ...].shape
-            print instance11.grid[..., ny-ybound1_nghost_y:, ...].shape
+            print(ybound1[ybound1_nghost_x:nx+ybound1_nghost_x, ..., ...].shape)
+            print(instance11.grid[..., ny-ybound1_nghost_y:, ...].shape)
             ybound1_channel = instance11.grid[
                     ..., ny-ybound1_nghost_y:, ...].new_channel_to(
                             ybound1[
@@ -235,14 +235,14 @@ class EvolveHydrodynamicsCodeWithAmusePeriodicBoundariesAndNCodes(object):
             if (min_timestep + code.model_time) >= time and time == endtime:
                 for x in self.codes:
                     x.parameters.must_evolve_to_exact_time = True
-            print min_timestep
+            print(min_timestep)
             for x in self.codes:
                 x.set_timestep(min_timestep)
 
             for x in self.codes:
                 x.evolve_model(x.model_time + (min_timestep * 2))
-                print "MODEL_TIME:", x.model_time
-
+                print("MODEL_TIME:", x.model_time)
+                
             self.copy_to_boundary_cells()
 
 
@@ -685,8 +685,8 @@ class CalculateLinearWave1D(object):
         return result
 
     def stop(self):
-        print "terminating code"
-
+        print("terminating code")
+        
         for code in self.codes:
             code.stop()
 
@@ -727,7 +727,7 @@ def main():
         )
 
     if not IS_PLOT_AVAILABLE:
-        print "Plot is not available. stop now"
+        print("Plot is not available. stop now")
         return
     model1.initialize()
     # model2.initialize()
@@ -767,10 +767,11 @@ def main():
         for line, grid in zip(lines, grids1):
             y = grid.y[0, ..., 0].value_in(length)
             rho = grid.rho[0, ..., 0].value_in(density)
-            line.set_data(y, rho)
-            # line = plot1.plot(y,rho)[0]
-            # lines.append(line)
-        print t
+            line.set_data(y,rho)
+            #line = plot1.plot(y,rho)[0]
+            #lines.append(line)
+        print(t)
+
         step += 1
         variables[0] = t
         variables[1] = step

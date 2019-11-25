@@ -19,12 +19,12 @@ def merge_two_stars(Mprim, Msec, t_coll):
 
     stellar.evolve_model(t_coll)
 
-    print "Pre merger:\n", stellar.particles
+    print("Pre merger:\n", stellar.particles)
     stellar.merge_colliding(primary.copy(), secondary.copy(),
                             MMAMS,
                             dict(), dict(target_n_shells_mixing = 2000),
                             return_merge_products=["se"])
-    print "Post merger:\n", stellar.particles
+    print("Post merger:\n", stellar.particles)
 
     radius = stellar.particles[0].get_radius_profile()
     rho    = stellar.particles[0].get_density_profile()
@@ -35,7 +35,7 @@ def get_density_profile(code=MESA, M=1.0|units.MSun, z=0.02):
     stellar = code()
     stellar.parameters.metallicity = z
     stellar.particles.add_particle(Particle(mass=M))
-    print "Nzones=", stellar.particles.get_number_of_zones()
+    print("Nzones=", stellar.particles.get_number_of_zones())
     radius = stellar.particles[0].get_radius_profile()
     rho    = stellar.particles[0].get_density_profile()
     stellar.stop()
@@ -68,11 +68,11 @@ def main(M, z, output_filename):
     
     if output_filename is not None:
         pyplot.savefig(output_filename)
-        print '\nSaved figure in file', output_filename,'\n'
+        print('\nSaved figure in file', output_filename,'\n')
     else:
         output_filename = 'merger_stellar_density_profile.png'
         pyplot.savefig(output_filename)
-        print '\nSaved figure in file', output_filename,'\n'
+        print('\nSaved figure in file', output_filename,'\n')
         pyplot.show()
    
 def new_option_parser():

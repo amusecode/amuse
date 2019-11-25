@@ -41,11 +41,11 @@ def main(t_end, mass, z, Tstar, Lstar):
         min_dist_sun = 10000.0
         current_time = 3000.0 | units.Myr
 
-        print label[si]
+        print(label[si])
         #dt = 50 | units.Myr
         #time = 4000 | units.Myr
         while stellar:
-            print stellar.model_time.value_in(units.Myr) 
+            print(stellar.model_time.value_in(units.Myr)) 
             current_time = current_time + stellar.particles[0].time_step
             stellar.evolve_model(current_time)
 
@@ -72,7 +72,7 @@ def main(t_end, mass, z, Tstar, Lstar):
                     T_sim_sun = (star[0].temperature - Tstar)/Tstar
 
                     eta = star[0].age
-        print eta
+        print(eta)
         if si==3: 
             pyplot.plot(T, L,ls='-', marker=marker[si], color=color[5], markersize=10)
             pyplot.scatter(T_sim_sun, L_sim_sun, marker=marker[si],
@@ -86,7 +86,7 @@ def main(t_end, mass, z, Tstar, Lstar):
 
     save_file = 'fig_SunComparison.png'
     pyplot.savefig(save_file)
-    print '\nSaved figure in file', save_file,'\n'
+    print('\nSaved figure in file', save_file,'\n')
     pyplot.show()
     
 def new_option_parser():
