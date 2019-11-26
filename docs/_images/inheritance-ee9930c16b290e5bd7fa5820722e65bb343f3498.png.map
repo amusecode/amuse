@@ -1,8 +1,0 @@
-<map id="inheritance58cd5d0765" name="inheritance58cd5d0765">
-<area shape="rect" id="node1" title="Adapting vector quanity objects will adapt their units to the" alt="" coords="507,5,763,26"/>
-<area shape="rect" id="node2" href="#amuse.units.quantities.VectorQuantity" target="_top" title="A VectorQuantity object represents a physical vector" alt="" coords="239,5,451,26"/>
-<area shape="rect" id="node3" href="#amuse.units.quantities.NonNumericQuantity" target="_top" title="A Non Numeric Quantity object represents a quantity without" alt="" coords="224,47,466,69"/>
-<area shape="rect" id="node4" href="#amuse.units.quantities.Quantity" target="_top" title="A Quantity objects represents a scalar or vector with a" alt="" coords="5,69,183,90"/>
-<area shape="rect" id="node5" href="#amuse.units.quantities.ScalarQuantity" target="_top" title="A ScalarQuantity object represents a physical scalar" alt="" coords="240,89,450,111"/>
-<area shape="rect" id="node6" title="A ZeroQuantity object represents zero in all units and" alt="" coords="244,131,446,153"/>
-</map>
