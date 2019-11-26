@@ -49,10 +49,10 @@ require the Apple Developer Tools and Xcode to be installed).
 Python
 ======
 
-AMUSE needs Python 2, version >2.7, or Python 3 version >=3.5 installed
-preferably with pip and virtualenv. It may be necessary to update pip
-to a recent version.
-We recommend Python 3, and Python 2 will no longer be supported in future AMUSE versions.
+AMUSE needs Python 3 version >=3.5 installed preferably with pip and 
+virtualenv. It may be necessary to update pip to a recent version.
+If you cannot use Python 3, legacy support for Python 2 is available in the 
+AMUSE 12 release and the python2 branch.
 
 Installing Prerequisites
 ========================
