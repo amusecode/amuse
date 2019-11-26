@@ -1,4 +1,4 @@
-from __future__ import print_function
+
 
 import time
 import traceback
@@ -6,14 +6,9 @@ import sys
 import linecache
 import inspect
 import os.path
-try:  # Python 2
-    import Queue as queue
-    from StringIO import StringIO
-    func_code_attr = 'func_code'
-except ImportError:  # Python 3
-    import queue
-    from io import StringIO
-    func_code_attr = '__code__'
+import queue
+from io import StringIO
+func_code_attr = '__code__'
 import subprocess
 import threading
 import tempfile
@@ -253,7 +248,7 @@ class MakeAReportOfATestRun(object):
 
     def __getstate__(self):
         result = {}
-        for key, value in self.__dict__.iteritems():
+        for key, value in self.__dict__.items():
             if not key.startswith('_'):
                 result[key] = value
         return result

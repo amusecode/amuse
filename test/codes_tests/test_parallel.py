@@ -45,7 +45,7 @@ class TestAmuseInterface(TestWithMPI):
         channel.MpiChannel.ensure_mpi_initialized()
         is_threaded = channel.MpiChannel.is_threaded()
         is_multithreading_supported = channel.MpiChannel.is_multithreading_supported()
-        self.assertEquals(is_threaded, is_multithreading_supported)
+        self.assertEqual(is_threaded, is_multithreading_supported)
 
     def test2(self):
         convert_nbody = nbody_system.nbody_to_si(1.0 | units.MSun, 149.5e6 | units.km)
@@ -89,16 +89,16 @@ class TestAmuseInterface(TestWithMPI):
             earth = bhtree_particles[1]
             x_points = earth.get_timeline_of_attribute("x")
             y_points = earth.get_timeline_of_attribute("y")
-            x_points_in_AU = map(lambda (t,x) : x.value_in(units.AU), x_points)
-            y_points_in_AU = map(lambda (t,x) : x.value_in(units.AU), y_points)
+            x_points_in_AU = [t_x[1].value_in(units.AU) for t_x in x_points]
+            y_points_in_AU = [t_x1[1].value_in(units.AU) for t_x1 in y_points]
             
             plot.scatter(x_points_in_AU,y_points_in_AU, color = "b", marker = 'o')
             
             earth = hermite_particles[1]
             x_points = earth.get_timeline_of_attribute("x")
             y_points = earth.get_timeline_of_attribute("y")
-            x_points_in_AU = map(lambda (t,x) : x.value_in(units.AU), x_points)
-            y_points_in_AU = map(lambda (t,x) : x.value_in(units.AU), y_points)
+            x_points_in_AU = [t_x2[1].value_in(units.AU) for t_x2 in x_points]
+            y_points_in_AU = [t_x3[1].value_in(units.AU) for t_x3 in y_points]
             
             plot.scatter(x_points_in_AU,y_points_in_AU, color = "g", marker = 'o')
             

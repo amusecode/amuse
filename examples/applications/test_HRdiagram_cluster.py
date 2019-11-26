@@ -37,39 +37,48 @@ def simulate_stellar_evolution(
     Finally, a Hertzsprung-Russell diagram will be produced for the final state
     of the simulation.
     """
-    print "The evolution of", str(number_of_stars), "stars will be ",  \
-        "simulated until t =", str(end_time), "..."
-
+    print(
+        "The evolution of",
+        str(number_of_stars),
+        "stars will be ",
+        "simulated until t =",
+        str(end_time),
+        "..."
+    )
+    
     stellar_evolution.commit_parameters()
-
-    print (
-            "Deriving a set of", str(number_of_stars), "random masses",
-            "following a Salpeter IMF between 0.1 and 125 MSun (alpha = -2.35).")
-
+    
+    print(
+        "Deriving a set of",
+        str(number_of_stars),
+        "random masses",
+        "following a Salpeter IMF between 0.1 and 125 MSun (alpha = -2.35)."
+    )
+    
     salpeter_masses = new_salpeter_mass_distribution(number_of_stars)
-
-    print "Initializing the particles"
+    
+    print("Initializing the particles")
     stars = datamodel.Particles(number_of_stars)
     stars.mass = salpeter_masses
-    print "Stars to evolve:"
-    print stars
+    print("Stars to evolve:")
+    print(stars)
     stars = stellar_evolution.particles.add_particles(stars)
     stellar_evolution.commit_particles()
 
     # print stars.temperature
 
-    print "Start evolving..."
+    print("Start evolving...")
     stellar_evolution.evolve_model(end_time)
 
-    print "Evolved model successfully."
+    print("Evolved model successfully.")
     temperatures = stars.temperature
     luminosities = stars.luminosity
 
     stellar_evolution.stop()
 
     plot_HR_diagram(temperatures, luminosities, name_of_the_figure, end_time)
-
-    print "All done!"
+            
+    print("All done!")
 
 
 def plot_HR_diagram(temperatures, luminosities, name_of_the_figure, end_time):
@@ -78,7 +87,7 @@ def plot_HR_diagram(temperatures, luminosities, name_of_the_figure, end_time):
         import matplotlib
         matplotlib.use("Agg", warn=False)
         from matplotlib import pyplot
-        print "Plotting the data..."
+        print("Plotting the data...")
         number_of_stars = len(temperatures)
         pyplot.figure(figsize=(7, 8))
         pyplot.title('Hertzsprung-Russell diagram', fontsize=12)
@@ -94,7 +103,7 @@ def plot_HR_diagram(temperatures, luminosities, name_of_the_figure, end_time):
         pyplot.axis([xmin, xmax, ymin, ymax])
         pyplot.savefig(name_of_the_figure)
     except ImportError:
-        print "Unable to produce plot: couldn't find matplotlib."
+        print("Unable to produce plot: couldn't find matplotlib.")
 
 
 class InstantiateCode(object):
@@ -216,7 +225,7 @@ if __name__ == '__main__':
     code = new_code(options.code, options.number_of_stars)
 
     if not (options.cacheDir is None):
-        print "Using cache directory: %s" % (options.cacheDir)
+        print("Using cache directory: %s" % (options.cacheDir))
         code = CachedStellarEvolution(code, options.cacheDir)
 
     if not (options.salpeterSeed is None):

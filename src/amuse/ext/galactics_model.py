@@ -8,12 +8,12 @@ def _new_galactics_model(halo_number_of_particles, unit_system_converter=None, d
     code=keyword_arguments.pop("code")
     instance = code(unit_converter=unit_system_converter, redirection="none" if verbose else "null")
     instance.parameters.halo_number_of_particles = halo_number_of_particles
-    for (key, value) in keyword_arguments.iteritems():
+    for (key, value) in keyword_arguments.items():
         setattr(instance.parameters, key, value)
     
     if verbose:
-        print "adopted galaxy model parameters:"
-        print instance.parameters
+        print("adopted galaxy model parameters:")
+        print(instance.parameters)
     
     instance.generate_particles()
     result = instance.particles.copy()
@@ -35,9 +35,9 @@ def _new_galactics_model(halo_number_of_particles, unit_system_converter=None, d
     # note that in case of scaling the output galaxy parameters may be very different from the model 
     # parameters input
     if do_scale:
-        print "Warning: do_scale for a large galactics model may be very slow"
+        print("Warning: do_scale for a large galactics model may be very slow")
         if verbose:
-            print "Warning: do_scale typically changes the galaxy scale parameters quite a lot from the input parameters"
+            print("Warning: do_scale typically changes the galaxy scale parameters quite a lot from the input parameters")
         if len(resultgas)>0:
             # this is fixable
             raise Exception("scaling of galaxy models with gas currently not possible")        
@@ -69,8 +69,7 @@ def _newModelWrapperWrapper(code, codeInterface):
             return _create_docstring(code, codeInterface)
         __doc__ = property(_get_doc)
 
-    class _NewModelWrapper(object):
-        __metaclass__ = _NewModelMetaclass
+    class _NewModelWrapper(object, metaclass=_NewModelMetaclass):
         def _get_doc(self):
             return _create_docstring(code, codeInterface)
         @property

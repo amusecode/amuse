@@ -91,9 +91,9 @@ def run_molecular_cloud(N=100, Mcloud=100. | units.MSun,
     conv = nbody_system.nbody_to_si(Mcloud,Rcloud)
 
     rho_cloud = 3.*Mcloud/(4.*numpy.pi*Rcloud**3)
-    print rho_cloud
+    print(rho_cloud)
     tff = 0.5427/numpy.sqrt(constants.G*rho_cloud)
-    print "t_ff=", tff.value_in(units.Myr), 'Myr'
+    print("t_ff=", tff.value_in(units.Myr), 'Myr')
 
     dt = 5.e-2 | units.Myr
     t_end = 1.0 | units.Myr
@@ -116,14 +116,14 @@ def run_molecular_cloud(N=100, Mcloud=100. | units.MSun,
     sph.parameters.sph_h_const = eps
     parts.h_smooth= eps
 
-    print 'eps-h flag', sph.get_eps_is_h(), sph.get_consthsm()
+    print('eps-h flag', sph.get_eps_is_h(), sph.get_consthsm())
 
     expected_dt = 0.2*numpy.pi*numpy.power(eps, 1.5) \
                    / numpy.sqrt(constants.G*Mcloud/N)
 
-    print "dt_exp=", expected_dt.value_in(units.Myr)
-    print "dt=", dt
-    print "eps=", sph.parameters.gas_epsilon.in_(units.parsec)
+    print("dt_exp=", expected_dt.value_in(units.Myr))
+    print("dt=", dt)
+    print("eps=", sph.parameters.gas_epsilon.in_(units.parsec))
 
     sph.gas_particles.add_particles(parts)
 
@@ -139,7 +139,7 @@ def run_molecular_cloud(N=100, Mcloud=100. | units.MSun,
 
     while ttarget < t_end:
         ttarget = float(i)*dt
-        print ttarget
+        print(ttarget)
         sph.evolve_model(ttarget, timestep=dt)
         E = sph.gas_particles.kinetic_energy() \
              + sph.gas_particles.potential_energy() \
@@ -148,7 +148,7 @@ def run_molecular_cloud(N=100, Mcloud=100. | units.MSun,
         if i == 0:
             E0 = E
         Eerr = (E-E0)/E0
-        print 'energy=', E, 'energy_error=', Eerr, 'e_th=', E_th
+        print('energy=', E, 'energy_error=', Eerr, 'e_th=', E_th)
         channel_from_sph_to_parts.copy()
         plot_hydro(ttarget, sph, i, L)
         i += 1

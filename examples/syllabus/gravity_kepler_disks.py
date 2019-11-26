@@ -1,3 +1,4 @@
+from __future__ import print_function
 from amuse.lab import *
 #from amuse.io import store
 #from amuse.community.seba.interface import SeBa
@@ -10,7 +11,7 @@ def resolve_close_encounter(time, bodies, Johannes):
 
     a, e = Johannes.get_elements()
     p = Johannes.get_periastron()
-    print "Close encounter at t=",  time.in_(units.Myr), "a=", a.in_(units.AU), "e=", e, "p=", p.in_(units.AU), "M=", bodies.mass.max().in_(units.MSun), bodies.mass.min().in_(units.MSun), "at d=", rcom.in_(units.parsec), "with v=", vcom.in_(units.kms)
+    print("Close encounter at t=",  time.in_(units.Myr), "a=", a.in_(units.AU), "e=", e, "p=", p.in_(units.AU), "M=", bodies.mass.max().in_(units.MSun), bodies.mass.min().in_(units.MSun), "at d=", rcom.in_(units.parsec), "with v=", vcom.in_(units.kms))
 
     truncate_disks_due_to_encounter(bodies, p)
 
@@ -101,7 +102,7 @@ def main(N, Rvir, Qvir, Fd):
 
                 resolve_close_encounter(gravity.model_time, local_particles_in_encounter, Johannes)
                 Nenc+=1
-                print "At time=", gravity.model_time.value_in(units.Myr), "Nenc=", Nenc, "Rdisk=", local_particles_in_encounter.disk_radius.in_(units.AU)
+                print("At time=", gravity.model_time.value_in(units.Myr), "Nenc=", Nenc, "Rdisk=", local_particles_in_encounter.disk_radius.in_(units.AU))
                 channel_from_framework_to_gd.copy_attributes(["radius"])
             dEk_enc += Ek_enc - gravity.kinetic_energy 
             dEp_enc += Ep_enc - gravity.potential_energy
@@ -118,12 +119,12 @@ def main(N, Rvir, Qvir, Fd):
         dE = Etot_prev-Etot
         dE_se = Etot_prev_se-Etot
         Mtot = bodies.mass.sum()
-        print "T=", time, 
-        print "M=", Mtot, "(dM[SE]=", Mtot/Mtot_init, ")",
-        print "E= ", Etot, "Q= ", Ekin/Epot,
-        print "dE=", (Etot_init-Etot)/Etot, "ddE=", (Etot_prev-Etot)/Etot, 
-        print "(dE[SE]=", dE_se/Etot, ")"
-        print "dE(enc)=", dEk_enc, dEp_enc
+        print("T=", time, end=' ') 
+        print("M=", Mtot, "(dM[SE]=", Mtot/Mtot_init, ")", end=' ')
+        print("E= ", Etot, "Q= ", Ekin/Epot, end=' ')
+        print("dE=", (Etot_init-Etot)/Etot, "ddE=", (Etot_prev-Etot)/Etot, end=' ') 
+        print("(dE[SE]=", dE_se/Etot, ")")
+        print("dE(enc)=", dEk_enc, dEp_enc)
         Etot_init -= dE
         Etot_prev = Etot
 

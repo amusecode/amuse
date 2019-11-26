@@ -12,6 +12,7 @@ from amuse.units.quantities import zero
 
 from amuse.datamodel import Particles
 from amuse.rfi.core import *
+from functools import reduce
 def stumpff_C(z):
     if(z==0): 
         return 1/2.
@@ -67,7 +68,7 @@ def universal_kepler_dxidxi(xi,r0,vr0,smu,alpha):
       
 def newton(f,x0,fprime=None,args=(),tol=1.48e-8,maxiter=50):
     if fprime is None:
-        print "provide fprime"
+        print("provide fprime")
         return x0
     i=0
     x=x0
@@ -85,10 +86,10 @@ def newton(f,x0,fprime=None,args=(),tol=1.48e-8,maxiter=50):
 
 def laguerre(f,x0,fprime=None,fprimeprime=None,args=(),order=4,tol=1.e-14,maxiter=50):
     if fprime is None:
-        print "provide fprime"
+        print("provide fprime")
         return x0
     if fprimeprime is None:
-        print "provide fprimeprime"
+        print("provide fprimeprime")
         return x0
     i=0
     x=x0

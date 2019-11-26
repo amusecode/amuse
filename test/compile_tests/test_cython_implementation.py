@@ -18,7 +18,7 @@ from amuse.rfi.tools import create_c
 from amuse.rfi import channel
 from amuse.rfi.core import *
 
-import test_c_implementation
+from . import test_c_implementation
 from amuse.rfi.tools import create_cython
 
 codestring = """
@@ -38,7 +38,7 @@ int echo_int(int int_in, int * int_out) {
 import shlex
 from amuse.test.amusetest import get_amuse_root_dir
 
-import test_fortran_implementation
+from . import test_fortran_implementation
 
 from amuse.rfi.tools import create_fortran
 
@@ -92,7 +92,7 @@ class TestCreateCython(TestCase):
         uc.needs_mpi = True
         uc.start()
         code =  uc.result
-        print '<c>' + code + '</c>'
+        print('<c>' + code + '</c>')
         self.assertTrue('INTEGER(kind = c_int) function c_3f33a9ce(int_in, &\n &int_out) &\n & result(rrreeesss) &\n & bind(c, name = "ci_echo_int")' in code)
         self.assertTrue('  INTEGER(kind = c_int), intent(in), value :: int_in' in code)
         self.assertTrue('  INTEGER(kind = c_int), intent(out) :: int_out' in code)
@@ -109,7 +109,7 @@ class TestCreateCython(TestCase):
         uc.needs_mpi = True
         uc.start()
         code =  uc.result
-        print '<c>' + code + '</c>'
+        print('<c>' + code + '</c>')
         self.assertTrue('INTEGER(kind = c_int) function c_64452f1a(string_in, &\n &string_out) &\n & result(rrreeesss) &\n & bind(c, name = "ci_echo_string")' in code)
         self.assertTrue('  type(C_ptr), intent(in), value :: string_in' in code)
         self.assertTrue('  character(len=4096) :: string_string_in' in code)
@@ -126,6 +126,7 @@ class TestCreateCython(TestCase):
 
 class TestCythonImplementationInterface(test_c_implementation.TestCImplementationInterface):
 
+
     @classmethod
     def setup_class(cls):
         cls.skip_if_no_cython()
@@ -133,7 +134,7 @@ class TestCythonImplementationInterface(test_c_implementation.TestCImplementatio
         try:
             cls.build_worker()
         except Exception as ex:
-            print ex
+            print(ex)
             raise
 
     @classmethod
@@ -215,7 +216,7 @@ class TestCythonImplementationInterface(test_c_implementation.TestCImplementatio
         with open(cls.exefile, "w") as f:
             f.write(script)
 
-        os.chmod(cls.exefile, 0777)
+        os.chmod(cls.exefile, 0o777)
         
         import mpi4py
         process, stdout, stderr = compile_tools.open_subprocess([config.compilers.cython, 
@@ -228,7 +229,7 @@ class TestCythonImplementationInterface(test_c_implementation.TestCImplementatio
             compile_tools.wait_for_file(cname)
         
         if process.returncode != 0 or not os.path.exists(cname):
-            print "Could not cythonize {0}, error = {1}".format(sourcename, stderr)
+            print("Could not cythonize {0}, error = {1}".format(sourcename, stderr))
             raise Exception("Could not cythonize {0}, error = {1}".format(sourcename, stderr))
         
         with open(cname, "r") as f:
@@ -242,8 +243,8 @@ class TestCythonImplementationInterface(test_c_implementation.TestCImplementatio
         instance = ForTestingInterface(self.exefile)
         int_out, error = instance.echo_int(10)
         instance.stop()
-        self.assertEquals(int_out, 10)
-        self.assertEquals(error, 0)
+        self.assertEqual(int_out, 10)
+        self.assertEqual(error, 0)
         
     def test14(self):
         self.skip("needs python support")
@@ -254,7 +255,7 @@ class TestCythonFortranImplementationInterface(test_fortran_implementation.TestI
     @classmethod
     def setup_class(cls):
         cls.skip_if_no_cython()
-        print "building"
+        print("building")
         cls.check_can_compile_modules()
         cls.build_worker()
 
@@ -332,7 +333,7 @@ class TestCythonFortranImplementationInterface(test_fortran_implementation.TestI
         with open(cls.exefile, "w") as f:
             f.write(script)
 
-        os.chmod(cls.exefile, 0777)
+        os.chmod(cls.exefile, 0o777)
 
         import mpi4py
         process, stdout, stderr = compile_tools.open_subprocess([config.compilers.cython, 
@@ -344,7 +345,7 @@ class TestCythonFortranImplementationInterface(test_fortran_implementation.TestI
             compile_tools.wait_for_file(cname)
         
         if process.returncode != 0 or not os.path.exists(cname):
-            print "Could not cythonize {0}, error = {1}".format(sourcename, stderr)
+            print("Could not cythonize {0}, error = {1}".format(sourcename, stderr))
             raise Exception("Could not cythonize {0}, error = {1}".format(sourcename, stderr))
         
         with open(cname, "r") as f:
@@ -369,5 +370,5 @@ class TestCythonFortranImplementationInterface(test_fortran_implementation.TestI
         instance = ForTestingInterface(self.exefile)
         int_out, error = instance.echo_int(10)
         instance.stop()
-        self.assertEquals(int_out, 10)
-        self.assertEquals(error, 0)
+        self.assertEqual(int_out, 10)
+        self.assertEqual(error, 0)

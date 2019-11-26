@@ -283,10 +283,10 @@ class TestMercury(TestWithMPI):
         self.assertAlmostEqual(mercury.central_particle.j4, .0|units.AU**4)
         self.assertAlmostEqual(mercury.central_particle.mass, 1.98892e+30 |units.kg, 3)
         self.assertAlmostEqual(mercury.central_particle.mass, 1.0 |units.MSun, 3)
-        self.assertEquals(mercury.get_number_of_orbiters(),1)
-        self.assertEquals(mercury.orbiters.position, [[1,0,0]] | units.AU)
-        self.assertEquals(mercury.orbiters.density, 1.0|units.g/units.cm**3 )
-        self.assertEquals(mercury.orbiters.angular_momentum, [[1.0, 0.0, 0.0]] | units.MSun*units.AU**2/units.day)
+        self.assertEqual(mercury.get_number_of_orbiters(),1)
+        self.assertEqual(mercury.orbiters.position, [[1,0,0]] | units.AU)
+        self.assertEqual(mercury.orbiters.density, 1.0|units.g/units.cm**3 )
+        self.assertEqual(mercury.orbiters.angular_momentum, [[1.0, 0.0, 0.0]] | units.MSun*units.AU**2/units.day)
 
         mercury.evolve_model(365.24 | units.day)
 
@@ -344,7 +344,7 @@ class TestMercury(TestWithMPI):
 
         mercury = Mercury()
         mercury.initialize_code()
-        self.assertEquals(mercury.parameters.timestep, 8 | units.day)
+        self.assertEqual(mercury.parameters.timestep, 8 | units.day)
         mercury.set_initial_timestep(1 | units.day)
         mercury.parameters.timestep = 1 | units.day
         
@@ -360,101 +360,101 @@ class TestMercury(TestWithMPI):
         centre, orbiters = new_solar_system_for_mercury()
 
         mercury = MercuryWayWard()
-        self.assertEquals(mercury.get_name_of_current_state(), 'UNINITIALIZED')
+        self.assertEqual(mercury.get_name_of_current_state(), 'UNINITIALIZED')
         mercury.initialize_code()
-        self.assertEquals(mercury.get_name_of_current_state(), 'INITIALIZED')
+        self.assertEqual(mercury.get_name_of_current_state(), 'INITIALIZED')
         mercury.commit_parameters()
-        self.assertEquals(mercury.get_name_of_current_state(), 'EDIT')
+        self.assertEqual(mercury.get_name_of_current_state(), 'EDIT')
         
         mercury.central_particle.add_particles(centre)
-        self.assertEquals(mercury.get_name_of_current_state(), 'EDIT')
+        self.assertEqual(mercury.get_name_of_current_state(), 'EDIT')
         mercury.orbiters.add_particles(orbiters)
-        self.assertEquals(mercury.get_name_of_current_state(), 'EDIT')
+        self.assertEqual(mercury.get_name_of_current_state(), 'EDIT')
 
         mercury.commit_particles()
-        self.assertEquals(mercury.get_name_of_current_state(), 'RUN')
+        self.assertEqual(mercury.get_name_of_current_state(), 'RUN')
 
         start_pos = mercury.orbiters[2].position
         mercury.evolve_model(365.14|units.day)
-        self.assertEquals(mercury.get_name_of_current_state(), 'EVOLVED')
+        self.assertEqual(mercury.get_name_of_current_state(), 'EVOLVED')
 
         self.assertAlmostEqual(mercury.orbiters[2].position, start_pos, 1)
         mercury.cleanup_code()
-        self.assertEquals(mercury.get_name_of_current_state(), 'END')
+        self.assertEqual(mercury.get_name_of_current_state(), 'END')
         mercury.stop()
 
     def test6(self):
         centre, orbiters = new_solar_system_for_mercury()
 
         mercury = MercuryWayWard()
-        self.assertEquals(mercury.get_name_of_current_state(), 'UNINITIALIZED')
+        self.assertEqual(mercury.get_name_of_current_state(), 'UNINITIALIZED')
         mercury.initialize_code()
-        self.assertEquals(mercury.get_name_of_current_state(), 'INITIALIZED')
+        self.assertEqual(mercury.get_name_of_current_state(), 'INITIALIZED')
         mercury.commit_parameters()
-        self.assertEquals(mercury.get_name_of_current_state(), 'EDIT')
+        self.assertEqual(mercury.get_name_of_current_state(), 'EDIT')
         
         mercury.central_particle.add_particles(centre)
-        self.assertEquals(mercury.get_name_of_current_state(), 'EDIT')
+        self.assertEqual(mercury.get_name_of_current_state(), 'EDIT')
         mercury.orbiters.add_particles(orbiters[4:5])
-        self.assertEquals(mercury.get_name_of_current_state(), 'EDIT')
+        self.assertEqual(mercury.get_name_of_current_state(), 'EDIT')
         mercury.commit_particles()
-        self.assertEquals(mercury.get_name_of_current_state(), 'RUN')
+        self.assertEqual(mercury.get_name_of_current_state(), 'RUN')
 
         start_pos = mercury.orbiters[0].position
         mercury.evolve_model(11.8618|units.yr)
-        self.assertEquals(mercury.get_name_of_current_state(), 'EVOLVED')
+        self.assertEqual(mercury.get_name_of_current_state(), 'EVOLVED')
         self.assertAlmostEqual(mercury.orbiters[0].position, start_pos, 1)
 
         mercury.orbiters.add_particles(orbiters[0:1])
-        self.assertEquals(mercury.get_name_of_current_state(), 'UPDATE')
+        self.assertEqual(mercury.get_name_of_current_state(), 'UPDATE')
         mercury.recommit_particles()
 
         self.assertAlmostEqual(mercury.orbiters[0].position, start_pos, 1)
 
         start_pos = mercury.orbiters[0].position
         mercury.evolve_model(2*11.8618|units.yr)
-        self.assertEquals(mercury.get_name_of_current_state(), 'EVOLVED')
+        self.assertEqual(mercury.get_name_of_current_state(), 'EVOLVED')
         self.assertAlmostEqual(mercury.orbiters[0].position, start_pos, 1)
 
         mercury.cleanup_code()
-        self.assertEquals(mercury.get_name_of_current_state(), 'END')
+        self.assertEqual(mercury.get_name_of_current_state(), 'END')
         mercury.stop()
 
     def test7(self):
         centre, orbiters = new_solar_system_for_mercury()
 
         mercury = MercuryWayWard()#debugger="gdb")
-        self.assertEquals(mercury.get_name_of_current_state(), 'UNINITIALIZED')
+        self.assertEqual(mercury.get_name_of_current_state(), 'UNINITIALIZED')
         mercury.initialize_code()
-        self.assertEquals(mercury.get_name_of_current_state(), 'INITIALIZED')
+        self.assertEqual(mercury.get_name_of_current_state(), 'INITIALIZED')
         mercury.commit_parameters()
-        self.assertEquals(mercury.get_name_of_current_state(), 'EDIT')
+        self.assertEqual(mercury.get_name_of_current_state(), 'EDIT')
         
         mercury.central_particle.add_particles(centre)
-        self.assertEquals(mercury.get_name_of_current_state(), 'EDIT')
+        self.assertEqual(mercury.get_name_of_current_state(), 'EDIT')
         mercury.orbiters.add_particles(orbiters[0:5])
-        self.assertEquals(mercury.get_name_of_current_state(), 'EDIT')
+        self.assertEqual(mercury.get_name_of_current_state(), 'EDIT')
         mercury.commit_particles()
-        self.assertEquals(mercury.get_name_of_current_state(), 'RUN')
+        self.assertEqual(mercury.get_name_of_current_state(), 'RUN')
 
         start_pos = mercury.orbiters[4].position
         mercury.evolve_model(11.8618|units.yr)
-        self.assertEquals(mercury.get_name_of_current_state(), 'EVOLVED')
+        self.assertEqual(mercury.get_name_of_current_state(), 'EVOLVED')
         self.assertAlmostEqual(mercury.orbiters[4].position, start_pos, 1)
 
         mercury.orbiters.remove_particles(orbiters[0:1])
-        self.assertEquals(mercury.get_name_of_current_state(), 'UPDATE')
+        self.assertEqual(mercury.get_name_of_current_state(), 'UPDATE')
         mercury.recommit_particles()
 
         self.assertAlmostEqual(mercury.orbiters[3].position, start_pos, 1)
 
         start_pos = mercury.orbiters[3].position
         mercury.evolve_model(2*11.8618|units.yr)
-        self.assertEquals(mercury.get_name_of_current_state(), 'EVOLVED')
+        self.assertEqual(mercury.get_name_of_current_state(), 'EVOLVED')
         self.assertAlmostEqual(mercury.orbiters[3].position, start_pos, 1)
 
         mercury.cleanup_code()
-        self.assertEquals(mercury.get_name_of_current_state(), 'END')
+        self.assertEqual(mercury.get_name_of_current_state(), 'END')
         mercury.stop()
 
 
@@ -462,60 +462,60 @@ class TestMercury(TestWithMPI):
         centre, orbiters = new_solar_system_for_mercury()
 
         mercury = MercuryWayWard()#debugger="gdb")
-        self.assertEquals(mercury.get_name_of_current_state(), 'UNINITIALIZED')
+        self.assertEqual(mercury.get_name_of_current_state(), 'UNINITIALIZED')
         mercury.initialize_code()
-        self.assertEquals(mercury.get_name_of_current_state(), 'INITIALIZED')
+        self.assertEqual(mercury.get_name_of_current_state(), 'INITIALIZED')
         mercury.commit_parameters()
-        self.assertEquals(mercury.get_name_of_current_state(), 'EDIT')
+        self.assertEqual(mercury.get_name_of_current_state(), 'EDIT')
         
         mercury.central_particle.add_particles(centre)
-        self.assertEquals(mercury.get_name_of_current_state(), 'EDIT')
+        self.assertEqual(mercury.get_name_of_current_state(), 'EDIT')
         mercury.orbiters.add_particles(orbiters[0:5])
-        self.assertEquals(mercury.get_name_of_current_state(), 'EDIT')
+        self.assertEqual(mercury.get_name_of_current_state(), 'EDIT')
         mercury.commit_particles()
-        self.assertEquals(mercury.get_name_of_current_state(), 'RUN')
+        self.assertEqual(mercury.get_name_of_current_state(), 'RUN')
 
         start_pos = mercury.orbiters[4].position
         mercury.evolve_model(11.8618|units.yr)
-        self.assertEquals(mercury.get_name_of_current_state(), 'EVOLVED')
+        self.assertEqual(mercury.get_name_of_current_state(), 'EVOLVED')
         self.assertAlmostEqual(mercury.orbiters[4].position, start_pos, 1)
 
         mercury.orbiters.remove_particles(orbiters[0:4])
-        self.assertEquals(mercury.get_name_of_current_state(), 'UPDATE')
+        self.assertEqual(mercury.get_name_of_current_state(), 'UPDATE')
         mercury.recommit_particles()
 
         self.assertAlmostEqual(mercury.orbiters[0].position, start_pos, 1)
 
         start_pos = mercury.orbiters[0].position
         mercury.evolve_model(2*11.8618|units.yr)
-        self.assertEquals(mercury.get_name_of_current_state(), 'EVOLVED')
+        self.assertEqual(mercury.get_name_of_current_state(), 'EVOLVED')
         self.assertAlmostEqual(mercury.orbiters[0].position, start_pos, 1)
 
         mercury.cleanup_code()
-        self.assertEquals(mercury.get_name_of_current_state(), 'END')
+        self.assertEqual(mercury.get_name_of_current_state(), 'END')
         mercury.stop()
 
     def test9(self):
         centre, orbiters = new_solar_system_for_mercury()
 
         mercury = MercuryWayWard()#debugger="gdb")
-        self.assertEquals(mercury.get_name_of_current_state(), 'UNINITIALIZED')
+        self.assertEqual(mercury.get_name_of_current_state(), 'UNINITIALIZED')
         mercury.central_particle.add_particles(centre)
-        self.assertEquals(mercury.get_name_of_current_state(), 'EDIT')
+        self.assertEqual(mercury.get_name_of_current_state(), 'EDIT')
         mercury.orbiters.add_particles(orbiters[0:5])
-        self.assertEquals(mercury.get_name_of_current_state(), 'EDIT')
+        self.assertEqual(mercury.get_name_of_current_state(), 'EDIT')
         start_pos = mercury.orbiters[4].position
         mercury.evolve_model(11.8618|units.yr)
-        self.assertEquals(mercury.get_name_of_current_state(), 'EVOLVED')
+        self.assertEqual(mercury.get_name_of_current_state(), 'EVOLVED')
         self.assertAlmostEqual(mercury.orbiters[4].position, start_pos, 1)
 
         mercury.orbiters.remove_particles(orbiters[0:4])
-        self.assertEquals(mercury.get_name_of_current_state(), 'UPDATE')
+        self.assertEqual(mercury.get_name_of_current_state(), 'UPDATE')
         self.assertAlmostEqual(mercury.orbiters[0].position, start_pos, 1)
 
         start_pos = mercury.orbiters[0].position
         mercury.evolve_model(2*11.8618|units.yr)
-        self.assertEquals(mercury.get_name_of_current_state(), 'EVOLVED')
+        self.assertEqual(mercury.get_name_of_current_state(), 'EVOLVED')
         self.assertAlmostEqual(mercury.orbiters[0].position, start_pos, 1)
 
     def test10(self):
@@ -523,29 +523,29 @@ class TestMercury(TestWithMPI):
 
         mercury = MercuryWayWard()
         mercury.central_particle.add_particles(centre)
-        self.assertEquals(mercury.get_name_of_current_state(), 'EDIT')
+        self.assertEqual(mercury.get_name_of_current_state(), 'EDIT')
         mercury.orbiters.add_particles(orbiters[4:5])
-        self.assertEquals(mercury.get_name_of_current_state(), 'EDIT')
+        self.assertEqual(mercury.get_name_of_current_state(), 'EDIT')
         start_pos = mercury.orbiters[0].position
         mercury.evolve_model(11.8618|units.yr)
-        self.assertEquals(mercury.get_name_of_current_state(), 'EVOLVED')
+        self.assertEqual(mercury.get_name_of_current_state(), 'EVOLVED')
         self.assertAlmostEqual(mercury.orbiters[0].position, start_pos, 1)
 
         mercury.orbiters.add_particles(orbiters[0:4])
-        self.assertEquals(mercury.get_name_of_current_state(), 'UPDATE')
+        self.assertEqual(mercury.get_name_of_current_state(), 'UPDATE')
         self.assertAlmostEqual(mercury.orbiters[0].position, start_pos, 1)
         start_pos = mercury.orbiters[0].position
         mercury.evolve_model(2*11.8618|units.yr)
-        self.assertEquals(mercury.get_name_of_current_state(), 'EVOLVED')
+        self.assertEqual(mercury.get_name_of_current_state(), 'EVOLVED')
         self.assertAlmostEqual(mercury.orbiters[0].position, start_pos, 1)
 
     def test11(self):
         solsys = new_solar_system()
 
         mercury = Mercury()
-        self.assertEquals(mercury.parameters.timestep, 8 | units.day)
+        self.assertEqual(mercury.parameters.timestep, 8 | units.day)
         mercury.parameters.timestep = 1 | units.day
-        self.assertEquals(mercury.parameters.timestep, 1 | units.day)
+        self.assertEqual(mercury.parameters.timestep, 1 | units.day)
         
         mercury.particles.add_particles(solsys)
         start_pos = mercury.particles[5].position
@@ -822,7 +822,7 @@ class TestMercury(TestWithMPI):
         while tnow<tend:
           code.evolve_model(tnow+dt)
           tnow=code.model_time
-          print tnow.in_(units.yr)
+          print(tnow.in_(units.yr))
 
         code.stop()
         

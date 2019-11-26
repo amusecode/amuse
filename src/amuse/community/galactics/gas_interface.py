@@ -260,19 +260,19 @@ class GaslactICsImplementation(object):
             self._cwd = dbh_dir
             if not is_new:
                 return 0
-            print "Writing output to:", self._cwd
+            print("Writing output to:", self._cwd)
 
-            print "\n running dbh \n\n"
+            print("\n running dbh \n\n")
             
             proc=Popen([os.path.join(self._bin_path, "dbh")], 
                 cwd = self._cwd, stdin = PIPE, stdout = sys.stdout, stderr = sys.stderr)
-            proc.communicate(in_dbh)
+            proc.communicate(in_dbh.encode())
             if proc.returncode==0:
               open(os.path.join(dbh_dir,"dbh.finished"),'a').close()
             else:
               raise Exception("dbh fail")
 
-            print "\n running getfreqs \n\n"
+            print("\n running getfreqs \n\n")
             
             proc=Popen([os.path.join(self._bin_path, "getfreqs")], 
                 cwd = self._cwd, stdin = PIPE, stdout = sys.stdout, stderr = sys.stderr)
@@ -282,12 +282,12 @@ class GaslactICsImplementation(object):
             else:
               raise Exception("getfreqs fail")
 
-            print "\n running diskdf \n\n"
+            print("\n running diskdf \n\n")
 
             if self._disk_type_parameter in [1,3]:
               proc=Popen([os.path.join(self._bin_path, "diskdf")], 
                       cwd = self._cwd, stdin = PIPE, stdout = sys.stdout, stderr = sys.stderr)
-              proc.communicate(in_diskdf)
+              proc.communicate(in_diskdf.encode())
               if proc.returncode==0:
                 open(os.path.join(dbh_dir,"diskdf.finished"),'a').close()
               else:
@@ -295,7 +295,7 @@ class GaslactICsImplementation(object):
                                 
             return 0
         except Exception as ex:
-            print "Exception occurred in commit_parameters:", ex
+            print("Exception occurred in commit_parameters:", ex)
             return -1
     
     def recommit_parameters(self):
@@ -316,11 +316,11 @@ class GaslactICsImplementation(object):
                 in_disk  = self.generate_in_disk_string()
                 process = Popen([os.path.join(self._bin_path, "gendisk")], 
                     cwd = self._cwd, stdin = PIPE, stdout = PIPE, stderr = PIPE)
-                out,err=process.communicate(in_disk)
+                out,err=process.communicate(in_disk.encode())
                 if process.returncode != 0:
-                    print "error:", err
+                    print("error:", err)
                     return -2
-                print err ," ****"
+                print(err ," ****")
                 disk_data=numpy.frombuffer(out,dtype="float32")
             else:
                 disk_data=numpy.array([])    
@@ -329,9 +329,9 @@ class GaslactICsImplementation(object):
                 in_gas  = self.generate_in_gas_string()
                 process = Popen([os.path.join(self._bin_path, "gengas")], 
                     cwd = self._cwd, stdin = PIPE, stdout = PIPE, stderr = PIPE)
-                out,err=process.communicate(in_gas)
+                out,err=process.communicate(in_gas.encode())
                 if process.returncode != 0:
-                    print "error:", err
+                    print("error:", err)
                     return -2
                 gas_data=numpy.frombuffer(out,dtype="float32")
             else:
@@ -341,9 +341,9 @@ class GaslactICsImplementation(object):
                 in_bulge = self.generate_in_bulge_string()
                 process = Popen([os.path.join(self._bin_path, "genbulge")], 
                     cwd = self._cwd, stdin = PIPE, stdout = PIPE, stderr = PIPE)
-                out,err=process.communicate(in_bulge)
+                out,err=process.communicate(in_bulge.encode())
                 if process.returncode != 0:
-                    print "error:", err
+                    print("error:", err)
                     return -3 
                 bulge_data=numpy.frombuffer(out,dtype="float32")
             else:
@@ -353,21 +353,21 @@ class GaslactICsImplementation(object):
                 in_halo  = self.generate_in_halo_string()
                 process = Popen([os.path.join(self._bin_path, "genhalo")], 
                     cwd = self._cwd, stdin = PIPE, stdout = PIPE, stderr = PIPE)
-                out, err = process.communicate(in_halo)
+                out, err = process.communicate(in_halo.encode())
                 if process.returncode != 0:
-                    print "error:", err
+                    print("error:", err)
                     return -4 
                 halo_data=numpy.frombuffer(out,dtype="float32")
             else:
                 halo_data=numpy.array([])    
                         
-            self._number_of_particles_updated = len(gas_data)/8+(len(halo_data)+len(bulge_data)+len(disk_data))/7
-            self._number_of_gas_particles_updated = len(gas_data)/8
-            self._number_of_halo_particles=len(halo_data)/7
-            self._number_of_bulge_particles=len(bulge_data)/7
-            self._number_of_disk_particles=len(disk_data)/7
-            self._number_of_gas_particles=len(gas_data)/8
-            gas_posdata=gas_data[8*numpy.arange(self._number_of_gas_particles*7)/7]
+            self._number_of_particles_updated = len(gas_data)//8+(len(halo_data)+len(bulge_data)+len(disk_data))//7
+            self._number_of_gas_particles_updated = len(gas_data)//8
+            self._number_of_halo_particles=len(halo_data)//7
+            self._number_of_bulge_particles=len(bulge_data)//7
+            self._number_of_disk_particles=len(disk_data)//7
+            self._number_of_gas_particles=len(gas_data)//8
+            gas_posdata=gas_data[8*numpy.arange(self._number_of_gas_particles*7)//7]
             
             gammafactor=1. if self._gas_disk_gamma==1 else 1/self._gas_disk_gamma/(self._gas_disk_gamma-1)
             self._gas_internal_energy=gammafactor*gas_data[8*numpy.arange(self._number_of_gas_particles)+7]**2
@@ -376,7 +376,7 @@ class GaslactICsImplementation(object):
             self._particles_generated = True
             return 0
         except Exception as ex:
-            print "Exception occurred in generate_particles:", ex
+            print("Exception occurred in generate_particles:", ex)
             return -1
     
     def get_number_of_particles(self,nhalo,nbulge,ndisk,ngas):
@@ -741,12 +741,12 @@ class GaslactICs(CommonCode):
 
     def commit_parameters(self):
         if not self.model_present():
-          print "generating galaxy model, this may take a while..."
+          print("generating galaxy model, this may take a while...")
         self.overridden().commit_parameters()  
 
     def recommit_parameters(self):
         if not self.model_present():
-          print "(re)generating galaxy model, this may take a while..."
+          print("(re)generating galaxy model, this may take a while...")
         self.overridden().recommit_parameters()  
 
     def generate_particles(self):
@@ -764,11 +764,11 @@ class GaslactICs(CommonCode):
         number_of_updated_particles,number_of_updated_gas_particles = self.get_number_of_particles_updated()
         if number_of_updated_particles:
             self.particles._private.attribute_storage._add_indices(
-                range(number_of_updated_gas_particles,number_of_updated_particles)
+                list(range(number_of_updated_gas_particles,number_of_updated_particles))
             ) # this should generate disjoint sets (gas_particles not in particles) 
         if number_of_updated_gas_particles:
             self.gas_particles._private.attribute_storage._add_indices(
-                range(number_of_updated_gas_particles)
+                list(range(number_of_updated_gas_particles))
             )
 
     def clear_particle_set(self):

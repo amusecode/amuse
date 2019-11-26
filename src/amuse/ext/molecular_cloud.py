@@ -72,7 +72,7 @@ def random_field(nf=32, power=-3., seed=None):
     vi=numpy.fft.ifftn(vi)
 
     if vi.imag.max()>1.e-16:
-        print "check random field"
+        print("check random field")
     return vi
 
 def make_div_free(nf,vx,vy,vz):
@@ -123,11 +123,11 @@ def make_div_free(nf,vx,vy,vz):
     vz=numpy.fft.ifftn(vz)
 
     if vx.imag.max()>1.e-16:
-        print "check div-free field"
+        print("check div-free field")
     if vy.imag.max()>1.e-16:
-        print "check div-free field"
+        print("check div-free field")
     if vz.imag.max()>1.e-16:
-        print "check div-free field"
+        print("check div-free field")
 
     return vx.real,vy.real,vz.real
 
@@ -317,16 +317,16 @@ def new_ism_cube(
 if __name__=="__main__":
     cloud=ism_cube()
     parts=cloud.result
-    print parts[0].u**0.5
-    print len(parts)*parts[0].mass.in_(units.MSun)
+    print(parts[0].u**0.5)
+    print(len(parts)*parts[0].mass.in_(units.MSun))
 
     mu=1.4 | units.amu
     gamma1=1.6667-1
-    print 'Temp:', (gamma1*min(parts.u)*mu/constants.kB).in_(units.K)
+    print('Temp:', (gamma1*min(parts.u)*mu/constants.kB).in_(units.K))
 
     total_mass=10000. | units.MSun
     radius=10. | units.parsec
-    print 'dens:',(total_mass*3/4./3.1415/radius**3).in_(units.amu/units.cm**3) 
+    print('dens:',(total_mass*3/4./3.1415/radius**3).in_(units.amu/units.cm**3)) 
   
   
   

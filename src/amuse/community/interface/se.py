@@ -922,7 +922,7 @@ class InternalStellarStructure(object):
         indices_of_the_stars = self._check_number_of_indices(indices_of_the_stars, action_string = "Querying density profiles")
         if number_of_zones is None:
             number_of_zones = self.get_number_of_zones(indices_of_the_stars)
-        return self.get_density_at_zone([indices_of_the_stars]*number_of_zones, range(number_of_zones) | units.none)
+        return self.get_density_at_zone([indices_of_the_stars]*number_of_zones, list(range(number_of_zones)) | units.none)
     
     def get_central_density(self, indices_of_the_stars):
         return self.get_density_at_zone(indices_of_the_stars, 0)
@@ -932,7 +932,7 @@ class InternalStellarStructure(object):
         if number_of_zones is None:
             number_of_zones = self.get_number_of_zones(indices_of_the_stars)
         self._check_supplied_values(len(values), number_of_zones)
-        self.set_density_at_zone([indices_of_the_stars]*number_of_zones, range(number_of_zones) | units.none, values)
+        self.set_density_at_zone([indices_of_the_stars]*number_of_zones, list(range(number_of_zones)) | units.none, values)
         if hasattr(self, "_erase_memory"):
             self._erase_memory(indices_of_the_stars)
     
@@ -940,14 +940,14 @@ class InternalStellarStructure(object):
         indices_of_the_stars = self._check_number_of_indices(indices_of_the_stars, action_string = "Querying radius profiles")
         if number_of_zones is None:
             number_of_zones = self.get_number_of_zones(indices_of_the_stars)
-        return self.get_radius_at_zone([indices_of_the_stars]*number_of_zones, range(number_of_zones) | units.none)
+        return self.get_radius_at_zone([indices_of_the_stars]*number_of_zones, list(range(number_of_zones)) | units.none)
     
     def set_radius_profile(self, indices_of_the_stars, values, number_of_zones = None):
         indices_of_the_stars = self._check_number_of_indices(indices_of_the_stars, action_string = "Setting radius profiles")
         if number_of_zones is None:
             number_of_zones = self.get_number_of_zones(indices_of_the_stars)
         self._check_supplied_values(len(values), number_of_zones)
-        self.set_radius_at_zone([indices_of_the_stars]*number_of_zones, range(number_of_zones) | units.none, values)
+        self.set_radius_at_zone([indices_of_the_stars]*number_of_zones, list(range(number_of_zones)) | units.none, values)
         if hasattr(self, "_erase_memory"):
             self._erase_memory(indices_of_the_stars)
     
@@ -955,7 +955,7 @@ class InternalStellarStructure(object):
         indices_of_the_stars = self._check_number_of_indices(indices_of_the_stars, action_string = "Querying temperature profiles")
         if number_of_zones is None:
             number_of_zones = self.get_number_of_zones(indices_of_the_stars)
-        return self.get_temperature_at_zone([indices_of_the_stars]*number_of_zones, range(number_of_zones) | units.none)
+        return self.get_temperature_at_zone([indices_of_the_stars]*number_of_zones, list(range(number_of_zones)) | units.none)
     
     def get_central_temperature(self, indices_of_the_stars):
         return self.get_temperature_at_zone(indices_of_the_stars, 0)
@@ -965,7 +965,7 @@ class InternalStellarStructure(object):
         if number_of_zones is None:
             number_of_zones = self.get_number_of_zones(indices_of_the_stars)
         self._check_supplied_values(len(values), number_of_zones)
-        self.set_temperature_at_zone([indices_of_the_stars]*number_of_zones, range(number_of_zones) | units.none, values)
+        self.set_temperature_at_zone([indices_of_the_stars]*number_of_zones, list(range(number_of_zones)) | units.none, values)
         if hasattr(self, "_erase_memory"):
             self._erase_memory(indices_of_the_stars)
     
@@ -973,13 +973,13 @@ class InternalStellarStructure(object):
         indices_of_the_stars = self._check_number_of_indices(indices_of_the_stars, action_string = "Querying pressure profiles")
         if number_of_zones is None:
             number_of_zones = self.get_number_of_zones(indices_of_the_stars)
-        return self.get_pressure_at_zone([indices_of_the_stars]*number_of_zones, range(number_of_zones) | units.none)
+        return self.get_pressure_at_zone([indices_of_the_stars]*number_of_zones, list(range(number_of_zones)) | units.none)
     
     def get_mu_profile(self, indices_of_the_stars, number_of_zones = None):
         indices_of_the_stars = self._check_number_of_indices(indices_of_the_stars, action_string = "Querying mean-molecular-weight profiles")
         if number_of_zones is None:
             number_of_zones = self.get_number_of_zones(indices_of_the_stars)
-        return self.get_mu_at_zone([indices_of_the_stars]*number_of_zones, range(number_of_zones) | units.none)
+        return self.get_mu_at_zone([indices_of_the_stars]*number_of_zones, list(range(number_of_zones)) | units.none)
     
     def get_names_of_species(self, indices_of_the_stars, number_of_species = None):
         indices_of_the_stars = self._check_number_of_indices(indices_of_the_stars, action_string = "Querying chemical abundance names")
@@ -987,7 +987,7 @@ class InternalStellarStructure(object):
             number_of_species = self.get_number_of_species(indices_of_the_stars)
         return list(self.get_name_of_species(
             [indices_of_the_stars]*number_of_species, 
-            range(1,number_of_species+1) | units.none
+            list(range(1,number_of_species+1)) | units.none
         ))
 
     def get_chemical_abundance_profiles(self, indices_of_the_stars, number_of_zones = None, number_of_species = None):
@@ -1084,7 +1084,7 @@ def merge_colliding_in_stellar_evolution_code(stellar_evolution_code, primaries,
     primaries = primaries.as_set()
     secondaries = secondaries.as_set()
     star_collider = collision_code(**code_options)
-    for (par_name, value) in code_parameters.iteritems():
+    for (par_name, value) in code_parameters.items():
         setattr(star_collider.parameters, par_name, value)
     star_collider.commit_parameters()
     star_collider.particles.add_particles(primaries)
@@ -1140,6 +1140,6 @@ def merge_colliding_in_stellar_evolution_code(stellar_evolution_code, primaries,
         elif type == "gd":
             result.append(gd_merge_products)
         else:
-            print "Unexpected value in return_merge_products, must be 'gd' (gravity particles) or 'se' (stellar evolution particles):", type
+            print("Unexpected value in return_merge_products, must be 'gd' (gravity particles) or 'se' (stellar evolution particles):", type)
     return result
 

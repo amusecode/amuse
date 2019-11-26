@@ -26,9 +26,7 @@ class NemoItemType(type):
     def new_item(metaclass, typecharacter, tagstring, dimensions, mustswap = False):
         return metaclass.mapping[typecharacter](tagstring, dimensions, mustswap = mustswap)
         
-class NemoItem(object):
-    __metaclass__ = NemoItemType
-    
+class NemoItem(object, metaclass=NemoItemType):
     def __init__(self, tagstring, dimensions = [1], data = None, mustswap = False):
         self.tagstring = tagstring
         self.dimensions = dimensions 
@@ -220,8 +218,8 @@ class NemoBinaryFile(object):
     def __init__(self, file):
         self.file = file
     
-    SingMagic  = ((011<<8) + 0222)
-    PlurMagic  = ((013<<8) + 0222)
+    SingMagic  = ((0o11<<8) + 0o222)
+    PlurMagic  = ((0o13<<8) + 0o222)
 
     def _byteswap(self, value, type = 'H'):
         x = array.array('H', [value])

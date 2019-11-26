@@ -113,6 +113,6 @@ if __name__=="__main__":
   
   sm.reindex(keys)
   
-  print sm.lookup([5,32]) 
+  print(sm.lookup([5,32])) 
   
   del sm

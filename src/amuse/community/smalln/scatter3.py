@@ -67,7 +67,7 @@ def set_inner_orbit(init, kep):
     kep.set_normal_unit_vector(zero, zero, one)
     mean_an = 2*math.pi*numpy.random.random()
     kep.initialize_from_elements(1.0|nbody_system.mass, semi, ecc, mean_an)
-    print 'inner semi, ecc =', semi.number, ecc
+    print('inner semi, ecc =', semi.number, ecc)
 
 def set_outer_orbit(init, kep):
 
@@ -79,9 +79,9 @@ def set_outer_orbit(init, kep):
     v_inf = init.v_infinity \
 	        * math.sqrt( (1 - init.m) * init.m * mtotal / init.M )
     energy3 = 0.5 * v_inf * v_inf
-    print 'm1, m2, m3 =', 1-init.m, init.m, init.M
-    print 'v_inf =', v_inf, 'energy3 =', energy3, \
-          'rho =', init.impact_parameter
+    print('m1, m2, m3 =', 1-init.m, init.m, init.M)
+    print('v_inf =', v_inf, 'energy3 =', energy3, \
+          'rho =', init.impact_parameter)
     if energy3 > 0:
         semi = -0.5*mtotal/energy3|nbody_system.length
         ang_mom3 = init.impact_parameter * v_inf
@@ -104,16 +104,16 @@ def set_outer_orbit(init, kep):
         costheta = 2*numpy.random.random() - 1
         sintheta = math.sqrt(max(0, 1-costheta**2))
         phi = 2*math.pi*numpy.random.random()
-        long = [sintheta*math.cos(phi), sintheta*math.sin(phi), costheta]
-        kep.set_longitudinal_unit_vector(long[0],
-                                         long[1],
-                                         long[2])
-        if abs(long[0]) < 0.5:
+        longv = [sintheta*math.cos(phi), sintheta*math.sin(phi), costheta]
+        kep.set_longitudinal_unit_vector(longv[0],
+                                         longv[1],
+                                         longv[2])
+        if abs(longv[0]) < 0.5:
             temp = [1, 0, 0]
         else:
             temp = [0, 1, 0]
-        trans = normalized(cross(long, temp))
-        normal = cross(long, trans)
+        trans = normalized(cross(longv, temp))
+        normal = cross(longv, trans)
         psi = 2*math.pi*numpy.random.random()
         cospsi = math.cos(psi)
         sinpsi = math.sin(psi)
@@ -127,13 +127,13 @@ def set_outer_orbit(init, kep):
     time = 0.0|nbody_system.time
     mean_anomaly = 0				# t = 0 at periastron
     if periastron.number == 0: mean_anomaly = -1.e-3
-    print 'mean_anomaly =', mean_anomaly
+    print('mean_anomaly =', mean_anomaly)
 
-    print 'outer semi, ecc =', semi.number, ecc
+    print('outer semi, ecc =', semi.number, ecc)
     kep.initialize_from_elements(mtotal|nbody_system.mass, semi, ecc,
                                  mean_anomaly, time, periastron)
-    print 'outer normal =', kep.get_normal_unit_vector()
-    print 'outer periastron =', kep.get_periastron().number
+    print('outer normal =', kep.get_normal_unit_vector())
+    print('outer periastron =', kep.get_periastron().number)
     #kep.print_all()
 
 def make_triple(init, kep, gamma):
@@ -170,8 +170,8 @@ def make_triple(init, kep, gamma):
     pos12 = [-f*rel_pos[0], -f*rel_pos[1], -f*rel_pos[2]]
     vel12 = [-f*rel_vel[0], -f*rel_vel[1], -f*rel_vel[2]]
 
-    print 'outer separation =', kep.get_separation().number, \
-	  ' time =', kep.get_time().number
+    print('outer separation =', kep.get_separation().number, \
+	  ' time =', kep.get_time().number)
 
     pos1 = sum3(pos1, pos12)
     vel1 = sum3(vel1, vel12)
@@ -180,7 +180,7 @@ def make_triple(init, kep, gamma):
     pos3 = [(1-f)*rel_pos[0], (1-f)*rel_pos[1], (1-f)*rel_pos[2]]
     vel3 = [(1-f)*rel_vel[0], (1-f)*rel_vel[1], (1-f)*rel_vel[2]]
 
-    print 'initial time =', time.number, "(time of outer periastron = 0)"
+    print('initial time =', time.number, "(time of outer periastron = 0)")
 
     # Create the 3-body system.
 
@@ -295,7 +295,7 @@ def scatter3(init, kep, gravity,
 
     #print stars
 
-    print "adding particles"
+    print("adding particles")
     sys.stdout.flush()
     gravity.set_time(time)
     gravity.particles.add_particles(stars)
@@ -313,7 +313,7 @@ def scatter3(init, kep, gravity,
     t_crit = -time
     if delta_t.number <= 0.0: delta_t = 2*t_crit	# for efficiency
 
-    print "evolving triple to completion in steps of", delta_t.number
+    print("evolving triple to completion in steps of", delta_t.number)
     sys.stdout.flush()
 
     t2 = clock()		# <----------------- t2 -----------------
@@ -334,7 +334,7 @@ def scatter3(init, kep, gravity,
         gravity.evolve_model(time)
 
         energy = gravity.get_kinetic_energy()+gravity.get_potential_energy()
-        print "time =", time.number, "energy =", energy.number
+        print("time =", time.number, "energy =", energy.number)
 
         tt4 = clock()		# <----------------- tt4 ----------------
 
@@ -399,8 +399,8 @@ if __name__ == '__main__':
 
     try:
         opts, args = getopt.getopt(sys.argv[1:], "A:d:e:g:m:M:n:pPr:s:t:v:")
-    except getopt.GetoptError, err:
-        print str(err)
+    except getopt.GetoptError as err:
+        print(str(err))
         sys.exit(1)
 
     # Command-line arguments are modeled on those in starlab.
@@ -444,13 +444,13 @@ if __name__ == '__main__':
             if init.v_infinity < 0:
                 raise Exception("v >= 0 required")
         else:
-            print "unexpected argument", o
+            print("unexpected argument", o)
 
     if random_seed <= 0:
         numpy.random.seed()
         random_seed = numpy.random.randint(1, pow(2,31)-1)
     numpy.random.seed(random_seed)
-    print "random seed =", random_seed, numpy.random.random()
+    print("random seed =", random_seed, numpy.random.random())
 
     #-----------------------------------------------------------------
 
@@ -480,25 +480,25 @@ if __name__ == '__main__':
         final,dcpu = scatter3(init, kep, gravity, gamma, delta_t, t_end)
         cpu += dcpu
 
-        print ''
+        print('')
         if final.is_over == 0:
-            print 'interaction is not over'
+            print('interaction is not over')
         else:
             if final.escaper > 0:
-                print 'escaper =', final.escaper, \
+                print('escaper =', final.escaper, \
                       'sep =', final.separation, \
-                      'vel =', final.v_rel
-                print 'binary (mass =', final.mbinary, \
+                      'vel =', final.v_rel)
+                print('binary (mass =', final.mbinary, \
                       'semi =', final.semimajoraxis, \
-                      'ecc =', final.eccentricity, ')'
+                      'ecc =', final.eccentricity, ')')
             else:
-                print 'ionization'
+                print('ionization')
 
-        if nscatter > 1: print '\n--------------------\n'
+        if nscatter > 1: print('\n--------------------\n')
 
-    print 'timing:  init', cpu[0], 'evol', cpu[1], 'over', cpu[2], \
-          'tree', cpu[3]
-    print ''
+    print('timing:  init', cpu[0], 'evol', cpu[1], 'over', cpu[2], \
+          'tree', cpu[3])
+    print('')
 
     gravity.stop()
     kep.stop()

@@ -89,7 +89,7 @@ class TrackLiteratureReferences(object):
             if docstring_in:
                 objectname = current_class.__name__
                 doctree  = core.publish_doctree(source = docstring_in)
-                ref_keys = doctree.ids.keys()
+                ref_keys = list(doctree.ids.keys())
                 natsort(ref_keys)
                 ref_values = [doctree.ids[key] for key in ref_keys]
                 literature_references_of_class = []
@@ -143,8 +143,8 @@ class LiteratureReferencesMixIn(object):
  
     @classmethod
     def print_literature_references(cls):
-        print "You are currently using the following codes, which contain literature references"
-        print TrackLiteratureReferences.default().all_literature_references_string()
+        print("You are currently using the following codes, which contain literature references")
+        print(TrackLiteratureReferences.default().all_literature_references_string())
  
     @classmethod
     def export2html(cls):
@@ -179,7 +179,7 @@ def try_int(s):
 def natsort_key(s):
     "Used internally to get a tuple by which s is sorted."
     import re
-    return map(try_int, re.findall(r'(\d+|\D+)', s))
+    return list(map(try_int, re.findall(r'(\d+|\D+)', s)))
 
 def natcmp(a, b):
     "Natural string comparison, case sensitive."

@@ -28,7 +28,7 @@ LIB_OBJ = $(CODEDIR)/src/rebound.o $(CODEDIR)/src/tree.o $(CODEDIR)/src/particle
           $(CODEDIR)/src/simulationarchive.o $(CODEDIR)/src/output.o \
           $(CODEDIR)/src/input.o \
 
-DOWNLOAD_FROM_WEB = $(PYTHON) ./download_http.py
+DOWNLOAD_FROM_WEB = $(PYTHON) ./download.py
 PATCH_FILES = $(PYTHON) ./patch_files.py
 CODE_GENERATOR = $(AMUSE_DIR)/build.py
 

@@ -50,7 +50,7 @@ class HydroGridAndNbody(object):
         corner1 = self.gridcode.grid[-1][-1][-1].position
 
         delta = self.gridcode.grid[1][1][1].position - corner0
-        print delta.prod()
+        print(delta.prod())
         self.volume = delta.prod()
         staggered_corner0 = corner0 - delta
         staggered_corner1 = corner1
@@ -134,9 +134,9 @@ class HydroGridAndNbody(object):
         self.from_model_to_nbody.copy_attribute('mass')
 
         correction = (length ** 3) / (mass * (time ** 2))
-        print correction, nbody_system.G
-
-        print "getting potential energy"
+        print(correction, nbody_system.G)
+        
+        print("getting potential energy")
         potential = self.nbodycode.get_potential_at_point(
             self.eps,
             self.x,
@@ -155,15 +155,15 @@ class HydroGridAndNbody(object):
                 (self.staggered_grid.rho * self.volume)
                 / numpy.sqrt(self.nbodycode.parameters.epsilon_squared)
                 ) * nbody_system.G
-        print correction.flatten().shape, potential.shape
+        print(correction.flatten().shape, potential.shape)
         potential = potential + correction.flatten()
-        print "got potential enery"
+        print("got potential enery")
         potential = potential.reshape(self.gridcode.potential_grid.shape)
         self.gridcode.potential_grid.potential = potential
 
-        print "evolve hydro", time
+        print("evolve hydro", time)
         self.gridcode.evolve_model(time)
-        print "end evolve hydro"
+        print("end evolve hydro")
 
 
 class HydroGridAndNbodyWithAccelerationTransfer(object):
@@ -187,7 +187,7 @@ class HydroGridAndNbodyWithAccelerationTransfer(object):
         corner1 = self.gridcode.grid[-1][-1][-1].position
 
         delta = self.gridcode.grid[1][1][1].position - corner0
-        print delta.prod()
+        print(delta.prod())
         self.volume = delta.prod()
         staggered_corner0 = corner0 - delta
         staggered_corner1 = corner1
@@ -269,23 +269,23 @@ class HydroGridAndNbodyWithAccelerationTransfer(object):
         # self.particles.mass = self.staggered_grid.masses.flatten()
         self.particles.mass = self.gridcode.grid.rho * self.volume
         self.from_model_to_nbody.copy_attribute('mass')
-        print "getting acceleration field"
+        print("getting acceleration field")
         acc_x, acc_y, acc_z = self.nbodycode.get_gravity_at_point(
             self.eps,
             self.x,
             self.y,
             self.z
         )
-        print "got acceleration field"
+        print("got acceleration field")
         acc_x = acc_x.reshape(self.grid.shape)
         acc_y = acc_y.reshape(self.grid.shape)
         acc_z = acc_z.reshape(self.grid.shape)
         self.gridcode.acceleration_grid.set_values_in_store(
             None, ["fx", "fy", "fz"], [acc_x, acc_y, acc_z])
 
-        print "evolve hydro", time
+        print("evolve hydro", time)
         self.gridcode.evolve_model(time)
-        print "end evolve hydro"
+        print("end evolve hydro")
 
 
 class CalculateSolutionIn3D(object):
@@ -305,7 +305,7 @@ class CalculateSolutionIn3D(object):
 
     def __init__(self, **keyword_arguments):
         for x in keyword_arguments:
-            print x, keyword_arguments[x]
+            print(x, keyword_arguments[x])
             setattr(self, x, keyword_arguments[x])
 
         self.dimensions_of_mesh = (
@@ -405,9 +405,14 @@ class CalculateSolutionIn3D(object):
         scaled_radius = self.radius  # / 1.695
 
         radii = (grid.position - self.center).lengths()
+
         selected_radii = radii[radii < self.radius]
-        print "number of cells in cloud (number of cells in grid)", len(
-            selected_radii), grid.shape, grid.size
+        print(
+            "number of cells in cloud (number of cells in grid)",
+            len(selected_radii),
+            grid.shape,
+            grid.size
+        )
 
         self.rho_sphere = (
             (0.75 * self.total_mass / (pi * (scaled_radius ** 3))))
@@ -429,11 +434,11 @@ class CalculateSolutionIn3D(object):
             (internal_energy/((1.0+(radii/scaled_radius)**2)**(1.0/2.0)))
 
     def setup_code(self):
-        print "setup code"
+        print("setup code")
 
         self.grid = self.new_grid()
         self.initialize_grid_with_plummer_sphere(self.grid)
-        print "Mean density", self.grid.rho.flatten().mean()
+        print("Mean density", self.grid.rho.flatten().mean())
         self.rho_mean = self.grid.rho.flatten().mean()
 
         self.instance = self.new_instance_of_code()
@@ -449,11 +454,12 @@ class CalculateSolutionIn3D(object):
     def get_solution_at_time(self, time):
         if self.instance is None:
             self.setup_code()
-
-        print "start evolve"
+        
+        print("start evolve")
         self.instance.evolve_model(time)
+        
+        print("copying results")
 
-        print "copying results"
         self.from_code_to_model.copy()
 
         # print "max,min", max(self.grid.rhovx.flatten()), min(self.grid.rhovx.flatten())
@@ -515,11 +521,11 @@ def new_option_parser():
 def main(**options):
     center = options['number_of_grid_points'] / 2
 
-    print "calculating shock using code"
+    print("calculating shock using code")
     model = CalculateSolutionIn3D(**options)
     for t in range(50):
         grid = model.get_solution_at_time(t * 0.1 | time)
-        print "saving data"
+        print("saving data")
         store_attributes_of_line(
             grid, yindex=center, zindex=center, time=t, **options)
 

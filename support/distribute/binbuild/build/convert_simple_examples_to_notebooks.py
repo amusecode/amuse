@@ -16,7 +16,7 @@ def convert_file(path, outputdir, is_convert_simple = False):
     notebookname, _ = os.path.splitext(filename)
     if is_convert_simple:
         with open(path, 'r') as stream:
-            notebook = notebook_format.read(stream, u'py')
+            notebook = notebook_format.read(stream, 'py')
     else:
         with open(path, 'r') as stream:
             sourcestring = stream.read()
@@ -25,20 +25,20 @@ def convert_file(path, outputdir, is_convert_simple = False):
         notebook = new_notebook_from_string(notebookname, filename, sourcestring)
         
     with open(os.path.join(outputdir, notebookname+'.ipynb'),'w') as stream:
-        notebook_format.write(notebook, stream, u'json')
+        notebook_format.write(notebook, stream, 'json')
 
 def new_notebook_from_string(notebookname, filename, sourcestring):
     root = ast.parse(sourcestring, filename=filename, mode='exec')
     x = DetermineBlocks()
     
     for child in ast.iter_child_nodes(root):
-        print child.lineno, child
+        print(child.lineno, child)
         x.visit(child)
     x.end()
     sourcelines = sourcestring.splitlines()
     cells = []
     for block in x.blocks:
-        print block
+        print(block)
         blocklines = sourcelines[block[1]-1:block[2]]
         blocksrc = '\n'.join(blocklines)
         if len(blocksrc) > 0:
@@ -89,7 +89,7 @@ class DetermineBlocks(ast.NodeVisitor):
             self.start_lineno = node.lineno
     
     def visit_DDExpr(self,node):
-        print node.col_offset
+        print(node.col_offset)
         if not self.kind == 'Expr':
             self.blocks.append( (self.kind, self.start_lineno, node.lineno - 1) )
             self.kind = 'Expr'

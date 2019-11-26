@@ -28,24 +28,23 @@ from amuse.rfi.tools import create_cython
     
 from amuse.support import get_amuse_root_dir    
 
-if sys.hexversion > 0x03000000:
-    def get_amuse_directory():
-        filename_of_this_script = __file__
-        directory_of_this_script = os.path.dirname(os.path.dirname(filename_of_this_script))
-        directory_of_this_script = os.path.join(directory_of_this_script, 'build', 'lib')
-        if os.path.isabs(directory_of_this_script):
-            return directory_of_this_script
-        else:
-            return os.path.abspath(directory_of_this_script)
-else:
-    
-    def get_amuse_directory():
-        filename_of_this_script = __file__
-        directory_of_this_script = os.path.dirname(os.path.dirname(filename_of_this_script))
-        if os.path.isabs(directory_of_this_script):
-            return directory_of_this_script
-        else:
-            return os.path.abspath(directory_of_this_script)
+def get_amuse_directory():
+    filename_of_this_script = __file__
+    directory_of_this_script = os.path.dirname(os.path.dirname(filename_of_this_script))
+    directory_of_this_script = os.path.join(directory_of_this_script, 'build', 'lib')
+    if os.path.isabs(directory_of_this_script):
+        return directory_of_this_script
+    else:
+        return os.path.abspath(directory_of_this_script)
+
+# in case of trouble consult old python 2:     
+    #~ def get_amuse_directory():
+        #~ filename_of_this_script = __file__
+        #~ directory_of_this_script = os.path.dirname(os.path.dirname(filename_of_this_script))
+        #~ if os.path.isabs(directory_of_this_script):
+            #~ return directory_of_this_script
+        #~ else:
+            #~ return os.path.abspath(directory_of_this_script)
 
 def get_amuse_directory_root():
     filename_of_this_script = __file__
@@ -392,7 +391,7 @@ def amusifier():
     uc.start()
     
     if uc.options.get_amuse_dir:
-        print(get_amuse_root_dir())
+        print((get_amuse_root_dir()))
         exit(0)
     elif uc.options.mode == 'dir':
         make_directory(uc)

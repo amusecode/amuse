@@ -58,6 +58,6 @@ if __name__=="__main__":
     convert_nbody = nbody_system.nbody_to_si(100. | units.MSun, 1.0 | units.parsec)
     sphere=MakePlummerGasModel(10000,convert_nbody)
     parts=sphere.result
-    print parts[0].internal_energy**0.5
-    print len(parts)*parts[0].mass.in_(units.MSun)
+    print(parts[0].internal_energy**0.5)
+    print(len(parts)*parts[0].mass.in_(units.MSun))
     

@@ -30,8 +30,8 @@ def evolve_single_star(mass, tend):
         radius.append(stellar_evolution.particles[0].radius)
         temperature.append(stellar_evolution.particles[0].temperature)
         luminosity.append(stellar_evolution.particles[0].luminosity)
-        print "Time=", time[-1], stellar_type[-1], mass[-1], radius[-1], \
-              temperature[-1].in_(units.K), luminosity[-1].in_(units.LSun)
+        print("Time=", time[-1], stellar_type[-1], mass[-1], radius[-1], \
+              temperature[-1].in_(units.K), luminosity[-1].in_(units.LSun))
         if stellar_type[-1] >= 4 | units.stellar_type:
             break
 
@@ -39,16 +39,16 @@ def evolve_single_star(mass, tend):
     return time, stellar_type, mass, radius, temperature, luminosity
     
 def print_stars(stellar_evolution):
-    print "Primary:   Time=", stellar_evolution.model_time.in_(units.Myr), \
+    print("Primary:   Time=", stellar_evolution.model_time.in_(units.Myr), \
         stellar_evolution.particles[0].mass.in_(units.MSun), \
         stellar_evolution.particles[0].radius.in_(units.RSun), \
         stellar_evolution.particles[0].temperature.in_(units.K), \
-        stellar_evolution.particles[0].luminosity.in_(units.LSun)
-    print "Secondary: Time=", stellar_evolution.model_time.in_(units.Myr), \
+        stellar_evolution.particles[0].luminosity.in_(units.LSun))
+    print("Secondary: Time=", stellar_evolution.model_time.in_(units.Myr), \
         stellar_evolution.particles[1].mass.in_(units.MSun), \
         stellar_evolution.particles[1].radius.in_(units.RSun), \
         stellar_evolution.particles[1].temperature.in_(units.K), \
-        stellar_evolution.particles[1].luminosity.in_(units.LSun)
+        stellar_evolution.particles[1].luminosity.in_(units.LSun))
 
 ###BOOKLISTSTART1###
 def merge_two_stars_and_evolve(Mprim, Msec, tcoll, tend):
@@ -77,7 +77,7 @@ def merge_two_stars_and_evolve(Mprim, Msec, tcoll, tend):
     merged = stellar_evolution.particles[0]
 ###BOOKLISTSTOP2###
 
-    print "Stars merged:", merged
+    print("Stars merged:", merged)
     time = [] | units.Myr
     stellar_type = []
     mass = [] | units.MSun
@@ -100,9 +100,9 @@ def merge_two_stars_and_evolve(Mprim, Msec, tcoll, tend):
         luminosity.append(p.luminosity)
         
 ###BOOKLISTSTART4###
-        print "Time=", stellar_evolution.model_time, p.stellar_type, \
+        print("Time=", stellar_evolution.model_time, p.stellar_type, \
             p.mass, p.radius, p.temperature.in_(units.K), \
-            p.luminosity.in_(units.LSun)
+            p.luminosity.in_(units.LSun))
         if p.stellar_type >= 4 | units.stellar_type:
             break
     merger_code.stop()
@@ -157,7 +157,7 @@ if __name__ in ('__main__','__plot__'):
     pyplot.xlim(2.e+4, 3.e3)
     pyplot.ylim(20., 2.e+3)
 
-    print "Evolve single star of mass", Mprim.in_(units.MSun)
+    print("Evolve single star of mass", Mprim.in_(units.MSun))
     time, stp, mass, radius, temperature, luminosity \
         = evolve_single_star(Mprim, tend)
     pyplot.plot(temperature.value_in(units.K),
@@ -174,7 +174,7 @@ if __name__ in ('__main__','__plot__'):
             tms = time[i]
     if tms <= 1|units.Myr:
         tms = 10|units.Myr
-    print "Main-sequence lifetime =", tms.in_(units.Myr)
+    print("Main-sequence lifetime =", tms.in_(units.Myr))
     
     tcoll = 0.5*tms
     icoll = 0
@@ -186,7 +186,7 @@ if __name__ in ('__main__','__plot__'):
                    c=color[2], s=150, marker='o',
                    edgecolor='k', zorder=2)
 
-    print "Evolve single star of mass", (Mprim+Msec).in_(units.MSun)
+    print("Evolve single star of mass", (Mprim+Msec).in_(units.MSun))
     time, stp, mass, radius, temperature, luminosity \
         = evolve_single_star(Mprim+Msec, tend)
     pyplot.plot(temperature.value_in(units.K),
@@ -197,7 +197,7 @@ if __name__ in ('__main__','__plot__'):
                    c=color[0], s=150, marker='^',
                    edgecolor='k', zorder=2)
 
-    print "Evolve two single stars and collide at", tcoll.in_(units.Myr)
+    print("Evolve two single stars and collide at", tcoll.in_(units.Myr))
     time, stp, mass, radius, temperature, luminosity \
         = merge_two_stars_and_evolve(Mprim, Msec, tcoll, tend)
     pyplot.plot(temperature.value_in(units.K),
@@ -209,7 +209,7 @@ if __name__ in ('__main__','__plot__'):
                    edgecolor='k', zorder=3)
 
     Mmerger = mass[0]
-    print "Evolve single star of mass", Mmerger
+    print("Evolve single star of mass", Mmerger)
     time, stp, mass, radius, temperature, luminosity \
         = evolve_single_star(Mmerger, tend)
     pyplot.plot(temperature.value_in(units.K),
@@ -225,5 +225,5 @@ if __name__ in ('__main__','__plot__'):
 
     save_file = 'merge_two_stars_and_evolve.pdf'
     pyplot.savefig(save_file)
-    print '\nSaved figure in file', save_file,'\n'
+    print('\nSaved figure in file', save_file,'\n')
     pyplot.show()

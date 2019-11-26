@@ -58,4 +58,4 @@ def coreradius(mass,x,y,z):
 
 if __name__=="__main__":
   mass,radius,x,y,z,vx,vy,vz=plummer(1000)
-  print coreradius(mass,x,y,z)
+  print(coreradius(mass,x,y,z))

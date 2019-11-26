@@ -10,7 +10,7 @@ def read_supernova_irradiation_file(filename):
     t = []
     Tmean = []
     Tmax = []
-    for line in open(filename).xreadlines():
+    for line in open(filename):
         if 'Time' in line:
             sl = line.split()
             t.append(float(sl[1]))
@@ -25,7 +25,7 @@ def read_Earthorbit():
     e = []
     a = []
     tmax = 1.e+6
-    for line in open('Eart_Orbit_Eps-3.data').xreadlines():
+    for line in open('Eart_Orbit_Eps-3.data'):
         if '#' not in line:
             sl = line.split()
             t.append(float(sl[0]))

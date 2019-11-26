@@ -1,6 +1,7 @@
 """
    Simulate the hydrodynamial evolve a disk with a single bump around a star
 """
+from __future__ import print_function
 from amuse.lab import *
 from amuse.io import store
 
@@ -74,15 +75,15 @@ def main(Mstar = 1|units.MSun,
         if len(lost)>0:
             hydro.particles.remove_particles(lost)
             hydro.particles.synchronize_to(particles)
-            print "Disk=", hydro.model_time, len(bodies), len(lost), lost.mass.sum(), star.mass
+            print("Disk=", hydro.model_time, len(bodies), len(lost), lost.mass.sum(), star.mass)
 
         Ekin = hydro.kinetic_energy 
         Epot = hydro.potential_energy
         Eth = hydro.thermal_energy
         Etot = Ekin + Epot + Eth
-        print "T=", hydro.get_time(), "M=", hydro.gas_particles.mass.sum(), 
-        print "E= ", Etot, "Q= ", (Ekin+Eth)/Epot, "dE=", (Etot_init-Etot)/Etot
-        print "Star=", hydro.model_time, star[0].mass, star[0].position
+        print("T=", hydro.get_time(), "M=", hydro.gas_particles.mass.sum(), end=' ') 
+        print("E= ", Etot, "Q= ", (Ekin+Eth)/Epot, "dE=", (Etot_init-Etot)/Etot)
+        print("Star=", hydro.model_time, star[0].mass, star[0].position)
 
     hydro.stop()
     

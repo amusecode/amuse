@@ -79,8 +79,8 @@ def run_only_gravity(bodies, t_end):
         gravity.evolve_model(time[-1]+dt)
         channel_from_gravity.copy_attributes(["x", "y", "z", "vx", "vy", "vz"])
 
-        print "G: T=", time[-1], "M=", bodies.mass.sum(), \
-              "(dM[SE]=", bodies.mass.sum()/Mtot_init, ")"
+        print("G: T=", time[-1], "M=", bodies.mass.sum(), \
+              "(dM[SE]=", bodies.mass.sum()/Mtot_init, ")")
         if time[-1] >= t_end:
             break
     gravity.stop()
@@ -122,8 +122,8 @@ def run_sequential_gravity_and_stellar(bodies, t_end):
         Lr50.append(LagrangianRadii(gravity.particles)[6])
         Lr75.append(LagrangianRadii(gravity.particles)[7])
         
-        print "GS: T=", time[-1], "M=", bodies.mass.sum(), \
-              "(dM[SE]=", bodies.mass.sum()/Mtot_init, ")"
+        print("GS: T=", time[-1], "M=", bodies.mass.sum(), \
+              "(dM[SE]=", bodies.mass.sum()/Mtot_init, ")")
         if time[-1] >= t_end:
             break
 
@@ -173,8 +173,8 @@ def run_event_driven_gravity_and_stellar(bodies, t_end):
 
         stellar.evolve_model()
         
-        print "GSE: T=", time[-1], "M=", bodies.mass.sum(), \
-              "(dM[SE]=", bodies.mass.sum()/Mtot_init, ")"
+        print("GSE: T=", time[-1], "M=", bodies.mass.sum(), \
+              "(dM[SE]=", bodies.mass.sum()/Mtot_init, ")")
 
         if time[-1] >= t_end:
             break
@@ -185,7 +185,7 @@ def run_event_driven_gravity_and_stellar(bodies, t_end):
 
 def main(N, W0, t_end, Rvir, Mmin, Mmax):
     bodies = generate_initial_conditions(N, W0, Rvir, Mmin, Mmax)
-    print numpy.sort(bodies.mass.value_in(units.MSun))
+    print(numpy.sort(bodies.mass.value_in(units.MSun)))
 
     x_label = "t [Myr]"
     y_label = "R [pc]"
@@ -223,7 +223,7 @@ def main(N, W0, t_end, Rvir, Mmin, Mmax):
 
     save_file = 'gravity_stellar_comparison.png'
     pyplot.savefig(save_file)
-    print '\nSaved figure in file', save_file,'\n'
+    print('\nSaved figure in file', save_file,'\n')
     pyplot.show()
     
 def new_option_parser():

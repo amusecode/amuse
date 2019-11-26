@@ -24,7 +24,7 @@ def get_mass_profile(star):
     radii_cubed = radius_profile**3
     radii_cubed.prepend(0|units.m**3)
     mass_profile = (4.0/3.0 * numpy.pi) * density_profile * (radii_cubed[1:] - radii_cubed[:-1])
-    print "Derived mass profile from density and radius."
+    print("Derived mass profile from density and radius.")
     return mass_profile
 
 def moment_of_inertia(star):
@@ -51,7 +51,7 @@ def main(Mstar, z):
         vcrit = (constants.G*star.mass*(1-gamma)/star.radius).sqrt()
         Omega = (vcrit/star.radius)
         J = star.mass *k2 *star.radius**2 * Omega
-        print "Star: t=", star.age, "r=", star.radius, "k2=", k2, "J=", J.in_(units.MSun*units.cm**2/units.s), "type=", star.stellar_type
+        print("Star: t=", star.age, "r=", star.radius, "k2=", k2, "J=", J.in_(units.MSun*units.cm**2/units.s), "type=", star.stellar_type)
 
     stellar.stop()
     

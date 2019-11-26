@@ -1,4 +1,4 @@
-from __future__ import print_function
+
 
 import subprocess
 import xml.dom
@@ -9,12 +9,9 @@ import os.path
 from optparse import OptionParser
 from collections import namedtuple
 from . import monitor
-from . import  webserver
+from . import webserver
 import json
-try:
-    import urlparse
-except ImportError:
-    from urllib import parse as urlparse
+import urllib.parse
 import threading
 
 ReportMessageLine = namedtuple('ReportMessageLine', 'filename lineno state message_id method_id message_string')
@@ -264,7 +261,7 @@ class HandleRequest(webserver.HandleRequest):
         return 'null', 'text/javascript'
     
     def do_show_file(self):
-        parameters = urlparse.parse_qs(self.parsed_path.query)
+        parameters = urllib.parse.parse_qs(self.parsed_path.query)
         filename = parameters['path'][0]
         messages = self.server.last_report.get_messages_of_file(filename)
         x = MakeHTMLDomFromFile(filename, messages)

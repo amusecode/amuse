@@ -33,7 +33,7 @@ def new_binary_orbit(mass1, mass2, semi_major_axis,
         = numpy.sqrt( mu / semi_major_axis * ((1.0 + eccentricity)
                                                /(1.0 - eccentricity)))
     radius_perihelion = semi_major_axis * (1.0 - eccentricity)
-    print velocity_perihelion
+    print(velocity_perihelion)
     
     binary[0].position = ((1.0 - mass_fraction_particle_1) \
                            * radius_perihelion * [1.0,0.0,0.0])
@@ -110,17 +110,17 @@ def calculate_orbital_elementss(bi, converter):
 def resolve_changed_binaries(stopping_condition, stellar, converter):
     new_binaries = stopping_condition.particles(0)
     for bi in new_binaries:
-        print "add new binary:", bi
+        print(("add new binary:", bi))
         a, e = calculate_orbital_elementss(bi, converter)
         bi.semi_major_axis = a
         bi.eccentricity = e
         stellar.binaries.add_particle(bi)
-        print "new binary parameters", a, e
-        print bi
+        print(("new binary parameters", a, e))
+        print(bi)
 
     lost_binaries = stopping_condition.particles(1)
     for bi in lost_binaries:
-        print "remove old binary:", bi.key
+        print(("remove old binary:", bi.key))
         stellar.binaries.remove_particle(bi)
 
     changed_binaries = stopping_condition.particles(2)
@@ -129,17 +129,17 @@ def resolve_changed_binaries(stopping_condition, stellar, converter):
         a, e = calculate_orbital_elementss(bi, converter)
         bs.semi_major_axis = a
         bs.eccentricity = e
-        print "Modified binary parameters", a, e
-        print bs
+        print(("Modified binary parameters", a, e))
+        print(bs)
 ###BOOKLISTSTOP###
 
 def update_dynamical_binaries_from_stellar(stellar, multiples_code, converter):
     kep = new_kepler(converter)
 
     # THIS NEEDS TO BE CHECKED!
-    print "++++++++++++ THIS NEEDS TO BE CHECKED ++++++++++++++++++++"
+    print("++++++++++++ THIS NEEDS TO BE CHECKED ++++++++++++++++++++")
 
-    print "Number of binaries=", len(stellar.binaries)
+    print(("Number of binaries=", len(stellar.binaries)))
     for bi in stellar.binaries:
         bs = bi.as_particle_in_set(multiples_code.binaries)
         total_mass = bi.child1.mass+bi.child2.mass 
@@ -152,8 +152,8 @@ def update_dynamical_binaries_from_stellar(stellar, multiples_code, converter):
         bs.child2.position = -(1-mu) * rel_position 
         bs.child1.velocity = mu * rel_velocity
         bs.child2.velocity = -(1-mu) * rel_velocity
-        print "semi_major_axis=", bi.semi_major_axis, total_mass, \
-              bi.child1.mass, bi.child2.mass, bi.eccentricity
+        print(("semi_major_axis=", bi.semi_major_axis, total_mass, \
+              bi.child1.mass, bi.child2.mass, bi.eccentricity))
     kep.stop()
         
 def kira(tend, N, R, Nbin):
@@ -168,7 +168,7 @@ def kira(tend, N, R, Nbin):
 
     single_stars, binary_stars, singles_in_binaries \
         = make_secondaries(stars, Nbin)
-    print binary_stars
+    print(binary_stars)
 
     stellar = SeBa()
     stellar.particles.add_particles(single_stars)
@@ -214,11 +214,11 @@ def kira(tend, N, R, Nbin):
     
     t = quantities.linspace(0*tend, tend, 11)
     for ti in t:
-        print "t, Energy=", ti, multiples_code.particles.mass.sum(), \
-              multiples_code.get_total_energy()
+        print(("t, Energy=", ti, multiples_code.particles.mass.sum(), \
+              multiples_code.get_total_energy()))
         multiples_code.evolve_model(ti)
-        print "at t=", multiples_code.model_time, \
-              "Nmultiples:", len(multiples_code.multiples)
+        print(("at t=", multiples_code.model_time, \
+              "Nmultiples:", len(multiples_code.multiples)))
 
         if stopping_condition.is_set():
             resolve_changed_binaries(stopping_condition, stellar, converter)
@@ -228,12 +228,12 @@ def kira(tend, N, R, Nbin):
         update_dynamical_binaries_from_stellar(stellar, multiples_code,
                                                converter)
 
-        print "Lagrangian radii:", \
-              multiples_code.all_singles.LagrangianRadii(converter)
-        print "MC.particles", multiples_code.particles
-        print "Lagrangian radii:", \
-              multiples_code.particles.LagrangianRadii(converter)
-        print "t, Energy=", ti, multiples_code.get_total_energy()
+        print(("Lagrangian radii:", \
+              multiples_code.all_singles.LagrangianRadii(converter)))
+        print(("MC.particles", multiples_code.particles))
+        print(("Lagrangian radii:", \
+              multiples_code.particles.LagrangianRadii(converter)))
+        print(("t, Energy=", ti, multiples_code.get_total_energy()))
 
     pyplot.scatter(numpy.log10(stellar.binaries.semi_major_axis
                                .value_in(units.AU)),
@@ -243,7 +243,7 @@ def kira(tend, N, R, Nbin):
 
     save_file = 'kira_a_vs_e.pdf'
     pyplot.savefig(save_file)
-    print '\nSaved figure in file', save_file,'\n'
+    print('\nSaved figure in file', save_file,'\n')
     pyplot.show()
         
     stellar.stop()

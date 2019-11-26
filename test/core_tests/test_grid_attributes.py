@@ -68,15 +68,15 @@ class TestGridAttributes(amusetest.TestCase):
 
     def test6(self):
         grid=new_regular_grid((10,10),(10,10))
-        self.assertEquals(grid.get_index((6.2,3.7)), [6,3])
-        self.assertEquals(grid.get_index(x=[6.2],y=[3.7]), [6,3])
-        self.assertEquals(grid.get_index(y=[6.2],x=[3.7]), [3,6])
-        self.assertEquals(grid.get_index(y=6.2,x=3.7)[0], 3)
-        self.assertEquals(grid.get_index(y=6.2,x=3.7)[1], 6)
+        self.assertEqual(grid.get_index((6.2,3.7)), [6,3])
+        self.assertEqual(grid.get_index(x=[6.2],y=[3.7]), [6,3])
+        self.assertEqual(grid.get_index(y=[6.2],x=[3.7]), [3,6])
+        self.assertEqual(grid.get_index(y=6.2,x=3.7)[0], 3)
+        self.assertEqual(grid.get_index(y=6.2,x=3.7)[1], 6)
         
     def test7(self):
         grid=new_regular_grid((10,10),[20,10] | units.m,axes_names="ab")
-        self.assertEquals(grid.get_index([16.2,3.7] | units.m), [8,3])
-        self.assertEquals(grid.get_index(a=16.2 | units.m,b=3.7 | units.m), [8,3])
-        self.assertEquals(grid.get_index(a=[16.2, 4.5] | units.m,b=[3.7,4.2] | units.m), [[8,3],[2,4]])
+        self.assertEqual(grid.get_index([16.2,3.7] | units.m), [8,3])
+        self.assertEqual(grid.get_index(a=16.2 | units.m,b=3.7 | units.m), [8,3])
+        self.assertEqual(grid.get_index(a=[16.2, 4.5] | units.m,b=[3.7,4.2] | units.m), [[8,3],[2,4]])
 

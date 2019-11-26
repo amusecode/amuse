@@ -58,7 +58,7 @@ CODELIBACC = $(BUILDDIR_ACC)/$(LIBNAME)
 
 CODE_GENERATOR = $(AMUSE_DIR)/build.py
 
-DOWNLOAD_FROM_WEB = $(PYTHON) ./download_svn.py
+DOWNLOAD_FROM_WEB = $(PYTHON) ./download.py
 PATCH_FILES = $(PYTHON) ./patch_files.py
 PATCH_FILES_IFORT91 = $(PYTHON) ./patch_files_ifort91.py
 

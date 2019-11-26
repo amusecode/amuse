@@ -1,6 +1,7 @@
 """
    Minimalistic routine for running a radiative transfer code.
 """
+from __future__ import print_function
 from amuse.lab import *
 
 def main(N=1000, Lstar=100|units.LSun, boxsize=10|units.parsec, 
@@ -29,9 +30,9 @@ def main(N=1000, Lstar=100|units.LSun, boxsize=10|units.parsec,
     radiative.particles.add_particles(ism)
 
     radiative.evolve_model(t_end)
-    print "min ionization:", radiative.particles.xion.min()
-    print "average Xion:", radiative.particles.xion.mean()
-    print "max ionization:", radiative.particles.xion.max()
+    print("min ionization:", radiative.particles.xion.min())
+    print("average Xion:", radiative.particles.xion.mean())
+    print("max ionization:", radiative.particles.xion.max())
     radiative.stop()
     
 def new_option_parser():

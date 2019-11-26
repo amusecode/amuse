@@ -19,10 +19,10 @@ from amuse.community.distributed.interface import (
 # it to do something interesting.
 
 if (len(sys.argv) < 2):
-    print "usage: amuse.sh distributed_amuse.py existing_amuse_script.py"
+    print("usage: amuse.sh distributed_amuse.py existing_amuse_script.py")
     sys.exit(1)
 
-print "Setting up distributed code"
+print("Setting up distributed code")
 instance = DistributedAmuse(redirection='none')
 instance.initialize_code()
 
@@ -36,8 +36,8 @@ instance.initialize_code()
 # resource.scheduler_type="sge"
 # resource.amuse_dir="/home/user/amuse"
 # instance.resources.add_resource(resource)
-print "Resources:"
-print instance.resources
+print("Resources:")
+print(instance.resources)
 
 # Claim nodes on the resources. In this example simply the "local" machine
 pilot = Pilot()
@@ -48,23 +48,26 @@ pilot.slots_per_node = 22
 pilot.label = 'local'
 instance.pilots.add_pilot(pilot)
 
-print "Pilots:"
-print instance.pilots
+print("Pilots:")
+print(instance.pilots)
 
-print "Waiting for pilots"
+print("Waiting for pilots")
 instance.wait_for_pilots()
 
-print "setting distributed as default channel"
+print("setting distributed as default channel")
 instance.use_for_all_workers()
 
-print "Running script"
+print("Running script")
 
 script = sys.argv[1]
 
 sys.argv = sys.argv[1:]
 
-execfile(script)
+if sys.hexversion > 0x03000000:
+    exec(compile(open(script).read(), script, 'exec'))
+else:
+    execfile(script)
 
-print "script done, stopping distributed code"
+print("script done, stopping distributed code")
 
 instance.stop()

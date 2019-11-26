@@ -1343,7 +1343,7 @@ class Mercury(MercuryWayWard):
     def commit_particles(self):
         N=len(self.particles)
         if N<=1:
-            print "too few particles"
+            print("too few particles")
             return -11
 
         ic=self.particles.mass.argmax()
@@ -1353,7 +1353,7 @@ class Mercury(MercuryWayWard):
 
         maxmass=orbiters.mass.amax()
         if (maxmass/self.central_particle.mass) > 0.1:
-            print "orbiters too massive"
+            print("orbiters too massive")
             return -12
 
         orbiters.position=orbiters.position-self.central_particle.position
@@ -1406,7 +1406,7 @@ class Mercury(MercuryWayWard):
 
         maxmass=orbiters.mass.amax()
         if (maxmass/self.central_particle.mass) > 0.1:
-          print "orbiters too massive"
+          print("orbiters too massive")
           return -12
 
         orbiters.position=orbiters.position-self.central_particle.position

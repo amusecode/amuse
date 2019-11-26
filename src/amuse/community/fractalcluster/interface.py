@@ -200,7 +200,7 @@ class FractalCluster(CommonCode):
         number_of_updated_particles = self.get_number_of_particles_updated()
         if number_of_updated_particles:
             self.particles._private.attribute_storage._add_indices(
-                range(1, number_of_updated_particles+1)
+                list(range(1, number_of_updated_particles+1))
             )
     
     def clear_particle_set(self):
@@ -221,7 +221,7 @@ class MakeFractalCluster(object):
             self.N = N
         else:
             if not N is None and len(masses) != N:
-                print "warning: provided mass array not equal to masses"
+                print("warning: provided mass array not equal to masses")
             self.masses = masses / masses.sum() | nbody_system.mass
             self.N = len(masses)
         

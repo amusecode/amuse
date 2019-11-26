@@ -24,7 +24,7 @@ def read_csv(filename):
             x.append(float(row[0]))
             rho.append(float(row[1]))
             for col in row:
-                print '%-8s: %s' % (header[colnum], col)
+                print('%-8s: %s' % (header[colnum], col))
                 colnum += 1
         rownum += 1
 

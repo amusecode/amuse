@@ -56,16 +56,16 @@ class TestHuaynoInterface(TestWithMPI):
         res1 = instance.new_particle(mass = 11.0, radius = 2.0, x = 0.0, y = 0.0, z = 0.0, vx = 0.0, vy = 0.0, vz = 0.0)
         res2 = instance.new_particle(mass = 21.0, radius = 5.0, x = 10.0, y = 0.0, z = 0.0, vx = 10.0, vy = 0.0, vz = 0.0)
         
-        self.assertEquals(0, res1['index_of_the_particle'])
-        self.assertEquals(1, res2['index_of_the_particle'])
+        self.assertEqual(0, res1['index_of_the_particle'])
+        self.assertEqual(1, res2['index_of_the_particle'])
     
         retrieved_state1 = instance.get_state(0)
         retrieved_state2 = instance.get_state(1)
     
-        self.assertEquals(11.0,  retrieved_state1['mass'])
-        self.assertEquals(21.0,  retrieved_state2['mass'])
-        self.assertEquals(0.0,  retrieved_state1['x'])
-        self.assertEquals(10.0,  retrieved_state2['x'])
+        self.assertEqual(11.0,  retrieved_state1['mass'])
+        self.assertEqual(21.0,  retrieved_state2['mass'])
+        self.assertEqual(0.0,  retrieved_state1['x'])
+        self.assertEqual(10.0,  retrieved_state2['x'])
     
         instance.cleanup_code()
         instance.stop()
@@ -76,27 +76,27 @@ class TestHuaynoInterface(TestWithMPI):
 
         for i in [0, 1, 2]:
             temp_particle = instance.new_particle(mass = i, radius = 1.0, x = 0.0, y = 0.0, z = 0.0, vx = 0.0, vy = 0.0, vz = 0.0)
-            self.assertEquals(i, temp_particle['index_of_the_particle'])
+            self.assertEqual(i, temp_particle['index_of_the_particle'])
             
         instance.delete_particle(1)
       
-        self.assertEquals(2, instance.get_number_of_particles()['number_of_particles'])
+        self.assertEqual(2, instance.get_number_of_particles()['number_of_particles'])
         
-        self.assertEquals(0, instance.get_index_of_first_particle()['index_of_the_particle'])
+        self.assertEqual(0, instance.get_index_of_first_particle()['index_of_the_particle'])
         
-        self.assertEquals(2, instance.get_index_of_next_particle(0)['index_of_the_next_particle'])
-        self.assertEquals(0, instance.get_index_of_next_particle(0)['__result'])
-        self.assertEquals(-2, instance.get_index_of_next_particle(1)['__result'])
-        self.assertEquals(1, instance.get_index_of_next_particle(2)['__result'])
+        self.assertEqual(2, instance.get_index_of_next_particle(0)['index_of_the_next_particle'])
+        self.assertEqual(0, instance.get_index_of_next_particle(0)['__result'])
+        self.assertEqual(-2, instance.get_index_of_next_particle(1)['__result'])
+        self.assertEqual(1, instance.get_index_of_next_particle(2)['__result'])
         instance.cleanup_code()
         instance.stop()
         
     def test3(self):
         huayno = HuaynoInterface()
         huayno.set_eps2(0.101)
-        self.assertEquals(0.101, huayno.get_eps2()['eps2'])
+        self.assertEqual(0.101, huayno.get_eps2()['eps2'])
         huayno.set_eps2( 0.110)
-        self.assertEquals(0.110, huayno.get_eps2()['eps2'])
+        self.assertEqual(0.110, huayno.get_eps2()['eps2'])
         huayno.cleanup_code()
         huayno.stop()
 
@@ -107,12 +107,12 @@ class TestHuaynoInterface(TestWithMPI):
         huayno.new_particle([10,20],[0,0],[0,0], [0,0], [0,0], [0,0], [0,0],[1,1])
         retrieved_state = huayno.get_state(0)
         
-        self.assertEquals(10.0,  retrieved_state['mass'])
-        self.assertEquals(1, retrieved_state['radius'])
+        self.assertEqual(10.0,  retrieved_state['mass'])
+        self.assertEqual(1, retrieved_state['radius'])
     
         retrieved_state = huayno.get_state([0,1])
-        self.assertEquals(20.0,  retrieved_state['mass'][1])
-        self.assertEquals(huayno.get_number_of_particles()['number_of_particles'], 2)
+        self.assertEqual(20.0,  retrieved_state['mass'][1])
+        self.assertEqual(huayno.get_number_of_particles()['number_of_particles'], 2)
         huayno.cleanup_code() 
         huayno.stop()
        
@@ -187,8 +187,8 @@ class TestHuayno(TestWithMPI):
             x_points = earth.get_timeline_of_attribute("x")
             y_points = earth.get_timeline_of_attribute("y")
             
-            x_points_in_AU = map(lambda (t,x) : x.value_in(units.AU), x_points)
-            y_points_in_AU = map(lambda (t,x) : x.value_in(units.AU), y_points)
+            x_points_in_AU = [t_x[1].value_in(units.AU) for t_x in x_points]
+            y_points_in_AU = [t_x1[1].value_in(units.AU) for t_x1 in y_points]
             
             plot.scatter(x_points_in_AU,y_points_in_AU, color = "b", marker = 'o')
             
@@ -239,7 +239,7 @@ class TestHuayno(TestWithMPI):
         instance.initialize_code()
         
         particles = datamodel.Particles(2)
-        self.assertEquals(len(instance.particles), 0)
+        self.assertEqual(len(instance.particles), 0)
         
         particles.mass = [15.0, 30.0] | units.kg
         particles.radius =  [10.0, 20.0] | units.m
@@ -248,13 +248,13 @@ class TestHuayno(TestWithMPI):
 
         
         instance.particles.add_particles(particles)
-        self.assertEquals(len(instance.particles), 2)
+        self.assertEqual(len(instance.particles), 2)
         
         instance.particles.mass =  [17.0, 33.0] | units.kg
         
         
-        self.assertEquals(instance.get_mass(0), 17.0| units.kg) 
-        self.assertEquals(instance.get_mass(1), 33.0| units.kg)  
+        self.assertEqual(instance.get_mass(0), 17.0| units.kg) 
+        self.assertEqual(instance.get_mass(1), 33.0| units.kg)  
 
     def test5(self):
         convert_nbody = nbody_system.nbody_to_si(5.0 | units.kg, 10.0 | units.m)
@@ -263,7 +263,7 @@ class TestHuayno(TestWithMPI):
         instance.initialize_code()
         
         particles = datamodel.Particles(2)
-        self.assertEquals(len(instance.particles), 0)
+        self.assertEqual(len(instance.particles), 0)
         
         particles.mass = [15.0, 30.0] | units.kg
         particles.radius =  [10.0, 20.0] | units.m
@@ -272,7 +272,7 @@ class TestHuayno(TestWithMPI):
 
         
         instance.particles.add_particles(particles)
-        self.assertEquals(len(instance.particles), 2)
+        self.assertEqual(len(instance.particles), 2)
         
         instance.set_state(1, 16|units.kg, 20.0|units.m, 40.0|units.m, 60.0|units.m, 
                                  1.0|units.ms, 1.0|units.ms, 1.0|units.ms)
@@ -293,29 +293,29 @@ class TestHuayno(TestWithMPI):
         
     
     def test6(self):
-        print "Test6: Testing Huayno parameters"
+        print("Test6: Testing Huayno parameters")
         convert_nbody = nbody_system.nbody_to_si(1.0 | units.yr, 1.0 | units.AU)
         instance = Huayno(convert_nbody)
         
         (value, error) = instance.legacy_interface.get_eps2()
-        self.assertEquals(0, error)
-        self.assertEquals(0.0, value)
-        self.assertAlmostEquals(0.0 | units.AU**2, instance.parameters.epsilon_squared, in_units=units.AU**2)
+        self.assertEqual(0, error)
+        self.assertEqual(0.0, value)
+        self.assertAlmostEqual(0.0 | units.AU**2, instance.parameters.epsilon_squared, in_units=units.AU**2)
         for x in [0.01, 0.1, 0.2]:
             instance.parameters.epsilon_squared = x | units.AU**2
-            self.assertAlmostEquals(x | units.AU**2, instance.parameters.epsilon_squared, in_units=units.AU**2)
+            self.assertAlmostEqual(x | units.AU**2, instance.parameters.epsilon_squared, in_units=units.AU**2)
                 
         (value, error) = instance.legacy_interface.get_time()
-        self.assertEquals(0, error)
-        self.assertEquals(0.0, value)
-        self.assertAlmostEquals(0.0 | units.yr, instance.parameters.begin_time, in_units=units.yr)
+        self.assertEqual(0, error)
+        self.assertEqual(0.0, value)
+        self.assertAlmostEqual(0.0 | units.yr, instance.parameters.begin_time, in_units=units.yr)
         for x in [1.0, 10.0, 100.0]:
             instance.parameters.begin_time = x | units.yr
-            self.assertAlmostEquals(x | units.yr, instance.parameters.begin_time, in_units=units.yr)
+            self.assertAlmostEqual(x | units.yr, instance.parameters.begin_time, in_units=units.yr)
         instance.stop()
     
     def test7(self):
-        print "Test7: Testing effect of Huayno parameter epsilon_squared"
+        print("Test7: Testing effect of Huayno parameter epsilon_squared")
         convert_nbody = nbody_system.nbody_to_si(1.0 | units.MSun, 1.0 | units.AU)
         
         particles = datamodel.Particles(2)
@@ -344,12 +344,12 @@ class TestHuayno(TestWithMPI):
                 instance.particles[1].velocity[1])))
             instance.stop()
         # Small values of epsilon_squared should result in normal earth-sun dynamics: rotation of 90 degrees
-        self.assertAlmostEquals(abs(final_direction[0]), abs(initial_direction+math.pi/2.0), 2)
+        self.assertAlmostEqual(abs(final_direction[0]), abs(initial_direction+math.pi/2.0), 2)
         # Large values of epsilon_squared should result in ~ no interaction
-        self.assertAlmostEquals(final_direction[-1], initial_direction, 2)
+        self.assertAlmostEqual(final_direction[-1], initial_direction, 2)
         # Outcome is most sensitive to epsilon_squared when epsilon_squared = d(earth, sun)^2
         delta = [abs(final_direction[i+1]-final_direction[i]) for i in range(len(final_direction)-1)]
-        self.assertEquals(delta[len(final_direction)//2 -1], max(delta))
+        self.assertEqual(delta[len(final_direction)//2 -1], max(delta))
         
         
     def test13(self):
@@ -413,9 +413,9 @@ class TestHuayno(TestWithMPI):
             instance.stop()
         
         # this result is probably dependent on system architecture hence no good for assert
-        print 
-        print sha.hexdigest()
-        print "8e71f9441578a43af4af927943577ad2c4130e4c"
+        print() 
+        print(sha.hexdigest())
+        print("8e71f9441578a43af4af927943577ad2c4130e4c")
         
     def test15(self):
         particles = plummer.new_plummer_model(512)
@@ -424,10 +424,10 @@ class TestHuayno(TestWithMPI):
             try:
                 instance = Huayno(mode=mode, number_of_workers=1)#, debugger="xterm")
             except:
-                print "Running huayno with mode=", mode, " was unsuccessful."
+                print("Running huayno with mode=", mode, " was unsuccessful.")
                 continue
             else:
-                print "Running huayno with mode=", mode, "... "
+                print("Running huayno with mode=", mode, "... ")
                 
             instance.initialize_code()
             instance.parameters.epsilon_squared = 0.01 | nbody_system.length ** 2
@@ -502,10 +502,10 @@ class TestHuayno(TestWithMPI):
         
         self.assertTrue(collisions.is_set())
         self.assertTrue(instance.model_time < 0.5 | nbody_system.time)
-        self.assertEquals(len(collisions.particles(0)), 3)
-        self.assertEquals(len(collisions.particles(1)), 3)
-        self.assertEquals(len(particles - collisions.particles(0) - collisions.particles(1)), 1)
-        self.assertEquals(abs(collisions.particles(0).x - collisions.particles(1).x) <= 
+        self.assertEqual(len(collisions.particles(0)), 3)
+        self.assertEqual(len(collisions.particles(1)), 3)
+        self.assertEqual(len(particles - collisions.particles(0) - collisions.particles(1)), 1)
+        self.assertEqual(abs(collisions.particles(0).x - collisions.particles(1).x) <= 
                 (collisions.particles(0).radius + collisions.particles(1).radius),
                 [True, True, True])
         
@@ -516,57 +516,57 @@ class TestHuayno(TestWithMPI):
             merged.position = (p1 + p2).center_of_mass()
             merged.velocity = (p1 + p2).center_of_mass_velocity()
         
-        print instance.model_time
-        print instance.particles
+        print(instance.model_time)
+        print(instance.particles)
         instance.particles.remove_particles(collisions.particles(0) + collisions.particles(1))
         instance.particles.add_particles(sticky_merged)
         
         instance.evolve_model(1.0 | nbody_system.time)
-        print
-        print instance.model_time
-        print instance.particles
+        print()
+        print(instance.model_time)
+        print(instance.particles)
         self.assertTrue(collisions.is_set())
         self.assertTrue(instance.model_time < 1.0 | nbody_system.time)
-        self.assertEquals(len(collisions.particles(0)), 1)
-        self.assertEquals(len(collisions.particles(1)), 1)
-        self.assertEquals(len(instance.particles - collisions.particles(0) - collisions.particles(1)), 2)
-        self.assertEquals(abs(collisions.particles(0).x - collisions.particles(1).x) <= 
+        self.assertEqual(len(collisions.particles(0)), 1)
+        self.assertEqual(len(collisions.particles(1)), 1)
+        self.assertEqual(len(instance.particles - collisions.particles(0) - collisions.particles(1)), 2)
+        self.assertEqual(abs(collisions.particles(0).x - collisions.particles(1).x) <= 
                 (collisions.particles(0).radius + collisions.particles(1).radius),
                 [True])
         instance.stop()
     
     def test17(self):
-        print "Compare the SHARED2 integrator with the collision-detection enabled SHARED2_COLLISIONS integrator"
+        print("Compare the SHARED2 integrator with the collision-detection enabled SHARED2_COLLISIONS integrator")
         self._compare_integrator_with_collision_integrator(Huayno.inttypes.SHARED2_COLLISIONS, Huayno.inttypes.SHARED2)
-        print "Testing Huayno collision_detection with SHARED2_COLLISIONS"
+        print("Testing Huayno collision_detection with SHARED2_COLLISIONS")
         self._run_collision_with_integrator(Huayno.inttypes.SHARED2_COLLISIONS)
     
     def test18(self):
-        print "Compare the SHARED4 integrator with the collision-detection enabled SHARED4_COLLISIONS integrator"
+        print("Compare the SHARED4 integrator with the collision-detection enabled SHARED4_COLLISIONS integrator")
         self._compare_integrator_with_collision_integrator(Huayno.inttypes.SHARED4_COLLISIONS, Huayno.inttypes.SHARED4)
-        print "Testing Huayno collision_detection with SHARED4_COLLISIONS"
+        print("Testing Huayno collision_detection with SHARED4_COLLISIONS")
         self._run_collision_with_integrator(Huayno.inttypes.SHARED4_COLLISIONS)
     
     def test19(self):
-        print "Compare the SHARED6 integrator with the collision-detection enabled SHARED6_COLLISIONS integrator"
+        print("Compare the SHARED6 integrator with the collision-detection enabled SHARED6_COLLISIONS integrator")
         self._compare_integrator_with_collision_integrator(Huayno.inttypes.SHARED6_COLLISIONS, Huayno.inttypes.SHARED6)
-        print "Testing Huayno collision_detection with SHARED6_COLLISIONS"
+        print("Testing Huayno collision_detection with SHARED6_COLLISIONS")
         self._run_collision_with_integrator(Huayno.inttypes.SHARED6_COLLISIONS)
     
     def test20(self):
-        print "Compare the SHARED8 integrator with the collision-detection enabled SHARED8_COLLISIONS integrator"
+        print("Compare the SHARED8 integrator with the collision-detection enabled SHARED8_COLLISIONS integrator")
         self._compare_integrator_with_collision_integrator(Huayno.inttypes.SHARED8_COLLISIONS, Huayno.inttypes.SHARED8)
-        print "Testing Huayno collision_detection with SHARED8_COLLISIONS"
+        print("Testing Huayno collision_detection with SHARED8_COLLISIONS")
         self._run_collision_with_integrator(Huayno.inttypes.SHARED8_COLLISIONS)
     
     def test21(self):
-        print "Compare the SHARED10 integrator with the collision-detection enabled SHARED10_COLLISIONS integrator"
+        print("Compare the SHARED10 integrator with the collision-detection enabled SHARED10_COLLISIONS integrator")
         self._compare_integrator_with_collision_integrator(Huayno.inttypes.SHARED10_COLLISIONS, Huayno.inttypes.SHARED10)
-        print "Testing Huayno collision_detection with SHARED10_COLLISIONS"
+        print("Testing Huayno collision_detection with SHARED10_COLLISIONS")
         self._run_collision_with_integrator(Huayno.inttypes.SHARED10_COLLISIONS)
     
     def test22(self):
-        print "Testing zero-mass test particles in Huayno, can be used for removing particles when inside recursive evolve loop"
+        print("Testing zero-mass test particles in Huayno, can be used for removing particles when inside recursive evolve loop")
         sun_and_earth = self.new_system_of_sun_and_earth()
         period = (4.0 * math.pi**2 * (1.0 | units.AU)**3 / (constants.G * sun_and_earth.total_mass())).sqrt()
         convert_nbody = nbody_system.nbody_to_si(1.0 | units.MSun, 1.0 | units.AU)
@@ -587,7 +587,7 @@ class TestHuayno(TestWithMPI):
         huayno.stop()
     
     def test23(self):
-        print "testing removing and adding particles repeatedly"
+        print("testing removing and adding particles repeatedly")
         N=1100
         p1=plummer.new_plummer_model(N)
         p2=plummer.new_plummer_model(N)
@@ -606,7 +606,7 @@ class TestHuayno(TestWithMPI):
         self.assertAlmostEqual(h1.potential_energy,h2.potential_energy,15)
         
     def test24(self):
-        print "test massless particles/ kepler integrator"
+        print("test massless particles/ kepler integrator")
         N=20        
         tend=2.| units.yr
         numpy.random.seed(12345)
@@ -649,7 +649,7 @@ class TestHuayno(TestWithMPI):
         self.assertAlmostEqual(pos[20][2],pos[14][2],12)
 
     def test25(self):
-        print "test massless particles/ kepler integrator, smoothed"
+        print("test massless particles/ kepler integrator, smoothed")
         N=10        
         tend=20.| units.yr
         numpy.random.seed(12345)
@@ -687,7 +687,7 @@ class TestHuayno(TestWithMPI):
 
 
     def test26(self):
-        print "test massless particles (negative time)"
+        print("test massless particles (negative time)")
         N=10        
         tend=-5.| units.yr
         numpy.random.seed(12345)
@@ -773,8 +773,8 @@ class TestHuayno(TestWithMPI):
         instance.parameters.stopping_conditions_out_of_box_use_center_of_mass = False
         instance.evolve_model(1 | nbody_system.time)
         self.assertTrue(instance.stopping_conditions.out_of_box_detection.is_set())
-        self.assertEquals(len(instance.stopping_conditions.out_of_box_detection.particles(0)), 1)
-        self.assertEquals(instance.stopping_conditions.out_of_box_detection.particles(0)[0].key, particles[1].key)
+        self.assertEqual(len(instance.stopping_conditions.out_of_box_detection.particles(0)), 1)
+        self.assertEqual(instance.stopping_conditions.out_of_box_detection.particles(0)[0].key, particles[1].key)
         instance.stop()
         
 

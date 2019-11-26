@@ -44,16 +44,15 @@ class ParametersAttributeDocumenter(AttributeDocumenter):
                 instance.stop()
                 
         except Exception as ex:
-            print ex
+            print(ex)
             return
             
         if self.analyzer:
             # prevent encoding errors when the file name is non-ASCII
-            filename = unicode(self.analyzer.srcname,
-                               sys.getfilesystemencoding(), 'replace')
-            sourcename = u'%s:docstring of %s' % (filename, self.fullname)
+            filename = str(self.analyzer.srcname)
+            sourcename = '%s:docstring of %s' % (filename, self.fullname)
         else:
-            sourcename = u'docstring of %s' % self.fullname
+            sourcename = 'docstring of %s' % self.fullname
             
         encoding = self.analyzer and self.analyzer.encoding
         lines = prepare_docstring(force_decode(parameter_documentation, encoding))
@@ -102,7 +101,7 @@ class ParametersAttributeDocumenter(AttributeDocumenter):
             return True
         # this used to only catch SyntaxError, ImportError and AttributeError,
         # but importing modules with side effects can raise all kinds of errors
-        except Exception, err:
+        except Exception as err:
             if self.env.app and not self.env.app.quiet:
                 self.env.app.info(traceback.format_exc().rstrip())
             self.directive.warn(

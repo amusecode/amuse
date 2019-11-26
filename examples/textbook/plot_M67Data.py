@@ -41,7 +41,7 @@ class Cluster():
             amusedir = os.environ['AMUSE_DIR']
             dir = amusedir+'/examples/textbook/'
         except:
-            print 'Environment variable AMUSE_DIR not set'
+            print('Environment variable AMUSE_DIR not set')
             dir = './'
     
         isofile = open(dir+'M67Data.dat')

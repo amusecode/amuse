@@ -20,7 +20,7 @@ AC_ARG_VAR([PYTHON], [Python interpreter])
 
 AC_SUBST(FC_ISO_C_BINDINGS)
 
-AM_PATH_PYTHON([2.7])
+AM_PATH_PYTHON([3.5])
 
 AC_PATH_PROG([PYTHON], [$PYTHON], [])
 AC_ARG_VAR([NVCC], [CUDA compiler command])

@@ -18,13 +18,13 @@ def run_molecular_cloud(N=100, Mcloud=100. | units.MSun,
 
     rho_cloud = Mcloud/Rcloud**3
     tff = 0.5427/numpy.sqrt(constants.G*rho_cloud)
-    print "Freefall timescale=", tff.in_(units.Myr)
+    print("Freefall timescale=", tff.in_(units.Myr))
 
     stars = Particles(0)
     hydro = Hydro(Fi, gas, stars)
 
     rho_cloud = 3.*Mcloud/(4.*numpy.pi*Rcloud**3)
-    print rho_cloud
+    print(rho_cloud)
 
     dt = 0.02 | units.Myr
     tend= 10.0 | units.Myr
@@ -37,33 +37,33 @@ def run_molecular_cloud(N=100, Mcloud=100. | units.MSun,
 
     while time < tend:
         time += dt
-        print "Evolve to time=", time.in_(units.Myr)
+        print("Evolve to time=", time.in_(units.Myr))
         Mtot = 0|units.MSun
         if len(hydro.star_particles) > 0:
-            print "Mass conservation: Slocal:", time.in_(units.Myr), \
+            print("Mass conservation: Slocal:", time.in_(units.Myr), \
                   hydro.gas_particles.mass.sum().in_(units.MSun), \
                   hydro.star_particles.mass.sum().in_(units.MSun), \
                   "sum=", (hydro.gas_particles.mass.sum() \
-                            + hydro.star_particles.mass.sum()).in_(units.MSun)
-            print "Mass conservation: Shydro:", time.in_(units.Myr), \
+                            + hydro.star_particles.mass.sum()).in_(units.MSun))
+            print("Mass conservation: Shydro:", time.in_(units.Myr), \
                   hydro.code.gas_particles.mass.sum().in_(units.MSun), \
                   hydro.code.dm_particles.mass.sum().in_(units.MSun), \
                   "sum=", \
                   (hydro.code.gas_particles.mass.sum() \
                     + hydro.code.dm_particles.mass.sum()).in_(units.MSun), \
-                    "S=", hydro.star_particles.mass.sum().in_(units.MSun)
+                    "S=", hydro.star_particles.mass.sum().in_(units.MSun))
             Mtot = hydro.gas_particles.mass.sum() \
                     + hydro.star_particles.mass.sum()
         else:
-            print "Mass conservation: local:", time.in_(units.Myr), \
-                  hydro.gas_particles.mass.sum().in_(units.MSun) 
-            print "Mass conservation: hydro:", time.in_(units.Myr), \
-                  hydro.code.gas_particles.mass.sum().in_(units.MSun)
+            print("Mass conservation: local:", time.in_(units.Myr), \
+                  hydro.gas_particles.mass.sum().in_(units.MSun)) 
+            print("Mass conservation: hydro:", time.in_(units.Myr), \
+                  hydro.code.gas_particles.mass.sum().in_(units.MSun))
             Mtot = hydro.gas_particles.mass.sum()
 
         if Mtot < Mcloud-(1.e-5|units.MSun):
-            print "Mass is not conserved:", Mtot.in_(units.MSun), \
-                  Mcloud.in_(units.MSun)
+            print("Mass is not conserved:", Mtot.in_(units.MSun), \
+                  Mcloud.in_(units.MSun))
             exit(-1)
 
         hydro.evolve_model(time)
@@ -74,8 +74,8 @@ def run_molecular_cloud(N=100, Mcloud=100. | units.MSun,
         if i==0:
             E0 = E
         Eerr = (E-E0)/E0
-        print 'energy=', E, 'energy_error=', Eerr, 'e_th=', E_th
-        print "maximal_density:",gas.rho.max().in_(units.MSun/units.parsec**3)
+        print('energy=', E, 'energy_error=', Eerr, 'e_th=', E_th)
+        print("maximal_density:",gas.rho.max().in_(units.MSun/units.parsec**3))
 
         hydro.print_diagnostics()
         if time>t_diag:

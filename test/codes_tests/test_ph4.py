@@ -32,16 +32,16 @@ class TestMPIInterface(TestWithMPI):
         instance.set_eta(0.01)
         
         index, error = instance.new_particle(11.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 2.0)
-        self.assertEquals(error, 0)
-        self.assertEquals(index, 1)
+        self.assertEqual(error, 0)
+        self.assertEqual(index, 1)
         error = instance.commit_particles()
-        self.assertEquals(error, 0)
+        self.assertEqual(error, 0)
         
         retrieved_state = instance.get_state(index)
-        self.assertEquals(retrieved_state['__result'], 0)
-        self.assertEquals(11.0,  retrieved_state['mass'])
-        self.assertEquals(2.0, retrieved_state['radius'])
-        self.assertEquals(instance.get_number_of_particles()['number_of_particles'], 1)
+        self.assertEqual(retrieved_state['__result'], 0)
+        self.assertEqual(11.0,  retrieved_state['mass'])
+        self.assertEqual(2.0, retrieved_state['radius'])
+        self.assertEqual(instance.get_number_of_particles()['number_of_particles'], 1)
         instance.cleanup_code()
         instance.stop()
         
@@ -50,10 +50,10 @@ class TestMPIInterface(TestWithMPI):
         instance.initialize_code()
         for x in [0.101, 4.0]:
             error = instance.set_eps2(x)
-            self.assertEquals(error, 0)            
+            self.assertEqual(error, 0)            
             value, error = instance.get_eps2()
-            self.assertEquals(error, 0)
-            self.assertEquals(x, value)
+            self.assertEqual(error, 0)
+            self.assertEqual(x, value)
         instance.cleanup_code()
         instance.stop()
         
@@ -73,10 +73,10 @@ class TestMPIInterface(TestWithMPI):
             , [2.0,3.0,4.0,5.0])
         error = instance.commit_particles()
         retrieved_state = instance.get_state(1)
-        self.assertEquals(11.0,  retrieved_state['mass'])
+        self.assertEqual(11.0,  retrieved_state['mass'])
         retrieved_state = instance.get_state([2,3,4])
-        self.assertEquals(12.0,  retrieved_state['mass'][0])
-        self.assertEquals(instance.get_number_of_particles()['number_of_particles'], 4)
+        self.assertEqual(12.0,  retrieved_state['mass'][0])
+        self.assertEqual(instance.get_number_of_particles()['number_of_particles'], 4)
         instance.cleanup_code()
         instance.stop()
     
@@ -98,11 +98,11 @@ class TestMPIInterface(TestWithMPI):
             , values)
         error = instance.commit_particles()
         retrieved_state = instance.get_state(1)
-        self.assertEquals(1.0,  retrieved_state['mass'])
+        self.assertEqual(1.0,  retrieved_state['mass'])
         retrieved_state = instance.get_state(3999)
         instance.cleanup_code()
         instance.stop()
-        self.assertEquals(3999.0,  retrieved_state['mass'])
+        self.assertEqual(3999.0,  retrieved_state['mass'])
         
     def test6(self):
         instance = ph4Interface()#(debugger="xterm")
@@ -147,7 +147,7 @@ class TestMPIInterface(TestWithMPI):
         
         instance.commit_particles()
         potential, errorcode = instance.get_potential(id1)
-        self.assertEquals(errorcode, 0)
+        self.assertEqual(errorcode, 0)
         self.assertAlmostRelativeEquals(potential,  -10.0 / numpy.sqrt(2.0**2 + 0.1**2), 8)
         total_potential, errorcode = instance.get_potential_energy()
         potentials, errorcode = instance.get_potential([id1, id2])
@@ -168,11 +168,11 @@ class TestMPIInterface(TestWithMPI):
         
         instance.commit_particles()
         potential, errorcode = instance.get_potential(id1)
-        self.assertEquals(errorcode, 0)
+        self.assertEqual(errorcode, 0)
         self.assertAlmostRelativeEquals(potential,  -1.0 / numpy.sqrt(2.0**2), 8)
         
         potential, errorcode = instance.get_potential(id2)
-        self.assertEquals(errorcode, 0)
+        self.assertEqual(errorcode, 0)
         self.assertAlmostRelativeEquals(potential,  -10.0 / numpy.sqrt(2.0**2), 8)
         
         total_potential, errorcode = instance.get_potential_energy()
@@ -189,20 +189,20 @@ class TestMPIInterface(TestWithMPI):
         instance.initialize_code()
         instance.set_eta(0.01)
         index, error = instance.new_particle(11.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 2.0, 10)
-        self.assertEquals(error, 0)
-        self.assertEquals(index, 10)
+        self.assertEqual(error, 0)
+        self.assertEqual(index, 10)
         #index, error = instance.new_particle(12.0, 3.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 10)
         #print index, error 
         # self.assertEquals(error, -1)
         #self.assertEquals(index, 10)
         error = instance.commit_particles()
-        self.assertEquals(error, 0)
+        self.assertEqual(error, 0)
         
         retrieved_state = instance.get_state(index)
-        self.assertEquals(retrieved_state['__result'], 0)
-        self.assertEquals(11.0,  retrieved_state['mass'])
-        self.assertEquals(2.0, retrieved_state['radius'])
-        self.assertEquals(instance.get_number_of_particles()['number_of_particles'], 1)
+        self.assertEqual(retrieved_state['__result'], 0)
+        self.assertEqual(11.0,  retrieved_state['mass'])
+        self.assertEqual(2.0, retrieved_state['radius'])
+        self.assertEqual(instance.get_number_of_particles()['number_of_particles'], 1)
         instance.cleanup_code()
         instance.stop()
 
@@ -292,8 +292,8 @@ class TestPH4(TestWithMPI):
             x_points = earth.get_timeline_of_attribute("x")
             y_points = earth.get_timeline_of_attribute("y")
             
-            x_points_in_AU = map(lambda (t,x) : x.value_in(units.AU), x_points)
-            y_points_in_AU = map(lambda (t,x) : x.value_in(units.AU), y_points)
+            x_points_in_AU = [t_x[1].value_in(units.AU) for t_x in x_points]
+            y_points_in_AU = [t_x1[1].value_in(units.AU) for t_x1 in y_points]
             
             plot.scatter(x_points_in_AU,y_points_in_AU, color = "b", marker = 'o')
             
@@ -316,7 +316,7 @@ class TestPH4(TestWithMPI):
         instance.initialize_code()
         
         particles = datamodel.Particles(2)
-        self.assertEquals(len(instance.particles), 0)
+        self.assertEqual(len(instance.particles), 0)
         
         particles.mass = [15.0, 30.0] | units.kg
         particles.radius =  [10.0, 20.0] | units.m
@@ -325,13 +325,13 @@ class TestPH4(TestWithMPI):
 
         
         instance.particles.add_particles(particles)
-        self.assertEquals(len(instance.particles), 2)
+        self.assertEqual(len(instance.particles), 2)
         instance.commit_particles()
         
         instance.particles.mass =  [17.0, 33.0] | units.kg
         
-        self.assertEquals(instance.get_mass(1), 17.0| units.kg) 
-        self.assertEquals(instance.get_mass(2), 33.0| units.kg)  
+        self.assertEqual(instance.get_mass(1), 17.0| units.kg) 
+        self.assertEqual(instance.get_mass(2), 33.0| units.kg)  
         
         instance.cleanup_code()
         instance.stop()
@@ -341,7 +341,7 @@ class TestPH4(TestWithMPI):
         instance.initialize_code()
         
         particles = datamodel.Particles(6)
-        particles.mass = nbody_system.mass.new_quantity(range(1,7))
+        particles.mass = nbody_system.mass.new_quantity(list(range(1,7)))
         particles.radius =   0.00001 | nbody_system.length
         particles.position = [[-1.0,0.0,0.0],[1.0,0.0,0.0],[0.0,-1.0,0.0],[0.0,1.0,0.0],[0.0,0.0,-1.0],[0.0,0.0,1.0]] | nbody_system.length
         particles.velocity = [[0.0,0.0,0.0],[0.0,0.0,0.0],[0.0,0.0,0.0],[0.0,0.0,0.0],[0.0,0.0,0.0],[0.0,0.0,0.0]] | nbody_system.speed
@@ -353,7 +353,7 @@ class TestPH4(TestWithMPI):
         instance.cleanup_code()
         instance.stop()
         
-        self.assertEquals(2 | nbody_system.mass, copyof[1].mass)  
+        self.assertEqual(2 | nbody_system.mass, copyof[1].mass)  
         
         
     def test5(self):
@@ -381,17 +381,17 @@ class TestPH4(TestWithMPI):
         
         instance.update_particle_set()
         
-        self.assertEquals(len(instance.particles), 5)
-        self.assertEquals(instance.particles.index_in_code, [3,4,5,6,10])
-        self.assertEquals(instance.particles.mass, [0.1,0.1,0.1,0.1,0.11] | nbody_system.mass)
+        self.assertEqual(len(instance.particles), 5)
+        self.assertEqual(instance.particles.index_in_code, [3,4,5,6,10])
+        self.assertEqual(instance.particles.mass, [0.1,0.1,0.1,0.1,0.11] | nbody_system.mass)
         
-        self.assertEquals(len(particles), 6)
+        self.assertEqual(len(particles), 6)
         instance.particles.synchronize_to(particles)
-        self.assertEquals(len(particles), 5)
-        self.assertEquals(particles.mass, [0.1,0.1,0.1,0.1,0.11] | nbody_system.mass)
+        self.assertEqual(len(particles), 5)
+        self.assertEqual(particles.mass, [0.1,0.1,0.1,0.1,0.11] | nbody_system.mass)
         
         binary_energy1, error = instance.legacy_interface.get_binary_energy()
-        self.assertEquals(error, 0)
+        self.assertEqual(error, 0)
         self.assertTrue(binary_energy1 < 0)
         
         binary_energy2 = instance.get_binary_energy()
@@ -399,7 +399,7 @@ class TestPH4(TestWithMPI):
         instance.cleanup_code()
         instance.stop()
         
-        self.assertEquals(binary_energy2.value_in(nbody_system.energy), binary_energy1)
+        self.assertEqual(binary_energy2.value_in(nbody_system.energy), binary_energy1)
         
     def test6(self):
         instance = ph4()
@@ -480,7 +480,7 @@ class TestPH4(TestWithMPI):
         
     def xtest8(self):
         particles = datamodel.Particles(6)
-        particles.mass = nbody_system.mass.new_quantity(range(1,7))
+        particles.mass = nbody_system.mass.new_quantity(list(range(1,7)))
         particles.radius =   0.00001 | nbody_system.length
         particles.position = [[-1.0,0.0,0.0],[1.0,0.0,0.0],[0.0,-1.0,0.0],[0.0,1.0,0.0],[0.0,0.0,-1.0],[0.0,0.0,1.0]] | nbody_system.length
         particles.velocity = [[0.0,0.0,0.0],[0.0,0.0,0.0],[0.0,0.0,0.0],[0.0,0.0,0.0],[0.0,0.0,0.0],[0.0,0.0,0.0]] | nbody_system.speed
@@ -489,16 +489,16 @@ class TestPH4(TestWithMPI):
             try:
                 instance = ph4(mode = current_mode)
             except:
-                print "Running PhiGRAPE with mode=", current_mode, " was unsuccessful."
+                print("Running PhiGRAPE with mode=", current_mode, " was unsuccessful.")
             else:
-                print "Running PhiGRAPE with mode=", current_mode, "... ",
+                print("Running PhiGRAPE with mode=", current_mode, "... ", end=' ')
                 instance.initialize_code()
                 instance.particles.add_particles(particles)
                 instance.initialize_particles(0.0)
                 instance.evolve_model(0.1 | nbody_system.time)
                 instance.cleanup_code()
                 instance.stop()
-                print "ok"
+                print("ok")
                 
     
 
@@ -564,7 +564,7 @@ class TestPH4(TestWithMPI):
 
     
     def test11(self):
-        print "Testing PH4 collision_detection"
+        print("Testing PH4 collision_detection")
         particles = datamodel.Particles(7)
         particles.mass = 0.000001 | nbody_system.mass
         particles.radius = 0.01 | nbody_system.length
@@ -586,10 +586,10 @@ class TestPH4(TestWithMPI):
             
             self.assertTrue(collisions.is_set())
             self.assertTrue(instance.model_time < 0.5 | nbody_system.time)
-            self.assertEquals(len(collisions.particles(0)), 1)
-            self.assertEquals(len(collisions.particles(1)), 1)
-            self.assertEquals(len(instance.particles - collisions.particles(0) - collisions.particles(1)), 5 - i)
-            self.assertEquals(abs(collisions.particles(0).x - collisions.particles(1).x) < 
+            self.assertEqual(len(collisions.particles(0)), 1)
+            self.assertEqual(len(collisions.particles(1)), 1)
+            self.assertEqual(len(instance.particles - collisions.particles(0) - collisions.particles(1)), 5 - i)
+            self.assertEqual(abs(collisions.particles(0).x - collisions.particles(1).x) < 
                 (collisions.particles(0).radius + collisions.particles(1).radius), True)
         
             sticky_merged = datamodel.Particles(len(collisions.particles(0)))
@@ -599,21 +599,21 @@ class TestPH4(TestWithMPI):
                 merged.position = (p1 + p2).center_of_mass()
                 merged.velocity = (p1 + p2).center_of_mass_velocity()
         
-            print instance.model_time
-            print instance.particles
+            print(instance.model_time)
+            print(instance.particles)
             instance.particles.remove_particles(collisions.particles(0) + collisions.particles(1))
             instance.particles.add_particles(sticky_merged)
         
         instance.evolve_model(1.0 | nbody_system.time)
-        print
-        print instance.model_time
-        print instance.particles
+        print()
+        print(instance.model_time)
+        print(instance.particles)
         self.assertTrue(collisions.is_set())
         self.assertTrue(instance.model_time < 1.0 | nbody_system.time)
-        self.assertEquals(len(collisions.particles(0)), 1)
-        self.assertEquals(len(collisions.particles(1)), 1)
-        self.assertEquals(len(instance.particles - collisions.particles(0) - collisions.particles(1)), 2)
-        self.assertEquals(abs(collisions.particles(0).x - collisions.particles(1).x) < 
+        self.assertEqual(len(collisions.particles(0)), 1)
+        self.assertEqual(len(collisions.particles(1)), 1)
+        self.assertEqual(len(instance.particles - collisions.particles(0) - collisions.particles(1)), 2)
+        self.assertEqual(abs(collisions.particles(0).x - collisions.particles(1).x) < 
                 (collisions.particles(0).radius + collisions.particles(1).radius),
                 [True])
         instance.stop()
@@ -642,10 +642,10 @@ class TestPH4(TestWithMPI):
         instance.stopping_conditions.collision_detection.enable()
         instance.evolve_model(0.5 | nbody_system.time)
         self.assertTrue(instance.stopping_conditions.collision_detection.is_set())
-        self.assertEquals(len(instance.stopping_conditions.collision_detection.particles(0)), 2 )
+        self.assertEqual(len(instance.stopping_conditions.collision_detection.particles(0)), 2 )
         p0 =  instance.stopping_conditions.collision_detection.particles(0)[0]
         p1 =  instance.stopping_conditions.collision_detection.particles(1)[0]
-        self.assertNotEquals(p0, p1)
+        self.assertNotEqual(p0, p1)
         self.assertTrue(p1.x - p0.x < 1.5| nbody_system.length)
         instance.stop()
 
@@ -673,10 +673,10 @@ class TestPH4(TestWithMPI):
         instance.stopping_conditions.pair_detection.enable()
         instance.evolve_model(1.5 | nbody_system.time)
         self.assertTrue(instance.stopping_conditions.pair_detection.is_set())
-        self.assertEquals(len(instance.stopping_conditions.pair_detection.particles(0)), 2 )
+        self.assertEqual(len(instance.stopping_conditions.pair_detection.particles(0)), 2 )
         p0 =  instance.stopping_conditions.pair_detection.particles(0)[0]
         p1 =  instance.stopping_conditions.pair_detection.particles(1)[0]
-        self.assertNotEquals(p0, p1)
+        self.assertNotEqual(p0, p1)
         self.assertTrue(p1.x - p0.x < 1.5| nbody_system.length)
         instance.stop()
 
@@ -694,7 +694,7 @@ class TestPH4(TestWithMPI):
         instance = ph4()
         instance.initialize_code()
         instance.parameters.stopping_conditions_number_of_steps = 2
-        self.assertEquals(instance.parameters.stopping_conditions_number_of_steps, 2)
+        self.assertEqual(instance.parameters.stopping_conditions_number_of_steps, 2)
         instance.parameters.epsilon_squared = (0.01 | nbody_system.length)**2
         instance.particles.add_particles(particles) 
         instance.stopping_conditions.number_of_steps_detection.enable()
@@ -721,7 +721,7 @@ class TestPH4(TestWithMPI):
         instance = ph4()
         instance.initialize_code()
         instance.parameters.stopping_conditions_timeout = very_short_time_to_evolve
-        self.assertEquals(instance.parameters.stopping_conditions_timeout, very_short_time_to_evolve)
+        self.assertEqual(instance.parameters.stopping_conditions_timeout, very_short_time_to_evolve)
         instance.parameters.epsilon_squared = (0.01 | nbody_system.length)**2
         instance.particles.add_particles(particles) 
         instance.stopping_conditions.timeout_detection.enable()
@@ -751,10 +751,10 @@ class TestPH4(TestWithMPI):
         instance.cleanup_code()
         instance.stop()
         
-        self.assertEquals(mass, 1.0 | nbody_system.mass)
+        self.assertEqual(mass, 1.0 | nbody_system.mass)
     
     def test16(self):
-        print "Testing ph4 states"
+        print("Testing ph4 states")
         stars = new_plummer_model(100)
         black_hole = datamodel.Particle()
         black_hole.mass = 1.0 | nbody_system.mass
@@ -762,59 +762,59 @@ class TestPH4(TestWithMPI):
         black_hole.position = [0.0, 0.0, 0.0] | nbody_system.length
         black_hole.velocity = [0.0, 0.0, 0.0] | nbody_system.speed
         
-        print "First do everything manually:"
+        print("First do everything manually:")
         instance = ph4()
-        self.assertEquals(instance.get_name_of_current_state(), 'UNINITIALIZED')
+        self.assertEqual(instance.get_name_of_current_state(), 'UNINITIALIZED')
         instance.initialize_code()
-        self.assertEquals(instance.get_name_of_current_state(), 'INITIALIZED')
+        self.assertEqual(instance.get_name_of_current_state(), 'INITIALIZED')
         instance.parameters.epsilon_squared = 0.0 | nbody_system.length**2
         instance.parameters.timestep_parameter = 0.01
         instance.commit_parameters()
-        self.assertEquals(instance.get_name_of_current_state(), 'EDIT')
+        self.assertEqual(instance.get_name_of_current_state(), 'EDIT')
         instance.particles.add_particles(stars)
         instance.commit_particles()
-        self.assertEquals(instance.get_name_of_current_state(), 'RUN')
+        self.assertEqual(instance.get_name_of_current_state(), 'RUN')
         instance.particles.remove_particle(stars[0])
         instance.particles.add_particle(black_hole)
-        self.assertEquals(instance.get_name_of_current_state(), 'UPDATE')
+        self.assertEqual(instance.get_name_of_current_state(), 'UPDATE')
         instance.recommit_particles()
-        self.assertEquals(instance.get_name_of_current_state(), 'RUN')
+        self.assertEqual(instance.get_name_of_current_state(), 'RUN')
         instance.evolve_model(0.001 | nbody_system.time)
-        self.assertEquals(instance.get_name_of_current_state(), 'EVOLVED')
+        self.assertEqual(instance.get_name_of_current_state(), 'EVOLVED')
         instance.synchronize_model()
-        self.assertEquals(instance.get_name_of_current_state(), 'RUN')
+        self.assertEqual(instance.get_name_of_current_state(), 'RUN')
         instance.cleanup_code()
-        self.assertEquals(instance.get_name_of_current_state(), 'END')
+        self.assertEqual(instance.get_name_of_current_state(), 'END')
         instance.stop()
 
-        print "initialize_code(), commit_parameters(), (re)commit_particles(), " \
+        print("initialize_code(), commit_parameters(), (re)commit_particles(), " \
             "synchronize_model(), and cleanup_code() should be called " \
-            "automatically before editing parameters, new_particle(), get_xx(), and stop():"
+            "automatically before editing parameters, new_particle(), get_xx(), and stop():")
         instance = ph4()
-        self.assertEquals(instance.get_name_of_current_state(), 'UNINITIALIZED')
+        self.assertEqual(instance.get_name_of_current_state(), 'UNINITIALIZED')
         instance.parameters.epsilon_squared = 0.0 | nbody_system.length**2
         instance.parameters.timestep_parameter = 0.01
-        self.assertEquals(instance.get_name_of_current_state(), 'INITIALIZED')
+        self.assertEqual(instance.get_name_of_current_state(), 'INITIALIZED')
         instance.particles.add_particles(stars)
-        self.assertEquals(instance.get_name_of_current_state(), 'EDIT')
+        self.assertEqual(instance.get_name_of_current_state(), 'EDIT')
         mass = instance.particles[0].mass
-        self.assertEquals(instance.get_name_of_current_state(), 'RUN')
+        self.assertEqual(instance.get_name_of_current_state(), 'RUN')
         instance.particles.remove_particle(stars[0])
         instance.particles.add_particle(black_hole)
-        self.assertEquals(instance.get_name_of_current_state(), 'UPDATE')
+        self.assertEqual(instance.get_name_of_current_state(), 'UPDATE')
         mass = instance.particles[0].mass
-        self.assertEquals(instance.get_name_of_current_state(), 'RUN')
+        self.assertEqual(instance.get_name_of_current_state(), 'RUN')
         instance.evolve_model(0.001 | nbody_system.time)
-        self.assertEquals(instance.get_name_of_current_state(), 'EVOLVED')
+        self.assertEqual(instance.get_name_of_current_state(), 'EVOLVED')
         mass = instance.particles[0].mass
-        self.assertEquals(instance.get_name_of_current_state(), 'RUN')
+        self.assertEqual(instance.get_name_of_current_state(), 'RUN')
         instance.stop()
-        self.assertEquals(instance.get_name_of_current_state(), 'STOPPED')
+        self.assertEqual(instance.get_name_of_current_state(), 'STOPPED')
     
 
 
     def test17(self):
-        print "Testing parameter defaults"
+        print("Testing parameter defaults")
        
         instance = ph4()
         instance.parameters.epsilon_squared = 0.5  | nbody_system.length * nbody_system.length
@@ -834,7 +834,7 @@ class TestPH4(TestWithMPI):
         self.assertAlmostRelativeEquals( instance.parameters.manage_encounters , 4)
     
     def test18(self):
-        print "Testing effect of ph4 parameter epsilon_squared"
+        print("Testing effect of ph4 parameter epsilon_squared")
         converter = nbody_system.nbody_to_si(1.0 | units.MSun, 1.0 | units.AU)
         particles = datamodel.Particles(2)
         particles.mass = [1.0, 3.0037e-6] | units.MSun
@@ -846,7 +846,7 @@ class TestPH4(TestWithMPI):
         particles.move_to_center()
         
         tan_initial_direction = particles[1].vy/particles[1].vx
-        self.assertAlmostEquals(tan_initial_direction, math.tan(-math.pi/4))
+        self.assertAlmostEqual(tan_initial_direction, math.tan(-math.pi/4))
         tan_final_direction =  []
         for log_eps2 in range(-5,6,2):
             instance = ph4(converter)
@@ -862,15 +862,15 @@ class TestPH4(TestWithMPI):
             instance.cleanup_code()
             instance.stop()
         # Small values of epsilon_squared should result in normal earth-sun dynamics: rotation of 90 degrees
-        self.assertAlmostEquals(tan_final_direction[0], math.tan(math.pi / 4.0), 2)
+        self.assertAlmostEqual(tan_final_direction[0], math.tan(math.pi / 4.0), 2)
         # Large values of epsilon_squared should result in ~ no interaction
-        self.assertAlmostEquals(tan_final_direction[-1], tan_initial_direction, 2)
+        self.assertAlmostEqual(tan_final_direction[-1], tan_initial_direction, 2)
         # Outcome is most sensitive to epsilon_squared when epsilon_squared = d(earth, sun)^2
         delta = [abs(tan_final_direction[i+1]-tan_final_direction[i]) for i in range(len(tan_final_direction)-1)]
-        self.assertEquals(delta[len(tan_final_direction)//2 -1], max(delta))
+        self.assertEqual(delta[len(tan_final_direction)//2 -1], max(delta))
     
     def test19(self):
-        print "Testing ph4 properties"
+        print("Testing ph4 properties")
         particles = new_plummer_model(1000, do_scale=True)
         particles.position += [1, 2, 3] | nbody_system.length
         cluster_velocity = [4, 5, 6] | nbody_system.speed
@@ -938,7 +938,7 @@ class TestPH4(TestWithMPI):
             
             self.assertAlmostRelativeEquals(fx0, -1.0 * fx1, 5)
             fx = (-1.0 / (x0**2) + 1.0 / (x1**2)) * (1.0 | nbody_system.length ** 3 / nbody_system.time ** 2)
-            print fx, fx0
+            print(fx, fx0)
             self.assertAlmostRelativeEquals(fx, fx0, 2)
             self.assertAlmostRelativeEquals(potential0, potential1, 5)
             self.assertAlmostRelativeEquals(potential0, pot, 5)
@@ -1013,10 +1013,10 @@ class TestPH4(TestWithMPI):
         overlay.add_particles(particles)
         all_attributes = overlay.get_values_in_store(overlay.get_all_indices_in_store(), ['mass', 'x', 'y', 'z', 'vx', 'vy', 'vz'])
         
-        self.assertEquals(all_attributes[0], [1,2] | nbody_system.mass )
-        self.assertEquals(instance.particles.mass, [1,2] | nbody_system.mass )
-        self.assertEquals(overlay.mass, [1,2] | nbody_system.mass )
-        self.assertEquals(overlay.position, [[-1., -1., -1.], [ 1.,  1.,  1.]]  | nbody_system.length )
+        self.assertEqual(all_attributes[0], [1,2] | nbody_system.mass )
+        self.assertEqual(instance.particles.mass, [1,2] | nbody_system.mass )
+        self.assertEqual(overlay.mass, [1,2] | nbody_system.mass )
+        self.assertEqual(overlay.position, [[-1., -1., -1.], [ 1.,  1.,  1.]]  | nbody_system.length )
 
    
     def test24(self):
@@ -1034,14 +1034,14 @@ class TestPH4(TestWithMPI):
         instance=ph4()
         
         instance.particles.add_particles(particles)
-        self.assertEquals(len(instance.particles), 2)
+        self.assertEqual(len(instance.particles), 2)
         self.assertAlmostRelativeEquals(instance.particles.mass, [1,2] | nbody_system.mass)
         
         instance.cleanup_code()
         instance.initialize_code()
         
         instance.particles.add_particles(particles)
-        self.assertEquals(len(instance.particles), 2)
+        self.assertEqual(len(instance.particles), 2)
         self.assertAlmostRelativeEquals(instance.particles.mass, [1,2] | nbody_system.mass)
 
 
@@ -1061,14 +1061,14 @@ class TestPH4(TestWithMPI):
         instance=ph4()
         
         instance.particles.add_particles(particles)
-        self.assertEquals(instance.particles.index_in_code, [3,4])
+        self.assertEqual(instance.particles.index_in_code, [3,4])
         instance.commit_particles()
         instance.particles.remove_particle(particles[1])
         instance.recommit_particles()
-        self.assertEquals(instance.particles.index_in_code, [3])
+        self.assertEqual(instance.particles.index_in_code, [3])
         instance.particles.add_particle(particles[1])
         instance.recommit_particles()
-        self.assertEquals(instance.particles.index_in_code, [3,4])
+        self.assertEqual(instance.particles.index_in_code, [3,4])
            
 
     def test26(self):
@@ -1087,14 +1087,14 @@ class TestPH4(TestWithMPI):
         instance=ph4()
         
         instance.particles.add_particles(particles)
-        self.assertEquals(instance.particles.index_in_code, [3,4])
+        self.assertEqual(instance.particles.index_in_code, [3,4])
         instance.commit_particles()
-        print instance.particles[0].potential_in_code
-        self.assertEquals(instance.particles[0].potential(G=nbody_system.G), -(nbody_system.G * (2 | nbody_system.mass)) / (2 | nbody_system.length))
-        self.assertEquals(instance.particles[0].potential_in_code, -(nbody_system.G * (2 | nbody_system.mass)) / (2 | nbody_system.length))
+        print(instance.particles[0].potential_in_code)
+        self.assertEqual(instance.particles[0].potential(G=nbody_system.G), -(nbody_system.G * (2 | nbody_system.mass)) / (2 | nbody_system.length))
+        self.assertEqual(instance.particles[0].potential_in_code, -(nbody_system.G * (2 | nbody_system.mass)) / (2 | nbody_system.length))
 
     def test27(self):
-        print "Testing get timestep of particles"
+        print("Testing get timestep of particles")
         with_softening = True
         
         particles = datamodel.Particles(7)
@@ -1111,7 +1111,7 @@ class TestPH4(TestWithMPI):
         instance.parameters.set_defaults()
         
         if with_softening:
-            print "small amount of softening will prevent timesteps far below 1e-6 and huge energy errors..."
+            print("small amount of softening will prevent timesteps far below 1e-6 and huge energy errors...")
             instance.parameters.epsilon_squared = 1.0e-10 | nbody_system.length**2
         instance.particles.add_particles(particles)
         
@@ -1120,12 +1120,12 @@ class TestPH4(TestWithMPI):
                 [10, 7, 4, 5, 5]):
             instance.evolve_model(target_time)
             if with_softening:
-                self.assertEquals(instance.particles.timestep.amin(), min_dt)
+                self.assertEqual(instance.particles.timestep.amin(), min_dt)
                 self.assertAlmostRelativeEquals(instance.potential_energy + instance.kinetic_energy, total_energy, n_digits)
             else:
-                print "\ntarget_time:", target_time
-                print "minimum timestep:", instance.particles.timestep.amin()
-                print "energy error:", (instance.potential_energy + instance.kinetic_energy - total_energy) / total_energy
+                print("\ntarget_time:", target_time)
+                print("minimum timestep:", instance.particles.timestep.amin())
+                print("energy error:", (instance.potential_energy + instance.kinetic_energy - total_energy) / total_energy)
             total_energy = instance.potential_energy + instance.kinetic_energy
         instance.stop()
 
@@ -1145,7 +1145,7 @@ class TestPH4(TestWithMPI):
         
         instance.particles.add_particles(particles)
         instance.evolve_model(0.1 | nbody_system.time)
-        self.assertEquals(len(instance.particles), 2)
+        self.assertEqual(len(instance.particles), 2)
         instance.particles.remove_particle(particles[0])
         instance.evolve_model(0.2 | nbody_system.time)
-        self.assertEquals(len(instance.particles), 1)
+        self.assertEqual(len(instance.particles), 1)

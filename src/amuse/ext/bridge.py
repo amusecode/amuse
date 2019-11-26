@@ -183,9 +183,9 @@ class bridge(object):
         """
         for x in self.systems:
             if hasattr(x,"synchronize_model"):
-                if(self.verbose): print x.__class__.__name__,"is synchronizing",
+                if(self.verbose): print(x.__class__.__name__,"is synchronizing", end=' ')
                 x.synchronize_model()    
-                if(self.verbose): print ".. done"
+                if(self.verbose): print(".. done")
                             
     def get_potential_at_point(self,radius,x,y,z):
         pot=quantities.zero
@@ -266,7 +266,7 @@ class bridge(object):
             if hasattr(x,"evolve_model"):
                 offset=self.time_offsets[x]
                 if(self.verbose):
-                    print "evolving", x.__class__.__name__,
+                    print("evolving", x.__class__.__name__, end=' ')
                 threads.append(threading.Thread(target=x.evolve_model, args=(tend-offset,)) )
         if self.use_threading:
             for x in threads:
@@ -277,21 +277,21 @@ class bridge(object):
             for x in threads:
                 x.run()
         if(self.verbose): 
-            print ".. done"
+            print(".. done")
         return 0
 
     def kick_systems(self,dt):
         for x in self.systems:
             if self.do_sync[x]:
                 if hasattr(x,"synchronize_model"):
-                    if(self.verbose): print x.__class__.__name__,"is synchronizing",
+                    if(self.verbose): print(x.__class__.__name__,"is synchronizing", end=' ')
                     x.synchronize_model()    
-                    if(self.verbose):  print ".. done"
+                    if(self.verbose):  print(".. done")
         for x in self.systems:
             if hasattr(x,"particles") and len(x.particles)>0:
                 for y in self.partners[x]:
                     if x is not y:
-                        if(self.verbose):  print x.__class__.__name__,"receives kick from",y.__class__.__name__,
+                        if(self.verbose):  print(x.__class__.__name__,"receives kick from",y.__class__.__name__, end=' ')
                         kick_system(x,y.get_gravity_at_point,dt)
-                        if(self.verbose):  print ".. done"
+                        if(self.verbose):  print(".. done")
         return 0

@@ -26,7 +26,7 @@ def plot_ionization_fraction(pos, xion):
     for pi, xi in zip(pos, xion):
         r.append(pi.length())
         x.append(xi)
-    r, x = zip(*sorted(zip(r.value_in(units.parsec), x)))
+    r, x = list(zip(*sorted(zip(r.value_in(units.parsec), x))))
 
     R, X = binned_mean_data(r, x)
     
@@ -55,8 +55,8 @@ def generate_ism_initial_conditions(N, boxsize):
     hydro.gas_particles.new_channel_to(ism).copy()
     hydro.stop()
     ism = ism.select(lambda r: r.length() < 0.5*boxsize,["position"])
-    print "Max density:", ism.rho.max().in_(units.MSun/units.parsec**3), \
-          ism.rho.max().in_(units.amu/units.cm**3)
+    print("Max density:", ism.rho.max().in_(units.MSun/units.parsec**3), \
+          ism.rho.max().in_(units.amu/units.cm**3))
     return ism
 ###BOOKLISTSTOP1###
 
@@ -77,9 +77,9 @@ def main(N, Lstar, boxsize, t_end):
     radiative.particles.add_particles(ism)
 
     radiative.evolve_model(t_end)
-    print "min ionization:", radiative.particles.xion.min()
-    print "average ionization:", radiative.particles.xion.mean()
-    print "max ionization:", radiative.particles.xion.max()
+    print("min ionization:", radiative.particles.xion.min())
+    print("average ionization:", radiative.particles.xion.mean())
+    print("max ionization:", radiative.particles.xion.max())
     plot_ionization_fraction(radiative.particles.position,
                              radiative.particles.xion)
     radiative.stop()

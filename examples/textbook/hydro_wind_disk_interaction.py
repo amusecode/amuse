@@ -42,7 +42,7 @@ class MinimalWorkingExample(object):
         self.disc_Rmax = self.converter.to_generic(100.| units.AU).value_in(nbody_system.length)
         self.filename = "DiskWind.h5"
     
-        print 'Files will be saved in ', self.dirname
+        print('Files will be saved in ', self.dirname)
 
 
     def initialize_star(self):
@@ -123,7 +123,7 @@ class MinimalWorkingExample(object):
         sigma_out=g2*self.discfraction/(2*numpy.pi*self.disc_Rmax**densitypower*(self.disc_Rmax**g2-self.disc_Rmin**g2))
         q_out = self.converter.to_generic(cs_disc).value_in(nbody_system.length/nbody_system.time)/(numpy.pi*sigma_out/k_out)
         
-        print "Number of disk particles:", self.disc_N
+        print("Number of disk particles:", self.disc_N)
         
         proto=ProtoPlanetaryDisk(self.disc_N,
                                  convert_nbody=self.converter,
@@ -135,7 +135,7 @@ class MinimalWorkingExample(object):
                                  q_out=q_out)
         disc=proto.result
     
-        print "The mass of a disc particle = ", disc.mass[0].value_in(units.kg)
+        print("The mass of a disc particle = ", disc.mass[0].value_in(units.kg))
     
         #Rotate 90 degrees with respect to the z-axis and then theta degrees with respect to the y-axis
         
@@ -191,21 +191,21 @@ class MinimalWorkingExample(object):
         while time <= (self.tend+self.dt/2.):
  
  
-            print "Adding new slice of ISM..."
+            print("Adding new slice of ISM...")
             newslice=self.make_slice()
             self.ism_code.gas_particles.add_particles(newslice)
             self.all_particles.add_particles(newslice)
 
                 
             start = timing.time()
-            print "======================================================="
-            print "Evolving to time = ", time.value_in(units.yr), " of ", self.tend.value_in(units.yr)," years..."    
+            print("=======================================================")
+            print("Evolving to time = ", time.value_in(units.yr), " of ", self.tend.value_in(units.yr)," years...")    
             self.ism_code.evolve_model(time)
-            print "This took ", (timing.time() - start), " s"
+            print("This took ", (timing.time() - start), " s")
             
             out_of_bounds = self.ism_code.gas_particles.select_array(lambda x,y,z:(x > self.cylinder_radius)|((z**2+y**2).sqrt() >= self.cylinder_radius), ["x","y","z"]) 
             if len(out_of_bounds)>0:
-                print "Removing ", len(out_of_bounds), " particles from the code because they were out of bounds"
+                print("Removing ", len(out_of_bounds), " particles from the code because they were out of bounds")
                 
                 self.ism_code.gas_particles.remove_particles(out_of_bounds)
             
@@ -218,7 +218,7 @@ class MinimalWorkingExample(object):
             
             time += self.dt
             
-        print "======================================================="
+        print("=======================================================")
         self.ism_code.stop()
 
 

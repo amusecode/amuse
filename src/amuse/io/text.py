@@ -19,7 +19,7 @@ class LineBasedFileCursor(object):
 
     def read_next_line(self):
         try:
-            line = self.file.next()
+            line = next(self.file)
             self._line = line.rstrip('\r\n')
         except StopIteration:
             self._line = None
@@ -111,7 +111,7 @@ class TableFormattedText(base.FileFormatProcessor):
 
     def _get_attribute_names(self):
         if self.set is None:
-            return map(lambda x: "col({0})".format(x), range(len(self.quantities)))
+            return ["col({0})".format(x) for x in range(len(self.quantities))]
         else:
             return sorted(self.set.get_attribute_names_defined_in_store())
 
@@ -128,7 +128,7 @@ class TableFormattedText(base.FileFormatProcessor):
     def _get_attribute_types(self):
         quantities = self.quantities
         if self.quantities:
-            return map(lambda x: x.unit.to_simple_form() if is_quantity(x) else None, quantities)
+            return [x.unit.to_simple_form() if is_quantity(x) else None for x in quantities]
         elif self.set is None:
             return [None] * len(self.attribute_names)
 
@@ -216,19 +216,19 @@ class TableFormattedText(base.FileFormatProcessor):
             if line.startswith(COLUMN_HDR):
                 line = line[len(COLUMN_HDR):].strip()
                 parts = line.split(':')
-                parts = map(lambda x: x.strip(), parts)
+                parts = [x.strip() for x in parts]
                 index = int(parts[0])
                 if self.key_in_column >= 0 and index > self.key_in_column:
                     index -= 1
                 name = parts[1]
                 is_on = parts[2] == 'on'
-                dtype = map(float, parts[3:-1])
+                dtype = list(map(float, parts[3:-1]))
                 unit = self.convert_float_to_unit(dtype)
                 if self.attribute_names is None:
                     current = []
                 else:
                     current = self.attribute_names[:]
-                print index
+                print(index)
                 while len(current)<=index:
                     current.append("")
                 current[index] = name
@@ -244,14 +244,14 @@ class TableFormattedText(base.FileFormatProcessor):
                 self.attribute_dtypes = self._get_attribute_dtypes()
 
     def read_rows(self):
-        values = map(lambda x: [], range(len(self.attribute_names)))
+        values = [[] for x in range(len(self.attribute_names))]
 
         number_of_particles = 0
         keys = []
 
         self.set = None
-        string_converters = map(self._new_converter_from_string_to_dtype, self.attribute_dtypes)
-        units_with_dtype = map(core.unit_with_specific_dtype, self.attribute_types, self.attribute_dtypes)
+        string_converters = list(map(self._new_converter_from_string_to_dtype, self.attribute_dtypes))
+        units_with_dtype = list(map(core.unit_with_specific_dtype, self.attribute_types, self.attribute_dtypes))
 
         while not self.cursor.is_at_end() and not self.cursor.line().startswith(self.footer_prefix_string):
             columns = self.split_into_columns(self.cursor.line())
@@ -271,18 +271,18 @@ class TableFormattedText(base.FileFormatProcessor):
                     raise base.IoException(
                         "Number of values on line '{0}' is {1}, expected {2}".format(self.cursor.line(), len(columns), len(self.attribute_names)))
 
-                map(lambda value_string, list_of_values, conv: list_of_values.append(conv(value_string)),
-                    columns, values, string_converters)
+                for value_string, list_of_values, conv in zip(columns, values, string_converters):
+                    list_of_values.append(conv(value_string))
 
                 number_of_particles += 1
             self.cursor.forward()
             if number_of_particles >= self.maximum_number_of_lines_buffered:
-                quantities = map(
+                quantities = list(map(
                     lambda value, unit, dtype: unit.new_quantity(value) if not unit is None else (numpy.asarray(value, dtype=dtype) if not dtype is None else value),
                     values,
                     units_with_dtype,
                     self.attribute_dtypes
-                )
+                ))
                 if self.set is None:
                     self.set = self.new_set(number_of_particles, keys=keys)
                     self.set.set_values_in_store(self.set.get_all_indices_in_store(), self.attribute_names, quantities)
@@ -293,15 +293,15 @@ class TableFormattedText(base.FileFormatProcessor):
 
                 number_of_particles = 0
                 keys = []
-                values = map(lambda x: [], range(len(self.attribute_names)))
+                values = [[] for x in range(len(self.attribute_names))]
 
         if number_of_particles > 0:
-            quantities = map(
+            quantities = list(map(
                 lambda value, unit, dtype: unit.new_quantity(value) if not unit is None else (numpy.asarray(value, dtype=dtype) if not dtype is None else value),
                 values,
                 units_with_dtype,
                 self.attribute_dtypes
-            )
+            ))
             if self.set is None:
                 self.set = self.new_set(number_of_particles, keys=keys)
                 self.set.set_values_in_store(self.set.get_all_indices_in_store(), self.attribute_names, quantities)
@@ -341,12 +341,13 @@ class TableFormattedText(base.FileFormatProcessor):
 
         while offset < max_row:
 
-            numbers = map(lambda quantity, unit: quantity[offset:offset+block_size] if unit is None else quantity[offset:offset+block_size].value_in(unit), quantities, units)
+            numbers = map(lambda quantity, unit: quantity[offset:offset+block_size] if unit is None else 
+                          quantity[offset:offset+block_size].value_in(unit), quantities, units)
 
             columns = []
 
             for x in numbers:
-                columns.append(map(self.convert_number_to_string, x))
+                columns.append(list(map(self.convert_number_to_string, x)))
 
             rows = []
             for i in range(len(columns[0])):
@@ -357,7 +358,7 @@ class TableFormattedText(base.FileFormatProcessor):
 
                 rows.append(row)
 
-            lines = map(lambda  x: self.column_separator.join(x), rows)
+            lines = [self.column_separator.join(x) for x in rows]
 
             for x in lines:
                 self.stream.write(x)
@@ -413,7 +414,7 @@ class TableFormattedText(base.FileFormatProcessor):
         return float(string)
 
     def convert_string_to_long(self, string):
-        return long(string)
+        return int(string)
 
     def new_set(self, number_of_items, keys=[]):
         if len(keys) > 0:
@@ -442,9 +443,9 @@ class TableFormattedText(base.FileFormatProcessor):
             return []
         else:
             if len(self.set) == 0:
-                return map(lambda x:[],self.attribute_names)
+                return [[] for x in self.attribute_names]
             else:
-                return map(lambda x:getattr(self.set, x),self.attribute_names)
+                return [getattr(self.set, x) for x in self.attribute_names]
 
     @late
     def keys(self):
@@ -513,7 +514,7 @@ class TableFormattedText(base.FileFormatProcessor):
         from amuse.units import core
         from amuse.units import units
 
-        print floats, int(floats[1]) == -1, numpy.all(numpy.asarray(floats[2:]) == 0.0), numpy.asarray(floats[2:]) == 0.0
+        print(floats, int(floats[1]) == -1, numpy.all(numpy.asarray(floats[2:]) == 0.0), numpy.asarray(floats[2:]) == 0.0)
         if int(floats[1]) == -1 and numpy.all(numpy.asarray(floats[2:]) == 0.0):
             return None
         factor = floats[0]
@@ -584,7 +585,7 @@ class CsvFileText(TableFormattedText):
             self.attribute_types = self._get_attribute_types()
         result = []
         if len(self.comments) > 0:
-            result.extend(map(lambda x: self.header_prefix_string + x, self.comments))
+            result.extend([self.header_prefix_string + x for x in self.comments])
         result.append(self.column_separator.join(self.attribute_names))
         if self.must_store_units_in_header:
             result.append(self.column_separator.join(['-' if one_unit is None else one_unit.to_simple_form().reference_string() for one_unit in self.attribute_types]))
@@ -616,7 +617,7 @@ class Athena3DText(TableFormattedText):
 
     def convert_dictionary_to_array(self, dictionary):
         result = [None] * len(dictionary)
-        for key, value in dictionary.iteritems():
+        for key, value in dictionary.items():
             result[key] = value
 
         return result

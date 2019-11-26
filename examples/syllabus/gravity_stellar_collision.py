@@ -3,6 +3,7 @@
    function between Mmin and Mmax and with stellar evolution with
    metalicity z.
 """
+from __future__ import print_function
 from amuse.lab import *
 from amuse.io import store
 from amuse.community.seba.interface import SeBa
@@ -64,7 +65,7 @@ def main(N, W0, t_end, dt, filename, Rvir, Mmin, Mmax, z):
 
         if stopping_condition.is_set():
             E_coll = gravity.kinetic_energy + gravity.potential_energy
-            print "At time=", gravity.model_time.in_(units.Myr), "number of encounters=", len(stopping_condition.particles(0))
+            print("At time=", gravity.model_time.in_(units.Myr), "number of encounters=", len(stopping_condition.particles(0)))
             for ci in range(len(stopping_condition.particles(0))): 
                 particles_in_encounter = Particles(particles=[stopping_condition.particles(0)[ci], stopping_condition.particles(1)[ci]])
                 particles_in_encounter = particles_in_encounter.get_intersecting_subset_in(bodies)
@@ -73,7 +74,7 @@ def main(N, W0, t_end, dt, filename, Rvir, Mmin, Mmax, z):
                 bodies.synchronize_to(gravity.particles)
                 bodies.synchronize_to(stellar.particles)
                 Nenc+=1
-                print "Resolve encounter Number:", Nenc
+                print("Resolve encounter Number:", Nenc)
                 gravity.evolve_model(time)
             dE_coll = E_coll - (gravity.kinetic_energy + gravity.potential_energy)
 
@@ -91,12 +92,12 @@ def main(N, W0, t_end, dt, filename, Rvir, Mmin, Mmax, z):
     stellar.stop()
 
 def print_diagnostics(time, Mtot, Etot, dE_dyn, dE_coll, dE_stellar):
-        print "T=", time, 
-        print "M=", Mtot, 
-        print "E= ", Etot, 
-        print "dE(dyn)=", dE_dyn/Etot, 
-        print "dE(coll)=", dE_coll/Etot, 
-        print "dE(se)=", dE_stellar/Etot
+        print("T=", time, end=' ') 
+        print("M=", Mtot, end=' ') 
+        print("E= ", Etot, end=' ') 
+        print("dE(dyn)=", dE_dyn/Etot, end=' ') 
+        print("dE(coll)=", dE_coll/Etot, end=' ') 
+        print("dE(se)=", dE_stellar/Etot)
     
 def new_option_parser():
     from amuse.units.optparse import OptionParser

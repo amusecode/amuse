@@ -34,15 +34,15 @@ class TestQuantities(amusetest.TestCase):
         x = [1.0, 2.0, 3.0] | si.kg
         y = [2.0, 3.0, 4.0] | si.kg
         self.assertTrue(isinstance(x[0], ScalarQuantity))
-        self.assertEquals(str(x[1]), "2.0 kg")
+        self.assertEqual(str(x[1]), "2.0 kg")
 
 
     def test4(self):
         g = si.kg / 1000
         x = [1.0, 2.0, 3.0] | si.kg
-        self.assertEquals(str(x), "[1.0, 2.0, 3.0] kg")
+        self.assertEqual(str(x), "[1.0, 2.0, 3.0] kg")
         x[0] = 3000.0 | g
-        self.assertEquals(str(x), "[3.0, 2.0, 3.0] kg")
+        self.assertEqual(str(x), "[3.0, 2.0, 3.0] kg")
 
     def test5(self):
         number_of_stars = 10
@@ -52,8 +52,8 @@ class TestQuantities(amusetest.TestCase):
             star.position = units.km.new_quantity([float(i+1), float((i+1)*2), float(-1 * (i+1))])
 
 
-        minpos = [float(sys.maxint)] * 3 | units.m
-        maxpos = [-float(sys.maxint)] * 3 | units.m
+        minpos = [float(sys.maxsize)] * 3 | units.m
+        maxpos = [-float(sys.maxsize)] * 3 | units.m
         for star in stars:
             for i in range(3):
                 if star.position[i] < minpos[i]:
@@ -61,20 +61,20 @@ class TestQuantities(amusetest.TestCase):
                 if star.position[i] > maxpos[i]:
                     maxpos[i] = star.position[i]
 
-        self.assertEquals(str(minpos), "[1000.0, 2000.0, -10000.0] m")
-        self.assertEquals(str(maxpos), "[10000.0, 20000.0, -1000.0] m")
+        self.assertEqual(str(minpos), "[1000.0, 2000.0, -10000.0] m")
+        self.assertEqual(str(maxpos), "[10000.0, 20000.0, -1000.0] m")
 
     def test6(self):
         x = [1.0, 2.0, 3.0] | si.kg
         y = x.copy()
         y[0] = 3.0 | si.kg
-        self.assertEquals(x[0].value_in(si.kg), 1.0)
-        self.assertEquals(y[0].value_in(si.kg), 3.0)
+        self.assertEqual(x[0].value_in(si.kg), 1.0)
+        self.assertEqual(y[0].value_in(si.kg), 3.0)
 
     def test7(self):
         x = 2.0 | si.kg
         y = 1 / x
-        self.assertEquals(y.value_in(1/si.kg), 0.5)
+        self.assertEqual(y.value_in(1/si.kg), 0.5)
 
 
     def test8(self):
@@ -83,11 +83,11 @@ class TestQuantities(amusetest.TestCase):
 
     def test9(self):
         converter = nbody_system.nbody_to_si(1 | si.kg, 2 | si.s)
-        self.assertEquals(0.0 | nbody_system.mass, converter.to_nbody(zero))
-        self.assertEquals(converter.to_nbody(zero), 0.0 | nbody_system.mass)
+        self.assertEqual(0.0 | nbody_system.mass, converter.to_nbody(zero))
+        self.assertEqual(converter.to_nbody(zero), 0.0 | nbody_system.mass)
 
     def test10(self):
-        self.assertEquals(1 | units.m, 1 | units.m)
+        self.assertEqual(1 | units.m, 1 | units.m)
         self.assertTrue (1 | units.m == 1 | units.m)
         self.assertFalse(1 | units.m == 2 | units.m)
         self.assertTrue (1 | units.m != 2 | units.m)
@@ -102,7 +102,7 @@ class TestQuantities(amusetest.TestCase):
         self.assertFalse(1 | units.m <  0 | units.m)
 
     def test11(self):
-        self.assertEquals([1] | units.m, [1] | units.m)
+        self.assertEqual([1] | units.m, [1] | units.m)
         self.assertTrue ([1] | units.m == [1] | units.m)
         self.assertFalse([1] | units.m == [2] | units.m)
         self.assertTrue ([1] | units.m != [2] | units.m)
@@ -117,7 +117,7 @@ class TestQuantities(amusetest.TestCase):
         self.assertFalse([1] | units.m <  [0] | units.m)
 
     def test12(self):
-        self.assertEquals(zero, zero)
+        self.assertEqual(zero, zero)
         self.assertTrue (zero == zero)
         self.assertFalse(zero == zero + (1 | units.m))
         self.assertFalse(zero + (1 | units.m) == zero)
@@ -134,7 +134,7 @@ class TestQuantities(amusetest.TestCase):
         self.assertTrue (zero == 0 | units.m)
 
     def test13(self):
-        self.assertEquals('a', 'a')
+        self.assertEqual('a', 'a')
         self.assertTrue ('a' == 'a')
         self.assertFalse('a' == 'ab')
         self.assertTrue ('a' != 'A')
@@ -172,10 +172,10 @@ class TestQuantities(amusetest.TestCase):
 
     def test16(self):
         # Tests for add/sub of quantity (with none unit) and number
-        self.assertEquals( (2.0 | units.none) + 1.0,  3.0  )
-        self.assertEquals( (2.0 | units.none) - 1.0,  1.0  )
-        self.assertEquals( 1.0 + (2.0 | units.none),  3.0  )
-        self.assertEquals( 1.0 - (2.0 | units.none), -1.0  )
+        self.assertEqual( (2.0 | units.none) + 1.0,  3.0  )
+        self.assertEqual( (2.0 | units.none) - 1.0,  1.0  )
+        self.assertEqual( 1.0 + (2.0 | units.none),  3.0  )
+        self.assertEqual( 1.0 - (2.0 | units.none), -1.0  )
 
     def test17(self):
         # Tests for add/sub of quantity (with other unit) and number
@@ -201,9 +201,9 @@ class TestQuantities(amusetest.TestCase):
 
     def test18(self):
         quantity = 'string'
-        self.assertEquals(quantity ,  'string')
-        quantity = u'string'
-        self.assertEquals(quantity , u'string')
+        self.assertEqual(quantity ,  'string')
+        quantity = 'string'
+        self.assertEqual(quantity , 'string')
 
     def test19(self):
         x = 1.0 | si.kg
@@ -250,9 +250,9 @@ class TestQuantities(amusetest.TestCase):
         self.assertEqual(([1, 1, 1] | units.m) - zero_vector, [1, 1, 1] | units.m)
 
         for one_zero in zero_vector:
-            self.assertEquals(one_zero, zero)
+            self.assertEqual(one_zero, zero)
 
-        self.assertEquals(zero_vector[0:2], zero.as_vector_with_length(2))
+        self.assertEqual(zero_vector[0:2], zero.as_vector_with_length(2))
 
 
     def test22(self):
@@ -265,10 +265,10 @@ class TestQuantities(amusetest.TestCase):
 
     def test23(self):
         z = zero.as_vector_with_length(2)
-        self.assertEquals(len(z), 2)
+        self.assertEqual(len(z), 2)
         z += 1 | units.kg
-        self.assertEquals(z.unit, units.kg)
-        self.assertEquals(z, [1,1] | units.kg)
+        self.assertEqual(z.unit, units.kg)
+        self.assertEqual(z, [1,1] | units.kg)
 
 
     def xtest24(self):
@@ -276,7 +276,7 @@ class TestQuantities(amusetest.TestCase):
         lhs = 3 | units.AU
         product = rhs * lhs
         product_unit = product.unit
-        print product
+        print(product)
         self.assertTrue(product_unit is units.MSun)
 
 
@@ -285,9 +285,9 @@ class TestQuantities(amusetest.TestCase):
         lhs = 3.0 | units.MSun
         product = rhs / lhs
         product_unit = product.unit
-        print product
-        self.assertEquals(product_unit , units.MSun / units.AU)
-        self.assertEquals(product_unit.local_factor , 4)
+        print(product)
+        self.assertEqual(product_unit , units.MSun / units.AU)
+        self.assertEqual(product_unit.local_factor , 4)
 
 
     def xtest26(self):
@@ -295,17 +295,17 @@ class TestQuantities(amusetest.TestCase):
         lhs = 3.0 | units.MSun
         product = rhs * lhs
         product_unit = product.unit
-        print product
-        print type(product_unit)
-        self.assertEquals(product_unit , units.AU / units.MSun)
-        self.assertEquals(product_unit.local_factor , 1/4.0)
+        print(product)
+        print(type(product_unit))
+        self.assertEqual(product_unit , units.AU / units.MSun)
+        self.assertEqual(product_unit.local_factor , 1/4.0)
 
     def test27(self):
         a=[1.|units.kg,2.|units.kg,3000.| units.g, 4.| (1000*units.g)]
         b=VectorQuantity.new_from_scalar_quantities(*a)
         c=[1.,2.,3.,4.] | units.kg
-        print a[0].unit==a[2].unit
-        self.assertEquals(b,c)
+        print(a[0].unit==a[2].unit)
+        self.assertEqual(b,c)
 
     def test28(self):
         a=[1.|units.kg,2.|units.kg,3000.| units.m, 4.| (1000*units.g)]
@@ -319,8 +319,8 @@ class TestQuantities(amusetest.TestCase):
         one_inch = 2.54 | units.cm
         self.assertFalse(isinstance(one_inch, core.unit))
         self.assertTrue(isinstance(one_inch.as_unit(), core.unit))
-        self.assertEquals(one_inch.as_unit(), 2.54 * units.cm)
-        self.assertEquals(1 | one_inch.as_unit(), 2.54 | units.cm)
+        self.assertEqual(one_inch.as_unit(), 2.54 * units.cm)
+        self.assertEqual(1 | one_inch.as_unit(), 2.54 | units.cm)
     
     def test30(self):
         a=1.5| units.km
@@ -381,12 +381,12 @@ class TestQuantities(amusetest.TestCase):
     def test32(self):
         a=numpy.array([[1.,2.,3.],[4.,5.,6.]]) |  units.m
         b=numpy.array([[1.,2.,3.],[4.,5.,6.]])
-        self.assertEquals(list(a.flatten()), list(a.flat))
+        self.assertEqual(list(a.flatten()), list(a.flat))
         flat1=b.flat
         flat2=a.flat
         self.assertEqual(flat1[2:5],flat2[2:5].number)
-        flat1.next()
-        flat2.next()
+        next(flat1)
+        next(flat2)
         self.assertEqual(flat1.index,flat2.index)
         self.assertEqual(flat1.base,flat2.base.number)
         self.assertEqual(flat1.copy(),flat2.copy().number)        
@@ -426,55 +426,55 @@ class TestAdaptingVectorQuantities(amusetest.TestCase):
 
     def test1(self):
         x = AdaptingVectorQuantity()
-        self.assertEquals(x.append.__name__, "append_start")
+        self.assertEqual(x.append.__name__, "append_start")
         x.append(1 | units.kg)
-        self.assertEquals(x.unit, units.kg)
-        self.assertEquals(len(x), 1)
-        self.assertEquals(x.append.__name__, "append_normal")
+        self.assertEqual(x.unit, units.kg)
+        self.assertEqual(len(x), 1)
+        self.assertEqual(x.append.__name__, "append_normal")
 
         self.assertTrue(isinstance(x._number_list, list))
         self.assertFalse(isinstance(x._number_list, numpy.ndarray))
         self.assertTrue(isinstance(x.number, numpy.ndarray))
         self.assertFalse(isinstance(x.number, list))
-        self.assertEquals(x._number_list, [1])
-        self.assertEquals(x.number, numpy.array([1]))
+        self.assertEqual(x._number_list, [1])
+        self.assertEqual(x.number, numpy.array([1]))
 
     def test2(self):
         x = AdaptingVectorQuantity()
-        self.assertEquals(len(x), 0)
-        self.assertEquals(len(x.number), 0)
-        self.assertEquals(str(x), '[]')
+        self.assertEqual(len(x), 0)
+        self.assertEqual(len(x.number), 0)
+        self.assertEqual(str(x), '[]')
         x.append(1 | units.kg)
-        self.assertEquals(x.unit, units.kg)
-        self.assertEquals(len(x), 1)
-        self.assertEquals(str(x), '[1] kg')
+        self.assertEqual(x.unit, units.kg)
+        self.assertEqual(len(x), 1)
+        self.assertEqual(str(x), '[1] kg')
         x.append(2 | units.kg)
-        self.assertEquals(x.unit, units.kg)
-        self.assertEquals(len(x), 2)
-        self.assertEquals(str(x), '[1, 2] kg')
+        self.assertEqual(x.unit, units.kg)
+        self.assertEqual(len(x), 2)
+        self.assertEqual(str(x), '[1, 2] kg')
 
     def test3(self):
         x = AdaptingVectorQuantity()
         x.extend([1,2,3] | units.kg)
-        self.assertEquals(x.unit, units.kg)
-        self.assertEquals(len(x), 3)
-        self.assertEquals(x.number, numpy.array([1,2,3]))
+        self.assertEqual(x.unit, units.kg)
+        self.assertEqual(len(x), 3)
+        self.assertEqual(x.number, numpy.array([1,2,3]))
 
         x.extend([1,2,3] | units.g)
-        self.assertEquals(x.unit, units.kg)
-        self.assertEquals(len(x), 6)
+        self.assertEqual(x.unit, units.kg)
+        self.assertEqual(len(x), 6)
         self.assertAlmostRelativeEquals(x, [1000,2000,3000,1,2,3] | units.g)
 
     def test4(self):
         x = AdaptingVectorQuantity()
         x.prepend(1 | units.kg)
-        self.assertEquals(x.unit, units.kg)
-        self.assertEquals(len(x), 1)
-        self.assertEquals(str(x), '[1] kg')
+        self.assertEqual(x.unit, units.kg)
+        self.assertEqual(len(x), 1)
+        self.assertEqual(str(x), '[1] kg')
         x.prepend(2 | units.kg)
-        self.assertEquals(x.unit, units.kg)
-        self.assertEquals(len(x), 2)
-        self.assertEquals(str(x), '[2, 1] kg')
+        self.assertEqual(x.unit, units.kg)
+        self.assertEqual(len(x), 2)
+        self.assertEqual(str(x), '[2, 1] kg')
 
     def test5(self):
         # Everything mixed...
@@ -485,35 +485,35 @@ class TestAdaptingVectorQuantities(amusetest.TestCase):
         x.extend([7000,8000,9000] | units.g)
         x.prepend(1000 | units.g)
         x.append(10000 | units.g)
-        self.assertEquals(x.unit, units.kg)
-        self.assertEquals(len(x), 10)
-        self.assertEquals(x.number, numpy.array([1,2,3,4,5,6,7,8,9,10]))
-        self.assertEquals(x, [1,2,3,4,5,6,7,8,9,10]|units.kg)
+        self.assertEqual(x.unit, units.kg)
+        self.assertEqual(len(x), 10)
+        self.assertEqual(x.number, numpy.array([1,2,3,4,5,6,7,8,9,10]))
+        self.assertEqual(x, [1,2,3,4,5,6,7,8,9,10]|units.kg)
 
     def test6(self):
         x =  6 | units.kg
         y =  5 | units.kg
-        self.assertEquals(x/y, 1) 
-        self.assertEquals(x//y, 1) 
-        self.assertEquals(operator.__truediv__(x,y), 1.2)
+        self.assertEqual(x/y, 6/5) 
+        self.assertEqual(x//y, 6//5) 
+        self.assertEqual(operator.__truediv__(x,y), 1.2)
 
 class TestNumpyFunctionWithUnits(amusetest.TestCase):
 
     def test1(self):
         array = quantities.arange(0 | units.kg, 10 | units.kg, 1 | units.kg)
-        self.assertEquals(len(array),  10)
+        self.assertEqual(len(array),  10)
         self.assertAlmostRelativeEquals(array, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9] | units.kg)
 
 
     def test2(self):
         array = quantities.linspace(0 | units.kg, 10 | units.kg, 11)
-        self.assertEquals(len(array),  11)
+        self.assertEqual(len(array),  11)
         self.assertAlmostRelativeEquals(array, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10] | units.kg)
 
 
     def test3(self):
         array = quantities.linspace(0 , 10 , 11)
-        self.assertEquals(len(array),  11)
+        self.assertEqual(len(array),  11)
         self.assertAlmostRelativeEquals(array, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
 
     def test4(self):
@@ -522,13 +522,13 @@ class TestNumpyFunctionWithUnits(amusetest.TestCase):
 
         fit = quantities.polyfit(x, y, 2)
 
-        self.assertEquals(len(fit), 3)
-        self.assertEquals(fit[0].unit, units.km/units.yr**2)
+        self.assertEqual(len(fit), 3)
+        self.assertEqual(fit[0].unit, units.km/units.yr**2)
 
         fit_values = quantities.polyval(fit, x)
 
-        self.assertEquals(fit_values.shape, x.shape)
-        self.assertEquals(y.unit, fit_values.unit)
+        self.assertEqual(fit_values.shape, x.shape)
+        self.assertEqual(y.unit, fit_values.unit)
 
         self.assertAlmostRelativeEquals(y, fit_values, 1)
 
@@ -539,6 +539,6 @@ class TestNumpyFunctionWithUnits(amusetest.TestCase):
         ab1=quantities.column_stack((a,b))
         ab2=quantities.column_stack((a.number,b.number)) | units.m
         
-        self.assertEquals(ab1,ab2)
+        self.assertEqual(ab1,ab2)
         
 

@@ -14,7 +14,7 @@ default_options = dict(number_of_workers=1)#,debugger='gdb')
 class TestSimpleXInterface(TestWithMPI):
 
     def test1(self):
-        print "Test 1: initialization"
+        print("Test 1: initialization")
         instance = SimpleXInterface(**default_options)
         self.assertEqual(0, instance.set_simplex_output_directory(instance.output_directory))
         self.assertEqual(0, instance.initialize_code())
@@ -23,7 +23,7 @@ class TestSimpleXInterface(TestWithMPI):
         instance.stop()
     
     def test2(self):
-        print "Test 2: commit_particles, getters and setters"
+        print("Test 2: commit_particles, getters and setters")
         instance = SimpleXInterface(**default_options)
         self.assertEqual(0, instance.set_simplex_output_directory(instance.output_directory))
         self.assertEqual(0, instance.initialize_code())
@@ -37,7 +37,7 @@ class TestSimpleXInterface(TestWithMPI):
         number_of_particles = len(x)
         indices, errors = instance.new_particle(x, y, z, n_H, flux, X_ion,u)
         self.assertEqual(errors, [0]*number_of_particles)
-        self.assertEqual(indices, range(number_of_particles))
+        self.assertEqual(indices, list(range(number_of_particles)))
         self.assertEqual(0, instance.commit_particles())
         x_out, y_out, z_out, n_H_out, flux_out, X_ion_out,u_out, metallicity_out, error = instance.get_state(indices)
 
@@ -88,7 +88,7 @@ class TestSimpleXInterface(TestWithMPI):
         instance.stop()
     
     def test3(self):
-        print "Test 3: evolve"
+        print("Test 3: evolve")
         instance = SimpleXInterface(**default_options)
         self.assertEqual(0, instance.set_simplex_output_directory(instance.output_directory))
         self.assertEqual(0, instance.initialize_code())
@@ -100,7 +100,7 @@ class TestSimpleXInterface(TestWithMPI):
         number_of_particles = len(x)
         indices, errors = instance.new_particle(x, y, z, n_H, flux, X_ion,u)
         self.assertEqual(errors, [0]*number_of_particles)
-        self.assertEqual(indices, range(number_of_particles))
+        self.assertEqual(indices, list(range(number_of_particles)))
         
         self.assertEqual(0, instance.commit_particles())
         
@@ -130,7 +130,7 @@ class TestSimpleXInterface(TestWithMPI):
         instance.stop()
 
     def test4(self):
-        print "Test 4: set boxsize, hilbert_order, timestep"
+        print("Test 4: set boxsize, hilbert_order, timestep")
         instance = SimpleXInterface(**default_options)
         self.assertEqual(0, instance.set_simplex_output_directory(instance.output_directory))
         self.assertEqual(0, instance.initialize_code())
@@ -159,7 +159,7 @@ class TestSimpleXInterface(TestWithMPI):
         instance.stop()
 
     def test5(self):
-        print "Test 2: delete particles"
+        print("Test 2: delete particles")
         instance = SimpleXInterface(**default_options)
         self.assertEqual(0, instance.set_simplex_output_directory(instance.output_directory))
         self.assertEqual(0, instance.initialize_code())
@@ -173,7 +173,7 @@ class TestSimpleXInterface(TestWithMPI):
         number_of_particles = len(x)
         indices, errors = instance.new_particle(x, y, z, n_H, flux, X_ion,u)
         self.assertEqual(errors, [0]*number_of_particles)
-        self.assertEqual(indices, range(number_of_particles))
+        self.assertEqual(indices, list(range(number_of_particles)))
         error=instance.delete_particle(indices[0])
         self.assertEqual(error, -1)
         instance.commit_particles()
@@ -188,7 +188,7 @@ class TestSimpleXInterface(TestWithMPI):
 class TestSimpleX(TestWithMPI):
 
     def test1(self):
-        print "Test 1: initialization"
+        print("Test 1: initialization")
         instance = SimpleX(**default_options)
         instance.initialize_code()
         instance.commit_parameters()
@@ -196,7 +196,7 @@ class TestSimpleX(TestWithMPI):
         instance.stop()
     
     def test2(self):
-        print "Test 2: commit_particles, getters and setters"
+        print("Test 2: commit_particles, getters and setters")
         instance = SimpleX(**default_options)
         instance.initialize_code()
         instance.commit_parameters()
@@ -215,7 +215,7 @@ class TestSimpleX(TestWithMPI):
         instance.stop()
     
     def test3(self):
-        print "Test 3: evolve"
+        print("Test 3: evolve")
         instance = SimpleX(**default_options)
         instance.initialize_code()
         instance.commit_parameters()
@@ -236,7 +236,7 @@ class TestSimpleX(TestWithMPI):
         instance.stop()
 
     def test4(self):
-        print "Test 4: default parameters"
+        print("Test 4: default parameters")
         instance = SimpleX(**default_options)
 
         default=dict( timestep= 0.05| units.Myr, 
@@ -261,7 +261,7 @@ class TestSimpleX(TestWithMPI):
         self.assertEqual(tnow, 321. | units.Myr)    
 
     def test5(self):
-        print "Test 4: default parameters"
+        print("Test 4: default parameters")
         instance = SimpleX(**default_options)
         param=dict( timestep= 0.1| units.Myr, 
                   source_effective_T=  2.e5 | units.K,
@@ -279,15 +279,15 @@ class TestSimpleX(TestWithMPI):
             self.assertEqual(getattr(instance.parameters,x), param[x])
 
     def test6(self):
-        print "Test 2: print parameters,data directory"
+        print("Test 2: print parameters,data directory")
         instance = SimpleX(**default_options)
-        print instance.parameters
+        print(instance.parameters)
         
         instance.parameters.simplex_data_directory="some/dir"
         self.assertEqual(instance.parameters.simplex_data_directory, "some/dir")
 
     def test7(self):
-        print "Test 7: two step evolve"
+        print("Test 7: two step evolve")
         instance = SimpleX(**default_options)
         instance.parameters.recombination_radiation_flag=1
         
@@ -307,7 +307,7 @@ class TestSimpleX(TestWithMPI):
         instance.stop()
 
     def test8(self):
-        print "Test 8: two step evolve"
+        print("Test 8: two step evolve")
         instance = SimpleX(**default_options)
         
         input_file = os.path.join(os.path.dirname(__file__), "test_simplex_data.txt")
@@ -322,7 +322,7 @@ class TestSimpleX(TestWithMPI):
         instance.stop()
 
     def test9(self):
-        print "Test 9: add test"
+        print("Test 9: add test")
         instance = SimpleX(number_of_workers=1)
         
         input_file = os.path.join(os.path.dirname(__file__), "test_simplex_data.txt")
@@ -337,7 +337,7 @@ class TestSimpleX(TestWithMPI):
         self.assertEqual( len(instance.particles), N)
 
     def test10(self):
-        print "Test 10: add test"
+        print("Test 10: add test")
         instance = SimpleX(number_of_workers=2)
         
         input_file = os.path.join(os.path.dirname(__file__), "test_simplex_data.txt")
@@ -352,7 +352,7 @@ class TestSimpleX(TestWithMPI):
         self.assertEqual( len(instance.particles), N)
 
     def test11(self):
-        print "Test 11: add test"
+        print("Test 11: add test")
         instance = SimpleX(number_of_workers=1)
         
         input_file = os.path.join(os.path.dirname(__file__), "test_simplex_data.txt")
@@ -400,7 +400,7 @@ class TestSimpleX(TestWithMPI):
 class TestSimpleXSplitSet(TestWithMPI):
 
     def test1(self):
-        print "Test 1: initialization"
+        print("Test 1: initialization")
         instance = SimpleXSplitSet(**default_options)
         instance.initialize_code()
         instance.commit_parameters()
@@ -408,7 +408,7 @@ class TestSimpleXSplitSet(TestWithMPI):
         instance.stop()
     
     def test2(self):
-        print "Test 2: commit_particles, getters and setters"
+        print("Test 2: commit_particles, getters and setters")
         instance = SimpleXSplitSet(**default_options)
         instance.initialize_code()
         instance.commit_parameters()
@@ -428,7 +428,7 @@ class TestSimpleXSplitSet(TestWithMPI):
         instance.stop()
     
     def test3(self):
-        print "Test 3: evolve"
+        print("Test 3: evolve")
         instance = SimpleXSplitSet(**default_options)
         instance.initialize_code()
         instance.commit_parameters()
@@ -441,9 +441,9 @@ class TestSimpleXSplitSet(TestWithMPI):
 
         self.assertAlmostEqual(instance.gas_particles.xion.mean(), 0.0)
         self.assertAlmostEqual(instance.gas_particles.du_dt.mean().in_(units.cm**2/units.s**3),particles.du_dt.mean().in_(units.cm**2/units.s**3))
-        self.assertEquals(instance.get_name_of_current_state(), 'EDIT')
+        self.assertEqual(instance.get_name_of_current_state(), 'EDIT')
         instance.evolve_model(0.5 | units.Myr)
-        self.assertEquals(instance.get_name_of_current_state(), 'RUN')
+        self.assertEqual(instance.get_name_of_current_state(), 'RUN')
         self.assertAlmostEqual(instance.gas_particles.du_dt.mean().in_(units.cm**2/units.s**3),particles.du_dt.mean().in_(units.cm**2/units.s**3))
         self.assertAlmostEqual(instance.gas_particles.xion.mean(), 0.000845247683257)
         instance.gas_particles.remove_particles(particles[0:4])
@@ -456,7 +456,7 @@ class TestSimpleXSplitSet(TestWithMPI):
         instance.stop()
 
     def test4(self):
-        print "Test 4: default parameters"
+        print("Test 4: default parameters")
         instance = SimpleXSplitSet(**default_options)
 
         default=dict( timestep= 0.05| units.Myr, 
@@ -481,7 +481,7 @@ class TestSimpleXSplitSet(TestWithMPI):
         self.assertEqual(tnow, 321. | units.Myr)    
 
     def test5(self):
-        print "Test 4: default parameters"
+        print("Test 4: default parameters")
         instance = SimpleXSplitSet(**default_options)
         param=dict( timestep= 0.1| units.Myr, 
                   source_effective_T=  2.e5 | units.K,

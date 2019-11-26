@@ -10,9 +10,9 @@ from amuse.ic.plummer import MakePlummerModel
 
 import time as systime
 
-import coreradius
-from interface import mmcInterface
-from interface import mmc
+from . import coreradius
+from .interface import mmcInterface
+from .interface import mmc
 
 def plummer(x):
   plummer = MakePlummerModel(x)
@@ -41,12 +41,12 @@ def crossing_time(r, vr, vt):
 
 def compare(mass, r, vr, vt, mass_, r_, vr_, vt_):
     for i, v in enumerate(mass):
-        print "{0} {1} {2} {3} {4} {5} {6} {7}".format(mass[i], r[i], vr[i], vt[i], mass_[i], r_[i], vr_[i], vt_[i])
+        print("{0} {1} {2} {3} {4} {5} {6} {7}".format(mass[i], r[i], vr[i], vt[i], mass_[i], r_[i], vr_[i], vt_[i]))
 
 def tests_tocartesian():
   x,y,z,vx,vy,vz,ex,ey,ez = to_cartesian(np.ones(100), np.zeros(100),np.ones(100))
   for i, x in enumerate(x):
-    print x,y[i],z[i],vx[i],vy[i],vz[i],ex[i],ey[i],ez[i]
+    print(x,y[i],z[i],vx[i],vy[i],vz[i],ex[i],ey[i],ez[i])
 
 def example_M67():
 
@@ -58,7 +58,7 @@ def example_M67():
     mmc.set_mmc_data_directory(mmc.data_directory)
 
     mmc.amuse_input()
-    print "1"
+    print("1")
     mmc.set_nt(2400)
     """    
     mmc.set_irun(10)
@@ -152,19 +152,19 @@ def example_M67():
 #    control_parts = res['index_of_the_particle']
 #    control.commit_particles()                                                                   
     mmc.set_istart(1)    
-    print mmc.get_nt()
-    print "2"
+    print(mmc.get_nt())
+    print("2")
 
     for time_end in np.arange(0.001, 1.2, 0.001):
-        print "3"
+        print("3")
         n_total = mmc.get_number_of_particles().n_
-        x, y, z = mmc.get_positions_3d(range(1, n_total+1))                           
-        M  = mmc.get_state(range(1, n_total+1))                                        
-        print "4"
+        x, y, z = mmc.get_positions_3d(list(range(1, n_total+1)))                           
+        M  = mmc.get_state(list(range(1, n_total+1)))                                        
+        print("4")
         tcross = crossing_time(M.r, M.vr, M.vt)
         x_core,y_core,z_core,rc = coreradius.coreradius(M.mass,x,y,z)                    
         tic = systime.clock()
-        print "5"
+        print("5")
         #mmc.evolve_model(time_end)          
         import pdb;pdb.set_trace()
         mmc.call_zone()
@@ -172,8 +172,8 @@ def example_M67():
         mmc.call_relaxt()
         import pdb;pdb.set_trace()
         mmc.call_amuse_output()
-        print mmc.get_timet()
-        print "6"
+        print(mmc.get_timet())
+        print("6")
         toc = systime.clock()
         time =  mmc.get_time().time
         tcrit_control =  mmc.get_tcrit().termination_time_units_crossing_time
@@ -187,7 +187,7 @@ def example_M67():
 #            coreradius.coreradius(H.mass,H.x,H.y,H.z)                    
         
 #        print time, time_end, rc, control_rc, toc-tic
-        print time, time_end, rc, mmc.get_nc()
+        print(time, time_end, rc, mmc.get_nc())
 
     mmc.stop()
 #    control.stop()

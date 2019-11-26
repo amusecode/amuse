@@ -1383,7 +1383,7 @@ class GenerateAJavaSourcecodeStringFromASpecificationClass\
         self._result = self.out.string
         
     def output_code_constants(self):
-        for dtype in self.dtype_to_spec.keys():
+        for dtype in list(self.dtype_to_spec.keys()):
             dtype_spec = self.dtype_to_spec[dtype]
             
             maxin = self.mapping_from_dtype_to_maximum_number_of_inputvariables.get(dtype, 0)

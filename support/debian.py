@@ -1,4 +1,4 @@
-from __future__ import print_function
+
 
 import os
 import shutil
@@ -6,7 +6,7 @@ import subprocess
 try:  # Python 3
     from urllib.request import urlretrieve
 except ImportError:  # Python 2
-    from urllib import urlretrieve
+    from urllib.request import urlretrieve
 import platform
 import sys
 from optparse import OptionParser

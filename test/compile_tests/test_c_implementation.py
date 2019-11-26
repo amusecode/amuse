@@ -368,7 +368,7 @@ class TestCImplementationInterface(TestWithMPI):
         try:
             cls.exefile = compile_tools.build_worker(codestring, cls.get_path_to_results(), ForTestingInterface)
         except Exception as ex:
-            print ex
+            print(ex)
             raise
         print("done")
         
@@ -376,15 +376,15 @@ class TestCImplementationInterface(TestWithMPI):
         instance = ForTestingInterface(self.exefile)
         int_out, error = instance.echo_int(10)
         instance.stop()
-        self.assertEquals(int_out, 10)
-        self.assertEquals(error, 0)
+        self.assertEqual(int_out, 10)
+        self.assertEqual(error, 0)
         
     def test2(self):
         instance = ForTestingInterface(self.exefile)
         out, error = instance.echo_double(4.0)
         instance.stop()
-        self.assertEquals(out, 4.0)
-        self.assertEquals(error, 0)
+        self.assertEqual(out, 4.0)
+        self.assertEqual(error, 0)
         
         
     def test3(self):
@@ -392,52 +392,52 @@ class TestCImplementationInterface(TestWithMPI):
         input = [1,2,3,4]
         output, errors = instance.echo_int(input)
         instance.stop()
-        self.assertEquals(len(errors),4)
+        self.assertEqual(len(errors),4)
         for actual, expected in zip(output, input):
-            self.assertEquals(actual, expected)
+            self.assertEqual(actual, expected)
             
     def test4(self):
         instance = ForTestingInterface(self.exefile)
         input = [1.0,2.1,3.3,4.2]
         output, errors = instance.echo_double(input)
         instance.stop()
-        self.assertEquals(len(errors),4)
+        self.assertEqual(len(errors),4)
         for actual, expected in zip(output, input):
-            self.assertEquals(actual, expected)
+            self.assertEqual(actual, expected)
             
         
     def test5(self):
         instance = ForTestingInterface(self.exefile)
         out, error = instance.echo_float(4.0)
         instance.stop()
-        self.assertEquals(out, 4.0)
-        self.assertEquals(error, 0)
+        self.assertEqual(out, 4.0)
+        self.assertEqual(error, 0)
         
     def test6(self):
         
         instance = ForTestingInterface(self.exefile)
         out, error = instance.echo_string("abc")
         instance.stop()
-        self.assertEquals(error, 0)
-        self.assertEquals(out, "abc")
+        self.assertEqual(error, 0)
+        self.assertEqual(out, "abc")
 
     def test7(self):
         instance = ForTestingInterface(self.exefile)
         out, error = instance.echo_string(["abc","def"])
         instance.stop()
         
-        self.assertEquals(error[0], 0)
-        self.assertEquals(error[1], 0)
-        self.assertEquals(out[0], "abc")
-        self.assertEquals(out[1], "def")
+        self.assertEqual(error[0], 0)
+        self.assertEqual(error[1], 0)
+        self.assertEqual(out[0], "abc")
+        self.assertEqual(out[1], "def")
 
     def test7b(self):
         instance = ForTestingInterface(self.exefile)
 
         out, error = instance.echo_int(numpy.arange(2000000))
         
-        self.assertEquals(error, [0]*2000000)
-        self.assertEquals(out, numpy.arange(2000000))
+        self.assertEqual(error, [0]*2000000)
+        self.assertEqual(out, numpy.arange(2000000))
 
         instance.stop()
 
@@ -446,8 +446,8 @@ class TestCImplementationInterface(TestWithMPI):
 
         out, error = instance.echo_string(["abc"]*10)
         
-        self.assertEquals(error, [0]*10)
-        self.assertEquals(out, ["abc"]*10)
+        self.assertEqual(error, [0]*10)
+        self.assertEqual(out, ["abc"]*10)
 
         instance.stop()
 
@@ -456,8 +456,8 @@ class TestCImplementationInterface(TestWithMPI):
 
         out, error = instance.echo_string(["abc"]*100000)
         
-        self.assertEquals(error, [0]*100000)
-        self.assertEquals(out, ["abc"]*100000)
+        self.assertEqual(error, [0]*100000)
+        self.assertEqual(out, ["abc"]*100000)
 
         instance.stop()
 
@@ -466,21 +466,21 @@ class TestCImplementationInterface(TestWithMPI):
         out1, out2, error = instance.echo_strings("abc","def")
         instance.stop()
         
-        self.assertEquals(error, 0)
-        self.assertEquals(out1, "def")
-        self.assertEquals(out2, "abc")
+        self.assertEqual(error, 0)
+        self.assertEqual(out1, "def")
+        self.assertEqual(out2, "abc")
       
     def test9(self):
         instance = ForTestingInterface(self.exefile)
         str1_out, str2_out, error = instance.echo_strings(["abc", "def"], ["ghi", "jkl"])
         instance.stop()
         
-        self.assertEquals(error[0], 0)
-        self.assertEquals(error[1], 0)
-        self.assertEquals(str1_out[0], "ghi")
-        self.assertEquals(str1_out[1], "jkl")
-        self.assertEquals(str2_out[0], "abc")
-        self.assertEquals(str2_out[1], "def")
+        self.assertEqual(error[0], 0)
+        self.assertEqual(error[1], 0)
+        self.assertEqual(str1_out[0], "ghi")
+        self.assertEqual(str1_out[1], "jkl")
+        self.assertEqual(str2_out[0], "abc")
+        self.assertEqual(str2_out[1], "def")
       
     def xtest10(self):
         """test for ticket #74, 'running out of os file descriptors'
@@ -497,7 +497,7 @@ class TestCImplementationInterface(TestWithMPI):
             instance = ForTestingInterface(self.exefile)
             out, error = instance.echo_float(4.0)
             if x % 100 == 0:
-                print "x:", x
+                print("x:", x)
             instance.stop()
 
     
@@ -505,22 +505,22 @@ class TestCImplementationInterface(TestWithMPI):
         instance = ForTestingInterface(self.exefile)
         (output_ints,) = instance.echo_array([4,5,6])
         instance.stop()
-        print output_ints
-        self.assertEquals(output_ints[0], 4)
-        self.assertEquals(output_ints[1], 5)
-        self.assertEquals(output_ints[2], 6)
+        print(output_ints)
+        self.assertEqual(output_ints[0], 4)
+        self.assertEqual(output_ints[1], 5)
+        self.assertEqual(output_ints[2], 6)
         
     def test12(self):
         instance = ForTestingInterface(self.exefile)
         (output_ints, error) = instance.echo_array_with_result([4,5,6])
         instance.stop()
-        self.assertEquals(output_ints[0], 4)
-        self.assertEquals(output_ints[1], 5)
-        self.assertEquals(output_ints[2], 6)
+        self.assertEqual(output_ints[0], 4)
+        self.assertEqual(output_ints[1], 5)
+        self.assertEqual(output_ints[2], 6)
         
-        self.assertEquals(error[0], -1)
-        self.assertEquals(error[1], -1)
-        self.assertEquals(error[2], -1)
+        self.assertEqual(error[0], -1)
+        self.assertEqual(error[1], -1)
+        self.assertEqual(error[2], -1)
         
     def test13(self):
         instance = ForTesting(self.exefile)
@@ -545,16 +545,16 @@ class TestCImplementationInterface(TestWithMPI):
         output_ints5, output_ints6 = instance.echo_2_int([5],[0])
         output_ints7, output_ints8 = instance.echo_2_int([5])
         instance.stop()
-        self.assertEquals(output_ints1[1], 2)
-        self.assertEquals(output_ints2[0], 3)
-        self.assertEquals(output_ints2[1], 4)
+        self.assertEqual(output_ints1[1], 2)
+        self.assertEqual(output_ints2[0], 3)
+        self.assertEqual(output_ints2[1], 4)
         for i in range(3):
-            self.assertEquals(output_ints3[i], i + 1)
-            self.assertEquals(output_ints4[i], 1)
-        self.assertEquals(output_ints5[0], 5)
-        self.assertEquals(output_ints6[0], 0)
-        self.assertEquals(output_ints7[0], 5)
-        self.assertEquals(output_ints8[0], 1)
+            self.assertEqual(output_ints3[i], i + 1)
+            self.assertEqual(output_ints4[i], 1)
+        self.assertEqual(output_ints5[0], 5)
+        self.assertEqual(output_ints6[0], 0)
+        self.assertEqual(output_ints7[0], 5)
+        self.assertEqual(output_ints8[0], 1)
 
     def test16(self):
         instance = ForTesting(self.exefile)
@@ -566,28 +566,28 @@ class TestCImplementationInterface(TestWithMPI):
         instance = ForTestingInterface(self.exefile)
         (output_ints, error) = instance.echo_inout_array_with_result([4,5,6])
         instance.stop()
-        self.assertEquals(output_ints[0], 14)
-        self.assertEquals(output_ints[1], 15)
-        self.assertEquals(output_ints[2], 16)
+        self.assertEqual(output_ints[0], 14)
+        self.assertEqual(output_ints[1], 15)
+        self.assertEqual(output_ints[2], 16)
         
-        self.assertEquals(error[0], 11)
-        self.assertEquals(error[1], 11)
-        self.assertEquals(error[2], 11)
+        self.assertEqual(error[0], 11)
+        self.assertEqual(error[1], 11)
+        self.assertEqual(error[2], 11)
 
     def test18(self):
         instance = ForTestingInterface(self.exefile)
         out, error = instance.echo_logical([True, False, True])
         instance.stop()
-        self.assertEquals(out, [True, False, True])
-        self.assertEquals(error, 0)
+        self.assertEqual(out, [True, False, True])
+        self.assertEqual(error, 0)
         
     def test19(self):
         instance = ForTestingInterface(self.exefile)
-        print 3935559000370003845
+        print(3935559000370003845)
         int_out, error = instance.echo_long_long_int(3935559000370003845)
         instance.stop()
-        self.assertEquals(int_out, 3935559000370003845)
-        self.assertEquals(error, 0)
+        self.assertEqual(int_out, 3935559000370003845)
+        self.assertEqual(error, 0)
         
     def xtest20(self):
         
@@ -611,12 +611,12 @@ class TestCImplementationInterface(TestWithMPI):
         self.assertTrue(os.path.exists("pout.000"))
         with open("pout.000","r") as f:
             content = f.read()
-        self.assertEquals(content.strip(), "abc")
+        self.assertEqual(content.strip(), "abc")
         
         self.assertTrue(os.path.exists("perr.000"))
         with open("perr.000","r") as f:
             content = f.read()
-        self.assertEquals(content.strip(), "exex")
+        self.assertEqual(content.strip(), "exex")
         
         x = ForTesting(self.exefile, redirect_stderr_file = 'pout', redirect_stdout_file = 'pout', redirection="file")
         x.print_string("def")
@@ -628,7 +628,7 @@ class TestCImplementationInterface(TestWithMPI):
         self.assertTrue(os.path.exists("pout.000"))
         with open("pout.000","r") as f:
             content = f.read()
-        self.assertEquals(content.strip(), "abc\ndef\nexex")
+        self.assertEqual(content.strip(), "abc\ndef\nexex")
         
         
 
@@ -639,11 +639,11 @@ class TestCImplementationInterface(TestWithMPI):
         (output2, error3) = instance.internal__get_message_polling_interval()
         instance.internal__set_message_polling_interval(0)
         instance.stop()
-        self.assertEquals(error1, 0)
-        self.assertEquals(output1, 0)
-        self.assertEquals(error2, 0)
-        self.assertEquals(error3, 0)
-        self.assertEquals(output2, 1234)
+        self.assertEqual(error1, 0)
+        self.assertEqual(output1, 0)
+        self.assertEqual(error2, 0)
+        self.assertEqual(error3, 0)
+        self.assertEqual(output2, 1234)
     
     def test22(self):
         self.check_for_mpi()
@@ -656,11 +656,11 @@ class TestCImplementationInterface(TestWithMPI):
         (output2, error3) = instance.internal__get_message_polling_interval()
         t3 = time.time()
         instance.stop()
-        self.assertEquals(error1, 0)
-        self.assertEquals(output1, 0)
-        self.assertEquals(error2, 0)
-        self.assertEquals(error3, 0)
-        self.assertEquals(output2, 500 * 1000)
+        self.assertEqual(error1, 0)
+        self.assertEqual(output1, 0)
+        self.assertEqual(error2, 0)
+        self.assertEqual(error3, 0)
+        self.assertEqual(output2, 500 * 1000)
         # the following is not necessarily true since polling interval is the maximum wait time
         #~ self.assertTrue((t3 - t2) > 0.25)
 
@@ -671,34 +671,34 @@ class TestCImplementationInterface(TestWithMPI):
         instance = ForTestingInterface(self.exefile)
         out, error = instance.echo_string_int(1)
         instance.stop()
-        self.assertEquals(error, 0)
-        self.assertEquals(out, "echo")
+        self.assertEqual(error, 0)
+        self.assertEqual(out, "echo")
 
     def test24(self):
         
         instance = ForTestingInterface(self.exefile)
         out, error = instance.echo_string_int(1, "abc")
         instance.stop()
-        self.assertEquals(error, 0)
-        self.assertEquals(out, "abc")
+        self.assertEqual(error, 0)
+        self.assertEqual(out, "abc")
 
     def test25(self):
         
         instance = ForTestingInterface(self.exefile)
         out, error = instance.echo_string_int([1,2])
         instance.stop()
-        self.assertEquals(error, 0)
-        self.assertEquals(out[0], "echo")
-        self.assertEquals(out[1], "echo")
+        self.assertEqual(error, 0)
+        self.assertEqual(out[0], "echo")
+        self.assertEqual(out[1], "echo")
         
     def test26(self):
         
         instance = ForTestingInterface(self.exefile)
         out, error = instance.echo_string_int([1,2],["abc","def"])
         instance.stop()
-        self.assertEquals(error, 0)
-        self.assertEquals(out[0], "abc")
-        self.assertEquals(out[1], "def")
+        self.assertEqual(error, 0)
+        self.assertEqual(out[0], "abc")
+        self.assertEqual(out[1], "def")
         
         
     def test27(self):
@@ -706,19 +706,19 @@ class TestCImplementationInterface(TestWithMPI):
         instance = ForTestingInterface(self.exefile)
         out, error = instance.echo_string_int([1,2], "abc")
         instance.stop()
-        self.assertEquals(error, 0)
-        self.assertEquals(out[0], "abc")
-        self.assertEquals(out[1], "abc")
+        self.assertEqual(error, 0)
+        self.assertEqual(out[0], "abc")
+        self.assertEqual(out[1], "abc")
         
     def test28(self):
         instance = ForTestingInterface(self.exefile)
         out1, out2, error = instance.echo_string_two(["one","two"], "three")
         instance.stop()
-        self.assertEquals(error, 0)
-        self.assertEquals(out1[0], "one")
-        self.assertEquals(out1[1], "two")
-        self.assertEquals(out2[0], "three")
-        self.assertEquals(out2[1], "three")
+        self.assertEqual(error, 0)
+        self.assertEqual(out1[0], "one")
+        self.assertEqual(out1[1], "two")
+        self.assertEqual(out2[0], "three")
+        self.assertEqual(out2[1], "three")
 
         
     def test29(self):
@@ -735,8 +735,8 @@ class TestCImplementationInterface(TestWithMPI):
         port_id2, error2 = request2.result()
         self.assertTrue(port_id1 >= 0)
         self.assertTrue(port_id2 >= 0)
-        self.assertEquals(error1, 0)
-        self.assertEquals(error2, 0)
+        self.assertEqual(error1, 0)
+        self.assertEqual(error2, 0)
 
 
     def test30(self):
@@ -752,7 +752,7 @@ class TestCImplementationInterface(TestWithMPI):
         doubles = x.echo_double([1.0*i for i in range(N)])
         self.assertTrue(list(doubles) == [1.0*i for i in range(N)])
         sums = x.sum_doubles([3.0*i for i in range(N)])
-        print sums
+        print(sums)
         self.assertTrue(list(sums) == [3.0*i + 1 for i in range(N)])
         N = 101
         doubles = x.echo_double([1.0*i for i in range(N)])

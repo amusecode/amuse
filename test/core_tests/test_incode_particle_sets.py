@@ -39,7 +39,7 @@ class ExampleParticlesInterface(interface.InCodeComponentImplementation):
     """
     
     def log(self, message, *arguments):
-        print "IN CODE >>", message.format(*arguments)
+        print("IN CODE >>", message.format(*arguments))
     
     def __init__(self):
         super(type(self), self).__init__(None)
@@ -268,7 +268,7 @@ class ExampleParticlesInterfaceTests(amusetest.TestCase):
         self.log("adding and removing of a particle")
         
         instance = ExampleParticlesInterface()
-        self.assertEquals(len(instance.particles), 0)
+        self.assertEqual(len(instance.particles), 0)
     
         # we create a particle in our script
         # all attributes of this particle are stored in the python space
@@ -285,13 +285,13 @@ class ExampleParticlesInterfaceTests(amusetest.TestCase):
         self.log("Adding particle with key {0}", theParticle.key)
         instance.particles.add_particle(theParticle)
         
-        print instance.particles.index_in_code
-        self.assertEquals(len(instance.particles), 1)
+        print(instance.particles.index_in_code)
+        self.assertEqual(len(instance.particles), 1)
         
         self.log("Removing particle with key {0}", theParticle.key)
         instance.particles.remove_particle(theParticle)
         
-        self.assertEquals(len(instance.particles), 0)
+        self.assertEqual(len(instance.particles), 0)
         
 
     def test2(self):
@@ -304,7 +304,7 @@ class ExampleParticlesInterfaceTests(amusetest.TestCase):
         """
         self.log("accessing attributes of a particle")
         instance = ExampleParticlesInterface()
-        self.assertEquals(len(instance.particles), 0)
+        self.assertEqual(len(instance.particles), 0)
         
         theParticle = datamodel.Particle()
         theParticle.mass = 10 | units.kg
@@ -315,13 +315,13 @@ class ExampleParticlesInterfaceTests(amusetest.TestCase):
         instance.particles.add_particle(theParticle)
         
         self.log("Getting the mass of particle with key {0}, get_mass should be called", theParticle.key)
-        self.assertEquals(instance.particles[0].mass, 10 | units.kg)
+        self.assertEqual(instance.particles[0].mass, 10 | units.kg)
         
         self.log("Getting the position of particle with key {0}, get_position should be called", theParticle.key)
-        self.assertEquals(instance.particles[0].position, [0.1, 0.2, 0.5] | units.m)
+        self.assertEqual(instance.particles[0].position, [0.1, 0.2, 0.5] | units.m)
         
         self.log("Getting the only the x attribute of particle with key {0}, get_position should be called (y and z are discarded)", theParticle.key)
-        self.assertEquals(instance.particles[0].x, 0.1 | units.m)
+        self.assertEqual(instance.particles[0].x, 0.1 | units.m)
         
         
         self.log("Setting the position of particle with key {0}, set_position should be called", theParticle.key)
@@ -340,7 +340,7 @@ class ExampleParticlesInterfaceTests(amusetest.TestCase):
         """
         
         instance = ExampleParticlesInterface()
-        self.assertEquals(len(instance.particles), 0)
+        self.assertEqual(len(instance.particles), 0)
         
         theParticle = datamodel.Particle()
         theParticle.mass = 10 | units.kg
@@ -358,20 +358,20 @@ class ExampleParticlesInterfaceTests(amusetest.TestCase):
         
         instance.particles.add_particle(theParticle)
         
-        self.assertEquals(len(instance.particles[0].element_list()), 10)
+        self.assertEqual(len(instance.particles[0].element_list()), 10)
         list = instance.particles[0].element_list()
-        self.assertEquals(list[0].value1, 0 | units.none)
-        self.assertEquals(list[0].value2, 0 | units.none)
-        self.assertEquals(list[1].value1, 0 | units.none)
-        self.assertEquals(list[1].value2, 1 | units.none)
+        self.assertEqual(list[0].value1, 0 | units.none)
+        self.assertEqual(list[0].value2, 0 | units.none)
+        self.assertEqual(list[1].value1, 0 | units.none)
+        self.assertEqual(list[1].value2, 1 | units.none)
         for x in range(len(list)):
-            self.assertEquals(list[x].value1, 0 | units.none)
-            self.assertEquals(list[x].value2, x | units.none)
+            self.assertEqual(list[x].value1, 0 | units.none)
+            self.assertEqual(list[x].value2, x | units.none)
             
         list = instance.particles[1].element_list()
         for x in range(len(list)):
-            self.assertEquals(list[x].value1, 1 | units.none)
-            self.assertEquals(list[x].value2, x | units.none)
+            self.assertEqual(list[x].value1, 1 | units.none)
+            self.assertEqual(list[x].value2, x | units.none)
             
         #print instance.particles.element_list()
         #print instance.particles.element_list()[0][1].value2
@@ -384,7 +384,7 @@ class ExampleParticlesInterfaceTests(amusetest.TestCase):
         """
         
         instance = ExampleParticlesInterface()
-        self.assertEquals(len(instance.particles), 0)
+        self.assertEqual(len(instance.particles), 0)
         
         theParticle = datamodel.Particle()
         theParticle.x = 0.1 | units.m
@@ -401,7 +401,7 @@ class ExampleParticlesInterfaceTests(amusetest.TestCase):
         """
         
         instance = ExampleParticlesInterface()
-        self.assertEquals(len(instance.particles), 0)
+        self.assertEqual(len(instance.particles), 0)
         
         particles = datamodel.Particles(10)
         particles.mass = 0.1 | units.kg
@@ -411,13 +411,13 @@ class ExampleParticlesInterfaceTests(amusetest.TestCase):
         
         instance.particles.add_particle(particles)
         
-        self.assertEquals(len(instance.particles), 10)
+        self.assertEqual(len(instance.particles), 10)
         
         subset = instance.particles[0:2]
-        self.assertEquals(len(subset), 2)
+        self.assertEqual(len(subset), 2)
         self.assertTrue(str(subset).find('key')> 0)
                
     def log(self, message, *arguments):
-        print "IN TEST >>", message.format(*arguments)
+        print("IN TEST >>", message.format(*arguments))
     
     

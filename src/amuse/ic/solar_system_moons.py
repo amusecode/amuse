@@ -238,10 +238,10 @@ def get_moons_for_planet(planet, delta_JD=0.|units.day):
         ('eccentricity','<f8'), ('argument_of_peri','<f8'),
         ('mean_anomaly','<f8'), ('inclination','<f8'), ('longitude_oan','<f8')])
   moon_data = data[data['planet_name']==planet.name]
-  print "Planet=", planet.name, "moon=", moon_data["name"]
+  print("Planet=", planet.name, "moon=", moon_data["name"])
   moons = Particles()
   if len(moon_data["name"]):
-      print len(moon_data["name"])
+      print(len(moon_data["name"]))
       for moon in moon_data:
           #print moon
           r, v = get_position(planet.mass,
@@ -311,6 +311,6 @@ def new_option_parser():
 if __name__ in ('__main__', '__plot__'):
   o, arguments  = new_option_parser().parse_args()
   lunar_system = new_lunar_system(o.Julian_date)
-  print lunar_system
+  print(lunar_system)
 
 

@@ -98,7 +98,7 @@ def head_on_stellar_merger(
             stellar_evolution = MESA()
             stellar_evolution.initialize_code()
         except:
-            print "MESA was not built. Returning."
+            print("MESA was not built. Returning.")
             return
         stellar_evolution.commit_parameters()
         stellar_evolution.particles.add_particles(stars)
@@ -109,21 +109,21 @@ def head_on_stellar_merger(
                 while True:
                     stellar_evolution.evolve_model()
             except AmuseException as exception:
-                print exception
+                print(exception)
         else:
             stellar_evolution.evolve_model(star_age)
 
         if os.path.exists(pickle_file_1):
-            print "Could not save stellar model 1: file already exists."
+            print("Could not save stellar model 1: file already exists.")
         else:
             pickle_stellar_model(stellar_evolution.particles[0], pickle_file_1)
-            print "Stellar model 1 saved at:", pickle_file_1
+            print("Stellar model 1 saved at:", pickle_file_1)
         if os.path.exists(pickle_file_2):
-            print "Could not save stellar model 2: file already exists."
+            print("Could not save stellar model 2: file already exists.")
         else:
             pickle_stellar_model(stellar_evolution.particles[1], pickle_file_2)
-            print "Stellar model 2 saved at:", pickle_file_2
-
+            print("Stellar model 2 saved at:", pickle_file_2)
+        
         stellar_evolution.stop()
 
     model_1 = StellarModel2SPH(None, None, pickle_file=pickle_file_1)
@@ -133,31 +133,36 @@ def head_on_stellar_merger(
     composition = model_2.composition_profile
     midpoints = model_2.midpoints_profile[1:-1]
     specific_internal_energy = model_2.specific_internal_energy_profile
-
+    
     number_of_sph_particles_1 = int(
-            round(
-                number_of_sph_particles * (
-                    model_1.mass / (model_1.mass + model_2.mass)
-                    )
-                )
-            )
-    number_of_sph_particles_2 = \
-        number_of_sph_particles - number_of_sph_particles_1
-    print "Creating initial conditions from a MESA stellar evolution model:"
+        round(
+            number_of_sph_particles
+            * (model_1.mass / (model_1.mass + model_2.mass))
+        )
+    )
+    number_of_sph_particles_2 = (
+        number_of_sph_particles
+        - number_of_sph_particles_1
+    )
+    print("Creating initial conditions from a MESA stellar evolution model:")
     print(
-            model_1.mass, "star consisting of",
-            number_of_sph_particles_1, "particles."
-            )
+        model_1.mass,
+        "star consisting of",
+        number_of_sph_particles_1,
+        "particles."
+    )
     sph_particles_1 = convert_stellar_model_to_SPH(
-            None,
-            number_of_sph_particles_1,
-            seed=12345,
-            pickle_file=pickle_file_1
-            ).gas_particles
+        None, 
+        number_of_sph_particles_1, 
+        seed=12345,
+        pickle_file = pickle_file_1
+    ).gas_particles
     print(
-            model_2.mass, "star consisting of",
-            number_of_sph_particles_2, "particles."
-            )
+        model_2.mass,
+        "star consisting of",
+        number_of_sph_particles_2,
+        "particles."
+    )
     sph_particles_2 = convert_stellar_model_to_SPH(
             None,
             number_of_sph_particles_2,
@@ -224,9 +229,9 @@ def head_on_stellar_merger(
             ).as_quantity_in(units.RSun)
     center_of_mass_velocity = all_sph_particles.center_of_mass_velocity(
             ).as_quantity_in(units.km / units.s)
-    print
-    print "center_of_mass:", center_of_mass
-    print "center_of_mass_velocity:", center_of_mass_velocity
+    print()
+    print("center_of_mass:", center_of_mass)
+    print("center_of_mass_velocity:", center_of_mass_velocity)
     all_sph_particles.position -= center_of_mass
     sph_midpoints = all_sph_particles.position.lengths()
 
@@ -257,7 +262,7 @@ def head_on_stellar_merger(
         base_output_file_name + "_hydro_image.png"
     )
     hydro_legacy_code.stop()
-    print "All done!\n"
+    print("All done!\n")
 
 
 def composition_comparison_plot(
@@ -272,7 +277,7 @@ def composition_comparison_plot(
     ylabel('mass fraction')
     pyplot.legend()
     pyplot.savefig(figname)
-    print "\nPlot of composition profiles was saved to: ", figname
+    print("\nPlot of composition profiles was saved to: ", figname)
     pyplot.close()
 
 
@@ -287,7 +292,7 @@ def internal_energy_comparison_plot(radii_SE, u_SE, radii_SPH, u_SPH, figname):
     ylabel('internal energy')
     pyplot.legend()
     pyplot.savefig(figname)
-    print "\nPlot of internal energy profiles was saved to: ", figname
+    print("\nPlot of internal energy profiles was saved to: ", figname)
     pyplot.close()
 
 
@@ -303,7 +308,7 @@ def energy_plot(time, E_kin, E_pot, E_therm, figname):
     ylabel('Energy')
     pyplot.legend(loc=3)
     pyplot.savefig(figname)
-    print "\nPlot of energy evolution was saved to: ", figname
+    print("\nPlot of energy evolution was saved to: ", figname)
     pyplot.close()
 
 
@@ -316,7 +321,7 @@ def thermal_energy_plot(time, E_therm, figname):
     ylabel('Energy')
     pyplot.legend(loc=3)
     pyplot.savefig(figname)
-    print "\nPlot of thermal energy evolution was saved to: ", figname
+    print("\nPlot of thermal energy evolution was saved to: ", figname)
     pyplot.close()
 
 
@@ -375,7 +380,7 @@ def hydro_plot(view, hydro_code, image_size, figname):
     im = pyplot.figimage(rgba, origin='lower')
 
     pyplot.savefig(figname, transparent=True, dpi=100)
-    print "\nHydroplot was saved to: ", figname
+    print("\nHydroplot was saved to: ", figname)
     pyplot.close()
 
 
@@ -450,8 +455,8 @@ def new_option_parser():
 
 if __name__ == "__main__":
     options, arguments = new_option_parser().parse_args()
-    print "Simulating a head on collision between two stars."
-    print "Options used:", options
+    print("Simulating a head on collision between two stars.")
+    print("Options used:", options)
     masses = [options.mass1, options.mass2] | units.MSun
     head_on_stellar_merger(
         masses=masses,

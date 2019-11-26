@@ -13,7 +13,7 @@ from amuse.rfi.tools import create_c
 from amuse.rfi import channel
 from amuse.rfi.core import *
 
-import test_c_implementation
+from . import test_c_implementation
 
 class TestCSocketsImplementationInterface(test_c_implementation.TestCImplementationInterface):
 

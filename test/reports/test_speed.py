@@ -307,7 +307,7 @@ class RunSpeedTests(object):
         for number_of_points_in_one_dimension in self.number_of_gridpoints:
             result = self.run(number_of_points_in_one_dimension)
     
-            print ', '.join(map(lambda x: str(x), result))
+            print(', '.join([str(x) for x in result]))
                 
     def run(self, number_of_points_in_one_dimension):
     

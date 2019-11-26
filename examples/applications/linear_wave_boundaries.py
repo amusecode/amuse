@@ -373,8 +373,9 @@ class CalculateLinearWave1D(object):
             from_model_to_code.copy()
 
         evolve.init_channels()
-
-        print "start evolve"
+        
+            
+        print("start evolve")
         dt = time / self.number_of_steps
         t = dt
         step = 1
@@ -382,17 +383,17 @@ class CalculateLinearWave1D(object):
             instance.parameters.must_evolve_to_exact_time = False
 
             evolve.evolve_model(t, time)
-            print "time : ", t, instance.model_time  # ,  instance.parameters.must_evolve_to_exact_time
+            print("time : ", t, instance.model_time)  # ,  instance.parameters.must_evolve_to_exact_time
 
             t += dt
             step += 1
 
-        print "copying results"
+        print("copying results")
         result = []
         for x in instance.itergrids():
             result.append(x.copy())
 
-        print "terminating code"
+        print("terminating code")
         instance.stop()
 
         return result
@@ -423,15 +424,15 @@ def main():
     )
     if not IS_PLOT_AVAILABLE:
         return
-
-    print "Evolve model with amuse implementing the periodic boundaries"
+    
+    print("Evolve model with amuse implementing the periodic boundaries")
     grids1 = model1.get_solution_at_time(1.0 | time)
-    print "Evolve model with the code implementing the periodic boundaries"
+    print("Evolve model with the code implementing the periodic boundaries")
     grids2 = model2.get_solution_at_time(1.0 | time)
     rho1 = grids1[0].rho[..., ..., 0].value_in(density)
     rho2 = grids2[0].rho[..., ..., 0].value_in(density)
     drho = rho2 - rho1
-    print drho.sum(), rho1[0][0], rho2[0][0], drho[0][0]
+    print(drho.sum(), rho1[0][0], rho2[0][0], drho[0][0])
     x = grids1[0].x[..., ..., 0].value_in(length)
     y = grids1[0].y[..., ..., 0].value_in(length)
     figure = pyplot.figure(figsize=(10, 5))

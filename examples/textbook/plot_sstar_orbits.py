@@ -49,7 +49,7 @@ def plot_orbits(x, y, z):
 def main(t_end=1, n_steps=1, filename=None):
 
     black_hole, stars = initialize_sstars(2001|units.yr, S_name, S_a_arcsec, S_ecc, S_inc, S_omra, S_Omega, S_tperi, S_Period)
-    print "N=", len(stars)
+    print("N=", len(stars))
 
     gravity = Gravity(Mercury, [black_hole, stars])
     model_time = gravity.model_time

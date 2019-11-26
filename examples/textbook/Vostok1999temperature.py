@@ -8,7 +8,7 @@ from distinct_colours import get_distinct
 def read_vostok1999temperaturedata(datafile):
     t = []
     T = []
-    for line in open(datafile).xreadlines():
+    for line in open(datafile):
         if '***' not in line and '#' not in line:
             sl = line.split()
             t.append(float(sl[1]))
@@ -20,7 +20,7 @@ def read_Earthorbit(datafile):
     e = []
     a = []
     tmax = 1.e+6
-    for line in open(datafile).xreadlines():
+    for line in open(datafile):
         if '#' not in line:
             sl = line.split()
             t.append(float(sl[0]))
@@ -36,7 +36,7 @@ if __name__ in ('__main__', '__plot__'):
         amusedir = os.environ['AMUSE_DIR']
         dir = amusedir+'/examples/textbook/'
     except:
-        print 'Environment variable AMUSE_DIR not set'
+        print('Environment variable AMUSE_DIR not set')
         dir = './'
     
     tv, T = read_vostok1999temperaturedata(dir+'vostok1999temperature.data')
@@ -84,6 +84,6 @@ if __name__ in ('__main__', '__plot__'):
 
     save_file = 'vostok1999temperature.png'
     pyplot.savefig(save_file)
-    print "\nSaved figure in file", save_file,'\n'
+    print("\nSaved figure in file", save_file,'\n')
     pyplot.show()
 

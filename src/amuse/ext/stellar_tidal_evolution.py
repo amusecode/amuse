@@ -90,7 +90,7 @@ class TidalEvolution(literature.LiteratureReferencesMixIn):
 
         interacting_bodies = self.orbiters.select(lambda a, e: a*(1-e)<self.pericenter_interaction_factor*R,["semimajor_axis", "eccentricity"])
         if len(interacting_bodies):
-            print "N tidal:", len(self.orbiters), "of which N=", len(interacting_bodies), "tidally interacting" 
+            print("N tidal:", len(self.orbiters), "of which N=", len(interacting_bodies), "tidally interacting") 
         self.orbiters_with_error = Particles()
 
         """
@@ -116,19 +116,19 @@ class TidalEvolution(literature.LiteratureReferencesMixIn):
             self.evolve_individual_orbiter(pi, time, M, R, Os)
 
 
-        print "Central_particle:", self.central_particle.Omega
+        print("Central_particle:", self.central_particle.Omega)
         self.current_time = time
         if len(interacting_bodies):
-            print "Post tidal interaction", len(interacting_bodies)
+            print("Post tidal interaction", len(interacting_bodies))
         if len(self.orbiters_with_error)>0:
-            print "Error in N=", len(self.orbiters_with_error), "orbiters."
-            print self.orbiters_with_error
+            print("Error in N=", len(self.orbiters_with_error), "orbiters.")
+            print(self.orbiters_with_error)
 
         merged_orbiters = interacting_bodies.select(lambda a, e, r: a*(1-e)<R+r,["semimajor_axis", "eccentricity", "radius"])
         self.all_merged_orbiters = Particles()
         if len(merged_orbiters)>0:
-            print "Merged orbiters N= ", len(merged_orbiters)
-            print merged_orbiters
+            print("Merged orbiters N= ", len(merged_orbiters))
+            print(merged_orbiters)
             self.all_merged_orbiters.add_particles(merged_orbiters-self.orbiters_with_error)
 
     def contains_nan(self, dO):
@@ -140,7 +140,7 @@ class TidalEvolution(literature.LiteratureReferencesMixIn):
 
     def evolve_multiple_orbiters(self, interacting_bodies, time, M, R, Os):
         for pi in interacting_bodies:
-            print "ev=", pi.key
+            print("ev=", pi.key)
             self.evolve_individual_orbiter(pi, time, M, R, Os)
 
     def evolve_individual_orbiter(self, oi, time, M, R, Os):
@@ -162,15 +162,15 @@ class TidalEvolution(literature.LiteratureReferencesMixIn):
             de = integrate.quad(lambda x: self.edot_star(a, M, R, m, r, Os, Op, e).value_in(units.s**-1), current_time.value_in(units.s), t_end.value_in(units.s))
             dO = integrate.quad(lambda x: self.Omegadot_star(a, M, R, m, r, Os, Op, e).value_in(units.s**-2), current_time.value_in(units.s), t_end.value_in(units.s))
             if self.contains_nan(da):
-                print "NAN's detected in da", da
+                print("NAN's detected in da", da)
                 self.orbiters_with_error.add_particles(oi.as_set())
                 break
             if self.contains_nan(de):
-                print "NAN's detected, de", de
+                print("NAN's detected, de", de)
                 self.orbiters_with_error.add_particles(oi.as_set())
                 break
             if self.contains_nan(dO):
-                print "NAN's detectedm dO", dO
+                print("NAN's detectedm dO", dO)
                 self.orbiters_with_error.add_particles(oi.as_set())
                 break
             oi.semimajor_axis += da[0] | units.RSun
@@ -319,7 +319,7 @@ class TestTidalInteraction(TestCase):
         time = 0*dt
         He_WD = 10 | units.stellar_type
         while star.stellar_type<He_WD:
-            print "T=", stellar.model_time
+            print("T=", stellar.model_time)
             stellar.particles.evolve_one_step()
             time = stellar.particles.age
             adiabatic_expansion_factor = star[0].mass/stellar.particles[0].mass
@@ -340,18 +340,18 @@ class TestTidalInteraction(TestCase):
             channel_from_to_to_framework.copy_attributes(["semimajor_axis", "eccentricity"])
 
             if len(tidal.orbiters_with_error)>0:
-                print "Remove orbiter with error:", len(tidal.orbiters_with_error)
+                print("Remove orbiter with error:", len(tidal.orbiters_with_error))
                 tidal.orbiters.remove_particles(tidal.orbiters_with_error)
                 planet.remove_particle(tidal.orbiters_with_error)
 
             if len(tidal.all_merged_orbiters)>0:
-                print "Merged planets/asteroids: N=", len(tidal.all_merged_orbiters)
-                print "removed:", tidal.all_merged_orbiters
+                print("Merged planets/asteroids: N=", len(tidal.all_merged_orbiters))
+                print("removed:", tidal.all_merged_orbiters)
                 tidal.orbiters.remove_particles(tidal.all_merged_orbiters)
                 planet.remove_particle(tidal.all_merged_orbiters)
-            print "Remaining orbiters:", tidal.orbiters
-            print "N=", len(tidal.orbiters)
-        self.assertEquals(len(tidal.orbiters), 1)
+            print("Remaining orbiters:", tidal.orbiters)
+            print("N=", len(tidal.orbiters))
+        self.assertEqual(len(tidal.orbiters), 1)
 
 def tidal_interaction(M, m, a, e, Omega_s, tend):
 
@@ -386,7 +386,7 @@ def tidal_interaction(M, m, a, e, Omega_s, tend):
         dt_se = stellar.particles[0].time_step
         dt = min(dt, dt_se)
         dt = max(1|units.Myr, dt)
-        print "dt_tidal=", dt
+        print("dt_tidal=", dt)
         time += dt
         stellar.evolve_model(time)
 
@@ -409,17 +409,17 @@ def tidal_interaction(M, m, a, e, Omega_s, tend):
         channel_from_to_to_framework.copy_attributes(["semimajor_axis", "eccentricity"])#, "merged_with_central_star"])
 
         if len(tidal.all_merged_orbiters)>0:
-            print "Merged planets/asteroids: N=", len(tidal.all_merged_orbiters)
-            print "removed:", tidal.all_merged_orbiters
+            print("Merged planets/asteroids: N=", len(tidal.all_merged_orbiters))
+            print("removed:", tidal.all_merged_orbiters)
             tidal.orbiters.remove_particles(tidal.all_merged_orbiters)
             planet.remove_particle(tidal.all_merged_orbiters)
-        print "Remaining orbiters:", tidal.orbiters
-        print "N=", len(tidal.orbiters)
+        print("Remaining orbiters:", tidal.orbiters)
+        print("N=", len(tidal.orbiters))
 
         if len(tidal.orbiters)==0:
             return
 
-    print "current time=", tidal.current_time, tidal.orbiters.semimajor_axis, tidal.orbiters.eccentricity
+    print("current time=", tidal.current_time, tidal.orbiters.semimajor_axis, tidal.orbiters.eccentricity)
 
 def new_option_parser():
 #    from optparse import OptionParser

@@ -303,7 +303,7 @@ class TestDefaults(_Defaults):
     @late
     def temporarydir(self):
         dirname=tempfile.mkdtemp()
-        print("generating temporary dir for test results: {0}". format(dirname))
+        print(("generating temporary dir for test results: {0}". format(dirname)))
         return dirname
 
     @options.option(sections=['test'])

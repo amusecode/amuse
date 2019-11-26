@@ -64,11 +64,11 @@ def main(N=10, W0=7.0, t_end=10, nsteps=10,
         RL = LagrangianRadii(gravity.particles, massf=MassFraction)
         pos,coreradius,coredens = \
             gravity.particles.densitycentre_coreradius_coredens()
-        print "Cluster at time=", time, "core_radius=", coreradius, \
-              "L_radii =",
+        print("Cluster at time=", time, "core_radius=", coreradius, \
+              "L_radii =", end=' ')
         for rl in RL:
-            print rl.number, " ",
-        print "length"
+            print(rl.number, " ", end=' ')
+        print("length")
 
         t.append(time.number)
         rcore.append(coreradius.number)
@@ -81,8 +81,8 @@ def main(N=10, W0=7.0, t_end=10, nsteps=10,
         if stopping_condition.is_set():
             Ek_enc = gravity.kinetic_energy 
             Ep_enc = gravity.potential_energy
-            print "At time=", time, "number of encounters=", \
-                len(stopping_condition.particles(0))
+            print("At time=", time, "number of encounters=", \
+                len(stopping_condition.particles(0)))
             for ci in range(len(stopping_condition.particles(0))): 
                 particles_in_encounter = Particles(
                     particles=[stopping_condition.particles(0)[ci],
@@ -97,15 +97,15 @@ def main(N=10, W0=7.0, t_end=10, nsteps=10,
                 Nenc+=1
                 RL = LagrangianRadii(gravity.particles, massf=MassFraction)
 
-                print "Resolve encounter number", Nenc
+                print("Resolve encounter number", Nenc)
                 pos,coreradius,coredens = \
                     gravity.particles.densitycentre_coreradius_coredens()
-                print "Collision at time=", time, new_particle.mass.sum(), \
+                print("Collision at time=", time, new_particle.mass.sum(), \
                     new_particle.position.length(), "Nstars= ", len(bodies), \
-                    "Ncoll=", Nenc, "core_radius=", coreradius, "L_radii=", 
+                    "Ncoll=", Nenc, "core_radius=", coreradius, "L_radii=", end=' ') 
                 for rl in RL:
-                    print rl.number, " ",
-                print "length"
+                    print(rl.number, " ", end=' ')
+                print("length")
 
                 pos = new_particle[0].position.number
                 rc = math.sqrt(numpy.sum(pos**2))
@@ -125,11 +125,11 @@ def main(N=10, W0=7.0, t_end=10, nsteps=10,
         Etot = Ekin + Epot
         dE = Etot_prev-Etot
         Mtot = bodies.mass.sum()
-        print "T=", time, 
-        print "M=", Mtot, "(dM[SE]=", Mtot/Mtot_init, ")",
-        print "E=", Etot, "Q=", Ekin/Epot,
-        print "dE=", (Etot_init-Etot)/Etot, "ddE=", (Etot_prev-Etot)/Etot, 
-        print "dE(enc)=", dEk_enc, dEp_enc
+        print("T=", time, end=' ') 
+        print("M=", Mtot, "(dM[SE]=", Mtot/Mtot_init, ")", end=' ')
+        print("E=", Etot, "Q=", Ekin/Epot, end=' ')
+        print("dE=", (Etot_init-Etot)/Etot, "ddE=", (Etot_prev-Etot)/Etot, end=' ') 
+        print("dE(enc)=", dEk_enc, dEp_enc)
         Etot_init -= dE
         Etot_prev = Etot
 
@@ -149,7 +149,7 @@ def main(N=10, W0=7.0, t_end=10, nsteps=10,
 
     save_file = 'gravity_collision.png'
     pyplot.savefig(save_file)
-    print '\nSaved figure in file', save_file,'\n'
+    print('\nSaved figure in file', save_file,'\n')
     pyplot.show()
     
 def new_option_parser():

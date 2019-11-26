@@ -20,19 +20,11 @@ from amuse.datamodel import Particles
 from amuse.datamodel import LinkedArray
 from amuse.datamodel import AttributeStorage
 
-if sys.hexversion > 0x03000000:
-    def pickle_to_string(value):
-        return numpy.void(pickle.dumps(value, protocol=0))
+def pickle_to_string(value):
+    return numpy.void(pickle.dumps(value, protocol=0))
         
-        
-    def unpickle_from_string(value):
-        return pickle.loads(value, encoding='bytes')
-else:
-    def pickle_to_string(value):
-        return pickle.dumps(value)
-        
-    def unpickle_from_string(value):
-        return pickle.loads(value)
+def unpickle_from_string(value):
+    return pickle.loads(value, encoding='bytes')
 
 class HDF5Attribute(object):
     
@@ -401,7 +393,7 @@ class HDF5AttributeStorage(AttributeStorage):
         return result
         
     def get_defined_attribute_names(self):
-        return self.attributesgroup.keys()
+        return list(self.attributesgroup.keys())
         
     def get_defined_settable_attribute_names(self):
         return self.get_defined_attribute_names()
@@ -475,7 +467,7 @@ class HDF5GridAttributeStorage(AttributeStorage):
         return eval(decoded, core.__dict__) 
         
     def get_defined_attribute_names(self):
-        return self.attributesgroup.keys()
+        return list(self.attributesgroup.keys())
         
     def get_values_in_store(self, indices, attributes):
             
@@ -692,7 +684,7 @@ class StoreHDF(object):
         arguments_and_attributes.update(collection_attributes)
         arguments_and_attributes.update(extra_attributes)
         
-        for name, quantity in arguments_and_attributes.iteritems():
+        for name, quantity in arguments_and_attributes.items():
             if quantity is None:
                 continue 
             if is_quantity(quantity):

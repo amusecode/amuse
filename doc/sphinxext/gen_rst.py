@@ -41,7 +41,7 @@ def generate_example_rst(app):
             relpath = os.path.split(root)[-1]
             datad.setdefault(relpath, []).append((fullpath, fname, contents))
 
-    subdirs = datad.keys()
+    subdirs = list(datad.keys())
     subdirs.sort()
 
     fhindex = file(os.path.join(exampledir, 'index.txt'), 'w')
@@ -151,7 +151,7 @@ AMUSE Examples
 
     fhindex.close()
 
-    print
+    print()
 
 def setup(app):
     app.connect('builder-inited', generate_example_rst)

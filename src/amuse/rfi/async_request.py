@@ -1,10 +1,10 @@
 import select
 import operator
 
-import channel
+from . import channel
 
 class AbstractASyncRequest(object):
-    def __nonzero__(self):
+    def __bool__(self):
         return not self.is_finished
 
     def waitone(self):
@@ -169,7 +169,7 @@ class DependentASyncRequest(AbstractASyncRequest):
     def wait(self):    
         try:
             self.parent.waitall()
-        except Exception, ex:
+        except Exception as ex:
             message=str(ex)
             if not message.startswith("Error in dependent call: "):
                 message="Error in dependent call: "+str(ex)
@@ -739,7 +739,7 @@ class AsyncRequestsPool(object):
     def __len__(self):
         return len(self.requests_and_handlers)
         
-    def __nonzero__(self):
+    def __bool__(self):
         return len(self)==0
 
     def waits_for(self):

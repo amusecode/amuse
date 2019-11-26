@@ -102,14 +102,14 @@ def main(filename=None):
     stars = Particles(0)
     bodies = read_set_from_file(filename, "amuse")
     for bi in bodies.history:
-      #print bi
+      #print(bi)
       if len(bi)>0:
-        if hasattr(bi, "name") and "gas" in bi.name:
+        if hasattr(bi, "name") and "gas" in str(bi.name):
             disk.add_particles(bi.copy())
-        elif "Star" in bi.name:
+        elif "Star" in str(bi.name):
             stars.add_particles(bi.copy())
 
-    print "Stellar masses:", stars.mass.min().in_(units.MSun), stars.mass.mean().in_(units.MSun), stars.mass.max().in_(units.MSun), stars.mass.median().in_(units.MSun)
+    print("Stellar masses:", stars.mass.min().in_(units.MSun), stars.mass.mean().in_(units.MSun), stars.mass.max().in_(units.MSun), stars.mass.median().in_(units.MSun))
             
     #plot_age_gasdensity(disk, stars)
     plot_radial_density_distribution(disk, stars)

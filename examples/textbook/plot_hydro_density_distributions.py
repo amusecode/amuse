@@ -11,10 +11,10 @@ def stellar_model(N, M, t=0.0|units.Myr):
     star = Particle(mass=M)
     stellar_evolution = EVtwin()
     se_star = stellar_evolution.particles.add_particle(star)
-    print "Evolving", star.mass, "to t=", t.in_(units.Myr)
+    print("Evolving", star.mass, "to t=", t.in_(units.Myr))
     stellar_evolution.evolve_model(t)
-    print "Stellar type:", stellar_evolution.particles.stellar_type.number
-    print "Creating SPH particles from the (1D) stellar evolution model"
+    print("Stellar type:", stellar_evolution.particles.stellar_type.number)
+    print("Creating SPH particles from the (1D) stellar evolution model")
     sph_particles = convert_stellar_model_to_SPH(se_star, N).gas_particles
     stellar_evolution.stop()
     return sph_particles
@@ -33,7 +33,7 @@ def plot_ZAMS_stellar_model(N, M):
     
     save_file = 'stellar_2MSunZAMS_projected.png'
     pyplot.savefig(save_file)
-    print 'Saved figure in file', save_file, '\n'
+    print('Saved figure in file', save_file, '\n')
     pyplot.show()
 ###BOOKLISTSTOP2###
 
@@ -63,7 +63,7 @@ def plot_GMC_model(N, M, R):
 
     file = 'molecular_cloud_projected.png'
     pyplot.savefig(file)
-    print 'Saved figure in file', file
+    print('Saved figure in file', file)
 
 
 if __name__ in ("__main__","__plot__"):
@@ -72,7 +72,7 @@ if __name__ in ("__main__","__plot__"):
     R = 10. | units.parsec
 
     M = 2 | units.MSun
-    print ''
+    print('')
     plot_ZAMS_stellar_model(N, M)
     plot_GMC_model(N, M, R)
-    print ''
+    print('')

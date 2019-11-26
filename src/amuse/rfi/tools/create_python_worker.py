@@ -77,5 +77,5 @@ class CreateAPythonWorker(OptionalAttributes):
         with open(self.output_name, 'w') as f:
             f.write(string)
             
-        os.chmod(self.output_name, 0777)
+        os.chmod(self.output_name, 0o777)
         
