@@ -92,10 +92,10 @@ script:
 - export PYTHONPATH=${PWD}/src:${PWD}
 - |
   if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
-    mpiexec nosetests --with-coverage amuse.test.suite.compile_tests.test_python_implementation:TestInterface.test10 -sv
-    mpiexec nosetests --with-coverage test/reports/test_speed.py -sv
-    mpiexec nosetests --with-coverage -e "test_plot" test/core_tests
-    mpiexec nosetests --with-coverage -e "test_cython_implementation" test/compile_tests -sv
+    nosetests --with-coverage amuse.test.suite.compile_tests.test_python_implementation:TestInterface.test10 -sv || exit $?
+    nosetests --with-coverage test/reports/test_speed.py -sv || exit $?
+    nosetests --with-coverage -e "test_plot" test/core_tests || exit $?
+    nosetests --with-coverage -e "test_cython_implementation" test/compile_tests -sv || exit $?
   elif [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
     nosetests --with-coverage test/reports/test_speed.py -sv
     nosetests --with-coverage -e "test_plot" test/core_tests
