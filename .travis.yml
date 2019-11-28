@@ -1,7 +1,7 @@
 codecov: true
 env:
   global:
-    - OMPI_MCA_rmaps_base_oversubscribe=yes
+    - OMPI_MCA_rmaps_base_oversubscribe=true
     - MINICONDA_VERSION="latest"
     - MINICONDA_PYTHON_MAJOR=3
     - MINICONDA_LINUX="Linux-x86_64"
@@ -92,10 +92,10 @@ script:
 - export PYTHONPATH=${PWD}/src:${PWD}
 - |
   if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
-    mpiexec nosetests --with-coverage amuse.test.suite.compile_tests.test_python_implementation:TestInterface.test10 -sv
-    mpiexec nosetests --with-coverage test/reports/test_speed.py -sv
-    mpiexec nosetests --with-coverage -e "test_plot" test/core_tests
-    mpiexec nosetests --with-coverage -e "test_cython_implementation" test/compile_tests -sv
+    mpiexec -n 1 nosetests --with-coverage amuse.test.suite.compile_tests.test_python_implementation:TestInterface.test10 -sv || exit $?
+    mpiexec -n 1 nosetests --with-coverage test/reports/test_speed.py -sv || exit $?
+    mpiexec -n 1 nosetests --with-coverage -e "test_plot" test/core_tests || exit $?
+    mpiexec -n 1 nosetests --with-coverage -e "test_cython_implementation" test/compile_tests -sv || exit $?
   elif [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
     nosetests --with-coverage test/reports/test_speed.py -sv
     nosetests --with-coverage -e "test_plot" test/core_tests
