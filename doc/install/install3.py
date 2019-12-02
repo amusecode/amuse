@@ -1,7 +1,5 @@
 #!/usr/bin/env python
 
-
-
 import sys
 import os.path
 import os
@@ -36,6 +34,8 @@ def late(function):
 class InstallPrerequisites(object):
     @late
     def prefix(self):
+        if 'VIRTUAL_ENV' in os.environ:
+            return os.environ['VIRTUAL_ENV']
         path = os.path.split(sys.executable)[0]
         if 'Framework' in path:
             return path[:path.index('Framework')]
@@ -44,8 +44,6 @@ class InstallPrerequisites(object):
     @late
     def applications(self):
        return [
-       #numpy-1.7.0b2.tar.gz?r=http%3A%2F%2Fsourceforge.net%2Fprojects%2Fnumpy%2Ffiles%2FNumPy%2F1.7.0b2%2F&ts=1353670630&use_mirror=garr
-          #('openssl' , [], '0.9.8k' , 'openssl-', '.tar.gz', 'http://www.openssl.org/source/', self.openssl_build),
           (
             'numpy' ,                  #name to refer by
             [],                        #names of prerequisites (unused)
@@ -226,12 +224,12 @@ class InstallPrerequisites(object):
     def hdf5_build(self, path):
         commands = []
         commands.append([
-          './configure',
-          '--prefix='+self.prefix,
-          '--enable-shared', 
-          '--enable-production',
-          '--with-pthread=/usr', 
-          '--enable-threadsafe'
+            './configure',
+            '--prefix='+self.prefix,
+            '--enable-shared', 
+            '--enable-production',
+            '--with-pthread=/usr', 
+            '--enable-threadsafe'
         ])
         commands.append(['make'])
         commands.append(['make', 'install'])
@@ -256,11 +254,12 @@ class InstallPrerequisites(object):
     def openmpi_build(self, path):
         commands = []
         commands.append([
-          './configure','--prefix='+self.prefix,
-          #'--enable-mpi-threads', 
-          '--enable-cxx-exceptions',
-          '--enable-debug',
-          '--enable-orterun-prefix-by-default',
+            './configure',
+            '--prefix='+self.prefix,
+            #'--enable-mpi-threads', 
+            '--enable-cxx-exceptions',
+            '--enable-debug',
+            '--enable-orterun-prefix-by-default',
         ])
         commands.append(['make'])
         commands.append(['make', 'install'])
@@ -270,13 +269,13 @@ class InstallPrerequisites(object):
     def mpich2_build(self, path):
         commands = []
         command = [
-          './configure',
-          '--prefix='+self.prefix,
-          '--enable-shared',
-          '--enable-sharedlibs=gcc',
-          '--enable-fc', 
-          '--with-python='+sys.executable,
-          '--with-device=ch3:sock',
+            './configure',
+            '--prefix='+self.prefix,
+            '--enable-shared',
+            '--enable-sharedlibs=gcc',
+            '--enable-fc', 
+            '--with-python='+sys.executable,
+            '--with-device=ch3:sock',
         ]
         if self.use_hydra_process_manager:
             command.append('--with-pm=hydra:gforker')
@@ -299,10 +298,10 @@ class InstallPrerequisites(object):
     def fftw_build(self, path):
         commands = []
         command = [
-          './configure',
-          '--prefix='+self.prefix,
-          '--enable-shared',
-          '--enable-threads'
+            './configure',
+            '--prefix='+self.prefix,
+            '--enable-shared',
+            '--enable-threads'
         ]
         commands.append(command)
         commands.append(['make'])
@@ -314,8 +313,8 @@ class InstallPrerequisites(object):
     def cmake_build(self, path):
         commands = []
         command = [
-          './configure',
-          '--prefix='+self.prefix
+            './configure',
+            '--prefix='+self.prefix,
         ]
         commands.append(command)
         commands.append(['make'])
@@ -327,9 +326,9 @@ class InstallPrerequisites(object):
     def gmp_build(self, path):
         commands = []
         command = [
-          './configure',
-          '--prefix='+self.prefix,
-          '--enable-shared'
+            './configure',
+            '--prefix='+self.prefix,
+            '--enable-shared'
         ]
         commands.append(command)
         commands.append(['make'])
@@ -340,20 +339,13 @@ class InstallPrerequisites(object):
             self.run_application(x, path)
     
     def mpfr_build(self, path):
-        #temp_patch_file = os.path.join(self.temp_dir, "mpfr-allpatches")
-        #if not os.path.exists(temp_patch_file):
-        #    print "Downloading mpfr-allpatches"
-        #    urllib.urlretrieve("http://www.mpfr.org/mpfr-3.1.1/allpatches", temp_patch_file)
-        #    print "...Finished"
-        
         commands = []
-        #commands.append(['patch', '-N', '-Z', '-p1', '-i', temp_patch_file])
         command = [
-          './configure',
-          '--prefix='+self.prefix,
-          '--with-gmp='+self.prefix,
-          '--enable-shared',
-          '--enable-thread-safe'
+            './configure',
+            '--prefix='+self.prefix,
+            '--with-gmp='+self.prefix,
+            '--enable-shared',
+            '--enable-thread-safe'
         ]
         commands.append(command)
         commands.append(['make'])
@@ -419,7 +411,6 @@ class InstallPrerequisites(object):
                 urllib.request.urlretrieve(url, os.path.join(self.temp_dir, app_file))
                 print("...Finished")
                 
-    
     def list_apps(self, names, skip):
         for (name, dependencies, version, prefix, suffix, url_prefix, function) in self.applications:
             if skip and name in skip:
@@ -498,24 +489,22 @@ class InstallPrerequisites(object):
             print("Building ", app_file)
             function(temp_app_dir)
             print("...Finished")
-            
+
+
 class InstallPrerequisitesOnOSX(InstallPrerequisites):
-
-
-   
           
     def mpich2_build(self, path):
         
         commands = []
         command = [
-          './configure',
-          '--prefix='+self.prefix,
-          '--enable-fc',
-          '--enable-shared',
-          '--with-python='+sys.executable,
-          '--with-pm=mpd',
-          '--enable-sharedlibs=osx-gcc',
-          '--with-device=ch3:sock',
+            './configure',
+            '--prefix='+self.prefix,
+            '--enable-fc',
+            '--enable-shared',
+            '--with-python='+sys.executable,
+            '--with-pm=mpd',
+            '--enable-sharedlibs=osx-gcc',
+            '--with-device=ch3:sock',
         ]
         if self.use_hydra_process_manager:
             command.append('--with-pm=hydra:mpd:gforker')
@@ -533,19 +522,12 @@ class InstallPrerequisitesOnOSX(InstallPrerequisites):
         self.check_mpich2_install(commands, path)
         
     def mpfr_build(self, path):
-        #temp_patch_file = os.path.join(self.temp_dir, "mpfr-allpatches")
-        #if not os.path.exists(temp_patch_file):
-        #    print "Downloading mpfr-allpatches"
-        #    urllib.urlretrieve("http://www.mpfr.org/mpfr-3.1.1/allpatches", temp_patch_file)
-        #    print "...Finished"
-        
         commands = []
-        #commands.append(['patch', '-N', '-Z', '-p1', '-i', temp_patch_file])
         command = [
-          './configure',
-          '--prefix='+self.prefix,
-          '--with-gmp='+self.prefix,
-          '--enable-shared'
+            './configure',
+            '--prefix='+self.prefix,
+            '--with-gmp='+self.prefix,
+            '--enable-shared',
         ]
         commands.append(command)
         commands.append(['make'])
@@ -732,6 +714,3 @@ setenv F77 gfortran
         
         
         sys.exit(1)
-    
-
-        
