@@ -523,7 +523,7 @@ class InstallPrerequisites(object):
     def extract_path(self, app_file):
         proc=subprocess.Popen(["tar","tf",app_file], stdout=subprocess.PIPE)
         out,err=proc.communicate()
-        out=out.split("\n")
+        out=out.decode().split("\n")
         return os.path.normpath(out[0]).split(os.sep)[0]
 
     def build_apps(self, names, skip):
