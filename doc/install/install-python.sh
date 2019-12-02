@@ -30,7 +30,7 @@ APP_DIR=Python-${APPVER}
 URL=https://www.python.org/ftp/python/${APPVER}/${APPFILE}
 
 # OpenSSL
-OPENSSLVERSION="1.1.1d"
+OPENSSLVERSION="1.1.1c"
 OPENSSLFILE=openssl-${OPENSSLVERSION}.tar.gz 
 OPENSSLURL=https://www.openssl.org/source/old/1.1.1/${OPENSSLFILE}
 OPENSSLDIR=openssl-${OPENSSLVERSION}

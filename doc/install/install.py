@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import sys
 import os.path
 import os
@@ -167,7 +167,7 @@ class InstallPrerequisites(object):
             ['gmp'],                    #names of prerequisites
             '4.0.2' ,                   #version string
             'mpfr-', '.tar.gz',         #pre- and postfix for filename
-            'http://mpfr.loria.fr/mpfr-4.0.2/', #download url, filename is appended
+            'https://www.mpfr.org/mpfr-4.0.2/', #download url, filename is appended
             self.mpfr_build             #method to use for building
           ) ,
           (
@@ -617,7 +617,7 @@ class InstallMatplotlib(InstallPrerequisites):
                 [],                         #names of prerequisites (unused)
                 '2.4.9' ,                   #version string
                 'freetype-', '.tar.gz',        #pre- and postfix for filename
-                'http://download.savannah.gnu.org/releases/freetype/', #download url, filename is appended
+                'https://download.savannah.gnu.org/releases/freetype/', #download url, filename is appended
                 self.basic_build             #method to use for building - same as for FFTW should work
               ) ,
               (
@@ -625,15 +625,15 @@ class InstallMatplotlib(InstallPrerequisites):
                 [],                         #names of prerequisites (unused)
                 '1.2.11' ,                   #version string
                 'zlib-', '.tar.gz',        #pre- and postfix for filename
-                'http://zlib.net/', #download url, filename is appended
+                'https://downloads.sourceforge.net/project/libpng/zlib/1.2.11/', #download url, filename is appended
                 self.basic_build             #method to use for building - same as for FFTW should work
               ) ,
               (
                 'png' ,                   #name to refer by
                 [],                         #names of prerequisites (unused)
-                '1.5.11' ,                   #version string
+                '1.6.37' ,                   #version string
                 'libpng-', '.tar.gz',        #pre- and postfix for filename
-                'http://downloads.sourceforge.net/project/libpng/libpng15/older-releases/1.5.11/', #download url, filename is appended
+                'https://downloads.sourceforge.net/project/libpng/libpng16/1.6.37/', #download url, filename is appended
                 self.basic_build             #method to use for building - same as for FFTW should work
               ),
               (
