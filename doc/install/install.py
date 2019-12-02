@@ -46,9 +46,9 @@ class InstallPrerequisites(object):
           (
             'numpy' ,                  #name to refer by
             [],                        #names of prerequisites (unused)
-            '1.8.2' ,                  #version string
+            '1.17.4' ,                  #version string
             'numpy-', '.tar.gz',       #pre- and postfix for filename
-            'https://pypi.python.org/packages/source/n/numpy/', #download url, filename is appended
+            'https://github.com/numpy/numpy/releases/download/v1.17.4/', #download url, filename is appended
             self.numpy_build          #method to use for building
           ),
           (
@@ -59,6 +59,14 @@ class InstallPrerequisites(object):
             'https://pypi.python.org/packages/source/n/nose/', 
             self.python_build
           ),
+          (
+            'cython',
+            [],
+            '0.29.14',
+            'Cython-' , '.tar.gz',
+            'https://pypi.io/packages/source/c/cython/',
+            self.python_build
+          ) ,
           (
             'hdf' ,
             [],  
@@ -125,7 +133,7 @@ class InstallPrerequisites(object):
           (
             'mpi4py', 
             ['mpich2'], 
-            '1.3.1', 
+            '3.0.3', 
             'mpi4py-', '.tar.gz', 
             'https://bitbucket.org/mpi4py/mpi4py/downloads/', 
             self.python_build
@@ -169,14 +177,6 @@ class InstallPrerequisites(object):
             'mpfr-', '.tar.gz',         #pre- and postfix for filename
             'https://www.mpfr.org/mpfr-4.0.2/', #download url, filename is appended
             self.mpfr_build             #method to use for building
-          ) ,
-          (
-            'cython',
-            [],
-            '0.25.2',
-            'Cython-' , '.tar.gz',
-            'https://pypi.io/packages/source/c/cython/',
-            self.python_build
           ) ,
         ]
         
@@ -247,7 +247,8 @@ class InstallPrerequisites(object):
         commands.append([
             './configure',
             '--prefix='+self.prefix,
-            '--enable-shared', 
+            '--enable-shared',
+            '--disable-hl', 
             '--enable-production',
             '--with-pthread=/usr', 
             '--enable-threadsafe'
