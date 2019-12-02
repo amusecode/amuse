@@ -1,9 +1,8 @@
 #!/usr/bin/env python
-
 import sys
 import os.path
 import os
-import urllib.request, urllib.parse, urllib.error
+import urllib.request
 import subprocess
 import shutil
 
@@ -49,8 +48,7 @@ class InstallPrerequisites(object):
             [],                        #names of prerequisites (unused)
             '1.8.2' ,                  #version string
             'numpy-', '.tar.gz',       #pre- and postfix for filename
-            # don't know whether there is a difference between pypi.io and this one.. 
-            'https://files.pythonhosted.org/packages/source/n/numpy/', #download url, filename is appended
+            'https://pypi.python.org/packages/source/n/numpy/', #download url, filename is appended
             self.numpy_build          #method to use for building
           ),
           (
@@ -58,45 +56,70 @@ class InstallPrerequisites(object):
             [], 
             '1.3.0', 
             'nose-' , '.tar.gz', 
-            'https://files.pythonhosted.org/packages/source/n/nose/', 
+            'https://pypi.python.org/packages/source/n/nose/', 
             self.python_build
           ),
           (
             'hdf' ,
             [],  
-            '1.8.14',
+            '1.8.17',
             'hdf5-' , '.tar.gz' , 
-            'https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.8/hdf5-1.8.14/src/',
+            'https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.8/hdf5-1.8.17/src/',
             self.hdf5_build
-          ) ,
-          (
-            'cython', 
-            [], 
-            '0.25.2', 
-            'Cython-' , '.tar.gz', 
-            'https://pypi.io/packages/source/c/cython/', self.python_build
           ) ,
           (
             'h5py', 
             ['hdf'], 
             '2.4.0', 
             'h5py-' , '.tar.gz', 
-            'https://files.pythonhosted.org/packages/source/h/h5py/', self.h5py_build
+            'https://pypi.python.org/packages/source/h/h5py/', self.h5py_build
           ) ,
+          (
+            'netcdf-c' ,
+            ['hdf'],  
+            '4.6.1',
+            'v' , '.tar.gz' , 
+            'https://github.com/Unidata/netcdf-c/archive/',
+            self.netcdf_build
+          ) ,
+          (
+            'netcdf-fortran' ,
+            ['netcdf-c'],  
+            '4.4.4',
+            'v' , '.tar.gz' , 
+            'https://github.com/Unidata/netcdf-fortran/archive/',
+            self.netcdf_build
+          ) ,
+          (
+            'netcdf4-python' ,
+            ['netcdf-c'],  
+            '1.2.4rel',
+            'v' , '.tar.gz' , 
+            'https://github.com/Unidata/netcdf4-python/archive/',
+            self.python_build
+          ) ,    
+          (
+            'f90nml',
+            [],  
+            '1.1.2',
+            'v' , '.tar.gz', 
+            'https://github.com/marshallward/f90nml/archive/',
+            self.python_build
+          ),      
           (
             'docutils', 
             [], 
-            '0.12', 
+            '0.15.2', 
             'docutils-','.tar.gz', 
-            'https://files.pythonhosted.org/packages/source/d/docutils/', 
+            'https://pypi.python.org/packages/source/d/docutils/', 
             self.python_build
           ) ,
           (
             'mpich', 
             [], 
-            '3.1.4', 
+            '3.3.2', 
             'mpich-', '.tar.gz', 
-            'https://www.mpich.org/static/tarballs/3.1.4/', 
+            'https://www.mpich.org/static/tarballs/3.3.2/', 
             self.mpich2_build
           ) ,
           (
@@ -107,9 +130,6 @@ class InstallPrerequisites(object):
             'https://bitbucket.org/mpi4py/mpi4py/downloads/', 
             self.python_build
           ) ,
-          #('openmpi', [], '1.3.3', 'openmpi-', '.tar.gz', 'http://www.open-mpi.org/software/ompi/v1.3/downloads/', self.openmpi_build) ,
-          #('setuptools', [], '0.6c11', 'setuptools-', '-py2.6.egg', 'http://pypi.python.org/packages/2.6/s/setuptools/', self.setuptools_install) ,
-          #http://pypi.python.org/packages/2.6/s/setuptools/setuptools-0.6c11-py2.6.egg#md5=bfa92100bd772d5a213eedd356d64086
           (
             'fftw3' ,                  #name to refer by
             [],                        #names of prerequisites (unused)
@@ -129,26 +149,34 @@ class InstallPrerequisites(object):
           (
             'cmake' ,                   #name to refer by
             [],                         #names of prerequisites (unused)
-            '2.8.12' ,                   #version string
+            '3.13.1' ,                   #version string
             'cmake-', '.tar.gz',        #pre- and postfix for filename
-            'https://www.cmake.org/files/v2.8/', #download url, filename is appended
+            'https://www.cmake.org/files/v3.13/', #download url, filename is appended
             self.cmake_build             #method to use for building
           ) ,
           (
             'gmp',                      #name to refer by
             [],                         #names of prerequisites (unused)
-            '5.1.3' ,                   #version string
+            '6.1.2' ,                   #version string
             'gmp-', '.tar.bz2',        #pre- and postfix for filename
-            'https://gmplib.org/download/gmp-5.1.3/', #download url, filename is appended
+            'https://gmplib.org/download/gmp/', #download url, filename is appended
             self.gmp_build             #method to use for building
           ) ,
-          ( # NOTE: When library version is changed, url to 'allpatches' in self.mpfr_build must be changed too!
+          (
             'mpfr' ,                    #name to refer by
             ['gmp'],                    #names of prerequisites
-            '3.1.5' ,                   #version string
+            '4.0.2' ,                   #version string
             'mpfr-', '.tar.gz',         #pre- and postfix for filename
-            'http://mpfr.loria.fr/mpfr-3.1.5/', #download url, filename is appended
+            'http://mpfr.loria.fr/mpfr-4.0.2/', #download url, filename is appended
             self.mpfr_build             #method to use for building
+          ) ,
+          (
+            'cython',
+            [],
+            '0.25.2',
+            'Cython-' , '.tar.gz',
+            'https://pypi.io/packages/source/c/cython/',
+            self.python_build
           ) ,
         ]
         
@@ -206,17 +234,10 @@ class InstallPrerequisites(object):
             raise Exception("Error when running <" + commandline + ">")
         print("finished " , ' '.join(args))
     
-    def h5py_build(self, path):
-        #self.run_application([
-        #    'patch', 
-        #    '-p1', 
-        #    '-i', 
-        #    os.path.abspath('h5py_imports_python33.patch')
-        #], cwd=path)
-       
+    def h5py_build(self, path):       
         self.run_application([PYTHON,'setup.py','configure','--hdf5='+self.prefix], cwd=path)
         self.run_application([PYTHON,'setup.py','build'],cwd=path)
-        self.run_application([PYTHON,'setup.py','install'], cwd=path)
+        self.run_application([PYTHON,'setup.py','install', '--prefix='+self.prefix], cwd=path)
         
     def setuptools_install(self, path):
         self.run_application(['sh',], cwd=path)
@@ -238,7 +259,7 @@ class InstallPrerequisites(object):
     
     def python_build(self, path):
         self.run_application([PYTHON,'setup.py','build'], cwd=path)
-        self.run_application([PYTHON,'setup.py','install'], cwd=path)
+        self.run_application([PYTHON,'setup.py','install', '--prefix='+self.prefix], cwd=path)
     
     def numpy_build(self, path):
         env = os.environ.copy()
@@ -246,7 +267,7 @@ class InstallPrerequisites(object):
         env['LAPACK'] = 'None'
         env['ATLAS'] = 'None'
         self.run_application([PYTHON,'setup.py','build'], cwd=path, env=env)
-        self.run_application([PYTHON,'setup.py','install'], cwd=path, env=env)
+        self.run_application([PYTHON,'setup.py','install', '--prefix='+self.prefix], cwd=path, env=env)
         
     def mercurial_build(self, path):
         self.run_application(['make','install','PREFIX='+self.prefix], cwd=path)
@@ -309,6 +330,38 @@ class InstallPrerequisites(object):
         
         for x in commands:
             self.run_application(x, path)
+
+    def basic_build(self, path):
+        commands = []
+        command = [
+            './configure',
+            '--prefix='+self.prefix,
+            '--enable-shared'
+        ]
+        commands.append(command)
+        commands.append(['make'])
+        commands.append(['make', 'install'])
+        
+        for x in commands:
+            self.run_application(x, path)
+
+    def netcdf_build(self, path):
+        env = os.environ.copy()
+        env['LDFLAGS'] = '-L{0}/lib '.format(self.prefix) + env.get('LDFLAGS','') 
+        env['CPPFLAGS'] = '-I{0}/include '.format(self.prefix) + env.get('CPPFLAGS','')
+        env['CFLAGS'] = '-I{0}/include '.format(self.prefix) + env.get('CFLAGS','')
+        commands = []
+        command = [
+            './configure',
+            '--prefix='+self.prefix,
+            '--enable-shared'
+        ]
+        commands.append(command)
+        commands.append(['make'])
+        commands.append(['make', 'install'])
+        
+        for x in commands:
+            self.run_application(x, path, env=env)
     
     def cmake_build(self, path):
         commands = []
@@ -416,6 +469,16 @@ class InstallPrerequisites(object):
             if skip and name in skip:
                 continue
             print(name, " - dowloaded from", url_prefix)
+
+    def list_download_urls(self, names, skip):
+        for (name, dependencies, version, prefix, suffix, url_prefix, function) in self.applications:
+            if skip and name in skip:
+                continue
+            app_file = prefix + version + suffix
+            app_dir = prefix + version 
+            url = url_prefix + app_file
+            print(url) 
+
                 
     def unpack_apps(self, names, skip):
         for (name, dependencies, version, prefix, suffix, url_prefix, function) in self.applications:
@@ -456,7 +519,13 @@ class InstallPrerequisites(object):
                 print("Note: The name of the output file must not be changed (after the -o or -O parameter)")
                 sys.exit(1)
             print("...Finished")
-            
+
+    def extract_path(self, app_file):
+        proc=subprocess.Popen(["tar","tf",app_file], stdout=subprocess.PIPE)
+        out,err=proc.communicate()
+        out=out.split("\n")
+        return os.path.normpath(out[0]).split(os.sep)[0]
+
     def build_apps(self, names, skip):
         for (name, dependencies, version, prefix, suffix, url_prefix, function) in self.applications:
             if names and name not in names:
@@ -465,7 +534,8 @@ class InstallPrerequisites(object):
                 continue
             app_file = prefix + version + suffix
             app_dir = prefix + version 
-            temp_app_dir = os.path.join(self.temp_dir , app_dir)
+            temp_app_dir = self.extract_path(os.path.join(self.temp_dir , app_file) )
+            temp_app_dir = os.path.join(self.temp_dir, temp_app_dir)
             if not os.path.exists(temp_app_dir):
                 if prefix.endswith('-'):
                     app_dir = prefix[:-1]
@@ -502,16 +572,16 @@ class InstallPrerequisitesOnOSX(InstallPrerequisites):
             '--enable-fc',
             '--enable-shared',
             '--with-python='+sys.executable,
-            '--with-pm=mpd',
+            '--enable-threads',
             '--enable-sharedlibs=osx-gcc',
             '--with-device=ch3:sock',
         ]
         if self.use_hydra_process_manager:
-            command.append('--with-pm=hydra:mpd:gforker')
+            command.append('--with-pm=hydra:gforker')
         elif self.use_gforker_process_manager:
-            command.append('--with-pm=gforker:hydra:mpd')
+            command.append('--with-pm=gforker:hydra')
         else:
-            command.append('--with-pm=mpd:hydra:gforker')
+            command.append('--with-pm=hydra:gforker')
             
         commands.append(command)
         commands.append(['make'])
@@ -527,7 +597,7 @@ class InstallPrerequisitesOnOSX(InstallPrerequisites):
             './configure',
             '--prefix='+self.prefix,
             '--with-gmp='+self.prefix,
-            '--enable-shared',
+            '--enable-shared'
         ]
         commands.append(command)
         commands.append(['make'])
@@ -569,9 +639,9 @@ class InstallMatplotlib(InstallPrerequisites):
               (
                 'matplotlib' ,                   #name to refer by
                 [],                         #names of prerequisites (unused)
-                '1.1.0' ,                   #version string
+                '2.2.2' ,                   #version string
                 'matplotlib-', '.tar.gz',        #pre- and postfix for filename
-                ' http://pypi.python.org/packages/source/m/matplotlib/', #download url, filename is appended
+                ' https://pypi.python.org/packages/source/m/matplotlib/', #download url, filename is appended
                 self.matplotlib_build             #method to use for building - same as for FFTW should work
               ),
         )
@@ -595,7 +665,7 @@ class InstallMatplotlib(InstallPrerequisites):
         env['CFLAGS'] ="-I{0}/include -I{0}/include/freetype2".format(self.prefix)
         env['LDFLAGS'] = "-L{0}/lib".format(self.prefix)
         self.run_application([PYTHON,'setup.py','build'], cwd=path, env = env)
-        self.run_application([PYTHON,'setup.py','install'], cwd=path, env = env)
+        self.run_application([PYTHON,'setup.py','install', '--prefix='+self.prefix], cwd=path, env = env)
       
      
 if IS_ON_OSX:
@@ -614,10 +684,14 @@ def install(names, skip):
 def listpackages(names, skip):
     INSTALL.list_apps(names, skip)
 
+def list_download_urls(names, skip):
+    INSTALL.list_download_urls(names, skip)
+
 _commands = {
     'download' : download,
     'install' : install,
     'list' : listpackages,
+    'url' : list_download_urls,
 }
 
 if __name__ == '__main__':
@@ -650,7 +724,7 @@ setenv F77 gfortran
     skip = []
     
     for x in sys.argv:
-        if x in list(_commands.keys()):
+        if x in _commands.keys():
             do.append(x)
             flag = True
         else:
