@@ -43,8 +43,8 @@ using namespace std;
 SimpleX::SimpleX(const string& output_path, const string& data_path){
 
   //rank of this processor and total number of processors
-  COMM_RANK = MPI::COMM_WORLD.Get_rank();    
-  COMM_SIZE = MPI::COMM_WORLD.Get_size();    
+  MPI_Comm_rank(MPI_COMM_WORLD, &COMM_RANK);    
+  MPI_Comm_size(MPI_COMM_WORLD, &COMM_SIZE);    
 
   //dimension of the simulation (only 3D is currently supported)
   dimension = 3;
@@ -120,7 +120,7 @@ SimpleX::~SimpleX(){
 void SimpleX::init_triangulation(char* inputName){
 
   //keep track of cpu time
-  double t0 = MPI::Wtime();
+  double t0 = MPI_Wtime();
 
   //read in the user specified parameter file
   read_parameters( inputName );
@@ -186,7 +186,7 @@ void SimpleX::init_triangulation(char* inputName){
     create_vertex_tree();
   }
 
-  MPI::COMM_WORLD.Barrier();
+  MPI_Barrier(MPI_COMM_WORLD);
 
   // triangulate the subboxes
   compute_triangulation();
@@ -204,7 +204,7 @@ void SimpleX::init_triangulation(char* inputName){
   initiate_ballistic_sites();
 
   //write the time it took to triangulate the points to log file
-  double t1 = MPI::Wtime();
+  double t1 = MPI_Wtime();
   if( COMM_RANK == 0 ){
     simpleXlog << endl << "  Calculating triangulation took " << t1-t0 << " seconds" << endl << endl;
   }
@@ -326,14 +326,14 @@ void SimpleX::read_parameters( char* initFileName ){
   if(COMM_RANK == 0)
     if(heat_cool&& (!blackBody)){
       cerr << "ERROR: Heating needs spectral information (e.g. bbSpectrum = 1)." << endl;
-      MPI::COMM_WORLD.Abort(-1);
+      MPI_Abort(MPI_COMM_WORLD, -1);
     }
   //include metal line cooling?
   KeyValueFile.readInto( metal_cooling, "metal_cooling", (bool) 0 );
   if(COMM_RANK == 0)
     if(metal_cooling&& (!heat_cool)){
       cerr << "ERROR: Metal cooling needs heat_cool as well." << endl;
-      MPI::COMM_WORLD.Abort(-1);
+      MPI_Abort(MPI_COMM_WORLD, -1);
     }
   
 
@@ -458,7 +458,7 @@ void SimpleX::set_direction_bins(){
     }
   }else{
     cerr << " (" << COMM_RANK << ") Incorrect header, orientations not found " << endl;
-    MPI::COMM_WORLD.Abort(-1);
+    MPI_Abort(MPI_COMM_WORLD, -1);
   }
 
 
@@ -522,7 +522,7 @@ void SimpleX::set_direction_bins(){
     }
   }else{
     cerr << " (" << COMM_RANK << ") Incorrect header, mappings not found " << endl;
-    MPI::COMM_WORLD.Abort(-1);
+    MPI_Abort(MPI_COMM_WORLD, -1);
   }
 }
 
@@ -860,7 +860,7 @@ void SimpleX::decompose_domain(){
 
   if( dom_dec.size() < COMM_SIZE ){
     cerr << " (" << COMM_RANK << ") Error: not enough subboxes for domain decomposition " << endl;
-    MPI::COMM_WORLD.Abort( -1 );
+    MPI_Abort(MPI_COMM_WORLD,  -1 );
   }
 
   bool correct = 0;
@@ -928,7 +928,7 @@ void SimpleX::assign_process(){
     for( vector< unsigned long long int >::iterator it=in_box.begin(); it!=in_box.end(); it++ ){
       if( *it > vertices.size() ){
 	cerr << " in_box gives: " << *it << " number of vertices: " << vertices.size() << endl;
-	MPI::COMM_WORLD.Abort( -1 );
+	MPI_Abort(MPI_COMM_WORLD,  -1 );
       }else{
 	vertices[ *it ].set_process( dom_dec[i] ); 
       }
@@ -1092,7 +1092,7 @@ void SimpleX::compute_triangulation(){
       //if( in_box.size() <= (unsigned int) dimension ){ 
       if( in_subbox <= (unsigned int) dimension ){ 
 	cerr << "Too few points in subbox to do tessellation." << endl;
-	MPI::COMM_WORLD.Abort( -1 );
+	MPI_Abort(MPI_COMM_WORLD,  -1 );
       }
 
       //minimum and maximum coordinates of subbox without the boundary
@@ -1439,7 +1439,7 @@ void SimpleX::compute_triangulation(){
 	cerr << "  (" << COMM_RANK << ")   box: (" << x_min << ", " << x_max << ")  (" 
 	     << y_min << ", " << y_max << ")  (" << z_min << ", " << z_max << ")" << endl;
 
-	MPI::COMM_WORLD.Abort( -1 );
+	MPI_Abort(MPI_COMM_WORLD,  -1 );
 
       }
 
@@ -1569,7 +1569,7 @@ void SimpleX::create_sites(){
     }
   }
 
-  MPI::COMM_WORLD.Allreduce( &local_numSites, &numSites, 1, MPI::UNSIGNED, MPI::SUM );
+  MPI_Allreduce( &local_numSites, &numSites, 1, MPI_UNSIGNED, MPI_SUM , MPI_COMM_WORLD );
 
   if( COMM_RANK == 0 ){
     //cerr << " (" << COMM_RANK << ") Number of sites in triangulation is " << numSites << endl;
@@ -1767,7 +1767,7 @@ void SimpleX::shuffle_sites(){
 void SimpleX::compute_site_properties(){
 
   //keep track of cpu time
-  double t0 = MPI::Wtime();
+  double t0 = MPI_Wtime();
 
   //compute the site id's of the neighbours and the (numerical) volume of a site
   compute_neighbours();
@@ -1816,7 +1816,7 @@ void SimpleX::compute_site_properties(){
   }
 
   //write the time it took to triangulate the points to log file
-  double t1 = MPI::Wtime();
+  double t1 = MPI_Wtime();
 
   if( COMM_RANK == 0 ){
     simpleXlog << endl << "  Calculating sites properties took " << t1-t0 << " seconds" << endl << endl;
@@ -2029,7 +2029,7 @@ void SimpleX::compute_volumes(){
       volume+=sites[i].get_volume();
   }
 
-  MPI::COMM_WORLD.Reduce(&volume,&totalVolume,1,MPI::DOUBLE,MPI::SUM,0);
+  MPI_Reduce(&volume,&totalVolume,1,MPI_DOUBLE,MPI_SUM,0, MPI_COMM_WORLD );
 
   if( COMM_RANK == 0 ){
     simpleXlog << "  Volumes computed " << endl;
@@ -2163,7 +2163,7 @@ void SimpleX::calculate_straight(){
 
   //add up number backpointing neighbours on all procs
   unsigned int total_backPointing;
-  MPI::COMM_WORLD.Allreduce(&backPointing, &total_backPointing, 1, MPI::UNSIGNED, MPI::SUM);
+  MPI_Allreduce(&backPointing, &total_backPointing, 1, MPI_UNSIGNED, MPI_SUM, MPI_COMM_WORLD );
 
   if( COMM_RANK == 0 ){
     simpleXlog << "  Most straight forward neighbours computed " << endl; 
@@ -2253,7 +2253,7 @@ void SimpleX::compute_solid_angles( const bool& rotate ){
   }
 
   //communicate orientation index to all procs
-  MPI::COMM_WORLD.Bcast( &orientation_index, 1, MPI::SHORT, 0 );
+  MPI_Bcast( &orientation_index, 1, MPI_SHORT, 0 , MPI_COMM_WORLD );
 
   //if the straight neighbours used are from the Delauany edge, associate every line with direction bins
   //if(straight_from_tess){
@@ -2331,7 +2331,7 @@ void SimpleX::compute_solid_angles( const bool& rotate ){
       }else{
         cerr << " (" << COMM_RANK << ") ERROR: in compute_solid_angles, mapping_pixels contains entry < 0 or > numPixels_ref, exiting" << endl;
         cerr << " (" << COMM_RANK << ") index[p]: " << index[p] << endl;
-        MPI::COMM_WORLD.Abort( -1 );
+        MPI_Abort(MPI_COMM_WORLD,  -1 );
       }
     }
 
@@ -2395,7 +2395,7 @@ void SimpleX::compute_solid_angles( const bool& rotate ){
 	//check if every direction is found
 	if(!found){
 	  cerr << " Outgoing direction not found! " << endl;
-	  MPI::COMM_WORLD.Abort( -1 );
+	  MPI_Abort(MPI_COMM_WORLD,  -1 );
 
 	}
 
@@ -2442,7 +2442,7 @@ void SimpleX::compute_solid_angles( const bool& rotate ){
   }
 
   //communicate orientation index to all procs
-  MPI::COMM_WORLD.Bcast( &orientation_index, 1, MPI::SHORT, 0 );
+  MPI_Bcast( &orientation_index, 1, MPI_SHORT, 0 , MPI_COMM_WORLD );
 
   //if the straight neighbours used are from the Delauany edge, associate every line with direction bins
   //if(straight_from_tess){
@@ -2508,7 +2508,7 @@ void SimpleX::compute_solid_angles( const bool& rotate ){
           cerr << "Number of neighbours of site " << it->get_site_id() << " is: " 
             << int(it->get_numNeigh()) << endl;
           cerr << "In routine compute_solid_angles: there is no highest inproduct." << endl;
-          MPI::COMM_WORLD.Abort( -1 );
+          MPI_Abort(MPI_COMM_WORLD,  -1 );
 
         }
   // associate the closest neighbour with this reference direction
@@ -2680,7 +2680,7 @@ void SimpleX::remove_border_simplices(){
   //   unsigned int numSimplLocal = simplices.size();
   //   unsigned int numSimpl = 0;
 
-  //   MPI::COMM_WORLD.Allreduce(&numSimplLocal, &numSimpl, 1, MPI::UNSIGNED, MPI::SUM);
+  //   MPI_Allreduce(&numSimplLocal, &numSimpl, 1, MPI_UNSIGNED, MPI_SUM, MPI_COMM_WORLD );
 
   if( COMM_RANK == 0 ){
     simpleXlog << "  Created vector with only local simplices " << endl;
@@ -2914,7 +2914,7 @@ void SimpleX::store_ballistic_intensities( const vector<unsigned long int>& site
       }else{
 	cerr << " (" << COMM_RANK << ") ERROR: in store_ballisitc_intensities, mapping_pixels contains entry < 0 or > numPixels_ref, exiting" << endl;
 	cerr << " (" << COMM_RANK << ") index[p]: " << index[p] << endl;
-	MPI::COMM_WORLD.Abort( -1 );
+	MPI_Abort(MPI_COMM_WORLD,  -1 );
 
       }
     }
@@ -2971,7 +2971,7 @@ void SimpleX::store_ballistic_intensities( const vector<unsigned long int>& site
       //check if every direction is found
       if(!found){
 	cerr << " Outgoing direction not found! " << endl;
-	MPI::COMM_WORLD.Abort( -1 );
+	MPI_Abort(MPI_COMM_WORLD,  -1 );
       }
 
     }//for all intensity directions
@@ -3130,7 +3130,7 @@ void SimpleX::store_ballistic_intensities( const vector<unsigned long int>& site
 	cerr << "Number of neighbours of site " << sites[ site_id ].get_site_id() << " is: " 
 	     << int(sites[ site_id ].get_numNeigh()) << endl;
 	cerr << "In routine compute_solid_angles: there is no highest inproduct." << endl;
-	MPI::COMM_WORLD.Abort( -1 );
+	MPI_Abort(MPI_COMM_WORLD,  -1 );
       }
 
       // associate the closest neighbour with this reference direction
@@ -3402,7 +3402,7 @@ void SimpleX::return_ballistic_intensities(){
       }else{
 	cerr << " (" << COMM_RANK << ") ERROR: in return_ballisitc_intensities, mapping_pixels contains entry < 0 or > numPixels_ref, exiting" << endl;
 	cerr << " (" << COMM_RANK << ") index[p]: " << index[p] << endl;
-	MPI::COMM_WORLD.Abort( -1 );
+	MPI_Abort(MPI_COMM_WORLD,  -1 );
       }
     }
 
@@ -3509,7 +3509,7 @@ void SimpleX::return_ballistic_intensities(){
 	    //check if every direction is found
 	    if(!found){
 	      cerr << " Outgoing direction not found! " << endl;
-	      MPI::COMM_WORLD.Abort( -1 );
+	      MPI_Abort(MPI_COMM_WORLD,  -1 );
 	    }
 
 	  }//for all intensity directions
@@ -3647,7 +3647,7 @@ void SimpleX::return_ballistic_intensities(){
 	      cerr << "Number of neighbours of site " << site_id << " is: " 
 		   << int(sites[site_id].get_numNeigh()) << endl;
 	      cerr << "In routine return_ballistic_intensities: there is no highest inproduct." << endl;
-	      MPI::COMM_WORLD.Abort( -1 );
+	      MPI_Abort(MPI_COMM_WORLD,  -1 );
 	    }
 
 	    unsigned int j = highestInprodNumber;
@@ -3831,7 +3831,7 @@ void SimpleX::check_ballistic_sites(){
 	      it->set_outgoing( j, localID );
 	    }else{
 	      cerr << " (" << COMM_RANK << ") Error in check_ballistic_sites(): Neighbour not matched " << endl;
-	      MPI::COMM_WORLD.Abort( -1 );
+	      MPI_Abort(MPI_COMM_WORLD,  -1 );
 	    }
 
 	  }//for all neighbours
@@ -4054,7 +4054,7 @@ void SimpleX::send_dom_dec(){
     }
 
     //broadcast this chunk
-    MPI::COMM_WORLD.Bcast(&temp[0],this_chunk_size,MPI::UNSIGNED,0);
+    MPI_Bcast(&temp[0],this_chunk_size,MPI_UNSIGNED,0, MPI_COMM_WORLD );
 
     //procs not master fill dom_dec vector from temp vector
     if( COMM_RANK != 0 ){
@@ -4072,7 +4072,7 @@ void SimpleX::send_dom_dec(){
       cerr << " (" << COMM_RANK << ") Error, domain decomposition and number of processes don't match, exiting" << endl;
       simpleXlog << "  Error, domain decomposition and number of processes don't match, exiting" << endl;
     }
-    MPI::COMM_WORLD.Abort( -1 );
+    MPI_Abort(MPI_COMM_WORLD,  -1 );
   }
 
   if( COMM_RANK == 0 ){
@@ -4086,7 +4086,7 @@ void SimpleX::send_dom_dec(){
 void SimpleX::send_vertices(){
 
   //make sure every proc knows the number of sites
-  MPI::COMM_WORLD.Bcast(&numSites,1,MPI::UNSIGNED,0);
+  MPI_Bcast(&numSites,1,MPI_UNSIGNED,0, MPI_COMM_WORLD );
 
   //if there's a lot of vertices, send in chunks
   unsigned int num_chunks = 1;
@@ -4126,8 +4126,8 @@ void SimpleX::send_vertices(){
     }
 
     //broadcast this chunk
-    MPI::COMM_WORLD.Bcast(&temp[0],this_chunk_size*sizeof(Vertex),MPI::BYTE,0);
-    //MPI::COMM_WORLD.Bcast(&temp[0],this_chunk_size,Vertex::MPI_Type,0);
+    MPI_Bcast(&temp[0],this_chunk_size*sizeof(Vertex),MPI_BYTE,0, MPI_COMM_WORLD );
+    //MPI_Bcast(&temp[0],this_chunk_size,Vertex::MPI_Type,0, MPI_COMM_WORLD );
 
 
     //procs not master fill vertices vector from temp vector
@@ -4244,7 +4244,7 @@ void SimpleX::send_site_properties(){
 
     //gather all the local numbers of sites to send to all procs
     vector< unsigned int > nsend( COMM_SIZE * COMM_SIZE, 0 );
-    MPI::COMM_WORLD.Allgather(&nsend_local[0], COMM_SIZE, MPI::UNSIGNED, &nsend[0], COMM_SIZE, MPI::UNSIGNED );
+    MPI_Allgather(&nsend_local[0], COMM_SIZE, MPI_UNSIGNED, &nsend[0], COMM_SIZE, MPI_UNSIGNED , MPI_COMM_WORLD );
 
     //calculate number of sites to receive
     unsigned int num_sites_to_receive = 0;
@@ -4279,10 +4279,10 @@ void SimpleX::send_site_properties(){
 	  if(nsend[ ThisTask * NTask + recvTask ] > 0 || nsend[ recvTask * NTask + ThisTask ] > 0){
 
 	    //do the sending and receiving
-	    MPI::COMM_WORLD.Sendrecv(&sites_to_send[ offset[recvTask] ], nsend_local[recvTask] * sizeof(Send_Site),
-				     MPI::BYTE, recvTask, 0, 
+	    {MPI_Status status; MPI_Sendrecv(&sites_to_send[ offset[recvTask] ], nsend_local[recvTask] * sizeof(Send_Site),
+				     MPI_BYTE, recvTask, 0, 
 				     &sites_to_update[ nbuffer[ThisTask] ], nsend[recvTask * NTask + ThisTask] * sizeof(Send_Site),
-				     MPI::BYTE, recvTask, 0);
+				     MPI_BYTE, recvTask, 0, MPI_COMM_WORLD, &status);};
 
 	  }//if there's sites to send or receive
 	}//if receiving task is smaller than COMM_SIZE
@@ -4339,8 +4339,8 @@ void SimpleX::send_site_properties(){
     //check if a proc still has sites to send left
     int local_sites_to_send = ( it == sites.end() ) ? 0 : 1;
     int sum;
-    //MPI::LOR doesn't work on paracluster :S
-    MPI::COMM_WORLD.Allreduce(&local_sites_to_send, &sum, 1, MPI::INT, MPI::SUM );
+    //MPI_LOR doesn't work on paracluster :S
+    MPI_Allreduce(&local_sites_to_send, &sum, 1, MPI_INT, MPI_SUM , MPI_COMM_WORLD );
     if(sum == 0){
       total_sites_to_send = 0;
     }
@@ -4463,7 +4463,7 @@ void SimpleX::send_neighbour_properties(){
 
     //gather all the local numbers of sites to send to all procs
     vector< unsigned int > nsend( COMM_SIZE * COMM_SIZE, 0 );
-    MPI::COMM_WORLD.Allgather(&nsend_local[0], COMM_SIZE, MPI::UNSIGNED, &nsend[0], COMM_SIZE, MPI::UNSIGNED );
+    MPI_Allgather(&nsend_local[0], COMM_SIZE, MPI_UNSIGNED, &nsend[0], COMM_SIZE, MPI_UNSIGNED , MPI_COMM_WORLD );
 
     //calculate number of sites to receive
     unsigned int num_neigh_to_receive = 0;
@@ -4498,10 +4498,10 @@ void SimpleX::send_neighbour_properties(){
 	  if(nsend[ ThisTask * NTask + recvTask ] > 0 || nsend[ recvTask * NTask + ThisTask ] > 0){
 
 	    //do the sending
-	    MPI::COMM_WORLD.Sendrecv(&neigh_to_send[ offset[recvTask] ], nsend_local[recvTask] * sizeof(Send_Neigh),
-				     MPI::BYTE, recvTask, 0, 
+	    {MPI_Status status; MPI_Sendrecv(&neigh_to_send[ offset[recvTask] ], nsend_local[recvTask] * sizeof(Send_Neigh),
+				     MPI_BYTE, recvTask, 0, 
 				     &neigh_recv[ nbuffer[ThisTask] ], nsend[recvTask * NTask + ThisTask] * sizeof(Send_Neigh),
-				     MPI::BYTE, recvTask, 0);
+				     MPI_BYTE, recvTask, 0, MPI_COMM_WORLD, &status);};
 
 	  }//if there's sites to send or receive
 
@@ -4537,7 +4537,7 @@ void SimpleX::send_neighbour_properties(){
       bool found = 0;
       if( site_it == sites.end()){
 	cerr << " (" << COMM_RANK << ") Error in send_neighbour_properties: vertex " << sit->get_vertex_id() << " not found " << endl;
-	MPI::COMM_WORLD.Abort( -1 );
+	MPI_Abort(MPI_COMM_WORLD,  -1 );
       }
       //check if we have the correct site
       bool found_site = 0;
@@ -4556,7 +4556,7 @@ void SimpleX::send_neighbour_properties(){
 
       if(found_site && !found){
 	cerr << " (" << COMM_RANK << ") Error in send_neighbour_properties: found site " << site_it->get_vertex_id() << " but not neighbour " << sit->get_neighId() << endl;
-	MPI::COMM_WORLD.Abort( -1 );
+	MPI_Abort(MPI_COMM_WORLD,  -1 );
       }
 
       //if the neighbour has been found, go the next
@@ -4575,13 +4575,13 @@ void SimpleX::send_neighbour_properties(){
     //check if a proc still has sites to send left
 
     //bool local_neigh_to_send = ( it == sites.end() ) ? 0 : 1;
-    //MPI::COMM_WORLD.Allreduce(&local_neigh_to_send, &total_neigh_to_send, 1, MPI::BOOL, MPI::LOR );
+    //MPI_Allreduce(&local_neigh_to_send, &total_neigh_to_send, 1, MPI_CXX_BOOL, MPI_LOR , MPI_COMM_WORLD );
 
-    //MPI::LOR doesn't work on paracluster...
+    //MPI_LOR doesn't work on paracluster...
     int local_neigh_to_send = ( it == sites.end() ) ? 0 : 1;
     int sum;
-    //MPI::LOR doesn't work on paracluster :S
-    MPI::COMM_WORLD.Allreduce(&local_neigh_to_send, &sum, 1, MPI::INT, MPI::SUM );
+    //MPI_LOR doesn't work on paracluster :S
+    MPI_Allreduce(&local_neigh_to_send, &sum, 1, MPI_INT, MPI_SUM , MPI_COMM_WORLD );
     if(sum == 0){
       total_neigh_to_send = 0;
     }
@@ -4702,7 +4702,7 @@ void SimpleX::send_intensities(){
 
     //gather all the local numbers of sites to send to all procs
     vector< unsigned int > nsend( COMM_SIZE * COMM_SIZE, 0 );
-    MPI::COMM_WORLD.Allgather(&nsend_local[0], COMM_SIZE, MPI::UNSIGNED, &nsend[0], COMM_SIZE, MPI::UNSIGNED );
+    MPI_Allgather(&nsend_local[0], COMM_SIZE, MPI_UNSIGNED, &nsend[0], COMM_SIZE, MPI_UNSIGNED , MPI_COMM_WORLD );
 
     //calculate number of sites to receive
     unsigned int num_sites_to_receive = 0;
@@ -4742,10 +4742,10 @@ void SimpleX::send_intensities(){
 	  if(nsend[ ThisTask * NTask + recvTask ] > 0 || nsend[ recvTask * NTask + ThisTask ] > 0){
 
 	    //send the intensity information and receive it from other procs in sites_recv
-	    MPI::COMM_WORLD.Sendrecv(&sites_to_send[ offset[recvTask] ], nsend_local[recvTask] * sizeof(Send_Intensity),
-				     MPI::BYTE, recvTask, 0, 
+	    {MPI_Status status; MPI_Sendrecv(&sites_to_send[ offset[recvTask] ], nsend_local[recvTask] * sizeof(Send_Intensity),
+				     MPI_BYTE, recvTask, 0, 
 				     &sites_recv[ nbuffer[ThisTask] ], nsend[recvTask * NTask + ThisTask] * sizeof(Send_Intensity),
-				     MPI::BYTE, recvTask, 0);
+				     MPI_BYTE, recvTask, 0, MPI_COMM_WORLD, &status);};
 
 	  }//if there's sites to send or receive
 	}//if receiving task is smaller than COMM_SIZE
@@ -4795,11 +4795,11 @@ void SimpleX::send_intensities(){
 
     //check if a proc still has sites to send left
     // bool local_sites_to_send = ( i >= send_list.size() ) ? 0 : 1;
-    //MPI::COMM_WORLD.Allreduce(&local_sites_to_send, &total_sites_to_send, 1, MPI::BOOL, MPI::LOR );
+    //MPI_Allreduce(&local_sites_to_send, &total_sites_to_send, 1, MPI_CXX_BOOL, MPI_LOR , MPI_COMM_WORLD );
     int local_sites_to_send = ( i >= send_list.size() ) ? 0 : 1;
     int sum;
-    //MPI::LOR doesn't work on paracluster :S
-    MPI::COMM_WORLD.Allreduce(&local_sites_to_send, &sum, 1, MPI::INT, MPI::SUM );
+    //MPI_LOR doesn't work on paracluster :S
+    MPI_Allreduce(&local_sites_to_send, &sum, 1, MPI_INT, MPI_SUM , MPI_COMM_WORLD );
     if(sum == 0){
       total_sites_to_send = 0;
     }
@@ -4857,7 +4857,7 @@ void SimpleX::send_new_vertex_list(){
 
     //gather all the local numbers of sites to send to all procs
     vector< unsigned int > nsend( COMM_SIZE * COMM_SIZE, 0 );
-    MPI::COMM_WORLD.Allgather(&nsend_local[0], COMM_SIZE, MPI::UNSIGNED, &nsend[0], COMM_SIZE, MPI::UNSIGNED );
+    MPI_Allgather(&nsend_local[0], COMM_SIZE, MPI_UNSIGNED, &nsend[0], COMM_SIZE, MPI_UNSIGNED , MPI_COMM_WORLD );
 
     //calculate number of sites to receive
     unsigned int num_vertices_to_receive = 0;
@@ -4896,10 +4896,10 @@ void SimpleX::send_new_vertex_list(){
 	  if(nsend[ ThisTask * NTask + recvTask ] > 0 || nsend[ recvTask * NTask + ThisTask ] > 0){
 
 	    //send the intensity information and receive it from other procs in sites_recv
-	    MPI::COMM_WORLD.Sendrecv(&vertices_to_send[ offset[recvTask] ], nsend_local[recvTask] * sizeof(Vertex),
-				     MPI::BYTE, recvTask, 0, 
+	    {MPI_Status status; MPI_Sendrecv(&vertices_to_send[ offset[recvTask] ], nsend_local[recvTask] * sizeof(Vertex),
+				     MPI_BYTE, recvTask, 0, 
 				     &vertices_recv[ nbuffer[ThisTask] ], nsend[recvTask * NTask + ThisTask] * sizeof(Vertex),
-				     MPI::BYTE, recvTask, 0);
+				     MPI_BYTE, recvTask, 0, MPI_COMM_WORLD, &status);};
 
 	  }//if there's sites to send or receive
 	}//if receiving task is smaller than COMM_SIZE
@@ -4932,8 +4932,8 @@ void SimpleX::send_new_vertex_list(){
 
     int local_sites_to_send = ( it == temp_vertices.end() ) ? 0 : 1;
     int sum;
-    //MPI::LOR doesn't work on paracluster :S
-    MPI::COMM_WORLD.Allreduce(&local_sites_to_send, &sum, 1, MPI::INT, MPI::SUM );
+    //MPI_LOR doesn't work on paracluster :S
+    MPI_Allreduce(&local_sites_to_send, &sum, 1, MPI_INT, MPI_SUM , MPI_COMM_WORLD );
     if(sum == 0){
       total_vertices_to_send = 0;
     }
@@ -5029,10 +5029,10 @@ void SimpleX::send_stored_intensities(){
       if(recvTask < NTask){                             
 
 	//send and receive number of sites to be send
-	MPI::COMM_WORLD.Sendrecv(&number_of_sites_send, 1,
-				 MPI::UNSIGNED, recvTask, 0, 
+	{MPI_Status status; MPI_Sendrecv(&number_of_sites_send, 1,
+				 MPI_UNSIGNED, recvTask, 0, 
 				 &number_of_sites_recv[recvTask], 1,
-				 MPI::UNSIGNED, recvTask ,0);
+				 MPI_UNSIGNED, recvTask ,0, MPI_COMM_WORLD, &status);};
 
       }
     }
@@ -5059,10 +5059,10 @@ void SimpleX::send_stored_intensities(){
       if(recvTask < NTask){                            
 
 	//send and receive the site intensities
-	MPI::COMM_WORLD.Sendrecv(&sites_to_send[0], number_of_sites_send*sizeof(Send_Intensity),
-				 MPI::BYTE, recvTask, 0, 
+	{MPI_Status status; MPI_Sendrecv(&sites_to_send[0], number_of_sites_send*sizeof(Send_Intensity),
+				 MPI_BYTE, recvTask, 0, 
 				 &intensities_recv[recvTask][0], number_of_sites_recv[recvTask]*sizeof(Send_Intensity),
-				 MPI::BYTE, recvTask ,0);
+				 MPI_BYTE, recvTask ,0, MPI_COMM_WORLD, &status);};
 
       }
     }
@@ -5254,7 +5254,7 @@ void SimpleX::send_site_ballistics( const vector< unsigned long int >& sites_to_
 
     //gather all the local numbers of sites to send to all procs
     vector< unsigned int > nsend( COMM_SIZE * COMM_SIZE, 0 );
-    MPI::COMM_WORLD.Allgather(&nsend_local[0], COMM_SIZE, MPI::UNSIGNED, &nsend[0], COMM_SIZE, MPI::UNSIGNED );
+    MPI_Allgather(&nsend_local[0], COMM_SIZE, MPI_UNSIGNED, &nsend[0], COMM_SIZE, MPI_UNSIGNED , MPI_COMM_WORLD );
 
     //calculate number of sites to receive
     unsigned int num_neigh_to_receive = 0;
@@ -5290,10 +5290,10 @@ void SimpleX::send_site_ballistics( const vector< unsigned long int >& sites_to_
 	  if(nsend[ ThisTask * NTask + recvTask ] > 0 || nsend[ recvTask * NTask + ThisTask ] > 0){
 
 	    //do the sending
-	    MPI::COMM_WORLD.Sendrecv(&neigh_to_send[ offset[recvTask] ], nsend_local[recvTask] * sizeof(Send_Neigh),
-				     MPI::BYTE, recvTask, 0, 
+	    {MPI_Status status; MPI_Sendrecv(&neigh_to_send[ offset[recvTask] ], nsend_local[recvTask] * sizeof(Send_Neigh),
+				     MPI_BYTE, recvTask, 0, 
 				     &neigh_recv[ nbuffer[ThisTask] ], nsend[recvTask * NTask + ThisTask] * sizeof(Send_Neigh),
-				     MPI::BYTE, recvTask, 0);
+				     MPI_BYTE, recvTask, 0, MPI_COMM_WORLD, &status);};
 
 	  }//if there's sites to send or receive
 
@@ -5401,13 +5401,13 @@ void SimpleX::send_site_ballistics( const vector< unsigned long int >& sites_to_
 
     //check if a proc still has sites to send left
     //     bool local_neigh_to_send = ( i >= sites_to_send.size() ) ? 0 : 1;
-    //     MPI::COMM_WORLD.Allreduce(&local_neigh_to_send, &total_neigh_to_send, 1, MPI::BOOL, MPI::LOR );
+    //     MPI_Allreduce(&local_neigh_to_send, &total_neigh_to_send, 1, MPI_CXX_BOOL, MPI_LOR , MPI_COMM_WORLD );
 
     //check if a proc still has sites to send left
     int local_neigh_to_send = ( i >= sites_to_send.size() ) ? 0 : 1;
     int sum;
-    //MPI::LOR doesn't work on paracluster :S
-    MPI::COMM_WORLD.Allreduce(&local_neigh_to_send, &sum, 1, MPI::INT, MPI::SUM );
+    //MPI_LOR doesn't work on paracluster :S
+    MPI_Allreduce(&local_neigh_to_send, &sum, 1, MPI_INT, MPI_SUM , MPI_COMM_WORLD );
     if(sum == 0){
       total_neigh_to_send = 0;
     }
@@ -5466,7 +5466,7 @@ void SimpleX::send_site_physics( ){
 
       }else if( it->get_vertex_id() > it2->get_vertex_id() ){
         cerr << " (" << COMM_RANK << ") Warning: Vertex " << it2->get_vertex_id() << " has disappeared from the computational domain " << endl;
-        //MPI::COMM_WORLD.Abort(-1);
+        //MPI_Abort(MPI_COMM_WORLD, -1);
       }
 
     }
@@ -5482,7 +5482,7 @@ void SimpleX::send_site_physics( ){
 
     //gather all the local numbers of sites to send to all procs
     vector< unsigned long long int > nSend( COMM_SIZE * COMM_SIZE, 0 );
-    MPI::COMM_WORLD.Allgather(&nSendLocal[0], COMM_SIZE, MPI::UNSIGNED_LONG_LONG, &nSend[0], COMM_SIZE, MPI::UNSIGNED_LONG_LONG );
+    MPI_Allgather(&nSendLocal[0], COMM_SIZE, MPI_UNSIGNED_LONG_LONG, &nSend[0], COMM_SIZE, MPI_UNSIGNED_LONG_LONG , MPI_COMM_WORLD );
 
     //calculate number of sites to receive
     unsigned long long int nSitesToReceive = 0;
@@ -5517,10 +5517,10 @@ void SimpleX::send_site_physics( ){
         if(nSend[ ThisTask * NTask + recvTask ] > 0 || nSend[ recvTask * NTask + ThisTask ] > 0){
 
           //do the sending
-          MPI::COMM_WORLD.Sendrecv(&sitesToSend[ offset[recvTask] ], nSendLocal[recvTask] * sizeof(Site_Update),
-            MPI::BYTE, recvTask, 0, 
+          {MPI_Status status; MPI_Sendrecv(&sitesToSend[ offset[recvTask] ], nSendLocal[recvTask] * sizeof(Site_Update),
+            MPI_BYTE, recvTask, 0, 
             &sitePropertiesReceived[ nBuffer[ThisTask] ], nSend[recvTask * NTask + ThisTask] * sizeof(Site_Update),
-            MPI::BYTE, recvTask, 0);
+            MPI_BYTE, recvTask, 0, MPI_COMM_WORLD, &status);};
 
         }//if there's sites to send or receive
 
@@ -5550,7 +5550,7 @@ void SimpleX::send_site_physics( ){
     int nSitesToSendLocal = ( it2 == site_properties.end() ) ? 0 : 1;
     int nSitesToSend;
 
-    MPI::COMM_WORLD.Allreduce(&nSitesToSendLocal, &nSitesToSend, 1, MPI::INT, MPI::SUM );
+    MPI_Allreduce(&nSitesToSendLocal, &nSitesToSend, 1, MPI_INT, MPI_SUM , MPI_COMM_WORLD );
     if(nSitesToSend == 0){
       isSitesToSend = 0;
     }
@@ -5654,7 +5654,7 @@ void SimpleX::send_site_intensities(){
 
       }else if( it->get_vertex_id() > intens_ids[intensityIndex] ){
         cerr << " (" << COMM_RANK << ") Warning: Vertex " << intens_ids[intensityIndex] << " has disappeared from the computational domain " << endl;
-        MPI::COMM_WORLD.Abort(-1);
+        MPI_Abort(MPI_COMM_WORLD, -1);
       }
 
     }
@@ -5670,7 +5670,7 @@ void SimpleX::send_site_intensities(){
 
     //gather all the local numbers of sites to send to all procs
     vector< unsigned long long int > nSend( COMM_SIZE * COMM_SIZE, 0 );
-    MPI::COMM_WORLD.Allgather(&nSendLocal[0], COMM_SIZE, MPI::UNSIGNED_LONG_LONG, &nSend[0], COMM_SIZE, MPI::UNSIGNED_LONG_LONG );
+    MPI_Allgather(&nSendLocal[0], COMM_SIZE, MPI_UNSIGNED_LONG_LONG, &nSend[0], COMM_SIZE, MPI_UNSIGNED_LONG_LONG , MPI_COMM_WORLD );
 
     //calculate number of sites to receive
     unsigned long long int nSitesToReceive = 0;
@@ -5705,10 +5705,10 @@ void SimpleX::send_site_intensities(){
         if(nSend[ ThisTask * NTask + recvTask ] > 0 || nSend[ recvTask * NTask + ThisTask ] > 0){
 
           //do the sending
-          MPI::COMM_WORLD.Sendrecv(&intensitiesToSend[ offset[recvTask] ], nSendLocal[recvTask] * sizeof(Send_Intensity),
-            MPI::BYTE, recvTask, 0, 
+          {MPI_Status status; MPI_Sendrecv(&intensitiesToSend[ offset[recvTask] ], nSendLocal[recvTask] * sizeof(Send_Intensity),
+            MPI_BYTE, recvTask, 0, 
             &intensitiesReceived[ nBuffer[ThisTask] ], nSend[recvTask * NTask + ThisTask] * sizeof(Send_Intensity),
-            MPI::BYTE, recvTask, 0);
+            MPI_BYTE, recvTask, 0, MPI_COMM_WORLD, &status);};
 
         }//if there's sites to send or receive
 
@@ -5738,7 +5738,7 @@ void SimpleX::send_site_intensities(){
     int nSitesToSendLocal = ( intensityIndex == intens_ids.size() ) ? 0 : 1;
     int nSitesToSend;
 
-    MPI::COMM_WORLD.Allreduce(&nSitesToSendLocal, &nSitesToSend, 1, MPI::INT, MPI::SUM );
+    MPI_Allreduce(&nSitesToSendLocal, &nSitesToSend, 1, MPI_INT, MPI_SUM , MPI_COMM_WORLD );
     if(nSitesToSend == 0){
       isSitesToSend = 0;
     }
@@ -5768,7 +5768,7 @@ void SimpleX::send_site_intensities(){
         cerr << "     Direction bin: " << it2->get_neighId() << " Frequency bin: " << it2->get_freq_bin() << endl;
         cerr << "     Index: " << index << endl;
         cerr << "     Total number of intensities received: " << intensities_recv.size() << endl;
-        MPI::COMM_WORLD.Abort(-1);
+        MPI_Abort(MPI_COMM_WORLD, -1);
       }
 
       site_intensities[pos] =  it2->get_intensityIn();
@@ -5789,7 +5789,7 @@ void SimpleX::send_site_intensities(){
 
 void SimpleX::compute_physics( const unsigned int& run ){
 
-  double t0 = MPI::Wtime();
+  double t0 = MPI_Wtime();
 
   if( run == 0 ){
 
@@ -5846,7 +5846,7 @@ void SimpleX::compute_physics( const unsigned int& run ){
 
   //parameter_output( run );
 
-  double t1 = MPI::Wtime();
+  double t1 = MPI_Wtime();
   if( COMM_RANK == 0 )
     simpleXlog << endl << "  Calculating physics parameters took " << t1-t0 << " seconds" << endl << endl;
 
@@ -6062,7 +6062,7 @@ void SimpleX::return_physics(){
         }else{
           cerr << " (" << COMM_RANK << ") Error in return_physics(): site not mapped" << endl;
           cerr << it->get_vertex_id() << " " << i << endl;
-          MPI::COMM_WORLD.Abort( -1 );
+          MPI_Abort(MPI_COMM_WORLD,  -1 );
         }
       }else{
   //in case of direction conserving transport, set boundary to 
@@ -6254,7 +6254,7 @@ vector<double> SimpleX::calc_freq_bounds( const double& lowerBound, const double
   if(deviation > TOL){
     cerr << "WARNING: Integration over last bin deviates more than TOL " << TOL << " from perBin by: " << deviation << endl;
     cerr << "This may signal inaccurate cross sections." << endl;
-    MPI::COMM_WORLD.Abort(-1);
+    MPI_Abort(MPI_COMM_WORLD, -1);
   }
 
   return freq_bounds;
@@ -6424,7 +6424,7 @@ void SimpleX::output_number_of_atoms() {
     }
   }  
 
-  MPI::COMM_WORLD.Reduce(&atoms,&totalAtoms,1,MPI::DOUBLE,MPI::SUM,0);
+  MPI_Reduce(&atoms,&totalAtoms,1,MPI_DOUBLE,MPI_SUM,0, MPI_COMM_WORLD );
 
   if( COMM_RANK == 0 )
     simpleXlog << "  Total number of atoms on grid calculated and sent " << endl;
@@ -6450,9 +6450,9 @@ double SimpleX::output_optical_depth() {
   }  
 
   double totalTau;
-  MPI::COMM_WORLD.Allreduce(&tau_tot,&totalTau,1,MPI::DOUBLE,MPI::SUM);
+  MPI_Allreduce(&tau_tot,&totalTau,1,MPI_DOUBLE,MPI_SUM, MPI_COMM_WORLD );
   unsigned int totalCount;
-  MPI::COMM_WORLD.Allreduce(&count,&totalCount,1,MPI::UNSIGNED,MPI::SUM);
+  MPI_Allreduce(&count,&totalCount,1,MPI_UNSIGNED,MPI_SUM, MPI_COMM_WORLD );
 
   double mean_tau = 0.0;
   if(totalCount > 0){
@@ -6468,7 +6468,7 @@ void SimpleX::parameter_output( const unsigned int& run ){
 
   int maxRes;
 
-  MPI::COMM_WORLD.Reduce(&localMaxRes,&maxRes,1,MPI::INT,MPI::MIN,0);
+  MPI_Reduce(&localMaxRes,&maxRes,1,MPI_INT,MPI_MIN,0, MPI_COMM_WORLD );
 
   double mean_tau = output_optical_depth();
 
@@ -7028,7 +7028,7 @@ vector<double> SimpleX::solve_rate_equation( Site& site ){
 	    cerr << tau_step[f] << " " << initial_tau[f] << " " << N_HI_step << " " << i << endl;
 	    cerr << (double) site.get_n_HI() << " " << UNIT_D << " " << (double) site.get_neigh_dist() << " " 
 		 << UNIT_L << " " << " " << straight_correction_factor << endl;
-	    MPI::COMM_WORLD.Abort(-1);
+	    MPI_Abort(MPI_COMM_WORLD, -1);
 	  }
 	}
 	
@@ -7096,7 +7096,7 @@ vector<double> SimpleX::solve_rate_equation( Site& site ){
     if(N_rec_phot_step < 0.0){
       cerr << " (" << COMM_RANK << ") Negative number of diffuse photons!" << endl;
       cerr << num_rec_factor << " " << rec_escape << " " << site.get_temperature() << " " << ( recomb_coeff_HII_caseA( site.get_temperature() ) - recomb_coeff_HII_caseB( site.get_temperature() ) ) << endl;
-      MPI::COMM_WORLD.Abort(-1);
+      MPI_Abort(MPI_COMM_WORLD, -1);
     }
 
   }
@@ -7127,7 +7127,7 @@ vector<double> SimpleX::solve_rate_equation( Site& site ){
   //     }
   //     cerr << endl;
   // 
-  //     //MPI::COMM_WORLD.Abort(-1);
+  //     //MPI_Abort(MPI_COMM_WORLD, -1);
   //     N_HI_step = 0.0;
   //     N_HII_step = n_H/one_over_volume;
   // 
@@ -7299,7 +7299,7 @@ vector<double> SimpleX::solve_rate_equation( Site& site ){
         if(N_out_total[f] != N_out_total[f] ){
           cerr << endl << " (" << COMM_RANK << ") NAN detected! N_out_total: " << N_out_total[f] << " " 
             << N_in_total[f] << " " << number_of_photo_ionisations[f] << endl;
-          MPI::COMM_WORLD.Abort(-1);
+          MPI_Abort(MPI_COMM_WORLD, -1);
         }
       }
 
@@ -7337,7 +7337,7 @@ vector<double> SimpleX::solve_rate_equation( Site& site ){
         if(N_out_total[f] != N_out_total[f] ){
           cerr << endl << " (" << COMM_RANK << ") NAN detected! N_out_total: " << N_out_total[f] << " " << N_in_total[f] << " " << initial_N_retained_H[f] << endl
 	       << initial_numIonised << " " << phot_ion_frac << " " << one_over_init_phot_ion << endl;
-          MPI::COMM_WORLD.Abort(-1);
+          MPI_Abort(MPI_COMM_WORLD, -1);
         }
       }
 
@@ -7413,7 +7413,7 @@ void SimpleX::source_transport( Site& site ){
         }
         if(!found){
           cerr << " error in source radiation" << endl;
-          MPI::COMM_WORLD.Abort(-1);
+          MPI_Abort(MPI_COMM_WORLD, -1);
         }
       }else{
 	//if the neighbour is not ballistic, simply 
@@ -7549,7 +7549,7 @@ void SimpleX::diffuse_transport( Site& site, vector<double>& N_out_total ){
         }
         if(!found){
           cerr << " error in source radiation" << endl;
-          MPI::COMM_WORLD.Abort(-1);
+          MPI_Abort(MPI_COMM_WORLD, -1);
         }
       }else{
 	//if the neighbour is not ballistic, simply 
@@ -7863,7 +7863,7 @@ void SimpleX::non_diffuse_transport( Site& site, vector<double>& N_out_total ) {
     for(short int f=0; f<numFreq; f++){
       if( site.get_intensityIn( f, j ) != site.get_intensityIn( f, j )){
         cerr << " NAN detected in intensityIn " << site.get_vertex_id() << " " << f << endl;
-        MPI::COMM_WORLD.Abort(-1);
+        MPI_Abort(MPI_COMM_WORLD, -1);
       }
     }
   }
@@ -7875,7 +7875,7 @@ void SimpleX::non_diffuse_transport( Site& site, vector<double>& N_out_total ) {
 
 void SimpleX::radiation_transport( const unsigned int& run ){
 
-  double t0 = MPI::Wtime();
+  double t0 = MPI_Wtime();
   //int dummy=0;
   double numRecombs = 0.0, allRecombs = 0.0; 
   double totalNumRecombs;
@@ -7919,7 +7919,7 @@ void SimpleX::radiation_transport( const unsigned int& run ){
     }//for all sites
 
     //double source_flux;
-    //MPI::COMM_WORLD.Allreduce(&total_inten,&source_flux,1,MPI::DOUBLE,MPI::SUM);
+    //MPI_Allreduce(&total_inten,&source_flux,1,MPI_DOUBLE,MPI_SUM, MPI_COMM_WORLD );
 
     send_intensities();
 
@@ -7929,8 +7929,8 @@ void SimpleX::radiation_transport( const unsigned int& run ){
       //old way of doing recombinations
       double rec =  recombine();
       numRecombs += rec;
-      MPI::COMM_WORLD.Allreduce(&numRecombs,&totalNumRecombs,1,MPI::DOUBLE,MPI::SUM);
-      MPI::COMM_WORLD.Allreduce(&rec,&recombinations,1,MPI::DOUBLE,MPI::SUM);
+      MPI_Allreduce(&numRecombs,&totalNumRecombs,1,MPI_DOUBLE,MPI_SUM, MPI_COMM_WORLD );
+      MPI_Allreduce(&rec,&recombinations,1,MPI_DOUBLE,MPI_SUM, MPI_COMM_WORLD );
       allRecombs += totalNumRecombs;
     } 
 
@@ -7977,7 +7977,7 @@ void SimpleX::radiation_transport( const unsigned int& run ){
     }//for all sites
 
     // double total_diffuse;
-    // MPI::COMM_WORLD.Allreduce(&total_diffuse_proc,&total_diffuse,1,MPI::DOUBLE,MPI::SUM);
+    // MPI_Allreduce(&total_diffuse_proc,&total_diffuse,1,MPI_DOUBLE,MPI_SUM, MPI_COMM_WORLD );
     // 
     // if(COMM_RANK == 0){
     //   cerr << " Number of diffuse photons: " << total_diffuse*UNIT_I << endl;
@@ -7992,7 +7992,7 @@ void SimpleX::radiation_transport( const unsigned int& run ){
 
   } //for all sweeps
 
-  double t1 = MPI::Wtime();
+  double t1 = MPI_Wtime();
   if( COMM_RANK == 0 )
     simpleXlog << endl << "  Calculating radiation transport took " << t1-t0 << " seconds" << endl << endl;
 
@@ -8013,7 +8013,7 @@ void SimpleX::generate_output( const unsigned int& run ){
 
   if( run==0 || (run+1)%output == 0 ){
 
-    double t0 = MPI::Wtime();
+    double t0 = MPI_Wtime();
 
     if( COMM_RANK == 0){
       cerr << endl << endl << " (" << COMM_RANK << ") Generating output" << endl;
@@ -8038,10 +8038,10 @@ void SimpleX::generate_output( const unsigned int& run ){
 
         write_hdf5_output(fileName[0], run);
       }
-      MPI::COMM_WORLD.Barrier();
+      MPI_Barrier(MPI_COMM_WORLD);
     }
 
-    double t1 = MPI::Wtime();
+    double t1 = MPI_Wtime();
     if( COMM_RANK == 0 ){
       simpleXlog << endl << "  Generating output took " << t1-t0 << " seconds" << endl;
     }
@@ -8340,8 +8340,8 @@ double SimpleX::calc_IFront( const unsigned int& run ){
     }  //if
   }  //for all vertices
 
-  MPI::COMM_WORLD.Allreduce(&averDist,&averDistTotal,1,MPI::DOUBLE,MPI::SUM);
-  MPI::COMM_WORLD.Allreduce(&teller,&tellerTotal,1,MPI::INT,MPI::SUM);
+  MPI_Allreduce(&averDist,&averDistTotal,1,MPI_DOUBLE,MPI_SUM, MPI_COMM_WORLD );
+  MPI_Allreduce(&teller,&tellerTotal,1,MPI_INT,MPI_SUM, MPI_COMM_WORLD );
 
   if( COMM_RANK == 0 ){
     float time = (run+1)*simTime/(numRuns*secondsPerMyr);
@@ -8400,18 +8400,18 @@ double SimpleX::calc_escape_fraction( const unsigned int& run, const unsigned in
     }
   }//for all sites
 
-  //MPI::COMM_WORLD.Barrier();
+  //MPI_Barrier(MPI_COMM_WORLD);
 
   if(numPhotons != numPhotons){
     cerr << " (" << COMM_RANK << ") numPhotons NAN!" << endl;
   }
 
   double total_numPhotons=0.0;
-  //MPI::COMM_WORLD.Allreduce(&numPhotons,&total_numPhotons,1,MPI::DOUBLE,MPI::SUM);
-  MPI::COMM_WORLD.Reduce(&numPhotons,&total_numPhotons,1,MPI::DOUBLE,MPI::SUM,0);
+  //MPI_Allreduce(&numPhotons,&total_numPhotons,1,MPI_DOUBLE,MPI_SUM, MPI_COMM_WORLD );
+  MPI_Reduce(&numPhotons,&total_numPhotons,1,MPI_DOUBLE,MPI_SUM,0, MPI_COMM_WORLD );
   double total_flux;
-  //MPI::COMM_WORLD.Allreduce(&flux,&total_flux,1,MPI::DOUBLE,MPI::SUM);
-  MPI::COMM_WORLD.Reduce(&flux,&total_flux,1,MPI::DOUBLE,MPI::SUM,0);
+  //MPI_Allreduce(&flux,&total_flux,1,MPI_DOUBLE,MPI_SUM, MPI_COMM_WORLD );
+  MPI_Reduce(&flux,&total_flux,1,MPI_DOUBLE,MPI_SUM,0, MPI_COMM_WORLD );
 
   double f_esc = total_numPhotons/(UNIT_T);
   if(total_flux > 0.0){
@@ -8494,7 +8494,7 @@ double SimpleX::count_photons(){
     }
   }
 
-  MPI::COMM_WORLD.Reduce(&numPhotons,&total_numPhotons,1,MPI::DOUBLE,MPI::SUM,0);
+  MPI_Reduce(&numPhotons,&total_numPhotons,1,MPI_DOUBLE,MPI_SUM,0, MPI_COMM_WORLD );
 
   //   if( COMM_RANK == 0 ){
   //     cerr << " (" << COMM_RANK << ") Total number of photons: " << total_numPhotons << endl;
@@ -8519,7 +8519,7 @@ double SimpleX::count_photons(){
     }
   }
 
-  MPI::COMM_WORLD.Reduce(&numPhotons,&total_numPhotons_in_domain,1,MPI::DOUBLE,MPI::SUM,0);
+  MPI_Reduce(&numPhotons,&total_numPhotons_in_domain,1,MPI_DOUBLE,MPI_SUM,0, MPI_COMM_WORLD );
 
   //   if( COMM_RANK == 0 )
   //     cerr << " (" << COMM_RANK << ") Total number of photons in simulation domain: " << total_numPhotons_in_domain << endl;

@@ -26,10 +26,6 @@ along with SimpleX.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef SIMPLEX_H
 #define SIMPLEX_H
 
-#ifndef NOMPI
-#include "mpi.h"
-#endif
-
 #include "rates.h"
 #include "Common.h"
 #include "Structs.h"
@@ -52,6 +48,9 @@ along with SimpleX.  If not, see <http://www.gnu.org/licenses/>.
 #if defined(__cplusplus)
 extern "C"
 {
+#endif
+#ifndef NOMPI
+#include "mpi.h"
 #endif
 #include <stdio.h>
 #include <stdlib.h>
@@ -514,8 +513,8 @@ class SimpleX{
     double totalVolume;            //!< Total volume of all Voronoi cells added up
     double totalAtoms;             //!< Total number of atoms in the simulation domain
     int localMaxRes;               //!< Maximum resolution on the local processor
-    unsigned int COMM_RANK;        //!< Rank of this proc
-    unsigned int COMM_SIZE;        //!< Total number of procs
+    int COMM_RANK;        //!< Rank of this proc
+    int COMM_SIZE;        //!< Total number of procs
     unsigned int chunk_size;       //!< Maximum size of chunks written in one piece to hdf5 file
     unsigned int max_msg_to_send;  //!< Maximum number of messages to send in MPI call
     unsigned long int vertex_id_max;    //!< Maximum vertex index
