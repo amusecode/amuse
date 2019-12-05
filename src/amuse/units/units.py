@@ -40,6 +40,7 @@ MEarth = named('earth mass', 'MEarth', 5.9722e24 * kg)
 RSun = named('solar radius', 'RSun', 6.955e8 * m)
 RJupiter = named('jupiter radius', 'RJupiter', 71492. * km)
 REarth = named('earth radius', 'REarth',  6371.0088 * km) # IUGG mean radius
+kyr = named('kilo year', 'kyr', 1000 * yr)
 myr = named('million year', 'Myr', 1000000 * yr)
 Myr = myr
 gyr = named('giga (billion) year', 'Gyr', 1000000000 * yr)
