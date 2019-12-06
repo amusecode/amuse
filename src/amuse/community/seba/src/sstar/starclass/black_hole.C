@@ -126,6 +126,11 @@ black_hole::black_hole(helium_giant & h) : single_star(h) {
 
       suddenly_lost_mass = 0;
       real m_tot = get_total_mass();
+      // (GN + SilT Oct  5 2016) In ::black_hole_mass, core mass is assumed to be helium core mass	
+      // so core_mass = m_tot, but set envelope_mass = 0 to avoid creating mass out of thin air.	
+      core_mass = m_tot;	
+      envelope_mass = 0.;	
+	
       core_mass = black_hole_mass(COcore_mass);
       envelope_mass = m_tot - core_mass;
 
