@@ -57,10 +57,11 @@ helium_giant::helium_giant(super_giant & g) : single_star(g) {
 helium_giant::helium_giant(helium_star & h) : single_star(h) {
     delete &h;
     
-// (GN+SPZ May  4 1999) last update age is time of previous type change
+    // (GN+SPZ May  4 1999) last update age is time of previous type change
     last_update_age = next_update_age;
     update_relative_helium_mass(get_total_mass());
 
+    adjust_next_update_age();
     //(GN Feb 16 2011) dirty trick to avoid crashes after mergers
     if (relative_age > next_update_age) relative_age = next_update_age;
 
