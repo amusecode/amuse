@@ -132,6 +132,11 @@ neutron_star::neutron_star(helium_giant & h) : single_star(h) {
 
       suddenly_lost_mass     = 0;
       real m_tot             = get_total_mass();
+      // (GN + SilT Oct  5 2016) safety: core_mass assumed to be helium core mass, i.e. total 	
+      // mass for helium_giant progenitors	
+      core_mass = m_tot;
+      envelope_mass = 0.;	
+	
       core_mass = birth_mass = neutron_star_mass(Helium_Star);
       envelope_mass          = m_tot - core_mass;
       relative_age           = 0;
