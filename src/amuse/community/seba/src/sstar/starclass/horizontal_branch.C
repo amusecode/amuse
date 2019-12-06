@@ -538,7 +538,10 @@ void horizontal_branch::update_wind_constant() {
                 dm_dj_v = max(max(dm_v, dm_dj), 0.);
             }
         }
-    }    
+    }  
+    else {	
+      dm_dj_v = dm_dj;	
+    }	
     
     // Reimers 1975
     // GB like stars
