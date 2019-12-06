@@ -41,10 +41,13 @@ using namespace std;
 
 // constructor
 SimpleX::SimpleX(const string& output_path, const string& data_path){
+  int COMM_RANK_, COMM_SIZE_; //temporaries
 
   //rank of this processor and total number of processors
-  MPI_Comm_rank(MPI_COMM_WORLD, &COMM_RANK);    
-  MPI_Comm_size(MPI_COMM_WORLD, &COMM_SIZE);    
+  MPI_Comm_rank(MPI_COMM_WORLD, &COMM_RANK_);    
+  MPI_Comm_size(MPI_COMM_WORLD, &COMM_SIZE_);    
+  COMM_RANK=COMM_RANK_;
+  COMM_SIZE=COMM_SIZE_;
 
   //dimension of the simulation (only 3D is currently supported)
   dimension = 3;

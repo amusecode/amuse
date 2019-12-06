@@ -62,9 +62,9 @@ class Vertex{
   static void construct_datatype();
 
   //! set the process the vertex lives on
-  void set_process(const int& proc ){ process = proc; }
+  void set_process(const unsigned int& proc ){ process = proc; }
   //! get the process the vertex lives on
-  const int& get_process() const{ return process; }
+  const unsigned int& get_process() const{ return process; }
 
   //! set global id of the vertex
   void set_vertex_id( const unsigned long long int& index ){ vertex_id = index; }
@@ -94,7 +94,7 @@ class Vertex{
 
  private:
 
-  int process;   //!< Process the site lives on
+  unsigned int process;   //!< Process the site lives on
   unsigned long long int vertex_id;    //!< Global unique index of the vertex
   unsigned int border;            //!< Vertex is in border or not
   float x;                    //!< x-coordinate of the vertex
@@ -415,8 +415,8 @@ class Send_Intensity{
   Send_Intensity();
   ~Send_Intensity(){};
 
-  void set_process(const int& proc){ process=proc;}
-  const int& get_process() const{ return process; }
+  void set_process(const unsigned int& proc){ process=proc;}
+  const unsigned int& get_process() const{ return process; }
 
   void set_neighId(const unsigned long long int& iden){ neighId=iden; }
   //! get the id of neighbour of site
@@ -440,7 +440,7 @@ class Send_Intensity{
 
  private:
 
-  int process;
+  unsigned int process;
   unsigned long long int neighId;
   unsigned long long int id;
   short int freq_bin;
@@ -457,8 +457,8 @@ class Send_Site{
   Send_Site(){};
   ~Send_Site(){};
 
-  void set_process(const int& proc){ process=proc;}
-  const int& get_process() const{ return process; }
+  void set_process(const unsigned int& proc){ process=proc;}
+  const unsigned int& get_process() const{ return process; }
 
   void set_vertex_id(const unsigned long long int& index){ vertex_id=index; }
   const unsigned long long int& get_vertex_id() const{ return vertex_id; }
@@ -473,7 +473,7 @@ class Send_Site{
 
  private:
 
-  int process;
+  unsigned int process;
   unsigned long long int vertex_id;
   unsigned long long int site_id;
   unsigned int ballistic;  
@@ -492,8 +492,8 @@ class Send_Neigh{
   void set_ballistic(const unsigned int& proc){ ballistic=proc;}
   const unsigned int& get_ballistic() const{ return ballistic; }
 
-  void set_process(const int& proc){ process=proc;}
-  const int& get_process() const{ return process; }
+  void set_process(const unsigned int& proc){ process=proc;}
+  const unsigned int& get_process() const{ return process; }
 
   void set_vertex_id(const unsigned long long int& index){ vertex_id=index; }
   const unsigned long long int& get_vertex_id() const{ return vertex_id; }
@@ -507,7 +507,7 @@ class Send_Neigh{
  private:
 
   unsigned int ballistic;
-  int process;
+  unsigned int process;
   unsigned long long int vertex_id;
   unsigned long long int neighId;
   unsigned int neighIdLoc;
@@ -527,9 +527,9 @@ class Site_Update{
   Site_Update();  
 
   //! set process
-  void set_process(const int& proc){ process=proc;}
+  void set_process(const unsigned int& proc){ process=proc;}
   //! get process
-  const int& get_process() const{ return process; }
+  const unsigned int& get_process() const{ return process; }
 
 
   //! set id of the site
@@ -584,7 +584,7 @@ class Site_Update{
 
  private:
 
-  int process;
+  unsigned int process;
   unsigned long long int vertex_id; //!< Position of the site in the local sites vector
   unsigned long long int site_id;   
   float n_HI;
@@ -605,8 +605,8 @@ class Site_Remove{
 
  public:
 
-  void set_process(const int& proc){ process=proc;}
-  const int& get_process() const{ return process; }
+  void set_process(const unsigned int& proc){ process=proc;}
+  const unsigned int& get_process() const{ return process; }
 
   //! This is the position of the site in the local sites array
   void set_site_id( const unsigned long long int& index ){ site_id = index; }
@@ -628,7 +628,7 @@ class Site_Remove{
 
  private:
 
-  int process;
+  unsigned int process;
   unsigned long long int vertex_id;
   unsigned long long int site_id;
   float update_property;
