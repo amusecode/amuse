@@ -234,7 +234,7 @@ class InstallPrerequisites(object):
             raise Exception("Error when running <" + commandline + ">")
         print("finished " , ' '.join(args))
     
-    def h5py_build(self, path):       
+    def h5py_build(self, path):
         self.run_application([PYTHON,'setup.py','configure','--hdf5='+self.prefix], cwd=path)
         self.run_application([PYTHON,'setup.py','build'],cwd=path)
         self.run_application([PYTHON,'setup.py','install', '--prefix='+self.prefix], cwd=path)
