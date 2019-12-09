@@ -1,6 +1,9 @@
 import numpy
 
-from ConfigParser import ConfigParser
+try:
+    from ConfigParser import ConfigParser
+except:
+    from configparser import ConfigParser
 from collections import defaultdict
 
 try:
@@ -69,7 +72,7 @@ class _CodeWithFileParameters(object):
                         self._parameters[key]["value"]=val 
                 else:
                     if not add_missing_parameters:
-                        print "'{0}' of group '{1}' not in the namelist_parameters".format(*key)
+                        print("'{0}' of group '{1}' not in the namelist_parameters".format(*key))
                     else:
                         value=rawval
                         description=comments.get(key, "unknown parameter read from {0}".format(inputfile))
@@ -94,7 +97,7 @@ class _CodeWithFileParameters(object):
             group_name=p["group_name"]
             short=p["short"]
             parameter_set_name=p.get("set_name", group_name)
-            parameter_set=getattr(self, parameter_set_name)
+            parameter_set=getattr(self, self._prefix+parameter_set_name)
             if is_quantity(p["default"]):
                 value=to_quantity(getattr(parameter_set, name)).value_in(p["default"].unit)
             else:
@@ -136,7 +139,7 @@ class CodeWithNamelistParameters(_CodeWithFileParameters):
     def write_file(self, outputfile, rawvals, do_patch=False, nml_file=None):
         patch=defaultdict( dict )
 
-        for key,rawval in rawvals:
+        for key,rawval in rawvals.items():
             if rawval is None:  # omit if value is None
                 continue
             if isinstance(rawval,numpy.ndarray):
@@ -153,6 +156,10 @@ class CodeWithNamelistParameters(_CodeWithFileParameters):
 
     def read_namelist_parameters(self, inputfile, add_missing_parameters=False):
         return self.read_parameters(inputfile,add_missing_parameters)
+
+    def output_format_value(self,value):
+        return value
+
 
 class CodeWithIniFileParameters(_CodeWithFileParameters):
     """
@@ -216,5 +223,10 @@ class CodeWithIniFileParameters(_CodeWithFileParameters):
         parser.write(f)
         f.close()
 
+    def output_format_value(self,value):
+        if isinstance(value, list):
+          return ','.join(value)
+        else:
+          return value
         
 
