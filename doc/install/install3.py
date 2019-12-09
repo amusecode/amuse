@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import sys
 import os.path
 import os
@@ -33,6 +33,8 @@ def late(function):
 class InstallPrerequisites(object):
     @late
     def prefix(self):
+        if 'VIRTUAL_ENV' in os.environ:
+            return os.environ['VIRTUAL_ENV']
         path = os.path.split(sys.executable)[0]
         if 'Framework' in path:
             return path[:path.index('Framework')]
@@ -41,14 +43,12 @@ class InstallPrerequisites(object):
     @late
     def applications(self):
        return [
-       #numpy-1.7.0b2.tar.gz?r=http%3A%2F%2Fsourceforge.net%2Fprojects%2Fnumpy%2Ffiles%2FNumPy%2F1.7.0b2%2F&ts=1353670630&use_mirror=garr
-          #('openssl' , [], '0.9.8k' , 'openssl-', '.tar.gz', 'http://www.openssl.org/source/', self.openssl_build),
           (
             'numpy' ,                  #name to refer by
             [],                        #names of prerequisites (unused)
-            '1.8.2' ,                  #version string
+            '1.17.4' ,                  #version string
             'numpy-', '.tar.gz',       #pre- and postfix for filename
-            'https://pypi.python.org/packages/source/n/numpy/', #download url, filename is appended
+            'https://github.com/numpy/numpy/releases/download/v1.17.4/', #download url, filename is appended
             self.numpy_build          #method to use for building
           ),
           (
@@ -59,6 +59,14 @@ class InstallPrerequisites(object):
             'https://pypi.python.org/packages/source/n/nose/', 
             self.python_build
           ),
+          (
+            'cython',
+            [],
+            '0.29.14',
+            'Cython-' , '.tar.gz',
+            'https://pypi.io/packages/source/c/cython/',
+            self.python_build
+          ) ,
           (
             'hdf' ,
             [],  
@@ -125,7 +133,7 @@ class InstallPrerequisites(object):
           (
             'mpi4py', 
             ['mpich2'], 
-            '1.3.1', 
+            '3.0.3', 
             'mpi4py-', '.tar.gz', 
             'https://bitbucket.org/mpi4py/mpi4py/downloads/', 
             self.python_build
@@ -167,16 +175,8 @@ class InstallPrerequisites(object):
             ['gmp'],                    #names of prerequisites
             '4.0.2' ,                   #version string
             'mpfr-', '.tar.gz',         #pre- and postfix for filename
-            'http://mpfr.loria.fr/mpfr-4.0.2/', #download url, filename is appended
+            'https://www.mpfr.org/mpfr-4.0.2/', #download url, filename is appended
             self.mpfr_build             #method to use for building
-          ) ,
-          (
-            'cython',
-            [],
-            '0.25.2',
-            'Cython-' , '.tar.gz',
-            'https://pypi.io/packages/source/c/cython/',
-            self.python_build
           ) ,
         ]
         
@@ -234,7 +234,7 @@ class InstallPrerequisites(object):
             raise Exception("Error when running <" + commandline + ">")
         print("finished " , ' '.join(args))
     
-    def h5py_build(self, path):       
+    def h5py_build(self, path):
         self.run_application([PYTHON,'setup.py','configure','--hdf5='+self.prefix], cwd=path)
         self.run_application([PYTHON,'setup.py','build'],cwd=path)
         self.run_application([PYTHON,'setup.py','install', '--prefix='+self.prefix], cwd=path)
@@ -245,12 +245,13 @@ class InstallPrerequisites(object):
     def hdf5_build(self, path):
         commands = []
         commands.append([
-          './configure',
-          '--prefix='+self.prefix,
-          '--enable-shared', 
-          '--enable-production',
-          '--with-pthread=/usr', 
-          '--enable-threadsafe'
+            './configure',
+            '--prefix='+self.prefix,
+            '--enable-shared',
+            '--disable-hl', 
+            '--enable-production',
+            '--with-pthread=/usr', 
+            '--enable-threadsafe'
         ])
         commands.append(['make'])
         commands.append(['make', 'install'])
@@ -275,11 +276,12 @@ class InstallPrerequisites(object):
     def openmpi_build(self, path):
         commands = []
         commands.append([
-          './configure','--prefix='+self.prefix,
-          #'--enable-mpi-threads', 
-          '--enable-cxx-exceptions',
-          '--enable-debug',
-          '--enable-orterun-prefix-by-default',
+            './configure',
+            '--prefix='+self.prefix,
+            #'--enable-mpi-threads', 
+            '--enable-cxx-exceptions',
+            '--enable-debug',
+            '--enable-orterun-prefix-by-default',
         ])
         commands.append(['make'])
         commands.append(['make', 'install'])
@@ -289,13 +291,13 @@ class InstallPrerequisites(object):
     def mpich2_build(self, path):
         commands = []
         command = [
-          './configure',
-          '--prefix='+self.prefix,
-          '--enable-shared',
-          '--enable-sharedlibs=gcc',
-          '--enable-fc', 
-          '--with-python='+sys.executable,
-          '--with-device=ch3:sock',
+            './configure',
+            '--prefix='+self.prefix,
+            '--enable-shared',
+            '--enable-sharedlibs=gcc',
+            '--enable-fc', 
+            '--with-python='+sys.executable,
+            '--with-device=ch3:sock',
         ]
         if self.use_hydra_process_manager:
             command.append('--with-pm=hydra:gforker')
@@ -318,10 +320,10 @@ class InstallPrerequisites(object):
     def fftw_build(self, path):
         commands = []
         command = [
-          './configure',
-          '--prefix='+self.prefix,
-          '--enable-shared',
-          '--enable-threads'
+            './configure',
+            '--prefix='+self.prefix,
+            '--enable-shared',
+            '--enable-threads'
         ]
         commands.append(command)
         commands.append(['make'])
@@ -365,8 +367,8 @@ class InstallPrerequisites(object):
     def cmake_build(self, path):
         commands = []
         command = [
-          './configure',
-          '--prefix='+self.prefix
+            './configure',
+            '--prefix='+self.prefix,
         ]
         commands.append(command)
         commands.append(['make'])
@@ -378,9 +380,9 @@ class InstallPrerequisites(object):
     def gmp_build(self, path):
         commands = []
         command = [
-          './configure',
-          '--prefix='+self.prefix,
-          '--enable-shared'
+            './configure',
+            '--prefix='+self.prefix,
+            '--enable-shared'
         ]
         commands.append(command)
         commands.append(['make'])
@@ -391,20 +393,13 @@ class InstallPrerequisites(object):
             self.run_application(x, path)
     
     def mpfr_build(self, path):
-        #temp_patch_file = os.path.join(self.temp_dir, "mpfr-allpatches")
-        #if not os.path.exists(temp_patch_file):
-        #    print "Downloading mpfr-allpatches"
-        #    urllib.urlretrieve("http://www.mpfr.org/mpfr-3.1.1/allpatches", temp_patch_file)
-        #    print "...Finished"
-        
         commands = []
-        #commands.append(['patch', '-N', '-Z', '-p1', '-i', temp_patch_file])
         command = [
-          './configure',
-          '--prefix='+self.prefix,
-          '--with-gmp='+self.prefix,
-          '--enable-shared',
-          '--enable-thread-safe'
+            './configure',
+            '--prefix='+self.prefix,
+            '--with-gmp='+self.prefix,
+            '--enable-shared',
+            '--enable-thread-safe'
         ]
         commands.append(command)
         commands.append(['make'])
@@ -470,7 +465,6 @@ class InstallPrerequisites(object):
                 urllib.request.urlretrieve(url, os.path.join(self.temp_dir, app_file))
                 print("...Finished")
                 
-    
     def list_apps(self, names, skip):
         for (name, dependencies, version, prefix, suffix, url_prefix, function) in self.applications:
             if skip and name in skip:
@@ -530,7 +524,7 @@ class InstallPrerequisites(object):
     def extract_path(self, app_file):
         proc=subprocess.Popen(["tar","tf",app_file], stdout=subprocess.PIPE)
         out,err=proc.communicate()
-        out=out.split("\n")
+        out=out.decode().split("\n")
         return os.path.normpath(out[0]).split(os.sep)[0]
 
     def build_apps(self, names, skip):
@@ -566,11 +560,9 @@ class InstallPrerequisites(object):
             print("Building ", app_file)
             function(temp_app_dir)
             print("...Finished")
-            
+
+
 class InstallPrerequisitesOnOSX(InstallPrerequisites):
-
-
-   
           
     def mpich2_build(self, path):
         
@@ -601,14 +593,7 @@ class InstallPrerequisitesOnOSX(InstallPrerequisites):
         self.check_mpich2_install(commands, path)
         
     def mpfr_build(self, path):
-        #temp_patch_file = os.path.join(self.temp_dir, "mpfr-allpatches")
-        #if not os.path.exists(temp_patch_file):
-        #    print "Downloading mpfr-allpatches"
-        #    urllib.urlretrieve("http://www.mpfr.org/mpfr-3.1.1/allpatches", temp_patch_file)
-        #    print "...Finished"
-        
         commands = []
-        #commands.append(['patch', '-N', '-Z', '-p1', '-i', temp_patch_file])
         command = [
             './configure',
             '--prefix='+self.prefix,
@@ -633,7 +618,7 @@ class InstallMatplotlib(InstallPrerequisites):
                 [],                         #names of prerequisites (unused)
                 '2.4.9' ,                   #version string
                 'freetype-', '.tar.gz',        #pre- and postfix for filename
-                'http://download.savannah.gnu.org/releases/freetype/', #download url, filename is appended
+                'https://download.savannah.gnu.org/releases/freetype/', #download url, filename is appended
                 self.basic_build             #method to use for building - same as for FFTW should work
               ) ,
               (
@@ -641,15 +626,15 @@ class InstallMatplotlib(InstallPrerequisites):
                 [],                         #names of prerequisites (unused)
                 '1.2.11' ,                   #version string
                 'zlib-', '.tar.gz',        #pre- and postfix for filename
-                'http://zlib.net/', #download url, filename is appended
+                'https://downloads.sourceforge.net/project/libpng/zlib/1.2.11/', #download url, filename is appended
                 self.basic_build             #method to use for building - same as for FFTW should work
               ) ,
               (
                 'png' ,                   #name to refer by
                 [],                         #names of prerequisites (unused)
-                '1.5.11' ,                   #version string
+                '1.6.37' ,                   #version string
                 'libpng-', '.tar.gz',        #pre- and postfix for filename
-                'http://downloads.sourceforge.net/project/libpng/libpng15/older-releases/1.5.11/', #download url, filename is appended
+                'https://downloads.sourceforge.net/project/libpng/libpng16/1.6.37/', #download url, filename is appended
                 self.basic_build             #method to use for building - same as for FFTW should work
               ),
               (
@@ -657,7 +642,7 @@ class InstallMatplotlib(InstallPrerequisites):
                 [],                         #names of prerequisites (unused)
                 '2.2.2' ,                   #version string
                 'matplotlib-', '.tar.gz',        #pre- and postfix for filename
-                ' https://pypi.python.org/packages/source/m/matplotlib/', #download url, filename is appended
+                'https://pypi.python.org/packages/source/m/matplotlib/', #download url, filename is appended
                 self.matplotlib_build             #method to use for building - same as for FFTW should work
               ),
         )
@@ -804,6 +789,3 @@ setenv F77 gfortran
         
         
         sys.exit(1)
-    
-
-        
