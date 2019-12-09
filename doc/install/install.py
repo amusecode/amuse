@@ -642,7 +642,7 @@ class InstallMatplotlib(InstallPrerequisites):
                 [],                         #names of prerequisites (unused)
                 '2.2.2' ,                   #version string
                 'matplotlib-', '.tar.gz',        #pre- and postfix for filename
-                ' https://pypi.python.org/packages/source/m/matplotlib/', #download url, filename is appended
+                'https://pypi.python.org/packages/source/m/matplotlib/', #download url, filename is appended
                 self.matplotlib_build             #method to use for building - same as for FFTW should work
               ),
         )
