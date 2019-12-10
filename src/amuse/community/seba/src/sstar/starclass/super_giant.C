@@ -624,7 +624,7 @@ void super_giant::create_remnant(const real mass, const real mass_tot, const rea
 
     stellar_type type;
     real mc_bagb = base_AGB_core_mass(mass, z);
-    real mc_SN = maximum_AGB_core_mass(mass, z);
+    //real mc_SN = maximum_AGB_core_mass(mass, z);
 
     // stars on the tpagb are evaluated until the envelope is gone or Mch is reached
     // sensitive to numerical errors
@@ -646,7 +646,11 @@ void super_giant::create_remnant(const real mass, const real mass_tot, const rea
         if (mc_bagb < 1.6) 
             type = Disintegrated;
         else {
-            if (mc_SN <= 7.)
+    	  // (GN Oct  5 2016) Hurley uses theoretical Base AGB core mass to determine
+    	  //     real mc_SN = maximum_AGB_core_mass(mass, z);
+    	  //            if (mc_SN <= 7.)
+    	  // in SeBa we use the current real properties
+    	  if (COcore_mass <= cnsts.parameters(COcore2black_hole)) 
                 type = Neutron_Star;
             else
                 type = Black_Hole;
