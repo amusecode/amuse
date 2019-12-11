@@ -1,15 +1,18 @@
 import numpy
 
-from ConfigParser import ConfigParser
+try:
+    from ConfigParser import ConfigParser
+except:
+    from configparser import ConfigParser
+from collections import defaultdict
 
 try:
     import f90nml
     HAS_F90NML=True
 except:
     HAS_F90NML=False
-from collections import defaultdict
-from amuse.units.quantities import new_quantity, to_quantity, is_quantity
 
+from amuse.units.quantities import new_quantity, to_quantity, is_quantity
 
 # CodeWithNamelistParameters
 # 
@@ -17,115 +20,174 @@ from amuse.units.quantities import new_quantity, to_quantity, is_quantity
 #   dict(name="name", group_name="name", short="codename", dtype="int32", default=64, description="description", ptype="nml" [, set_name="name"]), ...
 # )
 
-class CodeWithNamelistParameters(object):
-    def __init__(self, namelist_parameters):
-        self._namelist_parameters=dict([((x["short"].lower(),x["group_name"]),x) for x in namelist_parameters])
-    
-    def define_parameters(self,handler):
-        for p in self._namelist_parameters.values():
-            if p["ptype"] in ["nml", "nml+normal"]:
-                parameter_set_name=p.get("set_name", "parameters_"+p["group_name"])
-                handler.add_interface_parameter( p["name"], p["description"], p["default"], "before_set_interface_parameter", parameter_set=parameter_set_name)
+class _CodeWithFileParameters(object):
+    _ptypes=None
+    def write_file(self, inputfile, **kwargs):
+        raise Exception("not implemented")
+    def read_file(self, inputfile, rawvals, **kwargs):
+        raise Exception("not implemented")
 
-    def read_namelist_parameters(self, inputfile):
+    def define_parameters(self, handler):
+        _tmp=dict()
+        for p in self._parameters.values():
+            if p["ptype"] not in self._ptypes:
+                continue
+            parameter_set_name=p.get("set_name", self._prefix+p["group_name"] )
+            if parameter_set_name not in _tmp:
+                _tmp[parameter_set_name]=[ x.name for x in handler.definitions[parameter_set_name] ]
+            if not p["name"] in _tmp[parameter_set_name]:  
+                handler.add_interface_parameter( p["name"], p["description"], p["default"], 
+                                  "before_set_interface_parameter", parameter_set=parameter_set_name)
 
-        self._nml_file=inputfile
-        self._nml_params = f90nml.read(inputfile)
+        self.set_parameters()
 
-        for group, d in self._nml_params.iteritems():
-            for short, val in d.iteritems():
-                key=(short.lower(),group.upper())
-                if key in self._namelist_parameters:
-                    group_name=self._namelist_parameters[key]["group_name"]
-                    name=self._namelist_parameters[key]["name"]
-                    parameter_set_name=self._namelist_parameters[key].get("set_name", "parameters_"+group_name)
-                    parameter_set=getattr(self, parameter_set_name)
-                    if is_quantity(self._namelist_parameters[key]["default"]):
-                        setattr(parameter_set, name, new_quantity(val, to_quantity(self._namelist_parameters[key]["default"]).unit) )
+    def set_parameters(self):
+        for p in self._parameters.values():
+            if p["ptype"] not in self._ptypes:
+                continue
+            parameter_set_name=p.get("set_name", None) or self._prefix+p["group_name"]
+            parameter_set=getattr(self, parameter_set_name)
+            name=p["name"]
+            value=p.get("value", p["default"])
+            setattr(parameter_set, name, value)
+
+    def interpret_value(self,value, dtype=None):
+        raise Exception("not implemented")
+
+    def read_parameters(self, inputfile, add_missing_parameters=False):
+        self._file=inputfile
+
+        _nml_params = f90nml.read(inputfile)
+
+        rawvals, comments = self._read_file(inputfile)
+
+        for key, rawval in rawvals.items():      
+                if key in self._parameters:
+                    group_name=self._parameters[key]["group_name"]
+                    name=self._parameters[key]["name"]
+                    val=self.interpret_value( rawval, dtype=dtype)
+                    if is_quantity(self._parameters[key]["default"]):
+                        self._parameters[key]["value"]=new_quantity(val, to_quantity(self._namelist_parameters[key]["default"]).unit)
                     else:
-                        setattr(parameter_set, name, val )
+                        self._parameters[key]["value"]=val 
                 else:
-                    print "'%s' of group '%s' not in the namelist_parameters"%(short, group)
+                    if not add_missing_parameters:
+                        print("'{0}' of group '{1}' not in the namelist_parameters".format(*key))
+                    else:
+                        value=rawval
+                        description=comments.get(key, "unknown parameter read from {0}".format(inputfile))
+                        self._parameters[key]=dict(
+                            group_name=key[1],
+                            name=key[0],
+                            short_name=key[0],
+                            default=value,
+                            value=value,
+                            short=key[0],
+                            ptype=self._ptypes[0],
+                            dtype=str(type(value)),
+                            description=description
+                            )                        
 
-    def write_namelist_parameters(self, outputfile, do_patch=False, nml_file=None):
-        patch=defaultdict( dict )
-        for p in self._namelist_parameters.values():
+    def write_parameters(self, outputfile, **options):
+
+        rawvals=dict()
+
+        for key, p in self._parameters.items():
             name=p["name"]
             group_name=p["group_name"]
-            group=patch[group_name]
             short=p["short"]
-            parameter_set_name=p.get("set_name", "parameters_"+group_name)
-            parameter_set=getattr(self, parameter_set_name)
-            if getattr(parameter_set, name) is None:  # omit if value is None
-                continue
+            parameter_set_name=p.get("set_name", group_name)
+            parameter_set=getattr(self, self._prefix+parameter_set_name)
             if is_quantity(p["default"]):
                 value=to_quantity(getattr(parameter_set, name)).value_in(p["default"].unit)
             else:
-                value=getattr(parameter_set, name)            
-            if isinstance(value,numpy.ndarray):
-                value=list(value)  # necessary until f90nml supports numpy arrays
-            group[short]=value
+                value=getattr(parameter_set, name)
+            
+            rawvals[key]=self.output_format_value(value)
+            
+        self.write_file(outputfile, rawvals, **options)
+  
+class CodeWithNamelistParameters(_CodeWithFileParameters):
+    """
+    Mix-in class to 1) namelist file support to code interfaces and 2) automatically generate
+    parameter sets from descriptions or namelist files. 
+    
+    This class takes a list of parameter descriptions (optional) and has functions to
+    read and write namelist files. Every namelist section corresponds to a different 
+    parameter set.
+    """
+    _ptypes=["nml", "nml+normal"]
+
+    def __init__(self, _parameters, prefix="parameters_"):
+        if not HAS_F90NML:
+            raise Exception("f90nml package not available")
+        self._parameters=dict([((x["short"].lower(),x["group_name"]),x) for x in _parameters])
+        self._prefix=prefix
+        self._file=None
+
+    def _read_file(self, inputfile):
+        _nml_params = f90nml.read(inputfile)
+        rawvals=dict()
+
+        for group, d in _nml_params.items():
+            for short, val in d.items():
+                key=(short.lower(),group.upper())
+                rawvals[key]=val
+
+        return rawvals, dict()
+
+    def write_file(self, outputfile, rawvals, do_patch=False, nml_file=None):
+        patch=defaultdict( dict )
+
+        for key,rawval in rawvals.items():
+            if rawval is None:  # omit if value is None
+                continue
+            if isinstance(rawval,numpy.ndarray):
+                rawval=list(rawval)  # necessary until f90nml supports numpy arrays
+            patch[key[1]][key[0]]=rawval
         
         if do_patch:
             f90nml.patch(nml_file or self._nml_file,patch,outputfile)
         else:
             f90nml.write(patch, outputfile, force=True)      
 
-class CodeWithIniFileParameters(object):
-    def __init__(self, inifile_parameters=dict()):
-        self._inifile_parameters=dict([((x["name"],x["group_name"]),x) for x in inifile_parameters])
-        self._optionxform=str
-        
-    def define_parameters(self, handler):
-        _tmp=dict()
-        for p in self._inifile_parameters.values():
-            if p["ptype"] in ["ini", "ini+normal"]:
-                parameter_set_name=p.get("set_name", p["group_name"])
-                if parameter_set_name not in _tmp:
-                    _tmp[parameter_set_name]=[ x.name for x in handler.definitions[parameter_set_name] ]
-                if not p["name"] in _tmp[parameter_set_name]:  
-                    handler.add_interface_parameter( p["name"], p["description"], p["default"], 
-                                      "before_set_interface_parameter", parameter_set=parameter_set_name)
-                    
-        self.set_parameters()
+    def write_namelist_parameters(self, outputfile, do_patch=False, nml_file=None):
+        return self.write_parameters(outputfile, do_patch=do_patch, nml_file=nml_file)
 
-    def set_parameters(self):
-        for p in self._inifile_parameters.values():
-              parameter_set_name=p.get("set_name", None) or p["group_name"]
-              parameter_set=getattr(self, parameter_set_name)
-              name=p["name"]
-              value=p.get("value", None) or p["default"]
-              setattr(parameter_set, name, value)
-              
-    def read_inifile_parameters(self, configfile):
-        self._configfile=configfile
+    def read_namelist_parameters(self, inputfile, add_missing_parameters=False):
+        return self.read_parameters(inputfile,add_missing_parameters)
+
+    def output_format_value(self,value):
+        return value
+
+
+class CodeWithIniFileParameters(_CodeWithFileParameters):
+    """
+    Mix-in class to 1) INI-like file support to code interfaces and 2) automatically generate
+    parameter sets from descriptions or Ini files. 
+    
+    This class takes a list of parameter descriptions (optional) and has functions to
+    read and write INI files. Every section corresponds to a different parameter set.
+    """
+    _ptypes=["ini", "ini+normal"]
+    def __init__(self, _parameters=dict(), prefix="ini_"):
+        self._parameters=dict([((x["name"],x["group_name"]),x) for x in _parameters])
+        self._optionxform=str
+        self._prefix=prefix
+        self._file=None
+                      
+    def read_file(self, inputfile):
         parser=ConfigParser()
         parser.optionxform=self._optionxform
-        parser.read(configfile)
+        parser.read(inputfile)
         for section in parser.sections():
             group=section
             for option in parser.options(section):
                 key=(option,group)
-                if key in self._inifile_parameters:
-                    ptype=self._inifile_parameters[key]["ptype"]
-                    dtype=self._inifile_parameters[key]["dtype"]
-                    value=self.interpret_value(parser.get(group, option), dtype=dtype)
-                    if is_quantity(self._inifile_parameters[key]["default"]):
-                        value= new_quantity(val, to_quantity(self._inifile_parameters[key]["default"]).unit)
-                    self._inifile_parameters[key]["value"]=value
-                else:
-                    value=self.interpret_value(parser.get(group, option))
-                    self._inifile_parameters[key]=dict(
-                        group_name=group,
-                        name=option,
-                        set_name=group,
-                        default=value,
-                        value=value,
-                        short=option,
-                        ptype="ini",
-                        dtype="unknown",
-                        description="unknown parameter read from %s"%configfile
-                        )
+
+                rawvals[key]=parser.get(group, option)
+                
+        return rawvals, dict()
 
     def _convert(self, value, dtype):
         if dtype is "bool":
@@ -142,32 +204,29 @@ class CodeWithIniFileParameters(object):
             return [self._convert(x, dtype) for x in value.split(",")]
         return self._convert(value, dtype)
 
+    def write_file(self, outputfile, rawvals):
+        parser=ConfigParser()
+        parser.optionxform=self._optionxform
+
+        for key, rawval in rawvals.items():
+            section=key[1]
+            
+            if not parser.has_section(section):
+                parser.add_section(section)
+
+            if isinstance(rawval, list):
+                rawval=','.join(rawval)
+                
+            parser.set(section,short,self.output_format_value(rawval))
+
+        f=open(outputfile, "w")
+        parser.write(f)
+        f.close()
+
     def output_format_value(self,value):
         if isinstance(value, list):
           return ','.join(value)
         else:
           return value
-
-
-    def write_inifile_parameters(self, outputfile):
-        parser=ConfigParser()
-        parser.optionxform=self._optionxform
-
-        for p in self._inifile_parameters.values():
-            name=p["name"]
-            group_name=p["group_name"]
-            short=p["short"]
-            parameter_set_name=p.get("set_name", group_name)
-            parameter_set=getattr(self, parameter_set_name)
-            if is_quantity(p["default"]):
-                value=to_quantity(getattr(parameter_set, name)).value_in(p["default"].unit)
-            else:
-                value=self.output_format_value(getattr(parameter_set, name))            
-            if not parser.has_section(group_name):
-                parser.add_section(group_name)
-            parser.set(group_name,short,value)
         
-        f=open(outputfile, "w")
-        parser.write(f)
-        f.close()
 
