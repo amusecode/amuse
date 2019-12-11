@@ -922,7 +922,9 @@ class GravitationalDynamics(common.CommonCode):
         handler.add_method('RUN', 'get_potential')
         handler.add_method('RUN', 'get_potential_energy')
         handler.add_method('RUN', 'get_kinetic_energy')
-        
+        handler.add_transition('RUN', 'UPDATE', 'set_mass', False)
+        handler.add_transition('RUN', 'UPDATE', 'set_position', False)
+        handler.add_transition('RUN', 'UPDATE', 'set_velocity', False)
         
     def define_parameters(self, handler):
         handler.add_method_parameter(
