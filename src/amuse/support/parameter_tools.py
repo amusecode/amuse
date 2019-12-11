@@ -1,10 +1,8 @@
 import numpy
 
-try:
-    from ConfigParser import ConfigParser
-except:
-    from configparser import ConfigParser
+from configparser import ConfigParser
 from collections import defaultdict
+from io import StringIO
 
 try:
     import f90nml
@@ -14,17 +12,58 @@ except:
 
 from amuse.units.quantities import new_quantity, to_quantity, is_quantity
 
-# CodeWithNamelistParameters
+# parameters can be supplied as:
 # 
-# namelist_parameters=(
+# parameters=(
 #   dict(name="name", group_name="name", short="codename", dtype="int32", default=64, description="description", ptype="nml" [, set_name="name"]), ...
 # )
 
+dtype_str={ str: "str", 
+            bool: "bool",
+            int: "int32",
+            float: "float64",
+          }
+
+def parameter_list_py_code(parameters, label="parameters"):
+    header="""from omuse.units import units
+
+{label} = (
+
+""".format(label=label)
+
+    template='  dict(name={name}, group_name={group}, short={short}, dtype={dtype}, default={default}, description={description}, ptype={ptype}),\n'
+
+    footer=""")
+    """
+    
+    by_group=defaultdict(dict)
+    for key in parameters:
+        short,group=key
+        by_group[group][short]=parameters[key]
+
+    body=[]
+    for group in by_group:
+        _body=""
+        for short in by_group[group]:
+          _body+=template.format(name=by_group[group][short]["name"].__repr__(),
+                                group=by_group[group][short]["group_name"].__repr__(),
+                                short=by_group[group][short]["short"].__repr__(),
+                                dtype=by_group[group][short]["dtype"].__repr__(),
+                                default=by_group[group][short]["default"].__repr__(),
+                                description=by_group[group][short]["description"].__repr__(),
+                                ptype=by_group[group][short]["ptype"].__repr__(),)
+        
+        body.append(_body)
+    body="#\n".join(body)
+
+    return header+body+footer
+
+
 class _CodeWithFileParameters(object):
     _ptypes=None
-    def write_file(self, inputfile, **kwargs):
+    def _write_file(self, inputfile, **kwargs):
         raise Exception("not implemented")
-    def read_file(self, inputfile, rawvals, **kwargs):
+    def _read_file(self, inputfile, rawvals, **kwargs):
         raise Exception("not implemented")
 
     def define_parameters(self, handler):
@@ -65,14 +104,15 @@ class _CodeWithFileParameters(object):
                 if key in self._parameters:
                     group_name=self._parameters[key]["group_name"]
                     name=self._parameters[key]["name"]
+                    dtype=self._parameters[key]["dtype"]
                     val=self.interpret_value( rawval, dtype=dtype)
                     if is_quantity(self._parameters[key]["default"]):
-                        self._parameters[key]["value"]=new_quantity(val, to_quantity(self._namelist_parameters[key]["default"]).unit)
+                        self._parameters[key]["value"]=new_quantity(val, to_quantity(self._parameters[key]["default"]).unit)
                     else:
                         self._parameters[key]["value"]=val 
                 else:
                     if not add_missing_parameters:
-                        print("'{0}' of group '{1}' not in the namelist_parameters".format(*key))
+                        print("'{0}' of group '{1}' not in the parameters list".format(*key))
                     else:
                         value=rawval
                         description=comments.get(key, "unknown parameter read from {0}".format(inputfile))
@@ -84,7 +124,7 @@ class _CodeWithFileParameters(object):
                             value=value,
                             short=key[0],
                             ptype=self._ptypes[0],
-                            dtype=str(type(value)),
+                            dtype=dtype_str[type(value)],
                             description=description
                             )                        
 
@@ -105,8 +145,8 @@ class _CodeWithFileParameters(object):
             
             rawvals[key]=self.output_format_value(value)
             
-        self.write_file(outputfile, rawvals, **options)
-  
+        self._write_file(outputfile, rawvals, **options)
+
 class CodeWithNamelistParameters(_CodeWithFileParameters):
     """
     Mix-in class to 1) namelist file support to code interfaces and 2) automatically generate
@@ -136,7 +176,7 @@ class CodeWithNamelistParameters(_CodeWithFileParameters):
 
         return rawvals, dict()
 
-    def write_file(self, outputfile, rawvals, do_patch=False, nml_file=None):
+    def _write_file(self, outputfile, rawvals, do_patch=False, nml_file=None):
         patch=defaultdict( dict )
 
         for key,rawval in rawvals.items():
@@ -176,10 +216,36 @@ class CodeWithIniFileParameters(_CodeWithFileParameters):
         self._prefix=prefix
         self._file=None
                       
-    def read_file(self, inputfile):
+    def _read_file(self, inputfile):
+        f=open(inputfile,"r")
+        values=StringIO()
+        comments=StringIO()
+        for line in f.readlines():
+            if "=" in line:
+              key, val=line.split("=", 1)
+              if "#" in val:
+                val,comment=val.split("#",1)
+                comments.write("=".join([key,comment])+"\n")
+              values.write("=".join([key,val])+"\n")
+            else:
+              values.write(line+"\n")
+              comments.write(line+"\n")
+
+        values.seek(0)
+        comments.seek(0)
+
+        rawvals=self.parse_fp(values)
+        comments=self.parse_fp(comments)
+
+        return rawvals, comments
+
+
+    def parse_fp(self, fp):
         parser=ConfigParser()
         parser.optionxform=self._optionxform
-        parser.read(inputfile)
+        parser.readfp(fp)
+
+        rawvals=dict()
         for section in parser.sections():
             group=section
             for option in parser.options(section):
@@ -187,7 +253,7 @@ class CodeWithIniFileParameters(_CodeWithFileParameters):
 
                 rawvals[key]=parser.get(group, option)
                 
-        return rawvals, dict()
+        return rawvals
 
     def _convert(self, value, dtype):
         if dtype is "bool":
@@ -204,12 +270,13 @@ class CodeWithIniFileParameters(_CodeWithFileParameters):
             return [self._convert(x, dtype) for x in value.split(",")]
         return self._convert(value, dtype)
 
-    def write_file(self, outputfile, rawvals):
+    def _write_file(self, outputfile, rawvals):
         parser=ConfigParser()
         parser.optionxform=self._optionxform
 
         for key, rawval in rawvals.items():
             section=key[1]
+            short=key[0]
             
             if not parser.has_section(section):
                 parser.add_section(section)
@@ -229,4 +296,9 @@ class CodeWithIniFileParameters(_CodeWithFileParameters):
         else:
           return value
         
+    def write_inifile_parameters(self, outputfile):
+        return self.write_parameters(outputfile)
+
+    def read_inifile_parameters(self, inputfile, add_missing_parameters=False):
+        return self.read_parameters(inputfile,add_missing_parameters)
 
