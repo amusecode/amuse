@@ -21,8 +21,11 @@ radiative transfer calculations at every site.
 #ifndef STRUCTS_H
 #define STRUCTS_H
 
-#include "mpi.h"
 #include "Common.h"
+
+#ifndef NOMPI
+#include "mpi.h"
+#endif
 
 using namespace std;
 
@@ -48,7 +51,7 @@ class Vertex{
   Vertex();
 
   //these two should be statc
-  static MPI::Datatype MPI_Type;
+  static MPI_Datatype MPI_Type;
   static void construct_datatype();
 
   //! set the process the vertex lives on

@@ -49,7 +49,7 @@ Vertex& Vertex::operator=(const Site& p2){
 
 }
 
-MPI::Datatype Vertex::MPI_Type;
+MPI_Datatype Vertex::MPI_Type;
 void Vertex::construct_datatype(){
 
   const unsigned int entries = 6;
@@ -57,24 +57,24 @@ void Vertex::construct_datatype(){
 
   int block[entries] = {1,1,1,1,1,1};
 
-  MPI::Aint displ[entries];
-  displ[0] = MPI::Get_address( &dummy[0].x );
-  displ[1] = MPI::Get_address( &dummy[0].y );
-  displ[2] = MPI::Get_address( &dummy[0].z );
-  displ[3] = MPI::Get_address( &dummy[0].process );
-  displ[4] = MPI::Get_address( &dummy[0].vertex_id );
-  displ[5] = MPI::Get_address( &dummy[0].border );
+  MPI_Aint displ[entries];
+  MPI_Get_address( &dummy[0].x , &displ[0]);
+  MPI_Get_address( &dummy[0].y , &displ[1]);
+  MPI_Get_address( &dummy[0].z , &displ[2]);
+  MPI_Get_address( &dummy[0].process , &displ[3]);
+  MPI_Get_address( &dummy[0].vertex_id , &displ[4]);
+  MPI_Get_address( &dummy[0].border , &displ[5]);
 
-  MPI::Aint base = displ[0];
+  MPI_Aint base = displ[0];
   for(unsigned int i=0; i<entries; i++ ){
     displ[i] -= base;
   }
 
-  MPI::Datatype types[entries] = { MPI::FLOAT, MPI::FLOAT, MPI::FLOAT, 
-				   MPI::UNSIGNED, MPI::UNSIGNED, MPI::BOOL };
+  MPI_Datatype types[entries] = { MPI_FLOAT, MPI_FLOAT, MPI_FLOAT, 
+				   MPI_UNSIGNED, MPI_UNSIGNED, MPI_CXX_BOOL };
 
-  MPI_Type = MPI_Type.Create_struct( entries, block, displ, types );
-  MPI_Type.Commit();
+  MPI_Type_create_struct( entries, block, displ, types , &MPI_Type);
+  MPI_Type_commit( &MPI_Type);
 
 }
 
