@@ -42,15 +42,15 @@ along with SimpleX.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "h5w_serial.h"      //hdf5 header
 
-
 #include <algorithm>
+
+#ifndef NOMPI
+#include "mpi.h"
+#endif
 
 #if defined(__cplusplus)
 extern "C"
 {
-#endif
-#ifndef NOMPI
-#include "mpi.h"
 #endif
 #include <stdio.h>
 #include <stdlib.h>

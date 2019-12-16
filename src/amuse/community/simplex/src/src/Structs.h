@@ -23,15 +23,8 @@ radiative transfer calculations at every site.
 
 #include "Common.h"
 
-#if defined(__cplusplus)
-extern "C"
-{
-#endif
 #ifndef NOMPI
 #include "mpi.h"
-#endif
-#if defined(__cplusplus)
-}
 #endif
 
 using namespace std;
