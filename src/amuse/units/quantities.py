@@ -1,4 +1,5 @@
 import numpy
+import operator
 
 from math import sqrt
 
@@ -10,6 +11,7 @@ from amuse.support.core import compare_version_strings
 from amuse.units import core
 from amuse.units.si import none
 from amuse.units.core import zero_unit
+
 
 
 """
@@ -131,16 +133,24 @@ class Quantity(object):
 
     def __truediv__(self, other):
         other = to_quantity(other)
-        return new_quantity_nonone(self.number / other.number, (self.unit / other.unit).to_simple_form())
+        return new_quantity_nonone(operator.__truediv__(self.number,other.number), (self.unit / other.unit).to_simple_form())
 
     def __rtruediv__(self, other):
-        return new_quantity_nonone(other / self.number, (1.0 / self.unit).to_simple_form())
+        return new_quantity_nonone(operator.__truediv__(other,self.number), (1.0 / self.unit).to_simple_form())
+
+    def __floordiv__(self, other):
+        other = to_quantity(other)
+        return new_quantity_nonone(operator.__floordiv__(self.number,other.number), (self.unit / other.unit).to_simple_form())
+
+    def __rfloordiv__(self, other):
+        return new_quantity_nonone(operator.__floordiv__(other,self.number), (1.0 / self.unit).to_simple_form())
 
     def __div__(self, other):
-        return self.__truediv__(other)
+        other = to_quantity(other)
+        return new_quantity_nonone(self.number/other.number, (self.unit / other.unit).to_simple_form())
 
     def __rdiv__(self, other):
-        return self.__rtruediv__(other)
+        return new_quantity_nonone(other/self.number, (1.0 / self.unit).to_simple_form())
 
     def __mod__(self, other):
         other_in_my_units = to_quantity(other).as_quantity_in(self.unit)
@@ -303,6 +313,7 @@ class ScalarQuantity(Quantity):
     def round(self, decimals = 0):
         return new_quantity(numpy.round(self.number, decimals), self.unit)
 
+
     def new_zeros_array(self, length):
         array = numpy.zeros(length, dtype=self.unit.dtype)
         return new_quantity(array, self.unit)
@@ -328,6 +339,43 @@ class ScalarQuantity(Quantity):
 
     def as_unit(self):
         return self.number * self.unit
+
+class _flatiter_wrapper(object):
+    def __init__(self, quantity):
+        self.flat=quantity.number.flat
+        self.quantity=quantity
+    def __iter__(self):
+        return self
+    def __next__(self):
+        return new_quantity(next(self.flat),self.quantity.unit)
+    def __getitem__(self,x): 
+        return new_quantity(self.flat[x], self.quantity.unit)
+    def __setitem__(self,index,x):
+        return self.flat.__setitem__(index,x.value_in(self.quantity.unit))
+    @property
+    def base(self):
+        return self.quantity
+    @property
+    def index(self):
+        return self.flat.index
+    @property
+    def coords(self):
+        return self.flat.coords
+    @property
+    def unit(self):
+        return self.quantity.unit
+    @property
+    def number(self):
+        return self.flat
+    def copy(self):
+        return new_quantity(self.flat.copy(), self.quantity.unit)
+    def is_quantity(self):
+        return True
+    def value_in(self, unit):
+        return self.copy().value_in(unit)
+    def as_quantity_in(self, unit):
+        return self.copy().as_quantity_in(unit)
+    # todo: add as required
 
 class VectorQuantity(Quantity):
     """
@@ -355,7 +403,7 @@ class VectorQuantity(Quantity):
     def new_from_scalar_quantities(cls, *values):
         unit=to_quantity(values[0]).unit
         try:
-            array=map(lambda x: value_in(x,unit),values)
+            array=[value_in(x,unit) for x in values]
         except core.IncompatibleUnitsException:
             raise exceptions.AmuseException("not all values have conforming units")
         return cls(array, unit)
@@ -395,47 +443,33 @@ class VectorQuantity(Quantity):
         return new_quantity(self.number.flatten(), self.unit)
     
     @property
-    def flat(self):
-        flat=self.number.flat
-        class flatiter_wrapper(object):
-            def __init__(self, quantity):
-                self.flat=quantity.number.flat
-                self.quantity=quantity
-            def __iter__(self):
-                return self
-            def next(self):
-                return new_quantity(self.flat.next(),self.quantity.unit)
-            def __getitem__(self,x): 
-                return new_quantity(self.flat[x], self.quantity.unit)
-            @property
-            def base(self):
-                return self.quantity
-            def copy(self):
-                return new_quantity(self.flat.copy(), self.quantity.unit)
-            @property
-            def index(self):
-                return self.flat.index
-            @property
-            def coords(self):
-                return self.flat.coords
-        return flatiter_wrapper(self)
+    def flat(self):                
+        return _flatiter_wrapper(self)
         
     def is_vector(self):
         return True
 
 
     def as_vector_with_length(self, length):
-        #if length != len(self):
-        #    raise exceptions.AmuseException("Can only return a vector with the same length")
-        shape = list(self.shape)
-        shape.insert(0,1)
-        return self.reshape(shape)
+        if len(self)==length:
+            return self.copy()
+        if len(self)==1:
+            return self.new_from_scalar_quantities(*[self[0]]*length)
+        raise exceptions.AmuseException("as_vector_with_length only valid for same length or 1")
 
     def as_vector_quantity(self):
         return self
 
     def __len__(self):
         return len(self._number)
+
+    def split(self, indices_or_sections, axis = 0):
+        parts = numpy.split(self.number, indices_or_sections, axis)
+        return [VectorQuantity(x, self.unit) for x in parts]
+
+    def array_split(self, indices_or_sections, axis = 0):
+        parts = numpy.array_split(self.number, indices_or_sections, axis)
+        return [VectorQuantity(x, self.unit) for x in parts]
 
     def sum(self, axis=None, dtype=None, out=None):
         """Calculate the sum of the vector components
@@ -552,14 +586,7 @@ class VectorQuantity(Quantity):
         >>> print vector[[0,2,]]
         [0.0, 2.0] kg
         """
-        number =  self._number[index]
-        if number.shape:
-            return VectorQuantity(number, self.unit )
-        else:
-            if self.unit.is_non_numeric():
-                return NonNumericQuantity(number, self.unit )
-            else:
-                return ScalarQuantity(number, self.unit )
+        return new_quantity(self._number[index], self.unit)
 
     def take(self, indices):
         return VectorQuantity(self._number.take(indices), self.unit)
@@ -591,6 +618,7 @@ class VectorQuantity(Quantity):
         >>> print vector
         [0.0, 3.5, 2.0] kg
         """
+        quantity = as_vector_quantity(quantity)
         if self.unit.is_zero():
             self.unit = quantity.unit
         self._number[index] = quantity.value_in(self.unit)
@@ -850,6 +878,10 @@ class VectorQuantity(Quantity):
 
     def transpose(self, axes=None):
         return VectorQuantity(self.number.transpose(axes), self.unit)
+
+    @property
+    def T(self):
+        return VectorQuantity(self.number.T, self.unit)
 
     def mean(self, axis=None, dtype=None, out=None):
         return new_quantity(self.number.mean(axis, dtype, out), self.unit)
@@ -1200,16 +1232,28 @@ def is_unit(input):
     else:
         return False
 
+def isNumber(x):
+    try:
+        return 0 == x*0
+    except:
+        return False
+
 def as_vector_quantity(value):
-    if not is_quantity(value):
-        if hasattr(value, "__iter__"):
+    if is_quantity(value): 
+        return value
+    else:
+        if isinstance(value, numpy.ndarray) and  numpy.issubdtype(value.dtype, numpy.number):
+            return new_quantity(value, none)
+        if isinstance(value, __array_like): # its not a homogeneous numpy array, this can be slow
             result = AdaptingVectorQuantity()
             for subvalue in value:
                 result.append(as_vector_quantity(subvalue))
             return result
         else:
-            raise Exception("Cannot convert '{0!r}' to a vector quantity".format(value))
-    return value
+            if isNumber(value):
+                return new_quantity(value, none)
+            else:
+                raise Exception("Cannot convert '{0!r}' to a vector quantity".format(value))
 
 def to_quantity(input):
     if is_quantity(input):
@@ -1231,6 +1275,13 @@ def concatenate(quantities):
     concatenated = numpy.concatenate(numbers)
     return VectorQuantity(concatenated, unit)
 
+def column_stack( args ):
+    args_=[to_quantity(x) for x in args]
+    units=set([x.unit for x in args_])
+    if len(units)==1:
+      return new_quantity(numpy.column_stack([x.number for x in args_]),args_[0].unit)
+    else:
+      return numpy.column_stack(args)
 
 def arange(start, stop, step):
     if not is_quantity(start):

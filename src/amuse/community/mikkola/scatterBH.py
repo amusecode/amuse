@@ -78,7 +78,7 @@ def main(a=205, e=0.6, M=13., m=11., tend=10., dtdiag=1e99) :
     Porb = bs.OrbitalPeriod()
     bs.evolve(tend, dtdiag)
 #    print "Th binary Orbial Velocity: ", bs.OrbitalVelocity()
-    print "BINARY:", bs
+    print("BINARY:", bs)
     bs.terminate()
 
 if __name__ == "__main__":

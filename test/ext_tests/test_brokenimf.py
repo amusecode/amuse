@@ -10,7 +10,7 @@ default_options = dict(random=False)
 class TestMultiplePartIMF(amusetest.TestCase):
     
     def test1(self):
-        print "Test MultiplePartIMF with default mass_boundaries and alphas, i.e. Salpeter"
+        print("Test MultiplePartIMF with default mass_boundaries and alphas, i.e. Salpeter")
         instance = MultiplePartIMF(mass_max=100.0 | units.MSun)
         self.assertEqual(instance.mass_boundaries, [0.1, 100.0] | units.MSun)
         self.assertEqual(instance.alphas, [-2.35])
@@ -23,7 +23,7 @@ class TestMultiplePartIMF(amusetest.TestCase):
         self.assertAlmostEqual(instance.mass_mean(), 0.351 | units.MSun, 3)
     
     def test2(self):
-        print "Test MultiplePartIMF with mass_boundaries and alphas"
+        print("Test MultiplePartIMF with mass_boundaries and alphas")
         instance = MultiplePartIMF(mass_boundaries = [1.0, 10.0, 100.0] | units.MSun, 
             alphas = [1.3, -3.3], **default_options)
         self.assertEqual(instance.mass_boundaries, [1.0, 10.0, 100.0] | units.MSun)
@@ -40,7 +40,7 @@ class TestMultiplePartIMF(amusetest.TestCase):
         self.assertAlmostEqual(instance.mass_mean(), instance.next_mass(10000).mean(), 2)
     
     def test3(self):
-        print "Test new_broken_power_law_mass_distribution with default mass_boundaries and alphas, i.e. Salpeter"
+        print("Test new_broken_power_law_mass_distribution with default mass_boundaries and alphas, i.e. Salpeter")
         masses = new_broken_power_law_mass_distribution(10000, mass_max=100.0 | units.MSun, **default_options)
         self.assertTrue((masses >= 0.1 | units.MSun).all())
         self.assertTrue((masses <= 100.0 | units.MSun).all())
@@ -53,7 +53,7 @@ class TestMultiplePartIMF(amusetest.TestCase):
         self.assertAlmostRelativeEqual(masses.mean(), 0.351 | units.MSun, 1)
     
     def test4(self):
-        print "Test new_broken_power_law_mass_distribution with mass_boundaries and alphas"
+        print("Test new_broken_power_law_mass_distribution with mass_boundaries and alphas")
         masses = new_broken_power_law_mass_distribution(10000, 
             mass_boundaries = [1.0, 10.0, 100.0] | units.MSun, 
             alphas = [1.3, -3.3], **default_options)
@@ -68,7 +68,7 @@ class TestMultiplePartIMF(amusetest.TestCase):
         self.assertAlmostRelativeEqual(masses.mean(), 11.9457684987 | units.MSun, 1)
     
     def test5(self):
-        print "Test new_scalo_mass_distribution"
+        print("Test new_scalo_mass_distribution")
         masses = new_scalo_mass_distribution(10000, **default_options)
         self.assertTrue((masses >= 0.1 | units.MSun).all())
         self.assertTrue((masses <= 125.0 | units.MSun).all())
@@ -81,7 +81,7 @@ class TestMultiplePartIMF(amusetest.TestCase):
         self.assertAlmostRelativeEqual(masses.mean(), 0.487756751788 | units.MSun, 1)
     
     def test6(self):
-        print "Test new_miller_scalo_mass_distribution"
+        print("Test new_miller_scalo_mass_distribution")
         masses = new_miller_scalo_mass_distribution(10000, **default_options)
         self.assertTrue((masses >= 0.1 | units.MSun).all())
         self.assertTrue((masses <= 125.0 | units.MSun).all())
@@ -94,7 +94,7 @@ class TestMultiplePartIMF(amusetest.TestCase):
         self.assertAlmostRelativeEqual(masses.mean(), 0.885783055149 | units.MSun, 1)
     
     def test7(self):
-        print "Test new_kroupa_mass_distribution"
+        print("Test new_kroupa_mass_distribution")
         masses = new_kroupa_mass_distribution(10000, **default_options)
         self.assertTrue((masses >= 0.01 | units.MSun).all())
         roundoff = 1.0 + 1.0e-12
@@ -108,7 +108,7 @@ class TestMultiplePartIMF(amusetest.TestCase):
         self.assertAlmostRelativeEqual(masses.mean(), 0.376175542639 | units.MSun, 1)
     
     def test8(self):
-        print "Test with problematic alphas (new_salpeter_mass_distribution would give zero division errors)"
+        print("Test with problematic alphas (new_salpeter_mass_distribution would give zero division errors)")
         masses = new_broken_power_law_mass_distribution(10000, 
             mass_boundaries = [1.0, 10.0, 100.0] | units.MSun, 
             alphas = [-1, -2], **default_options)

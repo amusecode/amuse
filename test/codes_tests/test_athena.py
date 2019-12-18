@@ -24,7 +24,7 @@ class TestAthenaInterface(TestWithMPI):
         instance.par_seti("test", "testname", "%d", 10, "a test parameter")
         x = instance.par_geti("test", "testname")
         
-        self.assertEquals(x, 10)
+        self.assertEqual(x, 10)
         
         instance.stop()
         
@@ -34,7 +34,7 @@ class TestAthenaInterface(TestWithMPI):
         instance.par_setd("test", "test2", "%.15e", 1.123, "a test parameter")
         x = instance.par_getd("test", "test2")
         
-        self.assertEquals(x, 1.123)
+        self.assertEqual(x, 1.123)
         instance.stop()
         
         
@@ -47,37 +47,37 @@ class TestAthenaInterface(TestWithMPI):
         instance.set_boundary("periodic","periodic","periodic","periodic","periodic","periodic")
         
         x = instance.par_geti("domain1", "Nx1")
-        self.assertEquals(x, 5)
+        self.assertEqual(x, 5)
         
         error = instance.commit_parameters()
-        self.assertEquals(error, 0)
+        self.assertEqual(error, 0)
         
         number_of_grids, error = instance.get_number_of_grids()
-        self.assertEquals(error, 0)
-        self.assertEquals(number_of_grids, 1)
+        self.assertEqual(error, 0)
+        self.assertEqual(number_of_grids, 1)
 
         x,y,z,error = instance.get_position_of_index(0,0,0,1)
-        self.assertEquals(error, 0)
+        self.assertEqual(error, 0)
         self.assertAlmostRelativeEquals(x, 0.1)
         
         x,y,z,error = instance.get_position_of_index(1,0,0,1)
-        self.assertEquals(error, 0)
+        self.assertEqual(error, 0)
         self.assertAlmostRelativeEquals(x, 0.3)
         
         x,y,z,error = instance.get_position_of_index(2,0,0,1)
-        self.assertEquals(error, 0)
+        self.assertEqual(error, 0)
         self.assertAlmostRelativeEquals(x, 0.5)
         
         x,y,z,error = instance.get_position_of_index(3,0,0,1)
-        self.assertEquals(error, 0)
+        self.assertEqual(error, 0)
         self.assertAlmostRelativeEquals(x, 0.7)
         
         x,y,z,error = instance.get_position_of_index(4,0,0,1)
-        self.assertEquals(error, 0)
+        self.assertEqual(error, 0)
         self.assertAlmostRelativeEquals(x, 0.9)
         
         x,y,z,error = instance.get_position_of_index(5,0,0,1)
-        self.assertEquals(error, 0)
+        self.assertEqual(error, 0)
         self.assertAlmostRelativeEquals(x, 1.1)
         
         instance.stop()
@@ -94,21 +94,21 @@ class TestAthenaInterface(TestWithMPI):
         imin, imax, jmin, jmax, kmin, kmax = instance.get_index_range_inclusive()
         
         x,y,z, error= instance.get_position_of_index(2,2,2)
-        self.assertEquals(error, -1)
+        self.assertEqual(error, -1)
         
         result = instance.commit_parameters()
-        self.assertEquals(result, 0)
+        self.assertEqual(result, 0)
         
         x,y,z, error= instance.get_position_of_index(0,0,0)
-        self.assertEquals(error, 0)
-        print x,y,z
+        self.assertEqual(error, 0)
+        print(x,y,z)
         self.assertAlmostRelativeEquals(0.05, x)
         self.assertAlmostRelativeEquals(0.025, y)
         self.assertAlmostRelativeEquals(0.0125, z)
         
         x,y,z, error= instance.get_position_of_index(10,20,40)
-        self.assertEquals(error, 0)
-        print x,y,z
+        self.assertEqual(error, 0)
+        print(x,y,z)
         self.assertAlmostRelativeEquals(1.05, x)
         self.assertAlmostRelativeEquals(1.025, y)
         self.assertAlmostRelativeEquals(1.0125, z)
@@ -127,50 +127,50 @@ class TestAthenaInterface(TestWithMPI):
         instance.set_courant_friedrichs_lewy_number(0.4)
         instance.set_boundary("periodic","periodic","periodic","periodic","periodic","periodic")
         result = instance.commit_parameters()
-        self.assertEquals(result, 0)
+        self.assertEqual(result, 0)
         
         time, error = instance.get_time()
-        self.assertEquals(error,0)
-        self.assertEquals(time, 0.0)
+        self.assertEqual(error,0)
+        self.assertEqual(time, 0.0)
         
         error = instance.set_grid_state(1,1,1,0.1, 0.2, 0.3, 0.4, 0.5)
-        self.assertEquals(error, 0)
+        self.assertEqual(error, 0)
         
         rho, rhovx, rhovy, rhovz, energy, error = instance.get_grid_state(1,1,1)
         
-        self.assertEquals(error, 0)
-        self.assertEquals(rho, 0.1)
-        self.assertEquals(rhovx, 0.2)
-        self.assertEquals(rhovy, 0.3)
-        self.assertEquals(rhovz, 0.4)
-        self.assertEquals(energy, 0.5)
+        self.assertEqual(error, 0)
+        self.assertEqual(rho, 0.1)
+        self.assertEqual(rhovx, 0.2)
+        self.assertEqual(rhovy, 0.3)
+        self.assertEqual(rhovz, 0.4)
+        self.assertEqual(energy, 0.5)
         
         rhovx, rhovy, rhovz, error = instance.get_grid_momentum_density(1,1,1)
         
-        self.assertEquals(error, 0)
-        self.assertEquals(rhovx, 0.2)
-        self.assertEquals(rhovy, 0.3)
-        self.assertEquals(rhovz, 0.4)
+        self.assertEqual(error, 0)
+        self.assertEqual(rhovx, 0.2)
+        self.assertEqual(rhovy, 0.3)
+        self.assertEqual(rhovz, 0.4)
         
         rho, error = instance.get_grid_density(1,1,1)
         
-        self.assertEquals(error, 0)
-        self.assertEquals(rho, 0.1)
+        self.assertEqual(error, 0)
+        self.assertEqual(rho, 0.1)
         
         energy, error = instance.get_grid_energy_density(1,1,1)
         
-        self.assertEquals(error, 0)
-        self.assertEquals(energy, 0.5)
+        self.assertEqual(error, 0)
+        self.assertEqual(energy, 0.5)
         
         
         rho, rhovx, rhovy, rhovz, energy, error = instance.get_grid_state([1],[1],[1])
-        self.assertEquals(error[0], 0)
-        self.assertEquals(rho[0], 0.1)
+        self.assertEqual(error[0], 0)
+        self.assertEqual(rho[0], 0.1)
         error = instance.initialize_grid()
-        self.assertEquals(error, 0)
+        self.assertEqual(error, 0)
         
         timestep, error =  instance.get_timestep()
-        self.assertEquals(error, 0)
+        self.assertEqual(error, 0)
         
         
         instance.stop()
@@ -183,21 +183,21 @@ class TestAthenaInterface(TestWithMPI):
         instance.set_courant_friedrichs_lewy_number(0.4)
         instance.set_boundary("periodic","periodic","periodic","periodic","periodic","periodic")
         result = instance.commit_parameters()
-        self.assertEquals(result, 0)
+        self.assertEqual(result, 0)
         
         time, error = instance.get_time()
-        self.assertEquals(error,0)
-        self.assertEquals(time, 0.0)
+        self.assertEqual(error,0)
+        self.assertEqual(time, 0.0)
         
         error = instance.set_grid_magnetic_field(1,1,1,0.1, 0.2, 0.3)
-        self.assertEquals(error, 0)
+        self.assertEqual(error, 0)
         
         B1i, B2i, B3i, error = instance.get_grid_magnetic_field(1,1,1)
         
-        self.assertEquals(error, 0)
-        self.assertEquals(B1i, 0.1)
-        self.assertEquals(B2i, 0.2)
-        self.assertEquals(B3i, 0.3)
+        self.assertEqual(error, 0)
+        self.assertEqual(B1i, 0.1)
+        self.assertEqual(B2i, 0.2)
+        self.assertEqual(B3i, 0.3)
         
         instance.stop()
     
@@ -213,13 +213,13 @@ class TestAthenaInterface(TestWithMPI):
             instance.set_courant_friedrichs_lewy_number(0.8)
             instance.set_boundary("periodic","periodic","periodic","periodic","periodic","periodic")
             result = instance.commit_parameters()
-            self.assertEquals(result, 0)
+            self.assertEqual(result, 0)
             
             nghost, error = instance.get_nghost()
-            self.assertEquals(4, nghost)
+            self.assertEqual(4, nghost)
             instance.set_grid_state(numpy.arange(0,128), numpy.zeros(128), numpy.zeros(128),0.1, 0.2, 0.3, 0.4, 0.5)
             error = instance.initialize_grid()
-            self.assertEquals(error, 0)
+            self.assertEqual(error, 0)
             
             result = instance.get_grid_state(numpy.arange(0,128), numpy.zeros(128), numpy.zeros(128))
             results.append(list(result))
@@ -229,9 +229,9 @@ class TestAthenaInterface(TestWithMPI):
         
         for x in range(128):
             for y in range(6):
-                self.assertEquals(results[1][y][x], results[0][y][x])
-                self.assertEquals(results[2][y][x], results[0][y][x])
-                self.assertEquals(results[3][y][x], results[0][y][x])
+                self.assertEqual(results[1][y][x], results[0][y][x])
+                self.assertEqual(results[2][y][x], results[0][y][x])
+                self.assertEqual(results[3][y][x], results[0][y][x])
     
     
 
@@ -243,16 +243,16 @@ class TestAthenaInterface(TestWithMPI):
         instance.set_courant_friedrichs_lewy_number(0.8)
         instance.set_boundary("periodic","periodic","periodic","periodic","periodic","periodic")
         result = instance.commit_parameters()
-        self.assertEquals(result, 0)
+        self.assertEqual(result, 0)
         
         instance.fill_grid_linearwave_1d(0, 1e-06, 0.0, 1)
         error = instance.initialize_grid()
-        self.assertEquals(error, 0)
+        self.assertEqual(error, 0)
         
-        print instance.get_grid_state(numpy.arange(0,128), numpy.zeros(128), numpy.zeros(128))
+        print(instance.get_grid_state(numpy.arange(0,128), numpy.zeros(128), numpy.zeros(128)))
         
         timestep, error =  instance.get_timestep()
-        self.assertEquals(error, 0)
+        self.assertEqual(error, 0)
         self.assertAlmostRelativeEqual(timestep,  0.006249991, 5)
         
         rho0, rhovx0, rhovy0, rhovz0, energy0, error0  = instance.get_grid_state(numpy.arange(0,128), numpy.zeros(128), numpy.zeros(128))
@@ -282,13 +282,13 @@ class TestAthenaInterface(TestWithMPI):
             instance.set_courant_friedrichs_lewy_number(0.8)
             instance.set_boundary("periodic","periodic","periodic","periodic","periodic","periodic")
             result = instance.commit_parameters()
-            self.assertEquals(result, 0)
+            self.assertEqual(result, 0)
             
             nghost, error = instance.get_nghost()
-            self.assertEquals(4, nghost)
+            self.assertEqual(4, nghost)
             instance.fill_grid_linearwave_1d(0, 1e-06, 0.0, 1)
             error = instance.initialize_grid()
-            self.assertEquals(error, 0)
+            self.assertEqual(error, 0)
             instance.evolve_model(5.0)
         
             result = instance.get_grid_state(numpy.arange(0,128), numpy.zeros(128), numpy.zeros(128))
@@ -299,9 +299,9 @@ class TestAthenaInterface(TestWithMPI):
         
         for x in range(128):
             for y in range(6):
-                self.assertEquals(results[1][y][x], results[0][y][x])
-                self.assertEquals(results[2][y][x], results[0][y][x])
-                self.assertEquals(results[3][y][x], results[0][y][x])
+                self.assertEqual(results[1][y][x], results[0][y][x])
+                self.assertEqual(results[2][y][x], results[0][y][x])
+                self.assertEqual(results[3][y][x], results[0][y][x])
     
     
 
@@ -324,7 +324,7 @@ class TestAthenaInterface(TestWithMPI):
         
         i,j,k,error = instance.get_index_of_position(0.3, 0.1, 0.1)
         
-        print i,j,k
+        print(i,j,k)
         
         self.assertAlmostRelativeEqual(i, 1)
         self.assertAlmostRelativeEqual(j, 0)
@@ -342,10 +342,10 @@ class TestAthenaInterface(TestWithMPI):
         self.assertAlmostRelativeEqual(k, 0)
         
         x,y,z,error = instance.get_position_of_index(-1,0,0)
-        self.assertEquals(error, 0)
+        self.assertEqual(error, 0)
         self.assertAlmostRelativeEqual(x, -0.1)
         x,y,z,error = instance.get_position_of_index(5,0,0)
-        self.assertEquals(error, 0)
+        self.assertEqual(error, 0)
         self.assertAlmostRelativeEqual(x, 1.1)
         instance.stop()
     
@@ -362,14 +362,14 @@ class TestAthenaInterface(TestWithMPI):
         imin, imax, jmin, jmax, kmin, kmax = instance.get_index_range_inclusive()
         
         x,y,z, error= instance.get_position_of_index(2,2,2)
-        self.assertEquals(error, -1)
+        self.assertEqual(error, -1)
         
         result = instance.commit_parameters()
-        self.assertEquals(result, 0)
+        self.assertEqual(result, 0)
         
         x,y,z, error= instance.get_position_of_index(0,0,0)
-        self.assertEquals(error, 0)
-        print x,y,z
+        self.assertEqual(error, 0)
+        print(x,y,z)
         self.assertAlmostRelativeEquals(0.05, x)
         self.assertAlmostRelativeEquals(0.025, y)
         self.assertAlmostRelativeEquals(0.0125, z)
@@ -377,8 +377,8 @@ class TestAthenaInterface(TestWithMPI):
         
         
         x,y,z, error= instance.get_position_of_index(100,200,400)
-        self.assertEquals(error, 0)
-        print x,y,z
+        self.assertEqual(error, 0)
+        print(x,y,z)
         self.assertAlmostRelativeEquals(10.05, x)
         self.assertAlmostRelativeEquals(10.025, y)
         self.assertAlmostRelativeEquals(10.0125, z)
@@ -398,21 +398,21 @@ class TestAthenaInterface(TestWithMPI):
         
         imin, imax, jmin, jmax, kmin, kmax = instance.get_index_range_inclusive()
         
-        self.assertEquals(imin, 0)
-        self.assertEquals(jmin, 0)
-        self.assertEquals(kmin, 0)
-        self.assertEquals(imax, 9)
-        self.assertEquals(jmax, 19)
-        self.assertEquals(kmax, 39)
+        self.assertEqual(imin, 0)
+        self.assertEqual(jmin, 0)
+        self.assertEqual(kmin, 0)
+        self.assertEqual(imax, 9)
+        self.assertEqual(jmax, 19)
+        self.assertEqual(kmax, 39)
         
         imin, imax, jmin, jmax, kmin, kmax = instance.get_index_range_for_potential()
         
-        self.assertEquals(imin, -1)
-        self.assertEquals(jmin, -1)
-        self.assertEquals(kmin, -1)
-        self.assertEquals(imax, 10)
-        self.assertEquals(jmax, 20)
-        self.assertEquals(kmax, 40)
+        self.assertEqual(imin, -1)
+        self.assertEqual(jmin, -1)
+        self.assertEqual(kmin, -1)
+        self.assertEqual(imax, 10)
+        self.assertEqual(jmax, 20)
+        self.assertEqual(kmax, 40)
         instance.stop()
     
     
@@ -428,8 +428,8 @@ class TestAthenaInterface(TestWithMPI):
         instance.commit_parameters()
         instance.initialize_grid()
         x,y,z, error= instance.get_position_of_index(-1,-1,-1)
-        self.assertEquals(error, 0)
-        print x,y,z
+        self.assertEqual(error, 0)
+        print(x,y,z)
         self.assertAlmostRelativeEquals(-0.05, x)
         self.assertAlmostRelativeEquals(-0.025, y)
         self.assertAlmostRelativeEquals(-0.0125, z)
@@ -461,38 +461,38 @@ class TestAthenaInterface(TestWithMPI):
             [0,0,0,0],
             [0,0,0,0])
             
-        print got_potential, error
+        print(got_potential, error)
         for expected, actual in zip(potential_along_one_axis, got_potential):
-            self.assertEquals(expected, actual)
+            self.assertEqual(expected, actual)
         
         x,y,z,error = instance.get_position_of_index(
             [-1,0,1,2],
             [0,0,0,0],
             [0,0,0,0])
-        print x,y,z, error
+        print(x,y,z, error)
         for expected, actual in zip([-0.25,0.25,0.75,1.25], x):
-            self.assertEquals(expected, actual)
+            self.assertEqual(expected, actual)
         for expected, actual in zip([0.25,0.25,0.25,0.25], y):
-            self.assertEquals(expected, actual)
+            self.assertEqual(expected, actual)
         for expected, actual in zip([0.25,0.25,0.25,0.25], z):
-            self.assertEquals(expected, actual)
+            self.assertEqual(expected, actual)
             
         potential, error = instance.get_interpolated_gravitational_potential(0, 0.25, 0.25)
-        print potential, error
-        self.assertEquals(error, 0)
-        self.assertEquals(potential, -0.5)
+        print(potential, error)
+        self.assertEqual(error, 0)
+        self.assertEqual(potential, -0.5)
         potential, error = instance.get_interpolated_gravitational_potential(0.75, 0.5, 0.25)
-        print potential, error
-        self.assertEquals(error, 0)
-        self.assertEquals(potential, 0.5)
+        print(potential, error)
+        self.assertEqual(error, 0)
+        self.assertEqual(potential, 0.5)
         potential, error = instance.get_interpolated_gravitational_potential(0.75, 0.25, 0.5)
-        print potential, error
-        self.assertEquals(error, 0)
-        self.assertEquals(potential, 0.5)
+        print(potential, error)
+        self.assertEqual(error, 0)
+        self.assertEqual(potential, 0.5)
         potential, error = instance.get_interpolated_gravitational_potential(0.75, 0.25, 0.0)
-        print potential, error
-        self.assertEquals(error, 0)
-        self.assertEquals(potential, 0.5)
+        print(potential, error)
+        self.assertEqual(error, 0)
+        self.assertEqual(potential, 0.5)
         instance.stop()
         
     def test14(self):
@@ -503,20 +503,20 @@ class TestAthenaInterface(TestWithMPI):
         instance.set_courant_friedrichs_lewy_number(0.4)
         instance.set_boundary("periodic","periodic","periodic","periodic","periodic","periodic")
         result = instance.commit_parameters()
-        self.assertEquals(result, 0)
+        self.assertEqual(result, 0)
         
         error = instance.set_grid_scalar(1,1,1,0.45)
-        self.assertEquals(error, 0)
+        self.assertEqual(error, 0)
         
         scalar, error = instance.get_grid_scalar(1,1,1)
         
-        self.assertEquals(error, 0)
-        self.assertEquals(scalar, 0.45)
+        self.assertEqual(error, 0)
+        self.assertEqual(scalar, 0.45)
         
         scalar, error = instance.get_grid_scalar(1,1,2)
         
-        self.assertEquals(error, 0)
-        self.assertEquals(scalar, 0)
+        self.assertEqual(error, 0)
+        self.assertEqual(scalar, 0)
         
         instance.stop()
         
@@ -533,11 +533,11 @@ class TestAthenaInterface(TestWithMPI):
             
             for index in range(100):
                 x,y,z,error = instance.get_position_of_index(index,0,0)
-                self.assertEquals(error, 0)
+                self.assertEqual(error, 0)
                 self.assertAlmostRelativeEquals(x, index + 0.5)
                 
                 i,j,k,error = instance.get_index_of_position(x,y,z)
-                self.assertEquals(error, 0)
+                self.assertEqual(error, 0)
                 self.assertAlmostRelativeEquals(i, index)
                 
             
@@ -555,11 +555,11 @@ class TestAthenaInterface(TestWithMPI):
             
             for index in range(100):
                 x,y,z,error = instance.get_position_of_index(0,index,0)
-                self.assertEquals(error, 0)
+                self.assertEqual(error, 0)
                 self.assertAlmostRelativeEquals(y, index + 0.5)
                 
                 i,j,k,error = instance.get_index_of_position(x,y,z)
-                self.assertEquals(error, 0)
+                self.assertEqual(error, 0)
                 self.assertAlmostRelativeEquals(j, index)
                 
             
@@ -576,23 +576,23 @@ class TestAthenaInterface(TestWithMPI):
         instance.commit_parameters()
         
         minx, maxx, miny, maxy, minz, maxz, error = instance.get_boundary_index_range_inclusive(1,1)
-        self.assertEquals(error, 0)
-        self.assertEquals(minx, 0)
-        self.assertEquals(maxx, 3)
-        self.assertEquals(miny, 0)
-        self.assertEquals(maxy, 0)
-        self.assertEquals(minz, 0)
-        self.assertEquals(maxz, 0)
+        self.assertEqual(error, 0)
+        self.assertEqual(minx, 0)
+        self.assertEqual(maxx, 3)
+        self.assertEqual(miny, 0)
+        self.assertEqual(maxy, 0)
+        self.assertEqual(minz, 0)
+        self.assertEqual(maxz, 0)
         
         for i in range(2,7):
             minx, maxx, miny, maxy, minz, maxz, error = instance.get_boundary_index_range_inclusive(i,1)
-            self.assertEquals(error, 0)
-            self.assertEquals(minx, 0)
-            self.assertEquals(maxx, 0)
-            self.assertEquals(miny, 0)
-            self.assertEquals(maxy, 0)
-            self.assertEquals(minz, 0)
-            self.assertEquals(maxz, 0)
+            self.assertEqual(error, 0)
+            self.assertEqual(minx, 0)
+            self.assertEqual(maxx, 0)
+            self.assertEqual(miny, 0)
+            self.assertEqual(maxy, 0)
+            self.assertEqual(minz, 0)
+            self.assertEqual(maxz, 0)
     
     def test18(self):
         results = []
@@ -605,23 +605,23 @@ class TestAthenaInterface(TestWithMPI):
         instance.commit_parameters()
         
         minx, maxx, miny, maxy, minz, maxz, error = instance.get_boundary_index_range_inclusive(1,1)
-        self.assertEquals(error, 0)
-        self.assertEquals(minx, 0)
-        self.assertEquals(maxx, 3)
-        self.assertEquals(miny, 0)
-        self.assertEquals(maxy, 4)
-        self.assertEquals(minz, 0)
-        self.assertEquals(maxz, 5)
+        self.assertEqual(error, 0)
+        self.assertEqual(minx, 0)
+        self.assertEqual(maxx, 3)
+        self.assertEqual(miny, 0)
+        self.assertEqual(maxy, 4)
+        self.assertEqual(minz, 0)
+        self.assertEqual(maxz, 5)
         
         for i in range(2,7):
             minx, maxx, miny, maxy, minz, maxz, error = instance.get_boundary_index_range_inclusive(i,1)
-            self.assertEquals(error, 0)
-            self.assertEquals(minx, 0)
-            self.assertEquals(maxx, 0)
-            self.assertEquals(miny, 0)
-            self.assertEquals(maxy, 0)
-            self.assertEquals(minz, 0)
-            self.assertEquals(maxz, 0)
+            self.assertEqual(error, 0)
+            self.assertEqual(minx, 0)
+            self.assertEqual(maxx, 0)
+            self.assertEqual(miny, 0)
+            self.assertEqual(maxy, 0)
+            self.assertEqual(minz, 0)
+            self.assertEqual(maxz, 0)
     
     def test19(self):
         results = []
@@ -636,22 +636,22 @@ class TestAthenaInterface(TestWithMPI):
         
         for i in range(1,7):
             minx, maxx, miny, maxy, minz, maxz, error = instance.get_boundary_index_range_inclusive(i,1)
-            self.assertEquals(error, 0)
-            self.assertEquals(minx, 0)
-            self.assertEquals(miny, 0)
-            self.assertEquals(minz, 0)
+            self.assertEqual(error, 0)
+            self.assertEqual(minx, 0)
+            self.assertEqual(miny, 0)
+            self.assertEqual(minz, 0)
             if i == 1 or i == 2:
-                self.assertEquals(maxx, 3)
-                self.assertEquals(maxy, 4)
-                self.assertEquals(maxz, 5)
+                self.assertEqual(maxx, 3)
+                self.assertEqual(maxy, 4)
+                self.assertEqual(maxz, 5)
             elif i == 3 or i == 4:
-                self.assertEquals(maxx, 99+8)
-                self.assertEquals(maxy, 3)
-                self.assertEquals(maxz, 5)
+                self.assertEqual(maxx, 99+8)
+                self.assertEqual(maxy, 3)
+                self.assertEqual(maxz, 5)
             elif i == 5 or i == 6:
-                self.assertEquals(maxx, 99+8)
-                self.assertEquals(maxy, 4+8)
-                self.assertEquals(maxz, 3)
+                self.assertEqual(maxx, 99+8)
+                self.assertEqual(maxy, 4+8)
+                self.assertEqual(maxz, 3)
     
     def test20(self):
         results = []
@@ -671,13 +671,13 @@ class TestAthenaInterface(TestWithMPI):
                 5.0 * (i+1),         #  energy
                 1.0, 1.0     #  boundary + grid
             )
-            self.assertEquals(error, 0)
+            self.assertEqual(error, 0)
             rho, rhovx, rhovy, rhovz, rhoen, error = instance.get_boundary_state(
                 i, 0, 0,
                 1.0, 1.0
             )
-            print rho, rhovx, rhovy, rhovz, rhoen, error 
-            self.assertEquals(error, 0)
+            print(rho, rhovx, rhovy, rhovz, rhoen, error) 
+            self.assertEqual(error, 0)
             self.assertAlmostRelativeEquals(rho, 1.0 * (i+1))
             self.assertAlmostRelativeEquals(rhovx, 2.0 * (i+1))
             self.assertAlmostRelativeEquals(rhovy, 3.0 * (i+1))
@@ -703,13 +703,13 @@ class TestAthenaInterface(TestWithMPI):
                     5.0 * (i+1),         #  energy
                     j, 1.0     #  boundary + grid
                 )
-                self.assertEquals(error, 0)
+                self.assertEqual(error, 0)
                 rho, rhovx, rhovy, rhovz, rhoen, error = instance.get_boundary_state(
                     i, 0, 0,
                     j, 1.0
                 )
-                print j
-                self.assertEquals(error, 0)
+                print(j)
+                self.assertEqual(error, 0)
                 
                 self.assertAlmostRelativeEquals(rho, 1.0 * (i+1))
                 self.assertAlmostRelativeEquals(rhovx, 2.0 * (i+1))
@@ -746,12 +746,12 @@ class TestAthenaInterface(TestWithMPI):
                             5.0 * (i+1),         #  energy
                             j, 1.0     #  boundary + grid
                         )
-                        self.assertEquals(error, 0)
+                        self.assertEqual(error, 0)
                         rho, rhovx, rhovy, rhovz, rhoen, error = instance.get_boundary_state(
                             i0, j0, k0,       #  index
                             j, 1.0
                         )
-                        self.assertEquals(error, 0)
+                        self.assertEqual(error, 0)
                         
                         self.assertAlmostRelativeEquals(rho, 1.0 * (i+1))
                         self.assertAlmostRelativeEquals(rhovx, 2.0 * (i+1))
@@ -772,22 +772,22 @@ class TestAthenaInterface(TestWithMPI):
         
         for i in range(1,7):
             minx, maxx, miny, maxy, minz, maxz, error = instance.get_boundary_index_range_inclusive(i,1)
-            self.assertEquals(error, 0)
-            self.assertEquals(minx, 0)
-            self.assertEquals(miny, 0)
-            self.assertEquals(minz, 0)
+            self.assertEqual(error, 0)
+            self.assertEqual(minx, 0)
+            self.assertEqual(miny, 0)
+            self.assertEqual(minz, 0)
             if i == 1 or i == 2:
-                self.assertEquals(maxx, 3)
-                self.assertEquals(maxy, 4)
-                self.assertEquals(maxz, 0)
+                self.assertEqual(maxx, 3)
+                self.assertEqual(maxy, 4)
+                self.assertEqual(maxz, 0)
             elif i == 3 or i == 4:
-                self.assertEquals(maxx, 99+8)
-                self.assertEquals(maxy, 3)
-                self.assertEquals(maxz, 0)
+                self.assertEqual(maxx, 99+8)
+                self.assertEqual(maxy, 3)
+                self.assertEqual(maxz, 0)
             elif i == 5 or i == 6:
-                self.assertEquals(maxx, 99+8)
-                self.assertEquals(maxy, 4 +8)
-                self.assertEquals(maxz, 3)
+                self.assertEqual(maxx, 99+8)
+                self.assertEqual(maxy, 4 +8)
+                self.assertEqual(maxz, 3)
         
     def test25(self):
         results = []
@@ -805,7 +805,7 @@ class TestAthenaInterface(TestWithMPI):
                 i,0,0, 
                 1, 1 
             )
-            self.assertEquals(error, 0)
+            self.assertEqual(error, 0)
             self.assertAlmostRelativeEquals(x, (0.5 * dx) - ((4 -i)*dx))
             self.assertAlmostRelativeEquals(y, 0.0)
             self.assertAlmostRelativeEquals(z, 0.0)
@@ -827,7 +827,7 @@ class TestAthenaInterface(TestWithMPI):
                 i,0,0, 
                 2, 1 
             )
-            self.assertEquals(error, 0)
+            self.assertEqual(error, 0)
             self.assertAlmostRelativeEquals(x, 100.0 + (0.5 * dx) + (i * dx))
             self.assertAlmostRelativeEquals(y, 0.0)
             self.assertAlmostRelativeEquals(z, 0.0)
@@ -850,8 +850,8 @@ class TestAthenaInterface(TestWithMPI):
                     i, j, 1, 
                     2, 1 
                 )
-                print y, j, (0.5 * dy) - ((4 - j) * dy)
-                self.assertEquals(error, 0)
+                print(y, j, (0.5 * dy) - ((4 - j) * dy))
+                self.assertEqual(error, 0)
                 self.assertAlmostRelativeEquals(x, 100.0 + (0.5 * dx) + (i * dx))
                 self.assertAlmostRelativeEquals(y, (0.5 * dy) + (j * dy))
                 self.assertAlmostRelativeEquals(z, 0.0)
@@ -862,7 +862,7 @@ class TestAthenaInterface(TestWithMPI):
                     i, j, 1, 
                     3, 1 
                 )
-                self.assertEquals(error, 0)
+                self.assertEqual(error, 0)
                 self.assertAlmostRelativeEquals(x, (0.5 * dx) + ((i-4) * dx))
                 self.assertAlmostRelativeEquals(y, ((0.5 * dy) - ((4-j) * dy)))
                 self.assertAlmostRelativeEquals(z, 0.0)
@@ -872,7 +872,7 @@ class TestAthenaInterface(TestWithMPI):
                     i, j, 1, 
                     4, 1 
                 )
-                self.assertEquals(error, 0)
+                self.assertEqual(error, 0)
                 self.assertAlmostRelativeEquals(x, (0.5 * dx) + ((i-4) * dx))
                 self.assertAlmostRelativeEquals(y, 100.0 + (0.5 * dy) + (j * dy))
                 self.assertAlmostRelativeEquals(z, 0.0)
@@ -898,7 +898,7 @@ class TestAthenaInterface(TestWithMPI):
                         i, j, k, 
                         2, 1 
                     )
-                    self.assertEquals(error, 0)
+                    self.assertEqual(error, 0)
                     self.assertAlmostRelativeEquals(x, 6.0 + (0.5 * dx) + (i * dx))
                     self.assertAlmostRelativeEquals(y, (0.5 * dy) + (j * dy))
                     self.assertAlmostRelativeEquals(z, (0.5 * dz) + (k * dz))
@@ -910,7 +910,7 @@ class TestAthenaInterface(TestWithMPI):
                         i, j, k, 
                         3, 1 
                     )
-                    self.assertEquals(error, 0)
+                    self.assertEqual(error, 0)
                     self.assertAlmostRelativeEquals(x, (0.5 * dx) + ((i-4) * dx))
                     self.assertAlmostRelativeEquals(y, ((0.5 * dy) - ((4-j) * dy)))
                     self.assertAlmostRelativeEquals(z, (0.5 * dz) + (k * dz))
@@ -920,7 +920,7 @@ class TestAthenaInterface(TestWithMPI):
                         i, j, k, 
                         4, 1 
                     )
-                    self.assertEquals(error, 0)
+                    self.assertEqual(error, 0)
                     self.assertAlmostRelativeEquals(x, (0.5 * dx) + ((i-4) * dx))
                     self.assertAlmostRelativeEquals(y, 12.0 + (0.5 * dy) + (j * dy))
                     self.assertAlmostRelativeEquals(z, (0.5 * dz) + (k * dz))
@@ -932,7 +932,7 @@ class TestAthenaInterface(TestWithMPI):
                         i, j, k, 
                         5, 1 
                     )
-                    self.assertEquals(error, 0)
+                    self.assertEqual(error, 0)
                     self.assertAlmostRelativeEquals(x, (0.5 * dx) + ((i-4) * dx))
                     self.assertAlmostRelativeEquals(y, (0.5 * dy) + ((j-4) * dy))
                     self.assertAlmostRelativeEquals(z, ((0.5 * dz) - ((4-k) * dz)))
@@ -942,7 +942,7 @@ class TestAthenaInterface(TestWithMPI):
                         i, j, k, 
                         6, 1 
                     )
-                    self.assertEquals(error, 0)
+                    self.assertEqual(error, 0)
                     self.assertAlmostRelativeEquals(x, (0.5 * dx) + ((i-4) * dx))
                     self.assertAlmostRelativeEquals(y, (0.5 * dy) + ((j-4) * dy))
                     self.assertAlmostRelativeEquals(z, 18.0 + (0.5 * dz) + (k * dz))
@@ -959,7 +959,7 @@ class TestAthenaInterface(TestWithMPI):
         
            
         for j in [1,2]:
-            print j
+            print(j)
             for i in range(4):
                 error = instance.set_boundary_state(
                     i,0,0,       #  index
@@ -968,12 +968,12 @@ class TestAthenaInterface(TestWithMPI):
                     5.0 * (i+1),         #  energy
                     j, 1.0     #  boundary + grid
                 )
-                self.assertEquals(error, 0)
+                self.assertEqual(error, 0)
                 rho, rhovx, rhovy, rhovz, rhoen, error = instance.get_boundary_state(
                     i, 0, 0,
                     j, 1.0
                 )
-                self.assertEquals(error, 0)
+                self.assertEqual(error, 0)
                 
                 self.assertAlmostRelativeEquals(rho, 1.0 * (i+1))
                 self.assertAlmostRelativeEquals(rhovx, 2.0 * (i+1))
@@ -1003,12 +1003,12 @@ class TestAthenaInterface(TestWithMPI):
                         5.0 * (i+1),         #  energy
                         boundaryindex, 1     #  boundary + grid
                     )
-                    self.assertEquals(error, 0)
+                    self.assertEqual(error, 0)
                     rho, rhovx, rhovy, rhovz, rhoen, error = instance.get_boundary_state(
                         i0, j0, 0,
                         boundaryindex, 1.0
                     )
-                    self.assertEquals(error, 0)
+                    self.assertEqual(error, 0)
                     
                     self.assertAlmostRelativeEquals(rho, 1.0 * (i+1))
                     self.assertAlmostRelativeEquals(rhovx, 2.0 * (i+1))
@@ -1040,12 +1040,12 @@ class TestAthenaInterface(TestWithMPI):
                         5.0 * (i+1),         #  energy
                         boundaryindex, 1     #  boundary + grid
                     )
-                    self.assertEquals(error, 0)
+                    self.assertEqual(error, 0)
                     rho, rhovx, rhovy, rhovz, rhoen, error = instance.get_boundary_state(
                         i0, j0, 0,
                         boundaryindex, 1.0
                     )
-                    self.assertEquals(error, 0)
+                    self.assertEqual(error, 0)
                     
                     self.assertAlmostRelativeEquals(rho, 1.0 * (i+1))
                     self.assertAlmostRelativeEquals(rhovx, 2.0 * (i+1))
@@ -1078,12 +1078,12 @@ class TestAthenaInterface(TestWithMPI):
                         5.0 * (i+1),         #  energy
                         boundaryindex, 1     #  boundary + grid
                     )
-                    self.assertEquals(error, 0)
+                    self.assertEqual(error, 0)
                     rho, rhovx, rhovy, rhovz, rhoen, error = instance.get_boundary_state(
                         i0, j0, 0,
                         boundaryindex, 1.0
                     )
-                    self.assertEquals(error, 0)
+                    self.assertEqual(error, 0)
                     
                     self.assertAlmostRelativeEquals(rho, 1.0 * (i+1))
                     self.assertAlmostRelativeEquals(rhovx, 2.0 * (i+1))
@@ -1101,12 +1101,12 @@ class TestAthenaInterface(TestWithMPI):
                         5.0 * (i+1),         #  energy
                         boundaryindex, 1     #  boundary + grid
                     )
-                    self.assertEquals(error, 0)
+                    self.assertEqual(error, 0)
                     rho, rhovx, rhovy, rhovz, rhoen, error = instance.get_boundary_state(
                         i0, j0, 0,
                         boundaryindex, 1.0
                     )
-                    self.assertEquals(error, 0)
+                    self.assertEqual(error, 0)
                     
                     self.assertAlmostRelativeEquals(rho, 1.0 * (i+1))
                     self.assertAlmostRelativeEquals(rhovx, 2.0 * (i+1))
@@ -1139,12 +1139,12 @@ class TestAthenaInterface(TestWithMPI):
                             5.0 * (i+1),         #  energy
                             boundaryindex, 1     #  boundary + grid
                         )
-                        self.assertEquals(error, 0)
+                        self.assertEqual(error, 0)
                         rho, rhovx, rhovy, rhovz, rhoen, error = instance.get_boundary_state(
                             i0, j0, z0,
                             boundaryindex, 1.0
                         )
-                        self.assertEquals(error, 0)
+                        self.assertEqual(error, 0)
                         
                         self.assertAlmostRelativeEquals(rho, 1.0 * (i+1))
                         self.assertAlmostRelativeEquals(rhovx, 2.0 * (i+1))
@@ -1178,12 +1178,12 @@ class TestAthenaInterface(TestWithMPI):
                             5.0 * (i+1),         #  energy
                             boundaryindex, 1     #  boundary + grid
                         )
-                        self.assertEquals(error, 0)
+                        self.assertEqual(error, 0)
                         rho, rhovx, rhovy, rhovz, rhoen, error = instance.get_boundary_state(
                             i0, j0, z0,
                             boundaryindex, 1.0
                         )
-                        self.assertEquals(error, 0)
+                        self.assertEqual(error, 0)
                         
                         self.assertAlmostRelativeEquals(rho, 1.0 * (i+1))
                         self.assertAlmostRelativeEquals(rhovx, 2.0 * (i+1))
@@ -1231,12 +1231,12 @@ class TestAthenaInterface(TestWithMPI):
             5.0 * (all_i+1),         #  energy
             boundary_indices, 1     #  boundary + grid
         )
-        self.assertEquals(error, 0)
+        self.assertEqual(error, 0)
         rho, rhovx, rhovy, rhovz, rhoen, error = instance.get_boundary_state(
             all_i0, all_j0, all_z0,
             boundaryindex, 1.0
         )
-        self.assertEquals(error, 0)
+        self.assertEqual(error, 0)
         
         self.assertAlmostRelativeEquals(rho, 1.0 * (all_i+1))
         self.assertAlmostRelativeEquals(rhovx, 2.0 * (all_i+1))
@@ -1274,7 +1274,7 @@ class TestAthenaInterface(TestWithMPI):
             [0,1,0,1],
             [1,1,1,1]
         )
-        self.assertEquals(error, 0)
+        self.assertEqual(error, 0)
         self.assertAlmostRelativeEquals(ax_in, ax_out)
         self.assertAlmostRelativeEquals(ay_in, ay_out)
         self.assertAlmostRelativeEquals(az_in, az_out)
@@ -1290,70 +1290,70 @@ class TestAthenaInterface(TestWithMPI):
         instance.set_courant_friedrichs_lewy_number(0.4)
         instance.set_boundary("periodic","periodic","periodic","periodic","periodic","periodic")
         result = instance.commit_parameters()
-        self.assertEquals(result, 0)
+        self.assertEqual(result, 0)
         
         time, error = instance.get_time()
-        self.assertEquals(error,0)
-        self.assertEquals(time, 0.0)
+        self.assertEqual(error,0)
+        self.assertEqual(time, 0.0)
         
         for i in range(4):
             error = instance.set_grid_state(i,0,0,0.1 * (i+1), 0.2 * (i+1), 0.3 * (i+1), 0.4 * (i+1), 0.5 * (i+1))
-            self.assertEquals(error, 0)
+            self.assertEqual(error, 0)
         
         rho, rhovx, rhovy, rhovz, energy, error = instance.get_grid_state(0,0,0)
-        self.assertEquals(error, 0)
-        self.assertEquals(rho, 0.1)
+        self.assertEqual(error, 0)
+        self.assertEqual(rho, 0.1)
         
         rho, rhovx, rhovy, rhovz, energy, error = instance.get_grid_state(-1,0,0)
-        self.assertEquals(error, 0)
-        self.assertEquals(rho, 0.0)
-        self.assertEquals(rhovx, 0.0)
-        self.assertEquals(rhovy, 0.0)
-        self.assertEquals(rhovz, 0.0)
-        self.assertEquals(energy, 0.0)
+        self.assertEqual(error, 0)
+        self.assertEqual(rho, 0.0)
+        self.assertEqual(rhovx, 0.0)
+        self.assertEqual(rhovy, 0.0)
+        self.assertEqual(rhovz, 0.0)
+        self.assertEqual(energy, 0.0)
         
         instance.initialize_grid()
         
         rho, rhovx, rhovy, rhovz, energy, error = instance.get_grid_state(-1,0,0)
-        self.assertEquals(error, 0)
-        self.assertEquals(rho, 0.4)
+        self.assertEqual(error, 0)
+        self.assertEqual(rho, 0.4)
         
         rho, rhovx, rhovy, rhovz, energy, error = instance.get_grid_state(-2,0,0)
-        self.assertEquals(error, 0)
+        self.assertEqual(error, 0)
         self.assertAlmostRelativeEquals(rho, 0.3)
         
         rho, rhovx, rhovy, rhovz, energy, error = instance.get_grid_state(-3,0,0)
-        self.assertEquals(error, 0)
+        self.assertEqual(error, 0)
         self.assertAlmostRelativeEquals(rho, 0.2)
         
         rho, rhovx, rhovy, rhovz, energy, error = instance.get_grid_state(-4,0,0)
-        self.assertEquals(error, 0)
+        self.assertEqual(error, 0)
         self.assertAlmostRelativeEquals(rho, 0.1)
         
         rho, rhovx, rhovy, rhovz, energy, error = instance.get_grid_state(-5,0,0)
-        self.assertEquals(error, 0)
+        self.assertEqual(error, 0)
         self.assertAlmostRelativeEquals(rho, 0.0)
         
         
         rho, rhovx, rhovy, rhovz, energy, error = instance.get_grid_state(4,0,0)
-        self.assertEquals(error, 0)
-        self.assertEquals(rho, 0.1)
+        self.assertEqual(error, 0)
+        self.assertEqual(rho, 0.1)
         
         rho, rhovx, rhovy, rhovz, energy, error = instance.get_grid_state(5,0,0)
-        self.assertEquals(error, 0)
-        self.assertEquals(rho, 0.2)
+        self.assertEqual(error, 0)
+        self.assertEqual(rho, 0.2)
         
         rho, rhovx, rhovy, rhovz, energy, error = instance.get_grid_state(6,0,0)
-        self.assertEquals(error, 0)
+        self.assertEqual(error, 0)
         self.assertAlmostRelativeEquals(rho, 0.3)
         
         rho, rhovx, rhovy, rhovz, energy, error = instance.get_grid_state(7,0,0)
-        self.assertEquals(error, 0)
+        self.assertEqual(error, 0)
         self.assertAlmostRelativeEquals(rho, 0.4)
         
         rho, rhovx, rhovy, rhovz, energy, error = instance.get_grid_state(8,0,0)
-        self.assertEquals(error, 0)
-        self.assertEquals(rho, 0.0)
+        self.assertEqual(error, 0)
+        self.assertEqual(rho, 0.0)
         
         
         
@@ -1370,10 +1370,10 @@ class TestAthenaInterface(TestWithMPI):
         instance.set_courant_friedrichs_lewy_number(0.4)
         instance.set_boundary("periodic","periodic","periodic","periodic","periodic","periodic")
         result = instance.commit_parameters()
-        self.assertEquals(result, 0)
+        self.assertEqual(result, 0)
         time, error = instance.get_time()
-        self.assertEquals(error,0)
-        self.assertEquals(time, 0.0)
+        self.assertEqual(error,0)
+        self.assertEqual(time, 0.0)
         for i in range(8):
             error = instance.set_grid_state(i,0,0,0.1 * (i+1), 0.2 * (i+1), 0.3 * (i+1), 0.4 * (i+1), 0.5 * (i+1))
             
@@ -1381,76 +1381,76 @@ class TestAthenaInterface(TestWithMPI):
             
             error = instance.set_grid_state(0,0,i,0.1 * (i+1), 0.2 * (i+1), 0.3 * (i+1), 0.4 * (i+1), 0.5 * (i+1))
             
-            self.assertEquals(error, 0)
+            self.assertEqual(error, 0)
         
         instance.initialize_grid()
         
         
         for i in range(8):
             rho, rhovx, rhovy, rhovz, energy, error = instance.get_grid_state(i,0,0)
-            self.assertEquals(error, 0)
+            self.assertEqual(error, 0)
             self.assertAlmostRelativeEquals(rho, (i+1) * 0.1)
             rho, rhovx, rhovy, rhovz, energy, error = instance.get_grid_state(0,i,0)
-            self.assertEquals(error, 0)
+            self.assertEqual(error, 0)
             self.assertAlmostRelativeEquals(rho, (i+1) * 0.1)
             rho, rhovx, rhovy, rhovz, energy, error = instance.get_grid_state(0,0,i)
-            self.assertEquals(error, 0)
+            self.assertEqual(error, 0)
             self.assertAlmostRelativeEquals(rho, (i+1) * 0.1)
             
         for i in range(4):
             
             
             rho, rhovx, rhovy, rhovz, energy, error = instance.get_grid_state(-(i+1),0,0)
-            self.assertEquals(error, 0)
+            self.assertEqual(error, 0)
             self.assertAlmostRelativeEquals(rho, 0.8 - (i * 0.1))
             
             rho, rhovx, rhovy, rhovz, energy, error = instance.get_grid_state(-5,0,0)
-            self.assertEquals(error, 0)
+            self.assertEqual(error, 0)
             self.assertAlmostRelativeEquals(rho, 0.0)
             
             rho, rhovx, rhovy, rhovz, energy, error = instance.get_grid_state(8 + i,0,0)
-            self.assertEquals(error, 0)
+            self.assertEqual(error, 0)
             self.assertAlmostRelativeEquals(rho, (i+1) * 0.1)
             
             rho, rhovx, rhovy, rhovz, energy, error = instance.get_grid_state(8 + 4,0,0)
-            self.assertEquals(error, 0)
+            self.assertEqual(error, 0)
             self.assertAlmostRelativeEquals(rho, 0.0)
             
             # 2 dimension
             
             rho, rhovx, rhovy, rhovz, energy, error = instance.get_grid_state(0, -(i+1),0)
-            self.assertEquals(error, 0)
+            self.assertEqual(error, 0)
             self.assertAlmostRelativeEquals(rho, 0.8 - (i * 0.1))
             
             rho, rhovx, rhovy, rhovz, energy, error = instance.get_grid_state(0,-5, 0)
-            self.assertEquals(error, 0)
+            self.assertEqual(error, 0)
             self.assertAlmostRelativeEquals(rho, 0.0)
             
             
             rho, rhovx, rhovy, rhovz, energy, error = instance.get_grid_state(0,8 + i,0)
-            self.assertEquals(error, 0)
+            self.assertEqual(error, 0)
             self.assertAlmostRelativeEquals(rho, (i+1) * 0.1)
             
             rho, rhovx, rhovy, rhovz, energy, error = instance.get_grid_state(0,8+4, 0)
-            self.assertEquals(error, 0)
+            self.assertEqual(error, 0)
             self.assertAlmostRelativeEquals(rho, 0.0)
             
             # 3 dimension
             rho, rhovx, rhovy, rhovz, energy, error = instance.get_grid_state(0, 0, -(i+1))
-            self.assertEquals(error, 0)
+            self.assertEqual(error, 0)
             self.assertAlmostRelativeEquals(rho, 0.8 - (i * 0.1))
             
             rho, rhovx, rhovy, rhovz, energy, error = instance.get_grid_state(0,-5, 0)
-            self.assertEquals(error, 0)
+            self.assertEqual(error, 0)
             self.assertAlmostRelativeEquals(rho, 0.0)
             
             
             rho, rhovx, rhovy, rhovz, energy, error = instance.get_grid_state(0,0,8 + i)
-            self.assertEquals(error, 0)
+            self.assertEqual(error, 0)
             self.assertAlmostRelativeEquals(rho, (i+1) * 0.1)
             
             rho, rhovx, rhovy, rhovz, energy, error = instance.get_grid_state(0,0, 8+4)
-            self.assertEquals(error, 0)
+            self.assertEqual(error, 0)
             self.assertAlmostRelativeEquals(rho, 0.0)
             
         
@@ -1483,18 +1483,18 @@ class TestAthena(TestWithMPI):
         allx = instance.grid[0].x
         for j in range(20):
             for k in range(40):
-                self.assertEquals(allx[j][k], firstx)
+                self.assertEqual(allx[j][k], firstx)
         
-        print instance.grid[0][0].rho
-        self.assertEquals(instance.grid[0][0][0].rho, 0.0 |generic_unit_system.mass / generic_unit_system.length ** 3)
+        print(instance.grid[0][0].rho)
+        self.assertEqual(instance.grid[0][0][0].rho, 0.0 |generic_unit_system.mass / generic_unit_system.length ** 3)
         
         
         potential_grid = datamodel.Grid(12,22,42)
         potential_grid.potential = 2.0 | generic_unit_system.potential
         channel = potential_grid.new_channel_to(instance.potential_grid)
         channel.copy()
-        self.assertEquals(instance.potential_grid[0][0][0].potential, 2.0 | generic_unit_system.potential)
-        self.assertEquals(instance.potential_grid[0][2][20].potential, 2.0 | generic_unit_system.potential)
+        self.assertEqual(instance.potential_grid[0][0][0].potential, 2.0 | generic_unit_system.potential)
+        self.assertEqual(instance.potential_grid[0][2][20].potential, 2.0 | generic_unit_system.potential)
         
         instance.stop()
     
@@ -1514,12 +1514,12 @@ class TestAthena(TestWithMPI):
         result = instance.commit_parameters()
                 
         firstx = instance.potential_grid[0][0][0].x
-        print firstx
-        self.assertEquals(firstx, -0.05 | generic_unit_system.length)
+        print(firstx)
+        self.assertEqual(firstx, -0.05 | generic_unit_system.length)
         allx = instance.potential_grid[0].x
         for j in range(20):
             for k in range(40):
-                self.assertEquals(allx[j][k], firstx)
+                self.assertEqual(allx[j][k], firstx)
         instance.stop()
     
     
@@ -1551,19 +1551,19 @@ class TestAthena(TestWithMPI):
         channel.copy()
             
         
-        print instance.grid[1].rho
-        self.assertEquals(instance.grid[1][1][0].rho, 0.1 | density)
+        print(instance.grid[1].rho)
+        self.assertEqual(instance.grid[1][1][0].rho, 0.1 | density)
         for x in instance.grid[1].rho.value_in(density).flatten():
-            self.assertEquals(x, 0.1)
+            self.assertEqual(x, 0.1)
             
         instance.evolve_model(1.0 | generic_unit_system.time)
         
         for x in instance.grid.rho.value_in(density).flatten():
-            self.assertEquals(x, 0.1)
+            self.assertEqual(x, 0.1)
     
         instance.evolve_model(10.0 | generic_unit_system.time)
         for x in instance.grid.rho.value_in(density).flatten():
-            self.assertEquals(x, 0.1)
+            self.assertEqual(x, 0.1)
         instance.stop()
     
     
@@ -1592,7 +1592,7 @@ class TestAthena(TestWithMPI):
         grid.rhovz = 0.0 | momentum
         grid.energy = 0.0 | energy
         
-        self.assertEquals(grid.get_defined_settable_attribute_names(), ['energy', 'rho', 'rhovx', 'rhovy', 'rhovz', ] )
+        self.assertEqual(grid.get_defined_settable_attribute_names(), ['energy', 'rho', 'rhovx', 'rhovy', 'rhovz', ] )
         channel = grid.new_channel_to(instance.grid)
         channel.copy()
         potential_grid = datamodel.Grid(12,12,1)
@@ -1601,18 +1601,18 @@ class TestAthena(TestWithMPI):
         channel.copy()
         result = instance.initialize_grid()
         
-        self.assertEquals(instance.grid[1][1][0].rho, 0.1 | density)
+        self.assertEqual(instance.grid[1][1][0].rho, 0.1 | density)
         for x in instance.grid[1].rho.value_in(density).flatten():
-            self.assertEquals(x, 0.1)
+            self.assertEqual(x, 0.1)
             
         instance.evolve_model(1.0 | generic_unit_system.time)
         
         for x in instance.grid.rho.value_in(density).flatten():
-            self.assertEquals(x, 0.1)
+            self.assertEqual(x, 0.1)
     
         instance.evolve_model(10.0 | generic_unit_system.time)
         for x in instance.grid.rho.value_in(density).flatten():
-            self.assertEquals(x, 0.1)
+            self.assertEqual(x, 0.1)
         instance.stop()
     
     
@@ -1648,7 +1648,7 @@ class TestAthena(TestWithMPI):
         x = instance.potential_grid.x
         y = instance.potential_grid.y
         
-        print 1
+        print(1)
         for i in range(12):
             for j in range(12):
                 px = x[i][j][0].value_in(generic_unit_system.length)
@@ -1663,18 +1663,18 @@ class TestAthena(TestWithMPI):
                 #instance.potential_grid[i][j][0].potential = -0.001 * generic_unit_system.potential.new_quantity([potential])
         channel = potential_grid.new_channel_to(instance.potential_grid)
         channel.copy()
-        print 2
+        print(2)
         result = instance.initialize_grid()
         
-        self.assertEquals(instance.grid[1][1][0].rho, 0.1 | density)
+        self.assertEqual(instance.grid[1][1][0].rho, 0.1 | density)
         for x in instance.grid[1].rho.value_in(density).flatten():
             self.assertAlmostRelativeEquals(x, 0.1)
-        #print instance.potential_grid[...,...,0].potential
+        #print instance.potential_grid[...,0].potential
         instance.evolve_model(1.0 | generic_unit_system.time)
         #print "--------------------------"
-        #print instance.grid.rho[...,...,0]
-        z = instance.grid.rho[...,...,0]
-        #z = instance.potential_grid.potential[...,...,0]
+        #print instance.grid.rho[...,0]
+        z = instance.grid.rho[...,0]
+        #z = instance.potential_grid.potential[...,0]
         #z = z.value_in(generic_unit_system.potential)
         z = z.value_in(density)
         #from matplotlib import pyplot
@@ -1693,7 +1693,7 @@ class TestAthena(TestWithMPI):
 
         #pyplot.savefig("bla.png")
         for x in instance.grid.rho.value_in(density).flatten():
-            self.assertNotEquals(x, 0.1)
+            self.assertNotEqual(x, 0.1)
         instance.stop()
     
     
@@ -1710,7 +1710,7 @@ class TestAthena(TestWithMPI):
         instance.parameters.courant_number = 0.1
         self.assertAlmostRelativeEquals(instance.parameters.courant_number, 0.1)
         
-        print instance.parameters
+        print(instance.parameters)
         instance.stop()
     
     
@@ -1737,10 +1737,10 @@ class TestAthena(TestWithMPI):
         
         channel = grid.new_channel_to(instance.grid)
         channel.copy()
-        self.assertEquals(instance.grid[0][0][0].rho, 0.4 | density)
-        self.assertEquals(instance.grid.rho.number.ndim, 3)
+        self.assertEqual(instance.grid[0][0][0].rho, 0.4 | density)
+        self.assertEqual(instance.grid.rho.number.ndim, 3)
         
-        self.assertEquals(len(list(instance.itergrids())), 1)
+        self.assertEqual(len(list(instance.itergrids())), 1)
         
         instance.stop()
 
@@ -1758,31 +1758,31 @@ class TestAthena(TestWithMPI):
         instance.parameters.length_y = 20 | generic_unit_system.length
         instance.parameters.length_z = 30 | generic_unit_system.length
         
-        print instance.parameters
+        print(instance.parameters)
         instance.commit_parameters()
         
         mini,maxi, minj,maxj, mink,maxk = instance.get_index_range_inclusive()
         
-        self.assertEquals(mini, 0)
-        self.assertEquals(maxi, 9)
-        self.assertEquals(minj, 0)
-        self.assertEquals(maxj, 19)
-        self.assertEquals(mink, 0)
-        self.assertEquals(maxk, 39)
-        self.assertEquals(instance.parameters.mesh_size, (10,20,40))
-        print instance.parameters
+        self.assertEqual(mini, 0)
+        self.assertEqual(maxi, 9)
+        self.assertEqual(minj, 0)
+        self.assertEqual(maxj, 19)
+        self.assertEqual(mink, 0)
+        self.assertEqual(maxk, 39)
+        self.assertEqual(instance.parameters.mesh_size, (10,20,40))
+        print(instance.parameters)
         instance.stop()
     
     def test8(self):
         instance=self.new_instance(Athena)
         instance.parameters.stopping_conditions_number_of_steps = 10
-        self.assertEquals(instance.parameters.stopping_conditions_number_of_steps, 10)
+        self.assertEqual(instance.parameters.stopping_conditions_number_of_steps, 10)
         instance.stop()
 
     def test8a(self):
         instance=self.new_instance(Athena)
         instance.parameters.stopping_conditions_timeout = 10 | units.s
-        self.assertEquals(instance.parameters.stopping_conditions_timeout, 10|units.s)
+        self.assertEqual(instance.parameters.stopping_conditions_timeout, 10|units.s)
         instance.stop()
 
     def test9(self):
@@ -1790,7 +1790,7 @@ class TestAthena(TestWithMPI):
         instance.parameters.x_boundary_conditions = "periodic","periodic"
         instance.parameters.y_boundary_conditions = "periodic","periodic"
         instance.parameters.z_boundary_conditions = "periodic","periodic"
-        self.assertEquals(instance.parameters.xbound1, "periodic")
+        self.assertEqual(instance.parameters.xbound1, "periodic")
         instance.stop()
 
     def xtest10(self):
@@ -1931,7 +1931,7 @@ class TestAthena(TestWithMPI):
         instance.stop()
     
     def test12(self):
-        print "Testing Athena grid setters"
+        print("Testing Athena grid setters")
         instance=self.new_instance(Athena)
         instance.parameters.isothermal_sound_speed = 0.1 | generic_unit_system.speed
         instance.parameters.gamma = 5/3.0
@@ -1943,16 +1943,16 @@ class TestAthena(TestWithMPI):
         instance.parameters.z_boundary_conditions = ("periodic", "periodic")
         
         instance.grid.rho =    1.0 | generic_unit_system.density
-        self.assertAlmostEquals(instance.grid.rho, 
+        self.assertAlmostEqual(instance.grid.rho, 
             numpy.ones((2,2,2)) | generic_unit_system.density)
         
         instance.grid.momentum = numpy.reshape(
             numpy.arange(0.0, 3.0, 0.125), (2,2,2,3))  | generic_unit_system.momentum_density
-        self.assertAlmostEquals(instance.grid.rhovx, 
+        self.assertAlmostEqual(instance.grid.rhovx, 
             numpy.reshape(numpy.arange(0.000, 3.0, 0.375), (2,2,2)) | generic_unit_system.momentum_density)
-        self.assertAlmostEquals(instance.grid.rhovy, 
+        self.assertAlmostEqual(instance.grid.rhovy, 
             numpy.reshape(numpy.arange(0.125, 3.0, 0.375), (2,2,2)) | generic_unit_system.momentum_density)
-        self.assertAlmostEquals(instance.grid.rhovz, 
+        self.assertAlmostEqual(instance.grid.rhovz, 
             numpy.reshape(numpy.arange(0.250, 3.0, 0.375), (2,2,2)) | generic_unit_system.momentum_density)
         
         momentum = instance.grid.momentum
@@ -1960,27 +1960,27 @@ class TestAthena(TestWithMPI):
         rhovy = 2 * momentum.z
         rhovz = -0.5 * momentum.y
         instance.grid.momentum = VectorQuantity.new_from_scalar_quantities(rhovx,rhovy,rhovz).transpose(axes=(1,2,3,0))
-        self.assertAlmostEquals(instance.grid.rhovx, 
+        self.assertAlmostEqual(instance.grid.rhovx, 
             numpy.reshape(numpy.arange(0.000, -3.0, -0.375), (2,2,2)) | generic_unit_system.momentum_density)
-        self.assertAlmostEquals(instance.grid.rhovy, 
+        self.assertAlmostEqual(instance.grid.rhovy, 
             numpy.reshape(numpy.arange(0.5, 6.0, 0.75), (2,2,2)) | generic_unit_system.momentum_density)
-        self.assertAlmostEquals(instance.grid.rhovz, 
+        self.assertAlmostEqual(instance.grid.rhovz, 
             numpy.reshape(numpy.arange(-0.0625, -1.5, -0.1875), (2,2,2)) | generic_unit_system.momentum_density)
         
         instance.grid[...,0,...].momentum =  [12.0, 13.0, 14.0] | generic_unit_system.momentum_density
-        self.assertAlmostEquals(instance.grid[0,...,...].rhovx, 
+        self.assertAlmostEqual(instance.grid[0,...].rhovx, 
             [[12.0, 12.0], [-0.75, -1.125]] | generic_unit_system.momentum_density)
-        self.assertAlmostEquals(instance.grid[0,...,...].rhovy, 
+        self.assertAlmostEqual(instance.grid[0,...].rhovy, 
             [[13.0, 13.0], [2.0, 2.75]] | generic_unit_system.momentum_density)
-        self.assertAlmostEquals(instance.grid[...,...,0].rhovz, 
+        self.assertAlmostEqual(instance.grid[...,0].rhovz, 
             [[14.0, -0.4375], [14.0, -1.1875]] | generic_unit_system.momentum_density)
         
         instance.grid.energy = numpy.reshape(numpy.arange(0.0, 1.0, 0.125), (2,2,2)) | generic_unit_system.energy_density
-        self.assertAlmostEquals(instance.grid[...,0,0].energy, 
+        self.assertAlmostEqual(instance.grid[...,0,0].energy, 
             [0.0, 0.5] | generic_unit_system.energy_density)
-        self.assertAlmostEquals(instance.grid[0,...,0].energy, 
+        self.assertAlmostEqual(instance.grid[0,...,0].energy, 
             [0.0, 0.25] | generic_unit_system.energy_density)
-        self.assertAlmostEquals(instance.grid[0,0,...].energy, 
+        self.assertAlmostEqual(instance.grid[0,0,...].energy, 
             [0.0, 0.125] | generic_unit_system.energy_density)
         instance.initialize_grid()
         instance.stop()
@@ -2017,15 +2017,15 @@ class TestAthena(TestWithMPI):
         
         channel = grid.new_channel_to(instance.grid)
         channel.copy()
-        print instance.grid[0].rho
+        print(instance.grid[0].rho)
         self.assertAlmostRelativeEquals(instance.grid[0].rho, 0.4 | density)
         self.assertAlmostRelativeEquals(instance.grid[0].rhovx,  0.1 | momentum)
         self.assertAlmostRelativeEquals(instance.grid[0].rhovy,  0.2 | momentum)
         self.assertAlmostRelativeEquals(instance.grid[0].rhovz,  0.3 | momentum)
         self.assertAlmostRelativeEquals(instance.grid[0].energy,  0.5 | energy)
-        self.assertEquals(instance.grid.rho.number.ndim, 3)
+        self.assertEqual(instance.grid.rho.number.ndim, 3)
         
-        self.assertEquals(len(list(instance.itergrids())), 1)
+        self.assertEqual(len(list(instance.itergrids())), 1)
         
         instance.stop()
 
@@ -2061,7 +2061,7 @@ class TestAthena(TestWithMPI):
         
         #instance.grid.boundaries.left.
         xbound1 = instance.get_boundary_grid('xbound1')
-        self.assertEquals(xbound1.shape, (4,1,1))
+        self.assertEqual(xbound1.shape, (4,1,1))
         memxbound1 = xbound1.copy()
         memxbound1.rho = 0.02 | density
         memxbound1.rhovx = 0.2 | momentum
@@ -2073,20 +2073,20 @@ class TestAthena(TestWithMPI):
         channel.copy()
         
         instance.evolve_model(1.0 | generic_unit_system.time)
-        print instance.stopping_conditions.number_of_steps_detection.is_set()
+        print(instance.stopping_conditions.number_of_steps_detection.is_set())
         rho = instance.grid.rho[...,0,0]
         self.assertAlmostRelativeEquals(rho[-1], 0.01 | density)
         self.assertTrue(rho[0] > 0.01 | density)
         self.assertTrue(instance.grid.rhovx[0,0,0] > 0.1 | momentum)
         self.assertAlmostRelativeEquals(instance.grid.rhovx[-1,0,0] , 0.1 | momentum)
-        print instance.model_time
+        print(instance.model_time)
         
         instance.stopping_conditions.number_of_steps_detection.disable()
         instance.evolve_model(1.0 | generic_unit_system.time)
         rho = instance.grid.rho[...,0,0]
         self.assertAlmostRelativeEquals(rho, 0.02 | density, 8)
         self.assertAlmostRelativeEquals(instance.grid.rhovx[...,0,0], 0.2 | momentum, 8)
-        print instance.model_time
+        print(instance.model_time)
         
         instance.stop()
         
@@ -2126,7 +2126,7 @@ class TestAthena(TestWithMPI):
         
         #instance.grid.boundaries.left.
         xbound = instance.get_boundary_grid('xbound2')
-        self.assertEquals(xbound.shape, (4,1,1))
+        self.assertEqual(xbound.shape, (4,1,1))
         memxbound = xbound.copy()
         memxbound.rho = 0.02 | density
         memxbound.rhovx = -0.2 | momentum
@@ -2138,20 +2138,20 @@ class TestAthena(TestWithMPI):
         channel.copy()
         
         instance.evolve_model(1.0 | generic_unit_system.time)
-        print instance.stopping_conditions.number_of_steps_detection.is_set()
+        print(instance.stopping_conditions.number_of_steps_detection.is_set())
         rho = instance.grid.rho[...,0,0]
         self.assertAlmostRelativeEquals(rho[0], 0.01 | density)
         self.assertTrue(rho[-1] > 0.01 | density)
         self.assertTrue(instance.grid.rhovx[-1,0,0] < -0.1 | momentum)
         self.assertAlmostRelativeEquals(instance.grid.rhovx[0,0,0] , -0.1 | momentum)
-        print instance.model_time
+        print(instance.model_time)
         
         instance.stopping_conditions.number_of_steps_detection.disable()
         instance.evolve_model(1.0 | generic_unit_system.time)
         rho = instance.grid.rho[...,0,0]
         self.assertAlmostRelativeEquals(rho, 0.02 | density, 8)
         self.assertAlmostRelativeEquals(instance.grid.rhovx[...,0,0], -0.2 | momentum, 8)
-        print instance.model_time
+        print(instance.model_time)
         
         instance.stop()
     
@@ -2188,7 +2188,7 @@ class TestAthena(TestWithMPI):
         instance.stopping_conditions.number_of_steps_detection.enable()
         
         xbound = instance.get_boundary_grid('xbound1')
-        self.assertEquals(xbound.shape, (4,4,1))
+        self.assertEqual(xbound.shape, (4,4,1))
         memxbound = xbound.copy()
         memxbound.rho = 0.02 | density
         memxbound.rhovx = 0.2 | momentum
@@ -2200,21 +2200,21 @@ class TestAthena(TestWithMPI):
         channel.copy()
             
         instance.evolve_model(1.0 | generic_unit_system.time)
-        print instance.stopping_conditions.number_of_steps_detection.is_set()
-        print instance.grid.rho
+        print(instance.stopping_conditions.number_of_steps_detection.is_set())
+        print(instance.grid.rho)
         rho = instance.grid.rho[...,0,0]
         self.assertAlmostRelativeEquals(rho[-1], 0.01 | density)
         self.assertTrue(rho[0] > 0.01 | density)
         self.assertTrue(instance.grid.rhovx[0,0,0] > 0.1 | momentum)
         self.assertAlmostRelativeEquals(instance.grid.rhovx[-1,0,0] , 0.1 | momentum)
-        print instance.model_time
+        print(instance.model_time)
         
         instance.stopping_conditions.number_of_steps_detection.disable()
         instance.evolve_model(1.0 | generic_unit_system.time)
         rho = instance.grid.rho[...,0,0]
         self.assertAlmostRelativeEquals(rho, 0.02 | density, 8)
         self.assertAlmostRelativeEquals(instance.grid.rhovx[...,0,0], 0.2 | momentum, 8)
-        print instance.model_time
+        print(instance.model_time)
         
         instance.stop()
 
@@ -2251,7 +2251,7 @@ class TestAthena(TestWithMPI):
         instance.stopping_conditions.number_of_steps_detection.enable()
         
         ybound = instance.get_boundary_grid('ybound1')
-        self.assertEquals(ybound.shape, (4+8,4,1))
+        self.assertEqual(ybound.shape, (4+8,4,1))
         memybound = ybound.copy()
         memybound.rho = 0.02 | density
         memybound.rhovx = 0.0 | momentum
@@ -2264,21 +2264,21 @@ class TestAthena(TestWithMPI):
         channel.copy()
             
         instance.evolve_model(1.0 | generic_unit_system.time)
-        print instance.stopping_conditions.number_of_steps_detection.is_set()
-        print instance.grid.rho
+        print(instance.stopping_conditions.number_of_steps_detection.is_set())
+        print(instance.grid.rho)
         rho = instance.grid.rho[0,...,0]
         self.assertAlmostRelativeEquals(rho[-1], 0.01 | density)
         self.assertTrue(rho[0] > 0.01 | density)
         self.assertTrue(instance.grid.rhovy[0,0,0] > 0.1 | momentum)
         self.assertAlmostRelativeEquals(instance.grid.rhovy[0,-1,0] , 0.1 | momentum)
-        print instance.model_time
+        print(instance.model_time)
         
         instance.stopping_conditions.number_of_steps_detection.disable()
         instance.evolve_model(1.0 | generic_unit_system.time)
         rho = instance.grid.rho[0,...,0]
         self.assertAlmostRelativeEquals(rho, 0.02 | density, 8)
         self.assertAlmostRelativeEquals(instance.grid.rhovy[0,...,0], 0.2 | momentum, 8)
-        print instance.model_time
+        print(instance.model_time)
         
         instance.stop()
     
@@ -2316,7 +2316,7 @@ class TestAthena(TestWithMPI):
         instance.stopping_conditions.number_of_steps_detection.enable()
         
         zbound = instance.get_boundary_grid('zbound1')
-        self.assertEquals(zbound.shape, (4+8,5+8,4))
+        self.assertEqual(zbound.shape, (4+8,5+8,4))
         memzbound = zbound.copy()
         memzbound.rho = 0.02 | density
         memzbound.rhovx = 0.0 | momentum
@@ -2334,14 +2334,14 @@ class TestAthena(TestWithMPI):
         self.assertTrue(rho[0] > 0.01 | density)
         self.assertTrue(instance.grid.rhovz[0,0,0] > 0.1 | momentum)
         self.assertAlmostRelativeEquals(instance.grid.rhovz[0,0,-1] , 0.1 | momentum)
-        print instance.model_time
+        print(instance.model_time)
         
         instance.stopping_conditions.number_of_steps_detection.disable()
         instance.evolve_model(1.0 | generic_unit_system.time)
         rho = instance.grid.rho[0,...,0]
         self.assertAlmostRelativeEquals(rho, 0.02 | density, 8)
         self.assertAlmostRelativeEquals(instance.grid.rhovz[0,0,...], 0.2 | momentum, 8)
-        print instance.model_time
+        print(instance.model_time)
         
         instance.stop()
     
@@ -2379,7 +2379,7 @@ class TestAthena(TestWithMPI):
         instance.stopping_conditions.number_of_steps_detection.enable()
         
         zbound = instance.get_boundary_grid('zbound2')
-        self.assertEquals(zbound.shape, (4+8,5+8,4))
+        self.assertEqual(zbound.shape, (4+8,5+8,4))
         memzbound = zbound.copy()
         memzbound.rho = 0.02 | density
         memzbound.rhovx = 0.0 | momentum
@@ -2397,14 +2397,14 @@ class TestAthena(TestWithMPI):
         self.assertTrue(rho[-1] > 0.01 | density)
         self.assertTrue(instance.grid.rhovz[0,0,-1] < -0.1 | momentum)
         self.assertAlmostRelativeEquals(instance.grid.rhovz[0,0,0] , -0.1 | momentum)
-        print instance.model_time
+        print(instance.model_time)
         
         instance.stopping_conditions.number_of_steps_detection.disable()
         instance.evolve_model(1.0 | generic_unit_system.time)
         rho = instance.grid.rho[0,...,0]
         self.assertAlmostRelativeEquals(rho, 0.02 | density, 8)
         self.assertAlmostRelativeEquals(instance.grid.rhovz[0,0,...], -0.2 | momentum, 8)
-        print instance.model_time
+        print(instance.model_time)
         
         instance.stop()
         
@@ -2423,10 +2423,10 @@ class TestAthena(TestWithMPI):
             inmem.energy =  1.0 | generic_unit_system.energy_density
             from_model_to_code = inmem.new_channel_to(x)
             from_model_to_code.copy()
-            print inmem.rho
+            print(inmem.rho)
         rho, rhovx, rhovy, rhovx, rhoenergy = instance.get_hydro_state_at_point(0.5| generic_unit_system.length,0.0| generic_unit_system.length,0.0| generic_unit_system.length)
         
-        self.assertEquals(rho , 0.5 | generic_unit_system.density)
+        self.assertEqual(rho , 0.5 | generic_unit_system.density)
         
         for value in numpy.arange(0.5, 19.6, 0.1):
             
@@ -2479,10 +2479,10 @@ class TestAthena(TestWithMPI):
             inmem.energy =  1.0 | generic_unit_system.energy_density
             from_model_to_code = inmem.new_channel_to(x)
             from_model_to_code.copy()
-            print inmem.rho[0], inmem.y[0], inmem.x[0]
+            print(inmem.rho[0], inmem.y[0], inmem.x[0])
         rho, rhovx, rhovy, rhovx, rhoenergy = instance.get_hydro_state_at_point(0.5| generic_unit_system.length,0.5| generic_unit_system.length,0.0| generic_unit_system.length)
         
-        self.assertEquals(rho , 0.5 | generic_unit_system.density)
+        self.assertEqual(rho , 0.5 | generic_unit_system.density)
         
         for value in numpy.arange(0.5, 19.6, 0.1):
             
@@ -2530,7 +2530,7 @@ class TestAthena(TestWithMPI):
             from_model_to_code.copy()
         rho, rhovx, rhovy, rhovx, rhoenergy = instance.get_hydro_state_at_point(0.5| generic_unit_system.length,0.5| generic_unit_system.length,0.5| generic_unit_system.length)
         
-        self.assertEquals(rho , 0.5 | generic_unit_system.density)
+        self.assertEqual(rho , 0.5 | generic_unit_system.density)
         
         for value in numpy.arange(0.5, 19.6, 0.1):
             
@@ -2597,12 +2597,12 @@ class TestAthena(TestWithMPI):
         potential_grid = instance.potential_grid
         factor =  (2 | generic_unit_system.length / generic_unit_system.time**2)
         potential_grid.potential = potential_grid.y * factor
-        print  potential_grid.y * factor
+        print(potential_grid.y * factor)
         y = numpy.arange(0,10.25, 0.1) | generic_unit_system.length
         x = (y * 0) + (2 |generic_unit_system.length)
         z = 0.5 |generic_unit_system.length
         interpolated = instance.get_interpolated_gravitational_potential(x,y,z)
-        print y*factor
+        print(y*factor)
         self.assertAlmostRelativeEquals(interpolated, y * factor)
         
     
@@ -2636,26 +2636,26 @@ class TestAthena(TestWithMPI):
         channel = potential_grid.new_channel_to(instance.potential_grid)
         channel.copy()
         result = instance.initialize_grid()
-        print x[...,0,0]
-        print instance.grid.x[...,0,0]
-        print instance.potential_grid.potential[...,0,0]
-        print potential_grid.potential[...,0,0]
+        print(x[...,0,0])
+        print(instance.grid.x[...,0,0])
+        print(instance.potential_grid.potential[...,0,0])
+        print(potential_grid.potential[...,0,0])
         self.assertAlmostRelativeEquals(potential_grid.potential[...,0,0], instance.potential_grid.potential[...,0,0])
         interpolated_inside = instance.get_interpolated_gravitational_potential(x[0,0,0], y[0,0,0], z[0,0,0])
         interpolated_outside = instance.get_interpolated_gravitational_potential(x[0,0,0] - (1.0 |generic_unit_system.length), y[0,0,0], z[0,0,0])
-        print interpolated_inside, interpolated_outside
+        print(interpolated_inside, interpolated_outside)
         self.assertAlmostRelativeEquals(interpolated_inside, interpolated_outside)
         interpolated_inside = instance.get_interpolated_gravitational_potential(x[0,0,0], y[0,0,0], z[0,0,0])
         interpolated_outside = instance.get_interpolated_gravitational_potential(x[0,0,0] , y[0,0,0] - (2.0 |generic_unit_system.length), z[0,0,0])
-        print interpolated_inside, interpolated_outside
+        print(interpolated_inside, interpolated_outside)
         self.assertAlmostRelativeEquals(interpolated_inside, interpolated_outside)
         interpolated_inside = instance.get_interpolated_gravitational_potential(x[0,0,0], y[0,0,0], z[0,0,0])
         interpolated_outside = instance.get_interpolated_gravitational_potential(x[0,0,0] , y[0,0,0], z[0,0,0]  - (2.0 |generic_unit_system.length))
-        print interpolated_inside, interpolated_outside
+        print(interpolated_inside, interpolated_outside)
         self.assertAlmostRelativeEquals(interpolated_inside, interpolated_outside)
         interpolated_inside = instance.get_interpolated_gravitational_potential(x[5,0,0], y[0,0,0], z[0,0,0])
         interpolated_outside = instance.get_interpolated_gravitational_potential(x[5,0,0] + (2.0 |generic_unit_system.length), y[0,0,0], z[0,0,0])
-        print interpolated_inside, interpolated_outside
+        print(interpolated_inside, interpolated_outside)
         self.assertAlmostRelativeEquals(interpolated_inside, interpolated_outside)
         interpolated_inside = instance.get_interpolated_gravitational_potential(x[5,0,0], y[0,5,0], z[0,0,0])
         interpolated_outside = instance.get_interpolated_gravitational_potential(x[5,0,0], y[0,5,0]  + (2.0 |generic_unit_system.length), z[0,0,0])
@@ -2666,7 +2666,7 @@ class TestAthena(TestWithMPI):
 
         interpolated_inside = instance.get_interpolated_gravitational_potential(x[0,0,0], y[0,0,0], z[0,0,0])
         interpolated_outside = instance.get_interpolated_gravitational_potential(x[0,0,0] - (2.0 |generic_unit_system.length) , y[0,0,0] - (2.0 |generic_unit_system.length), z[0,0,0]  - (2.0 |generic_unit_system.length))
-        print interpolated_inside, interpolated_outside
+        print(interpolated_inside, interpolated_outside)
         
         
     def test27(self):
@@ -2702,15 +2702,15 @@ class TestAthena(TestWithMPI):
         self.assertAlmostRelativeEquals(potential_grid.potential[...,0,0], instance.potential_grid.potential[...,0,0])
         interpolated_inside = instance.get_interpolated_gravitational_potential(x[0,0,0], y[0,0,0], z[0,0,0])
         interpolated_outside = instance.get_interpolated_gravitational_potential(x[0,0,0] - (1.0 |generic_unit_system.length), y[0,0,0], z[0,0,0])
-        print interpolated_inside, interpolated_outside
+        print(interpolated_inside, interpolated_outside)
         self.assertAlmostRelativeEquals(interpolated_inside, interpolated_outside)
         interpolated_inside = instance.get_interpolated_gravitational_potential(x[0,0,0], y[0,0,0], z[0,0,0])
         interpolated_outside = instance.get_interpolated_gravitational_potential(x[0,0,0] , y[0,0,0] - (2.0 |generic_unit_system.length), z[0,0,0])
-        print interpolated_inside, interpolated_outside
+        print(interpolated_inside, interpolated_outside)
         self.assertAlmostRelativeEquals(interpolated_inside, interpolated_outside)
         interpolated_inside = instance.get_interpolated_gravitational_potential(x[5,0,0], y[0,0,0], z[0,0,0])
         interpolated_outside = instance.get_interpolated_gravitational_potential(x[5,0,0] + (2.0 |generic_unit_system.length), y[0,0,0], z[0,0,0])
-        print interpolated_inside, interpolated_outside
+        print(interpolated_inside, interpolated_outside)
         self.assertAlmostRelativeEquals(interpolated_inside, interpolated_outside)
         interpolated_inside = instance.get_interpolated_gravitational_potential(x[5,0,0], y[0,5,0], z[0,0,0])
         interpolated_outside = instance.get_interpolated_gravitational_potential(x[5,0,0], y[0,5,0]  + (2.0 |generic_unit_system.length), z[0,0,0])
@@ -2718,7 +2718,7 @@ class TestAthena(TestWithMPI):
 
         interpolated_inside = instance.get_interpolated_gravitational_potential(x[0,0,0], y[0,0,0], z[0,0,0])
         interpolated_outside = instance.get_interpolated_gravitational_potential(x[0,0,0] - (2.0 |generic_unit_system.length) , y[0,0,0] - (2.0 |generic_unit_system.length), z[0,0,0])
-        print interpolated_inside, interpolated_outside
+        print(interpolated_inside, interpolated_outside)
 
     def test28(self):
         n = 4
@@ -2757,7 +2757,7 @@ class TestAthena(TestWithMPI):
         self.assertAlmostRelativeEquals(potential_grid.potential[...,0,0], instance.potential_grid.potential[...,0,0])
         interpolated_inside = instance.get_interpolated_gravitational_potential(x[5,0,0], y[0,0,0], z[0,0,0])
         interpolated_outside = instance.get_interpolated_gravitational_potential(x[5,0,0] + (0.5 |generic_unit_system.length), y[0,0,0], z[0,0,0])
-        print interpolated_inside, interpolated_outside
+        print(interpolated_inside, interpolated_outside)
         self.assertAlmostRelativeEquals(interpolated_inside, interpolated_outside)
 
 
@@ -2777,10 +2777,10 @@ class TestAthena(TestWithMPI):
             inmem.energy =  1.0 | generic_unit_system.energy_density
             from_model_to_code = inmem.new_channel_to(x)
             from_model_to_code.copy()
-            print inmem.rho
+            print(inmem.rho)
         rho, rhovx, rhovy, rhovx, rhoenergy = instance.get_hydro_state_at_point(0.5| generic_unit_system.length,0.0| generic_unit_system.length,0.0| generic_unit_system.length)
         
-        self.assertEquals(rho , 0.5 | generic_unit_system.density)
+        self.assertEqual(rho , 0.5 | generic_unit_system.density)
         
         for value in numpy.arange(0.5, 19.6, 0.1):
             
@@ -2844,7 +2844,7 @@ class TestAthena(TestWithMPI):
             inmem.energy =  1.0 | generic_unit_system.energy_density
             from_model_to_code = inmem.new_channel_to(x)
             from_model_to_code.copy()
-            print inmem.rho
+            print(inmem.rho)
         
         
     
@@ -2862,11 +2862,11 @@ class TestAthena(TestWithMPI):
             inmem.energy =  1.0 | generic_unit_system.energy_density
             from_model_to_code = inmem.new_channel_to(x)
             from_model_to_code.copy()
-            print inmem.rho
+            print(inmem.rho)
             
         grid = instance.get_extended_grid()
-        self.assertEquals(grid.shape, (12,1,1))
+        self.assertEqual(grid.shape, (12,1,1))
         instance.initialize_grid()
-        self.assertEquals(grid.rho[...,0,0] , [6.5,7.5,0.5,1.5,2.5,3.5,4.5,5.5,6.5,7.5,0.5,1.5] | generic_unit_system.density)
+        self.assertEqual(grid.rho[...,0,0] , [6.5,7.5,0.5,1.5,2.5,3.5,4.5,5.5,6.5,7.5,0.5,1.5] | generic_unit_system.density)
         
         

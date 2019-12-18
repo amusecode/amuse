@@ -5,6 +5,7 @@ AMUSE_DIR?=../../../..
 
 MPIFC ?= mpif90
 FC      = $(MPIFC)
+CODEDIR = src
 
 LDFLAGS  += -lm $(MUSE_LD_FLAGS)
 
@@ -25,12 +26,43 @@ flash_obj = $(filter-out  $(ignore_obj), $(allflash_obj))
 
 all: flash_worker 
 
+ifdef DOWNLOAD_CODES
+$(CODEDIR)/makefile:
+	make -C . download
+else
+$(CODEDIR)/makefile:
+	@echo ""
+	@echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+	@echo ""
+	@echo "DOWNLOAD_CODES is not set. FLASH will not be downloaded and build."
+	@echo "If you do want FLASH, set DOWNLOAD_CODES to 1."
+	@echo "bash> export DOWNLOAD_CODES=1"
+	@echo "csh> setenv DOWNLOAD_CODES 1"
+	@echo "*** Unfortunately due to flash download restrictions;"
+	@echo "*** FLASH CANNOT be download automatically by this makefile"
+	@echo "*** Please register and download flash yourself"
+	@echo "*** You can do so at http://flash.uchicago.edu/site/flashcode/coderequest/"
+	@echo ""
+	@echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+	@echo ""
+	@make -s --no-print-directory -C . raise_error
+endif
+
+download:
+	@echo ""
+	@echo "*** Unfortunately due to flash download restrictions;"
+	@echo "*** FLASH CANNOT be download automatically by this makefile"
+	@echo "*** Please register and download flash yourself"
+	@echo "*** You can do so at http://flash.uchicago.edu/site/flashcode/coderequest/"
+	@echo ""
+	@make -s --no-print-directory -C . raise_error
+
 clean:
 	$(RM) -f *.so *.o *.pyc worker_code.cc worker_code.h #flash.par
 	$(RM) *~ flash_worker worker_code.f90
 	make -C src clean
 
-$(CODELIB):
+$(CODELIB): $(CODEDIR)/makefile
 	make -C src all
 
 worker_code.f90: interface.py

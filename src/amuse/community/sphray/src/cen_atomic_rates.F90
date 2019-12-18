@@ -295,6 +295,11 @@ contains
     real(r8b) :: x
     real(r8b) :: y
 
+    if (Ry < 1.d0) then
+      sigma = 0.d0
+      return
+    end if
+    
     eV = Ry * 13.6d0
     x = eV / E0
     y = x

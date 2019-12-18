@@ -13,6 +13,7 @@
 #endif  
 #include "worker_code.h"
 
+double potential = 0;
 
 octree *bonsai;
 bool initialized = false;
@@ -27,7 +28,7 @@ vector<float4> bodies_vel;
 vector<double2> bodies_time;
 vector<float4> bodies_grav(0);   // (w = potential)
 vector<int>    starids(0);       // list of identifiers
-vector<float>  radii(0);         // list of radii
+//vector<float>  radii(0);         // list of radii
 
 int id_counter          = 0;
 int n_bodies            = 0;
@@ -151,7 +152,6 @@ int new_particle(int *id, double mass, double x, double y, double z, double vx, 
   bodies_vel[n_bodies].x = vx;
   bodies_vel[n_bodies].y = vy;
   bodies_vel[n_bodies].z = vz;
-  //bodies_vel[n_bodies].w = 0;
   bodies_vel[n_bodies].w = radius; //Store radius in 'w' component for easy access stopping conditions
 
   bodies_time.resize(n_bodies+1);
@@ -167,7 +167,7 @@ int new_particle(int *id, double mass, double x, double y, double z, double vx, 
   n_bodies++;
 
   starids.push_back(id_counter);
-  radii.push_back(radius);
+  //radii.push_back(radius);
 
   id_counter++;
   total_mass += mass;
@@ -186,7 +186,7 @@ int delete_particle(int id)
   bodies_vel.resize(n_bodies);
   bodies_grav.resize(n_bodies);
   starids.resize(n_bodies);
-  radii.resize(n_bodies);
+  //radii.resize(n_bodies);
   bodies_time.resize(n_bodies);
 
   //From code into std::vectors
@@ -207,7 +207,7 @@ int delete_particle(int id)
     bodies_grav.erase(bodies_grav.begin()+index);
     bodies_time.erase(bodies_time.begin()+index);
     starids.erase(starids.begin()+index);
-    radii.erase(radii.begin()+index);
+    //radii.erase(radii.begin()+index);
     n_bodies--;
 
     //Have to rebuild the idx to id since it has become
@@ -298,7 +298,7 @@ int get_state(int id, double *mass, double *x, double *y, double *z, double *vx,
   if (i >= 0 && i < n_bodies)
   {
     *mass   = bonsai->localTree.bodies_pos[i].w;
-    *radius = radii[i];
+    *radius = bonsai->localTree.bodies_vel[i].w;
 
     *x   = bonsai->localTree.bodies_pos[i].x;
     *y   = bonsai->localTree.bodies_pos[i].y;
@@ -529,7 +529,7 @@ int get_radius(int id, double * radius){
   int index_of_the_particle = getIdxFromId(id);    
   if(index_of_the_particle < 0)     return -3;
   
-  *radius = radii[index_of_the_particle];
+  *radius = bonsai->localTree.bodies_vel[index_of_the_particle].w;
   return 0;
 }
 
@@ -537,7 +537,7 @@ int set_radius(int id, double radius){
   int index_of_the_particle = getIdxFromId(id);  
   if(index_of_the_particle < 0)     return -3;
   
-  radii[index_of_the_particle] = radius;
+  bonsai->localTree.bodies_vel[index_of_the_particle].w = radius;
   return 0;
 }
 
@@ -654,8 +654,7 @@ int set_state(int *index, double *mass, double *x, double *y, double *z,
     bonsai->localTree.bodies_vel[index_of_the_particle].x = vx[i];
     bonsai->localTree.bodies_vel[index_of_the_particle].y = vy[i];
     bonsai->localTree.bodies_vel[index_of_the_particle].z = vz[i];            
-    
-    radii[index_of_the_particle] = radius[i];
+    bonsai->localTree.bodies_vel[index_of_the_particle].w = radius[i];
   }
   
   
@@ -711,8 +710,10 @@ int get_index_of_next_particle(int index_of_the_particle,
 
 int get_potential_at_point(double eps, double x, double y, double z,
   double * phi){
-  fprintf(stderr,"NOT IMPLEMENTED: %s:%d \n", __FILE__, __LINE__);
-  return -2;
+  //fprintf(stderr,"NOT IMPLEMENTED: %s:%d \n", __FILE__, __LINE__);
+  *phi = potential;
+  
+  return 0;
 }
 
 
@@ -729,8 +730,34 @@ int get_center_of_mass_velocity(double * vx, double * vy, double * vz){
 
 int get_gravity_at_point(double eps, double x, double y, double z,
   double * forcex, double * forcey, double * forcez){
-  fprintf(stderr,"NOT IMPLEMENTED: %s:%d \n", __FILE__, __LINE__);
-  return -2;
+  //fprintf(stderr,"NOT IMPLEMENTED: %s:%d \n", __FILE__, __LINE__);
+  double inf_dr_cubed;
+  double dr;
+  double dx;
+  double dy;
+  double dz;
+  double fx = 0;
+  double fy = 0;
+  double fz = 0;
+  double pot = 0;
+  getCurrentStateToHost();
+  for(int i=0; i<n_bodies; i++) {
+    dx = (x-bodies_pos[i].x);
+    dy = (y-bodies_pos[i].y);
+    dz = (z-bodies_pos[i].z);
+    dr = sqrt(dx*dx + dy*dy + dz*dz + eps*eps);
+    F = bodies_pos[i].w/(dr*dr*dr);
+    fx -= dx * F;
+    fy -= dy * F;
+    fz -= dz * F;
+    pot += bodies_pos[i].w/dr;
+  }
+  *forcex = fx;
+  *forcey = fy;
+  *forcez = fz;
+  potential = pot;
+
+  return 0;
 }
 
 int cleanup_code(){
@@ -742,7 +769,7 @@ int cleanup_code(){
   bodies_vel.clear();
   bodies_grav.clear();
   starids.clear();
-  radii.clear();
+  //radii.clear();
   bodies_time.clear();
   
   total_mass = 0;

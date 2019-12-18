@@ -63,11 +63,11 @@ def parse_ids(string, position):
         if '-' in count_range:
             from_id, to_id = count_range.split('-')
             for number in range(int(from_id), int(to_id) + 1):
-                result.append(str(number));
+                result.append(str(number))
         else:
             result.append(count_range)
     return result, end+1
         
 if __name__ == "__main__":
-    print parse_slurm_tasks_per_node("10(x4),3")
-    print parse_slurm_nodelist("tcn[595,597-598,600-606],tcn100")
+    print(parse_slurm_tasks_per_node("10(x4),3"))
+    print(parse_slurm_nodelist("tcn[595,597-598,600-606],tcn100"))

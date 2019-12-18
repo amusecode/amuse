@@ -14,7 +14,7 @@ if __name__ == '__main__':
     code.run()
 
     local_particles = code.particles.copy()
-    delta = local_particles.neighbor1.position - local_particles.position
+    delta = local_particles.neighbor1.as_set().position - local_particles.position
    
     local_particles.dx = delta[...,0]
     local_particles.dy = delta[...,1]

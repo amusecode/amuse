@@ -4,7 +4,7 @@ from amuse.units import nbody_system
 from amuse.community import LiteratureReferencesMixIn
 
 try:
-    from _limepy import limepy, sample
+    from ._limepy import limepy, sample
     scipy_imported = True
 except ImportError:
     scipy_imported = False

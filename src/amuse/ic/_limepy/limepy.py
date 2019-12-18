@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from __future__ import division, absolute_import
+
 import numpy
 import scipy
 from numpy import exp, sqrt, pi, sin
@@ -191,23 +191,23 @@ class limepy:
 
         # Optional output
         if (self.verbose):
-            print "\n Model properties: "
-            print " ----------------- "
-            print " phi0 = %5.2f; g = %4.2f"%(self.phi0, self.g)
-            print " Converged = %s"%(self.converged)
+            print("\n Model properties: ")
+            print(" ----------------- ")
+            print(" phi0 = %5.2f; g = %4.2f"%(self.phi0, self.g))
+            print(" Converged = %s"%(self.converged))
             if (self.potonly):
-                print " M = %10.3f; U = %10.4f "%(self.M, self.U)
+                print(" M = %10.3f; U = %10.4f "%(self.M, self.U))
             else:
                 out1 = (self.M,self.U,self.K,-self.K/self.U,2*self.Kr/self.Kt)
                 frm = " M = %10.3e; U = %9.3e; K = %9.3e; Q = %6.4f; "
                 frm += " 2Kr/Kt = %5.3f"
-                print frm%out1
+                print(frm%out1)
 
             out2 = (self.rv/self.rh, self.rh/self.r0)
             out2 += (self.rt/self.r0, self.ra/self.rh)
             frm = " rv/rh = %4.3f; rh/r0 = %6.3f; "
             frm += "rt/r0 = %7.3f; ra/rh = %7.3f"
-            print  frm%out2
+            print(frm%out2)
 
     def _set_kwargs(self, phi0, g, **kwargs):
         """ Set parameters and scales """
@@ -246,7 +246,7 @@ class limepy:
         self._interpolator_set=False
 
         if kwargs is not None:
-            for key, value in kwargs.iteritems():
+            for key, value in kwargs.items():
                 setattr(self, key, value)
             if 'mj' in kwargs and 'Mj' in kwargs:
                 self.multi=True
@@ -324,7 +324,7 @@ class limepy:
             out = (self.niter, self.diff, self.converged, fracd, Mjit)
             frm = " Iter %3i; diff = %8.1e; conv = %s;"
             frm += " frac diff=%s; Mjtot=%s"
-            print  frm%out
+            print(frm%out)
 
     def _poisson(self, potonly):
         """ Solves Poisson equation """
@@ -868,7 +868,7 @@ class limepy:
             DF[c] *= self.A[j]
 
         else:
-	    DF = numpy.zeros(max(len(r),len(v)))
+            DF = numpy.zeros(max(len(r),len(v)))
 
         return DF
 

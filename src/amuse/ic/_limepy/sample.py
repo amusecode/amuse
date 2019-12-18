@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from __future__ import division, absolute_import
+
 import numpy
 import scipy
 from numpy import exp, sqrt, pi, sin, cos
@@ -42,7 +42,7 @@ class sample:
         self.verbose = False
         self.N = 1000
         if kwargs is not None:
-            for key, value in kwargs.iteritems():
+            for key, value in kwargs.items():
                 setattr(self, key, value)
 
         random.seed(self.seed)
@@ -77,11 +77,11 @@ class sample:
                 self.ra[self.Nstart[j]:self.Nend[j]] = mod.raj[j]
                 self.s2j[self.Nstart[j]:self.Nend[j]] = mod.s2j[j]
             if (self.verbose):
-                print " N as computed from Mj/mj = ",self.Nj
+                print(" N as computed from Mj/mj = ",self.Nj)
 
     def _sample_r(self, m):
         # Sample radial distances from cumulative mass profile
-        if (self.verbose): print " sample r ..."
+        if (self.verbose): print(" sample r ...")
         ran = random.rand(self.N)
 
         if not m.multi:
@@ -101,7 +101,7 @@ class sample:
 
     def _sample_v(self, m):
         # Sample random values for x = k**1.5
-        if (self.verbose): print " sample v ..."
+        if (self.verbose): print(" sample v ...")
         self.xmax= self.phihat**1.5
 
         nx = 10
@@ -115,7 +115,7 @@ class sample:
 
         self.k, self.v, self.rfinal = [], [], []
         for j in range(self.mod.nmbin):
-            if (self.verbose): print "   set-up segments for velocity cdf ..."
+            if (self.verbose): print("   set-up segments for velocity cdf ...")
 
             self.ycum = numpy.zeros(self.N)
             self.y = self._pdf_k32(self.r, self.phihat, self.x[0], j)
@@ -123,10 +123,10 @@ class sample:
                 self.y = numpy.vstack((self.y, self._pdf_k32(self.r, self.phihat, self.x[i], j)))
             self.y = numpy.vstack((self.y, 0*self.r, self.x[-1]))
 
-            if (self.verbose): print "   compute cdf ..."
+            if (self.verbose): print("   compute cdf ...")
             self._compute_cdf()
 
-            if (self.verbose): print "   (rejection) sampling of k^3/2 values ..."
+            if (self.verbose): print("   (rejection) sampling of k^3/2 values ...")
             self._sample_k(j)
 
         self.r = self.rfinal
@@ -231,7 +231,7 @@ class sample:
         return R  - erfi(a*q)/erfi(a)
 
     def _sample_angles(self,N):
-        if (self.verbose): print "   sample angles ..."
+        if (self.verbose): print("   sample angles ...")
         R = random.rand(N)
 
         if self.ani:
@@ -252,7 +252,7 @@ class sample:
         self.vt = self.v*sqrt(1-self.q**2)
 
     def _to_cartesian(self):
-        if (self.verbose): print " convert to cartesian coordinates ..."
+        if (self.verbose): print(" convert to cartesian coordinates ...")
         r = self.r
         r2 = r**2
         R1 = random.rand(self.N)
@@ -279,22 +279,22 @@ class sample:
             self.vz = sqrt(v2 - self.vx**2)*sin(2*pi*R2)
 
     def _summary(self):
-        print " done! "
+        print(" done! ")
         m = self.mod
         f = -self.phihat*m.s2 - m.G*m.M/m.rt
 
-        print "       U: sample = %12.4e; model = %12.4e"%(0.5*sum(self.m*f), m.U)
-        print "       K: sample = %12.4e; model = %12.4e"%(sum(0.5*self.m*self.v**2), m.K)
-        print "       Q: sample = %12.4e; model = %12.4e"%(sum(0.5*self.m*self.v**2)/(0.5*sum(self.m*f)), m.K/m.U)
-        print "  2Kr/Kt: sample = %12.4f; model = %12.4f"%(2*sum(self.vr**2)/sum(self.vt**2),2*m.Kr/m.Kt)
+        print("       U: sample = %12.4e; model = %12.4e"%(0.5*sum(self.m*f), m.U))
+        print("       K: sample = %12.4e; model = %12.4e"%(sum(0.5*self.m*self.v**2), m.K))
+        print("       Q: sample = %12.4e; model = %12.4e"%(sum(0.5*self.m*self.v**2)/(0.5*sum(self.m*f)), m.K/m.U))
+        print("  2Kr/Kt: sample = %12.4f; model = %12.4f"%(2*sum(self.vr**2)/sum(self.vt**2),2*m.Kr/m.Kt))
 
         if m.multi:
 
-            print "\n  Components: "
+            print("\n  Components: ")
             for j in range(m.nmbin):
                 c=(self.m==m.mj[j])
-                print "      Kj: sample = %12.4e; model = %12.4e"%(sum(0.5*self.m[c]*self.v[c]**2), m.Kj[j])
+                print("      Kj: sample = %12.4e; model = %12.4e"%(sum(0.5*self.m[c]*self.v[c]**2), m.Kj[j]))
 
             for j in range(m.nmbin):
                 c=(self.m==m.mj[j])
-                print " 2Kr/Ktj: sample = %12.4e; model = %12.4e"%(2*sum(self.vr[c]**2)/sum(self.vt[c]**2),2*m.Krj[j]/m.Ktj[j])
+                print(" 2Kr/Ktj: sample = %12.4e; model = %12.4e"%(2*sum(self.vr[c]**2)/sum(self.vt[c]**2),2*m.Krj[j]/m.Ktj[j]))

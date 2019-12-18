@@ -8,6 +8,7 @@ import os
 import socket
 import traceback
 import types
+import warnings
 
 from amuse.rfi.channel import ClientSideMPIMessage
 from amuse.rfi.channel import SocketMessage
@@ -52,9 +53,13 @@ class PythonImplementation(object):
             self.implementation._interface = self
         
 
-    def start(self):
-        parent = self.intercomm
-        self.communicators.append(parent)
+    def start(self, mpi_port = None):
+        if mpi_port is None:
+            parent = self.intercomm
+            self.communicators.append(parent)
+        else:
+            parent = MPI.COMM_WORLD.Connect(mpi_port, MPI.INFO_NULL, 0)
+            self.communicators.append(parent)
         self.activeid = 0
         self.lastid += 1
         
@@ -63,7 +68,7 @@ class PythonImplementation(object):
         self.must_run = True
         while self.must_run:
             if self.id_to_activate >= 0 and self.id_to_activate != self.activeid:
-                print "activating:", self.id_to_activate
+                warnings.warn("activating: "+str(self.id_to_activate))
                 self.activeid = self.id_to_activate
                 self.id_to_activate = -1
                 parent = self.communicators[self.activeid]
@@ -80,13 +85,13 @@ class PythonImplementation(object):
                     try:
                         self.handle_message(message, result_message)
                     except Exception as ex:
-                        print ex
+                        warnings.warn(str(ex))
                         traceback.print_exc()
                         result_message.set_error(str(ex))
                         #for type, attribute in self.dtype_to_message_attribute.iteritems():
                         #    setattr(result_message, attribute, [])
                             
-                        for type, attribute in self.dtype_to_message_attribute.iteritems():
+                        for type, attribute in self.dtype_to_message_attribute.items():
                             array = getattr(result_message, attribute)
                             packed = pack_array(array, result_message.call_count, type)
                             setattr(result_message, attribute, packed)
@@ -126,7 +131,7 @@ class PythonImplementation(object):
                     except  BaseException as ex:
                         traceback.print_exc()
                         result_message.set_error(ex.__str__())
-                        for type, attribute in self.dtype_to_message_attribute.iteritems():
+                        for type, attribute in self.dtype_to_message_attribute.items():
                             array = getattr(result_message, attribute)
                             packed = pack_array(array, result_message.call_count, type)
                             setattr(result_message, attribute, packed)
@@ -138,11 +143,52 @@ class PythonImplementation(object):
         
         client_socket.close()
         
+    def start_socket_mpi(self, port, host):
+        rank=MPI.COMM_WORLD.Get_rank()
+
+        if rank==0:
+            client_socket = socket.create_connection((host, port))
+        
+        self.must_run = True
+        while self.must_run:
+            
+            if rank==0:
+                message = SocketMessage()
+                message.receive(client_socket)
+            else:
+                message=None
+            
+            message=MPI.COMM_WORLD.bcast(message, root=0)
+                
+            result_message = SocketMessage(message.call_id, message.function_id, message.call_count)
+            
+            if message.function_id == 0:
+                self.must_run = False
+            else:
+                if message.function_id in self.mapping_from_tag_to_legacy_function:
+                    try:
+                        self.handle_message(message, result_message)
+                    except  BaseException as ex:
+                        traceback.print_exc()
+                        result_message.set_error(ex.__str__())
+                        for type, attribute in self.dtype_to_message_attribute.items():
+                            array = getattr(result_message, attribute)
+                            packed = pack_array(array, result_message.call_count, type)
+                            setattr(result_message, attribute, packed)
+    
+                else:
+                    result_message.set_error("unknown function id " + message.function_id)
+            
+            if rank==0:
+                result_message.send(client_socket)
+        
+        if rank==0:
+            client_socket.close()
+
 
     def handle_message(self, input_message, output_message):
         legacy_function = self.mapping_from_tag_to_legacy_function[input_message.function_id]
         specification = legacy_function.specification
-        
         dtype_to_count = self.get_dtype_to_count(specification)
         
         
@@ -156,7 +202,7 @@ class PythonImplementation(object):
         else:
             input_units = ()
         
-        for type, attribute in self.dtype_to_message_attribute.iteritems():
+        for type, attribute in self.dtype_to_message_attribute.items():
             count = dtype_to_count.get(type,0)
             for x in range(count):
                 if type == 'string':
@@ -164,7 +210,7 @@ class PythonImplementation(object):
                 else:
                     getattr(output_message, attribute).append(numpy.zeros(output_message.call_count, dtype=type))
 
-        for type, attribute in self.dtype_to_message_attribute.iteritems():
+        for type, attribute in self.dtype_to_message_attribute.items():
             array = getattr(input_message, attribute)
             unpacked = unpack_array(array, input_message.call_count, type)
             setattr(input_message,attribute, unpacked)
@@ -172,23 +218,24 @@ class PythonImplementation(object):
         units = [False] * len(specification.output_parameters)
         if specification.must_handle_array:
             keyword_arguments = self.new_keyword_arguments_from_message(input_message, None,  specification, input_units)
-            result = method(**keyword_arguments)
+            try: 
+                result = method(**keyword_arguments)
+            except TypeError as ex:
+                warnings.warn("mismatch in python function specification(?): "+str(ex))
+                result = method(*list(keyword_arguments))
             self.fill_output_message(output_message, None, result, keyword_arguments, specification, units)
         else:
             for index in range(input_message.call_count):
                 keyword_arguments = self.new_keyword_arguments_from_message(input_message, index,  specification, input_units)
                 try:
                     result = method(**keyword_arguments)
-                    if result < 0:
-                        print result, keyword_arguments
-                except TypeError:
+                except TypeError as ex:
+                    warnings.warn("mismatch in python function specification(?): "+str(ex))
                     result = method(*list(keyword_arguments))
-                    if result < 0:
-                        print "list", result, keyword_arguments, list(keyword_arguments)
                 self.fill_output_message(output_message, index, result, keyword_arguments, specification, units)
         
             
-        for type, attribute in self.dtype_to_message_attribute.iteritems():
+        for type, attribute in self.dtype_to_message_attribute.items():
             array = getattr(output_message, attribute)
             packed = pack_array(array, input_message.call_count, type)
             setattr(output_message, attribute, packed)
@@ -308,47 +355,55 @@ class PythonImplementation(object):
         outval.value = self.polling_interval 
         return 0
         
-    def internal__open_port(self, outportname):
-        outportname.value = MPI.Open_port(None)
+    def get_null_info(self):
+        return getattr(MPI, 'INFO_NULL') if hasattr(MPI, 'INFO_NULL') else None
+        
+    def internal__open_port(self, port_identifier):
+        port_identifier.value = MPI.Open_port(self.get_null_info())
         return 0
         
-    def internal__accept_on_port(self, portname, outval):
+    def internal__accept_on_port(self, port_identifier, comm_identifier):
         new_communicator = None
         rank = MPI.COMM_WORLD.Get_rank()
         if rank == 0:
-            communicator = MPI.COMM_SELF.Accept(portname, None, 0)
+            communicator = MPI.COMM_SELF.Accept(port_identifier, self.get_null_info(), 0)
             merged = communicator.Merge(False)
             new_communicator = MPI.COMM_WORLD.Create_intercomm(0, merged, 1, 65)
+
+            merged.Free()
+            communicator.Free()
         else:
             new_communicator = MPI.COMM_WORLD.Create_intercomm(0, MPI.COMM_WORLD, 1, 65)
         
         self.communicators.append(new_communicator)
         self.lastid += 1
-        outval.value = self.lastid
+        comm_identifier.value = self.lastid
         return 0
     
     
-    def internal__connect_to_port(self, portname, outval):
+    def internal__connect_to_port(self, port_identifier, comm_identifier):
         new_communicator = None
         rank = MPI.COMM_WORLD.Get_rank()
         if rank == 0:
-            communicator = MPI.COMM_SELF.Connect(portname, None, 0)
+            communicator = MPI.COMM_SELF.Connect(port_identifier, self.get_null_info(), 0)
             merged = communicator.Merge(True)
+
             new_communicator = MPI.COMM_WORLD.Create_intercomm(0, merged, 0, 65)
-            merged.Disconnect()
-            communicator.Disconnect()
+
+            merged.Free()
+            communicator.Free()
         else:
             new_communicator = MPI.COMM_WORLD.Create_intercomm(0, MPI.COMM_WORLD, 0, 65)
         
         self.communicators.append(new_communicator)
         self.lastid += 1
-        outval.value = self.lastid
+        comm_identifier.value = self.lastid
         return 0
         
-    def internal__activate_communicator(self, commid):
-        if commid > self.lastid or commid < 0:
+    def internal__activate_communicator(self, comm_identifier):
+        if comm_identifier > self.lastid or comm_identifier < 0:
             return -1
-        self.id_to_activate = commid
+        self.id_to_activate = comm_identifier
         return 0
         
     
@@ -359,7 +414,7 @@ class PythonImplementation(object):
         try:
             os.close(0)
         except Exception as ex:
-            print ex
+            warnings.warn( str(ex))
             
         if stdoutfile != "none":
             if stdoutfile != "/dev/null":
@@ -439,20 +494,21 @@ class PythonImplementation(object):
         return True
 
     def internal__become_code(self, number_of_workers, modulename, classname):
-        print number_of_workers, modulename, classname
+        warnings.warn(" possible experimental code path?")
+        #~ print number_of_workers, modulename, classname
         world = self.freeworld
         color = 0 if world.rank < number_of_workers else 1
         key = world.rank if world.rank < number_of_workers else world.rank - number_of_workers
-        print "CC,", color, key, world.rank, world.size
+        #~ print "CC,", color, key, world.rank, world.size
         newcomm = world.Split(color, key)
-        print ("nc:", newcomm.size, newcomm.rank)
-        print ("AA", self.world, color, self.world.rank, self.world.size)
+        #~ print ("nc:", newcomm.size, newcomm.rank)
+        #~ print ("AA", self.world, color, self.world.rank, self.world.size)
         try:
             new_intercomm = newcomm.Create_intercomm(0, self.world, 0, color)
         except Exception as ex:
-            print ex
-            raise
-        print ("nccc:", new_intercomm.Get_remote_size(), new_intercomm.rank)
+            warnings.warn(str(ex))
+            raise ex
+        #~ print ("nccc:", new_intercomm.Get_remote_size(), new_intercomm.rank)
         
         self.communicators.append(new_intercomm)
         self.id_to_activate = len(self.communicators) - 1
@@ -483,7 +539,7 @@ class CythonImplementation(PythonImplementation):
         else:
             input_units = ()
         
-        for type, attribute in self.dtype_to_message_attribute.iteritems():
+        for type, attribute in self.dtype_to_message_attribute.items():
             count = dtype_to_count.get(type,0)
             for x in range(count):
                 if type == 'string':
@@ -491,7 +547,7 @@ class CythonImplementation(PythonImplementation):
                 else:
                     getattr(output_message, attribute).append(numpy.zeros(output_message.call_count, dtype=type))
 
-        for type, attribute in self.dtype_to_message_attribute.iteritems():
+        for type, attribute in self.dtype_to_message_attribute.items():
             array = getattr(input_message, attribute)
             unpacked = unpack_array(array, input_message.call_count, type)
             setattr(input_message,attribute, unpacked)
@@ -512,7 +568,7 @@ class CythonImplementation(PythonImplementation):
                 self.fill_output_message(output_message, index, result, keyword_arguments, specification, units)
         
             
-        for type, attribute in self.dtype_to_message_attribute.iteritems():
+        for type, attribute in self.dtype_to_message_attribute.items():
             array = getattr(output_message, attribute)
             packed = pack_array(array, input_message.call_count, type)
             setattr(output_message, attribute, packed)

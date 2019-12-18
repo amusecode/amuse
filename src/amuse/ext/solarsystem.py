@@ -2,7 +2,7 @@ import numpy
 
 from amuse.units import units, nbody_system, constants
 from amuse.datamodel import Particles, Particle
-from amuse.community.kepler.interface import Kepler
+
 
 pi_over_180 = numpy.pi/180.
 
@@ -53,7 +53,7 @@ def _planets_only(define_mercury_attributes = False):
     
     planets = Particles(len(_solsysdat))
     planets.name = list(data['name'])
-    print planets.name.dtype
+    print(planets.name.dtype)
     planets.mass = units.MSun.new_quantity(data['mass'])
     density = (units.g/units.cm**3).new_quantity(data['density'])
     planets.radius = ((planets.mass/density) ** (1/3.0)).as_quantity_in(units.km)
@@ -98,6 +98,7 @@ def new_solar_system_for_mercury():
 
 
 def new_kepler():
+  from amuse.community.kepler.interface import Kepler
   converter = nbody_system.nbody_to_si(1|units.MSun,1|units.AU)
   kepler = Kepler(converter)
   kepler.initialize_code()
@@ -156,6 +157,15 @@ def get_sun_and_planets(delta_JD=0.|units.day):
                   5.68319e26,
                   86.8103e24,
                   102.41e24] | units.kg
+  #radius
+  planets.radius = [2439.7,
+                    6051.8,
+                    6378.1,
+                    3396.2,
+                    71492,
+                    60268,
+                    25559,
+                    24764] | units.km
   
   # eccentricity
   planets_ecc = [2.056263501026885E-01,
@@ -226,7 +236,7 @@ def get_sun_and_planets(delta_JD=0.|units.day):
                   'Earth',
                   'Mars',
                   'Jupiter',
-                  'Satrun',
+                  'Saturn',
                   'Uranus',
                   'Neptune']
   
@@ -325,6 +335,6 @@ def new_option_parser():
 if __name__ in ('__main__', '__plot__'):
   o, arguments  = new_option_parser().parse_args()
   solar_system = new_solar_system(o.Julian_date)
-  print solar_system
+  print(solar_system)
 
 

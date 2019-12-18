@@ -1,8 +1,6 @@
 """
-This is the public interface to the AMUSE 
+This is the public interface to the AMUSE
 *Astrophysical Multipurpose Software Environment* framework.
-
-
 """
 
 from amuse.support.core import late
@@ -29,49 +27,95 @@ from amuse.io import get_options_for_format
 from amuse.io import ReportTable
 
 from amuse.ext.solarsystem import new_solar_system_for_mercury, new_solar_system
-from amuse.ext.halogen_model import new_halogen_model
-from amuse.ext.galactics_model import new_galactics_model
+try:
+    from amuse.ext.halogen_model import new_halogen_model
+except ImportError:
+    def new_halogen_model():
+        print(
+            "Error - Halogen not installed. Install it with 'pip install amuse-halogen'."
+        )
+        return -1
+try:
+    from amuse.ext.galactics_model import new_galactics_model
+except ImportError:
+    def new_galactics_model():
+        print(
+            "Error - Galactics not installed. Install it with 'pip install amuse-galactics'."
+        )
+        return -1
 from amuse.ext.spherical_model import new_uniform_spherical_particle_distribution, new_spherical_particle_distribution
-from amuse.ext.star_to_sph import convert_stellar_model_to_SPH, pickle_stellar_model
-
-from amuse.community.bhtree.interface import BHTree, BHTreeInterface
-from amuse.community.hermite0.interface import Hermite, HermiteInterface
-from amuse.community.phiGRAPE.interface import PhiGRAPE, PhiGRAPEInterface
-from amuse.community.octgrav.interface import Octgrav, OctgravInterface
-from amuse.community.twobody.interface import TwoBody, TwoBodyInterface
-from amuse.community.huayno.interface import Huayno, HuaynoInterface
-from amuse.community.ph4.interface import ph4, ph4Interface
-from amuse.community.bonsai.interface import Bonsai, BonsaiInterface
-from amuse.community.pikachu.interface import Pikachu, PikachuInterface
-from amuse.community.aarsethzare.interface import AarsethZare, AarsethZareInterface
-from amuse.community.adaptb.interface import Adaptb, AdaptbInterface
-from amuse.community.hacs64.interface import Hacs64, Hacs64Interface
-from amuse.community.higpus.interface import HiGPUs, HiGPUsInterface
-from amuse.community.kepler.interface import Kepler, KeplerInterface
-from amuse.community.mercury.interface import Mercury, MercuryInterface
-from amuse.community.mi6.interface import MI6, MI6Interface
-from amuse.community.mikkola.interface import Mikkola, MikkolaInterface
-from amuse.community.smalln.interface import SmallN, SmallNInterface
+try:
+    from amuse.ext.star_to_sph import convert_stellar_model_to_SPH, pickle_stellar_model
+except ImportError:
+    def convert_stellar_model_to_SPH():
+        print(
+            "Error - Gadget2 not installed. Install it with 'pip install amuse-gadget2'."
+        )
+        return -1
+    def pickle_stellar_model():
+        print(
+            "Error - Gadget2 not installed. Install it with 'pip install amuse-gadget2'."
+        )
+        return -1
 
 
-from amuse.community.fi.interface import Fi, FiInterface
-from amuse.community.gadget2.interface import Gadget2, Gadget2Interface
-from amuse.community.athena.interface import Athena, AthenaInterface
-from amuse.community.capreole.interface import Capreole, CapreoleInterface
-from amuse.community.mpiamrvac.interface import MpiAmrVac, MpiAmrVacInterface
+_community_codes=[
+    "BHTree", 
+    "Hermite", 
+    "PhiGRAPE",
+    "Octgrav",
+    "TwoBody",
+    "Huayno",
+    "ph4",
+    "Bonsai",
+    "Pikachu",
+    "AarsethZare",
+    "Adaptb",
+    "Hacs64",
+    "HiGPUs",
+    "Kepler",
+    "Mercury",
+    "MI6",
+    "Mikkola",
+    "SmallN",
+    "Rebound",
+    "Brutus",
+    "Fi",
+    "Gadget2",
+    "Athena",
+    "Capreole",
+    "MpiAmrVac",
+    "SimpleX",
+    "Mocassin",
+    "SPHRay",
+    "SSE",
+    "BSE",
+    "MOSSE",
+    "MOBSE",
+    "SeBa",
+    "EVtwin",
+    "MESA",
+    "MMAMS",
+    "Hop",
+    ]
 
-from amuse.community.simplex.interface import SimpleX, SimpleXInterface
-from amuse.community.mocassin.interface import Mocassin, MocassinInterface
-from amuse.community.sphray.interface import SPHRay, SPHRayInterface
 
-from amuse.community.sse.interface import SSE, SSEInterface
-from amuse.community.bse.interface import BSE, BSEInterface
-from amuse.community.seba.interface import SeBa, SeBaInterface
-from amuse.community.evtwin.interface import EVtwin, EVtwinInterface
-from amuse.community.mesa.interface import MESA, MESAInterface
-from amuse.community.mmams.interface import MakeMeAMassiveStar, MakeMeAMassiveStarInterface
+def _placeholder(name):
+    class _placeholder(object):
+        def __init__(self, *arg,**kwargs):
+            raise Exception("failed import, code {0} not available, maybe it needs to be (pip) installed?".format(name))
+    return _placeholder
 
-from amuse.community.hop.interface import Hop, HopInterface
+for _name in _community_codes:
+    _interfacename=_name+"Interface"
+    _packagename=_name.lower()
+    try:
+        _interface=__import__("amuse.community."+_packagename+".interface", fromlist=[_name, _interfacename])
+        locals()[_name]=getattr(_interface,_name)
+        locals()[_interfacename]=getattr(_interface,_interfacename)
+    except ImportError:
+        locals()[_name]=_placeholder(_packagename)
+        locals()[_interfacename]=_placeholder(_packagename)
 
 from amuse.support.console import set_printing_strategy
 from amuse.support.console import get_current_printing_strategy
@@ -84,6 +128,8 @@ from amuse.datamodel import Grid
 from amuse.ic.plummer import new_plummer_model, new_plummer_sphere
 from amuse.ic.salpeter import new_salpeter_mass_distribution
 from amuse.ic.salpeter import new_salpeter_mass_distribution_nbody
+from amuse.ic.salpeter import new_powerlaw_mass_distribution
+from amuse.ic.salpeter import new_powerlaw_mass_distribution_nbody
 from amuse.ic.brokenimf import new_broken_power_law_mass_distribution, new_scalo_mass_distribution
 from amuse.ic.brokenimf import new_miller_scalo_mass_distribution, new_kroupa_mass_distribution
 from amuse.ic.flatimf import new_flat_mass_distribution, new_flat_mass_distribution_nbody
@@ -106,5 +152,3 @@ def vector(value = [], unit = None):
             return value.as_vector_with_length(1)
         else:
             return VectorQuantity(value, unit)
-            
-

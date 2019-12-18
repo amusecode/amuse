@@ -1,122 +1,122 @@
-from __future__ import print_function
+#from __future__ import print_function
 import numpy
 from amuse.units import units
+from amuse.units import quantities
 from amuse.units import constants
 from amuse.units import nbody_system
 from amuse.ext.bridge import bridge
-from amuse.community.phiGRAPE.interface import PhiGRAPE
+from amuse.community.phigrape.interface import PhiGRAPE
+from amuse.community.ph4.interface import ph4
 from amuse.community.fi.interface import Fi
+from amuse.community.bhtree.interface import BHTree
 from amuse.community.gadget2.interface import Gadget2
 from matplotlib import pyplot
 from amuse.ic.kingmodel import new_king_model
 
 """
-Implements a code simulating the galactic center. As the center itself does
-not evolve we only need to define the 'get_gravity_at_point'
-and 'get_potential_at_point'. Note that both functions get arrays
-of points.
+Implements a code simulating the galactic center. As the center itself
+does not evolve we only need to define the 'get_gravity_at_point' and
+'get_potential_at_point'. Note that both functions get arrays of
+points.
 """
+
+###BOOKLISTSTART1###
 class GalacticCenterGravityCode(object):
-    def __init__(self,R=1000.| units.parsec, M=1.6e10 | units.MSun, alpha=1.2):
-        self.R=R
-        self.M=M
+    def __init__(self,R, M, alpha):
+        self.radius=R
+        self.mass=M
         self.alpha=alpha
 
     def get_gravity_at_point(self,eps,x,y,z):
         r2=x**2+y**2+z**2
         r=r2**0.5
-        m=self.M*(r/self.R)**self.alpha  
+        m=self.mass*(r/self.radius)**self.alpha  
         fr=constants.G*m/r2
         ax=-fr*x/r
         ay=-fr*y/r
         az=-fr*z/r
         return ax,ay,az
 
-    def get_potential_at_point(self,eps,x,y,z):
-        r2=x**2+y**2+z**2
-        r=r2**0.5
-        c=constant.G*self.M/self.R**self.alpha    
-        phi=c/(alpha-1)*(r**(self.alpha-1)-R**(self.alpha-1))
-        return phi    
-
-    def vcirc(self,r):  
-        m=self.M*(r/self.R)**self.alpha  
+    def circular_velocity(self,r):  
+        m=self.mass*(r/self.radius)**self.alpha  
         vc=(constants.G*m/r)**0.5
         return vc
+###BOOKLISTSTOP1###
+
+    def get_potential_at_point(self,eps,x,y,z):
+        r=(x**2+y**2+z**2)**0.5
+        c=constant.G*self.mass/self.radius**self.alpha    
+        phi=c/(alpha-1)*(r**(self.alpha-1)-R**(self.alpha-1))
+        return phi    
         
-"""
-    helper function to setup an nbody king model cluster (returns code with particles)
-"""      
-def king_model_cluster(interface,N=1024,W0=3, Mcluster=4.e4 | units.MSun,
-                                 Rcluster= .7 | units.parsec,parameters=[]):
+###BOOKLISTSTART3###
+def make_king_model_cluster(nbodycode, N, W0, Mcluster,
+                            Rcluster, parameters = []):
 
     converter=nbody_system.nbody_to_si(Mcluster,Rcluster)
+    bodies=new_king_model(N,W0,convert_nbody=converter)
 
-    parts=new_king_model(N,W0,convert_nbody=converter)
-    parts.radius=0.0| units.parsec
-
-    nb=interface(converter)
+    code=nbodycode(converter)
     for name,value in parameters:
-      setattr(nb.parameters, name, value)
+        setattr(code.parameters, name, value)
+    code.particles.add_particles(bodies)
+    return code
+###BOOKLISTSTOP3###
 
-    nb.particles.add_particles(parts)
+def plot_cluster(x, y):
 
-    return nb
+    from prepare_figure import single_frame, get_distinct
+    colors = get_distinct(1)     
+    f = single_frame('X [pc]', 'Y [pc]')
+    pyplot.xlim(-60, 60)
+    pyplot.ylim(-60, 60)
+    pyplot.scatter(x,y, c=colors[0], s=50, lw=0)
 
-def shift_sys(system,dx,dy,dz,dvx,dvy,dvz):
-    """
-    helper function to shift system
-    """
-    parts=system.particles.copy()
-    parts.x=parts.x+dx
-    parts.y=parts.y+dy
-    parts.z=parts.z+dz
-    parts.vx=parts.vx+dvx
-    parts.vy=parts.vy+dvy
-    parts.vz=parts.vz+dvz
-    channel=parts.new_channel_to(system.particles)
-    channel.copy_attributes(["x","y","z","vx","vy","vz"])
-    #      parts.copy_values_of_state_attributes_to(system.particles)
+    save_file = 'Arches Fig. 7.1.png'
+    pyplot.savefig(save_file)
+    print('\nSaved figure in file', save_file, '\n')
+    pyplot.show()
+
+def evolve_cluster_in_galaxy(N, W0, Rinit, tend, timestep, M, R):
+
+###BOOKLISTSTART2###
+    Rgal = 1. | units.kpc
+    Mgal = 1.6e10 | units.MSun
+    alpha = 1.2
+    galaxy_code = GalacticCenterGravityCode(Rgal, Mgal, alpha)
+
+    cluster_code = make_king_model_cluster(BHTree, N, W0, M, R,
+                                           parameters=[("epsilon_squared",
+                                                        (0.01 | units.parsec)**2)])
     
-if __name__ == "__main__":
+    stars = cluster_code.particles.copy()    
+    stars.x += Rinit
+    stars.vy = 0.8*galaxy_code.circular_velocity(Rinit)
+    channel = stars.new_channel_to(cluster_code.particles)
+    channel.copy_attributes(["x","y","z","vx","vy","vz"])
 
+    system = bridge(verbose=False)
+    system.add_system(cluster_code, (galaxy_code,))
+
+    times = quantities.arange(0|units.Myr, tend, timestep)
+    for i,t in enumerate(times):
+        system.evolve_model(t,timestep=timestep)
+          
+    x = system.particles.x.value_in(units.parsec)
+    y = system.particles.y.value_in(units.parsec)
+    cluster_code.stop()
+###BOOKLISTSTOP2###
+
+    return x, y
+
+if __name__ == "__main__":
     N=1024
     W0=3
     Rinit=50. | units.parsec
     timestep=0.01 | units.Myr
-    Mcluster=4.e4 | units.MSun
-    Rcluster=0.7 | units.parsec
-
-    cluster=king_model_cluster(Fi,N,W0, Mcluster,Rcluster, parameters=[
-                   ("epsilon_squared", (0.01 | units.parsec)**2), 
-                   ("periodic_box_size",200 | units.parsec),
-                   ("timestep",timestep/4)] )
-    center=GalacticCenterGravityCode()
-    
-    vcirc=center.vcirc(Rinit)
-    shift_sys(cluster,Rinit,0| units.parsec,0.|units.parsec,
-                  0| units.kms,0.8*vcirc,0| units.kms)
-
-    sys=bridge(verbose=False)
-    sys.add_system(cluster, (center,), False)   
-
-    times=units.Myr([0.,0.2,0.4,0.6,0.8,1.0,1.2,1.4])
-    f=pyplot.figure(figsize=(8,16))
-    for i,t in enumerate(times):
-        sys.evolve_model(t,timestep=timestep)
-
-        x=sys.particles.x.value_in(units.parsec)
-        y=sys.particles.y.value_in(units.parsec)
-
-        subplot=f.add_subplot(4,2,i+1)
-        subplot.plot(x,y,'r .')
-        subplot.plot([0.],[0.],'b +')
-        subplot.set_xlim(-60,60)
-        subplot.set_ylim(-60,60)
-        subplot.set_title(t)
-        if i==7:
-            subplot.set_xlabel('parsec')
-            
-    cluster.stop()
-    pyplot.show()
-    
+    endtime = 2.5 | units.Myr
+    Mcluster = 5.e4 | units.MSun
+    Rcluster = 0.8 | units.parsec
+    x, y = evolve_cluster_in_galaxy(N, W0, Rinit, endtime, timestep,
+                                    Mcluster, Rcluster)
+    plot_cluster(x, y)

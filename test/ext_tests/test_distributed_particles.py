@@ -21,10 +21,12 @@ try:
 except ImportError:
     MPI = None
     
+import base64
+
 def dump_and_encode(x):
-  return pickle.dumps(x,0) # -1 does not work with sockets channel
+  return base64.b64encode(pickle.dumps(x)).decode()
 def decode_and_load(x):
-  return pickle.loads(x.encode("latin-1"))
+  return pickle.loads(base64.b64decode(x.encode()))
 
 class DistributedParticlesInterface(PythonCodeInterface):
     
@@ -34,15 +36,15 @@ class DistributedParticlesInterface(PythonCodeInterface):
     @legacy_function
     def get_length():
         function = LegacyFunctionSpecification()  
-        function.addParameter('reference_in', dtype='int64', direction=function.IN)
-        function.addParameter('output', dtype='int64', direction=function.OUT)
+        function.addParameter('reference', dtype='int64', direction=function.IN)
+        function.addParameter('len_out', dtype='int64', direction=function.OUT)
         function.result_type = 'int32'
         return function
         
     @legacy_function
     def do_init():
         function = LegacyFunctionSpecification()  
-        function.addParameter('input', dtype='int64', direction=function.IN)
+        function.addParameter('size', dtype='int64', direction=function.IN)
         function.addParameter('reference_out', dtype='int64', direction=function.OUT)
         function.result_type = 'int32'
         return function
@@ -50,7 +52,7 @@ class DistributedParticlesInterface(PythonCodeInterface):
     @legacy_function
     def do_set_attribute():
         function = LegacyFunctionSpecification()  
-        function.addParameter('reference_in', dtype='int64', direction=function.IN)
+        function.addParameter('reference', dtype='int64', direction=function.IN)
         function.addParameter('name_of_the_attribute', dtype='string', direction=function.IN)
         function.addParameter('pickled_value', dtype='string', direction=function.IN)
         function.result_type = 'int32'
@@ -59,9 +61,9 @@ class DistributedParticlesInterface(PythonCodeInterface):
     @legacy_function
     def do_get_attribute():
         function = LegacyFunctionSpecification()  
-        function.addParameter('reference_in', dtype='int64', direction=function.IN)
+        function.addParameter('reference', dtype='int64', direction=function.IN)
         function.addParameter('name_of_the_attribute', dtype='string', direction=function.IN)
-        function.addParameter('pickled_value', dtype='string', direction=function.OUT)
+        function.addParameter('output', dtype='string', direction=function.OUT)
         function.result_type = 'int32'
         return function
         
@@ -70,8 +72,8 @@ class DistributedParticlesInterface(PythonCodeInterface):
         function = LegacyFunctionSpecification()  
         function.addParameter('reference_in', dtype='int64', direction=function.IN)
         function.addParameter('pickled_index', dtype='string', direction=function.IN)
-        function.addParameter('is_particle', dtype='bool', direction=function.OUT)
-        function.addParameter('reference', dtype='int64', direction=function.OUT)
+        function.addParameter('is_particle_out', dtype='bool', direction=function.OUT)
+        function.addParameter('reference_out', dtype='int64', direction=function.OUT)
         function.result_type = 'int32'
         return function
 
@@ -151,7 +153,8 @@ class DistributedParticles(object):
         )
         
     def __getattr__(self, name_of_the_attribute):
-        return decode_and_load(self.code.do_get_attribute(self.reference,name_of_the_attribute))
+        result=self.code.do_get_attribute(self.reference,name_of_the_attribute)
+        return decode_and_load(result)
         
     def __getitem__(self, index):
         is_particle, reference = self.code.do_getitem(
@@ -230,7 +233,7 @@ class DistributedParticlesImplementation(object):
         self.mpi_comm = MPI.COMM_WORLD
         self.rank =  MPI.COMM_WORLD.Get_rank()
         self.number_of_processes = MPI.COMM_WORLD.Get_size()
-        local_size  = size / self.number_of_processes 
+        local_size  = size // self.number_of_processes 
         left_over = size - (local_size * self.number_of_processes)
         if self.rank == 0:
             local_size += left_over
@@ -440,7 +443,7 @@ class DistributedParticlesImplementation(object):
         return 0        
 
     def read_set_from_file(self, reference_in, filenames_in, fileformat):
-        ceil=lambda x,y: (x/y+(x%y>0))
+        ceil=lambda x,y: (x//y+(x%y>0))
         
         filenames=decode_and_load(filenames_in)
         if reference_in!=0:
@@ -479,7 +482,7 @@ class DistributedParticlesImplementation(object):
 def generate_set_example_function(start,end,*args,**kwargs):
     from amuse.datamodel import Particles
     p=Particles(end-start)
-    p.index=range(start,end)
+    p.index=list(range(start,end))
     return p
 
 def distributed_king_generator(start,end,*args,**kwargs):
@@ -512,9 +515,9 @@ class TestDistributedParticles(TestWithMPI):
             size = 3,
             number_of_workers = 1
         )
-        self.assertEquals(len(x) , 3)
+        self.assertEqual(len(x) , 3)
         x.mass = 10 | units.MSun
-        self.assertEquals(x.mass, [10, 10, 10]| units.MSun)
+        self.assertEqual(x.mass, [10, 10, 10]| units.MSun)
         
 
     def test2(self):
@@ -522,11 +525,11 @@ class TestDistributedParticles(TestWithMPI):
             size = 3,
             number_of_workers = 1
         )
-        self.assertEquals(len(x) , 3)
+        self.assertEqual(len(x) , 3)
         x.mass = 10 | units.MSun
         y = x[0:2]
-        self.assertEquals(len(y) , 2)
-        self.assertEquals(y.mass, [10, 10]| units.MSun)
+        self.assertEqual(len(y) , 2)
+        self.assertEqual(y.mass, [10, 10]| units.MSun)
         
 
     def test3(self):
@@ -534,18 +537,18 @@ class TestDistributedParticles(TestWithMPI):
             size = 3,
             number_of_workers = 1
         )
-        self.assertEquals(len(x) , 3)
+        self.assertEqual(len(x) , 3)
         x.mass = [1,2,3]| units.MSun
         y = x[0:2]
         z = x[1:]
-        self.assertEquals(len(y) , 2)
-        self.assertEquals(y.mass, [1,2]| units.MSun)
-        self.assertEquals(len(z) , 2)
-        self.assertEquals(z.mass, [2,3]| units.MSun)
+        self.assertEqual(len(y) , 2)
+        self.assertEqual(y.mass, [1,2]| units.MSun)
+        self.assertEqual(len(z) , 2)
+        self.assertEqual(z.mass, [2,3]| units.MSun)
         z.mass = [4,5] | units.MSun
-        self.assertEquals(y.mass, [1,4]| units.MSun)
-        self.assertEquals(z.mass, [4,5]| units.MSun)
-        self.assertEquals(x.mass, [1,4,5]| units.MSun)
+        self.assertEqual(y.mass, [1,4]| units.MSun)
+        self.assertEqual(z.mass, [4,5]| units.MSun)
+        self.assertEqual(x.mass, [1,4,5]| units.MSun)
         
         
     def test4(self):
@@ -555,20 +558,21 @@ class TestDistributedParticles(TestWithMPI):
         )
         x.mass = [1,2,3]| units.MSun
         y = x[1]
-        self.assertEquals(y.mass, 2 | units.MSun)
+        self.assertEqual(y.mass, 2 | units.MSun)
         y.mass = 10 | units.MSun
-        self.assertEquals(y.mass, 10 | units.MSun)
-        self.assertEquals(x.mass, [1,10,3]| units.MSun)
+        self.assertEqual(y.mass, 10 | units.MSun)
+        self.assertEqual(x.mass, [1,10,3]| units.MSun)
+
         
     def test5(self):
         x = DistributedParticles(
             size = 8,
             number_of_workers = 2
         )
-        self.assertEquals(len(x) , 8)
+        self.assertEqual(len(x) , 8)
         x.mass = [1,2,3,4,5,6,7,8] | units.MSun
         for index in range(len(x)):
-            self.assertEquals(x[index].mass, (index+1)| units.MSun)
+            self.assertEqual(x[index].mass, (index+1)| units.MSun)
             
     
     def test6(self):
@@ -576,62 +580,62 @@ class TestDistributedParticles(TestWithMPI):
             size = 9,
             number_of_workers = 2
         )
-        self.assertEquals(len(x) , 9)
+        self.assertEqual(len(x) , 9)
         x.mass = [1,2,3,4,5,6,7,8,9] | units.MSun
         for index in range(len(x)):
-            self.assertEquals(x[index].mass, (index+1)| units.MSun)
+            self.assertEqual(x[index].mass, (index+1)| units.MSun)
         
     def test7(self):
         x = DistributedParticles(
             size = 8,
             number_of_workers = 2
         )
-        self.assertEquals(len(x) , 8)
+        self.assertEqual(len(x) , 8)
         x.mass = [1,2,3,4,5,6,7,8] | units.MSun
-        self.assertEquals(len(x[3:7]), 4)
+        self.assertEqual(len(x[3:7]), 4)
         x[3:7].mass = [10,11,12,13] | units.MSun
         expected = [1,2,3,10,11,12,13,8]| units.MSun
         for index in range(len(x)):
-            self.assertEquals(x[index].mass, expected[index] )
+            self.assertEqual(x[index].mass, expected[index] )
             
     def test8(self):
         x = DistributedParticles(
             size = 8,
             number_of_workers = 2
         )
-        self.assertEquals(len(x) , 8)
+        self.assertEqual(len(x) , 8)
         x.mass = [1,2,3,4,5,6,7,8] | units.MSun
-        self.assertEquals(len(x[3:7]), 4)
+        self.assertEqual(len(x[3:7]), 4)
         x[3:7].mass = [10,11,12,13] | units.MSun
         
-        self.assertEquals(x[2:6].mass, [3,10,11,12]| units.MSun)
+        self.assertEqual(x[2:6].mass, [3,10,11,12]| units.MSun)
             
     def test9(self):
         x = DistributedParticles(
             size = 8,
             number_of_workers = 2
         )
-        self.assertEquals(len(x) , 8)
+        self.assertEqual(len(x) , 8)
         x.mass = [1,2,3,4,5,6,7,8] 
-        self.assertEquals(len(x[3:7]), 4)
+        self.assertEqual(len(x[3:7]), 4)
         x[3:7].mass = [10,11,12,13] 
         
-        self.assertEquals(x[2:6].mass, [3,10,11,12])
+        self.assertEqual(x[2:6].mass, [3,10,11,12])
         
     def test10(self):
         x = DistributedParticles(
             size = 40,
             number_of_workers = 4
         )
-        self.assertEquals(len(x) , 40)
-        x.mass = range(40) 
-        self.assertEquals(len(x[15:25]), 10)
-        self.assertEquals(x[15:25].mass, range(15,25))
-        x[15:25].mass = range(10)
-        self.assertEquals(x[15:25].mass, range(10))
+        self.assertEqual(len(x) , 40)
+        x.mass = list(range(40)) 
+        self.assertEqual(len(x[15:25]), 10)
+        self.assertEqual(x[15:25].mass, list(range(15,25)))
+        x[15:25].mass = list(range(10))
+        self.assertEqual(x[15:25].mass, list(range(10)))
             
     def test11(self):
-        from test_distributed_particles import generate_set_example_function
+        from .test_distributed_particles import generate_set_example_function
         y=generate_set_example_function(0,10)
         
         x = DistributedParticles(
@@ -642,8 +646,8 @@ class TestDistributedParticles(TestWithMPI):
         self.assertEqual(y.index,x.index)
 
     def test12(self):
-        from test_distributed_particles import generate_set_example_function
-        from test_distributed_particles import select_example_function
+        from .test_distributed_particles import generate_set_example_function
+        from .test_distributed_particles import select_example_function
         y=generate_set_example_function(0,10)
         
         x = DistributedParticles(
@@ -805,7 +809,7 @@ class TestDistributedParticles(TestWithMPI):
         self.assertEqual(x.mass, z.mass )        
 
     def test19(self):
-        from test_distributed_particles import distributed_king_generator
+        from .test_distributed_particles import distributed_king_generator
         from amuse.ic.kingmodel import MakeKingModel
         
         N=100

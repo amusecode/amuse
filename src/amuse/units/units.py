@@ -1,5 +1,5 @@
 import numpy
-import quantities
+from . import quantities
 from amuse.units.si import *
 from amuse.units.derivedsi import *
 from amuse.units import constants
@@ -25,6 +25,7 @@ Ry = named('rydberg unit', 'Ry', (constants.Rydberg_constant * constants.h * con
 # astronomical units
 angstrom = named('angstrom', 'angstrom', 1e-10*m)
 AU =  named('astronomical unit', 'AU', 149597870691.0  * m)
+au =  named('astronomical unit', 'au', 149597870691.0  * m)
 AUd = named('AU per day','AUd', 149597870691.0  * m / day)
 parsec=named('parsec','parsec', AU / numpy.tan(numpy.pi/(180*60*60)))
 kpc=named('kilo parsec','kpc',10**3 * parsec)
@@ -39,10 +40,12 @@ MEarth = named('earth mass', 'MEarth', 5.9722e24 * kg)
 RSun = named('solar radius', 'RSun', 6.955e8 * m)
 RJupiter = named('jupiter radius', 'RJupiter', 71492. * km)
 REarth = named('earth radius', 'REarth',  6371.0088 * km) # IUGG mean radius
+kyr = named('kilo year', 'kyr', 1000 * yr)
 myr = named('million year', 'Myr', 1000000 * yr)
 Myr = myr
 gyr = named('giga (billion) year', 'Gyr', 1000000000 * yr)
 Gyr = gyr
+pc = parsec
 
 # cgs units
 g = named('gram','g', 1e-3 * kg)
@@ -88,4 +91,6 @@ object_key = core.key_unit('object_key','key')
 #rad=named('radian','rad',m/m) (defined in derivedsi.py)
 pi=numpy.pi | rad
 rev=named('revolutions','rev',(2*numpy.pi) * rad)
-deg=named('degree','deg',(numpy.pi/180) *  rad)  
+deg=named('degree','deg',(numpy.pi/180) *  rad)
+arcmin=named('arcminutes', 'arcmin', (1./60) * deg)
+arcsec=named('arcseconds', 'arcsec', (1./3600) * deg)

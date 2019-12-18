@@ -57,10 +57,11 @@ helium_giant::helium_giant(super_giant & g) : single_star(g) {
 helium_giant::helium_giant(helium_star & h) : single_star(h) {
     delete &h;
     
-// (GN+SPZ May  4 1999) last update age is time of previous type change
+    // (GN+SPZ May  4 1999) last update age is time of previous type change
     last_update_age = next_update_age;
     update_relative_helium_mass(get_total_mass());
 
+    adjust_next_update_age();
     //(GN Feb 16 2011) dirty trick to avoid crashes after mergers
     if (relative_age > next_update_age) relative_age = next_update_age;
 
@@ -198,7 +199,7 @@ real helium_giant::helium_giant_end_time(const real mass, const real mass_tot) {
 void helium_giant::create_remnant(const real mass, const real mass_tot, const real mc_core) {
 
     stellar_type type;
-    real mc_SN = maximum_helium_giant_core_mass(mass);
+    //real mc_SN = maximum_helium_giant_core_mass(mass);
     if (mass_tot < cnsts.parameters(Chandrasekar_mass)){
         // if mc_core equals 1.45*mass-0.31
         // shell burning stops before whole envelope is converted into C and O
@@ -232,7 +233,12 @@ void helium_giant::create_remnant(const real mass, const real mass_tot, const re
         if (mass < 1.6) 
             type = Disintegrated;
         else {
-            if (mc_SN <  cnsts.parameters(COcore2black_hole))
+    	  // (GN Oct  5 2016) Hurley uses theoretical Base AGB core mass to determine
+    	  //     real mc_SN = maximum_helium_giant_core_mass(mass);
+    	  //            if (mc_SN <= 7.)
+    	  // in SeBa we use the current real properties
+    	  // note core_mass = COcore_mass
+            if (core_mass  <  cnsts.parameters(COcore2black_hole))
                 type = Neutron_Star;
             else
                 type = Black_Hole;

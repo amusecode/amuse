@@ -59,7 +59,7 @@ public class AmuseMessage {
     public static final int HEADER_DOUBLE_COUNT_INDEX = 7;
     public static final int HEADER_BOOLEAN_COUNT_INDEX = 8;
     public static final int HEADER_STRING_COUNT_INDEX = 9;
-    public static final int HEADER_UNITS_COUNT_INDEX = 9;
+    public static final int HEADER_UNITS_COUNT_INDEX = 10;
 
     public static final int SIZEOF_INT = 4;
     public static final int SIZEOF_LONG = 8;
@@ -133,8 +133,8 @@ public class AmuseMessage {
         stringHeaderBytes = ByteBuffer.allocateDirect(0);
         stringBytes = new ByteBuffer[0];
 
-        allButStringByteBuffers = new ByteBuffer[] { headerBytes, intBytes, longBytes, floatBytes, doubleBytes, booleanBytes,
-                stringHeaderBytes };
+        allButStringByteBuffers = new ByteBuffer[] { headerBytes, intBytes, longBytes, floatBytes, doubleBytes,
+                booleanBytes, stringHeaderBytes };
 
         // no string buffers yet
         byteBuffers = allButStringByteBuffers;
@@ -189,7 +189,7 @@ public class AmuseMessage {
         result += getBooleanCount() * SIZEOF_BOOLEAN;
 
         for (int i = 0; i < getStringCount(); i++) {
-            result += stringHeader.get(i);
+            result += stringHeader.get(i)+1 ; // account for zero
         }
 
         return result;
@@ -287,6 +287,7 @@ public class AmuseMessage {
         header.put(HEADER_DOUBLE_COUNT_INDEX, 0);
         header.put(HEADER_BOOLEAN_COUNT_INDEX, 0);
         header.put(HEADER_STRING_COUNT_INDEX, 1);
+        header.put(HEADER_UNITS_COUNT_INDEX, 0);
 
         // set error state
         headerBytes.put(HEADER_ERROR_FLAG, TRUE_BYTE);
@@ -301,10 +302,11 @@ public class AmuseMessage {
 
             stringHeader.put(0, bytes.length);
 
-            ensureStringsCapacity();
+            ensureStringsCapacity(0);
 
             stringBytes[0].clear();
             stringBytes[0].put(bytes);
+            stringBytes[0].put( (byte) 0); // add extra zero
         } catch (UnsupportedEncodingException e) {
             System.err.println("could not set error: " + e);
             stringHeader.put(0, 0);
@@ -334,17 +336,22 @@ public class AmuseMessage {
         byte[] bytes;
 
         try {
-            bytes = value.getBytes("UTF-8");
+            if (value == null) {
+                //set null values to an empty string
+                bytes = new String().getBytes("UTF-8");
+            } else {
+                bytes = value.getBytes("UTF-8");
+            }
 
             // set length of string in header
             stringHeader.put(position, bytes.length);
 
             // make sure there is space for the string
-            ensureStringsCapacity();
+            ensureStringsCapacity(position);
 
             stringBytes[position].clear();
             stringBytes[position].put(bytes);
-
+            stringBytes[position].put( (byte) 0); // add extra zero
         } catch (UnsupportedEncodingException e) {
             System.err.println("ERROR! UTF-8 not supported by the JVM!");
         }
@@ -355,17 +362,22 @@ public class AmuseMessage {
         byte[] bytes;
 
         try {
-            bytes = value.getBytes("UTF-8");
-
+            if (value == null) {
+                //set null values to an empty string
+                bytes = new String().getBytes("UTF-8");
+            } else {
+                bytes = value.getBytes("UTF-8");
+            }
+            
             // set length of string in header
             stringHeader.put(index, bytes.length);
 
             // make sure there is space for the string
-            ensureStringsCapacity();
+            ensureStringsCapacity(index);
 
             stringBytes[index].clear();
             stringBytes[index].put(bytes);
-
+            stringBytes[index].put( (byte) 0); // add extra zero
         } catch (UnsupportedEncodingException e) {
             System.err.println("ERROR! UTF-8 not supported by the JVM!");
         }
@@ -433,7 +445,8 @@ public class AmuseMessage {
         }
 
         if (stringBytes.length <= index) {
-            throw new IOException("cannot get string at index " + index + " in call" + this + " header does not match content!");
+            throw new IOException("cannot get string at index " + index + " in call" + this 
+                     + " header does not match content!");
 
         }
 
@@ -444,7 +457,7 @@ public class AmuseMessage {
         }
         byte[] bytes = new byte[utf8length];
         stringBytes[index].position(0);
-        stringBytes[index].limit(utf8length);
+        stringBytes[index].limit(utf8length +1 ); // account for extra zero
         stringBytes[index].get(bytes);
 
         return new String(bytes, 0, utf8length, "UTF-8");
@@ -496,9 +509,9 @@ public class AmuseMessage {
         }
 
         for (int i = 0; i < getStringCount(); i++) {
-            int utf8Length = stringHeader.get(i);
+            int utf8Length = stringHeader.get(i) +1; // account for extra zero
 
-            stringBytes[i].clear().limit(utf8Length);
+            stringBytes[i].clear().limit(utf8Length );
         }
 
         // set the limit of the rest of the string bytes to 0
@@ -516,7 +529,21 @@ public class AmuseMessage {
         setStringLimitsFromHeader();
 
         // write to channel
-        channel.write(byteBuffers);
+        // channel.write(byteBuffers);
+
+        // write all bufferd to channel
+        boolean done = false;
+        
+        while(!done) {
+            channel.write(byteBuffers);
+            
+            done = true;
+            for (ByteBuffer buffer : byteBuffers) {
+                if (buffer.hasRemaining()) {
+                   done = false;
+                }
+            }
+        }
 
         // alternative, debugging version of writing buffers
         // for (ByteBuffer buffer : byteBuffers) {
@@ -626,7 +653,7 @@ public class AmuseMessage {
         }
 
         for (int i = 0; i < getStringCount(); i++) {
-            int stringLength = stringHeader.get(i);
+            int stringLength = stringHeader.get(i) +1 ; // account for extra zero
             if (stringBytes[i] == null || stringLength > stringBytes[i].capacity()) {
 
                 stringBytes[i] = ByteBuffer.allocateDirect(stringLength);
@@ -647,6 +674,49 @@ public class AmuseMessage {
 
             //System.err.println("ensureStringsCapacity() Updated buffers to " + Arrays.toString(byteBuffers));
         }
+
+        return buffersUpdated;
+    }
+
+    public boolean ensureStringsCapacity(int index) {
+        // checking if the string header is big enough is checked above, so
+        // we
+        // only check if all strings listed in the header
+        boolean buffersUpdated = false;
+
+        if (stringBytes.length < getStringCount()) {
+            ByteBuffer[] oldStringBytes = stringBytes;
+            stringBytes = new ByteBuffer[getStringCount()];
+            for (int i = 0; i < oldStringBytes.length; i++) {
+                stringBytes[i] = oldStringBytes[i];
+            }
+            buffersUpdated = true;
+        }
+
+        if (buffersUpdated) {
+            // update byte buffers array
+            ByteBuffer[] newByteBuffers = new ByteBuffer[allButStringByteBuffers.length + stringBytes.length];
+            for (int i = 0; i < allButStringByteBuffers.length; i++) {
+                newByteBuffers[i] = allButStringByteBuffers[i];
+            }
+            for (int i = 0; i < stringBytes.length; i++) {
+                newByteBuffers[allButStringByteBuffers.length + i] = stringBytes[i];
+            }
+            byteBuffers = newByteBuffers;
+
+            
+            //System.err.println("ensureStringsCapacity() Updated buffers to " + Arrays.toString(byteBuffers));
+        }
+
+        {
+          int stringLength = stringHeader.get(index) +1; // account for extra zero
+          if (stringBytes[index] == null || stringLength > stringBytes[index].capacity()) {
+
+              stringBytes[index] = ByteBuffer.allocateDirect(stringLength);
+              byteBuffers[allButStringByteBuffers.length + index] = stringBytes[index];
+          }
+        }
+
 
         return buffersUpdated;
     }

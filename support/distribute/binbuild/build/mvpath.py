@@ -17,7 +17,7 @@ def get_dylib_files(path='.'):
         yield os.path.normpath(os.path.abspath(fullname))
 
 def get_dylib_id(name):
-    print name
+    print(name)
     outputstring = subprocess.check_output(['otool', '-D', name])
     lines = outputstring.strip().splitlines()
     return lines[1].strip()
@@ -25,15 +25,15 @@ def get_dylib_id(name):
 def change_dylib_id(name, newid, dryrun = True):
     arguments = ['install_name_tool', '-id', newid, name]
     if dryrun == True:
-        print ' '.join(arguments)
+        print(' '.join(arguments))
         return
 
     try:
         outputstring = subprocess.check_output(arguments)
-        print outputstring
+        print(outputstring)
     except Exception as ex:
-        print "coule not change id for library:", name
-        print "exception was:", ex
+        print("coule not change id for library:", name)
+        print("exception was:", ex)
 
 def main(path='.', rpath='@rpath', dryrun = True):
     for x in get_dylib_files(path):

@@ -54,7 +54,6 @@ release: amuse_examples latexpdf
 	mv docs-pdf pdf
 #	cp -R build/plot_directive .
 
-
 web: amuse_examples
 	$(SPHINXBUILD) -b web $(ALLSPHINXOPTS) $(BUILDDIR)/web
 	@echo

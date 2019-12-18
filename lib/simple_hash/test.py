@@ -4,27 +4,27 @@ import sys
 
 class HashTableWrapper:
     def __init__(self, pathToExe):
-        self.p = subprocess.Popen(pathToExe, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+        self.p = subprocess.Popen(pathToExe, stdin=subprocess.PIPE, stdout=subprocess.PIPE,bufsize=0)
 #        self.p.stdin = DebugPrintFilter(self.p.stdin)
     def __setitem__(self, key, value):
 #        print 'insert %d %d' % (key, value)
-        self.p.stdin.write('insert %d %d\n' % (key, value))
+        self.p.stdin.write(b'insert %d %d\n' % (key, value))
     def __getitem__(self, key):
 #        print 'lookup %d' % key
-        self.p.stdin.write('lookup %d\n' % key)
+        self.p.stdin.write(b'lookup %d\n' % key)
         return eval(self.p.stdout.readline())
     def increment(self, key):
 #        print 'increment %d' % key
-        self.p.stdin.write('increment %d\n' % key)
+        self.p.stdin.write(b'increment %d\n' % key)
     def __delitem__(self, key):
 #        print 'delete %d' % key
-        self.p.stdin.write('delete %d\n' % key)
+        self.p.stdin.write(b'delete %d\n' % key)
     def clear(self):
 #        print "clear"
-        self.p.stdin.write('clear\n')
+        self.p.stdin.write(b'clear\n')
     def compact(self):
 #        print "compact"
-        self.p.stdin.write('compact\n')
+        self.p.stdin.write(b'compact\n')
     def run(self, test, *args):
         r = test(self, *args)
         self.p.stdin.close()

@@ -5,23 +5,10 @@ except ImportError:
     class FakePlotLibrary(object):
         def stub(self, *args, **kwargs):
             raise Exception("No plot library available")
-        figure = stub
-        plot = stub
-        scatter = stub
-        hist = stub
-        semilogx = stub
-        semilogy = stub
-        loglog = stub
-        errorbar = stub
-        text = stub
-        imshow = stub
-        pcolor = stub
-        pcolormesh = stub
-        xlabel = stub
-        ylabel = stub
-        xlim = stub
-        ylim = stub
-
+        
+        def __getattr__(self, name):
+            raise Exception("matplotlib not present")
+        
     native_plot = FakePlotLibrary()
 
 import numpy
@@ -432,7 +419,10 @@ def sph_particles_plot(particles, u_range = None, min_size = 100, max_size = 100
     n_pixels = native_plot.gcf().get_dpi() * native_plot.gcf().get_size_inches()
 
     current_axes = native_plot.gca()
-    current_axes.set_axis_bgcolor('#101010')
+    try:
+      current_axes.set_facecolor('#101010')
+    except:
+      current_axes.set_axis_bgcolor('#101010')
     if width is not None:
         view = width * [-0.5, 0.5, -0.5, 0.5]
 

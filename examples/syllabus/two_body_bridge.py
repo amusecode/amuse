@@ -1,3 +1,4 @@
+from __future__ import print_function
 import numpy 
 from amuse.lab import *
 from amuse.couple import bridge
@@ -27,6 +28,7 @@ def main():
     star_gravity = ph4(converter)
     star_gravity.particles.add_particle(star)
 
+###BOOKLISTSTART###
     planet_gravity = ph4(converter)
     planet_gravity.particles.add_particle(planet)
 
@@ -34,8 +36,9 @@ def main():
     channel_from_planet_to_framework = planet_gravity.particles.new_channel_to(ss)
 
     gravity = bridge.Bridge(use_threading=False)
-    gravity.add_system(star_gravity, (planet_gravity,) )
-    gravity.add_system(planet_gravity, (star_gravity,) )
+    gravity.add_system(star_gravity, (planet_gravity,))
+    gravity.add_system(planet_gravity, (star_gravity,))
+###BOOKLISTSTOP###
 
     write_set_to_file(ss, filename, 'hdf5')
 
@@ -59,9 +62,9 @@ def main():
         Ekin = gravity.kinetic_energy 
         Epot = gravity.potential_energy
         Etot = Ekin + Epot
-        print "T=", time, 
-        print "E= ", Etot, "Q= ", Ekin/Epot,
-        print "dE=", (Etot_init-Etot)/Etot, "ddE=", (Etot_prev-Etot)/Etot 
+        print("T=", time, end=' ') 
+        print("E= ", Etot, "Q= ", Ekin/Epot, end=' ')
+        print("dE=", (Etot_init-Etot)/Etot, "ddE=", (Etot_prev-Etot)/Etot) 
         Etot_prev = Etot
     gravity.stop()
 

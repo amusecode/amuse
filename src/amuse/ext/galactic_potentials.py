@@ -193,7 +193,7 @@ class PowerLawCutoff_profile(LiteratureReferencesMixIn):
         self.G = G
         self.rho0_r0_to_alpha = self.rho0*self.r0**self.alpha
         
-        if 3.<=self.alpha: print "Warning: power-law index must be less than 3."
+        if 3.<=self.alpha: print("Warning: power-law index must be less than 3.")
     
     def get_potential_at_point(self,eps,x,y,z):
         if scipy_imported == False:
@@ -201,7 +201,7 @@ class PowerLawCutoff_profile(LiteratureReferencesMixIn):
         r = (x**2+y**2+z**2).sqrt()
         r_rc = r/self.rc
         return -2.*numpy.pi*self.G*self.rho0_r0_to_alpha*self.rc**(3.-self.alpha)/r* \
-            (gamma(1.5-0.5*self.alpha)*gammainc(1.5-0.5*self.alpha,r_rc**2)+r_rc*gamma(1.-0.5*self.alpha)*(1.-gammainc(1.-0.5*self.alpha,r_rc**2)))
+               (r/self.rc*gamma(1.-self.alpha/2.)*gammainc(1.-self.alpha/2.,(r/self.rc)**2.)-gamma(1.5-self.alpha/2.)*gammainc(1.5-self.alpha/2.,(r/self.rc)**2.))
     
     def radial_force(self,r):
         Mr = self.enclosed_mass(r)

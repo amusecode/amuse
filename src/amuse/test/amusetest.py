@@ -4,10 +4,15 @@ import numpy
 import os
 import sys
 import inspect
+import tempfile
 
+from amuse.support import _Defaults
 from amuse.support import exceptions
 from amuse.support import literature
 from amuse.support import options
+from amuse.support.core  import late
+from amuse.support import get_amuse_root_dir
+from amuse.units.quantities import none
 from amuse.units.quantities import Quantity
 from amuse.units.quantities import to_quantity
 from amuse.units.quantities import is_quantity
@@ -32,11 +37,15 @@ class TestCase(unittest.TestCase):
         literature.TrackLiteratureReferences.suppress_output()
 
     def _check_comparable(self, first, second):
-        if is_quantity(first) is not is_quantity(second):
-            # One exception: quantity with none_unit CAN be compared with non-quantity:
-            if not to_quantity(first).unit == to_quantity(second).unit:
-                raise TypeError("Cannot compare quantity: {0} with non-quantity: {1}.".format(*(first,second)
-                    if isinstance(first, Quantity) else (second,first)))
+        if is_quantity(first):
+          # if the second is not a quantity and the first does not have the none unit then
+          # we are comparing a quantity with a non-quanity
+          if not is_quantity(second) and not first.unit.base == none.base:
+              raise TypeError("Cannot compare quantity: {0} with non-quantity: {1}.".format(first, second))
+        elif is_quantity(second):
+          # by definition the first is not a quantity, so only check if second unit is not none
+          if not second.unit.base == none.base:
+              raise TypeError("Cannot compare non-quantity: {0} with quantity: {1}.".format(first, second))
 
     def _convert_to_numeric(self, first, second, in_units):
         if in_units:
@@ -105,7 +114,7 @@ class TestCase(unittest.TestCase):
     def failUnlessAlmostRelativeEqual(self, first, second, places=None, msg=None):
         self._check_comparable(first, second)
         first_num, second_num = self._convert_to_numeric(first, second, None)
-
+        
         if places is None:
             places = self.PRECISION
 
@@ -136,14 +145,14 @@ class TestCase(unittest.TestCase):
     def assertIsOfOrder(self, first, second, msg=None):
         ratio = first*1.0/second
         if isinstance(ratio, Quantity):
-            raise self.failureException,(msg or "Units of {0!r} and {1!r} do not match.".format(first, second))
+            raise self.failureException(msg or "Units of {0!r} and {1!r} do not match.".format(first, second))
         failures = numpy.array(numpy.round(numpy.log10(ratio)) != 0).flatten()
         self._raise_exceptions_if_any(failures, first, second, '{0} is not of order {1}', msg)
 
     def assertIsWithinFraction(self, first, second, fraction=0.05, msg=None):
         ratio = first*1.0/second
         if isinstance(ratio, Quantity):
-            raise self.failureException,(msg or "Units of {0!r} and {1!r} do not match.".format(first, second))
+            raise self.failureException(msg or "Units of {0!r} and {1!r} do not match.".format(first, second))
         failures = numpy.array(abs(ratio) < 0).flatten()
         self._raise_exceptions_if_any(failures, first, second, '{0} is not of order {1}', msg)
 
@@ -194,7 +203,7 @@ class TestCase(unittest.TestCase):
                 ok = True
             except self.failureException:
                 result.addFailure(self, sys.exc_info())
-            except SkipTest, ex:
+            except SkipTest as ex:
                 ok = True
                 pass
             except KeyboardInterrupt:
@@ -215,8 +224,8 @@ class TestCase(unittest.TestCase):
         finally:
             result.stopTest(self)
 
-
-    def skip(self, reason):
+    @staticmethod
+    def skip(reason):
         try:
             from nose.plugins import skip
             raise skip.SkipTest(reason)
@@ -226,10 +235,12 @@ class TestCase(unittest.TestCase):
             else:
                 raise SkipTest(reason)
 
-    def get_path_to_results(self):
+    @staticmethod
+    def get_path_to_results():
         return get_path_to_results()
 
-    def get_amuse_root_dir(self):
+    @staticmethod
+    def get_amuse_root_dir():
         return get_amuse_root_dir()
 
 
@@ -245,7 +256,7 @@ class TestWithMPI(TestCase):
     def tearDown(self):
         from amuse.rfi.core import stop_interfaces
         #leave the distributed code alone, stop the rest
-        stop_interfaces(exceptions= ['DistributedAmuseInterface'])
+        #stop_interfaces(exceptions= ['DistributedAmuseInterface'])
 
     def new_instance(self, factory, *arguments, **kwarguments):
         try:
@@ -255,30 +266,30 @@ class TestWithMPI(TestCase):
                 raise
             self.skip("Tried to instantiate a new object of the code with type '{0}', but this code is not available".format(factory))
 
-
-    def new_instance_of_an_optional_code(self, factory, *arguments, **kwarguments):
+    @classmethod
+    def new_instance_of_an_optional_code(cls, factory, *arguments, **kwarguments):
         try:
             return factory(*arguments, **kwarguments)
         except Exception as message:
-            self.skip("Tried to instantiate a new object of the optional code with type '{0}', but this code is not available".format(factory))
+            cls.skip("Tried to instantiate a new object of the optional code with type '{0}', but this code is not available".format(factory))
 
 
-    def can_compile_modules(self):
+    @staticmethod
+    def can_compile_modules():
         return TestDefaults().can_run_tests_to_compile_modules
 
-    def check_can_compile_modules(self):
-        if not self.can_compile_modules():
-            self.skip('will not run tests that compile codes')
+    @classmethod
+    def check_can_compile_modules(cls):
+        if not cls.can_compile_modules():
+            cls.skip('will not run tests that compile codes')
 
+    @classmethod
+    def check_for_mpi(cls):
+        if not cls.is_mpi_enabled():
+            cls.skip('mpi is not enabled')
 
-    def check_for_mpi(self):
-        if not self.is_mpi_enabled():
-            self.skip('mpi is not enabled')
-
-
-
-
-    def is_mpi_enabled(self):
+    @staticmethod
+    def is_mpi_enabled():
         try:
             from amuse import config
             if hasattr(config,'mpi'):
@@ -287,7 +298,13 @@ class TestWithMPI(TestCase):
             return True
 
 
-class TestDefaults(options.OptionalAttributes):
+class TestDefaults(_Defaults):
+
+    @late
+    def temporarydir(self):
+        dirname=tempfile.mkdtemp()
+        print(("generating temporary dir for test results: {0}". format(dirname)))
+        return dirname
 
     @options.option(sections=['test'])
     def path_to_results(self):
@@ -295,54 +312,29 @@ class TestDefaults(options.OptionalAttributes):
         if os.path.exists(os.path.abspath(name_of_testresults_directory)):
             if os.access(os.path.abspath(name_of_testresults_directory),  os.W_OK):
                 return os.path.abspath(name_of_testresults_directory)
-            else:
-                result = os.getcwd()
-                if not os.access(os.getcwd(),  os.W_OK):
-                    raise Exception("the current directory must be writable for amuse tests")
-                return os.getcwd()
 
         amuse_root_dir = self.amuse_root_dir
         test_results_dir = os.path.join(amuse_root_dir, self.name_of_testresults_directory)
         if os.path.exists(test_results_dir):
             try:
-                f = open('test.txt','w')
+                f = open(os.path.join(test_results_dir,'test.txt'),'w')
                 f.close()
                 return test_results_dir
             except IOError as ex:
-                if not os.access(os.getcwd(),  os.W_OK):
-                    raise Exception("the current directory must be writable for amuse tests")
-                return os.getcwd()
+                pass
         else:
-            if not os.access(os.getcwd(),  os.W_OK):
-                raise Exception("the current directory must be writable for amuse tests")
-            return os.getcwd()
+            return self.temporarydir
 
     @options.option(sections=['test'])
     def name_of_testresults_directory(self):
         return 'test_results'
 
-    @options.option(sections=['data'])
-    def amuse_root_dir(self):
-        if 'AMUSE_DIR' in os.environ:
-            return os.environ['AMUSE_DIR']
-        previous = None
-        result = os.path.abspath(__file__)
-        while not os.path.exists(os.path.join(result,'build.py')):
-            result = os.path.dirname(result)
-            if result == previous:
-                return os.path.dirname(os.path.dirname(__file__))
-            previous = result
-        return result
-
     @options.option(type='boolean',sections=['test'])
     def can_run_tests_to_compile_modules(self):
         return True
 
-
+_testdefaults=TestDefaults()
 
 def get_path_to_results():
-    return TestDefaults().path_to_results
-
-def get_amuse_root_dir():
-    return TestDefaults().amuse_root_dir
+    return _testdefaults.path_to_results
 

@@ -29,12 +29,12 @@ int main(int argc, char** argv) {
 
   cerr.precision(5);
 
-  MPI::Init( argc, argv );
+  MPI_Init( & argc, & argv );
 
-  unsigned int COMM_RANK = MPI::COMM_WORLD.Get_rank();  /* Get my rank          */    
-  //int COMM_SIZE = MPI::COMM_WORLD.Get_size();  /* Get the total number of processors */
+  int COMM_RANK;
+  MPI_Comm_rank(MPI_COMM_WORLD, &COMM_RANK);  /* Get my rank          */
 
-  double t0 = MPI::Wtime();
+  double t0 = MPI_Wtime();
 
   if (argc != 2) {
     
@@ -43,7 +43,7 @@ int main(int argc, char** argv) {
            << "mpirun < mpi param > " << argv[0] << " < input file >" << endl;
     }
     
-    MPI::Finalize();
+    MPI_Finalize();
     return EXIT_SUCCESS;
   }
 
@@ -108,7 +108,7 @@ int main(int argc, char** argv) {
 
       //================  Physics Section     =============================//
 
-      MPI::COMM_WORLD.Barrier();
+      MPI_Barrier(MPI_COMM_WORLD);
 
       if(COMM_RANK == 0)
         cerr << " (" << COMM_RANK << ") Computing physical properties" << endl;
@@ -146,7 +146,7 @@ int main(int argc, char** argv) {
 
   //SimpleXGrid.clear_temporary();
 
-  double t1 = MPI::Wtime();
+  double t1 = MPI_Wtime();
   if(COMM_RANK==0){
     cerr << endl << " *****  Total Simulation time: " << t1-t0 << " seconds *****" << endl;
     SimpleXGrid.simpleXlog << endl << " *****  Total Simulation time: " << t1-t0 << " seconds *****" << endl;
@@ -154,7 +154,7 @@ int main(int argc, char** argv) {
 
 
 
-  MPI::Finalize();
+  MPI_Finalize();
   return EXIT_SUCCESS;
 
 }

@@ -16,12 +16,12 @@ from amuse.couple.fallback_stellar_evolution import FallbackStellarEvolution
 class TestFallbackStellarEvolution(TestCase):
 
     def test1(self):
-        print "Testing FallbackStellarEvolution"
+        print("Testing FallbackStellarEvolution")
         instance = FallbackStellarEvolution()
         instance.stop()
 
     def xtest2(self):
-        print "Testing FallbackStellarEvolution: evolve tests"
+        print("Testing FallbackStellarEvolution: evolve tests")
 
 
 # results of original code  (not really check the numbers, tests have been relaxed because
@@ -65,8 +65,8 @@ class TestFallbackStellarEvolution(TestCase):
           while instance.ActiveModel[star].__class__.__name__=="EVtwin":
               instance.evolve_model()
 
-          print "%s\t%s\t%s\t%s\t%s\t%s" % (star.age, star.mass, star.radius,
-           star.luminosity, star.stellar_type, instance.ActiveModel[star].__class__.__name__)
+          print("%s\t%s\t%s\t%s\t%s\t%s" % (star.age, star.mass, star.radius,
+           star.luminosity, star.stellar_type, instance.ActiveModel[star].__class__.__name__))
 
           self.assertAlmostRelativeEqual(results[str(m)]["sse_age"],instance._FBTimeseries[star].particles[0].SSEAgeAtSwitch,7)
           self.assertAlmostRelativeEqual(results[str(m)]["sse_mass"],star.mass,7)
@@ -81,13 +81,13 @@ class TestFallbackStellarEvolution(TestCase):
           self.assertAlmostRelativeEqual(results[str(m)]["evtwin_rad"],star.radius,2)
           self.assertAlmostRelativeEqual(results[str(m)]["evtwin_L"],star.luminosity,2)
 
-          print "%s\t%s\t%s\t%s\t%s" % (star.age, star.mass, star.radius,
-           star.luminosity, star.stellar_type)
+          print("%s\t%s\t%s\t%s\t%s" % (star.age, star.mass, star.radius,
+           star.luminosity, star.stellar_type))
 
           instance.stop()
 
     def slowtest3(self):
-        print "Testing FallbackStellarEvolution: evolve 3 stars at the same time"
+        print("Testing FallbackStellarEvolution: evolve 3 stars at the same time")
 
 
 # results of original code  (not really check the numbers, tests have been relaxed because
@@ -154,7 +154,7 @@ class TestFallbackStellarEvolution(TestCase):
         instance.stop()
 
     def slowtest4(self):
-        print "Testing FallbackStellarEvolution: evolve same 3 stars at the same time"
+        print("Testing FallbackStellarEvolution: evolve same 3 stars at the same time")
 
         instance = FallbackStellarEvolution()
         instance._main_se.parameters.max_age_stop_condition=3.| units.Myr
@@ -179,7 +179,7 @@ class TestFallbackStellarEvolution(TestCase):
         instance.stop()
 
     def slowtest5(self):
-        print "Testing FallbackStellarEvolution: evolve with end time"
+        print("Testing FallbackStellarEvolution: evolve with end time")
 
         instance = FallbackStellarEvolution()
         instance._main_se.parameters.max_age_stop_condition=0.1| units.Myr
@@ -198,7 +198,7 @@ class TestFallbackStellarEvolution(TestCase):
         instance.stop()
 
     def test6(self):
-        print "Testing FallbackStellarEvolution: enforce monotonic mass evolution"
+        print("Testing FallbackStellarEvolution: enforce monotonic mass evolution")
 
         instance = FallbackStellarEvolution(enforce_monotonic_mass_evolution=True)
         instance._main_se.parameters.max_age_stop_condition=3.| units.Myr
@@ -216,7 +216,7 @@ class TestFallbackStellarEvolution(TestCase):
         instance.stop()
 
     def slowtest7(self):
-        print "Testing FallbackStellarEvolution: test mesa"
+        print("Testing FallbackStellarEvolution: test mesa")
 
         instance = FallbackStellarEvolution(MESA)
         instance._main_se.parameters.max_age_stop_condition=3.| units.Myr

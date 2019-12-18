@@ -96,11 +96,11 @@ class SimplifiedThermalModelEvolver(SimplifiedThermalModel):
                     ndu=numpy.isnan(du_dt.number).sum()
                     nnu=numpy.isnan(new_u.number).sum()
                     if nrho+nu+ndu+nnu>0:
-                        print "nan detected in thermal evolution"
-                        print nrho,nu,ndu,nnu
-                        import cPickle
+                        print("nan detected in thermal evolution")
+                        print(nrho,nu,ndu,nnu)
+                        import pickle
                         with open("cooling_dump","w") as f:
-                            cPickle.dump((dt,rho,u,du_dt,new_u),f)
+                            pickle.dump((dt,rho,u,du_dt,new_u),f)
                         raise Exception("NaNs in thermal evolution")
 
         def evolve_model(self,tend):
@@ -149,27 +149,6 @@ class Cooling(object):
                         x += fx * step
                 return x
 
-
-        def integrate_ode_print(self,function, x, t_end, ind, eps = 0.01):
-                """
-                Integrates the given ordinary differential equation of the form:
-                dx/dt = function(x)
-                for a time 't_end', using the initial value 'x'.
-                The routine takes small steps, such that (abs(dx) <= eps * x)
-                """
-                t = 0 * t_end
-                print  ((eps*x)/abs(function(x))).amin().value_in(units.yr)
-                while t < t_end:
-                        fx = function(x)
-                        dtinv=(abs(fx)/(eps*x)).amax()
-                        step=t_end-t
-                        if dtinv!=0*dtinv : 
-                                step = min( step, 1./dtinv )
-                        t += step
-                        x += fx * step
-                        print step, x[ind]
-                return x
-                
         # Transforming from T to U
         def u_from_T(self, T):
                 return 3.0/2.0 * constants.kB * T / self.mu()
@@ -191,7 +170,7 @@ class Cooling(object):
                         raise Exception("Error in calculating mu: mass fractions do not sum to 1.0")
                 return constants.proton_mass / (X*(1.0+x_ion) + Y*(1.0+2.0*x_ion)/4.0 + Z*x_ion/2.0)
         
-        # G depends on nearby sources
+        # G depends on nearby sources, see 1997A&A...325..972G
         def gerritsen_heating_function(self, G_0 = 10, eps = 0.05):
                 return 10.0**-24 * eps * G_0 | units.erg / units.s
 

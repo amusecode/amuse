@@ -2,13 +2,16 @@ import numpy
 from amuse.community.mercury.interface import MercuryWayWard
 from amuse.ext.solarsystem import new_solar_system_for_mercury
 from amuse.units import units
-from amuse.plot import *
+from amuse.plot import (
+        plot, native_plot,
+        )
 
 try:
     from matplotlib import pyplot
     HAS_MATPLOTLIB = True
 except ImportError:
     HAS_MATPLOTLIB = False
+
 
 def planetplot():
     sun, planets = new_solar_system_for_mercury()
@@ -32,9 +35,10 @@ def planetplot():
     for planet in planets:
         t, x = planet.get_timeline_of_attribute_as_vector("x")
         t, y = planet.get_timeline_of_attribute_as_vector("y")
-        plot(x, y,'.')
+        plot(x, y, '.')
 
     native_plot.show()
+
 
 if __name__ == "__main__":
     planetplot()

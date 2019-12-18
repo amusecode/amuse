@@ -25,3 +25,25 @@ Help on package amuse.ic in amuse:
 or (directly from the terminal):
 > pydoc amuse.ic
 """
+import numpy
+
+def numpy_fix():
+    try:
+      numpy.set_printoptions(legacy='1.13')
+    except TypeError:
+      pass
+      
+numpy_fix()
+
+class NoConfig(object):
+    def __init__(self, message):
+        self._message=message
+    def __getattr__(self, attr):
+        raise AttributeError(self._message)
+
+try:
+    from . import config
+except Exception as ex:
+    message="Configuration not read in - or configuration invalid, exception:\n"+str(ex)
+    config=NoConfig(message)
+    

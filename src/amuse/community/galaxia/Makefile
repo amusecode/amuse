@@ -23,7 +23,7 @@ $(OBJ): interface.f90
 	$(FC) -c $(FCFLAGS) -llapack -o $@ $< 
 
 GalaxyModel_worker:	worker_code.f90  $(OBJ)
-	$(MPIFC) $(FCFLAGS) $(FS_FLAGS)  -llapack $^ -o $@  $(FS_LIBS)
+	$(MPIFC) $(FCFLAGS) $(FS_FLAGS) $^ -o $@  $(FS_LIBS) -llapack
 
 .f90.o: $<
 	$(FC) -c $(FCFLAGS)  -llapack -o $@ $< 

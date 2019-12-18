@@ -1,5 +1,8 @@
+
+
 import time
-import urlparse
+import urllib.parse
+from io import StringIO
 import threading
 import traceback
 import json
@@ -8,9 +11,6 @@ import sys
 import linecache
 import inspect
 import os.path
-import BaseHTTPServer
-import SocketServer
-import Queue as queue
 
 from mpi4py import MPI
 from nose.plugins.capture import Capture
@@ -19,7 +19,6 @@ from nose.core import TestProgram
 from multiprocessing import Process, Queue
 from optparse import OptionParser
 from subprocess import call, Popen, PIPE
-from StringIO import StringIO
 
 class MonitoredFile(object):
     def __init__(self, path, container):
@@ -122,7 +121,7 @@ class MonitoredDirectory(object):
             
 class MonitorDirectories(object):
     def __init__(self, paths):
-        self.elements = map(lambda x : MonitoredDirectory(x), paths)
+        self.elements = [MonitoredDirectory(path) for path in paths]
         self.changed = False
         self.updated_elements = []
         
@@ -146,9 +145,8 @@ class MonitorDirectories(object):
         pass
         
     def errored(self, monitored_element):
-        print "error while monitoring file: ", monitored_element.path
-        pass
-    
+        print("error while monitoring file: ", monitored_element.path)
+
     def updated(self, monitored_element):
         if not self.must_monitor_file(monitored_element):
             return

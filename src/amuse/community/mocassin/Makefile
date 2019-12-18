@@ -29,7 +29,7 @@ SOURCES  = \
 OBJECTS = $(SOURCES:.f90=.o)
 
 
-DOWNLOAD_FROM_WEB = $(PYTHON) ./downloadhttp.py
+DOWNLOAD_FROM_WEB = $(PYTHON) ./download.py
 PATCH_FILES = $(PYTHON) ./patch_files.py
 
 
@@ -60,7 +60,7 @@ download:
 	$(RM) -Rf .pc
 	$(DOWNLOAD_FROM_WEB) $(VERSION)
 	$(PATCH_FILES)
-
+	make -C $(CODEDIR) clean
 
 clean:
 	$(RM) -f *.mod *.so *.o *.pyc worker_code.cc worker_code.h 
@@ -72,6 +72,7 @@ distclean: clean
 	$(RM) -Rf src
 	$(RM) -Rf .pc
 	$(RM) -Rf src.*
+	$(RM) -Rf data
 
 $(CODELIB): $(CODEDIR)/makefile
 	echo $(FC)
@@ -82,8 +83,13 @@ $(CODELIB): $(CODEDIR)/makefile
 worker_code.f90: interface.py
 	$(CODE_GENERATOR) --type=f90 interface.py MocassinInterface -o $@
 
-mocassin_worker:  worker_code.f90 $(CODELIB) $(OBJS) 
+mocassin_worker:  worker_code.f90 data $(CODELIB) $(OBJS)
 	$(MPIFC) $(FFLAGS) $(FS_FLAGS) $(LDFLAGS) worker_code.f90 $(OBJS) $(OBJECTS) $(FS_LIBS) -o $@  $(LIBS)
+
+data: $(CODEDIR)/makefile
+	mkdir data
+	cp -r $(CODEDIR) data/
+
 	
 %.mod %.o: %.f90
 	$(MPIFC) $(FFLAGS) -c -o $@ $<

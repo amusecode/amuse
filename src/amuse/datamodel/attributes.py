@@ -15,7 +15,7 @@ class AttributeDefinition(object):
 class DomainMetaclass(type):
     def __new__(metaclass, name, bases, dict):
         replacement_dictionary = {}
-        for key, value in dict.iteritems():
+        for key, value in dict.items():
             if isinstance(value, tuple):
                 default_value, description = value
                 replacement_dictionary[key] = AttributeDefinition(
@@ -26,8 +26,7 @@ class DomainMetaclass(type):
         return type.__new__(metaclass, name, bases, dict)
         
         
-class Domain(object):
-    __metaclass__ = DomainMetaclass
+class Domain(object, metaclass=DomainMetaclass):
     time = 0.0 | si.s, "model time"
     
 class Gravity(Domain):

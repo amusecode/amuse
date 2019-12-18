@@ -21,7 +21,6 @@ AM_CFLAGS = -I$(AMUSE_DIR)/lib/amuse_mpi
 CODELIB =  src/sstar/libsstar.a src/dstar/libdstar.a 
 
 CODE_GENERATOR = $(AMUSE_DIR)/build.py
-DOWNLOAD_FROM_SVN = ./downloadsvn.py
 
 all: seba_worker
 

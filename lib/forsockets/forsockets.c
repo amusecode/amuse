@@ -11,6 +11,7 @@
 	#include <netinet/in.h>
 	#include <netdb.h>
 	#include <netinet/tcp.h>
+	#include <arpa/inet.h>
 #endif
 
 int32_t socketfd;
@@ -172,6 +173,8 @@ void forsockets_init(char *host, int32_t port) {
 	if (connect(socketfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr))
 			< 0) {
 	    fprintf(stderr, "cannot connect socket to host %s, port %d\n", host, port);
+      fprintf(stderr, "resolved IP address: %s\n",  inet_ntoa( * (struct in_addr *) server->h_addr));
+
 		perror("could not connect socket");
 		exit(0);
 

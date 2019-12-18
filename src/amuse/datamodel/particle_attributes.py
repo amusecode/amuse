@@ -17,6 +17,7 @@ from amuse.ext.basicgraph import Graph, MinimumSpanningTreeFromEdges, MinimumSpa
 from amuse.datamodel import base
 from amuse.datamodel import rotation
 from amuse.datamodel import ParticlesWithUnitsConverted, AbstractParticleSet, Particle
+from functools import reduce
 
 def move_to_center(particles):
     """
@@ -331,7 +332,7 @@ def particle_potential(set, particle, smoothing_length_squared = zero, G = const
     dr = (dr_squared+smoothing_length_squared).sqrt()
     return - G * (particles.mass / dr).sum()
 
-def particleset_potential(particles, smoothing_length_squared = zero, G = constants.G):
+def particleset_potential(particles, smoothing_length_squared = zero, G = constants.G, gravity_code = None, block_size = 0):
     """
     Returns the potential at the position of each particle in the set.
 
@@ -347,6 +348,12 @@ def particleset_potential(particles, smoothing_length_squared = zero, G = consta
     >>> particles.potential()
     quantity<[-6.67428e-11, -6.67428e-11] m**2 * s**-2>
     """
+    n = len(particles)
+    if block_size == 0:
+        max = 100000 * 100 #100m floats
+        block_size = max // n
+        if block_size == 0:
+            block_size = 1 #if more than 100m particles, then do 1 by one
 
     mass = particles.mass
     x_vector = particles.x
@@ -354,21 +361,31 @@ def particleset_potential(particles, smoothing_length_squared = zero, G = consta
     z_vector = particles.z
 
     potentials = VectorQuantity.zeros(len(mass),mass.unit/x_vector.unit) 
-
-    for i in range(len(particles) - 1):
-        x = x_vector[i]
-        y = y_vector[i]
-        z = z_vector[i]
-        dx = x - x_vector[i+1:]
-        dy = y - y_vector[i+1:]
-        dz = z - z_vector[i+1:]
+    inf_len = numpy.inf | x_vector.unit
+    offset = 0
+    newshape =(n, 1)
+    x_vector_r = x_vector.reshape(newshape)
+    y_vector_r = y_vector.reshape(newshape)
+    z_vector_r = z_vector.reshape(newshape)
+    mass_r=mass.reshape(newshape)
+    while offset < n:
+        if offset + block_size > n:
+            block_size = n - offset
+        x = x_vector[offset:offset+block_size] 
+        y = y_vector[offset:offset+block_size] 
+        z = z_vector[offset:offset+block_size] 
+        indices = numpy.arange(block_size)
+        dx = x_vector_r - x 
+        dy = y_vector_r - y
+        dz = z_vector_r - z
         dr_squared = (dx * dx) + (dy * dy) + (dz * dz)
         dr = (dr_squared+smoothing_length_squared).sqrt()
+        index = (indices + offset, indices)
+        dr[index] = inf_len
+        potentials += (mass[offset:offset+block_size]/dr).sum(axis=1)
+        offset += block_size
 
-        potentials[i]-= (mass[i+1:]/dr).sum()
-        potentials[i+1:]-= mass[i]/dr
-
-    return G * potentials
+    return -G * potentials
 
 
 def virial_radius(particles):
@@ -517,7 +534,11 @@ def densitycentre_coreradius_coredens(particles, unit_converter=None, number_of_
     if isinstance(hop, HopContainer):
         hop.initialize(unit_converter)
         hop = hop.code
-    hop.particles.add_particles(particles)
+    try:
+        hop.particles.add_particles(particles)
+    except Exception as ex:
+        hop.stop()
+        raise exceptions.AmuseException(str(ex)+" (note: check whether Hop needs a converter here)")
     hop.parameters.density_method=2
     hop.parameters.number_of_neighbors_for_local_density=number_of_neighbours
     hop.calculate_densities()
@@ -582,7 +603,7 @@ def new_particle_from_cluster_core(particles, unit_converter=None, density_weigh
 
 def bound_subset(particles, tidal_radius=None, unit_converter=None, density_weighting_power=2,
         smoothing_length_squared=zero, G=constants.G, core=None,
-        reuse_hop=False, hop=HopContainer()):
+        reuse_hop=False, hop=HopContainer(), gravity_code=None):
     """
     find the particles bound to the cluster. Returns a subset of bound particles.
 
@@ -610,7 +631,7 @@ def bound_subset(particles, tidal_radius=None, unit_converter=None, density_weig
     
     v2=velocity.lengths_squared()
     r2=position.lengths_squared()
-    pot=particles.potential(smoothing_length_squared, G)
+    pot=particles.potential(smoothing_length_squared, G, gravity_code = gravity_code)
     
     if tidal_radius is None:
       boundary_radius2=r2.max()
@@ -648,7 +669,7 @@ def mass_segregation_Gini_coefficient(particles, unit_converter=None, density_we
     a=numpy.argsort(r2)
     m=particles.mass.number[a]
     
-    nf=1.*numpy.array(range(len(m)))/(len(m)-1.)
+    nf=1.*numpy.array(list(range(len(m))))/(len(m)-1.)
     mf=m.cumsum()
     mf=mf/mf[-1]
     
@@ -706,7 +727,7 @@ def find_closest_particle_to(particles,x,y,z):
     d2=(particles.x-x)**2+(particles.y-y)**2+(particles.z-z)**2
     return particles[d2.number.argmin()]
 
-def potential_energy_in_field(particles, field_particles, smoothing_length_squared = zero, G = constants.G):
+def potential_energy_in_field(particles, field_particles, smoothing_length_squared = zero, G = constants.G, just_potential = False):
     """
     Returns the total potential energy of the particles associated with an external 
     gravitational field, which is represented by the field_particles.
@@ -738,8 +759,12 @@ def potential_energy_in_field(particles, field_particles, smoothing_length_squar
     dxdydz = transposed_positions - field_particles.position
     dr_squared = (dxdydz**2).sum(-1)
     dr = (dr_squared+smoothing_length_squared).sqrt()
-    m_m = particles.mass.reshape([n,1]) * field_particles.mass
-    return -G * (m_m / dr).sum()
+    if just_potential:
+        m_m = field_particles.mass
+        return -G * (m_m / dr).sum(1)
+    else:
+        m_m = particles.mass.reshape([n,1]) * field_particles.mass
+        return -G * (m_m / dr).sum()
     
 def distances_squared(particles, other_particles):
     """
@@ -800,14 +825,14 @@ def nearest_neighbour(particles, neighbours=None, max_array_length=10000000):
         for indices in indices_in_each_batch:
             distances_squared = particles[indices].distances_squared(other_particles)
             if neighbours is None:
-                diagonal_indices = [numpy.arange(len(indices)), indices]
+                diagonal_indices = (numpy.arange(len(indices)), indices)
                 distances_squared.number[diagonal_indices] = numpy.inf # can't be your own neighbour
             neighbour_indices.append(distances_squared.argmin(axis=1))
         return other_particles[numpy.concatenate(neighbour_indices)]
     
     distances_squared = particles.distances_squared(other_particles)
     if neighbours is None:
-        diagonal_indices = [numpy.arange(len(particles))]*2
+        diagonal_indices = numpy.diag_indices(len(particles))
         distances_squared.number[diagonal_indices] = numpy.inf # can't be your own neighbour
     return other_particles[distances_squared.argmin(axis=1)]
     
@@ -886,8 +911,8 @@ def connected_components(parts, threshold=None, distfunc=None, verbose=False):
       def distfunc(p,q):
         return (((p.x-q.x)**2+(p.y-q.y)**2+(p.z-q.z)**2)**0.5)
   
-    if verbose: print "making CC"
-    tocheck=range(len(parts))
+    if verbose: print("making CC")
+    tocheck=list(range(len(parts)))
     cc=[]
     while len(tocheck)>0:
        p=tocheck.pop()
@@ -903,8 +928,8 @@ def connected_components(parts, threshold=None, distfunc=None, verbose=False):
          currentcc.extend(toadd)
        cc.append(parts[currentcc])  
          
-    if verbose: print "done"
-    if verbose: print "number of CC:",len(cc)
+    if verbose: print("done")
+    if verbose: print("number of CC:",len(cc))
     return cc
 
 def minimum_spanning_tree_length(particles):
@@ -1010,14 +1035,14 @@ def correlation_dimension(particles, max_array_length=10000000):
         indices_in_each_batch.append(numpy.arange(indices_in_each_batch[-1][-1]+1, len(particles)))
         for indices in indices_in_each_batch:
             distances_squared = particles[indices].distances_squared(particles)
-            diagonal_indices = [numpy.arange(len(indices)), indices]
+            diagonal_indices = (numpy.arange(len(indices)), indices)
             distances_squared.number[diagonal_indices] = numpy.inf # can't be your own neighbour
             
             counts_per_batch.append([(distances_squared < eps2).sum() for eps2 in eps2_range])
         number_of_close_pairs = numpy.array(counts_per_batch).sum(axis=0)
     else:
         distances_squared = particles.distances_squared(particles)
-        diagonal_indices = [numpy.arange(len(particles))]*2
+        diagonal_indices = numpy.diag_indices(len(particles))
         distances_squared.number[diagonal_indices] = numpy.inf # can't be your own neighbour
         number_of_close_pairs = numpy.array([(distances_squared < eps2).sum() for eps2 in eps2_range])
     

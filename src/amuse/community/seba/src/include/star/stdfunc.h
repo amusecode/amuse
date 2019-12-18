@@ -38,6 +38,10 @@
        real random_paczynski_velocity(const real);
        real maxwellian(const real, const real);
        real random_maxwellian_velocity(const real);
+	   real random_hobbs_velocity();
+	   real random_arzoumanian_velocity();
+	   real random_verbunt_velocity();
+       
        real gravitational_focussed_velocity(const real, const real,
                                             const real, const real,
                                             const real);

@@ -1,4 +1,4 @@
-from __future__ import absolute_import
+
 
 import optparse
 import textwrap
@@ -131,7 +131,7 @@ class OptionParser(optparse.OptionParser):
         defaults = self.defaults.copy()
         for option in self._get_all_options():
             default = defaults.get(option.dest)
-            if isinstance(default, basestring):
+            if isinstance(default, str):
                 opt_str = option.get_opt_string()
                 defaults[option.dest] = option.check_value(opt_str, default)
             elif not option.unit is None and not quantities.is_quantity(default):

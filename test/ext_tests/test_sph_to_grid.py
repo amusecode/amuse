@@ -37,7 +37,7 @@ class TestSPH2Grid(TestWithMPI):
         return sph_code
     
     def test1(self):
-        print "Testing convert_SPH_to_grid with Gadget2"
+        print("Testing convert_SPH_to_grid with Gadget2")
         number_of_particles = 10000
         L = 10.0 | units.parsec
         rho = 1.14 | units.amu/units.cm**3
@@ -56,13 +56,13 @@ class TestSPH2Grid(TestWithMPI):
         self.assertAlmostEqual(grid.get_volume(), 1000.0 | units.parsec**3)
         
         mean_rho = grid.rho.mean()
-        print "Mean density:", mean_rho.as_quantity_in(units.amu/units.cm**3), " -  original:", rho
+        print("Mean density:", mean_rho.as_quantity_in(units.amu/units.cm**3), " -  original:", rho)
         self.assertAlmostRelativeEqual(mean_rho, rho, 1)
         self.assertAlmostRelativeEqual(grid.energy.mean(), mean_rho * u, 1)
         self.assertEqual(grid.momentum, 0 * mean_rho * u.sqrt())
     
     def test2(self):
-        print "Testing convert_SPH_to_grid with Fi"
+        print("Testing convert_SPH_to_grid with Fi")
         number_of_particles = 10000
         L = 10.0 | units.parsec
         rho = 1.14 | units.amu/units.cm**3
@@ -81,13 +81,13 @@ class TestSPH2Grid(TestWithMPI):
         self.assertAlmostEqual(grid.get_volume(), 1000.0 | units.parsec**3)
         
         mean_rho = grid.rho.mean()
-        print "Mean density:", mean_rho.as_quantity_in(units.amu/units.cm**3), " -  original:", rho
+        print("Mean density:", mean_rho.as_quantity_in(units.amu/units.cm**3), " -  original:", rho)
         self.assertAlmostRelativeEqual(mean_rho, rho, 1)
         self.assertAlmostRelativeEqual(grid.energy.mean(), mean_rho * u, 1)
         self.assertEqual(grid.momentum, 0 * mean_rho * u.sqrt())
     
     def test3(self):
-        print "Testing convert_SPH_to_grid with Gadget2 and do_scale"
+        print("Testing convert_SPH_to_grid with Gadget2 and do_scale")
         number_of_particles = 10000
         L = 10.0 | units.parsec
         rho = 1.14 | units.amu/units.cm**3
@@ -106,13 +106,13 @@ class TestSPH2Grid(TestWithMPI):
         self.assertAlmostEqual(grid.get_volume(), 1000.0 | units.parsec**3)
         
         mean_rho = grid.rho.mean()
-        print "Mean density:", mean_rho.as_quantity_in(units.amu/units.cm**3), " -  original:", rho
+        print("Mean density:", mean_rho.as_quantity_in(units.amu/units.cm**3), " -  original:", rho)
         self.assertAlmostRelativeEqual(mean_rho, rho, 7)
         self.assertAlmostRelativeEqual(grid.energy.mean(), mean_rho * u, 7)
         self.assertEqual(grid.momentum, 0 * mean_rho * u.sqrt())
     
     def test4(self):
-        print "Testing convert_SPH_to_grid with Fi and do_scale"
+        print("Testing convert_SPH_to_grid with Fi and do_scale")
         number_of_particles = 10000
         L = 10.0 | units.parsec
         rho = 1.14 | units.amu/units.cm**3
@@ -131,13 +131,13 @@ class TestSPH2Grid(TestWithMPI):
         self.assertAlmostEqual(grid.get_volume(), 1000.0 | units.parsec**3)
         
         mean_rho = grid.rho.mean()
-        print "Mean density:", mean_rho.as_quantity_in(units.amu/units.cm**3), " -  original:", rho
+        print("Mean density:", mean_rho.as_quantity_in(units.amu/units.cm**3), " -  original:", rho)
         self.assertAlmostRelativeEqual(mean_rho, rho, 7)
         self.assertAlmostRelativeEqual(grid.energy.mean(), mean_rho * u, 7)
         self.assertEqual(grid.momentum, 0 * mean_rho * u.sqrt())
     
     def test5(self):
-        print "Testing exceptions"
+        print("Testing exceptions")
         class BogusHydroCode(object):
             MODE_PERIODIC_BOUNDARIES = "periodic"
             def __init__(self, mode = "normal"):

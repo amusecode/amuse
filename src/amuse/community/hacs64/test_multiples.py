@@ -31,11 +31,11 @@ def print_log(s, gravity, E0 = 0.0 | nbody_system.energy):
     if E0 == 0 | nbody_system.energy: E0 = E
     Rv = -0.5*M*M/U
     Q = -T/U
-    print ""
-    print "%s: time = %.10f, mass = %.10f, dE/E0 = %.5e" \
-          % (s, gravity.get_time().number, M.number, (E/E0 - 1))
-    print "%senergies = %.10f %.10f %.10f" \
-          % (' '*(2+len(s)), E.number, U.number, T.number)
+    print("")
+    print("%s: time = %.10f, mass = %.10f, dE/E0 = %.5e" \
+          % (s, gravity.get_time().number, M.number, (E/E0 - 1)))
+    print("%senergies = %.10f %.10f %.10f" \
+          % (' '*(2+len(s)), E.number, U.number, T.number))
         
     #print '%s %.4f %.6f %.6f %.6f %.6f %.6f %.6f %.6f' % \
     #	(s+"%%", time.number, M.number, T.number, U.number, \
@@ -78,16 +78,16 @@ def run_smallN(
 
     time = 0 | nbody_system.time
 
-    print "\nadding particles to smallN"
+    print("\nadding particles to smallN")
     sys.stdout.flush()
-    gravity.set_time(time);
+    gravity.set_time(time)
     gravity.particles.add_particles(particles)
-    print "committing particles to smallN"
+    print("committing particles to smallN")
     gravity.commit_particles()
 
-    print "smallN: number_of_stars =", len(particles)
-    print "smallN: evolving to time =", end_time.number, 
-    print "in steps of", delta_t.number
+    print("smallN: number_of_stars =", len(particles))
+    print("smallN: evolving to time =", end_time.number, end=' ') 
+    print("in steps of", delta_t.number)
     sys.stdout.flush()
     
     E0 = print_log('smallN', gravity)
@@ -97,13 +97,13 @@ def run_smallN(
 
     while time < end_time:
         time += delta_t
-        print 'evolving smallN to time', time.number
+        print('evolving smallN to time', time.number)
         sys.stdout.flush()
         gravity.evolve_model(time)
         print_log('smallN', gravity, E0)
         over = gravity.is_over()
         if over.number:
-            print 'interaction is over\n'; sys.stdout.flush()
+            print('interaction is over\n'); sys.stdout.flush()
 
             # Create a tree in the module representing the binary structure.
 
@@ -125,20 +125,20 @@ def run_smallN(
             # we loop over roots (top-level nodes) and print data on
             # all binaries below each.
 
-            print "smallN binaries:"; sys.stdout.flush()
+            print("smallN binaries:"); sys.stdout.flush()
             x = trees.BinaryTreesOnAParticleSet(particles, "child1", "child2")
             roots = list(x.iter_roots())
             for r in roots:
                 for level, particle in r.iter_levels():
-                    print '  '*level, int(particle.id.number),
+                    print('  '*level, int(particle.id.number), end=' ')
                     if not particle.child1 is None:
                         M,a,e,r,E = get_cm_binary_elements(particle)
-                        print " mass = %.5e" % (M.number)
+                        print(" mass = %.5e" % (M.number))
                         m1 = particle.child1.mass
                         m2 = particle.child2.mass
                         print_elements('      ', a, e, r, E*m1*m2/M)
                     else:
-                        print ''
+                        print('')
                     sys.stdout.flush()
 
             return E0
@@ -232,10 +232,10 @@ def find_nnn(star1, star2, stars):	# print next nearest neighbor
                 min_dr = dr2
                 nnn = t
     min_dr = math.sqrt(min_dr)
-    print 'star =', int(id1), ' min_dr =', min_dr, \
-          ' nnn =', int(nnn.id.number), '(', nnn.mass.number, ')'
-    print '    phi_tidal =', phi_tidal(star1, star2, nnn)
-    print '    nnn pos:', nnn.x.number, nnn.y.number, nnn.z.number
+    print('star =', int(id1), ' min_dr =', min_dr, \
+          ' nnn =', int(nnn.id.number), '(', nnn.mass.number, ')')
+    print('    phi_tidal =', phi_tidal(star1, star2, nnn))
+    print('    nnn pos:', nnn.x.number, nnn.y.number, nnn.z.number)
     sys.stdout.flush()
 
     return nnn
@@ -312,8 +312,8 @@ def compress_binary_components(comp1, comp2, scale):
     sep12 = ((pos2-pos1)**2).sum()
 
     if sep12 > scale*scale:
-        print '\ncompressing components', int(comp1.id.number), \
-              'and', int(comp2.id.number), 'to separation', scale.number
+        print('\ncompressing components', int(comp1.id.number), \
+              'and', int(comp2.id.number), 'to separation', scale.number)
         sys.stdout.flush()
         mass1 = comp1.mass
         mass2 = comp2.mass
@@ -407,16 +407,16 @@ def compress_binary_components(comp1, comp2, scale):
         offset_particle_tree(comp2, newpos2-pos2, newvel2-vel2)
 
 def print_elements(s, a, e, r, E):
-    print '%s elements  a = %.4e  e = %.5f  r = %.4e  E = %.4e' \
-	  % (s, a.number, e.number, r.number, E.number)
+    print('%s elements  a = %.4e  e = %.5f  r = %.4e  E = %.4e' \
+	  % (s, a.number, e.number, r.number, E.number))
 
 def print_multiple(m, level=0):
 
     # Recursively print the structure of (multipe) node m.
 
-    print '    '*level, int(m.id.number), ' mass =', m.mass.number
-    print '    '*level, 'pos =', m.position.number
-    print '    '*level, 'vel =', m.velocity.number
+    print('    '*level, int(m.id.number), ' mass =', m.mass.number)
+    print('    '*level, 'pos =', m.position.number)
+    print('    '*level, 'vel =', m.velocity.number)
     if not m.child1 is None and not m.child2 is None:
         M,a,e,r,E = get_component_binary_elements(m.child1, m.child2)
         print_elements(' '+'    '*level+'binary', a, e, r,
@@ -480,12 +480,12 @@ def scale_top_level_list(binaries, scale,
             # components to periastron.
 
             root = multiples[0]
-            print '\nunscaled binary node:'
+            print('\nunscaled binary node:')
             print_multiple(root)
             comp1 = root.child1
             comp2 = root.child2
             compress_binary_components(comp1, comp2, scale)
-            print '\nscaled binary node:'
+            print('\nscaled binary node:')
             print_multiple(root)
 
     elif lt == 2:
@@ -501,10 +501,10 @@ def scale_top_level_list(binaries, scale,
 
         comp1 = top_level_nodes[0]
         comp2 = top_level_nodes[1]
-        print '\nunscaled top-level pair:'
+        print('\nunscaled top-level pair:')
         print_pair_of_stars('pair', comp1, comp2)
         compress_binary_components(comp1, comp2, scale)
-        print '\nscaled top-level pair:'
+        print('\nscaled top-level pair:')
         print_pair_of_stars('pair', comp1, comp2)
 
     else:
@@ -514,7 +514,7 @@ def scale_top_level_list(binaries, scale,
         # will conserve energy and think later about how to preserve
         # angular momentum.  TODO
 
-        print lt, 'top-level nodes'; sys.stdout.flush()
+        print(lt, 'top-level nodes'); sys.stdout.flush()
 
     # Recompute the external field, compute the tidal error, and
     # absorb it into the top-level energy.  Optional code.
@@ -524,9 +524,9 @@ def scale_top_level_list(binaries, scale,
     dEmult = 0.0
 
     phi_external_final = relative_potential(top_level_nodes, klist, stars)
-    print 'phi_external_final =', phi_external_final
+    print('phi_external_final =', phi_external_final)
     dphi = phi_external_final - phi_external_init
-    print 'dphi =', dphi
+    print('dphi =', dphi)
 
     # Correction code parallels that above, but we must repeat it
     # here, since we have to complete the rescaling before the
@@ -554,13 +554,13 @@ def scale_top_level_list(binaries, scale,
         # simply by scaling their velocities.  Need to improve this.
         # TODO  Alternatively, add dphi to dEmult.
 
-        print lt, 'top-level nodes'; sys.stdout.flush()
+        print(lt, 'top-level nodes'); sys.stdout.flush()
         dEmult += dphi
 
     # Finally, include the internal top-level energy in dEmult.
 
     etot = total_energy(top_level_nodes)
-    print 'final etot =', etot
+    print('final etot =', etot)
     dEmult += etot
 
     return dEmult
@@ -584,7 +584,7 @@ def manage_encounter(star1, star2, stars, gravity_stars):
     # Currently we don't include neighbors in the integration and the
     # size limitation on any final multiple is poorly implemented.
 
-    print '\nin manage_encounter'; sys.stdout.flush()
+    print('\nin manage_encounter'); sys.stdout.flush()
 
     # 1. Star1 and star2 reflect the data in the gravity module.  Find
     #    the corresponding particles in the local particle set.
@@ -605,7 +605,7 @@ def manage_encounter(star1, star2, stars, gravity_stars):
 
     print_pair_of_stars('**encounter**', star1_in_memory, star2_in_memory)
 
-    print ''
+    print('')
     find_nnn(star1_in_memory, star2_in_memory, stars)
     find_nnn(star2_in_memory, star1_in_memory, stars)
 
@@ -618,11 +618,11 @@ def manage_encounter(star1, star2, stars, gravity_stars):
 
     slist = [star1_in_memory, star2_in_memory]
     etot = total_energy(slist)
-    print 'initial etot =', etot
+    print('initial etot =', etot)
     dEmult = -etot
     klist = [star1_in_memory, star2_in_memory]
     phi_external_init = relative_potential(slist, klist, stars)
-    print 'phi_external_init =', phi_external_init
+    print('phi_external_init =', phi_external_init)
 
     # 2. Create a particle set to perform the close encounter
     #    calculation.
@@ -654,14 +654,14 @@ def manage_encounter(star1, star2, stars, gravity_stars):
     # print particles_in_encounter.to_string(['x','y','z',
     #                                         'vx','vy','vz','mass','id'])
 
-    print '\nparticles in encounter (flat tree):'
+    print('\nparticles in encounter (flat tree):')
     for p in particles_in_encounter:
         print_multiple(p)
     
     initial_scale \
         = math.sqrt(((star1.position
                       -star2.position).number**2).sum())|nbody_system.length
-    print 'initial_scale =', initial_scale.number; sys.stdout.flush()
+    print('initial_scale =', initial_scale.number); sys.stdout.flush()
 
     # 4. Run the small-N encounter in the center of mass frame.
 
@@ -672,7 +672,7 @@ def manage_encounter(star1, star2, stars, gravity_stars):
     total_mass = star1.mass+star2.mass
     cmpos = (star1.mass*star1.position+star2.mass*star2.position)/total_mass
     cmvel = (star1.mass*star1.velocity+star2.mass*star2.velocity)/total_mass
-    print 'CM KE =', 0.5*total_mass.number*((cmvel.number)**2).sum()
+    print('CM KE =', 0.5*total_mass.number*((cmvel.number)**2).sum())
     for p in particles_in_encounter:
         p.position -= cmpos
         p.velocity -= cmvel
@@ -797,12 +797,12 @@ def print_energies(stars):
                 dpot -= mm/math.sqrt(xx**2+yy**2+zz**2)
         potential += 0.5*m*dpot
             
-    print 'len(stars) =', len(stars)
-    print 'len(top_level) =', len(top_level)
-    print 'mass =', mass
-    print 'kinetic =', kinetic
-    print 'potential =', potential
-    print 'energy =', kinetic+potential
+    print('len(stars) =', len(stars))
+    print('len(top_level) =', len(top_level))
+    print('mass =', mass)
+    print('kinetic =', kinetic)
+    print('potential =', potential)
+    print('energy =', kinetic+potential)
     sys.stdout.flush()
 
 def run_multiples(infile = None,
@@ -817,24 +817,24 @@ def run_multiples(infile = None,
                    softening_length = 0.0 | nbody_system.length,
                    random_seed = 1234):
 
-    if infile != None: print "input file =", infile
-    print "end_time =",  end_time.number
-    print "nstars= ",    number_of_stars,
-    print "nmax= ",      nmax,
-    print "delta_t= ",   delta_t.number
-    print "dt_max= ",    dt_max.number
-    print "n_ngb= ",     n_ngb,
-    print "eta_irr= ",   eta_irr
-    print "eta_reg= ",   eta_reg
-    print "eps2=    ",   softening_length.number**2
-    print "\ninitializing the gravity module"
+    if infile != None: print("input file =", infile)
+    print("end_time =",  end_time.number)
+    print("nstars= ",    number_of_stars, end=' ')
+    print("nmax= ",      nmax, end=' ')
+    print("delta_t= ",   delta_t.number)
+    print("dt_max= ",    dt_max.number)
+    print("n_ngb= ",     n_ngb, end=' ')
+    print("eta_irr= ",   eta_irr)
+    print("eta_reg= ",   eta_reg)
+    print("eps2=    ",   softening_length.number**2)
+    print("\ninitializing the gravity module")
     sys.stdout.flush()
 
     if random_seed <= 0:
         numpy.random.seed()
         random_seed = numpy.random.randint(1, pow(2,31)-1)
     numpy.random.seed(random_seed)
-    print "random seed =", random_seed
+    print("random seed =", random_seed)
     
     # Note that there are actually three GPU options to test:
     #
@@ -849,21 +849,21 @@ def run_multiples(infile = None,
 
     if infile == None:
 
-        print "making a Plummer model"
+        print("making a Plummer model")
         stars = new_plummer_model(number_of_stars)
 
         id = numpy.arange(number_of_stars) 
         stars.id = id+1
 
-        print "setting particle masses and radii"
+        print("setting particle masses and radii")
 	#stars.mass = (1.0 / number_of_stars) | nbody_system.mass
         scaled_mass = new_salpeter_mass_distribution_nbody(number_of_stars) 
         stars.mass = scaled_mass
         stars.radius = 0.0 | nbody_system.length
 
-        print "centering stars"
+        print("centering stars")
         stars.move_to_center()
-        print "scaling stars to virial equilibrium"
+        print("scaling stars to virial equilibrium")
         stars.scale_to_standard(smoothing_length_squared
                                     = 0 | nbody_system.length ** 2)
 
@@ -874,7 +874,7 @@ def run_multiples(infile = None,
 
         # Read the input data.  Units are dynamical.
 
-        print "reading file", infile; sys.stdout.flush()
+        print("reading file", infile); sys.stdout.flush()
 
         id = []
         mass = []
@@ -916,24 +916,24 @@ def run_multiples(infile = None,
     root_index = len(stars) + 10000
     #-----------------------------------------------------------------
     
-    gravity.parameters.nmax    = nmax;
-    gravity.parameters.dtmax   = dt_max;
+    gravity.parameters.nmax    = nmax
+    gravity.parameters.dtmax   = dt_max
 #    gravity.parameters.n_ngb   = n_ngb;
-    gravity.parameters.eta_irr = eta_irr;
-    gravity.parameters.eta_reg = eta_reg;
+    gravity.parameters.eta_irr = eta_irr
+    gravity.parameters.eta_reg = eta_reg
     gravity.parameters.eps2    = softening_length**2
-    gravity.commit_parameters();
+    gravity.commit_parameters()
 
-    print "adding particles"
+    print("adding particles")
     # print stars
     sys.stdout.flush()
     gravity.particles.add_particles(stars)
     gravity.commit_particles()
 
-    print ''
-    print "number_of_stars =", number_of_stars
-    print "evolving to time =", end_time.number, \
-          "in steps of", delta_t.number
+    print('')
+    print("number_of_stars =", number_of_stars)
+    print("evolving to time =", end_time.number, \
+          "in steps of", delta_t.number)
     sys.stdout.flush()
 
     E0 = print_log('hacs64', gravity)
@@ -958,12 +958,12 @@ def run_multiples(infile = None,
             if stopping_condition.is_set():
                 star1 = stopping_condition.particles(0)[0]
                 star2 = stopping_condition.particles(1)[0]
-                print '\n--------------------------------------------------'
-                print 'stopping condition set at time', \
-                    gravity.get_time().number
+                print('\n--------------------------------------------------')
+                print('stopping condition set at time', \
+                    gravity.get_time().number)
 
                 E = print_log('hacs64', gravity, E0)
-                print 'dEmult =', dEmult, 'dE =', (E-E0).number-dEmult
+                print('dEmult =', dEmult, 'dE =', (E-E0).number-dEmult)
                 # channel.copy()	# need other stars to be current in memory
                 # print_energies(stars)
 
@@ -982,8 +982,8 @@ def run_multiples(infile = None,
                 gravity.recommit_particles()
 
                 E = print_log('hacs64', gravity, E0)
-                print 'dEmult =', dEmult, 'dE =', (E-E0).number-dEmult
-                print '\n--------------------------------------------------'
+                print('dEmult =', dEmult, 'dE =', (E-E0).number-dEmult)
+                print('\n--------------------------------------------------')
         
         ls = len(stars)
     
@@ -999,18 +999,18 @@ def run_multiples(infile = None,
 
         if len(stars) != ls:
             if 0:
-                print "stars:"
+                print("stars:")
                 for s in stars:
-                    print " ", s.id.number, s.mass.number, \
-			       s.x.number, s.y.number, s.z.number
+                    print(" ", s.id.number, s.mass.number, \
+			       s.x.number, s.y.number, s.z.number)
             else:
-                print "number of stars =", len(stars)
+                print("number of stars =", len(stars))
             sys.stdout.flush()
 
         E = print_log('hacs64', gravity, E0)
-        print 'dEmult =', dEmult, 'dE =', (E-E0).number-dEmult
+        print('dEmult =', dEmult, 'dE =', (E-E0).number-dEmult)
 
-    print ''
+    print('')
     gravity.stop()
 
 if __name__ == '__main__':
@@ -1033,8 +1033,8 @@ if __name__ == '__main__':
 
     try:
         opts, args = getopt.getopt(sys.argv[1:], "a:c:d:e:f:gGn:s:t:w:")
-    except getopt.GetoptError, err:
-        print str(err)
+    except getopt.GetoptError as err:
+        print(str(err))
         sys.exit(1)
 
     for o, a in opts:
@@ -1062,7 +1062,7 @@ if __name__ == '__main__':
         elif o == "-w":
             n_workers = int(a)
         else:
-            print "unexpected argument", o
+            print("unexpected argument", o)
 
     
     Nmax = N*2

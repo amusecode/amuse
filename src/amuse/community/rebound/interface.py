@@ -15,6 +15,13 @@ class ReboundInterface(CodeInterface,
     
     .. [#] Rein, H., Liu, S.F., *Astronomy and Astrophysics* , **Volume 537**, A128 (2012)
     
+    For different integrators, cite:
+    ... IAS15:  Rein, H., Spiegel, D.S., *MNRAS* , **Volume 446**, Issue 2, p.1424-1437 (2015)
+    ... WHFast: Rein, H., Tamayo, D., *MNRAS* , **Volume 452**, Issue 1, p.376-388 (2015)
+    ... Hermes: Silburt, A., et al., in prep.
+    ... SEI:    Rein, H., Tremaine, S., *MNRAS* , **Volume 415**, Issue 4, p.3168-3176 (2011)
+    ... JANUS:  Rein, H., Tamayo, D., *arXiv* , 1704.07715 (2017)
+        
     """
     include_headers = ['worker_code.h', 'stopcond.h']
     __so_module__ = 'rebound_cython'
@@ -57,7 +64,24 @@ class ReboundInterface(CodeInterface,
             particle could not be created"""
         return function
         
-        
+    def delete_particle(self, index_of_the_particle, code_index=0):
+        return self._delete_particle(index_of_the_particle, code_index)
+
+    @legacy_function
+    def _delete_particle():
+        """
+        Delete a particle.
+        """
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
+        function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN, description ="Index of the particle")
+        function.addParameter('code_index', dtype='int32', direction=function.IN, description = "Index of the code in rebound", default = 0)
+        function.result_type = 'int32'
+        function.result_doc = """ 0 - OK
+            particle was deleted
+        -1 - ERROR
+            particle not deleted"""
+        return function
 
     @legacy_function
     def _set_integrator():
@@ -79,13 +103,13 @@ class ReboundInterface(CodeInterface,
         return function  
     
 
-    INTEGRATORS = {"ias15": 0, "whfast": 1, "whfast-helio": 2, "sei": 3, "leapfrog": 4, "hermes": 5, "none": 6}
+    INTEGRATORS = {"ias15": 0, "whfast": 1, "sei": 2, "leapfrog": 4, "hermes": 5, "whfast-helio": 6, "none": 7, "janus": 8}
     def set_integrator(self, name, code_index = 0 ):
         return self._set_integrator(self.INTEGRATORS[name], code_index)
     
     def get_integrator(self, code_index = 0):
         value, error = self._get_integrator(code_index)
-        for key, index in self.INTEGRATORS.iteritems():
+        for key, index in self.INTEGRATORS.items():
             if value == index:
                 return key
         return "none"
@@ -116,10 +140,10 @@ class ReboundInterface(CodeInterface,
     
     def get_solver(self, code_index = 0):
         value, error = self._get_solver(code_index)
-        for key, index in self.SOLVERS.iteritems():
+        for key, index in self.SOLVERS.items():
             if value == index:
-                return key, error
-        return "none", error
+                return key
+        return "none"
 
     @legacy_function
     def get_opening_angle2():
@@ -204,7 +228,7 @@ class ReboundInterface(CodeInterface,
     
     def get_boundary(self, code_index = 0):
         value, error = self._get_boundary(code_index)
-        for key, index in self.BOUNDARIES.iteritems():
+        for key, index in self.BOUNDARIES.items():
             if value == index:
                 return key
         return "none"
@@ -493,21 +517,21 @@ class Rebound(GravitationalDynamics, GravityFieldCode):
         )
 
     
-    def define_state(self, object):
-        GravitationalDynamics.define_state(self, object)
-        #GravityFieldCode.define_state(self, object)
-        self.stopping_conditions.define_state(object)
+    def define_state(self, handler):
+        GravitationalDynamics.define_state(self, handler)
+        #GravityFieldCode.define_state(self, handler)
+        self.stopping_conditions.define_state(handler)
         
-        object.add_method('EDIT', 'new_subset')
-        object.add_method('RUN', 'new_subset')
+        handler.add_method('EDIT', 'new_subset')
+        handler.add_method('RUN', 'new_subset')
         
 
 
-    def define_parameters(self, object):
-        self.stopping_conditions.define_parameters(object)
-        GravitationalDynamics.define_parameters(self, object)
+    def define_parameters(self, handler):
+        self.stopping_conditions.define_parameters(handler)
+        GravitationalDynamics.define_parameters(self, handler)
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_time_step",
             "set_time_step",
             "timestep",
@@ -516,7 +540,7 @@ class Rebound(GravitationalDynamics, GravityFieldCode):
         )
 
 
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_integrator",
             "set_integrator",
             "integrator",
@@ -525,7 +549,7 @@ class Rebound(GravitationalDynamics, GravityFieldCode):
         )
 
 
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_solver",
             "set_solver",
             "solver",
@@ -534,7 +558,7 @@ class Rebound(GravitationalDynamics, GravityFieldCode):
         )
 
 
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_eps2",
             "set_eps2",
             "epsilon_squared",
@@ -543,7 +567,7 @@ class Rebound(GravitationalDynamics, GravityFieldCode):
         )
 
 
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_opening_angle2",
             "set_opening_angle2",
             "opening_angle2",
@@ -551,7 +575,7 @@ class Rebound(GravitationalDynamics, GravityFieldCode):
             default_value = 0.5
         )
 
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_boundary",
             "set_boundary",
             "boundary",
@@ -559,7 +583,7 @@ class Rebound(GravitationalDynamics, GravityFieldCode):
             default_value = "none"
         )
 
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_boundary_size",
             "set_boundary_size",
             "boundary_size",
@@ -569,9 +593,9 @@ class Rebound(GravitationalDynamics, GravityFieldCode):
 
 
 
-    def define_methods(self, object):
-        GravitationalDynamics.define_methods(self, object)
-        object.add_method(
+    def define_methods(self, handler):
+        GravitationalDynamics.define_methods(self, handler)
+        handler.add_method(
             "new_particle",
             (
                 nbody_system.mass,
@@ -582,58 +606,58 @@ class Rebound(GravitationalDynamics, GravityFieldCode):
                 nbody_system.speed,
                 nbody_system.speed,
                 nbody_system.length,
-                object.NO_UNIT,
+                handler.NO_UNIT,
             ),
             (
-                object.INDEX,
-                object.ERROR_CODE,
+                handler.INDEX,
+                handler.ERROR_CODE,
             )
         )                                                                  
         
-        object.add_method(
+        handler.add_method(
             "get_potential_energy",
-            (object.INDEX,),
-            (nbody_system.mass * nbody_system.length ** 2  * nbody_system.time ** -2, object.ERROR_CODE,)
+            (handler.INDEX,),
+            (nbody_system.mass * nbody_system.length ** 2  * nbody_system.time ** -2, handler.ERROR_CODE,)
         )
 
 
-        object.add_method(
+        handler.add_method(
             "get_kinetic_energy",
-            (object.INDEX,),
-            (nbody_system.mass * nbody_system.length ** 2  * nbody_system.time ** -2, object.ERROR_CODE,)
+            (handler.INDEX,),
+            (nbody_system.mass * nbody_system.length ** 2  * nbody_system.time ** -2, handler.ERROR_CODE,)
         )
-        object.add_method(
+        handler.add_method(
             'evolve_model',
             (
                 nbody_system.time,
-                object.INDEX
+                handler.INDEX
             ),
             (
-                object.ERROR_CODE,
+                handler.ERROR_CODE,
             )
         )
-        object.add_method(
+        handler.add_method(
             'get_time',
-            (object.INDEX,),
-            (nbody_system.time, object.ERROR_CODE,)
+            (handler.INDEX,),
+            (nbody_system.time, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "get_time_step",
-            (object.INDEX,),
-            (nbody_system.time, object.ERROR_CODE,)
+            (handler.INDEX,),
+            (nbody_system.time, handler.ERROR_CODE,)
         )
 
-        object.add_method(
+        handler.add_method(
             "set_time_step",
-            (nbody_system.time, object.INDEX,),
-            (object.ERROR_CODE,)
+            (nbody_system.time, handler.INDEX,),
+            (handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "get_state",
             (
-                object.NO_UNIT,
+                handler.NO_UNIT,
             ),
             (
                 nbody_system.mass,
@@ -644,50 +668,50 @@ class Rebound(GravitationalDynamics, GravityFieldCode):
                 nbody_system.speed,
                 nbody_system.speed,
                 nbody_system.length,
-                object.NO_UNIT,
-                object.ERROR_CODE
+                handler.NO_UNIT,
+                handler.ERROR_CODE
             )
         )
-        object.add_method(
+        handler.add_method(
             "get_subset",
             (
-                object.NO_UNIT,
+                handler.NO_UNIT,
             ),
             (
-                object.NO_UNIT,
-                object.ERROR_CODE
+                handler.NO_UNIT,
+                handler.ERROR_CODE
             )
         )
-        object.add_method(
+        handler.add_method(
             "set_subset",
             (
-                object.NO_UNIT,
-                object.NO_UNIT,
+                handler.NO_UNIT,
+                handler.NO_UNIT,
             ),
             (
                 
-                object.ERROR_CODE,
+                handler.ERROR_CODE,
             )
         )
-        object.add_method(
+        handler.add_method(
             'new_subset',
             (
                 nbody_system.time,
             ),
             (
-                object.INDEX,
-                object.ERROR_CODE,
+                handler.INDEX,
+                handler.ERROR_CODE,
             )
         )
-        self.stopping_conditions.define_methods(object)
+        self.stopping_conditions.define_methods(handler)
     
 
 
-    def define_particle_sets(self, object):
-        GravitationalDynamics.define_particle_sets(self, object)
+    def define_particle_sets(self, handler):
+        GravitationalDynamics.define_particle_sets(self, handler)
         
-        self.stopping_conditions.define_particle_set(object)
+        self.stopping_conditions.define_particle_set(handler)
         
-        object.add_getter('particles', 'get_subset')
-        object.add_setter('particles', 'set_subset')
+        handler.add_getter('particles', 'get_subset')
+        handler.add_setter('particles', 'set_subset')
 

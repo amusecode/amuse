@@ -599,6 +599,21 @@ function sphray_set_src_particle_state(id,L,x,y,z,SpcType) result(ret)
     ret=0
 end function
 
+function sphray_set_src_particle_luminosity(id,L) result(ret)
+  integer(i4b) ::  id
+  real(r4b) :: L
+  integer(i4b) :: i,index,ret
+
+    index=find_src(id)
+    if(index.LT.0) then
+      ret=index
+      return
+    endif  
+        
+    psys%src(index)%L=L
+    ret=0
+end function
+
 
 subroutine sphray_add_gas_particle(id,mass,hsml,x,y,z,rho,xe,u,vx,vy,vz)
   use particle_system_mod, only: particle_set_ye, particle_set_ci_eq

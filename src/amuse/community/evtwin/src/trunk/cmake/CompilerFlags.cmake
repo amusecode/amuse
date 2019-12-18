@@ -18,6 +18,14 @@ if (CMAKE_Fortran_COMPILER_ID MATCHES "GNU")
    set (FPP_FLAGS "-cpp")
     STRING(REGEX REPLACE ".* ([0-9])\\.([0-9])\\.[0-9].*" "\\1\\2" _evtwin_COMPILER_VERSION ${_evtwin_COMPILER_VERSION})
    message ("-- Fortran compiler version: " ${_evtwin_COMPILER_VERSION})
+   EXEC_PROGRAM(${CMAKE_Fortran_COMPILER}
+        ARGS -dumpmachine
+        OUTPUT_VARIABLE _evtwin_MACHINE
+   )
+   string(REPLACE "-" ";" _evtwin_MACHINE_LIST ${_evtwin_MACHINE})
+   message ("-- Fortran arch: " ${_evtwin_MACHINE_LIST})
+   list(GET _evtwin_MACHINE_LIST 0 _evtwin_MACHINE_ARCH) 
+   message ("-- Fortran arch: " ${_evtwin_MACHINE_ARCH})
    
    if(NOT _evtwin_COMPILER_VERSION LESS 43 )
     set (CMAKE_Fortran_FLAGS "-finit-local-zero")
@@ -29,9 +37,12 @@ if (CMAKE_Fortran_COMPILER_ID MATCHES "GNU")
 
    
    if(NOT _evtwin_COMPILER_VERSION LESS 43 )
-    if(WANT_SSE42)
+    if(_evtwin_MACHINE_ARCH STREQUAL "x86_64")
+     if(WANT_SSE42)
          set (SSE_FLAGS "-msse4.2")
-    endif(WANT_SSE42)
+     endif(WANT_SSE42)
+    endif(_evtwin_MACHINE_ARCH STREQUAL "x86_64")
+    
    endif(NOT _evtwin_COMPILER_VERSION LESS 43 )
    
    set (OPENMP_FLAGS "-fopenmp")

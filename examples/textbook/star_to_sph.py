@@ -20,7 +20,7 @@ def evolve_star(mass, age):
     stellar.evolve_model(age)
     return stellar
 
-def star_to_sph(stellar, omega, Nsph):
+def evolve_star_and_convert_to_sph(stellar, omega, Nsph):
     new_age = stellar.model_time
     star = stellar.particles[0]
     if star.core_mass>zero:
@@ -31,8 +31,8 @@ def star_to_sph(stellar, omega, Nsph):
         target_core_mass  = 0|units.MSun
 
     m_sph = (star.mass-target_core_mass)/float(Nsph)
-    print "N_sph=", Nsph, m_sph.in_(units.MSun)
-    print "Target core mass:", target_core_mass
+    print("N_sph=", Nsph, m_sph.in_(units.MSun))
+    print("Target core mass:", target_core_mass)
     model = convert_stellar_model_to_SPH(
         star, 
         Nsph,
@@ -41,21 +41,21 @@ def star_to_sph(stellar, omega, Nsph):
         do_store_composition = False,
         base_grid_options=dict(type="fcc")
     )
-    print "Final star:", star
+    print("Final star:", star)
     age = stellar.model_time
     M_scale = star.mass
     R_scale = star.radius
     stellar.stop()
 
     core = model.core_particle
-    print "core", core
+    print("core", core)
     if core is None:
-        print "Make zero mass core"
+        print("Make zero mass core")
         core = Particle(mass=0|units.MSun, radius=1|units.RSun)
         core.position = (0,0,0) | units.AU
         core.velocity = (0,0,0) | units.kms
     sph_star = model.gas_particles
-    print "Add Spin to star:", omega
+    print("Add Spin to star:", omega)
     sph_star.add_spin(omega)
 
     relaxed_sph_star, core_particles = relax_sph_realization(sph_star, core)
@@ -99,25 +99,24 @@ def new_option_parser():
                       dest="mass", type="float", 
                       default = 0.6 | units.MSun,
                       help="stellar mass [%default]")
+    result.add_option("-o", unit=units.day**-1,
+                      dest="omega", type="float", 
+                      default = 24 | units.day**-1,
+                      help="stellar rotation [%default]")
     result.add_option("-t", unit=units.Myr,
                       dest="age", type="float", 
                       default = 10 | units.Myr,
                       help="stellar age [%default]")
-    result.add_option("-o", unit=units.day**-1,
-                      dest="omega", type="float", 
-                      default = (24.47 | units.day)**-1,
-                      help="stellar rotation [%default]")
     return result
 
 if __name__ == "__main__":
     o, arguments = new_option_parser().parse_args()
     stellar = evolve_star(o.mass, o.age)
-    star, core, age = star_to_sph(stellar, o.omega, o.Nsph)
-    print "age=", age.in_(units.Myr)
-    print star
-    print star.mass.sum().in_(units.MSun), core.mass
+    star, core, age = evolve_star_and_convert_to_sph(stellar, o.omega, o.Nsph)
+    print("age=", age.in_(units.Myr))
+    print(star)
+    print(star.mass.sum().in_(units.MSun), core.mass)
     filename = 'Hydro_M%2.2dMSun.h5'%o.mass.value_in(units.MSun)
-    print filename
+    print(filename)
 
     write_set_to_file(star, filename, format='hdf5', append_to_file=False)
-#    write_set_to_file(core, filename, format='hdf5', append_to_file=True)

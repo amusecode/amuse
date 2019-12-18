@@ -159,7 +159,7 @@ def start_empty():
         instance.must_disconnect = False
         world.Barrier()
         instance.start()
-        print "STOP...", world.rank
+        print("STOP...", world.rank)
         return None
         
 

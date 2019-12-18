@@ -31,7 +31,7 @@ map<int, dynamics_state> dm_states;
 map<int,dynamics_state>::iterator it;
 map<int,dynamics_state>::iterator et;
 
-int size, rank, particle_id_counter;
+int size_higpus, rank_higpus, particle_id_counter;
 unsigned int         N, M, NGPU, TPB, FMAX, BFMAX, MAXDIM, GPUMINTHREADS;
 bool                 CDM, CDV, VIR = 0, warm_start = 0, setdev = 0, cleanstop = 0, init = 0;
 double               EPS, ETA6, ETA4, GTIME, GTW, TTIME, ATIME, DTMAX, DTMIN, DTPRINT, plummer_core = 0.0, plummer_mass = 0.0, ratio = 0.0, mscale = 0.0, rscale = 0.0;
@@ -50,7 +50,7 @@ int echo_int(int input, int * output){
 }
 
 int initialize_code(){
-	HostSafeCall(__MPIstart(&rank, &size, &mpi_float4, &mpi_double4));
+	HostSafeCall(__MPIstart(&rank_higpus, &size_higpus, &mpi_float4, &mpi_double4));
    GTIME = 0.0;
    ATIME = 1.0e+10;
    GTW = 0.0;
@@ -59,7 +59,7 @@ int initialize_code(){
    path = "tmp/";
 	GPUNAME="";
 	particle_id_counter = 0;
-	if(rank == 0){
+	if(rank_higpus == 0){
 		cout<<"NOTE_1: the code works with nbody units ( G = 1 ): please check the parameters, more info are given in the README file"<<endl;
       cout<<"NOTE_2: the evolve method requires an input time (in nbody units) greater than or equal of the maximum time step ( 't' > or = 'max_step') "<<endl;
       cout<<"NOTE_3: the code only seems to work when the number of particles is a power of 2"<<endl;
@@ -73,7 +73,7 @@ int recommit_parameters(){
 
 int commit_parameters(){
 
-   if(rank == 0){
+   if(rank_higpus == 0){
       string param;
 
       if(!cleanstop){
@@ -116,7 +116,7 @@ int new_particle(int *id, double mass, double x, double y, double z, double vx, 
 int commit_particles(){
 	N = dm_states.size();
 
-	HostSafeCall(isDivisible(&N, &M,size, NGPU, TPB, &BFMAX));
+	HostSafeCall(isDivisible(&N, &M,size_higpus, NGPU, TPB, &BFMAX));
 
 	pos_PH = new double4 [N];
    vel_PH = new  float4 [N];
@@ -174,11 +174,11 @@ int commit_particles(){
 int evolve_model(double t){
 
    if(!init){
-		HostSafeCall(InitBlocks(pos_PH, vel_PH, TPB, N, M, BFMAX, ETA4, DTMIN, DTMAX, NGPU, EPS, &MAXDIM, &GPUMINTHREADS, GPUNAME, rank, size, pos_CH, vel_CH, a_H0, step, local_time, &ATIME, VIR, ratio, warm_start, setdev, dev, plummer_core, plummer_mass, rscale, mscale, path));
+		HostSafeCall(InitBlocks(pos_PH, vel_PH, TPB, N, M, BFMAX, ETA4, DTMIN, DTMAX, NGPU, EPS, &MAXDIM, &GPUMINTHREADS, GPUNAME, rank_higpus, size_higpus, pos_CH, vel_CH, a_H0, step, local_time, &ATIME, VIR, ratio, warm_start, setdev, dev, plummer_core, plummer_mass, rscale, mscale, path));
 		init = 1;
 	}
 
-	if(rank == 0){
+	if(rank_higpus == 0){
 		ofstream hlog;
 		temp = path + "HiGPUslog.dat";
       output_name = to_char(temp);
@@ -193,10 +193,10 @@ int evolve_model(double t){
    FMAX = 1000000 + (int) ((GTIME+GTW) / DTPRINT);
 	
    TTIME=t;
-   HostSafeCall(Hermite6th(TTIME, &GTIME, &ATIME, local_time, step, N, M, pos_PH, vel_PH, pos_CH, vel_CH, a_H0, MAXDIM, NGPU, TPB, rank, size, BFMAX, ETA6, ETA4, DTMAX, DTMIN, EPS, DTPRINT, FMAX, warm_start, GTW, GPUMINTHREADS, plummer_core, plummer_mass, rscale, mscale, dev, &cleanstop, path));
+   HostSafeCall(Hermite6th(TTIME, &GTIME, &ATIME, local_time, step, N, M, pos_PH, vel_PH, pos_CH, vel_CH, a_H0, MAXDIM, NGPU, TPB, rank_higpus, size_higpus, BFMAX, ETA6, ETA4, DTMAX, DTMIN, EPS, DTPRINT, FMAX, warm_start, GTW, GPUMINTHREADS, plummer_core, plummer_mass, rscale, mscale, dev, &cleanstop, path));
 
    MPISafeCall(MPI_Barrier(MPI_COMM_WORLD));
-   MPISafeCall(MPI_Bcast(&cleanstop, 1, MPI::BOOL, 0, MPI_COMM_WORLD));
+   MPISafeCall(MPI_Bcast(&cleanstop, 1, MPI_C_BOOL, 0, MPI_COMM_WORLD));
 
 	warm_start = 1;
 
@@ -256,7 +256,7 @@ int get_total_radius(double * radius){
 int get_potential_at_point(double soft, double x, double y, double z, double * phi){
    *phi = 0.0;
 	double F = 0.0;
-	unsigned int ppG = (unsigned int) ceil ( (double) M / size);
+	unsigned int ppG = (unsigned int) ceil ( (double) M / size_higpus);
    for(unsigned int i=0; i<ppG ; i++){
 		double rij =(x - pos_CH[i].x) * (x - pos_CH[i].x) + (y-pos_CH[i].y) * (y - pos_CH[i].y) + (z - pos_CH[i].z) * (z - pos_CH[i].z);
       F -= pos_CH[i].w / sqrt(rij + soft * soft); 
@@ -269,7 +269,7 @@ int get_potential_at_point(double soft, double x, double y, double z, double * p
 int get_total_mass(double * mass){
 	*mass = 0.0;
 	double M = 0.0;
-	unsigned int ppG = (unsigned int) ceil ( (double) M / size);
+	unsigned int ppG = (unsigned int) ceil ( (double) M / size_higpus);
    for(unsigned int i=0; i<ppG; i++)  M += pos_CH[i].w;
 	MPISafeCall(MPI_Barrier(MPI_COMM_WORLD));
 	MPISafeCall(MPI_Allreduce(&M, mass, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD));
@@ -459,7 +459,7 @@ int delete_particle(int index_of_the_particle){
 int get_potential(int index_of_the_particle, double * potential){ 
 	*potential = 0.0;
 	double P = 0.0;
-   unsigned int ppG = (unsigned int) ceil ( (double) M / size);
+   unsigned int ppG = (unsigned int) ceil ( (double) M / size_higpus);
    for(unsigned int i=0; i<ppG ; i++){
 		if(i != (unsigned int) index_of_the_particle){
 			double rij =((pos_CH[index_of_the_particle].x - pos_CH[i].x)*(pos_CH[index_of_the_particle].x - pos_CH[i].x)) +
@@ -518,7 +518,7 @@ int get_state(int index_of_the_particle, double * mass, double * radius, double 
 
 int get_time_step(double * time_step){
    *time_step = 0.0;
-	if(rank == 0) cout<<"time steps are printed in the file 'Blocks', see README file to obtain more information"<<endl;  
+	if(rank_higpus == 0) cout<<"time steps are printed in the file 'Blocks', see README file to obtain more information"<<endl;  
 	return 0;
 }
 
@@ -534,7 +534,7 @@ int recommit_particles(){
 
     N = dm_states.size();
    
-   HostSafeCall(isDivisible(&N, &M,size, NGPU, TPB, &BFMAX));
+   HostSafeCall(isDivisible(&N, &M,size_higpus, NGPU, TPB, &BFMAX));
 
    pos_PH = new double4 [N];
    vel_PH = new  float4 [N];
@@ -598,12 +598,12 @@ int set_acceleration(int index_of_the_particle, double ax, double ay, double az)
 	ax = 0;
 	ay = 0;
 	az = 0;
-   if (rank == 0) cout<<"accelerations are stored only on GPU, you can't set it"<<endl;
+   if (rank_higpus == 0) cout<<"accelerations are stored only on GPU, you can't set it"<<endl;
    return 0;
 }
 
 int get_center_of_mass_position(double * x, double * y, double * z){
-   unsigned int ppG = (unsigned int) ceil ( (double) M / size);
+   unsigned int ppG = (unsigned int) ceil ( (double) M / size_higpus);
 	double *sum = new double[4];
    sum[0] = sum[1] = sum[2] = sum[3] = 0.0;
    *x = *y = *z = 0.0;
@@ -627,7 +627,7 @@ int get_center_of_mass_position(double * x, double * y, double * z){
 }
 
 int get_center_of_mass_velocity(double * vx, double * vy, double * vz){ 
-   unsigned int ppG = (unsigned int) ceil ( (double) M / size);
+   unsigned int ppG = (unsigned int) ceil ( (double) M / size_higpus);
    double *sum = new double[4];
    sum[0] = sum[1] = sum[2] = sum[3] = 0.0;
    *vx = *vy = *vz = 0.0;
@@ -675,7 +675,7 @@ int cleanup_code(){
 
 
 int get_gravity_at_point(double soft, double x, double y, double z, double * forcex, double * forcey, double * forcez){
-   unsigned int ppG = (unsigned int) ceil ( (double) M / size);
+   unsigned int ppG = (unsigned int) ceil ( (double) M / size_higpus);
    double *sum = new double[3];
    sum[0] = sum[1] = sum[2] = 0.0;
 	*forcex = *forcey = *forcez = 0.0;
@@ -722,7 +722,7 @@ int get_acceleration(int index_of_the_particle, double * ax, double * ay, double
 	*ax = 0.0;
 	*ay = 0.0;
 	*az = 0.0;
-	if( rank == 0) cout<<"accelerations are stored only on GPU, you can't get it"<<endl;
+	if( rank_higpus == 0) cout<<"accelerations are stored only on GPU, you can't get it"<<endl;
    return 0;
 }
 
@@ -736,7 +736,7 @@ int set_velocity(int index_of_the_particle, double vx, double vy, double vz){
 int get_kinetic_energy(double * kinetic_energy){
    *kinetic_energy = 0.0;
    double K = 0.0;
-   unsigned int ppG = (unsigned int) ceil ( (double) M / size);
+   unsigned int ppG = (unsigned int) ceil ( (double) M / size_higpus);
    for(unsigned int i=0; i<ppG; i++)
       K += 0.5 * pos_CH[i].w * (vel_CH[i].x * vel_CH[i].x + vel_CH[i].y * vel_CH[i].y + vel_CH[i].z * vel_CH[i].z);
    MPISafeCall(MPI_Barrier(MPI_COMM_WORLD));
@@ -747,7 +747,7 @@ int get_kinetic_energy(double * kinetic_energy){
 int get_potential_energy(double * potential_energy){
    *potential_energy = 0.0;
    double U = 0.0;
-   unsigned int ppG = (unsigned int) ceil ( (double) M / size);
+   unsigned int ppG = (unsigned int) ceil ( (double) M / size_higpus);
    for(unsigned int i=0; i<ppG; i++){
 		for(unsigned int j=0; j<M; j++){
 			if (i==j) continue;

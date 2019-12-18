@@ -1,13 +1,14 @@
 import numpy
 from numpy import ma
 
-from itertools import izip
+
 
 from amuse.units import quantities
 from amuse.units.quantities import VectorQuantity
 from amuse.units.quantities import is_quantity
 from amuse.datamodel.base import *
 from amuse.support import exceptions
+from amuse.rfi.async_request import FakeASyncRequest
 
 try:
   if numpy.uintp().itemsize<8: raise Exception()
@@ -89,7 +90,7 @@ class InMemoryAttributeStorage(AttributeStorage):
                 raise AttributeError("exception in setting attribute '{0}', error was '{1}'".format(attribute, ex))
                 
         old_length = len(self.particle_keys)
-        for attribute, attribute_values in list(self.mapping_from_attribute_to_quantities.iteritems()):
+        for attribute, attribute_values in list(self.mapping_from_attribute_to_quantities.items()):
             attribute_values.increase_to_length(len(self.particle_keys) + len(keys))
                 
         self.particle_keys = numpy.concatenate((self.particle_keys,  numpy.array(list(keys), dtype='uint64')))
@@ -108,9 +109,12 @@ class InMemoryAttributeStorage(AttributeStorage):
             results.append(selected_values)
         
         return results
+    
+    def get_values_in_store_async(self, indices, attributes):
+        result = self.get_values_in_store(indices, attributes)
+        return FakeASyncRequest(result)
         
     def set_values_in_store(self, indices, attributes, list_of_values_to_set):
-        
         for attribute, values_to_set in zip(attributes, list_of_values_to_set):
     
             if attribute in self.mapping_from_attribute_to_quantities:
@@ -125,19 +129,25 @@ class InMemoryAttributeStorage(AttributeStorage):
                 # hack to set values between 
                 # with quanities with units.none
                 # and when values are stored without units
-                # need to be removed when units.none is completely gone
+                # note an alternative might be to store always with units.none
+                # but have the getitem remove the unit, caveat: maintaining compatibility in fileformat?
                 if is_quantity(values_to_set) and not storage.has_units():
                     if not values_to_set.unit.base:
                         storage.set_values(indices, values_to_set.value_in(units.none))
                     else:
                         raise AttributeError("exception in setting attribute '{0}', error was '{1}'".format(attribute, ex)) 
-                elif not is_quantity(values_to_set) and storage.has_units():
-                    if not storage.quantity.unit.base:
-                        storage.set_values(indices, units.none.new_quantity(values_to_set))
-                    else:
-                        raise AttributeError("exception in setting attribute '{0}', error was '{1}'".format(attribute, ex)) 
+                # this is no longer necessary:
+                #~ elif not is_quantity(values_to_set) and storage.has_units():
+                    #~ if not storage.quantity.unit.base:
+                        #~ storage.set_values(indices, units.none.new_quantity(values_to_set))
+                    #~ else:
+                        #~ raise AttributeError("exception in setting attribute '{0}', error was '{1}'".format(attribute, ex)) 
                 else:
                     raise AttributeError("exception in setting attribute '{0}', error was '{1}'".format(attribute, ex))
+
+    def set_values_in_store_async(self, indices, attributes, list_of_values_to_set):
+        result = self.set_values_in_store(indices, attributes, list_of_values_to_set)
+        return FakeASyncRequest(result)
                 
     def has_key_in_store(self, key):
         return key in self.keys_set
@@ -158,7 +168,7 @@ class InMemoryAttributeStorage(AttributeStorage):
         copy.keys_set = self.keys_set.copy()
         copy.particle_keys = self.particle_keys.copy()
         copy.index_array = self.index_array.copy()
-        for attribute, attribute_values in self.mapping_from_attribute_to_quantities.iteritems():
+        for attribute, attribute_values in self.mapping_from_attribute_to_quantities.items():
             copy.mapping_from_attribute_to_quantities[attribute] = attribute_values.copy()
         return copy
         
@@ -170,7 +180,7 @@ class InMemoryAttributeStorage(AttributeStorage):
         
     def remove_particles_from_store(self, indices):
             
-        for attribute, attribute_values in list(self.mapping_from_attribute_to_quantities.iteritems()):
+        for attribute, attribute_values in list(self.mapping_from_attribute_to_quantities.items()):
             attribute_values.remove_indices(indices)
             
         self.particle_keys = numpy.delete(self.particle_keys,indices)
@@ -268,7 +278,22 @@ class InMemoryGridAttributeStorage(object):
                 #    dtype = numpy.asanyarray(values_to_set).dtype
                 #    attribute_values = numpy.zeros((self.storage_shape()), dtype = dtype)
                     
-            storage.set_values(indices, values_to_set)
+            try:
+                storage.set_values(indices, values_to_set)
+            except ValueError as ex:
+                # hack to set values between 
+                # with quanities with units.none
+                # and when values are stored without units
+                # note an alternative might be to store always with units.none
+                # but have the getitem remove the unit, caveat: maintaining compatibility in fileformat?
+                if is_quantity(values_to_set) and not storage.has_units():
+                    if not values_to_set.unit.base:
+                        storage.set_values(indices, values_to_set.value_in(units.none))
+                    else:
+                        raise AttributeError("exception in setting attribute '{0}', error was '{1}'".format(attribute, ex)) 
+                else:
+                    raise AttributeError("exception in setting attribute '{0}', error was '{1}'".format(attribute, ex))
+
      
     def has_key_in_store(self, key):
         return key in self.mapping_from_particle_to_index
@@ -281,7 +306,7 @@ class InMemoryGridAttributeStorage(object):
         
     def copy(self):
         copy = InMemoryGridAttributeStorage(*self.number_of_points_in_each_direction)
-        for attribute, attribute_values in self.mapping_from_attribute_to_quantities.iteritems():
+        for attribute, attribute_values in self.mapping_from_attribute_to_quantities.items():
             copy.mapping_from_attribute_to_quantities[attribute] = attribute_values.copy()
         return copy
     
@@ -315,7 +340,7 @@ class InMemoryAttributeStorageUseDictionaryForKeySet(InMemoryAttributeStorage):
         copy.mapping_from_particle_to_index = self.mapping_from_particle_to_index.copy()
         copy.particle_keys = self.particle_keys.copy()
         copy.index_array = self.index_array.copy()
-        for attribute, attribute_values in self.mapping_from_attribute_to_quantities.iteritems():
+        for attribute, attribute_values in self.mapping_from_attribute_to_quantities.items():
             copy.mapping_from_attribute_to_quantities[attribute] = attribute_values.copy()
         return copy
 
@@ -344,7 +369,7 @@ class InMemoryAttributeStorageUseDictionaryForKeySet(InMemoryAttributeStorage):
         return numpy.asarray(result)
 
     def reindex(self):
-        new_index=dict(izip(self.particle_keys,xrange(len(self.particle_keys))))
+        new_index=dict(zip(self.particle_keys,range(len(self.particle_keys))))
         self.mapping_from_particle_to_index = new_index
 
 
@@ -367,7 +392,7 @@ class InMemoryAttributeStorageUseSortedKeys(InMemoryAttributeStorage):
         copy.keys_set = self.keys_set.copy()
         copy.particle_keys = self.particle_keys.copy()
         copy.index_array = self.index_array.copy()
-        for attribute, attribute_values in self.mapping_from_attribute_to_quantities.iteritems():
+        for attribute, attribute_values in self.mapping_from_attribute_to_quantities.items():
             copy.mapping_from_attribute_to_quantities[attribute] = attribute_values.copy()
         return copy
    
@@ -412,7 +437,7 @@ class InMemoryAttributeStorageUseSimpleHash(InMemoryAttributeStorage):
         copy.particle_keys = self.particle_keys.copy()
         copy.index_array = self.index_array.copy()
         copy._hash.reindex(copy.particle_keys)
-        for attribute, attribute_values in self.mapping_from_attribute_to_quantities.iteritems():
+        for attribute, attribute_values in self.mapping_from_attribute_to_quantities.items():
             copy.mapping_from_attribute_to_quantities[attribute] = attribute_values.copy()
         return copy
    
@@ -633,7 +658,7 @@ class InMemoryStringAttribute(InMemoryUnitlessAttribute):
     def set_values(self, indices, values):
         if indices is None:
             indices = slice(None)
-        if isinstance(values, basestring):
+        if isinstance(values, str):
             dtype=numpy.dtype(self.values.dtype.kind+str(max(1,len(values))))
         else:
             values_as_array = numpy.asarray(values, dtype=numpy.dtype(self.values.dtype.kind))
@@ -653,7 +678,6 @@ class InMemoryLinkedAttribute(InMemoryAttribute):
     
     def __init__(self, name, shape):
         InMemoryAttribute.__init__(self, name)
-           
         self.values = LinkedArray(numpy.empty(
             shape,
             dtype = numpy.object
@@ -680,11 +704,13 @@ class InMemoryLinkedAttribute(InMemoryAttribute):
     def increase_to_length(self, newlength):
         delta = newlength - len(self.values)
         if delta == 0: 
-           return
+            return
         deltashape = list(self.values.shape)
         deltashape[0] = delta
         zeros_for_concatenation =  numpy.empty(deltashape, dtype = self.values.dtype)
         self.values = LinkedArray(numpy.concatenate([self.values, zeros_for_concatenation]))
+
+
 
     def get_shape(self):
         return self.values.shape
@@ -703,3 +729,4 @@ class InMemoryLinkedAttribute(InMemoryAttribute):
 
     def has_units(self):
         return False
+

@@ -17,10 +17,10 @@ from amuse.ext.spherical_model import EnclosedMassInterpolator
 class TestMESAInterface(TestWithMPI):
     
     def test1(self):
-        print "Testing initialization of the interface..."
+        print("Testing initialization of the interface...")
         instance = self.new_instance_of_an_optional_code(MESAInterface)
         if instance is None:
-            print "MESA was not built. Skipping test."
+            print("MESA was not built. Skipping test.")
             return
         inlist_path = instance.default_path_to_inlist
         #print "Path to inlist: ", inlist_path
@@ -33,36 +33,36 @@ class TestMESAInterface(TestWithMPI):
         instance.stop()
         
     def slowtest2(self):
-        print "Testing get/set of metallicity (tests new ZAMS model implicitly)..."
-        print "The first time this test will take quite some time" \
-            " to generate new starting models."
+        print("Testing get/set of metallicity (tests new ZAMS model implicitly)...")
+        print("The first time this test will take quite some time" \
+            " to generate new starting models.")
         instance = self.new_instance_of_an_optional_code(MESAInterface)
         if instance is None:
-            print "MESA was not built. Skipping test."
+            print("MESA was not built. Skipping test.")
             return
         instance.set_MESA_paths(instance.default_path_to_inlist, 
             instance.default_path_to_MESA_data, instance.get_output_directory())
         status = instance.initialize_code()
         self.assertEqual(status,0)
         (metallicity, error) = instance.get_metallicity()
-        self.assertEquals(0, error)
-        self.assertEquals(0.02, metallicity)
+        self.assertEqual(0, error)
+        self.assertEqual(0.02, metallicity)
         for x in [0.04, 0.02, 0.01, 0.00]:
             error = instance.set_metallicity(x)
-            self.assertEquals(0, error)
+            self.assertEqual(0, error)
             (metallicity, error) = instance.get_metallicity()
-            self.assertEquals(0, error)
-            self.assertEquals(x, metallicity)
+            self.assertEqual(0, error)
+            self.assertEqual(x, metallicity)
         instance.stop()
     
     def test3(self):
-        print "Testing basic operations: new_particle..."
+        print("Testing basic operations: new_particle...")
         instance = self.new_instance_of_an_optional_code(MESAInterface)
         if instance is None:
-            print "MESA was not built. Skipping test."
+            print("MESA was not built. Skipping test.")
             return
         (maximum_number_of_stars, error) = instance.get_maximum_number_of_stars()
-        self.assertEquals(0, error)
+        self.assertEqual(0, error)
         self.assertEqual(maximum_number_of_stars,1000)
         instance.set_MESA_paths(instance.default_path_to_inlist, 
             instance.default_path_to_MESA_data, instance.get_output_directory())
@@ -72,56 +72,56 @@ class TestMESAInterface(TestWithMPI):
         for i in range(number_of_stars):
             #print i
             (index_of_the_star, error) = instance.new_particle(0.5+i*1.0/number_of_stars)
-            self.assertEquals(0, error)
+            self.assertEqual(0, error)
             self.assertEqual(index_of_the_star,i+1)
         #import time    # To check the amount of memory is used ...
         #time.sleep(10) # when a large number of stars is created.
         instance.stop()
         
     def test4(self):
-        print "Testing basic operations: evolve..."
+        print("Testing basic operations: evolve...")
         instance = self.new_instance_of_an_optional_code(MESAInterface)
         if instance is None:
-            print "MESA was not built. Skipping test."
+            print("MESA was not built. Skipping test.")
             return
         instance.set_MESA_paths(instance.default_path_to_inlist, 
             instance.default_path_to_MESA_data, instance.get_output_directory())
         status = instance.initialize_code()
         (index_of_the_star, error) = instance.new_particle(1.0)
-        self.assertEquals(0, error)
+        self.assertEqual(0, error)
         self.assertEqual(index_of_the_star, 1)
-        self.assertEquals(0, instance.commit_particles())
+        self.assertEqual(0, instance.commit_particles())
         
         initial_dt = 1.0e5
         dt_factor = 1.2
-        self.assertEqual([initial_dt, 0], instance.get_time_step(index_of_the_star).values())
-        self.assertEquals(0, instance.evolve_one_step(index_of_the_star))
-        self.assertEqual([initial_dt, 0], instance.get_age(index_of_the_star).values())
+        self.assertEqual([initial_dt, 0], list(instance.get_time_step(index_of_the_star).values()))
+        self.assertEqual(0, instance.evolve_one_step(index_of_the_star))
+        self.assertEqual([initial_dt, 0], list(instance.get_age(index_of_the_star).values()))
         
         target_end_time = 3.0e5 # (years)
-        self.assertEquals(0, instance.evolve_for(index_of_the_star, target_end_time-initial_dt))
-        self.assertEqual([initial_dt*(1 + dt_factor + dt_factor**2), 0], instance.get_age(index_of_the_star).values())
-        self.assertEqual([round(initial_dt*dt_factor**3), 0], instance.get_time_step(index_of_the_star).values())
+        self.assertEqual(0, instance.evolve_for(index_of_the_star, target_end_time-initial_dt))
+        self.assertEqual([initial_dt*(1 + dt_factor + dt_factor**2), 0], list(instance.get_age(index_of_the_star).values()))
+        self.assertEqual([round(initial_dt*dt_factor**3), 0], list(instance.get_time_step(index_of_the_star).values()))
         self.assertTrue(instance.get_age(index_of_the_star)['age'] >= target_end_time)
         
         (L_of_the_star, error) = instance.get_luminosity(index_of_the_star)
-        self.assertEquals(0, error)
+        self.assertEqual(0, error)
         self.assertAlmostEqual(L_of_the_star,0.725,1)
         (M_of_the_star, error) = instance.get_mass(index_of_the_star)
-        self.assertEquals(0, error)
+        self.assertEqual(0, error)
         self.assertAlmostEqual(M_of_the_star,1.000,3)
         (T_of_the_star, error) = instance.get_temperature(index_of_the_star)
-        self.assertEquals(0, error)
+        self.assertEqual(0, error)
         self.assertAlmostEqual(T_of_the_star,5650.998,-2)
         instance.stop()
     
     def slowtest5(self):
-        print "Testing evolve with varying Z (tests new ZAMS model implicitly)..."
-        print "If the required starting models do not exist, this test will " \
-            "take quite some time to generate them."
+        print("Testing evolve with varying Z (tests new ZAMS model implicitly)...")
+        print("If the required starting models do not exist, this test will " \
+            "take quite some time to generate them.")
         instance = self.new_instance_of_an_optional_code(MESAInterface)
         if instance is None:
-            print "MESA was not built. Skipping test."
+            print("MESA was not built. Skipping test.")
             return
         instance.set_MESA_paths(instance.default_path_to_inlist, 
             instance.default_path_to_MESA_data, instance.get_output_directory())
@@ -131,133 +131,133 @@ class TestMESAInterface(TestWithMPI):
         luminosities = [1.717, 0.938, 0.725, 0.592]
         for (i,(Z,L)) in enumerate(zip(metallicities, luminosities)):
             status = instance.set_metallicity(Z)
-            self.assertEquals(0, status)
+            self.assertEqual(0, status)
             (index_of_the_star, status) = instance.new_particle(1.0)
-            self.assertEquals(0, status)
+            self.assertEqual(0, status)
             self.assertEqual(index_of_the_star,i+1)
             instance.evolve_for(index_of_the_star, 5.0e5)
             (L_of_the_star, status) = instance.get_luminosity(index_of_the_star)
-            self.assertEquals(0, status)
+            self.assertEqual(0, status)
             self.assertAlmostEqual(L_of_the_star,L,1)
         instance.stop()
     
     def test6(self):
-        print "Testing MESA stop conditions..."
+        print("Testing MESA stop conditions...")
         instance = self.new_instance_of_an_optional_code(MESAInterface)
         if instance is None:
-            print "MESA was not built. Skipping test."
+            print("MESA was not built. Skipping test.")
             return
         (value, error) = instance.get_max_age_stop_condition()
-        self.assertEquals(0, error) 
-        self.assertEquals(1.0e36, value)
+        self.assertEqual(0, error) 
+        self.assertEqual(1.0e36, value)
         for x in range(10,14):
             error = instance.set_max_age_stop_condition(10 ** x)
-            self.assertEquals(0, error)
+            self.assertEqual(0, error)
             (value, error) = instance.get_max_age_stop_condition()
-            self.assertEquals(0, error)
-            self.assertEquals(10 ** x, value)
+            self.assertEqual(0, error)
+            self.assertEqual(10 ** x, value)
         (value, error) = instance.get_min_timestep_stop_condition()
-        self.assertEquals(0, error)
-        self.assertEquals(1.0e-6, value)
+        self.assertEqual(0, error)
+        self.assertEqual(1.0e-6, value)
         for x in range(-9,-2):
             error = instance.set_min_timestep_stop_condition(10.0 ** x)
-            self.assertEquals(0, error)
+            self.assertEqual(0, error)
             (value, error) = instance.get_min_timestep_stop_condition()
-            self.assertEquals(0, error)
-            self.assertEquals(10.0 ** x, value)
+            self.assertEqual(0, error)
+            self.assertEqual(10.0 ** x, value)
         instance.stop()
     
     def test7(self):
-        print "Testing MESA parameters..."
+        print("Testing MESA parameters...")
         instance = self.new_instance_of_an_optional_code(MESAInterface)
         if instance is None:
-            print "MESA was not built. Skipping test."
+            print("MESA was not built. Skipping test.")
             return
         (value, error) = instance.get_mixing_length_ratio()
-        self.assertEquals(0, error) 
-        self.assertEquals(2.0, value)
+        self.assertEqual(0, error) 
+        self.assertEqual(2.0, value)
         for x in [1.0, 1.5, 3.0]:
             error = instance.set_mixing_length_ratio(x)
-            self.assertEquals(0, error)
+            self.assertEqual(0, error)
             (value, error) = instance.get_mixing_length_ratio()
-            self.assertEquals(0, error)
-            self.assertEquals(x, value)
+            self.assertEqual(0, error)
+            self.assertEqual(x, value)
         (value, error) = instance.get_semi_convection_efficiency()
-        self.assertEquals(0, error)
-        self.assertEquals(0.0, value)
+        self.assertEqual(0, error)
+        self.assertEqual(0.0, value)
         for x in [0.1, 0.04, 0.001]:
             error = instance.set_semi_convection_efficiency(x)
-            self.assertEquals(0, error)
+            self.assertEqual(0, error)
             (value, error) = instance.get_semi_convection_efficiency()
-            self.assertEquals(0, error)
-            self.assertEquals(x, value)
+            self.assertEqual(0, error)
+            self.assertEqual(x, value)
         instance.stop()
     
     def test8(self):
-        print "Testing MESA wind parameters..."
+        print("Testing MESA wind parameters...")
         instance = self.new_instance_of_an_optional_code(MESAInterface)
         if instance is None:
-            print "MESA was not built. Skipping test."
+            print("MESA was not built. Skipping test.")
             return
         (value, error) = instance.get_RGB_wind_scheme()
-        self.assertEquals(0, error) 
-        self.assertEquals(1, value)
+        self.assertEqual(0, error) 
+        self.assertEqual(1, value)
         for x in range(6):
             error = instance.set_RGB_wind_scheme(x)
-            self.assertEquals(0, error)
+            self.assertEqual(0, error)
             (value, error) = instance.get_RGB_wind_scheme()
-            self.assertEquals(0, error)
-            self.assertEquals(x, value)
+            self.assertEqual(0, error)
+            self.assertEqual(x, value)
         
         (value, error) = instance.get_AGB_wind_scheme()
-        self.assertEquals(0, error) 
-        self.assertEquals(1, value)
+        self.assertEqual(0, error) 
+        self.assertEqual(1, value)
         for x in range(6):
             error = instance.set_AGB_wind_scheme(x)
-            self.assertEquals(0, error)
+            self.assertEqual(0, error)
             (value, error) = instance.get_AGB_wind_scheme()
-            self.assertEquals(0, error)
-            self.assertEquals(x, value)
+            self.assertEqual(0, error)
+            self.assertEqual(x, value)
             
         (value, error) = instance.get_reimers_wind_efficiency()
-        self.assertEquals(0, error)
-        self.assertEquals(0.5, value)
+        self.assertEqual(0, error)
+        self.assertEqual(0.5, value)
         for x in [0.0, 0.1, 0.5, 1.0]:
             error = instance.set_reimers_wind_efficiency(x)
-            self.assertEquals(0, error)
+            self.assertEqual(0, error)
             (value, error) = instance.get_reimers_wind_efficiency()
-            self.assertEquals(0, error)
-            self.assertEquals(x, value)
+            self.assertEqual(0, error)
+            self.assertEqual(x, value)
         
         (value, error) = instance.get_blocker_wind_efficiency()
-        self.assertEquals(0, error)
-        self.assertEquals(0.1, value)
+        self.assertEqual(0, error)
+        self.assertEqual(0.1, value)
         for x in [0.0, 0.1, 0.5, 1.0]:
             error = instance.set_blocker_wind_efficiency(x)
-            self.assertEquals(0, error)
+            self.assertEqual(0, error)
             (value, error) = instance.get_blocker_wind_efficiency()
-            self.assertEquals(0, error)
-            self.assertEquals(x, value)
+            self.assertEqual(0, error)
+            self.assertEqual(x, value)
         
         (value, error) = instance.get_de_jager_wind_efficiency()
-        self.assertEquals(0, error)
-        self.assertEquals(0.8, value)
+        self.assertEqual(0, error)
+        self.assertEqual(0.8, value)
         for x in [0.0, 0.1, 0.5, 1.0]:
             error = instance.set_de_jager_wind_efficiency(x)
-            self.assertEquals(0, error)
+            self.assertEqual(0, error)
             (value, error) = instance.get_de_jager_wind_efficiency()
-            self.assertEquals(0, error)
-            self.assertEquals(x, value)
+            self.assertEqual(0, error)
+            self.assertEqual(x, value)
         
         (value, error) = instance.get_dutch_wind_efficiency()
-        self.assertEquals(0, error)
-        self.assertEquals(0.8, value)
+        self.assertEqual(0, error)
+        self.assertEqual(0.8, value)
         for x in [0.0, 0.1, 0.5, 1.0]:
             error = instance.set_dutch_wind_efficiency(x)
-            self.assertEquals(0, error)
+            self.assertEqual(0, error)
             (value, error) = instance.get_dutch_wind_efficiency()
-            self.assertEquals(0, error)
-            self.assertEquals(x, value)
+            self.assertEqual(0, error)
+            self.assertEqual(x, value)
         
         instance.stop()
 
@@ -265,25 +265,25 @@ class TestMESAInterface(TestWithMPI):
 class TestMESA(TestWithMPI):
     
     def test1(self):
-        print "Testing initialization and default MESA parameters..."
+        print("Testing initialization and default MESA parameters...")
         instance = self.new_instance_of_an_optional_code(MESA)
         if instance is None:
-            print "MESA was not built. Skipping test."
+            print("MESA was not built. Skipping test.")
             return
         instance.set_MESA_paths(instance.default_path_to_inlist, 
             instance.default_path_to_MESA_data, instance.get_output_directory())
         instance.initialize_code()
-        self.assertEquals(0.02 | units.no_unit, instance.parameters.metallicity)
-        self.assertEquals(1.0e36 | units.yr, instance.parameters.max_age_stop_condition)
+        self.assertEqual(0.02 | units.no_unit, instance.parameters.metallicity)
+        self.assertEqual(1.0e36 | units.yr, instance.parameters.max_age_stop_condition)
         instance.parameters.max_age_stop_condition = 1.0e2 | units.Myr
-        self.assertEquals(1.0e2 | units.Myr, instance.parameters.max_age_stop_condition)
+        self.assertEqual(1.0e2 | units.Myr, instance.parameters.max_age_stop_condition)
         instance.stop()
     
     def test2(self):
-        print "Testing basic operations: evolve and get_..."
+        print("Testing basic operations: evolve and get_...")
         instance = self.new_instance_of_an_optional_code(MESA)
         if instance is None:
-            print "MESA was not built. Skipping test."
+            print("MESA was not built. Skipping test.")
             return
         instance.initialize_code() 
         instance.commit_parameters() 
@@ -313,10 +313,10 @@ class TestMESA(TestWithMPI):
         instance.stop()
     
     def test3(self):
-        print "Testing basic operations: evolve_model and channels..."
+        print("Testing basic operations: evolve_model and channels...")
         instance = self.new_instance_of_an_optional_code(MESA)
         if instance is None:
-            print "MESA was not built. Skipping test."
+            print("MESA was not built. Skipping test.")
             return
         instance.initialize_code() 
         instance.commit_parameters() 
@@ -329,19 +329,19 @@ class TestMESA(TestWithMPI):
         from_code_to_model.copy()
         #print stars
         #instance.evolve_model(end_time = 0.03 | units.Myr) # speeding test up:
-        self.assertEquals(stars[0].mass, mass)
+        self.assertEqual(stars[0].mass, mass)
         self.assertAlmostRelativeEqual(stars[0].luminosity, 5841. | units.LSun, 1)
         instance.evolve_model()
         from_code_to_model.copy()
-        self.assertAlmostEquals(stars[0].mass, mass, 5)
+        self.assertAlmostEqual(stars[0].mass, mass, 5)
         self.assertAlmostRelativeEqual(stars[0].luminosity, 5820.85 | units.LSun, 1)
         instance.stop()
     
     def slowtest4(self):
-        print "Testing stellar type..."
+        print("Testing stellar type...")
         instance = self.new_instance_of_an_optional_code(MESA)
         if instance is None:
-            print "MESA was not built. Skipping test."
+            print("MESA was not built. Skipping test.")
             return
         instance.initialize_code() 
         instance.commit_parameters() 
@@ -362,7 +362,7 @@ class TestMESA(TestWithMPI):
         
         while current_time < (101 | units.Myr):
             if not star.stellar_type == previous_type:
-                print (star.age, star.mass, star.stellar_type)
+                print((star.age, star.mass, star.stellar_type))
                 results.append((star.age, star.mass, star.stellar_type))
                 previous_type = star.stellar_type
             instance.evolve_model()
@@ -397,12 +397,12 @@ class TestMESA(TestWithMPI):
         )
         
         for result, expected in zip(results, types):
-            self.assertEquals(str(result[2]), expected)
+            self.assertEqual(str(result[2]), expected)
         
         instance.stop()
     
     def test5(self):
-        print "Testing evolve_model for particle set..."
+        print("Testing evolve_model for particle set...")
         instance = self.new_instance_of_an_optional_code(MESA)
         masses = [0.5, 1.0] | units.MSun
         max_age = 0.6 | units.Myr
@@ -431,25 +431,25 @@ class TestMESA(TestWithMPI):
         instance.stop()
     
     def test6(self):
-        print "Test for obtaining the stellar structure model"
+        print("Test for obtaining the stellar structure model")
         stars = Particles(2)
         stars.mass = [1.0, 10.0] | units.MSun
         instance = self.new_instance_of_an_optional_code(MESA)
         if instance is None:
-            print "MESA was not built. Skipping test."
+            print("MESA was not built. Skipping test.")
             return
         instance.initialize_code()
         instance.commit_parameters() 
         instance.particles.add_particles(stars)
         instance.commit_particles()
         instance.evolve_model()
-        self.assertEquals(instance.particles.get_number_of_zones(), [575, 2262])
-        self.assertEquals(len(instance.particles[0].get_mass_profile()), 575)
-        self.assertAlmostEquals(instance.particles[0].get_mass_profile().sum(), 1.0)
+        self.assertEqual(instance.particles.get_number_of_zones(), [575, 2262])
+        self.assertEqual(len(instance.particles[0].get_mass_profile()), 575)
+        self.assertAlmostEqual(instance.particles[0].get_mass_profile().sum(), 1.0)
         self.assertRaises(AmuseException, instance.particles.get_mass_profile, 
             expected_message = "Querying mass profiles of more than one particle at a time is not supported.")
-        print instance.particles
-        self.assertEquals(len(instance.particles[1].get_density_profile()), 2262)
+        print(instance.particles)
+        self.assertEqual(len(instance.particles[1].get_density_profile()), 2262)
         self.assertIsOfOrder(instance.particles[0].get_radius_profile()[-1],          1.0 | units.RSun)
         self.assertIsOfOrder(instance.particles[0].get_temperature_profile()[0],  1.0e7 | units.K)
         self.assertIsOfOrder(instance.particles[0].get_luminosity_profile()[-1],      1.0 | units.LSun)
@@ -459,18 +459,18 @@ class TestMESA(TestWithMPI):
         radius2 = radius1[:-1]
         radius2.prepend(0|units.m)
         delta_radius_cubed = (radius1**3 - radius2**3)
-        self.assertAlmostEquals(instance.particles[0].get_density_profile() / 
+        self.assertAlmostEqual(instance.particles[0].get_density_profile() / 
             (delta_mass/(4./3.*numpy.pi*delta_radius_cubed)), [1]*575, places=3)
-        self.assertAlmostEquals(instance.particles[1].get_mu_profile(), [0.62]*2262 | units.amu, places=1)
+        self.assertAlmostEqual(instance.particles[1].get_mu_profile(), [0.62]*2262 | units.amu, places=1)
         instance.stop()
     
     def test7(self):
-        print "Test for obtaining the stellar composition structure"
+        print("Test for obtaining the stellar composition structure")
         stars = Particles(1)
         stars.mass = 1.0 | units.MSun
         instance = self.new_instance_of_an_optional_code(MESA)
         if instance is None:
-            print "MESA was not built. Skipping test."
+            print("MESA was not built. Skipping test.")
             return
         instance.initialize_code()
         instance.commit_parameters() 
@@ -483,28 +483,28 @@ class TestMESA(TestWithMPI):
         species_names     = instance.particles[0].get_names_of_species()
         species_IDs       = instance.particles[0].get_IDs_of_species()
         species_masses    = instance.particles[0].get_masses_of_species()
-        self.assertEquals(number_of_zones,    575)
-        self.assertEquals(number_of_species,    8)
-        self.assertEquals(len(species_names),  number_of_species)
-        self.assertEquals(len(composition),    number_of_species)
-        self.assertEquals(len(composition[0]), number_of_zones)
-        self.assertEquals(species_names, ['h1', 'he3', 'he4', 'c12', 'n14', 'o16', 'ne20', 'mg24'])
-        self.assertEquals(species_IDs,   [2,    5,     6,     38,    51,    69,    114,    168])
-        self.assertAlmostEquals(species_masses, [1.0078250, 3.0160293, 4.0026032, 12.0, 
+        self.assertEqual(number_of_zones,    575)
+        self.assertEqual(number_of_species,    8)
+        self.assertEqual(len(species_names),  number_of_species)
+        self.assertEqual(len(composition),    number_of_species)
+        self.assertEqual(len(composition[0]), number_of_zones)
+        self.assertEqual(species_names, ['h1', 'he3', 'he4', 'c12', 'n14', 'o16', 'ne20', 'mg24'])
+        self.assertEqual(species_IDs,   [2,    5,     6,     38,    51,    69,    114,    168])
+        self.assertAlmostEqual(species_masses, [1.0078250, 3.0160293, 4.0026032, 12.0, 
                                 14.0030740, 15.9949146, 19.9924401, 23.9850417] | units.amu, places=5)
-        self.assertAlmostEquals(composition[ :1,-1].sum(),  0.7)
-        self.assertAlmostEquals(composition[1:3,-1].sum(),  (0.3) - instance.parameters.metallicity)
-        self.assertAlmostEquals(composition[3: ,-1].sum(),  instance.parameters.metallicity)
-        self.assertAlmostEquals(composition.sum(axis=0), [1.0]*number_of_zones)
+        self.assertAlmostEqual(composition[ :1,-1].sum(),  0.7)
+        self.assertAlmostEqual(composition[1:3,-1].sum(),  (0.3) - instance.parameters.metallicity)
+        self.assertAlmostEqual(composition[3: ,-1].sum(),  instance.parameters.metallicity)
+        self.assertAlmostEqual(composition.sum(axis=0), [1.0]*number_of_zones)
         instance.stop()
     
     def slowtest8(self):
-        print "Test for obtaining the stellar composition structure - evolved star with zero metalicity"
+        print("Test for obtaining the stellar composition structure - evolved star with zero metalicity")
         stars = Particles(1)
         stars.mass = 1.0 | units.MSun
         instance = self.new_instance_of_an_optional_code(MESA)
         if instance is None:
-            print "MESA was not built. Skipping test."
+            print("MESA was not built. Skipping test.")
             return
         instance.initialize_code()
         instance.parameters.metallicity = 0.0
@@ -519,29 +519,29 @@ class TestMESA(TestWithMPI):
         composition       = instance.particles[0].get_chemical_abundance_profiles()
         species_names     = instance.particles[0].get_names_of_species()
         species_IDs       = instance.particles[0].get_IDs_of_species()
-        self.assertEquals(number_of_zones,    578)
-        self.assertEquals(number_of_species,    8)
-        self.assertEquals(len(species_names),  number_of_species)
-        self.assertEquals(len(composition),    number_of_species)
-        self.assertEquals(len(composition[0]), number_of_zones)
-        self.assertEquals(species_names, ['h1', 'he3', 'he4', 'c12', 'n14', 'o16', 'ne20', 'mg24'])
-        self.assertEquals(species_IDs,   [2,    5,     6,     38,    51,    69,    114,    168])
-        self.assertAlmostEquals(composition[ :1,number_of_zones-1].sum(),  0.76 | units.none)
-        self.assertAlmostEquals(composition[1:3,number_of_zones-1].sum(),  0.24 | units.none)
-        self.assertAlmostEquals(composition[3: ,number_of_zones-1].sum(),  0.00 | units.none)
-        self.assertAlmostEquals(composition.sum(axis=0), [1.0]*number_of_zones | units.none)
-        self.assertAlmostEquals(composition[ :1,0].sum(),  0.00 | units.none)
-        self.assertAlmostEquals(composition[1:3,0].sum(),  1.00 | units.none)
-        self.assertAlmostEquals(composition[3: ,0].sum(),  0.00 | units.none)
+        self.assertEqual(number_of_zones,    578)
+        self.assertEqual(number_of_species,    8)
+        self.assertEqual(len(species_names),  number_of_species)
+        self.assertEqual(len(composition),    number_of_species)
+        self.assertEqual(len(composition[0]), number_of_zones)
+        self.assertEqual(species_names, ['h1', 'he3', 'he4', 'c12', 'n14', 'o16', 'ne20', 'mg24'])
+        self.assertEqual(species_IDs,   [2,    5,     6,     38,    51,    69,    114,    168])
+        self.assertAlmostEqual(composition[ :1,number_of_zones-1].sum(),  0.76 | units.none)
+        self.assertAlmostEqual(composition[1:3,number_of_zones-1].sum(),  0.24 | units.none)
+        self.assertAlmostEqual(composition[3: ,number_of_zones-1].sum(),  0.00 | units.none)
+        self.assertAlmostEqual(composition.sum(axis=0), [1.0]*number_of_zones | units.none)
+        self.assertAlmostEqual(composition[ :1,0].sum(),  0.00 | units.none)
+        self.assertAlmostEqual(composition[1:3,0].sum(),  1.00 | units.none)
+        self.assertAlmostEqual(composition[3: ,0].sum(),  0.00 | units.none)
         instance.stop()
     
     def test9(self):
-        print "Test for changing the stellar structure model"
+        print("Test for changing the stellar structure model")
         star = Particles(1)
         star.mass = 1.0 | units.MSun
         instance = self.new_instance_of_an_optional_code(MESA)
         if instance is None:
-            print "MESA was not built. Skipping test."
+            print("MESA was not built. Skipping test.")
             return
         instance.initialize_code()
         instance.commit_parameters() 
@@ -570,12 +570,12 @@ class TestMESA(TestWithMPI):
         instance.stop()
     
     def test10(self):
-        print "Test for changing the stellar composition"
+        print("Test for changing the stellar composition")
         star = Particles(1)
         star.mass = 1.0 | units.MSun
         instance = self.new_instance_of_an_optional_code(MESA)#, redirection = 'none')
         if instance is None:
-            print "MESA was not built. Skipping test."
+            print("MESA was not built. Skipping test.")
             return
         instance.initialize_code()
         instance.commit_parameters() 
@@ -586,9 +586,9 @@ class TestMESA(TestWithMPI):
         composition = instance.particles[0].get_chemical_abundance_profiles()
         k_surface = -1 # index to the outer mesh cell (surface)
         
-        self.assertAlmostEquals(composition[ :1, k_surface].sum(),  0.7)
-        self.assertAlmostEquals(composition[1:3, k_surface].sum(),  (0.3) - instance.parameters.metallicity)
-        self.assertAlmostEquals(composition[3: , k_surface].sum(),  instance.parameters.metallicity)
+        self.assertAlmostEqual(composition[ :1, k_surface].sum(),  0.7)
+        self.assertAlmostEqual(composition[1:3, k_surface].sum(),  (0.3) - instance.parameters.metallicity)
+        self.assertAlmostEqual(composition[3: , k_surface].sum(),  instance.parameters.metallicity)
         
         # Gradually and consistently increase helium and decrease hydrogen abundances until reversed
         for alpha in [0.3, 1.0, -0.5, -0.125]:
@@ -601,10 +601,10 @@ class TestMESA(TestWithMPI):
             instance.evolve_model()
             composition = instance.particles[0].get_chemical_abundance_profiles()
         
-        self.assertAlmostEquals(composition[ :2, k_surface].sum(),  (0.3) - instance.parameters.metallicity)
-        self.assertAlmostEquals(composition[2:3, k_surface].sum(),  0.7)
-        self.assertAlmostEquals(composition[3: , k_surface].sum(),  instance.parameters.metallicity)
-        self.assertAlmostEquals(composition.sum(axis=0), 1.0)
+        self.assertAlmostEqual(composition[ :2, k_surface].sum(),  (0.3) - instance.parameters.metallicity)
+        self.assertAlmostEqual(composition[2:3, k_surface].sum(),  0.7)
+        self.assertAlmostEqual(composition[3: , k_surface].sum(),  instance.parameters.metallicity)
+        self.assertAlmostEqual(composition.sum(axis=0), 1.0)
         
         self.assertRaises(AmuseException, instance.particles[0].set_chemical_abundance_profiles, composition[:7], 
             expected_message = "The length of the supplied vector (7) does not match the number of "
@@ -612,12 +612,12 @@ class TestMESA(TestWithMPI):
         instance.stop()
     
     def test11(self):
-        print "Test evolve_model optional arguments: end_time and keep_synchronous"
+        print("Test evolve_model optional arguments: end_time and keep_synchronous")
         stars = Particles(3)
         stars.mass = [1.0, 2.0, 3.0] | units.MSun
         instance = self.new_instance_of_an_optional_code(MESA)
         if instance is None:
-            print "MESA was not built. Skipping test."
+            print("MESA was not built. Skipping test.")
             return
         instance.initialize_code()
         instance.commit_parameters() 
@@ -627,19 +627,19 @@ class TestMESA(TestWithMPI):
         self.assertAlmostEqual(instance.particles.age, [0.0, 0.0, 0.0] | units.yr)
         self.assertAlmostEqual(instance.particles.time_step, [100000.0, 17677.6695, 6415.0029] | units.yr, 3)
         
-        print "evolve_model without arguments: use shared timestep = 0.99*min(particles.time_step)"
+        print("evolve_model without arguments: use shared timestep = 0.99*min(particles.time_step)")
         instance.evolve_model()
         self.assertAlmostEqual(instance.particles.age, [100000.0, 17677.6695, 6415.0029] | units.yr, 3)
         self.assertAlmostRelativeEquals(instance.particles.time_step, 1.2*([100000.0, 17677.6695, 6415.0029] | units.yr), 6)
         self.assertAlmostEqual(instance.model_time, 0.99 * 6415.0029 | units.yr, 3)
         
-        print "evolve_model with end_time: take timesteps, until end_time is reached exactly"
+        print("evolve_model with end_time: take timesteps, until end_time is reached exactly")
         instance.evolve_model(15000 | units.yr)
         self.assertAlmostEqual(instance.particles.age, [100000.0, 17677.6695, 6415.0029*(1+1.2+1.44)] | units.yr, 3)
         self.assertAlmostRelativeEquals(instance.particles.time_step, 1.2*([100000.0, 17677.6695, 1.44*6415.0029] | units.yr), 4)
         self.assertAlmostEqual(instance.model_time, 15000.0 | units.yr, 3)
         
-        print "evolve_model with keep_synchronous: use non-shared timestep, particle ages will typically diverge"
+        print("evolve_model with keep_synchronous: use non-shared timestep, particle ages will typically diverge")
         instance.evolve_model(keep_synchronous = False)
         self.assertAlmostRelativeEquals(instance.particles.age, ([100000.0, 17677.6695, 6415.0029*(1+1.2+1.44)] | units.yr)
             + 1.2*([100000.0, 17677.6695, 1.44*6415.0029] | units.yr), 5)
@@ -648,12 +648,12 @@ class TestMESA(TestWithMPI):
         instance.stop()
     
     def test12(self):
-        print "Test for importing new stellar models"
+        print("Test for importing new stellar models")
         star = Particles(1)
         star.mass = 1.0 | units.MSun
         instance = self.new_instance_of_an_optional_code(MESA)
         if instance is None:
-            print "MESA was not built. Skipping test."
+            print("MESA was not built. Skipping test.")
             return
         instance.initialize_code()
         instance.parameters.stabilize_new_stellar_model_flag = False
@@ -694,18 +694,18 @@ class TestMESA(TestWithMPI):
         self.assertAlmostEqual(instance.imported_stars[0].get_temperature_profile(), 
                                instance.native_stars[0].get_temperature_profile())
         
-        print instance.particles
+        print(instance.particles)
         instance.evolve_model(keep_synchronous = False)
-        print instance.particles
+        print(instance.particles)
         instance.stop()
     
     def slowtest13(self):
-        print "Testing MESA wind parameters..."
+        print("Testing MESA wind parameters...")
         stars = Particles(9)
         stars.mass = 10.0 | units.MSun
         instance = self.new_instance_of_an_optional_code(MESA)
         if instance is None:
-            print "MESA was not built. Skipping test."
+            print("MESA was not built. Skipping test.")
             return
         instance.initialize_code()
         instance.parameters.reimers_wind_efficiency = 0.5
@@ -729,7 +729,7 @@ class TestMESA(TestWithMPI):
         instance.evolve_model(keep_synchronous = False)
         from_code_to_model = instance.particles.new_channel_to(stars)
         from_code_to_model.copy()
-        print stars
+        print(stars)
         self.assertAlmostEqual(stars[0].wind, 0.0 | units.MSun / units.yr)
         self.assertAlmostRelativeEqual(stars[1:5].wind, 
             [4.59318475897e-10, 5.20742729636e-11, 1.05565558121e-09, 3.62519254311e-09] | units.MSun / units.yr, places = 7)
@@ -737,12 +737,12 @@ class TestMESA(TestWithMPI):
         instance.stop()
     
     def test14(self):
-        print "Testing MESA wind parameters... (short version of slowtest13)"
+        print("Testing MESA wind parameters... (short version of slowtest13)")
         stars = Particles(3)
         stars.mass = 10.0 | units.MSun
         instance = self.new_instance_of_an_optional_code(MESA)
         if instance is None:
-            print "MESA was not built. Skipping test."
+            print("MESA was not built. Skipping test.")
             return
         instance.initialize_code()
         instance.parameters.RGB_wind_scheme = 0
@@ -763,54 +763,54 @@ class TestMESA(TestWithMPI):
         instance.stop()
     
     def test15(self):
-        print "Testing MESA states"
+        print("Testing MESA states")
         stars = Particles(2)
         stars.mass = 1.0 | units.MSun
         instance = self.new_instance_of_an_optional_code(MESA)
         if instance is None:
-            print "MESA was not built. Skipping test."
+            print("MESA was not built. Skipping test.")
             return
         
-        print "First do everything manually:",
-        self.assertEquals(instance.get_name_of_current_state(), 'UNINITIALIZED')
+        print("First do everything manually:", end=' ')
+        self.assertEqual(instance.get_name_of_current_state(), 'UNINITIALIZED')
         instance.initialize_code()
-        self.assertEquals(instance.get_name_of_current_state(), 'INITIALIZED')
+        self.assertEqual(instance.get_name_of_current_state(), 'INITIALIZED')
         instance.commit_parameters()
-        self.assertEquals(instance.get_name_of_current_state(), 'EDIT')
+        self.assertEqual(instance.get_name_of_current_state(), 'EDIT')
         instance.particles.add_particle(stars[0])
         instance.commit_particles()
-        self.assertEquals(instance.get_name_of_current_state(), 'RUN')
+        self.assertEqual(instance.get_name_of_current_state(), 'RUN')
         instance.cleanup_code()
-        self.assertEquals(instance.get_name_of_current_state(), 'END')
+        self.assertEqual(instance.get_name_of_current_state(), 'END')
         instance.stop()
-        print "ok"
+        print("ok")
 
-        print "initialize_code(), commit_parameters(), (re)commit_particles(), " \
-            "and cleanup_code() should be called automatically:",
+        print("initialize_code(), commit_parameters(), (re)commit_particles(), " \
+            "and cleanup_code() should be called automatically:", end=' ')
         instance = MESA()
-        self.assertEquals(instance.get_name_of_current_state(), 'UNINITIALIZED')
+        self.assertEqual(instance.get_name_of_current_state(), 'UNINITIALIZED')
         instance.parameters.RGB_wind_scheme = 1
         instance.parameters.reimers_wind_efficiency = 0.5
-        self.assertEquals(instance.get_name_of_current_state(), 'INITIALIZED')
+        self.assertEqual(instance.get_name_of_current_state(), 'INITIALIZED')
         instance.particles.add_particle(stars[0])
-        self.assertEquals(instance.get_name_of_current_state(), 'EDIT')
+        self.assertEqual(instance.get_name_of_current_state(), 'EDIT')
         mass = instance.particles[0].mass
-        self.assertEquals(instance.get_name_of_current_state(), 'RUN')
+        self.assertEqual(instance.get_name_of_current_state(), 'RUN')
         instance.particles.add_particle(stars[1])
-        self.assertEquals(instance.get_name_of_current_state(), 'UPDATE')
+        self.assertEqual(instance.get_name_of_current_state(), 'UPDATE')
         mass = instance.particles[0].mass
-        self.assertEquals(instance.get_name_of_current_state(), 'RUN')
+        self.assertEqual(instance.get_name_of_current_state(), 'RUN')
         instance.stop()
-        self.assertEquals(instance.get_name_of_current_state(), 'STOPPED')
-        print "ok"
+        self.assertEqual(instance.get_name_of_current_state(), 'STOPPED')
+        print("ok")
     
     def test16(self):
-        print "Testing basic operations: evolve_one_step and evolve_for"
+        print("Testing basic operations: evolve_one_step and evolve_for")
         stars = Particles(2)
         stars.mass = 1.0 | units.MSun
         instance = self.new_instance_of_an_optional_code(MESA)#, redirection = 'none')
         if instance is None:
-            print "MESA was not built. Skipping test."
+            print("MESA was not built. Skipping test.")
             return
         
         se_stars = instance.particles.add_particles(stars)
@@ -827,7 +827,7 @@ class TestMESA(TestWithMPI):
         instance.stop()
     
     def test17(self):
-        print "MESA validation"
+        print("MESA validation")
         
         mesa_src_path = os.path.join(os.path.dirname(sys.modules[MESA.__module__].__file__), 'src', 'mesa')
         mesa_star_path = os.path.join(mesa_src_path, 'star', 'test', 'star')
@@ -869,7 +869,7 @@ class TestMESA(TestWithMPI):
         instance.stop()
         
         (stdout, stderr) = Popen([mesa_star_path], cwd = testpath, stdin = PIPE, stdout = PIPE, stderr = PIPE).communicate()
-        self.assertEquals(stderr, "")
+        self.assertEqual(stderr, "")
         for i, line in enumerate(stdout.splitlines()):
             #print i, line, line in amuse_output
             if i == 52 + 4 * number_of_steps + 8 * (number_of_steps/10) + (3 if number_of_steps > 55 else 0):
@@ -879,7 +879,7 @@ class TestMESA(TestWithMPI):
                 self.assertTrue(line in amuse_output)
     
     def test18(self):
-        print "Testing MESA mass_change (User-specified wind/accretion)"
+        print("Testing MESA mass_change (User-specified wind/accretion)")
         instance = self.new_instance_of_an_optional_code(MESA)
         instance.parameters.RGB_wind_scheme = 0 # must be turned off for user-specified rates
         instance.parameters.AGB_wind_scheme = 0 # must be turned off for user-specified rates
@@ -900,11 +900,11 @@ class TestMESA(TestWithMPI):
         self.assertAlmostRelativeEqual(star.wind, 1.0e-8 | units.MSun / units.yr, 3)
         self.assertAlmostRelativeEqual(star.age, 1.8e5 | units.yr)
         self.assertAlmostRelativeEqual(star.mass, 1.0002 | units.MSun)
-        print star.as_set()
+        print(star.as_set())
         instance.stop()
     
     def slowtest19a(self):
-        print "Testing MESA core mass"
+        print("Testing MESA core mass")
         instance = self.new_instance_of_an_optional_code(MESA)
         star = instance.particles.add_particle(Particle(mass=3|units.MSun))
         star.evolve_for(330 | units.Myr)
@@ -912,12 +912,12 @@ class TestMESA(TestWithMPI):
             star.evolve_for(10 | units.Myr)
             index = numpy.searchsorted(star.get_chemical_abundance_profiles(number_of_species=1)[0], 1.0e-4)
             h_poor_mass = EnclosedMassInterpolator(radii=star.get_radius_profile(), densities=star.get_density_profile()).enclosed_mass[index].as_quantity_in(units.MSun)
-            print h_poor_mass, star.core_mass
+            print(h_poor_mass, star.core_mass)
             self.assertAlmostEqual(star.core_mass, h_poor_mass, 2)
         instance.stop()
     
     def test19b(self):
-        print "Testing MESA core mass (short version of slowtest19a)"
+        print("Testing MESA core mass (short version of slowtest19a)")
         instance = self.new_instance_of_an_optional_code(MESA)
         star = instance.particles.add_particle(Particle(mass=3|units.MSun))
         star.evolve_one_step()
@@ -927,7 +927,7 @@ class TestMESA(TestWithMPI):
         instance.stop()
     
     def test20(self):
-        print "Testing MESA pre-main-sequence star"
+        print("Testing MESA pre-main-sequence star")
         instance = self.new_instance_of_an_optional_code(MESA)
         star = instance.pre_ms_stars.add_particle(Particle(mass=1.0|units.MSun))
         
@@ -945,7 +945,7 @@ class TestMESA(TestWithMPI):
         instance.stop()
     
     def slowtest21(self):
-        print "Testing MESA calculate_core_mass"
+        print("Testing MESA calculate_core_mass")
         instance = self.new_instance_of_an_optional_code(MESA)
         star = instance.particles.add_particle(Particle(mass=40|units.MSun))
         instance.evolve_model(4.56|units.Myr)
@@ -965,8 +965,8 @@ class TestMESA(TestWithMPI):
         ne20_core_mass = star.calculate_core_mass(species=["ne20"])
         mg24_core_mass = star.calculate_core_mass(species=["mg24"])
         metal_core_mass = star.calculate_core_mass(species=["c12", "n14", "o16", "ne20", "mg24"])
-        print h1_core_mass, he3_core_mass, he4_core_mass, c12_core_mass, n14_core_mass, o16_core_mass
-        print ne20_core_mass, mg24_core_mass, metal_core_mass
+        print(h1_core_mass, he3_core_mass, he4_core_mass, c12_core_mass, n14_core_mass, o16_core_mass)
+        print(ne20_core_mass, mg24_core_mass, metal_core_mass)
         self.assertAlmostRelativeEqual(star.core_mass, total_core_mass, 2)
         instance.stop()
         self.assertAlmostRelativeEqual(total_core_mass, he4_core_mass, 1)
@@ -977,7 +977,7 @@ class TestMESA(TestWithMPI):
         self.assertAlmostEqual(he3_core_mass, 0 | units.MSun)
     
     def test22(self):
-        print "Testing MESA calculate_core_mass (short version of slowtest21)"
+        print("Testing MESA calculate_core_mass (short version of slowtest21)")
         instance = self.new_instance_of_an_optional_code(MESA)
         star = instance.particles.add_particle(Particle(mass=1|units.MSun))
         instance.evolve_model(0.3|units.Gyr) # VERY short, for test speed up
@@ -1011,7 +1011,7 @@ class TestMESA(TestWithMPI):
         self.assertAlmostEqual(he3_core_mass, 0 | units.MSun, 5)
     
     def test23(self):
-        print "Testing MESA central_temperature and central_density"
+        print("Testing MESA central_temperature and central_density")
         instance = self.new_instance_of_an_optional_code(MESA)
         stars = instance.particles.add_particles(Particles(mass=[0.1, 1, 10]|units.MSun))
         self.assertIsOfOrder(stars.central_temperature, [4e6, 13e6, 31e6] | units.K)
@@ -1019,7 +1019,7 @@ class TestMESA(TestWithMPI):
         instance.stop()
     
     def test24(self):
-        print "Testing MESA calculate_helium_exhausted_core_mass"
+        print("Testing MESA calculate_helium_exhausted_core_mass")
         instance = self.new_instance_of_an_optional_code(MESA)
         star = instance.particles.add_particle(Particle(mass=2|units.MSun))
         
@@ -1054,7 +1054,7 @@ class TestMESA(TestWithMPI):
         self.assertEqual(core_mass_by_species[5], oxygen_mass_in_core)
     
     def test25(self):
-        print "Testing MESA accretion"
+        print("Testing MESA accretion")
         instance = self.new_instance_of_an_optional_code(MESA)
         instance.parameters.RGB_wind_scheme = 0
         instance.parameters.AGB_wind_scheme = 0
@@ -1067,9 +1067,9 @@ class TestMESA(TestWithMPI):
         self.assertEqual(star.get_accrete_composition_non_metals(), [-1.0, -1.0, -1.0, -1.0])
         self.assertEqual(star.get_accrete_composition_metals_identifier(), -1)
         self.assertEqual(star.get_accrete_composition_metals(), [-1.0]*28)
-        print "Accreting 75% deuterium",
+        print("Accreting 75% deuterium", end=' ')
         composition_light = [0, 0.75, 0, 0]
-        print "and 25% iron"
+        print("and 25% iron")
         composition_metals = [0]*23 + [1.0] + [0]*4
         star.set_accrete_composition_non_metals(*composition_light)
         star.set_accrete_composition_metals_identifier(0) # i.e. specified below:
@@ -1083,8 +1083,8 @@ class TestMESA(TestWithMPI):
         instance.evolve_model(1 | units.yr)
         composition = star.get_chemical_abundance_profiles()
         species = star.get_names_of_species()
-        print "Both deuterium and iron are not in the current net,"
-        print "so have been added to {0} and {1}".format(species[0], species[-1])
+        print("Both deuterium and iron are not in the current net,")
+        print("so have been added to {0} and {1}".format(species[0], species[-1]))
         self.assertEqual(composition[:, -1], [0.75, 0, 0, 0, 0, 0, 0, 0.25])
         instance.stop()
     

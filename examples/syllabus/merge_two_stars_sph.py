@@ -27,7 +27,7 @@ def merge_two_stars_sph(Mprim, Msec, t_coll):
     stellar_evolution = EVtwin()
     EVTwin_star = stellar_evolution.particles.add_particle(star)
     stellar_evolution.evolve_model(t_coll)
-    print "star=", EVTwin_star
+    print("star=", EVTwin_star)
     EVTwin_radius = EVTwin_star.get_radius_profile()
     EVTwin_rho    = EVTwin_star.get_density_profile()
     
@@ -53,7 +53,7 @@ def merge_two_stars_sph(Mprim, Msec, t_coll):
     
     stellar_evolution.new_particle_from_model(new_stellar_model, t_coll)
     MESA_star = stellar_evolution.particles[0]
-    print "star=", MESA_star
+    print("star=", MESA_star)
     MESA_radius = MESA_star.get_radius_profile()
     MESA_rho    = MESA_star.get_density_profile()
     stellar_evolution.stop()

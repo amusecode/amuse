@@ -5,11 +5,13 @@
 
 #include "src/smallN_interface.h"
 
-static hdyn *b;		// root node for all smallN data
-static hdyn *b_copy;
+static hdyn *b = NULL;		// root node for all smallN data
+static hdyn *b_copy = NULL;
 
 static double begin_time = 0;
-
+static real smalln_dtlog = _INFINITY_;
+static int smalln_verbose = 0;
+static string smalln_outfile("");
 
 class UpdatedParticle {
 
@@ -20,7 +22,7 @@ class UpdatedParticle {
   public:
 
     int index_of_particle;
-    int status;		// 1 ==> deleted, 2 ==> added
+    int status;			// 1 ==> deleted, 2 ==> added
     
     UpdatedParticle():index_of_particle(-1),status(0) {}
     UpdatedParticle(int i, int s):index_of_particle(i), status(s) {}
@@ -48,12 +50,17 @@ int cleanup_code()
         rmtree(b_copy);		// deletes b_copy
         b_copy = NULL;
     }
+    begin_time = 0.0;
+    real smalln_dtlog = _INFINITY_;
+    smalln_verbose = 0;
+    smalln_outfile = string("");
     UpdatedParticles.clear();
     return 0;
 }
 
 int initialize_code()
 {
+    initialize_stopping_conditions();    
     // Begin the initialization by creating a basic hdyn data structure.
 
     cleanup_code();
@@ -85,7 +92,6 @@ int get_begin_time(double * output) {
     *output = begin_time;
     return 0;
 }
-
 
 int set_eps2(double softening_parameter_sq)		// not used
 {
@@ -159,11 +165,25 @@ int get_time(double * sys_time)
     return 0;
 }
 
+int set_outfile(char * file)
+{
+    smalln_outfile = string(file);
+    // cout << "file = " << file << endl;
+    // cout << "smalln_outfile = " << smalln_outfile << endl;
+    return 0;
+}
+
+int get_outfile(char ** file)
+{
+    *file = (char*)smalln_outfile.c_str();
+    return 0;
+}
+
 int commit_parameters()
 {
     // Perform any needed setup after initial code parameters have been set.
 
-    if( b->get_system_time() == 0) {
+    if (b->get_system_time() == 0) {
         b->set_system_time(begin_time);
     }
     return 0;
@@ -225,8 +245,10 @@ int get_index_of_next_particle(int index_of_the_particle,
 			       int * index_of_the_next_particle)
 {
     hdyn *bb = particle_with_index(b, index_of_the_particle);
-    if (!bb) return -1;
-    else if (!bb->get_younger_sister()) return 1;
+    if (!bb)
+	return -1;
+    else if (!bb->get_younger_sister())
+	return 1;
     else
 	 *index_of_the_next_particle = bb->get_younger_sister()->get_index();
     return 0;
@@ -410,6 +432,7 @@ int evolve_model(double to_time)
     // On return, system_time will be greater than or equal to the
     // specified time.  All particles j will have time[j] <=
     // system_time < time[j] + timestep[j].
+
     reset_stopping_conditions();    
     UpdatedParticles.clear();
 
@@ -418,10 +441,11 @@ int evolve_model(double to_time)
     // interaction is over.
 
     // int status = 
-    smallN_evolve(b, to_time, break_scale_sq, structure_check_interval);
+    smallN_evolve(b, to_time, break_scale_sq, structure_check_interval,
+		  smalln_dtlog, smalln_verbose, smalln_outfile);
     //myprint(b);
 
-    // Note: return status is currently independent of the termination reason...
+    // Note: return status is independent of the termination reason...
 
     return 0;
 }
@@ -431,6 +455,7 @@ int is_over(int * over, real rlimit, int verbose)
     real rlimit2 = rlimit*rlimit;
     if (rlimit2 <= 0) rlimit2 = _INFINITY_;
     *over = check_structure(b, rlimit2, verbose);
+
     return 0;
 }
 
@@ -538,7 +563,7 @@ int get_total_radius(double * radius)
     return 0;
 }
 
-// Optional (not implemented):
+// Optional (not implemented; needed for bridge):
 
 int get_potential_at_point(double eps,
 			   double x, double y, double z, 
@@ -555,10 +580,63 @@ int get_gravity_at_point(double eps, double x, double y, double z,
 
 
 
-int update_particle_tree()
+int update_particle_tree(int over)	// default = 0
 {
     b_copy = b;			// save the smallN tree until restored
     b = get_tree(b_copy);	// b now is the structured tree
+				//	 	(why use b? - see below)
+
+    if (over > 1) {
+
+        // Over = 2 means a quasistable system has been detected.
+        // Over = 3 means that the interaction is over (because the
+        // system exceeded the size limit).  In either case,
+        // get_tree2() may not have returned usable hierarchical
+        // structure (e.g. an outer body escapes during an inner
+        // triple resonance.  Impose usable structure by relaxing the
+        // perturbation criterion on the components.  By effectively
+        // ignoring all perturbations we ensure that top-level nodes
+        // are unbound, leaving all bound substructure in a clump
+        // which will be treatewd as a single object.
+
+	rmtree(b);
+	b = get_tree(b_copy, 1.e6);	// 1.e6 means ignore perturbations
+
+	// Goals: (1) substructure, (2) top-level nodes are unbound.
+	// Should check both here, but not clear what to do if they
+	// aren't met...
+
+        int nmul = 0;
+	for_all_daughters(hdyn, b, bi)
+	  if (bi->get_oldest_daughter()) nmul++;
+
+        if (nmul == 0) {
+
+	    // No substructure.  Flag for now.
+
+	    cout << "*** SmallN: nmul = 0" << endl;
+	}
+
+	int nbound = 0;
+	for_all_daughters(hdyn, b, bi) {
+	    for_all_daughters(hdyn, b, bj) {
+	        if (bj > bi) {
+	            real m = bi->get_mass()+bj->get_mass();
+		    vec dx = bi->get_pos()-bj->get_pos();
+		    vec dv = bi->get_vel()-bj->get_vel();
+		    if (0.5*dv*dv - m/sqrt(dx*dx) < 0) nbound++;
+		}
+	    }
+	}
+
+        if (nbound > 0) {
+
+	    // Top level not unbound.  Flag for now.
+
+	    cout << "*** SmallN: "; PRL(nbound);
+	}
+    }
+
     UpdatedParticles.clear();
 
     // Create indices for the CM nodes and add them to the updated list.
@@ -575,6 +653,7 @@ int update_particle_tree()
 	    int newindex = b->get_cm_index();
 	    b->set_cm_index(newindex+1);
 	    bb->set_index(newindex);
+	    // cout << "push_back " << bb->get_index() << endl << flush;
 	    UpdatedParticles.push_back(UpdatedParticle(newindex, 1));
 	}
 
@@ -586,6 +665,7 @@ int update_particle_tree()
     // data.  It looks like restore_particle_tree() below was intended
     // to do just that, but it is not accessible from AMUSE and never
     // invoked.  Maybe it can be called through your state model?
+    // -- Steve
     //
     // rmtree(b);
     // b = b_copy;

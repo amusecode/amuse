@@ -2,6 +2,7 @@ from amuse.support.core import late, print_out
 
 from amuse.support.options import option
 from amuse.support.options import OptionalAttributes
+from amuse.support import get_amuse_root_dir
 
 import os
 import inspect
@@ -13,16 +14,7 @@ class CreateAPythonWorker(OptionalAttributes):
     
     @option(sections=['data'])
     def amuse_root_dir(self):
-        if 'AMUSE_DIR' in os.environ:
-            return os.environ['AMUSE_DIR']    
-        previous = None
-        result = os.path.abspath(__file__)
-        while not os.path.exists(os.path.join(result,'build.py')):
-            result = os.path.dirname(result)
-            if result == previous:
-                return os.path.dirname(os.path.dirname(__file__))
-            previous = result
-        return result
+        return get_amuse_root_dir()
         
     @late
     def channel_type(self):
@@ -31,6 +23,10 @@ class CreateAPythonWorker(OptionalAttributes):
     @late
     def template_dir(self):
         return os.path.dirname(__file__)
+        
+    @late
+    def worker_dir(self):
+        return os.path.abspath(os.path.curdir)
         
     @late
     def template_string(self):
@@ -48,8 +44,7 @@ class CreateAPythonWorker(OptionalAttributes):
         filename = os.path.basename(inspect.getfile(self.implementation_factory))
         filename = filename.split('.')[0]
         filename.replace(os.sep, '_')
-        path = os.path.abspath(os.path.curdir)
-        path = os.path.join(path, filename)
+        path = os.path.join(self.worker_dir, filename)
         
         return path
         
@@ -82,5 +77,5 @@ class CreateAPythonWorker(OptionalAttributes):
         with open(self.output_name, 'w') as f:
             f.write(string)
             
-        os.chmod(self.output_name, 0777)
+        os.chmod(self.output_name, 0o777)
         

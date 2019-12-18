@@ -38,7 +38,7 @@ class format_option(late):
        
 
 def _get_processor_factory(format):
-    if isinstance(format, basestring):
+    if isinstance(format, str):
         if not format in registered_fileformat_processors:
             raise UnsupportedFormatException(format)
         processor_factory = registered_fileformat_processors[format]
@@ -88,7 +88,7 @@ def read_set_from_file(
     determine the supported options for a processor call 
     :func:`get_options_for_format`
     """
-    if not os.path.exists(filename):
+    if not 'stream' in format_specific_keyword_arguments and not os.path.exists(filename):
         raise IoException("Error: file '{0}' does not exist.".format(filename))
         
     
@@ -175,7 +175,7 @@ class ReportTable(object):
             for i,name in enumerate(names):
                 names_to_index[name] = i
             
-            for name, value in fieldsbyname.iteritems():
+            for name, value in fieldsbyname.items():
                 index = names_to_index[name]
                 row[index] = value
         self.processor.write_row(row)
@@ -292,7 +292,7 @@ class FileFormatProcessor(object):
         
     def set_options(self, dictionary):
         supported_options = self.get_options()
-        for key, value in dictionary.iteritems():
+        for key, value in dictionary.items():
             if key in supported_options:
                 setattr(self, key, value)
             else:
@@ -325,7 +325,7 @@ class FileFormatProcessor(object):
         name of the option, a description of the option and
         the default values
         """
-        for option, method in self.get_options().iteritems():
+        for option, method in self.get_options().items():
             default_value = getattr(self, option)
             doc = method.__doc__
             if doc is None:
@@ -493,7 +493,7 @@ class FortranFileFormatProcessor(BinaryFileFormatProcessor):
         
     def read_fortran_block_float_vectors(self, file, size = 3):
         result = self.read_fortran_block_floats(file)
-        return result.reshape(len(result)/size,size)
+        return result.reshape(len(result)//size,size)
         
     def write_fortran_block(self, file, input):
         format = self.endianness+'I'

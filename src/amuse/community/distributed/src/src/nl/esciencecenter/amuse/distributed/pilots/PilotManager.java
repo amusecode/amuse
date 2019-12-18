@@ -17,6 +17,9 @@ package nl.esciencecenter.amuse.distributed.pilots;
 
 import ibis.ipl.IbisIdentifier;
 
+import java.io.InputStream;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -32,15 +35,13 @@ import nl.esciencecenter.amuse.distributed.DistributedAmuseException;
 import nl.esciencecenter.amuse.distributed.jobs.AmuseJob;
 import nl.esciencecenter.amuse.distributed.remote.Pilot;
 import nl.esciencecenter.amuse.distributed.resources.ResourceManager;
-import nl.esciencecenter.xenon.Xenon;
 import nl.esciencecenter.xenon.XenonException;
-import nl.esciencecenter.xenon.files.Path;
-import nl.esciencecenter.xenon.jobs.Job;
-import nl.esciencecenter.xenon.jobs.JobDescription;
-import nl.esciencecenter.xenon.jobs.JobStatus;
-import nl.esciencecenter.xenon.jobs.Scheduler;
-import nl.esciencecenter.xenon.util.JavaJobDescription;
-import nl.esciencecenter.xenon.util.Utils;
+import nl.esciencecenter.xenon.filesystems.FileSystem;
+import nl.esciencecenter.xenon.filesystems.Path;
+import nl.esciencecenter.xenon.schedulers.JobDescription;
+import nl.esciencecenter.xenon.schedulers.JobStatus;
+import nl.esciencecenter.xenon.schedulers.Scheduler;
+import nl.esciencecenter.xenon.utils.JavaJobDescription;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -59,6 +60,8 @@ public class PilotManager {
     public static final String EQUALS_REGEX = "\\s*=\\s*";
 
     private static final Logger logger = LoggerFactory.getLogger(PilotManager.class);
+
+    private static int MAX_IO_LINES = 10000;
 
     private static int nextID = 0;
 
@@ -91,14 +94,14 @@ public class PilotManager {
         JavaJobDescription result = new JavaJobDescription();
 
         if (stdoutPath != null) {
-            result.setStdout(stdoutPath.getRelativePath().getAbsolutePath());
+            result.setStdout(stdoutPath.toRelativePath().toAbsolutePath().toString());
         }
 
         if (stderrPath != null) {
-            result.setStderr(stderrPath.getRelativePath().getAbsolutePath());
+            result.setStderr(stderrPath.toRelativePath().toAbsolutePath().toString());
         }
 
-        result.setInteractive(false);
+        //~ result.setInteractive(false);
 
         if (queueName != null && !queueName.isEmpty()) {
             result.setQueueName(queueName);
@@ -122,16 +125,15 @@ public class PilotManager {
         }
 
         result.setNodeCount(nodeCount);
-        result.setMaxTime(timeMinutes);
+        result.setMaxRuntime(timeMinutes);
 
         AmuseConfiguration configuration = resource.getConfiguration();
 
         result.setExecutable(configuration.getJava());
 
         List<String> classpath = result.getJavaClasspath();
-        classpath.add(configuration.getAmuseHome().getPath() + "/src/amuse/community/distributed/src/dist/*");
-        classpath.add(configuration.getAmuseHome().getPath() + "/src/amuse/community/distributed/worker.jar");
-        classpath.add(configuration.getAmuseHome().getPath() + "/src/amuse/community/distributed");
+        classpath.add(configuration.getAmuseHome().getPath() + "/community/distributed/data/");
+        classpath.add(configuration.getAmuseHome().getPath() + "/community/distributed/data/*");
 
         result.setJavaMain(Pilot.class.getCanonicalName());
 
@@ -191,11 +193,9 @@ public class PilotManager {
     private final String label;
     private final String options;
 
-    private final Job xenonJob;
+    private final String xenonJob;
 
     private final ResourceManager resource;
-
-    private final Xenon xenon;
 
     private final Path stdoutPath;
     private final Path stderrPath;
@@ -218,12 +218,11 @@ public class PilotManager {
      * @param nodeLabel
      */
     public PilotManager(ResourceManager resource, String queueName, int nodeCount, int timeMinutes, int slotsPerNode, String nodeLabel,
-            String options, String serverAddress, String[] hubAddresses, Xenon xenon, UUID amuseID, boolean debug)
+            String options, String serverAddress, String[] hubAddresses, UUID amuseID, boolean debug)
             throws DistributedAmuseException {
         this.jobs = new ArrayList<AmuseJob>();
         ibisIdentifier = null;
 
-        this.xenon = xenon;
         this.resource = resource;
 
         this.queueName = queueName;
@@ -239,21 +238,25 @@ public class PilotManager {
 
         try {
             Scheduler scheduler = resource.getScheduler();
+            FileSystem filesystem = resource.getFileSystem();
 
             if (debug) {
 
                 Path resourceHome = resource.getHome();
 
-                Path logDir = Utils.resolveWithRoot(xenon.files(), resourceHome, "distributed-amuse-logs");
+                //~ Path logDir = Utils.resolveWithRoot(xenon.files(), resourceHome, "distributed-amuse-logs");
+                Path logDir = resourceHome.resolve("distributed-amuse-logs");
 
                 logger.debug("logs will be put in dir: " + logDir);
 
-                if (!xenon.files().exists(logDir)) {
-                    xenon.files().createDirectories(logDir);
+                if (!filesystem.exists(logDir)) {
+                    filesystem.createDirectories(logDir);
                 }
 
-                stdoutPath = Utils.resolveWithRoot(xenon.files(), logDir, "amuse-" + amuseID + "-pilot-" + id + "-stdout.txt");
-                stderrPath = Utils.resolveWithRoot(xenon.files(), logDir, "amuse-" + amuseID + "-pilot-" + id + "-stderr.txt");
+                //~ stdoutPath = Utils.resolveWithRoot(xenon.files(), logDir, "amuse-" + amuseID + "-pilot-" + id + "-stdout.txt");
+                //~ stderrPath = Utils.resolveWithRoot(xenon.files(), logDir, "amuse-" + amuseID + "-pilot-" + id + "-stderr.txt");
+                stdoutPath = logDir.resolve("amuse-" + amuseID + "-pilot-" + id + "-stdout.txt");
+                stderrPath = logDir.resolve("amuse-" + amuseID + "-pilot-" + id + "-stderr.txt");
 
             } else {
                 stdoutPath = null;
@@ -269,12 +272,12 @@ public class PilotManager {
 
             logger.debug("starting reservation using scheduler {}", scheduler);
 
-            this.xenonJob = xenon.jobs().submitJob(scheduler, jobDescription);
+            this.xenonJob = scheduler.submitBatchJob(jobDescription);
             
             logger.debug("submitted reservation: {}", xenonJob);
 
             //get initial job status
-            this.xenonJobStatus = xenon.jobs().getJobStatus(this.xenonJob);
+            this.xenonJobStatus = scheduler.getJobStatus(this.xenonJob);
             
             logState();
 
@@ -315,12 +318,34 @@ public class PilotManager {
         return resource.getName();
     }
 
+    public ResourceManager getResource() {
+        return resource;
+    }
+
     public int getResourceID() {
         return resource.getId();
     }
 
-    public Job getXenonJob() {
+    public String getXenonJob() {
         return xenonJob;
+    }
+    
+    private List<String> readlines(Path path) throws DistributedAmuseException{
+        try {
+            ArrayList<String> result = new ArrayList<>();
+            InputStream stream = resource.getFileSystem().readFromFile(stdoutPath);
+            BufferedReader buf= new BufferedReader( new InputStreamReader( stream, StandardCharsets.UTF_8) );
+            String line = buf.readLine();
+            while( line != null) {
+              result.add( line );
+              if(MAX_IO_LINES>0 && result.size() > MAX_IO_LINES) result.remove(0);
+              line = buf.readLine();
+            }
+            stream.close();
+            return result;
+      } catch (Exception e) {
+            throw new DistributedAmuseException("failed to read file " + path + " for " + this, e);
+      }
     }
     
     public List<String> getStdout() throws DistributedAmuseException {
@@ -330,8 +355,8 @@ public class PilotManager {
             return result;
         }
         try {
-            return Utils.readAllLines(xenon.files(), stdoutPath, StandardCharsets.UTF_8);
-        } catch (XenonException e) {
+            return readlines(stdoutPath);            
+        } catch (DistributedAmuseException e) {
             throw new DistributedAmuseException("failed to read stdout file " + stdoutPath + " for " + this, e);
         }
     }
@@ -343,8 +368,8 @@ public class PilotManager {
             return result;
         }
         try {
-            return Utils.readAllLines(xenon.files(), stderrPath, StandardCharsets.UTF_8);
-        } catch (XenonException e) {
+            return readlines(stderrPath);            
+        } catch (DistributedAmuseException e) {
             throw new DistributedAmuseException("failed to read stderr file " + stderrPath + " for " + this, e);
         }
     }
@@ -356,7 +381,7 @@ public class PilotManager {
 
         logger.debug("cancelling xenon job for pilot: {}", this);
         try {
-            xenon.jobs().cancelJob(xenonJob);
+            resource.getScheduler().cancelJob(xenonJob);
         } catch (XenonException e) {
             throw new DistributedAmuseException("failed to cancel job " + xenonJob, e);
         }
@@ -475,7 +500,9 @@ public class PilotManager {
         if (isRunning()) {
             return "RUNNING";
         }
-
+        if (!this.left && this.ibisIdentifier == null) {
+            return "WAITING";
+        }
         return xenonJobStatus.getState();
     }
 

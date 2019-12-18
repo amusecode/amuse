@@ -30,12 +30,12 @@ def print_log(time, gravity, E0 = 0.0 | nbody_system.energy):
     if E0 == 0 | nbody_system.energy: E0 = E
     Rv = -0.5*M*M/U
     Q = -T/U
-    print ""
-    print "time =", time.number, " energy = ", E.number, \
-	" dE/E0 = ", (E/E0 - 1)
-    print '%s %.4f %.6f %.6f %.6f %.6f %.6f %.6f %.6f' % \
+    print("")
+    print("time =", time.number, " energy = ", E.number, \
+	" dE/E0 = ", (E/E0 - 1))
+    print('%s %.4f %.6f %.6f %.6f %.6f %.6f %.6f %.6f' % \
 	("%%", time.number, M.number, T.number, U.number, \
-         E.number, Ebin.number, Rv.number, Q)
+         E.number, Ebin.number, Rv.number, Q))
     sys.stdout.flush()
     return E
 
@@ -57,15 +57,15 @@ def run_ph4(infile = None, number_of_stars = 40,
         numpy.random.seed()
         random_seed = numpy.random.randint(1, pow(2,31)-1)
     numpy.random.seed(random_seed)
-    print "random seed =", random_seed
+    print("random seed =", random_seed)
 
-    if infile != None: print "input file =", infile
-    print "end_time =", end_time.number
-    print "delta_t =", delta_t.number
-    print "n_workers =", n_workers
-    print "use_gpu =", use_gpu
-    print "manage_encounters =", manage_encounters
-    print "\ninitializing the gravity module"
+    if infile != None: print("input file =", infile)
+    print("end_time =", end_time.number)
+    print("delta_t =", delta_t.number)
+    print("n_workers =", n_workers)
+    print("use_gpu =", use_gpu)
+    print("manage_encounters =", manage_encounters)
+    print("\ninitializing the gravity module")
     sys.stdout.flush()
 
     # Note that there are actually three GPU options to test:
@@ -90,21 +90,21 @@ def run_ph4(infile = None, number_of_stars = 40,
 
     if infile == None:
 
-        print "making a Plummer model"
+        print("making a Plummer model")
         stars = new_plummer_model(number_of_stars)
 
         id = numpy.arange(number_of_stars)
         stars.id = id+1
 
-        print "setting particle masses and radii"
+        print("setting particle masses and radii")
 	#stars.mass = (1.0 / number_of_stars) | nbody_system.mass
         scaled_mass = new_salpeter_mass_distribution_nbody(number_of_stars) 
         stars.mass = scaled_mass
         stars.radius = 0.02 | nbody_system.length
 
-        print "centering stars"
+        print("centering stars")
         stars.move_to_center()
-        print "scaling stars to virial equilibrium"
+        print("scaling stars to virial equilibrium")
         stars.scale_to_standard(smoothing_length_squared
                                     = gravity.parameters.epsilon_squared)
 
@@ -115,7 +115,7 @@ def run_ph4(infile = None, number_of_stars = 40,
 
         # Read the input data.  Units are dynamical.
 
-        print "reading file", infile
+        print("reading file", infile)
 
         id = []
         mass = []
@@ -164,16 +164,16 @@ def run_ph4(infile = None, number_of_stars = 40,
     gravity.parameters.use_gpu = use_gpu
     # gravity.parameters.manage_encounters = manage_encounters
 
-    print "adding particles"
+    print("adding particles")
     # print stars
     sys.stdout.flush()
     gravity.particles.add_particles(stars)
     gravity.commit_particles()
 
-    print ''
-    print "number_of_stars =", number_of_stars
-    print "evolving to time =", end_time.number, \
-          "in steps of", delta_t.number
+    print('')
+    print("number_of_stars =", number_of_stars)
+    print("evolving to time =", end_time.number, \
+          "in steps of", delta_t.number)
     sys.stdout.flush()
 
     E0 = print_log(time, gravity)
@@ -207,7 +207,7 @@ def run_ph4(infile = None, number_of_stars = 40,
         print_log(time, gravity, E0)
         sys.stdout.flush()
 
-    print ''
+    print('')
     gravity.stop()
 
 if __name__ == '__main__':
@@ -226,8 +226,8 @@ if __name__ == '__main__':
 
     try:
         opts, args = getopt.getopt(sys.argv[1:], "a:c:d:e:f:gGn:s:t:w:")
-    except getopt.GetoptError, err:
-        print str(err)
+    except getopt.GetoptError as err:
+        print(str(err))
         sys.exit(1)
 
     for o, a in opts:
@@ -255,8 +255,7 @@ if __name__ == '__main__':
         elif o == "-w":
             n_workers = int(a)
         else:
-            print "unexpected argument", o
-
+            print("unexpected argument", o)
 
     assert is_mpd_running()
     run_ph4(infile, N, t_end, delta_t, n_workers,

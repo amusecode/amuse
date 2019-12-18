@@ -20,11 +20,15 @@ class Parameters(object):
         object.__setattr__(self, '_mapping_from_name_to_definition', OrderedDictionary())
         object.__setattr__(self, '_mapping_from_name_to_parameter', OrderedDictionary())
 
-        for x in definitions:
-            self._mapping_from_name_to_definition[x.name] = x
-        
-        
+        self.update()
 
+    def update(self):
+        for x in self._definitions:
+            self._mapping_from_name_to_definition[x.name] = x
+
+        if len(self._definitions)!=len(self._mapping_from_name_to_definition):
+            raise Exception("Duplicate parameters detected")
+ 
     def __getattr__(self, name):
         #if name.startswith('__'):
         #    return object.__getattribute__(self, name)
@@ -45,7 +49,7 @@ class Parameters(object):
         return self.get_parameter(name).set_value(value)
 
     def names(self):
-        return self._mapping_from_name_to_definition.keys()
+        return list(self._mapping_from_name_to_definition.keys())
 
     def set_defaults(self):
         
@@ -75,7 +79,10 @@ class Parameters(object):
 
         for name in sorted(self.names()):
             output += name + ": "
-            output += str(getattr(self, name))+"\n"
+            output += str(getattr(self, name))
+            if self.get_parameter(name).is_readonly():
+                output += "  (read only)"
+            output += "\n"
 
         return output
 
@@ -112,7 +119,7 @@ class Parameters(object):
                 functions[definition.functionname] = []
             functions[definition.functionname].append(x)
             
-        for functionname, parameters in functions.iteritems():
+        for functionname, parameters in functions.items():
             object = self._instance()
             method = getattr(object, functionname)
             keyword_arguments = {}
@@ -134,11 +141,11 @@ class Parameters(object):
             try:
                 value = x.get_value()
             except:
-                print "could not get value for:", x.definition.name, default_value
+                print("could not get value for:", x.definition.name, default_value)
                 continue
-            print x.definition.name, value, default_value
+            print(x.definition.name, value, default_value)
             if not value == default_value:
-               print "!default value is not equal to value in code: {0}".format(x.definition.name)
+               print("!default value is not equal to value in code: {0}".format(x.definition.name))
             
 
     def copy(self):
@@ -199,7 +206,7 @@ class ParametersMemento(object):
         self._mapping_from_name_to_value[name] = value
 
     def names(self):
-        return self._mapping_from_name_to_value.keys()
+        return list(self._mapping_from_name_to_value.keys())
 
     def set_defaults(self):
         pass
@@ -244,8 +251,7 @@ def new_parameters_instance_with_docs(definitions, instance):
             return output
         __doc__ = property(_get_doc)
     
-    class ParametersWithDocs(Parameters):
-        __metaclass__ = _ParametersMetaclass
+    class ParametersWithDocs(Parameters, metaclass=_ParametersMetaclass):
         def _get_doc(self):
             output = "Parameters: \n"
             for parameter_definition in definitions:
@@ -278,8 +284,7 @@ def new_parameters_with_units_converted_instance_with_docs(original, converter):
             return output
         __doc__ = property(_get_doc)
     
-    class ParametersWithDocs(ParametersWithUnitsConverted):
-        __metaclass__ = _ParametersMetaclass
+    class ParametersWithDocs(ParametersWithUnitsConverted, metaclass=_ParametersMetaclass):
         def _get_doc(self):
             output = "Parameters: \n"
             for parameter_definition in original._definitions:
@@ -347,11 +352,11 @@ class ParametersWithUnitsConverted(object):
             try:
                 value = x.get_value()
             except:
-                print "could not get value for:", x.definition.name, default_value
+                print("could not get value for:", x.definition.name, default_value)
                 continue
-            print x.definition.name, value, default_value
+            print(x.definition.name, value, default_value)
             if not value == default_value:
-                print "default value is not equal to value in code: {0}".format(x.definition.name)
+                print("default value is not equal to value in code: {0}".format(x.definition.name))
             
 
 class AbstractParameterDefinition(object):
@@ -382,19 +387,28 @@ class AbstractParameterDefinition(object):
 
 class AliasParameterDefinition(AbstractParameterDefinition):
     
-    def __init__(self, name, aliased_name, description):
+    def __init__(self, name, aliased_name, description, alias_set=None):
         AbstractParameterDefinition.__init__(self, name, description)
         self.aliased_name = aliased_name
+        self.alias_set = alias_set
         self.default_value = None
     
     def get_default_value(self, parameter_set):
         return parameter_set.get_parameter(self.aliased_name).definition.get_default_value(parameter_set)
         
     def get_value(self, parameter, object):
-        return getattr(parameter.parameter_set, self.aliased_name)
+        if self.alias_set:
+            parameter_set=getattr(object, self.alias_set)
+        else:
+            parameter_set=parameter.parameter_set
+        return getattr(parameter_set, self.aliased_name)
 
     def set_value(self, parameter, object, quantity):
-        return setattr(parameter.parameter_set, self.aliased_name, quantity)
+        if self.alias_set:
+            parameter_set=getattr(object, self.alias_set)
+        else:
+            parameter_set=parameter.parameter_set
+        return setattr(parameter_set, self.aliased_name, quantity)
 
     def set_default_value(self, parameter, object):
         pass
@@ -441,8 +455,6 @@ class ParameterDefinition(AbstractParameterDefinition):
 class InterfaceParameterDefinition(ParameterDefinition):
     def __init__(self, name, description, default_value,state_guard=None):
         AbstractParameterDefinition.__init__(self, name, description)
-        if default_value is None:
-          raise Exception("interface parameters need default value")
         self.default_value = default_value
         self.must_set_before_get = False
         self.value=default_value
@@ -456,12 +468,16 @@ class InterfaceParameterDefinition(ParameterDefinition):
         return x
         
     def set_value(self, parameter, object, quantity):
-        if self.state_guard:
-          getattr(object, self.state_guard)()
         try:
           self.value=quantity.copy()
         except:
           self.value=quantity
+        if self.state_guard:
+          getattr(object, self.state_guard)()
+
+    def must_set_to_default_if_not_set(self):
+        return False
+
 
 class ParameterException(AttributeError):
     template = ("Could not {0} value for parameter '{1}' of a '{2}' object, got errorcode <{3}>")

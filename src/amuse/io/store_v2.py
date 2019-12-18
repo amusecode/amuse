@@ -27,19 +27,11 @@ from amuse.io import store_v1
 
 import warnings
 
-if sys.hexversion > 0x03000000:
-    def pickle_to_string(value):
-        return numpy.void(pickle.dumps(value))
+def pickle_to_string(value):
+    return numpy.void(pickle.dumps(value, protocol=0))
         
-        
-    def unpickle_from_string(value):
-        return pickle.loads(value.tostring())
-else:
-    def pickle_to_string(value):
-        return pickle.dumps(value)
-        
-    def unpickle_from_string(value):
-        return pickle.loads(value)
+def unpickle_from_string(value):
+    return pickle.loads(value, encoding='bytes')
     
 class HDF5Attribute(object):
     
@@ -69,8 +61,9 @@ class HDF5Attribute(object):
         if is_quantity(input):
             if not hasattr(shape, '__iter__'): 
                 shape = shape,
-            dataset = group.create_dataset(name, shape=shape, dtype=input.number.dtype)
-            dataset.attrs["units"] = input.unit.to_simple_form().reference_string()
+            dtype = numpy.asanyarray(input.number).dtype
+            dataset = group.create_dataset(name, shape=shape, dtype=dtype)
+            dataset.attrs["units"] = input.unit.to_simple_form().reference_string().encode('ascii')
             return HDF5VectorQuantityAttribute(name, dataset, input.unit)                                     
         elif hasattr(input, 'as_set'):
             raise Exception("adding a linked attribute to a set stored in a HDF file is not supported, alternative is to copy the set and save it")
@@ -83,19 +76,20 @@ class HDF5Attribute(object):
             if dtype.kind == 'U':
                 new_dtype = numpy.dtype('S' + dtype.itemsize * 4)
                 dataset = group.create_dataset(name, shape=shape, dtype=dtype)
-                dataset.attrs["units"] = "UNICODE"
+                dataset.attrs["units"] = "UNICODE".encode('ascii')
                 return HDF5UnicodeAttribute(name, dataset)
             else:
-                dtype = numpy.asanyarray(input).dtype
+                if not hasattr(shape, '__iter__'): 
+                    shape = shape,
                 dataset = group.create_dataset(name, shape=shape, dtype=dtype)
-                dataset.attrs["units"] = "none"
+                dataset.attrs["units"] = "none".encode('ascii')
                 return HDF5UnitlessAttribute(name, dataset)
 
 
 
     @classmethod
     def load_attribute(cls, name, dataset, loader):
-        units_string = dataset.attrs["units"]
+        units_string = dataset.attrs["units"] if isinstance(dataset.attrs["units"], str) else dataset.attrs["units"].decode("ascii") 
         if units_string == "none":
             return HDF5UnitlessAttribute(name, dataset)
         elif units_string == "link":
@@ -103,7 +97,26 @@ class HDF5Attribute(object):
         elif units_string == "UNICODE":
             return HDF5UnicodeAttribute(name, dataset)
         else:
-            unit = eval(units_string, core.__dict__)
+            try:
+                unit = eval(units_string, core.__dict__)
+            except:
+                # These are some strange things found in the
+                # unit string field of a couple of data files
+                # I'm unsure if this is a data corruption
+                # or some problem in printing units...
+                # same error was found in multiple files
+                # pointing to a real error
+                # this code is for existing files
+                if '*0(' in units_string:
+                    updated = units_string.replace('*0(','* (')
+                    unit = eval(updated, core.__dict__)
+                elif 'vystem.' in units_string:
+                    updated = units_string.replace('vystem.','system.')
+                    unit = eval(updated, core.__dict__)
+                else:
+                    print(units_string)
+                    raise
+
             return HDF5VectorQuantityAttribute(name, dataset, unit) 
 
 
@@ -270,6 +283,8 @@ class HDF5LinkedAttribute(HDF5Attribute):
         self.loader = loader
 
     def get_values(self, indices):
+        if indices is None: 
+            indices=slice(None)
         kinds = self.kind_dataset[:][indices]
         references = self.ref_dataset[:][indices]
         keys = self.keys_dataset[:][indices]
@@ -450,7 +465,7 @@ class HDF5AttributeStorage(AttributeStorage):
         return result
         
     def get_defined_attribute_names(self):
-        return self.attributesgroup.keys()
+        return list(self.attributesgroup.keys())
         
     def get_defined_settable_attribute_names(self):
         return self.get_defined_attribute_names()
@@ -520,10 +535,11 @@ class HDF5GridAttributeStorage(AttributeStorage):
         
     def get_unit_of(self, attribute):
         dataset = self.attributesgroup[attribute]
-        return eval(dataset.attrs["units"], core.__dict__) 
+        decoded = dataset.attrs["units"] if isinstance(dataset.attrs["units"], str) else dataset.attrs["units"].decode("ascii")
+        return eval(decoded, core.__dict__) 
         
     def get_defined_attribute_names(self):
-        return self.attributesgroup.keys()
+        return list(self.attributesgroup.keys())
         
     def get_values_in_store(self, indices, attributes):
             
@@ -679,8 +695,8 @@ class StoreHDF(object):
             
         if hasattr(container, 'keys') and not hasattr(container, 'as_set'):
             self.store_sets(
-                container.values(),
-                container.keys(),
+                list(container.values()),
+                list(container.keys()),
                 extra_attributes
             )
         if hasattr(container, 'shape'):
@@ -717,7 +733,7 @@ class StoreHDF(object):
             parent = self.data_group()
             
         group = self.new_version(parent)
-        group.attrs["type"] = 'particles'
+        group.attrs["type"] = 'particles'.encode("ascii")
         self.mapping_from_groupid_to_set[group.id] = particles
         
         
@@ -741,7 +757,7 @@ class StoreHDF(object):
             
         group = self.new_version(parent)
         
-        group.attrs["type"] = 'grid'
+        group.attrs["type"] = 'grid'.encode("ascii")
         group.attrs["class_of_the_container"] = pickle_to_string(grid._factory_for_new_collection())
         group.create_dataset("shape", data=numpy.asarray(grid.shape))
     
@@ -774,17 +790,17 @@ class StoreHDF(object):
             if is_quantity(quantity):
                 value = quantity.value_in(quantity.unit)
                 dataset = attributes_group.create_dataset(attribute, data=value)
-                dataset.attrs["units"] = quantity.unit.to_simple_form().reference_string()
+                dataset.attrs["units"] = quantity.unit.to_simple_form().reference_string().encode("ascii")
             elif isinstance(quantity, LinkedArray):
                 self.store_linked_array(attribute, attributes_group, quantity, group, links)
             else:
                 dtype = numpy.asanyarray(quantity).dtype
                 if dtype.kind == 'U':
                     dataset = attributes_group.create_dataset(attribute, data=numpy.char.encode(quantity,  'UTF-32BE'))
-                    dataset.attrs["units"] = "UNICODE"
+                    dataset.attrs["units"] = "UNICODE".encode('ascii')
                 else:
                     dataset = attributes_group.create_dataset(attribute, data=quantity)
-                    dataset.attrs["units"] = "none"
+                    dataset.attrs["units"] = "none".encode('ascii')
                 
     
 
@@ -854,14 +870,14 @@ class StoreHDF(object):
             
         subgroup.create_dataset('keys', data=key_array)
         subgroup.create_dataset('kind', data=kind_array)
-        subgroup.attrs["units"] = "link"
+        subgroup.attrs["units"] = "link".encode("ascii")
     
 
     def store_timestamp(self, container, group):
         quantity = container.get_timestamp()
         if not quantity is None:
             group.attrs["timestamp"] = quantity.value_in(quantity.unit)
-            group.attrs["timestamp_unit"] = quantity.unit.reference_string()
+            group.attrs["timestamp_unit"] = quantity.unit.reference_string().encode("ascii")
     
     
     
@@ -871,16 +887,16 @@ class StoreHDF(object):
         arguments_and_attributes.update(collection_attributes)
         arguments_and_attributes.update(extra_attributes)
         ref_dtype = h5py.special_dtype(ref=h5py.Reference)
-        for name, quantity in arguments_and_attributes.iteritems():
+        for name, quantity in arguments_and_attributes.items():
             if quantity is None:
                 continue 
             if is_quantity(quantity):
                 group.attrs[name] = quantity.value_in(quantity.unit)
-                group.attrs[name+"_unit"] = quantity.unit.reference_string()
+                group.attrs[name+"_unit"] = quantity.unit.reference_string().encode("ascii")
             elif isinstance(quantity, Particle):
                 #group.attrs[name] = ref_dtype(None)
                 group.attrs[name+"_key"] = quantity.key
-                group.attrs[name+"_unit"] = "particle"
+                group.attrs[name+"_unit"] = "particle".encode("ascii")
                 links.append(UneresolvedAttributeLink(
                     group,
                     name,
@@ -889,7 +905,7 @@ class StoreHDF(object):
             elif isinstance(quantity, GridPoint):
                 #group.attrs[name] = ref_dtype(None)
                 group.attrs[name+"_index"] = quantity.index
-                group.attrs[name+"_unit"] = "gridpoint"
+                group.attrs[name+"_unit"] = "gridpoint".encode("ascii")
                 links.append(UneresolvedAttributeLink(
                     group, 
                     name, 
@@ -897,7 +913,7 @@ class StoreHDF(object):
                 ))
             elif isinstance(quantity, AbstractSet):
                 #group.attrs[name] = ref_dtype(None)
-                group.attrs[name+"_unit"] = "set"
+                group.attrs[name+"_unit"] = "set".encode("ascii")
                 links.append(UneresolvedAttributeLink(
                     group, 
                     name,
@@ -905,13 +921,13 @@ class StoreHDF(object):
                 ))
             else:
                 group.attrs[name] = quantity
-                group.attrs[name+"_unit"] = "none"
+                group.attrs[name+"_unit"] = "none".encode("ascii")
             
     def load_collection_attributes(self, container, group):
         names = group.attrs.keys()
         attributenames = [x for x in names if x + '_unit' in group.attrs]
         for name in attributenames:
-            unit_string = group.attrs[name+"_unit"]
+            unit_string = group.attrs[name+"_unit"] if isinstance(group.attrs[name+"_unit"],str) else group.attrs[name+"_unit"].decode("ascii")
             if unit_string == 'none':
                 quantity = group.attrs[name]
             elif unit_string == 'particle':
@@ -928,12 +944,12 @@ class StoreHDF(object):
                 reference = group.attrs[name]
                 quantity = self.get_set_from_reference(reference)
             else:
-                unit = eval(group.attrs[name+"_unit"], core.__dict__) 
+                unit = eval(unit_string, core.__dict__) 
                 quantity = unit.new_quantity(group.attrs[name])
             setattr(container.collection_attributes, name, quantity)
                 
     def load(self):
-        if not self.data_group()is None and len(self.data_group()) > 0:
+        if not self.data_group(False) is None and len(self.data_group(False)) > 0:
             return self.load_container(self.data_group())
         else:
             result = {}
@@ -992,7 +1008,7 @@ class StoreHDF(object):
         return container
     
     def load_from_group(self, group):
-        container_type = group.attrs['type']
+        container_type = group.attrs['type'] if isinstance(group.attrs['type'], str) else group.attrs['type'].decode('ascii') 
         
         if container_type == 'particles':
             return self.load_particles_from_group(group)
@@ -1057,14 +1073,14 @@ class StoreHDF(object):
         name = format(index + 1,"010d")
         return master_group.create_group(name)
         
-    def info_group(self):
-        return self.named_group(self.INFO_GROUP_NAME)
+    def info_group(self, ensure = True):
+        return self.named_group(self.INFO_GROUP_NAME, ensure)
         
-    def data_group(self):
-        return self.named_group(self.DATA_GROUP_NAME)
+    def data_group(self, ensure = True):
+        return self.named_group(self.DATA_GROUP_NAME, ensure)
         
-    def named_group(self, name):
-        if self.hdf5file.mode == 'r':
+    def named_group(self, name, ensure = True):
+        if self.hdf5file.mode == 'r' or not ensure:
             if not name in self.hdf5file:
                 return None
             else:

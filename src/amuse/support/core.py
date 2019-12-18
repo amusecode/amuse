@@ -2,7 +2,7 @@
 
 """
 import types 
-import collections
+import collections.abc
 import re
 
 def compare_version_strings(version1, version2):
@@ -202,10 +202,10 @@ class print_out(object):
         return str(self)
         
     def isstring(self, x):
-        return isinstance(x,types.StringType)
+        return isinstance(x,bytes)
         
     def isnumber(self, x):
-        return isinstance(x,types.IntType) or isinstance(x,types.FloatType) 
+        return isinstance(x,int) or isinstance(x,float) 
         
         
 class OrderedDictionary(object):
@@ -240,7 +240,7 @@ class OrderedDictionary(object):
         return key in self.mapping
         
     def  __iter__(self):
-        return self.itervalues()
+        return iter(self.values())
         
     def  __len__(self):
         return len(self.orderedKeys)
@@ -248,7 +248,7 @@ class OrderedDictionary(object):
     def __str__(self):
         result = 'OrderedDictionary({'
         elements = []
-        for x in self.iterkeys():
+        for x in self.keys():
             elements.append(repr(x) + ':' + repr(self[x]))
         result += ', '.join(elements)
         result += '})'
@@ -327,7 +327,7 @@ class OrderedMultiDictionary(object):
         return key in self.mapping
         
     def  __iter__(self):
-        return self.values()
+        return list(self.values())
         
     def  __len__(self):
         return len(self.orderedKeys)
@@ -400,15 +400,15 @@ class CompositeDictionary(object):
         return False
         
     def  __iter__(self):
-        return self.keys()
+        return list(self.keys())
         
     def  __len__(self):
-        return len(self.keys())
+        return len(list(self.keys()))
         
     def __str__(self):
         result = 'CompositeDictionary({'
         elements = []
-        for x in self.keys():
+        for x in list(self.keys()):
             elements.append(str(x) + ':' + str(self[x]) )
         result += ','.join(elements)
         result += '})'
@@ -424,7 +424,7 @@ class CompositeDictionary(object):
         return iter(keys)
         
     def values(self):
-        for x in self.keys():
+        for x in list(self.keys()):
             yield self[x]
             
     def copy(self):
@@ -432,7 +432,7 @@ class CompositeDictionary(object):
         result.mapping = self.mapping.copy()
         return result
             
-class OrderedSet(collections.MutableSet):
+class OrderedSet(collections.abc.MutableSet):
     class Node(object):
         __slots__ = ['key', 'next', 'previous']
         
@@ -453,7 +453,7 @@ class OrderedSet(collections.MutableSet):
             self.previous.next = self
             
         def discard(self):
-            self.previous.next = self.next
+            self.previous.next = self.__next__
             self.next.previous = self.previous
             
     def __init__(self, iterable=None):
@@ -472,10 +472,10 @@ class OrderedSet(collections.MutableSet):
 
     def __iter__(self):
         end = self.end
-        current = end.next
+        current = end.__next__
         while current is not end:
             yield current.key
-            current = current.next
+            current = current.__next__
 
     def __reversed__(self):
         end = self.end
@@ -498,7 +498,7 @@ class OrderedSet(collections.MutableSet):
         self.clear()
     def add(self, key):
         if key not in self.map:
-            self.map[key] = self.Node(key, self.end.previous, self.end.next)
+            self.map[key] = self.Node(key, self.end.previous, self.end.__next__)
 
     def discard(self, key):
         if key in self.map:        
@@ -517,9 +517,9 @@ def memoize(f):
         try:
             return memof.d[arg]
         except:
-            if len(memof.d)>5000:
-                raise Exception("long memo dict:"+str(len(memof.d)))
             result=f(*arg)
+            if len(memof.d)>5000:
+                return result
             memof.d[arg]=result
             return result
     memof.d={}

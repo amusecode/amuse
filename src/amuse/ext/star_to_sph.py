@@ -128,7 +128,7 @@ class StellarModel2SPH(object):
             raise AmuseException("Requested target_core_mass of {0} is out of range.".format(self.target_core_mass))
 
         while max_i - min_i > 1:
-            next_i = (max_i + min_i)/2
+            next_i = (max_i + min_i)//2
             enclosed_mass_edge = interpolator.enclosed_mass[next_i+1]
             enclosed_mass_residual = self.construct_model_with_core(next_i, enclosed_mass_edge, self.gamma)
             if enclosed_mass_residual >= zero:
@@ -287,9 +287,9 @@ class StellarModel2SPH(object):
         particles.u = hydro_code.gas_particles.u
         hydro_code.stop()
         if i == num_iterations:
-            print "\nUnable to converge to stable SPH model within {0} iterations.".format(num_iterations)
+            print("\nUnable to converge to stable SPH model within {0} iterations.".format(num_iterations))
         else:
-            print "\nSuccessfully converged to stable SPH model within {0} iterations.".format(i-1)
+            print("\nSuccessfully converged to stable SPH model within {0} iterations.".format(i-1))
         return result
 
     @property
@@ -305,7 +305,7 @@ class StellarModel2SPH(object):
         sph_particles = self.convert_to_SPH()
         if self.do_relax:
             for result_string in self.relax(sph_particles):
-                print result_string
+                print(result_string)
 
         specific_internal_energy, composition, mu = self.interpolate_internal_energy(
             sph_particles.position.lengths(),

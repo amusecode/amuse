@@ -1,6 +1,7 @@
 from amuse.units import nbody_system
 from amuse.units import units
 from amuse.test.amusetest import get_path_to_results
+from amuse.test import compile_tools
 import subprocess
 import os
 import numpy
@@ -270,95 +271,7 @@ class TestCode(CodeInterface):
 class RunSpeedTests(object):
     
     def __init__(self):
-        self.number_of_gridpoints = [8]
-     
-    def get_mpicc_name(self):
-        try:
-            from amuse import config
-            is_configured = hasattr(config, 'mpi')
-        except ImportError:
-            is_configured = False
-    
-        if is_configured:
-            return config.mpi.mpicc
-        else:
-            return os.environ['MPICC'] if 'MPICC' in os.environ else 'mpicc'
-            
-    def get_mpicxx_name(self):
-        try:
-            from amuse import config
-            is_configured = hasattr(config, 'mpi')
-        except ImportError:
-            is_configured = False
-    
-        if is_configured:
-            return config.mpi.mpicxx
-        else:
-            return os.environ['MPICXX'] if 'MPICXX' in os.environ else 'mpicxx'
-    
-    def wait_for_file(self, filename):
-        for dt in [0.01, 0.01, 0.02, 0.05]:
-            if os.path.exists(filename):
-                return
-            time.sleep(dt)
-    
-    def c_compile(self, objectname, string):
-        if os.path.exists(objectname):
-            os.remove(objectname)
-
-    
-        process = subprocess.Popen(
-            [self.get_mpicc_name(), "-g", "-x", "c++", "-c",  "-o", objectname, "-",],
-            stdin = subprocess.PIPE,
-            stdout = subprocess.PIPE,
-            stderr = subprocess.PIPE
-        )
-        stdout, stderr = process.communicate(string)
-        if process.returncode == 0:
-            self.wait_for_file(objectname)
-            
-        if process.returncode != 0 or not os.path.exists(objectname):
-            raise Exception("Could not compile {0}, error = {1}".format(objectname, stderr))
-            
-    def cxx_compile(self, objectname, string):
-        if os.path.exists(objectname):
-            os.remove(objectname)
-
-        process = subprocess.Popen(
-            [self.get_mpicxx_name(), "-g","-x","c++", "-c",  "-o", objectname, "-",],
-            stdin = subprocess.PIPE,
-            stdout = subprocess.PIPE,
-            stderr = subprocess.PIPE
-        )
-        stdout, stderr = process.communicate(string)
-        if process.returncode == 0:
-            self.wait_for_file(objectname)
-        if process.returncode != 0 or not os.path.exists(objectname):
-            raise Exception("Could not compile {0}, error = {1}".format(objectname, stderr))
-            
-    
-    def c_build(self, exename, objectnames):
-    
-        if os.path.exists(exename):
-            os.remove(exename)
-            
-        arguments = [self.get_mpicxx_name()]
-        arguments.extend(objectnames)
-        arguments.append("-g")
-        arguments.append("-o")
-        arguments.append(exename)
-        
-        process = subprocess.Popen(
-            arguments,
-            stdin = subprocess.PIPE,
-            stdout = subprocess.PIPE,
-            stderr = subprocess.PIPE
-        )
-        stdout, stderr = process.communicate()
-        if process.returncode == 0:
-            self.wait_for_file(exename)
-        if process.returncode != 0 or not os.path.exists(exename):
-            raise Exception("Could not build {0}, error = {1}".format(exename, stderr))
+        self.number_of_gridpoints = [8]            
     
     def build_worker(self):
         
@@ -367,7 +280,7 @@ class RunSpeedTests(object):
         interfacefile = os.path.join(path,"interface.o")
         self.exefile = os.path.join(path,"c_worker")
         
-        self.c_compile(codefile, codestring)
+        compile_tools.cxx_compile(codefile, codestring)
         
         uc = create_c.GenerateACHeaderStringFromASpecificationClass()
         uc.specification_class = TestCode
@@ -377,15 +290,15 @@ class RunSpeedTests(object):
         
         uc = create_c.GenerateACSourcecodeStringFromASpecificationClass()
         uc.specification_class = TestCode
-	uc.needs_mpi=False
+        uc.needs_mpi=False
         code =  uc.result
         
         string = '\n\n'.join([header, code])
         
         #print string
         
-        self.cxx_compile(interfacefile, string)
-        self.c_build(self.exefile, [interfacefile, codefile] )
+        compile_tools.cxx_compile(interfacefile, string, extra_args=['-I' , path])
+        compile_tools.c_build(self.exefile, [interfacefile, codefile] )
     
     def start(self):
         self.build_worker()
@@ -394,7 +307,7 @@ class RunSpeedTests(object):
         for number_of_points_in_one_dimension in self.number_of_gridpoints:
             result = self.run(number_of_points_in_one_dimension)
     
-            print ', '.join(map(lambda x: str(x), result))
+            print(', '.join([str(x) for x in result]))
                 
     def run(self, number_of_points_in_one_dimension):
     

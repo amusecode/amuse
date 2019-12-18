@@ -48,9 +48,11 @@
 ////             -G/g Semi major axis option: 0) Equal_sma
 ////                                          1) Power Law [default]
 ////                                          2) Duquennoy & Mayor (1987)
+////                                          3) Raghavan (2010)
+////                                          4) Eggleton (1999)
 ////            Option -G requires one of the following strings:
-////                      (Equal_sma, sma_Power_Law, Duquennoy_Mayor)
-////                   -g requires appropriate interger (see double_star.h)
+////                      (Equal_sma, sma_Power_Law, Duquennoy_Mayor, Raghavan, Eggleton)
+////                   -g requires appropriate integer (see double_star.h)
 ////             -E   maximum eccentricity [1] 
 ////             -e   minimum eccentricity [0] 
 ////             -v   exponent for a power-law distribution 
@@ -226,7 +228,7 @@ int main(int argc, char ** argv) {
     mass_function mf = mf_Power_Law;
     real m_min = 0.1;
     real m_max = 100;
-    real m_exp = -2.35;
+    real m_exp = -2.35;    
     char *qfc = new char[64];
     mass_ratio_distribution qf = Flat_q;
     real q_min = 0;

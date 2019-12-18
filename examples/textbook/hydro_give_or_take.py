@@ -40,10 +40,10 @@ def new_sph_particles_from_stellar_wind(stars, mgas):
             r = add[ri].position-si.position
             r = r/r.length()
             v_wind = (constants.G*si.mass/(add[ri].position-si.position).length()).sqrt()
-            add.u= 0.5 * (v_wind)**2
-            add.vx=si.vx + r[0]*si.terminal_wind_velocity
-            add.vy=si.vy + r[1]*si.terminal_wind_velocity
-            add.vz=si.vz + r[2]*si.terminal_wind_velocity
+            add[ri].u= 0.5 * (v_wind)**2
+            add[ri].vx=si.vx + r[0]*si.terminal_wind_velocity
+            add[ri].vy=si.vy + r[1]*si.terminal_wind_velocity
+            add[ri].vz=si.vz + r[2]*si.terminal_wind_velocity
         new_sph.add_particles(add)  
     return new_sph
 
@@ -70,12 +70,11 @@ def remove_gas(gas, rremove):
 
 def main(filename):
     stars = Particles(2)
-    stars.mass = (1.924785833858, 1.0) | units.MSun # age=1494.4Myr
-#    stars.mass = (2.0, 1.0) | units.MSun # age=1494.4Myr
+    stars.mass = (1.924785833858, 1.0) | units.MSun  # age=1494.4Myr
     separation = 10|units.AU
-    vc = numpy.sqrt(constants.G*stars.mass.sum()/separation**2)
+    vc = numpy.sqrt(constants.G*stars.mass.sum()/separation)
     stars[0].position = (1, 0, 0) * separation
-    stars[0].velocity = (0, 1, 0) | vc
+    stars[0].velocity = (0, 1, 0) * vc
     stars[1].position = (0, 0, 0) | units.AU
     stars[1].velocity = (0, 0, 0) | units.kms
     stars.move_to_center()
@@ -88,7 +87,7 @@ def main(filename):
     stars.radius = [0.992, 0.00434665] |units.AU
     stars.wind_radius = [1, 0] * stars.radius
     R_BH = 2*constants.G*stars[1].mass/stars[0].terminal_wind_velocity**2
-    print "Bondi Hoyle accretion radius:", R_BH
+    print("Bondi Hoyle accretion radius:", R_BH)
     stars.sink_radius = [0, 1] * R_BH
     #print "stars R=", stars.key, stars.sink_radius
     mgas =  0.1*abs(stars.dmdt.sum()*dt)
@@ -105,10 +104,9 @@ def main(filename):
     hydro.gas_particles.add_particles(gas)
     hydro.dm_particles.add_particles(stars)
     hydro_to_framework = hydro.gas_particles.new_channel_to(gas, 
-        attributes=["x", "y", "z", "vx", "vy", "vz", "mass", "u", "rho", "h_smooth"]) 
+        attributes=["x", "y", "z", "vx", "vy", "vz",
+                    "mass", "u", "rho", "h_smooth"]) 
 
-
-#    moving_bodies = ParticlesSuperset([stars, gas])
     generated_gas = Particles()
     accreted_gas = Particles()
     escaped_gas = Particles()
@@ -120,14 +118,15 @@ def main(filename):
 
         accreted = hydro_sink_particles(stars, gas)
         if len(accreted)>0:
-            print "N accreted:", time.in_(units.yr), len(accreted), "m=", accreted.mass.sum().in_(units.MSun)
+            print("N accreted:", time.in_(units.yr), len(accreted), \
+                  "m=", accreted.mass.sum().in_(units.MSun))
             accreted_gas.add_particles(accreted.copy())
             gas.remove_particles(accreted)
             hydro.gas_particles.remove_particles(accreted)
 
         escaped = remove_gas(gas, 5*separation)
         if len(escaped):
-            print "N escaped:", len(escaped)
+            print("N escaped:", len(escaped))
             escaped_gas.add_particles(escaped.copy())
             gas.remove_particles(escaped)
             hydro.gas_particles.remove_particles(escaped)
@@ -146,9 +145,11 @@ def main(filename):
             if time>t_snap:
                 t_snap += dt_snap
                 write_set_to_file(gas, filename, 'hdf5')
-                print "time=", hydro.model_time, "Ngas=", len(gas), mgas*len(gas)
-                print "T=", time, "M=", stars[0].mass, stars[1].mass
-                print "Gas = ", len(generated_gas), len(accreted_gas), len(escaped_gas)
+                print("time=", hydro.model_time, "Ngas=", len(gas), \
+                      mgas*len(gas))
+                print("T=", time, "M=", stars[0].mass, stars[1].mass)
+                print("Gas = ", len(generated_gas), len(accreted_gas), \
+                      len(escaped_gas))
         
     hydro.stop()
 

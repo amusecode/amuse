@@ -4,22 +4,24 @@ from amuse.units.optparse import OptionParser
 from matplotlib import pyplot
 from amuse.plot import scatter
 
+from prepare_figure import single_frame
+from distinct_colours import get_distinct
+
 from amuse.community.seba.interface import SeBa
     
 def main(t_end, mass, z, Tstar, Lstar):
 
     stellar_evolution_codes = [SeBa(), SSE(), MESA(), EVtwin()]
-#    stellar_evolution_codes = [SeBa(), SSE()]
     label = ["SeBa", "SSE", "MESA", "EVtwin"]
     marker = ["o", "v", "<", ">"]
-    color = ["r","b", "k", "m"]
 
-    from matplotlib import pyplot, rc
-    figure = pyplot.figure(figsize=(10,10))
-    font = {'size' : 20}
-    rc('font', **font)
-    plot = figure.add_subplot(1,1,1)
-    pyplot.scatter([0], [0], marker="o", c="y", label="Sun", s=200)
+    x_label = "$(T-T_\odot)/T_\odot)$"
+    y_label = "$(L-L_\odot)/L_\odot)$"
+    figure = single_frame(x_label, y_label, logy=False, xsize=14, ysize=10)
+    pyplot.xlim(-0.006, 0.004)
+    pyplot.ylim(-0.1, 0.1)    
+    color = get_distinct(6)
+    pyplot.scatter([0], [0], marker="o", c=color[3], label="Sun", s=200, lw=0)
 
     for si in range(len(stellar_evolution_codes)):
         stellar = stellar_evolution_codes[si]
@@ -27,18 +29,64 @@ def main(t_end, mass, z, Tstar, Lstar):
 
         star = Particles(1)
         star.mass = mass
+        t_end = 6000.0 | units.Myr
         stellar.particles.add_particles(star)
-        stellar.evolve_model(t_end)
+        attributes = ["temperature", "luminosity","age"]
+        to_framework = stellar.particles.new_channel_to(star,
+                                                    attributes=attributes,
+                                                    target_names=attributes)
+        t = [] | units.Myr
+        T = []
+        L = []
+        min_dist_sun = 10000.0
+        current_time = 3000.0 | units.Myr
 
-        T = (stellar.particles.temperature-Tstar)/Tstar
-        L = (stellar.particles.luminosity-Lstar)/Lstar
-        pyplot.scatter(T, L, marker=marker[si], color=color[si], label=label[si], s=200)
-        stellar.stop()
+        print(label[si])
+        #dt = 50 | units.Myr
+        #time = 4000 | units.Myr
+        while stellar:
+            print(stellar.model_time.value_in(units.Myr)) 
+            current_time = current_time + stellar.particles[0].time_step
+            stellar.evolve_model(current_time)
 
-    pyplot.legend(scatterpoints=1, loc=2)
+            to_framework.copy()
 
-    pyplot.xlabel("$(T-T_\odot)/T_\odot)$")
-    pyplot.ylabel("$(L-L_\odot)/L_\odot)$")
+            if star[0].age >= t_end:
+                stellar.stop()
+                stellar = False
+            else:
+                L.append((star[0].luminosity - Lstar)/Lstar)
+                T.append((star[0].temperature - Tstar)/Tstar)
+                t.append(star[0].age)
+
+                deltaL = numpy.abs((star[0].luminosity - Lstar)/Lstar)
+                deltaT = numpy.abs((star[0].temperature - Tstar)/Tstar)       
+
+                dist = numpy.sqrt(deltaL*deltaL + deltaT*deltaT)
+                
+                if min_dist_sun > dist:
+
+                    min_dist_sun = dist
+
+                    L_sim_sun = (star[0].luminosity - Lstar)/Lstar
+                    T_sim_sun = (star[0].temperature - Tstar)/Tstar
+
+                    eta = star[0].age
+        print(eta)
+        if si==3: 
+            pyplot.plot(T, L,ls='-', marker=marker[si], color=color[5], markersize=10)
+            pyplot.scatter(T_sim_sun, L_sim_sun, marker=marker[si],
+                           color=color[5], label=label[si], s=300, lw=1)
+        else:
+            pyplot.plot(T, L,ls='-', marker=marker[si], color=color[si], markersize=10)
+            pyplot.scatter(T_sim_sun, L_sim_sun, marker=marker[si],
+                           color=color[si], label=label[si], s=300, lw=1)
+
+    pyplot.legend(scatterpoints=1, loc='best')
+
+    save_file = 'fig_SunComparison.png'
+    pyplot.savefig(save_file)
+    print('\nSaved figure in file', save_file,'\n')
     pyplot.show()
     
 def new_option_parser():

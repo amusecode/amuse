@@ -30,6 +30,8 @@ def main():
     planet = ss[1]
     moon = ss[2]
     converter=nbody_system.nbody_to_si(star.mass,planet.position.length())
+
+###BOOKLISTSTART###
     star_gravity = ph4(converter)
     star_gravity.particles.add_particle(star)
 
@@ -45,10 +47,11 @@ def main():
 
     write_set_to_file(ss, filename, 'hdf5')
     
-    gravity = bridge.Bridge(use_threading=False)
-    gravity.add_system(star_gravity, (planet_gravity,moon_gravity) )
-    gravity.add_system(planet_gravity, (star_gravity,moon_gravity) )
-    gravity.add_system(moon_gravity, (star_gravity,planet_gravity) )
+    gravity = bridge.Bridge()
+    gravity.add_system(star_gravity, (planet_gravity,moon_gravity))
+    gravity.add_system(planet_gravity, (star_gravity,moon_gravity))
+    gravity.add_system(moon_gravity, (star_gravity,planet_gravity))
+###BOOKLISTSTOP###
 
     Etot_init = gravity.kinetic_energy + gravity.potential_energy
     Etot_prev = Etot_init
@@ -71,9 +74,9 @@ def main():
         Ekin = gravity.kinetic_energy 
         Epot = gravity.potential_energy
         Etot = Ekin + Epot
-        print "T=", time, 
-        print "E= ", Etot, "Q= ", Ekin/Epot,
-        print "dE=", (Etot_init-Etot)/Etot, "ddE=", (Etot_prev-Etot)/Etot 
+        print("T=", time, end=' ') 
+        print("E= ", Etot, "Q= ", Ekin/Epot, end=' ')
+        print("dE=", (Etot_init-Etot)/Etot, "ddE=", (Etot_prev-Etot)/Etot) 
         Etot_prev = Etot
     gravity.stop()
 

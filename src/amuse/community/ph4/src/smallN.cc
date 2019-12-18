@@ -62,7 +62,8 @@
 //			  real dt_check = _INFINITY_,
 //			  real break_r2 = _INFINITY_,
 //			  real dt_log = _INFINITY_,
-//			  int  verbose = 0);
+//			  int  verbose = 0,
+//			  string outfile = "");
 
 #include "hdyn.h"
 
@@ -131,7 +132,8 @@ static inline real get_pairwise_acc_and_jerk_CPT(hdyn *bi, hdyn *bj,
 
 #if 1
     int is_collision_detection_enabled = 0;
-    is_stopping_condition_enabled(COLLISION_DETECTION, &is_collision_detection_enabled);
+    is_stopping_condition_enabled(COLLISION_DETECTION,
+				  &is_collision_detection_enabled);
     
     // NOTE: assuming here that trees are just a single level deep.
     // MUST be generalized (see below) if we choose to allow
@@ -159,27 +161,26 @@ static inline real get_pairwise_acc_and_jerk_CPT(hdyn *bi, hdyn *bj,
 	    real distance  = sqrt(distance2);
 	    real distance3 = distance2*distance;
 	    
-	    // AVE COLLISION DETECTION
-	    if(is_collision_detection_enabled) {  
+	    // HAVE COLLISION DETECTION
+	    if (is_collision_detection_enabled) {  
 		real rsum = bbj->get_radius() + bbi->get_radius();
 		if (distance2 <= rsum*rsum) {
 		    int stopping_index  = next_index_for_stopping_condition();
-		    if(stopping_index < 0)
-		    {
-		
-		    }
-		    else
-		    {
-			set_stopping_condition_info(stopping_index, COLLISION_DETECTION);
-			set_stopping_condition_particle_index(stopping_index, 0, bbj->get_index());
-			set_stopping_condition_particle_index(stopping_index, 1, bbi->get_index());
+		    if (stopping_index < 0) {
+		    } else {
+			set_stopping_condition_info(
+			    stopping_index, COLLISION_DETECTION);
+			set_stopping_condition_particle_index(
+			    stopping_index, 0, bbj->get_index());
+			set_stopping_condition_particle_index(
+			    stopping_index, 1, bbi->get_index());
 		    }
 		}
 	    }
 
 	    iforce += bbj->get_mass() * dx / distance3;
 	    ijerk  += bbj->get_mass() * (dv / distance3
-					 - 3*dx*(dx*dv)/(distance3*distance2));
+					  - 3*dx*(dx*dv)/(distance3*distance2));
 
 	    if (distance2 < min_distance2) {
 		min_distance2 = distance2;
@@ -305,6 +306,7 @@ static inline real get_pairwise_acc_and_jerk(hdyn *bi, hdyn *bj,
     // binaries.
 
 #if 1
+    // cout << "calling get_pairwise_acc_and_jerk_CPT" << endl << flush;
     return get_pairwise_acc_and_jerk_CPT(bi, bj, force, jerk);
 #else
     return get_pairwise_acc_and_jerk_CM(bi, bj, force, jerk);
@@ -320,6 +322,8 @@ real calculate_top_level_acc_and_jerk(hdyn *b)
     // jerk.  Return the minimum time step associated with any
     // top-level pair.
 
+    // cout << "in calculate_top_level_acc_and_jerk" << endl << flush;
+    
     for_all_daughters(hdyn, b, bi) {
 	bi->set_acc(0);
 	bi->set_jerk(0);
@@ -335,6 +339,8 @@ real calculate_top_level_acc_and_jerk(hdyn *b)
 	for (hdyn *bj = bi->get_younger_sister();
 	     bj != NULL; bj = bj->get_younger_sister()) {
 
+	    // cout << bi << " " << bj << " get_pairwise_acc_and_jerk"
+	    //      << endl << flush;
 	    vec force, jerk;
 	    real timestep2 = get_pairwise_acc_and_jerk(bi, bj, force, jerk);
 
@@ -351,7 +357,6 @@ real calculate_top_level_acc_and_jerk(hdyn *b)
 		bi_min = bi;
 		bj_min = bj;
 	    }
-
 	}
 
     real dt = b->get_eta()*sqrt(min_timestep2);		// natural time step
@@ -360,13 +365,12 @@ real calculate_top_level_acc_and_jerk(hdyn *b)
 
 
 
-
 //----------------------------------------------------------------------
 //
-// Check if a collision occurs before time
+// Check if a collision occurs before time t.
 
-void check_collision_between_components_before_time(hdyn *bi, real t)	// unperturbed
-{							// "predictor"
+void check_collision_between_components_before_time(hdyn *bi, real t)
+{
     hdyn *od = bi->get_oldest_daughter();
 
     if (od) {
@@ -380,15 +384,16 @@ void check_collision_between_components_before_time(hdyn *bi, real t)	// unpertu
 
         else {
             hdyn *yd = od->get_younger_sister();
-            // AVE COLLISION DETECTION
+            // HAVE COLLISION DETECTION
             real rsum = od->get_radius() + yd->get_radius();
-            if(rsum > k->get_periastron()) {
+            if (rsum > k->get_periastron()) {
 #if 0
-                cerr<< "kepler orbit with periastron < sum of radii" << endl;
-                cerr<< "time to next periastron:" << k->get_time_of_periastron_passage() << endl;
-                cerr<< "time to evolve to:" << t << endl;
-                cerr<< "periastron:" << k->get_periastron() << endl;
-                cerr<< "sum of radii:" << rsum << endl;
+                cerr << "kepler orbit with periastron < sum of radii" << endl;
+                cerr << "time to next periastron:"
+		     << k->get_time_of_periastron_passage() << endl;
+                cerr << "time to evolve to:" << t << endl;
+                cerr << "periastron:" << k->get_periastron() << endl;
+                cerr << "sum of radii:" << rsum << endl;
 #endif
                 
                 if ( t > k->get_time_of_periastron_passage() ) {
@@ -400,15 +405,14 @@ void check_collision_between_components_before_time(hdyn *bi, real t)	// unpertu
                         k->transform_to_time(t);
                     }
                     int stopping_index  = next_index_for_stopping_condition();
-                    if(stopping_index < 0)
-                    {
-                
-                    }
-                    else
-                    {
-                        set_stopping_condition_info(stopping_index, COLLISION_DETECTION);
-                        set_stopping_condition_particle_index(stopping_index, 0, od->get_index());
-                        set_stopping_condition_particle_index(stopping_index, 1, yd->get_index());
+                    if (stopping_index < 0) {
+		    } else {
+                        set_stopping_condition_info(
+			    stopping_index, COLLISION_DETECTION);
+                        set_stopping_condition_particle_index(
+			    stopping_index, 0, od->get_index());
+                        set_stopping_condition_particle_index(
+			    stopping_index, 1, yd->get_index());
                     }
                 }
             }
@@ -451,8 +455,8 @@ void advance_components_to_time(hdyn *bi, real t)	// unperturbed
 
 	    hdyn *yd = od->get_younger_sister();
 	    if (!od->get_fully_unperturbed()) {
-            k->transform_to_time(t);
-        }
+		k->transform_to_time(t);
+	    }
 
 	    real fac = yd->get_mass()/bi->get_mass();
 	    od->set_pred_pos(-fac*k->get_rel_pos());
@@ -462,7 +466,6 @@ void advance_components_to_time(hdyn *bi, real t)	// unperturbed
 	}
     }
 }
-
 
 void update_components_from_pred(hdyn *bi)		// unperturbed
 {							// "corrector"
@@ -529,17 +532,33 @@ void hdyn::correct_pos_and_vel(const real new_dt)
 
 
 
+void print_positions(hdyn *b, real t, string outfile)
+{
+    if (!outfile.empty()) {
+	static ofstream f;
+	if (!f.is_open())
+	    f.open(outfile.c_str(), ios::out | ios::trunc); 
+	f << t;
+	for_all_daughters(hdyn, b, bi)
+	    f << " " << bi->get_index() << " " << bi->get_mass()
+	      << " " << bi->get_pos();
+	f << endl;
+    }
+}
+
 // Take the next step.  Return the actual system time at the end of
 // the step, after symmetrization if specified.  Starting time step is
 // dt.
 
 static real take_a_step(hdyn *b,	// root node
-			real &dt)	// natural step at start/end
+			real &dt,	// natural step at start/end
+			string outfile = "")
 {
     real t = b->get_system_time();
     
     int is_collision_detection_enabled = 0;
-    is_stopping_condition_enabled(COLLISION_DETECTION, &is_collision_detection_enabled);
+    is_stopping_condition_enabled(COLLISION_DETECTION,
+				  &is_collision_detection_enabled);
 
     // Impose an absolute limit on the step if unperturbed motion is
     // underway.
@@ -570,8 +589,8 @@ static real take_a_step(hdyn *b,	// root node
     predict_loworder_all(b, t+dt);	// top-level nodes
     for_all_daughters(hdyn, b, bi) {
         bi->store_old_force();
-        if (bi->is_parent()){		// components
-            if(is_collision_detection_enabled) {
+        if (bi->is_parent()) {		// components
+            if (is_collision_detection_enabled) {
                 check_collision_between_components_before_time(bi, t+dt);
             }
             advance_components_to_time(bi, t+dt);
@@ -598,6 +617,7 @@ static real take_a_step(hdyn *b,	// root node
     for (int i = 0; i <= n_iter; i++) {
 
 	real prev_new_dt = new_dt;
+	// cout <<  "calling calculate_top_level_acc_and_jerk" << endl << flush;
 	end_point_dt = calculate_top_level_acc_and_jerk(b);
 
 	// Obtain the next iterate of the time step (actually, do two
@@ -622,28 +642,28 @@ static real take_a_step(hdyn *b,	// root node
 		n_iter = 0;
 	    }
 	}
-	
-	
     
 	// Extrapolate acc and jerk to the end of the new step, and
 	// apply the corrector for this iteration.
 
+	// cout << "correcting" << endl << flush;
 	for_all_daughters(hdyn, b, bi) {
 	    if (new_dt != prev_new_dt)
 		bi->correct_acc_and_jerk(new_dt, prev_new_dt);
 	    bi->correct_pos_and_vel(new_dt);	// sets pred_xxx
 	    if (bi->is_parent()) {
-            if(is_collision_detection_enabled) {
-                check_collision_between_components_before_time(bi, t+dt);
-            }
-            advance_components_to_time(bi, t+new_dt);
-        }
+		if (is_collision_detection_enabled) {
+		    check_collision_between_components_before_time(bi, t+dt);
+		}
+		advance_components_to_time(bi, t+new_dt);
+	    }
 	}
 	
-	if(is_collision_detection_enabled && (set_conditions & enabled_conditions)) {
-          break;
+	if (is_collision_detection_enabled
+	    && (set_conditions & enabled_conditions)) {
+	    break;
         }
-     }
+    }
 
     // Complete the step.
 
@@ -653,6 +673,8 @@ static real take_a_step(hdyn *b,	// root node
 	if (bi->is_parent()) update_components_from_pred(bi);
     }
 
+    if (!outfile.empty()) print_positions(b, t+new_dt, outfile);
+    
     dt = end_point_dt;
     return t + new_dt;
 }
@@ -886,7 +908,8 @@ int smallN_evolve(hdyn *b,
 		  real break_r2,	// default = _INFINITY_
 		  real dt_check,	// default = _INFINITY_
 		  real dt_log,		// default = _INFINITY_
-		  int verbose)		// default = 0
+		  int verbose,		// default = 0
+		  string outfile)	// default = ""
 {
     int is_interaction_over_detection_enabled = 0;
     is_stopping_condition_enabled(INTERACTION_OVER_DETECTION,
@@ -912,17 +935,14 @@ int smallN_evolve(hdyn *b,
         // cout << "smallN: two-body encounter" << endl << flush;
         two_body(b, t_end, sqrt(break_r2));
     
-        if(is_interaction_over_detection_enabled) {
+        if (is_interaction_over_detection_enabled) {
             int is_over = check_structure(b, _INFINITY_, 0);
              
-            if(is_over) {
+            if (is_over) {
                 int stopping_index  = next_index_for_stopping_condition();
-                if(stopping_index < 0)
-                {
+                if (stopping_index < 0) {
                     // TODO, no more space available for stopping conditions
-                }
-                else
-                {
+                } else {
                     set_stopping_condition_info(stopping_index,
 						INTERACTION_OVER_DETECTION);
                 }
@@ -963,8 +983,8 @@ int smallN_evolve(hdyn *b,
 
     real t_check = b->get_system_time() + dt_check;
 
-    if(set_conditions & enabled_conditions) {
-      return 1;
+    if (set_conditions & enabled_conditions) {
+	return 1;
     }
     
     while (b->get_system_time() < t_end) {
@@ -978,7 +998,7 @@ int smallN_evolve(hdyn *b,
 	// the end of the step.  The return value of the function is
 	// the new system time.
 
-	b->set_system_time(take_a_step(b, dt));
+        b->set_system_time(take_a_step(b, dt, outfile));
 	n_steps++;
 
 	// The time step dt was set by bi_min and bj_min during the
@@ -997,8 +1017,8 @@ int smallN_evolve(hdyn *b,
 	    }
 	
 	
-	if(set_conditions & enabled_conditions) {
-          break;
+	if (set_conditions & enabled_conditions) {
+	    break;
         }
 	
 	// Check for the start of unperturbed motion.  Use various
@@ -1048,33 +1068,33 @@ int smallN_evolve(hdyn *b,
 	}
 
 	// Structure analysis:
-/* turned off, as we have stopping condition
- * may need to implement dt for is_over stopping condition check
+	/* turned off, as we have stopping condition
+	 * may need to implement dt for is_over stopping condition check
+
 	if (dt_check > 0 && b->get_system_time() >= t_check) {
 	    int over = check_structure(b, break_r2, verbose);
 	    if (over) return 0;
 	    while (b->get_system_time() >= t_check) t_check += dt_check;
 	}
-*/
+
+	*/
     
-        if(is_interaction_over_detection_enabled) {
+        if (is_interaction_over_detection_enabled) {
             int is_over = check_structure(b, _INFINITY_, 0);
              
-            if(is_over) {
+            if (is_over) {
                 int stopping_index  = next_index_for_stopping_condition();
-                if(stopping_index < 0)
-                {
+                if (stopping_index < 0) {
                     // TODO, no more space available for stopping conditions
-                }
-                else
-                {
-                    set_stopping_condition_info(stopping_index, INTERACTION_OVER_DETECTION);
+                } else {
+                    set_stopping_condition_info(
+			stopping_index, INTERACTION_OVER_DETECTION);
                 }
             }
         }
         
-        if(set_conditions & enabled_conditions) {
-          break;
+        if (set_conditions & enabled_conditions) {
+	    break;
         }
     }
 
@@ -1268,7 +1288,8 @@ int main(int argc, char *argv[])
     b->set_eta(eta);
     b->set_gamma(gamma);
     b->set_allow_full_unperturbed(allow_full);
-    int ret = smallN_evolve(b, t_end, break_r2, dt_check, dt_log, verbose);
+    int ret = smallN_evolve(b, t_end, break_r2, dt_check, dt_log,
+			    verbose, string(""));
     cout << "end at time " << b->get_system_time()
 	 << "; return status = " << ret << endl;
 

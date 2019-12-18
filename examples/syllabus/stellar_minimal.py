@@ -18,9 +18,9 @@ def main(M, z, model_time):
         stellar.evolve_model(time)
 
     final_luminosity = stellar.particles.luminosity
-    print "L(t=0)=", initial_luminosity, \
+    print("L(t=0)=", initial_luminosity, \
         ", L (t=", stellar.particles.age, ")=", \
-        final_luminosity, stellar.particles.radius, stellar.particles.mass.in_(units.MSun)
+        final_luminosity, stellar.particles.radius, stellar.particles.mass.in_(units.MSun))
         
     stellar.stop()
     

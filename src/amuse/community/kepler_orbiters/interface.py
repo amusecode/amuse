@@ -217,13 +217,13 @@ class Kepler(GravitationalDynamics, GravityFieldCode):
                                KeplerInterface(**options),
                                **options)
 
-    def define_converter(self, object):
+    def define_converter(self, handler):
         if not self.unit_converter is None:
-            object.set_converter(self.unit_converter.as_converter_from_si_to_generic())
+            handler.set_converter(self.unit_converter.as_converter_from_si_to_generic())
 
 
-    def define_parameters(self, object):
-        object.add_method_parameter(
+    def define_parameters(self, handler):
+        handler.add_method_parameter(
             "get_eps2",
             "set_eps2",
             "epsilon_squared",
@@ -231,19 +231,19 @@ class Kepler(GravitationalDynamics, GravityFieldCode):
             default_value = 0.0 | nbody_system.length * nbody_system.length
         )
 
-    def define_methods(self, object):
-        GravitationalDynamics.define_methods(self, object)
-        object.add_method(
+    def define_methods(self, handler):
+        GravitationalDynamics.define_methods(self, handler)
+        handler.add_method(
             "get_eps2",
             (),
-            (nbody_system.length * nbody_system.length, object.ERROR_CODE,)
+            (nbody_system.length * nbody_system.length, handler.ERROR_CODE,)
         )
-        object.add_method(
+        handler.add_method(
             "set_eps2",
             (nbody_system.length * nbody_system.length, ),
-            (object.ERROR_CODE,)
+            (handler.ERROR_CODE,)
         )
-        object.add_method(
+        handler.add_method(
             'get_gravity_at_point',
             (
                 nbody_system.length,
@@ -257,7 +257,7 @@ class Kepler(GravitationalDynamics, GravityFieldCode):
                 nbody_system.acceleration,
             )
         )
-        object.add_method(
+        handler.add_method(
             'get_potential_at_point',
             (
                 nbody_system.length,
@@ -271,33 +271,33 @@ class Kepler(GravitationalDynamics, GravityFieldCode):
         )
 
 
-    def define_particle_sets(self, object):
-        object.define_super_set('particles', ['central_particle','orbiters'],
+    def define_particle_sets(self, handler):
+        handler.define_super_set('particles', ['central_particle','orbiters'],
             index_to_default_set = 1)
 
-        object.define_set('central_particle', 'index_of_the_particle')
-        object.set_new('central_particle', 'new_central_particle')
-        object.set_delete('central_particle', 'delete_central_particle')
-        object.add_setter('central_particle', 'set_central_mass')
-        object.add_getter('central_particle', 'get_central_mass')
-        object.add_setter('central_particle', 'set_central_radius')
-        object.add_getter('central_particle', 'get_central_radius')
-        object.add_setter('central_particle', 'set_central_pos')
-        object.add_getter('central_particle', 'get_central_pos')
-        object.add_setter('central_particle', 'set_central_vel')
-        object.add_getter('central_particle', 'get_central_vel')
+        handler.define_set('central_particle', 'index_of_the_particle')
+        handler.set_new('central_particle', 'new_central_particle')
+        handler.set_delete('central_particle', 'delete_central_particle')
+        handler.add_setter('central_particle', 'set_central_mass')
+        handler.add_getter('central_particle', 'get_central_mass')
+        handler.add_setter('central_particle', 'set_central_radius')
+        handler.add_getter('central_particle', 'get_central_radius')
+        handler.add_setter('central_particle', 'set_central_pos')
+        handler.add_getter('central_particle', 'get_central_pos')
+        handler.add_setter('central_particle', 'set_central_vel')
+        handler.add_getter('central_particle', 'get_central_vel')
 
-        object.define_set('orbiters', 'index_of_the_particle')
-        object.set_new('orbiters', 'new_particle')
-        object.set_delete('orbiters', 'delete_particle')
-        object.add_setter('orbiters', 'set_state')
-        object.add_getter('orbiters', 'get_state')
-        object.add_setter('orbiters', 'set_mass')
-        object.add_getter('orbiters', 'get_mass')
-        object.add_setter('orbiters', 'set_position')
-        object.add_getter('orbiters', 'get_position')
-        object.add_setter('orbiters', 'set_velocity')
-        object.add_getter('orbiters', 'get_velocity')
+        handler.define_set('orbiters', 'index_of_the_particle')
+        handler.set_new('orbiters', 'new_particle')
+        handler.set_delete('orbiters', 'delete_particle')
+        handler.add_setter('orbiters', 'set_state')
+        handler.add_getter('orbiters', 'get_state')
+        handler.add_setter('orbiters', 'set_mass')
+        handler.add_getter('orbiters', 'get_mass')
+        handler.add_setter('orbiters', 'set_position')
+        handler.add_getter('orbiters', 'get_position')
+        handler.add_setter('orbiters', 'set_velocity')
+        handler.add_getter('orbiters', 'get_velocity')
 
 
     def get_gravity_at_point(self,radius,x,y,z):

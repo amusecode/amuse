@@ -22,6 +22,7 @@ from amuse.datamodel import parameters
 from amuse.datamodel import incode_storage
 
 import itertools
+from collections import defaultdict
 
 class ConvertArgumentsException(core.IncompatibleUnitsException):
     formatstring = "{0}"
@@ -36,6 +37,7 @@ class OldObjectsBindingMixin(object):
         self.particles.copy_values_of_all_attributes_to(particles)
 
 class MethodArgumentOrResultType(object):
+     _returns_result=True
      
      def append_result_value(self, method, definition, value, result):
          result.append(self.convert_result_value(method, definition, value))
@@ -55,6 +57,7 @@ class UnitMethodArgumentOrResultType(MethodArgumentOrResultType):
         return (_get_result_type, ("UNIT",))
 
 class ErrorCodeMethodArgumentOrResultType(MethodArgumentOrResultType):
+    _returns_result=False
 
     def append_result_value(self, method, definition, value, result):
         self.convert_result_value(method, definition, value)
@@ -107,7 +110,7 @@ class LinkMethodArgumentOrResultType(MethodArgumentOrResultType):
         try:
             return getattr(definition.wrapped_object, self.linked_set_name)
         except Exception as ex:
-            print ex
+            print(ex)
             raise ex
         
     def convert_result_value(self, method, definition, value):
@@ -211,7 +214,7 @@ class HandleConvertUnits(HandleCodeInterfaceAttributeAccess, CodeMethodWrapperDe
             result = CodeMethodWrapper(attribute, self)
         elif isinstance(attribute, parameters.Parameters):
             result = parameters.new_parameters_with_units_converted_instance_with_docs(attribute, self.converter)
-        elif isinstance(attribute, basestring):
+        elif isinstance(attribute, str):
             result = attribute
         elif isinstance(attribute, bytearray):
             result = attribute
@@ -251,7 +254,7 @@ class HandleConvertUnits(HandleCodeInterfaceAttributeAccess, CodeMethodWrapperDe
                 converted_list_arguments.append(x)
         
         converted_keyword_arguments = {}
-        for key, value in keyword_arguments.iteritems():
+        for key, value in keyword_arguments.items():
             converted_keyword_arguments[key] = self.from_source_to_target(value)
 
         return converted_list_arguments, converted_keyword_arguments
@@ -271,7 +274,7 @@ class HandleConvertUnits(HandleCodeInterfaceAttributeAccess, CodeMethodWrapperDe
                 return x
             else:
                 return self.converter.from_target_to_source(x)
-        elif isinstance(x, basestring):
+        elif isinstance(x, str):
             return x
         elif isinstance(x, numpy.ndarray):
             return x
@@ -330,7 +333,7 @@ class StateMethodDefinition(CodeMethodWrapperDefinition):
             try:
                 transition_path = self.state_machine._get_state_transition_path_to(from_state)
                 possible_paths.append([transition_path, to_state])
-            except Exception, ex:
+            except Exception as ex:
                 pass
         
         if len(possible_paths) == 0:            
@@ -567,7 +570,7 @@ class MethodWithUnitsDefinition(CodeMethodWrapperDefinition):
                 return_value = [return_value]
                 
             result = []
-            for value, unit in itertools.izip(return_value, self.return_units):
+            for value, unit in zip(return_value, self.return_units):
                 unit.append_result_value(method, self, value, result)
                     
             if len(result) == 1:                
@@ -626,6 +629,26 @@ class MethodWithUnitsDefinition(CodeMethodWrapperDefinition):
 
     def convert_result(self, method, result):
         return self.handle_return_value(method, result)
+    
+    # this function tries to determine the size of results from definition
+    # its a bit ad-hoc. in spite of what the name suggests it determines it from scratch
+    # (and not converting the index from the wrapped function's result_index)    
+    def convert_result_index(self, method):
+        if self.return_units is None:
+            return None
+        else:
+            if not self.is_return_units_iterable:
+                return None
+            else:                
+                nresult = 0
+                for unit in self.return_units:
+                    if not hasattr(unit,"_returns_result"):
+                        nresult+=1
+                    else:
+                        if unit._returns_result:
+                            nresult+=1
+                
+                return list(range(nresult))
 
     @late
     def has_same_name_as_original(self):
@@ -634,18 +657,18 @@ class MethodWithUnitsDefinition(CodeMethodWrapperDefinition):
 
     @late
     def index_input_attributes(self):
-        return map(lambda x : x == self.INDEX, self.units)
+        return [x == self.INDEX for x in self.units]
 
     @late
     def nbody_input_attributes(self):
-        return map(lambda x : isinstance(x, UnitMethodArgumentOrResultType) or isinstance(x, unit) and generic_unit_system.is_generic_unit(x), self.units)
+        return [isinstance(x, UnitMethodArgumentOrResultType) or isinstance(x, unit) and generic_unit_system.is_generic_unit(x) for x in self.units]
 
     @late
     def index_output_attributes(self):
         if not hasattr(self.return_units, '__iter__'):
             return [self.return_units == self.INDEX]
         else:
-            return map(lambda x : x == self.INDEX, self.return_units)
+            return [x == self.INDEX for x in self.return_units]
 
 
     def check_inputs_of_method(self, method):
@@ -859,22 +882,31 @@ class HandleParameters(HandleCodeInterfaceAttributeAccess):
     def __init__(self, interface):
         self.property_definitions = {}
         self.interface = interface
-        self.definitions = []
-        self.parameters = None
+        self.definitions = defaultdict(list,parameters=[])
+        self.parameters = {}
 
     def supports(self, name, was_found):
-        return name == 'parameters'
+        return name in self.definitions.keys()
 
     def get_attribute(self, name, value):
-        if not self.parameters:
-            self.parameters =  parameters.new_parameters_instance_with_docs(self.definitions, self.interface)
-       
-        return self.parameters
+        # note: parameters can be added after init, not yet removed
+
+        name=name or 'parameters'
+
+        if name not in self.parameters:
+            d=self.definitions[name]
+            self.parameters[name] = parameters.new_parameters_instance_with_docs(d, self.interface)
+        else:
+            self.parameters[name].update()       
+        result=self.parameters[name]
+        return result
 
     def attribute_names(self):
-        return set(['parameters'])
+        return set(self.definitions.keys())
 
-    def add_method_parameter(self, get_method, set_method, name, description, default_value = None,must_set_before_get = False, is_vector = False):
+    def add_method_parameter(self, get_method, set_method, name, description, 
+            default_value = None,must_set_before_get = False, is_vector = False,
+            parameter_set='parameters'):
         if is_vector:
             definition = parameters.ModuleVectorMethodParameterDefinition(
                 get_method,
@@ -893,18 +925,19 @@ class HandleParameters(HandleCodeInterfaceAttributeAccess):
                 default_value,
                 must_set_before_get = must_set_before_get
             )
-        self.definitions.append(definition)
+        self.definitions[parameter_set].append(definition)
         
-    def add_alias_parameter(self, name, aliased_name, description):
+    def add_alias_parameter(self, name, aliased_name, description,parameter_set='parameters',alias_set=None):
         definition = parameters.AliasParameterDefinition(
             name,
             aliased_name,
-            description
+            description,
+            alias_set=alias_set
         )
-        self.definitions.append(definition)
+        self.definitions[parameter_set].append(definition)
 
 
-    def add_caching_parameter(self, function_name, parameter_name, name, description, default_value = None):
+    def add_caching_parameter(self, function_name, parameter_name, name, description, default_value = None,parameter_set='parameters'):
         definition = parameters.ModuleCachingParameterDefinition(
             function_name,
             parameter_name,
@@ -912,9 +945,9 @@ class HandleParameters(HandleCodeInterfaceAttributeAccess):
             description,
             default_value
         )
-        self.definitions.append(definition)
+        self.definitions[parameter_set].append(definition)
 
-    def add_boolean_parameter(self, get_method, set_method, name, description, default_value = None):
+    def add_boolean_parameter(self, get_method, set_method, name, description, default_value = None,parameter_set='parameters'):
         definition = parameters.ModuleBooleanParameterDefinition(
             get_method,
             set_method,
@@ -922,15 +955,15 @@ class HandleParameters(HandleCodeInterfaceAttributeAccess):
             description,
             default_value
         )
-        self.definitions.append(definition)
+        self.definitions[parameter_set].append(definition)
 
-    def add_default_form_parameter(self,name,description,default):
+    def add_default_form_parameter(self,name,description,default,parameter_set='parameters'):
         if isinstance(default,bool):
-          self.add_boolean_parameter("get_"+name,"set_"+name,name,description,default)
+          self.add_boolean_parameter("get_"+name,"set_"+name,name,description,default,parameter_set='parameters')
         else:
-          self.add_method_parameter("get_"+name,"set_"+name,name,description,default)
+          self.add_method_parameter("get_"+name,"set_"+name,name,description,default,parameter_set='parameters')
 
-    def add_array_parameter(self, get_method, set_method, range_method, name, description):
+    def add_array_parameter(self, get_method, set_method, range_method, name, description,parameter_set='parameters'):
         definition = parameters.ModuleArrayParameterDefinition(
             get_method,
             set_method,
@@ -938,7 +971,7 @@ class HandleParameters(HandleCodeInterfaceAttributeAccess):
             name,
             description
         )
-        self.definitions.append(definition)
+        self.definitions[parameter_set].append(definition)
 
     def has_name(self, name):
         return name == 'PARAMETER'
@@ -948,10 +981,10 @@ class HandleParameters(HandleCodeInterfaceAttributeAccess):
 
 
 
-    def add_vector_parameter(self, name, description, parameter_names):
+    def add_vector_parameter(self, name, description, parameter_names,parameter_set='parameters'):
         default_value = None
         for parameter_name in parameter_names:
-            for defined_parameter in self.definitions:
+            for defined_parameter in self.definitions[parameter_set]:
                 if defined_parameter.name == parameter_name:
                     if default_value is None:
                         if not is_quantity(defined_parameter.default_value):
@@ -965,11 +998,11 @@ class HandleParameters(HandleCodeInterfaceAttributeAccess):
             parameter_names,
             default_value
         )
-        self.definitions.append(definition)
+        self.definitions[parameter_set].append(definition)
 
-    def add_interface_parameter(self, name, description, default_value,state_guard=None):        
+    def add_interface_parameter(self, name, description, default_value,state_guard=None,parameter_set='parameters'):        
         definition=parameters.InterfaceParameterDefinition(name,description,default_value,state_guard=state_guard)
-        self.definitions.append(definition)
+        self.definitions[parameter_set].append(definition)
     
 class HandleErrorCodes(HandleCodeInterfaceAttributeAccess):
     def __init__(self, interface):
@@ -1517,6 +1550,14 @@ class InCodeComponentImplementation(OldObjectsBindingMixin, OptionalAttributes):
         
     def __setstate__(self, state):
         self.__dict__ = state
+
+    def data_store_names(self):
+        self.before_get_data_store_names()
+        return list(self.get_handler('PARTICLES').mapping_from_name_to_set_definition.keys())
+
+    def parameter_set_names(self):
+        #~ self.before_get_data_store_names()
+        return list(self.get_handler('PARAMETER').definitions.keys())
 
     
 class IncorrectMethodDefinition(IncorrectWrappedMethodException):
