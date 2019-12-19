@@ -323,13 +323,14 @@ int commit_particles()
     sync_times();
 
     jd->initialize_arrays();
+
     id = new idata(jd);	  // set up idata data structures (sets acc and jerk)
 
     // Set timesteps (needs acc and jerk)
 
     // PRC(initial_timestep_fac); PRC(initial_timestep_limit);
     // PRL(initial_timestep_median);
-    
+
     jd->force_initial_timestep(initial_timestep_fac,
 			       initial_timestep_limit,
 			       initial_timestep_median);
@@ -760,13 +761,15 @@ int get_total_mass(double * mass)
 
 int get_potential_energy(double * potential_energy)
 {
-    *potential_energy = jd->get_pot();
+    *potential_energy = 0;
+    if (jd) *potential_energy = jd->get_pot();
     return 0;
 }
 
 int get_kinetic_energy(double * kinetic_energy)
 {
-    *kinetic_energy = jd->get_kin();
+    *kinetic_energy = 0;
+    if (jd) *kinetic_energy = jd->get_kin();
     return 0;
 }
 
@@ -780,6 +783,11 @@ int get_center_of_mass_position(double * x, double * y, double * z)
 {
     // (Could also use jdata::get_com.)
 
+    if (!jd || jd->nj <= 0) {
+	*x = *y = *z = 0;
+	return 0;
+    }
+	
     real mtot = 0;
     vec cmx(0,0,0);
     for (int j = 0; j < jd->nj; j++) {
@@ -796,6 +804,11 @@ int get_center_of_mass_velocity(double * vx, double * vy, double * vz)
 {
     // (Could also use jdata::get_com.)
 
+    if (!jd || jd->nj <= 0) {
+	*vx = *vy = *vz = 0;
+	return 0;
+    }
+	
     real mtot = 0;
     vec cmv(0,0,0);
     for (int j = 0; j < jd->nj; j++) {
