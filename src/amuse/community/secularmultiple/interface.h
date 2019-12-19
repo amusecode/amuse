@@ -209,7 +209,7 @@ int set_positions_and_velocities_interface();
 /**********************************************
 /* orbital element/vector conversion routines *
  **********************************************/
-int compute_h_tot_vector(ParticlesMap* particlesMap, double h_tot_vector[3]);
+void compute_h_tot_vector(ParticlesMap* particlesMap, double h_tot_vector[3]);
 int compute_orbital_vectors_from_orbital_elements(double child1_mass, double child2_mass, double semimajor_axis, double eccentricity, double inclination, double argument_of_pericenter,double longitude_of_ascending_node, double *e_vec_x, double *e_vec_y, double *e_vec_z, double *h_vec_x, double *h_vec_y, double *h_vec_z);
 int compute_orbital_elements_from_orbital_vectors(double child1_mass, double child2_mass, double h_tot_vec[3], double e_vec_x, double e_vec_y, double e_vec_z, double h_vec_x, double h_vec_y, double h_vec_z, double *semimajor_axis, double *eccentricity, double *inclination, double *argument_of_pericenter,double *longitude_of_ascending_node);
 int get_inclination_relative_to_parent(int index_of_the_particle, double *inclination_relative_to_parent);
