@@ -632,6 +632,8 @@ int evolve_model(double to_time)
     // to_time.  The function breaks out of the jd->advance() loop
     // (without synchronization) if an encounter is detected.
 
+    if (!jd) return 0;
+    
     bool debug_print = false;
     debug_print &= (jd->mpi_rank == 0);
 
@@ -652,6 +654,11 @@ int evolve_model(double to_time)
 	PRC(to_time); PRC(jd->sync_time);
 	PRC(begin_time); PRL(jd->system_time);
 	PRL(tt);
+    }
+
+    if (jd->nj <= 0) {
+	jd->system_time = tt;
+	return 0;
     }
 
     int nb = jd->block_steps;
