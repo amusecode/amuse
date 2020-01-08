@@ -29,9 +29,6 @@ $(SRCDIR)/src/cvode/sundials_math.o $(SRCDIR)/src/cvode/sundials_nvector.o
 
 all: secularmultiple_worker
 
-cleanall: clean
-	$(RM) worker_code *
-
 clean:
 	rm -f *.so *.o *.pyc worker_code.cc $(SRCDIR)/src/*.o*
 	
