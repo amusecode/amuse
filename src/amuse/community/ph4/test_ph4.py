@@ -7,7 +7,7 @@ import os
 import random
 import sys
 import unittest 
-from time import clock as cputime
+from time import process_time as cputime
 from time import time as wallclocktime
 
 from amuse.community.ph4.interface import ph4 as grav
@@ -27,24 +27,6 @@ def print_log(pre, time, gravity, E0 = 0.0 | nbody_system.energy,
     wall = wallclocktime()
     N = len(gravity.particles)
     M = gravity.total_mass
-    U = gravity.potential_energy
-    T = gravity.kinetic_energy
-    Etop = T + U
-    E = Etop
-    if E0 == 0 | nbody_system.energy: E0 = E
-    Rvir = -0.5*M*M/U
-    Q = -T/U
-    com = pa.center_of_mass(gravity.particles)
-    comv = pa.center_of_mass_velocity(gravity.particles)
-    if N > 15:
-        dcen,rcore,rhocore \
-            = pa.densitycentre_coreradius_coredens(gravity.particles)
-    else:
-        dcen = com
-        rcore = zero
-        rhocore = zero
-    cmx,cmy,cmz = dcen
-    lagr,mf = pa.LagrangianRadii(gravity.particles, cm=dcen)  # no units!
 
     print('')
     print(pre+"time=", time.number)
@@ -52,23 +34,45 @@ def print_log(pre, time, gravity, E0 = 0.0 | nbody_system.energy,
     print(pre+"wall=", wall-wall0)
     print(pre+"Ntot=", N)
     print(pre+"mass=", M.number)
-    print(pre+"Etot=", E.number)
-    print(pre+"dE/E=", E/E0 - 1)
-    print(pre+"Rvir=", Rvir.number)
-    print(pre+"Qvir=", Q)
-    cmx,cmy,cmz = com
-    print(pre+"cmpos[3]= %.8f %.8f %.8f" % (cmx.number, cmy.number, cmz.number))
-    cmx,cmy,cmz = comv
-    print(pre+"cmvel[3]= %.8f %.8f %.8f" % (cmx.number, cmy.number, cmz.number))
-    cmx,cmy,cmz = dcen
-    print(pre+"dcpos[3]= %.8f %.8f %.8f" % (cmx.number, cmy.number, cmz.number))
-    print(pre+"Rcore=", rcore.number)
-    print(pre+"Mlagr[9]=", end=' ')
-    for m in mf: print("%.4f" % (m), end=' ')
-    print('')
-    print(pre+"Rlagr[9]=", end=' ')
-    for r in lagr.number: print("%.8f" % (r), end=' ')
-    print('')
+    E = 0 | nbody_system.energy
+
+    if N > 0:
+        U = gravity.potential_energy
+        T = gravity.kinetic_energy
+        Etop = T + U
+        E = Etop
+        if E0 == 0 | nbody_system.energy: E0 = E
+        Rvir = -0.5*M*M/U
+        Q = -T/U
+        com = pa.center_of_mass(gravity.particles)
+        comv = pa.center_of_mass_velocity(gravity.particles)
+        if N > 15:
+            dcen,rcore,rhocore \
+              = pa.densitycentre_coreradius_coredens(gravity.particles)
+        else:
+            dcen = com
+            rcore = zero
+            rhocore = zero
+            cmx,cmy,cmz = dcen
+        lagr,mf = pa.LagrangianRadii(gravity.particles, cm=dcen)  # no units!
+
+        print(pre+"Etot=", E.number)
+        print(pre+"dE/E=", E/E0 - 1)
+        print(pre+"Rvir=", Rvir.number)
+        print(pre+"Qvir=", Q)
+        cmx,cmy,cmz = com
+        print(pre+"cmpos[3]= %.8f %.8f %.8f" % (cmx.number, cmy.number, cmz.number))
+        cmx,cmy,cmz = comv
+        print(pre+"cmvel[3]= %.8f %.8f %.8f" % (cmx.number, cmy.number, cmz.number))
+        cmx,cmy,cmz = dcen
+        print(pre+"dcpos[3]= %.8f %.8f %.8f" % (cmx.number, cmy.number, cmz.number))
+        print(pre+"Rcore=", rcore.number)
+        print(pre+"Mlagr[9]=", end=' ')
+        for m in mf: print("%.4f" % (m), end=' ')
+        print('')
+        print(pre+"Rlagr[9]=", end=' ')
+        for r in lagr.number: print("%.8f" % (r), end=' ')
+        print('')
 
     sys.stdout.flush()
     return E,cpu,wall
@@ -134,7 +138,8 @@ def run_ph4(infile = None, number_of_stars = 40,
         stars.id = id+1
 
         print("setting particle masses and radii")
-        stars.mass = (1.0 / number_of_stars) | nbody_system.mass
+        if number_of_stars > 0:
+            stars.mass = (1.0 / number_of_stars) | nbody_system.mass
         if 0:
             scaled_mass = new_salpeter_mass_distribution_nbody(number_of_stars) 
             stars.mass = scaled_mass
@@ -193,9 +198,9 @@ def run_ph4(infile = None, number_of_stars = 40,
     #-----------------------------------------------------------------
 
     #print "5"; sys.stdout.flush()
-    if softening_length == -1 | nbody_system.length:
+    if softening_length == -1 | nbody_system.length and number_of_stars > 0:
         eps2 = 0.25*(float(number_of_stars))**(-0.666667) \
-            | nbody_system.length**2
+                | nbody_system.length**2
     else:
         eps2 = softening_length*softening_length
 
@@ -210,6 +215,10 @@ def run_ph4(infile = None, number_of_stars = 40,
     sys.stdout.flush()
     gravity.particles.add_particles(stars)
     gravity.commit_particles()
+
+    print('Taking step')
+    sys.stdout.flush()
+    gravity.evolve_model(time)
 
     print('')
     print("number_of_stars =", number_of_stars)
