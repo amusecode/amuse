@@ -20,14 +20,14 @@ function sqrtacc_timestep(p) result(dt)
  integer :: p
  real :: dt
  dt=dtime
- if(acc(p,4).LE.0) return
+ if(aacc(p).LE.0) return
  if(adaptive_eps) then
-   dt=tstepcrit*sqrt(epsgrav(p)/acc(p,4))
+   dt=tstepcrit*sqrt(epsgrav(p)/aacc(p))
  else
-   dt=tstepcrit*sqrt(MIN(epsgrav(p),eps)/acc(p,4))		
+   dt=tstepcrit*sqrt(MIN(epsgrav(p),eps)/aacc(p))		
  endif
  if(dt.le.0.) then
-   print*,dt,epsgrav(p),acc(p,4),eps
+   print*,dt,epsgrav(p),aacc(p),eps
    call terror('timestep error: sqrttstp')	  
  endif	 
 end function
@@ -37,10 +37,10 @@ function acc_timestep(p) result(dt)
  integer :: p
  real :: dt
  dt=dtime
- if(acc(p,4).LE.0) return
- dt=tstpcr2/acc(p,4)
+ if(aacc(p).LE.0) return
+ dt=tstpcr2/aacc(p)
  if(dt.le.0.) then
-   print*,dt,epsgrav(p),acc(p,4)
+   print*,dt,epsgrav(p),aacc(p)
    call terror('timestep error: acc_tstp')	  
  endif	 
 end function
@@ -51,10 +51,10 @@ function freeform_timestep(p) result(dt)
  real :: dt,abvel
  dt=dtime
  abvel=sqrt(vel(p,1)**2+vel(p,2)**2+vel(p,3)**2)
- if(acc(p,4).LE.0.OR.abvel.LE.0) return
- dt=(abvel/freev)**freevexp*(acc(p,4)/freea)**freeaexp
+ if(aacc(p).LE.0.OR.abvel.LE.0) return
+ dt=(abvel/freev)**freevexp*(aacc(p)/freea)**freeaexp
  if(dt.le.0.) then
-   print*,dt,abvel,acc(p,4)
+   print*,dt,abvel,aacc(p)
    call terror('timestep error: freetstp')	  
  endif	 
 end function
