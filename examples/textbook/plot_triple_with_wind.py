@@ -14,7 +14,7 @@ def read_triple_data(filename):
     eout = []
     a0in = 0
     a0out = 0
-    for line in open(filename).xreadlines():
+    for line in open(filename):
         if "Triple" in line:
             l = line.split()
             ti = float(l[3])
@@ -35,7 +35,7 @@ try:
     amusedir = os.environ['AMUSE_DIR']
     dir = amusedir+'/examples/textbook/'
 except:
-    print 'Environment variable AMUSE_DIR not set'
+    print('Environment variable AMUSE_DIR not set')
     dir = './'
 filename = dir+'evolve_triple_with_wind.data'
 
@@ -53,5 +53,5 @@ pyplot.legend(loc='best', ncol=1, shadow=False, fontsize=20)
 
 save_file = 'evolve_triple_with_wind.png'
 pyplot.savefig(save_file)
-print '\nSaved figure in file', save_file,'\n'
+print('\nSaved figure in file', save_file,'\n')
 pyplot.show()

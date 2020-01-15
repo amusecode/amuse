@@ -23,7 +23,7 @@ def plummer_model(N, x_label = 'x [length]', y_label='y [length]'):
     plot_projected_density(model, col=0)
     file = "plummer_model.png"
     pyplot.savefig(file)
-    print 'Saved figure in file', file
+    print('Saved figure in file', file)
 
 def king_model(N, W=9, x_label = 'x [length]', y_label='y [length]'):
     fig = single_frame(x_label, y_label, xsize=8, ysize=8)
@@ -32,7 +32,7 @@ def king_model(N, W=9, x_label = 'x [length]', y_label='y [length]'):
     plot_projected_density(model, col=1)
     file = "king_model.png"
     pyplot.savefig(file)
-    print 'Saved figure in file', file
+    print('Saved figure in file', file)
 
 def hierarchical_king_model(N, W=9, x_label = 'x [length]', y_label='y [length]'):
     fig = single_frame(x_label, y_label, xsize=8, ysize=8)
@@ -44,7 +44,7 @@ def hierarchical_king_model(N, W=9, x_label = 'x [length]', y_label='y [length]'
         plot_projected_density(model, col=1)
     file = "hierarchical_king_model.png"
     pyplot.savefig(file)
-    print 'Saved figure in file', file
+    print('Saved figure in file', file)
     
 def fractal_model(N, F=1.6, x_label = 'x [length]', y_label='y [length]'):
     fig = single_frame(x_label, y_label, xsize=8, ysize=8)
@@ -54,7 +54,7 @@ def fractal_model(N, F=1.6, x_label = 'x [length]', y_label='y [length]'):
     plot_projected_density(model, col=2)
     file = "fractal_model.png"
     pyplot.savefig(file)
-    print 'Saved figure in file', file
+    print('Saved figure in file', file)
 
 def galaxy_model(N, x_label = 'x [length]', y_label='y [length]'):
     fig = single_frame(x_label, y_label, xsize=8, ysize=8)
@@ -63,17 +63,17 @@ def galaxy_model(N, x_label = 'x [length]', y_label='y [length]'):
     plot_projected_density(model, col=3)
     file = "galaxy_model.png"
     pyplot.savefig(file)
-    print 'Saved figure in file', file
+    print('Saved figure in file', file)
 
 def main(N=10): 
     numpy.random.seed(42)
-    print ''
+    print('')
     plummer_model(N)
     king_model(N)
     fractal_model(N)
     galaxy_model(N)
     hierarchical_king_model(N)
-    print ''
+    print('')
 
 def new_option_parser():
     result = OptionParser()

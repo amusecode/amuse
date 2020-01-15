@@ -16,14 +16,14 @@ class CreateADirectoryAndPopulateItWithFilesForACommunityCodeTest(amusetest.Test
     def test1(self):
         instance = create_dir.CreateADirectoryAndPopulateItWithFilesForACCode()
         instance.name_of_the_code_interface_class = 'TestCode'
-        self.assertEquals(instance.name_of_the_community_code, 'testcode')
+        self.assertEqual(instance.name_of_the_community_code, 'testcode')
         self.assertTrue(instance.path_of_the_community_code.endswith('testcode'))
             
     def test2(self):
         root = self.get_path_to_results()
         working_dir = os.path.join(root, 'testcode')
         
-        print working_dir
+        print(working_dir)
         
         if os.path.exists(working_dir):
             shutil.rmtree(working_dir)
@@ -32,7 +32,7 @@ class CreateADirectoryAndPopulateItWithFilesForACommunityCodeTest(amusetest.Test
         instance.name_of_the_code_interface_class = 'TestCode'
         instance.path_of_the_root_directory = root
         if create_dir.CreateADirectoryAndPopulateItWithFiles().amuse_root_dir == os.getcwd():
-            self.assertEquals(instance.reference_to_amuse_path,'../..')
+            self.assertEqual(instance.reference_to_amuse_path,'../..')
         
         instance.start()
         
@@ -51,7 +51,7 @@ class CreateADirectoryAndPopulateItWithFilesForACommunityCodeTest(amusetest.Test
         outputstring, errorstring = call.communicate()
         
         
-        self.assertEquals(call.returncode, 0)
+        self.assertEqual(call.returncode, 0)
         
         self.assertTrue(os.path.exists(os.path.join(working_dir,'testcode_worker')))
         
@@ -66,7 +66,7 @@ class CreateADirectoryAndPopulateItWithFilesForACommunityCodeTest(amusetest.Test
         instance = module.TestCode()
         result = instance.echo_int(12)
         
-        self.assertEquals(result, 12)
+        self.assertEqual(result, 12)
         
         instance.stop()
         
@@ -81,10 +81,10 @@ class CreateADirectoryAndPopulateItWithFilesForACommunityCodeTest(amusetest.Test
         )
         outputstring, errorstring = call.communicate()
         
-        print errorstring
+        print(errorstring)
         self.assertFalse(os.path.exists(os.path.join(working_dir,'worker_code.cc')))
     
-        self.assertEquals(call.returncode, 0)
+        self.assertEqual(call.returncode, 0)
         
         if os.path.exists(working_dir):
             shutil.rmtree(working_dir)
@@ -93,7 +93,7 @@ class CreateADirectoryAndPopulateItWithFilesForACommunityCodeTest(amusetest.Test
         root = self.get_path_to_results()
         working_dir = os.path.join(root, 'testcodef')
         
-        print working_dir
+        print(working_dir)
         
         if os.path.exists(working_dir):
             shutil.rmtree(working_dir)
@@ -102,7 +102,7 @@ class CreateADirectoryAndPopulateItWithFilesForACommunityCodeTest(amusetest.Test
         instance.name_of_the_code_interface_class = 'TestCodeF'
         instance.path_of_the_root_directory = root
         if create_dir.CreateADirectoryAndPopulateItWithFiles().amuse_root_dir == os.getcwd():
-            self.assertEquals(instance.reference_to_amuse_path,'../..')
+            self.assertEqual(instance.reference_to_amuse_path,'../..')
         
         instance.start()
         
@@ -118,9 +118,9 @@ class CreateADirectoryAndPopulateItWithFilesForACommunityCodeTest(amusetest.Test
         )
         outputstring, errorstring = call.communicate()
         
-        print errorstring
+        print(errorstring)
     
-        self.assertEquals(call.returncode, 0)
+        self.assertEqual(call.returncode, 0)
         
         self.assertTrue(os.path.exists(os.path.join(working_dir,'testcodef_worker')))
         
@@ -136,7 +136,7 @@ class CreateADirectoryAndPopulateItWithFilesForACommunityCodeTest(amusetest.Test
         instance = module.TestCodeF()
         result = instance.echo_int(12)
         
-        self.assertEquals(result, 12)
+        self.assertEqual(result, 12)
         
         instance.stop()
         
@@ -151,11 +151,11 @@ class CreateADirectoryAndPopulateItWithFilesForACommunityCodeTest(amusetest.Test
             stderr=subprocess.PIPE
         )
         outputstring, errorstring = call.communicate()
-        print errorstring
+        print(errorstring)
         
         self.assertFalse(os.path.exists(os.path.join(working_dir,'worker_code.f90')))
     
-        self.assertEquals(call.returncode, 0)
+        self.assertEqual(call.returncode, 0)
         
         
    #     if os.path.exists(working_dir):

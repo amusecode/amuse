@@ -107,7 +107,7 @@ class TestMiyamotoNagaiProfile(amusetest.TestCase):
         
         ax_nm,ay_nm,az_nm = nm_profile.get_gravity_at_point(0.|units.m,b*0.1,b*5.,b*0.1)
         ax_p,ay_p,az_p = plummer_profile.get_gravity_at_point(0.|units.m,b*0.1,b*5.,b*0.1)
-        print ax_nm.in_(units.parsec/units.Myr**2), ax_p.in_(units.parsec/units.Myr**2)
+        print(ax_nm.in_(units.parsec/units.Myr**2), ax_p.in_(units.parsec/units.Myr**2))
         self.assertAlmostEqual(ax_nm.in_(units.parsec/units.Myr**2),ax_p.in_(units.parsec/units.Myr**2), 12)
         self.assertAlmostEqual(ay_nm.in_(units.parsec/units.Myr**2),ay_p.in_(units.parsec/units.Myr**2), 12)
         self.assertAlmostEqual(az_nm.in_(units.parsec/units.Myr**2),az_p.in_(units.parsec/units.Myr**2), 12)
@@ -188,7 +188,7 @@ class TestMWpotentialBovy2015(amusetest.TestCase):
         
         # mass enclosed in 60kpc
         mass_in_60 = mw.enclosed_mass(60.|units.kpc)
-        print mass_in_60.in_(units.MSun)
+        print(mass_in_60.in_(units.MSun))
         self.assertAlmostEqual((mass_in_60/1.e11).in_(units.MSun), 4.08|units.MSun, 2)
         
         # normalization factor for bulge
@@ -202,7 +202,7 @@ class TestMWpotentialBovy2015(amusetest.TestCase):
         
         # normalization factor for halo
         fr_r0_halo = -mw.halo.radial_force(r0)
-        print fr_r0_halo/fr_r0_v0
+        print(fr_r0_halo/fr_r0_v0)
         self.assertAlmostEqual(fr_r0_halo/fr_r0_v0, 0.35, 3)
         
     def setUp(self):

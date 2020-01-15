@@ -43,16 +43,16 @@ def main(filename, tplot):
     for si in sc.history:
         si = si.copy()
         snapshot_id += 1
-        print snapshot_id
+        print(snapshot_id)
         if snapshot_id%2:
-            print "convert"
+            print("convert")
             gc = si
         else:
             time = si.get_timestamp()
         if time>=tplot:
             break
         gc.move_to_center()
-        print "Snapshot=", snapshot_id, time.in_(units.Gyr), len(gc), len(si)
+        print("Snapshot=", snapshot_id, time.in_(units.Gyr), len(gc), len(si))
     plot_galaxy_and_stars(gc, si)
 
 def new_option_parser():

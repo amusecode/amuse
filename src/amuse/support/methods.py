@@ -42,9 +42,9 @@ class AbstractCodeMethodWrapper(object):
         if self.method_is_code:
             return self.method.method_input_argument_names
         elif self.method_is_legacy:
-            return map(lambda x : x.name, self.method.specification.input_parameters)
+            return [x.name for x in self.method.specification.input_parameters]
         else:
-            args = inspect.getargspec(self.method).args
+            args = inspect.getfullargspec(self.method).args
             if args:
                 if args[0] == 'self' or args[0] == 'cls':
                     return args[1:]
@@ -55,7 +55,7 @@ class AbstractCodeMethodWrapper(object):
         if self.method_is_code:
             return self.method.optional_method_input_argument_names
         elif self.method_is_legacy:
-            return map(lambda x : x.name, self.method.specification.iter_optional_input_parameters())
+            return [x.name for x in self.method.specification.iter_optional_input_parameters()]
         else:
             argspec = inspect.getargspec(self.method)
             defaults = argspec.defaults
@@ -70,7 +70,7 @@ class AbstractCodeMethodWrapper(object):
         if self.method_is_code:
             return self.method.method_output_argument_names
         elif self.method_is_legacy:
-            return map(lambda x : x.name, self.method.specification.output_parameters)
+            return [x.name for x in self.method.specification.output_parameters]
         else:
             return ()
            
@@ -239,7 +239,7 @@ class CodeMethodWrapperDefinition(object):
         return result
 
     def convert_result_index(self, method):
-        return range(len(method.method_output_argument_names))
+        return list(range(len(method.method_output_argument_names)))
         
     
     

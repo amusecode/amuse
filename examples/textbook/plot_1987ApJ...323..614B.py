@@ -11,7 +11,7 @@ def get_zones(stars):
     massf = [0.25, 0.50, 0.75, 1.0]
     lagrad = LagrangianRadii(stars,  massf = massf)
     for zi in lagrad:
-        print "R=", zi.in_(units.RSun)
+        print("R=", zi.in_(units.RSun))
     center_of_mass = [0,0,0] | units.RSun #initial_stars.center_of_mass()
     zoneA = stars.select(lambda r: (center_of_mass-r).length()<lagrad[0], ["position"])
     zoneB = stars.select(lambda r: (center_of_mass-r).length()<lagrad[1], ["position"])
@@ -19,13 +19,13 @@ def get_zones(stars):
     zoneC -= zoneB
     zoneB -= zoneA
     zoneD = stars.select(lambda r: (center_of_mass-r).length()>lagrad[2], ["position"])
-    print "N=", len(zoneA), len(zoneB), len(zoneC), len(zoneD)
+    print("N=", len(zoneA), len(zoneB), len(zoneC), len(zoneD))
     return (zoneA, zoneB, zoneC, zoneD)
 
 def _get_number_of_particles_in_zone(iz, initial_stars, initial_zones, final_zones):
     range_list = [0,1,2,3]
     range_list.pop(iz)
-    print range_list
+    print(range_list)
     fzA = initial_stars.copy()
     for i in range_list:
         fzA -= final_zones[i]  
@@ -34,18 +34,18 @@ def _get_number_of_particles_in_zone(iz, initial_stars, initial_zones, final_zon
         for fzi in fzA:
             if fzi in initial_zones[izi]:
                 nzA[izi] +=1
-    print "iz=", iz, nzA
+    print("iz=", iz, nzA)
     return nzA
 
 def get_number_of_particles_in_zone(iz, initial_stars, initial_zones, final_star, final_zones):
     range_list = [0,1,2,3]
     range_list.pop(iz)
-    print range_list
+    print(range_list)
     fzA = final_zones[iz]
     not_selected = final_star - final_zones[iz]
-    print iz, len(initial_stars), len(not_selected)
+    print(iz, len(initial_stars), len(not_selected))
     initial_subset = initial_stars - not_selected
-    print len(initial_subset)
+    print(len(initial_subset))
 
     nzA = [0,0,0,0]
     for iz in range(len(initial_zones)):
@@ -70,7 +70,7 @@ def get_number_of_particles_in_zone(iz, initial_stars, initial_zones, final_star
     pyplot.scatter(fzA.x.value_in(units.RSun), fzA.y.value_in(units.RSun))
     pyplot.show()
     """
-    print nzA
+    print(nzA)
     return nzA
 
 def find_clumps(particles):
@@ -101,11 +101,11 @@ def plot_collide_two_stars(time, filename):
         process_file(time, filename, figure)
     else:
         n = 0.8
-        bars = ax1.bar(range(1, 5), [n,0,0,0], color='None', ecolor='black', hatch='//') +\
-               ax1.bar(range(1, 5), [n,0,0,0], color='None', ecolor='black', hatch='\\\\') +\
-               ax1.bar(range(1, 5), [0,n,0,0], color='None', ecolor='black', hatch='\\\\') +\
-               ax1.bar(range(1, 5), [0,0,n,0], color='None', ecolor='black', hatch='*') +\
-               ax1.bar(range(1, 5), [0,0,0,n], color='None', ecolor='black', hatch='.')
+        bars = ax1.bar(list(range(1, 5)), [n,0,0,0], color='None', ecolor='black', hatch='//') +\
+               ax1.bar(list(range(1, 5)), [n,0,0,0], color='None', ecolor='black', hatch='\\\\') +\
+               ax1.bar(list(range(1, 5)), [0,n,0,0], color='None', ecolor='black', hatch='\\\\') +\
+               ax1.bar(list(range(1, 5)), [0,0,n,0], color='None', ecolor='black', hatch='*') +\
+               ax1.bar(list(range(1, 5)), [0,0,0,n], color='None', ecolor='black', hatch='.')
         pyplot.savefig("1987ApJ323_614B")
 
     #pyplot.show()
@@ -124,7 +124,7 @@ def process_file(time, filename, figure):
     merger = read_set_from_file(filename, "hdf5")
     for si in merger.history:
         ts = si.get_timestamp()
-        print ts, time, len(si)
+        print(ts, time, len(si))
         if ts >= time: 
             final_star.add_particles(si)            
             break
@@ -147,11 +147,11 @@ def process_file(time, filename, figure):
 
     ax2 = pyplot.gca()
     from operator import add
-    bars = ax2.bar(range(1, 5), nA0, bottom=[0,0,0,0], color='None', ecolor='black', hatch='//') +\
-           ax2.bar(range(1, 5), nA0, color='None', ecolor='black', hatch='\\\\') +\
-           ax2.bar(range(1, 5), nA1, bottom=nA0, color='None', ecolor='black', hatch='\\\\') +\
-           ax2.bar(range(1, 5), nA2, bottom=map(add, nA0, nA1), color='None', ecolor='black', hatch='/') +\
-           ax2.bar(range(1, 5), nA3, bottom=map(add, nA0, map(add, nA1, nA2)), color='None', ecolor='black', hatch='.')
+    bars = ax2.bar(list(range(1, 5)), nA0, bottom=[0,0,0,0], color='None', ecolor='black', hatch='//') +\
+           ax2.bar(list(range(1, 5)), nA0, color='None', ecolor='black', hatch='\\\\') +\
+           ax2.bar(list(range(1, 5)), nA1, bottom=nA0, color='None', ecolor='black', hatch='\\\\') +\
+           ax2.bar(list(range(1, 5)), nA2, bottom=list(map(add, nA0, nA1)), color='None', ecolor='black', hatch='/') +\
+           ax2.bar(list(range(1, 5)), nA3, bottom=list(map(add, nA0, list(map(add, nA1, nA2)))), color='None', ecolor='black', hatch='.')
 #    ax2.set_xticks([1, 2, 3, 4])
     
     #pyplot.show()
@@ -170,6 +170,6 @@ def new_option_parser():
 
 if __name__ in ('__main__', '__plot__'):
     o, arguments  = new_option_parser().parse_args()
-    print o.time
+    print(o.time)
     plot_collide_two_stars(o.time, o.filename)
 

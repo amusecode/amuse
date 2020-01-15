@@ -62,13 +62,13 @@ class FallbackStellarEvolution(object):
         self.rms_weights=numpy.array(rms_weights,'d')
         self.rms_weights/=self.rms_weights.sum()
         if self.verbose:
-          print "started FallbackStellarEvolution with:"
-          print "main SE code:", self._main_se.__class__.__name__
-          print "fallback SE code:", self._fallback_se.__class__.__name__
+          print("started FallbackStellarEvolution with:")
+          print("main SE code:", self._main_se.__class__.__name__)
+          print("fallback SE code:", self._fallback_se.__class__.__name__)
           if self.enforce_monotonic_mass_evolution:
-            print "enforcing monotonic mass evolution"
-          print "normalized rms weights are %5.3f (mass), %5.3f (radius), %5.3f (luminosity)"% \
-            (self.rms_weights[0],self.rms_weights[1],self.rms_weights[2])
+            print("enforcing monotonic mass evolution")
+          print("normalized rms weights are %5.3f (mass), %5.3f (radius), %5.3f (luminosity)"% \
+            (self.rms_weights[0],self.rms_weights[1],self.rms_weights[2]))
         
     def cache_underlying_models(self, cacheDir):
         self._main_se = CachedStellarEvolution(self._main_se, cacheDir)
@@ -141,8 +141,8 @@ class FallbackStellarEvolution(object):
                     self.EVtwinException[particle] = ex
                     self.ActiveModel[particle] = self._fallback_se
                     if self.verbose:
-                      print "FallbackStellarEvolution switching models, %s (age = %s) threw exception: %s" % \
-                        (self._main_se.__class__.__name__,self.EVtwinAgeAtSwitch[particle],self.EVtwinException[particle])
+                      print("FallbackStellarEvolution switching models, %s (age = %s) threw exception: %s" % \
+                        (self._main_se.__class__.__name__,self.EVtwinAgeAtSwitch[particle],self.EVtwinException[particle]))
     
                     # run SSE for just long enough to get data for the RMS search
                     sse_part=particle.as_particle_in_set(self._fallback_se.particles)
@@ -150,14 +150,14 @@ class FallbackStellarEvolution(object):
                         sse_part.evolve_one_step()
                         self._FBTimeseries[particle].add_timepoint()
                     if self.verbose:
-                      print "FallbackStellarEvolution switch: evolved SSE to: %s " % (sse_part.age,)
+                      print("FallbackStellarEvolution switch: evolved SSE to: %s " % (sse_part.age,))
     
                     sse_track=self._FBTimeseries[particle].particles[0]
                     self._FB_rms_search(evtwin_part, sse_track)
                         # TODO: Add ModelSwitchFailed exception when RMS statistics is above some threshold?
                     if self.verbose:
-                      print ("FallbackStellarEvolution switch parameters: %s %s %s %s" %  
-                                (sse_track.SSEIndexAtSwitch, sse_track.SSENextStateIndex, sse_track.SSEAgeAtSwitch, sse_track.RMSErrorAtSwitch))
+                      print(("FallbackStellarEvolution switch parameters: %s %s %s %s" %  
+                                (sse_track.SSEIndexAtSwitch, sse_track.SSENextStateIndex, sse_track.SSEAgeAtSwitch, sse_track.RMSErrorAtSwitch)))
     
                     self._evolve_model_FB(particle)
             
@@ -248,18 +248,18 @@ if __name__ == '__main__':
     stars = stellar_evolution.particles.add_particles(stars)
     stellar_evolution.commit_particles()
 
-    print stellar_evolution.model_time,'|',
+    print(stellar_evolution.model_time,'|', end=' ')
     for star in stars:
-      print star.stellar_type,'|',
-      print stellar_evolution.ActiveModel[star].__class__.__name__,
-    print
+      print(star.stellar_type,'|', end=' ')
+      print(stellar_evolution.ActiveModel[star].__class__.__name__, end=' ')
+    print()
     while stellar_evolution.model_time < 13.2 | units.Gyr:
 
         stellar_evolution.evolve_model()
-        print stellar_evolution.model_time,'|',
+        print(stellar_evolution.model_time,'|', end=' ')
         for star in stars:
-          print star.stellar_type,',', 
-          print stellar_evolution.ActiveModel[star].__class__.__name__,'|',
-        print
+          print(star.stellar_type,',', end=' ') 
+          print(stellar_evolution.ActiveModel[star].__class__.__name__,'|', end=' ')
+        print()
 
     stellar_evolution.stop()

@@ -15,12 +15,6 @@ author_email = 'info@amusecode.org'
 license_ = "Apache License 2.0"
 url = 'http://www.amusecode.org/'
 install_requires = [
-    'wheel>=0.32',
-    'docutils>=0.6',
-    'numpy>=1.2.2',
-    'nose>=0.11.1',
-    'mpi4py>=1.1.0',
-    'h5py>=1.1.0',
     'amuse-framework>=%s' % main_version,
 ]
 description = 'The Astrophysical Multipurpose Software Environment - fractalcluster'
@@ -51,6 +45,7 @@ setup(
     long_description=long_description,
     long_description_content_type=long_description_content_type,
     install_requires=install_requires,
+    python_requires=">=3.5",
     cmdclass=mapping_from_command_name_to_command_class,
     ext_modules=extensions,
     package_dir={'amuse.community.fractalcluster': 'src/amuse/community/fractalcluster'},

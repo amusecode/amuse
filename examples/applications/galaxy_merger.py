@@ -95,15 +95,19 @@ def simulate_merger(galaxy1, galaxy2, dt=25. | units.Myr, tend=3. | units.Gyr):
 
     galaxies_without_halo = set1[:NDISK] + set2[:NDISK]
     make_plots(dynamics.particles, galaxies_without_halo)
-
-    print "starting simulation.."
-
+    
+    print("starting simulation..")
+        
     i = 0
     while dynamics.model_time < tend:
         i = i+1
         dynamics.evolve_model(i * dt)
-        print "evolved to:", dynamics.model_time.as_quantity_in(
-            units.Myr), "/", tend
+        print(
+            "evolved to:",
+            dynamics.model_time.as_quantity_in(units.Myr),
+            "/",
+            tend
+        )
         make_plots(dynamics.particles, galaxies_without_halo, i)
 
     dynamics.stop()

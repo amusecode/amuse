@@ -30,7 +30,7 @@ def get_dE(code, precision, t_end):
         dEi = energy_error_of_integrated_Nbody_system(code, particles,
                                                       t_end, pri)
         dE.append(abs(dEi))
-        print "integrated with precision=", pri, "dE/E=", dEi
+        print("integrated with precision=", pri, "dE/E=", dEi)
     return dE
     
 if __name__ in ('__main__','__plot__'):
@@ -43,12 +43,12 @@ if __name__ in ('__main__','__plot__'):
     t_end = 1.0| nbody_system.time
     cols = get_distinct(2)
     
-    print 'ph4'
+    print('ph4')
     code = ph4
     dE = get_dE(code, precision, t_end)
     pyplot.scatter(precision, dE, c=cols[0], lw=0, s=50, marker='o')
 
-    print 'BHTree'
+    print('BHTree')
     code = BHTree
     dE = get_dE(code, precision, t_end)
     pyplot.scatter(precision, dE, c=cols[1], lw=0, s=50, marker='^')
@@ -69,7 +69,7 @@ if __name__ in ('__main__','__plot__'):
 
     save_file = 'precision_N100t1.png'
     pyplot.savefig(save_file)
-    print "\nOutput saved in", save_file
+    print("\nOutput saved in", save_file)
     pyplot.show()
 
     

@@ -66,12 +66,12 @@ def gravity_hydro_bridge(a, ecc, t_end, n_steps, Rgas, Mgas, Ngas):
         model_time += dt
 
         a, e = get_kepler_elements(gravity.model_time, stars[0], stars[1], converter) 
-        print "time=", model_time, a, e
+        print("time=", model_time, a, e)
         gravhydro.evolve_model(model_time)
 
         Ed_tot = gravity.kinetic_energy + gravity.potential_energy
         Eh_tot = hydro.kinetic_energy + hydro.potential_energy + hydro.thermal_energy
-        print "Energies:", Ed_tot/Ed0_tot, Eh_tot/Eh0_tot
+        print("Energies:", Ed_tot/Ed0_tot, Eh_tot/Eh0_tot)
         channel_from_gravity.copy()
         channel_from_hydro.copy()
 

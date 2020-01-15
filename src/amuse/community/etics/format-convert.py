@@ -16,13 +16,13 @@ if __name__ == "__main__":
     parser.add_argument('--bh', type=int, nargs='?', const=1, default=0, help='number of black holes to grab from the end of the file')
 
     # Print message and parse input
-    print 'Welcome to Yohai\'s format converter! (phiGRAPE ---> HDF5)\n'
+    print('Welcome to Yohai\'s format converter! (phiGRAPE ---> HDF5)\n')
     args = parser.parse_args()
 
     # Parameter conflict tests
     if (args.bh > 0) and (args.particles==None):
         parser.print_usage()
-        print '%s: error: cannot --bh without --particles' % sys.argv[0]
+        print('%s: error: cannot --bh without --particles' % sys.argv[0])
         sys.exit(2)
     Nbh = args.bh
 
@@ -30,12 +30,12 @@ if __name__ == "__main__":
     try:
         import h5py
     except:
-        print '%s: error: booooo, can\'t find h5py.' % sys.argv[0]
+        print('%s: error: booooo, can\'t find h5py.' % sys.argv[0])
         sys.exit(1)
 
     # Check if input file exists, separate name from path and get file name pattern
     if not os.path.exists(args.InputFile):
-        print 'File `%s` not found!' % args.InputFile
+        print('File `%s` not found!' % args.InputFile)
         sys.exit(1)
     InputFileName = os.path.basename(args.InputFile)
     InputFilePath = os.path.dirname(os.path.realpath(args.InputFile))
@@ -55,13 +55,13 @@ if __name__ == "__main__":
 
     # Verify that enough files were found; shorten list if needed
     if (not args.num==None) and args.num > len(FileList):
-        print 'Requested to convert %d files, but only %d found!' % (args.num, len(FileList))
+        print('Requested to convert %d files, but only %d found!' % (args.num, len(FileList)))
         sys.exit(1)
     if (not args.num==None): num = args.num
     else: num = len(FileList)
     FileList = FileList[:num]
 
-    print 'Will convert %d files in the directory `%s`.' % (num, InputFilePath)
+    print('Will convert %d files in the directory `%s`.' % (num, InputFilePath))
 
     NumperOfStepsPerFile = 2147483647
     OutputFileNum = 2
@@ -80,24 +80,24 @@ if __name__ == "__main__":
             try:
                 StepNumer = int(Line)
             except:
-                print 'Error to read snapshot number (line 1 in file `%s`)' % Filename
+                print('Error to read snapshot number (line 1 in file `%s`)' % Filename)
                 sys.exit(1)
             File.readline()
             Line = File.readline()
             try:
                 Time = numpy.double(Line)
             except:
-                print 'Error to read snapshot time (line 3 in file `%s`)' % Filename
+                print('Error to read snapshot time (line 3 in file `%s`)' % Filename)
                 sys.exit(1)
         Data = numpy.loadtxt(FullFilename, skiprows=3)
         if (not args.particles==None) and (args.particles > Data.shape[0]):
-            print 'Requested to use %d paticles, but file %s has only %d!' % (args.particles, Filename, Data.shape[0])
+            print('Requested to use %d paticles, but file %s has only %d!' % (args.particles, Filename, Data.shape[0]))
             sys.exit(1)
         if (not args.particles==None): N = args.particles
         else: N = Data.shape[0]
         if FirstTime:
-            if Nbh == 0: print 'Reading %d particles.' % (N)
-            else: print 'Reading %d normal particles + %d black hole(s).' % (N, Nbh)
+            if Nbh == 0: print('Reading %d particles.' % (N))
+            else: print('Reading %d normal particles + %d black hole(s).' % (N, Nbh))
             if args.single: EstimatedDataSize = 32*N/1024.0**2
             else: EstimatedDataSize = 60*N/1024.0**2
             if not args.maxfs==None: NumperOfStepsPerFile = (int)(args.maxfs/EstimatedDataSize)
@@ -122,6 +122,6 @@ if __name__ == "__main__":
         DataSet = Group.create_dataset('VY',   (N+Nbh,), dtype=T);   DataSet[...] = Data[:,6]
         DataSet = Group.create_dataset('VZ',   (N+Nbh,), dtype=T);   DataSet[...] = Data[:,7]
         OutputFile.flush()
-        print 'Completed /Step#%d' % (StepNumer)
+        print('Completed /Step#%d' % (StepNumer))
         StepCounter += 1
     OutputFile.close()

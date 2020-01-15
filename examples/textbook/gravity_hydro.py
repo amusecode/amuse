@@ -108,9 +108,9 @@ def gravity_hydro_bridge(Mprim, Msec, a, ecc, t_end, n_steps,
         orbit = orbital_elements_from_binary(stars, G=constants.G)
         dE_gravity = gravity.initial_total_energy/gravity.total_energy
         dE_hydro = hydro.initial_total_energy/hydro.total_energy
-        print "Time:", model_time.in_(units.yr), \
+        print(("Time:", model_time.in_(units.yr), \
               "ae=", orbit[2].in_(units.AU), orbit[3], \
-              "dE=", dE_gravity, dE_hydro
+              "dE=", dE_gravity, dE_hydro))
         
         model_time += 10*gravhydro.timestep
         gravhydro.evolve_model(model_time)
@@ -118,7 +118,7 @@ def gravity_hydro_bridge(Mprim, Msec, a, ecc, t_end, n_steps,
         hydro.copy_to_framework()
         write_set_to_file(stars.savepoint(model_time), filename, 'amuse')
         write_set_to_file(ism, filename, 'amuse')
-        print "P=", model_time.in_(units.yr), gravity.particles.x.in_(units.au)
+        print("P=", model_time.in_(units.yr), gravity.particles.x.in_(units.au))
     gravity.stop()
     hydro.stop()
 ###BOOKLISTSTOP4###

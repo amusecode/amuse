@@ -7,7 +7,7 @@ import numpy
 from amuse.units import units, constants, quantities
 from amuse.datamodel import Particle, Particles
 from amuse.support.exceptions import AmuseException
-from StringIO import StringIO 
+from io import StringIO 
 
 class Abstract_Potential(object):
     def get_gravity_at_point(self, eps, x,y,z):
@@ -17,7 +17,7 @@ class Abstract_Potential(object):
         phi_dx = self.get_potential_at_point(0,x+dpos,y,z) - phi_0
         phi_dy = self.get_potential_at_point(0,x,y+dpos,z) - phi_0
         phi_dz = self.get_potential_at_point(0,x,y, z+dpos) - phi_0
-        return phi_dx/dpos, phi_dy/dpos, phi_dz/dpos
+        return -phi_dx/dpos, -phi_dy/dpos, -phi_dz/dpos
 
     def get_potential_at_point(self, eps, x, y, z):
         """ Abstract function, to be overwritten by subclass """
@@ -30,7 +30,7 @@ class Abstract_Potential(object):
             b=0 gives Kuzmin's potential for razor-thin disc
         """
         r_squared = x**2+y**2
-        return constants.G * mass / (r_squared + (a + (z**2 + b**2).sqrt())**2).sqrt()
+        return -constants.G * mass / (r_squared + (a + (z**2 + b**2).sqrt())**2).sqrt()
 
     def power_law_potential(self, r, alpha, r_0, mass_0):
         """ Following eq. 2.62 of B&T """
@@ -43,7 +43,7 @@ class Abstract_Potential(object):
         else:
             phi_minus_phi_0 = - v_circ_squared * (r_0**(2-alpha) - r**(2-alpha))/(alpha-2)
 
-        return phi_minus_phi_0 + phi_0
+        return -(phi_minus_phi_0 + phi_0)
 
     def point_mass_potential(self, r, mass):
         """ See eq. 2.34 of B&T """
@@ -58,7 +58,7 @@ class Disc_Bulge_Halo_Potential(Abstract_Potential):
         """ TODO: Find the source for this potential -> McMillan & Portegies Zwart 2000?"""
         r=(x**2+y**2+z**2).sqrt()
         rr = (r/Rc)
-        return -constants.G * (Mc/Rc)*(0.5*numpy.log(1 +rr**2) + numpy.arctan(rr)/rr)
+        return constants.G * (Mc/Rc)*(0.5*numpy.log(1 +rr**2) + numpy.arctan(rr)/rr)
 
     def get_potential_at_point(self, eps, x, y, z):
         disk = self.flattened_potential(x,y,z,
@@ -195,6 +195,7 @@ class Galactic_Center_Potential_Kruijssen(Abstract_Potential):
         """
         r = (x**2 + y**2 + z**2/self.q**2).sqrt()
         mass = self.enclosed_mass(r)
+        # missing a term with the integrated contribution from outside shells
         return self.point_mass_potential(r, mass)
 
     def get_gravity_at_point(self, eps, x,y,z):

@@ -51,8 +51,12 @@ def run_evrard(
 
     # (3 natural timescales)
     t_end = 3.0 * convert_nbody_units.to_si(1.0 | nbody_system.time)
-    print "Evolving to (3 natural timescales): ", t_end.as_quantity_in(
-        units.Myr)
+    print(
+        "Evolving to (3 natural timescales): ",
+        t_end.as_quantity_in(
+            units.Myr
+        )
+    )
     n_steps = 100
 
     gas = new_evrard_gas_sphere(
@@ -91,7 +95,7 @@ def run_evrard(
         hydro_legacy_code.stop()
     energy_plot(times, kinetic_energies, potential_energies,
                 thermal_energies, name_of_the_figure)
-    print "All done!\n"
+    print("All done!\n")
 
 
 def energy_plot(time, E_kin_list, E_pot_list, E_therm_list, figname):
@@ -109,7 +113,7 @@ def energy_plot(time, E_kin_list, E_pot_list, E_therm_list, figname):
     ylabel('Energy')
     pyplot.legend(prop={'size': "x-small"}, loc=3)
     pyplot.savefig(figname)
-    print "\nPlot of energy evolution was saved to: ", figname
+    print("\nPlot of energy evolution was saved to: ", figname)
     pyplot.close()
 
 
@@ -254,7 +258,7 @@ def new_commandline_option_parser():
 
 if __name__ == '__main__':
     if not is_mpd_running():
-        print "There is no mpd server running. Please do 'mpd &' first."
+        print("There is no mpd server running. Please do 'mpd &' first.")
         sys.exit()
     parser = new_commandline_option_parser()
     (options, arguments) = parser.parse_args()

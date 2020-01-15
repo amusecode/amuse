@@ -826,8 +826,11 @@ void jdata::get_densities_on_gpu()	// under development
         cout << mpi_rank << " receiving neighbors from"
 		     << mpi_rank+offset
 		     << endl << flush;
+    {
+    MPI_Status *status;
 		MPI_Recv(pneighbors+nj*knn, nj*knn, MPI_INT,
-			      mpi_rank+offset, 42, mpi_comm);
+			      mpi_rank+offset, 42, mpi_comm, status);
+    }
 		cout << mpi_rank << " receive done" << endl << flush;
 #endif
 

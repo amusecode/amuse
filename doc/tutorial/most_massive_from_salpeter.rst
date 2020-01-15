@@ -61,15 +61,15 @@ we simply use the *mean* function of VectorQuantities:
 
 .. code-block:: python
 
-    >>> print "mean:  ", maxmasses.mean()
+    >>> print ("mean:  ", maxmasses.mean())
     mean:   27.4915750164 MSun
 
 The same works for the median or the standard deviation of *maxmasses*.
 
 .. code-block:: python
 
-    >>> print "median:", maxmasses.median()
-    >>> print "stddev:", maxmasses.std()
+    >>> print ("median:", maxmasses.median())
+    >>> print ("stddev:", maxmasses.std())
     median: 21.0983403429 MSun
     stddev: 19.7149800906 MSun
 
@@ -77,9 +77,9 @@ Slightly slower, but giving the same result, we can use the numpy functions:
 
 .. code-block:: python
 
-    >>> print "mean:  ", numpy.mean( maxmasses)
-    >>> print "median:", numpy.median(maxmasses)
-    >>> print "stddev:", numpy.std(maxmasses)
+    >>> print ("mean:  ", numpy.mean( maxmasses))
+    >>> print ("median:", numpy.median(maxmasses))
+    >>> print ("stddev:", numpy.std(maxmasses))
     mean:   27.4915750164 MSun
     median: 21.0983403429 1.98892e+30 * kg
     stddev: 19.7149800906 MSun
@@ -93,7 +93,7 @@ it can easily be fixed by:
 
 .. code-block:: python
 
-    >>> print "median:", numpy.median(maxmasses).in_(units.MSun)
+    >>> print ("median:", numpy.median(maxmasses).in_(units.MSun))
     median: 21.0983403429 MSun
 
 

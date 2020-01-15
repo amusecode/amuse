@@ -29,7 +29,7 @@ SOURCES  = \
 OBJECTS = $(SOURCES:.f90=.o)
 
 
-DOWNLOAD_FROM_WEB = $(PYTHON) ./downloadhttp.py
+DOWNLOAD_FROM_WEB = $(PYTHON) ./download.py
 PATCH_FILES = $(PYTHON) ./patch_files.py
 
 

@@ -50,7 +50,7 @@ class ForTestingImplementation(object):
         self.myrank=self.comm.Get_rank()
         self.N=self.comm.Get_size()
         self.Ngrid=3*4*5
-        n=self.Ngrid/self.N
+        n=self.Ngrid//self.N
         x = (numpy.arange(n)+self.myrank*n)/(1.*self.Ngrid)
         self.local_imin=self.myrank*n
         self.local_imax=(self.myrank+1)*n-1
@@ -97,8 +97,8 @@ class TestInterface(TestWithMPI):
         interface=self.ForTesting(redirection="none",number_of_workers=1)        
         x=interface.grid.x
         dens=interface.grid.dens
-        self.assertEquals(x,numpy.arange(60)/60.)
-        self.assertEquals(dens,x**2)
+        self.assertEqual(x,numpy.arange(60)/60.)
+        self.assertEqual(dens,x**2)
         interface.stop()
     
     def test2(self):
@@ -106,7 +106,7 @@ class TestInterface(TestWithMPI):
             interface=self.ForTesting(redirection="none",number_of_workers=n)        
             x=interface.grid.x
             dens=interface.grid.dens
-            self.assertEquals(x,numpy.arange(60)/60.)
-            self.assertEquals(dens,x**2)
+            self.assertEqual(x,numpy.arange(60)/60.)
+            self.assertEqual(dens,x**2)
             interface.stop()
 

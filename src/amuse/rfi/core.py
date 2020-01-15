@@ -102,7 +102,7 @@ class CodeFunction(object):
         if self.interface.async_request:
             try:
                 self.interface.async_request.wait()
-            except Exception,ex:
+            except Exception as ex:
                 warnings.warn("Ignored exception in async call: " + str(ex))
             
         dtype_to_values = self.converted_keyword_and_list_arguments( arguments_list, keyword_arguments)
@@ -118,7 +118,7 @@ class CodeFunction(object):
             self.interface.channel.send_message(call_id, self.specification.id, dtype_to_arguments = dtype_to_values)
             
             dtype_to_result = self.interface.channel.recv_message(call_id, self.specification.id, handle_as_array)
-        except Exception, ex:
+        except Exception as ex:
             CODE_LOG.info("Exception when calling function '{0}', of code '{1}', exception was '{2}'".format(self.specification.name, type(self.interface).__name__, ex))
             raise exceptions.CodeException("Exception when calling function '{0}', of code '{1}', exception was '{2}'".format(self.specification.name, type(self.interface).__name__, ex))
         
@@ -143,7 +143,7 @@ class CodeFunction(object):
         def handle_result(function):
             try:
                 dtype_to_result = function()
-            except Exception, ex:
+            except Exception as ex:
                 raise exceptions.CodeException("Exception when calling legacy code '{0}', exception was '{1}'".format(self.specification.name, ex))
             result=self.converted_results(dtype_to_result, handle_as_array)
             return result
@@ -181,7 +181,7 @@ class CodeFunction(object):
                 count = 0
                 for argument_value in argument_values:
                     try:
-                        if not isinstance(argument_value, basestring):
+                        if not isinstance(argument_value, str):
                             count = max(count, len(argument_value))
                     except:
                         count = max(count, 0)
@@ -225,7 +225,7 @@ class CodeFunction(object):
         result = OrderedDictionary()
         dtype_to_array = {}
         
-        for key, value in dtype_to_result.iteritems():
+        for key, value in dtype_to_result.items():
             dtype_to_array[key] = list(reversed(value))
         
         if not result_type is None:
@@ -245,7 +245,7 @@ class CodeFunction(object):
     def converted_keyword_and_list_arguments(self, arguments_list, keyword_arguments):
         dtype_to_values = self.specification.new_dtype_to_values()
         
-        input_parameters_seen = set(map(lambda x : x.name, self.specification.input_parameters))
+        input_parameters_seen = set([x.name for x in self.specification.input_parameters])
         names_in_argument_list = set([])
         for index, argument in enumerate(arguments_list):
             parameter = self.specification.input_parameters[index]
@@ -337,7 +337,7 @@ class legacy_function(object):
         return result
     
     def is_compiled_file_up_to_date(self, time_of_the_compiled_file):
-        name_of_defining_file = self.specification_function.func_code.co_filename
+        name_of_defining_file = self.specification_function.__code__.co_filename
         if os.path.exists(name_of_defining_file):
             time_of_defining_file = os.stat(name_of_defining_file).st_mtime
             return time_of_defining_file <= time_of_the_compiled_file
@@ -402,11 +402,11 @@ def derive_dtype_unit_and_default(value):
               default=number
           if isinstance(number, bool):
               dtype="b"
-          elif isinstance(number,(int,long)):
+          elif isinstance(number,int):
               dtype="i"
-          elif isinstance(number,(float,)):
+          elif isinstance(number,float):
               dtype="d"
-          elif isinstance(number,(str,unicode)):
+          elif isinstance(number,str):
               dtype="s"
           else:
               raise Exception("undetectable type")
@@ -466,13 +466,13 @@ def simplified_function_specification(must_handle_array=False,can_handle_array=F
             start=flatsrc.find("returns(")
             order=lambda k: flatsrc.find(k[0]+"=",start)
             out_arg.extend(sorted(kwargs.items(),key=order))
-        f.func_globals['returns']=returns
+        f.__globals__['returns']=returns
         f(*argspec.args)
         out_arg_mapping=OrderedDictionary()
         for x in out_arg:
             out_arg_mapping[x[0]] = x[1]
             
-        function=get_function_specification(f.func_name,in_arg,out_arg_mapping,
+        function=get_function_specification(f.__name__,in_arg,out_arg_mapping,
             must_handle_array,can_handle_array,length_arguments)
         def g():
             return function
@@ -596,7 +596,7 @@ class LegacyFunctionSpecification(object):
             self.add_output_parameter(parameter)
             
     def add_input_parameter(self, parameter):
-        has_default_parameters = any(map(lambda x : x.has_default_value(), self.input_parameters))
+        has_default_parameters = any([x.has_default_value() for x in self.input_parameters])
         if has_default_parameters and not parameter.has_default_value():
             raise exceptions.AmuseException("non default argument '{0}' follows default argument".format(parameter.name))
         self.input_parameters.append(parameter)
@@ -617,12 +617,12 @@ class LegacyFunctionSpecification(object):
    
     def new_dtype_to_values(self):
         result = {}
-        for dtype, parameters in self.dtype_to_input_parameters.iteritems():
+        for dtype, parameters in self.dtype_to_input_parameters.items():
             result[dtype] =  [None] * len(parameters)   
         return result
     
     def prepare_output_parameters(self):
-        for dtype, parameters in self.dtype_to_output_parameters.iteritems():
+        for dtype, parameters in self.dtype_to_output_parameters.items():
             if dtype == self.result_type:
                 offset = 1
             else:
@@ -1114,7 +1114,7 @@ class PythonCodeInterface(CodeInterface):
     
     def __init__(self, implementation_factory = None, name_of_the_worker = None, **options):
         if self.channel_type == 'distributed':
-            print "Warning! Distributed channel not fully supported by PythonCodeInterface yet"
+            print("Warning! Distributed channel not fully supported by PythonCodeInterface yet")
         self.implementation_factory = implementation_factory
         self.worker_dir=options.get("worker_dir",None)
         
@@ -1197,7 +1197,7 @@ class CodeFunctionWithUnits(CodeFunction):
             self.interface.channel.send_message(call_id, self.specification.id, dtype_to_arguments = dtype_to_values, encoded_units = encoded_units)
             
             dtype_to_result , output_encoded_units = self.interface.channel.recv_message(call_id, self.specification.id, handle_as_array, has_units = True)
-        except Exception, ex:
+        except Exception as ex:
             CODE_LOG.info("Exception when calling function '{0}', of code '{1}', exception was '{2}'".format(self.specification.name, type(self.interface).__name__, ex))
             raise exceptions.CodeException("Exception when calling function '{0}', of code '{1}', exception was '{2}'".format(self.specification.name, type(self.interface).__name__, ex))
         
@@ -1224,7 +1224,7 @@ class CodeFunctionWithUnits(CodeFunction):
         def handle_result(function):
             try:
                 dtype_to_result, output_encoded_units = function()
-            except Exception, ex:
+            except Exception as ex:
                 raise exceptions.CodeException("Exception when calling legacy code '{0}', exception was '{1}'".format(self.specification.name, ex))
             output_units = self.convert_floats_to_units(output_encoded_units)
             return self.converted_results(dtype_to_result, handle_as_array, output_units)
@@ -1241,7 +1241,7 @@ class CodeFunctionWithUnits(CodeFunction):
                 count = 0
                 for argument_value in argument_values:
                     try:
-                        if not isinstance(argument_value, basestring):
+                        if not isinstance(argument_value, str):
                             count = max(count, len(argument_value))
                     except:
                         count = max(count, 0)
@@ -1275,7 +1275,7 @@ class CodeFunctionWithUnits(CodeFunction):
         result = OrderedDictionary()
         dtype_to_array = {}
         
-        for key, value in dtype_to_result.iteritems():
+        for key, value in dtype_to_result.items():
             dtype_to_array[key] = list(reversed(value))
         
         if not result_type is None:
@@ -1300,7 +1300,7 @@ class CodeFunctionWithUnits(CodeFunction):
         dtype_to_values = self.specification.new_dtype_to_values()
         units = [None] * len(self.specification.input_parameters)
         
-        input_parameters_seen = set(map(lambda x : x.name, self.specification.input_parameters))
+        input_parameters_seen = set([x.name for x in self.specification.input_parameters])
         names_in_argument_list = set([])
         for index, argument in enumerate(arguments_list):
             parameter = self.specification.input_parameters[index]

@@ -66,7 +66,7 @@ class Cosmology(object):
     self.omegam = omega - (omegak + omegar + omegal) 
     self.n=n
     
-    a=amax*(numpy.array(range(self.n+1))/float(self.n))**2
+    a=amax*(numpy.array(list(range(self.n+1)))/float(self.n))**2
     t=[0.]
     dtda=[0.]
     dadt=[0.]
@@ -153,8 +153,8 @@ def convert_quantity_from_comoving_to_physical(original, redshift, hubble_parame
 
 if __name__=="__main__":  
   cosmo=Cosmology(amax=2)
-  print cosmo.agefromz(0.).in_(units.Myr)
-  print cosmo.agefroma(1.).in_(units.Gyr)
-  print cosmo.afromage(cosmo.agefroma(1.5))
+  print(cosmo.agefromz(0.).in_(units.Myr))
+  print(cosmo.agefroma(1.).in_(units.Gyr))
+  print(cosmo.afromage(cosmo.agefroma(1.5)))
 
 

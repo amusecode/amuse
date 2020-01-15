@@ -226,8 +226,8 @@ class CalculateLinearWave1D(object):
             self.start_grids.append(inmem)
             from_model_to_code = inmem.new_channel_to(x)
             from_model_to_code.copy()
-
-        print "start evolve"
+        
+        print("start evolve")
         dt = time / self.number_of_steps
         t = dt
         step = 1
@@ -238,18 +238,19 @@ class CalculateLinearWave1D(object):
                 instance.parameters.must_evolve_to_exact_time = False
             instance.evolve_model(t)
 
+
             # ,  instance.parameters.must_evolve_to_exact_time
-            print "time : ", t, instance.model_time
+            print("time : ", t, instance.model_time)
 
             t += dt
             step += 1
 
-        print "copying results"
+        print("copying results")
         result = []
         for x in instance.itergrids():
             result.append(x.copy())
 
-        print "terminating code"
+        print("terminating code")
         instance.stop()
 
         return result
@@ -274,7 +275,7 @@ def main():
     rho0 = model.start_grids[0].rho[..., ..., 0].value_in(density)
     rho = grids[0].rho[..., ..., 0].value_in(density)
     drho = rho - rho0
-    print drho.sum(), rho[0][0], rho0[0][0], drho[0][0]
+    print(drho.sum(), rho[0][0], rho0[0][0], drho[0][0])
     x = grids[0].x[..., ..., 0].value_in(length)
     y = grids[0].y[..., ..., 0].value_in(length)
     figure = pyplot.figure(figsize=(10, 10))

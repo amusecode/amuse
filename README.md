@@ -1,9 +1,17 @@
-This directory contains the AMUSE software. With AMUSE you can write
+# AMUSE: The Astrophysical Multipurpose Software Environment
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3466805.svg)](https://doi.org/10.5281/zenodo.3466805)
+[![PyPI version](https://badge.fury.io/py/amuse.svg)](https://badge.fury.io/py/amuse)
+
+This repository contains the AMUSE software. With AMUSE you can write
 scripts to simulate astrophysical problems in different domains.
 
-The documentation and more info can be found at:
+The project website is:
 
-* http://www.amusecode.org
+* www.amusecode.org
+
+and the documentation can be found at:
+
+* https://amuse.readthedocs.io
 
 Getting Started
 ===============
@@ -41,9 +49,10 @@ require the Apple Developer Tools and Xcode to be installed).
 Python
 ======
 
-AMUSE needs Python 2, version >2.7, or Python3 version >=3.5 installed
-preferably with pip and virtualenv. It may be necessary to update pip
-to a recent version.
+AMUSE needs Python 3 version >=3.5 installed preferably with pip and 
+virtualenv. It may be necessary to update pip to a recent version.
+If you cannot use Python 3, legacy support for Python 2 is available in the 
+AMUSE 12 release and the python2 branch.
 
 Installing Prerequisites
 ========================

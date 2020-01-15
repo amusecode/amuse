@@ -3,13 +3,10 @@ import re
 import os
 import fnmatch
 
-if sys.hexversion > 0x03000000:
-    from os import walk as py_walk
-    def walk(top, callback, args):
-        for root, dirs, files in py_walk(top):
-            callback(args, root, files)
-else:
-    from os.path import walk
+from os import walk as py_walk
+def walk(top, callback, args):
+    for root, dirs, files in py_walk(top):
+        callback(args, root, files)
 
 def find_data_files(srcdir, destdir, *wildcards, **kw):
     """

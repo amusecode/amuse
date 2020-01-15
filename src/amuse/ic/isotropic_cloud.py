@@ -186,4 +186,4 @@ def new_isotropic_cloud(number_of_particles, *list_arguments, **keyword_argument
 
 if __name__ in ('__main__'):
   cloud = new_isotropic_cloud(10)
-  print cloud
+  print(cloud)

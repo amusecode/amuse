@@ -1,4 +1,4 @@
-from __future__ import print_function
+
 
 __revision__ = "$Id:$"
 
@@ -16,11 +16,11 @@ except ImportError:
     warnings.warn( "numpy etc needed during build; operation may fail" )
 
 try:
-    import ConfigParser as configparser
-    from StringIO import StringIO
-except ImportError:
     import configparser
     from io import StringIO
+except ImportError:
+    import ConfigParser as configparser
+    from StringIO import StringIO
 
 from stat import ST_MODE
 from distutils import sysconfig
@@ -32,9 +32,6 @@ from distutils import log
 from distutils import spawn
 from distutils import file_util
 from distutils.errors import DistutilsError
-if sys.hexversion > 0x03000000:
-    from distutils.util import run_2to3
-    from distutils.command.build_py import build_py_2to3
 from distutils.command.build import build
 from distutils.command.clean import clean
 from distutils.command.install import install
@@ -63,11 +60,6 @@ def pyfiles_in_build_dir(builddir):
     for x in module_files:
         result.append(os.path.abspath(x))
     return result
-
-def run_2to3_on_build_dirs(paths, target, src):
-    for dir in paths:
-        buildir = os.path.join(target,  os.path.relpath(dir, src))
-        run_2to3(pyfiles_in_build_dir(buildir))
 
 class InstallLibraries(Command):
     user_options = [
@@ -384,8 +376,9 @@ class CodeCommand(Command):
         
         if fcompiler:    
             compiler = fcompiler.new_fcompiler(requiref90=True)
-            fortran_executable = compiler.executables['compiler_f90'][0]
-            self.environment['FORTRAN'] = fortran_executable
+            if compiler is not None:
+                fortran_executable = compiler.executables['compiler_f90'][0]
+                self.environment['FORTRAN'] = fortran_executable
     
     
     
@@ -718,8 +711,7 @@ class CodeCommand(Command):
     def get_special_targets(self, name, directory, environment):
         process = Popen(['make','-qp', '-C', directory], env = environment, stdout = PIPE, stderr = PIPE)
         stdoutstring, stderrstring = process.communicate()
-        if sys.hexversion > 0x03000000:
-            stdoutstring = str(stdoutstring, 'utf-8')
+        stdoutstring = str(stdoutstring, 'utf-8')
         lines = stdoutstring.splitlines()
         result = []
         for line in lines:
@@ -765,10 +757,7 @@ class CodeCommand(Command):
             if not buildlogfile is None:
                 buildlogfile.write(line)
             self.announce(line[:-1], log.DEBUG)
-            if sys.hexversion > 0x03000000:
-                stringio.write(str(line, 'utf-8'))
-            else:
-                stringio.write(line)
+            stringio.write(str(line, 'utf-8'))
             
         result = process.wait()
         content = stringio.getvalue()
@@ -924,8 +913,6 @@ class BuildCodes(CodeCommand):
         if not self.lib_dir == self.lib_src_dir:
             self.copy_build_prereq_to_build_dir()
             self.copy_lib_to_build_dir()
-            if sys.hexversion > 0x03000000:
-                run_2to3_on_build_dirs(self.makefile_paths(self.lib_src_dir), self.lib_dir,self.lib_src_dir)
                           
         for x in self.makefile_paths(self.lib_dir):
             
@@ -949,8 +936,6 @@ class BuildCodes(CodeCommand):
             
         if not self.codes_dir == self.codes_src_dir:
             self.copy_codes_to_build_dir()
-            if sys.hexversion > 0x03000000:
-                run_2to3_on_build_dirs(self.makefile_paths(self.codes_src_dir), self.codes_dir,self.codes_src_dir)
         
         #environment.update(self.environment)
         makefile_paths = list(self.makefile_paths(self.codes_dir))
@@ -1272,9 +1257,6 @@ def setup_commands():
         'develop' : Develop,
         'develop_build' : BuildCodes_inplace
     }
-    
-    if sys.hexversion > 0x03000000:
-        mapping_from_command_name_to_command_class['build_py'] = build_py_2to3
     
     build.sub_commands.append(('build_codes', None))
     Clean.sub_commands.append(('clean_codes', None))

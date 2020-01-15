@@ -71,20 +71,21 @@ if __name__ in ('__main__', '__plot__'):
 
     # evolve module for some time
     for i in range(1, 100):
-        print 'starting evolve to time = ', (i * 0.1 | units.Myr)
+        print('starting evolve to time = ', (i * 0.1 | units.Myr))
         target_time = i * 0.1 | units.Myr
         gravity.evolve_model(target_time)
         from_gravity_to_local.copy()
         stellar_evolution.evolve_model(target_time)
         from_stellar_evolution_to_local.copy()
         from_local_to_viz.copy_attributes(
-            ["x", "y", "z", "red", "green", "blue"])
+            ["x", "y", "z", "red", "green", "blue"]
+        )
         visualization.particles.radius = (
-                stellar_evolution.particles.radius.sqrt()
-                * (1e4 | units.parsec).sqrt()
-                )
-
-        print 'updating visualization to time = ', target_time
+            stellar_evolution.particles.radius.sqrt()
+            * (1e4 | units.parsec).sqrt()
+        )
+        
+        print('updating visualization to time = ', target_time)
         visualization.store_view(target_time)
 
     visualization.stop()

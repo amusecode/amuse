@@ -595,7 +595,7 @@ class DistributedAmuse(CommonCode):
             options.GlobalOptions.instance().override_value_for_option("channel_type", "distributed")
         else:
             if DistributedChannel.default_distributed_instance is self \
-                     and options.GlobalOptions.instance().overriden_options.has_key("channel_type"):
+                     and "channel_type" in options.GlobalOptions.instance().overriden_options:
                 DistributedChannel.default_distributed_instance=None
                 del options.GlobalOptions.instance().overriden_options["channel_type"]
             
@@ -603,7 +603,7 @@ class DistributedAmuse(CommonCode):
     def cleanup_code(self):
         if DistributedChannel.default_distributed_instance is self:
             DistributedChannel.default_distributed_instance=None
-            if options.GlobalOptions.instance().overriden_options.has_key("channel_type"):
+            if "channel_type" in options.GlobalOptions.instance().overriden_options:
                 del options.GlobalOptions.instance().overriden_options["channel_type"]
                 
         self.overridden().cleanup_code()
@@ -750,7 +750,7 @@ class DistributedAmuse(CommonCode):
         old_ids = set(self._workers.get_all_indices_in_store())
         number_of_workers = self.get_number_of_workers()
         if not number_of_workers == 0:
-            new_ids = set(self.get_worker_ids(range(number_of_workers)))
+            new_ids = set(self.get_worker_ids(list(range(number_of_workers))))
         else:
             new_ids=set()
         

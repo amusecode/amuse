@@ -356,7 +356,7 @@ class StoppingCondition(object):
         return self.conditions.code.is_stopping_condition_set(self.type) == 1
 
     def get_set_condition_indices(self, index_in_condition):
-        indices = range(self.conditions.code.get_number_of_stopping_conditions_set())
+        indices = list(range(self.conditions.code.get_number_of_stopping_conditions_set()))
         if len(indices) == 0:
             return []
         types, number_of_particles = self.conditions.code.get_stopping_condition_info(indices)

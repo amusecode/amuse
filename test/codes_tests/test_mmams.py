@@ -19,7 +19,7 @@ default_options = dict()
 class TestMMAMSInterface(TestWithMPI):
     
     def test1(self):
-        print "Test 1: initialization of the interface"
+        print("Test 1: initialization of the interface")
         instance = MMAMSInterface(**default_options)
         error = instance.initialize_code()
         self.assertEqual(error, 0)
@@ -28,7 +28,7 @@ class TestMMAMSInterface(TestWithMPI):
         instance.stop()
     
     def test2(self):
-        print "Test 2: define a new particle"
+        print("Test 2: define a new particle")
         instance = MMAMSInterface(**default_options)
         self.assertEqual(instance.initialize_code(), 0)
         self.assertEqual(instance.commit_parameters(), 0)
@@ -79,7 +79,7 @@ class TestMMAMSInterface(TestWithMPI):
         instance.stop()
     
     def test3(self):
-        print "Test 3: read a new particle from a usm file"
+        print("Test 3: read a new particle from a usm file")
         instance = MMAMSInterface(**default_options)
         self.assertEqual(instance.initialize_code(), 0)
         self.assertEqual(instance.commit_parameters(), 0)
@@ -114,7 +114,7 @@ class TestMMAMSInterface(TestWithMPI):
         instance.stop()
     
     def slowtest4(self):
-        print "Test 4: merge particles (from usm files)"
+        print("Test 4: merge particles (from usm files)")
         instance = MMAMSInterface(**default_options)
         self.assertEqual(instance.initialize_code(), 0)
         self.assertEqual(instance.set_dump_mixed_flag(0), 0)
@@ -153,7 +153,7 @@ class TestMMAMSInterface(TestWithMPI):
         instance.stop()
     
     def test5(self):
-        print "Test 5: parameters"
+        print("Test 5: parameters")
         instance = MMAMSInterface(**default_options)
         self.assertEqual(instance.initialize_code(), 0)
         self.assertEqual(instance.commit_parameters(), 0)
@@ -195,7 +195,7 @@ class TestMMAMSInterface(TestWithMPI):
 class TestMMAMS(TestWithMPI):
     
     def test1(self):
-        print "Test 1: initialization of the interface"
+        print("Test 1: initialization of the interface")
         instance = MMAMS(**default_options)
         instance.initialize_code()
         instance.commit_parameters()
@@ -204,7 +204,7 @@ class TestMMAMS(TestWithMPI):
         instance.stop()
     
     def test2(self):
-        print "Test 2: define a new particle"
+        print("Test 2: define a new particle")
         stars = Particles(4)
         stars.mass = [1.0, 2.0, 3.0, 4.0] | units.MSun
         
@@ -250,7 +250,7 @@ class TestMMAMS(TestWithMPI):
         instance.stop()
     
     def test3(self):
-        print "Test 3: read a new particle from a usm file"
+        print("Test 3: read a new particle from a usm file")
         instance = MMAMS(**default_options)
         instance.initialize_code()
         instance.commit_parameters()
@@ -280,7 +280,7 @@ class TestMMAMS(TestWithMPI):
         instance.stop()
     
     def slowtest4(self):
-        print "Test 4: merge particles (from usm files)"
+        print("Test 4: merge particles (from usm files)")
 #        instance = MMAMS(debugger = 'gdb', **default_options)
         instance = MMAMS(**default_options)
         instance.initialize_code()
@@ -307,27 +307,27 @@ class TestMMAMS(TestWithMPI):
         instance.stop()
     
     def test5(self):
-        print "Test 5: parameters"
+        print("Test 5: parameters")
         instance = MMAMS(**default_options)
         instance.initialize_code()
         
         for par, value in [('dump_mixed_flag', True), ('do_shock_heating_flag', True),
                 ('create_new_key', True)]:
-            print "1", instance.parameters
+            print("1", instance.parameters)
             self.assertTrue(value is getattr(instance.parameters, par))
             setattr(instance.parameters, par, not value)
-            print "2", instance.parameters
+            print("2", instance.parameters)
             self.assertFalse(value is getattr(instance.parameters, par))
         
         for par, value in [('target_n_shells_mixing', 200), ('target_n_shells', 10000)]:
-            self.assertEquals(value, getattr(instance.parameters, par))
+            self.assertEqual(value, getattr(instance.parameters, par))
             setattr(instance.parameters, par, 1)
-            self.assertEquals(1, getattr(instance.parameters, par))
+            self.assertEqual(1, getattr(instance.parameters, par))
         
         instance.stop()
     
     def slowtest6(self):
-        print "Test 6: MMAMS with MESA particles - match composition only"
+        print("Test 6: MMAMS with MESA particles - match composition only")
         stars = Particles(2)
         stars.mass = [20.0, 8.0] | units.MSun
         
@@ -340,7 +340,7 @@ class TestMMAMS(TestWithMPI):
         
         stellar_evolution = self.new_instance(MESA)
         if stellar_evolution is None:
-            print "MESA was not built. Skipping test."
+            print("MESA was not built. Skipping test.")
             return
         stellar_evolution.initialize_code() 
         stellar_evolution.commit_parameters()
@@ -363,7 +363,7 @@ class TestMMAMS(TestWithMPI):
             mu_profile          = stellar_evolution.particles[i].get_mu_profile(number_of_zones = number_of_zones)
             composition_profile = stellar_evolution.particles[i].get_chemical_abundance_profiles(number_of_zones = number_of_zones)
             species_names       = stellar_evolution.particles[i].get_names_of_species()
-            self.assertEquals(species_names, ['h1', 'he3', 'he4', 'c12', 'n14', 'o16', 'ne20', 'mg24'])
+            self.assertEqual(species_names, ['h1', 'he3', 'he4', 'c12', 'n14', 'o16', 'ne20', 'mg24'])
             
             instance.particles[i].add_shell(mass_profile, cumul_mass_profile, radius_profile, density_profile, 
                 pressure_profile, temperature_profile, luminosity_profile, mu_profile, composition_profile[0], 
@@ -425,18 +425,18 @@ class TestMMAMS(TestWithMPI):
         merged_in_code.set_chemical_abundance_profiles(new_composition)
         for i in range(4):
             stellar_evolution.evolve_model(keep_synchronous = False)
-            print stellar_evolution.particles
+            print(stellar_evolution.particles)
         
         stellar_evolution.stop()
     
     def slowtest7(self):
-        print "Test 7: MMAMS with MESA particles - import product into MESA"
+        print("Test 7: MMAMS with MESA particles - import product into MESA")
         stars = Particles(2)
         stars.mass = [20.0, 8.0] | units.MSun
         
         stellar_evolution = self.new_instance(MESA)
         if stellar_evolution is None:
-            print "MESA was not built. Skipping test."
+            print("MESA was not built. Skipping test.")
             return
         stellar_evolution.initialize_code() 
         stellar_evolution.commit_parameters()
@@ -447,7 +447,7 @@ class TestMMAMS(TestWithMPI):
         if os.path.exists(os.path.join(get_path_to_results(), "test_mmams_7.pkl")):
            # Remove the next line to speed-up, and only test MESA loading the merger product
            os.remove(os.path.join(get_path_to_results(), "test_mmams_7.pkl"))
-           print "",
+           print("", end=' ')
         
         if os.path.exists(os.path.join(get_path_to_results(), "test_mmams_7.pkl")):
             with open(os.path.join(get_path_to_results(), "test_mmams_7.pkl"), 'r') as in_file:
@@ -476,7 +476,7 @@ class TestMMAMS(TestWithMPI):
                 mu_profile          = stellar_evolution.particles[i].get_mu_profile(number_of_zones = number_of_zones)
                 composition_profile = stellar_evolution.particles[i].get_chemical_abundance_profiles(number_of_zones = number_of_zones)
                 species_names       = stellar_evolution.particles[i].get_names_of_species()
-                self.assertEquals(species_names, ['h1', 'he3', 'he4', 'c12', 'n14', 'o16', 'ne20', 'mg24'])
+                self.assertEqual(species_names, ['h1', 'he3', 'he4', 'c12', 'n14', 'o16', 'ne20', 'mg24'])
                 
                 instance.particles[i].add_shell(mass_profile, cumul_mass_profile, radius_profile, density_profile, 
                     pressure_profile, temperature_profile, luminosity_profile, mu_profile, composition_profile[0], 
@@ -531,28 +531,28 @@ class TestMMAMS(TestWithMPI):
             with open(os.path.join(get_path_to_results(), "test_mmams_7.pkl"), 'w') as out_file:
                 pickle.dump(stellar_model, out_file)
         
-        print stellar_model['mass'][[0, -1]]
-        print stellar_model['radius'][[0, -1]]
-        print stellar_model['X_H'][[0, -1]]
+        print(stellar_model['mass'][[0, -1]])
+        print(stellar_model['radius'][[0, -1]])
+        print(stellar_model['X_H'][[0, -1]])
         self.assertAlmostEqual(stellar_model['mass'][[0, -1]],        [0.0263, 25.705] | units.MSun, 1)
         self.assertAlmostEqual(stellar_model['radius'][[0, -1]],      [0.0328,  7.674] | units.RSun, 1)
         self.assertAlmostEqual(stellar_model['X_H'][[0, -1]],         [0.6733, 0.6999] | units.none, 2)
         stellar_evolution.new_particle_from_model(stellar_model, 10.0 | units.Myr)
-        print stellar_evolution.particles
+        print(stellar_evolution.particles)
         for i in range(10):
             stellar_evolution.evolve_model(keep_synchronous = False)
-            print stellar_evolution.particles
+            print(stellar_evolution.particles)
         stellar_evolution.stop()
     
     def slowtest8(self):
-        print "Test 8: MMAMS with MESA particles - multiple mergers"
+        print("Test 8: MMAMS with MESA particles - multiple mergers")
         number_of_stars = 4
         stars = Particles(number_of_stars)
-        stars.mass = range(20, 20+number_of_stars) | units.MSun
+        stars.mass = list(range(20, 20+number_of_stars)) | units.MSun
         
         stellar_evolution = self.new_instance(MESA)
         if stellar_evolution is None:
-            print "MESA was not built. Skipping test."
+            print("MESA was not built. Skipping test.")
             return
         stellar_evolution.initialize_code() 
         stellar_evolution.commit_parameters()
@@ -566,7 +566,7 @@ class TestMMAMS(TestWithMPI):
         
         while len(stellar_evolution.particles) > 1:
             to_be_merged = [stellar_evolution.particles[len(stellar_evolution.particles)-1], stellar_evolution.particles[len(stellar_evolution.particles)-2]]
-            print "Merging particles with mass", to_be_merged[0].mass, "and", to_be_merged[1].mass
+            print("Merging particles with mass", to_be_merged[0].mass, "and", to_be_merged[1].mass)
             
             merge_product = Particle()
             for i in [0, 1]:
@@ -597,28 +597,28 @@ class TestMMAMS(TestWithMPI):
                 
             self.assertEqual(len(instance.merge_products)+len(stellar_evolution.particles), number_of_stars-2)
             new_merge_product = instance.merge_products.add_particle(merge_product)
-            print "Successfully merged particles. number_of_zones:", new_merge_product.number_of_zones
+            print("Successfully merged particles. number_of_zones:", new_merge_product.number_of_zones)
             self.assertEqual(len(instance.merge_products)+len(stellar_evolution.particles), number_of_stars-1)
             
             new_merge_product_model = new_merge_product.get_internal_structure()
             stellar_evolution.new_particle_from_model(new_merge_product_model, 0 | units.yr)
-            print stellar_evolution.particles
+            print(stellar_evolution.particles)
             self.assertEqual(len(instance.merge_products)+len(stellar_evolution.particles), number_of_stars)
             for i in range(10):
                 stellar_evolution.evolve_model(keep_synchronous = False)
-            print stellar_evolution.particles
+            print(stellar_evolution.particles)
 
         stellar_evolution.stop()
         instance.stop()
     
     def slowtest9(self):
-        print "Test 9: MMAMS with MESA particles - evolved stars"
+        print("Test 9: MMAMS with MESA particles - evolved stars")
         stars = Particles(2)
         stars.mass = [20.0, 8.0] | units.MSun
         
         stellar_evolution = self.new_instance(MESA)
         if stellar_evolution is None:
-            print "MESA was not built. Skipping test."
+            print("MESA was not built. Skipping test.")
             return
         stellar_evolution.initialize_code()
         stellar_evolution.parameters.min_timestep_stop_condition = 1 | units.yr
@@ -629,8 +629,8 @@ class TestMMAMS(TestWithMPI):
             stellar_evolution.particles[0].evolve_for(1.0 | units.Gyr)
         except AmuseException:
             stellar_evolution.particles[1].evolve_for(stellar_evolution.particles[0].age)
-            print "Evolved stars to", stellar_evolution.particles.age
-            print "Radius:", stellar_evolution.particles.radius
+            print("Evolved stars to", stellar_evolution.particles.age)
+            print("Radius:", stellar_evolution.particles.radius)
         
         instance = MMAMS(**default_options)
         instance.initialize_code()
@@ -654,7 +654,7 @@ class TestMMAMS(TestWithMPI):
             pressure_profile    = stellar_evolution.particles[i].get_pressure_profile(number_of_zones = number_of_zones)
             composition_profile = stellar_evolution.particles[i].get_chemical_abundance_profiles(number_of_zones = number_of_zones)
             species_names       = stellar_evolution.particles[i].get_names_of_species()
-            self.assertEquals(species_names, ['h1', 'he3', 'he4', 'c12', 'n14', 'o16', 'ne20', 'mg24', 'si28', 's32', ''][:-(1+2*i)])
+            self.assertEqual(species_names, ['h1', 'he3', 'he4', 'c12', 'n14', 'o16', 'ne20', 'mg24', 'si28', 's32', ''][:-(1+2*i)])
             
             instance.particles[i].add_shell(mass_profile, cumul_mass_profile, radius_profile, density_profile, 
                 pressure_profile, temperature_profile, luminosity_profile, mu_profile, composition_profile[0], 
@@ -671,9 +671,9 @@ class TestMMAMS(TestWithMPI):
                 )
             )
         
-        print stellar_model[0].mass[[0, -1]]
-        print stellar_model[0].radius[[0, -1]]
-        print stellar_model[0].X_H[[0, -1]]
+        print(stellar_model[0].mass[[0, -1]])
+        print(stellar_model[0].radius[[0, -1]])
+        print(stellar_model[0].X_H[[0, -1]])
         
         self.assertEqual(instance.number_of_particles, 2)
         merge_product = Particle()
@@ -683,9 +683,9 @@ class TestMMAMS(TestWithMPI):
         self.assertEqual(instance.number_of_particles, 3)
         
         mmams_merged_model = instance.merge_products[0].get_internal_structure()
-        print mmams_merged_model.mass[[0, -1]]
-        print mmams_merged_model.radius[[0, -1]]
-        print mmams_merged_model.X_H[[0, -1]]
+        print(mmams_merged_model.mass[[0, -1]])
+        print(mmams_merged_model.radius[[0, -1]])
+        print(mmams_merged_model.X_H[[0, -1]])
         stellar_model = dict(
             mass        = mmams_merged_model.mass,
             radius      = mmams_merged_model.radius,
@@ -707,14 +707,14 @@ class TestMMAMS(TestWithMPI):
         stellar_evolution.parameters.min_timestep_stop_condition = 1.0e-6 | units.s
         merged_in_code = stellar_evolution.new_particle_from_model(stellar_model, 0.0 | units.Myr)
         stellar_evolution.particles.remove_particles(stars)
-        print stellar_evolution.particles
+        print(stellar_evolution.particles)
         for i in range(10):
             stellar_evolution.evolve_model()
-        print stellar_evolution.particles
+        print(stellar_evolution.particles)
         stellar_evolution.stop()
     
     def xtest10(self):
-        print "Test 10: MMAMS with EVtwin particles - import product into EVtwin (WIP)"
+        print("Test 10: MMAMS with EVtwin particles - import product into EVtwin (WIP)")
         stars = Particles(2)
         stars.mass = [20.0, 8.0] | units.MSun
         
@@ -731,7 +731,7 @@ class TestMMAMS(TestWithMPI):
         stellar_evolution.particles.add_particles(stars)
         stellar_evolution.commit_particles()
         stellar_evolution.evolve_model(2 | units.Myr)
-        print stellar_evolution.particles
+        print(stellar_evolution.particles)
         
         for i in [0, 1]:
             stellar_model = stellar_evolution.particles[i].get_internal_structure()
@@ -754,20 +754,20 @@ class TestMMAMS(TestWithMPI):
         self.assertIsOfOrder(instance.merge_products[0].number_of_zones, instance.parameters.target_n_shells_mixing)
         
         stellar_model = instance.merge_products[0].get_internal_structure()
-        print stellar_model.mass[[0, -1]]
-        print stellar_model.radius[[0, -1]]
-        print stellar_model.X_H[[0, -1]]
+        print(stellar_model.mass[[0, -1]])
+        print(stellar_model.radius[[0, -1]])
+        print(stellar_model.X_H[[0, -1]])
         
         stellar_evolution.new_particle_from_model(stellar_model, 10.0 | units.Myr)
         instance.stop()
-        print stellar_evolution.particles
+        print(stellar_evolution.particles)
         for i in range(10):
             stellar_evolution.evolve_model(keep_synchronous = False)
-        print stellar_evolution.particles
+        print(stellar_evolution.particles)
         stellar_evolution.stop()
     
     def slowtest11(self):
-        print "Test 11: MMAMS with MESA particles of various masses/ages"
+        print("Test 11: MMAMS with MESA particles of various masses/ages")
         masses = [1.0, 5.0, 20.0, 42.0, 80.0, 200.0] | units.MSun
         number_of_stars = len(masses)
         stars = Particles(number_of_stars)
@@ -775,7 +775,7 @@ class TestMMAMS(TestWithMPI):
         
         stellar_evolution = self.new_instance(MESA)
         if stellar_evolution is None:
-            print "MESA was not built. Skipping test."
+            print("MESA was not built. Skipping test.")
             return
         stellar_evolution.parameters.metallicity = 0.0
         mesa_particles = stellar_evolution.particles.add_particles(stars)
@@ -812,9 +812,9 @@ class TestMMAMS(TestWithMPI):
         stellar_models = []
         crashed = False
         for (index_1, index_2) in itertools.combinations(range(number_of_stars), 2):
-            print
-            print masses[index_1], masses[index_2]
-            print
+            print()
+            print(masses[index_1], masses[index_2])
+            print()
             self.assertEqual(instance.number_of_particles, len(stellar_models))
             
             colliding = instance.particles.add_particles(stars[[index_1, index_2]])
@@ -832,7 +832,7 @@ class TestMMAMS(TestWithMPI):
                 self.assertEqual(instance.number_of_particles, 1 + len(stellar_models))
                 stellar_models.append(instance.particles[len(stellar_models)].get_internal_structure().copy())
             except CodeException as ex:
-                print ex
+                print(ex)
                 crashed = True
                 break
             
@@ -840,11 +840,11 @@ class TestMMAMS(TestWithMPI):
             instance.stop()
         
         for stellar_model in stellar_models:
-            print "mass:", stellar_model.mass[-1]
-            print "radius:", stellar_model.radius[-1]
-            print "X_H:", stellar_model.X_H[[0, -1]]
+            print("mass:", stellar_model.mass[-1])
+            print("radius:", stellar_model.radius[-1])
+            print("X_H:", stellar_model.X_H[[0, -1]])
         
-        print "Storing the merger products in", os.path.join(get_path_to_results(), "test_mmams_11.pkl")
+        print("Storing the merger products in", os.path.join(get_path_to_results(), "test_mmams_11.pkl"))
         mmams_merged_models = []
         for mmams_merged_model in stellar_models:
             mmams_merged_models.append(dict(
@@ -867,34 +867,34 @@ class TestMMAMS(TestWithMPI):
             pickle.dump(mmams_merged_models, out_file)
     
     def slowtest11b(self):
-        print "Test 11b: Continue the stellar evolution of the products from test 11 with MESA"
+        print("Test 11b: Continue the stellar evolution of the products from test 11 with MESA")
         if os.path.exists(os.path.join(get_path_to_results(), "test_mmams_11.pkl")):
             with open(os.path.join(get_path_to_results(), "test_mmams_11.pkl"), 'r') as in_file:
                 stellar_models = pickle.load(in_file)
         else:
             return
-        print len(stellar_models)
+        print(len(stellar_models))
         
         stellar_evolution = self.new_instance(MESA)
         if stellar_evolution is None:
-            print "MESA was not built. Skipping test."
+            print("MESA was not built. Skipping test.")
             return
         stellar_evolution.initialize_code() 
         stellar_evolution.parameters.metallicity = 0.0
         stellar_evolution.commit_parameters()
         for i, stellar_model in enumerate(stellar_models):
             stellar_evolution.model_time = 0 | units.yr
-            print "\n\n\n***", i, "***", stellar_model['mass'][-1]
+            print("\n\n\n***", i, "***", stellar_model['mass'][-1])
             stellar_evolution.particles.remove_particles(stellar_evolution.particles)
             merged_in_code = stellar_evolution.new_particle_from_model(stellar_model, 0.0 | units.Myr)
-            print stellar_evolution.particles
+            print(stellar_evolution.particles)
             stellar_evolution.evolve_model(1000 | units.yr)
-            print stellar_evolution.particles
+            print(stellar_evolution.particles)
         
         stellar_evolution.stop()
     
     def test12(self):
-        print "Test 12: merge particles, as fast/crude as possible"
+        print("Test 12: merge particles, as fast/crude as possible")
         stars = Particles(2)
         stars.mass = [1.0, 2.0] | units.MSun
         
@@ -1032,7 +1032,7 @@ class StellarEvolutionCodeWithInternalStructureForTesting(object):
 class TestMMAMSWithCollisionHandler(TestWithMPI):
     
     def test1(self):
-        print "Test 1: MMAMS in CollisionHandler"
+        print("Test 1: MMAMS in CollisionHandler")
         self.assertRaises(AmuseException, CollisionHandler, MMAMS, expected_message=
             "MMAMS requires a stellar evolution code: CollisionHandler(..., stellar_evolution_code=x)")
         handler = CollisionHandler(
@@ -1042,7 +1042,7 @@ class TestMMAMSWithCollisionHandler(TestWithMPI):
         )
     
     def test2(self):
-        print "Test 2: merge particles with CollisionHandler and MMAMS class, as fast/crude as possible"
+        print("Test 2: merge particles with CollisionHandler and MMAMS class, as fast/crude as possible")
         stellar_evolution = StellarEvolutionCodeWithInternalStructureForTesting()
         self.assertEqual(len(stellar_evolution.particles), 2)
         handler = CollisionHandler(
@@ -1065,7 +1065,7 @@ class TestMMAMSWithCollisionHandler(TestWithMPI):
         self.assertEqual(handler.collision_code, MMAMS)
     
     def test3(self):
-        print "Test 3: merge particles with CollisionHandler and MMAMS instance, as fast/crude as possible"
+        print("Test 3: merge particles with CollisionHandler and MMAMS instance, as fast/crude as possible")
         stellar_evolution = StellarEvolutionCodeWithInternalStructureForTesting()
         self.assertEqual(len(stellar_evolution.particles), 2)
         collision = MMAMS()
@@ -1091,7 +1091,7 @@ class TestMMAMSWithCollisionHandler(TestWithMPI):
         self.assertEqual(handler.collision_code.get_name_of_current_state(), 'STOPPED')
     
     def test4(self):
-        print "Test 4: merge particles without get_mass_profile, as fast/crude as possible"
+        print("Test 4: merge particles without get_mass_profile, as fast/crude as possible")
         stellar_evolution = StellarEvolutionCodeWithInternalStructureForTesting(
             has_get_mass_profile=False
         )
@@ -1116,7 +1116,7 @@ class TestMMAMSWithCollisionHandler(TestWithMPI):
         self.assertEqual(handler.collision_code, MMAMS)
     
     def slowtest5(self):
-        print "Test 5: merge MESA particles with CollisionHandler and MMAMS class"
+        print("Test 5: merge MESA particles with CollisionHandler and MMAMS class")
         stellar_evolution = self.new_instance(MESA)
         stellar_evolution.particles.add_particles(Particles(2, mass=[20.0, 8.0] | units.MSun))
         stellar_evolution.evolve_model(2 | units.Myr)
@@ -1134,14 +1134,14 @@ class TestMMAMSWithCollisionHandler(TestWithMPI):
         self.assertEqual(len(stellar_evolution.particles), 1)
         self.assertAlmostEqual(stellar_evolution.particles[0].mass, 25.705 | units.MSun, 1)
         self.assertEqual(handler.collision_code, MMAMS)
-        print stellar_evolution.particles
+        print(stellar_evolution.particles)
         for i in range(10):
             stellar_evolution.evolve_model(keep_synchronous = False)
-            print stellar_evolution.particles
+            print(stellar_evolution.particles)
         stellar_evolution.stop()
     
     def slowtest6(self):
-        print "Test 6: merge EVtwin particles with CollisionHandler and MMAMS class"
+        print("Test 6: merge EVtwin particles with CollisionHandler and MMAMS class")
         stellar_evolution = EVtwin(redirection="none")
         stellar_evolution.particles.add_particles(Particles(2, mass=[20.0, 8.0] | units.MSun))
         stellar_evolution.evolve_model(2 | units.Myr)
@@ -1161,10 +1161,10 @@ class TestMMAMSWithCollisionHandler(TestWithMPI):
         self.assertEqual(len(stellar_evolution.particles), 1)
         self.assertAlmostEqual(stellar_evolution.particles[0].mass, 25.705 | units.MSun, 1)
         self.assertEqual(handler.collision_code, MMAMS)
-        print stellar_evolution.particles
+        print(stellar_evolution.particles)
         for i in range(10):
             stellar_evolution.evolve_model(keep_synchronous = False)
-            print stellar_evolution.particles
+            print(stellar_evolution.particles)
         stellar_evolution.stop()
     
 def stub(instance, internal_structure, current_age, key=None):

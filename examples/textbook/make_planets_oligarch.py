@@ -213,7 +213,7 @@ def make_planets(central_particle, masses, radii, density = 3 | units.g/units.cm
         x.velocity = vel + com_particle.velocity
         if False:
             two_body = Particles(particles=[com_particle, x])
-            print "dp:", (com_particle.position - two_body.center_of_mass()).as_quantity_in(units.AU)
+            print("dp:", (com_particle.position - two_body.center_of_mass()).as_quantity_in(units.AU))
             com_particle.mass = two_body.mass.sum()
             com_particle.position = two_body.center_of_mass()
             com_particle.velocity = two_body.center_of_mass_velocity()
@@ -327,10 +327,10 @@ def main(
         rng = rng)
     
     star = output[0]
-    print "Number of planets generated:", len(star.planets)
-    print "Total mass:", star.planets.mass.sum().as_quantity_in(MEarth)
+    print("Number of planets generated:", len(star.planets))
+    print("Total mass:", star.planets.mass.sum().as_quantity_in(MEarth))
     for i, planet  in enumerate(star.planets):
-        print "Planet: {0: 3d} , mass: {1: 8.3f}  MEarth, a: {2: 8.2f} AU".format(i, planet.mass.value_in(MEarth), planet.semimajor_axis.value_in(units.AU))
+        print("Planet: {0: 3d} , mass: {1: 8.3f}  MEarth, a: {2: 8.2f} AU".format(i, planet.mass.value_in(MEarth), planet.semimajor_axis.value_in(units.AU)))
     
     write_set_to_file(output, output_filename, 'hdf5', version="2.0",append_to_file = False)
     

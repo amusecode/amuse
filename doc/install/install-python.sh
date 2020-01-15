@@ -16,12 +16,12 @@ if [ ! -d ${PREFIX} ]; then
 	exit 1
 fi
 
-# Python version selection (default to Python 2)
-if [ "${1}" = "python3" ]
+# Python version selection (default to recent Python 3)
+if [ "${1}" = "python2" ]
 then
-	APPVER=3.6.5
-else
 	APPVER=2.7.15
+else
+	APPVER=3.7.3
 fi
 
 # Python
@@ -30,9 +30,9 @@ APP_DIR=Python-${APPVER}
 URL=https://www.python.org/ftp/python/${APPVER}/${APPFILE}
 
 # OpenSSL
-OPENSSLVERSION="1.1.0g"
+OPENSSLVERSION="1.1.1c"
 OPENSSLFILE=openssl-${OPENSSLVERSION}.tar.gz 
-OPENSSLURL=https://www.openssl.org/source/old/1.1.0/${OPENSSLFILE}
+OPENSSLURL=https://www.openssl.org/source/old/1.1.1/${OPENSSLFILE}
 OPENSSLDIR=openssl-${OPENSSLVERSION}
 
 # Setting up the directory structure

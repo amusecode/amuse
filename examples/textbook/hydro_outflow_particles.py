@@ -94,7 +94,7 @@ def main():
         if len(new_sph) > 0: 
             bodies.add_particles(new_sph)
             bodies.synchronize_to(hydro.gas_particles)
-        print "time=", hydro.model_time, "Ngas=", len(bodies), mgas*len(bodies)
+        print("time=", hydro.model_time, "Ngas=", len(bodies), mgas*len(bodies))
         if len(bodies) > 100:
             hydro.evolve_model(hydro.model_time+dt)
             hydro_to_framework.copy()

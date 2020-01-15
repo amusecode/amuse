@@ -60,40 +60,44 @@ def head_on_stellar_merger(
         stellar_evolution = MESA()
         stellar_evolution.initialize_code()
     except:
-        print "MESA was not built. Returning."
+        print("MESA was not built. Returning.")
         return
     stellar_evolution.commit_parameters()
     stellar_evolution.particles.add_particles(stars)
     stellar_evolution.commit_particles()
-    print "Evolving stars with MESA..."
+    print("Evolving stars with MESA...")
     stellar_evolution.evolve_model(star_age)
-
+    
     number_of_sph_particles_1 = int(
-            round(
-                number_of_sph_particles
-                * (
-                    stellar_evolution.particles[0].mass
-                    / stellar_evolution.particles.mass.sum()
-                    )
-                )
+        round(
+            number_of_sph_particles
+            * (
+                stellar_evolution.particles[0].mass
+                / stellar_evolution.particles.mass.sum()
             )
+        )
+    )
     number_of_sph_particles_2 = (
-            number_of_sph_particles - number_of_sph_particles_1
-            )
-    print "Creating initial conditions from a MESA stellar evolution model:"
+        number_of_sph_particles - number_of_sph_particles_1
+    )
+    print("Creating initial conditions from a MESA stellar evolution model:")
     print(
-            stellar_evolution.particles[0].mass,
-            "star consisting of", number_of_sph_particles_1, "particles."
-            )
+        stellar_evolution.particles[0].mass,
+        "star consisting of",
+        number_of_sph_particles_1,
+        "particles."
+    )
     sph_particles_1 = convert_stellar_model_to_SPH(
         stellar_evolution.particles[0],
         number_of_sph_particles_1,
         seed=12345
     ).gas_particles
     print(
-            stellar_evolution.particles[1].mass,
-            "star consisting of", number_of_sph_particles_2, "particles."
-            )
+        stellar_evolution.particles[1].mass,
+        "star consisting of",
+        number_of_sph_particles_2,
+        "particles."
+    )
     sph_particles_2 = convert_stellar_model_to_SPH(
         stellar_evolution.particles[1],
         number_of_sph_particles_2
@@ -124,8 +128,8 @@ def head_on_stellar_merger(
         if "parameter is read-only" not in str(exc):
             raise
     hydro_legacy_code.gas_particles.add_particles(all_sph_particles)
-
-    print "Evolving to t =", t_end, " (using", sph_code.__name__, "SPH code)."
+    
+    print("Evolving to t =", t_end, " (using", sph_code.__name__, "SPH code).")
     for time, i_step in [(i*t_end/n_steps, i) for i in range(1, n_steps+1)]:
         hydro_legacy_code.evolve_model(time)
         if not i_step % 4:
@@ -137,7 +141,7 @@ def head_on_stellar_merger(
                 "_hydro_image{0:=03}.png".format(i_step)
             )
     hydro_legacy_code.stop()
-    print "All done!\n"
+    print("All done!\n")
 
 
 def hydro_plot(view, hydro_code, image_size, figname):
@@ -193,17 +197,17 @@ def hydro_plot(view, hydro_code, image_size, figname):
 
     pyplot.figure(figsize=(image_size[0]/100.0, image_size[1]/100.0), dpi=100)
     im = pyplot.figimage(rgba, origin='lower')
-
-    pyplot.savefig(figname, transparent=True, dpi=100)
-    print "\nHydroplot was saved to: ", figname
+    
+    pyplot.savefig(figname, transparent=True, dpi = 100)
+    print("\nHydroplot was saved to: ", figname)
     pyplot.close()
 
 
-if __name__ == "__main__":
-    print "Running the simulation that formed the basis of the christmas card of Leiden Observatory of 2010."
-    print
-    print "Details:"
-    print "The ornaments are the result of a smoothed particle simulation " \
+if __name__  == "__main__":
+    print("Running the simulation that formed the basis of the christmas card of Leiden Observatory of 2010.")
+    print()
+    print("Details:")
+    print("The ornaments are the result of a smoothed particle simulation " \
         "with 50000 equal mass particles of a 310 Myr star of 0.3 solar mass, " \
         "which is ejected from a distance of 4 solar radii (left) " \
         "with a velocity of 3000 km/s into a 3.0 solar mass star at an " \
@@ -214,9 +218,9 @@ if __name__ == "__main__":
         "simulation, from top left to bottom right. The peak is created from a " \
         "blend of all snapshots. The colors of the ornaments are, red: log " \
         "of the density, green: log of the speed and for blue we used " \
-        "the log of the specific internal energy."
-    print
+        "the log of the specific internal energy.")
+    print()
     if HAS_MATPLOTLIB:
         head_on_stellar_merger()
     else:
-        print "matplotlib is not installed. Install it in the site-packages folder of your Python installation. Returning."
+        print("matplotlib is not installed. Install it in the site-packages folder of your Python installation. Returning.")

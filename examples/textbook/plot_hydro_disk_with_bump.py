@@ -31,7 +31,7 @@ def read_planetary_system(filename): #lim, snapshot_id):
         else:
             gas = bi
             break
-    print "N=", len(source), len(gas)
+    print("N=", len(source), len(gas))
     return source, gas
 
 def mu(X = None, Y = 0.25, Z = 0.02, x_ion = 0.1):
@@ -82,15 +82,15 @@ def plot_single_image(source, disk):
     alpha = 0.2
     us = disk.u
     xion = disk.xion
-    print xion
+    print(xion)
     u_min, u_max = min(us), max(us)
     xion_min, xion_max = min(xion), max(xion)
-    print "u=", u_min, u_max
+    print("u=", u_min, u_max)
     Ts = mu() / constants.kB * disk.u
     T_min = max(20|units.K, mu() / constants.kB * u_min)
     T_max = min(1800|units.K, mu() / constants.kB * u_max)
-    print "T=", T_min, T_max
-    print "X=", xion_min, xion_max
+    print("T=", T_min, T_max)
+    print("X=", xion_min, xion_max)
 
     log_u = numpy.log((us / u_min)) / numpy.log((u_max / u_min))
     clipped_log_u = numpy.minimum(numpy.ones_like(log_u), numpy.maximum(numpy.zeros_like(log_u), log_u))
@@ -159,7 +159,7 @@ def calculate_orbital_elements(star, planet):
     
 def output_single_image(filename):
     source, disk = read_planetary_system(filename)
-    print disk[0].position.in_(units.AU)
+    print(disk[0].position.in_(units.AU))
     snapshot_id = 1
     lim = 150|units.AU
     plot_single_image(source, disk)
@@ -173,16 +173,16 @@ def output_multiple_images(lim):
             if len(bi)<=20:
                 planets = bi.copy()
                 time = bi.get_timestamp()
-                print "Orbits at t=", time, planets.semimajor_axis.in_(units.AU), planets.eccentricity
+                print("Orbits at t=", time, planets.semimajor_axis.in_(units.AU), planets.eccentricity)
             else:
                 disk = bi.copy()
 
                 time = bi.get_timestamp()
-                print "Snapshot=", snapshot_id, time
+                print("Snapshot=", snapshot_id, time)
                 if image_id<0 or image_id == snapshot_id:
                     plot_single_image(planets, disk)
                 if image_id == snapshot_id:
-                    print "Stop plotting"
+                    print("Stop plotting")
                     break
         snapshot_id += 1
         filename = "planetary_system_i{0:04}.amuse".format(snapshot_id)

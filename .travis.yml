@@ -1,8 +1,9 @@
+codecov: true
 env:
   global:
-    - OMPI_MCA_rmaps_base_oversubscribe=yes
+    - OMPI_MCA_rmaps_base_oversubscribe=true
     - MINICONDA_VERSION="latest"
-    - MINICONDA_PYTHON_MAJOR=2
+    - MINICONDA_PYTHON_MAJOR=3
     - MINICONDA_LINUX="Linux-x86_64"
     - MINICONDA_OSX="MacOSX-x86_64"
 
@@ -13,10 +14,10 @@ matrix:
   - name: "linux MPICH"
     language: python
     python:
-    - '2.7'
+    - '3.6'
     compiler: gcc
     before_install:
-    - pip install numpy scipy matplotlib nose docutils mpi4py h5py Cython
+    - pip install numpy scipy matplotlib nose docutils mpi4py h5py Cython codecov
     install:
     - ./configure
     - make framework
@@ -39,10 +40,10 @@ matrix:
   - name: "linux openmpi"
     language: python
     python:
-    - '2.7'
+    - '3.6'
     compiler: gcc
     before_install:
-    - pip install numpy scipy matplotlib nose docutils mpi4py h5py Cython
+    - pip install numpy scipy matplotlib nose docutils mpi4py h5py Cython codecov
     install:
     - ./configure
     - make framework
@@ -91,16 +92,19 @@ script:
 - export PYTHONPATH=${PWD}/src:${PWD}
 - |
   if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
-    mpiexec nosetests amuse.test.suite.compile_tests.test_python_implementation:TestInterface.test10 -sv
-    mpiexec nosetests test/reports/test_speed.py -sv
-    mpiexec nosetests -e "test_plot" test/core_tests
-    mpiexec nosetests -e "test_cython_implementation" test/compile_tests -sv
+    mpiexec -n 1 nosetests --with-coverage amuse.test.suite.compile_tests.test_python_implementation:TestInterface.test10 -sv || exit $?
+    mpiexec -n 1 nosetests --with-coverage test/reports/test_speed.py -sv || exit $?
+    mpiexec -n 1 nosetests --with-coverage -e "test_plot" test/core_tests || exit $?
+    mpiexec -n 1 nosetests --with-coverage -e "test_cython_implementation" test/compile_tests -sv || exit $?
   elif [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
-    nosetests test/reports/test_speed.py -sv
-    nosetests -e "test_plot" test/core_tests
-    nosetests test/compile_tests/test_c_implementation.py -sv
-    #nosetests test/compile_tests/test_c_sockets_implementation.py -sv
-    nosetests test/compile_tests/test_fortran_implementation.py -sv
-    #nosetests test/compile_tests/test_fortran_sockets_implementation.py -sv
-    nosetests test/compile_tests/test_python_implementation.py -sv
+    nosetests --with-coverage test/reports/test_speed.py -sv
+    nosetests --with-coverage -e "test_plot" test/core_tests
+    nosetests --with-coverage test/compile_tests/test_c_implementation.py -sv
+    #nosetests --with-coverage test/compile_tests/test_c_sockets_implementation.py -sv
+    nosetests --with-coverage test/compile_tests/test_fortran_implementation.py -sv
+    #nosetests --with-coverage test/compile_tests/test_fortran_sockets_implementation.py -sv
+    nosetests --with-coverage test/compile_tests/test_python_implementation.py -sv
   fi
+  
+after_success:
+  - codecov

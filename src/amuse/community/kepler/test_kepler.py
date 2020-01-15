@@ -31,12 +31,12 @@ def run_kepler(mass, semi, ecc, time):
     kep.initialize_from_elements(mass, semi, ecc)
     a,e = kep.get_elements()
     p = kep.get_periastron()
-    print "elements:", a, e, p
+    print("elements:", a, e, p)
     kep.transform_to_time(time)
     x,y,z = kep.get_separation_vector()
-    print "separation:", x,y,z
+    print("separation:", x,y,z)
     x,y,z = kep.get_longitudinal_unit_vector()
-    print "longitudinal:", x,y,z
+    print("longitudinal:", x,y,z)
 
     pos = [1, 0, 0] | nbody_system.length
     vel = [0, 0.5, 0] | nbody_system.speed
@@ -44,14 +44,14 @@ def run_kepler(mass, semi, ecc, time):
                             vel[0], vel[1], vel[2])
     a,e = kep.get_elements()
     p = kep.get_periastron()
-    print "elements:", a, e, p
+    print("elements:", a, e, p)
     kep.transform_to_time(time)
     x,y,z = kep.get_separation_vector()
-    print "separation:", x,y,z
+    print("separation:", x,y,z)
     x,y,z = kep.get_velocity_vector()
-    print "velocity:", x,y,z
+    print("velocity:", x,y,z)
     x,y,z = kep.get_longitudinal_unit_vector()
-    print "longitudinal:", x,y,z
+    print("longitudinal:", x,y,z)
 
     kep.set_random(42)
     kep.make_binary_scattering(0.5 | nbody_system.mass,
@@ -72,8 +72,8 @@ if __name__ == '__main__':
 
     try:
         opts, args = getopt.getopt(sys.argv[1:], "a:e:m:t:")
-    except getopt.GetoptError, err:
-        print str(err)
+    except getopt.GetoptError as err:
+        print(str(err))
         sys.exit(1)
 
     for o, a in opts:
@@ -86,7 +86,7 @@ if __name__ == '__main__':
         elif o == "-t":
             time = float(a) | nbody_system.time
         else:
-            print "unexpected argument", o
+            print("unexpected argument", o)
 
     assert is_mpd_running()
     run_kepler(mass, semi, ecc, time)

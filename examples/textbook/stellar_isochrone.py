@@ -34,7 +34,7 @@ def _get_stellar_temperature_and_luminosity(stars, C, z=0.02,
         try:
             si.evolve_for(t_end)
         except:
-            print "Failed to evolve star: m=", si.mass.in_(units.MSun)
+            print("Failed to evolve star: m=", si.mass.in_(units.MSun))
     if write:
         write_set_to_file(stellar.particles, filename, 'hdf5')
     stellar.stop()
@@ -67,9 +67,9 @@ def get_stellar_temperature_and_luminosity(stars, C, z=0.02,
                 stellar.evolve_model(t_end)
                 channel_to_framework.copy_attributes(["radius", "temperature",
                                                       "luminosity"])
-                print "Successfully evolved star: m=", si.mass.in_(units.MSun)
+                print("Successfully evolved star: m=", si.mass.in_(units.MSun))
             except:
-                print "Failed to evolve star: m=", si.mass.in_(units.MSun)
+                print("Failed to evolve star: m=", si.mass.in_(units.MSun))
             stellar.stop()
     if write:
         write_set_to_file(stars, filename, 'hdf5')
@@ -99,7 +99,7 @@ def main(N, t_end, z, C="SeBa", plot=False):
 
         save_file = 'HRD_N3000at4500Myr.png'
         pyplot.savefig(save_file)
-        print '\nSaved figure in file', save_file,'\n'
+        print('\nSaved figure in file', save_file,'\n')
         
     elif not plot:
         numpy.random.seed(1)
@@ -120,7 +120,7 @@ def main(N, t_end, z, C="SeBa", plot=False):
 
         save_file = 'HRD_N3000at4500Myr.png'
         pyplot.savefig(save_file)
-        print '\nSaved figure in file', save_file,'\n'
+        print('\nSaved figure in file', save_file,'\n')
         pyplot.show()
     
 def new_option_parser():

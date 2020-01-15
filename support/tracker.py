@@ -1,13 +1,10 @@
-from __future__ import print_function
+
 
 import subprocess
 import socket, os
 
 import time
-try:  # Python 3
-    import urlparse
-except ImportError:
-    from urllib import parse as urlparse
+import urllib.parse
 import threading
 import json
 import os
@@ -26,10 +23,7 @@ from . import project
 import pickle
 import textwrap
 
-try:  # Python 2
-    from Queue import Queue
-except ImportError:  # Python 3
-    from queue import Queue
+from queue import Queue
 
 background_test.RunTests.instance = background_test.RunTests()
 
@@ -522,7 +516,7 @@ class RunAllTestsOnASvnCommit(object):
 class HandleRequest(webserver.HandleRequest):
    
     def do_check_svn_commit(self):
-        parameters = urlparse.parse_qs(self.parsed_path.query)
+        parameters = urllib.parse.parse_qs(self.parsed_path.query)
         revision = parameters['rev'][0]
         
         

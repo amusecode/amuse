@@ -105,6 +105,11 @@ from amuse.datamodel import AttributeStorage
 
 from amuse.rfi.async_request import ASyncRequestSequence, PoolDependentASyncRequest
 
+try:
+    from types import EllipsisType
+except:
+    EllipsisType = type(Ellipsis)
+
 class ParticleMappingMethod(AbstractCodeMethodWrapper):
     def __init__(self, method, attribute_names = None):
         AbstractCodeMethodWrapper.__init__(self, method)
@@ -203,7 +208,7 @@ class ParticleGetAttributesMethod(ParticleMappingMethod):
         try:
             return_value = self.method(*indices, **storage.extra_keyword_arguments_for_getters_and_setters)
         except:
-            print(self.method)
+            print((self.method))
             raise
         return self.convert_return_value(return_value, storage, attributes_to_return)
     
@@ -250,11 +255,11 @@ class ParticleGetGriddedAttributesMethod(ParticleGetAttributesMethod):
         try:
             return_value = self.method(*one_dimensional_arrays_of_indices, **storage.extra_keyword_arguments_for_getters_and_setters)
         except:
-            print(self.method)
+            print((self.method))
             raise
             
         mapping_from_name_to_value = self.convert_return_value(return_value, storage, attributes_to_return)
-        for key, value in mapping_from_name_to_value.iteritems():
+        for key, value in mapping_from_name_to_value.items():
             mapping_from_name_to_value[key] = value.reshape(gridshape)
         return mapping_from_name_to_value
         
@@ -410,7 +415,7 @@ class ParticleSetGriddedAttributesMethod(ParticleSetAttributesMethod):
         list_arguments.extend(list_args)
         one_dimensional_arrays_of_args = [x.reshape(-1) for x in list_arguments]
         
-        for key, value in keyword_args.iteritems():
+        for key, value in keyword_args.items():
             keyword_args[key] = value.reshape(-1)
         
         keyword_args.update(storage.extra_keyword_arguments_for_getters_and_setters)
@@ -446,7 +451,7 @@ class ParticleSetGriddedAttributesMethod(ParticleSetAttributesMethod):
         list_arguments.extend(list_args)
         one_dimensional_arrays_of_args = [x.reshape(-1) for x in list_arguments]
         
-        for key, value in keyword_args.iteritems():
+        for key, value in keyword_args.items():
             keyword_args[key] = value.reshape(-1)
         
         async_request = self.method.asynchronous(*one_dimensional_arrays_of_args, **keyword_args)
@@ -537,7 +542,7 @@ class ParticleSpecificSelectMethod(object):
 
     def apply_on_all(self, particles):
         
-        all_indices = particles._private.attribute_storage.mapping_from_index_in_the_code_to_particle_key.keys()
+        all_indices = list(particles._private.attribute_storage.mapping_from_index_in_the_code_to_particle_key.keys())
         
         lists_of_indices = self.method(list(all_indices))
         
@@ -631,7 +636,7 @@ class ParticleSetSelectSubsetMethod(object):
             
         if not self.get_number_of_particles_in_set_method is None:
             number_of_particles_in_set = self.get_number_of_particles_in_set_method(*query_identifiers)
-            indices = self.method(range(number_of_particles_in_set))
+            indices = self.method(list(range(number_of_particles_in_set)))
         else:
             index = self.method(*query_identifiers)
             indices = [index]
@@ -662,7 +667,7 @@ class ParticlesAddedUpdateMethod(object):
             
         if not self.get_number_of_particles_in_set_method is None:
             number_of_particles_in_set = self.get_number_of_particles_in_set_method(*query_identifiers)
-            indices = self.method(range(number_of_particles_in_set))
+            indices = self.method(list(range(number_of_particles_in_set)))
         else:
             index = self.method(*query_identifiers)
             indices = [index]
@@ -898,7 +903,7 @@ class InCodeAttributeStorage(AbstractInCodeAttributeStorage):
    
     def get_values_in_store(self, indices_in_the_code, attributes):
 
-        if indices_in_the_code is None:
+        if indices_in_the_code is None or isinstance(indices_in_the_code, EllipsisType):
             indices_in_the_code = self.code_indices
             
         if len(indices_in_the_code) == 0:
@@ -1041,7 +1046,7 @@ class InCodeAttributeStorage(AbstractInCodeAttributeStorage):
         for i in indices:
             if i in self.mapping_from_index_in_the_code_to_particle_key:
                 raise exceptions.AmuseException("adding an index '{0}' that is already managed, bookkeeping is broken".format(i))
-            newkey = base.UniqueKeyGenerator.next()
+            newkey = next(base.UniqueKeyGenerator)
             self.mapping_from_index_in_the_code_to_particle_key[i] = newkey
             self.mapping_from_particle_key_to_index_in_the_code[newkey] = i
             
@@ -1208,7 +1213,7 @@ class InCodeGridAttributeStorage(AbstractInCodeAttributeStorage):
     def copy(self):
         from .memory_storage import InMemoryGridAttributeStorage
         copy = InMemoryGridAttributeStorage()
-        for attribute, attribute_values in self.mapping_from_attribute_to_quantities.iteritems():
+        for attribute, attribute_values in self.mapping_from_attribute_to_quantities.items():
             copy.mapping_from_attribute_to_quantities[attribute] = attribute_values.copy() 
         return copy
         
@@ -1254,7 +1259,7 @@ class ParticleSpecificSelectSubsetMethod(object):
         
         if not self.get_number_of_particles_in_set_method is None:
             number_of_particles_in_set = self.get_number_of_particles_in_set_method(from_indices)[0]
-            indices = self.method([from_indices[0]] * number_of_particles_in_set, range(number_of_particles_in_set))
+            indices = self.method([from_indices[0]] * number_of_particles_in_set, list(range(number_of_particles_in_set)))
         else:
             index = self.method()
             indices = [index]

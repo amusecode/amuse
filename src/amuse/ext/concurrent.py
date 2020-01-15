@@ -146,7 +146,7 @@ class MPISharedParticlesProxy(object):
         sum_of_energies = zero
         
         number_of_particles = len(self)
-        block_size = (number_of_particles - 1) / mpi_comm.size
+        block_size = (number_of_particles - 1) // mpi_comm.size
         start = mpi_comm.rank * block_size
         if mpi_comm.rank == (mpi_comm.size - 1):
             block_size = (number_of_particles - 1) - start

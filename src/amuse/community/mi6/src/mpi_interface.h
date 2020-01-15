@@ -9,6 +9,7 @@
 #include <windows.h>
 #else
 #include <sys/time.h>
+#include <cstddef>
 #endif
 
 typedef int MPI_Comm;

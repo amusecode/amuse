@@ -27,12 +27,12 @@ def print_log(time, gravity, E0 = 0.0 | nbody_system.energy):
     if E0 == 0 | nbody_system.energy: E0 = E
     Rv = -0.5*M*M/U
     Q = -T/U
-    print ""
-    print "time =", time.number, " energy = ", E.number, \
-	" dE/E0 = ", (E/E0 - 1)
-    print '%s %.4f %.6f %.6f %.6f %.6f %.6f %.6f %.6f' % \
+    print("")
+    print("time =", time.number, " energy = ", E.number, \
+	" dE/E0 = ", (E/E0 - 1))
+    print('%s %.4f %.6f %.6f %.6f %.6f %.6f %.6f %.6f' % \
 	("%%", time.number, M.number, T.number, U.number, \
-         E.number, Ebin.number, Rv.number, Q)
+         E.number, Ebin.number, Rv.number, Q))
     sys.stdout.flush()
     return E
 
@@ -47,17 +47,17 @@ def run_hacs(infile = None,
               eta_reg = 0.1,
               softening_length = 0.0 | nbody_system.length):
 
-    if infile != None: print "input file =", infile
-    print "end_time =",  end_time.number
-    print "nstars= ",    number_of_stars,
-    print "nmax= ",      nmax,
-    print "delta_t= ",   delta_t.number
-    print "dt_max= ",    dt_max.number
-    print "n_ngb= ",     n_ngb,
-    print "eta_irr= ",   eta_irr
-    print "eta_reg= ",   eta_reg
-    print "eps2=    ",   softening_length.number**2
-    print "\ninitializing the gravity module"
+    if infile != None: print("input file =", infile)
+    print("end_time =",  end_time.number)
+    print("nstars= ",    number_of_stars, end=' ')
+    print("nmax= ",      nmax, end=' ')
+    print("delta_t= ",   delta_t.number)
+    print("dt_max= ",    dt_max.number)
+    print("n_ngb= ",     n_ngb, end=' ')
+    print("eta_irr= ",   eta_irr)
+    print("eta_reg= ",   eta_reg)
+    print("eps2=    ",   softening_length.number**2)
+    print("\ninitializing the gravity module")
     sys.stdout.flush()
 
 #    gravity = grav(number_of_workers = 1, redirection = "none", mode='cpu')
@@ -68,21 +68,21 @@ def run_hacs(infile = None,
 
     if infile == None:
 
-        print "making a Plummer model"
+        print("making a Plummer model")
         stars = new_plummer_model(number_of_stars)
 
         id = numpy.arange(number_of_stars)
         stars.id = id+1
 
-        print "setting particle masses and radii"
+        print("setting particle masses and radii")
 	#stars.mass = (1.0 / number_of_stars) | nbody_system.mass
         scaled_mass = new_salpeter_mass_distribution_nbody(number_of_stars) 
         stars.mass = scaled_mass
         stars.radius = 0.0 | nbody_system.length
 
-        print "centering stars"
+        print("centering stars")
         stars.move_to_center()
-        print "scaling stars to virial equilibrium"
+        print("scaling stars to virial equilibrium")
         stars.scale_to_standard(smoothing_length_squared
                                     = gravity.parameters.eps2)
 
@@ -93,7 +93,7 @@ def run_hacs(infile = None,
 
         # Read the input data.  Units are dynamical.
 
-        print "reading file", infile
+        print("reading file", infile)
 
         id = []
         mass = []
@@ -121,7 +121,7 @@ def run_hacs(infile = None,
 
         stars = datamodel.Particles(number_of_stars)
         stars.id = id 
-        print len(mass), len(pos), len(vel), len(id)
+        print(len(mass), len(pos), len(vel), len(id))
         stars.mass = mass | nbody_system.mass
         stars.position = pos | nbody_system.length
         stars.velocity = vel | nbody_system.speed
@@ -142,16 +142,16 @@ def run_hacs(infile = None,
     gravity.commit_parameters()
 
 
-    print "adding particles"
+    print("adding particles")
     # print stars
     sys.stdout.flush()
     gravity.particles.add_particles(stars)
     gravity.commit_particles()
 
-    print ''
-    print "number_of_stars =", number_of_stars
-    print "evolving to time =", end_time.number, \
-          "in steps of", delta_t.number
+    print('')
+    print("number_of_stars =", number_of_stars)
+    print("evolving to time =", end_time.number, \
+          "in steps of", delta_t.number)
     sys.stdout.flush()
 
     E0 = print_log(time, gravity)
@@ -194,39 +194,39 @@ def run_hacs(infile = None,
             star1 = stopping_condition.particles(0)[0]
             star2 = stopping_condition.particles(1)[0]
             gravity.synchronize_model()
-            print '\nstopping condition set at time', \
-                gravity.get_time().number,'for:\n'
-            print star1
-            print ''
-            print star2
-            print ''
+            print('\nstopping condition set at time', \
+                gravity.get_time().number,'for:\n')
+            print(star1)
+            print('')
+            print(star2)
+            print('')
             gravity.particles.remove_particle(star1)
             gravity.particles.remove_particle(star2)
            
             gravity.recommit_particles()
             
-            print 'ls=', len(stars)
+            print('ls=', len(stars))
             
             gravity.update_particle_set()
             gravity.particles.synchronize_to(stars)
             
             
-            print 'ls=', len(stars)
+            print('ls=', len(stars))
             
 
         if len(stars) != ls:
            if 0:
-                print "stars:"
+                print("stars:")
                 for s in stars:
-                    print " ", s.id.number, s.mass.number, s.x.number, s.y.number, s.z.number
+                    print(" ", s.id.number, s.mass.number, s.x.number, s.y.number, s.z.number)
            else:
-             print "number of stars =", len(stars)
+             print("number of stars =", len(stars))
            sys.stdout.flush()
 
         print_log(gravity.get_time(), gravity, E0)
         sys.stdout.flush()
 
-    print ''
+    print('')
     print_log(gravity.get_time(), gravity, E0)
     sys.stdout.flush()
     gravity.stop()
@@ -251,8 +251,8 @@ if __name__ == '__main__':
 
     try:
         opts, args = getopt.getopt(sys.argv[1:], "a:c:d:e:f:gGn:s:t:w:")
-    except getopt.GetoptError, err:
-        print str(err)
+    except getopt.GetoptError as err:
+        print(str(err))
         sys.exit(1)
 
     for o, a in opts:
@@ -280,13 +280,13 @@ if __name__ == '__main__':
         elif o == "-w":
             n_workers = int(a)
         else:
-            print "unexpected argument", o
+            print("unexpected argument", o)
 
     if random_seed <= 0:
         numpy.random.seed()
         random_seed = numpy.random.randint(1, pow(2,31)-1)
     numpy.random.seed(random_seed)
-    print "random seed =", random_seed
+    print("random seed =", random_seed)
     
     Nmax = N*2
     softening_length = 0.0/N  | nbody_system.length

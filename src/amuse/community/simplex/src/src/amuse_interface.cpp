@@ -266,9 +266,9 @@ int AMUSE_SimpleX::initialize(double current_time) {
     vertex_id_max = vertices.size() + borderSites;
   }
   
-  MPI::COMM_WORLD.Bcast( &vertex_id_max, 1, MPI::UNSIGNED_LONG_LONG, 0 );
-  MPI::COMM_WORLD.Bcast( &origNumSites, 1, MPI::UNSIGNED_LONG_LONG, 0 );
-  MPI::COMM_WORLD.Bcast( &numSites, 1, MPI::UNSIGNED_LONG_LONG, 0 );
+  MPI_Bcast( &vertex_id_max, 1, MPI_UNSIGNED_LONG_LONG, 0 , MPI_COMM_WORLD );
+  MPI_Bcast( &origNumSites, 1, MPI_UNSIGNED_LONG_LONG, 0 , MPI_COMM_WORLD );
+  MPI_Bcast( &numSites, 1, MPI_UNSIGNED_LONG_LONG, 0 , MPI_COMM_WORLD );
     
   total_time=current_time;
   
@@ -312,7 +312,7 @@ int AMUSE_SimpleX::initialize(double current_time) {
 
   //determine which sites are ballistic and which direction conserving
   initiate_ballistic_sites();
-  MPI::COMM_WORLD.Barrier();
+  MPI_Barrier(MPI_COMM_WORLD);
   // from main:
   compute_site_properties();
   compute_physics( 0 );
@@ -864,7 +864,7 @@ string global_output_path = ".";
 string global_data_path = ".";
 
 int initialize_code() {
-  COMM_RANK = MPI::COMM_WORLD.Get_rank();
+  MPI_Comm_rank(MPI_COMM_WORLD, &COMM_RANK);
   SimpleXGrid=new AMUSE_SimpleX(global_output_path, global_data_path);
   return (*SimpleXGrid).setup_simplex();  
 }
@@ -920,7 +920,7 @@ int new_particle(int *id, double x,double y,double z,double rho,
     }
     if((*SimpleXGrid).get_syncflag() >= 0) {
         ret=(*SimpleXGrid).add_site(&tmp_id, x, y, z, rho, flux, xion, uInt, metallicity);
-        MPI::COMM_WORLD.Reduce(&ret, &totalret, 1, MPI::INT, MPI::SUM, 0);
+        MPI_Reduce(&ret, &totalret, 1, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD );
         return totalret-1;
     }
     return -1;
@@ -930,8 +930,8 @@ int delete_particle(int id) {
  int returnvalue,returnvalues;
  if((*SimpleXGrid).get_syncflag() != 1) return -1;
  returnvalue=(*SimpleXGrid).remove_site(id);
- MPI::COMM_WORLD.Reduce(&returnvalue,&returnvalues,1,MPI::INT,MPI::SUM,0);
- MPI::COMM_WORLD.Barrier();
+ MPI_Reduce(&returnvalue,&returnvalues,1,MPI_INT,MPI_SUM,0, MPI_COMM_WORLD );
+ MPI_Barrier(MPI_COMM_WORLD);
  return returnvalues-1;
 }
   
@@ -961,10 +961,10 @@ int get_state(int id, double *x, double *y, double *z, double *rho,
     if(bs==0) return -2;  
     
     ret=(*SimpleXGrid).get_site(id, &fx, &fy, &fz, &frho, &fflux, &fxion, &fuInt, &fmetallicity);
-    MPI::COMM_WORLD.Reduce(&ret,&totalret,1,MPI::INT,MPI::SUM,0); 
+    MPI_Reduce(&ret,&totalret,1,MPI_INT,MPI_SUM,0, MPI_COMM_WORLD ); 
     send[0]=fx;send[1]=fy;send[2]=fz;send[3]=frho;send[4]=fflux;send[5]=fxion;send[6]=fuInt;send[7]=fmetallicity;
-    MPI::COMM_WORLD.Reduce(&send[0],&recv[0],8,MPI::DOUBLE,MPI::SUM,0); 
-    MPI::COMM_WORLD.Barrier();
+    MPI_Reduce(&send[0],&recv[0],8,MPI_DOUBLE,MPI_SUM,0, MPI_COMM_WORLD ); 
+    MPI_Barrier(MPI_COMM_WORLD);
     fx=recv[0];fy=recv[1];fz=recv[2];
     frho=recv[3];
     fflux=recv[4];
@@ -990,12 +990,12 @@ int get_position(int id, double *x, double *y, double *z){
     if(bs==0) return -2;     
     
     ret = (*SimpleXGrid).get_position(id, &fx, &fy, &fz);
-    MPI::COMM_WORLD.Reduce(&ret, &totalret, 1, MPI::INT, MPI::SUM, 0);
+    MPI_Reduce(&ret, &totalret, 1, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD );
     send[0] = fx;
     send[1] = fy;
     send[2] = fz;
-    MPI::COMM_WORLD.Reduce(&send[0], &recv[0], 3, MPI::DOUBLE, MPI::SUM, 0);
-    MPI::COMM_WORLD.Barrier();
+    MPI_Reduce(&send[0], &recv[0], 3, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD );
+    MPI_Barrier(MPI_COMM_WORLD);
     *x = (recv[0]-0.5)*bs;
     *y = (recv[1]-0.5)*bs;
     *z = (recv[2]-0.5)*bs;
@@ -1008,10 +1008,10 @@ int get_density(int id, double *rho){
     int ret, totalret;
     
     ret = (*SimpleXGrid).get_density(id, &frho);
-    MPI::COMM_WORLD.Reduce(&ret, &totalret, 1, MPI::INT, MPI::SUM, 0);
+    MPI_Reduce(&ret, &totalret, 1, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD );
     send = frho;
-    MPI::COMM_WORLD.Reduce(&send, &recv, 1, MPI::DOUBLE, MPI::SUM, 0);
-    MPI::COMM_WORLD.Barrier();
+    MPI_Reduce(&send, &recv, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD );
+    MPI_Barrier(MPI_COMM_WORLD);
     *rho = recv;
     return totalret-1;
 }
@@ -1022,10 +1022,10 @@ int get_flux(int id, double *flux){
     int ret, totalret;
     
     ret = (*SimpleXGrid).get_flux(id, &fflux);
-    MPI::COMM_WORLD.Reduce(&ret, &totalret, 1, MPI::INT, MPI::SUM, 0);
+    MPI_Reduce(&ret, &totalret, 1, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD );
     send = fflux;
-    MPI::COMM_WORLD.Reduce(&send, &recv, 1, MPI::DOUBLE, MPI::SUM, 0);
-    MPI::COMM_WORLD.Barrier();
+    MPI_Reduce(&send, &recv, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD );
+    MPI_Barrier(MPI_COMM_WORLD);
     *flux = recv;
     return totalret-1;
 }
@@ -1036,10 +1036,10 @@ int get_mean_intensity(int id, double *mean_intensity){
     int ret, totalret;
     
     ret = (*SimpleXGrid).get_mean_intensity(id, &fmean_intensity);
-    MPI::COMM_WORLD.Reduce(&ret, &totalret, 1, MPI::INT, MPI::SUM, 0);
+    MPI_Reduce(&ret, &totalret, 1, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD );
     send = fmean_intensity;
-    MPI::COMM_WORLD.Reduce(&send, &recv, 1, MPI::DOUBLE, MPI::SUM, 0);
-    MPI::COMM_WORLD.Barrier();
+    MPI_Reduce(&send, &recv, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD );
+    MPI_Barrier(MPI_COMM_WORLD);
     *mean_intensity = recv;
     return totalret-1;
 }
@@ -1050,10 +1050,10 @@ int get_diffuse_intensity(int id, double *diffuse_intensity){
     int ret, totalret;
     
     ret = (*SimpleXGrid).get_diffuse_intensity(id, &fdiffuse_intensity);
-    MPI::COMM_WORLD.Reduce(&ret, &totalret, 1, MPI::INT, MPI::SUM, 0);
+    MPI_Reduce(&ret, &totalret, 1, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD );
     send = fdiffuse_intensity;
-    MPI::COMM_WORLD.Reduce(&send, &recv, 1, MPI::DOUBLE, MPI::SUM, 0);
-    MPI::COMM_WORLD.Barrier();
+    MPI_Reduce(&send, &recv, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD );
+    MPI_Barrier(MPI_COMM_WORLD);
     *diffuse_intensity = recv;
     return totalret-1;
 }
@@ -1064,10 +1064,10 @@ int get_ionisation(int id, double *xion){
     int ret, totalret;
     
     ret = (*SimpleXGrid).get_ionisation(id, &fxion);
-    MPI::COMM_WORLD.Reduce(&ret, &totalret, 1, MPI::INT, MPI::SUM, 0);
+    MPI_Reduce(&ret, &totalret, 1, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD );
     send = fxion;
-    MPI::COMM_WORLD.Reduce(&send, &recv, 1, MPI::DOUBLE, MPI::SUM, 0);
-    MPI::COMM_WORLD.Barrier();
+    MPI_Reduce(&send, &recv, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD );
+    MPI_Barrier(MPI_COMM_WORLD);
     *xion = recv;
     return totalret-1;
 }
@@ -1078,10 +1078,10 @@ int get_metallicity(int id, double *metallicity){
     int ret, totalret;
     
     ret = (*SimpleXGrid).get_metallicity(id, &fmetallicity);
-    MPI::COMM_WORLD.Reduce(&ret, &totalret, 1, MPI::INT, MPI::SUM, 0);
+    MPI_Reduce(&ret, &totalret, 1, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD );
     send = fmetallicity;
-    MPI::COMM_WORLD.Reduce(&send, &recv, 1, MPI::DOUBLE, MPI::SUM, 0);
-    MPI::COMM_WORLD.Barrier();
+    MPI_Reduce(&send, &recv, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD );
+    MPI_Barrier(MPI_COMM_WORLD);
     *metallicity = recv;
     return totalret-1;
 }
@@ -1092,10 +1092,10 @@ int get_internal_energy(int id, double *uInt){
   int ret, totalret;
   
   ret = (*SimpleXGrid).get_internalEnergy(id, &fuInt);
-  MPI::COMM_WORLD.Reduce(&ret, &totalret, 1, MPI::INT, MPI::SUM, 0);
+  MPI_Reduce(&ret, &totalret, 1, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD );
   send = fuInt;
-  MPI::COMM_WORLD.Reduce(&send, &recv, 1, MPI::DOUBLE, MPI::SUM, 0);
-  MPI::COMM_WORLD.Barrier();
+  MPI_Reduce(&send, &recv, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD );
+  MPI_Barrier(MPI_COMM_WORLD);
   *uInt= recv;
   return totalret-1;
 }
@@ -1106,10 +1106,10 @@ int get_dinternal_energy_dt(int id, double *dudt){
   int ret, totalret;
   
   ret = (*SimpleXGrid).get_dinternalEnergydt(id, &fdudt);
-  MPI::COMM_WORLD.Reduce(&ret, &totalret, 1, MPI::INT, MPI::SUM, 0);
+  MPI_Reduce(&ret, &totalret, 1, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD );
   send = fdudt;
-  MPI::COMM_WORLD.Reduce(&send, &recv, 1, MPI::DOUBLE, MPI::SUM, 0);
-  MPI::COMM_WORLD.Barrier();
+  MPI_Reduce(&send, &recv, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD );
+  MPI_Barrier(MPI_COMM_WORLD);
   *dudt= recv;
   return totalret-1;
 }
@@ -1128,8 +1128,8 @@ int set_state(int id, double x, double y, double z, double rho,
         z<0 || z>1 ) return -3;
           
     ret = (*SimpleXGrid).set_site(id, x, y, z, rho, flux, xion, uInt, metallicity);
-    MPI::COMM_WORLD.Reduce(&ret, &totalret, 1, MPI::INT, MPI::SUM, 0);
-    MPI::COMM_WORLD.Barrier();
+    MPI_Reduce(&ret, &totalret, 1, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD );
+    MPI_Barrier(MPI_COMM_WORLD);
     return totalret-1;
 }
 
@@ -1145,8 +1145,8 @@ int set_position(int id, double x, double y, double z){
         z<0 || z>1 ) return -3;
         
     ret = (*SimpleXGrid).set_position(id, x, y, z);
-    MPI::COMM_WORLD.Reduce(&ret, &totalret, 1, MPI::INT, MPI::SUM, 0);
-    MPI::COMM_WORLD.Barrier();
+    MPI_Reduce(&ret, &totalret, 1, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD );
+    MPI_Barrier(MPI_COMM_WORLD);
     return totalret-1;
 }
 
@@ -1154,8 +1154,8 @@ int set_density(int id, double rho){
     int ret, totalret;
     
     ret = (*SimpleXGrid).set_density(id, rho);
-    MPI::COMM_WORLD.Reduce(&ret, &totalret, 1, MPI::INT, MPI::SUM, 0);
-    MPI::COMM_WORLD.Barrier();
+    MPI_Reduce(&ret, &totalret, 1, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD );
+    MPI_Barrier(MPI_COMM_WORLD);
     return totalret-1;
 }
 
@@ -1163,8 +1163,8 @@ int set_flux(int id, double flux){
     int ret, totalret;
     
     ret = (*SimpleXGrid).set_flux(id, flux);
-    MPI::COMM_WORLD.Reduce(&ret, &totalret, 1, MPI::INT, MPI::SUM, 0);
-    MPI::COMM_WORLD.Barrier();
+    MPI_Reduce(&ret, &totalret, 1, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD );
+    MPI_Barrier(MPI_COMM_WORLD);
     return totalret-1;
 }
 
@@ -1172,8 +1172,8 @@ int set_ionisation(int id, double xion){
     int ret, totalret;
     
     ret = (*SimpleXGrid).set_ionisation(id, xion);
-    MPI::COMM_WORLD.Reduce(&ret, &totalret, 1, MPI::INT, MPI::SUM, 0);
-    MPI::COMM_WORLD.Barrier();
+    MPI_Reduce(&ret, &totalret, 1, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD );
+    MPI_Barrier(MPI_COMM_WORLD);
     return totalret-1;
 }
 
@@ -1181,8 +1181,8 @@ int set_metallicity(int id, double metallicity){
     int ret, totalret;
     
     ret = (*SimpleXGrid).set_metallicity(id, metallicity);
-    MPI::COMM_WORLD.Reduce(&ret, &totalret, 1, MPI::INT, MPI::SUM, 0);
-    MPI::COMM_WORLD.Barrier();
+    MPI_Reduce(&ret, &totalret, 1, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD );
+    MPI_Barrier(MPI_COMM_WORLD);
     return totalret-1;
 }
 
@@ -1190,8 +1190,8 @@ int set_internal_energy(int id, double uInt){
     int ret, totalret;
     
     ret = (*SimpleXGrid).set_internalEnergy(id, uInt);
-    MPI::COMM_WORLD.Reduce(&ret, &totalret, 1, MPI::INT, MPI::SUM, 0);
-    MPI::COMM_WORLD.Barrier();
+    MPI_Reduce(&ret, &totalret, 1, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD );
+    MPI_Barrier(MPI_COMM_WORLD);
     return totalret-1;
 }
 
@@ -1199,8 +1199,8 @@ int set_dinternal_energy_dt(int id, double dut){
     int ret, totalret;
     
     ret = (*SimpleXGrid).set_dinternalEnergydt(id, dut);
-    MPI::COMM_WORLD.Reduce(&ret, &totalret, 1, MPI::INT, MPI::SUM, 0);
-    MPI::COMM_WORLD.Barrier();
+    MPI_Reduce(&ret, &totalret, 1, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD );
+    MPI_Barrier(MPI_COMM_WORLD);
     return totalret-1;
 }
 

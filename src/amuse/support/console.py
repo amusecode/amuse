@@ -299,7 +299,7 @@ def set_preferred_units(*units):
     set_printing_strategy("custom", preferred_units=units)
 
 def _get_printing_strategy_factory(strategy):
-    if isinstance(strategy, basestring):
+    if isinstance(strategy, str):
         if not strategy in registered_printing_strategies:
             raise UnsupportedPrintingStrategyException(strategy)
         return registered_printing_strategies[strategy]

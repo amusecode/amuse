@@ -20,7 +20,7 @@ class StateMethodDescriptor(object):
         
         state_doc = "STATE: can run in states {0}".format(self.states)
         doc_string = _getdoc(function)
-        print doc_string
+        print(doc_string)
         if doc_string:
             doc_string += '\n' 
         
@@ -102,7 +102,7 @@ class MetaObjectWithState(type):
             if hasattr(x, '__state_definitions__'):
                 definitions.extend(getattr(x, '__state_definitions__'))
                 
-        for key, value in dict.iteritems():
+        for key, value in dict.items():
             if isinstance(value,StateTransitionDescriptor):
                 definitions.append(value)
             elif isinstance(value,StateMethodDescriptor):
@@ -114,9 +114,7 @@ class MetaObjectWithState(type):
         return result
     
     
-class ObjectWithState(object):
-    __metaclass__ = MetaObjectWithState
-    
+class ObjectWithState(object, metaclass=MetaObjectWithState):
     INITIAL_STATE = 'START'
     
     def __init__(self):

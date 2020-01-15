@@ -219,7 +219,7 @@ class ForTesting(InCodeComponentImplementation):
         particles = datamodel.Particles(len(mass))
         particles.mass = mass
         self.my_particles.add_particles(particles)
-        return range(len(self.my_particles)-len(mass), len(self.my_particles))
+        return list(range(len(self.my_particles)-len(mass), len(self.my_particles)))
     
     def get_mass(self, indices):
         return self.my_particles.mass[indices]
@@ -237,20 +237,22 @@ class ForTesting(InCodeComponentImplementation):
      
         
 class _AbstractTestInterface(TestWithMPI):
-    def get_libname(self):
+
+    @classmethod
+    def get_libname(cls):
         return "stopcond"
         
-    def setUp(self):
-        super(_AbstractTestInterface, self).setUp()
-        print "building"
-        self.check_can_compile_modules()
-        self.exefile=compile_tools.build_worker(codestring, 
-            self.get_path_to_results(), 
-            self.get_interface_class(), write_header=False, 
-            extra_args=["-L"+get_amuse_root_dir()+"/lib/stopcond", "-l" + self.get_libname()]
+    @classmethod
+    def setup_class(cls):
+        cls.check_can_compile_modules()
+        cls.exefile=compile_tools.build_worker(codestring, 
+            cls.get_path_to_results(), 
+            cls.get_interface_class(), write_header=False, 
+            extra_args=["-L"+get_amuse_root_dir()+"/lib/stopcond", "-l" + cls.get_libname()]
             )
         
-    def get_interface_class(self):
+    @classmethod
+    def get_interface_class(cls):
         return ForTestingInterface
         
 class TestInterface(_AbstractTestInterface):
@@ -262,7 +264,7 @@ class TestInterface(_AbstractTestInterface):
         next = instance.next_index_for_stopping_condition()
         next = instance.next_index_for_stopping_condition()
         instance.stop()
-        self.assertEquals(next, 1)
+        self.assertEqual(next, 1)
         
     def test2(self):
         instance = ForTesting(self.exefile) #, debugger = "xterm")
@@ -303,8 +305,8 @@ class TestInterface(_AbstractTestInterface):
         instance.set_stopping_condition_particle_index(next, 0, 11)
         instance.set_stopping_condition_particle_index(next, 1, 12)
         self.assertTrue(instance.stopping_conditions.pair_detection.is_set())
-        self.assertEquals(11, instance.get_stopping_condition_particle_index(next, 0))
-        self.assertEquals(12, instance.get_stopping_condition_particle_index(next, 1))
+        self.assertEqual(11, instance.get_stopping_condition_particle_index(next, 0))
+        self.assertEqual(12, instance.get_stopping_condition_particle_index(next, 1))
         instance.stop()
 
     def test6(self):
@@ -318,7 +320,7 @@ class TestInterface(_AbstractTestInterface):
     def test7(self):
         instance = ForTesting(self.exefile)
         particles = datamodel.Particles(20)
-        particles.mass = range(1, 21) | units.kg
+        particles.mass = list(range(1, 21)) | units.kg
         instance.particles.add_particles(particles)
         instance.reset_stopping_conditions()
         
@@ -328,26 +330,26 @@ class TestInterface(_AbstractTestInterface):
         instance.set_stopping_condition_info(next,instance.stopping_conditions.pair_detection.type)
         instance.set_stopping_condition_particle_index(next, 0, pairs[0][0])
         instance.set_stopping_condition_particle_index(next, 1, pairs[0][1])
-        self.assertEquals(11, instance.get_stopping_condition_particle_index(next, 0))
-        self.assertEquals(12, instance.get_stopping_condition_particle_index(next, 1))
+        self.assertEqual(11, instance.get_stopping_condition_particle_index(next, 0))
+        self.assertEqual(12, instance.get_stopping_condition_particle_index(next, 1))
         self.assertTrue(instance.stopping_conditions.pair_detection.is_set())
-        self.assertEquals(len(instance.stopping_conditions.pair_detection.particles(0)), 1)
-        self.assertEquals(len(instance.stopping_conditions.pair_detection.particles(1)), 1)
+        self.assertEqual(len(instance.stopping_conditions.pair_detection.particles(0)), 1)
+        self.assertEqual(len(instance.stopping_conditions.pair_detection.particles(1)), 1)
         
         for index1, index2 in pairs[1:]:
             next = instance.next_index_for_stopping_condition()
             instance.set_stopping_condition_info(next,instance.stopping_conditions.pair_detection.type)
             instance.set_stopping_condition_particle_index(next, 0, index1)
             instance.set_stopping_condition_particle_index(next, 1, index2)
-            self.assertEquals(index1, instance.get_stopping_condition_particle_index(next, 0))
-            self.assertEquals(index2, instance.get_stopping_condition_particle_index(next, 1))
-        self.assertEquals(len(instance.stopping_conditions.pair_detection.particles(0)), 4)
-        self.assertEquals(len(instance.stopping_conditions.pair_detection.particles(1)), 4)
-        self.assertEquals(len(instance.stopping_conditions.pair_detection.particles(2)), 0)
+            self.assertEqual(index1, instance.get_stopping_condition_particle_index(next, 0))
+            self.assertEqual(index2, instance.get_stopping_condition_particle_index(next, 1))
+        self.assertEqual(len(instance.stopping_conditions.pair_detection.particles(0)), 4)
+        self.assertEqual(len(instance.stopping_conditions.pair_detection.particles(1)), 4)
+        self.assertEqual(len(instance.stopping_conditions.pair_detection.particles(2)), 0)
         
-        self.assertEquals(instance.stopping_conditions.pair_detection.particles(0).mass, 
+        self.assertEqual(instance.stopping_conditions.pair_detection.particles(0).mass, 
             [first + 1 for first, second in pairs] | units.kg)
-        self.assertEquals(instance.stopping_conditions.pair_detection.particles(1).mass, 
+        self.assertEqual(instance.stopping_conditions.pair_detection.particles(1).mass, 
             [second + 1 for first, second in pairs] | units.kg)
         instance.stop()
     
@@ -367,17 +369,19 @@ class TestInterface(_AbstractTestInterface):
         for i in range(nmax):
             next = instance.next_index_for_stopping_condition()
             #~ print i, next
-            self.assertEquals(next, i)
+            self.assertEqual(next, i)
         instance.stop()
     
 class TestInterfaceMP(_AbstractTestInterface):
-    
+
+    @classmethod    
     def get_interface_class(self):
         return ForTestingInterfaceFortranModule
         
     def get_number_of_workers(self):
         return 3
     
+    @classmethod
     def get_libname(self):
         return "stopcondmpi"
         
@@ -390,14 +394,14 @@ class TestInterfaceMP(_AbstractTestInterface):
         nmax = 50
         for i in range(nmax):
             next = instance.next_index_for_stopping_condition()
-            self.assertEquals(next, i)
+            self.assertEqual(next, i)
         i, error = instance.get_number_of_stopping_conditions_set()
-        self.assertEquals(error, 0)
-        self.assertEquals(i, nmax)
+        self.assertEqual(error, 0)
+        self.assertEqual(i, nmax)
         instance.mpi_collect_stopping_conditions()
         i, error = instance.get_number_of_stopping_conditions_set()
-        self.assertEquals(error, 0)
-        self.assertEquals(i, number_of_workers * nmax)
+        self.assertEqual(error, 0)
+        self.assertEqual(i, number_of_workers * nmax)
         
         instance.stop()
         
@@ -415,7 +419,7 @@ class TestInterfaceMP(_AbstractTestInterface):
         pair_detection = instance.stopping_conditions.pair_detection
         
         particles = datamodel.Particles(20)
-        particles.mass = range(1, 21) | units.kg
+        particles.mass = list(range(1, 21)) | units.kg
         instance.particles.add_particles(particles)
         
         instance.stopping_conditions.pair_detection.enable()
@@ -429,12 +433,12 @@ class TestInterfaceMP(_AbstractTestInterface):
         )
         instance.mpi_collect_stopping_conditions()
         self.assertTrue(pair_detection.is_set())
-        self.assertEquals(len(pair_detection.particles(0)),self.get_number_of_workers()) 
-        self.assertEquals(len(pair_detection.particles(1)),self.get_number_of_workers()) 
-        self.assertEquals(pair_detection.particles(0).key,particles[1].key)
-        self.assertEquals(pair_detection.particles(1).key,particles[2].key)
-        self.assertEquals(pair_detection.particles(0).mass,[2,2,2] | units.kg) 
-        self.assertEquals(pair_detection.particles(1).mass,[3,3,3] | units.kg) 
+        self.assertEqual(len(pair_detection.particles(0)),self.get_number_of_workers()) 
+        self.assertEqual(len(pair_detection.particles(1)),self.get_number_of_workers()) 
+        self.assertEqual(pair_detection.particles(0).key,particles[1].key)
+        self.assertEqual(pair_detection.particles(1).key,particles[2].key)
+        self.assertEqual(pair_detection.particles(0).mass,[2,2,2] | units.kg) 
+        self.assertEqual(pair_detection.particles(1).mass,[3,3,3] | units.kg) 
         instance.stop()
         
         
@@ -451,7 +455,7 @@ class TestInterfaceMP(_AbstractTestInterface):
         pair_detection = instance.stopping_conditions.pair_detection
         
         particles = datamodel.Particles(20)
-        particles.mass = range(1, 21) | units.kg
+        particles.mass = list(range(1, 21)) | units.kg
         instance.particles.add_particles(particles)
         
         instance.stopping_conditions.pair_detection.enable()
@@ -465,12 +469,12 @@ class TestInterfaceMP(_AbstractTestInterface):
             )
             instance.mpi_collect_stopping_conditions()
             self.assertTrue(pair_detection.is_set())
-            self.assertEquals(len(pair_detection.particles(0)),1) 
-            self.assertEquals(len(pair_detection.particles(1)),1) 
-            self.assertEquals(pair_detection.particles(0).key,particles[1].key)
-            self.assertEquals(pair_detection.particles(1).key,particles[2].key)
-            self.assertEquals(pair_detection.particles(0).mass,[2] | units.kg) 
-            self.assertEquals(pair_detection.particles(1).mass,[3] | units.kg) 
+            self.assertEqual(len(pair_detection.particles(0)),1) 
+            self.assertEqual(len(pair_detection.particles(1)),1) 
+            self.assertEqual(pair_detection.particles(0).key,particles[1].key)
+            self.assertEqual(pair_detection.particles(1).key,particles[2].key)
+            self.assertEqual(pair_detection.particles(0).mass,[2] | units.kg) 
+            self.assertEqual(pair_detection.particles(1).mass,[3] | units.kg) 
             instance.reset_stopping_conditions()
             instance.stopping_conditions.pair_detection.enable()
             
@@ -489,7 +493,7 @@ class TestInterfaceMP(_AbstractTestInterface):
         pair_detection = instance.stopping_conditions.pair_detection
         
         particles = datamodel.Particles(20)
-        particles.mass = range(1, 21) | units.kg
+        particles.mass = list(range(1, 21)) | units.kg
         instance.particles.add_particles(particles)
         
         instance.stopping_conditions.pair_detection.enable()
@@ -510,14 +514,14 @@ class TestInterfaceMP(_AbstractTestInterface):
         )
         instance.mpi_collect_stopping_conditions()
         self.assertTrue(pair_detection.is_set())
-        self.assertEquals(len(pair_detection.particles(0)),3) 
-        self.assertEquals(len(pair_detection.particles(1)),3) 
-        self.assertEquals(pair_detection.particles(0).key[0],particles[1].key)
-        self.assertEquals(pair_detection.particles(1).key[0],particles[2].key)
-        self.assertEquals(pair_detection.particles(0).key[1],particles[3].key)
-        self.assertEquals(pair_detection.particles(1).key[1],particles[4].key)
-        self.assertEquals(pair_detection.particles(0).key[2],particles[5].key)
-        self.assertEquals(pair_detection.particles(1).key[2],particles[6].key)
+        self.assertEqual(len(pair_detection.particles(0)),3) 
+        self.assertEqual(len(pair_detection.particles(1)),3) 
+        self.assertEqual(pair_detection.particles(0).key[0],particles[1].key)
+        self.assertEqual(pair_detection.particles(1).key[0],particles[2].key)
+        self.assertEqual(pair_detection.particles(0).key[1],particles[3].key)
+        self.assertEqual(pair_detection.particles(1).key[1],particles[4].key)
+        self.assertEqual(pair_detection.particles(0).key[2],particles[5].key)
+        self.assertEqual(pair_detection.particles(1).key[2],particles[6].key)
         instance.reset_stopping_conditions()
         instance.stopping_conditions.pair_detection.enable()
             
@@ -538,7 +542,7 @@ class TestInterfaceMP(_AbstractTestInterface):
         pair_detection = instance.stopping_conditions.pair_detection
         
         particles = datamodel.Particles(20)
-        particles.mass = range(1, 21) | units.kg
+        particles.mass = list(range(1, 21)) | units.kg
         instance.particles.add_particles(particles)
         
         instance.stopping_conditions.pair_detection.enable()
@@ -551,7 +555,7 @@ class TestInterfaceMP(_AbstractTestInterface):
         )
         instance.mpi_distribute_stopping_conditions()
         self.assertTrue(pair_detection.is_set())
-        self.assertEquals(len(pair_detection.particles(0)),0) 
+        self.assertEqual(len(pair_detection.particles(0)),0) 
             
         instance.stop()
     
@@ -559,29 +563,32 @@ class TestInterfaceMP(_AbstractTestInterface):
 
 class _AbstractTestInterfaceFortran(TestWithMPI):
     
-    def get_libname(self):
+    @classmethod
+    def get_libname(cls):
         return 'stopcond'
     
-    def get_mpidir(self):
+    @classmethod
+    def get_mpidir(cls):
         return ''
         
-    def get_codestring(self):
+    @classmethod
+    def get_codestring(cls):
         return CodeStringF
-        
-    def get_interface_class(self):
+
+    @classmethod        
+    def get_interface_class(cls):
         return ForTestingInterface
     
     def get_number_of_workers(self):
         return 1
         
-    def setUp(self):
-        super(_AbstractTestInterfaceFortran, self).setUp()
-        print "building"
-        self.check_can_compile_modules()
-        self.exefile=compile_tools.build_fortran_worker(self.get_codestring(),
-            self.get_path_to_results(), self.get_interface_class(), needs_mpi= True, 
+    @classmethod
+    def setup_class(cls):
+        cls.check_can_compile_modules()
+        cls.exefile=compile_tools.build_fortran_worker(cls.get_codestring(),
+            cls.get_path_to_results(), cls.get_interface_class(), needs_mpi= True, 
             extra_fflags = ["-I","{0}/lib/stopcond".format( get_amuse_root_dir())],
-            extra_ldflags = ["-L{0}/lib/stopcond".format(get_amuse_root_dir()), "-l"+self.get_libname()] )
+            extra_ldflags = ["-L{0}/lib/stopcond".format(get_amuse_root_dir()), "-l"+cls.get_libname()] )
 
 
 class _TestInterfaceFortranSingleProcess(_AbstractTestInterfaceFortran):
@@ -595,7 +602,7 @@ class _TestInterfaceFortranSingleProcess(_AbstractTestInterfaceFortran):
         next = instance.next_index_for_stopping_condition()
         next = instance.next_index_for_stopping_condition()
         instance.stop()
-        self.assertEquals(next, 1)
+        self.assertEqual(next, 1)
 
     def test2(self):
         instance = ForTesting(self.exefile, number_of_workers = self.get_number_of_workers()) #, debugger = "xterm")
@@ -638,14 +645,14 @@ class _TestInterfaceFortranSingleProcess(_AbstractTestInterfaceFortran):
         instance.set_stopping_condition_particle_index(next, 0, 11)
         instance.set_stopping_condition_particle_index(next, 1, 12)
         self.assertTrue(instance.stopping_conditions.pair_detection.is_set())
-        self.assertEquals(11, instance.get_stopping_condition_particle_index(next, 0))
-        self.assertEquals(12, instance.get_stopping_condition_particle_index(next, 1))
+        self.assertEqual(11, instance.get_stopping_condition_particle_index(next, 0))
+        self.assertEqual(12, instance.get_stopping_condition_particle_index(next, 1))
         instance.stop()
     
     def test6(self):
         instance = ForTesting(self.exefile, number_of_workers = self.get_number_of_workers())
         particles = datamodel.Particles(20)
-        particles.mass = range(1, 21) | units.kg
+        particles.mass = list(range(1, 21)) | units.kg
         instance.particles.add_particles(particles)
         instance.reset_stopping_conditions()
         
@@ -655,26 +662,26 @@ class _TestInterfaceFortranSingleProcess(_AbstractTestInterfaceFortran):
         instance.set_stopping_condition_info(next,instance.stopping_conditions.pair_detection.type)
         instance.set_stopping_condition_particle_index(next, 0, pairs[0][0])
         instance.set_stopping_condition_particle_index(next, 1, pairs[0][1])
-        self.assertEquals(11, instance.get_stopping_condition_particle_index(next, 0))
-        self.assertEquals(12, instance.get_stopping_condition_particle_index(next, 1))
+        self.assertEqual(11, instance.get_stopping_condition_particle_index(next, 0))
+        self.assertEqual(12, instance.get_stopping_condition_particle_index(next, 1))
         self.assertTrue(instance.stopping_conditions.pair_detection.is_set())
-        self.assertEquals(len(instance.stopping_conditions.pair_detection.particles(0)), 1)
-        self.assertEquals(len(instance.stopping_conditions.pair_detection.particles(1)), 1)
+        self.assertEqual(len(instance.stopping_conditions.pair_detection.particles(0)), 1)
+        self.assertEqual(len(instance.stopping_conditions.pair_detection.particles(1)), 1)
         
         for index1, index2 in pairs[1:]:
             next = instance.next_index_for_stopping_condition()
             instance.set_stopping_condition_info(next,instance.stopping_conditions.pair_detection.type)
             instance.set_stopping_condition_particle_index(next, 0, index1)
             instance.set_stopping_condition_particle_index(next, 1, index2)
-            self.assertEquals(index1, instance.get_stopping_condition_particle_index(next, 0))
-            self.assertEquals(index2, instance.get_stopping_condition_particle_index(next, 1))
-        self.assertEquals(len(instance.stopping_conditions.pair_detection.particles(0)), 4)
-        self.assertEquals(len(instance.stopping_conditions.pair_detection.particles(1)), 4)
-        self.assertEquals(len(instance.stopping_conditions.pair_detection.particles(2)), 0)
+            self.assertEqual(index1, instance.get_stopping_condition_particle_index(next, 0))
+            self.assertEqual(index2, instance.get_stopping_condition_particle_index(next, 1))
+        self.assertEqual(len(instance.stopping_conditions.pair_detection.particles(0)), 4)
+        self.assertEqual(len(instance.stopping_conditions.pair_detection.particles(1)), 4)
+        self.assertEqual(len(instance.stopping_conditions.pair_detection.particles(2)), 0)
         
-        self.assertEquals(instance.stopping_conditions.pair_detection.particles(0).mass, 
+        self.assertEqual(instance.stopping_conditions.pair_detection.particles(0).mass, 
             [first + 1 for first, second in pairs] | units.kg)
-        self.assertEquals(instance.stopping_conditions.pair_detection.particles(1).mass, 
+        self.assertEqual(instance.stopping_conditions.pair_detection.particles(1).mass, 
             [second + 1 for first, second in pairs] | units.kg)
         instance.stop()
     
@@ -694,47 +701,57 @@ class _TestInterfaceFortranSingleProcess(_AbstractTestInterfaceFortran):
         for i in range(nmax):
             next = instance.next_index_for_stopping_condition()
             #~ print i, next
-            self.assertEquals(next, i)
+            self.assertEqual(next, i)
         instance.stop()
     
     
 
 class TestInterfaceFortran(_TestInterfaceFortranSingleProcess):
     
-    def get_libname(self):
+    @classmethod
+    def get_libname(cls):
         return 'stopcond'
-        
-    def get_codestring(self):
+    
+    @classmethod
+    def get_codestring(cls):
         return codestringF
-        
-    def get_interface_class(self):
+
+    @classmethod        
+    def get_interface_class(cls):
         return ForTestingInterface
     
 class TestInterfaceFortranModule(_TestInterfaceFortranSingleProcess):
     
-    def get_libname(self):
+    @classmethod
+    def get_libname(cls):
         return 'stopcond'
-        
-    def get_codestring(self):
+
+    @classmethod        
+    def get_codestring(cls):
         return codestringFModule
-        
-    def get_interface_class(self):
+
+    @classmethod        
+    def get_interface_class(cls):
         return ForTestingInterfaceFortranModule
     
 class TestInterfaceFortranModuleMultiprocess(_AbstractTestInterfaceFortran):
     
-    def get_libname(self):
+    @classmethod
+    def get_libname(cls):
         return 'stopcondmpi'
-        
-    def get_codestring(self):
+
+    @classmethod        
+    def get_codestring(cls):
         return codestringFModule
         
-    def get_interface_class(self):
+    @classmethod
+    def get_interface_class(cls):
         return ForTestingInterfaceFortranModule
     
     def get_number_of_workers(self):
         return 3
     
+    @classmethod
     def get_mpidir(self):
         return ''
         
@@ -751,7 +768,7 @@ class TestInterfaceFortranModuleMultiprocess(_AbstractTestInterfaceFortran):
         pair_detection = instance.stopping_conditions.pair_detection
         
         particles = datamodel.Particles(20)
-        particles.mass = range(1, 21) | units.kg
+        particles.mass = list(range(1, 21)) | units.kg
         instance.particles.add_particles(particles)
         
         instance.stopping_conditions.pair_detection.enable()
@@ -765,12 +782,12 @@ class TestInterfaceFortranModuleMultiprocess(_AbstractTestInterfaceFortran):
         )
         instance.mpi_collect_stopping_conditions()
         self.assertTrue(pair_detection.is_set())
-        self.assertEquals(len(pair_detection.particles(0)),self.get_number_of_workers()) 
-        self.assertEquals(len(pair_detection.particles(1)),self.get_number_of_workers()) 
-        self.assertEquals(pair_detection.particles(0).key,particles[1].key)
-        self.assertEquals(pair_detection.particles(1).key,particles[2].key)
-        self.assertEquals(pair_detection.particles(0).mass,[2,2,2] | units.kg) 
-        self.assertEquals(pair_detection.particles(1).mass,[3,3,3] | units.kg) 
+        self.assertEqual(len(pair_detection.particles(0)),self.get_number_of_workers()) 
+        self.assertEqual(len(pair_detection.particles(1)),self.get_number_of_workers()) 
+        self.assertEqual(pair_detection.particles(0).key,particles[1].key)
+        self.assertEqual(pair_detection.particles(1).key,particles[2].key)
+        self.assertEqual(pair_detection.particles(0).mass,[2,2,2] | units.kg) 
+        self.assertEqual(pair_detection.particles(1).mass,[3,3,3] | units.kg) 
         instance.stop()
         
     
@@ -788,7 +805,7 @@ class TestInterfaceFortranModuleMultiprocess(_AbstractTestInterfaceFortran):
         pair_detection = instance.stopping_conditions.pair_detection
         
         particles = datamodel.Particles(20)
-        particles.mass = range(1, 21) | units.kg
+        particles.mass = list(range(1, 21)) | units.kg
         instance.particles.add_particles(particles)
         
         instance.stopping_conditions.pair_detection.enable()
@@ -802,12 +819,12 @@ class TestInterfaceFortranModuleMultiprocess(_AbstractTestInterfaceFortran):
             )
             instance.mpi_collect_stopping_conditions()
             self.assertTrue(pair_detection.is_set())
-            self.assertEquals(len(pair_detection.particles(0)),1) 
-            self.assertEquals(len(pair_detection.particles(1)),1) 
-            self.assertEquals(pair_detection.particles(0).key,particles[1].key)
-            self.assertEquals(pair_detection.particles(1).key,particles[2].key)
-            self.assertEquals(pair_detection.particles(0).mass,[2] | units.kg) 
-            self.assertEquals(pair_detection.particles(1).mass,[3] | units.kg) 
+            self.assertEqual(len(pair_detection.particles(0)),1) 
+            self.assertEqual(len(pair_detection.particles(1)),1) 
+            self.assertEqual(pair_detection.particles(0).key,particles[1].key)
+            self.assertEqual(pair_detection.particles(1).key,particles[2].key)
+            self.assertEqual(pair_detection.particles(0).mass,[2] | units.kg) 
+            self.assertEqual(pair_detection.particles(1).mass,[3] | units.kg) 
             instance.reset_stopping_conditions()
             instance.stopping_conditions.pair_detection.enable()
             
@@ -826,7 +843,7 @@ class TestInterfaceFortranModuleMultiprocess(_AbstractTestInterfaceFortran):
         pair_detection = instance.stopping_conditions.pair_detection
         
         particles = datamodel.Particles(20)
-        particles.mass = range(1, 21) | units.kg
+        particles.mass = list(range(1, 21)) | units.kg
         instance.particles.add_particles(particles)
         
         instance.stopping_conditions.pair_detection.enable()
@@ -847,14 +864,14 @@ class TestInterfaceFortranModuleMultiprocess(_AbstractTestInterfaceFortran):
         )
         instance.mpi_collect_stopping_conditions()
         self.assertTrue(pair_detection.is_set())
-        self.assertEquals(len(pair_detection.particles(0)),3) 
-        self.assertEquals(len(pair_detection.particles(1)),3) 
-        self.assertEquals(pair_detection.particles(0).key[0],particles[1].key)
-        self.assertEquals(pair_detection.particles(1).key[0],particles[2].key)
-        self.assertEquals(pair_detection.particles(0).key[1],particles[3].key)
-        self.assertEquals(pair_detection.particles(1).key[1],particles[4].key)
-        self.assertEquals(pair_detection.particles(0).key[2],particles[5].key)
-        self.assertEquals(pair_detection.particles(1).key[2],particles[6].key)
+        self.assertEqual(len(pair_detection.particles(0)),3) 
+        self.assertEqual(len(pair_detection.particles(1)),3) 
+        self.assertEqual(pair_detection.particles(0).key[0],particles[1].key)
+        self.assertEqual(pair_detection.particles(1).key[0],particles[2].key)
+        self.assertEqual(pair_detection.particles(0).key[1],particles[3].key)
+        self.assertEqual(pair_detection.particles(1).key[1],particles[4].key)
+        self.assertEqual(pair_detection.particles(0).key[2],particles[5].key)
+        self.assertEqual(pair_detection.particles(1).key[2],particles[6].key)
         instance.reset_stopping_conditions()
         instance.stopping_conditions.pair_detection.enable()
             
@@ -875,7 +892,7 @@ class TestInterfaceFortranModuleMultiprocess(_AbstractTestInterfaceFortran):
         pair_detection = instance.stopping_conditions.pair_detection
         
         particles = datamodel.Particles(20)
-        particles.mass = range(1, 21) | units.kg
+        particles.mass = list(range(1, 21)) | units.kg
         instance.particles.add_particles(particles)
         
         instance.stopping_conditions.pair_detection.enable()
@@ -888,7 +905,7 @@ class TestInterfaceFortranModuleMultiprocess(_AbstractTestInterfaceFortran):
         )
         instance.mpi_distribute_stopping_conditions()
         self.assertTrue(pair_detection.is_set())
-        self.assertEquals(len(pair_detection.particles(0)),0) 
+        self.assertEqual(len(pair_detection.particles(0)),0) 
             
         instance.stop()
         
@@ -904,14 +921,14 @@ class TestInterfaceFortranModuleMultiprocess(_AbstractTestInterfaceFortran):
         nmax = 50
         for i in range(nmax):
             next = instance.next_index_for_stopping_condition()
-            self.assertEquals(next, i)
+            self.assertEqual(next, i)
         i, error = instance.get_number_of_stopping_conditions_set()
-        self.assertEquals(error, 0)
-        self.assertEquals(i, nmax)
+        self.assertEqual(error, 0)
+        self.assertEqual(i, nmax)
         instance.mpi_collect_stopping_conditions()
         i, error = instance.get_number_of_stopping_conditions_set()
-        self.assertEquals(error, 0)
-        self.assertEquals(i, number_of_workers * nmax)
+        self.assertEqual(error, 0)
+        self.assertEqual(i, number_of_workers * nmax)
         
         instance.stop()
     

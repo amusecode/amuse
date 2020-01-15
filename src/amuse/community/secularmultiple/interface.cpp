@@ -1713,7 +1713,7 @@ int set_positions_and_velocities_interface()
 /**********************************************
 /* orbital element/vector conversion routines *
  **********************************************/
-int compute_h_tot_vector(ParticlesMap* particlesMap, double h_tot_vec[3])
+void compute_h_tot_vector(ParticlesMap* particlesMap, double h_tot_vec[3])
 {
     for (int i=0; i<3; i++)
     {

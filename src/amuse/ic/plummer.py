@@ -24,7 +24,7 @@ class MakePlummerModel(object):
         self.mass_cutoff = min(mass_cutoff, self.calculate_mass_cuttof_from_radius_cutoff(radius_cutoff))
         self.do_scale = do_scale
         if not random_state == None:
-            print "DO NOT USE RANDOM STATE"
+            print("DO NOT USE RANDOM STATE")
         
         self.random_state = None
         

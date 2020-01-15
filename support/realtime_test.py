@@ -1,10 +1,7 @@
-from __future__ import print_function
+
 
 import time
-try:  # Python 2
-    import urlparse
-except ImportError:  # Python 3
-    from urllib import parse as urlparse
+import urllib.parse
 import threading
 import json
 import os.path
@@ -109,7 +106,7 @@ class HandleRequest(webserver.HandleRequest):
         return string, content_type
     
     def do_run_test(self):
-        parameters = urlparse.parse_qs(self.parsed_path.query)
+        parameters = urllib.parse.parse_qs(self.parsed_path.query)
         a0 = parameters['a0'][0]
         a1 = parameters['a1'][0]
         a2 = parameters['a2'][0]

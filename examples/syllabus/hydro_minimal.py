@@ -1,6 +1,7 @@
 """
    Minimalistic routine for running a hydrodynamics solver
 """
+from __future__ import print_function
 from amuse.lab import *
 
 def main(N=100, Mtot=1|units.MSun, Rvir=1|units.RSun, t_end=1|units.hour):
@@ -16,9 +17,9 @@ def main(N=100, Mtot=1|units.MSun, Rvir=1|units.RSun, t_end=1|units.hour):
     Epot = hydro.potential_energy
     Eth = hydro.thermal_energy
     Etot = Ekin + Epot + Eth
-    print "T=", hydro.get_time(), "M=", hydro.gas_particles.mass.sum(), 
-    print "E= ", Etot, "Q= ", (Ekin+Eth)/Epot, "dE=", (Etot_init-Etot)/Etot
-    print "pos=", hydro.gas_particles.center_of_mass().in_(units.RSun)
+    print("T=", hydro.get_time(), "M=", hydro.gas_particles.mass.sum(), end=' ') 
+    print("E= ", Etot, "Q= ", (Ekin+Eth)/Epot, "dE=", (Etot_init-Etot)/Etot)
+    print("pos=", hydro.gas_particles.center_of_mass().in_(units.RSun))
 
     hydro.stop()
     

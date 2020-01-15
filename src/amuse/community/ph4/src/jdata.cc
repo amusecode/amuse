@@ -148,8 +148,9 @@ int jdata::add_particle(real pmass, real pradius,
 	if (dnjbuf < njbuf/4) dnjbuf = njbuf/4;
 	njbuf += dnjbuf;
 
-	// Must preserve name, id, mass, radius, pos, vel already set.
-	// All other arrays will be created at the end.
+	// Must preserve name, id, mass, radius, time, timestep, pos,
+	// vel already set.  All other arrays will be recreated at the
+	// end.
 
 	string *name0 = name;
 	int *id0 = id;
@@ -187,6 +188,10 @@ int jdata::add_particle(real pmass, real pradius,
 	if (timestep0) delete [] timestep0;
 	if (pos0) delete [] pos0;
 	if (vel0) delete [] vel0;
+
+	// Recreate remaining arrays.
+
+	initialize_work_arrays();
     }
 
     // If a particle ID is specified, check that it isn't already in
@@ -268,7 +273,7 @@ int jdata::add_particle(real pmass, real pradius,
 
     // Return the particle id.
 
-    return pid;    
+    return pid;
 }
 
 void jdata::remove_particle(int j)
@@ -375,6 +380,25 @@ void jdata::remove_particle(int j)
     }
 }
 
+void jdata::initialize_work_arrays()
+{
+    if (nn) delete [] nn;
+    if (dnn) delete [] dnn;
+    if (pot) delete [] pot;
+    if (acc) delete [] acc;
+    if (jerk) delete [] jerk;
+    if (pred_pos) delete [] pred_pos;
+    if (pred_vel) delete [] pred_vel;
+
+    nn = new int[njbuf];			// scatter
+    dnn = new real[njbuf];			// scatter
+    pot = new real[njbuf];			// scatter
+    acc = new real[njbuf][3];			// gather, scatter
+    jerk = new real[njbuf][3];			// gather, scatter
+    pred_pos = new real[njbuf][3];		// gather, scatter
+    pred_vel = new real[njbuf][3];		// gather, scatter
+}
+
 void jdata::initialize_arrays()
 {
     const char *in_function = "jdata::initialize_arrays";
@@ -382,13 +406,7 @@ void jdata::initialize_arrays()
 
     // Complete the initialization of all arrays used in the calculation.
 
-    nn = new int[njbuf];			// scatter
-    pot = new real[njbuf];			// scatter
-    dnn = new real[njbuf];			// scatter
-    acc = new real[njbuf][3];			// gather, scatter
-    jerk = new real[njbuf][3];			// gather, scatter
-    pred_pos = new real[njbuf][3];		// gather, scatter
-    pred_vel = new real[njbuf][3];		// gather, scatter
+    initialize_work_arrays();
 
     for (int j = 0; j < nj; j++) {
 	nn[j] = 0;
@@ -405,7 +423,7 @@ void jdata::initialize_arrays()
 
     // *** To be refined.  Probably want to specify a scaling. ***
 
-    rmin = 2./nj;		// 90 degree turnaround in standard units
+    if (nj > 0) rmin = 2./nj;	// 90 degree turnaround in standard units
     dtmin = eta*(2./nj) * 4;	// for nn check: final 4 is a fudge factor
 				// -- not used??
     if (mpi_rank == 0) {
@@ -491,6 +509,8 @@ void jdata::set_initial_timestep(real fac, real limit, real limitm)
     // Assume acc and jerk have already been set.  Only set the time
     // step if it hasn't already been set.
 
+    if (nj <= 0) return;
+    
     for (int j = 0; j < nj; j++)
 	if (timestep[j] <= 0) {
 	    real a2 = 0, j2 = 0;
@@ -533,10 +553,12 @@ void jdata::set_initial_timestep(real fac, real limit, real limitm)
 	vector<real> temp;
 	for (int j = 0; j < nj; j++) temp.push_back(timestep[j]);
 	sort(temp.begin(), temp.end());
-	real dtmax = limitm*temp[nj/2];
-	// PRC(limitm); PRL(dtmax);
-	for (int j = 0; j < nj; j++) {
-	    while (timestep[j] > dtmax) timestep[j] /= 2;
+	if (nj > 0) {
+	    real dtmax = limitm*temp[nj/2];
+	    // PRC(limitm); PRL(dtmax);
+	    for (int j = 0; j < nj; j++) {
+		while (timestep[j] > dtmax) timestep[j] /= 2;
+	    }
 	}
     }
 }
@@ -549,6 +571,7 @@ void jdata::force_initial_timestep(real fac, real limit, real limitm)
 
     const char *in_function = "jdata::set_initial_timestep";
     if (DEBUG > 2 && mpi_rank == 0) PRL(in_function);
+    if (nj <= 0) return;
 
     // Assume acc and jerk have already been set.
 
@@ -560,6 +583,7 @@ real jdata::get_pot(bool reeval)		// default = false
 {
     const char *in_function = "jdata::get_pot";
     if (DEBUG > 2 && mpi_rank == 0) PRL(in_function);
+    if (nj <= 0) return 0;
 
     // Compute the total potential energy of the entire j-particle
     // set.  If no idata structure is specified, then just do a
@@ -628,6 +652,7 @@ real jdata::get_kin()
 {
     const char *in_function = "jdata::get_kin";
     if (DEBUG > 2 && mpi_rank == 0) PRL(in_function);
+    if (nj <= 0) return 0;
 
     // Return the total kinetic energy of the (predicted) j system.
 
@@ -638,6 +663,7 @@ real jdata::get_kin()
 	for (int k = 0; k < 3; k++) v2 += pow(pred_vel[j][k],2);
 	kin2 += mass[j]*v2;
     }
+    
     return kin2/2;
 }
 
@@ -645,6 +671,7 @@ real jdata::get_energy(bool reeval)		// default = false
 {
     const char *in_function = "jdata::get_energy";
     if (DEBUG > 2 && mpi_rank == 0) PRL(in_function);
+    if (nj <= 0) return 0;
 
     // Note: energy includes Emerge.
 
@@ -654,6 +681,7 @@ real jdata::get_energy(bool reeval)		// default = false
 
 real jdata::get_total_mass()
 {
+    if (nj <= 0) return 0;
     real mtot = 0;
     for (int j = 0; j < nj; j++) mtot += mass[j];
     return mtot;

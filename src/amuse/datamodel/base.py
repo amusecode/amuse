@@ -22,7 +22,7 @@ import warnings
 
 class KeyGenerator(object):
     
-    def next(self):
+    def __next__(self):
         pass
         
     def next_set_of_keys(self, length):
@@ -33,7 +33,7 @@ class BasicUniqueKeyGenerator(KeyGenerator):
     def __init__(self, lowest_unique_key = 1):
         self.lowest_unique_key = lowest_unique_key
     
-    def next(self):
+    def __next__(self):
         new_key = self.lowest_unique_key
         self.lowest_unique_key += 1
         return new_key
@@ -63,7 +63,7 @@ class RandomNumberUniqueKeyGenerator(KeyGenerator):
         self.random = random
         
 
-    def next(self):
+    def __next__(self):
         return numpy.array([random.getrandbits(self.number_of_bits)], dtype=numpy.uint64)[0]
         
     def next_set_of_keys(self, length):
@@ -72,8 +72,8 @@ class RandomNumberUniqueKeyGenerator(KeyGenerator):
         try:
             minint = -2** ((self.number_of_bits // 2) - 1)
             maxint = 2** ((self.number_of_bits // 2) - 1)
-            low = self.random.random_integers(minint,maxint,length)
-            high = self.random.random_integers(minint,maxint,length)
+            low = self.random.randint(minint,maxint+1,length)
+            high = self.random.randint(minint,maxint+1,length)
             return numpy.array(low + (high << 32), dtype=numpy.uint64)
         except:
              return numpy.array([random.getrandbits(self.number_of_bits) for i in range(length)], dtype='uint64')
@@ -616,7 +616,7 @@ class CollectionAttributes(object):
         
     def __str__(self):
         lines = []
-        for name, value in self._attributes.iteritems():
+        for name, value in self._attributes.items():
             lines.append("{0}: {1}".format(name, value))
         return '\n'.join(lines)
     
@@ -624,7 +624,7 @@ class CollectionAttributes(object):
         return CollectionAttributes(self._attributes)
         
     def iteritems(self):
-        return self._attributes.iteritems()
+        return iter(self._attributes.items())
 class CachedResults(object):
     """
     Stores results for functions that only need to be called once
@@ -1329,7 +1329,7 @@ class AbstractSet(object):
         """
         keys = self.get_all_keys_in_store()
         #values = self._get_values(keys, attributes) #fast but no vectors
-        values = map(lambda x: getattr(self, x), attributes)
+        values = [getattr(self, x) for x in attributes]
         selected_keys = []
         for index in range(len(keys)):
             key = keys[index]
@@ -1371,7 +1371,7 @@ class AbstractSet(object):
         """
         keys = self.get_all_keys_in_store()
         #values = self._get_values(keys, attributes) #fast but no vectors
-        values = map(lambda x: getattr(self, x), attributes)
+        values = [getattr(self, x) for x in attributes]
         
         selections = selection_function(*values)
         selected_keys =  numpy.compress(selections, keys)
@@ -1450,7 +1450,7 @@ class AbstractSet(object):
     def _attributes_for_dir(self):
         result = []
         result.extend(self.get_attribute_names_defined_in_store())
-        result.extend(self._derived_attributes.keys())
+        result.extend(list(self._derived_attributes.keys()))
         return result
         
     

@@ -8,13 +8,7 @@ author_email = 'info@amusecode.org'
 license_ = "Apache License 2.0"
 url = 'http://www.amusecode.org/'
 install_requires = [
-    'wheel>=0.32',
-    'docutils>=0.6',
-    'numpy>=1.2.2',
-    'nose>=0.11.1',
-    'mpi4py>=1.1.0',
-    'h5py>=1.1.0',
-    'matplotlib>=2.2'
+    'matplotlib>=2.2',
     'amuse-framework>=%s' % main_version,
     'amuse-athena>=%s' % main_version,
     'amuse-bhtree>=%s' % main_version,
@@ -42,7 +36,8 @@ install_requires = [
     'amuse-phigrape>=%s' % main_version,
     'amuse-seba>=%s' % main_version,
     'amuse-secularmultiple>=%s' % main_version,
-    'amuse-simplex>=%s' % main_version,
+# until C++ MPI code is replaced/fixed
+#    'amuse-simplex>=%s' % main_version,
     'amuse-smalln>=%s' % main_version,
     'amuse-sphray>=%s' % main_version,
     'amuse-sse>=%s' % main_version,
@@ -65,4 +60,5 @@ setup(
     long_description=long_description,
     long_description_content_type=long_description_content_type,
     install_requires=install_requires,
+    python_requires=">=3.5",
 )

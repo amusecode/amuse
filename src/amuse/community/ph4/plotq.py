@@ -104,14 +104,14 @@ if __name__ == '__main__':
                         ls.append(sys.argv[i])
 
                 else:
-                    print 'unknown option', sys.argv[i]
+                    print('unknown option', sys.argv[i])
 
         i += 1
     
     li = len(infiles)
     lq = len(quantities)
     if li == 0 or lq == 0:
-        print 'plotq -f file-list -q quantity-list'
+        print('plotq -f file-list -q quantity-list')
         sys.exit(0)
 
     # Extend the color list if neessary.
@@ -155,19 +155,19 @@ if __name__ == '__main__':
     for ii in range(lq):
         figs.append(plt.subplot(i+ii+1))
 
-    print 'infiles:    ',
-    for f in infiles: print f,
-    print ''
-    print 'quantities: ',
-    for q in quantities: print q,
-    print ''
-    print 'colors:     ',
-    for ic in range(li): print colors[ic],
-    print ''
-    print 'styles:     ',
-    for i in range(li): print ls[i],
-    print ''
-    print m, 'x', n, 'plot layout'
+    print('infiles:    ', end=' ')
+    for f in infiles: print(f, end=' ')
+    print('')
+    print('quantities: ', end=' ')
+    for q in quantities: print(q, end=' ')
+    print('')
+    print('colors:     ', end=' ')
+    for ic in range(li): print(colors[ic], end=' ')
+    print('')
+    print('styles:     ', end=' ')
+    for i in range(li): print(ls[i], end=' ')
+    print('')
+    print(m, 'x', n, 'plot layout')
 
     ifile = 0
     for infile in infiles:			# loop over input files
@@ -233,7 +233,7 @@ if __name__ == '__main__':
                 figs[iq].set_xlabel('time')
                 figs[iq].set_ylabel(qq)
             else:
-                print 'No', qq, 'data to plot in '+infile+'.'
+                print('No', qq, 'data to plot in '+infile+'.')
 
         ifile += 1
 
@@ -249,5 +249,5 @@ if __name__ == '__main__':
                 qq += quantities[iq]
             outfile = qq+'.pdf'
         outfile = outfile.replace('/','_')
-        print 'saving to', outfile
+        print('saving to', outfile)
         plt.savefig(outfile)

@@ -26,7 +26,7 @@ def new_halogen_model(number_of_particles, convert_nbody = None, do_scale = Fals
     """
     instance = Halogen(unit_converter=convert_nbody, redirection=redirection)
     instance.parameters.number_of_particles = number_of_particles
-    for (key, value) in keyword_arguments.iteritems():
+    for (key, value) in keyword_arguments.items():
         setattr(instance.parameters, key, value)
     
     instance.generate_particles()

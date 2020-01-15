@@ -32,11 +32,11 @@ from amuse.ic.salpeter import new_salpeter_mass_distribution
 def plot_particles(particles, name_of_the_figure):
     return 1
     if HAS_MATPLOTLIB:
-        print "plotting the data"
-
+        print("plotting the data")
+        
         figure = pyplot.figure(figsize=(40, 40))
-        plots = map(lambda x: figure.add_subplot(4, 4, x+1), range(4*4))
-
+        plots = [figure.add_subplot(4,4, x+1) for x in range(4*4)]
+        
         index = 0
         for data in particles.history:
             if index > 15:
@@ -78,18 +78,17 @@ def plot_particles(particles, name_of_the_figure):
 
 def print_log(time, gravity, particles,
               total_energy_at_t0, total_energy_at_this_time):
-    print "Evolved model to t = " + str(time)
-    print total_energy_at_t0.as_quantity_in(units.J), \
+    print("Evolved model to t = " + str(time))
+    print(total_energy_at_t0.as_quantity_in(units.J), \
         total_energy_at_this_time.as_quantity_in(units.J), \
-        (total_energy_at_this_time - total_energy_at_t0) / total_energy_at_t0
+        (total_energy_at_this_time - total_energy_at_t0) / total_energy_at_t0)
     # print "KE:" , particles.kinetic_energy().as_quantity_in(units.J)
     # print "PE:" , particles.potential_energy(gravity.parameters.epsilon_squared)
-    print "center of mass:", particles.center_of_mass()
-    print "center of mass velocity:", particles.center_of_mass_velocity()
-    total_mass = 0 | units.kg
-    for m in particles.mass:
-        total_mass += m
-    print "total mass =", total_mass
+    print("center of mass:", particles.center_of_mass())
+    print("center of mass velocity:", particles.center_of_mass_velocity())
+    total_mass = 0|units.kg
+    for m in particles.mass: total_mass += m
+    print("total mass =", total_mass)
 
 
 class AmuseEvolveThread(threading.Thread):
@@ -129,21 +128,22 @@ def simulate_small_cluster(number_of_stars, end_time=40 | units.Myr,
         = (float(number_of_stars)**(-0.333333) | units.parsec) ** 2
 
     stellar_evolution = SSE()
-    stellar_evolution.initialize_module_with_default_parameters()
-
-    print "setting masses of the stars"
+    stellar_evolution.initialize_module_with_default_parameters() 
+    
+    print("setting masses of the stars")
     particles.radius = 0.0 | units.RSun
     particles.mass = salpeter_masses
+    
+    print("initializing the particles")
 
-    print "initializing the particles"
     stellar_evolution.particles.add_particles(particles)
     from_stellar_evolution_to_model \
         = stellar_evolution.particles.new_channel_to(particles)
     from_stellar_evolution_to_model.copy_attributes(["mass"])
-
-    print "centering the particles"
+    
+    print("centering the particles")
     particles.move_to_center()
-    print "scaling particles to viridial equilibrium"
+    print("scaling particles to viridial equilibrium")
     particles.scale_to_standard(convert_nbody)
 
     gravity.particles.add_particles(particles)
@@ -154,23 +154,24 @@ def simulate_small_cluster(number_of_stars, end_time=40 | units.Myr,
 
     time = 0.0 | units.Myr
     particles.savepoint(time)
-
-    total_energy_at_t0 = gravity.kinetic_energy + gravity.potential_energy
-
-    print "evolving the model until t = " + str(end_time)
+    
+    
+    total_energy_at_t0 = gravity.kinetic_energy + gravity.potential_energy   
+    
+    print("evolving the model until t = " + str(end_time))
     while time < end_time:
         time += 0.25 | units.Myr
-
-        print "Gravity evolve step starting"
+        
+        print("Gravity evolve step starting")
         gravity_evolve = gravity.evolve_model.async(time)
-
-        print "Stellar evolution step starting"
+        
+        print("Stellar evolution step starting")
         stellar_evolution_evolve = stellar_evolution.evolve_model(time)
 
-        print "Stellar evolution step done."
-
+        print("Stellar evolution step done.")
+        
         gravity_evolve.result()
-        print "Gravity evolve step done."
+        print("Gravity evolve step done.")
 
         from_gravity_to_model.copy()
         from_stellar_evolution_to_model.copy_attributes(["mass", "radius"])

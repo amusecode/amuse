@@ -3,7 +3,7 @@ import sys
 import numpy as np
 import math
 
-from interface import SeiInterface
+from .interface import SeiInterface
 
 OMEGA = 1.0
 
@@ -19,9 +19,9 @@ if __name__ == '__main__':
                        0.0)
 
     for t in np.arange(0, 6,1):
-        print instance.get_state()['x'],\
+        print(instance.get_state()['x'],\
               instance.get_state()['y'],\
-              instance.get_state()['z'] 
+              instance.get_state()['z']) 
         instance.evolve(t)
 
     instance.stop()

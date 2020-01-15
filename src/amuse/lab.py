@@ -1,8 +1,6 @@
 """
-This is the public interface to the AMUSE 
+This is the public interface to the AMUSE
 *Astrophysical Multipurpose Software Environment* framework.
-
-
 """
 
 from amuse.support.core import late
@@ -29,10 +27,37 @@ from amuse.io import get_options_for_format
 from amuse.io import ReportTable
 
 from amuse.ext.solarsystem import new_solar_system_for_mercury, new_solar_system
-from amuse.ext.halogen_model import new_halogen_model
-from amuse.ext.galactics_model import new_galactics_model
+try:
+    from amuse.ext.halogen_model import new_halogen_model
+except ImportError:
+    def new_halogen_model():
+        print(
+            "Error - Halogen not installed. Install it with 'pip install amuse-halogen'."
+        )
+        return -1
+try:
+    from amuse.ext.galactics_model import new_galactics_model
+except ImportError:
+    def new_galactics_model():
+        print(
+            "Error - Galactics not installed. Install it with 'pip install amuse-galactics'."
+        )
+        return -1
 from amuse.ext.spherical_model import new_uniform_spherical_particle_distribution, new_spherical_particle_distribution
-from amuse.ext.star_to_sph import convert_stellar_model_to_SPH, pickle_stellar_model
+try:
+    from amuse.ext.star_to_sph import convert_stellar_model_to_SPH, pickle_stellar_model
+except ImportError:
+    def convert_stellar_model_to_SPH():
+        print(
+            "Error - Gadget2 not installed. Install it with 'pip install amuse-gadget2'."
+        )
+        return -1
+    def pickle_stellar_model():
+        print(
+            "Error - Gadget2 not installed. Install it with 'pip install amuse-gadget2'."
+        )
+        return -1
+
 
 _community_codes=[
     "BHTree", 
@@ -127,5 +152,3 @@ def vector(value = [], unit = None):
             return value.as_vector_with_length(1)
         else:
             return VectorQuantity(value, unit)
-            
-

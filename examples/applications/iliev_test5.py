@@ -73,7 +73,7 @@ def glass(N, target_rms=0.05):
      make glass for initial condition generation
     """
     if target_rms < 0.001:
-        print "warning: target_rms highly unlikely to succeed"
+        print("warning: target_rms highly unlikely to succeed")
 
     L = 1 | nbody_system.length
     dt = 0.01 | nbody_system.time
@@ -120,7 +120,7 @@ def glass(N, target_rms=0.05):
         h = sph.particles.h_smooth.value_in(nbody_system.length)
         rho = h**(-3.)
         rms = rho.std()/rho.mean()
-        print rms, target_rms
+        print(rms, target_rms)
 
     x = sph.particles.x.value_in(nbody_system.length)
     y = sph.particles.y.value_in(nbody_system.length)
@@ -261,14 +261,14 @@ def radhydro_evolve(sph, rad, tend, dt):
 
     t = 0. | units.Myr
     while t < tend-dt/2:
-        print t
-        print "sph1"
+        print(t)
+        print("sph1")
         sph.evolve_model(t+dt/2)
-        print "rad"
+        print("rad")
         update_pos_rho(rad, sph.gas_particles)
         rad.evolve_model(t+dt)
         update_u(sph, rad.particles)
-        print "sph2"
+        print("sph2")
         sph.evolve_model(t+dt)
         t += dt
         i += 1

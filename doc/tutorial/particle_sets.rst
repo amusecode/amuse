@@ -213,7 +213,7 @@ First we define a simple dummy legacy code object, with some typical gd interfac
     ...     def add_particles(self, new_particles):
     ...         self.particles.add_particles(new_particles)
     ...     def update_particles(self, particles):
-    ...         self.particles.copy_values_of_state_attributes_to(particles)
+    ...         self.particles.copy_values_of_attributes_to(['x', 'y', 'z', 'mass'], particles)
     ...         particles = self.particles.copy()           
     ...     def evolve(self):
     ...         self.particles.position *= 1.1

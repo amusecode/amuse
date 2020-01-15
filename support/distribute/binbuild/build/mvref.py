@@ -63,39 +63,39 @@ def get_dylib_id(name):
 def change_dylib_id(name, newid, dryrun = True):
     arguments = ['install_name_tool', '-id', newid, name]
     if dryrun == True:
-        print ' '.join(arguments)
+        print(' '.join(arguments))
         return
 
     outputstring = subprocess.check_output(arguments)
-    print outputstring
+    print(outputstring)
 
 def change_dylib_ref(name, oldid, newid, dryrun = True):
     arguments = ['install_name_tool', '-change', oldid, newid, name]
     if dryrun == True:
-        print ' '.join(arguments)
+        print(' '.join(arguments))
         return
     
     try:
         outputstring = subprocess.check_output(arguments)
-        print outputstring
+        print(outputstring)
     except subprocess.CalledProcessError as ex:
-        print "error while running:", ' '.join(arguments)
-        print "output:", ex.output
+        print("error while running:", ' '.join(arguments))
+        print("output:", ex.output)
 
 def add_rpath(name, rpath,  dryrun = True):
     arguments = ['install_name_tool', '-add_rpath', rpath, name]
     if dryrun == True:
-        print ' '.join(arguments)
+        print(' '.join(arguments))
         return
         
-    print ' '.join(arguments)
+    print(' '.join(arguments))
     try:
         outputstring = subprocess.check_output(arguments)
-        print outputstring
+        print(outputstring)
     except subprocess.CalledProcessError as ex:
-        print "error in addind rpath:"
-        print ex
-        print "will ignore"
+        print("error in addind rpath:")
+        print(ex)
+        print("will ignore")
 
 def mainold(path='../lib', binpath='.', rpath='', dryrun = True):
     
@@ -104,7 +104,7 @@ def mainold(path='../lib', binpath='.', rpath='', dryrun = True):
     if len(rpath) == 0:
         absbinpath = os.path.abspath(binpath)
         relpath = os.path.relpath(abslibpath, absbinpath)
-        print relpath
+        print(relpath)
         rpath = os.path.join('@loader_path',relpath)
          
     for name in get_bin_files(binpath):
@@ -132,13 +132,13 @@ def main(libpath='../lib', binpath='.', rpath='', dryrun = True):
     for name in get_bin_files(binpath):
         must_add_rpath = False
         
-        print "file:", name
+        print("file:", name)
         for x in get_bin_references(name):
             
             dir, basename = os.path.split(x)
-            print dir
-            print basename
-            print abslibpath
+            print(dir)
+            print(basename)
+            print(abslibpath)
             if dir == abslibpath or dir == '@rpath':
                 must_add_rpath = True
                 change_dylib_ref(name, x, os.path.join('@rpath', basename), dryrun)
@@ -155,7 +155,7 @@ def main(libpath='../lib', binpath='.', rpath='', dryrun = True):
                 newrpath = os.path.join('@loader_path',relpath)
             else:
                 newrpath = rpath
-            print "newrpath", newrpath, dryrun
+            print("newrpath", newrpath, dryrun)
             add_rpath(name, newrpath, dryrun)
 
 

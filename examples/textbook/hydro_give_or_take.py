@@ -87,7 +87,7 @@ def main(filename):
     stars.radius = [0.992, 0.00434665] |units.AU
     stars.wind_radius = [1, 0] * stars.radius
     R_BH = 2*constants.G*stars[1].mass/stars[0].terminal_wind_velocity**2
-    print "Bondi Hoyle accretion radius:", R_BH
+    print("Bondi Hoyle accretion radius:", R_BH)
     stars.sink_radius = [0, 1] * R_BH
     #print "stars R=", stars.key, stars.sink_radius
     mgas =  0.1*abs(stars.dmdt.sum()*dt)
@@ -118,15 +118,15 @@ def main(filename):
 
         accreted = hydro_sink_particles(stars, gas)
         if len(accreted)>0:
-            print "N accreted:", time.in_(units.yr), len(accreted), \
-                  "m=", accreted.mass.sum().in_(units.MSun)
+            print("N accreted:", time.in_(units.yr), len(accreted), \
+                  "m=", accreted.mass.sum().in_(units.MSun))
             accreted_gas.add_particles(accreted.copy())
             gas.remove_particles(accreted)
             hydro.gas_particles.remove_particles(accreted)
 
         escaped = remove_gas(gas, 5*separation)
         if len(escaped):
-            print "N escaped:", len(escaped)
+            print("N escaped:", len(escaped))
             escaped_gas.add_particles(escaped.copy())
             gas.remove_particles(escaped)
             hydro.gas_particles.remove_particles(escaped)
@@ -145,11 +145,11 @@ def main(filename):
             if time>t_snap:
                 t_snap += dt_snap
                 write_set_to_file(gas, filename, 'hdf5')
-                print "time=", hydro.model_time, "Ngas=", len(gas), \
-                      mgas*len(gas)
-                print "T=", time, "M=", stars[0].mass, stars[1].mass
-                print "Gas = ", len(generated_gas), len(accreted_gas), \
-                      len(escaped_gas)
+                print("time=", hydro.model_time, "Ngas=", len(gas), \
+                      mgas*len(gas))
+                print("T=", time, "M=", stars[0].mass, stars[1].mass)
+                print("Gas = ", len(generated_gas), len(accreted_gas), \
+                      len(escaped_gas))
         
     hydro.stop()
 

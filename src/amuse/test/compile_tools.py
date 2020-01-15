@@ -119,7 +119,8 @@ def open_subprocess(arguments, stdin=None):
         arguments,
         stdin=subprocess.PIPE,
         stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE
+        stderr=subprocess.PIPE,
+        universal_newlines=True
     )
     stdout, stderr = process.communicate(input=stdin)
     return process, stdout, stderr
@@ -443,7 +444,7 @@ def build_java_worker(codestring, path_to_results, specification_class):
     )
         
     if returncode != 0:
-        print "Could not compile worker"
+        print("Could not compile worker")
 
 #make jar file
 
@@ -453,7 +454,7 @@ def build_java_worker(codestring, path_to_results, specification_class):
     )
         
     if returncode != 0:
-        print "Could not compile worker"
+        print("Could not compile worker")
 
     #generate worker script
 
@@ -465,7 +466,7 @@ def build_java_worker(codestring, path_to_results, specification_class):
     with open(exefile, "w") as f:
         f.write(worker_script)
 
-    os.chmod(exefile, 0777)
+    os.chmod(exefile, 0o777)
 
     return exefile
 

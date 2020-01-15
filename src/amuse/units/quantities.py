@@ -346,8 +346,8 @@ class _flatiter_wrapper(object):
         self.quantity=quantity
     def __iter__(self):
         return self
-    def next(self):
-        return new_quantity(self.flat.next(),self.quantity.unit)
+    def __next__(self):
+        return new_quantity(next(self.flat),self.quantity.unit)
     def __getitem__(self,x): 
         return new_quantity(self.flat[x], self.quantity.unit)
     def __setitem__(self,index,x):
@@ -403,7 +403,7 @@ class VectorQuantity(Quantity):
     def new_from_scalar_quantities(cls, *values):
         unit=to_quantity(values[0]).unit
         try:
-            array=map(lambda x: value_in(x,unit),values)
+            array=[value_in(x,unit) for x in values]
         except core.IncompatibleUnitsException:
             raise exceptions.AmuseException("not all values have conforming units")
         return cls(array, unit)
@@ -465,11 +465,11 @@ class VectorQuantity(Quantity):
 
     def split(self, indices_or_sections, axis = 0):
         parts = numpy.split(self.number, indices_or_sections, axis)
-        return map(lambda x : VectorQuantity(x, self.unit), parts)
+        return [VectorQuantity(x, self.unit) for x in parts]
 
     def array_split(self, indices_or_sections, axis = 0):
         parts = numpy.array_split(self.number, indices_or_sections, axis)
-        return map(lambda x : VectorQuantity(x, self.unit), parts)
+        return [VectorQuantity(x, self.unit) for x in parts]
 
     def sum(self, axis=None, dtype=None, out=None):
         """Calculate the sum of the vector components
@@ -1242,7 +1242,9 @@ def as_vector_quantity(value):
     if is_quantity(value): 
         return value
     else:
-        if isinstance(value, __array_like):
+        if isinstance(value, numpy.ndarray) and  numpy.issubdtype(value.dtype, numpy.number):
+            return new_quantity(value, none)
+        if isinstance(value, __array_like): # its not a homogeneous numpy array, this can be slow
             result = AdaptingVectorQuantity()
             for subvalue in value:
                 result.append(as_vector_quantity(subvalue))

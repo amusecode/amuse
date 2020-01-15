@@ -84,7 +84,8 @@ class IntegrateOrbit(object):
         galaxy.commit_parameters()
         self.omega= galaxy.parameters.omega_system
         self.initial_phase= galaxy.parameters.initial_phase
-        print "INITIAL_PHASE:", self.initial_phase
+        print("INITIAL_PHASE:", self.initial_phase)
+
         galaxy.kinetic_energy=quantities.zero
         galaxy.potential_energy=quantities.zero
         return galaxy 
@@ -133,10 +134,10 @@ class IntegrateOrbit(object):
         phi2z= galaxy.get_potential_at_point(0 |units.kpc, x, y, (z-dz))
         f1z= -(phi1z-phi2z)/(2*dz)
         fx,fy,fz= galaxy.get_gravity_at_point(0 |units.kpc, x, y, z)
-        print "analytic", "numerical" 
-        print fx.value_in(100*units.kms**2/units.kpc) , f1x.value_in(100*units.kms**2/units.kpc)
-        print fy.value_in(100*units.kms**2/units.kpc) , f1y.value_in(100*units.kms**2/units.kpc)
-        print fz.value_in(100*units.kms**2/units.kpc) , f1z.value_in(100*units.kms**2/units.kpc)
+        print("analytic", "numerical") 
+        print(fx.value_in(100*units.kms**2/units.kpc) , f1x.value_in(100*units.kms**2/units.kpc))
+        print(fy.value_in(100*units.kms**2/units.kpc) , f1y.value_in(100*units.kms**2/units.kpc))
+        print(fz.value_in(100*units.kms**2/units.kpc) , f1z.value_in(100*units.kms**2/units.kpc))
         return
 
     def get_pos_vel_and_orbit(self, particle_set):
@@ -147,7 +148,7 @@ class IntegrateOrbit(object):
                           filename, "hdf5", append_to_file=False)
         
         MW= self.galaxy()
-        print "OMEGA:", self.omega.as_quantity_in(1/units.Gyr) 
+        print("OMEGA:", self.omega.as_quantity_in(1/units.Gyr)) 
         particle_rot= self.creation_particles_noinertial(particle_set)
         gravless= drift_without_gravity(particle_rot)
         
@@ -184,7 +185,7 @@ class IntegrateOrbit(object):
             write_set_to_file(particle_set.savepoint(self.time), filename, "hdf5")
 
             
-        print "minimum", tmin.in_(units.Myr), dmin.in_(units.parsec)
+        print("minimum", tmin.in_(units.Myr), dmin.in_(units.parsec))
         bar_angle= self.bar_phase + (self.omega_bar*self.time)
         spiral_angle= self.spiral_phase +  (self.omega_spiral*self.time)
         
@@ -228,14 +229,14 @@ def Sun_and_M67_in_the_Galaxy():
             amplitude= A, m=m, mass_bar= M )
 
     MW= inte.galaxy()
-    print MW.parameters
-    print MW.get_phi21()
+    print(MW.parameters)
+    print(MW.get_phi21())
 
-    print "Backwards integration"
+    print("Backwards integration")
     time, xf, yf, zf, vxf, vyf, vzf, bar_angle, spiral_angle, t1, d1= inte.get_pos_vel_and_orbit(bodies)
-    print "Birth position of the Sun:", xf, yf, zf, vxf, vyf, vzf
-    print "---"
-    print 'time after backward integration:', time
+    print("Birth position of the Sun:", xf, yf, zf, vxf, vyf, vzf)
+    print("---")
+    print('time after backward integration:', time)
 
     colors = get_distinct(4)
     figure = pyplot.figure(figsize=(16, 12))

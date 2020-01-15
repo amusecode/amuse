@@ -27,14 +27,14 @@ functions also work on quantities.
     >>>
     >>> weigth = 80 | kg
     >>> persons = 10
-    >>> print "Total weight: ", persons * weigth
+    >>> print ("Total weight: ", persons * weigth)
     Total weight:  800 kg
     
     >>> day = named_unit("day", "d", s * 60 * 60 * 24 )
     >>> weight_loss = (0.1 | kg) / (1 | day)
-    >>> print "Weight loss: ", weight_loss
+    >>> print ("Weight loss: ", weight_loss)
     Weight loss:  0.1 1.15740740741e-05 * kg * s**-1
-    >>> print "Weight loss: ", weight_loss.as_quantity_in(kg/day)
+    >>> print ("Weight loss: ", weight_loss.as_quantity_in(kg/day))
     Weight loss:  0.1 kg / d
     
 ===================
@@ -42,7 +42,10 @@ Working with arrays
 ===================
 
 A vector quantity can be used like a python list. Take care to only 
-put quantities into a vector quantity.
+put quantities into a vector quantity. These vector quantities behave
+more like numpy arrays than like python lists in that numeric operators
+operate on them element-wise; they can also be initialized from numpy
+arrays.
 
 .. code-block:: python
     
@@ -51,7 +54,7 @@ put quantities into a vector quantity.
     >>> masses = [] | MSun
     >>> for i in range(10):
     ...     masses.append(i**2 | MSun)
-    >>> print "Masses:", masses
+    >>> print ("Masses:", masses)
     Masses: [0.0, 1.0, 4.0, 9.0, 16.0, 25.0, 36.0, 49.0, 64.0, 81.0] MSun
     
 .. note::
@@ -65,7 +68,7 @@ put quantities into a vector quantity.
     >>> masses = []
     >>> for i in range(2):
     ...     masses.append(i**2 | MSun)
-    >>> print "Masses:", masses
+    >>> print ("Masses:", masses)
     Masses: [quantity<0 MSun>, quantity<1 MSun>]
 
     

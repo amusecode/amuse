@@ -42,8 +42,8 @@ def main(dt, a, mdonor, dmd, macc, dma, nj):
     macc_new = macc+dma
     a_new = orbital_separation_after_mass_transfer(a, mdonor, mdonor_new, 
                                                    macc, macc_new, nj)
-    print "a_old=", a.as_quantity_in(units.AU)
-    print "a_new=", a_new.as_quantity_in(units.AU)
+    print("a_old=", a.as_quantity_in(units.AU))
+    print("a_new=", a_new.as_quantity_in(units.AU))
 
 if __name__ == "__main__":
     options, arguments  = new_option_parser().parse_args()

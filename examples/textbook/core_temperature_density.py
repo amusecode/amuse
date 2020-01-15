@@ -22,7 +22,7 @@ def stellar_core_temperature_and_density(M, z):
         T_surface = star.get_temperature_profile(star.get_number_of_zones())[-1]
         density_surface = star.get_density_profile(star.get_number_of_zones())[-1]
 
-        print star.age, T_surface, density_surface, T_core, density_core
+        print(star.age, T_surface, density_surface, T_core, density_core)
 
     stellar.stop()
     

@@ -59,7 +59,7 @@ def evolve_quadruple(N_output, end_time, m1, m2, m3, m4, aA, aB, aC, eA, eB, eC,
     inclination = numpy.deg2rad([iA, iB, iC])
     argument_of_percienter = numpy.deg2rad([ApA, ApB, ApC])
     longitude_of_ascending_node = numpy.deg2rad([LANA, LANB, LANC])
-    print longitude_of_ascending_node
+    print(longitude_of_ascending_node)
     
     N_bodies = 4
     N_binaries = N_bodies-1
@@ -85,14 +85,14 @@ def evolve_quadruple(N_output, end_time, m1, m2, m3, m4, aA, aB, aC, eA, eB, eC,
         code.evolve_model(time)
 
         channel_from_code_to_particles.copy()
-        print '='*50
-        print 't/Myr',time.value_in(units.Myr)
-        print 'e',binaries.eccentricity
-        print 'i/deg', numpy.rad2deg(binaries.inclination)
-        print 'AP/deg', \
-            numpy.rad2deg(binaries.argument_of_pericenter)  
-        print 'LAN/deg', \
-            numpy.rad2deg(binaries.longitude_of_ascending_node)
+        print('='*50)
+        print('t/Myr',time.value_in(units.Myr))
+        print('e',binaries.eccentricity)
+        print('i/deg', numpy.rad2deg(binaries.inclination))
+        print('AP/deg', \
+            numpy.rad2deg(binaries.argument_of_pericenter))  
+        print('LAN/deg', \
+            numpy.rad2deg(binaries.longitude_of_ascending_node))
             
         ### write to output arrays ###
         print_times_Myr.append(time.value_in(units.Myr))
@@ -102,7 +102,7 @@ def evolve_quadruple(N_output, end_time, m1, m2, m3, m4, aA, aB, aC, eA, eB, eC,
             print_parent_is_deg[index_binary].append( numpy.rad2deg(binaries[index_binary].inclination_relative_to_parent) )
 
     ### compute the `canonical' maximum eccentricity/periapsis distance that applies in the quadrupole-order test-particle limit if the `outer' binary is replaced by a point mass ###
-    print inclination[0],inclination[2],longitude_of_ascending_node[0],longitude_of_ascending_node[2]
+    print(inclination[0],inclination[2],longitude_of_ascending_node[0],longitude_of_ascending_node[2])
     i_AC_init = compute_mutual_inclination(inclination[0],inclination[2],longitude_of_ascending_node[0],longitude_of_ascending_node[2])
     i_BC_init = compute_mutual_inclination(inclination[1],inclination[2],longitude_of_ascending_node[1],longitude_of_ascending_node[2])
     

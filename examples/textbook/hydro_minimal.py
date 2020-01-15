@@ -19,8 +19,8 @@ def main(N, Mtot, Rvir, t_end):
     Q = (Ekin+Eth)/Epot
     dE = (Etot_init-Etot)/Etot
     com = hydro.gas_particles.center_of_mass()
-    print "T=", hydro.get_time(), "M=", hydro.gas_particles.mass.sum(), 
-    print "E= ", Etot, "Q= ", Q, "dE=", dE, "CoM=", com.in_(units.RSun)
+    print("T=", hydro.get_time(), "M=", hydro.gas_particles.mass.sum(), end=' ') 
+    print("E= ", Etot, "Q= ", Q, "dE=", dE, "CoM=", com.in_(units.RSun))
 
     hydro.stop()
 ###BOOKLISTSTOP1###

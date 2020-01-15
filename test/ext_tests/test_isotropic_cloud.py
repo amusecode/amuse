@@ -29,7 +29,7 @@ class TestSphericalIsotropicCloud(amusetest.TestCase):
       binary.add_particle(comet)
       mass1, mass2, semimajor_axis, eccentricity, true_anomaly, inclination, long_asc_node, arg_per = \
         orbital_elements_from_binary(binary, G=constants.G)
-      print mass1, mass2, semimajor_axis, eccentricity, true_anomaly, inclination, long_asc_node, arg_per
+      print(mass1, mass2, semimajor_axis, eccentricity, true_anomaly, inclination, long_asc_node, arg_per)
       self.assertTrue( a_min < semimajor_axis < a_max )
       self.assertTrue( q_min < semimajor_axis*(1.-eccentricity) )
       binary.remove_particle(comet)

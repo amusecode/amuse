@@ -18,7 +18,7 @@ from amuse.rfi.tools import create_c
 from amuse.rfi import channel
 from amuse.rfi.core import *
 
-import test_c_implementation
+from . import test_c_implementation
 from amuse.rfi.tools import create_cython
 
 codestring = """
@@ -38,7 +38,7 @@ int echo_int(int int_in, int * int_out) {
 import shlex
 from amuse.test.amusetest import get_amuse_root_dir
 
-import test_fortran_implementation
+from . import test_fortran_implementation
 
 from amuse.rfi.tools import create_fortran
 
@@ -92,7 +92,7 @@ class TestCreateCython(TestCase):
         uc.needs_mpi = True
         uc.start()
         code =  uc.result
-        print '<c>' + code + '</c>'
+        print('<c>' + code + '</c>')
         self.assertTrue('INTEGER(kind = c_int) function c_3f33a9ce(int_in, &\n &int_out) &\n & result(rrreeesss) &\n & bind(c, name = "ci_echo_int")' in code)
         self.assertTrue('  INTEGER(kind = c_int), intent(in), value :: int_in' in code)
         self.assertTrue('  INTEGER(kind = c_int), intent(out) :: int_out' in code)
@@ -109,7 +109,7 @@ class TestCreateCython(TestCase):
         uc.needs_mpi = True
         uc.start()
         code =  uc.result
-        print '<c>' + code + '</c>'
+        print('<c>' + code + '</c>')
         self.assertTrue('INTEGER(kind = c_int) function c_64452f1a(string_in, &\n &string_out) &\n & result(rrreeesss) &\n & bind(c, name = "ci_echo_string")' in code)
         self.assertTrue('  type(C_ptr), intent(in), value :: string_in' in code)
         self.assertTrue('  character(len=4096) :: string_string_in' in code)
@@ -126,54 +126,57 @@ class TestCreateCython(TestCase):
 
 class TestCythonImplementationInterface(test_c_implementation.TestCImplementationInterface):
 
-    def setUp(self):
-        self.skip_if_no_cython()
-        super(test_c_implementation.TestCImplementationInterface, self).setUp()
-        print "building...",
-        self.check_can_compile_modules()
+
+    @classmethod
+    def setup_class(cls):
+        cls.skip_if_no_cython()
+        cls.check_can_compile_modules()
         try:
-            self.build_worker()
+            cls.build_worker()
         except Exception as ex:
-            print ex
+            print(ex)
             raise
-        print "done"
 
-
-    def tearDown(self):
+    @classmethod
+    def teardown_class(cls):
         pass
+
+    def setUp(self):
+        super(test_c_implementation.TestCImplementationInterface, self).setUp()
 
     def test22(self):
         self.skip("this test uses mpi internals, skip here")
                      
-    def skip_if_no_cython(self):
+    @classmethod
+    def skip_if_no_cython(cls):
         
         if sys.hexversion > 0x03000000:
-            self.skip("no cython for python 3.0")
+            cls.skip("no cython for python 3.0")
 
         if not hasattr(config.compilers, 'cython') or len(config.compilers.cython) == 0:
-            self.skip("cython not configured")
+            cls.skip("cython not configured")
             
         process, output, error = compile_tools.open_subprocess([config.compilers.cython, '-V'])
         if process.returncode:
-            self.skip("cython not available")
+            cls.skip("cython not available")
         
         error = error.strip()[0:7].decode('utf-8')
         if not error.startswith('Cython'):
-            self.skip("cython not available")
+            cls.skip("cython not available")
         
             
         
         
             
-
-    def build_worker(self):
+    @classmethod
+    def build_worker(cls):
         
-        path = os.path.abspath(self.get_path_to_results())
+        path = os.path.abspath(cls.get_path_to_results())
         codefile = os.path.join(path,"code.o")
         interfacefile = os.path.join(path,"interface.o")
         headerfile = os.path.join(path,"worker_code.h")
-        self.sofile = os.path.join(path,"interface.so")
-        self.exefile = os.path.join(path,"c_worker")
+        cls.sofile = os.path.join(path,"interface.so")
+        cls.exefile = os.path.join(path,"c_worker")
         
         compile_tools.c_compile(codefile, test_c_implementation.codestring,
                                 extra_args=["-fPIC"])
@@ -210,10 +213,10 @@ class TestCythonImplementationInterface(test_c_implementation.TestCImplementatio
         uc.needs_mpi = True
         script =  uc.result
         
-        with open(self.exefile, "w") as f:
+        with open(cls.exefile, "w") as f:
             f.write(script)
 
-        os.chmod(self.exefile, 0777)
+        os.chmod(cls.exefile, 0o777)
         
         import mpi4py
         process, stdout, stderr = compile_tools.open_subprocess([config.compilers.cython, 
@@ -226,22 +229,22 @@ class TestCythonImplementationInterface(test_c_implementation.TestCImplementatio
             compile_tools.wait_for_file(cname)
         
         if process.returncode != 0 or not os.path.exists(cname):
-            print "Could not cythonize {0}, error = {1}".format(sourcename, stderr)
+            print("Could not cythonize {0}, error = {1}".format(sourcename, stderr))
             raise Exception("Could not cythonize {0}, error = {1}".format(sourcename, stderr))
         
         with open(cname, "r") as f:
             string = f.read()
             
         compile_tools.c_pythondev_compile(interfacefile, string)
-        # self.c_pythondev_build(self.exefile, [interfacefile, codefile] )
-        compile_tools.c_pythondev_buildso(self.sofile,  [interfacefile, codefile] )
+        # cls.c_pythondev_build(cls.exefile, [interfacefile, codefile] )
+        compile_tools.c_pythondev_buildso(cls.sofile,  [interfacefile, codefile] )
 
     def test1(self):
         instance = ForTestingInterface(self.exefile)
         int_out, error = instance.echo_int(10)
         instance.stop()
-        self.assertEquals(int_out, 10)
-        self.assertEquals(error, 0)
+        self.assertEqual(int_out, 10)
+        self.assertEqual(error, 0)
         
     def test14(self):
         self.skip("needs python support")
@@ -249,45 +252,50 @@ class TestCythonImplementationInterface(test_c_implementation.TestCImplementatio
 
 class TestCythonFortranImplementationInterface(test_fortran_implementation.TestInterface):
 
-    def setUp(self):
-        self.skip_if_no_cython()
-        super(test_fortran_implementation.TestInterface, self).setUp()
-        print "building"
-        self.check_can_compile_modules()
-        self.build_worker()
+    @classmethod
+    def setup_class(cls):
+        cls.skip_if_no_cython()
+        print("building")
+        cls.check_can_compile_modules()
+        cls.build_worker()
 
-
-    def tearDown(self):
+    @classmethod
+    def teardown(cls):
         pass
+
+    def setUp(self):
+        super(test_fortran_implementation.TestInterface, self).setUp()
 
     def test22(self):
         self.skip("this test uses mpi internals, skip here")
 
-    def skip_if_no_cython(self):
+    @classmethod
+    def skip_if_no_cython(cls):
 
         if sys.hexversion > 0x03000000:
-            self.skip("no cython for python 3.0")
+            cls.skip("no cython for python 3.0")
         
         if not hasattr(config.compilers, 'cython') or len(config.compilers.cython) == 0:
-            self.skip("cython not configured")
+            cls.skip("cython not configured")
             
         process, output, error = compile_tools.open_subprocess([config.compilers.cython, '-V'])
         if process.returncode:
-            self.skip("cython not available")
+            cls.skip("cython not available")
         
         error = error.strip()[0:7].decode('utf-8')
         if not error.startswith('Cython'):
-            self.skip("cython not available")
+            cls.skip("cython not available")
 
-    def build_worker(self):
+    @classmethod
+    def build_worker(cls):
         
-        path = os.path.abspath(self.get_path_to_results())
+        path = os.path.abspath(cls.get_path_to_results())
         codefile = os.path.join(path,"code.o")
         interfacefile = os.path.join(path,"interface.o")
         headerfile = os.path.join(path,"worker_code.h")
-        self.sofile = os.path.join(path,"interface.so")
-        self.interfacec_o_file = os.path.join(path,"interfacec.o")
-        self.exefile = os.path.join(path,"c_worker")
+        cls.sofile = os.path.join(path,"interface.so")
+        cls.interfacec_o_file = os.path.join(path,"interfacec.o")
+        cls.exefile = os.path.join(path,"c_worker")
         
         compile_tools.fortran_compile(codefile, test_fortran_implementation.codestring,
                                       extra_args=["-fPIC"])
@@ -322,10 +330,10 @@ class TestCythonFortranImplementationInterface(test_fortran_implementation.TestI
         uc.needs_mpi = True
         script =  uc.result
         
-        with open(self.exefile, "w") as f:
+        with open(cls.exefile, "w") as f:
             f.write(script)
 
-        os.chmod(self.exefile, 0777)
+        os.chmod(cls.exefile, 0o777)
 
         import mpi4py
         process, stdout, stderr = compile_tools.open_subprocess([config.compilers.cython, 
@@ -337,7 +345,7 @@ class TestCythonFortranImplementationInterface(test_fortran_implementation.TestI
             compile_tools.wait_for_file(cname)
         
         if process.returncode != 0 or not os.path.exists(cname):
-            print "Could not cythonize {0}, error = {1}".format(sourcename, stderr)
+            print("Could not cythonize {0}, error = {1}".format(sourcename, stderr))
             raise Exception("Could not cythonize {0}, error = {1}".format(sourcename, stderr))
         
         with open(cname, "r") as f:
@@ -352,15 +360,15 @@ class TestCythonFortranImplementationInterface(test_fortran_implementation.TestI
         uc.needs_mpi = False
         code =  uc.result
 
-        compile_tools.fortran_compile(self.interfacec_o_file, code,
+        compile_tools.fortran_compile(cls.interfacec_o_file, code,
                                       extra_args=["-fPIC"])
 
         compile_tools.c_pythondev_compile(interfacefile, string)
-        compile_tools.fortran_pythondev_buildso(self.sofile,  [interfacefile, codefile, self.interfacec_o_file] )
+        compile_tools.fortran_pythondev_buildso(cls.sofile,  [interfacefile, codefile, cls.interfacec_o_file] )
 
     def test1(self):
         instance = ForTestingInterface(self.exefile)
         int_out, error = instance.echo_int(10)
         instance.stop()
-        self.assertEquals(int_out, 10)
-        self.assertEquals(error, 0)
+        self.assertEqual(int_out, 10)
+        self.assertEqual(error, 0)

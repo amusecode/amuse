@@ -1651,11 +1651,11 @@ class SecularMultiple(InCodeComponentImplementation):
         pass
 
     def commit_particles(self):
-        print print_name,' -- committing particles'
+        print(print_name,' -- committing particles')
         particles = self.particles
 
         if len(particles) == 0:
-            print print_name,' -- no particles have been added -- exiting'
+            print(print_name,' -- no particles have been added -- exiting')
             exit(-1)
 
         particles.add_vector_attribute("spin_vec",["spin_vec_x","spin_vec_y","spin_vec_z"])
@@ -1673,7 +1673,7 @@ class SecularMultiple(InCodeComponentImplementation):
         
     def evolve_model(self,end_time):
         if end_time is None:
-            print print_name,' -- end time not specified in evolve_model! exiting'
+            print(print_name,' -- end time not specified in evolve_model! exiting')
             exit(-1)
         if self.particles_committed == False:
             self.commit_particles()
@@ -1690,8 +1690,8 @@ class SecularMultiple(InCodeComponentImplementation):
         self.model_time = end_time
 
         if (flag==99):
-            print print_name,' -- error occurred during ODE integration'
-            print print_name,' -- error code is ',error_code
+            print(print_name,' -- error occurred during ODE integration')
+            print(print_name,' -- error code is ',error_code)
         self.flag = flag
         self.error_code = error_code
 

@@ -1,10 +1,13 @@
-import Queue
+try:
+    import queue
+except:
+    import Queue as queue
 import threading
 import multiprocessing
 from amuse.lab import *
 
 ###BOOKLISTSTART1###
-code_queue = Queue.Queue()
+code_queue = queue.Queue()
 
 def remote_worker_code():
     code = code_queue.get()
@@ -31,8 +34,8 @@ def evolve_single_star(code):
 
     stellar.evolve_model(1|units.Myr)
     channel.copy()
-    print "Star evolved to time=", stellar.model_time, \
-          " M=", stars.mass, "R=", stars.radius
+    print("Star evolved to time=", stellar.model_time, \
+          " M=", stars.mass, "R=", stars.radius)
     stellar.stop()
 ###BOOKLISTSTOP2###
     
@@ -53,9 +56,9 @@ if __name__ in ('__main__', '__plot__'):
     codes = [SeBa, MESA, SSE, EVtwin]
     
     if o.threaded:
-        print "Run threaded"
+        print("Run threaded")
         evolve_with_different_stellar_model(codes)
     else:
-        print "Run sequentially"
+        print("Run sequentially")
         for ci in codes:
             evolve_single_star(ci)
