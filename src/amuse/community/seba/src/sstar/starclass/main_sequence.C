@@ -125,7 +125,7 @@ void main_sequence::update_wind_constant() {
     if (luminosity > 4000.) {
         real x = min(1.0, (luminosity -4000.0)/500.0);
         dm_dj = x * 9.6310E-15 * pow(radius, 0.81) * pow(luminosity, 1.24) * 
-        pow(get_total_mass(), 0.16)*pow(metalicity/cnsts.parameters(solar_metalicity), 0.5);
+        pow(get_total_mass(), 0.16)*pow(metalicity/cnsts.parameters(solar_metalicity), 0.85);
     }
     
     // Vink 2000, 2001
