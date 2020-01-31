@@ -2690,10 +2690,10 @@ real double_star::orbital_timescale() {
 
   real aml_loss = abs(magnetic_braking_aml)
                 + abs(grav_rad_aml);
-  // about 10 steps to lose ang. momentum.
 
+// about 50 steps to lose ang. momentum.
   if (aml_loss> 0) 
-    dt=.1/aml_loss;
+    dt=.02/aml_loss;
 
   return dt;
 }
