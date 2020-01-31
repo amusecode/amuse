@@ -656,9 +656,9 @@ void helium_giant::update_wind_constant() {
     
     wind_constant = max(max(dm_wr, dm_r), 0.0);   
 
-    // (SilT Jan 2020) metallicity dependence on average with (Z/Z_sun)^0.85
+    // (SilT Jan 2020) metalicity dependence on average with (Z/Z_sun)^0.85
     // Vink & de Koter 2005
-    wind_constant *= pow(metallicity/cnsts.parameters(solar_metalicity),0.85);
+    wind_constant *= pow(metalicity/cnsts.parameters(solar_metalicity),0.85);
 	
 }
 
