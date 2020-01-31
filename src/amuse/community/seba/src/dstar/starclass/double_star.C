@@ -2026,7 +2026,7 @@ void double_star::gravrad(const real dt) {
 		    * pow(cnsts.parameters(solar_radius), 4.));
 
 //	Only appicable to small separation.
-     if(semi/sqrt(get_total_mass())<=6.) {
+     if(semi*sqrt(1-eccentricity*eccentricity)/sqrt(get_total_mass())<=6.) {
         real e_new = eccentricity 
                    + G3M3_C5R4*de_dt_gwr(eccentricity)
 	           * dt*cnsts.physics(Myear);
