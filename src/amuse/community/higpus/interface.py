@@ -845,3 +845,6 @@ class HiGPUs(GravitationalDynamics):
         GravitationalDynamics.define_particle_sets(self, handler)
 
 
+
+
+Higpus = HiGPUs

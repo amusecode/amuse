@@ -876,3 +876,6 @@ class EVtwin(StellarEvolution, InternalStellarStructure):
         tmp_star.age_tag = current_age
         return self.particles.add_particle(tmp_star)
 
+
+
+Evtwin = EVtwin

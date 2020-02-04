@@ -714,3 +714,6 @@ class ph4(GravitationalDynamics,GravityFieldCode):
                           names=('potential_in_code',))
         
         self.stopping_conditions.define_particle_set(handler)
+
+
+Ph4 = ph4

@@ -1540,3 +1540,6 @@ class MESA(StellarEvolution, InternalStellarStructure):
         tmp_star.age_tag = current_age
         return self.imported_stars.add_particle(tmp_star)
 
+
+
+Mesa = MESA
