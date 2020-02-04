@@ -282,12 +282,13 @@ def new_option_parser():
 
 
 if __name__ == "__main__":
-    set_printing_strategy("custom",
-                      preferred_units=[units.MSun, units.parsec, units.Myr],
-                      precision=4, prefix="",
-                      separator=" [", suffix="]")
+    set_printing_strategy(
+        "custom",
+        preferred_units=[units.MSun, units.parsec, units.Myr],
+        precision=4, prefix="",
+        separator=" [", suffix="]")
 
-    options, arguments  = new_option_parser().parse_args()
+    options, arguments = new_option_parser().parse_args()
     if options.seed >= 0:
         numpy.random.seed(options.seed)
         # This is only for random.sample, which apparently does not use numpy
