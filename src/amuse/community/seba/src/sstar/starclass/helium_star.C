@@ -589,7 +589,7 @@ void helium_star::update_wind_constant() {
 
     // (SilT Jan 2020) metallicity dependence on average with (Z/Z_sun)^0.85
     // Vink & de Koter 2005
-    wind_constant *= pow(metallicity/cnsts.parameters(solar_metalicity),0.85);	
+    wind_constant *= pow(metalicity/cnsts.parameters(solar_metalicity),0.85);	
 
 }
 
