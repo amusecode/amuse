@@ -153,3 +153,6 @@ class AarsethZare(InCodeComponentImplementation):
         self.particles.vy=vy
         self.particles.vz=vz
         
+
+
+Aarsethzare = AarsethZare

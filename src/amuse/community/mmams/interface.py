@@ -496,3 +496,6 @@ class MMAMS(CommonCode):
 
 MakeMeAMassiveStarInterface = MMAMSInterface
 MakeMeAMassiveStar = MMAMS
+
+
+Mmams = MMAMS

@@ -575,3 +575,6 @@ class TwoBody(GravitationalDynamics, GravityFieldCode):
             default_value = 0.0 | nbody_system.time
         )
     
+
+
+Twobody = TwoBody

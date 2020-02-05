@@ -444,3 +444,6 @@ class SmallN(GravitationalDynamics):
           
         self.stopping_conditions.define_state(handler)     
 
+
+
+Smalln = SmallN

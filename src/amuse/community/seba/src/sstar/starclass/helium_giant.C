@@ -654,8 +654,12 @@ void helium_giant::update_wind_constant() {
     //Reduced WR-like mass loss for small H-envelope mass
     real dm_wr = 1.E-13 * pow(luminosity, 1.5);
     
-    wind_constant = max(max(dm_wr, dm_r), 0.0);
-    
+    wind_constant = max(max(dm_wr, dm_r), 0.0);   
+
+    // (SilT Jan 2020) metalicity dependence on average with (Z/Z_sun)^0.85
+    // Vink & de Koter 2005
+    wind_constant *= pow(metalicity/cnsts.parameters(solar_metalicity),0.85);
+	
 }
 
 

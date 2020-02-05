@@ -191,28 +191,29 @@ double compute_t_V_hurley
         {
             P_spin = 2.0*M_PI/spin_angular_frequency;
             P_tid = 1.0/( 1e-10 + fabs( 1.0/P_orb - 1.0/P_spin) );
+        }
 
-            double tau_convective = pow( (convective_envelope_mass*convective_envelope_radius*(radius - (1.0/2.0)*convective_envelope_radius))/(3.0*luminosity), 1.0/3.0);
-            //double tau_convective = pow( (convective_envelope_mass*radius*radius)/(3.0*luminosity), 1.0/3.0);
+        double tau_convective = pow( (convective_envelope_mass*convective_envelope_radius*(radius - (1.0/2.0)*convective_envelope_radius))/(3.0*luminosity), 1.0/3.0);
+        //double tau_convective = pow( (convective_envelope_mass*radius*radius)/(3.0*luminosity), 1.0/3.0);
 //	print 'tau',envelope_mass,envelope_mass*envelope_radius*(radius - (1.0/2.0)*envelope_radius)/(3.0*luminosity)
 
-            double f_convective = pow(P_tid/(2.0*tau_convective),2.0);
-            f_convective = min(1.0,f_convective);
+        double f_convective = pow(P_tid/(2.0*tau_convective),2.0);
+        f_convective = min(1.0,f_convective);
 
-            k_AM_div_T = (2.0/21.0)*(f_convective/tau_convective)*(convective_envelope_mass/mass);
-            t_V = from_k_AM_div_T_to_t_V(k_AM_div_T,apsidal_motion_constant);
+        k_AM_div_T = (2.0/21.0)*(f_convective/tau_convective)*(convective_envelope_mass/mass);
+        t_V = from_k_AM_div_T_to_t_V(k_AM_div_T,apsidal_motion_constant);
 
-            //printf("test %g %g %g %g %g %g %g  \n",P_spin,P_tid,P_orb,tau_convective,f_convective,k_AM_div_T,t_V);
+        //printf("test %g %g %g %g %g %g %g  \n",P_spin,P_tid,P_orb,tau_convective,f_convective,k_AM_div_T,t_V);
 
-            //if ((convective_envelope_mass <= 0.0) || (convective_envelope_radius <= 0.0))
-           // {
-           //     t_V = 1.0e100;
-           // }
+        //if ((convective_envelope_mass <= 0.0) || (convective_envelope_radius <= 0.0))
+        // {
+        //     t_V = 1.0e100;
+        // }
         
 //        printf("test par conv %g %g %g %g %g \n",mass,radius,convective_envelope_mass,convective_envelope_radius,spin_angular_frequency);
 //        printf("test conv %g %g %g %g %g \n",P_orb,tau_convective,P_tid,P_spin,f_convective);
-            return t_V;
-        }
+        return t_V;
+
     }
     else // degenerate damping -- 1984MNRAS.207..433C
     {

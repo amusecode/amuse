@@ -278,3 +278,6 @@ class PhiGRAPE(GravitationalDynamics, GravityFieldCode):
         GravitationalDynamics.define_particle_sets(self, handler)
         self.stopping_conditions.define_particle_set(handler)
         
+
+
+Phigrape = PhiGRAPE
