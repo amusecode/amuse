@@ -52,7 +52,7 @@ distclean:
 	-rm -f amuse.sh
 	-rm -f iamuse.sh
 	-rm -f ibis-deploy.sh
-	-rm -f build.py amusifier
+	-rm -f build.py bin/amusifier
 	-rm -rf test_results src/amuse.egg-info
 	
 	-rm -f test/*.000 test/fort.* test/perr test/pout test/test.h5 test/*.log
