@@ -445,3 +445,6 @@ class MI6(GravitationalDynamics, GravityFieldCode):
     def define_particle_sets(self, handler):
         GravitationalDynamics.define_particle_sets(self, handler)
         self.stopping_conditions.define_particle_set(handler)
+
+
+Mi6 = MI6

@@ -99,13 +99,13 @@ PRC(pk);
              break;                                
 	case Maxwellian_velocity_kick:      return random_maxwellian_velocity(v_disp);
              break;
-    case internally_decided_velocity_kick:
 	case Paczynski_velocity_kick:       return random_paczynski_velocity(v_disp);
              break;
     case Hobbs_velocity_kick:      return random_hobbs_velocity();
             break;
 	case Arzoumanian_velocity_kick:      return random_arzoumanian_velocity();
             break;
+    case internally_decided_velocity_kick:		    
 	case Verbunt_velocity_kick:      return random_verbunt_velocity();
             break;
 	case delta_function_velocity_kick:  return v_disp;

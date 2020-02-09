@@ -489,3 +489,6 @@ class MOSSE(common.CommonCode):
 
     def update_time_steps(self):
         pass
+
+
+Mosse = MOSSE

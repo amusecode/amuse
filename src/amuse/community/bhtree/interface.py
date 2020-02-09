@@ -336,3 +336,6 @@ class BHTree(GravitationalDynamics, GravityFieldCode):
         self.stopping_conditions.define_particle_set(handler)
 
     
+
+
+Bhtree = BHTree

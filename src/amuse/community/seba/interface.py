@@ -967,3 +967,6 @@ class SeBa(se.StellarEvolution):
         
         self.stopping_conditions.define_state(handler)
 
+
+
+Seba = SeBa

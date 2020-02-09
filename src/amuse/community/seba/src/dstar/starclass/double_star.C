@@ -2026,7 +2026,7 @@ void double_star::gravrad(const real dt) {
 		    * pow(cnsts.parameters(solar_radius), 4.));
 
 //	Only appicable to small separation.
-     if(semi/sqrt(get_total_mass())<=6.) {
+     if(semi*sqrt(1-eccentricity*eccentricity)/sqrt(get_total_mass())<=6.) {
         real e_new = eccentricity 
                    + G3M3_C5R4*de_dt_gwr(eccentricity)
 	           * dt*cnsts.physics(Myear);
@@ -2103,7 +2103,7 @@ real double_star::mdot_according_to_roche_radius_change(star* donor,
     real m_don = donor->get_total_mass();
 
     real J_mb = mb_angular_momentum_loss();
-    real J_gwr = gwr_angular_momentum_loss(m_don, m_acc, semi);
+    real J_gwr = gwr_angular_momentum_loss(m_don, m_acc, semi, eccentricity);
     real mtt = 1./abs(J_mb + J_gwr);
     real mtt_nuc = donor->nucleair_evolution_timescale();
     
@@ -2626,7 +2626,7 @@ real double_star::zeta_scaled(star * donor,
 						      ->get_total_mass(),
 						      get_secondary()
 						      ->get_total_mass(),
-						      semi);
+						      semi, eccentricity);
 
         //       PRC(magnetic_braking_aml);PRL(grav_rad_aml);
         //       PRC(dt);PRC(semi);
@@ -2685,15 +2685,15 @@ real double_star::orbital_timescale() {
 						 ->get_total_mass(),
 						 get_secondary()
 						 ->get_total_mass(),
-						 semi);
+						 semi, eccentricity);
   real dt = cnsts.safety(maximum_timestep);
 
   real aml_loss = abs(magnetic_braking_aml)
                 + abs(grav_rad_aml);
-  // about 10 steps to lose ang. momentum.
 
+// about 50 steps to lose ang. momentum.
   if (aml_loss> 0) 
-    dt=.1/aml_loss;
+    dt=.02/aml_loss;
 
   return dt;
 }
@@ -2701,19 +2701,20 @@ real double_star::orbital_timescale() {
 // Peters & Mathews, 1963/4
 real double_star::gwr_angular_momentum_loss(const real m_prim,
 					    const real m_sec,
-					    const real sma) {
+					    const real sma, 
+					    const real ecc) {
 
   real m_tot = m_prim + m_sec;
   real J_gwr = 0;
   
-  if(sma/sqrt(m_tot)<=6.) {
+  if(sma*sqrt(1-ecc*ecc)/sqrt(m_tot)<=6.) {
   
     real c_gwr = -32*pow(cnsts.parameters(solar_mass)*
 			cnsts.physics(G), 3)
                / (5*pow(cnsts.physics(C), 5)*
 		 pow(cnsts.parameters(solar_radius), 4));
-
-    J_gwr = c_gwr*m_prim*m_sec*m_tot/pow(sma, 4);  
+   real ecc_factor = (1+7./8.*ecc*ecc)/pow(1-ecc*ecc, 2.5);
+    J_gwr = c_gwr*m_prim*m_sec*m_tot/pow(sma, 4)* ecc_factor;  
 
   }
   
