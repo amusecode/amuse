@@ -11,6 +11,8 @@ from amuse.community.evtwin.interface import EVtwin
 from amuse.community.cachedse.interface import CachedStellarEvolution, ParticlesTimeseries
 
 from amuse import datamodel
+
+
 class EVtwin2SSE:
 
     """
@@ -249,3 +251,6 @@ if __name__ == '__main__':
 
     stellar_evolution.particles.remove_particle(star)
     stellar_evolution.stop()
+
+
+Evtwin2sse = EVtwin2SSE
