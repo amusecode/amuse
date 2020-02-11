@@ -915,3 +915,6 @@ class GalactICs(CommonCode):
     def disk_particles(self):
         nhalo,nbulge,ndisk=self.get_number_of_particles()
         return self.particles[:ndisk]
+
+
+Galactics = GalactICs

@@ -1334,3 +1334,7 @@ class BarAndSpirals3D(CommonCode, GravityFieldCode):
 
    def get_density_at_point(self,x,y,z):
       return self.get_local_density(self.parameters.time,x,y,z)
+
+
+Barandspirals3d = BarAndSpirals3D
+Galaxia = BarAndSpirals3D

@@ -3,6 +3,7 @@ from amuse.community import *
 from amuse.community.interface.gd import GravityFieldCode, GravityFieldInterface
 from amuse.community.interface.common import CommonCodeInterface, CommonCode
 
+
 class FastKickInterface(CodeInterface, CommonCodeInterface, GravityFieldInterface):
     """
     """
@@ -247,3 +248,6 @@ class FastKick(CommonCode, GravityFieldCode):
     
     def define_properties(self, handler):
         handler.add_property("get_potential_energy")
+
+
+Fastkick = FastKick
