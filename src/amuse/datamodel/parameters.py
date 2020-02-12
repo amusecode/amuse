@@ -1,5 +1,7 @@
 import weakref
 import numpy
+import warnings
+
 from amuse.units import nbody_system
 from amuse.units import generic_unit_system
 from amuse.units import quantities
