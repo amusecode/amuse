@@ -113,8 +113,8 @@ class TestBrutusInterface(TestWithMPI):
 
         # eta, string
         #self.assertEquals(["0.10", 0], instance.get_eta_string().values())
-        self.assertEqual(0, instance.set_eta_string("0.20"))
-        self.assertEqual(["0.2", 0], list(instance.get_eta_string().values()))
+        self.assertEqual(0, instance.set_eta_string("123"))
+        self.assertEqual(["123", 0], list(instance.get_eta_string().values()))
 
         # output dir
         #self.assertEquals(["./", 0], instance.get_brutus_output_directory().values())
