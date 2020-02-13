@@ -309,7 +309,6 @@ class ParametersWithUnitsConverted(object):
         if not name in self._original._mapping_from_name_to_definition:
             raise exceptions.CoreException("Could not set unknown parameter '{0}' for a '{1}' object".format(self.name, type(object).__name__))
 
-            return
         try:
             setattr(self._original, name, self._converter.from_source_to_target(value))
         except IncompatibleUnitsException as ex:
