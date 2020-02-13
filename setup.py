@@ -4,9 +4,9 @@ import os
 from setuptools import setup, find_packages
 from support.setup_codes import setup_commands
 from support.misc import find_data_files
+from support.version import version
 
 name = 'amuse'
-version = "12.0"
 author = 'The AMUSE team'
 author_email = 'info@amusecode.org'
 license_ = "Apache License 2.0"
