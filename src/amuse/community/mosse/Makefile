@@ -14,7 +14,7 @@ F77FLAGS += -qfixed  							  #
 endif  											  # NG has some doubts
 
 
-CODE_GENERATOR = $(AMUSE_DIR)/build.py
+CODE_GENERATOR ?= $(AMUSE_DIR)/build.py
 
 FSLIBS ?= -L$(AMUSE_DIR)/lib/forsockets -lforsockets
 FSINC ?= -I$(AMUSE_DIR)/lib/forsockets

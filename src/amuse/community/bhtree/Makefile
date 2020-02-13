@@ -1,4 +1,6 @@
-AMUSE_DIR?=../../../..
+ifeq ($(origin AMUSE_DIR), undefined)
+  AMUSE_DIR := $(shell amusifier --get-amuse-dir)
+endif
 -include ${AMUSE_DIR}/config.mk
 
 MPICXX ?= mpicxx
@@ -16,7 +18,7 @@ GPU_BUILDDIR = build_gpu
 
 OBJS = interface.o 
 
-CODE_GENERATOR = $(AMUSE_DIR)/build.py
+CODE_GENERATOR ?= $(AMUSE_DIR)/build.py
 
 CODELIB = $(BUILDDIR)/libbhtree.a
 GPUCODELIB = $(GPU_BUILDDIR)/libbhtree.a

@@ -1,4 +1,6 @@
-AMUSE_DIR?=../../../..
+ifeq ($(origin AMUSE_DIR), undefined)
+  AMUSE_DIR := $(shell amusifier --get-amuse-dir)
+endif
 -include ${AMUSE_DIR}/config.mk
 
 PYTHON ?= python
@@ -10,7 +12,7 @@ CFFI_AVAILABLE := $(shell $(PYTHON) -c "import cffi"  1>&2 2> /dev/null && echo 
 
 
 
-CODE_GENERATOR = $(AMUSE_DIR)/build.py
+CODE_GENERATOR ?= $(AMUSE_DIR)/build.py
 
 all: code build install test tupan_worker
 

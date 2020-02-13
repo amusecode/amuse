@@ -1,6 +1,8 @@
 # standard amuse configuration include
 # config.mk will be made after ./configure has run
-AMUSE_DIR?=../../../..
+ifeq ($(origin AMUSE_DIR), undefined)
+  AMUSE_DIR := $(shell amusifier --get-amuse-dir)
+endif
 include ${AMUSE_DIR}/config.mk
 
 FORTRAN = $(FC)
@@ -11,7 +13,7 @@ export FORTRAN
 
 OBJS = interface.o
 
-CODE_GENERATOR = $(AMUSE_DIR)/build.py
+CODE_GENERATOR ?= $(AMUSE_DIR)/build.py
 
 VERSION = 2.02.70
 CODEDIR = src/mocassin.$(VERSION)

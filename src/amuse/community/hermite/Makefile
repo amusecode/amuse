@@ -1,6 +1,8 @@
 # standard amuse configuration include
 # config.mk will be made after ./configure has run
-AMUSE_DIR?=../../../..
+ifeq ($(origin AMUSE_DIR), undefined)
+  AMUSE_DIR := $(shell amusifier --get-amuse-dir)
+endif
 -include ${AMUSE_DIR}/config.mk
 
 MPICXX ?= mpicxx
@@ -19,7 +21,7 @@ ifeq ($(MPI_ENABLED),yes)
 AM_LIBS = -L$(AMUSE_DIR)/lib/amuse_mpi -lamuse_mpi
 AM_CFLAGS = -I$(AMUSE_DIR)/lib/amuse_mpi
 endif
-CODE_GENERATOR = $(PYTHON) $(AMUSE_DIR)/build.py
+CODE_GENERATOR ?= $(PYTHON) $(AMUSE_DIR)/build.py
 
 #PROFLIBS ?= -L$(AMUSE_DIR)/lib/ibis/src/profiling -libisprofiling -lmpi
 

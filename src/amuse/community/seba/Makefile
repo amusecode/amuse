@@ -1,6 +1,8 @@
 # standard amuse configuration include
 # config.mk will be made after ./configure has run
-AMUSE_DIR?=../../../..
+ifeq ($(origin AMUSE_DIR), undefined)
+  AMUSE_DIR := $(shell amusifier --get-amuse-dir)
+endif
 -include ${AMUSE_DIR}/config.mk
 
 MPICXX ?= mpicxx
@@ -20,7 +22,7 @@ AM_CFLAGS = -I$(AMUSE_DIR)/lib/amuse_mpi
 
 CODELIB =  src/sstar/libsstar.a src/dstar/libdstar.a 
 
-CODE_GENERATOR = $(AMUSE_DIR)/build.py
+CODE_GENERATOR ?= $(AMUSE_DIR)/build.py
 
 all: seba_worker
 

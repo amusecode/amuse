@@ -1,6 +1,8 @@
 # standard amuse configuration include
 # config.mk will be made after ./configure has run
-AMUSE_DIR?=../../../..
+ifeq ($(origin AMUSE_DIR), undefined)
+  AMUSE_DIR := $(shell amusifier --get-amuse-dir)
+endif
 -include ${AMUSE_DIR}/config.mk
 
 MPICXX ?= mpicxx
@@ -42,7 +44,7 @@ SELFGRAV_AMUSE_OBJS = $(SELFGRAV_BUILDDIR)/interface_$(VERSION).o
 MHD_AMUSE_OBJS = $(MHD_BUILDDIR)/interface_$(VERSION).o
 SCALAR_AMUSE_OBJS = $(SCALAR_BUILDDIR)/interface_$(VERSION).o
 
-CODE_GENERATOR = $(AMUSE_DIR)/build.py
+CODE_GENERATOR ?= $(AMUSE_DIR)/build.py
 DOWNLOAD_FROM_WEB = $(PYTHON) ./download.py
 PATCH_FILES = $(PYTHON) ./patch_files.py
 

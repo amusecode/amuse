@@ -1,6 +1,8 @@
 # standard amuse configuration include
 # config.mk will be made after ./configure has run
-AMUSE_DIR?=$(realpath ../../../..)
+ifeq ($(origin AMUSE_DIR), undefined)
+  AMUSE_DIR := $(shell amusifier --get-amuse-dir)
+endif
 -include $(AMUSE_DIR)/config.mk
 
 MPICXX   ?= mpicxx
@@ -30,7 +32,7 @@ LIB_OBJ = $(CODEDIR)/src/rebound.o $(CODEDIR)/src/tree.o $(CODEDIR)/src/particle
 
 DOWNLOAD_FROM_WEB = $(PYTHON) ./download.py
 PATCH_FILES = $(PYTHON) ./patch_files.py
-CODE_GENERATOR = $(AMUSE_DIR)/build.py
+CODE_GENERATOR ?= $(AMUSE_DIR)/build.py
 
 AM_LIBS = -L$(AMUSE_DIR)/lib/amuse_mpi -lamuse_mpi
 AM_CFLAGS = -I$(AMUSE_DIR)/lib/amuse_mpi
