@@ -1,6 +1,8 @@
 # standard amuse configuration include
 # config.mk will be made after ./configure has run
-AMUSE_DIR?=$(realpath ../../../..)
+ifeq ($(origin AMUSE_DIR), undefined)
+  AMUSE_DIR := $(shell amusifier --get-amuse-dir)
+endif
 -include ${AMUSE_DIR}/config.mk
 
 # Makefile to build the worker code.  First draft was auto-generated;
@@ -25,7 +27,7 @@ AM_CFLAGS = -I$(AMUSE_DIR)/lib/amuse_mpi
 
 CODELIB = src/libsmallN.a
 
-CODE_GENERATOR = $(AMUSE_DIR)/build.py
+CODE_GENERATOR ?= $(AMUSE_DIR)/build.py
 
 all: $(ALL)
 

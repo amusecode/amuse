@@ -1,5 +1,5 @@
-ifndef AMUSE_DIR
-	AMUSE_DIR=../../../..
+ifeq ($(origin AMUSE_DIR), undefined)
+  AMUSE_DIR := $(shell amusifier --get-amuse-dir)
 endif
 
 -include ${AMUSE_DIR}/config.mk 				  # NG has some doubts
@@ -13,7 +13,7 @@ F77FLAGS += -qfixed  							  #
 endif  											  # NG has some doubts
 
 
-CODE_GENERATOR = $(AMUSE_DIR)/build.py
+CODE_GENERATOR ?= $(AMUSE_DIR)/build.py
 
 OBJ	= src/comenv.o src/corerd.o src/deltat.o src/dgcore.o \
 	  src/evolv3.o src/gntage.o src/hrdiag.o src/instar.o \
