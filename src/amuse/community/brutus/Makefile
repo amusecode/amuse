@@ -1,6 +1,8 @@
 # standard amuse configuration include
 # config.mk will be made after ./configure has run
-AMUSE_DIR?=../../../..
+ifeq ($(origin AMUSE_DIR), undefined)
+  AMUSE_DIR := $(shell amusifier --get-amuse-dir)
+endif
 -include ${AMUSE_DIR}/config.mk
 
 ###############################################################
@@ -26,7 +28,7 @@ CXXFLAGS ?= -Wall -g -O2
 
 CXXFLAGS += $(MPFR_FLAGS) -std=c++0x -I../mpfrc++
 
-CODE_GENERATOR = $(AMUSE_DIR)/build.py
+CODE_GENERATOR ?= $(AMUSE_DIR)/build.py
 
 CODELIB = src/libbrutus.a
 OBJ = interface.o

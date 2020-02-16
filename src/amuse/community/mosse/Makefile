@@ -1,5 +1,5 @@
-ifndef AMUSE_DIR
-	AMUSE_DIR=../../../..
+ifeq ($(origin AMUSE_DIR), undefined)
+  AMUSE_DIR := $(shell amusifier --get-amuse-dir)
 endif
 
 -include ${AMUSE_DIR}/config.mk 				  # NG has some doubts
@@ -14,7 +14,7 @@ F77FLAGS += -qfixed  							  #
 endif  											  # NG has some doubts
 
 
-CODE_GENERATOR = $(AMUSE_DIR)/build.py
+CODE_GENERATOR ?= $(AMUSE_DIR)/build.py
 
 FSLIBS ?= -L$(AMUSE_DIR)/lib/forsockets -lforsockets
 FSINC ?= -I$(AMUSE_DIR)/lib/forsockets

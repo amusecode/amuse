@@ -1,5 +1,5 @@
-ifndef AMUSE_DIR
-    AMUSE_DIR=../../../..
+ifeq ($(origin AMUSE_DIR), undefined)
+  AMUSE_DIR := $(shell amusifier --get-amuse-dir)
 endif
 
 -include ${AMUSE_DIR}/config.mk
@@ -10,7 +10,7 @@ MPICC ?= mpicc
 CC = $(MPICC)
 CXX = $(MPICXX)
 
-CODE_GENERATOR = $(AMUSE_DIR)/build.py
+CODE_GENERATOR ?= $(AMUSE_DIR)/build.py
 
 CXXFLAGS += -g -DTOOLBOX -O3 $(MUSE_INCLUDE_DIR)
 LDFLAGS+ = -lm $(MUSE_LD_FLAGS)

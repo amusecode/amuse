@@ -1,6 +1,8 @@
 # standard amuse configuration include
 # config.mk will be made after ./configure has run
-AMUSE_DIR?=../../../..
+ifeq ($(origin AMUSE_DIR), undefined)
+  AMUSE_DIR := $(shell amusifier --get-amuse-dir)
+endif
 -include ${AMUSE_DIR}/config.mk
 
 GMP_LIBS ?= -L/home/boekholt/Packages/ -lgmp
@@ -13,7 +15,7 @@ CXX ?= g++
 
 CXXFLAGS ?= -Wall -g -O2
 CXXFLAGS += -std=c++11
-CODE_GENERATOR = $(AMUSE_DIR)/build.py
+CODE_GENERATOR ?= $(AMUSE_DIR)/build.py
 
 CODELIB = src/libadaptb.a
 OBJ = interface.o
