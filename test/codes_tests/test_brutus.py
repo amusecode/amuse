@@ -9,6 +9,8 @@ from amuse.datamodel import Particles
 
 from amuse.community.brutus.interface import BrutusInterface, Brutus
 
+import random
+
 class TestBrutusInterface(TestWithMPI):
     
     def test1(self):
@@ -177,6 +179,25 @@ class TestBrutusInterface(TestWithMPI):
             self.assertAlmostEqual(result, expected, 3)
 
         self.assertEqual(0, instance.cleanup_code())
+        instance.stop()
+
+    def test8(self):
+        print("Test BrutusInterface string parameters")
+        instance =  self.new_instance_of_an_optional_code(BrutusInterface)
+        instance.initialize_code()
+        
+        instance.set_word_length(128)
+        
+        for i in range(100):
+          x=random.random()
+          x=str(x)
+          instance.set_eta_string(x)
+          x_,err=instance.get_eta_string()
+          instance.set_eta_string(x_)
+          x__,err=instance.get_eta_string()
+          #~ assert x==x_ 
+          self.assertEqual(x_,x__) 
+        
         instance.stop()
 
 class TestBrutus(TestWithMPI):
