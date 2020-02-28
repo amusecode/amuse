@@ -17,7 +17,7 @@ OFLAGS = -g -Wall -fopenmp
 CXXFLAGS =  -fPIC $(OFLAGS) -I$(CUDA_TK)/include  -D__INCLUDE_KERNELS__ $(CL_CFLAGS)
 
 NVCC      = $(CUDA_TK)/bin/nvcc  
-NVCCFLAGS ?= -arch=sm_20
+NVCCFLAGS ?= 
 
 export NVCCFLAGS NVCC CXXFLAGS
 
