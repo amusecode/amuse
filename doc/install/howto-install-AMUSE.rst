@@ -1,211 +1,124 @@
-==================================
-Installation of the AMUSE software
-==================================
+Installing the prerequisites
+============================
 
-Before installing AMUSE the prerequisite software must be downloaded and
-installed, see :ref:`prerequisite-label`.
+For a full AMUSE installation, you will need to install some further dependencies that can be installed via your package manager - e.g. apt or yum on Linux; macports or homebrew on macOS.
 
-In the current stage of development AMUSE will not be installed in 
-the python ``site-packages`` library. Instead, all code is build 
-in the AMUSE source directories. With this setup we can easily edit
-the code and run it, without the need for an extra installation step.
+Ubuntu
+******
 
-Configuring the code
---------------------
-The code is configured using the ``configure`` command. 
-Before building the code, run 'configure' in the AMUSE
-root directory.
+You can choose between openmpi and mpich as desired, both work with AMUSE. Please do not install both!
+In the examples below we choose GCC-7 as the compiler, but more recent versions of GCC will also work.
 
-.. code-block:: sh
-    
-    > ./configure
-    
-The 'configure' script will check for all prerequisite software
-and report if any are missing.
-
-Building the code
------------------
-
-The code is build using a  ``Makefile``. To build the code run 'make'
-in the AMUSE root directory.
-
-.. code-block:: sh
-    
-    > make clean
-    > make
-    ...
-    community codes build
-    ==================
-    * sse
-    * hermite0
-    * bhtree
-    * phiGRAPE
-    running generate_main
-
-If everything goes well all community codes will be build (e.g. sse, hermite0, 
-bhtree, phiGRAPE and many others).
-
-In order to use codes not stored in the AMUSE repository (e.g. MESA, ATHENA, Rebound and some others), the codes must be downloaded additionally.
-This is done automatically after setting the environment variable DOWNLOAD_CODES to 1.
-Alternatively, instead of a plain 'make' like in the example above you could do:
+* For openmpi:
 
 .. code-block:: sh
 
-    > make DOWNLOAD_CODES=1
+    sudo apt-get install build-essential gfortran python3-dev \
+      libopenmpi-dev openmpi-bin \
+      libgsl-dev cmake libfftw3-3 libfftw3-dev \
+      libgmp3-dev libmpfr6 libmpfr-dev \
+      libhdf5-serial-dev hdf5-tools \
+      git
 
-or:
-
-.. code-block:: sh
-
-    > make mesa.code DOWNLOAD_CODES=1
-    > make athena.code DOWNLOAD_CODES=1
-
-
-Testing the build
------------------
-
-.. warning::
-    
-    For MPICH2 installations, the `mpd` process daemon must be 
-    started befor testing the code. The `mpd` application manages 
-    the creation of MPI processes. If this is the first time the 
-    MPICH2 daemon is run it will complain about a missing 
-    ``.mpd.conf`` file. Please follow the instructions printed by 
-    the mpd daemon.
-
-    .. code-block:: sh
-        
-        > mpd &
-
-    If the mpd deamon only complains with 'no mpd.conf', these
-    are the steps to take, to create a mpd.conf file:
-    
-    .. code-block:: sh
-        
-        > echo 'MPD_SECRETWORD=secret' > ~/.mpd.conf
-        > chmod 600 ~/.mpd.conf
-        
-    Please make sure to replace '''secret'''.
-    
-    After starting `mpd` we can start the tests.
-    
-
-    
-The tests are run using the nosetests program.
-
-.. code-block:: sh
-    
-    > nosetests
-    ............................................
-    Ran 91 tests in 12.013s
-
-    OK
-
-
-.. warning::
-
-    If you have an MPICH2 installation but no mpd program your MPICH2
-    installation has been configured for the Hydra process manager. 
-    To run amuse scripts with the hydra process manager you must start
-    every command with ``mpiexec``:
-    
-    .. code-block:: sh
-        
-        > mpiexec nosetests -v
-    
-    
-    If you do not run under mpiexec you get an error with a usage statement.
-    The error starts like this:
-    
-    .. code-block:: sh
-    
-        unable to parse user arguments
-
-        Usage: ./mpiexec [global opts] [exec1 local opts] : [exec2 local opts] : ...
-    
-    
-.. warning::
-    
-    On some laptops the hostname will not point
-    to the correct internet address. For these laptops 
-    you can start the mpd daemon on the localhost ip. To do so,
-    you need to set the ``--ifhn`` option:
-    
-    .. code-block:: sh
-    
-        > mpd --ifhn=localhost &
-        
-    
-    
-.. warning::
-    
-    On OS X, when you install the prerequisites with macports, 
-    ``nosetests`` will not have a standard name. It will be named
-    ``nosetests-<python-version>``. So for python2.7 you'll need to 
-    use *nosetests-2.7*
-    
-    .. code-block:: sh
-    
-        > nosetests-2.7
-        ............................................
-        
-        OK
-        
-
-
-
-Real-time testing
-~~~~~~~~~~~~~~~~~
-The code includes support for real-time testing. The real-time testing 
-application monitors the files in the source directories ('src' 
-and 'test'). Every time a file is changed it will run most of the tests.
-After each test a report is created, this report can be viewed with
-a web browser.
+* For mpich:
 
 .. code-block:: sh
 
-    # go to the AMUSE root directory
-    # display help information of the realtime_test script
-    >  python -m support.realtime_test --help
-    Usage: realtime_test.py [options]
+    sudo apt-get install build-essential gfortran python3-dev \
+      mpich libmpich-dev \
+      libgsl-dev cmake libfftw3-3 libfftw3-dev \
+      libgmp3-dev libmpfr6 libmpfr-dev \
+      libhdf5-serial-dev hdf5-tools \
+      git
 
-    Options:
-      -h, --help            show this help message and exit
-      -p PORT, --port=PORT  start serving on PORT
-      
-    # start the python realtime_test script on port 9080
-    > python -m support.realtime_test -p 9080
-    starting server on port:  9080
-    start test run
-    ...
-    # open a browser to view the results
-    > firefox http://localhost:9080/
-    
 
-Running the code
-----------------
-A python script will not find the AMUSE code as the code is not 
-installed into the python 'site-packages' directory or any other 
-directory that can be found by python automatically. 
+macOS
+*****
 
-During a build a shell script is created to run the AMUSE code. To 
-use this script you first have to copy it to a directory in your PATH.
-The script is called ''amuse.sh''. After copying this script you can run
-amuse code from anywhere on your disk by starting 'amuse.sh'. This
-script has exactly the same command line parameters as the normal python
-application.
+
+On macOS, you will first need to install Xcode. You can do so via the app store.
+
+In this section we assume a default macOS installation (up to Catalina) with MacPorts, but other methods (such as Homebrew) will also work.
+
+You can choose between openmpi and mpich as desired, both work with AMUSE. 
+Please make sure to set the compilers installed here as default, as it will greatly simplify things later on.
+In the examples below we choose GCC 9 as the compiler, but other versions of GCC should also work.
+
+* For openmpi:
 
 .. code-block:: sh
 
-    > amuse.sh
-    Python 2.6.2 (r262:71600, Sep  1 2009, 16:14:27) 
-    [GCC 4.3.2 20081105 (Red Hat 4.3.2-7)] on linux2
-    Type "help", "copyright", "credits" or "license" for more information.
-    >>> from amuse.units import units
-    >>> units.m
-    unit<m>
-    
-    
+    sudo port install gcc9 openmpi-gcc9 hdf5 gsl cmake gmp mpfr fftw-3 +gcc9
+    sudo port install python38
+    sudo port select --set mpi openmpi-gcc9-fortran
+    sudo port select --set gcc mp-gcc9
+    sudo port select --set python3 python38
 
-    
+* For mpich:
+
+.. code-block:: sh
+
+    sudo port install gcc9 mpich-gcc9 hdf5 gsl cmake gmp mpfr fftw-3 +gcc9
+    sudo port install python38
+    sudo port select --set mpi mpich-gcc9
+    sudo port select --set gcc mp-gcc9
+    sudo port select --set python3 python38
+
+
+
+Installing AMUSE
+================
+
+
+After installing the prerequisites, you can install AMUSE.
+Optionally, first create a virtual environment to install AMUSE and other desired Python packages in.
+This ensures that you don’t need root privileges and that your AMUSE environment is isolated from other system-installed packages.
+
+To create the virtual environment, do (from a desired directory):
+
+.. code-block:: sh
+
+    python3 -m venv Amuse-env
+
+When the environment is created, you can activate it with:
+
+.. code-block:: sh
+
+    . Amuse-env/bin/activate
+
+You may want to make an alias for this, e.g.:
+
+.. code-block:: sh
+
+    alias amuse-env='. ~/virtualenvironments/Amuse-env/bin/activate'
+
+From this point, your prompt will have ‘Amuse-env’ in front of it, so you will always know when you’re in this virtual environment.
+
+Now you can use pip to install the prerequisite python modules for AMUSE:
+
+.. code-block:: sh
+
+    pip install numpy nose docutils mpi4py h5py wheel
+
+Probably, you’ll want to install these Python modules too:
+
+.. code-block:: sh
+
+    pip install scipy astropy jupyter pandas seaborn
+
+Now we can finally install AMUSE itself.
+This is done easiest via pip:
+
+.. code-block:: sh
+
+    pip install amuse-framework
+    pip install amuse
+
+If you only require a subset of AMUSE, you can install any of the individual packages as such:
+
+.. code-block:: sh
+
+    pip install amuse-framework
+    pip install amuse-$(community_code_name)
+
 
