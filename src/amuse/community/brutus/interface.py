@@ -330,9 +330,9 @@ class Brutus(GravitationalDynamics):
     def adjust_prec(self):
         if not HAS_MPMATH:
             raise Exception("mpmath not available")
-        len = self.parameters.word_length
-        if (len > mpmath.mp.prec):
-            mpmath.mp.prec=len
+        len_ = self.parameters.word_length
+        if (len_ > mpmath.mp.prec):
+            mpmath.mp.prec=len_
         
     
     def initialize_code(self):
