@@ -1,6 +1,11 @@
 from amuse.community import *
 from amuse.community.interface.gd import GravitationalDynamicsInterface, GravitationalDynamics
-import mpmath
+try:
+    import mpmath
+    HAS_MPMATH=True
+except ImportError:
+    HAS_MPMATH=False
+
 
 """
 currently setting the particle (and possibly model time) as strings (ie to conserve 
@@ -319,9 +324,12 @@ class Brutus(GravitationalDynamics):
             **options
         )
         self.convert_nbody=convert_nbody
-        self.adjust_prec()
+        if HAS_MPMATH:
+            self.adjust_prec()
             
     def adjust_prec(self):
+        if not HAS_MPMATH:
+            raise Exception("mpmath not available")
         len = self.parameters.word_length
         if (len > mpmath.mp.prec):
             mpmath.mp.prec=len
