@@ -364,32 +364,32 @@ class Brutus(GravitationalDynamics):
         b=mpmath.mpf(self.get_total_mass_string())*a
         return b #* self.convert_nbody.to_si(nbody_system.energy).unit
         
-    def get_mass_p_si(self,id):
+    def get_mass_p_si(self,index):
         self.adjust_prec()
         a=self.convert_nbody.to_si(nbody_system.mass).number
-        b=mpmath.mpf(self.get_mass_string(id))*a
+        b=mpmath.mpf(self.get_mass_string(index))*a
         return b #* self.convert_nbody.to_si(nbody_system.energy).unit
         
-    def get_radius_p_si(self,id):
+    def get_radius_p_si(self,index):
         self.adjust_prec()
         a=self.convert_nbody.to_si(nbody_system.length).number
-        b=mpmath.mpf(self.get_radius_string(id))*a
+        b=mpmath.mpf(self.get_radius_string(index))*a
         return b #* self.convert_nbody.to_si(nbody_system.energy).unit
     
     def get_time_p_si(self):
         self.adjust_prec()
         return mpmath.mpf(self.get_time().number)
 
-    def get_velocity_p_si(self,id):
+    def get_velocity_p_si(self,index):
         self.adjust_prec()
         a=self.convert_nbody.to_si(nbody_system.speed).number
-        b=mpmath.matrix(self.get_velocity_string(id))*a
+        b=mpmath.matrix(self.get_velocity_string(index))*a
         return b #* self.convert_nbody.to_si(nbody_system.energy).unit   
 
-    def get_position_p_si(self,id):
+    def get_position_p_si(self,index):
         self.adjust_prec()
         a=self.convert_nbody.to_si(nbody_system.length).number
-        b=mpmath.matrix(self.get_position_string(id))*a
+        b=mpmath.matrix(self.get_position_string(index))*a
         return b #* self.convert_nbody.to_si(nbody_system.energy).unit   
 
     def new_particle_p_si(self,m,x,y,z,vx,vy,vz,radius):
@@ -402,41 +402,41 @@ class Brutus(GravitationalDynamics):
                                         str(vx/us) ,str(vy/us) ,
                                         str(vz/us) ,str(radius/ul))
   
-    def set_state_p_si(self,id,m,x,y,z,vx,vy,vz,radius):
+    def set_state_p_si(self,index,m,x,y,z,vx,vy,vz,radius):
         self.adjust_prec()
         um=self.convert_nbody.to_si(nbody_system.mass).number
         ul=self.convert_nbody.to_si(nbody_system.length).number
         us=self.convert_nbody.to_si(nbody_system.speed).number
-        return self.set_state_string(id ,str(m/um) ,str(x/ul) ,
+        return self.set_state_string(index ,str(m/um) ,str(x/ul) ,
                                         str(y/ul) ,str(z/ul) ,
                                         str(vx/us) ,str(vy/us) ,
                                         str(vz/us) ,str(radius/ul))
         
-    def set_mass_p_si(self,id,m):
+    def set_mass_p_si(self,index,m):
         self.adjust_prec()
         um=self.convert_nbody.to_si(nbody_system.mass).number
-        self.set_mass_string(id ,str(m/um))
+        self.set_mass_string(index ,str(m/um))
 
-    def set_radius_p_si(self,id,radius):
+    def set_radius_p_si(self,index,radius):
         self.adjust_prec()
         ul=self.convert_nbody.to_si(nbody_system.length).number
-        self.set_radius_string(id ,str(radius/ul))
+        self.set_radius_string(index ,str(radius/ul))
         
         
-    def set_position_p_si(self,id,x,y,z):
+    def set_position_p_si(self,index,x,y,z):
         self.adjust_prec()
         ul=self.convert_nbody.to_si(nbody_system.length).number
-        self.set_position_string(id ,str(x/ul) ,str(y/ul) ,str(z/ul))      
+        self.set_position_string(index ,str(x/ul) ,str(y/ul) ,str(z/ul))      
         
-    def set_velocity_p_si(self,id,vx,vy,vz):
+    def set_velocity_p_si(self,index,vx,vy,vz):
         self.adjust_prec()
         us=self.convert_nbody.to_si(nbody_system.speed).number
-        self.set_velocity_string(id ,str(vx/us) ,str(vy/us) ,str(vz/us))
+        self.set_velocity_string(index ,str(vx/us) ,str(vy/us) ,str(vz/us))
         
         
-    def get_state_p_si(self,id):
+    def get_state_p_si(self,index):
         self.adjust_prec()
-        b=mpmath.matrix(self.get_state_string(id))
+        b=mpmath.matrix(self.get_state_string(index))
         a=self.convert_nbody.to_si(nbody_system.mass).number
         b[0]=b[0]*a
         a=self.convert_nbody.to_si(nbody_system.length).number
