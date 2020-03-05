@@ -200,6 +200,9 @@ class CodeWithNamelistParameters(_CodeWithFileParameters):
     def output_format_value(self,value):
         return value
 
+    def interpret_value(self,value, dtype=None):
+        return value   # dtype, arrays should be handled by f90nml 
+
 
 class CodeWithIniFileParameters(_CodeWithFileParameters):
     """
