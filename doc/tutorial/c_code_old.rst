@@ -8,7 +8,8 @@ code. We will first define the legacy interface, then implement the
 code and finally build an object oriented interface on top of the 
 legacy interface.
 
-The legacy code will be a very simple and naive implementation of an N-body integrator.
+The legacy code will be a very simple and naive implementation to find
+3 nearest neighbors of a particle.
 
 The legacy code interface supports methods that transfer values to 
 and from the code. The values do not have any units and no error 
@@ -27,7 +28,7 @@ subclass of a InCodeComponentImplementation (this is the objected oriented inter
     }
 
 The legacy code in this tutorial will be a very simple and naive
-implementation of an N-body integrator.
+implementation to find 3 nearest neighbors of a particle.
 
 Two paths
 ---------
@@ -37,21 +38,18 @@ When defining the interface will walk 2 paths:
 2. Management of particles in the code (C or Fortran)
 
 The first path makes sense for legacy codes that perform a 
-transformation on the particles, analyse the particles' state or 
+transformation on the particles, or analyse the particles state or 
 do not store any internal state between function calls (all data is 
 external). For every function of the code, data of every particle is 
-sent to the code. If we expect multiple calls, the code would incur a 
+send to the code. If we expect multiple calls, the code would incur a 
 high communication overhead and we are better of choosing path 2.
 
 The second path makes sense for codes that already have management 
 of a particles (or grid) or were we want to call multiple functions 
 of the code and need to send the complete model to code for every 
-function call. The data are first given to the code, then calls are made 
-to the code to evolve its model or perform reduction steps on the 
-data, and finally the updated data are retrieved from the code. 
-
-As a rule of thumb, any 'integrating' type of code (gravitational
-dynamics, stellar evolution, etc.) is best served by an interface of path 2.
+function call. The code is first given the data, then calls are made 
+to the code to evolve it's model or perform reduction steps on the 
+data, finally the updated data is retrieved from the code. 
 
 Procedure
 ---------
@@ -60,8 +58,7 @@ The suggested procedure for creating a new interface is as follows:
 
 0. **Legacy Interface.** Start with creating the legacy 
    interface. Define functions on the interface to input and
-   output relevant data. These functions are defined in pairs, one in C/C++ and
-   one in python.
+   output relevant data.
    The InCodeComponentImplementation code depends on the legacy interface code.   
 1. **Make a Class.** Create a subclass of the InCodeComponentImplementation class
 2. **Define methods.** In the legacy interface we have defined functions
@@ -81,9 +78,9 @@ The suggested procedure for creating a new interface is as follows:
 Before we start
 ---------------
 
-This tutorial assumes you have a working amuse development build. Please 
-ensure that amuse is setup correctly by installing the amuse-tests package and 
-running 'nosetests' in the amuse directory.
+This tutorial assumes you have a working amuse environment. Please 
+ensure that amuse is setup correctly by running 'nosetests' in the 
+amuse directory.
 
 
 Environment variables
@@ -132,8 +129,8 @@ or in a c shell:
     
 The name of our project
 ~~~~~~~~~~~~~~~~~~~~~~~
-We will be writing a code to integrate a simple N-body system, 
-so let's call our project 'SimpleGrav'.
+We will be writing a code to find the nearest neighbors of a particle, 
+so let's call our project 'NearestNeighbor'.
 
 Creating the initial directory structure
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -143,7 +140,7 @@ directory is by using the build.py script.
 
 .. code-block:: bash
 
-    > $AMUSE_DIR/build.py --type=c --mode=dir SimpleGrav
+    > $AMUSE_DIR/build.py --type=c --mode=dir NearestNeighbor
 
 The script will generate a directory with all the files needed to 
 start our project. It also generates a very small example legacy code 
@@ -152,7 +149,7 @@ module::
 
     > cd nearestneighbor/
     > make all
-    > $AMUSE_DIR/amuse.sh -c 'from interface import SimpleGrav; print SimpleGrav().echo_int(10)' 
+    > $AMUSE_DIR/amuse.sh -c 'from interface import NearestNeighbor; print NearestNeighbor().echo_int(10)' 
     OrderedDictionary({'int_out':10, '__result':0})
     > nosetests -v
     .
@@ -179,14 +176,14 @@ access the code. For this tutorial we will implement our legacy code.
 When a legacy code is integrated all interface code is put in one 
 directory and all the legacy code is put in a **src** directory 
 placed under this directory. The build.py script created a **src** 
-directory for us, and we will put the N-body algorithm in 
+directory for us, and we will put the nearest neighbor algorithm in 
 this directory.
 
 Go to the **src** directory and create a **code.cc** file, open 
 this file in your favorite editor and copy and paste this code into 
 it:
     
-.. literalinclude:: simplegrav/code.cc
+.. literalinclude:: nearestneighbor/code.cc
     :language: c++
     
 
@@ -229,8 +226,9 @@ Path 1
 
 Defining the legacy interface
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-We will first define a legacy interface so that we can evolve a system of particles
-from python. AMUSE can interact with 2 classes of functions:
+We will first define a legacy interface so that we can call the 
+**find_nearest_neighbors** function from python. AMUSE can interact 
+with 2 classes of functions:
 
 
 1. A function with all scalar input and output variables. All variables
@@ -658,16 +656,17 @@ Path 2
 Defining the legacy interface
 -----------------------------
 We define our code interface so that a user can add, update and 
-delete particles, and dynamically evolve the system.
+delete particles, start the nearest neighbors finding
+algorithm and retrieve the ids of the nearest neighbors.
 
 To define the interface, open interface.py with your favorite
 editor and replace the contents of this file with:
 
-.. literalinclude:: simplegrav/interface_c_1.py
+.. literalinclude:: nearestneighbor/nn1.py
 
 We can generate a stub from the interface code with::
 
-    > $AMUSE_DIR/build.py --type=c --mode=stub interface.py SimpleGravInterface -o interface.cc
+    > $AMUSE_DIR/build.py --type=c --mode=stub interface.py NearestNeighborInterface -o interface.cc
 
 The generated **interface.cc** replaces the original file generated in
 the previous section.     
@@ -786,12 +785,8 @@ stubs generated earlier.
 Open the **interface.cc** file in your favorite editor and
 change its contents to:
 
-.. literalinclude:: simplegrav/interface1.cc
+.. literalinclude:: nearestneighbor/interface1.cc
     :language: c++
-
-Note that we only define the essential functions of those predefined in the **GravitationalDynamics**
-and **CommonCode** interface templates. A number of them don't need to do anything (e.g. **commit_particles**),
-while others we skip for brevity (and we leave implementing them as an exercise for the reader).
 
 Test if the code builds and try it out. In the legacy interface
 directory do:
@@ -1113,124 +1108,3 @@ with gnuplot.
 
 .. image:: nearestneighbor/plummer1.png
 
-
-
-
-Defining states
----------------
-
-The state of the code can be handled automatically by defining a state model that describes the states the code
-can be in as a graph with the nodes as the state and transitions mediated by interface calls. 
-The state model of a code is defined in the **define_state** interface function by calling the following
-methods on its handler argument: 
-
-**set_initial_state(state)**  this defines the initial entry state, given as a string label (usually 'UNINITIALIZED').
-**add_method(state, method_name)** this defines that the given method is allowed in state state. Again the state is a string,
-the string can be prepended with '!' to indicate a method is forbidden in the state. If state is not yet defined it will be added to the
-state model.
-**add_transition(state1, state2, method_name, is_auto=True)** this adds a transition between states 
-state1 and state2 (and adds these states if not previously defined) which is triggered by a call to the interface function
-method_name. The is_auto argument determines whether this transition is allowed to be triggered automatically. 
-
-A method that is not mentioned in any add_method, is allowed in any state (and doesn't trigger any transitions.
-If the state model detects that an interface call needs a state change it tries to hop to a state where the interface call is allowed
-by calling transitions that are added with is_auto=True. (this is only possible if they don't have non-default arguments)
-
-The state model can be build up by the above methods. The state model of a code can be printed:
-**interface.state_machine.to_table_string()** or **interface.state_machine.to_plantuml_string()**. 
-
-Note that function arguments in the above methods are strings! They are evaluated later to methods of the low level code interface class!
-(so they must be defined there, they need not be remote function but can be ordinary class methods) 
-
-Note that it can be convenient to use a number of sentinel methods which do not (by default) do anything, these are:
-before_get_parameter, before_set_parameter, before_set_interface_parameter, before_new_set_instance, before_get_data_store_names.
-(e.g. before_get_parameter is called before each parameter is retrieved)
-
-State models have been defined for our code's parent class, **GravitationalDynamics**, and its grandparent class, **CommonCode**,
-and our code is simple enough that we do not need to expand this. Thus we can again simply define our states to be those of the parent:
-
-.. code-block:: python
-
-    class SimpleGrav(GravitationalDynamics):
-
-        def __init__(self, **options):
-            GravitationalDynamics.__init__(self, SimpleGravInterface(**options), convert_nbody, **options)
-
-        def define_methods(self, handler):
-            ...
-
-        def define_particle_sets(self, handler):
-            ...
-
-        def define_state(self, handler):
-            GravitationalDynamics.define_state(self, handler)
-
-To complete this example we will take a look at the state model of **GravitationalDynamics**:
-
-.. code-block:: python
-
-    def define_state(self, handler): 
-        common.CommonCode.define_state(self, handler)   
-        handler.add_transition('END', 'INITIALIZED', 'initialize_code', False)    
-        
-        handler.add_transition('INITIALIZED','EDIT','commit_parameters')
-        handler.add_transition('RUN','CHANGE_PARAMETERS_RUN','before_set_parameter', False)
-        handler.add_transition('EDIT','CHANGE_PARAMETERS_EDIT','before_set_parameter', False)
-        handler.add_transition('UPDATE','CHANGE_PARAMETERS_UPDATE','before_set_parameter', False)
-        handler.add_transition('CHANGE_PARAMETERS_RUN','RUN','recommit_parameters')
-        handler.add_transition('CHANGE_PARAMETERS_EDIT','EDIT','recommit_parameters')
-        handler.add_transition('CHANGE_PARAMETERS_UPDATE','UPDATE','recommit_parameters')
-        
-        handler.add_method('CHANGE_PARAMETERS_RUN', 'before_set_parameter')
-        handler.add_method('CHANGE_PARAMETERS_EDIT', 'before_set_parameter')
-        handler.add_method('CHANGE_PARAMETERS_UPDATE','before_set_parameter')
-        
-        handler.add_method('CHANGE_PARAMETERS_RUN', 'before_get_parameter')
-        handler.add_method('CHANGE_PARAMETERS_EDIT', 'before_get_parameter')
-        handler.add_method('CHANGE_PARAMETERS_UPDATE','before_get_parameter')
-        handler.add_method('RUN', 'before_get_parameter')
-        handler.add_method('EDIT', 'before_get_parameter')
-        handler.add_method('UPDATE','before_get_parameter')
-        handler.add_method('EVOLVED','before_get_parameter')
-        
-        
-        handler.add_method('EDIT', 'new_particle')
-        handler.add_method('EDIT', 'delete_particle')
-        handler.add_method('UPDATE', 'new_particle')
-        handler.add_method('UPDATE', 'delete_particle')
-        handler.add_transition('EDIT', 'RUN', 'commit_particles')
-        handler.add_transition('RUN', 'UPDATE', 'new_particle', False)
-        handler.add_transition('RUN', 'UPDATE', 'delete_particle', False)
-        handler.add_transition('UPDATE', 'RUN', 'recommit_particles')
-        handler.add_transition('RUN', 'EVOLVED', 'evolve_model', False)
-        handler.add_method('EVOLVED', 'evolve_model')
-        handler.add_transition('EVOLVED','RUN', 'synchronize_model')
-        handler.add_method('RUN', 'synchronize_model')
-        handler.add_method('RUN', 'get_state')
-        handler.add_method('RUN', 'get_mass')
-        handler.add_method('RUN', 'get_position')
-        handler.add_method('RUN', 'get_velocity')
-        handler.add_method('RUN', 'get_potential')
-        handler.add_method('RUN', 'get_potential_energy')
-        handler.add_method('RUN', 'get_kinetic_energy')
-        handler.add_transition('RUN', 'UPDATE', 'set_mass', False)
-        handler.add_transition('RUN', 'UPDATE', 'set_position', False)
-        handler.add_transition('RUN', 'UPDATE', 'set_velocity', False)
-        handler.add_transition('RUN', 'UPDATE', 'set_radius', False)
-
-Note that the entry state is defined in **CommonCode**.
-
-Let's focus on what happens when we add a particle after evolving for some time. We can see that 
-**evolve_model** changes the state to **EVOLVED**. The function **new_particle**, then, can only
-be run in the **EDIT** or **UPDATE** states. Luckily, we can see that there is a path from
-**EVOLVED** to **RUN**, and then from **RUN** to **UPDATE**, by calling **synchronize_model** and
-**new_particle**, respectively. **synchronize_model** is just a function that makes sure all particles are
-evolved up to the same time, which our example code does by construction. We have defined it, 
-but the only thing it does is to **return 0**. If we then want to evolve
-the system further, we need to go back to the **RUN** state, which we can access from **UPDATE** through
-the **recommit_particles** function. This function, along with its sibling **commit_particles**, are 
-generally used to perform some transformation on the particles that is necessary for evolution, but
-can (or should) only be done once all particles are added. An example would be the construction of
-a tree, grid, or other graph on the particle set. In our code, again, these functions are not necessary. 
-
-The **CommonCode** class also has the similar **initialize_code**, **cleanup_code**, **commit_parameters**, and **recommit_parameters** functions that can be given any functionality needed by the interface. For example, **cleanup_code** can be used to free any memory allocated by the code.

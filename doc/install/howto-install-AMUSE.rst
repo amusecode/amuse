@@ -121,4 +121,3 @@ If you only require a subset of AMUSE, you can install any of the individual pac
     pip install amuse-framework
     pip install amuse-$(community_code_name)
 
-
