@@ -5,11 +5,61 @@ Installation of the AMUSE software
 Before installing AMUSE the prerequisite software must be downloaded and
 installed, see :ref:`prerequisite-label`.
 
-In the current stage of development AMUSE will not be installed in 
-the python ``site-packages`` library. Instead, all code is build 
-in the AMUSE source directories. With this setup we can easily edit
-the code and run it, without the need for an extra installation step.
+AMUSE can be installed from online packages using the python ``pip`` utility
+or from a checkout of the repository. For the latter option, you can either
+install it in a pip managed environment, or a self managed python environment.
 
+Package install
+===============
+
+In this case, install the non-python prerequisites first then:
+
+.. code-block:: sh
+    
+    > pip install amuse
+
+this will attempt to fetch and install the amuse-framework package,
+and the code packages (amuse-<code>) and python prerequisites. If one of the code fails to build,
+you can install packages by hand.
+
+Pip managed install from repository checkout
+============================================
+
+If you have a python environment where you can install packages with pip (it is 
+recommended to compartementalize environments of different projects with virtualenv),
+again install non-python prerequisites and checkout the AMUSE repository:
+
+.. code-block:: sh
+
+    > git clone https://github.com/amusecode/amuse
+    > cd amuse
+    > pip install -e .
+    > python setup.py develop_build 
+
+In this case, a link to the repository is created and codes are compiled in place. This is 
+the recommended install for development.
+
+Self-managed environment
+========================
+
+Lastly, you can install without pip. Again all code is build 
+in the AMUSE source directories. This setup also allows you to easily edit
+the code and run it, without the need for an extra installation step. There are bootstrap 
+scripts in ``doc/install/`` to download and build all prerequisites if c++/fortran compilers are available.
+
+Environment variables
+---------------------
+
+you need to tell python where to find the amuse package and the command line interpreter where to find
+the ``amusifier`` executable.
+
+.. code-block:: sh
+
+    > export PYTHONPATH=${PYTHONPATH}:/path/to/amuse/src
+    > export PATH=${PATH}:/path/to/amuse/bin
+ 
+where you replace ``/path/to/amuse`` with the correct path to AMUSE.
+ 
 Configuring the code
 --------------------
 The code is configured using the ``configure`` command. 
@@ -60,37 +110,29 @@ or:
     > make mesa.code DOWNLOAD_CODES=1
     > make athena.code DOWNLOAD_CODES=1
 
+Running the code
+----------------
+
+You can quickly test your installation by importing some AMUSE module and running a code
+
+.. code-block:: sh
+
+    > python
+    Python 3.7.3 (default, Dec  2 2019, 17:46:02) 
+    [GCC 9.2.1 20190903 [gcc-9-branch revision 275330]] on linux
+    Type "help", "copyright", "credits" or "license" for more information.
+    >>> from amuse.units import units
+    >>> units.m
+    unit<m>
+    >>> from amuse.community.bhtree.interface  import Bhtree
+    >>> b=Bhtree()
+    >>> print(b)
+    <amuse.community.bhtree.interface.BHTree object at 0x7f20f02e6dd8>
+
 
 Testing the build
 -----------------
 
-.. warning::
-    
-    For MPICH2 installations, the `mpd` process daemon must be 
-    started befor testing the code. The `mpd` application manages 
-    the creation of MPI processes. If this is the first time the 
-    MPICH2 daemon is run it will complain about a missing 
-    ``.mpd.conf`` file. Please follow the instructions printed by 
-    the mpd daemon.
-
-    .. code-block:: sh
-        
-        > mpd &
-
-    If the mpd deamon only complains with 'no mpd.conf', these
-    are the steps to take, to create a mpd.conf file:
-    
-    .. code-block:: sh
-        
-        > echo 'MPD_SECRETWORD=secret' > ~/.mpd.conf
-        > chmod 600 ~/.mpd.conf
-        
-    Please make sure to replace '''secret'''.
-    
-    After starting `mpd` we can start the tests.
-    
-
-    
 The tests are run using the nosetests program.
 
 .. code-block:: sh
@@ -114,98 +156,7 @@ The tests are run using the nosetests program.
         > mpiexec nosetests -v
     
     
-    If you do not run under mpiexec you get an error with a usage statement.
-    The error starts like this:
-    
-    .. code-block:: sh
-    
-        unable to parse user arguments
-
-        Usage: ./mpiexec [global opts] [exec1 local opts] : [exec2 local opts] : ...
-    
-    
-.. warning::
-    
-    On some laptops the hostname will not point
-    to the correct internet address. For these laptops 
-    you can start the mpd daemon on the localhost ip. To do so,
-    you need to set the ``--ifhn`` option:
-    
-    .. code-block:: sh
-    
-        > mpd --ifhn=localhost &
-        
-    
-    
-.. warning::
-    
-    On OS X, when you install the prerequisites with macports, 
-    ``nosetests`` will not have a standard name. It will be named
-    ``nosetests-<python-version>``. So for python2.7 you'll need to 
-    use *nosetests-2.7*
-    
-    .. code-block:: sh
-    
-        > nosetests-2.7
-        ............................................
-        
-        OK
-        
-
-
-
-Real-time testing
-~~~~~~~~~~~~~~~~~
-The code includes support for real-time testing. The real-time testing 
-application monitors the files in the source directories ('src' 
-and 'test'). Every time a file is changed it will run most of the tests.
-After each test a report is created, this report can be viewed with
-a web browser.
-
-.. code-block:: sh
-
-    # go to the AMUSE root directory
-    # display help information of the realtime_test script
-    >  python -m support.realtime_test --help
-    Usage: realtime_test.py [options]
-
-    Options:
-      -h, --help            show this help message and exit
-      -p PORT, --port=PORT  start serving on PORT
-      
-    # start the python realtime_test script on port 9080
-    > python -m support.realtime_test -p 9080
-    starting server on port:  9080
-    start test run
-    ...
-    # open a browser to view the results
-    > firefox http://localhost:9080/
-    
-
-Running the code
-----------------
-A python script will not find the AMUSE code as the code is not 
-installed into the python 'site-packages' directory or any other 
-directory that can be found by python automatically. 
-
-During a build a shell script is created to run the AMUSE code. To 
-use this script you first have to copy it to a directory in your PATH.
-The script is called ''amuse.sh''. After copying this script you can run
-amuse code from anywhere on your disk by starting 'amuse.sh'. This
-script has exactly the same command line parameters as the normal python
-application.
-
-.. code-block:: sh
-
-    > amuse.sh
-    Python 2.6.2 (r262:71600, Sep  1 2009, 16:14:27) 
-    [GCC 4.3.2 20081105 (Red Hat 4.3.2-7)] on linux2
-    Type "help", "copyright", "credits" or "license" for more information.
-    >>> from amuse.units import units
-    >>> units.m
-    unit<m>
-    
-    
+    If you do not run under mpiexec you get an error with a usage statement.    
 
     
 
