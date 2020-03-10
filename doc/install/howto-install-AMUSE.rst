@@ -5,11 +5,57 @@ Installation of the AMUSE software
 Before installing AMUSE the prerequisite software must be downloaded and
 installed, see :ref:`prerequisite-label`.
 
-In the current stage of development AMUSE will not be installed in 
-the python ``site-packages`` library. Instead, all code is build 
-in the AMUSE source directories. With this setup we can easily edit
-the code and run it, without the need for an extra installation step.
+AMUSE can be installed from online packages using the python ``pip`` utility
+or from a checkout of the repository. For the latter option, you can either
+install it in a pip managed environment, or a self managed python environment.
 
+Package install
+===============
+
+In this case, install the non-python prerequisites first then:
+
+.. code-block:: sh
+    
+    > pip install amuse
+
+this will attempt to fetch and install the amuse-framework package,
+and the code packages. If one of the code fails, you can install packages by 
+hand.
+
+Pip managed install from repository checkout
+============================================
+
+If you have a python environment where you can install packages with pip (it is 
+recommended to compartementalize environments of different projects with virtualenv),
+again install non-python prerequisites and checkout the AMUSE repository:
+
+.. code-block:: sh
+    > git clone https://github.com/amusecode/amuse
+    > cd amuse
+    > pip install -e .
+    > python setup.py develop_build 
+
+In this case, a link to the repository is created and codes are compiled in place. This is 
+the recommended install for development.
+
+Self-managed environment
+========================
+
+Lastly, you can install without pip. Again all code is build 
+in the AMUSE source directories. This setup also allows you to easily edit
+the code and run it, without the need for an extra installation step. There are bootstrap 
+scripts in ``doc/install/`` to download and build all prerequisites if c++/fortran compilers are available.
+
+Environment variables
+---------------------
+
+you need to tell python where to find the amuse package and the command line interpreter where to find
+the ``amusifier`` executable.
+
+.. code-block:: sh
+    > export PYTHONPATH=${PYTHONPATH}<path to amuse root>/src
+    > export PATH=${PATH}:<path to amuse root>/bin
+ 
 Configuring the code
 --------------------
 The code is configured using the ``configure`` command. 
