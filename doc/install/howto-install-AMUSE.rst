@@ -55,8 +55,10 @@ the ``amusifier`` executable.
 
 .. code-block:: sh
 
-    > export PYTHONPATH=${PYTHONPATH}<path to amuse root>/src
-    > export PATH=${PATH}:<path to amuse root>/bin
+    > export PYTHONPATH=${PYTHONPATH}:/path/to/amuse/src
+    > export PATH=${PATH}:/path/to/amuse/bin
+ 
+where you replace ``/path/to/amuse`` with the correct path to AMUSE.
  
 Configuring the code
 --------------------
