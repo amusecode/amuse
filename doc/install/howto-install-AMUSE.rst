@@ -19,8 +19,8 @@ In this case, install the non-python prerequisites first then:
     > pip install amuse
 
 this will attempt to fetch and install the amuse-framework package,
-and the code packages. If one of the code fails, you can install packages by 
-hand.
+and the code packages (amuse-<code>) and python prerequisites. If one of the code fails to build,
+you can install packages by hand.
 
 Pip managed install from repository checkout
 ============================================
@@ -30,6 +30,7 @@ recommended to compartementalize environments of different projects with virtual
 again install non-python prerequisites and checkout the AMUSE repository:
 
 .. code-block:: sh
+
     > git clone https://github.com/amusecode/amuse
     > cd amuse
     > pip install -e .
@@ -53,6 +54,7 @@ you need to tell python where to find the amuse package and the command line int
 the ``amusifier`` executable.
 
 .. code-block:: sh
+
     > export PYTHONPATH=${PYTHONPATH}<path to amuse root>/src
     > export PATH=${PATH}:<path to amuse root>/bin
  
