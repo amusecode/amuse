@@ -12,8 +12,6 @@ except ImportError:
 
     AmuseWarning("import limepy failed, maybe scipy is not installed")
 
-print(limepy)
-
 
 class Limepy(LiteratureReferencesMixIn):
     """
