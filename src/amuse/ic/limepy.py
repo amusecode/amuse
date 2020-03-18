@@ -7,9 +7,12 @@ try:
     from ._limepy import limepy, sample
     scipy_imported = True
 except ImportError:
+    raise
     scipy_imported = False
 
     AmuseWarning("import limepy failed, maybe scipy is not installed")
+
+print(limepy)
 
 
 class Limepy(LiteratureReferencesMixIn):
@@ -25,11 +28,8 @@ class Limepy(LiteratureReferencesMixIn):
 
     def __init__(self, *args, **kwargs):
         LiteratureReferencesMixIn.__init__(self)
-        kwargs["scale"] = True
-        kwargs["MS"] = 1
-        kwargs["GS"] = 1
-        kwargs["RS"] = 1
-        kwargs["scale_radius"] = "rv"
+        kwargs["M"] = 1
+        kwargs["rt"] = 1
 
         self.model = limepy(*args, **kwargs)
         self.kwargs = kwargs
