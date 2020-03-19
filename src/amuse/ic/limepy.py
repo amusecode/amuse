@@ -27,7 +27,8 @@ class Limepy(LiteratureReferencesMixIn):
     def __init__(self, *args, **kwargs):
         LiteratureReferencesMixIn.__init__(self)
         kwargs["M"] = 1
-        kwargs["rt"] = 1
+        kwargs["G"] = 1
+        kwargs["rv"] = 1
 
         self.model = limepy(*args, **kwargs)
         self.kwargs = kwargs
