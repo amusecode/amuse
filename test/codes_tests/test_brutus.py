@@ -384,31 +384,29 @@ class TestBrutus(TestWithMPI):
         return particles
 
     def test5(self):
-        if HAS_MPMATH == True:
-            print("MPmath available -> Doing tests")
-            bodies = self.sun_and_planets()
-            convert_nbody = nbody_system.nbody_to_si(bodies.mass.sum(),bodies[1].position.length())
-            gravity = Brutus(convert_nbody,number_of_workers=1)
-            gravity.parameters.bs_tolerance = 1e-30
-            gravity.parameters.word_length = 180
-            gravity.parameters.dt_param = 0.0000000000010
-            gravity.particles.add_particles(bodies)
-            Etot_init = gravity.kinetic_energy + gravity.potential_energy
-            Ein = gravity.get_total_energy_p_si()
-            gravity.evolve_model(gravity.model_time + (30| units.day))
-            Eout = gravity.get_total_energy_p_si()
-            Ekin = gravity.kinetic_energy 
-            Epot = gravity.potential_energy
-            Etot = Ekin + Epot
-            Loss_double = ((Etot_init-Etot)/gravity.get_time())
-            Loss_mp = (Ein - Eout)/gravity.get_time_p_si()
-            print("Loss with \"normal\" double =",Loss_double.number," (W)")
-            print("Loss with multiprecision =",Loss_mp," (W)")
-            gravity.stop()
-            if (Loss_mp > 0.0000007) or (Loss_mp <= 0.0000006):
-                assert False
-        else:
-            print("MPmath missing -> Skip tests")
+        if not HAS_MPMATH:
+            self.skip("mpmath not available")
+        print("MPmath available -> Doing tests")
+        bodies = self.sun_and_planets()
+        convert_nbody = nbody_system.nbody_to_si(bodies.mass.sum(),bodies[1].position.length())
+        gravity = Brutus(convert_nbody,number_of_workers=1)
+        gravity.parameters.bs_tolerance = 1e-30
+        gravity.parameters.word_length = 180
+        gravity.parameters.dt_param = 0.0000000000010
+        gravity.particles.add_particles(bodies)
+        Etot_init = gravity.kinetic_energy + gravity.potential_energy
+        Ein = gravity.get_total_energy_p_si()
+        gravity.evolve_model(gravity.model_time + (30| units.day))
+        Eout = gravity.get_total_energy_p_si()
+        Ekin = gravity.kinetic_energy 
+        Epot = gravity.potential_energy
+        Etot = Ekin + Epot
+        Loss_double = ((Etot_init-Etot)/gravity.get_time())
+        Loss_mp = (Ein - Eout)/gravity.get_time_p_si()
+        print("Loss with \"normal\" double =",Loss_double.number," (W)")
+        print("Loss with multiprecision =",Loss_mp," (W)")
+        gravity.stop()
+        self.assertTrue((Loss_mp <= 0.0000007) and (Loss_mp > 0.0000006))
     
 
 
