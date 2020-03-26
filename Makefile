@@ -6,6 +6,7 @@ CLEAN ?= yes
 
 CONFIGURE_ERROR=
 
+export PATH :=  ${PATH}:$(PWD)/bin
 export PYTHONPATH := $(PYTHONPATH):$(PWD)/src:$(PWD)/test
 
 python_version_full := $(wordlist 2,4,$(subst ., ,$(shell $(PYTHON) --version 2>&1)))
