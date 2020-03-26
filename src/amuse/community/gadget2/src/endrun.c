@@ -33,7 +33,7 @@ void endrun(int ierr)
       printf("task %d: endrun called with an error level of %d\n\n\n", ThisTask, ierr);
       fflush(stdout);
 #ifndef NOMPI
-      MPI_Abort(GADGET_WORLD, ierr); /* currently this brings down everything (?) */
+      if(NTask>1) MPI_Abort(GADGET_WORLD, ierr); /* currently this brings down everything (?) */
 #endif
     }
   exit(0);
