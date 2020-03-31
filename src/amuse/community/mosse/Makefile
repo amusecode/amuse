@@ -34,31 +34,11 @@ clean:
 	$(RM) -f mosse_worker mosse_worker_sockets worker_code-sockets.f90
 	$(RM) -f amuse_worker_module.mod
 	$(RM) -f forsockets.mod
-	$(RM) -f mosse_cython.* mosse_worker_* mosse_c.* cinterfacemodule.mod
 
 mosse_worker:	worker_code.f90  interface.o  $(OBJ)
 	make -C src mosse CMPLR=$(FORTRAN) FFLAGS="$(FCFLAGS) $(F77FLAGS)"
 	$(MPIF90) $(FS_FLAGS) $(LDFLAGS) $^ -o $@ $(FS_LIBS) $(LIBS)
 	
-mosse_worker_cython: mosse_cython.so
-	$(CODE_GENERATOR) --type=cython -m script -x amuse.community.mosse.interface MOSSEInterface -o $@ --cython-import mosse_cython
-	
-mosse_cython.so: mosse_cython.o $(CODELIB) $(OBJ) interface.o mosse_c.o
-	$(MPIFC) -shared $(CXXFLAGS) $(PYTHONDEV_LDFLAGS) $(AM_CFLAGS) $(SC_FLAGS) $(LDFLAGS) $(OBJ) mosse_cython.o interface.o  -o $@ $(SC_CLIBS) $(AM_LIBS) mosse_c.o
-
-mosse_cython.o: mosse_cython.c
-	$(MPICXX) $(CXXFLAGS) $(SC_FLAGS) $(AM_CFLAGS) $(PYTHONDEV_CFLAGS) -c -o $@ $< 
-
-mosse_cython.c: mosse_cython.pyx 
-	$(CYTHON) $< -o $@
-
-mosse_c.f90: interface.py
-	$(CODE_GENERATOR) --type=cython -m interface -x amuse.community.mosse.interface MOSSEInterface -o $@ --prefix aaa_
-
-mosse_cython.pyx: interface.py
-	$(CODE_GENERATOR) --type=cython -m mpi interface.py MOSSEInterface -o $@ --prefix aaa_
-
-
 worker_code.f90: interface.py
 	$(CODE_GENERATOR) --type=f90 interface.py MOSSEInterface -o $@
 	

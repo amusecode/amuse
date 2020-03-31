@@ -19,7 +19,6 @@ class HuaynoInterface(CodeInterface,
     .. [#] J\"anes, J\"urgen; Pelupessy, Federico I.; Portegies Zwart, Simon, A&A, Volume 570, October 2014 (for CC, OK methods)
     """
     include_headers = ['worker_code.h']
-    __so_module__ = 'huayno_cython'
 
     MODE_OPENCL='opencl'
     MODE_OPENMP='openmp'
