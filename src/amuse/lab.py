@@ -109,6 +109,7 @@ _community_codes = [
     "Brutus",
     "Fi",
     "Gadget2",
+    "Gadgetmg2",
     "Athena",
     "Capreole",
     "MpiAmrVac",
