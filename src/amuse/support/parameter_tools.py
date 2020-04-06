@@ -259,7 +259,7 @@ class CodeWithIniFileParameters(_CodeWithFileParameters):
         return rawvals
 
     def _convert(self, value, dtype):
-        if dtype is "bool":
+        if dtype=="bool":
             if value.lower() in ["0", "false", "off","no"]:
                 return False
             else:
