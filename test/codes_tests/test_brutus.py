@@ -9,6 +9,15 @@ from amuse.datamodel import Particles
 
 from amuse.community.brutus.interface import BrutusInterface, Brutus
 
+import random
+
+try:
+    import mpmath
+    HAS_MPMATH=True
+except ImportError:
+    HAS_MPMATH=False
+
+
 class TestBrutusInterface(TestWithMPI):
     
     def test1(self):
@@ -113,8 +122,8 @@ class TestBrutusInterface(TestWithMPI):
 
         # eta, string
         #self.assertEquals(["0.10", 0], instance.get_eta_string().values())
-        self.assertEqual(0, instance.set_eta_string("0.20"))
-        self.assertEqual(["0.2", 0], list(instance.get_eta_string().values()))
+        self.assertEqual(0, instance.set_eta_string("123"))
+        self.assertEqual(["123", 0], list(instance.get_eta_string().values()))
 
         # output dir
         #self.assertEquals(["./", 0], instance.get_brutus_output_directory().values())
@@ -178,6 +187,26 @@ class TestBrutusInterface(TestWithMPI):
 
         self.assertEqual(0, instance.cleanup_code())
         instance.stop()
+
+    def test8(self):
+        print("Test BrutusInterface string parameters")
+        instance =  self.new_instance_of_an_optional_code(BrutusInterface)
+        instance.initialize_code()
+        
+        instance.set_word_length(128)
+        
+        for i in range(100):
+          x=random.random()
+          x=str(x)
+          instance.set_eta_string(x)
+          x_,err=instance.get_eta_string()
+          instance.set_eta_string(x_)
+          x__,err=instance.get_eta_string()
+          #~ assert x==x_ 
+          self.assertEqual(x_,x__) 
+        
+        instance.stop()
+        
 
 class TestBrutus(TestWithMPI):
     
@@ -293,5 +322,91 @@ class TestBrutus(TestWithMPI):
         
         instance.cleanup_code()
         instance.stop()
+        
+    def sun_and_planets(self):
+        particles = Particles(9)
+        sun = particles[0] 
+        mercury = particles[1]
+        venus = particles[2]
+        earth = particles[3]
+        mars = particles[4]
+        jupiter = particles[5]
+        saturn = particles[6]
+        uranus = particles[7]
+        neptune = particles[8]
+        
+        sun.mass = 1047.517| units.MJupiter  
+        sun.radius = 1.0 | units.RSun      
+        sun.position = ( 0.005717 , -0.00538 , -2.130e-5 ) | units.AU
+        sun.velocity = ( 0.007893 , 0.01189 , 0.0002064 )  | units.kms 
+            
+        mercury.mass = 0.000174 | units.MJupiter  
+        mercury.radius =  0  | units.RSun    
+        mercury.position = ( -0.31419 , 0.14376 , 0.035135 ) | units.AU 
+        mercury.velocity = ( -30.729 , -41.93 , -2.659 )  | units.kms  
+            
+        venus.mass = 0.002564 | units.MJupiter     
+        venus.radius =   0    | units.RSun 
+        venus.position = ( -0.3767 , 0.60159 , 0.0393 ) | units.AU 
+        venus.velocity = ( -29.7725 , -18.849 , 0.795 )  | units.kms 
+            
+        earth.mass = 0.003185 | units.MJupiter     
+        earth.radius =   0    | units.RSun 
+        earth.position = ( -0.98561 , 0.0762 , -7.847e-5 ) | units.AU 
+        earth.velocity = ( -2.927 , -29.803 , -0.000533 )  | units.kms 
+            
+        mars.mass = 0.000338 | units.MJupiter     
+        mars.radius =     0  | units.RSun 
+        mars.position = ( -1.2895 , -0.9199 , -0.048494 ) | units.AU 
+        mars.velocity = ( 14.9 , -17.721 , 0.2979 )  | units.kms 
+            
+        jupiter.mass = 1 | units.MJupiter     
+        jupiter.radius =  0    | units.RSun  
+        jupiter.position = ( -4.9829 , 2.062 , -0.10990 ) | units.AU 
+        jupiter.velocity = ( -5.158 , -11.454 , -0.13558 )  | units.kms 
+        
+        saturn.mass = 0.29947 | units.MJupiter     
+        saturn.radius =   0    | units.RSun 
+        saturn.position = ( -2.075 , 8.7812 , 0.3273 ) | units.AU 
+        saturn.velocity = ( -9.9109 , -2.236 , -0.2398 )  | units.kms 
+        
+        uranus.mass = 0.045737 | units.MJupiter     
+        uranus.radius =    0   | units.RSun 
+        uranus.position = ( -12.0872 , -14.1917 , 0.184214 ) | units.AU 
+        uranus.velocity = ( 5.1377 , -4.7387 , -0.06108 )  | units.kms 
+            
+        neptune.mass = 0.053962 | units.MJupiter 
+        neptune.radius =   0    | units.RSun 
+        neptune.position = ( 3.1652 , 29.54882 , 0.476391 ) | units.AU 
+        neptune.velocity = ( -5.443317 , 0.61054 , -0.144172 )  | units.kms 
+        
+        particles.move_to_center()
+        return particles
+
+    def test5(self):
+        if not HAS_MPMATH:
+            self.skip("mpmath not available")
+        print("MPmath available -> Doing tests")
+        bodies = self.sun_and_planets()
+        convert_nbody = nbody_system.nbody_to_si(bodies.mass.sum(),bodies[1].position.length())
+        gravity = Brutus(convert_nbody,number_of_workers=1)
+        gravity.parameters.bs_tolerance = 1e-30
+        gravity.parameters.word_length = 180
+        gravity.parameters.dt_param = 0.0000000000010
+        gravity.particles.add_particles(bodies)
+        Etot_init = gravity.kinetic_energy + gravity.potential_energy
+        Ein = gravity.get_total_energy_p_si()
+        gravity.evolve_model(gravity.model_time + (30| units.day))
+        Eout = gravity.get_total_energy_p_si()
+        Ekin = gravity.kinetic_energy 
+        Epot = gravity.potential_energy
+        Etot = Ekin + Epot
+        Loss_double = ((Etot_init-Etot)/gravity.get_time())
+        Loss_mp = (Ein - Eout)/gravity.get_time_p_si()
+        print("Loss with \"normal\" double =",Loss_double.number," (W)")
+        print("Loss with multiprecision =",Loss_mp," (W)")
+        gravity.stop()
+        self.assertTrue((Loss_mp <= 0.0000007) and (Loss_mp > 0.0000006))
+    
 
 

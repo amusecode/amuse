@@ -1,6 +1,8 @@
 # standard amuse configuration include
 # config.mk will be made after ./configure has run
-AMUSE_DIR?=../../../..
+ifeq ($(origin AMUSE_DIR), undefined)
+  AMUSE_DIR := $(shell amusifier --get-amuse-dir)
+endif
 -include ${AMUSE_DIR}/config.mk
 
 MPICXX ?= mpicxx
@@ -15,7 +17,7 @@ CXXFLAGS ?= $(CFLAGS)
 LDFLAGS += -lm $(MUSE_LD_FLAGS)
 
 A_OBJS = interface.o
-CODE_GENERATOR = $(PYTHON) $(AMUSE_DIR)/build.py
+CODE_GENERATOR ?= $(PYTHON) $(AMUSE_DIR)/build.py
 
 #PROFLIBS ?= -L$(AMUSE_DIR)/lib/ibis/src/profiling -libisprofiling -lmpi
 

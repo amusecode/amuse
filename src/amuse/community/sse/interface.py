@@ -454,3 +454,6 @@ class SSE(common.CommonCode):
 
     def update_time_steps(self):
         pass
+
+
+Sse = SSE

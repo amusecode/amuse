@@ -1,6 +1,8 @@
 # standard amuse configuration include
 # config.mk will be made after ./configure has run
-AMUSE_DIR?=../../../..
+ifeq ($(origin AMUSE_DIR), undefined)
+  AMUSE_DIR := $(shell amusifier --get-amuse-dir)
+endif
 -include ${AMUSE_DIR}/config.mk
 
 ###############################################################
@@ -9,9 +11,9 @@ AMUSE_DIR?=../../../..
 # mpfr: http://www.mpfr.org/
 # mpfrc++: http://www.holoborodko.com/pavel/mpfr/
 # Change these paths in this Makefile and in src/makefile
-GMP_LIBS   ?= -L/data1/boekholt/Packages/mpreal_local/lib/ -lgmp  # libgmp.a
-MPFR_LIBS  ?= -L/data1/boekholt/Packages/mpreal_local/lib/ -lmpfr # libmpfr.a
-MPFR_FLAGS ?= -I/data1/boekholt/Packages/mpreal_local/include/    # mpreal.h
+GMP_LIBS   = -L/usr/lib/x86_64-linux-gnu/ -lgmp  # libgmp.a
+MPFR_LIBS  = -L/usr/lib/x86_64-linux-gnu/ -lmpfr # libmpfr.a
+MPFR_FLAGS = -I./mpfrc++    # mpreal.h
 ###############################################################
 
 LIBS += $(MPFR_LIBS) $(GMP_LIBS)
@@ -26,7 +28,7 @@ CXXFLAGS ?= -Wall -g -O2
 
 CXXFLAGS += $(MPFR_FLAGS) -std=c++0x -I../mpfrc++
 
-CODE_GENERATOR = $(AMUSE_DIR)/build.py
+CODE_GENERATOR ?= $(AMUSE_DIR)/build.py
 
 CODELIB = src/libbrutus.a
 OBJ = interface.o

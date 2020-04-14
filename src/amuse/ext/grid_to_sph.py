@@ -23,7 +23,9 @@ class Grid2SPH(object):
     def __init__(self, grid, number_of_sph_particles, base_distribution_type = "uniform", seed = None):
         if (grid.number_of_dimensions() != 3):
             raise AmuseException("Grid must be 3D")
-        
+        if not hasattr(grid,"momentum"):
+          grid.add_global_vector_attribute("momentum", ["rhovx","rhovy","rhovz"])
+
         self.grid = grid
         self.shape = grid.shape
         self.number_of_sph_particles = number_of_sph_particles

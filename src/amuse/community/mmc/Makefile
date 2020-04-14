@@ -1,4 +1,6 @@
-AMUSE_DIR?=../../../..
+ifeq ($(origin AMUSE_DIR), undefined)
+  AMUSE_DIR := $(shell amusifier --get-amuse-dir)
+endif
 -include $(AMUSE_DIR)/config.mk
 
 MPIFC  ?= mpif90
@@ -14,7 +16,7 @@ OBJS = interface.o
 CODELIB = src/libmmc.a
 
 MMC_DATA_DIR = ../../../../data/mmc
-CODE_GENERATOR = $(AMUSE_DIR)/build.py
+CODE_GENERATOR ?= $(AMUSE_DIR)/build.py
 
 SRCINC = -I./src
 

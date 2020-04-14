@@ -235,11 +235,8 @@ class TestMethodParameterDefintions(amusetest.TestCase):
         self.assertRaises(AmuseException, lambda: p.unknown, 
             expected_message = "tried to get unknown parameter 'unknown' for a 'TestModule' object")
 
-        with warnings.catch_warnings(record=True) as w:
-
-            p.unknown = 10 | units.m
-            self.assertEqual(len(w), 1)
-            self.assertEqual("tried to set unknown parameter 'unknown' for a 'TestModule' object", str(w[-1].message))
+        self.assertRaises(AmuseException, setattr, p, "unknown", 1.0 | units.m,
+            expected_message = "tried to set unknown parameter 'unknown' for a 'TestModule' object")
 
     def test10(self):
         parameter_definition = parameters.ModuleMethodParameterDefinition(
@@ -1024,12 +1021,10 @@ class TestParameters(amusetest.TestCase):
         
         memento.test_name = 2.0 | units.m
         self.assertEqual(memento.test_name, 2.0|units.m)
-        
-        with warnings.catch_warnings(record=True) as w:
-            set.reset_from_memento(memento)
-            self.assertEqual(len(w), 1)
-            self.assertEqual("tried to change read-only parameter 'test_name' for a 'TestModule' object", str(w[-1].message))
-        
+
+        self.assertRaises(AmuseException, set.reset_from_memento, memento,
+            expected_message = "tried to change read-only parameter 'test_name' for a 'TestModule' object")
+                
         self.assertEqual(o.x, 0.1|units.m)
         self.assertEqual(set.test_name, 0.1|units.m)
         self.assertEqual(memento.test_name, 2.0|units.m)

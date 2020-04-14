@@ -200,6 +200,9 @@ class CodeWithNamelistParameters(_CodeWithFileParameters):
     def output_format_value(self,value):
         return value
 
+    def interpret_value(self,value, dtype=None):
+        return value   # dtype, arrays should be handled by f90nml 
+
 
 class CodeWithIniFileParameters(_CodeWithFileParameters):
     """
@@ -256,7 +259,7 @@ class CodeWithIniFileParameters(_CodeWithFileParameters):
         return rawvals
 
     def _convert(self, value, dtype):
-        if dtype is "bool":
+        if dtype=="bool":
             if value.lower() in ["0", "false", "off","no"]:
                 return False
             else:
@@ -266,6 +269,8 @@ class CodeWithIniFileParameters(_CodeWithFileParameters):
         return numpy.fromstring(value, sep=",")[0]
 
     def interpret_value(self,value, dtype=None):
+        if value=="":
+            return value
         if value.find(',')>=0:
             return [self._convert(x, dtype) for x in value.split(",")]
         return self._convert(value, dtype)
@@ -283,7 +288,6 @@ class CodeWithIniFileParameters(_CodeWithFileParameters):
 
             if isinstance(rawval, list):
                 rawval=','.join(rawval)
-                
             parser.set(section,short,self.output_format_value(rawval))
 
         f=open(outputfile, "w")
@@ -292,9 +296,9 @@ class CodeWithIniFileParameters(_CodeWithFileParameters):
 
     def output_format_value(self,value):
         if isinstance(value, list):
-          return ','.join(value)
+          return ','.join([str(v) for v in value])
         else:
-          return value
+          return str(value)
         
     def write_inifile_parameters(self, outputfile):
         return self.write_parameters(outputfile)

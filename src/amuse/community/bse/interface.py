@@ -641,3 +641,6 @@ class BSE(common.CommonCode):
          
         
         
+
+
+Bse = BSE

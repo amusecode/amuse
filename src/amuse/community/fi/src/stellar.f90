@@ -186,7 +186,7 @@ include 'globals.h'
       acc(i,1)=acc(p,1)
       acc(i,2)=acc(p,2)
       acc(i,3)=acc(p,3)
-      acc(i,4)=acc(p,4)
+      aacc(i)=aacc(p)
       phi(i)=phi(p)
       phiext(i)=phiext(p)
       epsgrav(i)=epsgrav(p)
@@ -223,7 +223,7 @@ include 'globals.h'
       acc(p,1)=acc(ib,1)
       acc(p,2)=acc(ib,2)
       acc(p,3)=acc(ib,3)
-      acc(p,4)=acc(ib,4)
+      aacc(p)=aacc(ib)
       phi(p)=phi(ib)
       phiext(p)=phiext(ib)
       tfeedb(p)=-2

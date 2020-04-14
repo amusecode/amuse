@@ -52,7 +52,9 @@ class {0.name_of_the_community_interface_class}Tests(TestWithMPI):
 makefile_template_cxx = """\
 # standard amuse configuration include
 # config.mk will be made after ./configure has run
-AMUSE_DIR?=$(shell amusifier --get-amuse-dir)
+ifeq ($(origin AMUSE_DIR), undefined)
+  AMUSE_DIR := $(shell amusifier --get-amuse-dir)
+endif
 -include $(AMUSE_DIR)/config.mk
 
 MPICXX   ?= mpicxx
@@ -304,7 +306,9 @@ class CreateADirectoryAndPopulateItWithFilesForACCode(CreateADirectoryAndPopulat
 makefile_template_fortran = """\
 # standard amuse configuration include
 # config.mk will be made after ./configure has run
-AMUSE_DIR?=$(shell amusifier --get-amuse-dir)
+ifeq ($(origin AMUSE_DIR), undefined)
+  AMUSE_DIR := $(shell amusifier --get-amuse-dir)
+endif
 -include $(AMUSE_DIR)/config.mk
 
 MPIFC ?= mpif90

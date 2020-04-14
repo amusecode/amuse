@@ -1,6 +1,8 @@
 # standard amuse configuration include
 # config.mk will be made after ./configure has run
-AMUSE_DIR?=../../../..
+ifeq ($(origin AMUSE_DIR), undefined)
+  AMUSE_DIR := $(shell amusifier --get-amuse-dir)
+endif
 -include ${AMUSE_DIR}/config.mk
 
 MPICXX ?= mpicxx
@@ -42,7 +44,7 @@ SELFGRAV_AMUSE_OBJS = $(SELFGRAV_BUILDDIR)/interface_$(VERSION).o
 MHD_AMUSE_OBJS = $(MHD_BUILDDIR)/interface_$(VERSION).o
 SCALAR_AMUSE_OBJS = $(SCALAR_BUILDDIR)/interface_$(VERSION).o
 
-CODE_GENERATOR = $(AMUSE_DIR)/build.py
+CODE_GENERATOR ?= $(AMUSE_DIR)/build.py
 DOWNLOAD_FROM_WEB = $(PYTHON) ./download.py
 PATCH_FILES = $(PYTHON) ./patch_files.py
 
@@ -101,21 +103,9 @@ endif
 athena_worker: worker_code.cc worker_code.h $(CODELIB) $(AMUSE_OBJS)
 	$(MPICXX) $(CXXFLAGS) $(SC_FLAGS) $(LDFLAGS) worker_code.cc $(AMUSE_OBJS) $(CODELIB) $(LDFLAGS) -o $@ $(SC_CLIBS)  $(LIBS) $(AM_LIBS)
 
-athena_worker_cython: athena_cython.so
-	$(CODE_GENERATOR) --type=cython -m script -x amuse.community.athena.interface AthenaInterface -o $@ --cython-import athena_cython
-	
-athena_cython.so: athena_cython.o worker_code.h  $(CODELIB)  $(AMUSE_OBJS)
-	$(MPICXX) -shared $(CXXFLAGS) $(PYTHONDEV_LDFLAGS) $(AM_CFLAGS) $(SC_FLAGS) $(LDFLAGS) $<  $(AMUSE_OBJS) -o $@ $(SC_CLIBS) $(AM_LIBS) $(CODELIB)
-
 athena_%.o: athena_%.c worker_code.h
 	$(MPICC) $(CXXFLAGS) $(SC_FLAGS) $(AM_CFLAGS) $(PYTHONDEV_CFLAGS) -c -o $@ $< 
 
-athena_%.pyx: interface.py
-	$(CODE_GENERATOR) --type=cython -m mpi interface.py AthenaInterface -o $@
-
-athena_%.c: athena_%.pyx
-	$(CYTHON) $< -o $@
-	
 $(SELFGRAV_BUILDDIR)/Makefile: $(ATHENA_DIR)/Makefile.in
 	cp -r $(ATHENA_DIR) $(SELFGRAV_BUILDDIR)
 

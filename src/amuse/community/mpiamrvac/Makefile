@@ -1,4 +1,6 @@
-AMUSE_DIR?=../../../..
+ifeq ($(origin AMUSE_DIR), undefined)
+  AMUSE_DIR := $(shell amusifier --get-amuse-dir)
+endif
 -include $(AMUSE_DIR)/config.mk
 
 # need := to expand the variable here and not when it is used
@@ -56,7 +58,7 @@ CODELIB2DACC = $(TWOD_BUILDDIR_ACC)/$(LIBNAME)
 CODELIB1DACC = $(ONED_BUILDDIR_ACC)/$(LIBNAME)
 CODELIBACC = $(BUILDDIR_ACC)/$(LIBNAME)
 
-CODE_GENERATOR = $(AMUSE_DIR)/build.py
+CODE_GENERATOR ?= $(AMUSE_DIR)/build.py
 
 DOWNLOAD_FROM_WEB = $(PYTHON) ./download.py
 PATCH_FILES = $(PYTHON) ./patch_files.py

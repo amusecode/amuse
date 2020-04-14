@@ -311,3 +311,6 @@ class Kepler(GravitationalDynamics, GravityFieldCode):
         yy=y-self.central_particle.y
         zz=z-self.central_particle.z
         return self.overridden().get_potential_at_point(radius,xx,yy,zz)
+
+
+Kepler_orbiters = Kepler

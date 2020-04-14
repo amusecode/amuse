@@ -1,6 +1,8 @@
 # standard amuse configuration include
 # config.mk will be made after ./configure has run
-AMUSE_DIR?=../../../..
+ifeq ($(origin AMUSE_DIR), undefined)
+  AMUSE_DIR := $(shell amusifier --get-amuse-dir)
+endif
 -include ${AMUSE_DIR}/config.mk
 
 MPICXX ?= openmpicxx
@@ -17,8 +19,10 @@ CXXFLAGS+= $(MUSE_INCLUDE_DIR)
 
 OBJS = integrator.o interface.o 
 
-AMUSE_DIR?=../../../..
-CODE_GENERATOR = $(AMUSE_DIR)/build.py
+ifeq ($(origin AMUSE_DIR), undefined)
+  AMUSE_DIR := $(shell amusifier --get-amuse-dir)
+endif
+CODE_GENERATOR ?= $(AMUSE_DIR)/build.py
 
 CUDA_LIBDIRS ?= -L$(CUDA_TK)/lib -L$(CUDA_TK)/lib64
 CUDA_LIBS ?= -lcudart

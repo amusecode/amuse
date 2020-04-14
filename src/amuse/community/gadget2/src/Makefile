@@ -258,7 +258,7 @@ endif
 #LIBS   =   $(HDF5LIB) -g  $(MPICHLIB)  $(GSL_LIBS) -lgsl -lgslcblas -lm $(FFTW_LIB) 
 LIBS   =   $(HDF5LIB) -g  $(MPICHLIB)  $(GSL_LIBS) -lgsl -lgslcblas -lm
 
-all:  $(EXEC) $(CODELIB)
+all: allvars.o $(CODELIB)
 
 $(EXEC): $(OBJS) makefile_options
 	$(CC) $(OBJS) $(LIBS)   -o  $(EXEC)  

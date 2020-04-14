@@ -145,7 +145,8 @@ class double_star : public star
         real de_dt_gwr(const real);
 	real gwr_angular_momentum_loss(const real m_prim,
 				       const real m_sec,
-				       const real sma);
+				       const real sma, 
+				       const real ecc);
 	
 	real mb_angular_momentum_loss();
         void magnetic_stellar_wind(const real);

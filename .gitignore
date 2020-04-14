@@ -27,6 +27,7 @@ iamuse.sh
 lib/simple_hash/test_hash
 setuptools-*.zip
 src/amuse.egg-info
+bin/amusifier
 
 # directories and files generated in make
 # some of these should be patterns (the worker_code.cc / f90 stuff)

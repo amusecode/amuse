@@ -1,6 +1,8 @@
 # standard amuse configuration include
 # config.mk will be made after ./configure has run
-AMUSE_DIR?=$(realpath ../../../..)
+ifeq ($(origin AMUSE_DIR), undefined)
+  AMUSE_DIR := $(shell amusifier --get-amuse-dir)
+endif
 -include $(AMUSE_DIR)/config.mk
 
 MPICXX   ?= mpicxx
@@ -30,7 +32,7 @@ LIB_OBJ = $(CODEDIR)/src/rebound.o $(CODEDIR)/src/tree.o $(CODEDIR)/src/particle
 
 DOWNLOAD_FROM_WEB = $(PYTHON) ./download.py
 PATCH_FILES = $(PYTHON) ./patch_files.py
-CODE_GENERATOR = $(AMUSE_DIR)/build.py
+CODE_GENERATOR ?= $(AMUSE_DIR)/build.py
 
 AM_LIBS = -L$(AMUSE_DIR)/lib/amuse_mpi -lamuse_mpi
 AM_CFLAGS = -I$(AMUSE_DIR)/lib/amuse_mpi
@@ -70,8 +72,6 @@ clean:
 	$(RM) -Rf $(CODEDIR)/src/*.o
 	$(RM) -Rf $(CODEDIR)/src/*.so
 	$(RM) -Rf src/librebound.a
-	$(RM) -f rebound_cython.* rebound_cython_worker rebound_cython_worker.*
-	$(RM) -f rebound_worker_cython
 	-make -C $(CODEDIR) clean
 	
 distclean:
@@ -83,7 +83,6 @@ distclean:
 	$(RM) -Rf $(CODEDIR)/src/*.so
 	$(RM) -Rf src/librebound.a
 	$(RM) -Rf .pc
-	$(RM) rebound_cython.*
 
 $(CODELIB): $(CODEDIR)/Makefile
 	make -C $(CODEDIR) all CC=$(CC)
@@ -99,23 +98,5 @@ worker_code.h: interface.py
 rebound_worker: worker_code.cc worker_code.h $(CODELIB) $(OBJS)
 	$(MPICXX) $(CXXFLAGS) $(SC_FLAGS) $(LDFLAGS) -I$(CODEDIR)/src $< $(OBJS) $(CODELIB) $(SC_CLIBS)  -o $@
 	
-
-rebound_worker_cython: rebound_cython.so
-	$(CODE_GENERATOR) --type=cython -m script -x amuse.community.rebound.interface ReboundInterface -o $@ --cython-import rebound_cython
-	
-rebound_cython.so: rebound_cython.o $(CODELIB) $(OBJS)
-	$(MPICXX) -shared $(CXXFLAGS) $(PYTHONDEV_LDFLAGS) $(AM_CFLAGS) $(SC_FLAGS) $(LDFLAGS) rebound_cython.o  -o $@ $(SC_CLIBS) $(AM_LIBS) $(OBJS) $(CODELIB)
-
-rebound_cython.o: rebound_cython.cc
-	$(MPICXX) $(CXXFLAGS) $(SC_FLAGS) $(AM_CFLAGS) $(PYTHONDEV_CFLAGS) -c -o $@ $< 
-
-rebound_cython.pyx: interface.py worker_code.h
-	$(CODE_GENERATOR) --type=cython -m mpi interface.py ReboundInterface -o $@
-
-rebound_cython.cc: rebound_cython.pyx
-	$(CYTHON) $< -o $@
-
-
-
 .cc.o: $<
 	$(CXX) $(CXXFLAGS) $(SC_FLAGS) -I$(CODEDIR)/src -c -o $@ $< 

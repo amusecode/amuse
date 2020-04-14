@@ -536,9 +536,9 @@ void helium_star::stellar_wind(const real dt) {
                            + (alph-1.) * constant*dt),1./(1. - alph));
         real wind_mass = m - m_next;
         
-	// (GN Nov 2012) metallicity dependence on average with sqrt(Z/Z_sun)
+	// (GN Nov 2012) metalicity dependence on average with sqrt(Z/Z_sun)
 	// Vink & de Koter 2005
-	wind_mass *= pow(metallicity/cnsts.parameters(solar_metalicity),0.5);
+	wind_mass *= pow(metalicity/cnsts.parameters(solar_metalicity),0.5);
 
             
             
@@ -581,12 +581,16 @@ void helium_star::update_wind_constant() {
     real neta = 0.5; 
     real dm_r = neta * 4.E-13 * radius * luminosity / get_total_mass();
     
-    
     //HPT2000
     //Reduced WR-like mass loss for small H-envelope mass
     real dm_wr = 1.E-13 * pow(luminosity, 1.5);
 
     wind_constant = max(max(dm_wr, dm_r), 0.0);
+
+    // (SilT Jan 2020) metallicity dependence on average with (Z/Z_sun)^0.85
+    // Vink & de Koter 2005
+    wind_constant *= pow(metalicity/cnsts.parameters(solar_metalicity),0.85);	
+
 }
 
 

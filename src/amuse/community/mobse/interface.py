@@ -649,3 +649,6 @@ class MOBSE(common.CommonCode):
         self.parameters.set_defaults()
         self.commit_parameters()        
 
+
+
+Mobse = MOBSE
