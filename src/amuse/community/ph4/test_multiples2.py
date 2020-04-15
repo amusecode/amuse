@@ -126,7 +126,8 @@ def run_ph4(infile = None, outfile = None,
             salpeter = 0,
             accuracy_parameter = 0.1,
             softening_length = 0.0 | nbody_system.length,
-            manage_encounters = 1, random_seed = 1234):
+            manage_encounters = 1, random_seed = 1234,
+            debug_level = 1):
 
     if random_seed <= 0:
         numpy.random.seed()
@@ -378,7 +379,7 @@ def run_ph4(infile = None, outfile = None,
     multiples_code.neighbor_perturbation_limit = 0.1
     #multiples_code.neighbor_distance_factor = 2.0
     multiples_code.neighbor_veto = True
-    #multiples_code.global_debug = 2
+    multiples_code.global_debug = debug_level
 
     print('')
     print('multiples_code.initial_scale_factor =', \
@@ -477,11 +478,12 @@ if __name__ == '__main__':
     salpeter = 0
     accuracy_parameter = 0.1
     softening_length = 0  | nbody_system.length
-    random_seed = -1
+    random_seed = 42
     manage_encounters = 1
+    debug_level = 1
 
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "a:b:c:d:e:f:-F:gGn:s:St:w:")
+        opts, args = getopt.getopt(sys.argv[1:], "a:b:c:d:D:e:f:-F:gGn:s:St:w:")
     except getopt.GetoptError as err:
         print(str(err))
         sys.exit(1)
@@ -495,6 +497,8 @@ if __name__ == '__main__':
             manage_encounters = int(a)
         elif o == "-d":
             delta_t = float(a) | nbody_system.time 
+        elif o == "-D":
+            debug_level = int(a)
         elif o == "-e":
             softening_length = float(a) | nbody_system.length
         elif o == "-f":
@@ -524,4 +528,4 @@ if __name__ == '__main__':
             N, Nbin, t_end, delta_t, n_workers,
             use_gpu, gpu_worker,
             salpeter, accuracy_parameter, softening_length,
-            manage_encounters, random_seed)
+            manage_encounters, random_seed, debug_level)
