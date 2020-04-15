@@ -39,22 +39,6 @@ worker_code.h: interface.py
 hermite_worker:	worker_code.cc worker_code.h $(A_OBJS)
 	$(MPICXX) $(CXXFLAGS) $(SC_FLAGS) $(AM_CFLAGS) $(LDFLAGS) $< $(A_OBJS) -o $@ $(SC_MPI_CLIBS)  $(LIBS) $(AM_LIBS)
 
-hermite_worker_cython: hermite_cython.so
-	$(CODE_GENERATOR) --type=cython -m script -x amuse.community.hermite.interface HermiteInterface -o $@ --cython-import hermite_cython
-	
-hermite_cython.so: hermite_cython.o worker_code.h  $(CODELIB) $(A_OBJS)
-	$(MPICXX) -shared $(CFLAGS) $(PYTHONDEV_LDFLAGS) $(AM_CFLAGS) $(SC_FLAGS) $(LDFLAGS) hermite_cython.o $(A_OBJS) $(CODELIB) -o $@ $(SC_CLIBS) $(AM_LIBS)
-
-hermite_cython.o: hermite_cython.c worker_code.h
-	$(MPICC) $(CFLAGS) $(SC_FLAGS) $(AM_CFLAGS) $(PYTHONDEV_CFLAGS) -c -o $@ $< 
-
-hermite_cython.c: hermite_cython.pyx
-	$(CYTHON) $< -o $@
-	
-hermite_cython.pyx: interface.py
-	$(CODE_GENERATOR) --type=cython -m mpi interface.py HermiteInterface -o $@
-
-	
 .cc.o: $<
 	$(CXX) $(CXXFLAGS) $(SC_FLAGS) $(AM_CFLAGS) -c -o $@ $< 
 
@@ -65,4 +49,3 @@ clean:
 	rm -f *.so *.o *.pyc worker_code.cc worker_code.h
 	rm -f hermite_worker hermite_worker worker_code-sockets.cc hermite_worker_sockets
 	rm -rf *.dSYM
-	rm -f hermite_cython.* hermite_worker_cython hermite_worker_cython.*

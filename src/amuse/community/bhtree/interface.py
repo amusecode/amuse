@@ -14,7 +14,6 @@ class BHTreeInterface(
         .. [#] Barnes, J., Hut, P., A Hierarchical O(N log N) force-calculation algorithm, *Nature*, **4**, 324 (1986)   
     """
     include_headers = ['interface.h', 'worker_code.h', 'stopcond.h']
-    __so_module__ = 'bhtree_cython'
     
     def __init__(self, convert_nbody = None, mode = 'cpu', **kwargs):
         CodeInterface.__init__(self, name_of_the_worker=self.name_of_the_worker(mode), **kwargs)
