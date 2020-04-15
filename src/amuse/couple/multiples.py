@@ -14,6 +14,7 @@ from amuse.ic.salpeter import new_salpeter_mass_distribution_nbody
 from amuse.units import nbody_system
 from amuse.units import units
 from amuse.units import constants
+from amuse.units import quantities
 from amuse.units.quantities import zero
 from amuse.support.exceptions import KeysNotInStorageException
 from amuse import io
@@ -139,6 +140,7 @@ class Multiples(object):
                  kepler_code, 
                  gravity_constant = None, **options):
         self.gravity_code = gravity_code
+        print(self.gravity_code.particles)
         self._inmemory_particles = self.gravity_code.particles.copy()
         self._inmemory_particles.id = self.gravity_code.particles.index_in_code
         self._inmemory_particles.child1 = None
@@ -523,7 +525,7 @@ class Multiples(object):
         #stopping_condition.enable()  # allow user to set this; don't override
         
         time = self.gravity_code.model_time
-        print("\nEvolve model to", end_time, "starting at", time)
+        print("\nmultiples: evolve model to", end_time, "starting at", time)
         sys.stdout.flush()
 
         count_resolve_encounter = 0
@@ -1344,12 +1346,14 @@ class Multiples(object):
 
         # 6b. Break up wide top-level binaries.  Do this after
         #     rescaling because we want to preserve binary binding
-        #     energies.  Also place the wide binaries at pericenter.
+        #     energies.  Also place the wide binaries at pericenter to
+        #     minimize the tidal error.
 
         # Number of top-level nodes.
         lt = len(stars_not_in_a_multiple) + len(roots_of_trees)
 
-        modified_list = False
+        # Roots to be deleted after the loop.
+        roots_to_remove = []
 
         for root in roots_of_trees:
             comp1 = root.child1
@@ -1466,7 +1470,6 @@ class Multiples(object):
                     # but code here is more compact, since we have
                     # already initialized the kepler structure.
 
-                    sys.stdout.flush()
                     cmpos = root.position
                     cmvel = root.velocity
                     if self.global_debug > 1:
@@ -1474,36 +1477,36 @@ class Multiples(object):
                     self.kepler.advance_to_periastron()
                     if self.global_debug > 1:
                         print('advancing binary to', final_scale)
+                        sys.stdout.flush()
                     self.kepler.advance_to_radius(final_scale)
+                    
+                    dx = quantities.AdaptingVectorQuantity()
+                    dx.extend(kep.get_separation_vector())
+                    dv = quantities.AdaptingVectorQuantity()
+                    dv.extend(kep.get_velocity_vector())
 
-                    ### Question to Arjen: what is the right syntax to
-                    ### do this??  We want to say
-                    ###
-                    ###     rel_pos = self.kepler.get_separation_vector()
-                    ###     comp1.position = cmpos - f1*rel_pos
-                    ###     etc.
-                    ###
-                    ### but this doesn't work...
-
-                    x,y,z = self.kepler.get_separation_vector()
-                    vx,vy,vz = self.kepler.get_velocity_vector()
                     f1 = comp1.mass/root.mass
-                    rel_pos = numpy.array([x,y,z])
-                    rel_vel = numpy.array([vx,vy,vz])
-                    for k in range(3):
-                        comp1.position[k] = cmpos[k] - f1*rel_pos[k]
-                        comp1.velocity[k] = cmvel[k] - f1*rel_vel[k]
-                        comp2.position[k] = cmpos[k] + (1-f1)*rel_pos[k]
-                        comp2.velocity[k] = cmvel[k] + (1-f1)*rel_vel[k]
+                    comp1.position = cmpos - f1*dx
+                    comp1.velocity = cmvel - f1*dv
+                    comp2.position = cmpos + (1-f1)*dx
+                    comp2.velocity = cmvel + (1-f1)*dv
+                        
+                # Changing the list here would disrupt the loop
+                # bookkeeping.  Remove any split-up roots after the
+                # loop, then recalculate all data structures and
+                # restart the loop.
 
-                # Removing the CM reinstates the children as top-level
-                # objects:
+                #particles_in_encounter.remove_particle(root)
+                roots_to_remove.append(root)
 
-                particles_in_encounter.remove_particle(root)
-                modified_list = True
+                # Note that removing the root will reinstate the
+                # children as top-level objects:
 
-        if modified_list:
-
+        if len(roots_to_remove) > 0:
+            
+            for r in roots_to_remove:
+                particles_in_encounter.remove_particle(r)
+    
             # Recompute the tree structure.
 
             binaries = \
