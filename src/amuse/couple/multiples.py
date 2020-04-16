@@ -133,25 +133,31 @@ class DidNotFinishException(Exception):
     pass
 
 class Multiples(object):
-
+    
     def __init__(self, 
                  gravity_code,
                  resolve_collision_code_creation_function,
                  kepler_code, 
                  gravity_constant = None, **options):
         self.gravity_code = gravity_code
-        print(self.gravity_code.particles)
+        #print(self.gravity_code.particles)
         self._inmemory_particles = self.gravity_code.particles.copy()
-        self._inmemory_particles.id = self.gravity_code.particles.index_in_code
+        '''
+        # Unecessary code since copy_attribute below does the same thing.
+        if len(self.gravity_code.particles) == 0:
+            self._inmemory_particles.id = None
+        else:
+            self._inmemory_particles.id = self.gravity_code.particles.index_in_code
+        '''
         self._inmemory_particles.child1 = None
         self._inmemory_particles.child2 = None
         self.channel_from_code_to_memory = \
             self.gravity_code.particles.new_channel_to(self._inmemory_particles)
+        self.channel_from_code_to_memory.copy_attribute("index_in_code", "id")
 
         # FLASH interface needs a channel the other way also.
         self.channel_from_memory_to_code = \
             self._inmemory_particles.new_channel_to(self.gravity_code.particles)
-
         
         self.resolve_collision_code_creation_function \
             = resolve_collision_code_creation_function
@@ -583,7 +589,7 @@ class Multiples(object):
 
                 EPS = 0.001
                 if True or vr < EPS*r*v:    # True ==> keep all encounters
-		    			    # returned by gravity_code
+                                            # returned by gravity_code
 
                     if self.global_debug > 1:
                         print('\n'+'~'*60)
