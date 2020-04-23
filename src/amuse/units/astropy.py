@@ -1,6 +1,8 @@
 """
 This file contains conversion functions to/from Astropy, as well as constants
-taken from Astropy
+taken from Astropy.
+
+Requires astropy to be installed.
 """
 
 from amuse.units import units
