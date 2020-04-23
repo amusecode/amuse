@@ -167,6 +167,18 @@ int get_gpu_id(int * gpu_id)
     return 0;
 }
 
+int set_n_gpu(int n_gpu)
+{
+    jd->n_gpu = n_gpu;
+    return 0;
+}
+
+int get_n_gpu(int * n_gpu)
+{
+    *n_gpu = jd->n_gpu;
+    return 0;
+}
+
 int set_manage_encounters(int m)
 {
     jd->set_manage_encounters(m);

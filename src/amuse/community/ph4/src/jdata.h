@@ -87,6 +87,7 @@ class jdata {
     bool have_gpu;			// will be true if -DGPU is compiled in
     bool use_gpu;			// true if actually using GPU
     int gpu_id;				// >= 0 if we have specified a GPU ID
+    int n_gpu;				// number of GPUs to use
 
     real eps2, eta;
     real rmin;				// 90 degree turnaround distance

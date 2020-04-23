@@ -15,7 +15,7 @@ OPT	  = -I$(AMUSE_DIR)/lib/stopcond
 
 MPICXX   ?= mpicxx
 
-CFLAGS   += -Wall -g -O2 $(OPT)
+CFLAGS   += -Wall -g -O2 $(OPT) -DSAPPORO_VERSION=$(SAPPORO_VERSION)
 CXXFLAGS += $(CFLAGS) 
 LDFLAGS  += -L$(AMUSE_DIR)/lib/stopcond -lstopcond -lm $(MUSE_LD_FLAGS)
 
