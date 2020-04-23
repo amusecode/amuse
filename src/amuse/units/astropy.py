@@ -7,8 +7,14 @@ Requires astropy to be installed.
 
 from amuse.units import units
 from amuse.units.si import m, kg, s, A, K, mol, cd
-import astropy.units as apu
-import astropy.constants as apc
+
+try:
+    import astropy.units as apu
+    import astropy.constants as apc
+except ModuleNotFoundError:
+    raise ModuleNotFoundError(
+        "Astropy does not seem to be installed"
+    )
 
 
 def from_astropy(ap_quantity):
