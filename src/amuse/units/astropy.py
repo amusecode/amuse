@@ -25,19 +25,19 @@ def from_astropy(ap_quantity):
     # Reconstruct the quantity in AMUSE units
     amuse_quantity = si_value
     for base_unit in si_units:
-        if base_unit[1] == apu.m:
+        if base_unit[1].name == "m":
             amuse_quantity = amuse_quantity * (1 | units.m**base_unit[0])
-        elif base_unit[1] == apu.kg:
+        elif base_unit[1].name == "kg":
             amuse_quantity = amuse_quantity * (1 | units.kg**base_unit[0])
-        elif base_unit[1] == apu.s:
+        elif base_unit[1].name == "s":
             amuse_quantity = amuse_quantity * (1 | units.s**base_unit[0])
-        elif base_unit[1] == apu.A:
+        elif base_unit[1].name == "A":
             amuse_quantity = amuse_quantity * (1 | units.A**base_unit[0])
-        elif base_unit[1] == apu.K:
+        elif base_unit[1].name == "K":
             amuse_quantity = amuse_quantity * (1 | units.K**base_unit[0])
-        elif base_unit[1] == apu.mol:
+        elif base_unit[1].name == "mol":
             amuse_quantity = amuse_quantity * (1 | units.mol**base_unit[0])
-        elif base_unit[1] == apu.cd:
+        elif base_unit[1].name == "cd":
             amuse_quantity = amuse_quantity * (1 | units.cd**base_unit[0])
 
     return amuse_quantity
