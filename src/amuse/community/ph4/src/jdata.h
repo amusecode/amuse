@@ -217,6 +217,7 @@ class jdata {
 
     // In gpu.cc:
 
+    void startup_gpu(int clusterid);
     void initialize_gpu(bool reinitialize = false);
     void update_gpu(int jlist[], int njlist);
     void sync_gpu();

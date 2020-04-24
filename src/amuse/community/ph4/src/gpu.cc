@@ -20,10 +20,14 @@
 #include <mpi.h>
 #endif
 
+#ifdef SAPPORO_VERSION
+#if SAPPORO_VERSION==2
 extern "C" {
     int g6_open_special(int, int*);	// *** sapporo_2 function ***
     					// configure --enable-sapporo2
 }
+#endif
+#endif
 
 #include "debug.h"
 extern real TDEBUG;	// in debug.cc
@@ -33,6 +37,98 @@ extern real TDEBUG;	// in debug.cc
 
 // Maybe some of the n, j_start, j_end, etc. below should be promoted
 // to member data to avoid replicated code...?
+
+void jdata::startup_gpu(int clusterid)
+{
+#ifdef GPU
+
+    // g6_open() logic in sapporo_light is for a single GPU.  The
+    // code below expects to use sapporo_2, and will not work
+    // properly with sapporo_light in parallel.  It should work
+    // properly within a single node or across multiple nodes, but
+    // is currently inadequately tested in the latter case. (Steve, 4/20)
+
+    // The GPUs to use in sapporo_2 may be specified using a
+    // configuration file, but that doesn't generalize well to
+    // parallel operation.  Instead, we use the following simple
+    // allocation scheme.
+
+    PRL(clusterid);
+    PRL(gpu_id);
+    PRL(n_gpu);
+    PRL(n_node);
+
+    int light = 1, sapporo_version = light;
+#ifdef SAPPORO_VERSION
+    sapporo_version = SAPPORO_VERSION;
+    if (sapporo_version != 2) sapporo_version = 1;
+#endif
+    PRL(sapporo_version);
+	
+    if (sapporo_version == 1 || (mpi_size == 1 && gpu_id < 0 && n_gpu <= 0)) {
+
+	// Single process or sapporo_light: use g6open().  Both
+	// sapporo_light and sapporo_2 ignore the argument
+	// provided to g6_open().  Sapporo_light will use a single
+	// GPU; sapporo_2 will allocate all available GPUs.
+
+	int gpu_to_use = gpu_id;
+	cout << "AMUSE worker " << clusterid << " (PID " << getpid()
+	     << ") calling g6_open..." << endl << flush;
+	g6_open(gpu_to_use);
+
+    } else {
+
+#ifdef SAPPORO_VERSION
+#if SAPPORO_VERSION==2
+	
+	// Parallel process or gpu_id or n_gpu set: create a list
+	// of GPUs and use g6_open_special() in sapporo_2 to open
+	// them.
+
+	// If gpu_id is >= 0, start at that GPU.  Otherwise start
+	// at GPU 0 for a single-process run, MPI rank (clusterid)
+	// * n_gpu for a multi-process run.  Allocate n_gpu
+	// devices.  Note that no check is made for invalid or
+	// overlapping GPU IDs.
+
+	// We extend this scheme to multiple nodes by using n_node
+	// to determine the local rank of this process.  (Not
+	// clear why we are calling mpi_rank clusterid -- they are
+	// the same thing.)  Implemented but not tested yet on
+	// multiple nodes.
+
+	int cores_per_node = mpi_size/n_node;	// cores used in each node
+	int which_node = clusterid/cores_per_node;	// node I am running on
+	int local_rank = clusterid - which_node*cores_per_node;
+	    
+	if (n_gpu <= 0) n_gpu = 1;
+	int *ilist = new int[n_gpu];
+	for (int i = 0; i < n_gpu; i++) {
+	    ilist[i] = n_gpu*local_rank + i;
+	    if (gpu_id > 0) ilist[i] += gpu_id;
+	}
+	char hostname[1024];
+	int resultlen;
+	MPI_Get_processor_name(hostname, &resultlen);
+	if (resultlen > 1024) hostname[1023] = '\0';
+	cout << "AMUSE worker " << clusterid << " (PID " << getpid()
+	     << ") on logical node " << which_node << " (" << hostname
+	     << ") opening GPU(s)";
+	for (int i = 0; i < n_gpu; i++) cout << " " << ilist[i];
+	cout << endl << flush;
+	cout << "calling g6_open_special..." << endl << flush;
+	g6_open_special(n_gpu, ilist);
+	delete ilist;
+
+	cout << "done" << endl << flush;
+	// g6_set_tunit(new_tunit);
+	// g6_set_xunit(new_xunit);
+#endif
+#endif
+    }
+#endif
+}
 
 #ifdef GPU
 static int clusterid = 0;
@@ -49,89 +145,7 @@ void jdata::initialize_gpu(bool reinitialize)	// default = false
 
     // (Re)initialize the local GPU(s): reload all particles.
 
-    if (!reinitialize) {
-
-	// g6_open() logic in sapporo_light is for a single GPU.  The
-	// code below expects to use sapporo_2, and will not work
-	// properly with sapporo_light in parallel.  It also will not
-	// work properly as currently written across multiple nodes
-	// (OK within a single node, though).
-
-	// The GPUs to use in sapporo_2 may be specified using a
-	// configuration file, but that doesn't generalize well to
-	// parallel operation.  Instead, we use the following simple
-	// allocation scheme.
-
-	PRL(clusterid);
-	PRL(gpu_id);
-	PRL(n_gpu);
-	PRL(n_node);
-
-	int light = 1, sapporo_version = light;
-#ifdef SAPPORO_VERSION
-	sapporo_version = SAPPORO_VERSION;
-	if (sapporo_version != 2) sapporo_version = 1;
-#endif
-	PRL(sapporo_version);
-	
-        if (sapporo_version == 1 || (mpi_size == 1 && gpu_id < 0 && n_gpu <= 0)) {
-
-	    // Single process or sapporo_light: use g6open().  Both
-	    // sapporo_light and sapporo_2 ignore the argument
-	    // provided to g6_open().  Sapporo_light will use a single
-	    // GPU; sapporo_2 will allocate all available GPUs.
-
-	    int gpu_to_use = gpu_id;
-	    cout << "AMUSE worker " << clusterid << " (PID " << getpid()
-		 << ") calling g6_open..." << endl << flush;
-	    g6_open(gpu_to_use);
-
-	} else {
-
-	    // Parallel process or gpu_id or n_gpu set: create a list
-	    // of GPUs and use g6_open_special() in sapporo_2 to open
-	    // them.
-
-	    // If gpu_id is >= 0, start at that GPU.  Otherwise start
-	    // at GPU 0 for a single-process run, MPI rank (clusterid)
-	    // * n_gpu for a multi-process run.  Allocate n_gpu
-	    // devices.  Note that no check is made for invalid or
-	    // overlapping GPU IDs.
-
-	    // We could extend this scheme to multiple nodes by using
-	    // n_node to determine the local rank of this process.
-	    // (Not clear why we are calling mpi_rank clusterid --
-	    // they are the same thing.)  Implemented but not tested
-	    // yet on multiple nodes.
-
-	    int cores_per_node = mpi_size/n_node;	// cores used in each node
-	    int which_node = clusterid/cores_per_node;	// node I am running on
-	    int local_rank = clusterid - which_node*cores_per_node;
-	    
-	    if (n_gpu <= 0) n_gpu = 1;
-	    int *ilist = new int[n_gpu];
-	    for (int i = 0; i < n_gpu; i++) {
-                ilist[i] = n_gpu*local_rank + i;
-		if (gpu_id > 0) ilist[i] += gpu_id;
-	    }
-	    char hostname[1024];
-	    int resultlen;
-	    MPI_Get_processor_name(hostname, &resultlen);
-	    if (resultlen > 1024) hostname[1023] = '\0';
-	    cout << "AMUSE worker " << clusterid << " (PID " << getpid()
-		 << ") on logical node " << which_node << " (" << hostname
-		 << ") opening GPU(s)";
-	    for (int i = 0; i < n_gpu; i++) cout << " " << ilist[i];
-	    cout << endl << flush;
-	    cout << "calling g6_open_special..." << endl << flush;
-	    g6_open_special(n_gpu, ilist);
-	    delete ilist;
-	}
-
-	cout << "done" << endl << flush;
-	// g6_set_tunit(new_tunit);
-	// g6_set_xunit(new_xunit);
-    }
+    if (!reinitialize) startup_gpu(clusterid);
 
     static int n = 0;
     static int j_start, j_end;
@@ -159,7 +173,6 @@ void jdata::initialize_gpu(bool reinitialize)	// default = false
 			  time[j], timestep[j],		// as GRAPE index
 			  mass[j], k18, j6, a2, vel[j], pos[j]);
     }
-
 #endif
 }
 
