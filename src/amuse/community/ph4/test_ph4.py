@@ -150,7 +150,7 @@ def run_ph4(infile = None, number_of_stars = 40,
 
         print("centering stars")
         stars.move_to_center()
-        if 0:
+        if 1:
             print("scaling stars to virial equilibrium")
             stars.scale_to_standard(smoothing_length_squared
                                     = gravity.parameters.epsilon_squared)
@@ -206,6 +206,7 @@ def run_ph4(infile = None, number_of_stars = 40,
                 | nbody_system.length**2
     else:
         eps2 = softening_length*softening_length
+    print('softening_length =', eps2.sqrt())
 
     #print "6"; sys.stdout.flush()
     gravity.parameters.timestep_parameter = accuracy_parameter
