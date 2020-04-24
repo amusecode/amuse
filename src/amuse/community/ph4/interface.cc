@@ -179,6 +179,18 @@ int get_n_gpu(int * n_gpu)
     return 0;
 }
 
+int set_n_node(int n_node)
+{
+    jd->n_node = n_node;
+    return 0;
+}
+
+int get_n_node(int * n_node)
+{
+    *n_node = jd->n_node;
+    return 0;
+}
+
 int set_manage_encounters(int m)
 {
     jd->set_manage_encounters(m);

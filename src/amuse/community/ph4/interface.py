@@ -234,6 +234,28 @@ class ph4Interface(CodeInterface,
         return function
 
     @legacy_function
+    def set_n_node():
+        """
+        Set n_node.
+        """
+        function = LegacyFunctionSpecification()
+        function.addParameter('n_node', dtype='int32',
+                              direction=function.IN)
+        function.result_type = 'int32'
+        return function
+
+    @legacy_function
+    def get_n_node():
+        """
+        Get n_node.
+        """
+        function = LegacyFunctionSpecification()
+        function.addParameter('n_node', dtype='int32',
+                              direction=function.OUT)
+        function.result_type = 'int32'
+        return function
+
+    @legacy_function
     def set_manage_encounters():
         """
         Set the value of manage_encounters.
@@ -570,6 +592,14 @@ class ph4(GravitationalDynamics,GravityFieldCode):
             "n_gpu",                     # python parameter name
             "number of GPUs to use",     # description
             default_value = -1
+        )
+        
+        handler.add_method_parameter(
+            "get_n_node",                 # getter name in interface.cc
+            "set_n_node",                 # setter name in interface.cc
+            "n_node",                     # python parameter name
+            "number of nodes to use",     # description
+            default_value = 1
         )
         
         handler.add_method_parameter(

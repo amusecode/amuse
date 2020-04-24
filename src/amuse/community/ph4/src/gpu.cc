@@ -65,6 +65,7 @@ void jdata::initialize_gpu(bool reinitialize)	// default = false
 	PRL(clusterid);
 	PRL(gpu_id);
 	PRL(n_gpu);
+	PRL(n_node);
 
 	int light = 1, sapporo_version = light;
 #ifdef SAPPORO_VERSION
@@ -81,7 +82,7 @@ void jdata::initialize_gpu(bool reinitialize)	// default = false
 	    // GPU; sapporo_2 will allocate all available GPUs.
 
 	    int gpu_to_use = gpu_id;
-	    cout << "amuse worker " << clusterid << " (PID " << getpid()
+	    cout << "AMUSE worker " << clusterid << " (PID " << getpid()
 		 << ") calling g6_open..." << endl << flush;
 	    g6_open(gpu_to_use);
 
@@ -96,14 +97,29 @@ void jdata::initialize_gpu(bool reinitialize)	// default = false
 	    // * n_gpu for a multi-process run.  Allocate n_gpu
 	    // devices.  Note that no check is made for invalid or
 	    // overlapping GPU IDs.
+
+	    // We could extend this scheme to multiple nodes by using
+	    // n_node to determine the local rank of this process.
+	    // (Not clear why we are calling mpi_rank clusterid --
+	    // they are the same thing.)  Implemented but not tested
+	    // yet on multiple nodes.
+
+	    int cores_per_node = mpi_size/n_node;	// cores used in each node
+	    int which_node = clusterid/cores_per_node;	// node I am running on
+	    int local_rank = clusterid - which_node*cores_per_node;
 	    
 	    if (n_gpu <= 0) n_gpu = 1;
 	    int *ilist = new int[n_gpu];
 	    for (int i = 0; i < n_gpu; i++) {
-                ilist[i] = n_gpu*clusterid + i;
+                ilist[i] = n_gpu*local_rank + i;
 		if (gpu_id > 0) ilist[i] += gpu_id;
 	    }
-	    cout << "amuse worker " << clusterid << " (PID " << getpid()
+	    char hostname[1024];
+	    int resultlen;
+	    MPI_Get_processor_name(hostname, &resultlen);
+	    if (resultlen > 1024) hostname[1023] = '\0';
+	    cout << "AMUSE worker " << clusterid << " (PID " << getpid()
+		 << ") on logical node " << which_node << " (" << hostname
 		 << ") opening GPU(s)";
 	    for (int i = 0; i < n_gpu; i++) cout << " " << ilist[i];
 	    cout << endl << flush;

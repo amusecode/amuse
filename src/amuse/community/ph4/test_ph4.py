@@ -80,7 +80,8 @@ def print_log(pre, time, gravity, E0 = 0.0 | nbody_system.energy,
 def run_ph4(infile = None, number_of_stars = 40,
              end_time = 10 | nbody_system.time,
              delta_t = 1 | nbody_system.time,
-             n_workers = 1, use_gpu = 1, gpu_worker = 1, gpu_id = -1, n_gpu = 0,
+             n_workers = 1, use_gpu = 1, gpu_worker = 1, gpu_id = -1,
+             n_gpu = 0, n_node = 1,
              accuracy_parameter = 0.1,
              softening_length = -1 | nbody_system.length,
              manage_encounters = 1):
@@ -126,6 +127,7 @@ def run_ph4(infile = None, number_of_stars = 40,
 
     gravity.parameters.gpu_id = gpu_id	# (first) GPU to use
     gravity.parameters.n_gpu = n_gpu	# number of GPUs to use
+    gravity.parameters.n_node = n_node	# number of nodes to use
 
     #-----------------------------------------------------------------
 
@@ -301,13 +303,14 @@ if __name__ == '__main__':
     gpu_worker = 1
     gpu_id = -1
     n_gpu = 0
+    n_node = 1
     accuracy_parameter = 0.1
     softening_length = -1  | nbody_system.length
     random_seed = -1
     manage_encounters = 1
 
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "a:c:d:e:f:gGi:n:s:t:w:W:")
+        opts, args = getopt.getopt(sys.argv[1:], "a:c:d:e:f:gGi:n:N:s:t:w:W:")
     except getopt.GetoptError as err:
         print(str(err))
         sys.exit(1)
@@ -332,6 +335,8 @@ if __name__ == '__main__':
             gpu_id = int(a)
         elif o == "-n":
             N = int(a)
+        elif o == "-N":
+            n_node = int(a)
         elif o == "-s":
             random_seed = int(a)
         elif o == "-t":
@@ -355,6 +360,6 @@ if __name__ == '__main__':
 
     assert is_mpd_running()
     run_ph4(infile, N, t_end, delta_t, n_workers,
-             use_gpu, gpu_worker, gpu_id, n_gpu,
+             use_gpu, gpu_worker, gpu_id, n_gpu, n_node,
              accuracy_parameter, softening_length,
              manage_encounters)

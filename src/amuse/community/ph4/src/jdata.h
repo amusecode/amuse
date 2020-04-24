@@ -88,6 +88,7 @@ class jdata {
     bool use_gpu;			// true if actually using GPU
     int gpu_id;				// >= 0 if we have specified a GPU ID
     int n_gpu;				// number of GPUs to use
+    int n_node;				// number of nodes to use
 
     real eps2, eta;
     real rmin;				// 90 degree turnaround distance
