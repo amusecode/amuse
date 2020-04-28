@@ -10,8 +10,7 @@ from amuse.support.core import late
 from amuse.support.core import compare_version_strings
 from amuse.units import core
 from amuse.units.si import none
-from amuse.units.core import zero_unit
-
+from amuse.units.core import zero_unit:
 
 
 """
@@ -518,7 +517,7 @@ class VectorQuantity(Quantity):
         >>> v1.prod(2)
         quantity<[[6.0, 8.0], [10.0, 12.0]] m**2>
         """
-        if axis == None:
+        if axis is None:
             return new_quantity_nonone(self.number.prod(axis, dtype), self.unit ** numpy.prod(self.number.shape))
         else:
             return new_quantity_nonone(self.number.prod(axis, dtype), self.unit ** self.number.shape[axis])
@@ -607,8 +606,7 @@ class VectorQuantity(Quantity):
         except AttributeError:
             if not is_quantity(vector):
                 raise ValueError("Tried to put a non quantity value in a quantity")
-            else:
-                raise
+            raise
 
     def __setitem__(self, index, quantity):
         """Update the "index" component to the specified quantity.
@@ -1230,11 +1228,11 @@ def new_quantity_nonone(value, unit):
         return NonNumericQuantity(value, unit)
     return ScalarQuantity(value, unit)
 
-def is_quantity(input):
-    return hasattr(input, "is_quantity") and input.is_quantity()
+def is_quantity(x):
+    return hasattr(x, "is_quantity") and x.is_quantity()
 
-def is_unit(input):
-    if hasattr(input, "base"):
+def is_unit(x):
+    if hasattr(x, "base"):
         return True
     else:
         return False
@@ -1262,16 +1260,17 @@ def as_vector_quantity(value):
             else:
                 raise Exception("Cannot convert '{0!r}' to a vector quantity".format(value))
 
-def to_quantity(input):
-    if is_quantity(input):
-        return input
+def to_quantity(x):
+    if is_quantity(x):
+        return x
     else:
-        return new_quantity(input, none)
+        return new_quantity(x, none)
 
-def as_quantity_in(input,unit):
-    return to_quantity(input).as_quantity_in(unit)
-def value_in(input,unit):
-    return to_quantity(input).value_in(unit)
+def as_quantity_in(x,unit):
+    return to_quantity(x).as_quantity_in(unit)
+
+def value_in(x,unit):
+    return to_quantity(x).value_in(unit)
 
 def concatenate(quantities):
     first = quantities[0]
@@ -1353,7 +1352,6 @@ def polyval(p, x):
     y_unit = p_unit[-1].to_reduced_form()
     x_unit = (y_unit/p_unit[-2]).to_reduced_form()
 
-    from amuse.units.si import none
     if x_unit != none:
         x = x.value_in(x_unit)
 
