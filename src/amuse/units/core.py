@@ -609,7 +609,7 @@ class key_unit(none_unit):
     
     @property
     def dtype(self):
-        return 'uint64'
+        return numpy.dtype('uint64')
         
         
         
@@ -709,7 +709,7 @@ class string_unit(nonnumeric_unit):
         
     @property
     def dtype(self):
-        return 'S256'
+        return numpy.dtype('S256')
 
 class enumeration_unit(nonnumeric_unit):
     DEFINED={}
@@ -806,7 +806,7 @@ class enumeration_unit(nonnumeric_unit):
             
     @property
     def dtype(self):
-        return 'int32'
+        return numpy.dtype('int32')
         
     @classmethod
     def get(cls, name):

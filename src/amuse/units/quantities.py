@@ -278,7 +278,14 @@ class ScalarQuantity(Quantity):
         # Quantity.__init__(self, unit)
         # commented out super call, this speeds thing up
         self.unit = unit
-        self.number = number
+        if unit.dtype is None:
+            self.number = number
+        else:
+            if isinstance(unit.dtype, numpy.dtype):
+                self.number = unit.dtype.type(number)
+            else:
+                self.number = unit.dtype(number)
+
 
     def is_scalar(self):
         return True
