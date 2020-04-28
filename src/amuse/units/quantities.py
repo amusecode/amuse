@@ -10,7 +10,7 @@ from amuse.support.core import late
 from amuse.support.core import compare_version_strings
 from amuse.units import core
 from amuse.units.si import none
-from amuse.units.core import zero_unit:
+from amuse.units.core import zero_unit
 
 
 """
