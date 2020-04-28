@@ -335,9 +335,9 @@ class unit(object):
         from amuse.units import quantities
         if isinstance(unit, quantities.Quantity):
             raise exceptions.AmuseException("Cannot expres a unit in a quantity")
-        else:
-            factor = self.conversion_factor_from(unit)
-            return quantities.new_quantity(factor, unit)
+
+        factor = self.conversion_factor_from(unit)
+        return quantities.new_quantity(factor, unit)
             
     def value_in(self, unit):
         """
@@ -762,8 +762,7 @@ class enumeration_unit(nonnumeric_unit):
         if possible_values is None:
             if names_for_values is None:
                 raise exceptions.AmuseException("Must provide a list of values and / or a list of names for each value")
-            else:
-                return list(range(len(names_for_values)))
+            return list(range(len(names_for_values)))
         else:
             return list(possible_values)
             
@@ -779,8 +778,7 @@ class enumeration_unit(nonnumeric_unit):
         if names_for_values is None:
             if possible_values is None:
                 raise exceptions.AmuseException("Must provide a list of values and / or a list of names for each value")
-            else:
-                return [str(x) for x in possible_values]
+            return [str(x) for x in possible_values]
         else:
             return list(names_for_values)
             
