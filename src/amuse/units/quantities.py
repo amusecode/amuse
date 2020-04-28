@@ -1232,10 +1232,7 @@ def is_quantity(x):
     return hasattr(x, "is_quantity") and x.is_quantity()
 
 def is_unit(x):
-    if hasattr(x, "base"):
-        return True
-    else:
-        return False
+    return hasattr(x, "base")
 
 def isNumber(x):
     try:
@@ -1316,7 +1313,6 @@ def linspace(start, stop, num = 50,  endpoint=True, retstep=False):
         return new_quantity(array, unit)
 
 def separate_numbers_and_units(values):
-    from amuse.units.si import none
     number = []
     unit = []
     for value in values:
