@@ -325,9 +325,9 @@ class ScalarQuantity(Quantity):
         array = numpy.zeros(length, dtype=self.unit.dtype)
         return new_quantity(array, self.unit)
 
-    def __setstate__(self, tuple):
-        self.unit = tuple[0]
-        self.number = tuple[1]
+    def __setstate__(self, x):
+        self.unit = x[0]
+        self.number = x[1]
 
     def sum(self, axis=None, dtype=None, out=None):
         return self
@@ -927,9 +927,9 @@ class VectorQuantity(Quantity):
     def __getstate__(self):
         return (self.unit, self.number)
 
-    def __setstate__(self, tuple):
-        self.unit = tuple[0]
-        self._number = tuple[1]
+    def __setstate__(self, x):
+        self.unit = x[0]
+        self._number = x[1]
 
 
 class ZeroQuantity(Quantity):
@@ -1125,9 +1125,9 @@ class NonNumericQuantity(Quantity):
     def __getstate__(self):
         return (self.unit, self.value)
 
-    def __setstate__(self, tuple):
-        self.unit = tuple[0]
-        self.value = tuple[1]
+    def __setstate__(self, x):
+        self.unit = x[0]
+        self.value = x[1]
 
 class AdaptingVectorQuantity(VectorQuantity):
     """
