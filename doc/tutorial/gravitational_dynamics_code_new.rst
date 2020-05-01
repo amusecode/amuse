@@ -313,3 +313,53 @@ evolved up to the same time, which our example code does by construction. We hav
 but the only thing it does is to **return 0**. If we then want to evolve
 the system further, we need to go back to the **RUN** state, which we can access from **UPDATE** through
 the **recommit_particles** function.
+
+
+Literature References
+---------------------
+When adding your code to AMUSE you of course want your work to be recognized.
+AMUSE actively provides the references of every code used in an AMUSE script,
+at the end of every run of the script. The references are defined in the Python
+interface, as in the following code snippet:
+
+.. code-block:: python
+
+    class SimpleGravInterface(CodeInterface,
+                       LiteratureReferencesMixIn,
+                       GravitationalDynamicsInterface):
+        """
+        SimpleGrav is a forward Euler code to dynamically evolve a Newtonian
+        gravity N-body system. 
+
+        .. [#] Alvarez, Etienne; Monthly Notices of the Astronomical and Astrophysical Review Letters Z, Vol. 42 (2020)
+        .. [#] Adams, Douglas; Hitchhiker's Guide to the Galaxy (1979)
+        """
+        include_headers = ['worker_code.h']
+
+        def __init__ (self, **keyword_arguments):
+            CodeInterface.__init__(self, 
+                name_of_the_worker="simplegrav_worker",
+                **keyword_arguments)
+            LiteratureReferencesMixIn.__init__(self)
+
+Upon finishing a script using **SimpleGrav** we will get the following warning:
+
+.. code-block::
+    /home/martijn/venvs/amuse_dev/amuse/src/amuse/support/literature.py:78: AmuseWarning: 
+
+    You have used the following codes, which contain literature references:
+
+	    "SimpleGravInterface"
+		    Alvarez, Etienne; Monthly Notices of the Astronomical and Astrophysical Review Letters Z, Vol. 42 (2020)
+		    Adams, Douglas; Hitchhiker's Guide to the Galaxy (1979)
+
+
+	    "AMUSE"
+		    Portegies Zwart, S. & McMillan, S.L.W., 2018, "Astrophysical Recipes: the art of AMUSE", AAS IOP Astronomy publishing (411 pages) [2018araa.book.....P]
+		    ** Portegies Zwart, S. et al., 2013, Multi-physics Simulations Using a Hierarchical Interchangeable Software Interface, Computer Physics Communications 183, 456-468 [2013CoPhC.183..456P]
+		    ** Pelupessy, F. I. et al., 2013, The Astrophysical Multipurpose Software Environment, Astronomy and Astrophysics 557, 84 [2013A&A...557A..84P]
+		    Portegies Zwart, S. et al., 2009, A multiphysics and multiscale software environment for modeling astrophysical systems, *New Astronomy*, **Volume 14**, **Issue 4**, 369-378 [2009NewA...14..369P]
+
+      warnings.warn(prefix + self.all_literature_references_string(), exceptions.AmuseWarning)
+
+Note how the ``.. [#]`` denotes each entry for the literature list.
