@@ -212,15 +212,20 @@ by calling transitions that are added with is_auto=True. (this is only possible 
 they don't have non-default arguments)
 
 The state model can be built up by the above methods. The state model of a code can be printed:
+
 - **interface.state_machine.to_table_string()** or 
+
 - **interface.state_machine.to_plantuml_string()**. 
 
 Note that function arguments in the above methods are strings! They are evaluated later to methods of the low level code interface class!
 (so they must be defined there, they need not be remote function but can be ordinary class methods) 
 
 Note that it can be convenient to use a number of sentinel methods which do not (by default) do anything, these are:
+
 - before_get_parameter, before_set_parameter, before_set_interface_parameter, 
+
 - before_new_set_instance, before_get_data_store_names.
+
 (e.g. before_get_parameter is called before each parameter is retrieved.)
 
 State models have been defined for our code's parent class, **GravitationalDynamics**, and its grandparent class, **CommonCode**,
@@ -307,6 +312,68 @@ evolved up to the same time, which our example code does by construction. We hav
 but the only thing it does is to **return 0**. If we then want to evolve
 the system further, we need to go back to the **RUN** state, which we can access from **UPDATE** through
 the **recommit_particles** function.
+
+
+
+
+Properties & Parameters
+-----------------------
+A property of an AMUSE code is a read-only quantity of the code that contains
+information about the (often physical) state of the code. Examples include the
+current model time and the potential and kinetic energies of the total system.
+
+A parameter of an AMUSE code is a quantity that is used in the internal workings
+of the code. Examples include the time step in most types of evolution codes and
+the metallicity in stellar evolution codes. These are often, but not always,
+writable. 
+
+Both are defined in the object-oriented interface, in the **define_properties**
+and **define_parameters** functions. 
+
+Properties are added as follows:
+
+.. code-block:: python
+
+    define_properties(self, handler):
+        handler.add_property("get_property", public_name="property_name")
+
+Here, ``get_property`` is a legacy interface function that returns a single value.
+``public_name`` is an optional argument that defines what the property is called;
+if it is not given, the name of the parameter of the legacy function is used.
+
+Properties are accessed directly as properties of the code object:
+
+.. code-block:: python
+
+    gravity = SimpleGrav()
+    the_current_time = gravity.model_time
+
+Parameters are added as follows:
+
+.. code-block:: python
+
+   define_parameters(self, handler):
+        handler.add_method_parameter(
+            "get_parameter",
+            "set_parameter",
+            "parameter",
+            "what is this parameter?",
+            default_value = 1. | some_unit,
+            must_set_before_get = BOOL
+        )
+
+Here, ``get_parameter`` and ``set_parameter`` are two legacy interface functions
+that respectively have one output and one input. ``parameter`` is the name of the
+parameter in the code. The fourth parameter is a documentation string describing
+what the parameter signifies. Finally, there are two optional parameters.
+
+Parameters are accessed through the ``parameters`` property of the code object:
+
+.. code-block:: python
+
+    gravity = SimpleGrav()
+    param = gravity.parameters.parameter
+
 
 
 Literature References
