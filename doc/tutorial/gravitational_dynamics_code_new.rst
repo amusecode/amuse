@@ -176,7 +176,7 @@ synchronize_model           evolve all particles to the same time, if they
 The following code contains definitions for all legacy functions, although some
 non-essential functions only return error values:
 
-.. literalinclude:: simplegrav/interface.cc
+.. literalinclude:: simplegrav/interface_1.cc
     :language: c++
 
 
@@ -199,17 +199,11 @@ transitions mediated by interface calls. The state model of a code is defined in
 the **define_state** interface function by calling the following methods on its 
 handler argument: 
 
-- **set_initial_state(state)**  this defines the initial entry state, given as a
-string label (usually 'UNINITIALIZED').
-- **add_method(state, method_name)** this defines that the given method is allowed
-in state **state**. Again the state is a string, the string can be prepended with
-'!' to indicate a method is forbidden in the state. If state is not yet defined it
-will be added to the state model.
-- **add_transition(state1, state2, method_name, is_auto=True)** this adds a
-transition between states state1 and state2 (and adds these states if not
-previously defined) which is triggered by a call to the interface function
-method_name. The is_auto argument determines whether this transition is allowed to 
-be triggered automatically. 
+- **set_initial_state(state)**  this defines the initial entry state, given as a string label (usually 'UNINITIALIZED').
+
+- **add_method(state, method_name)** this defines that the given method is allowed in state **state**. Again the state is a string, the string can be prepended with '!' to indicate a method is forbidden in the state. If state is not yet defined it will be added to the state model.
+
+- **add_transition(state1, state2, method_name, is_auto=True)** this adds a transition between states state1 and state2 (and adds these states if not previously defined) which is triggered by a call to the interface function method_name. The is_auto argument determines whether this transition is allowed to  be triggered automatically. 
 
 A method that is not mentioned in any add_method, is allowed in any state (and
 doesn't trigger any transitions. If the state model detects that an interface call 
