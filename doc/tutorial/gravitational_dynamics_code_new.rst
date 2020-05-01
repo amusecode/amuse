@@ -3,12 +3,12 @@ Adding a Gravitational Dynamics Code
 ====================================
 
 In the previous tutorial we have seen how to create an AMUSE interface to
-a C++ or a Fortran code from scratch. In this tutorial, we will expand on this
+a c++ or a Fortran code from scratch. In this tutorial, we will expand on this
 with a number of additional features. We will do this through the implementation
 of a simple gravitational dynamics code.
 
 As this tutorial deals only with features of the Python interface, we restrict our
-legacy code example to C++. The concepts described can just as easily be applied to
+legacy code example to c++. The concepts described can just as easily be applied to
 an interface to a Fortran code. 
 
 We will also assume that we are working with the same environment settings as in
@@ -21,10 +21,10 @@ the previous example. Thus, we can create the initial directory structure of our
 
 The Legacy Code
 ---------------
-For this example we will use a very simple Eulerian integration routine as our
+For this example we will use a very simple forward Eulerian integration routine as our
 legacy code. We simply have a function that takes the initial condition of a set of particles (in the form of seven dynamics arrays), an integer containing the number of particles, and double precision scalars containing the time step, smoothing length, and gravitational constant. It outputs the new particle positions and velocities by updating the input arrays.
 
-.. literalinclude:: simplegrav/code.cc
+.. literalinclude:: simplegrav/SimpleGrav.cc
     :language: c++
 
 
@@ -86,8 +86,10 @@ definition of the **SimpleGravInterface** is then simply:
                 **keyword_arguments)
 
 Note that when compiling an interface inheriting from
-**GravitationalDynamicsInterface**, all legacy functions defined there must be
-defined in the C++ interface. For now, you can let them return error values.
+**GravitationalDynamicsInterface**, all legacy functions defined there
+(and in its parent class, **CommonCodeInterface**) must be
+defined in the c++ interface. For now, you can simply let them return an error 
+value.
 
 The object oriented interface contains definitions for methods, properties,
 particle sets, parameters, and states (the latter we will discuss later).
@@ -136,7 +138,7 @@ interface. The gravitational dynamics interface template assumes that the legacy
 codes work in dimensionless N-body units, but by passing a **convert_nbody**
 instance the unit conversions can be handled automatically.
 
-The only part left to write now is the C++ interface. As mentioned before,
+The only part left to write now is the c++ interface. As mentioned before,
 this must contain the corresponding functions of all legacy functions. Also note
 that **GravitationalDynamicsInterface** inherits from yet another interface,
 **CommonCodeInterface**, which contains four more legacy functions to be defined.
@@ -146,7 +148,7 @@ they are not needed they can simply return 0 (in the case of our legacy code, on
 **cleanup_code** has actual functionality). They are often called automatically,
 when needed, through the state model (discussed below). The four functions from
 **CommonCode**, plus three similar functions from
-**GravitationalDynamicsInterface**, are described in the table below:
+**GravitationalDynamics**, are described in the table below:
 
 =========================== ===================================
 definition                  description
@@ -188,7 +190,8 @@ the tree must be constructed after all particles have been added, but before
 the system is evolved. In order to automate this, a state model can be defined
 for the code. This defines what functions can be run in what state of the code,
 but also how to transition between states, and what functions trigger that
-transition. A particularly convenient function is to allow a transition, and thus
+transition. A particularly convenient function is that it allows a transition, 
+and thus
 the function associated with that, to be triggered automatically. This allows the
 aforementioned tree code to automatically build its tree between the definition
 of the particle set and the evolution of the system. 
@@ -206,7 +209,7 @@ handler argument:
 - **add_transition(state1, state2, method_name, is_auto=True)** this adds a transition between states state1 and state2 (and adds these states if not previously defined) which is triggered by a call to the interface function method_name. The is_auto argument determines whether this transition is allowed to  be triggered automatically. 
 
 A method that is not mentioned in any add_method, is allowed in any state (and
-doesn't trigger any transitions. If the state model detects that an interface call 
+doesn't trigger any transitions). If the state model detects that an interface call 
 needs a state change it tries to hop to a state where the interface call is allowed
 by calling transitions that are added with is_auto=True. (this is only possible if
 they don't have non-default arguments)
@@ -303,15 +306,16 @@ To complete this example we will take a look at the state model of **Gravitation
 
 Note that the entry state is defined in **CommonCode**.
 
-Let's focus on what happens when we add a particle after evolving for some time. We can see that 
-**evolve_model** changes the state to **EVOLVED**. The function **new_particle**, then, can only
-be run in the **EDIT** or **UPDATE** states. Luckily, we can see that there is a path from
-**EVOLVED** to **RUN**, and then from **RUN** to **UPDATE**, by calling **synchronize_model** and
-**new_particle**, respectively. **synchronize_model** is just a function that makes sure all particles are
-evolved up to the same time, which our example code does by construction. We have defined it, 
-but the only thing it does is to **return 0**. If we then want to evolve
-the system further, we need to go back to the **RUN** state, which we can access from **UPDATE** through
-the **recommit_particles** function.
+Let's focus on what happens when we add a particle after evolving for some time.
+We can see that **evolve_model** is only allowed in the **EVOLVED** state, which
+means that that is the state after evolving. **new_particle**, then, is allowed in
+the **EDIT** and **UPDATE** states, but also when transitioning from **RUN** to 
+**UPDATE**. From **EVOLVED** to **RUN**, we can transition automatically with
+**synchronize_model**. Thus, after evolving, if we add a particle, the function
+**synchronize_model** is automatically called, and we end up in the **UPDATE** 
+state. If we call **evolve_model** again, we first go from **UPDATE** to **RUN** 
+with an automatic call of **recommit_particles**, and from there **evolve_model**
+leads us from **RUN** back to **EVOLVED**.
 
 
 
@@ -373,6 +377,22 @@ Parameters are accessed through the ``parameters`` property of the code object:
 
     gravity = SimpleGrav()
     param = gravity.parameters.parameter
+
+.. note::
+
+    With properties, particles, and parameters, we have three ways of communicating
+    data between the legacy code and AMUSE. With complex codes that are not
+    necessarily similar to other codes in AMUSE, it might be nontrivial in which
+    of these manners data is to be communicated. As a rule of thumb, any quantity 
+    relating to individual particles should be communicated as particle properties, 
+    even if it is conceptually closer to a parameter. To demonstrate the thin line
+    between these, if a stellar evolution code has a single metallicity for all
+    stars, it will be parameter, whereas if different stars can have different
+    metallicities, it will be a particle property.
+
+    Parameters and properties, on the other hand, both apply to the system as a whole.
+    Of these, parameters should not be altered by the legacy code itself, whereas
+    properties are read-only. 
 
 
 

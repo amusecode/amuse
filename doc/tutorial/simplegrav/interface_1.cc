@@ -1,5 +1,3 @@
-#include "src/SimpleGrav.h"
-
 #include <vector>
 #include <math.h>
 
