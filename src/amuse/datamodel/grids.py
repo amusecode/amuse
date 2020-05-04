@@ -658,8 +658,8 @@ class GridRemappingChannel(object):
         names_to_copy = set(from_names).intersection(set(to_names))
         return list(names_to_copy)
 
-    def copy_attributes(self, attributes):
-        self.remapper.forward_mapping(attributes)
+    def copy_attributes(self, attributes, target_names=None):
+        self.remapper.forward_mapping(attributes, target_names)
                 
     def copy(self):
         if not self.target.can_extend_attributes():
@@ -713,9 +713,11 @@ class GridInformationChannel(object):
         names_to_copy = set(from_names).intersection(set(to_names))
         return list(names_to_copy)
     
-    def copy_attributes(self, attributes):
+    def copy_attributes(self, attributes, target_names=None):
+        if target_names is None:
+            target_names=attributes
         converted=self.get_values(attributes)        
-        self.target.set_values_in_store(self.index, attributes, converted)
+        self.target.set_values_in_store(self.index, target_names, converted)
         
     def copy(self):
         if not self.target.can_extend_attributes():

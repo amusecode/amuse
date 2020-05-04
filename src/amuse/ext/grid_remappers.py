@@ -136,9 +136,11 @@ class interpolating_2D_remapper(object):
         interpolator=tri.LinearTriInterpolator(self._triangulation,values)
         return interpolator(xpos,ypos)
 
-    def forward_mapping(self, attributes):
+    def forward_mapping(self, attributes, target_names=None):
         if attributes is None:
             attributes=self.source.get_attribute_names_defined_in_store()
+        if target_names is None:
+            target_names=attributes
         
         source=self.source.empty_copy()
         channel1=self.source.new_channel_to(source)
@@ -154,12 +156,12 @@ class interpolating_2D_remapper(object):
         xpos=value_in( getattr(target,self._axes_names[0]), self._xpos_unit)
         ypos=value_in( getattr(target,self._axes_names[1]), self._ypos_unit)
                 
-        for attribute in attributes:
+        for attribute, target_name in zip(attributes, target_names):
             values=to_quantity( getattr(nodes,attribute) ) 
             unit=values.unit
             values=values.number
             samples=self.sample(values,xpos,ypos)
-            setattr(target, attribute, (samples if unit is units.none else (samples | unit)))
+            setattr(target, target_name, (samples if unit is units.none else (samples | unit)))
 
         channel3.copy_attributes(attributes)    
 
