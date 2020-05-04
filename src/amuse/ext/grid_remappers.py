@@ -155,7 +155,7 @@ class interpolating_2D_remapper(object):
                 
         xpos=value_in( getattr(target,self._axes_names[0]), self._xpos_unit)
         ypos=value_in( getattr(target,self._axes_names[1]), self._ypos_unit)
-                
+                        
         for attribute, target_name in zip(attributes, target_names):
             values=to_quantity( getattr(nodes,attribute) ) 
             unit=values.unit
@@ -163,7 +163,7 @@ class interpolating_2D_remapper(object):
             samples=self.sample(values,xpos,ypos)
             setattr(target, target_name, (samples if unit is units.none else (samples | unit)))
 
-        channel3.copy_attributes(attributes)    
+        channel3.copy_attributes(target_names)    
 
 def conservative_spherical_remapper(*args,**kwargs):
     raise Exception("conservative_spherical_remapper has moved to omuse.ext")
