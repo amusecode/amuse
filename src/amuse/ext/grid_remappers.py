@@ -190,7 +190,7 @@ class bilinear_2D_remapper(object):
         y1=getattr(self.source[1,1], self._axes_names[1])
         dx=x1-x0
         dy=y1-y0
-        
+                
         x=getattr(self.target, self._axes_names[0])
         y=getattr(self.target, self._axes_names[1])
 
@@ -203,14 +203,13 @@ class bilinear_2D_remapper(object):
         ix=numpy.clip(ix,0, self.source.shape[0]-2)
         iy=numpy.clip(iy,0, self.source.shape[1]-2)
 
-        wx=((ix+1)*dx-x)/dx
-        wy=((iy+1)*dy-y)/dy
+        wx=(x0+(ix+1)*dx-x)/dx
+        wy=(y0+(iy+1)*dy-y)/dy
         wx=numpy.clip(wx,0.,1.)
         wy=numpy.clip(wy,0.,1.)
 
         self._weights=[wx,wy]
         self._indices=[ix,iy]
-
       
     def _evaluate(self, values):
         ix,iy=self._indices
@@ -256,8 +255,8 @@ class nearest_2D_remapper(object):
         kwargs={self._axes_names[0]: x, self._axes_names[1]:y}
         indices=self.source.get_index(**kwargs)
 
-        ix=indices[:,0]
-        iy=indices[:,1]
+        ix=indices[...,0]
+        iy=indices[...,1]
         if self.check_inside:
           if numpy.any(ix<0) or numpy.any(ix>self.source.shape[0]-1) or \
              numpy.any(iy<0) or numpy.any(iy>self.source.shape[1]-1):

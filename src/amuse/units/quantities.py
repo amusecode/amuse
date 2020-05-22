@@ -1286,6 +1286,14 @@ def column_stack( args ):
     else:
       return numpy.column_stack(args)
 
+def stack( args ):
+    args_=[to_quantity(x) for x in args]
+    units=set([x.unit for x in args_])
+    if len(units)==1:
+      return new_quantity(numpy.stack([x.number for x in args_]),args_[0].unit)
+    else:
+      return numpy.stack(args)
+
 def arange(start, stop, step):
     if not is_quantity(start):
         return numpy.arange(start, stop, step)
