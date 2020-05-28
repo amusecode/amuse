@@ -7,7 +7,7 @@ from amuse.units.quantities import Quantity
 from amuse.units.quantities import VectorQuantity
 from amuse.units.quantities import new_quantity
 from amuse.units.quantities import zero
-from amuse.units.quantities import column_stack
+from amuse.units.quantities import stack
 from amuse.support import exceptions
 from amuse.datamodel.base import *
 from amuse.datamodel.memory_storage import *
@@ -1085,6 +1085,9 @@ def _get_array_of_positions_from_arguments(axes_names, **kwargs):
         return kwargs['position']
     
     coordinates=[kwargs[x] for x in axes_names]
-    if numpy.ndim(coordinates[0])==0:
+    ndim=numpy.ndim(coordinates[0])
+    if ndim==0:
       return VectorQuantity.new_from_scalar_quantities(*coordinates)
-    return column_stack(coordinates)
+    result=stack(coordinates)
+    order=tuple(range(1,ndim+1))+(0,)
+    return result.transpose(order)

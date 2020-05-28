@@ -43,6 +43,72 @@ class TestGridRemappers(TestCase):
         self.assertEqual(target.x,target.xcopy)
         self.assertEqual(target.y,target.ycopy)
 
+class TestGridRemappers_bilinear(TestCase):
+
+    def test1(self):
+        source=new_cartesian_grid((10,20),1.)
+        target=new_cartesian_grid((5,10),2.,offset=[0.,0.25])
+        
+        source.xcopy=source.x
+        source.ycopy=source.y
+        
+        remapper=grid_remappers.bilinear_2D_remapper(source,target)
+        remapper.forward_mapping(["xcopy","ycopy"])
+        self.assertEqual(target.x,target.xcopy)
+        self.assertEqual(target.y,target.ycopy)
+
+    def test2(self):
+        source=new_cartesian_grid((10,20),1.)
+        target=new_cartesian_grid((8,8),0.125,offset=[0.5,0.5])
+        
+        source.xcopy=source.x
+        source.ycopy=source.y
+        
+        remapper=grid_remappers.bilinear_2D_remapper(source,target)
+        remapper.forward_mapping(["xcopy","ycopy"])
+        self.assertEqual(target.x,target.xcopy)
+        self.assertEqual(target.y,target.ycopy)
+
+
+    def test3(self):
+        source=new_cartesian_grid((10,20),1. | units.m)
+        target=new_cartesian_grid((5,10),2. | units.m,offset=[0.,0.25] | units.m)
+        
+        source.xcopy=source.x
+        source.ycopy=source.y
+        
+        remapper=grid_remappers.bilinear_2D_remapper(source,target)
+        remapper.forward_mapping(["xcopy","ycopy"])
+        self.assertEqual(target.x,target.xcopy)
+        self.assertEqual(target.y,target.ycopy)
+
+    def test4(self):
+        source=new_cartesian_grid((10,20),1.)
+        target=new_cartesian_grid((10,20),1.5,offset=[-0.5,-0.5])
+        
+        source.xcopy=source.x
+        source.ycopy=source.y
+        
+        remapper=grid_remappers.bilinear_2D_remapper(source,target, check_inside=False)
+        remapper.forward_mapping(["xcopy","ycopy"])
+        self.assertEqual(target.xcopy,numpy.clip(target.x,0.5,9.5))
+        self.assertEqual(target.ycopy,numpy.clip(target.y,0.5,19.5))
+
+class TestGridRemappers_nearest(TestCase):
+
+    def test1(self):
+        source=new_cartesian_grid((10,20),1.)
+        target=new_cartesian_grid((5,10),1.,offset=[0.,0.])
+        
+        source.xcopy=source.x
+        source.ycopy=source.y
+        
+        remapper=grid_remappers.nearest_2D_remapper(source,target)
+        remapper.forward_mapping(["xcopy","ycopy"])
+        self.assertEqual(target.x,target.xcopy)
+        self.assertEqual(target.y,target.ycopy)
+
+
 
 class TestConservativeSphericalRemapper(TestCase):
 
