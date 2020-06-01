@@ -1,6 +1,8 @@
 codecov: true
-language: c
+language: python
 dist: trusty
+compiler:
+  - gcc
 os:
   - linux
   #- osx
