@@ -64,13 +64,13 @@ script:
 - |
   if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
     # mpiexec -n 1 nosetests --with-coverage amuse.test.suite.compile_tests.test_python_implementation:TestInterface.test10 -sv || exit $?
-    mpiexec -n 1 py.test --cov-report=xml --cov=amuse test/compile_tests/test_python_implementation.py -k "TestInterface.test10"
+    mpiexec -n 1 py.test --cov-report=xml --cov=amuse test/compile_tests/test_python_implementation.py -k "TestInterface.test10" || exit $?
     # mpiexec -n 1 nosetests --with-coverage test/reports/test_speed.py -sv || exit $?
-    mpiexec -n 1 py.test --cov-report=xml --cov=amuse test/reports/test_speed.py
+    mpiexec -n 1 py.test --cov-report=xml --cov=amuse test/reports/test_speed.py || exit $?
     # mpiexec -n 1 nosetests --with-coverage -e "test_plot" test/core_tests || exit $?
-    mpiexec -n 1 py.test --cov-report=xml --cov=amuse test/core_tests -k "not test_plot"
+    mpiexec -n 1 py.test --cov-report=xml --cov=amuse test/core_tests -k "not test_plot" || exit $?
     # mpiexec -n 1 nosetests --with-coverage -e "test_cython_implementation" test/compile_tests -sv || exit $?
-    mpiexec .n 1 py.test --cov-report=xml --cov=amuse test/compile_tests -k "not test_cython_implementation"
+    mpiexec .n 1 py.test --cov-report=xml --cov=amuse test/compile_tests -k "not test_cython_implementation" || exit $?
   elif [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
     nosetests --with-coverage test/reports/test_speed.py -sv
     nosetests --with-coverage -e "test_plot" test/core_tests
