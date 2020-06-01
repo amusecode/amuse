@@ -10,6 +10,7 @@ env:
 matrix:
   allow_failures:
   - name: "linux openmpi"
+  - name: "macOS Conda"
   include:
   - name: "linux MPICH"
     language: python
@@ -63,7 +64,16 @@ matrix:
         - hdf5-tools
         - libopenmpi-dev
         - openmpi-bin
-  - name: "osx openmpi"
+  - name: "macOS Brew"
+    language: generic
+    os: osx
+    before_install:
+    - brew install gcc hdf5 netcdf cmake openmpi
+    - brew install python3
+    install:
+    - ./configure
+    - make framework
+  - name: "macOS Conda"
     language: generic
     os: osx
     before_install:
