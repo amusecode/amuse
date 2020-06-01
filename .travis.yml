@@ -34,7 +34,6 @@ addons:
       - hdf5-tools
       - libmpich-dev
       - mpich
-      - python3-venv
       # - libopenmpi-dev
       # - openmpi-bin
   homebrew:
@@ -47,12 +46,9 @@ before_install:
   # - if [[ $TRAVIS_OS_NAME == osx ]]; then
   #     something;
   #   fi
-  - python3 -m venv test-environment
-  - source test-environment/bin/activate
   - pip install numpy scipy matplotlib nose docutils mpi4py h5py Cython codecov
 
 install:
-  - source test-environment/bin/activate
   - pip install -e .
   - ./configure
   - make framework
