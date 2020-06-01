@@ -46,6 +46,7 @@ before_install:
   # - if [[ $TRAVIS_OS_NAME == osx ]]; then
   #     something;
   #   fi
+  - pip install --upgrade pip
   - pip install numpy scipy matplotlib nose docutils mpi4py h5py Cython codecov
 
 install:
