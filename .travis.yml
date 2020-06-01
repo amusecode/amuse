@@ -3,7 +3,7 @@ language: c
 dist: trusty
 os:
   - linux
-  - osx
+  #- osx
 env:
   global:
     - OMPI_MCA_rmaps_base_oversubscribe=true
@@ -34,6 +34,7 @@ addons:
       - hdf5-tools
       - libmpich-dev
       - mpich
+      - python3-venv
       # - libopenmpi-dev
       # - openmpi-bin
   homebrew:
