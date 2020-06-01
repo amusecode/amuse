@@ -68,7 +68,8 @@ matrix:
     language: generic
     os: osx
     before_install:
-    - brew install gcc hdf5 netcdf cmake openmpi
+    - brew install gcc hdf5 netcdf cmake
+    - brew install openmpi --build-from-source
     - brew install python3
     install:
     - ./configure
