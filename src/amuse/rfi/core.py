@@ -451,7 +451,7 @@ def get_function_specification(name,in_arg,out_arg,must_handle_array=False,
   
 def simplified_function_specification(must_handle_array=False,can_handle_array=False):
     def wrapper(f):
-        argspec=inspect.getargspec(f)
+        argspec=inspect.getfullargspec(f)
         nkw=len(argspec.defaults) if argspec.defaults else 0
         defaults=argspec.defaults if argspec.defaults else []
         length_arguments=argspec.args[0:-nkw]
