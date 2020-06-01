@@ -2,7 +2,7 @@
 Interface Definition for the galaxy models
 """
 from amuse.units import units
-from amuse.community import CodeInterface
+from amuse.community.interface import CodeInterface
 from amuse.community.interface.common import CommonCodeInterface, CommonCode
 from amuse.community.interface.gd import GravityFieldCode
 

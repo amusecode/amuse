@@ -2,7 +2,7 @@ import os
 import os.path
 import numpy
 import platform
-from amuse.community import *
+from amuse.community.interface import *
 from amuse.test.amusetest import TestWithMPI
 
 from amuse.community.galactics.interface import GalactICsInterface, GalactICs

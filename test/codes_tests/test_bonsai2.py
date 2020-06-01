@@ -1,4 +1,4 @@
-from amuse.community import *
+from amuse.community.interface import *
 from amuse.test.amusetest import TestWithMPI
 
 from amuse.community.bonsai2.interface import BonsaiInterface2, Bonsai2

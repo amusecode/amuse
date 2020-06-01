@@ -1,6 +1,6 @@
 import os.path
 from amuse.support import exceptions
-from amuse.community import *
+from amuse.community.interface import *
 from amuse.community.interface.se import StellarEvolution, StellarEvolutionInterface, \
     InternalStellarStructure, InternalStellarStructureInterface
 

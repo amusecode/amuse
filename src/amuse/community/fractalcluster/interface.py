@@ -1,6 +1,6 @@
 import numpy
 import os.path
-from amuse.community import *
+from amuse.community.interface import *
 from amuse.datamodel import Particles
 from amuse import datamodel
 from amuse.units import nbody_system

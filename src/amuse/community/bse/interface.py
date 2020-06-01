@@ -1,8 +1,7 @@
-from amuse.community import *
+from amuse.community.interface import *
 from amuse.units import units
 from amuse.units import constants
 from amuse.units.quantities import Quantity
-from amuse.community.interface import common
 
 from amuse.datamodel import Particles
 from amuse.datamodel import ParticlesSubset

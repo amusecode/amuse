@@ -14,7 +14,7 @@ do_hop()
 
 
 from amuse.units import generic_unit_system
-from amuse.community import *
+from amuse.community.interface import *
 from amuse.community.interface.common import CommonCodeInterface, CommonCode
 
 class HopInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesMixIn):

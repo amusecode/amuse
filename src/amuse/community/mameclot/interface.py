@@ -1,7 +1,7 @@
 import numpy
 import os
 
-from amuse.community import LiteratureReferencesMixIn
+from amuse.community.interface import LiteratureReferencesMixIn
 from amuse.datamodel import Particles,ParticlesWithUnitsConverted
 
 from subprocess import Popen, PIPE

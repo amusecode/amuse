@@ -1,4 +1,4 @@
-from amuse.community import *
+from amuse.community.interface import *
 
 class supportInterface(CodeInterface):
     

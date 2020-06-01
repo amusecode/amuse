@@ -2,7 +2,7 @@ import numpy
 
 from amuse.units import nbody_system
 from amuse.units import units
-from amuse.community import *
+from amuse.community.interface import *
 from amuse.community.interface.gd import GravitationalDynamicsInterface
 from amuse.community.interface.gd import GravitationalDynamics
 from amuse.community.interface.gd import GravityFieldInterface

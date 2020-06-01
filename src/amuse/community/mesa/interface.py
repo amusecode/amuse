@@ -2,7 +2,7 @@ import os
 import numpy
 from operator import itemgetter
 
-from amuse.community import *
+from amuse.community.interface import *
 from amuse.community.interface.se import StellarEvolution, StellarEvolutionInterface, \
     InternalStellarStructure, InternalStellarStructureInterface
 

@@ -17,7 +17,7 @@ from amuse.rfi.tools import create_c
 from amuse.rfi.tools import create_fortran
 from amuse.rfi import channel
 from amuse.rfi.core import *
-from amuse.community import NO_UNIT
+from amuse.community.interface import NO_UNIT
 codestring = """
 #ifndef NOMPI
 #include <mpi.h>

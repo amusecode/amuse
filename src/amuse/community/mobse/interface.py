@@ -1,4 +1,4 @@
-from amuse.community import *
+from amuse.community.interface import *
 from amuse.units import units
 from amuse.units import constants
 from amuse.units.quantities import Quantity

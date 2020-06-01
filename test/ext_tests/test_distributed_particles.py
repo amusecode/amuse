@@ -8,7 +8,7 @@ from amuse.ic.plummer import new_plummer_sphere
 from amuse.units import nbody_system
 from amuse.units import units
 
-from amuse.community import *
+from amuse.community.interface import *
 from amuse.support.interface import InCodeComponentImplementation
 
 from amuse.io import read_set_from_file, write_set_to_file

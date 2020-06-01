@@ -1,4 +1,4 @@
-from amuse.community import *
+from amuse.community.interface import *
 from amuse.test.amusetest import TestWithMPI
 
 from amuse.community.nbody6xx.interface import Nbody6xxInterface

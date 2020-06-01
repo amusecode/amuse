@@ -1,4 +1,4 @@
-from amuse.community import *
+from amuse.community.interface import *
 from amuse.datamodel import Particles
 from amuse.datamodel import ParticlesSubset
 from amuse.community.interface import se

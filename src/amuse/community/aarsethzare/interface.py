@@ -1,4 +1,4 @@
-from amuse.community import *
+from amuse.community.interface import *
 from amuse.units import units
 
 class AarsethZareInterface(CodeInterface, LiteratureReferencesMixIn):

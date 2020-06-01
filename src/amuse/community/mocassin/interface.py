@@ -1,4 +1,4 @@
-from amuse.community import *
+from amuse.community.interface import *
 from amuse.community.interface.common import CommonCodeInterface
 from amuse.support.core import OrderedDictionary
 from amuse.units import derivedsi

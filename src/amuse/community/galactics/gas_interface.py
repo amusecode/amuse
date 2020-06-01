@@ -7,7 +7,7 @@ import numpy
 from subprocess import Popen, PIPE
 
 from amuse.units.core import *
-from amuse.community import *
+from amuse.community.interface import *
 from amuse.community.interface.common import CommonCode, CommonCodeInterface
 from amuse.support.options import option
 from amuse.rfi.core import PythonCodeInterface

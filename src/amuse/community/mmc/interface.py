@@ -1,4 +1,4 @@
-from amuse.community import *
+from amuse.community.interface import *
 from amuse.community.mmc.amuselib.interface import supportInterface
 from amuse.support.options import OptionalAttributes, option
 from amuse.ext.polarsupport import PolarSupport

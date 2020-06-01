@@ -1,5 +1,5 @@
 import numpy
-from amuse.community import *
+from amuse.community.interface import *
 from amuse.community.interface.common import CommonCodeInterface, CommonCode
 from amuse.support.options import option
 from amuse.units import units

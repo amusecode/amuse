@@ -1,7 +1,7 @@
 from amuse.support.exceptions import AmuseWarning
 from amuse.datamodel import Particles, ParticlesWithUnitsConverted
 from amuse.units import nbody_system
-from amuse.community import LiteratureReferencesMixIn
+from amuse.community.interface import LiteratureReferencesMixIn
 
 try:
     from ._limepy import limepy, sample

@@ -1,6 +1,6 @@
 import numpy
 from operator import itemgetter
-from amuse.community import *
+from amuse.community.interface import *
 from amuse.units import units
 from amuse.units import constants
 from amuse.support.interface import InCodeComponentImplementation

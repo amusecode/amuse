@@ -1,4 +1,4 @@
-from amuse.community import *
+from amuse.community.interface import *
 from amuse.community.interface.hydro import HydrodynamicsInterface
 from amuse.community.interface.common import CommonCode
 from amuse.units.generic_unit_system import *

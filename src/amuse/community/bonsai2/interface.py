@@ -1,5 +1,5 @@
 import os.path
-from amuse.community import *
+from amuse.community.interface import *
 from amuse.community.interface.gd import GravitationalDynamicsInterface, GravitationalDynamics
 
 class BonsaiInterface2(CodeInterface, LiteratureReferencesMixIn, GravitationalDynamicsInterface, 

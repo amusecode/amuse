@@ -6,7 +6,7 @@ from amuse.support.options import option
 from amuse.support.options import OptionalAttributes
 
 interface_file_template = """\
-from amuse.community import *
+from amuse.community.interface import *
 
 class {0.name_of_the_community_interface_class}({0.name_of_the_superclass_for_the_community_code_interface_class}):
     

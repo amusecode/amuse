@@ -3,7 +3,7 @@ import os.path
 import pickle
 import random
 import numpy
-from amuse.community import *
+from amuse.community.interface import *
 from amuse.community.interface.common import CommonCode, CommonCodeInterface
 
 from amuse.support.options import option

@@ -1,5 +1,5 @@
 import numpy as np
-from amuse.community import *
+from amuse.community.interface import *
 from amuse.test.amusetest import TestWithMPI
 from amuse.community.hermite0.interface import HermiteInterface
 from amuse.community.phiGRAPE.interface import PhiGRAPEInterface
