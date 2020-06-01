@@ -60,8 +60,8 @@ virtualenv:
   system_site_packages: false
 
 script:
-  - py.test --cov-report=xml --cov=amuse -v test/compile_tests/test_python_implementation.py -k "TestInterface.test10"
-  - py.test --cov-report=xml --cov=amuse -v test/reports/test_speed.py
+  # - py.test --cov-report=xml --cov=amuse -v test/compile_tests/test_python_implementation.py -k "TestInterface.test10"
+  # - py.test --cov-report=xml --cov=amuse -v test/reports/test_speed.py
   - py.test --cov-report=xml --cov=amuse -v test/core_tests -k "not (plot or grid_implementation)"
   - py.test --cov-report=xml --cov=amuse -v test/compile_tests -k "not (cython_implementation or async or c_implementation)"
   
