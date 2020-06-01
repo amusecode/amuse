@@ -62,7 +62,7 @@ virtualenv:
 script:
   - py.test --cov-report=xml --cov=amuse test/compile_tests/test_python_implementation.py -k "TestInterface.test10"
   # - py.test --cov-report=xml --cov=amuse test/reports/test_speed.py
-  - py.test --cov-report=xml --cov=amuse test/core_tests -k "not test_plot not test_grid_implementation"
+  - py.test --cov-report=xml --cov=amuse test/core_tests -k "not (test_plot or test_grid_implementation)"
   - py.test --cov-report=xml --cov=amuse test/compile_tests -k "not test_cython_implementation"
   
 after_success:
