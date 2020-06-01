@@ -13,8 +13,9 @@ env:
     # - MINICONDA_OSX="MacOSX-x86_64"
 
 matrix:
-  - PYTHON_VERSION=3.5
+  # - PYTHON_VERSION=3.5
   - PYTHON_VERSION=3.6
+  - PYTHON_VERSION=3.7
   # - name: "linux openmpi"
   # - name: "macOS Conda"
 
