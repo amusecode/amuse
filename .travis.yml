@@ -9,7 +9,7 @@ os:
 env:
   global:
     - OMPI_MCA_rmaps_base_oversubscribe=true
-    - AMUSE_CODES="hermite ph4 seba sse"
+    - AMUSE_CODES="hermite\nph4\nseba\nsse\n"
     # - MINICONDA_VERSION="latest"
     # - MINICONDA_PYTHON_MAJOR=3
     # - MINICONDA_LINUX="Linux-x86_64"
@@ -49,7 +49,8 @@ before_install:
   #   fi
   # - pip install --upgrade pip
   - which pip
-  - pip install numpy scipy matplotlib nose docutils mpi4py h5py Cython codecov
+  - pip install numpy scipy matplotlib nose docutils mpi4py h5py Cython
+  - pip install pytest-cov codecov
 
 install:
   - pip install -e .
@@ -67,12 +68,16 @@ script:
 - |
   if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
     # mpiexec -n 1 nosetests --with-coverage amuse.test.suite.compile_tests.test_python_implementation:TestInterface.test10 -sv || exit $?
+    # py.test --cov-report=xml --cov=amuse amuse.test.suite.compile_tests.test_python_implementation:TestInterface.test10
     # mpiexec -n 1 nosetests --with-coverage test/reports/test_speed.py -sv || exit $?
+    # py.test --cov-report=xml --cov=amuse test/reports/test_speed.py
     # mpiexec -n 1 nosetests --with-coverage -e "test_plot" test/core_tests || exit $?
+    py.test --cov-report=xml --cov=amuse test/core_tests
     # mpiexec -n 1 nosetests --with-coverage -e "test_cython_implementation" test/compile_tests -sv || exit $?
-    echo $AMUSE_CODES | while read code; do
-    mpiexec -n 1 nosetests --with-coverage test/codes_tests/test_${code}.py || exit $?
-    done
+    # echo $AMUSE_CODES | while read code; do
+    # mpiexec -n 1 nosetests --with-coverage test/codes_tests/test_${code}.py || exit $?
+    # py.test --cov-report=xml --cov=amuse test/codes_tests/test_${code}.py
+    # done
   elif [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
     nosetests --with-coverage test/reports/test_speed.py -sv
     nosetests --with-coverage -e "test_plot" test/core_tests
