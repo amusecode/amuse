@@ -48,10 +48,10 @@ before_install:
   #     something;
   #   fi
   # - pip install --upgrade pip
-  - pip install numpy scipy matplotlib nose docutils mpi4py h5py Cython codecov
+  - pip3 install numpy scipy matplotlib nose docutils mpi4py h5py Cython codecov
 
 install:
-  - pip install -e .
+  - pip3 install -e .
   - ./configure
   - make framework
 
