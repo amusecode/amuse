@@ -5,21 +5,19 @@ compiler:
   - gcc
 os:
   - linux
-  #- osx
+  # - osx
 env:
   global:
     - OMPI_MCA_rmaps_base_oversubscribe=true
+    - AMUSE_CODES="hermite ph4 seba sse"
     # - MINICONDA_VERSION="latest"
     # - MINICONDA_PYTHON_MAJOR=3
     # - MINICONDA_LINUX="Linux-x86_64"
     # - MINICONDA_OSX="MacOSX-x86_64"
-
-matrix:
-  # - PYTHON_VERSION=3.5
-  # - PYTHON_VERSION=3.6
-  - PYTHON_VERSION=3.7
-  # - name: "linux openmpi"
-  # - name: "macOS Conda"
+  matrix:
+    # - PYTHON_VERSION=3.5
+    # - PYTHON_VERSION=3.6
+    - PYTHON_VERSION=3.7
 
 addons:
   apt:
@@ -57,6 +55,9 @@ install:
   - pip install -e .
   - ./configure
   - make framework
+  - echo $AMUSE_CODES | while read code; do 
+    make ${code}.code
+    done
 
 virtualenv:
   system_site_packages: false
@@ -65,10 +66,13 @@ script:
 - export PYTHONPATH=${PWD}/src:${PWD}
 - |
   if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
-    mpiexec -n 1 nosetests --with-coverage amuse.test.suite.compile_tests.test_python_implementation:TestInterface.test10 -sv || exit $?
-    mpiexec -n 1 nosetests --with-coverage test/reports/test_speed.py -sv || exit $?
-    mpiexec -n 1 nosetests --with-coverage -e "test_plot" test/core_tests || exit $?
-    mpiexec -n 1 nosetests --with-coverage -e "test_cython_implementation" test/compile_tests -sv || exit $?
+    # mpiexec -n 1 nosetests --with-coverage amuse.test.suite.compile_tests.test_python_implementation:TestInterface.test10 -sv || exit $?
+    # mpiexec -n 1 nosetests --with-coverage test/reports/test_speed.py -sv || exit $?
+    # mpiexec -n 1 nosetests --with-coverage -e "test_plot" test/core_tests || exit $?
+    # mpiexec -n 1 nosetests --with-coverage -e "test_cython_implementation" test/compile_tests -sv || exit $?
+    echo $AMUSE_CODES | while read code; do
+    mpiexec -n 1 nosetests --with-coverage test/codes_tests/test_${code}.py || exit $?
+    done
   elif [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
     nosetests --with-coverage test/reports/test_speed.py -sv
     nosetests --with-coverage -e "test_plot" test/core_tests
