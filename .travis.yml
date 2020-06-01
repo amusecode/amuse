@@ -14,7 +14,7 @@ env:
 
 matrix:
   # - PYTHON_VERSION=3.5
-  - PYTHON_VERSION=3.6
+  # - PYTHON_VERSION=3.6
   - PYTHON_VERSION=3.7
   # - name: "linux openmpi"
   # - name: "macOS Conda"
@@ -48,10 +48,11 @@ before_install:
   #     something;
   #   fi
   # - pip install --upgrade pip
-  - pip3 install numpy scipy matplotlib nose docutils mpi4py h5py Cython codecov
+  - which pip
+  - pip install numpy scipy matplotlib nose docutils mpi4py h5py Cython codecov
 
 install:
-  - pip3 install -e .
+  - pip install -e .
   - ./configure
   - make framework
 
