@@ -209,7 +209,7 @@ def ylabel(s, *args, **kwargs):
     return native_plot.ylabel(s, *args, **kwargs)
 
 def xlim(*args, **kwargs):
-    if len(UnitlessArgs.arg_units) is 0:
+    if len(UnitlessArgs.arg_units) == 0:
         raise AmuseException("Cannot call xlim function before plotting")
 
     args = UnitlessArgs.value_in_x_unit(*args)
@@ -220,7 +220,7 @@ def xlim(*args, **kwargs):
     native_plot.xlim(*args, **kwargs)
 
 def ylim(*args, **kwargs):
-    if len(UnitlessArgs.arg_units) is 0:
+    if len(UnitlessArgs.arg_units) == 0:
         raise AmuseException("Cannot call ylim function before plotting")
 
     args = UnitlessArgs.value_in_y_unit(*args)
