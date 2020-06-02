@@ -18,7 +18,7 @@ except ModuleNotFoundError:
 
 
 def from_astropy(ap_quantity):
-    "Convert a unit from Astropy to AMUSE"
+    "Convert a quantity from Astropy to AMUSE"
 
     # Find SI bases of the unit
     si_bases = ap_quantity.si.unit.bases
@@ -50,7 +50,7 @@ def from_astropy(ap_quantity):
 
 
 def to_astropy(quantity):
-    "Convert a unit from AMUSE to Astropy"
+    "Convert a quantity from AMUSE to Astropy"
 
     # Find the SI bases of the unit
     unit = quantity.unit
