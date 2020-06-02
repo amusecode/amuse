@@ -10,6 +10,7 @@ recursive-include lib *
 recursive-include support *
 
 recursive-exclude src/amuse/community *
+recursive-exclude src/amuse/units *
 
 include src/amuse/community/__init__.py
 recursive-include src/amuse/community/interface *
