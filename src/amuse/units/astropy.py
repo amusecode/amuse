@@ -1,6 +1,5 @@
 """
-This file contains conversion functions to/from Astropy, as well as constants
-taken from Astropy.
+This file contains conversion functions to/from Astropy.
 
 Requires astropy to be installed.
 """
@@ -78,6 +77,3 @@ def to_astropy(quantity):
             ap_quantity = ap_quantity * apu.cd**base_unit[0]
 
     return ap_quantity
-
-
-G = from_astropy(apc.G)
