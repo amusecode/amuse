@@ -5,10 +5,6 @@ from support.classifiers import classifiers
 
 from setuptools import setup
 
-import support
-support.use("system")
-from support.setup_codes import setup_commands
-
 name = 'amuse-units'
 author = 'The AMUSE team'
 author_email = 'info@amusecode.org'
@@ -32,8 +28,6 @@ packages = [
 package_data = {
 }
 
-mapping_from_command_name_to_command_class=setup_commands()
-
 setup(
     name=name,
     version=version,
@@ -47,7 +41,6 @@ setup(
     long_description_content_type=long_description_content_type,
     install_requires=install_requires,
     python_requires=">=3.5",
-    cmdclass=mapping_from_command_name_to_command_class,
     ext_modules=extensions,
     package_dir={
         'amuse.units': 'src/amuse/units'
