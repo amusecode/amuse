@@ -19,22 +19,22 @@ class EVtwinInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolution
     The work-around for the helium flash is not yet implemented in the AMUSE
     interface to evtwin. Currently only solar metallicity.
 
-        .. [#] ** Eggleton, P.P. 1971, MNRAS, 151, 351: "The evolution of low mass stars"
-        .. [#] ** Glebbeek, Pols & Hurley, 2008 A&A (for enhancements to the solver)
-        .. [#] Eggleton, P.P. 1972, MNRAS, 156, 361: "Composition changes during stellar evolution"
-        .. [#] Eggleton, P.P. 1973, MNRAS, 163, 279: "A numerical treatment of double shell source stars"
+        .. [#] ** Eggleton, P.P. 1971, MNRAS, 151, 351: "The evolution of low mass stars" [1971MNRAS.151..351E]
+        .. [#] ** Glebbeek, Pols & Hurley, 2008 A&A (for enhancements to the solver) [2008A&A...488.1007G]
+        .. [#] Eggleton, P.P. 1972, MNRAS, 156, 361: "Composition changes during stellar evolution" [1972MNRAS.156..361E]
+        .. [#] Eggleton, P.P. 1973, MNRAS, 163, 279: "A numerical treatment of double shell source stars" [1973MNRAS.163..279E]
         .. [#] Eggleton, P.P., Faulkner, J., & Flannery, B.P. 1973, A&A, 23, 325:
-        .. [#] ... "An Approximate Equation of State for Stellar Material"
+        .. [#] ... "An Approximate Equation of State for Stellar Material" [1973A&A....23..325E]
         .. [#] Han, Z., Podsiadlowski, P., & Eggleton, P.P. 1994, MNRAS, 270, 121:
-        .. [#] ... "A Possible Criterion for Envelope Ejection in Asymptotic Giant Branch or First Giant Branch Stars"
+        .. [#] ... "A Possible Criterion for Envelope Ejection in Asymptotic Giant Branch or First Giant Branch Stars" [1994MNRAS.270..121H]
         .. [#] Pols, O.R., Tout, C.A., Eggleton, P.P., & Han, Z. 1995, MNRAS, 274, 964:
-        .. [#] ... "Approximate input physics for stellar modelling"
-        .. [#] Eggleton, P.P. 2001, Evolution of Binary and Multiple Star Systems, 229, 157: "The Braking of Wind"
+        .. [#] ... "Approximate input physics for stellar modelling" [1995MNRAS.274..964P]
+        .. [#] Eggleton, P.P. 2001, Evolution of Binary and Multiple Star Systems, 229, 157: "The Braking of Wind" [2001ASPC..229..157E]
         .. [#] Nelson, C.A., & Eggleton, P.P. 2001, ApJ, 552, 664:
-        .. [#] ... "A Complete Survey of Case A Binary Evolution with Comparison to Observed Algol-type Systems"
-        .. [#] Eggleton, P.P., & Kiseleva-Eggleton, L. 2002, ApJ, 575, 461: "The Evolution of Cool Algols"
-        .. [#] Stancliffe, Glebbeek, Izzard & Pols, 2007 A&A (for thermohaline mixing)
-        .. [#] Eldridge & Tout, 2004 MNRAS 348 (for the OPAL 1996 opacity tables)
+        .. [#] ... "A Complete Survey of Case A Binary Evolution with Comparison to Observed Algol-type Systems" [2001ApJ...552..664N]
+        .. [#] Eggleton, P.P., & Kiseleva-Eggleton, L. 2002, ApJ, 575, 461: "The Evolution of Cool Algols" [2002ApJ...575..461E]
+        .. [#] Stancliffe, Glebbeek, Izzard & Pols, 2007 A&A (for thermohaline mixing) [2007A&A...464L..57S]]
+        .. [#] Eldridge & Tout, 2004 MNRAS 348 (for the OPAL 1996 opacity tables) [2004MNRAS.348..201E]
     """
     use_modules = ['twinlib', 'import']
 
