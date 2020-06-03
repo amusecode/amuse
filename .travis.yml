@@ -60,10 +60,10 @@ virtualenv:
   system_site_packages: false
 
 script:
-  - py.test --timeout=10 --cov-report=xml --cov=amuse -v test/compile_tests/test_python_implementation.py
-  - py.test --timeout=10 --cov-report=xml --cov=amuse -v test/reports/test_speed.py
-  - py.test --timeout=10 --cov-report=xml --cov=amuse -v test/core_tests
-  - py.test --timeout=10 --cov-report=xml --cov=amuse -v test/compile_tests
+  - py.test --timeout=10 --timeout-method=thread --cov-report=xml --cov=amuse -v test/compile_tests/test_python_implementation.py
+  - py.test --timeout=10 --timeout-method=thread --cov-report=xml --cov=amuse -v test/reports/test_speed.py
+  - py.test --timeout=10 --timeout-method=thread --cov-report=xml --cov=amuse -v test/core_tests
+  - py.test --timeout=10 --timeout-method=thread --cov-report=xml --cov=amuse -v test/compile_tests
   
 after_success:
   - codecov
