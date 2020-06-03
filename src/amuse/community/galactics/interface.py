@@ -3,6 +3,7 @@ import os.path
 import pickle
 import random
 import numpy
+import hashlib
 from amuse.community import *
 from amuse.community.interface.common import CommonCode, CommonCodeInterface
 
@@ -197,7 +198,8 @@ class GalactICsImplementation(object):
             pass
 
     def _data_directory(self,in_dbh,in_diskdf):
-        return os.path.join(self._output_directory, "model"+str(hash(in_dbh+in_diskdf)))
+        modelhash=hashlib.sha1((in_dbh+in_diskdf).encode()).hexdigest()
+        return os.path.join(self._output_directory, "model_"+modelhash)
         
     def model_present(self,x):
         in_dbh = self.generate_in_dbh_string()
