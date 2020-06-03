@@ -632,7 +632,7 @@ class StoreHDF(object):
         if h5py is None:
             raise AmuseException("h5py module not available, cannot use hdf5 files")
         
-        logger.info("opening {0} with options {1} {2} {3} {4} {5}".format(filename, append_to_file, open_for_writing, copy_history,overwrite_file))
+        logger.info("opening {0} with options {1} {2} {3} {4}".format(filename, append_to_file, open_for_writing, copy_history,overwrite_file))
             
         if not append_to_file and open_for_writing:
             if os.path.exists(filename):
