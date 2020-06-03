@@ -687,8 +687,8 @@ PYTHON_zlib_VERSION
 PYTHON_zlib
 PYTHON_docutils_VERSION
 PYTHON_docutils
-PYTHON_nose_VERSION
-PYTHON_nose
+PYTHON_pytest_VERSION
+PYTHON_pytest
 PYTHON_h5py_VERSION
 PYTHON_h5py
 PYTHON_mpi4py_VERSION
@@ -9963,11 +9963,11 @@ esac
     # AC_CHECK_PYTHON_MODULE(MODULE_NAME [,VERSION_VARIABLE])
 
     # the python module name
-    MODULE_NAME=nose
+    MODULE_NAME=pytest
     # the python variable that contains the module's version
     # If this is not set the version will not be retrieved from the module.
     # Example: __version__.
-    VERSION_VARIABLE=nose.__version__
+    VERSION_VARIABLE=pytest.__version__
 
     # check for the python binary defined in $PYTHON
     # fall back to "python"
@@ -10013,12 +10013,12 @@ $as_echo "not found" >&6; }
 
     fi
 
-as_arg_v1=$PYTHON_nose_VERSION
-as_arg_v2=0.10
+as_arg_v1=$PYTHON_pytest_VERSION
+as_arg_v2=4.999
 awk "$as_awk_strverscmp" v1="$as_arg_v1" v2="$as_arg_v2" /dev/null
 case $? in #(
   1) :
-    as_fn_error $? "nose version $PYTHON_nose_VERSION found, but at least 0.11 needed" "$LINENO" 5
+    as_fn_error $? "nose version $PYTHON_nose_VERSION found, but at least 5.0 needed" "$LINENO" 5
  ;; #(
   0) :
      ;; #(

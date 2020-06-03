@@ -18,8 +18,8 @@ class MercuryInterface(CodeInterface, CommonCodeInterface, CodeWithDataDirectori
     in Chambers (1999).
     
     Relevant references:
-        .. [#] Chambers J. E., 1999, MNRAS, 304, 793
-        .. [#] Wisdom J. & Holman M., 1991, AJ, 102, 1528
+        .. [#] Chambers J. E., 1999, MNRAS, 304, 793 [1999MNRAS.304..793C]
+        .. [#] Wisdom J. & Holman M., 1991, AJ, 102, 1528 [1991AJ....102.1528W]
     """
 
     use_modules = ['StoppingConditions', 'AmuseInterface']
