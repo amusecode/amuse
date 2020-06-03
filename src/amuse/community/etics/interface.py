@@ -6,6 +6,7 @@ class EticsInterface(CodeInterface, GravitationalDynamicsInterface, LiteratureRe
     """
         .. [#] Meiron, Y., Li, B., Holley-Bockelmann, K., & Spurzem, R. 2014, ApJ, 792, 98:
         .. [#] ... "Expansion techniques for collisionless stellar dynamical simulations"
+        .. [#] [2014ApJ...792...98M]
     """
 
     include_headers = ['worker_code.h']

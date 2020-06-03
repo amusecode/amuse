@@ -16,7 +16,7 @@ class BrutusInterface(CodeInterface, GravitationalDynamicsInterface, LiteratureR
         StoppingConditionInterface, CodeWithDataDirectories):
     """
     Brutus (Brute force N-body code)
-        .. [#] Boekholt, Tjarda and Portegies Zwart, Simon,On the reliability of N-body simulations, Computational Astrophysics and Cosmology, Volume 2, article id.2, 21 pp.
+        .. [#] Boekholt, Tjarda and Portegies Zwart, Simon, On the reliability of N-body simulations, Computational Astrophysics and Cosmology, Volume 2, article id.2, 21 pp. [2015ComAC...2....2B]
     
     """
     include_headers = ['worker_code.h', 'stopcond.h']

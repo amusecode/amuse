@@ -11,7 +11,7 @@ class BHTreeInterface(
     StoppingConditionInterface,
     SinglePointGravityFieldInterface):
     """
-        .. [#] Barnes, J., Hut, P., A Hierarchical O(N log N) force-calculation algorithm, *Nature*, **4**, 324 (1986)   
+        .. [#] Barnes, J., Hut, P., A Hierarchical O(N log N) force-calculation algorithm, *Nature*, **4**, 324 (1986) [1986Natur.324..446B]
     """
     include_headers = ['interface.h', 'worker_code.h', 'stopcond.h']
     

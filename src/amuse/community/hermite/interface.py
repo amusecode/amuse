@@ -15,7 +15,7 @@ class HermiteInterface(CodeInterface,
     using the Hermite integration scheme.
 
 
-    .. [#] Hut, P., Makino, J. & McMillan, S., *Astrophysical Journal Letters* , **443**, L93-L96 (1995)
+    .. [#] Hut, P., Makino, J. & McMillan, S., *Astrophysical Journal Letters* , **443**, L93-L96 (1995) [1995ApJ...443L..93H]
     """
     include_headers = ['worker_code.h', 'stopcond.h']
 
