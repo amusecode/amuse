@@ -756,7 +756,7 @@ class CodeCommand(Command):
             
             if not buildlogfile is None:
                 buildlogfile.write(line)
-            self.announce(line[:-1], log.DEBUG)
+            self.announce(line[:-1].decode("utf-8"), log.DEBUG)
             stringio.write(str(line, 'utf-8'))
             
         result = process.wait()
