@@ -48,8 +48,8 @@ before_install:
   #   fi
   # - pip install --upgrade pip
   - which pip
-  - pip install numpy scipy matplotlib nose docutils mpi4py h5py Cython
-  - pip install pytest-cov codecov
+  - pip install numpy scipy matplotlib pytest docutils mpi4py h5py Cython
+  - pip install pytest-cov codecov pytest-timeout
 
 install:
   - pip install -e .
@@ -60,10 +60,10 @@ virtualenv:
   system_site_packages: false
 
 script:
-  # - py.test --cov-report=xml --cov=amuse -v test/compile_tests/test_python_implementation.py -k "TestInterface.test10"
-  # - py.test --cov-report=xml --cov=amuse -v test/reports/test_speed.py
-  - py.test --cov-report=xml --cov=amuse -v test/core_tests -k "not (plot or grid_implementation)"
-  - py.test --cov-report=xml --cov=amuse -v test/compile_tests -k "not (Cython or ASync or TestInterface or CImplementation)"
+  - py.test --timeout=10 --cov-report=xml --cov=amuse -v test/compile_tests/test_python_implementation.py
+  - py.test --timeout=10 --cov-report=xml --cov=amuse -v test/reports/test_speed.py
+  - py.test --timeout=10 --cov-report=xml --cov=amuse -v test/core_tests
+  - py.test --timeout=10 --cov-report=xml --cov=amuse -v test/compile_tests
   
 after_success:
   - codecov
