@@ -15,7 +15,7 @@ install_requires = [
     'wheel>=0.32',
     'docutils>=0.6',
     'numpy>=1.2.2',
-    'nose>=0.11.1',
+    'pytest>=4.0',
     'mpi4py>=1.1.0',
     'h5py>=1.1.0',
 ]
