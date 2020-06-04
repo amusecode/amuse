@@ -1,3 +1,4 @@
+import pytest
 from amuse.support.interface import InCodeComponentImplementation
 
 from amuse.test.amusetest import TestWithMPI
@@ -512,6 +513,7 @@ class TestInterface(TestWithMPI):
         self.assertEqual(implementation.masses[3], 14.0)
         self.assertEqual(implementation.masses[4], 15.0)
 
+    @pytest.mark.skip
     def test05(self):
         x = self.ForTestingInterface()
 
@@ -523,6 +525,7 @@ class TestInterface(TestWithMPI):
         self.assertEqual(answer, 10.0)
         x.stop()
 
+    @pytest.mark.skip
     def test06(self):
         x = self.ForTestingInterface()
 
@@ -538,6 +541,7 @@ class TestInterface(TestWithMPI):
 
         x.stop()
 
+    @pytest.mark.skip
     def test07(self):
         x = self.ForTestingInterface()
 
@@ -563,6 +567,7 @@ class TestInterface(TestWithMPI):
         self.assertEqual(output_message.ints[0], 0)
         self.assertEqual(output_message.ints[1], 20)
 
+    @pytest.mark.skip
     def test09(self):
         x = self.ForTestingInterface()
         string_out, error = x.echo_string("1234567")
@@ -570,6 +575,7 @@ class TestInterface(TestWithMPI):
         self.assertEqual(string_out, "1234567")
         x.stop()
 
+    @pytest.mark.skip
     def test10(self):
         x = self.ForTestingInterface()
         string_out, error = x.echo_string(["aaaaa", "bbbb"])
@@ -579,6 +585,7 @@ class TestInterface(TestWithMPI):
         self.assertEqual(string_out[1], "bbbb")
         x.stop()
 
+    @pytest.mark.skip
     def test11(self):
         x = self.ForTestingInterface()
         string_out, error = x.echo_string(["", "bbbb"])
@@ -588,6 +595,7 @@ class TestInterface(TestWithMPI):
         self.assertEqual(string_out[1], "bbbb")
         x.stop()
 
+    @pytest.mark.skip
     def test12(self):
         x = self.ForTestingInterface()
         str1_out, str2_out, error = x.echo_strings("abc", "def")
@@ -596,6 +604,7 @@ class TestInterface(TestWithMPI):
         self.assertEqual(str2_out, "fed")
         x.stop()
 
+    @pytest.mark.skip
     def test13(self):
         x = self.ForTestingInterface()
         str1_out, str2_out, error = x.echo_strings(["abc", "def"], ["ghi", "jkl"])
@@ -607,6 +616,7 @@ class TestInterface(TestWithMPI):
         self.assertEqual(str2_out[1], "lkj")
         x.stop()
 
+    @pytest.mark.skip
     def test14(self):
         x = self.ForTestingInterface()
         result = x.sleep(2)
@@ -617,6 +627,7 @@ class TestInterface(TestWithMPI):
         self.assertEqual(result, 0)
         x.stop()
 
+    @pytest.mark.skip
     def test15(self):
         x = self.ForTestingInterface()
         y = self.ForTestingInterface()
@@ -634,6 +645,7 @@ class TestInterface(TestWithMPI):
         y.stop()
         x.stop()
 
+    @pytest.mark.skip
     def test16(self):
         x = self.ForTestingInterface()
         request1 = x.sleep.asynchronous(0.4)
