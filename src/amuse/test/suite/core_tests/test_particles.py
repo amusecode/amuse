@@ -20,6 +20,7 @@ from amuse import datamodel
 from amuse.datamodel import incode_storage
 from amuse.datamodel import memory_storage
 
+
 class TestParticles(amusetest.TestCase):
 
     def test1(self):
@@ -1643,11 +1644,11 @@ class TestParticlesWithBinding(amusetest.TestCase):
             errors = []
 
             for x in mass:
-                id = len(self.masses)
-                self.masses[id]  = x
-                self.links[id]  = -1
-                self.grids[id] = numpy.arange(4*3).reshape(4,3)
-                ids.append(id)
+                index = len(self.masses)
+                self.masses[index]  = x
+                self.links[index]  = -1
+                self.grids[index] = numpy.arange(4*3).reshape(4,3)
+                ids.append(index)
                 errors.append(0)
 
             return (ids, errors)
@@ -2995,23 +2996,23 @@ class TestAddParticles(amusetest.TestCase):
         print("Test1: create a particle subset by adding a particle to a set.")
         original_set = datamodel.Particles(4)
         original_set.x = [1.0, 2.0, -789.0, 3.0] | units.m
-        set = original_set[:2]
+        particleset = original_set[:2]
         particle = original_set[3]
         self.assertTrue(isinstance(set, datamodel.ParticlesSubset))
         self.assertTrue(isinstance(particle, datamodel.Particle))
 
-        new_set = set + particle
+        new_set = particleset + particle
         self.assertTrue(isinstance(new_set, datamodel.ParticlesSubset))
-        self.assertEqual(len(new_set),len(set)+1)
+        self.assertEqual(len(new_set),len(particleset)+1)
         print(new_set.x)
-        print(set.x)
+        print(particleset.x)
         print(particle.x)
         self.assertEqual(new_set.x, ([1.0, 2.0, 3.0]|units.m))
 
-        set += particle
-        self.assertTrue(isinstance(set, datamodel.ParticlesSubset))
-        self.assertEqual(len(set),3)
-        self.assertEqual(set.x, ([1.0, 2.0, 3.0]|units.m))
+        particleset += particle
+        self.assertTrue(isinstance(particleset, datamodel.ParticlesSubset))
+        self.assertEqual(len(particleset),3)
+        self.assertEqual(particleset.x, ([1.0, 2.0, 3.0]|units.m))
 
     def test2(self):
         print("Test2: create a particle subset by adding a set to a set.")
@@ -3034,34 +3035,34 @@ class TestAddParticles(amusetest.TestCase):
 
     def test3(self):
         print("Test3: create a particle superset by adding a particle to a set.")
-        set = datamodel.Particles(2)
-        set.x = [1.0, 2.0] | units.m
+        particleset = datamodel.Particles(2)
+        particleset.x = [1.0, 2.0] | units.m
         particle = datamodel.Particle()
         particle.x = 3.0 | units.m
 
-        superset = datamodel.ParticlesSuperset([set, particle.as_set()])
+        superset = datamodel.ParticlesSuperset([particleset, particle.as_set()])
         self.assertTrue(isinstance(superset, datamodel.ParticlesSuperset))
-        self.assertEqual(len(superset),len(set)+1)
+        self.assertEqual(len(superset),len(particleset)+1)
         self.assertEqual(superset.x, ([1.0, 2.0, 3.0]|units.m))
 
-        set2 = datamodel.Particles(2)
-        set2.x = [3.0, 4.0] | units.m
-        superset = datamodel.ParticlesSuperset([set, set2])
+        particleset2 = datamodel.Particles(2)
+        particleset2.x = [3.0, 4.0] | units.m
+        superset = datamodel.ParticlesSuperset([particleset, particleset2])
         self.assertTrue(isinstance(superset, datamodel.ParticlesSuperset))
-        self.assertEqual(len(superset),len(set)+len(set2))
+        self.assertEqual(len(superset),len(particleset)+len(particleset2))
         self.assertEqual(superset.x, ([1.0, 2.0, 3.0, 4.0]|units.m))
 
     def test4(self):
         print("Test4: check if the particle is already part of the set.")
-        set = datamodel.Particles(2)
+        particleset = datamodel.Particles(2)
         particle = datamodel.Particle()
-        set = datamodel.ParticlesSuperset([set, particle.as_set()])
-        self.assertRaises(AmuseException, datamodel.ParticlesSuperset, [set, particle.as_set()],
+        particleset = datamodel.ParticlesSuperset([particleset, particle.as_set()])
+        self.assertRaises(AmuseException, datamodel.ParticlesSuperset, [particleset, particle.as_set()],
             expected_message = "Unable to add a particle, because it was already part of this set.")
-        self.assertEqual(len(set),3)
-        other_set = datamodel.Particles(2)
-        other_set = datamodel.ParticlesSuperset([other_set, particle.as_set()])
-        self.assertRaises(AmuseException, datamodel.ParticlesSuperset, [set, other_set],
+        self.assertEqual(len(particleset),3)
+        other_particleset = datamodel.Particles(2)
+        other_particleset = datamodel.ParticlesSuperset([other_particleset, particle.as_set()])
+        self.assertRaises(AmuseException, datamodel.ParticlesSuperset, [particleset, other_particleset],
             expected_message = "Unable to add a particle, because it was already part of this set.")
 
     def test5(self):
@@ -3097,35 +3098,35 @@ class TestAddParticles(amusetest.TestCase):
         original_set = datamodel.Particles(4)
         particle1 = original_set[0]
         particle2 = original_set[1]
-        set = original_set[2:]
+        particleset = original_set[2:]
         self.assertTrue(isinstance(particle1, datamodel.Particle))
         self.assertTrue(isinstance(particle2, datamodel.Particle))
-        self.assertTrue(isinstance(set, datamodel.ParticlesSubset))
-        new_set = particle1 + particle2
-        self.assertTrue(isinstance(new_set, datamodel.ParticlesSubset))
-        self.assertEqual(len(new_set),2)
-        new_set = particle1 + set
-        self.assertTrue(isinstance(new_set, datamodel.ParticlesSubset))
-        self.assertEqual(len(new_set),3)
+        self.assertTrue(isinstance(particleset, datamodel.ParticlesSubset))
+        new_particleset = particle1 + particle2
+        self.assertTrue(isinstance(new_particleset, datamodel.ParticlesSubset))
+        self.assertEqual(len(new_particleset),2)
+        new_particleset = particle1 + particleset
+        self.assertTrue(isinstance(new_particleset, datamodel.ParticlesSubset))
+        self.assertEqual(len(new_particleset),3)
 
 class TestSubtractParticles(amusetest.TestCase):
 
     def test1(self):
         print("Test1: create a particle subset by removing a particle from a set.")
-        set = datamodel.Particles(4)
-        set.x = [1.0, 2.0, -789.0, 3.0] | units.m
-        particle = set[2]
+        particleset = datamodel.Particles(4)
+        particleset.x = [1.0, 2.0, -789.0, 3.0] | units.m
+        particle = particleset[2]
         self.assertTrue(isinstance(particle, datamodel.Particle))
 
-        new_set = set - particle
-        self.assertTrue(isinstance(new_set, datamodel.ParticlesSubset))
-        self.assertEqual(len(new_set),len(set)-1)
-        self.assertEqual(new_set.x, ([1.0, 2.0, 3.0]|units.m))
+        new_particleset = particleset - particle
+        self.assertTrue(isinstance(new_particleset, datamodel.ParticlesSubset))
+        self.assertEqual(len(new_particleset),len(particleset)-1)
+        self.assertEqual(new_particleset.x, ([1.0, 2.0, 3.0]|units.m))
 
-        set -= particle
-        self.assertTrue(isinstance(set, datamodel.ParticlesSubset))
-        self.assertEqual(len(set),3)
-        self.assertEqual(set.x, ([1.0, 2.0, 3.0]|units.m))
+        particleset -= particle
+        self.assertTrue(isinstance(particleset, datamodel.ParticlesSubset))
+        self.assertEqual(len(particleset),3)
+        self.assertEqual(particleset.x, ([1.0, 2.0, 3.0]|units.m))
 
     def test2(self):
         print("Test2: create a particle subset by removing a set from a set.")
@@ -3148,18 +3149,18 @@ class TestSubtractParticles(amusetest.TestCase):
 
     def test3(self):
         print("Test3: check if the particle is actually part of the set.")
-        set = datamodel.Particles(2)
+        particleset = datamodel.Particles(2)
         particle = datamodel.Particle()
-        self.assertRaises(AmuseException, lambda: set - particle,
+        self.assertRaises(AmuseException, lambda: particleset - particle,
             expected_message = "Unable to subtract a particle, because it is not part of this set.")
 
     def test4(self):
         print("Test4: recursive subtraction, remove particles until the set is empty.")
-        set = datamodel.Particles(10)
-        self.assertEqual(len(set), 10)
-        while len(set):
-            set -= set[0]
-        self.assertEqual(len(set), 0)
+        particleset = datamodel.Particles(10)
+        self.assertEqual(len(particleset), 10)
+        while len(particleset):
+            particleset -= particleset[0]
+        self.assertEqual(len(particleset), 0)
 
     def test5(self):
         print("Test5: check if it's possible to subtract particle(s) from a particle.")
