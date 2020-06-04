@@ -2998,7 +2998,7 @@ class TestAddParticles(amusetest.TestCase):
         original_set.x = [1.0, 2.0, -789.0, 3.0] | units.m
         particleset = original_set[:2]
         particle = original_set[3]
-        self.assertTrue(isinstance(set, datamodel.ParticlesSubset))
+        self.assertTrue(isinstance(particleset, datamodel.ParticlesSubset))
         self.assertTrue(isinstance(particle, datamodel.Particle))
 
         new_set = particleset + particle
