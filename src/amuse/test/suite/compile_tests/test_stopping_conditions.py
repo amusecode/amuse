@@ -573,7 +573,7 @@ class _AbstractTestInterfaceFortran(TestWithMPI):
         
     @classmethod
     def get_codestring(cls):
-        return CodeStringF
+        return codestringF
 
     @classmethod        
     def get_interface_class(cls):
