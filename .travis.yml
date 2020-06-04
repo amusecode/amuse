@@ -9,10 +9,6 @@ os:
 env:
   global:
     - OMPI_MCA_rmaps_base_oversubscribe=true
-    # - MINICONDA_VERSION="latest"
-    # - MINICONDA_PYTHON_MAJOR=3
-    # - MINICONDA_LINUX="Linux-x86_64"
-    # - MINICONDA_OSX="MacOSX-x86_64"
   matrix:
     # - PYTHON_VERSION=3.5
     # - PYTHON_VERSION=3.6
@@ -47,7 +43,6 @@ before_install:
   #     something;
   #   fi
   # - pip install --upgrade pip
-  - which pip
   - pip install numpy scipy matplotlib pytest docutils mpi4py h5py Cython
   - pip install pytest-cov codecov pytest-timeout
 
@@ -63,11 +58,9 @@ virtualenv:
   system_site_packages: false
 
 script:
-  # - py.test --timeout=10 --timeout_method=thread --cov-report=xml --cov=amuse -v test/compile_tests/test_python_implementation.py -k "test10"
-  # - py.test --timeout=10 --timeout_method=thread --cov-report=xml --cov=amuse -v test/reports/test_speed.py
-  # - py.test --timeout=10 --timeout_method=thread --cov-report=xml --cov=amuse -v test/core_tests -k "not TestCImplementationInterface"
-  # - py.test --timeout=10 --timeout_method=thread --cov-report=xml --cov=amuse -v test/compile_tests
-  - mpiexec -n 1 py.test --timeout=10 --timeout_method=thread --cov-report=xml --cov=amuse -v test/compile_tests
+  - mpiexec -n 1 py.test --timeout=10 --timeout_method=thread --cov-report=xml --cov=amuse -v src/amuse/test/suite/reports/test_speed.py
+  - mpiexec -n 1 py.test --timeout=10 --timeout_method=thread --cov-report=xml --cov=amuse -v src/amuse/test/suite/core_tests
+  - mpiexec -n 1 py.test --timeout=10 --timeout_method=thread --cov-report=xml --cov=amuse -v src/amuse/test/suite/compile_tests
   
 after_success:
   - codecov
