@@ -1,6 +1,6 @@
 codecov: true
 language: python
-dist: trusty
+dist: bionic
 compiler:
   - gcc
 os:
