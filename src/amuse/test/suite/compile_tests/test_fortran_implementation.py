@@ -1,4 +1,4 @@
-import pytest
+import unittest
 from amuse.support.interface import InCodeComponentImplementation
 
 
@@ -634,7 +634,7 @@ class TestInterface(TestWithMPI):
         self.assertEqual(error2, 0)
 
 
-    @pytest.mark.skip
+    @unittest.skip
     def test31(self):
         import time
         instance = ForTestingInterface(self.exefile)
