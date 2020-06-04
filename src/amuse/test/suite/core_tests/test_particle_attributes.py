@@ -1,3 +1,4 @@
+import pytest
 import random
 import numpy.random
 import sys
@@ -319,6 +320,7 @@ class TestParticlesAttributes(amusetest.TestCase):
         else:
             self.assertAlmostEqual(sigma, 0.4, 1)
 
+    @pytest.mark.timeout(30)
     def test15(self):
         scale_R = 1.0 | units.parsec
         scale_M = 1000.0 | units.MSun
