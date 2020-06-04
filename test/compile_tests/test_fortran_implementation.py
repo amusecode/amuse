@@ -1,3 +1,4 @@
+import pytest
 from amuse.support.interface import InCodeComponentImplementation
 
 
@@ -633,6 +634,7 @@ class TestInterface(TestWithMPI):
         self.assertEqual(error2, 0)
 
 
+    @pytest.mark.skip
     def test31(self):
         import time
         instance = ForTestingInterface(self.exefile)
@@ -653,6 +655,7 @@ class TestInterface(TestWithMPI):
         print("2 time:",t2-t1,(t2-t1)/N)  
         instance.stop()
 
+    @pytest.mark.skip
     def test32(self):
         instance = ForTestingInterface(self.exefile)
         out, error = instance.get_element_status(numpy.arange(10))
@@ -660,6 +663,7 @@ class TestInterface(TestWithMPI):
         
         self.assertEqual(out, ["dry"]*10)
 
+    @pytest.mark.skip
     def test33(self):
         instance = ForTestingInterface(self.exefile)
         out, error = instance.get_element_status(numpy.arange(100))
@@ -667,6 +671,7 @@ class TestInterface(TestWithMPI):
         
         self.assertEqual(out, ["dry"]*100)
 
+    @pytest.mark.skip
     def test34(self):
         instance = ForTestingInterface(self.exefile)
         out, error = instance.echo_string(["abc"]*14)
@@ -675,6 +680,7 @@ class TestInterface(TestWithMPI):
         self.assertEqual(out, ["abc"]*14)
         self.assertEqual(error, [0]*14)
 
+    @pytest.mark.skip
     def test35(self):
         instance = ForTestingInterface(self.exefile)
         out, error = instance.echo_string(["abc","def"]*100000)
@@ -685,6 +691,7 @@ class TestInterface(TestWithMPI):
         self.assertEqual(out[-2], "abc")
         self.assertEqual(out[-1], "def")
 
+    @pytest.mark.skip
     def test36(self):
         instance = ForTestingInterface(self.exefile)
         N=255
