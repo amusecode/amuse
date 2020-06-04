@@ -55,6 +55,8 @@ install:
   - pip install -e .
   - ./configure
   - make framework
+  - mkdir test_results
+  - cd test_results && ln -s ../test && cd ..
 
 virtualenv:
   system_site_packages: false
