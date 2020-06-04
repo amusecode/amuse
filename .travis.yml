@@ -64,7 +64,7 @@ script:
   # - py.test --timeout=10 --timeout_method=thread --cov-report=xml --cov=amuse -v test/reports/test_speed.py
   # - py.test --timeout=10 --timeout_method=thread --cov-report=xml --cov=amuse -v test/core_tests -k "not TestCImplementationInterface"
   # - py.test --timeout=10 --timeout_method=thread --cov-report=xml --cov=amuse -v test/compile_tests
-  - py.test --timeout=10 --timeout_method=thread --cov-report=xml --cov=amuse -v test/compile_tests/test_async.py
+  - mpiexec -n 1 py.test --timeout=10 --timeout_method=thread --cov-report=xml --cov=amuse -v test/compile_tests/test_async.py
   
 after_success:
   - codecov
