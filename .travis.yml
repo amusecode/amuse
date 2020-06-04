@@ -1,6 +1,6 @@
 codecov: true
 language: python
-dist: xenial
+dist: bionic
 compiler:
   - gcc
 os:
@@ -28,7 +28,7 @@ addons:
       - cmake
       - libfftw3-3
       - libfftw3-dev
-      - libmpfr4
+      - libmpfr6
       - libmpfr-dev
       - libhdf5-serial-dev
       - hdf5-tools
