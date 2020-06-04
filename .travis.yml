@@ -22,7 +22,7 @@ addons:
   apt:
     packages:
       - build-essential
-      - python-dev
+      - python3-dev
       - gfortran
       - libgsl0-dev
       - cmake
