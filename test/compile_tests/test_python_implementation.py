@@ -513,7 +513,6 @@ class TestInterface(TestWithMPI):
         self.assertEqual(implementation.masses[3], 14.0)
         self.assertEqual(implementation.masses[4], 15.0)
 
-    @pytest.mark.skip
     def test05(self):
         x = self.ForTestingInterface()
 
@@ -525,7 +524,6 @@ class TestInterface(TestWithMPI):
         self.assertEqual(answer, 10.0)
         x.stop()
 
-    @pytest.mark.skip
     def test06(self):
         x = self.ForTestingInterface()
 
@@ -541,7 +539,6 @@ class TestInterface(TestWithMPI):
 
         x.stop()
 
-    @pytest.mark.skip
     def test07(self):
         x = self.ForTestingInterface()
 
@@ -567,7 +564,6 @@ class TestInterface(TestWithMPI):
         self.assertEqual(output_message.ints[0], 0)
         self.assertEqual(output_message.ints[1], 20)
 
-    @pytest.mark.skip
     def test09(self):
         x = self.ForTestingInterface()
         string_out, error = x.echo_string("1234567")
@@ -575,7 +571,6 @@ class TestInterface(TestWithMPI):
         self.assertEqual(string_out, "1234567")
         x.stop()
 
-    @pytest.mark.skip
     def test10(self):
         x = self.ForTestingInterface()
         string_out, error = x.echo_string(["aaaaa", "bbbb"])
@@ -585,7 +580,6 @@ class TestInterface(TestWithMPI):
         self.assertEqual(string_out[1], "bbbb")
         x.stop()
 
-    @pytest.mark.skip
     def test11(self):
         x = self.ForTestingInterface()
         string_out, error = x.echo_string(["", "bbbb"])
@@ -595,7 +589,6 @@ class TestInterface(TestWithMPI):
         self.assertEqual(string_out[1], "bbbb")
         x.stop()
 
-    @pytest.mark.skip
     def test12(self):
         x = self.ForTestingInterface()
         str1_out, str2_out, error = x.echo_strings("abc", "def")
@@ -604,7 +597,6 @@ class TestInterface(TestWithMPI):
         self.assertEqual(str2_out, "fed")
         x.stop()
 
-    @pytest.mark.skip
     def test13(self):
         x = self.ForTestingInterface()
         str1_out, str2_out, error = x.echo_strings(["abc", "def"], ["ghi", "jkl"])
@@ -616,7 +608,6 @@ class TestInterface(TestWithMPI):
         self.assertEqual(str2_out[1], "lkj")
         x.stop()
 
-    @pytest.mark.skip
     def test14(self):
         x = self.ForTestingInterface()
         result = x.sleep(2)
@@ -627,7 +618,6 @@ class TestInterface(TestWithMPI):
         self.assertEqual(result, 0)
         x.stop()
 
-    @pytest.mark.skip
     def test15(self):
         x = self.ForTestingInterface()
         y = self.ForTestingInterface()
@@ -645,7 +635,6 @@ class TestInterface(TestWithMPI):
         y.stop()
         x.stop()
 
-    @pytest.mark.skip
     def test16(self):
         x = self.ForTestingInterface()
         request1 = x.sleep.asynchronous(0.4)
@@ -657,7 +646,6 @@ class TestInterface(TestWithMPI):
         self.assertTrue(request1.is_result_available())
         x.stop()
 
-    @pytest.mark.skip
     def test17(self):
         x = self.ForTesting()
         self.assertTrue(x.sleep.is_async_supported)
@@ -667,7 +655,6 @@ class TestInterface(TestWithMPI):
         self.assertEqual(result, [])
         x.stop()
 
-    @pytest.mark.skip
     def test18(self):
         print("Testing the splitting of very long MPI messages into blocks")
         x = self.ForTesting(max_message_length=10)
@@ -687,7 +674,6 @@ class TestInterface(TestWithMPI):
         self.assertTrue(list(products) == [i*i for i in range(N)])
         x.stop()
 
-    @pytest.mark.skip
     def test19(self):
         print("Testing the splitting of very long MPI messages into blocks II: strings")
         x = self.ForTesting(max_message_length=10)
@@ -741,7 +727,6 @@ class TestInterface(TestWithMPI):
             content = f.read()
         self.assertEqual(content.strip(), "abc\ndef\nexex")
 
-    @pytest.mark.skip
     def test21(self):
         print("Testing must_handle_array for Python codes")
         instance = self.ForTestingInterface()
@@ -769,7 +754,6 @@ class TestInterface(TestWithMPI):
 
         instance.stop()
 
-    @pytest.mark.skip
     def test22(self):
 
         pool = AsyncRequestsPool()
@@ -804,7 +788,6 @@ class TestInterface(TestWithMPI):
         y.stop()
         x.stop()
 
-    @pytest.mark.skip
     def test22b(self):
 
         pool = AsyncRequestsPool()
@@ -842,7 +825,6 @@ class TestInterface(TestWithMPI):
         y.stop()
         x.stop()
 
-    @pytest.mark.skip
     def test23(self):
 
         path = self.get_path_to_results()
@@ -886,7 +868,6 @@ class TestInterface(TestWithMPI):
         self.assertTrue(loglines[0].startswith('start '))
         self.assertTrue(loglines[1].startswith('end '))
 
-    @pytest.mark.skip
     def test24(self):
 
         # same as test23 but now with redirection is none
@@ -932,7 +913,6 @@ class TestInterface(TestWithMPI):
         self.assertTrue(loglines[0].startswith('start '))
         self.assertTrue(loglines[1].startswith('end '))
 
-    @pytest.mark.skip
     def test25(self):
         self.check_for_mpi()
         instance = self.ForTestingInterface(polling_interval_in_milliseconds=100)
@@ -941,7 +921,6 @@ class TestInterface(TestWithMPI):
         self.assertEqual(error1, 0)
         self.assertEqual(output1, 100000)
 
-    @pytest.mark.skip
     def test25(self):
         instance = self.ForTestingInterface(polling_interval_in_milliseconds=100)
         if instance.channel.is_polling_supported():
@@ -950,7 +929,6 @@ class TestInterface(TestWithMPI):
             self.assertEqual(output1, 100000)
         instance.stop()
 
-    @pytest.mark.skip
     def test26(self):
         self.check_for_mpi()
         instance1 = self.ForTestingInterface()
@@ -969,7 +947,6 @@ class TestInterface(TestWithMPI):
         self.assertEqual(error1, 0)
         self.assertEqual(error2, 0)
 
-    @pytest.mark.skip
     def test27(self):
         self.check_for_mpi()
         instance1 = self.ForTestingInterface(redirection="none")
@@ -997,7 +974,6 @@ class TestInterface(TestWithMPI):
         self.assertEqual(errorcode, 0)
         self.assertEqual(result, "world")
 
-    @pytest.mark.skip
     def test28(self):
         x = self.ForTestingInterface()
         def next_request(index):
@@ -1014,7 +990,6 @@ class TestInterface(TestWithMPI):
         self.assertEqual(len(result), 3)
         x.stop()
 
-    @pytest.mark.skip
     def test29(self):
 
         pool = AsyncRequestsPool()
@@ -1062,7 +1037,6 @@ class TestInterface(TestWithMPI):
         y.stop()
         x.stop()
 
-    @pytest.mark.skip
     def test30(self):
         instance = self.ForTesting()
         input = [1.0, 2.0, 3.0]
@@ -1071,7 +1045,6 @@ class TestInterface(TestWithMPI):
         output =  instance.sum_doubles(5, input)
         self.assertAlmostRelativeEquals(output, [6.0, 7.0, 8.0])
 
-    @pytest.mark.skip
     def test31(self):
         x = self.ForTesting()
         p = datamodel.Particles(5)
@@ -1082,7 +1055,6 @@ class TestInterface(TestWithMPI):
         self.assertAlmostRelativeEquals(x.particles.mass, [1, 2, 3, 4, 5])
         x.stop()
 
-    @pytest.mark.skip
     def test32(self):
         x = self.ForTestingInterface()
         quantity_out, error = x.echo_quantity(20.0 | units.m)
@@ -1093,7 +1065,6 @@ class TestInterface(TestWithMPI):
         self.assertEqual(quantity_out, 300 | (1.0/units.s))
         x.stop()
 
-    @pytest.mark.skip
     def test33(self):
         x = self.ForTestingInterface()
         quantity_out, error = x.echo_quantity([20, 30, 40] | units.m)
@@ -1101,7 +1072,6 @@ class TestInterface(TestWithMPI):
         self.assertEqual(quantity_out, [200, 300, 400] | (units.m/units.s))
         x.stop()
 
-    @pytest.mark.skip
     def test34(self):
         x = self.ForTestingInterface()
         #self.assertException(x.echo_quantities_error, [20, 30, 40] | units.m)
@@ -1110,7 +1080,6 @@ class TestInterface(TestWithMPI):
         self.assertEqual(quantity_out, [200, 300, 400] | (units.m/units.s))
         x.stop()
 
-    @pytest.mark.skip
     def test35(self):
         x = self.ForTesting(max_message_length=10)
         N = 10
@@ -1125,13 +1094,11 @@ class TestInterface(TestWithMPI):
         self.assertTrue(list(sums) == [3.0*i + 1 for i in range(N)])
         x.stop()
 
-    @pytest.mark.skip
     def test36(self):
         x = self.ForTestingInterface()
         self.assertRaises(exceptions.CodeException, x.echo_quantities_error, ([20, 30, 40] | units.m), expected_message="Exception when calling function 'echo_quantities_error', of code 'ForTestingInterface', exception was 'Error in code: an unexpected event'")
         x.stop()
 
-    @pytest.mark.skip
     def test37(self):
         x = self.ForTestingInterface()
         request = x.echo_quantity.asynchronous([20, 30, 40] | units.m)
@@ -1140,7 +1107,6 @@ class TestInterface(TestWithMPI):
         self.assertEqual(quantity_out, [200, 300, 400] | (units.m/units.s))
         x.stop()
 
-    @pytest.mark.skip
     def test40(self):
         x = self.ForTesting()
         out = x.echo_bool([True, False, True])
