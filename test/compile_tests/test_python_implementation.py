@@ -1,4 +1,3 @@
-import pytest
 from amuse.support.interface import InCodeComponentImplementation
 
 from amuse.test.amusetest import TestWithMPI
@@ -11,7 +10,6 @@ import sys
 import os
 import time
 import pickle
-import pytest
 from amuse.units import nbody_system
 from amuse.units import units
 from amuse import datamodel
