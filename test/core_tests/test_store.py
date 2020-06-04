@@ -554,7 +554,7 @@ class _AbstractTestStoreHDF(amusetest.TestCase):
 
         io.write_set_to_file(stars, output_file, "hdf5", version = self.store_version())
        
-        loaded = io.read_set_from_file(output_file, "hdf5", close_file = True, version = self.store_version())
+        loaded = io.read_set_from_file(output_file, "hdf5", close_file = True, version = self.store_version(), copy_history=False)
         
         self.assertEqual(loaded[0].md, [[1,3],[2,4],[3,5]])
         self.assertEqual(loaded[1].md, [[4,6],[5,7],[6,8]])
@@ -612,7 +612,7 @@ class _AbstractTestStoreHDF(amusetest.TestCase):
         
         for i in range(10):
             particles.position += [1.0, 2.0, 3.0] | units.m
-            io.write_set_to_file(particles, output_file, format='amuse', version = self.store_version())
+            io.write_set_to_file(particles, output_file, format='amuse', version = self.store_version(), append_to_file=True)
         
         particles_from_file = io.read_set_from_file(output_file, format='amuse', version = self.store_version())
         os.remove(output_file)
@@ -634,7 +634,7 @@ class _AbstractTestStoreHDF(amusetest.TestCase):
         
         for i in range(10):
             particles.position += [1.0, 2.0, 3.0] | units.m
-            io.write_set_to_file(particles, output_file, format='amuse', version = self.store_version())
+            io.write_set_to_file(particles, output_file, format='amuse', version = self.store_version(), append_to_file=True)
         
         particles_from_file = io.read_set_from_file(output_file, format='amuse', version = self.store_version(), copy_history = True, close_file = True)
         
@@ -969,7 +969,7 @@ class TestStoreHDFV2(_AbstractTestStoreHDF):
         loaded_particles = io.read_set_from_file(
             output_file, 
             "hdf5",
-            version = self.store_version()
+            version = self.store_version(), copy_history=False, close_file=False
         )
         
         attributes = loaded_particles.collection_attributes
