@@ -9,12 +9,12 @@ from amuse.datamodel.memory_storage import InMemoryVectorQuantityAttribute
 from amuse.datamodel.incode_storage import *
 
 
-class _AbstractTestInMemoryAttributeStorage(amusetest.TestCase):
+class _AbstractTestInMemoryAttributeStorage:
 
     def new_inmemory_storage(self, is_with_units = True):
         raise NotImplementedError()
 
-    def xtest1(self):
+    def test1(self):
         keys = 4, 5, 6
         attributes = "a", "b"    
         values = [
@@ -31,7 +31,7 @@ class _AbstractTestInMemoryAttributeStorage(amusetest.TestCase):
         self.assertEqual(2.0 | units.m, instance.get_value_of(indices[1], "a"))
 
 
-    def xtest2(self):
+    def test2(self):
         keys =  4, 5, 6
         attributes = "a", "b"
         values = [
@@ -76,7 +76,7 @@ class _AbstractTestInMemoryAttributeStorage(amusetest.TestCase):
         self.assertEqual(all_values[1][1], 0.001 | units.km)
 
 
-    def xtest3(self):
+    def test3(self):
         keys =  4, 5, 6
         attributes = "a", "b"
         values = [
@@ -107,7 +107,7 @@ class _AbstractTestInMemoryAttributeStorage(amusetest.TestCase):
         self.assertEqual(values[1][2], 11.0 | units.kg)
 
 
-    def xtest4(self):
+    def test4(self):
         keys = 10, 5, 6, 7
         attributes = "a", "b"
         values = [
@@ -141,7 +141,7 @@ class _AbstractTestInMemoryAttributeStorage(amusetest.TestCase):
         self.assertEqual(all_values[1][1], 7.0 | units.g)
 
 
-    def xtest5(self):
+    def test5(self):
         keys = 10, 5, 6, 7
         attributes = "a", "b"
         values = [
@@ -176,7 +176,7 @@ class _AbstractTestInMemoryAttributeStorage(amusetest.TestCase):
         self.assertEqual(all_values[0][0], 2.0 | units.m)
         self.assertEqual(all_values[0][1], 2.0 | units.m)
 
-    def xtest6(self):
+    def test6(self):
         keys = 10, 5, 6, 7
         attributes = "a", "b"
         values = [
@@ -227,7 +227,7 @@ class _AbstractTestInMemoryAttributeStorage(amusetest.TestCase):
             self.assertEqual(all_values[0], 4.0)
             self.assertEqual(all_values[1], 5.0)
 
-    def xtest7(self):
+    def test7(self):
 
         keys = 10, 5, 6, 7
         attributes = "a", "b"
@@ -242,7 +242,7 @@ class _AbstractTestInMemoryAttributeStorage(amusetest.TestCase):
         self.assertFalse(instance.has_key_in_store(8))
         self.assertFalse(instance.has_key_in_store(11))
 
-    def xtest8(self):
+    def test8(self):
 
         keys = 10, 5, 6, 7
         attributes = "a", "b"
@@ -257,7 +257,7 @@ class _AbstractTestInMemoryAttributeStorage(amusetest.TestCase):
         self.assertEqual(instance.get_all_indices_in_store(), indices)
         self.assertEqual(instance.get_indices_of(keys), indices) 
 
-    def xtest9(self):
+    def test9(self):
 
         keys = 10, 5, 6, 7
         attributes = "a", "b"
@@ -274,7 +274,7 @@ class _AbstractTestInMemoryAttributeStorage(amusetest.TestCase):
         self.assertRaises(Exception, instance.get_indices_of, [30], expected_message = "Key not found in storage: 30")
         self.assertRaises(Exception, instance.get_indices_of, [0], expected_message = "Key not found in storage: 0")
 
-    def xtest10(self):
+    def test10(self):
 
         keys = 10, 5, 6, 7
         attributes = "a", "b"
@@ -292,7 +292,7 @@ class _AbstractTestInMemoryAttributeStorage(amusetest.TestCase):
         self.assertRaises(Exception, instance.get_indices_of, [5, 6, 1], expected_message = "Key not found in storage: 1")
 
 
-    def xtest11(self):
+    def test11(self):
         keys = 10, 5
         attributes = "a", "b"
         values = [
@@ -321,12 +321,12 @@ class _AbstractTestInMemoryAttributeStorage(amusetest.TestCase):
         instance.remove_particles_from_store([indices])
         self.assertEqual(instance.get_all_keys_in_store(), [5, 6])
 
-class TestSortedKeysInMemoryAttributeStorage(_AbstractTestInMemoryAttributeStorage):
+class TestSortedKeysInMemoryAttributeStorage(amusetest.TestCase, _AbstractTestInMemoryAttributeStorage):
 
     def new_inmemory_storage(self, is_with_units = True):
         return InMemoryAttributeStorageUseSortedKeys()
 
-class TestDictionaryKeysInMemoryAttributeStorage(_AbstractTestInMemoryAttributeStorage):
+class TestDictionaryKeysInMemoryAttributeStorage(amusetest.TestCase, _AbstractTestInMemoryAttributeStorage):
 
     def new_inmemory_storage(self, is_with_units = True):
         return InMemoryAttributeStorageUseDictionaryForKeySet()
@@ -373,7 +373,7 @@ class _Code(object):
         for i in index:
             del self.data[i]
 
-class TestInCodeAttributeStorage(_AbstractTestInMemoryAttributeStorage):
+class TestInCodeAttributeStorage(amusetest.TestCase, _AbstractTestInMemoryAttributeStorage):
 
     def new_inmemory_storage(self, is_with_units = True):
         code = _Code(is_with_units)
