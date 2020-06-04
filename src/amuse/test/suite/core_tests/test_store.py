@@ -1,4 +1,3 @@
-import pytest
 from amuse.test import amusetest
 
 import os
@@ -19,7 +18,7 @@ from amuse.datamodel import ParticlesSuperset
 
 
 
-class _AbstractTestStoreHDF(amusetest.TestCase):
+class _AbstractTestStoreHDF(object):
     
     def store_factory(self):
         raise NotImplementedError
@@ -30,7 +29,6 @@ class _AbstractTestStoreHDF(amusetest.TestCase):
     def get_version_in_store(self, container):
         raise NotImplementedError
 
-    @pytest.mark.skip
     def test1(self):
         test_results_path = self.get_path_to_results()
         output_file = os.path.join(test_results_path, "test1."+self.store_version()+".hdf5")
@@ -54,7 +52,6 @@ class _AbstractTestStoreHDF(amusetest.TestCase):
         
         instance.close()
 
-    @pytest.mark.skip
     def test2(self):
         test_results_path = self.get_path_to_results()
         output_file = os.path.join(test_results_path, "test2."+self.store_version()+".hdf5")
@@ -80,7 +77,6 @@ class _AbstractTestStoreHDF(amusetest.TestCase):
 
         instance.close()
 
-    @pytest.mark.skip
     def test3(self):
         test_results_path = self.get_path_to_results()
         output_file = os.path.join(test_results_path, "test3"+self.store_version()+".hdf5")
@@ -101,7 +97,6 @@ class _AbstractTestStoreHDF(amusetest.TestCase):
 
         instance.close()
 
-    @pytest.mark.skip
     def test4(self):
         test_results_path = self.get_path_to_results()
         output_file = os.path.join(test_results_path, "test4"+self.store_version()+".hdf5")
@@ -124,7 +119,6 @@ class _AbstractTestStoreHDF(amusetest.TestCase):
 
         self.assertAlmostRelativeEquals(particles_from_file.mass[2], 1.0 | units.kg)
     
-    @pytest.mark.skip
     def test5(self):
         test_results_path = self.get_path_to_results()
         output_file = os.path.join(test_results_path, "test5_grid"+self.store_version()+".hdf5")
@@ -150,7 +144,6 @@ class _AbstractTestStoreHDF(amusetest.TestCase):
         
         instance.close()
     
-    @pytest.mark.skip
     def test6(self):
         test_results_path = self.get_path_to_results()
         output_file = os.path.join(test_results_path, "test6_grid"+self.store_version()+".hdf5")
@@ -175,7 +168,6 @@ class _AbstractTestStoreHDF(amusetest.TestCase):
 
         instance.close()
         
-    @pytest.mark.skip
     def test7(self):
         test_results_path = self.get_path_to_results()
         output_file = os.path.join(test_results_path, "test7"+self.store_version()+".hdf5")
@@ -215,7 +207,6 @@ class _AbstractTestStoreHDF(amusetest.TestCase):
         self.assertEqual( 44 | units.kg, loaded_particles[2].mass)
         instance.close()
         
-    @pytest.mark.skip
     def test8(self):
         test_results_path = self.get_path_to_results()
         output_file = os.path.join(test_results_path, "test8"+self.store_version()+".hdf5")
@@ -236,7 +227,6 @@ class _AbstractTestStoreHDF(amusetest.TestCase):
         instance.close()
     
 
-    @pytest.mark.skip
     def test9(self):
         test_results_path = self.get_path_to_results()
         output_file = os.path.join(test_results_path, "test9"+self.store_version()+".hdf5")
@@ -270,7 +260,6 @@ class _AbstractTestStoreHDF(amusetest.TestCase):
         self.assertAlmostRelativeEquals(a.timestamp, 2 | units.Myr)
         self.assertAlmostRelativeEquals(a.scale, 1 | units.kg)
 
-    @pytest.mark.skip
     def test10(self):
         test_results_path = self.get_path_to_results()
         output_file = os.path.join(test_results_path, "test10"+self.store_version()+".hdf5")
@@ -291,7 +280,6 @@ class _AbstractTestStoreHDF(amusetest.TestCase):
         self.assertAlmostRelativeEquals(a.timestamp, 2 | units.Myr)
         self.assertAlmostRelativeEquals(a.scale, 1 | units.kg)
 
-    @pytest.mark.skip
     def test11(self):
         test_results_path = self.get_path_to_results()
         output_file = os.path.join(test_results_path, "test11"+self.store_version()+".hdf5")
@@ -312,7 +300,6 @@ class _AbstractTestStoreHDF(amusetest.TestCase):
         self.assertAlmostRelativeEquals(a.scale, 1 | units.kg)
         
     
-    @pytest.mark.skip
     def test12(self):
         test_results_path = self.get_path_to_results()
         output_file = os.path.join(test_results_path, "test12"+self.store_version()+".hdf5")
@@ -333,7 +320,6 @@ class _AbstractTestStoreHDF(amusetest.TestCase):
         self.assertAlmostRelativeEquals(a.timestamp, 2 | units.Myr)
         self.assertAlmostRelativeEquals(a.scale, 1 | units.kg)
     
-    @pytest.mark.skip
     def test13(self):
         test_results_path = self.get_path_to_results()
         output_file = os.path.join(test_results_path, "test13"+self.store_version()+".hdf5")
@@ -358,7 +344,6 @@ class _AbstractTestStoreHDF(amusetest.TestCase):
         #self.assertEquals(self.get_version_in_store(loaded)[0].md,  [7,8,9] | units.km)
     
       
-    @pytest.mark.skip
     def test14(self):
         test_results_path = self.get_path_to_results()
         output_file = os.path.join(test_results_path, "test14"+self.store_version()+".hdf5")
@@ -379,7 +364,6 @@ class _AbstractTestStoreHDF(amusetest.TestCase):
         self.assertEqual(loaded.md[0], [[1,3],[2,4],[3,5]])
         self.assertEqual(loaded.md[1], [[4,6],[5,7],[6,8]])
     
-    @pytest.mark.skip
     def test15(self):
         
         test_results_path = self.get_path_to_results()
@@ -403,7 +387,6 @@ class _AbstractTestStoreHDF(amusetest.TestCase):
         self.assertEqual(loaded[0].md, [[3,1],[3,4],[5,2]])
         self.assertEqual(loaded[1].md, [[4,6],[5,7],[6,8]])
         
-    @pytest.mark.skip
     def test16(self):
         import h5py
         #~ print h5py.version.version
@@ -433,7 +416,6 @@ class _AbstractTestStoreHDF(amusetest.TestCase):
         self.assertEqual(loaded[0].nn.x,stars[1].x)
         
     
-    @pytest.mark.skip
     def test17(self):
         
         test_results_path = self.get_path_to_results()
@@ -465,7 +447,6 @@ class _AbstractTestStoreHDF(amusetest.TestCase):
         self.assertEqual(loaded[0].child1.key,stars[0].key)
         self.assertEqual(loaded[1].child1.key,stars[2].key)
         
-    @pytest.mark.skip
     def test18(self):
         
         test_results_path = self.get_path_to_results()
@@ -501,7 +482,6 @@ class _AbstractTestStoreHDF(amusetest.TestCase):
         self.assertEqual(loaded[0].child1.parent,loaded[0])
         self.assertEqual(loaded[0].child2.parent,loaded[0])
     
-    @pytest.mark.skip
     def test19(self):
         test_results_path = self.get_path_to_results()
         output_file = os.path.join(test_results_path, "test19"+self.store_version()+".hdf5")
@@ -536,7 +516,6 @@ class _AbstractTestStoreHDF(amusetest.TestCase):
         self.assertEqual(loader_binaries[0].child1.parent,loader_binaries[0])
         self.assertEqual(loader_binaries[0].child2.parent,loader_binaries[0])
 
-    @pytest.mark.skip
     def test20(self):
         
         test_results_path = self.get_path_to_results()
@@ -557,7 +536,6 @@ class _AbstractTestStoreHDF(amusetest.TestCase):
         self.assertAlmostRelativeEquals(p.mass[0][1][2], 24)
         self.assertAlmostRelativeEquals(p[0][1][2].mass, 24)
         
-    @pytest.mark.skip
     def test21(self):
         
         test_results_path = self.get_path_to_results()
@@ -581,7 +559,6 @@ class _AbstractTestStoreHDF(amusetest.TestCase):
         self.assertEqual(previous, None)
 
 
-    @pytest.mark.skip
     def test22(self):
         
         test_results_path = self.get_path_to_results()
@@ -604,7 +581,6 @@ class _AbstractTestStoreHDF(amusetest.TestCase):
         self.assertEqual(loaded[1].y,  2.0 | units.km)
         
     
-    @pytest.mark.skip
     def test23(self):
         test_results_path = self.get_path_to_results()
         output_file = os.path.join(test_results_path, "test23"+self.store_version()+".hdf5")
@@ -619,7 +595,6 @@ class _AbstractTestStoreHDF(amusetest.TestCase):
         
         self.assertEqual(len(particles_from_file), 0)
     
-    @pytest.mark.skip
     def test24(self):
         test_results_path = self.get_path_to_results()
         output_file = os.path.join(test_results_path, "test24"+self.store_version()+".hdf5")
@@ -642,7 +617,6 @@ class _AbstractTestStoreHDF(amusetest.TestCase):
             self.assertEqual(len(snap), 20)
             self.assertEqual((i+1) * ([1.0, 2.0, 3.0] | units.m), snap.center_of_mass())
             
-    @pytest.mark.skip
     def test25(self):
         test_results_path = self.get_path_to_results()
         output_file = os.path.join(test_results_path, "test25"+self.store_version()+".hdf5")
@@ -668,7 +642,6 @@ class _AbstractTestStoreHDF(amusetest.TestCase):
             self.assertEqual((i+1) * ([1.0, 2.0, 3.0] | units.m), snap.center_of_mass())
         os.remove(output_file)
         
-    @pytest.mark.skip
     def test26(self):
         test_results_path = self.get_path_to_results()
         output_file = os.path.join(test_results_path, "test26"+self.store_version()+".hdf5")
@@ -681,7 +654,6 @@ class _AbstractTestStoreHDF(amusetest.TestCase):
         
         os.remove(output_file)
 
-    @pytest.mark.skip
     def test27(self):
         test_results_path = self.get_path_to_results()
         output_file = os.path.join(test_results_path, "test27"+self.store_version()+".hdf5")
@@ -707,7 +679,6 @@ class _AbstractTestStoreHDF(amusetest.TestCase):
         
         instance.close()
 
-    @pytest.mark.skip
     def test28(self):
         
         test_results_path = self.get_path_to_results()
@@ -745,7 +716,6 @@ class _AbstractTestStoreHDF(amusetest.TestCase):
             self.assertEqual(loaded[0].child1.parent,loaded[0])
             self.assertEqual(loaded[0].child2.parent,loaded[0])
 
-    @pytest.mark.skip
     def test29(self):
         test_results_path = self.get_path_to_results()
         output_file = os.path.join(test_results_path, "test29"+self.store_version()+".hdf5")
@@ -761,7 +731,6 @@ class _AbstractTestStoreHDF(amusetest.TestCase):
         output = io.read_set_from_file(output_file, format='amuse')
         self.assertEqual(output[0].attribute2, "unicode")
         
-    @pytest.mark.skip
     def test30(self):
         test_results_path = self.get_path_to_results()
         output_file = os.path.join(test_results_path, "test30"+self.store_version()+".hdf5")
@@ -782,7 +751,6 @@ class _AbstractTestStoreHDF(amusetest.TestCase):
 
         self.assertEqual(output.new_attribute, 2 * output.mass)
         
-    @pytest.mark.skip
     def test31(self):
         test_results_path = self.get_path_to_results()
         output_file = os.path.join(test_results_path, "test31"+self.store_version()+".h5")
@@ -804,7 +772,7 @@ class _AbstractTestStoreHDF(amusetest.TestCase):
 
 
 
-class TestStoreHDFV1(_AbstractTestStoreHDF):
+class TestStoreHDFV1(amusetest.TestCase, _AbstractTestStoreHDF):
     
     def store_factory(self):
         return store_v1.StoreHDF
@@ -815,7 +783,7 @@ class TestStoreHDFV1(_AbstractTestStoreHDF):
     def get_version_in_store(self, container):
         return container.previous_state()
     
-class TestStoreHDFV2(_AbstractTestStoreHDF):
+class TestStoreHDFV2(amusetest.TestCase, _AbstractTestStoreHDF):
     
     def store_factory(self):
         return store_v2.StoreHDF
