@@ -55,7 +55,7 @@ virtualenv:
   system_site_packages: false
 
 script:
-  - mpiexec -n 1 py.test --timeout=10 --timeout_method=thread --cov-report=xml --cov=amuse -v --pyargs amuse.test.suite.reports.test_speed.py 
+  - mpiexec -n 1 py.test --timeout=10 --timeout_method=thread --cov-report=xml --cov=amuse -v --pyargs amuse.test.suite.reports.test_speed
   - mpiexec -n 1 py.test --timeout=10 --timeout_method=thread --cov-report=xml --cov=amuse -v --pyargs amuse.test.suite.core_tests
   - mpiexec -n 1 py.test --timeout=10 --timeout_method=thread --cov-report=xml --cov=amuse -v --pyargs amuse.test.suite.compile_tests
   
