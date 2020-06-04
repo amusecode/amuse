@@ -561,7 +561,7 @@ class TestInterfaceMP(_AbstractTestInterface):
     
 
 
-class _AbstractTestInterfaceFortran(TestWithMPI):
+class _AbstractTestInterfaceFortran:
     
     @classmethod
     def get_libname(cls):
@@ -591,7 +591,7 @@ class _AbstractTestInterfaceFortran(TestWithMPI):
             extra_ldflags = ["-L{0}/lib/stopcond".format(get_amuse_root_dir()), "-l"+cls.get_libname()] )
 
 
-class _TestInterfaceFortranSingleProcess(_AbstractTestInterfaceFortran):
+class _TestInterfaceFortranSingleProcess(TestWithMPI, _AbstractTestInterfaceFortran):
     
     def get_number_of_workers(self):
         return 1
@@ -734,7 +734,7 @@ class TestInterfaceFortranModule(_TestInterfaceFortranSingleProcess):
     def get_interface_class(cls):
         return ForTestingInterfaceFortranModule
     
-class TestInterfaceFortranModuleMultiprocess(_AbstractTestInterfaceFortran):
+class TestInterfaceFortranModuleMultiprocess(TestWithMPI, _AbstractTestInterfaceFortran):
     
     @classmethod
     def get_libname(cls):
