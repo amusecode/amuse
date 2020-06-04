@@ -55,9 +55,7 @@ install:
   - pip install -e .
   - ./configure
   - make framework
-  - if [[ -d test_results ]]; then
-    rm -r test_results
-    fi
+  - rm -r test_results
   - mkdir test_results
   - cd test_results && ln -s ../test && cd ..
 
