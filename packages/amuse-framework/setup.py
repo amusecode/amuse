@@ -19,6 +19,7 @@ install_requires = [
     'numpy>=1.2.2',
     'pytest>=4.0',
     'h5py>=1.1.0',
+    'amuse-units',
 ]
 description = 'The Astrophysical Multipurpose Software Environment'
 with open("README.md", "r") as fh:
