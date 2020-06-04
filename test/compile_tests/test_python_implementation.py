@@ -10,6 +10,7 @@ import sys
 import os
 import time
 import pickle
+import pytest
 from amuse.units import nbody_system
 from amuse.units import units
 from amuse import datamodel
@@ -24,7 +25,6 @@ from amuse.rfi.async_request import ASyncRequestSequence
 from amuse.rfi.tools.create_python_worker import CreateAPythonWorker
 
 from amuse.support import exceptions
-
 
 class ForTestingInterface(PythonCodeInterface):
 
@@ -458,7 +458,7 @@ class TestInterface(TestWithMPI):
         options["worker_dir"] = self.get_path_to_results()
         return ForTestingInterface(**options)
 
-    def test2(self):
+    def test02(self):
         implementation = ForTestingImplementation()
         x = python_code.PythonImplementation(implementation, ForTestingInterface)
 
@@ -474,7 +474,7 @@ class TestInterface(TestWithMPI):
         self.assertEqual(output_message.ints[0], 0)
         self.assertEqual(output_message.doubles[0], 0.0)
 
-    def test3(self):
+    def test03(self):
         implementation = ForTestingImplementation()
         x = python_code.PythonImplementation(implementation, ForTestingInterface)
 
@@ -491,7 +491,7 @@ class TestInterface(TestWithMPI):
         self.assertEqual(output_message.ints[0], 0)
         self.assertEqual(implementation.masses[1], 12.0)
 
-    def test4(self):
+    def test04(self):
         implementation = ForTestingImplementation()
         x = python_code.PythonImplementation(implementation, ForTestingInterface)
 
@@ -512,7 +512,7 @@ class TestInterface(TestWithMPI):
         self.assertEqual(implementation.masses[3], 14.0)
         self.assertEqual(implementation.masses[4], 15.0)
 
-    def test5(self):
+    def test05(self):
         x = self.ForTestingInterface()
 
         error = x.set_mass(1, 10.0)
@@ -523,7 +523,7 @@ class TestInterface(TestWithMPI):
         self.assertEqual(answer, 10.0)
         x.stop()
 
-    def test6(self):
+    def test06(self):
         x = self.ForTestingInterface()
 
         errors = x.set_mass([1, 2], [10.0, 11.0])
@@ -538,7 +538,7 @@ class TestInterface(TestWithMPI):
 
         x.stop()
 
-    def test7(self):
+    def test07(self):
         x = self.ForTestingInterface()
 
         int_out, error = x.echo_int(20)
@@ -548,7 +548,7 @@ class TestInterface(TestWithMPI):
 
         x.stop()
 
-    def test8(self):
+    def test08(self):
         implementation = ForTestingImplementation()
         x = python_code.PythonImplementation(implementation, ForTestingInterface)
 
@@ -563,7 +563,7 @@ class TestInterface(TestWithMPI):
         self.assertEqual(output_message.ints[0], 0)
         self.assertEqual(output_message.ints[1], 20)
 
-    def test9(self):
+    def test09(self):
         x = self.ForTestingInterface()
         string_out, error = x.echo_string("1234567")
         self.assertEqual(error, 0)
