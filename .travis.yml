@@ -1,6 +1,6 @@
 codecov: true
 language: python
-dist: bionic
+dist: xenial
 compiler:
   - gcc
 os:
@@ -22,7 +22,7 @@ addons:
   apt:
     packages:
       - build-essential
-      # - python-dev
+      - python-dev
       - gfortran
       - libgsl0-dev
       - cmake
