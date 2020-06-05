@@ -10,6 +10,10 @@ osx_image: xcode11.5
 env:
   global:
     - OMPI_MCA_rmaps_base_oversubscribe=true
+    - MINICONDA_VERSION="latest"
+    - MINICONDA_PYTHON_MAJOR=3
+    - MINICONDA_LINUX="Linux-x86_64"
+    - MINICONDA_OSX="MacOSX-x86_64"
   matrix:
     # - PYTHON_VERSION=3.5
     # - PYTHON_VERSION=3.6
