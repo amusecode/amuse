@@ -3,10 +3,6 @@ compiler: gcc
 env:
   global:
     - OMPI_MCA_rmaps_base_oversubscribe=true
-  matrix:
-    # - PYTHON_VERSION=3.5
-    # - PYTHON_VERSION=3.6
-    - PYTHON_VERSION=3.7
 
 dist: bionic
 matrix:
