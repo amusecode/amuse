@@ -34,15 +34,18 @@ addons:
       # - openmpi-bin
   homebrew:
     packages:
-      - openmpi
       - python
+      - gcc@8
+      - hdf5
+      - netcdf
+      - cmake
 
 
 before_install:
   # - if [[ $TRAVIS_OS_NAME == linux ]]; then ; fi
-  # - if [[ $TRAVIS_OS_NAME == osx ]]; then
-  #     something;
-  #   fi
+  - if [[ $TRAVIS_OS_NAME == osx ]]; then
+      brew install openmpi --build-from-source --cc=gcc-8;
+    fi
   # - pip install --upgrade pip
   - pip install numpy scipy matplotlib pytest docutils mpi4py h5py Cython
   - pip install pytest-cov codecov pytest-timeout
