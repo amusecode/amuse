@@ -63,9 +63,9 @@ before_install:
   #     something;
   #   fi
   # - pip install --upgrade pip
+  - pip install numpy scipy matplotlib docutils mpi4py pytest
 
 install:
-  - pip install numpy scipy matplotlib docutils mpi4py pytest
   # - pip install pytest-cov codecov pytest-timeout
   - pip install tox
 
