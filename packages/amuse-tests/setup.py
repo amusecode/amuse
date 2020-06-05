@@ -1,9 +1,7 @@
-import sys
-import os
 from support.version import version, main_version
 from support.classifiers import classifiers
 
-from setuptools import setup, find_packages
+from setuptools import setup
 import support
 support.use("system")
 from support.setup_codes import setup_commands
@@ -25,7 +23,7 @@ extensions = []
 
 all_data_files = []
 
-packages=['amuse.test.suite']
+packages = ['amuse.test.suite']
 
 package_data = {
     'amuse.rfi.tools': ['*.template'],
@@ -45,7 +43,7 @@ package_data = {
     ]
 }
 
-mapping_from_command_name_to_command_class=setup_commands()
+mapping_from_command_name_to_command_class = setup_commands()
 
 setup(
     name=name,
@@ -62,7 +60,7 @@ setup(
     python_requires=">=3.5",
     cmdclass=mapping_from_command_name_to_command_class,
     ext_modules=extensions,
-    package_dir={'amuse.test.suite'},
+    package_dir={'amuse.test': 'src/amuse/test'},
     packages=packages,
     package_data=package_data,
     data_files=all_data_files,
