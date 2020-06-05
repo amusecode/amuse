@@ -10,47 +10,46 @@ matrix:
     - linux
     # - osx
   include:
-    - python: 3.7
+    - name: "openmpi py37 linux"
+      python: 3.7
+      language: python
       env: TOXENV=py37
-      - name: "openmpi py37 linux"
-        language: python
-        addons:
-          apt:
-            packages:
-              - build-essential
-              - python3-dev
-              - gfortran
-              - libgsl0-dev
-              - cmake
-              - libfftw3-3
-              - libfftw3-dev
-              - libmpfr6
-              - libmpfr-dev
-              - libhdf5-serial-dev
-              - hdf5-tools
-              - libopenmpi-dev
-              - openmpi-bin
-  
-    - python: 3.7
+      addons:
+        apt:
+          packages:
+            - build-essential
+            - python3-dev
+            - gfortran
+            - libgsl0-dev
+            - cmake
+            - libfftw3-3
+            - libfftw3-dev
+            - libmpfr6
+            - libmpfr-dev
+            - libhdf5-serial-dev
+            - hdf5-tools
+            - libopenmpi-dev
+            - openmpi-bin
+    - name: "mpich py37 linux"
+      python: 3.7
       env: TOXENV=py37
-      - name: "mpich py37 linux"
-        language: python
-        addons:
-          apt:
-            packages:
-              - build-essential
-              - python3-dev
-              - gfortran
-              - libgsl0-dev
-              - cmake
-              - libfftw3-3
-              - libfftw3-dev
-              - libmpfr6
-              - libmpfr-dev
-              - libhdf5-serial-dev
-              - hdf5-tools
-              - libmpich-dev
-              - mpich
+      language: python
+      addons:
+        apt:
+          packages:
+            - build-essential
+            - python3-dev
+            - gfortran
+            - libgsl0-dev
+            - cmake
+            - libfftw3-3
+            - libfftw3-dev
+            - libmpfr6
+            - libmpfr-dev
+            - libhdf5-serial-dev
+            - hdf5-tools
+            - libmpich-dev
+            - mpich
 
 
 before_install:
@@ -70,6 +69,6 @@ virtualenv:
 
 script:
   - tox
-  
+
 after_success:
   - codecov
