@@ -67,23 +67,18 @@ matrix:
         - CONDA_OPTIONS="-c conda-forge -c anaconda"
         - CONDA_PACKAGES="gfortran_osx-64"
         - CONDA_PACKAGES="${CONDA_PACKAGES} openmpi"
-
-
-before_install:
-  - if [[ $TRAVIS_OS_NAME == osx ]]; then
-      export MINICONDA_OS=$MINICONDA_OSX
-      wget "http://repo.continuum.io/miniconda/Miniconda$MINICONDA_PYTHON_MAJOR-$MINICONDA_VERSION-$MINICONDA_OS.sh" -O miniconda.sh;
-      bash miniconda.sh -b -p $HOME/miniconda;
-      export CONDA_PREFIX=$HOME/miniconda;
-      export PATH="$CONDA_PREFIX/bin:$PATH";
-      hash -r;
-      conda update -yq conda;
-      conda install -y ${CONDA_OPTIONS} ${CONDA_PACKAGES};
-    fi
-  # - pip install --upgrade pip
-  - pip install numpy scipy matplotlib docutils mpi4py pytest
+      before_install:
+        - export MINICONDA_OS=$MINICONDA_OSX
+        - wget "http://repo.continuum.io/miniconda/Miniconda$MINICONDA_PYTHON_MAJOR-$MINICONDA_VERSION-$MINICONDA_OS.sh" -O miniconda.sh;
+        - bash miniconda.sh -b -p $HOME/miniconda;
+        - export CONDA_PREFIX=$HOME/miniconda;
+        - export PATH="$CONDA_PREFIX/bin:$PATH";
+        - hash -r;
+        - conda update -yq conda;
+        - conda install -y ${CONDA_OPTIONS} ${CONDA_PACKAGES};
 
 install:
+  - pip install numpy scipy matplotlib docutils mpi4py pytest
   - pip install tox
 
 virtualenv:
