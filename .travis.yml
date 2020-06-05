@@ -1,11 +1,12 @@
 codecov: true
 language: c
-dist: bionic
 compiler:
   - gcc
 os:
   #- linux
   - osx
+dist: bionic
+osx_image: xcode11.5
 env:
   global:
     - OMPI_MCA_rmaps_base_oversubscribe=true
