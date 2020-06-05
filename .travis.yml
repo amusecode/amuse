@@ -1,5 +1,5 @@
 codecov: true
-language: python
+language: c
 dist: bionic
 compiler:
   - gcc
