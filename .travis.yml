@@ -7,6 +7,7 @@ env:
 matrix:
   allow_failures:
     - name: "openmpi py37 linux"
+    - name: "openmpi py37 macos"
   include:
     - name: "openmpi py37 linux"
       os: linux
@@ -72,12 +73,12 @@ before_install:
   - if [[ $TRAVIS_OS_NAME == osx ]]; then
       export MINICONDA_OS=$MINICONDA_OSX
       wget "http://repo.continuum.io/miniconda/Miniconda$MINICONDA_PYTHON_MAJOR-$MINICONDA_VERSION-$MINICONDA_OS.sh" -O miniconda.sh;
-      bash miniconda.sh -b -p $HOME/miniconda
-      export CONDA_PREFIX=$HOME/miniconda
-      export PATH="$CONDA_PREFIX/bin:$PATH"
-      hash -r
-      conda update -yq conda
-      conda install -y ${CONDA_OPTIONS} ${CONDA_PACKAGES}
+      bash miniconda.sh -b -p $HOME/miniconda;
+      export CONDA_PREFIX=$HOME/miniconda;
+      export PATH="$CONDA_PREFIX/bin:$PATH";
+      hash -r;
+      conda update -yq conda;
+      conda install -y ${CONDA_OPTIONS} ${CONDA_PACKAGES};
     fi
   # - pip install --upgrade pip
   - pip install numpy scipy matplotlib docutils mpi4py pytest
