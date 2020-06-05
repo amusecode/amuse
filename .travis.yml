@@ -35,6 +35,8 @@ matrix:
               - libopenmpi-dev
               - openmpi-bin
   
+    - python: 3.7
+      env: TOXENV=py37
       - name: "mpich py37 linux"
         language: python
         addons:
