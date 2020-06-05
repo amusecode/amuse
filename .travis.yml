@@ -20,6 +20,17 @@ matrix:
       addons:
         apt:
           packages:
+            - build-essential
+            - python3-dev
+            - gfortran
+            - libgsl0-dev
+            - cmake
+            - libfftw3-3
+            - libfftw3-dev
+            - libmpfr6
+            - libmpfr-dev
+            - libhdf5-serial-dev
+            - hdf5-tools
             - libopenmpi-dev
             - openmpi-bin
 
@@ -27,30 +38,19 @@ matrix:
       addons:
         apt:
           packages:
+            - build-essential
+            - python3-dev
+            - gfortran
+            - libgsl0-dev
+            - cmake
+            - libfftw3-3
+            - libfftw3-dev
+            - libmpfr6
+            - libmpfr-dev
+            - libhdf5-serial-dev
+            - hdf5-tools
             - libmpich-dev
             - mpich
-
-addons:
-  apt:
-    packages:
-      - build-essential
-      - python3-dev
-      - gfortran
-      - libgsl0-dev
-      - cmake
-      - libfftw3-3
-      - libfftw3-dev
-      - libmpfr6
-      - libmpfr-dev
-      - libhdf5-serial-dev
-      - hdf5-tools
-      # - libmpich-dev
-      # - mpich
-      # - libopenmpi-dev
-      # - openmpi-bin
-  homebrew:
-    packages:
-      - openmpi
 
 
 before_install:
