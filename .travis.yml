@@ -55,7 +55,7 @@ matrix:
             - mpich
     - name: "openmpi py37 macos"
       os: osx
-      osx_image: xcode11.5
+      osx_image: xcode10.3
       env:
         - TOXENV=py37
         - MINICONDA_OSX="MacOSX-x86_64"
