@@ -8,8 +8,9 @@ endif
 MPIFC ?= mpif90
 FORTRAN=$(FC)
 PYTHON ?= python
-GL_PATH ?= ${AMUSE_DIR}/sandbox/pelupes/f90gl
-#/home/inti/libraries/f90gl-1.2.11
+
+# provide location of f90gl lib here
+GL_PATH ?= $(realpath ./f90gl)
 
 SRC=src
 BUILDDIR = build
@@ -91,15 +92,14 @@ $(BUILDDIR)/Makefile:
 	ln -s ../src/Makefile  $(BUILDDIR)/Makefile
 	
 $(BUILDDIR)/libfi.a: $(BUILDDIR)/Makefile $(FILES) Makefile
-	mkdir -p $(BUILDDIR)
-	$(PYTHON) ./patch_globals_dot_h.py
-	make -C $(BUILDDIR) amuse_interface FFLAGS="$(FFLAGS)" FC="$(FC)" VPATH=../src  F77FLAGS="$(F77FLAGS)"
+	$(PYTHON) ./patch_globals_dot_h.py --input=src/globals_template.h --output $(BUILDDIR)/globals.h
+	make -C $(BUILDDIR) amuse_interface FFLAGS="-I$(realpath $(BUILDDIR)) $(FFLAGS)" FC="$(FC)" VPATH=../src  F77FLAGS="$(F77FLAGS)"
 
 fi_worker: worker_code.f90 $(BUILDDIR)/libfi.a interface.o 
 	$(MPIFC) $(FFLAGS) $(SC_FLAGS) $(FS_FLAGS) $(LDFLAGS) -I$(BUILDDIR) worker_code.f90 interface.o -o $@ $(BUILDDIR)/libfi.a  $(LIBS) $(SC_FCLIBS) $(FS_LIBS)  $(LIBS)
 
 fi_worker_gl: worker_code-gl.f90 $(BUILDDIR)/libfi.a interface.o 
-	make -C $(BUILDDIR) gl FFLAGS="$(FFLAGS)" FC="$(FC)" GLINCLUDE="$(GLINCLUDE)" GLLIB="$(GLLIB)" VPATH=../src  F77FLAGS="$(F77FLAGS)"
+	make -C $(BUILDDIR) gl FFLAGS="-I$(realpath $(BUILDDIR)) $(FFLAGS)" FC="$(FC)" GLINCLUDE="$(GLINCLUDE)" GLLIB="$(GLLIB)" VPATH=../src  F77FLAGS="$(F77FLAGS)"
 	$(MPIFC) $(FFLAGS) $(SC_FLAGS) $(FS_FLAGS) $(LDFLAGS) -I$(BUILDDIR) worker_code-gl.f90 interface.o -o $@  $(GLOBJECTS) \
 	$(GLLIB)  $(X11LIB) $(THREADLIB) $(BUILDDIR)/libfi.a $(LIBS) $(SC_FCLIBS) $(FS_LIBS)  $(LIBS)
 
@@ -108,15 +108,14 @@ $(PERIODIC_BUILDDIR)/Makefile:
 	ln -s ../src/Makefile $(PERIODIC_BUILDDIR)/Makefile
 	
 $(PERIODIC_BUILDDIR)/libfi.a: $(PERIODIC_BUILDDIR)/Makefile 
-	$(PYTHON) ./patch_globals_dot_h.py --periodic
-	make -C $(PERIODIC_BUILDDIR) amuse_interface FFLAGS="-I./$(PERIODIC_BUILDDIR) $(FFLAGS)" FC="$(FC)" VPATH=../src   F77FLAGS="$(F77FLAGS)"
-	$(PYTHON) ./patch_globals_dot_h.py
+	$(PYTHON) ./patch_globals_dot_h.py --periodic --input=src/globals_template.h --output $(PERIODIC_BUILDDIR)/globals.h
+	make -C $(PERIODIC_BUILDDIR) amuse_interface FFLAGS="-I$(realpath $(PERIODIC_BUILDDIR)) $(FFLAGS)" FC="$(FC)" VPATH=../src   F77FLAGS="$(F77FLAGS)"
 	
 fi_worker_periodic: worker_code.f90 $(PERIODIC_BUILDDIR)/libfi.a interface.po 
 	$(MPIFC) -I./$(PERIODIC_BUILDDIR) $(FFLAGS) $(SC_FLAGS) $(FS_FLAGS) $(LDFLAGS) worker_code.f90 interface.po -o $@  $(PERIODIC_BUILDDIR)/libfi.a $(SC_FCLIBS) $(FS_LIBS) $(FFTW_LIBS)  $(LIBS)
 
 fi_worker_periodic_gl: worker_code-gl.f90 $(PERIODIC_BUILDDIR)/libfi.a interface.po 
-	make -C $(PERIODIC_BUILDDIR) gl FFLAGS="$(FFLAGS)" FC="$(FC)" GLINCLUDE="$(GLINCLUDE)" GLLIB="$(GLLIB)" VPATH=../src  F77FLAGS="$(F77FLAGS)"
+	make -C $(PERIODIC_BUILDDIR) gl FFLAGS="-I$(realpath $(PERIODIC_BUILDDIR)) $(FFLAGS)" FC="$(FC)" GLINCLUDE="$(GLINCLUDE)" GLLIB="$(GLLIB)" VPATH=../src  F77FLAGS="$(F77FLAGS)"
 	$(MPIFC) -I./$(PERIODIC_BUILDDIR) $(FFLAGS) $(SC_FLAGS) $(FS_FLAGS) $(LDFLAGS) worker_code-gl.f90 interface.po -o $@  $(PGLOBJECTS) \
 	$(GLLIB)  $(X11LIB) $(PTHREADLIB) $(PERIODIC_BUILDDIR)/libfi.a $(LIBS) $(SC_FCLIBS) $(FS_LIBS) $(FFTW_LIBS)  $(LIBS)
 
@@ -125,7 +124,8 @@ $(OPENMP_BUILDDIR)/Makefile:
 	ln -s ../src/Makefile $(OPENMP_BUILDDIR)/Makefile
 	
 $(OPENMP_BUILDDIR)/libfi.a: $(OPENMP_BUILDDIR)/Makefile 
-	make -C $(OPENMP_BUILDDIR) amuse_interface FFLAGS="-I./$(OPENMP_BUILDDIR) $(FFLAGS) $(OPENMP_FCFLAGS)" FC="$(FC)" VPATH=../src   F77FLAGS="$(F77FLAGS) $(OPENMP_FCFLAGS)"
+	$(PYTHON) ./patch_globals_dot_h.py --input=src/globals_template.h --output $(OPENMP_BUILDDIR)/globals.h
+	make -C $(OPENMP_BUILDDIR) amuse_interface FFLAGS="-I$(realpath $(OPENMP_BUILDDIR)) $(FFLAGS) $(OPENMP_FCFLAGS)" FC="$(FC)" VPATH=../src   F77FLAGS="$(F77FLAGS) $(OPENMP_FCFLAGS)"
 
 fi_worker_mp: BUILDDIR = $(OPENMP_BUILDDIR)
 fi_worker_mp: worker_code.f90 $(OPENMP_BUILDDIR)/libfi.a interface.o 
@@ -149,8 +149,8 @@ build_map/Makefile:
 	ln -s ../src/Makefile  build_map/Makefile
 
 build_map/libmap.a: build_map/Makefile $(MAPFILES) Makefile
-	mkdir -p build_map
-	make -C build_map libmap.a FFLAGS="$(FFLAGS)" FC="$(FC)" VPATH=../src  F77FLAGS="$(F77FLAGS)"
+	$(PYTHON) ./patch_globals_dot_h.py --input=src/globals_template.h --output build_map/globals.h
+	make -C build_map libmap.a FFLAGS="-I$(realpath ./build_map) $(FFLAGS)" FC="$(FC)" VPATH=../src  F77FLAGS="$(F77FLAGS)"
 
 fi_worker_map: BUILDDIR=./build_map
 fi_worker_map: map_worker_code.f90 build_map/libmap.a map_interface.o 
@@ -169,8 +169,8 @@ build_map_mp/Makefile:
 	ln -s ../src/Makefile  build_map_mp/Makefile
 
 build_map_mp/libmap.a: build_map_mp/Makefile $(MAPFILES) Makefile
-	mkdir -p build_map_mp
-	make -C build_map_mp libmap.a FFLAGS="$(FFLAGS) $(OPENMP_FCFLAGS)" FC="$(FC)" VPATH=../src  F77FLAGS="$(F77FLAGS)"
+	$(PYTHON) ./patch_globals_dot_h.py --input=src/globals_template.h --output build_map_mp/globals.h
+	make -C build_map_mp libmap.a FFLAGS="-I$(realpath ./build_map) $(FFLAGS) $(OPENMP_FCFLAGS)" FC="$(FC)" VPATH=../src  F77FLAGS="$(F77FLAGS)"
 
 fi_worker_map_mp: BUILDDIR=./build_map_mp
 fi_worker_map_mp: map_worker_code.f90 build_map_mp/libmap.a map_interface.o 

@@ -50,9 +50,6 @@ clean:
 	rm -Rf $(BUILDDIR)
 	rm -Rf $(OPENCL_BUILDDIR)
 	rm -Rf $(OPENMP_BUILDDIR)
-	rm -f huayno_cython.* huayno_worker_cython huayno_worker_cython.* 
-	rm -f huayno_cython_mp.* huayno_worker_cython_cl
-	rm -f huayno_cython_cl.* huayno_worker_cython_mp
 	rm -f huayno_worker huayno_worker_cl huayno_worker_mp huayno_worker_sockets
 	-make -C $(SRCDIR) clean
 
@@ -90,21 +87,6 @@ worker_code.h: interface.py
 huayno_worker: __init__.py worker_code.cc worker_code.h  $(BUILDDIR)/libhuayno.a $(BUILDDIR)/interface.o
 	$(MPICXX) $(SC_FLAGS) $(CXXFLAGS) $(INCLUDE) $(LDFLAGS) worker_code.cc $(BUILDDIR)/interface.o $(BUILDDIR)/libhuayno.a -o $@ $(LIBS) $(SC_CLIBS)
 	
-huayno_worker_cython: huayno_cython.so
-	$(CODE_GENERATOR) --type=cython -m script -x amuse.community.huayno.interface HuaynoInterface -o $@ --cython-import huayno_cython
-	
-huayno_cython.so: huayno_cython.o worker_code.h  $(BUILDDIR)/libhuayno.a  $(BUILDDIR)/interface.o
-	$(MPICXX) -shared $(CXXFLAGS) $(PYTHONDEV_LDFLAGS) $(AM_CFLAGS) $(SC_FLAGS) $(LDFLAGS) $<  $(BUILDDIR)/interface.o -o $@ $(SC_CLIBS) $(AM_LIBS) $(BUILDDIR)/libhuayno.a  
-
-huayno_%.o: huayno_%.c worker_code.h
-	$(MPICXX) $(CXXFLAGS) $(SC_FLAGS) $(AM_CFLAGS) $(PYTHONDEV_CFLAGS) -c -o $@ $< 
-
-huayno_%.pyx: interface.py
-	$(CODE_GENERATOR) --type=cython -m mpi interface.py HuaynoInterface -o $@
-
-huayno_%.c: huayno_%.pyx
-	$(CYTHON) $< -o $@
-	
 huayno_worker_mp: CFLAGS   += $(OPENMP_CFLAGS) 
 huayno_worker_mp: CXXFLAGS   += $(OPENMP_CFLAGS)	
 huayno_worker_mp: __init__.py worker_code.cc worker_code.h $(OPENMP_BUILDDIR)/libhuayno.a $(OPENMP_BUILDDIR)/interface.o 
@@ -112,12 +94,6 @@ huayno_worker_mp: __init__.py worker_code.cc worker_code.h $(OPENMP_BUILDDIR)/li
 	
 huayno_worker_mp.so: CFLAGS   += $(OPENMP_CFLAGS) 
 huayno_worker_mp.so: CXXFLAGS   += $(OPENMP_CFLAGS)	
-huayno_cython_mp.so: huayno_cython_mp.o worker_code.h  $(OPENMP_BUILDDIR)/libhuayno.a  $(OPENMP_BUILDDIR)/interface.o
-	$(MPICXX) -shared $(CXXFLAGS) $(PYTHONDEV_LDFLAGS) $(AM_CFLAGS) $(SC_FLAGS) $(LDFLAGS) $<  $(OPENMP_BUILDDIR)/interface.o -o $@ $(SC_CLIBS) $(AM_LIBS) $(OPENMP_BUILDDIR)/libhuayno.a  
-
-huayno_worker_cython_mp: huayno_cython_mp.so
-	$(CODE_GENERATOR) --type=cython -m script -x amuse.community.huayno.interface HuaynoInterface -o $@ --cython-import huayno_cython_mp
-	
 
 huayno_worker_cl: CFLAGS   += -fopenmp -DEVOLVE_OPENCL
 huayno_worker_cl: CXXFLAGS   += -fopenmp -DEVOLVE_OPENCL
@@ -126,17 +102,6 @@ huayno_worker_cl: INCLUDE += $(CL_FLAGS)
 huayno_worker_cl: __init__.py worker_code.cc worker_code.h $(OPENCL_BUILDDIR)/libhuayno_cl.a $(OPENCL_BUILDDIR)/interface.o 
 	$(MPICXX) $(CXXFLAGS) $(INCLUDE) $(LDFLAGS) worker_code.cc $(OPENCL_BUILDDIR)/interface.o $(OPENCL_BUILDDIR)/libhuayno_cl.a -o $@ $(LIBS) $(SC_CLIBS)
 
-
-huayno_worker_cl.so: CFLAGS   += -fopenmp -DEVOLVE_OPENCL
-huayno_worker_cl.so: CXXFLAGS   += -fopenmp -DEVOLVE_OPENCL
-huayno_worker_cl.so: LIBS += $(CL_LIBS)  -lstdcl
-huayno_worker_cl.so: INCLUDE += $(CL_FLAGS)
-huayno_cython_cl.so: huayno_cython_cl.o worker_code.h  $(OPENCL_BUILDDIR)/libhuayno.a  $(OPENCL_BUILDDIR)/interface.o
-	$(MPICXX) -shared $(CXXFLAGS) $(PYTHONDEV_LDFLAGS) $(AM_CFLAGS) $(SC_FLAGS) $(LDFLAGS) $<  $(OPENCL_BUILDDIR)/interface.o -o $@ $(SC_CLIBS) $(AM_LIBS) $(OPENCL_BUILDDIR)/libhuayno.a  
-
-huayno_worker_cython_cl: huayno_cython_cl.so
-	$(CODE_GENERATOR) --type=cython -m script -x amuse.community.huayno.interface HuaynoInterface -o $@ --cython-import huayno_cython_mp
-	
 
 .cc.o: $<
 	$(MPICXX) -I$(SRCDIR)  $(SC_FLAGS) $(CXXFLAGS) $(INCLUDE) -c -o $@ $< 

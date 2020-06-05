@@ -1405,7 +1405,7 @@ class Particles(AbstractParticleSet):
     def is_quantity():
         return False
         
-    def new_particle(key = None, **keyword_arguments):
+    def new_particle(self, key = None, **keyword_arguments):
         return self.add_particle(Particle(key = key, **keyword_arguments))
         
 

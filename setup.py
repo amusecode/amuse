@@ -15,7 +15,7 @@ install_requires = [
     'wheel>=0.32',
     'docutils>=0.6',
     'numpy>=1.2.2',
-    'nose>=0.11.1',
+    'pytest>=4.0',
     'mpi4py>=1.1.0',
     'h5py>=1.1.0',
 ]
@@ -32,9 +32,11 @@ classifiers = [
     'License :: OSI Approved :: Apache Software License',
     'Operating System :: MacOS :: MacOS X',
     'Operating System :: POSIX',
-    'Programming Language :: Python :: 2.6',
-    'Programming Language :: Python :: 2.7',
     'Programming Language :: Python :: 3',
+    'Programming Language :: Python :: 3.5',
+    'Programming Language :: Python :: 3.6',
+    'Programming Language :: Python :: 3.7',
+    'Programming Language :: Python :: 3.8',
     'Programming Language :: C',
     'Programming Language :: C++',
     'Programming Language :: Fortran',
@@ -47,7 +49,6 @@ all_data_files = find_data_files('data', 'share/amuse/data', '*', recursive=True
 all_data_files.append(('share/amuse', ['./config.mk', './build.py']))
 
 packages = find_packages('src')
-packages.extend(['amuse.test.suite.' + x for x in find_packages('test')])
 packages.extend(['amuse.examples.' + x for x in find_packages('examples')])
 
 package_data = {
@@ -84,7 +85,7 @@ setup(
     install_requires=install_requires,
     cmdclass=mapping_from_command_name_to_command_class,
     ext_modules=extensions,
-    package_dir={'': 'src', 'amuse.test.suite' :'test', 'amuse.examples' : 'examples'},
+    package_dir={'': 'src', 'amuse.examples' : 'examples'},
     packages=packages,
     package_data=package_data,
     data_files=all_data_files,

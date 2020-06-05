@@ -24,7 +24,6 @@ class ReboundInterface(CodeInterface,
         
     """
     include_headers = ['worker_code.h', 'stopcond.h']
-    __so_module__ = 'rebound_cython'
 
     def __init__(self, **options):
         CodeInterface.__init__(self, name_of_the_worker="rebound_worker",

@@ -5,7 +5,7 @@ import os
 import random
 import sys
 import unittest
-from time import clock
+from time import process_time as clock
 
 from amuse.community.ph4.interface import ph4 as grav
 from amuse.community.smalln.interface import SmallN
@@ -126,7 +126,8 @@ def run_ph4(infile = None, outfile = None,
             salpeter = 0,
             accuracy_parameter = 0.1,
             softening_length = 0.0 | nbody_system.length,
-            manage_encounters = 1, random_seed = 1234):
+            manage_encounters = 1, random_seed = 1234,
+            debug_level = 1):
 
     if random_seed <= 0:
         numpy.random.seed()
@@ -135,8 +136,8 @@ def run_ph4(infile = None, outfile = None,
     print("random seed =", random_seed)
 
     if infile != None: print("input file =", infile)
-    print("end_time =", end_time.number)
-    print("delta_t =", delta_t.number)
+    print("end_time =", end_time)
+    print("delta_t =", delta_t)
     print("n_workers =", n_workers)
     print("use_gpu =", use_gpu)
     print("manage_encounters =", manage_encounters)
@@ -249,23 +250,31 @@ def run_ph4(infile = None, outfile = None,
         Emax = 20*kT
         ecc = 0.1
 
-        id_count = number_of_stars
         nbin = 0
+        companion_base_id = 100*(number_of_stars//10)
+
         for i in range(0, number_of_stars,
-                       number_of_stars/number_of_binaries):
+                       number_of_stars//number_of_binaries):
 
             # Star i is CM, becomes component, add other star at end.
 
             nbin += 1
 
             mass = stars[i].mass
-            new_mass = numpy.random.uniform()*mass	# uniform q?
+            new_mass = numpy.random.uniform()*mass	# uniform q
             mbin = mass + new_mass
             fac = new_mass/mbin
             E = Emin + numpy.random.uniform()*(Emax-Emin)
             a = 0.5*nbody_system.G*mass*new_mass/E
 
             kep.initialize_from_elements(mbin, a, ecc)
+
+            # Binaries should be approaching in order to be picked up
+            # by multiples.
+            
+            kep.advance_to_apastron()
+            kep.advance_to_radius(a)
+
             dr = quantities.AdaptingVectorQuantity()
             dr.extend(kep.get_separation_vector())
             dv = quantities.AdaptingVectorQuantity()
@@ -275,12 +284,12 @@ def run_ph4(infile = None, outfile = None,
             newstar.mass = new_mass
             newstar.position = stars[i].position + (1-fac)*dr
             newstar.velocity = stars[i].velocity + (1-fac)*dv
-            # stars[i].mass = mass
+
             stars[i].position = stars[i].position - fac*dr
             stars[i].velocity = stars[i].velocity - fac*dv
 
-            id_count += 1
-            newstar.id = id_count
+            newstar.id = companion_base_id + stars[i].id
+
             stars.add_particles(newstar)
             added_mass += new_mass
 
@@ -308,7 +317,7 @@ def run_ph4(infile = None, outfile = None,
     # Taking r_i = m_i / 2<v^2> = m_i in virial equilibrium means
     # that, approximately, "contact" means a 90-degree deflection (r_1
     # + r_2 = b_90).  A more conservative choice with r_i less than
-    # this value will isolates encounters better, but also place more
+    # this value will isolate encounters better, but also place more
     # load on the large-N dynamical module.
 
     stars.radius = stars.mass.number | nbody_system.length
@@ -346,8 +355,6 @@ def run_ph4(infile = None, outfile = None,
 
     print('')
     print("number_of_stars =", number_of_stars)
-    print("evolving to time =", end_time.number, \
-          "in steps of", delta_t.number)
     sys.stdout.flush()
 
     # Channel to copy values from the code to the set in memory.
@@ -370,10 +377,9 @@ def run_ph4(infile = None, outfile = None,
     multiples_code = multiples.Multiples(gravity, new_smalln, kep)
 
     multiples_code.neighbor_perturbation_limit = 0.1
-    #multiples_code.neighbor_distance_factor = 1.0
-    #multiples_code.neighbor_veto = False
     #multiples_code.neighbor_distance_factor = 2.0
     multiples_code.neighbor_veto = True
+    multiples_code.global_debug = debug_level
 
     print('')
     print('multiples_code.initial_scale_factor =', \
@@ -393,8 +399,18 @@ def run_ph4(infile = None, outfile = None,
     print('multiples_code.wide_perturbation_limit =', \
         multiples_code.wide_perturbation_limit)
 
+    # Find initial binaries.
+    
+    gravity.parameters.zero_step_mode = 1
+    print('\nidentifying initial binaries')
+    multiples_code.evolve_model(time)
+    gravity.parameters.zero_step_mode = 0
+    
     pre = "%%% "
     E0,cpu0 = print_log(pre, time, multiples_code)
+
+    print("evolving to time =", end_time, \
+            "in steps of", delta_t)
 
     while time < end_time:
 
@@ -453,20 +469,21 @@ if __name__ == '__main__':
     infile = None
     outfile = None
     N = 100
-    Nbin = 0
-    t_end = 5.0 | nbody_system.time
+    Nbin = 10
+    t_end = 10.0 | nbody_system.time
     delta_t = 1.0 | nbody_system.time
     n_workers = 2
-    use_gpu = 1
-    gpu_worker = 1
+    use_gpu = 0
+    gpu_worker = 0
     salpeter = 0
     accuracy_parameter = 0.1
     softening_length = 0  | nbody_system.length
-    random_seed = -1
+    random_seed = 42
     manage_encounters = 1
+    debug_level = 1
 
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "a:b:c:d:e:f:-F:gGn:s:St:w:")
+        opts, args = getopt.getopt(sys.argv[1:], "a:b:c:d:D:e:f:-F:gGn:s:St:w:")
     except getopt.GetoptError as err:
         print(str(err))
         sys.exit(1)
@@ -480,6 +497,8 @@ if __name__ == '__main__':
             manage_encounters = int(a)
         elif o == "-d":
             delta_t = float(a) | nbody_system.time 
+        elif o == "-D":
+            debug_level = int(a)
         elif o == "-e":
             softening_length = float(a) | nbody_system.length
         elif o == "-f":
@@ -509,4 +528,4 @@ if __name__ == '__main__':
             N, Nbin, t_end, delta_t, n_workers,
             use_gpu, gpu_worker,
             salpeter, accuracy_parameter, softening_length,
-            manage_encounters, random_seed)
+            manage_encounters, random_seed, debug_level)

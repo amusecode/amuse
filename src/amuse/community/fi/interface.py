@@ -27,10 +27,10 @@ class FiInterface(
     future. (and I will think of a better name)
     
     The relevant references are:
-        .. [#] ** Hernquist & Katz, 1989, ApJS 70, 419
-        .. [#] ** Pelupessy, van der Werf & Icke, 2004, A&A 422, 55
-        .. [#] Pelupessy, PhD thesis 2005, Leiden Observatory
-        .. [#] Gerritsen & Icke, 1997, A&A 325, 972
+        .. [#] ** Hernquist & Katz, 1989, ApJS 70, 419 [1989ApJS...70..419H]
+        .. [#] ** Pelupessy, van der Werf & Icke, 2004, A&A 422, 55 [2004A&A...422...55P]
+        .. [#] Pelupessy, PhD thesis 2005, Leiden Observatory [2005PhDT........17P]
+        .. [#] Gerritsen & Icke, 1997, A&A 325, 972 [1997A&A...325..972G]
     """
     get_total_radius=None
     get_total_mass=None

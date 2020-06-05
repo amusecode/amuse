@@ -27,6 +27,9 @@ from amuse.io import store_v1
 
 import warnings
 
+import logging
+logger = logging.getLogger(__name__)
+
 def pickle_to_string(value):
     return numpy.void(pickle.dumps(value, protocol=0))
         
@@ -625,29 +628,29 @@ class StoreHDF(object):
     INFO_GROUP_NAME = 'AMUSE_INF'
     DATA_GROUP_NAME = 'data'
     
-    def __init__(self, filename, append_to_file=True, open_for_writing = True, copy_history = False, return_working_copy = False):
+    def __init__(self, filename, append_to_file=True, open_for_writing = True, copy_history = False, overwrite_file=False):
         if h5py is None:
             raise AmuseException("h5py module not available, cannot use hdf5 files")
+        
+        logger.info("opening {0} with options {1} {2} {3} {4}".format(filename, append_to_file, open_for_writing, copy_history,overwrite_file))
             
-        if not append_to_file and open_for_writing and os.path.exists(filename):
-            os.remove(filename)
-            
-        if append_to_file:
-            if open_for_writing:
-                self.hdf5file = h5py.File(filename,'a')
-            else:
-                if os.access(filename, os.W_OK):
-                    self.hdf5file = h5py.File(filename,'a')
+        if not append_to_file and open_for_writing:
+            if os.path.exists(filename):
+                if overwrite_file:
+                    os.remove(filename)
                 else:
-                    self.hdf5file = h5py.File(filename,'r')
+                    raise Exception("Opening file for write with overwrite_file is False but file {0} exists".format(filename))
+
+        if append_to_file:
+            if os.access(filename, os.F_OK) and not os.access(filename, os.W_OK):
+                   raise Exception("Opening file for append but file {0} is not writeable".format(filename))
+            self.hdf5file = h5py.File(filename,'a')
+        elif open_for_writing:
+            self.hdf5file = h5py.File(filename,'w')
         else:
-            if open_for_writing:
-                self.hdf5file = h5py.File(filename,'w')
-            else:
-                self.hdf5file = h5py.File(filename,'r')
+            self.hdf5file = h5py.File(filename,'r')
         
         self.copy_history = copy_history
-        self.return_working_copy = return_working_copy
         self.mapping_from_groupid_to_set = {}
         
         #warnings.warn("amuse hdf storage version 2.0 is still in development, do not use it for production scripts")
@@ -959,8 +962,6 @@ class StoreHDF(object):
                 result[x] = self.load_container(self.named_group(x))
             return result
                 
-
-
     def load_sets(self, names):
         result = []
         for x in names:
@@ -990,7 +991,6 @@ class StoreHDF(object):
         
         
         return particles
-        
         
     def load_grid_from_group(self, group):
         try:
@@ -1088,12 +1088,13 @@ class StoreHDF(object):
         else:
             return self.hdf5file.require_group(name)
         
-
     def close(self):
         if not self.hdf5file is None:
             self.hdf5file.flush()
             self.hdf5file.close()
             self.hdf5file = None
+
+
 class HDF5UnicodeAttribute(HDF5UnitlessAttribute):
     
     def __init__(self, name, dataset):
@@ -1108,11 +1109,9 @@ class HDF5UnicodeAttribute(HDF5UnitlessAttribute):
             encoded = self.dataset[:][indices]
         return numpy.char.decode(encoded, 'UTF-32BE')
 
-
     def set_values(self, indices, values):
         self.dataset[indices] = numpy.char.encode(values, 'UTF-32LE')
     
-
     def get_value(self, index):
         return self.dataset[index].decode('UTF-32BE')
 

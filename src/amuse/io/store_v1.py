@@ -20,6 +20,9 @@ from amuse.datamodel import Particles
 from amuse.datamodel import LinkedArray
 from amuse.datamodel import AttributeStorage
 
+import logging
+logger = logging.getLogger(__name__)
+
 def pickle_to_string(value):
     return numpy.void(pickle.dumps(value, protocol=0))
         
@@ -514,26 +517,27 @@ class StoreHDF(object):
     GRIDS_GROUP_NAME = "grids"
     UNNAMED_REFERENCES_GROUP_NAME = "referenced"
     
-    def __init__(self, filename, append_to_file=True, open_for_writing = True, copy_history = False):
+    def __init__(self, filename, append_to_file=True, open_for_writing = True, copy_history = False, overwrite_file=False):
         if h5py is None:
             raise exceptions.AmuseException("h5py module not available, cannot use hdf5 files")
             
-        if not append_to_file and open_for_writing and os.path.exists(filename):
-            os.remove(filename)
-            
-        if append_to_file:
-            if open_for_writing:
-                self.hdf5file = h5py.File(filename,'a')
-            else:
-                if os.access(filename, os.W_OK):
-                    self.hdf5file = h5py.File(filename,'a')
+        logger.info("opening {0} with options {1} {2} {3} {4}".format(filename, append_to_file, open_for_writing, copy_history,overwrite_file))
+
+        if not append_to_file and open_for_writing:
+            if os.path.exists(filename):
+                if overwrite_file:
+                    os.remove(filename)
                 else:
-                    self.hdf5file = h5py.File(filename,'r')
+                    raise Exception("Opening file for write with overwrite_file is False but file {0} exists".format(filename))
+
+        if append_to_file:
+            if os.access(filename, os.F_OK) and not os.access(filename, os.W_OK):
+                   raise Exception("Opening file for append but file {0} is not writeable".format(filename))
+            self.hdf5file = h5py.File(filename,'a')
+        elif open_for_writing:
+            self.hdf5file = h5py.File(filename,'w')
         else:
-            if open_for_writing:
-                self.hdf5file = h5py.File(filename,'w')
-            else:
-                self.hdf5file = h5py.File(filename,'r')
+            self.hdf5file = h5py.File(filename,'r')
         
         self.copy_history = copy_history
         self.mapping_from_groupid_to_set = {}
