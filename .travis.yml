@@ -35,23 +35,39 @@ addons:
       # - openmpi-bin
   homebrew:
     packages:
-      - python
-      - gcc@8
-      - hdf5
-      - netcdf
-      - cmake
+      # - python
+      # - gcc@8
+      # - hdf5
+      # - netcdf
+      # - cmake
 
 
 before_install:
   # - if [[ $TRAVIS_OS_NAME == linux ]]; then ; fi
   - if [[ $TRAVIS_OS_NAME == osx ]]; then
-      brew install openmpi --build-from-source --cc=gcc-8;
+      export MINICONDA_OS=$MINICONDA_OSX
+      wget "http://repo.continuum.io/miniconda/Miniconda$MINICONDA_PYTHON_MAJOR-$MINICONDA_VERSION-$MINICONDA_OS.sh" -O miniconda.sh;
+      bash miniconda.sh -b -p $HOME/miniconda
+      export CONDA_PREFIX=$HOME/miniconda
+      export PATH="$CONDA_PREFIX/bin:$PATH"
+      hash -r
+      conda update -yq conda
+      # gather the conda packages to install in one go, saving time
+      export CONDA_OPTIONS="-c conda-forge -c anaconda"  # N.B.: order matters, first is search first!
+      export CONDA_PACKAGES="gfortran_osx-64"  # configure wants this, even just for the framework target
+      export CONDA_PACKAGES="${CONDA_PACKAGES} mpi4py nose numpy docutils h5py"  # additional basic dependencies
+      export CONDA_PACKAGES="${CONDA_PACKAGES} openmpi cython"  # for the compile_tests
+      #- export CONDA_PACKAGES="${CONDA_PACKAGES} -c conda-forge fftw mpfr gsl gmp pkg-config"  # for a full build including community codes
+      conda install -y ${CONDA_OPTIONS} ${CONDA_PACKAGES}
     fi
   # - pip install --upgrade pip
   - pip install numpy scipy matplotlib pytest docutils mpi4py h5py Cython
   - pip install pytest-cov codecov pytest-timeout
 
 install:
+  - if [[ $TRAVIS_OS_NAME == osx ]]; then
+    env CXX=clang++ CC=clang LDFLAGS="-Wl,-rpath,$CONDA_PREFIX/lib" ./configure --with-hdf5=$CONDA_PREFIX --with-gmp=$CONDA_PREFIX --with-mpfr=$CONDA_PREFIX --with-fftw=$CONDA_PREFIX --with-gsl-prefix=$CONDA_PREFIX
+    fi
   - pip install -e .
   - ./configure
   - make framework
