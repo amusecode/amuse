@@ -52,13 +52,33 @@ matrix:
             - hdf5-tools
             - libmpich-dev
             - mpich
+    - name: "openmpi py37 macos"
+      os: osx
+      osx_image: xcode11.5
+      env:
+        - TOXENV=py37
+        - MINICONDA_OSX="MacOSX-x86_64"
+        - MINICONDA_PYTHON_MAJOR=3
+        - MINICONDA_VERSION="$TOXENV"
+        - CXX=clang++
+        - CC=clang
+        - LDFLAGS="-Wl,-rpath,$CONDA_PREFIX/lib"
+        - CONDA_OPTIONS="-c conda-forge -c anaconda"
+        - CONDA_PACKAGES="gfortran_osx-64"
+        - CONDA_PACKAGES="${CONDA_PACKAGES} openmpi"
 
 
 before_install:
-  # - if [[ $TRAVIS_OS_NAME == linux ]]; then ; fi
-  # - if [[ $TRAVIS_OS_NAME == osx ]]; then
-  #     something;
-  #   fi
+  - if [[ $TRAVIS_OS_NAME == osx ]]; then
+      export MINICONDA_OS=$MINICONDA_OSX
+      wget "http://repo.continuum.io/miniconda/Miniconda$MINICONDA_PYTHON_MAJOR-$MINICONDA_VERSION-$MINICONDA_OS.sh" -O miniconda.sh;
+      bash miniconda.sh -b -p $HOME/miniconda
+      export CONDA_PREFIX=$HOME/miniconda
+      export PATH="$CONDA_PREFIX/bin:$PATH"
+      hash -r
+      conda update -yq conda
+      conda install -y ${CONDA_OPTIONS} ${CONDA_PACKAGES}
+    fi
   # - pip install --upgrade pip
   - pip install numpy scipy matplotlib docutils mpi4py pytest
 
