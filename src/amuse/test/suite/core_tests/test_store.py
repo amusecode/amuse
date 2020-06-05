@@ -18,7 +18,7 @@ from amuse.datamodel import ParticlesSuperset
 
 
 
-class _AbstractTestStoreHDF(amusetest.TestCase):
+class _AbstractTestStoreHDF(object):
     
     def store_factory(self):
         raise NotImplementedError
@@ -28,7 +28,7 @@ class _AbstractTestStoreHDF(amusetest.TestCase):
         
     def get_version_in_store(self, container):
         raise NotImplementedError
-        
+
     def test1(self):
         test_results_path = self.get_path_to_results()
         output_file = os.path.join(test_results_path, "test1."+self.store_version()+".hdf5")
@@ -96,8 +96,6 @@ class _AbstractTestStoreHDF(amusetest.TestCase):
         self.assertAlmostRelativeEquals(p.mass[1], 2.0 | nbody_system.mass)
 
         instance.close()
-
-
 
     def test4(self):
         test_results_path = self.get_path_to_results()
@@ -262,7 +260,6 @@ class _AbstractTestStoreHDF(amusetest.TestCase):
         self.assertAlmostRelativeEquals(a.timestamp, 2 | units.Myr)
         self.assertAlmostRelativeEquals(a.scale, 1 | units.kg)
 
-
     def test10(self):
         test_results_path = self.get_path_to_results()
         output_file = os.path.join(test_results_path, "test10"+self.store_version()+".hdf5")
@@ -282,7 +279,6 @@ class _AbstractTestStoreHDF(amusetest.TestCase):
         a = loaded_particles.collection_attributes
         self.assertAlmostRelativeEquals(a.timestamp, 2 | units.Myr)
         self.assertAlmostRelativeEquals(a.scale, 1 | units.kg)
-
 
     def test11(self):
         test_results_path = self.get_path_to_results()
@@ -735,9 +731,6 @@ class _AbstractTestStoreHDF(amusetest.TestCase):
         output = io.read_set_from_file(output_file, format='amuse')
         self.assertEqual(output[0].attribute2, "unicode")
         
-
-
-
     def test30(self):
         test_results_path = self.get_path_to_results()
         output_file = os.path.join(test_results_path, "test30"+self.store_version()+".hdf5")
@@ -779,7 +772,7 @@ class _AbstractTestStoreHDF(amusetest.TestCase):
 
 
 
-class TestStoreHDFV1(_AbstractTestStoreHDF):
+class TestStoreHDFV1(amusetest.TestCase, _AbstractTestStoreHDF):
     
     def store_factory(self):
         return store_v1.StoreHDF
@@ -790,7 +783,7 @@ class TestStoreHDFV1(_AbstractTestStoreHDF):
     def get_version_in_store(self, container):
         return container.previous_state()
     
-class TestStoreHDFV2(_AbstractTestStoreHDF):
+class TestStoreHDFV2(amusetest.TestCase, _AbstractTestStoreHDF):
     
     def store_factory(self):
         return store_v2.StoreHDF

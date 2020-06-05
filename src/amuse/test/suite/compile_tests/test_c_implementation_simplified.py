@@ -1,3 +1,4 @@
+import unittest
 import numpy
 from amuse.support.interface import InCodeComponentImplementation
 
@@ -597,6 +598,7 @@ class TestCImplementationInterface(TestWithMPI):
           "got multiple values for argument 'i' of method dummy_3_int")
         instance.stop()
 
+    @unittest.skip
     def test31(self):
         import time
         instance = ForTestingInterface(self.exefile)

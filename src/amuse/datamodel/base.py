@@ -465,7 +465,7 @@ class CalculatedAttribute(DerivedAttribute):
     def  __init__(self, function, attribute_names = None):
         self.function = function
         if attribute_names is None:
-            arguments, varargs, kwargs, defaults = inspect.getargspec(function)
+            arguments, varargs, kwargs, defaults, kwonlyargs, kwonlydefaults, annotations = inspect.getfullargspec(function)
             self.attribute_names = arguments 
         else:
             self.attribute_names = attribute_names

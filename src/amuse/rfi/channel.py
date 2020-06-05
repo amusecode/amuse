@@ -292,7 +292,7 @@ class MPIMessage(AbstractMessage):
         lengths = numpy.array( [len(s) for s in array] ,dtype='i')
         
         chars=(chr(0).join(array)+chr(0)).encode("utf-8")
-        chars = numpy.fromstring(chars, dtype='uint8')
+        chars = numpy.frombuffer(chars, dtype='uint8')
 
         if len(chars) != lengths.sum()+len(lengths):
             raise Exception("send_strings size mismatch {0} vs {1}".format( len(chars) , lengths.sum()+len(lengths) ))
