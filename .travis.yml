@@ -35,6 +35,7 @@ addons:
   homebrew:
     packages:
       - openmpi
+      - python
 
 
 before_install:
