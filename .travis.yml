@@ -4,15 +4,15 @@ env:
   global:
     - OMPI_MCA_rmaps_base_oversubscribe=true
 
-dist: bionic
 matrix:
-  os:
-    - linux
-    # - osx
+  allow_failures:
+    - name: "openmpi py37 linux"
   include:
     - name: "openmpi py37 linux"
-      python: 3.7
+      os: linux
+      dist: bionic
       language: python
+      python: 3.7
       env: TOXENV=py37
       addons:
         apt:
@@ -31,9 +31,11 @@ matrix:
             - libopenmpi-dev
             - openmpi-bin
     - name: "mpich py37 linux"
+      os: linux
+      dist: bionic
+      language: python
       python: 3.7
       env: TOXENV=py37
-      language: python
       addons:
         apt:
           packages:
@@ -61,7 +63,6 @@ before_install:
   - pip install numpy scipy matplotlib docutils mpi4py pytest
 
 install:
-  # - pip install pytest-cov codecov pytest-timeout
   - pip install tox
 
 virtualenv:
