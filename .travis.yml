@@ -1,11 +1,5 @@
 codecov: true
-language: python
-dist: bionic
-compiler:
-  - gcc
-os:
-  - linux
-  # - osx
+compiler: gcc
 env:
   global:
     - OMPI_MCA_rmaps_base_oversubscribe=true
@@ -14,9 +8,14 @@ env:
     # - PYTHON_VERSION=3.6
     - PYTHON_VERSION=3.7
 
+dist: bionic
 matrix:
+  os:
+    - linux
+    # - osx
   include:
-    - mpi: "openmpi"
+    - name: "openmpi"
+      language: python
       addons:
         apt:
           packages:
@@ -34,7 +33,8 @@ matrix:
             - libopenmpi-dev
             - openmpi-bin
 
-    - mpi: "mpich"
+    - name: "mpich"
+      language: python
       addons:
         apt:
           packages:
@@ -73,7 +73,7 @@ virtualenv:
 script:
   - mpiexec -n 1 py.test --timeout=10 --cov-report=xml --cov=amuse --pyargs amuse.test.suite.reports.test_speed
   - mpiexec -n 1 py.test --timeout=30 --cov-report=xml --cov=amuse --pyargs amuse.test.suite.core_tests
-  - mpiexec -n 1 py.test --timeout=10 --timeout_method=thread --cov-report=xml --cov=amuse --pyargs amuse.test.suite.compile_tests
+  - mpiexec -n 1 py.test -v --timeout=10 --timeout_method=thread --cov-report=xml --cov=amuse --pyargs amuse.test.suite.compile_tests
   
 after_success:
   - codecov
