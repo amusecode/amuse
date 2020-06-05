@@ -10014,11 +10014,11 @@ $as_echo "not found" >&6; }
     fi
 
 as_arg_v1=$PYTHON_pytest_VERSION
-as_arg_v2=3.999
+as_arg_v2=2.999
 awk "$as_awk_strverscmp" v1="$as_arg_v1" v2="$as_arg_v2" /dev/null
 case $? in #(
   1) :
-    as_fn_error $? "pytest version $PYTHON_pytest_VERSION found, but at least 4.0 needed" "$LINENO" 5
+    as_fn_error $? "pytest version $PYTHON_pytest_VERSION found, but at least 3.0 needed" "$LINENO" 5
  ;; #(
   0) :
      ;; #(
