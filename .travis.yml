@@ -4,8 +4,8 @@ dist: bionic
 compiler:
   - gcc
 os:
-  - linux
-  # - osx
+  #- linux
+  - osx
 env:
   global:
     - OMPI_MCA_rmaps_base_oversubscribe=true
