@@ -14,43 +14,45 @@ matrix:
     - linux
     # - osx
   include:
-    - name: "openmpi"
-      language: python
-      addons:
-        apt:
-          packages:
-            - build-essential
-            - python3-dev
-            - gfortran
-            - libgsl0-dev
-            - cmake
-            - libfftw3-3
-            - libfftw3-dev
-            - libmpfr6
-            - libmpfr-dev
-            - libhdf5-serial-dev
-            - hdf5-tools
-            - libopenmpi-dev
-            - openmpi-bin
-
-    - name: "mpich"
-      language: python
-      addons:
-        apt:
-          packages:
-            - build-essential
-            - python3-dev
-            - gfortran
-            - libgsl0-dev
-            - cmake
-            - libfftw3-3
-            - libfftw3-dev
-            - libmpfr6
-            - libmpfr-dev
-            - libhdf5-serial-dev
-            - hdf5-tools
-            - libmpich-dev
-            - mpich
+    - python: 3.7
+      env: TOXENV=py37
+      - name: "openmpi py37 linux"
+        language: python
+        addons:
+          apt:
+            packages:
+              - build-essential
+              - python3-dev
+              - gfortran
+              - libgsl0-dev
+              - cmake
+              - libfftw3-3
+              - libfftw3-dev
+              - libmpfr6
+              - libmpfr-dev
+              - libhdf5-serial-dev
+              - hdf5-tools
+              - libopenmpi-dev
+              - openmpi-bin
+  
+      - name: "mpich py37 linux"
+        language: python
+        addons:
+          apt:
+            packages:
+              - build-essential
+              - python3-dev
+              - gfortran
+              - libgsl0-dev
+              - cmake
+              - libfftw3-3
+              - libfftw3-dev
+              - libmpfr6
+              - libmpfr-dev
+              - libhdf5-serial-dev
+              - hdf5-tools
+              - libmpich-dev
+              - mpich
 
 
 before_install:
@@ -59,21 +61,17 @@ before_install:
   #     something;
   #   fi
   # - pip install --upgrade pip
-  - pip install numpy scipy matplotlib pytest docutils mpi4py h5py Cython
-  - pip install pytest-cov codecov pytest-timeout
 
 install:
-  - pip install -e .
-  - ./configure
-  - make framework
+  - pip install numpy scipy matplotlib docutils mpi4py pytest
+  # - pip install pytest-cov codecov pytest-timeout
+  - pip install tox
 
 virtualenv:
   system_site_packages: false
 
 script:
-  - mpiexec -n 1 py.test --timeout=10 --cov-report=xml --cov=amuse --pyargs amuse.test.suite.reports.test_speed
-  - mpiexec -n 1 py.test --timeout=30 --cov-report=xml --cov=amuse --pyargs amuse.test.suite.core_tests
-  - mpiexec -n 1 py.test -v --timeout=10 --timeout_method=thread --cov-report=xml --cov=amuse --pyargs amuse.test.suite.compile_tests
+  - tox
   
 after_success:
   - codecov
