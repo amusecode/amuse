@@ -60,7 +60,7 @@ matrix:
         - TOXENV=py37
         - MINICONDA_OSX="MacOSX-x86_64"
         - MINICONDA_PYTHON_MAJOR=3
-        - MINICONDA_VERSION="$TOXENV"
+        - MINICONDA_VERSION="py37_4.8.2"
         - CXX=clang++
         - CC=clang
         - LDFLAGS="-Wl,-rpath,$CONDA_PREFIX/lib"
