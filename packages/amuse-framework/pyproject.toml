@@ -1,2 +1,2 @@
 [build-system]
-requires = [ "setuptools>=41.0.0", "pip>=19.0.0", "wheel", "docutils", "numpy", "nose", "h5py" ]
+requires = [ "setuptools>=41.0.0", "pip>=19.0.0", "wheel", "docutils", "numpy", "nose", "h5py", "pytest" ]

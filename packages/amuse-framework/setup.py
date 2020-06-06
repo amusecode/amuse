@@ -35,17 +35,6 @@ packages.append("amuse.community.interface")
 
 package_data = {
     'amuse.rfi.tools': ['*.template'],
-    'amuse.test.suite.core_tests': [
-        '*.txt', '*.dyn', '*.ini',
-        '*.nemo',
-        '*.dat', 'gadget_snapshot'
-    ],
-    'amuse.test.suite.codes_tests': [
-        '*.txt', 'test_sphray_data*'
-    ],
-    'amuse.test.suite.ticket_tests': [
-        '*.out'
-    ],
     'amuse': [
         '*rc'
     ]
