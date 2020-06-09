@@ -71,7 +71,7 @@ class _CodeWithFileParameters(object):
         for p in self._parameters.values():
             if p["ptype"] not in self._ptypes:
                 continue
-            parameter_set_name=p.get("set_name", self._prefix+p["group_name"] )
+            parameter_set_name=p.get("set_name", None) or self._prefix+p["group_name"].replace(" ","_")
             if parameter_set_name not in _tmp:
                 _tmp[parameter_set_name]=[ x.name for x in handler.definitions[parameter_set_name] ]
             if not p["name"] in _tmp[parameter_set_name]:  
@@ -84,7 +84,7 @@ class _CodeWithFileParameters(object):
         for p in self._parameters.values():
             if p["ptype"] not in self._ptypes:
                 continue
-            parameter_set_name=p.get("set_name", None) or self._prefix+p["group_name"]
+            parameter_set_name=p.get("set_name", None) or self._prefix+p["group_name"].replace(" ","_")
             parameter_set=getattr(self, parameter_set_name)
             name=p["name"]
             value=p.get("value", p["default"])
@@ -136,8 +136,8 @@ class _CodeWithFileParameters(object):
             name=p["name"]
             group_name=p["group_name"]
             short=p["short"]
-            parameter_set_name=p.get("set_name", group_name)
-            parameter_set=getattr(self, self._prefix+parameter_set_name)
+            parameter_set_name=p.get("set_name", None) or self._prefix+p["group_name"].replace(" ","_")
+            parameter_set=getattr(self, parameter_set_name)
             if is_quantity(p["default"]):
                 value=to_quantity(getattr(parameter_set, name)).value_in(p["default"].unit)
             else:
