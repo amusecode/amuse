@@ -152,7 +152,7 @@ if test "$with_hdf5" = "yes"; then
             m4_case(m4_normalize([$1]),
                 [serial],   [h5cc],
                 [parallel], [h5pcc],
-                [h5cc h5pcc]),
+                [h5pcc h5cc]),
             [])
     else
         AC_MSG_CHECKING([Using provided HDF5 C wrapper])
