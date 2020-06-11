@@ -27,6 +27,7 @@ from amuse.rfi.tools import create_python_worker
 from amuse.rfi.tools import create_cython
     
 from amuse.support import get_amuse_root_dir    
+from amuse.support.literature import TrackLiteratureReferences    
 
 def get_amuse_directory():
     filename_of_this_script = __file__
@@ -394,6 +395,8 @@ def make_directory(uc):
     builder.start()
     
 def amusifier():
+    TrackLiteratureReferences.suppress_output()
+    
     uc = ParseCommandLine()
     uc.start()
     
