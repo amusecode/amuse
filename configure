@@ -10018,7 +10018,8 @@ as_arg_v2=2.999
 awk "$as_awk_strverscmp" v1="$as_arg_v1" v2="$as_arg_v2" /dev/null
 case $? in #(
   1) :
-    as_fn_error $? "pytest version $PYTHON_pytest_VERSION found, but at least 3.0 needed" "$LINENO" 5
+    { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: pytest version $PYTHON_pytest_VERSION found, but at least 3.0 needed" >&5
+$as_echo "$as_me: WARNING: pytest version $PYTHON_pytest_VERSION found, but at least 3.0 needed" >&2;}
  ;; #(
   0) :
      ;; #(

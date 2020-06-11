@@ -247,7 +247,7 @@ AS_VERSION_COMPARE([$PYTHON_h5py_VERSION], [1.1.0],
 )
 AC_CHECK_PYTHON_MODULE(pytest, __version__)
 AS_VERSION_COMPARE([$PYTHON_pytest_VERSION], [2.999],
-        [AC_MSG_ERROR([pytest version $PYTHON_pytest_VERSION found, but at least 3.0 needed])]
+        [AC_MSG_WARN([pytest version $PYTHON_pytest_VERSION found, but at least 3.0 needed])]
 )
 AC_CHECK_PYTHON_MODULE(docutils, __version__)
 AS_VERSION_COMPARE([$PYTHON_docutils_VERSION], [0.5],
