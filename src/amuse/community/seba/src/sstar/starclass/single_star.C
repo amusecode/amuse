@@ -2007,6 +2007,7 @@ real single_star::minimum_blue_loop_radius(const real mass,
         // r_mHe should be the minimum of r_mHe and r_agb.
         real l_HeI = helium_ignition_luminosity(mass, z);
         real r_agb = AGB_radius(l_HeI, mass, mass_tot, z);
+	r_mHe = (b24*mass + pow(b25*mass, b26)*pow(mass, b28)/ (b27 + pow(mass, b28));
         r_mHe = min(r_agb, r_mHe);
     }
     if (mass > helium_ignition_mass(z) && mass <12.0){
