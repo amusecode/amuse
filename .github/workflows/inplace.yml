@@ -36,7 +36,11 @@ jobs:
       run: |
         amusifier --get-amuse-configmk
         pip list
+        cat build.log
     - name: test core
       run: |
         pytest --pyargs amuse.test.suite.core_tests -sv
+    - name: test compile_tests
+      run: |
+        pytest --pyargs amuse.test.suite.compile_tests -sv
         
