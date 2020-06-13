@@ -47,7 +47,9 @@ jobs:
           path: build.log
     - name: test core_tests
       run: |
-        pytest --timeout=30 --pyargs amuse.test.suite.core_tests -sv
+        mpiexec -n 1 pytest --timeout=30 --pyargs amuse.test.suite.core_tests -sv
+      env: 
+        OMPI_MCA_rmaps_base_oversubscribe: true  
     - name: test compile_tests
       run: |
         mpiexec -n 1 pytest --timeout=30 --pyargs amuse.test.suite.compile_tests -sv
