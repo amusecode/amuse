@@ -28,7 +28,6 @@ class TestBinaryTree(amusetest.TestCase):
         children = children1 + children2
         roots = particles - children
     
-        print(len(roots))
         self.assertEqual(len(roots), 8)
         self.assertEqual(len(children), 2)
         
@@ -65,7 +64,6 @@ class TestBinaryTree(amusetest.TestCase):
     
         binaries = particles.select_array(lambda x : x != [None], ["child1",])
     
-        print(len(binaries))
         self.assertEqual(len(binaries), 2)
     
         binaries_children1 = binaries.child1.as_set().compressed().select_array(lambda x : x != [None], ["child1",])
@@ -166,7 +164,6 @@ class TestBinaryTree(amusetest.TestCase):
             output += str(particle.mass.value_in(units.kg))
             output += '\n'
         
-        print(output)
         self.assertEqual(output, """0.0
 ..1.0
 ....3.0
@@ -297,7 +294,6 @@ class TestChildTree(amusetest.TestCase):
             output += str(node.particle.mass.value_in(units.kg))
             output += '\n'
         
-        print(output)
         self.assertEqual(output, """0.0
 ..1.0
 ....3.0

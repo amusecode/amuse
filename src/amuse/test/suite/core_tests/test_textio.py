@@ -64,7 +64,6 @@ class TableFormattedTextTests(amusetest.TestCase):
         instance.store()
         
         contents = data_file.getvalue()
-        #print contents       
         self.assertEqual("#a b c\n#m m m\n1.0 2.0 3.0\n4.0 5.0 6.0\n", contents)
     
     def test3(self):
@@ -140,7 +139,6 @@ class TableFormattedTextTests(amusetest.TestCase):
         instance.store()
         
         contents = data_file.getvalue()
-        #print contents       
         self.assertEqual("#a b c\n#- m m\n1.0 2.0 3.0\n4.0 5.0 6.0\n", contents)
         
     def test7(self):
@@ -154,7 +152,6 @@ class TableFormattedTextTests(amusetest.TestCase):
         instance.store()
         
         contents = data_file.getvalue()
-        #print contents       
         self.assertEqual("#a b c\n#- m m\n1.0 2.0 3.0\n4.0 5.0 6.0\n", contents)
         
     def test8(self):
@@ -209,7 +206,6 @@ class TableFormattedTextTests(amusetest.TestCase):
         p.a = [1.0, 2.0, 3.0, 4.0, 5.0]
         p.b = [10, 11, 12, 13, 14] | units.m
         p.c = [20, 21, 22, 23, 24] | units.m
-        print(p.key)
         io.write_set_to_file(
             p, 
             "test.csv",
@@ -221,7 +217,6 @@ class TableFormattedTextTests(amusetest.TestCase):
         )
         with open("test.csv", "r") as f:
             contents = f.read()
-        print(repr(contents))
         expected_contents = '#a b c\n#- m m\n30 1.0 10.0 20.0\n31 2.0 11.0 21.0\n32 3.0 12.0 22.0\n33 4.0 13.0 23.0\n34 5.0 14.0 24.0\n'
         self.assertEqual(expected_contents, contents)
         p2 = io.read_set_from_file(

@@ -389,8 +389,6 @@ class _AbstractTestStoreHDF(object):
         
     def test16(self):
         import h5py
-        #~ print h5py.version.version
-        #~ print h5py
         test_results_path = self.get_path_to_results()
         output_file = os.path.join(test_results_path, "test16"+self.store_version()+".hdf5")
         if os.path.exists(output_file):

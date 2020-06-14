@@ -289,7 +289,7 @@ class TestIndexing(amusetest.TestCase):
 
             t3=combine_slices(normalize_slices(len(tiny),s1),normalize_slices(len(tiny[s1]),s2))
             s3=slice(*t3)
-            print(s1,s2,s3)
+            #~ print(s1,s2,s3)
             self.assertTrue(tiny[s1][s2]==tiny[s3])
 
             t3=combine_slices(normalize_slices(len(small),s1),normalize_slices(len(small[s1]),s2))

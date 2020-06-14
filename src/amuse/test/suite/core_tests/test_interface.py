@@ -44,7 +44,6 @@ class CodeInterfaceWithConvertedUnitsTests(amusetest.TestCase):
         handler = instance.get_handler('METHOD')
         handler.add_method('add_to_length', (nbody_system.length,), nbody_system.length)
         
-        print(instance.mass)
         self.assertAlmostEqual(instance.mass.value_in(units.kg), 100.0, 10)
         
         
@@ -1279,8 +1278,6 @@ class TestGridWithBinding(amusetest.TestCase):
             return [numpy.asarray(i_s), numpy.asarray(j_s)]
         
         def get_a(self,i_s,j_s,k_s):
-            #print "indices:", i_s, j_s, k_s
-            #print "values:", numpy.asarray([(self.storage[i][j][k]) for i,j,k in zip(i_s, j_s, k_s)])
             return [numpy.asarray([(self.storage[i][j][k]) for i,j,k in zip(i_s, j_s, k_s)]),]
             
         def set_a(self, i_s, j_s, k_s, values):
@@ -1288,7 +1285,6 @@ class TestGridWithBinding(amusetest.TestCase):
             for i,j,k in zip(i_s, j_s, k_s):
                 self.storage[i][j][k] = values[index].value_in(units.m)
                 index += 1
-                print(index)
         
             
         
@@ -1301,10 +1297,7 @@ class TestGridWithBinding(amusetest.TestCase):
         handler = instance.get_handler('METHOD')
         handler.add_method('get_a',(handler.INDEX, handler.INDEX,handler.INDEX,), (units.kg,))
         handler.add_method('set_a',(handler.INDEX, handler.INDEX,handler.INDEX, units.kg,), ())
-      
-        print(instance.get_a([1],[2],[3]))
-        print([38] | units.kg)
-        
+              
         self.assertEqual(instance.get_a([1],[2],[3]), [38] | units.kg)
         
         handler = instance.get_handler('PARTICLES')
@@ -1412,9 +1405,7 @@ class TestGridWithBinding2(amusetest.TestCase):
         handler = instance.get_handler('METHOD')
         handler.add_method('get_a',(handler.INDEX, handler.INDEX,), (units.kg,))
         handler.add_method('set_a',(handler.INDEX, handler.INDEX, units.kg,), ())
-      
-        print(instance.get_a([1],[2]))
-        
+              
         self.assertEqual(instance.get_a([1],[2]), [7] | units.kg)
         
         handler = instance.get_handler('PARTICLES')
@@ -1427,7 +1418,6 @@ class TestGridWithBinding2(amusetest.TestCase):
         self.assertEqual(grid[1,2].mass, original.storage[1,2] | units.kg)
         self.assertEqual(len(grid[1].mass), len(original.storage[1]))
   
-        print(grid[1,1:].mass)   
         grid[1,1:].mass=[5. | units.kg]*4
 
         self.assertEqual(original.storage[1,1:],5)
