@@ -50,4 +50,6 @@ jobs:
         pytest --pyargs amuse.test.suite.core_tests -s
     - name: test compile_tests
       run: |
-        pytest --pyargs amuse.test.suite.compile_tests.test_c_implementation -s
+        pytest --pyargs amuse.test.suite.compile_tests.test_c_implementation -sv
+      env:
+        OMPI_MCA_rmaps_base_oversubscribe: 1
