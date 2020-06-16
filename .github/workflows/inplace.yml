@@ -53,3 +53,4 @@ jobs:
         pytest --pyargs amuse.test.suite.compile_tests.test_c_implementation -sv
       env:
         OMPI_MCA_rmaps_base_oversubscribe: 1
+        OMPI_MCA_btl_tcp_if_include: "lo"
