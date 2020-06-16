@@ -50,6 +50,8 @@ jobs:
         pytest --pyargs amuse.test.suite.core_tests -s
     - name: test compile_tests
       run: |
+        ip link show
+        echo $OMPI_MCA_btl_tcp_if_include
         pytest --pyargs amuse.test.suite.compile_tests.test_c_implementation -sv
       env:
         OMPI_MCA_rmaps_base_oversubscribe: 1
