@@ -587,47 +587,47 @@ void print_initial_binary_distributions(real m_min,  real m_max,
 					ecc_distribution ef,  real e_exp) {
 
 
-    cout << "Use the following initial distribution functions:" << endl;
-    cout << "    -Mass function is " << type_string(mf);
+    cerr << "Use the following initial distribution functions:" << endl;
+    cerr << "    -Mass function is " << type_string(mf);
     if(mf==mf_Power_Law)
-        cout << " with exponent " << m_exp;
+        cerr << " with exponent " << m_exp;
 
     if(mf==Equal_Mass)
-        cout << " with value " << m_min << endl;
+        cerr << " with value " << m_min << endl;
     else
-        cout << "\n                      between "
+        cerr << "\n                      between "
              << m_min << " and " << m_max << endl;
-    cout << "    -mass-ratio distribution is " << type_string(qf);
+    cerr << "    -mass-ratio distribution is " << type_string(qf);
     if(qf==qf_Power_Law)
-        cout << " with exponent " << q_exp;
+        cerr << " with exponent " << q_exp;
 
     if (qf==Equal_q)
-        cout << " with value " << q_min << endl;
+        cerr << " with value " << q_min << endl;
     else if (qf!=Flat_q)
-        cout << endl;
+        cerr << endl;
     else
-        cout << "\n                      between "
+        cerr << "\n                      between "
              << q_min << " and " << q_max << endl;
 
-    cout << "    -Semi-major axis distribution is " << type_string(af);
+    cerr << "    -Semi-major axis distribution is " << type_string(af);
     if(af==sma_Power_Law)
-        cout << " with exponent " << a_exp;
+        cerr << " with exponent " << a_exp;
 
     if(af==Equal_sma)
-        cout << " with value " << a_min << endl;
+        cerr << " with value " << a_min << endl;
     else
-        cout << "\n                      between "
+        cerr << "\n                      between "
              << a_min << " and " << a_max << endl;
-    cout << "    -eccentricity distribution is " << type_string(ef);
+    cerr << "    -eccentricity distribution is " << type_string(ef);
     real e_lower = 0;
     if (e_min>=0) e_lower=e_min;
     if(ef==ecc_Power_Law)
-        cout << " with exponent " << e_exp;
+        cerr << " with exponent " << e_exp;
 
     if(ef==Equal_ecc)
-        cout << " with value " << e_lower << endl;
+        cerr << " with value " << e_lower << endl;
     else
-        cout << "\n                      between "
+        cerr << "\n                      between "
              << e_lower << " and " << e_max << endl;
   }
 
@@ -819,7 +819,7 @@ void main(int argc, char ** argv) {
 			a_min, a_max, af, a_exp, 
 			e_min, e_max, ef, e_exp, 
 			m_prim, m_sec, sma, ecc);
-	cout << "\t" << m_prim 
+	cerr << "\t" << m_prim 
 	     << "\t" << m_sec 
 	     << "\t" << sma
 	     << "\t" << ecc << endl;

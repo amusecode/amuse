@@ -130,7 +130,7 @@ local bool read_binary_params(ifstream& in, real &m_prim,
       //     >> tpp >> m_prim >> Rlp >> tps >> m_sec >> Rls;
     }
     
-    PRC(m_prim);PRC(m_sec);PRC(sma);PRC(ecc);PRL(z);
+    //PRC(m_prim);PRC(m_sec);PRC(sma);PRC(ecc);PRL(z);
   return true;
 }
 
@@ -383,7 +383,7 @@ int main(int argc, char ** argv) {
     root->log_history(argc, argv);
     root->log_comment(seedlog);
     root->log_comment(paramlog);
-    root->print_log_story(cout);
+    root->print_log_story(cerr);
 
     print_initial_binary_distributions(m_min, m_max, mf, m_exp,
 				       q_min, q_max, qf, q_exp,
