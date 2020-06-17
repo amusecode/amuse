@@ -118,7 +118,7 @@ class SeBa_hist {
 
        real get_time()              {return time;}
        int get_number()             {return number;}
-       int set_number(int n)        {number = n;}
+       void set_number(int n)        {number = n;}
 
        real set_stellar_radius(bool);
        void move_SeBa_hist_to(SeBa_hist*);

@@ -4,7 +4,7 @@
      //  /      |      ^     |   \  |         ^     |   \     //          _\|/_
     //   \__    |     / \    |___/  |        / \    |___/    //            /|\
    //       \   |    /___\   |  \   |       /___\   |   \   // _\|/_
-  //     ___/   |   /     \  |   \  |____  /     \  |___/  //   /|\     
+  //     ___/   |   /     \  |   \  |____  /     \  |___/  //   /|\
  //                                                       //            _\|/_
 //=======================================================//              /|\
 
@@ -353,9 +353,17 @@ class  single_star : public star
       real r_helper(const real rad, const real rad_c, const real mass_tot, 
                                 const real mu);
 
-        virtual real small_envelope_core_luminosity(){};
-        virtual real small_envelope_core_radius(){};
-        virtual real helium_core_radius(){};
+//      virtual real small_envelope_core_luminosity(){};
+//      virtual real small_envelope_core_radius(){};
+//      virtual real helium_core_radius(){};
+
+//      virtual real small_envelope_core_luminosity(){return 0;};
+//      virtual real small_envelope_core_radius(){return 0;};
+//      virtual real helium_core_radius(){return 0;};
+
+      real small_envelope_core_luminosity(){return 0;};
+      real small_envelope_core_radius(){return 0;};
+      real helium_core_radius(){return 0;};
         
       //white dwarf      
       real white_dwarf_radius(real mass, real time);

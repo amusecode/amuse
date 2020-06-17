@@ -121,6 +121,7 @@ int get_radial_vdisp(dyn *b, vec cpos, vec cvel,
 	if (mass[j] > 0) v2[j] /= mass[j];
 
     delete[] table;
+    return -1;
 }
 
 #else

@@ -51,6 +51,7 @@ star* star::get_binary()
     return (star*)the_node->get_parent()->get_starbase();
   else
     err_exit("star* get_binary_node: no binary node.");
+    return 0;
 }
 
 star* star::get_companion()
@@ -61,6 +62,7 @@ star* star::get_companion()
                           ->get_starbase();
   else
     err_exit("star* get_companion: no companion.");
+    return 0;
 }
 
 star* star::get_companion(star* str)
@@ -70,6 +72,7 @@ star* star::get_companion(star* str)
     return str->get_companion();
   else
     err_exit("star* get_companion(star*): no companion.");
+    return 0;
 }
 
 star* star::get_primary()

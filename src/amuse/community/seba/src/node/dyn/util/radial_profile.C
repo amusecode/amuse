@@ -106,6 +106,7 @@ int get_density_profile(dyn *b, vec cpos,
 	rho[j] /= (4*M_PI/3) * (v1 - v0);	// dM --> dM/dV
 	v0 = v1;
     }
+    return -1;
 }
 
 // get_profile:  Return the mass-weighted radial profile of some
@@ -168,6 +169,7 @@ int get_profile(dyn *b, vec cpos,
     // Complete the calculation.
 
     for (j = 0; j < n_zones; j++) if (mass[j] > 0) q[j] /= mass[j];
+    return -1;
 }
 
 #else

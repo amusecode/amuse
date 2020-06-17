@@ -312,6 +312,7 @@ SeBa_hist* SeBa_hist::get_SeBa_hist_at_time(real snap_time) {
   }
 
   err_exit("SeBa_hist::SeBa_hist_at_time(real time): time not found");
+  return 0;
 }
 
 
