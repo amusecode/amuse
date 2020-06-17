@@ -3003,13 +3003,7 @@ real single_star::helium_giant_initial_core_mass(const real mass, const real z )
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // Small envelope behaviour 
 //
-
-//real single_star::small_envelope_core_luminosity(){return 0;}
-//real single_star::small_envelope_core_radius(){return 0;}
-//real single_star::helium_core_radius(){return 0;}
-
-
-
+    
 void single_star::small_envelope_perturbation(){
     real mu = small_envelope_mu(luminosity, get_total_mass(), core_mass);
     if(mu < 1.){
