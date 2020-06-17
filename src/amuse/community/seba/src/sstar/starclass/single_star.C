@@ -2001,23 +2001,40 @@ real single_star::minimum_blue_loop_radius(const real mass,
     //these lines are not in the HPT2000 article, but they are in the HPT2000 code
     //in case a massive star skips the blue loop phase, 
     // the stellar radius should continue smoothly
+//    if (mass >= max(12.0, helium_ignition_mass(z))){
+//        // In this mass range r_x = r_HeI = r_mHe.
+//        // In case the star skips the blue loop phase, 
+//        // r_mHe should be the minimum of r_mHe and r_agb.
+//        real l_HeI = helium_ignition_luminosity(mass, z);
+//        real r_agb = AGB_radius(l_HeI, mass, mass_tot, z);
+//	r_mHe = (b24*mass + pow(b25*mass, b26)*pow(mass, b28))/ (b27 + pow(mass, b28));
+//        r_mHe = min(r_agb, r_mHe);
+//    }
+//    if (mass > helium_ignition_mass(z) && mass <12.0){
+//        real l_HeI = helium_ignition_luminosity(mass, z);
+//        real r_agb = AGB_radius(l_HeI, mass, mass_tot, z);
+//        if (r_agb < r_mHe) {
+//            PRC(r_agb);PRC(r_mHe);
+//            cerr<<"WARNING in single_star::minimum_blue_loop_radius: R_AGB(L_HeI) < R_mHe, skipping blue loop?"<<endl;
+//        }
+//    }
+
+
+    //these lines are not in the HPT2000 article, but they are in the HPT2000 code
+    //in case a massive star skips the blue loop phase, 
+    // the stellar radius should continue smoothly
     if (mass >= max(12.0, helium_ignition_mass(z))){
         // In this mass range r_x = r_HeI = r_mHe.
         // In case the star skips the blue loop phase, 
         // r_mHe should be the minimum of r_mHe and r_agb.
         real l_HeI = helium_ignition_luminosity(mass, z);
         real r_agb = AGB_radius(l_HeI, mass, mass_tot, z);
-	r_mHe = (b24*mass + pow(b25*mass, b26)*pow(mass, b28))/ (b27 + pow(mass, b28));
+        r_mHe = (b24*mass + pow(b25*mass, b26)*pow(mass, b28))
+            / (b27 + pow(mass, b28));// depends on relative mass for HM stars
         r_mHe = min(r_agb, r_mHe);
+        
     }
-    if (mass > helium_ignition_mass(z) && mass <12.0){
-        real l_HeI = helium_ignition_luminosity(mass, z);
-        real r_agb = AGB_radius(l_HeI, mass, mass_tot, z);
-        if (r_agb < r_mHe) {
-            PRC(r_agb);PRC(r_mHe);
-            cerr<<"WARNING in single_star::minimum_blue_loop_radius: R_AGB(L_HeI) < R_mHe, skipping blue loop?"<<endl;
-        }
-    }
+
     
     return r_mHe;
 }
