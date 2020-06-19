@@ -406,7 +406,6 @@ class TestSSE(TestWithMPI):
         stars = Particles(2)
         stars.mass = 1.0 | units.MSun
         for star in stars:
-            print(star)
             stellar_evolution = SSE()
             stellar_evolution.commit_parameters()
             stellar_evolution.particles.add_particles(star.as_set())
@@ -580,7 +579,6 @@ class TestSSE(TestWithMPI):
         for i in range(1, number_of_steps + 1):
             se_stars[1].evolve_for(step_size)
             self.assertAlmostEqual(se_stars.age, [number_of_steps, i] * step_size)
-        print(se_stars)
         self.assertAlmostRelativeEqual(se_stars[0].age,         se_stars[1].age)
         self.assertAlmostRelativeEqual(se_stars[0].luminosity,  se_stars[1].luminosity, 3)
         self.assertAlmostRelativeEqual(se_stars[0].radius,      se_stars[1].radius, 3)
@@ -603,7 +601,6 @@ class TestSSE(TestWithMPI):
         for i in range(1, number_of_steps + 1):
             se_stars[1:].evolve_for(step_size)
             self.assertAlmostEqual(se_stars.age, [number_of_steps, i] * step_size)
-        print(se_stars)
         self.assertAlmostRelativeEqual(se_stars[0].age,         se_stars[1].age)
         self.assertAlmostRelativeEqual(se_stars[0].luminosity,  se_stars[1].luminosity, 3)
         self.assertAlmostRelativeEqual(se_stars[0].radius,      se_stars[1].radius, 3)
@@ -635,7 +632,6 @@ class TestSSE(TestWithMPI):
         
         i=0
         for p in instance.particles:
-          print(i,p.mass)
           p.evolve_for(0.1 | units.Myr)
           i+=1
         instance.stop()
@@ -665,9 +661,7 @@ class TestSSE(TestWithMPI):
         
         i=0
         for p in instance.particles:
-          print(i,p.mass, end=' ')
           p.evolve_for(13.2 | units.Gyr)
-          print(p.mass)
           i+=1
         instance.stop()
     
