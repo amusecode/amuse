@@ -116,8 +116,8 @@ NOMPI_MODULE_GLOBALS_STRING = """
 
 MPI_INTERNAL_FUNCTIONS_STRING = """
 FUNCTION internal__open_port(outval)
+    USE mpi
     IMPLICIT NONE
-    INCLUDE 'mpif.h'
     character(len=MPI_MAX_PORT_NAME+1), intent(out) :: outval
     INTEGER :: internal__open_port
     INTEGER :: ierror
@@ -126,8 +126,8 @@ FUNCTION internal__open_port(outval)
 END FUNCTION
 
 FUNCTION internal__accept_on_port(port_identifier, comm_identifier)
+    USE mpi
     IMPLICIT NONE
-    INCLUDE 'mpif.h'
     character(len=*), intent(in) :: port_identifier
     INTEGER, intent(out) :: comm_identifier
     INTEGER :: internal__accept_on_port
@@ -143,7 +143,7 @@ FUNCTION internal__accept_on_port(port_identifier, comm_identifier)
     call MPI_Comm_rank(MPI_COMM_WORLD, rank, ierror);
     IF (rank .EQ. 0) THEN
         call MPI_Comm_accept(port_identifier, MPI_INFO_NULL, 0,  MPI_COMM_SELF, communicator, ierror)
-        call MPI_Intercomm_merge(communicator, 0, mcommunicator, ierror)
+        call MPI_Intercomm_merge(communicator, .FALSE., mcommunicator, ierror)
         call MPI_Intercomm_create(MPI_COMM_WORLD, 0, mcommunicator, 1, 65, communicators(last_communicator_id), ierror)
         call MPI_Comm_free(mcommunicator, ierror)
         call MPI_Comm_free(communicator, ierror)
@@ -156,8 +156,8 @@ FUNCTION internal__accept_on_port(port_identifier, comm_identifier)
 END FUNCTION
 
 FUNCTION internal__connect_to_port(port_identifier, comm_identifier)
+    USE MPI
     IMPLICIT NONE
-    INCLUDE 'mpif.h'
     character(len=*), intent(in) :: port_identifier
     INTEGER, intent(out) :: comm_identifier
     INTEGER :: internal__connect_to_port
@@ -174,7 +174,7 @@ FUNCTION internal__connect_to_port(port_identifier, comm_identifier)
     
     IF (rank .EQ. 0) THEN
         call MPI_Comm_connect(port_identifier, MPI_INFO_NULL, 0,  MPI_COMM_SELF, communicator, ierror)
-        call MPI_Intercomm_merge(communicator, 1, mcommunicator, ierror)
+        call MPI_Intercomm_merge(communicator, .TRUE., mcommunicator, ierror)
         call MPI_Intercomm_create(MPI_COMM_WORLD, 0, mcommunicator, 0, 65, communicators(last_communicator_id), ierror)
         call MPI_Comm_free(mcommunicator, ierror)
         call MPI_Comm_free(communicator, ierror)
@@ -188,8 +188,8 @@ END FUNCTION
 
 
 FUNCTION  internal__activate_communicator(comm_identifier)
+    USE mpi
     IMPLICIT NONE
-    INCLUDE 'mpif.h'
     INTEGER, intent(in) :: comm_identifier
     INTEGER :: internal__activate_communicator
     
@@ -279,10 +279,9 @@ POLLING_FUNCTIONS_STRING = """
 RECV_HEADER_SLEEP_STRING = """
     SUBROUTINE mpi_recv_header(parent, ioerror)
         use iso_c_binding
+        use mpi
         implicit none
-        
-        INCLUDE 'mpif.h'
-      
+              
         integer,intent(in) :: parent
         integer,intent(inout) :: ioerror
         integer :: request_status(MPI_STATUS_SIZE),header_request
@@ -314,8 +313,8 @@ RECV_HEADER_SLEEP_STRING = """
 
 RECV_HEADER_WAIT_STRING = """
     SUBROUTINE mpi_recv_header(parent, ioerror)
+        use mpi
         implicit none
-        INCLUDE 'mpif.h'
         integer,intent(in) :: parent
         integer,intent(inout) :: ioerror
         integer :: request_status(MPI_STATUS_SIZE),header_request
@@ -333,10 +332,9 @@ EMPTY_RUN_LOOP_MPI_STRING = """
 
 RUN_LOOP_MPI_STRING = """
     SUBROUTINE run_loop_mpi
+      use mpi
       implicit none
-      
-      INCLUDE 'mpif.h'
-      
+            
       integer :: provided
       integer :: rank, parent, ioerror, max_call_count = 255
       integer :: must_run_loop, maximum_size, total_string_length
@@ -812,11 +810,10 @@ RUN_LOOP_SOCKETS_MPI_STRING = """
     SUBROUTINE run_loop_sockets_mpi
       use iso_c_binding
       use FortranSocketsInterface
+      use mpi
 
       implicit none
-      
-      include 'mpif.h'
-      
+            
       integer :: provided
       integer :: max_call_count = 255
       integer :: must_run_loop, maximum_size, total_string_length
@@ -1489,7 +1486,7 @@ class GenerateAFortranSourcecodeStringFromASpecificationClass(GenerateASourcecod
         self._result = self.out.string
 
     def output_mpi_include(self):
-        self.out.n() + "INCLUDE 'mpif.h'"
+        self.out.n() + "USE mpi"
         
     def output_modules(self):
         self.out.n()
