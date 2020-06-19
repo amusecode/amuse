@@ -52,7 +52,15 @@ jobs:
       run: |
         ip link show
         echo $OMPI_MCA_btl_tcp_if_include
-        mpiexec -n 1 pytest --pyargs amuse.test.suite.compile_tests.test_c_implementation -sv
+        mpiexec -n 1 pytest -k "not test29" --pyargs amuse.test.suite.compile_tests.test_c_implementation -sv
       env:
         OMPI_MCA_rmaps_base_oversubscribe: 1
         OMPI_MCA_btl_tcp_if_include: lo
+    - name: test code_tests
+      run: |
+        mpiexec -n 1 pytest  --pyargs amuse.test.suite.codes_tests.test_bhtree -sv
+        mpiexec -n 1 pytest  --pyargs amuse.test.suite.codes_tests.test_sse -sv
+      env:
+        OMPI_MCA_rmaps_base_oversubscribe: 1
+        OMPI_MCA_btl_tcp_if_include: lo
+
