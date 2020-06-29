@@ -54,7 +54,7 @@ class MultiplePartIMF(object):
         if mass_max is not None and mass_max < mass_boundaries[-1]:
             mass_boundaries[-1] = mass_max
             for i, right_boundary in enumerate(self.mass_boundaries):
-                if self.mass_boundaries[-1-i] >= mass_max:
+                if self.mass_boundaries[-1-i] > mass_max:
                     # shift the rightmost bin because it won't be used
                     last_bin -= 1
                     self.mass_boundaries[last_bin] = mass_max
