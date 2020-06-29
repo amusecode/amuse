@@ -1,7 +1,7 @@
 """
 Broken power-law initial mass function (IMF)
 
-This module contains functions used to generate realisations of multiple-part 
+This module contains functions used to generate realisations of multiple-part
 power-law IMFs such as Kroupa (2001), Scalo (1986), Miller & Scalo (1979).
 """
 
