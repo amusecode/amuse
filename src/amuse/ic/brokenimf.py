@@ -8,6 +8,7 @@ power-law IMFs such as Kroupa (2001), Scalo (1986), Miller & Scalo (1979).
 import numpy
 import numpy.random
 
+from amuse.support import exceptions
 from amuse.units import units
 from amuse.units.quantities import AdaptingVectorQuantity
 
@@ -29,6 +30,12 @@ class MultiplePartIMF(object):
             alphas=[-2.35],
             random=True
     ):
+        # Sanity check
+        if mass_min is not None and mass_max is not None:
+            if mass_min > mass_max:
+                raise exceptions.AmuseException(
+                    "mass_min cannot be larger than mass_max!"
+                )
         self.mass_boundaries = mass_boundaries
         self.alphas = numpy.array(alphas)
         first_bin = 0
@@ -43,18 +50,19 @@ class MultiplePartIMF(object):
                     break
             self.mass_boundaries = self.mass_boundaries[first_bin:]
             self.alphas = self.alphas[first_bin:]
-        last_bin = -1
+        last_bin = 0
         if mass_max is not None and mass_max < mass_boundaries[-1]:
             mass_boundaries[-1] = mass_max
-            for i, right_boundary in enumerate(self.mass_boundaries[1:]):
+            for i, right_boundary in enumerate(self.mass_boundaries):
                 if self.mass_boundaries[-1-i] >= mass_max:
                     # shift the rightmost bin because it won't be used
                     last_bin -= 1
-                    self.mass_boundaries[-1-i] = mass_max
+                    self.mass_boundaries[last_bin] = mass_max
                 else:
                     break
-            self.mass_boundaries = self.mass_boundaries[:last_bin]
-            self.alphas = self.alphas[:last_bin]
+            if last_bin < -1:
+                self.mass_boundaries = self.mass_boundaries[:last_bin+1]
+                self.alphas = self.alphas[:last_bin+1]
 
         if random:
             if random is True:
