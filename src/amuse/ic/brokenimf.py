@@ -165,7 +165,7 @@ def new_broken_power_law_mass_distribution(
 
 
 def new_scalo_mass_distribution(
-        number_of_particles, mass_max=None, random=True
+        number_of_particles, mass_max=None, random=True, **keyword_arguments
 ):
     """Returns a Scalo (1986) mass distribution in SI units, with mass ranges:
         [0.10, 0.18, 0.42, 0.62, 1.18, 3.5, 125.0] MSun,
@@ -179,11 +179,12 @@ def new_scalo_mass_distribution(
         mass_max=mass_max,
         alphas=[1.6, -1.01, -2.75, -2.08, -3.5, -2.63],
         random=random,
+        **keyword_arguments
     ).next_mass(number_of_particles)
 
 
 def new_miller_scalo_mass_distribution(
-        number_of_particles, mass_max=None, random=True
+        number_of_particles, mass_max=None, random=True, **keyword_arguments
 ):
     """Returns a Miller & Scalo (1979) mass distribution in SI units, with mass ranges:
         [0.1, 1.0, 2.0, 10.0, 125.0] MSun,
@@ -196,11 +197,12 @@ def new_miller_scalo_mass_distribution(
         mass_boundaries=[0.1, 1.0, 2.0, 10.0, 125.0] | units.MSun,
         mass_max=mass_max, alphas=[-1.25, -2.0, -2.3, -3.3],
         random=random,
+        **keyword_arguments
     ).next_mass(number_of_particles)
 
 
 def new_kroupa_mass_distribution(
-        number_of_particles, mass_max=None, random=True
+        number_of_particles, mass_max=None, random=True, **keyword_arguments
 ):
     """Returns a Kroupa (2001) mass distribution in SI units, with mass ranges:
         [0.01, 0.08, 0.5, 100.0] MSun,
@@ -210,10 +212,9 @@ def new_kroupa_mass_distribution(
     :argument mass_max: the cut-off mass (defaults to 100.0 MSun)
     """
     return MultiplePartIMF(
-        mass_boundaries=[0.01, 0.08, 0.5, 100.0] | units.MSun, 
+        mass_boundaries=[0.01, 0.08, 0.5, 100.0] | units.MSun,
         mass_max=mass_max,
         alphas=[-0.3, -1.3, -2.3],
         random=random,
+        **keyword_arguments
     ).next_mass(number_of_particles)
-
-
