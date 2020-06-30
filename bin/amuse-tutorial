@@ -12,6 +12,6 @@ mkdir -p $RUNDIR
 
 cp ${AMUSEDIR}/tutorial/*.ipynb ${RUNDIR}/
 
-jupyter notebook --pylab --notebook-dir=${RUNDIR}
+jupyter notebook --notebook-dir=${RUNDIR}
 
 
