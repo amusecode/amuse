@@ -1,13 +1,14 @@
 """
 Broken power-law initial mass function (IMF)
 
-This module contains functions used to generate realisations of multiple-part 
+This module contains functions used to generate realisations of multiple-part
 power-law IMFs such as Kroupa (2001), Scalo (1986), Miller & Scalo (1979).
 """
 
 import numpy
 import numpy.random
 
+from amuse.support import exceptions
 from amuse.units import units
 from amuse.units.quantities import AdaptingVectorQuantity
 
@@ -24,14 +25,44 @@ class MultiplePartIMF(object):
     def __init__(
             self,
             mass_boundaries=[0.1, 125.0] | units.MSun,
+            mass_min=None,
             mass_max=None,
             alphas=[-2.35],
             random=True
     ):
+        # Sanity check
+        if mass_min is not None and mass_max is not None:
+            if mass_min > mass_max:
+                raise exceptions.AmuseException(
+                    "mass_min cannot be larger than mass_max!"
+                )
         self.mass_boundaries = mass_boundaries
-        if mass_max is not None:
-            self.mass_boundaries[-1] = mass_max
         self.alphas = numpy.array(alphas)
+        first_bin = 0
+        if mass_min is not None and mass_min > self.mass_boundaries[0]:
+            self.mass_boundaries[0] = mass_min
+            for i, left_boundary in enumerate(self.mass_boundaries[:-1]):
+                if self.mass_boundaries[i+1] <= mass_min:
+                    # shift the leftmost bin because it won't be used
+                    first_bin += 1
+                    self.mass_boundaries[i+1] = mass_min
+                else:
+                    break
+            self.mass_boundaries = self.mass_boundaries[first_bin:]
+            self.alphas = self.alphas[first_bin:]
+        last_bin = 0
+        if mass_max is not None and mass_max < mass_boundaries[-1]:
+            mass_boundaries[-1] = mass_max
+            for i, right_boundary in enumerate(self.mass_boundaries):
+                if self.mass_boundaries[-1-i] > mass_max:
+                    # shift the rightmost bin because it won't be used
+                    last_bin -= 1
+                    self.mass_boundaries[last_bin] = mass_max
+                else:
+                    break
+            if last_bin < -1:
+                self.mass_boundaries = self.mass_boundaries[:last_bin+1]
+                self.alphas = self.alphas[:last_bin+1]
 
         if random:
             if random is True:
@@ -165,7 +196,11 @@ def new_broken_power_law_mass_distribution(
 
 
 def new_scalo_mass_distribution(
-        number_of_particles, mass_max=None, random=True
+        number_of_particles,
+        mass_min=None,
+        mass_max=None,
+        random=True,
+        **keyword_arguments
 ):
     """Returns a Scalo (1986) mass distribution in SI units, with mass ranges:
         [0.10, 0.18, 0.42, 0.62, 1.18, 3.5, 125.0] MSun,
@@ -176,14 +211,20 @@ def new_scalo_mass_distribution(
     """
     return MultiplePartIMF(
         mass_boundaries=[0.10, 0.18, 0.42, 0.62, 1.18, 3.5, 125.0] | units.MSun,
+        mass_min=mass_min,
         mass_max=mass_max,
         alphas=[1.6, -1.01, -2.75, -2.08, -3.5, -2.63],
         random=random,
+        **keyword_arguments
     ).next_mass(number_of_particles)
 
 
 def new_miller_scalo_mass_distribution(
-        number_of_particles, mass_max=None, random=True
+        number_of_particles,
+        mass_min=None,
+        mass_max=None,
+        random=True,
+        **keyword_arguments
 ):
     """Returns a Miller & Scalo (1979) mass distribution in SI units, with mass ranges:
         [0.1, 1.0, 2.0, 10.0, 125.0] MSun,
@@ -194,13 +235,20 @@ def new_miller_scalo_mass_distribution(
     """
     return MultiplePartIMF(
         mass_boundaries=[0.1, 1.0, 2.0, 10.0, 125.0] | units.MSun,
-        mass_max=mass_max, alphas=[-1.25, -2.0, -2.3, -3.3],
+        mass_min=mass_min,
+        mass_max=mass_max,
+        alphas=[-1.25, -2.0, -2.3, -3.3],
         random=random,
+        **keyword_arguments
     ).next_mass(number_of_particles)
 
 
 def new_kroupa_mass_distribution(
-        number_of_particles, mass_max=None, random=True
+        number_of_particles,
+        mass_min=None,
+        mass_max=None,
+        random=True,
+        **keyword_arguments
 ):
     """Returns a Kroupa (2001) mass distribution in SI units, with mass ranges:
         [0.01, 0.08, 0.5, 100.0] MSun,
@@ -210,10 +258,10 @@ def new_kroupa_mass_distribution(
     :argument mass_max: the cut-off mass (defaults to 100.0 MSun)
     """
     return MultiplePartIMF(
-        mass_boundaries=[0.01, 0.08, 0.5, 100.0] | units.MSun, 
+        mass_boundaries=[0.01, 0.08, 0.5, 100.0] | units.MSun,
+        mass_min=mass_min,
         mass_max=mass_max,
         alphas=[-0.3, -1.3, -2.3],
         random=random,
+        **keyword_arguments
     ).next_mass(number_of_particles)
-
-
