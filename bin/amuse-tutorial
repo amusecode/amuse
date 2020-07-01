@@ -6,12 +6,10 @@ gethostip `hostname` > /dev/null || ( echo warning hostname may not resolve: che
 
 AMUSEDIR=`amusifier --get-amuse-dir`
 
-RUNDIR=/tmp/${USER}/amuse-tutorial
+RUNDIR=${PWD}/amuse-tutorial
 
 mkdir -p $RUNDIR
 
 cp ${AMUSEDIR}/tutorial/*.ipynb ${RUNDIR}/
 
 jupyter notebook --notebook-dir=${RUNDIR}
-
-
