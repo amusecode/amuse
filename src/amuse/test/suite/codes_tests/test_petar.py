@@ -10,11 +10,6 @@ from amuse.units import units
 from amuse import datamodel
 from amuse.ic import plummer
 from amuse.ic.plummer import new_plummer_model
-try:
-    from matplotlib import pyplot
-    HAS_MATPLOTLIB = True
-except ImportError:
-    HAS_MATPLOTLIB = False
 
 
 class TestPetarInterface(TestWithMPI):
