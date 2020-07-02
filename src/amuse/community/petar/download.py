@@ -2,8 +2,6 @@
 
 import subprocess
 import os
-import sys
-import time
 import urllib.request
 import urllib.parse
 import urllib.error
@@ -39,8 +37,11 @@ class GetCodeFromHttp:
             cwd=os.path.join(self.src_directory())
         )
         subprocess.call(
-            ['mv', '{name}-{version}'.format(name=name, version=version), name],
-            cwd = os.path.join(self.src_directory())
+            [
+                'mv', '{name}-{version}'.format(name=name, version=version),
+                name
+            ],
+            cwd=os.path.join(self.src_directory())
         )
         print("done")
 
@@ -60,10 +61,15 @@ class GetCodeFromHttp:
             url = url_template.format(version=self.version[i])
             filename = self.filename_template.format(version=self.version[i])
             filepath = os.path.join(self.src_directory(), filename)
-            print("downloading version", self.version[i], "from", url, "to", filename)
+            print(
+                "downloading version", self.version[i],
+                "from", url, "to", filename
+            )
             urllib.request.urlretrieve(url, filepath)
             print("downloading finished")
-            self.unpack_downloaded_file(filename, self.name[i], self.version[i])
+            self.unpack_downloaded_file(
+                filename, self.name[i], self.version[i]
+            )
 
 
 def main(petar_version='', sdar_version='', fdps_version=''):

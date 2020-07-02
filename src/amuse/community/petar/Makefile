@@ -57,12 +57,14 @@ clean:
 
 DOWNLOAD_FROM_WEB = $(PYTHON) ./download.py
 
-
 download:
 	$(RM) -Rf .pc
 	$(RM) -Rf src
 	mkdir src
 	$(DOWNLOAD_FROM_WEB)
+	ln -sf src/PeTar/amuse-interface/interface.py ./
+	ln -sf src/PeTar/amuse-interface/interface.h ./
+	ln -sf src/PeTar/amuse-interface/interface.cc ./
 
 FILELIST=interface.cc interface.py interface.h test_interface.cc test_interface.py run_one_cluster_movie.py
 
@@ -71,7 +73,6 @@ __init__.py:
 	touch $@
 
 $(FILELIST): |download
-	ln -sf src/PeTar/amuse-interface/$@
 
 test_interface: $(OBJS) test_interface.o
 	$(MPICXX) $(CXXFLAGS) $(OBJS) test_interface.o -o $@
