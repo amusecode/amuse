@@ -13,10 +13,11 @@ class petarInterface(CodeInterface,
     """
     Parallel, Particle-Particle & Particle-Tree & Few-body integration module
     
+    .. [#] Namekata D., et al., 2018, PASJ, 70, 70
     .. [#] Iwasawa M., Tanikawa A., Hosono N., Nitadori K., Muranushi T., Makino J., 2016, PASJ, 68, 54
     .. [#] Iwasawa M., Portegies Zwart S., Makino J., 2015, ComAC, 2, 6
-    .. [#] Wang, L., Nitadori, K., Makino, J. (2019, pre.)
-    .. [#] Wang, L., Nitadori, K., Iwasawa, M., Makino, J. (2020, pre.)
+    .. [#] Wang, L., Nitadori, K., Makino, J., 2020, MNRAS, 493, 3398
+    .. [#] Wang, L., Iwasawa, M., Nitadori, K., Makino, J., 2020, MNRAS, accepted, ArXiv: 2006.16560 [astro-ph]
     """
     
     include_headers = ['interface.h']

@@ -55,36 +55,14 @@ clean:
 #$(CODELIB):
 #	make -C src all
 
-src:
+DOWNLOAD_FROM_WEB = $(PYTHON) ./download.py
+
+
+download:
+	$(RM) -Rf .pc
+	$(RM) -Rf src
 	mkdir src
-
-src/PeTar: |src
-	npath=$(shell pwd); \
-	cd src; \
-	wget "https://github.com/AICS-SC-GROUP/PeTar/archive/master.zip" ; \
-	unzip master.zip; \
-	mv PeTar-master PeTar; \
-	rm -f master.zip; \
-	cd $(npath); \
-	cp src/PeTar/amuse-interface/Makefile ./
-
-src/SDAR: |src
-	npath=$(shell pwd); \
-	cd src; \
-	wget "https://github.com/lwang-astro/SDAR/archive/master.zip" ; \
-	unzip master.zip; \
-	mv SDAR-master SDAR; \
-	rm -f master.zip; \
-	cd $(npath);
-
-src/FDPS: |src
-	npath=$(shell pwd); \
-	cd src; \
-	wget "https://github.com/FDPS/FDPS/archive/v5.0g.zip" ;\
-	unzip v5.0g.zip; \
-	mv FDPS-5.0g FDPS; \
-	rm -f v5.0g.zip; \
-	cd $(npath);
+	$(DOWNLOAD_FROM_WEB)
 
 FILELIST=interface.cc interface.py interface.h test_interface.cc test_interface.py run_one_cluster_movie.py
 
@@ -92,7 +70,7 @@ FILELIST=interface.cc interface.py interface.h test_interface.cc test_interface.
 __init__.py:
 	touch $@
 
-$(FILELIST): |src/PeTar
+$(FILELIST): |download
 	ln -sf src/PeTar/amuse-interface/$@
 
 test_interface: $(OBJS) test_interface.o
@@ -104,7 +82,7 @@ worker_code.cc: interface.py
 worker_code.h: interface.py 
 	$(CODE_GENERATOR) --type=H -i amuse.support.codes.stopping_conditions.StoppingConditionInterface interface.py petarInterface -o $@
 
-petar_worker: worker_code.cc worker_code.h $(CODELIB) $(OBJS) interface.h |src/PeTar src/SDAR src/FDPS
+petar_worker: worker_code.cc worker_code.h $(CODELIB) $(OBJS) interface.h
 	$(MPICXX) $(CXXFLAGS) $(SC_FLAGS) $(AM_CFLAGS) $(LDFLAGS) $< $(OBJS) $(CODELIB) -o $@ $(SC_MPI_CLIBS) $(LIBS) $(AM_LIBS)
 
 .cc.o: $<
