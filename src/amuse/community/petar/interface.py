@@ -1,12 +1,12 @@
 from amuse.community import (
     CodeInterface,
     LiteratureReferencesMixIn,
-    GravitationalDynamicsInterface,
     StoppingConditionInterface,
     StoppingConditions,
 )
 from amuse.community.interface.gd import (
     GravitationalDynamics,
+    GravitationalDynamicsInterface,
     GravityFieldInterface,
     GravityFieldCode,
 )
