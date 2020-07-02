@@ -16,6 +16,20 @@ try:
     HAS_MATPLOTLIB = True
 except ImportError:
     HAS_MATPLOTLIB = False
+from amuse.test.suite.codes_tests.gd_tests import (
+    _TestGravitationalDynamicsInterface,
+)
+
+
+class NewTestPh4Interface(_TestGravitationalDynamicsInterface):
+    def gravity_code_interface(self):
+        return ph4Interface
+
+    def test_reversed_time_allowed(self):
+        self.skip("not supported")
+
+    def starting_particle_index(self):
+        return 1
 
 
 class TestPh4Interface(TestWithMPI):
@@ -23,7 +37,6 @@ class TestPh4Interface(TestWithMPI):
     def test0(self):
         instance = ph4Interface()
         instance.initialize_code()
-        instance.cleanup_code()
         instance.stop()
         
     def test1(self):
@@ -42,7 +55,6 @@ class TestPh4Interface(TestWithMPI):
         self.assertEqual(11.0,  retrieved_state['mass'])
         self.assertEqual(2.0, retrieved_state['radius'])
         self.assertEqual(instance.get_number_of_particles()['number_of_particles'], 1)
-        instance.cleanup_code()
         instance.stop()
         
     def test2(self):
@@ -54,7 +66,6 @@ class TestPh4Interface(TestWithMPI):
             value, error = instance.get_eps2()
             self.assertEqual(error, 0)
             self.assertEqual(x, value)
-        instance.cleanup_code()
         instance.stop()
         
     
