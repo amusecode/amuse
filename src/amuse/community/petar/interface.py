@@ -54,4 +54,6 @@ class petar(GravitationalDynamics, GravityFieldCode):
     def define_particle_sets(self, handler):
         GravitationalDynamics.define_particle_sets(self, handler)
         self.stopping_conditions.define_particle_set(handler)
-    
+
+PetarInterface = petarInterface
+Petar = petar
