@@ -18,7 +18,7 @@ except ImportError:
     HAS_MATPLOTLIB = False
 
 
-class TestMPIInterface(TestWithMPI):
+class TestPh4Interface(TestWithMPI):
     
     def test0(self):
         instance = ph4Interface()
