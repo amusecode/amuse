@@ -19,36 +19,24 @@ class TestPetarInterface(TestWithMPI):
         self.assertTrue("Wang" in instance.all_literature_references_string())
         instance.stop()
 
-    def test_retrieving_particle_state(self):
+    def test_add_and_retrieve_particles(self):
         instance = PetarInterface()
         instance.initialize_code()
 
-        res1 = instance.new_particle(
-            mass=11.0,
-            x=0.0, y=0.0, z=0.0,
-            vx=0.0, vy=0.0, vz=0.0,
-            radius=2.0,
+        index, error = instance.new_particle(
+            11.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 2.0)
+        self.assertEqual(error, 0)
+        self.assertEqual(index, self.starting_particle_index())
+        error = instance.commit_particles()
+        self.assertEqual(error, 0)
+
+        retrieved_state = instance.get_state(index)
+        self.assertEqual(retrieved_state['__result'], 0)
+        self.assertEqual(11.0,  retrieved_state['mass'])
+        self.assertEqual(2.0, retrieved_state['radius'])
+        self.assertEqual(
+            instance.get_number_of_particles()['number_of_particles'], 1
         )
-        res2 = instance.new_particle(
-            mass=21.0,
-            x=10.0, y=0.0, z=0.0,
-            vx=10.0, vy=0.0, vz=0.0,
-            radius=5.0,
-        )
-
-        self.assertEqual(1, res1['index_of_the_particle'])
-        self.assertEqual(2, res2['index_of_the_particle'])
-
-        retrieved_state1 = instance.get_state(0)
-        retrieved_state2 = instance.get_state(1)
-
-        self.assertEqual(11.0,  retrieved_state1['mass'])
-        self.assertEqual(21.0,  retrieved_state2['mass'])
-        self.assertEqual(0.0,  retrieved_state1['x'])
-        self.assertEqual(10.0,  retrieved_state2['x'])
-        self.assertEqual(2.0,  retrieved_state1['radius'])
-        self.assertEqual(5.0,  retrieved_state2['radius'])
-
         instance.stop()
 
 
