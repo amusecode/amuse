@@ -41,7 +41,7 @@ class _TestGravitationalDynamicsInterface(TestWithMPI, object):
         )
         instance.stop()
 
-    def test_add_and_retrieve_particles(self):
+    def test_add_and_retrieve_particle(self):
         interface = self.gravity_code_interface()
         instance = self.new_instance_of_an_optional_code(interface)
         instance.initialize_code()
@@ -55,12 +55,71 @@ class _TestGravitationalDynamicsInterface(TestWithMPI, object):
 
         retrieved_state = instance.get_state(index)
         self.assertEqual(retrieved_state['__result'], 0)
-        self.assertEqual(11.0,  retrieved_state['mass'])
+        self.assertEqual(11.0, retrieved_state['mass'])
         self.assertEqual(2.0, retrieved_state['radius'])
         self.assertEqual(
             instance.get_number_of_particles()['number_of_particles'], 1
         )
         instance.stop()
+
+    def test_add_and_retrieve_particles(self):
+        interface = self.gravity_code_interface()
+        instance = self.new_instance_of_an_optional_code(interface)
+        instance.initialize_code()
+
+        instance.new_particle(
+            [11.0, 12.0, 13.0, 14.0],
+            [2.1, 3.1, 4.1, 5.1],
+            [2.2, 3.2, 4.2, 5.2],
+            [2.3, 3.3, 4.3, 5.3],
+            [2.4, 3.4, 4.4, 5.4],
+            [2.5, 3.5, 4.5, 5.5],
+            [2.6, 3.6, 4.6, 5.6],
+            [2.0, 3.0, 4.0, 5.0],
+        ),
+        error = instance.commit_particles()
+        self.assertEqual(error, 0)
+        retrieved_state = instance.get_state(self.starting_particle_index())
+        self.assertEqual(11.0, retrieved_state['mass'])
+        retrieved_state = instance.get_state(
+            [
+                self.starting_particle_index()+1,
+                self.starting_particle_index()+2,
+                self.starting_particle_index()+3,
+            ]
+        )
+        self.assertEqual(12.0, retrieved_state['mass'][0])
+        self.assertEqual(
+            instance.get_number_of_particles()['number_of_particles'], 4
+        )
+        instance.stop()
+
+    def test_add_and_retrieve_many_particles(self):
+        interface = self.gravity_code_interface()
+        instance = self.new_instance_of_an_optional_code(interface)
+        instance.initialize_code()
+        n = 4000
+        values = [1.0 * i for i in range(1, n)]
+        instance.new_particle(
+            values,
+            values,
+            values,
+            values,
+            values,
+            values,
+            values,
+            values,
+        )
+        error = instance.commit_particles()
+        self.assertEqual(error, 0)
+        retrieved_state = instance.get_state(self.starting_particle_index())
+        self.assertEqual(1.0, retrieved_state['mass'])
+        retrieved_state = instance.get_state(
+            self.starting_particle_index()+3998
+        )
+        instance.cleanup_code()
+        instance.stop()
+        self.assertEqual(3999.0,  retrieved_state['mass'])
 
     def test_epsilon_squared(self):
         interface = self.gravity_code_interface()
@@ -86,6 +145,40 @@ class _TestGravitationalDynamicsInterface(TestWithMPI, object):
             [1, 0], list(instance.get_is_time_reversed_allowed().values())
         )
         instance.stop()
+
+    def test_calculate_energies(self):
+        interface = self.gravity_code_interface()
+        instance = self.new_instance_of_an_optional_code(interface)
+        instance.initialize_code()
+        instance.set_eps2(0.0**2)
+        instance.commit_parameters()
+
+        instance.new_particle(
+            [1.0, 1.0, 1.0],
+            [1.0, 0.0, -1.0],
+            [0.0, 0.0, 0.0],
+            [0.0, 0.0, 0.0],
+            [0.0, 1.0, 0.0],
+            [0.0, 0.0, 0.0],
+            [0.0, 0.0, 0.0],
+        )
+        instance.commit_particles()
+        Ep = instance.get_potential_energy()['potential_energy']
+        Ek = instance.get_kinetic_energy()['kinetic_energy']
+        self.assertEqual(Ek, 0.5)
+        self.assertEqual(Ep, -2.5)
+        instance.delete_particle(self.starting_particle_index()+1)
+        instance.recommit_particles()
+        n = instance.get_number_of_particles()['number_of_particles']
+        Ep = instance.get_potential_energy()['potential_energy']
+        Ek = instance.get_kinetic_energy()['kinetic_energy']
+
+        instance.cleanup_code()
+        instance.stop()
+
+        self.assertEqual(n, 2)
+        self.assertEqual(Ek, 0.)
+        self.assertEqual(Ep, -0.5)
 
 
 class _TestGravityCodes(TestWithMPI):

@@ -22,57 +22,12 @@ except ImportError:
     HAS_MATPLOTLIB = False
 
 
-class NewTestHermiteInterface(_TestGravitationalDynamicsInterface):
-    def gravity_code_interface(self):
-        return HermiteInterface
-
-    def reference_includes(self):
-        return "Hut"
-
-
 class TestHermiteInterface(_TestGravitationalDynamicsInterface):
     def gravity_code_interface(self):
         return HermiteInterface
 
     def reference_includes(self):
         return "Hut"
-
-    def test2(self):
-        instance = HermiteInterface()
-        instance.initialize_code()
-
-        for i in [0, 1, 2]:
-            temp_particle = instance.new_particle(mass=i, radius=1.0, x=0.0, y=0.0, z=0.0, vx=0.0, vy=0.0, vz=0.0)
-            self.assertEqual(i, temp_particle['index_of_the_particle'])
-
-        instance.delete_particle(1)
-
-        self.assertEqual(2, instance.get_number_of_particles()['number_of_particles'])
-
-        self.assertEqual(0, instance.get_index_of_first_particle()['index_of_the_particle'])
-
-        self.assertEqual(2, instance.get_index_of_next_particle(0)['index_of_the_next_particle'])
-        self.assertEqual(0, instance.get_index_of_next_particle(0)['__result'])
-        self.assertEqual(-1, instance.get_index_of_next_particle(1)['__result'])
-        self.assertEqual(1, instance.get_index_of_next_particle(2)['__result'])
-        instance.cleanup_code()
-        instance.stop()
-
-    def test5(self):
-        hermite = HermiteInterface()
-        hermite.initialize_code()
-
-        hermite.new_particle([10,20],[0,0],[0,0], [0,0], [0,0], [0,0], [0,0],[1,1])
-        retrieved_state = hermite.get_state(0)
-
-        self.assertEqual(10.0,  retrieved_state['mass'])
-        self.assertEqual(1, retrieved_state['radius'])
-
-        retrieved_state = hermite.get_state([0,1])
-        self.assertEqual(20.0,  retrieved_state['mass'][1])
-        self.assertEqual(hermite.get_number_of_particles()['number_of_particles'], 2)
-        hermite.cleanup_code() 
-        hermite.stop()
 
     def test6(self):
         hermite = HermiteInterface()
