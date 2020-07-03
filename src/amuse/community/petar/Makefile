@@ -44,7 +44,7 @@ FILELIST=interface.cc interface.py interface.h
 
 CODELIB = 
 
-all: petar_worker __init__.py test_interface.py run_one_cluster_movie.py
+all: petar_worker __init__.py
 
 clean:
 	$(RM) -rf __pycache__
