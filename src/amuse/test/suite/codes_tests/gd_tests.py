@@ -1,15 +1,4 @@
-from amuse.test.amusetest import TestWithMPI
-
-from amuse.community.bhtree.interface import BHTree
-from amuse.community.hermite.interface import Hermite
-from amuse.community.phigrape.interface import PhiGRAPE
-from amuse.community.gadget2.interface import Gadget2
-from amuse.community.fi.interface import Fi
-from amuse.community.ph4.interface import ph4
-from amuse.community.mi6.interface import MI6
-
 import numpy
-from amuse.units import units
 from amuse.units import nbody_system
 from amuse import datamodel
 from amuse.ic.plummer import new_plummer_model
@@ -24,6 +13,12 @@ class _TestGravitationalDynamicsInterface:
 
     def starting_particle_index(self):
         return 0
+
+    def check_for_energy(self, *args, **kwargs):
+        return self.assertEqual(*args, **kwargs)
+
+    def almost_equal_precision(self):
+        return 7
 
     def test_initialise(self):
         interface = self.gravity_code_interface()
@@ -165,8 +160,8 @@ class _TestGravitationalDynamicsInterface:
         instance.commit_particles()
         Ep = instance.get_potential_energy()['potential_energy']
         Ek = instance.get_kinetic_energy()['kinetic_energy']
-        self.assertEqual(Ek, 0.5)
-        self.assertEqual(Ep, -2.5)
+        self.check_for_energy(Ek, 0.5)
+        self.check_for_energy(Ep, -2.5)
         instance.delete_particle(self.starting_particle_index()+1)
         instance.recommit_particles()
         n = instance.get_number_of_particles()['number_of_particles']
@@ -177,8 +172,8 @@ class _TestGravitationalDynamicsInterface:
         instance.stop()
 
         self.assertEqual(n, 2)
-        self.assertEqual(Ek, 0.)
-        self.assertEqual(Ep, -0.5)
+        self.check_for_energy(Ek, 0.)
+        self.check_for_energy(Ep, -0.5)
 
 
 class _TestGravityCodes:
