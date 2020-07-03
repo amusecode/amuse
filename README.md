@@ -46,6 +46,11 @@ Other distributions have similar package or package groups available.
 In OS X you can use the homebrew or macports package manager (both
 require the Apple Developer Tools and Xcode to be installed).
 
+For a Windows 10 machine, AMUSE can be installed in the Windows Subsystem
+for linux (WSL), and installing e.g. Ubuntu from the Microsoft store. 
+Its recommended to use WSL 2. For further installation instructions, see the 
+Linux install instructions.
+
 Python
 ======
 
