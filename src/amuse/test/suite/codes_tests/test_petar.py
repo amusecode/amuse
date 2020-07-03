@@ -12,6 +12,8 @@ from .gd_tests import _TestGravitationalDynamicsInterface
 
 
 class TestPetarInterface(_TestGravitationalDynamicsInterface, TestWithMPI):
+    PRECISION = 6
+
     def gravity_code_interface(self):
         return PetarInterface
 
@@ -21,42 +23,11 @@ class TestPetarInterface(_TestGravitationalDynamicsInterface, TestWithMPI):
     def starting_particle_index(self):
         return 1
 
+    def check_for_energy(self, *args, **kwargs):
+        return self.assertAlmostEqual(*args, **kwargs, places=self.PRECISION)
+
     def test_reversed_time_allowed(self):
         self.skip("not supported")
-
-    def test_calculate_energies(self):
-        interface = self.gravity_code_interface()
-        instance = self.new_instance_of_an_optional_code(interface)
-        instance.initialize_code()
-        instance.set_eps2(0.0**2)
-        instance.commit_parameters()
-
-        instance.new_particle(
-            [1.0, 1.0, 1.0],
-            [1.0, 0.0, -1.0],
-            [0.0, 0.0, 0.0],
-            [0.0, 0.0, 0.0],
-            [0.0, 1.0, 0.0],
-            [0.0, 0.0, 0.0],
-            [0.0, 0.0, 0.0],
-        )
-        instance.commit_particles()
-        Ep = instance.get_potential_energy()['potential_energy']
-        Ek = instance.get_kinetic_energy()['kinetic_energy']
-        self.assertAlmostEqual(Ek, 0.5, places=6)
-        self.assertAlmostEqual(Ep, -2.5, places=6)
-        instance.delete_particle(self.starting_particle_index()+1)
-        instance.recommit_particles()
-        n = instance.get_number_of_particles()['number_of_particles']
-        Ep = instance.get_potential_energy()['potential_energy']
-        Ek = instance.get_kinetic_energy()['kinetic_energy']
-
-        instance.cleanup_code()
-        instance.stop()
-
-        self.assertEqual(n, 2,  msg="incorrect number of particles")
-        self.assertAlmostEqual(Ek, 0.)
-        self.assertAlmostEqual(Ep, -0.5, places=6)
 
 
 class TestPetar(TestWithMPI):
