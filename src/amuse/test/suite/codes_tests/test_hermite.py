@@ -22,7 +22,7 @@ except ImportError:
     HAS_MATPLOTLIB = False
 
 
-class TestHermiteInterface(_TestGravitationalDynamicsInterface):
+class TestHermiteInterface(_TestGravitationalDynamicsInterface, TestWithMPI):
     def gravity_code_interface(self):
         return HermiteInterface
 

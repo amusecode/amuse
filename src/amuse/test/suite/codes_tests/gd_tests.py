@@ -15,7 +15,7 @@ from amuse import datamodel
 from amuse.ic.plummer import new_plummer_model
 
 
-class _TestGravitationalDynamicsInterface(TestWithMPI, object):
+class _TestGravitationalDynamicsInterface:
     def gravity_code_interface(self):
         self.skip("abstract test")
 

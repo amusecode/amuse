@@ -21,7 +21,7 @@ from amuse.test.suite.codes_tests.gd_tests import (
 )
 
 
-class TestPh4Interface(_TestGravitationalDynamicsInterface):
+class TestPh4Interface(_TestGravitationalDynamicsInterface, TestWithMPI):
     def gravity_code_interface(self):
         return ph4Interface
 
