@@ -16,126 +16,20 @@ try:
     HAS_MATPLOTLIB = True
 except ImportError:
     HAS_MATPLOTLIB = False
+from amuse.test.suite.codes_tests.gd_tests import (
+    _TestGravitationalDynamicsInterface,
+)
 
 
-class TestMPIInterface(TestWithMPI):
-    
-    def test0(self):
-        instance = ph4Interface()
-        instance.initialize_code()
-        instance.cleanup_code()
-        instance.stop()
-        
-    def test1(self):
-        instance = ph4Interface()
-        instance.initialize_code()
-        instance.set_eta(0.01)
-        
-        index, error = instance.new_particle(11.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 2.0)
-        self.assertEqual(error, 0)
-        self.assertEqual(index, 1)
-        error = instance.commit_particles()
-        self.assertEqual(error, 0)
-        
-        retrieved_state = instance.get_state(index)
-        self.assertEqual(retrieved_state['__result'], 0)
-        self.assertEqual(11.0,  retrieved_state['mass'])
-        self.assertEqual(2.0, retrieved_state['radius'])
-        self.assertEqual(instance.get_number_of_particles()['number_of_particles'], 1)
-        instance.cleanup_code()
-        instance.stop()
-        
-    def test2(self):
-        instance = ph4Interface()
-        instance.initialize_code()
-        for x in [0.101, 4.0]:
-            error = instance.set_eps2(x)
-            self.assertEqual(error, 0)            
-            value, error = instance.get_eps2()
-            self.assertEqual(error, 0)
-            self.assertEqual(x, value)
-        instance.cleanup_code()
-        instance.stop()
-        
-    
-    def test3(self):
-        instance = ph4Interface()
-        instance.initialize_code()
-        instance.set_eta(0.01)
-        
-        instance.new_particle([11.0,12.0,13.0,14.0]
-            , [2.1,3.1,4.1,5.1]
-            , [2.2,3.2,4.2,5.2]
-            , [2.3,3.3,4.3,5.3]
-            , [2.4,3.4,4.4,5.4]
-            , [2.5,3.5,4.5,5.5]
-            , [2.6,3.6,4.6,5.6]
-            , [2.0,3.0,4.0,5.0])
-        error = instance.commit_particles()
-        retrieved_state = instance.get_state(1)
-        self.assertEqual(11.0,  retrieved_state['mass'])
-        retrieved_state = instance.get_state([2,3,4])
-        self.assertEqual(12.0,  retrieved_state['mass'][0])
-        self.assertEqual(instance.get_number_of_particles()['number_of_particles'], 4)
-        instance.cleanup_code()
-        instance.stop()
-    
-    def test5(self):
-        instance = ph4Interface()
-        instance.initialize_code()
-        instance.set_eta(0.01)
-        n = 4000
-        ids = [i for i in range(1,n)]
-        values = [1.0 * i for i in range(1,n)]
-        instance.new_particle(
-              values
-            , values
-            , values
-            , values
-            , values
-            , values
-            , values
-            , values)
-        error = instance.commit_particles()
-        retrieved_state = instance.get_state(1)
-        self.assertEqual(1.0,  retrieved_state['mass'])
-        retrieved_state = instance.get_state(3999)
-        instance.cleanup_code()
-        instance.stop()
-        self.assertEqual(3999.0,  retrieved_state['mass'])
-        
-    def test6(self):
-        instance = ph4Interface()#(debugger="xterm")
-        instance.initialize_code()
-        instance.set_eps2(0.0**2)
-        instance.set_eta(0.01)
-        instance.commit_parameters()
-        
-        instance.new_particle( 
-            [1.0,1.0,1.0],
-            [1.0,0.0,-1.0],
-            [0.0,0.0,0.0],
-            [0.0,0.0,0.0],
-            [0.0,1.0,0.0],
-            [0.0,0.0,0.0],
-            [0.0,0.0,0.0] )
-        instance.commit_particles()
-        Ep=instance.get_potential_energy()['potential_energy']
-        Ek=instance.get_kinetic_energy()['kinetic_energy']
-        self.assertEqual( Ek, 0.5)
-        self.assertEqual( Ep, -2.5)    
-        instance.delete_particle(2)
-        instance.recommit_particles()
-        n=instance.get_number_of_particles()['number_of_particles']
-        Ep=instance.get_potential_energy()['potential_energy']
-        Ek=instance.get_kinetic_energy()['kinetic_energy']
-    
-        instance.cleanup_code()
-        instance.stop()
-    
-        self.assertEqual( n, 2)
-        self.assertEqual( Ek, 0.)
-        self.assertEqual( Ep, -0.5)    
+class TestPh4Interface(_TestGravitationalDynamicsInterface, TestWithMPI):
+    def gravity_code_interface(self):
+        return ph4Interface
+
+    def test_reversed_time_allowed(self):
+        self.skip("not supported")
+
+    def starting_particle_index(self):
+        return 1
 
     def test7(self):
         instance = ph4Interface()
