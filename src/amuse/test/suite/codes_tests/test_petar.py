@@ -1,55 +1,62 @@
 from amuse.test.amusetest import TestWithMPI
-import os
 import numpy
-import math
 
 from amuse.community.petar.interface import PetarInterface, Petar
 
 from amuse.units import nbody_system
-from amuse.units import units
 from amuse import datamodel
 from amuse.ic import plummer
 from amuse.ic.plummer import new_plummer_model
 
+from .gd_tests import _TestGravitationalDynamicsInterface
 
-class TestPetarInterface(TestWithMPI):
 
-    def test_literature(self):
-        instance = PetarInterface()
-        self.assertTrue("Wang" in instance.all_literature_references_string())
-        instance.stop()
+class TestPetarInterface(_TestGravitationalDynamicsInterface, TestWithMPI):
+    def gravity_code_interface(self):
+        return PetarInterface
 
-    def test_retrieving_particle_state(self):
-        instance = PetarInterface()
+    def reference_includes(self):
+        return "Wang"
+
+    def starting_particle_index(self):
+        return 1
+
+    def test_reversed_time_allowed(self):
+        self.skip("not supported")
+
+    def test_calculate_energies(self):
+        interface = self.gravity_code_interface()
+        instance = self.new_instance_of_an_optional_code(interface)
         instance.initialize_code()
+        instance.set_eps2(0.0**2)
+        instance.commit_parameters()
 
-        res1 = instance.new_particle(
-            mass=11.0,
-            x=0.0, y=0.0, z=0.0,
-            vx=0.0, vy=0.0, vz=0.0,
-            radius=2.0,
+        instance.new_particle(
+            [1.0, 1.0, 1.0],
+            [1.0, 0.0, -1.0],
+            [0.0, 0.0, 0.0],
+            [0.0, 0.0, 0.0],
+            [0.0, 1.0, 0.0],
+            [0.0, 0.0, 0.0],
+            [0.0, 0.0, 0.0],
         )
-        res2 = instance.new_particle(
-            mass=21.0,
-            x=10.0, y=0.0, z=0.0,
-            vx=10.0, vy=0.0, vz=0.0,
-            radius=5.0,
-        )
+        instance.commit_particles()
+        Ep = instance.get_potential_energy()['potential_energy']
+        Ek = instance.get_kinetic_energy()['kinetic_energy']
+        self.assertAlmostEqual(Ek, 0.5, places=6)
+        self.assertAlmostEqual(Ep, -2.5, places=6)
+        instance.delete_particle(self.starting_particle_index()+1)
+        instance.recommit_particles()
+        n = instance.get_number_of_particles()['number_of_particles']
+        Ep = instance.get_potential_energy()['potential_energy']
+        Ek = instance.get_kinetic_energy()['kinetic_energy']
 
-        self.assertEqual(1, res1['index_of_the_particle'])
-        self.assertEqual(2, res2['index_of_the_particle'])
-
-        retrieved_state1 = instance.get_state(0)
-        retrieved_state2 = instance.get_state(1)
-
-        self.assertEqual(11.0,  retrieved_state1['mass'])
-        self.assertEqual(21.0,  retrieved_state2['mass'])
-        self.assertEqual(0.0,  retrieved_state1['x'])
-        self.assertEqual(10.0,  retrieved_state2['x'])
-        self.assertEqual(2.0,  retrieved_state1['radius'])
-        self.assertEqual(5.0,  retrieved_state2['radius'])
-
+        instance.cleanup_code()
         instance.stop()
+
+        self.assertEqual(n, 2,  msg="incorrect number of particles")
+        self.assertAlmostEqual(Ek, 0.)
+        self.assertAlmostEqual(Ep, -0.5, places=6)
 
 
 class TestPetar(TestWithMPI):
