@@ -9,12 +9,12 @@ from optparse import OptionParser
 
 
 class GetCodeFromHttp:
-    filename_template = "{version}.zip"
+    filename_template = "{version}.tar.gz"
     name = ["PeTar", "SDAR", "FDPS"]
     url_template = [
-        "https://github.com/AICS-SC-GROUP/PeTar/archive/{version}.zip",
-        "https://github.com/lwang-astro/SDAR/archive/{version}.zip",
-        "https://github.com/FDPS/FDPS/archive/{version}.zip",
+        "https://github.com/AICS-SC-GROUP/PeTar/archive/{version}.tar.gz",
+        "https://github.com/lwang-astro/SDAR/archive/{version}.tar.gz",
+        "https://github.com/FDPS/FDPS/archive/{version}.tar.gz",
     ]
     version = [
         "",
