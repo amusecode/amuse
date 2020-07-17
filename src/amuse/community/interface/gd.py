@@ -926,6 +926,10 @@ class GravitationalDynamics(common.CommonCode):
         handler.add_transition('RUN', 'UPDATE', 'set_position', False)
         handler.add_transition('RUN', 'UPDATE', 'set_velocity', False)
         handler.add_transition('RUN', 'UPDATE', 'set_radius', False)
+        handler.add_method('UPDATE', 'set_mass')
+        handler.add_method('UPDATE', 'set_position')
+        handler.add_method('UPDATE', 'set_velocity')
+        handler.add_method('UPDATE', 'set_radius')
         
     def define_parameters(self, handler):
         handler.add_method_parameter(
