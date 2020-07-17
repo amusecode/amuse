@@ -112,7 +112,7 @@ class StateTransition(object):
         self.handler = handler
 
     def __str__(self):
-        return "transition from {0} to {1}".format(self.from_state, self.to_state)
+        return "{0}: transition from {1} to {2}".format(self.handler.interface.model_name,self.from_state, self.to_state)
 
     def do(self):
         if self.handler.log_transitions:
@@ -142,7 +142,7 @@ class StateMachine(OptionalAttributes):
         
     @option(type='boolean', sections=['state',])
     def log_transitions(self):
-        return False
+        return True
         
     def enable(self):
         self.is_enabled = True
