@@ -115,8 +115,7 @@ class StateTransition(object):
         return "{0}: transition from {1} to {2}".format(self.handler.interface.model_name,self.from_state, self.to_state)
 
     def do(self):
-        if self.handler.log_transitions:
-            logging.getLogger("state").info(str(self))
+        logging.getLogger("state").info(str(self))
             
         if self.method is None:
             self.handler.current_state = self.to_state
@@ -139,11 +138,7 @@ class StateMachine(OptionalAttributes):
     @option(type='boolean', sections=['state',])
     def is_enabled(self):
         return True
-        
-    @option(type='boolean', sections=['state',])
-    def log_transitions(self):
-        return True
-        
+
     def enable(self):
         self.is_enabled = True
 
