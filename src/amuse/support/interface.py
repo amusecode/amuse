@@ -1558,6 +1558,10 @@ class InCodeComponentImplementation(OldObjectsBindingMixin, OptionalAttributes):
     def parameter_set_names(self):
         #~ self.before_get_data_store_names()
         return list(self.get_handler('PARAMETER').definitions.keys())
+        
+    @property
+    def model_name(self):
+        return type(self).__name__
 
     
 class IncorrectMethodDefinition(IncorrectWrappedMethodException):
