@@ -22,7 +22,9 @@ the previous example. Thus, we can create the initial directory structure of our
 The Legacy Code
 ---------------
 For this example we will use a very simple forward Eulerian integration routine as our
-legacy code. We simply have a function that takes the initial condition of a set of particles (in the form of seven dynamics arrays), an integer containing the number of particles, and double precision scalars containing the time step, smoothing length, and gravitational constant. It outputs the new particle positions and velocities by updating the input arrays.
+legacy code. We simply have a function that takes the initial condition of a set of particles (in the form of seven dynamic arrays), an integer containing the number of particles, and double precision scalars containing the time step, smoothing length, and gravitational constant. It outputs the new particle positions and velocities by updating the input arrays.
+
+SimpleGrav.cc goes here.
 
 .. literalinclude:: simplegrav/SimpleGrav.cc
     :language: c++
@@ -178,6 +180,8 @@ synchronize_model           evolve all particles to the same time, if they
 The following code contains definitions for all legacy functions, although some
 non-essential functions only return error values:
 
+interface_1.cc goes here.
+
 .. literalinclude:: simplegrav/interface_1.cc
     :language: c++
 
@@ -187,7 +191,7 @@ State Model
 Many legacy codes have pieces of logistical code that must be executed between
 physically relevant pieces of code. For example, in a gravitational tree code,
 the tree must be constructed after all particles have been added, but before
-the system is evolved. In order to automate this, a state model can be defined
+the system is evolved, and not necessarily between evolve calls. In order to automate this, a state model can be defined
 for the code. This defines what functions can be run in what state of the code,
 but also how to transition between states, and what functions trigger that
 transition. A particularly convenient function is that it allows a transition, 
