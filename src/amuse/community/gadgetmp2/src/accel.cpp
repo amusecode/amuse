@@ -1,3 +1,18 @@
+/* ################################################################################## */
+/* ###                                                                            ### */
+/* ###                                 Gadgetmp2                                  ### */
+/* ###                                                                            ### */
+/* ###   Original: Gadget2 in the version used in Amuse                           ### */
+/* ###   Author: Gadget2 and Amuse contributors                                   ### */
+/* ###                                                                            ### */
+/* ###   Modified: July 2020                                                      ### */
+/* ###   Author: Thomas Schano                                                    ### */
+/* ###                                                                            ### */
+/* ###   Changes are intended to enable precise calculations in                   ### */
+/* ###   non periodic small domain simulations in which comoving parts            ### */
+/* ###   are simulated in std precision                                           ### */
+/* ###                                                                            ### */
+/* ################################################################################## */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -6,8 +21,8 @@
 #include <mpi.h>
 #endif
 
-#include "allvars.h"
-#include "proto.h"
+//#include "allvars.hpp"
+#include "proto.hpp"
 
 /*! \file accel.c
  *  \brief driver routine to carry out force computation
@@ -23,7 +38,7 @@
  *  is carried out. This includes an iteration on the correct number of
  *  neighbours.  Finally, the hydrodynamical forces are added.
  */
-void compute_accelerations(int mode)
+void gadgetmp2::compute_accelerations(int mode)
 {
   double tstart, tend;
 
@@ -32,16 +47,6 @@ void compute_accelerations(int mode)
       printf("Start force computation...\n");
       fflush(stdout);
     }
-
-#ifdef PMGRID
-  if(All.PM_Ti_endstep == All.Ti_Current)
-    {
-      tstart = second();
-      long_range_force();
-      tend = second();
-      All.CPU_PM += timediff(tstart, tend);
-    }
-#endif
 
   tstart = second();		/* measure the time for the full force computation */
 

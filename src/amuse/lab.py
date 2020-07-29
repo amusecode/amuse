@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 This is the public interface to the AMUSE
 *Astrophysical Multipurpose Software Environment* framework.
@@ -109,7 +110,7 @@ _community_codes = [
     "Brutus",
     "Fi",
     "Gadget2",
-    "Gadgetmg2",
+    "Gadgetmp2",
     "Athena",
     "Capreole",
     "MpiAmrVac",
@@ -146,8 +147,8 @@ for _name in _community_codes:
             "amuse.community."+_packagename+".interface",
             fromlist=[_name, _interfacename, _standardisedname],
         )
-        locals()[_name] = getattr(_interface, _name)
         locals()[_interfacename] = getattr(_interface, _interfacename)
+        locals()[_name] = getattr(_interface, _name)
         locals()[_standardisedname] = getattr(_interface, _standardisedname)
     except ImportError:
         locals()[_name] = _placeholder(_packagename)

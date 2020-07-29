@@ -1,3 +1,18 @@
+/* ################################################################################## */
+/* ###                                                                            ### */
+/* ###                                 Gadgetmp2                                  ### */
+/* ###                                                                            ### */
+/* ###   Original: Gadget2 in the version used in Amuse                           ### */
+/* ###   Author: Gadget2 and Amuse contributors                                   ### */
+/* ###                                                                            ### */
+/* ###   Modified: July 2020                                                      ### */
+/* ###   Author: Thomas Schano                                                    ### */
+/* ###                                                                            ### */
+/* ###   Changes are intended to enable precise calculations in                   ### */
+/* ###   non periodic small domain simulations in which comoving parts            ### */
+/* ###   are simulated in std precision                                           ### */
+/* ###                                                                            ### */
+/* ################################################################################## */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -7,8 +22,8 @@
 #endif
 #include <gsl/gsl_math.h>
 
-#include "allvars.h"
-#include "proto.h"
+//#include "allvars.hpp"
+#include "proto.hpp"
 
 
 /*! \file predict.c
@@ -30,10 +45,10 @@
  *  allows the domain decomposition to be carried out only every once in a
  *  while.
  */
-void move_particles(int time0, int time1)
+void gadgetmp2::move_particles(int time0, int time1)
 {
   int i, j;
-  double dt_drift, dt_gravkick, dt_hydrokick, dt_entr;
+  my_float dt_drift, dt_gravkick, dt_hydrokick, dt_entr;
   double t0, t1;
 
 
@@ -57,14 +72,8 @@ void move_particles(int time0, int time1)
 
       if(P[i].Type == 0)
 	{
-#ifdef PMGRID
-	  for(j = 0; j < 3; j++)
-	    SphP[i].VelPred[j] +=
-	      (P[i].GravAccel[j] + P[i].GravPM[j]) * dt_gravkick + SphP[i].HydroAccel[j] * dt_hydrokick;
-#else
 	  for(j = 0; j < 3; j++)
 	    SphP[i].VelPred[j] += P[i].GravAccel[j] * dt_gravkick + SphP[i].HydroAccel[j] * dt_hydrokick;
-#endif
 	  SphP[i].Density *= exp(-SphP[i].DivVel * dt_drift);
 	  SphP[i].Hsml *= exp(0.333333333333 * SphP[i].DivVel * dt_drift);
 
@@ -86,7 +95,7 @@ void move_particles(int time0, int time1)
     {
       for(i = 0; i < Numnodestree; i++)
 	for(j = 0; j < 3; j++)
-	  Nodes[All.MaxPart + i].u.d.s[j] += Extnodes[All.MaxPart + i].vs[j] * dt_drift;
+	  Nodes[All.MaxPart + i].u_d_s[j] += Extnodes[All.MaxPart + i].vs[j] * dt_drift;
 
       force_update_len();
 
@@ -97,41 +106,3 @@ void move_particles(int time0, int time1)
 
   All.CPU_Predict += timediff(t0, t1);
 }
-
-
-
-/*! This function makes sure that all particle coordinates (Pos) are
- *  periodically mapped onto the interval [0, BoxSize].  After this function
- *  has been called, a new domain decomposition should be done, which will
- *  also force a new tree construction.
- */
-#ifdef PERIODIC
-void do_box_wrapping(void)
-{
-  int i, j;
-  double boxsize[3];
-
-  for(j = 0; j < 3; j++)
-    boxsize[j] = All.BoxSize;
-
-#ifdef LONG_X
-  boxsize[0] *= LONG_X;
-#endif
-#ifdef LONG_Y
-  boxsize[1] *= LONG_Y;
-#endif
-#ifdef LONG_Z
-  boxsize[2] *= LONG_Z;
-#endif
-
-  for(i = 0; i < NumPart; i++)
-    for(j = 0; j < 3; j++)
-      {
-	while(P[i].Pos[j] < 0)
-	  P[i].Pos[j] += boxsize[j];
-
-	while(P[i].Pos[j] >= boxsize[j])
-	  P[i].Pos[j] -= boxsize[j];
-      }
-}
-#endif

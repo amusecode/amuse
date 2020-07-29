@@ -1,3 +1,18 @@
+/* ################################################################################## */
+/* ###                                                                            ### */
+/* ###                                 Gadgetmp2                                  ### */
+/* ###                                                                            ### */
+/* ###   Original: Gadget2 in the version used in Amuse                           ### */
+/* ###   Author: Gadget2 and Amuse contributors                                   ### */
+/* ###                                                                            ### */
+/* ###   Modified: July 2020                                                      ### */
+/* ###   Author: Thomas Schano                                                    ### */
+/* ###                                                                            ### */
+/* ###   Changes are intended to enable precise calculations in                   ### */
+/* ###   non periodic small domain simulations in which comoving parts            ### */
+/* ###   are simulated in std precision                                           ### */
+/* ###                                                                            ### */
+/* ################################################################################## */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -6,8 +21,8 @@
 #include <mpi.h>
 #endif
 
-#include "allvars.h"
-#include "proto.h"
+//#include "allvars.hpp"
+#include "proto.hpp"
 
 /*! \file peano.c
  *  \brief Routines to compute a Peano-Hilbert order
@@ -33,7 +48,7 @@ static int *Id;
  *  domain decomposition. Since gas particles need to stay at the beginning of
  *  the particle list, they are sorted as a separate block.
  */
-void peano_hilbert_order(void)
+void gadgetmp2::peano_hilbert_order(void)
 {
   int i;
 
@@ -42,8 +57,8 @@ void peano_hilbert_order(void)
 
   if(N_gas)
     {
-      mp = malloc(sizeof(struct peano_hilbert_data) * N_gas);
-      Id = malloc(sizeof(int) * N_gas);
+      mp = new peano_hilbert_data[N_gas];
+      Id =  new int[N_gas];
 
       for(i = 0; i < N_gas; i++)
 	{
@@ -65,10 +80,10 @@ void peano_hilbert_order(void)
 
   if(NumPart - N_gas > 0)
     {
-      mp = malloc(sizeof(struct peano_hilbert_data) * (NumPart - N_gas));
+      mp = (peano_hilbert_data*)malloc(sizeof(struct peano_hilbert_data) * (NumPart - N_gas));
       mp -= (N_gas);
 
-      Id = malloc(sizeof(int) * (NumPart - N_gas));
+      Id = new int[NumPart - N_gas];
       Id -= (N_gas);
 
       for(i = N_gas; i < NumPart; i++)
@@ -97,7 +112,7 @@ void peano_hilbert_order(void)
 
 /*! This function is a comparison kernel for sorting the Peano-Hilbert keys.
  */
-int compare_key(const void *a, const void *b)
+int gadgetmp2::compare_key(const void *a, const void *b)
 {
   if(((struct peano_hilbert_data *) a)->key < (((struct peano_hilbert_data *) b)->key))
     return -1;
@@ -116,7 +131,7 @@ int compare_key(const void *a, const void *b)
  *  particles are rearranged, such that each particle has to be moved at most
  *  once.)
  */
-void reorder_gas(void)
+void gadgetmp2::reorder_gas(void)
 {
   int i;
   struct particle_data Psave, Psource;
@@ -165,7 +180,7 @@ void reorder_gas(void)
  *  particles are rearranged, such that each particle has to be moved at most
  *  once.)
  */
-void reorder_particles(void)
+void gadgetmp2::reorder_particles(void)
 {
   int i;
   struct particle_data Psave, Psource;
@@ -262,7 +277,7 @@ static char quadrants_inverse_z[24][8];
 /*! This function computes a Peano-Hilbert key for an integer triplet (x,y,z),
  *  with x,y,z in the range between 0 and 2^bits-1.
  */
-peanokey peano_hilbert_key(int x, int y, int z, int bits)
+peanokey gadgetmp2::peano_hilbert_key(int x, int y, int z, int bits)
 {
   int i, quad, bitx, bity, bitz;
   int mask, rotation, rotx, roty, sense;
@@ -312,7 +327,8 @@ peanokey peano_hilbert_key(int x, int y, int z, int bits)
  *  input key. (This functionality is actually not needed in the present
  *  code.)
  */
-void peano_hilbert_key_inverse(peanokey key, int bits, int *x, int *y, int *z)
+
+void gadgetmp2::peano_hilbert_key_inverse(peanokey key, int bits, int *x, int *y, int *z)
 {
   int i, keypart, bitx, bity, bitz, mask, quad, rotation, shift;
   char sense, rotx, roty;

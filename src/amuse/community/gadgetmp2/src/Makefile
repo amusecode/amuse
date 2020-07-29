@@ -13,7 +13,6 @@ GSL_INCL ?= $(GSL_FLAGS)
 #----------------------------------------------------------------------
 
 include makefile_options
-
 # !!!                                                                                        !!!
 # !!! Do not set the options below, but set them in the makefile_options file included above !!!
 # !!!                                                                                        !!!
@@ -89,10 +88,11 @@ include makefile_options
 
 #--------------------------------------- Select some defaults
 
-CC       =  $(MPICC)  # sets the C-compiler
+#CC       =  $(MPICC)  # sets the C-compiler
+#CC       =  $(MPICXX)  # sets the C-compiler
+CXX =  $(MPICXX)  # sets the C-compiler
 OPTIMIZE =  # sets optimization and warning flags
 MPICHLIB =  # will be included by the linker -lmpich
-
 
 #--------------------------------------- Select target computer
 
@@ -221,23 +221,24 @@ OPTIONS =  $(OPTIMIZE) $(OPT)
 EXEC   = Gadget2
 
 LIBOBJS = run.o  predict.o begrun.o endrun.o global.o  \
-	 init.o restart.o  io.o    \
-	 accel.o   read_ic.o  ngb.o  \
+	 init.o   io.o    \
+	 accel.o    ngb.o  \
 	 system.o  allocate.o  density.o  \
 	 gravtree.o hydra.o  driftfac.o  \
 	 domain.o   potential.o  \
-     forcetree.o   peano.o gravtree_forcetest.o \
-	 pm_periodic.o pm_nonperiodic.o longrange.o \
+     forcetree.o   peano.o \
 	 density_at_pos.o \
 	 timestep_limit.o  sigvel.o
+# longrange.o pm_periodic.o pm_nonperiodic.o read_ic.o restart.o gravtree_forcetest.o \
 #  ^^^ Durier & Dalla Vecchia timestepping fix ^^^
 
 #	 timestep.o
 #  ^^^ original timestepping ^^^
 
-OBJS   = main.o allvars.o $(LIBOBJS)
+#OBJS   = main.o allvars.o $(LIBOBJS)
+OBJS   = allvars.o $(LIBOBJS)
 
-INCL   = allvars.h  proto.h  tags.h  Makefile
+INCL   = allvars.hpp  proto.hpp  tags.hpp  Makefile
 
 CODELIB = libgadget.a
 
@@ -256,17 +257,23 @@ endif
 
 
 #LIBS   =   $(HDF5LIB) -g  $(MPICHLIB)  $(GSL_LIBS) -lgsl -lgslcblas -lm $(FFTW_LIB) 
-LIBS   =   $(HDF5LIB) -g  $(MPICHLIB)  $(GSL_LIBS) -lgsl -lgslcblas -lm
+#LIBS   =   $(HDF5LIB) -g  $(MPICHLIB)  $(GSL_LIBS) -lgsl -lgslcblas -lm
+LIBS   =   $(HDF5LIB) -g  $(MPICHLIB)  -lm
 
-all:  $(EXEC) $(CODELIB)
+all:   $(OBJS) $(CODELIB) 
+#all:  $(EXEC) $(CODELIB)
 
 $(EXEC): $(OBJS) makefile_options
-	$(CC) $(OBJS) $(LIBS)   -o  $(EXEC)  
+	$(CC)  $(OBJS) $(LIBS)   -o  $(EXEC)  
 
 $(CODELIB): $(LIBOBJS) makefile_options
 	ar crs $@ $(LIBOBJS)
 
 $(OBJS): $(INCL) makefile_options
+	$(CXX)  -I../mpfrc++ $(OPT) -c $(VPATH)/*.cpp  
+#	echo
+#	env
+#	echo
 
 clean:
 	rm -f $(OBJS) $(EXEC) $(CODELIB)

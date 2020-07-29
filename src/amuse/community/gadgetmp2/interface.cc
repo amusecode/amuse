@@ -1,3 +1,18 @@
+/* ################################################################################## */
+/* ###                                                                            ### */
+/* ###                                 Gadgetmp2                                  ### */
+/* ###                                                                            ### */
+/* ###   Original: Gadget2 in the version used in Amuse                           ### */
+/* ###   Author: Gadget2 and Amuse contributors                                   ### */
+/* ###                                                                            ### */
+/* ###   Modified: July 2020                                                      ### */
+/* ###   Author: Thomas Schano                                                    ### */
+/* ###                                                                            ### */
+/* ###   Changes are intended to enable precise calculations in                   ### */
+/* ###   non periodic small domain simulations in which comoving parts            ### */
+/* ###   are simulated in std precision                                           ### */
+/* ###                                                                            ### */
+/* ################################################################################## */
 #ifndef NOMPI
 #include <mpi.h>
 #include <amuse_mpi.h>
@@ -12,7 +27,7 @@
 //AMUSE STOPPING CONDITIONS
 #include "stopcond.h"
 
-using namespace std;
+//using namespace std;
 
 const bool debug = false;
 
@@ -34,108 +49,109 @@ map<long long, int> local_index_map;
 
 double redshift_begin_parameter = 20.0;
 double redshift_max_parameter = 0.0;
+gadgetmp2 a;
 
 // general interface functions:
 
 void set_default_parameters(){
     // parameters that can be changed from AMUSE
-    All.TimeLimitCPU = 36000;
-    All.ComovingIntegrationOn = 0;
-    All.TypeOfTimestepCriterion = 0;
+    gadgetmp2::All.TimeLimitCPU = 36000;
+    gadgetmp2::All.ComovingIntegrationOn = 0;
+    gadgetmp2::All.TypeOfTimestepCriterion = 0;
 #ifdef PERIODIC
-    All.PeriodicBoundariesOn = 1;
+    gadgetmp2::All.PeriodicBoundariesOn = 1;
 #else
-    All.PeriodicBoundariesOn = 0;
+    gadgetmp2::All.PeriodicBoundariesOn = 0;
 #endif
-    All.Time = 0.0;
-    All.TimeBegin = 0.0;
-    All.TimeMax = 100.0;
-    All.Omega0 = 0;
-    All.OmegaLambda = 0;
-    All.OmegaBaryon = 0;
-    All.HubbleParam = 0.7;
-    All.BoxSize = 1.0;
-    All.TimeBetStatistics = 0.1;
-    All.ErrTolIntAccuracy = 0.025;
-    All.CourantFac = 0.15;
-    All.MaxSizeTimestep = 0.01;
-    All.MinSizeTimestep = 0.0;
-    All.ErrTolTheta = 0.5;
-    All.TypeOfOpeningCriterion = 1;
-    All.ErrTolForceAcc = 0.005;
-    All.TreeDomainUpdateFrequency = 0.05;
-    All.DesNumNgb = 50;
-    All.MaxNumNgbDeviation = 5.;
-    All.ArtBulkViscConst = 0.5;
-    All.ArtBulkViscBeta = 1.;
-    All.MinGasTemp = 0;
-    All.UnitLength_in_cm = 3.085678e21;
-    All.UnitMass_in_g = 1.989e43;
-    All.UnitVelocity_in_cm_per_s = 1e5;
-    All.UnitTime_in_s = All.UnitLength_in_cm / All.UnitVelocity_in_cm_per_s;
-    All.MinGasHsmlFractional = 0.0;
-    All.SofteningGas = 0.01;
-    All.SofteningHalo = 0.01;
-    All.SofteningGasMaxPhys = 0.0;
-    All.SofteningHaloMaxPhys = 0.0;
-    set_softenings();
-    strcpy(All.OutputDir,   ".");
-    strcpy(All.EnergyFile,  "energy.txt");
-    strcpy(All.InfoFile,    "info.txt");
-    strcpy(All.TimingsFile, "timings.txt");
-    strcpy(All.CpuFile,     "cpu.txt");
+    gadgetmp2::All.Time = 0.0;
+    gadgetmp2::All.TimeBegin = 0.0;
+    gadgetmp2::All.TimeMax = 100.0;
+    gadgetmp2::All.Omega0 = 0;
+    gadgetmp2::All.OmegaLambda = 0;
+    gadgetmp2::All.OmegaBaryon = 0;
+    gadgetmp2::All.HubbleParam = 0.7;
+    gadgetmp2::All.BoxSize = 1.0;
+    gadgetmp2::All.TimeBetStatistics = 0.1;
+    gadgetmp2::All.ErrTolIntAccuracy = 0.025;
+    gadgetmp2::All.CourantFac = 0.15;
+    gadgetmp2::All.MaxSizeTimestep = 0.01;
+    gadgetmp2::All.MinSizeTimestep = 0.0;
+    gadgetmp2::All.ErrTolTheta = 0.5;
+    gadgetmp2::All.TypeOfOpeningCriterion = 1;
+    gadgetmp2::All.ErrTolForceAcc = 0.005;
+    gadgetmp2::All.TreeDomainUpdateFrequency = 0.05;
+    gadgetmp2::All.DesNumNgb = 50;
+    gadgetmp2::All.MaxNumNgbDeviation = 5.;
+    gadgetmp2::All.ArtBulkViscConst = 0.5;
+    gadgetmp2::All.ArtBulkViscBeta = 1.;
+    gadgetmp2::All.MinGasTemp = 0;
+    gadgetmp2::All.UnitLength_in_cm = 3.085678e21;
+    gadgetmp2::All.UnitMass_in_g = 1.989e43;
+    gadgetmp2::All.UnitVelocity_in_cm_per_s = 1e5;
+    gadgetmp2::All.UnitTime_in_s = gadgetmp2::All.UnitLength_in_cm / gadgetmp2::All.UnitVelocity_in_cm_per_s;
+    gadgetmp2::All.MinGasHsmlFractional = 0.0;
+    gadgetmp2::All.SofteningGas = 0.01;
+    gadgetmp2::All.SofteningHalo = 0.01;
+    gadgetmp2::All.SofteningGasMaxPhys = 0.0;
+    gadgetmp2::All.SofteningHaloMaxPhys = 0.0;
+    gadgetmp2::set_softenings();
+    strcpy(gadgetmp2::All.OutputDir,   ".");
+    strcpy(gadgetmp2::All.EnergyFile,  "energy.txt");
+    strcpy(gadgetmp2::All.InfoFile,    "info.txt");
+    strcpy(gadgetmp2::All.TimingsFile, "timings.txt");
+    strcpy(gadgetmp2::All.CpuFile,     "cpu.txt");
 
     // parameters that are fixed for AMUSE:
-    All.PartAllocFactor = 1.5; // Memory allocation parameter
-    All.TreeAllocFactor = 0.8; // Memory allocation parameter
-    All.BufferSize = 25;       // Memory allocation parameter
-    All.ResubmitOn = 0;              // Keep this turned off!
-    All.OutputListOn = 0;            // Keep this turned off!
-    All.GravityConstantInternal = 0; // Keep this turned off!
+    gadgetmp2::All.PartAllocFactor = 1.5; // Memory allocation parameter
+    gadgetmp2::All.TreeAllocFactor = 0.8; // Memory allocation parameter
+    gadgetmp2::All.BufferSize = 25;       // Memory allocation parameter
+    gadgetmp2::All.ResubmitOn = 0;              // Keep this turned off!
+    gadgetmp2::All.OutputListOn = 0;            // Keep this turned off!
+    gadgetmp2::All.GravityConstantInternal = 0; // Keep this turned off!
 
     // parameters that are unused for AMUSE:
-    strcpy(All.InitCondFile, "");
-    strcpy(All.RestartFile, "");
-    strcpy(All.SnapshotFileBase, "");
-    strcpy(All.OutputListFilename, "");
-    strcpy(All.ResubmitCommand, "");
-    All.ICFormat = 1;
-    All.SnapFormat = 1;
-    All.TimeBetSnapshot = 100.0;
-    All.TimeOfFirstSnapshot = 100.0;
-    All.CpuTimeBetRestartFile = 36000.0;
-    All.NumFilesPerSnapshot = 1;
-    All.NumFilesWrittenInParallel = 1;
-    All.InitGasTemp = 0;
-    All.MaxRMSDisplacementFac = 0.2; // parameter for PM; PM is currently not supported
+    strcpy(gadgetmp2::All.InitCondFile, "");
+    strcpy(gadgetmp2::All.RestartFile, "");
+    strcpy(gadgetmp2::All.SnapshotFileBase, "");
+    strcpy(gadgetmp2::All.OutputListFilename, "");
+    strcpy(gadgetmp2::All.ResubmitCommand, "");
+    gadgetmp2::All.ICFormat = 1;
+    gadgetmp2::All.SnapFormat = 1;
+    gadgetmp2::All.TimeBetSnapshot = 100.0;
+    gadgetmp2::All.TimeOfFirstSnapshot = 100.0;
+    gadgetmp2::All.CpuTimeBetRestartFile = 36000.0;
+    gadgetmp2::All.NumFilesPerSnapshot = 1;
+    gadgetmp2::All.NumFilesWrittenInParallel = 1;
+    gadgetmp2::All.InitGasTemp = 0;
+    gadgetmp2::All.MaxRMSDisplacementFac = 0.2; // parameter for PM; PM is currently not supported
 }
 
 int initialize_code(){
     double t0, t1;
 #ifndef NOMPI
-    get_comm_world(&GADGET_WORLD);
-    MPI_Comm_rank(GADGET_WORLD, &ThisTask);
-    MPI_Comm_size(GADGET_WORLD, &NTask);
+    get_comm_world(&gadgetmp2::GADGET_WORLD);
+    MPI_Comm_rank(gadgetmp2::GADGET_WORLD, &gadgetmp2::ThisTask);
+    MPI_Comm_size(gadgetmp2::GADGET_WORLD, &gadgetmp2::NTask);
 #else
-    ThisTask = 0;
-    NTask = 1;
+    gadgetmp2::ThisTask = 0;
+    gadgetmp2::NTask = 1;
 #endif
-    for(PTask = 0; NTask > (1 << PTask); PTask++);
-    RestartFlag = All.TotNumPart = All.TotN_gas = 0;
-    All.CPU_TreeConstruction = All.CPU_TreeWalk = All.CPU_Gravity = All.CPU_Potential = All.CPU_Domain =
-        All.CPU_Snapshot = All.CPU_Total = All.CPU_CommSum = All.CPU_Imbalance = All.CPU_Hydro =
-        All.CPU_HydCompWalk = All.CPU_HydCommSumm = All.CPU_HydImbalance =
-        All.CPU_EnsureNgb = All.CPU_Predict = All.CPU_TimeLine = All.CPU_PM = All.CPU_Peano = 0;
-    CPUThisRun = 0;
-    t0 = second();
-    if(ThisTask == 0){
+    for(gadgetmp2::PTask = 0; gadgetmp2::NTask > (1 << gadgetmp2::PTask); gadgetmp2::PTask++);
+    gadgetmp2::RestartFlag = gadgetmp2::All.TotNumPart = gadgetmp2::All.TotN_gas = 0;
+    gadgetmp2::All.CPU_TreeConstruction = gadgetmp2::All.CPU_TreeWalk = gadgetmp2::All.CPU_Gravity = gadgetmp2::All.CPU_Potential = gadgetmp2::All.CPU_Domain =
+        gadgetmp2::All.CPU_Snapshot = gadgetmp2::All.CPU_Total = gadgetmp2::All.CPU_CommSum = gadgetmp2::All.CPU_Imbalance = gadgetmp2::All.CPU_Hydro =
+        gadgetmp2::All.CPU_HydCompWalk = gadgetmp2::All.CPU_HydCommSumm = gadgetmp2::All.CPU_HydImbalance =
+        gadgetmp2::All.CPU_EnsureNgb = gadgetmp2::All.CPU_Predict = gadgetmp2::All.CPU_TimeLine = gadgetmp2::All.CPU_PM = gadgetmp2::All.CPU_Peano = 0;
+    gadgetmp2::CPUThisRun = 0;
+    t0 = gadgetmp2::second();
+    if(gadgetmp2::ThisTask == 0){
         printf("\nThis is Gadget, version `%s'.\n", GADGETVERSION);
-        printf("\nRunning on %d processors.\n", NTask);
+        printf("\nRunning on %d processors.\n", gadgetmp2::NTask);
     }
 
-    t1 = second();
-    CPUThisRun += timediff(t0, t1);
-    All.CPU_Total += timediff(t0, t1);
+    t1 = gadgetmp2::second();
+    gadgetmp2::CPUThisRun += gadgetmp2::timediff(t0, t1);
+    gadgetmp2::All.CPU_Total += gadgetmp2::timediff(t0, t1);
 
     //AMUSE STOPPING CONDITIONS SUPPORT
     set_support_for_condition(NUMBER_OF_STEPS_DETECTION);
@@ -149,11 +165,11 @@ int initialize_code(){
 
 int cleanup_code(){
     if (outfiles_opened)
-        close_outputfiles();
+        gadgetmp2::close_outputfiles();
     if (particles_initialized){
-        free_memory();
-        ngb_treefree();
-        force_treefree();
+        gadgetmp2::free_memory();
+        gadgetmp2::ngb_treefree();
+        gadgetmp2::force_treefree();
     }
     return 0;
 }
@@ -161,9 +177,9 @@ int cleanup_code(){
 
 int check_parameters(){
 #ifndef NOMPI
-    MPI_Bcast(&All, sizeof(struct global_data_all_processes), MPI_BYTE, 0, GADGET_WORLD);
+    MPI_Bcast(&gadgetmp2::All, sizeof(struct global_data_all_processes), MPI_BYTE, 0, gadgetmp2::GADGET_WORLD);
 #endif
-    if (ThisTask){
+    if (gadgetmp2::ThisTask){
         return 0;
     }
     if(sizeof(long long) != 8){
@@ -182,28 +198,28 @@ int check_parameters(){
         printf("\nType `double' is not 64 bit on this platform. Stopping.\n\n");
         return -4;
     }
-    if(All.NumFilesWrittenInParallel < 1){
+    if(gadgetmp2::All.NumFilesWrittenInParallel < 1){
         printf("NumFilesWrittenInParallel MUST be at least 1\n");
         return -4;
     }
-    if(All.NumFilesWrittenInParallel > NTask){
+    if(gadgetmp2::All.NumFilesWrittenInParallel > gadgetmp2::NTask){
         printf("NumFilesWrittenInParallel MUST be smaller than number of processors\n");
         return -4;
     }
 #ifdef PERIODIC
-    if(All.PeriodicBoundariesOn == 0){
+    if(gadgetmp2::All.PeriodicBoundariesOn == 0){
         printf("Code was compiled with periodic boundary conditions switched on.\n");
         printf("You must set `PeriodicBoundariesOn=1', or recompile the code.\n");
         return -4;
     }
 #else
-    if(All.PeriodicBoundariesOn == 1){
+    if(gadgetmp2::All.PeriodicBoundariesOn == 1){
         printf("Code was compiled with periodic boundary conditions switched off.\n");
         printf("You must set `PeriodicBoundariesOn=0', or recompile the code.\n");
         return -4;
     }
 #endif
-    if(All.TypeOfTimestepCriterion >= 1){
+    if(gadgetmp2::All.TypeOfTimestepCriterion >= 1){
         printf("The specified timestep criterion\n");
         printf("is not valid\n");
         return -4;
@@ -220,43 +236,43 @@ int check_parameters(){
 }
 
 int commit_parameters(){
-    allocate_commbuffers();        /* ... allocate buffer-memory for particle
+    gadgetmp2::allocate_commbuffers();        /* ... allocate buffer-memory for particle
                                    exchange during force computation */
-    set_units();
+    gadgetmp2::set_units();
 #if defined(PERIODIC) && (!defined(PMGRID) || defined(FORCETEST))
     ewald_init();
 #endif
-    random_generator = gsl_rng_alloc(gsl_rng_ranlxd1);
-    gsl_rng_set(random_generator, 42);        /* start-up seed */
+    gadgetmp2::random_generator = gsl_rng_alloc(gsl_rng_ranlxd1);
+    gsl_rng_set(gadgetmp2::random_generator, 42);        /* start-up seed */
 #ifdef PMGRID
     long_range_init();
 #endif
-    set_random_numbers();
+    gadgetmp2::set_random_numbers();
 
     for(int i = 0; i < 6; i++)
-        All.MassTable[i] = 0;
+        gadgetmp2::All.MassTable[i] = 0;
 
-    if(All.ComovingIntegrationOn){
-        All.TimeBegin = 1.0 / (1.0 + redshift_begin_parameter);
-        All.TimeMax = 1.0 / (1.0 + redshift_max_parameter);
-        All.Timebase_interval = (log(All.TimeMax) - log(All.TimeBegin)) / TIMEBASE;
+    if(gadgetmp2::All.ComovingIntegrationOn){
+        gadgetmp2::All.TimeBegin = 1.0 / (1.0 + redshift_begin_parameter);
+        gadgetmp2::All.TimeMax = 1.0 / (1.0 + redshift_max_parameter);
+        gadgetmp2::All.Timebase_interval = (log(gadgetmp2::All.TimeMax) - log(gadgetmp2::All.TimeBegin)) / TIMEBASE;
     }else{
-        All.Timebase_interval = (All.TimeMax - All.TimeBegin) / TIMEBASE;
+        gadgetmp2::All.Timebase_interval = (gadgetmp2::All.TimeMax - gadgetmp2::All.TimeBegin) / TIMEBASE;
     }
-    All.Time = All.TimeBegin;
-    All.Ti_Current = 0;
-    All.NumCurrentTiStep = 0;        /* setup some counters */
-    All.SnapshotFileCount = 0;
-    All.TotNumOfForces = All.NumForcesSinceLastDomainDecomp = 0;
-    All.TimeLastStatistics = All.TimeBegin - All.TimeBetStatistics;
+    gadgetmp2::All.Time = gadgetmp2::All.TimeBegin;
+    gadgetmp2::All.Ti_Current = 0;
+    gadgetmp2::All.NumCurrentTiStep = 0;        /* setup some counters */
+    gadgetmp2::All.SnapshotFileCount = 0;
+    gadgetmp2::All.TotNumOfForces = gadgetmp2::All.NumForcesSinceLastDomainDecomp = 0;
+    gadgetmp2::All.TimeLastStatistics = gadgetmp2::All.TimeBegin - gadgetmp2::All.TimeBetStatistics;
 #ifdef PMGRID
-    All.PM_Ti_endstep = All.PM_Ti_begstep = 0;
+    gadgetmp2::All.PM_Ti_endstep = gadgetmp2::All.PM_Ti_begstep = 0;
 #endif
 #ifdef FLEXSTEPS
-    All.PresentMinStep = TIMEBASE;
+    gadgetmp2::All.PresentMinStep = TIMEBASE;
 #endif
-    All.Ti_nextoutput = -1; // find_next_outputtime(All.Ti_Current);
-    open_outputfiles();
+    gadgetmp2::All.Ti_nextoutput = -1; // find_next_outputtime(gadgetmp2::All.Ti_Current);
+    gadgetmp2::open_outputfiles();
     outfiles_opened = true;
     return check_parameters();
 }
@@ -268,42 +284,41 @@ int commit_particles(){
     double t0, t1;
     int i, j;
 #ifndef ISOTHERM_EQS
-    double a3;
+    my_float a3;
 #endif
-    double a, a_inv;
-    if (All.ComovingIntegrationOn) {
-        a = All.Time;
-        a_inv = 1.0 / All.Time;
+    my_float a, a_inv;
+
+    if (gadgetmp2::All.ComovingIntegrationOn) {
+        a = gadgetmp2::All.Time;
+        a_inv = 1.0 / gadgetmp2::All.Time;
     } else {
         a = a_inv = 1;
     }
-
-    t0 = second();
-    All.TotNumPart = dm_particles_in_buffer + sph_particles_in_buffer;
-    All.TotN_gas = sph_particles_in_buffer;
-    All.MaxPart = All.PartAllocFactor * (All.TotNumPart / NTask);        /* sets the maximum number of particles that may */
-    All.MaxPartSph = All.PartAllocFactor * (All.TotN_gas / NTask);        /* sets the maximum number of particles that may
+    t0 = gadgetmp2::second();
+    gadgetmp2::All.TotNumPart = dm_particles_in_buffer + sph_particles_in_buffer;
+    gadgetmp2::All.TotN_gas = sph_particles_in_buffer;
+    gadgetmp2::All.MaxPart = gadgetmp2::All.PartAllocFactor * (gadgetmp2::All.TotNumPart / gadgetmp2::NTask);        /* sets the maximum number of particles that may */
+    gadgetmp2::All.MaxPartSph = gadgetmp2::All.PartAllocFactor * (gadgetmp2::All.TotN_gas / gadgetmp2::NTask);        /* sets the maximum number of particles that may
                                                                         reside on a processor */
-    NumPart = dm_states.size()+sph_states.size();
-    N_gas = sph_states.size();
-    allocate_memory();
-
+    gadgetmp2::NumPart = dm_states.size()+sph_states.size();
+    gadgetmp2::N_gas = sph_states.size();
+    gadgetmp2::allocate_memory();
     // initialize sph particles
     i = 0;
     for (map<long long, sph_state>::iterator state_iter = sph_states.begin();
             state_iter != sph_states.end(); state_iter++, i++){
-        P[i].ID = (*state_iter).first;
-        P[i].Mass = (*state_iter).second.mass;
-        P[i].Pos[0] = (*state_iter).second.x * a_inv;
-        P[i].Pos[1] = (*state_iter).second.y * a_inv;
-        P[i].Pos[2] = (*state_iter).second.z * a_inv;
-        P[i].Vel[0] = (*state_iter).second.vx * a;
-        P[i].Vel[1] = (*state_iter).second.vy * a;
-        P[i].Vel[2] = (*state_iter).second.vz * a;
-        P[i].Type = 0; // SPH particles (dark matter particles have type 1)
-        SphP[i].Entropy = (*state_iter).second.u;
-        SphP[i].Density = -1;
-        SphP[i].Hsml = 0;
+        gadgetmp2::P[i].ID = (*state_iter).first;
+        gadgetmp2::P[i].Mass = (*state_iter).second.mass;
+        gadgetmp2::P[i].Pos[0] = (*state_iter).second.x * a_inv;
+        gadgetmp2::P[i].Pos[1] = (*state_iter).second.y * a_inv;
+        gadgetmp2::P[i].Pos[2] = (*state_iter).second.z * a_inv;
+        gadgetmp2::P[i].Vel[0] = (*state_iter).second.vx * a;
+        gadgetmp2::P[i].Vel[1] = (*state_iter).second.vy * a;
+        gadgetmp2::P[i].Vel[2] = (*state_iter).second.vz * a;
+        gadgetmp2::P[i].Type = 0; // SPH particles (dark matter particles have type 1)
+        gadgetmp2::SphP[i].Entropy = (*state_iter).second.u;
+        gadgetmp2::SphP[i].Density = -1;
+        gadgetmp2::SphP[i].Hsml = 0;
 #ifdef MORRIS97VISC
         SphP[i].Alpha = (*state_iter).second.alpha;
         SphP[i].DAlphaDt = (*state_iter).second.dalphadt;
@@ -312,102 +327,103 @@ int commit_particles(){
     sph_states.clear();
 
     // initialize dark matter particles
-    i = N_gas;
+    i = gadgetmp2::N_gas;
     for (map<long long, dynamics_state>::iterator state_iter = dm_states.begin();
             state_iter != dm_states.end(); state_iter++, i++){
-        P[i].ID = (*state_iter).first;
-        P[i].Mass = (*state_iter).second.mass;
-        P[i].Pos[0] = (*state_iter).second.x * a_inv;
-        P[i].Pos[1] = (*state_iter).second.y * a_inv;
-        P[i].Pos[2] = (*state_iter).second.z * a_inv;
-        P[i].Vel[0] = (*state_iter).second.vx * a;
-        P[i].Vel[1] = (*state_iter).second.vy * a;
-        P[i].Vel[2] = (*state_iter).second.vz * a;
-        P[i].Type = 1; // dark matter particles (SPH particles have type 0)
+        gadgetmp2::P[i].ID = (*state_iter).first;
+        gadgetmp2::P[i].Mass = (*state_iter).second.mass;
+        gadgetmp2::P[i].Pos[0] = (*state_iter).second.x * a_inv;
+        gadgetmp2::P[i].Pos[1] = (*state_iter).second.y * a_inv;
+        gadgetmp2::P[i].Pos[2] = (*state_iter).second.z * a_inv;
+        gadgetmp2::P[i].Vel[0] = (*state_iter).second.vx * a;
+        gadgetmp2::P[i].Vel[1] = (*state_iter).second.vy * a;
+        gadgetmp2::P[i].Vel[2] = (*state_iter).second.vz * a;
+        gadgetmp2::P[i].Type = 1; // dark matter particles (SPH particles have type 0)
     }
     dm_states.clear();
-    All.TimeBegin += All.Ti_Current * All.Timebase_interval;
-    All.Ti_Current = 0;
-    All.Time = All.TimeBegin;
-    set_softenings();
-    for(i = 0; i < NumPart; i++){        /*  start-up initialization */
+    gadgetmp2::All.TimeBegin += gadgetmp2::All.Ti_Current * gadgetmp2::All.Timebase_interval;
+    gadgetmp2::All.Ti_Current = 0;
+    gadgetmp2::All.Time = gadgetmp2::All.TimeBegin;
+    gadgetmp2::set_softenings();
+    for(i = 0; i < gadgetmp2::NumPart; i++){        /*  start-up initialization */
         for(j = 0; j < 3; j++)
-            P[i].GravAccel[j] = 0;
+            gadgetmp2::P[i].GravAccel[j] = 0;
 #ifdef PMGRID
         for(j = 0; j < 3; j++)
-            P[i].GravPM[j] = 0;
+            gadgetmp2::P[i].GravPM[j] = 0;
 #endif
-        P[i].Ti_endstep = 0;
-        P[i].Ti_begstep = 0;
-        P[i].OldAcc = 0;
-        P[i].GravCost = 1;
-        P[i].Potential = 0;
+        gadgetmp2::P[i].Ti_endstep = 0;
+        gadgetmp2::P[i].Ti_begstep = 0;
+        gadgetmp2::P[i].OldAcc = 0;
+        gadgetmp2::P[i].GravCost = 1;
+        gadgetmp2::P[i].Potential = 0;
     }
 #ifdef FLEXSTEPS
-    for(i = 0; i < NumPart; i++)        /*  start-up initialization */
+    for(i = 0; i < gadgetmp2::NumPart; i++)        /*  start-up initialization */
         P[i].FlexStepGrp = (int) (TIMEBASE * get_random_number(P[i].ID));
 #endif
-    for(i = 0; i < N_gas; i++){        /* initialize sph_properties */
+    for(i = 0; i < gadgetmp2::N_gas; i++){        /* initialize sph_properties */
         for(j = 0; j < 3; j++){
-            SphP[i].VelPred[j] = P[i].Vel[j];
-            SphP[i].HydroAccel[j] = 0;
+            gadgetmp2::SphP[i].VelPred[j] = gadgetmp2::P[i].Vel[j];
+            gadgetmp2::SphP[i].HydroAccel[j] = 0;
         }
-        SphP[i].DtEntropy = 0;
+        gadgetmp2::SphP[i].DtEntropy = 0;
 #ifdef TIMESTEP_UPDATE
-        SphP[i].FeedbackFlag = 0;
+        gadgetmp2::SphP[i].FeedbackFlag = 0;
         for(j = 0; j < 3; j++)
-            SphP[i].FeedAccel[j] = 0;
+            gadgetmp2::SphP[i].FeedAccel[j] = 0;
 #endif
     }
 
-    if((All.MaxPart < 1000)){
-        if (ThisTask == 0){
-            cout << "Gadget takes "<< All.PartAllocFactor  << " times the number of particles on a processors as a maximum."<<endl;
+    if((gadgetmp2::All.MaxPart < 1000)){
+        if (gadgetmp2::ThisTask == 0){
+            cout << "Gadget takes "<< gadgetmp2::All.PartAllocFactor  << " times the number of particles on a processors as a maximum."<<endl;
             cout << "For large numbers of particles some room is always available for storing nodes from other processors." << endl;
             cout << "For smaller numbers, this assumption is incorrect."<<endl;
             cout << "Changed allocation of tree to include more nodes."<<endl;
         }
-        //All.MaxPart = MAXTOPNODES;
-        All.TreeAllocFactor = 4000.0 / All.MaxPart;
-        ngb_treeallocate(MAX_NGB);
-        force_treeallocate(10 * All.TreeAllocFactor * All.MaxPart, 10 * All.MaxPart);
+        //gadgetmp2::All.MaxPart = MAXTOPNODES;
+        gadgetmp2::All.TreeAllocFactor = 4000.0 / gadgetmp2::All.MaxPart;
+        gadgetmp2::ngb_treeallocate(MAX_NGB);
+        gadgetmp2::force_treeallocate(10 * gadgetmp2::All.TreeAllocFactor * gadgetmp2::All.MaxPart, 10 * gadgetmp2::All.MaxPart);
     } else {
-        ngb_treeallocate(MAX_NGB);
-        force_treeallocate(All.TreeAllocFactor * All.MaxPart, All.MaxPart);
+        gadgetmp2::ngb_treeallocate(MAX_NGB);
+        gadgetmp2::force_treeallocate(gadgetmp2::All.TreeAllocFactor * gadgetmp2::All.MaxPart, gadgetmp2::All.MaxPart);
     }
-    
-    All.NumForcesSinceLastDomainDecomp = 1 + All.TotNumPart * All.TreeDomainUpdateFrequency;
-    Flag_FullStep = 1;                /* to ensure that Peano-Hilber order is done */
-    domain_Decomposition();        /* do initial domain decomposition (gives equal numbers of particles) */
+
+    gadgetmp2::All.NumForcesSinceLastDomainDecomp = 1 + gadgetmp2::All.TotNumPart * gadgetmp2::All.TreeDomainUpdateFrequency;
+    gadgetmp2::Flag_FullStep = 1;                /* to ensure that Peano-Hilber order is done */
+
+    gadgetmp2::domain_Decomposition();        /* do initial domain decomposition (gives equal numbers of particles) */
     update_particle_map();
+
     index_of_highest_mapped_particle = local_index_map.rbegin()->first;
 #ifndef NOMPI
-    MPI_Allreduce(MPI_IN_PLACE, &index_of_highest_mapped_particle, 1, MPI_LONG_LONG_INT, MPI_MAX, GADGET_WORLD);
+    MPI_Allreduce(MPI_IN_PLACE, &index_of_highest_mapped_particle, 1, MPI_LONG_LONG_INT, MPI_MAX, gadgetmp2::GADGET_WORLD);
 #endif
-    ngb_treebuild();                /* will build tree */
-    setup_smoothinglengths();
-    TreeReconstructFlag = 1;
+    gadgetmp2::ngb_treebuild();                /* will build tree */
+    gadgetmp2::setup_smoothinglengths();
+    gadgetmp2::TreeReconstructFlag = 1;
   /* at this point, the entropy variable normally contains the
    * internal energy, read in from the initial conditions file, unless the file
    * explicitly signals that the initial conditions contain the entropy directly.
    * Once the density has been computed, we can convert thermal energy to entropy.
    */
 #ifndef ISOTHERM_EQS
-    if(All.ComovingIntegrationOn){a3 = All.Time * All.Time * All.Time;}else{a3 = 1;}
-    for(i = 0; i < N_gas; i++)
-        SphP[i].Entropy = GAMMA_MINUS1 * SphP[i].Entropy / pow(SphP[i].Density / a3, GAMMA_MINUS1);
+    if(gadgetmp2::All.ComovingIntegrationOn){a3 = gadgetmp2::All.Time * gadgetmp2::All.Time * gadgetmp2::All.Time;}else{a3 = 1;}
+    for(i = 0; i < gadgetmp2::N_gas; i++)
+        gadgetmp2::SphP[i].Entropy = GAMMA_MINUS1 * gadgetmp2::SphP[i].Entropy / pow(gadgetmp2::SphP[i].Density / a3, GAMMA_MINUS1);
 #endif
 #ifdef PMGRID
     long_range_init_regionsize();
 #endif
-    if(All.ComovingIntegrationOn)
-        init_drift_table();
-    t1 = second();
-    CPUThisRun += timediff(t0, t1);
-    All.CPU_Total += timediff(t0, t1);
-
+    if(gadgetmp2::All.ComovingIntegrationOn)
+        gadgetmp2::init_drift_table();
+    t1 = gadgetmp2::second();
+    gadgetmp2::CPUThisRun += gadgetmp2::timediff(t0, t1);
+    gadgetmp2::All.CPU_Total += gadgetmp2::timediff(t0, t1);
     particles_initialized = true;
-    if (ThisTask == 0){
+    if (gadgetmp2::ThisTask == 0){
         cout << flush;
     }
     return 0;
@@ -416,37 +432,37 @@ int commit_particles(){
 void push_particle_data_on_state_vectors(){
     map<long long, int>::iterator iter;
     int i;
-    double a_inv, a;
+    my_float a_inv, a;
 #ifndef ISOTHERM_EQS
-    double a3;
-    if(All.ComovingIntegrationOn){a3 = All.Time * All.Time * All.Time;}else{a3 = 1;}
+    my_float a3;
+    if(gadgetmp2::All.ComovingIntegrationOn){a3 = gadgetmp2::All.Time * gadgetmp2::All.Time * gadgetmp2::All.Time;}else{a3 = 1;}
     if (!density_up_to_date){
-        density();
+        gadgetmp2::density();
         density_up_to_date = true;
     }
 #endif
-    if (All.ComovingIntegrationOn) {
-        a = All.Time;
-        a_inv = 1.0 / All.Time;
+    if (gadgetmp2::All.ComovingIntegrationOn) {
+        a = gadgetmp2::All.Time;
+        a_inv = 1.0 / gadgetmp2::All.Time;
     } else {
         a = a_inv = 1;
     }
     for (iter = local_index_map.begin(); iter != local_index_map.end(); iter++){
         i = (*iter).second;
-        if (P[i].Type == 0){
+        if (gadgetmp2::P[i].Type == 0){
             // store sph particle data
             sph_state state;
-            state.mass = P[i].Mass;
-            state.x =    P[i].Pos[0] * a;
-            state.y =    P[i].Pos[1] * a;
-            state.z =    P[i].Pos[2] * a;
-            state.vx =   P[i].Vel[0] * a_inv;
-            state.vy =   P[i].Vel[1] * a_inv;
-            state.vz =   P[i].Vel[2] * a_inv;
+            state.mass = gadgetmp2::P[i].Mass;
+            state.x =    gadgetmp2::P[i].Pos[0] * a;
+            state.y =    gadgetmp2::P[i].Pos[1] * a;
+            state.z =    gadgetmp2::P[i].Pos[2] * a;
+            state.vx =   gadgetmp2::P[i].Vel[0] * a_inv;
+            state.vy =   gadgetmp2::P[i].Vel[1] * a_inv;
+            state.vz =   gadgetmp2::P[i].Vel[2] * a_inv;
 #ifdef ISOTHERM_EQS
             state.u = SphP[i].Entropy;
 #else
-            state.u = SphP[i].Entropy * pow(SphP[i].Density / a3, GAMMA_MINUS1) / GAMMA_MINUS1;
+            state.u = gadgetmp2::SphP[i].Entropy * pow(gadgetmp2::SphP[i].Density / a3, GAMMA_MINUS1) / GAMMA_MINUS1;
 #endif
 
 #ifdef MORRIS97VISC
@@ -455,18 +471,18 @@ void push_particle_data_on_state_vectors(){
 #endif
 
 
-            sph_states.insert(std::pair<long long, sph_state>(P[i].ID, state));
+            sph_states.insert(std::pair<long long, sph_state>(gadgetmp2::P[i].ID, state));
         } else {
             // store dark matter particle data
             dynamics_state state;
-            state.mass = P[i].Mass;
-            state.x =    P[i].Pos[0] * a;
-            state.y =    P[i].Pos[1] * a;
-            state.z =    P[i].Pos[2] * a;
-            state.vx =   P[i].Vel[0] * a_inv;
-            state.vy =   P[i].Vel[1] * a_inv;
-            state.vz =   P[i].Vel[2] * a_inv;
-            dm_states.insert(std::pair<long long, dynamics_state>(P[i].ID, state));
+            state.mass = gadgetmp2::P[i].Mass;
+            state.x =    gadgetmp2::P[i].Pos[0] * a;
+            state.y =    gadgetmp2::P[i].Pos[1] * a;
+            state.z =    gadgetmp2::P[i].Pos[2] * a;
+            state.vx =   gadgetmp2::P[i].Vel[0] * a_inv;
+            state.vy =   gadgetmp2::P[i].Vel[1] * a_inv;
+            state.vz =   gadgetmp2::P[i].Vel[2] * a_inv;
+            dm_states.insert(std::pair<long long, dynamics_state>(gadgetmp2::P[i].ID, state));
         }
     }
 }
@@ -474,81 +490,81 @@ void push_particle_data_on_state_vectors(){
 int recommit_particles(){
     if (particles_initialized){
         push_particle_data_on_state_vectors();
-        free_memory();
-        ngb_treefree();
-        force_treefree();
+        gadgetmp2::free_memory();
+        gadgetmp2::ngb_treefree();
+        gadgetmp2::force_treefree();
     }
-    
+
     return commit_particles();
 }
 
 bool drift_to_t_end(int ti_end){
     bool done;
     int n, min, min_glob, flag, *temp;
-    double timeold;
+    my_float timeold;
     double t0, t1;
-    t0 = second();
-    timeold = All.Time;
-    for(n = 1, min = P[0].Ti_endstep; n < NumPart; n++){
-        if(min > P[n].Ti_endstep){
-            min = P[n].Ti_endstep;
+    t0 = gadgetmp2::second();
+    timeold = gadgetmp2::All.Time;
+    for(n = 1, min = gadgetmp2::P[0].Ti_endstep; n < gadgetmp2::NumPart; n++){
+        if(min > gadgetmp2::P[n].Ti_endstep){
+            min = gadgetmp2::P[n].Ti_endstep;
         }
     }
 #ifndef NOMPI
-    MPI_Allreduce(&min, &min_glob, 1, MPI_INT, MPI_MIN, GADGET_WORLD);
+    MPI_Allreduce(&min, &min_glob, 1, MPI_INT, MPI_MIN, gadgetmp2::GADGET_WORLD);
 #else
     min_glob = min;
 #endif
     /* We check whether this is a full step where all particles are synchronized */
     flag = 1;
-    for(n = 0; n < NumPart; n++)
-        if(P[n].Ti_endstep > min_glob)
+    for(n = 0; n < gadgetmp2::NumPart; n++)
+        if(gadgetmp2::P[n].Ti_endstep > min_glob)
             flag = 0;
 #ifndef NOMPI
-    MPI_Allreduce(&flag, &Flag_FullStep, 1, MPI_INT, MPI_MIN, GADGET_WORLD);
+    MPI_Allreduce(&flag, &gadgetmp2::Flag_FullStep, 1, MPI_INT, MPI_MIN, gadgetmp2::GADGET_WORLD);
 #else
-    Flag_FullStep = flag;
+    gadgetmp2::Flag_FullStep = flag;
 #endif
 #ifdef PMGRID
-    if(min_glob >= All.PM_Ti_endstep){
-        min_glob = All.PM_Ti_endstep;
-        Flag_FullStep = 1;
+    if(min_glob >= gadgetmp2::All.PM_Ti_endstep){
+        min_glob = gadgetmp2::All.PM_Ti_endstep;
+        gadgetmp2::Flag_FullStep = 1;
     }
 #endif
     /* Determine 'NumForceUpdate', i.e. the number of particles on this processor that are going to be active */
-    for(n = 0, NumForceUpdate = 0; n < NumPart; n++){
-        if(P[n].Ti_endstep == min_glob)
+    for(n = 0, gadgetmp2::NumForceUpdate = 0; n < gadgetmp2::NumPart; n++){
+        if(gadgetmp2::P[n].Ti_endstep == min_glob)
 #ifdef SELECTIVE_NO_GRAVITY
           if(!((1 << P[n].Type) & (SELECTIVE_NO_GRAVITY)))
 #endif
-            NumForceUpdate++;
+            gadgetmp2::NumForceUpdate++;
     }
     /* note: NumForcesSinceLastDomainDecomp has type "long long" */
-    temp = (int*) malloc(NTask * sizeof(int));
+    temp = new int[gadgetmp2::NTask];
 
 #ifndef NOMPI
-    MPI_Allgather(&NumForceUpdate, 1, MPI_INT, temp, 1, MPI_INT, GADGET_WORLD);
+    MPI_Allgather(&gadgetmp2::NumForceUpdate, 1, MPI_INT, temp, 1, MPI_INT, gadgetmp2::GADGET_WORLD);
 #else
-    temp[0] = NumForceUpdate;
+    temp[0] = gadgetmp2::NumForceUpdate;
 #endif
-    for(n = 0; n < NTask; n++)
-        All.NumForcesSinceLastDomainDecomp += temp[n];
+    for(n = 0; n < gadgetmp2::NTask; n++)
+        gadgetmp2::All.NumForcesSinceLastDomainDecomp += temp[n];
     free(temp);
-    t1 = second();
-    All.CPU_Predict += timediff(t0, t1);
+    t1 = gadgetmp2::second();
+    gadgetmp2::All.CPU_Predict += gadgetmp2::timediff(t0, t1);
     if (min_glob >= ti_end){
         min_glob = ti_end;
         done = true;
     } else {
         done = false;
     }
-    move_particles(All.Ti_Current, min_glob);
-    All.Ti_Current = min_glob;
-    if(All.ComovingIntegrationOn)
-        All.Time = All.TimeBegin * exp(All.Ti_Current * All.Timebase_interval);
+    gadgetmp2::move_particles(gadgetmp2::All.Ti_Current, min_glob);
+    gadgetmp2::All.Ti_Current = min_glob;
+    if(gadgetmp2::All.ComovingIntegrationOn)
+        gadgetmp2::All.Time = gadgetmp2::All.TimeBegin * exp(gadgetmp2::All.Ti_Current * gadgetmp2::All.Timebase_interval);
     else
-        All.Time = All.TimeBegin + All.Ti_Current * All.Timebase_interval;
-    All.TimeStep = All.Time - timeold;
+        gadgetmp2::All.Time = gadgetmp2::All.TimeBegin + gadgetmp2::All.Ti_Current * gadgetmp2::All.Timebase_interval;
+    gadgetmp2::All.TimeStep = gadgetmp2::All.Time - timeold.toDouble();
     return done;
 }
 
@@ -557,15 +573,15 @@ bool check_density_stopping_condition(){
     double minimum_density_parameter, maximum_density_parameter;
     get_stopping_condition_minimum_density_parameter(&minimum_density_parameter);
     get_stopping_condition_maximum_density_parameter(&maximum_density_parameter);
-    for (int i=0; i<N_gas; i++) {
-        if ( (SphP[i].Density < minimum_density_parameter) ||
-             (SphP[i].Density > maximum_density_parameter)) {
+    for (int i=0; i<gadgetmp2::N_gas; i++) {
+        if ( (gadgetmp2::SphP[i].Density < minimum_density_parameter) ||
+             (gadgetmp2::SphP[i].Density > maximum_density_parameter)) {
             int stopping_index  = next_index_for_stopping_condition();
             if (stopping_index >= 0) {
                 cout << "set_stopping_condition_info returned: " <<
                     set_stopping_condition_info(stopping_index, DENSITY_LIMIT_DETECTION) << endl;
                 cout << "set_stopping_condition_particle_index returned: " <<
-                    set_stopping_condition_particle_index(stopping_index, 0, P[i].ID) << endl;
+                    set_stopping_condition_particle_index(stopping_index, 0, gadgetmp2::P[i].ID) << endl;
             }
         }
     }
@@ -576,22 +592,22 @@ bool check_density_stopping_condition(){
 }
 bool check_internal_energy_stopping_condition(){
     int stopping_condition_is_set;
-    double internal_energy;
+    my_float internal_energy;
     double minimum_internal_energy_parameter, maximum_internal_energy_parameter;
     get_stopping_condition_minimum_internal_energy_parameter(&minimum_internal_energy_parameter);
     get_stopping_condition_maximum_internal_energy_parameter(&maximum_internal_energy_parameter);
 
 #ifndef ISOTHERM_EQS
-    double a3;
-    if(All.ComovingIntegrationOn){a3 = All.Time * All.Time * All.Time;}else{a3 = 1;}
+    my_float a3;
+    if(gadgetmp2::All.ComovingIntegrationOn){a3 = gadgetmp2::All.Time * gadgetmp2::All.Time * gadgetmp2::All.Time;}else{a3 = 1;}
 #endif
 
-    for (int i=0; i<N_gas; i++) {
+    for (int i=0; i<gadgetmp2::N_gas; i++) {
 #ifdef ISOTHERM_EQS
         internal_energy = SphP[i].Entropy;
 #else
-        internal_energy = SphP[i].Entropy *
-                pow(SphP[i].Density / a3, GAMMA_MINUS1) / GAMMA_MINUS1;
+        internal_energy = gadgetmp2::SphP[i].Entropy *
+                pow(gadgetmp2::SphP[i].Density / a3, GAMMA_MINUS1) / GAMMA_MINUS1;
 #endif
         if ( (internal_energy < minimum_internal_energy_parameter) ||
              (internal_energy > maximum_internal_energy_parameter)) {
@@ -600,7 +616,7 @@ bool check_internal_energy_stopping_condition(){
                 cout << "set_stopping_condition_info returned: " <<
                     set_stopping_condition_info(stopping_index, INTERNAL_ENERGY_LIMIT_DETECTION) << endl;
                 cout << "set_stopping_condition_particle_index returned: " <<
-                    set_stopping_condition_particle_index(stopping_index, 0, P[i].ID) << endl;
+                    set_stopping_condition_particle_index(stopping_index, 0, gadgetmp2::P[i].ID) << endl;
             }
         }
     }
@@ -633,23 +649,23 @@ int evolve_model_generic(double t_end){
 
     // .......
 
-    if (t_end > All.TimeMax)
+    if (t_end > gadgetmp2::All.TimeMax)
         return -7;
-    ZeroTimestepEncountered = 0;
-    if(All.ComovingIntegrationOn){
-        Ti_end = log(t_end / All.TimeBegin) / All.Timebase_interval;
+    gadgetmp2::ZeroTimestepEncountered = 0;
+    if(gadgetmp2::All.ComovingIntegrationOn){
+        Ti_end = (log(t_end / gadgetmp2::All.TimeBegin) / gadgetmp2::All.Timebase_interval);
     } else {
-        Ti_end = (t_end - All.TimeBegin) / All.Timebase_interval;
+        Ti_end = ((t_end - gadgetmp2::All.TimeBegin) / gadgetmp2::All.Timebase_interval);
     }
-    if (Ti_end >= All.Ti_Current){
+    if (Ti_end >= gadgetmp2::All.Ti_Current){
         global_quantities_of_system_up_to_date = density_up_to_date = false;
         done = drift_to_t_end(Ti_end); /* find next synchronization point and drift particles to MIN(this time, t_end). */
-        while (!done && All.Ti_Current < TIMEBASE && All.Time <= All.TimeMax) {
-            t0 = second();
-            every_timestep_stuff();        /* write some info to log-files */
-            domain_Decomposition();        /* do domain decomposition if needed */
+        while (!done && gadgetmp2::All.Ti_Current < TIMEBASE && gadgetmp2::All.Time <= gadgetmp2::All.TimeMax) {
+            t0 = gadgetmp2::second();
+            gadgetmp2::every_timestep_stuff();        /* write some info to log-files */
+            gadgetmp2::domain_Decomposition();        /* do domain decomposition if needed */
             particle_map_up_to_date = false;
-            compute_accelerations(0);        /* compute accelerations for
+            gadgetmp2::compute_accelerations(0);        /* compute accelerations for
                 * the particles that are to be advanced  */
 
             // AMUSE stopping conditions: density and internal energy check
@@ -662,42 +678,41 @@ int evolve_model_generic(double t_end){
             }
 
             /* check whether we want a full energy statistics */
-            if((All.Time - All.TimeLastStatistics) >= All.TimeBetStatistics) {
+            if((gadgetmp2::All.Time - gadgetmp2::All.TimeLastStatistics) >= gadgetmp2::All.TimeBetStatistics) {
 #ifdef COMPUTE_POTENTIAL_ENERGY
                 compute_potential();
 #endif
-                energy_statistics();        /* compute and output energy statistics */
-                All.TimeLastStatistics += All.TimeBetStatistics;
+                gadgetmp2::energy_statistics();        /* compute and output energy statistics */
+                gadgetmp2::All.TimeLastStatistics += gadgetmp2::All.TimeBetStatistics;
             }
-            advance_and_find_timesteps();        /* 'kick' active particles in
+            gadgetmp2::advance_and_find_timesteps();        /* 'kick' active particles in
                             * momentum space and compute new
                             * timesteps for them  */
             done = drift_to_t_end(Ti_end);
-            All.NumCurrentTiStep++;
+            gadgetmp2::All.NumCurrentTiStep++;
 
             /* Check whether we need to interrupt the run */
 #ifndef NOMPI
-            MPI_Allreduce(MPI_IN_PLACE, &ZeroTimestepEncountered, 1, MPI_INT, MPI_MAX, GADGET_WORLD);
+            MPI_Allreduce(MPI_IN_PLACE, &gadgetmp2::ZeroTimestepEncountered, 1, MPI_INT, MPI_MAX, gadgetmp2::GADGET_WORLD);
 #endif
-            if(ZeroTimestepEncountered)
+            if(gadgetmp2::ZeroTimestepEncountered)
                 return -8;
 
-            if(ThisTask == 0) {
+            if(gadgetmp2::ThisTask == 0) {
                 /* are we running out of CPU-time ? If yes, interrupt run. */
-                if(CPUThisRun > 0.85 * All.TimeLimitCPU){
+                if(gadgetmp2::CPUThisRun > 0.85 * gadgetmp2::All.TimeLimitCPU){
                     printf("reaching time-limit. stopping.\n");
                     stopflag = 2;
                 }
             }
 #ifndef NOMPI
-            MPI_Bcast(&stopflag, 1, MPI_INT, 0, GADGET_WORLD);
+            MPI_Bcast(&stopflag, 1, MPI_INT, 0, gadgetmp2::GADGET_WORLD);
 #endif
             if(stopflag)
                 return -5;
-
-            t1 = second();
-            All.CPU_Total += timediff(t0, t1);
-            CPUThisRun += timediff(t0, t1);
+            t1 = gadgetmp2::second();
+            gadgetmp2::All.CPU_Total += gadgetmp2::timediff(t0, t1);
+            gadgetmp2::CPUThisRun += gadgetmp2::timediff(t0, t1);
             //
             if(is_number_of_steps_detection_enabled) {
                 number_of_steps_innerloop++;
@@ -713,18 +728,18 @@ int evolve_model_generic(double t_end){
     } else {
         return -6;
     }
-    if (ThisTask == 0)
+    if (gadgetmp2::ThisTask == 0)
         cout << flush;
-    if (All.Ti_Current > TIMEBASE || All.Time > All.TimeMax)
+    if (gadgetmp2::All.Ti_Current > TIMEBASE || gadgetmp2::All.Time > gadgetmp2::All.TimeMax)
         return -7;
     return 0;
 }
 int evolve_to_redshift(double redshift){
-    if (!All.ComovingIntegrationOn) {return -9;}
+    if (!gadgetmp2::All.ComovingIntegrationOn) {return -9;}
     return evolve_model_generic(1.0 / (1.0 + redshift));
 }
 int evolve_model(double t_end){
-    if (All.ComovingIntegrationOn) {return -9;}
+    if (gadgetmp2::All.ComovingIntegrationOn) {return -9;}
     return evolve_model_generic(t_end);
 }
 
@@ -736,27 +751,26 @@ int construct_tree_if_needed(void){
     double tstart, tend;
     if (!particles_initialized)
         return -1;
-    tstart = second();
-    if (TreeReconstructFlag){
-        if(ThisTask == 0)
+    tstart = gadgetmp2::second();
+    if (gadgetmp2::TreeReconstructFlag){
+        if(gadgetmp2::ThisTask == 0)
             printf("Tree construction.\n");
-        force_treebuild(NumPart);
-        TreeReconstructFlag = 0;
-        if(ThisTask == 0)
+        gadgetmp2::force_treebuild(gadgetmp2::NumPart);
+        gadgetmp2::TreeReconstructFlag = 0;
+        if(gadgetmp2::ThisTask == 0)
             printf("Tree construction done.\n");
     }
-    tend = second();
-    All.CPU_TreeConstruction += timediff(tstart, tend);
+    tend = gadgetmp2::second();
+    gadgetmp2::All.CPU_TreeConstruction += gadgetmp2::timediff(tstart, tend);
     return 0;
 }
 
 int new_dm_particle(int *id, double mass, double x, double y, double z, double vx, double vy, double vz){
     particle_id_counter++;
-    if (ThisTask == 0)
+    if (gadgetmp2::ThisTask == 0)
         *id = particle_id_counter;
-
     // Divide the particles equally over all Tasks, Gadget will redistribute them later.
-    if (ThisTask == (dm_particles_in_buffer % NTask)){
+    if (gadgetmp2::ThisTask == (dm_particles_in_buffer % gadgetmp2::NTask)){
         dynamics_state state;
         state.mass = mass;
         state.x = x;
@@ -772,12 +786,13 @@ int new_dm_particle(int *id, double mass, double x, double y, double z, double v
 }
 
 int new_sph_particle(int *id, double mass, double x, double y, double z, double vx, double vy, double vz, double u){
+    exit(0);
     particle_id_counter++;
-    if (ThisTask == 0)
+    if (gadgetmp2::ThisTask == 0)
         *id = particle_id_counter;
 
     // Divide the sph particles equally over all Tasks, Gadget will redistribute them later.
-    if (ThisTask == (sph_particles_in_buffer % NTask)){
+    if (gadgetmp2::ThisTask == (sph_particles_in_buffer % gadgetmp2::NTask)){
         sph_state state;
         state.mass = mass;
         state.x = x;
@@ -788,7 +803,7 @@ int new_sph_particle(int *id, double mass, double x, double y, double z, double 
         state.vz = vz;
         state.u = u;
 #ifdef MORRIS97VISC
-        state.alpha = All.ArtBulkViscConst;
+        state.alpha = gadgetmp2::All.ArtBulkViscConst;
         state.dalphadt = 0;
 #endif
         sph_states.insert(std::pair<long long, sph_state>(particle_id_counter, state));
@@ -809,10 +824,10 @@ int delete_particle(int id){
     it = local_index_map.find(id);
     if (it != local_index_map.end()){
         local_index_map.erase(it);
-        found = 1 + P[(*it).second].Type; // 1 for sph; 2 for dm
+        found = 1 + gadgetmp2::P[(*it).second].Type; // 1 for sph; 2 for dm
     }
 #ifndef NOMPI
-    MPI_Allreduce(MPI_IN_PLACE, &found, 1, MPI_INT, MPI_MAX, GADGET_WORLD);
+    MPI_Allreduce(MPI_IN_PLACE, &found, 1, MPI_INT, MPI_MAX, gadgetmp2::GADGET_WORLD);
 #endif
     if (found){
         if (found == 2)
@@ -828,7 +843,7 @@ int delete_particle(int id){
         found = 1;
     }
 #ifndef NOMPI
-    MPI_Allreduce(MPI_IN_PLACE, &found, 1, MPI_INT, MPI_LOR, GADGET_WORLD);
+    MPI_Allreduce(MPI_IN_PLACE, &found, 1, MPI_INT, MPI_LOR, gadgetmp2::GADGET_WORLD);
 #endif
     if (found){
         dm_particles_in_buffer--;
@@ -841,7 +856,7 @@ int delete_particle(int id){
         found = 1;
     }
 #ifndef NOMPI
-    MPI_Allreduce(MPI_IN_PLACE, &found, 1, MPI_INT, MPI_LOR, GADGET_WORLD);
+    MPI_Allreduce(MPI_IN_PLACE, &found, 1, MPI_INT, MPI_LOR, gadgetmp2::GADGET_WORLD);
 #endif
     if (found){
         sph_particles_in_buffer--;
@@ -853,90 +868,90 @@ int delete_particle(int id){
 // parameter getters/setters:
 
 int get_time_step(double *timestep){
-    if (ThisTask) {return 0;}
-    *timestep = All.TimeStep;
+    if (gadgetmp2::ThisTask) {return 0;}
+    *timestep = gadgetmp2::All.TimeStep;
     return 0;
 }
 int set_time_step(double timestep){
-    if (ThisTask) {return 0;}
+    if (gadgetmp2::ThisTask) {return 0;}
     return -2;
 }
 int get_epsilon(double *epsilon){
-    if (ThisTask) {return 0;}
-    set_softenings();
-    *epsilon = All.SofteningTable[1];
+    if (gadgetmp2::ThisTask) {return 0;}
+    gadgetmp2::set_softenings();
+    *epsilon = gadgetmp2::All.SofteningTable[1];
     return 0;
 }
 int set_epsilon(double epsilon){
-    All.SofteningHalo = epsilon;
-    set_softenings();
+    gadgetmp2::All.SofteningHalo = epsilon;
+    gadgetmp2::set_softenings();
     return 0;
 }
 int get_eps2(double *epsilon_squared){
-    if (ThisTask) {return 0;}
+    if (gadgetmp2::ThisTask) {return 0;}
     return -2;
 }
 int set_eps2(double epsilon_squared){
-    if (ThisTask) {return 0;}
+    if (gadgetmp2::ThisTask) {return 0;}
     return -2;
 }
 int get_epsgas(double *gas_epsilon){
-    if (ThisTask) {return 0;}
-    set_softenings();
-    *gas_epsilon = All.SofteningTable[0];
+    if (gadgetmp2::ThisTask) {return 0;}
+    gadgetmp2::set_softenings();
+    *gas_epsilon = gadgetmp2::All.SofteningTable[0];
     return 0;
 }
 int set_epsgas(double gas_epsilon){
-    All.SofteningGas = gas_epsilon;
-    set_softenings();
+    gadgetmp2::All.SofteningGas = gas_epsilon;
+    gadgetmp2::set_softenings();
     return 0;
 }
 int get_unit_mass(double *code_mass_unit){
-    if (ThisTask) {return 0;}
-    *code_mass_unit = All.UnitMass_in_g;
+    if (gadgetmp2::ThisTask) {return 0;}
+    *code_mass_unit = gadgetmp2::All.UnitMass_in_g;
     return 0;
 }
 int set_unit_mass(double code_mass_unit){
-    All.UnitMass_in_g = code_mass_unit;
+    gadgetmp2::All.UnitMass_in_g = code_mass_unit;
     return 0;
 }
 int get_unit_length(double *code_length_unit){
-    if (ThisTask) {return 0;}
-    *code_length_unit = All.UnitLength_in_cm;
+    if (gadgetmp2::ThisTask) {return 0;}
+    *code_length_unit = gadgetmp2::All.UnitLength_in_cm;
     return 0;
 }
 int set_unit_length(double code_length_unit){
-    All.UnitLength_in_cm = code_length_unit;
+    gadgetmp2::All.UnitLength_in_cm = code_length_unit;
     return 0;
 }
 int get_unit_time(double *code_time_unit){
-    if (ThisTask) {return 0;}
-    *code_time_unit = All.UnitTime_in_s;
+    if (gadgetmp2::ThisTask) {return 0;}
+    *code_time_unit = gadgetmp2::All.UnitTime_in_s;
     return 0;
 }
 int set_unit_time(double code_time_unit){
-    All.UnitVelocity_in_cm_per_s = All.UnitLength_in_cm / code_time_unit;
-    All.UnitTime_in_s = code_time_unit;
+    gadgetmp2::All.UnitVelocity_in_cm_per_s = gadgetmp2::All.UnitLength_in_cm / code_time_unit;
+    gadgetmp2::All.UnitTime_in_s = code_time_unit;
     return 0;
 }
 int get_unit_velocity(double *code_velocity_unit){
-    if (ThisTask) {return 0;}
-    *code_velocity_unit = All.UnitVelocity_in_cm_per_s;
+    if (gadgetmp2::ThisTask) {return 0;}
+    *code_velocity_unit = gadgetmp2::All.UnitVelocity_in_cm_per_s;
     return 0;
 }
 int set_unit_velocity(double code_velocity_unit){
-    All.UnitVelocity_in_cm_per_s = code_velocity_unit;
-    All.UnitTime_in_s = All.UnitLength_in_cm / All.UnitVelocity_in_cm_per_s;
+    gadgetmp2::All.UnitVelocity_in_cm_per_s = code_velocity_unit;
+    gadgetmp2::All.UnitTime_in_s = gadgetmp2::All.UnitLength_in_cm / gadgetmp2::All.UnitVelocity_in_cm_per_s;
     return 0;
 }
 
 int get_gadget_output_directory(char **output_directory){
-    if (ThisTask) {return 0;}
-    *output_directory = All.OutputDir;
+    if (gadgetmp2::ThisTask) {return 0;}
+    *output_directory = gadgetmp2::All.OutputDir;
     return 0;
 }
 int get_viscosity_switch(char **viscosity_switch){
-    if (ThisTask) {return 0;}
+    if (gadgetmp2::ThisTask) {return 0;}
 #ifdef MONAGHAN83VISC
     *viscosity_switch = (char *)"Monaghan & Gingold 1983";
 #elif MORRIS97VISC
@@ -951,21 +966,21 @@ int set_gadget_output_directory(char *output_directory){
     int length = strlen(output_directory);
     if (length >= MAXLEN_FILENAME)
         return -1;
-    strcpy(All.OutputDir, output_directory);
+    strcpy(gadgetmp2::All.OutputDir, output_directory);
 #ifdef WIN32
     const char sep[] = "\\";
 #else
     const char sep[] = "/";
 #endif // WIN32
     if(length > 0) {
-        if(All.OutputDir[length - 1] != sep[0]) {
-            strcat(All.OutputDir, sep);
+        if(gadgetmp2::All.OutputDir[length - 1] != sep[0]) {
+            strcat(gadgetmp2::All.OutputDir, sep);
         }
     }
     return 0;
 }
 int get_nogravity(int *no_gravity_flag){
-    if (ThisTask) {return 0;}
+    if (gadgetmp2::ThisTask) {return 0;}
 #ifdef NOGRAVITY
     *no_gravity_flag = 1;
 #else
@@ -974,16 +989,16 @@ int get_nogravity(int *no_gravity_flag){
     return 0;
 }
 int get_gdgop(int *gadget_cell_opening_flag){
-    if (ThisTask) {return 0;}
-    *gadget_cell_opening_flag = All.TypeOfOpeningCriterion;
+    if (gadgetmp2::ThisTask) {return 0;}
+    *gadget_cell_opening_flag = gadgetmp2::All.TypeOfOpeningCriterion;
     return 0;
 }
 int set_gdgop(int gadget_cell_opening_flag){
-    All.TypeOfOpeningCriterion = gadget_cell_opening_flag;
+    gadgetmp2::All.TypeOfOpeningCriterion = gadget_cell_opening_flag;
     return 0;
 }
 int get_isotherm(int *isothermal_flag){
-    if (ThisTask) {return 0;}
+    if (gadgetmp2::ThisTask) {return 0;}
 #ifdef ISOTHERM_EQS
     *isothermal_flag = 1;
 #else
@@ -992,7 +1007,7 @@ int get_isotherm(int *isothermal_flag){
     return 0;
 }
 int get_eps_is_h(int *eps_is_h_flag){
-    if (ThisTask) {return 0;}
+    if (gadgetmp2::ThisTask) {return 0;}
 #if defined(ADAPTIVE_GRAVSOFT_FORGAS) &&  defined(UNEQUALSOFTENINGS)
     *eps_is_h_flag = 1;
 #else
@@ -1001,158 +1016,158 @@ int get_eps_is_h(int *eps_is_h_flag){
     return 0;
 }
 int get_nsmooth(int *nsmooth){
-    if (ThisTask) {return 0;}
-    *nsmooth = All.DesNumNgb;
+    if (gadgetmp2::ThisTask) {return 0;}
+    *nsmooth = gadgetmp2::All.DesNumNgb;
     return 0;
 }
 int set_nsmooth(int nsmooth){
-    All.DesNumNgb = nsmooth;
+    gadgetmp2::All.DesNumNgb = nsmooth;
     return 0;
 }
 int get_bh_tol(double *opening_angle){
-    if (ThisTask) {return 0;}
-    *opening_angle = All.ErrTolTheta;
+    if (gadgetmp2::ThisTask) {return 0;}
+    *opening_angle = gadgetmp2::All.ErrTolTheta;
     return 0;
 }
 int set_bh_tol(double opening_angle){
-    All.ErrTolTheta = opening_angle;
+    gadgetmp2::All.ErrTolTheta = opening_angle;
     return 0;
 }
 int get_gdgtol(double *gadget_cell_opening_constant){
-    if (ThisTask) {return 0;}
-    *gadget_cell_opening_constant = All.ErrTolForceAcc;
+    if (gadgetmp2::ThisTask) {return 0;}
+    *gadget_cell_opening_constant = gadgetmp2::All.ErrTolForceAcc;
     return 0;
 }
 int set_gdgtol(double gadget_cell_opening_constant){
-    All.ErrTolForceAcc = gadget_cell_opening_constant;
+    gadgetmp2::All.ErrTolForceAcc = gadget_cell_opening_constant;
     return 0;
 }
 int get_gamma(double *gamma){
-    if (ThisTask) {return 0;}
+    if (gadgetmp2::ThisTask) {return 0;}
     *gamma = GAMMA;
     return 0;
 }
 int get_alpha(double *artificial_viscosity_alpha){
-    if (ThisTask) {return 0;}
-    *artificial_viscosity_alpha = All.ArtBulkViscConst;
+    if (gadgetmp2::ThisTask) {return 0;}
+    *artificial_viscosity_alpha = gadgetmp2::All.ArtBulkViscConst;
     return 0;
 }
 int set_alpha(double artificial_viscosity_alpha){
-    All.ArtBulkViscConst = artificial_viscosity_alpha;
+    gadgetmp2::All.ArtBulkViscConst = artificial_viscosity_alpha;
     return 0;
 }
 int get_beta(double *artificial_viscosity_beta){
-    if (ThisTask) {return 0;}
-    *artificial_viscosity_beta = All.ArtBulkViscBeta;
+    if (gadgetmp2::ThisTask) {return 0;}
+    *artificial_viscosity_beta = gadgetmp2::All.ArtBulkViscBeta;
     return 0;
 }
 int set_beta(double artificial_viscosity_beta){
-    All.ArtBulkViscBeta = artificial_viscosity_beta;
+    gadgetmp2::All.ArtBulkViscBeta = artificial_viscosity_beta;
     return 0;
 }
 int get_courant(double *courant){
-    if (ThisTask) {return 0;}
-    *courant = All.CourantFac*2.0;
+    if (gadgetmp2::ThisTask) {return 0;}
+    *courant = gadgetmp2::All.CourantFac*2.0;
     return 0;
 }
 int set_courant(double courant){
-    All.CourantFac = courant/2.0;
+    gadgetmp2::All.CourantFac = courant/2.0;
     return 0;
 }
 int get_nsmtol(double *n_neighbour_tol){
-    if (ThisTask) {return 0;}
-    *n_neighbour_tol = All.MaxNumNgbDeviation / All.DesNumNgb;
+    if (gadgetmp2::ThisTask) {return 0;}
+    *n_neighbour_tol = (gadgetmp2::All.MaxNumNgbDeviation / gadgetmp2::All.DesNumNgb);
     return 0;
 }
 int set_nsmtol(double n_neighbour_tol){
-    All.MaxNumNgbDeviation = n_neighbour_tol * All.DesNumNgb;
+    gadgetmp2::All.MaxNumNgbDeviation = n_neighbour_tol * gadgetmp2::All.DesNumNgb;
     return 0;
 }
 
 int get_energy_file(char **energy_file){
-    if (ThisTask) {return 0;}
-    *energy_file = All.EnergyFile;
+    if (gadgetmp2::ThisTask) {return 0;}
+    *energy_file = gadgetmp2::All.EnergyFile;
     return 0;
 }
 int set_energy_file(char *energy_file){
-    strcpy(All.EnergyFile, energy_file);
+    strcpy(gadgetmp2::All.EnergyFile, energy_file);
     return 0;
 }
 int get_info_file(char **info_file){
-    if (ThisTask) {return 0;}
-    *info_file = All.InfoFile;
+    if (gadgetmp2::ThisTask) {return 0;}
+    *info_file = gadgetmp2::All.InfoFile;
     return 0;
 }
 int set_info_file(char *info_file){
-    strcpy(All.InfoFile, info_file);
+    strcpy(gadgetmp2::All.InfoFile, info_file);
     return 0;
 }
 int get_timings_file(char **timings_file){
-    if (ThisTask) {return 0;}
-    *timings_file = All.TimingsFile;
+    if (gadgetmp2::ThisTask) {return 0;}
+    *timings_file = gadgetmp2::All.TimingsFile;
     return 0;
 }
 int set_timings_file(char *timings_file){
-    strcpy(All.TimingsFile, timings_file);
+    strcpy(gadgetmp2::All.TimingsFile, timings_file);
     return 0;
 }
 int get_cpu_file(char **cpu_file){
-    if (ThisTask) {return 0;}
-    *cpu_file = All.CpuFile;
+    if (gadgetmp2::ThisTask) {return 0;}
+    *cpu_file = gadgetmp2::All.CpuFile;
     return 0;
 }
 int set_cpu_file(char *cpu_file){
-    strcpy(All.CpuFile, cpu_file);
+    strcpy(gadgetmp2::All.CpuFile, cpu_file);
     return 0;
 }
 
 int get_time_limit_cpu(double *time_limit_cpu){
-    if (ThisTask) {return 0;}
-    *time_limit_cpu = All.TimeLimitCPU;
+    if (gadgetmp2::ThisTask) {return 0;}
+    *time_limit_cpu = gadgetmp2::All.TimeLimitCPU;
     return 0;
 }
 int set_time_limit_cpu(double time_limit_cpu){
-    All.TimeLimitCPU = time_limit_cpu;
+    gadgetmp2::All.TimeLimitCPU = time_limit_cpu;
     return 0;
 }
 int get_comoving_integration_flag(bool *comoving_integration_flag){
-    if (ThisTask) {return 0;}
-    *comoving_integration_flag = All.ComovingIntegrationOn;
+    if (gadgetmp2::ThisTask) {return 0;}
+    *comoving_integration_flag = gadgetmp2::All.ComovingIntegrationOn;
     return 0;
 }
 int set_comoving_integration_flag(bool comoving_integration_flag){
-    All.ComovingIntegrationOn = comoving_integration_flag;
+    gadgetmp2::All.ComovingIntegrationOn = comoving_integration_flag;
     return 0;
 }
 int get_type_of_timestep_criterion(int *type_of_timestep_criterion){
-    if (ThisTask) {return 0;}
-    *type_of_timestep_criterion = All.TypeOfTimestepCriterion;
+    if (gadgetmp2::ThisTask) {return 0;}
+    *type_of_timestep_criterion = gadgetmp2::All.TypeOfTimestepCriterion;
     return 0;
 }
 int set_type_of_timestep_criterion(int type_of_timestep_criterion){
-    All.TypeOfTimestepCriterion = type_of_timestep_criterion;
+    gadgetmp2::All.TypeOfTimestepCriterion = type_of_timestep_criterion;
     return 0;
 }
 int get_begin_time(double *time_begin){
-    if (ThisTask) {return 0;}
-    *time_begin = All.TimeBegin;
+    if (gadgetmp2::ThisTask) {return 0;}
+    *time_begin = gadgetmp2::All.TimeBegin;
     return 0;
 }
 int set_begin_time(double time_begin){
-    All.TimeBegin = time_begin;
+    gadgetmp2::All.TimeBegin = time_begin;
     return 0;
 }
 int get_time_max(double *time_max){
-    if (ThisTask) {return 0;}
-    *time_max = All.TimeMax;
+    if (gadgetmp2::ThisTask) {return 0;}
+    *time_max = gadgetmp2::All.TimeMax;
     return 0;
 }
 int set_time_max(double time_max){
-    All.TimeMax = time_max;
+    gadgetmp2::All.TimeMax = time_max;
     return 0;
 }
 int get_redshift_begin(double *redshift_begin){
-    if (ThisTask) {return 0;}
+    if (gadgetmp2::ThisTask) {return 0;}
     *redshift_begin = redshift_begin_parameter;
     return 0;
 }
@@ -1161,7 +1176,7 @@ int set_redshift_begin(double redshift_begin){
     return 0;
 }
 int get_redshift_max(double *redshift_max){
-    if (ThisTask) {return 0;}
+    if (gadgetmp2::ThisTask) {return 0;}
     *redshift_max = redshift_max_parameter;
     return 0;
 }
@@ -1170,152 +1185,152 @@ int set_redshift_max(double redshift_max){
     return 0;
 }
 int get_omega_zero(double *omega_zero){
-    if (ThisTask) {return 0;}
-    *omega_zero = All.Omega0;
+    if (gadgetmp2::ThisTask) {return 0;}
+    *omega_zero = gadgetmp2::All.Omega0;
     return 0;
 }
 int set_omega_zero(double omega_zero){
-    All.Omega0 = omega_zero;
+    gadgetmp2::All.Omega0 = omega_zero;
     return 0;
 }
 int get_omega_lambda(double *omega_lambda){
-    if (ThisTask) {return 0;}
-    *omega_lambda = All.OmegaLambda;
+    if (gadgetmp2::ThisTask) {return 0;}
+    *omega_lambda = gadgetmp2::All.OmegaLambda;
     return 0;
 }
 int set_omega_lambda(double omega_lambda){
-    All.OmegaLambda = omega_lambda;
+    gadgetmp2::All.OmegaLambda = omega_lambda;
     return 0;
 }
 int get_omega_baryon(double *omega_baryon){
-    if (ThisTask) {return 0;}
-    *omega_baryon = All.OmegaBaryon;
+    if (gadgetmp2::ThisTask) {return 0;}
+    *omega_baryon = gadgetmp2::All.OmegaBaryon;
     return 0;
 }
 int set_omega_baryon(double omega_baryon){
-    All.OmegaBaryon = omega_baryon;
+    gadgetmp2::All.OmegaBaryon = omega_baryon;
     return 0;
 }
 int get_hubble_param(double *hubble_param){
-    if (ThisTask) {return 0;}
-    *hubble_param = All.HubbleParam;
+    if (gadgetmp2::ThisTask) {return 0;}
+    *hubble_param = gadgetmp2::All.HubbleParam;
     return 0;
 }
 int set_hubble_param(double hubble_param){
-    All.HubbleParam = hubble_param;
+    gadgetmp2::All.HubbleParam = hubble_param;
     return 0;
 }
 int get_err_tol_int_accuracy(double *err_tol_int_accuracy){
-    if (ThisTask) {return 0;}
-    *err_tol_int_accuracy = All.ErrTolIntAccuracy;
+    if (gadgetmp2::ThisTask) {return 0;}
+    *err_tol_int_accuracy = gadgetmp2::All.ErrTolIntAccuracy;
     return 0;
 }
 int set_err_tol_int_accuracy(double err_tol_int_accuracy){
-    All.ErrTolIntAccuracy = err_tol_int_accuracy;
+    gadgetmp2::All.ErrTolIntAccuracy = err_tol_int_accuracy;
     return 0;
 }
 int get_max_size_timestep(double *max_size_timestep){
-    if (ThisTask) {return 0;}
-    *max_size_timestep = All.MaxSizeTimestep;
+    if (gadgetmp2::ThisTask) {return 0;}
+    *max_size_timestep = gadgetmp2::All.MaxSizeTimestep;
     return 0;
 }
 int set_max_size_timestep(double max_size_timestep){
-    All.MaxSizeTimestep = max_size_timestep;
+    gadgetmp2::All.MaxSizeTimestep = max_size_timestep;
     return 0;
 }
 int get_min_size_timestep(double *min_size_timestep){
-    if (ThisTask) {return 0;}
-    *min_size_timestep = All.MinSizeTimestep;
+    if (gadgetmp2::ThisTask) {return 0;}
+    *min_size_timestep = gadgetmp2::All.MinSizeTimestep;
     return 0;
 }
 int set_min_size_timestep(double min_size_timestep){
-    All.MinSizeTimestep = min_size_timestep;
+    gadgetmp2::All.MinSizeTimestep = min_size_timestep;
     return 0;
 }
 int get_tree_domain_update_frequency(double *tree_domain_update_frequency){
-    if (ThisTask) {return 0;}
-    *tree_domain_update_frequency = All.TreeDomainUpdateFrequency;
+    if (gadgetmp2::ThisTask) {return 0;}
+    *tree_domain_update_frequency = gadgetmp2::All.TreeDomainUpdateFrequency;
     return 0;
 }
 int set_tree_domain_update_frequency(double tree_domain_update_frequency){
-    All.TreeDomainUpdateFrequency = tree_domain_update_frequency;
+    gadgetmp2::All.TreeDomainUpdateFrequency = tree_domain_update_frequency;
     return 0;
 }
 int get_time_between_statistics(double *time_between_statistics){
-    if (ThisTask) {return 0;}
-    *time_between_statistics = All.TimeBetStatistics;
+    if (gadgetmp2::ThisTask) {return 0;}
+    *time_between_statistics = gadgetmp2::All.TimeBetStatistics;
     return 0;
 }
 int set_time_between_statistics(double time_between_statistics){
-    All.TimeBetStatistics = time_between_statistics;
+    gadgetmp2::All.TimeBetStatistics = time_between_statistics;
     return 0;
 }
 int get_min_gas_temp(double *min_gas_temp){
-    if (ThisTask) {return 0;}
-    *min_gas_temp = All.MinGasTemp;
+    if (gadgetmp2::ThisTask) {return 0;}
+    *min_gas_temp = gadgetmp2::All.MinGasTemp;
     return 0;
 }
 int set_min_gas_temp(double min_gas_temp){
-    All.MinGasTemp = min_gas_temp;
+    gadgetmp2::All.MinGasTemp = min_gas_temp;
     return 0;
 }
 int get_min_gas_hsmooth_fractional(double *min_gas_hsmooth_fractional){
-    if (ThisTask) {return 0;}
-    *min_gas_hsmooth_fractional = All.MinGasHsmlFractional;
+    if (gadgetmp2::ThisTask) {return 0;}
+    *min_gas_hsmooth_fractional = gadgetmp2::All.MinGasHsmlFractional;
     return 0;
 }
 int set_min_gas_hsmooth_fractional(double min_gas_hsmooth_fractional){
-    All.MinGasHsmlFractional = min_gas_hsmooth_fractional;
+    gadgetmp2::All.MinGasHsmlFractional = min_gas_hsmooth_fractional;
     return 0;
 }
 int get_softening_gas_max_phys(double *softening_gas_max_phys){
-    if (ThisTask) {return 0;}
-    *softening_gas_max_phys = All.SofteningGasMaxPhys;
+    if (gadgetmp2::ThisTask) {return 0;}
+    *softening_gas_max_phys = gadgetmp2::All.SofteningGasMaxPhys;
     return 0;
 }
 int set_softening_gas_max_phys(double softening_gas_max_phys){
-    All.SofteningGasMaxPhys = softening_gas_max_phys;
+    gadgetmp2::All.SofteningGasMaxPhys = softening_gas_max_phys;
     return 0;
 }
 int get_softening_halo_max_phys(double *softening_halo_max_phys){
-    if (ThisTask) {return 0;}
-    *softening_halo_max_phys = All.SofteningHaloMaxPhys;
+    if (gadgetmp2::ThisTask) {return 0;}
+    *softening_halo_max_phys = gadgetmp2::All.SofteningHaloMaxPhys;
     return 0;
 }
 int set_softening_halo_max_phys(double softening_halo_max_phys){
-    All.SofteningHaloMaxPhys = softening_halo_max_phys;
+    gadgetmp2::All.SofteningHaloMaxPhys = softening_halo_max_phys;
     return 0;
 }
 
 int get_box_size(double *value)
 {
-    if (ThisTask) {return 0;}
-    *value = All.BoxSize;
+    if (gadgetmp2::ThisTask) {return 0;}
+    *value = gadgetmp2::All.BoxSize;
     return 0;
 }
 
 int set_box_size(double value)
 {
-    All.BoxSize = value;
+    gadgetmp2::All.BoxSize = value;
     return 0;
 }
 
 int get_periodic_boundaries_flag(bool *value)
 {
-    if (ThisTask) {return 0;}
-    *value = All.PeriodicBoundariesOn;
+    if (gadgetmp2::ThisTask) {return 0;}
+    *value = gadgetmp2::All.PeriodicBoundariesOn;
     return 0;
 }
 
 int set_periodic_boundaries_flag(bool value)
 {
-// All.PeriodicBoundariesOn is read only because compile time determined
+// gadgetmp2::All.PeriodicBoundariesOn is read only because compile time determined
     return -2;
 }
 
 int get_interpret_kicks_as_feedback_flag(bool *value)
 {
-    if (ThisTask) {return 0;}
+    if (gadgetmp2::ThisTask) {return 0;}
     *value = interpret_kicks_as_feedback;
     return 0;
 }
@@ -1327,7 +1342,7 @@ int set_interpret_kicks_as_feedback_flag(bool value)
 }
 
 int get_interpret_heat_as_feedback_flag(bool *value) {
-    if (ThisTask) {return 0;}
+    if (gadgetmp2::ThisTask) {return 0;}
     *value = interpret_heat_as_feedback;
     return 0;
 }
@@ -1360,9 +1375,9 @@ int get_index_of_next_particle(int index_of_the_particle, int *index_of_the_next
         next_local_index = index_of_highest_mapped_particle + 1;
     }
 
-    if (ThisTask == 0){
+    if (gadgetmp2::ThisTask == 0){
 #ifndef NOMPI
-        MPI_Reduce(MPI_IN_PLACE, &next_local_index, 1, MPI_LONG_LONG_INT, MPI_MIN, 0, GADGET_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, &next_local_index, 1, MPI_LONG_LONG_INT, MPI_MIN, 0, gadgetmp2::GADGET_WORLD);
 #endif
         *index_of_the_next_particle = next_local_index;
         if (next_local_index < index_of_highest_mapped_particle){
@@ -1374,7 +1389,7 @@ int get_index_of_next_particle(int index_of_the_particle, int *index_of_the_next
         }
     } else {
 #ifndef NOMPI
-        MPI_Reduce(&next_local_index, NULL, 1, MPI_LONG_LONG_INT, MPI_MIN, 0, GADGET_WORLD);
+        MPI_Reduce(&next_local_index, NULL, 1, MPI_LONG_LONG_INT, MPI_MIN, 0, gadgetmp2::GADGET_WORLD);
 #endif
         return 0;
     }
@@ -1382,14 +1397,13 @@ int get_index_of_next_particle(int index_of_the_particle, int *index_of_the_next
 
 void update_particle_map(void){
     local_index_map.clear();
-    for(int i = 0; i < NumPart; i++) {
-        local_index_map.insert(std::pair<long long, int>(P[i].ID, i));
+    for(int i = 0; i < gadgetmp2::NumPart; i++) {
+        local_index_map.insert(std::pair<long long, int>(gadgetmp2::P[i].ID, i));
     }
     particle_map_up_to_date = true;
 }
 int found_particle(int index_of_the_particle, int *local_index){
     map<long long, int>::iterator it;
-
     if (!particles_initialized || index_of_the_particle < 1 ||
             index_of_the_particle > index_of_highest_mapped_particle)
         return 0;
@@ -1414,21 +1428,21 @@ int get_mass(int *index, double *mass, int length){
     for (int i = 0; i < length; i++){
         if(found_particle(index[i], &local_index)){
             count[i] = 1;
-            buffer[i] = P[local_index].Mass;
+            buffer[i] = gadgetmp2::P[local_index].Mass.toDouble();
         } else {
             count[i] = 0;
             buffer[i] = 0;
         }
     }
-    if(ThisTask) {
+    if(gadgetmp2::ThisTask) {
 #ifndef NOMPI
-        MPI_Reduce(buffer, NULL, length, MPI_DOUBLE, MPI_SUM, 0, GADGET_WORLD);
-        MPI_Reduce(count, NULL, length, MPI_INT, MPI_SUM, 0, GADGET_WORLD);
+        MPI_Reduce(buffer, NULL, length, MPI_DOUBLE, MPI_SUM, 0, gadgetmp2::GADGET_WORLD);
+        MPI_Reduce(count, NULL, length, MPI_INT, MPI_SUM, 0, gadgetmp2::GADGET_WORLD);
 #endif
     } else {
 #ifndef NOMPI
-        MPI_Reduce(MPI_IN_PLACE, buffer, length, MPI_DOUBLE, MPI_SUM, 0, GADGET_WORLD);
-        MPI_Reduce(MPI_IN_PLACE, count, length, MPI_INT, MPI_SUM, 0, GADGET_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, buffer, length, MPI_DOUBLE, MPI_SUM, 0, gadgetmp2::GADGET_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, count, length, MPI_INT, MPI_SUM, 0, gadgetmp2::GADGET_WORLD);
 #endif
         for (int i = 0; i < length; i++){
             if (count[i] != 1){
@@ -1449,14 +1463,14 @@ int get_mass(int *index, double *mass, int length){
 
 int check_counts_and_free(int *count, int length){
     int errors = 0;
-    if(ThisTask) {
+    if(gadgetmp2::ThisTask) {
 #ifndef NOMPI
-        MPI_Reduce(count, NULL, length, MPI_INT, MPI_SUM, 0, GADGET_WORLD);
+        MPI_Reduce(count, NULL, length, MPI_INT, MPI_SUM, 0, gadgetmp2::GADGET_WORLD);
 #endif
         return 0;
     } else {
 #ifndef NOMPI
-        MPI_Reduce(MPI_IN_PLACE, count, length, MPI_INT, MPI_SUM, 0, GADGET_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, count, length, MPI_INT, MPI_SUM, 0, gadgetmp2::GADGET_WORLD);
 #endif
         for (int i = 0; i < length; i++){
             if (count[i] != 1)
@@ -1477,7 +1491,7 @@ int set_mass(int *index, double *mass, int length){
 
     for (int i = 0; i < length; i++){
         if(found_particle(index[i], &local_index)){
-            P[local_index].Mass = mass[i];
+            gadgetmp2::P[local_index].Mass = mass[i];
             count[i] = 1;
         } else count[i] = 0;
     }
@@ -1499,16 +1513,17 @@ int get_position_comoving(int *index, double *x, double *y, double *z, int lengt
     int *count = new int[length];
     int local_index;
 #ifdef PERIODIC
-    double boxSize = All.BoxSize;
-    double boxHalf = 0.5 * All.BoxSize;
+    double boxSize = gadgetmp2::All.BoxSize;
+    double boxHalf = 0.5 * gadgetmp2::All.BoxSize;
 #endif
+
 
     for (int i = 0; i < length; i++){
         if(found_particle(index[i], &local_index)){
             count[i] = 1;
-            buffer[i] = P[local_index].Pos[0];
-            buffer[i+length] = P[local_index].Pos[1];
-            buffer[i+2*length] = P[local_index].Pos[2];
+            buffer[i] = gadgetmp2::P[local_index].Pos[0].toDouble();
+            buffer[i+length] = gadgetmp2::P[local_index].Pos[1].toDouble();
+            buffer[i+2*length] = gadgetmp2::P[local_index].Pos[2].toDouble();
         } else {
             count[i] = 0;
             buffer[i] = 0;
@@ -1516,15 +1531,15 @@ int get_position_comoving(int *index, double *x, double *y, double *z, int lengt
             buffer[i+2*length] = 0;
         }
     }
-    if(ThisTask) {
+    if(gadgetmp2::ThisTask) {
 #ifndef NOMPI
-        MPI_Reduce(buffer, NULL, length*3, MPI_DOUBLE, MPI_SUM, 0, GADGET_WORLD);
-        MPI_Reduce(count, NULL, length, MPI_INT, MPI_SUM, 0, GADGET_WORLD);
+        MPI_Reduce(buffer, NULL, length*3, MPI_DOUBLE, MPI_SUM, 0, gadgetmp2::GADGET_WORLD);
+        MPI_Reduce(count, NULL, length, MPI_INT, MPI_SUM, 0, gadgetmp2::GADGET_WORLD);
 #endif
     } else {
 #ifndef NOMPI
-        MPI_Reduce(MPI_IN_PLACE, buffer, length*3, MPI_DOUBLE, MPI_SUM, 0, GADGET_WORLD);
-        MPI_Reduce(MPI_IN_PLACE, count, length, MPI_INT, MPI_SUM, 0, GADGET_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, buffer, length*3, MPI_DOUBLE, MPI_SUM, 0, gadgetmp2::GADGET_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, count, length, MPI_INT, MPI_SUM, 0, gadgetmp2::GADGET_WORLD);
 #endif
 #ifdef PERIODIC
         for (int i = 0; i < 3*length; i++){
@@ -1556,11 +1571,11 @@ int get_position_comoving(int *index, double *x, double *y, double *z, int lengt
 }
 int get_position(int *index, double *x, double *y, double *z, int length){
     int result = get_position_comoving(index, x, y, z, length);
-    if(ThisTask == 0 && All.ComovingIntegrationOn) {
+    if(gadgetmp2::ThisTask == 0 && gadgetmp2::All.ComovingIntegrationOn) {
         for (int i = 0; i < length; i++){
-            x[i] *= All.Time;
-            y[i] *= All.Time;
-            z[i] *= All.Time;
+            x[i] *= gadgetmp2::All.Time;
+            y[i] *= gadgetmp2::All.Time;
+            z[i] *= gadgetmp2::All.Time;
         }
     }
     return result;
@@ -1572,9 +1587,9 @@ int set_position_comoving(int *index, double *x, double *y, double *z, int lengt
 
     for (int i = 0; i < length; i++){
         if(found_particle(index[i], &local_index)){
-            P[local_index].Pos[0] = x[i];
-            P[local_index].Pos[1] = y[i];
-            P[local_index].Pos[2] = z[i];
+            gadgetmp2::P[local_index].Pos[0] = x[i];
+            gadgetmp2::P[local_index].Pos[1] = y[i];
+            gadgetmp2::P[local_index].Pos[2] = z[i];
             count[i] = 1;
         } else count[i] = 0;
     }
@@ -1582,8 +1597,8 @@ int set_position_comoving(int *index, double *x, double *y, double *z, int lengt
     return check_counts_and_free(count, length);
 }
 int set_position(int *index, double *x, double *y, double *z, int length){
-    if(All.ComovingIntegrationOn) {
-        double a_inv = 1.0 / All.Time;
+    if(gadgetmp2::All.ComovingIntegrationOn) {
+        double a_inv = 1.0 / gadgetmp2::All.Time;
         for (int i = 0; i < length; i++){
             x[i] *= a_inv;
             y[i] *= a_inv;
@@ -1602,9 +1617,9 @@ int get_velocity_gadget_u(int *index, double *vx, double *vy, double *vz, int le
     for (int i = 0; i < length; i++){
         if(found_particle(index[i], &local_index)){
             count[i] = 1;
-            buffer[i] = P[local_index].Vel[0];
-            buffer[i+length] = P[local_index].Vel[1];
-            buffer[i+2*length] = P[local_index].Vel[2];
+            buffer[i] = gadgetmp2::P[local_index].Vel[0].toDouble();
+            buffer[i+length] = gadgetmp2::P[local_index].Vel[1].toDouble();
+            buffer[i+2*length] = gadgetmp2::P[local_index].Vel[2].toDouble();
         } else {
             count[i] = 0;
             buffer[i] = 0;
@@ -1612,15 +1627,15 @@ int get_velocity_gadget_u(int *index, double *vx, double *vy, double *vz, int le
             buffer[i+2*length] = 0;
         }
     }
-    if(ThisTask) {
+    if(gadgetmp2::ThisTask) {
 #ifndef NOMPI
-        MPI_Reduce(buffer, NULL, length*3, MPI_DOUBLE, MPI_SUM, 0, GADGET_WORLD);
-        MPI_Reduce(count, NULL, length, MPI_INT, MPI_SUM, 0, GADGET_WORLD);
+        MPI_Reduce(buffer, NULL, length*3, MPI_DOUBLE, MPI_SUM, 0, gadgetmp2::GADGET_WORLD);
+        MPI_Reduce(count, NULL, length, MPI_INT, MPI_SUM, 0, gadgetmp2::GADGET_WORLD);
 #endif
     } else {
 #ifndef NOMPI
-        MPI_Reduce(MPI_IN_PLACE, buffer, length*3, MPI_DOUBLE, MPI_SUM, 0, GADGET_WORLD);
-        MPI_Reduce(MPI_IN_PLACE, count, length, MPI_INT, MPI_SUM, 0, GADGET_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, buffer, length*3, MPI_DOUBLE, MPI_SUM, 0, gadgetmp2::GADGET_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, count, length, MPI_INT, MPI_SUM, 0, gadgetmp2::GADGET_WORLD);
 #endif
         for (int i = 0; i < length; i++){
             if (count[i] != 1){
@@ -1645,8 +1660,8 @@ int get_velocity_gadget_u(int *index, double *vx, double *vy, double *vz, int le
 }
 int get_velocity_comoving(int *index, double *vx, double *vy, double *vz, int length){
     int result = get_velocity_gadget_u(index, vx, vy, vz, length);
-    if(ThisTask == 0 && All.ComovingIntegrationOn) {
-        double a2_inv = 1.0 / (All.Time * All.Time);
+    if(gadgetmp2::ThisTask == 0 && gadgetmp2::All.ComovingIntegrationOn) {
+        double a2_inv = 1.0 / (gadgetmp2::All.Time * gadgetmp2::All.Time);
         for (int i = 0; i < length; i++){
             vx[i] *= a2_inv;
             vy[i] *= a2_inv;
@@ -1657,8 +1672,8 @@ int get_velocity_comoving(int *index, double *vx, double *vy, double *vz, int le
 }
 int get_velocity(int *index, double *vx, double *vy, double *vz, int length){
     int result = get_velocity_gadget_u(index, vx, vy, vz, length);
-    if(ThisTask == 0 && All.ComovingIntegrationOn) {
-        double a_inv = 1.0 / All.Time;
+    if(gadgetmp2::ThisTask == 0 && gadgetmp2::All.ComovingIntegrationOn) {
+        double a_inv = 1.0 / gadgetmp2::All.Time;
         for (int i = 0; i < length; i++){
             vx[i] *= a_inv;
             vy[i] *= a_inv;
@@ -1674,18 +1689,18 @@ int set_velocity_gadget_u(int *index, double *vx, double *vy, double *vz, int le
 
     for (int i = 0; i < length; i++){
         if(found_particle(index[i], &local_index)){
-            P[local_index].Vel[0] = vx[i];
-            P[local_index].Vel[1] = vy[i];
-            P[local_index].Vel[2] = vz[i];
+            gadgetmp2::P[local_index].Vel[0] = vx[i];
+            gadgetmp2::P[local_index].Vel[1] = vy[i];
+            gadgetmp2::P[local_index].Vel[2] = vz[i];
             count[i] = 1;
 #ifdef TIMESTEP_UPDATE
-            if (interpret_kicks_as_feedback && P[local_index].Type == 0) {
-                SphP[local_index].FeedbackFlag = 2;
+            if (interpret_kicks_as_feedback && gadgetmp2::P[local_index].Type == 0) {
+                gadgetmp2::SphP[local_index].FeedbackFlag = 2;
             }
 #endif
 #ifdef TIMESTEP_LIMITER
-            if(interpret_kicks_as_feedback && P[local_index].Type == 0 && P[local_index].Ti_endstep != All.Ti_Current) {
-                make_it_active(local_index);
+            if(interpret_kicks_as_feedback && gadgetmp2::P[local_index].Type == 0 && gadgetmp2::P[local_index].Ti_endstep != gadgetmp2::All.Ti_Current) {
+                gadgetmp2::make_it_active(local_index);
             }
 #endif
         } else count[i] = 0;
@@ -1694,8 +1709,8 @@ int set_velocity_gadget_u(int *index, double *vx, double *vy, double *vz, int le
     return check_counts_and_free(count, length);
 }
 int set_velocity_comoving(int *index, double *vx, double *vy, double *vz, int length){
-    if(All.ComovingIntegrationOn) {
-        double a2 = All.Time * All.Time;
+    if(gadgetmp2::All.ComovingIntegrationOn) {
+        double a2 = (gadgetmp2::All.Time * gadgetmp2::All.Time);
         for (int i = 0; i < length; i++){
             vx[i] *= a2;
             vy[i] *= a2;
@@ -1705,11 +1720,11 @@ int set_velocity_comoving(int *index, double *vx, double *vy, double *vz, int le
     return set_velocity_gadget_u(index, vx, vy, vz, length);
 }
 int set_velocity(int *index, double *vx, double *vy, double *vz, int length){
-    if(All.ComovingIntegrationOn) {
+    if(gadgetmp2::All.ComovingIntegrationOn) {
         for (int i = 0; i < length; i++){
-            vx[i] *= All.Time;
-            vy[i] *= All.Time;
-            vz[i] *= All.Time;
+            vx[i] *= gadgetmp2::All.Time;
+            vy[i] *= gadgetmp2::All.Time;
+            vz[i] *= gadgetmp2::All.Time;
         }
     }
     return set_velocity_gadget_u(index, vx, vy, vz, length);
@@ -1721,20 +1736,20 @@ int get_state_gadget(int *index, double *mass, double *x, double *y, double *z, 
     int *count = new int[length];
     int local_index;
 #ifdef PERIODIC
-    double boxSize = All.BoxSize;
-    double boxHalf = 0.5 * All.BoxSize;
+    double boxSize = gadgetmp2::All.BoxSize;
+    double boxHalf = 0.5 * gadgetmp2::All.BoxSize;
 #endif
 
     for (int i = 0; i < length; i++){
         if(found_particle(index[i], &local_index)){
             count[i] = 1;
-            buffer[i] = P[local_index].Mass;
-            buffer[i+length] = P[local_index].Pos[0];
-            buffer[i+2*length] = P[local_index].Pos[1];
-            buffer[i+3*length] = P[local_index].Pos[2];
-            buffer[i+4*length] = P[local_index].Vel[0];
-            buffer[i+5*length] = P[local_index].Vel[1];
-            buffer[i+6*length] = P[local_index].Vel[2];
+            buffer[i] = gadgetmp2::P[local_index].Mass.toDouble();
+            buffer[i+length] = gadgetmp2::P[local_index].Pos[0].toDouble();
+            buffer[i+2*length] = gadgetmp2::P[local_index].Pos[1].toDouble();
+            buffer[i+3*length] = gadgetmp2::P[local_index].Pos[2].toDouble();
+            buffer[i+4*length] = gadgetmp2::P[local_index].Vel[0].toDouble();
+            buffer[i+5*length] = gadgetmp2::P[local_index].Vel[1].toDouble();
+            buffer[i+6*length] = gadgetmp2::P[local_index].Vel[2].toDouble();
         } else {
             count[i] = 0;
             buffer[i] = 0;
@@ -1746,15 +1761,15 @@ int get_state_gadget(int *index, double *mass, double *x, double *y, double *z, 
             buffer[i+6*length] = 0;
         }
     }
-    if(ThisTask) {
+    if(gadgetmp2::ThisTask) {
 #ifndef NOMPI
-        MPI_Reduce(buffer, NULL, length*7, MPI_DOUBLE, MPI_SUM, 0, GADGET_WORLD);
-        MPI_Reduce(count, NULL, length, MPI_INT, MPI_SUM, 0, GADGET_WORLD);
+        MPI_Reduce(buffer, NULL, length*7, MPI_DOUBLE, MPI_SUM, 0, gadgetmp2::GADGET_WORLD);
+        MPI_Reduce(count, NULL, length, MPI_INT, MPI_SUM, 0, gadgetmp2::GADGET_WORLD);
 #endif
     } else {
 #ifndef NOMPI
-        MPI_Reduce(MPI_IN_PLACE, buffer, length*7, MPI_DOUBLE, MPI_SUM, 0, GADGET_WORLD);
-        MPI_Reduce(MPI_IN_PLACE, count, length, MPI_INT, MPI_SUM, 0, GADGET_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, buffer, length*7, MPI_DOUBLE, MPI_SUM, 0, gadgetmp2::GADGET_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, count, length, MPI_INT, MPI_SUM, 0, gadgetmp2::GADGET_WORLD);
 #endif
 #ifdef PERIODIC
         for (int i = length; i < 4*length; i++){
@@ -1794,8 +1809,8 @@ int get_state_gadget(int *index, double *mass, double *x, double *y, double *z, 
 }
 int get_state_comoving(int *index, double *mass, double *x, double *y, double *z, double *vx, double *vy, double *vz, int length) {
     int result = get_state_gadget(index, mass, x, y, z, vx, vy, vz, length);
-    if(ThisTask == 0 && All.ComovingIntegrationOn) {
-        double a2_inv = 1.0 / (All.Time * All.Time);
+    if(gadgetmp2::ThisTask == 0 && gadgetmp2::All.ComovingIntegrationOn) {
+        double a2_inv = 1.0 / (gadgetmp2::All.Time * gadgetmp2::All.Time);
         for (int i = 0; i < length; i++){
             vx[i] *= a2_inv;
             vy[i] *= a2_inv;
@@ -1806,12 +1821,12 @@ int get_state_comoving(int *index, double *mass, double *x, double *y, double *z
 }
 int get_state(int *index, double *mass, double *x, double *y, double *z, double *vx, double *vy, double *vz, int length) {
     int result = get_state_gadget(index, mass, x, y, z, vx, vy, vz, length);
-    if(ThisTask == 0 && All.ComovingIntegrationOn) {
-        double a_inv = 1.0 / All.Time;
+    if(gadgetmp2::ThisTask == 0 && gadgetmp2::All.ComovingIntegrationOn) {
+        double a_inv = 1.0 / gadgetmp2::All.Time;
         for (int i = 0; i < length; i++){
-            x[i] *= All.Time;
-            y[i] *= All.Time;
-            z[i] *= All.Time;
+            x[i] *= gadgetmp2::All.Time;
+            y[i] *= gadgetmp2::All.Time;
+            z[i] *= gadgetmp2::All.Time;
             vx[i] *= a_inv;
             vy[i] *= a_inv;
             vz[i] *= a_inv;
@@ -1826,22 +1841,22 @@ int set_state_gadget(int *index, double *mass, double *x, double *y, double *z, 
 
     for (int i = 0; i < length; i++){
         if(found_particle(index[i], &local_index)){
-            P[local_index].Mass = mass[i];
-            P[local_index].Pos[0] = x[i];
-            P[local_index].Pos[1] = y[i];
-            P[local_index].Pos[2] = z[i];
-            P[local_index].Vel[0] = vx[i];
-            P[local_index].Vel[1] = vy[i];
-            P[local_index].Vel[2] = vz[i];
+            gadgetmp2::P[local_index].Mass = mass[i];
+            gadgetmp2::P[local_index].Pos[0] = x[i];
+            gadgetmp2::P[local_index].Pos[1] = y[i];
+            gadgetmp2::P[local_index].Pos[2] = z[i];
+            gadgetmp2::P[local_index].Vel[0] = vx[i];
+            gadgetmp2::P[local_index].Vel[1] = vy[i];
+            gadgetmp2::P[local_index].Vel[2] = vz[i];
             count[i] = 1;
 #ifdef TIMESTEP_UPDATE
-            if (interpret_kicks_as_feedback && P[local_index].Type == 0) {
-                SphP[local_index].FeedbackFlag = 2;
+            if (interpret_kicks_as_feedback && gadgetmp2::P[local_index].Type == 0) {
+                gadgetmp2::SphP[local_index].FeedbackFlag = 2;
             }
 #endif
 #ifdef TIMESTEP_LIMITER
-            if(interpret_kicks_as_feedback && P[local_index].Type == 0 && P[local_index].Ti_endstep != All.Ti_Current) {
-                make_it_active(local_index);
+            if(interpret_kicks_as_feedback && gadgetmp2::P[local_index].Type == 0 && gadgetmp2::P[local_index].Ti_endstep != gadgetmp2::All.Ti_Current) {
+                gadgetmp2::make_it_active(local_index);
             }
 #endif
         } else count[i] = 0;
@@ -1850,8 +1865,8 @@ int set_state_gadget(int *index, double *mass, double *x, double *y, double *z, 
     return check_counts_and_free(count, length);
 }
 int set_state_comoving(int *index, double *mass, double *x, double *y, double *z, double *vx, double *vy, double *vz, int length){
-    if(All.ComovingIntegrationOn) {
-        double a2 = All.Time * All.Time;
+    if(gadgetmp2::All.ComovingIntegrationOn) {
+        double a2 = (gadgetmp2::All.Time * gadgetmp2::All.Time);
         for (int i = 0; i < length; i++){
             vx[i] *= a2;
             vy[i] *= a2;
@@ -1861,15 +1876,15 @@ int set_state_comoving(int *index, double *mass, double *x, double *y, double *z
     return set_state_gadget(index, mass, x, y, z, vx, vy, vz, length);
 }
 int set_state(int *index, double *mass, double *x, double *y, double *z, double *vx, double *vy, double *vz, int length){
-    if(All.ComovingIntegrationOn) {
-        double a_inv = 1.0 / All.Time;
+    if(gadgetmp2::All.ComovingIntegrationOn) {
+        double a_inv = 1.0 / gadgetmp2::All.Time;
         for (int i = 0; i < length; i++){
             x[i] *= a_inv;
             y[i] *= a_inv;
             z[i] *= a_inv;
-            vx[i] *= All.Time;
-            vy[i] *= All.Time;
-            vz[i] *= All.Time;
+            vx[i] *= gadgetmp2::All.Time;
+            vy[i] *= gadgetmp2::All.Time;
+            vz[i] *= gadgetmp2::All.Time;
         }
     }
     return set_state_gadget(index, mass, x, y, z, vx, vy, vz, length);
@@ -1881,33 +1896,33 @@ int get_state_sph_gadget(int *index, double *mass, double *x, double *y, double 
     int *count = new int[length];
     int local_index;
 #ifdef PERIODIC
-    double boxSize = All.BoxSize;
-    double boxHalf = 0.5 * All.BoxSize;
+    double boxSize = gadgetmp2::All.BoxSize;
+    double boxHalf = 0.5 * gadgetmp2::All.BoxSize;
 #endif
 #ifndef ISOTHERM_EQS
     double a3;
 
     if (!density_up_to_date){
-        density();
+        gadgetmp2::density();
         density_up_to_date = true;
     }
-    if(All.ComovingIntegrationOn){a3 = All.Time * All.Time * All.Time;}else{a3 = 1;}
+    if(gadgetmp2::All.ComovingIntegrationOn){a3 = (gadgetmp2::All.Time * gadgetmp2::All.Time * gadgetmp2::All.Time);}else{a3 = 1;}
 #endif
     for (int i = 0; i < length; i++){
-        if(found_particle(index[i], &local_index) && P[local_index].Type == 0){
+        if(found_particle(index[i], &local_index) && gadgetmp2::P[local_index].Type == 0){
             count[i] = 1;
-            buffer[i] = P[local_index].Mass;
-            buffer[i+length] = P[local_index].Pos[0];
-            buffer[i+2*length] = P[local_index].Pos[1];
-            buffer[i+3*length] = P[local_index].Pos[2];
-            buffer[i+4*length] = P[local_index].Vel[0];
-            buffer[i+5*length] = P[local_index].Vel[1];
-            buffer[i+6*length] = P[local_index].Vel[2];
+            buffer[i] = gadgetmp2::P[local_index].Mass.toDouble();
+            buffer[i+length] = gadgetmp2::P[local_index].Pos[0].toDouble();
+            buffer[i+2*length] = gadgetmp2::P[local_index].Pos[1].toDouble();
+            buffer[i+3*length] = gadgetmp2::P[local_index].Pos[2].toDouble();
+            buffer[i+4*length] = gadgetmp2::P[local_index].Vel[0].toDouble();
+            buffer[i+5*length] = gadgetmp2::P[local_index].Vel[1].toDouble();
+            buffer[i+6*length] = gadgetmp2::P[local_index].Vel[2].toDouble();
 #ifdef ISOTHERM_EQS
-            buffer[i+7*length] = SphP[local_index].Entropy;
+            buffer[i+7*length] = gadgetmp2::SphP[local_index].Entropy.toDouble();
 #else
-            buffer[i+7*length] = SphP[local_index].Entropy *
-                pow(SphP[local_index].Density / a3, GAMMA_MINUS1) / GAMMA_MINUS1;
+            buffer[i+7*length] = (gadgetmp2::SphP[local_index].Entropy *
+                pow(gadgetmp2::SphP[local_index].Density / a3, GAMMA_MINUS1) / GAMMA_MINUS1).toDouble();
 #endif
         } else {
             count[i] = 0;
@@ -1921,15 +1936,15 @@ int get_state_sph_gadget(int *index, double *mass, double *x, double *y, double 
             buffer[i+7*length] = 0;
         }
     }
-    if(ThisTask) {
+    if(gadgetmp2::ThisTask) {
 #ifndef NOMPI
-        MPI_Reduce(buffer, NULL, length*8, MPI_DOUBLE, MPI_SUM, 0, GADGET_WORLD);
-        MPI_Reduce(count, NULL, length, MPI_INT, MPI_SUM, 0, GADGET_WORLD);
+        MPI_Reduce(buffer, NULL, length*8, MPI_DOUBLE, MPI_SUM, 0, gadgetmp2::GADGET_WORLD);
+        MPI_Reduce(count, NULL, length, MPI_INT, MPI_SUM, 0, gadgetmp2::GADGET_WORLD);
 #endif
     } else {
 #ifndef NOMPI
-        MPI_Reduce(MPI_IN_PLACE, buffer, length*8, MPI_DOUBLE, MPI_SUM, 0, GADGET_WORLD);
-        MPI_Reduce(MPI_IN_PLACE, count, length, MPI_INT, MPI_SUM, 0, GADGET_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, buffer, length*8, MPI_DOUBLE, MPI_SUM, 0, gadgetmp2::GADGET_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, count, length, MPI_INT, MPI_SUM, 0, gadgetmp2::GADGET_WORLD);
 #endif
 #ifdef PERIODIC
         for (int i = length; i < 4*length; i++){
@@ -1971,12 +1986,12 @@ int get_state_sph_gadget(int *index, double *mass, double *x, double *y, double 
 }
 int get_state_sph(int *index, double *mass, double *x, double *y, double *z, double *vx, double *vy, double *vz, double *internal_energy, int length) {
     int result = get_state_sph_gadget(index, mass, x, y, z, vx, vy, vz, internal_energy, length);
-    if(ThisTask == 0 && All.ComovingIntegrationOn) {
-        double a_inv = 1.0 / All.Time;
+    if(gadgetmp2::ThisTask == 0 && gadgetmp2::All.ComovingIntegrationOn) {
+        double a_inv = 1.0 / gadgetmp2::All.Time;
         for (int i = 0; i < length; i++){
-            x[i] *= All.Time;
-            y[i] *= All.Time;
-            z[i] *= All.Time;
+            x[i] *= gadgetmp2::All.Time;
+            y[i] *= gadgetmp2::All.Time;
+            z[i] *= gadgetmp2::All.Time;
             vx[i] *= a_inv;
             vy[i] *= a_inv;
             vz[i] *= a_inv;
@@ -1993,36 +2008,36 @@ int set_state_sph_gadget(int *index, double *mass, double *x, double *y, double 
     double a3;
 
     if (!density_up_to_date){
-        density();
+        gadgetmp2::density();
         density_up_to_date = true;
     }
-    if(All.ComovingIntegrationOn){a3 = All.Time * All.Time * All.Time;}else{a3 = 1;}
+    if(gadgetmp2::All.ComovingIntegrationOn){a3 = (gadgetmp2::All.Time * gadgetmp2::All.Time * gadgetmp2::All.Time);}else{a3 = 1;}
 #endif
     for (int i = 0; i < length; i++){
-        if(found_particle(index[i], &local_index) && P[local_index].Type == 0){
-            P[local_index].Mass = mass[i];
-            P[local_index].Pos[0] = x[i];
-            P[local_index].Pos[1] = y[i];
-            P[local_index].Pos[2] = z[i];
-            P[local_index].Vel[0] = vx[i];
-            P[local_index].Vel[1] = vy[i];
-            P[local_index].Vel[2] = vz[i];
+        if(found_particle(index[i], &local_index) && gadgetmp2::P[local_index].Type == 0){
+            gadgetmp2::P[local_index].Mass = mass[i];
+            gadgetmp2::P[local_index].Pos[0] = x[i];
+            gadgetmp2::P[local_index].Pos[1] = y[i];
+            gadgetmp2::P[local_index].Pos[2] = z[i];
+            gadgetmp2::P[local_index].Vel[0] = vx[i];
+            gadgetmp2::P[local_index].Vel[1] = vy[i];
+            gadgetmp2::P[local_index].Vel[2] = vz[i];
 #ifdef ISOTHERM_EQS
-            SphP[local_index].Entropy = internal_energy[i];
+            gadgetmp2::SphP[local_index].Entropy = internal_energy[i];
 #else
-            SphP[local_index].Entropy = GAMMA_MINUS1 * internal_energy[i] /
-                pow(SphP[local_index].Density / a3, GAMMA_MINUS1);
+            gadgetmp2::SphP[local_index].Entropy = GAMMA_MINUS1 * internal_energy[i] /
+                pow(gadgetmp2::SphP[local_index].Density / a3, GAMMA_MINUS1);
 #endif
             count[i] = 1;
 #ifdef TIMESTEP_UPDATE
             if (interpret_heat_as_feedback || interpret_kicks_as_feedback) {
-                SphP[local_index].FeedbackFlag = 2;
+                gadgetmp2::SphP[local_index].FeedbackFlag = 2;
             }
 #endif
 #ifdef TIMESTEP_LIMITER
             if ((interpret_heat_as_feedback || interpret_kicks_as_feedback) &&
-                    P[local_index].Ti_endstep != All.Ti_Current) {
-                make_it_active(local_index);
+                    gadgetmp2::P[local_index].Ti_endstep != gadgetmp2::All.Ti_Current) {
+                gadgetmp2::make_it_active(local_index);
             }
 #endif
         } else count[i] = 0;
@@ -2032,15 +2047,15 @@ int set_state_sph_gadget(int *index, double *mass, double *x, double *y, double 
 }
 int set_state_sph(int *index, double *mass, double *x, double *y, double *z,
         double *vx, double *vy, double *vz, double *internal_energy, int length){
-    if(All.ComovingIntegrationOn) {
-        double a_inv = 1.0 / All.Time;
+    if(gadgetmp2::All.ComovingIntegrationOn) {
+        double a_inv = 1.0 / gadgetmp2::All.Time;
         for (int i = 0; i < length; i++){
             x[i] *= a_inv;
             y[i] *= a_inv;
             z[i] *= a_inv;
-            vx[i] *= All.Time;
-            vy[i] *= All.Time;
-            vz[i] *= All.Time;
+            vx[i] *= gadgetmp2::All.Time;
+            vy[i] *= gadgetmp2::All.Time;
+            vz[i] *= gadgetmp2::All.Time;
         }
     }
     return set_state_sph_gadget(index, mass, x, y, z, vx, vy, vz, internal_energy, length);
@@ -2055,13 +2070,13 @@ int get_acceleration_comoving(int *index, double * ax, double * ay, double * az,
     for (int i = 0; i < length; i++){
         if(found_particle(index[i], &local_index)){
             count[i] = 1;
-            buffer[i] = P[local_index].GravAccel[0];
-            buffer[i+length] = P[local_index].GravAccel[1];
-            buffer[i+2*length] = P[local_index].GravAccel[2];
-            if(P[local_index].Type == 0){
-                buffer[i] += SphP[local_index].HydroAccel[0];
-                buffer[i+length] += SphP[local_index].HydroAccel[1];
-                buffer[i+2*length] += SphP[local_index].HydroAccel[2];
+            buffer[i] = gadgetmp2::P[local_index].GravAccel[0].toDouble();
+            buffer[i+length] = gadgetmp2::P[local_index].GravAccel[1].toDouble();
+            buffer[i+2*length] = gadgetmp2::P[local_index].GravAccel[2].toDouble();
+            if(gadgetmp2::P[local_index].Type == 0){
+                buffer[i] += gadgetmp2::SphP[local_index].HydroAccel[0].toDouble();
+                buffer[i+length] += gadgetmp2::SphP[local_index].HydroAccel[1].toDouble();
+                buffer[i+2*length] += gadgetmp2::SphP[local_index].HydroAccel[2].toDouble();
             }
         } else {
             count[i] = 0;
@@ -2070,15 +2085,15 @@ int get_acceleration_comoving(int *index, double * ax, double * ay, double * az,
             buffer[i+2*length] = 0;
         }
     }
-    if(ThisTask) {
+    if(gadgetmp2::ThisTask) {
 #ifndef NOMPI
-        MPI_Reduce(buffer, NULL, length*3, MPI_DOUBLE, MPI_SUM, 0, GADGET_WORLD);
-        MPI_Reduce(count, NULL, length, MPI_INT, MPI_SUM, 0, GADGET_WORLD);
+        MPI_Reduce(buffer, NULL, length*3, MPI_DOUBLE, MPI_SUM, 0, gadgetmp2::GADGET_WORLD);
+        MPI_Reduce(count, NULL, length, MPI_INT, MPI_SUM, 0, gadgetmp2::GADGET_WORLD);
 #endif
     } else {
 #ifndef NOMPI
-        MPI_Reduce(MPI_IN_PLACE, buffer, length*3, MPI_DOUBLE, MPI_SUM, 0, GADGET_WORLD);
-        MPI_Reduce(MPI_IN_PLACE, count, length, MPI_INT, MPI_SUM, 0, GADGET_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, buffer, length*3, MPI_DOUBLE, MPI_SUM, 0, gadgetmp2::GADGET_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, count, length, MPI_INT, MPI_SUM, 0, gadgetmp2::GADGET_WORLD);
 #endif
         for (int i = 0; i < length; i++){
             if (count[i] != 1){
@@ -2103,11 +2118,11 @@ int get_acceleration_comoving(int *index, double * ax, double * ay, double * az,
 }
 int get_acceleration(int *index, double * ax, double * ay, double * az, int length){
     int result = get_acceleration_comoving(index, ax, ay, az, length);
-    if(ThisTask == 0 && All.ComovingIntegrationOn) {
+    if(gadgetmp2::ThisTask == 0 && gadgetmp2::All.ComovingIntegrationOn) {
         for (int i = 0; i < length; i++){
-            ax[i] *= All.Time;
-            ay[i] *= All.Time;
-            az[i] *= All.Time;
+            ax[i] *= gadgetmp2::All.Time;
+            ay[i] *= gadgetmp2::All.Time;
+            az[i] *= gadgetmp2::All.Time;
         }
     }
     return result;
@@ -2125,35 +2140,35 @@ int get_internal_energy(int *index, double *internal_energy, int length){
 #ifndef ISOTHERM_EQS
     double a3;
 
-    if(All.ComovingIntegrationOn){a3 = All.Time * All.Time * All.Time;}else{a3 = 1;}
+    if(gadgetmp2::All.ComovingIntegrationOn){a3 = (gadgetmp2::All.Time * gadgetmp2::All.Time * gadgetmp2::All.Time);}else{a3 = 1;}
     if (!density_up_to_date){
-        density();
+        gadgetmp2::density();
         density_up_to_date = true;
     }
 #endif
     for (int i = 0; i < length; i++){
-        if(found_particle(index[i], &local_index) && P[local_index].Type == 0){
+        if(found_particle(index[i], &local_index) && gadgetmp2::P[local_index].Type == 0){
             count[i] = 1;
 #ifdef ISOTHERM_EQS
-            buffer[i] = SphP[local_index].Entropy;
+            buffer[i] = gadgetmp2::SphP[local_index].Entropy.toDouble();
 #else
-            buffer[i] = SphP[local_index].Entropy *
-                pow(SphP[local_index].Density / a3, GAMMA_MINUS1) / GAMMA_MINUS1;
+            buffer[i] = (gadgetmp2::SphP[local_index].Entropy *
+                pow(gadgetmp2::SphP[local_index].Density / a3, GAMMA_MINUS1) / GAMMA_MINUS1).toDouble();
 #endif
         } else {
             count[i] = 0;
             buffer[i] = 0;
         }
     }
-    if(ThisTask) {
+    if(gadgetmp2::ThisTask) {
 #ifndef NOMPI
-        MPI_Reduce(buffer, NULL, length, MPI_DOUBLE, MPI_SUM, 0, GADGET_WORLD);
-        MPI_Reduce(count, NULL, length, MPI_INT, MPI_SUM, 0, GADGET_WORLD);
+        MPI_Reduce(buffer, NULL, length, MPI_DOUBLE, MPI_SUM, 0, gadgetmp2::GADGET_WORLD);
+        MPI_Reduce(count, NULL, length, MPI_INT, MPI_SUM, 0, gadgetmp2::GADGET_WORLD);
 #endif
     } else {
 #ifndef NOMPI
-        MPI_Reduce(MPI_IN_PLACE, buffer, length, MPI_DOUBLE, MPI_SUM, 0, GADGET_WORLD);
-        MPI_Reduce(MPI_IN_PLACE, count, length, MPI_INT, MPI_SUM, 0, GADGET_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, buffer, length, MPI_DOUBLE, MPI_SUM, 0, gadgetmp2::GADGET_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, count, length, MPI_INT, MPI_SUM, 0, gadgetmp2::GADGET_WORLD);
 #endif
         for (int i = 0; i < length; i++){
             if (count[i] != 1){
@@ -2178,29 +2193,29 @@ int set_internal_energy(int *index, double *internal_energy, int length){
 #ifndef ISOTHERM_EQS
     double a3;
 
-    if(All.ComovingIntegrationOn){a3 = All.Time * All.Time * All.Time;}else{a3 = 1;}
+    if(gadgetmp2::All.ComovingIntegrationOn){a3 = (gadgetmp2::All.Time * gadgetmp2::All.Time * gadgetmp2::All.Time);}else{a3 = 1;}
     if (!density_up_to_date){
-        density();
+        gadgetmp2::density();
         density_up_to_date = true;
     }
 #endif
     for (int i = 0; i < length; i++){
-        if(found_particle(index[i], &local_index) && P[local_index].Type == 0){
+        if(found_particle(index[i], &local_index) && gadgetmp2::P[local_index].Type == 0){
 #ifdef ISOTHERM_EQS
-            SphP[local_index].Entropy = internal_energy[i];
+            gadgetmp2::SphP[local_index].Entropy = internal_energy[i];
 #else
-            SphP[local_index].Entropy = GAMMA_MINUS1 * internal_energy[i] /
-                pow(SphP[local_index].Density / a3, GAMMA_MINUS1);
+            gadgetmp2::SphP[local_index].Entropy = GAMMA_MINUS1 * internal_energy[i] /
+                pow(gadgetmp2::SphP[local_index].Density / a3, GAMMA_MINUS1);
 #endif
             count[i] = 1;
 #ifdef TIMESTEP_UPDATE
             if (interpret_heat_as_feedback) {
-                SphP[local_index].FeedbackFlag = 2;
+                gadgetmp2::SphP[local_index].FeedbackFlag = 2;
             }
 #endif
 #ifdef TIMESTEP_LIMITER
-            if(interpret_heat_as_feedback && P[local_index].Ti_endstep != All.Ti_Current) {
-                make_it_active(local_index);
+            if(interpret_heat_as_feedback && gadgetmp2::P[local_index].Ti_endstep != gadgetmp2::All.Ti_Current) {
+                gadgetmp2::make_it_active(local_index);
             }
 #endif
         } else count[i] = 0;
@@ -2216,28 +2231,28 @@ int get_smoothing_length_comoving(int *index, double *smoothing_length, int leng
     int local_index;
 
     if (!density_up_to_date){
-        density();
+        gadgetmp2::density();
         density_up_to_date = true;
     }
 
     for (int i = 0; i < length; i++){
-        if(found_particle(index[i], &local_index) && P[local_index].Type == 0){
+        if(found_particle(index[i], &local_index) && gadgetmp2::P[local_index].Type == 0){
             count[i] = 1;
-            buffer[i] = SphP[local_index].Hsml;
+            buffer[i] = gadgetmp2::SphP[local_index].Hsml.toDouble();
         } else {
             count[i] = 0;
             buffer[i] = 0;
         }
     }
-    if(ThisTask) {
+    if(gadgetmp2::ThisTask) {
 #ifndef NOMPI
-        MPI_Reduce(buffer, NULL, length, MPI_DOUBLE, MPI_SUM, 0, GADGET_WORLD);
-        MPI_Reduce(count, NULL, length, MPI_INT, MPI_SUM, 0, GADGET_WORLD);
+        MPI_Reduce(buffer, NULL, length, MPI_DOUBLE, MPI_SUM, 0, gadgetmp2::GADGET_WORLD);
+        MPI_Reduce(count, NULL, length, MPI_INT, MPI_SUM, 0, gadgetmp2::GADGET_WORLD);
 #endif
     } else {
 #ifndef NOMPI
-        MPI_Reduce(MPI_IN_PLACE, buffer, length, MPI_DOUBLE, MPI_SUM, 0, GADGET_WORLD);
-        MPI_Reduce(MPI_IN_PLACE, count, length, MPI_INT, MPI_SUM, 0, GADGET_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, buffer, length, MPI_DOUBLE, MPI_SUM, 0, gadgetmp2::GADGET_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, count, length, MPI_INT, MPI_SUM, 0, gadgetmp2::GADGET_WORLD);
 #endif
         for (int i = 0; i < length; i++){
             if (count[i] != 1){
@@ -2257,9 +2272,9 @@ int get_smoothing_length_comoving(int *index, double *smoothing_length, int leng
 }
 int get_smoothing_length(int *index, double *smoothing_length, int length){
     int result = get_smoothing_length_comoving(index, smoothing_length, length);
-    if(ThisTask == 0 && All.ComovingIntegrationOn) {
+    if(gadgetmp2::ThisTask == 0 && gadgetmp2::All.ComovingIntegrationOn) {
         for (int i = 0; i < length; i++){
-            smoothing_length[i] *= All.Time;
+            smoothing_length[i] *= gadgetmp2::All.Time;
         }
     }
     return result;
@@ -2273,27 +2288,27 @@ int get_alpha_visc(int *index, double *alpha_visc, int length){
     int local_index;
 
     for (int i = 0; i < length; i++){
-        if(found_particle(index[i], &local_index) && P[local_index].Type == 0){
+        if(found_particle(index[i], &local_index) && gadgetmp2::P[local_index].Type == 0){
             count[i] = 1;
 #ifdef MORRIS97VISC
-            buffer[i] = SphP[local_index].Alpha;
+            buffer[i] = gadgetmp2::SphP[local_index].Alpha.toDouble();
 #else
-	    buffer[i] = All.ArtBulkViscConst;
+	    buffer[i] = gadgetmp2::All.ArtBulkViscConst;
 #endif
         } else {
             count[i] = 0;
             buffer[i] = 0;
         }
     }
-    if(ThisTask) {
+    if(gadgetmp2::ThisTask) {
 #ifndef NOMPI
-        MPI_Reduce(buffer, NULL, length, MPI_DOUBLE, MPI_SUM, 0, GADGET_WORLD);
-        MPI_Reduce(count, NULL, length, MPI_INT, MPI_SUM, 0, GADGET_WORLD);
+        MPI_Reduce(buffer, NULL, length, MPI_DOUBLE, MPI_SUM, 0, gadgetmp2::GADGET_WORLD);
+        MPI_Reduce(count, NULL, length, MPI_INT, MPI_SUM, 0, gadgetmp2::GADGET_WORLD);
 #endif
     } else {
 #ifndef NOMPI
-        MPI_Reduce(MPI_IN_PLACE, buffer, length, MPI_DOUBLE, MPI_SUM, 0, GADGET_WORLD);
-        MPI_Reduce(MPI_IN_PLACE, count, length, MPI_INT, MPI_SUM, 0, GADGET_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, buffer, length, MPI_DOUBLE, MPI_SUM, 0, gadgetmp2::GADGET_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, count, length, MPI_INT, MPI_SUM, 0, gadgetmp2::GADGET_WORLD);
 #endif
         for (int i = 0; i < length; i++){
             if (count[i] != 1){
@@ -2319,10 +2334,10 @@ int get_dalphadt_visc(int *index, double *dalphadt_visc, int length){
     int local_index;
 
     for (int i = 0; i < length; i++){
-        if(found_particle(index[i], &local_index) && P[local_index].Type == 0){
+        if(found_particle(index[i], &local_index) && gadgetmp2::P[local_index].Type == 0){
             count[i] = 1;
 #ifdef MORRIS97VISC
-            buffer[i] = SphP[local_index].DAlphaDt;
+            buffer[i] = gadgetmp2::SphP[local_index].DAlphaDt;
 #else
             buffer[i] = 0;
 #endif
@@ -2331,15 +2346,15 @@ int get_dalphadt_visc(int *index, double *dalphadt_visc, int length){
             buffer[i] = 0;
         }
     }
-    if(ThisTask) {
+    if(gadgetmp2::ThisTask) {
 #ifndef NOMPI
-        MPI_Reduce(buffer, NULL, length, MPI_DOUBLE, MPI_SUM, 0, GADGET_WORLD);
-        MPI_Reduce(count, NULL, length, MPI_INT, MPI_SUM, 0, GADGET_WORLD);
+        MPI_Reduce(buffer, NULL, length, MPI_DOUBLE, MPI_SUM, 0, gadgetmp2::GADGET_WORLD);
+        MPI_Reduce(count, NULL, length, MPI_INT, MPI_SUM, 0, gadgetmp2::GADGET_WORLD);
 #endif
     } else {
 #ifndef NOMPI
-        MPI_Reduce(MPI_IN_PLACE, buffer, length, MPI_DOUBLE, MPI_SUM, 0, GADGET_WORLD);
-        MPI_Reduce(MPI_IN_PLACE, count, length, MPI_INT, MPI_SUM, 0, GADGET_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, buffer, length, MPI_DOUBLE, MPI_SUM, 0, gadgetmp2::GADGET_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, count, length, MPI_INT, MPI_SUM, 0, gadgetmp2::GADGET_WORLD);
 #endif
         for (int i = 0; i < length; i++){
             if (count[i] != 1){
@@ -2368,30 +2383,30 @@ int get_density_comoving(int *index, double *density_out, int length){
     int local_index;
     double a3;
 
-    if(All.ComovingIntegrationOn){a3 = All.Time * All.Time * All.Time;}else{a3 = 1;}
+    if(gadgetmp2::All.ComovingIntegrationOn){a3 = (gadgetmp2::All.Time * gadgetmp2::All.Time * gadgetmp2::All.Time);}else{a3 = 1;}
     if (!density_up_to_date){
-        density();
+        gadgetmp2::density();
         density_up_to_date = true;
     }
 
     for (int i = 0; i < length; i++){
-        if(found_particle(index[i], &local_index) && P[local_index].Type == 0){
+        if(found_particle(index[i], &local_index) && gadgetmp2::P[local_index].Type == 0){
             count[i] = 1;
-            buffer[i] = SphP[local_index].Density / a3;
+            buffer[i] = gadgetmp2::SphP[local_index].Density.toDouble() / a3;
         } else {
             count[i] = 0;
             buffer[i] = 0;
         }
     }
-    if(ThisTask) {
+    if(gadgetmp2::ThisTask) {
 #ifndef NOMPI
-        MPI_Reduce(buffer, NULL, length, MPI_DOUBLE, MPI_SUM, 0, GADGET_WORLD);
-        MPI_Reduce(count, NULL, length, MPI_INT, MPI_SUM, 0, GADGET_WORLD);
+        MPI_Reduce(buffer, NULL, length, MPI_DOUBLE, MPI_SUM, 0, gadgetmp2::GADGET_WORLD);
+        MPI_Reduce(count, NULL, length, MPI_INT, MPI_SUM, 0, gadgetmp2::GADGET_WORLD);
 #endif
     } else {
 #ifndef NOMPI
-        MPI_Reduce(MPI_IN_PLACE, buffer, length, MPI_DOUBLE, MPI_SUM, 0, GADGET_WORLD);
-        MPI_Reduce(MPI_IN_PLACE, count, length, MPI_INT, MPI_SUM, 0, GADGET_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, buffer, length, MPI_DOUBLE, MPI_SUM, 0, gadgetmp2::GADGET_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, count, length, MPI_INT, MPI_SUM, 0, gadgetmp2::GADGET_WORLD);
 #endif
         for (int i = 0; i < length; i++){
             if (count[i] != 1){
@@ -2411,8 +2426,8 @@ int get_density_comoving(int *index, double *density_out, int length){
 }
 int get_density(int *index, double *density_out, int length){
     int result = get_density_comoving(index, density_out, length);
-    if(ThisTask == 0 && All.ComovingIntegrationOn) {
-        double a3_inv = 1.0 / (All.Time * All.Time * All.Time);
+    if(gadgetmp2::ThisTask == 0 && gadgetmp2::All.ComovingIntegrationOn) {
+        double a3_inv = 1.0 / (gadgetmp2::All.Time * gadgetmp2::All.Time * gadgetmp2::All.Time);
         for (int i = 0; i < length; i++){
             density_out[i] *= a3_inv;
         }
@@ -2427,30 +2442,30 @@ int get_pressure_comoving(int *index, double *pressure_out, int length){
     int local_index;
     double a;
 
-    if(All.ComovingIntegrationOn){a = All.Time;}else{a = 1;}
+    if(gadgetmp2::All.ComovingIntegrationOn){a = gadgetmp2::All.Time;}else{a = 1;}
     if (!density_up_to_date){
-        density();
+        gadgetmp2::density();
         density_up_to_date = true;
     }
 
     for (int i = 0; i < length; i++){
-        if(found_particle(index[i], &local_index) && P[local_index].Type == 0){
+        if(found_particle(index[i], &local_index) && gadgetmp2::P[local_index].Type == 0){
             count[i] = 1;
-            buffer[i] = SphP[local_index].Pressure / a;
+            buffer[i] = gadgetmp2::SphP[local_index].Pressure.toDouble() / a;
         } else {
             count[i] = 0;
             buffer[i] = 0;
         }
     }
-    if(ThisTask) {
+    if(gadgetmp2::ThisTask) {
 #ifndef NOMPI
-        MPI_Reduce(buffer, NULL, length, MPI_DOUBLE, MPI_SUM, 0, GADGET_WORLD);
-        MPI_Reduce(count, NULL, length, MPI_INT, MPI_SUM, 0, GADGET_WORLD);
+        MPI_Reduce(buffer, NULL, length, MPI_DOUBLE, MPI_SUM, 0, gadgetmp2::GADGET_WORLD);
+        MPI_Reduce(count, NULL, length, MPI_INT, MPI_SUM, 0, gadgetmp2::GADGET_WORLD);
 #endif
     } else {
 #ifndef NOMPI
-        MPI_Reduce(MPI_IN_PLACE, buffer, length, MPI_DOUBLE, MPI_SUM, 0, GADGET_WORLD);
-        MPI_Reduce(MPI_IN_PLACE, count, length, MPI_INT, MPI_SUM, 0, GADGET_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, buffer, length, MPI_DOUBLE, MPI_SUM, 0, gadgetmp2::GADGET_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, count, length, MPI_INT, MPI_SUM, 0, gadgetmp2::GADGET_WORLD);
 #endif
         for (int i = 0; i < length; i++){
             if (count[i] != 1){
@@ -2470,8 +2485,8 @@ int get_pressure_comoving(int *index, double *pressure_out, int length){
 }
 int get_pressure(int *index, double *pressure_out, int length){
     int result = get_pressure_comoving(index, pressure_out, length);
-    if(ThisTask == 0 && All.ComovingIntegrationOn) {
-        double a_inv = 1.0 / All.Time;
+    if(gadgetmp2::ThisTask == 0 && gadgetmp2::All.ComovingIntegrationOn) {
+        double a_inv = 1.0 / gadgetmp2::All.Time;
         for (int i = 0; i < length; i++){
             pressure_out[i] *= a_inv;
         }
@@ -2486,44 +2501,44 @@ int get_d_internal_energy_dt(int *index, double *d_internal_energy_dt_out, int l
     int local_index;
 
     double hubble;
-    if (All.ComovingIntegrationOn){
-        hubble = All.Hubble * sqrt(All.Omega0 / (All.Time * All.Time * All.Time)
-            + (1 - All.Omega0 - All.OmegaLambda) / (All.Time * All.Time) + All.OmegaLambda);
+    if (gadgetmp2::All.ComovingIntegrationOn){
+        hubble = (gadgetmp2::All.Hubble * std::sqrt(gadgetmp2::All.Omega0 / (gadgetmp2::All.Time * gadgetmp2::All.Time * gadgetmp2::All.Time)
+            + (1 - gadgetmp2::All.Omega0 - gadgetmp2::All.OmegaLambda) / (gadgetmp2::All.Time * gadgetmp2::All.Time) + gadgetmp2::All.OmegaLambda));
     } else {
         hubble = 1;
     }
 
 #ifndef ISOTHERM_EQS
     //~double a3;
-    //~if(All.ComovingIntegrationOn){a3 = All.Time * All.Time * All.Time;}else{a3 = 1;}
+    //~if(gadgetmp2::All.ComovingIntegrationOn){a3 = gadgetmp2::All.Time * gadgetmp2::All.Time * gadgetmp2::All.Time;}else{a3 = 1;}
     if (!density_up_to_date){
-        density();
+        gadgetmp2::density();
         density_up_to_date = true;
     }
 #endif
     for (int i = 0; i < length; i++){
-        if(found_particle(index[i], &local_index) && P[local_index].Type == 0){
+        if(found_particle(index[i], &local_index) && gadgetmp2::P[local_index].Type == 0){
             count[i] = 1;
 #ifdef ISOTHERM_EQS
-            buffer[i] = SphP[local_index].DtEntropy * hubble;
+            buffer[i] = gadgetmp2::SphP[local_index].DtEntropy * hubble;
 #else
-            buffer[i] = - SphP[local_index].Pressure * SphP[local_index].DivVel /
-                SphP[local_index].Density * hubble;
+            buffer[i] = (- gadgetmp2::SphP[local_index].Pressure * gadgetmp2::SphP[local_index].DivVel /
+                gadgetmp2::SphP[local_index].Density * hubble).toDouble();
 #endif
         } else {
             count[i] = 0;
             buffer[i] = 0;
         }
     }
-    if(ThisTask) {
+    if(gadgetmp2::ThisTask) {
 #ifndef NOMPI
-        MPI_Reduce(buffer, NULL, length, MPI_DOUBLE, MPI_SUM, 0, GADGET_WORLD);
-        MPI_Reduce(count, NULL, length, MPI_INT, MPI_SUM, 0, GADGET_WORLD);
+        MPI_Reduce(buffer, NULL, length, MPI_DOUBLE, MPI_SUM, 0, gadgetmp2::GADGET_WORLD);
+        MPI_Reduce(count, NULL, length, MPI_INT, MPI_SUM, 0, gadgetmp2::GADGET_WORLD);
 #endif
     } else {
 #ifndef NOMPI
-        MPI_Reduce(MPI_IN_PLACE, buffer, length, MPI_DOUBLE, MPI_SUM, 0, GADGET_WORLD);
-        MPI_Reduce(MPI_IN_PLACE, count, length, MPI_INT, MPI_SUM, 0, GADGET_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, buffer, length, MPI_DOUBLE, MPI_SUM, 0, gadgetmp2::GADGET_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, count, length, MPI_INT, MPI_SUM, 0, gadgetmp2::GADGET_WORLD);
 #endif
         for (int i = 0; i < length; i++){
             if (count[i] != 1){
@@ -2549,28 +2564,28 @@ int get_n_neighbours(int *index, double *n_neighbours, int length){
     int local_index;
 
     if (!density_up_to_date){
-        density();
+        gadgetmp2::density();
         density_up_to_date = true;
     }
 
     for (int i = 0; i < length; i++){
-        if(found_particle(index[i], &local_index) && P[local_index].Type == 0){
+        if(found_particle(index[i], &local_index) && gadgetmp2::P[local_index].Type == 0){
             count[i] = 1;
-            buffer[i] = SphP[local_index].NumNgb;
+            buffer[i] = gadgetmp2::SphP[local_index].NumNgb.toDouble();
         } else {
             count[i] = 0;
             buffer[i] = 0;
         }
     }
-    if(ThisTask) {
+    if(gadgetmp2::ThisTask) {
 #ifndef NOMPI
-        MPI_Reduce(buffer, NULL, length, MPI_DOUBLE, MPI_SUM, 0, GADGET_WORLD);
-        MPI_Reduce(count, NULL, length, MPI_INT, MPI_SUM, 0, GADGET_WORLD);
+        MPI_Reduce(buffer, NULL, length, MPI_DOUBLE, MPI_SUM, 0, gadgetmp2::GADGET_WORLD);
+        MPI_Reduce(count, NULL, length, MPI_INT, MPI_SUM, 0, gadgetmp2::GADGET_WORLD);
 #endif
     } else {
 #ifndef NOMPI
-        MPI_Reduce(MPI_IN_PLACE, buffer, length, MPI_DOUBLE, MPI_SUM, 0, GADGET_WORLD);
-        MPI_Reduce(MPI_IN_PLACE, count, length, MPI_INT, MPI_SUM, 0, GADGET_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, buffer, length, MPI_DOUBLE, MPI_SUM, 0, gadgetmp2::GADGET_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, count, length, MPI_INT, MPI_SUM, 0, gadgetmp2::GADGET_WORLD);
 #endif
         for (int i = 0; i < length; i++){
             if (count[i] != 1){
@@ -2589,12 +2604,12 @@ int get_n_neighbours(int *index, double *n_neighbours, int length){
     return 0;
 }
 int get_epsilon_dm_part(int *index, double *epsilon, int length){
-    set_softenings();
-    if (ThisTask) {return 0;}
+    gadgetmp2::set_softenings();
+    if (gadgetmp2::ThisTask) {return 0;}
     double a;
-    if (All.ComovingIntegrationOn) {a = All.Time;} else {a = 1;}
+    if (gadgetmp2::All.ComovingIntegrationOn) {a = gadgetmp2::All.Time;} else {a = 1;}
     for (int i = 0; i < length; i++){
-        epsilon[i] = a * All.SofteningTable[1];
+        epsilon[i] = a * gadgetmp2::All.SofteningTable[1];
     }
     return 0;
 }
@@ -2602,12 +2617,12 @@ int get_epsilon_gas_part(int *index, double *epsilon, int length){
 #if defined(ADAPTIVE_GRAVSOFT_FORGAS) &&  defined(UNEQUALSOFTENINGS)
     return get_smoothing_length(index, epsilon, length);
 #else
-    set_softenings();
-    if (ThisTask) {return 0;}
+    gadgetmp2::set_softenings();
+    if (gadgetmp2::ThisTask) {return 0;}
     double a;
-    if (All.ComovingIntegrationOn) {a = All.Time;} else {a = 1;}
+    if (gadgetmp2::All.ComovingIntegrationOn) {a = gadgetmp2::All.Time;} else {a = 1;}
     for (int i = 0; i < length; i++){
-        epsilon[i] = a * All.SofteningTable[0];
+        epsilon[i] = a * gadgetmp2::All.SofteningTable[0];
     }
     return 0;
 #endif
@@ -2619,24 +2634,24 @@ int get_epsilon_gas_part(int *index, double *epsilon, int length){
 
 void update_global_quantities(bool do_potential){
     if (do_potential) {
-        compute_potential();
+        gadgetmp2::compute_potential();
         potential_energy_also_up_to_date = true;
     } else {potential_energy_also_up_to_date = false;}
-    compute_global_quantities_of_system();
+    gadgetmp2::compute_global_quantities_of_system();
     global_quantities_of_system_up_to_date = true;
 }
 int get_time(double *time){
-    if (ThisTask) {return 0;}
-    if (All.ComovingIntegrationOn) {return -9;}
-    *time = All.Time;
+    if (gadgetmp2::ThisTask) {return 0;}
+    if (gadgetmp2::All.ComovingIntegrationOn) {return -9;}
+    *time = gadgetmp2::All.Time;
     return 0;
 }
 
 
 int get_redshift(double *redshift){
-    if (ThisTask) {return 0;}
-    if (!All.ComovingIntegrationOn) {return -9;}
-    *redshift = 1.0 / All.Time - 1.0;
+    if (gadgetmp2::ThisTask) {return 0;}
+    if (!gadgetmp2::All.ComovingIntegrationOn) {return -9;}
+    *redshift = 1.0 / gadgetmp2::All.Time - 1.0;
     return 0;
 }
 int get_total_radius(double *radius){
@@ -2645,25 +2660,25 @@ int get_total_radius(double *radius){
 
     if (!global_quantities_of_system_up_to_date)
         update_global_quantities(false);
-    for (i = 0; i < NumPart; i++){
+    for (i = 0; i < gadgetmp2::NumPart; i++){
         for (r_squared = 0, j = 0; j < 3; j++)
-            r_squared += (SysState.CenterOfMass[j]-P[i].Pos[j])*(SysState.CenterOfMass[j]-P[i].Pos[j]);
+            r_squared += ((gadgetmp2::SysState.CenterOfMass[j]-gadgetmp2::P[i].Pos[j])*(gadgetmp2::SysState.CenterOfMass[j]-gadgetmp2::P[i].Pos[j])).toDouble();
         if (r_squared > local_max)
             local_max = r_squared;
     }
 
-    if(ThisTask) {
+    if(gadgetmp2::ThisTask) {
 #ifndef NOMPI
-        MPI_Reduce(&local_max, NULL, 1, MPI_DOUBLE, MPI_MAX, 0, GADGET_WORLD);
+        MPI_Reduce(&local_max, NULL, 1, MPI_DOUBLE, MPI_MAX, 0, gadgetmp2::GADGET_WORLD);
 #endif
     } else {
 #ifndef NOMPI
-        MPI_Reduce(MPI_IN_PLACE, &local_max, 1, MPI_DOUBLE, MPI_MAX, 0, GADGET_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, &local_max, 1, MPI_DOUBLE, MPI_MAX, 0, gadgetmp2::GADGET_WORLD);
 #endif
-        if (All.ComovingIntegrationOn){
-            *radius = All.Time * sqrt(local_max);
+        if (gadgetmp2::All.ComovingIntegrationOn){
+            *radius = gadgetmp2::All.Time * std::sqrt(local_max);
         } else {
-            *radius = sqrt(local_max);
+            *radius = std::sqrt(local_max);
         }
     }
     return 0;
@@ -2672,8 +2687,8 @@ int get_total_radius(double *radius){
 int get_total_mass(double *mass){
     if (!global_quantities_of_system_up_to_date)
         update_global_quantities(false);
-    if (ThisTask) {return 0;}
-    *mass = SysState.Mass;
+    if (gadgetmp2::ThisTask) {return 0;}
+    *mass = gadgetmp2::SysState.Mass.toDouble();
     return 0;
 }
 
@@ -2684,32 +2699,32 @@ int get_potential(int *index, double *potential, int length) {
     int local_index;
 
     if (!potential_energy_also_up_to_date) {
-        compute_potential();
+        gadgetmp2::compute_potential();
         potential_energy_also_up_to_date = true;
     }
 
     for (int i = 0; i < length; i++) {
         if (found_particle(index[i], &local_index)) {
             count[i] = 1;
-            buffer[i] = P[local_index].Potential;
+            buffer[i] = gadgetmp2::P[local_index].Potential.toDouble();
         } else {
             count[i] = 0;
             buffer[i] = 0;
         }
     }
 
-    if (ThisTask) {
+    if (gadgetmp2::ThisTask) {
 #ifndef NOMPI
-        MPI_Reduce(buffer, NULL, length, MPI_DOUBLE, MPI_SUM, 0, GADGET_WORLD);
-        MPI_Reduce(count, NULL, length, MPI_INT, MPI_SUM, 0, GADGET_WORLD);
+        MPI_Reduce(buffer, NULL, length, MPI_DOUBLE, MPI_SUM, 0, gadgetmp2::GADGET_WORLD);
+        MPI_Reduce(count, NULL, length, MPI_INT, MPI_SUM, 0, gadgetmp2::GADGET_WORLD);
 #endif
     } else {
 #ifndef NOMPI
-        MPI_Reduce(MPI_IN_PLACE, buffer, length, MPI_DOUBLE, MPI_SUM, 0, GADGET_WORLD);
-        MPI_Reduce(MPI_IN_PLACE, count, length, MPI_INT, MPI_SUM, 0, GADGET_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, buffer, length, MPI_DOUBLE, MPI_SUM, 0, gadgetmp2::GADGET_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, count, length, MPI_INT, MPI_SUM, 0, gadgetmp2::GADGET_WORLD);
 #endif
         double a2;
-        if (All.ComovingIntegrationOn) {a2 = All.Time * All.Time;} else {a2 = 1;}
+        if (gadgetmp2::All.ComovingIntegrationOn) {a2 = (gadgetmp2::All.Time * gadgetmp2::All.Time);} else {a2 = 1;}
         for (int i = 0; i < length; i++) {
             if (count[i] != 1){
                 errors++;
@@ -2731,27 +2746,27 @@ int get_potential(int *index, double *potential, int length) {
 int get_kinetic_energy(double *kinetic_energy){
     if (!global_quantities_of_system_up_to_date)
         update_global_quantities(false);
-    if (ThisTask) {return 0;}
-    *kinetic_energy = SysState.EnergyKin;
+    if (gadgetmp2::ThisTask) {return 0;}
+    *kinetic_energy = gadgetmp2::SysState.EnergyKin.toDouble();
     return 0;
 }
 int get_potential_energy(double *potential_energy){
     if (!(global_quantities_of_system_up_to_date && potential_energy_also_up_to_date))
         update_global_quantities(true);
-    if (ThisTask) {return 0;}
-    *potential_energy = SysState.EnergyPot;
+    if (gadgetmp2::ThisTask) {return 0;}
+    *potential_energy = gadgetmp2::SysState.EnergyPot.toDouble();
     return 0;
 }
 int get_thermal_energy(double *thermal_energy){
     if (!global_quantities_of_system_up_to_date)
         update_global_quantities(false);
-    if (ThisTask) {return 0;}
-    *thermal_energy = SysState.EnergyInt;
+    if (gadgetmp2::ThisTask) {return 0;}
+    *thermal_energy = gadgetmp2::SysState.EnergyInt.toDouble();
     return 0;
 }
 int get_number_of_particles(int *number_of_particles){
-    if (ThisTask) {return 0;}
-    *number_of_particles = All.TotNumPart;
+    if (gadgetmp2::ThisTask) {return 0;}
+    *number_of_particles = gadgetmp2::All.TotNumPart;
     return 0;
 }
 int get_center_of_mass_position(double *x, double *y, double *z){
@@ -2760,23 +2775,23 @@ int get_center_of_mass_position(double *x, double *y, double *z){
 #endif
     if (!global_quantities_of_system_up_to_date)
         update_global_quantities(false);
-    if (ThisTask) {return 0;}
+    if (gadgetmp2::ThisTask) {return 0;}
     double a;
-    if (All.ComovingIntegrationOn) {a = All.Time;} else {a = 1;}
-    *x = a * SysState.CenterOfMass[0];
-    *y = a * SysState.CenterOfMass[1];
-    *z = a * SysState.CenterOfMass[2];
+    if (gadgetmp2::All.ComovingIntegrationOn) {a = gadgetmp2::All.Time;} else {a = 1;}
+    *x = a * gadgetmp2::SysState.CenterOfMass[0].toDouble();
+    *y = a * gadgetmp2::SysState.CenterOfMass[1].toDouble();
+    *z = a * gadgetmp2::SysState.CenterOfMass[2].toDouble();
     return 0;
 }
 int get_center_of_mass_velocity(double * vx, double * vy, double * vz){
     if (!global_quantities_of_system_up_to_date)
         update_global_quantities(false);
-    if (ThisTask) {return 0;}
+    if (gadgetmp2::ThisTask) {return 0;}
     double a_inv;
-    if (All.ComovingIntegrationOn) {a_inv = 1.0 / All.Time;} else {a_inv = 1;}
-    *vx = a_inv * SysState.Momentum[0]/SysState.Mass;
-    *vy = a_inv * SysState.Momentum[1]/SysState.Mass;
-    *vz = a_inv * SysState.Momentum[2]/SysState.Mass;
+    if (gadgetmp2::All.ComovingIntegrationOn) {a_inv = 1.0 / gadgetmp2::All.Time;} else {a_inv = 1;}
+    *vx = a_inv * (gadgetmp2::SysState.Momentum[0]/gadgetmp2::SysState.Mass).toDouble();
+    *vy = a_inv * (gadgetmp2::SysState.Momentum[1]/gadgetmp2::SysState.Mass).toDouble();
+    *vz = a_inv * (gadgetmp2::SysState.Momentum[2]/gadgetmp2::SysState.Mass).toDouble();
     return 0;
 }
 int get_gravity_at_point(double eps, double x, double y, double z, double *forcex, double *forcey, double *forcez){
@@ -2787,13 +2802,13 @@ int get_potential_at_point(double eps, double x, double y, double z, double * ph
 }
 int get_hydro_state_at_point(double x, double y, double z, double vx, double vy, double vz,
         double * rho, double * rhovx, double * rhovy, double * rhovz, double * rhoe){
-    FLOAT pos[3], vel[3];
-    FLOAT h_out, ngb_out, dhsml_out, rho_out, rhov_out[3], rhov2_out, rhoe_out;
+    my_float pos[3], vel[3];
+    my_float h_out, ngb_out, dhsml_out, rho_out, rhov_out[3], rhov2_out, rhoe_out;
     int error;
     double a, a_inv, a3_inv, a4_inv, a5_inv;
-    if (All.ComovingIntegrationOn) {
-        a = All.Time;
-        a_inv = 1.0 / All.Time;
+    if (gadgetmp2::All.ComovingIntegrationOn) {
+        a = gadgetmp2::All.Time;
+        a_inv = 1.0 / gadgetmp2::All.Time;
         a3_inv = a_inv * a_inv * a_inv;
         a4_inv = a3_inv * a_inv;
         a5_inv = a4_inv * a_inv;
@@ -2810,23 +2825,23 @@ int get_hydro_state_at_point(double x, double y, double z, double vx, double vy,
 #ifdef PERIODIC
     for (int i = 0; i < 3; i++){
         if (pos[i] < 0.0){
-            pos[i] += All.BoxSize;
+            pos[i] += gadgetmp2::All.BoxSize;
         }
     }
 #endif
     vel[0] = a * vx;
     vel[1] = a * vy;
     vel[2] = a * vz;
-    hydro_state_at_point(pos, vel, &h_out, &ngb_out, &dhsml_out, &rho_out, rhov_out, &rhov2_out, &rhoe_out);
-    if (ThisTask) {return 0;}
-    *rho   = rho_out * a3_inv;
-    *rhovx = rhov_out[0] * a4_inv;
-    *rhovy = rhov_out[1] * a4_inv;
-    *rhovz = rhov_out[2] * a4_inv;
+    gadgetmp2::hydro_state_at_point(pos, vel, &h_out, &ngb_out, &dhsml_out, &rho_out, rhov_out, &rhov2_out, &rhoe_out);
+    if (gadgetmp2::ThisTask) {return 0;}
+    *rho   = rho_out.toDouble() * a3_inv;
+    *rhovx = rhov_out[0].toDouble() * a4_inv;
+    *rhovy = rhov_out[1].toDouble() * a4_inv;
+    *rhovz = rhov_out[2].toDouble() * a4_inv;
 #ifdef ISOTHERM_EQS
     *rhoe = a3_inv * rhoe_out + a5_inv * 0.5*(rhov_out[0]*rhov_out[0] + rhov_out[1]*rhov_out[1] + rhov_out[2]*rhov_out[2]) / rho_out;
 #else
-    *rhoe = a3_inv * rhoe_out * (pow(rho_out * a3_inv, GAMMA_MINUS1) / GAMMA_MINUS1) + a5_inv * 0.5*rhov2_out;
+    *rhoe = (a3_inv * rhoe_out * (pow(rho_out * a3_inv, GAMMA_MINUS1) / GAMMA_MINUS1) + a5_inv * 0.5*rhov2_out).toDouble();
 #endif
     return 0;
 }

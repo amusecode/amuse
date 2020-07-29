@@ -1,3 +1,18 @@
+/* ################################################################################## */
+/* ###                                                                            ### */
+/* ###                                 Gadgetmp2                                  ### */
+/* ###                                                                            ### */
+/* ###   Original: Gadget2 in the version used in Amuse                           ### */
+/* ###   Author: Gadget2 and Amuse contributors                                   ### */
+/* ###                                                                            ### */
+/* ###   Modified: July 2020                                                      ### */
+/* ###   Author: Thomas Schano                                                    ### */
+/* ###                                                                            ### */
+/* ###   Changes are intended to enable precise calculations in                   ### */
+/* ###   non periodic small domain simulations in which comoving parts            ### */
+/* ###   are simulated in std precision                                           ### */
+/* ###                                                                            ### */
+/* ################################################################################## */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -6,8 +21,8 @@
 #include <mpi.h>
 #endif
 
-#include "allvars.h"
-#include "proto.h"
+//#include "allvars.hpp"
+#include "proto.hpp"
 
 
 /*! \file global.c
@@ -21,15 +36,19 @@
  *  used (e.g. momentum is not really used anywhere), just the energies are
  *  written to a log-file every once in a while.
  */
-void compute_global_quantities_of_system(void)
+void gadgetmp2::compute_global_quantities_of_system(void)
 {
   int i, j, n;
   struct state_of_system sys;
-  double a1, a2, a3;
-  double entr = 0, egyspec, vel[3];
-  double dt_entr, dt_gravkick, dt_hydrokick;
+  my_float a1, a2, a3;
+  my_float entr = 0, egyspec, vel[3];
+  my_float dt_entr, dt_gravkick, dt_hydrokick;
+  my_float_buff *gather_buff;
+  my_float_buff *sys_buff=my_float_buff::generate_buffer(state_of_system::max_cnt1*state_of_system::max_cnt2);
+  size_t buff_size=sys_buff->get_transfer_buff_size();
 
-
+  if(buff_size*NTask > All.BufferSize * 1024 * 1024)
+    exit(40);
 
   if(All.ComovingIntegrationOn)
     {
@@ -78,16 +97,6 @@ void compute_global_quantities_of_system(void)
       if(P[i].Type == 0)
 	entr = SphP[i].Entropy + SphP[i].DtEntropy * dt_entr;
 
-#ifdef PMGRID
-      if(All.ComovingIntegrationOn)
-	dt_gravkick = get_gravkick_factor(All.PM_Ti_begstep, All.Ti_Current) -
-	  get_gravkick_factor(All.PM_Ti_begstep, (All.PM_Ti_begstep + All.PM_Ti_endstep) / 2);
-      else
-	dt_gravkick = (All.Ti_Current - (All.PM_Ti_begstep + All.PM_Ti_endstep) / 2) * All.Timebase_interval;
-
-      for(j = 0; j < 3; j++)
-	vel[j] += P[i].GravPM[j] * dt_gravkick;
-#endif
 
       sys.EnergyKinComp[P[i].Type] +=
 	0.5 * P[i].Mass * (vel[0] * vel[0] + vel[1] * vel[1] + vel[2] * vel[2]) / a2;
@@ -118,16 +127,101 @@ void compute_global_quantities_of_system(void)
 
   /* some the stuff over all processors */
 #ifndef NOMPI
-  MPI_Reduce(&sys.MassComp[0], &SysState.MassComp[0], 6, MPI_DOUBLE, MPI_SUM, 0, GADGET_WORLD);
-  MPI_Reduce(&sys.EnergyPotComp[0], &SysState.EnergyPotComp[0], 6, MPI_DOUBLE, MPI_SUM, 0, GADGET_WORLD);
-  MPI_Reduce(&sys.EnergyIntComp[0], &SysState.EnergyIntComp[0], 6, MPI_DOUBLE, MPI_SUM, 0, GADGET_WORLD);
-  MPI_Reduce(&sys.EnergyKinComp[0], &SysState.EnergyKinComp[0], 6, MPI_DOUBLE, MPI_SUM, 0, GADGET_WORLD);
-  MPI_Reduce(&sys.MomentumComp[0][0], &SysState.MomentumComp[0][0], 6 * 4, MPI_DOUBLE, MPI_SUM, 0,
-	     GADGET_WORLD);
-  MPI_Reduce(&sys.AngMomentumComp[0][0], &SysState.AngMomentumComp[0][0], 6 * 4, MPI_DOUBLE, MPI_SUM, 0,
-	     GADGET_WORLD);
-  MPI_Reduce(&sys.CenterOfMassComp[0][0], &SysState.CenterOfMassComp[0][0], 6 * 4, MPI_DOUBLE, MPI_SUM, 0,
-	     GADGET_WORLD);
+    for(i=0;i<state_of_system::max_cnt1;i++)
+    {
+        sys_buff[i]=sys.MassComp[i];
+        sys_buff[i+state_of_system::max_cnt1]=sys.EnergyPotComp[i];
+        sys_buff[i+state_of_system::max_cnt1*2]=sys.EnergyIntComp[i];
+        sys_buff[i+state_of_system::max_cnt1*3]=sys.EnergyKinComp[i];
+        SysState.MassComp[i]=0;
+        SysState.EnergyPotComp[i]=0;
+        SysState.EnergyIntComp[i]=0;
+        SysState.EnergyKinComp[i]=0;
+    }
+    MPI_Gather(sys_buff->get_transfer_buff(),buff_size,MPI_BYTE,CommBuffer,buff_size,MPI_BYTE,0,GADGET_WORLD);
+    if(ThisTask == 0)
+    {
+        gather_buff=my_float_buff::re_org_transfer_buff(CommBuffer);
+        for(n=0;n<NTask;n++)
+        {
+            for(i=0;i<state_of_system::max_cnt1;i++)
+            {
+                SysState.MassComp[i]+=gather_buff[i];
+                SysState.EnergyPotComp[i]+=gather_buff[i+state_of_system::max_cnt1];
+                SysState.EnergyIntComp[i]+=gather_buff[i+state_of_system::max_cnt1*2];
+                SysState.EnergyKinComp[i]+=gather_buff[i+state_of_system::max_cnt1*3];
+            }
+            gather_buff=my_float_buff::re_org_transfer_buff(gather_buff->next_pointer());
+        }
+    }
+  //MPI_Reduce(&sys.MassComp[0], &SysState.MassComp[0], 6, MPI_DOUBLE, MPI_SUM, 0, GADGET_WORLD);
+  //MPI_Reduce(&sys.EnergyPotComp[0], &SysState.EnergyPotComp[0], 6, MPI_DOUBLE, MPI_SUM, 0, GADGET_WORLD);
+  //MPI_Reduce(&sys.EnergyIntComp[0], &SysState.EnergyIntComp[0], 6, MPI_DOUBLE, MPI_SUM, 0, GADGET_WORLD);
+  //MPI_Reduce(&sys.EnergyKinComp[0], &SysState.EnergyKinComp[0], 6, MPI_DOUBLE, MPI_SUM, 0, GADGET_WORLD);
+  for(j=0;j<state_of_system::max_cnt2;j++)
+    for(i=0;i<state_of_system::max_cnt1;i++)
+    {
+        sys_buff[i+state_of_system::max_cnt1*j]=sys.MomentumComp[i][j];
+        SysState.MomentumComp[i][j]=0;
+    }
+    MPI_Gather(sys_buff->get_transfer_buff(),buff_size,MPI_BYTE,CommBuffer,buff_size,MPI_BYTE,0,GADGET_WORLD);
+    if(ThisTask == 0)
+    {
+        gather_buff=my_float_buff::re_org_transfer_buff(CommBuffer);
+        for(n=0;n<NTask;n++)
+        {
+          for(j=0;j<state_of_system::max_cnt2;j++)
+            for(i=0;i<state_of_system::max_cnt1;i++)
+            {
+                SysState.MomentumComp[i][j]+=gather_buff[i+state_of_system::max_cnt1*j];
+            }
+            gather_buff=my_float_buff::re_org_transfer_buff(gather_buff->next_pointer());
+        }
+    }
+  //MPI_Reduce(&sys.MomentumComp[0][0], &SysState.MomentumComp[0][0], 6 * 4, MPI_DOUBLE, MPI_SUM, 0, GADGET_WORLD);
+
+  for(j=0;j<state_of_system::max_cnt2;j++)
+    for(i=0;i<state_of_system::max_cnt1;i++)
+    {
+        sys_buff[i+state_of_system::max_cnt1*j]=sys.AngMomentumComp[i][j];
+        SysState.AngMomentumComp[i][j]=0;
+    }
+    MPI_Gather(sys_buff->get_transfer_buff(),buff_size,MPI_BYTE,CommBuffer,buff_size,MPI_BYTE,0,GADGET_WORLD);
+    if(ThisTask == 0)
+    {
+        gather_buff=my_float_buff::re_org_transfer_buff(CommBuffer);
+        for(n=0;n<NTask;n++)
+        {
+          for(j=0;j<state_of_system::max_cnt2;j++)
+            for(i=0;i<state_of_system::max_cnt1;i++)
+            {
+                SysState.AngMomentumComp[i][j]+=gather_buff[i+state_of_system::max_cnt1*j];
+            }
+            gather_buff=my_float_buff::re_org_transfer_buff(gather_buff->next_pointer());
+        }
+    }
+  //MPI_Reduce(&sys.AngMomentumComp[0][0], &SysState.AngMomentumComp[0][0], 6 * 4, MPI_DOUBLE, MPI_SUM, 0, GADGET_WORLD);
+  for(j=0;j<state_of_system::max_cnt2;j++)
+    for(i=0;i<state_of_system::max_cnt1;i++)
+    {
+        sys_buff[i+state_of_system::max_cnt1*j]=sys.CenterOfMassComp[i][j];
+        SysState.CenterOfMassComp[i][j]=0;
+    }
+    MPI_Gather(sys_buff->get_transfer_buff(),buff_size,MPI_BYTE,CommBuffer,buff_size,MPI_BYTE,0,GADGET_WORLD);
+    if(ThisTask == 0)
+    {
+        gather_buff=my_float_buff::re_org_transfer_buff(CommBuffer);
+        for(n=0;n<NTask;n++)
+        {
+          for(j=0;j<state_of_system::max_cnt2;j++)
+            for(i=0;i<state_of_system::max_cnt1;i++)
+            {
+                SysState.CenterOfMassComp[i][j]+=gather_buff[i+state_of_system::max_cnt1*j];
+            }
+            gather_buff=my_float_buff::re_org_transfer_buff(gather_buff->next_pointer());
+        }
+    }
+  //MPI_Reduce(&sys.CenterOfMassComp[0][0], &SysState.CenterOfMassComp[0][0], 6 * 4, MPI_DOUBLE, MPI_SUM, 0, GADGET_WORLD);
 #else
     for(i = 0; i < 6; i++){
         SysState.MassComp[i] = sys.MassComp[i];
@@ -211,6 +305,6 @@ void compute_global_quantities_of_system(void)
 
   /* give everyone the result, maybe the want to do something with it */
 #ifndef NOMPI
-  MPI_Bcast(&SysState, sizeof(struct state_of_system), MPI_BYTE, 0, GADGET_WORLD);
+//  MPI_Bcast(&SysState, sizeof(struct state_of_system), MPI_BYTE, 0, GADGET_WORLD);
 #endif // NOMPI
 }

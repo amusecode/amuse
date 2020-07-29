@@ -1,3 +1,18 @@
+/* ################################################################################## */
+/* ###                                                                            ### */
+/* ###                                 Gadgetmp2                                  ### */
+/* ###                                                                            ### */
+/* ###   Original: Gadget2 in the version used in Amuse                           ### */
+/* ###   Author: Gadget2 and Amuse contributors                                   ### */
+/* ###                                                                            ### */
+/* ###   Modified: July 2020                                                      ### */
+/* ###   Author: Thomas Schano                                                    ### */
+/* ###                                                                            ### */
+/* ###   Changes are intended to enable precise calculations in                   ### */
+/* ###   non periodic small domain simulations in which comoving parts            ### */
+/* ###   are simulated in std precision                                           ### */
+/* ###                                                                            ### */
+/* ################################################################################## */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -8,8 +23,8 @@
 #include <signal.h>
 #include <unistd.h>
 
-#include "allvars.h"
-#include "proto.h"
+//#include "allvars.hpp"
+#include "proto.hpp"
 
 
 /*! \file endrun.c
@@ -26,7 +41,7 @@
  */
 
 // adapted for AMUSE:
-void endrun(int ierr)
+void gadgetmp2::endrun(int ierr)
 {
   if(ierr)
     {
@@ -36,26 +51,3 @@ void endrun(int ierr)
   exit(0);
 }
 
-void original_endrun(int ierr)
-{
-  if(ierr)
-    {
-      printf("task %d: endrun called with an error level of %d\n\n\n", ThisTask, ierr);
-      fflush(stdout);
-#ifdef DEBUG
-      terminate_processes();
-      raise(SIGABRT);
-      sleep(60);
-#else
-#ifndef NOMPI
-      MPI_Abort(GADGET_WORLD, ierr);
-#endif
-#endif
-      exit(0);
-    }
-
-#ifndef NOMPI
-  MPI_Finalize();
-#endif
-  exit(0);
-}

@@ -8,7 +8,7 @@ from amuse.community.interface.gd import GravityFieldCode
 from amuse.community import *
 from amuse.support.options import option
 
-class Gadget2Interface(
+class Gadgetmp2Interface(
     CodeInterface, 
     GravitationalDynamicsInterface, 
     LiteratureReferencesMixIn, 
@@ -49,7 +49,7 @@ class Gadget2Interface(
         CodeWithDataDirectories.__init__(self)
         
     def name_of_the_worker(self, mode):
-        return 'gadget2_worker_'+mode
+        return 'gadgetmp2_worker_'+mode
     
     @legacy_function
     def new_dm_particle():
@@ -498,7 +498,7 @@ class Gadget2Interface(
     def get_viscosity_switch():
         function = LegacyFunctionSpecification()
         function.addParameter('viscosity_switch', dtype='string', direction=function.OUT,
-            description = "The viscosity switch used by Gadget2.")
+            description = "The viscosity switch used by Gadgetmp2.")
         function.result_type = 'int32'
         return function
         
@@ -825,14 +825,14 @@ class Gadget2Interface(
     def get_time_limit_cpu():
         function = LegacyFunctionSpecification()
         function.addParameter('time_limit_cpu', dtype='d', direction=function.OUT,
-            description = "The cpu-time limit. Gadget2 will stop once 85% of this (wall-clock) time has passed.")
+            description = "The cpu-time limit. Gadgetmp2 will stop once 85% of this (wall-clock) time has passed.")
         function.result_type = 'i'
         return function
     @legacy_function
     def set_time_limit_cpu():
         function = LegacyFunctionSpecification()
         function.addParameter('time_limit_cpu', dtype='d', direction=function.IN,
-            description = "The cpu-time limit. Gadget2 will stop once 85% of this (wall-clock) time has passed.")
+            description = "The cpu-time limit. Gadgetmp2 will stop once 85% of this (wall-clock) time has passed.")
         function.result_type = 'i'
         return function
     
@@ -1194,18 +1194,18 @@ class Gadget2Interface(
         return function
     
 
-class Gadget2Doc(object):
+class Gadgetmp2Doc(object):
 
     def __get__(self, instance, owner):
         return instance.legacy_interface.__doc__+"\n\n"+instance.parameters.__doc__
 
-class Gadget2(GravitationalDynamics, GravityFieldCode):
+class Gadgetmp2(GravitationalDynamics, GravityFieldCode):
     
-    __doc__ = Gadget2Doc()
+    __doc__ = Gadgetmp2Doc()
     
     def __init__(self, unit_converter = None, mode = 'normal', **options):
         self.mode = mode
-        legacy_interface = Gadget2Interface(mode = mode, **options)
+        legacy_interface = Gadgetmp2Interface(mode = mode, **options)
         
         if unit_converter is None:
             unit_converter = ConvertBetweenGenericAndSiUnits(
@@ -1311,7 +1311,7 @@ class Gadget2(GravitationalDynamics, GravityFieldCode):
             "get_time_step", 
             None,
             "timestep", 
-            "timestep for system, Gadget2 calculates this by itself, based on particle acceleration.", 
+            "timestep for system, Gadgetmp2 calculates this by itself, based on particle acceleration.", 
             default_value = 1.0 | generic_unit_system.time
         ) 
         
@@ -1470,8 +1470,8 @@ class Gadget2(GravitationalDynamics, GravityFieldCode):
             "get_viscosity_switch", 
             None,
             "viscosity_switch", 
-            "Viscosity switch used by Gadget2", 
-            default_value = "standard Gadget2 viscosity"
+            "Viscosity switch used by Gadgetmp2", 
+            default_value = "standard Gadgetmp2 viscosity"
         )
 
 
@@ -1511,7 +1511,7 @@ class Gadget2(GravitationalDynamics, GravityFieldCode):
             "get_time_limit_cpu", 
             "set_time_limit_cpu",
             "time_limit_cpu", 
-            "The cpu-time limit. Gadget2 will stop once 85% of this (wall-clock) time has passed.", 
+            "The cpu-time limit. Gadgetmp2 will stop once 85% of this (wall-clock) time has passed.", 
             default_value = 36000 | units.s
         )
         
@@ -1687,7 +1687,7 @@ class Gadget2(GravitationalDynamics, GravityFieldCode):
             "get_interpret_kicks_as_feedback_flag",
             "set_interpret_kicks_as_feedback_flag",
             "interpret_kicks_as_feedback",
-            "Flag telling Gadget2 whether to interpret external changes to particles' velocities as feedback (for timestepping).",
+            "Flag telling Gadgetmp2 whether to interpret external changes to particles' velocities as feedback (for timestepping).",
             False
         )
         
@@ -1695,7 +1695,7 @@ class Gadget2(GravitationalDynamics, GravityFieldCode):
             "get_interpret_heat_as_feedback_flag",
             "set_interpret_heat_as_feedback_flag",
             "interpret_heat_as_feedback",
-            "Flag telling Gadget2 whether to interpret external changes to particles' internal energy as feedback (for timestepping).",
+            "Flag telling Gadgetmp2 whether to interpret external changes to particles' internal energy as feedback (for timestepping).",
             True
         )
         

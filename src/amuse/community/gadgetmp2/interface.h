@@ -1,39 +1,46 @@
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-#include "src/allvars.h"
-#include "src/proto.h"
-#include "src/tags.h"
+/* ################################################################################## */
+/* ###                                                                            ### */
+/* ###                                 Gadgetmp2                                  ### */
+/* ###                                                                            ### */
+/* ###   Original: Gadget2 in the version used in Amuse                           ### */
+/* ###   Author: Gadget2 and Amuse contributors                                   ### */
+/* ###                                                                            ### */
+/* ###   Modified: July 2020                                                      ### */
+/* ###   Author: Thomas Schano                                                    ### */
+/* ###                                                                            ### */
+/* ###   Changes are intended to enable precise calculations in                   ### */
+/* ###   non periodic small domain simulations in which comoving parts            ### */
+/* ###   are simulated in std precision                                           ### */
+/* ###                                                                            ### */
+/* ################################################################################## */
+#include "src/tags.hpp"
 #include <gsl/gsl_rng.h>
+#include "src/proto.hpp"
 
 
 typedef struct {
-    double mass;                                        /// mass
-    double x, y, z;                                     /// position
-    double vx, vy, vz;                                  /// velocity
+    my_float mass;                                        /// mass
+    my_float x, y, z;                                     /// position
+    my_float vx, vy, vz;                                  /// velocity
 } dynamics_state;
 
 typedef struct {
-    double mass;                                        /// mass
-    double x, y, z;                                     /// position
-    double vx, vy, vz;                                  /// velocity
-    double u;                                           /// entropy
+    my_float mass;                                        /// mass
+    my_float x, y, z;                                     /// position
+    my_float vx, vy, vz;                                  /// velocity
+    my_float u;                                           /// entropy
 #ifdef MORRIS97VISC
-    double alpha, dalphadt;				///viscosity
+    my_float alpha, dalphadt;				///viscosity
 #endif
 } sph_state;
 
-void   begrun(void);
-double second(void);
+//void   gadgetmp2::begrun(void);
+//double gadgetmp2::second(void);
 
 int found_particle(int index_of_the_particle, int *local_index);
 void update_particle_map(void);
 
-void hydro_state_at_point(FLOAT pos[3], FLOAT vel[3], FLOAT *h_out,
-  FLOAT *ngb_out, FLOAT *dhsml_out, FLOAT *rho_out, FLOAT *rhov_out,
-  FLOAT *rhov2_out, FLOAT *rhoe_out);
-
-#ifdef __cplusplus
-}
-#endif
+/*void gadgetmp2::hydro_state_at_point(double pos[3], double vel[3], double *h_out,
+  double *ngb_out, double *dhsml_out, double *rho_out, double *rhov_out,
+  double *rhov2_out, double *rhoe_out);
+*/

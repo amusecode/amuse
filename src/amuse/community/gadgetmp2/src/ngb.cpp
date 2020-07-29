@@ -1,3 +1,18 @@
+/* ################################################################################## */
+/* ###                                                                            ### */
+/* ###                                 Gadgetmp2                                  ### */
+/* ###                                                                            ### */
+/* ###   Original: Gadget2 in the version used in Amuse                           ### */
+/* ###   Author: Gadget2 and Amuse contributors                                   ### */
+/* ###                                                                            ### */
+/* ###   Modified: July 2020                                                      ### */
+/* ###   Author: Thomas Schano                                                    ### */
+/* ###                                                                            ### */
+/* ###   Changes are intended to enable precise calculations in                   ### */
+/* ###   non periodic small domain simulations in which comoving parts            ### */
+/* ###   are simulated in std precision                                           ### */
+/* ###                                                                            ### */
+/* ################################################################################## */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -7,8 +22,8 @@
 #include <mpi.h>
 #endif
 
-#include "allvars.h"
-#include "proto.h"
+//#include "allvars.hpp"
+#include "proto.hpp"
 
 
 /*! \file ngb.c
@@ -17,29 +32,6 @@
  *  This file contains routines for neighbour finding.  We use the
  *  gravity-tree and a range-searching technique to find neighbours.
  */
-
-#ifdef PERIODIC
-static double boxSize, boxHalf;
-
-#ifdef LONG_X
-static double boxSize_X, boxHalf_X;
-#else
-#define boxSize_X boxSize
-#define boxHalf_X boxHalf
-#endif
-#ifdef LONG_Y
-static double boxSize_Y, boxHalf_Y;
-#else
-#define boxSize_Y boxSize
-#define boxHalf_Y boxHalf
-#endif
-#ifdef LONG_Z
-static double boxSize_Z, boxHalf_Z;
-#else
-#define boxSize_Z boxSize
-#define boxHalf_Z boxHalf
-#endif
-#endif
 
 
 /*! these macros maps a coordinate difference to the nearest periodic
@@ -63,16 +55,13 @@ static double boxSize_Z, boxHalf_Z;
  *  difficult) second part of it. For this purpose, each node knows the
  *  maximum h occuring among the particles it represents.
  */
-int ngb_treefind_pairs(FLOAT searchcenter[3], FLOAT hsml, int *startnode)
+int gadgetmp2::ngb_treefind_pairs(my_float searchcenter[3], my_float hsml, int *startnode)
 {
   int k, no, p, numngb;
-  FLOAT hdiff;
-  FLOAT searchmin[3], searchmax[3];
-  struct NODE *this;
+  my_float hdiff;
+  my_float searchmin[3], searchmax[3];
+  struct NODE *thiis;
 
-#ifdef PERIODIC
-  double xtmp;
-#endif
 
   for(k = 0; k < 3; k++)	/* cube-box window */
     {
@@ -97,20 +86,7 @@ int ngb_treefind_pairs(FLOAT searchcenter[3], FLOAT hsml, int *startnode)
 	  if(hdiff < 0)
 	    hdiff = 0;
 
-#ifdef PERIODIC
-	  if(NGB_PERIODIC_X(P[p].Pos[0] - searchcenter[0]) < (-hsml - hdiff))
-	    continue;
-	  if(NGB_PERIODIC_X(P[p].Pos[0] - searchcenter[0]) > (hsml + hdiff))
-	    continue;
-	  if(NGB_PERIODIC_Y(P[p].Pos[1] - searchcenter[1]) < (-hsml - hdiff))
-	    continue;
-	  if(NGB_PERIODIC_Y(P[p].Pos[1] - searchcenter[1]) > (hsml + hdiff))
-	    continue;
-	  if(NGB_PERIODIC_Z(P[p].Pos[2] - searchcenter[2]) < (-hsml - hdiff))
-	    continue;
-	  if(NGB_PERIODIC_Z(P[p].Pos[2] - searchcenter[2]) > (hsml + hdiff))
-	    continue;
-#else
+
 	  if(P[p].Pos[0] < (searchmin[0] - hdiff))
 	    continue;
 	  if(P[p].Pos[0] > (searchmax[0] + hdiff))
@@ -123,14 +99,13 @@ int ngb_treefind_pairs(FLOAT searchcenter[3], FLOAT hsml, int *startnode)
 	    continue;
 	  if(P[p].Pos[2] > (searchmax[2] + hdiff))
 	    continue;
-#endif
 	  Ngblist[numngb++] = p;
 
 	  if(numngb == MAX_NGB)
 	    {
 	      printf
 		("ThisTask=%d: Need to do a second neighbour loop in hydro-force for (%g|%g|%g) hsml=%g no=%d\n",
-		 ThisTask, searchcenter[0], searchcenter[1], searchcenter[2], hsml, no);
+		 ThisTask, searchcenter[0].toDouble(), searchcenter[1].toDouble(), searchcenter[2].toDouble(), hsml.toDouble(), no);
 	      *startnode = no;
 	      return numngb;
 	    }
@@ -144,41 +119,28 @@ int ngb_treefind_pairs(FLOAT searchcenter[3], FLOAT hsml, int *startnode)
 	      continue;
 	    }
 
-	  this = &Nodes[no];
+	  thiis = &Nodes[no];
 	  hdiff = Extnodes[no].hmax - hsml;
 	  if(hdiff < 0)
 	    hdiff = 0;
 
-	  no = this->u.d.sibling;	/* in case the node can be discarded */
+	  no = thiis->u.d.sibling;	/* in case the node can be discarded */
 
-#ifdef PERIODIC
-	  if((NGB_PERIODIC_X(this->center[0] - searchcenter[0]) + 0.5 * this->len) < (-hsml - hdiff))
+
+	  if((thiis->center[0] + 0.5 * thiis->len) < (searchmin[0] - hdiff))
 	    continue;
-	  if((NGB_PERIODIC_X(this->center[0] - searchcenter[0]) - 0.5 * this->len) > (hsml + hdiff))
+	  if((thiis->center[0] - 0.5 * thiis->len) > (searchmax[0] + hdiff))
 	    continue;
-	  if((NGB_PERIODIC_Y(this->center[1] - searchcenter[1]) + 0.5 * this->len) < (-hsml - hdiff))
+	  if((thiis->center[1] + 0.5 * thiis->len) < (searchmin[1] - hdiff))
 	    continue;
-	  if((NGB_PERIODIC_Y(this->center[1] - searchcenter[1]) - 0.5 * this->len) > (hsml + hdiff))
+	  if((thiis->center[1] - 0.5 * thiis->len) > (searchmax[1] + hdiff))
 	    continue;
-	  if((NGB_PERIODIC_Z(this->center[2] - searchcenter[2]) + 0.5 * this->len) < (-hsml - hdiff))
+	  if((thiis->center[2] + 0.5 * thiis->len) < (searchmin[2] - hdiff))
 	    continue;
-	  if((NGB_PERIODIC_Z(this->center[2] - searchcenter[2]) - 0.5 * this->len) > (hsml + hdiff))
+	  if((thiis->center[2] - 0.5 * thiis->len) > (searchmax[2] + hdiff))
 	    continue;
-#else
-	  if((this->center[0] + 0.5 * this->len) < (searchmin[0] - hdiff))
-	    continue;
-	  if((this->center[0] - 0.5 * this->len) > (searchmax[0] + hdiff))
-	    continue;
-	  if((this->center[1] + 0.5 * this->len) < (searchmin[1] - hdiff))
-	    continue;
-	  if((this->center[1] - 0.5 * this->len) > (searchmax[1] + hdiff))
-	    continue;
-	  if((this->center[2] + 0.5 * this->len) < (searchmin[2] - hdiff))
-	    continue;
-	  if((this->center[2] - 0.5 * this->len) > (searchmax[2] + hdiff))
-	    continue;
-#endif
-	  no = this->u.d.nextnode;	/* ok, we need to open the node */
+
+	  no = thiis->u.d.nextnode;	/* ok, we need to open the node */
 	}
     }
 
@@ -193,16 +155,12 @@ int ngb_treefind_pairs(FLOAT searchcenter[3], FLOAT hsml, int *startnode)
  *  returned, i.e. the reduction to a sphere still needs to be done in the
  *  calling routine.
  */
-int ngb_treefind_variable(FLOAT searchcenter[3], FLOAT hsml, int *startnode)
+int gadgetmp2::ngb_treefind_variable(my_float searchcenter[3], my_float hsml, int *startnode)
 {
   int k, numngb;
   int no, p;
-  struct NODE *this;
-  FLOAT searchmin[3], searchmax[3];
-
-#ifdef PERIODIC
-  double xtmp;
-#endif
+  struct NODE *thiis;
+  my_float searchmin[3], searchmax[3];
 
   for(k = 0; k < 3; k++)	/* cube-box window */
     {
@@ -223,20 +181,7 @@ int ngb_treefind_variable(FLOAT searchcenter[3], FLOAT hsml, int *startnode)
 	  if(P[p].Type > 0)
 	    continue;
 
-#ifdef PERIODIC
-	  if(NGB_PERIODIC_X(P[p].Pos[0] - searchcenter[0]) < -hsml)
-	    continue;
-	  if(NGB_PERIODIC_X(P[p].Pos[0] - searchcenter[0]) > hsml)
-	    continue;
-	  if(NGB_PERIODIC_Y(P[p].Pos[1] - searchcenter[1]) < -hsml)
-	    continue;
-	  if(NGB_PERIODIC_Y(P[p].Pos[1] - searchcenter[1]) > hsml)
-	    continue;
-	  if(NGB_PERIODIC_Z(P[p].Pos[2] - searchcenter[2]) < -hsml)
-	    continue;
-	  if(NGB_PERIODIC_Z(P[p].Pos[2] - searchcenter[2]) > hsml)
-	    continue;
-#else
+
 	  if(P[p].Pos[0] < searchmin[0])
 	    continue;
 	  if(P[p].Pos[0] > searchmax[0])
@@ -249,7 +194,6 @@ int ngb_treefind_variable(FLOAT searchcenter[3], FLOAT hsml, int *startnode)
 	    continue;
 	  if(P[p].Pos[2] > searchmax[2])
 	    continue;
-#endif
 	  Ngblist[numngb++] = p;
 
 	  if(numngb == MAX_NGB)
@@ -258,7 +202,7 @@ int ngb_treefind_variable(FLOAT searchcenter[3], FLOAT hsml, int *startnode)
 	      if(numngb == MAX_NGB)
 		{
 		  printf("ThisTask=%d: Need to do a second neighbour loop for (%g|%g|%g) hsml=%g no=%d\n",
-			 ThisTask, searchcenter[0], searchcenter[1], searchcenter[2], hsml, no);
+			 ThisTask, searchcenter[0].toDouble(), searchcenter[1].toDouble(), searchcenter[2].toDouble(), hsml.toDouble(), no);
 		  *startnode = no;
 		  return numngb;
 		}
@@ -273,37 +217,23 @@ int ngb_treefind_variable(FLOAT searchcenter[3], FLOAT hsml, int *startnode)
 	      continue;
 	    }
 
-	  this = &Nodes[no];
+	  thiis = &Nodes[no];
 
-	  no = this->u.d.sibling;	/* in case the node can be discarded */
-#ifdef PERIODIC
-	  if((NGB_PERIODIC_X(this->center[0] - searchcenter[0]) + 0.5 * this->len) < -hsml)
+	  no = thiis->u.d.sibling;	/* in case the node can be discarded */
+
+	  if((thiis->center[0] + 0.5 * thiis->len) < (searchmin[0]))
 	    continue;
-	  if((NGB_PERIODIC_X(this->center[0] - searchcenter[0]) - 0.5 * this->len) > hsml)
+	  if((thiis->center[0] - 0.5 * thiis->len) > (searchmax[0]))
 	    continue;
-	  if((NGB_PERIODIC_Y(this->center[1] - searchcenter[1]) + 0.5 * this->len) < -hsml)
+	  if((thiis->center[1] + 0.5 * thiis->len) < (searchmin[1]))
 	    continue;
-	  if((NGB_PERIODIC_Y(this->center[1] - searchcenter[1]) - 0.5 * this->len) > hsml)
+	  if((thiis->center[1] - 0.5 * thiis->len) > (searchmax[1]))
 	    continue;
-	  if((NGB_PERIODIC_Z(this->center[2] - searchcenter[2]) + 0.5 * this->len) < -hsml)
+	  if((thiis->center[2] + 0.5 * thiis->len) < (searchmin[2]))
 	    continue;
-	  if((NGB_PERIODIC_Z(this->center[2] - searchcenter[2]) - 0.5 * this->len) > hsml)
+	  if((thiis->center[2] - 0.5 * thiis->len) > (searchmax[2]))
 	    continue;
-#else
-	  if((this->center[0] + 0.5 * this->len) < (searchmin[0]))
-	    continue;
-	  if((this->center[0] - 0.5 * this->len) > (searchmax[0]))
-	    continue;
-	  if((this->center[1] + 0.5 * this->len) < (searchmin[1]))
-	    continue;
-	  if((this->center[1] - 0.5 * this->len) > (searchmax[1]))
-	    continue;
-	  if((this->center[2] + 0.5 * this->len) < (searchmin[2]))
-	    continue;
-	  if((this->center[2] - 0.5 * this->len) > (searchmax[2]))
-	    continue;
-#endif
-	  no = this->u.d.nextnode;	/* ok, we need to open the node */
+	  no = thiis->u.d.nextnode;	/* ok, we need to open the node */
 	}
     }
 
@@ -319,27 +249,20 @@ int ngb_treefind_variable(FLOAT searchcenter[3], FLOAT hsml, int *startnode)
  *  called to eliminate some of the superfluous particles in the "corners" of
  *  the search box - only the ones in the inscribed sphere need to be kept.
  */
-int ngb_clear_buf(FLOAT searchcenter[3], FLOAT hsml, int numngb)
+int gadgetmp2::ngb_clear_buf(my_float searchcenter[3], my_float hsml, int numngb)
 {
   int i, p;
-  FLOAT dx, dy, dz, r2;
+  my_float dx, dy, dz, r2;
 
-#ifdef PERIODIC
-  double xtmp;
-#endif
 
   for(i = 0; i < numngb; i++)
     {
       p = Ngblist[i];
-#ifdef PERIODIC
-      dx = NGB_PERIODIC_X(P[p].Pos[0] - searchcenter[0]);
-      dy = NGB_PERIODIC_Y(P[p].Pos[1] - searchcenter[1]);
-      dz = NGB_PERIODIC_Z(P[p].Pos[2] - searchcenter[2]);
-#else
+
       dx = P[p].Pos[0] - searchcenter[0];
       dy = P[p].Pos[1] - searchcenter[1];
       dz = P[p].Pos[2] - searchcenter[2];
-#endif
+
       r2 = dx * dx + dy * dy + dz * dz;
 
       if(r2 > hsml * hsml)
@@ -357,29 +280,11 @@ int ngb_clear_buf(FLOAT searchcenter[3], FLOAT hsml, int numngb)
 
 /*! Allocates memory for the neighbour list buffer.
  */
-void ngb_treeallocate(int npart)
+void gadgetmp2::ngb_treeallocate(int npart)
 {
-  double totbytes = 0;
+  long long totbytes = 0;
   size_t bytes;
-
-#ifdef PERIODIC
-  boxSize = All.BoxSize;
-  boxHalf = 0.5 * All.BoxSize;
-#ifdef LONG_X
-  boxHalf_X = boxHalf * LONG_X;
-  boxSize_X = boxSize * LONG_X;
-#endif
-#ifdef LONG_Y
-  boxHalf_Y = boxHalf * LONG_Y;
-  boxSize_Y = boxSize * LONG_Y;
-#endif
-#ifdef LONG_Z
-  boxHalf_Z = boxHalf * LONG_Z;
-  boxSize_Z = boxSize * LONG_Z;
-#endif
-#endif
-
-  if(!(Ngblist = malloc(bytes = npart * (long) sizeof(int))))
+  if(!(Ngblist = (int*)malloc(bytes = npart * (long) sizeof(int))))
     {
       printf("Failed to allocate %g MB for ngblist array\n", bytes / (1024.0 * 1024.0));
       endrun(78);
@@ -393,7 +298,7 @@ void ngb_treeallocate(int npart)
 
 /*! free memory allocated for neighbour list buffer.
  */
-void ngb_treefree(void)
+void gadgetmp2::ngb_treefree(void)
 {
   free(Ngblist);
 }
@@ -402,7 +307,7 @@ void ngb_treefree(void)
  *  to construct the gravitational tree, because we use it now for the
  *  neighbour search.
  */
-void ngb_treebuild(void)
+void gadgetmp2::ngb_treebuild(void)
 {
   if(ThisTask == 0)
     printf("Begin Ngb-tree construction.\n");

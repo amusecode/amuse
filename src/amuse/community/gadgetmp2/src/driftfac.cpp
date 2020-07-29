@@ -1,3 +1,18 @@
+/* ################################################################################## */
+/* ###                                                                            ### */
+/* ###                                 Gadgetmp2                                  ### */
+/* ###                                                                            ### */
+/* ###   Original: Gadget2 in the version used in Amuse                           ### */
+/* ###   Author: Gadget2 and Amuse contributors                                   ### */
+/* ###                                                                            ### */
+/* ###   Modified: July 2020                                                      ### */
+/* ###   Author: Thomas Schano                                                    ### */
+/* ###                                                                            ### */
+/* ###   Changes are intended to enable precise calculations in                   ### */
+/* ###   non periodic small domain simulations in which comoving parts            ### */
+/* ###   are simulated in std precision                                           ### */
+/* ###                                                                            ### */
+/* ################################################################################## */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -8,15 +23,15 @@
 #include <gsl/gsl_math.h>
 #include <gsl/gsl_integration.h>
 
-#include "allvars.h"
-#include "proto.h"
+//#include "allvars.hpp"
+#include "proto.hpp"
 
 /*! \file driftfac.c
  *  \brief compute loop-up tables for prefactors in cosmological integration
  */
 
-static double logTimeBegin;
-static double logTimeMax;
+static my_float logTimeBegin;
+static my_float logTimeMax;
 
 
 /*! This function computes look-up tables for factors needed in
@@ -25,7 +40,11 @@ static double logTimeMax;
  *  and the gravitational and hydrodynamical "kicks".  The lookup-table is
  *  used for reasons of speed.
  */
-void init_drift_table(void)
+
+/*!
+ * Tables are used in comoving simulations only. -> No deeper details needed.
+ */
+void gadgetmp2::init_drift_table(void)
 {
 #define WORKSIZE 100000
   int i;
@@ -41,19 +60,20 @@ void init_drift_table(void)
   for(i = 0; i < DRIFT_TABLE_LENGTH; i++)
     {
       F.function = &drift_integ;
-      gsl_integration_qag(&F, exp(logTimeBegin), exp(logTimeBegin + ((logTimeMax - logTimeBegin) / DRIFT_TABLE_LENGTH) * (i + 1)), 0,
+      gsl_integration_qag(&F, exp(logTimeBegin).toDouble(), exp(logTimeBegin + ((logTimeMax - logTimeBegin) / DRIFT_TABLE_LENGTH) * (i + 1)).toDouble(), 0,
 			  1.0e-8, WORKSIZE, GSL_INTEG_GAUSS41, workspace, &result, &abserr);
+
       DriftTable[i] = result;
 
 
       F.function = &gravkick_integ;
-      gsl_integration_qag(&F, exp(logTimeBegin), exp(logTimeBegin + ((logTimeMax - logTimeBegin) / DRIFT_TABLE_LENGTH) * (i + 1)), 0,
+      gsl_integration_qag(&F, exp(logTimeBegin).toDouble(), exp(logTimeBegin + ((logTimeMax - logTimeBegin) / DRIFT_TABLE_LENGTH) * (i + 1)).toDouble(), 0,
 			  1.0e-8, WORKSIZE, GSL_INTEG_GAUSS41, workspace, &result, &abserr);
       GravKickTable[i] = result;
 
 
       F.function = &hydrokick_integ;
-      gsl_integration_qag(&F, exp(logTimeBegin), exp(logTimeBegin + ((logTimeMax - logTimeBegin) / DRIFT_TABLE_LENGTH) * (i + 1)), 0,
+      gsl_integration_qag(&F, exp(logTimeBegin).toDouble(), exp(logTimeBegin + ((logTimeMax - logTimeBegin) / DRIFT_TABLE_LENGTH) * (i + 1)).toDouble(), 0,
 			  1.0e-8, WORKSIZE, GSL_INTEG_GAUSS41, workspace, &result, &abserr);
       HydroKickTable[i] = result;
     }
@@ -66,9 +86,9 @@ void init_drift_table(void)
  *  between time0 and time1. The value returned is * \f[ \int_{a_0}^{a_1}
  *  \frac{{\rm d}a}{H(a)} * \f]
  */
-double get_drift_factor(int time0, int time1)
+my_float gadgetmp2::get_drift_factor(int time0, int time1)
 {
-  double a1, a2, df1, df2, u1, u2;
+  my_float a1, a2, df1, df2, u1, u2;
   int i1, i2;
 
   /* note: will only be called for cosmological integration */
@@ -104,9 +124,9 @@ double get_drift_factor(int time0, int time1)
 /*! This function integrates the cosmological prefactor for a kick step of
  *  the gravitational force.
  */
-double get_gravkick_factor(int time0, int time1)
+my_float gadgetmp2::get_gravkick_factor(int time0, int time1)
 {
-  double a1, a2, df1, df2, u1, u2;
+  my_float a1, a2, df1, df2, u1, u2;
   int i1, i2;
 
   /* note: will only be called for cosmological integration */
@@ -141,9 +161,9 @@ double get_gravkick_factor(int time0, int time1)
 /*! This function integrates the cosmological prefactor for a kick step of
  *  the hydrodynamical force.
  */
-double get_hydrokick_factor(int time0, int time1)
+my_float gadgetmp2::get_hydrokick_factor(int time0, int time1)
 {
-  double a1, a2, df1, df2, u1, u2;
+  my_float a1, a2, df1, df2, u1, u2;
   int i1, i2;
 
   /* note: will only be called for cosmological integration */
@@ -178,24 +198,23 @@ double get_hydrokick_factor(int time0, int time1)
 
 /*! Integration kernel for drift factor computation.
  */
-double drift_integ(double a, void *param)
+double gadgetmp2::drift_integ(double a, void *param)
 {
   double h;
-
-  h = All.Omega0 / (a * a * a) + (1 - All.Omega0 - All.OmegaLambda) / (a * a) + All.OmegaLambda;
-  h = All.Hubble * sqrt(h);
+  h = (All.Omega0 / (a * a * a) + (1 - All.Omega0 - All.OmegaLambda) / (a * a) + All.OmegaLambda);
+  h = All.Hubble * std::sqrt(h);
 
   return 1 / (h * a * a * a);
 }
 
 /*! Integration kernel for gravitational kick factor computation.
  */
-double gravkick_integ(double a, void *param)
+double gadgetmp2::gravkick_integ(double a, void *param)
 {
   double h;
 
-  h = All.Omega0 / (a * a * a) + (1 - All.Omega0 - All.OmegaLambda) / (a * a) + All.OmegaLambda;
-  h = All.Hubble * sqrt(h);
+  h = (All.Omega0 / (a * a * a) + (1 - All.Omega0 - All.OmegaLambda) / (a * a) + All.OmegaLambda);
+  h = All.Hubble * std::sqrt(h);
 
   return 1 / (h * a * a);
 }
@@ -203,24 +222,24 @@ double gravkick_integ(double a, void *param)
 
 /*! Integration kernel for hydrodynamical kick factor computation.
  */
-double hydrokick_integ(double a, void *param)
+double gadgetmp2::hydrokick_integ(double a, void *param)
 {
   double h;
 
-  h = All.Omega0 / (a * a * a) + (1 - All.Omega0 - All.OmegaLambda) / (a * a) + All.OmegaLambda;
-  h = All.Hubble * sqrt(h);
+  h = (All.Omega0 / (a * a * a) + (1 - All.Omega0 - All.OmegaLambda) / (a * a) + All.OmegaLambda);
+  h = All.Hubble * std::sqrt(h);
 
-  return 1 / (h * pow(a, 3 * GAMMA_MINUS1) * a);
+  return 1 / (h * std::pow(a, 3 * GAMMA_MINUS1) * a);
 }
 
-double growthfactor_integ(double a, void *param)
+double gadgetmp2::growthfactor_integ(double a, void *param)
 {
   double s;
 
-  s = All.Omega0 + (1 - All.Omega0 - All.OmegaLambda) * a + All.OmegaLambda * a * a * a;
-  s = sqrt(s);
+  s = (All.Omega0 + (1 - All.Omega0 - All.OmegaLambda) * a + All.OmegaLambda * a * a * a);
+  s = std::sqrt(s);
 
-  return pow(sqrt(a) / s, 3);
+  return std::pow(std::sqrt(a) / s, 3);
 }
 
 

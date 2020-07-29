@@ -1,3 +1,18 @@
+/* ################################################################################## */
+/* ###                                                                            ### */
+/* ###                                 Gadgetmp2                                  ### */
+/* ###                                                                            ### */
+/* ###   Original: Gadget2 in the version used in Amuse                           ### */
+/* ###   Author: Gadget2 and Amuse contributors                                   ### */
+/* ###                                                                            ### */
+/* ###   Modified: July 2020                                                      ### */
+/* ###   Author: Thomas Schano                                                    ### */
+/* ###                                                                            ### */
+/* ###   Changes are intended to enable precise calculations in                   ### */
+/* ###   non periodic small domain simulations in which comoving parts            ### */
+/* ###   are simulated in std precision                                           ### */
+/* ###                                                                            ### */
+/* ################################################################################## */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -6,61 +21,20 @@
 #include <mpi.h>
 #endif
 
-#include "allvars.h"
-#include "proto.h"
-
-#ifdef PERIODIC
-static double boxSize, boxHalf;
-
-#ifdef LONG_X
-static double boxSize_X, boxHalf_X;
-#else
-#define boxSize_X boxSize
-#define boxHalf_X boxHalf
-#endif
-#ifdef LONG_Y
-static double boxSize_Y, boxHalf_Y;
-#else
-#define boxSize_Y boxSize
-#define boxHalf_Y boxHalf
-#endif
-#ifdef LONG_Z
-static double boxSize_Z, boxHalf_Z;
-#else
-#define boxSize_Z boxSize
-#define boxHalf_Z boxHalf
-#endif
-#endif
+//#include "allvars.hpp"
+#include "proto.hpp"
 
 const int debug = 0;
-
-static void hydro_state_evaluate(FLOAT h, FLOAT pos[3], FLOAT vel[3], FLOAT *numngb,
-    FLOAT *dhsml_out, FLOAT *rho_out, FLOAT *rhov_out, FLOAT *rhov2_out, FLOAT
+/*void hydro_state_evaluate(my_float h, my_float pos[3], my_float vel[3], my_float *numngb,
+    my_float *dhsml_out, my_float *rho_out, my_float *rhov_out, my_float *rhov2_out, my_float
     *rhoe_out);
-
-void hydro_state_at_point(FLOAT pos[3], FLOAT vel[3], FLOAT *h_out, FLOAT *ngb_out,
-    FLOAT *dhsml_out, FLOAT *rho_out, FLOAT *rhov_out, FLOAT *rhov2_out, FLOAT *rhoe_out)
+*/
+void gadgetmp2::hydro_state_at_point(my_float pos[3], my_float vel[3], my_float *h_out, my_float *ngb_out,
+    my_float *dhsml_out, my_float *rho_out, my_float *rhov_out, my_float *rhov2_out, my_float *rhoe_out)
 {
-    double low, up, h, dhsml, low_ngb, up_ngb, ngb;
-    double rho, rhov[3], rhov2, rhoe;
+    my_float low, up, h, dhsml, low_ngb, up_ngb, ngb;
+    my_float rho, rhov[3], rhov2, rhoe;
     int i, iter;
-
-#ifdef PERIODIC
-    boxSize = All.BoxSize;
-    boxHalf = 0.5 * All.BoxSize;
-#ifdef LONG_X
-    boxHalf_X = boxHalf * LONG_X;
-    boxSize_X = boxSize * LONG_X;
-#endif
-#ifdef LONG_Y
-    boxHalf_Y = boxHalf * LONG_Y;
-    boxSize_Y = boxSize * LONG_Y;
-#endif
-#ifdef LONG_Z
-    boxHalf_Z = boxHalf * LONG_Z;
-    boxSize_Z = boxSize * LONG_Z;
-#endif
-#endif
 
     up = low = SphP[0].Hsml;
     for(i = 1; i < N_gas; i++){
@@ -70,8 +44,10 @@ void hydro_state_at_point(FLOAT pos[3], FLOAT vel[3], FLOAT *h_out, FLOAT *ngb_o
             up = SphP[i].Hsml;
     }
 #ifndef NOMPI
-    MPI_Allreduce(MPI_IN_PLACE, &low, 1, MPI_DOUBLE, MPI_MIN, GADGET_WORLD);
-    MPI_Allreduce(MPI_IN_PLACE, &up,  1, MPI_DOUBLE, MPI_MAX, GADGET_WORLD);
+    //MPI_Allreduce(MPI_IN_PLACE, &low, 1, MPI_DOUBLE, MPI_MIN, GADGET_WORLD);
+    low=mpi_all_min(low);
+    //MPI_Allreduce(MPI_IN_PLACE, &up,  1, MPI_DOUBLE, MPI_MAX, GADGET_WORLD);
+    up=mpi_all_max(up);
 #endif
     low *= 1.26;
     up /= 1.26;
@@ -81,11 +57,12 @@ void hydro_state_at_point(FLOAT pos[3], FLOAT vel[3], FLOAT *h_out, FLOAT *ngb_o
         low /= 1.26;
         hydro_state_evaluate(low, pos, vel, &low_ngb, &dhsml, &rho, rhov, &rhov2, &rhoe);
 #ifndef NOMPI
-        MPI_Allreduce(MPI_IN_PLACE, &low_ngb, 1, MPI_DOUBLE, MPI_SUM, GADGET_WORLD);
+        //MPI_Allreduce(MPI_IN_PLACE, &low_ngb, 1, MPI_DOUBLE, MPI_SUM, GADGET_WORLD);
+        low_ngb=mpi_all_sum(low_ngb);
 #endif
         if (iter > MAXITER)
             endrun(3210);
-        if (debug) printf("%d - Searching for lower h boundary: %f (ngb: %f)\n",iter, low, low_ngb);
+        if (debug) printf("%d - Searching for lower h boundary: %f (ngb: %f)\n",iter, low.toDouble(), low_ngb.toDouble());
         iter++;
     } while (low_ngb > All.DesNumNgb);
     iter = 0;
@@ -93,11 +70,12 @@ void hydro_state_at_point(FLOAT pos[3], FLOAT vel[3], FLOAT *h_out, FLOAT *ngb_o
         up *= 1.26;
         hydro_state_evaluate(up, pos, vel, &up_ngb, &dhsml, &rho, rhov, &rhov2, &rhoe);
 #ifndef NOMPI
-        MPI_Allreduce(MPI_IN_PLACE, &up_ngb, 1, MPI_DOUBLE, MPI_SUM, GADGET_WORLD);
+        //MPI_Allreduce(MPI_IN_PLACE, &up_ngb, 1, MPI_DOUBLE, MPI_SUM, GADGET_WORLD);
+        up_ngb=mpi_all_sum(up_ngb);
 #endif
         if (iter > MAXITER)
             endrun(3211);
-        if (debug) printf("%d - Searching for upper h boundary: %f (ngb: %f)\n",iter, up, up_ngb);
+        if (debug) printf("%d - Searching for upper h boundary: %f (ngb: %f)\n",iter, up.toDouble(), up_ngb.toDouble());
         iter++;
     } while (up_ngb < All.DesNumNgb);
 
@@ -107,7 +85,8 @@ void hydro_state_at_point(FLOAT pos[3], FLOAT vel[3], FLOAT *h_out, FLOAT *ngb_o
         h = pow(0.5 * (pow(low, 3) + pow(up, 3)), 1.0 / 3);
         hydro_state_evaluate(h, pos, vel, &ngb, &dhsml, &rho, rhov, &rhov2, &rhoe);
 #ifndef NOMPI
-        MPI_Allreduce(MPI_IN_PLACE, &ngb, 1, MPI_DOUBLE, MPI_SUM, GADGET_WORLD);
+        //MPI_Allreduce(MPI_IN_PLACE, &ngb, 1, MPI_DOUBLE, MPI_SUM, GADGET_WORLD);
+        ngb=mpi_all_sum(ngb);
 #endif
 
         if (ngb > All.DesNumNgb){
@@ -119,7 +98,7 @@ void hydro_state_at_point(FLOAT pos[3], FLOAT vel[3], FLOAT *h_out, FLOAT *ngb_o
 
         if(iter > MAXITER)
             endrun(3212);
-        if (debug) printf("%d - Searching for h: %f (ngb: %f)\n",iter, h, ngb);
+        if (debug) printf("%d - Searching for h: %f (ngb: %f)\n",iter, h.toDouble(), ngb.toDouble());
         iter++;
     }
 
@@ -129,12 +108,20 @@ void hydro_state_at_point(FLOAT pos[3], FLOAT vel[3], FLOAT *h_out, FLOAT *ngb_o
 //    ngb = dhsml = rho = rhov2 = rhoe = rhov[0] = rhov[1] = rhov[2] = 0;
     hydro_state_evaluate(h, pos, vel, &ngb, &dhsml, &rho, rhov, &rhov2, &rhoe);
 #ifndef NOMPI
-    MPI_Allreduce(MPI_IN_PLACE, &ngb,   1, MPI_DOUBLE, MPI_SUM, GADGET_WORLD);
-    MPI_Allreduce(MPI_IN_PLACE, &dhsml, 1, MPI_DOUBLE, MPI_SUM, GADGET_WORLD);
-    MPI_Allreduce(MPI_IN_PLACE, &rho,   1, MPI_DOUBLE, MPI_SUM, GADGET_WORLD);
-    MPI_Allreduce(MPI_IN_PLACE, &rhov,  3, MPI_DOUBLE, MPI_SUM, GADGET_WORLD);
-    MPI_Allreduce(MPI_IN_PLACE, &rhov2, 1, MPI_DOUBLE, MPI_SUM, GADGET_WORLD);
-    MPI_Allreduce(MPI_IN_PLACE, &rhoe,  1, MPI_DOUBLE, MPI_SUM, GADGET_WORLD);
+    //MPI_Allreduce(MPI_IN_PLACE, &ngb,   1, MPI_DOUBLE, MPI_SUM, GADGET_WORLD);
+        ngb=mpi_all_sum(ngb);
+    //MPI_Allreduce(MPI_IN_PLACE, &dhsml, 1, MPI_DOUBLE, MPI_SUM, GADGET_WORLD);
+        dhsml=mpi_all_sum(dhsml);
+    //MPI_Allreduce(MPI_IN_PLACE, &rho,   1, MPI_DOUBLE, MPI_SUM, GADGET_WORLD);
+        rho=mpi_all_sum(rho);
+    //MPI_Allreduce(MPI_IN_PLACE, &rhov,  3, MPI_DOUBLE, MPI_SUM, GADGET_WORLD);
+        rhov[0]=mpi_all_sum(rhov[0]);
+        rhov[1]=mpi_all_sum(rhov[1]);
+        rhov[2]=mpi_all_sum(rhov[2]);
+    //MPI_Allreduce(MPI_IN_PLACE, &rhov2, 1, MPI_DOUBLE, MPI_SUM, GADGET_WORLD);
+        rhov2=mpi_all_sum(rhov2);
+    //MPI_Allreduce(MPI_IN_PLACE, &rhoe,  1, MPI_DOUBLE, MPI_SUM, GADGET_WORLD);
+        rhoe=mpi_all_sum(rhoe);
 #endif
 
     *h_out      = h;
@@ -148,16 +135,16 @@ void hydro_state_at_point(FLOAT pos[3], FLOAT vel[3], FLOAT *h_out, FLOAT *ngb_o
     rhov_out[2] = rhov[2];
 }
 
-static void hydro_state_evaluate(FLOAT h, FLOAT pos[3], FLOAT vel[3],
-    FLOAT *numngb_out, FLOAT *dhsml_out, FLOAT *rho_out, FLOAT *rhov_out,
-    FLOAT *rhov2_out, FLOAT *rhoe_out)
+void gadgetmp2::hydro_state_evaluate(my_float h, my_float pos[3], my_float vel[3],
+    my_float *numngb_out, my_float *dhsml_out, my_float *rho_out, my_float *rhov_out,
+    my_float *rhov2_out, my_float *rhoe_out)
 {
   int j, n, startnode, numngb, numngb_inbox;
-  double h2, fac, hinv, hinv3, hinv4;
-  double rho, rhov[3], rhov2, rhoe, wk, dwk;
-  double dx, dy, dz, r, r2, u, mass_j;
-  double dvx, dvy, dvz;
-  double weighted_numngb, dhsmlrho;
+  my_float h2, fac, hinv, hinv3, hinv4;
+  my_float rho, rhov[3], rhov2, rhoe, wk, dwk;
+  my_float dx, dy, dz, r, r2, u, mass_j;
+  my_float dvx, dvy, dvz;
+  my_float weighted_numngb, dhsmlrho;
 
   h2 = h * h;
   hinv = 1.0 / h;
@@ -186,20 +173,6 @@ static void hydro_state_evaluate(FLOAT h, FLOAT pos[3], FLOAT vel[3],
 	  dy = pos[1] - P[j].Pos[1];
 	  dz = pos[2] - P[j].Pos[2];
 
-#ifdef PERIODIC			/*  now find the closest image in the given box size  */
-	  if(dx > boxHalf_X)
-	    dx -= boxSize_X;
-	  if(dx < -boxHalf_X)
-	    dx += boxSize_X;
-	  if(dy > boxHalf_Y)
-	    dy -= boxSize_Y;
-	  if(dy < -boxHalf_Y)
-	    dy += boxSize_Y;
-	  if(dz > boxHalf_Z)
-	    dz -= boxSize_Z;
-	  if(dz < -boxHalf_Z)
-	    dz += boxSize_Z;
-#endif
 	  r2 = dx * dx + dy * dy + dz * dz;
 
 	  if(r2 < h2)

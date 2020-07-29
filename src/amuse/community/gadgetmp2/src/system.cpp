@@ -1,3 +1,18 @@
+/* ################################################################################## */
+/* ###                                                                            ### */
+/* ###                                 Gadgetmp2                                  ### */
+/* ###                                                                            ### */
+/* ###   Original: Gadget2 in the version used in Amuse                           ### */
+/* ###   Author: Gadget2 and Amuse contributors                                   ### */
+/* ###                                                                            ### */
+/* ###   Modified: July 2020                                                      ### */
+/* ###   Author: Thomas Schano                                                    ### */
+/* ###                                                                            ### */
+/* ###   Changes are intended to enable precise calculations in                   ### */
+/* ###   non periodic small domain simulations in which comoving parts            ### */
+/* ###   are simulated in std precision                                           ### */
+/* ###                                                                            ### */
+/* ################################################################################## */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -15,8 +30,8 @@
 #include <mpi.h>
 #endif
 
-#include "allvars.h"
-#include "proto.h"
+//#include "allvars.hpp"
+#include "proto.hpp"
 
 
 /*! \file system.c
@@ -31,7 +46,7 @@
  *  to work properly, the particle IDs should be set properly to unique
  *  integer values.
  */
-double get_random_number(int id)
+my_float gadgetmp2::get_random_number(int id)
 {
   return RndTable[(id % RNDTABLE)];
 }
@@ -39,7 +54,7 @@ double get_random_number(int id)
 
 /*! This routine fills the random number table.
  */
-void set_random_numbers(void)
+void gadgetmp2::set_random_numbers(void)
 {
   int i;
 
@@ -51,16 +66,16 @@ void set_random_numbers(void)
 /*! returns the number of cpu-ticks in seconds that have elapsed, or the
  *  wall-clock time obtained with MPI_Wtime().
  */
-double second(void)
+double gadgetmp2::second(void)
 {
 #ifdef WALLCLOCK
 #ifndef NOMPI
   return MPI_Wtime();
 #else
-  return ((double) clock()) / CLOCKS_PER_SEC;
+  return ( clock()) / CLOCKS_PER_SEC;
 #endif
 #else
-  return ((double) clock()) / CLOCKS_PER_SEC;
+  return (clock()) / CLOCKS_PER_SEC;
 #endif
 
   /* note: on AIX and presumably many other 32bit systems,
@@ -76,7 +91,7 @@ double second(void)
  *  function may also overflow, in which case a negative time difference would
  *  be returned. The routine returns instead a time difference equal to 0.
  */
-double timediff(double t0, double t1)
+double gadgetmp2::timediff(double t0, double t1)
 {
   double dt;
 
@@ -95,9 +110,9 @@ double timediff(double t0, double t1)
 }
 
 
-/*! returns the maximum of two double
+/*! returns the maximum of two my_float
  */
-double dmax(double x, double y)
+my_float gadgetmp2::dmax(my_float x, my_float y)
 {
   if(x > y)
     return x;
@@ -105,9 +120,9 @@ double dmax(double x, double y)
     return y;
 }
 
-/*! returns the minimum of two double
+/*! returns the minimum of two my_float
  */
-double dmin(double x, double y)
+my_float gadgetmp2::dmin(my_float x, my_float y)
 {
   if(x < y)
     return x;
@@ -117,7 +132,7 @@ double dmin(double x, double y)
 
 /*! returns the maximum of two integers
  */
-int imax(int x, int y)
+int gadgetmp2::imax(int x, int y)
 {
   if(x > y)
     return x;
@@ -127,7 +142,7 @@ int imax(int x, int y)
 
 /*! returns the minimum of two integers
  */
-int imin(int x, int y)
+int gadgetmp2::imin(int x, int y)
 {
   if(x < y)
     return x;
