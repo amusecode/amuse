@@ -695,11 +695,13 @@ struct global_data_all_processes
     /*! This structure holds all the information that is
      * stored for each particle of the simulation.
      */
-    struct particle_data
+    class particle_data
     {
+        public:
         my_float Pos[3];			/*!< particle position at its current time */
         my_float Mass;			/*!< particle mass */
         my_float Vel[3];			/*!< particle velocity at its current time */
+        my_float radius;
         my_float GravAccel[3];		/*!< particle acceleration due to gravity */
 
         #ifdef FORCETEST
@@ -729,6 +731,65 @@ struct global_data_all_processes
         allowing to guess whether a decrease/increase of the timestep should occur
         in the timestep that is started. */
         #endif
+        static inline size_t get_size_()
+        {
+            size_t retval=0;
+            size_t my_float_size = my_float_buff::get_needed_mem_single();
+            retval += my_float_size*3; //Pos[3];
+            retval += my_float_size; //Mass;
+            retval += my_float_size*3; //Vel[3];
+            retval += my_float_size; //radius;
+            retval += my_float_size*3; //GravAccel[3];
+            #ifdef FORCETEST
+            retval += my_float_size; //GravAccelDirect[3];
+            #endif
+            retval += my_float_size; //Potential;
+            retval += my_float_size; //OldAcc;
+            #ifndef LONGIDS
+            retval += sizeof(unsigned int); //ID;
+            #else
+            retval += sizeof(unsigned long long); //ID;
+            #endif
+            retval += sizeof(int); //Type;
+            retval += sizeof(int); //Ti_endstep;
+            retval += sizeof(int); //Ti_begstep;
+            #ifdef TIMESTEP_LIMITER
+            retval += sizeof(int); //Ti_sizestep;
+            #endif
+            #ifdef FLEXSTEPS
+            retval += sizeof(int); //FlexStepGrp;
+            #endif
+            retval += my_float_size; //GravCost;
+            #ifdef PSEUDOSYMMETRIC
+            retval += my_float_size; //AphysOld;
+            #endif
+            return retval;
+        };
+
+        inline void change_prec ()
+        {
+            mpfr_prec_t prec = my_float::get_default_prec();
+            Pos[0].setPrecision(prec);
+            Pos[1].setPrecision(prec);
+            Pos[2].setPrecision(prec);
+            Mass.setPrecision(prec);
+            Vel[0].setPrecision(prec);
+            Vel[1].setPrecision(prec);
+            Vel[2].setPrecision(prec);
+            radius.setPrecision(prec);
+            GravAccel[0].setPrecision(prec);
+            GravAccel[1].setPrecision(prec);
+            GravAccel[2].setPrecision(prec);
+            #ifdef FORCETEST
+            GravAccelDirect[3].setPrecision(prec);
+            #endif
+            Potential.setPrecision(prec);
+            OldAcc.setPrecision(prec);
+            GravCost.setPrecision(prec);
+            #ifdef PSEUDOSYMMETRIC
+            AphysOld.setPrecision(prec);
+            #endif
+        };
     }
     ;
 
@@ -742,6 +803,7 @@ struct global_data_all_processes
         static size_t Vel0_off;
         static size_t Vel1_off;
         static size_t Vel2_off;
+        static size_t Radius_off;
         static size_t GravAccel0_off;
         static size_t GravAccel1_off;
         static size_t GravAccel2_off;
@@ -820,6 +882,8 @@ struct global_data_all_processes
             Vel1_off = offset;
             offset += my_float_buff_size;
             Vel2_off = offset;
+            offset += my_float_buff_size;
+            Radius_off = offset;
             offset += my_float_buff_size;
             GravAccel0_off = offset;
             offset += my_float_buff_size;
@@ -1057,6 +1121,32 @@ struct global_data_all_processes
         {
             my_float_buff* to_read;
             to_read = (my_float_buff*)((size_t)this + index * tot_size + Vel2_off);
+            return *to_read;
+        };
+        inline void set_init_Radius(my_float value, size_t index=0)
+        {
+            my_float_buff* to_prep;
+            to_prep = (my_float_buff*)((size_t)this + index * tot_size + Radius_off);
+            my_float_buff::place_pmpreal((void*)to_prep, prec);
+            *to_prep= value;
+        };
+        inline void set_Radius(my_float value, size_t index=0)
+        {
+            my_float_buff* to_store;
+            to_store = (my_float_buff*)((size_t)this + index * tot_size + Radius_off);
+            *to_store =value;
+        };
+        inline my_float read_re_init_Radius(size_t index=0)
+        {
+            my_float_buff* to_read;
+            to_read = (my_float_buff*)((size_t)this + index * tot_size + Radius_off);
+            my_float_buff::re_org_pmpreal(to_read);
+            return *to_read;
+        };
+        inline my_float read_Radius(size_t index=0)
+        {
+            my_float_buff* to_read;
+            to_read = (my_float_buff*)((size_t)this + index * tot_size + Radius_off);
             return *to_read;
         };
         inline void set_init_GravAccel0(my_float value, size_t index=0)
@@ -1423,6 +1513,7 @@ struct global_data_all_processes
         set_init_Vel0(in.Vel[0],index);
         set_init_Vel1(in.Vel[1],index);
         set_init_Vel2(in.Vel[2],index);
+        set_init_Radius(in.radius,index);
         set_init_GravAccel0(in.GravAccel[0],index);
         set_init_GravAccel1(in.GravAccel[1],index);
         set_init_GravAccel2(in.GravAccel[2],index);
@@ -1458,6 +1549,7 @@ struct global_data_all_processes
         retval.Vel[0] = read_re_init_Vel0(index);
         retval.Vel[1] = read_re_init_Vel1(index);
         retval.Vel[2] = read_re_init_Vel2(index);
+        retval.radius = read_re_init_Radius(index);
         retval.GravAccel[0] = read_re_init_GravAccel0(index);
         retval.GravAccel[1] = read_re_init_GravAccel1(index);
         retval.GravAccel[2] = read_re_init_GravAccel2(index);
@@ -1515,6 +1607,68 @@ struct global_data_all_processes
         my_float Alpha;		        /*!< viscosity coefficient */
         my_float DAlphaDt;       		/*!< time rate of change of viscosity coefficient */
         #endif
+        static inline size_t get_size_()
+        {
+            size_t retval=0;
+            size_t my_float_size = my_float_buff::get_needed_mem_single();
+            retval += my_float_size; //Entropy
+            retval += my_float_size; //Density
+            retval += my_float_size; //Hsml
+            retval += my_float_size; //Left
+            retval += my_float_size; //Right
+            retval += my_float_size; //NumNgb
+            retval += my_float_size; //Pressure
+            retval += my_float_size; //DtEntropy
+            retval += my_float_size*3; //HydroAccel[3]
+            retval += my_float_size*3; //VelPred[3]
+            retval += my_float_size; //DivVel
+            retval += my_float_size; //CurlVel
+            retval += my_float_size*3; //Rot[3]
+            retval += my_float_size; //DhsmlDensityFactor
+            retval += my_float_size; //MaxSignalVel
+            #ifdef TIMESTEP_UPDATE
+            retval += sizeof(int); //FeedbackFlag;
+            retval += my_float_size*3; //FeedAccel[3]
+            #endif
+            #ifdef MORRIS97VISC
+            retval += my_float_size; //Alpha;
+            retval += my_float_size; //DAlphaDt;
+            #endif
+            return retval;
+        };
+
+        inline void change_prec ()
+        {
+            mpfr_prec_t prec = my_float::get_default_prec();
+            Entropy.setPrecision(prec);
+            Density.setPrecision(prec);
+            Hsml.setPrecision(prec);
+            Left.setPrecision(prec);
+            Right.setPrecision(prec);
+            NumNgb.setPrecision(prec);
+            Pressure.setPrecision(prec);
+            DtEntropy.setPrecision(prec);
+            HydroAccel[0].setPrecision(prec);
+            HydroAccel[1].setPrecision(prec);
+            HydroAccel[2].setPrecision(prec);
+            VelPred[0].setPrecision(prec);
+            VelPred[1].setPrecision(prec);
+            VelPred[2].setPrecision(prec);
+            DivVel.setPrecision(prec);
+            CurlVel.setPrecision(prec);
+            Rot[0].setPrecision(prec);
+            Rot[1].setPrecision(prec);
+            Rot[2].setPrecision(prec);
+            DhsmlDensityFactor.setPrecision(prec);
+            MaxSignalVel.setPrecision(prec);
+            #ifdef TIMESTEP_UPDATE
+            FeedAccel[3].setPrecision(prec);
+            #endif
+            #ifdef MORRIS97VISC
+            Alpha.setPrecision(prec);
+            DAlphaDt.setPrecision(prec);
+            #endif
+        };
     }
     ;
 
@@ -2401,8 +2555,9 @@ struct global_data_all_processes
     }
     ;
 
-    struct NODE
+    class NODE
     {
+    public:
         my_float len;			/*!< sidelength of treenode */
         my_float center[3];		/*!< geometrical center of node */
         #ifdef ADAPTIVE_GRAVSOFT_FORGAS
@@ -2427,8 +2582,9 @@ struct global_data_all_processes
     }
     ;
 
-    struct extNODE           /*!< this structure holds additional tree-node information which is not needed in the actual gravity computation */
+    class extNODE           /*!< this structure holds additional tree-node information which is not needed in the actual gravity computation */
     {
+    public:
         my_float hmax;			/*!< maximum SPH smoothing length in node. Only used for gas particles */
         my_float vs[3];			/*!< center-of-mass velocity */
     }

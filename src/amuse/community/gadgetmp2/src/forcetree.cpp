@@ -1692,14 +1692,16 @@ void gadgetmp2::force_treeallocate(int maxnodes, int maxpart)
     my_float u;
 
     MaxNodes = maxnodes;
+    Nodes_base = new NODE[MaxNodes + 1];
 
-    if(!(Nodes_base = (NODE*)malloc(bytes = (MaxNodes + 1) * sizeof(struct NODE))))
+/*    if(!(Nodes_base = (NODE*)malloc(bytes = (MaxNodes + 1) * sizeof(struct NODE))))
     {
         printf("failed to allocate memory for %d tree-nodes (%g MB).\n", MaxNodes, bytes / (1024.0 * 1024.0));
         endrun(3);
-    }
+    }*/
     allbytes += bytes;
 
+    Extnodes_base = new extNODE[MaxNodes + 1];
     if(!(Extnodes_base = (extNODE*)malloc(bytes = (MaxNodes + 1) * sizeof(struct extNODE))))
     {
         printf("failed to allocate memory for %d tree-extnodes (%g MB).\n", MaxNodes,
@@ -1753,10 +1755,10 @@ void gadgetmp2::force_treefree(void)
 {
     free(Father);
     free(Nextnode);
-    free(Extnodes_base);
-    //delete[] Extnodes_base;
-    free(Nodes_base);
-    //delete[] Nodes_base;
+    //free(Extnodes_base);
+    delete Extnodes_base;
+    //free(Nodes_base);
+    delete[] Nodes_base;
 }
 
 

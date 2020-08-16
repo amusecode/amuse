@@ -28,16 +28,16 @@ AM_LIBS = -L$(AMUSE_DIR)/lib/amuse_mpi -lamuse_mpi
 AM_CFLAGS = -I$(AMUSE_DIR)/lib/amuse_mpi
 endif
 
-LIBFILES = $(SRCDIR)/run.c  $(SRCDIR)/predict.c  $(SRCDIR)/begrun.c \
-	$(SRCDIR)/endrun.c  $(SRCDIR)/global.c  \
-	$(SRCDIR)/init.c  $(SRCDIR)/io.c  \
-	$(SRCDIR)/accel.c   $(SRCDIR)/ngb.c  \
-	$(SRCDIR)/system.c  $(SRCDIR)/allocate.c  $(SRCDIR)/density.c  \
-	$(SRCDIR)/gravtree.c  $(SRCDIR)/hydra.c  $(SRCDIR)/driftfac.c  \
-	$(SRCDIR)/domain.c  $(SRCDIR)/allvars.c  $(SRCDIR)/potential.c  \
-	$(SRCDIR)/forcetree.c  $(SRCDIR)/peano.c  \
-	$(SRCDIR)/density_at_pos.c \
-	$(SRCDIR)/timestep_limit.c  $(SRCDIR)/sigvel.c
+LIBFILES = $(SRCDIR)/run.cpp  $(SRCDIR)/predict.cpp  $(SRCDIR)/begrun.cpp \
+	$(SRCDIR)/endrun.cpp  $(SRCDIR)/global.cpp  \
+	$(SRCDIR)/init.cpp  $(SRCDIR)/io.cpp  \
+	$(SRCDIR)/accel.cpp   $(SRCDIR)/ngb.cpp  \
+	$(SRCDIR)/system.cpp  $(SRCDIR)/allocate.cpp  $(SRCDIR)/density.cpp  \
+	$(SRCDIR)/gravtree.cpp  $(SRCDIR)/hydra.cpp  $(SRCDIR)/driftfac.cpp  \
+	$(SRCDIR)/domain.cpp  $(SRCDIR)/allvars.cpp  $(SRCDIR)/potential.cpp  \
+	$(SRCDIR)/forcetree.cpp  $(SRCDIR)/peano.cpp  \
+	$(SRCDIR)/density_at_pos.cpp \
+	$(SRCDIR)/timestep_limit.cpp  $(SRCDIR)/sigvel.cpp
 #	$(SRCDIR)/pm_periodic.c  $(SRCDIR)/pm_nonperiodic.c  $(SRCDIR)/longrange.c  $(SRCDIR)/restart.c  $(SRCDIR)/read_ic.c  $(SRCDIR)/gravtree_forcetest.c \
 #  ^^^ Durier & Dalla Vecchia timestepping fix ^^^
 
@@ -51,7 +51,7 @@ LIBFILES = $(SRCDIR)/run.c  $(SRCDIR)/predict.c  $(SRCDIR)/begrun.c \
 
 gadgetmp2_worker: ${TARGETS}
 
-${TARGETS}: gadgetmp2_worker_%: worker_code.cc interface_%.o $(BUILDDIR)_%/libgadget.a $(BUILDDIR)_%/allvars.o
+${TARGETS}: gadgetmp2_worker_%: worker_code.cc interface_%.o $(BUILDDIR)_%/libgadget.a $(BUILDDIR)_%/allvars.o 
 	$(MPICXX) $(CXXFLAGS) -Impfrc++ $(SC_FLAGS) $(GSL_FLAGS) $(LDFLAGS) -o $@ $^ $(SC_MPI_CLIBS) $(GSL_LIBS) $(AM_LIBS) $(LIBS) -lgcc -lmpfr
  
 $(BUILDDIR)_%:

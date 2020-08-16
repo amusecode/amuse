@@ -43,7 +43,7 @@ int gadgetmp2::RestartFlag;         /*!< taken from command line used to start c
                                      initial conditions, 1 is resuming a run from a set of restart files, while 2
                                      marks a restart from a snapshot file. */
 
-char *gadgetmp2::Exportflag;        /*!< Buffer used for flagging whether a particle needs to be exported to another process */
+char *gadgetmp2::Exportflag=nullptr;        /*!< Buffer used for flagging whether a particle needs to be exported to another process */
 
 int  *gadgetmp2::Ngblist;           /*!< Buffer to hold indices of neighbours retrieved by the neighbour search routines */
 
@@ -66,18 +66,18 @@ my_float gadgetmp2::DomainLen;          /*!< gives the (maximum) side-length of 
 my_float gadgetmp2::DomainFac;          /*!< factor used for converting particle coordinates to a Peano-Hilbert mesh covering the simulation volume */
 int    gadgetmp2::DomainMyStart;      /*!< first domain mesh cell that resides on the local processor */
 int    gadgetmp2::DomainMyLast;       /*!< last domain mesh cell that resides on the local processor */
-int    *gadgetmp2::DomainStartList;   /*!< a table that lists the first domain mesh cell for all processors */
-int    *gadgetmp2::DomainEndList;     /*!< a table that lists the last domain mesh cell for all processors */
-my_float *gadgetmp2::DomainWork;        /*!< a table that gives the total "work" due to the particles stored by each processor */
-int    *gadgetmp2::DomainCount;       /*!< a table that gives the total number of particles held by each processor */
-int    *gadgetmp2::DomainCountSph;    /*!< a table that gives the total number of SPH particles held by each processor */
+int    *gadgetmp2::DomainStartList=nullptr;   /*!< a table that lists the first domain mesh cell for all processors */
+int    *gadgetmp2::DomainEndList=nullptr;     /*!< a table that lists the last domain mesh cell for all processors */
+my_float *gadgetmp2::DomainWork=nullptr;        /*!< a table that gives the total "work" due to the particles stored by each processor */
+int    *gadgetmp2::DomainCount=nullptr;       /*!< a table that gives the total number of particles held by each processor */
+int    *gadgetmp2::DomainCountSph=nullptr;    /*!< a table that gives the total number of SPH particles held by each processor */
 
-int    *gadgetmp2::DomainTask;        /*!< this table gives for each leaf of the top-level tree the processor it was assigned to */
-int    *gadgetmp2::DomainNodeIndex;   /*!< this table gives for each leaf of the top-level tree the corresponding node of the gravitational tree */
-my_float  *gadgetmp2::DomainTreeNodeLen; /*!< this table gives for each leaf of the top-level tree the side-length of the corresponding node of the gravitational tree */
-All_Reduce_buff  *gadgetmp2::DomainHmax;        /*!< this table gives for each leaf of the top-level tree the maximum SPH smoothing length among the particles of the corresponding node of the gravitational tree */
+int    *gadgetmp2::DomainTask=nullptr;        /*!< this table gives for each leaf of the top-level tree the processor it was assigned to */
+int    *gadgetmp2::DomainNodeIndex=nullptr;   /*!< this table gives for each leaf of the top-level tree the corresponding node of the gravitational tree */
+my_float  *gadgetmp2::DomainTreeNodeLen=nullptr; /*!< this table gives for each leaf of the top-level tree the side-length of the corresponding node of the gravitational tree */
+All_Reduce_buff  *gadgetmp2::DomainHmax=nullptr;        /*!< this table gives for each leaf of the top-level tree the maximum SPH smoothing length among the particles of the corresponding node of the gravitational tree */
 
-DomainNODE *gadgetmp2::DomainMoment;                    /*!< this table stores for each node of the top-level tree corresponding node data from the gravitational tree */
+DomainNODE *gadgetmp2::DomainMoment=nullptr;                    /*!< this table stores for each node of the top-level tree corresponding node data from the gravitational tree */
 
 size_t DomainNODE::s0_off;
 size_t DomainNODE::s1_off;
@@ -132,7 +132,7 @@ my_float gadgetmp2::DriftTable[DRIFT_TABLE_LENGTH];      /*!< table for the cosm
 my_float gadgetmp2::GravKickTable[DRIFT_TABLE_LENGTH];   /*!< table for the cosmological kick factor for gravitational forces */
 my_float gadgetmp2::HydroKickTable[DRIFT_TABLE_LENGTH];  /*!< table for the cosmological kick factor for hydrodynmical forces */
 
-void *gadgetmp2::CommBuffer;   /*!< points to communication buffer, which is used in the domain decomposition, the
+void *gadgetmp2::CommBuffer=nullptr;   /*!< points to communication buffer, which is used in the domain decomposition, the
                                 parallel tree-force computation, the SPH routines, etc. */
 
 
@@ -150,7 +150,7 @@ struct global_data_all_processes
 /*! This structure holds all the information that is
  * stored for each particle of the simulation.
  */
-struct particle_data *gadgetmp2::P;              /*!< holds particle data on local processor */
+particle_data *gadgetmp2::P=nullptr;              /*!< holds particle data on local processor */
 particle_data_buff *gadgetmp2::DomainPartBuf_s,
                    *gadgetmp2::DomainPartBuf_r;  /*!< buffer for particle data used in domain decomposition */
 
@@ -161,6 +161,7 @@ size_t particle_data_buff::Mass_off;
 size_t particle_data_buff::Vel0_off;
 size_t particle_data_buff::Vel1_off;
 size_t particle_data_buff::Vel2_off;
+size_t particle_data_buff::Radius_off;
 size_t particle_data_buff::GravAccel0_off;
 size_t particle_data_buff::GravAccel1_off;
 size_t particle_data_buff::GravAccel2_off;
@@ -191,7 +192,7 @@ mpfr_prec_t particle_data_buff::prec;
 /* the following struture holds data that is stored for each SPH particle in addition to the collisionless
  * variables.
  */
-struct sph_particle_data *gadgetmp2::SphP;                        	/*!< holds SPH particle data on local processor */
+struct sph_particle_data *gadgetmp2::SphP=nullptr;;                        	/*!< holds SPH particle data on local processor */
 sph_particle_data_buff *gadgetmp2::DomainSphBuf_s,                 /*!< buffer for SPH particle data in domain decomposition */
                        *gadgetmp2::DomainSphBuf_r;
 
@@ -240,7 +241,7 @@ mpfr_prec_t sph_particle_data_buff::prec;
 int gadgetmp2::MaxNodes;		/*!< maximum allowed number of internal nodes */
 int gadgetmp2::Numnodestree;	/*!< number of (internal) nodes in each tree */
 
-struct NODE
+NODE
  *gadgetmp2::Nodes_base,                   /*!< points to the actual memory allocted for the nodes */
  *gadgetmp2::Nodes;                        /*!< this is a pointer used to access the nodes which is shifted such that Nodes[All.MaxPart]
  				     gives the first allocated node */
@@ -250,7 +251,7 @@ int *gadgetmp2::Nextnode;	        /*!< gives next node in tree walk */
 int *gadgetmp2::Father;	        /*!< gives parent node in tree    */
 
 
-struct extNODE           /*!< this structure holds additional tree-node information which is not needed in the actual gravity computation */
+extNODE           /*!< this structure holds additional tree-node information which is not needed in the actual gravity computation */
  *gadgetmp2::Extnodes_base,                /*!< points to the actual memory allocted for the extended node information */
  *gadgetmp2::Extnodes;                     /*!< provides shifted access to extended node information, parallel to Nodes/Nodes_base */
 

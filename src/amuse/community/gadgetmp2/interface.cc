@@ -49,7 +49,21 @@ map<long long, int> local_index_map;
 
 double redshift_begin_parameter = 20.0;
 double redshift_max_parameter = 0.0;
+
+int numBits = my_float::get_default_prec();
+int numDigits = numBits/4;
+
 gadgetmp2 a;
+std::string arg0;
+std::string arg1;
+std::string arg2;
+std::string arg3;
+std::string arg4;
+std::string arg5;
+std::string arg6;
+std::string arg7;
+std::string arg8;
+std::string arg9;
 
 // general interface functions:
 
@@ -160,6 +174,10 @@ int initialize_code(){
     mpi_setup_stopping_conditions();
 
     set_default_parameters();
+
+//    gadgetmp2::open_outputfiles();
+//    outfiles_opened = true;
+//    gadgetmp2::allocate_commbuffers();        /* ... allocate buffer-memory for  exchange during force computation */
     return 0;
 }
 
@@ -236,8 +254,9 @@ int check_parameters(){
 }
 
 int commit_parameters(){
-    gadgetmp2::allocate_commbuffers();        /* ... allocate buffer-memory for particle
-                                   exchange during force computation */
+    gadgetmp2::open_outputfiles();
+    outfiles_opened = true;
+    gadgetmp2::allocate_commbuffers();        /* ... allocate buffer-memory for particle exchange during force computation */
     gadgetmp2::set_units();
 #if defined(PERIODIC) && (!defined(PMGRID) || defined(FORCETEST))
     ewald_init();
@@ -272,8 +291,6 @@ int commit_parameters(){
     gadgetmp2::All.PresentMinStep = TIMEBASE;
 #endif
     gadgetmp2::All.Ti_nextoutput = -1; // find_next_outputtime(gadgetmp2::All.Ti_Current);
-    gadgetmp2::open_outputfiles();
-    outfiles_opened = true;
     return check_parameters();
 }
 int recommit_parameters(){
@@ -331,6 +348,8 @@ int commit_particles(){
     for (map<long long, dynamics_state>::iterator state_iter = dm_states.begin();
             state_iter != dm_states.end(); state_iter++, i++){
         gadgetmp2::P[i].ID = (*state_iter).first;
+        gadgetmp2::DEBUG << "_commited_particles " << gadgetmp2::P[i].ID<< "\n";
+        gadgetmp2::DEBUG.flush();
         gadgetmp2::P[i].Mass = (*state_iter).second.mass;
         gadgetmp2::P[i].Pos[0] = (*state_iter).second.x * a_inv;
         gadgetmp2::P[i].Pos[1] = (*state_iter).second.y * a_inv;
@@ -338,6 +357,7 @@ int commit_particles(){
         gadgetmp2::P[i].Vel[0] = (*state_iter).second.vx * a;
         gadgetmp2::P[i].Vel[1] = (*state_iter).second.vy * a;
         gadgetmp2::P[i].Vel[2] = (*state_iter).second.vz * a;
+        gadgetmp2::P[i].radius = (*state_iter).second.radius;
         gadgetmp2::P[i].Type = 1; // dark matter particles (SPH particles have type 0)
     }
     dm_states.clear();
@@ -394,14 +414,25 @@ int commit_particles(){
     gadgetmp2::All.NumForcesSinceLastDomainDecomp = 1 + gadgetmp2::All.TotNumPart * gadgetmp2::All.TreeDomainUpdateFrequency;
     gadgetmp2::Flag_FullStep = 1;                /* to ensure that Peano-Hilber order is done */
 
+        gadgetmp2::DEBUG << "pre_domaindecomp" << "\n";
+        gadgetmp2::DEBUG.flush();
     gadgetmp2::domain_Decomposition();        /* do initial domain decomposition (gives equal numbers of particles) */
+
+        gadgetmp2::DEBUG << "post_domaindecomp" << "\n";
+        gadgetmp2::DEBUG.flush();
     update_particle_map();
+        gadgetmp2::DEBUG << "update_particle_map" << "\n";
+        gadgetmp2::DEBUG.flush();
 
     index_of_highest_mapped_particle = local_index_map.rbegin()->first;
 #ifndef NOMPI
     MPI_Allreduce(MPI_IN_PLACE, &index_of_highest_mapped_particle, 1, MPI_LONG_LONG_INT, MPI_MAX, gadgetmp2::GADGET_WORLD);
 #endif
+        gadgetmp2::DEBUG << "pre_ngb_treebuild " << index_of_highest_mapped_particle<< "\n";
+        gadgetmp2::DEBUG.flush();
     gadgetmp2::ngb_treebuild();                /* will build tree */
+        gadgetmp2::DEBUG << "post_ngb_treebuild" << "\n";
+        gadgetmp2::DEBUG.flush();
     gadgetmp2::setup_smoothinglengths();
     gadgetmp2::TreeReconstructFlag = 1;
   /* at this point, the entropy variable normally contains the
@@ -447,8 +478,14 @@ void push_particle_data_on_state_vectors(){
     } else {
         a = a_inv = 1;
     }
+//    update_particle_map();
+//sph_states.clear();
+//dm_states.clear();
     for (iter = local_index_map.begin(); iter != local_index_map.end(); iter++){
         i = (*iter).second;
+
+    gadgetmp2::DEBUG << i << "\n";
+    gadgetmp2::DEBUG.flush();
         if (gadgetmp2::P[i].Type == 0){
             // store sph particle data
             sph_state state;
@@ -482,6 +519,7 @@ void push_particle_data_on_state_vectors(){
             state.vx =   gadgetmp2::P[i].Vel[0] * a_inv;
             state.vy =   gadgetmp2::P[i].Vel[1] * a_inv;
             state.vz =   gadgetmp2::P[i].Vel[2] * a_inv;
+            state.radius =   gadgetmp2::P[i].radius;
             dm_states.insert(std::pair<long long, dynamics_state>(gadgetmp2::P[i].ID, state));
         }
     }
@@ -494,7 +532,6 @@ int recommit_particles(){
         gadgetmp2::ngb_treefree();
         gadgetmp2::force_treefree();
     }
-
     return commit_particles();
 }
 
@@ -765,7 +802,7 @@ int construct_tree_if_needed(void){
     return 0;
 }
 
-int new_dm_particle(int *id, double mass, double x, double y, double z, double vx, double vy, double vz){
+int new_dm_particle(int *id, double mass, double x, double y, double z, double vx, double vy, double vz, double radius){
     particle_id_counter++;
     if (gadgetmp2::ThisTask == 0)
         *id = particle_id_counter;
@@ -1503,10 +1540,6 @@ int get_radius(int index, double *radius){
     return -2;
 }
 
-int set_radius(int index, double radius){
-    return -2;
-}
-
 int get_position_comoving(int *index, double *x, double *y, double *z, int length){
     int errors = 0;
     double *buffer = new double[length*3];
@@ -1730,9 +1763,9 @@ int set_velocity(int *index, double *vx, double *vy, double *vz, int length){
     return set_velocity_gadget_u(index, vx, vy, vz, length);
 }
 
-int get_state_gadget(int *index, double *mass, double *x, double *y, double *z, double *vx, double *vy, double *vz, int length) {
+int get_state_gadget(int *index, double *mass, double *x, double *y, double *z, double *vx, double *vy, double *vz, double *radius, int length) {
     int errors = 0;
-    double *buffer = new double[length*7];
+    double *buffer = new double[length*8];
     int *count = new int[length];
     int local_index;
 #ifdef PERIODIC
@@ -1750,6 +1783,7 @@ int get_state_gadget(int *index, double *mass, double *x, double *y, double *z, 
             buffer[i+4*length] = gadgetmp2::P[local_index].Vel[0].toDouble();
             buffer[i+5*length] = gadgetmp2::P[local_index].Vel[1].toDouble();
             buffer[i+6*length] = gadgetmp2::P[local_index].Vel[2].toDouble();
+            buffer[i+7*length] = gadgetmp2::P[local_index].radius.toDouble();
         } else {
             count[i] = 0;
             buffer[i] = 0;
@@ -1759,16 +1793,17 @@ int get_state_gadget(int *index, double *mass, double *x, double *y, double *z, 
             buffer[i+4*length] = 0;
             buffer[i+5*length] = 0;
             buffer[i+6*length] = 0;
+            buffer[i+7*length] = 0;
         }
     }
     if(gadgetmp2::ThisTask) {
 #ifndef NOMPI
-        MPI_Reduce(buffer, NULL, length*7, MPI_DOUBLE, MPI_SUM, 0, gadgetmp2::GADGET_WORLD);
+        MPI_Reduce(buffer, NULL, length*8, MPI_DOUBLE, MPI_SUM, 0, gadgetmp2::GADGET_WORLD);
         MPI_Reduce(count, NULL, length, MPI_INT, MPI_SUM, 0, gadgetmp2::GADGET_WORLD);
 #endif
     } else {
 #ifndef NOMPI
-        MPI_Reduce(MPI_IN_PLACE, buffer, length*7, MPI_DOUBLE, MPI_SUM, 0, gadgetmp2::GADGET_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, buffer, length*8, MPI_DOUBLE, MPI_SUM, 0, gadgetmp2::GADGET_WORLD);
         MPI_Reduce(MPI_IN_PLACE, count, length, MPI_INT, MPI_SUM, 0, gadgetmp2::GADGET_WORLD);
 #endif
 #ifdef PERIODIC
@@ -1788,6 +1823,7 @@ int get_state_gadget(int *index, double *mass, double *x, double *y, double *z, 
                 vx[i] = 0;
                 vy[i] = 0;
                 vz[i] = 0;
+                radius[i] = 0;
             } else {
                 mass[i] = buffer[i];
                 x[i] = buffer[i+length];
@@ -1796,6 +1832,7 @@ int get_state_gadget(int *index, double *mass, double *x, double *y, double *z, 
                 vx[i] = buffer[i+4*length];
                 vy[i] = buffer[i+5*length];
                 vz[i] = buffer[i+6*length];
+                radius[i] = buffer[i+7*length];
             }
         }
     }
@@ -1808,7 +1845,8 @@ int get_state_gadget(int *index, double *mass, double *x, double *y, double *z, 
     return 0;
 }
 int get_state_comoving(int *index, double *mass, double *x, double *y, double *z, double *vx, double *vy, double *vz, int length) {
-    int result = get_state_gadget(index, mass, x, y, z, vx, vy, vz, length);
+    double* radius;
+    int result = get_state_gadget(index, mass, x, y, z, vx, vy, vz, radius, length);
     if(gadgetmp2::ThisTask == 0 && gadgetmp2::All.ComovingIntegrationOn) {
         double a2_inv = 1.0 / (gadgetmp2::All.Time * gadgetmp2::All.Time);
         for (int i = 0; i < length; i++){
@@ -1819,8 +1857,8 @@ int get_state_comoving(int *index, double *mass, double *x, double *y, double *z
     }
     return result;
 }
-int get_state(int *index, double *mass, double *x, double *y, double *z, double *vx, double *vy, double *vz, int length) {
-    int result = get_state_gadget(index, mass, x, y, z, vx, vy, vz, length);
+int get_state(int *index, double *mass, double *x, double *y, double *z, double *vx, double *vy, double *vz, double *radius, int length) {
+    int result = get_state_gadget(index, mass, x, y, z, vx, vy, vz, radius, length);
     if(gadgetmp2::ThisTask == 0 && gadgetmp2::All.ComovingIntegrationOn) {
         double a_inv = 1.0 / gadgetmp2::All.Time;
         for (int i = 0; i < length; i++){
@@ -1830,6 +1868,7 @@ int get_state(int *index, double *mass, double *x, double *y, double *z, double 
             vx[i] *= a_inv;
             vy[i] *= a_inv;
             vz[i] *= a_inv;
+            radius[1] *= 1;
         }
     }
     return result;
@@ -2843,5 +2882,385 @@ int get_hydro_state_at_point(double x, double y, double z, double vx, double vy,
 #else
     *rhoe = (a3_inv * rhoe_out * (pow(rho_out * a3_inv, GAMMA_MINUS1) / GAMMA_MINUS1) + a5_inv * 0.5*rhov2_out).toDouble();
 #endif
+    return 0;
+}
+// Word-length, numBits in mantissa
+int set_word_length(int mynumBits) {
+    numBits = mynumBits;
+    size_t i;
+    my_float::set_default_prec(numBits);
+    numDigits = (int)abs(log10( pow("2.0", -numBits) )).toLong();
+    if (gadgetmp2::CommBuffer!= nullptr) gadgetmp2::allocate_commbuffers();
+    if (gadgetmp2::P!=nullptr)
+    {
+    for (i=0; i<gadgetmp2::All.MaxPart; i++)
+    gadgetmp2::P[i].change_prec();
+    }
+    if (gadgetmp2::SphP!=nullptr)
+    {
+    for (i=0; i<gadgetmp2::All.MaxPartSph; i++)
+    gadgetmp2::SphP[i].change_prec();
+    }
+    return 0;
+}
+int get_word_length(int *mynumBits) {
+    numBits=my_float::get_default_prec();
+    *mynumBits = numBits;
+    return 0;
+}
+
+int get_total_energy_string( char **ep) {
+    if (gadgetmp2::ThisTask == 0)
+    {
+    arg1 = gadgetmp2::SysState.EnergyTot.toString();
+    *ep =(char*)arg1.c_str();
+    }
+    return 0;
+}
+
+int get_state_string(int id, char** m, char** x, char** y, char** z, char** vx, char** vy, char** vz, char** radius) {
+    int retval=0;
+    bool flag=false;
+    int local_index;
+    my_float_buff* arg=my_float_buff::place_buffer(8, gadgetmp2::CommBuffer);
+    #ifndef NOMPI
+    MPI_Status status;
+    #endif
+    if(found_particle(id, &local_index)){
+        retval++;
+        flag=true;
+        arg[0]=gadgetmp2::P[local_index].Mass;
+        arg[1]=gadgetmp2::P[local_index].Pos[0];
+        arg[2]=gadgetmp2::P[local_index].Pos[1];
+        arg[3]=gadgetmp2::P[local_index].Pos[2];
+        arg[4]=gadgetmp2::P[local_index].Vel[0];
+        arg[5]=gadgetmp2::P[local_index].Vel[1];
+        arg[6]=gadgetmp2::P[local_index].Vel[2];
+        arg[7]=gadgetmp2::P[local_index].radius;
+    };
+    #ifndef NOMPI
+    MPI_Allreduce(MPI_IN_PLACE, &retval, 1, MPI_INT, MPI_SUM, gadgetmp2::GADGET_WORLD);
+    #endif
+    if(retval == 1)
+    {
+        if (gadgetmp2::ThisTask == 0)
+        {
+            if(flag == false)
+            {
+                #ifndef NOMPI
+                MPI_Recv(gadgetmp2::CommBuffer,my_float_buff::get_buff_size(arg),MPI_BYTE,MPI_ANY_SOURCE,TAG_AMUSE_SYNC, gadgetmp2::GADGET_WORLD,&status);
+                my_float_buff::re_org_buff(arg);
+                #endif
+            }
+            arg0=arg[0].toString();
+            arg1=arg[1].toString();
+            arg2=arg[2].toString();
+            arg3=arg[3].toString();
+            arg4=arg[4].toString();
+            arg5=arg[5].toString();
+            arg6=arg[6].toString();
+            arg7=arg[7].toString();
+            *m = (char*) arg0.c_str();
+            *x = (char*) arg1.c_str();
+            *y = (char*) arg2.c_str();
+            *z = (char*) arg3.c_str();
+            *vx = (char*) arg4.c_str();
+            *vy = (char*) arg5.c_str();
+            *vz = (char*) arg6.c_str();
+            *radius = (char*) arg7.c_str();
+        }else{
+            #ifndef NOMPI
+            if(flag == true)
+            {
+                MPI_Send(gadgetmp2::CommBuffer,my_float_buff::get_buff_size(arg),MPI_BYTE,0,TAG_AMUSE_SYNC, gadgetmp2::GADGET_WORLD);
+            }
+            #endif
+        }
+    }
+    return retval-1;
+}
+
+int get_position_string(int id, char **x, char **y, char **z) {
+    int retval=0;
+    bool flag=false;
+    int local_index;
+    my_float_buff* arg=my_float_buff::place_buffer(8, gadgetmp2::CommBuffer);
+    #ifndef NOMPI
+    MPI_Status status;
+    #endif
+    if(found_particle(id, &local_index)){
+        retval++;
+        flag=true;
+        arg[0]=gadgetmp2::P[local_index].Pos[0];
+        arg[1]=gadgetmp2::P[local_index].Pos[1];
+        arg[2]=gadgetmp2::P[local_index].Pos[2];
+    };
+    #ifndef NOMPI
+    MPI_Allreduce(MPI_IN_PLACE, &retval, 1, MPI_INT, MPI_SUM, gadgetmp2::GADGET_WORLD);
+    #endif
+    if(retval == 1)
+    {
+        if (gadgetmp2::ThisTask == 0)
+        {
+            if(flag == false)
+            {
+                #ifndef NOMPI
+                MPI_Recv(gadgetmp2::CommBuffer,my_float_buff::get_buff_size(arg),MPI_BYTE,MPI_ANY_SOURCE,TAG_AMUSE_SYNC, gadgetmp2::GADGET_WORLD,&status);
+                my_float_buff::re_org_buff(arg);
+                #endif
+            }
+            arg0=arg[0].toString();
+            arg1=arg[1].toString();
+            arg2=arg[2].toString();
+            *x = (char*) arg0.c_str();
+            *y = (char*) arg1.c_str();
+            *z = (char*) arg2.c_str();
+        }else{
+            #ifndef NOMPI
+            if(flag == true)
+            {
+                MPI_Send(gadgetmp2::CommBuffer,my_float_buff::get_buff_size(arg),MPI_BYTE,0,TAG_AMUSE_SYNC, gadgetmp2::GADGET_WORLD);
+            }
+            #endif
+        }
+    }
+    return retval-1;
+}
+
+int get_velocity_string(int id, char **vx, char **vy, char **vz) {
+    int retval=0;
+    bool flag=false;
+    int local_index;
+    my_float_buff* arg=my_float_buff::place_buffer(8, gadgetmp2::CommBuffer);
+    #ifndef NOMPI
+    MPI_Status status;
+    #endif
+    if(found_particle(id, &local_index)){
+        retval++;
+        flag=true;
+        arg[0]=gadgetmp2::P[local_index].Vel[0];
+        arg[1]=gadgetmp2::P[local_index].Vel[1];
+        arg[2]=gadgetmp2::P[local_index].Vel[2];
+    };
+    #ifndef NOMPI
+    MPI_Allreduce(MPI_IN_PLACE, &retval, 1, MPI_INT, MPI_SUM, gadgetmp2::GADGET_WORLD);
+    #endif
+    if(retval == 1)
+    {
+        if (gadgetmp2::ThisTask == 0)
+        {
+            if(flag == false)
+            {
+                #ifndef NOMPI
+                MPI_Recv(gadgetmp2::CommBuffer,my_float_buff::get_buff_size(arg),MPI_BYTE,MPI_ANY_SOURCE,TAG_AMUSE_SYNC, gadgetmp2::GADGET_WORLD,&status);
+                my_float_buff::re_org_buff(arg);
+                #endif
+            }
+            arg0=arg[0].toString();
+            arg1=arg[1].toString();
+            arg2=arg[2].toString();
+            *vx = (char*) arg0.c_str();
+            *vy = (char*) arg1.c_str();
+            *vz = (char*) arg2.c_str();
+        }else{
+            #ifndef NOMPI
+            if(flag == true)
+            {
+                MPI_Send(gadgetmp2::CommBuffer,my_float_buff::get_buff_size(arg),MPI_BYTE,0,TAG_AMUSE_SYNC, gadgetmp2::GADGET_WORLD);
+            }
+            #endif
+        }
+    }
+    return retval-1;
+}
+
+int get_mass_string(int id, char **mass) {
+    int retval=0;
+    bool flag=false;
+    int local_index;
+    my_float_buff* arg=my_float_buff::place_buffer(1, gadgetmp2::CommBuffer);
+    #ifndef NOMPI
+    MPI_Status status;
+    #endif
+    if(found_particle(id, &local_index)){
+        retval++;
+        flag=true;
+        arg[0]=gadgetmp2::P[local_index].Mass;
+    };
+    #ifndef NOMPI
+    MPI_Allreduce(MPI_IN_PLACE, &retval, 1, MPI_INT, MPI_SUM, gadgetmp2::GADGET_WORLD);
+    #endif
+    if(retval == 1)
+    {
+        if (gadgetmp2::ThisTask == 0)
+        {
+            if(flag == false)
+            {
+                #ifndef NOMPI
+                MPI_Recv(gadgetmp2::CommBuffer,my_float_buff::get_buff_size(arg),MPI_BYTE,MPI_ANY_SOURCE,TAG_AMUSE_SYNC, gadgetmp2::GADGET_WORLD,&status);
+                my_float_buff::re_org_buff(arg);
+                #endif
+            }
+            arg0=arg[0].toString();
+            *mass = (char*) arg0.c_str();
+        }else{
+            #ifndef NOMPI
+            if(flag == true)
+            {
+                MPI_Send(gadgetmp2::CommBuffer,my_float_buff::get_buff_size(arg),MPI_BYTE,0,TAG_AMUSE_SYNC, gadgetmp2::GADGET_WORLD);
+            }
+            #endif
+        }
+    }
+    return retval-1;
+}
+
+int get_radius_string(int id, char** radius){
+    int retval=0;
+    bool flag=false;
+    int local_index;
+    my_float_buff* arg=my_float_buff::place_buffer(1, gadgetmp2::CommBuffer);
+    #ifndef NOMPI
+    MPI_Status status;
+    #endif
+    if(found_particle(id, &local_index)){
+        retval++;
+        flag=true;
+        arg[0]=gadgetmp2::P[local_index].radius;
+    };
+    #ifndef NOMPI
+    MPI_Allreduce(MPI_IN_PLACE, &retval, 1, MPI_INT, MPI_SUM, gadgetmp2::GADGET_WORLD);
+    #endif
+    if(retval == 1)
+    {
+        if (gadgetmp2::ThisTask == 0)
+        {
+            if(flag == false)
+            {
+                #ifndef NOMPI
+                MPI_Recv(gadgetmp2::CommBuffer,my_float_buff::get_buff_size(arg),MPI_BYTE,MPI_ANY_SOURCE,TAG_AMUSE_SYNC, gadgetmp2::GADGET_WORLD,&status);
+                my_float_buff::re_org_buff(arg);
+                #endif
+            }
+            arg0=arg[0].toString();
+            *radius = (char*) arg0.c_str();
+        }else{
+            #ifndef NOMPI
+            if(flag == true)
+            {
+                MPI_Send(gadgetmp2::CommBuffer,my_float_buff::get_buff_size(arg),MPI_BYTE,0,TAG_AMUSE_SYNC, gadgetmp2::GADGET_WORLD);
+            }
+            #endif
+        }
+    }
+    return retval-1;
+}
+
+int set_state_string(int id, char* m, char* x, char* y, char* z, char* vx, char* vy, char* vz, char* radius) {
+    int retval=0;
+    int local_index;
+    if(found_particle(id, &local_index)){
+        retval++;
+        gadgetmp2::P[local_index].Mass=m;
+        gadgetmp2::P[local_index].Pos[0]=x;
+        gadgetmp2::P[local_index].Pos[1]=y;
+        gadgetmp2::P[local_index].Pos[2]=z;
+        gadgetmp2::P[local_index].Vel[0]=vx;
+        gadgetmp2::P[local_index].Vel[1]=vy;
+        gadgetmp2::P[local_index].Vel[2]=vz;
+        gadgetmp2::P[local_index].radius=radius;
+    };
+    #ifndef NOMPI
+    MPI_Allreduce(MPI_IN_PLACE, &retval, 1, MPI_INT, MPI_SUM, gadgetmp2::GADGET_WORLD);
+    #endif
+    return retval-1;
+}
+
+int set_mass_string(int id, char* m) {
+    int retval=0;
+    int local_index;
+    if(found_particle(id, &local_index)){
+        retval++;
+        gadgetmp2::P[local_index].Mass=m;
+    };
+    #ifndef NOMPI
+    MPI_Allreduce(MPI_IN_PLACE, &retval, 1, MPI_INT, MPI_SUM, gadgetmp2::GADGET_WORLD);
+    #endif
+    return retval-1;
+}
+
+int set_radius_string(int id, char* radius) {
+    int retval=0;
+    int local_index;
+    if(found_particle(id, &local_index)){
+        retval++;
+        gadgetmp2::P[local_index].radius=radius;
+    };
+    #ifndef NOMPI
+    MPI_Allreduce(MPI_IN_PLACE, &retval, 1, MPI_INT, MPI_SUM, gadgetmp2::GADGET_WORLD);
+    #endif
+    return retval-1;
+}
+
+int set_radius(int id, double radius) {
+    int retval=0;
+    int local_index;
+    if(found_particle(id, &local_index)){
+        retval++;
+        gadgetmp2::P[local_index].radius=radius;
+    };
+    #ifndef NOMPI
+    MPI_Allreduce(MPI_IN_PLACE, &retval, 1, MPI_INT, MPI_SUM, gadgetmp2::GADGET_WORLD);
+    #endif
+    return retval-1;
+}
+
+int set_position_string(int id,char* x, char* y, char* z) {
+    int retval=0;
+    int local_index;
+    if(found_particle(id, &local_index)){
+        retval++;
+        gadgetmp2::P[local_index].Pos[0]=x;
+        gadgetmp2::P[local_index].Pos[1]=y;
+        gadgetmp2::P[local_index].Pos[2]=z;
+    };
+    #ifndef NOMPI
+    MPI_Allreduce(MPI_IN_PLACE, &retval, 1, MPI_INT, MPI_SUM, gadgetmp2::GADGET_WORLD);
+    #endif
+    return retval-1;
+}
+
+int set_velocity_string(int id, char* vx, char* vy, char* vz) {
+    int retval=0;
+    int local_index;
+    if(found_particle(id, &local_index)){
+        retval++;
+        gadgetmp2::P[local_index].Vel[0]=vx;
+        gadgetmp2::P[local_index].Vel[1]=vy;
+        gadgetmp2::P[local_index].Vel[2]=vz;
+    };
+    #ifndef NOMPI
+    MPI_Allreduce(MPI_IN_PLACE, &retval, 1, MPI_INT, MPI_SUM, gadgetmp2::GADGET_WORLD);
+    #endif
+    return retval-1;
+}
+
+int new_dm_particle_string(int *id, char* mass, char* x, char* y, char* z, char* vx, char* vy, char* vz, char* radius){
+    particle_id_counter++;
+    if (gadgetmp2::ThisTask == 0)
+        *id = particle_id_counter;
+    // Divide the particles equally over all Tasks, Gadget will redistribute them later.
+    if (gadgetmp2::ThisTask == (dm_particles_in_buffer % gadgetmp2::NTask)){
+        dynamics_state state;
+        state.mass = mass;
+        state.x = x;
+        state.y = y;
+        state.z = z;
+        state.vx = vx;
+        state.vy = vy;
+        state.vz = vz;
+        dm_states.insert(std::pair<long long, dynamics_state>(particle_id_counter, state));
+    }
+    dm_particles_in_buffer++;
     return 0;
 }

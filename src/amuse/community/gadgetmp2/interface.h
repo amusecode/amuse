@@ -22,6 +22,7 @@ typedef struct {
     my_float mass;                                        /// mass
     my_float x, y, z;                                     /// position
     my_float vx, vy, vz;                                  /// velocity
+    my_float radius;                                      /// radius
 } dynamics_state;
 
 typedef struct {
