@@ -307,9 +307,9 @@ int commit_particles(){
 
     if (gadgetmp2::All.ComovingIntegrationOn) {
         a = gadgetmp2::All.Time;
-        a_inv = 1.0 / gadgetmp2::All.Time;
+        a_inv = (my_float)"1.0" / gadgetmp2::All.Time;
     } else {
-        a = a_inv = 1;
+        a = a_inv = "1";
     }
     t0 = gadgetmp2::second();
     gadgetmp2::All.TotNumPart = dm_particles_in_buffer + sph_particles_in_buffer;
@@ -334,8 +334,8 @@ int commit_particles(){
         gadgetmp2::P[i].Vel[2] = (*state_iter).second.vz * a;
         gadgetmp2::P[i].Type = 0; // SPH particles (dark matter particles have type 1)
         gadgetmp2::SphP[i].Entropy = (*state_iter).second.u;
-        gadgetmp2::SphP[i].Density = -1;
-        gadgetmp2::SphP[i].Hsml = 0;
+        gadgetmp2::SphP[i].Density = "-1";
+        gadgetmp2::SphP[i].Hsml.setZero(); // = 0;
 #ifdef MORRIS97VISC
         SphP[i].Alpha = (*state_iter).second.alpha;
         SphP[i].DAlphaDt = (*state_iter).second.dalphadt;
@@ -348,8 +348,6 @@ int commit_particles(){
     for (map<long long, dynamics_state>::iterator state_iter = dm_states.begin();
             state_iter != dm_states.end(); state_iter++, i++){
         gadgetmp2::P[i].ID = (*state_iter).first;
-        gadgetmp2::DEBUG << "_commited_particles " << gadgetmp2::P[i].ID<< "\n";
-        gadgetmp2::DEBUG.flush();
         gadgetmp2::P[i].Mass = (*state_iter).second.mass;
         gadgetmp2::P[i].Pos[0] = (*state_iter).second.x * a_inv;
         gadgetmp2::P[i].Pos[1] = (*state_iter).second.y * a_inv;
@@ -367,16 +365,16 @@ int commit_particles(){
     gadgetmp2::set_softenings();
     for(i = 0; i < gadgetmp2::NumPart; i++){        /*  start-up initialization */
         for(j = 0; j < 3; j++)
-            gadgetmp2::P[i].GravAccel[j] = 0;
+            gadgetmp2::P[i].GravAccel[j].setZero(); // = 0;
 #ifdef PMGRID
         for(j = 0; j < 3; j++)
-            gadgetmp2::P[i].GravPM[j] = 0;
+            gadgetmp2::P[i].GravPM[j].setZero(); // = 0;
 #endif
         gadgetmp2::P[i].Ti_endstep = 0;
         gadgetmp2::P[i].Ti_begstep = 0;
-        gadgetmp2::P[i].OldAcc = 0;
-        gadgetmp2::P[i].GravCost = 1;
-        gadgetmp2::P[i].Potential = 0;
+        gadgetmp2::P[i].OldAcc.setZero(); // = 0;
+        gadgetmp2::P[i].GravCost = "1";
+        gadgetmp2::P[i].Potential.setZero(); // = 0;
     }
 #ifdef FLEXSTEPS
     for(i = 0; i < gadgetmp2::NumPart; i++)        /*  start-up initialization */
@@ -385,13 +383,13 @@ int commit_particles(){
     for(i = 0; i < gadgetmp2::N_gas; i++){        /* initialize sph_properties */
         for(j = 0; j < 3; j++){
             gadgetmp2::SphP[i].VelPred[j] = gadgetmp2::P[i].Vel[j];
-            gadgetmp2::SphP[i].HydroAccel[j] = 0;
+            gadgetmp2::SphP[i].HydroAccel[j].setZero(); // = 0;
         }
-        gadgetmp2::SphP[i].DtEntropy = 0;
+        gadgetmp2::SphP[i].DtEntropy.setZero(); // = 0;
 #ifdef TIMESTEP_UPDATE
         gadgetmp2::SphP[i].FeedbackFlag = 0;
         for(j = 0; j < 3; j++)
-            gadgetmp2::SphP[i].FeedAccel[j] = 0;
+            gadgetmp2::SphP[i].FeedAccel[j].setZero(); // = 0;
 #endif
     }
 
@@ -413,26 +411,14 @@ int commit_particles(){
 
     gadgetmp2::All.NumForcesSinceLastDomainDecomp = 1 + gadgetmp2::All.TotNumPart * gadgetmp2::All.TreeDomainUpdateFrequency;
     gadgetmp2::Flag_FullStep = 1;                /* to ensure that Peano-Hilber order is done */
-
-        gadgetmp2::DEBUG << "pre_domaindecomp" << "\n";
-        gadgetmp2::DEBUG.flush();
     gadgetmp2::domain_Decomposition();        /* do initial domain decomposition (gives equal numbers of particles) */
-
-        gadgetmp2::DEBUG << "post_domaindecomp" << "\n";
-        gadgetmp2::DEBUG.flush();
     update_particle_map();
-        gadgetmp2::DEBUG << "update_particle_map" << "\n";
-        gadgetmp2::DEBUG.flush();
 
     index_of_highest_mapped_particle = local_index_map.rbegin()->first;
 #ifndef NOMPI
     MPI_Allreduce(MPI_IN_PLACE, &index_of_highest_mapped_particle, 1, MPI_LONG_LONG_INT, MPI_MAX, gadgetmp2::GADGET_WORLD);
 #endif
-        gadgetmp2::DEBUG << "pre_ngb_treebuild " << index_of_highest_mapped_particle<< "\n";
-        gadgetmp2::DEBUG.flush();
     gadgetmp2::ngb_treebuild();                /* will build tree */
-        gadgetmp2::DEBUG << "post_ngb_treebuild" << "\n";
-        gadgetmp2::DEBUG.flush();
     gadgetmp2::setup_smoothinglengths();
     gadgetmp2::TreeReconstructFlag = 1;
   /* at this point, the entropy variable normally contains the
@@ -474,18 +460,12 @@ void push_particle_data_on_state_vectors(){
 #endif
     if (gadgetmp2::All.ComovingIntegrationOn) {
         a = gadgetmp2::All.Time;
-        a_inv = 1.0 / gadgetmp2::All.Time;
+        a_inv = (my_float)"1.0" / gadgetmp2::All.Time;
     } else {
-        a = a_inv = 1;
+        a = a_inv = "1";
     }
-//    update_particle_map();
-//sph_states.clear();
-//dm_states.clear();
     for (iter = local_index_map.begin(); iter != local_index_map.end(); iter++){
         i = (*iter).second;
-
-    gadgetmp2::DEBUG << i << "\n";
-    gadgetmp2::DEBUG.flush();
         if (gadgetmp2::P[i].Type == 0){
             // store sph particle data
             sph_state state;

@@ -129,13 +129,13 @@ which short-range forces are evaluated in the short-range tree walk. */
 
 #ifndef  TWODIMS
 #define  NUMDIMS 3                                      /*!< For 3D-normalized kernel */
-#define  KERNEL_COEFF_1  2.546479089470                 /*!< Coefficients for SPH spline kernel and its derivative */
-#define  KERNEL_COEFF_2  15.278874536822
-#define  KERNEL_COEFF_3  45.836623610466
-#define  KERNEL_COEFF_4  30.557749073644
-#define  KERNEL_COEFF_5  5.092958178941
-#define  KERNEL_COEFF_6  (-15.278874536822)
-#define  NORM_COEFF      4.188790204786                 /*!< Coefficient for kernel normalization. Note:  4.0/3 * PI = 4.188790204786 */
+#define  KERNEL_COEFF_1  (my_float)"2.546479089470"                 /*!< Coefficients for SPH spline kernel and its derivative */
+#define  KERNEL_COEFF_2  (my_float)"15.278874536822"
+#define  KERNEL_COEFF_3  (my_float)"45.836623610466"
+#define  KERNEL_COEFF_4  (my_float)"30.557749073644"
+#define  KERNEL_COEFF_5  (my_float)"5.092958178941"
+#define  KERNEL_COEFF_6  (my_float)"-15.278874536822"
+#define  NORM_COEFF      (const_4 / const_3 * const_PI)                /*!< Coefficient for kernel normalization. Note:  4.0/3 * PI = 4.188790204786 */
 #else
 #define  NUMDIMS 2                                      /*!< For 2D-normalized kernel */
 #define  KERNEL_COEFF_1  (5.0/7*2.546479089470)         /*!< Coefficients for SPH spline kernel and its derivative */
@@ -493,6 +493,7 @@ struct global_data_all_processes
     int BunchSizeDensity;         /*!< number of particles fitting into the communication buffer in the density computation */
     int BunchSizeHydro;           /*!< number of particles fitting into the communication buffer in the SPH hydrodynamical force computation */
     int BunchSizeDomain;          /*!< number of particles fitting into the communication buffer in the domain decomposition */
+    int max_transfer_elements;
 
     double PartAllocFactor;	/*!< in order to maintain work-load balance, the particle load will usually
     NOT be balanced.  Each processor allocates memory for PartAllocFactor times

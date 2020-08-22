@@ -72,7 +72,7 @@ void gadgetmp2::hydro_force(void)
         atime = All.Time;
     }
     else
-        hubble_a = hubble_a2 = atime = fac_mu = fac_vsic_fix = a3inv = fac_egy = 1.0;
+        hubble_a = hubble_a2 = atime = fac_mu = fac_vsic_fix = a3inv = fac_egy = const_1;
 
 
     /* `NumSphUpdate' gives the number of particles on this processor that want a force update */
@@ -155,7 +155,7 @@ void gadgetmp2::hydro_force(void)
                          *		       0.0001 * soundspeed_i / SphP[i].Hsml / fac_mu); */
                         HydroDataIn->set_init_F1(fabs(SphP[i].DivVel) /
                         (fabs(SphP[i].DivVel) + SphP[i].CurlVel +
-                        0.0001 * soundspeed_i / SphP[i].Hsml / fac_mu),nexport);
+                        const_0_0001 * soundspeed_i / SphP[i].Hsml / fac_mu),nexport);
 
                         //HydroDataIn[nexport].Index = i;
                         HydroDataIn->set_Index(i,nexport);
@@ -348,9 +348,9 @@ void gadgetmp2::hydro_force(void)
             #ifdef SPH_BND_PARTICLES
             if(P[i].ID == 0)
             {
-                SphP[i].DtEntropy = 0;
+                SphP[i].DtEntropy = const_0;
                 for(k = 0; k < 3; k++)
-                    SphP[i].HydroAccel[k] = 0;
+                    SphP[i].HydroAccel[k] = const_0;
             }
             #endif
         }
@@ -424,7 +424,7 @@ void gadgetmp2::hydro_evaluate(int target, int mode)
         #else
         f1 = fabs(SphP[target].DivVel) /
         (fabs(SphP[target].DivVel) + SphP[target].CurlVel +
-        0.0001 * soundspeed_i / SphP[target].Hsml / fac_mu);
+        const_0_0001 * soundspeed_i / SphP[target].Hsml / fac_mu);
         #endif
     }
     else
@@ -460,8 +460,8 @@ void gadgetmp2::hydro_evaluate(int target, int mode)
 
 
     /* initialize variables before SPH loop is started */
-    acc[0] = acc[1] = acc[2] = dtEntropy = 0;
-    maxSignalVel = 0;
+    acc[0] = acc[1] = acc[2] = dtEntropy = const_0;
+    maxSignalVel = const_0;
 
     p_over_rho2_i = pressure / (rho * rho) * dhsmlDensityFactor;
     h_i2 = h_i * h_i;
@@ -487,7 +487,7 @@ void gadgetmp2::hydro_evaluate(int target, int mode)
             if(r2 < h_i2 || r2 < h_j * h_j)
             {
                 r = sqrt(r2);
-                if(r > 0)
+                if(r > const_0)
                 {
                     p_over_rho2_j = SphP[j].Pressure / (SphP[j].Density * SphP[j].Density);
                     soundspeed_j = sqrt(GAMMA * p_over_rho2_j * SphP[j].Density);
@@ -503,61 +503,61 @@ void gadgetmp2::hydro_evaluate(int target, int mode)
 
                     if(r2 < h_i2)
                     {
-                        hinv = 1.0 / h_i;
+                        hinv = const_1 / h_i;
                         #ifndef  TWODIMS
                         hinv4 = hinv * hinv * hinv * hinv;
                         #else
                         hinv4 = hinv * hinv * hinv / boxSize_Z;
                         #endif
                         u = r * hinv;
-                        if(u < 0.5)
+                        if(u < const_0_5)
                             dwk_i = hinv4 * u * (KERNEL_COEFF_3 * u - KERNEL_COEFF_4);
                         else
-                            dwk_i = hinv4 * KERNEL_COEFF_6 * (1.0 - u) * (1.0 - u);
+                            dwk_i = hinv4 * KERNEL_COEFF_6 * (const_1 - u) * (const_1 - u);
                     }
                     else
                     {
-                        dwk_i = 0;
+                        dwk_i = const_0;
                     }
 
                     if(r2 < h_j * h_j)
                     {
-                        hinv = 1.0 / h_j;
+                        hinv = const_1 / h_j;
                         #ifndef  TWODIMS
                         hinv4 = hinv * hinv * hinv * hinv;
                         #else
                         hinv4 = hinv * hinv * hinv / boxSize_Z;
                         #endif
                         u = r * hinv;
-                        if(u < 0.5)
+                        if(u < const_0_5)
                             dwk_j = hinv4 * u * (KERNEL_COEFF_3 * u - KERNEL_COEFF_4);
                         else
-                            dwk_j = hinv4 * KERNEL_COEFF_6 * (1.0 - u) * (1.0 - u);
+                            dwk_j = hinv4 * KERNEL_COEFF_6 * (const_1 - u) * (const_1 - u);
                     }
                     else
                     {
-                        dwk_j = 0;
+                        dwk_j = const_0;
                     }
 
                     if(soundspeed_i + soundspeed_j > maxSignalVel)
                         maxSignalVel = soundspeed_i + soundspeed_j;
 
-                    if(vdotr2 < 0)	/* ... artificial viscosity */
+                    if(vdotr2 < const_0)	/* ... artificial viscosity */
                     {
                         #ifndef MONAGHAN83VISC
                         mu_ij = fac_mu * vdotr2 / r;	/* note: this is negative! */
                         #else
-                        h_ij = 0.5 * (h_i + h_j);
-                        mu_ij = fac_mu * h_ij * vdotr2 / (r2 + 0.0001 * h_ij * h_ij);
+                        h_ij = const_0_5 * (h_i + h_j);
+                        mu_ij = fac_mu * h_ij * vdotr2 / (r2 + const_0_0001 * h_ij * h_ij);
                         #endif
-                        vsig = soundspeed_i + soundspeed_j - 3 * mu_ij;
+                        vsig = soundspeed_i + soundspeed_j - const_3 * mu_ij;
 
 
 
                         if(vsig > maxSignalVel)
                             maxSignalVel = vsig;
 
-                        rho_ij = 0.5 * (rho + SphP[j].Density);
+                        rho_ij = const_0_5 * (rho + SphP[j].Density);
 
                         #ifdef MORRIS97VISC
                         visc = 0.25 * (alpha_visc + alpha_visc_j) * vsig * (-mu_ij) / rho_ij;
@@ -565,10 +565,10 @@ void gadgetmp2::hydro_evaluate(int target, int mode)
 
                         f2 =
                         fabs(SphP[j].DivVel) / (fabs(SphP[j].DivVel) + SphP[j].CurlVel +
-                        0.0001 * soundspeed_j / fac_mu / SphP[j].Hsml);
+                        const_0_0001 * soundspeed_j / fac_mu / SphP[j].Hsml);
 
                         #ifndef MONAGHAN83VISC
-                        visc = 0.25 * All.ArtBulkViscConst * vsig * (-mu_ij) / rho_ij * (f1 + f2);
+                        visc = const_0_25 * All.ArtBulkViscConst * vsig * (-mu_ij) / rho_ij * (f1 + f2);
                         #else
                         soundspeed_ij = (soundspeed_i+soundspeed_j) * 0.5;
 
@@ -581,26 +581,26 @@ void gadgetmp2::hydro_evaluate(int target, int mode)
                         #ifndef NOVISCOSITYLIMITER
                         /* make sure that viscous acceleration is not too large */
                         dt = imax(timestep, (P[j].Ti_endstep - P[j].Ti_begstep)) * All.Timebase_interval;
-                        if(dt > 0 && (dwk_i + dwk_j) < 0)
+                        if(dt > const_0 && (dwk_i + dwk_j) < const_0)
                         {
-                            visc = dmin(visc, 0.5 * fac_vsic_fix * vdotr2 /
-                            (0.5 * (mass + P[j].Mass) * (dwk_i + dwk_j) * r * dt));
+                            visc = dmin(visc, const_0_5 * fac_vsic_fix * vdotr2 /
+                            (const_0_5 * (mass + P[j].Mass) * (dwk_i + dwk_j) * r * dt));
                         }
                         #endif
                     }
                     else
-                        visc = 0;
+                        visc = const_0;
 
                     p_over_rho2_j *= SphP[j].DhsmlDensityFactor;
 
-                    hfc_visc = 0.5 * P[j].Mass * visc * (dwk_i + dwk_j) / r;
+                    hfc_visc = const_0_5 * P[j].Mass * visc * (dwk_i + dwk_j) / r;
 
                     hfc = hfc_visc + P[j].Mass * (p_over_rho2_i * dwk_i + p_over_rho2_j * dwk_j) / r;
 
                     acc[0] -= hfc * dx;
                     acc[1] -= hfc * dy;
                     acc[2] -= hfc * dz;
-                    dtEntropy += 0.5 * hfc_visc * vdotr2;
+                    dtEntropy += const_0_5 * hfc_visc * vdotr2;
                 }
             }
         }

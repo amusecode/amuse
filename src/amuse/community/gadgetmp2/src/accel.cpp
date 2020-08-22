@@ -75,7 +75,7 @@ void gadgetmp2::compute_accelerations(int mode)
 	    SphP[i].FeedbackFlag = 0;
 
             for(j = 0; j < 3; j++)
-              SphP[i].FeedAccel[j] = 0;
+              SphP[i].FeedAccel[j].setZero();
           }
 #endif
       if(ThisTask == 0)

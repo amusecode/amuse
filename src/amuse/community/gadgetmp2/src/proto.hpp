@@ -85,7 +85,7 @@ static int    *DomainCountSph;    /*!< a table that gives the total number of SP
 
 static int    *DomainTask;        /*!< this table gives for each leaf of the top-level tree the processor it was assigned to */
 static int    *DomainNodeIndex;   /*!< this table gives for each leaf of the top-level tree the corresponding node of the gravitational tree */
-static my_float  *DomainTreeNodeLen; /*!< this table gives for each leaf of the top-level tree the side-length of the corresponding node of the gravitational tree */
+static All_Reduce_buff* DomainTreeNodeLen; /*!< this table gives for each leaf of the top-level tree the side-length of the corresponding node of the gravitational tree */
 static All_Reduce_buff  *DomainHmax;        /*!< this table gives for each leaf of the top-level tree the maximum SPH smoothing length among the particles of the corresponding node of the gravitational tree */
 
 static DomainNODE
@@ -238,6 +238,41 @@ static struct timedata_in *TimeDataIn, *TimeDataGet;
 #endif
 
 static All_Reduce_buff *all_reduce_buff;
+
+static my_float const_0;
+static my_float const_1;
+static my_float const_2;
+static my_float const_0_5;
+static my_float const_3;
+static my_float const_4;
+static my_float const_0_333333333333;
+static my_float const_0_25;
+static my_float const_8;
+static my_float const_32;
+
+static my_float const_21_333333333333;
+static my_float const_10_666666666667;
+static my_float const_0_066666666667;
+static my_float const_5_333333333333;
+static my_float const_2_133333333333;
+static my_float const_PI;
+
+
+static my_float const_1_26;
+static my_float const_1_001;
+static my_float const_0_6;
+static my_float const_38_4;
+static my_float const_48;
+static my_float const_2_8;
+static my_float const_6_4;
+static my_float const_9_6;
+static my_float const_3_2;
+static my_float const_16;
+static my_float const_0_999999;
+static my_float const_0_001;
+static my_float const_0_0001;
+static my_float const_2_5;
+static my_float const_0_1;
 
 #ifndef NOMPI
 #include <mpi.h>
@@ -471,7 +506,7 @@ static inline void show_buffer(void * buff, size_t size_in_byte)
 #ifndef NOMPI
 static inline my_float mpi_all_sum(my_float val)
 {
-  my_float retval=0;
+  my_float retval; retval.setZero();
   All_Reduce_buff *buff =  gadgetmp2::all_reduce_buff;
   size_t tt= gadgetmp2::ThisTask;
   size_t nt= gadgetmp2::NTask;

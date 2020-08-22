@@ -238,7 +238,7 @@ void gadgetmp2::domain_decompose(void)
         if(ThisTask == 0)
         {
             sumload = maxload = 0;
-            sumwork = maxwork = 0;
+            sumwork.setZero(); maxwork.setZero();
             for(i = 0; i < NTask; i++)
             {
                 sumload += list_load[i];
@@ -461,7 +461,7 @@ void gadgetmp2::domain_shiftSplit(void)
     my_float maxw, newmaxw;
 
     for(task = 0; task < NTask; task++)
-        list_work[task] = 0;
+        list_work[task].setZero();
 
     for(i = 0; i < NTopleaves; i++)
         list_work[DomainTask[i]] += DomainWork[i];
@@ -833,7 +833,7 @@ void gadgetmp2::domain_sumCost(void)
 
     for(i = 0; i < NTopleaves; i++)
     {
-        local_DomainWork[i] = 0;
+        local_DomainWork[i].setZero();
         local_DomainCount[i] = 0;
         local_DomainCountSph[i] = 0;
     }
@@ -851,9 +851,9 @@ void gadgetmp2::domain_sumCost(void)
         no = TopNodes[no].Leaf;
 
         if(P[n].Ti_endstep > P[n].Ti_begstep)
-            local_DomainWork[no] += (1.0 + P[n].GravCost) / (P[n].Ti_endstep - P[n].Ti_begstep);
+            local_DomainWork[no] += (const_1 + P[n].GravCost) / (P[n].Ti_endstep - P[n].Ti_begstep);
         else
-            local_DomainWork[no] += (1.0 + P[n].GravCost);
+            local_DomainWork[no] += (const_1 + P[n].GravCost);
 
         local_DomainCount[no] += 1;
         if(P[n].Type == 0)
@@ -891,8 +891,8 @@ void gadgetmp2::domain_findExtent(void)
     /* determine local extension */
     for(j = 0; j < 3; j++)
     {
-        xmin[j] = MAX_REAL_NUMBER;
-        xmax[j] = -MAX_REAL_NUMBER;
+        xmin[j] = "+Inf"; /*MAX_REAL_NUMBER;*/
+        xmax[j] = "-Inf"; /*-MAX_REAL_NUMBER;*/
     }
 
     for(i = 0; i < NumPart; i++)
@@ -925,16 +925,16 @@ void gadgetmp2::domain_findExtent(void)
         if(xmax_glob[j] - xmin_glob[j] > len)
             len = xmax_glob[j] - xmin_glob[j];
 
-        len *= 1.001;
+        len *= const_1_001;
 
     for(j = 0; j < 3; j++)
     {
-        DomainCenter[j] = 0.5 * (xmin_glob[j] + xmax_glob[j]);
-        DomainCorner[j] = 0.5 * (xmin_glob[j] + xmax_glob[j]) - 0.5 * len;
+        DomainCenter[j] = const_0_5 * (xmin_glob[j] + xmax_glob[j]);
+        DomainCorner[j] = const_0_5 * (xmin_glob[j] + xmax_glob[j]) - const_0_5 * len;
     }
 
     DomainLen = len;
-    DomainFac = 1.0 / len * (((peanokey) 1) << (BITS_PER_DIMENSION));
+    DomainFac = const_1 / len * (((peanokey) 1) << (BITS_PER_DIMENSION));
 }
 
 

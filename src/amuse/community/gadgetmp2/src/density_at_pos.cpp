@@ -49,12 +49,12 @@ void gadgetmp2::hydro_state_at_point(my_float pos[3], my_float vel[3], my_float 
     //MPI_Allreduce(MPI_IN_PLACE, &up,  1, MPI_DOUBLE, MPI_MAX, GADGET_WORLD);
     up=mpi_all_max(up);
 #endif
-    low *= 1.26;
-    up /= 1.26;
+    low *= const_1_26;
+    up /= const_1_26;
 
     iter = 0;
     do {
-        low /= 1.26;
+        low /= const_1_26;
         hydro_state_evaluate(low, pos, vel, &low_ngb, &dhsml, &rho, rhov, &rhov2, &rhoe);
 #ifndef NOMPI
         //MPI_Allreduce(MPI_IN_PLACE, &low_ngb, 1, MPI_DOUBLE, MPI_SUM, GADGET_WORLD);
@@ -67,7 +67,7 @@ void gadgetmp2::hydro_state_at_point(my_float pos[3], my_float vel[3], my_float 
     } while (low_ngb > All.DesNumNgb);
     iter = 0;
     do {
-        up *= 1.26;
+        up *= const_1_26;
         hydro_state_evaluate(up, pos, vel, &up_ngb, &dhsml, &rho, rhov, &rhov2, &rhoe);
 #ifndef NOMPI
         //MPI_Allreduce(MPI_IN_PLACE, &up_ngb, 1, MPI_DOUBLE, MPI_SUM, GADGET_WORLD);
@@ -82,7 +82,7 @@ void gadgetmp2::hydro_state_at_point(my_float pos[3], my_float vel[3], my_float 
     iter = 0;
     ngb = All.DesNumNgb + 2*All.MaxNumNgbDeviation; // Makes sure first evaluation of condition is true:
     while (fabs(All.DesNumNgb - ngb) > All.MaxNumNgbDeviation) {
-        h = pow(0.5 * (pow(low, 3) + pow(up, 3)), 1.0 / 3);
+        h = pow(const_0_5 * (pow(low, const_3) + pow(up, const_3)), const_1 / const_3);
         hydro_state_evaluate(h, pos, vel, &ngb, &dhsml, &rho, rhov, &rhov2, &rhoe);
 #ifndef NOMPI
         //MPI_Allreduce(MPI_IN_PLACE, &ngb, 1, MPI_DOUBLE, MPI_SUM, GADGET_WORLD);
@@ -147,7 +147,7 @@ void gadgetmp2::hydro_state_evaluate(my_float h, my_float pos[3], my_float vel[3
   my_float weighted_numngb, dhsmlrho;
 
   h2 = h * h;
-  hinv = 1.0 / h;
+  hinv = const_1 / h;
 #ifndef  TWODIMS
   hinv3 = hinv * hinv * hinv;
 #else
@@ -155,9 +155,9 @@ void gadgetmp2::hydro_state_evaluate(my_float h, my_float pos[3], my_float vel[3
 #endif
   hinv4 = hinv3 * hinv;
 
-  rho = rhov2 = rhoe = rhov[0] = rhov[1] = rhov[2] = 0;
-  weighted_numngb = 0;
-  dhsmlrho = 0;
+  rho.setZero(); rhov2.setZero(); rhoe.setZero(); rhov[0].setZero(); rhov[1].setZero(); rhov[2].setZero();
+  weighted_numngb.setZero();
+  dhsmlrho.setZero();
 
   startnode = All.MaxPart;
   numngb = 0;
@@ -183,15 +183,15 @@ void gadgetmp2::hydro_state_evaluate(my_float h, my_float pos[3], my_float vel[3
 
 	      u = r * hinv;
 
-	      if(u < 0.5)
+	      if(u < const_0_5)
 		{
-		  wk = hinv3 * (KERNEL_COEFF_1 + KERNEL_COEFF_2 * (u - 1) * u * u);
+		  wk = hinv3 * (KERNEL_COEFF_1 + KERNEL_COEFF_2 * (u - const_1) * u * u);
 		  dwk = hinv4 * u * (KERNEL_COEFF_3 * u - KERNEL_COEFF_4);
 		}
 	      else
 		{
-		  wk = hinv3 * KERNEL_COEFF_5 * (1.0 - u) * (1.0 - u) * (1.0 - u);
-		  dwk = hinv4 * KERNEL_COEFF_6 * (1.0 - u) * (1.0 - u);
+		  wk = hinv3 * KERNEL_COEFF_5 * (const_1 - u) * (const_1 - u) * (const_1 - u);
+		  dwk = hinv4 * KERNEL_COEFF_6 * (const_1- u) * (const_1 - u);
 		}
 
 	      mass_j = P[j].Mass;

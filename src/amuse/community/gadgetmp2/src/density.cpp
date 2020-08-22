@@ -69,7 +69,7 @@ void gadgetmp2::density(void)
 
     for(n = 0, NumSphUpdate = 0; n < N_gas; n++)
     {
-        SphP[n].Left = SphP[n].Right = 0;
+        SphP[n].Left.setZero(); SphP[n].Right.setZero();
 
         if(P[n].Ti_endstep == All.Ti_Current)
             NumSphUpdate++;
@@ -313,7 +313,7 @@ void gadgetmp2::density(void)
             {
                 {
                     SphP[i].DhsmlDensityFactor =
-                    1 / (1 + SphP[i].Hsml * SphP[i].DhsmlDensityFactor / (NUMDIMS * SphP[i].Density));
+                    const_1 / (const_1 + SphP[i].Hsml * SphP[i].DhsmlDensityFactor / (NUMDIMS * SphP[i].Density));
 
                     SphP[i].CurlVel = sqrt(SphP[i].Rot[0] * SphP[i].Rot[0] +
                     SphP[i].Rot[1] * SphP[i].Rot[1] +
@@ -321,7 +321,7 @@ void gadgetmp2::density(void)
 
                     SphP[i].DivVel /= SphP[i].Density;
 
-                    dt_entr = (All.Ti_Current - (P[i].Ti_begstep + P[i].Ti_endstep) / 2) * All.Timebase_interval;
+                    dt_entr = (All.Ti_Current - (P[i].Ti_begstep + P[i].Ti_endstep) / const_2) * All.Timebase_interval;
 
                     SphP[i].Pressure =
                     (SphP[i].Entropy + SphP[i].DtEntropy * dt_entr) * pow(SphP[i].Density, GAMMA);
@@ -350,7 +350,7 @@ void gadgetmp2::density(void)
                             SphP[i].Left = dmax(SphP[i].Hsml, SphP[i].Left);
                         else
                         {
-                            if(SphP[i].Right != 0)
+                            if(SphP[i].Right != "0")
                             {
                                 if(SphP[i].Hsml < SphP[i].Right)
                                     SphP[i].Right = SphP[i].Hsml;
@@ -369,42 +369,42 @@ void gadgetmp2::density(void)
                             fflush(stdout);
                         }
 
-                        if(SphP[i].Right > 0 && SphP[i].Left > 0)
-                            SphP[i].Hsml = pow(0.5 * (pow(SphP[i].Left, 3) + pow(SphP[i].Right, 3)), 1.0 / 3);
+                        if(SphP[i].Right > const_0 && SphP[i].Left > const_0)
+                            SphP[i].Hsml = pow(const_0_5 * (pow(SphP[i].Left,const_3) + pow(SphP[i].Right,const_3)), const_1 / const_3);
                         else
                         {
-                            if(SphP[i].Right == 0 && SphP[i].Left == 0)
+                            if(SphP[i].Right == const_0 && SphP[i].Left == const_0)
                                 endrun(8188);	/* can't occur */
 
-                                if(SphP[i].Right == 0 && SphP[i].Left > 0)
+                                if(SphP[i].Right == const_0 && SphP[i].Left > const_0)
                                 {
-                                    if(P[i].Type == 0 && fabs(SphP[i].NumNgb - All.DesNumNgb) < 0.5 * All.DesNumNgb)
+                                    if(P[i].Type == 0 && fabs(SphP[i].NumNgb - All.DesNumNgb) < const_0_5 * All.DesNumNgb)
                                     {
                                         SphP[i].Hsml *=
-                                        1 - (SphP[i].NumNgb -
+                                        const_1- (SphP[i].NumNgb -
                                         All.DesNumNgb) / (NUMDIMS * SphP[i].NumNgb) * SphP[i].DhsmlDensityFactor;
                                     }
                                     else
-                                        SphP[i].Hsml *= 1.26;
+                                        SphP[i].Hsml *= const_1_26;
                                 }
 
-                                if(SphP[i].Right > 0 && SphP[i].Left == 0)
+                                if(SphP[i].Right > const_0 && SphP[i].Left == const_0)
                                 {
-                                    if(P[i].Type == 0 && fabs(SphP[i].NumNgb - All.DesNumNgb) < 0.5 * All.DesNumNgb)
+                                    if(P[i].Type == 0 && fabs(SphP[i].NumNgb - All.DesNumNgb) < const_0_5 * All.DesNumNgb)
                                     {
                                         my_float d=(SphP[i].NumNgb -
                                         All.DesNumNgb) / (NUMDIMS * SphP[i].NumNgb) * SphP[i].DhsmlDensityFactor;
                                         if(d<.99)
-                                            SphP[i].Hsml *= 1 - d;
+                                            SphP[i].Hsml *= const_1 - d;
                                         else
-                                            SphP[i].Hsml /= 1.26;
+                                            SphP[i].Hsml /= const_1_26;
                                     }
                                     else
-                                        SphP[i].Hsml /= 1.26;
+                                        SphP[i].Hsml /= const_1_26;
                                 }
                         }
 
-                        if(SphP[i].Hsml <= 0.)
+                        if(SphP[i].Hsml <= const_0)
                         {
                             printf
                             ("** i=%d task=%d ID=%d Hsml=%g Left=%g Right=%g Ngbs=%g dhsml=%g\n ",
@@ -543,7 +543,7 @@ void gadgetmp2::density_evaluate(int target, int mode)
     }
 
     h2 = h * h;
-    hinv = 1.0 / h;
+    hinv = const_1 / h;
     #ifndef  TWODIMS
     hinv3 = hinv * hinv * hinv;
     #else
@@ -551,9 +551,9 @@ void gadgetmp2::density_evaluate(int target, int mode)
     #endif
     hinv4 = hinv3 * hinv;
 
-    rho = divv = rotv[0] = rotv[1] = rotv[2] = 0;
-    weighted_numngb = 0;
-    dhsmlrho = 0;
+    rho.setZero(); divv.setZero(); rotv[0].setZero(); rotv[1].setZero(); rotv[2].setZero();
+    weighted_numngb.setZero();
+    dhsmlrho.setZero();
 
     startnode = All.MaxPart;
     numngb = 0;
@@ -579,15 +579,15 @@ void gadgetmp2::density_evaluate(int target, int mode)
 
                 u = r * hinv;
 
-                if(u < 0.5)
+                if(u < const_0_5)
                 {
-                    wk = hinv3 * (KERNEL_COEFF_1 + KERNEL_COEFF_2 * (u - 1) * u * u);
+                    wk = hinv3 * (KERNEL_COEFF_1 + KERNEL_COEFF_2 * (u - const_1) * u * u);
                     dwk = hinv4 * u * (KERNEL_COEFF_3 * u - KERNEL_COEFF_4);
                 }
                 else
                 {
-                    wk = hinv3 * KERNEL_COEFF_5 * (1.0 - u) * (1.0 - u) * (1.0 - u);
-                    dwk = hinv4 * KERNEL_COEFF_6 * (1.0 - u) * (1.0 - u);
+                    wk = hinv3 * KERNEL_COEFF_5 * (const_1 - u) * (const_1 - u) * (const_1 - u);
+                    dwk = hinv4 * KERNEL_COEFF_6 * (const_1 - u) * (const_1 - u);
                 }
 
                 mass_j = P[j].Mass;
@@ -598,7 +598,7 @@ void gadgetmp2::density_evaluate(int target, int mode)
 
                 dhsmlrho += -mass_j * (NUMDIMS * hinv * wk + u * dwk);
 
-                if(r > 0)
+                if(r > const_0)
                 {
                     fac = mass_j * dwk / r;
 

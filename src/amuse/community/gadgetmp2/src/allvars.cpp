@@ -74,7 +74,7 @@ int    *gadgetmp2::DomainCountSph=nullptr;    /*!< a table that gives the total 
 
 int    *gadgetmp2::DomainTask=nullptr;        /*!< this table gives for each leaf of the top-level tree the processor it was assigned to */
 int    *gadgetmp2::DomainNodeIndex=nullptr;   /*!< this table gives for each leaf of the top-level tree the corresponding node of the gravitational tree */
-my_float  *gadgetmp2::DomainTreeNodeLen=nullptr; /*!< this table gives for each leaf of the top-level tree the side-length of the corresponding node of the gravitational tree */
+All_Reduce_buff  *gadgetmp2::DomainTreeNodeLen=nullptr; /*!< this table gives for each leaf of the top-level tree the side-length of the corresponding node of the gravitational tree */
 All_Reduce_buff  *gadgetmp2::DomainHmax=nullptr;        /*!< this table gives for each leaf of the top-level tree the maximum SPH smoothing length among the particles of the corresponding node of the gravitational tree */
 
 DomainNODE *gadgetmp2::DomainMoment=nullptr;                    /*!< this table stores for each node of the top-level tree corresponding node data from the gravitational tree */
@@ -373,6 +373,39 @@ size_t hydrodata_out::DtEntropy_off;
 size_t hydrodata_out::MaxSignalVel_off;
 size_t hydrodata_out::tot_size;
 mpfr_prec_t hydrodata_out::prec;
+
+
+my_float gadgetmp2::const_0;
+my_float gadgetmp2::const_1;
+my_float gadgetmp2::const_2;
+my_float gadgetmp2::const_0_5;
+my_float gadgetmp2::const_3;
+my_float gadgetmp2::const_4;
+my_float gadgetmp2::const_0_333333333333;
+my_float gadgetmp2::const_0_25;
+my_float gadgetmp2::const_8;
+my_float gadgetmp2::const_32;
+my_float gadgetmp2::const_21_333333333333;
+my_float gadgetmp2::const_10_666666666667;
+my_float gadgetmp2::const_0_066666666667;
+my_float gadgetmp2::const_5_333333333333;
+my_float gadgetmp2::const_2_133333333333;
+my_float gadgetmp2::const_PI;
+my_float gadgetmp2::const_1_26;
+my_float gadgetmp2::const_1_001;
+my_float gadgetmp2::const_0_6;
+my_float gadgetmp2::const_38_4;
+my_float gadgetmp2::const_48;
+my_float gadgetmp2::const_2_8;
+my_float gadgetmp2::const_6_4;
+my_float gadgetmp2::const_9_6;
+my_float gadgetmp2::const_3_2;
+my_float gadgetmp2::const_16;
+my_float gadgetmp2::const_0_999999;
+my_float gadgetmp2::const_0_001;
+my_float gadgetmp2::const_0_0001;
+my_float gadgetmp2::const_2_5;
+my_float gadgetmp2::const_0_1;
 
 #ifdef TIMESTEP_LIMITER
 timedata_in *gadgetmp2::TimeDataIn, *gadgetmp2::TimeDataGet;

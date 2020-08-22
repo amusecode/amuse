@@ -83,8 +83,8 @@ int gadgetmp2::ngb_treefind_pairs(my_float searchcenter[3], my_float hsml, int *
 	    continue;
 
 	  hdiff = SphP[p].Hsml - hsml;
-	  if(hdiff < 0)
-	    hdiff = 0;
+	  if(hdiff < const_0)
+	    hdiff = const_0;
 
 
 	  if(P[p].Pos[0] < (searchmin[0] - hdiff))
@@ -121,23 +121,23 @@ int gadgetmp2::ngb_treefind_pairs(my_float searchcenter[3], my_float hsml, int *
 
 	  thiis = &Nodes[no];
 	  hdiff = Extnodes[no].hmax - hsml;
-	  if(hdiff < 0)
-	    hdiff = 0;
+	  if(hdiff < const_0)
+	    hdiff = const_0;
 
 	  no = thiis->u.d.sibling;	/* in case the node can be discarded */
 
 
-	  if((thiis->center[0] + 0.5 * thiis->len) < (searchmin[0] - hdiff))
+	  if((thiis->center[0] + const_0_5 * thiis->len) < (searchmin[0] - hdiff))
 	    continue;
-	  if((thiis->center[0] - 0.5 * thiis->len) > (searchmax[0] + hdiff))
+	  if((thiis->center[0] - const_0_5 * thiis->len) > (searchmax[0] + hdiff))
 	    continue;
-	  if((thiis->center[1] + 0.5 * thiis->len) < (searchmin[1] - hdiff))
+	  if((thiis->center[1] + const_0_5 * thiis->len) < (searchmin[1] - hdiff))
 	    continue;
-	  if((thiis->center[1] - 0.5 * thiis->len) > (searchmax[1] + hdiff))
+	  if((thiis->center[1] - const_0_5 * thiis->len) > (searchmax[1] + hdiff))
 	    continue;
-	  if((thiis->center[2] + 0.5 * thiis->len) < (searchmin[2] - hdiff))
+	  if((thiis->center[2] + const_0_5 * thiis->len) < (searchmin[2] - hdiff))
 	    continue;
-	  if((thiis->center[2] - 0.5 * thiis->len) > (searchmax[2] + hdiff))
+	  if((thiis->center[2] - const_0_5 * thiis->len) > (searchmax[2] + hdiff))
 	    continue;
 
 	  no = thiis->u.d.nextnode;	/* ok, we need to open the node */
@@ -221,17 +221,17 @@ int gadgetmp2::ngb_treefind_variable(my_float searchcenter[3], my_float hsml, in
 
 	  no = thiis->u.d.sibling;	/* in case the node can be discarded */
 
-	  if((thiis->center[0] + 0.5 * thiis->len) < (searchmin[0]))
+	  if((thiis->center[0] + const_0_5 * thiis->len) < (searchmin[0]))
 	    continue;
-	  if((thiis->center[0] - 0.5 * thiis->len) > (searchmax[0]))
+	  if((thiis->center[0] - const_0_5 * thiis->len) > (searchmax[0]))
 	    continue;
-	  if((thiis->center[1] + 0.5 * thiis->len) < (searchmin[1]))
+	  if((thiis->center[1] + const_0_5 * thiis->len) < (searchmin[1]))
 	    continue;
-	  if((thiis->center[1] - 0.5 * thiis->len) > (searchmax[1]))
+	  if((thiis->center[1] - const_0_5 * thiis->len) > (searchmax[1]))
 	    continue;
-	  if((thiis->center[2] + 0.5 * thiis->len) < (searchmin[2]))
+	  if((thiis->center[2] + const_0_5 * thiis->len) < (searchmin[2]))
 	    continue;
-	  if((thiis->center[2] - 0.5 * thiis->len) > (searchmax[2]))
+	  if((thiis->center[2] - const_0_5 * thiis->len) > (searchmax[2]))
 	    continue;
 	  no = thiis->u.d.nextnode;	/* ok, we need to open the node */
 	}

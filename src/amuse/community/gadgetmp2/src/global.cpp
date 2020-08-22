@@ -41,7 +41,7 @@ void gadgetmp2::compute_global_quantities_of_system(void)
   int i, j, n;
   struct state_of_system sys;
   my_float a1, a2, a3;
-  my_float entr = 0, egyspec, vel[3];
+  my_float entr = "0", egyspec, vel[3];
   my_float dt_entr, dt_gravkick, dt_hydrokick;
   my_float_buff *gather_buff;
   my_float_buff *sys_buff=my_float_buff::generate_buffer(state_of_system::max_cnt1*state_of_system::max_cnt2);
@@ -58,23 +58,23 @@ void gadgetmp2::compute_global_quantities_of_system(void)
     }
   else
     {
-      a1 = a2 = a3 = 1;
+      a1 = a2 = a3 = const_1;
     }
 
 
   for(n = 0; n < 6; n++)
     {
-      sys.MassComp[n] = sys.EnergyKinComp[n] = sys.EnergyPotComp[n] = sys.EnergyIntComp[n] = 0;
+      sys.MassComp[n] = sys.EnergyKinComp[n] = sys.EnergyPotComp[n] = sys.EnergyIntComp[n] = const_0;
 
       for(j = 0; j < 4; j++)
-	sys.CenterOfMassComp[n][j] = sys.MomentumComp[n][j] = sys.AngMomentumComp[n][j] = 0;
+	sys.CenterOfMassComp[n][j] = sys.MomentumComp[n][j] = sys.AngMomentumComp[n][j] = const_0;
     }
 
   for(i = 0; i < NumPart; i++)
     {
       sys.MassComp[P[i].Type] += P[i].Mass;
 
-      sys.EnergyPotComp[P[i].Type] += 0.5 * P[i].Mass * P[i].Potential / a1;
+      sys.EnergyPotComp[P[i].Type] += const_0_5 * P[i].Mass * P[i].Potential / a1;
 
       if(All.ComovingIntegrationOn)
 	{
@@ -99,7 +99,7 @@ void gadgetmp2::compute_global_quantities_of_system(void)
 
 
       sys.EnergyKinComp[P[i].Type] +=
-	0.5 * P[i].Mass * (vel[0] * vel[0] + vel[1] * vel[1] + vel[2] * vel[2]) / a2;
+	  const_0_5 * P[i].Mass * (vel[0] * vel[0] + vel[1] * vel[1] + vel[2] * vel[2]) / a2;
 
       if(P[i].Type == 0)
 	{
@@ -134,9 +134,9 @@ void gadgetmp2::compute_global_quantities_of_system(void)
         sys_buff[i+state_of_system::max_cnt1*2]=sys.EnergyIntComp[i];
         sys_buff[i+state_of_system::max_cnt1*3]=sys.EnergyKinComp[i];
         SysState.MassComp[i]=0;
-        SysState.EnergyPotComp[i]=0;
-        SysState.EnergyIntComp[i]=0;
-        SysState.EnergyKinComp[i]=0;
+        SysState.EnergyPotComp[i]=const_0;
+        SysState.EnergyIntComp[i]=const_0;
+        SysState.EnergyKinComp[i]=const_0;
     }
     MPI_Gather(sys_buff->get_transfer_buff(),buff_size,MPI_BYTE,CommBuffer,buff_size,MPI_BYTE,0,GADGET_WORLD);
     if(ThisTask == 0)
@@ -162,7 +162,7 @@ void gadgetmp2::compute_global_quantities_of_system(void)
     for(i=0;i<state_of_system::max_cnt1;i++)
     {
         sys_buff[i+state_of_system::max_cnt1*j]=sys.MomentumComp[i][j];
-        SysState.MomentumComp[i][j]=0;
+        SysState.MomentumComp[i][j]=const_0;
     }
     MPI_Gather(sys_buff->get_transfer_buff(),buff_size,MPI_BYTE,CommBuffer,buff_size,MPI_BYTE,0,GADGET_WORLD);
     if(ThisTask == 0)
@@ -184,7 +184,7 @@ void gadgetmp2::compute_global_quantities_of_system(void)
     for(i=0;i<state_of_system::max_cnt1;i++)
     {
         sys_buff[i+state_of_system::max_cnt1*j]=sys.AngMomentumComp[i][j];
-        SysState.AngMomentumComp[i][j]=0;
+        SysState.AngMomentumComp[i][j]=const_0;
     }
     MPI_Gather(sys_buff->get_transfer_buff(),buff_size,MPI_BYTE,CommBuffer,buff_size,MPI_BYTE,0,GADGET_WORLD);
     if(ThisTask == 0)
@@ -205,7 +205,7 @@ void gadgetmp2::compute_global_quantities_of_system(void)
     for(i=0;i<state_of_system::max_cnt1;i++)
     {
         sys_buff[i+state_of_system::max_cnt1*j]=sys.CenterOfMassComp[i][j];
-        SysState.CenterOfMassComp[i][j]=0;
+        SysState.CenterOfMassComp[i][j]=const_0;
     }
     MPI_Gather(sys_buff->get_transfer_buff(),buff_size,MPI_BYTE,CommBuffer,buff_size,MPI_BYTE,0,GADGET_WORLD);
     if(ThisTask == 0)
@@ -243,10 +243,10 @@ void gadgetmp2::compute_global_quantities_of_system(void)
 	SysState.EnergyTotComp[i] = SysState.EnergyKinComp[i] +
 	  SysState.EnergyPotComp[i] + SysState.EnergyIntComp[i];
 
-      SysState.Mass = SysState.EnergyKin = SysState.EnergyPot = SysState.EnergyInt = SysState.EnergyTot = 0;
+      SysState.Mass = SysState.EnergyKin = SysState.EnergyPot = SysState.EnergyInt = SysState.EnergyTot = const_0;
 
       for(j = 0; j < 3; j++)
-	SysState.Momentum[j] = SysState.AngMomentum[j] = SysState.CenterOfMass[j] = 0;
+	SysState.Momentum[j] = SysState.AngMomentum[j] = SysState.CenterOfMass[j] = const_0;
 
       for(i = 0; i < 6; i++)
 	{
@@ -266,16 +266,16 @@ void gadgetmp2::compute_global_quantities_of_system(void)
 
       for(i = 0; i < 6; i++)
 	for(j = 0; j < 3; j++)
-	  if(SysState.MassComp[i] > 0)
+	  if(SysState.MassComp[i] > const_0)
 	    SysState.CenterOfMassComp[i][j] /= SysState.MassComp[i];
 
       for(j = 0; j < 3; j++)
-	if(SysState.Mass > 0)
+	if(SysState.Mass > const_0)
 	  SysState.CenterOfMass[j] /= SysState.Mass;
 
       for(i = 0; i < 6; i++)
 	{
-	  SysState.CenterOfMassComp[i][3] = SysState.MomentumComp[i][3] = SysState.AngMomentumComp[i][3] = 0;
+	  SysState.CenterOfMassComp[i][3] = SysState.MomentumComp[i][3] = SysState.AngMomentumComp[i][3] = const_0;
 	  for(j = 0; j < 3; j++)
 	    {
 	      SysState.CenterOfMassComp[i][3] +=
@@ -289,7 +289,7 @@ void gadgetmp2::compute_global_quantities_of_system(void)
 	  SysState.AngMomentumComp[i][3] = sqrt(SysState.AngMomentumComp[i][3]);
 	}
 
-      SysState.CenterOfMass[3] = SysState.Momentum[3] = SysState.AngMomentum[3] = 0;
+      SysState.CenterOfMass[3] = SysState.Momentum[3] = SysState.AngMomentum[3] = const_0;
 
       for(j = 0; j < 3; j++)
 	{

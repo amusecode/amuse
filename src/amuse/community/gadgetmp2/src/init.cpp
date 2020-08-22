@@ -58,10 +58,10 @@ void gadgetmp2::setup_smoothinglengths(void)
 	    }
 #ifndef TWODIMS
 	  SphP[i].Hsml =
-	    pow(3.0 / (4 * M_PI) * All.DesNumNgb * P[i].Mass / Nodes[no].u_d_mass, 1.0 / 3) * Nodes[no].len;
+	    pow(const_3 / (const_4 * const_PI) * All.DesNumNgb * P[i].Mass / Nodes[no].u_d_mass,  const_1 / const_3) * Nodes[no].len;
 #else
 	  SphP[i].Hsml =
-	    pow(1.0 / (M_PI) * All.DesNumNgb * P[i].Mass / Nodes[no].u.d.mass, 1.0 / 2) * Nodes[no].len;
+	    pow(const_1 / (const_PI) * All.DesNumNgb * P[i].Mass / Nodes[no].u.d.mass, const_1 / const_2) * Nodes[no].len;
 #endif
 	}
     }

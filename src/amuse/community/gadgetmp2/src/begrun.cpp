@@ -77,12 +77,12 @@ void gadgetmp2::set_units(void)
       printf("\n");
     }
 
-  meanweight = 4.0 / (1 + 3 * HYDROGEN_MASSFRAC);	/* note: we assume neutral gas here */
+  meanweight = const_4 / (const_1 + const_3 * (my_float)HYDROGEN_MASSFRAC);	/* note: we assume neutral gas here */
 
 #ifdef ISOTHERM_EQS
   All.MinEgySpec = 0;
 #else
-  All.MinEgySpec = (1 / meanweight * (1.0 / GAMMA_MINUS1) * (BOLTZMANN / PROTONMASS) * All.MinGasTemp).toDouble();
+  All.MinEgySpec = (const_1 / meanweight * (const_1/ GAMMA_MINUS1) * (BOLTZMANN / PROTONMASS) * All.MinGasTemp).toDouble();
   All.MinEgySpec *= All.UnitMass_in_g / All.UnitEnergy_in_cgs;
 #endif
 
@@ -139,10 +139,7 @@ void gadgetmp2::open_outputfiles(void)
       printf("error in opening file '%s'\n", buf);
       endrun(1);
     }
-/*  sprintf(buf, "%s%s", All.OutputDir, "debug.txt");
-    DEBUG.open (buf);
-    DEBUG << "test  te" << 2 <<"\n";
-    DEBUG.flush();*/
+/*  sprintf(buf, "%s%s", All.OutputDir, "debug.txt");*/
 
 #ifdef FORCETEST
   if(RestartFlag == 0)

@@ -50,7 +50,7 @@
 
 
 static my_float fac1, fac2, fac3, hubble_a, atime, a3inv;
-static my_float dt_displacement = 0;
+static my_float dt_displacement="0";
 
 static int NDone;
 static long long NTotDone;
@@ -71,7 +71,9 @@ void gadgetmp2::advance_and_find_timesteps(void)
     int n, ndone, maxfill, source;
     int level, ngrp, sendTask, recvTask, place, nexport;
     double t0, t1;
-    my_float sumt = 0, sumimbalance = 0, sumcomm = 0;
+    my_float sumt = const_0;
+    my_float sumimbalance = const_0;
+    my_float sumcomm = const_0;
     double timecomp = 0, timeimbalance = 0, timecommsumm = 0;
     #ifndef NOMPI
     MPI_Status status;
@@ -124,26 +126,26 @@ void gadgetmp2::advance_and_find_timesteps(void)
         atime = All.Time;
     }
     else
-        fac1 = fac2 = fac3 = hubble_a = a3inv = atime = 1;
+        fac1 = fac2 = fac3 = hubble_a = a3inv = atime = const_1;
 
-    if(Flag_FullStep || dt_displacement == 0)
+    if(Flag_FullStep || dt_displacement == const_0)
         find_dt_displacement_constraint(hubble_a * atime * atime);
 
     #ifdef MAKEGLASS
-    for(i = 0, dispmax = 0, disp2sum = 0; i < NumPart; i++)
+    for(i = 0, dispmax = const_0, disp2sum = const_0; i < NumPart; i++)
     {
         for(j = 0; j < 3; j++)
         {
-            P[i].GravPM[j] *= -1;
-            P[i].GravAccel[j] *= -1;
+            P[i].GravPM[j] *= -const_1;
+            P[i].GravAccel[j] *= -const_1;
             P[i].GravAccel[j] += P[i].GravPM[j];
-            P[i].GravPM[j] = 0;
+            P[i].GravPM[j] = const_0;
         }
 
         disp = sqrt(P[i].GravAccel[0] * P[i].GravAccel[0] +
         P[i].GravAccel[1] * P[i].GravAccel[1] + P[i].GravAccel[2] * P[i].GravAccel[2]);
 
-        disp *= 2.0 / (3 * All.Hubble * All.Hubble);
+        disp *= const_2 / (const_3 * All.Hubble * All.Hubble);
 
         disp2sum += disp * disp;
 
@@ -160,12 +162,12 @@ void gadgetmp2::advance_and_find_timesteps(void)
     globmax = dispmax;
     globdisp2sum = disp2sum;
     #endif
-    dmean = pow(P[0].Mass / (All.Omega0 * 3 * All.Hubble * All.Hubble / (8 * M_PI * All.G)), 1.0 / 3);
+    dmean = pow(P[0].Mass / (All.Omega0 * const_3 * All.Hubble * All.Hubble / (const_8 * const_PI * All.G)), const_0_333333333333);
 
     if(globmax > dmean)
         fac = dmean / globmax;
     else
-        fac = 1.0;
+        fac = const_1;
 
     if(ThisTask == 0)
     {
@@ -174,13 +176,13 @@ void gadgetmp2::advance_and_find_timesteps(void)
         fflush(stdout);
     }
 
-    for(i = 0, dispmax = 0; i < NumPart; i++)
+    for(i = 0, dispmax = const_0; i < NumPart; i++)
     {
         for(j = 0; j < 3; j++)
         {
-            P[i].Vel[j] = 0;
-            P[i].Pos[j] += fac * P[i].GravAccel[j] * 2.0 / (3 * All.Hubble * All.Hubble);
-            P[i].GravAccel[j] = 0;
+            P[i].Vel[j] = const_0;
+            P[i].Pos[j] += fac * P[i].GravAccel[j] * const_2 / (const_3 * All.Hubble * All.Hubble);
+            P[i].GravAccel[j] = const_0;
         }
     }
     #endif
@@ -245,7 +247,7 @@ void gadgetmp2::advance_and_find_timesteps(void)
                     if(P[i].Ti_endstep > P[i].Ti_begstep)
                     {
                         apred = aphys + ((aphys - P[i].AphysOld) / (P[i].Ti_endstep - P[i].Ti_begstep)) * ti_step;
-                        if(fabs(apred - aphys) < 0.5 * aphys)
+                        if(fabs(apred - aphys) < const_0_5 * aphys)
                         {
                             ti_step2 = get_timestep(i, &apred, -1);
                             ti_min = TIMEBASE;
@@ -559,9 +561,9 @@ void gadgetmp2::advance_and_find_timesteps(void)
 
                     soundspeed  = sqrt(GAMMA * SphP[i].Pressure / SphP[i].Density);
                     f_fac = fabs(SphP[i].DivVel) / (fabs(SphP[i].DivVel) + SphP[i].CurlVel +
-                    0.0001 * soundspeed / SphP[i].Hsml);
-                    tau = 2.5 * SphP[i].Hsml / soundspeed;
-                    SphP[i].DAlphaDt = f_fac*dmax(-SphP[i].DivVel, 0) * (2.0 - SphP[i].Alpha) - (SphP[i].Alpha - .1)/tau;
+                    const_0_0001 * soundspeed / SphP[i].Hsml);
+                    tau = const_2_5 * SphP[i].Hsml / soundspeed;
+                    SphP[i].DAlphaDt = f_fac*dmax(-SphP[i].DivVel, const_0) * (const_2 - SphP[i].Alpha) - (SphP[i].Alpha - const_0_1)/tau;
 
                     /*printf("f_fac = %g, tau = %g, Alpha = %g, DivVel = %g, DAlphaDt = %g \n",
                      *		f_fac.toDouble(),
@@ -570,7 +572,7 @@ void gadgetmp2::advance_and_find_timesteps(void)
                      *		SphP[i].DivVel.toDouble(),
                      *		SphP[i].DAlphaDt.toDouble());*/
                     /* change this to input the maximum the viscosity can get to. */
-                    /*  SphP[i].DAlphaDt = f_fac*dmax(-SphP[i].DivVel, 0) * (All.ArtBulkViscConst - SphP[i].Alpha) - (SphP[i].Alpha - .1)/tau;*/
+                    /*  SphP[i].DAlphaDt = f_fac*dmax(-SphP[i].DivVel, const_0) * (All.ArtBulkViscConst - SphP[i].Alpha) - (SphP[i].Alpha - const_0_1)/tau;*/
                     #endif
                     for(j = 0; j < 3; j++)
                     {
@@ -584,10 +586,10 @@ void gadgetmp2::advance_and_find_timesteps(void)
                     /* In case of cooling, we prevent that the entropy (and
                      *	         hence temperature decreases by more than a factor 0.5 */
 
-                    if(SphP[i].DtEntropy * dt_entr > -0.5 * SphP[i].Entropy)
+                    if(SphP[i].DtEntropy * dt_entr > -const_0_5 * SphP[i].Entropy)
                         SphP[i].Entropy += SphP[i].DtEntropy * dt_entr;
                     else
-                        SphP[i].Entropy *= 0.5;
+                        SphP[i].Entropy *= const_0_5;
 
                     if(All.MinEgySpec)
                     {
@@ -595,7 +597,7 @@ void gadgetmp2::advance_and_find_timesteps(void)
                         if(SphP[i].Entropy < minentropy)
                         {
                             SphP[i].Entropy = minentropy;
-                            SphP[i].DtEntropy = 0;
+                            SphP[i].DtEntropy = const_0;
                         }
                     }
 
@@ -606,8 +608,8 @@ void gadgetmp2::advance_and_find_timesteps(void)
                      *	         the middle to the end of the current step */
 
                     dt_entr = ti_step / 2 * All.Timebase_interval;
-                    if(SphP[i].Entropy + SphP[i].DtEntropy * dt_entr < 0.5 * SphP[i].Entropy)
-                        SphP[i].DtEntropy = -0.5 * SphP[i].Entropy / dt_entr;
+                    if(SphP[i].Entropy + SphP[i].DtEntropy * dt_entr < const_0_5 * SphP[i].Entropy)
+                        SphP[i].DtEntropy = -const_0_5 * SphP[i].Entropy / dt_entr;
                 }
 
 
@@ -656,7 +658,7 @@ int gadgetmp2::get_timestep(int p,         /*!< particle index */
                             aphys */ )
 {
     my_float ax, ay, az, ac, csnd;
-    my_float dt = 0, dt_courant = 0, dt_accel;
+    my_float dt = const_0, dt_courant = const_0, dt_accel;
     int ti_step;
 
     #ifdef CONDUCTION
@@ -665,9 +667,9 @@ int gadgetmp2::get_timestep(int p,         /*!< particle index */
 
     if(flag == 0)
     {
-        ax = fac1 * P[p].GravAccel[0] * 0;
-        ay = fac1 * P[p].GravAccel[1] * 0;
-        az = fac1 * P[p].GravAccel[2] * 0;
+        ax = fac1 * P[p].GravAccel[0] * const_0;   // Does this make sense?
+        ay = fac1 * P[p].GravAccel[1] * const_0;
+        az = fac1 * P[p].GravAccel[2] * const_0;
 
         if(P[p].Type == 0)
         {
@@ -698,7 +700,7 @@ int gadgetmp2::get_timestep(int p,         /*!< particle index */
         ac = *aphys;
 
     if(ac == 0)
-        ac = 1.0e-30;
+        ac = 1.0e-90;
 
     switch (All.TypeOfTimestepCriterion)
     {
@@ -707,19 +709,19 @@ int gadgetmp2::get_timestep(int p,         /*!< particle index */
             {
                 dt = flag * All.Timebase_interval;
                 dt /= hubble_a;       /* convert dloga to physical timestep  */
-                ac = 2 * All.ErrTolIntAccuracy * atime * All.SofteningTable[P[p].Type] / (dt * dt);
+                ac = const_2 * All.ErrTolIntAccuracy * atime * All.SofteningTable[P[p].Type] / (dt * dt);
                 *aphys = ac;
                 return flag;
             }
 
             if(P[p].Type == 0)
-                dt = dt_accel = sqrt(2 * All.ErrTolIntAccuracy * atime * dmin(SphP[p].Hsml, All.SofteningTable[P[p].Type]) / ac);
+                dt = dt_accel = sqrt(const_2 * All.ErrTolIntAccuracy * atime * dmin(SphP[p].Hsml, All.SofteningTable[P[p].Type]) / ac);
             else
-                dt = dt_accel = sqrt(2 * All.ErrTolIntAccuracy * atime * All.SofteningTable[P[p].Type] / ac);
+                dt = dt_accel = sqrt(const_2 * All.ErrTolIntAccuracy * atime * All.SofteningTable[P[p].Type] / ac);
 
             #ifdef ADAPTIVE_GRAVSOFT_FORGAS
             if(P[p].Type == 0)
-                dt = dt_accel = sqrt(2 * All.ErrTolIntAccuracy * atime * SphP[p].Hsml / 2.8 / ac);
+                dt = dt_accel = sqrt(const_2* All.ErrTolIntAccuracy * atime * SphP[p].Hsml / const_2_8 / ac);
             #endif
             break;
         default:
@@ -732,9 +734,9 @@ int gadgetmp2::get_timestep(int p,         /*!< particle index */
         csnd = sqrt(GAMMA * SphP[p].Pressure / SphP[p].Density);
 
         if(All.ComovingIntegrationOn)
-            dt_courant = 2 * All.CourantFac * All.Time * SphP[p].Hsml / (fac3 * SphP[p].MaxSignalVel);
+            dt_courant = const_2 * All.CourantFac * All.Time * SphP[p].Hsml / (fac3 * SphP[p].MaxSignalVel);
         else
-            dt_courant = 2 * All.CourantFac * SphP[p].Hsml / SphP[p].MaxSignalVel;
+            dt_courant = const_2 * All.CourantFac * SphP[p].Hsml / SphP[p].MaxSignalVel;
 
         if(dt_courant < dt)
             dt = dt_courant;
@@ -879,12 +881,12 @@ void gadgetmp2::find_dt_displacement_constraint(my_float hfac /*!<  should be  a
             {
                 if(type == 0)
                     dmean =
-                    pow(min_mass[type] / (All.OmegaBaryon * 3 * All.Hubble * All.Hubble / (8 * M_PI * All.G)),
+                    pow(min_mass[type] / (All.OmegaBaryon * 3 * All.Hubble * All.Hubble / (8 * const_PI * All.G)),
                         1.0 / 3);
                     else
                         dmean =
                         pow(min_mass[type] /
-                        ((All.Omega0 - All.OmegaBaryon) * 3 * All.Hubble * All.Hubble / (8 * M_PI * All.G)),
+                        ((All.Omega0 - All.OmegaBaryon) * 3 * All.Hubble * All.Hubble / (8 * const_PI * All.G)),
                             1.0 / 3);
 
                         dt = All.MaxRMSDisplacementFac * hfac * dmean / sqrt(v_sum[type] / count_sum[type]);

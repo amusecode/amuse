@@ -184,8 +184,8 @@ int gadgetmp2::force_treebuild_single(int npart)
                  */
                 Nodes[parent].u.suns[subnode] = nfree;
 
-                nfreep->len = 0.5 * Nodes[parent].len;
-                lenhalf = 0.25 * Nodes[parent].len;
+                nfreep->len = const_0_5 * Nodes[parent].len;
+                lenhalf = const_0_25 * Nodes[parent].len;
 
                 if(subnode & 1)
                     nfreep->center[0] = Nodes[parent].center[0] + lenhalf;
@@ -220,7 +220,7 @@ int gadgetmp2::force_treebuild_single(int npart)
                 if(P[th].Pos[2] > nfreep->center[2])
                     subnode += 4;
                 #ifndef NOTREERND
-                if(nfreep->len < 1.0e-3 * epsilon)
+                if(nfreep->len < const_0_001 * epsilon)
                 {
                     /* seems like we're dealing with particles at identical (or extremely close)
                      * locations. Randomize subnode index to allow tree construction. Note: Multipole moments
@@ -228,7 +228,7 @@ int gadgetmp2::force_treebuild_single(int npart)
                      * length-scale anyway.
                      */
                     subnode = (int) (8.0 * get_random_number((0xffff & P[i].ID) + P[i].GravCost.toDouble()));
-                    P[i].GravCost += 1;
+                    P[i].GravCost += const_1;
                     if(subnode >= 8)
                         subnode = 7;
                 }
@@ -305,9 +305,9 @@ void gadgetmp2::force_create_empty_nodes(int no, int topnode, int bits, int x, i
 
 
                     Nodes[*nextfree].len = 0.5 * Nodes[no].len;
-                    Nodes[*nextfree].center[0] = Nodes[no].center[0] + (2 * i - 1) * 0.25 * Nodes[no].len;
-                    Nodes[*nextfree].center[1] = Nodes[no].center[1] + (2 * j - 1) * 0.25 * Nodes[no].len;
-                    Nodes[*nextfree].center[2] = Nodes[no].center[2] + (2 * k - 1) * 0.25 * Nodes[no].len;
+                    Nodes[*nextfree].center[0] = Nodes[no].center[0] + (const_2 * i - const_1) * const_0_25 * Nodes[no].len;
+                    Nodes[*nextfree].center[1] = Nodes[no].center[1] + (const_2 * j - const_1) * const_0_25 * Nodes[no].len;
+                    Nodes[*nextfree].center[2] = Nodes[no].center[2] + (const_2 * k - const_1) * const_0_25 * Nodes[no].len;
 
                     for(n = 0; n < 8; n++)
                         Nodes[*nextfree].u.suns[n] = -1;
@@ -459,20 +459,20 @@ void gadgetmp2::force_update_node_recursive(int no, int sib, int father)
 
             last = no;
 
-            mass = 0;
-            s[0] = 0;
-            s[1] = 0;
-            s[2] = 0;
-            vs[0] = 0;
-            vs[1] = 0;
-            vs[2] = 0;
-            hmax = 0;
+            mass.setZero();
+            s[0].setZero();
+            s[1].setZero();
+            s[2].setZero();
+            vs[0].setZero();
+            vs[1].setZero();
+            vs[2].setZero();
+            hmax.setZero();
             #ifdef UNEQUALSOFTENINGS
             #ifndef ADAPTIVE_GRAVSOFT_FORGAS
             maxsofttype = 7;
             diffsoftflag = 0;
             #else
-            maxsoft = 0;
+            maxsoft.setZero();
             #endif
             #endif
             for(j = 0; j < 8; j++)
@@ -598,7 +598,7 @@ void gadgetmp2::force_update_node_recursive(int no, int sib, int father)
                 }
             }
 
-            if(mass!=0)
+            if(mass!=const_0)
             {
                 s[0] /= mass;
                 s[1] /= mass;
@@ -921,7 +921,8 @@ void gadgetmp2::force_update_len(void)
     {
         no = DomainNodeIndex[i];
 
-        DomainTreeNodeLen[i] = Nodes[no].len;
+       // DomainTreeNodeLen[i] = Nodes[no].len;
+        DomainTreeNodeLen->set_init(Nodes[no].len, i);
     }
 
     #ifndef NOMPI
@@ -930,13 +931,20 @@ void gadgetmp2::force_update_len(void)
         sendTask = ThisTask;
         recvTask = ThisTask ^ level;
 
-        if(recvTask < NTask)
-            MPI_Sendrecv(&DomainTreeNodeLen[DomainStartList[sendTask]],
+        if(recvTask < NTask){
+            /*MPI_Sendrecv(&DomainTreeNodeLen[DomainStartList[sendTask]],
                          (DomainEndList[sendTask] - DomainStartList[sendTask] + 1) * sizeof(my_float),
                          MPI_BYTE, recvTask, TAG_NODELEN,
                          &DomainTreeNodeLen[DomainStartList[recvTask]],
                          (DomainEndList[recvTask] - DomainStartList[recvTask] + 1) * sizeof(my_float),
+                         MPI_BYTE, recvTask, TAG_NODELEN, GADGET_WORLD, &status);*/
+            MPI_Sendrecv(DomainTreeNodeLen->get_buff_start(DomainStartList[sendTask]),
+                         (DomainEndList[sendTask] - DomainStartList[sendTask] + 1) * DomainTreeNodeLen->get_size(),
+                         MPI_BYTE, recvTask, TAG_NODELEN,
+                         DomainTreeNodeLen->get_buff_start(DomainStartList[recvTask]),
+                         (DomainEndList[recvTask] - DomainStartList[recvTask] + 1) * DomainTreeNodeLen->get_size(),
                          MPI_BYTE, recvTask, TAG_NODELEN, GADGET_WORLD, &status);
+            }
     }
     #endif
 
@@ -957,10 +965,10 @@ void gadgetmp2::force_update_node_len_local(void)
     {
         no = Father[i];
 
-        for(k = 0, distmax = 0; k < 3; k++)
+        for(k = 0, distmax = const_0; k < 3; k++)
         {
             dist = P[i].Pos[k] - Nodes[no].center[k];
-            if(dist < 0)
+            if(dist < const_0)
                 dist = -dist;
             if(dist > distmax)
                 distmax = dist;
@@ -974,11 +982,11 @@ void gadgetmp2::force_update_node_len_local(void)
             while(p >= 0)
             {
                 distmax = Nodes[p].center[0] - Nodes[no].center[0];
-                if(distmax < 0)
+                if(distmax < const_0)
                     distmax = -distmax;
                 distmax = distmax + distmax + Nodes[no].len;
 
-                if(0.999999 * distmax > Nodes[p].len)
+                if(const_0_999999 * distmax > Nodes[p].len)
                 {
                     Nodes[p].len = distmax;
                     no = p;
@@ -1005,19 +1013,19 @@ void gadgetmp2::force_update_node_len_toptree(void)
         {
             no = DomainNodeIndex[i];
 
-            if(Nodes[no].len < DomainTreeNodeLen[i])
-                Nodes[no].len = DomainTreeNodeLen[i];
+            if(Nodes[no].len < DomainTreeNodeLen->read_re_init(i))
+                Nodes[no].len = DomainTreeNodeLen->read(i);
 
             p = Nodes[no].u.d.father;
 
             while(p >= 0)
             {
                 distmax = Nodes[p].center[0] - Nodes[no].center[0];
-                if(distmax < 0)
+                if(distmax < const_0)
                     distmax = -distmax;
                 distmax = distmax + distmax + Nodes[no].len;
 
-                if(0.999999 * distmax > Nodes[p].len)
+                if(const_0_999999 * distmax > Nodes[p].len)
                 {
                     Nodes[p].len = distmax;
                     no = p;
@@ -1164,11 +1172,11 @@ int gadgetmp2::force_treeevaluate(int target, int mode, double *ewaldcountsum)
     int maxsofttype;
     #endif
     #ifdef ADAPTIVE_GRAVSOFT_FORGAS
-    my_float soft = 0;
+    my_float soft.setZero();
     #endif
-    acc_x = 0;
-    acc_y = 0;
-    acc_z = 0;
+    acc_x.setZero();
+    acc_y.setZero();
+    acc_z.setZero();
     ninteractions = 0;
 
     if(mode == 0)
@@ -1210,7 +1218,7 @@ int gadgetmp2::force_treeevaluate(int target, int mode, double *ewaldcountsum)
 
     #ifndef UNEQUALSOFTENINGS
     h = All.ForceSoftening[ptype];
-    h_inv = 1.0 / h;
+    h_inv = const_1 / h;
     h3_inv = h_inv * h_inv * h_inv;
     #endif
     no = All.MaxPart;		/* root node */
@@ -1310,11 +1318,11 @@ int gadgetmp2::force_treeevaluate(int target, int mode, double *ewaldcountsum)
 
                 /* check in addition whether we lie inside the cell */
 
-                if(fabs(nop->center[0] - pos_x) < 0.60 * nop->len)
+                if(fabs(nop->center[0] - pos_x) < const_0_6* nop->len)
                 {
-                    if(fabs(nop->center[1] - pos_y) < 0.60 * nop->len)
+                    if(fabs(nop->center[1] - pos_y) < const_0_6* nop->len)
                     {
-                        if(fabs(nop->center[2] - pos_z) < 0.60 * nop->len)
+                        if(fabs(nop->center[2] - pos_z) < const_0_6* nop->len)
                         {
                             no = nop->u.d.nextnode;
                             continue;
@@ -1329,7 +1337,7 @@ int gadgetmp2::force_treeevaluate(int target, int mode, double *ewaldcountsum)
             maxsofttype = (nop->u.d.bitflags >> 2) & 7;
             if(maxsofttype == 7) /* may only occur for zero mass top-level nodes */
             {
-                if(mass > 0)
+                if(mass > const_0)
                     endrun(986);
                 no = nop->u.d.nextnode;
                 continue;
@@ -1383,16 +1391,16 @@ int gadgetmp2::force_treeevaluate(int target, int mode, double *ewaldcountsum)
         else
         {
             #ifdef UNEQUALSOFTENINGS
-            h_inv = 1.0 / h;
+            h_inv = const_1 / h;
             h3_inv = h_inv * h_inv * h_inv;
             #endif
             u = r * h_inv;
-            if(u < 0.5)
-                fac = mass * h3_inv * (10.666666666667 + u * u * (32.0 * u - 38.4));
+            if(u < const_0_5)
+                fac = mass * h3_inv * (const_10_666666666667 + u * u * (const_32 * u - const_38_4));
             else
                 fac =
-                mass * h3_inv * (21.333333333333 - 48.0 * u +
-                38.4 * u * u - 10.666666666667 * u * u * u - 0.066666666667 / (u * u * u));
+                mass * h3_inv * (const_21_333333333333 - const_48 * u +
+                const_38_4 * u * u - const_10_666666666667 * u * u * u - const_0_066666666667 / (u * u * u));
         }
 
         acc_x += dx * fac;
@@ -1442,10 +1450,10 @@ void gadgetmp2::force_treeevaluate_potential(int target, int mode)
     int maxsofttype;
     #endif
     #ifdef ADAPTIVE_GRAVSOFT_FORGAS
-    my_float soft = 0;
+    my_float soft.setZero();
     #endif
 
-    pot = 0;
+    pot.setZero();
 
     if(mode == 0)
     {
@@ -1485,7 +1493,7 @@ void gadgetmp2::force_treeevaluate_potential(int target, int mode)
 
     #ifndef UNEQUALSOFTENINGS
     h = All.ForceSoftening[ptype];
-    h_inv = 1.0 / h;
+    h_inv = const_1 / h;
     #endif
     no = All.MaxPart;
 
@@ -1581,11 +1589,11 @@ void gadgetmp2::force_treeevaluate_potential(int target, int mode)
                     continue;
                 }
 
-                if(fabs(nop->center[0] - pos_x) < 0.60 * nop->len)
+                if(fabs(nop->center[0] - pos_x) < const_0_6* nop->len)
                 {
-                    if(fabs(nop->center[1] - pos_y) < 0.60 * nop->len)
+                    if(fabs(nop->center[1] - pos_y) < const_0_6 * nop->len)
                     {
-                        if(fabs(nop->center[2] - pos_z) < 0.60 * nop->len)
+                        if(fabs(nop->center[2] - pos_z) < const_0_6* nop->len)
                         {
                             no = nop->u.d.nextnode;
                             continue;
@@ -1599,7 +1607,7 @@ void gadgetmp2::force_treeevaluate_potential(int target, int mode)
             maxsofttype = (nop->u.d.bitflags >> 2) & 7;
             if(maxsofttype == 7) /* may only occur for zero mass top-level nodes */
             {
-                if(mass > 0)
+                if(mass > const_0)
                     endrun(988);
                 no = nop->u.d.nextnode;
                 continue;
@@ -1653,16 +1661,16 @@ void gadgetmp2::force_treeevaluate_potential(int target, int mode)
         else
         {
             #ifdef UNEQUALSOFTENINGS
-            h_inv = 1.0 / h;
+            h_inv = const_1 / h;
             #endif
             u = r * h_inv;
 
-            if(u < 0.5)
-                wp = -2.8 + u * u * (5.333333333333 + u * u * (6.4 * u - 9.6));
+            if(u < const_0_5)
+                wp = (-const_2_8) + u * u * (const_5_333333333333 + u * u * (const_6_4 * u - const_9_6));
             else
                 wp =
-                -3.2 + 0.066666666667 / u + u * u * (10.666666666667 +
-                u * (-16.0 + u * (9.6 - 2.133333333333 * u)));
+                (-const_3_2) + const_0_066666666667 / u + u * u * (const_10_666666666667 +
+                u * ((-const_16) + u * (const_9_6 - const_2_133333333333 * u)));
 
             pot += mass * h_inv * wp;
         }
@@ -1736,12 +1744,12 @@ void gadgetmp2::force_treeallocate(int maxnodes, int maxpart)
             printf("\nAllocated %g MByte for BH-tree. %ld\n\n", allbytes / (1024.0 * 1024.0),
                    sizeof(struct NODE) + sizeof(struct extNODE));
 
-            tabfac = NTAB / 3.0;
+            tabfac = NTAB / const_3;
 
         for(i = 0; i < NTAB; i++)
         {
-            u = 3.0 / NTAB * (i + 0.5);
-            shortrange_table[i] = erfc(u) + 2.0 * u / sqrt((my_float)M_PI) * exp(-u * u);
+            u = const_3/ NTAB * (i + const_0_5);
+            shortrange_table[i] = erfc(u) + const_2 * u / sqrt(const_PI) * exp(-u * u);
             shortrange_table_potential[i] = erfc(u);
         }
     }
@@ -1778,9 +1786,9 @@ int gadgetmp2::force_treeevaluate_direct(int target, int mode)
     my_float pos_x, pos_y, pos_z;
     my_float acc_x, acc_y, acc_z;
 
-    acc_x = 0;
-    acc_y = 0;
-    acc_z = 0;
+    acc_x.setZero();
+    acc_y.setZero();
+    acc_z.setZero();
 
     if(mode == 0)
     {
@@ -1806,7 +1814,7 @@ int gadgetmp2::force_treeevaluate_direct(int target, int mode)
         epsilon = dmax(All.ForceSoftening[P[i].Type], All.ForceSoftening[ptype]);
 
         h = epsilon;
-        h_inv = 1 / h;
+        h_inv = const_1 / h;
 
         dx = P[i].Pos[0] - pos_x;
         dy = P[i].Pos[1] - pos_y;
@@ -1817,22 +1825,22 @@ int gadgetmp2::force_treeevaluate_direct(int target, int mode)
 
         u = r * h_inv;
 
-        if(u >= 1)
+        if(u >= const_1)
         {
-            r_inv = 1 / r;
+            r_inv = const_1 / r;
 
             fac = P[i].Mass * r_inv * r_inv * r_inv;
         }
         else
         {
-            if(u < 0.5)
-                fac = P[i].Mass * h_inv * h_inv * h_inv * (10.666666666667 + u * u * (32.0 * u - 38.4));
+            if(u < const_0_5)
+                fac = P[i].Mass * h_inv * h_inv * h_inv * (const_10_666666666667 + u * u * (const_32 * u - const_38_4));
             else
                 fac =
-                P[i].Mass * h_inv * h_inv * h_inv * (21.333333333333 -
-                48.0 * u + 38.4 * u * u -
-                10.666666666667 * u * u *
-                u - 0.066666666667 / (u * u * u));
+                P[i].Mass * h_inv * h_inv * h_inv * (const_21_333333333333 -
+                const_48 * u + const_38_4 * u * u -
+                const_10_666666666667 * u * u *
+                u - const_0_066666666667 / (u * u * u));
         }
 
         acc_x += dx * fac;

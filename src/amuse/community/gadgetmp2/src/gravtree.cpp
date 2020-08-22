@@ -334,7 +334,7 @@ void gadgetmp2::gravity_tree(void)
     #ifndef PMGRID
     if(All.ComovingIntegrationOn)
     {
-        fac = 0.5 * All.Hubble * All.Hubble * All.Omega0 / All.G;
+        fac = const_0_5 * All.Hubble * All.Hubble * All.Omega0 / All.G;
 
         for(i = 0; i < NumPart; i++)
             if(P[i].Ti_endstep == All.Ti_Current)
@@ -440,7 +440,7 @@ void gadgetmp2::gravity_tree(void)
 
                                 fac = NTask / ((my_float) All.TotNumPart);
 
-                                for(i = 0, maxt = timetreelist[0], sumt = 0, plb_max = 0,
+                                for(i = 0, maxt = timetreelist[0], sumt = 0, plb_max = const_0,
                                     maxnumnodes = 0, costtotal = 0, sumcomm = 0, ewaldtot = 0; i < NTask; i++)
                                 {
                                     costtotal += costtreelist[i];

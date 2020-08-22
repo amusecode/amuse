@@ -66,8 +66,8 @@ class Gadgetmp2Interface(
         function.result_type = 'int32'
         return function
     
-    def new_particle(self, mass, x, y, z, vx, vy, vz, radius = 0):
-        return self.new_dm_particle(mass, x, y, z, vx, vy, vz, radius = radius)
+    def new_particle(self, mass, x, y, z, vx, vy, vz, radius ):
+        return self.new_dm_particle(mass, x, y, z, vx, vy, vz, radius)
     
     @legacy_function
     def new_sph_particle():

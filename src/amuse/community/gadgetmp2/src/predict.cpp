@@ -75,12 +75,12 @@ void gadgetmp2::move_particles(int time0, int time1)
 	  for(j = 0; j < 3; j++)
 	    SphP[i].VelPred[j] += P[i].GravAccel[j] * dt_gravkick + SphP[i].HydroAccel[j] * dt_hydrokick;
 	  SphP[i].Density *= exp(-SphP[i].DivVel * dt_drift);
-	  SphP[i].Hsml *= exp(0.333333333333 * SphP[i].DivVel * dt_drift);
+	  SphP[i].Hsml *= exp(const_0_333333333333 * SphP[i].DivVel * dt_drift);
 
 	  if(SphP[i].Hsml < All.MinGasHsml)
 	    SphP[i].Hsml = All.MinGasHsml;
 
-	  dt_entr = (time1 - (P[i].Ti_begstep + P[i].Ti_endstep) / 2) * All.Timebase_interval;
+	  dt_entr = (time1 - (P[i].Ti_begstep + P[i].Ti_endstep) / const_2) * All.Timebase_interval;
 
 	  SphP[i].Pressure = (SphP[i].Entropy + SphP[i].DtEntropy * dt_entr) * pow(SphP[i].Density, GAMMA);
 

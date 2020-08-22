@@ -296,7 +296,7 @@ void gadgetmp2::compute_potential(void)
         if(All.ComovingIntegrationOn)
             if(All.PeriodicBoundariesOn)
                 P[i].Potential -= 2.8372975 * pow(P[i].Mass, 2.0 / 3) *
-                std::pow(All.Omega0 * 3 * All.Hubble * All.Hubble / (8 * M_PI * All.G), 1.0 / 3);
+                std::pow(All.Omega0 * 3 * All.Hubble * All.Hubble / (8 * const_PI.toDouble() * All.G), 1.0 / 3);
     }
 
 
@@ -322,8 +322,8 @@ void gadgetmp2::compute_potential(void)
     }
     else
     {
-        fac = -0.5 * All.OmegaLambda * All.Hubble * All.Hubble;
-        if(fac != 0)
+        fac = -const_0_5 * All.OmegaLambda * All.Hubble * All.Hubble;
+        if(fac != const_0)
         {
             for(i = 0; i < NumPart; i++)
             {
@@ -348,6 +348,6 @@ void gadgetmp2::compute_potential(void)
 
     #else
     for(i = 0; i < NumPart; i++)
-        P[i].Potential = 0;
+        P[i].Potential = const_0;
     #endif
 }

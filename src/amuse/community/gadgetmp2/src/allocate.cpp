@@ -40,6 +40,8 @@
 void gadgetmp2::allocate_commbuffers(void)
 {
     size_t bytes, i;
+    All.max_transfer_elements= (All.BufferSize * 1024 * 1024)/pmpreal::get_needed_mem_single()-1;
+
     if (CommBuffer == nullptr)
         if(!(CommBuffer = malloc(bytes = All.BufferSize * 1024 * 1024)))
         {
@@ -62,13 +64,11 @@ void gadgetmp2::allocate_commbuffers(void)
     if (DomainCountSph == nullptr) DomainCountSph = new int[MAXTOPNODES];
     if (DomainTask == nullptr) DomainTask = new int[MAXTOPNODES];
     if (DomainNodeIndex == nullptr) DomainNodeIndex = new int[MAXTOPNODES];
-    if (DomainTreeNodeLen == nullptr){
-        DomainTreeNodeLen = new my_float[MAXTOPNODES];
-    }else{
-        for(i=0;i<MAXTOPNODES; i++)
-            DomainTreeNodeLen[i].set_prec(my_float::get_default_prec());
-    }
     size_t all_reduce_size = All_Reduce_buff::gen_size();
+    if (DomainTreeNodeLen != nullptr){
+        free(DomainTreeNodeLen);
+    };
+    DomainTreeNodeLen = (All_Reduce_buff*)malloc(MAXTOPNODES*all_reduce_size);
     if (DomainHmax != nullptr) free(DomainHmax);
     DomainHmax = (All_Reduce_buff*)malloc(MAXTOPNODES*all_reduce_size);
     if (DomainMoment != nullptr) free(DomainMoment);
@@ -152,8 +152,38 @@ void gadgetmp2::allocate_commbuffers(void)
         printf("Communication buffer has room for %d particles in domain decomposition\n", All.BunchSizeDomain);
         printf("\n");
     }
-//    DEBUG << "sph" <<  hydro_size_in << " sppppp " << All.BunchSizeHydro<<"\n";
-//    DEBUG.flush();
+
+    const_0.setZero();
+    const_1 = (my_float)"1";
+    const_2 = (my_float)"2";
+    const_0_5 = const_1 / const_2;
+    const_3 = (my_float)"3";
+    const_4 = (my_float)"4";
+    const_0_333333333333 = const_1 / const_3;
+    const_0_25= const_1 / const_4;
+    const_8 = (my_float)"8";
+    const_32 = (my_float)"32";
+    const_21_333333333333 = const_1 / const_3 + (my_float)"21";
+    const_10_666666666667 = const_2 / const_3 + (my_float)"10";
+    const_0_066666666667 = const_2 / (my_float)"30";
+    const_5_333333333333 = const_1 / const_3 + (my_float)"5";
+    const_2_133333333333 = const_32 / (my_float)"15";
+    const_PI = const_pi() ;
+    const_1_26 = (my_float)"1.26";
+    const_1_001=(my_float)"1.001";
+    const_0_6 = (my_float)"0.60";
+    const_38_4 = (my_float)"38.4";
+    const_48 = (my_float)"48";
+    const_2_8 = (my_float)"2.8";
+    const_6_4 = (my_float)"6.4";
+    const_9_6 = (my_float)"9.6";
+    const_3_2 = (my_float)"3.2";
+    const_16 = (my_float)"16.0";
+    const_0_999999 = (my_float)"0.999999";
+    const_0_001 = (my_float)"1.0e-3";
+    const_0_0001 = (my_float)"0.0001";
+    const_2_5 = (my_float)"2.5";
+    const_0_1 = (my_float)"0.1";
 }
 
 
@@ -219,6 +249,7 @@ void gadgetmp2::free_memory(void)
         delete[] P;
         P=nullptr;
     }
+    mpfr_free_cache();
 }
 
 
