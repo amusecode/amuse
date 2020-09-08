@@ -188,7 +188,7 @@ real stellar_evolution_constants::parameters(pulsar_initial_conditions pp) {
              break;                               
         case kanonical_neutron_star_mass:        return 1.34;   // [msun]
              break;                                
-	case maximum_neutron_star_mass:          return 1.8;    // [Msun]
+	case maximum_neutron_star_mass:          return 2.1;    // [Msun] //Updated Andrei Igoshev, 2020, see e.g. Cromartie et al. 2019 (NA 4, 72)
              break;                                
 	case minimum_neutron_star_mass:          return 0.0925; // [Msun]
              break;                              // Newtonian polytrope 
