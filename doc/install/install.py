@@ -70,22 +70,22 @@ class InstallPrerequisites(object):
           (
             'hdf' ,
             [],  
-            '1.8.17',
+            '1.10.6',
             'hdf5-' , '.tar.gz' , 
-            'https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.8/hdf5-1.8.17/src/',
+            'https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.10/hdf5-1.10.6/src/',
             self.hdf5_build
           ) ,
           (
             'h5py', 
             ['hdf'], 
-            '2.4.0', 
+            '2.10.0', 
             'h5py-' , '.tar.gz', 
             'https://pypi.python.org/packages/source/h/h5py/', self.h5py_build
           ) ,
           (
             'netcdf-c' ,
             ['hdf'],  
-            '4.6.1',
+            '4.7.4',
             'v' , '.tar.gz' , 
             'https://github.com/Unidata/netcdf-c/archive/',
             self.netcdf_build
@@ -93,7 +93,7 @@ class InstallPrerequisites(object):
           (
             'netcdf-fortran' ,
             ['netcdf-c'],  
-            '4.4.4',
+            '4.5.3',
             'v' , '.tar.gz' , 
             'https://github.com/Unidata/netcdf-fortran/archive/',
             self.netcdf_build
@@ -101,7 +101,7 @@ class InstallPrerequisites(object):
           (
             'netcdf4-python' ,
             ['netcdf-c'],  
-            '1.2.4rel',
+            '1.5.4rel',
             'v' , '.tar.gz' , 
             'https://github.com/Unidata/netcdf4-python/archive/',
             self.python_build
@@ -249,7 +249,7 @@ class InstallPrerequisites(object):
             '--prefix='+self.prefix,
             '--enable-shared',
             '--disable-hl', 
-            '--enable-production',
+            '--enable-build-mode=production',
             '--with-pthread=/usr', 
             '--enable-threadsafe'
         ])
@@ -348,14 +348,14 @@ class InstallPrerequisites(object):
 
     def netcdf_build(self, path):
         env = os.environ.copy()
-        env['LDFLAGS'] = '-L{0}/lib '.format(self.prefix) + env.get('LDFLAGS','') 
+        env['LDFLAGS'] = '-L{0}/lib64'.format(self.prefix) + env.get('LDFLAGS','') 
         env['CPPFLAGS'] = '-I{0}/include '.format(self.prefix) + env.get('CPPFLAGS','')
         env['CFLAGS'] = '-I{0}/include '.format(self.prefix) + env.get('CFLAGS','')
         commands = []
         command = [
             './configure',
             '--prefix='+self.prefix,
-            '--enable-shared'
+            #~ '--enable-shared'
         ]
         commands.append(command)
         commands.append(['make'])
