@@ -87,14 +87,14 @@ def new_option_parser():
     result = OptionParser()
     result.add_option(
         "--petar-version",
-        default='6a5fef76b639da0c56f1132f65c2679a8d1405cf',
+        default='48321c9b8d3610c8a202ef9f5b6916c70b3391b5',
         dest="petar_version",
         help="PeTar commit hash to download",
         type="string"
     )
     result.add_option(
         "--sdar-version",
-        default='6278f76bac8fe3079854ca2b792ea5c0b2de31dc',
+        default='2b674b8be42b80cd65135fee29d9cac3ae375b49',
         dest="sdar_version",
         help="SDAR commit hash to download",
         type="string"
