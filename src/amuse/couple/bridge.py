@@ -128,7 +128,6 @@ class AbstractCalculateFieldForCodes(object):
             for input_code in self.codes_to_calculate_field_for:
                 particles = input_code.particles.copy(filter_attributes = self.required_attributes)
                 code.particles.add_particles(particles)
-            code.commit_particles()
             return code.get_potential_at_point(radius,x,y,z)
         finally:
             self._cleanup_code(code)
@@ -139,7 +138,6 @@ class AbstractCalculateFieldForCodes(object):
             for input_code in self.codes_to_calculate_field_for:
                 particles = input_code.particles.copy(filter_attributes = self.required_attributes)
                 code.particles.add_particles(particles)
-            code.commit_particles()
             return code.get_gravity_at_point(radius,x,y,z)
         finally:
             self._cleanup_code(code)

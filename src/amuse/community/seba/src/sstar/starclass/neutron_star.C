@@ -590,6 +590,7 @@ real neutron_star::sudden_mass_loss() {
 //      Note that a kick is already applied in these cases.
 //      Which might as well be true: see Sigurdsson & Brandt (~1995).
 
+
 real neutron_star::neutron_star_mass(stellar_type stp) {
 
   real m = get_total_mass();
@@ -598,13 +599,19 @@ real neutron_star::neutron_star_mass(stellar_type stp) {
   else
       m = relative_mass;
 
-    real a, b, c, d, e;
-    a =  2.25928E+00;
-    b = -2.68264E-01;
-    c =  2.28206E-02;
-    d = -7.06583E-04;
-    e =  7.48965E-06;
-    real mass = a + m*(b + m*(c + m*(d + m*e)));
+//    real a, b, c, d, e;
+//    a =  2.25928E+00;
+//    b = -2.68264E-01;
+//    c =  2.28206E-02;
+//    d = -7.06583E-04;
+//    e =  7.48965E-06;
+//    real mass = a + m*(b + m*(c + m*(d + m*e)));
+
+// Changes by Andrei Igoshev, 2020
+// Implementing the dependance from Fryer et al. 2012, ApJ 749, delayed model
+
+      real Z = metalicity;
+      real mass = 1.1 + 0.2 * exp((m - 11.0)/4.0) - (2.0 + Z) * exp(0.4*(m - 26.0));
 
   return min(mass, get_total_mass());
 }
