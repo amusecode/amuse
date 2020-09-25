@@ -65,9 +65,9 @@ download:
 	$(RM) -Rf src
 	mkdir src
 	$(DOWNLOAD_FROM_WEB)
-	ln -sf src/PeTar/amuse-interface/interface.py ./
-	ln -sf src/PeTar/amuse-interface/interface.h ./
-	ln -sf src/PeTar/amuse-interface/interface.cc ./
+	cp src/PeTar/amuse-interface/interface.py ./
+	cp src/PeTar/amuse-interface/interface.h ./
+	cp src/PeTar/amuse-interface/interface.cc ./
 
 
 
