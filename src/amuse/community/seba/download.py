@@ -81,7 +81,7 @@ def main(seba_version=''):
 def new_option_parser():
     result = OptionParser()
     result.add_option(
-        "--petar-version",
+        "--seba-version",
         default='6bd7aa00d497a3e02822e629435281a61bc1eee4',
         dest="seba_version",
         help="SeBa commit hash to download",
