@@ -9,7 +9,7 @@ import support
 support.use("system")
 from support.setup_codes import setup_commands
 
-version += ".4"
+version += ".5"
 name = 'amuse-petar'
 author = 'The AMUSE team'
 author_email = 'info@amusecode.org'
