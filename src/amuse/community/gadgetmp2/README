@@ -1,0 +1,38 @@
+AMUSE interface to:
+
+
+  *************************************************************
+  *  GADGET-2   -  A code for collisionless and gasdynamical  *
+  *                cosmological simulations                   *
+  *                                                           *
+  *        (GAlaxies with Dark matter and GasintEracT)        *
+  *         --            -               -     -   -         *
+  *                                                           *
+  *  written by:   Volker Springel, MPA, (c) 2005             *
+  *                                                           *
+  *************************************************************
+
+  GADGET is a freely available code for cosmological N-body/SPH 
+  simulations on massively parallel computers with distributed 
+  memory. 
+
+  GADGET computes gravitational forces with a hierarchical tree 
+  algorithm (optionally in combination with a particle-mesh 
+  scheme for long-range gravitational forces, currently not 
+  supported from the AMUSE interface) and represents fluids by 
+  means of smoothed particle hydrodynamics (SPH). The code can 
+  be used for studies of isolated systems, or for simulations 
+  that include the cosmological expansion of space, both with 
+  or without periodic boundary conditions. In all these types 
+  of simulations, GADGET follows the evolution of a self-
+  gravitating collisionless N-body system, and allows gas 
+  dynamics to be optionally included. Both the force computation 
+  and the time stepping of GADGET are fully adaptive, with a 
+  dynamic range which is, in principle, unlimited. 
+
+  The relevant references are:
+
+    Springel V., 2005, MNRAS, 364, 1105  (GADGET-2)
+    
+    Springel V., Yoshida N., White S. D. M., 2001, 
+        New Astronomy, 6, 51  (GADGET-1)
