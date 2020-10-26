@@ -36,6 +36,8 @@ SRCDIR = src
 BUILDDIRCPU = build_cpu
 CXXFLAGS += -I../src -I../src/ON_neib
 
+NVCCFLAGS ?= $(NVCC_FLAGS)
+
 CODELIB = src/libhacs64gpu.a
 CODELIBCPU = $(BUILDDIRCPU)/libhacs64cpu.a
 
