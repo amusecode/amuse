@@ -149,13 +149,13 @@ int evolve_model (double tend) {
         (Particles[i])->vz = vz[i];
     }
 
-    delete mass;
-    delete x;
-    delete y;
-    delete z;
-    delete vx;
-    delete vy;
-    delete vz;
+    delete [] mass;
+    delete [] x;
+    delete [] y;
+    delete [] z;
+    delete [] vx;
+    delete [] vy;
+    delete [] vz;
 
     return 0;
 }

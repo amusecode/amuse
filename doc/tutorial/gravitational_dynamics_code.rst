@@ -3,12 +3,12 @@ Adding a Gravitational Dynamics Code
 ====================================
 
 In the previous tutorial we have seen how to create an AMUSE interface to
-a c++ or a Fortran code from scratch. In this tutorial, we will expand on this
+a C++ or a Fortran code from scratch. In this tutorial, we will expand on this
 with a number of additional features. We will do this through the implementation
 of a simple gravitational dynamics code.
 
 As this tutorial deals only with features of the Python interface, we restrict our
-legacy code example to c++. The concepts described can just as easily be applied to
+legacy code example to C++. The concepts described can just as easily be applied to
 an interface to a Fortran code. 
 
 We will also assume that we are working with the same environment settings as in
@@ -27,7 +27,7 @@ legacy code. We simply have a function that takes the initial condition of a set
 SimpleGrav.cc goes here.
 
 .. literalinclude:: simplegrav/SimpleGrav.cc
-    :language: c++
+    :language: C++
 
 
 .. note::
@@ -60,7 +60,6 @@ in **gd.py**. We can use this template by inheriting from it:
 
 .. code-block:: python
 
-    from amuse.community import *
     from amuse.community.interface.gd import GravitationalDynamics
     from amuse.community.interface.gd import GravitationalDynamicsInterface
 
@@ -74,7 +73,7 @@ The legacy interface now contains all legacy functions defined in **gd.py**.
 This includes adding and deleting particles, getting and setting particle properties
 (mass, position, velocity, acceleration, and radius), getting and setting 
 parameters (smoothing length and begin time), and a host of other functions. Our
-definition of the **SimpleGravInterface** is then simply:
+definition of the ``SimpleGravInterface`` is then simply:
 
 .. code-block:: python
 
@@ -88,15 +87,14 @@ definition of the **SimpleGravInterface** is then simply:
                 **keyword_arguments)
 
 Note that when compiling an interface inheriting from
-**GravitationalDynamicsInterface**, all legacy functions defined there
-(and in its parent class, **CommonCodeInterface**) must be
-defined in the c++ interface. For now, you can simply let them return an error 
-value.
+``GravitationalDynamicsInterface``, all legacy functions defined there
+(and in its parent class, ``CommonCodeInterface``) must be
+defined in the C++ interface. For now, you can simply let them return an error 
+value (-1 or -2).
 
-The object oriented interface contains definitions for methods, properties,
-particle sets, parameters, and states (the latter we will discuss later).
-We can define these by calling the functions that define them in the
-gravitational dynamics interface:
+The object oriented interface similarly contains definitions for methods, properties,
+particle sets, parameters, and states (the latter we will discuss later). Its definition
+is simply:
 
 .. code-block:: python
 
@@ -110,47 +108,23 @@ gravitational dynamics interface:
                                            **keyword_arguments)
 
 
-        def define_state (self, handler):
-
-            GravitationalDynamics.define_state(self, handler)
-
-
-        def define_methods (self, handler):
-
-            GravitationalDynamics.define_methods(self, handler)
-
-
-        def define_parameters (self, handler):
-
-            GravitationalDynamics.define_parameters(self, handler)
-
-
-        def define_particle_sets (self, handler):
-
-            GravitationalDynamics.define_particle_sets(self, handler)
-
-
-        def define_properties(self, handler):
-
-            GravitationalDynamics.define_properties(self, handler)
-
-Note the **convert_nbody** keyword that appears in the initializer. This is used
+Note the ``convert_nbody`` keyword that appears in the initializer. This is used
 to handle the conversion of units between the legacy code and the object-oriented
 interface. The gravitational dynamics interface template assumes that the legacy
-codes work in dimensionless N-body units, but by passing a **convert_nbody**
+codes work in dimensionless N-body units, but by passing a ``convert_nbody``
 instance the unit conversions can be handled automatically.
 
-The only part left to write now is the c++ interface. As mentioned before,
+The only part left to write for a functional version is the C++ interface. As mentioned before,
 this must contain the corresponding functions of all legacy functions. Also note
-that **GravitationalDynamicsInterface** inherits from yet another interface,
-**CommonCodeInterface**, which contains four more legacy functions to be defined.
+that ``GravitationalDynamicsInterface`` inherits from yet another interface,
+``CommonCodeInterface``, which contains four more legacy functions to be defined.
 These are very general functions, mostly concerned with code logistics. Their 
 implementation, and whether they are even necessary, depends on the legacy code. If
 they are not needed they can simply return 0 (in the case of our legacy code, only
-**cleanup_code** has actual functionality). They are often called automatically,
+``cleanup_code`` has actual functionality). They are often called automatically,
 when needed, through the state model (discussed below). The four functions from
-**CommonCode**, plus three similar functions from
-**GravitationalDynamics**, are described in the table below:
+``CommonCode``, plus three similar functions from
+``GravitationalDynamics``, are described in the table below:
 
 =========================== ===================================
 definition                  description
@@ -183,7 +157,205 @@ non-essential functions only return error values:
 interface_1.cc goes here.
 
 .. literalinclude:: simplegrav/interface_1.cc
-    :language: c++
+    :language: C++
+
+
+
+Properties & Parameters
+-----------------------
+A property of an AMUSE code is a read-only quantity of the code that contains
+information about the (often physical) state of the code. Examples include the
+current model time and the potential and kinetic energies of the total system.
+
+A parameter of an AMUSE code is a quantity that is used in the internal workings
+of the code. Examples include the time step in most types of evolution codes and
+the metallicity in stellar evolution codes. These are often, but not always,
+writable. 
+
+Both are defined in the object-oriented interface, in the ``define_properties``
+and ``define_parameters`` functions. 
+
+Properties are added as follows:
+
+.. code-block:: python
+
+    def define_properties(self, handler):
+        handler.add_property("get_property", public_name="property_name")
+
+Here, ``get_property`` is a legacy interface function that returns a single value.
+``public_name`` is an optional argument that defines what the property is called;
+if it is not given, the name of the parameter of the legacy function is used.
+
+Properties are accessed directly as properties of the code object:
+
+.. code-block:: python
+
+    gravity = SimpleGrav()
+    the_current_time = gravity.model_time
+
+Parameters are added as follows:
+
+.. code-block:: python
+
+   def define_parameters(self, handler):
+        handler.add_method_parameter(
+            "get_parameter",
+            "set_parameter",
+            "parameter",
+            "what is this parameter?",
+            default_value = 1. | some_unit,
+            is_vector = BOOL,
+            must_set_before_get = BOOL,
+        )
+
+Here, ``get_parameter`` and ``set_parameter`` are two legacy interface functions
+that respectively have one output and one input. ``parameter`` is the name of the
+parameter in the code. The fourth parameter is a documentation string describing
+what the parameter signifies. Finally, there are three optional parameters. Note
+that there are methods to define other types of parameters; ``add_boolean_parameter``
+could be especially useful.
+
+Parameters are accessed through the ``parameters`` property of the code object:
+
+.. code-block:: python
+
+    gravity = SimpleGrav()
+    param = gravity.parameters.parameter
+
+
+
+
+.. note::
+
+    With properties, particles, and parameters, we have three ways of communicating
+    data between the legacy code and AMUSE. With complex codes that are not
+    necessarily similar to other codes in AMUSE, it might be nontrivial in which
+    of these manners data is to be communicated. As a rule of thumb, any quantity 
+    relating to individual particles should be communicated as particle properties, 
+    even if it is conceptually closer to a parameter. To demonstrate the thin line
+    between these, if a stellar evolution code has a single metallicity for all
+    stars, it will be parameter, whereas if different stars can have different
+    metallicities, it will be a particle property.
+
+    Parameters and properties, on the other hand, both apply to the system as a whole.
+    Of these, parameters should not be altered by the legacy code itself, whereas
+    properties are read-only. 
+
+In our SimpleGrav example we have introduced a number of parameters that the template
+interface does not have. For one, we want the time step to be a settable parameter
+(note that the definition in **gd.py** has ``None`` as a setter function). Additionally,
+we want to be able to set a smoothing length, and for didactic reasons we include an
+entirely new parameter, ``gravity_strength``, which functions as a scaling of the
+magnitude of the gravitational force. 
+
+We have to define new legacy functions to set the time step and get and set the gravity
+strength (the others are defined in **gd.py**). The legacy interface then looks as follows:
+
+.. code-block:: python
+
+    class SimpleGravInterface(CodeInterface,
+                       GravitationalDynamicsInterface):
+
+        include_headers = ['worker_code.h']
+
+        def __init__ (self, **keyword_arguments):
+            CodeInterface.__init__(self, 
+                name_of_the_worker="SimpleGrav_worker",
+                **keyword_arguments)
+
+        @legacy_function
+        def get_grav_fac ():
+            function = LegacyFunctionSpecification()
+            function.addParameter('grav_fac', dtype='float64', direction=function.OUT)
+            function.result_type = 'int32'
+            return function
+
+        @legacy_function
+        def set_grav_fac ():
+            function = LegacyFunctionSpecification()
+            function.addParameter('grav_fac', dtype='float64', direction=function.IN)
+            function.result_type = 'int32'
+            return function
+
+        @legacy_function
+        def set_time_step ():
+            function = LegacyFunctionSpecification()
+            function.addParameter('time_step', dtype='float64', direction=function.IN)
+            function.result_type = 'int32'
+            return function
+
+In the object-oriented interface, we have to overload the ``define_methods`` and the 
+``define_parameters`` functions:
+
+.. code-block:: python
+
+    def define_methods (self, handler):
+
+        GravitationalDynamics.define_methods(self, handler)
+
+        handler.add_method(
+            "get_grav_fac",
+            (),
+            (handler.NO_UNIT, handler.ERROR_CODE)
+        )
+
+        handler.add_method(
+            "set_grav_fac",
+            (handler.NO_UNIT),
+            (handler.ERROR_CODE)
+        )
+
+        handler.add_method(
+            "set_time_step",
+            (nbody_system.time),
+            (handler.ERROR_CODE)
+        )
+
+        handler.add_method(
+            "get_eps2",
+            (),
+            (nbody_system.length * nbody_system.length, handler.ERROR_CODE)
+        )
+
+        handler.add_method(
+            "set_eps2",
+            (nbody_system.length * nbody_system.length),
+            (handler.ERROR_CODE)
+        )
+
+
+    def define_parameters (self, handler):
+
+        GravitationalDynamics.define_parameters(self, handler)
+
+        handler.add_method_parameter(
+            "get_grav_fac",
+            "set_grav_fac",
+            "gravity_strength",
+            "constant factor by which G is multiplied",
+            default_value = 1.
+        )
+
+        handler.add_method_parameter(
+            "get_time_step",
+            "set_time_step",
+            "time_step",
+            "constant integrator timestep",
+            default_value = 0.01 | nbody_system.time
+        )
+
+        handler.add_method_parameter(
+            "get_eps2",
+            "set_eps2",
+            "epsilon_squared", 
+            "smoothing parameter for gravity calculations", 
+            default_value = 0.0 | nbody_system.length * nbody_system.length
+
+
+We also call the equivalent functions of **gd.py** so we still inherit
+from the template interface. 
+
+
 
 
 State Model
@@ -203,14 +375,14 @@ of the particle set and the evolution of the system.
 The state of the code can be handled automatically by defining a state model that 
 describes the states the code can be in as a graph with the nodes as the state and 
 transitions mediated by interface calls. The state model of a code is defined in
-the **define_state** interface function by calling the following methods on its 
+the ``define_state`` interface function by calling the following methods on its 
 handler argument: 
 
-- **set_initial_state(state)**  this defines the initial entry state, given as a string label (usually 'UNINITIALIZED').
+- ``set_initial_state(state)``  this defines the initial entry state, given as a string label (usually 'UNINITIALIZED').
 
-- **add_method(state, method_name)** this defines that the given method is allowed in state **state**. Again the state is a string, the string can be prepended with '!' to indicate a method is forbidden in the state. If state is not yet defined it will be added to the state model.
+- ``add_method(state, method_name)`` this defines that the given method is allowed in state ``state``. Again the state is a string, the string can be prepended with '!' to indicate a method is forbidden in the state. If state is not yet defined it will be added to the state model.
 
-- **add_transition(state1, state2, method_name, is_auto=True)** this adds a transition between states state1 and state2 (and adds these states if not previously defined) which is triggered by a call to the interface function method_name. The is_auto argument determines whether this transition is allowed to  be triggered automatically. 
+- ``add_transition(state1, state2, method_name, is_auto=True)`` this adds a transition between states state1 and state2 (and adds these states if not previously defined) which is triggered by a call to the interface function method_name. The is_auto argument determines whether this transition is allowed to  be triggered automatically. 
 
 A method that is not mentioned in any add_method, is allowed in any state (and
 doesn't trigger any transitions). If the state model detects that an interface call 
@@ -220,9 +392,9 @@ they don't have non-default arguments)
 
 The state model can be built up by the above methods. The state model of a code can be printed:
 
-- **interface.state_machine.to_table_string()** or 
+- ``interface.state_machine.to_table_string()`` or 
 
-- **interface.state_machine.to_plantuml_string()**. 
+- ``interface.state_machine.to_plantuml_string()``. 
 
 Note that function arguments in the above methods are strings! They are evaluated later to methods of the low level code interface class!
 (so they must be defined there, they need not be remote function but can be ordinary class methods) 
@@ -235,27 +407,10 @@ Note that it can be convenient to use a number of sentinel methods which do not 
 
 (e.g. before_get_parameter is called before each parameter is retrieved.)
 
-State models have been defined for our code's parent class, **GravitationalDynamics**, and its grandparent class, **CommonCode**,
-and our code is simple enough that we do not need to expand this. Thus we can again simply define our states to be those of the parent:
+State models have been defined for our code's parent class, ``GravitationalDynamics``, and its grandparent class, ``CommonCode``,
+and our code is simple enough that we do not need to expand this. Thus we do not need to define it.
 
-.. code-block:: python
-
-    class SimpleGrav(GravitationalDynamics):
-
-        def __init__(self, **options):
-            GravitationalDynamics.__init__(self, SimpleGravInterface(**options), convert_nbody, **options)
-
-        def define_methods(self, handler):
-            ...
-
-        def define_particle_sets(self, handler):
-            ...
-
-        def define_state(self, handler):
-            GravitationalDynamics.define_state(self, handler)
-
-
-To complete this example we will take a look at the state model of **GravitationalDynamics**:
+To complete this example we will take a look at the state model of ``GravitationalDynamics``:
 
 .. code-block:: python
 
@@ -264,24 +419,7 @@ To complete this example we will take a look at the state model of **Gravitation
         handler.add_transition('END', 'INITIALIZED', 'initialize_code', False)    
         
         handler.add_transition('INITIALIZED','EDIT','commit_parameters')
-        handler.add_transition('RUN','CHANGE_PARAMETERS_RUN','before_set_parameter', False)
-        handler.add_transition('EDIT','CHANGE_PARAMETERS_EDIT','before_set_parameter', False)
-        handler.add_transition('UPDATE','CHANGE_PARAMETERS_UPDATE','before_set_parameter', False)
-        handler.add_transition('CHANGE_PARAMETERS_RUN','RUN','recommit_parameters')
-        handler.add_transition('CHANGE_PARAMETERS_EDIT','EDIT','recommit_parameters')
-        handler.add_transition('CHANGE_PARAMETERS_UPDATE','UPDATE','recommit_parameters')
-        
-        handler.add_method('CHANGE_PARAMETERS_RUN', 'before_set_parameter')
-        handler.add_method('CHANGE_PARAMETERS_EDIT', 'before_set_parameter')
-        handler.add_method('CHANGE_PARAMETERS_UPDATE','before_set_parameter')
-        
-        handler.add_method('CHANGE_PARAMETERS_RUN', 'before_get_parameter')
-        handler.add_method('CHANGE_PARAMETERS_EDIT', 'before_get_parameter')
-        handler.add_method('CHANGE_PARAMETERS_UPDATE','before_get_parameter')
-        handler.add_method('RUN', 'before_get_parameter')
-        handler.add_method('EDIT', 'before_get_parameter')
-        handler.add_method('UPDATE','before_get_parameter')
-        handler.add_method('EVOLVED','before_get_parameter')
+        ...
         
         
         handler.add_method('EDIT', 'new_particle')
@@ -295,108 +433,22 @@ To complete this example we will take a look at the state model of **Gravitation
         handler.add_transition('RUN', 'EVOLVED', 'evolve_model', False)
         handler.add_method('EVOLVED', 'evolve_model')
         handler.add_transition('EVOLVED','RUN', 'synchronize_model')
-        handler.add_method('RUN', 'synchronize_model')
-        handler.add_method('RUN', 'get_state')
-        handler.add_method('RUN', 'get_mass')
-        handler.add_method('RUN', 'get_position')
-        handler.add_method('RUN', 'get_velocity')
-        handler.add_method('RUN', 'get_potential')
-        handler.add_method('RUN', 'get_potential_energy')
-        handler.add_method('RUN', 'get_kinetic_energy')
-        handler.add_transition('RUN', 'UPDATE', 'set_mass', False)
-        handler.add_transition('RUN', 'UPDATE', 'set_position', False)
-        handler.add_transition('RUN', 'UPDATE', 'set_velocity', False)
-        handler.add_transition('RUN', 'UPDATE', 'set_radius', False)
+        ...
 
-Note that the entry state is defined in **CommonCode**.
+Note that the entry state is defined in ``CommonCode``, and we have shortened it
+for readability.
 
 Let's focus on what happens when we add a particle after evolving for some time.
-We can see that **evolve_model** is only allowed in the **EVOLVED** state, which
-means that that is the state after evolving. **new_particle**, then, is allowed in
-the **EDIT** and **UPDATE** states, but also when transitioning from **RUN** to 
-**UPDATE**. From **EVOLVED** to **RUN**, we can transition automatically with
-**synchronize_model**. Thus, after evolving, if we add a particle, the function
-**synchronize_model** is automatically called, and we end up in the **UPDATE** 
-state. If we call **evolve_model** again, we first go from **UPDATE** to **RUN** 
-with an automatic call of **recommit_particles**, and from there **evolve_model**
-leads us from **RUN** back to **EVOLVED**.
+We can see that ``evolve_model`` is only allowed in the ``EVOLVED`` state, which
+means that that is the state after evolving. ``new_particle``, then, is allowed in
+the ``EDIT`` and ``UPDATE`` states, but also when transitioning from ``RUN`` to 
+``UPDATE``. From ``EVOLVED`` to ``RUN``, we can transition automatically with
+``synchronize_model``. Thus, after evolving, if we add a particle, the function
+``synchronize_model`` is automatically called, and we end up in the ``UPDATE`` 
+state. If we call ``evolve_model`` again, we first go from ``UPDATE`` to ``RUN`` 
+with an automatic call of ``recommit_particles``, and from there ``evolve_model``
+leads us from ``RUN`` back to ``EVOLVED``.
 
-
-
-
-Properties & Parameters
------------------------
-A property of an AMUSE code is a read-only quantity of the code that contains
-information about the (often physical) state of the code. Examples include the
-current model time and the potential and kinetic energies of the total system.
-
-A parameter of an AMUSE code is a quantity that is used in the internal workings
-of the code. Examples include the time step in most types of evolution codes and
-the metallicity in stellar evolution codes. These are often, but not always,
-writable. 
-
-Both are defined in the object-oriented interface, in the **define_properties**
-and **define_parameters** functions. 
-
-Properties are added as follows:
-
-.. code-block:: python
-
-    define_properties(self, handler):
-        handler.add_property("get_property", public_name="property_name")
-
-Here, ``get_property`` is a legacy interface function that returns a single value.
-``public_name`` is an optional argument that defines what the property is called;
-if it is not given, the name of the parameter of the legacy function is used.
-
-Properties are accessed directly as properties of the code object:
-
-.. code-block:: python
-
-    gravity = SimpleGrav()
-    the_current_time = gravity.model_time
-
-Parameters are added as follows:
-
-.. code-block:: python
-
-   define_parameters(self, handler):
-        handler.add_method_parameter(
-            "get_parameter",
-            "set_parameter",
-            "parameter",
-            "what is this parameter?",
-            default_value = 1. | some_unit,
-            must_set_before_get = BOOL
-        )
-
-Here, ``get_parameter`` and ``set_parameter`` are two legacy interface functions
-that respectively have one output and one input. ``parameter`` is the name of the
-parameter in the code. The fourth parameter is a documentation string describing
-what the parameter signifies. Finally, there are two optional parameters.
-
-Parameters are accessed through the ``parameters`` property of the code object:
-
-.. code-block:: python
-
-    gravity = SimpleGrav()
-    param = gravity.parameters.parameter
-
-.. note::
-
-    With properties, particles, and parameters, we have three ways of communicating
-    data between the legacy code and AMUSE. With complex codes that are not
-    necessarily similar to other codes in AMUSE, it might be nontrivial in which
-    of these manners data is to be communicated. As a rule of thumb, any quantity 
-    relating to individual particles should be communicated as particle properties, 
-    even if it is conceptually closer to a parameter. To demonstrate the thin line
-    between these, if a stellar evolution code has a single metallicity for all
-    stars, it will be parameter, whereas if different stars can have different
-    metallicities, it will be a particle property.
-
-    Parameters and properties, on the other hand, both apply to the system as a whole.
-    Of these, parameters should not be altered by the legacy code itself, whereas
-    properties are read-only. 
 
 
 
@@ -427,10 +479,10 @@ interface, as in the following code snippet:
                 **keyword_arguments)
             LiteratureReferencesMixIn.__init__(self)
 
-Upon finishing a script using **SimpleGrav** we will get the following warning:
+Upon finishing a script using ``SimpleGrav`` we will get the following warning:
 
 .. code-block::
-    /home/martijn/venvs/amuse_dev/amuse/src/amuse/support/literature.py:78: AmuseWarning: 
+    /home/.../amuse/src/amuse/support/literature.py:78: AmuseWarning: 
 
     You have used the following codes, which contain literature references:
 
@@ -440,10 +492,14 @@ Upon finishing a script using **SimpleGrav** we will get the following warning:
 
 
 	    "AMUSE"
-		    Portegies Zwart, S. & McMillan, S.L.W., 2018, "Astrophysical Recipes: the art of AMUSE", AAS IOP Astronomy publishing (411 pages) [2018araa.book.....P]
-		    ** Portegies Zwart, S. et al., 2013, Multi-physics Simulations Using a Hierarchical Interchangeable Software Interface, Computer Physics Communications 183, 456-468 [2013CoPhC.183..456P]
-		    ** Pelupessy, F. I. et al., 2013, The Astrophysical Multipurpose Software Environment, Astronomy and Astrophysics 557, 84 [2013A&A...557A..84P]
-		    Portegies Zwart, S. et al., 2009, A multiphysics and multiscale software environment for modeling astrophysical systems, *New Astronomy*, **Volume 14**, **Issue 4**, 369-378 [2009NewA...14..369P]
+		    Portegies Zwart, S. & McMillan, S.L.W., 2018, "Astrophysical Recipes: the art of AMUSE", 
+                AAS IOP Astronomy publishing (411 pages) [2018araa.book.....P]
+		    ** Portegies Zwart, S. et al., 2013, Multi-physics Simulations Using a Hierarchical Interchangeable 
+                Software Interface, Computer Physics Communications 183, 456-468 [2013CoPhC.183..456P]
+		    ** Pelupessy, F. I. et al., 2013, The Astrophysical Multipurpose Software Environment, 
+                Astronomy and Astrophysics 557, 84 [2013A&A...557A..84P]
+		    Portegies Zwart, S. et al., 2009, A multiphysics and multiscale software environment 
+                for modeling astrophysical systems, *New Astronomy*, **Volume 14**, **Issue 4**, 369-378 [2009NewA...14..369P]
 
       warnings.warn(prefix + self.all_literature_references_string(), exceptions.AmuseWarning)
 
