@@ -113,7 +113,7 @@ class ConvertBetweenGenericAndSiUnits(object):
         return numpy.sum(numpy.where( s>tol, 1, 0 ) )
 
     def determine_new_base(self):
-        matrix = numpy.mat(numpy.zeros((self.system_rank,self.system_rank)))
+        matrix = numpy.asmatrix(numpy.zeros((self.system_rank,self.system_rank)))
         for row, value in enumerate(self.values):
             for n, unit in value.unit.base:
                 matrix[row, [i for i, j in enumerate(self.list_of_available_units) if j == unit]] = n
@@ -121,7 +121,7 @@ class ConvertBetweenGenericAndSiUnits(object):
 
     @late
     def conversion_factors(self):
-        factors_of_the_bases =  numpy.mat(numpy.zeros((self.system_rank,1)))
+        factors_of_the_bases = numpy.asmatrix(numpy.zeros((self.system_rank,1)))
         for row, value in enumerate(self.values):
             factors_of_the_bases[row] = value.number * value.unit.factor
         log_factors_of_the_bases = numpy.log(numpy.abs(factors_of_the_bases))

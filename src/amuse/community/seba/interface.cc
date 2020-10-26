@@ -174,7 +174,9 @@ local int translate_stellar_type_to_int(stellar_type stp, const real mass) {
     case Disintegrated:
       return 15;
     case Proto_Star:
+      return 17;
     case Planet:
+      return 18;
     case Static_Star:
     case SPZDCH_Star:
     case NAS: 

@@ -84,7 +84,7 @@ If necessary this will also install some required Python packages:
 * Numpy (version >= 1.3.0)
 * h5py (version >= 1.2.0)
 * mpi4py (version >= 1.0)
-* nose (version >= 0.11)
+* pytest (version >= 5.0)
 * docutils (version >= 0.6)
 
 If you are not using pip these must be installed by hand.
@@ -120,7 +120,7 @@ python setup.py develop_build
 Running the tests
 =================
 AMUSE comes with a large set of tests, most can be run automatically.
-To run these tests start the nosetests command from the main
+To run these tests start the py.test command from the main
 amuse directory (directory this README file lives in).
 
 To run these tests do:
@@ -134,5 +134,5 @@ pip install [--user] amuse-tests
 2. Run the automatic tests
 
 ```bash
-nosetests -v amuse.tests.suite
+py.test -v amuse.tests.suite
 ```

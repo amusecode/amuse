@@ -198,7 +198,8 @@ class TestPlot(amusetest.TestCase):
     def yaxis(self):
         return pyplot.gca().get_yaxis()
 
-    def skip(self):
-        print("Matplotlib not installed. Skipping test.")
+    def skip(self, reason="Matplotlib not installed. Skipping test."):
+        amusetest.TestCase.skip(reason)
+
     def tearDown(self):
         set_printing_strategy('default')

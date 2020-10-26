@@ -196,15 +196,15 @@ class FormatTests(amusetest.TestCase):
         x.mass = [10.0, 20.0] | units.kg
         io.write_set_to_file(x, "test_unit.hdf5","hdf5", append_to_file=True, version="1.0")
         x.mass = [100.0, 200.0] | units.kg
-        io.write_set_to_file(x, "test_unit.hdf5","hdf5", version="1.0")
-        y = io.read_set_from_file("test_unit.hdf5","hdf5")
+        io.write_set_to_file(x, "test_unit.hdf5","hdf5", version="1.0", append_to_file=True)
+        y = io.read_set_from_file("test_unit.hdf5","hdf5", copy_history=False, close_file=False)
         y = y.previous_state() # weirdness for version="1.0"
         self.assertAlmostEqual(x.mass, y.mass, 8)
         self.assertAlmostEqual([10.0, 20.0] | units.kg, y.previous_state().mass, 8)
         self.assertAlmostEqual([1.0, 2.0] | units.kg, y.previous_state().previous_state().mass, 8)
         self.assertEqual(y.previous_state().previous_state().previous_state(), None)
         
-        io.write_set_to_file(x, "test_unit.hdf5","hdf5", append_to_file=False, version="1.0")
+        io.write_set_to_file(x, "test_unit.hdf5","hdf5", append_to_file=False, overwrite_file=True,version="1.0")
         y = io.read_set_from_file("test_unit.hdf5","hdf5")
         self.assertAlmostEqual(x.mass, y.mass, 8)
         self.assertEqual(y.previous_state().previous_state(), None)
@@ -212,6 +212,31 @@ class FormatTests(amusetest.TestCase):
         os.remove("test_unit.hdf5")
 
     def test6b(self):
+        print("Testing HDF5 io, with options")
+        if os.path.exists("test_unit.hdf5"):
+            os.remove("test_unit.hdf5")
+        x = datamodel.Particles(2)
+        x.mass = [1.0, 2.0] | units.kg
+        io.write_set_to_file(x, "test_unit.hdf5","hdf5", version="1.0")
+        x.mass = [10.0, 20.0] | units.kg
+        io.write_set_to_file(x, "test_unit.hdf5","hdf5", append_to_file=True, version="1.0")
+        x.mass = [100.0, 200.0] | units.kg
+        io.write_set_to_file(x, "test_unit.hdf5","hdf5", version="1.0", append_to_file=True)
+        y = io.read_set_from_file("test_unit.hdf5","hdf5", copy_history=True, )
+        y = y.previous_state() # weirdness for version="1.0"
+        self.assertAlmostEqual(x.mass, y.mass, 8)
+        self.assertAlmostEqual([10.0, 20.0] | units.kg, y.previous_state().mass, 8)
+        self.assertAlmostEqual([1.0, 2.0] | units.kg, y.previous_state().previous_state().mass, 8)
+        self.assertEqual(y.previous_state().previous_state().previous_state(), None)
+        
+        io.write_set_to_file(x, "test_unit.hdf5","hdf5", append_to_file=False, overwrite_file=True,version="1.0")
+        y = io.read_set_from_file("test_unit.hdf5","hdf5")
+        self.assertAlmostEqual(x.mass, y.mass, 8)
+        self.assertEqual(y.previous_state().previous_state(), None)
+        
+        os.remove("test_unit.hdf5")
+
+    def test6c(self):
         print("Testing HDF5 io, with options, version=2.0")
         if os.path.exists("test_unit.hdf5"):
             os.remove("test_unit.hdf5")
@@ -221,19 +246,45 @@ class FormatTests(amusetest.TestCase):
         x.mass = [10.0, 20.0] | units.kg
         io.write_set_to_file(x, "test_unit.hdf5","hdf5", append_to_file=True, version="2.0")
         x.mass = [100.0, 200.0] | units.kg
-        io.write_set_to_file(x, "test_unit.hdf5","hdf5", version="2.0")
-        y = io.read_set_from_file("test_unit.hdf5","hdf5")
+        io.write_set_to_file(x, "test_unit.hdf5","hdf5", append_to_file=True, version="2.0")
+        y = io.read_set_from_file("test_unit.hdf5","hdf5", close_file=False, copy_history=False)
         self.assertAlmostEqual(x.mass, y.mass, 8)
         self.assertAlmostEqual([10.0, 20.0] | units.kg, y.previous_state().mass, 8)
         self.assertAlmostEqual([1.0, 2.0] | units.kg, y.previous_state().previous_state().mass, 8)
         self.assertEqual(y.previous_state().previous_state().previous_state(), None)
         
-        io.write_set_to_file(x, "test_unit.hdf5","hdf5", append_to_file=False, version="2.0")
-        y = io.read_set_from_file("test_unit.hdf5","hdf5")
+        io.write_set_to_file(x, "test_unit.hdf5","hdf5", append_to_file=False, overwrite_file=True, version="2.0")
+        y = io.read_set_from_file("test_unit.hdf5","hdf5", copy_history=False)
         self.assertAlmostEqual(x.mass, y.mass, 8)
         self.assertEqual(y.previous_state(), None)
         
         os.remove("test_unit.hdf5")
+
+    def test6d(self):
+        print("Testing HDF5 io, with options, version=2.0")
+        if os.path.exists("test_unit.hdf5"):
+            os.remove("test_unit.hdf5")
+        x = datamodel.Particles(2)
+        x.mass = [1.0, 2.0] | units.kg
+        io.write_set_to_file(x, "test_unit.hdf5","hdf5", version="2.0")
+        x.mass = [10.0, 20.0] | units.kg
+        io.write_set_to_file(x, "test_unit.hdf5","hdf5", append_to_file=True, version="2.0")
+        x.mass = [100.0, 200.0] | units.kg
+        io.write_set_to_file(x, "test_unit.hdf5","hdf5", append_to_file=True, version="2.0")
+        y = io.read_set_from_file("test_unit.hdf5","hdf5", close_file=True, copy_history=True)
+        y = y.previous_state() # weirdness for version="1.0"
+        self.assertAlmostEqual(x.mass, y.mass, 8)
+        self.assertAlmostEqual([10.0, 20.0] | units.kg, y.previous_state().mass, 8)
+        self.assertAlmostEqual([1.0, 2.0] | units.kg, y.previous_state().previous_state().mass, 8)
+        self.assertEqual(y.previous_state().previous_state().previous_state(), None)
+        
+        io.write_set_to_file(x, "test_unit.hdf5","hdf5", append_to_file=False, overwrite_file=True, version="2.0")
+        y = io.read_set_from_file("test_unit.hdf5","hdf5", copy_history=False)
+        self.assertAlmostEqual(x.mass, y.mass, 8)
+        self.assertEqual(y.previous_state(), None)
+        
+        os.remove("test_unit.hdf5")
+
 
     def test7(self):
         print("Testing HDF5 io with a ParticlesSuperset")
@@ -275,7 +326,7 @@ class FormatTests(amusetest.TestCase):
         self.assertEqual(name, 'append_to_file')
         self.assertTrue(description.find('If set to True, new data is appended to HDF5 files.') >= 0)
         self.assertTrue(description.find('If set to False, the existing file is removed and overwritten.') >= 0)
-        self.assertEqual(default, True)
+        self.assertEqual(default, False)
     
     def test9(self):
         x = datamodel.Particles(2)

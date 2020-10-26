@@ -292,7 +292,7 @@ class MPIMessage(AbstractMessage):
         lengths = numpy.array( [len(s) for s in array] ,dtype='i')
         
         chars=(chr(0).join(array)+chr(0)).encode("utf-8")
-        chars = numpy.fromstring(chars, dtype='uint8')
+        chars = numpy.frombuffer(chars, dtype='uint8')
 
         if len(chars) != lengths.sum()+len(lengths):
             raise Exception("send_strings size mismatch {0} vs {1}".format( len(chars) , lengths.sum()+len(lengths) ))
@@ -918,6 +918,8 @@ class MpiChannel(AbstractMessageChannel):
         self.intercomm = None
         self._is_inuse = False
         self._communicated_splitted_message = False
+
+        logger.debug("MPI channel created with info items: %s", str(self.info.items()))
     
 
     @classmethod
@@ -1041,6 +1043,10 @@ class MpiChannel(AbstractMessageChannel):
         return MPI.COMM_WORLD.rank == 0
         
     def start(self):
+
+        logger.debug("starting mpi worker process")
+
+        logger.debug("mpi_enabled: %s", str(self.initialize_mpi))
         
         if not self.debugger_method is None:
             command, arguments = self.debugger_method(self.full_name_of_the_worker, self, interpreter_executable=self.interpreter_executable)
@@ -1056,7 +1062,11 @@ class MpiChannel(AbstractMessageChannel):
             else:
                 command, arguments = self.REDIRECT(self.full_name_of_the_worker, self.redirect_stdout_file, self.redirect_stderr_file, command=self.python_exe_for_redirection, interpreter_executable=self.interpreter_executable)
 
+        logger.debug("spawning %d mpi processes with command `%s`, arguments `%s` and environment '%s'", self.number_of_workers, command, arguments, os.environ)
+
         self.intercomm = MPI.COMM_SELF.Spawn(command, arguments, self.number_of_workers, info=self.info)
+
+        logger.debug("worker spawn done")
             
         
         

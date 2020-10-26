@@ -37,9 +37,8 @@ class HDF5FileFormatProcessor(base.FileFormatProcessor):
     
     provided_formats = ['hdf5', 'amuse']
     
-    def __init__(self, filename = None, set = None, format = None, append_to_file=True):
+    def __init__(self, filename = None, set = None, format = None):
         base.FileFormatProcessor.__init__(self, filename, set, format)
-        self.append_to_file = append_to_file
     
     def load(self):
         processor, result = self.load_base()
@@ -49,44 +48,21 @@ class HDF5FileFormatProcessor(base.FileFormatProcessor):
             return result
             
     def load_base(self):
-        if self.version == '1.0':
-            processor = store_v1.StoreHDF(
+        processor = store_v2.StoreHDF(
                 self.filename, 
-                open_for_writing = self.allow_writing, 
-                append_to_file = self.append_to_file,
-                copy_history = self.copy_history
-            )
-            if not processor.is_correct_version():
-                
-                processor.close()
-                processor = store_v2.StoreHDF(
+                open_for_writing = False, 
+                append_to_file = self.append_to_file or self.allow_writing, 
+                copy_history = self.copy_history,
+                overwrite_file = self.overwrite_file )
+        if not processor.is_correct_version():                
+            processor.close()
+            processor = store_v1.StoreHDF(
                     self.filename, 
-                    open_for_writing = self.allow_writing, 
-                    append_to_file = self.append_to_file, 
+                    open_for_writing = False, 
+                    append_to_file = self.append_to_file or self.allow_writing, 
                     copy_history = self.copy_history,
-                    return_working_copy = self.return_working_copy
-                )
-        else:
-                processor = store_v2.StoreHDF(
-                    self.filename, 
-                    open_for_writing = self.allow_writing, 
-                    append_to_file = self.append_to_file,
-                    copy_history = self.copy_history,
-                    return_working_copy = self.return_working_copy
-                )
+                    overwrite_file = self.overwrite_file )
 
-                if not processor.is_correct_version():
-                
-                    processor.close()
-                    processor = store_v1.StoreHDF(
-                        self.filename, 
-                        open_for_writing = self.allow_writing, 
-                        append_to_file = self.append_to_file, 
-                        copy_history = self.copy_history,
-                    )
-
-
-     
         if len(self.names) > 0:
             result = processor.load_sets(self.names)
             if self.close_file:
@@ -109,8 +85,9 @@ class HDF5FileFormatProcessor(base.FileFormatProcessor):
         if self.version == '1.0':
             processor = store_v1.StoreHDF(
                 self.filename, 
-                self.append_to_file, 
-                open_for_writing = True
+                append_to_file = self.append_to_file, 
+                open_for_writing = True,
+                overwrite_file = self.overwrite_file
             )
             
             if not processor.is_correct_version():
@@ -118,8 +95,9 @@ class HDF5FileFormatProcessor(base.FileFormatProcessor):
         else:
             processor = store_v2.StoreHDF(
                 self.filename, 
-                self.append_to_file, 
-                open_for_writing = True
+                append_to_file = self.append_to_file, 
+                open_for_writing = True,
+                overwrite_file = self.overwrite_file            
             )
         
             if not processor.is_correct_version():
@@ -136,21 +114,19 @@ class HDF5FileFormatProcessor(base.FileFormatProcessor):
     def append_to_file(self):
         """If set to True, new data is appended to HDF5 files. 
         If set to False, the existing file is removed and overwritten.
-        Only relevant for write set to file. (default: True)"""
-        return True
+        Only relevant for write set to file. (default: False)"""
+        return False
     
     @base.format_option
     def close_file(self):
         """If set to True, the file is closed after reading, unless you
-        set copy_history to True no previous versions will be returned"""
-        return False
+        set copy_history to True no previous savepoints will be returned"""
+        return True
         
     @base.format_option
     def copy_history(self):
-        """If set to True, the savepoint history is read from file 
-        into memory. By default the history will be kept on file and
-        the file will be kept open"""
-        return False
+        """If set to True, the savepoint history is read from file into memory."""
+        return True
         
     @base.format_option
     def names(self):
@@ -165,17 +141,8 @@ class HDF5FileFormatProcessor(base.FileFormatProcessor):
     @base.format_option
     def version(self):
         """AMUSE storage version to use, needs to be >= '2.0' if you want
-        to store links between particles and grids (default: '1.0')"""
-        return '1.0'
-
-    @base.format_option
-    def return_working_copy(self):
-        """If set to True, return a working copy in memory you can manipulate,
-        savepoint etc. Only available for version 2.0 in version 1.0
-        a working copy (i.e. a particles set or grid in memory)
-        is always returned. (default: True)"""
-        return True
-    
+        to store links between particles and grids (default: '2.0')"""
+        return '2.0'
 
     @base.format_option
     def return_context(self):
@@ -194,7 +161,12 @@ class HDF5FileFormatProcessor(base.FileFormatProcessor):
         
     @base.format_option
     def allow_writing(self):
-        """If set to True, data can be written to the file, even if read_set_from_file is used"""
+        """If set to True, data can be written to the file, equivalent of append_to_file 
+        even if read_set_from_file is used"""
         return False
 
-
+    @base.format_option
+    def overwrite_file(self):
+        """If set to True, overwrite file if it exists, otherwise writing an existing
+        file generates an exception"""
+        return False

@@ -14,7 +14,7 @@ AMUSE is based on python, so if you’re new to Python, you’ll find the offici
 
 Secondly, by writing (Python) scripts. Suppose you wrote the following script myscript.py, and saved it in the current working directory:
 
-.. code-block:: sh
+.. code-block:: python
 
     from amuse.units.units import *
     from amuse.units import constants
@@ -31,7 +31,7 @@ Secondly, by writing (Python) scripts. Suppose you wrote the following script my
 
 Then this script can be executed from the AMUSE interactive command line:
 
-.. code-block:: sh
+.. code-block:: python
 
     >>> import myscript
     >>> help(myscript) # Tells you what myscript can do, ...

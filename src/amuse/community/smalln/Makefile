@@ -43,31 +43,12 @@ interface.h: interface.py
 smallN_worker: worker_code.cc interface.h $(CODELIB) $(OBJS)
 	$(MPICXX) $(CXXFLAGS) $(LDFLAGS) worker_code.cc $(OBJS) $(CODELIB) -o $@ $(LDFLAGS) $(LIBS)
 
-
-smalln_worker_cython: smalln_cython.so
-	$(CODE_GENERATOR) --type=cython -m script -x amuse.community.smalln.interface SmallNInterface -o $@ --cython-import smalln_cython
-	
-smalln_cython.so: smalln_cython.o interface.o interface.h  $(CODELIB) $(A_OBJS)
-	$(MPICXX) -shared $(CFLAGS) $(PYTHONDEV_LDFLAGS) $(AM_CFLAGS) $(SC_FLAGS) $(LDFLAGS) smalln_cython.o interface.o $(A_OBJS) $(CODELIB) -o $@ $(SC_CLIBS) $(AM_LIBS) 
-
-smalln_cython.o: smalln_cython.c interface.h
-	$(MPICC) $(CFLAGS) $(SC_FLAGS) $(AM_CFLAGS) $(PYTHONDEV_CFLAGS) -c -o $@ $< 
-
-smalln_cython.c: smalln_cython.pyx
-	$(CYTHON) $< -o $@
-	
-smalln_cython.pyx: interface.py
-	$(CODE_GENERATOR) --type=cython -m mpi interface.py SmallNInterface -o $@
-
-	
-
 %.o: %.cc
 	$(MPICXX) $(CXXFLAGS) -c -o $@ $< 
 
 clean:
 	$(RM) -r -f *.so *.dSYM *.o *.pyc worker_code.cc interface.h 
 	$(RM) -f *~ smallN_worker worker_code.cc
-	$(RM) -f smalln_worker_cython smalln_cython.so smalln_cython.o smalln_cython.c smalln_cython.pyx
 	make -C src clean
 
 distclean: clean

@@ -1,110 +1,91 @@
 codecov: true
+compiler: gcc
 env:
   global:
     - OMPI_MCA_rmaps_base_oversubscribe=true
-    - MINICONDA_VERSION="latest"
-    - MINICONDA_PYTHON_MAJOR=3
-    - MINICONDA_LINUX="Linux-x86_64"
-    - MINICONDA_OSX="MacOSX-x86_64"
 
 matrix:
   allow_failures:
-  - name: "linux openmpi"
+    - name: "openmpi py37 linux"
+    - name: "openmpi py37 macos"
   include:
-  - name: "linux MPICH"
-    language: python
-    python:
-    - '3.6'
-    compiler: gcc
-    before_install:
-    - pip install numpy scipy matplotlib nose docutils mpi4py h5py Cython codecov
-    install:
-    - ./configure
-    - make framework
-    addons:
-      apt:
-        packages:
-        - build-essential
-        - python-dev
-        - gfortran
-        - libgsl0-dev
-        - cmake
-        - libfftw3-3
-        - libfftw3-dev
-        - libmpfr4
-        - libmpfr-dev
-        - libhdf5-serial-dev
-        - hdf5-tools
-        - libmpich-dev
-        - mpich  
-  - name: "linux openmpi"
-    language: python
-    python:
-    - '3.6'
-    compiler: gcc
-    before_install:
-    - pip install numpy scipy matplotlib nose docutils mpi4py h5py Cython codecov
-    install:
-    - ./configure
-    - make framework
-    addons:
-      apt:
-        packages:
-        - build-essential
-        - python-dev
-        - gfortran
-        - libgsl0-dev
-        - cmake
-        - libfftw3-3
-        - libfftw3-dev
-        - libmpfr4
-        - libmpfr-dev
-        - libhdf5-serial-dev
-        - hdf5-tools
-        - libopenmpi-dev
-        - openmpi-bin
-  - name: "osx openmpi"
-    language: generic
-    os: osx
-    before_install:
-    - export MINICONDA_OS=$MINICONDA_OSX
-    - wget "http://repo.continuum.io/miniconda/Miniconda$MINICONDA_PYTHON_MAJOR-$MINICONDA_VERSION-$MINICONDA_OS.sh" -O miniconda.sh;
-    - bash miniconda.sh -b -p $HOME/miniconda
-    - export CONDA_PREFIX=$HOME/miniconda
-    - export PATH="$CONDA_PREFIX/bin:$PATH"
-    - hash -r
-    - conda update -yq conda
-    # gather the conda packages to install in one go, saving time
-    - export CONDA_OPTIONS="-c conda-forge -c anaconda"  # N.B.: order matters, first is search first!
-    - export CONDA_PACKAGES="gfortran_osx-64"  # configure wants this, even just for the framework target
-    - export CONDA_PACKAGES="${CONDA_PACKAGES} mpi4py nose numpy docutils h5py"  # additional basic dependencies
-    - export CONDA_PACKAGES="${CONDA_PACKAGES} openmpi cython"  # for the compile_tests
-      #- export CONDA_PACKAGES="${CONDA_PACKAGES} -c conda-forge fftw mpfr gsl gmp pkg-config"  # for a full build including community codes
-    - conda install -y ${CONDA_OPTIONS} ${CONDA_PACKAGES}
-    install:
-    - env CXX=clang++ CC=clang LDFLAGS="-Wl,-rpath,$CONDA_PREFIX/lib" ./configure --with-hdf5=$CONDA_PREFIX --with-gmp=$CONDA_PREFIX --with-mpfr=$CONDA_PREFIX --with-fftw=$CONDA_PREFIX --with-gsl-prefix=$CONDA_PREFIX
-    - make framework
+    - name: "openmpi py37 linux"
+      os: linux
+      dist: bionic
+      language: python
+      python: 3.7
+      env: TOXENV=py37
+      addons:
+        apt:
+          packages:
+            - build-essential
+            - python3-dev
+            - gfortran
+            - libgsl0-dev
+            - cmake
+            - libfftw3-3
+            - libfftw3-dev
+            - libmpfr6
+            - libmpfr-dev
+            - libhdf5-serial-dev
+            - hdf5-tools
+            - libopenmpi-dev
+            - openmpi-bin
+    - name: "mpich py37 linux"
+      os: linux
+      dist: bionic
+      language: python
+      python: 3.7
+      env: TOXENV=py37
+      addons:
+        apt:
+          packages:
+            - build-essential
+            - python3-dev
+            - gfortran
+            - libgsl0-dev
+            - cmake
+            - libfftw3-3
+            - libfftw3-dev
+            - libmpfr6
+            - libmpfr-dev
+            - libhdf5-serial-dev
+            - hdf5-tools
+            - libmpich-dev
+            - mpich
+    - name: "openmpi py37 macos"
+      os: osx
+      osx_image: xcode10.3
+      env:
+        - TOXENV=py37
+        - MINICONDA_OSX="MacOSX-x86_64"
+        - MINICONDA_PYTHON_MAJOR=3
+        - MINICONDA_VERSION="py37_4.8.2"
+        - CXX=clang++
+        - CC=clang
+        - LDFLAGS="-Wl,-rpath,$CONDA_PREFIX/lib"
+        - CONDA_OPTIONS="-c conda-forge -c anaconda"
+        - CONDA_PACKAGES="gfortran_osx-64"
+        - CONDA_PACKAGES="${CONDA_PACKAGES} openmpi"
+      before_install:
+        - export MINICONDA_OS=$MINICONDA_OSX
+        - wget "http://repo.continuum.io/miniconda/Miniconda$MINICONDA_PYTHON_MAJOR-$MINICONDA_VERSION-$MINICONDA_OS.sh" -O miniconda.sh;
+        - bash miniconda.sh -b -p $HOME/miniconda;
+        - export CONDA_PREFIX=$HOME/miniconda;
+        - export PATH="$CONDA_PREFIX/bin:$PATH";
+        - hash -r;
+        - conda update -yq conda;
+        - conda install -y ${CONDA_OPTIONS} ${CONDA_PACKAGES};
+
+install:
+  - pip install numpy scipy matplotlib docutils mpi4py pytest
+  - pip install tox
 
 virtualenv:
   system_site_packages: false
 
 script:
-- export PYTHONPATH=${PWD}/src:${PWD}
-- |
-  if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
-    mpiexec -n 1 nosetests --with-coverage amuse.test.suite.compile_tests.test_python_implementation:TestInterface.test10 -sv || exit $?
-    mpiexec -n 1 nosetests --with-coverage test/reports/test_speed.py -sv || exit $?
-    mpiexec -n 1 nosetests --with-coverage -e "test_plot" test/core_tests || exit $?
-    mpiexec -n 1 nosetests --with-coverage -e "test_cython_implementation" test/compile_tests -sv || exit $?
-  elif [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
-    nosetests --with-coverage test/reports/test_speed.py -sv
-    nosetests --with-coverage -e "test_plot" test/core_tests
-    nosetests --with-coverage test/compile_tests/test_c_implementation.py -sv
-    #nosetests --with-coverage test/compile_tests/test_c_sockets_implementation.py -sv
-    nosetests --with-coverage test/compile_tests/test_fortran_implementation.py -sv
-    #nosetests --with-coverage test/compile_tests/test_fortran_sockets_implementation.py -sv
-    nosetests --with-coverage test/compile_tests/test_python_implementation.py -sv
-  fi
-  
+  - tox
+
 after_success:
   - codecov

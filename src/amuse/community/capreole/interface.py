@@ -22,7 +22,7 @@ class CapreoleInterface(
     processors, but also on massively parallel systems (e.g. 512 processors on a BlueGene/L).
     
     The reference for Capreole (original version):
-        .. [#] Mellema, Eulderink & Icke 1991, A&A 252, 718
+        .. [#] Mellema, Eulderink & Icke 1991, A&A 252, 718 [1991A&A...252..718M]
     """
     
     

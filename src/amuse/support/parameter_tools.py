@@ -200,6 +200,9 @@ class CodeWithNamelistParameters(_CodeWithFileParameters):
     def output_format_value(self,value):
         return value
 
+    def interpret_value(self,value, dtype=None):
+        return value   # dtype, arrays should be handled by f90nml 
+
 
 class CodeWithIniFileParameters(_CodeWithFileParameters):
     """
@@ -256,7 +259,7 @@ class CodeWithIniFileParameters(_CodeWithFileParameters):
         return rawvals
 
     def _convert(self, value, dtype):
-        if dtype is "bool":
+        if dtype=="bool":
             if value.lower() in ["0", "false", "off","no"]:
                 return False
             else:

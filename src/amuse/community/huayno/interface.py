@@ -15,11 +15,10 @@ class HuaynoInterface(CodeInterface,
     AMUSE environment. It can make use of GPUs - for this an OpenCL
     version can be compiled.
 
-    .. [#] Pelupessy, Federico I.; J\"anes, J\"urgen; Portegies Zwart, Simon, New Astronomy, Volume 17, Issue 8, p. 711-719
-    .. [#] J\"anes, J\"urgen; Pelupessy, Federico I.; Portegies Zwart, Simon, A&A, Volume 570, October 2014 (for CC, OK methods)
+    .. [#] Pelupessy, Federico I.; J\"anes, J\"urgen; Portegies Zwart, Simon, New Astronomy, Volume 17, Issue 8, p. 711-719 [2012NewA...17..711P]
+    .. [#] J\"anes, J\"urgen; Pelupessy, Federico I.; Portegies Zwart, Simon, A&A, Volume 570, October 2014 (for CC, OK methods) [2014A&A...570A..20J]
     """
     include_headers = ['worker_code.h']
-    __so_module__ = 'huayno_cython'
 
     MODE_OPENCL='opencl'
     MODE_OPENMP='openmp'
