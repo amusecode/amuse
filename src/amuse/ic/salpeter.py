@@ -1,5 +1,5 @@
 """
-Salpeter initial mass function (IMF)
+Salpeter (1955) initial mass function (IMF)
 
 This module contains functions used to generate realisations of the 
 Salpeter IMF.

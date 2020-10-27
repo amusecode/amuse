@@ -1,5 +1,5 @@
 """
-King model generator
+King (1966) model generator
 
 This module contains a function used to create King models.
 """

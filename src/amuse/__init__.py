@@ -16,9 +16,9 @@ community - a variety of existing codes of different physical domains, each with
             a uniform interface to enable coupling
 
 Help is available for each of these packages, e.g.:
-> amuse.sh
->>> import amuse.ic
->>> help(amuse.ic) # doctest: +ELLIPSIS
+> ipython
+In [1]: import amuse.ic
+In [2]: help(amuse.ic) # doctest: +ELLIPSIS
 Help on package amuse.ic in amuse:
 ...
 
