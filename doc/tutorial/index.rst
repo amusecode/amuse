@@ -13,7 +13,6 @@ Tutorials
    fortran_code
    gravitational_dynamics_code
    legacy_code
-   blender
    plot
    grid_boundary
    

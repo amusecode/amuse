@@ -78,7 +78,7 @@ The suggested procedure for creating a new interface is as follows:
 Before we start
 ---------------
 
-This tutorial assumes you have a working amuse environment. Please 
+This tutorial assumes you have a working amuse development build. Please 
 ensure that amuse is setup correctly by running 'nosetests' in the 
 amuse directory.
 
@@ -1000,7 +1000,7 @@ handle we will continue by defining a **set**.
 .. note::
 
     We skip defining parameters and properties, we will come back to 
-    this later in this tutorial.
+    this in the next tutorial.
 
 Defining a set
 --------------
@@ -1090,7 +1090,7 @@ First make a file with the following contents, let's call this file
 We can run this file with python::
 
 .. code-block:: bash
-
+    
     $AMUSE_DIR/amuse.sh plummer2.py
     
 It will create an **output.txt** file and we can show this file

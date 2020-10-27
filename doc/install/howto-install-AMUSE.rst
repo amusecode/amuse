@@ -1,162 +1,123 @@
-==================================
-Installation of the AMUSE software
-==================================
+Installing the prerequisites
+============================
 
-Before installing AMUSE the prerequisite software must be downloaded and
-installed, see :ref:`prerequisite-label`.
+For a full AMUSE installation, you will need to install some further dependencies that can be installed via your package manager - e.g. apt or yum on Linux; macports or homebrew on macOS.
 
-AMUSE can be installed from online packages using the python ``pip`` utility
-or from a checkout of the repository. For the latter option, you can either
-install it in a pip managed environment, or a self managed python environment.
+Ubuntu
+******
 
-Package install
-===============
+You can choose between openmpi and mpich as desired, both work with AMUSE. Please do not install both!
+In the examples below we choose GCC-7 as the compiler, but more recent versions of GCC will also work.
 
-In this case, install the non-python prerequisites first then:
-
-.. code-block:: sh
-    
-    > pip install amuse
-
-this will attempt to fetch and install the amuse-framework package,
-and the code packages (amuse-<code>) and python prerequisites. If one of the code fails to build,
-you can install packages by hand.
-
-Pip managed install from repository checkout
-============================================
-
-If you have a python environment where you can install packages with pip (it is 
-recommended to compartementalize environments of different projects with virtualenv),
-again install non-python prerequisites and checkout the AMUSE repository:
+* For openmpi:
 
 .. code-block:: sh
 
-    > git clone https://github.com/amusecode/amuse
-    > cd amuse
-    > pip install -e .
-    > python setup.py develop_build 
+    sudo apt-get install build-essential gfortran python3-dev \
+      libopenmpi-dev openmpi-bin \
+      libgsl-dev cmake libfftw3-3 libfftw3-dev \
+      libgmp3-dev libmpfr6 libmpfr-dev \
+      libhdf5-serial-dev hdf5-tools \
+      git
 
-In this case, a link to the repository is created and codes are compiled in place. This is 
-the recommended install for development.
-
-Self-managed environment
-========================
-
-Lastly, you can install without pip. Again all code is build 
-in the AMUSE source directories. This setup also allows you to easily edit
-the code and run it, without the need for an extra installation step. There are bootstrap 
-scripts in ``doc/install/`` to download and build all prerequisites if c++/fortran compilers are available.
-
-Environment variables
----------------------
-
-you need to tell python where to find the amuse package and the command line interpreter where to find
-the ``amusifier`` executable.
+* For mpich:
 
 .. code-block:: sh
 
-    > export PYTHONPATH=${PYTHONPATH}:/path/to/amuse/src
-    > export PATH=${PATH}:/path/to/amuse/bin
- 
-where you replace ``/path/to/amuse`` with the correct path to AMUSE.
- 
-Configuring the code
---------------------
-The code is configured using the ``configure`` command. 
-Before building the code, run 'configure' in the AMUSE
-root directory.
+    sudo apt-get install build-essential gfortran python3-dev \
+      mpich libmpich-dev \
+      libgsl-dev cmake libfftw3-3 libfftw3-dev \
+      libgmp3-dev libmpfr6 libmpfr-dev \
+      libhdf5-serial-dev hdf5-tools \
+      git
 
-.. code-block:: sh
-    
-    > ./configure
-    
-The 'configure' script will check for all prerequisite software
-and report if any are missing.
 
-Building the code
------------------
+macOS
+*****
 
-The code is build using a  ``Makefile``. To build the code run 'make'
-in the AMUSE root directory.
 
-.. code-block:: sh
-    
-    > make clean
-    > make
-    ...
-    community codes build
-    ==================
-    * sse
-    * hermite0
-    * bhtree
-    * phiGRAPE
-    running generate_main
+On macOS, you will first need to install Xcode. You can do so via the app store.
 
-If everything goes well all community codes will be build (e.g. sse, hermite0, 
-bhtree, phiGRAPE and many others).
+In this section we assume a default macOS installation (up to Catalina) with MacPorts, but other methods (such as Homebrew) will also work.
 
-In order to use codes not stored in the AMUSE repository (e.g. MESA, ATHENA, Rebound and some others), the codes must be downloaded additionally.
-This is done automatically after setting the environment variable DOWNLOAD_CODES to 1.
-Alternatively, instead of a plain 'make' like in the example above you could do:
+You can choose between openmpi and mpich as desired, both work with AMUSE. 
+Please make sure to set the compilers installed here as default, as it will greatly simplify things later on.
+In the examples below we choose GCC 9 as the compiler, but other versions of GCC should also work.
+
+* For openmpi:
 
 .. code-block:: sh
 
-    > make DOWNLOAD_CODES=1
+    sudo port install gcc9 openmpi-gcc9 hdf5 gsl cmake gmp mpfr fftw-3 +gcc9
+    sudo port install python38
+    sudo port select --set mpi openmpi-gcc9-fortran
+    sudo port select --set gcc mp-gcc9
+    sudo port select --set python3 python38
 
-or:
-
-.. code-block:: sh
-
-    > make mesa.code DOWNLOAD_CODES=1
-    > make athena.code DOWNLOAD_CODES=1
-
-Running the code
-----------------
-
-You can quickly test your installation by importing some AMUSE module and running a code
+* For mpich:
 
 .. code-block:: sh
 
-    > python
-    Python 3.7.3 (default, Dec  2 2019, 17:46:02) 
-    [GCC 9.2.1 20190903 [gcc-9-branch revision 275330]] on linux
-    Type "help", "copyright", "credits" or "license" for more information.
-    >>> from amuse.units import units
-    >>> units.m
-    unit<m>
-    >>> from amuse.community.bhtree.interface  import Bhtree
-    >>> b=Bhtree()
-    >>> print(b)
-    <amuse.community.bhtree.interface.BHTree object at 0x7f20f02e6dd8>
+    sudo port install gcc9 mpich-gcc9 hdf5 gsl cmake gmp mpfr fftw-3 +gcc9
+    sudo port install python38
+    sudo port select --set mpi mpich-gcc9
+    sudo port select --set gcc mp-gcc9
+    sudo port select --set python3 python38
 
 
-Testing the build
------------------
 
-The tests are run using the nosetests program.
+Installing AMUSE
+================
+
+
+After installing the prerequisites, you can install AMUSE.
+Optionally, first create a virtual environment to install AMUSE and other desired Python packages in.
+This ensures that you don’t need root privileges and that your AMUSE environment is isolated from other system-installed packages.
+
+To create the virtual environment, do (from a desired directory):
 
 .. code-block:: sh
-    
-    > nosetests
-    ............................................
-    Ran 91 tests in 12.013s
 
-    OK
+    python3 -m venv Amuse-env
 
+When the environment is created, you can activate it with:
 
-.. warning::
+.. code-block:: sh
 
-    If you have an MPICH2 installation but no mpd program your MPICH2
-    installation has been configured for the Hydra process manager. 
-    To run amuse scripts with the hydra process manager you must start
-    every command with ``mpiexec``:
-    
-    .. code-block:: sh
-        
-        > mpiexec nosetests -v
-    
-    
-    If you do not run under mpiexec you get an error with a usage statement.    
+    . Amuse-env/bin/activate
 
-    
+You may want to make an alias for this, e.g.:
+
+.. code-block:: sh
+
+    alias amuse-env='. ~/virtualenvironments/Amuse-env/bin/activate'
+
+From this point, your prompt will have ‘Amuse-env’ in front of it, so you will always know when you’re in this virtual environment.
+
+Now you can use pip to install the prerequisite python modules for AMUSE:
+
+.. code-block:: sh
+
+    pip install numpy nose docutils mpi4py h5py wheel
+
+Probably, you’ll want to install these Python modules too:
+
+.. code-block:: sh
+
+    pip install scipy astropy jupyter pandas seaborn
+
+Now we can finally install AMUSE itself.
+This is done easiest via pip:
+
+.. code-block:: sh
+
+    pip install amuse-framework
+    pip install amuse
+
+If you only require a subset of AMUSE, you can install any of the individual packages as such:
+
+.. code-block:: sh
+
+    pip install amuse-framework
+    pip install amuse-$(community_code_name)
 
