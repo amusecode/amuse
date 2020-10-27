@@ -7,9 +7,9 @@ endif
 
 MPICXX ?= mpicxx
 
-CFLAGS   += -Isrc/include -Isrc/include/star $(SC_FLAGS)
+CFLAGS   += -Isrc/SeBa/include -Isrc/SeBa/include/star $(SC_FLAGS)
 CXXFLAGS += $(CFLAGS)
-LDFLAGS  += -Lsrc/node  -Lsrc/std 
+LDFLAGS  += -Lsrc/SeBa/node  -Lsrc/SeBa/std 
 LIBS = -lnode -lstd -lm
 # so that seba build process works
 unexport CFLAGS CXXFLAGS LDFLAGS
@@ -20,23 +20,32 @@ AM_LIBS = -L$(AMUSE_DIR)/lib/amuse_mpi -lamuse_mpi
 AM_CFLAGS = -I$(AMUSE_DIR)/lib/amuse_mpi
 
 
-CODELIB =  src/sstar/libsstar.a src/dstar/libdstar.a 
+CODELIB =  src/SeBa/sstar/libsstar.a src/SeBa/dstar/libdstar.a 
 
 CODE_GENERATOR ?= $(AMUSE_DIR)/build.py
 
+DOWNLOAD_FROM_WEB = $(PYTHON) ./download.py
+
 all: seba_worker
+
+download:
+	$(RM) -Rf .pc
+	$(RM) -Rf src
+	mkdir src
+	$(DOWNLOAD_FROM_WEB)
 
 clean:
 	$(RM) -f *.so *.o *.pyc worker_code.cc worker_code.h
 	$(RM) *~ worker_code seba_worker
-	@-make -C src clean
+	$(RM) -r *.dSYM
+	@-make -C src/SeBa clean
 
 distclean:
 	$(RM) -f *.so *.o *.pyc worker_code.cc worker_code.h
 	$(RM) *~ worker_code
 
-$(CODELIB): src
-	cd src; make -C. CXX="$(CXX) $(CXXFLAGS)"
+$(CODELIB): download src/SeBa
+	cd src/SeBa; make -C. CXX="$(CXX) $(CXXFLAGS)"
 
 worker_code.cc: interface.py
 	CFLAGS="$(CFLAGS)" $(CODE_GENERATOR) --type=c interface.py SeBaInterface -o $@
