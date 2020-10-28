@@ -872,10 +872,12 @@ class named_unit(unit):
     >>> (20.0 * (60.0 * si.s)).as_quantity_in(minute)
     quantity<20.0 min>
     """
-    def __init__(self, name, symbol, unit):
+    def __init__(self, name, symbol, local_unit):
         self.name = name
         self.symbol = symbol
-        self.local_unit = unit
+        if not isinstance(local_unit, unit):
+            local_unit = local_unit.as_unit()
+        self.local_unit = local_unit
 
     def __str__(self):
         return self.symbol
