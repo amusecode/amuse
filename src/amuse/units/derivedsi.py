@@ -19,5 +19,5 @@ Wb = named('weber','Wb', V*s)
 weber = Wb
 
 # handy definitions
-one = 1 | none
+one = 1 * none
 km = k(m)
