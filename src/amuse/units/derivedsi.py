@@ -1,7 +1,7 @@
 from amuse.units.si import *
 
-Hz = named('hertz', 'Hz', 1/s)
-MHz = named('megahertz', 'MHz', 1e6*Hz)
+Hz = named('hertz', 'Hz', (1/s).as_unit())
+MHz = named('megahertz', 'MHz', (1e6*Hz).as_unit())
 rad = named('radian','rad',m/m)
 sr = named('steradian','sr',m**2/m**2)
 N = named('newton', 'N', kg * m /s**2)
