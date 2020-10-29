@@ -83,12 +83,9 @@ class unit(object):
 #            return factor_unit(1.0 / other, self)
 
     def __rmul__(self, other):
-        if other == 1:
-            return self
-        else:
-            if isinstance(other, unit):
-                return factor_unit(other, self)
-            return self.new_quantity(other)
+        if isinstance(other, unit):
+            return factor_unit(other, self)
+        return self.new_quantity(other)
 
     def __ror__(self, value):
         """Create a new Quantity object.
