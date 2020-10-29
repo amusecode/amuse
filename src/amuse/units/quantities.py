@@ -10,7 +10,7 @@ from amuse.support.core import late
 from amuse.support.core import compare_version_strings
 from amuse.units import core
 from amuse.units.si import none
-from amuse.units.core import zero_unit
+from amuse.units.core import zero_unit, factor_unit
 
 
 """
@@ -21,30 +21,31 @@ class Quantity(object):
     specific unit. Quantity is an abstract base class
     for VectorQuantity and ScalarQuantity.
 
-    Quantities should be constructed using *or-operator* ("|"),
+    Quantities should be constructed using *mul-operator* ("*"),
     *new_quantity* or *unit.new_quantity*.
+    Constructing quantities using the *or-operator* ("|") is deprecated.
 
     Quantities emulate numeric types.
 
     Examples
 
     >>> from amuse.units import units
-    >>> 100 | units.m
+    >>> 100 * units.m
     quantity<100 m>
-    >>> (100 | units.m) + (1 | units.km)
+    >>> (100 * units.m) + (1 * units.km)
     quantity<1100.0 m>
 
     Quantities can be tested
 
     >>> from amuse.units import units
-    >>> x = 100 | units.m
+    >>> x = 100 * units.m
     >>> x.is_quantity()
     True
     >>> x.is_scalar()
     True
     >>> x.is_vector()
     False
-    >>> v = [100, 200, 300] | units.g
+    >>> v = [100, 200, 300] * units.g
     >>> v.is_quantity()
     True
     >>> v.is_scalar()
@@ -55,7 +56,7 @@ class Quantity(object):
     Quantities can be converted to numbers
 
     >>> from amuse.units import units
-    >>> x = 1000.0 | units.m
+    >>> x = 1000.0 * units.m
     >>> x.value_in(units.m)
     1000.0
     >>> x.value_in(units.km)
@@ -167,10 +168,10 @@ class Quantity(object):
         """Calculate the square root of each component
 
         >>> from amuse.units import units
-        >>> s1 = 144.0 | units.m**2
+        >>> s1 = 144.0 * units.m**2
         >>> s1.sqrt()
         quantity<12.0 m>
-        >>> v1 = [16.0, 25.0, 36.0] | units.kg
+        >>> v1 = [16.0, 25.0, 36.0] * units.kg
         >>> v1.sqrt()
         quantity<[4.0, 5.0, 6.0] kg**0.5>
         """
@@ -217,7 +218,7 @@ class Quantity(object):
         :returns: number in the given unit
 
         >>> from amuse.units import units
-        >>> x = 10 | units.km
+        >>> x = 10 * units.km
         >>> x.value_in(units.m)
         10000.0
 
@@ -230,7 +231,7 @@ class Quantity(object):
         Return the absolute value of this quantity
 
         >>> from amuse.units import units
-        >>> x = -10 | units.km
+        >>> x = -10 * units.km
         >>> print abs(x)
         10 km
         """
@@ -241,7 +242,7 @@ class Quantity(object):
         Unary minus.
 
         >>> from amuse.units import units
-        >>> x = -10 | units.km
+        >>> x = -10 * units.km
         >>> print -x
         10 km
         """
@@ -308,11 +309,6 @@ class ScalarQuantity(Quantity):
     def copy(self):
         return new_quantity(self.number, self.unit)
 
-    def to_unit(self):
-        in_base=self.in_base()
-        return in_base.number * in_base.unit
-
-
     def __getstate__(self):
         return (self.unit, self.number)
 
@@ -344,7 +340,11 @@ class ScalarQuantity(Quantity):
         return self
 
     def as_unit(self):
-        return self.number * self.unit
+        return factor_unit(self.number, self.unit)
+
+    def to_unit(self):
+        in_base=self.in_base()
+        return in_base.number * in_base.unit
 
 class _flatiter_wrapper(object):
     def __init__(self, quantity):
@@ -389,8 +389,8 @@ class VectorQuantity(Quantity):
     quantity.
 
     >>> from amuse.units import units
-    >>> v1 = [0.0, 1.0, 2.0] | units.kg
-    >>> v2 = [2.0, 4.0, 6.0] | units.kg
+    >>> v1 = [0.0, 1.0, 2.0] * units.kg
+    >>> v2 = [2.0, 4.0, 6.0] * units.kg
     >>> v1 + v2
     quantity<[2.0, 5.0, 8.0] kg>
     >>> len(v1)
@@ -481,7 +481,7 @@ class VectorQuantity(Quantity):
         """Calculate the sum of the vector components
 
         >>> from amuse.units import units
-        >>> v1 = [0.0, 1.0, 2.0] | units.kg
+        >>> v1 = [0.0, 1.0, 2.0] * units.kg
         >>> v1.sum()
         quantity<3.0 kg>
         """
@@ -496,10 +496,10 @@ class VectorQuantity(Quantity):
         """Calculate the product of the vector components
 
         >>> from amuse.units import units
-        >>> v1 = [1.0, 2.0, 3.0] | units.m
+        >>> v1 = [1.0, 2.0, 3.0] * units.m
         >>> v1.prod()
         quantity<6.0 m**3>
-        >>> v1 = [[2.0, 3.0], [2.0, 4.0], [5.0,3.0] ] | units.m
+        >>> v1 = [[2.0, 3.0], [2.0, 4.0], [5.0,3.0] ] * units.m
         >>> v1.prod()
         quantity<720.0 m**6>
         >>> v1.prod(0)
@@ -507,7 +507,7 @@ class VectorQuantity(Quantity):
         >>> v1.prod(1)
         quantity<[6.0, 8.0, 15.0] m**2>
 
-        >>> v1 = [[[2.0, 3.0], [2.0, 4.0]],[[5.0, 2.0], [3.0, 4.0]]] | units.m
+        >>> v1 = [[[2.0, 3.0], [2.0, 4.0]],[[5.0, 2.0], [3.0, 4.0]]] * units.m
         >>> v1.prod() # doctest:+ELLIPSIS
         quantity<5760.0 m**8...>
         >>> v1.prod(0)
@@ -528,7 +528,7 @@ class VectorQuantity(Quantity):
         """Calculate the inner product of self with other.
 
         >>> from amuse.units import units
-        >>> v1 = [1.0, 2.0, 3.0] | units.m
+        >>> v1 = [1.0, 2.0, 3.0] * units.m
         >>> v1.inner(v1)
         quantity<14.0 m**2>
         """
@@ -540,7 +540,7 @@ class VectorQuantity(Quantity):
         """Calculate the squared length of the vector.
 
         >>> from amuse.units import units
-        >>> v1 = [2.0, 3.0, 4.0] | units.m
+        >>> v1 = [2.0, 3.0, 4.0] * units.m
         >>> v1.length_squared()
         quantity<29.0 m**2>
         """
@@ -550,7 +550,7 @@ class VectorQuantity(Quantity):
         """Calculate the length of the vector.
 
         >>> from amuse.units import units
-        >>> v1 = [0.0, 3.0, 4.0] | units.m
+        >>> v1 = [0.0, 3.0, 4.0] * units.m
         >>> v1.length()
         quantity<5.0 m>
         """
@@ -560,7 +560,7 @@ class VectorQuantity(Quantity):
         """Calculate the length of the vectors in this vector.
 
         >>> from amuse.units import units
-        >>> v1 = [[0.0, 3.0, 4.0],[2.0 , 2.0 , 1.0]] | units.m
+        >>> v1 = [[0.0, 3.0, 4.0],[2.0 , 2.0 , 1.0]] * units.m
         >>> v1.lengths()
         quantity<[5.0, 3.0] m>
         """
@@ -570,7 +570,7 @@ class VectorQuantity(Quantity):
         """Calculate the length of the vectors in this vector
 
         >>> from amuse.units import units
-        >>> v1 = [[0.0, 3.0, 4.0],[4.0, 2.0, 1.0]] | units.m
+        >>> v1 = [[0.0, 3.0, 4.0],[4.0, 2.0, 1.0]] * units.m
         >>> v1.lengths_squared()
         quantity<[25.0, 21.0] m**2>
         """
@@ -584,7 +584,7 @@ class VectorQuantity(Quantity):
         :returns: quantity with the same units
 
         >>> from amuse.units import si
-        >>> vector = [0.0, 1.0, 2.0] | si.kg
+        >>> vector = [0.0, 1.0, 2.0] * si.kg
         >>> print vector[1]
         1.0 kg
         >>> print vector[0:2]
@@ -617,9 +617,9 @@ class VectorQuantity(Quantity):
             the unit of this vector
 
         >>> from amuse.units import si
-        >>> vector = [0.0, 1.0, 2.0] | si.kg
+        >>> vector = [0.0, 1.0, 2.0] * si.kg
         >>> g = si.kg / 1000
-        >>> vector[1] = 3500 | g
+        >>> vector[1] = 3500 * g
         >>> print vector
         [0.0, 3.5, 2.0] kg
         """
@@ -640,7 +640,7 @@ class VectorQuantity(Quantity):
         :returns: x axis component as a quantity
 
         >>> from amuse.units import si
-        >>> vector = [1.0, 2.0, 3.0] | si.kg
+        >>> vector = [1.0, 2.0, 3.0] * si.kg
         >>> print vector.x
         1.0 kg
         """
@@ -654,7 +654,7 @@ class VectorQuantity(Quantity):
         :returns: y axis component as a quantity
 
         >>> from amuse.units import si
-        >>> vector = [1.0, 2.0, 3.0] | si.kg
+        >>> vector = [1.0, 2.0, 3.0] * si.kg
         >>> print vector.y
         2.0 kg
         """
@@ -668,7 +668,7 @@ class VectorQuantity(Quantity):
         :returns: z axis component as a quantity
 
         >>> from amuse.units import si
-        >>> vector = [1.0, 2.0, 3.0] | si.kg
+        >>> vector = [1.0, 2.0, 3.0] * si.kg
         >>> print vector.z
         3.0 kg
         """
@@ -693,15 +693,15 @@ class VectorQuantity(Quantity):
         Append a scalar quantity to this vector.
 
         >>> from amuse.units import si
-        >>> vector = [1.0, 2.0, 3.0] | si.kg
-        >>> vector.append(4.0 | si.kg)
+        >>> vector = [1.0, 2.0, 3.0] * si.kg
+        >>> vector.append(4.0 * si.kg)
         >>> print vector
         [1.0, 2.0, 3.0, 4.0] kg
         """
         append_number = numpy.array(scalar_quantity.value_in(self.unit)) # fix for deg, unitless
         # The following lines make sure that appending vectors works as expected,
-        # e.g. ([]|units.m).append([1,2,3]|units.m) -> [[1,2,3]] | units.m
-        # e.g. ([[1,2,3]]|units.m).append([4,5,6]|units.m) -> [[1,2,3],[4,5,6]] | units.m
+        # e.g. ([]*units.m).append([1,2,3]*units.m) -> [[1,2,3]] * units.m
+        # e.g. ([[1,2,3]]*units.m).append([4,5,6]*units.m) -> [[1,2,3],[4,5,6]] * units.m
         if (append_number.shape and (len(self._number) == 0 or self._number.shape[1:] == append_number.shape)):
             new_shape = [1 + self._number.shape[0]] + list(append_number.shape)
         else:
@@ -715,8 +715,8 @@ class VectorQuantity(Quantity):
         is converted to the units of this vector.
 
         >>> from amuse.units import units
-        >>> vector1 = [1.0, 2.0, 3.0] | units.kg
-        >>> vector2 = [1500, 2500, 6000] | units.g
+        >>> vector1 = [1.0, 2.0, 3.0] * units.kg
+        >>> vector2 = [1500, 2500, 6000] * units.g
         >>> vector1.extend(vector2)
         >>> print vector1
         [1.0, 2.0, 3.0, 1.5, 2.5, 6.0] kg
@@ -730,8 +730,8 @@ class VectorQuantity(Quantity):
         is converted to the units of this vector.
 
         >>> from amuse.units import units
-        >>> vector1 = [1.0, 2.0, 3.0] | units.kg
-        >>> vector1.prepend(0.0 | units.kg)
+        >>> vector1 = [1.0, 2.0, 3.0] * units.kg
+        >>> vector1.prepend(0.0 * units.kg)
         >>> print vector1
         [0.0, 1.0, 2.0, 3.0] kg
         """
@@ -742,8 +742,8 @@ class VectorQuantity(Quantity):
         Return the minimum of self and the argument.
 
         >>> from amuse.units import si
-        >>> v1 = [1.0, 2.0, 3.0] | si.kg
-        >>> v2 = [0.0, 3.0, 4.0] | si.kg
+        >>> v1 = [1.0, 2.0, 3.0] * si.kg
+        >>> v2 = [0.0, 3.0, 4.0] * si.kg
         >>> v1.minimum(v2)
         quantity<[0.0, 2.0, 3.0] kg>
 
@@ -758,8 +758,8 @@ class VectorQuantity(Quantity):
         Return the maximum of self and the argument.
 
         >>> from amuse.units import si
-        >>> v1 = [1.0, 2.0, 3.0] | si.kg
-        >>> v2 = [0.0, 3.0, 4.0] | si.kg
+        >>> v1 = [1.0, 2.0, 3.0] * si.kg
+        >>> v2 = [0.0, 3.0, 4.0] * si.kg
         >>> v1.maximum(v2)
         quantity<[1.0, 3.0, 4.0] kg>
         """
@@ -773,7 +773,7 @@ class VectorQuantity(Quantity):
         Return the maximum along an axis.
 
         >>> from amuse.units import si
-        >>> v1 = [1.0, 2.0, 3.0] | si.kg
+        >>> v1 = [1.0, 2.0, 3.0] * si.kg
         >>> v1.amax()
         quantity<3.0 kg>
         """
@@ -785,7 +785,7 @@ class VectorQuantity(Quantity):
         Return the minimum value along an axis.
 
         >>> from amuse.units import si
-        >>> v1 = [1.0, 2.0, 3.0] | si.kg
+        >>> v1 = [1.0, 2.0, 3.0] * si.kg
         >>> v1.amin()
         quantity<1.0 kg>
         """
@@ -799,7 +799,7 @@ class VectorQuantity(Quantity):
         Return the indices of the maximum values along an axis.
 
         >>> from amuse.units import si
-        >>> v1 = [[1.0, 2.0, 3.0], [2.5, 2.5, 2.5]] | si.kg
+        >>> v1 = [[1.0, 2.0, 3.0], [2.5, 2.5, 2.5]] * si.kg
         >>> v1.argmax(axis=0)
         array([1, 1, 0])
         """
@@ -810,7 +810,7 @@ class VectorQuantity(Quantity):
         Return the indices of the minimum values along an axis.
 
         >>> from amuse.units import si
-        >>> v1 = [[1.0, 2.0, 3.0], [2.5, 2.5, 2.5]] | si.kg
+        >>> v1 = [[1.0, 2.0, 3.0], [2.5, 2.5, 2.5]] * si.kg
         >>> v1.argmin(axis=0)
         array([0, 0, 1])
         """
@@ -822,7 +822,7 @@ class VectorQuantity(Quantity):
         Return a new vector with all items sorted.
 
         >>> from amuse.units import si
-        >>> v1 = [3.0, 1.0, 2.0] | si.kg
+        >>> v1 = [3.0, 1.0, 2.0] * si.kg
         >>> v1.sorted()
         quantity<[1.0, 2.0, 3.0] kg>
         """
@@ -834,7 +834,7 @@ class VectorQuantity(Quantity):
         Returns the indices that would sort an array.
 
         >>> from amuse.units import si
-        >>> v1 = [3.0, 1.0, 2.0] | si.kg
+        >>> v1 = [3.0, 1.0, 2.0] * si.kg
         >>> v1.argsort()
         array([1, 2, 0])
         """
@@ -845,7 +845,7 @@ class VectorQuantity(Quantity):
         Returns the index of the maximum item
 
         >>> from amuse.units import si
-        >>> v1 = [1.0, 3.0, 2.0] | si.kg
+        >>> v1 = [1.0, 3.0, 2.0] * si.kg
         >>> v1.argmax()
         1
         """
@@ -860,9 +860,9 @@ class VectorQuantity(Quantity):
             the numpy.sort documentation
 
         >>> from amuse.units import si
-        >>> v1 = [3.0, 1.0, 2.0] | si.kg
-        >>> v2 = [2.0, 3.0, 2.0] | si.m
-        >>> v3 = [1.0, 4.0, 5.0] | si.s
+        >>> v1 = [3.0, 1.0, 2.0] * si.kg
+        >>> v2 = [2.0, 3.0, 2.0] * si.m
+        >>> v3 = [1.0, 4.0, 5.0] * si.s
         >>> list(v1.sorted_with(v2, v3))
         [quantity<[1.0, 2.0, 3.0] kg>, quantity<[3.0, 2.0, 2.0] m>, quantity<[4.0, 5.0, 1.0] s>]
         """
@@ -912,7 +912,7 @@ class VectorQuantity(Quantity):
         Return the dot product of this vector quantity with the supplied vector (quantity).
 
         >>> from amuse.units import units
-        >>> v1 = [1.0, 2.0, 3.0] | units.m
+        >>> v1 = [1.0, 2.0, 3.0] * units.m
         >>> v1.dot(v1)
         quantity<14.0 m**2>
         """
@@ -937,7 +937,7 @@ class ZeroQuantity(Quantity):
 
     >>> from amuse.units import si
     >>> x = zero
-    >>> x += 2.0 | si.kg
+    >>> x += 2.0 * si.kg
     >>> x
     quantity<2.0 kg>
 
@@ -1077,9 +1077,9 @@ class NonNumericQuantity(Quantity):
     ...     [1,3,4],
     ...     ["first", "second", "third"])
     ...
-    >>> 3 | my_unit
+    >>> 3 * my_unit
     quantity<3 - second>
-    >>> (3 | my_unit).value_in(my_unit)
+    >>> (3 * my_unit).value_in(my_unit)
     3
 
     """
@@ -1338,13 +1338,13 @@ def meshgrid(*xi, **kwargs):
 
     result = numpy.meshgrid(*unitless_xi, **kwargs)
 
-    return [matrix | unit for matrix, unit in zip(result, units)]
+    return [matrix * unit for matrix, unit in zip(result, units)]
 
 def polyfit(x, y, deg):
     (x_number, y_number), (x_unit, y_unit) = separate_numbers_and_units([x, y])
 
     fit = numpy.polyfit(x_number, y_number, deg)
-    fit = [f | y_unit/(x_unit**(deg-i)) for i, f in enumerate(fit)]
+    fit = [f * y_unit/(x_unit**(deg-i)) for i, f in enumerate(fit)]
 
     return fit
 
@@ -1361,7 +1361,7 @@ def polyval(p, x):
 
     value = numpy.polyval(p_number, x)
 
-    return value | y_unit
+    return value * y_unit
 
 def searchsorted(a, v, **kwargs):
     if is_quantity(a):

@@ -4,7 +4,7 @@ The n-body unit system knows the three base quantities in the
 International System of Quantities, I.S.Q. and defines 
 the gravitational constant to be 1:
 
-G = 1 | (length**3) / (mass * (time**2))
+G = 1 * (length**3) / (mass * (time**2))
 
 +-------------------+-----------------------------------+-----------------+
 |Base quantity      |Name in generic unit               |Name in S.I. unit|
@@ -57,21 +57,19 @@ class nbody_unit(core.base_unit):
     def __init__(self, unit_in_si, system):
         core.base_unit.__init__(self, unit_in_si.quantity, unit_in_si.name, unit_in_si.symbol, system)
         self.unit_in_si = unit_in_si
-        
+
     def __str__(self):
         return 'nbody '+self.unit_in_si.quantity
-        
-  
 
     def is_generic(self):
         return True
-    
-    
+
+
 nbody_system = core.system('nbody')
 
 length = generic_unit_system.length
-time =  generic_unit_system.time
-mass =  generic_unit_system.mass
+time = generic_unit_system.time
+mass = generic_unit_system.mass
 
 acceleration = length / (time ** 2)
 potential = (length ** 2) / (time ** 2)
@@ -83,7 +81,7 @@ density = mass / volume
 pressure = mass / length / (time ** 2)
 momentum_density = density * speed
 energy_density = density * specific_energy
-G = 1. | (length**3) / (mass * (time**2))
+G = 1. * (length**3) / (mass * (time**2))
 
 def is_nbody_unit(unit):
     for factor, x in unit.base:

@@ -24,9 +24,9 @@ ADDITIONAL_DERIVED_CONSTANTS = \
 pi = numpy.pi
 hbar = h / (2.0 * numpy.pi)
 four_pi_stefan_boltzmann = 4.0 * numpy.pi * Stefan_hyphen_Boltzmann_constant
-mu0 = 4 * numpy.pi * 1.e-7 | N/A**2
+mu0 = 4 * numpy.pi * 1.e-7 * N/A**2
 eps0 = mu0**-1 * c**-2
-sidereal_day = 86164.100352 | s
+sidereal_day = 86164.100352 * s
 #machine constants
 eps = numpy.finfo(numpy.double).eps
 precision = int(numpy.log10(2/eps))
@@ -173,7 +173,7 @@ class Constants(object):
     
     def print_list_of_units(self, unitlist):
         for name, value, unit in unitlist:
-            self.nistfile += ("{0} = {1} | {2}\n".format(name, value, unit or "none"))
+            self.nistfile += ("{0} = {1} * {2}\n".format(name, value, unit or "none"))
 
     def generate_constants(self):
         self.list_constants()
