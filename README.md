@@ -43,7 +43,7 @@ apt-get install build-essential curl g++ gfortran gettext zlib1g-dev
 
 Other distributions have similar package or package groups available.
 
-In OS X you can use the homebrew or macports package manager (both
+In macOS you can use the homebrew or macports package manager (both
 require the Apple Developer Tools and Xcode to be installed).
 
 For a Windows 10 machine, AMUSE can be installed in the Windows Subsystem
@@ -108,8 +108,7 @@ pip install [--user] amuse-<code name>
 AMUSE Development 
 =================
 
-If you are using Python 2, an AMUSE development install can also 
-be handled through pip by executing (in the root of a clone of the 
+An AMUSE development install can also be handled through pip by executing (in the root of a clone of the 
 repository)
 
 ```bash
