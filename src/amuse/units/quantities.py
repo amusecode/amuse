@@ -12,6 +12,12 @@ from amuse.units import core
 from amuse.units.si import none
 from amuse.units.core import zero_unit
 
+try:
+    import astropy.units
+    from amuse.units import units
+    astropy_available = True
+except ImportError:
+    astropy_available = False
 
 """
 """
@@ -265,6 +271,10 @@ class Quantity(object):
     def __ge__(self, other):
         return self.value_in(self.unit) >= to_quantity(other).value_in(self.unit)
 
+    if astropy_available:
+        def as_astropy_quantity(self):
+            return to_astropy(self)
+
 
 class ScalarQuantity(Quantity):
     """
@@ -311,7 +321,6 @@ class ScalarQuantity(Quantity):
     def to_unit(self):
         in_base=self.in_base()
         return in_base.number * in_base.unit
-
 
     def __getstate__(self):
         return (self.unit, self.number)
@@ -1368,3 +1377,34 @@ def searchsorted(a, v, **kwargs):
         return numpy.searchsorted(a.value_in(a.unit), v.value_in(a.unit), **kwargs)
     else:
         return numpy.searchsorted(a, v, **kwargs)
+
+
+if astropy_available:
+    def to_astropy(quantity):
+        "Convert a quantity from AMUSE to Astropy"
+
+        # Find the SI bases of the unit
+        unit = quantity.unit
+        unit_bases = unit.base
+
+        # Find the quantity's value in base units
+        value = quantity.value_in(unit.base_unit())
+
+        # Reconstruct the quantity in Astropy units
+        ap_quantity = value
+        for base_unit in unit_bases:
+            if base_unit[1] == units.m:
+                ap_quantity = ap_quantity * astropy.units.m**base_unit[0]
+            elif base_unit[1] == units.kg:
+                ap_quantity = ap_quantity * astropy.units.kg**base_unit[0]
+            elif base_unit[1] == units.s:
+                ap_quantity = ap_quantity * astropy.units.s**base_unit[0]
+            elif base_unit[1] == units.A:
+                ap_quantity = ap_quantity * astropy.units.A**base_unit[0]
+            elif base_unit[1] == units.K:
+                ap_quantity = ap_quantity * astropy.units.K**base_unit[0]
+            elif base_unit[1] == units.mol:
+                ap_quantity = ap_quantity * astropy.units.mol**base_unit[0]
+            elif base_unit[1] == units.cd:
+                ap_quantity = ap_quantity * astropy.units.cd**base_unit[0]
+        return ap_quantity
