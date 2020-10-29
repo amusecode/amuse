@@ -211,9 +211,37 @@ Parameters are added as follows:
 Here, ``get_parameter`` and ``set_parameter`` are two legacy interface functions
 that respectively have one output and one input. ``parameter`` is the name of the
 parameter in the code. The fourth parameter is a documentation string describing
-what the parameter signifies. Finally, there are three optional parameters. Note
-that there are methods to define other types of parameters; ``add_boolean_parameter``
-could be especially useful.
+what the parameter signifies. Finally, there are three optional parameters. 
+If ``is_vector == True``, the parameter is a vector of a fixed length. This
+length is defined by the revelant get and set functions as the number of parameters.
+
+
+Note that there are methods to define other types of parameters:
+
+=========================== ============================
+function                    purpose
+=========================== ============================
+add_boolean_parameter       the parameter is a boolean,
+                            instead of an integer/float.
+add_caching_parameter       the parameter is only set
+                            once commit_parameters is
+                            called.
+add_array_parameter         the parameter is an array;
+                            in contrast with a normal
+                            parameter with ``is_vector=True``,
+                            the getters and setters have
+                            only a single argument, which
+                            must be able to handle arrays.
+                            Between the setter and the name,
+                            an additional function must be
+                            passed that specifies the size
+                            of the array.
+=========================== ============================
+
+``add_alias_parameter`` is also available to add an alias to an existing parameter.
+It is of the following form: ``add_alias_parameter("alias_parameter", "original_parameter", 
+"parameter documentation")``.
+
 
 Parameters are accessed through the ``parameters`` property of the code object:
 

@@ -6,7 +6,5 @@ Installation
    
    howto-install-AMUSE
    getting-started
-   configuration
-   documenting
    
 
