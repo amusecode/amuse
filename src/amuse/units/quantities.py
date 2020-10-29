@@ -309,11 +309,6 @@ class ScalarQuantity(Quantity):
     def copy(self):
         return new_quantity(self.number, self.unit)
 
-    def to_unit(self):
-        in_base=self.in_base()
-        return in_base.number * in_base.unit
-
-
     def __getstate__(self):
         return (self.unit, self.number)
 
@@ -346,6 +341,10 @@ class ScalarQuantity(Quantity):
 
     def as_unit(self):
         return factor_unit(self.number, self.unit)
+
+    def to_unit(self):
+        in_base=self.in_base()
+        return in_base.number * in_base.unit
 
 class _flatiter_wrapper(object):
     def __init__(self, quantity):

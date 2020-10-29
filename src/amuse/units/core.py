@@ -490,6 +490,11 @@ class unit(object):
             parts[1] = str(base.system)
         return ', '.join(parts)
 
+    def as_unit(self):
+        return self
+
+    def to_unit(self):
+        return self
 
 
 class base_unit(unit):
@@ -872,12 +877,10 @@ class named_unit(unit):
     >>> (20.0 * (60.0 * si.s)).as_quantity_in(minute)
     quantity<20.0 min>
     """
-    def __init__(self, name, symbol, local_unit):
+    def __init__(self, name, symbol, unit):
         self.name = name
         self.symbol = symbol
-        if not isinstance(local_unit, unit):
-            local_unit = local_unit.as_unit()
-        self.local_unit = local_unit
+        self.local_unit = unit.as_unit()
 
     def __str__(self):
         return self.symbol
