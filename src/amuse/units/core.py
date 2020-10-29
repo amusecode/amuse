@@ -84,7 +84,7 @@ class unit(object):
 
     def __rmul__(self, other):
         if isinstance(other, unit):
-            return factor_unit(other, self)
+            return mul_unit(other, self)
         return self.new_quantity(other)
 
     def __ror__(self, value):
