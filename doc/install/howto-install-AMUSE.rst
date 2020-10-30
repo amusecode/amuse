@@ -135,3 +135,30 @@ installed on your local machine. After compilation pip saves a binary package ve
 In case of problems with the AMUSE installation using pip or if the environment changes it may be necessary to clean the pip cache (e.g. at ```~/.cache/pip```). In addition, the cache can be disabled using the ```--no-cache-dir``` option. the ```--no-build-isolation``` may also be tried in case the virtualenv has all the prerequisites, but the build still fails.
 The ```--no-clean``` pip install option preserves the build directory for debugging purposes (The actual directory is reported 
 in verbose mode ```-v```). 
+
+
+
+Development build
+*****************
+
+Alternatively, you can install amuse as a development build, which allows you to modify the source code. It is potentially also more convenient when encountering issues with installation of specific codes as the build.log file in the root directory of the repository contains the error logs of the installation process.
+
+Installation can also be handled through pip by executing (in the root of a clone of the repository)
+
+.. code-block:: sh
+
+    pip install -e .
+
+after this the codes need to be build:
+
+.. code-block:: sh
+
+    python setup.py develop_build
+
+individual codes can be build with:
+
+.. code-block:: sh
+
+    make {code}.code
+
+with {code} the name of the code in lower case. 
