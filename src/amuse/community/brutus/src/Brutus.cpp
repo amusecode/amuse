@@ -3,10 +3,10 @@
 Brutus::Brutus() {
   t = "0";
   data.clear();
-  N = 0;  
+  N = 0;
 
   tolerance = "1e-6";
-  numBits = 56;
+//  numBits = 56;
 
   eta = get_eta(tolerance);
 
@@ -15,10 +15,10 @@ Brutus::Brutus() {
 Brutus::Brutus(vector<mpreal> &data) {
   t = "0";
   this->data = data;
-  N = data.size()/7;  
+  N = data.size()/arg_cnt;
 
   tolerance = "1e-6";
-  numBits = 56;
+//  numBits = 56;
 
   eta = get_eta(tolerance);
 
@@ -27,10 +27,10 @@ Brutus::Brutus(vector<mpreal> &data) {
 Brutus::Brutus(mpreal &t, vector<mpreal> &data, mpreal &tolerance) {
   this->t = t;
   this->data = data;
-  N = data.size()/7;  
+  N = data.size()/arg_cnt;
 
   this->tolerance = tolerance;
-  numBits = get_numBits(tolerance);
+//  numBits = get_numBits(tolerance);
 
   eta = get_eta(tolerance);
 
@@ -39,10 +39,10 @@ Brutus::Brutus(mpreal &t, vector<mpreal> &data, mpreal &tolerance) {
 Brutus::Brutus(mpreal &t, vector<mpreal> &data, mpreal &tolerance, int &numBits) {
   this->t = t;
   this->data = data;
-  N = data.size()/7;  
+  N = data.size()/arg_cnt;
 
   this->tolerance = tolerance;
-  this->numBits = numBits;
+//  this->numBits = numBits;
 
   eta = get_eta(tolerance);
 
@@ -51,8 +51,11 @@ Brutus::Brutus(mpreal &t, vector<mpreal> &data, mpreal &tolerance, int &numBits)
 
 void Brutus::set_data(vector<mpreal> &data) {
   this->data = data;
-  N = data.size()/7; 
 
+  N = data.size()/arg_cnt;
+
+
+//Star::DEBUG <<"\n"; Star::DEBUG.flush();
   Cluster c(data);
   cl = c;
 }
@@ -63,9 +66,9 @@ void Brutus::set_tolerance(mpreal &tolerance) {
   this->tolerance = tolerance;
   bs.set_tolerance(tolerance);
 }
-void Brutus::set_numBits(int &numBits) {
+/*void Brutus::set_numBits(int &numBits) {
   this->numBits = numBits;
-}
+}*/
 void Brutus::set_t_begin(mpreal &t_begin) {
   this->t = t_begin;
 }
@@ -85,19 +88,20 @@ mpreal Brutus::get_eta(mpreal tolerance) {
   mpreal abslogtol = abs( log10(tolerance) );
   mpreal logeta = a*abslogtol+b;
   mpreal eta = pow("10", logeta);
-  
+
   return eta;
 }
 mpreal Brutus::get_tolerance() {
   return tolerance;
 }
-int Brutus::get_numBits() {
+/*int Brutus::get_numBits() {
   return numBits;
-}  
-int Brutus::get_numBits(mpreal tolerance) {
+}*/
+/*int Brutus::get_numBits(mpreal tolerance) {
   mpreal absloge = abs( log10(tolerance) );
   return 4*(int)absloge.toLong()+32;
-}
+}*/
+/*
 mpreal Brutus::fit_slope(vector<mpreal> &x, vector<mpreal> &y) {
   mpreal a = "0";
   int N = x.size();
@@ -112,7 +116,7 @@ mpreal Brutus::fit_slope(vector<mpreal> &x, vector<mpreal> &y) {
       SY += y[i];
       SX2 += x[i]*x[i];
       SXY += x[i]*y[i];
-    }        
+    }
     Xav = SX / (mpreal)N;
     Yav = SY / (mpreal)N;
     a = (SXY - SX * Yav) / (SX2 - SX * Xav);
@@ -120,7 +124,7 @@ mpreal Brutus::fit_slope(vector<mpreal> &x, vector<mpreal> &y) {
 
   return a;
 }
-
+*/
 void Brutus::setup() {
   Cluster c(data);
   c.eps2 = "0";
@@ -129,7 +133,7 @@ void Brutus::setup() {
   Bulirsch_Stoer b(tolerance);
   bs = b;
 
-  eta = get_eta(tolerance);  
+  eta = get_eta(tolerance);
 }
 
 void Brutus::evolve(mpreal t_end) {
@@ -150,7 +154,7 @@ void Brutus::evolve(mpreal t_end) {
   }
   this->data = cl.get_data();
 }
-  
+
 mpreal Brutus::get_t() {
   return t;
 }
@@ -158,21 +162,21 @@ vector<mpreal> Brutus::get_data() {
   return data;
 }
 vector<double> Brutus::get_data_double() {
-  int N = data.size()/7;
-  vector<double> v(7*N, 0);
+  int N = data.size()/arg_cnt;
+  vector<double> v(arg_cnt*N, 0);
   for(int i=0; i<N; i++) {
-    for(int j=0; j<7; j++) {
-      v[i*7+j] = data[i*7+j].toDouble();
+    for(int j=0; j<arg_cnt; j++) {
+      v[i*arg_cnt+j] = data[i*arg_cnt+j].toDouble();
     }
   }
   return v;
 }
 vector<string> Brutus::get_data_string() {
-  int N = data.size()/7;
-  vector<string> v(7*N, "0");
+  int N = data.size()/arg_cnt;
+  vector<string> v(arg_cnt*N, "0");
   for(int i=0; i<N; i++) {
-    for(int j=0; j<7; j++) {
-      v[i*7+j] = data[i*7+j].toString();
+    for(int j=0; j<arg_cnt; j++) {
+      v[i*arg_cnt+j] = data[i*arg_cnt+j].toString();
     }
   }
   return v;

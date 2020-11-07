@@ -38,7 +38,7 @@ int Bulirsch_Stoer::get_k_max() {
 
 bool Bulirsch_Stoer::integrate(Cluster &cl, mpreal &dt) {
   Cluster c0 = cl;
-  Cluster c  = cl;	
+  Cluster c  = cl;
   mpreal timestep = dt;
 
   bool flag = step(c, timestep);
@@ -51,13 +51,15 @@ bool Bulirsch_Stoer::integrate(Cluster &cl, mpreal &dt) {
       flag = step(c, timestep);
       k += 2;
     }
-  }  
+  }
 
   if(flag == true) {
     cl = c;
     dt = timestep;
   }
-
+  #ifdef use_additional_acc
+  cl.remove_step_Acceleration();
+  #endif // use_additional_acc
   return flag;
 }
 bool Bulirsch_Stoer::step(Cluster &cl, mpreal &dt) {
@@ -81,7 +83,7 @@ bool Bulirsch_Stoer::step(Cluster &cl, mpreal &dt) {
   c.push_back( cl );
   for(int i=0; i<n; i++) c[1].step( h[1] );
   extrapol( cl_exp, h, c );
-  
+
   flag = error_control(cl_exp0, cl_exp);
 
   if(flag == false) {
@@ -91,10 +93,10 @@ bool Bulirsch_Stoer::step(Cluster &cl, mpreal &dt) {
       c.push_back( cl );
       for(int i=0; i<n; i++) c[n/2].step( h[n/2] );
       cl_exp0 = cl_exp;
-      extrapol( cl_exp, h, c );   
+      extrapol( cl_exp, h, c );
 
-      flag = error_control(cl_exp0, cl_exp);   
-    }    
+      flag = error_control(cl_exp0, cl_exp);
+    }
   }
 
   cl = cl_exp;
@@ -108,16 +110,16 @@ void Bulirsch_Stoer::extrapol(Cluster &cl_exp, vector<mpreal> &dt, vector<Cluste
   vector<mpreal> x_sample(M), y_sample(M), z_sample(M), vx_sample(M), vy_sample(M), vz_sample(M);
   for(int i=0; i<N; i++) {
     for(int j=0; j<M; j++) {
-      x_sample[j]  = c[j].s[i].r[0];
-      y_sample[j]  = c[j].s[i].r[1];
-      z_sample[j]  = c[j].s[i].r[2];
+      x_sample[j]  = c[j].s[i].x[0];
+      y_sample[j]  = c[j].s[i].x[1];
+      z_sample[j]  = c[j].s[i].x[2];
       vx_sample[j] = c[j].s[i].v[0];
       vy_sample[j] = c[j].s[i].v[1];
       vz_sample[j] = c[j].s[i].v[2];
     }
-    cl_exp.s[i].r[0]  = extrapolate(dt, x_sample, "0.0");
-    cl_exp.s[i].r[1]  = extrapolate(dt, y_sample, "0.0");
-    cl_exp.s[i].r[2]  = extrapolate(dt, z_sample, "0.0");
+    cl_exp.s[i].x[0]  = extrapolate(dt, x_sample, "0.0");
+    cl_exp.s[i].x[1]  = extrapolate(dt, y_sample, "0.0");
+    cl_exp.s[i].x[2]  = extrapolate(dt, z_sample, "0.0");
     cl_exp.s[i].v[0] = extrapolate(dt, vx_sample, "0.0");
     cl_exp.s[i].v[1] = extrapolate(dt, vy_sample, "0.0");
     cl_exp.s[i].v[2] = extrapolate(dt, vz_sample, "0.0");
@@ -135,21 +137,21 @@ mpreal Bulirsch_Stoer::extrapolate(vector<mpreal> x, vector<mpreal> y, mpreal x0
       }
     }
     return y[0];
-  }  
+  }
 }
 bool Bulirsch_Stoer::error_control(Cluster &c1, Cluster &c2) {
   int N = c1.s.size();
   bool flag = true;
   for(int i=0; i<N; i++) {
-    if( fabs(c2.s[i].r[0]-c1.s[i].r[0]) > tolerance ) {
+    if( fabs(c2.s[i].x[0]-c1.s[i].x[0]) > tolerance ) {
       flag = false;
       break;
     }
-    if( fabs(c2.s[i].r[1]-c1.s[i].r[1]) > tolerance ) {
+    if( fabs(c2.s[i].x[1]-c1.s[i].x[1]) > tolerance ) {
       flag = false;
       break;
     }
-    if( fabs(c2.s[i].r[2]-c1.s[i].r[2]) > tolerance ) {
+    if( fabs(c2.s[i].x[2]-c1.s[i].x[2]) > tolerance ) {
       flag = false;
       break;
     }

@@ -1,5 +1,6 @@
 from amuse.community import *
 from amuse.community.interface.gd import GravitationalDynamicsInterface, GravitationalDynamics
+from amuse.community.interface.gd import GravityFieldCode
 try:
     import mpmath
     HAS_MPMATH=True
@@ -8,16 +9,16 @@ except ImportError:
 
 
 """
-currently setting the particle (and possibly model time) as strings (ie to conserve 
+currently setting the particle (and possibly model time) as strings (ie to conserve
 precision) is not yet supported fully (no high level, low level untested)
 """
 
-class BrutusInterface(CodeInterface, GravitationalDynamicsInterface, LiteratureReferencesMixIn, 
+class BrutusInterface(CodeInterface, GravitationalDynamicsInterface, LiteratureReferencesMixIn,
         StoppingConditionInterface, CodeWithDataDirectories):
     """
     Brutus (Brute force N-body code)
         .. [#] Boekholt, Tjarda and Portegies Zwart, Simon,On the reliability of N-body simulations, Computational Astrophysics and Cosmology, Volume 2, article id.2, 21 pp.
-    
+
     """
     include_headers = ['worker_code.h', 'stopcond.h']
 
@@ -26,7 +27,7 @@ class BrutusInterface(CodeInterface, GravitationalDynamicsInterface, LiteratureR
         CodeInterface.__init__(self, name_of_the_worker="brutus_worker", **options)
         LiteratureReferencesMixIn.__init__(self)
         CodeWithDataDirectories.__init__(self)
-    
+
     ####
     @legacy_function
     def get_brutus_output_directory():
@@ -34,7 +35,7 @@ class BrutusInterface(CodeInterface, GravitationalDynamicsInterface, LiteratureR
         function.addParameter('brutus_output_directory', dtype='string', direction=function.OUT)
         function.result_type = 'int32'
         return function
-    
+
     @legacy_function
     def set_brutus_output_directory():
         function = LegacyFunctionSpecification()
@@ -74,7 +75,7 @@ class BrutusInterface(CodeInterface, GravitationalDynamicsInterface, LiteratureR
         function.addParameter('radius', dtype='string', direction=function.IN, description = "The radius of the particle", default='0')
         function.result_type = 'int32'
         return function
-    
+
     @legacy_function
     def set_state_string():
         function = LegacyFunctionSpecification()
@@ -108,7 +109,7 @@ class BrutusInterface(CodeInterface, GravitationalDynamicsInterface, LiteratureR
         function.addParameter('radius', dtype='string', direction=function.IN, description = "new radius of the particle", default='0')
         function.result_type = 'int32'
         return function
-    
+
     @legacy_function
     def set_position_string():
         function = LegacyFunctionSpecification()
@@ -119,7 +120,7 @@ class BrutusInterface(CodeInterface, GravitationalDynamicsInterface, LiteratureR
         function.addParameter('z', dtype='string', direction=function.IN, description = "new position vector of the particle")
         function.result_type = 'int32'
         return function
-    
+
     @legacy_function
     def set_velocity_string():
         function = LegacyFunctionSpecification()
@@ -229,35 +230,35 @@ class BrutusInterface(CodeInterface, GravitationalDynamicsInterface, LiteratureR
         function.addParameter('time', dtype='float64', direction=function.IN)
         function.result_type = 'int32'
         return function
-        
+
     @legacy_function
     def get_potential_energy_string():
         function = LegacyFunctionSpecification()
         function.addParameter('potential_energy_string', dtype='string', direction=function.OUT)
         function.result_type = 'int32'
-        return function 
-        
+        return function
+
     @legacy_function
     def get_total_mass_string():
         function = LegacyFunctionSpecification()
         function.addParameter('M', dtype='string', direction=function.OUT)
         function.result_type = 'int32'
-        return function 
-       
+        return function
+
     @legacy_function
     def get_total_energy_string():
         function = LegacyFunctionSpecification()
         function.addParameter('total_energy_string', dtype='string', direction=function.OUT)
         function.result_type = 'int32'
-        return function 
-       
+        return function
+
     @legacy_function
     def get_kinetic_energy_string():
         function = LegacyFunctionSpecification()
         function.addParameter('kinetic_energy_string', dtype='string', direction=function.OUT)
         function.result_type = 'int32'
         return function
-    
+
     @legacy_function
     def get_velocity_string():
         function = LegacyFunctionSpecification()
@@ -267,7 +268,7 @@ class BrutusInterface(CodeInterface, GravitationalDynamicsInterface, LiteratureR
         function.addParameter('vz', dtype='string', direction=function.OUT)
         function.result_type = 'int32'
         return function
-    
+
     @legacy_function
     def get_position_string():
         function = LegacyFunctionSpecification()
@@ -276,8 +277,8 @@ class BrutusInterface(CodeInterface, GravitationalDynamicsInterface, LiteratureR
         function.addParameter('y', dtype='string', direction=function.OUT)
         function.addParameter('z', dtype='string', direction=function.OUT)
         function.result_type = 'int32'
-        return function  
-    
+        return function
+
     @legacy_function
     def get_mass_string():
         function = LegacyFunctionSpecification()
@@ -285,7 +286,7 @@ class BrutusInterface(CodeInterface, GravitationalDynamicsInterface, LiteratureR
         function.addParameter('m', dtype='string', direction=function.OUT)
         function.result_type = 'int32'
         return function
-    
+
     @legacy_function
     def get_radius_string():
         function = LegacyFunctionSpecification()
@@ -293,7 +294,7 @@ class BrutusInterface(CodeInterface, GravitationalDynamicsInterface, LiteratureR
         function.addParameter('radius', dtype='string', direction=function.OUT)
         function.result_type = 'int32'
         return function
-    
+
     @legacy_function
     def get_state_string():
         function = LegacyFunctionSpecification()
@@ -308,8 +309,33 @@ class BrutusInterface(CodeInterface, GravitationalDynamicsInterface, LiteratureR
         function.addParameter('radius', dtype='string', direction=function.OUT)
         function.result_type = 'int32'
         return function
-    
-class Brutus(GravitationalDynamics):
+
+    @legacy_function
+    def add_step_acceleration_float64():
+        """
+         Add acceleration to a particle.
+        """
+        function = LegacyFunctionSpecification()
+        function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN,
+            description = "Index of the particle for which the state is to be updated. This index must have been returned by an earlier call to :meth:`new_particle`")
+        function.addParameter('a_step_x', dtype='float64', direction=function.IN, description = "Add acceleration vector to the particle (valid for next evaluation step only)")
+        function.addParameter('a_step_y', dtype='float64', direction=function.IN, description = "Add acceleration vector to the particle (valid for next evaluation step only)")
+        function.addParameter('a_step_z', dtype='float64', direction=function.IN, description = "Add acceleration vector to the particle (valid for next evaluation step only)")
+        function.result_type = 'int32'
+        function.can_handle_array = True
+        function.result_doc = """
+        0 - OK
+            particle was found in the model and the information was set
+        -1 - ERROR
+            particle could not be found
+        -2 - ERROR
+            code does not support updating of a particle
+        -3 - ERROR
+            not yet implemented
+        """
+        return function
+
+class Brutus(GravitationalDynamics, GravityFieldCode):
 
     def __init__(self, convert_nbody = None, **options):
         self.stopping_conditions = StoppingConditions(self)
@@ -326,56 +352,56 @@ class Brutus(GravitationalDynamics):
         self.convert_nbody=convert_nbody
         if HAS_MPMATH:
             self.adjust_prec()
-            
+
     def adjust_prec(self):
         if not HAS_MPMATH:
             raise Exception("mpmath not available")
         len_ = self.parameters.word_length
         if (len_ > mpmath.mp.prec):
             mpmath.mp.prec=len_
-        
-    
+
+
     def initialize_code(self):
         result = self.overridden().initialize_code()
         self.parameters.brutus_output_directory = self.output_directory
         return result
-    
+
     def get_potential_energy_p_si(self):
         self.adjust_prec()
         a=self.convert_nbody.to_si(nbody_system.energy).number
         b=mpmath.mpf(self.get_potential_energy_string())*a
         return b #* self.convert_nbody.to_si(nbody_system.energy).unit
-    
+
     def get_total_energy_p_si(self):
         self.adjust_prec()
         a=self.convert_nbody.to_si(nbody_system.energy).number
         b=mpmath.mpf(self.get_total_energy_string())*a
         return b #* self.convert_nbody.to_si(nbody_system.energy).unit
-    
+
     def get_kinetic_energy_p_si(self):
         self.adjust_prec()
         a=self.convert_nbody.to_si(nbody_system.energy).number
         b=mpmath.mpf(self.get_kinetic_energy_string())*a
         return b #* self.convert_nbody.to_si(nbody_system.energy).unit
-    
+
     def get_total_mass_p_si(self):
         self.adjust_prec()
         a=self.convert_nbody.to_si(nbody_system.mass).number
         b=mpmath.mpf(self.get_total_mass_string())*a
         return b #* self.convert_nbody.to_si(nbody_system.energy).unit
-        
+
     def get_mass_p_si(self,index):
         self.adjust_prec()
         a=self.convert_nbody.to_si(nbody_system.mass).number
         b=mpmath.mpf(self.get_mass_string(index))*a
         return b #* self.convert_nbody.to_si(nbody_system.energy).unit
-        
+
     def get_radius_p_si(self,index):
         self.adjust_prec()
         a=self.convert_nbody.to_si(nbody_system.length).number
         b=mpmath.mpf(self.get_radius_string(index))*a
         return b #* self.convert_nbody.to_si(nbody_system.energy).unit
-    
+
     def get_time_p_si(self):
         self.adjust_prec()
         return mpmath.mpf(self.get_time().number)
@@ -384,13 +410,13 @@ class Brutus(GravitationalDynamics):
         self.adjust_prec()
         a=self.convert_nbody.to_si(nbody_system.speed).number
         b=mpmath.matrix(self.get_velocity_string(index))*a
-        return b #* self.convert_nbody.to_si(nbody_system.energy).unit   
+        return b #* self.convert_nbody.to_si(nbody_system.energy).unit
 
     def get_position_p_si(self,index):
         self.adjust_prec()
         a=self.convert_nbody.to_si(nbody_system.length).number
         b=mpmath.matrix(self.get_position_string(index))*a
-        return b #* self.convert_nbody.to_si(nbody_system.energy).unit   
+        return b #* self.convert_nbody.to_si(nbody_system.energy).unit
 
     def new_particle_p_si(self,m,x,y,z,vx,vy,vz,radius):
         self.adjust_prec()
@@ -401,7 +427,12 @@ class Brutus(GravitationalDynamics):
                                         str(y/ul) ,str(z/ul) ,
                                         str(vx/us) ,str(vy/us) ,
                                         str(vz/us) ,str(radius/ul))
-  
+
+    def add_step_acceleration(self, index, a_step_x, a_step_y, a_step_z):
+        self.adjust_prec()
+        a=self.convert_nbody.to_si(nbody_system.acceleration)#.number
+        return self.add_step_acceleration_float64(index , a_step_x/a, a_step_y/a, a_step_z/a)
+
     def set_state_p_si(self,index,m,x,y,z,vx,vy,vz,radius):
         self.adjust_prec()
         um=self.convert_nbody.to_si(nbody_system.mass).number
@@ -411,7 +442,7 @@ class Brutus(GravitationalDynamics):
                                         str(y/ul) ,str(z/ul) ,
                                         str(vx/us) ,str(vy/us) ,
                                         str(vz/us) ,str(radius/ul))
-        
+
     def set_mass_p_si(self,index,m):
         self.adjust_prec()
         um=self.convert_nbody.to_si(nbody_system.mass).number
@@ -421,19 +452,19 @@ class Brutus(GravitationalDynamics):
         self.adjust_prec()
         ul=self.convert_nbody.to_si(nbody_system.length).number
         self.set_radius_string(index ,str(radius/ul))
-        
-        
+
+
     def set_position_p_si(self,index,x,y,z):
         self.adjust_prec()
         ul=self.convert_nbody.to_si(nbody_system.length).number
-        self.set_position_string(index ,str(x/ul) ,str(y/ul) ,str(z/ul))      
-        
+        self.set_position_string(index ,str(x/ul) ,str(y/ul) ,str(z/ul))
+
     def set_velocity_p_si(self,index,vx,vy,vz):
         self.adjust_prec()
         us=self.convert_nbody.to_si(nbody_system.speed).number
         self.set_velocity_string(index ,str(vx/us) ,str(vy/us) ,str(vz/us))
-        
-        
+
+
     def get_state_p_si(self,index):
         self.adjust_prec()
         b=mpmath.matrix(self.get_state_string(index))
@@ -449,62 +480,93 @@ class Brutus(GravitationalDynamics):
         b[6]=b[6]*a
         a=self.convert_nbody.to_si(nbody_system.length).number
         b[7]=b[7]*a
-        return b #* self.convert_nbody.to_si(nbody_system.energy).unit   
+        return b #* self.convert_nbody.to_si(nbody_system.energy).unit
 
     def define_parameters(self, handler):
         GravitationalDynamics.define_parameters(self, handler)
         self.stopping_conditions.define_parameters(handler)
-        
+
         handler.add_method_parameter(
-            "get_bs_tolerance", 
+            "get_bs_tolerance",
             "set_bs_tolerance",
-            "bs_tolerance", 
-            "Error tolerance of the Bulirsch-Stoer integrator", 
+            "bs_tolerance",
+            "Error tolerance of the Bulirsch-Stoer integrator",
             default_value = 1.0e-8
         )
 
         handler.add_method_parameter(
-            "get_word_length", 
+            "get_word_length",
             "set_word_length",
-            "word_length", 
-            "The word length, or number of bits for the mantissa, used for the arbitrary precision calculations (#digits = log10(2**# bits) ", 
+            "word_length",
+            "The word length, or number of bits for the mantissa, used for the arbitrary precision calculations (#digits = log10(2**# bits) ",
             default_value = 72
         )
-                
+
         handler.add_method_parameter(
-            "get_eta", 
+            "get_eta",
             "set_eta",
-            "dt_param", 
-            "dt_param, the time-step parameter for the adaptive time-step criterion", 
+            "dt_param",
+            "dt_param, the time-step parameter for the adaptive time-step criterion",
             default_value = 0.24
         )
-            
+
         handler.add_method_parameter(
-            "get_brutus_output_directory", 
+            "get_brutus_output_directory",
             "set_brutus_output_directory",
-            "brutus_output_directory", 
-            "Path to the directory where Brutus stores its output", 
+            "brutus_output_directory",
+            "Path to the directory where Brutus stores its output",
             default_value = "./"
         )
-        
+
     def define_methods(self, handler):
         GravitationalDynamics.define_methods(self, handler)
         self.stopping_conditions.define_methods(handler)
-        
+
         handler.add_method("get_bs_tolerance", (), (handler.NO_UNIT, handler.ERROR_CODE,))
         handler.add_method("set_bs_tolerance", (handler.NO_UNIT, ), (handler.ERROR_CODE,))
- 
+
         handler.add_method("get_word_length", (), (handler.NO_UNIT, handler.ERROR_CODE,))
         handler.add_method("set_word_length", (handler.NO_UNIT, ), (handler.ERROR_CODE,))
 
         handler.add_method("get_eta", (), (handler.NO_UNIT, handler.ERROR_CODE,))
         handler.add_method("set_eta", (handler.NO_UNIT, ), (handler.ERROR_CODE,))
-        
+
         handler.add_method("get_brutus_output_directory", (), (handler.NO_UNIT, handler.ERROR_CODE,))
         handler.add_method("set_brutus_output_directory", (handler.NO_UNIT, ), (handler.ERROR_CODE,))
-            
+
     def define_particle_sets(self, handler):
         GravitationalDynamics.define_particle_sets(self, handler)
         self.stopping_conditions.define_particle_set(handler)
+
+    def define_state(self, handler):
+        GravitationalDynamics.define_state(self, handler)
+        GravityFieldCode.define_state(self, handler)
+
+        handler.add_method('RUN', 'get_state_string')
+        handler.add_method('RUN', 'get_position_string')
+        handler.add_method('RUN', 'get_velocity_string')
+        handler.add_method('RUN', 'get_time_string')
+        handler.add_method('RUN', 'get_radius_string')
+        handler.add_method('RUN', 'get_mass_string')
+        handler.add_method('RUN', 'get_total_mass_string')
+        handler.add_method('RUN', 'get_kinetic_energy_string')
+        handler.add_method('RUN', 'get_potential_energy_string')
+        handler.add_method('RUN', 'get_total_mass_string')
+        handler.add_method('EDIT', 'new_particle_string')
+        handler.add_method('UPDATE', 'new_particle_string')
+        handler.add_method('EDIT', 'add_step_acceleration_float64')
+        handler.add_method('UPDATE', 'add_step_acceleration_float64')
+        handler.add_method('INITIALIZED', 'set_word_length')
+        handler.add_method('EDIT', 'set_word_length')
+        handler.add_method('UPDATE', 'set_word_length')
+
+        handler.add_transition('RUN', 'UPDATE', 'new_particle_string', False)
+        handler.add_transition('RUN', 'UPDATE', 'set_velocity_string', False)
+        handler.add_transition('RUN', 'UPDATE', 'set_position_string', False)
+        handler.add_transition('RUN', 'UPDATE', 'set_radius_string', False)
+        handler.add_transition('RUN', 'UPDATE', 'set_mass_string', False)
+        handler.add_transition('RUN', 'UPDATE', 'set_state_string', False)
+        handler.add_transition('RUN', 'UPDATE', 'add_step_acceleration_float64', False)
+        handler.add_transition('RUN', 'UPDATE', 'set_word_length', False)
 
 

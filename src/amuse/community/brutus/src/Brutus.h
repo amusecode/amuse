@@ -7,18 +7,20 @@
 
 class Brutus {
   mpreal t;
-  int N;  
+  int N;
   vector<mpreal> data;
 
   mpreal tolerance;
-  int numBits;
+//  int numBits;
 
   mpreal eta, dt;
 
-  Cluster cl;
+//  Cluster cl;
   Bulirsch_Stoer bs;
 
   public:
+
+  Cluster cl;
 
   Brutus();
   Brutus(vector<mpreal> &data);
@@ -28,18 +30,18 @@ class Brutus {
   void set_data(vector<mpreal> &data);
   void set_eta(mpreal &eta);
   void set_tolerance(mpreal &tolerance);
-  void set_numBits(int &numBits);
+//  void set_numBits(int &numBits);
   void set_t_begin(mpreal &t_begin);
 
   mpreal get_eta(mpreal tolerance);
   mpreal get_tolerance();
-  int get_numBits();
-  int get_numBits(mpreal tolerance);
-  mpreal fit_slope(vector<mpreal> &x, vector<mpreal> &y);
+//  int get_numBits();
+//  int get_numBits(mpreal tolerance);
+//  mpreal fit_slope(vector<mpreal> &x, vector<mpreal> &y);
 
   void setup();
   void evolve(mpreal t_end);
-  
+
   mpreal get_t();
   vector<mpreal> get_data();
   vector<double> get_data_double();
