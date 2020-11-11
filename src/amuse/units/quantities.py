@@ -15,9 +15,9 @@ from amuse.units.core import zero_unit
 try:
     import astropy.units
     from amuse.units import units
-    astropy_available = True
+    HAS_ASTROPY = True
 except ImportError:
-    astropy_available = False
+    HAS_ASTROPY = False
 
 """
 """
@@ -271,7 +271,7 @@ class Quantity(object):
     def __ge__(self, other):
         return self.value_in(self.unit) >= to_quantity(other).value_in(self.unit)
 
-    if astropy_available:
+    if HAS_ASTROPY:
         def as_astropy_quantity(self):
             return to_astropy(self)
 
@@ -1379,7 +1379,7 @@ def searchsorted(a, v, **kwargs):
         return numpy.searchsorted(a, v, **kwargs)
 
 
-if astropy_available:
+if HAS_ASTROPY:
     def to_astropy(quantity):
         "Convert a quantity from AMUSE to Astropy"
 
