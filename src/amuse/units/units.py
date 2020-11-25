@@ -82,6 +82,7 @@ stellar_type = core.enumeration_unit(
         "Unknown stellar type",  # 16
         "Pre-main-sequence Star",  # 17
         "Planet",  # 18
+        "Brown Dwarf",  # 19
     ]
 )
 
