@@ -139,6 +139,7 @@ local int translate_stellar_type_to_int(stellar_type stp, const real mass) {
 
   switch (stp) {
     case Brown_Dwarf:
+      return 19;
     case Main_Sequence: 
       if (mass<0.1) {
             return 0;
