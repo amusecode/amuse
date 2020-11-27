@@ -14,7 +14,7 @@ from amuse.units.core import zero_unit
 
 try:
     import astropy.units
-    from amuse.units import units
+    import amuse.units.si
     HAS_ASTROPY = True
 except ImportError:
     HAS_ASTROPY = False
@@ -1393,18 +1393,19 @@ if HAS_ASTROPY:
         # Reconstruct the quantity in Astropy units
         ap_quantity = value
         for base_unit in unit_bases:
-            if base_unit[1] == units.m:
+            if base_unit[1] == amuse.units.si.m:
                 ap_quantity = ap_quantity * astropy.units.m**base_unit[0]
-            elif base_unit[1] == units.kg:
+            elif base_unit[1] == amuse.units.si.kg:
                 ap_quantity = ap_quantity * astropy.units.kg**base_unit[0]
-            elif base_unit[1] == units.s:
+            elif base_unit[1] == amuse.units.si.s:
                 ap_quantity = ap_quantity * astropy.units.s**base_unit[0]
-            elif base_unit[1] == units.A:
+            elif base_unit[1] == amuse.units.si.A:
                 ap_quantity = ap_quantity * astropy.units.A**base_unit[0]
-            elif base_unit[1] == units.K:
+            elif base_unit[1] == amuse.units.si.K:
                 ap_quantity = ap_quantity * astropy.units.K**base_unit[0]
-            elif base_unit[1] == units.mol:
+            elif base_unit[1] == amuse.units.si.mol:
                 ap_quantity = ap_quantity * astropy.units.mol**base_unit[0]
-            elif base_unit[1] == units.cd:
+            elif base_unit[1] == amuse.units.si.cd:
                 ap_quantity = ap_quantity * astropy.units.cd**base_unit[0]
         return ap_quantity
+    del amuse.units.si
