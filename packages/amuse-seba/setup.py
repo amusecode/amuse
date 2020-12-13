@@ -12,6 +12,7 @@ from support.setup_codes import setup_commands
 name = 'amuse-seba'
 author = 'The AMUSE team'
 author_email = 'info@amusecode.org'
+version += ".1"
 license_ = "Apache License 2.0"
 url = 'http://www.amusecode.org/'
 install_requires = [
@@ -31,7 +32,7 @@ packages = ['amuse.community.seba']
 package_data = {
 }
 
-mapping_from_command_name_to_command_class=setup_commands()
+mapping_from_command_name_to_command_class = setup_commands()
 
 setup(
     name=name,
