@@ -411,7 +411,7 @@ class SimpleWind(PositionGenerator):
 
     def evolve_model(self, time):
         if self.has_target():
-            while self.model_time <= time:
+            while self.model_time < time:
                 self.evolve_particles()
                 if self.has_new_wind_particles():
                     wind_gas = self.create_wind_particles()
