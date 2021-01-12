@@ -187,7 +187,7 @@ class ReportTable(object):
             
     
 def get_options_for_format(
-        format = 'csv', 
+        format = 'amuse', 
     ):
     """Retuns a list of tuples, each tuple contains the
     name of the option, a description of the option and
