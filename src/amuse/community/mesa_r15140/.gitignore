@@ -1,0 +1,5 @@
+src/
+
+*.mod
+*.o
+*.smod

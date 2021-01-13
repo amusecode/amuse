@@ -2,7 +2,8 @@
 import sys
 
 _CODES = [
-'athena', 'capreole', 'cachedse',     'gadget2',      'mesa',         'octgrav',      'twobody',
+'athena', 'capreole', 'cachedse',     'gadget2',      'mesa', 'mesa_r15140'        
+'octgrav',      'twobody',
 'capreole',     'hermite0',     'mocassin',     'phiGRAPE',
 'athena',       'evtwin',       'hop',          'seba',
 'bhtree',       'evtwin2sse',   'interface',    'smallN',

@@ -1,0 +1,51 @@
+From 82b23867e1a63cab2993406b145c27aaaaa51160 Mon Sep 17 00:00:00 2001
+From: Robert Farmer <r.j.farmer@uva.nl>
+Date: Tue, 16 Feb 2021 11:55:46 +0100
+Subject: [PATCH 2/6] Patch location of ndiff and makedepf90
+
+---
+ install | 7 ++++---
+ 1 file changed, 4 insertions(+), 3 deletions(-)
+
+diff --git a/install b/install
+index c436c7c..d021d8b 100755
+--- a/install
++++ b/install
+@@ -133,7 +133,7 @@ fi
+ # The ndiff utility we want recognizes this will return 0.
+ # We send the output, which is on stderr, to dev/null
+ 
+-ndiff -? 2> /dev/null
++$MESA_DIR/utils/ndiff-2.00/ndiff -? 2> /dev/null
+ if [ $? -ne 0 ]
+ then
+ 	echo
+@@ -169,7 +169,7 @@ then
+ 	exit 1
+ fi
+ 
+-makedepf90 > /dev/null
++$MESA_DIR/utils/makedepf90-2.8.8/makedepf90 > /dev/null
+ if [ $? -ne 0 ]
+ then
+ 	echo
+@@ -201,7 +201,6 @@ then
+ 	exit 1
+ fi
+ 
+-
+ if [ ! -r lib ]
+ then
+   mkdir lib
+@@ -318,6 +317,8 @@ do_one_parallel binary
+ 
+ do_one_parallel astero
+ 
++# Cleanup bad symlinks left as gyre was not installed
++find . -xtype l -delete
+ 
+ 
+ echo
+-- 
+2.29.2
+
