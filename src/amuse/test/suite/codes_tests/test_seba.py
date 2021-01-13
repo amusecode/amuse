@@ -490,12 +490,15 @@ class TestSeBa(TestWithMPI):
         self.assertAlmostRelativeEqual(p.mass, 0.9906 | units.MSun, 4)
 
     def test8(self):
+        """
+        Test to check setting/getting the semi-major axis of a binary
+        """
         instance = self.new_instance_of_an_optional_code(SeBa)
         instance.parameters.supernova_kick_velocity = 0 | units.kms
         instance.commit_parameters()
         print("v_kick=", instance.parameters.supernova_kick_velocity)
         stars = Particles(2)
-        stars[0].mass = 10.0 | units.MSun
+        stars[0].mass = 10 | units.MSun
         stars[1].mass = 9 | units.MSun
 
         semi_major_axis = 10000 | units.AU
