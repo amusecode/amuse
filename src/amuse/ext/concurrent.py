@@ -124,8 +124,8 @@ class MPISharedParticlesProxy(object):
         attributes_dump = numpy.zeros(attributes_dump_len, dtype='uint8')
         self.concurrent_processes.mpi_comm.Bcast([attributes_dump, MPI.CHARACTER], root=self.concurrent_processes.ROOT)
         
-        units = pickle.loads(units_dump.tostring())
-        attributes = pickle.loads(attributes_dump.tostring())
+        units = pickle.loads(units_dump.tobytes())
+        attributes = pickle.loads(attributes_dump.tobytes())
         values = []
         for x in units:
             value = numpy.zeros(number_of_particles, dtype='float64')
