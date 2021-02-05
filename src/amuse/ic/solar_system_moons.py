@@ -5,7 +5,7 @@ from amuse.datamodel import Particles, Particle
 from amuse.community.kepler.interface import Kepler
 
 from amuse.ext.solarsystem import solar_system_in_time
- 
+
 #mass in units of 10^16kg
 _lunar_data = [
     ["Earth", "Moon",         7.34767309e+6, 1.737, 384400., 0.0554, 318.15, 135.27, 5.16, 125.08],
@@ -212,8 +212,13 @@ def get_position(mass_sun, mass_planet, ecc, semi, mean_anomaly, incl, argument,
   a2 = ([1.0, 0.0, 0.0], [0.0, numpy.cos(incl), -numpy.sin(incl)], [0.0, numpy.sin(incl), numpy.cos(incl)])
   a3 = ([numpy.cos(argument), -numpy.sin(argument), 0.0], [numpy.sin(argument), numpy.cos(argument), 0.0], [0.0, 0.0, 1.0])
   A = numpy.dot(numpy.dot(a1,a2),a3)
-  r_vec = numpy.dot(A,numpy.reshape(r,3,1))
-  v_vec = numpy.dot(A,numpy.reshape(v,3,1))
+  print(A, r)
+  
+  # old version from P2.7
+  #  r_vec = numpy.dot(A,numpy.reshape(r,3,1))
+  #  v_vec = numpy.dot(A,numpy.reshape(v,3,1))
+  r_vec = numpy.dot(A,numpy.reshape(r,3,'F'))
+  v_vec = numpy.dot(A,numpy.reshape(v,3,'F'))
   
   # for relative vectors
   r[0] = r_vec[0]
@@ -237,7 +242,7 @@ def get_moons_for_planet(planet, delta_JD=0.|units.day):
         ('mass','<f8'), ('radius','<f8'), ('semimajor_axis','<f8'), 
         ('eccentricity','<f8'), ('argument_of_peri','<f8'),
         ('mean_anomaly','<f8'), ('inclination','<f8'), ('longitude_oan','<f8')])
-  moon_data = data[data['planet_name']==planet.name]
+  moon_data = data[data['planet_name']==planet.name.encode('UTF-8')]
   print("Planet=", planet.name, "moon=", moon_data["name"])
   moons = Particles()
   if len(moon_data["name"]):
