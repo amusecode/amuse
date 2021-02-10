@@ -276,6 +276,7 @@ function map_remove_particle(id) result(ret)
     return
   endif  
 
+  mass(index)=0
   pindex(index)=-1
   nbod=nbod-1
 
