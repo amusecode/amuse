@@ -3,5 +3,4 @@
 0002-Patch-location-of-ndiff-and-makedepf90.patch
 0003-Add-mpi-to-utils.patch
 0004-Fix-adipls-and-gyre-builds.patch
-0005-Update-makefile.patch
 0006-Adipls-skip-tests.patch

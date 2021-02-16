@@ -121,7 +121,7 @@ $(MESA_LIB):  $(MESA_DIR)/install
 patch:
 	mkdir -p $(MESA_DIR)/lib $(MESA_DIR)/include
 	$(PYTHON) ./patch_files.py
-	cp $(MESA_DIR)/utils/makefile_header_non_mesasdk $(MESA_DIR)/utils/makefile_header
+	cp $(PATCHES_DIR)/makefile_header_non_mesasdk $(MESA_DIR)/utils/makefile_header
 	cp ./src/crmath-1.2/libcrmath.a $(MESA_DIR)/lib/.
 	cp ./src/crmath-1.2/*.mod $(MESA_DIR)/include/.
 	cp ./src/crmath-1.2/*.smod $(MESA_DIR)/include/.
