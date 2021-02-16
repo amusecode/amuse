@@ -25,8 +25,3 @@ print(star.get_history('time_step')) # Previous step
 
 print(star.time_step) # Next step
 
-#Acess non existant history column
-star.get_history('dsafafasa')
-
-#Acess non existant profile column
-xx = star.get_profile('asdsada')
