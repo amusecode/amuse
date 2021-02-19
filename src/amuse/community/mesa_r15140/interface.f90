@@ -232,7 +232,7 @@ module amuse_mesa
    integer function get_number_of_particles(AMUSE_value)
       integer, intent(out) :: AMUSE_value
       AMUSE_value = 1
-      get_number_of_particles = -1
+      get_number_of_particles = how_many_allocated_star_ids()
    end function get_number_of_particles
 
 ! Return the metallicity parameter

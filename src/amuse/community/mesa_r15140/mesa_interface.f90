@@ -214,6 +214,19 @@ module mesa_interface
 
     end subroutine max_num_stars
 
+
+    integer function how_many_allocated_star_ids()
+        integer :: id
+        how_many_allocated_star_ids = 0
+        if (have_initialized_star_handles) then
+            do id = 1, max_star_handles
+                if (star_handles(id)% in_use .eqv. .true.) &
+                    how_many_allocated_star_ids = how_many_allocated_star_ids+1
+            end do
+        end if
+    end function how_many_allocated_star_ids
+
+
 ! ***********************************************************************
 ! Routines for setting stellar parameters
 ! ***********************************************************************
