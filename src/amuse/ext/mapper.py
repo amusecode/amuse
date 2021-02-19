@@ -4,8 +4,12 @@
 Make 2D maps from SPH particles
 """
 
+import logging
 from amuse.units import units, constants, nbody_system
-from amuse.community.fi.interface import FiMap
+try:
+    from amuse.community.fi.interface import FiMap
+except ImportError:
+    FiMap = False
 
 
 def gas_mean_molecular_weight(h2ratio=1):
@@ -44,22 +48,43 @@ class MapHydro():
         def __init__(self):
             self.counts = None
             self.mass = None
-            self.temp = None
+            self.temperature = None
             self.vx = None
             self.vy = None
             self.vz = None
 
     def __init__(self, gas=None, stars=None, sinks=None):
-        self.set_bins()
-        self.set_width()
-        self.set_axes()
-        self.set_offset()
+        """
+        Sets up MapHydro instance. Maps are created as-needed.
+        Usage:
+        mapper = MapHydro(gas=gas, stars=None, sinks=None)
+
+        mapper.width = 10 | units.pc
+        mapper.bins = 800
+        mapper.offset = (0, 0, 0) | units.pc
+
+        counts_map = mapper.counts
+        density_map = mapper.density
+        vx_map = mapper.vx
+        vy_map = mapper.vy
+        temperature_map = mapper.temperature
+        mapper.stop()
+        """
+        self.__bins_x = 800
+        self.__bins_y = 800
+        self.__width = 1 | units.pc
+        self.__axis_x = 'x'
+        self.__axis_y = 'y'
+        self.__axis_z = 'z'
+        self.__offset_x = 0 | units.pc
+        self.__offset_y = 0 | units.pc
+        self.__offset_z = 0 | units.pc
         self.__maps = self.Maps()
         self.__unit_mass = units.MSun
         self.__unit_length = units.pc
         self.__unit_time = units.Myr
         self.__unit_speed = units.kms
-        self.__unit_temp = units.K
+        self.__unit_temperature = units.K
         self.__mapper = None
 
         self.__gas = gas
@@ -78,6 +103,8 @@ class MapHydro():
             self.__mapper.stop()
             self.__mapper = None
         del self.__gas
+        del self.__maps
+        self.__maps = self.Maps()
         self.__state = "STOP"
 
     def __new_gas_mapper(self):
@@ -102,8 +129,9 @@ class MapHydro():
                 # positive y = top layer
                 mapper.parameters.projection_direction = [0, -1, 0]
             else:
-                print('Wrong input for x_axis or y_axis: please check!')
-                return None
+                raise ValueError(
+                    'Incorrect value for x_axis or y_axis'
+                )
 
         # positive y = up
         if y_axis == 'y':
@@ -115,8 +143,9 @@ class MapHydro():
                 # negative x = top layer
                 mapper.parameters.projection_direction = [1, 0, 0]
             else:
-                print('Wrong input for x_axis or y_axis: please check!')
-                return None
+                raise ValueError(
+                    'Incorrect value for x_axis or y_axis'
+                )
 
         # positive z = up
         if y_axis == 'z':
@@ -128,8 +157,9 @@ class MapHydro():
                 # positive x = top layer
                 mapper.parameters.projection_direction = [-1, 0, 0]
             else:
-                print('Wrong input for x_axis or y_axis: please check!')
-                return None
+                raise ValueError(
+                    'Incorrect value for x_axis or y_axis'
+                )
 
         mapper.parameters.target_x = self.__offset_x
         mapper.parameters.target_y = self.__offset_y
@@ -139,46 +169,97 @@ class MapHydro():
         self.__mapper = mapper
         self.__state = "RUN"
 
-    def set_axes(self, x='x', y='y', z='z'):
+    @property
+    def axes(self):
+        "Get axes"
+        return (self.__axis_x, self.__axis_y, self.__axis_z)
+
+    @axes.setter
+    def axes(self, axes):
         "Set axes"
-        self.__axis_x = x
-        self.__axis_y = y
-        self.__axis_z = z
-        self.__state = "EDIT"
+        self.__axis_x = axes[0]
+        self.__axis_y = axes[1]
+        self.__axis_z = axes[2]
 
-    def set_offset(self, x=0 | units.pc, y=0 | units.pc, z=0 | units.pc):
-        "Set origin offset"
-        self.__offset_x = x
-        self.__offset_y = y
-        self.__offset_z = z
-        self.__state = "EDIT"
+    @property
+    def xmin(self):
+        "Return smallest value on x axis"
+        return self.__offset_x - (self.width/2)
 
-    def get_offset(self):
+    @property
+    def xmax(self):
+        "Return largest value on x axis"
+        return self.__offset_x + (self.width/2)
+
+    @property
+    def ymin(self):
+        "Return smallest value on x axis"
+        return self.__offset_y - (self.height/2)
+
+    @property
+    def ymax(self):
+        "Return largest value on x axis"
+        return self.__offset_y + (self.height/2)
+
+    @property
+    def extent(self):
+        "Return image extent"
+        return (
+            self.xmin.value_in(self.__unit_length),
+            self.xmax.value_in(self.__unit_length),
+            self.ymin.value_in(self.__unit_length),
+            self.ymax.value_in(self.__unit_length),
+        )
+
+    @property
+    def offset(self):
         "Get origin offset"
         return self.__offset_x, self.__offset_y, self.__offset_z
 
-    def set_width(self, width=1 | units.pc):
+    @offset.setter
+    def offset(self, offset=(0, 0, 0) | units.pc):
+        "Set origin offset"
+        self.__offset_x = offset[0]
+        self.__offset_y = offset[1]
+        self.__offset_z = offset[2]
+        self.__state = "EDIT"
+
+    @property
+    def height(self):
+        "Get height of map"
+        return self.__width * (self.__bins_y / self.__bins_x)
+
+    @property
+    def width(self):
+        "Get width of map"
+        return self.__width
+
+    @width.setter
+    def width(self, width=1 | units.pc):
         "Set width of map"
         self.__width = width
         self.__state = "EDIT"
 
-    def get_width(self):
-        "Get width of map"
-        return self.__width
-
-    def set_bins(self, x=800, y=None):
-        "Set number of bins"
-        if y is None:
-            y = x
-        self.__bins_x = x
-        self.__bins_y = y
-        self.__state = "EDIT"
-
-    def get_bins(self):
+    @property
+    def bins(self):
         "Get number of bins"
         return self.__bins_x, self.__bins_y
 
-    def get_counts(self):
+    @bins.setter
+    def bins(self, bins):
+        "Set number of bins"
+        if isinstance(bins, (int)):
+            self.__bins_x = bins
+            self.__bins_y = bins
+        elif isinstance(bins, (list, tuple)):
+            self.__bins_x = bins[0]
+            self.__bins_y = bins[1]
+        else:
+            raise TypeError("bins needs to be 'int', 'tuple' or 'list'")
+        self.__state = "EDIT"
+
+    @property
+    def counts(self):
         "Return a counts map"
         if (
             (self.__maps.counts is not None)
@@ -193,7 +274,8 @@ class MapHydro():
         self.__maps.counts = self.__mapper.image.pixel_value.transpose()
         return self.__maps.counts
 
-    def get_mass(self):
+    @property
+    def mass(self):
         "Return a mass map"
         if self.__constant_mass:
             return self.__maps.counts * self.__constant_mass
@@ -213,22 +295,24 @@ class MapHydro():
         ) | self.__unit_mass
         return self.__maps.mass
 
-    def get_column_density(self):
+    @property
+    def column_density(self):
         "Return a column density map"
         length_x = self.__width / self.__bins_x
         length_y = length_x * (self.__bins_y / self.__bins_x)
         pixel_size = length_x * length_y
-        map_mass = self.get_mass()
+        map_mass = self.mass
 
         return map_mass / pixel_size
 
-    def get_temperature(self):
+    @property
+    def temperature(self):
         "Return a temperature map"
         if (
-            (self.__maps.temp is not None)
+            (self.__maps.temperature is not None)
             and (self.__state != "EDIT")
         ):
-            return self.__maps.temp
+            return self.__maps.temperature
 
         if self.__state != "RUN":
             self.__new_gas_mapper()
@@ -240,15 +324,16 @@ class MapHydro():
             gmmw = gas_mean_molecular_weight()
         temperature = u_to_temperature(gas.u, gmmw=gmmw)
         self.__mapper.particles.weight = temperature.value_in(
-            self.__unit_temp)
-        counts = self.get_counts()
-        self.__maps.temp = (
+            self.__unit_temperature)
+        counts = self.counts
+        self.__maps.temperature = (
             self.__mapper.image.pixel_value.transpose(
-            ) | self.__unit_temp
+            ) | self.__unit_temperature
         ) / counts
-        return self.__maps.temp
+        return self.__maps.temperature
 
-    def get_vx(self):
+    @property
+    def vx(self):
         "Return a vx map"
         if (
             (self.__maps.vx is not None)
@@ -266,7 +351,8 @@ class MapHydro():
         ) | self.__unit_speed
         return self.__maps.vx
 
-    def get_vy(self):
+    @property
+    def vy(self):
         "Return a vy map"
         if (
             (self.__maps.vy is not None)
@@ -284,7 +370,8 @@ class MapHydro():
         ) | self.__unit_speed
         return self.__maps.vy
 
-    def get_vz(self):
+    @property
+    def vz(self):
         "Return a vz map"
         if (
             (self.__maps.vz is not None)
@@ -301,3 +388,18 @@ class MapHydro():
         self.__maps.vz = self.__mapper.image.pixel_value.transpose(
         ) | self.__unit_speed
         return self.__maps.vz
+
+    @property
+    def gas(self):
+        "Return gas"
+        return self.__gas
+
+    @property
+    def stars(self):
+        "Return stars"
+        return self.__stars
+
+    @property
+    def sinks(self):
+        "Return sinks"
+        return self.__sinks
