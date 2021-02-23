@@ -73,7 +73,12 @@ class TrackLiteratureReferences(object):
         if self.must_show_literature_references_atexit:
             string = self.all_literature_references_string()
             if string:
-                prefix = "\n\nYou have used the following codes, which contain literature references:\n"
+                prefix = """
+
+Thank you for using AMUSE!
+In this session you have used the modules below. Please cite any relevant articles:
+
+"""
                 print(prefix + self.all_literature_references_string())
         
     
