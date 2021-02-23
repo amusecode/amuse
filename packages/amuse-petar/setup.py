@@ -1,6 +1,4 @@
-import sys
-import os
-from support.version import version, main_version
+#!/usr/bin/env python3
 from support.classifiers import classifiers
 
 from setuptools import setup
@@ -9,14 +7,13 @@ import support
 support.use("system")
 from support.setup_codes import setup_commands
 
-version += ".5"
 name = 'amuse-petar'
 author = 'The AMUSE team'
 author_email = 'info@amusecode.org'
 license_ = "Apache License 2.0"
 url = 'http://www.amusecode.org/'
 install_requires = [
-    'amuse-framework>=%s' % (main_version),
+    'amuse-framework',
 ]
 description = 'The Astrophysical Multipurpose Software Environment - PeTar'
 with open("README.md", "r") as fh:
@@ -27,16 +24,23 @@ extensions = []
 
 all_data_files = []
 
-packages = ['amuse.community.petar']
+packages = [
+    'amuse.community.petar',
+]
 
 package_data = {
 }
 
-mapping_from_command_name_to_command_class=setup_commands()
+mapping_from_command_name_to_command_class = setup_commands()
 
 setup(
     name=name,
-    version=version,
+    use_scm_version={
+        "root": "../..",
+        "relative_to": __file__,
+        "write_to": "src/amuse/community/petar/version.py",
+    },
+    setup_requires=['setuptools_scm'],
     classifiers=classifiers,
     url=url,
     author_email=author_email,
@@ -49,7 +53,9 @@ setup(
     python_requires=">=3.5",
     cmdclass=mapping_from_command_name_to_command_class,
     ext_modules=extensions,
-    package_dir={'amuse.community.petar': 'src/amuse/community/petar'},
+    package_dir={
+        'amuse.community.petar': 'src/amuse/community/petar',
+    },
     packages=packages,
     package_data=package_data,
     data_files=all_data_files,
