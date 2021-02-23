@@ -1,6 +1,5 @@
 import sys
 import os
-from support.version import version
 from support.classifiers import classifiers
 
 from setuptools import setup, find_packages
@@ -44,7 +43,12 @@ mapping_from_command_name_to_command_class=setup_commands()
 
 setup(
     name=name,
-    version=version,
+    use_scm_version={
+        "root": "../..",
+        "relative_to": __file__,
+        "write_to": "src/amuse/version.py",
+    },
+    setup_requires=['setuptools_scm'],
     classifiers=classifiers,
     url=url,
     author_email=author_email,
