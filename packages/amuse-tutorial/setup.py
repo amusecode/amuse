@@ -32,7 +32,7 @@ setup(
     use_scm_version={
         "root": "../..",
         "relative_to": __file__,
-        "write_to": "src/amuse/community/tutorial/version.py",
+        "write_to": "share/amuse/tutorial/version.py",
     },
     setup_requires=['setuptools_scm'],
     classifiers=classifiers,
