@@ -25,7 +25,7 @@ extensions = []
 all_data_files = []
 
 packages = [
-    'amuse.community.kepler-orbiters',
+    'amuse.community.kepler_orbiters',
 ]
 
 package_data = {
