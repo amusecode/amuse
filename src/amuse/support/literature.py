@@ -24,16 +24,16 @@ ClassWithLiteratureReferences = namedtuple(\
     "name_of_class_with_refs literature_references_of_class"
 )
 LiteratureReference = namedtuple(
-    "LiteratureReference", 
+    "LiteratureReference",
     "id footnote"
 )
 
 class TrackLiteratureReferences(object):
     """
-        .. [#] Portegies Zwart, S. & McMillan, S.L.W., 2018, "Astrophysical Recipes: the art of AMUSE", AAS IOP Astronomy publishing (411 pages) [2018araa.book.....P]
-        .. [#] ** Portegies Zwart, S. et al., 2013, Multi-physics Simulations Using a Hierarchical Interchangeable Software Interface, Computer Physics Communications 183, 456-468 [2013CoPhC.183..456P]
-        .. [#] ** Pelupessy, F. I. et al., 2013, The Astrophysical Multipurpose Software Environment, Astronomy and Astrophysics 557, 84 [2013A&A...557A..84P]
-        .. [#] Portegies Zwart, S. et al., 2009, A multiphysics and multiscale software environment for modeling astrophysical systems, *New Astronomy*, **Volume 14**, **Issue 4**, 369-378 [2009NewA...14..369P]
+        .. [#] [2018araa.book.....P] Portegies Zwart, S. & McMillan, S.L.W., 2018
+        .. [#] [2013CoPhC.183..456P] ** Portegies Zwart, S. et al., 2013
+        .. [#] [2013A&A...557A..84P] ** Pelupessy, F. I. et al., 2013
+        .. [#] [2009NewA...14..369P] Portegies Zwart, S. et al., 2009
     """
     INSTANCE = None
     
