@@ -10,6 +10,10 @@ except ValueError:
 import docutils.nodes as nodes
 from collections import namedtuple
 from amuse.support import exceptions
+try:
+    from amuse.version import version
+except ImportError:
+    version = "unknown version"
 
 import atexit
 import sys
@@ -75,10 +79,10 @@ class TrackLiteratureReferences(object):
             if string:
                 prefix = """
 
-Thank you for using AMUSE!
+Thank you for using AMUSE (version {version})!
 In this session you have used the modules below. Please cite any relevant articles:
 
-"""
+""".format(version=version)
                 print(prefix + self.all_literature_references_string())
         
     
