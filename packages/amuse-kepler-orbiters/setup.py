@@ -38,7 +38,7 @@ setup(
     use_scm_version={
         "root": "../..",
         "relative_to": __file__,
-        "write_to": "src/amuse/community/kepler-orbiters/version.py",
+        "write_to": "src/amuse/community/kepler_orbiters/version.py",
     },
     setup_requires=['setuptools_scm'],
     classifiers=classifiers,
@@ -54,7 +54,7 @@ setup(
     cmdclass=mapping_from_command_name_to_command_class,
     ext_modules=extensions,
     package_dir={
-        'amuse.community.kepler-orbiters': 'src/amuse/community/kepler-orbiters',
+        'amuse.community.kepler_orbiters': 'src/amuse/community/kepler_orbiters',
     },
     packages=packages,
     package_data=package_data,
