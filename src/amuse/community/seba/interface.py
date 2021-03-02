@@ -23,14 +23,6 @@ class SeBaInterface(CodeInterface, se.StellarEvolutionInterface, LiteratureRefer
 
     include_headers = ['worker_code.h', 'stopcond.h']
 
-    try:
-        from .version import version
-    except ImportError:
-        try:
-            from amuse.version import version
-        except ImportError:
-            version = "unknown"
-
     def __init__(self, **options):
         CodeInterface.__init__(self, name_of_the_worker="seba_worker", **options)
         LiteratureReferencesMixIn.__init__(self)

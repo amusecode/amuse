@@ -44,13 +44,6 @@ class FiInterface(
     MODE_NORMAL = 'normal'
     MODE_NORMAL_OPENMP = 'openmp'
     MODE_PERIODIC_BOUNDARIES = 'periodic'
-    try:
-        from .version import version
-    except ImportError:
-        try:
-            from amuse.version import version
-        except ImportError:
-            version = "unknown"
     
     def __init__(self, mode = MODE_NORMAL,  **options):
         self.mode = mode
