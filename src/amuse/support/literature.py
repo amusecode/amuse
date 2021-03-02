@@ -80,10 +80,10 @@ class TrackLiteratureReferences:
             if string:
                 prefix = """
 
-Thank you for using AMUSE!.
+Thank you for using AMUSE!
 In this session you have used the modules below. Please cite any relevant articles:
 
-""".format(version=amuse_version)
+"""
                 print(prefix + self.all_literature_references_string())
         
     
