@@ -11,9 +11,9 @@ import docutils.nodes as nodes
 from collections import namedtuple
 from amuse.support import exceptions
 try:
-    from amuse.version import version
+    from amuse.version import version as amuse_version
 except ImportError:
-    version = "unknown version"
+    amuse_version = "unknown version"
 
 import atexit
 import sys
@@ -28,7 +28,7 @@ LiteratureReference = namedtuple(
     "id footnote"
 )
 
-class TrackLiteratureReferences(object):
+class TrackLiteratureReferences:
     """
         .. [#] [2018araa.book.....P] Portegies Zwart, S. & McMillan, S.L.W., 2018
         .. [#] [2013CoPhC.183..456P] ** Portegies Zwart, S. et al., 2013
@@ -79,10 +79,10 @@ class TrackLiteratureReferences(object):
             if string:
                 prefix = """
 
-Thank you for using AMUSE (version {version})!
+Thank you for using AMUSE!.
 In this session you have used the modules below. Please cite any relevant articles:
 
-""".format(version=version)
+""".format(version=amuse_version)
                 print(prefix + self.all_literature_references_string())
         
     
@@ -95,8 +95,18 @@ In this session you have used the modules below. Please cite any relevant articl
         for current_class in cls.__mro__:
             docstring_in = current_class.__doc__
             if docstring_in:
-                objectname = current_class.__name__
-                doctree  = core.publish_doctree(source = docstring_in)
+                if hasattr(current_class, "version"):
+                    version = current_class.version
+                else:
+                    version = amuse_version
+                name = current_class.__name__
+                if name.endswith("Interface"):
+                    name = "AMUSE-" + name[:-9]
+                objectname = "{name} ({version})".format(
+                    name=name,
+                    version=version,
+                )
+                doctree = core.publish_doctree(source = docstring_in)
                 ref_keys = list(doctree.ids.keys())
                 natsort(ref_keys)
                 ref_values = [doctree.ids[key] for key in ref_keys]
@@ -129,7 +139,7 @@ In this session you have used the modules below. Please cite any relevant articl
             for literature_reference_of_class_item in s.literature_references_of_class:
                 lines.append('\t\t%s' % (literature_reference_of_class_item.footnote))
         
-        lines.append('\n\t"AMUSE"')
+        lines.append('\n\t"AMUSE (%s)"' % amuse_version)
         amuse_list = self.get_literature_list_of_class(type(self))
         for x in amuse_list:
             for literature_reference_of_class_item in x.literature_references_of_class:
