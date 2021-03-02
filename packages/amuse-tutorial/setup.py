@@ -1,4 +1,4 @@
-from support.version import version, main_version
+#!/usr/bin/env python3
 from support.classifiers import classifiers
 from support.misc import find_data_files
 
@@ -11,14 +11,14 @@ license_ = "Apache License 2.0"
 url = 'http://www.amusecode.org/'
 install_requires = [
     'matplotlib>=2.2',
-    'amuse-framework>=%s' % main_version,
-    'amuse-bhtree>=%s' % main_version,
-    'amuse-hermite>=%s' % main_version,
-    'amuse-seba>=%s' % main_version,
-    'amuse-sphray>=%s' % main_version,
+    'amuse-framework',
+    'amuse-bhtree',
+    'amuse-hermite',
+    'amuse-seba',
+    'amuse-sphray',
     'notebook',
 ]
-description = 'The Astrophysical Multipurpose Software Environment: tutorial'
+description = 'The Astrophysical Multipurpose Software Environment - tutorial'
 with open("README.md", "r") as fh:
     long_description = fh.read()
 long_description_content_type = "text/markdown"
@@ -29,7 +29,12 @@ all_data_files = find_data_files(
 
 setup(
     name=name,
-    version=version,
+    use_scm_version={
+        "root": "../..",
+        "relative_to": __file__,
+        "write_to": "tutorial/version.py",
+    },
+    setup_requires=['setuptools_scm'],
     classifiers=classifiers,
     url=url,
     author_email=author_email,
