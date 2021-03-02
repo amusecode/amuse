@@ -18,6 +18,7 @@ except ImportError:
 import atexit
 import sys
 import traceback
+import importlib
 
 ClassWithLiteratureReferences = namedtuple(\
     "ClassWithLiteratureReferences", 
@@ -96,7 +97,7 @@ In this session you have used the modules below. Please cite any relevant articl
             docstring_in = current_class.__doc__
             if docstring_in:
                 if hasattr(current_class, "version"):
-                    version = current_class.version
+                    version = current_class.version()
                 else:
                     version = amuse_version
                 name = current_class.__name__
@@ -158,6 +159,20 @@ class LiteratureReferencesMixIn(object):
 
     def __init__(self):
         self.register_use()
+
+    @classmethod
+    def version(cls):
+        try:
+            version = importlib.import_module(
+                '..version',
+                cls.__module__
+            ).version
+        except ImportError:
+            try:
+                from amuse.version import version
+            except ImportError:
+                version = "unknown"
+        return version
  
     @classmethod
     def print_literature_references(cls):
