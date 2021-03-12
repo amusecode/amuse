@@ -172,7 +172,7 @@ class CodeWithNamelistParameters(_CodeWithFileParameters):
 
     def _read_file(self, inputfile):
         _nml_params = f90nml.read(inputfile).todict()
-        rawvals=dict()
+        rawvals=OrderedDict()
 
         for group, d in _nml_params.items():
             for short, val in d.items():
@@ -182,17 +182,23 @@ class CodeWithNamelistParameters(_CodeWithFileParameters):
         return rawvals, dict()
 
     def _write_file(self, outputfile, rawvals, do_patch=False, nml_file=None):
-        patch=defaultdict( dict )
+        patch=OrderedDict()
 
         for key,rawval in rawvals.items():
             if rawval is None:  # omit if value is None
                 continue
             if isinstance(rawval,numpy.ndarray):
                 rawval=list(rawval)  # necessary until f90nml supports numpy arrays
+            if key[1] not in patch:
+              patch[key[1]]=OrderedDict()
             patch[key[1]][key[0]]=rawval
         
         if do_patch:
-            f90nml.patch(nml_file or self._nml_file,patch,outputfile)
+            _tmp=f90nml.read(nml_file or self._nml_file)
+            _tmp.update(patch)
+            f90nml.write(_tmp, outputfile, force=True)      
+            # workaround because this can produce errors (f90nml 1.1.2):
+            #~ f90nml.patch(nml_file or self._nml_file,f90nml.Namelist(patch),outputfile)
         else:
             f90nml.write(patch, outputfile, force=True)      
 
@@ -218,7 +224,9 @@ class CodeWithIniFileParameters(_CodeWithFileParameters):
     read and write INI files. Every section corresponds to a different parameter set.
     """
     _ptypes=["ini", "ini+normal"]
-    def __init__(self, _parameters=dict(), prefix="ini_"):
+    def __init__(self, _parameters=None, prefix="ini_"):
+        if _parameters is None:
+          _parameters=dict()
         self._parameters=dict([((x["name"],x["group_name"]),x) for x in _parameters])
         self._optionxform=str
         self._prefix=prefix
