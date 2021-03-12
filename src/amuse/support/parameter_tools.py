@@ -1,7 +1,7 @@
 import numpy
 
 from configparser import ConfigParser
-from collections import defaultdict
+from collections import defaultdict, OrderedDict
 from io import StringIO
 
 try:
@@ -22,16 +22,21 @@ dtype_str={ str: "str",
             bool: "bool",
             int: "int32",
             float: "float64",
+            complex: "complex",
+            list: "list",
+            dict: "dict",
+            OrderedDict: "OrderedDict",
           }
 
 def parameter_list_py_code(parameters, label="parameters"):
     header="""from omuse.units import units
+from collections import OrderedDict
 
 {label} = (
 
 """.format(label=label)
 
-    template='  dict(name={name}, group_name={group}, short={short}, dtype={dtype}, default={default}, description={description}, ptype={ptype}),\n'
+    template='  dict(group_name={group}, name={name}, short={short}, dtype={dtype}, default={default}, description={description}, ptype={ptype}),\n'
 
     footer=""")
     """
@@ -166,7 +171,7 @@ class CodeWithNamelistParameters(_CodeWithFileParameters):
         self._file=None
 
     def _read_file(self, inputfile):
-        _nml_params = f90nml.read(inputfile)
+        _nml_params = f90nml.read(inputfile).todict()
         rawvals=dict()
 
         for group, d in _nml_params.items():
