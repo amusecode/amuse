@@ -167,7 +167,7 @@ class LiteratureReferencesMixIn(object):
                 '..version',
                 cls.__module__
             ).version
-        except ImportError:
+        except (ImportError, ValueError):
             try:
                 from amuse.version import version
             except ImportError:
