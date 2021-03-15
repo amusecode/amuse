@@ -639,7 +639,7 @@ class StoreHDF(object):
                 if overwrite_file:
                     os.remove(filename)
                 else:
-                    raise Exception("Opening file for write with overwrite_file is False but file {0} exists".format(filename))
+                    raise FileExistsError("Opening file for write with overwrite_file is False but file {0} exists".format(filename))
 
         if append_to_file:
             if os.access(filename, os.F_OK) and not os.access(filename, os.W_OK):
