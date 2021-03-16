@@ -111,6 +111,7 @@ _community_codes = [
     "Fi",
     "Gadget2",
     "Gadgetmp2",
+    "gpuhermite8",
     "Athena",
     "Capreole",
     "MpiAmrVac",

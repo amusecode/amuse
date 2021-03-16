@@ -139,8 +139,8 @@ int gadgetmp2::force_treebuild_single(int npart)
         epsilon = All.ForceSoftening[P[i].Type];
 
         key = peano_hilbert_key(((P[i].Pos[0] - DomainCorner[0]) * DomainFac).toDouble(),
-                                ((P[i].Pos[1] - DomainCorner[1]) * DomainFac).toDouble(),
-                                ((P[i].Pos[2] - DomainCorner[2]) * DomainFac).toDouble(), BITS_PER_DIMENSION);
+                ((P[i].Pos[1] - DomainCorner[1]) * DomainFac).toDouble(),
+                ((P[i].Pos[2] - DomainCorner[2]) * DomainFac).toDouble(), BITS_PER_DIMENSION);
 
         no = 0;
         while(TopNodes[no].Daughter >= 0)
@@ -219,7 +219,7 @@ int gadgetmp2::force_treebuild_single(int npart)
                     subnode += 2;
                 if(P[th].Pos[2] > nfreep->center[2])
                     subnode += 4;
-                #ifndef NOTREERND
+#ifndef NOTREERND
                 if(nfreep->len < const_0_001 * epsilon)
                 {
                     /* seems like we're dealing with particles at identical (or extremely close)
@@ -232,7 +232,7 @@ int gadgetmp2::force_treebuild_single(int npart)
                     if(subnode >= 8)
                         subnode = 7;
                 }
-                #endif
+#endif
                 nfreep->u.suns[subnode] = th;
 
                 th = nfree;	/* resume trying to insert the new particle at
@@ -327,7 +327,7 @@ void gadgetmp2::force_create_empty_nodes(int no, int topnode, int bits, int x, i
                     }
 
                     force_create_empty_nodes(*nextfree - 1, TopNodes[topnode].Daughter + sub,
-                        bits + 1, 2 * x + i, 2 * y + j, 2 * z + k, nodecount, nextfree);
+                                             bits + 1, 2 * x + i, 2 * y + j, 2 * z + k, nodecount, nextfree);
                 }
     }
 }
@@ -371,7 +371,7 @@ void gadgetmp2::force_insert_pseudo_particles(void)
                     if(th >= All.MaxPart + MaxNodes)
                         endrun(888);	/* this can't be */
 
-                        subnode = 0;
+                    subnode = 0;
                     //if(DomainMoment[i].s[0] > Nodes[th].center[0])
                     if(DomainMoment->read_s0(i) > Nodes[th].center[0])
                         subnode += 1;
@@ -428,13 +428,13 @@ void gadgetmp2::force_update_node_recursive(int no, int sib, int father)
     int j, jj, p, pp, nextsib, suns[8];
     my_float hmax;
 
-    #ifdef UNEQUALSOFTENINGS
-    #ifndef ADAPTIVE_GRAVSOFT_FORGAS
+#ifdef UNEQUALSOFTENINGS
+#ifndef ADAPTIVE_GRAVSOFT_FORGAS
     int maxsofttype, diffsoftflag;
-    #else
+#else
     my_float maxsoft;
-    #endif
-    #endif
+#endif
+#endif
     struct particle_data *pa;
     my_float s[3], vs[3], mass;
 
@@ -444,200 +444,200 @@ void gadgetmp2::force_update_node_recursive(int no, int sib, int father)
         for(j = 0; j < 8; j++)
             suns[j] = Nodes[no].u.suns[j];	/* this "backup" is necessary because the nextnode entry will
             overwrite one element (union!) */
-            if(last >= 0)
+        if(last >= 0)
+        {
+            if(last >= All.MaxPart)
             {
-                if(last >= All.MaxPart)
-                {
-                    if(last >= All.MaxPart + MaxNodes)	/* a pseudo-particle */
-                        Nextnode[last - MaxNodes] = no;
-                    else
-                        Nodes[last].u.d.nextnode = no;
-                }
+                if(last >= All.MaxPart + MaxNodes)	/* a pseudo-particle */
+                    Nextnode[last - MaxNodes] = no;
                 else
-                    Nextnode[last] = no;
+                    Nodes[last].u.d.nextnode = no;
             }
+            else
+                Nextnode[last] = no;
+        }
 
-            last = no;
+        last = no;
 
-            mass.setZero();
-            s[0].setZero();
-            s[1].setZero();
-            s[2].setZero();
-            vs[0].setZero();
-            vs[1].setZero();
-            vs[2].setZero();
-            hmax.setZero();
-            #ifdef UNEQUALSOFTENINGS
-            #ifndef ADAPTIVE_GRAVSOFT_FORGAS
-            maxsofttype = 7;
-            diffsoftflag = 0;
-            #else
-            maxsoft.setZero();
-            #endif
-            #endif
-            for(j = 0; j < 8; j++)
+        mass.setZero();
+        s[0].setZero();
+        s[1].setZero();
+        s[2].setZero();
+        vs[0].setZero();
+        vs[1].setZero();
+        vs[2].setZero();
+        hmax.setZero();
+#ifdef UNEQUALSOFTENINGS
+#ifndef ADAPTIVE_GRAVSOFT_FORGAS
+        maxsofttype = 7;
+        diffsoftflag = 0;
+#else
+        maxsoft.setZero();
+#endif
+#endif
+        for(j = 0; j < 8; j++)
+        {
+            if((p = suns[j]) >= 0)
             {
-                if((p = suns[j]) >= 0)
+                /* check if we have a sibling on the same level */
+                for(jj = j + 1; jj < 8; jj++)
+                    if((pp = suns[jj]) >= 0)
+                        break;
+
+                if(jj < 8)	/* yes, we do */
+                    nextsib = pp;
+                else
+                    nextsib = sib;
+
+                force_update_node_recursive(p, nextsib, no);
+
+
+                if(p >= All.MaxPart)	/* an internal node or pseudo particle */
                 {
-                    /* check if we have a sibling on the same level */
-                    for(jj = j + 1; jj < 8; jj++)
-                        if((pp = suns[jj]) >= 0)
-                            break;
-
-                        if(jj < 8)	/* yes, we do */
-                            nextsib = pp;
-                        else
-                            nextsib = sib;
-
-                        force_update_node_recursive(p, nextsib, no);
-
-
-                        if(p >= All.MaxPart)	/* an internal node or pseudo particle */
-                        {
-                            if(p >= All.MaxPart + MaxNodes)	/* a pseudo particle */
-                            {
-                                /* nothing to be done here because the mass of the
+                    if(p >= All.MaxPart + MaxNodes)	/* a pseudo particle */
+                    {
+                        /* nothing to be done here because the mass of the
                                  * pseudo-particle is still zero. This will be changed
                                  * later.
                                  */
-                            }
-                            else
-                            {
-                                mass += Nodes[p].u_d_mass;
-                                s[0] += Nodes[p].u_d_mass * Nodes[p].u_d_s[0];
-                                s[1] += Nodes[p].u_d_mass * Nodes[p].u_d_s[1];
-                                s[2] += Nodes[p].u_d_mass * Nodes[p].u_d_s[2];
-                                vs[0] += Nodes[p].u_d_mass * Extnodes[p].vs[0];
-                                vs[1] += Nodes[p].u_d_mass * Extnodes[p].vs[1];
-                                vs[2] += Nodes[p].u_d_mass * Extnodes[p].vs[2];
+                    }
+                    else
+                    {
+                        mass += Nodes[p].u_d_mass;
+                        s[0] += Nodes[p].u_d_mass * Nodes[p].u_d_s[0];
+                        s[1] += Nodes[p].u_d_mass * Nodes[p].u_d_s[1];
+                        s[2] += Nodes[p].u_d_mass * Nodes[p].u_d_s[2];
+                        vs[0] += Nodes[p].u_d_mass * Extnodes[p].vs[0];
+                        vs[1] += Nodes[p].u_d_mass * Extnodes[p].vs[1];
+                        vs[2] += Nodes[p].u_d_mass * Extnodes[p].vs[2];
 
-                                if(Extnodes[p].hmax > hmax)
-                                    hmax = Extnodes[p].hmax;
+                        if(Extnodes[p].hmax > hmax)
+                            hmax = Extnodes[p].hmax;
 
-                                #ifdef UNEQUALSOFTENINGS
-                                #ifndef ADAPTIVE_GRAVSOFT_FORGAS
-                                diffsoftflag |= (Nodes[p].u.d.bitflags >> 5) & 1;
+#ifdef UNEQUALSOFTENINGS
+#ifndef ADAPTIVE_GRAVSOFT_FORGAS
+                        diffsoftflag |= (Nodes[p].u.d.bitflags >> 5) & 1;
 
-                                if(maxsofttype == 7)
-                                {
-                                    maxsofttype = (Nodes[p].u.d.bitflags >> 2) & 7;
-                                }
-                                else
-                                {
-                                    if(((Nodes[p].u.d.bitflags >> 2) & 7) != 7)
-                                    {
-                                        if(All.ForceSoftening[((Nodes[p].u.d.bitflags >> 2) & 7)] >
-                                            All.ForceSoftening[maxsofttype])
-                                        {
-                                            maxsofttype = ((Nodes[p].u.d.bitflags >> 2) & 7);
-                                            diffsoftflag = 1;
-                                        }
-                                        else
-                                        {
-                                            if(All.ForceSoftening[((Nodes[p].u.d.bitflags >> 2) & 7)] <
-                                                All.ForceSoftening[maxsofttype])
-                                                diffsoftflag = 1;
-                                        }
-                                    }
-                                }
-                                #else
-                                if(Nodes[p].maxsoft > maxsoft)
-                                    maxsoft = Nodes[p].maxsoft;
-                                #endif
-                                #endif
-                            }
-                        }
-                        else		/* a particle */
+                        if(maxsofttype == 7)
                         {
-                            pa = &P[p];
-
-                            mass += pa->Mass;
-                            s[0] += pa->Mass * pa->Pos[0];
-                            s[1] += pa->Mass * pa->Pos[1];
-                            s[2] += pa->Mass * pa->Pos[2];
-                            vs[0] += pa->Mass * pa->Vel[0];
-                            vs[1] += pa->Mass * pa->Vel[1];
-                            vs[2] += pa->Mass * pa->Vel[2];
-
-                            #ifdef UNEQUALSOFTENINGS
-                            #ifndef ADAPTIVE_GRAVSOFT_FORGAS
-                            if(maxsofttype == 7)
+                            maxsofttype = (Nodes[p].u.d.bitflags >> 2) & 7;
+                        }
+                        else
+                        {
+                            if(((Nodes[p].u.d.bitflags >> 2) & 7) != 7)
                             {
-                                maxsofttype = pa->Type;
-                            }
-                            else
-                            {
-                                if(All.ForceSoftening[pa->Type] > All.ForceSoftening[maxsofttype])
+                                if(All.ForceSoftening[((Nodes[p].u.d.bitflags >> 2) & 7)] >
+                                        All.ForceSoftening[maxsofttype])
                                 {
-                                    maxsofttype = pa->Type;
+                                    maxsofttype = ((Nodes[p].u.d.bitflags >> 2) & 7);
                                     diffsoftflag = 1;
                                 }
                                 else
                                 {
-                                    if(All.ForceSoftening[pa->Type] < All.ForceSoftening[maxsofttype])
+                                    if(All.ForceSoftening[((Nodes[p].u.d.bitflags >> 2) & 7)] <
+                                            All.ForceSoftening[maxsofttype])
                                         diffsoftflag = 1;
                                 }
                             }
-                            #else
-                            if(pa->Type == 0)
-                            {
-                                if(SphP[p].Hsml > maxsoft)
-                                    maxsoft = SphP[p].Hsml;
-                            }
-                            else
-                            {
-                                if(All.ForceSoftening[pa->Type] > maxsoft)
-                                    maxsoft = All.ForceSoftening[pa->Type];
-                            }
-                            #endif
-                            #endif
-                            if(pa->Type == 0)
-                                if(SphP[p].Hsml > hmax)
-                                    hmax = SphP[p].Hsml;
                         }
+#else
+                        if(Nodes[p].maxsoft > maxsoft)
+                            maxsoft = Nodes[p].maxsoft;
+#endif
+#endif
+                    }
+                }
+                else		/* a particle */
+                {
+                    pa = &P[p];
+
+                    mass += pa->Mass;
+                    s[0] += pa->Mass * pa->Pos[0];
+                    s[1] += pa->Mass * pa->Pos[1];
+                    s[2] += pa->Mass * pa->Pos[2];
+                    vs[0] += pa->Mass * pa->Vel[0];
+                    vs[1] += pa->Mass * pa->Vel[1];
+                    vs[2] += pa->Mass * pa->Vel[2];
+
+#ifdef UNEQUALSOFTENINGS
+#ifndef ADAPTIVE_GRAVSOFT_FORGAS
+                    if(maxsofttype == 7)
+                    {
+                        maxsofttype = pa->Type;
+                    }
+                    else
+                    {
+                        if(All.ForceSoftening[pa->Type] > All.ForceSoftening[maxsofttype])
+                        {
+                            maxsofttype = pa->Type;
+                            diffsoftflag = 1;
+                        }
+                        else
+                        {
+                            if(All.ForceSoftening[pa->Type] < All.ForceSoftening[maxsofttype])
+                                diffsoftflag = 1;
+                        }
+                    }
+#else
+                    if(pa->Type == 0)
+                    {
+                        if(SphP[p].Hsml > maxsoft)
+                            maxsoft = SphP[p].Hsml;
+                    }
+                    else
+                    {
+                        if(All.ForceSoftening[pa->Type] > maxsoft)
+                            maxsoft = All.ForceSoftening[pa->Type];
+                    }
+#endif
+#endif
+                    if(pa->Type == 0)
+                        if(SphP[p].Hsml > hmax)
+                            hmax = SphP[p].Hsml;
                 }
             }
+        }
 
-            if(mass!=const_0)
-            {
-                s[0] /= mass;
-                s[1] /= mass;
-                s[2] /= mass;
-                vs[0] /= mass;
-                vs[1] /= mass;
-                vs[2] /= mass;
-            }
-            else
-            {
-                s[0] = Nodes[no].center[0];
-                s[1] = Nodes[no].center[1];
-                s[2] = Nodes[no].center[2];
-            }
-            Nodes[no].u_d_s[0] = s[0];
-            Nodes[no].u_d_s[1] = s[1];
-            Nodes[no].u_d_s[2] = s[2];
-            Nodes[no].u_d_mass = mass;
-
-
-            #ifdef UNEQUALSOFTENINGS
-            #ifndef ADAPTIVE_GRAVSOFT_FORGAS
-            Nodes[no].u.d.bitflags = 4 * maxsofttype + 32 * diffsoftflag;
-            #else
-            Nodes[no].u.d.bitflags = 0;
-            Nodes[no].maxsoft = maxsoft;
-            #endif
-            #else
-            Nodes[no].u.d.bitflags = 0;
-            #endif
+        if(mass!=const_0)
+        {
+            s[0] /= mass;
+            s[1] /= mass;
+            s[2] /= mass;
+            vs[0] /= mass;
+            vs[1] /= mass;
+            vs[2] /= mass;
+        }
+        else
+        {
+            s[0] = Nodes[no].center[0];
+            s[1] = Nodes[no].center[1];
+            s[2] = Nodes[no].center[2];
+        }
+        Nodes[no].u_d_s[0] = s[0];
+        Nodes[no].u_d_s[1] = s[1];
+        Nodes[no].u_d_s[2] = s[2];
+        Nodes[no].u_d_mass = mass;
 
 
-            Extnodes[no].vs[0] = vs[0];
-            Extnodes[no].vs[1] = vs[1];
-            Extnodes[no].vs[2] = vs[2];
-            Extnodes[no].hmax = hmax;
+#ifdef UNEQUALSOFTENINGS
+#ifndef ADAPTIVE_GRAVSOFT_FORGAS
+        Nodes[no].u.d.bitflags = 4 * maxsofttype + 32 * diffsoftflag;
+#else
+        Nodes[no].u.d.bitflags = 0;
+        Nodes[no].maxsoft = maxsoft;
+#endif
+#else
+        Nodes[no].u.d.bitflags = 0;
+#endif
 
-            Nodes[no].u.d.sibling = sib;
-            Nodes[no].u.d.father = father;
+
+        Extnodes[no].vs[0] = vs[0];
+        Extnodes[no].vs[1] = vs[1];
+        Extnodes[no].vs[2] = vs[2];
+        Extnodes[no].hmax = hmax;
+
+        Nodes[no].u.d.sibling = sib;
+        Nodes[no].u.d.father = father;
     }
     else				/* single particle or pseudo particle */
     {
@@ -686,9 +686,9 @@ void gadgetmp2::force_update_pseudoparticles(void)
 void gadgetmp2::force_exchange_pseudodata(void)
 {
     int i, no;
-    #ifndef NOMPI
+#ifndef NOMPI
     MPI_Status status;
-    #endif
+#endif
     int level, sendTask, recvTask;
 
     for(i = DomainMyStart; i <= DomainMyLast; i++)
@@ -710,20 +710,20 @@ void gadgetmp2::force_exchange_pseudodata(void)
         DomainMoment->set_init_vs2(Extnodes[no].vs[2],i);
         //DomainMoment[i].mass = Nodes[no].u_d_mass;
         DomainMoment->set_init_mass(Nodes[no].u_d_mass,i);
-        #ifdef UNEQUALSOFTENINGS
-        #ifndef ADAPTIVE_GRAVSOFT_FORGAS
+#ifdef UNEQUALSOFTENINGS
+#ifndef ADAPTIVE_GRAVSOFT_FORGAS
         //DomainMoment[i].bitflags = Nodes[no].u.d.bitflags;
         DomainMoment->set_bitflags(Nodes[no].u.d.bitflags,i);
-        #else
+#else
         //DomainMoment[i].maxsoft = Nodes[no].maxsoft;
         DomainMoment->set_init_maxsoft(Nodes[no].maxsoft,i);
-        #endif
-        #endif
+#endif
+#endif
     }
 
     /* share the pseudo-particle data accross CPUs */
 
-    #ifndef NOMPI
+#ifndef NOMPI
     for(level = 1; level < (1 << PTask); level++)
     {
         sendTask = ThisTask;
@@ -737,7 +737,7 @@ void gadgetmp2::force_exchange_pseudodata(void)
                          (DomainEndList[recvTask] - DomainStartList[recvTask] + 1) * DomainNODE::get_size(),
                          MPI_BYTE, recvTask, TAG_DMOM, GADGET_WORLD, &status);
     }
-    #endif
+#endif
 }
 
 /*! This function updates the top-level tree after the multipole moments of
@@ -748,13 +748,13 @@ void gadgetmp2::force_treeupdate_pseudos(void)
     int i, k, no;
     my_float sold[3], vsold[3], snew[3], vsnew[3], massold, massnew, mm;
 
-    #ifdef UNEQUALSOFTENINGS
-    #ifndef ADAPTIVE_GRAVSOFT_FORGAS
+#ifdef UNEQUALSOFTENINGS
+#ifndef ADAPTIVE_GRAVSOFT_FORGAS
     int maxsofttype, diffsoftflag;
-    #else
+#else
     my_float maxsoft;
-    #endif
-    #endif
+#endif
+#endif
 
     for(i = 0; i < NTopleaves; i++)
         if(i < DomainMyStart || i > DomainMyLast)
@@ -783,17 +783,17 @@ void gadgetmp2::force_treeupdate_pseudos(void)
             massnew = DomainMoment->read_re_init_mass(i);
 
 
-            #ifdef UNEQUALSOFTENINGS
-            #ifndef ADAPTIVE_GRAVSOFT_FORGAS
+#ifdef UNEQUALSOFTENINGS
+#ifndef ADAPTIVE_GRAVSOFT_FORGAS
             //maxsofttype = (DomainMoment[i].bitflags >> 2) & 7;
             maxsofttype = (DomainMoment->read_bitflags(i) >> 2) & 7;
             //diffsoftflag = (DomainMoment[i].bitflags >> 5) & 1;
             diffsoftflag = (DomainMoment->read_bitflags(i) >> 5) & 1;
-            #else
+#else
             //maxsoft = DomainMoment[i].maxsoft;
             maxsoft = DomainMoment->read_re_init_maxsoft(i);
-            #endif
-            #endif
+#endif
+#endif
             do
             {
                 mm = Nodes[no].u_d_mass + massnew - massold;
@@ -802,17 +802,17 @@ void gadgetmp2::force_treeupdate_pseudos(void)
                     if(mm > 0)
                     {
                         Nodes[no].u_d_s[k] =
-                        (Nodes[no].u_d_mass * Nodes[no].u_d_s[k] + massnew * snew[k] - massold * sold[k]) / mm;
+                                (Nodes[no].u_d_mass * Nodes[no].u_d_s[k] + massnew * snew[k] - massold * sold[k]) / mm;
                         Extnodes[no].vs[k] =
-                        (Nodes[no].u_d_mass * Extnodes[no].vs[k] + massnew * vsnew[k] -
-                        massold * vsold[k]) / mm;
+                                (Nodes[no].u_d_mass * Extnodes[no].vs[k] + massnew * vsnew[k] -
+                                 massold * vsold[k]) / mm;
                     }
                 }
                 Nodes[no].u_d_mass = mm;
 
 
-                #ifdef UNEQUALSOFTENINGS
-                #ifndef ADAPTIVE_GRAVSOFT_FORGAS
+#ifdef UNEQUALSOFTENINGS
+#ifndef ADAPTIVE_GRAVSOFT_FORGAS
                 diffsoftflag |= (Nodes[no].u.d.bitflags >> 5) & 1;
 
                 if(maxsofttype == 7)
@@ -822,7 +822,7 @@ void gadgetmp2::force_treeupdate_pseudos(void)
                     if(((Nodes[no].u.d.bitflags >> 2) & 7) != 7)
                     {
                         if(All.ForceSoftening[((Nodes[no].u.d.bitflags >> 2) & 7)] >
-                            All.ForceSoftening[maxsofttype])
+                                All.ForceSoftening[maxsofttype])
                         {
                             maxsofttype = ((Nodes[no].u.d.bitflags >> 2) & 7);
                             diffsoftflag = 1;
@@ -830,19 +830,19 @@ void gadgetmp2::force_treeupdate_pseudos(void)
                         else
                         {
                             if(All.ForceSoftening[((Nodes[no].u.d.bitflags >> 2) & 7)] <
-                                All.ForceSoftening[maxsofttype])
+                                    All.ForceSoftening[maxsofttype])
                                 diffsoftflag = 1;
                         }
                     }
                 }
 
                 Nodes[no].u.d.bitflags = (Nodes[no].u.d.bitflags & 3) + 4 * maxsofttype + 32 * diffsoftflag;
-                #else
+#else
                 if(Nodes[no].maxsoft < maxsoft)
                     Nodes[no].maxsoft = maxsoft;
                 maxsoft = Nodes[no].maxsoft;
-                #endif
-                #endif
+#endif
+#endif
                 no = Nodes[no].u.d.father;
 
             }
@@ -909,9 +909,9 @@ void gadgetmp2::force_flag_localnodes(void)
 void gadgetmp2::force_update_len(void)
 {
     int i, no;
-    #ifndef NOMPI
+#ifndef NOMPI
     MPI_Status status;
-    #endif
+#endif
     int level, sendTask, recvTask;
 
     force_update_node_len_local();
@@ -921,11 +921,11 @@ void gadgetmp2::force_update_len(void)
     {
         no = DomainNodeIndex[i];
 
-       // DomainTreeNodeLen[i] = Nodes[no].len;
+        // DomainTreeNodeLen[i] = Nodes[no].len;
         DomainTreeNodeLen->set_init(Nodes[no].len, i);
     }
 
-    #ifndef NOMPI
+#ifndef NOMPI
     for(level = 1; level < (1 << PTask); level++)
     {
         sendTask = ThisTask;
@@ -944,9 +944,9 @@ void gadgetmp2::force_update_len(void)
                          DomainTreeNodeLen->get_buff_start(DomainStartList[recvTask]),
                          (DomainEndList[recvTask] - DomainStartList[recvTask] + 1) * DomainTreeNodeLen->get_size(),
                          MPI_BYTE, recvTask, TAG_NODELEN, GADGET_WORLD, &status);
-            }
+        }
     }
-    #endif
+#endif
 
     /* Finally, we update the top-level tree. */
     force_update_node_len_toptree();
@@ -1050,9 +1050,9 @@ void gadgetmp2::force_update_node_len_toptree(void)
 void gadgetmp2::force_update_hmax(void)
 {
     int i, no;
-    #ifndef NOMPI
+#ifndef NOMPI
     MPI_Status status;
-    #endif
+#endif
     int level, sendTask, recvTask;
 
     force_update_node_hmax_local();
@@ -1066,7 +1066,7 @@ void gadgetmp2::force_update_hmax(void)
 
     /* share the hmax-data of the pseudo-particles accross CPUs */
 
-    #ifndef NOMPI
+#ifndef NOMPI
     for(level = 1; level < (1 << PTask); level++)
     {
         sendTask = ThisTask;
@@ -1079,7 +1079,7 @@ void gadgetmp2::force_update_hmax(void)
                          (DomainEndList[recvTask] - DomainStartList[recvTask] + 1) * DomainHmax->get_size(),
                          MPI_BYTE, recvTask, TAG_HMAX, GADGET_WORLD, &status);
     }
-    #endif
+#endif
 
 
     force_update_node_hmax_toptree();
@@ -1168,12 +1168,12 @@ int gadgetmp2::force_treeevaluate(int target, int mode, double *ewaldcountsum)
     int no, ninteractions, ptype;
     my_float r2, dx, dy, dz, mass, r, fac, u, h, h_inv, h3_inv;
     my_float acc_x, acc_y, acc_z, pos_x, pos_y, pos_z, aold;
-    #if defined(UNEQUALSOFTENINGS) && !defined(ADAPTIVE_GRAVSOFT_FORGAS)
+#if defined(UNEQUALSOFTENINGS) && !defined(ADAPTIVE_GRAVSOFT_FORGAS)
     int maxsofttype;
-    #endif
-    #ifdef ADAPTIVE_GRAVSOFT_FORGAS
+#endif
+#ifdef ADAPTIVE_GRAVSOFT_FORGAS
     my_float soft.setZero();
-    #endif
+#endif
     acc_x.setZero();
     acc_y.setZero();
     acc_z.setZero();
@@ -1186,10 +1186,10 @@ int gadgetmp2::force_treeevaluate(int target, int mode, double *ewaldcountsum)
         pos_z = P[target].Pos[2];
         ptype = P[target].Type;
         aold = All.ErrTolForceAcc * P[target].OldAcc;
-        #ifdef ADAPTIVE_GRAVSOFT_FORGAS
+#ifdef ADAPTIVE_GRAVSOFT_FORGAS
         if(ptype == 0)
             soft = SphP[target].Hsml;
-        #endif
+#endif
     }
     else
     {
@@ -1199,28 +1199,28 @@ int gadgetmp2::force_treeevaluate(int target, int mode, double *ewaldcountsum)
         pos_y = GravDataGet->read_re_init_u1(target);
         //pos_z = GravDataGet[target].u2;
         pos_z = GravDataGet->read_re_init_u2(target);
-        #ifdef UNEQUALSOFTENINGS
+#ifdef UNEQUALSOFTENINGS
         //ptype = GravDataGet[target].Type;
         ptype = GravDataGet->read_Type(target);
-        #else
+#else
         ptype = P[0].Type;
-        #endif
+#endif
         //aold = All.ErrTolForceAcc * GravDataGet[target].OldAcc;
         aold = All.ErrTolForceAcc *GravDataGet->read_re_init_OldAcc(target);
-        #ifdef ADAPTIVE_GRAVSOFT_FORGAS
+#ifdef ADAPTIVE_GRAVSOFT_FORGAS
         if(ptype == 0)
             //soft = GravDataGet[target].Soft;
             soft =GravDataGet->read_re_init_Soft(target);
-        #endif
+#endif
     }
 
 
 
-    #ifndef UNEQUALSOFTENINGS
+#ifndef UNEQUALSOFTENINGS
     h = All.ForceSoftening[ptype];
     h_inv = const_1 / h;
     h3_inv = h_inv * h_inv * h_inv;
-    #endif
+#endif
     no = All.MaxPart;		/* root node */
 
     while(no >= 0)
@@ -1258,8 +1258,8 @@ int gadgetmp2::force_treeevaluate(int target, int mode, double *ewaldcountsum)
 
         if(no < All.MaxPart)
         {
-            #ifdef UNEQUALSOFTENINGS
-            #ifdef ADAPTIVE_GRAVSOFT_FORGAS
+#ifdef UNEQUALSOFTENINGS
+#ifdef ADAPTIVE_GRAVSOFT_FORGAS
             if(ptype == 0)
                 h = soft;
             else
@@ -1275,12 +1275,12 @@ int gadgetmp2::force_treeevaluate(int target, int mode, double *ewaldcountsum)
                 if(h < All.ForceSoftening[P[no].Type])
                     h = All.ForceSoftening[P[no].Type];
             }
-            #else
+#else
             h = All.ForceSoftening[ptype];
             if(h < All.ForceSoftening[P[no].Type])
                 h = All.ForceSoftening[P[no].Type];
-            #endif
-            #endif
+#endif
+#endif
             no = Nextnode[no];
         }
         else			/* we have an  internal node. Need to check opening criterion */
@@ -1291,10 +1291,10 @@ int gadgetmp2::force_treeevaluate(int target, int mode, double *ewaldcountsum)
                     * which does not contain
                     * local particles we can
                     * continue to do a short-cut */
-                    {
-                        no = nop->u.d.sibling;
-                        continue;
-                    }
+                {
+                    no = nop->u.d.sibling;
+                    continue;
+                }
             }
 
 
@@ -1331,8 +1331,8 @@ int gadgetmp2::force_treeevaluate(int target, int mode, double *ewaldcountsum)
                 }
             }
 
-            #ifdef UNEQUALSOFTENINGS
-            #ifndef ADAPTIVE_GRAVSOFT_FORGAS
+#ifdef UNEQUALSOFTENINGS
+#ifndef ADAPTIVE_GRAVSOFT_FORGAS
             h = All.ForceSoftening[ptype];
             maxsofttype = (nop->u.d.bitflags >> 2) & 7;
             if(maxsofttype == 7) /* may only occur for zero mass top-level nodes */
@@ -1357,7 +1357,7 @@ int gadgetmp2::force_treeevaluate(int target, int mode, double *ewaldcountsum)
                     }
                 }
             }
-            #else
+#else
             if(ptype == 0)
                 h = soft;
             else
@@ -1372,8 +1372,8 @@ int gadgetmp2::force_treeevaluate(int target, int mode, double *ewaldcountsum)
                     continue;
                 }
             }
-            #endif
-            #endif
+#endif
+#endif
 
             no = nop->u.d.sibling;	/* ok, node can be used */
 
@@ -1390,17 +1390,17 @@ int gadgetmp2::force_treeevaluate(int target, int mode, double *ewaldcountsum)
             fac = mass / (r2 * r);
         else
         {
-            #ifdef UNEQUALSOFTENINGS
+#ifdef UNEQUALSOFTENINGS
             h_inv = const_1 / h;
             h3_inv = h_inv * h_inv * h_inv;
-            #endif
+#endif
             u = r * h_inv;
             if(u < const_0_5)
                 fac = mass * h3_inv * (const_10_666666666667 + u * u * (const_32 * u - const_38_4));
             else
                 fac =
-                mass * h3_inv * (const_21_333333333333 - const_48 * u +
-                const_38_4 * u * u - const_10_666666666667 * u * u * u - const_0_066666666667 / (u * u * u));
+                        mass * h3_inv * (const_21_333333333333 - const_48 * u +
+                                         const_38_4 * u * u - const_10_666666666667 * u * u * u - const_0_066666666667 / (u * u * u));
         }
 
         acc_x += dx * fac;
@@ -1446,12 +1446,12 @@ void gadgetmp2::force_treeevaluate_potential(int target, int mode)
     int no, ptype;
     my_float r2, dx, dy, dz, mass, r, u, h, h_inv, wp;
     my_float pot, pos_x, pos_y, pos_z, aold;
-    #if defined(UNEQUALSOFTENINGS) && !defined(ADAPTIVE_GRAVSOFT_FORGAS)
+#if defined(UNEQUALSOFTENINGS) && !defined(ADAPTIVE_GRAVSOFT_FORGAS)
     int maxsofttype;
-    #endif
-    #ifdef ADAPTIVE_GRAVSOFT_FORGAS
+#endif
+#ifdef ADAPTIVE_GRAVSOFT_FORGAS
     my_float soft.setZero();
-    #endif
+#endif
 
     pot.setZero();
 
@@ -1462,10 +1462,10 @@ void gadgetmp2::force_treeevaluate_potential(int target, int mode)
         pos_z = P[target].Pos[2];
         ptype = P[target].Type;
         aold = All.ErrTolForceAcc * P[target].OldAcc;
-        #ifdef ADAPTIVE_GRAVSOFT_FORGAS
+#ifdef ADAPTIVE_GRAVSOFT_FORGAS
         if(ptype == 0)
             soft = SphP[target].Hsml;
-        #endif
+#endif
     }
     else
     {
@@ -1475,26 +1475,26 @@ void gadgetmp2::force_treeevaluate_potential(int target, int mode)
         pos_y = GravDataGet->read_re_init_u1(target);
         //pos_z = GravDataGet[target].u2;
         pos_z = GravDataGet->read_re_init_u2(target);
-        #ifdef UNEQUALSOFTENINGS
+#ifdef UNEQUALSOFTENINGS
         //ptype = GravDataGet[target].Type;
         ptype = GravDataGet->read_Type(target);
-        #else
+#else
         ptype = P[0].Type;
-        #endif
+#endif
         //aold = All.ErrTolForceAcc * GravDataGet[target].OldAcc;
         aold = All.ErrTolForceAcc *GravDataGet->read_re_init_OldAcc(target);
-        #ifdef ADAPTIVE_GRAVSOFT_FORGAS
+#ifdef ADAPTIVE_GRAVSOFT_FORGAS
         if(ptype == 0)
             //soft = GravDataGet[target].Soft;
             soft =GravDataGet->read_re_init_Soft(target);
-        #endif
+#endif
     }
 
 
-    #ifndef UNEQUALSOFTENINGS
+#ifndef UNEQUALSOFTENINGS
     h = All.ForceSoftening[ptype];
     h_inv = const_1 / h;
-    #endif
+#endif
     no = All.MaxPart;
 
     while(no >= 0)
@@ -1531,8 +1531,8 @@ void gadgetmp2::force_treeevaluate_potential(int target, int mode)
 
         if(no < All.MaxPart)
         {
-            #ifdef UNEQUALSOFTENINGS
-            #ifdef ADAPTIVE_GRAVSOFT_FORGAS
+#ifdef UNEQUALSOFTENINGS
+#ifdef ADAPTIVE_GRAVSOFT_FORGAS
             if(ptype == 0)
                 h = soft;
             else
@@ -1548,12 +1548,12 @@ void gadgetmp2::force_treeevaluate_potential(int target, int mode)
                 if(h < All.ForceSoftening[P[no].Type])
                     h = All.ForceSoftening[P[no].Type];
             }
-            #else
+#else
             h = All.ForceSoftening[ptype];
             if(h < All.ForceSoftening[P[no].Type])
                 h = All.ForceSoftening[P[no].Type];
-            #endif
-            #endif
+#endif
+#endif
             no = Nextnode[no];
         }
         else			/* we have an internal node. Need to check opening criterion */
@@ -1565,10 +1565,10 @@ void gadgetmp2::force_treeevaluate_potential(int target, int mode)
                     * local particles we can make
                     * a short-cut
                     */
-                    {
-                        no = nop->u.d.sibling;
-                        continue;
-                    }
+                {
+                    no = nop->u.d.sibling;
+                    continue;
+                }
             }
 
             if(All.ErrTolTheta)	/* check Barnes-Hut opening criterion */
@@ -1601,8 +1601,8 @@ void gadgetmp2::force_treeevaluate_potential(int target, int mode)
                     }
                 }
             }
-            #ifdef UNEQUALSOFTENINGS
-            #ifndef ADAPTIVE_GRAVSOFT_FORGAS
+#ifdef UNEQUALSOFTENINGS
+#ifndef ADAPTIVE_GRAVSOFT_FORGAS
             h = All.ForceSoftening[ptype];
             maxsofttype = (nop->u.d.bitflags >> 2) & 7;
             if(maxsofttype == 7) /* may only occur for zero mass top-level nodes */
@@ -1627,7 +1627,7 @@ void gadgetmp2::force_treeevaluate_potential(int target, int mode)
                     }
                 }
             }
-            #else
+#else
             if(ptype == 0)
                 h = soft;
             else
@@ -1642,8 +1642,8 @@ void gadgetmp2::force_treeevaluate_potential(int target, int mode)
                     continue;
                 }
             }
-            #endif
-            #endif
+#endif
+#endif
 
             no = nop->u.d.sibling;	/* node can be used */
 
@@ -1660,17 +1660,17 @@ void gadgetmp2::force_treeevaluate_potential(int target, int mode)
             pot -= mass / r;
         else
         {
-            #ifdef UNEQUALSOFTENINGS
+#ifdef UNEQUALSOFTENINGS
             h_inv = const_1 / h;
-            #endif
+#endif
             u = r * h_inv;
 
             if(u < const_0_5)
                 wp = (-const_2_8) + u * u * (const_5_333333333333 + u * u * (const_6_4 * u - const_9_6));
             else
                 wp =
-                (-const_3_2) + const_0_066666666667 / u + u * u * (const_10_666666666667 +
-                u * ((-const_16) + u * (const_9_6 - const_2_133333333333 * u)));
+                        (-const_3_2) + const_0_066666666667 / u + u * u * (const_10_666666666667 +
+                                                                           u * ((-const_16) + u * (const_9_6 - const_2_133333333333 * u)));
 
             pot += mass * h_inv * wp;
         }
@@ -1702,7 +1702,7 @@ void gadgetmp2::force_treeallocate(int maxnodes, int maxpart)
     MaxNodes = maxnodes;
     Nodes_base = new NODE[MaxNodes + 1];
 
-/*    if(!(Nodes_base = (NODE*)malloc(bytes = (MaxNodes + 1) * sizeof(struct NODE))))
+    /*    if(!(Nodes_base = (NODE*)malloc(bytes = (MaxNodes + 1) * sizeof(struct NODE))))
     {
         printf("failed to allocate memory for %d tree-nodes (%g MB).\n", MaxNodes, bytes / (1024.0 * 1024.0));
         endrun(3);
@@ -1744,7 +1744,7 @@ void gadgetmp2::force_treeallocate(int maxnodes, int maxpart)
             printf("\nAllocated %g MByte for BH-tree. %ld\n\n", allbytes / (1024.0 * 1024.0),
                    sizeof(struct NODE) + sizeof(struct extNODE));
 
-            tabfac = NTAB / const_3;
+        tabfac = NTAB / const_3;
 
         for(i = 0; i < NTAB; i++)
         {
@@ -1802,11 +1802,11 @@ int gadgetmp2::force_treeevaluate_direct(int target, int mode)
         pos_x = GravDataGet[target].u.Pos[0];
         pos_y = GravDataGet[target].u.Pos[1];
         pos_z = GravDataGet[target].u.Pos[2];
-        #ifdef UNEQUALSOFTENINGS
+#ifdef UNEQUALSOFTENINGS
         ptype = GravDataGet[target].Type;
-        #else
+#else
         ptype = P[0].Type;
-        #endif
+#endif
     }
 
     for(i = 0; i < NumPart; i++)
@@ -1837,10 +1837,10 @@ int gadgetmp2::force_treeevaluate_direct(int target, int mode)
                 fac = P[i].Mass * h_inv * h_inv * h_inv * (const_10_666666666667 + u * u * (const_32 * u - const_38_4));
             else
                 fac =
-                P[i].Mass * h_inv * h_inv * h_inv * (const_21_333333333333 -
-                const_48 * u + const_38_4 * u * u -
-                const_10_666666666667 * u * u *
-                u - const_0_066666666667 / (u * u * u));
+                        P[i].Mass * h_inv * h_inv * h_inv * (const_21_333333333333 -
+                                                             const_48 * u + const_38_4 * u * u -
+                                                             const_10_666666666667 * u * u *
+                                                             u - const_0_066666666667 / (u * u * u));
         }
 
         acc_x += dx * fac;

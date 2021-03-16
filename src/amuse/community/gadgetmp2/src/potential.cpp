@@ -40,7 +40,7 @@ void gadgetmp2::compute_potential(void)
 {
     int i;
 
-    #ifndef NOGRAVITY
+#ifndef NOGRAVITY
     long long ntot, ntotleft;
     int j, k, level, sendTask, recvTask;
     int ndone;
@@ -48,9 +48,9 @@ void gadgetmp2::compute_potential(void)
     int *nsend, *noffset, *nsend_local, *nbuffer, *ndonelist, *numlist;
     my_float fac;
     double t0, t1, tstart, tend;
-    #ifndef NOMPI
+#ifndef NOMPI
     MPI_Status status;
-    #endif
+#endif
     my_float r2;
 
     t0 = second();
@@ -82,11 +82,11 @@ void gadgetmp2::compute_potential(void)
     All.CPU_TreeConstruction += timediff(tstart, tend);
 
     numlist = new int[NTask * NTask];
-    #ifndef NOMPI
+#ifndef NOMPI
     MPI_Allgather(&NumPart, 1, MPI_INT, numlist, 1, MPI_INT, GADGET_WORLD);
-    #else
+#else
     numlist[0] = NumPart;
-    #endif
+#endif
     for(i = 0, ntot = 0; i < NTask; i++)
         ntot += numlist[i];
     free(numlist);
@@ -113,11 +113,11 @@ void gadgetmp2::compute_potential(void)
             for(j = 0; j < NTask; j++)
                 Exportflag[j] = 0;
 
-            #ifndef PMGRID
+#ifndef PMGRID
             force_treeevaluate_potential(i, 0);
-            #else
+#else
             force_treeevaluate_potential_shortrange(i, 0);
-            #endif
+#endif
 
             for(j = 0; j < NTask; j++)
             {
@@ -126,23 +126,23 @@ void gadgetmp2::compute_potential(void)
                     /*		  for(k = 0; k < 3; k++)
                      *		    GravDataGet[nexport].u.Pos[k] = P[i].Pos[k];
                      */
-                        //GravDataGet[nexport].u0 = P[i].Pos[0];
-                        GravDataGet->set_init_u0(P[i].Pos[0],nexport);
-                        //GravDataGet[nexport].u1 = P[i].Pos[1];
-                        GravDataGet->set_init_u1(P[i].Pos[1],nexport);
-                        //GravDataGet[nexport].u2 = P[i].Pos[2];
-                        GravDataGet->set_init_u2(P[i].Pos[2],nexport);
-                        #ifdef UNEQUALSOFTENINGS
-                        //GravDataGet[nexport].Type = P[i].Type;
-                        GravDataGet->set_Type(P[i].Type,nexport);
-                        #ifdef ADAPTIVE_GRAVSOFT_FORGAS
-                        if(P[i].Type == 0)
-                            //GravDataGet[nexport].Soft = SphP[i].Hsml;
-                            GravDataGet->set_init_Soft(SphP[i].Hsml,nexport);
-                        #endif
-                        #endif
-                        //GravDataGet[nexport].OldAcc = P[i].OldAcc;
-                        GravDataGet->set_init_OldAcc(P[i].OldAcc,nexport);
+                    //GravDataGet[nexport].u0 = P[i].Pos[0];
+                    GravDataGet->set_init_u0(P[i].Pos[0],nexport);
+                    //GravDataGet[nexport].u1 = P[i].Pos[1];
+                    GravDataGet->set_init_u1(P[i].Pos[1],nexport);
+                    //GravDataGet[nexport].u2 = P[i].Pos[2];
+                    GravDataGet->set_init_u2(P[i].Pos[2],nexport);
+#ifdef UNEQUALSOFTENINGS
+                    //GravDataGet[nexport].Type = P[i].Type;
+                    GravDataGet->set_Type(P[i].Type,nexport);
+#ifdef ADAPTIVE_GRAVSOFT_FORGAS
+                    if(P[i].Type == 0)
+                        //GravDataGet[nexport].Soft = SphP[i].Hsml;
+                        GravDataGet->set_init_Soft(SphP[i].Hsml,nexport);
+#endif
+#endif
+                    //GravDataGet[nexport].OldAcc = P[i].OldAcc;
+                    GravDataGet->set_init_OldAcc(P[i].OldAcc,nexport);
 
                     GravDataIndexTable[nexport].Task = j;
                     GravDataIndexTable[nexport].Index = i;
@@ -163,11 +163,11 @@ void gadgetmp2::compute_potential(void)
         for(j = 1, noffset[0] = 0; j < NTask; j++)
             noffset[j] = noffset[j - 1] + nsend_local[j - 1];
 
-        #ifndef NOMPI
+#ifndef NOMPI
         MPI_Allgather(nsend_local, NTask, MPI_INT, nsend, NTask, MPI_INT, GADGET_WORLD);
-        #else
+#else
         nsend[0] = nsend_local[0];
-        #endif
+#endif
         /* now do the particles that need to be exported */
 
         for(level = 1; level < (1 << PTask); level++)
@@ -189,7 +189,7 @@ void gadgetmp2::compute_potential(void)
                 sendTask = ThisTask;
                 recvTask = ThisTask ^ ngrp;
 
-                #ifndef NOMPI
+#ifndef NOMPI
                 if(recvTask < NTask)
                 {
                     if(nsend[ThisTask * NTask + recvTask] > 0 || nsend[recvTask * NTask + ThisTask] > 0)
@@ -200,10 +200,10 @@ void gadgetmp2::compute_potential(void)
                                      recvTask, TAG_POTENTIAL_A,
                                      GravDataGet->get_buff_start(nbuffer[ThisTask]),
                                      nsend[recvTask * NTask + ThisTask] * gravdata_in::get_size(), MPI_BYTE,
-                                     recvTask, TAG_POTENTIAL_A, GADGET_WORLD, &status);
+                                recvTask, TAG_POTENTIAL_A, GADGET_WORLD, &status);
                     }
                 }
-                #endif
+#endif
 
                 for(j = 0; j < NTask; j++)
                     if((j ^ ngrp) < NTask)
@@ -212,11 +212,11 @@ void gadgetmp2::compute_potential(void)
 
             for(j = 0; j < nbuffer[ThisTask]; j++)
             {
-                #ifndef PMGRID
+#ifndef PMGRID
                 force_treeevaluate_potential(j, 1);
-                #else
+#else
                 force_treeevaluate_potential_shortrange(j, 1);
-                #endif
+#endif
             }
 
 
@@ -238,7 +238,7 @@ void gadgetmp2::compute_potential(void)
                 sendTask = ThisTask;
                 recvTask = ThisTask ^ ngrp;
 
-                #ifndef NOMPI
+#ifndef NOMPI
                 if(recvTask < NTask)
                 {
                     if(nsend[ThisTask * NTask + recvTask] > 0 || nsend[recvTask * NTask + ThisTask] > 0)
@@ -246,10 +246,10 @@ void gadgetmp2::compute_potential(void)
                         /* send the results */
                         MPI_Sendrecv(GravDataResult->get_buff_start(nbuffer[ThisTask]),
                                      nsend[recvTask * NTask + ThisTask] * gravdata_in::get_size(),
-                                     MPI_BYTE, recvTask, TAG_POTENTIAL_B,
-                                     GravDataOut->get_buff_start(noffset[recvTask]),
-                                     nsend_local[recvTask] * gravdata_in::get_size(),
-                                     MPI_BYTE, recvTask, TAG_POTENTIAL_B, GADGET_WORLD, &status);
+                                MPI_BYTE, recvTask, TAG_POTENTIAL_B,
+                                GravDataOut->get_buff_start(noffset[recvTask]),
+                                nsend_local[recvTask] * gravdata_in::get_size(),
+                                MPI_BYTE, recvTask, TAG_POTENTIAL_B, GADGET_WORLD, &status);
 
                         /* add the result to the particles */
                         for(j = 0; j < nsend_local[recvTask]; j++)
@@ -261,7 +261,7 @@ void gadgetmp2::compute_potential(void)
                         }
                     }
                 }
-                #endif
+#endif
                 for(j = 0; j < NTask; j++)
                     if((j ^ ngrp) < NTask)
                         nbuffer[j] += nsend[(j ^ ngrp) * NTask + j];
@@ -270,11 +270,11 @@ void gadgetmp2::compute_potential(void)
             level = ngrp - 1;
         }
 
-        #ifndef NOMPI
+#ifndef NOMPI
         MPI_Allgather(&ndone, 1, MPI_INT, ndonelist, 1, MPI_INT, GADGET_WORLD);
-        #else
+#else
         ndonelist[0] = ndone;
-        #endif // NOMPI
+#endif // NOMPI
         for(j = 0; j < NTask; j++)
             ntotleft -= ndonelist[j];
     }
@@ -296,7 +296,7 @@ void gadgetmp2::compute_potential(void)
         if(All.ComovingIntegrationOn)
             if(All.PeriodicBoundariesOn)
                 P[i].Potential -= 2.8372975 * pow(P[i].Mass, 2.0 / 3) *
-                std::pow(All.Omega0 * 3 * All.Hubble * All.Hubble / (8 * const_PI.toDouble() * All.G), 1.0 / 3);
+                        std::pow(All.Omega0 * 3 * All.Hubble * All.Hubble / (8 * const_PI.toDouble() * All.G), 1.0 / 3);
     }
 
 
@@ -308,7 +308,7 @@ void gadgetmp2::compute_potential(void)
 
     if(All.ComovingIntegrationOn)
     {
-        #ifndef PERIODIC
+#ifndef PERIODIC
         fac = -0.5 * All.Omega0 * All.Hubble * All.Hubble;
 
         for(i = 0; i < NumPart; i++)
@@ -318,7 +318,7 @@ void gadgetmp2::compute_potential(void)
 
             P[i].Potential += fac * r2;
         }
-        #endif
+#endif
     }
     else
     {
@@ -346,8 +346,8 @@ void gadgetmp2::compute_potential(void)
 
     All.CPU_Potential += timediff(t0, t1);
 
-    #else
+#else
     for(i = 0; i < NumPart; i++)
         P[i].Potential = const_0;
-    #endif
+#endif
 }

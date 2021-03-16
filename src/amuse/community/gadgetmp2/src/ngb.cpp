@@ -57,95 +57,95 @@
  */
 int gadgetmp2::ngb_treefind_pairs(my_float searchcenter[3], my_float hsml, int *startnode)
 {
-  int k, no, p, numngb;
-  my_float hdiff;
-  my_float searchmin[3], searchmax[3];
-  struct NODE *thiis;
+    int k, no, p, numngb;
+    my_float hdiff;
+    my_float searchmin[3], searchmax[3];
+    struct NODE *thiis;
 
 
-  for(k = 0; k < 3; k++)	/* cube-box window */
+    for(k = 0; k < 3; k++)	/* cube-box window */
     {
-      searchmin[k] = searchcenter[k] - hsml;
-      searchmax[k] = searchcenter[k] + hsml;
+        searchmin[k] = searchcenter[k] - hsml;
+        searchmax[k] = searchcenter[k] + hsml;
     }
 
-  numngb = 0;
-  no = *startnode;
+    numngb = 0;
+    no = *startnode;
 
-  while(no >= 0)
+    while(no >= 0)
     {
-      if(no < All.MaxPart)	/* single particle */
-	{
-	  p = no;
-	  no = Nextnode[no];
+        if(no < All.MaxPart)	/* single particle */
+        {
+            p = no;
+            no = Nextnode[no];
 
-	  if(P[p].Type > 0)
-	    continue;
+            if(P[p].Type > 0)
+                continue;
 
-	  hdiff = SphP[p].Hsml - hsml;
-	  if(hdiff < const_0)
-	    hdiff = const_0;
-
-
-	  if(P[p].Pos[0] < (searchmin[0] - hdiff))
-	    continue;
-	  if(P[p].Pos[0] > (searchmax[0] + hdiff))
-	    continue;
-	  if(P[p].Pos[1] < (searchmin[1] - hdiff))
-	    continue;
-	  if(P[p].Pos[1] > (searchmax[1] + hdiff))
-	    continue;
-	  if(P[p].Pos[2] < (searchmin[2] - hdiff))
-	    continue;
-	  if(P[p].Pos[2] > (searchmax[2] + hdiff))
-	    continue;
-	  Ngblist[numngb++] = p;
-
-	  if(numngb == MAX_NGB)
-	    {
-	      printf
-		("ThisTask=%d: Need to do a second neighbour loop in hydro-force for (%g|%g|%g) hsml=%g no=%d\n",
-		 ThisTask, searchcenter[0].toDouble(), searchcenter[1].toDouble(), searchcenter[2].toDouble(), hsml.toDouble(), no);
-	      *startnode = no;
-	      return numngb;
-	    }
-	}
-      else
-	{
-	  if(no >= All.MaxPart + MaxNodes)	/* pseudo particle */
-	    {
-	      Exportflag[DomainTask[no - (All.MaxPart + MaxNodes)]] = 1;
-	      no = Nextnode[no - MaxNodes];
-	      continue;
-	    }
-
-	  thiis = &Nodes[no];
-	  hdiff = Extnodes[no].hmax - hsml;
-	  if(hdiff < const_0)
-	    hdiff = const_0;
-
-	  no = thiis->u.d.sibling;	/* in case the node can be discarded */
+            hdiff = SphP[p].Hsml - hsml;
+            if(hdiff < const_0)
+                hdiff = const_0;
 
 
-	  if((thiis->center[0] + const_0_5 * thiis->len) < (searchmin[0] - hdiff))
-	    continue;
-	  if((thiis->center[0] - const_0_5 * thiis->len) > (searchmax[0] + hdiff))
-	    continue;
-	  if((thiis->center[1] + const_0_5 * thiis->len) < (searchmin[1] - hdiff))
-	    continue;
-	  if((thiis->center[1] - const_0_5 * thiis->len) > (searchmax[1] + hdiff))
-	    continue;
-	  if((thiis->center[2] + const_0_5 * thiis->len) < (searchmin[2] - hdiff))
-	    continue;
-	  if((thiis->center[2] - const_0_5 * thiis->len) > (searchmax[2] + hdiff))
-	    continue;
+            if(P[p].Pos[0] < (searchmin[0] - hdiff))
+                continue;
+            if(P[p].Pos[0] > (searchmax[0] + hdiff))
+                continue;
+            if(P[p].Pos[1] < (searchmin[1] - hdiff))
+                continue;
+            if(P[p].Pos[1] > (searchmax[1] + hdiff))
+                continue;
+            if(P[p].Pos[2] < (searchmin[2] - hdiff))
+                continue;
+            if(P[p].Pos[2] > (searchmax[2] + hdiff))
+                continue;
+            Ngblist[numngb++] = p;
 
-	  no = thiis->u.d.nextnode;	/* ok, we need to open the node */
-	}
+            if(numngb == MAX_NGB)
+            {
+                printf
+                        ("ThisTask=%d: Need to do a second neighbour loop in hydro-force for (%g|%g|%g) hsml=%g no=%d\n",
+                         ThisTask, searchcenter[0].toDouble(), searchcenter[1].toDouble(), searchcenter[2].toDouble(), hsml.toDouble(), no);
+                *startnode = no;
+                return numngb;
+            }
+        }
+        else
+        {
+            if(no >= All.MaxPart + MaxNodes)	/* pseudo particle */
+            {
+                Exportflag[DomainTask[no - (All.MaxPart + MaxNodes)]] = 1;
+                no = Nextnode[no - MaxNodes];
+                continue;
+            }
+
+            thiis = &Nodes[no];
+            hdiff = Extnodes[no].hmax - hsml;
+            if(hdiff < const_0)
+                hdiff = const_0;
+
+            no = thiis->u.d.sibling;	/* in case the node can be discarded */
+
+
+            if((thiis->center[0] + const_0_5 * thiis->len) < (searchmin[0] - hdiff))
+                continue;
+            if((thiis->center[0] - const_0_5 * thiis->len) > (searchmax[0] + hdiff))
+                continue;
+            if((thiis->center[1] + const_0_5 * thiis->len) < (searchmin[1] - hdiff))
+                continue;
+            if((thiis->center[1] - const_0_5 * thiis->len) > (searchmax[1] + hdiff))
+                continue;
+            if((thiis->center[2] + const_0_5 * thiis->len) < (searchmin[2] - hdiff))
+                continue;
+            if((thiis->center[2] - const_0_5 * thiis->len) > (searchmax[2] + hdiff))
+                continue;
+
+            no = thiis->u.d.nextnode;	/* ok, we need to open the node */
+        }
     }
 
-  *startnode = -1;
-  return numngb;
+    *startnode = -1;
+    return numngb;
 }
 
 
@@ -157,88 +157,88 @@ int gadgetmp2::ngb_treefind_pairs(my_float searchcenter[3], my_float hsml, int *
  */
 int gadgetmp2::ngb_treefind_variable(my_float searchcenter[3], my_float hsml, int *startnode)
 {
-  int k, numngb;
-  int no, p;
-  struct NODE *thiis;
-  my_float searchmin[3], searchmax[3];
+    int k, numngb;
+    int no, p;
+    struct NODE *thiis;
+    my_float searchmin[3], searchmax[3];
 
-  for(k = 0; k < 3; k++)	/* cube-box window */
+    for(k = 0; k < 3; k++)	/* cube-box window */
     {
-      searchmin[k] = searchcenter[k] - hsml;
-      searchmax[k] = searchcenter[k] + hsml;
+        searchmin[k] = searchcenter[k] - hsml;
+        searchmax[k] = searchcenter[k] + hsml;
     }
 
-  numngb = 0;
-  no = *startnode;
+    numngb = 0;
+    no = *startnode;
 
-  while(no >= 0)
+    while(no >= 0)
     {
-      if(no < All.MaxPart)	/* single particle */
-	{
-	  p = no;
-	  no = Nextnode[no];
+        if(no < All.MaxPart)	/* single particle */
+        {
+            p = no;
+            no = Nextnode[no];
 
-	  if(P[p].Type > 0)
-	    continue;
+            if(P[p].Type > 0)
+                continue;
 
 
-	  if(P[p].Pos[0] < searchmin[0])
-	    continue;
-	  if(P[p].Pos[0] > searchmax[0])
-	    continue;
-	  if(P[p].Pos[1] < searchmin[1])
-	    continue;
-	  if(P[p].Pos[1] > searchmax[1])
-	    continue;
-	  if(P[p].Pos[2] < searchmin[2])
-	    continue;
-	  if(P[p].Pos[2] > searchmax[2])
-	    continue;
-	  Ngblist[numngb++] = p;
+            if(P[p].Pos[0] < searchmin[0])
+                continue;
+            if(P[p].Pos[0] > searchmax[0])
+                continue;
+            if(P[p].Pos[1] < searchmin[1])
+                continue;
+            if(P[p].Pos[1] > searchmax[1])
+                continue;
+            if(P[p].Pos[2] < searchmin[2])
+                continue;
+            if(P[p].Pos[2] > searchmax[2])
+                continue;
+            Ngblist[numngb++] = p;
 
-	  if(numngb == MAX_NGB)
-	    {
-	      numngb = ngb_clear_buf(searchcenter, hsml, numngb);
-	      if(numngb == MAX_NGB)
-		{
-		  printf("ThisTask=%d: Need to do a second neighbour loop for (%g|%g|%g) hsml=%g no=%d\n",
-			 ThisTask, searchcenter[0].toDouble(), searchcenter[1].toDouble(), searchcenter[2].toDouble(), hsml.toDouble(), no);
-		  *startnode = no;
-		  return numngb;
-		}
-	    }
-	}
-      else
-	{
-	  if(no >= All.MaxPart + MaxNodes)	/* pseudo particle */
-	    {
-	      Exportflag[DomainTask[no - (All.MaxPart + MaxNodes)]] = 1;
-	      no = Nextnode[no - MaxNodes];
-	      continue;
-	    }
+            if(numngb == MAX_NGB)
+            {
+                numngb = ngb_clear_buf(searchcenter, hsml, numngb);
+                if(numngb == MAX_NGB)
+                {
+                    printf("ThisTask=%d: Need to do a second neighbour loop for (%g|%g|%g) hsml=%g no=%d\n",
+                           ThisTask, searchcenter[0].toDouble(), searchcenter[1].toDouble(), searchcenter[2].toDouble(), hsml.toDouble(), no);
+                    *startnode = no;
+                    return numngb;
+                }
+            }
+        }
+        else
+        {
+            if(no >= All.MaxPart + MaxNodes)	/* pseudo particle */
+            {
+                Exportflag[DomainTask[no - (All.MaxPart + MaxNodes)]] = 1;
+                no = Nextnode[no - MaxNodes];
+                continue;
+            }
 
-	  thiis = &Nodes[no];
+            thiis = &Nodes[no];
 
-	  no = thiis->u.d.sibling;	/* in case the node can be discarded */
+            no = thiis->u.d.sibling;	/* in case the node can be discarded */
 
-	  if((thiis->center[0] + const_0_5 * thiis->len) < (searchmin[0]))
-	    continue;
-	  if((thiis->center[0] - const_0_5 * thiis->len) > (searchmax[0]))
-	    continue;
-	  if((thiis->center[1] + const_0_5 * thiis->len) < (searchmin[1]))
-	    continue;
-	  if((thiis->center[1] - const_0_5 * thiis->len) > (searchmax[1]))
-	    continue;
-	  if((thiis->center[2] + const_0_5 * thiis->len) < (searchmin[2]))
-	    continue;
-	  if((thiis->center[2] - const_0_5 * thiis->len) > (searchmax[2]))
-	    continue;
-	  no = thiis->u.d.nextnode;	/* ok, we need to open the node */
-	}
+            if((thiis->center[0] + const_0_5 * thiis->len) < (searchmin[0]))
+                continue;
+            if((thiis->center[0] - const_0_5 * thiis->len) > (searchmax[0]))
+                continue;
+            if((thiis->center[1] + const_0_5 * thiis->len) < (searchmin[1]))
+                continue;
+            if((thiis->center[1] - const_0_5 * thiis->len) > (searchmax[1]))
+                continue;
+            if((thiis->center[2] + const_0_5 * thiis->len) < (searchmin[2]))
+                continue;
+            if((thiis->center[2] - const_0_5 * thiis->len) > (searchmax[2]))
+                continue;
+            no = thiis->u.d.nextnode;	/* ok, we need to open the node */
+        }
     }
 
-  *startnode = -1;
-  return numngb;
+    *startnode = -1;
+    return numngb;
 }
 
 
@@ -251,29 +251,29 @@ int gadgetmp2::ngb_treefind_variable(my_float searchcenter[3], my_float hsml, in
  */
 int gadgetmp2::ngb_clear_buf(my_float searchcenter[3], my_float hsml, int numngb)
 {
-  int i, p;
-  my_float dx, dy, dz, r2;
+    int i, p;
+    my_float dx, dy, dz, r2;
 
 
-  for(i = 0; i < numngb; i++)
+    for(i = 0; i < numngb; i++)
     {
-      p = Ngblist[i];
+        p = Ngblist[i];
 
-      dx = P[p].Pos[0] - searchcenter[0];
-      dy = P[p].Pos[1] - searchcenter[1];
-      dz = P[p].Pos[2] - searchcenter[2];
+        dx = P[p].Pos[0] - searchcenter[0];
+        dy = P[p].Pos[1] - searchcenter[1];
+        dz = P[p].Pos[2] - searchcenter[2];
 
-      r2 = dx * dx + dy * dy + dz * dz;
+        r2 = dx * dx + dy * dy + dz * dz;
 
-      if(r2 > hsml * hsml)
-	{
-	  Ngblist[i] = Ngblist[numngb - 1];
-	  i--;
-	  numngb--;
-	}
+        if(r2 > hsml * hsml)
+        {
+            Ngblist[i] = Ngblist[numngb - 1];
+            i--;
+            numngb--;
+        }
     }
 
-  return numngb;
+    return numngb;
 }
 
 
@@ -282,17 +282,17 @@ int gadgetmp2::ngb_clear_buf(my_float searchcenter[3], my_float hsml, int numngb
  */
 void gadgetmp2::ngb_treeallocate(int npart)
 {
-  long long totbytes = 0;
-  size_t bytes;
-  if(!(Ngblist = (int*)malloc(bytes = npart * (long) sizeof(int))))
+    long long totbytes = 0;
+    size_t bytes;
+    if(!(Ngblist = (int*)malloc(bytes = npart * (long) sizeof(int))))
     {
-      printf("Failed to allocate %g MB for ngblist array\n", bytes / (1024.0 * 1024.0));
-      endrun(78);
+        printf("Failed to allocate %g MB for ngblist array\n", bytes / (1024.0 * 1024.0));
+        endrun(78);
     }
-  totbytes += bytes;
+    totbytes += bytes;
 
-  if(ThisTask == 0)
-    printf("allocated %g Mbyte for ngb search.\n", totbytes / (1024.0 * 1024.0));
+    if(ThisTask == 0)
+        printf("allocated %g Mbyte for ngb search.\n", totbytes / (1024.0 * 1024.0));
 }
 
 
@@ -300,7 +300,7 @@ void gadgetmp2::ngb_treeallocate(int npart)
  */
 void gadgetmp2::ngb_treefree(void)
 {
-  free(Ngblist);
+    free(Ngblist);
 }
 
 /*! This function constructs the neighbour tree. To this end, we actually need
@@ -309,12 +309,12 @@ void gadgetmp2::ngb_treefree(void)
  */
 void gadgetmp2::ngb_treebuild(void)
 {
-  if(ThisTask == 0)
-    printf("Begin Ngb-tree construction.\n");
+    if(ThisTask == 0)
+        printf("Begin Ngb-tree construction.\n");
 
-  force_treebuild(N_gas);
+    force_treebuild(N_gas);
 
-  if(ThisTask == 0)
-    printf("Ngb-Tree contruction finished \n");
+    if(ThisTask == 0)
+        printf("Ngb-Tree contruction finished \n");
 }
 

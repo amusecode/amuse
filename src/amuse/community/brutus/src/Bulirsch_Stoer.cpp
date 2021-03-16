@@ -40,7 +40,7 @@ bool Bulirsch_Stoer::integrate(Cluster &cl, mpreal &dt) {
   Cluster c0 = cl;
   Cluster c  = cl;
   mpreal timestep = dt;
-
+//  DEBUG::DEB <<  "Bulirsch_Stoer::integrate  "<< tolerance <<"  " << timestep <<"\n"; DEBUG::DEB.flush();
   bool flag = step(c, timestep);
 
   if(flag == false) {

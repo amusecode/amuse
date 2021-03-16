@@ -369,18 +369,22 @@ class Brutus(GravitationalDynamics, GravityFieldCode):
     def get_potential_energy_p_si(self):
         self.adjust_prec()
         a=self.convert_nbody.to_si(nbody_system.energy).number
+        print (a,self.convert_nbody.to_si(nbody_system.energy))
         b=mpmath.mpf(self.get_potential_energy_string())*a
         return b #* self.convert_nbody.to_si(nbody_system.energy).unit
 
     def get_total_energy_p_si(self):
         self.adjust_prec()
         a=self.convert_nbody.to_si(nbody_system.energy).number
-        b=mpmath.mpf(self.get_total_energy_string())*a
+        print (a)
+        c= self.get_total_energy_string()
+        b=mpmath.mpf(c)*a
         return b #* self.convert_nbody.to_si(nbody_system.energy).unit
 
     def get_kinetic_energy_p_si(self):
         self.adjust_prec()
         a=self.convert_nbody.to_si(nbody_system.energy).number
+        print (a)
         b=mpmath.mpf(self.get_kinetic_energy_string())*a
         return b #* self.convert_nbody.to_si(nbody_system.energy).unit
 
@@ -548,7 +552,7 @@ class Brutus(GravitationalDynamics, GravityFieldCode):
         handler.add_method('RUN', 'get_time_string')
         handler.add_method('RUN', 'get_radius_string')
         handler.add_method('RUN', 'get_mass_string')
-        handler.add_method('RUN', 'get_total_mass_string')
+        handler.add_method('RUN', 'get_total_energy_string')
         handler.add_method('RUN', 'get_kinetic_energy_string')
         handler.add_method('RUN', 'get_potential_energy_string')
         handler.add_method('RUN', 'get_total_mass_string')

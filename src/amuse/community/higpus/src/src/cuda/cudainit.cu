@@ -34,7 +34,10 @@ HostError CudaInit(unsigned int *M, int NGPU, int rank, string gpu_name, const b
 	for(int i = 0; i < count; i++){
 		DeviceSafeCall(cudaGetDeviceProperties(&properties[i], i));
 		if(rank == 0)
+		{
 			hlog<<" Available : "<<properties[i].name<<" as device : "<<i<<endl;
+			hlog<<" has compute capability "<< properties[i].major <<"."<< properties[i].minor<<endl;
+        }
 	}
 
 	if(rank == 0)
@@ -43,12 +46,12 @@ HostError CudaInit(unsigned int *M, int NGPU, int rank, string gpu_name, const b
     if(!setdev){
 
 	for(int i = 0; i < count; i++){
-	    if(gpu_name.length()>0 && to_string(properties[i].name) != gpu_name) { 
+	    if(gpu_name.length()>0 && to_string(properties[i].name) != gpu_name) {
 		continue;
 	    } else {
 		to_use[k] = i;
 		k++;
-		if(k >= NGPU) {break;} 
+		if(k >= NGPU) {break;}
 	    }
 	}
 
@@ -74,7 +77,29 @@ HostError CudaInit(unsigned int *M, int NGPU, int rank, string gpu_name, const b
 	}
 
 	if(rank == 0){
-		if(properties[to_use[0]].major == 2)
+        switch (properties[to_use[0]].major)
+        {   case 1:     if(properties[to_use[0]].minor == 3) *M = properties[to_use[0]].multiProcessorCount * 1024;
+                        break;
+            case 2:     *M = properties[to_use[0]].multiProcessorCount * 1536;
+                        break;
+            case 3:     *M = properties[to_use[0]].multiProcessorCount * 2048;
+                        break;
+            case 4:     *M = properties[to_use[0]].multiProcessorCount * 2048;
+                        break;
+            case 5:     *M = properties[to_use[0]].multiProcessorCount * 2048;
+                        break;
+            case 6:     *M = properties[to_use[0]].multiProcessorCount * 2048;
+                        break;
+            case 7:     if(properties[to_use[0]].minor == 0) *M = properties[to_use[0]].multiProcessorCount * 2048;
+                        if(properties[to_use[0]].minor == 2) *M = properties[to_use[0]].multiProcessorCount * 2048;
+                        if(properties[to_use[0]].minor == 5) *M = properties[to_use[0]].multiProcessorCount * 1024;
+                        break;
+            case 8:     if(properties[to_use[0]].minor == 0) *M = properties[to_use[0]].multiProcessorCount * 2048;
+                        if(properties[to_use[0]].minor == 6) *M = properties[to_use[0]].multiProcessorCount * 1536;
+                        break;
+            default:    return HNoDouble;
+        }
+/*		if(properties[to_use[0]].major == 2)
 			*M = properties[to_use[0]].multiProcessorCount * 1536;
 		else if(properties[to_use[0]].major == 3)
 			*M = properties[to_use[0]].multiProcessorCount * 2048;
@@ -84,6 +109,8 @@ HostError CudaInit(unsigned int *M, int NGPU, int rank, string gpu_name, const b
 			else
 				return HNoDouble;
 		}
+*/
+		cout<<" multiProcessorCount : "<<properties[to_use[0]].multiProcessorCount<<endl;
 		cout<<" Maximum number of parallel threads on the gpu : "<<*M<<endl;
 	}
 

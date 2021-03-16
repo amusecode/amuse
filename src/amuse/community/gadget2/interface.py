@@ -1368,7 +1368,7 @@ class Gadget2(GravitationalDynamics, GravityFieldCode):
         
         handler.add_method_parameter(
             "get_unit_length", 
-            None,
+            "set_unit_length",
             "code_length_unit", 
             "The code length unit (in cm/h, 3.085678e21 cm = 1 kpc standard).", 
             default_value = 3.085678e21 | units.cm
@@ -1376,7 +1376,7 @@ class Gadget2(GravitationalDynamics, GravityFieldCode):
         
         handler.add_method_parameter(
             "get_unit_time", 
-            None,
+            "set_unit_time",
             "code_time_unit", 
             "The code time unit (in s/h, default: 3.085678e16 s = (1 kpc) / (1 km/s) ~ 0.9778 Gyr).", 
             default_value = 3.085678e16 | units.s

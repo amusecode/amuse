@@ -476,6 +476,23 @@ class AbstractMessageChannel(OptionalAttributes):
             
             command = 'xterm'
             return command, arguments
+
+    @classmethod
+    def CUDDD(cls, full_name_of_the_worker, channel, interpreter_executable=None):
+        if os.name == 'nt':
+            arguments = [full_name_of_the_worker, "--args",full_name_of_the_worker]
+            command = channel.adg_exe
+            return command, arguments
+        else:
+            arguments = ['-display', os.environ['DISPLAY'], '-e', 'ddd', '--debugger', 'cuda-gdb', '--args']
+            
+            if not interpreter_executable is None:
+                arguments.append(interpreter_executable)
+            
+            arguments.append(full_name_of_the_worker)
+            
+            command = 'xterm'
+            return command, arguments
         
     @classmethod
     def VALGRIND(cls, full_name_of_the_worker, channel, interpreter_executable=None):
@@ -799,6 +816,7 @@ AbstractMessageChannel.DEBUGGERS = {
     "gdb":AbstractMessageChannel.GDB,
     "lldb":AbstractMessageChannel.LLDB,
     "ddd":AbstractMessageChannel.DDD,
+    "cuddd":AbstractMessageChannel.CUDDD,
     "xterm":AbstractMessageChannel.XTERM,
     "gdb-remote":AbstractMessageChannel.GDBR,
     "valgrind":AbstractMessageChannel.VALGRIND,

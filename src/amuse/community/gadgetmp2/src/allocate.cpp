@@ -90,7 +90,7 @@ void gadgetmp2::allocate_commbuffers(void)
     size_t dens_size_in = densdata_in::gen_size();
     size_t dens_size_out = densdata_out::gen_size();
     All.BunchSizeDensity =
-    (All.BufferSize * 1024 * 1024) / (2 * dens_size_in + 2 * dens_size_out);
+            (All.BufferSize * 1024 * 1024) / (2 * dens_size_in + 2 * dens_size_out);
 
     DensDataIn = (densdata_in *) CommBuffer;
     //DensDataGet = DensDataIn + All.BunchSizeDensity;
@@ -129,13 +129,13 @@ void gadgetmp2::allocate_commbuffers(void)
     //DomainKeyBuf = (peanokey *) (DomainSphBuf + All.BunchSizeDomain);
     DomainKeyBuf = (peanokey *)((size_t)DomainSphBuf_r + All.BunchSizeDomain*sphparticle_size);
 
-    #ifdef TIMESTEP_LIMITER
+#ifdef TIMESTEP_LIMITER
     size_t time_size = timedata_in::gen_size();
     All.BunchSizeTime = (All.BufferSize * 1024 * 1024) / (2 * time_size);
     TimeDataIn = (timedata_in *) CommBuffer;
     //  TimeDataGet = TimeDataIn + All.BunchSizeTime;
     TimeDataGet =(timedata_in *)((size_t)TimeDataIn + All.BunchSizeTime*time_size);
-    #endif
+#endif
 
 
     if((All.BufferSize * 1024 * 1024) < all_reduce_size * NTask)
@@ -159,6 +159,7 @@ void gadgetmp2::allocate_commbuffers(void)
     const_0_5 = const_1 / const_2;
     const_3 = (my_float)"3";
     const_4 = (my_float)"4";
+    const_5 = (my_float)"5";
     const_0_333333333333 = const_1 / const_3;
     const_0_25= const_1 / const_4;
     const_8 = (my_float)"8";
@@ -184,8 +185,13 @@ void gadgetmp2::allocate_commbuffers(void)
     const_0_0001 = (my_float)"0.0001";
     const_2_5 = (my_float)"2.5";
     const_0_1 = (my_float)"0.1";
+#ifdef   ISOTHERM_EQS
+    const_GAMMA = const_1;
+#else
+    const_GAMMA = const_5/const_3; /*(5.0/3)   !< adiabatic index of simulated gas */
+#endif
+    const_GAMMA_MINUS1 = const_GAMMA-const_1;//(GAMMA-1)
 }
-
 
 
 /*! This routine allocates memory for particle storage, both the

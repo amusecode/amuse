@@ -106,13 +106,13 @@ void gadgetmp2::domain_Decomposition(void)
         list_loadsph = new int[NTask];
         list_work = new my_float [NTask];
 
-        #ifndef NOMPI
+#ifndef NOMPI
         MPI_Allgather(&NumPart, 1, MPI_INT, list_NumPart, 1, MPI_INT, GADGET_WORLD);
         MPI_Allgather(&N_gas, 1, MPI_INT, list_N_gas, 1, MPI_INT, GADGET_WORLD);
-        #else
+#else
         list_NumPart[0] = NumPart;
         list_N_gas[0] = N_gas;
-        #endif
+#endif
         maxload = All.MaxPart * REDUC_FAC;
         maxloadsph = All.MaxPartSph * REDUC_FAC;
         domain_decompose();
@@ -137,12 +137,12 @@ void gadgetmp2::domain_Decomposition(void)
         t1 = second();
         All.CPU_Domain += timediff(t0, t1);
 
-        #ifdef PEANOHILBERT
+#ifdef PEANOHILBERT
         t0 = second();
         peano_hilbert_order();
         t1 = second();
         All.CPU_Peano += timediff(t0, t1);
-        #endif
+#endif
 
         free(KeySorted);
         free(Key);
@@ -179,11 +179,11 @@ void gadgetmp2::domain_decompose(void)
      * MPI_Allreduce() to sum the total particle numbers
      */
     temp = new int[NTask * 6];
-    #ifndef NOMPI
+#ifndef NOMPI
     MPI_Allgather(NtypeLocal, 6, MPI_INT, temp, 6, MPI_INT, GADGET_WORLD);
-    #else
+#else
     for(i = 0; i < 6; i++){temp[i] = NtypeLocal[i];}
-    #endif
+#endif
     for(i = 0; i < 6; i++)
     {
         Ntype[i] = 0;
@@ -192,132 +192,132 @@ void gadgetmp2::domain_decompose(void)
     }
     free(temp);
 
-    #ifndef UNEQUALSOFTENINGS
+#ifndef UNEQUALSOFTENINGS
     for(i = 0; i < 6; i++)
         if(Ntype[i] > 0)
             break;
 
-        for(ngrp = i + 1; ngrp < 6; ngrp++)
-        {
-            if(Ntype[ngrp] > 0)
-                if(All.SofteningTable[ngrp] != All.SofteningTable[i])
+    for(ngrp = i + 1; ngrp < 6; ngrp++)
+    {
+        if(Ntype[ngrp] > 0)
+            if(All.SofteningTable[ngrp] != All.SofteningTable[i])
+            {
+                if(ThisTask == 0)
                 {
-                    if(ThisTask == 0)
-                    {
-                        fprintf(stdout, "Code was not compiled with UNEQUALSOFTENINGS, but some of the\n");
-                        fprintf(stdout, "softening lengths are unequal nevertheless.\n");
-                        fprintf(stdout, "This is not allowed.\n");
-                    }
-                    endrun(0);
+                    fprintf(stdout, "Code was not compiled with UNEQUALSOFTENINGS, but some of the\n");
+                    fprintf(stdout, "softening lengths are unequal nevertheless.\n");
+                    fprintf(stdout, "This is not allowed.\n");
                 }
-        }
-        #endif
+                endrun(0);
+            }
+    }
+#endif
 
-        /* determine global dimensions of domain grid */
-        domain_findExtent();
+    /* determine global dimensions of domain grid */
+    domain_findExtent();
 
-        domain_determineTopTree();
+    domain_determineTopTree();
 
-        /* determine cost distribution in domain grid */
-        domain_sumCost();
+    /* determine cost distribution in domain grid */
+    domain_sumCost();
 
-        /* find the split of the domain grid recursively */
-        status = domain_findSplit(0, NTask, 0, NTopleaves - 1);
-        if(status != 0)
+    /* find the split of the domain grid recursively */
+    status = domain_findSplit(0, NTask, 0, NTopleaves - 1);
+    if(status != 0)
+    {
+        if(ThisTask == 0)
+            printf("\nNo domain decomposition that stays within memory bounds is possible.\n");
+        endrun(0);
+    }
+    /* now try to improve the work-load balance of the split */
+    domain_shiftSplit();
+
+    DomainMyStart = DomainStartList[ThisTask];
+    DomainMyLast = DomainEndList[ThisTask];
+
+    if(ThisTask == 0)
+    {
+        sumload = maxload = 0;
+        sumwork.setZero(); maxwork.setZero();
+        for(i = 0; i < NTask; i++)
         {
-            if(ThisTask == 0)
-                printf("\nNo domain decomposition that stays within memory bounds is possible.\n");
-            endrun(0);
+            sumload += list_load[i];
+            sumwork += list_work[i];
+
+            if(list_load[i] > maxload)
+                maxload = list_load[i];
+
+            if(list_work[i] > maxwork)
+                maxwork = list_work[i];
         }
-        /* now try to improve the work-load balance of the split */
-        domain_shiftSplit();
 
-        DomainMyStart = DomainStartList[ThisTask];
-        DomainMyLast = DomainEndList[ThisTask];
+        printf("work-load balance=%g   memory-balance=%g\n",
+               (maxwork / (sumwork / NTask)).toDouble(), (maxload / (((my_float) sumload) / NTask)).toDouble());
+    }
 
+    /* determine for each cpu how many particles have to be shifted to other cpus */
+    domain_countToGo();
+
+    for(i = 0, sumtogo = 0; i < NTask * NTask; i++)
+        sumtogo += toGo[i];
+
+    while(sumtogo > 0)
+    {
         if(ThisTask == 0)
         {
-            sumload = maxload = 0;
-            sumwork.setZero(); maxwork.setZero();
-            for(i = 0; i < NTask; i++)
-            {
-                sumload += list_load[i];
-                sumwork += list_work[i];
-
-                if(list_load[i] > maxload)
-                    maxload = list_load[i];
-
-                if(list_work[i] > maxwork)
-                    maxwork = list_work[i];
-            }
-
-            printf("work-load balance=%g   memory-balance=%g\n",
-                   (maxwork / (sumwork / NTask)).toDouble(), (maxload / (((my_float) sumload) / NTask)).toDouble());
+            printf("exchange of %d%09d particles\n", (int) (sumtogo / 1000000000),
+                   (int) (sumtogo % 1000000000));
+            fflush(stdout);
         }
 
-        /* determine for each cpu how many particles have to be shifted to other cpus */
-        domain_countToGo();
-
-        for(i = 0, sumtogo = 0; i < NTask * NTask; i++)
-            sumtogo += toGo[i];
-
-        while(sumtogo > 0)
+        for(ngrp = 1; ngrp < (1 << PTask); ngrp++)
         {
-            if(ThisTask == 0)
+            for(task = 0; task < NTask; task++)
             {
-                printf("exchange of %d%09d particles\n", (int) (sumtogo / 1000000000),
-                       (int) (sumtogo % 1000000000));
-                fflush(stdout);
-            }
+                partner = task ^ ngrp;
 
-            for(ngrp = 1; ngrp < (1 << PTask); ngrp++)
-            {
-                for(task = 0; task < NTask; task++)
+                if(partner < NTask && task < partner)
                 {
-                    partner = task ^ ngrp;
-
-                    if(partner < NTask && task < partner)
+                    /* treat SPH separately */
+                    if(All.TotN_gas > 0)
                     {
-                        /* treat SPH separately */
-                        if(All.TotN_gas > 0)
-                        {
-                            domain_findExchangeNumbers(task, partner, 1, &sendcount, &recvcount);
-
-                            list_NumPart[task] += recvcount - sendcount;
-                            list_NumPart[partner] -= recvcount - sendcount;
-                            list_N_gas[task] += recvcount - sendcount;
-                            list_N_gas[partner] -= recvcount - sendcount;
-
-                            toGo[task * NTask + partner] -= sendcount;
-                            toGo[partner * NTask + task] -= recvcount;
-                            toGoSph[task * NTask + partner] -= sendcount;
-                            toGoSph[partner * NTask + task] -= recvcount;
-
-                            if(task == ThisTask)	/* actually carry out the exchange */
-                                domain_exchangeParticles(partner, 1, sendcount, recvcount);
-                            if(partner == ThisTask)
-                                domain_exchangeParticles(task, 1, recvcount, sendcount);
-                        }
-
-                        domain_findExchangeNumbers(task, partner, 0, &sendcount, &recvcount);
+                        domain_findExchangeNumbers(task, partner, 1, &sendcount, &recvcount);
 
                         list_NumPart[task] += recvcount - sendcount;
                         list_NumPart[partner] -= recvcount - sendcount;
+                        list_N_gas[task] += recvcount - sendcount;
+                        list_N_gas[partner] -= recvcount - sendcount;
 
                         toGo[task * NTask + partner] -= sendcount;
                         toGo[partner * NTask + task] -= recvcount;
+                        toGoSph[task * NTask + partner] -= sendcount;
+                        toGoSph[partner * NTask + task] -= recvcount;
 
                         if(task == ThisTask)	/* actually carry out the exchange */
-                            domain_exchangeParticles(partner, 0, sendcount, recvcount);
+                            domain_exchangeParticles(partner, 1, sendcount, recvcount);
                         if(partner == ThisTask)
-                            domain_exchangeParticles(task, 0, recvcount, sendcount);
+                            domain_exchangeParticles(task, 1, recvcount, sendcount);
                     }
+
+                    domain_findExchangeNumbers(task, partner, 0, &sendcount, &recvcount);
+
+                    list_NumPart[task] += recvcount - sendcount;
+                    list_NumPart[partner] -= recvcount - sendcount;
+
+                    toGo[task * NTask + partner] -= sendcount;
+                    toGo[partner * NTask + task] -= recvcount;
+
+                    if(task == ThisTask)	/* actually carry out the exchange */
+                        domain_exchangeParticles(partner, 0, sendcount, recvcount);
+                    if(partner == ThisTask)
+                        domain_exchangeParticles(task, 0, recvcount, sendcount);
                 }
             }
-
-            for(i = 0, sumtogo = 0; i < NTask * NTask; i++)
-                sumtogo += toGo[i];
         }
+
+        for(i = 0, sumtogo = 0; i < NTask * NTask; i++)
+            sumtogo += toGo[i];
+    }
 }
 
 /*! This function tries to find a split point in a range of cells in the
@@ -364,11 +364,11 @@ int gadgetmp2::domain_findSplit(int cpustart, int ncpu, int first, int last)
     while(split < last - (ncpu - ncpu_leftOfSplit - 1) && split > 0)
     {
         maxAvgLoad_CurrentSplit =
-        dmax(load_leftOfSplit / ncpu_leftOfSplit, (load - load_leftOfSplit) / (ncpu - ncpu_leftOfSplit));
+                dmax(load_leftOfSplit / ncpu_leftOfSplit, (load - load_leftOfSplit) / (ncpu - ncpu_leftOfSplit));
 
         maxAvgLoad_NewSplit =
-        dmax((load_leftOfSplit + DomainCount[split]) / ncpu_leftOfSplit,
-             (load - load_leftOfSplit - DomainCount[split]) / (ncpu - ncpu_leftOfSplit));
+                dmax((load_leftOfSplit + DomainCount[split]) / ncpu_leftOfSplit,
+                     (load - load_leftOfSplit - DomainCount[split]) / (ncpu - ncpu_leftOfSplit));
 
         if(maxAvgLoad_NewSplit <= maxAvgLoad_CurrentSplit)
         {
@@ -390,14 +390,14 @@ int gadgetmp2::domain_findSplit(int cpustart, int ncpu, int first, int last)
     }
 
     if(load_leftOfSplit > maxload * ncpu_leftOfSplit ||
-        (load - load_leftOfSplit) > maxload * (ncpu - ncpu_leftOfSplit))
+            (load - load_leftOfSplit) > maxload * (ncpu - ncpu_leftOfSplit))
     {
         /* we did not find a viable split */
         return -1;
     }
 
     if(sphload_leftOfSplit > maxloadsph * ncpu_leftOfSplit ||
-        (sphload - sphload_leftOfSplit) > maxloadsph * (ncpu - ncpu_leftOfSplit))
+            (sphload - sphload_leftOfSplit) > maxloadsph * (ncpu - ncpu_leftOfSplit))
     {
         /* we did not find a viable split */
         return -1;
@@ -475,7 +475,7 @@ void gadgetmp2::domain_shiftSplit(void)
             if(list_work[task] < list_work[task + 1])
             {
                 newmaxw = dmax(list_work[task] + DomainWork[DomainStartList[task + 1]],
-                               list_work[task + 1] - DomainWork[DomainStartList[task + 1]]);
+                        list_work[task + 1] - DomainWork[DomainStartList[task + 1]]);
                 if(newmaxw <= maxw)
                 {
                     if(list_load[task] + DomainCount[DomainStartList[task + 1]] <= maxload)
@@ -502,7 +502,7 @@ void gadgetmp2::domain_shiftSplit(void)
             else
             {
                 newmaxw = dmax(list_work[task] - DomainWork[DomainEndList[task]],
-                               list_work[task + 1] + DomainWork[DomainEndList[task]]);
+                        list_work[task + 1] + DomainWork[DomainEndList[task]]);
                 if(newmaxw <= maxw)
                 {
                     if(list_load[task + 1] + DomainCount[DomainEndList[task]] <= maxload)
@@ -606,9 +606,9 @@ void gadgetmp2::domain_findExchangeNumbers(int task, int partner, int sphflag, i
 void gadgetmp2::domain_exchangeParticles(int partner, int sphflag, int send_count, int recv_count)
 {
     int i, no, n, count, rep, a,b,c;
-    #ifndef NOMPI
+#ifndef NOMPI
     MPI_Status status;
-    #endif
+#endif
 
     for(n = 0, count = 0; count < send_count && n < NumPart; n++)
     {
@@ -674,7 +674,7 @@ void gadgetmp2::domain_exchangeParticles(int partner, int sphflag, int send_coun
 
     /* transmit */
 
-    #ifndef NOMPI
+#ifndef NOMPI
     for(rep = 0; rep < 2; rep++)
     {
         if((rep == 0 && ThisTask < partner) || (rep == 1 && ThisTask > partner))
@@ -746,7 +746,7 @@ void gadgetmp2::domain_exchangeParticles(int partner, int sphflag, int send_coun
             }
         }
     }
-    #endif
+#endif
 }
 
 /*! This function determines how many particles that are currently stored
@@ -779,13 +779,13 @@ void gadgetmp2::domain_countToGo(void)
                 local_toGoSph[DomainTask[no]] += 1;
         }
     }
-    #ifndef NOMPI
+#ifndef NOMPI
     MPI_Allgather(local_toGo, NTask, MPI_INT, toGo, NTask, MPI_INT, GADGET_WORLD);
     MPI_Allgather(local_toGoSph, NTask, MPI_INT, toGoSph, NTask, MPI_INT, GADGET_WORLD);
-    #else
+#else
     toGo[0] = local_toGo[0];
     toGoSph[0] = local_toGoSph[0];
-    #endif
+#endif
 }
 
 
@@ -860,20 +860,20 @@ void gadgetmp2::domain_sumCost(void)
             local_DomainCountSph[no] += 1;
     }
 
-    #ifndef NOMPI
+#ifndef NOMPI
     //MPI_Allreduce(local_DomainWork, DomainWork, NTopleaves, MPI_DOUBLE, MPI_SUM, GADGET_WORLD);
     for(i = 0; i < NTopleaves; i++){
         DomainWork[i] = mpi_all_sum(local_DomainWork[i]);
     }
     MPI_Allreduce(local_DomainCount, DomainCount, NTopleaves, MPI_INT, MPI_SUM, GADGET_WORLD);
     MPI_Allreduce(local_DomainCountSph, DomainCountSph, NTopleaves, MPI_INT, MPI_SUM, GADGET_WORLD);
-    #else
+#else
     for(i = 0; i < NTopleaves; i++){
         DomainWork[i] = local_DomainWork[i];
         DomainCount[i] = local_DomainCount[i];
         DomainCountSph[i] = local_DomainCountSph[i];
     }
-    #endif
+#endif
     free(local_DomainCountSph);
     free(local_DomainCount);
     //free(local_DomainWork);
@@ -906,26 +906,26 @@ void gadgetmp2::domain_findExtent(void)
                 xmax[j] = P[i].Pos[j];
         }
     }
-    #ifndef NOMPI
+#ifndef NOMPI
     //MPI_Allreduce(xmin, xmin_glob, 3, MPI_DOUBLE, MPI_MIN, GADGET_WORLD);
     //MPI_Allreduce(xmax, xmax_glob, 3, MPI_DOUBLE, MPI_MAX, GADGET_WORLD);
     for(j = 0; j < 3; j++){
         xmin_glob[j] = mpi_all_min(xmin[j]);
         xmax_glob[j] = mpi_all_max(xmax[j]);
     }
-    #else
+#else
     for(j = 0; j < 3; j++){
         xmin_glob[j] = xmin[j];
         xmax_glob[j] = xmax[j];
     }
-    #endif
+#endif
 
     len = 0;
     for(j = 0; j < 3; j++)
         if(xmax_glob[j] - xmin_glob[j] > len)
             len = xmax_glob[j] - xmin_glob[j];
 
-        len *= const_1_001;
+    len *= const_1_001;
 
     for(j = 0; j < 3; j++)
     {
@@ -952,9 +952,9 @@ void gadgetmp2::domain_determineTopTree(void)
     for(i = 0; i < NumPart; i++)
     {
         KeySorted[i] = Key[i] = peano_hilbert_key(((P[i].Pos[0] - DomainCorner[0]) * DomainFac).toDouble(),
-                                                  ((P[i].Pos[1] - DomainCorner[1]) * DomainFac).toDouble(),
-                                                  ((P[i].Pos[2] - DomainCorner[2]) * DomainFac).toDouble(),
-                                                  BITS_PER_DIMENSION);
+                ((P[i].Pos[1] - DomainCorner[1]) * DomainFac).toDouble(),
+                ((P[i].Pos[2] - DomainCorner[2]) * DomainFac).toDouble(),
+                BITS_PER_DIMENSION);
     }
 
     qsort(KeySorted, NumPart, sizeof(peanokey), domain_compare_key);
@@ -982,11 +982,11 @@ void gadgetmp2::domain_determineTopTree(void)
 
     ntopnodelist =  new int[NTask];
     ntopoffset =  new int[NTask];
-    #ifndef NOMPI
+#ifndef NOMPI
     MPI_Allgather(&ntop_local, 1, MPI_INT, ntopnodelist, 1, MPI_INT, GADGET_WORLD);
-    #else
+#else
     ntopnodelist[0] = ntop_local;
-    #endif
+#endif
     for(i = 0, ntop = 0, ntopoffset[0] = 0; i < NTask; i++)
     {
         ntop += ntopnodelist[i];
@@ -1003,15 +1003,15 @@ void gadgetmp2::domain_determineTopTree(void)
         ntopoffset[i] *= sizeof(struct topnode_exchange);
     }
 
-    #ifndef NOMPI
+#ifndef NOMPI
     MPI_Allgatherv(toplist_local, ntop_local * sizeof(struct topnode_exchange), MPI_BYTE,
                    toplist, ntopnodelist, ntopoffset, MPI_BYTE, GADGET_WORLD);
-    #else
+#else
     for(i = 0; i < ntop; i++) {
         toplist[i].Count = toplist_local[i].Count;
         toplist[i].Startkey = toplist_local[i].Startkey;
     }
-    #endif
+#endif
 
     qsort(toplist, ntop, sizeof(struct topnode_exchange), domain_compare_toplist);
 

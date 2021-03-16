@@ -71,6 +71,7 @@ int initialize_code() {
     t = t_begin;
 
     DEBUG::DEB.open ("debug.log");
+//    DEBUG::DEB.open ("/dev/null");
     DEBUG::DEB << "Brutus started" <<"\n";
     DEBUG::DEB.flush();
     return 0;
@@ -169,6 +170,7 @@ int get_eta_string(char **myeta) {
 }
 int set_eta(double myeta) {
     eta = (mpreal)myeta;
+    DEBUG::DEB <<  "set_eta  "<< eta <<"\n"; DEBUG::DEB.flush();
     brutus->set_eta(eta);
     return 0;
 }
@@ -221,7 +223,7 @@ int get_bs_tolerance_string(char **bs_tolerance) {
 int set_bs_tolerance(double bs_tolerance) {
 
 odata << t << ": changing e from " << epsilon << ", to " << bs_tolerance << endl;
-
+DEBUG::DEB <<  "set_bs_tolerance  "<< bs_tolerance <<"\n"; DEBUG::DEB.flush();
     epsilon = (mpreal) bs_tolerance;
     brutus->set_tolerance(epsilon);
 
@@ -236,7 +238,7 @@ int get_bs_tolerance(double *bs_tolerance) {
 // Word-length, numBits in mantissa
 int set_word_length(int mynumBits) {
 odata << t << ": changing L from " << numBits << ", to " << mynumBits << endl;
-    DEBUG::DEB <<  "set_word_length  "<< cluster->s.size() <<"\n"; DEBUG::DEB.flush();
+    DEBUG::DEB <<  "set_word_length  "<< mynumBits <<"\n"; DEBUG::DEB.flush();
 
     numBits = mynumBits;
     mpreal::set_default_prec(numBits);
@@ -258,9 +260,11 @@ odata << t << ": changing L from " << numBits << ", to " << mynumBits << endl;
         cluster->s[i].a0[0].set_prec(numBits);
         cluster->s[i].a0[1].set_prec(numBits);
         cluster->s[i].a0[2].set_prec(numBits);
+        #ifdef use_additional_acc
         cluster->s[i].a_step[0].set_prec(numBits);
         cluster->s[i].a_step[1].set_prec(numBits);
         cluster->s[i].a_step[2].set_prec(numBits);
+        #endif // use_additional_acc
         cluster->s[i].m.set_prec(numBits);
         cluster->s[i].r.set_prec(numBits);
     }
@@ -625,13 +629,13 @@ int get_kinetic_energy_m(mpreal* ek) {
   mpreal ektot; //constructor sets to zero by default = "0";
   for(int i=0; i<N; i++) {
     mpreal m  = cluster->s[i].m;
-    mpreal vx = cluster->s[i].x[0];
-    mpreal vy = cluster->s[i].x[1];
-    mpreal vz = cluster->s[i].x[2];
+    mpreal vx = cluster->s[i].v[0];
+    mpreal vy = cluster->s[i].v[1];
+    mpreal vz = cluster->s[i].v[2];
     mpreal v2 = vx*vx + vy*vy + vz*vz;
-    ektot += "0.5"*m*v2;
+    ektot += m*v2;
   }
-  *ek = ektot;
+  *ek = ektot/2;
   return 0;
 }
 
@@ -654,6 +658,8 @@ int get_total_energy_string( char **ep) {
     etot = ektot + eptot;
     arg9=etot.toString();
     *ep =(char*) arg9.c_str();
+
+    DEBUG::DEB <<  "get_total_energy_string  "<< *ep <<"\n"; DEBUG::DEB.flush();
     return 0;
 }
 

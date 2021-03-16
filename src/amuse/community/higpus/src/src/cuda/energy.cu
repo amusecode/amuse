@@ -11,7 +11,7 @@ HostError Calculate_Energy(double4 **pos_CD, double4 **vel_CD, unsigned int N, d
 
    double *K [NGPU];
    double *P [NGPU];
-
+      cout<<"Calculate_Energy "<< NGPU<<endl;
 	for(unsigned int i = 0; i < NGPU; i++){
       DeviceSafeCall(cudaSetDevice(devices[i]));
       DeviceSafeCall(cudaMalloc(( void**)&K[i], N*sizeof(double)));
@@ -29,11 +29,12 @@ HostError Calculate_Energy(double4 **pos_CD, double4 **vel_CD, unsigned int N, d
 	int SHARED = THREADS*sizeof(double4);
 
 	for(unsigned int i = 0; i < NGPU; i++)
-		DeviceSafeCall(cudaThreadSynchronize());
+		DeviceSafeCall(cudaDeviceSynchronize());
 
 	for(unsigned int i = 0; i < NGPU; i++){
       DeviceSafeCall(cudaSetDevice(devices[i]));
       int istart = ppG*(i+rank*NGPU);
+      cout<<"BLOCKS "<< BLOCKS<<" |THREADS "<<THREADS<<"  |SHARED "<<SHARED<<endl;
       energy<<<BLOCKS, THREADS, SHARED>>>(pos_CD[i], vel_CD[i], K[i], P[i], N, EPS, istart, ppG, plummer_core, plummer_mass, rscale, mscale);
    }
 

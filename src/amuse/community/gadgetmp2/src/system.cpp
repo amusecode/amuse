@@ -48,7 +48,7 @@
  */
 my_float gadgetmp2::get_random_number(int id)
 {
-  return RndTable[(id % RNDTABLE)];
+    return RndTable[(id % RNDTABLE)];
 }
 
 
@@ -56,10 +56,10 @@ my_float gadgetmp2::get_random_number(int id)
  */
 void gadgetmp2::set_random_numbers(void)
 {
-  int i;
+    int i;
 
-  for(i = 0; i < RNDTABLE; i++)
-    RndTable[i] = gsl_rng_uniform(random_generator);
+    for(i = 0; i < RNDTABLE; i++)
+        RndTable[i] = gsl_rng_uniform(random_generator);
 }
 
 
@@ -70,15 +70,15 @@ double gadgetmp2::second(void)
 {
 #ifdef WALLCLOCK
 #ifndef NOMPI
-  return MPI_Wtime();
+    return MPI_Wtime();
 #else
-  return ( clock()) / CLOCKS_PER_SEC;
+    return ( clock()) / CLOCKS_PER_SEC;
 #endif
 #else
-  return (clock()) / CLOCKS_PER_SEC;
+    return (clock()) / CLOCKS_PER_SEC;
 #endif
 
-  /* note: on AIX and presumably many other 32bit systems,
+    /* note: on AIX and presumably many other 32bit systems,
    * clock() has only a resolution of 10ms=0.01sec
    */
 }
@@ -93,20 +93,20 @@ double gadgetmp2::second(void)
  */
 double gadgetmp2::timediff(double t0, double t1)
 {
-  double dt;
+    double dt;
 
-  dt = t1 - t0;
+    dt = t1 - t0;
 
-  if(dt < 0)	/* overflow has occured (for systems with 32bit tick counter) */
+    if(dt < 0)	/* overflow has occured (for systems with 32bit tick counter) */
     {
 #ifdef WALLCLOCK
-      dt = 0;
+        dt = 0;
 #else
-      dt = t1 + pow(2, 32) / CLOCKS_PER_SEC - t0;
+        dt = t1 + pow(2, 32) / CLOCKS_PER_SEC - t0;
 #endif
     }
 
-  return dt;
+    return dt;
 }
 
 
@@ -114,38 +114,38 @@ double gadgetmp2::timediff(double t0, double t1)
  */
 my_float gadgetmp2::dmax(my_float x, my_float y)
 {
-  if(x > y)
-    return x;
-  else
-    return y;
+    if(x > y)
+        return x;
+    else
+        return y;
 }
 
 /*! returns the minimum of two my_float
  */
 my_float gadgetmp2::dmin(my_float x, my_float y)
 {
-  if(x < y)
-    return x;
-  else
-    return y;
+    if(x < y)
+        return x;
+    else
+        return y;
 }
 
 /*! returns the maximum of two integers
  */
 int gadgetmp2::imax(int x, int y)
 {
-  if(x > y)
-    return x;
-  else
-    return y;
+    if(x > y)
+        return x;
+    else
+        return y;
 }
 
 /*! returns the minimum of two integers
  */
 int gadgetmp2::imin(int x, int y)
 {
-  if(x < y)
-    return x;
-  else
-    return y;
+    if(x < y)
+        return x;
+    else
+        return y;
 }

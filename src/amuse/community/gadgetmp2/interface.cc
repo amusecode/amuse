@@ -429,7 +429,7 @@ int commit_particles(){
 #ifndef ISOTHERM_EQS
     if(gadgetmp2::All.ComovingIntegrationOn){a3 = gadgetmp2::All.Time * gadgetmp2::All.Time * gadgetmp2::All.Time;}else{a3 = 1;}
     for(i = 0; i < gadgetmp2::N_gas; i++)
-        gadgetmp2::SphP[i].Entropy = GAMMA_MINUS1 * gadgetmp2::SphP[i].Entropy / pow(gadgetmp2::SphP[i].Density / a3, GAMMA_MINUS1);
+        gadgetmp2::SphP[i].Entropy = gadgetmp2::const_GAMMA_MINUS1 * gadgetmp2::SphP[i].Entropy / pow(gadgetmp2::SphP[i].Density / a3, gadgetmp2::const_GAMMA_MINUS1);
 #endif
 #ifdef PMGRID
     long_range_init_regionsize();
@@ -479,7 +479,7 @@ void push_particle_data_on_state_vectors(){
 #ifdef ISOTHERM_EQS
             state.u = SphP[i].Entropy;
 #else
-            state.u = gadgetmp2::SphP[i].Entropy * pow(gadgetmp2::SphP[i].Density / a3, GAMMA_MINUS1) / GAMMA_MINUS1;
+            state.u = gadgetmp2::SphP[i].Entropy * pow(gadgetmp2::SphP[i].Density / a3, gadgetmp2::const_GAMMA_MINUS1) / gadgetmp2::const_GAMMA_MINUS1;
 #endif
 
 #ifdef MORRIS97VISC
@@ -624,7 +624,7 @@ bool check_internal_energy_stopping_condition(){
         internal_energy = SphP[i].Entropy;
 #else
         internal_energy = gadgetmp2::SphP[i].Entropy *
-                pow(gadgetmp2::SphP[i].Density / a3, GAMMA_MINUS1) / GAMMA_MINUS1;
+                pow(gadgetmp2::SphP[i].Density / a3, gadgetmp2::const_GAMMA_MINUS1) / gadgetmp2::const_GAMMA_MINUS1;
 #endif
         if ( (internal_energy < minimum_internal_energy_parameter) ||
              (internal_energy > maximum_internal_energy_parameter)) {
@@ -1061,7 +1061,7 @@ int set_gdgtol(double gadget_cell_opening_constant){
 }
 int get_gamma(double *gamma){
     if (gadgetmp2::ThisTask) {return 0;}
-    *gamma = GAMMA;
+    *gamma = gadgetmp2::const_GAMMA.toDouble();
     return 0;
 }
 int get_alpha(double *artificial_viscosity_alpha){
@@ -1941,7 +1941,7 @@ int get_state_sph_gadget(int *index, double *mass, double *x, double *y, double 
             buffer[i+7*length] = gadgetmp2::SphP[local_index].Entropy.toDouble();
 #else
             buffer[i+7*length] = (gadgetmp2::SphP[local_index].Entropy *
-                pow(gadgetmp2::SphP[local_index].Density / a3, GAMMA_MINUS1) / GAMMA_MINUS1).toDouble();
+                pow(gadgetmp2::SphP[local_index].Density / a3, gadgetmp2::const_GAMMA_MINUS1) / gadgetmp2::const_GAMMA_MINUS1).toDouble();
 #endif
         } else {
             count[i] = 0;
@@ -2044,8 +2044,8 @@ int set_state_sph_gadget(int *index, double *mass, double *x, double *y, double 
 #ifdef ISOTHERM_EQS
             gadgetmp2::SphP[local_index].Entropy = internal_energy[i];
 #else
-            gadgetmp2::SphP[local_index].Entropy = GAMMA_MINUS1 * internal_energy[i] /
-                pow(gadgetmp2::SphP[local_index].Density / a3, GAMMA_MINUS1);
+            gadgetmp2::SphP[local_index].Entropy = gadgetmp2::const_GAMMA_MINUS1 * internal_energy[i] /
+                pow(gadgetmp2::SphP[local_index].Density / a3, gadgetmp2::const_GAMMA_MINUS1);
 #endif
             count[i] = 1;
 #ifdef TIMESTEP_UPDATE
@@ -2172,7 +2172,7 @@ int get_internal_energy(int *index, double *internal_energy, int length){
             buffer[i] = gadgetmp2::SphP[local_index].Entropy.toDouble();
 #else
             buffer[i] = (gadgetmp2::SphP[local_index].Entropy *
-                pow(gadgetmp2::SphP[local_index].Density / a3, GAMMA_MINUS1) / GAMMA_MINUS1).toDouble();
+                pow(gadgetmp2::SphP[local_index].Density / a3, gadgetmp2::const_GAMMA_MINUS1) / gadgetmp2::const_GAMMA_MINUS1).toDouble();
 #endif
         } else {
             count[i] = 0;
@@ -2223,8 +2223,8 @@ int set_internal_energy(int *index, double *internal_energy, int length){
 #ifdef ISOTHERM_EQS
             gadgetmp2::SphP[local_index].Entropy = internal_energy[i];
 #else
-            gadgetmp2::SphP[local_index].Entropy = GAMMA_MINUS1 * internal_energy[i] /
-                pow(gadgetmp2::SphP[local_index].Density / a3, GAMMA_MINUS1);
+            gadgetmp2::SphP[local_index].Entropy = gadgetmp2::const_GAMMA_MINUS1 * internal_energy[i] /
+                pow(gadgetmp2::SphP[local_index].Density / a3, gadgetmp2::const_GAMMA_MINUS1);
 #endif
             count[i] = 1;
 #ifdef TIMESTEP_UPDATE
@@ -2860,7 +2860,7 @@ int get_hydro_state_at_point(double x, double y, double z, double vx, double vy,
 #ifdef ISOTHERM_EQS
     *rhoe = a3_inv * rhoe_out + a5_inv * 0.5*(rhov_out[0]*rhov_out[0] + rhov_out[1]*rhov_out[1] + rhov_out[2]*rhov_out[2]) / rho_out;
 #else
-    *rhoe = (a3_inv * rhoe_out * (pow(rho_out * a3_inv, GAMMA_MINUS1) / GAMMA_MINUS1) + a5_inv * 0.5*rhov2_out).toDouble();
+    *rhoe = (a3_inv * rhoe_out * (pow(rho_out * a3_inv, gadgetmp2::const_GAMMA_MINUS1) / gadgetmp2::const_GAMMA_MINUS1) + a5_inv * 0.5*rhov2_out).toDouble();
 #endif
     return 0;
 }

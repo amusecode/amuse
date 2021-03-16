@@ -23,7 +23,7 @@ inline const std::string __getErrorString(HostError err){
 			break;
 		case(HNoFile):
 			error_string = " Cannot read the specified file ; ";
-			break;	
+			break;
 		case(HInvalidArgv):
 			error_string = " Invalid option passed to *argv[] : lunch with option -h to have an help ;";
 			break;
@@ -62,11 +62,12 @@ inline const std::string __getErrorString(HostError err){
 			break;
 		case(HNoDefPlummer2):
 			error_string = " You did not pass the -p argument at lunch time but you compiled the code with the option -DPLUMMER. This implies you want to add a plummer potential to the stellar environment. Please add the -p option or compile without -DPLUMMER \n";
-			case(HNoDefGalaxy):
-         error_string = " You did not define GALAXY but you are passing option -gal at lunch time : Please compile with -DGALAXY if you want to add a Milky Way potential to the stellar environment, otherwise do not pass the option -gal at lunch time \n";
-         break;
-      case(HNoDefGalaxy2):
-         error_string = " You did not pass the -gal argument at lunch time but you compiled the code with the option -DGALAXY. This implies you want to add a Milky Way potential to the stellar environment. Please add the -gal option or compile without -DGALAXY \n";
+			break;
+        case(HNoDefGalaxy):
+            error_string = " You did not define GALAXY but you are passing option -gal at lunch time : Please compile with -DGALAXY if you want to add a Milky Way potential to the stellar environment, otherwise do not pass the option -gal at lunch time \n";
+            break;
+        case(HNoDefGalaxy2):
+            error_string = " You did not pass the -gal argument at lunch time but you compiled the code with the option -DGALAXY. This implies you want to add a Milky Way potential to the stellar environment. Please add the -gal option or compile without -DGALAXY \n";
 			break;
 		case(HNoSpace):
 			error_string = " There is not enough space in your Hard Disk \n";
@@ -126,9 +127,9 @@ inline void __myCudaLastError(const char *file __attribute__((unused)), const in
 
 #ifdef CHECK_ERRORS
 
-	do{ 
+	do{
 		cudaError_t err = cudaGetLastError();
-      
+
 		if( cudaSuccess != err ){
 			std::cout<<" cudaCheckError() FAILED at :"<<file<<"::"<<line<<":: "<<cudaGetErrorString(err)<<std::endl;
          exit( -1 );
@@ -150,7 +151,7 @@ inline void __mySafeCall(HostError err __attribute__((unused)), const char *file
 			  std::cout<<" HostSafeCall() FAILED at : "<<file<<"::"<<line<<"\n"<<__getErrorString(err)<<std::endl;
            exit(1);
         }
-		
+
     } while ( 0 );
 #endif
 

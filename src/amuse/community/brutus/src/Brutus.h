@@ -13,7 +13,8 @@ class Brutus {
   mpreal tolerance;
 //  int numBits;
 
-  mpreal eta, dt;
+  mpreal *eta, dt;
+  bool eta_was_set=false;
 
 //  Cluster cl;
   Bulirsch_Stoer bs;
@@ -28,7 +29,7 @@ class Brutus {
   Brutus(mpreal &t, vector<mpreal> &data, mpreal &tolerance, int &numBits);
 
   void set_data(vector<mpreal> &data);
-  void set_eta(mpreal &eta);
+  void set_eta(mpreal eta);
   void set_tolerance(mpreal &tolerance);
 //  void set_numBits(int &numBits);
   void set_t_begin(mpreal &t_begin);

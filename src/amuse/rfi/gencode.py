@@ -310,6 +310,7 @@ def make_file(uc):
                 code = compile(text, settings.name_of_module_or_python_file, 'exec')
                 exec(code, module)
             #execfile(settings.name_of_module_or_python_file, module)
+            print( settings.name_of_class,"\n")
             specification_class = module[settings.name_of_class]
             if not settings.name_of_implementation_class is None:
                 implementation_class = module[settings.name_of_implementation_class]

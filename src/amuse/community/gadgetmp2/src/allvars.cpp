@@ -86,13 +86,13 @@ size_t DomainNODE::vs0_off;
 size_t DomainNODE::vs1_off;
 size_t DomainNODE::vs2_off;
 size_t DomainNODE::mass_off;
-    #ifdef UNEQUALSOFTENINGS
-    #ifndef ADAPTIVE_GRAVSOFT_FORGAS
+#ifdef UNEQUALSOFTENINGS
+#ifndef ADAPTIVE_GRAVSOFT_FORGAS
 size_t DomainNODE::bitflags_off;
-    #else
+#else
 size_t DomainNODE::maxsoft_off;
-    #endif
-    #endif
+#endif
+#endif
 size_t DomainNODE::tot_size;
 mpfr_prec_t DomainNODE::prec;
 
@@ -106,7 +106,7 @@ int gadgetmp2::NTopnodes;             /*!< total number of nodes in top-level tr
 int gadgetmp2::NTopleaves;            /*!< number of leaves in top-level tree. Each leaf can be assigned to a different processor */
 
 struct topnode_data
- *gadgetmp2::TopNodes;                      /*!< points to the root node of the top-level tree */
+        *gadgetmp2::TopNodes;                      /*!< points to the root node of the top-level tree */
 
 
 my_float gadgetmp2::TimeOfLastTreeConstruction; /*!< holds what it says, only used in connection with FORCETEST */
@@ -143,7 +143,7 @@ void *gadgetmp2::CommBuffer=nullptr;   /*!< points to communication buffer, whic
  * them into this structure.
  */
 struct global_data_all_processes
- gadgetmp2::All;
+        gadgetmp2::All;
 
 
 
@@ -152,7 +152,7 @@ struct global_data_all_processes
  */
 particle_data *gadgetmp2::P=nullptr;              /*!< holds particle data on local processor */
 particle_data_buff *gadgetmp2::DomainPartBuf_s,
-                   *gadgetmp2::DomainPartBuf_r;  /*!< buffer for particle data used in domain decomposition */
+*gadgetmp2::DomainPartBuf_r;  /*!< buffer for particle data used in domain decomposition */
 
 size_t particle_data_buff::Pos0_off;
 size_t particle_data_buff::Pos1_off;
@@ -165,27 +165,27 @@ size_t particle_data_buff::Radius_off;
 size_t particle_data_buff::GravAccel0_off;
 size_t particle_data_buff::GravAccel1_off;
 size_t particle_data_buff::GravAccel2_off;
-        #ifdef FORCETEST
+#ifdef FORCETEST
 size_t particle_data_buff::GravAccelDirect0_off;
 size_t particle_data_buff::GravAccelDirect1_off;
 size_t particle_data_buff::GravAccelDirect2_off;
-        #endif
+#endif
 size_t particle_data_buff::Potential_off;
 size_t particle_data_buff::OldAcc_off;
 size_t particle_data_buff::ID_off;
 size_t particle_data_buff::Type_off;
 size_t particle_data_buff::Ti_endstep_off;
 size_t particle_data_buff::Ti_begstep_off;
-        #ifdef TIMESTEP_LIMITER
+#ifdef TIMESTEP_LIMITER
 size_t particle_data_buff::Ti_sizestep_off;
-        #endif
-        #ifdef FLEXSTEPS
+#endif
+#ifdef FLEXSTEPS
 size_t particle_data_buff::FlexStepGrp_off;
-        #endif
+#endif
 size_t particle_data_buff::GravCost_off;
-        #ifdef PSEUDOSYMMETRIC
+#ifdef PSEUDOSYMMETRIC
 size_t particle_data_buff::AphysOld_off;
-        #endif
+#endif
 size_t particle_data_buff::tot_size;
 mpfr_prec_t particle_data_buff::prec;
 
@@ -194,7 +194,7 @@ mpfr_prec_t particle_data_buff::prec;
  */
 struct sph_particle_data *gadgetmp2::SphP=nullptr;;                        	/*!< holds SPH particle data on local processor */
 sph_particle_data_buff *gadgetmp2::DomainSphBuf_s,                 /*!< buffer for SPH particle data in domain decomposition */
-                       *gadgetmp2::DomainSphBuf_r;
+*gadgetmp2::DomainSphBuf_r;
 
 
 size_t sph_particle_data_buff::Entropy_off;
@@ -218,16 +218,16 @@ size_t sph_particle_data_buff::Rot1_off;
 size_t sph_particle_data_buff::Rot2_off;
 size_t sph_particle_data_buff::DhsmlDensityFactor_off;
 size_t sph_particle_data_buff::MaxSignalVel_off;
-        #ifdef TIMESTEP_UPDATE
+#ifdef TIMESTEP_UPDATE
 size_t sph_particle_data_buff::FeedbackFlag_off;
 size_t sph_particle_data_buff::FeedAccel0_off;
 size_t sph_particle_data_buff::FeedAccel1_off;
 size_t sph_particle_data_buff::FeedAccel2_off;
-        #endif
-        #ifdef MORRIS97VISC
+#endif
+#ifdef MORRIS97VISC
 size_t sph_particle_data_buff::Alpha_off;
 size_t sph_particle_data_buff::DAlphaDt_off;
-        #endif
+#endif
 size_t sph_particle_data_buff::tot_size;
 mpfr_prec_t sph_particle_data_buff::prec;
 
@@ -242,9 +242,9 @@ int gadgetmp2::MaxNodes;		/*!< maximum allowed number of internal nodes */
 int gadgetmp2::Numnodestree;	/*!< number of (internal) nodes in each tree */
 
 NODE
- *gadgetmp2::Nodes_base,                   /*!< points to the actual memory allocted for the nodes */
- *gadgetmp2::Nodes;                        /*!< this is a pointer used to access the nodes which is shifted such that Nodes[All.MaxPart]
- 				     gives the first allocated node */
+*gadgetmp2::Nodes_base,                   /*!< points to the actual memory allocted for the nodes */
+*gadgetmp2::Nodes;                        /*!< this is a pointer used to access the nodes which is shifted such that Nodes[All.MaxPart]
+                                     gives the first allocated node */
 
 
 int *gadgetmp2::Nextnode;	        /*!< gives next node in tree walk */
@@ -252,8 +252,8 @@ int *gadgetmp2::Father;	        /*!< gives parent node in tree    */
 
 
 extNODE           /*!< this structure holds additional tree-node information which is not needed in the actual gravity computation */
- *gadgetmp2::Extnodes_base,                /*!< points to the actual memory allocted for the extended node information */
- *gadgetmp2::Extnodes;                     /*!< provides shifted access to extended node information, parallel to Nodes/Nodes_base */
+*gadgetmp2::Extnodes_base,                /*!< points to the actual memory allocted for the extended node information */
+*gadgetmp2::Extnodes;                     /*!< provides shifted access to extended node information, parallel to Nodes/Nodes_base */
 
 
 
@@ -262,7 +262,7 @@ extNODE           /*!< this structure holds additional tree-node information whi
 /*! Header for the standard file format.
  */
 struct io_header
- gadgetmp2::header;  /*!< holds header for snapshot files */
+        gadgetmp2::header;  /*!< holds header for snapshot files */
 
 
 
@@ -273,17 +273,17 @@ char gadgetmp2::Tab_IO_Labels[IO_NBLOCKS][4];   /*<! This table holds four-byte 
 /* global state of system, used for global statistics
  */
 struct state_of_system
- gadgetmp2::SysState;      /*<! Structure for storing some global statistics about the simulation. */
+        gadgetmp2::SysState;      /*<! Structure for storing some global statistics about the simulation. */
 
 
 
 /* Various structures for communication
  */
 gravdata_in
- *gadgetmp2::GravDataIn,                   /*!< holds particle data to be exported to other processors */
- *gadgetmp2::GravDataGet,                  /*!< holds particle data imported from other processors */
- *gadgetmp2::GravDataResult,               /*!< holds the partial results computed for imported particles. Note: We use GravDataResult = GravDataGet, such that the result replaces the imported data */
- *gadgetmp2::GravDataOut;                  /*!< holds partial results received from other processors. This will overwrite the GravDataIn array */
+*gadgetmp2::GravDataIn,                   /*!< holds particle data to be exported to other processors */
+*gadgetmp2::GravDataGet,                  /*!< holds particle data imported from other processors */
+*gadgetmp2::GravDataResult,               /*!< holds the partial results computed for imported particles. Note: We use GravDataResult = GravDataGet, such that the result replaces the imported data */
+*gadgetmp2::GravDataOut;                  /*!< holds partial results received from other processors. This will overwrite the GravDataIn array */
 
 size_t gravdata_in::u0_off=0;
 size_t gravdata_in::u1_off=0;
@@ -300,13 +300,13 @@ size_t gravdata_in::tot_size=0;
 mpfr_prec_t gravdata_in::prec=0;
 
 struct gravdata_index
- *gadgetmp2::GravDataIndexTable;           /*!< the particles to be exported are grouped by task-number. This table allows the results to be disentangled again and to be assigned to the correct particle */
+        *gadgetmp2::GravDataIndexTable;           /*!< the particles to be exported are grouped by task-number. This table allows the results to be disentangled again and to be assigned to the correct particle */
 
 
 
 struct densdata_in
- *gadgetmp2::DensDataIn,                   /*!< holds particle data for SPH density computation to be exported to other processors */
- *gadgetmp2::DensDataGet;                  /*!< holds imported particle data for SPH density computation */
+        *gadgetmp2::DensDataIn,                   /*!< holds particle data for SPH density computation to be exported to other processors */
+        *gadgetmp2::DensDataGet;                  /*!< holds imported particle data for SPH density computation */
 
 size_t densdata_in::Pos0_off;
 size_t densdata_in::Pos1_off;
@@ -321,8 +321,8 @@ size_t densdata_in::tot_size;
 mpfr_prec_t densdata_in::prec;
 
 struct densdata_out
- *gadgetmp2::DensDataResult,               /*!< stores the locally computed SPH density results for imported particles */
- *gadgetmp2::DensDataPartialResult;        /*!< imported partial SPH density results from other processors */
+        *gadgetmp2::DensDataResult,               /*!< stores the locally computed SPH density results for imported particles */
+        *gadgetmp2::DensDataPartialResult;        /*!< imported partial SPH density results from other processors */
 
 
 size_t densdata_out::Rho_off;
@@ -337,8 +337,8 @@ mpfr_prec_t densdata_out::prec;
 
 
 struct hydrodata_in
- *gadgetmp2::HydroDataIn,                  /*!< holds particle data for SPH hydro-force computation to be exported to other processors */
- *gadgetmp2::HydroDataGet;                 /*!< holds imported particle data for SPH hydro-force computation */
+        *gadgetmp2::HydroDataIn,                  /*!< holds particle data for SPH hydro-force computation to be exported to other processors */
+        *gadgetmp2::HydroDataGet;                 /*!< holds imported particle data for SPH hydro-force computation */
 
 
 size_t hydrodata_in::Pos0_off;
@@ -356,15 +356,15 @@ size_t hydrodata_in::DhsmlDensityFactor_off;
 size_t hydrodata_in::Timestep_off;
 size_t hydrodata_in::Task_off;
 size_t hydrodata_in::Index_off;
-        #ifdef MORRIS97VISC
+#ifdef MORRIS97VISC
 size_t hydrodata_in::Alpha_off;
-        #endif
+#endif
 size_t hydrodata_in::tot_size;
 mpfr_prec_t hydrodata_in::prec;
 
 struct hydrodata_out
- *gadgetmp2::HydroDataResult,              /*!< stores the locally computed SPH hydro results for imported particles */
- *gadgetmp2::HydroDataPartialResult;       /*!< imported partial SPH hydro-force results from other processors */
+        *gadgetmp2::HydroDataResult,              /*!< stores the locally computed SPH hydro results for imported particles */
+        *gadgetmp2::HydroDataPartialResult;       /*!< imported partial SPH hydro-force results from other processors */
 
 size_t hydrodata_out::Acc0_off;
 size_t hydrodata_out::Acc1_off;
@@ -406,6 +406,10 @@ my_float gadgetmp2::const_0_001;
 my_float gadgetmp2::const_0_0001;
 my_float gadgetmp2::const_2_5;
 my_float gadgetmp2::const_0_1;
+my_float gadgetmp2::const_5;
+my_float gadgetmp2::const_GAMMA;
+my_float gadgetmp2::const_GAMMA_MINUS1;
+
 
 #ifdef TIMESTEP_LIMITER
 timedata_in *gadgetmp2::TimeDataIn, *gadgetmp2::TimeDataGet;

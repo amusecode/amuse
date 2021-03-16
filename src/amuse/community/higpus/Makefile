@@ -25,7 +25,7 @@ MPI_INSTALL_PATH := /usr/lib64/openmpi/1.4-gcc
 NVCC ?= /usr/local/cuda/bin/nvcc
 
 #possible options : -DCHECK_ERRORS -DCHECK_TIMES -DPLUMMER -DUNROLL -DGPUCORR -DGALAXY
-MYOPTS := -DUNROLL -DCHECK_ERRORS 
+MYOPTS := -DUNROLL -DCHECK_ERRORS
 
 CUDAINCLUDE := -I$(CUDA_INSTALL_PATH)/include
 CUDALIB := -L$(CUDA_INSTALL_PATH)/lib64 -lcuda -lcudart
@@ -46,8 +46,8 @@ MYINCLUDE := -I./lib/
 ## (note all these variables have defaults in this makefile too, for unconfigured makes)
 LIBS := -lm $(OPENMP_CFLAGS) $(MPI_CXXLIBS) $(CUDALIB)
 
-GXXOPTS := -O3 -fopenmp -Wall -W
-NVCCFLAGS := -O3 --compiler-bindir=/usr/bin/$(CXX) -Xcompiler "$(GXXOPTS) $(MYOPTS)" $(CUDAINCLUDE) $(MPI_CXXFLAGS) $(MYINCLUDE)
+GXXOPTS := -O3 -fopenmp -Wall -W -g
+NVCCFLAGS := -g -G -O3 --compiler-bindir=/usr/bin/$(CXX) -Xcompiler "$(GXXOPTS) $(MYOPTS)" $(CUDAINCLUDE) $(MPI_CXXFLAGS) $(MYINCLUDE)
 CXXFLAGS += $(GXXOPTS) $(MYOPTS) $(CUDAINCLUDE) $(MPI_CXXFLAGS) $(MYINCLUDE)
 
 LDFLAGS = $(LIBS) $(CUDALIB) 

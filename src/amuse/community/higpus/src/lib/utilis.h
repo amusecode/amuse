@@ -22,7 +22,7 @@ class BadConversion : public std::runtime_error {
       BadConversion(std::string const& s)
       : std::runtime_error(s)
       { }
-}; 
+};
 
 inline void get_times(double *tm __attribute__((unused))){
 #ifdef CHECK_TIMES

@@ -46,44 +46,44 @@
  */
 void gadgetmp2::set_units(void)
 {
-  my_float meanweight;
+    my_float meanweight;
 
-  All.UnitTime_in_s = All.UnitLength_in_cm / All.UnitVelocity_in_cm_per_s;
-  All.UnitTime_in_Megayears = All.UnitTime_in_s / SEC_PER_MEGAYEAR;
+    All.UnitTime_in_s = All.UnitLength_in_cm / All.UnitVelocity_in_cm_per_s;
+    All.UnitTime_in_Megayears = All.UnitTime_in_s / SEC_PER_MEGAYEAR;
 
-  if(All.GravityConstantInternal == 0)
-    All.G = GRAVITY / std::pow(All.UnitLength_in_cm, 3) * All.UnitMass_in_g * std::pow(All.UnitTime_in_s, 2);
-  else
-    All.G = All.GravityConstantInternal;
+    if(All.GravityConstantInternal == 0)
+        All.G = GRAVITY / std::pow(All.UnitLength_in_cm, 3) * All.UnitMass_in_g * std::pow(All.UnitTime_in_s, 2);
+    else
+        All.G = All.GravityConstantInternal;
 
-  All.UnitDensity_in_cgs = All.UnitMass_in_g / std::pow(All.UnitLength_in_cm, 3);
-  All.UnitPressure_in_cgs = All.UnitMass_in_g / All.UnitLength_in_cm / std::pow(All.UnitTime_in_s, 2);
-  All.UnitCoolingRate_in_cgs = All.UnitPressure_in_cgs / All.UnitTime_in_s;
-  All.UnitEnergy_in_cgs = All.UnitMass_in_g * std::pow(All.UnitLength_in_cm, 2) / std::pow(All.UnitTime_in_s, 2);
+    All.UnitDensity_in_cgs = All.UnitMass_in_g / std::pow(All.UnitLength_in_cm, 3);
+    All.UnitPressure_in_cgs = All.UnitMass_in_g / All.UnitLength_in_cm / std::pow(All.UnitTime_in_s, 2);
+    All.UnitCoolingRate_in_cgs = All.UnitPressure_in_cgs / All.UnitTime_in_s;
+    All.UnitEnergy_in_cgs = All.UnitMass_in_g * std::pow(All.UnitLength_in_cm, 2) / std::pow(All.UnitTime_in_s, 2);
 
-  /* convert some physical input parameters to internal units */
+    /* convert some physical input parameters to internal units */
 
-  All.Hubble = HUBBLE * All.UnitTime_in_s;
+    All.Hubble = HUBBLE * All.UnitTime_in_s;
 
-  if(ThisTask == 0)
+    if(ThisTask == 0)
     {
-      printf("\nHubble (internal units) = %g\n", All.Hubble);
-      printf("G (internal units) = %g\n", All.G);
-      printf("UnitMass_in_g = %g \n", All.UnitMass_in_g);
-      printf("UnitTime_in_s = %g \n", All.UnitTime_in_s);
-      printf("UnitVelocity_in_cm_per_s = %g \n", All.UnitVelocity_in_cm_per_s);
-      printf("UnitDensity_in_cgs = %g \n", All.UnitDensity_in_cgs);
-      printf("UnitEnergy_in_cgs = %g \n", All.UnitEnergy_in_cgs);
-      printf("\n");
+        printf("\nHubble (internal units) = %g\n", All.Hubble);
+        printf("G (internal units) = %g\n", All.G);
+        printf("UnitMass_in_g = %g \n", All.UnitMass_in_g);
+        printf("UnitTime_in_s = %g \n", All.UnitTime_in_s);
+        printf("UnitVelocity_in_cm_per_s = %g \n", All.UnitVelocity_in_cm_per_s);
+        printf("UnitDensity_in_cgs = %g \n", All.UnitDensity_in_cgs);
+        printf("UnitEnergy_in_cgs = %g \n", All.UnitEnergy_in_cgs);
+        printf("\n");
     }
 
-  meanweight = const_4 / (const_1 + const_3 * (my_float)HYDROGEN_MASSFRAC);	/* note: we assume neutral gas here */
+    meanweight = const_4 / (const_1 + const_3 * (my_float)HYDROGEN_MASSFRAC);	/* note: we assume neutral gas here */
 
 #ifdef ISOTHERM_EQS
-  All.MinEgySpec = 0;
+    All.MinEgySpec = 0;
 #else
-  All.MinEgySpec = (const_1 / meanweight * (const_1/ GAMMA_MINUS1) * (BOLTZMANN / PROTONMASS) * All.MinGasTemp).toDouble();
-  All.MinEgySpec *= All.UnitMass_in_g / All.UnitEnergy_in_cgs;
+    All.MinEgySpec = (const_1 / meanweight * (const_1/ const_GAMMA_MINUS1) * (BOLTZMANN / PROTONMASS) * All.MinGasTemp).toDouble();
+    All.MinEgySpec *= All.UnitMass_in_g / All.UnitEnergy_in_cgs;
 #endif
 
 }
@@ -96,61 +96,61 @@ void gadgetmp2::set_units(void)
  */
 void gadgetmp2::open_outputfiles(void)
 {
-  char mode[2], buf[200];
+    char mode[2], buf[200];
 
     sprintf(buf, "%s%s%d%s", All.OutputDir, "debug",(int)ThisTask,".txt");
     DEBUG.open (buf);
     DEBUG << "debugged task " << ThisTask <<"\n";
     DEBUG.flush();
 
-  if(ThisTask != 0)		/* only the root processor writes to the log files */
-    return;
+    if(ThisTask != 0)		/* only the root processor writes to the log files */
+        return;
 
-  if(RestartFlag == 0)
-    strcpy(mode, "w");
-  else
-    strcpy(mode, "a");
+    if(RestartFlag == 0)
+        strcpy(mode, "w");
+    else
+        strcpy(mode, "a");
 
 
-  sprintf(buf, "%s%s", All.OutputDir, All.CpuFile);
-  if(!(FdCPU = fopen(buf, mode)))
+    sprintf(buf, "%s%s", All.OutputDir, All.CpuFile);
+    if(!(FdCPU = fopen(buf, mode)))
     {
-      printf("error in opening file '%s'\n", buf);
-      endrun(1);
+        printf("error in opening file '%s'\n", buf);
+        endrun(1);
     }
 
-  sprintf(buf, "%s%s", All.OutputDir, All.InfoFile);
-  if(!(FdInfo = fopen(buf, mode)))
+    sprintf(buf, "%s%s", All.OutputDir, All.InfoFile);
+    if(!(FdInfo = fopen(buf, mode)))
     {
-      printf("error in opening file '%s'\n", buf);
-      endrun(1);
+        printf("error in opening file '%s'\n", buf);
+        endrun(1);
     }
 
-  sprintf(buf, "%s%s", All.OutputDir, All.EnergyFile);
-  if(!(FdEnergy = fopen(buf, mode)))
+    sprintf(buf, "%s%s", All.OutputDir, All.EnergyFile);
+    if(!(FdEnergy = fopen(buf, mode)))
     {
-      printf("error in opening file '%s'\n", buf);
-      endrun(1);
+        printf("error in opening file '%s'\n", buf);
+        endrun(1);
     }
 
-  sprintf(buf, "%s%s", All.OutputDir, All.TimingsFile);
-  if(!(FdTimings = fopen(buf, mode)))
+    sprintf(buf, "%s%s", All.OutputDir, All.TimingsFile);
+    if(!(FdTimings = fopen(buf, mode)))
     {
-      printf("error in opening file '%s'\n", buf);
-      endrun(1);
+        printf("error in opening file '%s'\n", buf);
+        endrun(1);
     }
-/*  sprintf(buf, "%s%s", All.OutputDir, "debug.txt");*/
+    /*  sprintf(buf, "%s%s", All.OutputDir, "debug.txt");*/
 
 #ifdef FORCETEST
-  if(RestartFlag == 0)
+    if(RestartFlag == 0)
     {
-      sprintf(buf, "%s%s", All.OutputDir, "forcetest.txt");
-      if(!(FdForceTest = fopen(buf, "w")))
-	{
-	  printf("error in opening file '%s'\n", buf);
-	  endrun(1);
-	}
-      fclose(FdForceTest);
+        sprintf(buf, "%s%s", All.OutputDir, "forcetest.txt");
+        if(!(FdForceTest = fopen(buf, "w")))
+        {
+            printf("error in opening file '%s'\n", buf);
+            endrun(1);
+        }
+        fclose(FdForceTest);
     }
 #endif
 }
@@ -160,15 +160,15 @@ void gadgetmp2::open_outputfiles(void)
  */
 void gadgetmp2::close_outputfiles(void)
 {
-  if(ThisTask != 0)		/* only the root processor writes to the log files */
-    return;
+    if(ThisTask != 0)		/* only the root processor writes to the log files */
+        return;
 
-  fclose(FdCPU);
-  fclose(FdInfo);
-  fclose(FdEnergy);
-  fclose(FdTimings);
+    fclose(FdCPU);
+    fclose(FdInfo);
+    fclose(FdEnergy);
+    fclose(FdTimings);
 #ifdef FORCETEST
-  fclose(FdForceTest);
+    fclose(FdForceTest);
 #endif
 }
 

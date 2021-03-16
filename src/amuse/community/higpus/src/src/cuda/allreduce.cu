@@ -35,7 +35,7 @@ HostError ReduceAll(unsigned int cpy_size, unsigned int N, unsigned int NGPU, un
       }
 
    MPISafeCall(MPI_Allreduce(mpi_red_aux, mpi_red, cpy_size, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD));
-     
+
 	for(unsigned int k = 0; k < 3; k++){
       unsigned int p = k*nextsize;
       for(unsigned int i = 0; i < nextsize; i++){

@@ -10,15 +10,15 @@ HostError CheckBlocks(double *step, unsigned int M, string path){
    int local_rank;
 	string temp;
 	char *output_name;
-   
+
 	MPISafeCall(MPI_Comm_rank(MPI_COMM_WORLD, &local_rank));
 
    if(local_rank == 0){
       ofstream blocks;
       temp = path + "Blocks.dat";
       output_name = to_char(temp);
-      blocks.open(output_name);		
-      
+      blocks.open(output_name);
+
 		int *bl = new int [35];
       double conto;
 
@@ -92,7 +92,7 @@ HostError DetermineSteps(double stp, unsigned int N, unsigned int M, double4* a_
     *ACTUAL_TIME = min(step[who],*ACTUAL_TIME);
     local_time[who] = 0.0;
    }
- 
+
    for(unsigned int who = M; who < N; who++){
       step[who] = 1.0e+10;
       local_time[who] = 1.0e+10;
@@ -101,11 +101,11 @@ HostError DetermineSteps(double stp, unsigned int N, unsigned int M, double4* a_
    return HNoError;
 }
 
-extern "C"
+//extern "C"
 HostError InitBlocks(double4 *pos_PH, float4 *vel_PH, unsigned int TPB, unsigned int N, unsigned int M, unsigned int BFMAX, double ETA4, double DTMIN, double DTMAX, unsigned int NGPU, double EPS, unsigned int *MAXDIM, unsigned int *GPUMINTHREADS, string gpu_name, int rank, int nodes, double4* pos_CH, double4* vel_CH, double4* a_H0, double* step, double* local_time, double* ACTUAL_TIME, const bool vir, const double ratio, const bool warm, const bool setdev, vector<unsigned int>& devices, double plummer_core, double plummer_mass, double rscale, double mscale, string path){
 
    HostSafeCall(CudaInit(GPUMINTHREADS, NGPU, rank, gpu_name, setdev, devices, path));
-   
+
 	HostSafeCall(Max_dimension(TPB, BFMAX, N, MAXDIM, *GPUMINTHREADS));
 cout<<N<<"  "<<*MAXDIM<<endl;
     double4 **a_D    = new double4* [NGPU];
@@ -128,7 +128,7 @@ cout<<N<<"  "<<*MAXDIM<<endl;
 
    double4 *a_H = new double4 [NGPU*3*N];
    double4 *a_H1 = new double4 [3*N];
- 
+
    string temp;
 	char *output_name;
 
@@ -267,7 +267,7 @@ cout<<N<<"  "<<*MAXDIM<<endl;
 
    for(unsigned int i = 0; i < NGPU; i++){
       DeviceSafeCall(cudaSetDevice(devices[i]));
-      DeviceSafeCall(cudaThreadSynchronize());
+      DeviceSafeCall(cudaDeviceSynchronize());
       DeviceCheckErrors();
    }
 
@@ -286,16 +286,16 @@ cout<<N<<"  "<<*MAXDIM<<endl;
 
       for(unsigned int i = 0; i < NGPU; i++){
          DeviceSafeCall(cudaSetDevice(devices[i]));
-         DeviceSafeCall(cudaThreadSynchronize());
+         DeviceSafeCall(cudaDeviceSynchronize());
          DeviceCheckErrors();
       }
    }
 
 	for(unsigned int i = 0; i < NGPU; i++){
          DeviceSafeCall(cudaSetDevice(devices[i]));
-         DeviceSafeCall(cudaThreadSynchronize());
+         DeviceSafeCall(cudaDeviceSynchronize());
 	}
-	
+
 	for(unsigned int i = 0; i < NGPU; i++){
 		 DeviceSafeCall(cudaSetDevice(devices[i]));
         reposition<<<bl, threads>>>(a_D[i], a1_D[i], a2_D[i], a_temp_Dev[i], nextsize);
@@ -307,7 +307,7 @@ cout<<N<<"  "<<*MAXDIM<<endl;
 
 	for(unsigned int i = 0; i < NGPU; i++){
          DeviceSafeCall(cudaSetDevice(devices[i]));
-         DeviceSafeCall(cudaThreadSynchronize());
+         DeviceSafeCall(cudaDeviceSynchronize());
    }
 
 	for(unsigned int i = 0; i < NGPU; i++){
@@ -353,7 +353,7 @@ cout<<N<<"  "<<*MAXDIM<<endl;
 
    for(unsigned int i = 0; i < NGPU; i++){
       DeviceSafeCall(cudaSetDevice(devices[i]));
-      DeviceSafeCall(cudaThreadSynchronize());
+      DeviceSafeCall(cudaDeviceSynchronize());
       DeviceCheckErrors();
    }
 
@@ -372,14 +372,14 @@ cout<<N<<"  "<<*MAXDIM<<endl;
 
       for(unsigned int i = 0; i < NGPU; i++){
          DeviceSafeCall(cudaSetDevice(devices[i]));
-         DeviceSafeCall(cudaThreadSynchronize());
+         DeviceSafeCall(cudaDeviceSynchronize());
          DeviceCheckErrors();
       }
    }
 
    for(unsigned int i = 0; i < NGPU; i++){
          DeviceSafeCall(cudaSetDevice(devices[i]));
-         DeviceSafeCall(cudaThreadSynchronize());
+         DeviceSafeCall(cudaDeviceSynchronize());
    }
 
    for(unsigned int i = 0; i < NGPU; i++){
@@ -391,7 +391,7 @@ cout<<N<<"  "<<*MAXDIM<<endl;
 
 	   for(unsigned int i = 0; i < NGPU; i++){
          DeviceSafeCall(cudaSetDevice(devices[i]));
-         DeviceSafeCall(cudaThreadSynchronize());
+         DeviceSafeCall(cudaDeviceSynchronize());
    }
 
    for(unsigned int i = 0; i < NGPU; i++){
@@ -424,7 +424,7 @@ cout<<N<<"  "<<*MAXDIM<<endl;
       DeviceSafeCall(cudaFree(loc_D[i]));
       DeviceSafeCall(cudaFree(a3_D[i]));
    }
-   
+
 	delete [] a_H;
    delete [] a_H1;
    delete [] mpi_red_aux;

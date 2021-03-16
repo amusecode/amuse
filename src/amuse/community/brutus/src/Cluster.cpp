@@ -73,7 +73,7 @@ void Cluster::calcAcceleration_dt() {
   #ifdef use_additional_acc
      for(int i=0; i<N; i++) {
         for(int j=0; j<3; j++){
-    DEBUG::DEB << s[i].a_step[j].toString() << "  "<< N<<"  "<<i<< "  "<< j<< "Cluster\n"; DEBUG::DEB.flush();
+    //DEBUG::DEB << s[i].a_step[j].toString() << "  "<< N<<"  "<<i<< "  "<< j<< "Cluster\n"; DEBUG::DEB.flush();
            s[i].a[j]=s[i].a_step[j];
         }
      }
@@ -131,11 +131,12 @@ void Cluster::calcAcceleration_dt() {
       if(mydti < dt) dt = mydti;
     }
   }
-     for(int i=0; i<N; i++) {
+/*     for(int i=0; i<N; i++) {
         for(int j=0; j<3; j++){
-    DEBUG::DEB << s[i].a[j].toString() << "  "<< N<<"  "<<i<< "  "<< j<< "acc\n"; DEBUG::DEB.flush();
+    DEBUG::DEB << "acc:" << s[i].a[j].toString() << "  "<< N<<"  "<<i<< "  "<< j<< "pos: " << s[i].x[j].toString() << "\n"; DEBUG::DEB.flush();
         }
      }
+*/
   dt = pow(dt, "0.25");
 }
 void Cluster::calcAcceleration() {

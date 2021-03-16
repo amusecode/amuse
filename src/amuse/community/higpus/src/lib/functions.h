@@ -25,10 +25,10 @@ HostError print_info(double plc __attribute__((unused)), double plm __attribute_
 HostError adjust_param_ifwarmstart(bool *CDM, bool *CDV, unsigned *FMAX, string warm_start_file, string path, string *FINP, double *GTIME_WARM, double DTPRINT);
 HostError __MPIbcast_otherparams(bool *warm_start, bool *VIR, bool *setdev, double *plummer_core, double *plummer_mass, double *rscale, double *mscale, double *ratio, vector<unsigned> &dev);
 
-extern "C"
+//extern "C"
 HostError Hermite6th(const double TTIME, double* GTIME, double* ATIME, double* local_time, double* step, const unsigned int N, const unsigned int M, double4* pos_PH, float4* vel_PH, double4* pos_CH, double4* vel_CH, double4* a_H0, const unsigned int MAXDIM, unsigned int NGPU, unsigned int TPB, int rank, int size, unsigned int BFMAX, double ETA6, double ETA4, double DTMAX, double DTMIN, double EPS, double DTPRINT, unsigned int FMAX, const bool warm, double GTW, unsigned int GPUMINTHREADS, double plummer_core, double plummer_mass, double rscale, double mscale, vector<unsigned int> devices, bool *cleanstop, string path);
 
-extern "C"
+//extern "C"
 HostError InitBlocks(double4 *pos_PH, float4 *vel_PH, unsigned int TPB, unsigned int N, unsigned int M, unsigned int BFMAX, double ETA4, double DTMIN, double DTMAX, unsigned int NGPU, double EPS, unsigned int *MAXDIM, unsigned int *GPUMINTHREADS, string gpu_name, int rank, int nodes, double4* pos_CH, double4* vel_CH, double4* a_H0, double* step, double* local_time, double* ACTUAL_TIME, const bool vir, const double ratio, const bool warm, const bool setdev, vector<unsigned int>& devices, double plummer_core, double plummer_mass, double rscale, double mscale, string path);
 
 HostError Calculate_Energy(double4 **pos_CD, double4 **vel_CD, unsigned int N, double EPS, unsigned int TPB, unsigned int NGPU, int rank, unsigned int ppG, double *kin, double *pot, double plummer_core, double plummer_mass, double rscale, double mscale, vector<unsigned int> devices);

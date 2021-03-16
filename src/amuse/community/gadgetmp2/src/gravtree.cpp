@@ -54,17 +54,17 @@ void gadgetmp2::gravity_tree(void)
     double sumcomm;
     my_float fac, plb, plb_max;
 
-    #ifndef NOGRAVITY
+#ifndef NOGRAVITY
     int *noffset, *nbuffer, *nsend, *nsend_local;
     long long ntotleft;
     int ndone, maxfill, ngrp;
     int k, place;
     int level, sendTask, recvTask;
     my_float ax, ay, az;
-    #ifndef NOMPI
+#ifndef NOMPI
     MPI_Status status;
-    #endif // NOMPI
-    #endif
+#endif // NOMPI
+#endif
 
     /* set new softening lengths */
     if(All.ComovingIntegrationOn)
@@ -93,17 +93,17 @@ void gadgetmp2::gravity_tree(void)
 
     /* Note: 'NumForceUpdate' has already been determined in find_next_sync_point_and_drift() */
     numlist =  new int[NTask * NTask]; // just NTask is needed!
-    #ifndef NOMPI
+#ifndef NOMPI
     MPI_Allgather(&NumForceUpdate, 1, MPI_INT, numlist, 1, MPI_INT, GADGET_WORLD);
-    #else
+#else
     numlist[0] = NumForceUpdate;
-    #endif
+#endif
     for(i = 0, ntot = 0; i < NTask; i++)
         ntot += numlist[i]; // sum all particles to be transfered
-        free(numlist);
+    free(numlist);
 
 
-    #ifndef NOGRAVITY
+#ifndef NOGRAVITY
     if(ThisTask == 0)
         printf("Begin tree force.\n");
 
@@ -132,11 +132,11 @@ void gadgetmp2::gravity_tree(void)
 
                 for(j = 0; j < NTask; j++)
                     Exportflag[j] = 0;
-                #ifndef PMGRID
+#ifndef PMGRID
                 costtotal += force_treeevaluate(i, 0, &ewaldcount); // decide to export to which task
-                #else
+#else
                 costtotal += force_treeevaluate_shortrange(i, 0);
-                #endif
+#endif
                 for(j = 0; j < NTask; j++)
                 {
                     if(Exportflag[j] != 0) //collect data to export into intermediate buffer
@@ -150,15 +150,15 @@ void gadgetmp2::gravity_tree(void)
                         GravDataGet->set_init_u1(P[i].Pos[1],nexport);
                         //GravDataGet[nexport].u2 = P[i].Pos[2];
                         GravDataGet->set_init_u2(P[i].Pos[2],nexport);
-                        #ifdef UNEQUALSOFTENINGS
+#ifdef UNEQUALSOFTENINGS
                         //GravDataGet[nexport].Type = P[i].Type;
                         GravDataGet->set_Type(P[i].Type,nexport);
-                        #ifdef ADAPTIVE_GRAVSOFT_FORGAS
+#ifdef ADAPTIVE_GRAVSOFT_FORGAS
                         if(P[i].Type == 0)
                             //GravDataGet[nexport].Soft = SphP[i].Hsml;
                             GravDataGet->set_init_Soft(SphP[i].Hsml,nexport);
-                        #endif
-                        #endif
+#endif
+#endif
                         //GravDataGet[nexport].OldAcc = P[i].OldAcc;
                         GravDataGet->set_init_OldAcc(P[i].OldAcc,nexport);
                         GravDataIndexTable[nexport].Task = j;
@@ -170,156 +170,156 @@ void gadgetmp2::gravity_tree(void)
                     }
                 }
             }
+        tend = second();
+        timetree += timediff(tstart, tend);
+
+        qsort(GravDataIndexTable, nexport, sizeof(struct gravdata_index), grav_tree_compare_key); //generate pattern to setup real buffer
+
+        for(j = 0; j < nexport; j++)
+            gravdata_in::lcopy(GravDataIn, j, GravDataGet, GravDataIndexTable[j].SortIndex);
+        //               GravDataIn[j] = GravDataGet[GravDataIndexTable[j].SortIndex];   //this builts the real transfer buffer
+
+        for(j = 1, noffset[0] = 0; j < NTask; j++)
+            noffset[j] = noffset[j - 1] + nsend_local[j - 1];
+
+        tstart = second();
+
+#ifndef NOMPI
+        MPI_Allgather(nsend_local, NTask, MPI_INT, nsend, NTask, MPI_INT, GADGET_WORLD);
+#else
+        nsend[0] = nsend_local[0];
+#endif
+        tend = second();
+        timeimbalance += timediff(tstart, tend);
+
+        /* now do the particles that need to be exported */
+
+#ifndef NOMPI
+        for(level = 1; level < (1 << PTask); level++)
+        {
+            tstart = second();
+            for(j = 0; j < NTask; j++)
+                nbuffer[j] = 0;
+            for(ngrp = level; ngrp < (1 << PTask); ngrp++)
+            {
+                maxfill = 0;
+                for(j = 0; j < NTask; j++)
+                {
+                    if((j ^ ngrp) < NTask)
+                        if(maxfill < nbuffer[j] + nsend[(j ^ ngrp) * NTask + j])
+                            maxfill = nbuffer[j] + nsend[(j ^ ngrp) * NTask + j];
+                }
+                if(maxfill >= All.BunchSizeForce)
+                    break;
+
+                sendTask = ThisTask;
+                recvTask = ThisTask ^ ngrp;
+
+                if(recvTask < NTask)
+                {
+                    if(nsend[ThisTask * NTask + recvTask] > 0 || nsend[recvTask * NTask + ThisTask] > 0)
+                    {
+                        /* get the particles */
+                        MPI_Sendrecv(GravDataIn->get_buff_start(noffset[recvTask]),
+                                     nsend_local[recvTask] * gravdata_in::get_size(), MPI_BYTE,
+                                     recvTask, TAG_GRAV_A,
+                                     GravDataGet->get_buff_start(nbuffer[ThisTask]),
+                                     nsend[recvTask * NTask + ThisTask] * gravdata_in::get_size(), MPI_BYTE,
+                                recvTask, TAG_GRAV_A, GADGET_WORLD, &status);
+                    }
+                }
+                for(j = 0; j < NTask; j++)
+                    if((j ^ ngrp) < NTask)
+                        nbuffer[j] += nsend[(j ^ ngrp) * NTask + j];
+            }
+            tend = second();
+            timecommsumm += timediff(tstart, tend);
+
+
+            tstart = second();
+            for(j = 0; j < nbuffer[ThisTask]; j++)
+            {
+#ifndef PMGRID
+                costtotal += force_treeevaluate(j, 1, &ewaldcount);
+#else
+                costtotal += force_treeevaluate_shortrange(j, 1);
+#endif
+            }
             tend = second();
             timetree += timediff(tstart, tend);
 
-            qsort(GravDataIndexTable, nexport, sizeof(struct gravdata_index), grav_tree_compare_key); //generate pattern to setup real buffer
-
-            for(j = 0; j < nexport; j++)
-            gravdata_in::lcopy(GravDataIn, j, GravDataGet, GravDataIndexTable[j].SortIndex);
- //               GravDataIn[j] = GravDataGet[GravDataIndexTable[j].SortIndex];   //this builts the real transfer buffer
-
-            for(j = 1, noffset[0] = 0; j < NTask; j++)
-                noffset[j] = noffset[j - 1] + nsend_local[j - 1];
-
             tstart = second();
-
-            #ifndef NOMPI
-            MPI_Allgather(nsend_local, NTask, MPI_INT, nsend, NTask, MPI_INT, GADGET_WORLD);
-            #else
-            nsend[0] = nsend_local[0];
-            #endif
+            MPI_Barrier(GADGET_WORLD);
             tend = second();
             timeimbalance += timediff(tstart, tend);
 
-            /* now do the particles that need to be exported */
-
-            #ifndef NOMPI
-            for(level = 1; level < (1 << PTask); level++)
+            /* get the result */
+            tstart = second();
+            for(j = 0; j < NTask; j++)
+                nbuffer[j] = 0;
+            for(ngrp = level; ngrp < (1 << PTask); ngrp++)
             {
-                tstart = second();
+                maxfill = 0;
                 for(j = 0; j < NTask; j++)
-                    nbuffer[j] = 0;
-                for(ngrp = level; ngrp < (1 << PTask); ngrp++)
                 {
-                    maxfill = 0;
-                    for(j = 0; j < NTask; j++)
-                    {
-                        if((j ^ ngrp) < NTask)
-                            if(maxfill < nbuffer[j] + nsend[(j ^ ngrp) * NTask + j])
-                                maxfill = nbuffer[j] + nsend[(j ^ ngrp) * NTask + j];
-                    }
-                    if(maxfill >= All.BunchSizeForce)
-                        break;
-
-                    sendTask = ThisTask;
-                    recvTask = ThisTask ^ ngrp;
-
-                    if(recvTask < NTask)
-                    {
-                        if(nsend[ThisTask * NTask + recvTask] > 0 || nsend[recvTask * NTask + ThisTask] > 0)
-                        {
-                            /* get the particles */
-                            MPI_Sendrecv(GravDataIn->get_buff_start(noffset[recvTask]),
-                                         nsend_local[recvTask] * gravdata_in::get_size(), MPI_BYTE,
-                                         recvTask, TAG_GRAV_A,
-                                         GravDataGet->get_buff_start(nbuffer[ThisTask]),
-                                         nsend[recvTask * NTask + ThisTask] * gravdata_in::get_size(), MPI_BYTE,
-                                         recvTask, TAG_GRAV_A, GADGET_WORLD, &status);
-                        }
-                    }
-                    for(j = 0; j < NTask; j++)
-                        if((j ^ ngrp) < NTask)
-                            nbuffer[j] += nsend[(j ^ ngrp) * NTask + j];
+                    if((j ^ ngrp) < NTask)
+                        if(maxfill < nbuffer[j] + nsend[(j ^ ngrp) * NTask + j])
+                            maxfill = nbuffer[j] + nsend[(j ^ ngrp) * NTask + j];
                 }
-                tend = second();
-                timecommsumm += timediff(tstart, tend);
+                if(maxfill >= All.BunchSizeForce)
+                    break;
 
-
-                tstart = second();
-                for(j = 0; j < nbuffer[ThisTask]; j++)
+                sendTask = ThisTask;
+                recvTask = ThisTask ^ ngrp;
+                if(recvTask < NTask)
                 {
-                    #ifndef PMGRID
-                    costtotal += force_treeevaluate(j, 1, &ewaldcount);
-                    #else
-                    costtotal += force_treeevaluate_shortrange(j, 1);
-                    #endif
-                }
-                tend = second();
-                timetree += timediff(tstart, tend);
-
-                tstart = second();
-                MPI_Barrier(GADGET_WORLD);
-                tend = second();
-                timeimbalance += timediff(tstart, tend);
-
-                /* get the result */
-                tstart = second();
-                for(j = 0; j < NTask; j++)
-                    nbuffer[j] = 0;
-                for(ngrp = level; ngrp < (1 << PTask); ngrp++)
-                {
-                    maxfill = 0;
-                    for(j = 0; j < NTask; j++)
+                    if(nsend[ThisTask * NTask + recvTask] > 0 || nsend[recvTask * NTask + ThisTask] > 0)
                     {
-                        if((j ^ ngrp) < NTask)
-                            if(maxfill < nbuffer[j] + nsend[(j ^ ngrp) * NTask + j])
-                                maxfill = nbuffer[j] + nsend[(j ^ ngrp) * NTask + j];
-                    }
-                    if(maxfill >= All.BunchSizeForce)
-                        break;
+                        /* send the results */
+                        MPI_Sendrecv(GravDataResult->get_buff_start(nbuffer[ThisTask]),
+                                     nsend[recvTask * NTask + ThisTask] * gravdata_in::get_size(),
+                                MPI_BYTE, recvTask, TAG_GRAV_B,
+                                GravDataOut->get_buff_start(noffset[recvTask]),
+                                nsend_local[recvTask] * gravdata_in::get_size(),
+                                MPI_BYTE, recvTask, TAG_GRAV_B, GADGET_WORLD, &status);
 
-                    sendTask = ThisTask;
-                    recvTask = ThisTask ^ ngrp;
-                    if(recvTask < NTask)
-                    {
-                        if(nsend[ThisTask * NTask + recvTask] > 0 || nsend[recvTask * NTask + ThisTask] > 0)
+                        /* add the result to the particles */
+                        for(j = 0; j < nsend_local[recvTask]; j++)
                         {
-                            /* send the results */
-                            MPI_Sendrecv(GravDataResult->get_buff_start(nbuffer[ThisTask]),
-                                         nsend[recvTask * NTask + ThisTask] * gravdata_in::get_size(),
-                                         MPI_BYTE, recvTask, TAG_GRAV_B,
-                                         GravDataOut->get_buff_start(noffset[recvTask]),
-                                         nsend_local[recvTask] * gravdata_in::get_size(),
-                                         MPI_BYTE, recvTask, TAG_GRAV_B, GADGET_WORLD, &status);
+                            place = GravDataIndexTable[noffset[recvTask] + j].Index;
 
-                            /* add the result to the particles */
-                            for(j = 0; j < nsend_local[recvTask]; j++)
-                            {
-                                place = GravDataIndexTable[noffset[recvTask] + j].Index;
-
-                                /*			  for(k = 0; k < 3; k++)
+                            /*			  for(k = 0; k < 3; k++)
                                  *			    P[place].GravAccel[k] += GravDataOut[j + noffset[recvTask]].u.Acc[k];
                                  */
-                                //P[place].GravAccel[0] += GravDataOut[j + noffset[recvTask]].u0;
-                                P[place].GravAccel[0] += GravDataOut->read_re_init_u0(j + noffset[recvTask]);
-                                //P[place].GravAccel[1] += GravDataOut[j + noffset[recvTask]].u1;
-                                P[place].GravAccel[1] += GravDataOut->read_re_init_u1(j + noffset[recvTask]);
-                                //P[place].GravAccel[2] += GravDataOut[j + noffset[recvTask]].u2;
-                                P[place].GravAccel[2] += GravDataOut->read_re_init_u2(j + noffset[recvTask]);
+                            //P[place].GravAccel[0] += GravDataOut[j + noffset[recvTask]].u0;
+                            P[place].GravAccel[0] += GravDataOut->read_re_init_u0(j + noffset[recvTask]);
+                            //P[place].GravAccel[1] += GravDataOut[j + noffset[recvTask]].u1;
+                            P[place].GravAccel[1] += GravDataOut->read_re_init_u1(j + noffset[recvTask]);
+                            //P[place].GravAccel[2] += GravDataOut[j + noffset[recvTask]].u2;
+                            P[place].GravAccel[2] += GravDataOut->read_re_init_u2(j + noffset[recvTask]);
 
-                                //P[place].GravCost += GravDataOut[j + noffset[recvTask]].Ninteractions;
-                                P[place].GravCost += GravDataOut->read_Ninteractions(j + noffset[recvTask]);
-                            }
+                            //P[place].GravCost += GravDataOut[j + noffset[recvTask]].Ninteractions;
+                            P[place].GravCost += GravDataOut->read_Ninteractions(j + noffset[recvTask]);
                         }
                     }
-                    for(j = 0; j < NTask; j++)
-                        if((j ^ ngrp) < NTask)
-                            nbuffer[j] += nsend[(j ^ ngrp) * NTask + j];
                 }
-                tend = second();
-                timecommsumm += timediff(tstart, tend);
-
-                level = ngrp - 1;
+                for(j = 0; j < NTask; j++)
+                    if((j ^ ngrp) < NTask)
+                        nbuffer[j] += nsend[(j ^ ngrp) * NTask + j];
             }
-            #endif
-            #ifndef NOMPI
-            MPI_Allgather(&ndone, 1, MPI_INT, ndonelist, 1, MPI_INT, GADGET_WORLD);
-            #else
-            ndonelist[0] = ndone;
-            #endif
-            for(j = 0; j < NTask; j++)
-                ntotleft -= ndonelist[j];
+            tend = second();
+            timecommsumm += timediff(tstart, tend);
+
+            level = ngrp - 1;
+        }
+#endif
+#ifndef NOMPI
+        MPI_Allgather(&ndone, 1, MPI_INT, ndonelist, 1, MPI_INT, GADGET_WORLD);
+#else
+        ndonelist[0] = ndone;
+#endif
+        for(j = 0; j < NTask; j++)
+            ntotleft -= ndonelist[j];
     }
 
     free(ndonelist);
@@ -330,8 +330,8 @@ void gadgetmp2::gravity_tree(void)
 
     /* now add things for comoving integration */
 
-    #ifndef PERIODIC
-    #ifndef PMGRID
+#ifndef PERIODIC
+#ifndef PMGRID
     if(All.ComovingIntegrationOn)
     {
         fac = const_0_5 * All.Hubble * All.Hubble * All.Omega0 / All.G;
@@ -341,8 +341,8 @@ void gadgetmp2::gravity_tree(void)
                 for(j = 0; j < 3; j++)
                     P[i].GravAccel[j] += fac * P[i].Pos[j];
     }
-    #endif
-    #endif
+#endif
+#endif
 
     for(i = 0; i < NumPart; i++)
         if(P[i].Ti_endstep == All.Ti_Current)
@@ -355,134 +355,134 @@ void gadgetmp2::gravity_tree(void)
         }
 
 
-        if(All.TypeOfOpeningCriterion == 1)
-            All.ErrTolTheta = 0;	/* This will switch to the relative opening criterion for the following force computations */
+    if(All.TypeOfOpeningCriterion == 1)
+        All.ErrTolTheta = 0;	/* This will switch to the relative opening criterion for the following force computations */
 
-            /*  muliply by G */
-            for(i = 0; i < NumPart; i++)
-                if(P[i].Ti_endstep == All.Ti_Current)
-                    for(j = 0; j < 3; j++)
-                        P[i].GravAccel[j] *= All.G;
+    /*  muliply by G */
+    for(i = 0; i < NumPart; i++)
+        if(P[i].Ti_endstep == All.Ti_Current)
+            for(j = 0; j < 3; j++)
+                P[i].GravAccel[j] *= All.G;
 
 
-                    /* Finally, the following factor allows a computation of a cosmological simulation
+    /* Finally, the following factor allows a computation of a cosmological simulation
                      *     with vacuum energy in physical coordinates */
-                    #ifndef PERIODIC
-                    #ifndef PMGRID
-                    if(All.ComovingIntegrationOn == 0)
-                    {
-                        fac = All.OmegaLambda * All.Hubble * All.Hubble;
+#ifndef PERIODIC
+#ifndef PMGRID
+    if(All.ComovingIntegrationOn == 0)
+    {
+        fac = All.OmegaLambda * All.Hubble * All.Hubble;
 
-                        for(i = 0; i < NumPart; i++)
-                            if(P[i].Ti_endstep == All.Ti_Current)
-                                for(j = 0; j < 3; j++)
-                                    P[i].GravAccel[j] += fac * P[i].Pos[j];
-                    }
-                    #endif
-                    #endif
+        for(i = 0; i < NumPart; i++)
+            if(P[i].Ti_endstep == All.Ti_Current)
+                for(j = 0; j < 3; j++)
+                    P[i].GravAccel[j] += fac * P[i].Pos[j];
+    }
+#endif
+#endif
 
-                    if(ThisTask == 0)
-                        printf("tree is done.\n");
+    if(ThisTask == 0)
+        printf("tree is done.\n");
 
-                    #else /* gravity is switched off */
+#else /* gravity is switched off */
 
-                    for(i = 0; i < NumPart; i++)
-                        if(P[i].Ti_endstep == All.Ti_Current)
-                            for(j = 0; j < 3; j++)
-                                P[i].GravAccel[j] = 0;
+    for(i = 0; i < NumPart; i++)
+        if(P[i].Ti_endstep == All.Ti_Current)
+            for(j = 0; j < 3; j++)
+                P[i].GravAccel[j] = 0;
 
-                            #endif
-
-
+#endif
 
 
-                            /* Now the force computation is finished */
 
-                            /*  gather some diagnostic information */
 
-                            timetreelist =  new double[NTask];
-                            timecommlist = new double[NTask];
-                            costtreelist = new double[NTask];
-                            numnodeslist = new int[NTask];
-                            ewaldlist = new double[NTask];
-                            nrecv =  new int[NTask];
+    /* Now the force computation is finished */
 
-                            numnodes = Numnodestree;
-                            #ifndef NOMPI
-                            MPI_Gather(&costtotal, 1, MPI_DOUBLE, costtreelist, 1, MPI_DOUBLE, 0, GADGET_WORLD);
-                            MPI_Gather(&numnodes, 1, MPI_INT, numnodeslist, 1, MPI_INT, 0, GADGET_WORLD);
-                            MPI_Gather(&timetree, 1, MPI_DOUBLE, timetreelist, 1, MPI_DOUBLE, 0, GADGET_WORLD);
-                            MPI_Gather(&timecommsumm, 1, MPI_DOUBLE, timecommlist, 1, MPI_DOUBLE, 0, GADGET_WORLD);
-                            MPI_Gather(&NumPart, 1, MPI_INT, nrecv, 1, MPI_INT, 0, GADGET_WORLD);
-                            MPI_Gather(&ewaldcount, 1, MPI_DOUBLE, ewaldlist, 1, MPI_DOUBLE, 0, GADGET_WORLD);
-                            MPI_Reduce(&nexportsum, &nexport, 1, MPI_INT, MPI_SUM, 0, GADGET_WORLD);
-                            MPI_Reduce(&timeimbalance, &sumimbalance, 1, MPI_DOUBLE, MPI_SUM, 0, GADGET_WORLD);
-                            #else
-                            costtreelist[0] = costtotal;
-                            numnodeslist[0] = numnodes;
-                            timetreelist[0] = timetree;
-                            timecommlist[0] = timecommsumm;
-                            nrecv[0] = NumPart;
-                            ewaldlist[0] = ewaldcount;
-                            nexport  = nexportsum;
-                            sumimbalance = timeimbalance;
-                            #endif
-                            if(ThisTask == 0)
-                            {
-                                All.TotNumOfForces += ntot;
+    /*  gather some diagnostic information */
 
-                                fprintf(FdTimings, "Step= %d  t= %g  dt= %g \n", All.NumCurrentTiStep, All.Time, All.TimeStep);
-                                fprintf(FdTimings, "Nf= %d%09d  total-Nf= %d%09d  ex-frac= %g  iter= %d\n",
-                                        (int) (ntot / 1000000000), (int) (ntot % 1000000000),
-                                        (int) (All.TotNumOfForces / 1000000000), (int) (All.TotNumOfForces % 1000000000),
-                                        (nexport / ((my_float) ntot)).toDouble(), iter);
-                                /* note: on Linux, the 8-byte integer could be printed with the format identifier "%qd", but doesn't work on AIX */
+    timetreelist =  new double[NTask];
+    timecommlist = new double[NTask];
+    costtreelist = new double[NTask];
+    numnodeslist = new int[NTask];
+    ewaldlist = new double[NTask];
+    nrecv =  new int[NTask];
 
-                                fac = NTask / ((my_float) All.TotNumPart);
+    numnodes = Numnodestree;
+#ifndef NOMPI
+    MPI_Gather(&costtotal, 1, MPI_DOUBLE, costtreelist, 1, MPI_DOUBLE, 0, GADGET_WORLD);
+    MPI_Gather(&numnodes, 1, MPI_INT, numnodeslist, 1, MPI_INT, 0, GADGET_WORLD);
+    MPI_Gather(&timetree, 1, MPI_DOUBLE, timetreelist, 1, MPI_DOUBLE, 0, GADGET_WORLD);
+    MPI_Gather(&timecommsumm, 1, MPI_DOUBLE, timecommlist, 1, MPI_DOUBLE, 0, GADGET_WORLD);
+    MPI_Gather(&NumPart, 1, MPI_INT, nrecv, 1, MPI_INT, 0, GADGET_WORLD);
+    MPI_Gather(&ewaldcount, 1, MPI_DOUBLE, ewaldlist, 1, MPI_DOUBLE, 0, GADGET_WORLD);
+    MPI_Reduce(&nexportsum, &nexport, 1, MPI_INT, MPI_SUM, 0, GADGET_WORLD);
+    MPI_Reduce(&timeimbalance, &sumimbalance, 1, MPI_DOUBLE, MPI_SUM, 0, GADGET_WORLD);
+#else
+    costtreelist[0] = costtotal;
+    numnodeslist[0] = numnodes;
+    timetreelist[0] = timetree;
+    timecommlist[0] = timecommsumm;
+    nrecv[0] = NumPart;
+    ewaldlist[0] = ewaldcount;
+    nexport  = nexportsum;
+    sumimbalance = timeimbalance;
+#endif
+    if(ThisTask == 0)
+    {
+        All.TotNumOfForces += ntot;
 
-                                for(i = 0, maxt = timetreelist[0], sumt = 0, plb_max = const_0,
-                                    maxnumnodes = 0, costtotal = 0, sumcomm = 0, ewaldtot = 0; i < NTask; i++)
-                                {
-                                    costtotal += costtreelist[i];
+        fprintf(FdTimings, "Step= %d  t= %g  dt= %g \n", All.NumCurrentTiStep, All.Time, All.TimeStep);
+        fprintf(FdTimings, "Nf= %d%09d  total-Nf= %d%09d  ex-frac= %g  iter= %d\n",
+                (int) (ntot / 1000000000), (int) (ntot % 1000000000),
+                (int) (All.TotNumOfForces / 1000000000), (int) (All.TotNumOfForces % 1000000000),
+                (nexport / ((my_float) ntot)).toDouble(), iter);
+        /* note: on Linux, the 8-byte integer could be printed with the format identifier "%qd", but doesn't work on AIX */
 
-                                    sumcomm += timecommlist[i];
+        fac = NTask / ((my_float) All.TotNumPart);
 
-                                    if(maxt < timetreelist[i])
-                                        maxt = timetreelist[i];
-                                    sumt += timetreelist[i];
+        for(i = 0, maxt = timetreelist[0], sumt = 0, plb_max = const_0,
+            maxnumnodes = 0, costtotal = 0, sumcomm = 0, ewaldtot = 0; i < NTask; i++)
+        {
+            costtotal += costtreelist[i];
 
-                                    plb = nrecv[i] * fac;
+            sumcomm += timecommlist[i];
 
-                                    if(plb > plb_max)
-                                        plb_max = plb;
+            if(maxt < timetreelist[i])
+                maxt = timetreelist[i];
+            sumt += timetreelist[i];
 
-                                    if(numnodeslist[i] > maxnumnodes)
-                                        maxnumnodes = numnodeslist[i];
+            plb = nrecv[i] * fac;
 
-                                    ewaldtot += ewaldlist[i];
-                                }
-                                fprintf(FdTimings, "work-load balance: %g  max=%g avg=%g PE0=%g\n",
-                                        (maxt / (sumt / NTask)), maxt, (sumt / NTask), timetreelist[0]);
-                                fprintf(FdTimings, "particle-load balance: %g\n", plb_max.toDouble());
-                                fprintf(FdTimings, "max. nodes: %d, filled: %g\n", maxnumnodes,
-                                        (maxnumnodes / (All.TreeAllocFactor * All.MaxPart)));
-                                fprintf(FdTimings, "part/sec=%g | %g  ia/part=%g (%g)\n", (ntot / (sumt + 1.0e-20)),
-                                        (ntot / (maxt * NTask)), ( (costtotal)) / ntot), ((( ewaldtot) / ntot));
-                                fprintf(FdTimings, "\n");
+            if(plb > plb_max)
+                plb_max = plb;
 
-                                fflush(FdTimings);
+            if(numnodeslist[i] > maxnumnodes)
+                maxnumnodes = numnodeslist[i];
 
-                                All.CPU_TreeWalk += sumt / NTask;
-                                All.CPU_Imbalance += sumimbalance / NTask;
-                                All.CPU_CommSum += sumcomm / NTask;
-                            }
+            ewaldtot += ewaldlist[i];
+        }
+        fprintf(FdTimings, "work-load balance: %g  max=%g avg=%g PE0=%g\n",
+                (maxt / (sumt / NTask)), maxt, (sumt / NTask), timetreelist[0]);
+        fprintf(FdTimings, "particle-load balance: %g\n", plb_max.toDouble());
+        fprintf(FdTimings, "max. nodes: %d, filled: %g\n", maxnumnodes,
+                (maxnumnodes / (All.TreeAllocFactor * All.MaxPart)));
+        fprintf(FdTimings, "part/sec=%g | %g  ia/part=%g (%g)\n", (ntot / (sumt + 1.0e-20)),
+                (ntot / (maxt * NTask)), ( (costtotal)) / ntot), ((( ewaldtot) / ntot));
+        fprintf(FdTimings, "\n");
 
-                            free(nrecv);
-                            free(ewaldlist);
-                            free(numnodeslist);
-                            free(costtreelist);
-                            free(timecommlist);
-                            free(timetreelist);
+        fflush(FdTimings);
+
+        All.CPU_TreeWalk += sumt / NTask;
+        All.CPU_Imbalance += sumimbalance / NTask;
+        All.CPU_CommSum += sumcomm / NTask;
+    }
+
+    free(nrecv);
+    free(ewaldlist);
+    free(numnodeslist);
+    free(costtreelist);
+    free(timecommlist);
+    free(timetreelist);
 }
 
 

@@ -57,9 +57,9 @@ void gadgetmp2::density(void)
     my_float dt_entr;
     double sumt, sumcomm, timengb, sumtimengb;
     double timecomp = 0, timeimbalance = 0, timecommsumm = 0, sumimbalance;
-    #ifndef NOMPI
+#ifndef NOMPI
     MPI_Status status;
-    #endif
+#endif
 
     noffset = new int[NTask];	/* offsets of bunches in common list */
     nbuffer = new int[NTask];
@@ -76,11 +76,11 @@ void gadgetmp2::density(void)
     }
 
     numlist = new int[NTask * NTask];
-    #ifndef NOMPI
+#ifndef NOMPI
     MPI_Allgather(&NumSphUpdate, 1, MPI_INT, numlist, 1, MPI_INT, GADGET_WORLD);
-    #else
+#else
     numlist[0] = NumSphUpdate;
-    #endif
+#endif
     for(i = 0, ntot = 0; i < NTask; i++)
         ntot += numlist[i];
     free(numlist);
@@ -119,188 +119,188 @@ void gadgetmp2::density(void)
                             //DensDataIn[nexport].Pos[0] = P[i].Pos[0];
                             //DensDataIn[nexport].Pos[1] = P[i].Pos[1];
                             //DensDataIn[nexport].Pos[2] = P[i].Pos[2];
-                        DensDataIn->set_init_Pos0(P[i].Pos[0],nexport);
-                        DensDataIn->set_init_Pos1(P[i].Pos[1],nexport);
-                        DensDataIn->set_init_Pos2(P[i].Pos[2],nexport);
+                            DensDataIn->set_init_Pos0(P[i].Pos[0],nexport);
+                            DensDataIn->set_init_Pos1(P[i].Pos[1],nexport);
+                            DensDataIn->set_init_Pos2(P[i].Pos[2],nexport);
                             //DensDataIn[nexport].Vel[0] = SphP[i].VelPred[0];
                             //DensDataIn[nexport].Vel[1] = SphP[i].VelPred[1];
                             //DensDataIn[nexport].Vel[2] = SphP[i].VelPred[2];
-                        DensDataIn->set_init_Vel0(SphP[i].VelPred[0],nexport);
-                        DensDataIn->set_init_Vel1(SphP[i].VelPred[1],nexport);
-                        DensDataIn->set_init_Vel2(SphP[i].VelPred[2],nexport);
+                            DensDataIn->set_init_Vel0(SphP[i].VelPred[0],nexport);
+                            DensDataIn->set_init_Vel1(SphP[i].VelPred[1],nexport);
+                            DensDataIn->set_init_Vel2(SphP[i].VelPred[2],nexport);
                             //DensDataIn[nexport].Hsml = SphP[i].Hsml;
-                        DensDataIn->set_init_Hsml(SphP[i].Hsml,nexport);
+                            DensDataIn->set_init_Hsml(SphP[i].Hsml,nexport);
                             //DensDataIn[nexport].Index = i;
-                        DensDataIn->set_Index(i,nexport);
+                            DensDataIn->set_Index(i,nexport);
                             //DensDataIn[nexport].Task = j;
-                        DensDataIn->set_Task(j,nexport);
+                            DensDataIn->set_Task(j,nexport);
                             nexport++;
                             nsend_local[j]++;
                         }
                     }
                 }
+            tend = second();
+            timecomp += timediff(tstart, tend);
+
+            qsort(DensDataIn, nexport, densdata_in::get_size(), dens_compare_key);
+
+            for(j = 1, noffset[0] = 0; j < NTask; j++)
+                noffset[j] = noffset[j - 1] + nsend_local[j - 1];
+
+            tstart = second();
+
+#ifndef NOMPI
+            MPI_Allgather(nsend_local, NTask, MPI_INT, nsend, NTask, MPI_INT, GADGET_WORLD);
+#else
+            nsend[0] = nsend_local[0];
+#endif
+            tend = second();
+            timeimbalance += timediff(tstart, tend);
+
+
+            /* now do the particles that need to be exported */
+
+            for(level = 1; level < (1 << PTask); level++)
+            {
+                tstart = second();
+                for(j = 0; j < NTask; j++)
+                    nbuffer[j] = 0;
+                for(ngrp = level; ngrp < (1 << PTask); ngrp++)
+                {
+                    maxfill = 0;
+                    for(j = 0; j < NTask; j++)
+                    {
+                        if((j ^ ngrp) < NTask)
+                            if(maxfill < nbuffer[j] + nsend[(j ^ ngrp) * NTask + j])
+                                maxfill = nbuffer[j] + nsend[(j ^ ngrp) * NTask + j];
+                    }
+                    if(maxfill >= All.BunchSizeDensity)
+                        break;
+
+                    sendTask = ThisTask;
+                    recvTask = ThisTask ^ ngrp;
+
+                    if(recvTask < NTask)
+                    {
+                        if(nsend[ThisTask * NTask + recvTask] > 0 || nsend[recvTask * NTask + ThisTask] > 0)
+                        {
+                            /* get the particles */
+#ifndef NOMPI
+                            MPI_Sendrecv(DensDataIn->get_buff_start(noffset[recvTask]),
+                                         nsend_local[recvTask] * densdata_in::get_size(), MPI_BYTE,
+                                         recvTask, TAG_DENS_A,
+                                         DensDataGet->get_buff_start(nbuffer[ThisTask]),
+                                         nsend[recvTask * NTask + ThisTask] * densdata_in::get_size(),
+                                    MPI_BYTE, recvTask, TAG_DENS_A, GADGET_WORLD, &status);
+#else
+                            fprintf(stderr, "NO MPI, SO NO SENDING");
+                            exit(1);
+#endif
+                        }
+                    }
+
+                    for(j = 0; j < NTask; j++)
+                        if((j ^ ngrp) < NTask)
+                            nbuffer[j] += nsend[(j ^ ngrp) * NTask + j];
+                }
+                tend = second();
+                timecommsumm += timediff(tstart, tend);
+
+
+                tstart = second();
+                for(j = 0; j < nbuffer[ThisTask]; j++)
+                    density_evaluate(j, 1);
                 tend = second();
                 timecomp += timediff(tstart, tend);
 
-                qsort(DensDataIn, nexport, densdata_in::get_size(), dens_compare_key);
-
-                for(j = 1, noffset[0] = 0; j < NTask; j++)
-                    noffset[j] = noffset[j - 1] + nsend_local[j - 1];
-
+                /* do a block to explicitly measure imbalance */
                 tstart = second();
-
-                #ifndef NOMPI
-                MPI_Allgather(nsend_local, NTask, MPI_INT, nsend, NTask, MPI_INT, GADGET_WORLD);
-                #else
-                nsend[0] = nsend_local[0];
-                #endif
+#ifndef NOMPI
+                MPI_Barrier(GADGET_WORLD);
+#endif
                 tend = second();
                 timeimbalance += timediff(tstart, tend);
 
-
-                /* now do the particles that need to be exported */
-
-                for(level = 1; level < (1 << PTask); level++)
-                {
-                    tstart = second();
-                    for(j = 0; j < NTask; j++)
-                        nbuffer[j] = 0;
-                    for(ngrp = level; ngrp < (1 << PTask); ngrp++)
-                    {
-                        maxfill = 0;
-                        for(j = 0; j < NTask; j++)
-                        {
-                            if((j ^ ngrp) < NTask)
-                                if(maxfill < nbuffer[j] + nsend[(j ^ ngrp) * NTask + j])
-                                    maxfill = nbuffer[j] + nsend[(j ^ ngrp) * NTask + j];
-                        }
-                        if(maxfill >= All.BunchSizeDensity)
-                            break;
-
-                        sendTask = ThisTask;
-                        recvTask = ThisTask ^ ngrp;
-
-                        if(recvTask < NTask)
-                        {
-                            if(nsend[ThisTask * NTask + recvTask] > 0 || nsend[recvTask * NTask + ThisTask] > 0)
-                            {
-                                /* get the particles */
-                                #ifndef NOMPI
-                                MPI_Sendrecv(DensDataIn->get_buff_start(noffset[recvTask]),
-                                             nsend_local[recvTask] * densdata_in::get_size(), MPI_BYTE,
-                                             recvTask, TAG_DENS_A,
-                                             DensDataGet->get_buff_start(nbuffer[ThisTask]),
-                                             nsend[recvTask * NTask + ThisTask] * densdata_in::get_size(),
-                                             MPI_BYTE, recvTask, TAG_DENS_A, GADGET_WORLD, &status);
-                                #else
-                                fprintf(stderr, "NO MPI, SO NO SENDING");
-                                exit(1);
-                                #endif
-                            }
-                        }
-
-                        for(j = 0; j < NTask; j++)
-                            if((j ^ ngrp) < NTask)
-                                nbuffer[j] += nsend[(j ^ ngrp) * NTask + j];
-                    }
-                    tend = second();
-                    timecommsumm += timediff(tstart, tend);
-
-
-                    tstart = second();
-                    for(j = 0; j < nbuffer[ThisTask]; j++)
-                        density_evaluate(j, 1);
-                    tend = second();
-                    timecomp += timediff(tstart, tend);
-
-                    /* do a block to explicitly measure imbalance */
-                    tstart = second();
-                    #ifndef NOMPI
-                    MPI_Barrier(GADGET_WORLD);
-                    #endif
-                    tend = second();
-                    timeimbalance += timediff(tstart, tend);
-
-                    /* get the result */
-                    tstart = second();
-                    for(j = 0; j < NTask; j++)
-                        nbuffer[j] = 0;
-                    for(ngrp = level; ngrp < (1 << PTask); ngrp++)
-                    {
-                        maxfill = 0;
-                        for(j = 0; j < NTask; j++)
-                        {
-                            if((j ^ ngrp) < NTask)
-                                if(maxfill < nbuffer[j] + nsend[(j ^ ngrp) * NTask + j])
-                                    maxfill = nbuffer[j] + nsend[(j ^ ngrp) * NTask + j];
-                        }
-                        if(maxfill >= All.BunchSizeDensity)
-                            break;
-
-                        sendTask = ThisTask;
-                        recvTask = ThisTask ^ ngrp;
-
-                        if(recvTask < NTask)
-                        {
-                            if(nsend[ThisTask * NTask + recvTask] > 0 || nsend[recvTask * NTask + ThisTask] > 0)
-                            {
-                                /* send the results */
-                                #ifndef NOMPI
-                                MPI_Sendrecv(DensDataResult->get_buff_start(nbuffer[ThisTask]),
-                                             nsend[recvTask * NTask + ThisTask] * densdata_out::get_size(),
-                                             MPI_BYTE, recvTask, TAG_DENS_B,
-                                             DensDataPartialResult->get_buff_start(noffset[recvTask]),
-                                             nsend_local[recvTask] * densdata_out::get_size(),
-                                             MPI_BYTE, recvTask, TAG_DENS_B, GADGET_WORLD, &status);
-                                #else
-                                fprintf(stderr, "NO MPI, SO NO SENDING");
-                                exit(1);
-                                #endif
-
-                                /* add the result to the particles */
-                                for(j = 0; j < nsend_local[recvTask]; j++)
-                                {
-                                    source = j + noffset[recvTask];
-                                    //place = DensDataIn[source].Index;
-                                    place = DensDataIn->read_Index(source);
-
-                                    //SphP[place].NumNgb += DensDataPartialResult[source].Ngb;
-                                    SphP[place].NumNgb += DensDataPartialResult->read_re_init_Ngb(source);
-                                    //SphP[place].Density += DensDataPartialResult[source].Rho;
-                                    SphP[place].Density += DensDataPartialResult->read_re_init_Rho(source);
-                                    //SphP[place].DivVel += DensDataPartialResult[source].Div;
-                                    SphP[place].DivVel += DensDataPartialResult->read_re_init_Div(source);
-
-                                    //SphP[place].DhsmlDensityFactor += DensDataPartialResult[source].DhsmlDensity;
-                                    SphP[place].DhsmlDensityFactor += DensDataPartialResult->read_re_init_DhsmlDensity(source);
-
-                                    //SphP[place].Rot[0] += DensDataPartialResult[source].Rot[0];
-                                    //SphP[place].Rot[1] += DensDataPartialResult[source].Rot[1];
-                                    //SphP[place].Rot[2] += DensDataPartialResult[source].Rot[2];
-                                    SphP[place].Rot[0] +=  DensDataPartialResult->read_re_init_Rot0(source);
-                                    SphP[place].Rot[1] +=  DensDataPartialResult->read_re_init_Rot1(source);
-                                    SphP[place].Rot[2] +=  DensDataPartialResult->read_re_init_Rot2(source);
-                                }
-                            }
-                        }
-
-                        for(j = 0; j < NTask; j++)
-                            if((j ^ ngrp) < NTask)
-                                nbuffer[j] += nsend[(j ^ ngrp) * NTask + j];
-                    }
-                    tend = second();
-                    timecommsumm += timediff(tstart, tend);
-
-                    level = ngrp - 1;
-                }
-
-                #ifndef NOMPI
-                MPI_Allgather(&ndone, 1, MPI_INT, ndonelist, 1, MPI_INT, GADGET_WORLD);
-                #else
-                ndonelist[0] = ndone;
-                #endif
+                /* get the result */
+                tstart = second();
                 for(j = 0; j < NTask; j++)
-                    ntotleft -= ndonelist[j];
+                    nbuffer[j] = 0;
+                for(ngrp = level; ngrp < (1 << PTask); ngrp++)
+                {
+                    maxfill = 0;
+                    for(j = 0; j < NTask; j++)
+                    {
+                        if((j ^ ngrp) < NTask)
+                            if(maxfill < nbuffer[j] + nsend[(j ^ ngrp) * NTask + j])
+                                maxfill = nbuffer[j] + nsend[(j ^ ngrp) * NTask + j];
+                    }
+                    if(maxfill >= All.BunchSizeDensity)
+                        break;
+
+                    sendTask = ThisTask;
+                    recvTask = ThisTask ^ ngrp;
+
+                    if(recvTask < NTask)
+                    {
+                        if(nsend[ThisTask * NTask + recvTask] > 0 || nsend[recvTask * NTask + ThisTask] > 0)
+                        {
+                            /* send the results */
+#ifndef NOMPI
+                            MPI_Sendrecv(DensDataResult->get_buff_start(nbuffer[ThisTask]),
+                                         nsend[recvTask * NTask + ThisTask] * densdata_out::get_size(),
+                                    MPI_BYTE, recvTask, TAG_DENS_B,
+                                    DensDataPartialResult->get_buff_start(noffset[recvTask]),
+                                    nsend_local[recvTask] * densdata_out::get_size(),
+                                    MPI_BYTE, recvTask, TAG_DENS_B, GADGET_WORLD, &status);
+#else
+                            fprintf(stderr, "NO MPI, SO NO SENDING");
+                            exit(1);
+#endif
+
+                            /* add the result to the particles */
+                            for(j = 0; j < nsend_local[recvTask]; j++)
+                            {
+                                source = j + noffset[recvTask];
+                                //place = DensDataIn[source].Index;
+                                place = DensDataIn->read_Index(source);
+
+                                //SphP[place].NumNgb += DensDataPartialResult[source].Ngb;
+                                SphP[place].NumNgb += DensDataPartialResult->read_re_init_Ngb(source);
+                                //SphP[place].Density += DensDataPartialResult[source].Rho;
+                                SphP[place].Density += DensDataPartialResult->read_re_init_Rho(source);
+                                //SphP[place].DivVel += DensDataPartialResult[source].Div;
+                                SphP[place].DivVel += DensDataPartialResult->read_re_init_Div(source);
+
+                                //SphP[place].DhsmlDensityFactor += DensDataPartialResult[source].DhsmlDensity;
+                                SphP[place].DhsmlDensityFactor += DensDataPartialResult->read_re_init_DhsmlDensity(source);
+
+                                //SphP[place].Rot[0] += DensDataPartialResult[source].Rot[0];
+                                //SphP[place].Rot[1] += DensDataPartialResult[source].Rot[1];
+                                //SphP[place].Rot[2] += DensDataPartialResult[source].Rot[2];
+                                SphP[place].Rot[0] +=  DensDataPartialResult->read_re_init_Rot0(source);
+                                SphP[place].Rot[1] +=  DensDataPartialResult->read_re_init_Rot1(source);
+                                SphP[place].Rot[2] +=  DensDataPartialResult->read_re_init_Rot2(source);
+                            }
+                        }
+                    }
+
+                    for(j = 0; j < NTask; j++)
+                        if((j ^ ngrp) < NTask)
+                            nbuffer[j] += nsend[(j ^ ngrp) * NTask + j];
+                }
+                tend = second();
+                timecommsumm += timediff(tstart, tend);
+
+                level = ngrp - 1;
+            }
+
+#ifndef NOMPI
+            MPI_Allgather(&ndone, 1, MPI_INT, ndonelist, 1, MPI_INT, GADGET_WORLD);
+#else
+            ndonelist[0] = ndone;
+#endif
+            for(j = 0; j < NTask; j++)
+                ntotleft -= ndonelist[j];
         }
 
 
@@ -313,26 +313,26 @@ void gadgetmp2::density(void)
             {
                 {
                     SphP[i].DhsmlDensityFactor =
-                    const_1 / (const_1 + SphP[i].Hsml * SphP[i].DhsmlDensityFactor / (NUMDIMS * SphP[i].Density));
+                            const_1 / (const_1 + SphP[i].Hsml * SphP[i].DhsmlDensityFactor / (NUMDIMS * SphP[i].Density));
 
                     SphP[i].CurlVel = sqrt(SphP[i].Rot[0] * SphP[i].Rot[0] +
-                    SphP[i].Rot[1] * SphP[i].Rot[1] +
-                    SphP[i].Rot[2] * SphP[i].Rot[2]) / SphP[i].Density;
+                            SphP[i].Rot[1] * SphP[i].Rot[1] +
+                            SphP[i].Rot[2] * SphP[i].Rot[2]) / SphP[i].Density;
 
                     SphP[i].DivVel /= SphP[i].Density;
 
                     dt_entr = (All.Ti_Current - (P[i].Ti_begstep + P[i].Ti_endstep) / const_2) * All.Timebase_interval;
 
                     SphP[i].Pressure =
-                    (SphP[i].Entropy + SphP[i].DtEntropy * dt_entr) * pow(SphP[i].Density, GAMMA);
+                            (SphP[i].Entropy + SphP[i].DtEntropy * dt_entr) * pow(SphP[i].Density, const_GAMMA);
                 }
 
 
                 /* now check whether we had enough neighbours */
 
                 if(SphP[i].NumNgb < (All.DesNumNgb - All.MaxNumNgbDeviation) ||
-                    (SphP[i].NumNgb > (All.DesNumNgb + All.MaxNumNgbDeviation)
-                    && SphP[i].Hsml > (1.01 * All.MinGasHsml)))
+                        (SphP[i].NumNgb > (All.DesNumNgb + All.MaxNumNgbDeviation)
+                         && SphP[i].Hsml > (1.01 * All.MinGasHsml)))
                 {
                     /* need to redo this particle */
                     npleft++;
@@ -346,76 +346,76 @@ void gadgetmp2::density(void)
                             continue;
                         }
 
-                        if(SphP[i].NumNgb < (All.DesNumNgb - All.MaxNumNgbDeviation))
-                            SphP[i].Left = dmax(SphP[i].Hsml, SphP[i].Left);
-                        else
+                    if(SphP[i].NumNgb < (All.DesNumNgb - All.MaxNumNgbDeviation))
+                        SphP[i].Left = dmax(SphP[i].Hsml, SphP[i].Left);
+                    else
+                    {
+                        if(SphP[i].Right != "0")
                         {
-                            if(SphP[i].Right != "0")
-                            {
-                                if(SphP[i].Hsml < SphP[i].Right)
-                                    SphP[i].Right = SphP[i].Hsml;
-                            }
-                            else
+                            if(SphP[i].Hsml < SphP[i].Right)
                                 SphP[i].Right = SphP[i].Hsml;
                         }
-
-                        if(iter >= MAXITER - 10)
-                        {
-                            printf
-                            ("i=%d task=%d ID=%d Hsml=%g Left=%g Right=%g Ngbs=%g Right-Left=%g\n   pos=(%g|%g|%g)\n",
-                             i, ThisTask, (int) P[i].ID, SphP[i].Hsml.toDouble(), SphP[i].Left.toDouble(), SphP[i].Right.toDouble(),
-                             ((my_float) SphP[i].NumNgb).toDouble(), (SphP[i].Right - SphP[i].Left).toDouble(), P[i].Pos[0].toDouble(), P[i].Pos[1].toDouble(),
-                             P[i].Pos[2].toDouble());
-                            fflush(stdout);
-                        }
-
-                        if(SphP[i].Right > const_0 && SphP[i].Left > const_0)
-                            SphP[i].Hsml = pow(const_0_5 * (pow(SphP[i].Left,const_3) + pow(SphP[i].Right,const_3)), const_1 / const_3);
                         else
-                        {
-                            if(SphP[i].Right == const_0 && SphP[i].Left == const_0)
-                                endrun(8188);	/* can't occur */
+                            SphP[i].Right = SphP[i].Hsml;
+                    }
 
-                                if(SphP[i].Right == const_0 && SphP[i].Left > const_0)
-                                {
-                                    if(P[i].Type == 0 && fabs(SphP[i].NumNgb - All.DesNumNgb) < const_0_5 * All.DesNumNgb)
-                                    {
-                                        SphP[i].Hsml *=
+                    if(iter >= MAXITER - 10)
+                    {
+                        printf
+                                ("i=%d task=%d ID=%d Hsml=%g Left=%g Right=%g Ngbs=%g Right-Left=%g\n   pos=(%g|%g|%g)\n",
+                                 i, ThisTask, (int) P[i].ID, SphP[i].Hsml.toDouble(), SphP[i].Left.toDouble(), SphP[i].Right.toDouble(),
+                                 ((my_float) SphP[i].NumNgb).toDouble(), (SphP[i].Right - SphP[i].Left).toDouble(), P[i].Pos[0].toDouble(), P[i].Pos[1].toDouble(),
+                                P[i].Pos[2].toDouble());
+                        fflush(stdout);
+                    }
+
+                    if(SphP[i].Right > const_0 && SphP[i].Left > const_0)
+                        SphP[i].Hsml = pow(const_0_5 * (pow(SphP[i].Left,const_3) + pow(SphP[i].Right,const_3)), const_1 / const_3);
+                    else
+                    {
+                        if(SphP[i].Right == const_0 && SphP[i].Left == const_0)
+                            endrun(8188);	/* can't occur */
+
+                        if(SphP[i].Right == const_0 && SphP[i].Left > const_0)
+                        {
+                            if(P[i].Type == 0 && fabs(SphP[i].NumNgb - All.DesNumNgb) < const_0_5 * All.DesNumNgb)
+                            {
+                                SphP[i].Hsml *=
                                         const_1- (SphP[i].NumNgb -
-                                        All.DesNumNgb) / (NUMDIMS * SphP[i].NumNgb) * SphP[i].DhsmlDensityFactor;
-                                    }
-                                    else
-                                        SphP[i].Hsml *= const_1_26;
-                                }
-
-                                if(SphP[i].Right > const_0 && SphP[i].Left == const_0)
-                                {
-                                    if(P[i].Type == 0 && fabs(SphP[i].NumNgb - All.DesNumNgb) < const_0_5 * All.DesNumNgb)
-                                    {
-                                        my_float d=(SphP[i].NumNgb -
-                                        All.DesNumNgb) / (NUMDIMS * SphP[i].NumNgb) * SphP[i].DhsmlDensityFactor;
-                                        if(d<.99)
-                                            SphP[i].Hsml *= const_1 - d;
-                                        else
-                                            SphP[i].Hsml /= const_1_26;
-                                    }
-                                    else
-                                        SphP[i].Hsml /= const_1_26;
-                                }
+                                                  All.DesNumNgb) / (NUMDIMS * SphP[i].NumNgb) * SphP[i].DhsmlDensityFactor;
+                            }
+                            else
+                                SphP[i].Hsml *= const_1_26;
                         }
 
-                        if(SphP[i].Hsml <= const_0)
+                        if(SphP[i].Right > const_0 && SphP[i].Left == const_0)
                         {
-                            printf
-                            ("** i=%d task=%d ID=%d Hsml=%g Left=%g Right=%g Ngbs=%g dhsml=%g\n ",
-                             i, ThisTask, (int) P[i].ID, SphP[i].Hsml.toDouble(), SphP[i].Left.toDouble(), SphP[i].Right.toDouble(),
-                             ((my_float) SphP[i].NumNgb).toDouble(), SphP[i].DhsmlDensityFactor.toDouble());
-                            fflush(stdout);
+                            if(P[i].Type == 0 && fabs(SphP[i].NumNgb - All.DesNumNgb) < const_0_5 * All.DesNumNgb)
+                            {
+                                my_float d=(SphP[i].NumNgb -
+                                            All.DesNumNgb) / (NUMDIMS * SphP[i].NumNgb) * SphP[i].DhsmlDensityFactor;
+                                if(d<.99)
+                                    SphP[i].Hsml *= const_1 - d;
+                                else
+                                    SphP[i].Hsml /= const_1_26;
+                            }
+                            else
+                                SphP[i].Hsml /= const_1_26;
                         }
+                    }
+
+                    if(SphP[i].Hsml <= const_0)
+                    {
+                        printf
+                                ("** i=%d task=%d ID=%d Hsml=%g Left=%g Right=%g Ngbs=%g dhsml=%g\n ",
+                                 i, ThisTask, (int) P[i].ID, SphP[i].Hsml.toDouble(), SphP[i].Left.toDouble(), SphP[i].Right.toDouble(),
+                                 ((my_float) SphP[i].NumNgb).toDouble(), SphP[i].DhsmlDensityFactor.toDouble());
+                        fflush(stdout);
+                    }
 
 
-                        if(SphP[i].Hsml < All.MinGasHsml)
-                            SphP[i].Hsml = All.MinGasHsml;
+                    if(SphP[i].Hsml < All.MinGasHsml)
+                        SphP[i].Hsml = All.MinGasHsml;
                 }
                 else
                     P[i].Ti_endstep = -P[i].Ti_endstep - 1;	/* Mark as inactive */
@@ -427,11 +427,11 @@ void gadgetmp2::density(void)
 
         numlist = new int[NTask * NTask];
 
-        #ifndef NOMPI
+#ifndef NOMPI
         MPI_Allgather(&npleft, 1, MPI_INT, numlist, 1, MPI_INT, GADGET_WORLD);
-        #else
+#else
         numlist[0] = npleft;
-        #endif
+#endif
         for(i = 0, ntot = 0; i < NTask; i++)
             ntot += numlist[i];
         free(numlist);
@@ -468,7 +468,7 @@ void gadgetmp2::density(void)
         if(P[i].Ti_endstep < 0)
             P[i].Ti_endstep = -P[i].Ti_endstep - 1;
 
-        free(ndonelist);
+    free(ndonelist);
     free(nsend);
     free(nsend_local);
     free(nbuffer);
@@ -481,17 +481,17 @@ void gadgetmp2::density(void)
     else
         timengb = 0;
 
-    #ifndef NOMPI
+#ifndef NOMPI
     MPI_Reduce(&timengb, &sumtimengb, 1, MPI_DOUBLE, MPI_SUM, 0, GADGET_WORLD);
     MPI_Reduce(&timecomp, &sumt, 1, MPI_DOUBLE, MPI_SUM, 0, GADGET_WORLD);
     MPI_Reduce(&timecommsumm, &sumcomm, 1, MPI_DOUBLE, MPI_SUM, 0, GADGET_WORLD);
     MPI_Reduce(&timeimbalance, &sumimbalance, 1, MPI_DOUBLE, MPI_SUM, 0, GADGET_WORLD);
-    #else
+#else
     sumtimengb = timengb;
     sumt = timecomp;
     sumcomm = timecommsumm;
     sumimbalance = timeimbalance;
-    #endif
+#endif
 
     if(ThisTask == 0)
     {
@@ -506,7 +506,7 @@ void gadgetmp2::density(void)
 
 /*! This function represents the core of the SPH density computation. The
  *  target particle may either be local, or reside in the communication
- *  buffer.
+ *  buffer. it computes the cumulative and rated density of neighbors
  */
 void gadgetmp2::density_evaluate(int target, int mode)
 {
@@ -544,11 +544,11 @@ void gadgetmp2::density_evaluate(int target, int mode)
 
     h2 = h * h;
     hinv = const_1 / h;
-    #ifndef  TWODIMS
+#ifndef  TWODIMS
     hinv3 = hinv * hinv * hinv;
-    #else
+#else
     hinv3 = hinv * hinv / boxSize_Z;
-    #endif
+#endif
     hinv4 = hinv3 * hinv;
 
     rho.setZero(); divv.setZero(); rotv[0].setZero(); rotv[1].setZero(); rotv[2].setZero();

@@ -18,13 +18,13 @@
 using namespace std;
 
 HostError CPU_memcheck(const char *file, const int line, string path){
-	
+
 	string str1, str2, str3;
    int memtot, memfree, membuf, cached;
 	int local_rank;
 	MPISafeCall(MPI_Comm_rank(MPI_COMM_WORLD, &local_rank));
 
-	if(local_rank == 0){
+	if((local_rank == 0)/*&&(0==1)*/){
 
 		ofstream meminfo;
 		char *output_name;
@@ -50,6 +50,7 @@ HostError CPU_memcheck(const char *file, const int line, string path){
    	isNumeric_int(to_char(str2),&memfree);
 
    	proc>>str1>>str2>>str3;
+   	proc>>str1>>str2>>str3;
 		if(str1!="Buffers:")
 			return HInvalidMeminfo;
    	isNumeric_int(to_char(str2),&membuf);
@@ -62,7 +63,7 @@ HostError CPU_memcheck(const char *file, const int line, string path){
 
 		meminfo<<fixed<<setprecision(1);
 		float used = memtot/1024.0 - memfree/1024.0 - membuf/1024.0 - cached/1024.0;
-		float total = memtot/1024.0; 
+		float total = memtot/1024.0;
    	//cout<<" Buffered CPU mem : "<< membuf/1024.0<<" MB "<<endl;
    	//cout<<" Cached CPU mem   : "<< cached/1024.0<<" MB \n"<<endl;
    	meminfo<<" Used CPU memory @ file/line "<<file<<"/"<<line<<" : "<<used/total*100.0  <<" % \n"<<endl;
@@ -122,7 +123,7 @@ HostError open_file(string argument, string path){
 HostError append_file(string argument, string path){
 
       ofstream generic;
-    
+
       string temp;
       char *output_name;
 
@@ -399,7 +400,7 @@ HostError check_argv(int ac, char *av[], string *param, bool *warm_start, string
 
 HostError isDivisible(unsigned int *N, unsigned int *M, int size, unsigned int NGPU, unsigned int TPB, unsigned int *BFMAX){
 
-   int product = size*NGPU*TPB;
+   unsigned int product = (unsigned int)size*NGPU*TPB;
 
 	double esp = ceil(log(*N) / log (2.0));
 
@@ -703,7 +704,7 @@ HostError __MPIbcastParam(unsigned int *N, unsigned int *M, unsigned int *NGPU, 
    char *value = new char [256];
    if(rank==0)
       value = to_char(*gpu_name);
-  
+
    MPISafeCall(MPI_Bcast( N,     1, MPI_INT,    0, MPI_COMM_WORLD));
    MPISafeCall(MPI_Bcast( M,     1, MPI_INT,    0, MPI_COMM_WORLD));
 	MPISafeCall(MPI_Bcast( NGPU,  1, MPI_INT,    0, MPI_COMM_WORLD));
@@ -782,7 +783,7 @@ HostError random_check_Bcast( int rank, int size, const char* Format ... )
 
 					else if (Format[i] == 'd'){
 						doubleArg0 = va_arg(Arguments, double);
-						
+
 						MPISafeCall(MPI_Sendrecv(&doubleArg0, 1, MPI_DOUBLE, to, 100, &doubleArg1, 1, MPI_DOUBLE, from, 100, MPI_COMM_WORLD, &status));
 
 						if(doubleArg0 != doubleArg1)

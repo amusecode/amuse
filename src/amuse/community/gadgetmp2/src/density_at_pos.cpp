@@ -30,7 +30,7 @@ const int debug = 0;
     *rhoe_out);
 */
 void gadgetmp2::hydro_state_at_point(my_float pos[3], my_float vel[3], my_float *h_out, my_float *ngb_out,
-    my_float *dhsml_out, my_float *rho_out, my_float *rhov_out, my_float *rhov2_out, my_float *rhoe_out)
+my_float *dhsml_out, my_float *rho_out, my_float *rhov_out, my_float *rhov2_out, my_float *rhoe_out)
 {
     my_float low, up, h, dhsml, low_ngb, up_ngb, ngb;
     my_float rho, rhov[3], rhov2, rhoe;
@@ -105,23 +105,23 @@ void gadgetmp2::hydro_state_at_point(my_float pos[3], my_float vel[3], my_float 
     if (h <= All.MinGasHsml)
         h = All.MinGasHsml;
 
-//    ngb = dhsml = rho = rhov2 = rhoe = rhov[0] = rhov[1] = rhov[2] = 0;
+    //    ngb = dhsml = rho = rhov2 = rhoe = rhov[0] = rhov[1] = rhov[2] = 0;
     hydro_state_evaluate(h, pos, vel, &ngb, &dhsml, &rho, rhov, &rhov2, &rhoe);
 #ifndef NOMPI
     //MPI_Allreduce(MPI_IN_PLACE, &ngb,   1, MPI_DOUBLE, MPI_SUM, GADGET_WORLD);
-        ngb=mpi_all_sum(ngb);
+    ngb=mpi_all_sum(ngb);
     //MPI_Allreduce(MPI_IN_PLACE, &dhsml, 1, MPI_DOUBLE, MPI_SUM, GADGET_WORLD);
-        dhsml=mpi_all_sum(dhsml);
+    dhsml=mpi_all_sum(dhsml);
     //MPI_Allreduce(MPI_IN_PLACE, &rho,   1, MPI_DOUBLE, MPI_SUM, GADGET_WORLD);
-        rho=mpi_all_sum(rho);
+    rho=mpi_all_sum(rho);
     //MPI_Allreduce(MPI_IN_PLACE, &rhov,  3, MPI_DOUBLE, MPI_SUM, GADGET_WORLD);
-        rhov[0]=mpi_all_sum(rhov[0]);
-        rhov[1]=mpi_all_sum(rhov[1]);
-        rhov[2]=mpi_all_sum(rhov[2]);
+    rhov[0]=mpi_all_sum(rhov[0]);
+    rhov[1]=mpi_all_sum(rhov[1]);
+    rhov[2]=mpi_all_sum(rhov[2]);
     //MPI_Allreduce(MPI_IN_PLACE, &rhov2, 1, MPI_DOUBLE, MPI_SUM, GADGET_WORLD);
-        rhov2=mpi_all_sum(rhov2);
+    rhov2=mpi_all_sum(rhov2);
     //MPI_Allreduce(MPI_IN_PLACE, &rhoe,  1, MPI_DOUBLE, MPI_SUM, GADGET_WORLD);
-        rhoe=mpi_all_sum(rhoe);
+    rhoe=mpi_all_sum(rhoe);
 #endif
 
     *h_out      = h;
@@ -136,95 +136,95 @@ void gadgetmp2::hydro_state_at_point(my_float pos[3], my_float vel[3], my_float 
 }
 
 void gadgetmp2::hydro_state_evaluate(my_float h, my_float pos[3], my_float vel[3],
-    my_float *numngb_out, my_float *dhsml_out, my_float *rho_out, my_float *rhov_out,
-    my_float *rhov2_out, my_float *rhoe_out)
+my_float *numngb_out, my_float *dhsml_out, my_float *rho_out, my_float *rhov_out,
+my_float *rhov2_out, my_float *rhoe_out)
 {
-  int j, n, startnode, numngb, numngb_inbox;
-  my_float h2, fac, hinv, hinv3, hinv4;
-  my_float rho, rhov[3], rhov2, rhoe, wk, dwk;
-  my_float dx, dy, dz, r, r2, u, mass_j;
-  my_float dvx, dvy, dvz;
-  my_float weighted_numngb, dhsmlrho;
+    int j, n, startnode, numngb, numngb_inbox;
+    my_float h2, fac, hinv, hinv3, hinv4;
+    my_float rho, rhov[3], rhov2, rhoe, wk, dwk;
+    my_float dx, dy, dz, r, r2, u, mass_j;
+    my_float dvx, dvy, dvz;
+    my_float weighted_numngb, dhsmlrho;
 
-  h2 = h * h;
-  hinv = const_1 / h;
+    h2 = h * h;
+    hinv = const_1 / h;
 #ifndef  TWODIMS
-  hinv3 = hinv * hinv * hinv;
+    hinv3 = hinv * hinv * hinv;
 #else
-  hinv3 = hinv * hinv / boxSize_Z;
+    hinv3 = hinv * hinv / boxSize_Z;
 #endif
-  hinv4 = hinv3 * hinv;
+    hinv4 = hinv3 * hinv;
 
-  rho.setZero(); rhov2.setZero(); rhoe.setZero(); rhov[0].setZero(); rhov[1].setZero(); rhov[2].setZero();
-  weighted_numngb.setZero();
-  dhsmlrho.setZero();
+    rho.setZero(); rhov2.setZero(); rhoe.setZero(); rhov[0].setZero(); rhov[1].setZero(); rhov[2].setZero();
+    weighted_numngb.setZero();
+    dhsmlrho.setZero();
 
-  startnode = All.MaxPart;
-  numngb = 0;
-  do
+    startnode = All.MaxPart;
+    numngb = 0;
+    do
     {
-      numngb_inbox = ngb_treefind_variable(&pos[0], h, &startnode);
+        numngb_inbox = ngb_treefind_variable(&pos[0], h, &startnode);
 
-      for(n = 0; n < numngb_inbox; n++)
-	{
-	  j = Ngblist[n];
+        for(n = 0; n < numngb_inbox; n++)
+        {
+            j = Ngblist[n];
 
-	  dx = pos[0] - P[j].Pos[0];
-	  dy = pos[1] - P[j].Pos[1];
-	  dz = pos[2] - P[j].Pos[2];
+            dx = pos[0] - P[j].Pos[0];
+            dy = pos[1] - P[j].Pos[1];
+            dz = pos[2] - P[j].Pos[2];
 
-	  r2 = dx * dx + dy * dy + dz * dz;
+            r2 = dx * dx + dy * dy + dz * dz;
 
-	  if(r2 < h2)
-	    {
-	      numngb++;
+            if(r2 < h2)
+            {
+                numngb++;
 
-	      r = sqrt(r2);
+                r = sqrt(r2);
 
-	      u = r * hinv;
+                u = r * hinv;
 
-	      if(u < const_0_5)
-		{
-		  wk = hinv3 * (KERNEL_COEFF_1 + KERNEL_COEFF_2 * (u - const_1) * u * u);
-		  dwk = hinv4 * u * (KERNEL_COEFF_3 * u - KERNEL_COEFF_4);
-		}
-	      else
-		{
-		  wk = hinv3 * KERNEL_COEFF_5 * (const_1 - u) * (const_1 - u) * (const_1 - u);
-		  dwk = hinv4 * KERNEL_COEFF_6 * (const_1- u) * (const_1 - u);
-		}
+                if(u < const_0_5)
+                {
+                    wk = hinv3 * (KERNEL_COEFF_1 + KERNEL_COEFF_2 * (u - const_1) * u * u);
+                    dwk = hinv4 * u * (KERNEL_COEFF_3 * u - KERNEL_COEFF_4);
+                }
+                else
+                {
+                    wk = hinv3 * KERNEL_COEFF_5 * (const_1 - u) * (const_1 - u) * (const_1 - u);
+                    dwk = hinv4 * KERNEL_COEFF_6 * (const_1- u) * (const_1 - u);
+                }
 
-	      mass_j = P[j].Mass;
+                mass_j = P[j].Mass;
 
-            fac = mass_j * wk;
-	      rho += fac;
+                fac = mass_j * wk;
+                rho += fac;
 
-	      weighted_numngb += NORM_COEFF * wk / hinv3;
+                weighted_numngb += NORM_COEFF * wk / hinv3;
 
-	      dhsmlrho += -mass_j * (NUMDIMS * hinv * wk + u * dwk);
+                dhsmlrho += -mass_j * (NUMDIMS * hinv * wk + u * dwk);
 
-              dvx = vel[0] - SphP[j].VelPred[0];
-              dvy = vel[1] - SphP[j].VelPred[1];
-              dvz = vel[2] - SphP[j].VelPred[2];
+                dvx = vel[0] - SphP[j].VelPred[0];
+                dvy = vel[1] - SphP[j].VelPred[1];
+                dvz = vel[2] - SphP[j].VelPred[2];
 
-              rhov[0] -= fac * dvx;
-              rhov[1] -= fac * dvy;
-              rhov[2] -= fac * dvz;
+                rhov[0] -= fac * dvx;
+                rhov[1] -= fac * dvy;
+                rhov[2] -= fac * dvz;
 
-              rhoe  += fac * SphP[j].Entropy;
+                rhoe  += fac * SphP[j].Entropy;
 
-              rhov2 += fac * (dvx*dvx + dvy*dvy + dvz*dvz);
-	    }
-	}
+                rhov2 += fac * (dvx*dvx + dvy*dvy + dvz*dvz);
+            }
+        }
     }
-  while(startnode >= 0);
+    while(startnode >= 0);
 
-  *rho_out    = rho;
-  *rhoe_out   = rhoe;
-  *rhov2_out  = rhov2;
-  *dhsml_out  = dhsmlrho;
-  *numngb_out = weighted_numngb;
-  rhov_out[0] = rhov[0];
-  rhov_out[1] = rhov[1];
-  rhov_out[2] = rhov[2];
+    *rho_out    = rho;
+    *rhoe_out   = rhoe;
+    *rhov2_out  = rhov2;
+    *dhsml_out  = dhsmlrho;
+    *numngb_out = weighted_numngb;
+    rhov_out[0] = rhov[0];
+    rhov_out[1] = rhov[1];
+    rhov_out[2] = rhov[2];
 }

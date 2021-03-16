@@ -40,83 +40,83 @@
  */
 void gadgetmp2::compute_accelerations(int mode)
 {
-  double tstart, tend;
+    double tstart, tend;
 
-  if(ThisTask == 0)
+    if(ThisTask == 0)
     {
-      printf("Start force computation...\n");
-      fflush(stdout);
+        printf("Start force computation...\n");
+        fflush(stdout);
     }
 
-  tstart = second();		/* measure the time for the full force computation */
+    tstart = second();		/* measure the time for the full force computation */
 
-  gravity_tree();		/* computes gravity accel. */
+    gravity_tree();		/* computes gravity accel. */
 
-  if(All.TypeOfOpeningCriterion == 1 && All.Ti_Current == 0)
-    gravity_tree();		/* For the first timestep, we redo it
-				 * to allow usage of relative opening
-				 * criterion for consistent accuracy.
-				 */
-  tend = second();
-  All.CPU_Gravity += timediff(tstart, tend);
+    if(All.TypeOfOpeningCriterion == 1 && All.Ti_Current == 0)
+        gravity_tree();		/* For the first timestep, we redo it
+                                 * to allow usage of relative opening
+                                 * criterion for consistent accuracy.
+                                 */
+    tend = second();
+    All.CPU_Gravity += timediff(tstart, tend);
 
 #ifdef FORCETEST
-  gravity_forcetest();
+    gravity_forcetest();
 #endif
 
-  if(All.TotN_gas > 0)
+    if(All.TotN_gas > 0)
     {
 #ifdef TIMESTEP_UPDATE
-      int i, j;
+        int i, j;
 
-      for(i = 0; i < N_gas; i++)
-        if(P[i].Ti_endstep == All.Ti_Current && SphP[i].FeedbackFlag > 0)
-          {
-	    SphP[i].FeedbackFlag = 0;
+        for(i = 0; i < N_gas; i++)
+            if(P[i].Ti_endstep == All.Ti_Current && SphP[i].FeedbackFlag > 0)
+            {
+                SphP[i].FeedbackFlag = 0;
 
-            for(j = 0; j < 3; j++)
-              SphP[i].FeedAccel[j].setZero();
-          }
+                for(j = 0; j < 3; j++)
+                    SphP[i].FeedAccel[j].setZero();
+            }
 #endif
-      if(ThisTask == 0)
-	{
-	  printf("Start density computation...\n");
-	  fflush(stdout);
-	}
+        if(ThisTask == 0)
+        {
+            printf("Start density computation...\n");
+            fflush(stdout);
+        }
 
-      tstart = second();
-      density();		/* computes density, and pressure */
-      tend = second();
-      All.CPU_Hydro += timediff(tstart, tend);
+        tstart = second();
+        density();		/* computes density, and pressure */
+        tend = second();
+        All.CPU_Hydro += timediff(tstart, tend);
 
-      tstart = second();
-      force_update_hmax();      /* tell the tree nodes the new SPH smoothing length such that they are guaranteed to hold the correct max(Hsml) */
-      tend = second();
-      All.CPU_Predict += timediff(tstart, tend);
+        tstart = second();
+        force_update_hmax();      /* tell the tree nodes the new SPH smoothing length such that they are guaranteed to hold the correct max(Hsml) */
+        tend = second();
+        All.CPU_Predict += timediff(tstart, tend);
 
 
-      if(ThisTask == 0)
-	{
-	  printf("Start hydro-force computation...\n");
-	  fflush(stdout);
-	}
+        if(ThisTask == 0)
+        {
+            printf("Start hydro-force computation...\n");
+            fflush(stdout);
+        }
 
-      tstart = second();
-      hydro_force();		/* adds hydrodynamical accelerations and computes viscous entropy injection  */
-      tend = second();
-      All.CPU_Hydro += timediff(tstart, tend);
+        tstart = second();
+        hydro_force();		/* adds hydrodynamical accelerations and computes viscous entropy injection  */
+        tend = second();
+        All.CPU_Hydro += timediff(tstart, tend);
 
 #ifdef TIMESTEP_UPDATE
-      tstart = second();
-      get_sigvel();
-      tend = second();
-      All.CPU_Hydro += timediff(tstart, tend);
+        tstart = second();
+        get_sigvel();
+        tend = second();
+        All.CPU_Hydro += timediff(tstart, tend);
 #endif
     }
 
-  if(ThisTask == 0)
+    if(ThisTask == 0)
     {
-      printf("force computation done.\n");
-      fflush(stdout);
+        printf("force computation done.\n");
+        fflush(stdout);
     }
 }

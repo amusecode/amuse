@@ -38,34 +38,34 @@
  */
 void gadgetmp2::setup_smoothinglengths(void)
 {
-  int i, no, p;
+    int i, no, p;
 
-  if(RestartFlag == 0)
+    if(RestartFlag == 0)
     {
 
-      for(i = 0; i < N_gas; i++)
-	{
-	  no = Father[i];
+        for(i = 0; i < N_gas; i++)
+        {
+            no = Father[i];
 
-	  while(10 * All.DesNumNgb * P[i].Mass > Nodes[no].u_d_mass)
-	    {
-	      p = Nodes[no].u.d.father;
+            while(10 * All.DesNumNgb * P[i].Mass > Nodes[no].u_d_mass)
+            {
+                p = Nodes[no].u.d.father;
 
-	      if(p < 0)
-		break;
+                if(p < 0)
+                    break;
 
-	      no = p;
-	    }
+                no = p;
+            }
 #ifndef TWODIMS
-	  SphP[i].Hsml =
-	    pow(const_3 / (const_4 * const_PI) * All.DesNumNgb * P[i].Mass / Nodes[no].u_d_mass,  const_1 / const_3) * Nodes[no].len;
+            SphP[i].Hsml =
+                    pow(const_3 / (const_4 * const_PI) * All.DesNumNgb * P[i].Mass / Nodes[no].u_d_mass,  const_1 / const_3) * Nodes[no].len;
 #else
-	  SphP[i].Hsml =
-	    pow(const_1 / (const_PI) * All.DesNumNgb * P[i].Mass / Nodes[no].u.d.mass, const_1 / const_2) * Nodes[no].len;
+            SphP[i].Hsml =
+                    pow(const_1 / (const_PI) * All.DesNumNgb * P[i].Mass / Nodes[no].u.d.mass, const_1 / const_2) * Nodes[no].len;
 #endif
-	}
+        }
     }
 
-  density();
+    density();
 }
 

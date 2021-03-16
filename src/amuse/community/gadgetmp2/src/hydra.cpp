@@ -49,24 +49,24 @@ void gadgetmp2::hydro_force(void)
     my_float soundspeed_i;
     double tstart, tend, sumt, sumcomm;
     double timecomp = 0, timecommsumm = 0, timeimbalance = 0, sumimbalance;
-    #ifndef NOMPI
+#ifndef NOMPI
     MPI_Status status;
-    #endif
+#endif
 
     if(All.ComovingIntegrationOn)
     {
         /* Factors for comoving integration of hydro */
         hubble_a = All.Omega0 / (All.Time * All.Time * All.Time)
-        + (1 - All.Omega0 - All.OmegaLambda) / (All.Time * All.Time) + All.OmegaLambda;
+                + (1 - All.Omega0 - All.OmegaLambda) / (All.Time * All.Time) + All.OmegaLambda;
 
         hubble_a = All.Hubble * sqrt(hubble_a);
         hubble_a2 = All.Time * All.Time * hubble_a;
 
-        fac_mu = std::pow(All.Time, 3 * (GAMMA - 1) / 2) / All.Time;
+        fac_mu = pow(All.Time, 3 * (const_GAMMA - 1) / 2) / All.Time;
 
-        fac_egy = std::pow(All.Time, 3 * (GAMMA - 1));
+        fac_egy = pow(All.Time, 3 * (const_GAMMA - 1));
 
-        fac_vsic_fix = hubble_a * std::pow(All.Time, 3 * GAMMA_MINUS1);
+        fac_vsic_fix = hubble_a * pow(All.Time, 3 * const_GAMMA_MINUS1);
 
         a3inv = 1 / (All.Time * All.Time * All.Time);
         atime = All.Time;
@@ -83,11 +83,11 @@ void gadgetmp2::hydro_force(void)
     }
 
     numlist = new int[NTask * NTask];
-    #ifndef NOMPI
+#ifndef NOMPI
     MPI_Allgather(&NumSphUpdate, 1, MPI_INT, numlist, 1, MPI_INT, GADGET_WORLD);
-    #else
+#else
     numlist[0] = NumSphUpdate;
-    #endif
+#endif
     for(i = 0, ntot = 0; i < NTask; i++)
         ntot += numlist[i];
     free(numlist);
@@ -124,210 +124,189 @@ void gadgetmp2::hydro_force(void)
                 {
                     if(Exportflag[j])
                     {
-                        /* for(k = 0; k < 3; k++)
-                         *		      {
-                         *			HydroDataIn[nexport].Pos[k] = P[i].Pos[k];
-                         *			HydroDataIn[nexport].Vel[k] = SphP[i].VelPred[k];
-                    }*/
                         HydroDataIn->set_init_Pos0(P[i].Pos[0],nexport);
                         HydroDataIn->set_init_Pos1(P[i].Pos[1],nexport);
                         HydroDataIn->set_init_Pos2(P[i].Pos[2],nexport);
                         HydroDataIn->set_init_Vel0(SphP[i].VelPred[0],nexport);
                         HydroDataIn->set_init_Vel1(SphP[i].VelPred[1],nexport);
                         HydroDataIn->set_init_Vel2(SphP[i].VelPred[2],nexport);
-                        //HydroDataIn[nexport].Hsml = SphP[i].Hsml;
                         HydroDataIn->set_init_Hsml(SphP[i].Hsml,nexport);
-                        //HydroDataIn[nexport].Mass = P[i].Mass;
                         HydroDataIn->set_init_Mass(P[i].Mass,nexport);
-                        //HydroDataIn[nexport].DhsmlDensityFactor = SphP[i].DhsmlDensityFactor;
                         HydroDataIn->set_init_DhsmlDensityFactor(SphP[i].DhsmlDensityFactor,nexport);
-                        //HydroDataIn[nexport].Density = SphP[i].Density;
                         HydroDataIn->set_init_Density(SphP[i].Density,nexport);
-                        //HydroDataIn[nexport].Pressure = SphP[i].Pressure;
                         HydroDataIn->set_init_Pressure(SphP[i].Pressure,nexport);
-                        //HydroDataIn[nexport].Timestep = P[i].Ti_endstep - P[i].Ti_begstep;
                         HydroDataIn->set_Timestep(P[i].Ti_endstep - P[i].Ti_begstep,nexport);
 
                         /* calculation of F1 */
-                        soundspeed_i = sqrt(GAMMA * SphP[i].Pressure / SphP[i].Density);
-                        /*HydroDataIn[nexport].F1 = fabs(SphP[i].DivVel) /
-                         *		      (fabs(SphP[i].DivVel) + SphP[i].CurlVel +
-                         *		       0.0001 * soundspeed_i / SphP[i].Hsml / fac_mu); */
-                        HydroDataIn->set_init_F1(fabs(SphP[i].DivVel) /
-                        (fabs(SphP[i].DivVel) + SphP[i].CurlVel +
-                        const_0_0001 * soundspeed_i / SphP[i].Hsml / fac_mu),nexport);
+                        soundspeed_i = sqrt(const_GAMMA * SphP[i].Pressure / SphP[i].Density);
+                        HydroDataIn->set_init_F1(
+                                                    fabs(SphP[i].DivVel) / (fabs(SphP[i].DivVel) +
+                                                    SphP[i].CurlVel + const_0_0001 * soundspeed_i /
+                                                    SphP[i].Hsml / fac_mu)
+                                                    ,nexport);
 
-                        //HydroDataIn[nexport].Index = i;
                         HydroDataIn->set_Index(i,nexport);
-                        //HydroDataIn[nexport].Task = j;
                         HydroDataIn->set_Task(j,nexport);
-                        #ifdef MORRIS97VISC
-                        //HydroDataIn[nexport].Alpha = SphP[i].Alpha;
+#ifdef MORRIS97VISC
                         HydroDataIn->set_init_Alpha(SphP[i].Alpha,nexport);
-                        #endif
+#endif
                         nexport++;
                         nsend_local[j]++;
                     }
                 }
             }
+        tend = second();
+        timecomp += timediff(tstart, tend);
+
+        qsort(HydroDataIn, nexport, hydrodata_in::get_size(), hydro_compare_key);
+
+        for(j = 1, noffset[0] = 0; j < NTask; j++)
+            noffset[j] = noffset[j - 1] + nsend_local[j - 1];
+
+        tstart = second();
+#ifndef NOMPI
+        MPI_Allgather(nsend_local, NTask, MPI_INT, nsend, NTask, MPI_INT, GADGET_WORLD);
+#else
+        nsend[0] = nsend_local[0];
+#endif
+        tend = second();
+        timeimbalance += timediff(tstart, tend);
+
+
+
+        /* now do the particles that need to be exported */
+
+        for(level = 1; level < (1 << PTask); level++)
+        {
+            tstart = second();
+            for(j = 0; j < NTask; j++)
+                nbuffer[j] = 0;
+            for(ngrp = level; ngrp < (1 << PTask); ngrp++)
+            {
+                maxfill = 0;
+                for(j = 0; j < NTask; j++)
+                {
+                    if((j ^ ngrp) < NTask)
+                        if(maxfill < nbuffer[j] + nsend[(j ^ ngrp) * NTask + j])
+                            maxfill = nbuffer[j] + nsend[(j ^ ngrp) * NTask + j];
+                }
+                if(maxfill >= All.BunchSizeHydro)
+                    break;
+
+                sendTask = ThisTask;
+                recvTask = ThisTask ^ ngrp;
+
+                if(recvTask < NTask)
+                {
+                    if(nsend[ThisTask * NTask + recvTask] > 0 || nsend[recvTask * NTask + ThisTask] > 0)
+                    {
+#ifndef NOMPI
+                        /* get the particles */
+                        MPI_Sendrecv(HydroDataIn->get_buff_start(noffset[recvTask]),
+                                     nsend_local[recvTask] * hydrodata_in::get_size(), MPI_BYTE,
+                                     recvTask, TAG_HYDRO_A,
+                                     HydroDataGet->get_buff_start(nbuffer[ThisTask]),
+                                     nsend[recvTask * NTask + ThisTask] * hydrodata_in::get_size(), MPI_BYTE,
+                                recvTask, TAG_HYDRO_A, GADGET_WORLD, &status);
+#else
+                        fprintf(stderr, "NOT SUPPORTED");
+                        exit(1);
+#endif
+                    }
+                }
+
+                for(j = 0; j < NTask; j++)
+                    if((j ^ ngrp) < NTask)
+                        nbuffer[j] += nsend[(j ^ ngrp) * NTask + j];
+            }
+            tend = second();
+            timecommsumm += timediff(tstart, tend);
+
+            /* now do the imported particles */
+            tstart = second();
+            for(j = 0; j < nbuffer[ThisTask]; j++)
+                hydro_evaluate(j, 1);
             tend = second();
             timecomp += timediff(tstart, tend);
 
-            qsort(HydroDataIn, nexport, hydrodata_in::get_size(), hydro_compare_key);
-
-            for(j = 1, noffset[0] = 0; j < NTask; j++)
-                noffset[j] = noffset[j - 1] + nsend_local[j - 1];
-
+            /* do a block to measure imbalance */
             tstart = second();
-            #ifndef NOMPI
-            MPI_Allgather(nsend_local, NTask, MPI_INT, nsend, NTask, MPI_INT, GADGET_WORLD);
-            #else
-            nsend[0] = nsend_local[0];
-            #endif
+#ifndef NOMPI
+            MPI_Barrier(GADGET_WORLD);
+#endif
             tend = second();
             timeimbalance += timediff(tstart, tend);
 
-
-
-            /* now do the particles that need to be exported */
-
-            for(level = 1; level < (1 << PTask); level++)
-            {
-                tstart = second();
-                for(j = 0; j < NTask; j++)
-                    nbuffer[j] = 0;
-                for(ngrp = level; ngrp < (1 << PTask); ngrp++)
-                {
-                    maxfill = 0;
-                    for(j = 0; j < NTask; j++)
-                    {
-                        if((j ^ ngrp) < NTask)
-                            if(maxfill < nbuffer[j] + nsend[(j ^ ngrp) * NTask + j])
-                                maxfill = nbuffer[j] + nsend[(j ^ ngrp) * NTask + j];
-                    }
-                    if(maxfill >= All.BunchSizeHydro)
-                        break;
-
-                    sendTask = ThisTask;
-                    recvTask = ThisTask ^ ngrp;
-
-                    if(recvTask < NTask)
-                    {
-                        if(nsend[ThisTask * NTask + recvTask] > 0 || nsend[recvTask * NTask + ThisTask] > 0)
-                        {
-                            #ifndef NOMPI
-                            /* get the particles */
-                            MPI_Sendrecv(HydroDataIn->get_buff_start(noffset[recvTask]),
-                                         nsend_local[recvTask] * hydrodata_in::get_size(), MPI_BYTE,
-                                         recvTask, TAG_HYDRO_A,
-                                         HydroDataGet->get_buff_start(nbuffer[ThisTask]),
-                                         nsend[recvTask * NTask + ThisTask] * hydrodata_in::get_size(), MPI_BYTE,
-                                         recvTask, TAG_HYDRO_A, GADGET_WORLD, &status);
-                            #else
-                            fprintf(stderr, "NOT SUPPORTED");
-                            exit(1);
-                            #endif
-                        }
-                    }
-
-                    for(j = 0; j < NTask; j++)
-                        if((j ^ ngrp) < NTask)
-                            nbuffer[j] += nsend[(j ^ ngrp) * NTask + j];
-                }
-                tend = second();
-                timecommsumm += timediff(tstart, tend);
-
-                /* now do the imported particles */
-                tstart = second();
-                for(j = 0; j < nbuffer[ThisTask]; j++)
-                    hydro_evaluate(j, 1);
-                tend = second();
-                timecomp += timediff(tstart, tend);
-
-                /* do a block to measure imbalance */
-                tstart = second();
-                #ifndef NOMPI
-                MPI_Barrier(GADGET_WORLD);
-                #endif
-                tend = second();
-                timeimbalance += timediff(tstart, tend);
-
-                /* get the result */
-                tstart = second();
-                for(j = 0; j < NTask; j++)
-                    nbuffer[j] = 0;
-                for(ngrp = level; ngrp < (1 << PTask); ngrp++)
-                {
-                    maxfill = 0;
-                    for(j = 0; j < NTask; j++)
-                    {
-                        if((j ^ ngrp) < NTask)
-                            if(maxfill < nbuffer[j] + nsend[(j ^ ngrp) * NTask + j])
-                                maxfill = nbuffer[j] + nsend[(j ^ ngrp) * NTask + j];
-                    }
-                    if(maxfill >= All.BunchSizeHydro)
-                        break;
-
-                    sendTask = ThisTask;
-                    recvTask = ThisTask ^ ngrp;
-
-                    if(recvTask < NTask)
-                    {
-                        if(nsend[ThisTask * NTask + recvTask] > 0 || nsend[recvTask * NTask + ThisTask] > 0)
-                        {
-                            #ifndef NOMPI
-                            /* send the results */
-                            MPI_Sendrecv(HydroDataResult->get_buff_start(nbuffer[ThisTask]),
-                                         nsend[recvTask * NTask + ThisTask] * hydrodata_out::get_size(),
-                                         MPI_BYTE, recvTask, TAG_HYDRO_B,
-                                         HydroDataPartialResult->get_buff_start(noffset[recvTask]),
-                                         nsend_local[recvTask] * hydrodata_out::get_size(),
-                                         MPI_BYTE, recvTask, TAG_HYDRO_B, GADGET_WORLD, &status);
-                            #else
-                            fprintf(stderr, "NOT SUPPORTED");
-                            exit(1);
-                            #endif
-                            /* add the result to the particles */
-                            for(j = 0; j < nsend_local[recvTask]; j++)
-                            {
-                                source = j + noffset[recvTask];
-                                //place = HydroDataIn[source].Index;
-                                place = HydroDataIn->read_Index(source);
-
-                                /* for(k = 0; k < 3; k++)
-                                 *			    SphP[place].HydroAccel[k] += HydroDataPartialResult[source].Acc[k];*/
-                                SphP[place].HydroAccel[0] +=  HydroDataPartialResult->read_re_init_Acc0(source);
-                                SphP[place].HydroAccel[1] +=  HydroDataPartialResult->read_re_init_Acc1(source);
-                                SphP[place].HydroAccel[2] +=  HydroDataPartialResult->read_re_init_Acc2(source);
-
-                                //SphP[place].DtEntropy += HydroDataPartialResult[source].DtEntropy;
-                                SphP[place].DtEntropy += HydroDataPartialResult->read_re_init_DtEntropy(source);
-
-                                //if(SphP[place].MaxSignalVel < HydroDataPartialResult[source].MaxSignalVel)
-                                if(SphP[place].MaxSignalVel < HydroDataPartialResult->read_re_init_MaxSignalVel(source))
-                                    //SphP[place].MaxSignalVel = HydroDataPartialResult[source].MaxSignalVel;
-                                    SphP[place].MaxSignalVel = HydroDataPartialResult->read_re_init_MaxSignalVel(source);
-                            }
-                        }
-                    }
-
-                    for(j = 0; j < NTask; j++)
-                        if((j ^ ngrp) < NTask)
-                            nbuffer[j] += nsend[(j ^ ngrp) * NTask + j];
-                }
-                tend = second();
-                timecommsumm += timediff(tstart, tend);
-
-                level = ngrp - 1;
-            }
-
-            #ifndef NOMPI
-            MPI_Allgather(&ndone, 1, MPI_INT, ndonelist, 1, MPI_INT, GADGET_WORLD);
-            #else
-            ndonelist[0] = ndone;
-            #endif
+            /* get the result */
+            tstart = second();
             for(j = 0; j < NTask; j++)
-                ntotleft -= ndonelist[j];
+                nbuffer[j] = 0;
+            for(ngrp = level; ngrp < (1 << PTask); ngrp++)
+            {
+                maxfill = 0;
+                for(j = 0; j < NTask; j++)
+                {
+                    if((j ^ ngrp) < NTask)
+                        if(maxfill < nbuffer[j] + nsend[(j ^ ngrp) * NTask + j])
+                            maxfill = nbuffer[j] + nsend[(j ^ ngrp) * NTask + j];
+                }
+                if(maxfill >= All.BunchSizeHydro)
+                    break;
+
+                sendTask = ThisTask;
+                recvTask = ThisTask ^ ngrp;
+
+                if(recvTask < NTask)
+                {
+                    if(nsend[ThisTask * NTask + recvTask] > 0 || nsend[recvTask * NTask + ThisTask] > 0)
+                    {
+#ifndef NOMPI
+                        /* send the results */
+                        MPI_Sendrecv(HydroDataResult->get_buff_start(nbuffer[ThisTask]),
+                                     nsend[recvTask * NTask + ThisTask] * hydrodata_out::get_size(),
+                                MPI_BYTE, recvTask, TAG_HYDRO_B,
+                                HydroDataPartialResult->get_buff_start(noffset[recvTask]),
+                                nsend_local[recvTask] * hydrodata_out::get_size(),
+                                MPI_BYTE, recvTask, TAG_HYDRO_B, GADGET_WORLD, &status);
+#else
+                        fprintf(stderr, "NOT SUPPORTED");
+                        exit(1);
+#endif
+                        /* add the result to the particles */
+                        for(j = 0; j < nsend_local[recvTask]; j++)
+                        {
+                            source = j + noffset[recvTask];
+                            place = HydroDataIn->read_Index(source);
+
+                            SphP[place].HydroAccel[0] +=  HydroDataPartialResult->read_re_init_Acc0(source);
+                            SphP[place].HydroAccel[1] +=  HydroDataPartialResult->read_re_init_Acc1(source);
+                            SphP[place].HydroAccel[2] +=  HydroDataPartialResult->read_re_init_Acc2(source);
+
+                            SphP[place].DtEntropy += HydroDataPartialResult->read_re_init_DtEntropy(source);
+
+                            if(SphP[place].MaxSignalVel < HydroDataPartialResult->read_re_init_MaxSignalVel(source))
+                                SphP[place].MaxSignalVel = HydroDataPartialResult->read_re_init_MaxSignalVel(source);
+                        }
+                    }
+                }
+
+                for(j = 0; j < NTask; j++)
+                    if((j ^ ngrp) < NTask)
+                        nbuffer[j] += nsend[(j ^ ngrp) * NTask + j];
+            }
+            tend = second();
+            timecommsumm += timediff(tstart, tend);
+
+            level = ngrp - 1;
+        }
+
+#ifndef NOMPI
+        MPI_Allgather(&ndone, 1, MPI_INT, ndonelist, 1, MPI_INT, GADGET_WORLD);
+#else
+        ndonelist[0] = ndone;
+#endif
+        for(j = 0; j < NTask; j++)
+            ntotleft -= ndonelist[j];
     }
 
     free(ndonelist);
@@ -344,37 +323,37 @@ void gadgetmp2::hydro_force(void)
     for(i = 0; i < N_gas; i++)
         if(P[i].Ti_endstep == All.Ti_Current)
         {
-            SphP[i].DtEntropy *= GAMMA_MINUS1 / (hubble_a2 * pow(SphP[i].Density, GAMMA_MINUS1));
-            #ifdef SPH_BND_PARTICLES
+            SphP[i].DtEntropy *= const_GAMMA_MINUS1 / (hubble_a2 * pow(SphP[i].Density, const_GAMMA_MINUS1));
+#ifdef SPH_BND_PARTICLES
             if(P[i].ID == 0)
             {
                 SphP[i].DtEntropy = const_0;
                 for(k = 0; k < 3; k++)
                     SphP[i].HydroAccel[k] = const_0;
             }
-            #endif
+#endif
         }
 
-        tend = second();
-        timecomp += timediff(tstart, tend);
+    tend = second();
+    timecomp += timediff(tstart, tend);
 
-        /* collect some timing information */
+    /* collect some timing information */
 
-        #ifndef NOMPI
-        MPI_Reduce(&timecomp, &sumt, 1, MPI_DOUBLE, MPI_SUM, 0, GADGET_WORLD);
-        MPI_Reduce(&timecommsumm, &sumcomm, 1, MPI_DOUBLE, MPI_SUM, 0, GADGET_WORLD);
-        MPI_Reduce(&timeimbalance, &sumimbalance, 1, MPI_DOUBLE, MPI_SUM, 0, GADGET_WORLD);
-        #else
-        sumt = timecomp;
-        sumcomm = timecommsumm;
-        sumimbalance = timeimbalance;
-        #endif
-        if(ThisTask == 0)
-        {
-            All.CPU_HydCompWalk += sumt / NTask;
-            All.CPU_HydCommSumm += sumcomm / NTask;
-            All.CPU_HydImbalance += sumimbalance / NTask;
-        }
+#ifndef NOMPI
+    MPI_Reduce(&timecomp, &sumt, 1, MPI_DOUBLE, MPI_SUM, 0, GADGET_WORLD);
+    MPI_Reduce(&timecommsumm, &sumcomm, 1, MPI_DOUBLE, MPI_SUM, 0, GADGET_WORLD);
+    MPI_Reduce(&timeimbalance, &sumimbalance, 1, MPI_DOUBLE, MPI_SUM, 0, GADGET_WORLD);
+#else
+    sumt = timecomp;
+    sumcomm = timecommsumm;
+    sumimbalance = timeimbalance;
+#endif
+    if(ThisTask == 0)
+    {
+        All.CPU_HydCompWalk += sumt / NTask;
+        All.CPU_HydCommSumm += sumcomm / NTask;
+        All.CPU_HydImbalance += sumimbalance / NTask;
+    }
 }
 
 
@@ -387,22 +366,22 @@ void gadgetmp2::hydro_evaluate(int target, int mode)
     int j, k, n, timestep, startnode, numngb;
     my_float pos[3], vel[3];
     my_float mass, h_i, dhsmlDensityFactor, rho, pressure, f1, f2;
-    #ifdef MORRIS97VISC
+#ifdef MORRIS97VISC
     my_float alpha_visc, alpha_visc_j;
-    #endif
+#endif
     my_float acc[3], dtEntropy, maxSignalVel;
     my_float dx, dy, dz, dvx, dvy, dvz;
     my_float h_i2, hinv, hinv4;
     my_float p_over_rho2_i, p_over_rho2_j, soundspeed_i, soundspeed_j;
-    #ifdef MONAGHAN83VISC
+#ifdef MONAGHAN83VISC
     my_float soundspeed_ij, h_ij;
-    #endif
+#endif
     my_float hfc, dwk_i, vdotr, vdotr2, visc, mu_ij, rho_ij, vsig;
     my_float h_j, dwk_j, r, r2, u, hfc_visc;
 
-    #ifndef NOVISCOSITYLIMITER
+#ifndef NOVISCOSITYLIMITER
     my_float dt;
-    #endif
+#endif
 
     if(mode == 0)
     {
@@ -418,14 +397,14 @@ void gadgetmp2::hydro_evaluate(int target, int mode)
         rho = SphP[target].Density;
         pressure = SphP[target].Pressure;
         timestep = P[target].Ti_endstep - P[target].Ti_begstep;
-        soundspeed_i = sqrt(GAMMA * pressure / rho);
-        #ifdef MORRIS97VISC
+        soundspeed_i = sqrt(const_GAMMA * pressure / rho);
+#ifdef MORRIS97VISC
         alpha_visc = SphP[target].Alpha;
-        #else
+#else
         f1 = fabs(SphP[target].DivVel) /
-        (fabs(SphP[target].DivVel) + SphP[target].CurlVel +
-        const_0_0001 * soundspeed_i / SphP[target].Hsml / fac_mu);
-        #endif
+                (fabs(SphP[target].DivVel) + SphP[target].CurlVel +
+                 const_0_0001 * soundspeed_i / SphP[target].Hsml / fac_mu);
+#endif
     }
     else
     {
@@ -449,13 +428,13 @@ void gadgetmp2::hydro_evaluate(int target, int mode)
         pressure =  HydroDataGet->read_re_init_Pressure(target);
         //timestep = HydroDataGet[target].Timestep;
         timestep =  HydroDataGet->read_Timestep(target);
-        soundspeed_i = sqrt(GAMMA * pressure / rho);
+        soundspeed_i = sqrt(const_GAMMA * pressure / rho);
         //f1 = HydroDataGet[target].F1;
         f1 =  HydroDataGet->read_re_init_F1(target);
-        #ifdef MORRIS97VISC
+#ifdef MORRIS97VISC
         //alpha_visc = HydroDataGet[target].Alpha;
         alpha_visc =  HydroDataGet->read_re_init_Alpha(target);
-        #endif
+#endif
     }
 
 
@@ -479,9 +458,9 @@ void gadgetmp2::hydro_evaluate(int target, int mode)
             dx = pos[0] - P[j].Pos[0];
             dy = pos[1] - P[j].Pos[1];
             dz = pos[2] - P[j].Pos[2];
-            #ifdef MORRIS97VISC
+#ifdef MORRIS97VISC
             alpha_visc_j = SphP[j].Alpha;
-            #endif
+#endif
             r2 = dx * dx + dy * dy + dz * dz;
             h_j = SphP[j].Hsml;
             if(r2 < h_i2 || r2 < h_j * h_j)
@@ -490,7 +469,7 @@ void gadgetmp2::hydro_evaluate(int target, int mode)
                 if(r > const_0)
                 {
                     p_over_rho2_j = SphP[j].Pressure / (SphP[j].Density * SphP[j].Density);
-                    soundspeed_j = sqrt(GAMMA * p_over_rho2_j * SphP[j].Density);
+                    soundspeed_j = sqrt(const_GAMMA * p_over_rho2_j * SphP[j].Density);
                     dvx = vel[0] - SphP[j].VelPred[0];
                     dvy = vel[1] - SphP[j].VelPred[1];
                     dvz = vel[2] - SphP[j].VelPred[2];
@@ -504,11 +483,11 @@ void gadgetmp2::hydro_evaluate(int target, int mode)
                     if(r2 < h_i2)
                     {
                         hinv = const_1 / h_i;
-                        #ifndef  TWODIMS
+#ifndef  TWODIMS
                         hinv4 = hinv * hinv * hinv * hinv;
-                        #else
+#else
                         hinv4 = hinv * hinv * hinv / boxSize_Z;
-                        #endif
+#endif
                         u = r * hinv;
                         if(u < const_0_5)
                             dwk_i = hinv4 * u * (KERNEL_COEFF_3 * u - KERNEL_COEFF_4);
@@ -523,11 +502,11 @@ void gadgetmp2::hydro_evaluate(int target, int mode)
                     if(r2 < h_j * h_j)
                     {
                         hinv = const_1 / h_j;
-                        #ifndef  TWODIMS
+#ifndef  TWODIMS
                         hinv4 = hinv * hinv * hinv * hinv;
-                        #else
+#else
                         hinv4 = hinv * hinv * hinv / boxSize_Z;
-                        #endif
+#endif
                         u = r * hinv;
                         if(u < const_0_5)
                             dwk_j = hinv4 * u * (KERNEL_COEFF_3 * u - KERNEL_COEFF_4);
@@ -544,12 +523,12 @@ void gadgetmp2::hydro_evaluate(int target, int mode)
 
                     if(vdotr2 < const_0)	/* ... artificial viscosity */
                     {
-                        #ifndef MONAGHAN83VISC
+#ifndef MONAGHAN83VISC
                         mu_ij = fac_mu * vdotr2 / r;	/* note: this is negative! */
-                        #else
+#else
                         h_ij = const_0_5 * (h_i + h_j);
                         mu_ij = fac_mu * h_ij * vdotr2 / (r2 + const_0_0001 * h_ij * h_ij);
-                        #endif
+#endif
                         vsig = soundspeed_i + soundspeed_j - const_3 * mu_ij;
 
 
@@ -559,34 +538,32 @@ void gadgetmp2::hydro_evaluate(int target, int mode)
 
                         rho_ij = const_0_5 * (rho + SphP[j].Density);
 
-                        #ifdef MORRIS97VISC
+#ifdef MORRIS97VISC
                         visc = 0.25 * (alpha_visc + alpha_visc_j) * vsig * (-mu_ij) / rho_ij;
-                        #else
+#else
 
-                        f2 =
-                        fabs(SphP[j].DivVel) / (fabs(SphP[j].DivVel) + SphP[j].CurlVel +
-                        const_0_0001 * soundspeed_j / fac_mu / SphP[j].Hsml);
+                        f2 = fabs(SphP[j].DivVel) / (fabs(SphP[j].DivVel) + SphP[j].CurlVel + const_0_0001 * soundspeed_j / fac_mu / SphP[j].Hsml);
 
-                        #ifndef MONAGHAN83VISC
+#ifndef MONAGHAN83VISC
                         visc = const_0_25 * All.ArtBulkViscConst * vsig * (-mu_ij) / rho_ij * (f1 + f2);
-                        #else
+#else
                         soundspeed_ij = (soundspeed_i+soundspeed_j) * 0.5;
 
                         visc = ((-All.ArtBulkViscConst) * soundspeed_ij * mu_ij + All.ArtBulkViscBeta * mu_ij * mu_ij) / rho_ij;
-                        #endif //MONAGHAN83VISC
+#endif //MONAGHAN83VISC
 
-                        #endif //MORRIS97VISC
+#endif //MORRIS97VISC
 
                         /* .... end artificial viscosity evaluation */
-                        #ifndef NOVISCOSITYLIMITER
+#ifndef NOVISCOSITYLIMITER
                         /* make sure that viscous acceleration is not too large */
                         dt = imax(timestep, (P[j].Ti_endstep - P[j].Ti_begstep)) * All.Timebase_interval;
                         if(dt > const_0 && (dwk_i + dwk_j) < const_0)
                         {
                             visc = dmin(visc, const_0_5 * fac_vsic_fix * vdotr2 /
-                            (const_0_5 * (mass + P[j].Mass) * (dwk_i + dwk_j) * r * dt));
+                                        (const_0_5 * (mass + P[j].Mass) * (dwk_i + dwk_j) * r * dt));
                         }
-                        #endif
+#endif
                     }
                     else
                         visc = const_0;
@@ -617,14 +594,10 @@ void gadgetmp2::hydro_evaluate(int target, int mode)
     }
     else
     {
-        /*     for(k = 0; k < 3; k++)
-         *	HydroDataResult[target].Acc[k] = acc[k];*/
         HydroDataResult->set_init_Acc0(acc[0],target);
         HydroDataResult->set_init_Acc1(acc[1],target);
         HydroDataResult->set_init_Acc2(acc[2],target);
-        //HydroDataResult[target].DtEntropy = dtEntropy;
         HydroDataResult->set_init_DtEntropy(dtEntropy,target);
-        //HydroDataResult[target].MaxSignalVel = maxSignalVel;
         HydroDataResult->set_init_MaxSignalVel(maxSignalVel,target);
     }
 }
