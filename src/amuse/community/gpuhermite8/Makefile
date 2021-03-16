@@ -13,7 +13,7 @@ CFLAGS   += -Wall -g -mfma
 CXXFLAGS +=  $(CFLAGS)
 #LDFLAGS  +=  -lqd $(MUSE_LD_FLAGS) -L$(AMUSE_DIR)/lib/stopcond -lstopcond
 LDFLAGS  +=   -lqd
-NVCCFLAGS += -g -G -I./CAMPARY/Doubles/src_gpu/ -arch=compute_70 -rdc=true -Xcompiler -fopenmp
+NVCCFLAGS += -g -G -Xcompiler -fopenmp
 
 #OBJS = constants.o interface.o gpuhermite8.o worker_code.o
 OBJS = interface.o worker_code.o
