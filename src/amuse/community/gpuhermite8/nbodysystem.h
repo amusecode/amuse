@@ -22,6 +22,7 @@ SOFTWARE.*/
 
 /*
 -added support for QD in addition to DD by Thomas Schano  QD is available at http://crd-legacy.lbl.gov/~dhbailey/mpdist/ (https://github.com/GFTwrt/QD)
+-added support for additional step acceleration by Thomas Schano
 */
 
 #include <cstdio>
@@ -110,6 +111,10 @@ struct NbodySystem{
 	template <int p>
 	void set_force(const int i, const vect_type &f){
 		force[i].force[p] = f;
+	}
+
+	vect_type get_add_acc(const int i) const {
+		return ptcl[i].add_acc;
 	}
 
 	template <typename PTCL> // Particle or Predictor

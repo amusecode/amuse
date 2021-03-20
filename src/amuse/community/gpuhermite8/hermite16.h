@@ -22,6 +22,7 @@ SOFTWARE.*/
 
 /*
 -added support for QD in addition to DD by Thomas Schano  QD is available at http://crd-legacy.lbl.gov/~dhbailey/mpdist/ (https://github.com/GFTwrt/QD)
+-added support for additional step acceleration by Thomas Schano
 */
 
 #include "vector3.h"
@@ -43,9 +44,10 @@ struct Particle{
 	m_real dt;
 	m_real tlast;
 	m_real mass;
-	double radius;
+	m_real radius;
 
 	qvec3 coord[2 + ORDER]; // pos-vel, forces, interpolates
+	qvec3 add_acc;
 };
 
 struct Predictor{

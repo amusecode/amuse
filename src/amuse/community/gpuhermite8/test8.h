@@ -1,3 +1,30 @@
+/*MIT License
+
+Copyright (c) 2021 Keigo Nitadori
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.*/
+
+/*
+-added support for QD in addition to DD by Thomas Schano  QD is available at http://crd-legacy.lbl.gov/~dhbailey/mpdist/ (https://github.com/GFTwrt/QD)
+-added support for additional step acceleration by Thomas Schano
+*/
+
 template <class SYS, typename real_type, typename vect_type>
 void calc_force_on_i_p8(SYS &sys, const int nbody, const int i, const real_type eps2) {
 	vect_type acc0(real_type(0));
@@ -62,7 +89,8 @@ void calc_force_on_i_p8(SYS &sys, const int nbody, const int i, const real_type 
 		acc5 += rinv3 * (dr5 +(5.0*q1)*dr4 +(10.0*q2)*dr3 +(10.0*q3)*dr2 +(5.0*q4)*dr1 +(q5)*dr0);
 		acc6 += rinv3 * (dr6 +(6.0*q1)*dr5 +(15.0*q2)*dr4 +(20.0*q3)*dr3 +(15.0*q4)*dr2 +(6.0*q5)*dr1 +(q6)*dr0);
 		acc7 += rinv3 * (dr7 +(7.0*q1)*dr6 +(21.0*q2)*dr5 +(35.0*q3)*dr4 +(35.0*q4)*dr3 +(21.0*q5)*dr2 +(7.0*q6)*dr1 +(q7)*dr0);
-	} // for(j) 
+	} // for(j)
+	acc0 += sys.get_add_acc(i);
 	sys.template set_force<0>(i, acc0);
 	sys.template set_force<1>(i, acc1);
 	sys.template set_force<2>(i, acc2);
@@ -71,4 +99,4 @@ void calc_force_on_i_p8(SYS &sys, const int nbody, const int i, const real_type 
 	sys.template set_force<5>(i, acc5);
 	sys.template set_force<6>(i, acc6);
 	sys.template set_force<7>(i, acc7);
-} // end of function 
+} // end of function
