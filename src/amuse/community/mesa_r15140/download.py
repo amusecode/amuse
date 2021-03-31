@@ -9,13 +9,15 @@ import urllib.parse
 import urllib.error
 from optparse import OptionParser
 import glob
-
+import shutil
+import stat
 
 class GetCodeFromHttp(object):
     url_template = ''
     filename_template = "mesa-r{version}.zip"
     version = ""
     zip=True
+    unpack=True
 
     def directory(self):
         return os.path.abspath(os.path.dirname(__file__))
@@ -25,15 +27,16 @@ class GetCodeFromHttp(object):
 
     def unpack_downloaded_file(self, filename):
         print("unpacking", filename)
-        if self.zip:
-            arguments = ['unzip']
-        else:
-            arguments = ['tar','xvf']
-        arguments.append(filename)
-        subprocess.call(
-            arguments,
-            cwd=os.path.join(self.src_directory())
-        )
+        if self.unpack:
+            if self.zip:
+                arguments = ['unzip']
+            else:
+                arguments = ['tar','xvf']
+            arguments.append(filename)
+            subprocess.call(
+                arguments,
+                cwd=os.path.join(self.src_directory())
+            )
         print("done")
 
     def start(self):
@@ -50,6 +53,10 @@ class GetCodeFromHttp(object):
         print("downloading finished")
         self.unpack_downloaded_file(filename)
 
+
+def make_exectuable(filename):
+    st = os.stat(filename)
+    os.chmod(filename, st.st_mode | stat.S_IEXEC)
 
 def get_crmath():
     instance = GetCodeFromHttp()
@@ -94,6 +101,89 @@ def get_crlibm():
         cwd=wd
     )
 
+def get_fpx3deps():
+    instance = GetCodeFromHttp()
+    instance.url_template = 'https://raw.githubusercontent.com/rhdtownsend/sdk2/master/profile/common/fpx3/fpx3_deps'
+    instance.filename_template='fpx3_deps'
+    instance.version = ''
+    instance.zip=False
+    instance.unpack=False
+    instance.start()  
+
+
+    filename = os.path.join(instance.src_directory(),'fpx3_deps')
+    # Need to patch the file
+    with open(filename,'r') as f:
+        lines = f.readlines()
+
+    for ldx,l in enumerate(lines):
+        if 21<=ldx<=30:
+            lines[ldx] = ''
+
+        if "'omp_lib" in l:
+            lines[ldx] = lines[ldx] + "'hdf5','f95_lapack',"
+    
+        lines[22] = '$EXCLUDE_PATHS="";'
+
+    with open(filename,'w') as f:
+        for l in lines:
+            f.write(l)
+
+    make_exectuable(filename)
+
+def get_fpx3():
+    instance = GetCodeFromHttp()
+    instance.url_template = 'http://www.astro.wisc.edu/~townsend/resource/download/sdk2/src/fpx3.tar.gz'
+    instance.filename_template='fpx3.tar.gz'
+    instance.version = ''
+    instance.zip=False
+    instance.start()  
+
+    shutil.move(os.path.join(instance.src_directory(),'fpx3'),os.path.join(instance.src_directory(),'fpx3_folder'))
+    shutil.move(os.path.join(instance.src_directory(),'fpx3_folder','fpx3'),os.path.join(instance.src_directory(),'fpx3'))
+
+    make_exectuable(os.path.join(instance.src_directory(),'fpx3'))
+
+def get_lapack95():
+    instance = GetCodeFromHttp()
+    instance.url_template = 'http://www.astro.wisc.edu/~townsend/resource/download/sdk2/src/lapack95.tgz'
+    instance.filename_template='lapack95.tar.gz'
+    instance.version = ''
+    instance.zip=False
+    instance.start()      
+
+    # Tweak makefile
+    filename=os.path.join(instance.src_directory(),'LAPACK95','make.inc')
+    with open(filename,'r') as f:
+        lines = f.readlines()
+
+    lines[5] = 'FC = $(MPIFC) -ffree-form\n' 
+    for ldx,l in enumerate(lines):
+        if l.startswith('OPTS0'):
+            lines[ldx] = 'OPTS0 = -O2 -fPIC \n'  
+        if l.startswith('FC1 '):
+            lines[ldx] = 'FC1 = $(MPIFC) -fixed-form\n' 
+
+    with open(filename,'w') as f:
+        for l in lines:
+            f.write(l)
+
+    # Build
+    os.mkdir(os.path.join(instance.src_directory(),'LAPACK95','lapack95_modules'))
+    wd = os.path.join(instance.src_directory(),'LAPACK95','SRC')
+
+    subprocess.call(
+            ['make','clean'],
+            cwd=wd
+        )
+
+    subprocess.call(
+            ['make','single_double_complex_dcomplex'],
+            cwd=wd
+        )
+
+
+
 def get_mesa():
     instance = GetCodeFromHttp()
 
@@ -107,8 +197,11 @@ def get_mesa():
 
 
 def main():
+    get_lapack95()
     get_crmath()
     get_crlibm()
+    get_fpx3()
+    get_fpx3deps()
     get_mesa()
 
 

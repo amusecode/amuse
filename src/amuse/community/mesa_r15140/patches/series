@@ -1,6 +1,5 @@
 0001-Dont-make-empty-output-directories.patch
 0001-Fix-astero-builds-when-disabled.patch
-0002-Patch-location-of-ndiff-and-makedepf90.patch
 0003-Add-mpi-to-utils.patch
 0004-Fix-adipls-and-gyre-builds.patch
 0006-Adipls-skip-tests.patch

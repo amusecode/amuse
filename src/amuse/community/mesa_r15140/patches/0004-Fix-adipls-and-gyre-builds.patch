@@ -21,26 +21,6 @@ index 2c37698..7727441 100644
        external rhs
        return
        end
-diff --git a/adipls/test/ck b/adipls/test/ck
-index 997c7b0..ffa3c51 100755
---- a/adipls/test/ck
-+++ b/adipls/test/ck
-@@ -28,4 +28,4 @@ set-obs.d 16 mesa >> .list
- check_okay
- mv obs.mesa obs.txt
- check_okay
--ndiff -quiet -relerr 1e-9 obs.txt obs.test.txt
-+$MESA_DIR/utils/ndiff-2.00/ndiff -quiet -relerr 1e-9 obs.txt obs.test.txt
-diff --git a/gyre/test/ck b/gyre/test/ck
-index a2e1385..4f4c067 100755
---- a/gyre/test/ck
-+++ b/gyre/test/ck
-@@ -14,4 +14,4 @@ function check_okay {
- 
- ./rn >& tmp.txt
- check_okay
--ndiff -quiet -relerr 1.0e-6 tmp.txt test_output
-+$MESA_DIR/utils/ndiff-2.00/ndiff -quiet -relerr 1.0e-6 tmp.txt test_output
 -- 
 2.29.2
 

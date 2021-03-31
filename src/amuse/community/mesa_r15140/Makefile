@@ -5,6 +5,7 @@ ifeq ($(origin AMUSE_DIR), undefined)
 endif
 -include ${AMUSE_DIR}/config.mk
 
+
 GFORTRAN_VERSION?=$(shell $(FC) -v 2>&1 | grep gcc\ version | cut -d\  -f3)
 GFORTRAN_MAJOR_MINOR=$(shell echo $(GFORTRAN_VERSION) | cut -s -d'.' -f1,2)
 #IFORT_VERSION?=$(shell $(FC) -v 2>&1 | cut -d\  -f2)
@@ -22,6 +23,8 @@ MPICC+= $(CFLAGS)
 export FC MPIFC MPICC
 
 
+SRC_DIR := $(realpath ./src)
+
 MESA_MAKE_DIR=./mesa_reqs
 INCLUDE_DIR=./src/mesa/star/make
 export MESA_DIR = $(realpath ./src/mesa-r15140)
@@ -36,7 +39,6 @@ BUILD_DEP = $(PYTHON) ./build-dep.py
 PATCHES_DIR=./patches
 
 include $(PATCHES_DIR)/makefile_header_non_mesasdk
-
 
 all:	mesa_worker 
 
@@ -74,7 +76,8 @@ build_ndiff:
 	tar xvf ndiff-2.00.tar.gz;\
 	cd ndiff-2.00;\
 	./configure;\
-	make
+	make;\
+	cp ndiff $(SRC_DIR)/.
 
 build_makedepf90:
 	cd $(MESA_DIR)/utils;\
@@ -82,7 +85,9 @@ build_makedepf90:
 	tar xvf makedepf90-2.8.8.tar.gz;\
 	cd 	makedepf90-2.8.8;\
 	./configure;\
-	make
+	make;\
+	cp makedepf90 $(SRC_DIR)/.
+
 
 clean:
 	$(RM) -f *~ *.pyc *.mod *.smod *.o worker_code worker_code.f90 $(MESA_LIB)
@@ -115,7 +120,8 @@ worker_code.f90: interface.py
 
 $(MESA_LIB):  $(MESA_DIR)/install
 	mkdir -p $(MESA_DIR)/lib $(MESA_DIR)/include
-	cd $(MESA_DIR); ./install
+	cd $(MESA_DIR);\
+	env PATH=$(MESA_DIR)/../:$(PATH) ./install
  
 
 patch:
@@ -126,7 +132,8 @@ patch:
 	cp ./src/crmath-1.2/*.mod $(MESA_DIR)/include/.
 	cp ./src/crmath-1.2/*.smod $(MESA_DIR)/include/.
 	cp ./src/crlibm-1.0beta4/libcrlibm.a $(MESA_DIR)/lib/.
-
+	cp ./src/LAPACK95/lapack95_modules/*.mod $(MESA_DIR)/include/.
+	cp ./src/LAPACK95/lapack95.a $(MESA_DIR)/lib/liblapack95.a
 
 interface.o: interface.f90 $(MESA_LIB)
 	$(WORK_COMPILE) $<

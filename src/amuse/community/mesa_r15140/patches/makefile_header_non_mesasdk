@@ -42,10 +42,10 @@ endif
 # step 3) specify which BLAS and LAPACK libraries to use for mesa/mtx
 
 # these are the standard defaults
-WHICH_LAPACK = USE_SRCS
-LOAD_LAPACK = -lmesalapack
-WHICH_BLAS = USE_SRCS
-LOAD_BLAS = -lmesablas
+WHICH_LAPACK = 
+LOAD_LAPACK = -llapack -llapack95
+WHICH_BLAS = 
+LOAD_BLAS = -lblas -llapack -llapack95
 MKL_INCLUDE = 
 
 # step 4) do you want to use PGPLOT with mesa/star?                                                                                     
@@ -93,7 +93,7 @@ MKL_INCLUDE =
 # NOTE: a change in USE_PGSTAR doesn't take effect until you next recompile mesa/star
 
 # for now, GYRE is only available with the mesasdk 
-USE_GYRE = NO
+USE_GYRE = YES
 
 # See http://www.gnu.org/software/make/manual/make.html#Testing-Flags for findstring
 ifneq (,$(findstring ifort,$(FC)))
