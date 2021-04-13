@@ -66,9 +66,15 @@ download:
 	$(RM) -Rf src
 	-mkdir src
 	$(DOWNLOAD_FROM_WEB)
+	make -C . patch
 	make -C . build_ndiff
 	make -C . build_makedepf90
-	make -C . patch
+	make -C . build_crmath
+	make -C . build_crlibm
+	make -C . build_fpx3_deps
+	make -C . build_fpx3
+	make -C . build_lapack95
+	make -C . install_deps
 
 build_ndiff:
 	cd $(MESA_DIR)/utils;\
@@ -77,7 +83,6 @@ build_ndiff:
 	cd ndiff-2.00;\
 	./configure;\
 	make;\
-	cp ndiff $(SRC_DIR)/.
 
 build_makedepf90:
 	cd $(MESA_DIR)/utils;\
@@ -86,7 +91,30 @@ build_makedepf90:
 	cd 	makedepf90-2.8.8;\
 	./configure;\
 	make;\
-	cp makedepf90 $(SRC_DIR)/.
+
+build_crmath:
+	cd $(SRC_DIR)/crmath-1.2;\
+	make;\
+
+build_crlibm:
+	cd $(SRC_DIR)/crlibm-1.0beta4;\
+	./configure --enable-static=yes;\
+	make;\
+	make install;\
+	ar cru libcrlibm.a *.o scs_lib/*.o
+
+build_fpx3:
+	mv $(SRC_DIR)/fpx3 $(SRC_DIR)/fpx3_folder;\
+	cp $(SRC_DIR)/fpx3_folder/fpx3 $(SRC_DIR)/fpx3
+
+build_lapack95:
+	cd $(SRC_DIR)/LAPACK95/SRC;\
+	mkdir ../lapack95_modules;\
+	make clean;\
+	make single_double_complex_dcomplex
+
+build_fpx3_deps:
+	chmod u+x $(SRC_DIR)/fpx3_deps
 
 
 clean:
@@ -128,12 +156,16 @@ patch:
 	mkdir -p $(MESA_DIR)/lib $(MESA_DIR)/include
 	$(PYTHON) ./patch_files.py
 	cp $(PATCHES_DIR)/makefile_header_non_mesasdk $(MESA_DIR)/utils/makefile_header
+
+install_deps:
 	cp ./src/crmath-1.2/libcrmath.a $(MESA_DIR)/lib/.
 	cp ./src/crmath-1.2/*.mod $(MESA_DIR)/include/.
 	cp ./src/crmath-1.2/*.smod $(MESA_DIR)/include/.
 	cp ./src/crlibm-1.0beta4/libcrlibm.a $(MESA_DIR)/lib/.
 	cp ./src/LAPACK95/lapack95_modules/*.mod $(MESA_DIR)/include/.
 	cp ./src/LAPACK95/lapack95.a $(MESA_DIR)/lib/liblapack95.a
+	cp $(MESA_DIR)/utils/makedepf90-2.8.8/makedepf90 $(SRC_DIR)/.
+	cp $(MESA_DIR)/utils/ndiff-2.00/ndiff $(SRC_DIR)/.
 
 interface.o: interface.f90 $(MESA_LIB)
 	$(WORK_COMPILE) $<

@@ -47,21 +47,30 @@ def undo_patches_using_quilt():
     if not returncode == 0:
         raise Exception("error in undoing the patches, please undo by hand using quilt pop -a")
 
-def run_patch(patchname, patchfile):
+def run_patch(patchname, patchfile, wd):
     arguments = ['patch', '-p1', '-i', patchfile]
-    returncode = subprocess.call(arguments,cwd=os.environ['MESA_DIR'])
+    returncode = subprocess.call(arguments,cwd=wd)
     if not returncode == 0:
         raise Exception("could not apply patch {0}".format(patchname))
         
 def apply_patches_using_patch():
-    with open("patches/series", "r") as f:
+    with open("patches/series_mesa", "r") as f:
         lines = f.readlines()
     patches = [x.strip() for x in lines]
     patches = [x for x in patches if len(x) > 0]
     for patch in patches:
         path = os.path.join(PATCHESDIR, patch)
-        run_patch(patch, path)
+        run_patch(patch, path, os.environ['MESA_DIR'])
         
+    with open("patches/series_deps", "r") as f:
+        lines = f.readlines()
+    patches = [x.strip() for x in lines]
+    patches = [x for x in patches if len(x) > 0]
+    for patch in patches:
+        path = os.path.join(PATCHESDIR, patch)
+        run_patch(patch, path, os.path.join(os.environ['MESA_DIR'],'../'))
+
+
 def main(undo_patches = False):
     print("checking if quilt is installed ... ", end=' ') 
     if not is_quilt_installed():

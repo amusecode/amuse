@@ -65,10 +65,6 @@ def get_crmath():
     instance.version = 'v1.2'
     instance.start()  
 
-    subprocess.call(
-            'make',
-            cwd=os.path.join(instance.src_directory(),'crmath-1.2')
-        )
 
 def get_crlibm():
     instance = GetCodeFromHttp()
@@ -77,29 +73,6 @@ def get_crlibm():
     instance.version = '1.0beta4'
     instance.zip=False
     instance.start()  
-
-
-    wd = os.path.join(instance.src_directory(),'crlibm-1.0beta4')
-
-    subprocess.call(
-            ['./configure','--enable-static=yes'],
-            cwd=wd
-        )
-
-    subprocess.call(
-            'make',
-            cwd=wd
-        )
-
-    subprocess.call(
-            ['make','install'],
-            cwd=wd
-        )
-
-    subprocess.call(
-        ['ar','cru', 'libcrlibm.a'] + glob.glob(wd+'/*.o') + glob.glob(wd+'/scs_lib/*.o'), 
-        cwd=wd
-    )
 
 def get_fpx3deps():
     instance = GetCodeFromHttp()
@@ -110,27 +83,6 @@ def get_fpx3deps():
     instance.unpack=False
     instance.start()  
 
-
-    filename = os.path.join(instance.src_directory(),'fpx3_deps')
-    # Need to patch the file
-    with open(filename,'r') as f:
-        lines = f.readlines()
-
-    for ldx,l in enumerate(lines):
-        if 21<=ldx<=30:
-            lines[ldx] = ''
-
-        if "'omp_lib" in l:
-            lines[ldx] = lines[ldx] + "'hdf5','f95_lapack',"
-    
-        lines[22] = '$EXCLUDE_PATHS="";'
-
-    with open(filename,'w') as f:
-        for l in lines:
-            f.write(l)
-
-    make_exectuable(filename)
-
 def get_fpx3():
     instance = GetCodeFromHttp()
     instance.url_template = 'http://www.astro.wisc.edu/~townsend/resource/download/sdk2/src/fpx3.tar.gz'
@@ -139,11 +91,6 @@ def get_fpx3():
     instance.zip=False
     instance.start()  
 
-    shutil.move(os.path.join(instance.src_directory(),'fpx3'),os.path.join(instance.src_directory(),'fpx3_folder'))
-    shutil.move(os.path.join(instance.src_directory(),'fpx3_folder','fpx3'),os.path.join(instance.src_directory(),'fpx3'))
-
-    make_exectuable(os.path.join(instance.src_directory(),'fpx3'))
-
 def get_lapack95():
     instance = GetCodeFromHttp()
     instance.url_template = 'http://www.astro.wisc.edu/~townsend/resource/download/sdk2/src/lapack95.tgz'
@@ -151,38 +98,6 @@ def get_lapack95():
     instance.version = ''
     instance.zip=False
     instance.start()      
-
-    # Tweak makefile
-    filename=os.path.join(instance.src_directory(),'LAPACK95','make.inc')
-    with open(filename,'r') as f:
-        lines = f.readlines()
-
-    lines[5] = 'FC = $(MPIFC) -ffree-form\n' 
-    for ldx,l in enumerate(lines):
-        if l.startswith('OPTS0'):
-            lines[ldx] = 'OPTS0 = -O2 -fPIC \n'  
-        if l.startswith('FC1 '):
-            lines[ldx] = 'FC1 = $(MPIFC) -fixed-form\n' 
-
-    with open(filename,'w') as f:
-        for l in lines:
-            f.write(l)
-
-    # Build
-    os.mkdir(os.path.join(instance.src_directory(),'LAPACK95','lapack95_modules'))
-    wd = os.path.join(instance.src_directory(),'LAPACK95','SRC')
-
-    subprocess.call(
-            ['make','clean'],
-            cwd=wd
-        )
-
-    subprocess.call(
-            ['make','single_double_complex_dcomplex'],
-            cwd=wd
-        )
-
-
 
 def get_mesa():
     instance = GetCodeFromHttp()
