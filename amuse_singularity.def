@@ -1,0 +1,73 @@
+#
+# Copyright (C) 2021, Leonardo Lenoci, Lorentz Institute Leiden University
+#
+# This program is free software: you can redistribute it and/or modify it
+# under the terms of the GNU General Public License as published by the
+# Free Software Foundation; either version 3 of the License, or (at your option)
+# any later version.
+#
+# This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+# without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+# See the GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along with this program.
+# If not, see https://www.gnu.org/licenses/.
+
+# Read `man singularity'
+# Modify and test with: sudo singularity build -s amuse amuse_singularity.def
+# sudo singularity shell -w amuse
+
+
+BootStrap:docker
+From:ubuntu:20.04
+
+%environment
+    export LC_ALL="en_US.UTF-8"
+    export LANG="en_US.UTF-8"
+    export LANGUAGE="en_US.UTF-8"
+
+    export TZ="Europe/Amsterdam"        
+    export DEBIAN_FRONTEND=noninteractive
+    
+
+%labels
+    Author lenocil@lorentz.leidenuniv.nl
+    Version v0.0.1
+
+%help
+    Singularity container with AMUSE
+    Based on Ubuntu 20.04 LTS
+ 
+ %runscript
+    # commands to be executed when the container runs
+    exec python3 "$@"
+
+%post
+    # first update the system
+    apt-get update
+    apt-get -y upgrade
+
+    # setup environment properly
+    apt install -y locales
+    echo "en_US.UTF-8 UTF-8" >> /etc/locale.gen
+    locale-gen en_US.utf8
+    /usr/sbin/update-locale LANG=en_US.UTF-8
+
+    export LC_ALL="en_US.UTF-8"
+    export LANG="en_US.UTF-8"
+    export LANGUAGE="en_US.UTF-8"
+    export TZ="Europe/Amsterdam"
+    export DEBIAN_FRONTEND=noninteractive
+
+    # install AMUSE prerequisites
+    apt-get install -y build-essential gfortran python3-dev libopenmpi-dev openmpi-bin libgsl-dev cmake libfftw3-3 libfftw3-dev libgmp3-dev libmpfr6 libmpfr-dev libhdf5-serial-dev hdf5-tools libblas-dev liblapack-dev  python3-venv python3-pip git
+    
+    pip3 install --upgrade pip
+    python3 -m pip install numpy docutils mpi4py h5py wheel
+    python3 -m pip install scipy astropy jupyter pandas seaborn matplotlib
+
+    # install AMUSE
+    python3 -m pip install -v amuse-framework>=2021.2.0[MPI]
+    python3 -m pip install -v amuse>=2021.2.0
+
+
