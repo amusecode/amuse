@@ -4,6 +4,7 @@ AC_CONFIG_SRCDIR([src/amuse/__init__.py])
 AC_CONFIG_FILES([config.mk])
 AC_CONFIG_FILES([build.py:bin/amusifier.in],[chmod +x build.py])
 AC_CONFIG_FILES([bin/amusifier:build.py],[chmod +x bin/amusifier])
+AC_CONFIG_FILES([Makefile])
 
 #CODE_GENERATOR="\${AMUSE_DIR}/build.py"
 CODE_GENERATOR=amusifier
