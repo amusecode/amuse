@@ -1,5 +1,7 @@
 #!/bin/bash
 
+-include ${AMUSE_DIR}/config.mk
+
 # NOTE: MESA is no longer supported on 32-bit systems.  This isn't by design;
 # we simply haven't been able to get it to work!  So if you really-really want 
 # to use an antique 32-bit system for mesa, you'll have to try to make it work yourself.
@@ -22,8 +24,8 @@ FC =  $(MPIFC)
 
 
 # if you need special flags for the compiler, define them here:
-SPECIAL_FC_FLAGS = $(cflags)
-SPECIAL_C_FLAGS = $(fflags)
+SPECIAL_FC_FLAGS = $(CFLAGS)
+SPECIAL_C_FLAGS = $(FCFLAGSs)
 
 # step 1.a) [temporary workaround for loader problem on Mac:] 
 #           go down to select the correct entry for LOAD_MATRIX 
@@ -152,8 +154,8 @@ endif
 # export LD_LIBRARY_PATH=$MESA_DIR/utils/hdf5/lib:$LD_LIBRARY_PATH
 
 # These are if you are using the sdk hdf5 implementation
-LOAD_HDF5 = -L/usr/lib64 -lhdf5_fortran -lhdf5 -lz
-INCLUDE_HDF5 = -I/usr/lib64/gfortran/modules/
+LOAD_HDF5 = $(HDF5_FLIBS)
+INCLUDE_HDF5 = $(HDF5_FFLAGS)
 
 # If not YES then we don't use HDF5, thus you wont have access to custom weak rates
 # Also the rates test suite will not pass so do: /usr/bin/touch $MESA_DIR/rates/skip_test
@@ -374,7 +376,7 @@ LOAD_MESA_BINARY_EXT = $(LOAD_MESA_STAR_EXT)
 LOAD_MESA_BINARY = $(LOAD_MESA_BINARY_INT) $(LOAD_MESA_BINARY_EXT)
 
 # LOADER creates executables
-LOADER = $(FC)
+LOADER = $(FC) $(LDFLAGS)
 
 STAR_WORK_OBJS = \
    run_star_extras.o run_star.o 
