@@ -220,7 +220,7 @@ class MPIMessage(AbstractMessage):
             strings = []
             begin = 0
             for size in sizes:
-                strings.append(data_bytes[begin:begin + size].tostring().decode('latin_1'))
+                strings.append(data_bytes[begin:begin + size].tobytes().decode('latin_1'))
                 begin = begin + size + 1
                 
             logger.debug("got %d strings of size %s, data = %s", total, sizes, strings)
@@ -1645,9 +1645,9 @@ class SocketMessage(AbstractMessage):
         
         # logger.debug("sending message with flags %s and header %s", flags, header)
         
-        socket.sendall(flags.tostring())
+        socket.sendall(flags.tobytes())
 
-        socket.sendall(header.tostring())
+        socket.sendall(header.tobytes())
 
         self.send_ints(socket, self.ints)
         self.send_longs(socket, self.longs)
@@ -1663,17 +1663,17 @@ class SocketMessage(AbstractMessage):
     def send_doubles(self, socket, array):
         if len(array) > 0:
             data_buffer = numpy.array(array, dtype='f8')
-            socket.sendall(data_buffer.tostring())
+            socket.sendall(data_buffer.tobytes())
             
     def send_ints(self, socket, array):
         if len(array) > 0:
             data_buffer = numpy.array(array, dtype='int32')
-            socket.sendall(data_buffer.tostring())
+            socket.sendall(data_buffer.tobytes())
             
     def send_floats(self, socket, array):
         if len(array) > 0:
             data_buffer = numpy.array(array, dtype='f4')
-            socket.sendall(data_buffer.tostring())
+            socket.sendall(data_buffer.tobytes())
             
     def send_strings(self, socket, array):
         if len(array) > 0:
@@ -1690,12 +1690,12 @@ class SocketMessage(AbstractMessage):
     def send_booleans(self, socket, array):
         if len(array) > 0:
             data_buffer = numpy.array(array, dtype='b')
-            socket.sendall(data_buffer.tostring())
+            socket.sendall(data_buffer.tobytes())
 
     def send_longs(self, socket, array):
         if len(array) > 0:
             data_buffer = numpy.array(array, dtype='int64')
-            socket.sendall(data_buffer.tostring())
+            socket.sendall(data_buffer.tobytes())
         
 class SocketChannel(AbstractMessageChannel):
     
