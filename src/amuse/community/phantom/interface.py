@@ -1681,7 +1681,7 @@ class Phantom(GravitationalDynamics, GravityFieldCode):
             "set_ieos",
             "ieos",
             "eqn of state (1=isoth;2=adiab;3=locally iso;8=barotropic)",
-            default_value=2
+            default_value=1
         )
 
         handler.add_method_parameter(
