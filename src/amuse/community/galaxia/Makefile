@@ -22,13 +22,13 @@ clean:
 
 
 $(OBJ): interface.f90
-	$(FC) -c $(FCFLAGS) -llapack -lblas -o $@ $< 
+	$(FC) -c $(FCFLAGS) -o $@ $< 
 
 GalaxyModel_worker:	worker_code.f90  $(OBJ)
-	$(MPIFC) $(FCFLAGS) $(FS_FLAGS) $^ -o $@  $(FS_LIBS) -llapack -lblas 
+	$(MPIFC) $(FCFLAGS) $(FS_FLAGS) $^ -o $@  $(FS_LIBS) $(LAPACK_LIBS) $(BLAS_LIBS)
 
 .f90.o: $<
-	$(FC) -c $(FCFLAGS)  -llapack  -lblas -o $@ $< 
+	$(FC) -c $(FCFLAGS) -o $@ $< 
 
 worker_code.f90: interface.py
 	$(CODE_GENERATOR) --type=f90 interface.py  BarAndSpiralsInterface -o $@
