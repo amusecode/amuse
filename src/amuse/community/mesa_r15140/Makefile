@@ -19,8 +19,10 @@ export CC		?= gcc
 MPIFC+= $(FCFLAGS)
 MPICC+= $(CFLAGS)
 
+LAPACK_LIBS ?= -llapack
+BLAS_LIBS ?= -lblas
 
-export FC MPIFC MPICC
+export FC MPIFC MPICC LAPACK_LIBS BLAS_LIBS
 
 
 SRC_DIR := $(realpath ./src)
@@ -31,7 +33,7 @@ export MESA_DIR = $(realpath ./src/mesa-r15140)
 MESA_LIB=$(MESA_DIR)/lib/libstar.a
 WORK_SRC_DIR=./
 
-export OPENMP_FCFLAGS=-fopenmp
+export OPENMP_FCFLAGS=$(OPENMP_FCFLAG)
 
 CODE_GENERATOR ?= $(AMUSE_DIR)/build.py
 DOWNLOAD_FROM_WEB = $(PYTHON) ./download.py

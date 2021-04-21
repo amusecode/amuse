@@ -45,9 +45,9 @@ endif
 
 # these are the standard defaults
 WHICH_LAPACK = 
-LOAD_LAPACK = -llapack -llapack95
+LOAD_LAPACK = $(LAPACK_LIBS) -llapack95
 WHICH_BLAS = 
-LOAD_BLAS = -lblas -llapack -llapack95
+LOAD_BLAS = $(BLAS_LIBS) $(LAPACK_LIBS) -llapack95
 MKL_INCLUDE = 
 
 # step 4) do you want to use PGPLOT with mesa/star?                                                                                     
@@ -164,8 +164,11 @@ USE_HDF5 = YES
 
 
 # step 6) now do the mesa install
-
+ifeq ($(OPENMP_ENABLED), yes)
 USE_OPENMP = YES
+else
+USE_OPENMP = NO
+endif
 
 # step 7) Build shared libraries? Needed if you want mesa to be usable in python
 
