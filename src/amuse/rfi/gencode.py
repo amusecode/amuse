@@ -24,7 +24,6 @@ from amuse.rfi.tools import create_fortran
 from amuse.rfi.tools import create_java
 from amuse.rfi.tools import create_dir
 from amuse.rfi.tools import create_python_worker
-from amuse.rfi.tools import create_cython
     
 from amuse.support import get_amuse_root_dir    
 from amuse.support.literature import TrackLiteratureReferences    
@@ -117,10 +116,10 @@ class ParseCommandLine(object):
         self.parser.add_option(
             "-t",
             "--type",
-            choices=["c","h", "H", "f90", "py", "java", "cython"],
+            choices=["c","h", "H", "f90", "py", "java"],
             default="c",
             dest="type",
-            help="TYPE of the code to generate. Can be one of c, h, H, f90, py, java or cython. <c> will generate c code. <h/H> will generate c/c++ header. <f90> will generate fortran 90 code. <py> will generate a python worker wrapper <java> will generate java interface or class, depending on mode. (Defaults to c)")
+            help="TYPE of the code to generate. Can be one of c, h, H, f90, py or java. <c> will generate c code. <h/H> will generate c/c++ header. <f90> will generate fortran 90 code. <py> will generate a python worker wrapper <java> will generate java interface or class, depending on mode. (Defaults to c)")
         
         self.parser.add_option(
             "-m",
@@ -166,18 +165,6 @@ class ParseCommandLine(object):
             dest="make_executable",
             help="Set the executable bit when generating the output file")
         
-        self.parser.add_option(
-            "--cython-import",
-            default="",
-            dest="cython_import",
-            help="Name of the module to import for the cython worker (name of the .so file)")
-        
-        self.parser.add_option(
-            "--prefix",
-            default="",
-            dest="function_name_prefix",
-            help="Prefix for generated function names, relevant for cython")
-
         self.parser.add_option(
             "--get-amuse-dir",
             action="store_true",
@@ -336,9 +323,6 @@ def make_file(uc):
         ('java','script'): create_java.GenerateAJavaWorkerScript,
         ('py','sockets'): make_a_socket_python_worker,
         ('py','mpi'): make_a_mpi_python_worker,    
-        ('cython','script'): create_cython.GenerateACythonStartScriptStringFromASpecificationClass,
-        ('cython','mpi'): create_cython.GenerateACythonSourcecodeStringFromASpecificationClass,
-        ('cython', 'interface'): create_cython.GenerateAFortranInterfaceSourcecodeStringFromASpecificationClass
     }
     
     try:
@@ -353,7 +337,6 @@ def make_file(uc):
         builder.needs_mpi = settings.needs_mpi.lower() == 'true'
         builder.is_mpi_enabled = config.mpi.is_enabled
         builder.name_of_outputfile = settings.output
-        builder.cython_import = settings.cython_import
         builder.function_name_prefix = settings.function_name_prefix
     except:
         uc.show_error_and_exit("'{0}' and '{1}' is not a valid combination of type and mode, cannot generate the code".format(settings.type, settings.mode))
