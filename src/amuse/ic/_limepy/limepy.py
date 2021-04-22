@@ -700,10 +700,10 @@ class limepy:
 
             diff_rot = 0
 
-    def _phil_rot(self):
-        phi_l = numpy.zeros(len(self.r)*nl).reshape(len(self.r), nl)
+    # def _phil_rot(self):
+    #     phi_l = numpy.zeros(len(self.r)*nl).reshape(len(self.r), nl)
 
-        phi_l[:,0] = self.phi0*sqrt(2)
+    #     phi_l[:,0] = self.phi0*sqrt(2)
 
     def legendre_Ul(self, l, theta):
         il = l/2.0
