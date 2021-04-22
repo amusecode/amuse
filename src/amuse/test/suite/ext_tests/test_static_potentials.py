@@ -75,29 +75,6 @@ class TestGalacticCenterPotential(amusetest.TestCase):
         self.assertAlmostEqual(grav[1], [0, -2.6887222, 0]|1e-8*units.m/units.s**2, 6)
         self.assertAlmostEqual(grav[2], [-4.7661597, 0, -1.200846]|1e-10*units.m/units.s**2, 6)
 
-    def xtest4(self):
-        """
-            test if get_gravity_at_point is consistent with the default,
-            (which uses get_potential_at_point).
-            It seems that this doesn't really make sense
-        """
-        static_potential = static_potentials.Galactic_Center_Potential_Kruijssen()
-        r = numpy.logspace(1, 3, 10) | units.parsec
-        z = numpy.zeros(r.shape)|units.parsec
-        gravity = static_potential.get_gravity_at_point(z, r, z, z)
-        orig_gravity = static_potentials.Abstract_Potential.get_gravity_at_point(static_potential, z, r, z, z)
-
-        # quick plot for testing
-        from matplotlib import pyplot
-        from amuse import plot as aplot
-        aplot.plot(r, gravity[0], marker="*", color='black')
-        aplot.plot(r, orig_gravity[0], ls=":", marker="^", color='black')
-        aplot.plot(r, gravity[1], marker="*", color='red')
-        aplot.plot(r, orig_gravity[1], ls=":", marker="^", color='red')
-        aplot.plot(r, gravity[2], marker="*", color='green')
-        aplot.plot(r, orig_gravity[2], ls=":", marker="^", color='green')
-        pyplot.show()
-        TODO
 
 class TestGalacticPotential(amusetest.TestCase):
     def test1(self):
