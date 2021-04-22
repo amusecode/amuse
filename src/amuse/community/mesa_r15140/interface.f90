@@ -722,8 +722,12 @@ module amuse_mesa
                end if
             end if
          end if
-      else ! stellar remnant (what about planets)?
-         if (mass < 1.44) then ! white dwarf
+      else ! stellar remnant?
+         if (mass <= 0.0075) then ! Planet
+            AMUSE_value = 18
+         else if (mass > 0.0075 .and. mass < 0.075) then ! brown dwarf
+            AMUSE_value = 19
+         else if (mass < 1.44) then ! white dwarf
             ! Helium White Dwarf:
             if (che3 + che4 > 0.1) AMUSE_value = 10
             ! Carbon/Oxygen White Dwarf:
