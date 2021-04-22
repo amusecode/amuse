@@ -1,5 +1,3 @@
-import sys
-import os
 from support.classifiers import classifiers
 
 from setuptools import setup, find_packages
