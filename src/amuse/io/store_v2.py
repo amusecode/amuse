@@ -630,7 +630,7 @@ class StoreHDF(object):
     
     def __init__(self, filename, append_to_file=True, open_for_writing = True, copy_history = False, overwrite_file=False):
         if h5py is None:
-            raise AmuseException("h5py module not available, cannot use hdf5 files")
+            raise exceptions.AmuseException("h5py module not available, cannot use hdf5 files")
         
         logger.info("opening {0} with options {1} {2} {3} {4}".format(filename, append_to_file, open_for_writing, copy_history,overwrite_file))
             
