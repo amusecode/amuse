@@ -1,3 +1,4 @@
+import random
 from amuse.rfi.channel import MpiChannel
 from amuse.datamodel import Particles
 
