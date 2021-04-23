@@ -727,7 +727,7 @@ module amuse_mesa
             AMUSE_value = 18
          else if (mass > 0.0075 .and. mass < 0.075) then ! brown dwarf
             AMUSE_value = 19
-         else if (mass < 1.44) then ! white dwarf
+         else if (mass > 0.075 .and. mass < 1.44) then ! white dwarf
             ! Helium White Dwarf:
             if (che3 + che4 > 0.1) AMUSE_value = 10
             ! Carbon/Oxygen White Dwarf:
