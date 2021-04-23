@@ -17,10 +17,6 @@ star.evolve_one_step()
 
 print(star.time_step)
 
-star.time_step = 1. | units.yr
-
-star.evolve_one_step()
-
 print(star.get_history('time_step')) # Previous step
 
 print(star.get_control_dble('mesh_delta_coeff')) # Should be 1.5

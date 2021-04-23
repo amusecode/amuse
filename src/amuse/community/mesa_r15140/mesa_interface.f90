@@ -10,6 +10,7 @@ module mesa_interface
     implicit none
 
     integer, parameter :: MESA_FAIL=-1, MESA_SUCESS=0
+    logical :: use_gyre=.false.
 
     contains
 
@@ -239,10 +240,11 @@ module mesa_interface
                                 metallicity,&
                                 max_age_stop_condition, &
                                 min_timestep_stop_condition, &
-                                max_iter_stop_condition &
+                                max_iter_stop_condition, &
+                                gyre_in &
                                 )
         integer, intent(in) :: id
-        character(len=*), intent(in) :: mesa_dir_in, output_folder, inlist
+        character(len=*), intent(in) :: mesa_dir_in, output_folder, inlist, gyre_in
         real(dp), intent(in) :: mass, metallicity,&
                                 max_age_stop_condition, &
                                 min_timestep_stop_condition
@@ -280,7 +282,38 @@ module mesa_interface
         mesa_temp_caches_dir = trim(output_folder)//'/.mesa_temp_caches'  
         s% report_ierr = .true.
 
+        if(len_trim(gyre_in) > 0) then
+            call setup_gyre(gyre_in)
+            use_gyre = .true.
+        end if
+
+
     end subroutine set_init_options
+
+    subroutine setup_gyre(gyre_in)
+        use gyre_lib
+        use const_def
+        character(len=*), intent(in) :: gyre_in
+
+        ! Initialize GYRE
+
+        call gyre_init('gyre.in')
+
+        ! Set constants
+    
+        call gyre_set_constant('G_GRAVITY', standard_cgrav)
+        call gyre_set_constant('C_LIGHT', clight)
+        call gyre_set_constant('A_RADIATION', crad)
+    
+        call gyre_set_constant('M_SUN', Msun)
+        call gyre_set_constant('R_SUN', Rsun)
+        call gyre_set_constant('L_SUN', Lsun)
+    
+        call gyre_set_constant('GYRE_DIR', TRIM(mesa_dir)//'/gyre/gyre')
+
+
+    end subroutine setup_gyre
+
 
     subroutine set_control_opt_namelist(id, str, ierr)
         use ctrls_io

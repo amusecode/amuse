@@ -994,15 +994,21 @@ class MESA(StellarEvolution, InternalStellarStructure):
         output_dir = self.get_output_directory()
 
         if 'inlist' in options:
-            inlist=options['inlist']
+            inlist = options['inlist']
         else:
             inlist = self.default_path_to_inlist
 
 
+        if 'gyre_in' in options:
+            gyre_in = options['gyre_in']
+        else:
+            gyre_in  = ''
+
         self.set_MESA_paths(
             inlist, 
             self.default_path_to_MESA, 
-            output_dir
+            output_dir,
+            gyre_in
         )
         self.model_time = 0.0 | units.yr
         
