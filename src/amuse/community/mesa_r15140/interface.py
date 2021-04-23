@@ -993,8 +993,14 @@ class MESA(StellarEvolution, InternalStellarStructure):
         
         output_dir = self.get_output_directory()
 
+        if 'inlist' in options:
+            inlist=options['inlist']
+        else:
+            inlist = self.default_path_to_inlist
+
+
         self.set_MESA_paths(
-            self.default_path_to_inlist, 
+            inlist, 
             self.default_path_to_MESA, 
             output_dir
         )
