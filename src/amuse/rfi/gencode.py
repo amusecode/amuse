@@ -337,7 +337,6 @@ def make_file(uc):
         builder.needs_mpi = settings.needs_mpi.lower() == 'true'
         builder.is_mpi_enabled = config.mpi.is_enabled
         builder.name_of_outputfile = settings.output
-        builder.function_name_prefix = settings.function_name_prefix
     except:
         uc.show_error_and_exit("'{0}' and '{1}' is not a valid combination of type and mode, cannot generate the code".format(settings.type, settings.mode))
     
