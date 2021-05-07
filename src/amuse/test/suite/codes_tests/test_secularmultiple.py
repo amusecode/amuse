@@ -9,13 +9,6 @@ from amuse.community.secularmultiple.interface import SecularMultipleInterface, 
 from amuse.units import units,quantities,constants
 from amuse.datamodel import Particles
 
-"""
-try:
-    from matplotlib import pyplot
-    HAS_MATPLOTLIB = True
-except ImportError:
-    HAS_MATPLOTLIB = False
-"""
 HAS_MATPLOTLIB = False  # disable plotting in the test script
 
 def parse_arguments():
@@ -227,20 +220,6 @@ class TestSecularMultiple(TestWithMPI):
             INCL_print_array.append(binaries[0].inclination_relative_to_parent | units.none)
             AP_print_array.append(binaries[0].argument_of_pericenter | units.none)
 
-        if HAS_MATPLOTLIB == True:
-            fig = pyplot.figure(figsize=(16,10))
-            plot1 = fig.add_subplot(2,1,1)
-            plot2 = fig.add_subplot(2,1,2,yscale="log")
-
-            plot1.plot(t_print_array.value_in(units.Myr),(180.0/numpy.pi)*INCL_print_array.value_in(units.none), color='k')
-            plot2.plot(t_print_array.value_in(units.Myr),1.0-e_print_array.value_in(units.none), color='k')
-
-            fontsize = 15
-            plot1.set_ylabel("$i$",fontsize=fontsize)
-            plot2.set_ylabel("$1-e$",fontsize=fontsize)
-            plot2.set_xlabel("$t/\mathrm{Myr}$",fontsize=fontsize)
-
-            pyplot.show()
 
     def test2(self):
         """
@@ -290,30 +269,6 @@ class TestSecularMultiple(TestWithMPI):
         P = 2.0*numpy.pi*numpy.sqrt(a**3/(constants.G*M))
         t_1PN = (1.0/3.0)*P*(1.0-e**2)*(a/rg)
 
-        if HAS_MATPLOTLIB == True:
-            fig = pyplot.figure(figsize=(16,10))
-            plot1 = fig.add_subplot(4,1,1)
-            plot2 = fig.add_subplot(4,1,2,yscale="log")
-            plot3 = fig.add_subplot(4,1,3,yscale="log")
-            plot4 = fig.add_subplot(4,1,4,yscale="log")
-
-            plot1.plot(t_print_array.value_in(units.Myr),AP_print_array.value_in(units.none), color='r')
-            points = numpy.linspace(0.0,tend.value_in(units.Myr),N)
-            AP = 0.01 +2.0*numpy.pi*points/(t_1PN.value_in(units.Myr))
-            AP = (AP+numpy.pi)%(2.0*numpy.pi) - numpy.pi ### -pi < AP < pi
-            plot1.plot(points,AP,color='g')
-
-            plot2.plot(t_print_array.value_in(units.Myr),numpy.fabs( (AP - AP_print_array.value_in(units.none))/AP ), color='r')
-            plot3.plot(t_print_array.value_in(units.Myr),numpy.fabs((a-a_print_array)/a), color='r')
-            plot4.plot(t_print_array.value_in(units.Myr),numpy.fabs((e-e_print_array)/e), color='r')
-
-            fontsize = 15
-            plot1.set_ylabel("$\omega$",fontsize=fontsize)
-            plot2.set_ylabel("$|(\omega_p-\omega)/\omega_p|$",fontsize=fontsize)
-            plot3.set_ylabel("$|(a_0-a)/a_0|$",fontsize=fontsize)
-            plot4.set_ylabel("$|(e_0-e)/e_0|$",fontsize=fontsize)
-
-            pyplot.show()
 
     def test3(self):
         """
@@ -362,21 +317,6 @@ class TestSecularMultiple(TestWithMPI):
 
             print('e',binaries.eccentricity,'a/AU',binaries.semimajor_axis.value_in(units.AU),'rp/AU',(binaries.semimajor_axis*(1.0-binaries.eccentricity)).value_in(units.AU))
 
-        if HAS_MATPLOTLIB == True:
-            fig = pyplot.figure(figsize=(16,10))
-            plot1 = fig.add_subplot(2,1,1)
-            plot2 = fig.add_subplot(2,1,2,yscale="log")
-
-            plot1.plot(t_print_array.value_in(units.Myr),e_print_array.value_in(units.none), color='r')
-
-            plot2.plot(t_print_array.value_in(units.Myr),a_print_array.value_in(units.AU), color='r')
-
-            fontsize = 15
-            plot1.set_ylabel("$e$",fontsize=fontsize)
-            plot2.set_ylabel("$a/\mathrm{AU}$",fontsize=fontsize)
-            plot2.set_xlabel("$t/\mathrm{Myr}$",fontsize=fontsize)
-
-            pyplot.show()
 
     def test4(self):
         """
@@ -469,33 +409,6 @@ class TestSecularMultiple(TestWithMPI):
             print('S_z',bodies.spin_vec_z.value_in(1.0/units.day))
             print('='*50)
 
-        if HAS_MATPLOTLIB == True:
-            fig = pyplot.figure()
-            fontsize=12
-
-            N_p = 4
-            plot1 = fig.add_subplot(N_p,1,1)
-            plot1.plot(t_print_array.value_in(units.Myr),a_print_array.value_in(units.AU), color='r')
-            plot1.set_ylabel("$a/\mathrm{AU}$",fontsize=fontsize)
-
-            plot2 = fig.add_subplot(N_p,1,2)
-            plot2.plot(t_print_array.value_in(units.Myr),e_print_array.value_in(units.none),color='k')
-            plot2.set_ylabel("$e$",fontsize=fontsize)
-
-            plot3 = fig.add_subplot(N_p,1,3,yscale="log")
-
-            plot3.plot(t_print_array.value_in(units.Myr),a_print_array.value_in(units.AU)*(1.0-e_print_array.value_in(units.none)**2),color='k')
-            plot3.axhline(y = a0.value_in(units.AU)*(1.0 - e0**2), color='k')
-            plot3.set_ylabel("$a(1-e^2)/\mathrm{AU}$",fontsize=fontsize)
-
-            plot4 = fig.add_subplot(N_p,1,4)
-            plot4.plot(t_print_array.value_in(units.Myr),spin_print_array/n_print_array)
-            plot4.set_ylabel("$\Omega/n$",fontsize=fontsize)
-
-            plot4.set_xlabel("$t/\mathrm{Myr}$",fontsize=fontsize)
-
-            pyplot.show()
-
     def test5(self):
         """
         test precession due to tidal bulges
@@ -559,30 +472,6 @@ class TestSecularMultiple(TestWithMPI):
             AP_print_array.append(binaries[0].argument_of_pericenter | units.none)
 
             N+=1
-        if HAS_MATPLOTLIB == True:
-            fig = pyplot.figure(figsize=(16,10))
-            plot1 = fig.add_subplot(4,1,1)
-            plot2 = fig.add_subplot(4,1,2,yscale="log")
-            plot3 = fig.add_subplot(4,1,3,yscale="log")
-            plot4 = fig.add_subplot(4,1,4,yscale="log")
-
-            plot1.plot(t_print_array.value_in(units.Myr),AP_print_array.value_in(units.none), color='r')
-            points = numpy.linspace(0.0,tend.value_in(units.Myr),N)
-            AP = 0.01 +2.0*numpy.pi*points/(t_TB.value_in(units.Myr))
-            AP = (AP+numpy.pi)%(2.0*numpy.pi) - numpy.pi ### -pi < AP < pi
-            plot1.plot(points,AP,color='g')
-
-            plot2.plot(t_print_array.value_in(units.Myr),numpy.fabs( (AP - AP_print_array.value_in(units.none))/AP ), color='r')
-            plot3.plot(t_print_array.value_in(units.Myr),numpy.fabs((a0-a_print_array)/a0), color='r')
-            plot4.plot(t_print_array.value_in(units.Myr),numpy.fabs((e0-e_print_array)/e0), color='r')
-
-            fontsize = 15
-            plot1.set_ylabel("$\omega$",fontsize=fontsize)
-            plot2.set_ylabel("$|(\omega_p-\omega)/\omega_p|$",fontsize=fontsize)
-            plot3.set_ylabel("$|(a_0-a)/a_0|$",fontsize=fontsize)
-            plot4.set_ylabel("$|(e_0-e)/e_0|$",fontsize=fontsize)
-
-            pyplot.show()
 
     def test6(self):
         """
@@ -660,30 +549,6 @@ class TestSecularMultiple(TestWithMPI):
             AP_print_array.append(binaries[0].argument_of_pericenter | units.none)
 
             N+=1
-        if HAS_MATPLOTLIB == True:
-            fig = pyplot.figure(figsize=(16,10))
-            plot1 = fig.add_subplot(4,1,1)
-            plot2 = fig.add_subplot(4,1,2,yscale="log")
-            plot3 = fig.add_subplot(4,1,3,yscale="log")
-            plot4 = fig.add_subplot(4,1,4,yscale="log")
-
-            plot1.plot(t_print_array.value_in(units.Myr),AP_print_array.value_in(units.none), color='r')
-            points = numpy.linspace(0.0,tend.value_in(units.Myr),N)
-            AP = 0.01 +2.0*numpy.pi*points/(t_rot.value_in(units.Myr))
-            AP = (AP+numpy.pi)%(2.0*numpy.pi) - numpy.pi ### -pi < AP < pi
-            plot1.plot(points,AP,color='g')
-
-            plot2.plot(t_print_array.value_in(units.Myr),numpy.fabs( (AP - AP_print_array.value_in(units.none))/AP ), color='r')
-            plot3.plot(t_print_array.value_in(units.Myr),numpy.fabs((a0-a_print_array)/a0), color='r')
-            plot4.plot(t_print_array.value_in(units.Myr),numpy.fabs((e0-e_print_array)/e0), color='r')
-
-            fontsize = 15
-            plot1.set_ylabel("$\omega$",fontsize=fontsize)
-            plot2.set_ylabel("$|(\omega_p-\omega)/\omega_p|$",fontsize=fontsize)
-            plot3.set_ylabel("$|(a_0-a)/a_0|$",fontsize=fontsize)
-            plot4.set_ylabel("$|(e_0-e)/e_0|$",fontsize=fontsize)
-
-            pyplot.show()
 
     def test7(self):
         """
@@ -733,17 +598,6 @@ class TestSecularMultiple(TestWithMPI):
             t_print_array.append(t)
             a_print_array.append(binaries[0].semimajor_axis)
             e_print_array.append(binaries[0].eccentricity | units.none)
-
-        if HAS_MATPLOTLIB == True:
-            fig = pyplot.figure()
-            plot = fig.add_subplot(2,1,1)
-            plot.plot(t_print_array.value_in(units.Myr),e_print_array.value_in(units.none))
-
-            plot = fig.add_subplot(2,1,2)
-            plot.plot(t_print_array.value_in(units.Myr),a_print_array.value_in(units.AU)*(1.0-e_print_array.value_in(units.none)))
-            plot.axhline(y = stars[0].radius.value_in(units.AU) + stars[1].radius.value_in(units.AU),color='k')
-
-            pyplot.show()
 
     def test8(self):
         """
@@ -795,18 +649,6 @@ class TestSecularMultiple(TestWithMPI):
             a_print_array.append(binaries[0].semimajor_axis)
             e_print_array.append(binaries[0].eccentricity | units.none)
 
-        if HAS_MATPLOTLIB == True:
-            fig = pyplot.figure()
-            plot = fig.add_subplot(2,1,1)
-            plot.plot(t_print_array.value_in(units.Myr),e_print_array.value_in(units.none))
-
-            plot = fig.add_subplot(2,1,2)
-            plot.plot(t_print_array.value_in(units.Myr),a_print_array.value_in(units.AU)*(1.0-e_print_array.value_in(units.none)))
-            plot.axhline(y = rp_min.value_in(units.AU),color='k')
-
-            plot.set_ylim(0.0,1.0)
-
-            pyplot.show()
 
 if __name__ in ('__main__','__plot__'):
     testSecularMultiple = TestSecularMultiple()

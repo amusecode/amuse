@@ -24,8 +24,6 @@ The Legacy Code
 For this example we will use a very simple forward Eulerian integration routine as our
 legacy code. We simply have a function that takes the initial condition of a set of particles (in the form of seven dynamic arrays), an integer containing the number of particles, and double precision scalars containing the time step, smoothing length, and gravitational constant. It outputs the new particle positions and velocities by updating the input arrays.
 
-SimpleGrav.cc goes here.
-
 .. literalinclude:: simplegrav/SimpleGrav.cc
     :language: C++
 
@@ -154,7 +152,6 @@ synchronize_model           evolve all particles to the same time, if they
 The following code contains definitions for all legacy functions, although some
 non-essential functions only return error values:
 
-interface_1.cc goes here.
 
 .. literalinclude:: simplegrav/interface_1.cc
     :language: C++
@@ -211,9 +208,41 @@ Parameters are added as follows:
 Here, ``get_parameter`` and ``set_parameter`` are two legacy interface functions
 that respectively have one output and one input. ``parameter`` is the name of the
 parameter in the code. The fourth parameter is a documentation string describing
-what the parameter signifies. Finally, there are three optional parameters. Note
-that there are methods to define other types of parameters; ``add_boolean_parameter``
-could be especially useful.
+what the parameter signifies. Finally, there are three optional parameters. 
+``default_value`` is the value the parameter is set to by default.
+If ``is_vector == True``, the parameter is a vector of a fixed length. This
+length is defined as the number of parameters of the getters and setters
+(scalar parameters have only one parameter). 
+If ``must_set_before_get == True``, the parameter must be set before it can be returned. 
+In most cases, this can be False.
+
+
+Note that there are methods to define other types of parameters:
+
+=========================== ============================
+function                    purpose
+=========================== ============================
+add_boolean_parameter       the parameter is a boolean,
+                            instead of an integer/float.
+add_caching_parameter       the parameter is only set
+                            once ``commit_parameters`` is
+                            called.
+add_array_parameter         the parameter is an array;
+                            in contrast with a normal
+                            parameter with ``is_vector=True``,
+                            the getters and setters have
+                            only a single argument, which
+                            must be able to handle arrays.
+                            Between the setter and the name,
+                            an additional function must be
+                            passed that specifies the size
+                            of the array.
+=========================== ============================
+
+``add_alias_parameter`` is also available to add an alias to an existing parameter.
+It is of the following form: ``add_alias_parameter("alias_parameter", "original_parameter", 
+"parameter documentation")``.
+
 
 Parameters are accessed through the ``parameters`` property of the code object:
 

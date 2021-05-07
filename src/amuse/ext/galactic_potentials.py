@@ -2,6 +2,7 @@ import numpy
 
 from amuse.units import constants, units
 from amuse.support.literature import LiteratureReferencesMixIn
+from amuse.support.exceptions import AmuseWarning
 
 try:
     from scipy.special import gammainc,gamma

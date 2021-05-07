@@ -12,6 +12,8 @@ GPU_OBJ = interface.gpuo cuda_fastkick.o
 
 CODE_GENERATOR ?= $(PYTHON) $(AMUSE_DIR)/build.py
 
+NVCCFLAGS ?= $(NVCC_FLAGS)
+
 all: fastkick_worker
 
 worker_code.cc: interface.py

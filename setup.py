@@ -1,10 +1,6 @@
-import sys
-import os
-
 from setuptools import setup, find_packages
 from support.setup_codes import setup_commands
 from support.misc import find_data_files
-from support.version import version
 
 name = 'amuse'
 author = 'The AMUSE team'
@@ -45,7 +41,8 @@ classifiers = [
 
 extensions = []
 
-all_data_files = find_data_files('data', 'share/amuse/data', '*', recursive=True)
+all_data_files = find_data_files(
+    'data', 'share/amuse/data', '*', recursive=True)
 all_data_files.append(('share/amuse', ['./config.mk', './build.py']))
 
 packages = find_packages('src')
@@ -69,11 +66,14 @@ package_data = {
     ]
 }
 
-mapping_from_command_name_to_command_class=setup_commands()
+mapping_from_command_name_to_command_class = setup_commands()
 
 setup(
     name=name,
-    version=version,
+    use_scm_version={
+        "write_to": "src/amuse/version.py",
+    },
+    setup_requires=['setuptools_scm'],
     classifiers=classifiers,
     url=url,
     author_email=author_email,
@@ -85,10 +85,10 @@ setup(
     install_requires=install_requires,
     cmdclass=mapping_from_command_name_to_command_class,
     ext_modules=extensions,
-    package_dir={'': 'src', 'amuse.examples' : 'examples'},
+    package_dir={'': 'src', 'amuse.examples': 'examples'},
     packages=packages,
     package_data=package_data,
     data_files=all_data_files,
-    scripts=[ "bin/amusifier", "bin/amuse-tutorial" ],
+    scripts=["bin/amusifier", "bin/amuse-tutorial", ],
     python_requires=">=3.5"
 )

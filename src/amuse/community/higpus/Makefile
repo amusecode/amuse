@@ -47,7 +47,7 @@ MYINCLUDE := -I./lib/
 LIBS := -lm $(OPENMP_CFLAGS) $(MPI_CXXLIBS) $(CUDALIB)
 
 GXXOPTS := -O3 -fopenmp -Wall -W
-NVCCFLAGS := -O3 --compiler-bindir=/usr/bin/$(CXX) -Xcompiler "$(GXXOPTS) $(MYOPTS)" $(CUDAINCLUDE) $(MPI_CXXFLAGS) $(MYINCLUDE)
+NVCCFLAGS := -O3 --compiler-bindir=/usr/bin/$(CXX) -Xcompiler "$(GXXOPTS) $(MYOPTS)" $(CUDAINCLUDE) $(MPI_CXXFLAGS) $(MYINCLUDE) $(NVCC_FLAGS)
 CXXFLAGS += $(GXXOPTS) $(MYOPTS) $(CUDAINCLUDE) $(MPI_CXXFLAGS) $(MYINCLUDE)
 
 LDFLAGS = $(LIBS) $(CUDALIB) 

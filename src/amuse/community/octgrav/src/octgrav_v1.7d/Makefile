@@ -12,7 +12,7 @@ CXXFLAGS ?= $(CFLAGS)
 
 NVCC      ?= $(CUDA_TK)/bin/nvcc
 
-NVCCFLAGS ?= -D_DEBUG --compiler-options -fno-inline \
+NVCCFLAGS ?= -D_DEBUG --compiler-options -fno-inline $(NVCC_FLAGS) \
 		--maxrregcount=32 -O0 -g 
 
 

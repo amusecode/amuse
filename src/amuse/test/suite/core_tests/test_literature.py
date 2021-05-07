@@ -19,12 +19,14 @@ class TestLiteratureRefs(unittest.TestCase):
                 literature.LiteratureReferencesMixIn.__init__(self)
 
         classnames = literature.LiteratureReferencesMixIn.names_of_classes_with_references()
-        self.assertFalse("ClassLitrefs" in classnames)
+        for classname in classnames:
+            self.assertFalse("ClassLitrefs" in classname)
 
         instance = ClassLitrefs()
         
         classnames = literature.LiteratureReferencesMixIn.names_of_classes_with_references()
-        self.assertTrue("ClassLitrefs" in classnames)
+        for classname in classnames:
+            self.assertTrue("ClassLitrefs" in classname)
 
     def test2(self):
         class ClassLitrefs(literature.LiteratureReferencesMixIn):
@@ -40,7 +42,7 @@ class TestLiteratureRefs(unittest.TestCase):
         literature.TrackLiteratureReferences.default().registered_classes = set([])
         string = literature.LiteratureReferencesMixIn.all_literature_references_string()
         self.assertTrue("AMUSE" in string)
-        self.assertTrue("multiphysics and multiscale software environment" in string)
+        self.assertTrue("2018araa.book.....P" in string)
 
         instance = ClassLitrefs()
         

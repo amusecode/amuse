@@ -1,4 +1,8 @@
 #!/usr/bin/env python3
+import sys
+
+name = sys.argv[1]
+setupstring = '''#!/usr/bin/env python3
 from support.classifiers import classifiers
 
 from setuptools import setup
@@ -7,7 +11,7 @@ import support
 support.use("system")
 from support.setup_codes import setup_commands
 
-name = 'amuse-mercury'
+name = 'amuse-{name_lowercase}'
 author = 'The AMUSE team'
 author_email = 'info@amusecode.org'
 license_ = "Apache License 2.0"
@@ -15,7 +19,7 @@ url = 'http://www.amusecode.org/'
 install_requires = [
     'amuse-framework',
 ]
-description = 'The Astrophysical Multipurpose Software Environment - Mercury'
+description = 'The Astrophysical Multipurpose Software Environment - {name}'
 with open("README.md", "r") as fh:
     long_description = fh.read()
 long_description_content_type = "text/markdown"
@@ -25,26 +29,26 @@ extensions = []
 all_data_files = []
 
 packages = [
-    'amuse.community.mercury',
+    'amuse.community.{name_lowercase}',
 ]
 
-package_data = {
-}
+package_data = {{
+}}
 
 mapping_from_command_name_to_command_class = setup_commands()
 
 try:
-    from src.amuse.community.mercury.version import version
+    from src.amuse.community.{name_lowercase}.version import version
     use_scm_version = False
     setup_requires = []
 except ImportError:
     version = False
     setup_requires = ['setuptools_scm']
-    use_scm_version = {
+    use_scm_version = {{
         "root": "../..",
         "relative_to": __file__,
-        "write_to": "src/amuse/community/mercury/version.py",
-    }
+        "write_to": "src/amuse/community/{name_lowercase}/version.py",
+    }}
 
 setup(
     name=name,
@@ -63,10 +67,11 @@ setup(
     python_requires=">=3.5",
     cmdclass=mapping_from_command_name_to_command_class,
     ext_modules=extensions,
-    package_dir={
-        'amuse.community.mercury': 'src/amuse/community/mercury',
-    },
+    package_dir={{
+        'amuse.community.{name_lowercase}': 'src/amuse/community/{name_lowercase}',
+    }},
     packages=packages,
     package_data=package_data,
     data_files=all_data_files,
-)
+)'''
+print(setupstring.format(name=name, name_lowercase=name.lower()))

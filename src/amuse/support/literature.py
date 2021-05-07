@@ -10,26 +10,31 @@ except ValueError:
 import docutils.nodes as nodes
 from collections import namedtuple
 from amuse.support import exceptions
+try:
+    from amuse.version import version as amuse_version
+except ImportError:
+    amuse_version = "unknown version"
 
 import atexit
 import sys
 import traceback
+import importlib
 
 ClassWithLiteratureReferences = namedtuple(\
     "ClassWithLiteratureReferences", 
     "name_of_class_with_refs literature_references_of_class"
 )
 LiteratureReference = namedtuple(
-    "LiteratureReference", 
+    "LiteratureReference",
     "id footnote"
 )
 
-class TrackLiteratureReferences(object):
+class TrackLiteratureReferences:
     """
-        .. [#] Portegies Zwart, S. & McMillan, S.L.W., 2018, "Astrophysical Recipes: the art of AMUSE", AAS IOP Astronomy publishing (411 pages) [2018araa.book.....P]
-        .. [#] ** Portegies Zwart, S. et al., 2013, Multi-physics Simulations Using a Hierarchical Interchangeable Software Interface, Computer Physics Communications 183, 456-468 [2013CoPhC.183..456P]
-        .. [#] ** Pelupessy, F. I. et al., 2013, The Astrophysical Multipurpose Software Environment, Astronomy and Astrophysics 557, 84 [2013A&A...557A..84P]
-        .. [#] Portegies Zwart, S. et al., 2009, A multiphysics and multiscale software environment for modeling astrophysical systems, *New Astronomy*, **Volume 14**, **Issue 4**, 369-378 [2009NewA...14..369P]
+        .. [#] [2018araa.book.....P] Portegies Zwart, S. & McMillan, S.L.W., 2018
+        .. [#] [2013CoPhC.183..456P] ** Portegies Zwart, S. et al., 2013
+        .. [#] [2013A&A...557A..84P] ** Pelupessy, F. I. et al., 2013
+        .. [#] [2009NewA...14..369P] Portegies Zwart, S. et al., 2009
     """
     INSTANCE = None
     
@@ -73,7 +78,12 @@ class TrackLiteratureReferences(object):
         if self.must_show_literature_references_atexit:
             string = self.all_literature_references_string()
             if string:
-                prefix = "\n\nYou have used the following codes, which contain literature references:\n"
+                prefix = """
+
+Thank you for using AMUSE!
+In this session you have used the modules below. Please cite any relevant articles:
+
+"""
                 print(prefix + self.all_literature_references_string(), file=sys.stderr)
         
     
@@ -86,8 +96,18 @@ class TrackLiteratureReferences(object):
         for current_class in cls.__mro__:
             docstring_in = current_class.__doc__
             if docstring_in:
-                objectname = current_class.__name__
-                doctree  = core.publish_doctree(source = docstring_in)
+                if hasattr(current_class, "version"):
+                    version = current_class.version()
+                else:
+                    version = amuse_version
+                name = current_class.__name__
+                if name.endswith("Interface"):
+                    name = "AMUSE-" + name[:-9]
+                objectname = "{name} ({version})".format(
+                    name=name,
+                    version=version,
+                )
+                doctree = core.publish_doctree(source = docstring_in)
                 ref_keys = list(doctree.ids.keys())
                 natsort(ref_keys)
                 ref_values = [doctree.ids[key] for key in ref_keys]
@@ -120,7 +140,7 @@ class TrackLiteratureReferences(object):
             for literature_reference_of_class_item in s.literature_references_of_class:
                 lines.append('\t\t%s' % (literature_reference_of_class_item.footnote))
         
-        lines.append('\n\t"AMUSE"')
+        lines.append('\n\t"AMUSE (%s)"' % amuse_version)
         amuse_list = self.get_literature_list_of_class(type(self))
         for x in amuse_list:
             for literature_reference_of_class_item in x.literature_references_of_class:
@@ -139,6 +159,20 @@ class LiteratureReferencesMixIn(object):
 
     def __init__(self):
         self.register_use()
+
+    @classmethod
+    def version(cls):
+        try:
+            version = importlib.import_module(
+                '..version',
+                cls.__module__
+            ).version
+        except (ImportError, ValueError):
+            try:
+                from amuse.version import version
+            except ImportError:
+                version = "unknown"
+        return version
  
     @classmethod
     def print_literature_references(cls):
@@ -180,10 +214,6 @@ def natsort_key(s):
     import re
     return list(map(try_int, re.findall(r'(\d+|\D+)', s)))
 
-def natcmp(a, b):
-    "Natural string comparison, case sensitive."
-    return cmp(natsort_key(a), natsort_key(b))
-
-def natsort(seq, cmp=natcmp):
+def natsort(seq):
     "In-place natural string sort."
     seq.sort(key=natsort_key)

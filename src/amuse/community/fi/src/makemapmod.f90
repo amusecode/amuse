@@ -226,10 +226,10 @@ end subroutine
    endif   
   endif
   if(extinction.EQ.1) then
-   if(pmass.GT.0.OR.popac.gt.0) call projectopacity(low,up,pic,opdepth, &
+   if(pmass.NE.0.OR.popac.gt.0) call projectopacity(low,up,pic,opdepth, &
                                   scratch,ppos,psize,pmass,popac,magic_number)
   else 
-   if(pmass.gt.0) call projectparticle(low,up,pic,scratch,ppos,psize,pmass)
+   if(pmass.ne.0) call projectparticle(low,up,pic,scratch,ppos,psize,pmass)
   endif
  enddo
 
@@ -322,13 +322,13 @@ end subroutine
 ! if(opac.gt.0) tau(i+n1:i+n2,j+m1:j+m2)=tau(i+n1:i+n2,j+m1:j+m2)*exp(-opac/2*pimage(n1:n2,m1:m2))
 ! if(opac.gt.0) tau(i+n1:i+n2,j+m1:j+m2)=tau(i+n1:i+n2,j+m1:j+m2)*exp(-opac/2*pimage(n1:n2,m1:m2))
 
-  if(mass.gt.0.and.opac.gt.0) then
+  if(mass.ne.0.and.opac.gt.0) then
 !   tau(i+n1:i+n2,j+m1:j+m2)=tau(i+n1:i+n2,j+m1:j+m2)*(1.-min(1.,opac/2*pimage(n1:n2,m1:m2)))
    img(i+n1:i+n2,j+m1:j+m2)=img(i+n1:i+n2,j+m1:j+m2)+mass*pimage(n1:n2,m1:m2)*tau(i+n1:i+n2,j+m1:j+m2)
    tau(i+n1:i+n2,j+m1:j+m2)=tau(i+n1:i+n2,j+m1:j+m2)*(1.-min(1.,opac*pimage(n1:n2,m1:m2)))
    return
   endif
-  if(mass.gt.0) img(i+n1:i+n2,j+m1:j+m2)=img(i+n1:i+n2,j+m1:j+m2)+mass*pimage(n1:n2,m1:m2)*tau(i+n1:i+n2,j+m1:j+m2)
+  if(mass.ne.0) img(i+n1:i+n2,j+m1:j+m2)=img(i+n1:i+n2,j+m1:j+m2)+mass*pimage(n1:n2,m1:m2)*tau(i+n1:i+n2,j+m1:j+m2)
   if(opac.gt.0) tau(i+n1:i+n2,j+m1:j+m2)=tau(i+n1:i+n2,j+m1:j+m2)*(1.-min(1.,opac*pimage(n1:n2,m1:m2)))
   
  end subroutine
