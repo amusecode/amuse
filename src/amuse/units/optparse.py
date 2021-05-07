@@ -126,7 +126,7 @@ class OptionParser(optparse.OptionParser):
     def get_default_values(self):
         if not self.process_default_values:
                 # Old, pre-Optik 1.5 behaviour.
-            return Values(self.defaults)
+            return optparse.Values(self.defaults)
 
         defaults = self.defaults.copy()
         for option in self._get_all_options():

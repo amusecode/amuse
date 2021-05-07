@@ -1,4 +1,4 @@
-AC_INIT([amuse],  m4_esyscmd_s([python support/version.py]))
+AC_INIT([amuse],[m4_esyscmd_s(python support/version.py)])
 AC_CONFIG_SRCDIR([src/amuse/__init__.py])
 
 AC_CONFIG_FILES([config.mk])
@@ -270,6 +270,6 @@ AC_CHECK_PYTHON_MODULE(matplotlib)
 #AS_VERSION_COMPARE([$PYTHON_Cython_VERSION], [0.13],
 #        [AC_MSG_WARN([Cython version $PYTHON_Cython_VERSION found, but at least 0.13 needed])]
 #)
-AC_OUTPUT()
+AC_OUTPUT
 
  AC_MSG_NOTICE( Configuration done. Configuration written to config.mk )

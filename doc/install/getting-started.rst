@@ -1,7 +1,7 @@
 Getting started with AMUSE
 ==========================
 
-AMUSE is based on python, so if you’re new to Python, you’ll find the official `Python documentation <https://docs.python.org/3/>` a valuable resource. Like with Python, there are basically two ways to use AMUSE. Firstly, directly via the interactive (Python) command line:
+AMUSE is based on python, so if you’re new to Python, you’ll find the official `Python documentation <https://docs.python.org/3/>`_ a valuable resource. Like with Python, there are basically two ways to use AMUSE. Firstly, directly via the interactive (Python) command line:
 
 .. code-block:: sh
 

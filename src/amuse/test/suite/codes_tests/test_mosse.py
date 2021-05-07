@@ -722,9 +722,9 @@ class TestSSE(TestWithMPI):
         instance.stop()
        
         testpath = get_path_to_results()
-        shutil.copy(os.path.join(sse_src_path, "evolve.in"), os.path.join(testpath, "evolve.in"))
+        shutil.copy(os.path.join(mosse_src_path, "evolve.in"), os.path.join(testpath, "evolve.in"))
         
-        call([os.path.join(sse_src_path, "mosse")], cwd=testpath)
+        call([os.path.join(mosse_src_path, "mosse")], cwd=testpath)
         
         with open(os.path.join(testpath, "evolve.dat"), "r") as sse_output:
             lines = sse_output.readlines()

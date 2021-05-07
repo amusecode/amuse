@@ -13,7 +13,8 @@ MPIF90 ?= mpif90
 FORTRAN ?= gfortran
 PYTHON ?= python
 FC      ?= $(FORTRAN)
-MPIFC+= $(FCFLAGS)
+MPIFC += $(FCFLAGS)
+MPIFC += -fallow-invalid-boz -std=legacy
 export FC MPIFC
 
 MESA_MAKE_DIR=./mesa_reqs

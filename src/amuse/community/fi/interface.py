@@ -43,7 +43,7 @@ class FiInterface(
     
     MODE_NORMAL = 'normal'
     MODE_NORMAL_OPENMP = 'openmp'
-    MODE_PERIODIC_BOUNDARIES   = 'periodic'
+    MODE_PERIODIC_BOUNDARIES = 'periodic'
     
     def __init__(self, mode = MODE_NORMAL,  **options):
         self.mode = mode
