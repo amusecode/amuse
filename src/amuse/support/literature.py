@@ -74,7 +74,7 @@ class TrackLiteratureReferences(object):
             string = self.all_literature_references_string()
             if string:
                 prefix = "\n\nYou have used the following codes, which contain literature references:\n"
-                print(prefix + self.all_literature_references_string(), file=sys.stderr)
+                print(prefix + self.all_literature_references_string())
         
     
     def get_literature_list_of_class(self, cls):
