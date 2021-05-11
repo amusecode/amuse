@@ -2,6 +2,7 @@ import subprocess
 import random
 import sys
 
+
 class HashTableWrapper:
     def __init__(self, pathToExe):
         self.p = subprocess.Popen(pathToExe, stdin=subprocess.PIPE, stdout=subprocess.PIPE,bufsize=0)
@@ -30,6 +31,7 @@ class HashTableWrapper:
         self.p.stdin.close()
         return r, eval(self.p.stdout.read())
 
+
 class DictionaryWrapper:
     def __init__(self):
         self.d = {}
@@ -49,6 +51,7 @@ class DictionaryWrapper:
     def run(self, test, *args):
         return test(self, *args), self.d
 
+
 class DebugPrintFilter:
     def __init__(self, pipe):
         self.pipe = pipe
@@ -57,6 +60,7 @@ class DebugPrintFilter:
         self.pipe.write(text)
     def close(self):
         self.pipe.close()
+
 
 def RandomizedTest(w, seed, keys, loops):
     random.seed(seed + 1)
@@ -76,6 +80,7 @@ def RandomizedTest(w, seed, keys, loops):
             w.compact()
     return r
 
+
 if __name__ == '__main__':
     pathToExe = sys.argv[1]
     seed = int(sys.argv[2])
@@ -90,11 +95,11 @@ if __name__ == '__main__':
         [0] + [random.randint(1, 0xffffffff) for i in range(32)],
         [0] + [random.randint(1, 0xffffffff) for i in range(100)],
         [random.randint(0, 0xffffffff) for i in range(20000)],
-#        [0] + [random.randint(1, 10) for i in xrange(4)],
-#        [0] + [random.randint(1, 100) for i in xrange(10)],
-#        [0] + [random.randint(1, 1000) for i in xrange(32)],
-#        [0] + [random.randint(1, 10000) for i in xrange(100)],
-#        [random.randint(0, 1000) for i in xrange(10000)],
+        # [0] + [random.randint(1, 10) for i in xrange(4)],
+        # [0] + [random.randint(1, 100) for i in xrange(10)],
+        # [0] + [random.randint(1, 1000) for i in xrange(32)],
+        # [0] + [random.randint(1, 10000) for i in xrange(100)],
+        # [random.randint(0, 1000) for i in xrange(10000)],
     ]
     for keys in keySets:
         r1 = HashTableWrapper(pathToExe).run(RandomizedTest, seed, keys, 4)
