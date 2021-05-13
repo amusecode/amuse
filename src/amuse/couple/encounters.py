@@ -1066,14 +1066,14 @@ class HandleEncounterWithSmallN(AbstractHandleEncounter):
         initial_delta_t = delta_t
         print(pre, 'evolving to time', end_time)
         print(pre, 'initial step =', initial_delta_t)
-        if self.debug_encounters:
-            print(pre, '### START ENCOUNTER ###')
-            print(pre, '### snapshot at time %f' % 0.0)
-            for p in particles:
-                print(pre, '### id=%d, x=%f, y=%f, z=%f,'\
-                      'vx=%f, vy=%f, vz=%f' % \
-                        (p.id, p.x.number, p.y.number, p.z.number,
-                         p.vx.number, p.vy.number, p.vz.number))
+        # if self.debug_encounters:
+        #     print(pre, '### START ENCOUNTER ###')
+        #     print(pre, '### snapshot at time %f' % 0.0)
+        #     for p in particles:
+        #         print(pre, '### id=%d, x=%f, y=%f, z=%f,'\
+        #               'vx=%f, vy=%f, vz=%f' % \
+        #                 (p.id, p.x.number, p.y.number, p.z.number,
+        #                  p.vx.number, p.vy.number, p.vz.number))
 
         resolve_collision_code.set_break_scale(final_scatter_scale)
 
@@ -1102,17 +1102,17 @@ class HandleEncounterWithSmallN(AbstractHandleEncounter):
                 # the size limit and don't need to check is_over().
 
                 # DEBUGGING:
-                if self.debug_encounters:
-                    print(pre, '### snapshot at time %f' % time.number)
-                    #resolve_collision_code.update_particle_tree()
-                    #resolve_collision_code.update_particle_set()
-                    resolve_collision_code.particles.synchronize_to(particles)
-                    channel.copy()
-                    for p in particles:
-                            print(pre, '### id=%d, x=%f, y=%f, z=%f,'\
-                              'vx=%f, vy=%f, vz=%f' % \
-                                (p.id, p.x.number, p.y.number, p.z.number,
-                                 p.vx.number, p.vy.number, p.vz.number))
+                # if self.debug_encounters:
+                #     print(pre, '### snapshot at time %f' % time.number)
+                #     #resolve_collision_code.update_particle_tree()
+                #     #resolve_collision_code.update_particle_set()
+                #     resolve_collision_code.particles.synchronize_to(particles)
+                #     channel.copy()
+                #     for p in particles:
+                #             print(pre, '### id=%d, x=%f, y=%f, z=%f,'\
+                #               'vx=%f, vy=%f, vz=%f' % \
+                #                 (p.id, p.x.number, p.y.number, p.z.number,
+                #                  p.vx.number, p.vy.number, p.vz.number))
 
                 # The argument final_scatter_scale is used to limit
                 # the size of the system.  It has to be supplied again

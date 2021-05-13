@@ -87,7 +87,7 @@ class CharItem(NemoItem):
     datatype = "c"
 
     def postprocess(self):
-        self.data = self.data[:-1].tostring().decode('latin_1')
+        self.data = self.data[:-1].tobytes().decode('latin_1')
 
     def preprocess(self):
         result = numpy.array(list(self.data), "c")
@@ -350,7 +350,7 @@ class NemoBinaryFile(object):
 
     def write_fixed_array(self, data, datatype):
         temp = numpy.array(data, dtype=datatype)
-        self.file.write(temp.tostring())
+        self.file.write(temp.tobytes())
 
     def write(self, data):
         for x in data.values():

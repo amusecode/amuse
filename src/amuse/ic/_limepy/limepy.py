@@ -257,29 +257,29 @@ class limepy:
         if kwargs is not None:
             for key, value in kwargs.items():
                 # Check for scaling input
-                if key is 'G':
+                if key == 'G':
                     self._GS, self.scale = value, True
-                elif key is 'M':
+                elif key == 'M':
                     self._MS, self.scale = value, True
-                elif key is 'r0':
+                elif key == 'r0':
                     if self.scale_radius is None:
                         self._RS,self.scale_radius,self.scale = value,'r0', True
                     else:
                         error="Can not set scale radius to r0,already set to %s"
                         raise ValueError(error%self.scale_radius)
-                elif key is 'rh':
+                elif key == 'rh':
                     if self.scale_radius is None:
                         self._RS, self.scale_radius, self.scale=value,'rh', True
                     else:
                         error="Can not set scale radius to rh,already set to %s"
                         raise ValueError(error%self.scale_radius)
-                elif key is 'rv':
+                elif key == 'rv':
                     if self.scale_radius is None:
                         self._RS, self.scale_radius, self.scale=value,'rv', True
                     else:
                         error="Can not set scale radius to rv,already set to %s"
                         raise ValueError(error%self.scale_radius)
-                elif key is 'rt':
+                elif key == 'rt':
                     if self.scale_radius is None:
                         self._RS, self.scale_radius, self.scale=value,'rt', True
                     else:
@@ -700,10 +700,10 @@ class limepy:
 
             diff_rot = 0
 
-    def _phil_rot(self):
-        phi_l = numpy.zeros(len(self.r)*nl).reshape(len(self.r), nl)
+    # def _phil_rot(self):
+    #     phi_l = numpy.zeros(len(self.r)*nl).reshape(len(self.r), nl)
 
-        phi_l[:,0] = self.phi0*sqrt(2)
+    #     phi_l[:,0] = self.phi0*sqrt(2)
 
     def legendre_Ul(self, l, theta):
         il = l/2.0

@@ -630,7 +630,7 @@ class StoreHDF(object):
     
     def __init__(self, filename, append_to_file=True, open_for_writing = True, copy_history = False, overwrite_file=False):
         if h5py is None:
-            raise AmuseException("h5py module not available, cannot use hdf5 files")
+            raise exceptions.AmuseException("h5py module not available, cannot use hdf5 files")
         
         logger.info("opening {0} with options {1} {2} {3} {4}".format(filename, append_to_file, open_for_writing, copy_history,overwrite_file))
             
@@ -639,7 +639,7 @@ class StoreHDF(object):
                 if overwrite_file:
                     os.remove(filename)
                 else:
-                    raise Exception("Opening file for write with overwrite_file is False but file {0} exists".format(filename))
+                    raise FileExistsError("Opening file for write with overwrite_file is False but file {0} exists".format(filename))
 
         if append_to_file:
             if os.access(filename, os.F_OK) and not os.access(filename, os.W_OK):

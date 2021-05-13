@@ -207,7 +207,7 @@ def animate_data(t, m, x, y, id, lx, ly, scale, delay):
     # Determine time scales.
 
     dtscale = t[-1]
-    if t[0] < 0: dtscale = max(tscale, -t[0])
+    if t[0] < 0: dtscale = max(dtscale, -t[0])
     nf = int(math.floor(math.log10(dtscale)))
     #print 'dtscale =', dtscale, 'nf =', nf
     if nf > 3:
@@ -370,7 +370,7 @@ def plot_data(t, x, lx, ly):
     plt.grid()
     plt.show()
 
-def write_data(t, x, y, i, filenajme):
+def write_data(t, x, y, i, filename):
     nt,np = x.shape
     f = open(filename)
     for i in range(nt):
