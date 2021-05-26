@@ -266,15 +266,18 @@ class gpuhermite8(GravitationalDynamics, GravityFieldCode):
             **options
         )
         self.convert_nbody=convert_nbody
+        self.not_adjusted = True
         if HAS_MPMATH:
             self.adjust_prec()
 
     def adjust_prec(self):
-        if not HAS_MPMATH:
-            raise Exception("mpmath not available")
-        len_ = self.parameters.word_length
-        if (len_ > mpmath.mp.prec):
-            mpmath.mp.prec=len_
+        if self.not_adjusted:
+            if not HAS_MPMATH:
+                raise Exception("mpmath not available")
+            len_ = self.parameters.word_length
+            if (len_ > mpmath.mp.prec):
+                mpmath.mp.prec=len_
+            self.not_adjusted = False
 
     def get_potential_energy_p_si(self):
         self.adjust_prec()
@@ -307,25 +310,25 @@ class gpuhermite8(GravitationalDynamics, GravityFieldCode):
     def get_mass_p_si(self,index):
         self.adjust_prec()
         a=self.convert_nbody.to_si(nbody_system.mass).number
-        b=mpmath.mpf(self.get_mass_string(index))*a
+        b=mpmath.mpf(self.get_mass_string(index+1))*a
         return b #* self.convert_nbody.to_si(nbody_system.energy).unit
 
     def get_radius_p_si(self,index):
         self.adjust_prec()
         a=self.convert_nbody.to_si(nbody_system.length).number
-        b=mpmath.mpf(self.get_radius_string(index))*a
+        b=mpmath.mpf(self.get_radius_string(index+1))*a
         return b #* self.convert_nbody.to_si(nbody_system.energy).unit
 
     def get_velocity_p_si(self,index):
         self.adjust_prec()
         a=self.convert_nbody.to_si(nbody_system.speed).number
-        b=mpmath.matrix(self.get_velocity_string(index))*a
+        b=mpmath.matrix(self.get_velocity_string(index+1))*a
         return b #* self.convert_nbody.to_si(nbody_system.energy).unit
 
     def get_position_p_si(self,index):
         self.adjust_prec()
         a=self.convert_nbody.to_si(nbody_system.length).number
-        b=mpmath.matrix(self.get_position_string(index))*a
+        b=mpmath.matrix(self.get_position_string(index+1))*a
         return b #* self.convert_nbody.to_si(nbody_system.energy).unit
 
     def new_particle_p_si(self,m,x,y,z,vx,vy,vz,radius):
@@ -341,14 +344,14 @@ class gpuhermite8(GravitationalDynamics, GravityFieldCode):
     def add_step_acceleration(self, index, a_step_x, a_step_y, a_step_z):
         self.adjust_prec()
         a=self.convert_nbody.to_si(nbody_system.acceleration)#.number
-        return self.add_step_acceleration_float64(index , a_step_x/a, a_step_y/a, a_step_z/a)
+        return self.add_step_acceleration_float64(index+1 , a_step_x/a, a_step_y/a, a_step_z/a)
 
     def set_state_p_si(self,index,m,x,y,z,vx,vy,vz,radius):
         self.adjust_prec()
         um=self.convert_nbody.to_si(nbody_system.mass).number
         ul=self.convert_nbody.to_si(nbody_system.length).number
         us=self.convert_nbody.to_si(nbody_system.speed).number
-        return self.set_state_string(index ,str(m/um) ,str(x/ul) ,
+        return self.set_state_string(index+1 ,str(m/um) ,str(x/ul) ,
                                         str(y/ul) ,str(z/ul) ,
                                         str(vx/us) ,str(vy/us) ,
                                         str(vz/us) ,str(radius/ul))
@@ -356,28 +359,28 @@ class gpuhermite8(GravitationalDynamics, GravityFieldCode):
     def set_mass_p_si(self,index,m):
         self.adjust_prec()
         um=self.convert_nbody.to_si(nbody_system.mass).number
-        self.set_mass_string(index ,str(m/um))
+        self.set_mass_string(index+1 ,str(m/um))
 
     def set_radius_p_si(self,index,radius):
         self.adjust_prec()
         ul=self.convert_nbody.to_si(nbody_system.length).number
-        self.set_radius_string(index ,str(radius/ul))
+        self.set_radius_string(index+1 ,str(radius/ul))
 
 
     def set_position_p_si(self,index,x,y,z):
         self.adjust_prec()
         ul=self.convert_nbody.to_si(nbody_system.length).number
-        self.set_position_string(index ,str(x/ul) ,str(y/ul) ,str(z/ul))
+        self.set_position_string(index+1 ,str(x/ul) ,str(y/ul) ,str(z/ul))
 
     def set_velocity_p_si(self,index,vx,vy,vz):
         self.adjust_prec()
         us=self.convert_nbody.to_si(nbody_system.speed).number
-        self.set_velocity_string(index ,str(vx/us) ,str(vy/us) ,str(vz/us))
+        self.set_velocity_string(index+1 ,str(vx/us) ,str(vy/us) ,str(vz/us))
 
 
     def get_state_p_si(self,index):
         self.adjust_prec()
-        b=mpmath.matrix(self.get_state_string(index))
+        b=mpmath.matrix(self.get_state_string(index+1))
         a=self.convert_nbody.to_si(nbody_system.mass).number
         b[0]=b[0]*a
         a=self.convert_nbody.to_si(nbody_system.length).number

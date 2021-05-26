@@ -28,6 +28,7 @@ SOFTWARE.*/
 #include "vector3.h"
 #include "taylor.h"
 
+
 #ifdef _QD_QD_REAL_H
 static inline m_real div(double a, double b){
     return  m_real::accurate_div(m_real(a),m_real(b));

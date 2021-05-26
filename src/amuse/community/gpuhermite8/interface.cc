@@ -202,10 +202,10 @@ int new_particle_string(int *id, char *mass, char *x, char *y, char *z, char *vx
     *id=last_id_of_parts;
     Particle part;
     part.id= *id;
-    part.mass=*mass;
-    part.radius=*radius;
-    part.coord[0]= qvec3( *x, *y, *z);
-    part.coord[1]= qvec3( *vx, *vy, *vz);
+    part.mass=m_real(mass);
+    part.radius=m_real(radius);
+    part.coord[0]= qvec3( m_real(x), m_real(y), m_real(z));
+    part.coord[1]= qvec3( m_real(vx), m_real(vy), m_real(vz));
     part.add_acc= qvec3( 0, 0, 0);
     sys.ptcl.push_back(part);
     new_data=true;
@@ -251,7 +251,7 @@ m_real e0;
 
 int evolve_model(double t_end)
 {
-    std::cout <<"evolve_model"<<std::endl;
+    std::cout <<"evolve_model t = "<< t_end<<std::endl;
     m_real ldt = t_end-sys.tsys;
     if(ldt > i_dt)
     {
@@ -425,7 +425,7 @@ int set_velocity(int id, double vx, double vy, double vz)
 
 int get_state(int id, double* m, double* x, double* y, double* z, double* vx, double* vy, double* vz, double* radius)
 {
-    std::cout <<"get_state"<<std::endl;
+    std::cout <<"get_state "<<id<<std::endl;
     int part=map_id(id);
     if (part >=0)
     {
@@ -657,11 +657,11 @@ int get_mass_string(int id, char **mass)
 
 int set_mass_string(int id, char *mass)
 {
-    std::cout <<"set_mass_string"<<std::endl;
+    std::cout <<"set_mass_string" <<std::endl;
     int part=map_id(id);
     if (part >=0)
     {
-        sys.ptcl[part].mass=*mass;
+        sys.ptcl[part].mass=m_real(mass);
         return 0;
     }
     return part;
@@ -669,7 +669,7 @@ int set_mass_string(int id, char *mass)
 
 int get_position_string(int id, char **x, char **y, char **z)
 {
-    std::cout <<"get_position_string" <<std::endl;
+    std::cout <<"get_position_string "<<id<<std::endl;
     int part=map_id(id);
     if (part >=0)
     {
@@ -690,9 +690,9 @@ int set_position_string(int id, char *x, char *y, char *z)
     int part=map_id(id);
     if (part >=0)
     {
-        sys.ptcl[part].coord[0].x=*x;
-        sys.ptcl[part].coord[0].y=*y;
-        sys.ptcl[part].coord[0].z=*z;
+        sys.ptcl[part].coord[0].x=m_real(x);
+        sys.ptcl[part].coord[0].y=m_real(y);
+        sys.ptcl[part].coord[0].z=m_real(z);
         return 0;
     }
     return part;
@@ -720,9 +720,9 @@ int set_velocity_string(int id, char* vx, char* vy, char* vz)
     int part=map_id(id);
     if (part >=0)
     {
-        sys.ptcl[part].coord[1].x=*vx;
-        sys.ptcl[part].coord[1].y=*vy;
-        sys.ptcl[part].coord[1].z=*vz;
+        sys.ptcl[part].coord[1].x=m_real(vx);
+        sys.ptcl[part].coord[1].y=m_real(vy);
+        sys.ptcl[part].coord[1].z=m_real(vz);
         return 0;
     }
     return part;
@@ -761,14 +761,14 @@ int set_state_string(int id, char* m, char* x, char* y, char* z, char* vx, char*
     int part=map_id(id);
     if (part >=0)
     {
-        sys.ptcl[part].mass=*m;
-        sys.ptcl[part].coord[0].x=*x;
-        sys.ptcl[part].coord[0].y=*y;
-        sys.ptcl[part].coord[0].z=*z;
-        sys.ptcl[part].coord[1].x=*vx;
-        sys.ptcl[part].coord[1].y=*vy;
-        sys.ptcl[part].coord[1].z=*vz;
-        sys.ptcl[part].radius=*radius;
+        sys.ptcl[part].mass=m_real(m);
+        sys.ptcl[part].coord[0].x=m_real(x);
+        sys.ptcl[part].coord[0].y=m_real(y);
+        sys.ptcl[part].coord[0].z=m_real(z);
+        sys.ptcl[part].coord[1].x=m_real(vx);
+        sys.ptcl[part].coord[1].y=m_real(vy);
+        sys.ptcl[part].coord[1].z=m_real(vz);
+        sys.ptcl[part].radius=m_real(radius);
         return 0;
     }
     return part;
@@ -793,7 +793,7 @@ int set_radius_string(int id, char* radius)
     int part=map_id(id);
     if (part >=0)
     {
-        sys.ptcl[part].radius=*radius;
+        sys.ptcl[part].radius=m_real(radius);
         return 0;
     }
     return part;

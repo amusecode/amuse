@@ -29,6 +29,7 @@ SOFTWARE.*/
 #include <cassert>
 #include <cmath>
 #include <vector>
+#include <omp.h>
 
 struct NbodySystem{
 	long   nbody;
@@ -147,19 +148,22 @@ struct NbodySystem{
 	}
 
 	void calc_force_on_first_nact(int nact){
-#pragma omp parallel for
-		for(int i=0; i<nact; i++){
-			calc_force_on_i <NbodySystem, real_type, vect_type>
-				(*this, nbody, i, this->eps2);
-		}
+        #pragma omp parallel for
+//        #pragma omp loop
+            for(int i=0; i<nact; i++){
+                calc_force_on_i <NbodySystem, real_type, vect_type>
+                    (*this, nbody, i, this->eps2);
+            }
 	}
 	void init_force(){
 		const int niter = (Particle::NFORCE+1)/2;
 		for(int n=0; n<niter; n++){
+        #pragma omp parallel for
 			for(int i=0; i<nbody; i++){
 				pred[i].zero_predict(ptcl[i]);
 			}
 			calc_force_on_first_nact(nbody);
+        #pragma omp parallel for
 			for(int i=0; i<nbody; i++){
 				force[i].init_assign(ptcl[i]);
 			}
@@ -172,6 +176,7 @@ struct NbodySystem{
 		}
 	}
 	void predict_all(){
+        #pragma omp parallel for
 		for(int i=0; i<nbody; i++){
 			pred[i].predict(tsys, ptcl[i]);
 		}
@@ -186,6 +191,7 @@ struct NbodySystem{
 		}
 	}
 	void correct_and_feedback(){
+        #pragma omp parallel for
 		for(int i=0; i<nbody; i++){
 			Corrector corr;
 			corr.correct    (ptcl[i], force[i]);
@@ -193,6 +199,8 @@ struct NbodySystem{
 		}
 	}
 	void correct_and_commit(){
+
+        #pragma omp parallel for
 		for(int i=0; i<nbody; i++){
 			Corrector corr;
 			corr.correct    (ptcl[i], force[i]);
