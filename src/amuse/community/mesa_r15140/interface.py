@@ -60,6 +60,8 @@ class MESAInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolutionIn
             description = "Path to the MESA directory.")
         function.addParameter('local_data_path', dtype='string', direction=function.IN,
             description = "Path to the data directory.")
+        function.addParameter('gyre_in_filename', dtype='string', direction=function.IN,
+            description = "Path to the gyre.in file.")
         function.result_type = 'int32'
         function.result_doc = """
         0 - OK
