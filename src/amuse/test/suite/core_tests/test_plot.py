@@ -166,7 +166,8 @@ class TestPlot(amusetest.TestCase):
 
         self.assertEqual("[m]", self.xaxis().get_label_text())
         self.assertEqual("[m]", self.yaxis().get_label_text())
-        self.assertEqual("[m**2]", bar._label)
+        # Removed 2021-04-14, no longer supported by matplotlib
+        # self.assertEqual("[m**2]", bar._label)
 
     def test9(self):
         """ Test the contour plot """

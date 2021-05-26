@@ -346,30 +346,6 @@ class StellarEvolution(common.CommonCode):
             particle.evolve_for(delta_time)
         self.model_time += delta_time
     
-    def _evolve_model_old(self, end_time = None, keep_synchronous = True):
-        """
-        This is the old implementation of evolve_model. Even with (keep_synchronous = True) 
-        it is unable to evolve all stars to a common age, since it relies on the 
-        individual timesteps as determined by the community code. Furthermore, it 
-        is not suited to simulations with ongoing star formation, since it evolves 
-        newly created stars to the same age as the old stars. Finally, this old 
-        implementation has substantially more communication overhead. 
-        """
-        if end_time is None:
-            if keep_synchronous:
-                ages = self.particles.age
-                index, min_age = min(enumerate(ages), key=itemgetter(1))
-                self.particles[index].evolve_one_step()
-                new_age = self.particles[index].age
-                for particle in self.particles.select(lambda x : x < new_age, ["age"]):
-                    particle.evolve_one_step()
-            else:
-                self.particles.evolve_one_step()
-        else:
-            for particle in self.particles:
-                while particle.age < end_time:
-                    particle.evolve_one_step()
-    
     def define_state(self, handler):
         common.CommonCode.define_state(self, handler)
         

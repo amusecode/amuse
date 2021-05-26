@@ -1,6 +1,4 @@
-import sys
-import os
-from support.version import version, main_version
+#!/usr/bin/env python3
 from support.classifiers import classifiers
 
 from setuptools import setup
@@ -12,11 +10,10 @@ from support.setup_codes import setup_commands
 name = 'amuse-seba'
 author = 'The AMUSE team'
 author_email = 'info@amusecode.org'
-version += ".1"
 license_ = "Apache License 2.0"
 url = 'http://www.amusecode.org/'
 install_requires = [
-    'amuse-framework>=%s' % (main_version),
+    'amuse-framework',
 ]
 description = 'The Astrophysical Multipurpose Software Environment - SeBa'
 with open("README.md", "r") as fh:
@@ -27,15 +24,32 @@ extensions = []
 
 all_data_files = []
 
-packages = ['amuse.community.seba']
+packages = [
+    'amuse.community.seba',
+]
 
 package_data = {
 }
 
 mapping_from_command_name_to_command_class = setup_commands()
 
+try:
+    from src.amuse.community.seba.version import version
+    use_scm_version = False
+    setup_requires = []
+except ImportError:
+    version = False
+    setup_requires = ['setuptools_scm']
+    use_scm_version = {
+        "root": "../..",
+        "relative_to": __file__,
+        "write_to": "src/amuse/community/seba/version.py",
+    }
+
 setup(
     name=name,
+    use_scm_version=use_scm_version,
+    setup_requires=setup_requires,
     version=version,
     classifiers=classifiers,
     url=url,
@@ -49,7 +63,9 @@ setup(
     python_requires=">=3.5",
     cmdclass=mapping_from_command_name_to_command_class,
     ext_modules=extensions,
-    package_dir={'amuse.community.seba': 'src/amuse/community/seba'},
+    package_dir={
+        'amuse.community.seba': 'src/amuse/community/seba',
+    },
     packages=packages,
     package_data=package_data,
     data_files=all_data_files,

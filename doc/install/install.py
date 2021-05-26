@@ -157,9 +157,9 @@ class InstallPrerequisites(object):
           (
             'cmake' ,                   #name to refer by
             [],                         #names of prerequisites (unused)
-            '3.13.1' ,                   #version string
+            '3.19.4' ,                   #version string
             'cmake-', '.tar.gz',        #pre- and postfix for filename
-            'https://www.cmake.org/files/v3.13/', #download url, filename is appended
+            'https://www.cmake.org/files/v3.19/', #download url, filename is appended
             self.cmake_build             #method to use for building
           ) ,
           (

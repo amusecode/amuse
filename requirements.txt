@@ -1,4 +1,6 @@
-setuptools
+setuptools>=42
+setuptools_scm>=6
+wheel
 docutils>=0.6
 numpy>=1.2.2
 pytest>=3.0

@@ -5,6 +5,7 @@ import os
 import urllib.request
 import urllib.parse
 import urllib.error
+from shutil import which
 from optparse import OptionParser
 
 
@@ -65,7 +66,20 @@ class GetCodeFromHttp:
                 "downloading version", self.version[i],
                 "from", url, "to", filename
             )
-            urllib.request.urlretrieve(url, filepath)
+            if which('wget') is not None:
+                arguments = ['wget', url]
+                subprocess.call(
+                    arguments,
+                    cwd=os.path.join(self.src_directory())
+                )
+            elif which('curl') is not None:
+                arguments = ['curl', '-L', '-O', url]
+                subprocess.call(
+                    arguments,
+                    cwd=os.path.join(self.src_directory())
+                )
+            else:
+                urllib.request.urlretrieve(url, filepath)
             print("downloading finished")
             self.unpack_downloaded_file(
                 filename, self.name[i], self.version[i]

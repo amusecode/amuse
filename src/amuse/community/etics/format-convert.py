@@ -67,6 +67,7 @@ if __name__ == "__main__":
     OutputFileNum = 2
     StepCounter = 0
     FirstTime = True
+    OutputFile = False
 
     for Filename in FileList:
         if StepCounter > NumperOfStepsPerFile:

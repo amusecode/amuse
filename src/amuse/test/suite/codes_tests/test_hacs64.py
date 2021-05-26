@@ -4,7 +4,7 @@ import sys
 import numpy
 import math
 
-from amuse.community.hacs64.interface import Hacs64Interface, hacs64
+from amuse.community.hacs64.interface import Hacs64Interface, Hacs64
 
 from amuse.units import nbody_system
 from amuse.units import units
@@ -192,7 +192,7 @@ class TestHacs64Interface(TestWithMPI):
         
     
     def test9(self):
-        print("Test HermiteInterface evolve_model")
+        print("Test Hacs64Interface evolve_model")
         instance = Hacs64Interface()
         self.assertEqual(0, instance.initialize_code())
         #self.assertEquals(0, instance.set_eta_irr(0.14))
@@ -241,7 +241,7 @@ class _TestHacs64(TestWithMPI):
     def test1(self):
         convert_nbody = nbody_system.nbody_to_si(1.0 | units.MSun, 149.5e6 | units.km)
     
-        instance = Hermite(convert_nbody)
+        instance = Hacs64(convert_nbody)
         instance.initialize_code()
         instance.parameters.epsilon_squared = 0.0 | units.AU**2
         instance.dt_dia = 5000
@@ -278,7 +278,7 @@ class _TestHacs64(TestWithMPI):
     def test2(self):
         convert_nbody = nbody_system.nbody_to_si(1.0 | units.MSun, 149.5e6 | units.km)
     
-        instance = Hermite(convert_nbody)
+        instance = Hacs64(convert_nbody)
         instance.initialize_code()
         instance.parameters.epsilon_squared = 0.0 | units.AU**2
         instance.dt_dia = 5000
@@ -320,7 +320,7 @@ class _TestHacs64(TestWithMPI):
     def test3(self):
         convert_nbody = nbody_system.nbody_to_si(1.0 | units.MSun, 149.5e6 | units.km)
 
-        instance = Hermite(convert_nbody)
+        instance = Hacs64(convert_nbody)
         instance.initialize_code()
         instance.parameters.epsilon_squared = 0.00001 | units.AU**2
         instance.dt_dia = 5000
@@ -351,7 +351,7 @@ class _TestHacs64(TestWithMPI):
     def test4(self):
         convert_nbody = nbody_system.nbody_to_si(5.0 | units.kg, 10.0 | units.m)
 
-        instance = Hermite(convert_nbody)
+        instance = Hacs64(convert_nbody)
         instance.initialize_code()
         
         particles = datamodel.Particles(2)
@@ -376,7 +376,7 @@ class _TestHacs64(TestWithMPI):
     def test5(self):
         convert_nbody = nbody_system.nbody_to_si(5.0 | units.kg, 10.0 | units.m)
 
-        instance = Hermite(convert_nbody)
+        instance = Hacs64(convert_nbody)
         instance.initialize_code()
         
         particles = datamodel.Particles(2)
@@ -400,9 +400,9 @@ class _TestHacs64(TestWithMPI):
         self.assertEqual(curr_state[0], 16|units.kg, 8)
     
     def test6(self):
-        print("Test6: Testing Hermite parameters")
+        print("Test6: Testing Hacs64 parameters")
         convert_nbody = nbody_system.nbody_to_si(1.0 | units.yr, 1.0 | units.AU)
-        instance = Hermite(convert_nbody)
+        instance = Hacs64(convert_nbody)
         
         value = instance.get_eps2()
         self.assertEqual(0.0 | units.AU**2 , value)
@@ -434,7 +434,7 @@ class _TestHacs64(TestWithMPI):
         instance.stop()
     
     def test7(self):
-        print("Test7: Testing effect of Hermite parameter epsilon_squared")
+        print("Test7: Testing effect of Hacs64 parameter epsilon_squared")
         convert_nbody = nbody_system.nbody_to_si(1.0 | units.MSun, 1.0 | units.AU)
         
         particles = datamodel.Particles(2)
@@ -453,7 +453,7 @@ class _TestHacs64(TestWithMPI):
         initial_direction = math.atan((earth.velocity[0]/earth.velocity[1]))
         final_direction = []
         for log_eps2 in range(-9,10,2):
-            instance = Hermite(convert_nbody)
+            instance = Hacs64(convert_nbody)
             instance.initialize_code()
             instance.parameters.epsilon_squared = 10.0**log_eps2 | units.AU ** 2
             instance.particles.add_particles(particles)
@@ -471,7 +471,7 @@ class _TestHacs64(TestWithMPI):
         self.assertEqual(delta[len(final_direction)/2 -1], max(delta))
         
     def test8(self):
-        print("Testing Hermite collision_detection")
+        print("Testing Hacs64 collision_detection")
         particles = datamodel.Particles(7)
         particles.mass = 0.001 | nbody_system.mass
         particles.radius = 0.01 | nbody_system.length
@@ -480,7 +480,7 @@ class _TestHacs64(TestWithMPI):
         particles.z = 0 | nbody_system.length
         particles.velocity = [[2, 0, 0], [-2, 0, 0]]*3 + [[-4, 0, 0]] | nbody_system.speed
         
-        instance = Hermite()
+        instance = Hacs64()
         instance.initialize_code()
         instance.parameters.set_defaults()
         instance.particles.add_particles(particles)
@@ -526,7 +526,7 @@ class _TestHacs64(TestWithMPI):
     def test9(self):
         convert_nbody = nbody_system.nbody_to_si(1.0 | units.MSun, 149.5e6 | units.km)
     
-        instance = Hermite(convert_nbody)
+        instance = Hacs64(convert_nbody)
         instance.initialize_code()
         instance.parameters.epsilon_squared = 0.0 | units.AU**2
         instance.parameters.pair_factor = 1e14
@@ -555,7 +555,7 @@ class _TestHacs64(TestWithMPI):
     def test10(self):
         convert_nbody = nbody_system.nbody_to_si(1.0 | units.MSun, 149.5e6 | units.km)
     
-        instance = Hermite(convert_nbody)
+        instance = Hacs64(convert_nbody)
         instance.initialize_code()
         instance.parameters.epsilon_squared = 0.0 | units.AU**2
         instance.parameters.stopping_conditions_number_of_steps = 10
@@ -585,7 +585,7 @@ class _TestHacs64(TestWithMPI):
         particles.vz =  0 | nbody_system.speed
         particles.mass = 1.0 | nbody_system.mass
        
-        instance = Hermite()
+        instance = Hacs64()
         instance.initialize_code()
         instance.parameters.stopping_conditions_number_of_steps = 2
         self.assertEqual(instance.parameters.stopping_conditions_number_of_steps, 2)
@@ -608,7 +608,7 @@ class _TestHacs64(TestWithMPI):
         particles.vz =  [0.0,0.0]| nbody_system.speed
         particles.mass = [0.1,0.1] | nbody_system.mass
        
-        instance = Hermite()
+        instance = Hacs64()
         instance.initialize_code()
         instance.parameters.stopping_conditions_out_of_box_size = .5 | nbody_system.length
         self.assertEqual(instance.parameters.stopping_conditions_out_of_box_size, .5 | nbody_system.length)
@@ -622,7 +622,7 @@ class _TestHacs64(TestWithMPI):
     def test13(self):
         particles = plummer.new_plummer_model(31)
        
-        instance = Hermite(number_of_workers=1)#, debugger="xterm")
+        instance = Hacs64(number_of_workers=1)#, debugger="xterm")
         instance.initialize_code()
         instance.parameters.epsilon_squared = 0.01 | nbody_system.length ** 2
         instance.particles.add_particles(particles)
@@ -633,7 +633,7 @@ class _TestHacs64(TestWithMPI):
         instance.stop()
         positions_per_workers = []
         for n in [2,3,4,5]:
-            instance = Hermite(number_of_workers=n)
+            instance = Hacs64(number_of_workers=n)
             instance.initialize_code()
             instance.parameters.epsilon_squared = 0.01 | nbody_system.length ** 2
             instance.particles.add_particles(particles)
@@ -648,7 +648,7 @@ class _TestHacs64(TestWithMPI):
             self.assertAlmostEqual(expected_positions, positions_per_workers[index], 15)
     
     def test14(self):
-        instance = Hermite()
+        instance = Hacs64()
         instance.initialize_code()
         instance.parameters.epsilon_squared = 0.00001 | nbody_system.length**2
         
