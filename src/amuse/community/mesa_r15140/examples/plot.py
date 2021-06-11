@@ -44,6 +44,7 @@ while age < 4.6*10**9:
     ax4.cla()
 
     ax1.plot(logT,logL)
+    ax1.scatter(logT[-1],logL[-1],s=50)
     ax1.set_xlim(ax1.get_xlim()[::-1])
     ax1.set_xlabel(r'$\log \left(T_{eff}/K\right)$')
     ax1.set_ylabel(r'$\log \left(L/L_{\odot}\right)$')
@@ -52,6 +53,7 @@ while age < 4.6*10**9:
     ax2.set_title('Star age='+str(star.get_history('star_age')))
 
     ax2.plot(logRhoc,logTc)
+    ax2.scatter(logRhoc[-1],logTc[-1],s=50)
     ax2.set_ylabel(r'$\log \left(T_{c}/K\right)$')
     ax2.set_xlabel(r'$\log \left(\rho_{c}/\left(g\ cm^{-3}\right)\right)$')
 
@@ -69,7 +71,7 @@ while age < 4.6*10**9:
         species = star.get_profile(name)
         ax4.plot(m,species,label=name)
     ax4.legend(loc=0)   
-    ax4.sey_ylim(10**-5,1.0)
+    ax4.set_ylim(10**-5,1.0)
 
     ax4.set_xlabel(r'$m/M_{\odot}$')
     ax4.set_ylabel('Abundance')
