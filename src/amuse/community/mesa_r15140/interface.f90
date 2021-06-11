@@ -1050,6 +1050,40 @@ module amuse_mesa
 
    end function
 
+! Retrieve the name of the current nuclear network
+   integer function get_nuclear_network(AMUSE_id, AMUSE_value)
+      integer, intent(in) :: AMUSE_id
+      character(len=*), intent(out) :: AMUSE_value
+      integer :: ierr
+
+      get_nuclear_network = 0
+
+      call get_net_name(AMUSE_id, AMUSE_value, ierr)
+
+      if (ierr /= MESA_SUCESS) then
+         AMUSE_value = ''
+         get_nuclear_network= ierr
+      endif   
+
+   end function get_nuclear_network
+
+! Set the name of the current nuclear network
+   integer function set_nuclear_network(AMUSE_id, AMUSE_value)
+      integer, intent(in) :: AMUSE_id
+      character(len=*), intent(in) :: AMUSE_value
+      integer :: ierr
+
+      set_nuclear_network = 0
+
+      call set_net_name(AMUSE_id, AMUSE_value, ierr)
+
+      if (ierr /= MESA_SUCESS) then
+         set_nuclear_network = ierr
+      endif   
+
+   end function set_nuclear_network
+
+
 
    ! Evolve the star for one step (for calls from amuse)
    function evolve_one_step(AMUSE_id)

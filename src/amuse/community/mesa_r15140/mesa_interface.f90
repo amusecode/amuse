@@ -733,8 +733,38 @@ module mesa_interface
 
 
 
+    subroutine get_net_name(id, net_name, ierr)
+        integer, intent(in) :: id
+        character(len=*), intent(out) :: net_name
+        integer, intent(out) :: ierr
+        type (star_info), pointer :: s 
+
+        ierr = MESA_SUCESS
+
+        call star_ptr(id, s, ierr)
+        if (failed('star_ptr',ierr)) return
+
+        net_name = s%net_name
+
+    end subroutine get_net_name
 
 
+    subroutine set_net_name(id, net_name, ierr)
+        integer, intent(in) :: id
+        character(len=*), intent(in) :: net_name
+        integer, intent(out) :: ierr
+        type (star_info), pointer :: s 
+
+        ierr = MESA_SUCESS
+
+        call star_ptr(id, s, ierr)
+        if (failed('star_ptr',ierr)) return
+
+        call star_change_to_new_net(id, .true., net_name, ierr)
+
+        if (failed('change_net',ierr)) return
+
+    end subroutine set_net_name
 
 
 

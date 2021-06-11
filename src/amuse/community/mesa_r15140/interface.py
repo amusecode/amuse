@@ -990,6 +990,47 @@ class MESAInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolutionIn
         return function  
 
 
+    @legacy_function
+    def get_nuclear_network():
+        """
+        Retrieve the current nuclear network of the star.
+        """
+        function = LegacyFunctionSpecification() 
+        function.can_handle_array = True 
+        function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
+            , description="The index of the star to get the value of")
+        function.addParameter('net_name', dtype='string', direction=function.OUT
+            , description="The current nuclear network of the star.")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            The value was retrieved.
+        -1 - ERROR
+            A star with the given index was not found.
+        """
+        return function
+
+    @legacy_function
+    def set_nuclear_network():
+        """
+        Set the current nuclear network of the star.
+        """
+        function = LegacyFunctionSpecification() 
+        function.can_handle_array = True 
+        function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
+            , description="The index of the star to get the value of")
+        function.addParameter('net_name', dtype='string', direction=function.IN
+            , description="The new nuclear network of the star.")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            The value was retrieved.
+        -1 - ERROR
+            A star with the given index was not found.
+        """
+        return function
+
+
 class MESA(StellarEvolution, InternalStellarStructure):
     
     def __init__(self, **options):
@@ -1114,6 +1155,9 @@ class MESA(StellarEvolution, InternalStellarStructure):
             handler.add_method(particle_set_name, 'set_star_job_logical')
 
             handler.add_method(particle_set_name, 'star_job_update')
+
+            handler.add_method(particle_set_name, 'get_nuclear_network')
+            handler.add_method(particle_set_name, 'set_nuclear_network')
                         
             handler.add_method(particle_set_name, 'evolve_one_step')
             handler.add_method(particle_set_name, 'evolve_for') 
@@ -1408,6 +1452,18 @@ class MESA(StellarEvolution, InternalStellarStructure):
         handler.add_method(
             "star_job_update",
             (handler.INDEX,),
+            (handler.ERROR_CODE,)
+        )
+
+        handler.add_method(
+            "get_nuclear_network",
+            (handler.INDEX,),
+            (handler.NO_UNIT, handler.ERROR_CODE,)
+        )
+
+        handler.add_method(
+            "set_nuclear_network",
+            (handler.INDEX,handler.NO_UNIT),
             (handler.ERROR_CODE,)
         )
     
