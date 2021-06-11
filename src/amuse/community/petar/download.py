@@ -13,7 +13,7 @@ class GetCodeFromHttp:
     filename_template = "{version}.tar.gz"
     name = ["PeTar", "SDAR", "FDPS"]
     url_template = [
-        "https://github.com/AICS-SC-GROUP/PeTar/archive/{version}.tar.gz",
+        "https://github.com/lwang-astro/PeTar/archive/{version}.tar.gz",
         "https://github.com/lwang-astro/SDAR/archive/{version}.tar.gz",
         "https://github.com/FDPS/FDPS/archive/{version}.tar.gz",
     ]
@@ -101,14 +101,14 @@ def new_option_parser():
     result = OptionParser()
     result.add_option(
         "--petar-version",
-        default='26ad74251a9d788bbdab3f9bcc75f65be55b22fb',
+        default='06fe564c57bfa70658f0ee97eeb878353b8fec7d',
         dest="petar_version",
         help="PeTar commit hash to download",
         type="string"
     )
     result.add_option(
         "--sdar-version",
-        default='1a0261bd0060b27055ceedfe95245507ea71ef77',
+        default='2d0f79f259ffd6dd972f27548698d91e7cd476d7',
         dest="sdar_version",
         help="SDAR commit hash to download",
         type="string"
