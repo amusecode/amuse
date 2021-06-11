@@ -1549,56 +1549,7 @@ class MESA(StellarEvolution, InternalStellarStructure):
         )
 
     def new_particle_from_model(self, internal_structure, current_age=0|units.Myr, key=None):
-        if isinstance(internal_structure, dict):
-            if "dmass" in internal_structure:
-                mass_profile = internal_structure['dmass'][::-1]
-            else:
-                cumulative_mass_profile = [0.0] | units.MSun
-                cumulative_mass_profile.extend(internal_structure['mass'])
-                mass_profile = (cumulative_mass_profile[1:] - cumulative_mass_profile[:-1])[::-1]
-            self.new_stellar_model(
-                mass_profile,
-                internal_structure['radius'][::-1],
-                internal_structure['rho'][::-1],
-                internal_structure['temperature'][::-1],
-                internal_structure['luminosity'][::-1],
-                internal_structure['X_H'][::-1],
-                internal_structure['X_He'][::-1],
-                internal_structure['X_C'][::-1],
-                internal_structure['X_N'][::-1],
-                internal_structure['X_O'][::-1],
-                internal_structure['X_Ne'][::-1],
-                internal_structure['X_Mg'][::-1],
-                internal_structure['X_Si'][::-1],
-                internal_structure['X_Fe'][::-1]
-            )
-        else:
-            if hasattr(internal_structure, "dmass"):
-                mass_profile = internal_structure.dmass[::-1]
-            else:
-                cumulative_mass_profile = [0.0] | units.MSun
-                cumulative_mass_profile.extend(internal_structure.mass)
-                mass_profile = (cumulative_mass_profile[1:] - cumulative_mass_profile[:-1])[::-1]
-            self.new_stellar_model(
-                mass_profile,
-                internal_structure.radius[::-1],
-                internal_structure.rho[::-1],
-                internal_structure.temperature[::-1],
-                internal_structure.luminosity[::-1],
-                internal_structure.X_H[::-1],
-                internal_structure.X_He[::-1],
-                internal_structure.X_C[::-1],
-                internal_structure.X_N[::-1],
-                internal_structure.X_O[::-1],
-                internal_structure.X_Ne[::-1],
-                internal_structure.X_Mg[::-1],
-                internal_structure.X_Si[::-1],
-                internal_structure.X_Fe[::-1]
-            )
-        tmp_star = datamodel.Particle(key=key)
-        tmp_star.age_tag = current_age
-        return self.imported_stars.add_particle(tmp_star)
-
+        pass
 
 
 Mesa = MESA
