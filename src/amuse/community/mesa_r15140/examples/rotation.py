@@ -15,7 +15,7 @@ star = stars[0]
 
 # Turn on rotation
 star.set_star_job_logical('change_rotation_flag',True)
-star.set_star_job_logical('new_flag',True)
+star.set_star_job_logical('new_rotation_flag',True)
 
 # Many options for initialising the rotation rate
 star.set_star_job_logical('set_surface_rotation_v',True)
@@ -23,6 +23,10 @@ star.set_star_job_dble('new_surface_rotation_v',100.0) # sets surface velocity i
 
 # Now change the model to turn on rotation
 star.star_job_update()
+
+# Turn options back off
+star.set_star_job_logical('change_rotation_flag',False)
+
 
 # Evovle star until?
 star.evolve_for(1.0 | units.Gyr)
