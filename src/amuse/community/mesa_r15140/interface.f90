@@ -1032,10 +1032,10 @@ module amuse_mesa
    end function
    
 
-   ! Return the chem_id of the species given by AMUSE_species (net_id)
+   ! Return the chem_id of the species given by AMUSE_species 
    integer function get_id_of_species(AMUSE_id, AMUSE_species, AMUSE_value)
       integer, intent(in) :: AMUSE_id
-      integer, intent(in) :: AMUSE_species
+      character(len=*), intent(in) :: AMUSE_species
       integer, intent(out) :: AMUSE_value
       integer :: ierr
       

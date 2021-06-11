@@ -356,22 +356,24 @@ class MESAInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolutionIn
     @legacy_function
     def get_id_of_species():
         """
-        Retrieve the chem_ID of the chemical abundance variable of the star.
+        Retrieve the net_id of the chemical abundance variable of the star.
         """
         function = LegacyFunctionSpecification() 
         function.can_handle_array = True 
         function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
             , description="The index of the star to get the value of")
-        function.addParameter('species', dtype='int32', direction=function.IN
-            , description="The species of the star to get the name of")
+        function.addParameter('species', dtype='string', direction=function.IN
+            , description="The name of the isotope to get the name id of")
         function.addParameter('species_id', dtype='int32', direction=function.OUT
-            , description="The chem_ID of the chemical abundance variable of the star.")
+            , description="The net_id of the chemical abundance variable of the star.")
         function.result_type = 'int32'
         function.result_doc = """
         0 - OK
             The value was retrieved.
         -1 - ERROR
             A star with the given index was not found.
+        -2 - ERROR
+            The isotope was not found.
         """
         return function
     
@@ -1471,10 +1473,7 @@ class MESA(StellarEvolution, InternalStellarStructure):
         indices_of_the_stars = self._check_number_of_indices(indices_of_the_stars, action_string = "Querying chemical abundance IDs")
         if number_of_species is None:
             number_of_species = self.get_number_of_species(indices_of_the_stars)
-        return list(self.get_id_of_species(
-            [indices_of_the_stars]*number_of_species, 
-            list(range(1,number_of_species+1)) 
-        ))
+        return list(range(1,number_of_species+1))
 
     def get_profile(self, indices_of_the_stars, name, number_of_zones = None):
         indices_of_the_stars = self._check_number_of_indices(indices_of_the_stars, action_string = "Querying profiles")

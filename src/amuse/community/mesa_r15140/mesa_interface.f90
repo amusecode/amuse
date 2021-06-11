@@ -1066,23 +1066,26 @@ module mesa_interface
     end subroutine get_species_name
 
 
-    subroutine get_species_id(id, net_id, chem_id, ierr)
+    subroutine get_species_id(id, iso_name, net_id, ierr)
         use chem_lib, only: chem_get_iso_id
         integer, intent(in) :: id
-        integer, intent(out) :: chem_id
-        integer, intent(in) :: net_id
+        integer, intent(out) :: net_id
+        character(len=*), intent(in) :: iso_name
         integer, intent(out) :: ierr
-        type (star_info), pointer :: s    
+        type (star_info), pointer :: s
+        integer :: k    
 
         call star_ptr(id, s, ierr)
         if (failed('star_ptr',ierr)) return
 
-        if(net_id < 1 .or. net_id > s% species) then
-            ierr =-2
-            return
-        end if
-
-        chem_id = s% chem_id(net_id)
+        ierr = -2
+        do k=1,s%species
+            if(chem_isos% name(s% chem_id(k)) == trim(iso_name)) then
+                ierr = 0
+                net_id = k
+                exit
+            end if
+        end do
 
     end subroutine get_species_id
 

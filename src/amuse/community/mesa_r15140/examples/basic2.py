@@ -21,4 +21,5 @@ print(star.get_name_of_species(1))
 print(star.get_masses_of_species())
 
 print(star.get_mass_fraction_of_species_at_zone(1,1))
+
 print(star.get_id_of_species('h1'))
