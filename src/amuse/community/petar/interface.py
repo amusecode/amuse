@@ -83,6 +83,50 @@ class petarInterface(
         """
         return function
 
+    #@legacy_function
+    #def get_gravitational_constant():
+    #    """
+    #    Get the value of gravitational constant
+    #    """
+    #    function = LegacyFunctionSpecification()
+    #    function.addParameter(
+    #        'gravitational_constant', dtype='float64', direction=function.OUT,
+    #        description=(
+    #            "gravitational constant:"
+    #            " positive"
+    #        )
+    #    )
+    #    function.result_type = 'int32'
+    #    function.result_doc = """
+    #    0 - OK
+    #        the parameter was retrieved
+    #    -1 - ERROR
+    #        could not retrieve parameter
+    #    """
+    #    return function
+    # 
+    #@legacy_function
+    #def set_gravitational_constant():
+    #    """
+    #    Set gravitational constant
+    #    """
+    #    function = LegacyFunctionSpecification()
+    #    function.addParameter(
+    #        'gravitational_constant', dtype='float64', direction=function.IN,
+    #        description=(
+    #            "gravitational constant:"
+    #            " between 0 and 1"
+    #        )
+    #    )
+    #    function.result_type = 'int32'
+    #    function.result_doc = """
+    #    0 - OK
+    #        the parameter was set
+    #    -1 - ERROR
+    #        could not set parameter
+    #    """
+    #    return function
+
     @legacy_function
     def get_changeover_rout():
         """
@@ -382,6 +426,14 @@ class petar(GravitationalDynamics, GravityFieldCode):
             "Tree opening angle",
             default_value=0.3
         )
+
+        #handler.add_method_parameter(
+        #    "get_gravitational_constant",
+        #    "set_gravitational_constant",
+        #    "gravitational_constant",
+        #    "Gravitational constant",
+        #    default_value=0.3
+        #)
 
         handler.add_method_parameter(
             "get_tree_step",
