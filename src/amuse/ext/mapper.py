@@ -5,7 +5,9 @@ Make 2D maps from SPH particles
 """
 
 import logging
+import numpy
 from amuse.units import units, constants, nbody_system
+from amuse.datamodel.rotation import new_rotation_matrix, rotate
 try:
     from amuse.community.fi.interface import FiMap
 except ImportError:
@@ -61,7 +63,7 @@ class MapHydro():
 
         mapper.width = 10 | units.pc
         mapper.bins = 800
-        mapper.offset = (0, 0, 0) | units.pc
+        mapper.origin = (0, 0, 0) | units.pc
 
         counts_map = mapper.counts
         density_map = mapper.density
@@ -76,9 +78,7 @@ class MapHydro():
         self.__axis_x = 'x'
         self.__axis_y = 'y'
         self.__axis_z = 'z'
-        self.__offset_x = 0 | units.pc
-        self.__offset_y = 0 | units.pc
-        self.__offset_z = 0 | units.pc
+        self.__origin = [0., 0., 0.] | units.pc
         self.__maps = self.Maps()
         self.__unit_mass = units.MSun
         self.__unit_length = units.pc
@@ -92,10 +92,52 @@ class MapHydro():
         self.__sinks = sinks
         self.__state = "INIT"
 
+        self.__phi = 0 | units.deg
+        self.__theta = 0 | units.deg
+        self.__psi = 0 | units.deg
+
         self.__constant_mass = False
         if not gas.is_empty():
             if self.__gas.mass.std() == 0 | self.__unit_mass:
                 self.__constant_mass = self.__gas[0].mass
+
+    def set_unit_length(self, unit=units.pc):
+        # need to assert this is indeed a length
+        self.__unit_length = unit
+
+    def rotate(
+            self,
+            phi=0 | units.deg,
+            theta=0 | units.deg,
+            psi=0 | units.deg,
+    ):
+        dphi = phi - self.__phi
+        dtheta = theta - self.__theta
+        dpsi = psi - self.__psi
+        self.__phi = phi
+        self.__theta = theta
+        self.__psi = psi
+        if self.__stars is not None:
+            if not self.__stars.is_empty():
+                rotate(self.__stars, dphi, dtheta, dpsi)
+        if self.__sinks is not None:
+            if not self.__sinks.is_empty():
+                rotate(self.__sinks, dphi, dtheta, dpsi)
+
+        if self.__state == "RUN":
+            rotation_matrix = new_rotation_matrix(
+                self.__phi, self.__theta, self.__psi,
+            ).transpose()
+            self.__mapper.parameters.upvector = numpy.inner(
+                rotation_matrix,
+                [0, 1, 0],
+            )
+            self.__mapper.parameters.projection_direction = numpy.inner(
+                rotation_matrix,
+                [0, 0, -1],
+            )
+            del self.__maps
+            self.__maps = self.Maps()
 
     def stop(self):
         "Clean up"
@@ -109,61 +151,70 @@ class MapHydro():
 
     def __new_gas_mapper(self):
         "Start a new mapper instance"
-        converter = nbody_system.nbody_to_si(1 | units.MSun, 1 | units.pc)
+        converter = nbody_system.nbody_to_si(100 | units.MSun, 1000 | units.pc)
         gas = self.__gas
-        x_axis = self.__axis_x
-        y_axis = self.__axis_y
+        # x_axis = self.__axis_x
+        # y_axis = self.__axis_y
 
         mapper = FiMap(converter, mode="openmp", redirection="none")
         if not hasattr(gas, "radius"):
             gas.radius = gas.h_smooth
         mapper.particles.add_particles(gas)
 
-        # positive x = up
-        if y_axis == 'x':
-            mapper.parameters.upvector = [1, 0, 0]
-            if x_axis == 'y':
-                # negative z = top layer
-                mapper.parameters.projection_direction = [0, 0, 1]
-            elif x_axis == 'z':
-                # positive y = top layer
-                mapper.parameters.projection_direction = [0, -1, 0]
-            else:
-                raise ValueError(
-                    'Incorrect value for x_axis or y_axis'
-                )
+        rotation_matrix = new_rotation_matrix(
+            self.__phi, self.__theta, self.__psi,
+        ).transpose()
+        mapper.parameters.upvector = numpy.inner(
+            rotation_matrix,
+            [0, 1, 0],
+        )
+        mapper.parameters.projection_direction = numpy.inner(
+            rotation_matrix,
+            [0, 0, -1],
+        )
+        mapper.parameters.image_target = self.__origin
+        # # positive x = up
+        # if y_axis == 'x':
+        #     mapper.parameters.upvector = [1, 0, 0]
+        #     if x_axis == 'y':
+        #         # negative z = top layer
+        #         mapper.parameters.projection_direction = [0, 0, 1]
+        #     elif x_axis == 'z':
+        #         # positive y = top layer
+        #         mapper.parameters.projection_direction = [0, -1, 0]
+        #     else:
+        #         raise ValueError(
+        #             'Incorrect value for x_axis or y_axis'
+        #         )
 
-        # positive y = up
-        if y_axis == 'y':
-            mapper.parameters.upvector = [0, 1, 0]
-            if x_axis == 'x':
-                # positive z = top layer
-                mapper.parameters.projection_direction = [0, 0, -1]
-            elif x_axis == 'z':
-                # negative x = top layer
-                mapper.parameters.projection_direction = [1, 0, 0]
-            else:
-                raise ValueError(
-                    'Incorrect value for x_axis or y_axis'
-                )
+        # # positive y = up
+        # if y_axis == 'y':
+        #     mapper.parameters.upvector = [0, 1, 0]
+        #     if x_axis == 'x':
+        #         # positive z = top layer
+        #         mapper.parameters.projection_direction = [0, 0, -1]
+        #     elif x_axis == 'z':
+        #         # negative x = top layer
+        #         mapper.parameters.projection_direction = [1, 0, 0]
+        #     else:
+        #         raise ValueError(
+        #             'Incorrect value for x_axis or y_axis'
+        #         )
 
-        # positive z = up
-        if y_axis == 'z':
-            mapper.parameters.upvector = [0, 0, 1]
-            if x_axis == 'x':
-                # negative y = top layer
-                mapper.parameters.projection_direction = [0, 1, 0]
-            elif x_axis == 'y':
-                # positive x = top layer
-                mapper.parameters.projection_direction = [-1, 0, 0]
-            else:
-                raise ValueError(
-                    'Incorrect value for x_axis or y_axis'
-                )
+        # # positive z = up
+        # if y_axis == 'z':
+        #     mapper.parameters.upvector = [0, 0, 1]
+        #     if x_axis == 'x':
+        #         # negative y = top layer
+        #         mapper.parameters.projection_direction = [0, 1, 0]
+        #     elif x_axis == 'y':
+        #         # positive x = top layer
+        #         mapper.parameters.projection_direction = [-1, 0, 0]
+        #     else:
+        #         raise ValueError(
+        #             'Incorrect value for x_axis or y_axis'
+        #         )
 
-        mapper.parameters.target_x = self.__offset_x
-        mapper.parameters.target_y = self.__offset_y
-        mapper.parameters.target_z = self.__offset_z
         mapper.parameters.image_width = self.__width
         mapper.parameters.image_size = [self.__bins_x, self.__bins_y]
         self.__mapper = mapper
@@ -182,24 +233,36 @@ class MapHydro():
         self.__axis_z = axes[2]
 
     @property
+    def phi(self):
+        return self.__phi
+
+    @property
+    def theta(self):
+        return self.__theta
+
+    @property
+    def psi(self):
+        return self.__psi
+
+    @property
     def xmin(self):
         "Return smallest value on x axis"
-        return self.__offset_x - (self.width/2)
+        return self.origin[0] - (self.width/2)
 
     @property
     def xmax(self):
         "Return largest value on x axis"
-        return self.__offset_x + (self.width/2)
+        return self.origin[0] + (self.width/2)
 
     @property
     def ymin(self):
         "Return smallest value on x axis"
-        return self.__offset_y - (self.height/2)
+        return self.origin[1] - (self.height/2)
 
     @property
     def ymax(self):
         "Return largest value on x axis"
-        return self.__offset_y + (self.height/2)
+        return self.origin[1] + (self.height/2)
 
     @property
     def extent(self):
@@ -212,17 +275,28 @@ class MapHydro():
         )
 
     @property
-    def offset(self):
-        "Get origin offset"
-        return self.__offset_x, self.__offset_y, self.__offset_z
+    def origin(self):
+        "Get origin (rotated)"
+        rotation_matrix = new_rotation_matrix(
+            self.__phi, self.__theta, self.__psi,
+        ).transpose()
+        return self.__origin.dot(rotation_matrix)
 
-    @offset.setter
-    def offset(self, offset=(0, 0, 0) | units.pc):
+    @origin.setter
+    def origin(self, origin=[0., 0., 0.] | units.pc):
         "Set origin offset"
-        self.__offset_x = offset[0]
-        self.__offset_y = offset[1]
-        self.__offset_z = offset[2]
-        self.__state = "EDIT"
+        delta_origin = -self.__origin
+        for i, o_i in enumerate(origin):
+            delta_origin[i] += o_i
+        self.__origin = origin
+        if self.__state in ["RUN"]:
+            self.__mapper.parameters.image_target = self.__origin
+
+        # for particles in (self.__gas, self.__stars, self.__sinks):
+        #     if particles is not None:
+        #         if not particles.is_empty():
+        #             particles.position -= delta_origin
+        # self.__state = "EDIT"
 
     @property
     def height(self):
@@ -278,7 +352,7 @@ class MapHydro():
     def mass(self):
         "Return a mass map"
         if self.__constant_mass:
-            return self.__maps.counts * self.__constant_mass
+            return self.counts * self.__constant_mass
 
         if (
             (self.__maps.mass is not None)
