@@ -101,7 +101,7 @@ def new_option_parser():
     result = OptionParser()
     result.add_option(
         "--petar-version",
-        default='06fe564c57bfa70658f0ee97eeb878353b8fec7d',
+        default='1b7c279fbb94af558952c56f4fd746fcf730ce83',
         dest="petar_version",
         help="PeTar commit hash to download",
         type="string"
