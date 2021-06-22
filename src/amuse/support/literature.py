@@ -214,10 +214,6 @@ def natsort_key(s):
     import re
     return list(map(try_int, re.findall(r'(\d+|\D+)', s)))
 
-def natcmp(a, b):
-    "Natural string comparison, case sensitive."
-    return cmp(natsort_key(a), natsort_key(b))
-
-def natsort(seq, cmp=natcmp):
+def natsort(seq):
     "In-place natural string sort."
     seq.sort(key=natsort_key)
