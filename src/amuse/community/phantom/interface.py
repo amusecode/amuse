@@ -781,6 +781,31 @@ class PhantomInterface(
         return function
 
     @legacy_function
+    def get_c_cool():
+        function = LegacyFunctionSpecification()
+        function.addParameter(
+            'C_cool', dtype='float64', direction=function.OUT)
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+        -1 - ERROR
+        """
+        return function
+
+    @legacy_function
+    def set_c_cool():
+        function = LegacyFunctionSpecification()
+        function.addParameter(
+            'C_cool', dtype='float64', direction=function.IN)
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+        -1 - ERROR
+        """
+        return function
+
+
+    @legacy_function
     def get_tolv():
         function = LegacyFunctionSpecification()
         function.addParameter(
@@ -1597,6 +1622,14 @@ class Phantom(GravitationalDynamics, GravityFieldCode):
         )
 
         handler.add_method_parameter(
+            "get_c_cool",
+            "set_c_cool",
+            "c_cool",
+            "dt_cool number",
+            default_value=0.25
+        )
+
+        handler.add_method_parameter(
             "get_tolv",
             "set_tolv",
             "tolv",
@@ -1799,33 +1832,33 @@ class Phantom(GravitationalDynamics, GravityFieldCode):
             default_value=0.0
         )
 
-        # handler.add_method_parameter(
-        #     "get_unit_length",
-        #     "set_unit_length",
-        #     "code_unit_length",
-        #     "code unit length",
-        #     default_value=(
-        #         ((60 * 60 * 24 * 365.25 * 1e6) | units.s)**2
-        #         * (6.672041e-8 | units.cm**3 * units.g**-1 * units.s**-2)
-        #         * (1.98892e33 | units.g)
-        #     )**(1/3)
-        # )
+        handler.add_method_parameter(
+            "get_unit_length",
+            "set_unit_length",
+            "code_unit_length",
+            "code unit length",
+            default_value=(
+                ((60 * 60 * 24 * 365.25 * 1e6) | units.s)**2
+                * (6.672041e-8 | units.cm**3 * units.g**-1 * units.s**-2)
+                * (1.98892e33 | units.g)
+            )**(1/3)
+        )
 
-        # handler.add_method_parameter(
-        #     "get_unit_mass",
-        #     "set_unit_mass",
-        #     "code_unit_mass",
-        #     "code unit mass",
-        #     default_value=1.98892e33 | units.g
-        # )
+        handler.add_method_parameter(
+            "get_unit_mass",
+            "set_unit_mass",
+            "code_unit_mass",
+            "code unit mass",
+            default_value=1.98892e33 | units.g
+        )
 
-        # handler.add_method_parameter(
-        #     "get_unit_time",
-        #     "set_unit_time",
-        #     "code_unit_time",
-        #     "code unit time",
-        #     default_value=3.15576e13 | units.s
-        # )
+        handler.add_method_parameter(
+            "get_unit_time",
+            "set_unit_time",
+            "code_unit_time",
+            "code unit time",
+            default_value=3.15576e13 | units.s
+        )
 
         self.stopping_conditions.define_parameters(handler)
 

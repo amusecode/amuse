@@ -376,24 +376,24 @@ function get_state_sink(index_of_the_particle, mass, x, y, z, &
 end function
 
 function set_state_dm(index_of_the_particle, mass, x, y, z, &
-        vx, vy, vz, radius)
+        vx, vy, vz)
   implicit none
   integer :: index_of_the_particle
-  double precision :: mass, x, y, z, vx, vy, vz, radius
+  double precision :: mass, x, y, z, vx, vy, vz
   integer :: set_state_dm
   call amuse_set_state_dm(index_of_the_particle, mass, x, y, z, &
-      vx, vy, vz, radius)
+      vx, vy, vz)
   set_state_dm=0
 end function
 
 function get_state_dm(index_of_the_particle, mass, x, y, z, &
-        vx, vy, vz, radius)
+        vx, vy, vz)
   implicit none
   integer :: index_of_the_particle
-  double precision :: mass, x, y, z, vx, vy, vz, radius
+  double precision :: mass, x, y, z, vx, vy, vz
   integer :: get_state_dm
   call amuse_get_state_dm(index_of_the_particle, mass, x, y, z, &
-      vx, vy, vz, radius)
+      vx, vy, vz)
   get_state_dm=0
 end function
 
@@ -628,6 +628,14 @@ function set_c_force(C_force)
     set_c_force=0
 end function
 
+function set_c_cool(C_cool)
+    implicit none
+    double precision :: C_cool
+    integer :: set_c_cool
+    call amuse_set_c_cool(C_cool)
+    set_c_cool=0
+end function
+
 function set_tolv(tolv)
     implicit none
     double precision :: tolv
@@ -844,6 +852,13 @@ function get_c_force(C_force)
   get_c_force=0
 end function
 
+function get_c_cool(C_cool)
+  implicit none
+  double precision :: C_cool
+  integer :: get_c_cool
+  call amuse_get_c_cool(C_cool)
+  get_c_cool=0
+end function
 
 function get_tolv(tolv)
     implicit none
