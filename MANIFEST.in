@@ -4,6 +4,9 @@ include README.txt
 include config.mk.in
 include bin/amusifier.in
 include amuserc.example
+include install-sh
+include config.sub
+include config.guess
 
 recursive-include src *
 recursive-include lib *

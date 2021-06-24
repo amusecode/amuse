@@ -4,6 +4,9 @@ include config.mk.in
 include bin/amusifier.in
 include pyproject.toml
 include support/configpy.in
+include install-sh
+include config.sub
+include config.guess
 
 recursive-include src/amuse *
 recursive-include lib *
