@@ -4,6 +4,9 @@ module mesa_interface
     use const_def
     use const_lib
     use math_lib
+    use chem_def
+    use eos_lib
+    use eos_def
     use run_star_support
     use run_star_extras, rse_extras_controls => extras_controls
 
@@ -1200,5 +1203,61 @@ module mesa_interface
         time = s% job% after_step_timing 
 
     end subroutine time_of_step
+
+
+    subroutine relax_to_new_comp(id, xa, xqs, ierr)
+        integer, intent(in) :: id
+        real(dp), intent(in) :: xa(:,:), xqs(:)
+        type (star_info), pointer :: s   
+        integer, intent(out) :: ierr
+
+        call star_ptr(id, s, ierr)
+        if (failed('star_ptr',ierr)) return
+
+        call star_relax_composition(id, s% job% num_steps_to_relax_composition, &
+                                    size(xqs),size(xa,dim=1) ,xa, xqs, ierr )
+
+
+    end subroutine relax_to_new_comp
+
+
+    subroutine relax_to_new_entropy(id, dq, temperature, rho, ierr)
+        integer, intent(in) :: id
+        real(dp), intent(in) :: dq(:), temperature(:), rho(:)
+        type (star_info), pointer :: s   
+        integer, intent(out) :: ierr
+        real(dp), allocatable, dimension(:) :: entropy
+        real(dp), dimension(num_eos_basic_results) :: res,d_dlnd, d_dlnT, d_dabar, d_dzbar
+        integer :: num_pts, k
+
+        call star_ptr(id, s, ierr)
+        if (failed('star_ptr',ierr)) return
+
+        num_pts = size(dq)
+
+        allocate(entropy(num_pts))
+
+        do k = 1, num_pts
+            ! get entropy
+            call eosDT_get( &
+                s% eos_handle, 1 - s% X(k) - s% Y(k), s% X(k), s% abar(k), s% zbar(k), &
+                s% species, s% chem_id, s% net_iso, s% xa(:,k), &
+                rho(k), log10(rho(k)), temperature(k), log10(temperature(k)), &
+                res, d_dlnd, d_dlnT, d_dabar, d_dzbar, ierr)
+            if (ierr /= 0) then
+                write(*,*) "failed in eosDT_get"
+                return
+            end if
+            entropy(k) = exp(res(i_lnS))
+        end do
+
+
+        call star_relax_entropy(id, s% job% max_steps_to_relax_entropy, num_pts, entropy, dq, ierr)
+        deallocate(entropy)
+
+    end subroutine relax_to_new_entropy
+
+
+
 
 end module mesa_interface

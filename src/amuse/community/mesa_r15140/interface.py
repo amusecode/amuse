@@ -910,11 +910,13 @@ class MESAInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolutionIn
     def new_stellar_model():
         """
         Define a new star model in the code. 
+        Arrays should be in MESA order (surface =1 center=n)
         """
         function = LegacyFunctionSpecification()  
         function.must_handle_array = True
-        for par in ['d_mass', 'radius', 'rho', 'temperature', 'luminosity', 
-                'X_H', 'X_He', 'X_C', 'X_N', 'X_O', 'X_Ne', 'X_Mg', 'X_Si', 'X_Fe']:
+        for par in ['star_mass','dq', 'rho', 'temperature', 
+                'XH1','XHe3','XHe4','XC12','XN14','XO16','XNe20','XMg24','XSi28','XS32',
+                'XAr36','XCa40','XTi44','XCr48','XFe52','XFe54','XFe56','XCr56','XNi56']:
             function.addParameter(par, dtype='float64', direction=function.IN)
         function.addParameter('n', 'int32', function.LENGTH)
         function.result_type = 'int32'
@@ -1096,12 +1098,18 @@ class MESA(StellarEvolution, InternalStellarStructure):
         
         
     def define_particle_sets(self, handler):
-        handler.define_super_set('particles', ['native_stars','pre_ms_stars','pre_built_stars','pure_he_stars'], 
+
+        star_types = ['native_stars','pre_ms_stars',
+                    'pre_built_stars','pure_he_stars',
+                    'imported_stars'
+                    ]
+
+        handler.define_super_set('particles', star_types, 
             index_to_default_set = 0)
         
-        # handler.define_set('imported_stars', 'index_of_the_star')
-        # handler.set_new('imported_stars', 'finalize_stellar_model')
-        # handler.set_delete('imported_stars', 'delete_star')
+        handler.define_set('imported_stars', 'index_of_the_star')
+        #handler.set_new('imported_stars', 'finalize_stellar_model')
+        handler.set_delete('imported_stars', 'delete_star')
         
         handler.define_set('native_stars', 'index_of_the_star')
         handler.set_new('native_stars', 'new_zams_particle')
@@ -1120,7 +1128,7 @@ class MESA(StellarEvolution, InternalStellarStructure):
         handler.set_delete('pure_he_stars', 'delete_star')
 
         
-        for particle_set_name in ['native_stars','pre_ms_stars','pre_built_stars','pure_he_stars']:
+        for particle_set_name in star_types:
             handler.add_getter(particle_set_name, 'get_radius', names = ('radius',))
             handler.add_getter(particle_set_name, 'get_stellar_type', names = ('stellar_type',))
             handler.add_getter(particle_set_name, 'get_mass', names = ('mass',))
@@ -1311,9 +1319,13 @@ class MESA(StellarEvolution, InternalStellarStructure):
         )
         handler.add_method(
             "new_stellar_model", 
-            (units.MSun, units.cm, units.g / units.cm**3, units.K, units.erg / units.s, 
+            (units.MSun, units.NO_UNIT, units.g / units.cm**3, units.K,  
                 handler.NO_UNIT, handler.NO_UNIT, handler.NO_UNIT, handler.NO_UNIT, handler.NO_UNIT, 
-                handler.NO_UNIT, handler.NO_UNIT, handler.NO_UNIT, handler.NO_UNIT,), 
+                handler.NO_UNIT, handler.NO_UNIT, handler.NO_UNIT, handler.NO_UNIT, handler.NO_UNIT,
+                handler.NO_UNIT, handler.NO_UNIT, handler.NO_UNIT, handler.NO_UNIT, handler.NO_UNIT, 
+                handler.NO_UNIT, handler.NO_UNIT, handler.NO_UNIT, handler.NO_UNIT, handler.NO_UNIT,
+                handler.NO_UNIT, handler.NO_UNIT,
+                ), 
             (handler.ERROR_CODE,)
         )
         
@@ -1549,7 +1561,85 @@ class MESA(StellarEvolution, InternalStellarStructure):
         )
 
     def new_particle_from_model(self, internal_structure, current_age=0|units.Myr, key=None):
-        pass
+        if isinstance(internal_structure, dict):
+            if "dq" in internal_structure:
+                mass_profile = internal_structure['dq'][::-1]
+            else:
+                cumulative_mass_profile = [0.0] | units.MSun
+                cumulative_mass_profile.extend(internal_structure['mass'])
+                mass_profile = (cumulative_mass_profile[1:] - cumulative_mass_profile[:-1])[::-1]
+                mass_profile = mass_profile/cumulative_mass_profile[-1]
 
+            star_mass = numpy.zeros(numpy.size(internal_structure['temperature']))
+            star_mass[:] = cumulative_mass_profile[-1]
+            empty_comp = numpy.zeros(numpy.size(internal_structure['temperature']))
+            empty_comp[:] = 10**-50
+
+            self.new_stellar_model(
+                mass_profile,
+                internal_structure['rho'][::-1],
+                internal_structure['temperature'][::-1],
+                internal_structure['X_H'][::-1],
+                empty_comp,
+                internal_structure['X_He'][::-1],
+                internal_structure['X_C'][::-1],
+                internal_structure['X_N'][::-1],
+                internal_structure['X_O'][::-1],
+                internal_structure['X_Ne'][::-1],
+                internal_structure['X_Mg'][::-1],
+                internal_structure['X_Si'][::-1],
+                empty_comp,
+                empty_comp,
+                empty_comp,
+                empty_comp,
+                empty_comp,
+                empty_comp,
+                empty_comp,
+                internal_structure['X_Fe'][::-1],
+                empty_comp,
+                empty_comp,
+            )
+        else:
+            if hasattr(internal_structure, "dmass"):
+                mass_profile = internal_structure.dmass[::-1]
+            else:
+                cumulative_mass_profile = [0.0] | units.MSun
+                cumulative_mass_profile.extend(internal_structure.mass)
+                mass_profile = (cumulative_mass_profile[1:] - cumulative_mass_profile[:-1])[::-1]
+                mass_profile = mass_profile/cumulative_mass_profile[-1]
+
+            star_mass = numpy.zeros(numpy.size(internal_structure.temperature))
+            star_mass[:] = cumulative_mass_profile[-1]
+            empty_comp = numpy.zeros(numpy.size(internal_structure.temperature))
+            empty_comp[:] = 10**-50
+
+
+            self.new_stellar_model(
+                mass_profile,
+                internal_structure.rho[::-1],
+                internal_structure.temperature[::-1],
+                internal_structure.X_H[::-1],
+                empty_comp,
+                internal_structure.X_He[::-1],
+                internal_structure.X_C[::-1],
+                internal_structure.X_N[::-1],
+                internal_structure.X_O[::-1],
+                internal_structure.X_Ne[::-1],
+                internal_structure.X_Mg[::-1],
+                internal_structure.X_Si[::-1],
+                empty_comp,
+                empty_comp,
+                empty_comp,
+                empty_comp,
+                empty_comp,
+                empty_comp,
+                empty_comp,
+                internal_structure.X_Fe[::-1],
+                empty_comp,
+                empty_comp,
+            )
+        tmp_star = datamodel.Particle(key=key)
+        tmp_star.age_tag = current_age
+        return self.imported_stars.add_particle(tmp_star)
 
 Mesa = MESA

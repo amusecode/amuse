@@ -5,7 +5,7 @@ from amuse.units import units
 from amuse.community.mesa_r15140.interface import MESA
 from amuse import datamodel
 
-stellar_evolution = MESA(inlist='inlist')
+stellar_evolution = MESA(inlist='./inlist')
 
 masses=[10.0] | units.MSun # Masses must be set here not in inlist
 stars = datamodel.Particles(len(masses), mass=masses)

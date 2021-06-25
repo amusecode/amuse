@@ -1171,32 +1171,121 @@ module amuse_mesa
    end function get_maximum_number_of_stars
 
 ! Create a new particle from a user supplied model (non-ZAMS, e.g. merger product)
-   integer function new_specified_stellar_model(d_mass, radius, rho, temperature, luminosity, &
-         XH, XHE, XC, XN, XO, XNE, XMG, XSI, XFE, n)
+   ! This expects all arrays to be in MESA order (1==surface n==center)
+      ! dq(k) is the fraction of star_mass between points k and k+1  
+      ! NOTE: near the surface, dq's can be extremely small
+      ! the code should only use q(k)-q(k+1) in cases where 0 is an okay value.
+   ! star_mass needs to be an array for the interface to work but we only need the total star mass in star_mass(1)
+   integer function new_stellar_model(star_mass, dq, rho, temperature, &
+         XH1,XHe3,XHe4,XC12,XN14,XO16,XNe20,XMg24,XSi28,XS32, &
+         XAr36,XCa40,XTi44,XCr48,XFe52,XFe54,XFe56,XCr56,XNi56, n)
       integer, intent(in) :: n
-      double precision, intent(in) :: d_mass(n), radius(n), rho(n), &
-         temperature(n), luminosity(n), XH(n), XHE(n), XC(n), XN(n), &
-         XO(n), XNE(n), XMG(n), XSI(n), XFE(n)
-      double precision :: x(n)
-      integer :: ierr, k
-
-      new_specified_stellar_model = -1
-     
-   end function new_specified_stellar_model
-
-   integer function new_stellar_model(d_mass, radius, rho, temperature, luminosity, &
-         XH, XHE, XC, XN, XO, XNE, XMG, XSI, XFE, n)
-      integer, intent(in) :: n
-      double precision, intent(in) :: d_mass(n), radius(n), rho(n), &
-         temperature(n), luminosity(n), XH(n), XHE(n), XC(n), XN(n), &
-         XO(n), XNE(n), XMG(n), XSI(n), XFE(n)
-      double precision :: total_mass, original_timestep, f
-      double precision :: original_timestep_limit, original_dxdt_nuc_f
-
-      logical :: do_T = .false.
-      logical :: do_restore_timestep = .false.
+      double precision,dimension(n), intent(in) :: star_mass,dq,&
+         XH1,XHe3,XHe4,XC12,XN14,XO16,XNe20,XMg24, XSi28,XS32, &
+         XAr36,XCa40,XTi44,XCr48,XFe52,XFe54,XFe56,XCr56,XNi56,&
+         rho, temperature
+      integer :: id, ierr
+      double precision,allocatable :: xa(:,:)
 
       new_stellar_model = -1
+
+      ! Load ZAMS to start with
+      new_stellar_model = new_zams_particle(id, star_mass(1))
+      if(new_stellar_model/=0) return
+
+      ! Set network
+      new_stellar_model = set_nuclear_network(id, 'approx21.net')
+      if(new_stellar_model/=0) return
+
+      allocate(xa(21,n))
+
+      ! Build composition array
+      call set_comp('h1',XH1)
+      if(new_stellar_model/=0) return
+
+      call set_comp('he3',XHe3)
+      if(new_stellar_model/=0) return
+
+      call set_comp('he4',XHe4)
+      if(new_stellar_model/=0) return
+
+      call set_comp('c12',XC12)
+      if(new_stellar_model/=0) return
+
+      call set_comp('o16',XO16)
+      if(new_stellar_model/=0) return
+
+      call set_comp('n14',XN14)
+      if(new_stellar_model/=0) return
+
+      call set_comp('ne20',XNe20)
+      if(new_stellar_model/=0) return
+
+      call set_comp('mg24',XMg24)
+      if(new_stellar_model/=0) return
+
+      call set_comp('si28',XSi28)
+      if(new_stellar_model/=0) return
+
+      call set_comp('s32',XS32)
+      if(new_stellar_model/=0) return
+
+      call set_comp('ar36',XAr36)
+      if(new_stellar_model/=0) return
+
+      call set_comp('ca40',XCa40)
+      if(new_stellar_model/=0) return
+
+      call set_comp('ti44',Xti44)
+      if(new_stellar_model/=0) return
+
+      call set_comp('cr48',Xcr48)
+      if(new_stellar_model/=0) return
+
+      call set_comp('fe52',Xfe52)
+      if(new_stellar_model/=0) return
+
+      call set_comp('fe54',Xfe54)
+      if(new_stellar_model/=0) return
+
+      call set_comp('fe56',Xfe56)
+      if(new_stellar_model/=0) return
+
+      call set_comp('cr56',Xcr56)
+      if(new_stellar_model/=0) return
+
+      call set_comp('ni56',Xni56)
+      if(new_stellar_model/=0) return
+
+      ! Relax composition
+      call relax_to_new_comp(id, xa, dq, ierr)
+      if(ierr/=MESA_SUCESS) then
+         new_stellar_model = ierr
+         return
+      end if
+
+      ! Relax entropy profile
+      call relax_to_new_entropy(id, dq, temperature, rho, ierr)
+      if(ierr/=MESA_SUCESS) then
+         new_stellar_model = ierr
+         return
+      end if
+
+      contains 
+      
+         subroutine set_comp(iso,comp)
+            character(len=*) :: iso
+            double precision,dimension(n) :: comp
+            integer :: net_id, ierr
+            
+            call get_species_id(id, iso, net_id, ierr)
+            if(ierr/=MESA_SUCESS) then
+               new_stellar_model = ierr
+               return
+            end if
+            xa(net_id,:) = max(1d-50,comp)
+            
+         end subroutine set_comp
 
    end function new_stellar_model
 
@@ -1257,5 +1346,10 @@ module amuse_mesa
       double precision, intent(in) :: AMUSE_value
       set_radius_at_zone = -1
    end function set_radius_at_zone
+
+
+
+
+
 
 end module AMUSE_mesa
