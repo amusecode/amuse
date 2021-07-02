@@ -2267,13 +2267,66 @@ class TestParticlesWithTransformedAttributes(amusetest.TestCase):
 
         self.assertEqual(stars[0].mass, 10 | units.g)
         self.assertEqual(converted_stars[0].mass, 20 | units.g)
+        self.assertEqual(converted_stars.mass, [20,40] | units.g)
 
 
         converted_stars[0].mass = 40 | units.g
 
         self.assertEqual(stars[0].mass, 20 | units.g)
 
+    def test2(self):
+        stars = datamodel.Particles(2)
+        stars[0].mass = 10 | units.g
+        stars[1].mass = 20 | units.g
 
+        def get_function(attribute, quantity):
+            return quantity * 2
+
+        def set_function(attribute, quantity):
+            return quantity / 2
+
+        converted_stars = datamodel.ParticlesWithAttributesTransformed(
+            stars,
+            get_function,
+            set_function
+        )
+
+        p=datamodel.Particle(mass=50. | units.g)
+        converted_stars.add_particle(p)
+
+        self.assertEqual(stars[2].mass, 25. | units.g)
+        self.assertEqual(converted_stars[2].mass, 50 | units.g)
+
+        p=datamodel.Particle(mass=100. | units.g)
+        stars.add_particle(p)
+
+        self.assertEqual(stars[3].mass, 100. | units.g)
+        self.assertEqual(converted_stars[3].mass, 200 | units.g)
+
+    def test3(self):
+        stars = datamodel.Particles(3)
+        stars[0].mass = 10 | units.g
+        stars[1].mass = 20 | units.g
+        stars[2].mass = 30 | units.g
+
+        def get_function(attribute, quantity):
+            return quantity * 2
+
+        def set_function(attribute, quantity):
+            return quantity / 2
+
+        converted_stars = datamodel.ParticlesWithAttributesTransformed(
+            stars,
+            get_function,
+            set_function
+        )
+
+        sub=converted_stars[0:2]
+        self.assertEqual(sub[0].mass, 20 | units.g)
+        self.assertEqual(sub[1].mass, 40 | units.g)
+        stars[0].mass=1 | units.g
+        self.assertEqual(converted_stars[0].mass, 2 | units.g)
+        self.assertEqual(sub[0].mass, 2 | units.g)
 
     def test4(self):
 
@@ -2304,6 +2357,109 @@ class TestParticlesWithTransformedAttributes(amusetest.TestCase):
         self.assertAlmostRelativeEquals(converted_stars[0].velocity, [0,-0.5,0] | units.kms)
         self.assertAlmostRelativeEquals(converted_stars[1].velocity, [0,0.5,0] | units.kms)
 
+class TestTransformedParticles(amusetest.TestCase):
+
+    def test1(self):
+        stars = datamodel.Particles(2)
+        stars[0].mass = 10 | units.g
+        stars[1].mass = 20 | units.g
+
+        def forward_transformation(mass):
+            return [2*mass]
+
+        def backward_transformation(mass):
+            return [mass/2]
+
+        converted_stars = datamodel.TransformedParticles(
+            stars,
+            ["mass"],
+            forward_transformation,
+            ["mass"],
+            backward_transformation
+        )
+
+        self.assertEqual(stars[0].mass, 10 | units.g)
+        self.assertEqual(converted_stars[0].mass, 20 | units.g)
+        self.assertEqual(converted_stars.mass, [20,40] | units.g)
+
+        converted_stars[0].mass = 40 | units.g
+
+        self.assertEqual(stars[0].mass, 20 | units.g)
+        self.assertEqual(converted_stars[0].mass, 40 | units.g)
+
+    def test2(self):
+        stars = datamodel.Particles(2)
+        stars.mass = [10,20] | units.g
+        stars.x = [0,1] | units.m
+        stars.y = [1,0] | units.m
+
+        def forward_transformation(x,y):
+            return (x+y,x-y)
+
+        def backward_transformation(x,y):
+            return [(x+y)/2, (x-y)/2]
+
+        converted_stars = datamodel.TransformedParticles(
+            stars,
+            ["x","y"],
+            forward_transformation,
+            ["x","y"],
+            backward_transformation
+        )
+
+        self.assertEqual(stars[0].mass, 10 | units.g)
+        self.assertEqual(converted_stars[0].mass, 10 | units.g)
+        self.assertEqual(converted_stars.mass, [10,20] | units.g)
+        
+        converted_stars[0].mass = 20 | units.g
+        self.assertEqual(stars[0].mass, 20 | units.g)
+        self.assertEqual(converted_stars[0].mass, 20 | units.g)
+
+        self.assertEqual(converted_stars.x, [1,1]| units.m)
+        self.assertEqual(converted_stars.y, [-1,1]| units.m)
+
+        converted_stars[0].x=10. | units.m
+        converted_stars[0].y=20.  | units.m
+
+        self.assertEqual(converted_stars.x, [10,1]| units.m)
+        self.assertEqual(converted_stars.y, [20,1]| units.m)
+
+        self.assertEqual(stars.x, [15,1]| units.m)
+        self.assertEqual(stars.y, [-5,0]| units.m)
+
+    def test3(self):
+        stars = datamodel.Particles(2)
+        stars.mass = [10,20] | units.g
+        stars.x = [0,1] | units.m
+        stars.y = [1,0] | units.m
+
+        def forward_transformation(x,y):
+            return (x+y,x-y)
+
+        def backward_transformation(x,y):
+            return [(x+y)/2, (x-y)/2]
+
+        converted_stars = datamodel.TransformedParticles(
+            stars,
+            ["x","y"],
+            forward_transformation,
+            ["x","y"],
+            backward_transformation
+        )
+
+        p=datamodel.Particle(mass=1.| units.kg)
+        converted_stars.add_particle(p)
+        self.assertEqual(stars.y, [1,0,0] | units.m)
+        self.assertEqual(stars.mass, [10,20,1000] | units.g)
+
+        p=datamodel.Particle(mass=1.| units.kg,x=10.| units.m, y=20.| units.m)
+        converted_stars.add_particle(p)
+        self.assertEqual(converted_stars.y, [-1,1,0,20] | units.m)
+        self.assertEqual(stars.y, [1,0,0,-5] | units.m)
+        self.assertEqual(stars.mass, [10,20,1000,1000] | units.g)
+
+        
+        
 
 
 class TestParticlesWithChildren(amusetest.TestCase):
