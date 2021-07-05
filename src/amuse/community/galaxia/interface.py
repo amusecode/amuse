@@ -409,6 +409,21 @@ class BarAndSpiralsInterface(CodeInterface, CommonCodeInterface):
         return function
 
     @legacy_function
+    def set_tin():
+        function = LegacyFunctionSpecification()
+        function.addParameter('Tin', dtype='float64', direction=function.IN, unit=97781310.5721*units.yr)
+        function.result_type = 'int32'
+        return function
+
+    @legacy_function
+    def get_tin():
+        function = LegacyFunctionSpecification()
+        function.addParameter('Tin', dtype='float64', direction=function.OUT, unit=97781310.5721*units.yr)
+        function.result_type = 'int32'
+        return function
+
+
+    @legacy_function
     def get_tgrowth():
         function = LegacyFunctionSpecification()
         function.addParameter('tgrowth_bar', dtype='float64', direction=function.OUT, unit=97781310.5721*units.yr)
@@ -986,7 +1001,15 @@ class BarAndSpirals3D(CommonCode, GravityFieldCode):
            "get_nbt",
            "set_nbt",
            "nbt",
-           "The number of rotations of the bar in the model. This is to set tgrow",
+           "The number of rotations over which bar in the model grows. This is to set tgrow.",
+           default_value=0
+           )
+
+        handler.add_method_parameter(
+           "get_tin",
+           "set_tin",
+           "Tin",
+           "Bar formation start time. (takes nbt bar rotations). Bar forms from bulge mass.",
            default_value=0
            )
 
