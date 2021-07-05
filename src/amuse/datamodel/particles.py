@@ -8,6 +8,7 @@ from amuse.datamodel import trees
 from amuse.units import constants
 from amuse.units import units
 from amuse.units import quantities
+from amuse.units import trigo
 from amuse.units.quantities import Quantity
 from amuse.units.quantities import new_quantity
 from amuse.units.quantities import is_quantity
@@ -3093,6 +3094,60 @@ class TransformedParticles(ParticlesWithAttributesTransformed):
     This is a more flexible reimplementation of ParticlesWithAttributesTransformed such
     that general coordinate trasnformations are possible.
     """
+
+    @classmethod
+    def translate(cls, particles, position, velocity):
+        def forward(x,y,z,vx,vy,vz):
+            return [x+position[0],
+                    y+position[1],
+                    z+position[2],
+                    vx+velocity[0],
+                    vy+velocity[1],
+                    vz+velocity[2],]
+
+        def reverse(x,y,z,vx,vy,vz):
+            return [x-position[0],
+                    y-position[1],
+                    z-position[2],
+                    vx-velocity[0],
+                    vy-velocity[1],
+                    vz-velocity[2],]
+
+        return cls(
+            particles,
+            ["x","y","z","vx","vy","vz"],
+            forward,
+            ["x","y","z","vx","vy","vz"],
+            reverse
+        )
+
+    @classmethod
+    def rotate_z(cls, particles, angle, omega):
+        def forward(x,y,vx,vy, inverse=False):
+            _angle=angle
+            _omega=omega
+            if inverse:
+                _angle=-angle
+                _omega=-omega
+    
+            C1 = vx + _omega*y
+            C2 = vy - _omega*x
+            x_ =  x * trigo.cos(_angle) + y * trigo.sin(_angle)
+            y_ = -x * trigo.sin(_angle) + y * trigo.cos(_angle)
+            vx_ = C1*trigo.cos(_angle) + C2*trigo.sin(_angle)
+            vy_ = C2*trigo.cos(_angle) - C1*trigo.sin(_angle)
+            return x_,y_,vx_,vy_
+
+        def reverse(x,y,vx,vy):
+            return forward(x,y,vx,vy, inverse=True)
+
+        return cls(
+            particles,
+            ["x","y","vx","vy"],
+            forward,
+            ["x","y","vx","vy"],
+            reverse
+        )
 
     def __init__(self, particles, target_attributes, 
         forward_transformation, source_attributes, reverse_transformation=None):

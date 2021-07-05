@@ -2458,7 +2458,74 @@ class TestTransformedParticles(amusetest.TestCase):
         self.assertEqual(stars.y, [1,0,0,-5] | units.m)
         self.assertEqual(stars.mass, [10,20,1000,1000] | units.g)
 
+    def test4(self):
+
+        stars = datamodel.Particles(2)
+        stars[0].mass = 1 | units.MSun
+        stars[0].position = [0,0,0] | units.AU
+        stars[0].velocity = [0,1,0] | units.kms
+
+        stars[1].mass = 1 | units.MSun
+        stars[1].position = [1,0,0] | units.AU
+        stars[1].velocity = [0,2,0] | units.kms
+
+        com = stars.center_of_mass()
+        cov = stars.center_of_mass_velocity()
+
+        converted_stars = datamodel.TransformedParticles.translate(
+            stars,
+            -com,
+            -cov
+        )
+
+        com1 = converted_stars.center_of_mass()
+        cov1 = converted_stars.center_of_mass_velocity()
+        self.assertAlmostRelativeEquals(com1, [0,0,0] | units.AU)
+        self.assertAlmostRelativeEquals(cov1, [0,0,0] | units.kms)
+        self.assertAlmostRelativeEquals(converted_stars[0].position, [-0.5,0,0] | units.AU)
+        self.assertAlmostRelativeEquals(converted_stars[1].position, [0.5,0,0] | units.AU)
+        self.assertAlmostRelativeEquals(converted_stars[0].velocity, [0,-0.5,0] | units.kms)
+        self.assertAlmostRelativeEquals(converted_stars[1].velocity, [0,0.5,0] | units.kms)
         
+    def test5(self):
+
+        stars = datamodel.Particles(2)
+        stars[0].mass = 1 | units.MSun
+        stars[0].position = [1,0,0] | units.AU
+        stars[0].velocity = [0,2*numpy.pi,0] | units.AU/units.yr
+
+        stars[1].mass = 1 | units.MSun
+        stars[1].position = [0,1,0] | units.AU
+        stars[1].velocity = [0,0,0] | units.AU/units.yr
+
+        angle=0.*numpy.pi
+        omega=2* numpy.pi| units.rad/units.yr
+
+        converted_stars = datamodel.TransformedParticles.rotate_z(
+            stars,
+            angle,
+            omega
+        )
+
+        self.assertAlmostRelativeEquals(converted_stars[0].position, [1,0,0] | units.AU)
+        self.assertAlmostRelativeEquals(converted_stars[1].position, [0,1,0] | units.AU)
+        self.assertAlmostRelativeEquals(converted_stars[0].velocity, [0,0,0] | units.AU/units.yr)
+        self.assertAlmostRelativeEquals(converted_stars[1].velocity, [2*numpy.pi,0,0] | units.AU/units.yr)
+
+        angle=numpy.pi/2
+        omega=2* numpy.pi| units.rad/units.yr
+
+        converted_stars = datamodel.TransformedParticles.rotate_z(
+            stars,
+            angle,
+            omega
+        )
+
+        self.assertAlmostRelativeEquals(converted_stars[0].position, [0,-1,0] | units.AU)
+        self.assertAlmostRelativeEquals(converted_stars[1].position, [1,0,0] | units.AU)
+        self.assertAlmostRelativeEquals(converted_stars[0].velocity, [0,0,0] | units.AU/units.yr)
+        self.assertAlmostRelativeEquals(converted_stars[1].velocity, [0.,-2*numpy.pi,0] | units.AU/units.yr)
+
         
 
 
