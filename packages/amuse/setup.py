@@ -64,7 +64,7 @@ except ImportError:
     use_scm_version = {
         "root": "../..",
         "relative_to": __file__,
-        "write_to": "src/amuse/version.py",
+        # "write_to": "src/amuse/version.py",
     }
 
 setup(
