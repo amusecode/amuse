@@ -1,17 +1,14 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Make 2D maps from SPH particles
+Make 2D maps from SPH particles using FiMap
 """
 
 import logging
 import numpy
 from amuse.units import units, constants, nbody_system
 from amuse.datamodel.rotation import new_rotation_matrix, rotate
-try:
-    from amuse.community.fi.interface import FiMap
-except ImportError:
-    FiMap = False
+from amuse.community.fi.interface import FiMap
 
 
 def gas_mean_molecular_weight(h2ratio=1):
@@ -291,12 +288,6 @@ class MapHydro():
         self.__origin = origin
         if self.__state in ["RUN"]:
             self.__mapper.parameters.image_target = self.__origin
-
-        # for particles in (self.__gas, self.__stars, self.__sinks):
-        #     if particles is not None:
-        #         if not particles.is_empty():
-        #             particles.position -= delta_origin
-        # self.__state = "EDIT"
 
     @property
     def height(self):
