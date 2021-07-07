@@ -1110,6 +1110,11 @@ class AbstractParticleSet(AbstractSet):
     def get_containing_set(self):
         return self
 
+    def get_subsets(self):
+        raise Exception("not implemented/ not a ParticlesSuperset or derived")
+
+    def get_subset(self, name):
+        raise Exception("not implemented/ not a ParticlesSuperset or derived")
 
 class Particles(AbstractParticleSet):
     """
@@ -3162,26 +3167,19 @@ class TransformedParticles(ParticlesWithAttributesTransformed):
             self._private.forward_transformation = lambda *x:x
             self._private.reverse_transformation = lambda *x:x
           
+    def _factory(self, particles):
+        return TransformedParticles( particles,
+                    self._private.target_attributes,
+                    self._private.forward_transformation,
+                    self._private.source_attributes,
+                    self._private.reverse_transformation )
 
     def compressed(self):
-        return TransformedParticles(
-            self._private.particles.compressed(),
-            self._private.source_attributes,
-            self._private.target_attributes,
-            self._private.forward_transformation,
-            self._private.reverse_transformation,
-        )
+        return self._factory(self._private.particles.compressed())
 
     def shallow_copy(self):
         copiedParticles =  self._private.particles.shallow_copy()
-        return TransformedParticles(
-            copiedParticles,
-            self._private.source_attributes,
-            self._private.target_attributes,
-            self._private.forward_transformation,
-            self._private.reverse_transformation,
-        )
-
+        return self._factory(copiedParticles)
 
     def get_values_in_store(self, indices, attributes):
         
@@ -3217,13 +3215,7 @@ class TransformedParticles(ParticlesWithAttributesTransformed):
                     if x is None:
                         convert_objects.append(x)
                     else:
-                        transformed_x=TransformedParticles(
-                                x.as_set(),
-                                self._private.source_attributes,
-                                self._private.target_attributes,
-                                self._private.forward_transformation,
-                                self._private.reverse_transformation,
-        )
+                        transformed_x=self._factory(x.as_set())
                         if isinstance(x, Particle):
                             transformed_x=x[0]
                         convert_objects.append(transformed_x)
@@ -3309,24 +3301,17 @@ class TransformedParticles(ParticlesWithAttributesTransformed):
         return self._private.particles.get_timestamp()
 
     def savepoint(self, timestamp=None, **kwargs):
-        return TransformedParticles(
-            self._private.particles.savepoint(timestamp),
-            self._private.source_attributes,
-            self._private.target_attributes,
-            self._private.forward_transformation,
-            self._private.reverse_transformation,
-        )
-
+        return self._factory(self._private.particles.savepoint(timestamp))
 
     def previous_state(self):
-        return TransformedParticles(
-            self._private.particles.previous_state(),
-            self._private.source_attributes,
-            self._private.target_attributes,
-            self._private.forward_transformation,
-            self._private.reverse_transformation,
-        )
+        return self._factory(self._private.particles.previous_state())
 
+    def get_subsets(self):
+        return list([  self._factory(particles) for particles in self._private.particles.get_subsets()])
+
+    def get_subset(self, name):
+        return self._factory(self._private.particles.get_subset(name))
+        
 
 class ParticleInformationChannel(object):
 
