@@ -1379,6 +1379,8 @@ def searchsorted(a, v, **kwargs):
     else:
         return numpy.searchsorted(a, v, **kwargs)
 
+def sign(x):
+    return numpy.sign(to_quantity(x).number)
 
 if HAS_ASTROPY:
     def to_astropy(quantity):

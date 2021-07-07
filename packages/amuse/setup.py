@@ -17,7 +17,8 @@ install_requires = [
     'amuse-framework>=%s' % version,
     'amuse-athena>=%s' % version,
     'amuse-bhtree>=%s' % version,
-    'amuse-brutus>=%s' % version,
+# Brutus won't build on macOS as mpfr is not found - #209
+#    'amuse-brutus>=%s' % version,
     'amuse-bse>=%s' % version,
     'amuse-capreole>=%s' % version,
     'amuse-evtwin>=%s' % version,
@@ -41,8 +42,7 @@ install_requires = [
     'amuse-phigrape>=%s' % version,
     'amuse-seba>=%s' % version,
     'amuse-secularmultiple>=%s' % version,
-# until C++ MPI code is replaced/fixed
-#    'amuse-simplex>=%s' % version,
+    'amuse-simplex>=%s' % version,
     'amuse-smalln>=%s' % version,
     'amuse-sphray>=%s' % version,
     'amuse-sse>=%s' % version,
@@ -64,7 +64,7 @@ except ImportError:
     use_scm_version = {
         "root": "../..",
         "relative_to": __file__,
-        "write_to": "src/amuse/version.py",
+        # "write_to": "src/amuse/version.py",
     }
 
 setup(

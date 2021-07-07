@@ -87,6 +87,7 @@
 import threading
 
 from amuse.units import quantities
+from amuse.units.quantities import sign
 from amuse.units import units
 
 from amuse import datamodel
@@ -146,7 +147,9 @@ class bridge(object):
             if self.timestep is None:
                 timestep=tend-self.time
             else:
-                timestep = self.timestep
+                timestep=self.timestep
+        
+        timestep=sign(tend-self.time)*abs(timestep)
                 
         if self.method==None:
           return self.evolve_joined_leapfrog(tend,timestep)
@@ -154,7 +157,7 @@ class bridge(object):
           return self.evolve_simple_steps(tend,timestep)          
 
     def evolve_simple_steps(self,tend,timestep):
-        while self.time < (tend-timestep/2):
+        while sign(timestep)*(tend - self.time) > sign(timestep)*timestep/2 :    #self.time < (tend-timestep/2):
             self._drift_time=self.time
             self._kick_time=self.time
             self.method(self.kick_systems,self.drift_systems_dt, timestep)
@@ -165,7 +168,7 @@ class bridge(object):
         first=True
         self._drift_time=self.time
         self._kick_time=self.time
-        while self.time < (tend-timestep/2):
+        while sign(timestep)*(tend - self.time) > sign(timestep)*timestep/2:      #self.time < (tend-timestep/2):
              if first:      
                  self.kick_systems(timestep/2)
                  first=False
