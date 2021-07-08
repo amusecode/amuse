@@ -77,7 +77,7 @@ void evolve_bs(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt)
 }
 
 
-#define FREEBSYS_ARRAY(arr)  for(i=0; arr[i].part!=NULL && i<JMAX; i++) free(arr[i].part);
+#define FREEBSYS_ARRAY(arr)  for(i=0; i<JMAX && arr[i].part!=NULL; i++) {free(arr[i].part);arr[i].part=NULL;}
 #define ZEROBSYS_ARRAY(arr)  for(i=0; i<JMAX; i++) arr[i].part=NULL;
 #define ALLOCBSYS(bs,N) { \
                           if(bs.part==NULL) \
@@ -88,6 +88,14 @@ void evolve_bs(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt)
                             if(bs.n != N) ENDRUN("bsys allocated but mismatch\n"); \
                           if(!bs.part) ENDRUN("bsys allocation error\n"); \
                         }
+#define CHECKBSYS(arr) for(i=0; i<JMAX;i++) { \
+                          if(arr[i].part!=NULL) \
+                          { \
+                            LOG("bsys not freed mismatch\n"); \
+                          } \
+                      }
+
+
 
 void sys_to_bsys(struct sys s, struct bsys bs)
 {
@@ -189,6 +197,8 @@ static int BulirschStoer(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DO
   FREEBSYS_ARRAY(bsys_array);
   FREEBSYS_ARRAY(bsys_array1);
   free(tmpsys.part);
+  CHECKBSYS(bsys_array);
+  CHECKBSYS(bsys_array1);
   return 1;
 }
 

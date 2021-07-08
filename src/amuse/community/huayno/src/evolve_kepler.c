@@ -50,7 +50,7 @@ void evolve_kepler(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE d
 // special solver to test kepler
 void evolve_kepler_test(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt) {
   struct particle *central=s.part;
-  struct particle p1,p2;
+  struct particle p[2];
   struct sys s2;
 
   CHECK_TIMESTEP(etime,stime,dt,clevel);
@@ -60,18 +60,18 @@ void evolve_kepler_test(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOU
   for(struct particle *i=s.part;i<=s.last;i++)
   {
     if(i==central) continue;
-    p1=*central;
-    p2=*i;
+    p[0]=*central;
+    p[1]=*i;
 
-    p1.mass=central->mass+i->mass;
-    p2.mass=0;
+    p[0].mass=central->mass+i->mass;
+    p[1].mass=0;
 
     s2.n=2;
-    s2.part=&p1;
-    s2.last=&p2;
+    s2.part=&p[0];
+    s2.last=&p[1];
     evolve_kepler(clevel,s2,stime,etime,dt);
-    p2.mass=i->mass;
-    *i=p2;
+    p[1].mass=i->mass;
+    *i=p[1];
   }
   for(int k=0;k<3;k++) central->pos[k]+=central->vel[k]*dt;
 }

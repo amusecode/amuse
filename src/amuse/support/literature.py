@@ -31,6 +31,7 @@ LiteratureReference = namedtuple(
 
 class TrackLiteratureReferences:
     """
+        .. [#] https://doi.org/10.5281/zenodo.4946130
         .. [#] [2018araa.book.....P] Portegies Zwart, S. & McMillan, S.L.W., 2018
         .. [#] [2013CoPhC.183..456P] ** Portegies Zwart, S. et al., 2013
         .. [#] [2013A&A...557A..84P] ** Pelupessy, F. I. et al., 2013

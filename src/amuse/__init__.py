@@ -46,4 +46,10 @@ try:
 except Exception as ex:
     message="Configuration not read in - or configuration invalid, exception:\n"+str(ex)
     config=NoConfig(message)
-    
+
+
+
+# always report AMUSE reference information
+from amuse.support.literature import TrackLiteratureReferences
+
+TrackLiteratureReferences.default()

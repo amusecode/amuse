@@ -339,6 +339,7 @@ static void kick_cpu(struct sys s1, struct sys s2, DOUBLE dt)
     acc[2]=0.;
     for(j=0;j<s2.n;j++)
     {
+      if(s2.part[j].mass==0) continue;
 //      if(s1.part+i==s2.part+j) continue; 
       dx[0]=s1.part[i].pos[0]-s2.part[j].pos[0];
       dx[1]=s1.part[i].pos[1]-s2.part[j].pos[1];
