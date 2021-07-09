@@ -10,6 +10,7 @@ from amuse.units.quantities import VectorQuantity
 from amuse.support.interface import InCodeComponentImplementation
 from amuse.support.options import option
 
+
 class MESAInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolutionInterface, 
         InternalStellarStructureInterface, CodeWithDataDirectories): 
     """
@@ -137,7 +138,7 @@ class MESAInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolutionIn
         Load a pre-built MESA model (.mod file)
         """
         function = LegacyFunctionSpecification()  
-        function.can_handle_array = True
+        
         function.addParameter('index_of_the_star', dtype='int32', direction=function.OUT
             , description="The new index for the star. This index can be used to refer to this star in other functions")
         function.addParameter('filename', dtype='string', direction=function.IN
@@ -211,7 +212,7 @@ class MESAInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolutionIn
         Set a new user-specified mass transfer rate of the star. (negative for winds, positive for accretion)
         """
         function = LegacyFunctionSpecification() 
-        function.can_handle_array = True 
+         
         function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
             , description="The index of the star to get the value of")
         function.addParameter('mass_change', dtype='float64', direction=function.IN
@@ -261,30 +262,6 @@ class MESAInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolutionIn
         function.result_doc = """
         0 - OK
             The value was retrieved.
-        -1 - ERROR
-            A star with the given index was not found.
-        -2 - ERROR
-            A zone with the given index was not found.
-        """
-        return function
-    
-    @legacy_function
-    def set_luminosity_at_zone():
-        """
-        Set the luminosity at the specified zone/mesh-cell of the star.
-        """
-        function = LegacyFunctionSpecification() 
-        function.can_handle_array = True 
-        function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
-            , description="The index of the star to set the value of")
-        function.addParameter('zone', dtype='int32', direction=function.IN
-            , description="The zone/mesh-cell of the star to set the value of")
-        function.addParameter('lum_i', dtype='float64', direction=function.IN
-            , description="The luminosity at the specified zone/mesh-cell of the star.")
-        function.result_type = 'int32'
-        function.result_doc = """
-        0 - OK
-            The value was set.
         -1 - ERROR
             A star with the given index was not found.
         -2 - ERROR
@@ -462,6 +439,7 @@ class MESAInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolutionIn
         Evolution will stop once the star has reached this maximum age.
         """
         function = LegacyFunctionSpecification()  
+        function.can_handle_array = True
         function.addParameter('max_age_stop_condition', dtype='float64', direction=function.OUT
             , description="The current maximum age stop condition of this instance (in years).")
         function.result_type = 'int32'
@@ -499,6 +477,7 @@ class MESAInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolutionIn
         has decreased below this minimum timestep.
         """
         function = LegacyFunctionSpecification()  
+        function.can_handle_array = True
         function.addParameter('min_timestep_stop_condition', dtype='float64', direction=function.OUT
             , description="The current minimum timestep stop condition of this instance (in years).")
         function.result_type = 'int32'
@@ -536,6 +515,7 @@ class MESAInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolutionIn
         Evolution will stop after this number of iterations.
         """
         function = LegacyFunctionSpecification()  
+        function.can_handle_array = True
         function.addParameter('max_iter_stop_condition', dtype='int32', direction=function.OUT
             , description="The current maximum number of iterations of this instance.")
         function.result_type = 'int32'
@@ -903,9 +883,6 @@ class MESAInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolutionIn
         """
         return function
 
-
-
-
     @legacy_function   
     def new_stellar_model():
         """
@@ -916,11 +893,27 @@ class MESAInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolutionIn
         function.must_handle_array = True
         for par in ['star_mass','dq', 'rho', 'temperature', 
                 'XH1','XHe3','XHe4','XC12','XN14','XO16','XNe20','XMg24','XSi28','XS32',
-                'XAr36','XCa40','XTi44','XCr48','XFe52','XFe54','XFe56','XCr56','XNi56']:
+                'XAr36','XCa40','XTi44','XCr48','XFe52','XFe54','XFe56','XCr56','XNi56',
+                'prot','neut']:
             function.addParameter(par, dtype='float64', direction=function.IN)
         function.addParameter('n', 'int32', function.LENGTH)
         function.result_type = 'int32'
         return function
+
+    @legacy_function   
+    def finalize_stellar_model():
+        """
+        Finalize the new star model defined by 'new_stellar_model'.
+        """
+        function = LegacyFunctionSpecification()  
+        function.addParameter('index_of_the_star', dtype='int32', 
+            direction=function.OUT, description = "The new index for the star. "
+            "This index can be used to refer to this star in other functions")
+        function.addParameter('age_tag', dtype='float64', direction=function.IN, 
+            description = "The initial age of the star")
+        function.result_type = 'int32'
+        return function
+
 
     @legacy_function
     def get_profile_at_zone():
@@ -979,7 +972,7 @@ class MESAInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolutionIn
         After changing options in star_job this function must be called to make the changes to the star
         """
         function = LegacyFunctionSpecification() 
-        function.can_handle_array = True 
+         
         function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
             , description="The index of the star to update")
         function.result_type = 'int32'
@@ -998,7 +991,7 @@ class MESAInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolutionIn
         Retrieve the current nuclear network of the star.
         """
         function = LegacyFunctionSpecification() 
-        function.can_handle_array = True 
+        function.can_handle_array = False 
         function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
             , description="The index of the star to get the value of")
         function.addParameter('net_name', dtype='string', direction=function.OUT
@@ -1018,7 +1011,7 @@ class MESAInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolutionIn
         Set the current nuclear network of the star.
         """
         function = LegacyFunctionSpecification() 
-        function.can_handle_array = True 
+        function.can_handle_array = False
         function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
             , description="The index of the star to get the value of")
         function.addParameter('net_name', dtype='string', direction=function.IN
@@ -1030,6 +1023,33 @@ class MESAInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolutionIn
         -1 - ERROR
             A star with the given index was not found.
         """
+        return function
+
+
+    @legacy_function   
+    def get_age():
+        """
+        Retrieve the current age of the star
+        """
+        function = LegacyFunctionSpecification() 
+        function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
+            , description="The index of the star to get the value of")
+        function.addParameter('star_age', dtype='float64', direction=function.OUT
+            , description="The current age of the star")
+        function.result_type = 'int32'
+        return function
+
+    @legacy_function   
+    def set_age():
+        """
+        Set the current age of the star
+        """
+        function = LegacyFunctionSpecification() 
+        function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
+            , description="The index of the star to get the value of")
+        function.addParameter('star_age', dtype='float64', direction=function.IN
+            , description="The new age of the star")
+        function.result_type = 'int32'
         return function
 
 
@@ -1060,8 +1080,7 @@ class MESA(StellarEvolution, InternalStellarStructure):
             gyre_in
         )
         self.model_time = 0.0 | units.yr
-        
-    
+
     def define_parameters(self, handler):
         
         handler.add_method_parameter(
@@ -1108,7 +1127,7 @@ class MESA(StellarEvolution, InternalStellarStructure):
             index_to_default_set = 0)
         
         handler.define_set('imported_stars', 'index_of_the_star')
-        #handler.set_new('imported_stars', 'finalize_stellar_model')
+        handler.set_new('imported_stars', 'finalize_stellar_model')
         handler.set_delete('imported_stars', 'delete_star')
         
         handler.define_set('native_stars', 'index_of_the_star')
@@ -1136,6 +1155,7 @@ class MESA(StellarEvolution, InternalStellarStructure):
             handler.add_getter(particle_set_name, 'get_core_mass', names = ('core_mass',))
             handler.add_getter(particle_set_name, 'get_mass_loss_rate', names = ('wind',))
             handler.add_getter(particle_set_name, 'get_age', names = ('age',))
+            handler.add_getter(particle_set_name, 'set_age', names = ('age',))
             handler.add_getter(particle_set_name, 'get_time_step', names = ('time_step',))
             handler.add_setter(particle_set_name, 'set_time_step', names = ('time_step',))
             handler.add_getter(particle_set_name, 'get_luminosity', names = ('luminosity',))
@@ -1201,9 +1221,9 @@ class MESA(StellarEvolution, InternalStellarStructure):
         handler.add_method('EDIT', 'new_pre_ms_particle')
         handler.add_method('UPDATE', 'new_pre_ms_particle')
         handler.add_transition('RUN', 'UPDATE', 'new_pre_ms_particle', False)
-        # handler.add_method('EDIT', 'finalize_stellar_model')
-        # handler.add_method('UPDATE', 'finalize_stellar_model')
-        # handler.add_transition('RUN', 'UPDATE', 'finalize_stellar_model', False)
+        handler.add_method('EDIT', 'finalize_stellar_model')
+        handler.add_method('UPDATE', 'finalize_stellar_model')
+        handler.add_transition('RUN', 'UPDATE', 'finalize_stellar_model', False)
     
     def define_errorcodes(self, handler):
         InternalStellarStructure.define_errorcodes(self, handler)
@@ -1319,13 +1339,25 @@ class MESA(StellarEvolution, InternalStellarStructure):
         )
         handler.add_method(
             "new_stellar_model", 
-            (units.MSun, units.NO_UNIT, units.g / units.cm**3, units.K,  
+            (units.MSun, handler.NO_UNIT, units.g / units.cm**3, units.K,  
                 handler.NO_UNIT, handler.NO_UNIT, handler.NO_UNIT, handler.NO_UNIT, handler.NO_UNIT, 
                 handler.NO_UNIT, handler.NO_UNIT, handler.NO_UNIT, handler.NO_UNIT, handler.NO_UNIT,
                 handler.NO_UNIT, handler.NO_UNIT, handler.NO_UNIT, handler.NO_UNIT, handler.NO_UNIT, 
                 handler.NO_UNIT, handler.NO_UNIT, handler.NO_UNIT, handler.NO_UNIT, handler.NO_UNIT,
-                handler.NO_UNIT, handler.NO_UNIT,
+                handler.NO_UNIT,
                 ), 
+            (handler.ERROR_CODE,)
+        )
+
+        handler.add_method(
+            "get_star_age",
+            (handler.INDEX,),
+            (units.yr, handler.ERROR_CODE,)
+        )
+
+        handler.add_method(
+            "set_star_age",
+            (handler.INDEX,units.yr),
             (handler.ERROR_CODE,)
         )
         
@@ -1466,6 +1498,17 @@ class MESA(StellarEvolution, InternalStellarStructure):
             (handler.INDEX,),
             (handler.ERROR_CODE,)
         )
+        handler.add_method(
+            "set_age",
+            (handler.INDEX,),
+            (units.yr,handler.ERROR_CODE,)
+        )
+
+        handler.add_method(
+            "set_age",
+            (handler.INDEX,units.yr),
+            (handler.ERROR_CODE,)
+        )
 
         handler.add_method(
             "get_nuclear_network",
@@ -1478,7 +1521,32 @@ class MESA(StellarEvolution, InternalStellarStructure):
             (handler.INDEX,handler.NO_UNIT),
             (handler.ERROR_CODE,)
         )
-    
+
+        handler.add_method(
+            "start_composition_change",
+            (handler.INDEX,handler.NO_UNIT,handler.NO_UNIT,handler.NO_UNIT),
+            (handler.ERROR_CODE,)
+        )
+
+        handler.add_method(
+            "end_composition_change",
+            (handler.INDEX),
+            (handler.ERROR_CODE,),
+        )
+
+        handler.add_method(
+            "set_composition_vector",
+            (handler.INDEX,handler.NO_UNIT,handler.NO_UNIT,handler.NO_UNIT),
+            (handler.ERROR_CODE,),
+        )
+
+        handler.add_method(
+            "finalize_stellar_model", 
+            (units.yr,), 
+            (handler.INDEX, handler.ERROR_CODE,)
+        )
+
+
     def initialize_module_with_default_parameters(self):
         self.parameters.set_defaults()
         self.initialize_code()
@@ -1560,8 +1628,74 @@ class MESA(StellarEvolution, InternalStellarStructure):
             list(range(1,number_of_species+1))
         )
 
-    def new_particle_from_model(self, internal_structure, current_age=0|units.Myr, key=None):
-        if isinstance(internal_structure, dict):
+    def new_particle_from_model(self, internal_structure, current_age=0|units.yr, key=None):
+        
+        
+        if hasattr(internal_structure,'get_profile'):
+            mm = internal_structure
+
+            xqs = 10**mm.get_profile('logxq') # log(1-q)
+            temperature = mm.get_profile('temperature') | units.K
+            rho = mm.get_profile('rho') | units.g / units.cm**3
+            
+            empty_comp = numpy.zeros(numpy.size(xqs))
+            empty_comp[:] = 10**-50 # If you dont have anything in that isotope
+
+            sm = mm.get_history('star_mass')
+            star_mass = [sm]*len(xqs) | units.MSun
+            species = [mm.get_name_of_species(i) for i in range(1,mm.get_number_of_species()+1)]
+
+            xH1 = mm.get_profile('h1') if 'h1' in species else empty_comp
+            xHe3 = mm.get_profile('he3') if 'he3' in species else empty_comp
+            xHe4 = mm.get_profile('he4') if 'he4' in species else empty_comp
+            xC12 = mm.get_profile('c12') if 'c12' in species else empty_comp
+            xN14 = mm.get_profile('n14') if 'n14' in species else empty_comp
+            xO16 = mm.get_profile('o16') if 'o16' in species else empty_comp
+            xNe20 = mm.get_profile('ne20') if 'ne20' in species else empty_comp
+            xMg24 = mm.get_profile('mg24') if 'mg24' in species else empty_comp
+            xSi28 = mm.get_profile('si28') if 'si28' in species else empty_comp
+            xS32 = mm.get_profile('s32') if 's32' in species else empty_comp
+            xAr36 = mm.get_profile('ar36') if 'ar36' in species else empty_comp
+            xCa40 = mm.get_profile('ca40') if 'ca40' in species else empty_comp
+            xTi44 = mm.get_profile('ti44') if 'ti44' in species else empty_comp
+            xCr48 = mm.get_profile('cr48') if 'cr48' in species else empty_comp
+            xFe52 = mm.get_profile('fe52') if 'fe52' in species else empty_comp
+            xFe54 = mm.get_profile('fe54') if 'fe54' in species else empty_comp
+            xFe56 = mm.get_profile('fe56') if 'fe56' in species else empty_comp
+            xCr56 = mm.get_profile('cr56') if 'cr56' in species else empty_comp
+            xNi56 = mm.get_profile('ni56') if 'ni56' in species else empty_comp
+
+            self.new_stellar_model(
+                star_mass,
+                xqs[::-1],
+                rho[::-1],
+                temperature[::-1],
+                xH1[::-1],
+                xHe3[::-1],
+                xHe4[::-1],
+                xC12[::-1],
+                xN14[::-1],
+                xO16[::-1],
+                xNe20[::-1],
+                xMg24[::-1],
+                xSi28[::-1],
+                xS32[::-1],
+                xAr36[::-1],
+                xCa40[::-1],
+                xTi44[::-1],
+                xCr48[::-1],
+                xFe52[::-1],
+                xFe54[::-1],
+                xFe56[::-1],
+                xCr56[::-1],
+                xNi56[::-1],
+                empty_comp[::-1],
+                empty_comp[::-1],
+            )
+
+
+        
+        elif isinstance(internal_structure, dict):
             if "dq" in internal_structure:
                 mass_profile = internal_structure['dq'][::-1]
             else:
@@ -1576,6 +1710,7 @@ class MESA(StellarEvolution, InternalStellarStructure):
             empty_comp[:] = 10**-50
 
             self.new_stellar_model(
+                star_mass,
                 mass_profile,
                 internal_structure['rho'][::-1],
                 internal_structure['temperature'][::-1],
@@ -1598,10 +1733,12 @@ class MESA(StellarEvolution, InternalStellarStructure):
                 internal_structure['X_Fe'][::-1],
                 empty_comp,
                 empty_comp,
+                empty_comp[::-1],
+                empty_comp[::-1],
             )
         else:
-            if hasattr(internal_structure, "dmass"):
-                mass_profile = internal_structure.dmass[::-1]
+            if hasattr(internal_structure, "dq"):
+                mass_profile = internal_structure.dq[::-1]
             else:
                 cumulative_mass_profile = [0.0] | units.MSun
                 cumulative_mass_profile.extend(internal_structure.mass)
@@ -1615,6 +1752,7 @@ class MESA(StellarEvolution, InternalStellarStructure):
 
 
             self.new_stellar_model(
+                star_mass,
                 mass_profile,
                 internal_structure.rho[::-1],
                 internal_structure.temperature[::-1],
@@ -1637,6 +1775,8 @@ class MESA(StellarEvolution, InternalStellarStructure):
                 internal_structure.X_Fe[::-1],
                 empty_comp,
                 empty_comp,
+                empty_comp[::-1],
+                empty_comp[::-1],
             )
         tmp_star = datamodel.Particle(key=key)
         tmp_star.age_tag = current_age

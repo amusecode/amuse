@@ -1172,104 +1172,183 @@ module amuse_mesa
 
 ! Create a new particle from a user supplied model (non-ZAMS, e.g. merger product)
    ! This expects all arrays to be in MESA order (1==surface n==center)
-      ! dq(k) is the fraction of star_mass between points k and k+1  
-      ! NOTE: near the surface, dq's can be extremely small
-      ! the code should only use q(k)-q(k+1) in cases where 0 is an okay value.
+      ! 1-q (where q is mass fraction at zone i)
    ! star_mass needs to be an array for the interface to work but we only need the total star mass in star_mass(1)
-   integer function new_stellar_model(star_mass, dq, rho, temperature, &
+   
+   ! Negative return value indicates an error while positive is the new id
+   integer function new_stellar_model(star_mass, xq, rho, temperature, &
          XH1,XHe3,XHe4,XC12,XN14,XO16,XNe20,XMg24,XSi28,XS32, &
-         XAr36,XCa40,XTi44,XCr48,XFe52,XFe54,XFe56,XCr56,XNi56, n)
+         XAr36,XCa40,XTi44,XCr48,XFe52,XFe54,XFe56,XCr56,XNi56,&
+         prot,neut, n)
       integer, intent(in) :: n
-      double precision,dimension(n), intent(in) :: star_mass,dq,&
+      double precision,dimension(n), intent(in) :: star_mass, xq,&
          XH1,XHe3,XHe4,XC12,XN14,XO16,XNe20,XMg24, XSi28,XS32, &
          XAr36,XCa40,XTi44,XCr48,XFe52,XFe54,XFe56,XCr56,XNi56,&
+         prot, neut,&
          rho, temperature
       integer :: id, ierr
       double precision,allocatable :: xa(:,:)
 
       new_stellar_model = -1
+      new_model_defined = .false.
 
       ! Load ZAMS to start with
       new_stellar_model = new_zams_particle(id, star_mass(1))
-      if(new_stellar_model/=0) return
-
+      if(new_stellar_model/=0) then
+         new_stellar_model = -10
+         return
+      end if
       ! Set network
       new_stellar_model = set_nuclear_network(id, 'approx21.net')
-      if(new_stellar_model/=0) return
-
+      if(new_stellar_model/=0) then
+         new_stellar_model = -11
+         return
+      end if
       allocate(xa(21,n))
 
       ! Build composition array
       call set_comp('h1',XH1)
-      if(new_stellar_model/=0) return
+      if(new_stellar_model/=0) then
+         new_stellar_model = -12
+         return
+      end if
 
       call set_comp('he3',XHe3)
-      if(new_stellar_model/=0) return
+      if(new_stellar_model/=0) then
+         new_stellar_model = -13
+         return
+      end if
 
       call set_comp('he4',XHe4)
-      if(new_stellar_model/=0) return
+      if(new_stellar_model/=0) then
+         new_stellar_model = -14
+         return
+      end if
 
       call set_comp('c12',XC12)
-      if(new_stellar_model/=0) return
+      if(new_stellar_model/=0) then
+         new_stellar_model = -15
+         return
+      end if
 
       call set_comp('o16',XO16)
-      if(new_stellar_model/=0) return
+      if(new_stellar_model/=0) then
+         new_stellar_model = -16
+         return
+      end if
 
       call set_comp('n14',XN14)
-      if(new_stellar_model/=0) return
-
+      if(new_stellar_model/=0) then
+         new_stellar_model = -17
+         return
+      end if
       call set_comp('ne20',XNe20)
-      if(new_stellar_model/=0) return
+      if(new_stellar_model/=0) then
+         new_stellar_model = -18
+         return
+      end if
 
       call set_comp('mg24',XMg24)
-      if(new_stellar_model/=0) return
+      if(new_stellar_model/=0) then
+         new_stellar_model = -19
+         return
+      end if
 
       call set_comp('si28',XSi28)
-      if(new_stellar_model/=0) return
+      if(new_stellar_model/=0) then
+         new_stellar_model = -20
+         return
+      end if
 
       call set_comp('s32',XS32)
-      if(new_stellar_model/=0) return
+      if(new_stellar_model/=0) then
+         new_stellar_model = -21
+         return
+      end if
 
       call set_comp('ar36',XAr36)
-      if(new_stellar_model/=0) return
+      if(new_stellar_model/=0)then
+         new_stellar_model = -22
+         return
+      end if
 
       call set_comp('ca40',XCa40)
-      if(new_stellar_model/=0) return
+      if(new_stellar_model/=0) then
+         new_stellar_model = -23
+         return
+      end if
 
       call set_comp('ti44',Xti44)
-      if(new_stellar_model/=0) return
+      if(new_stellar_model/=0)then
+         new_stellar_model = -24
+         return
+      end if
 
       call set_comp('cr48',Xcr48)
-      if(new_stellar_model/=0) return
+      if(new_stellar_model/=0) then
+         new_stellar_model = -25
+         return
+      end if
 
       call set_comp('fe52',Xfe52)
-      if(new_stellar_model/=0) return
+      if(new_stellar_model/=0) then
+         new_stellar_model = -26
+         return
+      end if
 
       call set_comp('fe54',Xfe54)
-      if(new_stellar_model/=0) return
+      if(new_stellar_model/=0) then
+         new_stellar_model = -27
+         return
+      end if
 
       call set_comp('fe56',Xfe56)
-      if(new_stellar_model/=0) return
+      if(new_stellar_model/=0) then
+         new_stellar_model = -28
+         return
+      end if
 
       call set_comp('cr56',Xcr56)
-      if(new_stellar_model/=0) return
+      if(new_stellar_model/=0) then
+         new_stellar_model = -29
+         return
+      end if
 
       call set_comp('ni56',Xni56)
-      if(new_stellar_model/=0) return
+      if(new_stellar_model/=0) then
+         new_stellar_model = -30
+         return
+      end if
+
+      call set_comp('prot',prot)
+      if(new_stellar_model/=0) then
+         new_stellar_model = -31
+         return
+      end if
+
+      call set_comp('neut',neut)
+      if(new_stellar_model/=0) then
+         new_stellar_model = -32
+         return
+      end if
 
       ! Relax composition
-      call relax_to_new_comp(id, xa, dq, ierr)
+      call relax_to_new_comp(id, xa, xq, ierr)
       if(ierr/=MESA_SUCESS) then
-         new_stellar_model = ierr
+         new_stellar_model = -33
          return
       end if
 
       ! Relax entropy profile
-      call relax_to_new_entropy(id, dq, temperature, rho, ierr)
+      call relax_to_new_entropy(id, xq, temperature, rho, ierr)
       if(ierr/=MESA_SUCESS) then
-         new_stellar_model = ierr
+         new_stellar_model = -34
          return
       end if
+
+      id_new_model = id
+      new_model_defined = .true.
+
 
       contains 
       
@@ -1288,6 +1367,40 @@ module amuse_mesa
          end subroutine set_comp
 
    end function new_stellar_model
+
+   function finalize_stellar_model(star_id, age_tag)
+      implicit none
+      integer :: finalize_stellar_model, ierr
+      integer, intent(out) :: star_id
+      double precision, intent(in) :: age_tag
+
+      if (.not. new_model_defined) then
+         finalize_stellar_model = -35
+         return
+      endif
+
+      finalize_stellar_model = -1
+      star_id = id_new_model
+      number_of_particles = star_id
+      finalize_stellar_model =  set_age(id_new_model, age_tag)
+
+      new_model_defined = .false.
+      finalize_stellar_model = 0
+   end function finalize_stellar_model
+
+   function set_age(AMUSE_ID, AMUSE_value)
+      implicit none
+      integer :: set_age, ierr
+      integer, intent(out) :: amuse_id
+      double precision, intent(in) :: amuse_value
+
+      ierr = MESA_SUCESS
+
+      call set_new_age(amuse_id, amuse_value, ierr)
+
+      set_age = ierr
+
+   end function set_age
 
 
 ! Set the current mass of the star

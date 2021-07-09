@@ -770,6 +770,18 @@ module mesa_interface
     end subroutine set_net_name
 
 
+    subroutine set_new_age(id, age, ierr)
+        integer, intent(in) :: id
+        real(dp) :: age ! in years
+        integer, intent(out) :: ierr
+
+        ierr = MESA_SUCESS
+
+        call star_set_age(id, age, ierr)
+
+
+    end subroutine set_new_age
+
 
 ! ***********************************************************************
 ! Routines for evovling a star
@@ -936,6 +948,61 @@ module mesa_interface
         if (failed('star_relax_z',ierr)) return
 
     end subroutine set_new_metallicity
+
+
+    subroutine relax_to_new_comp(id, xa, xqs, ierr)
+        integer, intent(in) :: id
+        real(dp), intent(in) :: xa(:,:), xqs(:)
+        type (star_info), pointer :: s   
+        integer, intent(out) :: ierr
+        ierr=0
+        call star_ptr(id, s, ierr)
+        if (failed('star_ptr',ierr)) return
+
+        call star_relax_composition(id, s% job% num_steps_to_relax_composition, &
+                                    size(xqs),size(xa,dim=1) ,xa, xqs, ierr )
+
+
+    end subroutine relax_to_new_comp
+
+
+    subroutine relax_to_new_entropy(id, xqs, temperature, rho, ierr)
+        integer, intent(in) :: id
+        real(dp), intent(in) :: xqs(:), temperature(:), rho(:)
+        type (star_info), pointer :: s   
+        integer, intent(out) :: ierr
+        real(dp), allocatable, dimension(:) :: entropy
+        real(dp), dimension(num_eos_basic_results) :: res,d_dlnd, d_dlnT, d_dabar, d_dzbar
+        integer :: num_pts, k
+        ierr=0
+        call star_ptr(id, s, ierr)
+        if (failed('star_ptr',ierr)) return
+
+        num_pts = size(xqs)
+
+        allocate(entropy(num_pts))
+
+        do k = 1, num_pts
+            ! get entropy
+            call eosDT_get( &
+                s% eos_handle, 1 - s% X(k) - s% Y(k), s% X(k), s% abar(k), s% zbar(k), &
+                s% species, s% chem_id, s% net_iso, s% xa(:,k), &
+                rho(k), log10(rho(k)), temperature(k), log10(temperature(k)), &
+                res, d_dlnd, d_dlnT, d_dabar, d_dzbar, ierr)
+            if (ierr /= 0) then
+                write(*,*) "failed in eosDT_get"
+                return
+            end if
+            entropy(k) = exp(res(i_lnS))
+        end do
+
+
+        call star_relax_entropy(id, s% job% max_steps_to_relax_entropy, num_pts, entropy, xqs, ierr)
+        deallocate(entropy)
+
+    end subroutine relax_to_new_entropy
+
+
 
 ! ***********************************************************************
 ! Routines for acessing stellar properites
@@ -1203,61 +1270,5 @@ module mesa_interface
         time = s% job% after_step_timing 
 
     end subroutine time_of_step
-
-
-    subroutine relax_to_new_comp(id, xa, xqs, ierr)
-        integer, intent(in) :: id
-        real(dp), intent(in) :: xa(:,:), xqs(:)
-        type (star_info), pointer :: s   
-        integer, intent(out) :: ierr
-
-        call star_ptr(id, s, ierr)
-        if (failed('star_ptr',ierr)) return
-
-        call star_relax_composition(id, s% job% num_steps_to_relax_composition, &
-                                    size(xqs),size(xa,dim=1) ,xa, xqs, ierr )
-
-
-    end subroutine relax_to_new_comp
-
-
-    subroutine relax_to_new_entropy(id, dq, temperature, rho, ierr)
-        integer, intent(in) :: id
-        real(dp), intent(in) :: dq(:), temperature(:), rho(:)
-        type (star_info), pointer :: s   
-        integer, intent(out) :: ierr
-        real(dp), allocatable, dimension(:) :: entropy
-        real(dp), dimension(num_eos_basic_results) :: res,d_dlnd, d_dlnT, d_dabar, d_dzbar
-        integer :: num_pts, k
-
-        call star_ptr(id, s, ierr)
-        if (failed('star_ptr',ierr)) return
-
-        num_pts = size(dq)
-
-        allocate(entropy(num_pts))
-
-        do k = 1, num_pts
-            ! get entropy
-            call eosDT_get( &
-                s% eos_handle, 1 - s% X(k) - s% Y(k), s% X(k), s% abar(k), s% zbar(k), &
-                s% species, s% chem_id, s% net_iso, s% xa(:,k), &
-                rho(k), log10(rho(k)), temperature(k), log10(temperature(k)), &
-                res, d_dlnd, d_dlnT, d_dabar, d_dzbar, ierr)
-            if (ierr /= 0) then
-                write(*,*) "failed in eosDT_get"
-                return
-            end if
-            entropy(k) = exp(res(i_lnS))
-        end do
-
-
-        call star_relax_entropy(id, s% job% max_steps_to_relax_entropy, num_pts, entropy, dq, ierr)
-        deallocate(entropy)
-
-    end subroutine relax_to_new_entropy
-
-
-
 
 end module mesa_interface
