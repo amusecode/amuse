@@ -175,42 +175,32 @@ class Huayno(GravitationalDynamics,GravityFieldCode):
     __interface__ = HuaynoInterface
 
     class inttypes(object):
-        # http://stackoverflow.com/questions/36932/whats-the-best-way-to-implement-an-enum-in-python
-        SHARED2=1
-        EXTRAPOLATE=5
-        PASS_KDK=2
-        PASS_DKD=7
-        HOLD_KDK=3
-        HOLD_DKD=8
-        PPASS_DKD=9
-        BRIDGE_KDK=4
-        BRIDGE_DKD=10
-        CC=11
-        CC_KEPLER=12
-        OK=13
-        KEPLER=14
-        SHARED4=15
-        SHARED6=18
-        SHARED8=19
-        SHARED10=20
-        SHAREDBS=21
-        CCC=22
-        CCC_KEPLER=23
-        CC_BS=24
-        CCC_BS=25
-        BS_CC_KEPLER=26
-        CC_BSA=27
-        CCC_BSA=28
-        SHARED2_COLLISIONS=29
-        SHARED4_COLLISIONS=30
-        SHARED6_COLLISIONS=31
-        SHARED8_COLLISIONS=32
-        SHARED10_COLLISIONS=33
-
+        """
+        CONSTANT# = constant global timestep, of different order
+        SHARED# = shared, but varying global timestep, of different order
+        SHARED#_COLLISION = shared, but varying global timestep, of different order with collision detection
+        CC_.. = various variant of connected component (termination with KEPLER or Bulirsch-stoer, see paper Janes
+        CCC_... = with centering of subsys
+        OK = Optimal Kick (see paper Janes)
+        PASS, HOLD, BRIDGE and variants= momentum conserving individual timestepping see paper Pelupessy
+        NAIVE = naive implementation of individual timestepping
+        others are experimental, testing, development 
+        """
         @classmethod
         def _list(cls):
               return set([x for x in cls.__dict__.keys() if not x.startswith('_')])
 
+    all_inttypes=dict(CONSTANT = 0, SHARED2 = 1, PASS_KDK = 2, HOLD_KDK = 3, BRIDGE_KDK = 4, 
+      EXTRAPOLATE = 5, VARIABLE = 6, PASS_DKD = 7, HOLD_DKD = 8, PPASS_DKD = 9, BRIDGE_DKD = 10,
+      CC = 11, CC_KEPLER = 12, OK = 13, KEPLER = 14, SHARED4 = 15, FOURTH_M4 = 16, FOURTH_M5 = 17,
+      SHARED6 = 18, SHARED8 = 19, SHARED10 = 20, SHAREDBS = 21, CCC = 22, CCC_KEPLER = 23,
+      CC_BS = 24, CCC_BS = 25, BS_CC_KEPLER = 26, CC_BSA = 27, CCC_BSA = 28, SHARED2_COLLISIONS = 29,
+      SHARED4_COLLISIONS = 30, SHARED6_COLLISIONS = 31, SHARED8_COLLISIONS = 32, 
+      SHARED10_COLLISIONS = 33, CONSTANT2 = 34, CONSTANT4 = 35, CONSTANT6 = 36, 
+      CONSTANT8 = 37, CONSTANT10 = 38, )
+
+    for key, val in all_inttypes.items():
+      setattr(inttypes, key, val)
 
     def __init__(self, convert_nbody = None, **options):
         self.stopping_conditions = StoppingConditions(self)
@@ -260,11 +250,15 @@ class Huayno(GravitationalDynamics,GravityFieldCode):
             default_value = 0
         )
 
+        inttypes=sorted([(getattr(self.inttypes,t),t ) 
+                   for i,t in enumerate(sorted(self.inttypes._list()))])
+
         handler.add_method_parameter(
             "get_inttype_parameter",
             "set_inttype_parameter",
             "inttype_parameter",
-            "integrator method to use",
+            "integrator method to use, this can be one of: "+
+             ",".join( ["{0}={1}".format(i, t) for i,t in inttypes]),
             default_value = 8
         )
 
