@@ -21,7 +21,7 @@ int verbosity=0;
 
 FLOAT eps2;
 FLOAT dt_param;
-struct sys zerosys ={ 0, NULL,NULL};
+struct sys zerosys ={0,NULL,NULL,NULL};
 
 struct diagnostics global_diag;
 struct diagnostics *diag;
