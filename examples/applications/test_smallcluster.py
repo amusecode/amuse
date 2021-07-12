@@ -133,7 +133,7 @@ def simulate_small_cluster(number_of_stars, end_time = 40 | units.Myr,
 
     total_energy_at_t0 = gravity.kinetic_energy + gravity.potential_energy
 
-    print "evolving the model until t = " + str(end_time)
+    print("evolving the model until t = " + str(end_time))
     while time < end_time:
         time += 0.25 | units.Myr
 

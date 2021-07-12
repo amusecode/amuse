@@ -7,8 +7,8 @@ import numpy
 import os
 import random
 import sys
-import unittest 
-from time import clock as cputime
+import unittest
+from time import process_time as cputime
 from time import time as wallclocktime
 
 from amuse.community.ph4.interface import ph4 as grav

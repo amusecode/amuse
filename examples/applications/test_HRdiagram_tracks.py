@@ -92,8 +92,8 @@ def simulate_evolution_tracks(
             # BHs and neutron stars would otherwise fall off the chart.
             luminosity_at_time.append(luminosity_at_time[-1])
             temperature_at_time.append(temperature_at_time[-1])
-        print " ... evolved model to t = " + \
-            str(star.age.as_quantity_in(units.Myr))
+        print(" ... evolved model to t = " + \
+            str(star.age.as_quantity_in(units.Myr)))
         print(
             "Star has now become a: ",
             star.stellar_type,
