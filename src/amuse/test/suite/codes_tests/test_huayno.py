@@ -414,8 +414,8 @@ class TestHuayno(TestWithMPI):
         import hashlib
 
         numpy.random.seed(123456)
-        particles = plummer.new_plummer_model(16)
-        p2 = plummer.new_plummer_model(16)
+        particles = plummer.new_plummer_model(32)
+        p2 = plummer.new_plummer_model(32)
         p2.mass*=0
         sha=hashlib.sha1()
 
@@ -424,7 +424,51 @@ class TestHuayno(TestWithMPI):
             "PPASS_DKD", "BRIDGE_KDK", "BRIDGE_DKD",
             "CC", "CC_KEPLER", "CC_BS", "CC_BSA",
             "OK", "SHAREDBS", "SHARED4", "SHARED6", "SHARED8",
-            "SHARED10", "SHAREDBS"]
+            "SHARED10"]
+           
+        for itype in test_set:
+            instance = Huayno()
+            instance.parameters.inttype_parameter=Huayno.all_inttypes[itype]
+            instance.parameters.accelerate_zero_mass=False
+            instance.particles.add_particles(particles)
+            instance.particles.add_particles(p2)
+            E1=instance.kinetic_energy+instance.potential_energy
+            instance.evolve_model(0.125 | nbody_system.time)
+            E2=instance.kinetic_energy+instance.potential_energy
+            if itype!="CONSTANT":
+              self.assertLess((E2-E1).number, 1.e-5)
+
+            part_out= instance.particles.copy()
+            position = part_out.position.number
+            if hasattr(position,'tobytes'):
+                as_bytes = position.tobytes()
+            else:
+                as_bytes = numpy.array(position.data, copy=True, order='C')
+            sha.update(as_bytes)
+            
+            instance.stop()
+        
+        # this result is probably dependent on system architecture hence no good for assert
+        print() 
+        print(sha.hexdigest())
+        print("36cf912fb27cbf8169aa6d58e592a29bca4d1991")
+
+    def test14c(self):
+        import hashlib
+
+        numpy.random.seed(123456)
+        particles = plummer.new_plummer_model(16)
+        particles.mass*=0.25
+        p2 = plummer.new_plummer_model(16)
+        p2.mass*=0.75
+        sha=hashlib.sha1()
+
+        test_set=["CONSTANT", "SHARED2", "EXTRAPOLATE",
+            "PASS_KDK", "PASS_DKD", "HOLD_KDK", "HOLD_DKD",
+            "PPASS_DKD", "BRIDGE_KDK", "BRIDGE_DKD",
+            "CC", "CC_KEPLER", "CC_BS", "CC_BSA",
+            "OK", "SHAREDBS", "SHARED4", "SHARED6", "SHARED8",
+            "SHARED10"]
            
         #~ test_set=["CC_BS"]   
            
@@ -433,7 +477,7 @@ class TestHuayno(TestWithMPI):
             print(itype)
             instance = Huayno(redirection="none")
             instance.parameters.inttype_parameter=Huayno.all_inttypes[itype]
-            instance.parameters.accelerate_zero_mass=False
+            instance.parameters.accelerate_zero_mass=True
             instance.particles.add_particles(particles)
             instance.particles.add_particles(p2)
             E1=instance.kinetic_energy+instance.potential_energy
@@ -455,7 +499,8 @@ class TestHuayno(TestWithMPI):
         # this result is probably dependent on system architecture hence no good for assert
         print() 
         print(sha.hexdigest())
-        print("9e2025989eead2b37198db730bbaa32fd7dd1051")
+        print("ac993b464a8efe1f56a57748259d6388ce1e1e44 ")
+
         
     def test15(self):
         particles = plummer.new_plummer_model(512)

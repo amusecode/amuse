@@ -127,6 +127,7 @@ void init_evolve(struct sys s,int inttype)
     ipart->vel_e[0]=0.;ipart->vel_e[1]=0.;ipart->vel_e[2]=0.;
 #endif
   }
+  if(accel_zero_mass) split_zeromass(&s); // because of potential calc
   potential(s,s);
   
   evolve_ok_stop();
@@ -357,7 +358,7 @@ static void kick_cpu(struct sys s1, struct sys s2, DOUBLE dt)
     for(UINT j=0;j<s2.n-s2.nzero;j++)
     {
       jpart=GETPART(s2,j);
-//      if(s2.part[j].mass==0) continue;
+      if(s2.part[j].mass==0) continue;
 //      if(s1.part+i==s2.part+j) continue; 
       dx[0]=ipart->pos[0]-jpart->pos[0];
       dx[1]=ipart->pos[1]-jpart->pos[1];
@@ -569,7 +570,8 @@ static void report(struct sys s,DOUBLE etime, int inttype)
   printf("postime errors: %u \n",err);
   printf("target time, actual time: %12.8g %12.8g %12.8g\n", 
            (double) etime,(double) diag->simtime,(double) ((DOUBLE) etime-diag->simtime));
-  printf("time track, ratio: %12.8g %12.8g\n", (double) diag->timetrack,(double) (diag->timetrack/diag->simtime));
+  printf("time track, ratio: %12.8g %12.8g\n", (double) diag->timetrack,
+       (double) (diag->simtime!=0? (diag->timetrack/diag->simtime) :1));
 
 #ifdef EVOLVE_OPENCL
   printf("cpu step,count: %12li,%18li\n",diag->cpu_step,diag->cpu_count);

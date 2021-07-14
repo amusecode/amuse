@@ -265,11 +265,11 @@ class Huayno(GravitationalDynamics,GravityFieldCode):
             default_value = 0
         )
 
-        handler.add_method_parameter(
+        handler.add_boolean_parameter(
             "get_accel_zero_mass_parameter",
             "set_accel_zero_mass_parameter",
             "accelerate_zero_mass",
-            "accelerate zero mass particles (should always be true, except for testing)",
+            "accelerate zero mass particle interactions (should always be true, except for testing)",
             default_value = True
         )
 

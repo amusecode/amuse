@@ -69,6 +69,11 @@ int cleanup_code()
     return 0;
 }
 
+void refresh_lookup()
+{
+    for(int p=0;p<mainsys.n;p++) LOOKUPSYMBOL(,_update)(&lookup, mainsys.part[p].id,p);
+}
+
 int new_particle(int *id, double mass,
                  double x, double y, double z,
                  double vx, double vy, double vz,
@@ -410,7 +415,7 @@ int evolve_model(double t_end)
       t_now+=dt;
     }
   }
-  for(int p=0;p<mainsys.n;p++) LOOKUPSYMBOL(,_update)(&lookup, mainsys.part[p].id,p);
+  refresh_lookup();
 
   if (set_conditions & enabled_conditions) {
     int err,type, number_of_particles, id;
@@ -447,6 +452,7 @@ int get_begin_time(double * output) {
 int commit_particles()
 {
   init_evolve(mainsys,inttype);
+  refresh_lookup();
   return 0;
 }
 
@@ -481,6 +487,7 @@ int synchronize_model()
 int recommit_particles()
 {
   init_evolve(mainsys,inttype);
+  refresh_lookup();
   return 0;
 }
 
@@ -542,6 +549,7 @@ int get_center_of_mass_velocity(double *vx,double *vy,double *vz)
 int recommit_parameters()
 {
   init_evolve(mainsys,inttype);
+  refresh_lookup();
   return 0;
 }
 int commit_parameters()

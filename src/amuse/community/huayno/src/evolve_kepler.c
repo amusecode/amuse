@@ -8,6 +8,9 @@
 #include "evolve.h"
 #include "evolve_shared.h"
 #include "universal_kepler_solver.h"
+#ifdef _OPENMP
+#include <omp.h>
+#endif
 
 static void evolve_kepler_2(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt)
 {
@@ -50,10 +53,10 @@ static void evolve_kepler_2(int clevel,struct sys s, DOUBLE stime, DOUBLE etime,
 
 static void evolve_kepler_n(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt)
 {
-  int k;
   struct particle *ipart;
-  DOUBLE dpos[3],dpos0[3],pos_cm[3];
-  DOUBLE dvel[3],dvel0[3],vel_cm[3];
+  DOUBLE dpos[3],dpos0[3],cmpos[3];
+  DOUBLE dvel[3],dvel0[3];
+  UINT err;
 
   CHECK_TIMESTEP(etime,stime,dt,clevel);
   if (s.n-s.nzero > 1) ENDRUN("kepler-n solver was called with too many massive particles sys.n=%u\n", s.n-s.nzero);
@@ -62,22 +65,30 @@ static void evolve_kepler_n(int clevel,struct sys s, DOUBLE stime, DOUBLE etime,
     drift(clevel,s,etime, dt);
     return;
   }
+  for(int k=0;k<3;k++) cmpos[k]= s.part->pos[k] + s.part->vel[k]*dt;
+
+  err=0;
+#pragma omp parallel for if((ULONG) s.n>omp_get_num_threads() && !omp_in_parallel()) default(none) \
+ private(ipart, dpos,dvel,dpos0,dvel0) shared(clevel, dt,cmpos, s, eps2) reduction(+: err)
   for(UINT i=1;i<s.n;i++)
   {
     ipart=GETPART(s,i);
-    for(k=0;k<3;k++) dpos0[k] = s.part->pos[k] - ipart->pos[k];
-    for(k=0;k<3;k++) dvel0[k] = s.part->vel[k] - ipart->vel[k];
-    int err=universal_kepler_solver(dt,s.part->mass,eps2,
+    for(int k=0;k<3;k++) dpos0[k] = s.part->pos[k] - ipart->pos[k];
+    for(int k=0;k<3;k++) dvel0[k] = s.part->vel[k] - ipart->vel[k];
+    err+=universal_kepler_solver(dt,s.part->mass,eps2,
                                       dpos0[0],dpos0[1],dpos0[2],
                                       dvel0[0],dvel0[1],dvel0[2],
                                       &dpos[0],&dpos[1],&dpos[2],
                                       &dvel[0],&dvel[1],&dvel[2]);
-    if (err != 0) ENDRUN("kepler solver failure"); // failure of the kepler solver should be very rare now
 
-    for(k=0;k<3;k++) s.part->pos[k]+= s.part->vel[k]*dt;
-    for(k=0;k<3;k++) ipart->pos[k] = s.part->pos[k] - dpos[k];
-    for(k=0;k<3;k++) ipart->vel[k] = s.part->vel[k] - dvel[k];
+
+    for(int k=0;k<3;k++) ipart->pos[k] = cmpos[k] - dpos[k];
+    for(int k=0;k<3;k++) ipart->vel[k] = s.part->vel[k] - dvel[k];
   } 
+  if (err != 0) {
+    ENDRUN("kepler solver failure"); // failure of the kepler solver should be very rare now
+  }
+  for(int k=0;k<3;k++) s.part->pos[k]=cmpos[k];
   diag->cecount[clevel]+=s.nzero;
 }
 
