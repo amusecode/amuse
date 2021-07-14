@@ -92,8 +92,8 @@ huayno_worker_mp: CXXFLAGS   += $(OPENMP_CFLAGS)
 huayno_worker_mp: __init__.py worker_code.cc worker_code.h $(OPENMP_BUILDDIR)/libhuayno.a $(OPENMP_BUILDDIR)/interface.o 
 	$(MPICXX) $(SC_FLAGS) $(CXXFLAGS) $(INCLUDE)  $(LDFLAGS) worker_code.cc $(OPENMP_BUILDDIR)/interface.o $(OPENMP_BUILDDIR)/libhuayno.a -o $@ $(LIBS) $(SC_CLIBS)
 	
-huayno_worker_mp.so: CFLAGS   += $(OPENMP_CFLAGS) 
-huayno_worker_mp.so: CXXFLAGS   += $(OPENMP_CFLAGS)	
+#~ huayno_worker_mp.so: CFLAGS   += $(OPENMP_CFLAGS) 
+#~ huayno_worker_mp.so: CXXFLAGS   += $(OPENMP_CFLAGS)	
 
 huayno_worker_cl: CFLAGS   += -fopenmp -DEVOLVE_OPENCL
 huayno_worker_cl: CXXFLAGS   += -fopenmp -DEVOLVE_OPENCL

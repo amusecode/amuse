@@ -21,7 +21,8 @@ int verbosity=0;
 
 FLOAT eps2;
 FLOAT dt_param;
-struct sys zerosys ={0,NULL,NULL,NULL};
+struct sys zerosys ={0,0,NULL,NULL,NULL,NULL,NULL};
+int accel_zero_mass=1;
 
 struct diagnostics global_diag;
 struct diagnostics *diag;
@@ -34,12 +35,14 @@ static void report(struct sys s,DOUBLE etime, int inttype);
 
 void move_system(struct sys s, DOUBLE dpos[3],DOUBLE dvel[3],int dir)
 {
+  struct particle *ipart;
   for(UINT p=0;p<s.n;p++)
   {
+    ipart=GETPART(s, p);
     for(int i=0;i<3;i++)
     {
-        COMPSUMP(s.part[p].pos[i],s.part[p].pos_e[i],dir*dpos[i])
-        COMPSUMV(s.part[p].vel[i],s.part[p].vel_e[i],dir*dvel[i])
+        COMPSUMP(ipart->pos[i],ipart->pos_e[i],dir*dpos[i])
+        COMPSUMV(ipart->vel[i],ipart->vel_e[i],dir*dvel[i])
     }
   }  
 }
@@ -47,14 +50,16 @@ void move_system(struct sys s, DOUBLE dpos[3],DOUBLE dvel[3],int dir)
 void system_center_of_mass(struct sys s, DOUBLE *cmpos, DOUBLE *cmvel)
 {
   DOUBLE mass=0.,pos[3]={0.,0.,0.},vel[3]={0.,0.,0.};
+  struct particle *ipart;
   for(UINT p=0;p<s.n;p++)
   {
+    ipart=GETPART(s, p);
     for(int i=0;i<3;i++)
     {
-      pos[i]+=(DOUBLE) s.part[p].mass*s.part[p].pos[i];
-      vel[i]+=(DOUBLE) s.part[p].mass*s.part[p].vel[i];
+      pos[i]+=(DOUBLE) ipart->mass*ipart->pos[i];
+      vel[i]+=(DOUBLE) ipart->mass*ipart->vel[i];
     }
-    mass+=(DOUBLE) s.part[p].mass;
+    mass+=(DOUBLE) ipart->mass;
   }
   for(int i=0;i<3;i++)
   {
@@ -67,10 +72,14 @@ FLOAT system_kinetic_energy(struct sys s)
 {
  UINT i;
  DOUBLE e=0.;
- for(i=0;i<s.n;i++) e+=0.5*s.part[i].mass*(
-                           s.part[i].vel[0]*s.part[i].vel[0]+
-                           s.part[i].vel[1]*s.part[i].vel[1]+
-                           s.part[i].vel[2]*s.part[i].vel[2]);
+ struct particle *ipart;
+ for(i=0;i<s.n;i++)
+ {
+   ipart=GETPART(s, i);
+   e+=0.5*ipart->mass*( ipart->vel[0]*ipart->vel[0]+
+                        ipart->vel[1]*ipart->vel[1]+
+                        ipart->vel[2]*ipart->vel[2] );
+ }
  return (FLOAT) e;
 }
         
@@ -78,7 +87,12 @@ FLOAT system_potential_energy(struct sys s)
 {
  UINT i;
  DOUBLE e=0.;
- for(i=0;i<s.n;i++) e+=s.part[i].mass*s.part[i].pot;
+ struct particle *ipart;
+ for(i=0;i<s.n;i++)
+ {
+   ipart=GETPART(s, i);
+   e+=ipart->mass*ipart->pot;
+ }
  return (FLOAT) e/2;
 }
 
@@ -100,16 +114,17 @@ void stop_code()
 
 void init_evolve(struct sys s,int inttype)
 {
-  UINT i;
-  for(i=0;i<s.n;i++)
+  struct particle *ipart;
+  for(UINT i=0;i<s.n;i++)
   {
-    s.part[i].postime=0.;
-    s.part[i].pot=0.;
+    ipart=GETPART(s,i);
+    ipart->postime=0.;
+    ipart->pot=0.;
 #ifdef COMPENSATED_SUMMP
-    s.part[i].pos_e[0]=0.;s.part[i].pos_e[1]=0.;s.part[i].pos_e[2]=0.;
+    ipart->pos_e[0]=0.;ipart->pos_e[1]=0.;ipart->pos_e[2]=0.;
 #endif
 #ifdef COMPENSATED_SUMMV
-    s.part[i].vel_e[0]=0.;s.part[i].vel_e[1]=0.;s.part[i].vel_e[2]=0.;
+    ipart->vel_e[0]=0.;ipart->vel_e[1]=0.;ipart->vel_e[2]=0.;
 #endif
   }
   potential(s,s);
@@ -179,11 +194,12 @@ void sum_diagnostics(struct diagnostics* total,struct diagnostics* diag)
 
 void do_evolve(struct sys s, double dt, int inttype)
 {
-  UINT p;
   int i,clevel;
+  struct particle *ipart;
   if(dt==0) return;
-  for(p=0;p<s.n;p++) s.part[p].postime=0.;
+  for(UINT p=0;p<s.n;p++) GETPART(s,p)->postime=0.;
   clevel=0;
+  if(accel_zero_mass) split_zeromass(&s);
   zero_diagnostics(diag);
   switch (inttype)
   {
@@ -275,8 +291,7 @@ void do_evolve(struct sys s, double dt, int inttype)
       evolve_ok2(clevel,s, zeroforces, (DOUBLE) 0.,(DOUBLE) dt,(DOUBLE) dt,1);
       break;
     case KEPLER:
-      if(s.n==2) evolve_kepler(clevel,s,(DOUBLE) 0.,(DOUBLE) dt,(DOUBLE) dt);
-      else evolve_kepler_test(clevel,s,(DOUBLE) 0.,(DOUBLE) dt,(DOUBLE) dt);
+      evolve_kepler(clevel,s,(DOUBLE) 0.,(DOUBLE) dt,(DOUBLE) dt);
       break;
     case FOURTH_M4:
       evolve_sf_4m4(clevel,s,(DOUBLE) 0.,(DOUBLE) dt,(DOUBLE) dt,1);
@@ -303,20 +318,21 @@ void do_evolve(struct sys s, double dt, int inttype)
       ENDRUN("unknown integrator\n");
       break;
   } 
-  for(p=0;p<s.n;p++) s.part[p].pot=0;
+  for(UINT p=0;p<s.n;p++) GETPART(s,p)->pot=0;
   potential(s,s);
   if(verbosity>0) report(s,(DOUBLE) dt, inttype);
 }
 
 void drift(int clevel,struct sys s, DOUBLE etime, DOUBLE dt)
 {
-  UINT i;
-  for(i=0;i<s.n;i++)
+  struct particle *ipart;
+  for(UINT i=0;i<s.n;i++)
   {
-    COMPSUMP(s.part[i].pos[0],s.part[i].pos_e[0],dt*s.part[i].vel[0])
-    COMPSUMP(s.part[i].pos[1],s.part[i].pos_e[1],dt*s.part[i].vel[1])
-    COMPSUMP(s.part[i].pos[2],s.part[i].pos_e[2],dt*s.part[i].vel[2])
-    s.part[i].postime=etime;
+    ipart=GETPART(s,i);
+    COMPSUMP(ipart->pos[0],ipart->pos_e[0],dt*ipart->vel[0])
+    COMPSUMP(ipart->pos[1],ipart->pos_e[1],dt*ipart->vel[1])
+    COMPSUMP(ipart->pos[2],ipart->pos_e[2],dt*ipart->vel[2])
+    ipart->postime=etime;
   }
   diag->dstep[clevel]++;
   diag->dcount[clevel]+=s.n;
@@ -325,47 +341,49 @@ void drift(int clevel,struct sys s, DOUBLE etime, DOUBLE dt)
 
 static void kick_cpu(struct sys s1, struct sys s2, DOUBLE dt)
 {
-  UINT i,j;
   FLOAT dx[3],dr3,dr2,dr,acci;
   FLOAT acc[3];
+  struct particle *ipart, *jpart;
 
-#pragma omp parallel for if((ULONG) s1.n*s2.n>MPWORKLIMIT && !omp_in_parallel()) default(none) \
- private(i,j,dx,dr3,dr2,dr,acc,acci) \
+#pragma omp parallel for if((ULONG) s1.n*(s2.n-s2.nzero)>MPWORKLIMIT && !omp_in_parallel()) default(none) \
+ private(dx,dr3,dr2,dr,acc,acci,ipart,jpart) \
  shared(dt,s1,s2,eps2)
-  for(i=0;i<s1.n;i++)
+  for(UINT i=0;i<s1.n;i++)
   {
+    ipart=GETPART(s1,i);
     acc[0]=0.;
     acc[1]=0.;
     acc[2]=0.;
-    for(j=0;j<s2.n;j++)
+    for(UINT j=0;j<s2.n-s2.nzero;j++)
     {
-      if(s2.part[j].mass==0) continue;
+      jpart=GETPART(s2,j);
+//      if(s2.part[j].mass==0) continue;
 //      if(s1.part+i==s2.part+j) continue; 
-      dx[0]=s1.part[i].pos[0]-s2.part[j].pos[0];
-      dx[1]=s1.part[i].pos[1]-s2.part[j].pos[1];
-      dx[2]=s1.part[i].pos[2]-s2.part[j].pos[2];
+      dx[0]=ipart->pos[0]-jpart->pos[0];
+      dx[1]=ipart->pos[1]-jpart->pos[1];
+      dx[2]=ipart->pos[2]-jpart->pos[2];
       dr2=dx[0]*dx[0]+dx[1]*dx[1]+dx[2]*dx[2]+eps2;
       if(dr2>0) 
       {
         dr=sqrt(dr2);
         dr3=dr*dr2;
-        acci=s2.part[j].mass/dr3;
+        acci=jpart->mass/dr3;
 
         acc[0]-=dx[0]*acci;
         acc[1]-=dx[1]*acci;
         acc[2]-=dx[2]*acci;  
       }
     }
-    COMPSUMV(s1.part[i].vel[0],s1.part[i].vel_e[0],dt*acc[0]);
-    COMPSUMV(s1.part[i].vel[1],s1.part[i].vel_e[1],dt*acc[1]);
-    COMPSUMV(s1.part[i].vel[2],s1.part[i].vel_e[2],dt*acc[2]);
+    COMPSUMV(ipart->vel[0],ipart->vel_e[0],dt*acc[0]);
+    COMPSUMV(ipart->vel[1],ipart->vel_e[1],dt*acc[1]);
+    COMPSUMV(ipart->vel[2],ipart->vel_e[2],dt*acc[2]);
   }
 }
 
 void kick(int clevel,struct sys s1, struct sys s2, DOUBLE dt)
 {
 #ifdef EVOLVE_OPENCL
-  if((ULONG) s1.n*s2.n>CLWORKLIMIT) 
+  if((ULONG) s1.n*(s2.n-s2.nzero)>CLWORKLIMIT) 
   {
 #pragma omp critical
     kick_cl(s1,s2,dt);
@@ -387,37 +405,39 @@ void kick(int clevel,struct sys s1, struct sys s2, DOUBLE dt)
 
 static void potential_cpu(struct sys s1,struct sys s2)
 {
-  UINT i,j;
   FLOAT dx[3],dr2,dr;
   FLOAT pot;
+  struct particle *ipart, *jpart;
 
-#pragma omp parallel for if((ULONG) s1.n*s2.n>MPWORKLIMIT && !omp_in_parallel()) default(none) \
- private(i,j,dx,dr2,dr,pot) \
+#pragma omp parallel for if((ULONG) s1.n*(s2.n-s2.nzero)>MPWORKLIMIT && !omp_in_parallel()) default(none) \
+ private(dx,dr2,dr,pot, ipart,jpart) \
  shared(s1,s2,eps2)
-  for(i=0;i<s1.n;i++)
+  for(UINT i=0;i<s1.n;i++)
   {
     pot=0;
-    for(j=0;j<s2.n;j++)
+    ipart=GETPART(s1,i);
+    for(UINT j=0;j<s2.n-s2.nzero;j++)
     {
-      if(s1.part+i==s2.part+j) continue; 
-      dx[0]=s1.part[i].pos[0]-s2.part[j].pos[0];
-      dx[1]=s1.part[i].pos[1]-s2.part[j].pos[1];
-      dx[2]=s1.part[i].pos[2]-s2.part[j].pos[2];
+      jpart=GETPART(s2,j);
+      if(ipart==jpart) continue; 
+      dx[0]=ipart->pos[0]-jpart->pos[0];
+      dx[1]=ipart->pos[1]-jpart->pos[1];
+      dx[2]=ipart->pos[2]-jpart->pos[2];
       dr2=dx[0]*dx[0]+dx[1]*dx[1]+dx[2]*dx[2]+eps2;
       if(dr2>0) 
       {
         dr=sqrt(dr2);
-        pot-=s2.part[j].mass/dr;
+        pot-=jpart->mass/dr;
       }
     }
-    s1.part[i].pot+=pot;
+    ipart->pot+=pot;
   }
 }
 
 void potential(struct sys s1, struct sys s2)
 {
 #ifdef EVOLVE_OPENCL
-  if((ULONG) s1.n*s2.n>CLWORKLIMIT) 
+  if((ULONG) s1.n*(s2.n-s2.nzero)>CLWORKLIMIT) 
   {
 #pragma omp critical
     potential_cl(s1,s2);
@@ -477,21 +497,24 @@ inline FLOAT timestep_ij(struct particle *i, struct particle *j,int dir) {
 
 static void timestep_cpu(struct sys s1, struct sys s2,int dir)
 {
-  UINT i,j;
+  UINT i,j, jmax;
   FLOAT timestep,tau;
-#pragma omp parallel for if((ULONG) s1.n*s2.n>MPWORKLIMIT && !omp_in_parallel()) default(none) \
- private(i,j,tau,timestep) copyin(dt_param) \
+  struct particle *ipart;
+#pragma omp parallel for if((ULONG) (s1.n*s2.n-s1.nzero*s2.nzero)>MPWORKLIMIT && !omp_in_parallel()) default(none) \
+ private(i,j,tau,timestep, jmax, ipart) copyin(dt_param) \
  shared(s1,s2,stdout,dir)
   for(i=0;i<s1.n;i++)
   {  
     timestep=HUGE_VAL;
-    for(j=0;j<s2.n;j++)
+    ipart=GETPART(s1,i);
+    jmax=s2.n;if(i>=s1.n-s1.nzero) jmax=s2.n-s2.nzero;
+    for(j=0;j<jmax;j++)
     {
-      tau=timestep_ij(s1.part+i,s2.part+j,dir);
+      tau=timestep_ij(ipart,GETPART(s2,j),dir);
       if(tau < timestep) timestep=tau;
     }
 //    if(timestep<s1.part[i].timestep) 
-    s1.part[i].timestep=timestep;
+    ipart->timestep=timestep;
   }
 }
 
@@ -518,6 +541,7 @@ static void report(struct sys s,DOUBLE etime, int inttype)
   int maxlevel=0,i;
   long int ktot=0,dtot=0, kstot=0,dstot=0,ttot=0,tstot=0;
   UINT n,p,err=0;
+  struct particle *ipart;
   n=s.n;
   printf("** report **\n");
   printf("interaction counts:\n");
@@ -541,10 +565,7 @@ static void report(struct sys s,DOUBLE etime, int inttype)
   printf("steps: %18li, equiv: %18li, maxlevel: %i\n", 
     diag->deepsteps,((long) 1)<<maxlevel,maxlevel); 
 
-  for(p=0;p<s.n;p++)
-  {
-    if(s.part[p].postime != (DOUBLE) etime) err++;
-  }
+  for(p=0;p<s.n;p++) if(GETPART(s,p)->postime != (DOUBLE) etime) err++;
   printf("postime errors: %u \n",err);
   printf("target time, actual time: %12.8g %12.8g %12.8g\n", 
            (double) etime,(double) diag->simtime,(double) ((DOUBLE) etime-diag->simtime));
@@ -596,26 +617,49 @@ static void report(struct sys s,DOUBLE etime, int inttype)
   fflush(stdout);
 }
 
+void join_array(UINT n1, struct particle *p1, struct particle *l1,
+                UINT n2, struct particle *p2, struct particle *l2,
+                UINT *n, struct particle **p, struct particle **l)
+{
+  if(n1==0 && n2==0)
+  {
+    *n=0;*p=NULL;*l=NULL;
+  }
+  if(n1!=0 && n2==0)
+  {
+    *n=n1;*p=p1;*l=l1;
+  }
+  if(n1==0 && n2!=0)
+  {
+    *n=n2;*p=p2;*l=l2;
+  }
+  if(n1!=0 && n2!=0)
+  {
+    *n=n1+n2;
+    if(l1+1==p2)
+    {
+      *p=p1;*l=l2;
+    }
+    else
+    {
+      if(l2+1==p1)
+      {
+        *p=p2;*l=l1;
+      } else ENDRUN("join_array error");
+    }
+  }
+}                  
+
 struct sys join(struct sys s1,struct sys s2)
 {
   struct sys s=zerosys;
-  if(s1.n == 0) return s2;
-  if(s2.n == 0) return s1;  
-  s.n=s1.n+s2.n;
-  if(s1.part+s1.n == s2.part)
-  {
-    s.part=s1.part;
-    s.last=s2.last;
-  } else
-  {
-    if(s2.part+s2.n == s1.part)
-    {
-      s.part=s2.part;
-      s.last=s1.last;
-    } else
-      ENDRUN("join error 1");
-  }   
-  if(s.last-s.part + 1 != s.n) ENDRUN("join error 2");
+  if(s1.n==0) return s2;
+  if(s2.n==0) return s1;
+  join_array(s1.n-s1.nzero, s1.part, s1.last, s2.n-s2.nzero, s2.part,s2.last, &s.n, &s.part, &s.last);
+  join_array(s1.nzero, s1.zeropart, s1.lastzero, s2.nzero, s2.zeropart,s2.lastzero, &s.nzero, &s.zeropart, &s.lastzero);
+  s.n=s.n+s.nzero;
+  if(s.n-s.nzero>0 && s.last-s.part + 1 != s.n-s.nzero) ENDRUN("join error 1");
+  if(s.nzero>0 && s.lastzero-s.zeropart + 1 != s.nzero) ENDRUN("join error 2");
   return s;
 }
 
@@ -624,9 +668,11 @@ FLOAT global_timestep(struct sys s)
   UINT i;
   FLOAT mindt;
   mindt=HUGE_VAL;
+  struct particle *ipart;
   for(i=0;i<s.n;i++)
   {
-    if(mindt>s.part[i].timestep) mindt=s.part[i].timestep;
+    ipart=GETPART(s, i);
+    if(mindt>ipart->timestep) mindt=ipart->timestep;
   }
   return mindt;
 }
@@ -646,4 +692,43 @@ void dkd(int clevel,struct sys s1,struct sys s2, DOUBLE stime, DOUBLE etime, DOU
   kick(clevel,s1,join(s1,s2),dt);
   if(s2.n>0) kick(clevel,s2, s1, dt);
   drift(clevel,s1,etime, dt/2);
+}
+
+void split_zeromass(struct sys *s)
+{
+  UINT i=0;
+  struct particle *left, *right;
+  if(s->n==0) return;
+  if(s->n-s->nzero==0)
+  {
+    if(s->lastzero-s->zeropart+1!=s->nzero) ENDRUN( "split_zeromass malformed input sys");
+    return;
+  }  
+  if(s->nzero!=0 && s->last+1!=s->zeropart) 
+    ENDRUN("split_zeromass can only work on fully contiguous sys");
+  left=s->part;
+  right=s->part+(s->n-1);
+  while(1)
+  {
+    if(i>=s->n) ENDRUN("split_zeromass error 1");
+    i++;
+    while(left->mass!=0 && left<right) left++;
+    while(right->mass==0 && left<right) right--;
+    if(left<right) 
+      {SWAP( *left, *right, struct particle);}
+    else 
+      break;  
+  }
+  if(left->mass!=0) left++;
+  s->nzero=s->n-(left-s->part);
+  if(s->nzero<0) ENDRUN("split_zeromass find negative number of part");
+  if(s->nzero>0)
+  {
+    s->last=left-1;
+    s->zeropart=left;
+    s->lastzero=left+(s->nzero-1);
+  }
+  if((left-s->part)+s->nzero !=s->n) ENDRUN( "split_zeromass error 2");
+  for(i=0;i<(s->n-s->nzero);i++) if(s->part[i].mass==0) ENDRUN ("split_zromass error 3");
+  for(i=s->n-s->nzero;i<s->n;i++) if(s->part[i].mass!=0) ENDRUN ("split_zeromass error 4");
 }

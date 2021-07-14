@@ -152,6 +152,21 @@ class HuaynoInterface(CodeInterface,
         function.result_type = 'i'
         return function
 
+    @legacy_function
+    def get_accel_zero_mass_parameter():
+        function = LegacyFunctionSpecification()
+        function.addParameter('accelerate_zero_mass', dtype='b', direction=function.OUT)
+        function.result_type = 'i'
+        return function
+
+    @legacy_function
+    def set_accel_zero_mass_parameter():
+        function = LegacyFunctionSpecification()
+        function.addParameter('accelerate_zero_mass', dtype='b', direction=function.IN)
+        function.result_type = 'i'
+        return function
+
+
     def set_eps2(self, e):
         return self.set_eps2_parameter(e)
 
@@ -248,6 +263,14 @@ class Huayno(GravitationalDynamics,GravityFieldCode):
             "verbosity_parameter",
             "verbosity parameter (0 mean silent)",
             default_value = 0
+        )
+
+        handler.add_method_parameter(
+            "get_accel_zero_mass_parameter",
+            "set_accel_zero_mass_parameter",
+            "accelerate_zero_mass",
+            "accelerate zero mass particles (should always be true, except for testing)",
+            default_value = True
         )
 
         inttypes=sorted([(getattr(self.inttypes,t),t ) 

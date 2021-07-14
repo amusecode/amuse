@@ -35,7 +35,8 @@ int initialize_code()
   mainsys.part=(struct particle*) malloc(nmax*sizeof(struct particle));
   if(mainsys.part == NULL) return -1;
   mainsys.last=NULL;
-  dt_param=.03; 
+  dt_param=.03;
+  accel_zero_mass=1; 
   eps2=0.;
   inttype=8;
   t_now=0.;
@@ -58,6 +59,7 @@ int cleanup_code()
     }
     mainsys.last=NULL;
     dt_param=.03; 
+    accel_zero_mass=1;
     t_now=0.;
     dtime=0.;
     eps2=0.;
@@ -332,6 +334,18 @@ int set_verbosity_parameter(int t)
 int get_verbosity_parameter(int *t)
 {
   *t=verbosity;
+  return 0;
+}
+
+int set_accel_zero_mass_parameter(int t)
+{
+  accel_zero_mass=t;
+  return 0;
+}
+
+int get_accel_zero_mass_parameter(int *t)
+{
+  *t=accel_zero_mass;
   return 0;
 }
 

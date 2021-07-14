@@ -46,11 +46,15 @@ struct jparticle
 
 struct sys
 {
-  UINT n; 
-  struct particle *part;
-  struct particle *last;
+  UINT n, nzero; // n=total particles, nzero=# zero mass particles
+  struct particle *part; // start of particles (non-zero mass)
+  struct particle *zeropart; // start of zero mass particles
+  struct particle *last; // last of non-zero mass; not needed, serves mainly to check consistency
+  struct particle *lastzero; // last of zero mass; not needed, serves mainly to check consistency
   struct sys *next_cc; // used in the CC split only
 };
+
+#define GETPART(s, i)   (i<s.n-s.nzero? s.part+i : s.zeropart+(i-(s.n-s.nzero)))    
 
 enum intopt
 {
@@ -99,6 +103,7 @@ extern int verbosity;
 extern FLOAT eps2;
 extern FLOAT dt_param;
 #pragma omp threadprivate(dt_param)
+extern int accel_zero_mass;
 
 extern struct sys zerosys;
 
@@ -149,6 +154,7 @@ FLOAT global_timestep(struct sys s);
 void potential(struct sys s1, struct sys s2);
 
 struct sys join(struct sys s1,struct sys s2);
+void split_zeromass(struct sys *s);
 
 #define SWAP(a,b,c) {c t;t=(a);(a)=(b);(b)=t;}
 

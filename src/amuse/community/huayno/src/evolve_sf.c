@@ -165,13 +165,15 @@ static void drift_naive(int clevel,struct sys s, DOUBLE etime)
 {
   UINT i;
   DOUBLE dt;
+  struct particle *ipart;
   for(i=0;i<s.n;i++)
   {
-    dt=etime-s.part[i].postime;
-    COMPSUMP(s.part[i].pos[0],s.part[i].pos_e[0],dt*s.part[i].vel[0])
-    COMPSUMP(s.part[i].pos[1],s.part[i].pos_e[1],dt*s.part[i].vel[1])
-    COMPSUMP(s.part[i].pos[2],s.part[i].pos_e[2],dt*s.part[i].vel[2])
-    s.part[i].postime=etime;
+    ipart=GETPART(s,i);
+    dt=etime-ipart->postime;
+    COMPSUMP(ipart->pos[0],ipart->pos_e[0],dt*ipart->vel[0])
+    COMPSUMP(ipart->pos[1],ipart->pos_e[1],dt*ipart->vel[1])
+    COMPSUMP(ipart->pos[2],ipart->pos_e[2],dt*ipart->vel[2])
+    ipart->postime=etime;
   }
   diag->dstep[clevel]++;
   diag->dcount[clevel]+=s.n;
@@ -314,17 +316,15 @@ void evolve_sf_4m4(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE d
 #undef D1
 #undef D2
 
-
-static void split(FLOAT dt, struct sys s, struct sys *slow, struct sys *fast)
+// partitions a contiguous array bordered by left and right according to a pivot timestep dt 
+static struct particle *partition(FLOAT dt, struct particle *left, struct particle *right)
 {
-  UINT i=0;
-  struct particle *left, *right;
-  left=s.part;
-  right=s.last;
+  UINT i,n;
   dt=fabs(dt);
+  n=right-left+1;
   while(1)
   {
-    if(i>=s.n) ENDRUN("split error 1");
+    if(i>=n) ENDRUN("partition error");
     i++;
     while(left->timestep<dt && left<right) left++;
     while(right->timestep>=dt && left<right) right--;
@@ -334,23 +334,61 @@ static void split(FLOAT dt, struct sys s, struct sys *slow, struct sys *fast)
       break;  
   }
   if(left->timestep<dt) left++;
-  slow->n=s.last-left+1;
-  fast->n=(left-s.part);  
-  if(fast->n==1)
+  return left;
+}
+
+static void split(FLOAT dt, struct sys s, struct sys *slow, struct sys *fast)
+{
+  struct particle *left, *right, *pivot;
+  slow->n=0;  
+  fast->n=0;  
+  if(s.n-s.nzero>0)
   {
-    fast->n=0;
-    slow->n=s.n;
-  } 
-  if(slow->n > 0)
-  {
-    slow->part=s.part+fast->n;
-    slow->last=s.last;//slow->part+slow->n-1;
+    left=s.part;
+    right=s.last;
+    pivot=partition(dt, left, right);
+    slow->n=right-pivot+1;
+    fast->n=(pivot-left);
   }
-  if(fast->n > 0)
+  slow->nzero=0;  
+  fast->nzero=0;  
+  if(s.nzero>0)
+  {
+    left=s.zeropart;
+    right=s.lastzero;
+    pivot=partition(dt, left, right);
+    slow->nzero=right-pivot+1;
+    fast->nzero=(pivot-left);  
+    slow->n+=slow->nzero;
+    fast->n+=fast->nzero;  
+  }
+  if(fast->n<=1)
+  {
+    *fast=zerosys;
+    slow->n=s.n;
+    slow->nzero=s.nzero;
+  } 
+  if(slow->n>0)
+  {
+    slow->part=s.part+fast->n-fast->nzero;
+    slow->last=s.last;
+  }
+  if(fast->n>0)
   {
     fast->part=s.part;
-    fast->last=s.part+fast->n-1;
+    fast->last=s.part+(fast->n-fast->nzero)-1;
+  }
+  if(slow->nzero>0)
+  {
+    slow->zeropart=s.zeropart+fast->nzero;
+    slow->lastzero=s.lastzero;
+  }
+  if(fast->nzero > 0)
+  {
+    fast->zeropart=s.zeropart;
+    fast->lastzero=s.zeropart+fast->nzero-1;
   }
   if(fast->n+slow->n !=s.n) ENDRUN( "split error 2");
+  if(fast->nzero+slow->nzero !=s.nzero) ENDRUN( "split error 3");
 }
 

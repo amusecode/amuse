@@ -100,32 +100,36 @@ void evolve_bs(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt)
 void sys_to_bsys(struct sys s, struct bsys bs)
 {
   UINT i;
+  struct particle* ipart;
   if(s.n!=bs.n) ENDRUN("sys to bsys copy mismatch\n");
   if(!bs.part || !s.part) ENDRUN("sys to bsys unallocated error\n");
   for(i=0;i<s.n;i++)
   {
-      bs.part[i].pos[0]=s.part[i].pos[0];
-      bs.part[i].pos[1]=s.part[i].pos[1];
-      bs.part[i].pos[2]=s.part[i].pos[2];
-      bs.part[i].vel[0]=s.part[i].vel[0];
-      bs.part[i].vel[1]=s.part[i].vel[1];
-      bs.part[i].vel[2]=s.part[i].vel[2];   
+      ipart=GETPART(s, i);
+      bs.part[i].pos[0]=ipart->pos[0];
+      bs.part[i].pos[1]=ipart->pos[1];
+      bs.part[i].pos[2]=ipart->pos[2];
+      bs.part[i].vel[0]=ipart->vel[0];
+      bs.part[i].vel[1]=ipart->vel[1];
+      bs.part[i].vel[2]=ipart->vel[2];   
   }  
 }
 
 void bsys_to_sys(struct bsys bs, struct sys s)
 {
   UINT i;
+  struct particle* ipart;
   if(s.n!=bs.n) ENDRUN("bsys to sys copy mismatch %d,%d\n",s.n,bs.n);
   if(!bs.part || !s.part) ENDRUN("bsys to sys unallocated error\n");
   for(i=0;i<s.n;i++)
   {
-      s.part[i].pos[0]=bs.part[i].pos[0];
-      s.part[i].pos[1]=bs.part[i].pos[1];
-      s.part[i].pos[2]=bs.part[i].pos[2];
-      s.part[i].vel[0]=bs.part[i].vel[0];
-      s.part[i].vel[1]=bs.part[i].vel[1];
-      s.part[i].vel[2]=bs.part[i].vel[2];   
+      ipart=GETPART(s, i);
+      ipart->pos[0]=bs.part[i].pos[0];
+      ipart->pos[1]=bs.part[i].pos[1];
+      ipart->pos[2]=bs.part[i].pos[2];
+      ipart->vel[0]=bs.part[i].vel[0];
+      ipart->vel[1]=bs.part[i].vel[1];
+      ipart->vel[2]=bs.part[i].vel[2];   
   }  
 }
 
@@ -135,14 +139,16 @@ static int BulirschStoer(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DO
   struct bsys bsys_array1[JMAX];
   struct bsys *jline;
   struct bsys *j1line;
-  struct sys tmpsys;
+  struct sys tmpsys=zerosys;
   int j,k;
   UINT i;
   DOUBLE error;
+  struct particle *ipart;
 
-  tmpsys.n=s.n;
+  tmpsys.n=s.n; // todo: fix zero mass part, though it will work as is
   tmpsys.part=(struct particle*) malloc(s.n*sizeof(struct particle));
   if(!tmpsys.part) ENDRUN("failed allocation of tmpsys\n");
+  tmpsys.last=tmpsys.part+tmpsys.n-1;
 
   ZEROBSYS_ARRAY(bsys_array)
   ZEROBSYS_ARRAY(bsys_array1)
@@ -164,7 +170,7 @@ static int BulirschStoer(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DO
     }
 
     SWAP(jline,j1line, struct bsys*)
-    for(i=0;i<s.n;i++) tmpsys.part[i]=s.part[i];
+    for(i=0;i<s.n;i++) tmpsys.part[i]=*GETPART(s,i);
     if(CCSUBSTEP)
     {
       n_cc_kepler(clevel,nsequence(j),tmpsys,stime,etime,dt);
@@ -183,17 +189,21 @@ static int BulirschStoer(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DO
   diag->bsstep[clevel]+=1;
   diag->jcount[clevel]+=j;
   bsys_to_sys(jline[j-1],tmpsys);
-  for(i=0;i<s.n;i++) s.part[i]=tmpsys.part[i];  
+  for(i=0;i<s.n;i++) 
+  {
+    ipart=GETPART(s,i);
+    *ipart=tmpsys.part[i];  
 #ifdef COMPENSATED_SUMMP
-  for(i=0;i<s.n;i++) s.part[i].pos_e[0]=0.;
-  for(i=0;i<s.n;i++) s.part[i].pos_e[1]=0.;
-  for(i=0;i<s.n;i++) s.part[i].pos_e[2]=0.;
+    ipart->pos_e[0]=0.;
+    ipart->pos_e[1]=0.;
+    ipart->pos_e[2]=0.;
 #endif
 #ifdef COMPENSATED_SUMMV
-  for(i=0;i<s.n;i++) s.part[i].vel_e[0]=0.;
-  for(i=0;i<s.n;i++) s.part[i].vel_e[1]=0.;
-  for(i=0;i<s.n;i++) s.part[i].vel_e[2]=0.;
+    ipart->vel_e[0]=0.;
+    ipart->vel_e[1]=0.;
+    ipart->vel_e[2]=0.;
 #endif
+  }
   FREEBSYS_ARRAY(bsys_array);
   FREEBSYS_ARRAY(bsys_array1);
   free(tmpsys.part);
@@ -274,7 +284,7 @@ static void ndkd(int clevel,int n,struct sys s1,struct sys s2, DOUBLE stime, DOU
 static void n_cc_kepler(int clevel,int n,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt)
 {
   UINT id;
-  struct sys tmpsys;
+  struct sys tmpsys=zerosys;
   FLOAT odt_param=dt_param;
   dt_param=dt_param/n;
   tmpsys.n=s.n;

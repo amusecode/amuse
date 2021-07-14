@@ -35,6 +35,7 @@ void kick_cl(struct sys s1, struct sys s2, DOUBLE dt)
   int i;
   int groupsize,nthread,blocksize;
   CLFLOAT cleps2=(CLFLOAT) eps2;
+  struct particle *ipart;
   
   if(s1.n==0 || s2.n==0) return;
 
@@ -51,18 +52,20 @@ void kick_cl(struct sys s1, struct sys s2, DOUBLE dt)
 
   for(i=0;i<s1.n;i++)
   {
-    ipos[i].s0= s1.part[i].pos[0];
-    ipos[i].s1= s1.part[i].pos[1];
-    ipos[i].s2= s1.part[i].pos[2];
-    ipos[i].s3= s1.part[i].mass;
+    ipart=GETPART(s1,i);
+    ipos[i].s0=ipart->pos[0];
+    ipos[i].s1=ipart->pos[1];
+    ipos[i].s2=ipart->pos[2];
+    ipos[i].s3=ipart->mass;
   }  
   for(i=s1.n;i<nthread;i++) ipos[i]=(CLFLOAT4) {{0.0,0.0,0.0,0.0}};  
-  for(i=0;i<s2.n;i++)
+  for(i=0;i<s2.n-s2.nzero;i++)
   {
-    jpos[i].s0= s2.part[i].pos[0];
-    jpos[i].s1= s2.part[i].pos[1];
-    jpos[i].s2= s2.part[i].pos[2];
-    jpos[i].s3= s2.part[i].mass;
+    ipart=GETPART(s2,i);
+    jpos[i].s0=ipart->pos[0];
+    jpos[i].s1=ipart->pos[1];
+    jpos[i].s2=ipart->pos[2];
+    jpos[i].s3=ipart->mass;
   }
   for(i=0;i<nthread;i++) acc[i]=(CLFLOAT4) {{0.0,0.0,0.0,0.0}};  
                         
@@ -82,9 +85,10 @@ void kick_cl(struct sys s1, struct sys s2, DOUBLE dt)
 
   for(i=0;i<s1.n;i++)
   {
-    s1.part[i].vel[0]+=dt*acc[i].s0;
-    s1.part[i].vel[1]+=dt*acc[i].s1;
-    s1.part[i].vel[2]+=dt*acc[i].s2;
+    ipart=GETPART(s1,i);
+    ipart->vel[0]+=dt*acc[i].s0;
+    ipart->vel[1]+=dt*acc[i].s1;
+    ipart->vel[2]+=dt*acc[i].s2;
   }
 
   clfree( ipos);
@@ -98,7 +102,8 @@ void timestep_cl(struct sys s1, struct sys s2,int dir)
   int groupsize,nthread,blocksize;
   CLFLOAT cleps2=(CLFLOAT) eps2;
   CLFLOAT cldtparam=(CLFLOAT) dt_param;
-  
+  struct particle *ipart;
+    
   if(s1.n==0 || s2.n==0) return;
 
   groupsize=NTHREAD;
@@ -114,21 +119,24 @@ void timestep_cl(struct sys s1, struct sys s2,int dir)
   CLFLOAT4* jpos = (CLFLOAT4*) clmalloc(CLCONTEXT,s2.n*sizeof(CLFLOAT4),0);
   CLFLOAT4* jvel = (CLFLOAT4*) clmalloc(CLCONTEXT,s2.n*sizeof(CLFLOAT4),0);
 
+  // an unnecessary block of nzero*nzero timesteps is calculated
   for(i=0;i<s1.n;i++)
   {
-    ipos[i].s0= s1.part[i].pos[0];ivel[i].s0= s1.part[i].vel[0];
-    ipos[i].s1= s1.part[i].pos[1];ivel[i].s1= s1.part[i].vel[1];
-    ipos[i].s2= s1.part[i].pos[2];ivel[i].s2= s1.part[i].vel[2];
-    ipos[i].s3= s1.part[i].mass;ivel[i].s3=0.;
+    ipart=GETPART(s1,i);
+    ipos[i].s0=ipart->pos[0]; ivel[i].s0=ipart->vel[0];
+    ipos[i].s1=ipart->pos[1]; ivel[i].s1=ipart->vel[1];
+    ipos[i].s2=ipart->pos[2]; ivel[i].s2=ipart->vel[2];
+    ipos[i].s3=ipart->mass;   ivel[i].s3=0.;
   }  
   for(i=s1.n;i<nthread;i++) ipos[i]=(CLFLOAT4) {{0.0,0.0,0.0,0.0}};  
   for(i=s1.n;i<nthread;i++) ivel[i]=(CLFLOAT4) {{0.0,0.0,0.0,0.0}};  
   for(i=0;i<s2.n;i++)
   {
-    jpos[i].s0= s2.part[i].pos[0]; jvel[i].s0= s2.part[i].vel[0];
-    jpos[i].s1= s2.part[i].pos[1]; jvel[i].s1= s2.part[i].vel[1];
-    jpos[i].s2= s2.part[i].pos[2]; jvel[i].s2= s2.part[i].vel[2];
-    jpos[i].s3= s2.part[i].mass;jvel[i].s3= 0.;
+    ipart=GETPART(s2,i);
+    jpos[i].s0= ipart->pos[0]; jvel[i].s0=ipart->vel[0];
+    jpos[i].s1= ipart->pos[1]; jvel[i].s1=ipart->vel[1];
+    jpos[i].s2= ipart->pos[2]; jvel[i].s2=ipart->vel[2];
+    jpos[i].s3= ipart->mass;   jvel[i].s3=0.;
   }
   for(i=0;i<nthread;i++) timestep[i]=(CLFLOAT) 0.;  
                         
@@ -153,11 +161,8 @@ void timestep_cl(struct sys s1, struct sys s2,int dir)
   clmsync(CLCONTEXT,0,timestep,CL_MEM_HOST|CL_EVENT_NOWAIT);
   clwait(CLCONTEXT,0,CL_KERNEL_EVENT|CL_MEM_EVENT);
 
-  for(i=0;i<s1.n;i++)
-  {
 //    if(timestep[i]<s1.part[i].timestep) 
-    s1.part[i].timestep=timestep[i];
-  }
+  for(i=0;i<s1.n;i++) GETPART(s1,i)->timestep=timestep[i];
 
   clfree( ipos);
   clfree( ivel);
@@ -172,6 +177,7 @@ void potential_cl(struct sys s1, struct sys s2)
   int i;
   int groupsize,nthread,blocksize;
   CLFLOAT cleps2=(CLFLOAT) eps2;
+  struct particle *ipart;
   
   if(s1.n==0 || s2.n==0) return;
 
@@ -188,18 +194,20 @@ void potential_cl(struct sys s1, struct sys s2)
 
   for(i=0;i<s1.n;i++)
   {
-    ipos[i].s0= s1.part[i].pos[0];
-    ipos[i].s1= s1.part[i].pos[1];
-    ipos[i].s2= s1.part[i].pos[2];
-    ipos[i].s3= s1.part[i].mass;
+    ipart=GETPART(s1,i);
+    ipos[i].s0=ipart->pos[0];
+    ipos[i].s1=ipart->pos[1];
+    ipos[i].s2=ipart->pos[2];
+    ipos[i].s3=ipart->mass;
   }  
   for(i=s1.n;i<nthread;i++) ipos[i]=(CLFLOAT4) {{0.0,0.0,0.0,0.0}};  
-  for(i=0;i<s2.n;i++)
+  for(i=0;i<s2.n-s2.nzero;i++)
   {
-    jpos[i].s0= s2.part[i].pos[0];
-    jpos[i].s1= s2.part[i].pos[1];
-    jpos[i].s2= s2.part[i].pos[2];
-    jpos[i].s3= s2.part[i].mass;
+    ipart=GETPART(s2,i);
+    jpos[i].s0=ipart->pos[0];
+    jpos[i].s1=ipart->pos[1];
+    jpos[i].s2=ipart->pos[2];
+    jpos[i].s3=ipart->mass;
   }
   for(i=0;i<nthread;i++) pot[i]=0.0;  
                         
@@ -217,10 +225,7 @@ void potential_cl(struct sys s1, struct sys s2)
   clmsync(CLCONTEXT,0,pot,CL_MEM_HOST|CL_EVENT_NOWAIT);
   clwait(CLCONTEXT,0,CL_KERNEL_EVENT|CL_MEM_EVENT);
 
-  for(i=0;i<s1.n;i++)
-  {
-    s1.part[i].pot+=pot[i];
-  }
+  for(i=0;i<s1.n;i++) GETPART(s1,i)->pot+=pot[i];
 
   clfree( ipos);
   clfree( jpos);

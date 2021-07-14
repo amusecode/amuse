@@ -18,8 +18,8 @@
 
 //#define CC_DEBUG // perform (time-consuming, but thorough) CC sanity checks
 
-#define IS_ZEROSYS(SYS) (((SYS)->n == 0) && ((SYS)->part == NULL) && ((SYS)->last == NULL) && ((SYS)->next_cc == NULL))
-#define IS_ZEROSYSs(SYS) (((SYS).n == 0) && ((SYS).part == NULL) && ((SYS).last == NULL) && ((SYS).next_cc == NULL))
+#define IS_ZEROSYS(SYS) (((SYS)->n == 0) && ((SYS)->nzero == 0) && ((SYS)->part == NULL) && ((SYS)->last == NULL) && ((SYS)->next_cc == NULL))
+#define IS_ZEROSYSs(SYS) (((SYS).n == 0) && ((SYS).nzero == 0) && ((SYS).part == NULL) && ((SYS).last == NULL) && ((SYS).next_cc == NULL))
 #define LOG_CC_SPLIT(C, R) \
 { \
   LOG("clevel = %d s.n = %d c.n = {", clevel, s.n); \
@@ -41,6 +41,8 @@ void split_cc(int clevel,struct sys s, struct sys *c, struct sys *r, DOUBLE dt) 
   dt=fabs(dt);
   diag->tstep[clevel]++; // not directly comparable to corresponding SF-split statistics
   struct sys *c_next;
+  if(s.nzero>0 && s.n!=s.nzero && s.zeropart!=s.last+1) 
+    ENDRUN("split_cc only works on contiguous systems");
   c_next = c;
   *c_next = zerosys;
   UINT processed = 0; // increase if something is added from the stack to the cc
@@ -115,7 +117,7 @@ void split_cc(int clevel,struct sys s, struct sys *c, struct sys *r, DOUBLE dt) 
   if (r->n > 0)
   {
     r->part = &( s.part[rest_next + 1] );
-    r->last = s.last;
+    r->last = s.part+s.n-1;
   }
   else
   {
@@ -392,7 +394,7 @@ void evolve_cc2(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt, 
 
   // Independently integrate every C_i at reduced pivot time step h/2 (1st time)
   int nc=0; for (struct sys *ci = &c; !IS_ZEROSYS(ci); ci = ci->next_cc) nc++;
-
+  
   if(nc>1 || r.n>0) recentersub=1;
 
   for (struct sys *ci = &c; !IS_ZEROSYS(ci); ci = ci->next_cc)
@@ -404,7 +406,7 @@ void evolve_cc2(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt, 
       diag->taskcount[clevel]+=ci->n;
 #pragma omp task firstprivate(clevel,ci,stime,dt,recentersub) untied
       {
-        struct sys lsys;
+        struct sys lsys=zerosys;
         lsys.n=ci->n;
         struct particle* lpart=(struct particle*) malloc(lsys.n*sizeof(struct particle));
         lsys.part=lpart;lsys.last=lpart+lsys.n-1;
@@ -437,6 +439,7 @@ void evolve_cc2(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt, 
     }
   }
 
+  if(r.n>0 && accel_zero_mass) split_zeromass(&r);
   // kick c <-> rest (eq 24)
   if(r.n>0) for (struct sys *ci = &c; !IS_ZEROSYS(ci); ci = ci->next_cc)
   {
@@ -458,7 +461,7 @@ void evolve_cc2(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt, 
     diag->taskcount[clevel]+=ci->n;
 #pragma omp task firstprivate(clevel,ci,stime,etime,dt,recentersub) untied
     {
-      struct sys lsys;
+      struct sys lsys=zerosys;
       lsys.n=ci->n;
       struct particle* lpart=(struct particle*) malloc(lsys.n*sizeof(struct particle));
       lsys.part=lpart;lsys.last=lpart+lsys.n-1;
@@ -482,5 +485,8 @@ void evolve_cc2(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt, 
   }
 
   free_sys(c.next_cc);
+
+  if(accel_zero_mass) split_zeromass(&s);
+
 }
 #undef TASKCONDITION

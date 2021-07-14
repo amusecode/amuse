@@ -100,8 +100,8 @@ void evolve_ok_init(struct sys s)
     {
       if (i != j)
       {
-        ok_main_forces.forc[k].parti = &( s.part[i] );
-        ok_main_forces.forc[k].partj = &( s.part[j] );
+        ok_main_forces.forc[k].parti = GETPART(s,i);
+        ok_main_forces.forc[k].partj = GETPART(s,j);
         k++;
       }
     }
