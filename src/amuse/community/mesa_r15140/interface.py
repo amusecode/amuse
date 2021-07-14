@@ -546,342 +546,118 @@ class MESAInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolutionIn
         return function
     
 
-    @legacy_function
-    def get_control_dble():
+    @remote_function 
+    def get_control_dble(index_of_the_star='i',name='s'):
         """
         Retrieve the current control option given by name, if it is a double precision number
         """
-        function = LegacyFunctionSpecification()  
-        function.addParameter('index_of_the_star', dtype='int32', 
-            direction=function.IN, description = "The index of the star. ")
-        function.addParameter('name', dtype='string', direction=function.IN
-            , description="The name of the control to get")
-        function.addParameter('value', dtype='float64', direction=function.OUT
-            , description="The value of the control option")
-        function.result_type = 'int32'
-        function.result_doc = """
-        0 - OK
-            Current value was retrieved
-        -1 - ERROR
-            The code could not retrieve the value.
-        """
-        return function
+        returns (value='d')
     
-    @legacy_function
-    def set_control_dble():
+    @remote_function 
+    def set_control_dble(index_of_the_star='i',name='s',value='d'):
         """
         Set the current control option given by name, if it is a double precision number
         """
-        function = LegacyFunctionSpecification()  
-        function.addParameter('index_of_the_star', dtype='int32', 
-            direction=function.IN, description = "The index of the star. ")
-        function.addParameter('name', dtype='string', direction=function.IN
-            , description="The name of the control to get")
-        function.addParameter('value', dtype='float64', direction=function.IN
-            , description="The value of the control option")
-        function.result_type = 'int32'
-        function.result_doc = """
-        0 - OK
-            The value has been set.
-        -1 - ERROR
-            The code could not set the value.
-        """
-        return function
+        returns ()
 
-    @legacy_function
-    def get_control_logical():
+    @remote_function 
+    def get_control_logical(index_of_the_star='i',name='s'):
         """
         Retrieve the current control option given by name, if it is a logical flag
         """
-        function = LegacyFunctionSpecification()  
-        function.addParameter('index_of_the_star', dtype='int32', 
-            direction=function.IN, description = "The index of the star. ")
-        function.addParameter('name', dtype='string', direction=function.IN
-            , description="The name of the control to get")
-        function.addParameter('value', dtype='bool', direction=function.OUT
-            , description="The value of the control option")
-        function.result_type = 'int32'
-        function.result_doc = """
-        0 - OK
-            Current value was retrieved
-        -1 - ERROR
-            The code could not retrieve the value.
-        """
-        return function
+        returns (value='b')
     
-    @legacy_function
-    def set_control_logical():
+    @remote_function 
+    def set_control_logical(index_of_the_star='i',name='s',value='b'):
         """
         Set the current control option given by name, if it is a logical flag
         """
-        function = LegacyFunctionSpecification()  
-        function.addParameter('index_of_the_star', dtype='int32', 
-            direction=function.IN, description = "The index of the star. ")
-        function.addParameter('name', dtype='string', direction=function.IN
-            , description="The name of the control to get")
-        function.addParameter('value', dtype='bool', direction=function.IN
-            , description="The value of the control option")
-        function.result_type = 'int32'
-        function.result_doc = """
-        0 - OK
-            The value has been set.
-        -1 - ERROR
-            The code could not set the value.
-        """
-        return function
+        returns ()
 
-    @legacy_function
-    def get_control_int():
+    @remote_function 
+    def get_control_int(index_of_the_star='i',name='s'):
         """
         Retrieve the current control option given by name, if it is an integer
         """
-        function = LegacyFunctionSpecification()  
-        function.addParameter('index_of_the_star', dtype='int32', 
-            direction=function.IN, description = "The index of the star. ")
-        function.addParameter('name', dtype='string', direction=function.IN
-            , description="The name of the control to get")
-        function.addParameter('value', dtype='int32', direction=function.OUT
-            , description="The value of the control option")
-        function.result_type = 'int32'
-        function.result_doc = """
-        0 - OK
-            Current value was retrieved
-        -1 - ERROR
-            The code could not retrieve the value.
-        """
-        return function
+        returns (value='i')
     
-    @legacy_function
-    def set_control_int():
+    @remote_function 
+    def set_control_int(index_of_the_star='i',name='s',value='i'):
         """
         Set the current control option given by name, if it is an integer
         """
-        function = LegacyFunctionSpecification()  
-        function.addParameter('index_of_the_star', dtype='int32', 
-            direction=function.IN, description = "The index of the star. ")
-        function.addParameter('name', dtype='string', direction=function.IN
-            , description="The name of the control to get")
-        function.addParameter('value', dtype='int32', direction=function.IN
-            , description="The value of the control option")
-        function.result_type = 'int32'
-        function.result_doc = """
-        0 - OK
-            The value has been set.
-        -1 - ERROR
-            The code could not set the value.
-        """
-        return function
+        returns ()
 
-    @legacy_function
-    def get_control_str():
+    @remote_function 
+    def get_control_str(index_of_the_star='i',name='s'):
         """
         Retrieve the current control option given by name, if it is a string
         """
-        function = LegacyFunctionSpecification()  
-        function.addParameter('index_of_the_star', dtype='int32', 
-            direction=function.IN, description = "The index of the star. ")
-        function.addParameter('name', dtype='string', direction=function.IN
-            , description="The name of the control to get")
-        function.addParameter('value', dtype='string', direction=function.OUT
-            , description="The value of the control option")
-        function.result_type = 'int32'
-        function.result_doc = """
-        0 - OK
-            Current value was retrieved
-        -1 - ERROR
-            The code could not retrieve the value.
-        """
-        return function
+        returns (value='s')
     
-    @legacy_function
-    def set_control_str():
+    @remote_function 
+    def set_control_str(index_of_the_star='i',name='s',value='s'):
         """
         Set the current control option given by name, if it is a string
         """
-        function = LegacyFunctionSpecification()  
-        function.addParameter('index_of_the_star', dtype='int32', 
-            direction=function.IN, description = "The index of the star. ")
-        function.addParameter('name', dtype='string', direction=function.IN
-            , description="The name of the control to get")
-        function.addParameter('value', dtype='string', direction=function.IN
-            , description="The value of the control option")
-        function.result_type = 'int32'
-        function.result_doc = """
-        0 - OK
-            The value has been set.
-        -1 - ERROR
-            The code could not set the value.
-        """
-        return function
+        returns ()
 
 
-    @legacy_function
-    def get_star_job_dble():
+    @remote_function 
+    def get_star_job_dble(index_of_the_star='i',name='s'):
         """
         Retrieve the current star_job option given by name, if it is a double precision number
         """
-        function = LegacyFunctionSpecification()  
-        function.addParameter('index_of_the_star', dtype='int32', 
-            direction=function.IN, description = "The index of the star. ")
-        function.addParameter('name', dtype='string', direction=function.IN
-            , description="The name of the star_job to get")
-        function.addParameter('value', dtype='float64', direction=function.OUT
-            , description="The value of the star_job option")
-        function.result_type = 'int32'
-        function.result_doc = """
-        0 - OK
-            Current value was retrieved
-        -1 - ERROR
-            The code could not retrieve the value.
-        """
-        return function
+        returns (value='d')
     
-    @legacy_function
-    def set_star_job_dble():
+    @remote_function 
+    def set_star_job_dble(index_of_the_star='i',name='s',value='d'):
         """
         Set the current star_job option given by name, if it is a double precision number
         """
-        function = LegacyFunctionSpecification()  
-        function.addParameter('index_of_the_star', dtype='int32', 
-            direction=function.IN, description = "The index of the star. ")
-        function.addParameter('name', dtype='string', direction=function.IN
-            , description="The name of the star_job to get")
-        function.addParameter('value', dtype='float64', direction=function.IN
-            , description="The value of the star_job option")
-        function.result_type = 'int32'
-        function.result_doc = """
-        0 - OK
-            The value has been set.
-        -1 - ERROR
-            The code could not set the value.
-        """
-        return function
+        returns ()
 
-    @legacy_function
-    def get_star_job_logical():
+    @remote_function 
+    def get_star_job_logical(index_of_the_star='i',name='s'):
         """
         Retrieve the current star_job option given by name, if it is a logical flag
         """
-        function = LegacyFunctionSpecification()  
-        function.addParameter('index_of_the_star', dtype='int32', 
-            direction=function.IN, description = "The index of the star. ")
-        function.addParameter('name', dtype='string', direction=function.IN
-            , description="The name of the star_job to get")
-        function.addParameter('value', dtype='bool', direction=function.OUT
-            , description="The value of the star_job option")
-        function.result_type = 'int32'
-        function.result_doc = """
-        0 - OK
-            Current value was retrieved
-        -1 - ERROR
-            The code could not retrieve the value.
-        """
-        return function
+        returns (value='b')
     
-    @legacy_function
-    def set_star_job_logical():
+    @remote_function 
+    def set_star_job_logical(index_of_the_star='i',name='s',value='b'):
         """
         Set the current star_job option given by name, if it is a logical flag
         """
-        function = LegacyFunctionSpecification()  
-        function.addParameter('index_of_the_star', dtype='int32', 
-            direction=function.IN, description = "The index of the star. ")
-        function.addParameter('name', dtype='string', direction=function.IN
-            , description="The name of the star_job to get")
-        function.addParameter('value', dtype='bool', direction=function.IN
-            , description="The value of the star_job option")
-        function.result_type = 'int32'
-        function.result_doc = """
-        0 - OK
-            The value has been set.
-        -1 - ERROR
-            The code could not set the value.
-        """
-        return function
+        returns ()
 
-    @legacy_function
-    def get_star_job_int():
+    @remote_function 
+    def get_star_job_int(index_of_the_star='i',name='s'):
         """
         Retrieve the current star_job option given by name, if it is an integer
         """
-        function = LegacyFunctionSpecification()  
-        function.addParameter('index_of_the_star', dtype='int32', 
-            direction=function.IN, description = "The index of the star. ")
-        function.addParameter('name', dtype='string', direction=function.IN
-            , description="The name of the star_job to get")
-        function.addParameter('value', dtype='int32', direction=function.OUT
-            , description="The value of the star_job option")
-        function.result_type = 'int32'
-        function.result_doc = """
-        0 - OK
-            Current value was retrieved
-        -1 - ERROR
-            The code could not retrieve the value.
-        """
-        return function
+        returns (value='i')
     
-    @legacy_function
-    def set_star_job_int():
+    @remote_function 
+    def set_star_job_int(index_of_the_star='i',name='s',value='i'):
         """
         Set the current star_job option given by name, if it is an integer
         """
-        function = LegacyFunctionSpecification()  
-        function.addParameter('index_of_the_star', dtype='int32', 
-            direction=function.IN, description = "The index of the star. ")
-        function.addParameter('name', dtype='string', direction=function.IN
-            , description="The name of the star_job to get")
-        function.addParameter('value', dtype='int32', direction=function.IN
-            , description="The value of the star_job option")
-        function.result_type = 'int32'
-        function.result_doc = """
-        0 - OK
-            The value has been set.
-        -1 - ERROR
-            The code could not set the value.
-        """
-        return function
+        returns ()
 
-    @legacy_function
-    def get_star_job_str():
+    @remote_function
+    def get_star_job_str(index_of_the_star='i',name='s'):
         """
         Retrieve the current star_job option given by name, if it is a string
         """
-        function = LegacyFunctionSpecification()  
-        function.addParameter('index_of_the_star', dtype='int32', 
-            direction=function.IN, description = "The index of the star. ")
-        function.addParameter('name', dtype='string', direction=function.IN
-            , description="The name of the star_job to get")
-        function.addParameter('value', dtype='string', direction=function.OUT
-            , description="The value of the star_job option")
-        function.result_type = 'int32'
-        function.result_doc = """
-        0 - OK
-            Current value was retrieved
-        -1 - ERROR
-            The code could not retrieve the value.
-        """
-        return function
+        returns (value='s') 
     
-    @legacy_function
-    def set_star_job_str():
+    @remote_function
+    def set_star_job_str(index_of_the_star='i',name='s',value='s'):
         """
         Set the current star_job option given by name, if it is a string
         """
-        function = LegacyFunctionSpecification()  
-        function.addParameter('index_of_the_star', dtype='int32', 
-            direction=function.IN, description = "The index of the star. ")
-        function.addParameter('name', dtype='string', direction=function.IN
-            , description="The name of the star_job to get")
-        function.addParameter('value', dtype='string', direction=function.IN
-            , description="The value of the star_job option")
-        function.result_type = 'int32'
-        function.result_doc = """
-        0 - OK
-            The value has been set.
-        -1 - ERROR
-            The code could not set the value.
-        """
-        return function
+        returns () 
 
     @legacy_function   
     def new_stellar_model():
@@ -900,7 +676,7 @@ class MESAInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolutionIn
         function.result_type = 'int32'
         return function
 
-    @legacy_function   
+    @legacy_function  
     def finalize_stellar_model():
         """
         Finalize the new star model defined by 'new_stellar_model'.
@@ -915,142 +691,56 @@ class MESAInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolutionIn
         return function
 
 
-    @legacy_function
-    def get_profile_at_zone():
+    @remote_function
+    def get_profile_at_zone(index_of_the_star='i',zone='i',name='s'):
         """
         Retrieve arbitary profile column at the specified zone/mesh-cell of the star.
         """
-        function = LegacyFunctionSpecification() 
-        function.can_handle_array = True 
-        function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
-            , description="The index of the star to get the value of")
-        function.addParameter('zone', dtype='int32', direction=function.IN
-            , description="The zone/mesh-cell of the star to get the value of")
-        function.addParameter('name', dtype='string', direction=function.IN
-            , description="The profile column name to get the value of")            
-        function.addParameter('value', dtype='float64', direction=function.OUT
-            , description="The profile value at the specified zone/mesh-cell of the star.")
-        function.result_type = 'int32'
-        function.result_doc = """
-        0 - OK
-            The value was retrieved.
-        -1 - ERROR
-            A star with the given index was not found.
-        -2 - ERROR
-            A zone with the given index was not found.
-        """
-        return function   
+        returns (value='d') 
 
-    @legacy_function
-    def get_history():
+    @remote_function
+    def get_history(index_of_the_star='i',name='s'):
         """
         Retrieve arbitary history column of the star.
         """
-        function = LegacyFunctionSpecification() 
-        function.can_handle_array = True 
-        function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
-            , description="The index of the star to get the value of")
-        function.addParameter('name', dtype='string', direction=function.IN
-            , description="The history column name to get the value of")            
-        function.addParameter('value', dtype='float64', direction=function.OUT
-            , description="The history value of the star.")
-        function.result_type = 'int32'
-        function.result_doc = """
-        0 - OK
-            The value was retrieved.
-        -1 - ERROR
-            A star with the given index was not found.
-        -2 - ERROR
-            A coloumn with the given name was not found.
-        """
-        return function  
+        returns (value='d')
 
 
-    @legacy_function
-    def star_job_update():
+    @remote_function
+    def star_job_update(index_of_the_star='i'):
         """
         After changing options in star_job this function must be called to make the changes to the star
         """
-        function = LegacyFunctionSpecification() 
-         
-        function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
-            , description="The index of the star to update")
-        function.result_type = 'int32'
-        function.result_doc = """
-        0 - OK
-            The changes were appplied.
-        -1 - ERROR
-            The changes were not appplied.
-        """
-        return function  
+        returns ()
 
 
-    @legacy_function
-    def get_nuclear_network():
+    @remote_function
+    def get_nuclear_network(index_of_the_star='i'):
         """
         Retrieve the current nuclear network of the star.
         """
-        function = LegacyFunctionSpecification() 
-        function.can_handle_array = False 
-        function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
-            , description="The index of the star to get the value of")
-        function.addParameter('net_name', dtype='string', direction=function.OUT
-            , description="The current nuclear network of the star.")
-        function.result_type = 'int32'
-        function.result_doc = """
-        0 - OK
-            The value was retrieved.
-        -1 - ERROR
-            A star with the given index was not found.
-        """
-        return function
+        returns (net_name='s')
 
-    @legacy_function
-    def set_nuclear_network():
+    @remote_function
+    def set_nuclear_network(index_of_the_star='i',net_name='s'):
         """
         Set the current nuclear network of the star.
         """
-        function = LegacyFunctionSpecification() 
-        function.can_handle_array = False
-        function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
-            , description="The index of the star to get the value of")
-        function.addParameter('net_name', dtype='string', direction=function.IN
-            , description="The new nuclear network of the star.")
-        function.result_type = 'int32'
-        function.result_doc = """
-        0 - OK
-            The value was retrieved.
-        -1 - ERROR
-            A star with the given index was not found.
-        """
-        return function
+        returns ()
 
-
-    @legacy_function   
-    def get_age():
+    @remote_function   
+    def get_age(index_of_the_star='i'):
         """
         Retrieve the current age of the star
         """
-        function = LegacyFunctionSpecification() 
-        function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
-            , description="The index of the star to get the value of")
-        function.addParameter('star_age', dtype='float64', direction=function.OUT
-            , description="The current age of the star")
-        function.result_type = 'int32'
-        return function
+        returns (net_name='d')
 
-    @legacy_function   
-    def set_age():
+    @remote_function  
+    def set_age(index_of_the_star='i',new_age='d'):
         """
         Set the current age of the star
         """
-        function = LegacyFunctionSpecification() 
-        function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
-            , description="The index of the star to get the value of")
-        function.addParameter('star_age', dtype='float64', direction=function.IN
-            , description="The new age of the star")
-        function.result_type = 'int32'
-        return function
+        returns ()
 
 
 class MESA(StellarEvolution, InternalStellarStructure):
@@ -1195,6 +885,7 @@ class MESA(StellarEvolution, InternalStellarStructure):
                 handler, 
                 set_name = particle_set_name
             )
+
             handler.add_method(particle_set_name, 'get_mass_profile')
             handler.add_method(particle_set_name, 'set_mass_profile')
             handler.add_method(particle_set_name, 'get_cumulative_mass_profile')
@@ -1781,5 +1472,6 @@ class MESA(StellarEvolution, InternalStellarStructure):
         tmp_star = datamodel.Particle(key=key)
         tmp_star.age_tag = current_age
         return self.imported_stars.add_particle(tmp_star)
+
 
 Mesa = MESA
