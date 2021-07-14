@@ -71,23 +71,16 @@ class MESAInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolutionIn
             Directory does not exist
         """
         return function
-    
-    @legacy_function
+        
+    @remote_function   
     def get_maximum_number_of_stars():
         """
         Retrieve the maximum number of stars that can be
         handled by this instance.
         """
-        function = LegacyFunctionSpecification()  
-        function.addParameter('maximum_number_of_stars', dtype='int32', direction=function.OUT,
-            description = "The current value of the maximum number of stars")
-        function.result_type = 'int32'
-        function.result_doc = """
-        0 - OK
-            Current value of was retrieved
-        """
-        return function
-        
+        returns (maximum_number_of_stars='i')
+
+
     @legacy_function   
     def new_pre_ms_particle():
         """
@@ -130,8 +123,6 @@ class MESAInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolutionIn
         function.result_type = 'int32'
         return function
 
-
-
     @legacy_function   
     def load_model():
         """
@@ -146,22 +137,9 @@ class MESAInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolutionIn
         function.result_type = 'int32'
         return function
         
-    @legacy_function
-    def set_time_step():
-        function = LegacyFunctionSpecification() 
-        function.can_handle_array = True
-        function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
-            , description="The index of the star to get the value of")
-        function.addParameter('time_step', dtype='float64', direction=function.IN
-            , description="The next timestep for the star in years.")
-        function.result_type = 'int32'
-        function.result_doc = """
-        0 - OK
-            The value has been set.
-        -1 - ERROR
-            A star with the given index was not found.
-        """
-        return function
+    @remote_function
+    def set_time_step(index_of_the_star='i',time_step='d' | units.yr):
+        returns ()
     
     
     @legacy_function   
@@ -178,157 +156,62 @@ class MESAInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolutionIn
         function.result_type = 'int32'
         return function
     
-    @legacy_function   
-    def get_mass_loss_rate():
+    @remote_function   
+    def get_mass_loss_rate(index_of_the_star='i'):
         """
         Retrieve the current mass loss rate of the star. (positive for winds, negative for accretion)
         """
-        function = LegacyFunctionSpecification() 
-        function.can_handle_array = True 
-        function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
-            , description="The index of the star to get the value of")
-        function.addParameter('mass_loss_rate', dtype='float64', direction=function.OUT
-            , description="The current mass loss rate of the star. (positive for winds, negative for accretion)")
-        function.result_type = 'int32'
-        return function
+        returns (mass_change='d'| units.MSun/units.yr)
     
-    @legacy_function   
-    def get_manual_mass_transfer_rate():
+    @remote_function  
+    def get_manual_mass_transfer_rate(index_of_the_star='i'):
         """
         Retrieve the current user-specified mass transfer rate of the star. (negative for winds, positive for accretion)
         """
-        function = LegacyFunctionSpecification() 
-        function.can_handle_array = True 
-        function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
-            , description="The index of the star to get the value of")
-        function.addParameter('mass_change', dtype='float64', direction=function.OUT
-            , description="The current user-specified mass transfer rate of the star. (negative for winds, positive for accretion)")
-        function.result_type = 'int32'
-        return function
+        returns (mass_change='d'| units.MSun/units.yr)
     
-    @legacy_function   
-    def set_manual_mass_transfer_rate():
+    @remote_function
+    def set_manual_mass_transfer_rate(index_of_the_star='i', mass_change='d'| units.MSun/units.yr):
         """
         Set a new user-specified mass transfer rate of the star. (negative for winds, positive for accretion)
         """
-        function = LegacyFunctionSpecification() 
-         
-        function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
-            , description="The index of the star to get the value of")
-        function.addParameter('mass_change', dtype='float64', direction=function.IN
-            , description="The new user-specified mass transfer rate of the star. (negative for winds, positive for accretion)")
-        function.result_type = 'int32'
-        return function
+        return ()
     
-    @legacy_function
-    def get_mass_fraction_at_zone():
+    @remote_function 
+    def get_mass_fraction_at_zone(index_of_the_star='i',zone='i'):
         """
         Retrieve the mass fraction at the specified zone/mesh-cell of the star.
         """
-        function = LegacyFunctionSpecification() 
-        function.can_handle_array = True 
-        function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
-            , description="The index of the star to get the value of")
-        function.addParameter('zone', dtype='int32', direction=function.IN
-            , description="The zone/mesh-cell of the star to get the value of")
-        function.addParameter('dq_i', dtype='float64', direction=function.OUT
-            , description="The mass fraction at the specified zone/mesh-cell of the star.")
-        function.result_type = 'int32'
-        function.result_doc = """
-        0 - OK
-            The value was retrieved.
-        -1 - ERROR
-            A star with the given index was not found.
-        -2 - ERROR
-            A zone with the given index was not found.
-        """
-        return function
+        returns (dq_i='d')
     
     
-    @legacy_function
-    def get_luminosity_at_zone():
+    @remote_function 
+    def get_luminosity_at_zone(index_of_the_star='i',zone='i'):
         """
         Retrieve the luminosity at the specified zone/mesh-cell of the star.
         """
-        function = LegacyFunctionSpecification() 
-        function.can_handle_array = True 
-        function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
-            , description="The index of the star to get the value of")
-        function.addParameter('zone', dtype='int32', direction=function.IN
-            , description="The zone/mesh-cell of the star to get the value of")
-        function.addParameter('lum_i', dtype='float64', direction=function.OUT
-            , description="The luminosity at the specified zone/mesh-cell of the star.")
-        function.result_type = 'int32'
-        function.result_doc = """
-        0 - OK
-            The value was retrieved.
-        -1 - ERROR
-            A star with the given index was not found.
-        -2 - ERROR
-            A zone with the given index was not found.
-        """
-        return function
+        returns (L_i='d')
     
-    @legacy_function
-    def get_entropy_at_zone():
+    @remote_function 
+    def get_entropy_at_zone(index_of_the_star='i',zone='i'):
         """
         Retrieve the entropy at the specified zone/mesh-cell of the star.
         """
-        function = LegacyFunctionSpecification() 
-        function.can_handle_array = True 
-        function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
-            , description="The index of the star to get the value of")
-        function.addParameter('zone', dtype='int32', direction=function.IN
-            , description="The zone/mesh-cell of the star to get the value of")
-        function.addParameter('S_i', dtype='float64', direction=function.OUT
-            , description="The specific entropy at the specified zone/mesh-cell of the star.")
-        function.result_type = 'int32'
-        function.result_doc = """
-        0 - OK
-            The value was retrieved.
-        -1 - ERROR
-            A star with the given index was not found.
-        -2 - ERROR
-            A zone with the given index was not found.
-        """
-        return function    
+        returns (S_i='d')
 
-    @legacy_function
-    def get_thermal_energy_at_zone():
+    @remote_function 
+    def get_thermal_energy_at_zone(index_of_the_star='i',zone='i'):
         """
-        Retrieve the entropy at the specified zone/mesh-cell of the star.
+        Retrieve the thermal energy at the specified zone/mesh-cell of the star.
         """
-        function = LegacyFunctionSpecification() 
-        function.can_handle_array = True 
-        function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
-            , description="The index of the star to get the value of")
-        function.addParameter('zone', dtype='int32', direction=function.IN
-            , description="The zone/mesh-cell of the star to get the value of")
-        function.addParameter('E_i', dtype='float64', direction=function.OUT
-            , description="The specific thermal energy at the specified zone/mesh-cell of the star.")
-        function.result_type = 'int32'
-        function.result_doc = """
-        0 - OK
-            The value was retrieved.
-        -1 - ERROR
-            A star with the given index was not found.
-        -2 - ERROR
-            A zone with the given index was not found.
+        returns (E_i='d') 
+
+    @remote_function 
+    def get_brunt_vaisala_frequency_squared_at_zone(index_of_the_star='i',zone='i'):
         """
-        return function    
-    
-    @legacy_function
-    def get_brunt_vaisala_frequency_squared_at_zone():
+        Retrieve the mass fraction at the specified zone/mesh-cell of the star.
         """
-        Retrieve the Brunt-Vaisala frequency squared at the specified zone/mesh-cell of the star.
-        """
-        function = LegacyFunctionSpecification() 
-        function.can_handle_array = True 
-        function.addParameter('index_of_the_star', dtype='int32', direction=function.IN, unit=INDEX)
-        function.addParameter('zone', dtype='int32', direction=function.IN, unit=NO_UNIT)
-        function.addParameter('brunt_N2', dtype='float64', direction=function.OUT, unit=units.s**-2)
-        function.result_type = 'int32'
-        return function
+        returns (brunt_N2='d')
     
     @legacy_function
     def get_id_of_species():
@@ -1058,7 +941,6 @@ class MESA(StellarEvolution, InternalStellarStructure):
             (units.yr, handler.ERROR_CODE,)
         )
         
-    
         handler.add_method(
             "set_max_age_stop_condition", 
             (units.yr, ), 
