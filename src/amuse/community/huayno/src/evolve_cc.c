@@ -299,7 +299,10 @@ void evolve_cc2(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt, 
   struct sys c = zerosys, r = zerosys;
   CHECK_TIMESTEP(etime,stime,dt,clevel);
 
-  if (s.n == 2 && (inttype==CCC_KEPLER || inttype==CC_KEPLER))
+  if(accel_zero_mass) split_zeromass(&s);
+
+  if ((s.n == 2 || s.n-s.nzero<=1 )&& (inttype==CCC_KEPLER || inttype==CC_KEPLER))
+  //~ if (s.n == 2 && (inttype==CCC_KEPLER || inttype==CC_KEPLER))
   {
     evolve_kepler(clevel,s, stime, etime, dt);
     return;
@@ -473,7 +476,7 @@ void evolve_cc2(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt, 
   } else
 #endif
   {
-      evolve_cc2(clevel+1,*ci, stime, stime+dt/2, dt/2,inttype,recentersub);
+      evolve_cc2(clevel+1,*ci, stime+dt/2, etime, dt/2,inttype,recentersub);
   }
   }
 #pragma omp taskwait
