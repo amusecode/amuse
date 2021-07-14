@@ -69,13 +69,13 @@ static void evolve_kepler_n(int clevel,struct sys s, DOUBLE stime, DOUBLE etime,
 
   err=0;
 #pragma omp parallel for if((ULONG) s.n>omp_get_num_threads() && !omp_in_parallel()) default(none) \
- private(ipart, dpos,dvel,dpos0,dvel0) shared(clevel, dt,cmpos, s, eps2) reduction(+: err)
+ private(ipart, dpos,dvel,dpos0,dvel0) shared(clevel, dt,cmpos, s, eps2) reduction(|: err)
   for(UINT i=1;i<s.n;i++)
   {
     ipart=GETPART(s,i);
     for(int k=0;k<3;k++) dpos0[k] = s.part->pos[k] - ipart->pos[k];
     for(int k=0;k<3;k++) dvel0[k] = s.part->vel[k] - ipart->vel[k];
-    err+=universal_kepler_solver(dt,s.part->mass,eps2,
+    err|=universal_kepler_solver(dt,s.part->mass,eps2,
                                       dpos0[0],dpos0[1],dpos0[2],
                                       dvel0[0],dvel0[1],dvel0[2],
                                       &dpos[0],&dpos[1],&dpos[2],
