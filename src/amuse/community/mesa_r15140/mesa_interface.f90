@@ -1056,7 +1056,7 @@ module mesa_interface
         end if
 
         ! Check it exists
-        profile_id = star_get_profile_id(s,name)
+        call star_get_profile_id(s, name, profile_id)
         if(profile_id<0) then
             val = -HUGE(val)
             ierr = MESA_FAIL
@@ -1096,7 +1096,7 @@ module mesa_interface
         end if
 
         ! Check it exists
-        profile_id = star_get_profile_id(s,name)
+        call star_get_profile_id(s, name, profile_id)
 
         if(profile_id<0) then
             ierr = MESA_FAIL
