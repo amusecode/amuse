@@ -177,42 +177,6 @@ class MESAInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolutionIn
         """
         return ()
     
-    @remote_function 
-    def get_mass_fraction_at_zone(index_of_the_star='i',zone='i'):
-        """
-        Retrieve the mass fraction at the specified zone/mesh-cell of the star.
-        """
-        returns (dq_i='d')
-    
-    
-    @remote_function 
-    def get_luminosity_at_zone(index_of_the_star='i',zone='i'):
-        """
-        Retrieve the luminosity at the specified zone/mesh-cell of the star.
-        """
-        returns (L_i='d')
-    
-    @remote_function 
-    def get_entropy_at_zone(index_of_the_star='i',zone='i'):
-        """
-        Retrieve the entropy at the specified zone/mesh-cell of the star.
-        """
-        returns (S_i='d')
-
-    @remote_function 
-    def get_thermal_energy_at_zone(index_of_the_star='i',zone='i'):
-        """
-        Retrieve the thermal energy at the specified zone/mesh-cell of the star.
-        """
-        returns (E_i='d') 
-
-    @remote_function 
-    def get_brunt_vaisala_frequency_squared_at_zone(index_of_the_star='i',zone='i'):
-        """
-        Retrieve the mass fraction at the specified zone/mesh-cell of the star.
-        """
-        returns (brunt_N2='d')
-    
     @legacy_function
     def get_id_of_species():
         """
@@ -574,7 +538,7 @@ class MESAInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolutionIn
         return function
 
 
-    @remote_function
+    @remote_function(can_handle_array=True)
     def get_profile_at_zone(index_of_the_star='i',zone='i',name='s'):
         """
         Retrieve arbitary profile column at the specified zone/mesh-cell of the star.
@@ -616,14 +580,37 @@ class MESAInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolutionIn
         """
         Retrieve the current age of the star
         """
-        returns (net_name='d')
+        returns (net_name='d' | units.yr)
 
     @remote_function  
-    def set_age(index_of_the_star='i',new_age='d'):
+    def set_age(index_of_the_star='i',new_age='d'| units.yr):
         """
         Set the current age of the star
         """
         returns ()
+
+
+    def get_radius_at_zone(self, index_of_the_star, zone):
+        return self.get_profile_at_zone(index_of_the_star,zone,'radius')
+
+    def get_temperature_at_zone(self, index_of_the_star, zone):
+        return self.get_profile_at_zone(index_of_the_star,zone,'temperature')
+
+    def get_density_at_zone(self, index_of_the_star, zone):
+        return self.get_profile_at_zone(index_of_the_star,zone,'density')
+
+    def get_pressure_at_zone(self, index_of_the_star, zone):
+        return self.get_profile_at_zone(index_of_the_star,zone,'pressure')
+
+    def get_mu_at_zone(self, index_of_the_star, zone):
+        return self.get_profile_at_zone(index_of_the_star,zone,'mu')
+
+    def get_mass_fraction_of_species_at_zone(self, index_of_the_star, species, zone):
+        res = self.get_name_of_species(index_of_the_star, species)
+        if res['__result'] == 0:
+            return self.get_profile_at_zone(index_of_the_star, zone, res['species_name'])
+        else:
+            return res['__result']
 
 
 class MESA(StellarEvolution, InternalStellarStructure):
@@ -636,7 +623,7 @@ class MESA(StellarEvolution, InternalStellarStructure):
         if 'inlist' in options:
             inlist = options['inlist']
             if not os.path.exists(inlist):
-                raise ValueError('Named inlist does not exist, maybe in a different folder?')
+                raise ValueError('Named inlist does not exist, maybe its in a different folder?')
         else:
             inlist = self.default_path_to_inlist
 
@@ -861,31 +848,7 @@ class MESA(StellarEvolution, InternalStellarStructure):
             (handler.INDEX, units.MSun / units.yr),
             (handler.ERROR_CODE,)
         )
-        handler.add_method(
-            "get_mass_fraction_at_zone", 
-            (handler.INDEX,handler.NO_UNIT,), 
-            (handler.NO_UNIT, handler.ERROR_CODE,)
-        )
-        handler.add_method(
-            "set_mass_fraction_at_zone", 
-            (handler.INDEX, handler.NO_UNIT, handler.NO_UNIT,), 
-            (handler.ERROR_CODE,)
-        )
-        handler.add_method(
-            "get_luminosity_at_zone", 
-            (handler.INDEX,handler.NO_UNIT,), 
-            (units.erg/units.s, handler.ERROR_CODE,)
-        )
-        handler.add_method(
-            "set_luminosity_at_zone", 
-            (handler.INDEX, handler.NO_UNIT, units.erg/units.s,), 
-            (handler.ERROR_CODE,)
-        )
-        handler.add_method(
-            "get_entropy_at_zone", 
-            (handler.INDEX,handler.NO_UNIT,), 
-            (units.erg/units.K, handler.ERROR_CODE,)
-        )    
+
         handler.add_method(
             "get_profile_at_zone", 
             (handler.INDEX,handler.NO_UNIT, handler.NO_UNIT), 
@@ -896,11 +859,7 @@ class MESA(StellarEvolution, InternalStellarStructure):
             (handler.INDEX, handler.NO_UNIT), 
             (handler.NO_UNIT, handler.ERROR_CODE,)
         )    
-        handler.add_method(
-            "get_thermal_energy_at_zone", 
-            (handler.INDEX,handler.NO_UNIT,), 
-            (units.erg/units.g, handler.ERROR_CODE,)
-        )        
+   
         handler.add_method(
             "get_id_of_species", 
             (handler.INDEX,handler.NO_UNIT,), 
@@ -974,11 +933,7 @@ class MESA(StellarEvolution, InternalStellarStructure):
             (handler.NO_UNIT, ), 
             (handler.ERROR_CODE,)
         )     
-        handler.add_method(
-            "get_mass_fraction_of_species_at_zone",
-            (handler.INDEX, handler.NO_UNIT, handler.NO_UNIT),
-            (handler.NO_UNIT,handler.ERROR_CODE,)
-        )
+
         handler.add_method(
             "get_name_of_species",
             (handler.INDEX, handler.NO_UNIT,),
@@ -1096,24 +1051,6 @@ class MESA(StellarEvolution, InternalStellarStructure):
         )
 
         handler.add_method(
-            "start_composition_change",
-            (handler.INDEX,handler.NO_UNIT,handler.NO_UNIT,handler.NO_UNIT),
-            (handler.ERROR_CODE,)
-        )
-
-        handler.add_method(
-            "end_composition_change",
-            (handler.INDEX),
-            (handler.ERROR_CODE,),
-        )
-
-        handler.add_method(
-            "set_composition_vector",
-            (handler.INDEX,handler.NO_UNIT,handler.NO_UNIT,handler.NO_UNIT),
-            (handler.ERROR_CODE,),
-        )
-
-        handler.add_method(
             "finalize_stellar_model", 
             (units.yr,), 
             (handler.INDEX, handler.ERROR_CODE,)
@@ -1136,7 +1073,7 @@ class MESA(StellarEvolution, InternalStellarStructure):
         indices_of_the_stars = self._check_number_of_indices(indices_of_the_stars, action_string = "Querying mass profiles")
         if number_of_zones is None:
             number_of_zones = self.get_number_of_zones(indices_of_the_stars)
-        return self.get_mass_fraction_at_zone([indices_of_the_stars]*number_of_zones, list(range(number_of_zones)) | units.none)
+        return self.get_profile(indices_of_the_stars,'mass',number_of_zones) | units.MSun
     
     def get_cumulative_mass_profile(self, indices_of_the_stars, number_of_zones = None):
         frac_profile = self.get_mass_profile(indices_of_the_stars, number_of_zones = number_of_zones)
@@ -1153,7 +1090,7 @@ class MESA(StellarEvolution, InternalStellarStructure):
         indices_of_the_stars = self._check_number_of_indices(indices_of_the_stars, action_string = "Querying luminosity profiles")
         if number_of_zones is None:
             number_of_zones = self.get_number_of_zones(indices_of_the_stars)
-        return self.get_luminosity_at_zone([indices_of_the_stars]*number_of_zones, list(range(number_of_zones)) | units.none)
+        return self.get_profile(indices_of_the_stars,'luminosity',number_of_zones) | units.LSun
     
     def set_luminosity_profile(self, indices_of_the_stars, values, number_of_zones = None):
         indices_of_the_stars = self._check_number_of_indices(indices_of_the_stars, action_string = "Setting luminosity profiles")
@@ -1166,19 +1103,61 @@ class MESA(StellarEvolution, InternalStellarStructure):
         indices_of_the_stars = self._check_number_of_indices(indices_of_the_stars, action_string = "Querying entropy profiles")
         if number_of_zones is None:
             number_of_zones = self.get_number_of_zones(indices_of_the_stars)
-        return self.get_entropy_at_zone([indices_of_the_stars]*number_of_zones, list(range(number_of_zones)) | units.none)
+
+        return self.get_profile(indices_of_the_stars,'entropy',number_of_zones) | units.erg/units.K
     
     def get_thermal_energy_profile(self, indices_of_the_stars, number_of_zones = None):
         indices_of_the_stars = self._check_number_of_indices(indices_of_the_stars, action_string = "Querying thermal energy profiles")
         if number_of_zones is None:
             number_of_zones = self.get_number_of_zones(indices_of_the_stars)
-        return self.get_thermal_energy_at_zone([indices_of_the_stars]*number_of_zones, list(range(number_of_zones)) | units.none)
+
+        return self.get_profile(indices_of_the_stars,'energy',number_of_zones) | units.erg/units.s/units.g
+
+    def get_temperature_profile(self, indices_of_the_stars, number_of_zones = None):
+        indices_of_the_stars = self._check_number_of_indices(indices_of_the_stars, action_string = "Querying temperature profiles")
+        if number_of_zones is None:
+            number_of_zones = self.get_number_of_zones(indices_of_the_stars)
+
+        return self.get_profile(indices_of_the_stars,'temperature',number_of_zones) | units.K
+
+
+    def get_density_profile(self, indices_of_the_stars, number_of_zones = None):
+        indices_of_the_stars = self._check_number_of_indices(indices_of_the_stars, action_string = "Querying density profiles")
+        if number_of_zones is None:
+            number_of_zones = self.get_number_of_zones(indices_of_the_stars)
+
+        return self.get_profile(indices_of_the_stars,'density',number_of_zones) | units.g/(units.cm*units.cm*units.cm)
+
+
+    def get_radius_profile(self, indices_of_the_stars, number_of_zones = None):
+        indices_of_the_stars = self._check_number_of_indices(indices_of_the_stars, action_string = "Querying radius profiles")
+        if number_of_zones is None:
+            number_of_zones = self.get_number_of_zones(indices_of_the_stars)
+
+        return self.get_profile(indices_of_the_stars,'radius',number_of_zones) | units.RSun
+
+
+    def get_pressure_profile(self, indices_of_the_stars, number_of_zones = None):
+        indices_of_the_stars = self._check_number_of_indices(indices_of_the_stars, action_string = "Querying pressure profiles")
+        if number_of_zones is None:
+            number_of_zones = self.get_number_of_zones(indices_of_the_stars)
+
+        return self.get_profile(indices_of_the_stars,'pressure',number_of_zones) | units.none
+
+    def get_mu_profile(self, indices_of_the_stars, number_of_zones = None):
+        indices_of_the_stars = self._check_number_of_indices(indices_of_the_stars, action_string = "Querying mu profiles")
+        if number_of_zones is None:
+            number_of_zones = self.get_number_of_zones(indices_of_the_stars)
+
+        return self.get_profile(indices_of_the_stars,'mu',number_of_zones) | units.none
+
 
     def get_brunt_vaisala_frequency_squared_profile(self, indices_of_the_stars, number_of_zones = None):
         indices_of_the_stars = self._check_number_of_indices(indices_of_the_stars, action_string = "Querying brunt-vaisala-frequency-squared profiles") 
         if number_of_zones is None:
             number_of_zones = self.get_number_of_zones(indices_of_the_stars)
-        return self.get_brunt_vaisala_frequency_squared_at_zone([indices_of_the_stars]*number_of_zones, list(range(number_of_zones)) | units.none)
+
+        return self.get_profile(indices_of_the_stars,'brunt_N2',number_of_zones) | units.none
     
     def get_IDs_of_species(self, indices_of_the_stars, number_of_species = None):
         indices_of_the_stars = self._check_number_of_indices(indices_of_the_stars, action_string = "Querying chemical abundance IDs")

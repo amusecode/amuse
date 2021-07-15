@@ -767,117 +767,6 @@ module amuse_mesa
       AMUSE_value = int(val)
    end function
 
-! Return the mass fraction at the specified zone/mesh-cell of the star
-   integer function get_mass_fraction_at_zone(AMUSE_id, AMUSE_zone, AMUSE_value)
-      integer, intent(in) :: AMUSE_id, AMUSE_zone
-      double precision, intent(out) :: AMUSE_value
-      integer :: ierr, zone
-      get_mass_fraction_at_zone = 0
-
-      zone = reverse_zone_id(AMUSE_id, AMUSE_zone, ierr)
-      call get_profile_value_zone(AMUSE_id,'dq', zone, AMUSE_value, ierr)
-
-      if (ierr /= MESA_SUCESS) then
-         AMUSE_value = -1.0
-         get_mass_fraction_at_zone = -1
-      endif
-   end function
-
-
-! Return the temperature at the specified zone/mesh-cell of the star
-   integer function get_temperature_at_zone(AMUSE_id, AMUSE_zone, AMUSE_value)
-      integer, intent(in) :: AMUSE_id, AMUSE_zone
-      double precision, intent(out) :: AMUSE_value
-      integer :: ierr, zone
-      get_temperature_at_zone = 0
-      zone = reverse_zone_id(AMUSE_id, AMUSE_zone, ierr)
-      call get_profile_value_zone(AMUSE_id,'temperature', zone, AMUSE_value, ierr)
-
-      if (ierr /= MESA_SUCESS) then
-         AMUSE_value = -1.0
-         get_temperature_at_zone = -1
-      endif
-   end function
-
-! Return the density at the specified zone/mesh-cell of the star
-   integer function get_density_at_zone(AMUSE_id, AMUSE_zone, AMUSE_value)
-      integer, intent(in) :: AMUSE_id, AMUSE_zone
-      double precision, intent(out) :: AMUSE_value
-      integer :: ierr, zone
-      get_density_at_zone = 0
-      zone = reverse_zone_id(AMUSE_id, AMUSE_zone, ierr)
-      call get_profile_value_zone(AMUSE_id,'density', zone, AMUSE_value, ierr)
-
-      if (ierr /= MESA_SUCESS) then
-         AMUSE_value = -1.0
-         get_density_at_zone = -1
-      endif
-   end function
-
-! Return the radius at the specified zone/mesh-cell of the star
-   integer function get_radius_at_zone(AMUSE_id, AMUSE_zone, AMUSE_value)
-      integer, intent(in) :: AMUSE_id, AMUSE_zone
-      double precision, intent(out) :: AMUSE_value
-      integer :: ierr, zone
-      get_radius_at_zone = 0
-      zone = reverse_zone_id(AMUSE_id, AMUSE_zone, ierr)
-      call get_profile_value_zone(AMUSE_id,'radius', zone, AMUSE_value, ierr)
-
-      if (ierr /= MESA_SUCESS) then
-         AMUSE_value = -1.0
-         get_radius_at_zone = -1
-      endif
-   end function
-
-! Return the luminosity at the specified zone/mesh-cell of the star
-   integer function get_luminosity_at_zone(AMUSE_id, AMUSE_zone, AMUSE_value)
-      integer, intent(in) :: AMUSE_id, AMUSE_zone
-      double precision, intent(out) :: AMUSE_value
-      integer :: ierr, zone
-      get_luminosity_at_zone = 0 
-      zone = reverse_zone_id(AMUSE_id, AMUSE_zone, ierr)
-      call get_profile_value_zone(AMUSE_id,'luminosity', zone, AMUSE_value, ierr)
-
-      if (ierr /= MESA_SUCESS) then
-         AMUSE_value = -1.0
-         get_luminosity_at_zone = -1
-      endif
-   end function
-
-! Return the Brunt-Vaisala frequency squared at the specified zone/mesh-cell of the star
-   integer function get_brunt_vaisala_frequency_squared_at_zone(AMUSE_id, AMUSE_zone, AMUSE_value)
-      integer, intent(in) :: AMUSE_id, AMUSE_zone
-      double precision, intent(out) :: AMUSE_value
-      integer :: ierr, zone
-
-      get_brunt_vaisala_frequency_squared_at_zone = 0
-      zone = reverse_zone_id(AMUSE_id, AMUSE_zone, ierr)
-      call get_profile_value_zone(AMUSE_id,'brunt_N2', zone, AMUSE_value, ierr)
-
-      if (ierr /= MESA_SUCESS) then
-         AMUSE_value = -1.0
-         get_brunt_vaisala_frequency_squared_at_zone = -1
-      endif
-      
-   end function
-
-! Return the mean molecular weight per particle (ions + free electrons) at the specified zone/mesh-cell of the star
-   integer function get_mu_at_zone(AMUSE_id, AMUSE_zone, AMUSE_value)
-      integer, intent(in) :: AMUSE_id, AMUSE_zone
-      double precision, intent(out) :: AMUSE_value
-      integer :: ierr, zone
-
-      get_mu_at_zone = 0
-      zone = reverse_zone_id(AMUSE_id, AMUSE_zone, ierr)
-      call get_profile_value_zone(AMUSE_id,'mu', zone, AMUSE_value, ierr)
-
-      if (ierr /= MESA_SUCESS) then
-         AMUSE_value = -1.0
-         get_mu_at_zone = -1
-      endif
-
-   end function
-
 ! Return the profile at the specified zone/mesh-cell of the star
    integer function get_profile_at_zone(AMUSE_id, AMUSE_zone, AMUSE_name, AMUSE_value)
       integer, intent(in) :: AMUSE_id, AMUSE_zone
@@ -911,56 +800,6 @@ module amuse_mesa
       endif
    end function
 
-
-! Return the total (gas + radiation) pressure at the specified zone/mesh-cell of the star
-   integer function get_pressure_at_zone(AMUSE_id, AMUSE_zone, AMUSE_value)
-      integer, intent(in) :: AMUSE_id, AMUSE_zone
-      double precision, intent(out) :: AMUSE_value
-      integer :: ierr, zone
-
-      get_pressure_at_zone = 0
-      zone = reverse_zone_id(AMUSE_id, AMUSE_zone, ierr)
-      call get_profile_value_zone(AMUSE_id,'pressure', zone, AMUSE_value, ierr)
-
-      if (ierr /= MESA_SUCESS) then
-         AMUSE_value = -1.0
-         get_pressure_at_zone = -1
-      endif
-
-   end function
-
-! Return the specific entropy at the specified zone/mesh-cell of the star
-   integer function get_entropy_at_zone(AMUSE_id, AMUSE_zone, AMUSE_value)
-      integer, intent(in) :: AMUSE_id, AMUSE_zone
-      double precision, intent(out) :: AMUSE_value
-      integer :: ierr, zone
-
-      get_entropy_at_zone = 0
-      zone = reverse_zone_id(AMUSE_id, AMUSE_zone, ierr)
-      call get_profile_value_zone(AMUSE_id,'entropy', zone, AMUSE_value, ierr)
-
-      if (ierr /= MESA_SUCESS) then
-         AMUSE_value = -1.0
-         get_entropy_at_zone = -1
-      endif         
-   end function
-
-! Return the specific thermal energy at the specified zone/mesh-cell of the star
-   integer function get_thermal_energy_at_zone(AMUSE_id, AMUSE_zone, AMUSE_value)
-      integer, intent(in) :: AMUSE_id, AMUSE_zone
-      double precision, intent(out) :: AMUSE_value
-      integer :: ierr, zone
-
-      get_thermal_energy_at_zone = 0
-      zone = reverse_zone_id(AMUSE_id, AMUSE_zone, ierr)
-      call get_profile_value_zone(AMUSE_id,'energy', zone, AMUSE_value, ierr)
-
-      if (ierr /= MESA_SUCESS) then
-         AMUSE_value = -1.0
-         get_thermal_energy_at_zone = -1
-      endif                
-   end function
-
    ! Return the current number of chemical abundance variables per zone of the star
    integer function get_number_of_species(AMUSE_id, AMUSE_value)
       integer, intent(in) :: AMUSE_id
@@ -992,24 +831,6 @@ module amuse_mesa
       if (ierr /= MESA_SUCESS) then
          AMUSE_value = -1
          get_mass_of_species = ierr
-      endif   
-   end function
-
-   ! Return the mass fraction of species 'AMUSE_species' at the specified
-   ! zone/mesh-cell of the star
-   integer function get_mass_fraction_of_species_at_zone(AMUSE_id, &
-         AMUSE_species, AMUSE_zone, AMUSE_value)
-      integer, intent(in) :: AMUSE_id, AMUSE_zone
-      integer,intent(in) :: AMUSE_species
-      double precision, intent(out) :: AMUSE_value
-      integer :: ierr
-      get_mass_fraction_of_species_at_zone = 0
-      
-      call get_species_at_zone(AMUSE_id, AMUSE_species, AMUSE_zone, AMUSE_value, ierr)
-
-      if (ierr /= MESA_SUCESS) then
-         AMUSE_value = -1
-         get_mass_fraction_of_species_at_zone = ierr
       endif   
    end function
 
