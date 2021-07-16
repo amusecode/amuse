@@ -19,5 +19,5 @@ print(star.time_step)
 
 print(star.get_history('time_step')) # Previous step
 
-print(star.get_control_dble('mesh_delta_coeff')) # Should be 1.5
+print(star.get_control('mesh_delta_coeff')) # Should be 1.5
 

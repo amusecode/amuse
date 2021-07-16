@@ -7,6 +7,7 @@ module mesa_interface
     use chem_def
     use eos_lib
     use eos_def
+    use kap_lib
     use run_star_support
     use run_star_extras, rse_extras_controls => extras_controls
 
@@ -318,407 +319,6 @@ module mesa_interface
     end subroutine setup_gyre
 
 
-    subroutine set_control_opt_namelist(id, str, ierr)
-        use ctrls_io
-        integer, intent(in) :: id
-        character(*), intent(in) :: str
-        integer, intent(out) :: ierr
-        type (star_info), pointer :: s  
-        integer :: iostat
-
-        call star_ptr(id, s, ierr)
-        if (failed('star_ptr',ierr)) return
-
-        ! First save current controls
-        call set_controls_for_writing(s, ierr)
-        if (failed('set_controls_for_writing',ierr)) return
-
-        ! Load into namelist
-        read(str, nml=controls)
-
-        ! Add to star
-        call store_controls(s, ierr)
-        if (failed('store_controls',ierr)) return
-
-    end subroutine set_control_opt_namelist
-
-
-    subroutine set_control_opt_dble(id, name, value, ierr)
-        use math_lib
-        integer, intent(in) :: id
-        character(*), intent(in) :: name
-        real(dp), intent(in) :: value
-        integer, intent(out) :: ierr
-        character(len=512) :: str  
-        character(len=26) :: str_value
-
-        ! Build namelist string
-        call double_to_str(value, str_value)
-        str='&controls '//trim(name)//'='//str_value//' /'
-
-        ! Read values back into star_info
-        call set_control_opt_namelist(id, str, ierr)
-
-    end subroutine set_control_opt_dble
-
-    subroutine set_control_opt_str(id, name, value, ierr)
-        integer, intent(in) :: id
-        character(*), intent(in) :: name
-        character(*), intent(in) :: value
-        integer, intent(out) :: ierr
-        character(len=512) :: str  
-
-        ! Build namelist string
-        str='&controls '//trim(name)//'="'//trim(value)//'" /'
-
-        call set_control_opt_namelist(id, str, ierr)
-
-    end subroutine set_control_opt_str
-
-    subroutine set_control_opt_logical(id, name, value, ierr)
-        integer, intent(in) :: id
-        character(*), intent(in) :: name
-        logical, intent(in) :: value
-        integer, intent(out) :: ierr
-        character(len=512) :: str  
-
-        ! Build namelist string
-        if(value) then
-            str='&controls '//trim(name)//'=.true. /'
-        else
-            str='&controls '//trim(name)//'=.false. /'
-        end if
-
-        call set_control_opt_namelist(id, str, ierr)
-
-    end subroutine set_control_opt_logical
-
-    subroutine set_control_opt_int(id, name, value, ierr)
-        use math_lib
-        integer, intent(in) :: id
-        character(*), intent(in) :: name
-        integer, intent(in) :: value
-        integer, intent(out) :: ierr
-        character(len=512) :: str
-        character(len=26) :: str_value
-
-        ! Build namelist string
-        write(str_value,'(I0)') value
-
-        str='&controls '//trim(name)//'='//trim(str_value)//' /'
-
-        call set_control_opt_namelist(id, str, ierr)
-
-    end subroutine set_control_opt_int
-
-
-
-    subroutine set_star_job_opt_namelist(id, str, ierr)
-        use star_job_ctrls_io
-        integer, intent(in) :: id
-        character(*), intent(in) :: str
-        integer, intent(out) :: ierr
-        type (star_info), pointer :: s  
-
-        call star_ptr(id, s, ierr)
-        if (failed('star_ptr',ierr)) return
-
-        ! First save current star_job controls
-        call set_star_job_controls_for_writing(s, ierr)
-        if (failed('set_star_job_controls_for_writing',ierr)) return
-
-        ! Load into namelist
-        read(str, nml=star_job)
-
-        ! Add to star
-        call store_star_job_controls(s, ierr)
-        if (failed('store_star_job_controls',ierr)) return
-
-    end subroutine set_star_job_opt_namelist
-
-
-    subroutine set_star_job_opt_dble(id, name, value, ierr)
-        use math_lib
-        integer, intent(in) :: id
-        character(*), intent(in) :: name
-        real(dp), intent(in) :: value
-        integer, intent(out) :: ierr
-        character(len=512) :: str  
-        character(len=26) :: str_value
-
-        ! Build namelist string
-        call double_to_str(value, str_value)
-        str='&star_job  '//trim(name)//'='//trim(str_value)//' /'
-
-        ! Read values back into star_info
-        call set_star_job_opt_namelist(id, str, ierr)
-
-    end subroutine set_star_job_opt_dble
-
-    subroutine set_star_job_opt_str(id, name, value, ierr)
-        integer, intent(in) :: id
-        character(*), intent(in) :: name
-        character(*), intent(in) :: value
-        integer, intent(out) :: ierr
-        character(len=512) :: str  
-
-        ! Build namelist string
-        str='&star_job '//trim(name)//'="'//trim(value)//'" /'
-
-        call set_star_job_opt_namelist(id, str, ierr)
-
-    end subroutine set_star_job_opt_str
-
-    subroutine set_star_job_opt_logical(id, name, value, ierr)
-        integer, intent(in) :: id
-        character(*), intent(in) :: name
-        logical, intent(in) :: value
-        integer, intent(out) :: ierr
-        character(len=512) :: str  
-
-        ! Build namelist string
-        if(value) then
-            str='&star_job '//trim(name)//'=.true. /'
-        else
-            str='&star_job '//trim(name)//'=.false. /'
-        end if
-
-        call set_star_job_opt_namelist(id, str, ierr)
-
-    end subroutine set_star_job_opt_logical
-
-    subroutine set_star_job_opt_int(id, name, value, ierr)
-        integer, intent(in) :: id
-        character(*), intent(in) :: name
-        integer, intent(in) :: value
-        integer, intent(out) :: ierr
-        character(len=512) :: str
-        character(len=26) :: str_value
-
-        ! Build namelist string
-        write(str_value,'(I0)') value
-
-        str='&star_job '//trim(name)//'='//trim(str_value)//' /'
-
-        call set_star_job_opt_namelist(id, str, ierr)
-
-    end subroutine set_star_job_opt_int
-
-
-
-    subroutine get_star_job_opt_namelist(id, name, val, ierr)
-        use star_job_ctrls_io
-        use utils_lib, only: StrUpCase
-        integer, intent(in) :: id
-        character(*), intent(in) :: name
-        character(len(name)) :: upper_name
-        character(len=256), intent(out) :: val
-        character(len=512) :: str
-        integer, intent(out) :: ierr
-        type (star_info), pointer :: s  
-        integer :: iounit,iostat,ind
-
-        ierr = 0
-        call star_ptr(id, s, ierr)
-        if (failed('star_ptr',ierr)) return
-
-        ! First save current star_job controls
-        call set_star_job_controls_for_writing(s, ierr)
-        if (failed('set_star_job_controls_for_writing',ierr)) return
-
-        ! Write namelist to temporay file
-        open(newunit=iounit,status='scratch')
-        write(iounit,nml=star_job)
-        rewind(iounit)
-
-        ! Namelists get written in captials
-        upper_name = StrUpCase(name)
-        val = ''
-
-        ! Search for name inside namelist
-        do 
-            read(iounit,'(A)',iostat=iostat) str
-            ind = index(str,trim(upper_name))
-            if( ind /= 0 ) then
-                val = str(ind+len_trim(upper_name)+1:len_trim(str)-1) ! Remove final comma and starting =
-                exit
-            end if
-            if(is_iostat_end(iostat)) exit
-        end do   
-
-        if(len_trim(val) == 0 ) ierr = -1
-
-    end subroutine get_star_job_opt_namelist
-
-    subroutine get_control_opt_namelist(id, name, val, ierr)
-        use ctrls_io
-        use utils_lib, only: StrUpCase
-        integer, intent(in) :: id
-        character(*), intent(in) :: name
-        character(len(name)) :: upper_name
-        character(len=*), intent(out) :: val
-        character(len=512) :: str
-        integer, intent(out) :: ierr
-        type (star_info), pointer :: s  
-        integer :: iounit,iostat,ind
-
-        ierr = 0
-        call star_ptr(id, s, ierr)
-        if (failed('star_ptr',ierr)) return
-
-        ! First save current controls
-        call set_controls_for_writing(s, ierr)
-        if (failed('set_controls_for_writing',ierr)) return
-       
-        ! Write namelist to temporay file
-        open(newunit=iounit,status='scratch')
-        write(iounit,nml=controls)
-        rewind(iounit)
-
-        ! Namelists get written in captials
-        upper_name = StrUpCase(name)
-        val = ''
-        ! Search for name inside namelist
-        do 
-            read(iounit,'(A)',iostat=iostat) str
-            ind = index(str,trim(upper_name))
-            if( ind /= 0 ) then
-                val = str(ind+len_trim(upper_name)+1:len_trim(str)-1) ! Remove final comma and starting =
-                exit
-            end if
-            if(is_iostat_end(iostat)) exit
-        end do   
-
-        if(len_trim(val) == 0 ) ierr = -1
-
-        close(iounit)
-
-    end subroutine get_control_opt_namelist
-
-
-
-    subroutine get_control_opt_dble(id, name, value, ierr)
-        use math_lib
-        integer, intent(in) :: id
-        character(*), intent(in) :: name
-        real(dp), intent(out) :: value
-        integer, intent(out) :: ierr
-        character(len=512) :: val
-
-        call get_control_opt_namelist(id, name, val, ierr)
-        if (failed('get_control_opt_namelist',ierr)) return
-
-        call str_to_double(val, value, ierr)
-
-    end subroutine get_control_opt_dble
-
-    subroutine get_control_opt_str(id, name, value, ierr)
-        integer, intent(in) :: id
-        character(*), intent(in) :: name
-        character(*), intent(out) :: value
-        character(len(value)) :: v1
-        integer, intent(out) :: ierr 
-
-        call get_control_opt_namelist(id, name, v1, ierr)
-        if (failed('get_control_opt_namelist',ierr)) return
-
-        value = v1(2:) ! Remove starting "
-
-    end subroutine get_control_opt_str
-
-    subroutine get_control_opt_logical(id, name, value, ierr)
-        integer, intent(in) :: id
-        character(*), intent(in) :: name
-        logical, intent(out) :: value
-        integer, intent(out) :: ierr
-        character(len=512) :: val 
-        character(len=256) :: v1
-
-        call get_control_opt_namelist(id, name, v1, ierr)
-
-        if (failed('get_control_opt_namelist',ierr)) return
-
-        value = .false.
-        if(trim(v1)  == 'T') value = .true.
-
-    end subroutine get_control_opt_logical
-
-    subroutine get_control_opt_int(id, name, value, ierr)
-        use math_lib
-        integer, intent(in) :: id
-        character(*), intent(in) :: name
-        integer, intent(out) :: value
-        integer, intent(out) :: ierr
-        character(len=512) :: val
-
-        call get_control_opt_namelist(id, name, val, ierr)
-        if (failed('get_control_opt_namelist',ierr)) return
-
-        read(val, *) value
-
-    end subroutine get_control_opt_int
-
-    subroutine get_star_job_opt_dble(id, name, value, ierr)
-        use math_lib
-        integer, intent(in) :: id
-        character(*), intent(in) :: name
-        real(dp), intent(out) :: value
-        integer, intent(out) :: ierr
-        character(len=512) :: val
-
-        ! Read values back into star_info
-        call get_star_job_opt_namelist(id, name, val, ierr)
-        if (failed('get_star_job_opt_namelist',ierr)) return
-
-        call str_to_double(val, value, ierr)
-
-    end subroutine get_star_job_opt_dble
-
-    subroutine get_star_job_opt_str(id, name, value, ierr)
-        integer, intent(in) :: id
-        character(*), intent(in) :: name
-        character(*), intent(out) :: value
-        character(len(value)) :: v1
-        integer, intent(out) :: ierr
-
-        call get_star_job_opt_namelist(id, name, v1, ierr)
-        if (failed('get_star_job_opt_namelist',ierr)) return
-
-        value = v1(2:) ! Remove starting "
-
-    end subroutine get_star_job_opt_str
-
-    subroutine get_star_job_opt_logical(id, name, value, ierr)
-        integer, intent(in) :: id
-        character(*), intent(in) :: name
-        character(len=256) :: v1
-        logical, intent(out) :: value
-        integer, intent(out) :: ierr
-        character(len=512) :: val 
-
-        call get_star_job_opt_namelist(id, name, v1, ierr)
-        if (failed('get_star_job_opt_namelist',ierr)) return
-
-        value = .false.
-        if(trim(v1) == 'T') value = .true.
-
-    end subroutine get_star_job_opt_logical
-
-    subroutine get_star_job_opt_int(id, name, value, ierr)
-        integer, intent(in) :: id
-        character(*), intent(in) :: name
-        integer, intent(out) :: value
-        integer, intent(out) :: ierr
-        character(len=512) :: val
-
-        call get_star_job_opt_namelist(id, name, val, ierr)
-        if (failed('get_star_job_opt_namelist',ierr)) return
-
-        read(val, *) value
-
-    end subroutine get_star_job_opt_int
-
-
     subroutine update_star_job(id, ierr)
         integer, intent(in) :: id
         integer, intent(out) :: ierr
@@ -781,6 +381,76 @@ module mesa_interface
 
 
     end subroutine set_new_age
+
+
+    subroutine get_star_control_nml(id, name, val, ierr)
+        integer, intent(in) :: id
+        character(len=*) :: name, val
+        integer, intent(out) :: ierr
+        ierr = 0
+        call star_get_control_namelist(id, name, val, ierr)
+    end subroutine get_star_control_nml
+
+    subroutine set_star_control_nml(id, name, val, ierr)
+        integer, intent(in) :: id
+        character(len=*) :: name, val
+        integer, intent(out) :: ierr
+        ierr = 0
+        call star_set_control_namelist(id, name, val, ierr)
+    end subroutine set_star_control_nml
+
+
+    subroutine get_star_job_nml(id, name, val, ierr)
+        integer, intent(in) :: id
+        character(len=*) :: name, val
+        integer, intent(out) :: ierr
+        ierr = 0
+        call star_get_star_job_namelist(id, name, val, ierr)
+    end subroutine get_star_job_nml
+
+
+    subroutine set_star_job_nml(id, name, val, ierr)
+        integer, intent(in) :: id
+        character(len=*) :: name, val
+        integer, intent(out) :: ierr
+        ierr = 0
+        call star_set_star_job_namelist(id, name, val, ierr)
+    end subroutine set_star_job_nml
+
+
+    subroutine get_eos_nml(id, name, val, ierr)
+        integer, intent(in) :: id
+        character(len=*) :: name, val
+        integer, intent(out) :: ierr
+        ierr = 0
+        call eos_get_control_namelist(id, name, val, ierr)
+    end subroutine get_eos_nml
+
+
+    subroutine set_eos_nml(id, name, val, ierr)
+        integer, intent(in) :: id
+        character(len=*) :: name, val
+        integer, intent(out) :: ierr
+        ierr = 0
+        call eos_set_control_namelist(id, name, val, ierr)
+    end subroutine set_eos_nml
+
+
+    subroutine get_kap_nml(id, name, val, ierr)
+        integer, intent(in) :: id
+        character(len=*) :: name, val
+        integer, intent(out) :: ierr
+        ierr = 0
+        call kap_get_control_namelist(id, name, val, ierr)
+    end subroutine get_kap_nml
+
+    subroutine set_kap_nml(id, name, val, ierr)
+        integer, intent(in) :: id
+        character(len=*) :: name, val
+        integer, intent(out) :: ierr
+        ierr = 0
+        call kap_set_control_namelist(id, name, val, ierr)
+    end subroutine set_kap_nml
 
 
 ! ***********************************************************************

@@ -14,12 +14,12 @@ stars = stellar_evolution.native_stars.add_particles(stars)
 star = stars[0]
 
 # Turn on rotation
-star.set_star_job_logical('change_rotation_flag',True)
-star.set_star_job_logical('new_rotation_flag',True)
+star.set_star_job('change_rotation_flag',True)
+star.set_star_job('new_rotation_flag',True)
 
 # Many options for initialising the rotation rate
-star.set_star_job_logical('set_surface_rotation_v',True)
-star.set_star_job_dble('new_surface_rotation_v',100.0) # sets surface velocity in km/sec
+star.set_star_job('set_surface_rotation_v',True)
+star.set_star_job('new_surface_rotation_v',100.0) # sets surface velocity in km/sec
 
 # Now change the model to turn on rotation
 star.star_job_update()
