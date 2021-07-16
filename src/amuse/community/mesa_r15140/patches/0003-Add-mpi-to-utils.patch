@@ -1,0 +1,53 @@
+From 6f56e1c244b8866c448f9d7763895f243611882e Mon Sep 17 00:00:00 2001
+From: Robert Farmer <r.j.farmer@uva.nl>
+Date: Tue, 16 Feb 2021 11:56:04 +0100
+Subject: [PATCH 3/6] Add mpi to utils
+
+---
+ utils/public/utils_lib.f | 21 ++++++++++++++++-----
+ 1 file changed, 16 insertions(+), 5 deletions(-)
+
+diff --git a/utils/public/utils_lib.f b/utils/public/utils_lib.f
+index a13f1d2..f235063 100644
+--- a/utils/public/utils_lib.f
++++ b/utils/public/utils_lib.f
+@@ -1005,8 +1005,11 @@ contains
+ 
+ 
+    subroutine mesa_error(file, line,msg)
++      use mpi
+       character(len=*), intent(in) :: file
+       character(len=*), optional,intent(in) :: msg
++      integer :: parent, ierr
++      integer, dimension(8) :: header
+       integer, intent(in) :: line
+       character (len=strlen) :: bt_disable
+       if(present(msg)) then
+@@ -1015,11 +1018,19 @@ contains
+          write(*,"(A, A, A, I4)") "File: ", file, ", Line: ", line
+       end if
+       call get_environment_variable("MESA_ERROR_BACKTRACE_DISABLE", bt_disable)
+-      if (len_trim(bt_disable) > 0) then
+-         stop 1
+-      else
+-         error stop 1
+-      end if
++      call MPI_Comm_get_parent(parent, ierr)
++      header = 0
++      header(1) = -2
++      header(2) = 1
++      call MPI_Send(header, 8, MPI_INTEGER, 0, 999, parent, ierr)
++      call MPI_Comm_disconnect(parent, ierr)
++      call MPI_Finalize(ierr)
++      ! if (len_trim(bt_disable) > 0) then
++      !    stop 1
++      ! else
++      !    error stop 1
++      ! end if
++
+    end subroutine mesa_error
+ 
+ 
+-- 
+2.29.2
+
