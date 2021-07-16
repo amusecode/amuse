@@ -21,6 +21,11 @@ module amuse_support
 
    logical :: debugging = .false.
 
+   integer,parameter :: CONTROL_NML=0
+   integer,parameter :: STAR_JOB_NML=1
+   integer,parameter :: EOS_NML=2
+   integer,parameter :: KAP_NML=3
+
 end module amuse_support
 
 
@@ -306,10 +311,12 @@ module amuse_mesa
    integer function get_manual_mass_transfer_rate(AMUSE_id, AMUSE_value)
       integer, intent(in) :: AMUSE_id
       double precision, intent(out) :: AMUSE_value
+      character(len=128) :: tmp
       integer :: ierr
 
       get_manual_mass_transfer_rate = 0
-      call get_control_opt_dble(AMUSE_id, 'mass_change', AMUSE_value, ierr)
+      write(tmp , *) AMUSE_value
+      ierr = get_opt(AMUSE_id, CONTROL_NML, 'mass_change', tmp)
 
       if (ierr /= MESA_SUCESS) then
          AMUSE_value = -1.0
@@ -321,15 +328,18 @@ module amuse_mesa
    integer function set_manual_mass_transfer_rate(AMUSE_id, AMUSE_value)
       integer, intent(in) :: AMUSE_id
       double precision, intent(out) :: AMUSE_value
+      character(len=128) :: tmp
       integer :: ierr
       set_manual_mass_transfer_rate = 0
       
-      call set_control_opt_dble(AMUSE_id, 'mass_change', AMUSE_value, ierr)
+      ierr =  set_opt(AMUSE_id, CONTROL_NML,'mass_change', tmp)
 
       if (ierr /= MESA_SUCESS) then
          AMUSE_value = -1.0
          set_manual_mass_transfer_rate = -1
       endif
+      read(tmp,*) AMUSE_value
+
    end function set_manual_mass_transfer_rate
 
 ! Return the current temperature of the star
@@ -385,7 +395,7 @@ module amuse_mesa
       call get_next_timestep(AMUSE_id, AMUSE_value, ierr)
       if (ierr /= MESA_SUCESS) then
          AMUSE_value = -1.0
-         get_time_step = -1
+         get_time_step = ierr
       endif
    end function
 
@@ -397,52 +407,9 @@ module amuse_mesa
       set_time_step = 0
       call set_timestep(AMUSE_id, AMUSE_value, ierr)
       if (ierr /= MESA_SUCESS) then
-         set_time_step = -1
+         set_time_step = ierr
       endif
    end function
-
-! Given mesa controls option AMUSE_name set it to AMUSE_value Where AMUSE_value is a double
-   integer function set_control_dble(AMUSE_id, AMUSE_name, AMUSE_value)
-      integer, intent(in) :: AMUSE_id
-      character(len=*), intent(in) :: AMUSE_name
-      double precision, intent(in) :: AMUSE_value
-      integer ::  ierr
-      set_control_dble = 0
-      call set_control_opt_dble(AMUSE_id, AMUSE_name, AMUSE_value, ierr)
-      if (ierr /= MESA_SUCESS) then
-         set_control_dble = -1
-      endif
-
-   end function set_control_dble
-
-! Given mesa controls option AMUSE_name set it to AMUSE_value Where AMUSE_value is a integer
-   integer function set_control_int(AMUSE_id, AMUSE_name, AMUSE_value)
-      integer, intent(in) :: AMUSE_id
-      character(len=*), intent(in) :: AMUSE_name
-      integer, intent(in) :: AMUSE_value
-      integer ::  ierr
-      set_control_int = 0
-      call set_control_opt_int(AMUSE_id, AMUSE_name, AMUSE_value, ierr)
-      if (ierr /= MESA_SUCESS) then
-         set_control_int = -1
-      endif
-
-   end function set_control_int
-
-! Given mesa controls option AMUSE_name set it to AMUSE_value Where AMUSE_value is a logical flag
-   integer function set_control_logical(AMUSE_id, AMUSE_name, AMUSE_value)
-      integer, intent(in) :: AMUSE_id
-      character(len=*), intent(in) :: AMUSE_name
-      logical, intent(in) :: AMUSE_value
-      integer ::  ierr
-      set_control_logical = 0
-      call set_control_opt_logical(AMUSE_id, AMUSE_name, AMUSE_value, ierr)
-      if (ierr /= MESA_SUCESS) then
-         set_control_logical = -1
-      endif
-
-   end function set_control_logical
-
 
    ! Setting options in star_job does not actual change anything, this function must be called
    ! to actually update the model
@@ -452,192 +419,74 @@ module amuse_mesa
       star_job_update = 0
       call update_star_job(AMUSE_id, ierr)
       if (ierr /= MESA_SUCESS) then
-         star_job_update = -1
+         star_job_update = ierr
       endif
 
    end function star_job_update
 
 
-! Given mesa controls option AMUSE_name set it to AMUSE_value Where AMUSE_value is a string
-   integer function set_control_str(AMUSE_id,AMUSE_name,  AMUSE_value)
+   ! Set an option in the given namelist (nml)
+   integer function set_opt(AMUSE_id, nml, AMUSE_name,  AMUSE_value)
       integer, intent(in) :: AMUSE_id
+      integer, intent(in) :: nml
       character(len=*), intent(in) :: AMUSE_name
       character(len=*), intent(in) :: AMUSE_value
       integer ::  ierr
-      set_control_str = 0
-      call set_control_opt_str(AMUSE_id, AMUSE_name, AMUSE_value, ierr)
-      if (ierr /= MESA_SUCESS) then
-         set_control_str = -1
-      endif
+      set_opt = 0
 
-   end function set_control_str
-
-! Given mesa star_job option AMUSE_name set it to AMUSE_value Where AMUSE_value is a double
-   integer function set_star_job_dble(AMUSE_id, AMUSE_name, AMUSE_value)
-      integer, intent(in) :: AMUSE_id
-      character(len=*), intent(in) :: AMUSE_name
-      double precision, intent(in) :: AMUSE_value
-      integer ::  ierr
-      set_star_job_dble = 0
-      call set_star_job_opt_dble(AMUSE_id, AMUSE_name, AMUSE_value, ierr)
-      if (ierr /= MESA_SUCESS) then
-         set_star_job_dble = -1
-      endif
-
-   end function set_star_job_dble
-
-! Given mesa star_job option AMUSE_name set it to AMUSE_value Where AMUSE_value is a integer
-   integer function set_star_job_int(AMUSE_id, AMUSE_name, AMUSE_value)
-      integer, intent(in) :: AMUSE_id
-      character(len=*), intent(in) :: AMUSE_name
-      integer, intent(in) :: AMUSE_value
-      integer ::  ierr
-      set_star_job_int = 0
-      call set_star_job_opt_int(AMUSE_id, AMUSE_name, AMUSE_value, ierr)
-      if (ierr /= MESA_SUCESS) then
-         set_star_job_int = -1
-      endif
-
-   end function set_star_job_int
-
-! Given mesa star_job option AMUSE_name set it to AMUSE_value Where AMUSE_value is a logical flag
-   integer function set_star_job_logical(AMUSE_id, AMUSE_name, AMUSE_value)
-      integer, intent(in) :: AMUSE_id
-      character(len=*), intent(in) :: AMUSE_name
-      logical, intent(in) :: AMUSE_value
-      integer ::  ierr
-      set_star_job_logical = 0
-      call set_star_job_opt_logical(AMUSE_id, AMUSE_name, AMUSE_value, ierr)
-      if (ierr /= MESA_SUCESS) then
-         set_star_job_logical = -1
-      endif
-
-   end function set_star_job_logical
-
-! Given mesa star_job option AMUSE_name set it to AMUSE_value Where AMUSE_value is a string
-   integer function set_star_job_str(AMUSE_id, AMUSE_name, AMUSE_value)
-      integer, intent(in) :: AMUSE_id
-      character(len=*), intent(in) :: AMUSE_name
-      character(len=*), intent(in) :: AMUSE_value
-      integer ::  ierr
-      set_star_job_str = 0
-      call set_star_job_opt_str(AMUSE_id, AMUSE_name, AMUSE_value, ierr)
-      if (ierr /= MESA_SUCESS) then
-         set_star_job_str = -1
-      endif
-
-   end function set_star_job_str 
-
-
-! Given mesa controls option AMUSE_name put the value into AMUSE_value Where AMUSE_value is a double
-   integer function get_control_dble(AMUSE_id, AMUSE_name, AMUSE_value)
-      integer, intent(in) :: AMUSE_id
-      character(len=*), intent(in) :: AMUSE_name
-      double precision, intent(out) :: AMUSE_value
-      integer ::  ierr
-      get_control_dble = 0
-      call get_control_opt_dble(AMUSE_id, AMUSE_name, AMUSE_value, ierr)
-      if (ierr /= MESA_SUCESS) then
-         get_control_dble = -1
-      endif
-   end function get_control_dble
-
-! Given mesa controls option AMUSE_name put the value into AMUSE_value Where AMUSE_value is a integer
-   integer function get_control_int(AMUSE_id, AMUSE_name, AMUSE_value)
-      integer, intent(in) :: AMUSE_id
-      character(len=*), intent(in) :: AMUSE_name
-      integer, intent(out) :: AMUSE_value
-      integer ::  ierr
-      get_control_int = 0
-      call get_control_opt_int(AMUSE_id, AMUSE_name, AMUSE_value, ierr)
-      if (ierr /= MESA_SUCESS) then
-         get_control_int = -1
-      endif
-   end function get_control_int
-
-! Given mesa controls option AMUSE_name put the value into AMUSE_value Where AMUSE_value is a logical flag
-   integer function get_control_logical(AMUSE_id, AMUSE_name, AMUSE_value)
-      integer, intent(in) :: AMUSE_id
-      character(len=*), intent(in) :: AMUSE_name
-      logical, intent(out) :: AMUSE_value
-      integer ::  ierr
-      get_control_logical = 0
-      call get_control_opt_logical(AMUSE_id, AMUSE_name, AMUSE_value, ierr)
+      select case (nml)
+         case(CONTROL_NML)
+            call set_star_control_nml(AMUSE_id, AMUSE_name, AMUSE_value, ierr)
+         case(STAR_JOB_NML)
+            call set_star_job_nml(AMUSE_id, AMUSE_name, AMUSE_value, ierr)
+         case(EOS_NML)
+            call set_eos_nml(AMUSE_id, AMUSE_name, AMUSE_value, ierr)
+         case(KAP_NML)
+            call set_kap_nml(AMUSE_id, AMUSE_name, AMUSE_value, ierr)
+         case default
+            ierr = MESA_FAIL
+      end select
 
       if (ierr /= MESA_SUCESS) then
-         get_control_logical = -1
+         set_opt = ierr
       endif
-   end function get_control_logical
 
-! Given mesa controls option AMUSE_name put the value into AMUSE_value Where AMUSE_value is a string
-   integer function get_control_str(AMUSE_id,AMUSE_name,  AMUSE_value)
+   end function set_opt
+
+
+   ! Get an option in the given namelist (nml)
+   integer function get_opt(AMUSE_id, nml, AMUSE_name,  AMUSE_value)
       integer, intent(in) :: AMUSE_id
+      integer, intent(in) :: nml
       character(len=*), intent(in) :: AMUSE_name
       character(len=*), intent(out) :: AMUSE_value
       integer ::  ierr
-      get_control_str = 0
-      call get_control_opt_str(AMUSE_id, AMUSE_name, AMUSE_value, ierr)
+
+      get_opt = 0
+
+      write(50,*) AMUSE_id, AMUSE_name
+      select case (nml)
+         case(CONTROL_NML)
+            call get_star_control_nml(AMUSE_id, AMUSE_name, AMUSE_value, ierr)
+         case(STAR_JOB_NML)
+            write(50,*) 'here'
+            call get_star_job_nml(AMUSE_id, AMUSE_name, AMUSE_value, ierr)
+            write(50,*)AMUSE_id, AMUSE_name, AMUSE_value, ierr
+         case(EOS_NML)
+            call get_eos_nml(AMUSE_id, AMUSE_name, AMUSE_value, ierr)
+         case(KAP_NML)
+            call get_kap_nml(AMUSE_id, AMUSE_name, AMUSE_value, ierr)
+         case default
+            ierr = MESA_FAIL
+      end select
+      flush(50)
       if (ierr /= MESA_SUCESS) then
-         get_control_str = -1
+         get_opt = ierr
+         AMUSE_value = ''
       endif
 
-   end function get_control_str
+   end function get_opt
 
-! Given mesa star_job option AMUSE_name put the value into AMUSE_value Where AMUSE_value is a double
-   integer function get_star_job_dble(AMUSE_id, AMUSE_name, AMUSE_value)
-      integer, intent(in) :: AMUSE_id
-      character(len=*), intent(in) :: AMUSE_name
-      double precision, intent(out) :: AMUSE_value
-      integer ::  ierr
-      get_star_job_dble = 0
-      call get_star_job_opt_dble(AMUSE_id, AMUSE_name, AMUSE_value, ierr)
-      if (ierr /= MESA_SUCESS) then
-         get_star_job_dble = -1
-      endif
-
-   end function get_star_job_dble
-
-! Given mesa star_job option AMUSE_name put the value into AMUSE_value Where AMUSE_value is a integer
-   integer function get_star_job_int(AMUSE_id, AMUSE_name, AMUSE_value)
-      integer, intent(in) :: AMUSE_id
-      character(len=*), intent(in) :: AMUSE_name
-      integer, intent(out) :: AMUSE_value
-      integer ::  ierr
-      get_star_job_int = 0
-      call get_star_job_opt_int(AMUSE_id, AMUSE_name, AMUSE_value, ierr)
-      if (ierr /= MESA_SUCESS) then
-         get_star_job_int = -1
-      endif
-
-   end function get_star_job_int
-
-! Given mesa star_job option AMUSE_name put the value into AMUSE_value Where AMUSE_value is a logical flag
-   integer function get_star_job_logical(AMUSE_id, AMUSE_name, AMUSE_value)
-      integer, intent(in) :: AMUSE_id
-      character(len=*), intent(in) :: AMUSE_name
-      logical, intent(out) :: AMUSE_value
-      integer ::  ierr
-      get_star_job_logical = 0
-      call get_star_job_opt_logical(AMUSE_id, AMUSE_name, AMUSE_value, ierr)
-      if (ierr /= MESA_SUCESS) then
-         get_star_job_logical = -1
-      endif
-
-   end function get_star_job_logical
-
-! Given mesa star_job option AMUSE_name put the value into AMUSE_value Where AMUSE_value is a string
-   integer function get_star_job_str(AMUSE_id, AMUSE_name, AMUSE_value)
-      integer, intent(in) :: AMUSE_id
-      character(len=*), intent(in) :: AMUSE_name
-      character(len=*), intent(out) :: AMUSE_value
-      integer ::  ierr
-      get_star_job_str = 0
-      call get_star_job_opt_str(AMUSE_id, AMUSE_name, AMUSE_value, ierr)
-      if (ierr /= MESA_SUCESS) then
-         get_star_job_str = -1
-      endif
-
-   end function get_star_job_str 
 
 ! Return the current radius of the star
    integer function get_radius(AMUSE_id, AMUSE_value)

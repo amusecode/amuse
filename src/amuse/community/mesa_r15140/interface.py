@@ -35,6 +35,13 @@ class MESAInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolutionIn
 
     use_modules = ['amuse_mesa']
 
+    # Needs to keep sync with interface.f90
+    _CONTROL_NML=0
+    _STAR_JOB_NML=1
+    _EOS_NML=2
+    _KAP_NML=3
+
+
     def __init__(self, **options):
         CodeInterface.__init__(self, name_of_the_worker="mesa_worker", **options)
         LiteratureReferencesMixIn.__init__(self)
@@ -380,7 +387,7 @@ class MESAInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolutionIn
         Set the new maximum number of iterations of this instance. (Negative means no maximum)
         Evolution will stop after this number of iterations.
         """
-        function = LegacyFunctionSpecification()  
+        function = LegacyFunctionSpecification()
         function.addParameter('max_iter_stop_condition', dtype='int32', direction=function.IN
             , description="The new maximum number of iterations of this instance.")
         function.result_type = 'int32'
@@ -391,120 +398,151 @@ class MESAInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolutionIn
             The code could not set the value.
         """
         return function
-    
-
-    @remote_function 
-    def get_control_dble(index_of_the_star='i',name='s'):
-        """
-        Retrieve the current control option given by name, if it is a double precision number
-        """
-        returns (value='d')
-    
-    @remote_function 
-    def set_control_dble(index_of_the_star='i',name='s',value='d'):
-        """
-        Set the current control option given by name, if it is a double precision number
-        """
-        returns ()
-
-    @remote_function 
-    def get_control_logical(index_of_the_star='i',name='s'):
-        """
-        Retrieve the current control option given by name, if it is a logical flag
-        """
-        returns (value='b')
-    
-    @remote_function 
-    def set_control_logical(index_of_the_star='i',name='s',value='b'):
-        """
-        Set the current control option given by name, if it is a logical flag
-        """
-        returns ()
-
-    @remote_function 
-    def get_control_int(index_of_the_star='i',name='s'):
-        """
-        Retrieve the current control option given by name, if it is an integer
-        """
-        returns (value='i')
-    
-    @remote_function 
-    def set_control_int(index_of_the_star='i',name='s',value='i'):
-        """
-        Set the current control option given by name, if it is an integer
-        """
-        returns ()
-
-    @remote_function 
-    def get_control_str(index_of_the_star='i',name='s'):
-        """
-        Retrieve the current control option given by name, if it is a string
-        """
-        returns (value='s')
-    
-    @remote_function 
-    def set_control_str(index_of_the_star='i',name='s',value='s'):
-        """
-        Set the current control option given by name, if it is a string
-        """
-        returns ()
 
 
-    @remote_function 
-    def get_star_job_dble(index_of_the_star='i',name='s'):
+    @legacy_function
+    def _get_opt():
         """
-        Retrieve the current star_job option given by name, if it is a double precision number
+        Users should not call this directly
         """
-        returns (value='d')
+        function = LegacyFunctionSpecification()
+        function.name = 'get_opt'
+        function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
+            , description="The index of the star to get the value of")
+        function.addParameter('type', dtype='int32', direction=function.IN
+            , description="Flag for which type of option to get")
+        function.addParameter('name', dtype='string', direction=function.IN
+            , description="Name of control parameter to get")
+        function.addParameter('value', dtype='string', direction=function.OUT
+            , description="The value of the parameter")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            The value has been set.
+        -1 - ERROR
+            The code could not set the value.
+        """
+        return function
     
-    @remote_function 
-    def set_star_job_dble(index_of_the_star='i',name='s',value='d'):
+    @legacy_function
+    def _set_opt():
         """
-        Set the current star_job option given by name, if it is a double precision number
+        Users should not call this directly
         """
-        returns ()
+        function = LegacyFunctionSpecification()
+        function.name = 'set_opt'
+        function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
+            , description="The index of the star to get the value of")
+        function.addParameter('type', dtype='int32', direction=function.IN
+            , description="Flag for which type of option to get")
+        function.addParameter('name', dtype='string', direction=function.IN
+            , description="Name of control parameter to get")
+        function.addParameter('value', dtype='string', direction=function.IN
+            , description="The value of the parameter")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            The value has been set.
+        -1 - ERROR
+            The code could not set the value.
+        """
+        return function
 
-    @remote_function 
-    def get_star_job_logical(index_of_the_star='i',name='s'):
-        """
-        Retrieve the current star_job option given by name, if it is a logical flag
-        """
-        returns (value='b')
-    
-    @remote_function 
-    def set_star_job_logical(index_of_the_star='i',name='s',value='b'):
-        """
-        Set the current star_job option given by name, if it is a logical flag
-        """
-        returns ()
 
-    @remote_function 
-    def get_star_job_int(index_of_the_star='i',name='s'):
-        """
-        Retrieve the current star_job option given by name, if it is an integer
-        """
-        returns (value='i')
-    
-    @remote_function 
-    def set_star_job_int(index_of_the_star='i',name='s',value='i'):
-        """
-        Set the current star_job option given by name, if it is an integer
-        """
-        returns ()
 
-    @remote_function
-    def get_star_job_str(index_of_the_star='i',name='s'):
+    def set_control(self, index_of_the_star, name, value):
         """
-        Retrieve the current star_job option given by name, if it is a string
+        Gets a MESA control namelist value.
         """
-        returns (value='s') 
-    
-    @remote_function
-    def set_star_job_str(index_of_the_star='i',name='s',value='s'):
+        v = self._val2str(value)
+        return self._set_opt(index_of_the_star,self._CONTROL_NML,name,v)
+
+    def get_control(self, index_of_the_star, name):
         """
-        Set the current star_job option given by name, if it is a string
+        Sets a MESA control namelist value.
         """
-        returns () 
+        v = self._get_opt(index_of_the_star,self._CONTROL_NML,name)
+        v['value'] = self._str2val(v['value'])
+        return v
+
+    def set_star_job(self, index_of_the_star, name, value):
+        """
+        Sets a MESA star_job namelist value.
+        """
+        v = self._val2str(value)
+        return self._set_opt(index_of_the_star,self._STAR_JOB_NML,name,v)
+
+    def get_star_job(self, index_of_the_star, name):
+        """
+        Gets a MESA star_job namelist value.
+        """
+        v = self._get_opt(index_of_the_star,self._STAR_JOB_NML,name)
+        v['value'] = self._str2val(v['value'])
+        return v
+
+    def set_eos(self, index_of_the_star, name, value):
+        """
+        Sets a MESA eos namelist value.
+        """
+        v = self._val2str(value)
+        return self._set_opt(index_of_the_star,self._EOS_NML,name,v)
+
+    def get_eos(self, index_of_the_star, name):
+        """
+        Gets a MESA eos namelist value.
+        """
+        v = self._get_opt(index_of_the_star,self._EOS_NML,name)
+        v['value'] = self._str2val(v['value'])
+        return v
+
+    def set_kap(self, index_of_the_star, name, value):
+        """
+        Sets a MESA kap namelist value.
+        """
+        v = self._val2str(value)
+        return self._set_opt(index_of_the_star,self._KAP_NML,name,v)
+
+    def get_kap(self, index_of_the_star, name):
+        """
+        Gets a MESA kap namelist value.
+        """
+        v = self._get_opt(index_of_the_star,self._KAP_NML,name)
+        v['value'] = self._str2val(v['value'])
+        return v
+
+
+
+
+    def _val2str(self,value):
+        if isinstance(value, bool):
+            if value:
+                return '.true.'
+            else:
+                return '.false.'
+        elif isinstance(value, int) or isinstance(value, float):
+            return str(value)
+        else:
+            if '"' not in value and "'" not in value:
+                return '"'+str(value)+'"'
+            else:
+                return value
+
+    def _str2val(self,value):
+        value = value.strip()
+        if '.true.' in value.lower():
+            return True
+        elif '.false.' in value.lower():
+            return False
+        try:
+            return int(value)
+        except ValueError:
+            pass
+        try:
+            return float(value)
+        except ValueError:
+            pass
+        return value
+
 
     @legacy_function   
     def new_stellar_model():
@@ -724,25 +762,17 @@ class MESA(StellarEvolution, InternalStellarStructure):
             handler.add_getter(particle_set_name, 'get_manual_mass_transfer_rate', names = ('mass_change',))
             handler.add_setter(particle_set_name, 'set_manual_mass_transfer_rate', names = ('mass_change',))
 
-            handler.add_method(particle_set_name, 'get_control_dble')
-            handler.add_method(particle_set_name, 'set_control_dble')
-            handler.add_method(particle_set_name, 'get_control_int')
-            handler.add_method(particle_set_name, 'set_control_int')
-            handler.add_method(particle_set_name, 'get_control_str')
-            handler.add_method(particle_set_name, 'set_control_str')
-            handler.add_method(particle_set_name, 'get_control_logical')
-            handler.add_method(particle_set_name, 'set_control_logical')
+            handler.add_method(particle_set_name, 'get_control')
+            handler.add_method(particle_set_name, 'set_control')
 
-            handler.add_method(particle_set_name, 'get_star_job_dble')
-            handler.add_method(particle_set_name, 'set_star_job_dble')
-            handler.add_method(particle_set_name, 'get_star_job_int')
-            handler.add_method(particle_set_name, 'set_star_job_int')
-            handler.add_method(particle_set_name, 'get_star_job_str')
-            handler.add_method(particle_set_name, 'set_star_job_str')
-            handler.add_method(particle_set_name, 'get_star_job_logical')
-            handler.add_method(particle_set_name, 'set_star_job_logical')
-
+            handler.add_method(particle_set_name, 'get_star_job')
+            handler.add_method(particle_set_name, 'set_star_job')
             handler.add_method(particle_set_name, 'star_job_update')
+
+            handler.add_method(particle_set_name, 'get_eos')
+            handler.add_method(particle_set_name, 'set_eos')
+            handler.add_method(particle_set_name, 'get_kap')
+            handler.add_method(particle_set_name, 'set_kap')
 
             handler.add_method(particle_set_name, 'get_nuclear_network')
             handler.add_method(particle_set_name, 'set_nuclear_network')
@@ -940,87 +970,45 @@ class MESA(StellarEvolution, InternalStellarStructure):
             (handler.NO_UNIT,handler.ERROR_CODE,)
         )
         handler.add_method(
-            "get_control_dble",
+            "get_kap",
             (handler.INDEX,handler.NO_UNIT),
             (handler.NO_UNIT, handler.ERROR_CODE,)
         )
         handler.add_method(
-            "set_control_dble",
+            "set_kap",
             (handler.INDEX, handler.NO_UNIT, handler.NO_UNIT),
             (handler.ERROR_CODE,)
         )
         handler.add_method(
-            "get_control_int",
+            "get_eos",
             (handler.INDEX,handler.NO_UNIT),
             (handler.NO_UNIT, handler.ERROR_CODE,)
         )
         handler.add_method(
-            "set_control_int",
+            "set_eos",
             (handler.INDEX, handler.NO_UNIT, handler.NO_UNIT),
             (handler.ERROR_CODE,)
         )
         handler.add_method(
-            "get_control_str",
+            "get_control",
             (handler.INDEX,handler.NO_UNIT),
             (handler.NO_UNIT, handler.ERROR_CODE,)
         )
         handler.add_method(
-            "set_control_str",
+            "set_control",
             (handler.INDEX, handler.NO_UNIT, handler.NO_UNIT),
             (handler.ERROR_CODE,)
         )
         handler.add_method(
-            "get_control_logical",
+            "get_star_job",
             (handler.INDEX,handler.NO_UNIT),
             (handler.NO_UNIT, handler.ERROR_CODE,)
         )
         handler.add_method(
-            "set_control_logical",
+            "set_star_job",
             (handler.INDEX, handler.NO_UNIT, handler.NO_UNIT),
             (handler.ERROR_CODE,)
         )
-        
-        handler.add_method(
-            "get_star_job_dble",
-            (handler.INDEX,handler.NO_UNIT),
-            (handler.NO_UNIT, handler.ERROR_CODE,)
-        )
-        handler.add_method(
-            "set_star_job_dble",
-            (handler.INDEX, handler.NO_UNIT, handler.NO_UNIT),
-            (handler.ERROR_CODE,)
-        )
-        handler.add_method(
-            "get_star_job_int",
-            (handler.INDEX,handler.NO_UNIT),
-            (handler.NO_UNIT, handler.ERROR_CODE,)
-        )
-        handler.add_method(
-            "set_star_job_int",
-            (handler.INDEX, handler.NO_UNIT, handler.NO_UNIT),
-            (handler.ERROR_CODE,)
-        )
-        handler.add_method(
-            "get_star_job_str",
-            (handler.INDEX,handler.NO_UNIT),
-            (handler.NO_UNIT, handler.ERROR_CODE,)
-        )
-        handler.add_method(
-            "set_star_job_str",
-            (handler.INDEX, handler.NO_UNIT, handler.NO_UNIT),
-            (handler.ERROR_CODE,)
-        )
-        handler.add_method(
-            "get_star_job_logical",
-            (handler.INDEX,handler.NO_UNIT),
-            (handler.NO_UNIT, handler.ERROR_CODE,)
-        )
-        handler.add_method(
-            "set_star_job_logical",
-            (handler.INDEX, handler.NO_UNIT, handler.NO_UNIT),
-            (handler.ERROR_CODE,)
-        )
-
         handler.add_method(
             "star_job_update",
             (handler.INDEX,),
