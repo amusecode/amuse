@@ -44,10 +44,7 @@ extensions = [
 
 if not is_running_in_rtd:
     extensions.extend([
-        'matplotlib.sphinxext.only_directives',
         'matplotlib.sphinxext.plot_directive',
-        'gen_rst',
-        'gen_gallery', 
         'rst2pdf.pdfbuilder',
     ])
 

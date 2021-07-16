@@ -54,7 +54,7 @@ class ParametersAttributeDocumenter(AttributeDocumenter):
         else:
             sourcename = 'docstring of %s' % self.fullname
             
-        encoding = self.analyzer and self.analyzer.encoding
+        encoding = self.analyzer  # and self.analyzer.encoding
         lines = prepare_docstring(force_decode(parameter_documentation, encoding))
         
         for i, line in enumerate(self.process_doc([lines,])):

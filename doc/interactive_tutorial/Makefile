@@ -39,7 +39,7 @@ clean:
 	rm -Rf $(RSTFILES)
 	
 %.rst:%.ipynb
-	$(NBCONVERT) rst "$<"
+	$(NBCONVERT) --to rst "$<"
 	
 %.txt:%.rst
 	python create_title.py "$<" > "$@"

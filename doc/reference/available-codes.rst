@@ -27,7 +27,7 @@ Stellar Dynamics
 ~~~~~~~~~~~~~~~~
 
 * BHtree_
-* hermite0_
+* hermite_
 * HiGPUs_
 * huayno_
 * mercury_
@@ -200,9 +200,9 @@ example
 
 .. [#bh] Barnes, J. & Hut, P. 1986. *Nature* **324**, 446.
 
-.. _hermite0:
+.. _hermite:
 
-hermite0
+hermite
 --------
 
 Time-symmetric N-body integration module with shared but variable time step
@@ -255,7 +255,7 @@ Parameters
 |                                    |               |               |output             |
 +------------------------------------+---------------+---------------+-------------------+
 
-.. automodule:: amuse.community.hermite0.interface
+.. automodule:: amuse.community.hermite.interface
     
     .. autoclass:: Hermite
     
@@ -311,7 +311,7 @@ module the preferred mode can be selected whith the mode parameter:
 
 .. code-block:: python
 
-   >>> from amuse.community.phiGRAPE.interface import PhiGRAPEInterface, PhiGRAPE
+   >>> from amuse.community.phigrape.interface import PhiGRAPEInterface, PhiGRAPE
    >>> instance = PhiGRAPE(PhiGRAPE.NBODY, PhiGRAPEInterface.MODE_GPU)
 
 The default is **MODE_G6LIB**.
@@ -360,7 +360,7 @@ The default is **MODE_G6LIB**.
 |                                    |               |               |                   |
 +------------------------------------+---------------+---------------+-------------------+
 
-.. automodule:: amuse.community.phiGRAPE.interface
+.. automodule:: amuse.community.phigrape.interface
     
     .. autoclass:: PhiGRAPE
     
