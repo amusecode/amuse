@@ -108,3 +108,7 @@ class openmp():
     is_enabled = configmk["OPENMP_ENABLED"] == 'yes'
     fcflags = configmk["OPENMP_FCFLAGS"]
     cflags = configmk["OPENMP_CFLAGS"]
+
+class community:
+    mesa_version = "2208"
+    # mesa_version = "new"
