@@ -14,17 +14,17 @@ python_version_major := $(word 1,${python_version_full})
 python_version_minor := $(word 2,${python_version_full})
 python_version_patch := $(word 3,${python_version_full})
 
-all: build.py
+all: config.mk
 	@-mkdir -p test_results
 	$(PYTHON) setup.py generate_main
 	$(PYTHON) setup.py build_codes --inplace
 
-framework: build.py
+framework: config.mk
 	@-mkdir -p test_results
 	$(PYTHON) setup.py generate_main
 	$(PYTHON) setup.py build_libraries --inplace
 
-build.py:
+config.mk:
 	$(error the code is not configured, please run configure first)
 
 allinbuild:
@@ -53,7 +53,7 @@ distclean:
 	-rm -f amuse.sh
 	-rm -f iamuse.sh
 	-rm -f ibis-deploy.sh
-	-rm -f build.py bin/amusifier
+	-rm -f bin/amusifier
 	-rm -rf test_results src/amuse.egg-info
 	
 	-rm -f test/*.000 test/fort.* test/perr test/pout test/test.h5 test/*.log
