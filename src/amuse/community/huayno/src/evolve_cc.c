@@ -50,17 +50,18 @@ void split_cc(int clevel,struct sys s, struct sys *c, struct sys *r, DOUBLE dt) 
   dt=fabs(dt);
   diag->tstep[clevel]++; // not directly comparable to corresponding SF-split statistics
   struct sys *c_next;
+  if(s.n<=1) ENDRUN("This does not look right...");
   if(s.nzero>0 && s.n!=s.nzero && s.zeropart!=s.last+1) 
     ENDRUN("split_cc only works on contiguous systems");
   c_next = c;
   *c_next = zerosys;
   UINT processed = 0; // increase if something is added from the stack to the cc
-  UINT comp_next = 0; // increase to move a particle from stack to cc; points to the first element of the stack
+  struct particle *comp_next = s.part; // increase to move a particle from stack to cc; points to the first element of the stack
   UINT comp_size = 0; // amount of particles added to the current cc
-  UINT stack_next = 1; // swap this with s[i] to increase the stack
-  UINT stack_size = 1; // first element of the stack is s[comp_next]
-                       // last element of the stack is s[comp_next + stack_size - 1]
-  UINT rest_next = s.n - 1; // swap this to add to the rest-system
+  struct particle *stack_next = comp_next+1; // swap this with s[i] to increase the stack
+  UINT stack_size = 1; // first element of the stack is comp_next
+                       // last element of the stack is comp_next + stack_size - 1 == stack_next-1
+  struct particle *rest_next = GETPART(s, s.n-1); // swap this to add to the rest-system
   // find connected components
   while (processed < s.n)
   {
@@ -69,15 +70,15 @@ void split_cc(int clevel,struct sys s, struct sys *c, struct sys *r, DOUBLE dt) 
     while (stack_size > 0)
     {
       // iterate over all unvisited elements
-      for (UINT i = stack_next; i <= rest_next; i++)
+      for (struct particle *i = stack_next; i <= rest_next; i++)
       {
         // if element is connected to the first element of the stack
-        DOUBLE timestep = (DOUBLE) timestep_ij(s.part+comp_next, s.part+i,dir);
+        DOUBLE timestep = (DOUBLE) timestep_ij(comp_next, i,dir);
         diag->tcount[clevel]++;
         if ( timestep <= dt)
         {
           // add i to the end of the stack by swapping stack_next and i
-          SWAP( s.part[ stack_next ], s.part[i], struct particle );
+          SWAP( *stack_next , *i, struct particle );
           stack_next++;
           stack_size++;
         }
@@ -95,25 +96,27 @@ void split_cc(int clevel,struct sys s, struct sys *c, struct sys *r, DOUBLE dt) 
       // create new component c from u[0] to u[cc_visited - 1]
       // remove components from u (u.n, u.part)
       c_next->n = comp_size;
-      c_next->part = &( s.part[ comp_next - comp_size ]);
-      c_next->last = &( s.part[ comp_next - 1 ]);
+      c_next->part = comp_next - comp_size;
+      c_next->last = comp_next-1;
       c_next->next_cc = (struct sys*) malloc( sizeof(struct sys) );
       c_next = c_next->next_cc;
       *c_next = zerosys;
-      comp_next = stack_next;
+      if(stack_next!=comp_next) ENDRUN("consistency error in split_cc")
+      // comp_next = stack_next; // should be unchanged
       comp_size = 0;
-      stack_next = stack_next + 1;
+      stack_next= comp_next+1;
       stack_size = 1;
     // new component is trivial: add to rest
     }
     else
     {
       //LOG("found trivial component; adding to rest\n");
-      SWAP(s.part[ comp_next - 1 ], s.part[ rest_next ], struct particle );
+      SWAP( *(comp_next - 1), *rest_next, struct particle );
       rest_next--;
       comp_next = comp_next - 1;
       comp_size = 0;
-      stack_next = comp_next + 1;
+      if(stack_next!=comp_next+1) ENDRUN("consistency error in split_cc")
+      //stack_next = comp_next + 1; // should be unchanged
       stack_size = 1;
     }
   }
@@ -122,11 +125,11 @@ void split_cc(int clevel,struct sys s, struct sys *c, struct sys *r, DOUBLE dt) 
     ENDRUN("split_cc particle count mismatch: processed=%u s.n=%u r->n=%u\n", processed, s.n, r->n);
   }
   // create the rest system
-  r->n = (s.n - 1) - rest_next;
+  r->n = GETPART(s, s.n-1) - rest_next;
   if (r->n > 0)
   {
-    r->part = &( s.part[rest_next + 1] );
-    r->last = s.part+s.n-1;
+    r->part = rest_next+1;
+    r->last = GETPART(s, s.n-1);
   }
   else
   {
