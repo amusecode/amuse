@@ -31,10 +31,9 @@ int initialize_code()
   nmax=NMAX;
   err=LOOKUPSYMBOL(init_,)(&lookup, nmax*sizeof(struct particle)/sizeof(int));
   if(err != 0) return err;
-  mainsys.n=0;
+  mainsys=zerosys;
   mainsys.part=(struct particle*) malloc(nmax*sizeof(struct particle));
   if(mainsys.part == NULL) return -1;
-  mainsys.last=NULL;
   dt_param=.03;
   accel_zero_mass=1; 
   eps2=0.;
@@ -586,7 +585,7 @@ int get_indices_of_colliding_particles(int *p1,int*p2)
 int get_gravity_at_point(double * eps, double * x, double * y, double * z, 
 			 double * ax, double * ay, double * az, int n)
 {
-  struct sys tmpsys;
+  struct sys tmpsys=zerosys;
   tmpsys.n=n;
   tmpsys.part=(struct particle*) malloc(n*sizeof(struct particle));
   tmpsys.last=&tmpsys.part[n];
@@ -620,7 +619,7 @@ int get_potential_at_point(double * eps,
 			   double * x, double * y, double * z, 
 			   double * phi, int n)
 {
-  struct sys tmpsys;
+  struct sys tmpsys=zerosys;
   tmpsys.n=n;
   tmpsys.part=(struct particle*) malloc(n*sizeof(struct particle));
   tmpsys.last=&tmpsys.part[n];

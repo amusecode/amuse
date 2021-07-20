@@ -19,6 +19,8 @@
 #define COMPENSATED_SUMMP
 //#define COMPENSATED_SUMMV  
 
+#define CONSISTENCY_CHECKS // perform (time-consuming, but thorough) sanity checks
+
 struct particle
 {
   UINT id;
@@ -54,7 +56,7 @@ struct sys
   struct sys *next_cc; // used in the CC split only
 };
 
-#define GETPART(s, i)   (i<s.n-s.nzero? s.part+i : s.zeropart+(i-(s.n-s.nzero)))    
+#define GETPART(s, i)   ((i)<(s).n-(s).nzero ? (s).part+(i) : (s).zeropart+((i)-((s).n-(s).nzero)))    
 
 enum intopt
 {

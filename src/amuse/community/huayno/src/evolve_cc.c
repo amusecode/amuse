@@ -12,14 +12,23 @@
 #ifdef _OPENMP
 #include <omp.h>
 #endif
+#include <string.h>
+
 #include "evolve.h"
 #include "evolve_kepler.h"
 #include "evolve_bs.h"
 
-//#define CC_DEBUG // perform (time-consuming, but thorough) CC sanity checks
+// this is a bit weird, why not use NULL pointer?
+#define IS_ZEROSYS(SYS) (((SYS)->n == 0) && \
+                         ((SYS)->nzero == 0) && \
+                         ((SYS)->part == NULL) && \
+                         ((SYS)->last == NULL) && \
+                         ((SYS)->next_cc == NULL) && \
+                         ((SYS)->zeropart == NULL) && \
+                         ((SYS)->lastzero == NULL) )
 
-#define IS_ZEROSYS(SYS) (((SYS)->n == 0) && ((SYS)->nzero == 0) && ((SYS)->part == NULL) && ((SYS)->last == NULL) && ((SYS)->next_cc == NULL))
-#define IS_ZEROSYSs(SYS) (((SYS).n == 0) && ((SYS).nzero == 0) && ((SYS).part == NULL) && ((SYS).last == NULL) && ((SYS).next_cc == NULL))
+#define IS_ZEROSYSs(SYS) IS_ZEROSYS(&(SYS))
+
 #define LOG_CC_SPLIT(C, R) \
 { \
   LOG("clevel = %d s.n = %d c.n = {", clevel, s.n); \
@@ -132,14 +141,14 @@ void split_cc_verify(int clevel,struct sys s, struct sys *c, struct sys *r) {
    * split_cc_verify: explicit verification if connected components c and rest system r form a correct
    * connected components decomposition of the system.
    */
-  //LOG("split_cc_verify ping s.n=%d r->n=%d\n", s.n, r->n);
+  LOG("split_cc_verify ping s.n=%d r->n=%d\n", s.n, r->n);
   //LOG_CC_SPLIT(c, r);
   UINT pcount_check = 0;
   for (UINT i = 0; i < s.n; i++)
   {
     pcount_check = 0;
     UINT particle_found = 0;
-    struct particle *p = &( s.part[i] );
+    struct particle *p = GETPART(s, i);
     for (struct sys *cj = c; !IS_ZEROSYS(cj); cj = cj->next_cc)
     {
       pcount_check += cj->n;
@@ -147,7 +156,7 @@ void split_cc_verify(int clevel,struct sys s, struct sys *c, struct sys *r) {
       // search for p in connected components
       for (UINT k = 0; k < cj->n; k++)
       {
-        struct particle * pk = &( cj->part[k] );
+        struct particle * pk = GETPART( *cj,k);
         // is pk equal to p
         if (p->id == pk->id)
         {
@@ -155,7 +164,13 @@ void split_cc_verify(int clevel,struct sys s, struct sys *c, struct sys *r) {
           //LOG("split_cc_verify: found in a cc\n");
         }
       }
-      if (& ( cj->part[cj->n - 1] ) != cj->last)
+      if (cj->n-cj->nzero>0 &&  (  &(cj->part[cj->n - cj->nzero - 1]) != cj->last ))
+      {
+        LOG("split_cc_verify: last pointer for c is not set correctly!");
+        LOG_CC_SPLIT(c, r);
+        ENDRUN("data structure corrupted\n");
+      }
+      if (cj->nzero>0 &&  (  &(cj->part[cj->n-1]) != cj->lastzero ))
       {
         LOG("split_cc_verify: last pointer for c is not set correctly!");
         LOG_CC_SPLIT(c, r);
@@ -166,7 +181,7 @@ void split_cc_verify(int clevel,struct sys s, struct sys *c, struct sys *r) {
     // search for p in rest
     for (UINT k = 0; k < r->n; k++)
     {
-      struct particle * pk = &( r->part[k] );
+      struct particle * pk = GETPART( *r, k);
 
       // is pk equal to p
       if (p->id == pk->id)
@@ -198,7 +213,7 @@ void split_cc_verify(int clevel,struct sys s, struct sys *c, struct sys *r) {
   }
   else
   {
-    //LOG("split_cc_verify pong\n");
+     LOG("split_cc_verify pong\n");
   }
   //ENDRUN("Fin.\n");
 }
@@ -221,7 +236,7 @@ void split_cc_verify_ts(int clevel,struct sys *c, struct sys *r, DOUBLE dt)
         }
         for (UINT j = 0; j < cj->n; j++)
         {
-          ts_ij = (DOUBLE) timestep_ij((*ci).part+i, (*cj).part+j, dir);
+          ts_ij = (DOUBLE) timestep_ij(GETPART( *ci, i), GETPART( *cj, j), dir);
           //LOG("comparing %d %d\n", ci->part[i].id, cj->part[j].id);
           //LOG("%f %f \n", ts_ij, dt);
           if (dt > ts_ij)
@@ -240,7 +255,7 @@ void split_cc_verify_ts(int clevel,struct sys *c, struct sys *r, DOUBLE dt)
     {
       for (UINT j = 0; j < r->n; j++)
       {
-        ts_ij = (DOUBLE) timestep_ij( (*ci).part+ i, (*r).part+ j,dir);
+        ts_ij = (DOUBLE) timestep_ij( GETPART(*ci, i), GETPART(*r, j),dir);
         if (ts_ij < dt)
         {
           ENDRUN("split_cc_verify_ts C-R timestep underflow\n");
@@ -255,7 +270,7 @@ void split_cc_verify_ts(int clevel,struct sys *c, struct sys *r, DOUBLE dt)
     for (UINT j = 0; j < r->n; j++)
     {
       if (i == j) continue;
-      ts_ij = (DOUBLE) timestep_ij( (*r).part+ i, (*r).part+j,dir);
+      ts_ij = (DOUBLE) timestep_ij( GETPART(*r, i), GETPART( *r,j),dir);
       if (ts_ij < dt)
       {
         ENDRUN("split_cc_verify_ts R-R timestep underflow\n");
@@ -345,16 +360,16 @@ void evolve_cc2(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt, 
   }
 #endif
 
-#ifdef CC2_SPLIT_CONSISTENCY_CHECKS
+#ifdef CONSISTENCY_CHECKS
   if (clevel == 0)
   {
     printf("consistency_checks: ", s.n, clevel);
   }
 #endif
 
-#ifdef CC2_SPLIT_CONSISTENCY_CHECKS
+#ifdef CONSISTENCY_CHECKS
   // debug: make a copy of s to verify that the split has been done properly
-  struct sys s_before_split;
+  struct sys s_before_split=zerosys;
   s_before_split.n = s.n;
   s_before_split.part = (struct particle*) malloc(s.n*sizeof(struct particle));
   s_before_split.last = &( s_before_split.part[s.n - 1] );
@@ -370,7 +385,7 @@ void evolve_cc2(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt, 
   split_cc(clevel,s, &c, &r, dt);
   //if (s.n != c.n) LOG_CC_SPLIT(&c, &r); // print out non-trivial splits
 
-#ifdef CC2_SPLIT_CONSISTENCY_CHECKS
+#ifdef CONSISTENCY_CHECKS
 /*
     if (s.n != r.n) {
     LOG("s: ");
