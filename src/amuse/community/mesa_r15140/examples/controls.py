@@ -86,7 +86,7 @@ print(star.set_extra_heat(1.0,1))
 print(star.get_mesa_value('extra_heat',1))
 
 eng = np.zeros(star.get_number_of_zones())
-eng[:] = 2.0 | units.erg/units.g/units.s
+eng[:] = 2.0
 print(star.set_mesa_value_profile('extra_heat',eng))
 print(star.get_mesa_value_profile('extra_heat'))
 

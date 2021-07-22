@@ -1,6 +1,7 @@
 import os
 import numpy
 from operator import itemgetter
+import tempfile
 
 from amuse.community import *
 from amuse.community.interface.se import StellarEvolution, StellarEvolutionInterface, \
@@ -55,6 +56,15 @@ class MESAInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolutionIn
     def default_path_to_MESA(self):
         return os.path.join(self.amuse_root_directory, 'src', 'amuse', 'community', 'mesa_r15140', 'src', 'mesa-r15140')
     
+    @property
+    def default_tmp_dir(self):
+        """ 
+        This must be unique for each MESA star being run a time, as a place MESA can write 
+        temperoy files to.
+
+        It does not need persistance
+        """
+        return tempfile.mkdtemp()
 
     @legacy_function
     def set_MESA_paths():
@@ -70,6 +80,8 @@ class MESAInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolutionIn
             description = "Path to the data directory.")
         function.addParameter('gyre_in_filename', dtype='string', direction=function.IN,
             description = "Path to the gyre.in file.")
+        function.addParameter('temp_dir', dtype='string', direction=function.IN,
+            description = "Unique per-MESA temporary folder")
         function.result_type = 'int32'
         function.result_doc = """
         0 - OK
@@ -735,7 +747,8 @@ class MESA(StellarEvolution, InternalStellarStructure):
             inlist, 
             self.default_path_to_MESA, 
             output_dir,
-            gyre_in
+            gyre_in,
+            self.default_tmp_dir
         )
         self.model_time = 0.0 | units.yr
 

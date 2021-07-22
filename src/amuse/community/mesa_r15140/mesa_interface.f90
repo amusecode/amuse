@@ -245,10 +245,11 @@ module mesa_interface
                                 max_age_stop_condition, &
                                 min_timestep_stop_condition, &
                                 max_iter_stop_condition, &
-                                gyre_in &
+                                gyre_in, &
+                                temp_dir &
                                 )
         integer, intent(in) :: id
-        character(len=*), intent(in) :: mesa_dir_in, output_folder, inlist, gyre_in
+        character(len=*), intent(in) :: mesa_dir_in, output_folder, inlist, gyre_in, temp_dir
         real(dp), intent(in) :: mass, metallicity,&
                                 max_age_stop_condition, &
                                 min_timestep_stop_condition
@@ -256,6 +257,8 @@ module mesa_interface
 
         type (star_info), pointer :: s
         integer :: ierr
+
+        call chdir(output_folder)
 
         call star_ptr(id, s, ierr)
         if (failed('star_ptr',ierr)) return   
@@ -283,8 +286,8 @@ module mesa_interface
         s% terminal_interval = -1
         s% write_header_frequency =-1
 
-        mesa_temp_caches_dir = trim(output_folder)//'/.mesa_temp_caches'  
-        s% report_ierr = .true.
+        mesa_temp_caches_dir = trim(temp_dir) 
+        s% report_ierr = .false.
 
         if(len_trim(gyre_in) > 0) then
             call setup_gyre(gyre_in)
