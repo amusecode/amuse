@@ -19,6 +19,8 @@
 
 int verbosity=0;
 
+struct sys debugsys;
+
 FLOAT eps2;
 FLOAT dt_param;
 struct sys zerosys ={0,0,NULL,NULL,NULL,NULL,NULL};
@@ -187,7 +189,7 @@ void sum_diagnostics(struct diagnostics* total,struct diagnostics* diag)
   total->cl_count+=diag->cl_count;
 #endif
 #ifdef _OPENMP
-  printf("%d: %d %li %li %li\n",omp_get_thread_num(),tasksum,diag->taskdrift,
+  printf("task %d: %d %li %li %li\n",omp_get_thread_num(),tasksum,diag->taskdrift,
      diag->taskkick,taskcountsum);
 #endif
 }
@@ -202,6 +204,7 @@ void do_evolve(struct sys s, double dt, int inttype)
   clevel=0;
   if(accel_zero_mass) split_zeromass(&s);
   zero_diagnostics(diag);
+  debugsys=s;
   switch (inttype)
   {
     case CONSTANT:
@@ -278,6 +281,8 @@ void do_evolve(struct sys s, double dt, int inttype)
       {
         diag=(struct diagnostics *) malloc(sizeof( struct diagnostics));
         zero_diagnostics(diag);
+#pragma omp master      
+        printf("Total Threads # %d\n", omp_get_num_threads()); 
 #pragma omp single
 #endif
         evolve_cc2(clevel,s,(DOUBLE) 0.,(DOUBLE) dt,(DOUBLE) dt, inttype, 1);
@@ -733,4 +738,13 @@ void split_zeromass(struct sys *s)
   if((left-s->part)+s->nzero !=s->n) ENDRUN( "split_zeromass error 2");
   for(i=0;i<(s->n-s->nzero);i++) if(s->part[i].mass==0) ENDRUN ("split_zromass error 3");
   for(i=s->n-s->nzero;i<s->n;i++) if(s->part[i].mass!=0) ENDRUN ("split_zeromass error 4");
+#ifdef CONSISTENCY_CHECKS
+  verify_split_zeromass(*s);
+#endif
+}
+
+void verify_split_zeromass(struct sys s)
+{
+  for(UINT i=0;i<s.n-s.nzero;i++) if(GETPART(s,i)->mass==0) ENDRUN("massless particle in main part\n") 
+  for(UINT i=s.n-s.nzero;i<s.n;i++) if(GETPART(s,i)->mass!=0) ENDRUN("massive particle in massless part\n") 
 }

@@ -113,7 +113,7 @@ static void evolve_kepler_test(int clevel,struct sys s, DOUBLE stime, DOUBLE eti
   CHECK_TIMESTEP(etime,stime,dt,clevel);
   if (s.n <= 1) ENDRUN("kepler test solver was called with too few massive particles sys.n=%u\n this hsouldn't happen\n", s.n);
 
-  central=s.part;
+  central=GETPART(s,0);
   for(UINT i=1;i<s.n;i++)
   {
     ipart=GETPART(s,i);

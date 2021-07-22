@@ -56,6 +56,8 @@ struct sys
   struct sys *next_cc; // used in the CC split only
 };
 
+extern struct sys debugsys;
+
 #define GETPART(s, i)   ((i)<(s).n-(s).nzero ? (s).part+(i) : (s).zeropart+((i)-((s).n-(s).nzero)))    
 
 enum intopt
@@ -157,6 +159,7 @@ void potential(struct sys s1, struct sys s2);
 
 struct sys join(struct sys s1,struct sys s2);
 void split_zeromass(struct sys *s);
+void verify_split_zeromass(struct sys s);
 
 #define SWAP(a,b,c) {c t;t=(a);(a)=(b);(b)=t;}
 
