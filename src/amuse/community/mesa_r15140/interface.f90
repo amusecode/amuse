@@ -842,7 +842,7 @@ module amuse_mesa
 
 ! Create a new particle from a user supplied model (non-ZAMS, e.g. merger product)
    ! This expects all arrays to be in MESA order (1==surface n==center)
-      ! 1-q (where q is mass fraction at zone i)
+      ! xq = 1-q (where q is mass fraction at zone i)
    ! star_mass needs to be an array for the interface to work but we only need the total star mass in star_mass(1)
    
    ! Negative return value indicates an error while positive is the new id
@@ -1086,6 +1086,39 @@ module amuse_mesa
       if(ierr/=MESA_SUCESS) return
       set_mass = 0
    end function
+
+
+   integer function get_mesa_value(AMUSE_id, AMUSE_name, AMUSE_value, zone)
+      integer, intent(in) :: AMUSE_id
+      character(len=*) :: AMUSE_name
+      double precision, intent(out) :: AMUSE_value
+      integer, intent(in) :: zone
+      integer :: ierr
+
+      call get_value(AMUSE_id, AMUSE_name, AMUSE_value, zone, ierr)
+
+      if(ierr/=MESA_SUCESS) then
+         get_mesa_value = ierr
+      end if
+
+
+   end function get_mesa_value
+
+   integer function set_mesa_value(AMUSE_id, AMUSE_name, AMUSE_value, zone)
+      integer, intent(in) :: AMUSE_id
+      character(len=*) :: AMUSE_name
+      double precision, intent(in) :: AMUSE_value
+      integer, intent(in) :: zone
+      integer :: ierr
+
+      call set_value(AMUSE_id, AMUSE_name, AMUSE_value, zone, ierr)
+
+      if(ierr/=MESA_SUCESS) then
+         set_mesa_value = ierr
+      end if
+
+   end function set_mesa_value
+
 
 ! Functions created to map to the se.py interface but they do nothing and allways return failure if called
 

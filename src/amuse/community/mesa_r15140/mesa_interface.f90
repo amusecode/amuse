@@ -941,4 +941,61 @@ module mesa_interface
 
     end subroutine time_of_step
 
+
+    ! Routines for setting/getting MESA varaibles that are not available via history/profile output
+    subroutine get_value(id, name, val, k, ierr)
+        integer, intent(in) :: id, k
+        character(len=*), intent(in) :: name
+        real(dp), intent(out) :: val
+        integer, intent(out) :: ierr
+        type (star_info), pointer :: s   
+
+        ierr = 0
+        call star_ptr(id, s, ierr)
+        if (failed('star_ptr',ierr)) return
+
+        if(k<1 .or. k> s% nz) then
+            ierr = -2
+            return
+        end if
+
+        select case(name)
+            case('extra_heat') 
+                val = s% extra_heat(k)
+            case default
+                ierr = -3
+        end select
+
+
+    end subroutine get_value
+
+
+    subroutine set_value(id, name, val, k, ierr)
+        integer, intent(in) :: id, k
+        character(len=*), intent(in) :: name
+        real(dp), intent(in) :: val
+        integer, intent(out) :: ierr
+        type (star_info), pointer :: s   
+
+        ierr = 0
+        call star_ptr(id, s, ierr)
+        if (failed('star_ptr',ierr)) return
+
+        if(k<1 .or. k> s% nz) then
+            ierr = -2
+            return
+        end if
+
+        select case(name)
+            case('extra_heat') 
+                s% extra_heat(k) = val
+            case default
+                ierr = -3
+        end select
+
+
+    end subroutine set_value
+
+
+
 end module mesa_interface

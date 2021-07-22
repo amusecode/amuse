@@ -25,8 +25,6 @@ print(star.get_control('terminal_show_age_units'))
 star.set_control('terminal_show_age_units','seconds')
 print(star.get_control('terminal_show_age_units'))
 
-solver_save_photo_call_number
-
 print(star.get_control('solver_save_photo_call_number'))
 star.set_control('solver_save_photo_call_number',3)
 print(star.get_control('solver_save_photo_call_number'))
@@ -78,3 +76,17 @@ star.mass=10| units.MSun
 
 print(star.mass)
 print(star.get_history('star_mass'))
+
+
+
+#Add extra energy to satr
+
+print(star.get_extra_heat())
+print(star.set_extra_heat(1.0,1))
+print(star.get_mesa_value('extra_heat',1))
+
+eng = np.zeros(star.get_number_of_zones())
+eng[:] = 2.0 | units.erg/units.g/units.s
+print(star.set_mesa_value_profile('extra_heat',eng))
+print(star.get_mesa_value_profile('extra_heat'))
+

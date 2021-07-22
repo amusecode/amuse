@@ -511,8 +511,6 @@ class MESAInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolutionIn
         return v
 
 
-
-
     def _val2str(self,value):
         if isinstance(value, bool):
             if value:
@@ -542,6 +540,68 @@ class MESAInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolutionIn
         except ValueError:
             pass
         return value
+
+
+    @legacy_function
+    def set_mesa_value():
+        """
+        Sets a MESA variable given by name. If the variable is not an array then set zone=1
+
+        Not all variables are supported, addtional ones can be added to set_value() in mesa_interface.f90
+        """
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
+        function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
+            , description="The index of the star to get the value of")
+        function.addParameter('name', dtype='string', direction=function.IN
+            , description="Name of the variable to set")
+        function.addParameter('value', dtype='float64', direction=function.IN
+            , description="Value to set to")
+        function.addParameter('zone', dtype='int32', direction=function.IN
+            , description="Zone if setting array ( must between 1 and s%nz)")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            The value has been set.
+        -1 - ERROR
+            An error occured
+        -2 - ERROR
+            The zone is out of bounds
+        -3 - ERROR
+            The named variable does not exist
+        """
+        return function
+
+
+    @legacy_function
+    def get_mesa_value():
+        """
+        Gets a MESA variable given by name. If the variable is not an array then set zone=1
+
+        Not all variables are supported, addtional ones can be added to get_value() in mesa_interface.f90
+        """
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
+        function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
+            , description="The index of the star to get the value of")
+        function.addParameter('name', dtype='string', direction=function.IN
+            , description="Name of the variable to get")
+        function.addParameter('value', dtype='float64', direction=function.OUT
+            , description="Value which has be gotten")
+        function.addParameter('zone', dtype='int32', direction=function.IN
+            , description="Zone if getting from an array (must between 1 and s%nz)")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            The value has been gotten.
+        -1 - ERROR
+            An error occured
+        -2 - ERROR
+            The zone is out of bounds
+        -3 - ERROR
+            The named variable does not exist
+        """
+        return function
 
 
     @legacy_function   
@@ -774,6 +834,12 @@ class MESA(StellarEvolution, InternalStellarStructure):
             handler.add_method(particle_set_name, 'get_kap')
             handler.add_method(particle_set_name, 'set_kap')
 
+            handler.add_method(particle_set_name, 'get_mesa_value')
+            handler.add_method(particle_set_name, 'set_mesa_value')
+
+            handler.add_method(particle_set_name, 'get_extra_heat')
+            handler.add_method(particle_set_name, 'set_extra_heat')
+
             handler.add_method(particle_set_name, 'get_nuclear_network')
             handler.add_method(particle_set_name, 'set_nuclear_network')
                         
@@ -796,6 +862,8 @@ class MESA(StellarEvolution, InternalStellarStructure):
             handler.add_method(particle_set_name, 'get_brunt_vaisala_frequency_squared_profile')
             handler.add_method(particle_set_name, 'get_profile')
             handler.add_method(particle_set_name, 'get_history') 
+            handler.add_method(particle_set_name, 'get_mesa_value_profile')
+            handler.add_method(particle_set_name, 'set_mesa_value_profile')
 
             handler.add_method(particle_set_name, 'get_name_of_species')
             handler.add_method(particle_set_name, 'get_mass_of_species')
@@ -1015,6 +1083,18 @@ class MESA(StellarEvolution, InternalStellarStructure):
             (handler.ERROR_CODE,)
         )
         handler.add_method(
+            "get_mesa_value",
+            (handler.INDEX,handler.NO_UNIT,handler.NO_UNIT),
+            (handler.NO_UNIT, handler.ERROR_CODE,)
+        )
+        handler.add_method(
+            "set_mesa_value",
+            (handler.INDEX, handler.NO_UNIT, handler.NO_UNIT,handler.NO_UNIT),
+            (handler.ERROR_CODE,)
+        )
+
+
+        handler.add_method(
             "set_age",
             (handler.INDEX,),
             (units.yr,handler.ERROR_CODE,)
@@ -1159,6 +1239,7 @@ class MESA(StellarEvolution, InternalStellarStructure):
             number_of_zones = self.get_number_of_zones(indices_of_the_stars)
         return self.get_profile_at_zone([indices_of_the_stars]*number_of_zones, list(range(number_of_zones)) | units.none, [name]*number_of_zones)
         
+
     def get_masses_of_species(self, indices_of_the_stars, number_of_species = None):
         indices_of_the_stars = self._check_number_of_indices(indices_of_the_stars, action_string = "Querying chemical abundance mass numbers")
         if number_of_species is None:
@@ -1167,6 +1248,38 @@ class MESA(StellarEvolution, InternalStellarStructure):
             [indices_of_the_stars]*number_of_species, 
             list(range(1,number_of_species+1))
         )
+
+    def get_extra_heat(self, indices_of_the_stars, number_of_zones = None):
+        indices_of_the_stars = self._check_number_of_indices(indices_of_the_stars, action_string = "Querying extra_heat ") 
+        if number_of_zones is None:
+            number_of_zones = self.get_number_of_zones(indices_of_the_stars)
+
+        return self.get_mesa_value([indices_of_the_stars]*number_of_zones,['extra_heat']*number_of_zones,list(range(1,number_of_zones+1))) | units.erg/units.g/units.s
+
+    def set_extra_heat(self, indices_of_the_stars, values , number_of_zones = None):
+        indices_of_the_stars = self._check_number_of_indices(indices_of_the_stars, action_string = "Setting extra_heat ") 
+        if number_of_zones is None:
+            number_of_zones = self.get_number_of_zones(indices_of_the_stars)
+
+        return self.set_mesa_value([indices_of_the_stars]*number_of_zones,['extra_heat']*number_of_zones,values,list(range(1,number_of_zones+1))) 
+
+
+    def get_mesa_value_profile(self, indices_of_the_stars,name,  number_of_zones = None):
+        indices_of_the_stars = self._check_number_of_indices(indices_of_the_stars, action_string = "Querying generic mesaa_get_value") 
+        if number_of_zones is None:
+            number_of_zones = self.get_number_of_zones(indices_of_the_stars)
+
+        return self.get_mesa_value([indices_of_the_stars]*number_of_zones,[name]*number_of_zones,list(range(1,number_of_zones+1)))
+
+
+    def set_mesa_value_profile(self, indices_of_the_stars, name, values , number_of_zones = None):
+        indices_of_the_stars = self._check_number_of_indices(indices_of_the_stars, action_string =  "Setting generic mesaa_get_value")
+        if number_of_zones is None:
+            number_of_zones = self.get_number_of_zones(indices_of_the_stars)
+
+        return self.set_mesa_value([indices_of_the_stars]*number_of_zones,[name]*number_of_zones,values,list(range(1,number_of_zones+1))) 
+
+
 
     def new_particle_from_model(self, internal_structure, current_age=0|units.yr, key=None):
         
