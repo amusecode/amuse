@@ -49,14 +49,14 @@ struct jparticle
 struct sys
 {
   UINT n, nzero; // n=total particles, nzero=# zero mass particles
-  struct particle *part; // start of particles (non-zero mass)
-  struct particle *zeropart; // start of zero mass particles
-  struct particle *last; // last of non-zero mass; not needed, serves mainly to check consistency
-  struct particle *lastzero; // last of zero mass; not needed, serves mainly to check consistency
+  struct particle *part; // start of particles, NULL iff n==0 
+  struct particle *zeropart; // start of zero mass particles nzero>0, otherwise NULL
+  struct particle *last; // last of non-zero mass; not needed, serves mainly to check consistency, NULL if n-nzero==0 
+  struct particle *lastzero; // last of zero mass; not needed, serves mainly to check consistency, NULL if nzero==0
   struct sys *next_cc; // used in the CC split only
 };
 
-extern struct sys debugsys;
+extern struct sys debugsys; // for monitoring purposes 
 
 #define GETPART(s, i)   ((i)<(s).n-(s).nzero ? (s).part+(i) : (s).zeropart+((i)-((s).n-(s).nzero)))    
 

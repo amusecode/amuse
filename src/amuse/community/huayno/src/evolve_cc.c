@@ -351,7 +351,7 @@ void split_cc_verify(int clevel,struct sys s, struct sys *c, struct sys *r) {
    * split_cc_verify: explicit verification if connected components c and rest system r form a correct
    * connected components decomposition of the system.
    */
-  LOG("split_cc_verify ping s.n=%d r->n=%d\n", s.n, r->n);
+  //~ LOG("split_cc_verify ping s.n=%d r->n=%d\n", s.n, r->n);
   //LOG_CC_SPLIT(c, r);
   UINT pcount_check = 0;
 
@@ -428,7 +428,7 @@ void split_cc_verify(int clevel,struct sys s, struct sys *c, struct sys *r) {
   }
   else
   {
-     LOG("split_cc_verify pong\n");
+     //~ LOG("split_cc_verify pong\n");
   }
   //ENDRUN("Fin.\n");
 }
@@ -531,7 +531,8 @@ void evolve_cc2(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt, 
 
   //~ if(accel_zero_mass) split_zeromass(&s);
 
-  if ((s.n == 2 || s.n-s.nzero<=1 )&& (inttype==CCC_KEPLER || inttype==CC_KEPLER))
+  if ((s.n == 2 || s.n-s.nzero<=1 )&& 
+     (inttype==CCC_KEPLER || inttype==CC_KEPLER || inttype==CCC_BS || inttype==CC_BS || inttype==CCC_BSA || inttype==CC_BSA))
   //~ if (s.n == 2 && (inttype==CCC_KEPLER || inttype==CC_KEPLER))
   {
     evolve_kepler(clevel,s, stime, etime, dt);
@@ -578,7 +579,7 @@ void evolve_cc2(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt, 
 #ifdef CONSISTENCY_CHECKS
   if (clevel == 0)
   {
-    printf("consistency_checks: ", s.n, clevel);
+    printf("consistency_checks: %d %d \n", s.n, clevel);
   }
 #endif
 
@@ -620,7 +621,7 @@ void evolve_cc2(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt, 
   split_cc_verify_ts(clevel,&c, &r, dt);
   free(s_before_split.part);
   if (clevel == 0) {
-    printf("ok ");
+    printf("ok \n");
   }
 #endif
 

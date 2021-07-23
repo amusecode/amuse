@@ -145,10 +145,13 @@ static int BulirschStoer(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DO
   DOUBLE error;
   struct particle *ipart;
 
-  tmpsys.n=s.n; // todo: fix zero mass part, though it will work as is
+  tmpsys.n=s.n; 
+  tmpsys.nzero=s.nzero;
   tmpsys.part=(struct particle*) malloc(s.n*sizeof(struct particle));
   if(!tmpsys.part) ENDRUN("failed allocation of tmpsys\n");
-  tmpsys.last=tmpsys.part+tmpsys.n-1;
+  if(tmpsys.n-tmpsys.nzero>0) tmpsys.last=tmpsys.part+(tmpsys.n-tmpsys.nzero)-1;
+  if(tmpsys.nzero>0) tmpsys.zeropart=tmpsys.part+tmpsys.n-tmpsys.nzero;
+  if(tmpsys.nzero>0) tmpsys.lastzero=tmpsys.part+tmpsys.n-1;
 
   ZEROBSYS_ARRAY(bsys_array)
   ZEROBSYS_ARRAY(bsys_array1)
@@ -170,7 +173,7 @@ static int BulirschStoer(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DO
     }
 
     SWAP(jline,j1line, struct bsys*)
-    for(i=0;i<s.n;i++) tmpsys.part[i]=*GETPART(s,i);
+    for(i=0;i<s.n;i++) *GETPART(tmpsys,i)=*GETPART(s,i);
     if(CCSUBSTEP)
     {
       n_cc_kepler(clevel,nsequence(j),tmpsys,stime,etime,dt);
@@ -192,7 +195,7 @@ static int BulirschStoer(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DO
   for(i=0;i<s.n;i++) 
   {
     ipart=GETPART(s,i);
-    *ipart=tmpsys.part[i];  
+    *ipart=*GETPART(tmpsys,i);  
 #ifdef COMPENSATED_SUMMP
     ipart->pos_e[0]=0.;
     ipart->pos_e[1]=0.;
@@ -285,22 +288,31 @@ static void n_cc_kepler(int clevel,int n,struct sys s, DOUBLE stime, DOUBLE etim
 {
   UINT id;
   struct sys tmpsys=zerosys;
+  struct particle *ipart, *tpart;
   FLOAT odt_param=dt_param;
   dt_param=dt_param/n;
   tmpsys.n=s.n;
+  tmpsys.nzero=s.nzero;
   tmpsys.part=(struct particle*) malloc(s.n*sizeof(struct particle));
-  tmpsys.last=tmpsys.part+s.n-1;
-  for(UINT i=0;i<s.n;i++)
+  if(tmpsys.n-tmpsys.nzero>0) tmpsys.last=tmpsys.part+(tmpsys.n-tmpsys.nzero)-1;
+  if(tmpsys.nzero>0) tmpsys.zeropart=tmpsys.part+tmpsys.n-tmpsys.nzero;
+  if(tmpsys.nzero>0) tmpsys.lastzero=tmpsys.part+tmpsys.n-1;
+
+  for(UINT i=0;i<s.n;i++) //needs to maintain original order for bs
   {
-    tmpsys.part[i]=s.part[i];
-    tmpsys.part[i].id=i;
+    tpart=GETPART(tmpsys,i);
+    ipart=GETPART(s,i);
+    *tpart=*ipart;
+    tpart->id=i;
   }
   evolve_cc2(clevel,tmpsys, stime, etime, dt,CCC_KEPLER,1);
   for(UINT i=0;i<s.n;i++)
   {
-    id=s.part[tmpsys.part[i].id].id;
-    s.part[tmpsys.part[i].id]=tmpsys.part[i];
-    s.part[tmpsys.part[i].id].id=id;
+    tpart=GETPART(tmpsys,i);
+    ipart=GETPART(s,tpart->id);
+    id=ipart->id;
+    *ipart=*tpart;
+    ipart->id=id;
   }
   dt_param=odt_param;
   free(tmpsys.part);

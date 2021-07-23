@@ -594,7 +594,7 @@ static void report(struct sys s,DOUBLE etime, int inttype)
     }
     printf(" total, total j, mean j: %18li %18li %f\n",totalbs,totalj,totalj/(1.*totalbs));
   }
-  if(inttype==KEPLER || inttype==CC_KEPLER || inttype==CCC_KEPLER)
+  if(inttype==KEPLER || inttype==CC_KEPLER || inttype==CCC_KEPLER || inttype==CCC_BS || inttype==CC_BS || inttype==CCC_BSA || inttype==CC_BSA)
   {
     unsigned long totalcefail=0,totalcecount=0;
     printf("kepler solver counts:\n");
@@ -745,6 +745,7 @@ void split_zeromass(struct sys *s)
 
 void verify_split_zeromass(struct sys s)
 {
+  if(!accel_zero_mass) return;
   for(UINT i=0;i<s.n-s.nzero;i++) if(GETPART(s,i)->mass==0) ENDRUN("massless particle in main part\n") 
   for(UINT i=s.n-s.nzero;i<s.n;i++) if(GETPART(s,i)->mass!=0) ENDRUN("massive particle in massless part\n") 
 }
