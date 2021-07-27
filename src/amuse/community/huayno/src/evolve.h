@@ -51,14 +51,14 @@ struct sys
   UINT n, nzero; // n=total particles, nzero=# zero mass particles
   struct particle *part; // start of particles, NULL iff n==0 
   struct particle *zeropart; // start of zero mass particles nzero>0, otherwise NULL
-  struct particle *last; // last of non-zero mass; not needed, serves mainly to check consistency, NULL if n-nzero==0 
-  struct particle *lastzero; // last of zero mass; not needed, serves mainly to check consistency, NULL if nzero==0
   struct sys *next_cc; // used in the CC split only
 };
 
-extern struct sys debugsys; // for monitoring purposes 
-
 #define GETPART(s, i)   ((i)<(s).n-(s).nzero ? (s).part+(i) : (s).zeropart+((i)-((s).n-(s).nzero)))    
+#define LAST(s)   ((s).part==NULL || (s).n-(s).nzero == 0 ? NULL : (s).part+(s).n-1)
+#define LASTZERO(s)   ((s).zeropart==NULL ? NULL : (s).zeropart+(s).nzero-1)
+
+extern struct sys debugsys; // for monitoring purposes 
 
 enum intopt
 {

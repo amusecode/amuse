@@ -56,7 +56,6 @@ int cleanup_code()
     	free(mainsys.part);
     	mainsys.part=NULL;
     }
-    mainsys.last=NULL;
     dt_param=.03; 
     accel_zero_mass=1;
     t_now=0.;
@@ -105,7 +104,6 @@ int new_particle(int *id, double mass,
  mainsys.part[p].postime=0;
  mainsys.n++;
  pcounter++;
- mainsys.last=&mainsys.part[p];
  return 0;
 }
 
@@ -117,12 +115,7 @@ int delete_particle(int id)
   if(err!=0) return err;
   LOOKUPSYMBOL(,_delete)(&lookup,id);  
   mainsys.n--;
-  if(mainsys.n==0)
-  {
-    mainsys.last=NULL;
-    return 0;
-  }
-  mainsys.last--;
+  if(mainsys.n==0) return 0;
   mainsys.part[p]=mainsys.part[mainsys.n];
   LOOKUPSYMBOL(,_update)(&lookup,mainsys.part[p].id,p);
   return 0; 
@@ -588,7 +581,6 @@ int get_gravity_at_point(double * eps, double * x, double * y, double * z,
   struct sys tmpsys=zerosys;
   tmpsys.n=n;
   tmpsys.part=(struct particle*) malloc(n*sizeof(struct particle));
-  tmpsys.last=&tmpsys.part[n];
   for(int p=0;p<n;p++)
   {
     tmpsys.part[p].pos[0]=x[p];
@@ -622,7 +614,6 @@ int get_potential_at_point(double * eps,
   struct sys tmpsys=zerosys;
   tmpsys.n=n;
   tmpsys.part=(struct particle*) malloc(n*sizeof(struct particle));
-  tmpsys.last=&tmpsys.part[n];
   for(int p=0;p<n;p++)
   {
     tmpsys.part[p].pos[0]=x[p];

@@ -23,7 +23,7 @@ struct sys debugsys;
 
 FLOAT eps2;
 FLOAT dt_param;
-struct sys zerosys ={0,0,NULL,NULL,NULL,NULL,NULL};
+struct sys zerosys ={0,0,NULL,NULL,NULL};
 int accel_zero_mass=1;
 
 struct diagnostics global_diag;
@@ -624,34 +624,34 @@ static void report(struct sys s,DOUBLE etime, int inttype)
   fflush(stdout);
 }
 
-void join_array(UINT n1, struct particle *p1, struct particle *l1,
-                UINT n2, struct particle *p2, struct particle *l2,
-                UINT *n, struct particle **p, struct particle **l)
+void join_array(UINT n1, struct particle *p1,
+                UINT n2, struct particle *p2,
+                UINT *n, struct particle **p)
 {
   if(n1==0 && n2==0)
   {
-    *n=0;*p=NULL;*l=NULL;
+    *n=0;*p=NULL;
   }
   if(n1!=0 && n2==0)
   {
-    *n=n1;*p=p1;*l=l1;
+    *n=n1;*p=p1;
   }
   if(n1==0 && n2!=0)
   {
-    *n=n2;*p=p2;*l=l2;
+    *n=n2;*p=p2;
   }
   if(n1!=0 && n2!=0)
   {
     *n=n1+n2;
-    if(l1+1==p2)
+    if(p1+n1==p2)
     {
-      *p=p1;*l=l2;
+      *p=p1;
     }
     else
     {
-      if(l2+1==p1)
+      if(p2+n2==p1)
       {
-        *p=p2;*l=l1;
+        *p=p2;
       } else ENDRUN("join_array error");
     }
   }
@@ -662,11 +662,11 @@ struct sys join(struct sys s1,struct sys s2)
   struct sys s=zerosys;
   if(s1.n==0) return s2;
   if(s2.n==0) return s1;
-  join_array(s1.n-s1.nzero, s1.part, s1.last, s2.n-s2.nzero, s2.part,s2.last, &s.n, &s.part, &s.last);
-  join_array(s1.nzero, s1.zeropart, s1.lastzero, s2.nzero, s2.zeropart,s2.lastzero, &s.nzero, &s.zeropart, &s.lastzero);
+  join_array(s1.n-s1.nzero, s1.part, s2.n-s2.nzero, s2.part, &s.n, &s.part);
+  join_array(s1.nzero, s1.zeropart, s2.nzero, s2.zeropart, &s.nzero, &s.zeropart);
   s.n=s.n+s.nzero;
-  if(s.n-s.nzero>0 && s.last-s.part + 1 != s.n-s.nzero) ENDRUN("join error 1");
-  if(s.nzero>0 && s.lastzero-s.zeropart + 1 != s.nzero) ENDRUN("join error 2");
+  if(s.n-s.nzero>0 && LAST(s)-s.part + 1 != s.n-s.nzero) ENDRUN("join error 1");
+  if(s.nzero>0 && LASTZERO(s)-s.zeropart + 1 != s.nzero) ENDRUN("join error 2");
   return s;
 }
 
@@ -708,10 +708,11 @@ void split_zeromass(struct sys *s)
   if(s->n==0) return;
   if(s->n-s->nzero==0)
   {
-    if(s->lastzero-s->zeropart+1!=s->nzero) ENDRUN( "split_zeromass malformed input sys");
+    if(s->zeropart==NULL) ENDRUN("split_zeromass malformed input");
+    if(LASTZERO(*s)-s->zeropart+1!=s->nzero) ENDRUN( "split_zeromass malformed input sys");
     return;
   }  
-  if(s->nzero!=0 && s->last+1!=s->zeropart) 
+  if(s->nzero!=0 && LAST(*s)+1!=s->zeropart) 
     ENDRUN("split_zeromass can only work on fully contiguous sys");
   left=s->part;
   right=s->part+(s->n-1);
@@ -731,9 +732,7 @@ void split_zeromass(struct sys *s)
   if(s->nzero<0) ENDRUN("split_zeromass find negative number of part");
   if(s->nzero>0)
   {
-    s->last=left-1;
     s->zeropart=left;
-    s->lastzero=left+(s->nzero-1);
   }
   if((left-s->part)+s->nzero !=s->n) ENDRUN( "split_zeromass error 2");
   for(i=0;i<(s->n-s->nzero);i++) if(s->part[i].mass==0) ENDRUN ("split_zromass error 3");

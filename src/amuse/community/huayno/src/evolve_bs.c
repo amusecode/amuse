@@ -149,9 +149,7 @@ static int BulirschStoer(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DO
   tmpsys.nzero=s.nzero;
   tmpsys.part=(struct particle*) malloc(s.n*sizeof(struct particle));
   if(!tmpsys.part) ENDRUN("failed allocation of tmpsys\n");
-  if(tmpsys.n-tmpsys.nzero>0) tmpsys.last=tmpsys.part+(tmpsys.n-tmpsys.nzero)-1;
   if(tmpsys.nzero>0) tmpsys.zeropart=tmpsys.part+tmpsys.n-tmpsys.nzero;
-  if(tmpsys.nzero>0) tmpsys.lastzero=tmpsys.part+tmpsys.n-1;
 
   ZEROBSYS_ARRAY(bsys_array)
   ZEROBSYS_ARRAY(bsys_array1)
@@ -294,9 +292,7 @@ static void n_cc_kepler(int clevel,int n,struct sys s, DOUBLE stime, DOUBLE etim
   tmpsys.n=s.n;
   tmpsys.nzero=s.nzero;
   tmpsys.part=(struct particle*) malloc(s.n*sizeof(struct particle));
-  if(tmpsys.n-tmpsys.nzero>0) tmpsys.last=tmpsys.part+(tmpsys.n-tmpsys.nzero)-1;
   if(tmpsys.nzero>0) tmpsys.zeropart=tmpsys.part+tmpsys.n-tmpsys.nzero;
-  if(tmpsys.nzero>0) tmpsys.lastzero=tmpsys.part+tmpsys.n-1;
 
   for(UINT i=0;i<s.n;i++) //needs to maintain original order for bs
   {

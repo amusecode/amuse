@@ -22,10 +22,8 @@
 #define IS_ZEROSYS(SYS) (((SYS)->n == 0) && \
                          ((SYS)->nzero == 0) && \
                          ((SYS)->part == NULL) && \
-                         ((SYS)->last == NULL) && \
-                         ((SYS)->next_cc == NULL) && \
                          ((SYS)->zeropart == NULL) && \
-                         ((SYS)->lastzero == NULL) )
+                         ((SYS)->next_cc == NULL) )
 
 #define IS_ZEROSYSs(SYS) IS_ZEROSYS(&(SYS))
 
@@ -66,7 +64,7 @@ void split_cc_old(int clevel,struct sys s, struct sys *c, struct sys *r, DOUBLE 
   diag->tstep[clevel]++; // not directly comparable to corresponding SF-split statistics
   struct sys *c_next;
   if(s.n<=1) ENDRUN("This does not look right...");
-  if(s.nzero>0 && s.n!=s.nzero && s.zeropart!=s.last+1) 
+  if(s.nzero>0 && s.n!=s.nzero && s.zeropart!=LAST(s)+1) 
     ENDRUN("split_cc only works on contiguous systems");
   c_next = c;
   *c_next = zerosys;
@@ -112,7 +110,6 @@ void split_cc_old(int clevel,struct sys s, struct sys *c, struct sys *r, DOUBLE 
       // remove components from u (u.n, u.part)
       c_next->n = comp_size;
       c_next->part = comp_next - comp_size;
-      c_next->last = comp_next-1;
       c_next->next_cc = (struct sys*) malloc( sizeof(struct sys) );
       c_next = c_next->next_cc;
       *c_next = zerosys;
@@ -144,12 +141,10 @@ void split_cc_old(int clevel,struct sys s, struct sys *c, struct sys *r, DOUBLE 
   if (r->n > 0)
   {
     r->part = rest_next+1;
-    r->last = GETPART(s, s.n-1);
   }
   else
   {
     r->part = NULL;
-    r->last = NULL;
   }
   //LOG("split_cc: rest system size: %d\n", r->n);
 }
@@ -175,9 +170,9 @@ void split_cc(int clevel,struct sys s, struct sys *c, struct sys *r, DOUBLE dt) 
   // find connected components
   
   if(s.n-s.nzero>0) stack_next=s.part;
-  if(s.n-s.nzero>0) rest_next=s.last;
+  if(s.n-s.nzero>0) rest_next=LAST(s);
   if(s.nzero>0) stackzero_next=s.zeropart;
-  if(s.nzero>0) restzero_next=s.lastzero;
+  if(s.nzero>0) restzero_next=LASTZERO(s);
   comp_next=stack_next;
   compzero_next=stackzero_next;
   *c_next=zerosys;     // initialize c_next 
@@ -277,12 +272,10 @@ void split_cc(int clevel,struct sys s, struct sys *c, struct sys *r, DOUBLE dt) 
       if(comp_size-compzero_size>0)
       {
         c_next->part = comp_next - (comp_size-compzero_size);
-        c_next->last = comp_next-1;
       }
       if(compzero_size>0)
       {
         c_next->zeropart = compzero_next - compzero_size;
-        c_next->lastzero = compzero_next-1;
       }
       if(c_next->part==NULL) c_next->part=c_next->zeropart;
       //~ PRINTSYS((*c_next));
@@ -320,18 +313,16 @@ void split_cc(int clevel,struct sys s, struct sys *c, struct sys *r, DOUBLE dt) 
 
   // create the rest system 
   *r=zerosys;
-  if(rest_next!=NULL) r->n = s.last - rest_next;
-  if(restzero_next!=NULL) r->nzero = s.lastzero - restzero_next;
+  if(rest_next!=NULL) r->n = LAST(s) - rest_next;
+  if(restzero_next!=NULL) r->nzero = LASTZERO(s) - restzero_next;
   r->n+=r->nzero;
   if (r->n-r->nzero > 0)
   {
     r->part = rest_next+1;
-    r->last = s.last;
   }
   if (r->nzero > 0)
   {
     r->zeropart = restzero_next+1;
-    r->lastzero = s.lastzero;
   }
   if(r->part==NULL) r->part=r->zeropart;
 
@@ -376,13 +367,13 @@ void split_cc_verify(int clevel,struct sys s, struct sys *c, struct sys *r) {
           //~ LOG("split_cc_verify: found %d in a cc\n",i);
         }
       }
-      if (cj->n-cj->nzero>0 &&  (  GETPART( *cj, cj->n - cj->nzero - 1) != cj->last ))
+      if (cj->n-cj->nzero>0 &&  (  GETPART( *cj, cj->n - cj->nzero - 1) != LAST(*cj) ))
       {
         LOG("split_cc_verify: last pointer for c is not set correctly!\n");
         LOG_CC_SPLIT(c, r);
         ENDRUN("data structure corrupted\n");
       }
-      if (cj->nzero>0 &&  (  GETPART( *cj, cj->n-1) != cj->lastzero ))
+      if (cj->nzero>0 &&  (  GETPART( *cj, cj->n-1) != LASTZERO(*cj) ))
       {
         LOG("split_cc_verify: last pointer for c is not set correctly!\n");
         LOG_CC_SPLIT(c, r);
@@ -412,12 +403,6 @@ void split_cc_verify(int clevel,struct sys s, struct sys *c, struct sys *r) {
       ENDRUN("data structure corrupted\n");
     }
   }
-
-  //if (& ( r->part[r->n - 1] ) != r->last) {
-  //  LOG("split_cc_verify: last pointer for r is not set correctly! %d %d",&( r->part[r->n - 1] ), r->last);
-  //  LOG_CC_SPLIT(c, r);
-  //  ENDRUN("data structure corrupted\n");
-  //}
 
   if (pcount_check + r->n != s.n)
   {
@@ -585,15 +570,13 @@ void evolve_cc2(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt, 
 
 #ifdef CONSISTENCY_CHECKS
   // debug: make a copy of s to verify that the split has been done properly
-  struct sys s_before_split=zerosys;
-  s_before_split.n = s.n;
-  s_before_split.nzero = s.nzero;
-  s_before_split.part = (struct particle*) malloc(s.n*sizeof(struct particle));
-  if(s_before_split.n-s_before_split.nzero>0) s_before_split.last = s_before_split.part+(s_before_split.n-s_before_split.nzero)-1;
-  if(s_before_split.nzero>0) s_before_split.zeropart = s_before_split.last+1;
-  if(s_before_split.nzero>0) s_before_split.lastzero = s_before_split.part+s_before_split.n-1;
-  s_before_split.next_cc = NULL;
-  for(UINT i=0; i<s.n;i++) *GETPART(s_before_split, i)=*GETPART(s,i);
+  struct sys s_before=zerosys;
+  s_before.n = s.n;
+  s_before.nzero = s.nzero;
+  s_before.part = (struct particle*) malloc(s.n*sizeof(struct particle));
+  if(s_before.nzero>0) s_before.zeropart = s_before.part+(s_before.n-s_before.nzero);
+  s_before.next_cc = NULL;
+  for(UINT i=0; i<s.n;i++) *GETPART(s_before, i)=*GETPART(s,i);
 #endif
 
 
@@ -609,7 +592,7 @@ void evolve_cc2(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt, 
 /*
     if (s.n != r.n) {
     LOG("s: ");
-    LOGSYS_ID(s_before_split);
+    LOGSYS_ID(s_before);
     LOG("c: ");
     LOGSYSC_ID(c);
     LOG("r: ");
@@ -617,9 +600,9 @@ void evolve_cc2(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt, 
   }
 */
   // verify the split
-  split_cc_verify(clevel,s_before_split, &c, &r);
+  split_cc_verify(clevel,s_before, &c, &r);
   split_cc_verify_ts(clevel,&c, &r, dt);
-  free(s_before_split.part);
+  free(s_before.part);
   if (clevel == 0) {
     printf("ok \n");
   }
@@ -649,9 +632,7 @@ void evolve_cc2(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt, 
         lsys.nzero=ci->nzero;
         struct particle* lpart=(struct particle*) malloc(lsys.n*sizeof(struct particle));
         lsys.part=lpart;
-        if(lsys.n-lsys.nzero>0) lsys.last=lpart+lsys.n-lsys.nzero-1;
-        if(lsys.nzero>0) lsys.zeropart=lsys.last+1;
-        if(lsys.nzero>0) lsys.lastzero=lpart+lsys.n-1;
+        if(lsys.nzero>0) lsys.zeropart=lsys.part+(lsys.n-lsys.nzero);
         
         for(UINT i=0;i<lsys.n;i++) *GETPART(lsys,i)=*GETPART(*ci,i);
       
@@ -712,9 +693,7 @@ void evolve_cc2(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt, 
         lsys.nzero=ci->nzero;
         struct particle* lpart=(struct particle*) malloc(lsys.n*sizeof(struct particle));
         lsys.part=lpart;
-        if(lsys.n-lsys.nzero>0) lsys.last=lpart+lsys.n-lsys.nzero-1;
-        if(lsys.nzero>0) lsys.zeropart=lsys.last+1;
-        if(lsys.nzero>0) lsys.lastzero=lpart+lsys.n-1;
+        if(lsys.nzero>0) lsys.zeropart=lsys.part+(lsys.n-lsys.nzero);
         
         for(UINT i=0;i<lsys.n;i++) *GETPART(lsys,i)=*GETPART(*ci,i);
         

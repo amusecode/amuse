@@ -131,8 +131,7 @@ static void evolve_kepler_test(int clevel,struct sys s, DOUBLE stime, DOUBLE eti
     p[1].mass=0;
 
     s2.n=2;
-    s2.part=&p[0];
-    s2.last=&p[1];
+    s2.part=p;
     evolve_kepler_2(clevel,s2,stime,etime,dt);
     p[1].mass=ipart->mass;
     *ipart=p[1];

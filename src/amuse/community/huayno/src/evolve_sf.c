@@ -345,7 +345,7 @@ static void split(FLOAT dt, struct sys s, struct sys *slow, struct sys *fast)
   if(s.n-s.nzero>0)
   {
     left=s.part;
-    right=s.last;
+    right=LAST(s);
     pivot=partition(dt, left, right);
     slow->n=right-pivot+1;
     fast->n=(pivot-left);
@@ -355,7 +355,7 @@ static void split(FLOAT dt, struct sys s, struct sys *slow, struct sys *fast)
   if(s.nzero>0)
   {
     left=s.zeropart;
-    right=s.lastzero;
+    right=LASTZERO(s);
     pivot=partition(dt, left, right);
     slow->nzero=right-pivot+1;
     fast->nzero=(pivot-left);  
@@ -371,22 +371,18 @@ static void split(FLOAT dt, struct sys s, struct sys *slow, struct sys *fast)
   if(slow->n>0)
   {
     slow->part=s.part+fast->n-fast->nzero;
-    slow->last=s.last;
   }
   if(fast->n>0)
   {
     fast->part=s.part;
-    fast->last=s.part+(fast->n-fast->nzero)-1;
   }
   if(slow->nzero>0)
   {
     slow->zeropart=s.zeropart+fast->nzero;
-    slow->lastzero=s.lastzero;
   }
   if(fast->nzero > 0)
   {
     fast->zeropart=s.zeropart;
-    fast->lastzero=s.zeropart+fast->nzero-1;
   }
   if(fast->n+slow->n !=s.n) ENDRUN( "split error 2");
   if(fast->nzero+slow->nzero !=s.nzero) ENDRUN( "split error 3");

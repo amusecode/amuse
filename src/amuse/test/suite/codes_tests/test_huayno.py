@@ -383,8 +383,8 @@ class TestHuayno(TestWithMPI):
 
            
         for itype in test_set:
-            print()
-            print(itype)
+            #~ print()
+            #~ print(itype)
             instance = Huayno()
             instance.parameters.inttype_parameter=Huayno.all_inttypes[itype]
             #~ instance.parameters.accelerate_zero_mass=False
@@ -394,6 +394,7 @@ class TestHuayno(TestWithMPI):
             E2=instance.kinetic_energy+instance.potential_energy
             if itype!="CONSTANT":
               self.assertLess(abs(E2-E1).number, 1.e-5)
+            #~ print((E2-E1).number)
 
             part_out= instance.particles.copy()
             position = part_out.position.number
@@ -425,11 +426,13 @@ class TestHuayno(TestWithMPI):
             "CC", "CC_KEPLER", "CC_BS", "CC_BSA",
             "OK", "SHAREDBS", "SHARED4", "SHARED6", "SHARED8",
             "SHARED10"]
-           
+                                            
         for itype in test_set:
-            instance = Huayno()
+            #~ print()
+            #~ print(itype)
+            instance = Huayno(redirection="none")
             instance.parameters.inttype_parameter=Huayno.all_inttypes[itype]
-            instance.parameters.accelerate_zero_mass=False
+            instance.parameters.accelerate_zero_mass=True
             instance.particles.add_particles(particles)
             instance.particles.add_particles(p2)
             E1=instance.kinetic_energy+instance.potential_energy
@@ -473,8 +476,8 @@ class TestHuayno(TestWithMPI):
         #~ test_set=["CC_BS"]   
            
         for itype in test_set:
-            print()
-            print(itype)
+            #~ print()
+            #~ print(itype)
             instance = Huayno(redirection="none")
             instance.parameters.inttype_parameter=Huayno.all_inttypes[itype]
             instance.parameters.accelerate_zero_mass=True
@@ -485,7 +488,7 @@ class TestHuayno(TestWithMPI):
             E2=instance.kinetic_energy+instance.potential_energy
             #~ if itype!="CONSTANT":
               #~ self.assertLess(abs(E2-E1).number, 1.e-5)
-            print((E2-E1).number)
+            #~ print((E2-E1).number)
             part_out= instance.particles.copy()
             position = part_out.position.number
             if hasattr(position,'tobytes'):
