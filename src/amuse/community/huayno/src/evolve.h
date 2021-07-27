@@ -55,8 +55,8 @@ struct sys
 };
 
 #define GETPART(s, i)   ((i)<(s).n-(s).nzero ? (s).part+(i) : (s).zeropart+((i)-((s).n-(s).nzero)))    
-#define LAST(s)   ((s).part==NULL || (s).n-(s).nzero == 0 ? NULL : (s).part+(s).n-1)
-#define LASTZERO(s)   ((s).zeropart==NULL ? NULL : (s).zeropart+(s).nzero-1)
+#define LAST(s)   ((s).part==NULL || (s).n-(s).nzero==0 ? NULL : (s).part+((s).n-(s).nzero)-1)
+#define LASTZERO(s)   ((s).zeropart==NULL || (s).nzero==0 ? NULL : (s).zeropart+(s).nzero-1)
 
 extern struct sys debugsys; // for monitoring purposes 
 
