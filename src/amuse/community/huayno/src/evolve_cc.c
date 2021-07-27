@@ -18,20 +18,11 @@
 #include "evolve_kepler.h"
 #include "evolve_bs.h"
 
-// this is a bit weird, why not use NULL pointer?
-#define IS_ZEROSYS(SYS) (((SYS)->n == 0) && \
-                         ((SYS)->nzero == 0) && \
-                         ((SYS)->part == NULL) && \
-                         ((SYS)->zeropart == NULL) && \
-                         ((SYS)->next_cc == NULL) )
-
-#define IS_ZEROSYSs(SYS) IS_ZEROSYS(&(SYS))
-
 #define LOG_CC_SPLIT(C, R) \
 { \
   LOG("clevel = %d s.n = %d c.n = {", clevel, s.n); \
-  for (struct sys *_ci = (C); !IS_ZEROSYS(_ci); _ci = _ci->next_cc) printf(" %d ", _ci->n ); \
-  printf("} r.n = %d\n", (R)->n); \
+  for (struct sys *_ci = (C); _ci!=NULL; _ci = _ci->next_cc) printf(" %d ", _ci->n ); \
+  printf("} r.n = %d\n", (R).n); \
 };
 
 #define PRINTSYS(s) \
@@ -51,9 +42,9 @@
 
 #define LOGSYS_ID(SYS) for (UINT i = 0; i < (SYS).n; i++) { printf("%u ", (SYS).part[i].id); } printf("\n");
 #define LOGSYSp_ID(SYS) for (UINT i = 0; i < (SYS)->n; i++) { printf("%u ", (SYS)->part[i].id); } printf("\n");
-#define LOGSYSC_ID(SYS) for (struct sys *_ci = &(SYS); !IS_ZEROSYS(_ci); _ci = _ci->next_cc) {printf("{"); for (UINT i = 0; i < _ci->n; i++) {printf("%u ", _ci->part[i].id); } printf("}\t");} printf("\n");
+#define LOGSYSC_ID(SYS) for (struct sys *_ci = &(SYS); _ci!=NULL; _ci = _ci->next_cc) {printf("{"); for (UINT i = 0; i < _ci->n; i++) {printf("%u ", _ci->part[i].id); } printf("}\t");} printf("\n");
 
-void split_cc(int clevel,struct sys s, struct sys *c, struct sys *r, DOUBLE dt) {
+void split_cc(int clevel,struct sys s, struct sys **c, struct sys *r, DOUBLE dt) {
   /*
    * split_cc: run a connected component search on sys s with threshold dt,
    * creates a singly-linked list of connected components c and a rest system r
@@ -62,9 +53,10 @@ void split_cc(int clevel,struct sys s, struct sys *c, struct sys *r, DOUBLE dt) 
   int dir=SIGN(dt);
   dt=fabs(dt);
   diag->tstep[clevel]++; // not directly comparable to corresponding SF-split statistics
-  struct sys *c_next;
+  struct sys **c_next;
   if(s.n<=1) ENDRUN("This does not look right...");
-  c_next = c;
+  c_next = c; 
+  if(*c_next!=NULL) ENDRUN("should start with zero pointer");
   UINT processed = 0; // increase if something is added from the stack to the cc
   struct particle **active, *comp_next, *compzero_next; // current active particle, and next in the mass and massless part 
   UINT comp_size, compzero_size;
@@ -79,7 +71,6 @@ void split_cc(int clevel,struct sys s, struct sys *c, struct sys *r, DOUBLE dt) 
   if(s.nzero>0) restzero_next=LASTZERO(s);
   comp_next=stack_next;
   compzero_next=stackzero_next;
-  *c_next=zerosys;     // initialize c_next 
 
   while (processed < s.n)
   {
@@ -171,23 +162,24 @@ void split_cc(int clevel,struct sys s, struct sys *c, struct sys *r, DOUBLE dt) 
     {
       //~ LOG("split_cc: found component with size: %d %d\n", comp_size, compzero_size);
       //~ LOG("%d %d \n", comp_next-stack_next, compzero_next-stackzero_next);
-      c_next->n = comp_size;
-      c_next->nzero = compzero_size;
+      struct sys *new=(struct sys*) malloc( sizeof(struct sys) );
+      *new=zerosys;
+      new->n = comp_size;
+      new->nzero = compzero_size;
       if(comp_size-compzero_size>0)
       {
-        c_next->part = comp_next - (comp_size-compzero_size);
+        new->part = comp_next - (comp_size-compzero_size);
       }
       if(compzero_size>0)
       {
-        c_next->zeropart = compzero_next - compzero_size;
+        new->zeropart = compzero_next - compzero_size;
       }
-      if(c_next->part==NULL) c_next->part=c_next->zeropart;
+      if(new->part==NULL) new->part=new->zeropart;
       //~ PRINTSYS((*c_next));
       //~ PRINTOFFSETS((*c_next));
-
-      c_next->next_cc = (struct sys*) malloc( sizeof(struct sys) );
-      c_next = c_next->next_cc;
-      *c_next=zerosys;
+      new->next_cc = NULL;
+      *c_next=new;
+      c_next = &(new->next_cc);
     }
     else  // new component is trivial: add to rest, reset pointers
     {
@@ -241,7 +233,7 @@ void split_cc(int clevel,struct sys s, struct sys *c, struct sys *r, DOUBLE dt) 
 
 
 
-void split_cc_verify(int clevel,struct sys s, struct sys *c, struct sys *r) {
+void split_cc_verify(int clevel,struct sys s, struct sys *c, struct sys r) {
   /*
    * split_cc_verify: explicit verification if connected components c and rest system r form a correct
    * connected components decomposition of the system.
@@ -255,7 +247,7 @@ void split_cc_verify(int clevel,struct sys s, struct sys *c, struct sys *r) {
     pcount_check = 0;
     UINT particle_found = 0;
     struct particle *p = GETPART(s, i);
-    for (struct sys *cj = c; !IS_ZEROSYS(cj); cj = cj->next_cc)
+    for (struct sys *cj = c; cj!=NULL; cj = cj->next_cc)
     {
       verify_split_zeromass(*cj);
       pcount_check += cj->n;
@@ -285,12 +277,12 @@ void split_cc_verify(int clevel,struct sys s, struct sys *c, struct sys *r) {
       }
     }
 
-    verify_split_zeromass(*r);
+    verify_split_zeromass(r);
 
     // search for p in rest
-    for (UINT k = 0; k < r->n; k++)
+    for (UINT k = 0; k < r.n; k++)
     {
-      struct particle * pk = GETPART( *r, k);
+      struct particle * pk = GETPART( r, k);
 
       // is pk equal to p
       if (p->id == pk->id)
@@ -308,9 +300,9 @@ void split_cc_verify(int clevel,struct sys s, struct sys *c, struct sys *r) {
     }
   }
 
-  if (pcount_check + r->n != s.n)
+  if (pcount_check + r.n != s.n)
   {
-    LOG("split_cc_verify: particle count mismatch (%d %d)\n", pcount_check + r->n, s.n);
+    LOG("split_cc_verify: particle count mismatch (%d %d)\n", pcount_check + r.n, s.n);
     LOG_CC_SPLIT(c, r);
     ENDRUN("data structure corrupted\n");
     //ENDRUN("split_cc_verify: particle count mismatch\n");
@@ -322,17 +314,17 @@ void split_cc_verify(int clevel,struct sys s, struct sys *c, struct sys *r) {
   //ENDRUN("Fin.\n");
 }
 
-void split_cc_verify_ts(int clevel,struct sys *c, struct sys *r, DOUBLE dt)
+void split_cc_verify_ts(int clevel,struct sys *c, struct sys r, DOUBLE dt)
 {
   DOUBLE ts_ij;
   int dir=SIGN(dt);
   dt=fabs(dt);
   // verify C-C interactions
-  for (struct sys *ci = c; !IS_ZEROSYS(ci); ci = ci->next_cc)
+  for (struct sys *ci = c; ci!=NULL; ci = ci->next_cc)
   {
     for (UINT i = 0; i < ci->n; i++)
     {
-      for (struct sys *cj = c; !IS_ZEROSYS(cj); cj = cj->next_cc)
+      for (struct sys *cj = c; cj!=NULL; cj = cj->next_cc)
       {
         if (ci == cj)
         {
@@ -353,13 +345,13 @@ void split_cc_verify_ts(int clevel,struct sys *c, struct sys *r, DOUBLE dt)
   }
 
   // verify C-R interactions
-  for (struct sys *ci = c; !IS_ZEROSYS(ci); ci = ci->next_cc)
+  for (struct sys *ci = c; ci!=NULL; ci = ci->next_cc)
   {
     for (UINT i = 0; i < ci->n; i++)
     {
-      for (UINT j = 0; j < r->n; j++)
+      for (UINT j = 0; j < r.n; j++)
       {
-        ts_ij = (DOUBLE) timestep_ij( GETPART(*ci, i), GETPART(*r, j),dir);
+        ts_ij = (DOUBLE) timestep_ij( GETPART(*ci, i), GETPART(r, j),dir);
         if (ts_ij < dt)
         {
           ENDRUN("split_cc_verify_ts C-R timestep underflow\n");
@@ -369,12 +361,12 @@ void split_cc_verify_ts(int clevel,struct sys *c, struct sys *r, DOUBLE dt)
   }
 
   // verify R interactions
-  for (UINT i = 0; i < r->n; i++)
+  for (UINT i = 0; i < r.n; i++)
   {
-    for (UINT j = 0; j < r->n; j++)
+    for (UINT j = 0; j < r.n; j++)
     {
       if (i == j) continue;
-      ts_ij = (DOUBLE) timestep_ij( GETPART(*r, i), GETPART( *r,j),dir);
+      ts_ij = (DOUBLE) timestep_ij( GETPART(r, i), GETPART(r,j),dir);
       if (ts_ij < dt)
       {
         ENDRUN("split_cc_verify_ts R-R timestep underflow\n");
@@ -415,7 +407,7 @@ void evolve_cc2(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt, 
 {
   DOUBLE cmpos[3],cmvel[3];
   int recentersub=0;
-  struct sys c = zerosys, r = zerosys;
+  struct sys *c = NULL, r = zerosys;
   CHECK_TIMESTEP(etime,stime,dt,clevel);
 
   //~ if(accel_zero_mass) split_zeromass(&s);
@@ -504,25 +496,25 @@ void evolve_cc2(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt, 
   }
 */
   // verify the split
-  split_cc_verify(clevel,s_before, &c, &r);
-  split_cc_verify_ts(clevel,&c, &r, dt);
+  split_cc_verify(clevel,s_before, c, r);
+  split_cc_verify_ts(clevel, c, r, dt);
   free(s_before.part);
   if (clevel == 0) {
     printf("ok \n");
   }
 #endif
 
-  if (IS_ZEROSYSs(c)) {
+  if (c==NULL) {
     diag->deepsteps++;
     diag->simtime+=dt;
   }
 
   // Independently integrate every C_i at reduced pivot time step h/2 (1st time)
-  int nc=0; for (struct sys *ci = &c; !IS_ZEROSYS(ci); ci = ci->next_cc) nc++;
+  int nc=0; for (struct sys *ci = c; ci!=NULL; ci = ci->next_cc) nc++;
   
   if(nc>1 || r.n>0) recentersub=1;
 
-  for (struct sys *ci = &c; !IS_ZEROSYS(ci); ci = ci->next_cc)
+  for (struct sys *ci = c; ci!=NULL; ci = ci->next_cc)
   {
 #ifdef _OPENMP
     if( TASKCONDITION )
@@ -558,9 +550,9 @@ void evolve_cc2(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt, 
   if(r.n>0) drift(clevel,r, stime+dt/2, dt/2); // drift r, 1st time
 
   // kick ci <-> cj (eq 23)
-  for (struct sys *ci = &c; !IS_ZEROSYS(ci); ci = ci->next_cc)
+  for (struct sys *ci = c; ci!=NULL; ci = ci->next_cc)
   {
-    for (struct sys *cj = &c; !IS_ZEROSYS(cj); cj = cj->next_cc)
+    for (struct sys *cj = c; cj!=NULL; cj = cj->next_cc)
     {
       if (ci != cj)
       {
@@ -572,7 +564,7 @@ void evolve_cc2(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt, 
 
   //~ if(r.n>0 && accel_zero_mass) split_zeromass(&r);
   // kick c <-> rest (eq 24)
-  if(r.n>0) for (struct sys *ci = &c; !IS_ZEROSYS(ci); ci = ci->next_cc)
+  if(r.n>0) for (struct sys *ci = c; ci!=NULL; ci = ci->next_cc)
   {
     kick(clevel,r, *ci, dt);
     kick(clevel,*ci, r, dt);
@@ -583,7 +575,7 @@ void evolve_cc2(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt, 
   if(r.n>0) drift(clevel,r, etime, dt/2); // drift r, 2nd time
 
   // Independently integrate every C_i at reduced pivot time step h/2 (2nd time, eq 27)
-  for (struct sys *ci = &c; !IS_ZEROSYS(ci); ci = ci->next_cc)
+  for (struct sys *ci = c; ci!=NULL; ci = ci->next_cc)
   {
 #ifdef _OPENMP
     if (TASKCONDITION)
@@ -621,7 +613,7 @@ void evolve_cc2(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt, 
     move_system(s,cmpos,cmvel,1);
   }
 
-  free_sys(c.next_cc);
+  free_sys(c);
 
   //~ if(accel_zero_mass) split_zeromass(&s);
 }
