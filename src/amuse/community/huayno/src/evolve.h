@@ -19,7 +19,7 @@
 #define COMPENSATED_SUMMP
 //#define COMPENSATED_SUMMV  
 
-#define CONSISTENCY_CHECKS // perform (time-consuming, but thorough) sanity checks
+//~ #define CONSISTENCY_CHECKS // perform (time-consuming, but thorough) sanity checks
 
 struct particle
 {

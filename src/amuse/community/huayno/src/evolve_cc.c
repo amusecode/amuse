@@ -137,8 +137,8 @@ void split_cc(int clevel,struct sys s, struct sys *c, struct sys *r, DOUBLE dt) 
           }
         }
       }
-      // iterate over all unvisited elements
-      if(stackzero_next!=NULL)
+      // iterate over all unvisited elements, skip when active is zero mass
+      if(stackzero_next!=NULL && active!=&compzero_next)
       {
         //~ LOG("check zero %d\n", restzero_next-stackzero_next+1);
         for (struct particle *i = stackzero_next; i <= restzero_next; i++)
