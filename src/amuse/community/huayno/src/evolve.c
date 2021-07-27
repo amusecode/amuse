@@ -23,7 +23,7 @@ struct sys debugsys;
 
 FLOAT eps2;
 FLOAT dt_param;
-struct sys zerosys ={0,0,NULL,NULL,NULL};
+struct sys zerosys ={0,0,NULL,NULL};
 int accel_zero_mass=1;
 
 struct diagnostics global_diag;

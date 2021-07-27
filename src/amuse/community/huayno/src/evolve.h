@@ -51,7 +51,6 @@ struct sys
   UINT n, nzero; // n=total particles, nzero=# zero mass particles
   struct particle *part; // start of particles, NULL iff n==0 
   struct particle *zeropart; // start of zero mass particles nzero>0, otherwise NULL
-  struct sys *next_cc; // used in the CC split only
 };
 
 #define GETPART(s, i)   ((i)<(s).n-(s).nzero ? (s).part+(i) : (s).zeropart+((i)-((s).n-(s).nzero)))    
