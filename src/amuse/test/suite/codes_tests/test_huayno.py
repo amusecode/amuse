@@ -409,7 +409,7 @@ class TestHuayno(TestWithMPI):
         # this result is probably dependent on system architecture hence no good for assert
         print() 
         print(sha.hexdigest())
-        print("a43263ea713b4b944513d0597e5651a07114eefc")
+        print("44b8747cd181c7c05de39094d254771b4f67809c")
 
     def test14b(self):
         import hashlib
@@ -502,7 +502,7 @@ class TestHuayno(TestWithMPI):
         # this result is probably dependent on system architecture hence no good for assert
         print() 
         print(sha.hexdigest())
-        print("ac993b464a8efe1f56a57748259d6388ce1e1e44 ")
+        print("c31d5d2667189708ae8e8be593a2445204596203")
 
         
     def test15(self):
