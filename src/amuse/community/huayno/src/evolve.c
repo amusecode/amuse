@@ -322,7 +322,7 @@ void do_evolve(struct sys s, double dt, int inttype)
       evolve_shared10_collision_detection(s, (DOUBLE) dt);
       break;
     case ERROR_CONTROL:
-      evolve_error_control(clevel,s, (DOUBLE) 0.,(DOUBLE) dt,(DOUBLE) dt,1);
+      evolve_error_control(clevel,s, (DOUBLE) 0.,(DOUBLE) dt,(DOUBLE) dt, -1.);
       break;
     default:  
       ENDRUN("unknown integrator\n");

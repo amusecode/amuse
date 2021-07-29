@@ -9,7 +9,7 @@
 #include "evolve.h"
 #include "evolve_shared.h"
 
-#define error_control_parameter   1.e-15
+#define error_control_parameter   1.e-12
 
 static FLOAT error_function(struct sys s1, struct sys s2)
 {
