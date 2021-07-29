@@ -12,6 +12,7 @@
 #include "evolve_kepler.h"
 #include "evolve_ok.h"
 #include "evolve_bs.h"
+#include "evolve_error_control.h"
 
 #ifdef EVOLVE_OPENCL
 #include "evolve_cl.h"
@@ -224,22 +225,22 @@ void do_evolve(struct sys s, double dt, int inttype)
       evolve_constant10(clevel,s, (DOUBLE) 0.,(DOUBLE) dt,(DOUBLE) dt);
       break;
     case SHARED2:
-      evolve_shared2(clevel,s, (DOUBLE) 0.,(DOUBLE) dt,(DOUBLE) dt,1);
+      evolve_shared2(clevel,s, (DOUBLE) 0.,(DOUBLE) dt,(DOUBLE) dt, -1.);
       break;
     case SHARED4:
-      evolve_shared4(clevel,s, (DOUBLE) 0.,(DOUBLE) dt,(DOUBLE) dt,1);
+      evolve_shared4(clevel,s, (DOUBLE) 0.,(DOUBLE) dt,(DOUBLE) dt, -1.);
       break;
     case SHARED6:
-      evolve_shared6(clevel,s, (DOUBLE) 0.,(DOUBLE) dt,(DOUBLE) dt,1);
+      evolve_shared6(clevel,s, (DOUBLE) 0.,(DOUBLE) dt,(DOUBLE) dt, -1.);
       break;
     case SHARED8:
-      evolve_shared8(clevel,s, (DOUBLE) 0.,(DOUBLE) dt,(DOUBLE) dt,1);
+      evolve_shared8(clevel,s, (DOUBLE) 0.,(DOUBLE) dt,(DOUBLE) dt, -1.);
       break;
     case SHARED10:
-      evolve_shared10(clevel,s, (DOUBLE) 0.,(DOUBLE) dt,(DOUBLE) dt,1);
+      evolve_shared10(clevel,s, (DOUBLE) 0.,(DOUBLE) dt,(DOUBLE) dt, -1.);
       break;
     case SHAREDBS:
-      evolve_bs_adaptive(clevel,s, (DOUBLE) 0.,(DOUBLE) dt,(DOUBLE) dt,1);
+      evolve_bs_adaptive(clevel,s, (DOUBLE) 0.,(DOUBLE) dt,(DOUBLE) dt, -1.);
       break;
     case BS_CC_KEPLER:
       evolve_bs(clevel,s, (DOUBLE) 0.,(DOUBLE) dt,(DOUBLE) dt);
@@ -319,6 +320,9 @@ void do_evolve(struct sys s, double dt, int inttype)
       break;
     case SHARED10_COLLISIONS:
       evolve_shared10_collision_detection(s, (DOUBLE) dt);
+      break;
+    case ERROR_CONTROL:
+      evolve_error_control(clevel,s, (DOUBLE) 0.,(DOUBLE) dt,(DOUBLE) dt,1);
       break;
     default:  
       ENDRUN("unknown integrator\n");
@@ -672,11 +676,9 @@ struct sys join(struct sys s1,struct sys s2)
 
 FLOAT global_timestep(struct sys s)
 {
-  UINT i;
-  FLOAT mindt;
-  mindt=HUGE_VAL;
+  FLOAT mindt=HUGE_VAL;
   struct particle *ipart;
-  for(i=0;i<s.n;i++)
+  for(UINT i=0;i<s.n;i++)
   {
     ipart=GETPART(s, i);
     if(mindt>ipart->timestep) mindt=ipart->timestep;

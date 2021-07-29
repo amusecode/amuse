@@ -17,7 +17,7 @@
 #define MAXLEVEL  64
 
 #define COMPENSATED_SUMMP
-//#define COMPENSATED_SUMMV  
+//~ #define COMPENSATED_SUMMV  
 
 //~ #define CONSISTENCY_CHECKS // perform (time-consuming, but thorough) sanity checks
 
@@ -100,6 +100,7 @@ enum intopt
   CONSTANT6,   // 36
   CONSTANT8,   // 37
   CONSTANT10,   // 38
+  ERROR_CONTROL // 39
 };
 
 extern int verbosity;

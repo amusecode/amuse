@@ -435,7 +435,7 @@ void evolve_cc2(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt, 
 
   if (s.n <= BS_SUBSYS_SIZE && (inttype==CCC_BSA ||inttype==CC_BSA))
   {
-    evolve_bs_adaptive(clevel,s, stime, etime, dt,1);
+    evolve_bs_adaptive(clevel,s, stime, etime, dt, -1.);
     return;
   }
 

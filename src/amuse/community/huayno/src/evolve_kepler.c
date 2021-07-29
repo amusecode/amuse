@@ -6,7 +6,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "evolve.h"
-#include "evolve_shared.h"
 #include "universal_kepler_solver.h"
 #ifdef _OPENMP
 #include <omp.h>

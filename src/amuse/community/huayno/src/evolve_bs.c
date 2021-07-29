@@ -35,21 +35,23 @@ static void nkdk(int clevel,int n,struct sys s1,struct sys s2, DOUBLE stime, DOU
 static void ndkd(int clevel,int n,struct sys s1,struct sys s2, DOUBLE stime, DOUBLE etime, DOUBLE dt);
 static void n_cc_kepler(int clevel,int n,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt);
 
-void evolve_bs_adaptive(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt, int calc_timestep)
+void evolve_bs_adaptive(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt, FLOAT dtsys)
 {
-  FLOAT dtsys;
   int done=0;
   CHECK_TIMESTEP(etime,stime,dt,clevel);
-  if(calc_timestep) timestep(clevel,s,s,SIGN(dt));
-  dtsys=global_timestep(s);
+  if(dtsys<0) 
+  {
+    timestep(clevel,s,s,SIGN(dt));
+    dtsys=global_timestep(s);
+  }
   if(dtsys > fabs(dt))
   {
     done=BulirschStoer(clevel,s, stime, etime, dt, 0);
   }
   if(done==0)
   {      
-    evolve_bs_adaptive(clevel+1,s,stime, stime+dt/2,dt/2,0);
-    evolve_bs_adaptive(clevel+1,s,stime+dt/2, etime,dt/2,1);
+    evolve_bs_adaptive(clevel+1,s,stime, stime+dt/2,dt/2, dtsys);
+    evolve_bs_adaptive(clevel+1,s,stime+dt/2, etime,dt/2, -1.);
   }
   else
   {
@@ -60,7 +62,6 @@ void evolve_bs_adaptive(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOU
 
 void evolve_bs(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt)
 {
-  FLOAT dtsys;
   int done=0;
   CHECK_TIMESTEP(etime,stime,dt,clevel);
   done=BulirschStoer(clevel,s, stime, etime, dt, 1);

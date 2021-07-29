@@ -285,6 +285,13 @@ class Huayno(GravitationalDynamics,GravityFieldCode):
             default_value = 8
         )
 
+        handler.add_alias_parameter(
+            "integrator",
+            "inttype_parameter",
+            "integrator method to use (alias), this can be one of: "+
+             ",".join( ["{0}={1}".format(i, t) for i,t in inttypes]),
+        )
+
         handler.add_method_parameter(
             "get_begin_time",
             "set_begin_time",
