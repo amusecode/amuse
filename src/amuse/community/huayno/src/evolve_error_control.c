@@ -1,5 +1,5 @@
 /*
- * Reference integrators with single, global shared time step.
+ * integrator which combines multiple integrators at different timestep/order to get error estimates
  */
 
 
