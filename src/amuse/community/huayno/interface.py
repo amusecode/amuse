@@ -214,6 +214,16 @@ class Huayno(GravitationalDynamics,GravityFieldCode):
             **options
         )
 
+    def set_integrator(self, name):
+        return self.set_inttype_parameter(self.all_inttypes[name])
+    
+    def get_integrator(self):
+        value= self.get_inttype_parameter()
+        for key, index in self.all_inttypes.items():
+            if value == index:
+                return key
+        return "unknown"
+
     def define_parameters(self, handler):
 
         self.stopping_conditions.define_parameters(handler)
@@ -263,14 +273,21 @@ class Huayno(GravitationalDynamics,GravityFieldCode):
         )
 
         handler.add_method_parameter(
+            "get_integrator",
+            "set_integrator",
+            "integrator",
+            "integrator method to use, this can be one of: "+
+             ",".join( ["{0}".format(t) for i,t in inttypes]),
+             default_value="HOLD_DKD"
+        )
+
+        handler.add_method_parameter(
             "get_begin_time",
             "set_begin_time",
             "begin_time",
             "model time to start the simulation at",
             default_value = 0.0 | nbody_system.time
         )
-
-
 
 
     def define_methods(self, handler):
