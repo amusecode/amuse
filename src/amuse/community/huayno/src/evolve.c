@@ -325,7 +325,7 @@ void do_evolve(struct sys s, double dt, int inttype)
       evolve_error_control(clevel,s, (DOUBLE) 0.,(DOUBLE) dt,(DOUBLE) dt, -1.);
       break;
     default:  
-      ENDRUN("unknown integrator\n");
+      ENDRUN("unknown integrator %d\n", inttype);
       break;
   } 
   for(UINT p=0;p<s.n;p++) GETPART(s,p)->pot=0;

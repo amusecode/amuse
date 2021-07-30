@@ -730,6 +730,8 @@ class CodeCommand(Command):
                 if(index_of_the_colon > 0):
                     targetname = line[len(name + '_worker_'):index_of_the_colon]
                     if '%' not in targetname: result.append((line[:index_of_the_colon], targetname,))
+        
+        result=list(set(result))
                     
         return result
     
