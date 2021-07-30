@@ -300,7 +300,7 @@ void do_evolve(struct sys s, double dt, int inttype)
       evolve_shared10_collision_detection(s, (DOUBLE) dt);
       break;
     default:  
-      ENDRUN("unknown integrator\n");
+      ENDRUN("unknown integrator %d\n", inttype);
       break;
   } 
   for(p=0;p<s.n;p++) s.part[p].pot=0;
