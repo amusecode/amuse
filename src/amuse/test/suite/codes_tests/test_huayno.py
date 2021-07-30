@@ -504,7 +504,6 @@ class TestHuayno(TestWithMPI):
         print() 
         print(sha.hexdigest())
         print("c31d5d2667189708ae8e8be593a2445204596203")
-
         
     def test15(self):
         particles = plummer.new_plummer_model(512)
