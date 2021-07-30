@@ -16,6 +16,11 @@ module mesa_interface
     integer, parameter :: MESA_FAIL=-1, MESA_SUCESS=0
     logical :: use_gyre=.false.
 
+    integer, parameter :: M_CENTER=0
+    integer, parameter :: R_CENTER=1
+    integer, parameter :: L_CENTER=2
+    integer, parameter :: V_CENTER=3
+
     contains
 
 ! ***********************************************************************
@@ -674,6 +679,63 @@ module mesa_interface
         deallocate(entropy)
 
     end subroutine relax_to_new_entropy
+
+
+
+    subroutine set_star_center_value(id, boundary, val, ierr)
+        integer, intent(in) :: id,boundary
+        real(dp),intent(in) :: val
+        integer, intent(out) :: ierr
+        type (star_info), pointer :: s
+
+        ierr = MESA_SUCESS
+        call star_ptr(id, s, ierr)
+        if (failed('star_ptr',ierr)) return
+
+        select case (boundary)
+            case(M_CENTER)
+                call star_relax_m_center(id,  val, s% job% dlgm_per_step, s% job% relax_M_center_dt,ierr)
+            case(R_CENTER)
+                call star_relax_r_center(id, val, s% job% dlgR_per_step, s% job% relax_R_center_dt,ierr)
+            case(L_CENTER)
+                call star_relax_l_center(id,  val, s% job% dlgL_per_step, s% job% relax_L_center_dt,ierr)
+            case(V_CENTER)
+                call star_relax_v_center(id,  val, s% job% dv_per_step, s% job% relax_v_center_dt,ierr)
+            case default
+                ierr = MESA_FAIL
+        end select
+
+
+    end subroutine set_star_center_value
+
+
+    subroutine get_star_center_value(id, boundary, val, ierr)
+        integer, intent(in) :: id, boundary
+        real(dp),intent(out) :: val
+        integer, intent(out) :: ierr
+        type (star_info), pointer :: s
+
+        ierr = MESA_SUCESS
+        call star_ptr(id, s, ierr)
+        if (failed('star_ptr',ierr)) return
+
+        select case (boundary)
+            case(M_CENTER)
+                val = s% m_center
+            case(R_CENTER)
+                val = s% r_center
+            case(L_CENTER)
+                val = s% l_center
+            case(V_CENTER)
+                val = s% v_center
+            case default
+                ierr = MESA_FAIL
+        end select
+
+
+    end subroutine get_star_center_value
+
+
 
 
 

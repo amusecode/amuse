@@ -469,12 +469,10 @@ module amuse_mesa
 
       get_opt = 0
 
-      write(50,*) AMUSE_id, AMUSE_name
       select case (nml)
          case(CONTROL_NML)
             call get_star_control_nml(AMUSE_id, AMUSE_name, AMUSE_value, ierr)
          case(STAR_JOB_NML)
-            write(50,*) 'here'
             call get_star_job_nml(AMUSE_id, AMUSE_name, AMUSE_value, ierr)
             write(50,*)AMUSE_id, AMUSE_name, AMUSE_value, ierr
          case(EOS_NML)
@@ -484,13 +482,49 @@ module amuse_mesa
          case default
             ierr = MESA_FAIL
       end select
-      flush(50)
+
       if (ierr /= MESA_SUCESS) then
          get_opt = ierr
          AMUSE_value = ''
       endif
 
    end function get_opt
+
+
+   ! Set a center value
+   integer function set_center_value(AMUSE_id, boundary, AMUSE_value)
+      integer, intent(in) :: AMUSE_id
+      integer, intent(in) :: boundary
+      real(dp), intent(in) :: AMUSE_value
+      integer ::  ierr
+      set_center_value = 0
+
+      call set_star_center_value(AMUSE_id, boundary, AMUSE_value, ierr)
+
+      if (ierr /= MESA_SUCESS) then
+         set_center_value = ierr
+      endif
+
+   end function set_center_value
+
+
+   ! Get the value of a inner boundary
+   integer function get_center_value(AMUSE_id, boundary, AMUSE_value)
+      integer, intent(in) :: AMUSE_id
+      integer, intent(in) :: boundary
+      real(dp), intent(out) :: AMUSE_value
+      integer ::  ierr
+
+      get_center_value = 0
+
+      call get_star_center_value(AMUSE_id, boundary, AMUSE_value, ierr)
+
+      if (ierr /= MESA_SUCESS) then
+         get_center_value = ierr
+      endif
+
+   end function get_center_value
+
 
 
 ! Return the current radius of the star

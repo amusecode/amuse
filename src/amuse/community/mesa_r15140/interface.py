@@ -42,6 +42,12 @@ class MESAInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolutionIn
     _EOS_NML=2
     _KAP_NML=3
 
+    # Set in mesa_interface.f90
+    _M_CENTER=0
+    _R_CENTER=1
+    _L_CENTER=2
+    _V_CENTER=3
+
 
     def __init__(self, **options):
         CodeInterface.__init__(self, name_of_the_worker="mesa_worker", **options)
@@ -616,6 +622,105 @@ class MESAInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolutionIn
         return function
 
 
+    @legacy_function
+    def _get_center_value():
+        """
+        Gets one of the inner boundry conditions of mesa
+        """
+        function = LegacyFunctionSpecification()
+        function.name = 'get_center_value'
+        function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
+            , description="The index of the star to get the value of")
+        function.addParameter('name', dtype='int32', direction=function.IN
+            , description="Flag for which variable to get")
+        function.addParameter('value', dtype='float64', direction=function.OUT
+            , description="Value which has to be get")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            The value has been gotten.
+        -1 - ERROR
+            An error occured
+        -3 - ERROR
+            The named variable does not exist
+        """
+        return function
+
+
+    @legacy_function
+    def _set_center_value():
+        """
+        Sets one of the inner boundry conditions of mesa
+        """
+        function = LegacyFunctionSpecification()
+        function.name = 'set_center_value'
+        function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
+            , description="The index of the star to get the value of")
+        function.addParameter('name', dtype='int32', direction=function.IN
+            , description="Flag for which variable to set")
+        function.addParameter('value', dtype='float64', direction=function.IN
+            , description="Value which has to be set")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            The value has been gotten.
+        -1 - ERROR
+            An error occured
+        -3 - ERROR
+            The named variable does not exist
+        """
+        return function
+
+
+    def set_m_center(self, index_of_the_star, value):
+        """
+        Sets the inner mass boundary
+        """
+        return self._set_center_value(index_of_the_star, self._M_CENTER, value)
+
+    def get_m_center(self, index_of_the_star):
+        """
+        Gets the inner mass boundary
+        """
+        return self._get_center_value(index_of_the_star, self._M_CENTER)
+
+    def set_r_center(self, index_of_the_star, value):
+        """
+        Sets the inner radius boundary
+        """
+        return self._set_center_value(index_of_the_star, self._R_CENTER, value)
+
+    def get_r_center(self, index_of_the_star):
+        """
+        Gets the inner radius boundary
+        """
+        return self._get_center_value(index_of_the_star, self._R_CENTER)
+
+    def set_l_center(self, index_of_the_star, value ):
+        """
+        Sets the inner luminosity boundary
+        """
+        return self._set_center_value(index_of_the_star, self._L_CENTER, value)
+
+    def get_l_center(self, index_of_the_star):
+        """
+        Gets the inner luminosity boundary
+        """
+        return self._get_center_value(index_of_the_star, self._L_CENTER)
+
+    def set_v_center(self, index_of_the_star, value ):
+        """
+        Sets the inner velocity boundary
+        """
+        return self._set_center_value(index_of_the_star, self._V_CENTER, value)
+
+    def get_v_center(self, index_of_the_star):
+        """
+        Sets the inner velocity boundary
+        """
+        return self._get_center_value(index_of_the_star, self._V_CENTER)
+
+
     @legacy_function   
     def new_stellar_model():
         """
@@ -826,7 +931,7 @@ class MESA(StellarEvolution, InternalStellarStructure):
             handler.add_getter(particle_set_name, 'get_core_mass', names = ('core_mass',))
             handler.add_getter(particle_set_name, 'get_mass_loss_rate', names = ('wind',))
             handler.add_getter(particle_set_name, 'get_age', names = ('age',))
-            handler.add_getter(particle_set_name, 'set_age', names = ('age',))
+            handler.add_setter(particle_set_name, 'set_age', names = ('age',))
             handler.add_getter(particle_set_name, 'get_time_step', names = ('time_step',))
             handler.add_setter(particle_set_name, 'set_time_step', names = ('time_step',))
             handler.add_getter(particle_set_name, 'get_luminosity', names = ('luminosity',))
@@ -834,6 +939,16 @@ class MESA(StellarEvolution, InternalStellarStructure):
             
             handler.add_getter(particle_set_name, 'get_manual_mass_transfer_rate', names = ('mass_change',))
             handler.add_setter(particle_set_name, 'set_manual_mass_transfer_rate', names = ('mass_change',))
+
+            handler.add_getter(particle_set_name, 'get_m_center', names = ('m_center',))
+            handler.add_setter(particle_set_name, 'set_m_center', names = ('m_center',))
+            handler.add_getter(particle_set_name, 'get_r_center', names = ('r_center',))
+            handler.add_setter(particle_set_name, 'set_r_center', names = ('r_center',))
+            handler.add_getter(particle_set_name, 'get_l_center', names = ('l_center',))
+            handler.add_setter(particle_set_name, 'set_l_center', names = ('l_center',))
+            handler.add_getter(particle_set_name, 'get_v_center', names = ('v_center',))
+            handler.add_setter(particle_set_name, 'set_v_center', names = ('v_center',))
+
 
             handler.add_method(particle_set_name, 'get_control')
             handler.add_method(particle_set_name, 'set_control')
@@ -1135,6 +1250,55 @@ class MESA(StellarEvolution, InternalStellarStructure):
             "finalize_stellar_model", 
             (units.yr,), 
             (handler.INDEX, handler.ERROR_CODE,)
+        )
+
+
+        handler.add_method(
+            "get_m_center",
+            (handler.INDEX,),
+            (units.MSun, handler.ERROR_CODE,)
+        )
+
+        handler.add_method(
+            "set_m_center",
+            (handler.INDEX,units.MSun),
+            (handler.ERROR_CODE,)
+        )
+
+        handler.add_method(
+            "get_r_center",
+            (handler.INDEX,),
+            (units.cm, handler.ERROR_CODE,)
+        )
+
+        handler.add_method(
+            "set_r_center",
+            (handler.INDEX,units.cm),
+            (handler.ERROR_CODE,)
+        )
+
+        handler.add_method(
+            "get_l_center",
+            (handler.INDEX,),
+            (units.erg/units.s, handler.ERROR_CODE,)
+        )
+
+        handler.add_method(
+            "set_l_center",
+            (handler.INDEX,units.erg/units.s),
+            (handler.ERROR_CODE,)
+        )
+
+        handler.add_method(
+            "get_v_center",
+            (handler.INDEX,),
+            (units.cm/units.s, handler.ERROR_CODE,)
+        )
+
+        handler.add_method(
+            "set_v_center",
+            (handler.INDEX,units.cm/units.s),
+            (handler.ERROR_CODE,)
         )
 
 
