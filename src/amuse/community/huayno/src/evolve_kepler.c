@@ -101,46 +101,6 @@ static void evolve_kepler_n(int clevel,struct sys s, DOUBLE stime, DOUBLE etime,
   diag->cecount[clevel]+=s.nzero;
 }
 
-
-// special solver to test kepler
-static void evolve_kepler_test(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt)
-{
-  struct particle *central;
-  struct particle *ipart;
-  struct particle p[2];
-  struct sys s2=zerosys;
-
-  CHECK_TIMESTEP(etime,stime,dt,clevel);
-  if (s.n <= 1) ENDRUN("kepler test solver was called with too few massive particles sys.n=%u\n this hsouldn't happen\n", s.n);
-
-  central=GETPART(s,0);
-  for(UINT i=1;i<s.n;i++)
-  {
-    ipart=GETPART(s,i);
-    if(central->mass<ipart->mass) central=ipart;
-  }
-
-  for(UINT i=0;i<s.n;i++)
-  {
-    ipart=GETPART(s,i);
-    if(ipart==central) continue;
-    p[0]=*central;
-    p[1]=*ipart;
-
-    p[0].mass=central->mass+ipart->mass;
-    p[1].mass=0;
-
-    s2.n=2;
-    s2.part=p;
-    evolve_kepler_2(clevel,s2,stime,etime,dt);
-    p[1].mass=ipart->mass;
-    *ipart=p[1];
-    ipart->postime=etime;
-  }
-  for(int k=0;k<3;k++) central->pos[k]+=central->vel[k]*dt;
-  central->postime=etime;
-}
-
 void evolve_kepler(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt)
 {
   if(s.n-s.nzero==2) // 2 body 
