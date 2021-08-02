@@ -58,7 +58,7 @@ static void evolve_kepler_2(int clevel,struct sys s, DOUBLE stime, DOUBLE etime,
 
 static void evolve_kepler_n(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt)
 {
-  struct particle *ipart;
+  struct particle *ipart, *spart;
   DOUBLE dpos[3],dpos0[3],cmpos[3];
   DOUBLE dvel[3],dvel0[3];
   UINT err;
@@ -71,17 +71,18 @@ static void evolve_kepler_n(int clevel,struct sys s, DOUBLE stime, DOUBLE etime,
     drift(clevel,s,etime, dt);
     return;
   }
-  for(int k=0;k<3;k++) cmpos[k]= s.part->pos[k] + s.part->vel[k]*dt;
+  spart=GETPART(s,0);
+  for(int k=0;k<3;k++) cmpos[k]= spart->pos[k] + spart->vel[k]*dt;
 
   err=0;
 #pragma omp parallel for if((ULONG) s.n>omp_get_num_threads() && !omp_in_parallel()) default(none) \
- private(ipart, dpos,dvel,dpos0,dvel0) shared(etime,clevel, dt,cmpos, s, eps2) reduction(|: err)
+ private(ipart, dpos,dvel,dpos0,dvel0) shared(etime,clevel, dt,cmpos, s, eps2, spart) reduction(|: err)
   for(UINT i=1;i<s.n;i++)
   {
     ipart=GETPART(s,i);
-    for(int k=0;k<3;k++) dpos0[k] = s.part->pos[k] - ipart->pos[k];
-    for(int k=0;k<3;k++) dvel0[k] = s.part->vel[k] - ipart->vel[k];
-    err|=universal_kepler_solver(dt,s.part->mass,eps2,
+    for(int k=0;k<3;k++) dpos0[k] = spart->pos[k] - ipart->pos[k];
+    for(int k=0;k<3;k++) dvel0[k] = spart->vel[k] - ipart->vel[k];
+    err|=universal_kepler_solver(dt,spart->mass,eps2,
                                       dpos0[0],dpos0[1],dpos0[2],
                                       dvel0[0],dvel0[1],dvel0[2],
                                       &dpos[0],&dpos[1],&dpos[2],
@@ -89,14 +90,14 @@ static void evolve_kepler_n(int clevel,struct sys s, DOUBLE stime, DOUBLE etime,
 
 
     for(int k=0;k<3;k++) ipart->pos[k] = cmpos[k] - dpos[k];
-    for(int k=0;k<3;k++) ipart->vel[k] = s.part->vel[k] - dvel[k];
+    for(int k=0;k<3;k++) ipart->vel[k] = spart->vel[k] - dvel[k];
     ipart->postime=etime;
   } 
   if (err != 0) {
     ENDRUN("kepler solver failure"); // failure of the kepler solver should be very rare now
   }
-  for(int k=0;k<3;k++) s.part->pos[k]=cmpos[k];
-  s.part->postime=etime;
+  for(int k=0;k<3;k++) spart->pos[k]=cmpos[k];
+  spart->postime=etime;
   diag->cecount[clevel]+=s.nzero;
 }
 
@@ -107,7 +108,7 @@ static void evolve_kepler_test(int clevel,struct sys s, DOUBLE stime, DOUBLE eti
   struct particle *central;
   struct particle *ipart;
   struct particle p[2];
-  struct sys s2;
+  struct sys s2=zerosys;
 
   CHECK_TIMESTEP(etime,stime,dt,clevel);
   if (s.n <= 1) ENDRUN("kepler test solver was called with too few massive particles sys.n=%u\n this hsouldn't happen\n", s.n);
@@ -154,7 +155,7 @@ void evolve_kepler(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE d
   }
   if(s.n-s.nzero>1) // more than 1 massive particle, consider heaviest as central;  
   {
-    evolve_kepler_test(clevel,s,stime,etime,dt);
+    ENDRUN("evolve_kepler called for a system with more than 1 massive particle");
     return;
   }
   drift(clevel,s,etime, dt); // 1 massive or only zero mass

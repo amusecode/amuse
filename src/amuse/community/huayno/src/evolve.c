@@ -367,8 +367,8 @@ static void kick_cpu(struct sys s1, struct sys s2, DOUBLE dt)
     for(UINT j=0;j<s2.n-s2.nzero;j++)
     {
       jpart=GETPART(s2,j);
-      if(s2.part[j].mass==0) continue;
-//      if(s1.part+i==s2.part+j) continue; 
+//~ if(jpart->mass==0) continue;
+//      if(ipart==jpart) continue; 
       dx[0]=ipart->pos[0]-jpart->pos[0];
       dx[1]=ipart->pos[1]-jpart->pos[1];
       dx[2]=ipart->pos[2]-jpart->pos[2];
@@ -523,7 +523,7 @@ static void timestep_cpu(struct sys s1, struct sys s2,int dir)
       tau=timestep_ij(ipart,GETPART(s2,j),dir);
       if(tau < timestep) timestep=tau;
     }
-//    if(timestep<s1.part[i].timestep) 
+//    if(timestep<ipart->timestep) 
     ipart->timestep=timestep;
   }
 }
@@ -708,9 +708,10 @@ void split_zeromass(struct sys *s)
   UINT i=0;
   struct particle *left, *right;
   if(s->n==0) return;
+  if(s->part==NULL) ENDRUN("split_zeromass malformed input");
   if(s->n-s->nzero==0)
   {
-    if(s->zeropart==NULL) ENDRUN("split_zeromass malformed input");
+    if(s->zeropart==NULL || s->part!=s->zeropart) ENDRUN("split_zeromass malformed input");
     if(LASTZERO(*s)-s->zeropart+1!=s->nzero) ENDRUN( "split_zeromass malformed input sys");
     return;
   }  
@@ -737,8 +738,8 @@ void split_zeromass(struct sys *s)
     s->zeropart=left;
   }
   if((left-s->part)+s->nzero !=s->n) ENDRUN( "split_zeromass error 2");
-  for(i=0;i<(s->n-s->nzero);i++) if(s->part[i].mass==0) ENDRUN ("split_zromass error 3");
-  for(i=s->n-s->nzero;i<s->n;i++) if(s->part[i].mass!=0) ENDRUN ("split_zeromass error 4");
+  for(i=0;i<(s->n-s->nzero);i++) if(GETPART(*s,i)->mass==0) ENDRUN ("split_zromass error 3");
+  for(i=s->n-s->nzero;i<s->n;i++) if(GETPART(*s,i)->mass!=0) ENDRUN ("split_zeromass error 4");
 #ifdef CONSISTENCY_CHECKS
   verify_split_zeromass(*s);
 #endif

@@ -46,9 +46,10 @@ struct ccsys
 };
 
 
-#define LOGSYS_ID(SYS) for (UINT i = 0; i < (SYS).n; i++) { printf("%u ", (SYS).part[i].id); } printf("\n");
-#define LOGSYSp_ID(SYS) for (UINT i = 0; i < (SYS)->n; i++) { printf("%u ", (SYS)->part[i].id); } printf("\n");
-#define LOGSYSC_ID(SYS) for (struct ccsys *_ci = &(SYS); _ci!=NULL; _ci = _ci->next_cc) {printf("{"); for (UINT i = 0; i < _ci->s.n; i++) {printf("%u ", _ci->part[i].id); } printf("}\t");} printf("\n");
+#define LOGSYS_ID(SYS) for (UINT i = 0; i < (SYS).n; i++) { printf("%u ", GETPART(SYS, i)->id); } printf("\n");
+#define LOGSYSp_ID(SYS) LOGSYS_ID(*SYS);
+#define LOGSYSC_ID(SYS) for (struct ccsys *_ci = &(SYS); _ci!=NULL; _ci = _ci->next_cc) \
+ {printf("{"); for (UINT i = 0; i < _ci->s.n; i++) {printf("%u ", GETPART(_ci->s,i)->id); } printf("}\t");} printf("\n");
 
 void split_cc(int clevel,struct sys s, struct ccsys **c, struct sys *r, DOUBLE dt) {
   /*
@@ -496,7 +497,7 @@ void evolve_cc2(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt, 
     LOG("s: ");
     LOGSYS_ID(s_before);
     LOG("c: ");
-    LOGSYSC_ID(c);
+    LOGSYSC_ID(*c);
     LOG("r: ");
     LOGSYS_ID(r);
   }
