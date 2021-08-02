@@ -428,8 +428,8 @@ class TestHuayno(TestWithMPI):
             "SHARED10"]
                                             
         for itype in test_set:
-            print()
-            print(itype)
+            #~ print()
+            #~ print(itype)
             instance = Huayno(redirection="none")
             instance.parameters.inttype_parameter=Huayno.all_inttypes[itype]
             instance.parameters.accelerate_zero_mass=True

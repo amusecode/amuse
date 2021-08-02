@@ -340,7 +340,7 @@ void split_cc_verify_ts(int clevel,struct ccsys *c, struct sys r, DOUBLE dt)
         for (UINT j = 0; j < cj->s.n; j++)
         {
           ts_ij = (DOUBLE) timestep_ij(GETPART( ci->s, i), GETPART( cj->s, j), dir);
-          //LOG("comparing %d %d\n", ci->part[i].id, cj->part[j].id);
+          //LOG("comparing %d %d\n", GETPART( ci->s, i)-> id, GETPART( cj->s, j)->id);
           //LOG("%f %f \n", ts_ij, dt);
           if (dt > ts_ij)
           {
@@ -417,8 +417,6 @@ void evolve_cc2(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt, 
   struct ccsys *c = NULL;
   struct sys r = zerosys;
   CHECK_TIMESTEP(etime,stime,dt,clevel);
-
-  //~ if(accel_zero_mass) split_zeromass(&s);
 
   if ((s.n == 2 || s.n-s.nzero<=1 )&& 
      (inttype==CCC_KEPLER || inttype==CC_KEPLER || inttype==CCC_BS || inttype==CC_BS || inttype==CCC_BSA || inttype==CC_BSA))
@@ -569,7 +567,6 @@ void evolve_cc2(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt, 
     }
   }
 
-  //~ if(r.n>0 && accel_zero_mass) split_zeromass(&r);
   // kick c <-> rest (eq 24)
   if(r.n>0) for (struct ccsys *ci = c; ci!=NULL; ci = ci->next_cc)
   {
@@ -622,6 +619,5 @@ void evolve_cc2(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt, 
 
   free_sys(c);
 
-  //~ if(accel_zero_mass) split_zeromass(&s);
 }
 #undef TASKCONDITION
