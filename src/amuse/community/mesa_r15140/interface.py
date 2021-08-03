@@ -1389,6 +1389,14 @@ class MESA(StellarEvolution, InternalStellarStructure):
 
         return self.get_profile(indices_of_the_stars,'pressure',number_of_zones) | units.none
 
+    def get_pressure_scale_height_profile(self, indices_of_the_stars, number_of_zones = None):
+        indices_of_the_stars = self._check_number_of_indices(indices_of_the_stars, action_string = "Querying pressure scale height profiles")
+        if number_of_zones is None:
+            number_of_zones = self.get_number_of_zones(indices_of_the_stars)
+
+        return self.get_profile(indices_of_the_stars,'pressure_scale_height',number_of_zones) | units.RSun
+
+
     def get_mu_profile(self, indices_of_the_stars, number_of_zones = None):
         indices_of_the_stars = self._check_number_of_indices(indices_of_the_stars, action_string = "Querying mu profiles")
         if number_of_zones is None:
