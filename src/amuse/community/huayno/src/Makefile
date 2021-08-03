@@ -15,7 +15,7 @@ else
 CFLAGS += -std=gnu99
 endif
 LIBS += -lm
-INCLUDE =
+#~ INCLUDE =
 
 AR = ar ruv
 RANLIB = ranlib
@@ -56,7 +56,7 @@ libhuayno_cl.a: evolve_kern.clh $(OBJS) evolve_cl.o
 	$(MPICXX) $(CXXFLAGS) $(SC_FLAGS) $(INCLUDE) -c -o $@ $< 
 
 .c.o: $<
-	$(MPICC) $(CFLAGS) $(SC_FLAGS) -I../build_cl $(INCLUDE) -c -o $@ $< 
+	$(MPICC) $(CFLAGS) $(SC_FLAGS) $(INCLUDE) -c -o $@ $< 
 
 %.clh: %.cl
 	awk 'BEGIN{print "const char srcstr[]=" } {if(substr($$0,length($0))=="\\"){$$0=$$0"\\"};print "\""$$0"\\n\""} END{print ";"}' $< > $@

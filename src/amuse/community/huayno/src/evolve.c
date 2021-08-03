@@ -531,7 +531,7 @@ static void timestep_cpu(struct sys s1, struct sys s2,int dir)
 void timestep(int clevel,struct sys s1, struct sys s2,int dir)
 {
 #ifdef EVOLVE_OPENCL
-  if((ULONG) s1.n*s2.n>CLWORKLIMIT) 
+  if((ULONG) (s1.n*s2.n-s1.nzero*s2.nzero)>CLWORKLIMIT) 
   {
 #pragma omp critical
     timestep_cl(s1,s2,dir);

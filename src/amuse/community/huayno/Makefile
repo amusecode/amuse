@@ -40,9 +40,8 @@ OPENMP_BUILDDIR = build_mp
 AM_LIBS = -L$(AMUSE_DIR)/lib/amuse_mpi -lamuse_mpi
 AM_CFLAGS = -I$(AMUSE_DIR)/lib/amuse_mpi
 
-CL_LIBS?=-L$(OPENCL)/lib/x86_64 -lOpenCL -lpthread -ldl -L$(STDCL)/lib -lstdcl
-CL_FLAGS?=-I$(OPENCL)/include -I$(STDCL)/include
-
+CL_LIBS+=-L$(STDCL)/lib64 -lstdcl
+CL_FLAGS+=-I$(STDCL)/include
 all:	huayno_worker
 
 clean:
@@ -60,7 +59,7 @@ $(BUILDDIR)/Makefile: $(SRCDIR)/Makefile
 	cp $(SRCDIR)/Makefile $(BUILDDIR)/Makefile
 	
 $(BUILDDIR)/libhuayno.a: $(BUILDDIR)/Makefile $(LIBFILES) src/Makefile
-	make -C $(BUILDDIR) all VPATH=../src 
+	make -C $(BUILDDIR) all VPATH=../src CFLAGS="$(CFLAGS)" CXXFLAGS="$(CXXFLAGS)"
 	
 	
 $(OPENMP_BUILDDIR)/Makefile: $(SRCDIR)/Makefile 
@@ -98,7 +97,7 @@ huayno_worker_mp: __init__.py worker_code.cc worker_code.h $(OPENMP_BUILDDIR)/li
 huayno_worker_cl: CFLAGS   += -fopenmp -DEVOLVE_OPENCL
 huayno_worker_cl: CXXFLAGS   += -fopenmp -DEVOLVE_OPENCL
 huayno_worker_cl: LIBS += $(CL_LIBS)  -lstdcl
-huayno_worker_cl: INCLUDE += $(CL_FLAGS)
+huayno_worker_cl: INCLUDE += $(CL_FLAGS) -I.
 huayno_worker_cl: __init__.py worker_code.cc worker_code.h $(OPENCL_BUILDDIR)/libhuayno_cl.a $(OPENCL_BUILDDIR)/interface.o 
 	$(MPICXX) $(CXXFLAGS) $(INCLUDE) $(LDFLAGS) worker_code.cc $(OPENCL_BUILDDIR)/interface.o $(OPENCL_BUILDDIR)/libhuayno_cl.a -o $@ $(LIBS) $(SC_CLIBS)
 

@@ -32,23 +32,24 @@ void close_cl()
 
 void kick_cl(struct sys s1, struct sys s2, DOUBLE dt)
 {
-  int i;
+  int i, n2;
   int groupsize,nthread,blocksize;
   CLFLOAT cleps2=(CLFLOAT) eps2;
   struct particle *ipart;
   
-  if(s1.n==0 || s2.n==0) return;
+  n2=s2.n-s2.nzero;
+  if(s1.n==0 || n2==0) return;
 
   groupsize=NTHREAD;
   if(s1.n < NTHREAD) groupsize=s1.n;
   nthread=((s1.n-1)/groupsize+1)*groupsize;
   blocksize=BLOCKSIZE;
-  if(s2.n<blocksize) blocksize=s2.n;
+  if(n2<blocksize) blocksize=n2;
   clndrange_t ndr = clndrange_init1d(0,nthread,groupsize);
 
   CLFLOAT4* ipos = (CLFLOAT4*) clmalloc(CLCONTEXT,nthread*sizeof(CLFLOAT4),0);
   CLFLOAT4* acc = (CLFLOAT4*) clmalloc(CLCONTEXT,nthread*sizeof(CLFLOAT4),0);
-  CLFLOAT4* jpos = (CLFLOAT4*) clmalloc(CLCONTEXT,s2.n*sizeof(CLFLOAT4),0);
+  CLFLOAT4* jpos = (CLFLOAT4*) clmalloc(CLCONTEXT,n2*sizeof(CLFLOAT4),0);
 
   for(i=0;i<s1.n;i++)
   {
@@ -59,7 +60,7 @@ void kick_cl(struct sys s1, struct sys s2, DOUBLE dt)
     ipos[i].s3=ipart->mass;
   }  
   for(i=s1.n;i<nthread;i++) ipos[i]=(CLFLOAT4) {{0.0,0.0,0.0,0.0}};  
-  for(i=0;i<s2.n-s2.nzero;i++)
+  for(i=0;i<n2;i++)
   {
     ipart=GETPART(s2,i);
     jpos[i].s0=ipart->pos[0];
@@ -69,7 +70,7 @@ void kick_cl(struct sys s1, struct sys s2, DOUBLE dt)
   }
   for(i=0;i<nthread;i++) acc[i]=(CLFLOAT4) {{0.0,0.0,0.0,0.0}};  
                         
-  clarg_set(CLCONTEXT,kick_krn,0, s2.n);
+  clarg_set(CLCONTEXT,kick_krn,0, n2);
   clarg_set(CLCONTEXT,kick_krn,1, blocksize);
   clarg_set(CLCONTEXT,kick_krn,2, cleps2);
   clarg_set_global(CLCONTEXT,kick_krn,3, ipos);
@@ -96,14 +97,15 @@ void kick_cl(struct sys s1, struct sys s2, DOUBLE dt)
   clfree( acc);  
 }
 
-void timestep_cl(struct sys s1, struct sys s2,int dir)
+void _timestep_cl(struct sys s1, struct sys s2,int dir)
 {
-  int i;
+  int i,n2;
   int groupsize,nthread,blocksize;
   CLFLOAT cleps2=(CLFLOAT) eps2;
   CLFLOAT cldtparam=(CLFLOAT) dt_param;
   struct particle *ipart;
     
+  n2=s2.n;  
   if(s1.n==0 || s2.n==0) return;
 
   groupsize=NTHREAD;
@@ -119,7 +121,6 @@ void timestep_cl(struct sys s1, struct sys s2,int dir)
   CLFLOAT4* jpos = (CLFLOAT4*) clmalloc(CLCONTEXT,s2.n*sizeof(CLFLOAT4),0);
   CLFLOAT4* jvel = (CLFLOAT4*) clmalloc(CLCONTEXT,s2.n*sizeof(CLFLOAT4),0);
 
-  // an unnecessary block of nzero*nzero timesteps is calculated
   for(i=0;i<s1.n;i++)
   {
     ipart=GETPART(s1,i);
@@ -140,7 +141,7 @@ void timestep_cl(struct sys s1, struct sys s2,int dir)
   }
   for(i=0;i<nthread;i++) timestep[i]=(CLFLOAT) 0.;  
                         
-  clarg_set(CLCONTEXT,timestep_krn,0, s2.n);
+  clarg_set(CLCONTEXT,timestep_krn,0, n2);
   clarg_set(CLCONTEXT,timestep_krn,1, blocksize);
   clarg_set(CLCONTEXT,timestep_krn,2, cleps2);
   clarg_set(CLCONTEXT,timestep_krn,3, cldtparam);
@@ -161,8 +162,11 @@ void timestep_cl(struct sys s1, struct sys s2,int dir)
   clmsync(CLCONTEXT,0,timestep,CL_MEM_HOST|CL_EVENT_NOWAIT);
   clwait(CLCONTEXT,0,CL_KERNEL_EVENT|CL_MEM_EVENT);
 
-//    if(timestep[i]<s1.part[i].timestep) 
-  for(i=0;i<s1.n;i++) GETPART(s1,i)->timestep=timestep[i];
+  for(i=0;i<s1.n;i++) 
+  {
+    ipart=GETPART(s1,i);
+    ipart->timestep=timestep[i]; //if(timestep[i]<ipart->timestep)
+  }
 
   clfree( ipos);
   clfree( ivel);
@@ -171,26 +175,52 @@ void timestep_cl(struct sys s1, struct sys s2,int dir)
   clfree( timestep);  
 }
 
+void timestep_cl(struct sys s1, struct sys s2,int dir)
+{
+  if(accel_zero_mass)
+  {
+    struct sys s1m=zerosys, s1ml=zerosys, s2m=zerosys;
+    
+    s1m.n=s1.n-s1.nzero;
+    if(s1m.n>0) s1m.part=s1.part;
+    
+    s1ml.n=s1.nzero;
+    s1ml.nzero=s1.nzero;
+    if(s1ml.n>0) s1ml.part=s1.zeropart;
+    if(s1ml.n>0) s1ml.zeropart=s1.zeropart;
+    
+    s2m.n=s2.n-s2.nzero;
+    if(s2m.n>0) s2m.part=s2.part;
+    _timestep_cl(s1m,  s2, dir);
+    _timestep_cl(s1ml, s2m, dir);
+  } else
+  {
+    _timestep_cl(s1,s2,dir);
+  }
+}
+
 
 void potential_cl(struct sys s1, struct sys s2)
 {
-  int i;
+  int i, n2;
   int groupsize,nthread,blocksize;
   CLFLOAT cleps2=(CLFLOAT) eps2;
   struct particle *ipart;
   
-  if(s1.n==0 || s2.n==0) return;
+  n2=s2.n-s2.nzero;
+
+  if(s1.n==0 || n2==0) return;
 
   groupsize=NTHREAD;
   if(s1.n < NTHREAD) groupsize=s1.n;
   nthread=((s1.n-1)/groupsize+1)*groupsize;
   blocksize=BLOCKSIZE;
-  if(s2.n<blocksize) blocksize=s2.n;
+  if( n2<blocksize) blocksize=n2;
   clndrange_t ndr = clndrange_init1d(0,nthread,groupsize);
 
   CLFLOAT4* ipos = (CLFLOAT4*) clmalloc(CLCONTEXT,nthread*sizeof(CLFLOAT4),0);
   CLFLOAT* pot = (CLFLOAT*) clmalloc(CLCONTEXT,nthread*sizeof(CLFLOAT),0);
-  CLFLOAT4* jpos = (CLFLOAT4*) clmalloc(CLCONTEXT,s2.n*sizeof(CLFLOAT4),0);
+  CLFLOAT4* jpos = (CLFLOAT4*) clmalloc(CLCONTEXT,n2*sizeof(CLFLOAT4),0);
 
   for(i=0;i<s1.n;i++)
   {
@@ -201,7 +231,7 @@ void potential_cl(struct sys s1, struct sys s2)
     ipos[i].s3=ipart->mass;
   }  
   for(i=s1.n;i<nthread;i++) ipos[i]=(CLFLOAT4) {{0.0,0.0,0.0,0.0}};  
-  for(i=0;i<s2.n-s2.nzero;i++)
+  for(i=0;i<n2;i++)
   {
     ipart=GETPART(s2,i);
     jpos[i].s0=ipart->pos[0];
@@ -211,7 +241,7 @@ void potential_cl(struct sys s1, struct sys s2)
   }
   for(i=0;i<nthread;i++) pot[i]=0.0;  
                         
-  clarg_set(CLCONTEXT,potential_krn,0, s2.n);
+  clarg_set(CLCONTEXT,potential_krn,0, n2);
   clarg_set(CLCONTEXT,potential_krn,1, blocksize);
   clarg_set(CLCONTEXT,potential_krn,2, cleps2);
   clarg_set_global(CLCONTEXT,potential_krn,3, ipos);
