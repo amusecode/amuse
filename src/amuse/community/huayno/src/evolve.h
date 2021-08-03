@@ -1,6 +1,6 @@
 #define FLOAT double
-#define CLFLOAT cl_float
-#define CLFLOAT4 cl_float4
+#define CLFLOAT cl_double
+#define CLFLOAT4 cl_double4
 #define DOUBLE long double
 #define INT int
 #define UINT unsigned int
