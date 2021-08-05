@@ -143,8 +143,8 @@ void do_evolve(struct sys s, double dt, int inttype);
 
 void system_center_of_mass(struct sys s, DOUBLE *cmpos, DOUBLE *cmvel);
 void move_system(struct sys s, DOUBLE dpos[3],DOUBLE dvel[3],int dir);
-FLOAT system_potential_energy(struct sys s);
-FLOAT system_kinetic_energy(struct sys s);
+DOUBLE system_potential_energy(struct sys s);
+DOUBLE system_kinetic_energy(struct sys s);
 
 void drift(int clevel,struct sys s, DOUBLE etime, DOUBLE dt); /* drift sys */
 void kick(int clevel,struct sys s1, struct sys s2, DOUBLE dt); /* =kick sys1 for interactions with sys2  */

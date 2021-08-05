@@ -276,13 +276,13 @@ int get_index_of_next_particle(int  id, int *nout)
              
 int get_kinetic_energy(double *kinetic_energy)
 {
-  *kinetic_energy=system_kinetic_energy(mainsys);
+  *kinetic_energy=(double) system_kinetic_energy(mainsys);
   return 0;
 }
 
 int get_potential_energy(double *potential_energy)
 {
-  *potential_energy=system_potential_energy(mainsys);
+  *potential_energy=(double) system_potential_energy(mainsys);
   return 0;
 }
 

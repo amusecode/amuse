@@ -72,7 +72,7 @@ void system_center_of_mass(struct sys s, DOUBLE *cmpos, DOUBLE *cmvel)
   }
 }
 
-FLOAT system_kinetic_energy(struct sys s)
+DOUBLE system_kinetic_energy(struct sys s)
 {
  UINT i;
  DOUBLE e=0.;
@@ -84,10 +84,10 @@ FLOAT system_kinetic_energy(struct sys s)
                         ipart->vel[1]*ipart->vel[1]+
                         ipart->vel[2]*ipart->vel[2] );
  }
- return (FLOAT) e;
+ return e;
 }
         
-FLOAT system_potential_energy(struct sys s)
+DOUBLE system_potential_energy(struct sys s)
 {
  UINT i;
  DOUBLE e=0.;
@@ -97,7 +97,7 @@ FLOAT system_potential_energy(struct sys s)
    ipart=GETPART(s, i);
    e+=ipart->mass*ipart->pot;
  }
- return (FLOAT) e/2;
+ return e/2;
 }
 
 void init_code()
