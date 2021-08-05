@@ -1,8 +1,9 @@
 # standard amuse configuration include
 # config.mk will be made after ./configure has run
-AMUSE_DIR?=../../../../..
+ifeq ($(origin AMUSE_DIR), undefined)
+  AMUSE_DIR := $(shell amusifier --get-amuse-dir)
+endif
 -include ${AMUSE_DIR}/config.mk
-
 
 MPICXX ?= mpicxx
 MPICC ?= mpicc
@@ -30,18 +31,10 @@ OBJS = evolve.o evolve_shared.o evolve_sf.o evolve_cc.o \
 all: libhuayno.a
 
 clean:
-	rm -f *.o *.bck *.pyc *.clh worker_code.cc worker_code.h worker_code-sockets.cc
+	rm -f *.o *.bck *.pyc *.clh 
 
 distclean: clean
-	rm -f huayno_worker huayno_worker_cl huayno_worker_mp huayno_worker_sockets
-
-worker_code.cc: interface.py
-	$(CODE_GENERATOR) --type=c interface.py HuaynoInterface -o $@
 	
-worker_code.h: interface.py
-	$(CODE_GENERATOR) --type=h interface.py HuaynoInterface -o $@
-
-
 libhuayno.a: $(OBJS)
 	$(RM) -f $@
 	$(AR) $@ $(OBJS)
@@ -53,10 +46,10 @@ libhuayno_cl.a: evolve_kern.clh $(OBJS) evolve_cl.o
 	$(RANLIB) $@
 	
 .cc.o: $<
-	$(MPICXX) $(CXXFLAGS) $(SC_FLAGS) $(INCLUDE) -c -o $@ $< 
+	$(CXX) $(CXXFLAGS) $(SC_FLAGS) $(INCLUDE) -c -o $@ $< 
 
 .c.o: $<
-	$(MPICC) $(CFLAGS) $(SC_FLAGS) $(INCLUDE) -c -o $@ $< 
+	$(CC) $(CFLAGS) $(SC_FLAGS) $(INCLUDE) -c -o $@ $< 
 
 %.clh: %.cl
 	awk 'BEGIN{print "const char *srcstr=" } {if(substr($$0,length($0))=="\\"){$$0=$$0"\\"};print "\""$$0"\\n\""} END{print ";"}' $< > $@
