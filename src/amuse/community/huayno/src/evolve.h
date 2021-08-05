@@ -113,6 +113,7 @@ extern struct sys zerosys;
 
 extern int fixed_j;
 extern DOUBLE bs_target_error;
+extern int opencl_device_type;
 
 /* diagnostics */
 struct diagnostics {

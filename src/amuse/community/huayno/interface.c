@@ -38,9 +38,9 @@ int initialize_code()
   accel_zero_mass=1; 
   eps2=0.;
   inttype=8;
+  opencl_device_type=0;
   t_now=0.;
   dtime=0.;
-  init_code();
   // AMUSE STOPPING CONDITIONS SUPPORT
   set_support_for_condition(COLLISION_DETECTION);
   set_support_for_condition(OUT_OF_BOX_DETECTION);
@@ -298,6 +298,19 @@ int set_inttype_parameter(int i)
   return 0;
 }
 
+int get_opencl_device_type(int *i)
+{
+  *i=opencl_device_type;
+  return 0;
+}
+
+int set_opencl_device_type(int i)
+{
+  opencl_device_type=i;
+  return 0;
+}
+
+
 int set_timestep_parameter(double t)
 {
   dt_param=t;
@@ -546,6 +559,7 @@ int recommit_parameters()
 }
 int commit_parameters()
 {
+    init_code();
     t_now = begin_time;
     return 0;
 }

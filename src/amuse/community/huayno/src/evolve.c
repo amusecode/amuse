@@ -26,6 +26,7 @@ FLOAT eps2;
 FLOAT dt_param;
 struct sys zerosys ={0,0,NULL,NULL};
 int accel_zero_mass=1;
+int opencl_device_type=0;
 
 struct diagnostics global_diag;
 struct diagnostics *diag;

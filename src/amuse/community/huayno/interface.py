@@ -166,6 +166,20 @@ class HuaynoInterface(CodeInterface,
         function.result_type = 'i'
         return function
 
+    @legacy_function
+    def get_opencl_device_type():
+        function = LegacyFunctionSpecification()
+        function.addParameter('opencl_device_type', dtype='i', direction=function.OUT)
+        function.result_type = 'i'
+        return function
+
+    @legacy_function
+    def set_opencl_device_type():
+        function = LegacyFunctionSpecification()
+        function.addParameter('opencl_device_type', dtype='i', direction=function.IN)
+        function.result_type = 'i'
+        return function
+
 
     def set_eps2(self, e):
         return self.set_eps2_parameter(e)
@@ -312,6 +326,13 @@ class Huayno(GravitationalDynamics,GravityFieldCode):
             default_value = 0.0 | nbody_system.time
         )
 
+        handler.add_method_parameter(
+            "get_opencl_device_type",
+            "set_opencl_device_type",
+            "opencl_device_type",
+            "set preferred OpenCL device type (0=default, 1=cpu, 2=gpu)",
+            default_value = 0
+        )
 
     def define_methods(self, handler):
         GravitationalDynamics.define_methods(self, handler)

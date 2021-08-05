@@ -23,10 +23,6 @@ INCLUDE =
 
 CODE_GENERATOR ?= $(AMUSE_DIR)/build.py
 
-# set OpenCL and STDCL libraries
-OPENCL = /home/inti/libraries/cuda
-STDCL = /home/inti/libraries/coprthr
-
 #---------------------------------------------
 
 OBJS = interface.o
@@ -40,8 +36,6 @@ OPENMP_BUILDDIR = build_mp
 AM_LIBS = -L$(AMUSE_DIR)/lib/amuse_mpi -lamuse_mpi
 AM_CFLAGS = -I$(AMUSE_DIR)/lib/amuse_mpi
 
-CL_LIBS+=-L$(STDCL)/lib64 -lstdcl
-CL_FLAGS+=-I$(STDCL)/include
 all:	huayno_worker
 
 clean:
@@ -96,7 +90,7 @@ huayno_worker_mp: __init__.py worker_code.cc worker_code.h $(OPENMP_BUILDDIR)/li
 
 huayno_worker_cl: CFLAGS   += -fopenmp -DEVOLVE_OPENCL
 huayno_worker_cl: CXXFLAGS   += -fopenmp -DEVOLVE_OPENCL
-huayno_worker_cl: LIBS += $(CL_LIBS)  -lstdcl
+huayno_worker_cl: LIBS += $(CL_LIBS)
 huayno_worker_cl: INCLUDE += $(CL_FLAGS) -I.
 huayno_worker_cl: __init__.py worker_code.cc worker_code.h $(OPENCL_BUILDDIR)/libhuayno_cl.a $(OPENCL_BUILDDIR)/interface.o 
 	$(MPICXX) $(CXXFLAGS) $(INCLUDE) $(LDFLAGS) worker_code.cc $(OPENCL_BUILDDIR)/interface.o $(OPENCL_BUILDDIR)/libhuayno_cl.a -o $@ $(LIBS) $(SC_CLIBS)
@@ -119,4 +113,4 @@ $(OPENCL_BUILDDIR)/%.o: %.c
 	$(MPICC) -I$(SRCDIR)  $(SC_FLAGS) $(CFLAGS) $(INCLUDE) -c -o $@ $< 
 
 %.clh: %.cl
-	awk 'BEGIN{print "const char srcstr[]=" } {if(substr($$0,length($0))=="\\"){$$0=$$0"\\"};print "\""$$0"\\n\""} END{print ";"}' $< > $@
+	awk 'BEGIN{print "const char *srcstr=" } {if(substr($$0,length($0))=="\\"){$$0=$$0"\\"};print "\""$$0"\\n\""} END{print ";"}' $< > $@
