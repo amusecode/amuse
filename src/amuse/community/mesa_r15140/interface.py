@@ -804,7 +804,6 @@ class MESAInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolutionIn
         """
         returns ()
 
-
     def get_radius_at_zone(self, index_of_the_star, zone):
         return self.get_profile_at_zone(index_of_the_star,zone,'radius')
 
@@ -826,6 +825,66 @@ class MESAInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolutionIn
             return self.get_profile_at_zone(index_of_the_star, zone, res['species_name'])
         else:
             return res['__result']
+
+
+    @legacy_function  
+    def _get_gyre():
+        """
+        Get gyre data. Dont call this directly use get_gyre()
+        """
+        function = LegacyFunctionSpecification()  
+        function.name = 'get_gyre'
+        function.addParameter('index_of_the_star', dtype='int32', 
+            direction=function.IN, description = "The index for the star. ")
+        function.addParameter('mode_l', dtype='int32', 
+            direction=function.IN, description = "L mode to find (must match that in gyre.in) ")
+        function.addParameter('add_center_point', dtype='bool', direction=function.IN, 
+            description = "Whether to add center point")
+        function.addParameter('keep_surface_pointt', dtype='bool', direction=function.IN, 
+            description = "Whether to keep surface point")
+        function.addParameter('add_atmosphere', dtype='bool', direction=function.IN, 
+            description = "Whether to add atmosphere")
+        function.addParameter('p', dtype='string', direction=function.OUT, 
+            description = "P modes found")
+        function.addParameter('g', dtype='string', direction=function.OUT, 
+            description = "G modes found")
+        function.addParameter('freq_real', dtype='string', direction=function.OUT, 
+            description = "Real components of the frequency")
+        function.addParameter('freq_imag', dtype='string', direction=function.OUT, 
+            description = "Imaginary components of the frequency")
+        function.result_type = 'int32'
+        return function
+
+
+    def get_gyre(self, index_of_the_star,mode_l=0,
+                add_center_point=False, keep_surface_point=False, add_atmosphere=False):
+        """
+        Get gyre data. 
+
+        This returns a dict with (p,g) mode number and its complex frequenecy
+        """
+
+        res = self._get_gyre(index_of_the_star, mode_l,
+                            add_center_point, keep_surface_point, add_atmosphere)
+        
+        if res['__result'] != 0:
+            return res
+        else:
+            # Split output into lists
+            for key,value in res.items():
+                if key == '__result':
+                    continue
+                res[key] = value.strip().split(',')
+            
+            res['p'] = [int(x) for x in res['p'] if len(x)]
+            res['g'] = [int(x) for x in res['g'] if len(x)]
+            res['freq'] = [complex(float(i),float(j)) | units.Hz for i,j in zip(res['freq_real'],res['freq_imag']) if len(i)]
+            res.pop('freq_real')
+            res.pop('freq_imag')
+            res.pop('__result')
+            return res
+
+
 
 
 class MESA(StellarEvolution, InternalStellarStructure):
@@ -1000,7 +1059,7 @@ class MESA(StellarEvolution, InternalStellarStructure):
             handler.add_method(particle_set_name, 'get_id_of_species')
             
             handler.add_method(particle_set_name, 'get_IDs_of_species')
-
+            handler.add_method(particle_set_name, 'get_gyre')
 
             
     def define_state(self, handler):
@@ -1020,6 +1079,7 @@ class MESA(StellarEvolution, InternalStellarStructure):
         handler.add_errorcode(-12, 'Evolve terminated: Maximum age reached.')
         handler.add_errorcode(-13, 'Evolve terminated: Maximum number of iterations reached.')
         handler.add_errorcode(-15, 'Evolve terminated: Minimum timestep limit reached.')
+        handler.add_errorcode(-99, 'GYRE not configured for use')
     
     def define_methods(self, handler):
         InternalStellarStructure.define_methods(self, handler)
@@ -1299,6 +1359,12 @@ class MESA(StellarEvolution, InternalStellarStructure):
             "set_v_center",
             (handler.INDEX,units.cm/units.s),
             (handler.ERROR_CODE,)
+        )
+
+        handler.add_method(
+            "get_gyre",
+            (handler.INDEX, handler.NO_UNIT,handler.NO_UNIT, handler.NO_UNIT, handler.NO_UNIT),
+            (handler.NO_UNIT,handler.NO_UNIT, handler.NO_UNIT)
         )
 
 

@@ -263,7 +263,8 @@ module mesa_interface
         type (star_info), pointer :: s
         integer :: ierr
 
-        call chdir(output_folder)
+        ! Needs work as it breaks things
+        !call chdir(output_folder)
 
         call star_ptr(id, s, ierr)
         if (failed('star_ptr',ierr)) return   
@@ -292,6 +293,7 @@ module mesa_interface
         s% write_header_frequency =-1
 
         mesa_temp_caches_dir = trim(temp_dir) 
+
         s% report_ierr = .false.
 
         if(len_trim(gyre_in) > 0) then
@@ -301,31 +303,6 @@ module mesa_interface
 
 
     end subroutine set_init_options
-
-    subroutine setup_gyre(gyre_in)
-        use gyre_lib
-        use const_def
-        character(len=*), intent(in) :: gyre_in
-
-        ! Initialize GYRE
-
-        call gyre_init('gyre.in')
-
-        ! Set constants
-    
-        call gyre_set_constant('G_GRAVITY', standard_cgrav)
-        call gyre_set_constant('C_LIGHT', clight)
-        call gyre_set_constant('A_RADIATION', crad)
-    
-        call gyre_set_constant('M_SUN', Msun)
-        call gyre_set_constant('R_SUN', Rsun)
-        call gyre_set_constant('L_SUN', Lsun)
-    
-        call gyre_set_constant('GYRE_DIR', TRIM(mesa_dir)//'/gyre/gyre')
-
-
-    end subroutine setup_gyre
-
 
     subroutine update_star_job(id, ierr)
         integer, intent(in) :: id
@@ -1060,6 +1037,153 @@ module mesa_interface
 
 
     end subroutine set_value
+
+
+
+! ***********************************************************************
+! Routines for GYRE
+! ***********************************************************************
+
+    subroutine setup_gyre(gyre_in)
+        use gyre_lib
+        use const_def
+        character(len=*), intent(in) :: gyre_in
+
+        ! Initialize GYRE
+
+        call gyre_init(gyre_in)
+
+        ! Set constants
+    
+        call gyre_set_constant('G_GRAVITY', standard_cgrav)
+        call gyre_set_constant('C_LIGHT', clight)
+        call gyre_set_constant('A_RADIATION', crad)
+    
+        call gyre_set_constant('M_SUN', Msun)
+        call gyre_set_constant('R_SUN', Rsun)
+        call gyre_set_constant('L_SUN', Lsun)
+    
+        call gyre_set_constant('GYRE_DIR', TRIM(mesa_dir)//'/gyre/gyre')
+
+
+    end subroutine setup_gyre
+
+
+    subroutine get_gyre_data(id, mode_l, &
+         add_center_point, keep_surface_point, add_atmosphere, &
+         out_p, out_g, out_freq_real, out_freq_imag, &
+         ierr)
+        use gyre_lib
+        integer, intent(in) :: id, mode_l
+        integer, intent(out) :: ierr
+        logical, intent(in) :: add_center_point, keep_surface_point, add_atmosphere
+        character(len=*), intent(out) :: out_p, out_g, out_freq_real, out_freq_imag
+        type (star_info), pointer :: s  
+        real(dp), allocatable     :: global_data(:)
+        real(dp), allocatable     :: point_data(:,:)
+        integer                   :: ipar(1)
+        real(dp)                  :: rpar(1)
+
+        ierr = 0
+        call star_ptr(id, s, ierr)
+        if (failed('star_ptr',ierr)) return
+
+        if(.not.use_gyre) then
+            ierr = -99
+            return
+        end if
+
+        call star_get_pulse_data(s%id, 'GYRE', &
+            add_center_point, keep_surface_point, add_atmosphere, &
+            global_data, point_data, ierr)
+
+        if (ierr /= 0) return
+
+        call gyre_set_model(global_data, point_data, 101)
+
+
+        call gyre_get_modes(mode_l, process_mode_, ipar, rpar)
+
+        write(42,*) trim(out_freq_real)
+        write(42,*) trim(out_freq_imag)
+        write(42,*) trim(out_p)
+        write(42,*) trim(out_g)
+        flush(42)
+
+        ierr = ipar(1)
+
+    contains
+
+        subroutine process_mode_ (md, ipar, rpar, retcode)
+    
+         type(mode_t), intent(in) :: md
+         integer, intent(inout)   :: ipar(:)
+         real(dp), intent(inout)  :: rpar(:)
+         integer, intent(out)     :: retcode
+   
+         integer               :: k
+         complex(dp)           :: cfreq
+         real(dp)              :: freq, growth
+         type(grid_t)          :: gr
+         character(len=100)      :: tmp_int
+         character(len=100)     :: tmp_float
+          
+         retcode= 0 
+         ipar(1) = 0
+         cfreq = md% freq('HZ')
+         freq = REAL(cfreq)
+
+         write(42,*)  md%n_pg,md%n_p,md%n_g, freq
+         flush(42)
+
+         write(tmp_float,*) REAL(cfreq)
+         if(len_trim(out_freq_real) + len_trim(tmp_float) + 1 > len(out_freq_real) ) then
+            ipar(1) = -1
+            return
+         end if
+
+         out_freq_real = trim(out_freq_real) // trim(tmp_float) // ','  
+         tmp_float = ''
+
+         write(tmp_float,*) IMAG(cfreq)
+         if(len_trim(out_freq_imag) + len_trim(tmp_float) + 1 > len(out_freq_imag) ) then
+            ipar(1) = -1
+            return
+         end if
+         out_freq_imag = trim(out_freq_imag) // trim(tmp_float) // ','  
+         tmp_float = ''
+
+         write(tmp_int,*) md%n_p
+         if(len_trim(out_p) + len_trim(tmp_int) + 1 > len(out_p) ) then
+            ipar(1) = -1
+            return
+         end if
+         out_p = trim(out_p) // trim(tmp_int) // ','  
+         tmp_int = ''
+
+         write(tmp_int,*) md%n_g
+         if(len_trim(out_g) + len_trim(tmp_int) + 1 > len(out_g) ) then
+            ipar(1) = -1
+            return
+         end if
+         out_g = trim(out_g) // trim(tmp_int) // ','  
+         tmp_int = ''
+
+         ! order = md%n_pg
+         ! !growth
+         ! fourpiimdivre =  4*pi*AIMAG(cfreq)/freq
+
+         ! do k = 1, md%n_k
+         !    radius = gr%pt(k)%x
+         !    xi_r = md%xi_r(k)
+         !    xi_h = md%xi_h(k)
+         !    dwdx = md%dW_dx(k)
+         ! end do
+
+        end subroutine process_mode_
+
+    end subroutine get_gyre_data
+
 
 
 

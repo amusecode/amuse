@@ -803,7 +803,6 @@ module amuse_mesa
       evolve_one_step = -1
 
       call do_evolve_one_step(AMUSE_id, res, ierr)
-
       if (ierr /= MESA_SUCESS) return   
 
       result = get_age(AMUSE_id, target_times(AMUSE_id))
@@ -1202,6 +1201,29 @@ module amuse_mesa
       set_radius_at_zone = -1
    end function set_radius_at_zone
 
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! Gyre related functions
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+   integer function get_gyre(AMUSE_id, mode_l, &
+                           add_center_point, keep_surface_point, add_atmosphere,&
+                           p, g, freq_real, freq_imag)
+      integer, intent(in) :: AMUSE_id
+      logical, intent(in) :: add_center_point, keep_surface_point, add_atmosphere
+      integer, intent(in) :: mode_l
+      character(len=256),intent(out) :: p, g, freq_real, freq_imag
+      integer :: ierr
+
+
+      call get_gyre_data(AMUSE_ID, mode_l, &
+         add_center_point, keep_surface_point, add_atmosphere, &
+         p, g, freq_real, freq_imag, &
+         ierr)
+
+      get_gyre=ierr
+
+   end function get_gyre
 
 
 
