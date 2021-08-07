@@ -417,6 +417,16 @@ void evolve_cc2(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt, 
     return;
   }
 
+  if(recenter && (inttype==CCC || inttype==CCC_KEPLER || inttype==CCC_BS || inttype==CCC_BSA || inttype==CCC_SHARED10))
+  {
+    system_center_of_mass(s,cmpos,cmvel);
+    move_system(s,cmpos,cmvel,-1);
+    evolve_cc2(clevel, s, stime, etime, dt, inttype, 0);
+    for(int i=0;i<3;i++) cmpos[i]+=cmvel[i]*dt;
+    move_system(s,cmpos,cmvel,1);
+    return;
+  }
+
   if (s.n <= BS_SUBSYS_SIZE && (inttype==CCC_BS ||inttype==CC_BS))
   {
     evolve_bs(clevel,s, stime, etime, dt);
@@ -441,15 +451,7 @@ void evolve_cc2(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt, 
     }
   }
 
-  if(recenter && (inttype==CCC || inttype==CCC_KEPLER || inttype==CCC_BS || inttype==CCC_BSA || inttype==CCC_SHARED10))
-  {
-    system_center_of_mass(s,cmpos,cmvel);
-    move_system(s,cmpos,cmvel,-1);
-    evolve_cc2(clevel, s, stime, etime, dt, inttype, 0);
-    for(int i=0;i<3;i++) cmpos[i]+=cmvel[i]*dt;
-    move_system(s,cmpos,cmvel,1);
-    return;
-  }
+
 
 #ifdef CONSISTENCY_CHECKS
   if (clevel == 0)

@@ -46,9 +46,18 @@ static void evolve_kepler_2(int clevel,struct sys s, DOUBLE stime, DOUBLE etime,
     for(k=0;k<3;k++) ipart->vel[k] = vel_cm[k] + f1 * dvel[k];
     for(k=0;k<3;k++) jpart->pos[k] = pos_cm[k] - f2 * dpos[k];
     for(k=0;k<3;k++) jpart->vel[k] = vel_cm[k] - f2 * dvel[k];
+#ifdef COMPENSATED_SUMMP
+    for(k=0;k<3;k++) ipart->pos_e[k]=0.;
+    for(k=0;k<3;k++) jpart->pos_e[k]=0.;
+#endif
+#ifdef COMPENSATED_SUMMV
+    for(k=0;k<3;k++) ipart->vel_e[k]=0.;
+    for(k=0;k<3;k++) jpart->vel_e[k]=0.;
+#endif
+    
   } else {
-    for(k=0;k<3;k++) ipart->pos[k]+=ipart->vel[k]*dt;
-    for(k=0;k<3;k++) jpart->pos[k]+=jpart->vel[k]*dt;
+    for(k=0;k<3;k++) COMPSUMP(ipart->pos[k],ipart->pos_e[k],dt*ipart->vel[k]);
+    for(k=0;k<3;k++) COMPSUMP(jpart->pos[k],jpart->pos_e[k],dt*jpart->vel[k]);   
   } 
   ipart->postime=etime;
   jpart->postime=etime;
@@ -59,7 +68,7 @@ static void evolve_kepler_2(int clevel,struct sys s, DOUBLE stime, DOUBLE etime,
 static void evolve_kepler_n(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt)
 {
   struct particle *ipart, *spart;
-  DOUBLE dpos[3],dpos0[3],cmpos[3];
+  DOUBLE dpos[3],dpos0[3],spos[3];
   DOUBLE dvel[3],dvel0[3];
   UINT err;
 
@@ -72,15 +81,17 @@ static void evolve_kepler_n(int clevel,struct sys s, DOUBLE stime, DOUBLE etime,
     return;
   }
   spart=GETPART(s,0);
-  for(int k=0;k<3;k++) cmpos[k]= spart->pos[k] + spart->vel[k]*dt;
+  for(int k=0;k<3;k++) spos[k]= spart->pos[k]; // save initial pos
+  for(int k=0;k<3;k++) COMPSUMP(spart->pos[k],spart->pos_e[k],dt*spart->vel[k]); //evolve central
+  spart->postime=etime;
 
   err=0;
 #pragma omp parallel for if((ULONG) s.n>omp_get_num_threads() && !omp_in_parallel()) default(none) \
- private(ipart, dpos,dvel,dpos0,dvel0) shared(etime,clevel, dt,cmpos, s, eps2, spart) reduction(|: err)
+ private(ipart, dpos,dvel,dpos0,dvel0) shared(etime,clevel, dt,spos, s, eps2, spart) reduction(|: err)
   for(UINT i=1;i<s.n;i++)
   {
     ipart=GETPART(s,i);
-    for(int k=0;k<3;k++) dpos0[k] = spart->pos[k] - ipart->pos[k];
+    for(int k=0;k<3;k++) dpos0[k] = spos[k] - ipart->pos[k];
     for(int k=0;k<3;k++) dvel0[k] = spart->vel[k] - ipart->vel[k];
     err|=universal_kepler_solver(dt,spart->mass,eps2,
                                       dpos0[0],dpos0[1],dpos0[2],
@@ -89,15 +100,19 @@ static void evolve_kepler_n(int clevel,struct sys s, DOUBLE stime, DOUBLE etime,
                                       &dvel[0],&dvel[1],&dvel[2]);
 
 
-    for(int k=0;k<3;k++) ipart->pos[k] = cmpos[k] - dpos[k];
+    for(int k=0;k<3;k++) ipart->pos[k] = spart->pos[k] - dpos[k];
     for(int k=0;k<3;k++) ipart->vel[k] = spart->vel[k] - dvel[k];
+#ifdef COMPENSATED_SUMMP
+    for(int k=0;k<3;k++) ipart->pos_e[k]=0.;
+#endif
+#ifdef COMPENSATED_SUMMV
+    for(int k=0;k<3;k++) ipart->vel_e[k]=0.;
+#endif
     ipart->postime=etime;
   } 
   if (err != 0) {
     ENDRUN("kepler solver failure"); // failure of the kepler solver should be very rare now
   }
-  for(int k=0;k<3;k++) spart->pos[k]=cmpos[k];
-  spart->postime=etime;
   diag->cecount[clevel]+=s.nzero;
 }
 
