@@ -17,6 +17,12 @@
 #include "evolve.h"
 #include "evolve_kepler.h"
 #include "evolve_bs.h"
+#include "evolve_shared.h"
+
+#define BS_SUBSYS_SIZE   10
+#define SHARED10_SUBSYS_SIZE   10
+#define SHARED10_MIN_DT_RATIO   (1./128) // if dtmin/dtmax > this do shared10, else try to find further CC 
+                                        // (ie see if there are hard binaries) 
 
 struct ccsys
 {
@@ -393,22 +399,6 @@ void free_sys(struct ccsys * s)
   free(s);
 }
 
-DOUBLE sys_forces_max_timestep(struct sys s,int dir)
-{
-  DOUBLE ts = 0.0;
-  DOUBLE ts_ij;
-  for (UINT i = 0; i < s.n-1; i++)
-  {
-    for (UINT j = i+1; j < s.n; j++)
-    {
-      ts_ij = (DOUBLE) timestep_ij(GETPART(s,i), GETPART(s,j) ,dir); // check symm.
-      if (ts_ij >= ts) { ts = ts_ij; };
-    }
-  }
-  return ts;
-}
-
-#define BS_SUBSYS_SIZE   10
 #define TASKCONDITION    (nc > 1 && s.n>BS_SUBSYS_SIZE)
 void evolve_cc2(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt, int inttype, int recenter)
 {
@@ -419,7 +409,8 @@ void evolve_cc2(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt, 
   CHECK_TIMESTEP(etime,stime,dt,clevel);
 
   if ((s.n == 2 || s.n-s.nzero<=1 )&& 
-     (inttype==CCC_KEPLER || inttype==CC_KEPLER || inttype==CCC_BS || inttype==CC_BS || inttype==CCC_BSA || inttype==CC_BSA))
+     (inttype==CCC_KEPLER || inttype==CC_KEPLER || inttype==CCC_BS || 
+      inttype==CC_BS || inttype==CCC_BSA || inttype==CC_BSA || inttype==CC_SHARED10 || inttype==CCC_SHARED10))
   //~ if (s.n == 2 && (inttype==CCC_KEPLER || inttype==CC_KEPLER))
   {
     evolve_kepler(clevel,s, stime, etime, dt);
@@ -438,30 +429,23 @@ void evolve_cc2(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt, 
     return;
   }
 
-  if(recenter && (inttype==CCC || inttype==CCC_KEPLER || inttype==CCC_BS || inttype==CCC_BSA))
+  if (s.n <= SHARED10_SUBSYS_SIZE && (inttype==CCC_SHARED10 ||inttype==CC_SHARED10))
+  {
+    timestep(clevel,s,s,SIGN(dt));
+    FLOAT dtmax=max_global_timestep(s);    
+    FLOAT dtmin=global_timestep(s);    
+    if(dtmin/dtmax>SHARED10_MIN_DT_RATIO) 
+    {
+      evolve_shared10(clevel,s, stime, etime, dt, -1.);
+      return;
+    }
+  }
+
+  if(recenter && (inttype==CCC || inttype==CCC_KEPLER || inttype==CCC_BS || inttype==CCC_BSA || inttype==CCC_SHARED10))
   {
      system_center_of_mass(s,cmpos,cmvel);
      move_system(s,cmpos,cmvel,-1);
   }
-
-// not actually helpful I think; needs testing
-#ifdef CC2_SPLIT_SHORTCUTS
-  int dir=SIGN(dt);
-  DOUBLE initial_timestep = sys_forces_max_timestep(s, dir);
-  if(fabs(dt) > initial_timestep)
-  {
-    DOUBLE dt_step = dt;
-    while (fabs(dt_step) > initial_timestep)
-    {
-      dt_step = dt_step / 2;
-      clevel++;
-    }
-    LOG("CC2_SPLIT_SHORTCUTS clevel=%d dt/dt_step=%Le\n", clevel,(long double) (dt / dt_step));
-    for (DOUBLE dt_now = 0; dir*dt_now < dir*(dt-dt_step/2); dt_now += dt_step)
-      evolve_cc2(clevel,s, dt_now, dt_now + dt_step, dt_step,inttype,0);
-    return;
-  }
-#endif
 
 #ifdef CONSISTENCY_CHECKS
   if (clevel == 0)
@@ -611,7 +595,7 @@ void evolve_cc2(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt, 
   }
 #pragma omp taskwait
 
-  if(recenter && (inttype==CCC || inttype==CCC_KEPLER || inttype==CCC_BS || inttype==CCC_BSA))
+  if(recenter && (inttype==CCC || inttype==CCC_KEPLER || inttype==CCC_BS || inttype==CCC_BSA || inttype==CCC_SHARED10))
   {
     for(int i=0;i<3;i++) cmpos[i]+=cmvel[i]*dt;
     move_system(s,cmpos,cmvel,1);
@@ -620,4 +604,28 @@ void evolve_cc2(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt, 
   free_sys(c);
 
 }
+
+// not actually helpful I think; needs testing
+void evolve_cc2_shortcut(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt, int inttype, int recenter, FLOAT dtsys)
+{
+  CHECK_TIMESTEP(etime,stime,dt,clevel);
+  if(dtsys<0) 
+  {
+    timestep(clevel,s,s,SIGN(dt));
+    dtsys=max_global_timestep(s);
+  }
+  if(dtsys < fabs(dt))
+  {
+    evolve_cc2_shortcut(clevel+1,s,stime, stime+dt/2,dt/2, inttype, recenter, dtsys);
+    evolve_cc2_shortcut(clevel+1,s,stime+dt/2, etime,dt/2, inttype, recenter, -1.);
+  }
+  else
+  {
+    evolve_cc2(clevel,s, stime, etime, dt, inttype, recenter);
+  }
+}
+
+
 #undef TASKCONDITION
+
+

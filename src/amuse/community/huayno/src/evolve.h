@@ -12,7 +12,7 @@
 #define RARVRATIO   1.
 
 #define MPWORKLIMIT 1000
-#define CLWORKLIMIT 100000
+#define CLWORKLIMIT 40000
 
 #define MAXLEVEL  64
 
@@ -100,7 +100,9 @@ enum intopt
   CONSTANT6,   // 36
   CONSTANT8,   // 37
   CONSTANT10,   // 38
-  ERROR_CONTROL // 39
+  ERROR_CONTROL, // 39
+  CC_SHARED10, // 40
+  CCC_SHARED10 // 41
 };
 
 extern int verbosity;
@@ -155,6 +157,7 @@ void dkd(int clevel,struct sys s1,struct sys s2, DOUBLE stime, DOUBLE etime, DOU
 void timestep(int clevel,struct sys s1, struct sys s2,int dir);
 FLOAT timestep_ij(struct particle *i, struct particle *j,int dir);
 FLOAT global_timestep(struct sys s);
+FLOAT max_global_timestep(struct sys s);
 
 void potential(struct sys s1, struct sys s2);
 

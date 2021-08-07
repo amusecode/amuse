@@ -278,6 +278,8 @@ void do_evolve(struct sys s, double dt, int inttype)
     case CCC_KEPLER:
     case CCC_BS:
     case CCC_BSA:
+    case CC_SHARED10:
+    case CCC_SHARED10:
 #ifdef _OPENMP
 #pragma omp parallel shared(global_diag,s,dt,clevel) copyin(dt_param) 
       {
@@ -287,7 +289,11 @@ void do_evolve(struct sys s, double dt, int inttype)
         printf("Total Threads # %d\n", omp_get_num_threads()); 
 #pragma omp single
 #endif
+#ifdef CC2_SPLIT_SHORTCUTS
+        evolve_cc2_shortcut(clevel,s,(DOUBLE) 0.,(DOUBLE) dt,(DOUBLE) dt, inttype, 1, -1.);
+#else
         evolve_cc2(clevel,s,(DOUBLE) 0.,(DOUBLE) dt,(DOUBLE) dt, inttype, 1);
+#endif        
 #ifdef _OPENMP
 #pragma omp critical
         sum_diagnostics(&global_diag,diag);
@@ -599,7 +605,8 @@ static void report(struct sys s,DOUBLE etime, int inttype)
     }
     printf(" total, total j, mean j: %18li %18li %f\n",totalbs,totalj,totalj/(1.*totalbs));
   }
-  if(inttype==KEPLER || inttype==CC_KEPLER || inttype==CCC_KEPLER || inttype==CCC_BS || inttype==CC_BS || inttype==CCC_BSA || inttype==CC_BSA)
+  if(inttype==KEPLER || inttype==CC_KEPLER || inttype==CCC_KEPLER || inttype==CCC_BS || 
+     inttype==CC_BS || inttype==CCC_BSA || inttype==CC_BSA || inttype==CC_SHARED10 || inttype==CC_SHARED10)
   {
     unsigned long totalcefail=0,totalcecount=0;
     printf("kepler solver counts:\n");
@@ -677,14 +684,24 @@ struct sys join(struct sys s1,struct sys s2)
 
 FLOAT global_timestep(struct sys s)
 {
-  FLOAT mindt=HUGE_VAL;
-  struct particle *ipart;
+  FLOAT dt,mindt=HUGE_VAL;
   for(UINT i=0;i<s.n;i++)
   {
-    ipart=GETPART(s, i);
-    if(mindt>ipart->timestep) mindt=ipart->timestep;
+    dt=GETPART(s, i)->timestep;
+    if(dt<mindt) mindt=dt;
   }
   return mindt;
+}
+
+FLOAT max_global_timestep(struct sys s)
+{
+  FLOAT dt,maxdt=0;
+  for(UINT i=0;i<s.n;i++)
+  {
+    dt=GETPART(s, i)->timestep;
+    if(dt>maxdt) maxdt=dt;
+  }
+  return maxdt;
 }
 
 void kdk(int clevel,struct sys s1,struct sys s2, DOUBLE stime, DOUBLE etime, DOUBLE dt)

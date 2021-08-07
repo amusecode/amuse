@@ -226,7 +226,7 @@ class Huayno(GravitationalDynamics,GravityFieldCode):
       CC_BS = 24, CCC_BS = 25, BS_CC_KEPLER = 26, CC_BSA = 27, CCC_BSA = 28, SHARED2_COLLISIONS = 29,
       SHARED4_COLLISIONS = 30, SHARED6_COLLISIONS = 31, SHARED8_COLLISIONS = 32, 
       SHARED10_COLLISIONS = 33, CONSTANT2 = 34, CONSTANT4 = 35, CONSTANT6 = 36, 
-      CONSTANT8 = 37, CONSTANT10 = 38, )
+      CONSTANT8 = 37, CONSTANT10 = 38, ERROR_CONTROL=39, CC_SHARED10=40, CCC_SHARED10=41)
 
     for key, val in all_inttypes.items():
       setattr(inttypes, key, val)
