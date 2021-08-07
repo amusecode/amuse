@@ -443,8 +443,12 @@ void evolve_cc2(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt, 
 
   if(recenter && (inttype==CCC || inttype==CCC_KEPLER || inttype==CCC_BS || inttype==CCC_BSA || inttype==CCC_SHARED10))
   {
-     system_center_of_mass(s,cmpos,cmvel);
-     move_system(s,cmpos,cmvel,-1);
+    system_center_of_mass(s,cmpos,cmvel);
+    move_system(s,cmpos,cmvel,-1);
+    evolve_cc2(clevel, s, stime, etime, dt, inttype, 0);
+    for(int i=0;i<3;i++) cmpos[i]+=cmvel[i]*dt;
+    move_system(s,cmpos,cmvel,1);
+    return;
   }
 
 #ifdef CONSISTENCY_CHECKS
@@ -594,12 +598,6 @@ void evolve_cc2(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt, 
     }
   }
 #pragma omp taskwait
-
-  if(recenter && (inttype==CCC || inttype==CCC_KEPLER || inttype==CCC_BS || inttype==CCC_BSA || inttype==CCC_SHARED10))
-  {
-    for(int i=0;i<3;i++) cmpos[i]+=cmvel[i]*dt;
-    move_system(s,cmpos,cmvel,1);
-  }
 
   free_sys(c);
 
