@@ -22,11 +22,21 @@ import numpy
 
 import warnings
 
-from amuse.units import units, nbody_system
+from amuse.units import units, constants, nbody_system
 from amuse.units.trigo import cos, sin, arccos, arctan2
 from amuse.datamodel import Particles, Particle
 
 from amuse.units.quantities import to_quantity, VectorQuantity
+
+def derive_G(unit_or_quantity):
+    unit=unit_or_quantity.unit
+    if(unit.base_system==constants.G.unit.base_system):
+        G=constants.G
+    elif(unit.base_system==nbody_system.G.unit.base_system):
+        G=nbody_system.G
+    else:
+        raise Exception("units not known, provide a G constant")
+    return G
 
 
 def newton(f, x0, fprime=None, args=(), tol=1.48e-8, maxiter=50):
@@ -124,14 +134,23 @@ def center_of_mass_array(
     return center_of_mass_array
 
 
-def orbital_period_to_semimajor_axis(
-        T, M1, M2, G=nbody_system.G
-        ):
+def orbital_period_to_semimajor_axis( T, M1, M2=None, G=None ):
+    if G is None:    
+        G=derive_G(M1)
+    if M2 is None:
+        M2=0.*M1
     mu = G * (M1 + M2)
     semi_major_axis = ((T / (2*numpy.pi))**2 * mu)**(1./3.)
-
     return semi_major_axis
 
+def semimajor_axis_to_orbital_period( a, M1, M2=None, G=None ):
+    if G is None:
+        G=derive_G(M1)
+    if M2 is None:
+        M2=0.*M1
+    mu = G * (M1 + M2)
+    orbital_period = 2*numpy.pi*(a**3/mu)**0.5
+    return orbital_period
 
 def rel_posvel_arrays_from_orbital_elements(
         primary_mass,
@@ -142,12 +161,15 @@ def rel_posvel_arrays_from_orbital_elements(
         inclination=0 | units.rad,
         longitude_of_the_ascending_node=0 | units.rad,
         argument_of_periapsis=0 | units.rad,
-        G=nbody_system.G
+        G=None
         ):
     """
     Returns relative positions/velocities for secondaries orbiting primaries.
     If primary_mass is a scalar, assumes the same primary for all secondaries.
     """
+    if G is None:
+        G=derive_G(primary_mass)
+
     try:
         number_of_secondaries = len(secondary_mass)
     except:
@@ -238,12 +260,14 @@ def generate_binaries(
         inclination=0 | units.rad,
         longitude_of_the_ascending_node=0 | units.rad,
         argument_of_periapsis=0 | units.rad,
-        G=nbody_system.G
+        G=None
         ):
     """
     returns two particlesets, which contain the primaries and the secondaries
     in binary pairs.
     """
+    if G is None:
+        G=derive_G(primary_mass)
     mass_unit = primary_mass.unit
     try:
         number_of_primaries = len(primary_mass)
@@ -259,6 +283,10 @@ def generate_binaries(
         secondary_mass = numpy.array(
                 [secondary_mass.value_in(mass_unit)]
                 ) | mass_unit
+
+    if number_of_primaries==1 and number_of_secondaries:
+        number_of_primaries = number_of_secondaries
+        primary_mass = primary_mass[0] * numpy.ones(number_of_secondaries)
 
     # mass arrays need to be the same length
     if number_of_secondaries != number_of_primaries:
@@ -304,7 +332,7 @@ def new_binary_from_orbital_elements(
         inclination=0 | units.deg,
         longitude_of_the_ascending_node=0 | units.deg,
         argument_of_periapsis=0 | units.deg,
-        G=nbody_system.G
+        G=None
         ):
     """
     returns a two-particle Particle set, with the second particle's position
@@ -346,7 +374,7 @@ def new_binary_from_orbital_elements(
     return result
 
 
-def get_orbital_elements_from_binary(binary, G=nbody_system.G):
+def get_orbital_elements_from_binary(binary, G=None):
     """
     Function that computes orbital elements from given two-particle set.
     Elements are computed for the second particle in this set and the
@@ -384,7 +412,7 @@ def get_orbital_elements_from_binary(binary, G=nbody_system.G):
             true_anomaly[0], inclination[0], long_asc_node[0], arg_per[0])
 
 
-def orbital_elements_from_binary(binary, G=nbody_system.G):
+def orbital_elements_from_binary(binary, G=None):
     (
             mass1, mass2, semimajor_axis, eccentricity, true_anomaly,
             inclination, long_asc_node, arg_per
@@ -398,7 +426,7 @@ def orbital_elements_from_binary(binary, G=nbody_system.G):
 
 
 def get_orbital_elements_from_binaries(
-        primaries, secondaries, G=nbody_system.G):
+        primaries, secondaries, G=None):
     """
     Function that computes orbital elements from given primaries and
     secondaries.
@@ -427,7 +455,7 @@ def get_orbital_elements_from_binaries(
 
 def get_orbital_elements_from_arrays(
         rel_position_raw, rel_velocity_raw,
-        total_masses, G=nbody_system.G):
+        total_masses, G=None):
     """
     Orbital elements from array of relative positions and velocities vectors,
     based on orbital_elements_from_binary and adapted to work for arrays (each
@@ -466,6 +494,9 @@ def get_orbital_elements_from_arrays(
     else:
         rel_position = rel_position_raw
         rel_velocity = rel_velocity_raw
+
+    if G is None:
+        G=derive_G(total_masses[0])
 
     separation = (rel_position**2).sum(axis=1)**0.5
     n_vec = len(rel_position)
@@ -614,7 +645,7 @@ def orbital_elements(*args, **kwargs):
 
 def orbital_elements_for_rel_posvel_arrays(
         rel_position_raw, rel_velocity_raw,
-        total_masses, G=nbody_system.G):
+        total_masses, G=None):
     (semimajor_axis, eccentricity, true_anomaly, inc, long_asc_node,
         arg_per_mat) = get_orbital_elements_from_arrays(
                 rel_position_raw, rel_velocity_raw, total_masses, G)
