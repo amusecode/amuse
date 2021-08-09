@@ -403,7 +403,8 @@ void potential_cl(struct sys s1, struct sys s2)
 
   if(err!=CL_SUCCESS) ENDRUN("clEnqueueNDRangeKernel fail")
 
-  clFinish(queue);
+  err=clFinish(queue);
+  if(err!=CL_SUCCESS) ENDRUN("clFinish fail")
 
   CLFLOAT* pot = (CLFLOAT*) clEnqueueMapBuffer(queue, _pot, CL_TRUE,  CL_MAP_WRITE, 0, nthread * sizeof(CLFLOAT), 0, NULL, NULL, &err);
   if(err!=CL_SUCCESS) ENDRUN("clEnqueueMapBuffer fail")
