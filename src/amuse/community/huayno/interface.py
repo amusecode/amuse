@@ -152,6 +152,35 @@ class HuaynoInterface(CodeInterface,
         function.result_type = 'i'
         return function
 
+    @legacy_function
+    def get_accel_zero_mass_parameter():
+        function = LegacyFunctionSpecification()
+        function.addParameter('accelerate_zero_mass', dtype='b', direction=function.OUT)
+        function.result_type = 'i'
+        return function
+
+    @legacy_function
+    def set_accel_zero_mass_parameter():
+        function = LegacyFunctionSpecification()
+        function.addParameter('accelerate_zero_mass', dtype='b', direction=function.IN)
+        function.result_type = 'i'
+        return function
+
+    @legacy_function
+    def get_opencl_device_type():
+        function = LegacyFunctionSpecification()
+        function.addParameter('opencl_device_type', dtype='i', direction=function.OUT)
+        function.result_type = 'i'
+        return function
+
+    @legacy_function
+    def set_opencl_device_type():
+        function = LegacyFunctionSpecification()
+        function.addParameter('opencl_device_type', dtype='i', direction=function.IN)
+        function.result_type = 'i'
+        return function
+
+
     def set_eps2(self, e):
         return self.set_eps2_parameter(e)
 
@@ -197,7 +226,7 @@ class Huayno(GravitationalDynamics,GravityFieldCode):
       CC_BS = 24, CCC_BS = 25, BS_CC_KEPLER = 26, CC_BSA = 27, CCC_BSA = 28, SHARED2_COLLISIONS = 29,
       SHARED4_COLLISIONS = 30, SHARED6_COLLISIONS = 31, SHARED8_COLLISIONS = 32, 
       SHARED10_COLLISIONS = 33, CONSTANT2 = 34, CONSTANT4 = 35, CONSTANT6 = 36, 
-      CONSTANT8 = 37, CONSTANT10 = 38, )
+      CONSTANT8 = 37, CONSTANT10 = 38, ERROR_CONTROL=39, CC_SHARED10=40, CCC_SHARED10=41)
 
     for key, val in all_inttypes.items():
       setattr(inttypes, key, val)
@@ -260,6 +289,14 @@ class Huayno(GravitationalDynamics,GravityFieldCode):
             default_value = 0
         )
 
+        handler.add_boolean_parameter(
+            "get_accel_zero_mass_parameter",
+            "set_accel_zero_mass_parameter",
+            "accelerate_zero_mass",
+            "accelerate zero mass particle interactions (should always be true, except for testing)",
+            default_value = True
+        )
+
         inttypes=sorted([(getattr(self.inttypes,t),t ) 
                    for i,t in enumerate(sorted(self.inttypes._list()))])
 
@@ -289,6 +326,13 @@ class Huayno(GravitationalDynamics,GravityFieldCode):
             default_value = 0.0 | nbody_system.time
         )
 
+        handler.add_method_parameter(
+            "get_opencl_device_type",
+            "set_opencl_device_type",
+            "opencl_device_type",
+            "set preferred OpenCL device type (0=default, 1=cpu, 2=gpu)",
+            default_value = 0
+        )
 
     def define_methods(self, handler):
         GravitationalDynamics.define_methods(self, handler)
