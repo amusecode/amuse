@@ -25,6 +25,7 @@ Help on package amuse.ic in amuse:
 or (directly from the terminal):
 > pydoc amuse.ic
 """
+import sys
 import numpy
 
 def numpy_fix():
@@ -52,4 +53,5 @@ except Exception as ex:
 # always report AMUSE reference information
 from amuse.support.literature import TrackLiteratureReferences
 
-TrackLiteratureReferences.default()
+if not "--no-report-references" in sys.argv:
+    TrackLiteratureReferences.default()
