@@ -409,7 +409,7 @@ class TestHuayno(TestWithMPI):
         # this result is probably dependent on system architecture hence no good for assert
         print() 
         print(sha.hexdigest())
-        print("44b8747cd181c7c05de39094d254771b4f67809c")
+        print("4f2aac4d8761f3b07545dcea53f1a65f84a5275b")
 
     def test14b(self):
         import hashlib
@@ -454,8 +454,7 @@ class TestHuayno(TestWithMPI):
         # this result is probably dependent on system architecture hence no good for assert
         print() 
         print(sha.hexdigest())
-        print("a37517f3acc23cfd39b7a53f9f47631fa8df2ae4")
-        #~ print("36cf912fb27cbf8169aa6d58e592a29bca4d1991")
+        print("f3563453fb9b959d8337c6e57a526e1ff52572a7")
 
     def test14c(self):
         import hashlib
@@ -503,7 +502,7 @@ class TestHuayno(TestWithMPI):
         # this result is probably dependent on system architecture hence no good for assert
         print() 
         print(sha.hexdigest())
-        print("c31d5d2667189708ae8e8be593a2445204596203")
+        print("0af7eaea472989ea4be1bb0e2b8633d6b9af41e4")
         
     def test15(self):
         particles = plummer.new_plummer_model(512)
