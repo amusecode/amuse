@@ -11,14 +11,14 @@ CODE_GENERATOR ?= $(AMUSE_DIR)/build.py
 
 CLASSNAME=KromeInterface
 
-FFLAGS += $(FCFLAGS) -O2 -ffree-line-length-none
+FFLAGS += $(FCFLAGS) -std=legacy -O2 -ffree-line-length-none
 INCL = -I./src/ -I./src/krome/build/
 
 all: src/krome src/libchem.a test krome_worker
 
 ifdef DOWNLOAD_CODES
 src/krome:
-	make -C . download
+	make -C . download_git
 else
 src/krome:
 	@echo ""
