@@ -1104,11 +1104,11 @@ module mesa_interface
 
         call gyre_get_modes(mode_l, process_mode_, ipar, rpar)
 
-        write(42,*) trim(out_freq_real)
-        write(42,*) trim(out_freq_imag)
-        write(42,*) trim(out_p)
-        write(42,*) trim(out_g)
-        flush(42)
+        ! write(42,*) trim(out_freq_real)
+        ! write(42,*) trim(out_freq_imag)
+        ! write(42,*) trim(out_p)
+        ! write(42,*) trim(out_g)
+        ! flush(42)
 
         ierr = ipar(1)
 
@@ -1133,8 +1133,8 @@ module mesa_interface
          cfreq = md% freq('HZ')
          freq = REAL(cfreq)
 
-         write(42,*)  md%n_pg,md%n_p,md%n_g, freq
-         flush(42)
+        !  write(42,*)  md%n_pg,md%n_p,md%n_g, freq
+        !  flush(42)
 
          write(tmp_float,*) REAL(cfreq)
          if(len_trim(out_freq_real) + len_trim(tmp_float) + 1 > len(out_freq_real) ) then

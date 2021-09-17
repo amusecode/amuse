@@ -5,3 +5,4 @@
 0006-Adipls-skip-tests.patch
 0001-Stop-crashes-when-profile-column-name-is-bad.patch
 0001-Add-support-for-namelist-setting-from-a-string.patch
+001-declare-i.patch
