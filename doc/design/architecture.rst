@@ -280,7 +280,7 @@ prone) and easier to couple with other codes.
     }
 
 Model of a community code
-~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The community codes of every module in all physical domains are modelled using
 the same template. The template consists of attributes and wrappers. **Attributes**

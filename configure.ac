@@ -1,3 +1,5 @@
+AC_CONFIG_MACRO_DIRS([m4])
+
 AC_INIT([amuse],[m4_esyscmd_s(python support/version.py)])
 AC_CONFIG_SRCDIR([src/amuse/__init__.py])
 

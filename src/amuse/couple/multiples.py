@@ -2295,15 +2295,15 @@ def rescale_binary_components(comp1, comp2, kep, scale, compress=True):
     M,th = kep.get_angles()
     a,e = kep.get_elements()
 
-    if 0:
-        print(pre, 'M, th, a, e, =', M, th, a, e)
-        print(pre, 'compress =', compress)
-        print(pre, sep12, scale**2, min_scale**2)
-
     rescale = (compress and sep12 > scale**2) \
                 or (not compress and sep12 < scale**2)
 
     min_scale = 0.1*scale			# see note above
+
+    if 0:
+        print(pre, 'M, th, a, e, =', M, th, a, e)
+        print(pre, 'compress =', compress)
+        print(pre, sep12, scale**2, min_scale**2)
 
     if compress == True:
         rescale = rescale or sep12 < min_scale**2

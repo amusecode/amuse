@@ -14,7 +14,12 @@ FORTRAN ?= gfortran
 PYTHON ?= python
 FC      ?= $(FORTRAN)
 MPIFC += $(FCFLAGS)
+
+GFVERSION10PLUS := $(shell expr `${FC} -dumpversion | cut -f1 -d.` \>= 10)
+ifeq (${GFVERSION10PLUS}, 1)
 MPIFC += -fallow-invalid-boz -std=legacy
+endif
+
 export FC MPIFC
 
 MESA_MAKE_DIR=./mesa_reqs

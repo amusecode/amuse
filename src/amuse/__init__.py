@@ -25,6 +25,7 @@ Help on package amuse.ic in amuse:
 or (directly from the terminal):
 > pydoc amuse.ic
 """
+import sys
 import numpy
 
 def numpy_fix():
@@ -46,4 +47,11 @@ try:
 except Exception as ex:
     message="Configuration not read in - or configuration invalid, exception:\n"+str(ex)
     config=NoConfig(message)
-    
+
+
+
+# always report AMUSE reference information
+from amuse.support.literature import TrackLiteratureReferences
+
+if not "--no-report-references" in sys.argv:
+    TrackLiteratureReferences.default()

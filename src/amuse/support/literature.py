@@ -31,6 +31,7 @@ LiteratureReference = namedtuple(
 
 class TrackLiteratureReferences:
     """
+        .. [#] https://doi.org/10.5281/zenodo.4946130
         .. [#] [2018araa.book.....P] Portegies Zwart, S. & McMillan, S.L.W., 2018
         .. [#] [2013CoPhC.183..456P] ** Portegies Zwart, S. et al., 2013
         .. [#] [2013A&A...557A..84P] ** Pelupessy, F. I. et al., 2013
@@ -214,10 +215,6 @@ def natsort_key(s):
     import re
     return list(map(try_int, re.findall(r'(\d+|\D+)', s)))
 
-def natcmp(a, b):
-    "Natural string comparison, case sensitive."
-    return cmp(natsort_key(a), natsort_key(b))
-
-def natsort(seq, cmp=natcmp):
+def natsort(seq):
     "In-place natural string sort."
     seq.sort(key=natsort_key)

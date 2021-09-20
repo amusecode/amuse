@@ -216,41 +216,4 @@ def _sse_search_endpoint_reached(stars):
     return True
 
 
-if __name__ == '__main__':
-
-    # simple test for the EVtwinContSSE script
-    stellar_evolution = EVtwin2SSE()
-    stellar_evolution.commit_paremeters() 
-
-    star = datamodel.Particle()
-    star.mass = 2.0 | units.MSun
-
-    star = stellar_evolution.particles.add_particle(star)
-    stellar_evolution.commit_particles()
-
-    stopped_evolving = False
-
-    stellar_remnant_counter = 10
-    print("%s\t%s\t%s\t%s\t%s\t%s" % (star.age, star.mass, star.radius, star.luminosity, star.stellar_type, stellar_evolution.activeModel))
-    while stellar_remnant_counter > 0 and not stopped_evolving:
-
-        if (is_remnant_stellar_type( star.stellar_type )):
-            stellar_remnant_counter -= 1
-        
-        previous_age = star.age
-        try:
-            stellar_evolution.evolve_model()
-            stopped_evolving = (star.age == previous_age) # Check whether the age has stopped increasing
-
-        except Exception as ex:
-            traceback.print_exc(file=sys.stdout)
-#			print str(ex)
-#			stopped_evolving = True
-
-        print("%s\t%s\t%s\t%s\t%s\t%s" % (star.age, star.mass, star.radius, star.luminosity, star.stellar_type, stellar_evolution.activeModel))
-
-    stellar_evolution.particles.remove_particle(star)
-    stellar_evolution.stop()
-
-
 Evtwin2sse = EVtwin2SSE

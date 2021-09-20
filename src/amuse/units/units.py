@@ -53,6 +53,11 @@ cm = named('centimeter','cm',0.01*m)
 erg = named('erg','erg', 1e-7 * J)
 barye = named('barye', 'Ba', 0.1*Pa)
 
+# imperial distance units
+inch = named('inch', 'in', 0.0254 * m)
+foot = named('foot', 'ft', 0.3048 * m)
+mile = named('mile', 'mi', 1609.344 * m)
+
 percent = named('percent', '%', 0.01 * none)
 metallicity = core.none_unit('metallicity', 'metallicity')
 

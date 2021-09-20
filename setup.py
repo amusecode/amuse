@@ -1,6 +1,3 @@
-import sys
-import os
-
 from setuptools import setup, find_packages
 from support.setup_codes import setup_commands
 from support.misc import find_data_files
