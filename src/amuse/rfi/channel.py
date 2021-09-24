@@ -912,7 +912,10 @@ class MpiChannel(AbstractMessageChannel):
             if self.job_scheduler:
                 self.info = self.get_info_from_job_scheduler(self.job_scheduler)
             else:
-                self.info = MPI.INFO_NULL
+                self.info = MPI.Info.Create()
+                
+        for key,value in self.mpi_info_options.items():     
+            self.info[key]=value
             
         self.cached = None
         self.intercomm = None
@@ -981,7 +984,10 @@ class MpiChannel(AbstractMessageChannel):
     def debugger(self):
         """Name of the debugger to use when starting the code"""
         return "none"
-        
+
+    @option(type="dict", sections=("channel",))
+    def mpi_info_options(self):
+        return dict()
     
     @option(type="int", sections=("channel",))
     def max_message_length(self):
