@@ -38,7 +38,7 @@ Once you have installed ipython you can run the notebook with:
     :maxdepth: 1
 
     01-Loading_AMUSE
-    02-Quantities_with_units_
+    02-Quantities_with_units
     03-Generic_units
     04-Collections_of_Particles
     05-Attributes_and_functions_on_particle_collections

@@ -528,7 +528,7 @@ class Rebound(GravitationalDynamics, GravityFieldCode):
 
     def define_parameters(self, handler):
         self.stopping_conditions.define_parameters(handler)
-        GravitationalDynamics.define_parameters(self, handler)
+        #~ GravitationalDynamics.define_parameters(self, handler)
         
         handler.add_method_parameter(
             "get_time_step",

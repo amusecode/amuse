@@ -369,39 +369,33 @@ class TestHuayno(TestWithMPI):
         import hashlib
 
         numpy.random.seed(123456)
-        particles = plummer.new_plummer_model(64)
+        particles = plummer.new_plummer_model(32)
         sha=hashlib.sha1()
 
-        class inttypes(object):
-            SHARED2=1
-            EXTRAPOLATE=5
-            PASS_KDK=2
-            PASS_DKD=7
-            HOLD_KDK=3
-            HOLD_DKD=8
-            PPASS_DKD=9
-            BRIDGE_KDK=4
-            BRIDGE_DKD=10
-            CC=11
-            CC_KEPLER=12
-            OK=13
-            KEPLER=14
-            SHARED4=15
-            SHARED6=18
-            SHARED8=19
-            SHARED10=20
-            SHAREDBS=21
-           
-            @classmethod
-            def _list(cls):
-                  return set([x for x in cls.__dict__.keys() if not x.startswith('_')])
+        test_set=["CONSTANT", "SHARED2", "EXTRAPOLATE",
+            "PASS_KDK", "PASS_DKD", "HOLD_KDK", "HOLD_DKD",
+            "PPASS_DKD", "BRIDGE_KDK", "BRIDGE_DKD",
+            "CC", "CC_KEPLER", "CC_BS", "CC_BSA",
+            "OK", "SHAREDBS", "SHARED4", "SHARED6", "SHARED8",
+            "SHARED10"]
 
-        for itype in sorted(inttypes._list()):
-            if itype in ("KEPLER"): continue
+        #~ test_set=["CONSTANT"]
+
+           
+        for itype in test_set:
+            #~ print()
+            #~ print(itype)
             instance = Huayno()
-            instance.parameters.inttype_parameter=getattr(Huayno.inttypes,itype)
+            instance.parameters.inttype_parameter=Huayno.all_inttypes[itype]
+            #~ instance.parameters.accelerate_zero_mass=False
             instance.particles.add_particles(particles)
+            E1=instance.kinetic_energy+instance.potential_energy
             instance.evolve_model(0.125 | nbody_system.time)
+            E2=instance.kinetic_energy+instance.potential_energy
+            if itype!="CONSTANT":
+              self.assertLess(abs(E2-E1).number, 1.e-5)
+            #~ print((E2-E1).number)
+
             part_out= instance.particles.copy()
             position = part_out.position.number
             if hasattr(position,'tobytes'):
@@ -415,7 +409,100 @@ class TestHuayno(TestWithMPI):
         # this result is probably dependent on system architecture hence no good for assert
         print() 
         print(sha.hexdigest())
-        print("8e71f9441578a43af4af927943577ad2c4130e4c")
+        print("4f2aac4d8761f3b07545dcea53f1a65f84a5275b")
+
+    def test14b(self):
+        import hashlib
+
+        numpy.random.seed(123456)
+        particles = plummer.new_plummer_model(32)
+        p2 = plummer.new_plummer_model(32)
+        p2.mass*=0
+        sha=hashlib.sha1()
+
+        test_set=["CONSTANT", "SHARED2", "EXTRAPOLATE",
+            "PASS_KDK", "PASS_DKD", "HOLD_KDK", "HOLD_DKD",
+            "PPASS_DKD", "BRIDGE_KDK", "BRIDGE_DKD",
+            "CC", "CC_KEPLER", "CC_BS", "CC_BSA",
+            "OK", "SHAREDBS", "SHARED4", "SHARED6", "SHARED8",
+            "SHARED10"]
+                                            
+        for itype in test_set:
+            #~ print()
+            #~ print(itype)
+            instance = Huayno(redirection="none")
+            instance.parameters.inttype_parameter=Huayno.all_inttypes[itype]
+            instance.parameters.accelerate_zero_mass=True
+            instance.particles.add_particles(particles)
+            instance.particles.add_particles(p2)
+            E1=instance.kinetic_energy+instance.potential_energy
+            instance.evolve_model(0.125 | nbody_system.time)
+            E2=instance.kinetic_energy+instance.potential_energy
+            if itype!="CONSTANT":
+              self.assertLess((E2-E1).number, 1.e-5)
+
+            part_out= instance.particles.copy()
+            position = part_out.position.number
+            if hasattr(position,'tobytes'):
+                as_bytes = position.tobytes()
+            else:
+                as_bytes = numpy.array(position.data, copy=True, order='C')
+            sha.update(as_bytes)
+            
+            instance.stop()
+        
+        # this result is probably dependent on system architecture hence no good for assert
+        print() 
+        print(sha.hexdigest())
+        print("f3563453fb9b959d8337c6e57a526e1ff52572a7")
+
+    def test14c(self):
+        import hashlib
+
+        numpy.random.seed(123456)
+        particles = plummer.new_plummer_model(16)
+        particles.mass*=0.25
+        p2 = plummer.new_plummer_model(16)
+        p2.mass*=0.75
+        sha=hashlib.sha1()
+
+        test_set=["CONSTANT", "SHARED2", "EXTRAPOLATE",
+            "PASS_KDK", "PASS_DKD", "HOLD_KDK", "HOLD_DKD",
+            "PPASS_DKD", "BRIDGE_KDK", "BRIDGE_DKD",
+            "CC", "CC_KEPLER", "CC_BS", "CC_BSA",
+            "OK", "SHAREDBS", "SHARED4", "SHARED6", "SHARED8",
+            "SHARED10"]
+           
+        #~ test_set=["CC_BS"]   
+           
+        for itype in test_set:
+            #~ print()
+            #~ print(itype)
+            instance = Huayno(redirection="none")
+            instance.parameters.inttype_parameter=Huayno.all_inttypes[itype]
+            instance.parameters.accelerate_zero_mass=True
+            instance.particles.add_particles(particles)
+            instance.particles.add_particles(p2)
+            E1=instance.kinetic_energy+instance.potential_energy
+            instance.evolve_model(0.125 | nbody_system.time)
+            E2=instance.kinetic_energy+instance.potential_energy
+            #~ if itype!="CONSTANT":
+              #~ self.assertLess(abs(E2-E1).number, 1.e-5)
+            #~ print((E2-E1).number)
+            part_out= instance.particles.copy()
+            position = part_out.position.number
+            if hasattr(position,'tobytes'):
+                as_bytes = position.tobytes()
+            else:
+                as_bytes = numpy.array(position.data, copy=True, order='C')
+            sha.update(as_bytes)
+            
+            instance.stop()
+        
+        # this result is probably dependent on system architecture hence no good for assert
+        print() 
+        print(sha.hexdigest())
+        print("0af7eaea472989ea4be1bb0e2b8633d6b9af41e4")
         
     def test15(self):
         particles = plummer.new_plummer_model(512)
@@ -516,15 +603,10 @@ class TestHuayno(TestWithMPI):
             merged.position = (p1 + p2).center_of_mass()
             merged.velocity = (p1 + p2).center_of_mass_velocity()
         
-        print(instance.model_time)
-        print(instance.particles)
         instance.particles.remove_particles(collisions.particles(0) + collisions.particles(1))
         instance.particles.add_particles(sticky_merged)
         
         instance.evolve_model(1.0 | nbody_system.time)
-        print()
-        print(instance.model_time)
-        print(instance.particles)
         self.assertTrue(collisions.is_set())
         self.assertTrue(instance.model_time < 1.0 | nbody_system.time)
         self.assertEqual(len(collisions.particles(0)), 1)

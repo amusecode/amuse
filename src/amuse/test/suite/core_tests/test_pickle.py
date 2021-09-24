@@ -114,7 +114,8 @@ class TestPicklingOfUnitsAndQuantities(amusetest.TestCase):
         process = subprocess.Popen([
                 sys.executable,
                 "-c",
-                code
+                code,
+               "--no-report-references"
             ]
             , stdout=subprocess.PIPE
             , stderr=subprocess.PIPE
@@ -141,14 +142,15 @@ class TestPicklingOfUnitsAndQuantities(amusetest.TestCase):
         process = subprocess.Popen([
                 sys.executable,
                 "-c",
-               code
+               code,
+               "--no-report-references"
             ]
             , stdout=subprocess.PIPE
             , stderr=subprocess.PIPE
             , env = env
         )
         unpickled_quantity_string, error_string = process.communicate()
-        self.assertEqual(process.returncode, 0)        
+        self.assertEqual(process.returncode, 0)
         self.assertEqual(str(quantity),unpickled_quantity_string.strip().decode('utf-8'))
         
     
