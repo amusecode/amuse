@@ -43,7 +43,7 @@ clean:
 	$(RM) ${CODELIB}
 	make -C ${CODEDIR} clean
 
-$(CODELIB):$(CODEDIR)/Makefile
+$(CODELIB):$(CODEDIR)/Makefile download
 	make -C ${CODEDIR} libphantom-amuse SETUP=$(SETUP) SYSTEM=$(SYSTEM) OPENMP=yes
 
 worker_code.f90: interface.py

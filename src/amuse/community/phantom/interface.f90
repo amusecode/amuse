@@ -562,6 +562,15 @@ function get_velocity(index_of_the_particle, vx, vy, vz)
   get_velocity=0
 end function
 
+function get_acceleration(index_of_the_particle, ax, ay, az)
+  implicit none
+  integer :: index_of_the_particle
+  double precision :: ax, ay, az
+  integer :: get_acceleration
+  call amuse_get_acceleration(index_of_the_particle, ax, ay, az)
+  get_acceleration=0
+end function
+
 function new_star_particle(index_of_the_particle, mass, x, y, z, vx, vy,  &
     vz, tform, radius)
   implicit none
@@ -587,14 +596,6 @@ function set_position(index_of_the_particle, x, y, z)
   integer :: set_position
   call amuse_set_position(index_of_the_particle, x, y, z)
   set_position=0
-end function
-
-function get_acceleration(index_of_the_particle, ax, ay, az)
-  implicit none
-  integer :: index_of_the_particle
-  double precision :: ax, ay, az
-  integer :: get_acceleration
-  get_acceleration=-1
 end function
 
 function commit_parameters()

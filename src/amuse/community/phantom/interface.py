@@ -1880,6 +1880,7 @@ class Phantom(GravitationalDynamics, GravityFieldCode):
         handler.add_setter('dm_particles', 'set_position')
         handler.add_getter('dm_particles', 'get_velocity')
         handler.add_setter('dm_particles', 'set_velocity')
+        handler.add_getter('dm_particles', 'get_acceleration')
 
         handler.define_set('gas_particles', 'index_of_the_particle')
         handler.set_new('gas_particles', 'new_sph_particle')
@@ -1892,6 +1893,7 @@ class Phantom(GravitationalDynamics, GravityFieldCode):
         handler.add_setter('gas_particles', 'set_position')
         handler.add_getter('gas_particles', 'get_velocity')
         handler.add_setter('gas_particles', 'set_velocity')
+        handler.add_getter('gas_particles', 'get_acceleration')
         handler.add_getter('gas_particles', 'get_internal_energy')
         handler.add_setter('gas_particles', 'set_internal_energy')
         handler.add_getter('gas_particles', 'get_smoothing_length')
@@ -1921,6 +1923,7 @@ class Phantom(GravitationalDynamics, GravityFieldCode):
         handler.add_setter('sink_particles', 'set_position')
         handler.add_getter('sink_particles', 'get_velocity')
         handler.add_setter('sink_particles', 'set_velocity')
+        handler.add_getter('sink_particles', 'get_acceleration')
         handler.add_getter('sink_particles', 'get_radius')
         handler.add_setter('sink_particles', 'set_radius')
         handler.add_getter('sink_particles', 'get_smoothing_length')
