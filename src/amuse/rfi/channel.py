@@ -915,7 +915,6 @@ class MpiChannel(AbstractMessageChannel):
                 self.info = MPI.Info.Create()
                 
         for key,value in self.mpi_info_options.items():     
-            print(key,value)
             self.info[key]=value
             
         self.cached = None
