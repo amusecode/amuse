@@ -11,8 +11,8 @@ from optparse import OptionParser
 
 
 class GetCodeFromHttp(object):
-    url_template = "https://github.com/hannorein/rebound/archive/{version}.zip"
-    filename_template = "{version}.zip"
+    url_template = "https://github.com/hannorein/rebound/archive/{version}.tar.gz"
+    filename_template = "{version}.tar.gz"
     version = ""
 
     def directory(self):
