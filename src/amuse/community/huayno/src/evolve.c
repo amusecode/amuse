@@ -190,10 +190,9 @@ void sum_diagnostics(struct diagnostics* total,struct diagnostics* diag)
   total->cpu_count+=diag->cpu_count;
   total->cl_count+=diag->cl_count;
 #endif
-  //#ifdef _OPENMP
-  //  printf("task %d: %d %li %li %li\n",omp_get_thread_num(),tasksum,diag->taskdrift,
-  //     diag->taskkick,taskcountsum);
-  //#endif
+#ifdef _OPENMP
+  if(verbosity>0) printf("task %d: %d %li %li %li\n",omp_get_thread_num(),tasksum,diag->taskdrift, diag->taskkick,taskcountsum);
+#endif
 }
 
 
@@ -285,8 +284,8 @@ void do_evolve(struct sys s, double dt, int inttype)
       {
         diag=(struct diagnostics *) malloc(sizeof( struct diagnostics));
         zero_diagnostics(diag);
-	//#pragma omp master      
-	//        printf("Total Threads # %d\n", omp_get_num_threads()); 
+#pragma omp master      
+	      if(verbosity>0) printf("Total Threads # %d\n", omp_get_num_threads()); 
 #pragma omp single
 #endif
 #ifdef CC2_SPLIT_SHORTCUTS
@@ -297,6 +296,7 @@ void do_evolve(struct sys s, double dt, int inttype)
 #ifdef _OPENMP
 #pragma omp critical
         sum_diagnostics(&global_diag,diag);
+        free(diag);
       }
       diag=&global_diag;
 #endif        
@@ -620,7 +620,6 @@ static void report(struct sys s,DOUBLE etime, int inttype)
   }
   
 #ifdef _OPENMP
-  /*
   {
     int totaltasks=0;
     printf("task counts:\n");
@@ -629,10 +628,8 @@ static void report(struct sys s,DOUBLE etime, int inttype)
       printf("%d: %18li %18li\n",i,diag->ntasks[i],diag->taskcount[i]);
       totaltasks+=diag->ntasks[i];
     } 
-   printf("openmp tasks: %d\n",totaltasks);
-
+    printf("openmp tasks: %d\n",totaltasks);
   }
-  */
 #endif  
   fflush(stdout);
 }
