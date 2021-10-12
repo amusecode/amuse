@@ -1208,20 +1208,18 @@ module amuse_mesa
 
    integer function get_gyre(AMUSE_id, mode_l, &
                            add_center_point, keep_surface_point, add_atmosphere,&
-                           p, g, freq_real, freq_imag)
+                           fileout)
       integer, intent(in) :: AMUSE_id
       logical, intent(in) :: add_center_point, keep_surface_point, add_atmosphere
       integer, intent(in) :: mode_l
-      character(len=256),intent(out) :: p, g, freq_real, freq_imag
+      character(*),intent(in) :: fileout
       integer :: ierr
-
 
       call get_gyre_data(AMUSE_ID, mode_l, &
          add_center_point, keep_surface_point, add_atmosphere, &
-         p, g, freq_real, freq_imag, &
-         ierr)
+         fileout, ierr) 
 
-      get_gyre=ierr
+      get_gyre = ierr
 
    end function get_gyre
 

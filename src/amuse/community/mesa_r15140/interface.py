@@ -844,14 +844,8 @@ class MESAInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolutionIn
             description = "Whether to keep surface point")
         function.addParameter('add_atmosphere', dtype='bool', direction=function.IN, 
             description = "Whether to add atmosphere")
-        function.addParameter('p', dtype='string', direction=function.OUT, 
-            description = "P modes found")
-        function.addParameter('g', dtype='string', direction=function.OUT, 
-            description = "G modes found")
-        function.addParameter('freq_real', dtype='string', direction=function.OUT, 
-            description = "Real components of the frequency")
-        function.addParameter('freq_imag', dtype='string', direction=function.OUT, 
-            description = "Imaginary components of the frequency")
+        function.addParameter('fileout', dtype='string', direction=function.IN, 
+            description = "Filename to store data at each radial point")
         function.result_type = 'int32'
         return function
 
@@ -861,31 +855,49 @@ class MESAInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolutionIn
         """
         Get gyre data. 
 
-        This returns a dict with (p,g) mode number and its complex frequenecy
+        This returns a list of dicts where each element of the list coresponds to one mode
+        
+        Each dict contains the pg,p,g and complex frequency for the mode as well as
+        arrays of r/R, xi_r, xi_h, and dwdx for the mode
+        
         """
 
+        _, filename = tempfile.mkstemp()
+
         res = self._get_gyre(index_of_the_star, mode_l,
-                            add_center_point, keep_surface_point, add_atmosphere)
-        
-        if res['__result'] != 0:
-            return res
-        else:
-            # Split output into lists
-            for key,value in res.items():
-                if key == '__result':
-                    continue
-                res[key] = value.strip().split(',')
-            
-            res['p'] = [int(x) for x in res['p'] if len(x)]
-            res['g'] = [int(x) for x in res['g'] if len(x)]
-            res['freq'] = [complex(float(i),float(j)) | units.Hz for i,j in zip(res['freq_real'],res['freq_imag']) if len(i)]
-            res.pop('freq_real')
-            res.pop('freq_imag')
-            res.pop('__result')
+                            add_center_point, keep_surface_point, add_atmosphere,
+                            filename)
+
+        if res != 0:
+            os.remove(filename)
             return res
 
+        res = []
+        with open(filename,'r') as f:
+            while True:
+                line = f.readline()
+                if len(line) == 0:
+                    break
 
+                pg,p,g,nk,fr,fi= line.split()
+                nk=int(nk)
+                data = numpy.zeros((nk,7))
+                for i in range(nk):
+                    data[i,:] = [float(j) for j in f.readline().split()]
+                
+                # Repack data into arrays with complex quantities
+                k = data[:,0].astype('int')
+                r = data[:,1]
+                xi_r = data[:,2] + 1j*data[:,3]
+                xi_h = data[:,4] + 1j*data[:,5]
+                dwdx = data[:,6]
 
+                res.append({'pg':int(pg),'p':int(p),'g':int(g),
+                            'freq':complex(float(fr),float(fi)),
+                            'r/R':r,'xi_r':xi_r,'xi_h':xi_h,'dwdx':dwdx})
+
+        os.remove(filename)
+        return res
 
 class MESA(StellarEvolution, InternalStellarStructure):
     
@@ -1364,7 +1376,7 @@ class MESA(StellarEvolution, InternalStellarStructure):
         handler.add_method(
             "get_gyre",
             (handler.INDEX, handler.NO_UNIT,handler.NO_UNIT, handler.NO_UNIT, handler.NO_UNIT),
-            (handler.NO_UNIT,handler.NO_UNIT, handler.NO_UNIT)
+            (handler.NO_UNIT,handler.NO_UNIT, handler.NO_UNIT, handler.NO_UNIT)
         )
 
 
