@@ -1129,82 +1129,13 @@ module mesa_interface
          write(unit,*) md%n_pg,md%n_p,md%n_g,md%n_k,REAL(cfreq),IMAG(cfreq)
 
          do k=1,md%n_k
-            write(unit,'(I8,6(1X,E24.16))') k, gr%pt(k)%x,md%xi_r(k), md%xi_h(k), md%dW_dx(k)
+            write(unit,'(I8,6(1X,E24.16))') k, gr%pt(k)%x, &
+                                            md%xi_r(k), md%xi_h(k), md%dW_dx(k)
          end do
          flush(unit)
          close(unit)
 
         end subroutine process_mode_
-
-        ! subroutine process_mode_ (md, ipar, rpar, retcode)
-    
-        !     type(mode_t), intent(in) :: md
-        !     integer, intent(inout)   :: ipar(:)
-        !     real(dp), intent(inout)  :: rpar(:)
-        !     integer, intent(out)     :: retcode
-      
-        !     integer               :: k, unit
-        !     complex(dp)           :: cfreq
-        !     real(dp)              :: freq, growth
-        !     type(grid_t)          :: gr
-        !     character(len=100)      :: tmp_int
-        !     character(len=100)     :: tmp_float
-             
-        !     retcode= 0 
-        !     ipar(1) = 0
-        !     cfreq = md% freq('HZ')
-        !     freq = REAL(cfreq)
-   
-        !    !  write(42,*)  md%n_pg,md%n_p,md%n_g, freq
-        !    !  flush(42)
-   
-        !     write(tmp_float,*) REAL(cfreq)
-        !     if(len_trim(out_freq_real) + len_trim(tmp_float) + 1 > len(out_freq_real) ) then
-        !        ipar(1) = -1
-        !        return
-        !     end if
-   
-        !     out_freq_real = trim(out_freq_real) // trim(tmp_float) // ','  
-        !     tmp_float = ''
-   
-        !     write(tmp_float,*) IMAG(cfreq)
-        !     if(len_trim(out_freq_imag) + len_trim(tmp_float) + 1 > len(out_freq_imag) ) then
-        !        ipar(1) = -1
-        !        return
-        !     end if
-        !     out_freq_imag = trim(out_freq_imag) // trim(tmp_float) // ','  
-        !     tmp_float = ''
-   
-        !     write(tmp_int,*) md%n_p
-        !     if(len_trim(out_p) + len_trim(tmp_int) + 1 > len(out_p) ) then
-        !        ipar(1) = -1
-        !        return
-        !     end if
-        !     out_p = trim(out_p) // trim(tmp_int) // ','  
-        !     tmp_int = ''
-   
-        !     write(tmp_int,*) md%n_g
-        !     if(len_trim(out_g) + len_trim(tmp_int) + 1 > len(out_g) ) then
-        !        ipar(1) = -1
-        !        return
-        !     end if
-        !     out_g = trim(out_g) // trim(tmp_int) // ','  
-        !     tmp_int = ''
-   
-        !     gr = md%grid()
-   
-        !     open(newunit=unit,file=fileout,action='write',status='old',position="append")
-   
-        !     write(unit, *) '# k x=r/R Real(xi_r/R) Imag(xi_r/R) Real(xi_h/R) Imag(xi_h/R) dW/dx'
-        !     do k=1,md%n_k
-        !        write(unit,'(I8,6(1X,E24.16))') k, gr%pt(k)%x,md%xi_r(k), md%xi_h(k), md%dW_dx(k)
-        !     end do
-        !     flush(unit)
-        !     close(unit)
-   
-        !    end subroutine process_mode_
-   
-
 
     end subroutine get_gyre_data
 
