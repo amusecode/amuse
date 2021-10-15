@@ -13,6 +13,7 @@ import matplotlib
 import matplotlib.pyplot as plt
 # import matplotlib.cm as cm
 
+import numpy
 from amuse.datamodel import Particles
 from amuse.io import read_set_from_file
 from amuse.units import units, nbody_system
@@ -22,6 +23,20 @@ from amuse.plot.mapper import MapHydro
 
 
 logger = logging.getLogger(__name__)
+
+
+def velocity_divergence(vx_field, vy_field, dx, velocity_unit=units.kms):
+    # Return divergence of velocity fields
+
+    div = (numpy.ufunc.reduce(
+        numpy.add,
+        [
+            -numpy.gradient(vx_field.value_in(velocity_unit), axis=1),
+            -numpy.gradient(vy_field.value_in(velocity_unit), axis=0),
+        ]
+    ) | velocity_unit) / dx
+
+    return div
 
 
 def plot_column_density(
@@ -71,18 +86,77 @@ def plot_temperature(
     )
 
 
+def plot_divergence(
+    ax,
+    maps,
+    x_axis="vx",
+    y_axis="vy",
+    contours=False,
+    normalise_by_counts=True,
+    vmin=None,
+    vmax=None,
+    div_unit=units.Myr**-1,
+):
+    dx = maps.width / maps.bins[0]
+    dy = maps.width / maps.bins[1]
+    assert (dx == dy), "dx/dy are spaced differently!"
+    x_range = numpy.arange(
+        maps.xmin.value_in(units.pc), maps.xmax.value_in(units.pc),
+        (maps.width / maps.bins[0]).value_in(units.pc),
+    )
+    y_range = numpy.arange(
+        maps.ymin.value_in(units.pc), maps.ymax.value_in(units.pc),
+        (maps.height / maps.bins[1]).value_in(units.pc),
+    )
+    x_grid, y_grid = numpy.meshgrid(x_range, y_range)
+    div = velocity_divergence(
+        getattr(maps, x_axis) / maps.counts,
+        getattr(maps, y_axis) / maps.counts,
+        dx,
+    )
+    if not normalise_by_counts:
+        div = div * maps.mass
+
+    if contours:
+        levels = 1 / ([-4, -10, -100, 100, 10, 4] | units.Myr)
+        return ax.contour(
+            x_grid, y_grid,
+            div.value_in(div_unit),
+            levels=levels.value_in(div_unit),
+            # colors=["blue", "red"],
+            # cmap="coolwarm",
+            cmap='bwr',
+        )
+    minmax = max(-div.min(), div.max())
+    if not vmin:
+        vmin = -minmax
+    if not vmax:
+        vmax = minmax
+    # minmax = 500
+    # print(minmax)
+    # print(vmin, vmax)
+    return ax.imshow(
+        div.value_in(div_unit),
+        extent=maps.extent,
+        vmin=vmin.value_in(div_unit),
+        vmax=vmax.value_in(div_unit),
+        cmap='bwr',
+        origin='lower',
+    )
+
+
 def new_figure(
     aspect=1,
     colorbar_width=0 | units.cm,
     title_margin=0 | units.cm,
     xlabel_margin=0.9 | units.cm,
     ylabel_margin=1.25 | units.cm,
-    right_padding=0.1 | units.cm,
-    top_padding=0.1 | units.cm,
-    plot_style="default",
+    right_padding=0.18 | units.cm,
+    top_padding=0.15 | units.cm,
+    # plot_style="default",
 ):
     "Return a new figure and a new axes object"
-    plt.style.use(plot_style)
+    # /plt.style.use(plot_style)
     fig = plt.figure()
 
     # Get the width of the figure - this is the fixed value
@@ -136,20 +210,23 @@ def new_figure(
 def plot_hydro_and_stars(
     maps,
     fig=None,
+    ax=None,
     title="",
     plot="column density",
     length_unit=units.parsec,
-    use_fresco=False,
     colorbar=True,
+    **kwargs
 ):
     "Plot gas and stars"
     maps.set_unit_length(length_unit)
 
     if fig:
-        ax = fig.gca()
+        if ax is None:
+            ax = fig.gca()
         ax.cla()
         # for artist in ax.lines + ax.collections:
         #     artist.remove()
+        cax = False
     else:
         if colorbar:
             fig, ax, cax = new_figure(
@@ -168,6 +245,36 @@ def plot_hydro_and_stars(
     elif plot == "temperature":
         gasplot = plot_temperature(ax, maps)
         gasplot_unit = units.K
+    elif plot == "divergence":
+        gasplot = plot_divergence(
+            ax,
+            maps,
+            normalise_by_counts=True,
+            div_unit=units.Myr**-1,
+        )
+    elif plot in ["hubble", "hubbledust"]:
+        from amuse.plot.fresco.fresco import make_image as fresco_image
+        if plot == "hubbledust":
+            extinction = True
+        else:
+            extinction = False
+
+        converter = nbody_system.nbody_to_si(1 | units.pc, 1 | units.MSun)
+        image = fresco_image(
+            stars=maps.stars,
+            gas=maps.gas if extinction is True else None,
+            image_width=maps.width,
+            image_size=maps.bins,
+            return_vmax=False,
+            converter=converter,
+            extinction=extinction,
+            # **kwargs
+        )
+        plt.imshow(
+            image,
+            extent=maps.extent,
+            origin="lower",
+        )
 
     cmap = copy.copy(matplotlib.cm.get_cmap("coolwarm"))
 
@@ -203,7 +310,7 @@ def plot_hydro_and_stars(
         else:
             cbar.set_label("%s" % gasplot_unit)
 
-    return fig, ax
+    return gasplot
 
 
 def new_argument_parser():

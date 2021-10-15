@@ -39,6 +39,16 @@ def u_to_temperature(
     )
     return temperature
 
+def temperature_to_u(
+        temperature,
+        gmmw=gas_mean_molecular_weight(),
+):
+    internal_energy = (
+        3.0 * constants.kB * temperature
+        / (2.0 * gmmw)
+    )
+    return internal_energy
+
 
 class MapHydro():
     class Maps():
@@ -154,8 +164,8 @@ class MapHydro():
         # y_axis = self.__axis_y
 
         mapper = FiMap(converter, mode="openmp", redirection="none")
-        if not hasattr(gas, "radius"):
-            gas.radius = gas.h_smooth
+        # if not hasattr(gas, "radius"):
+        gas.radius = gas.h_smooth
         mapper.particles.add_particles(gas)
 
         rotation_matrix = new_rotation_matrix(
