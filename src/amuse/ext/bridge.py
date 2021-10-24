@@ -109,14 +109,16 @@ def kick_system(system, get_gravity, dt):
 
 
 class bridge(object):
-    def __init__(self,verbose=False,method=None, use_threading=True):
+    def __init__(self,verbose=False,method=None, use_threading=True, time=None):
         """
         verbose indicates whether to output some run info
         """  
         self.systems=set()
         self.partners=dict()
         self.time_offsets=dict()
-        self.time=quantities.zero
+        if time is None:
+            time=quantities.zero
+        self.time=time
         self.do_sync=dict()
         self.verbose=verbose
         self.timestep=None
