@@ -2,7 +2,6 @@ from amuse.community import *
 from amuse.community.interface import common
 
 
-#class vaderInterface(common.CommonCodeInterface):
 class VaderInterface(CodeInterface,
 					 LiteratureReferencesMixIn,
 					 common.CommonCodeInterface):
@@ -11,33 +10,16 @@ class VaderInterface(CodeInterface,
 	VADER is a code simulating the evolution of viscous thin accretion
 	disks. It is developed by Mark Krumholz and John Forbes [1]. 
 
-	Note that this version is an old version running with Python2,
-	whereas the main branch has been updated to Python 3.
-	This verions is available on github, with the version
-	used here was updated on march 5th 2017 and has 
-	git branch id: ef719e8b068ab101b3fdb35bead6a317a0c1ae78
-
-	The AMUSE interface was build by Martijn Wilhelm as part of
-	his MSc Thesis (2018) at Leiden Observatory
-
 	.. [#] Krumholz, M. R. and Forbes, J. C., VADER: A Flexible, Robust, Open-Source Code for Simulating Viscous Thin Accretion Disks, Astronomy and Computing, Vol. 11 (2015)
 	"""
 		
 	include_headers = ['worker_code.h']
 
-	'''
-	def __init__(self, **keyword_arguments):
-		common.CommonCodeInterface.__init__(self,
-			name_of_the_worker="vader_worker",
-			**keyword_arguments)
-	'''
 	def __init__(self, mode = 'none', **keyword_arguments):
 		CodeInterface.__init__(self,
 			name_of_the_worker="vader_worker_" + mode,
 			**keyword_arguments)
 		LiteratureReferencesMixIn.__init__(self)
-				
-	#'''
 
 	@legacy_function
 	def initialize_code():
@@ -101,10 +83,6 @@ class VaderInterface(CodeInterface,
 		function.result_type = 'int32'
 		return function
 
-	# Vader's version of these functions is not compatible 
-	# with AMUSE (they require a mix of arrays and scalars),
-	# therefore these are not implemented
-	#'''
 	@legacy_function
 	def initialize_tabulated_grid():
 		function = LegacyFunctionSpecification()
@@ -121,12 +99,16 @@ class VaderInterface(CodeInterface,
 		function.addParameter('bspline_breakpoints', 	
 							  dtype='int32',
 							  direction=function.IN)
-		#function.addParameter('rTab', dtype='float64', 
-		#					  direction=function.IN)
-		#function.addParameter('vTab', dtype='float64', 
-		#					  direction=function.IN)
-		#function.addParameter('nTab', dtype='int32', 
-		#					  direction=function.IN)
+		function.result_type = 'int32'
+		return function
+
+	@legacy_function
+	def update_tabulated_grid():
+		function = LegacyFunctionSpecification()
+		function.addParameter('bspline_degree', dtype='int32',
+							  direction=function.IN)
+		function.addParameter('bspline_breakpoints', dtype='int32',
+							  direction=function.IN)
 		function.result_type = 'int32'
 		return function
 
@@ -184,37 +166,6 @@ class VaderInterface(CodeInterface,
 		function.addParameter('vTab', dtype='float64', direction=function.IN)
 		function.result_type = 'int32'
 		return function
-
-	'''
-	@legacy_function
-	def initialize_grid():
-		function = LegacyFunctionSpecification()
-		function.can_handle_array = True
-		function.addParameter('n', dtype='int32', 
-							  direction=function.IN)
-		function.addParameter('linear', dtype='int32', 
-							  direction=function.IN)
-		function.addParameter('r_g', dtype='float64', 
-							  direction=function.IN)
-		function.addParameter('r_h', dtype='float64', 
-							  direction=function.IN)
-		function.addParameter('vphi_g', dtype='float64', 
-							  direction=function.IN)
-		function.addParameter('vphi_h', dtype='float64', 
-							  direction=function.IN)
-		function.addParameter('beta_g', dtype='float64', 
-							  direction=function.IN)
-		function.addParameter('beta_h', dtype='float64', 
-							  direction=function.IN)
-		function.addParameter('psiEff_g', dtype='float64', 
-							  direction=function.IN)
-		function.addParameter('psiEff_h', dtype='float64', 	
-							  direction=function.IN)
-		function.addParameter('g_h', dtype='float64', 
-							  direction=function.IN)
-		function.result_type = 'int32'
-		return function
-	'''
 
 	#grid getters&setters
 	@legacy_function
@@ -1242,6 +1193,7 @@ class Vader(common.CommonCode):
 
 		handler.add_method('RUN', 'update_keplerian_grid')
 		handler.add_method('RUN', 'update_flat_grid')
+		handler.add_method('RUN', 'update_tabulated_grid')
 
 
 		grid_write_properties = ['state', 'column_density', 'pressure',
@@ -1336,13 +1288,18 @@ class Vader(common.CommonCode):
 			(builder.ERROR_CODE,)
 		)
 
-		#''' See comment at corresponding legacy functions
 		builder.add_method(
 			"initialize_tabulated_grid",
 			(builder.NO_UNIT, builder.NO_UNIT,
 			 length, length,
 			 builder.NO_UNIT, builder.NO_UNIT,),
 			(builder.ERROR_CODE)
+		)
+
+		builder.add_method(
+			"update_tabulated_grid",
+			(builder.NO_UNIT, builder.NO_UNIT),
+			(builder.ERROR_CODE,)
 		)
 
 		builder.add_method(

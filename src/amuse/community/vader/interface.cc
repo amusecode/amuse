@@ -9,7 +9,7 @@ using namespace std;
 
 /*
  * Interface code
- */
+*/
 
 class outputs {
 	public:
@@ -154,8 +154,8 @@ Disk::~Disk() {
 	delete out;
 	delete ctrl;
 
-    if (inttbl->rTab != NULL) { delete [] inttbl->rTab; }
-    if (inttbl->vTab != NULL) { delete [] inttbl->vTab; }
+    delete [] inttbl->rTab;
+    delete [] inttbl->vTab;
     delete inttbl;
 
 	if (grd != NULL) { gridFree(grd); }
@@ -340,11 +340,6 @@ int initialize_tabulated_grid(const int n, const int linear,
 							  const int bspline_degree, 
 							  const int bspline_breakpoints) {
 
-    if (disk->inttbl->rTab == NULL || disk->inttbl->vTab == NULL) {
-        cout << "[VADER-IF] No interpolation table defined" << endl;
-        return -1;
-    }
-
 	delete [] disk->column_density;
 	delete [] disk->pressure;
 	delete [] disk->internal_energy;
@@ -382,20 +377,41 @@ int initialize_tabulated_grid(const int n, const int linear,
 	return 0;
 }
 
+int update_tabulated_grid(const int bspline_degree, const int bspline_breakpoints){
+
+	if (disk->grd == NULL) { return -1; }
+
+	double rmin = disk->grd->r_h[0];
+	double rmax = disk->grd->r_h[disk->n];
+	unsigned int linear = disk->grd->linear;
+
+	if (disk->grd != NULL) { gridFree(disk->grd); }	
+
+	if (disk->w != NULL) { wkspFree(disk->w); }
+
+	disk->grd = gridInitTabulated(disk->n, 
+        disk->inttbl->rTab, 
+        disk->inttbl->vTab, 
+        disk->inttbl->nTab, 
+        rmin, rmax, bspline_degree, bspline_breakpoints, linear);
+	disk->w = wkspAlloc(disk->n);
+
+	return 0;
+}
+
 
 int get_tabulated_size(int *nTab) { *nTab = disk->inttbl->nTab; return 0; }
 
 int set_tabulated_size(int  nTab) { 
 
-    if (disk->inttbl->nTab != nTab && disk->inttbl->rTab != NULL 
-            && disk->inttbl->vTab != NULL) {
+    if (disk->inttbl->nTab != nTab) {
         delete [] disk->inttbl->rTab;
         delete [] disk->inttbl->vTab;
-    }
 
-    disk->inttbl->nTab = nTab;
-    disk->inttbl->rTab = new double[nTab];
-    disk->inttbl->vTab = new double[nTab];
+        disk->inttbl->nTab = nTab;
+        disk->inttbl->rTab = new double[nTab];
+        disk->inttbl->vTab = new double[nTab];
+    }
 
     return 0; 
 }
