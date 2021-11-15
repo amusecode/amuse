@@ -9,7 +9,7 @@ CXXFLAGS += -DAA_M=$(AA_M)
 
 CODELIB = libvader.a
 
-CODEOBJS = test.o advanceBE.o advanceCN.o applyBC.o checkpoint.o driver.o getNextIterate.o init.o ppmExtrap.o rotCurveSpline.o testingMode.o userFunc.o vader.o
+CODEOBJS = advanceBE.o advanceCN.o applyBC.o checkpoint.o driver.o getNextIterate.o init.o ppmExtrap.o rotCurveSpline.o testingMode.o userFunc.o vader.o
 
 AR = ar ruv
 RANLIB = ranlib
