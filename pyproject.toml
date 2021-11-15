@@ -1,5 +1,5 @@
 [build-system]
-requires = [ "setuptools>=42.0.0", "setuptools_scm", "pip>=19.0.0", "wheel", "docutils>=0.6", "numpy>=1.2.2", "mpi4py>=1.1.0", "pytest>=5", "h5py>=1.1.0" ]
+requires = [ "setuptools>=45.0.0", "setuptools_scm", "pip>=19.0.0", "wheel", "docutils>=0.6", "numpy>=1.2.2", "mpi4py>=1.1.0", "pytest>=5", "h5py>=1.1.0" ]
 
 [tool.setuptools_scm]
 write_to = "src/amuse/version.py"
