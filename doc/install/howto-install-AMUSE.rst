@@ -39,8 +39,13 @@ macOS
 
 
 On macOS, you will first need to install Xcode. You can do so via the app store.
+In macOS Big Sur and later, you may have to add the following line to your .bashrc or .zshrc profile:
 
-In this section we assume a default macOS installation (up to Catalina) with MacPorts, but other methods (such as Homebrew) will also work.
+.. code-block:: sh
+
+    export SDKROOT=/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk
+
+In this section we assume a default macOS installation (up to Big Sur) with MacPorts, but other methods (such as Homebrew) will also work.
 
 You can choose between openmpi and mpich as desired, both work with AMUSE. 
 Please make sure to set the compilers installed here as default, as it will greatly simplify things later on.
@@ -51,20 +56,20 @@ In the examples below we choose GCC 9 as the compiler, but other versions of GCC
 .. code-block:: sh
 
     sudo port install gcc9 openmpi-gcc9 hdf5 gsl cmake gmp mpfr fftw-3 +gcc9 openblas lapack
-    sudo port install python38
+    sudo port install python39
     sudo port select --set mpi openmpi-gcc9-fortran
     sudo port select --set gcc mp-gcc9
-    sudo port select --set python3 python38
+    sudo port select --set python3 python39
 
 * For mpich:
 
 .. code-block:: sh
 
     sudo port install gcc9 mpich-gcc9 hdf5 gsl cmake gmp mpfr fftw-3 +gcc9 openblas lapack
-    sudo port install python38
+    sudo port install python39
     sudo port select --set mpi mpich-gcc9
     sudo port select --set gcc mp-gcc9
-    sudo port select --set python3 python38
+    sudo port select --set python3 python39
 
 
 
