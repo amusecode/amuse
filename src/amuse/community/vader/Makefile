@@ -20,6 +20,8 @@ CODELIB = src/libvader_%.a
 
 CODE_GENERATOR = $(AMUSE_DIR)/build.py
 
+DOWNLOAD_FROM_WEB = $(PYTHON) ./download.py
+
 PROB = none
 
 BUILDDIR = build
@@ -27,13 +29,19 @@ BUILDDIR = build
 #all: vader_worker_% 
 all: ${TARGETS}
 
+download:
+	$(RM) -Rf src
+	#mkdir src
+	$(DOWNLOAD_FROM_WEB)
+    
+
 clean:
 	$(RM) -f *.so *.o *.pyc worker_code.cc worker_code.h 
 	$(RM) *~ vader_worker_* worker_code.cc
 	$(RM) -Rf build_*
 	make -C src clean
 
-vader_worker: ${TARGETS}
+vader_worker: download src ${TARGETS}
 
 ${TARGETS}: vader_worker_%: worker_code.cc worker_code.h interface_%.o $(BUILDDIR)_%/libvader.a
 	$(MPICXX) $(CXXFLAGS) $< interface_$*.o $(BUILDDIR)_$*/libvader.a -o $@ $(LDFLAGS)
