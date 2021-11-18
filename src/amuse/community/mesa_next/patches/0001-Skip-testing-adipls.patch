@@ -1,0 +1,20 @@
+From f751e1d7d9be5c02ed7468e3e713144c96aa2771 Mon Sep 17 00:00:00 2001
+From: Rob Farmer <robert.j.farmer37@gmail.com>
+Date: Thu, 18 Nov 2021 10:16:21 +0100
+Subject: [PATCH] Skip testing adipls
+
+---
+ adipls/skip_test | 1 +
+ 1 file changed, 1 insertion(+)
+ create mode 100644 adipls/skip_test
+
+diff --git a/adipls/skip_test b/adipls/skip_test
+new file mode 100644
+index 00000000..d00491fd
+--- /dev/null
++++ b/adipls/skip_test
+@@ -0,0 +1 @@
++1
+-- 
+2.31.1
+
