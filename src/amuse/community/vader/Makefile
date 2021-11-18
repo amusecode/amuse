@@ -40,6 +40,8 @@ code:
 
 download:
 	$(DOWNLOAD_FROM_WEB)
+	cp -r vader_src/vader_csrc src
+	cp Makefile_vader src/Makefile
 
 ifdef DOWNLOAD_CODES
 src:
@@ -56,7 +58,7 @@ src:
 	@echo ""
 	@echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
 	@echo ""
-	@make -s --no-print-directory -C . raise_error
+	@exit -1
 endif 
 
 
@@ -96,5 +98,6 @@ worker_code.h: interface.py
 	$(MPICC) $(CXXFLAGS) -c -o $@ $< 
 
 distclean: clean
-	$(RM) -Rf src org_src *.tar.gz
+	$(RM) -Rf src vader_src *.tar.gz
 
+.PRECIOUS: $(BUILDDIR)_% $(BUILDDIR)_%/Makefile $(BUILDDIR)_%/userFunc.h $(BUILDDIR)_%/vader_common.h

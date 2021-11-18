@@ -25,30 +25,14 @@ class GetCodeFromHttp:
 
     def unpack_downloaded_file(self, filename, name, version):
         print ("unpacking", filename)
-        arguments = ['mkdir', 'org_src']
+        arguments = ['mkdir', 'vader_src']
         subprocess.call(
             arguments,
             cwd=os.path.join(self.directory())
         )
-        arguments = ['tar', '-xf', filename, '-C', 'org_src', '--strip-components=1']
+        arguments = ['tar', '-xf', filename, '-C', 'vader_src', '--strip-components=1']
         subprocess.call(
             arguments,
-            cwd=os.path.join(self.directory())
-        )
-        subprocess.call(
-            [
-                'mv',
-                'org_src/vader_csrc',
-                'src'
-            ],
-            cwd=os.path.join(self.directory())
-        )
-        subprocess.call(
-            [
-                'cp',
-                'Makefile_vader',
-                'src/Makefile'
-            ],
             cwd=os.path.join(self.directory())
         )
         print("done")
