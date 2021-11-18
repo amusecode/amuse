@@ -4,6 +4,8 @@ import subprocess
 import os
 import urllib.request
 from shutil import which
+from optparse import OptionParser
+
 
 class GetCodeFromHttp:
     filename_template = "{version}.tar.gz"
@@ -23,7 +25,12 @@ class GetCodeFromHttp:
 
     def unpack_downloaded_file(self, filename, name, version):
         print ("unpacking", filename)
-        arguments = ['tar', '-xf', filename]
+        arguments = ['mkdir', 'org_src']
+        subprocess.call(
+            arguments,
+            cwd=os.path.join(self.directory())
+        )
+        arguments = ['tar', '-xf', filename, '-C', 'org_src', '--strip-components=1']
         subprocess.call(
             arguments,
             cwd=os.path.join(self.directory())
@@ -31,7 +38,7 @@ class GetCodeFromHttp:
         subprocess.call(
             [
                 'mv',
-                '{name}-{version}/vader_csrc'.format(name=name, version=version),
+                'org_src/vader_csrc',
                 'src'
             ],
             cwd=os.path.join(self.directory())
