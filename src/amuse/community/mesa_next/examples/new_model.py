@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from amuse.units import units
-from amuse.community.mesa_r15140.interface import MESA
+from amuse.community.mesa_next.interface import MESA
 from amuse import datamodel
 
 stellar_evolution = MESA()
@@ -26,7 +26,7 @@ new_star = stellar_evolution.new_particle_from_model(stars[0], 0.0|units.Myr)
 
 # Check they look similiar, they wont be identical as mesa attemtps to find a matching solution
 # within some tolerances (even when importing an exisiting mesa model), this will be worse
-# the more the EOSs and oither microphysics differs between models. 
+# the more the EOSs and other microphysics differs between models. 
 
 print(new_star.mass,stars[0].mass)
 

@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from amuse.units import units
-from amuse.community.mesa_r15140.interface import MESA
+from amuse.community.mesa_next.interface import MESA
 from amuse import datamodel
 
 stellar_evolution = MESA()
