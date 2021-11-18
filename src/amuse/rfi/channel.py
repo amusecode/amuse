@@ -1846,7 +1846,7 @@ class SocketChannel(AbstractMessageChannel):
             arguments.append('false')
             
         logger.debug("starting process with command `%s`, arguments `%s` and environment '%s'", command, arguments, os.environ)
-        self.process = Popen(arguments, executable=command, stdin=PIPE, stdout=None, stderr=None, close_fds=True)
+        self.process = Popen(arguments, executable=command, stdin=PIPE, stdout=None, stderr=None, close_fds=self.close_fds)
         logger.debug("waiting for connection from worker")
 
         self.socket, address = self.accept_worker_connection(server_socket, self.process)
@@ -1862,7 +1862,10 @@ class SocketChannel(AbstractMessageChannel):
         # logger.info("worker %s initialized", self.name_of_the_worker)
         
 
-
+    @option(type="boolean", sections=("sockets_channel",))
+    def close_fds(self):
+        """close open file descriptors when spawning child process"""
+        return True
 
     @option(choices=AbstractMessageChannel.DEBUGGERS.keys(), sections=("channel",))
     def debugger(self):

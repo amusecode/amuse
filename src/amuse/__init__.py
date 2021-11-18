@@ -53,5 +53,4 @@ except Exception as ex:
 # always report AMUSE reference information
 from amuse.support.literature import TrackLiteratureReferences
 
-if not "--no-report-references" in sys.argv:
-    TrackLiteratureReferences.default()
+TrackLiteratureReferences.default()
