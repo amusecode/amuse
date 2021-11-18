@@ -43,6 +43,14 @@ class GetCodeFromHttp:
             ],
             cwd=os.path.join(self.directory())
         )
+        subprocess.call(
+            [
+                'cp',
+                'Makefile_vader',
+                'src/Makefile'
+            ],
+            cwd=os.path.join(self.directory())
+        )
         print("done")
 
     def start(self):
