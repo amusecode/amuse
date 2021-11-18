@@ -40,14 +40,17 @@ code:
 
 download:
 	$(DOWNLOAD_FROM_WEB)
+
+src: vader_src
 	cp -r vader_src/vader_csrc src
 	cp Makefile_vader src/Makefile
 
+
 ifdef DOWNLOAD_CODES
-src:
+vader_src:
 	make -C . download
 else
-src:
+vader_src:
 	@echo ""
 	@echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
 	@echo ""
