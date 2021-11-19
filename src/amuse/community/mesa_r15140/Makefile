@@ -176,8 +176,7 @@ interface.o: interface.f90 $(MESA_LIB)
 skip_tests:
 #This one should always be skipped
 	touch $(MESA_DIR)/adipls/skip_test
-# Only on macs
-	UNAME_S := $(shell uname -s)
-ifeq ($(UNAME_S),Darwin)
+#Only on macs
+ifeq ($(shell sh -c 'uname 2>/dev/null || echo Unknown'),Darwin)
 	touch $(MESA_DIR)/skip_test
 endif
