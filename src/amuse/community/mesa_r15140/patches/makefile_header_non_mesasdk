@@ -22,6 +22,18 @@ endif
 CC = $(MPICC)
 FC =  $(MPIFC)
 
+# Set optimization level
+ARCH = $(shell uname -m)
+
+ifeq (${ARCH},x86_64)
+OPT_LEVEL = 2
+else ifeq (${ARCH},aarch64)
+OPT_LEVEL = 2
+SPECIAL_FC_FLAGS := ${SPECIAL_FC_FLAGS} -ffp-contract=off
+else
+OPT_LEVEL = 0
+endif
+
 
 # if you need special flags for the compiler, define them here:
 SPECIAL_FC_FLAGS = $(CFLAGS)
@@ -38,7 +50,7 @@ USE_CRMATH = YES
 ifeq ($(USE_CRMATH),YES)
 LOAD_CRMATH = -L$(MESA_DIR)/lib -lcrmath -lcrlibm
 export MESASDK_MATH_SLOT = crmath
-INCLUDE_CRMATH = 
+INCLUDE_CRMATH = -I$(MESA_DIR)/include
 endif
 
 # step 3) specify which BLAS and LAPACK libraries to use for mesa/mtx
@@ -214,10 +226,14 @@ USE_SHARED = NO
 # else
 # ifneq (,$(findstring gfortran,$(FC)))
 
+SKIP_NAN_TRAPS = YES
+
 FCbasic = -Wno-uninitialized -fno-range-check -fmax-errors=100 $(SPECIAL_FC_FLAGS) $(FCbasic2)
 FCbasic2 = -fprotect-parens -fno-sign-zero -fbacktrace -ggdb -finit-real=snan
 # -Warray-temporaries
  
+FCstandard = -std=f2008 -Wno-error=tabs
+
 FCimpno = -fimplicit-none  
 FCchecks = -fbounds-check
 FCwarn = -Wunused-value -W -Wno-compare-reals -Wno-unused-parameter -Wno-function-elimination
@@ -225,10 +241,10 @@ FCwarn = -Wunused-value -W -Wno-compare-reals -Wno-unused-parameter -Wno-functio
  
 FC_fixed_preprocess = -x f77-cpp-input
 FC_free_preprocess = -x f95-cpp-input
-FCfixed = -ffixed-form -ffixed-line-length-132 $(FC_fixed_preprocess)
+FCfixed = -ffixed-form -ffixed-line-length-none $(FC_fixed_preprocess)
 FCfixed72 = -ffixed-form $(FC_fixed_preprocess)
 FCfree = -ffree-form -ffree-line-length-none $(FC_free_preprocess)
-FCopt = -O2 -ftree-vectorize
+FCopt = -O${OPT_LEVEL} -ftree-vectorize
 FCdebug = -ggdb
 FCstatic =
 SLOW_COMPILE = -fno-var-tracking
@@ -401,8 +417,10 @@ CP_IF_NEWER = $(MESA_DIR)/utils/cp_if_newer
 
 # makedepf90 invocation (depends on whether we have the SDK2-patched version that
 # supports the -X flag)
-MAKEDEPF90 := $(MESA_DIR)/utils/makedepf90-2.8.8/makedepf90 -m %m.mod
-
-
-
+ifneq ($(shell makedepf90 -V | grep sdk2),)
+    MAKEDEPF90_IGNORE_MODS = intrinsic omp_lib iso_c_binding iso_fortran_env ieee_arithmetic crmath hdf5
+    MAKEDEPF90 := $(MESA_DIR)/utils/makedepf90-2.8.8/makedepf90 -m %m.mod -X $(addprefix -u,$(MAKEDEPF90_IGNORE_MODS))
+else
+    MAKEDEPF90 := $(MESA_DIR)/utils/makedepf90-2.8.8/makedepf90 -m %m.mod
+endif
     
