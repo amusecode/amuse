@@ -70,6 +70,7 @@ download:
 	$(DOWNLOAD_FROM_WEB)
 	make -C . patch
 	make -C . skip_tests
+	make -C . build_hdf5
 	make -C . build_ndiff
 	make -C . build_makedepf90
 	make -C . build_crmath
@@ -119,6 +120,11 @@ build_lapack95:
 build_fpx3_deps:
 	chmod u+x $(SRC_DIR)/fpx3_deps
 
+build_hdf5:
+	cd $(SRC_DIR)/hdf5-1.12.0;\
+	./configure --enable-fortran --enable-fortran2003 --enable-parallel --prefix=$(MESA_DIR) --enable-shared=no;\
+	make;\
+	make install
 
 clean:
 	$(RM) -f *~ *.pyc *.mod *.smod *.o worker_code worker_code.f90 $(MESA_LIB)

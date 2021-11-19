@@ -80,6 +80,7 @@ download:
 	make -C . build_fpx3_deps
 	make -C . build_fpx3
 	make -C . build_lapack95
+	make -C . build_hdf5
 	make -C . install_deps
 
 build_ndiff:
@@ -121,6 +122,12 @@ build_lapack95:
 
 build_fpx3_deps:
 	chmod u+x $(SRC_DIR)/fpx3_deps
+
+build_hdf5:
+	cd $(SRC_DIR)/hdf5-1.12.0;\
+	./configure --enable-fortran --enable-fortran2003 --enable-parallel --prefix=$(MESA_DIR) --enable-shared=no;\
+	make;\
+	make install
 
 
 clean:
