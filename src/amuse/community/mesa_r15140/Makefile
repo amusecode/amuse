@@ -69,6 +69,7 @@ download:
 	-mkdir src
 	$(DOWNLOAD_FROM_WEB)
 	make -C . patch
+	make -C . skip_tests
 	make -C . build_ndiff
 	make -C . build_makedepf90
 	make -C . build_crmath
@@ -171,3 +172,12 @@ install_deps:
 
 interface.o: interface.f90 $(MESA_LIB)
 	$(WORK_COMPILE) $<
+
+skip_tests:
+#This one should always be skipped
+	touch $(MESA_DIR)/adipls/skip_test
+# Only on macs
+	UNAME_S := $(shell uname -s)
+ifeq ($(UNAME_S),Darwin)
+	touch $(MESA_DIR)/skip_test
+endif
