@@ -99,6 +99,15 @@ def get_lapack95():
     instance.zip=False
     instance.start()      
 
+def get_hdf5():
+    instance = GetCodeFromHttp()
+    instance.url_template = "https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-{version}/hdf5-{version}/src/hdf5-{version}.tar.bz2"
+    instance.filename_template='hdf-{version}.tar.bz2'
+    instance.version = '1.12.0'
+    instance.zip=False
+    instance.start()      
+
+
 def get_mesa():
     instance = GetCodeFromHttp()
 
@@ -117,6 +126,7 @@ def main():
     get_crlibm()
     get_fpx3()
     get_fpx3deps()
+    get_hdf5()
     get_mesa()
 
 
