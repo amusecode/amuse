@@ -22,7 +22,7 @@ BUILDDIR = build
 
 ifdef MAKE_CODE
 
-TARGETS := $(patsubst src/prob/userFunc_%.c, vader_worker_%, ${shell ls src/prob/userFunc_*.c})
+TARGETS := $(patsubst src/prob/userFunc_%.c, vader_worker_%, ${wildcard src/prob/userFunc_*.c})
 all: $(TARGETS)
 
 ${TARGETS}: vader_worker_%: worker_code.cc worker_code.h interface_%.o $(BUILDDIR)_%/libvader.a
