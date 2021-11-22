@@ -9,7 +9,7 @@ from amuse.community.mesa_r2208.interface import MESA as MESA_2208
 from amuse.community.mesa_r15140.interface import MESA as MESA_15140
 
 
-def MESAInterface(version="15140", **options):
+def MESAInterface(version="2208", **options):
     if str(version) == "2208":
         return MESAInterface_2208(**options)
     if str(version) == "15140":
@@ -19,7 +19,7 @@ def MESAInterface(version="15140", **options):
     )
 
 
-def MESA(version="15140", **options):
+def MESA(version="2208", **options):
     if str(version) == "2208":
         return MESA_2208(**options)
     if str(version) == "15140":

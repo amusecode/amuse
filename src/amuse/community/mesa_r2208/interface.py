@@ -39,7 +39,7 @@ class MESAInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolutionIn
 
     @option(type="string", sections=('data'))
     def default_path_to_MESA_data(self):
-        return os.path.join(self.amuse_root_directory, 'src', 'amuse', 'community', 'mesa', 'src', 'mesa', 'data')
+        return os.path.join(self.amuse_root_directory, 'src', 'amuse', 'community', 'mesa_r2208', 'src', 'mesa', 'data')
     
     @legacy_function
     def set_MESA_paths():
