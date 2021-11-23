@@ -1,4 +1,4 @@
-include Makefile
+include Makefile.in
 include configure
 include README.txt
 include config.mk.in
