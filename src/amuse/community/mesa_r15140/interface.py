@@ -181,14 +181,14 @@ class MESAInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolutionIn
         function.result_type = 'int32'
         return function
     
-    @remote_function   
+    @remote_function(can_handle_array=True)
     def get_mass_loss_rate(index_of_the_star='i'):
         """
         Retrieve the current mass loss rate of the star. (positive for winds, negative for accretion)
         """
         returns (mass_change='d'| units.MSun/units.yr)
     
-    @remote_function  
+    @remote_function(can_handle_array=True)  
     def get_manual_mass_transfer_rate(index_of_the_star='i'):
         """
         Retrieve the current user-specified mass transfer rate of the star. (negative for winds, positive for accretion)
@@ -760,7 +760,7 @@ class MESAInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolutionIn
         """
         returns (value='d') 
 
-    @remote_function
+    @remote_function(can_handle_array=True)
     def get_history(index_of_the_star='i',name='s'):
         """
         Retrieve arbitary history column of the star.
@@ -790,7 +790,7 @@ class MESAInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolutionIn
         """
         returns ()
 
-    @remote_function   
+    @remote_function(can_handle_array=True)   
     def get_age(index_of_the_star='i'):
         """
         Retrieve the current age of the star
