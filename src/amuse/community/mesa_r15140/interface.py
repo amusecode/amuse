@@ -821,7 +821,7 @@ class MESAInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolutionIn
 
     def get_mass_fraction_of_species_at_zone(self, index_of_the_star, species, zone):
         res = self.get_name_of_species(index_of_the_star, species)
-        if res['__result'] == 0:
+        if all(numpy.atleast_1d(res['__result'])) == 0:
             return self.get_profile_at_zone(index_of_the_star, zone, res['species_name'])
         else:
             return res['__result']
