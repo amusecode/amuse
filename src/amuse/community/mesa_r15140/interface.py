@@ -1480,7 +1480,7 @@ class MESA(StellarEvolution, InternalStellarStructure):
         if number_of_zones is None:
             number_of_zones = self.get_number_of_zones(indices_of_the_stars)
 
-        return self.get_profile(indices_of_the_stars,'mu',number_of_zones) | units.none
+        return self.get_profile(indices_of_the_stars,'mu',number_of_zones) | units.amu
 
 
     def get_brunt_vaisala_frequency_squared_profile(self, indices_of_the_stars, number_of_zones = None):
