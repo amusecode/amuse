@@ -2,10 +2,10 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from amuse.units import units
-from amuse.community.mesa_r15140.interface import MESA
+from amuse.community.mesa.interface import MESA
 from amuse import datamodel
 
-stellar_evolution = MESA()
+stellar_evolution = MESA(version='15140')
 
 # Set Z for all stars?
 stellar_evolution.parameters.metallicity = 0.0142

@@ -2,14 +2,14 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from amuse.units import units
-from amuse.community.mesa_r15140.interface import MESA
+from amuse.community.mesa.interface import MESA
 from amuse import datamodel
 
 ###BOOKLISTSTART###
 def evolve_with_different_stellar_model():
     times = [10, 100, 1000] | units.Myr
     stars = datamodel.Particles(mass=[1, 2, 4]|units.MSun)
-    stellars = [MESA()]
+    stellars = [MESA(version='15140')]
     channels = []
     for star, stellar in zip(stars, stellars):
         stellar.particles.add_particle(star)
