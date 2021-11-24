@@ -134,9 +134,15 @@ To run these tests do:
 ```bash
 pip install [--user] amuse-tests
 ```
+(this will install all tests whether or not you have installed the full amuse package)
 
 2. Run the automatic tests
 
 ```bash
-py.test -v amuse.tests.suite
+pytest --pyargs -v amuse.test.suite
 ```
+you can also just run the tests for the specific packages you have installed e.g.
+```bash
+pytest --pyargs amuse.test.suite.codes_tests.test_huayno
+```
+you may have to prefix ```mpiexec -n 1 --oversubscribe``` to the pytest command.
