@@ -2,7 +2,6 @@ include Makefile.in
 include configure
 include README.txt
 include config.mk.in
-include Makefile.in
 include bin/amusifier.in
 include amuserc.example
 include install-sh

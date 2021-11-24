@@ -51,6 +51,8 @@ except Exception as ex:
 
 
 # always report AMUSE reference information
-from amuse.support.literature import TrackLiteratureReferences
-
-TrackLiteratureReferences.default()
+try:
+  from amuse.support.literature import TrackLiteratureReferences
+  TrackLiteratureReferences.default()
+except:
+  pass
