@@ -1,4 +1,4 @@
-setuptools>=42
+setuptools>=45
 setuptools_scm>=6
 wheel
 docutils>=0.6
