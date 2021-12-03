@@ -6,6 +6,7 @@ import math
 
 from amuse.community.phantom.interface import PhantomInterface, Phantom
 
+from amuse.datamodel import Particles
 from amuse.units import nbody_system
 from amuse.units import units
 from amuse import datamodel
@@ -123,4 +124,18 @@ class TestPhantomInterface(TestWithMPI):
 class TestPhantom(TestWithMPI):
     def test_initialise(self):
         instance = Phantom()
+        instance.stop()
+
+    def test_add_gasparticles(self):
+        n_particles = 10
+        instance = Phantom()
+        gas = Particles(n_particles)
+        gas.mass = 1 | nbody_system.mass
+        gas.x = numpy.arange(n_particles) | nbody_system.length
+        gas.y = numpy.arange(n_particles) | nbody_system.length
+        gas.z = 0 | nbody_system.length
+        gas.velocity = [0, 0, 0] | nbody_system.speed
+        gas.u = 0 | nbody_system.speed**2
+        instance.gas_particles.add_particles(gas)
+        self.assertEqual(10, len(instance.gas_particles))
         instance.stop()
