@@ -4,8 +4,12 @@
 from amuse.lab import *
 
 Second_Asymptotic_Giant_Branch = 6 | units.stellar_type
+MASS_UNIT = units.MSun
+LENGTH_UNIT = units.RSun
+TIME_UNIT = units.Myr
+MASSLOSS_UNIT = units.MSun / units.yr
 set_printing_strategy("custom", 
-                      preferred_units = [units.MSun, units.RSun, units.Myr], 
+                      preferred_units = [MASS_UNIT, LENGTH_UNIT, TIME_UNIT, MASSLOSS_UNIT], 
                       precision = 6, prefix = "", 
                       separator = " [", suffix = "]")
 
@@ -49,13 +53,13 @@ def main(Mstar, z, dmdt):
 def new_option_parser():
     from amuse.units.optparse import OptionParser
     result = OptionParser()
-    result.add_option("-M", unit=units.MSun, dest="Mstar", type="float",
-                      default = 1.|units.MSun, help="stellar mass [%default]")
-    result.add_option("--dmdt", unit=units.MSun/units.yr, dest="dmdt",
-                      type="float", default = -0.01|(units.MSun/units.yr),
+    result.add_option("-M", unit=MASS_UNIT, dest="Mstar", type="float",
+                      default=1. | MASS_UNIT, help="stellar mass [%default]")
+    result.add_option("--dmdt", unit=MASSLOSS_UNIT, dest="dmdt",
+                      type="float", default=-0.01 | (MASSLOSS_UNIT),
                       help="dmdt [%default]")
     result.add_option("-z", dest="z", type="float", default = 0.02,
-                      help="metalicity [%default]")
+                      help="metallicity [%default]")
     return result
 
 if __name__ in ('__main__', '__plot__'):
