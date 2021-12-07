@@ -1,0 +1,7 @@
+atomic_mass_constant,u
+Boltzmann_constant,kB
+Boltzmann_constant_in_eV_div_K,kBeV
+Planck_constant,h
+Planck_constant_in_eV_s,heV
+Newtonian_constant_of_gravitation,G
+speed_of_light_in_vacuum,c
