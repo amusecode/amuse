@@ -7,7 +7,7 @@ AMUSE_DIR := $(shell amusifier --get-amuse-dir)
 
 MPICXX   ?= mpicxx
 
-use_phantom_grape_x86 = no
+use_phantom_grape_x86 = no  # speedup from ~1M particles or so?
 
 FDPS_PATH = src/FDPS/src
 SUI_PATH = src/sui
@@ -33,8 +33,8 @@ ifeq ($(use_phantom_grape_x86),yes)
   CXXFLAGS += -I $(PG_ROOT)
   CXXFLAGS += -DENABLE_PHANTOM_GRAPE_X86
   CXXFLAGS += -L$(PG_ROOT) -lpg5
-  PG_BUILD = cd $(PG_ROOT) && $(MAKE) distclean libpg5.a
-  PG_CLEAN = cd $(PG_ROOT) && $(MAKE) distclean
+  PG_BUILD = make -C $(PG_ROOT) distclean libpg5.a
+  PG_CLEAN = make -C $(PG_ROOT) distclean
 else
   PG_BUILD =
   PG_CLEAN = 
