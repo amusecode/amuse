@@ -1,1 +1,1 @@
-# generated file
+from .interface import Sui
