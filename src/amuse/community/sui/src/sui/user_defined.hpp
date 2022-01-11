@@ -32,7 +32,7 @@ const PS::F64 CFL_hydro = 0.3; // CFL(Courant-Friedrichs-Lewy) number for hydrod
 const PS::F64 alpha_AV = 1.0; // coefficient of artificial viscosity
 const PS::S32 N_neighbor = 50; // number of neighbor particles
 const PS::F64 CFL_dyn = 0.3; // coefficient used to limit a timestep in terms of dynamics
-PS::F64 eps_grav = 0.01;
+PS::F64 epsilon_gravity = 0.0001;
 
 /* Kernel Function */
 PS::F64 W(const PS::F64 r, const PS::F64 h){
@@ -351,16 +351,19 @@ public:
     PS::S64 id;
     PS::F64 mass;
     PS::F64vec pos;
+    PS::F64 smth;
 
     void copyFromFP(const FP_nbody& fp) {
         this->id   = fp.id;
         this->mass = fp.mass;
         this->pos  = fp.pos;
+	//this->smth = fp.smth; -> fixed epsilon_gravity in this case?
     }
     void copyFromFP(const FP_sph& fp) {
         this->id   = fp.id;
         this->mass = fp.mass;
         this->pos  = fp.pos;
+	this->smth = fp.smth;
     }
     PS::F64 getCharge() const {
         return this->mass;
@@ -634,14 +637,22 @@ void CalcGravity (const EP_grav * ep_i,
                   const TParticleJ * ep_j,
                   const PS::S32 n_jp,
                   Force_grav * force) {
-    const PS::F64 eps2 = eps_grav * eps_grav;
+    //const PS::F64 eps2 = epsilon_gravity * epsilon_gravity;
+    PS::F64 eps2 = 0.0;
     for(PS::S32 i = 0; i < n_ip; i++){
+	eps2 = ep_i[i].smth * ep_i[i].smth;
         PS::F64vec xi = ep_i[i].getPos();
         PS::F64vec ai = 0.0;
         PS::F64 poti = 0.0;
         for(PS::S32 j = 0; j < n_jp; j++){
             PS::F64vec rij    = xi - ep_j[j].getPos();
+	    //PS::F64 eps = ((ep_i[i].smth + ep_j[j].smth)/2.);
+	    //eps2 = eps * eps
             PS::F64    r3_inv = rij * rij + eps2;
+            //PS::F64    r3_inv = rij * rij;
+	    //if (r3_inv < 4*eps2) {
+	    //    r3_inv += eps2;
+	    //}
             PS::F64    r_inv  = 1.0/sqrt(r3_inv);
             r3_inv  = r_inv * r_inv;
             r_inv  *= ep_j[j].getCharge();

@@ -84,8 +84,12 @@ private:
     PS::TreeForForceShort<Force_dens, EP_hydro, EP_hydro>::Gather tree_dens;
     PS::TreeForForceShort<Force_hydro, EP_hydro, EP_hydro>::Symmetry tree_hydro;
     PS::F64 dt;
+    bool enable_gravity_interact = true;
+    bool enable_hydro_interact = true;
+    bool use_entropy = false;
 
 public:
+    PS::ParticleSystem<FP_nbody> psys_nbody;
     PS::ParticleSystem<FP_sph> psys_sph;
     PS::F64 epsilon_gravity;
     PS::F64 dt_max;
@@ -109,8 +113,10 @@ public:
         int argc = 0;
         char **argv = NULL;
         PS::Initialize(argc, argv);
+        this->psys_nbody.initialize();
         this->psys_sph.initialize();
         //psys_test.initialize();
+        this->psys_nbody.setNumberOfParticleLocal(0);
         this->psys_sph.setNumberOfParticleLocal(0);
         //psys_test.setNumberOfParticleLocal(0);
         this->dinfo.initialize();
@@ -126,32 +132,77 @@ public:
         }
     }
 
-    void getTimeStep(){	
+    void checkConservativeVariables() {
+        PS::F64    ekin_loc = 0.0;
+        PS::F64    epot_loc = 0.0;
+        PS::F64    eth_loc  = 0.0; 
+        PS::F64vec mom_loc  = 0.0; 
+        for (PS::S32 i = 0; i < this->psys_nbody.getNumberOfParticleLocal(); i++) {
+            ekin_loc += 0.5 * this->psys_nbody[i].mass * this->psys_nbody[i].vel * this->psys_nbody[i].vel;
+            epot_loc += 0.5 * this->psys_nbody[i].mass * (this->psys_nbody[i].pot + this->psys_nbody[i].mass / this->epsilon_gravity);
+            mom_loc  += this->psys_nbody[i].mass * this->psys_nbody[i].vel;
+        }
+        for (PS::S32 i = 0; i < this->psys_sph.getNumberOfParticleLocal(); i++) {
+            ekin_loc += 0.5 * this->psys_sph[i].mass * this->psys_sph[i].vel * this->psys_sph[i].vel;
+            epot_loc += 0.5 * this->psys_sph[i].mass * (this->psys_sph[i].pot_grav + this->psys_sph[i].mass / this->epsilon_gravity);
+            eth_loc  += this->psys_sph[i].mass * this->psys_sph[i].eng;
+            mom_loc  += this->psys_sph[i].mass * this->psys_sph[i].vel;
+        }
+        PS::F64 ekin    = PS::Comm::getSum(ekin_loc);
+        PS::F64 epot    = PS::Comm::getSum(epot_loc);
+        PS::F64 eth     = PS::Comm::getSum(eth_loc);
+        PS::F64vec mom  = PS::Comm::getSum(mom_loc);
+    
+        static bool is_initialized = false;
+        static PS::F64 emech_ini, etot_ini;
+        if (is_initialized == false) {
+            emech_ini = ekin + epot;
+            etot_ini  = ekin + epot + eth;
+            is_initialized = true;
+        }
+    
+        if (PS::Comm::getRank() == 0){
+            const PS::F64 emech = ekin + epot;
+            const PS::F64 etot  = ekin + epot + eth;
+            const PS::F64 relerr_mech = std::fabs((emech - emech_ini)/emech_ini);
+            const PS::F64 relerr_tot  = std::fabs((etot  - etot_ini)/etot_ini);
+            std::cout << "-------------------------" << std::endl;
+            std::cout << "E_kin  = " << ekin  << std::endl;
+            std::cout << "E_pot  = " << epot  << std::endl;
+            std::cout << "E_th   = " << eth   << std::endl;
+            std::cout << "E_mech = " << emech << " (" << relerr_mech << ")" << std::endl;
+            std::cout << "E_tot  = " << etot  << " (" << relerr_tot  << ")" << std::endl;
+            std::cout << "Mom (x) = " << mom.x << std::endl;
+            std::cout << "Mom (y) = " << mom.y << std::endl;
+            std::cout << "Mom (z) = " << mom.z << std::endl;
+            std::cout << "-------------------------" << std::endl;
+        }
+    }
+
+    void getTimeStep(){ 
         this->dt = DBL_MAX; 
         if (this->dt_max > 0.0) this->dt = this->dt_max;
      
         // Timescale for N-body system
-	/*
-//#if defined(ENABLE_GRAVITY_INTERACT)
-        for (PS::S32 i = 0; i < psys_nbody.getNumberOfParticleLocal(); i++) {
-           const PS::F64 acc = std::sqrt(psys_nbody[i].acc * psys_nbody[i].acc);
-           if (acc > 0.0)
-               this->dt = std::min(this->dt, CFL_dyn * std::sqrt(epsilon_gravity / acc));
+        if (this->enable_gravity_interact) {
+            for (PS::S32 i = 0; i < this->psys_nbody.getNumberOfParticleLocal(); i++) {
+               const PS::F64 acc = std::sqrt(this->psys_nbody[i].acc * this->psys_nbody[i].acc);
+               if (acc > 0.0)
+                   this->dt = std::min(this->dt, CFL_dyn * std::sqrt(this->epsilon_gravity / acc));
+            }
         }
-//#endif
-        */
      
         // Timescale for SPH system
         for (PS::S32 i = 0; i < this->psys_sph.getNumberOfParticleLocal(); i++) {
-//#if defined(ENABLE_GRAVITY_INTERACT)
-           const PS::F64 acc = std::sqrt((psys_sph[i].acc_grav + psys_sph[i].acc_hydro)
-                                        *(psys_sph[i].acc_grav + psys_sph[i].acc_hydro));
-           if (acc > 0.0)
-               this->dt = std::min(this->dt, CFL_dyn * std::sqrt(epsilon_gravity / acc));
-//#endif
-//#if defined(ENABLE_HYDRO_INTERACT)
-           this->dt = std::min(this->dt, psys_sph[i].dt);
-//#endif
+            if (this->enable_gravity_interact){
+                const PS::F64 acc = std::sqrt((psys_sph[i].acc_grav + psys_sph[i].acc_hydro)
+                                    *(psys_sph[i].acc_grav + psys_sph[i].acc_hydro));
+            if (acc > 0.0)
+                this->dt = std::min(this->dt, CFL_dyn * std::sqrt(epsilon_gravity / acc));
+        }
+            if (this->enable_hydro_interact){
+                this->dt = std::min(this->dt, psys_sph[i].dt);
+        }
         }
         this->dt = PS::Comm::getMinValue(this->dt);
     }
@@ -261,19 +312,21 @@ public:
 
 
         // Perform domain decomposition 
-        // TODO: what does 'false' mean here?
+        // TODO: what does 'false' mean here? clear?
+        this->dinfo.collectSampleParticle(this->psys_nbody,false);
         this->dinfo.collectSampleParticle(this->psys_sph,false);
         this->dinfo.decomposeDomain();
         
         // Perform particle exchange
+        this->psys_nbody.exchangeParticle(this->dinfo);
         this->psys_sph.exchangeParticle(this->dinfo);
     
         
         // Make tree structures
         numPtclSPH = std::max(psys_sph.getNumberOfParticleLocal(),1);
-        //numPtclAll = psys_test.getNumberOfParticleLocal() + numPtclSPH;
-        numPtclAll = std::max(psys_sph.getNumberOfParticleLocal(),1);
-        std::cout << "N_sph: " << psys_sph.getNumberOfParticleLocal() << std::endl;
+        numPtclAll = psys_nbody.getNumberOfParticleLocal() + numPtclSPH;
+        //numPtclAll = std::max(psys_sph.getNumberOfParticleLocal(),1);
+        //std::cout << "N_sph: " << psys_sph.getNumberOfParticleLocal() << std::endl;
 
         //PS::TreeForForceLong<Force_grav, EP_grav, EP_grav>::Monopole this->tree_grav;
         this->tree_grav.initialize(3 * numPtclAll, theta_gravity);
@@ -291,39 +344,36 @@ public:
     
         // Peform force calculations 
         //- Gravity calculations
-//#if defined(ENABLE_GRAVITY_INTERACT)
-        //tree_grav.setParticleLocalTree(psys_nbody);
-        tree_grav.setParticleLocalTree(psys_sph,false);
-        tree_grav.calcForceMakingTree(CalcGravity<EP_grav>,
-                                      CalcGravity<PS::SPJMonopole>,
-                                      dinfo);
-        //for (PS::S32 i = 0; i < psys_nbody.getNumberOfParticleLocal(); i++) {
-        //    psys_nbody[i].copyFromForce(tree_grav.getForce(i));
-        //}
-        //const PS::S32 offset = psys_nbody.getNumberOfParticleLocal();
-        std::cout << "N_SPH: " << psys_sph.getNumberOfParticleLocal() << std::endl;
-        for (PS::S32 i = 0; i < psys_sph.getNumberOfParticleLocal(); i++) {
-            //psys_sph[i].copyFromForce(tree_grav.getForce(i+offset));
-            psys_sph[i].copyFromForce(tree_grav.getForce(i));
+        if (this->enable_gravity_interact){
+            tree_grav.setParticleLocalTree(psys_nbody);
+            tree_grav.setParticleLocalTree(psys_sph,false);
+            tree_grav.calcForceMakingTree(CalcGravity<EP_grav>,
+                                          CalcGravity<PS::SPJMonopole>,
+                                          dinfo);
+            for (PS::S32 i = 0; i < psys_nbody.getNumberOfParticleLocal(); i++) {
+                psys_nbody[i].copyFromForce(tree_grav.getForce(i));
+            }
+            const PS::S32 offset = psys_nbody.getNumberOfParticleLocal();
+            for (PS::S32 i = 0; i < psys_sph.getNumberOfParticleLocal(); i++) {
+                psys_sph[i].copyFromForce(tree_grav.getForce(i+offset));
+                //psys_sph[i].copyFromForce(tree_grav.getForce(i));
+            }
         }
-//#endif
 
-    //- SPH calculations
-//#if defined(ENABLE_HYDRO_INTERACT)
-		calcDensity(psys_sph, dinfo, tree_dens);
-#if defined(USE_ENTROPY)
-		setEntropy(psys_sph);
-#endif
-		setPressure(this->psys_sph);
-		this->tree_hydro.calcForceAllAndWriteBack(CalcHydroForce(), this->psys_sph, this->dinfo);
-//#endif
-
+        //- SPH calculations
+        if (this->enable_hydro_interact){
+            calcDensity(psys_sph, dinfo, tree_dens);
+            if (this->use_entropy){
+                setEntropy(psys_sph);
+            }
+            setPressure(this->psys_sph);
+            this->tree_hydro.calcForceAllAndWriteBack(CalcHydroForce(), this->psys_sph, this->dinfo);
+        }
         
-	// Set the timestep
-	getTimeStep();
-    //checkConservativeVariables(psys_nbody, psys_sph);
-        std::cout << "finished commit particles" << std::endl;
-
+        // Set the timestep
+        getTimeStep();
+        //checkConservativeVariables(psys_nbody, psys_sph);
+        //std::cout << "finished commit particles" << std::endl;
     }
 
     void evolve_model(PS::F64 time_end){
@@ -367,33 +417,33 @@ public:
         PS::F64 t_start; 
         //- Gravity calculations
         PS::Comm::barrier(); t_start = PS::GetWtime();
-//#if defined(ENABLE_GRAVITY_INTERACT)
-        //tree_grav.setParticleLocalTree(psys_nbody);
-        //tree_grav.setParticleLocalTree(psys_sph);
-        tree_grav.setParticleLocalTree(psys_sph,true);
-        tree_grav.calcForceMakingTree(CalcGravity<EP_grav>,
-                                      CalcGravity<PS::SPJMonopole>,
-                                      dinfo);
-        //for (PS::S32 i = 0; i < psys_nbody.getNumberOfParticleLocal(); i++) {
-        //    psys_nbody[i].copyFromForce(tree_grav.getForce(i));
-        //}
-        //const PS::S32 offset = psys_nbody.getNumberOfParticleLocal();
-        for (PS::S32 i = 0; i < psys_sph.getNumberOfParticleLocal(); i++) {
-            //psys_sph[i].copyFromForce(tree_grav.getForce(i+offset));
-            psys_sph[i].copyFromForce(tree_grav.getForce(i));
+        if (this->enable_gravity_interact){
+            //tree_grav.setParticleLocalTree(psys_nbody);
+            //tree_grav.setParticleLocalTree(psys_sph,false);
+            tree_grav.setParticleLocalTree(psys_sph,true);
+            tree_grav.calcForceMakingTree(CalcGravity<EP_grav>,
+                                          CalcGravity<PS::SPJMonopole>,
+                                          dinfo);
+            //for (PS::S32 i = 0; i < psys_nbody.getNumberOfParticleLocal(); i++) {
+            //    psys_nbody[i].copyFromForce(tree_grav.getForce(i));
+            //}
+            //const PS::S32 offset = psys_nbody.getNumberOfParticleLocal();
+            for (PS::S32 i = 0; i < psys_sph.getNumberOfParticleLocal(); i++) {
+                //psys_sph[i].copyFromForce(tree_grav.getForce(i+offset));
+                psys_sph[i].copyFromForce(tree_grav.getForce(i));
+            }
         }
-//#endif
         PS::Comm::barrier();
         //if (PS::Comm::getRank() == 0) std::cout << "t_grav = " << (PS::GetWtime() - t_start) << std::endl;
         //- SPH calculations
         PS::Comm::barrier(); t_start = PS::GetWtime();
-//#if defined(ENABLE_HYDRO_INTERACT)
 
-        calcDensity(psys_sph, dinfo, tree_dens);
-        setPressure(psys_sph);
-        tree_hydro.calcForceAllAndWriteBack(CalcHydroForce(), psys_sph, dinfo);
+        if (this->enable_hydro_interact){
+            calcDensity(psys_sph, dinfo, tree_dens);
+            setPressure(psys_sph);
+            tree_hydro.calcForceAllAndWriteBack(CalcHydroForce(), psys_sph, dinfo);
+        }
 
-//#endif
         PS::Comm::barrier();
         //if (PS::Comm::getRank() == 0) std::cout << "t_hydro = " << (PS::GetWtime() - t_start) << std::endl;
 
