@@ -53,6 +53,7 @@ class MESAInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolutionIn
         CodeInterface.__init__(self, name_of_the_worker="mesa_worker", **options)
         LiteratureReferencesMixIn.__init__(self)
         CodeWithDataDirectories.__init__(self)
+        self.mesa_version = "15140"
     
     @property
     def default_path_to_inlist(self):
@@ -927,6 +928,8 @@ class MESA(StellarEvolution, InternalStellarStructure):
             self.default_tmp_dir
         )
         self.model_time = 0.0 | units.yr
+
+        self.mesa_version = "15140"
 
     def define_parameters(self, handler):
         
