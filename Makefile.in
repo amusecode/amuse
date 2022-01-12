@@ -1,10 +1,7 @@
 -include config.mk
 
 PYTHON ?= python
-VERSION ?= undefined
 CLEAN ?= yes
-
-CONFIGURE_ERROR=
 
 export PATH :=  ${PATH}:$(PWD)/bin
 export PYTHONPATH := $(PYTHONPATH):$(PWD)/src:$(PWD)/test
@@ -23,9 +20,6 @@ framework: build.py
 	@-mkdir -p test_results
 	$(PYTHON) setup.py generate_main
 	$(PYTHON) setup.py build_libraries --inplace
-
-build.py:
-	$(error the code is not configured, please run configure first)
 
 allinbuild:
 	$(PYTHON) setup.py build
@@ -46,7 +40,6 @@ clean:
 
 oclean:
 	$(PYTHON) setup.py clean
-	$(PYTHON) setup.py clean_codes --inplace --codes-dir=src/omuse/community
 
 distclean:
 	-rm -f src/amuse/config.mk
@@ -65,7 +58,6 @@ distclean:
 	$(PYTHON) setup.py dist_clean
 	$(PYTHON) setup.py clean_codes --inplace
 	$(PYTHON) setup.py dist_clean --inplace
-	$(PYTHON) setup.py clean_codes --inplace --codes-dir=src/omuse/community
 	
 	make -C doc clean
 	-find ./ -name "*.pyc" -exec rm \{} \;
@@ -77,11 +69,9 @@ distclean:
 	-rm -f amuse.cfg
 	-rm -f test*.pickle test.csv
 
-
 tests:
 	$(PYTHON) setup.py tests
 	
-
 doc:
 	$(PYTHON) setup.py -q build_latex
 
@@ -91,32 +81,6 @@ html:
 latexpdf:
 	make -C doc latexpdf
 
-ctags:
-	find src -name "*.py" | xargs ctags
-	find src -name "*.cc" | xargs ctags -a
-	find src -name "*.[cCfFhH]" | xargs ctags -a
-	find src -name "*.cpp" | xargs ctags -a
-
-release: distclean
-	sed 's/version = .*/version = "$(VERSION)",/' < setup.py > releasesetup.py
-	cp setup.py setup.py.bck
-	mv releasesetup.py setup.py 
-	make -C doc release
-	python setup.py  -q sdist
-	cp setup.py.bck setup.py
-
-nightly:
-	make -C doc release
-	sed 's/version = .*/version = "$(VERSION)",/' < setup.py > nightlysetup.py
-	cp setup.py setup.py.bck
-	mv nightlysetup.py setup.py 
-	python setup.py sdist
-	cp setup.py.bck setup.py
-	
-debian:
-	$(PYTHON) ./support/debian.py
-
-
 %.code:
 ifneq (,$(findstring s,$(MAKEFLAGS)))
 	$(PYTHON) setup.py build_code --inplace --clean=$(CLEAN) --code-name=$*
@@ -124,30 +88,9 @@ else
 	$(PYTHON) setup.py -v build_code --inplace --clean=$(CLEAN) --code-name=$*
 endif
 
-%.ocode: | src/omuse
-ifneq (,$(findstring s,$(MAKEFLAGS)))
-	$(PYTHON) setup.py build_code --inplace --clean=$(CLEAN) --code-name=$* --codes-dir=src/omuse/community
-else
-	$(PYTHON) setup.py -v build_code --inplace --clean=$(CLEAN) --code-name=$* --codes-dir=src/omuse/community
-endif
-
-omuse: build.py  | src/omuse
-	@-mkdir -p test_results
-	$(PYTHON) setup.py generate_main
-	$(PYTHON) setup.py build_codes --inplace --codes-dir=src/omuse/community
-
-src/omuse:
-	@echo "src/omuse not present"
-	@false
-
 help:
 	@echo "brief overview of most important make options:"
 	@echo "make              - build all AMUSE libraries and community codes "
 	@echo "make <name>.code  - clean & build the community code <name> (or matching name*)"
 	@echo "make clean        - clean codes and libraries"
 	@echo "make distclean    - clean codes and libraries and all configuration files"
-ifeq (src/omuse ,$(wildcard src/omuse))
-	@echo "make omuse        - build OMUSE community codes"
-	@echo "make oclean       - clean OMUSE community codes"
-	@echo "make <name>.ocode - build OMUSE community code <name>"
-endif
