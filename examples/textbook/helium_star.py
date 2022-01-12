@@ -17,7 +17,7 @@ def main():
     
     star =  Particle()
     star.mass = 12.0 | units.MSun
-    stop_radius = 100 | units.RSun
+    stop_radius = 90 | units.RSun # Avoid the model going through a blue loop
     
     stellar_evolution = MESA()
     se_star = stellar_evolution.particles.add_particle(star)

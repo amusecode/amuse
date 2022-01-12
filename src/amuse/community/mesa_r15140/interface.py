@@ -1399,7 +1399,7 @@ class MESA(StellarEvolution, InternalStellarStructure):
         indices_of_the_stars = self._check_number_of_indices(indices_of_the_stars, action_string = "Querying mass profiles")
         if number_of_zones is None:
             number_of_zones = self.get_number_of_zones(indices_of_the_stars)
-        return self.get_profile(indices_of_the_stars,'mass',number_of_zones) | units.MSun
+        return self.get_profile(indices_of_the_stars,'dq',number_of_zones)
     
     def get_cumulative_mass_profile(self, indices_of_the_stars, number_of_zones = None):
         frac_profile = self.get_mass_profile(indices_of_the_stars, number_of_zones = number_of_zones)
@@ -1615,22 +1615,21 @@ class MESA(StellarEvolution, InternalStellarStructure):
 
         
         elif isinstance(internal_structure, dict):
-            if "dq" in internal_structure:
-                mass_profile = internal_structure['dq'][::-1]
-            else:
-                cumulative_mass_profile = [0.0] | units.MSun
-                cumulative_mass_profile.extend(internal_structure['mass'])
-                mass_profile = (cumulative_mass_profile[1:] - cumulative_mass_profile[:-1])[::-1]
-                mass_profile = mass_profile/cumulative_mass_profile[-1]
+
+            cumulative_mass_profile = numpy.insert(internal_structure['mass'].value_in(units.MSun),0,0)
+            mass_profile = (cumulative_mass_profile[1:] - cumulative_mass_profile[:-1])[::-1]
+            mass_profile = mass_profile/cumulative_mass_profile.max()
+            xqs = 1.0 - mass_profile # 1-q
 
             star_mass = numpy.zeros(numpy.size(internal_structure['temperature']))
-            star_mass[:] = cumulative_mass_profile[-1]
+            star_mass[:] = internal_structure['mass'].max().value_in(units.MSun)
+            star_mass = star_mass | units.MSun
             empty_comp = numpy.zeros(numpy.size(internal_structure['temperature']))
             empty_comp[:] = 10**-50
 
             self.new_stellar_model(
                 star_mass,
-                mass_profile,
+                xqs,
                 internal_structure['rho'][::-1],
                 internal_structure['temperature'][::-1],
                 internal_structure['X_H'][::-1],
