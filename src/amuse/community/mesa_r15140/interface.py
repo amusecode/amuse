@@ -1616,9 +1616,8 @@ class MESA(StellarEvolution, InternalStellarStructure):
         
         elif isinstance(internal_structure, dict):
 
-            cumulative_mass_profile = numpy.insert(internal_structure['mass'].value_in(units.MSun),0,0)
-            mass_profile = (cumulative_mass_profile[1:] - cumulative_mass_profile[:-1])[::-1]
-            mass_profile = mass_profile/cumulative_mass_profile.max()
+            cumulative_mass_profile = internal_structure['mass'].value_in(units.MSun)
+            mass_profile = cumulative_mass_profile/cumulative_mass_profile.max()
             xqs = 1.0 - mass_profile # 1-q
 
             star_mass = numpy.zeros(numpy.size(internal_structure['temperature']))
@@ -1629,7 +1628,7 @@ class MESA(StellarEvolution, InternalStellarStructure):
 
             self.new_stellar_model(
                 star_mass,
-                xqs,
+                xqs[::-1],
                 internal_structure['rho'][::-1],
                 internal_structure['temperature'][::-1],
                 internal_structure['X_H'][::-1],
