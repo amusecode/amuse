@@ -919,7 +919,7 @@ class MpiChannel(AbstractMessageChannel):
             self.info['host'] = self.hostname
         else:
             if self.job_scheduler:
-                self.info = self.get_info_from_job_scheduler(self.job_scheduler)
+                self.info = self.get_info_from_job_scheduler(self.job_scheduler, self.number_of_workers)
             else:
                 self.info = MPI.Info.Create()
                 
