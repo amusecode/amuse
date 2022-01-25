@@ -49,7 +49,7 @@ MODULES_F90_BASE = $(CODEDIR)/evol.f90  \
                    $(CODEDIR)/chemicals.f90  \
                    $(CODEDIR)/bintidemod.f90 \
                    $(CODEDIR)/winds.f90 \
-		   $(INI_CODEDIR)/inichemmod-amuse.f90 \
+		   $(INI_CODEDIR)/inichemmod.f90 \
                    $(INI_CODEDIR)/interpolmod.f90 \
                    $(INI_CODEDIR)/modinimod.f90
 

@@ -243,7 +243,7 @@ class Genec(StellarEvolution, InternalStellarStructure):
         StellarEvolution.define_methods(self, handler)
         handler.add_method(
             "new_particle",
-            (units.MSun, handler.NO_UNIT),
+            (units.MSun, handler.NO_UNIT, handler.NO_UNIT),
             (handler.INDEX, handler.ERROR_CODE)
         )
         handler.add_method(

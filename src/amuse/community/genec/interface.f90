@@ -192,11 +192,29 @@ function get_mass(index_of_the_star, mass)
 end function
 
 function get_mass_fraction_of_species_at_zone(index_of_the_star, species, zone, Xj_i)
+    use abundmod, only: &
+        x,y3,y,xc12,xc13,xc14,xn14,xn15,xo16,xo17,xo18,xf18,xf19,xne20,xne21,xne22,xna23,xmg24,&
+        xmg25,xmg26,xal26,xal27,xsi28,xprot,xneut,xbid,xbid1
     implicit none
     integer:: index_of_the_star
     integer:: species, zone
     double precision:: Xj_i
     integer:: get_mass_fraction_of_species_at_zone
+    select case(species)
+    case(1)
+        Xj_i = x(zone)
+    case(2)
+        Xj_i = y3(zone)
+    case(3)
+        Xj_i = y(zone)
+    case(4)
+        Xj_i = xc12(zone)
+    case(5)
+        Xj_i = xc13(zone)
+    case default
+        Xj_i = 0
+    end select
+
     get_mass_fraction_of_species_at_zone = 0
 end function
 
@@ -220,8 +238,47 @@ function get_name_of_species(index_of_the_star, species, species_name)
     implicit none
     integer:: index_of_the_star
     integer:: species
-    character(len = :), allocatable:: species_name
+    character(len = 6):: species_name
     integer:: get_name_of_species
+
+    character(len = 6), dimension(27):: species_names
+
+    species_names(1) = 'h'
+    species_names(2) = 'he3'
+    species_names(3) = 'he'
+    species_names(4) = 'c12'
+    species_names(5) = 'c13'
+    species_names(6) = 'n14'
+    species_names(7) = 'n15'
+    species_names(8) = 'o16'
+    species_names(9) = 'o17'
+    species_names(10) = 'o18'
+    species_names(11) = 'ne20'
+    species_names(12) = 'ne22'
+    species_names(13) = 'mg24'
+    species_names(14) = 'mg25'
+    species_names(15) = 'mg26'
+    species_names(16) = 'c14'
+    species_names(17) = 'f18'
+    species_names(18) = 'f19'
+    species_names(19) = 'ne21'
+    species_names(20) = 'na23'
+    species_names(21) = 'al26'
+    species_names(22) = 'al27'
+    species_names(23) = 'si28'
+    species_names(24) = 'neut'
+    species_names(25) = 'prot'
+    species_names(26) = 'bid'
+    species_names(27) = 'bid1'
+    species_name = species_names(species)
+    !x: H1
+    !y: He4
+    !y3: He3
+    !xneut: neutron
+    !xprot: proton
+    !xc12: C12
+    !xXYY: XYY - X element YY mass number
+    !xXXYY: as above
     get_name_of_species = 0
 end function
 
@@ -232,10 +289,16 @@ function get_number_of_particles()
 end function
 
 function get_number_of_species(index_of_the_star, n_species)
+    use inputparam,only: ialflu
     implicit none
     integer:: index_of_the_star
     integer:: n_species
     integer:: get_number_of_species
+    if (ialflu==1) then
+        n_species = 27
+    else
+        n_species = 15
+    end if
     get_number_of_species = 0
 end function
 
