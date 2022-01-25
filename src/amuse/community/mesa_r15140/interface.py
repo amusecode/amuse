@@ -815,7 +815,7 @@ class MESAInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolutionIn
         return self.get_profile_at_zone(index_of_the_star,zone,'density')
 
     def get_pressure_at_zone(self, index_of_the_star, zone):
-        return self.get_profile_at_zone(index_of_the_star,zone,'pressure')
+        return self.get_profile_at_zone(index_of_the_star,zone,'pressure') 
 
     def get_mu_at_zone(self, index_of_the_star, zone):
         return self.get_profile_at_zone(index_of_the_star,zone,'mu')
@@ -1468,7 +1468,7 @@ class MESA(StellarEvolution, InternalStellarStructure):
         if number_of_zones is None:
             number_of_zones = self.get_number_of_zones(indices_of_the_stars)
 
-        return self.get_profile(indices_of_the_stars,'pressure',number_of_zones) | units.none
+        return self.get_profile(indices_of_the_stars,'pressure',number_of_zones) | units.g/(units.cm * units.s* units.s)
 
     def get_pressure_scale_height_profile(self, indices_of_the_stars, number_of_zones = None):
         indices_of_the_stars = self._check_number_of_indices(indices_of_the_stars, action_string = "Querying pressure scale height profiles")
@@ -1654,23 +1654,19 @@ class MESA(StellarEvolution, InternalStellarStructure):
                 empty_comp[::-1],
             )
         else:
-            if hasattr(internal_structure, "dq"):
-                mass_profile = internal_structure.dq[::-1]
-            else:
-                cumulative_mass_profile = [0.0] | units.MSun
-                cumulative_mass_profile.extend(internal_structure.mass)
-                mass_profile = (cumulative_mass_profile[1:] - cumulative_mass_profile[:-1])[::-1]
-                mass_profile = mass_profile/cumulative_mass_profile[-1]
+            cumulative_mass_profile = internal_structure.mass.value_in(units.MSun)
+            mass_profile = cumulative_mass_profile/cumulative_mass_profile.max()
+            xqs = 1.0 - mass_profile # 1-q
 
             star_mass = numpy.zeros(numpy.size(internal_structure.temperature))
-            star_mass[:] = cumulative_mass_profile[-1]
+            star_mass[:] = internal_structure.mass.max().value_in(units.MSun)
+            star_mass = star_mass | units.MSun
             empty_comp = numpy.zeros(numpy.size(internal_structure.temperature))
             empty_comp[:] = 10**-50
 
-
             self.new_stellar_model(
                 star_mass,
-                mass_profile,
+                xqs[::-1],
                 internal_structure.rho[::-1],
                 internal_structure.temperature[::-1],
                 internal_structure.X_H[::-1],
