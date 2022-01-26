@@ -437,8 +437,13 @@ class AbstractMessageChannel(OptionalAttributes):
         OptionalAttributes.__init__(self, **options)
     
     @classmethod
-    def GDB(cls, full_name_of_the_worker, channel, interpreter_executable=None):
-        arguments = ['-hold', '-display', os.environ['DISPLAY'], '-e', 'gdb', '--args']
+    def GDB(cls, full_name_of_the_worker, channel, interpreter_executable=None, immediate_run=True):
+        arguments = ['-hold', '-display', os.environ['DISPLAY'], '-e', 'gdb']
+        
+        if immediate_run:
+            arguments.extend([ '-ex', 'run'])
+        
+        arguments.extend(['--args'])
         
         if not interpreter_executable is None:
             arguments.append(interpreter_executable)
@@ -449,7 +454,7 @@ class AbstractMessageChannel(OptionalAttributes):
         return command, arguments
 
     @classmethod
-    def LLDB(cls, full_name_of_the_worker, channel, interpreter_executable=None):
+    def LLDB(cls, full_name_of_the_worker, channel, interpreter_executable=None, immediate_run=True):
         arguments = ['-hold', '-display', os.environ['DISPLAY'], '-e', 'lldb', '--']
 
         if not interpreter_executable is None:
@@ -461,7 +466,7 @@ class AbstractMessageChannel(OptionalAttributes):
         return command, arguments
 
     @classmethod
-    def DDD(cls, full_name_of_the_worker, channel, interpreter_executable=None):
+    def DDD(cls, full_name_of_the_worker, channel, interpreter_executable=None, immediate_run=True):
         if os.name == 'nt':
             arguments = [full_name_of_the_worker, "--args",full_name_of_the_worker]
             command = channel.adg_exe
@@ -478,7 +483,7 @@ class AbstractMessageChannel(OptionalAttributes):
             return command, arguments
         
     @classmethod
-    def VALGRIND(cls, full_name_of_the_worker, channel, interpreter_executable=None):
+    def VALGRIND(cls, full_name_of_the_worker, channel, interpreter_executable=None, immediate_run=True):
         # arguments = ['-hold', '-display', os.environ['DISPLAY'], '-e', 'valgrind',  full_name_of_the_worker]
         arguments = []
         
@@ -491,7 +496,7 @@ class AbstractMessageChannel(OptionalAttributes):
         
         
     @classmethod
-    def XTERM(cls, full_name_of_the_worker, channel, interpreter_executable=None):
+    def XTERM(cls, full_name_of_the_worker, channel, interpreter_executable=None, immediate_run=True):
         arguments = ['-hold', '-display', os.environ['DISPLAY'], '-e']
         
         if not interpreter_executable is None:
@@ -520,7 +525,7 @@ class AbstractMessageChannel(OptionalAttributes):
         return command, arguments
     
     @classmethod
-    def GDBR(cls, full_name_of_the_worker, channel, interpreter_executable=None):
+    def GDBR(cls, full_name_of_the_worker, channel, interpreter_executable=None, immediate_run=True):
         "remote gdb, can run without xterm"
         
         arguments = ['localhost:{0}'.format(channel.debugger_port)]
@@ -534,7 +539,7 @@ class AbstractMessageChannel(OptionalAttributes):
         return command, arguments
         
     @classmethod
-    def NODEBUGGER(cls, full_name_of_the_worker, channel, interpreter_executable=None):
+    def NODEBUGGER(cls, full_name_of_the_worker, channel, interpreter_executable=None, immediate_run=True):
         if not interpreter_executable is None:
             return interpreter_executable, [full_name_of_the_worker]
         else:
@@ -542,7 +547,7 @@ class AbstractMessageChannel(OptionalAttributes):
             
     
     @classmethod
-    def STRACE(cls, full_name_of_the_worker, channel, interpreter_executable=None):
+    def STRACE(cls, full_name_of_the_worker, channel, interpreter_executable=None, immediate_run=True):
         arguments = ['-ostrace-out',  '-ff']
         if not interpreter_executable is None:
             arguments.append(interpreter_executable)
@@ -551,7 +556,7 @@ class AbstractMessageChannel(OptionalAttributes):
         return command, arguments
         
     @classmethod
-    def CUSTOM(cls, full_name_of_the_worker, channel, interpreter_executable=None):
+    def CUSTOM(cls, full_name_of_the_worker, channel, interpreter_executable=None, immediate_run=True):
         arguments = list(shlex.split(channel.custom_args))
         if not interpreter_executable is None:
             arguments.append(interpreter_executable)
@@ -604,6 +609,10 @@ class AbstractMessageChannel(OptionalAttributes):
     @option(type="string", sections=("channel",))
     def custom_args(self):
         return '--hold -e gdb --args'
+
+    @option(type='boolean', sections=("channel",))
+    def debugger_immediate_run(self):
+        return True
     
     @option(type='boolean', sections=("channel",))
     def must_check_if_worker_is_up_to_date(self):
@@ -910,9 +919,12 @@ class MpiChannel(AbstractMessageChannel):
             self.info['host'] = self.hostname
         else:
             if self.job_scheduler:
-                self.info = self.get_info_from_job_scheduler(self.job_scheduler)
+                self.info = self.get_info_from_job_scheduler(self.job_scheduler, self.number_of_workers)
             else:
-                self.info = MPI.INFO_NULL
+                self.info = MPI.Info.Create()
+                
+        for key,value in self.mpi_info_options.items():     
+            self.info[key]=value
             
         self.cached = None
         self.intercomm = None
@@ -981,7 +993,10 @@ class MpiChannel(AbstractMessageChannel):
     def debugger(self):
         """Name of the debugger to use when starting the code"""
         return "none"
-        
+
+    @option(type="dict", sections=("channel",))
+    def mpi_info_options(self):
+        return dict()
     
     @option(type="int", sections=("channel",))
     def max_message_length(self):
@@ -1049,7 +1064,8 @@ class MpiChannel(AbstractMessageChannel):
         logger.debug("mpi_enabled: %s", str(self.initialize_mpi))
         
         if not self.debugger_method is None:
-            command, arguments = self.debugger_method(self.full_name_of_the_worker, self, interpreter_executable=self.interpreter_executable)
+            command, arguments = self.debugger_method(self.full_name_of_the_worker, self, 
+                interpreter_executable=self.interpreter_executable, immediate_run=self.debugger_immediate_run)
         else:
             if not self.can_redirect_output or (self.redirect_stdout_file == 'none' and self.redirect_stderr_file == 'none'):
                 
@@ -1830,7 +1846,7 @@ class SocketChannel(AbstractMessageChannel):
             arguments.append('false')
             
         logger.debug("starting process with command `%s`, arguments `%s` and environment '%s'", command, arguments, os.environ)
-        self.process = Popen(arguments, executable=command, stdin=PIPE, stdout=None, stderr=None, close_fds=True)
+        self.process = Popen(arguments, executable=command, stdin=PIPE, stdout=None, stderr=None, close_fds=self.close_fds)
         logger.debug("waiting for connection from worker")
 
         self.socket, address = self.accept_worker_connection(server_socket, self.process)
@@ -1846,7 +1862,10 @@ class SocketChannel(AbstractMessageChannel):
         # logger.info("worker %s initialized", self.name_of_the_worker)
         
 
-
+    @option(type="boolean", sections=("sockets_channel",))
+    def close_fds(self):
+        """close open file descriptors when spawning child process"""
+        return True
 
     @option(choices=AbstractMessageChannel.DEBUGGERS.keys(), sections=("channel",))
     def debugger(self):

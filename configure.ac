@@ -1,9 +1,12 @@
+AC_CONFIG_MACRO_DIRS([m4])
+
 AC_INIT([amuse],[m4_esyscmd_s(python support/version.py)])
 AC_CONFIG_SRCDIR([src/amuse/__init__.py])
 
 AC_CONFIG_FILES([config.mk])
 AC_CONFIG_FILES([build.py:bin/amusifier.in],[chmod +x build.py])
 AC_CONFIG_FILES([bin/amusifier:build.py],[chmod +x bin/amusifier])
+AC_CONFIG_FILES([Makefile])
 
 #CODE_GENERATOR="\${AMUSE_DIR}/build.py"
 CODE_GENERATOR=amusifier
@@ -117,8 +120,6 @@ AC_LANG(C)
 AX_CUDA()
 
 AC_PROG_SED()
-
-
       
 AX_CHECK_CL()
 
@@ -183,6 +184,9 @@ AC_SUBST(SC_CLIBS)
 AC_SUBST(SC_FCLIBS)
 AC_SUBST(SC_MPI_CLIBS)
 AC_SUBST(SC_MPI_FCLIBS)
+
+AX_LAPACK([AC_MSG_NOTICE([LAPACK and BLAS found ])], 
+          [AC_MSG_ERROR([LAPACK and/or BLAS not found])] )
 
 AX_FFTW()
 AX_GMP()

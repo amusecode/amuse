@@ -31,16 +31,16 @@ int initialize_code()
   nmax=NMAX;
   err=LOOKUPSYMBOL(init_,)(&lookup, nmax*sizeof(struct particle)/sizeof(int));
   if(err != 0) return err;
-  mainsys.n=0;
+  mainsys=zerosys;
   mainsys.part=(struct particle*) malloc(nmax*sizeof(struct particle));
   if(mainsys.part == NULL) return -1;
-  mainsys.last=NULL;
-  dt_param=.03; 
+  dt_param=.03;
+  accel_zero_mass=1; 
   eps2=0.;
   inttype=8;
+  opencl_device_type=0;
   t_now=0.;
   dtime=0.;
-  init_code();
   // AMUSE STOPPING CONDITIONS SUPPORT
   set_support_for_condition(COLLISION_DETECTION);
   set_support_for_condition(OUT_OF_BOX_DETECTION);
@@ -56,8 +56,8 @@ int cleanup_code()
     	free(mainsys.part);
     	mainsys.part=NULL;
     }
-    mainsys.last=NULL;
     dt_param=.03; 
+    accel_zero_mass=1;
     t_now=0.;
     dtime=0.;
     eps2=0.;
@@ -65,6 +65,11 @@ int cleanup_code()
     begin_time = 0;
     stop_code();
     return 0;
+}
+
+void refresh_lookup()
+{
+    for(int p=0;p<mainsys.n;p++) LOOKUPSYMBOL(,_update)(&lookup, mainsys.part[p].id,p);
 }
 
 int new_particle(int *id, double mass,
@@ -99,7 +104,6 @@ int new_particle(int *id, double mass,
  mainsys.part[p].postime=0;
  mainsys.n++;
  pcounter++;
- mainsys.last=&mainsys.part[p];
  return 0;
 }
 
@@ -111,12 +115,7 @@ int delete_particle(int id)
   if(err!=0) return err;
   LOOKUPSYMBOL(,_delete)(&lookup,id);  
   mainsys.n--;
-  if(mainsys.n==0)
-  {
-    mainsys.last=NULL;
-    return 0;
-  }
-  mainsys.last--;
+  if(mainsys.n==0) return 0;
   mainsys.part[p]=mainsys.part[mainsys.n];
   LOOKUPSYMBOL(,_update)(&lookup,mainsys.part[p].id,p);
   return 0; 
@@ -277,13 +276,13 @@ int get_index_of_next_particle(int  id, int *nout)
              
 int get_kinetic_energy(double *kinetic_energy)
 {
-  *kinetic_energy=system_kinetic_energy(mainsys);
+  *kinetic_energy=(double) system_kinetic_energy(mainsys);
   return 0;
 }
 
 int get_potential_energy(double *potential_energy)
 {
-  *potential_energy=system_potential_energy(mainsys);
+  *potential_energy=(double) system_potential_energy(mainsys);
   return 0;
 }
 
@@ -298,6 +297,19 @@ int set_inttype_parameter(int i)
   inttype=i;
   return 0;
 }
+
+int get_opencl_device_type(int *i)
+{
+  *i=opencl_device_type;
+  return 0;
+}
+
+int set_opencl_device_type(int i)
+{
+  opencl_device_type=i;
+  return 0;
+}
+
 
 int set_timestep_parameter(double t)
 {
@@ -332,6 +344,18 @@ int set_verbosity_parameter(int t)
 int get_verbosity_parameter(int *t)
 {
   *t=verbosity;
+  return 0;
+}
+
+int set_accel_zero_mass_parameter(int t)
+{
+  accel_zero_mass=t;
+  return 0;
+}
+
+int get_accel_zero_mass_parameter(int *t)
+{
+  *t=accel_zero_mass;
   return 0;
 }
 
@@ -396,7 +420,7 @@ int evolve_model(double t_end)
       t_now+=dt;
     }
   }
-  for(int p=0;p<mainsys.n;p++) LOOKUPSYMBOL(,_update)(&lookup, mainsys.part[p].id,p);
+  refresh_lookup();
 
   if (set_conditions & enabled_conditions) {
     int err,type, number_of_particles, id;
@@ -433,6 +457,7 @@ int get_begin_time(double * output) {
 int commit_particles()
 {
   init_evolve(mainsys,inttype);
+  refresh_lookup();
   return 0;
 }
 
@@ -467,6 +492,7 @@ int synchronize_model()
 int recommit_particles()
 {
   init_evolve(mainsys,inttype);
+  refresh_lookup();
   return 0;
 }
 
@@ -528,10 +554,12 @@ int get_center_of_mass_velocity(double *vx,double *vy,double *vz)
 int recommit_parameters()
 {
   init_evolve(mainsys,inttype);
+  refresh_lookup();
   return 0;
 }
 int commit_parameters()
 {
+    init_code();
     t_now = begin_time;
     return 0;
 }
@@ -564,10 +592,9 @@ int get_indices_of_colliding_particles(int *p1,int*p2)
 int get_gravity_at_point(double * eps, double * x, double * y, double * z, 
 			 double * ax, double * ay, double * az, int n)
 {
-  struct sys tmpsys;
+  struct sys tmpsys=zerosys;
   tmpsys.n=n;
   tmpsys.part=(struct particle*) malloc(n*sizeof(struct particle));
-  tmpsys.last=&tmpsys.part[n];
   for(int p=0;p<n;p++)
   {
     tmpsys.part[p].pos[0]=x[p];
@@ -598,10 +625,9 @@ int get_potential_at_point(double * eps,
 			   double * x, double * y, double * z, 
 			   double * phi, int n)
 {
-  struct sys tmpsys;
+  struct sys tmpsys=zerosys;
   tmpsys.n=n;
   tmpsys.part=(struct particle*) malloc(n*sizeof(struct particle));
-  tmpsys.last=&tmpsys.part[n];
   for(int p=0;p<n;p++)
   {
     tmpsys.part[p].pos[0]=x[p];

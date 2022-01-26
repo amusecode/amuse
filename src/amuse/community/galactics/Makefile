@@ -21,6 +21,13 @@ ifneq (,$(findstring xlf, $(notdir $(FORTRAN))))
 FFLAGS = $(FCFLAGS) -qfixed -qextname
 endif
 
+GFVERSION10PLUS := $(shell expr `${FC} -dumpversion | cut -f1 -d.` \>= 10)
+
+ifeq (${GFVERSION10PLUS}, 1)
+FFLAGS += -fallow-argument-mismatch
+FCFLAGS += -fallow-argument-mismatch
+endif
+
 
 BINDIR = data/bin/
 EXES = $(BINDIR)dbh $(BINDIR)genhalo $(BINDIR)genbulge \

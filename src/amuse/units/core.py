@@ -473,6 +473,14 @@ class unit(object):
             parts[1] = str(base.system)
         return ', '.join(parts)
 
+    @property
+    def base_system(self):
+        base=self.base
+        system=self.base[0][1].system
+        for b in base:
+            if system!=b[1].system:
+                raise Exception("inconsistent unit found")
+        return self.base[0][1].system
 
 
 class base_unit(unit):
