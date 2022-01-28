@@ -524,6 +524,27 @@ class SeBaInterface(CodeInterface, se.StellarEvolutionInterface, LiteratureRefer
         """
         return function
 
+    @legacy_function
+    def get_fallback():
+        """
+        Retrieve the value of fallback fraction during the SN.
+        """
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
+        function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
+            , description="The index of the star to set the value of")
+        function.addParameter('rotation_period', dtype='float64', direction=function.OUT,
+            description = "The current value of the rotation period")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            Value of the fallback fraction was retrieved
+        -1 - ERROR
+            The code does not have support for retrieving the fallback fraction
+        """
+        return function
+
+
 
     @legacy_function
     def get_relative_age():
@@ -896,6 +917,11 @@ class SeBa(se.StellarEvolution):
             (handler.ERROR_CODE,)
         )        
         handler.add_method(
+            "get_fallback",
+            (handler.INDEX,),
+            (units.none, handler.ERROR_CODE,)
+        )
+        handler.add_method(
             "get_relative_age",
             (handler.INDEX,),
             (units.Myr, handler.ERROR_CODE,)
@@ -991,6 +1017,7 @@ class SeBa(se.StellarEvolution):
         handler.add_getter('particles', 'get_gyration_radius_sq', names = ('gyration_radius_sq',))
         handler.add_getter('particles', 'get_rotation_period', names = ('rotation_period',))
         handler.add_setter('particles', 'set_rotation_period', names = ('rotation_period',))
+        handler.add_getter('particles', 'get_fallback', names = ('fallback',))
         
         handler.add_getter('particles', 'get_relative_age', names = ('relative_age',))
         handler.add_getter('particles', 'get_relative_mass', names = ('relative_mass',))
