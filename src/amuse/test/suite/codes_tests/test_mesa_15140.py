@@ -5,7 +5,7 @@ from subprocess import PIPE, Popen
 import numpy
 from math import ceil
 
-from amuse.community.mesa.interface import MESA, MESAInterface
+from amuse.community.mesa_r15140.interface import MESA, MESAInterface
 
 from amuse.support.exceptions import AmuseException
 from amuse.units import units
