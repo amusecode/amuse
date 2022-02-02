@@ -868,7 +868,10 @@ class TestMESA(TestWithMPI):
                         test_inlist.write(one_line)
         instance.stop()
         
-        (stdout, stderr) = Popen([mesa_star_path], cwd = testpath, stdin = PIPE, stdout = PIPE, stderr = PIPE).communicate()
+        (stdout, stderr) = Popen([mesa_star_path], cwd = testpath, 
+                                stdin = PIPE, stdout = PIPE, stderr = PIPE,
+                                universal_newlines=True).communicate()
+        
         self.assertEqual(stderr, "")
         for i, line in enumerate(stdout.splitlines()):
             #print i, line, line in amuse_output
