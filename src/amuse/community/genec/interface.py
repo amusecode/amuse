@@ -99,8 +99,8 @@ class GenecInterface(
             'metallicity', dtype='float64', direction=function.IN,
             description="The initial metallicity of the star")
         function.addParameter(
-            'key', dtype='float64', direction=function.IN,
-            description="The identifying key of the star")
+            'starname', dtype='string', direction=function.IN,
+            default='AmuseStar', description="The star's name")
         # function.addParameter(
         #     'age_tag', dtype='float64', direction=function.IN,
         #     description="Starting age of the star *to be specified exactly*")
@@ -202,6 +202,7 @@ class Genec(StellarEvolution, InternalStellarStructure):
         handler.add_getter('particles', 'get_age')
         handler.add_getter('particles', 'get_luminosity')
         handler.add_getter('particles', 'get_temperature')
+        handler.add_getter('particles', 'get_time_step', names=('time_step',))
         # handler.add_method('particles', 'get_number_of_zones')
         # handler.add_method('particles', 'get_radius_profile')
         # handler.add_method('particles', 'get_temperature_profile')
@@ -230,6 +231,21 @@ class Genec(StellarEvolution, InternalStellarStructure):
         # handler.add_method('EDIT', 'new_particle')
 
         # -> Run (commit_particles)
+        handler.add_transition('EDIT', 'RUN', 'commit_particles')
+
+        handler.add_method('RUN', 'get_chemical_abundance_profiles')
+        handler.add_method('RUN', 'get_mass_fraction_of_species_at_zone')
+        handler.add_method('RUN', 'get_mu_at_zone')
+        handler.add_method('RUN', 'get_number_of_species')
+        handler.add_method('RUN', 'get_number_of_zones')
+        handler.add_method('RUN', 'get_pressure_at_zone')
+        handler.add_method('RUN', 'get_radius')
+        handler.add_method('RUN', 'get_radius_at_zone')
+        handler.add_method('RUN', 'get_temperature_at_zone')
+        handler.add_method('RUN', 'get_density_at_zone')
+        handler.add_method('RUN', 'get_luminosity_at_zone')
+        handler.add_method('RUN', 'get_mass_fraction_at_zone')
+        handler.add_method('RUN', 'get_time_step')
 
         # -> Update
 

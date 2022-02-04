@@ -1,6 +1,7 @@
 function initialize_code()
     use WriteSaveClose, only: quitafterclosing
-    use genec, only: initialise_genec, amuseinterface
+    use inputparam, only: amuseinterface, writetofiles
+    use genec, only: initialise_genec
     use amuse_helpers, only: set_defaults
     use amuse_helpers, only: mstar, zini, starname
     use evol, only: input_dir
@@ -8,6 +9,7 @@ function initialize_code()
     integer:: initialize_code
 
     amuseinterface = .true.
+    writetofiles = .false.
     input_dir = "./src/GENEC/code"
     call initialise_genec()
     call set_defaults()
@@ -18,6 +20,43 @@ function initialize_code()
 
     initialize_code = 0
 end function
+
+!function read_genec_model()
+!    ! This should only be called if no star has been initialised yet!
+!    use genec, only: amuseinterface
+!    use amuse_helpers, only: starname
+!    use inputparam, only:CharacteristicsParams,PhysicsParams,CompositionParams,RotationParams,&
+!        SurfaceParams,ConvectionParams,ConvergenceParams,TimeControle,VariousSettings
+!    implicit none
+!    character(*):: inputfilename
+!    integer:: read_genec_model
+!
+!    amuseinterface = .false. ! This will make initialise_star read the b file
+!    write(inputfilename, *) starname
+!    write(inputfilename, *) ".input"
+!    open(unit=4242, file=inputfilename)
+!    ! * Parse the CharacteristicsParams namelist *
+!    read(*,nml=CharacteristicsParams)
+!    ! * Parse the PhysicsParams namelist *
+!    read(*,nml=PhysicsParams)
+!    ! * Parse the CompositionParams namelist *
+!    read(*,nml=CompositionParams)
+!    ! * Parse the RotationParams namelist *
+!    read(*,nml=RotationParams)
+!    ! * Parse the SurfaceParams namelist *
+!    read(*,nml=SurfaceParams)
+!    ! * Parse the ConvectionParams namelist *
+!    read(*,nml=ConvectionParams)
+!    ! * Parse the ConvergenceParams namelist *
+!    read(*,nml=ConvergenceParams)
+!    ! * Parse the TimeControle namelist *
+!    read(*,nml=TimeControle)
+!    ! * Parse the VariousSettings namelist *
+!    read(*,nml=VariousSettings)
+!
+!    close(4242)
+!    read_genec_model = 0
+!end function
 
 function cleanup_code()
     implicit none
@@ -32,16 +71,20 @@ function commit_parameters()
 end function
 
 function commit_particles()
+    use genec, only: amuseinterface
     use amuse_helpers, only: initialise_star, makeini
     use WriteSaveClose, only: OpenAll
+    use inputparam, only: nzmod
     implicit none
     integer:: commit_particles
-    call makeini()
+    call makeini()  ! this will actually override some things from set_defaults now! FIXME
     !write(*,*) 'makeini done'
     call OpenAll()
     !write(*,*) 'OpenAll done'
     call initialise_star()
+    nzmod = 1
     !write(*,*) 'initialise_star done'
+    amuseinterface = .true. ! If we just read a b file, disable this again for continuing
     commit_particles = 0
 end function
 
@@ -61,11 +104,12 @@ function evolve_model(end_time)
     integer:: evolve_model
     do while (alter < end_time)
         write(*,*) "Current time: ", alter, ", evolving to: ", end_time
-        modell = 1
+        !modell = 1
         call evolve()
         call finalise()
         call OpenAll()
         call initialise_star()
+        write(*,*) "*****Modell: ", modell
     end do
     evolve_model = 0
 end function
@@ -87,11 +131,12 @@ function evolve_for(index_of_the_star, time)
     end_time = alter+time
     do while (alter < end_time)
         write(*,*) "Current time: ", alter, ", evolving to: ", end_time
-        modell = 1
+        !modell = 1
         call evolve()
         call finalise()
         call OpenAll()
         call initialise_star()
+        write(*,*) "*****Modell: ", modell
     end do
 
     evolve_for = 0
@@ -101,16 +146,22 @@ function evolve_one_step(index_of_the_star)
     use timestep, only: alter
     use WriteSaveClose, only: OpenAll
     use genec, only: evolve, modell, finalise, initialise_star
+    use inputparam,only: modanf,nwseq,nzmod
     implicit none
     integer:: index_of_the_star
     integer:: evolve_one_step
+    integer:: original_nzmod
+    original_nzmod = nzmod
+    nzmod = 1
     write(*,*) "Evolving one step, current time: ", alter
-    modell = 1
+    !modell = 1
     call evolve()
     call finalise()
     call OpenAll()
-    call initialise_star()
+    call initialise_star() ! will set modell to 1
     write(*,*) "Evolved one step, current time: ", alter
+    nzmod = original_nzmod
+    write(*,*) "*****modanf, nwseq, nzmod: ", modanf, nwseq, nzmod
     evolve_one_step = 0
 end function
 
@@ -128,11 +179,12 @@ function get_density_at_zone(index_of_the_star, zone, rho_i)
     use strucmod, only: rho, m
     implicit none
     integer:: index_of_the_star
-    integer:: zone
+    integer:: zone, i
     double precision:: rho_i
     integer:: get_density_at_zone
+    i = m - zone
     if (zone <= m) then
-        rho_i = exp(rho(m-zone))
+        rho_i = exp(rho(i))
     end if
     get_density_at_zone = 0
 end function
@@ -159,7 +211,7 @@ function get_luminosity_at_zone(index_of_the_star, zone, lum_i)
     i = m - zone
     if (zone <= m) then
         !lum_i = exp(s(zone+1))
-        lum_i = exp(s(m-zone))
+        lum_i = exp(s(i)) - 1
     end if
     get_luminosity_at_zone = 0
 end function
@@ -192,28 +244,76 @@ function get_mass(index_of_the_star, mass)
 end function
 
 function get_mass_fraction_of_species_at_zone(index_of_the_star, species, zone, Xj_i)
+    use strucmod, only: m
     use abundmod, only: &
         x,y3,y,xc12,xc13,xc14,xn14,xn15,xo16,xo17,xo18,xf18,xf19,xne20,xne21,xne22,xna23,xmg24,&
         xmg25,xmg26,xal26,xal27,xsi28,xprot,xneut,xbid,xbid1
     implicit none
     integer:: index_of_the_star
-    integer:: species, zone
+    integer:: species, zone, i
     double precision:: Xj_i
     integer:: get_mass_fraction_of_species_at_zone
-    select case(species)
-    case(1)
-        Xj_i = x(zone)
-    case(2)
-        Xj_i = y3(zone)
-    case(3)
-        Xj_i = y(zone)
-    case(4)
-        Xj_i = xc12(zone)
-    case(5)
-        Xj_i = xc13(zone)
-    case default
-        Xj_i = 0
-    end select
+    i = m-zone
+    if (zone <= m) then
+      select case(species)
+      case(1)
+          Xj_i = x(i)
+      case(2)
+          Xj_i = y3(i)
+      case(3)
+          Xj_i = y(i)
+      case(4)
+          Xj_i = xc12(i)
+      case(5)
+          Xj_i = xc13(i)
+      case(6)
+          Xj_i = xn14(i)
+      case(7)
+          Xj_i = xn15(i)
+      case(8)
+          Xj_i = xo16(i)
+      case(9)
+          Xj_i = xo17(i)
+      case(10)
+          Xj_i = xo18(i)
+      case(11)
+          Xj_i = xne20(i)
+      case(12)
+          Xj_i = xne22(i)
+      case(13)
+          Xj_i = xmg24(i)
+      case(14)
+          Xj_i = xmg25(i)
+      case(15)
+          Xj_i = xmg26(i)
+      case(16)
+          Xj_i = xc14(i)
+      case(17)
+          Xj_i = xf18(i)
+      case(18)
+          Xj_i = xf19(i)
+      case(19)
+          Xj_i = xne21(i)
+      case(20)
+          Xj_i = xna23(i)
+      case(21)
+          Xj_i = xal26(i)
+      case(22)
+          Xj_i = xal27(i)
+      case(23)
+          Xj_i = xsi28(i)
+      case(24)
+          Xj_i = xneut(i)
+      case(25)
+          Xj_i = xprot(i)
+      case(26)
+          Xj_i = xbid(i)
+      case(27)
+          Xj_i = xbid1(i)
+      case default
+          Xj_i = 0
+      end select
+    end if
 
     get_mass_fraction_of_species_at_zone = 0
 end function
@@ -226,11 +326,15 @@ function get_metallicity(metallicity)
 end function
 
 function get_mu_at_zone(index_of_the_star, zone, mu_i)
+    use strucmod, only: m
     implicit none
     integer:: index_of_the_star
     integer:: zone
     double precision:: mu_i
     integer:: get_mu_at_zone
+    if (zone <= m) then
+        mu_i = 0
+    endif
     get_mu_at_zone = 0
 end function
 
@@ -345,12 +449,12 @@ function get_radius_at_zone(index_of_the_star, zone, R_i)
     use strucmod, only: r, m
     implicit none
     integer:: index_of_the_star
-    integer:: zone
+    integer:: zone, i
     double precision:: R_i
     integer:: get_radius_at_zone
+    i = m - zone
     if (zone <= m) then
-        !R_i = exp(r(zone+1))  ! in cm
-        R_i = exp(r(m-zone))  ! in cm
+        R_i = exp(r(i))  ! in cm
     end if
     get_radius_at_zone = 0
 end function
@@ -377,11 +481,12 @@ function get_temperature_at_zone(index_of_the_star, zone, T_i)
     use strucmod, only: t, m
     implicit none
     integer:: index_of_the_star
-    integer:: zone
+    integer:: zone, i
     double precision:: T_i
     integer:: get_temperature_at_zone
+    i = m - zone
     if (zone <= m) then
-        T_i = exp(t(m-zone))
+        T_i = exp(t(i))
     else
         get_temperature_at_zone = -2
         return
@@ -390,12 +495,12 @@ function get_temperature_at_zone(index_of_the_star, zone, T_i)
 end function
 
 function get_time_step(index_of_the_star, time_step)
-    use timestep, only: dzeit
+    use timestep, only: dzeitj
     implicit none
     integer:: index_of_the_star
     double precision:: time_step
     integer:: get_time_step
-    time_step = dzeit
+    time_step = dzeitj
     get_time_step = 0
 end function
 
@@ -408,13 +513,14 @@ function get_time(time)
     get_time = 0
 end function
 
-function new_particle(index_of_the_star, mass, metallicity, key)
+function new_particle(index_of_the_star, mass, metallicity, am_starname)
     use amuse_helpers, only: starname, mstar, zini
     implicit none
     integer:: index_of_the_star, key
     double precision:: mass, metallicity
     integer:: new_particle
-    starname = 'AmuseStar'!write(starname, '(i10.10)') key
+    character(len=12):: am_starname
+    starname = am_starname !'AmuseStar'!write(starname, '(i10.10)') key
     index_of_the_star = 1
     mstar = mass
     zini = metallicity
@@ -440,11 +546,16 @@ function recommit_particles()
 end function
 
 function set_density_at_zone(index_of_the_star, zone, rho_i)
+    use strucmod, only: rho, m
     implicit none
     integer:: index_of_the_star
-    integer:: zone
+    integer:: zone, i
     double precision:: rho_i
     integer:: set_density_at_zone
+    i = m - zone
+    if (zone <= m) then
+        rho(i) = log(rho_i)
+    end if
     set_density_at_zone = 0
 end function
 
@@ -478,11 +589,76 @@ function set_mass(index_of_the_star, mass)
 end function
 
 function set_mass_fraction_of_species_at_zone(index_of_the_star, species, zone, Xj_i)
+    use strucmod, only: m
+    use abundmod, only: &
+        x,y3,y,xc12,xc13,xc14,xn14,xn15,xo16,xo17,xo18,xf18,xf19,xne20,xne21,xne22,xna23,xmg24,&
+        xmg25,xmg26,xal26,xal27,xsi28,xprot,xneut,xbid,xbid1
     implicit none
     integer:: index_of_the_star
-    integer:: species, zone
+    integer:: species, zone, i
     double precision:: Xj_i
     integer:: set_mass_fraction_of_species_at_zone
+    i = m - zone
+    if (zone <= m) then
+        select case(species)
+      case(1)
+          x(i) = Xj_i
+      case(2)
+          y3(i) = Xj_i
+      case(3)
+          y(i) = Xj_i
+      case(4)
+          xc12(i) = Xj_i
+      case(5)
+          xc13(i) = Xj_i
+      case(6)
+          xn14(i) = Xj_i
+      case(7)
+          xn14(i) = Xj_i
+      case(8)
+          xo16(i) = Xj_i
+      case(9)
+          xo17(i) = Xj_i
+      case(10)
+          xo18(i) = Xj_i
+      case(11)
+          xne20(i) = Xj_i
+      case(12)
+          xne22(i) = Xj_i
+      case(13)
+          xmg24(i) = Xj_i
+      case(14)
+          xmg25(i) = Xj_i
+      case(15)
+          xmg26(i) = Xj_i
+      case(16)
+          xc14(i) = Xj_i
+      case(17)
+          xf18(i) = Xj_i
+      case(18)
+          xf19(i) = Xj_i
+      case(19)
+          xne21(i) = Xj_i
+      case(20)
+          xna23(i) = Xj_i
+      case(21)
+          xal26(i) = Xj_i
+      case(22)
+          xal27(i) = Xj_i
+      case(23)
+          xsi28(i) = Xj_i
+      case(24)
+          xneut(i) = Xj_i
+      case(25)
+          xprot(i) = Xj_i
+      case(26)
+          xbid(i) = Xj_i
+      case(27)
+          xbid1(i) = Xj_i
+      !case default
+      end select
+    end if
+
     set_mass_fraction_of_species_at_zone = 0
 end function
 
@@ -496,19 +672,30 @@ function set_metallicity(metallicity)
 end function
 
 function set_radius_at_zone(index_of_the_star, zone, R_i)
+    use strucmod, only: r, m
     implicit none
     integer:: index_of_the_star
-    integer:: zone
+    integer:: zone, i
     double precision:: R_i
     integer:: set_radius_at_zone
+    i = m - zone
+    if (zone <= m) then
+        r(i) = log(R_i)
+    end if
     set_radius_at_zone = 0
 end function
 
 function set_temperature_at_zone(index_of_the_star, zone, T_i)
+    use strucmod, only: t, m
     implicit none
     integer:: index_of_the_star
-    integer:: zone
+    integer:: zone, i
     double precision:: T_i
     integer:: set_temperature_at_zone
+    i = m - zone
+    if (zone <= m) then
+        t(i) = log(T_i)
+    end if
+    
     set_temperature_at_zone = 0
 end function
