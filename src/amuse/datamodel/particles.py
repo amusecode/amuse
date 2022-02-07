@@ -3518,7 +3518,7 @@ class ParticleInformationChannel(object):
             function=lambda *x : x
 
         if not self.to_particles.can_extend_attributes():
-            target_attributes = self.to_particles.get_defined_settable_attribute_names()
+            target_attributes = self.to_particles.get_settable_attribute_names_defined_in_store()
             if not set(target).issubset(set(target_attributes)):
                 raise Exception("trying to set unsettable attributes {0}".format(
                                 list(set(target)-set(target_attributes))) )
