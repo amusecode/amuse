@@ -101,7 +101,7 @@ def run_mc(N=5000, Mcloud=10000. | units.MSun, Rcloud=1. | units.parsec):
         pyplot.draw()
 
     print("done. press key to exit")
-    raw_input()
+    input()
 
 
 if __name__ == "__main__":
