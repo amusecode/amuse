@@ -23,7 +23,7 @@ gamma = 1.4
 meanmwt = 1.35 | units.amu
 ionization_rate=2.e-17 | units.s**-1
 
-def get_n_t_xi(density, u)
+def get_n_T_xi(density, u):
     number_density=density/meanmwt
     temperature=((gamma - 1) * meanmwt * u / constants.kB)
     ionrate=ionization_rate*numpy.ones_like(density)
