@@ -89,14 +89,14 @@ def run_mc(N=5000, Mcloud=10000. | units.MSun, Rcloud=1. | units.parsec):
         fh2 = chem.particles.abundances[:, chem.species["H2"]]
         co = chem.particles.abundances[:, chem.species["CO"]]
 
-        f.clear()
+        pyplot.clf()
         pyplot.loglog(n, fh2, 'r.')
         pyplot.loglog(n, co, 'g.')
         pyplot.xlim(1.e3, 1.e6)
         pyplot.ylim(1.e-6, 1)
         pyplot.xlabel("density (cm**-3)")
         pyplot.ylabel("H_2,CO abundance")
-        pyplot.draw()
+        f.canvas.flush_events()
 
     print("done. press key to exit")
     input()
