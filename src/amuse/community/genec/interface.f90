@@ -243,6 +243,73 @@ function get_mass(index_of_the_star, mass)
     get_mass = 0
 end function
 
+function get_mass_of_species(index_of_the_star, species, species_mass)
+    implicit none
+    integer:: index_of_the_star
+    integer:: species
+    double precision:: species_mass
+    integer:: get_mass_of_species
+    get_mass_of_species = 0
+    select case(species)
+    case(1)
+        species_mass = 1.
+    case(2)
+        species_mass = 3.
+    case(3)
+        species_mass = 4.
+    case(4)
+        species_mass = 12.
+    case(5)
+        species_mass = 13.
+    case(6)
+        species_mass = 14.
+    case(7)
+        species_mass = 15.
+    case(8)
+        species_mass = 16.
+    case(9)
+        species_mass = 17.
+    case(10)
+        species_mass = 18.
+    case(11)
+        species_mass = 20.
+    case(12)
+        species_mass = 22.
+    case(13)
+        species_mass = 24.
+    case(14)
+        species_mass = 25.
+    case(15)
+        species_mass = 26.
+    case(16)
+        species_mass = 14.
+    case(17)
+        species_mass = 18.
+    case(18)
+        species_mass = 19.
+    case(19)
+        species_mass = 21.
+    case(20)
+        species_mass = 23.
+    case(21)
+        species_mass = 26.
+    case(22)
+        species_mass = 27.
+    case(23)
+        species_mass = 28.
+    case(24)
+        species_mass = 1. !neut(i)
+    case(25)
+        species_mass = 1. !prot(i)
+!    case(26)
+!        species_mass = bid(i)
+!    case(27)
+!        species_mass = bid1(i)
+    case default
+        species_mass = 0.
+    end select
+end function
+
 function get_mass_fraction_of_species_at_zone(index_of_the_star, species, zone, Xj_i)
     use strucmod, only: m
     use abundmod, only: &
@@ -329,12 +396,20 @@ function get_mu_at_zone(index_of_the_star, zone, mu_i)
     use strucmod, only: m
     implicit none
     integer:: index_of_the_star
-    integer:: zone
-    double precision:: mu_i
+    integer:: zone, i
+    integer:: get_mass_fraction_of_species_at_zone
+    double precision:: mu_i, X, Y3, Y
+    integer:: err
     integer:: get_mu_at_zone
+    i = (m - zone)
     if (zone <= m) then
-        mu_i = 0
-    endif
+        mu_i = 0.0d0
+        err = get_mass_fraction_of_species_at_zone(index_of_the_star, 1, zone, X)
+        err = get_mass_fraction_of_species_at_zone(index_of_the_star, 2, zone, Y3)
+        err = get_mass_fraction_of_species_at_zone(index_of_the_star, 3, zone, Y)
+
+        mu_i = (4.0 / (2.0 + 6 * X - (Y+Y3)))
+    end if
     get_mu_at_zone = 0
 end function
 

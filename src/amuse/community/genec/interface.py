@@ -146,6 +146,36 @@ class GenecInterface(
         return function
 
     @legacy_function
+    def get_mass_of_species():
+        """
+        Retrieve the mass number of the chemical abundance variable of the
+        star.
+        """
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
+        function.addParameter(
+            'index_of_the_star', dtype='int32', direction=function.IN,
+            description="The index of the star to get the value of")
+        function.addParameter(
+            'species', dtype='int32', direction=function.IN,
+            description="The species of the star to get the mass number of")
+        function.addParameter(
+            'species_mass', dtype='float64', direction=function.OUT,
+            description=(
+                "The mass number of the chemical abundance variable of "
+                "the star."
+            )
+        )
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            The value was retrieved.
+        -1 - ERROR
+            A star with the given index was not found.
+        """
+        return function
+
+    @legacy_function
     def get_mass_fraction_at_zone():
         """
         Retrieve the mass fraction at the specified zone/mesh-cell of the star.
@@ -207,6 +237,7 @@ class Genec(StellarEvolution, InternalStellarStructure):
         # handler.add_method('particles', 'get_radius_profile')
         # handler.add_method('particles', 'get_temperature_profile')
         handler.add_method('particles', 'get_luminosity_profile')
+        handler.add_method('particles', 'get_mass_profile')
         handler.add_method('particles', 'get_cumulative_mass_profile')
 
         handler.add_method('particles', 'evolve_one_step')
