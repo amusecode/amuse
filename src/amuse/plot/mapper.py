@@ -11,9 +11,11 @@ from amuse.datamodel.rotation import new_rotation_matrix, rotate
 from amuse.community.fi.interface import FiMap
 
 
-def gas_mean_molecular_weight(h2ratio=1):
+def gas_mean_molecular_weight(
+    h2ratio=1,
+):
     "Return mean molecular weight of hydrogen gas"
-    gmmw = (
+    meanmwt = (
         (
             2.0 * h2ratio
             + (1. - 2. * h2ratio)
@@ -23,29 +25,37 @@ def gas_mean_molecular_weight(h2ratio=1):
             0.1 + h2ratio + (1. - 2. * h2ratio)
         )
     ) | units.amu
-    return gmmw
+    return meanmwt
 
 
 def u_to_temperature(
-        internal_energy,
-        gmmw=gas_mean_molecular_weight(),
+    internal_energy,
+    meanmwt=gas_mean_molecular_weight(),
+    gamma=5/3,
 ):
     """
     Convert internal energy to temperature, by default assumes all gas is
-    molecular hydrogen.
+    molecular hydrogen and gamma = 5/3.
     """
     temperature = (
-        2/3*internal_energy/(constants.kB/gmmw)
+        (gamma - 1) * meanmwt * internal_energy
+        / constants.kB
     )
     return temperature
 
+
 def temperature_to_u(
-        temperature,
-        gmmw=gas_mean_molecular_weight(),
+    temperature,
+    meanmwt=gas_mean_molecular_weight(),
+    gamma=5/3,
 ):
+    """
+    Convert temperature to internal energy, by default assumes all gas is
+    molecular hydrogen and gamma = 5/3.
+    """
     internal_energy = (
-        3.0 * constants.kB * temperature
-        / (2.0 * gmmw)
+        constants.kB * temperature
+        / ((gamma - 1) * meanmwt)
     )
     return internal_energy
 
@@ -393,11 +403,13 @@ class MapHydro():
             self.__new_gas_mapper()
 
         gas = self.__gas
-        if hasattr(gas, "h2ratio"):
-            gmmw = gas_mean_molecular_weight(gas.h2ratio)
+        if hasattr(gas, "mu"):
+            meanmwt = gas.mu
+        elif hasattr(gas, "h2ratio"):
+            meanmwt = gas_mean_molecular_weight(gas.h2ratio)
         else:
-            gmmw = gas_mean_molecular_weight()
-        temperature = u_to_temperature(gas.u, gmmw=gmmw)
+            meanmwt = gas_mean_molecular_weight()
+        temperature = u_to_temperature(gas.u, meanmwt=meanmwt)
         self.__mapper.particles.weight = temperature.value_in(
             self.__unit_temperature)
         counts = self.counts
