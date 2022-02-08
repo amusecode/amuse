@@ -13,7 +13,6 @@ import matplotlib
 import matplotlib.pyplot as plt
 # import matplotlib.cm as cm
 
-import numpy
 from amuse.datamodel import Particles
 from amuse.io import read_set_from_file
 from amuse.units import units, nbody_system
@@ -406,8 +405,7 @@ def new_argument_parser():
     parser.add_argument(
         '--length',
         dest='length_unit',
-        # default='parsec',
-        default='kpc',
+        default='parsec',
         help='Length unit (default: parsec)',
     )
     return parser.parse_args()
@@ -511,7 +509,7 @@ def main():
         xyz_to_yzx()
 
     for plot in plots:
-        figure, ax = plot_hydro_and_stars(
+        gasplot = plot_hydro_and_stars(
             maps,
             title="time = %06.2f %s" % (
                 time.value_in(units.Myr),
