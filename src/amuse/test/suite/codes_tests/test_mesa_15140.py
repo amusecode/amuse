@@ -308,7 +308,6 @@ class TestMESA(TestWithMPI):
             print("MESA was not built. Skipping test.")
             return
         instance.initialize_code() 
-        instance.commit_parameters() 
         index_of_the_star = instance.new_particle(1.0 | units.MSun)
         self.assertEqual(index_of_the_star,1)
         
