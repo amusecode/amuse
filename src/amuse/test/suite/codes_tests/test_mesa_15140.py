@@ -293,7 +293,7 @@ class TestMESA(TestWithMPI):
         instance.initialize_code()
         self.assertEqual(0.02 | units.no_unit, instance.parameters.metallicity)
         self.assertEqual(
-            1.0e36 | units.yr, instance.parameters.max_age_stop_condition
+            1.0e36 | units.julianyr, instance.parameters.max_age_stop_condition
         )
         instance.parameters.max_age_stop_condition = 1.0e2 | units.Myr
         self.assertEqual(
@@ -315,26 +315,30 @@ class TestMESA(TestWithMPI):
         self.assertEqual(len(instance.particles), 1)
         # instance.commit_particles()
 
-        initial_dt = 1.0e5 | units.yr
+        initial_dt = 1.0e5 | units.julianyr
         dt_factor = 1.2
-        time_step = evo_star.time_step.in_(units.yr)
+        time_step = evo_star.time_step
         self.assertAlmostEqual(time_step, initial_dt)
         evo_star.evolve_one_step()
         age_of_the_star = evo_star.age
         self.assertAlmostEqual(age_of_the_star, initial_dt)
 
-        target_end_time = 3.0e5 | units.yr
+        target_end_time = 3.0e5 | units.julianyr
         evo_star.evolve_for(
             target_end_time - age_of_the_star
         )
+
+        # FIXME the two tests below assumes the timestep gets longer initially
+        # maybe no longer true in the new MESA?
         self.assertAlmostEqual(
-            initial_dt*(1 + dt_factor + dt_factor**2),
+            (initial_dt*(1 + dt_factor + dt_factor**2)).in_(units.julianyr),
             evo_star.age
         )
         self.assertAlmostEqual(
-            initial_dt*dt_factor**3,
-            evo_star.time_step
+            (initial_dt*dt_factor**3).in_(units.julianyr),
+            evo_star.time_step.in_(units.julianyr)
         )
+
         self.assertTrue(
             evo_star.age >= target_end_time
         )

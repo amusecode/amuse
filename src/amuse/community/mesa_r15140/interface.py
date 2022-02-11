@@ -164,7 +164,7 @@ class MESAInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolutionIn
         return function
         
     @remote_function
-    def set_time_step(index_of_the_star='i',time_step='d' | units.yr):
+    def set_time_step(index_of_the_star='i',time_step='d' | units.julianyr):
         returns ()
     
     
@@ -796,10 +796,10 @@ class MESAInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolutionIn
         """
         Retrieve the current age of the star
         """
-        returns (net_name='d' | units.yr)
+        returns (net_name='d' | units.julianyr)
 
     @remote_function  
-    def set_age(index_of_the_star='i',new_age='d'| units.yr):
+    def set_age(index_of_the_star='i',new_age='d'| units.julianyr):
         """
         Set the current age of the star
         """
@@ -927,7 +927,7 @@ class MESA(StellarEvolution, InternalStellarStructure):
             gyre_in,
             self.default_tmp_dir
         )
-        self.model_time = 0.0 | units.yr
+        self.model_time = 0.0 | units.julianyr
 
         self.mesa_version = "15140"
 
@@ -946,7 +946,7 @@ class MESA(StellarEvolution, InternalStellarStructure):
             "set_max_age_stop_condition",
             "max_age_stop_condition", 
             "The maximum age stop condition of this instance.",
-            default_value = 1.0e36 | units.yr
+            default_value = 1.0e36 | units.julianyr
         )
         
         handler.add_method_parameter(
@@ -1142,11 +1142,11 @@ class MESA(StellarEvolution, InternalStellarStructure):
         handler.add_method(
             "get_manual_mass_transfer_rate",
             (handler.INDEX,),
-            (units.MSun / units.yr, handler.ERROR_CODE,)
+            (units.MSun / units.julianyr, handler.ERROR_CODE,)
         )
         handler.add_method(
             "set_manual_mass_transfer_rate",
-            (handler.INDEX, units.MSun / units.yr),
+            (handler.INDEX, units.MSun / units.julianyr),
             (handler.ERROR_CODE,)
         )
 
@@ -1186,24 +1186,36 @@ class MESA(StellarEvolution, InternalStellarStructure):
         handler.add_method(
             "get_star_age",
             (handler.INDEX,),
-            (units.yr, handler.ERROR_CODE,)
+            (units.julianyr, handler.ERROR_CODE,)
         )
 
         handler.add_method(
             "set_star_age",
-            (handler.INDEX,units.yr),
+            (handler.INDEX,units.julianyr),
             (handler.ERROR_CODE,)
         )
-        
+
+        handler.add_method(
+            "get_age", 
+            (handler.INDEX,),
+            (units.julianyr, handler.ERROR_CODE,)
+        )
+
+        handler.add_method(
+            "evolve_for",
+            (handler.INDEX, units.julianyr),
+            (handler.ERROR_CODE,)
+        )
+
         handler.add_method(
             "get_max_age_stop_condition", 
             (), 
-            (units.yr, handler.ERROR_CODE,)
+            (units.julianyr, handler.ERROR_CODE,)
         )
         
         handler.add_method(
             "set_max_age_stop_condition", 
-            (units.yr, ), 
+            (units.julianyr, ), 
             (handler.ERROR_CODE,)
         )
         
@@ -1300,12 +1312,12 @@ class MESA(StellarEvolution, InternalStellarStructure):
         handler.add_method(
             "set_age",
             (handler.INDEX,),
-            (units.yr,handler.ERROR_CODE,)
+            (units.julianyr,handler.ERROR_CODE,)
         )
 
         handler.add_method(
             "set_age",
-            (handler.INDEX,units.yr),
+            (handler.INDEX,units.julianyr),
             (handler.ERROR_CODE,)
         )
 
@@ -1323,7 +1335,7 @@ class MESA(StellarEvolution, InternalStellarStructure):
 
         handler.add_method(
             "finalize_stellar_model", 
-            (units.yr,), 
+            (units.julianyr,), 
             (handler.INDEX, handler.ERROR_CODE,)
         )
 
@@ -1547,7 +1559,7 @@ class MESA(StellarEvolution, InternalStellarStructure):
 
 
 
-    def new_particle_from_model(self, internal_structure, current_age=0|units.yr, key=None):
+    def new_particle_from_model(self, internal_structure, current_age=0|units.julianyr, key=None):
         
         
         if hasattr(internal_structure,'get_profile'):
