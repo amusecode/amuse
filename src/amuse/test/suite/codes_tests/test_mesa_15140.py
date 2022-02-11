@@ -307,30 +307,42 @@ class TestMESA(TestWithMPI):
         if instance is None:
             print("MESA was not built. Skipping test.")
             return
-        instance.initialize_code() 
-        index_of_the_star = instance.new_particle(1.0 | units.MSun)
-        self.assertEqual(index_of_the_star,1)
-        
+        evo_star = instance.particles.add_particle(
+            Particle(mass=1.0 | units.MSun)
+        )
+        self.assertEqual(len(instance.particles), 1)
+        # instance.commit_particles()
+
         initial_dt = 1.0e5 | units.yr
         dt_factor = 1.2
-        time_step = instance.get_time_step(index_of_the_star)
+        time_step = evo_star.time_step.in_(units.yr)
         self.assertAlmostEqual(time_step, initial_dt)
-        instance.evolve_one_step(index_of_the_star)
-        age_of_the_star = instance.get_age(index_of_the_star)
+        evo_star.evolve_one_step()
+        age_of_the_star = evo_star.age
         self.assertAlmostEqual(age_of_the_star, initial_dt)
 
         target_end_time = 3.0e5 | units.yr
-        instance.evolve_for(index_of_the_star, target_end_time - age_of_the_star)
-        self.assertAlmostEqual(initial_dt*(1 + dt_factor + dt_factor**2), instance.get_age(index_of_the_star))
-        self.assertAlmostEqual(initial_dt*dt_factor**3, instance.get_time_step(index_of_the_star))
-        self.assertTrue(instance.get_age(index_of_the_star) >= target_end_time)
-        
-        L_of_the_star = instance.get_luminosity(index_of_the_star)
-        self.assertAlmostEqual(L_of_the_star,0.725 | units.LSun,1)
-        M_of_the_star = instance.get_mass(index_of_the_star)
-        self.assertAlmostEqual(M_of_the_star,1.000 | units.MSun,3)
-        T_of_the_star = instance.get_temperature(index_of_the_star)
-        self.assertAlmostEqual(T_of_the_star,5650.998 | units.K,-2)
+        evo_star.evolve_for(
+            target_end_time - age_of_the_star
+        )
+        self.assertAlmostEqual(
+            initial_dt*(1 + dt_factor + dt_factor**2),
+            evo_star.age
+        )
+        self.assertAlmostEqual(
+            initial_dt*dt_factor**3,
+            evo_star.time_step
+        )
+        self.assertTrue(
+            evo_star.age >= target_end_time
+        )
+
+        L_of_the_star = evo_star.luminosity
+        self.assertAlmostEqual(L_of_the_star, 0.725 | units.LSun, 1)
+        M_of_the_star = evo_star.mass
+        self.assertAlmostEqual(M_of_the_star, 1.000 | units.MSun, 3)
+        T_of_the_star = evo_star.temperature
+        self.assertAlmostEqual(T_of_the_star, 5650.998 | units.K, -2)
         instance.stop()
 
     def test3(self):
