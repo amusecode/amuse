@@ -72,8 +72,8 @@ class TestMESAInterface(TestWithMPI):
             self.assertEqual(0, error)
             self.assertEqual(index_of_the_star, i+1)
         instance.stop()
-    def test4(self):
 
+    def xtest4(self):
         print("Testing basic operations: evolve...")
         instance = self.new_instance_of_an_optional_code(MESAInterface)
         if instance is None:
@@ -187,8 +187,8 @@ class TestMESAInterface(TestWithMPI):
             self.assertEqual(0, error)
             self.assertEqual(10.0 ** x, value)
         instance.stop()
-    def test7(self):
 
+    def xtest7(self):
         print("Testing MESA parameters...")
         instance = self.new_instance_of_an_optional_code(MESAInterface)
         if instance is None:
@@ -213,8 +213,8 @@ class TestMESAInterface(TestWithMPI):
             self.assertEqual(0, error)
             self.assertEqual(x, value)
         instance.stop()
-    def test8(self):
 
+    def xtest8(self):
         print("Testing MESA wind parameters...")
         instance = self.new_instance_of_an_optional_code(MESAInterface)
         if instance is None:
@@ -690,8 +690,8 @@ class TestMESA(TestWithMPI):
             integrated_mass, star.mass*mass_factor, places=3
         )
         instance.stop()
-    def test10(self):
 
+    def xtest10(self):
         print("Test for changing the stellar composition")
         star = Particles(1)
         star.mass = 1.0 | units.MSun
@@ -749,8 +749,8 @@ class TestMESA(TestWithMPI):
             )
         )
         instance.stop()
-    def test11(self):
 
+    def xtest11(self):
         print(
             "Test evolve_model optional arguments: end_time and "
             "keep_synchronous"
@@ -826,8 +826,8 @@ class TestMESA(TestWithMPI):
         self.assertAlmostEqual(
             instance.model_time, 15000.0 | units.yr, 3)  # Unchanged!
         instance.stop()
-    def test12(self):
 
+    def xtest12(self):
         print("Test for importing new stellar models")
         star = Particles(1)
         star.mass = 1.0 | units.MSun
@@ -937,8 +937,8 @@ class TestMESA(TestWithMPI):
         self.assertAlmostRelativeEqual(
             stars[5:].wind, 2.0 * stars[1:5].wind, places=7)
         instance.stop()
-    def test14(self):
 
+    def xtest14(self):
         print("Testing MESA wind parameters... (short version of slowtest13)")
         stars = Particles(3)
         stars.mass = 10.0 | units.MSun
@@ -965,8 +965,8 @@ class TestMESA(TestWithMPI):
         self.assertAlmostRelativeEqual(
             stars[2].wind, 2.0 * stars[1].wind, places=7)
         instance.stop()
-    def test15(self):
 
+    def xtest15(self):
         print("Testing MESA states")
         stars = Particles(2)
         stars.mass = 1.0 | units.MSun
@@ -1119,8 +1119,8 @@ class TestMESA(TestWithMPI):
                 break
             else:
                 self.assertTrue(line in amuse_output)
-    def test18(self):
 
+    def xtest18(self):
         print("Testing MESA mass_change (User-specified wind/accretion)")
         instance = self.new_instance_of_an_optional_code(MESA)
         instance.parameters.RGB_wind_scheme = 0  # must be turned off for user-specified rates
