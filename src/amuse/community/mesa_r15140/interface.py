@@ -187,17 +187,17 @@ class MESAInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolutionIn
         """
         Retrieve the current mass loss rate of the star. (positive for winds, negative for accretion)
         """
-        returns (mass_change='d'| units.MSun/units.yr)
+        returns (mass_change='d'| units.MSun/units.julianyr)
     
     @remote_function(can_handle_array=True)  
     def get_manual_mass_transfer_rate(index_of_the_star='i'):
         """
         Retrieve the current user-specified mass transfer rate of the star. (negative for winds, positive for accretion)
         """
-        returns (mass_change='d'| units.MSun/units.yr)
+        returns (mass_change='d'| units.MSun/units.julianyr)
     
     @remote_function
-    def set_manual_mass_transfer_rate(index_of_the_star='i', mass_change='d'| units.MSun/units.yr):
+    def set_manual_mass_transfer_rate(index_of_the_star='i', mass_change='d'| units.MSun/units.julianyr):
         """
         Set a new user-specified mass transfer rate of the star. (negative for winds, positive for accretion)
         """
