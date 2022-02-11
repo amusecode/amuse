@@ -490,8 +490,8 @@ class TestMESA(TestWithMPI):
         instance.particles.add_particles(stars)
         instance.commit_particles()
         instance.evolve_model()
-        self.assertEqual(instance.particles.get_number_of_zones(), [575, 2262])
-        self.assertEqual(len(instance.particles[0].get_mass_profile()), 575)
+        self.assertEqual(instance.particles.get_number_of_zones(), [3832, 2468])
+        self.assertEqual(len(instance.particles[0].get_mass_profile()), 3832)
         self.assertAlmostEqual(
             instance.particles[0].get_mass_profile().sum(), 1.0
         )
@@ -504,7 +504,7 @@ class TestMESA(TestWithMPI):
         )
         print(instance.particles)
         self.assertEqual(
-            len(instance.particles[1].get_density_profile()), 2262
+            len(instance.particles[1].get_density_profile()), 2468
         )
         self.assertIsOfOrder(
             instance.particles[0].get_radius_profile()[-1],
@@ -532,7 +532,7 @@ class TestMESA(TestWithMPI):
             [1]*575, places=3
         )
         self.assertAlmostEqual(
-            instance.particles[1].get_mu_profile(), [0.62]*2262 | units.amu,
+            instance.particles[1].get_mu_profile(), [0.62]*2468 | units.amu,
             places=1
         )
         instance.stop()
@@ -556,7 +556,7 @@ class TestMESA(TestWithMPI):
         species_names = instance.particles[0].get_names_of_species()
         species_IDs = instance.particles[0].get_IDs_of_species()
         species_masses = instance.particles[0].get_masses_of_species()
-        self.assertEqual(number_of_zones, 575)
+        self.assertEqual(number_of_zones, 3832)
         self.assertEqual(number_of_species,  8)
         self.assertEqual(len(species_names), number_of_species)
         self.assertEqual(len(composition), number_of_species)
@@ -567,7 +567,8 @@ class TestMESA(TestWithMPI):
         )
         self.assertEqual(
             species_IDs,
-            [2,    5,     6,     38,    51,    69,    114,    168]
+            # [2,    5,     6,     38,    51,    69,    114,    168]
+            [1,    2,     3,      4,     5,     6,      7,      8]
         )
         self.assertAlmostEqual(
             species_masses,
@@ -675,8 +676,8 @@ class TestMESA(TestWithMPI):
             instance.particles[0].set_density_profile,
             density_profile[2:],
             expected_message=(
-                "The length of the supplied vector (573) does not match the"
-                "number of mesh zones of the star (575)."
+                "The length of the supplied vector (3830) does not match the "
+                "number of mesh zones of the star (3832)."
             )
         )
 
