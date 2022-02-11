@@ -21,12 +21,6 @@ class TestMESAInterface(TestWithMPI):
         if instance is None:
             print("MESA was not built. Skipping test.")
             return
-        inlist_path = instance.default_path_to_inlist
-        #print "Path to inlist: ", inlist_path
-        MESA_data_path = instance.default_path_to_MESA_data
-        #print "Path to MESA data directory: ", MESA_data_path
-        instance.set_MESA_paths(instance.default_path_to_inlist, 
-            instance.default_path_to_MESA_data, instance.get_output_directory())
         status = instance.initialize_code()
         self.assertEqual(status, 0)
         instance.stop()
@@ -44,8 +38,6 @@ class TestMESAInterface(TestWithMPI):
         if instance is None:
             print("MESA was not built. Skipping test.")
             return
-        instance.set_MESA_paths(instance.default_path_to_inlist, 
-            instance.default_path_to_MESA_data, instance.get_output_directory())
         status = instance.initialize_code()
         self.assertEqual(status, 0)
         (metallicity, error) = instance.get_metallicity()
@@ -69,9 +61,7 @@ class TestMESAInterface(TestWithMPI):
             maximum_number_of_stars, error
         ) = instance.get_maximum_number_of_stars()
         self.assertEqual(0, error)
-        self.assertEqual(maximum_number_of_stars,1000)
-        instance.set_MESA_paths(instance.default_path_to_inlist, 
-            instance.default_path_to_MESA_data, instance.get_output_directory())
+        self.assertEqual(maximum_number_of_stars, 10)
         status = instance.initialize_code()
         self.assertEqual(status, 0)
         number_of_stars = 1
@@ -89,9 +79,7 @@ class TestMESAInterface(TestWithMPI):
         if instance is None:
             print("MESA was not built. Skipping test.")
             return
-        instance.set_MESA_paths(instance.default_path_to_inlist, 
-            instance.default_path_to_MESA_data, instance.get_output_directory())
-        status = instance.initialize_code()
+        instance.initialize_code()
         (index_of_the_star, error) = instance.new_particle(1.0)
         self.assertEqual(0, error)
         self.assertEqual(index_of_the_star, 1)
@@ -302,8 +290,6 @@ class TestMESA(TestWithMPI):
         if instance is None:
             print("MESA was not built. Skipping test.")
             return
-        instance.set_MESA_paths(instance.default_path_to_inlist, 
-            instance.default_path_to_MESA_data, instance.get_output_directory())
         instance.initialize_code()
         self.assertEqual(0.02 | units.no_unit, instance.parameters.metallicity)
         self.assertEqual(
