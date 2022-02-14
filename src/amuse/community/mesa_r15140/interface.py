@@ -115,7 +115,7 @@ class MESAInterface(
         Retrieve the maximum number of stars that can be
         handled by this instance.
         """
-        return (maximum_number_of_stars='i')
+        returns (maximum_number_of_stars='i') 
 
     @legacy_function
     def new_pre_ms_particle():
