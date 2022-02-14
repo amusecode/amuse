@@ -480,7 +480,7 @@ class MESAInterface(
 
     def set_control(self, index_of_the_star, name, value):
         """
-        Gets a MESA control namelist value.
+        Sets a MESA control namelist value.
         """
         v = self._val2str(value)
         return self._set_opt(index_of_the_star, self._CONTROL_NML, name, v)
@@ -896,6 +896,35 @@ class MESAInterface(
 
         os.remove(filename)
         return res
+
+
+    def get_mixing_length_ratio(self,index_of_the_star):
+        """
+        Retrieve the current mixing_length_ratio of the star.
+        """
+
+        return self.get_control(index_of_the_star,'mixing_length_alpha')
+
+    def set_mixing_length_ratio(self,index_of_the_star, mixing_length_ratio ):
+        """
+        Sets the current mixing_length_ratio of the star.
+        """
+        return self.set_control(index_of_the_star,'mixing_length_alpha',mixing_length_ratio)
+
+    def get_semi_convection_efficiency(self,index_of_the_star):
+        """
+        Retrieve the current semi_convection_efficiency of the star.
+        """
+        return self.get_control(index_of_the_star,'alpha_semiconvection')
+
+    def set_mixing_length_ratio(self,index_of_the_star, semi_convection_efficiency):
+        """
+        Sets the current semi_convection_efficiency of the star and turns on semiconvection.
+        """
+        self.set_control(index_of_the_star,'use_Ledoux_criterion',True)
+        
+        return self.set_control(index_of_the_star,'alpha_semiconvection',semi_convection_efficiency)
+
 
 class MESA(StellarEvolution, InternalStellarStructure):
 
@@ -1378,6 +1407,31 @@ class MESA(StellarEvolution, InternalStellarStructure):
             "get_gyre",
             (handler.INDEX, handler.NO_UNIT, handler.NO_UNIT, handler.NO_UNIT, handler.NO_UNIT),
             (handler.NO_UNIT, handler.NO_UNIT, handler.NO_UNIT, handler.NO_UNIT)
+        )
+
+
+        handler.add_method(
+            "get_mixing_length_ratio",
+            (handler.INDEX,),
+            (handler.NO_UNIT,handler.ERROR_CODE)
+        )
+
+        handler.add_method(
+            "set_mixing_length_ratio",
+            (handler.INDEX, handler.NO_UNIT),
+            (handler.ERROR_CODE,)
+        )
+
+        handler.add_method(
+            "get_semi_convection_efficiency",
+            (handler.INDEX,),
+            (handler.NO_UNIT,handler.ERROR_CODE)
+        )
+
+        handler.add_method(
+            "set_semi_convection_efficiency",
+            (handler.INDEX, handler.NO_UNIT),
+            (handler.ERROR_CODE,)
         )
 
     def initialize_module_with_default_parameters(self):

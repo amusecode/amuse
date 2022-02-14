@@ -195,28 +195,29 @@ class TestMESAInterface(TestWithMPI):
             self.assertEqual(10.0 ** x, value)
         instance.stop()
 
-    def xtest7(self):
+    def test7(self):
         print("Testing MESA parameters...")
         instance = self.new_instance_of_an_optional_code(MESAInterface)
         if instance is None:
             print("MESA was not built. Skipping test.")
             return
-        (value, error) = instance.get_mixing_length_ratio()
+        (index_of_the_star, error) = instance.new_particle(1.0)
+        (value, error) = instance.get_mixing_length_ratio(index_of_the_star)
         self.assertEqual(0, error)
         self.assertEqual(2.0, value)
         for x in [1.0, 1.5, 3.0]:
-            error = instance.set_mixing_length_ratio(x)
+            error = instance.set_mixing_length_ratio(index_of_the_star,x)
             self.assertEqual(0, error)
-            (value, error) = instance.get_mixing_length_ratio()
+            (value, error) = instance.get_mixing_length_ratio(index_of_the_star)
             self.assertEqual(0, error)
             self.assertEqual(x, value)
-        (value, error) = instance.get_semi_convection_efficiency()
+        (value, error) = instance.get_semi_convection_efficiency(index_of_the_star)
         self.assertEqual(0, error)
         self.assertEqual(0.0, value)
         for x in [0.1, 0.04, 0.001]:
-            error = instance.set_semi_convection_efficiency(x)
+            error = instance.set_semi_convection_efficiency(index_of_the_star,x)
             self.assertEqual(0, error)
-            (value, error) = instance.get_semi_convection_efficiency()
+            (value, error) = instance.get_semi_convection_efficiency(index_of_the_star)
             self.assertEqual(0, error)
             self.assertEqual(x, value)
         instance.stop()
