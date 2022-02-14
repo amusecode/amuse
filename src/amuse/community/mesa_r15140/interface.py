@@ -69,6 +69,11 @@ class MESAInterface(
     def default_path_to_MESA(self):
         return os.path.join(self.amuse_root_directory, 'src', 'amuse', 'community', 'mesa_r15140', 'src', 'mesa-r15140')
 
+
+    @option(type="string", sections=('data'))
+    def default_path_to_MESA_data(self):
+        return os.path.join(self.amuse_root_directory, 'src', 'amuse', 'community', 'mesa_r15140', 'src', 'mesa-r15140', 'data')
+    
     @property
     def default_tmp_dir(self):
         """

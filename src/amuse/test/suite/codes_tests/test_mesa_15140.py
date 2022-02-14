@@ -87,10 +87,17 @@ class TestMESAInterface(TestWithMPI):
 
         initial_dt = 1.0e5
         dt_factor = 1.2
+        
+
         self.assertEqual(
-            [initial_dt, 0],
+            [0, 0],
             list(instance.get_time_step(index_of_the_star).values())
         )
+
+        instance.set_time_step(index_of_the_star,initial_dt)
+        self.assertEqual([initial_dt, 0], list(instance.get_time_step(index_of_the_star).values()))
+
+
         self.assertEqual(0, instance.evolve_one_step(index_of_the_star))
         self.assertEqual(
             [initial_dt, 0],
