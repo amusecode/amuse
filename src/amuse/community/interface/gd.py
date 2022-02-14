@@ -310,9 +310,9 @@ class GravitationalDynamicsInterface(common.CommonCodeInterface):
         function = LegacyFunctionSpecification()
         function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN,
             description = "Index of the particle to get the state from. This index must have been returned by an earlier call to :meth:`new_particle`")
-        function.addParameter('ax', dtype='float64', direction=function.OUT, description = "The current position vector of the particle")
-        function.addParameter('ay', dtype='float64', direction=function.OUT, description = "The current position vector of the particle")
-        function.addParameter('az', dtype='float64', direction=function.OUT, description = "The current position vector of the particle")
+        function.addParameter('ax', dtype='float64', direction=function.OUT, description = "The current acceleration vector of the particle")
+        function.addParameter('ay', dtype='float64', direction=function.OUT, description = "The current acceleration vector of the particle")
+        function.addParameter('az', dtype='float64', direction=function.OUT, description = "The current acceleration vector of the particle")
         function.result_type = 'int32'
         function.can_handle_array = True
         function.result_doc = """
