@@ -6,11 +6,13 @@ from amuse.units import units, constants
 
 from amuse.community.vader.interface import VaderInterface, Vader
 
+default_options = dict()
 
 class TestVaderInterface(TestWithMPI):
 
     def test1(self):
-        instance = VaderInterface()
+        instance = self.new_instance_of_an_optional_code(
+            VaderInterface, **default_options)
         instance.initialize_code()
         instance.set_nUserOut(nUserOut=1)
         instance.initialize_flat_grid(n=99, linear=True, rmin=1., rmax=100.,
@@ -27,7 +29,8 @@ class TestVaderInterface(TestWithMPI):
         instance.stop()
 
     def test2(self):
-        instance = VaderInterface()
+        instance = self.new_instance_of_an_optional_code(
+            VaderInterface, **default_options)
         instance.initialize_code()
         instance.set_nUserOut(nUserOut=1)
         instance.initialize_keplerian_grid(n=100, linear=False, rmin=1., rmax=100.,
@@ -52,7 +55,8 @@ class TestVaderInterface(TestWithMPI):
         instance.stop()
 
     def test3(self):
-        instance = VaderInterface()
+        instance = self.new_instance_of_an_optional_code(
+            VaderInterface, **default_options)
         instance.initialize_code()
         instance.set_nUserOut(nUserOut=1)
         instance.initialize_flat_grid(n=100, linear=False, rmin=1., rmax=100.,
@@ -71,7 +75,8 @@ class TestVaderInterface(TestWithMPI):
         instance.stop()
 
     def test4(self):
-        instance = VaderInterface()
+        instance = self.new_instance_of_an_optional_code(
+            VaderInterface, **default_options)
         instance.initialize_code()
         instance.set_nUserOut(nUserOut=1)
         instance.initialize_flat_grid(n=100, linear=False, rmin=1., rmax=100.,
@@ -90,7 +95,8 @@ class TestVaderInterface(TestWithMPI):
 class TestVader(TestWithMPI):
 
     def test1(self):
-        instance = Vader()
+        instance = self.new_instance_of_an_optional_code(
+            Vader, **default_options)
         instance.initialize_flat_grid(100, False, 1.|units.AU, 100.|units.AU,
             1.|units.kms)
 
@@ -103,7 +109,8 @@ class TestVader(TestWithMPI):
         instance.stop()
 
     def test2(self):
-        instance = Vader()
+        instance = self.new_instance_of_an_optional_code(
+            Vader, **default_options)
         instance.initialize_keplerian_grid(100, False, 1.|units.AU, 100.|units.AU,
             1.|units.MSun)
 
@@ -126,7 +133,8 @@ class TestVader(TestWithMPI):
         instance.stop()
 
     def test3(self):
-        instance = Vader()
+        instance = self.new_instance_of_an_optional_code(
+            Vader, **default_options)
         instance.initialize_keplerian_grid(100, False, 1.|units.AU, 100.|units.AU,
             1.|units.MSun)
 
@@ -157,8 +165,8 @@ class TestVader(TestWithMPI):
         instance.stop()
 
     def test4(self):
-
-        instance = Vader()
+        instance = self.new_instance_of_an_optional_code(
+            Vader, **default_options)
         instance.initialize_keplerian_grid(100, False, 1.|units.AU, 100.|units.AU,
             1.|units.MSun)
 
