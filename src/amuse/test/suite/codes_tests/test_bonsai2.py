@@ -33,7 +33,7 @@ class TestBonsaiInterface(TestWithMPI):
         vz=plummer.vz.number
 
 
-        instance = self.new_instance_of_an_optional_code(BonsaiInterface2, **default_options)
+        instance = self.new_instance_of_an_optional_code(Bonsai2Interface, **default_options)
         self.assertEqual(0, instance.initialize_code())
         self.assertEqual([0, 0], list(instance.get_number_of_particles().values()))
         ids, errors = instance.new_particle(mass,x,y,z,vx,vy,vz,radius)
