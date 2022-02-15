@@ -242,6 +242,9 @@ class TwoBodyImplementation(object):
       
     def commit_particles(self):
         return 0
+
+    def recommit_particles(self):
+        return 0
       
     def synchronize_model(self):
         return 0
