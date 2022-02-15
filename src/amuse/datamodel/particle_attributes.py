@@ -1068,7 +1068,7 @@ def box_counting_dimension(particles):
             [(r[0], r[1], r[2]) for r in (scaled_positions * boxes_per_dimension).astype(int)]
         )))
     
-    number_of_boxes_filled = numpy.array(number_of_boxes_filled, dtype=numpy.float)
+    number_of_boxes_filled = numpy.array(number_of_boxes_filled, dtype=numpy.float64)
     # When #filled-boxes ~ #particles, the dimension goes to 0. Exclude those values:
     upper_index = numpy.searchsorted(number_of_boxes_filled, 0.2 * len(particles))
     x = numpy.log(boxes_per_dimension_range[:upper_index])
