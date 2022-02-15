@@ -36,6 +36,11 @@ ifeq ($(FORTRAN), gfortran)
 FFLAGS += $(PIC) $(FCFLAGS)
 endif
 
+GFVERSION10PLUS := $(shell expr `${FC} -dumpversion | cut -f1 -d.` \>= 10)
+ifeq (${GFVERSION10PLUS}, 1)
+MPIFC += -fallow-argument-mismatch
+endif
+
 ifeq  ($(FORTRAN), ifort)
 # ifort flags
 FFLAGS += -O -ip -u -g -traceback -fpp1 -DIFORT  $(PIC) $(FCFLAGS)
