@@ -1,10 +1,8 @@
 from amuse.community import *
 from amuse.test.amusetest import TestWithMPI
 
-from amuse.community.bonsai2.interface import BonsaiInterface2, Bonsai2
+from amuse.community.bonsai2.interface import Bonsai2Interface, Bonsai2
 
-import os
-import sys 
 import numpy
 
 from amuse.units import nbody_system
