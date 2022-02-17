@@ -1158,6 +1158,27 @@ module amuse_mesa
    end function set_mesa_value
 
 
+   integer function set_mass_fraction_of_species_at_zone(AMUSE_id, &
+      AMUSE_species, AMUSE_zone, AMUSE_value)
+      integer, intent(in) :: AMUSE_id, AMUSE_zone,AMUSE_species
+      double precision, intent(in) :: AMUSE_value
+      integer :: ierr, zone
+
+      zone = reverse_zone_id(AMUSE_id, AMUSE_zone, ierr)
+      if(ierr/=MESA_SUCESS) then
+         set_mass_fraction_of_species_at_zone = ierr
+      end if
+
+      call change_species_one_zone(AMUSE_id, AMUSE_zone, AMUSE_species, AMUSE_value, ierr)
+
+      if(ierr/=MESA_SUCESS) then
+         set_mass_fraction_of_species_at_zone = ierr
+      end if
+
+   end function set_mass_fraction_of_species_at_zone
+
+
+
 ! Functions created to map to the se.py interface but they do nothing and allways return failure if called
 
    integer function set_temperature_at_zone(AMUSE_id, AMUSE_zone, AMUSE_value)
@@ -1175,17 +1196,6 @@ module amuse_mesa
       set_luminosity_at_zone = -1
 
    end function set_luminosity_at_zone
-
-
-   integer function set_mass_fraction_of_species_at_zone(AMUSE_id, &
-      AMUSE_species, AMUSE_zone, AMUSE_value)
-      integer, intent(in) :: AMUSE_id, AMUSE_zone, AMUSE_species
-      double precision, intent(in) :: AMUSE_value
-      integer :: ierr
-
-      set_mass_fraction_of_species_at_zone = -1
-
-   end function set_mass_fraction_of_species_at_zone
 
    integer function set_density_at_zone(AMUSE_id, AMUSE_zone, AMUSE_value)
       integer, intent(in) :: AMUSE_id, AMUSE_zone

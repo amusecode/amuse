@@ -905,7 +905,7 @@ class MESAInterface(
 
         return self.get_control(index_of_the_star,'mixing_length_alpha')
 
-    def set_mixing_length_ratio(self,index_of_the_star, mixing_length_ratio ):
+    def set_mixing_length_ratio(self,index_of_the_star, mixing_length_ratio):
         """
         Sets the current mixing_length_ratio of the star.
         """
@@ -924,6 +924,100 @@ class MESAInterface(
         self.set_control(index_of_the_star,'use_Ledoux_criterion',True)
         
         return self.set_control(index_of_the_star,'alpha_semiconvection',semi_convection_efficiency)
+
+    def get_RGB_wind_scheme(self, index_of_the_star):
+        """
+        Retrieve the current RGB wind scheme
+        """
+        return self.get_control(index_of_the_star,'cool_wind_RGB_scheme')
+
+    def set_RGB_wind_scheme(self, index_of_the_star, cool_wind_RGB_scheme):
+        """
+        Set the current RGB wind scheme
+        """
+        return self.set_control(index_of_the_star,'cool_wind_RGB_scheme',cool_wind_RGB_scheme)
+
+
+    def get_AGB_wind_scheme(self, index_of_the_star):
+        """
+        Retrieve the current AGB wind scheme
+        """
+        return self.get_control(index_of_the_star,'cool_wind_AGB_scheme')
+
+    def set_AGB_wind_scheme(self, index_of_the_star, cool_wind_AGB_scheme):
+        """
+        Set the current RGB wind scheme
+        """
+        return self.set_control(index_of_the_star,'cool_wind_AGB_scheme',cool_wind_AGB_scheme)
+
+
+    def get_reimers_wind_efficiency(self, index_of_the_star):
+        """
+        Retrieve the current reimers_wind_efficiency
+        """
+        return self.get_control(index_of_the_star,'Reimers_scaling_factor')
+
+    def set_reimers_wind_efficiency(self, index_of_the_star, reimers_wind_efficiency):
+        """
+        Set the current reimers_wind_efficiency
+        """
+        return self.set_control(index_of_the_star,'Reimers_scaling_factor',reimers_wind_efficiency)
+
+
+
+    def get_blocker_wind_efficiency(self, index_of_the_star):
+        """
+        Retrieve the current blocker_wind_efficiency
+        """
+        return self.get_control(index_of_the_star,'blocker_scaling_factor')
+
+    def set_blocker_wind_efficiency(self, index_of_the_star, blocker_wind_efficiency):
+        """
+        Set the current blocker_wind_efficiency
+        """
+        return self.set_control(index_of_the_star,'blocker_scaling_factor',blocker_wind_efficiency)
+
+
+
+    def get_de_jager_wind_efficiency(self, index_of_the_star):
+        """
+        Retrieve the current de_jager_wind_efficiency
+        """
+        return self.get_control(index_of_the_star,'de_jager_scaling_factor')
+
+    def set_de_jager_wind_efficiency(self, index_of_the_star, de_jager_wind_efficiency):
+        """
+        Set the current de_jager_wind_efficiency
+        """
+        return self.set_control(index_of_the_star,'de_jager_scaling_factor',de_jager_wind_efficiency)
+
+
+
+    def get_dutch_wind_efficiency(self, index_of_the_star):
+        """
+        Retrieve the current dutch_wind_efficiency
+        """
+        return self.get_control(index_of_the_star,'dutch_scaling_factor')
+
+    def set_dutch_wind_efficiency(self, index_of_the_star, dutch_wind_efficiency):
+        """
+        Set the current dutch_wind_efficiency
+        """
+        return self.set_control(index_of_the_star,'dutch_scaling_factor',dutch_wind_efficiency)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 class MESA(StellarEvolution, InternalStellarStructure):

@@ -221,7 +221,7 @@ module mesa_interface
         integer, intent(out) :: num
 
         num =  max_star_handles
-
+ 
     end subroutine max_num_stars
 
 
@@ -713,6 +713,22 @@ module mesa_interface
 
     end subroutine get_star_center_value
 
+
+    subroutine change_species_one_zone(id, zone, species, value, ierr)
+        integer, intent(in) :: id, species, zone
+        real(dp),intent(in) :: value
+        integer, intent(out) :: ierr
+        type (star_info), pointer :: s
+        integer :: net_id
+
+        ierr = MESA_SUCESS
+        call star_ptr(id, s, ierr)
+        if (failed('star_ptr',ierr)) return
+
+        call set_abundance_in_section(id, s% chem_id(species), value,zone, zone, ierr)
+        if (failed('star_set_abundance',ierr)) return
+
+    end subroutine change_species_one_zone
 
 
 

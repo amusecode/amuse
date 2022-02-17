@@ -195,7 +195,7 @@ class TestMESAInterface(TestWithMPI):
             self.assertEqual(10.0 ** x, value)
         instance.stop()
 
-    def test7(self):
+    def xtest7(self):
         print("Testing MESA parameters...")
         instance = self.new_instance_of_an_optional_code(MESAInterface)
         if instance is None:
@@ -228,63 +228,64 @@ class TestMESAInterface(TestWithMPI):
         if instance is None:
             print("MESA was not built. Skipping test.")
             return
-        (value, error) = instance.get_RGB_wind_scheme()
+        (index_of_the_star, error) = instance.new_particle(1.0)
+        (value, error) = instance.get_RGB_wind_scheme(index_of_the_star)
         self.assertEqual(0, error)
         self.assertEqual(1, value)
         for x in range(6):
-            error = instance.set_RGB_wind_scheme(x)
+            error = instance.set_RGB_wind_scheme(index_of_the_star,x)
             self.assertEqual(0, error)
-            (value, error) = instance.get_RGB_wind_scheme()
+            (value, error) = instance.get_RGB_wind_scheme(index_of_the_star)
             self.assertEqual(0, error)
             self.assertEqual(x, value)
 
-        (value, error) = instance.get_AGB_wind_scheme()
+        (value, error) = instance.get_AGB_wind_scheme(index_of_the_star)
         self.assertEqual(0, error)
         self.assertEqual(1, value)
         for x in range(6):
-            error = instance.set_AGB_wind_scheme(x)
+            error = instance.set_AGB_wind_scheme(index_of_the_star,x)
             self.assertEqual(0, error)
-            (value, error) = instance.get_AGB_wind_scheme()
+            (value, error) = instance.get_AGB_wind_scheme(index_of_the_star)
             self.assertEqual(0, error)
             self.assertEqual(x, value)
 
-        (value, error) = instance.get_reimers_wind_efficiency()
+        (value, error) = instance.get_reimers_wind_efficiency(index_of_the_star)
         self.assertEqual(0, error)
         self.assertEqual(0.5, value)
         for x in [0.0, 0.1, 0.5, 1.0]:
-            error = instance.set_reimers_wind_efficiency(x)
+            error = instance.set_reimers_wind_efficiency(index_of_the_star,x)
             self.assertEqual(0, error)
-            (value, error) = instance.get_reimers_wind_efficiency()
+            (value, error) = instance.get_reimers_wind_efficiency(index_of_the_star)
             self.assertEqual(0, error)
             self.assertEqual(x, value)
 
-        (value, error) = instance.get_blocker_wind_efficiency()
+        (value, error) = instance.get_blocker_wind_efficiency(index_of_the_star)
         self.assertEqual(0, error)
         self.assertEqual(0.1, value)
         for x in [0.0, 0.1, 0.5, 1.0]:
-            error = instance.set_blocker_wind_efficiency(x)
+            error = instance.set_blocker_wind_efficiency(index_of_the_star,x)
             self.assertEqual(0, error)
-            (value, error) = instance.get_blocker_wind_efficiency()
-            self.assertEqual(0, error)
-            self.assertEqual(x, value)
-
-        (value, error) = instance.get_de_jager_wind_efficiency()
-        self.assertEqual(0, error)
-        self.assertEqual(0.8, value)
-        for x in [0.0, 0.1, 0.5, 1.0]:
-            error = instance.set_de_jager_wind_efficiency(x)
-            self.assertEqual(0, error)
-            (value, error) = instance.get_de_jager_wind_efficiency()
+            (value, error) = instance.get_blocker_wind_efficiency(index_of_the_star)
             self.assertEqual(0, error)
             self.assertEqual(x, value)
 
-        (value, error) = instance.get_dutch_wind_efficiency()
+        (value, error) = instance.get_de_jager_wind_efficiency(index_of_the_star)
         self.assertEqual(0, error)
         self.assertEqual(0.8, value)
         for x in [0.0, 0.1, 0.5, 1.0]:
-            error = instance.set_dutch_wind_efficiency(x)
+            error = instance.set_de_jager_wind_efficiency(index_of_the_star,x)
             self.assertEqual(0, error)
-            (value, error) = instance.get_dutch_wind_efficiency()
+            (value, error) = instance.get_de_jager_wind_efficiency(index_of_the_star)
+            self.assertEqual(0, error)
+            self.assertEqual(x, value)
+
+        (value, error) = instance.get_dutch_wind_efficiency(index_of_the_star)
+        self.assertEqual(0, error)
+        self.assertEqual(0.8, value)
+        for x in [0.0, 0.1, 0.5, 1.0]:
+            error = instance.set_dutch_wind_efficiency(index_of_the_star,x)
+            self.assertEqual(0, error)
+            (value, error) = instance.get_dutch_wind_efficiency(index_of_the_star)
             self.assertEqual(0, error)
             self.assertEqual(x, value)
 
@@ -335,17 +336,6 @@ class TestMESA(TestWithMPI):
         evo_star.evolve_for(
             target_end_time - age_of_the_star
         )
-
-        # FIXME the two tests below assume the timestep gets longer initially
-        # maybe no longer true in the new MESA?
-        # self.assertAlmostEqual(
-        #     (initial_dt*(1 + dt_factor + dt_factor**2)).in_(units.julianyr),
-        #     evo_star.age
-        # )
-        # self.assertAlmostEqual(
-        #     (initial_dt*dt_factor**3).in_(units.julianyr),
-        #     evo_star.time_step.in_(units.julianyr)
-        # )
 
         self.assertTrue(
             evo_star.age >= target_end_time
@@ -675,53 +665,57 @@ class TestMESA(TestWithMPI):
 
     def xtest9(self):
         print("Test for changing the stellar structure model")
-        star = Particles(1)
-        star.mass = 1.0 | units.MSun
-        instance = self.new_instance_of_an_optional_code(MESA)
-        if instance is None:
-            print("MESA was not built. Skipping test.")
-            return
-        instance.initialize_code()
-        instance.commit_parameters()
-        instance.particles.add_particles(star)
-        instance.commit_particles()
-        instance.evolve_model()
+        ##################################################################
+        # Changing the density or radius in this manner is not supported #
+        ##################################################################
 
-        density_profile = instance.particles[0].get_density_profile()
+        # star = Particles(1)
+        # star.mass = 1.0 | units.MSun
+        # instance = self.new_instance_of_an_optional_code(MESA)
+        # if instance is None:
+        #     print("MESA was not built. Skipping test.")
+        #     return
+        # instance.initialize_code()
+        # instance.commit_parameters()
+        # instance.particles.add_particles(star)
+        # instance.commit_particles()
+        # instance.evolve_model()
 
-        self.assertRaises(
-            AmuseException,
-            instance.particles[0].set_density_profile,
-            density_profile[2:],
-            expected_message=(
-                "The length of the supplied vector (3830) does not match the "
-                "number of mesh zones of the star (3832)."
-            )
-        )
+        # density_profile = instance.particles[0].get_density_profile()
 
-        mass_factor = 1.1
-        instance.particles[0].set_density_profile(mass_factor*density_profile)
-        self.assertAlmostRelativeEqual(
-            instance.particles[0].get_density_profile(),
-            density_profile*mass_factor, places=10
-        )
-        instance.particles.mass *= mass_factor
-        instance.evolve_model()
+        # self.assertRaises(
+        #     AmuseException,
+        #     instance.particles[0].set_density_profile,
+        #     density_profile[2:],
+        #     expected_message=(
+        #         "The length of the supplied vector (3830) does not match the "
+        #         "number of mesh zones of the star (3832)."
+        #     )
+        # )
 
-        outer_radius = instance.particles[0].get_radius_profile()
-        inner_radius = outer_radius[:-1]
-        inner_radius.prepend(0 | units.m)
-        delta_radius_cubed = (outer_radius**3 - inner_radius**3)
-        integrated_mass = (
-            4./3. * numpy.pi * delta_radius_cubed
-            * instance.particles[0].get_density_profile()
-        ).sum()
-        self.assertAlmostRelativeEqual(
-            integrated_mass, star.mass*mass_factor, places=3
-        )
-        instance.stop()
+        # mass_factor = 1.1
+        # instance.particles[0].set_density_profile(mass_factor*density_profile)
+        # self.assertAlmostRelativeEqual(
+        #     instance.particles[0].get_density_profile(),
+        #     density_profile*mass_factor, places=10
+        # )
+        # instance.particles.mass *= mass_factor
+        # instance.evolve_model()
 
-    def xtest10(self):
+        # outer_radius = instance.particles[0].get_radius_profile()
+        # inner_radius = outer_radius[:-1]
+        # inner_radius.prepend(0 | units.m)
+        # delta_radius_cubed = (outer_radius**3 - inner_radius**3)
+        # integrated_mass = (
+        #     4./3. * numpy.pi * delta_radius_cubed
+        #     * instance.particles[0].get_density_profile()
+        # ).sum()
+        # self.assertAlmostRelativeEqual(
+        #     integrated_mass, star.mass*mass_factor, places=3
+        # )
+        # instance.stop()
+
+    def test10(self):
         print("Test for changing the stellar composition")
         star = Particles(1)
         star.mass = 1.0 | units.MSun
