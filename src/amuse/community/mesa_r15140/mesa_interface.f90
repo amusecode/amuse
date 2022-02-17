@@ -51,7 +51,6 @@ module mesa_interface
 
         s% inlist_fname = ''
 
-
     end subroutine allocate_star
 
     subroutine load_inlist(id, inlist, ierr)
@@ -166,13 +165,14 @@ module mesa_interface
 
         call init_callback(id) ! Call here and in evolve_controls as there are options that 
                                ! need to be set before and after the other inlist options get set
-
         id_from_read_star_job = id
         call before_evolve_loop(.true., .false., restart, &
             null_binary_controls, extras_controls, &
             id_from_read_star_job, s% inlist_fname, "restart_photo", &
             dbg, 0, id, ierr)
+
         if (failed('before_evolve_loop',ierr)) return
+
 
 
         contains
@@ -269,12 +269,12 @@ module mesa_interface
         call star_ptr(id, s, ierr)
         if (failed('star_ptr',ierr)) return   
 
-        call const_init(MESA_DIR, ierr)
+        mesa_dir = mesa_dir_in
+
+        call const_init(mesa_dir_in, ierr)
         if (failed('const_init',ierr)) return 
 
         s% inlist_fname = inlist
-
-        mesa_dir = mesa_dir_in
 
         s% job% mesa_dir = mesa_dir_in
         s% initial_mass = mass
@@ -300,7 +300,6 @@ module mesa_interface
             call setup_gyre(gyre_in)
             use_gyre = .true.
         end if
-
 
     end subroutine set_init_options
 

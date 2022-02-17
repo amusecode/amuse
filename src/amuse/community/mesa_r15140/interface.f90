@@ -80,36 +80,33 @@ module amuse_mesa
    integer function new_particle(AMUSE_id, AMUSE_value)
       integer, intent(out) :: AMUSE_id
       double precision, intent(in) :: AMUSE_value
-      integer :: id, ierr
       
-      new_particle = -1
-      call allocate_star(id, ierr)
-      if(ierr/=MESA_SUCESS) return
-
-      AMUSE_mass = AMUSE_value
-
-      AMUSE_id = id
-      number_of_particles = AMUSE_id
-      call flush()
-      new_particle = 0
+      new_particle = new_zams_particle(AMUSE_id, AMUSE_value)
    end function new_particle
 
 ! load zams model 
    integer function new_zams_particle(AMUSE_id, AMUSE_value)
       integer, intent(out) :: AMUSE_id
       double precision, intent(in) :: AMUSE_value
-      integer :: ierr
+      integer :: ierr, id
 
       new_zams_particle = -1
 
-      new_zams_particle = new_particle(AMUSE_id, AMUSE_value)
+      call allocate_star(id, ierr)
 
-      if(new_zams_particle/=0 ) return  
+      if(ierr/=MESA_SUCESS) return
+
+      AMUSE_mass = AMUSE_value
+
+      AMUSE_id = id
+      number_of_particles = AMUSE_id
 
       call load_zams_model(AMUSE_id, ierr)
+
       if(ierr/=MESA_SUCESS) return
 
       call finish_init_star(AMUSE_id, set_amuse_options, ierr)
+
       if(ierr/=MESA_SUCESS) return
 
       new_zams_particle = 0
@@ -120,12 +117,14 @@ module amuse_mesa
    integer function load_model(AMUSE_id, AMUSE_filename)
       integer, intent(out) :: AMUSE_id
       character(len=*), intent(in) :: AMUSE_filename
-      integer :: ierr
+      integer :: ierr, id
 
       load_model = -1
 
       call allocate_star(AMUSE_id, ierr) 
       if(ierr/=MESA_SUCESS) return
+
+      number_of_particles = AMUSE_id
 
       ierr = MESA_FAIL
       call load_saved_model(AMUSE_id, AMUSE_filename, ierr)
@@ -142,15 +141,17 @@ module amuse_mesa
    integer function new_pre_ms_particle(AMUSE_id, AMUSE_value)
       integer, intent(out) :: AMUSE_id
       double precision :: AMUSE_value
-      integer ::  ierr
+      integer ::  ierr, id
 
       new_pre_ms_particle = -1
 
-      new_pre_ms_particle = new_particle(AMUSE_id, AMUSE_value)
+      call allocate_star(id, ierr)
+      if(ierr/=MESA_SUCESS) return
 
-      if(new_pre_ms_particle/=0 ) return  
+      AMUSE_mass = AMUSE_value
 
-      ierr = MESA_FAIL
+      AMUSE_id = id
+      number_of_particles = AMUSE_id
 
       call create_pre_main_sequence(AMUSE_id, ierr)
       if(ierr/=MESA_SUCESS) return
@@ -168,13 +169,17 @@ module amuse_mesa
    integer function new_pure_he_particle(AMUSE_id, AMUSE_value)
       integer, intent(out) :: AMUSE_id
       double precision :: AMUSE_value
-      integer ::  ierr
+      integer ::  ierr, id
 
       new_pure_he_particle = -1
 
-      new_pure_he_particle = new_particle(AMUSE_id, AMUSE_value)
+      call allocate_star(id, ierr)
+      if(ierr/=MESA_SUCESS) return
 
-      if(new_pure_he_particle/=0 ) return  
+      AMUSE_mass = AMUSE_value
+
+      AMUSE_id = id
+      number_of_particles = AMUSE_id
 
       ierr = MESA_FAIL
 
