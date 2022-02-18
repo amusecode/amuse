@@ -553,20 +553,28 @@ class MESAInterface(
                 return value
 
     def _str2val(self, value):
-        value = value.strip()
-        if '.true.' in value.lower():
-            return True
-        elif '.false.' in value.lower():
-            return False
-        try:
-            return int(value)
-        except ValueError:
-            pass
-        try:
-            return float(value)
-        except ValueError:
-            pass
-        return value
+        def process(val):
+            val = val.strip()
+            if '.true.' in val.lower():
+                return True
+            elif '.false.' in val.lower():
+                return False
+            try:
+                return int(val)
+            except ValueError:
+                pass
+            try:
+                return float(val)
+            except ValueError:
+                pass
+            return val
+
+        if isinstance(value, list):
+            result = [process(i) for i in value]
+        else:
+            result = process(value)
+
+        return result
 
     @legacy_function
     def set_mesa_value():
@@ -964,7 +972,6 @@ class MESAInterface(
         return self.set_control(index_of_the_star,'Reimers_scaling_factor',reimers_wind_efficiency)
 
 
-
     def get_blocker_wind_efficiency(self, index_of_the_star):
         """
         Retrieve the current blocker_wind_efficiency
@@ -1182,6 +1189,15 @@ class MESA(StellarEvolution, InternalStellarStructure):
             handler.add_setter(particle_set_name, 'set_RGB_wind_scheme', names = ('RGB_wind_scheme',))
             handler.add_getter(particle_set_name, 'get_AGB_wind_scheme', names = ('AGB_wind_scheme',))
             handler.add_setter(particle_set_name, 'set_AGB_wind_scheme', names = ('AGB_wind_scheme',))
+
+            handler.add_getter(particle_set_name, 'get_reimers_wind_efficiency', names = ('reimers_wind_efficiency',))
+            handler.add_setter(particle_set_name, 'set_reimers_wind_efficiency', names = ('reimers_wind_efficiency',))
+            handler.add_getter(particle_set_name, 'get_de_jager_wind_efficiency', names = ('de_jager_wind_efficiency',))
+            handler.add_setter(particle_set_name, 'set_de_jager_wind_efficiency', names = ('de_jager_wind_efficiency',))
+            handler.add_getter(particle_set_name, 'get_dutch_wind_efficiency', names = ('dutch_wind_efficiency',))
+            handler.add_setter(particle_set_name, 'set_dutch_wind_efficiency', names = ('dutch_wind_efficiency',))           
+            handler.add_getter(particle_set_name, 'get_blocker_wind_efficiency', names = ('blocker_wind_efficiency',))
+            handler.add_setter(particle_set_name, 'set_blocker_wind_efficiency', names = ('blocker_wind_efficiency',)) 
 
     def define_state(self, handler):
         StellarEvolution.define_state(self, handler)
@@ -1515,6 +1531,54 @@ class MESA(StellarEvolution, InternalStellarStructure):
 
         handler.add_method(
             "set_semi_convection_efficiency",
+            (handler.INDEX, handler.NO_UNIT),
+            (handler.ERROR_CODE,)
+        )
+
+        handler.add_method(
+            "get_reimers_wind_efficiency",
+            (handler.INDEX,),
+            (handler.NO_UNIT,handler.ERROR_CODE)
+        )
+
+        handler.add_method(
+            "set_reimers_wind_efficiency",
+            (handler.INDEX, handler.NO_UNIT),
+            (handler.ERROR_CODE,)
+        )
+
+        handler.add_method(
+            "get_dutch_wind_efficiency",
+            (handler.INDEX,),
+            (handler.NO_UNIT,handler.ERROR_CODE)
+        )
+
+        handler.add_method(
+            "set_dutch_wind_efficiency",
+            (handler.INDEX, handler.NO_UNIT),
+            (handler.ERROR_CODE,)
+        )
+
+        handler.add_method(
+            "get_de_jager_wind_efficiency",
+            (handler.INDEX,),
+            (handler.NO_UNIT,handler.ERROR_CODE)
+        )
+
+        handler.add_method(
+            "set_de_jager_wind_efficiency",
+            (handler.INDEX, handler.NO_UNIT),
+            (handler.ERROR_CODE,)
+        )
+
+        handler.add_method(
+            "get_blocker_wind_efficiency",
+            (handler.INDEX,),
+            (handler.NO_UNIT,handler.ERROR_CODE)
+        )
+
+        handler.add_method(
+            "set_blocker_wind_efficiency",
             (handler.INDEX, handler.NO_UNIT),
             (handler.ERROR_CODE,)
         )

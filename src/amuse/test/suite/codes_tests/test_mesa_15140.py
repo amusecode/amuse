@@ -1107,21 +1107,22 @@ class TestMESA(TestWithMPI):
         )
         instance.initialize_code()
         instance.commit_parameters()
-        instance.particles.add_particle(stars[0])
-        stars[0].RGB_wind_scheme = 'Reimers'
-        for i, wind_efficiency in enumerate([0.5, 1.0]):
-            instance.set_reimers_wind_efficiency(i, wind_efficiency)
-            instance.recommit_parameters()
-            instance.particles.add_particle(stars[i+1])
+        for i, wind_efficiency in enumerate([0.0, 0.5, 1.0]):
+            instance.particles.add_particle(stars[i])
+            stars[i].RGB_wind_scheme = 'Reimers'
+            stars[i].reimers_wind_efficiency = wind_efficiency
         instance.commit_particles()
         instance.evolve_model(keep_synchronous=False)
-        from_code_to_model = instance.particles.new_channel_to(stars)
-        from_code_to_model.copy()
-        self.assertAlmostEqual(stars[0].wind, 0.0 | units.MSun / units.yr)
+        
+        # FIXME: What is this even doing?
+        #from_code_to_model = instance.particles.new_channel_to(stars)
+        #from_code_to_model.copy()
+
+        self.assertAlmostEqual(stars[0].mass_change, 0.0 | units.MSun / units.yr)
         self.assertAlmostRelativeEqual(
-            stars[1].wind, 4.59318475897e-10 | units.MSun / units.yr, places=1)
+            stars[1].mass_change, 4.59318475897e-10 | units.MSun / units.yr, places=1)
         self.assertAlmostRelativeEqual(
-            stars[2].wind, 2.0 * stars[1].wind, places=7)
+            stars[2].mass_change, 2.0 * stars[1].mass_change, places=7)
         instance.stop()
 
     def test15(self):
