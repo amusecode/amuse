@@ -78,7 +78,7 @@ class MESAInterface(
     def default_tmp_dir(self):
         """
         This must be unique for each MESA star being run a time, as a place MESA can write
-        temperoy files to.
+        temporay files to.
 
         It does not need persistance
         """
@@ -795,7 +795,7 @@ class MESAInterface(
         """
         Retrieve the current age of the star
         """
-        returns (net_name='d' | units.julianyr)
+        returns (age='d' | units.julianyr)
 
     @remote_function
     def set_age(index_of_the_star='i', new_age='d' | units.julianyr):
@@ -1006,20 +1006,6 @@ class MESAInterface(
         return self.set_control(index_of_the_star,'dutch_scaling_factor',dutch_wind_efficiency)
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 class MESA(StellarEvolution, InternalStellarStructure):
 
     def __init__(self, **options):
@@ -1191,6 +1177,11 @@ class MESA(StellarEvolution, InternalStellarStructure):
 
             handler.add_method(particle_set_name, 'get_IDs_of_species')
             handler.add_method(particle_set_name, 'get_gyre')
+
+            handler.add_getter(particle_set_name, 'get_RGB_wind_scheme', names = ('RGB_wind_scheme',))
+            handler.add_setter(particle_set_name, 'set_RGB_wind_scheme', names = ('RGB_wind_scheme',))
+            handler.add_getter(particle_set_name, 'get_AGB_wind_scheme', names = ('AGB_wind_scheme',))
+            handler.add_setter(particle_set_name, 'set_AGB_wind_scheme', names = ('AGB_wind_scheme',))
 
     def define_state(self, handler):
         StellarEvolution.define_state(self, handler)
@@ -1528,6 +1519,13 @@ class MESA(StellarEvolution, InternalStellarStructure):
             (handler.ERROR_CODE,)
         )
 
+        handler.add_method(
+            "set_MESA_paths",
+            (handler.NO_UNIT,handler.NO_UNIT,handler.NO_UNIT,handler.NO_UNIT,handler.NO_UNIT),
+            (handler.ERROR_CODE,)
+        )
+
+
     def initialize_module_with_default_parameters(self):
         self.parameters.set_defaults()
         self.initialize_code()
@@ -1669,14 +1667,14 @@ class MESA(StellarEvolution, InternalStellarStructure):
         return self.set_mesa_value([indices_of_the_stars]*number_of_zones, ['extra_heat']*number_of_zones, values, list(range(1, number_of_zones+1)))
 
     def get_mesa_value_profile(self, indices_of_the_stars, name,  number_of_zones=None):
-        indices_of_the_stars = self._check_number_of_indices(indices_of_the_stars, action_string="Querying generic mesaa_get_value")
+        indices_of_the_stars = self._check_number_of_indices(indices_of_the_stars, action_string="Querying generic mesa_get_value")
         if number_of_zones is None:
             number_of_zones = self.get_number_of_zones(indices_of_the_stars)
 
         return self.get_mesa_value([indices_of_the_stars]*number_of_zones, [name]*number_of_zones, list(range(1, number_of_zones+1)))
 
     def set_mesa_value_profile(self, indices_of_the_stars, name, values , number_of_zones=None):
-        indices_of_the_stars = self._check_number_of_indices(indices_of_the_stars, action_string="Setting generic mesaa_get_value")
+        indices_of_the_stars = self._check_number_of_indices(indices_of_the_stars, action_string="Setting generic mesa_get_value")
         if number_of_zones is None:
             number_of_zones = self.get_number_of_zones(indices_of_the_stars)
 

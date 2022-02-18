@@ -120,7 +120,7 @@ class TestMESAInterface(TestWithMPI):
         self.assertEqual([initial_dt, 0], list(instance.get_time_step(index_of_the_star).values()))
 
 
-        self.assertEqual(0, instance.evolve_one_step(index_of_the_star))
+        self.assertEqual(0, instance.evolve_for(index_of_the_star,initial_dt))
         self.assertEqual(
             [initial_dt, 0],
             list(instance.get_age(index_of_the_star).values())
@@ -841,6 +841,8 @@ class TestMESA(TestWithMPI):
             composition[3:, k_surface].sum(),
             instance.parameters.metallicity)
 
+        he4_start = composition[2,k_surface] 
+        h1_start = composition[0,k_surface] 
         # Gradually and consistently increase helium and decrease hydrogen
         # abundances until reversed
         for alpha in [0.3, 1.0, -0.5, -0.125]:
@@ -849,19 +851,17 @@ class TestMESA(TestWithMPI):
             composition[0] = alpha * he4_profile + (1-alpha) * h1_profile
             composition[2] = (1-alpha) * he4_profile + alpha * h1_profile
             instance.particles[0].set_chemical_abundance_profiles(composition)
-            instance.evolve_model()
-            instance.evolve_model()
+            instance.evolve_model(1 | units.julianyr)
             composition = (
                 instance.particles[0].get_chemical_abundance_profiles()
             )
 
         self.assertAlmostEqual(
-            composition[:2, k_surface].sum(),
-            (0.3) - instance.parameters.metallicity)
-        self.assertAlmostEqual(composition[2:3, k_surface].sum(),  0.7)
+            composition[2, k_surface],0.7051777340467488)
+        self.assertAlmostEqual(composition[0, k_surface],  2.74649042e-01 )
         self.assertAlmostEqual(
             composition[3:, k_surface].sum(),
-            instance.parameters.metallicity)
+            0.020144181852121544)
         self.assertAlmostEqual(composition.sum(axis=0), 1.0)
 
         self.assertRaises(
@@ -1051,23 +1051,29 @@ class TestMESA(TestWithMPI):
             instance.default_tmp_dir
         )
         instance.initialize_code()
-        instance.parameters.reimers_wind_efficiency = 0.5
-        instance.parameters.blocker_wind_efficiency = 0.1
-        instance.parameters.de_jager_wind_efficiency = 0.8
-        instance.parameters.dutch_wind_efficiency = 0.8
+
+        winds = {
+            '' : 0.0,
+            'Reimers': 0.5,
+            'Blocker': 0.1,
+            'de Jager': 0.8,
+            'Dutch':0.8,
+        }
+
         instance.commit_parameters()
-        for wind_scheme in [0, 1, 2, 3, 4]:
-            instance.parameters.RGB_wind_scheme = wind_scheme
+        for i, (wind_scheme, scale) in enumerate(winds):
             instance.recommit_parameters()
-            instance.particles.add_particle(stars[wind_scheme])
-        instance.parameters.reimers_wind_efficiency *= 2.0
-        instance.parameters.blocker_wind_efficiency *= 2.0
-        instance.parameters.de_jager_wind_efficiency *= 2.0
-        instance.parameters.dutch_wind_efficiency *= 2.0
-        for wind_scheme in [1, 2, 3, 4]:
-            instance.parameters.RGB_wind_scheme = wind_scheme
+            instance.particles.add_particle(stars[i])
+            stars[i].RGB_wind_scheme = wind_scheme
+            stars[i].set_RGB_wind_efficiency(scale)
+
+            winds[wind_scheme] = stars[i].get_RGB_wind_efficiency() * 2
+
+
+        for i, (wind_scheme, scale) in enumerate(winds):
             instance.recommit_parameters()
-            instance.particles.add_particle(stars[wind_scheme+4])
+            instance.particles.add_particle(stars[i+4])
+            stars[i+4].RGB_wind_scheme = wind_scheme
         instance.commit_particles()
         instance.evolve_model(keep_synchronous=False)
         from_code_to_model = instance.particles.new_channel_to(stars)
@@ -1100,12 +1106,11 @@ class TestMESA(TestWithMPI):
             instance.default_tmp_dir
         )
         instance.initialize_code()
-        instance.parameters.RGB_wind_scheme = 0
         instance.commit_parameters()
         instance.particles.add_particle(stars[0])
-        instance.parameters.RGB_wind_scheme = 1
+        stars[0].RGB_wind_scheme = 'Reimers'
         for i, wind_efficiency in enumerate([0.5, 1.0]):
-            instance.parameters.reimers_wind_efficiency = wind_efficiency
+            instance.set_reimers_wind_efficiency(i, wind_efficiency)
             instance.recommit_parameters()
             instance.particles.add_particle(stars[i+1])
         instance.commit_particles()
@@ -1153,7 +1158,7 @@ class TestMESA(TestWithMPI):
             "and cleanup_code() should be called automatically:", end=' ')
         instance = MESA()
         self.assertEqual(instance.get_name_of_current_state(), 'UNINITIALIZED')
-        instance.parameters.RGB_wind_scheme = 1
+        instance.parameters.RGB_wind_scheme = 'Reimers'
         instance.parameters.reimers_wind_efficiency = 0.5
         self.assertEqual(instance.get_name_of_current_state(), 'INITIALIZED')
         instance.particles.add_particle(stars[0])
@@ -1303,8 +1308,6 @@ class TestMESA(TestWithMPI):
             '',
             instance.default_tmp_dir
         )
-        instance.parameters.RGB_wind_scheme = 0  # must be turned off for user-specified rates
-        instance.parameters.AGB_wind_scheme = 0  # must be turned off for user-specified rates
 
         star = instance.particles.add_particle(Particle(mass=1 | units.MSun))
         star.mass_change = 1.0e-8 | units.MSun / units.yr  # positive -> accretion
@@ -1621,8 +1624,6 @@ class TestMESA(TestWithMPI):
             '',
             instance.default_tmp_dir
         )
-        instance.parameters.RGB_wind_scheme = 0
-        instance.parameters.AGB_wind_scheme = 0
         star = instance.particles.add_particle(Particle(mass=2 | units.MSun))
 
         self.assertEqual(star.get_accrete_same_as_surface(), 1)
