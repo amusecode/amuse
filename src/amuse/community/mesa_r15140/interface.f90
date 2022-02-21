@@ -325,30 +325,32 @@ module amuse_mesa
       integer :: ierr
 
       get_manual_mass_transfer_rate = 0
-      write(tmp , *) AMUSE_value
       ierr = get_opt(AMUSE_id, CONTROL_NML, 'mass_change', tmp)
 
       if (ierr /= MESA_SUCESS) then
          AMUSE_value = -1.0
          get_manual_mass_transfer_rate = -1
       endif
+
+      read(tmp,*) AMUSE_value
+
    end function get_manual_mass_transfer_rate
 
 ! Set a new user-specified mass transfer rate of the star
    integer function set_manual_mass_transfer_rate(AMUSE_id, AMUSE_value)
       integer, intent(in) :: AMUSE_id
-      double precision, intent(out) :: AMUSE_value
+      double precision, intent(in) :: AMUSE_value
       character(len=128) :: tmp
       integer :: ierr
       set_manual_mass_transfer_rate = 0
       
+      write(tmp , *) AMUSE_value
+
       ierr =  set_opt(AMUSE_id, CONTROL_NML,'mass_change', tmp)
 
       if (ierr /= MESA_SUCESS) then
-         AMUSE_value = -1.0
          set_manual_mass_transfer_rate = -1
       endif
-      read(tmp,*) AMUSE_value
 
    end function set_manual_mass_transfer_rate
 

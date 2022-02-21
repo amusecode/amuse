@@ -1259,7 +1259,7 @@ class MESA(StellarEvolution, InternalStellarStructure):
         handler.add_method(
             "get_mass_loss_rate",
             (handler.INDEX,),
-            (units.g / units.s, handler.ERROR_CODE,)
+            (units.MSun / units.julianyr, handler.ERROR_CODE,)
         )
         handler.add_method(
             "get_manual_mass_transfer_rate",
