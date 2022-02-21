@@ -1318,24 +1318,26 @@ class TestMESA(TestWithMPI):
 
         star = instance.particles.add_particle(Particle(mass=1 | units.MSun))
         star.mass_change = 1.0e-8 | units.MSun / units.julianyr  # positive -> accretion
-        star.evolve_one_step()
+        star.evolve_for(1.0e5 | units.julianyr)
 
         self.assertAlmostRelativeEqual(
             star.mass_change, 1.0e-8 | units.MSun / units.julianyr)
         self.assertAlmostRelativeEqual(
-            star.wind, -1.0e-8 | units.MSun / units.julianyr, 3)
+            star.wind, 1.0e-8 | units.MSun / units.julianyr, 3)
         self.assertAlmostRelativeEqual(star.age, 1.0e5 | units.julianyr)
         self.assertAlmostRelativeEqual(star.mass, 1.0010 | units.MSun)
 
         star.mass_change = -1.0e-8 | units.MSun / units.julianyr  # negative -> wind
-        star.evolve_one_step()
+        star.evolve_for(1 | units.s)
 
         self.assertAlmostRelativeEqual(
             star.mass_change, -1.0e-8 | units.MSun / units.julianyr)
         self.assertAlmostRelativeEqual(
-            star.wind, 1.0e-8 | units.MSun / units.julianyr, 3)
-        self.assertAlmostRelativeEqual(star.age, 1.8e5 | units.julianyr)
-        self.assertAlmostRelativeEqual(star.mass, 1.0002 | units.MSun)
+            star.wind, -1.0e-8 | units.MSun / units.julianyr, 3)
+
+        star.evolve_for(1.8e5 | units.julianyr)
+        self.assertAlmostRelativeEqual(star.age | units.julianyr, 1.8e5 | units.julianyr)
+        self.assertAlmostRelativeEqual(star.mass,  1.00 | units.MSun)
         print(star.as_set())
         instance.stop()
 
@@ -1404,15 +1406,15 @@ class TestMESA(TestWithMPI):
             Particle(mass=1.0 | units.MSun))
 
         self.assertAlmostEqual(
-            star.time_step.in_(units.yr), 1.0e-5 | units.julianyr)
+            star.time_step.in_(units.julianyr), 1.0e-5 | units.julianyr)
         star.evolve_one_step()
         self.assertAlmostEqual(
-            star.age.in_(units.yr), 1.0e-5 | units.julianyr)
+            star.age.in_(units.julianyr), 1.0e-5 | units.julianyr)
 
         instance.evolve_model(1.0 | units.julianyr)
         self.assertEqual(star.stellar_type, 17 | units.stellar_type)
         self.assertEqual(str(star.stellar_type), "Pre-main-sequence Star")
-        self.assertTrue(star.age >= 1.0 | units.julianyr)
+        self.assertTrue(star.age | units.julianyr >= 1.0 | units.julianyr)
         # 4408.57819467 K
         self.assertTrue(star.temperature < 4500 | units.K)
         # 1.33431386707 LSun
