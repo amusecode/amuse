@@ -925,7 +925,7 @@ class MESAInterface(
         """
         return self.get_control(index_of_the_star,'alpha_semiconvection')
 
-    def set_mixing_length_ratio(self,index_of_the_star, semi_convection_efficiency):
+    def set_semi_convection_efficiency(self,index_of_the_star, semi_convection_efficiency):
         """
         Sets the current semi_convection_efficiency of the star and turns on semiconvection.
         """
@@ -963,13 +963,13 @@ class MESAInterface(
         """
         Retrieve the current reimers_wind_efficiency
         """
-        return self.get_control(index_of_the_star,'Reimers_scaling_factor')
+        return self.get_control(index_of_the_star,'reimers_scaling_factor')
 
     def set_reimers_wind_efficiency(self, index_of_the_star, reimers_wind_efficiency):
         """
         Set the current reimers_wind_efficiency
         """
-        return self.set_control(index_of_the_star,'Reimers_scaling_factor',reimers_wind_efficiency)
+        return self.set_control(index_of_the_star,'reimers_scaling_factor',reimers_wind_efficiency)
 
 
     def get_blocker_wind_efficiency(self, index_of_the_star):

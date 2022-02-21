@@ -32,7 +32,7 @@ class TestMESAInterface(TestWithMPI):
         )
         instance.stop()
 
-    def slowtest2(self):
+    def test2(self):
         print(
             "Testing get/set of metallicity (tests new ZAMS model "
             "implicitly)..."
@@ -175,7 +175,7 @@ class TestMESAInterface(TestWithMPI):
         for (i, (Z, L)) in enumerate(zip(metallicities, luminosities)):
             status = instance.set_metallicity(Z)
             self.assertEqual(0, status)
-            (index_of_the_star, status) = instance.new_particle(1.0)
+            (index_of_the_star, status) = instance.new_pre_ms_particle(1.0)
             self.assertEqual(0, status)
             self.assertEqual(index_of_the_star, i+1)
             instance.evolve_for(index_of_the_star, 5.0e5)
@@ -219,7 +219,7 @@ class TestMESAInterface(TestWithMPI):
             self.assertEqual(10.0 ** x, value)
         instance.stop()
 
-    def xtest7(self):
+    def test7(self):
         print("Testing MESA parameters...")
         instance = self.new_instance_of_an_optional_code(MESAInterface)
         if instance is None:
@@ -253,7 +253,7 @@ class TestMESAInterface(TestWithMPI):
             self.assertEqual(x, value)
         instance.stop()
 
-    def xtest8(self):
+    def test8(self):
         print("Testing MESA wind parameters...")
         instance = self.new_instance_of_an_optional_code(MESAInterface)
         if instance is None:
@@ -1090,7 +1090,7 @@ class TestMESA(TestWithMPI):
             stars[5:].wind, 2.0 * stars[1:5].wind, places=7)
         instance.stop()
 
-    def test14(self):
+    def xtest14(self):
         print("Testing MESA wind parameters... (short version of slowtest13)")
         stars = Particles(3)
         stars.mass = 10.0 | units.MSun
