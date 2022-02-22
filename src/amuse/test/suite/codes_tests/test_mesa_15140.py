@@ -421,14 +421,15 @@ class TestMESA(TestWithMPI):
         stars.mass = mass
         instance.particles.add_particles(stars)
         instance.commit_particles()
-        from_code_to_model = instance.particles.new_channel_to(stars)
-        from_code_to_model.copy()
+        #FIXME: ??
+        # from_code_to_model = instance.particles.new_channel_to(stars)
+        # from_code_to_model.copy()
         self.assertEqual(stars[0].mass, mass)
         self.assertAlmostRelativeEqual(
             stars[0].luminosity, 5841. | units.LSun, 1
         )
         instance.evolve_model()
-        from_code_to_model.copy()
+        #from_code_to_model.copy()
         self.assertAlmostEqual(stars[0].mass, mass, 5)
         self.assertAlmostRelativeEqual(
             stars[0].luminosity, 5820.85 | units.LSun, 1
@@ -1335,8 +1336,8 @@ class TestMESA(TestWithMPI):
         self.assertAlmostRelativeEqual(
             star.wind, -1.0e-8 | units.MSun / units.julianyr, 3)
 
-        star.evolve_for(1.8e5 | units.julianyr)
-        self.assertAlmostRelativeEqual(star.age | units.julianyr, 1.8e5 | units.julianyr)
+        star.evolve_for(1.0e5 | units.julianyr)
+        self.assertAlmostRelativeEqual(star.age, 2.e5 | units.julianyr, 3)
         self.assertAlmostRelativeEqual(star.mass,  1.00 | units.MSun)
         print(star.as_set())
         instance.stop()
@@ -1414,7 +1415,7 @@ class TestMESA(TestWithMPI):
         instance.evolve_model(1.0 | units.julianyr)
         self.assertEqual(star.stellar_type, 17 | units.stellar_type)
         self.assertEqual(str(star.stellar_type), "Pre-main-sequence Star")
-        self.assertTrue(star.age | units.julianyr >= 1.0 | units.julianyr)
+        self.assertTrue(star.age >= 1.0 | units.julianyr)
         # 4408.57819467 K
         self.assertTrue(star.temperature < 4500 | units.K)
         # 1.33431386707 LSun
