@@ -185,4 +185,3 @@ skip_tests:
 # We cant guarentee bit-for-bit as we dont control the compiler used
 # So everyone has to skip the build tests
 	touch $(MESA_DIR)/skip_test
-endif
