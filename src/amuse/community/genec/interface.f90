@@ -468,7 +468,7 @@ function get_number_of_particles()
 end function
 
 function get_number_of_species(index_of_the_star, n_species)
-    use inputparam,only: ialflu
+    use inputparam, only: ialflu
     implicit none
     integer:: index_of_the_star
     integer:: n_species
@@ -479,6 +479,21 @@ function get_number_of_species(index_of_the_star, n_species)
         n_species = 15
     end if
     get_number_of_species = 0
+end function
+
+function get_firstlast_species_number(first, last)
+    use inputparam, only: ialflu
+    implicit none
+    !integer:: index_of_the_star
+    integer:: first, last
+    integer:: get_firstlast_species_number
+    first = 1
+    if (ialflu==1) then
+        last = 27
+    else
+        last = 15
+    end if
+    get_firstlast_species_number = 0
 end function
 
 function get_number_of_zones(index_of_the_star, n_zones)
@@ -494,6 +509,17 @@ function get_number_of_zones(index_of_the_star, n_zones)
     !end if
     n_zones = m
     get_number_of_zones = 0
+end function
+
+function get_firstlast_zone(first, last)
+    use strucmod, only: m
+    implicit none
+    !integer:: index_of_the_star
+    integer:: first, last
+    integer:: get_firstlast_zone
+    first = 1
+    last = m
+    get_firstlast_zone = 0
 end function
 
 function get_pressure_at_zone(index_of_the_star, zone, P_i)
