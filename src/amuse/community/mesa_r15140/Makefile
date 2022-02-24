@@ -182,7 +182,7 @@ interface.o: interface.f90 $(MESA_LIB)
 skip_tests:
 #This one should always be skipped
 	touch $(MESA_DIR)/adipls/skip_test
-#Only on macs
-ifeq ($(shell sh -c 'uname 2>/dev/null || echo Unknown'),Darwin)
+# We cant guarentee bit-for-bit as we dont control the compiler used
+# So everyone has to skip the build tests
 	touch $(MESA_DIR)/skip_test
 endif
