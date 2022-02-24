@@ -465,22 +465,22 @@ class SeBaInterface(CodeInterface, se.StellarEvolutionInterface, LiteratureRefer
 
 
     @legacy_function
-    def get_gyration_radius_sq():
+    def get_gyration_radius():
         """
-        Retrieve the current value of the square of the gyration radius (no units).
+        Retrieve the current value of the gyration radius (no units).
         """
         function = LegacyFunctionSpecification()
         function.can_handle_array = True
         function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
             , description="The index of the star to set the value of")
-        function.addParameter('gyration_radius_sq', dtype='float64', direction=function.OUT,
-            description = "The current value of the square of the gyration radius")
+        function.addParameter('gyration_radius', dtype='float64', direction=function.OUT,
+            description = "The current value of the gyration radius")
         function.result_type = 'int32'
         function.result_doc = """
         0 - OK
-            Current value of the square of the gyration radius was retrieved
+            Current value of the gyration radius was retrieved
         -1 - ERROR
-            The code does not have support for retrieving the square of the gyration radius
+            The code does not have support for retrieving the gyration radius
         """
         return function
 
@@ -902,7 +902,7 @@ class SeBa(se.StellarEvolution):
             (handler.ERROR_CODE,)
         )
         handler.add_method(
-            "get_gyration_radius_sq",
+            "get_gyration_radius",
             (handler.INDEX,),
             (units.none, handler.ERROR_CODE,)
         )
@@ -1014,7 +1014,7 @@ class SeBa(se.StellarEvolution):
         handler.add_getter('particles', 'get_natal_kick_velocity', names = ('natal_kick_x','natal_kick_y','natal_kick_z'))
         handler.add_getter('particles', 'get_convective_envelope_mass', names = ('convective_envelope_mass',))
         handler.add_getter('particles', 'get_convective_envelope_radius', names = ('convective_envelope_radius',))
-        handler.add_getter('particles', 'get_gyration_radius_sq', names = ('gyration_radius_sq',))
+        handler.add_getter('particles', 'get_gyration_radius', names = ('gyration_radius',))
         handler.add_getter('particles', 'get_rotation_period', names = ('rotation_period',))
         handler.add_setter('particles', 'set_rotation_period', names = ('rotation_period',))
         handler.add_getter('particles', 'get_fallback', names = ('fallback',))

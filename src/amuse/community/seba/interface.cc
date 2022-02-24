@@ -616,11 +616,11 @@ int get_stellar_type(int index_of_the_star, int * stellar_type){
     return error_code;
 }
 
-int get_gyration_radius_sq(int index_of_the_star, double * gyration_radius_sq){
+int get_gyration_radius(int index_of_the_star, double * gyration_radius){
     int error_code = 0;
     node * seba_node = get_seba_node_from_index(index_of_the_star, &error_code);
     if(error_code < 0) {return error_code;}
-    *gyration_radius_sq = seba_node->get_starbase()->gyration_radius_sq();
+    *gyration_radius = pow(seba_node->get_starbase()->gyration_radius_sq(),0.5);
     return error_code;
 }
 
