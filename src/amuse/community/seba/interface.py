@@ -547,6 +547,68 @@ class SeBaInterface(CodeInterface, se.StellarEvolutionInterface, LiteratureRefer
 
 
     @legacy_function
+    def get_rotation_period():
+        """
+        Retrieve the current value of the rotation period (sec).
+        """
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
+        function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
+            , description="The index of the star to set the value of")
+        function.addParameter('rotation_period', dtype='float64', direction=function.OUT,
+            description = "The current value of the rotation period")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            Current value of the rotation period was retrieved
+        -1 - ERROR
+            The code does not have support for retrieving the rotation period
+        """
+        return function
+
+    @legacy_function
+    def set_rotation_period():
+        """
+        Update the current rotation period of a star.
+        """
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
+        function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
+            , description="The index of the star to get the value of")
+        function.addParameter('value', dtype='float64', direction=function.IN
+            , description="The new rotation period.")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            The value has been set.
+        -1 - ERROR
+            A binary with the given index was not found.
+        """
+        return function
+
+    @legacy_function
+    def get_fallback():
+        """
+        Retrieve the value of fallback fraction during the SN.
+        """
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
+        function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
+            , description="The index of the star to set the value of")
+        function.addParameter('rotation_period', dtype='float64', direction=function.OUT,
+            description = "The current value of the rotation period")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            Value of the fallback fraction was retrieved
+        -1 - ERROR
+            The code does not have support for retrieving the fallback fraction
+        """
+        return function
+
+
+
+    @legacy_function
     def get_relative_age():
         """
         Retrieve the current value of the square of the relative age (Myr).
@@ -903,6 +965,21 @@ class SeBa(se.StellarEvolution):
         )
         handler.add_method(
             "get_gyration_radius",
+            (handler.INDEX,),
+            (units.none, handler.ERROR_CODE,)
+        )
+        handler.add_method(
+            "get_rotation_period",
+            (handler.INDEX,),
+            (units.s, handler.ERROR_CODE,)
+        )
+        handler.add_method(
+            "set_rotation_period",
+            (handler.INDEX, units.s,),
+            (handler.ERROR_CODE,)
+        )        
+        handler.add_method(
+            "get_fallback",
             (handler.INDEX,),
             (units.none, handler.ERROR_CODE,)
         )

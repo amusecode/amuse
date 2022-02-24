@@ -17,11 +17,11 @@ class TestStaggeredGrid(amusetest.TestCase):
         #generate corners for a simple structured grid
         shape = [5,5]
         ind = numpy.indices( (shape[0]+1,shape[1]+1))
-        lats = numpy.array( ind[0] , dtype=numpy.float)
+        lats = numpy.array( ind[0] , dtype=numpy.float64)
         lats = (0.5-lats/shape[1]) * numpy.pi
         lats[0] = lats[0] - 1e-14
         lats = lats[::-1,:]
-        lons = numpy.array( ind[1] , dtype=numpy.float)
+        lons = numpy.array( ind[1] , dtype=numpy.float64)
         lons = lons/ind.shape[1] * 2.0*numpy.pi
 
         corners = numpy.array([lons,lats])
@@ -62,11 +62,11 @@ class TestStaggeredGrid(amusetest.TestCase):
         #generate corners for a simple structured grid
         shape = [5,5]
         ind = numpy.indices( (shape[0]+1,shape[1]+1))
-        lats = numpy.array( ind[0] , dtype=numpy.float)
+        lats = numpy.array( ind[0] , dtype=numpy.float64)
         lats = (0.5-lats/shape[1]) * numpy.pi
         lats[0] = lats[0] - 1e-14
         lats = lats[::-1,:]
-        lons = numpy.array( ind[1] , dtype=numpy.float)
+        lons = numpy.array( ind[1] , dtype=numpy.float64)
         lons = lons/ind.shape[1] * 2.0*numpy.pi
 
         corners = numpy.array([lons,lats])

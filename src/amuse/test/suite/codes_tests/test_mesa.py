@@ -869,10 +869,10 @@ class TestMESA(TestWithMPI):
         instance.stop()
         
         (stdout, stderr) = Popen([mesa_star_path], cwd = testpath, stdin = PIPE, stdout = PIPE, stderr = PIPE).communicate()
-        self.assertEqual(stderr, "")
-        for i, line in enumerate(stdout.splitlines()):
+        self.assertEqual(stderr, b"")
+        for i, line in enumerate(stdout.decode("utf-8").splitlines()):
             #print i, line, line in amuse_output
-            if i == 52 + 4 * number_of_steps + 8 * (number_of_steps/10) + (3 if number_of_steps > 55 else 0):
+            if i == 52 + 4 * number_of_steps + 8 * (number_of_steps//10) + (3 if number_of_steps > 55 else 0):
                 self.assertEqual(line, "stop because model_number >= max_model_number")
                 break
             else:

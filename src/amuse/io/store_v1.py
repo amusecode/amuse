@@ -269,7 +269,7 @@ class HDF5LinkedAttribute(HDF5Attribute):
         
         keys = self.keys[:][indices]
         mask = self.masked[:][indices]
-        result = LinkedArray(numpy.empty(len(keys), dtype= numpy.object))
+        result = LinkedArray(numpy.empty(len(keys), dtype= object))
         for index in range(len(keys)):
             key = keys[index]
             if key >= 0:
