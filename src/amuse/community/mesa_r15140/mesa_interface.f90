@@ -497,6 +497,7 @@ module mesa_interface
            end if
            first_try = .false.
         end do step_loop
+        s% doing_first_model_of_run = .false.
 
         call after_step_loop(s% id, s% inlist_fname, &
             dbg, result, ierr)
@@ -538,10 +539,13 @@ module mesa_interface
                     exit evolve_loop
                 end if
             end if
+            s% doing_first_model_of_run = .false.
         end do evolve_loop
 
         ! In case you want to evolve further
         s% max_age = old_age
+
+        s% doing_first_model_of_run = .false.
 
     end subroutine evolve_until
 
