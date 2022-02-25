@@ -421,15 +421,15 @@ class TestMESA(TestWithMPI):
         stars.mass = mass
         instance.particles.add_particles(stars)
         instance.commit_particles()
-        #FIXME: ??
-        # from_code_to_model = instance.particles.new_channel_to(stars)
-        # from_code_to_model.copy()
+
+        from_code_to_model = instance.particles.new_channel_to(stars)
+        from_code_to_model.copy()
         self.assertEqual(stars[0].mass, mass)
         self.assertAlmostRelativeEqual(
             stars[0].luminosity, 5841. | units.LSun, 1
         )
         instance.evolve_model()
-        #from_code_to_model.copy()
+        from_code_to_model.copy()
         self.assertAlmostEqual(stars[0].mass, mass, 5)
         self.assertAlmostRelativeEqual(
             stars[0].luminosity, 5820.85 | units.LSun, 1
@@ -1079,7 +1079,6 @@ class TestMESA(TestWithMPI):
         instance.evolve_model(keep_synchronous=False)
         from_code_to_model = instance.particles.new_channel_to(stars)
         from_code_to_model.copy()
-        print(stars)
         self.assertAlmostEqual(stars[0].wind, 0.0 | units.MSun / units.yr)
         self.assertAlmostRelativeEqual(
             stars[1:5].wind,
@@ -1091,7 +1090,7 @@ class TestMESA(TestWithMPI):
             stars[5:].wind, 2.0 * stars[1:5].wind, places=7)
         instance.stop()
 
-    def xtest14(self):
+    def test14(self):
         print("Testing MESA wind parameters... (short version of slowtest13)")
         stars = Particles(3)
         stars.mass = 10.0 | units.MSun
@@ -1115,9 +1114,8 @@ class TestMESA(TestWithMPI):
         instance.commit_particles()
         instance.evolve_model(keep_synchronous=False)
         
-        # FIXME: What is this even doing?
-        #from_code_to_model = instance.particles.new_channel_to(stars)
-        #from_code_to_model.copy()
+        from_code_to_model = instance.particles.new_channel_to(stars)
+        from_code_to_model.copy()
 
         self.assertAlmostEqual(stars[0].mass_change, 0.0 | units.MSun / units.yr)
         self.assertAlmostRelativeEqual(

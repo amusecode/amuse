@@ -437,6 +437,7 @@ class MESAInterface(
         """
         function = LegacyFunctionSpecification()
         function.name = 'get_opt'
+        function.can_handle_array=True
         function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
             , description="The index of the star to get the value of")
         function.addParameter('type', dtype='int32', direction=function.IN
@@ -461,6 +462,7 @@ class MESAInterface(
         """
         function = LegacyFunctionSpecification()
         function.name = 'set_opt'
+        function.can_handle_array=True
         function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
             , description="The index of the star to get the value of")
         function.addParameter('type', dtype='int32', direction=function.IN
@@ -487,7 +489,7 @@ class MESAInterface(
 
     def get_control(self, index_of_the_star, name):
         """
-        Sets a MESA control namelist value.
+        Gets a MESA control namelist value.
         """
         v = self._get_opt(index_of_the_star, self._CONTROL_NML, name)
         v['value'] = self._str2val(v['value'])
@@ -569,8 +571,8 @@ class MESAInterface(
                 pass
             return val
 
-        if isinstance(value, list):
-            result = [process(i) for i in value]
+        if isinstance(value, list) or isinstance(value, numpy.ndarray):
+            result = numpy.array([process(i) for i in value])
         else:
             result = process(value)
 
@@ -1185,19 +1187,19 @@ class MESA(StellarEvolution, InternalStellarStructure):
             handler.add_method(particle_set_name, 'get_IDs_of_species')
             handler.add_method(particle_set_name, 'get_gyre')
 
-            handler.add_getter(particle_set_name, 'get_RGB_wind_scheme', names = ('RGB_wind_scheme',))
-            handler.add_setter(particle_set_name, 'set_RGB_wind_scheme', names = ('RGB_wind_scheme',))
-            handler.add_getter(particle_set_name, 'get_AGB_wind_scheme', names = ('AGB_wind_scheme',))
-            handler.add_setter(particle_set_name, 'set_AGB_wind_scheme', names = ('AGB_wind_scheme',))
+            # handler.add_getter(particle_set_name, 'get_RGB_wind_scheme', names = ('RGB_wind_scheme',))
+            # handler.add_setter(particle_set_name, 'set_RGB_wind_scheme', names = ('RGB_wind_scheme',))
+            # handler.add_getter(particle_set_name, 'get_AGB_wind_scheme', names = ('AGB_wind_scheme',))
+            # handler.add_setter(particle_set_name, 'set_AGB_wind_scheme', names = ('AGB_wind_scheme',))
 
-            handler.add_getter(particle_set_name, 'get_reimers_wind_efficiency', names = ('reimers_wind_efficiency',))
-            handler.add_setter(particle_set_name, 'set_reimers_wind_efficiency', names = ('reimers_wind_efficiency',))
-            handler.add_getter(particle_set_name, 'get_de_jager_wind_efficiency', names = ('de_jager_wind_efficiency',))
-            handler.add_setter(particle_set_name, 'set_de_jager_wind_efficiency', names = ('de_jager_wind_efficiency',))
-            handler.add_getter(particle_set_name, 'get_dutch_wind_efficiency', names = ('dutch_wind_efficiency',))
-            handler.add_setter(particle_set_name, 'set_dutch_wind_efficiency', names = ('dutch_wind_efficiency',))           
-            handler.add_getter(particle_set_name, 'get_blocker_wind_efficiency', names = ('blocker_wind_efficiency',))
-            handler.add_setter(particle_set_name, 'set_blocker_wind_efficiency', names = ('blocker_wind_efficiency',)) 
+            # handler.add_getter(particle_set_name, 'get_reimers_wind_efficiency', names = ('reimers_wind_efficiency',))
+            # handler.add_setter(particle_set_name, 'set_reimers_wind_efficiency', names = ('reimers_wind_efficiency',))
+            # handler.add_getter(particle_set_name, 'get_de_jager_wind_efficiency', names = ('de_jager_wind_efficiency',))
+            # handler.add_setter(particle_set_name, 'set_de_jager_wind_efficiency', names = ('de_jager_wind_efficiency',))
+            # handler.add_getter(particle_set_name, 'get_dutch_wind_efficiency', names = ('dutch_wind_efficiency',))
+            # handler.add_setter(particle_set_name, 'set_dutch_wind_efficiency', names = ('dutch_wind_efficiency',))           
+            # handler.add_getter(particle_set_name, 'get_blocker_wind_efficiency', names = ('blocker_wind_efficiency',))
+            # handler.add_setter(particle_set_name, 'set_blocker_wind_efficiency', names = ('blocker_wind_efficiency',)) 
 
     def define_state(self, handler):
         StellarEvolution.define_state(self, handler)
