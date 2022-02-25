@@ -373,6 +373,8 @@ class SeBaInterface(CodeInterface, se.StellarEvolutionInterface, LiteratureRefer
         """
         return function
 
+
+
     @legacy_function
     def get_children_of_binary():
         """
@@ -463,24 +465,86 @@ class SeBaInterface(CodeInterface, se.StellarEvolutionInterface, LiteratureRefer
 
 
     @legacy_function
-    def get_gyration_radius_sq():
+    def get_gyration_radius():
         """
-        Retrieve the current value of the square of the gyration radius (no units).
+        Retrieve the current value of the gyration radius (no units).
         """
         function = LegacyFunctionSpecification()
         function.can_handle_array = True
         function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
             , description="The index of the star to set the value of")
-        function.addParameter('gyration_radius_sq', dtype='float64', direction=function.OUT,
-            description = "The current value of the square of the gyration radius")
+        function.addParameter('gyration_radius', dtype='float64', direction=function.OUT,
+            description = "The current value of the gyration radius")
         function.result_type = 'int32'
         function.result_doc = """
         0 - OK
-            Current value of the square of the gyration radius was retrieved
+            Current value  of the gyration radius was retrieved
         -1 - ERROR
-            The code does not have support for retrieving the square of the gyration radius
+            The code does not have support for retrieving the gyration radius
         """
         return function
+
+    @legacy_function
+    def get_rotation_period():
+        """
+        Retrieve the current value of the rotation period (sec).
+        """
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
+        function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
+            , description="The index of the star to set the value of")
+        function.addParameter('rotation_period', dtype='float64', direction=function.OUT,
+            description = "The current value of the rotation period")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            Current value of the rotation period was retrieved
+        -1 - ERROR
+            The code does not have support for retrieving the rotation period
+        """
+        return function
+
+    @legacy_function
+    def set_rotation_period():
+        """
+        Update the current rotation period of a star.
+        """
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
+        function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
+            , description="The index of the star to get the value of")
+        function.addParameter('value', dtype='float64', direction=function.IN
+            , description="The new rotation period.")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            The value has been set.
+        -1 - ERROR
+            A binary with the given index was not found.
+        """
+        return function
+
+    @legacy_function
+    def get_fallback():
+        """
+        Retrieve the value of fallback fraction during the SN.
+        """
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
+        function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
+            , description="The index of the star to set the value of")
+        function.addParameter('rotation_period', dtype='float64', direction=function.OUT,
+            description = "The current value of the rotation period")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            Value of the fallback fraction was retrieved
+        -1 - ERROR
+            The code does not have support for retrieving the fallback fraction
+        """
+        return function
+
+
 
     @legacy_function
     def get_relative_age():
@@ -838,7 +902,22 @@ class SeBa(se.StellarEvolution):
             (handler.ERROR_CODE,)
         )
         handler.add_method(
-            "get_gyration_radius_sq",
+            "get_gyration_radius",
+            (handler.INDEX,),
+            (units.none, handler.ERROR_CODE,)
+        )
+        handler.add_method(
+            "get_rotation_period",
+            (handler.INDEX,),
+            (units.s, handler.ERROR_CODE,)
+        )
+        handler.add_method(
+            "set_rotation_period",
+            (handler.INDEX, units.s,),
+            (handler.ERROR_CODE,)
+        )        
+        handler.add_method(
+            "get_fallback",
             (handler.INDEX,),
             (units.none, handler.ERROR_CODE,)
         )
@@ -935,7 +1014,11 @@ class SeBa(se.StellarEvolution):
         handler.add_getter('particles', 'get_natal_kick_velocity', names = ('natal_kick_x','natal_kick_y','natal_kick_z'))
         handler.add_getter('particles', 'get_convective_envelope_mass', names = ('convective_envelope_mass',))
         handler.add_getter('particles', 'get_convective_envelope_radius', names = ('convective_envelope_radius',))
-        handler.add_getter('particles', 'get_gyration_radius_sq', names = ('gyration_radius_sq',))
+        handler.add_getter('particles', 'get_gyration_radius', names = ('gyration_radius',))
+        handler.add_getter('particles', 'get_rotation_period', names = ('rotation_period',))
+        handler.add_setter('particles', 'set_rotation_period', names = ('rotation_period',))
+        handler.add_getter('particles', 'get_fallback', names = ('fallback',))
+        
         handler.add_getter('particles', 'get_relative_age', names = ('relative_age',))
         handler.add_getter('particles', 'get_relative_mass', names = ('relative_mass',))
         handler.add_getter('particles', 'get_wind_mass_loss_rate', names = ('wind_mass_loss_rate',))
@@ -961,6 +1044,9 @@ class SeBa(se.StellarEvolution):
         handler.add_setter('binaries', 'set_semi_major_axis', names = ('semi_major_axis',))
         handler.add_setter('binaries', 'set_eccentricity', names = ('eccentricity',))
         handler.add_method('binaries', 'merge_the_binary')
+        
+
+        
     def define_state(self, handler):
         se.StellarEvolution.define_state(self, handler)
         

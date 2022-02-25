@@ -224,7 +224,7 @@ class MPIMessage(AbstractMessage):
                 begin = begin + size + 1
                 
             logger.debug("got %d strings of size %s, data = %s", total, sizes, strings)
-            return strings
+            return numpy.array(strings)
         else:
             return []
         
@@ -919,7 +919,7 @@ class MpiChannel(AbstractMessageChannel):
             self.info['host'] = self.hostname
         else:
             if self.job_scheduler:
-                self.info = self.get_info_from_job_scheduler(self.job_scheduler)
+                self.info = self.get_info_from_job_scheduler(self.job_scheduler, self.number_of_workers)
             else:
                 self.info = MPI.Info.Create()
                 
@@ -1634,7 +1634,7 @@ class SocketMessage(AbstractMessage):
                 strings.append(data_bytes[begin:begin + size].decode('utf-8'))
                 begin = begin + size + 1
 
-            return strings
+            return numpy.array(strings)
         else:
             return []
             

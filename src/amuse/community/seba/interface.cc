@@ -616,11 +616,27 @@ int get_stellar_type(int index_of_the_star, int * stellar_type){
     return error_code;
 }
 
-int get_gyration_radius_sq(int index_of_the_star, double * gyration_radius_sq){
+int get_gyration_radius(int index_of_the_star, double * gyration_radius){
     int error_code = 0;
     node * seba_node = get_seba_node_from_index(index_of_the_star, &error_code);
     if(error_code < 0) {return error_code;}
-    *gyration_radius_sq = seba_node->get_starbase()->gyration_radius_sq();
+    *gyration_radius = pow(seba_node->get_starbase()->gyration_radius_sq(),0.5);
+    return error_code;
+}
+
+int get_rotation_period(int index_of_the_star, double * rotation_period){
+    int error_code = 0;
+    node * seba_node = get_seba_node_from_index(index_of_the_star, &error_code);
+    if(error_code < 0) {return error_code;}
+    *rotation_period = seba_node->get_starbase()->get_rotation_period();
+    return error_code;
+}
+
+int get_fallback(int index_of_the_star, double * rotation_period){
+    int error_code = 0;
+    node * seba_node = get_seba_node_from_index(index_of_the_star, &error_code);
+    if(error_code < 0) {return error_code;}
+    *rotation_period = seba_node->get_starbase()->get_fallback();
     return error_code;
 }
 
@@ -916,5 +932,11 @@ int set_semi_major_axis(int index_of_the_star, double value){
 }
 
 
-
+int set_rotation_period(int index_of_the_star, double value){
+    int error_code = 0;
+    node * seba_node = get_seba_node_from_index(index_of_the_star, &error_code);
+    if(error_code < 0) {return error_code;}
+    seba_node->get_starbase()->set_rotation_period(value);
+    return error_code;
+}
 

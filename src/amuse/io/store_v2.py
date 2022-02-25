@@ -296,7 +296,7 @@ class HDF5LinkedAttribute(HDF5Attribute):
             grid_indices = self.indices_dataset[:][indices]
         else:
             grid_indices = numpy.zeros(shape)
-        result = LinkedArray(numpy.empty(shape, dtype = numpy.object))
+        result = LinkedArray(numpy.empty(shape, dtype = object))
         if len(shape) == 0:
             # we have one unique value, happens with grids
             result = self.convert_to_object(kinds, references, keys, grid_indices)

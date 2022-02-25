@@ -117,7 +117,7 @@ class LinkMethodArgumentOrResultType(MethodArgumentOrResultType):
         linked_set = self.get_linked_set(method, definition)
         storage = linked_set._private.attribute_storage
         keys = storage._get_keys_for_indices_in_the_code(value)
-        result = base.LinkedArray(numpy.empty(len(keys), dtype= numpy.object))
+        result = base.LinkedArray(numpy.empty(len(keys), dtype= object))
         for index in range(len(keys)):
             key = keys[index]
             if key >= 0:

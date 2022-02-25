@@ -5,7 +5,6 @@ from amuse.test.amusetest import TestCase
 
 
 import numpy
-import parser
 import sys
 import os
 import time
