@@ -485,66 +485,25 @@ class SeBaInterface(CodeInterface, se.StellarEvolutionInterface, LiteratureRefer
         return function
 
     @legacy_function
-    def get_rotation_period():
+    def get_apsidal_motion_constant():
         """
-        Retrieve the current value of the rotation period (sec).
-        """
-        function = LegacyFunctionSpecification()
-        function.can_handle_array = True
-        function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
-            , description="The index of the star to set the value of")
-        function.addParameter('rotation_period', dtype='float64', direction=function.OUT,
-            description = "The current value of the rotation period")
-        function.result_type = 'int32'
-        function.result_doc = """
-        0 - OK
-            Current value of the rotation period was retrieved
-        -1 - ERROR
-            The code does not have support for retrieving the rotation period
-        """
-        return function
-
-    @legacy_function
-    def set_rotation_period():
-        """
-        Update the current rotation period of a star.
-        """
-        function = LegacyFunctionSpecification()
-        function.can_handle_array = True
-        function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
-            , description="The index of the star to get the value of")
-        function.addParameter('value', dtype='float64', direction=function.IN
-            , description="The new rotation period.")
-        function.result_type = 'int32'
-        function.result_doc = """
-        0 - OK
-            The value has been set.
-        -1 - ERROR
-            A binary with the given index was not found.
-        """
-        return function
-
-    @legacy_function
-    def get_fallback():
-        """
-        Retrieve the value of fallback fraction during the SN.
+        Retrieve the current value of the apsidal motion constant (no units).
         """
         function = LegacyFunctionSpecification()
         function.can_handle_array = True
         function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
             , description="The index of the star to set the value of")
-        function.addParameter('rotation_period', dtype='float64', direction=function.OUT,
-            description = "The current value of the rotation period")
+        function.addParameter('apsidal_motion_constant', dtype='float64', direction=function.OUT,
+            description = "The current value of the apsidal motion constant")
         function.result_type = 'int32'
         function.result_doc = """
         0 - OK
-            Value of the fallback fraction was retrieved
+            Current value of the apsidal motion constant was retrieved
         -1 - ERROR
-            The code does not have support for retrieving the fallback fraction
+            The code does not have support for retrieving the apsidal motion constant
         """
         return function
-
-
+        
 
     @legacy_function
     def get_rotation_period():
@@ -969,6 +928,11 @@ class SeBa(se.StellarEvolution):
             (units.none, handler.ERROR_CODE,)
         )
         handler.add_method(
+            "get_apsidal_motion_constant",
+            (handler.INDEX,),
+            (units.none, handler.ERROR_CODE,)
+        )        
+        handler.add_method(
             "get_rotation_period",
             (handler.INDEX,),
             (units.s, handler.ERROR_CODE,)
@@ -1077,6 +1041,7 @@ class SeBa(se.StellarEvolution):
         handler.add_getter('particles', 'get_convective_envelope_mass', names = ('convective_envelope_mass',))
         handler.add_getter('particles', 'get_convective_envelope_radius', names = ('convective_envelope_radius',))
         handler.add_getter('particles', 'get_gyration_radius', names = ('gyration_radius',))
+        handler.add_getter('particles', 'get_apsidal_motion_constant', names = ('apsidal_motion_constant',))        
         handler.add_getter('particles', 'get_rotation_period', names = ('rotation_period',))
         handler.add_setter('particles', 'set_rotation_period', names = ('rotation_period',))
         handler.add_getter('particles', 'get_fallback', names = ('fallback',))
