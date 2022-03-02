@@ -640,22 +640,6 @@ int get_fallback(int index_of_the_star, double * rotation_period){
     return error_code;
 }
 
-int get_rotation_period(int index_of_the_star, double * rotation_period){
-    int error_code = 0;
-    node * seba_node = get_seba_node_from_index(index_of_the_star, &error_code);
-    if(error_code < 0) {return error_code;}
-    *rotation_period = seba_node->get_starbase()->get_rotation_period();
-    return error_code;
-}
-
-int get_fallback(int index_of_the_star, double * rotation_period){
-    int error_code = 0;
-    node * seba_node = get_seba_node_from_index(index_of_the_star, &error_code);
-    if(error_code < 0) {return error_code;}
-    *rotation_period = seba_node->get_starbase()->get_fallback();
-    return error_code;
-}
-
 int get_relative_age(int index_of_the_star, double * relative_age){
     int error_code = 0;
     node * seba_node = get_seba_node_from_index(index_of_the_star, &error_code);

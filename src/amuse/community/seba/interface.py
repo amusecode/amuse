@@ -984,21 +984,6 @@ class SeBa(se.StellarEvolution):
             (units.none, handler.ERROR_CODE,)
         )
         handler.add_method(
-            "get_rotation_period",
-            (handler.INDEX,),
-            (units.s, handler.ERROR_CODE,)
-        )
-        handler.add_method(
-            "set_rotation_period",
-            (handler.INDEX, units.s,),
-            (handler.ERROR_CODE,)
-        )        
-        handler.add_method(
-            "get_fallback",
-            (handler.INDEX,),
-            (units.none, handler.ERROR_CODE,)
-        )
-        handler.add_method(
             "get_relative_age",
             (handler.INDEX,),
             (units.Myr, handler.ERROR_CODE,)
