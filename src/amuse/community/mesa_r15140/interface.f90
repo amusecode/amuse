@@ -812,8 +812,6 @@ module amuse_mesa
       call do_evolve_one_step(AMUSE_id, res, ierr)
       if (ierr /= MESA_SUCESS) return   
 
-      result = get_age(AMUSE_id, target_times(AMUSE_id))
-
       evolve_one_step = res
 
    end function evolve_one_step
@@ -901,7 +899,7 @@ module amuse_mesa
          XAr36,XCa40,XTi44,XCr48,XFe52,XFe54,XFe56,XCr56,XNi56,&
          prot, neut,&
          rho, temperature
-      integer :: id, ierr
+      integer :: id, ierr, k,i,res
       double precision,allocatable :: xa(:,:)
 
       new_stellar_model = -1
@@ -921,6 +919,17 @@ module amuse_mesa
       end if
       allocate(xa(21,n))
 
+
+      call update_star_job(id, ierr)
+
+      !Let model sit for a bit
+      do i=1,10
+         ierr = evolve_one_step(id)
+         if(ierr/=MESA_SUCESS) then
+            new_stellar_model = -35
+            return
+         end if
+      end do
       ! Build composition array
       call set_comp('h1',XH1)
       if(new_stellar_model/=0) then

@@ -51,6 +51,8 @@ module mesa_interface
 
         s% inlist_fname = ''
 
+        call init_starting_star_data(s, ierr)
+
     end subroutine allocate_star
 
     subroutine load_inlist(id, inlist, ierr)
@@ -163,6 +165,7 @@ module mesa_interface
         call star_ptr(id, s, ierr)
         if (failed('star_ptr',ierr)) return
 
+        restart = .false.
         call init_callback(id) ! Call here and in evolve_controls as there are options that 
                                ! need to be set before and after the other inlist options get set
         id_from_read_star_job = id
@@ -569,6 +572,18 @@ module mesa_interface
 
     end subroutine set_initial_mass
 
+    subroutine set_model_number(id, new_number, ierr)
+        integer, intent(in) :: id
+        integer, intent(in) :: new_number
+        integer, intent(out) :: ierr
+        type (star_info), pointer :: s
+
+        call star_ptr(id, s, ierr)
+        if (failed('star_ptr',ierr)) return
+
+        s% model_number = new_number
+
+    end subroutine set_model_number
     subroutine set_timestep(id, dt_next, ierr)
         integer, intent(in) :: id
         real(dp), intent(in) :: dt_next
@@ -614,9 +629,16 @@ module mesa_interface
         real(dp), intent(in) :: xa(:,:), xqs(:)
         type (star_info), pointer :: s   
         integer, intent(out) :: ierr
-        ierr=0
+        integer :: k
+        real(dp) :: max_age
+        ierr=0 
         call star_ptr(id, s, ierr)
         if (failed('star_ptr',ierr)) return
+
+        if(s%species /= size(xa,dim=1)) then
+            ierr = -50
+            return 
+        end if
 
         call star_relax_composition(id, s% job% num_steps_to_relax_composition, &
                                     size(xqs),size(xa,dim=1) ,xa, xqs, ierr )
@@ -637,6 +659,7 @@ module mesa_interface
         call star_ptr(id, s, ierr)
         if (failed('star_ptr',ierr)) return
 
+        s% doing_first_model_of_run = .false.
         num_pts = size(xqs)
 
         allocate(entropy(num_pts))
@@ -655,6 +678,7 @@ module mesa_interface
             entropy(k) = exp(res(i_lnS))
         end do
 
+        s% min_timestep_limit = 1d-15
 
         call star_relax_entropy(id, s% job% max_steps_to_relax_entropy, num_pts, entropy, xqs, ierr)
         deallocate(entropy)
