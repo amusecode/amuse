@@ -3,17 +3,15 @@
 import subprocess
 import os
 import urllib.request
-import urllib.parse
-import urllib.error
 from shutil import which
 from optparse import OptionParser
 
 
 class GetCodeFromHttp:
     filename_template = "{version}.tar.gz"
-    name = ["SeBa"]
+    name = ["MJCWilhelm-vader"]
     url_template = [
-        "https://github.com/amusecode/SeBa/archive/{version}.tar.gz",
+        "https://bitbucket.org/MJCWilhelm/vader/get/{version}.tar.gz",
     ]
     version = [
         "",
@@ -26,20 +24,16 @@ class GetCodeFromHttp:
         return os.path.join(self.directory(), 'src')
 
     def unpack_downloaded_file(self, filename, name, version):
-        print("unpacking", filename)
-        arguments = ['tar', '-xf']
-        arguments.append(filename)
+        print ("unpacking", filename)
+        arguments = ['mkdir', 'vader_src']
         subprocess.call(
             arguments,
-            cwd=os.path.join(self.src_directory())
+            cwd=os.path.join(self.directory())
         )
+        arguments = ['tar', '-xf', filename, '-C', 'vader_src', '--strip-components=1']
         subprocess.call(
-            [
-                'mv',
-                '{name}-{version}'.format(name=name, version=version),
-                name
-            ],
-            cwd=os.path.join(self.src_directory())
+            arguments,
+            cwd=os.path.join(self.directory())
         )
         print("done")
 
@@ -53,12 +47,12 @@ class GetCodeFromHttp:
                     break
             os.rename('src', 'src.{0}'.format(counter))
 
-        os.mkdir('src')
+        #os.mkdir('src')
 
         for i, url_template in enumerate(self.url_template):
             url = url_template.format(version=self.version[i])
             filename = self.filename_template.format(version=self.version[i])
-            filepath = os.path.join(self.src_directory(), filename)
+            filepath = os.path.join(self.directory(), filename)
             print(
                 "downloading version", self.version[i],
                 "from", url, "to", filename
@@ -67,13 +61,13 @@ class GetCodeFromHttp:
                 arguments = ['wget', url]
                 subprocess.call(
                     arguments,
-                    cwd=os.path.join(self.src_directory())
+                    cwd=os.path.join(self.directory())
                 )
             elif which('curl') is not None:
                 arguments = ['curl', '-L', '-O', url]
                 subprocess.call(
                     arguments,
-                    cwd=os.path.join(self.src_directory())
+                    cwd=os.path.join(self.directory())
                 )
             else:
                 urllib.request.urlretrieve(url, filepath)
@@ -83,9 +77,9 @@ class GetCodeFromHttp:
             )
 
 
-def main(seba_version=''):
+def main(vader_version=''):
     version = [
-        seba_version,
+        vader_version,
     ]
     instance = GetCodeFromHttp()
     instance.version = version
@@ -95,10 +89,10 @@ def main(seba_version=''):
 def new_option_parser():
     result = OptionParser()
     result.add_option(
-        "--seba-version",
-        default='5257018d9fd90500c03b165ef130e6fe6344b320',
-        dest="seba_version",
-        help="SeBa commit hash to download",
+        "--vader-version",
+        default='0e6357b451e6',
+        dest="vader_version",
+        help="VADER commit hash to download",
         type="string"
     )
     return result

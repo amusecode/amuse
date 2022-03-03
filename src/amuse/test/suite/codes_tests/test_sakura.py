@@ -11,13 +11,17 @@ try:
 except ImportError:
     MODULES_MISSING = True
 
+default_options = dict()
+
+
 class TestSakuraInterface(TestWithMPI):
 
     def test01(self):
         if MODULES_MISSING:
             self.skip("Failed to import a module required for Sakura")
         print("Test SakuraInterface initialization")
-        instance = SakuraInterface()
+        instance = self.new_instance_of_an_optional_code(
+            SakuraInterface, **default_options)
         self.assertEqual(0, instance.initialize_code())
         self.assertEqual(0, instance.commit_parameters())
         self.assertEqual(0, instance.cleanup_code())
@@ -27,7 +31,8 @@ class TestSakuraInterface(TestWithMPI):
         if MODULES_MISSING:
             self.skip("Failed to import a module required for Sakura")
         print("Test SakuraInterface new_particle / get_state")
-        instance = SakuraInterface()
+        instance = self.new_instance_of_an_optional_code(
+            SakuraInterface, **default_options)
         self.assertEqual(0, instance.initialize_code())
         self.assertEqual(0, instance.commit_parameters())
 
@@ -55,7 +60,8 @@ class TestSakuraInterface(TestWithMPI):
         if MODULES_MISSING:
             self.skip("Failed to import a module required for Sakura")
         print("Test SakuraInterface particle property getters/setters")
-        instance = SakuraInterface()
+        instance = self.new_instance_of_an_optional_code(
+            SakuraInterface, **default_options)
         self.assertEqual(0, instance.initialize_code())
         self.assertEqual(0, instance.commit_parameters())
         self.assertEqual([0, 0], list(instance.new_particle(0.01,  1, 0, 0,  0, 1, 0, 0.1).values()))
@@ -95,7 +101,8 @@ class TestSakuraInterface(TestWithMPI):
         if MODULES_MISSING:
             self.skip("Failed to import a module required for Sakura")
         print("Test SakuraInterface parameters")
-        instance = SakuraInterface()
+        instance = self.new_instance_of_an_optional_code(
+            SakuraInterface, **default_options)
         self.assertEqual(0, instance.initialize_code())
 
         self.assertEqual([0.001, 0], list(instance.get_dt().values()))
@@ -133,7 +140,8 @@ class TestSakuraInterface(TestWithMPI):
         if MODULES_MISSING:
             self.skip("Failed to import a module required for Sakura")
         print("Test SakuraInterface evolve_model, binary")
-        instance = SakuraInterface(redirection='none')#,debugger="gdb")
+        instance = self.new_instance_of_an_optional_code(
+            SakuraInterface, redirection='none', **default_options)
         self.assertEqual(0, instance.initialize_code())
         self.assertEqual(0, instance.commit_parameters())
 
@@ -168,7 +176,8 @@ class TestSakura(TestWithMPI):
         if MODULES_MISSING:
             self.skip("Failed to import a module required for Sakura")
         print("Testing Sakura initialization")
-        instance = Sakura(self.default_converter, )
+        instance = self.new_instance_of_an_optional_code(
+            Sakura, self.default_converter, **default_options)
         instance.initialize_code()
         instance.commit_parameters()
         instance.cleanup_code()
@@ -178,7 +187,8 @@ class TestSakura(TestWithMPI):
         if MODULES_MISSING:
             self.skip("Failed to import a module required for Sakura")
         print("Testing Sakura parameters")
-        instance = Sakura(self.default_converter, )
+        instance = self.new_instance_of_an_optional_code(
+            Sakura, self.default_converter, **default_options)
         instance.initialize_code()
 
         self.assertEqual(instance.parameters.epsilon_squared,
@@ -227,7 +237,8 @@ class TestSakura(TestWithMPI):
         if MODULES_MISSING:
             self.skip("Failed to import a module required for Sakura")
         print("Testing Sakura particles")
-        instance = Sakura(self.default_converter, )
+        instance = self.new_instance_of_an_optional_code(
+            Sakura, self.default_converter, **default_options)
         instance.initialize_code()
         instance.commit_parameters()
         instance.particles.add_particles(self.new_sun_earth_system())
@@ -257,7 +268,8 @@ class TestSakura(TestWithMPI):
         particles.move_to_center()
         print(particles)
 
-        instance = Sakura(self.default_converter, )
+        instance = self.new_instance_of_an_optional_code(
+            Sakura, self.default_converter, **default_options)
         instance.initialize_code()
 #        instance.parameters.include_smbh = True
         instance.commit_parameters()
@@ -295,7 +307,8 @@ class TestSakura(TestWithMPI):
         print(particles)
 
         converter = nbody_system.nbody_to_si(1.0 | units.MSun, 1.0 | units.AU)
-        instance = Sakura(converter, )
+        instance = self.new_instance_of_an_optional_code(
+            Sakura, converter, **default_options)
         instance.initialize_code()
 #        instance.parameters.integrator_method = "asakura"
         instance.commit_parameters()
@@ -323,7 +336,8 @@ class TestSakura(TestWithMPI):
             self.skip("Failed to import a module required for Sakura")
         print("Testing Sakura evolve_model, earth-sun system, no SMBH")
         converter = nbody_system.nbody_to_si(1.0 | units.MSun, 1.0 | units.AU)
-        instance = Sakura(converter, )
+        instance = self.new_instance_of_an_optional_code(
+            Sakura, converter, **default_options)
         instance.initialize_code()
 #        instance.parameters.smbh_mass = 0.0 | units.MSun
         instance.commit_parameters()
@@ -357,7 +371,8 @@ class TestSakura(TestWithMPI):
         self.assertAlmostEqual(tan_initial_direction, math.tan(math.pi/4))
         tan_final_direction =  []
         for log_eps2 in range(-9,10,2):
-            instance = Sakura(converter, )
+            instance = self.new_instance_of_an_optional_code(
+                Sakura, converter, **default_options)
             instance.initialize_code()
             instance.parameters.epsilon_squared = 10.0**log_eps2 | units.AU ** 2
 #            instance.parameters.smbh_mass = 0.0 | units.MSun
@@ -381,7 +396,8 @@ class TestSakura(TestWithMPI):
         if MODULES_MISSING:
             self.skip("Failed to import a module required for Sakura")
         print("Testing Sakura get_gravity_at_point and get_potential_at_point")
-        instance = Sakura()
+        instance = self.new_instance_of_an_optional_code(
+            Sakura, **default_options)
         instance.initialize_code()
         instance.parameters.epsilon_squared = 0.0 | nbody_system.length**2
 #        instance.parameters.smbh_mass = 0.0 | nbody_system.mass
@@ -424,7 +440,8 @@ class TestSakura(TestWithMPI):
             self.skip("Failed to import a module required for Sakura")
         print("Testing Sakura evolve_model and getters energy, plummer sphere, no SMBH")
         converter = nbody_system.nbody_to_si(1.0e2 | units.MSun, 1.0 | units.parsec)
-        instance = Sakura(converter, )
+        instance = self.new_instance_of_an_optional_code(
+            Sakura, converter, **default_options)
 #        instance.parameters.timestep_parameter = 1.0/256
         instance.initialize_code()
 #        instance.parameters.smbh_mass = 0.0 | units.MSun
@@ -462,7 +479,8 @@ class TestSakura(TestWithMPI):
         particles.z = 0 | nbody_system.length
         particles.velocity = [[2, 0, 0], [-2, 0, 0]]*3 + [[-4, 0, 0]] | nbody_system.speed
 
-        instance = Sakura()
+        instance = self.new_instance_of_an_optional_code(
+            Sakura, **default_options)
         instance.initialize_code()
         instance.parameters.set_defaults()
         instance.particles.add_particles(particles)
@@ -517,7 +535,8 @@ class TestSakura(TestWithMPI):
         particles.velocity += cluster_velocity
         external_kinetic_energy = (0.5 | nbody_system.mass) * cluster_velocity.length_squared()
 
-        instance = Sakura()
+        instance = self.new_instance_of_an_optional_code(
+            Sakura, **default_options)
         instance.particles.add_particles(particles)
         instance.set_dt(1e-3 | nbody_system.time)
 

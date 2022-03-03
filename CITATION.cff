@@ -123,7 +123,7 @@ authors:
     given-names: Gabriel
 
 
-cff-version: "1.0.3"
+cff-version: 1.2.0
 doi: "10.5281/zenodo.1435860"
 keywords: 
   - astronomy

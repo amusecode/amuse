@@ -1,0 +1,84 @@
+		PARAMETERS
+Interface name						Unit/Type		Default		Comment
+-----------------------------------------------------------------------------------------------------------------------------------------
+alpha_function						bool			False		if True, the userAlpha function is used
+alpha								float			1.			the dimensionless viscosity parameter as defined in the paper
+equation_of_state_function			bool			False		if True, the userEOS function is used
+gamma								float			1.000001	the ratio of specific heats as defined in the paper
+delta								cm2/s2			0.			a parameter defined in the paper
+inner_pressure_boundary_type		int				1			type of pressure boundary; fixed 1) mass flux 2) torque flux 3) torque
+inner_pressure_boundary_mass_flux	g/s				0.			mass flux boundary condition
+inner_pressure_boundary_torque_flux g cm2/s3		0.			torque flux boundary condition
+inner_pressure_boundary_torque		g cm2/s2		0.			torque boundary condition
+inner_enthalpy_boundary_type		int				1			type of enthalpy boundary; fixed 1) enthalpy 2) enthalpy gradient
+inner_enthalpy_boundary_enthalpy	erg/g			0.			specific enthalpy boundary condition
+inner_enthalpy_boundary_enthalpy_gradient erg/cm/g	0.			specific enthalpy gradient boundary condition
+inner_boundary_function				bool			False		if True, the userIBC function is used
+outer_pressure_boundary_type		int				1			type of pressure boundary; fixed 1) mass flux 2) torque flux 3) torque
+outer_pressure_boundary_mass_flux	g/s				0.			mass flux boundary condition
+outer_pressure_boundary_torque_flux g cm2/s3		0.			torque flux boundary condition
+outer_pressure_boundary_torque		g cm2/s2		0.			torque boundary condition
+outer_enthalpy_boundary_type		int				1			type of enthalpy boundary; fixed 1) enthalpy 2) enthalpy gradient
+outer_enthalpy_boundary_enthalpy	erg/g			0.			specific enthalpy boundary condition
+outer_enthalpy_boundary_enthalpy_gradient erg/cm/g	0.			specific enthalpy gradient boundary condition
+outer_boundary_function				bool			False		if True, the userOBC function is used
+mass_source_function				bool			False		if True, the userMassSrc function is used
+mass_source_value					g/cm2/s			0.			constant mass source value
+internal_energy_source_function		bool			False		if True, the userIntEnSrc function is used
+internal_energy_source_value		erg/cm2/s		0.			constant internal energy source value
+number_of_user_outputs   			int				1           number of quantities on user-defined grid
+number_of_user_parameters			int				1           number of parameters in user-defined functions
+initial_timestep					s				1.
+minimum_timestep					float			1e-15		simulation stops if the timestep is smaller than dtMin*(tEnd - tStart)
+maximum_tolerated_change			float			0.1			maximum allowed change in any grid quantity; used to predict time step
+error_tolerance						float			1e-6		implicit solver tolerance
+maximum_timestep_increase			float			1.5			maximum timestep increase factor
+maximum_iterations					int				40			maximum implicit iterations
+interpolation_order					int				2			(see userguide)
+maximum_steps						int				-1			maximum steps, negative means unbounded
+use_backwards_euler					bool			False		use backwards Euler integration instead of Crank-Nicolson
+verbosity							int				0			amount of prints; 0) nothing 1) /100 steps 2) /1 step 3) /1 iteration
+pre_timestep_function				bool			False		if True, the userPreTimestep function is used
+post_timestep_function				bool			False		if True, the userPostTimestep function is used
+table_size                          int             1           size of rotation curve interpolation table
+radius_table                        array, cm       [0.]        radius array of rotation curve interpolation table
+velocity_table                      array, cm/s     [0.]        velocity array of rotation curve interpolation table
+begin_time                          s               0.          begin time of simulation
+-----------------------------------------------------------------------------------------------------------------------------------------
+		GRID						Unit/Type					Comment
+r									cm							cell centers
+area								cm2							cell areas
+rotational_velocity					cm/s						cell center rotational velocity
+effective_potential					erg/g						cell effective specific potential (gravitational + orbital)
+gravitational_potential				erg/g						cell gravitational specific potential (no self-gravity)
+column_density						g/cm2						cell column density
+pressure							g/s2						cell pressure
+internal_energy						erg/cm2						cell internal energy
+mass_source_difference				g/cm2						total mass difference in cell
+internal_energy_source_difference	erg/cm2						total internal energy difference in cell
+value                               float                       user-defined grid output
+-----------------------------------------------------------------------------------------------------------------------------------------
+		PROPERTIES					Unit						Comment
+mass								g							total mass in cells
+model_time							s							current model time
+inner_boundary_mass_out				g							total mass flow through inner boundary
+inner_boundary_energy_out			erg							total energy flow through inner boundary
+outer_boundary_mass_out				g							total mass flow through outer boundary
+outer_boundary_energy_out			erg							total energy flow through outer boundary
+-----------------------------------------------------------------------------------------------------------------------------------------
+		FUNCTIONS					Parameters					Comment
+evolve_model						end_time					evolves model
+initialize_keplerian_grid			n, linear, rmin, rmax, mass	initializes grid according to a Keplerian rotation curve; deletes old
+update_keplerian_grid				mass						updates Keplerian grid to new central mass; keeps old
+initialize_flat_grid				n, linear, rmin, rmax, vphi	initializes grid according to a flat rotation curve; deletes old
+update_flat_grid					vphi						updates flat grid to new constant velocity; keeps old
+initialize_tabulated_grid           n, linear, rmin, rmax,      initializes grid according to a tabulated rotation curve; deletes old
+                                    degree, breakpoints         degree of bspline, number of breakpoints; n >= degree + breakpoints - 2
+set_parameter						n, parameter				set user parameter n, in pre-defined units
+get_parameter						n							get user parameter n, in pre-defined units
+
+
+Note on the definition of mass differences/fluxes: positive means mass transfer towards greater radii, negative means mass towards smaller
+radii. If inner_pressure_boundary_mass_flux is positive, mass enters the grid; if outer_pressure_boundary_mass_flux is positive, mass
+leaves the grid. Similarly, positive inner_boundary_mass_out means mass entered the grid, and positive outer_boundary_mass_out means mass
+has left the grid.
