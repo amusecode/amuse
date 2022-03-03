@@ -836,6 +836,14 @@ class MESAInterface(
         else:
             return res['__result']
 
+    
+    def get_accrete_same_as_surface(self, index_of_the_star):
+        return self.get_control(index_of_the_star,'accrete_same_as_surface')
+
+    
+    def set_accrete_same_as_surface(self, index_of_the_star, value):
+        return self.set_control(index_of_the_star,'accrete_same_as_surface', value)
+
     @legacy_function
     def _get_gyre():
         """
@@ -1015,6 +1023,62 @@ class MESAInterface(
         return self.set_control(index_of_the_star,'dutch_scaling_factor',dutch_wind_efficiency)
 
 
+    def get_accrete_composition_non_metals(self, index_of_the_star):
+        h1 = self.get_control(index_of_the_star,'accretion_h1')
+        h2 = self.get_control(index_of_the_star,'accretion_h2')
+        he3 = self.get_control(index_of_the_star,'accretion_he3')
+        he4 = self.get_control(index_of_the_star,'accretion_he4')
+
+        return {**h1, **h2, **he3, **he4}
+
+    def set_accrete_composition_non_metals(self,index_of_the_star,h1,h2,he3,he4):
+        self.set_control(index_of_the_star,'accretion_h1',h1,)
+        self.set_control(index_of_the_star,'accretion_h2',h2)
+        self.set_control(index_of_the_star,'accretion_he3',he3)
+        return self.set_control(index_of_the_star,'accretion_he4',he4)
+
+    def get_accrete_composition_metals_identifier(self, index_of_the_star):
+        return self.get_control(index_of_the_star,'zfracs')
+
+    def set_accrete_composition_metals_identifier(self, index_of_the_star, zfracs):
+        return self.set_control(index_of_the_star,'zfracs',zfracs)
+
+    def get_accrete_composition_metals(self, index_of_the_star):
+        result = {}
+        for element in ['li','be','b','c','n','o','f','ne','mg','al','si','p'
+                        's','cl','ar','k','ca','sc','ti','v','cr','mn','fe',
+                        'co','ni','cu','zn']:
+            r = self.get_control(index_of_the_star,'z_fraction_'+element)
+            result[element] = r['value']
+            result['__result'] = r['__result']
+        return result
+
+    def set_accrete_composition_metals(self, index_of_the_star, **kwargs):
+        '''
+        Sets the accretion composition based on the following elements:
+
+        'li','be','b','c','n','o','f','ne','mg','al','si','p'
+        's','cl','ar','k','ca','sc','ti','v','cr','mn','fe',
+        'co','ni','cu','zn'
+
+        Thus to set the li accretion fraction to 1/2 then pass li=0.5
+
+        If an element is not set then its left with its currernt value
+
+        '''
+
+        result = {}
+        for element,value in kwargs.items():
+            if element not in ['li','be','b','c','n','o','f','ne','mg','al','si','p'
+                        's','cl','ar','k','ca','sc','ti','v','cr','mn','fe',
+                        'co','ni','cu','zn']:
+                raise ValueError("Bad element "+str(element))
+
+            r = self.set_control(index_of_the_star,'z_fraction_'+element,value)
+        return r
+
+
+
 class MESA(StellarEvolution, InternalStellarStructure):
 
     def __init__(self, **options):
@@ -1186,6 +1250,18 @@ class MESA(StellarEvolution, InternalStellarStructure):
 
             handler.add_method(particle_set_name, 'get_IDs_of_species')
             handler.add_method(particle_set_name, 'get_gyre')
+
+            handler.add_method(particle_set_name, 'get_accrete_same_as_surface')
+            handler.add_method(particle_set_name, 'set_accrete_same_as_surface')
+
+            handler.add_method(particle_set_name, 'get_accrete_composition_non_metals')
+            handler.add_method(particle_set_name, 'set_accrete_composition_non_metals')
+
+            handler.add_method(particle_set_name, 'get_accrete_composition_metals_identifier')
+            handler.add_method(particle_set_name, 'set_accrete_composition_metals_identifier')
+
+            handler.add_method(particle_set_name, 'get_accrete_composition_metals')
+            handler.add_method(particle_set_name, 'set_accrete_composition_metals')
 
             # handler.add_getter(particle_set_name, 'get_RGB_wind_scheme', names = ('RGB_wind_scheme',))
             # handler.add_setter(particle_set_name, 'set_RGB_wind_scheme', names = ('RGB_wind_scheme',))
@@ -1364,6 +1440,18 @@ class MESA(StellarEvolution, InternalStellarStructure):
         handler.add_method(
             "set_max_iter_stop_condition",
             (handler.NO_UNIT, ),
+            (handler.ERROR_CODE,)
+        )
+
+        handler.add_method(
+            "get_accrete_same_as_surface",
+            (handler.INDEX,),
+            (handler.NO_UNIT, handler.ERROR_CODE,)
+        )
+
+        handler.add_method(
+            "set_accrete_same_as_surface",
+            (handler.INDEX,handler.NO_UNIT, ),
             (handler.ERROR_CODE,)
         )
 
@@ -1592,6 +1680,29 @@ class MESA(StellarEvolution, InternalStellarStructure):
         )
 
 
+        handler.add_method(
+            "get_accrete_composition_non_metals",
+            (handler.INDEX,),
+            (handler.NO_UNIT,handler.NO_UNIT,handler.NO_UNIT,handler.NO_UNIT,handler.ERROR_CODE,)
+        )
+
+        handler.add_method(
+            "set_accrete_composition_non_metals",
+            (handler.INDEX,handler.NO_UNIT,handler.NO_UNIT,handler.NO_UNIT,handler.NO_UNIT),
+            (handler.ERROR_CODE)
+        )
+
+        handler.add_method(
+            "get_accrete_composition_metals_identifier",
+            (handler.INDEX,),
+            (handler.NO_UNIT,handler.ERROR_CODE,)
+        )
+
+        handler.add_method(
+            "set_accrete_composition_metals_identifier",
+            (handler.INDEX,handler.NO_UNIT),
+            (handler.ERROR_CODE)
+        )
     def initialize_module_with_default_parameters(self):
         self.parameters.set_defaults()
         self.initialize_code()
