@@ -481,7 +481,6 @@ module amuse_mesa
             call get_star_control_nml(AMUSE_id, AMUSE_name, AMUSE_value, ierr)
          case(STAR_JOB_NML)
             call get_star_job_nml(AMUSE_id, AMUSE_name, AMUSE_value, ierr)
-            write(50,*)AMUSE_id, AMUSE_name, AMUSE_value, ierr
          case(EOS_NML)
             call get_eos_nml(AMUSE_id, AMUSE_name, AMUSE_value, ierr)
          case(KAP_NML)

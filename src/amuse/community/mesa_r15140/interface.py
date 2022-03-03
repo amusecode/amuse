@@ -557,9 +557,9 @@ class MESAInterface(
     def _str2val(self, value):
         def process(val):
             val = val.strip()
-            if '.true.' in val.lower():
+            if '.true.' in val.lower() or val == 'T':
                 return True
-            elif '.false.' in val.lower():
+            elif '.false.' in val.lower() or val == 'F':
                 return False
             try:
                 return int(val)
@@ -1029,28 +1029,32 @@ class MESAInterface(
         he3 = self.get_control(index_of_the_star,'accretion_he3')
         he4 = self.get_control(index_of_the_star,'accretion_he4')
 
-        return {**h1, **h2, **he3, **he4}
+        return [{'h1':h1['value'], 
+                'h2': h2['value'],
+                'he3': he3['value'],
+                'he4': he4['value'],
+                }]
 
-    def set_accrete_composition_non_metals(self,index_of_the_star,h1,h2,he3,he4):
-        self.set_control(index_of_the_star,'accretion_h1',h1,)
+    def set_accrete_composition_non_metals(self,index_of_the_star,h1=0.0,h2=0.0,he3=0.0,he4=0.0):
+        self.set_control(index_of_the_star,'accretion_h1',h1)
         self.set_control(index_of_the_star,'accretion_h2',h2)
         self.set_control(index_of_the_star,'accretion_he3',he3)
         return self.set_control(index_of_the_star,'accretion_he4',he4)
 
     def get_accrete_composition_metals_identifier(self, index_of_the_star):
-        return self.get_control(index_of_the_star,'zfracs')
+        return self.get_control(index_of_the_star,'accretion_zfracs')
 
     def set_accrete_composition_metals_identifier(self, index_of_the_star, zfracs):
-        return self.set_control(index_of_the_star,'zfracs',zfracs)
+        return self.set_control(index_of_the_star,'accretion_zfracs',zfracs)
 
     def get_accrete_composition_metals(self, index_of_the_star):
         result = {}
-        for element in ['li','be','b','c','n','o','f','ne','mg','al','si','p'
+        for element in ['li','be','b','c','n','o','f','ne','mg','al','si','p',
                         's','cl','ar','k','ca','sc','ti','v','cr','mn','fe',
                         'co','ni','cu','zn']:
             r = self.get_control(index_of_the_star,'z_fraction_'+element)
             result[element] = r['value']
-            result['__result'] = r['__result']
+
         return result
 
     def set_accrete_composition_metals(self, index_of_the_star, **kwargs):
@@ -1069,11 +1073,10 @@ class MESAInterface(
 
         result = {}
         for element,value in kwargs.items():
-            if element not in ['li','be','b','c','n','o','f','ne','mg','al','si','p'
+            if element not in ['li','be','b','c','n','o','f','ne','mg','al','si','p',
                         's','cl','ar','k','ca','sc','ti','v','cr','mn','fe',
                         'co','ni','cu','zn']:
                 raise ValueError("Bad element "+str(element))
-
             r = self.set_control(index_of_the_star,'z_fraction_'+element,value)
         return r
 
@@ -1683,7 +1686,7 @@ class MESA(StellarEvolution, InternalStellarStructure):
         handler.add_method(
             "get_accrete_composition_non_metals",
             (handler.INDEX,),
-            (handler.NO_UNIT,handler.NO_UNIT,handler.NO_UNIT,handler.NO_UNIT,handler.ERROR_CODE,)
+            (handler.NO_UNIT,handler.NO_UNIT,handler.NO_UNIT,handler.NO_UNIT)
         )
 
         handler.add_method(
@@ -1695,7 +1698,7 @@ class MESA(StellarEvolution, InternalStellarStructure):
         handler.add_method(
             "get_accrete_composition_metals_identifier",
             (handler.INDEX,),
-            (handler.NO_UNIT,handler.ERROR_CODE,)
+            (handler.NO_UNIT,)
         )
 
         handler.add_method(
@@ -1703,6 +1706,7 @@ class MESA(StellarEvolution, InternalStellarStructure):
             (handler.INDEX,handler.NO_UNIT),
             (handler.ERROR_CODE)
         )
+
     def initialize_module_with_default_parameters(self):
         self.parameters.set_defaults()
         self.initialize_code()
