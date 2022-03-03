@@ -1044,7 +1044,6 @@ class SeBa(se.StellarEvolution):
         handler.add_getter('particles', 'get_apsidal_motion_constant', names = ('apsidal_motion_constant',))        
         handler.add_getter('particles', 'get_rotation_period', names = ('rotation_period',))
         handler.add_setter('particles', 'set_rotation_period', names = ('rotation_period',))
-        handler.add_getter('particles', 'get_fallback', names = ('fallback',))
         
         handler.add_getter('particles', 'get_relative_age', names = ('relative_age',))
         handler.add_getter('particles', 'get_relative_mass', names = ('relative_mass',))
@@ -1057,6 +1056,9 @@ class SeBa(se.StellarEvolution):
         handler.add_method('particles', 'refresh_memory')
         handler.add_method('particles', 'recall_memory_one_step')
         handler.add_method('particles', 'merge_with_other_star')
+        handler.add_method('particles', 'get_fallback')
+        handler.add_method('particles', 'get_time_step')
+        
 
         handler.define_set('binaries', 'index_of_the_star')
         handler.set_new('binaries', 'new_binary')
