@@ -15,6 +15,4 @@ markComment: >
   recent activity. It will be closed in 28 days if no further activity occurs.
   Thank you for your contributions.
 # Comment to post when closing a stale issue. Set to `false` to disable
-closeComment: >
-  This issue has been closed because it has had no recent activity.
-  Please feel free to reopen the issue if needed.
+closeComment: false
