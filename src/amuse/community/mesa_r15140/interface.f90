@@ -193,6 +193,32 @@ module amuse_mesa
 
    end function new_pure_he_particle
 
+! Load from mesa photo
+   integer function load_photo(AMUSE_id, filename)
+      integer, intent(out) :: AMUSE_id
+      character(len=*), intent(in) :: filename
+      integer ::  ierr, id
+      load_photo = -1
+
+      call allocate_star(id, ierr)
+      if(ierr/=MESA_SUCESS) return
+
+      AMUSE_mass = 1.0 
+
+      AMUSE_id = id
+      number_of_particles = AMUSE_id
+
+      ierr = MESA_FAIL
+
+      call load_mesa_photo(AMUSE_id, filename, ierr)
+      if(ierr/=MESA_SUCESS) return
+
+      call finish_init_star(AMUSE_id, set_amuse_options, ierr)
+      if(ierr/=MESA_SUCESS) return
+
+      load_photo = 0
+
+   end function load_photo
    subroutine set_amuse_options(AMUSE_id)
       ! Dont call this directly as variables will be reset during initlization
       ! Instead it must be used as a calback function in finish_init_star()
@@ -1192,6 +1218,31 @@ module amuse_mesa
 
    end function set_mass_fraction_of_species_at_zone
 
+
+
+   integer function save_model(AMUSE_id, filename)
+      integer, intent(in) :: AMUSE_id
+      character(len=*), intent(in) :: filename
+      integer :: ierr
+
+      ierr = 0
+      call save_mesa_model(AMUSE_id, filename, ierr)
+
+      save_model = ierr
+
+   end function save_model
+
+   integer function save_photo(AMUSE_id, filename)
+      integer, intent(in) :: AMUSE_id
+      character(len=*), intent(in) :: filename
+      integer :: ierr
+
+      ierr = 0
+      call save_mesa_photo(AMUSE_id, filename, ierr)
+
+      save_photo = ierr
+
+   end function save_photo
 
 
 ! Functions created to map to the se.py interface but they do nothing and allways return failure if called

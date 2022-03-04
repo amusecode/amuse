@@ -178,6 +178,30 @@ class MESAInterface(
         function.result_type = 'int32'
         return function
 
+
+    @legacy_function
+    def load_photo():
+        """
+        Load a MESA snapshot (photo file)
+        """
+        function = LegacyFunctionSpecification()
+        function.addParameter('index_of_the_star', dtype='int32', direction=function.OUT
+            , description="The new index for the star. This index can be used to refer to this star in other functions")
+        function.addParameter('filename', dtype='string', direction=function.IN
+            , description="The filename of the photo to load")
+        function.result_type = 'int32'
+        return function
+
+
+    @remote_function
+    def save_photo(index_of_the_star='i', filename='s' ):
+        returns ()
+
+    @remote_function
+    def save_model(index_of_the_star='i', filename='s'):
+        returns ()
+
+
     @remote_function
     def set_time_step(index_of_the_star='i', time_step='d' | units.julianyr):
         returns ()
@@ -1266,6 +1290,9 @@ class MESA(StellarEvolution, InternalStellarStructure):
             handler.add_method(particle_set_name, 'get_accrete_composition_metals')
             handler.add_method(particle_set_name, 'set_accrete_composition_metals')
 
+            handler.add_method(particle_set_name, 'save_photo')
+            handler.add_method(particle_set_name, 'save_model')
+
             # handler.add_getter(particle_set_name, 'get_RGB_wind_scheme', names = ('RGB_wind_scheme',))
             # handler.add_setter(particle_set_name, 'set_RGB_wind_scheme', names = ('RGB_wind_scheme',))
             # handler.add_getter(particle_set_name, 'get_AGB_wind_scheme', names = ('AGB_wind_scheme',))
@@ -1319,6 +1346,21 @@ class MESA(StellarEvolution, InternalStellarStructure):
         )
         handler.add_method(
             "load_model",
+            (handler.NO_UNIT),
+            (handler.INDEX, handler.ERROR_CODE)
+        )
+        handler.add_method(
+            "load_photo",
+            (handler.NO_UNIT),
+            (handler.INDEX, handler.ERROR_CODE)
+        )
+        handler.add_method(
+            "save_model",
+            (handler.NO_UNIT),
+            (handler.INDEX, handler.ERROR_CODE)
+        )
+        handler.add_method(
+            "save_photo",
             (handler.NO_UNIT),
             (handler.INDEX, handler.ERROR_CODE)
         )
