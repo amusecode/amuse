@@ -929,12 +929,12 @@ class TestMESA(TestWithMPI):
             "particle ages will typically diverge"
         )
         instance.evolve_model(keep_synchronous=False)
+
         self.assertAlmostEqual(
-            instance.model_time, 15000.0 | units.yr, 3)  # Unchanged!
+            instance.model_time, 15000.0 | units.yr, 3) 
         instance.stop()
 
     def test12(self):
-    def xtest12(self):
         print("Test for importing new stellar models")
         star = Particles(1)
         star.mass = 1.0 | units.MSun
@@ -995,12 +995,6 @@ class TestMESA(TestWithMPI):
         self.assertAlmostEqual(
             instance.imported_stars[0].get_mass_profile()[-1],
             instance.native_stars[0].get_mass_profile()[-1])
-        self.assertAlmostEqual(
-            instance.imported_stars[0].get_radius_profile()[-1],
-            instance.native_stars[0].get_radius_profile()[-1])
-        self.assertAlmostEqual(
-            instance.imported_stars[0].get_temperature_profile()[-1],
-            instance.native_stars[0].get_temperature_profile()[-1])
 
         print(instance.particles)
         instance.evolve_model(keep_synchronous=False)
@@ -1544,7 +1538,7 @@ class TestMESA(TestWithMPI):
             stars.central_density, [400, 77, 9] | units.g * units.cm**-3)
         instance.stop()
 
-    def xtest24(self):
+    def test24(self):
         print("Testing MESA calculate_helium_exhausted_core_mass")
         instance = self.new_instance_of_an_optional_code(MESA)
         instance.set_MESA_paths(
@@ -1593,7 +1587,7 @@ class TestMESA(TestWithMPI):
         self.assertEqual(core_mass_by_species[3], carbon_mass_in_core)
         self.assertEqual(core_mass_by_species[5], oxygen_mass_in_core)
 
-    def xtest25(self):
+    def test25(self):
         print("Testing MESA accretion")
         instance = self.new_instance_of_an_optional_code(MESA)
         instance.set_MESA_paths(
@@ -1605,27 +1599,51 @@ class TestMESA(TestWithMPI):
         )
         star = instance.particles.add_particle(Particle(mass=2 | units.MSun))
 
-        self.assertEqual(star.get_accrete_same_as_surface(), 1)
-        star.set_accrete_same_as_surface(0)
-        self.assertEqual(star.get_accrete_same_as_surface(), 0)
+        self.assertEqual(star.get_accrete_same_as_surface(), True)
+        star.set_accrete_same_as_surface(False)
+        self.assertEqual(star.get_accrete_same_as_surface(), False)
 
         self.assertEqual(
-            star.get_accrete_composition_non_metals(), [-1.0, -1.0, -1.0, -1.0]
+            star.get_accrete_composition_non_metals(), {'h1': 0.0, 'h2': 0.0, 'he3': 0.0, 'he4': 0.0}
         )
         self.assertEqual(star.get_accrete_composition_metals_identifier(), -1)
-        self.assertEqual(star.get_accrete_composition_metals(), [-1.0]*28)
+        self.assertEqual(star.get_accrete_composition_metals(), {'li': 0.0,
+                                                                'be': 0.0,
+                                                                'b': 0.0,
+                                                                'c': 0.0,
+                                                                'n': 0.0,
+                                                                'o': 0.0,
+                                                                'f': 0.0,
+                                                                'ne': 0.0,
+                                                                'mg': 0.0,
+                                                                'al': 0.0,
+                                                                'si': 0.0,
+                                                                'p': 0.0,
+                                                                's': 0.0,
+                                                                'cl': 0.0,
+                                                                'ar': 0.0,
+                                                                'k': 0.0,
+                                                                'ca': 0.0,
+                                                                'sc': 0.0,
+                                                                'ti': 0.0,
+                                                                'v': 0.0,
+                                                                'cr': 0.0,
+                                                                'mn': 0.0,
+                                                                'fe': 0.0,
+                                                                'co': 0.0,
+                                                                'ni': 0.0,
+                                                                'cu': 0.0,
+                                                                'zn': 0.0})
         print("Accreting 75% deuterium", end=' ')
-        composition_light = [0, 0.75, 0, 0]
         print("and 25% iron")
-        composition_metals = [0]*23 + [1.0] + [0]*4
-        star.set_accrete_composition_non_metals(*composition_light)
+        star.set_accrete_composition_non_metals(h2=0.75)
         star.set_accrete_composition_metals_identifier(0)  # i.e. specified below:
-        star.set_accrete_composition_metals(*composition_metals)
+        star.set_accrete_composition_metals(fe=0.25)
         self.assertEqual(
-            star.get_accrete_composition_non_metals(), composition_light)
+            star.get_accrete_composition_non_metals()['h2'], 0.75)
         self.assertEqual(star.get_accrete_composition_metals_identifier(), 0)
         self.assertEqual(
-            star.get_accrete_composition_metals(), composition_metals)
+            star.get_accrete_composition_metals()['fe'], 0.25)
 
         star.mass_change = 1.0e-8 | units.MSun / units.yr
         star.time_step = 0.1 | units.yr
