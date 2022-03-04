@@ -87,7 +87,7 @@ class ParametersAttributeDocumenter(AttributeDocumenter):
 
         Returns True if successful, False if an error occurred.
         """
-        self._datadescriptor = False
+        #~ self._datadescriptor = False
         try:
             __import__(self.modname)
             parent = None
