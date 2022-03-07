@@ -1093,6 +1093,8 @@ class MESAInterface(
 
         If an element is not set then its left with its currernt value
 
+        These must sum to 1.0 (the total z fraction is set by setting the non_metals to the 1-Z value)
+
         '''
 
         result = {}

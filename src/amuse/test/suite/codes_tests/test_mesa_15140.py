@@ -1175,100 +1175,6 @@ class TestMESA(TestWithMPI):
             se_stars[0].temperature, se_stars[1].temperature, 2)
         instance.stop()
 
-    def test17(self):
-        print("MESA validation")
-
-        mesa_src_path = os.path.join(
-            os.path.dirname(
-                sys.modules[MESA.__module__].__file__
-            ), 'src', 'mesa'
-        )
-        mesa_star_path = os.path.join(mesa_src_path, 'star', 'test', 'star')
-
-        if (
-            not os.path.exists(mesa_star_path)
-            or not os.access(mesa_star_path, os.X_OK)
-        ):
-            self.skip(
-                "no mesa executable in binary distribution, test cannot run"
-            )
-
-        number_of_steps = 11  # 4
-        star = Particle()
-        star.mass = 1.0 | units.MSun
-
-        testpath = get_path_to_results()
-        outputfile_name = os.path.join(testpath, "mesa_output")
-
-        instance = self.new_instance_of_an_optional_code(
-            MESA, redirection='file', redirect_file=outputfile_name)
-        instance.set_MESA_paths(
-            instance.default_path_to_inlist,
-            instance.default_path_to_MESA,
-            instance.default_path_to_MESA_data,
-            '',
-            instance.default_tmp_dir
-        )
-        
-        se_star = instance.particles.add_particle(star)
-        for i in range(number_of_steps):
-            se_star.evolve_one_step()
-        instance.stop()
-
-        rfile = open(outputfile_name, 'r')
-        amuse_output = rfile.read()
-        rfile.close()
-
-        # generate the inlist for the (stand-alone) MESA star run:
-        instance = self.new_instance_of_an_optional_code(
-            MESA, redirection='null')
-        with open(instance.default_path_to_inlist, 'r') as default_inlist:
-            with open(os.path.join(testpath, 'inlist'), 'w') as test_inlist:
-                for one_line in default_inlist.readlines():
-                    if ("max_model_number" in one_line):
-                        test_inlist.write(
-                            "         max_model_number = "
-                            + str(number_of_steps+1)+"\n"
-                        )
-                    elif ("mesa_data_dir" in one_line):
-                        test_inlist.write(
-                            "      mesa_data_dir = '"
-                            + os.path.join(mesa_src_path, 'data')+"'\n"
-                        )
-                    elif ("zams_filename" in one_line):
-                        test_inlist.write(
-                            "      zams_filename = '"
-                            + os.path.join(
-                                instance.get_output_directory(),
-                                "star_data", "starting_models",
-                                "zams_z20m3.data")+"'\n"
-                        )
-                    else:
-                        test_inlist.write(one_line)
-        instance.stop()
-
-        (stdout, stderr) = Popen(
-            [mesa_star_path], cwd=testpath, stdin=PIPE, stdout=PIPE,
-            stderr=PIPE
-        ).communicate()
-        self. assertEqual(stderr, "")
-        for i, line in enumerate(stdout.splitlines()):
-            # print i, line, line in amuse_output
-            if (
-                i == (
-                    52
-                    + 4 * number_of_steps
-                    + 8 * (number_of_steps/10)
-                    + (3 if number_of_steps > 55 else 0)
-                )
-            ):
-                self.assertEqual(
-                    line, "stop because model_number >= max_model_number"
-                )
-                break
-            else:
-                self.assertTrue(line in amuse_output)
-
     def test18(self):
         print("Testing MESA mass_change (User-specified wind/accretion)")
         instance = self.new_instance_of_an_optional_code(MESA)
@@ -1638,12 +1544,13 @@ class TestMESA(TestWithMPI):
         print("and 25% iron")
         star.set_accrete_composition_non_metals(h2=0.75)
         star.set_accrete_composition_metals_identifier(0)  # i.e. specified below:
-        star.set_accrete_composition_metals(fe=0.25)
+        star.set_accrete_composition_metals(fe=1.0) # These must add to 1.0
         self.assertEqual(
             star.get_accrete_composition_non_metals()['h2'], 0.75)
         self.assertEqual(star.get_accrete_composition_metals_identifier(), 0)
         self.assertEqual(
-            star.get_accrete_composition_metals()['fe'], 0.25)
+            star.get_accrete_composition_metals()['fe'], 1.0) # Metals must now sum to 1.0
+                                                              # Z is set by the 1 - sum(non_metals)
 
         star.mass_change = 1.0e-8 | units.MSun / units.yr
         star.time_step = 0.1 | units.yr
@@ -1654,5 +1561,5 @@ class TestMESA(TestWithMPI):
         print(
             f"so have been added to {species[0]} and {species[-1]}"
         )
-        self.assertEqual(composition[:, -1], [0.75, 0, 0, 0, 0, 0, 0, 0.25])
+        self.assertAlmostEqual(composition[:, -1], [0.75, 0, 0, 0, 0, 0, 0, 0.25])
         instance.stop()
