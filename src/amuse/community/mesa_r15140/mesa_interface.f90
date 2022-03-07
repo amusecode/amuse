@@ -128,6 +128,37 @@ module mesa_interface
     end subroutine load_zams_model
 
 
+    subroutine load_mesa_photo(id, filename, ierr)
+        integer, intent(in) :: id
+        character(len=*), intent(in) :: filename
+        integer, intent(out) :: ierr
+
+        call star_load_restart_photo(id, filename, ierr)
+
+    end subroutine load_mesa_photo
+
+    subroutine save_mesa_photo(id, filename, ierr)
+        integer, intent(in) :: id
+        character(len=*), intent(in) :: filename
+        integer, intent(out) :: ierr
+
+        call star_save_for_restart(id, filename, ierr)
+
+    end subroutine save_mesa_photo
+
+
+    subroutine save_mesa_model(id, filename, ierr)
+        integer, intent(in) :: id
+        character(len=*), intent(in) :: filename
+        integer, intent(out) :: ierr
+
+        call star_write_model(id, filename, ierr)
+        
+    end subroutine save_mesa_model
+
+
+
+
     subroutine create_he_star(id, ierr)
         integer, intent(in) :: id
         integer, intent(out) :: ierr
