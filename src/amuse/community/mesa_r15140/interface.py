@@ -1356,13 +1356,13 @@ class MESA(StellarEvolution, InternalStellarStructure):
         )
         handler.add_method(
             "save_model",
-            (handler.NO_UNIT),
-            (handler.INDEX, handler.ERROR_CODE)
+            (handler.INDEX,handler.NO_UNIT),
+            (handler.ERROR_CODE)
         )
         handler.add_method(
             "save_photo",
-            (handler.NO_UNIT),
-            (handler.INDEX, handler.ERROR_CODE)
+            (handler.INDEX,handler.NO_UNIT),
+            (handler.ERROR_CODE)
         )
         handler.add_method(
             "set_time_step",
