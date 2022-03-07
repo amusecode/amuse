@@ -66,6 +66,24 @@ end function
 
 ! **** Parameters
 
+function get_par_ipoly(par_ipoly)
+    use inputparam, only: ipoly
+    implicit none
+    integer:: par_ipoly
+    integer:: get_par_ipoly
+    par_ipoly = ipoly
+    get_par_ipoly = 0
+end function
+
+function set_par_ipoly(par_ipoly)
+    use inputparam, only: ipoly
+    implicit none
+    integer:: par_ipoly
+    integer:: set_par_ipoly
+    ipoly = par_ipoly
+    set_par_ipoly = 0
+end function
+
 function get_par_nwseq(par_nwseq)
     use inputparam, only: nwseq
     implicit none
@@ -982,6 +1000,24 @@ function set_par_stop_deg(par_stop_deg)
     integer:: set_par_stop_deg
     stop_deg = par_stop_deg
     set_par_stop_deg = 0
+end function
+
+function get_par_index_poly(par_index_poly)
+    use inputparam, only: index_poly
+    implicit none
+    double precision:: par_index_poly
+    integer:: get_par_index_poly
+    par_index_poly = index_poly
+    get_par_index_poly = 0
+end function
+
+function set_par_index_poly(par_index_poly)
+    use inputparam, only: index_poly
+    implicit none
+    double precision:: par_index_poly
+    integer:: set_par_index_poly
+    index_poly = par_index_poly
+    set_par_index_poly = 0
 end function
 
 function get_par_binm2(par_binm2)

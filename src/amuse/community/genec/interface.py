@@ -55,6 +55,42 @@ class GenecInterface(
     # Parameters
 
     @legacy_function
+    def get_par_ipoly():
+        'get parameter ipoly'
+        function = LegacyFunctionSpecification()
+        function.addParameter(
+            'ipoly', dtype='int32',
+            direction=function.OUT,
+        )
+        function.result_type = 'int32'
+        function.result_doc = '''
+        0 - OK
+            Got the value.
+        -1 - ERROR
+            Unable to get.
+        '''
+        return function
+
+    @legacy_function
+    def set_par_ipoly():
+        'set parameter ipoly'
+        function = LegacyFunctionSpecification()
+        function.addParameter(
+            'ipoly', dtype='int32',
+            direction=function.IN,
+        )
+        function.result_type = 'int32'
+        function.result_doc = '''
+        0 - OK
+            The value has been set.
+        -1 - ERROR
+            Unable to set.
+        -2 - ERROR
+            Cannot set at this point, already running.
+        '''
+        return function
+
+    @legacy_function
     def get_par_nwseq():
         'get parameter nwseq'
         function = LegacyFunctionSpecification()
@@ -1855,6 +1891,41 @@ class GenecInterface(
         return function
 
     @legacy_function
+    def get_par_index_poly():
+        'get parameter index_poly'
+        function = LegacyFunctionSpecification()
+        function.addParameter(
+            'index_poly', dtype='float64',
+            direction=function.OUT,
+        )
+        function.result_type = 'int32'
+        function.result_doc = '''
+        0 - OK
+            Got the value.
+        -1 - ERROR
+            Unable to get.
+        '''
+        return function
+
+    @legacy_function
+    def set_par_index_poly():
+        'set parameter index_poly'
+        function = LegacyFunctionSpecification()
+        function.addParameter(
+            'index_poly', dtype='float64',
+            direction=function.IN,
+        )
+        function.result_type = 'int32'
+        function.result_doc = '''
+        0 - OK
+            The value has been set.
+        -1 - ERROR
+            Unable to set.
+        -2 - ERROR
+            Cannot set at this point, already running.
+        '''
+        return function
+    @legacy_function
     def get_par_binm2():
         'get parameter binm2'
         function = LegacyFunctionSpecification()
@@ -3408,6 +3479,13 @@ class Genec(StellarEvolution, InternalStellarStructure):
         )
 
         handler.add_method_parameter(
+            "get_par_ipoly",
+            "set_par_ipoly",
+            "ipoly",
+            "GENEC parameter ipoly",
+        )
+
+        handler.add_method_parameter(
             "get_par_nwseq",
             "set_par_nwseq",
             "nwseq",
@@ -3755,6 +3833,13 @@ class Genec(StellarEvolution, InternalStellarStructure):
             "set_par_stop_deg",
             "stop_deg",
             "GENEC parameter stop_deg",
+        )
+
+        handler.add_method_parameter(
+            "get_par_index_poly",
+            "set_par_index_poly",
+            "index_poly",
+            "GENEC parameter index_poly",
         )
 
         handler.add_method_parameter(
