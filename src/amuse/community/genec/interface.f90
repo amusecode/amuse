@@ -64,6 +64,1611 @@ function cleanup_code()
     cleanup_code = 0
 end function
 
+! **** Parameters
+
+function get_par_nwseq(par_nwseq)
+    use inputparam, only: nwseq
+    implicit none
+    integer:: par_nwseq
+    integer:: get_par_nwseq
+    par_nwseq = nwseq
+    get_par_nwseq = 0
+end function
+
+function set_par_nwseq(par_nwseq)
+    use inputparam, only: nwseq
+    implicit none
+    integer:: par_nwseq
+    integer:: set_par_nwseq
+    nwseq = par_nwseq
+    set_par_nwseq = 0
+end function
+
+function get_par_modanf(par_modanf)
+    use inputparam, only: modanf
+    implicit none
+    integer:: par_modanf
+    integer:: get_par_modanf
+    par_modanf = modanf
+    get_par_modanf = 0
+end function
+
+function set_par_modanf(par_modanf)
+    use inputparam, only: modanf
+    implicit none
+    integer:: par_modanf
+    integer:: set_par_modanf
+    modanf = par_modanf
+    set_par_modanf = 0
+end function
+
+function get_par_nzmod(par_nzmod)
+    use inputparam, only: nzmod
+    implicit none
+    integer:: par_nzmod
+    integer:: get_par_nzmod
+    par_nzmod = nzmod
+    get_par_nzmod = 0
+end function
+
+function set_par_nzmod(par_nzmod)
+    use inputparam, only: nzmod
+    implicit none
+    integer:: par_nzmod
+    integer:: set_par_nzmod
+    nzmod = par_nzmod
+    set_par_nzmod = 0
+end function
+
+function get_par_irot(par_irot)
+    use inputparam, only: irot
+    implicit none
+    integer:: par_irot
+    integer:: get_par_irot
+    par_irot = irot
+    get_par_irot = 0
+end function
+
+function set_par_irot(par_irot)
+    use inputparam, only: irot
+    implicit none
+    integer:: par_irot
+    integer:: set_par_irot
+    irot = par_irot
+    set_par_irot = 0
+end function
+
+function get_par_isol(par_isol)
+    use inputparam, only: isol
+    implicit none
+    integer:: par_isol
+    integer:: get_par_isol
+    par_isol = isol
+    get_par_isol = 0
+end function
+
+function set_par_isol(par_isol)
+    use inputparam, only: isol
+    implicit none
+    integer:: par_isol
+    integer:: set_par_isol
+    isol = par_isol
+    set_par_isol = 0
+end function
+
+function get_par_imagn(par_imagn)
+    use inputparam, only: imagn
+    implicit none
+    integer:: par_imagn
+    integer:: get_par_imagn
+    par_imagn = imagn
+    get_par_imagn = 0
+end function
+
+function set_par_imagn(par_imagn)
+    use inputparam, only: imagn
+    implicit none
+    integer:: par_imagn
+    integer:: set_par_imagn
+    imagn = par_imagn
+    set_par_imagn = 0
+end function
+
+function get_par_ialflu(par_ialflu)
+    use inputparam, only: ialflu
+    implicit none
+    integer:: par_ialflu
+    integer:: get_par_ialflu
+    par_ialflu = ialflu
+    get_par_ialflu = 0
+end function
+
+function set_par_ialflu(par_ialflu)
+    use inputparam, only: ialflu
+    implicit none
+    integer:: par_ialflu
+    integer:: set_par_ialflu
+    ialflu = par_ialflu
+    set_par_ialflu = 0
+end function
+
+function get_par_ianiso(par_ianiso)
+    use inputparam, only: ianiso
+    implicit none
+    integer:: par_ianiso
+    integer:: get_par_ianiso
+    par_ianiso = ianiso
+    get_par_ianiso = 0
+end function
+
+function set_par_ianiso(par_ianiso)
+    use inputparam, only: ianiso
+    implicit none
+    integer:: par_ianiso
+    integer:: set_par_ianiso
+    ianiso = par_ianiso
+    set_par_ianiso = 0
+end function
+
+function get_par_ipop3(par_ipop3)
+    use inputparam, only: ipop3
+    implicit none
+    integer:: par_ipop3
+    integer:: get_par_ipop3
+    par_ipop3 = ipop3
+    get_par_ipop3 = 0
+end function
+
+function set_par_ipop3(par_ipop3)
+    use inputparam, only: ipop3
+    implicit none
+    integer:: par_ipop3
+    integer:: set_par_ipop3
+    ipop3 = par_ipop3
+    set_par_ipop3 = 0
+end function
+
+function get_par_ibasnet(par_ibasnet)
+    use inputparam, only: ibasnet
+    implicit none
+    integer:: par_ibasnet
+    integer:: get_par_ibasnet
+    par_ibasnet = ibasnet
+    get_par_ibasnet = 0
+end function
+
+function set_par_ibasnet(par_ibasnet)
+    use inputparam, only: ibasnet
+    implicit none
+    integer:: par_ibasnet
+    integer:: set_par_ibasnet
+    ibasnet = par_ibasnet
+    set_par_ibasnet = 0
+end function
+
+function get_par_phase(par_phase)
+    use inputparam, only: phase
+    implicit none
+    integer:: par_phase
+    integer:: get_par_phase
+    par_phase = phase
+    get_par_phase = 0
+end function
+
+function set_par_phase(par_phase)
+    use inputparam, only: phase
+    implicit none
+    integer:: par_phase
+    integer:: set_par_phase
+    phase = par_phase
+    set_par_phase = 0
+end function
+
+function get_par_iopac(par_iopac)
+    use inputparam, only: iopac
+    implicit none
+    integer:: par_iopac
+    integer:: get_par_iopac
+    par_iopac = iopac
+    get_par_iopac = 0
+end function
+
+function set_par_iopac(par_iopac)
+    use inputparam, only: iopac
+    implicit none
+    integer:: par_iopac
+    integer:: set_par_iopac
+    iopac = par_iopac
+    set_par_iopac = 0
+end function
+
+function get_par_ikappa(par_ikappa)
+    use inputparam, only: ikappa
+    implicit none
+    integer:: par_ikappa
+    integer:: get_par_ikappa
+    par_ikappa = ikappa
+    get_par_ikappa = 0
+end function
+
+function set_par_ikappa(par_ikappa)
+    use inputparam, only: ikappa
+    implicit none
+    integer:: par_ikappa
+    integer:: set_par_ikappa
+    ikappa = par_ikappa
+    set_par_ikappa = 0
+end function
+
+function get_par_idiff(par_idiff)
+    use inputparam, only: idiff
+    implicit none
+    integer:: par_idiff
+    integer:: get_par_idiff
+    par_idiff = idiff
+    get_par_idiff = 0
+end function
+
+function set_par_idiff(par_idiff)
+    use inputparam, only: idiff
+    implicit none
+    integer:: par_idiff
+    integer:: set_par_idiff
+    idiff = par_idiff
+    set_par_idiff = 0
+end function
+
+function get_par_iadvec(par_iadvec)
+    use inputparam, only: iadvec
+    implicit none
+    integer:: par_iadvec
+    integer:: get_par_iadvec
+    par_iadvec = iadvec
+    get_par_iadvec = 0
+end function
+
+function set_par_iadvec(par_iadvec)
+    use inputparam, only: iadvec
+    implicit none
+    integer:: par_iadvec
+    integer:: set_par_iadvec
+    iadvec = par_iadvec
+    set_par_iadvec = 0
+end function
+
+function get_par_istati(par_istati)
+    use inputparam, only: istati
+    implicit none
+    integer:: par_istati
+    integer:: get_par_istati
+    par_istati = istati
+    get_par_istati = 0
+end function
+
+function set_par_istati(par_istati)
+    use inputparam, only: istati
+    implicit none
+    integer:: par_istati
+    integer:: set_par_istati
+    istati = par_istati
+    set_par_istati = 0
+end function
+
+function get_par_icoeff(par_icoeff)
+    use inputparam, only: icoeff
+    implicit none
+    integer:: par_icoeff
+    integer:: get_par_icoeff
+    par_icoeff = icoeff
+    get_par_icoeff = 0
+end function
+
+function set_par_icoeff(par_icoeff)
+    use inputparam, only: icoeff
+    implicit none
+    integer:: par_icoeff
+    integer:: set_par_icoeff
+    icoeff = par_icoeff
+    set_par_icoeff = 0
+end function
+
+function get_par_igamma(par_igamma)
+    use inputparam, only: igamma
+    implicit none
+    integer:: par_igamma
+    integer:: get_par_igamma
+    par_igamma = igamma
+    get_par_igamma = 0
+end function
+
+function set_par_igamma(par_igamma)
+    use inputparam, only: igamma
+    implicit none
+    integer:: par_igamma
+    integer:: set_par_igamma
+    igamma = par_igamma
+    set_par_igamma = 0
+end function
+
+function get_par_idialo(par_idialo)
+    use inputparam, only: idialo
+    implicit none
+    integer:: par_idialo
+    integer:: get_par_idialo
+    par_idialo = idialo
+    get_par_idialo = 0
+end function
+
+function set_par_idialo(par_idialo)
+    use inputparam, only: idialo
+    implicit none
+    integer:: par_idialo
+    integer:: set_par_idialo
+    idialo = par_idialo
+    set_par_idialo = 0
+end function
+
+function get_par_idialu(par_idialu)
+    use inputparam, only: idialu
+    implicit none
+    integer:: par_idialu
+    integer:: get_par_idialu
+    par_idialu = idialu
+    get_par_idialu = 0
+end function
+
+function set_par_idialu(par_idialu)
+    use inputparam, only: idialu
+    implicit none
+    integer:: par_idialu
+    integer:: set_par_idialu
+    idialu = par_idialu
+    set_par_idialu = 0
+end function
+
+function get_par_imloss(par_imloss)
+    use inputparam, only: imloss
+    implicit none
+    integer:: par_imloss
+    integer:: get_par_imloss
+    par_imloss = imloss
+    get_par_imloss = 0
+end function
+
+function set_par_imloss(par_imloss)
+    use inputparam, only: imloss
+    implicit none
+    integer:: par_imloss
+    integer:: set_par_imloss
+    imloss = par_imloss
+    set_par_imloss = 0
+end function
+
+function get_par_ifitm(par_ifitm)
+    use inputparam, only: ifitm
+    implicit none
+    integer:: par_ifitm
+    integer:: get_par_ifitm
+    par_ifitm = ifitm
+    get_par_ifitm = 0
+end function
+
+function set_par_ifitm(par_ifitm)
+    use inputparam, only: ifitm
+    implicit none
+    integer:: par_ifitm
+    integer:: set_par_ifitm
+    ifitm = par_ifitm
+    set_par_ifitm = 0
+end function
+
+function get_par_nndr(par_nndr)
+    use inputparam, only: nndr
+    implicit none
+    integer:: par_nndr
+    integer:: get_par_nndr
+    par_nndr = nndr
+    get_par_nndr = 0
+end function
+
+function set_par_nndr(par_nndr)
+    use inputparam, only: nndr
+    implicit none
+    integer:: par_nndr
+    integer:: set_par_nndr
+    nndr = par_nndr
+    set_par_nndr = 0
+end function
+
+function get_par_iledou(par_iledou)
+    use inputparam, only: iledou
+    implicit none
+    integer:: par_iledou
+    integer:: get_par_iledou
+    par_iledou = iledou
+    get_par_iledou = 0
+end function
+
+function set_par_iledou(par_iledou)
+    use inputparam, only: iledou
+    implicit none
+    integer:: par_iledou
+    integer:: set_par_iledou
+    iledou = par_iledou
+    set_par_iledou = 0
+end function
+
+function get_par_idifcon(par_idifcon)
+    use inputparam, only: idifcon
+    implicit none
+    integer:: par_idifcon
+    integer:: get_par_idifcon
+    par_idifcon = idifcon
+    get_par_idifcon = 0
+end function
+
+function set_par_idifcon(par_idifcon)
+    use inputparam, only: idifcon
+    implicit none
+    integer:: par_idifcon
+    integer:: set_par_idifcon
+    idifcon = par_idifcon
+    set_par_idifcon = 0
+end function
+
+function get_par_my(par_my)
+    use inputparam, only: my
+    implicit none
+    integer:: par_my
+    integer:: get_par_my
+    par_my = my
+    get_par_my = 0
+end function
+
+function set_par_my(par_my)
+    use inputparam, only: my
+    implicit none
+    integer:: par_my
+    integer:: set_par_my
+    my = par_my
+    set_par_my = 0
+end function
+
+function get_par_iover(par_iover)
+    use inputparam, only: iover
+    implicit none
+    integer:: par_iover
+    integer:: get_par_iover
+    par_iover = iover
+    get_par_iover = 0
+end function
+
+function set_par_iover(par_iover)
+    use inputparam, only: iover
+    implicit none
+    integer:: par_iover
+    integer:: set_par_iover
+    iover = par_iover
+    set_par_iover = 0
+end function
+
+function get_par_iunder(par_iunder)
+    use inputparam, only: iunder
+    implicit none
+    integer:: par_iunder
+    integer:: get_par_iunder
+    par_iunder = iunder
+    get_par_iunder = 0
+end function
+
+function set_par_iunder(par_iunder)
+    use inputparam, only: iunder
+    implicit none
+    integer:: par_iunder
+    integer:: set_par_iunder
+    iunder = par_iunder
+    set_par_iunder = 0
+end function
+
+function get_par_nbchx(par_nbchx)
+    use inputparam, only: nbchx
+    implicit none
+    integer:: par_nbchx
+    integer:: get_par_nbchx
+    par_nbchx = nbchx
+    get_par_nbchx = 0
+end function
+
+function set_par_nbchx(par_nbchx)
+    use inputparam, only: nbchx
+    implicit none
+    integer:: par_nbchx
+    integer:: set_par_nbchx
+    nbchx = par_nbchx
+    set_par_nbchx = 0
+end function
+
+function get_par_nrband(par_nrband)
+    use inputparam, only: nrband
+    implicit none
+    integer:: par_nrband
+    integer:: get_par_nrband
+    par_nrband = nrband
+    get_par_nrband = 0
+end function
+
+function set_par_nrband(par_nrband)
+    use inputparam, only: nrband
+    implicit none
+    integer:: par_nrband
+    integer:: set_par_nrband
+    nrband = par_nrband
+    set_par_nrband = 0
+end function
+
+function get_par_islow(par_islow)
+    use inputparam, only: islow
+    implicit none
+    integer:: par_islow
+    integer:: get_par_islow
+    par_islow = islow
+    get_par_islow = 0
+end function
+
+function set_par_islow(par_islow)
+    use inputparam, only: islow
+    implicit none
+    integer:: par_islow
+    integer:: set_par_islow
+    islow = par_islow
+    set_par_islow = 0
+end function
+
+function get_par_icncst(par_icncst)
+    use inputparam, only: icncst
+    implicit none
+    integer:: par_icncst
+    integer:: get_par_icncst
+    par_icncst = icncst
+    get_par_icncst = 0
+end function
+
+function set_par_icncst(par_icncst)
+    use inputparam, only: icncst
+    implicit none
+    integer:: par_icncst
+    integer:: set_par_icncst
+    icncst = par_icncst
+    set_par_icncst = 0
+end function
+
+function get_par_tauH_fit(par_tauH_fit)
+    use inputparam, only: tauH_fit
+    implicit none
+    integer:: par_tauH_fit
+    integer:: get_par_tauH_fit
+    par_tauH_fit = tauH_fit
+    get_par_tauH_fit = 0
+end function
+
+function set_par_tauH_fit(par_tauH_fit)
+    use inputparam, only: tauH_fit
+    implicit none
+    integer:: par_tauH_fit
+    integer:: set_par_tauH_fit
+    tauH_fit = par_tauH_fit
+    set_par_tauH_fit = 0
+end function
+
+function get_par_iauto(par_iauto)
+    use inputparam, only: iauto
+    implicit none
+    integer:: par_iauto
+    integer:: get_par_iauto
+    par_iauto = iauto
+    get_par_iauto = 0
+end function
+
+function set_par_iauto(par_iauto)
+    use inputparam, only: iauto
+    implicit none
+    integer:: par_iauto
+    integer:: set_par_iauto
+    iauto = par_iauto
+    set_par_iauto = 0
+end function
+
+function get_par_iprn(par_iprn)
+    use inputparam, only: iprn
+    implicit none
+    integer:: par_iprn
+    integer:: get_par_iprn
+    par_iprn = iprn
+    get_par_iprn = 0
+end function
+
+function set_par_iprn(par_iprn)
+    use inputparam, only: iprn
+    implicit none
+    integer:: par_iprn
+    integer:: set_par_iprn
+    iprn = par_iprn
+    set_par_iprn = 0
+end function
+
+function get_par_iout(par_iout)
+    use inputparam, only: iout
+    implicit none
+    integer:: par_iout
+    integer:: get_par_iout
+    par_iout = iout
+    get_par_iout = 0
+end function
+
+function set_par_iout(par_iout)
+    use inputparam, only: iout
+    implicit none
+    integer:: par_iout
+    integer:: set_par_iout
+    iout = par_iout
+    set_par_iout = 0
+end function
+
+function get_par_itmin(par_itmin)
+    use inputparam, only: itmin
+    implicit none
+    integer:: par_itmin
+    integer:: get_par_itmin
+    par_itmin = itmin
+    get_par_itmin = 0
+end function
+
+function set_par_itmin(par_itmin)
+    use inputparam, only: itmin
+    implicit none
+    integer:: par_itmin
+    integer:: set_par_itmin
+    itmin = par_itmin
+    set_par_itmin = 0
+end function
+
+function get_par_idebug(par_idebug)
+    use inputparam, only: idebug
+    implicit none
+    integer:: par_idebug
+    integer:: get_par_idebug
+    par_idebug = idebug
+    get_par_idebug = 0
+end function
+
+function set_par_idebug(par_idebug)
+    use inputparam, only: idebug
+    implicit none
+    integer:: par_idebug
+    integer:: set_par_idebug
+    idebug = par_idebug
+    set_par_idebug = 0
+end function
+
+function get_par_itests(par_itests)
+    use inputparam, only: itests
+    implicit none
+    integer:: par_itests
+    integer:: get_par_itests
+    par_itests = itests
+    get_par_itests = 0
+end function
+
+function set_par_itests(par_itests)
+    use inputparam, only: itests
+    implicit none
+    integer:: par_itests
+    integer:: set_par_itests
+    itests = par_itests
+    set_par_itests = 0
+end function
+
+function get_par_amuseinterface(par_amuseinterface)
+    use inputparam, only: amuseinterface
+    implicit none
+    logical:: par_amuseinterface
+    integer:: get_par_amuseinterface
+    par_amuseinterface = amuseinterface
+    get_par_amuseinterface = 0
+end function
+
+function set_par_amuseinterface(par_amuseinterface)
+    use inputparam, only: amuseinterface
+    implicit none
+    logical:: par_amuseinterface
+    integer:: set_par_amuseinterface
+    amuseinterface = par_amuseinterface
+    set_par_amuseinterface = 0
+end function
+
+function get_par_var_rates(par_var_rates)
+    use inputparam, only: var_rates
+    implicit none
+    logical:: par_var_rates
+    integer:: get_par_var_rates
+    par_var_rates = var_rates
+    get_par_var_rates = 0
+end function
+
+function set_par_var_rates(par_var_rates)
+    use inputparam, only: var_rates
+    implicit none
+    logical:: par_var_rates
+    integer:: set_par_var_rates
+    var_rates = par_var_rates
+    set_par_var_rates = 0
+end function
+
+function get_par_bintide(par_bintide)
+    use inputparam, only: bintide
+    implicit none
+    logical:: par_bintide
+    integer:: get_par_bintide
+    par_bintide = bintide
+    get_par_bintide = 0
+end function
+
+function set_par_bintide(par_bintide)
+    use inputparam, only: bintide
+    implicit none
+    logical:: par_bintide
+    integer:: set_par_bintide
+    bintide = par_bintide
+    set_par_bintide = 0
+end function
+
+function get_par_const_per(par_const_per)
+    use inputparam, only: const_per
+    implicit none
+    logical:: par_const_per
+    integer:: get_par_const_per
+    par_const_per = const_per
+    get_par_const_per = 0
+end function
+
+function set_par_const_per(par_const_per)
+    use inputparam, only: const_per
+    implicit none
+    logical:: par_const_per
+    integer:: set_par_const_per
+    const_per = par_const_per
+    set_par_const_per = 0
+end function
+
+function get_par_Add_Flux(par_Add_Flux)
+    use inputparam, only: Add_Flux
+    implicit none
+    logical:: par_Add_Flux
+    integer:: get_par_Add_Flux
+    par_Add_Flux = Add_Flux
+    get_par_Add_Flux = 0
+end function
+
+function set_par_Add_Flux(par_Add_Flux)
+    use inputparam, only: Add_Flux
+    implicit none
+    logical:: par_Add_Flux
+    integer:: set_par_Add_Flux
+    Add_Flux = par_Add_Flux
+    set_par_Add_Flux = 0
+end function
+
+function get_par_diff_only(par_diff_only)
+    use inputparam, only: diff_only
+    implicit none
+    logical:: par_diff_only
+    integer:: get_par_diff_only
+    par_diff_only = diff_only
+    get_par_diff_only = 0
+end function
+
+function set_par_diff_only(par_diff_only)
+    use inputparam, only: diff_only
+    implicit none
+    logical:: par_diff_only
+    integer:: set_par_diff_only
+    diff_only = par_diff_only
+    set_par_diff_only = 0
+end function
+
+function get_par_lowRSGMdot(par_lowRSGMdot)
+    use inputparam, only: lowRSGMdot
+    implicit none
+    logical:: par_lowRSGMdot
+    integer:: get_par_lowRSGMdot
+    par_lowRSGMdot = lowRSGMdot
+    get_par_lowRSGMdot = 0
+end function
+
+function set_par_lowRSGMdot(par_lowRSGMdot)
+    use inputparam, only: lowRSGMdot
+    implicit none
+    logical:: par_lowRSGMdot
+    integer:: set_par_lowRSGMdot
+    lowRSGMdot = par_lowRSGMdot
+    set_par_lowRSGMdot = 0
+end function
+
+function get_par_plot(par_plot)
+    use inputparam, only: plot
+    implicit none
+    logical:: par_plot
+    integer:: get_par_plot
+    par_plot = plot
+    get_par_plot = 0
+end function
+
+function set_par_plot(par_plot)
+    use inputparam, only: plot
+    implicit none
+    logical:: par_plot
+    integer:: set_par_plot
+    plot = par_plot
+    set_par_plot = 0
+end function
+
+function get_par_refresh(par_refresh)
+    use inputparam, only: refresh
+    implicit none
+    logical:: par_refresh
+    integer:: get_par_refresh
+    par_refresh = refresh
+    get_par_refresh = 0
+end function
+
+function set_par_refresh(par_refresh)
+    use inputparam, only: refresh
+    implicit none
+    logical:: par_refresh
+    integer:: set_par_refresh
+    refresh = par_refresh
+    set_par_refresh = 0
+end function
+
+function get_par_xyfiles(par_xyfiles)
+    use inputparam, only: xyfiles
+    implicit none
+    logical:: par_xyfiles
+    integer:: get_par_xyfiles
+    par_xyfiles = xyfiles
+    get_par_xyfiles = 0
+end function
+
+function set_par_xyfiles(par_xyfiles)
+    use inputparam, only: xyfiles
+    implicit none
+    logical:: par_xyfiles
+    integer:: set_par_xyfiles
+    xyfiles = par_xyfiles
+    set_par_xyfiles = 0
+end function
+
+function get_par_verbose(par_verbose)
+    use inputparam, only: verbose
+    implicit none
+    logical:: par_verbose
+    integer:: get_par_verbose
+    par_verbose = verbose
+    get_par_verbose = 0
+end function
+
+function set_par_verbose(par_verbose)
+    use inputparam, only: verbose
+    implicit none
+    logical:: par_verbose
+    integer:: set_par_verbose
+    verbose = par_verbose
+    set_par_verbose = 0
+end function
+
+function get_par_stop_deg(par_stop_deg)
+    use inputparam, only: stop_deg
+    implicit none
+    logical:: par_stop_deg
+    integer:: get_par_stop_deg
+    par_stop_deg = stop_deg
+    get_par_stop_deg = 0
+end function
+
+function set_par_stop_deg(par_stop_deg)
+    use inputparam, only: stop_deg
+    implicit none
+    logical:: par_stop_deg
+    integer:: set_par_stop_deg
+    stop_deg = par_stop_deg
+    set_par_stop_deg = 0
+end function
+
+function get_par_binm2(par_binm2)
+    use inputparam, only: binm2
+    implicit none
+    double precision:: par_binm2
+    integer:: get_par_binm2
+    par_binm2 = binm2
+    get_par_binm2 = 0
+end function
+
+function set_par_binm2(par_binm2)
+    use inputparam, only: binm2
+    implicit none
+    double precision:: par_binm2
+    integer:: set_par_binm2
+    binm2 = par_binm2
+    set_par_binm2 = 0
+end function
+
+function get_par_periodini(par_periodini)
+    use inputparam, only: periodini
+    implicit none
+    double precision:: par_periodini
+    integer:: get_par_periodini
+    par_periodini = periodini
+    get_par_periodini = 0
+end function
+
+function set_par_periodini(par_periodini)
+    use inputparam, only: periodini
+    implicit none
+    double precision:: par_periodini
+    integer:: set_par_periodini
+    periodini = par_periodini
+    set_par_periodini = 0
+end function
+
+function get_par_zinit(par_zinit)
+    use inputparam, only: zinit
+    implicit none
+    double precision:: par_zinit
+    integer:: get_par_zinit
+    par_zinit = zinit
+    get_par_zinit = 0
+end function
+
+function set_par_zinit(par_zinit)
+    use inputparam, only: zinit
+    implicit none
+    double precision:: par_zinit
+    integer:: set_par_zinit
+    zinit = par_zinit
+    set_par_zinit = 0
+end function
+
+function get_par_zsol(par_zsol)
+    use inputparam, only: zsol
+    implicit none
+    double precision:: par_zsol
+    integer:: get_par_zsol
+    par_zsol = zsol
+    get_par_zsol = 0
+end function
+
+function set_par_zsol(par_zsol)
+    use inputparam, only: zsol
+    implicit none
+    double precision:: par_zsol
+    integer:: set_par_zsol
+    zsol = par_zsol
+    set_par_zsol = 0
+end function
+
+function get_par_z(par_z)
+    use inputparam, only: z
+    implicit none
+    double precision:: par_z
+    integer:: get_par_z
+    par_z = z
+    get_par_z = 0
+end function
+
+function set_par_z(par_z)
+    use inputparam, only: z
+    implicit none
+    double precision:: par_z
+    integer:: set_par_z
+    z = par_z
+    set_par_z = 0
+end function
+
+function get_par_fenerg(par_fenerg)
+    use inputparam, only: fenerg
+    implicit none
+    double precision:: par_fenerg
+    integer:: get_par_fenerg
+    par_fenerg = fenerg
+    get_par_fenerg = 0
+end function
+
+function set_par_fenerg(par_fenerg)
+    use inputparam, only: fenerg
+    implicit none
+    double precision:: par_fenerg
+    integer:: set_par_fenerg
+    fenerg = par_fenerg
+    set_par_fenerg = 0
+end function
+
+function get_par_richac(par_richac)
+    use inputparam, only: richac
+    implicit none
+    double precision:: par_richac
+    integer:: get_par_richac
+    par_richac = richac
+    get_par_richac = 0
+end function
+
+function set_par_richac(par_richac)
+    use inputparam, only: richac
+    implicit none
+    double precision:: par_richac
+    integer:: set_par_richac
+    richac = par_richac
+    set_par_richac = 0
+end function
+
+function get_par_frein(par_frein)
+    use inputparam, only: frein
+    implicit none
+    double precision:: par_frein
+    integer:: get_par_frein
+    par_frein = frein
+    get_par_frein = 0
+end function
+
+function set_par_frein(par_frein)
+    use inputparam, only: frein
+    implicit none
+    double precision:: par_frein
+    integer:: set_par_frein
+    frein = par_frein
+    set_par_frein = 0
+end function
+
+function get_par_K_Kawaler(par_K_Kawaler)
+    use inputparam, only: K_Kawaler
+    implicit none
+    double precision:: par_K_Kawaler
+    integer:: get_par_K_Kawaler
+    par_K_Kawaler = K_Kawaler
+    get_par_K_Kawaler = 0
+end function
+
+function set_par_K_Kawaler(par_K_Kawaler)
+    use inputparam, only: K_Kawaler
+    implicit none
+    double precision:: par_K_Kawaler
+    integer:: set_par_K_Kawaler
+    K_Kawaler = par_K_Kawaler
+    set_par_K_Kawaler = 0
+end function
+
+function get_par_Omega_saturation(par_Omega_saturation)
+    use inputparam, only: Omega_saturation
+    implicit none
+    double precision:: par_Omega_saturation
+    integer:: get_par_Omega_saturation
+    par_Omega_saturation = Omega_saturation
+    get_par_Omega_saturation = 0
+end function
+
+function set_par_Omega_saturation(par_Omega_saturation)
+    use inputparam, only: Omega_saturation
+    implicit none
+    double precision:: par_Omega_saturation
+    integer:: set_par_Omega_saturation
+    Omega_saturation = par_Omega_saturation
+    set_par_Omega_saturation = 0
+end function
+
+function get_par_rapcrilim(par_rapcrilim)
+    use inputparam, only: rapcrilim
+    implicit none
+    double precision:: par_rapcrilim
+    integer:: get_par_rapcrilim
+    par_rapcrilim = rapcrilim
+    get_par_rapcrilim = 0
+end function
+
+function set_par_rapcrilim(par_rapcrilim)
+    use inputparam, only: rapcrilim
+    implicit none
+    double precision:: par_rapcrilim
+    integer:: set_par_rapcrilim
+    rapcrilim = par_rapcrilim
+    set_par_rapcrilim = 0
+end function
+
+function get_par_vwant(par_vwant)
+    use inputparam, only: vwant
+    implicit none
+    double precision:: par_vwant
+    integer:: get_par_vwant
+    par_vwant = vwant
+    get_par_vwant = 0
+end function
+
+function set_par_vwant(par_vwant)
+    use inputparam, only: vwant
+    implicit none
+    double precision:: par_vwant
+    integer:: set_par_vwant
+    vwant = par_vwant
+    set_par_vwant = 0
+end function
+
+function get_par_xfom(par_xfom)
+    use inputparam, only: xfom
+    implicit none
+    double precision:: par_xfom
+    integer:: get_par_xfom
+    par_xfom = xfom
+    get_par_xfom = 0
+end function
+
+function set_par_xfom(par_xfom)
+    use inputparam, only: xfom
+    implicit none
+    double precision:: par_xfom
+    integer:: set_par_xfom
+    xfom = par_xfom
+    set_par_xfom = 0
+end function
+
+function get_par_omega(par_omega)
+    use inputparam, only: omega
+    implicit none
+    double precision:: par_omega
+    integer:: get_par_omega
+    par_omega = omega
+    get_par_omega = 0
+end function
+
+function set_par_omega(par_omega)
+    use inputparam, only: omega
+    implicit none
+    double precision:: par_omega
+    integer:: set_par_omega
+    omega = par_omega
+    set_par_omega = 0
+end function
+
+function get_par_xdial(par_xdial)
+    use inputparam, only: xdial
+    implicit none
+    double precision:: par_xdial
+    integer:: get_par_xdial
+    par_xdial = xdial
+    get_par_xdial = 0
+end function
+
+function set_par_xdial(par_xdial)
+    use inputparam, only: xdial
+    implicit none
+    double precision:: par_xdial
+    integer:: set_par_xdial
+    xdial = par_xdial
+    set_par_xdial = 0
+end function
+
+function get_par_B_initial(par_B_initial)
+    use inputparam, only: B_initial
+    implicit none
+    double precision:: par_B_initial
+    integer:: get_par_B_initial
+    par_B_initial = B_initial
+    get_par_B_initial = 0
+end function
+
+function set_par_B_initial(par_B_initial)
+    use inputparam, only: B_initial
+    implicit none
+    double precision:: par_B_initial
+    integer:: set_par_B_initial
+    B_initial = par_B_initial
+    set_par_B_initial = 0
+end function
+
+function get_par_add_diff(par_add_diff)
+    use inputparam, only: add_diff
+    implicit none
+    double precision:: par_add_diff
+    integer:: get_par_add_diff
+    par_add_diff = add_diff
+    get_par_add_diff = 0
+end function
+
+function set_par_add_diff(par_add_diff)
+    use inputparam, only: add_diff
+    implicit none
+    double precision:: par_add_diff
+    integer:: set_par_add_diff
+    add_diff = par_add_diff
+    set_par_add_diff = 0
+end function
+
+function get_par_fmlos(par_fmlos)
+    use inputparam, only: fmlos
+    implicit none
+    double precision:: par_fmlos
+    integer:: get_par_fmlos
+    par_fmlos = fmlos
+    get_par_fmlos = 0
+end function
+
+function set_par_fmlos(par_fmlos)
+    use inputparam, only: fmlos
+    implicit none
+    double precision:: par_fmlos
+    integer:: set_par_fmlos
+    fmlos = par_fmlos
+    set_par_fmlos = 0
+end function
+
+function get_par_fitm(par_fitm)
+    use inputparam, only: fitm
+    implicit none
+    double precision:: par_fitm
+    integer:: get_par_fitm
+    par_fitm = fitm
+    get_par_fitm = 0
+end function
+
+function set_par_fitm(par_fitm)
+    use inputparam, only: fitm
+    implicit none
+    double precision:: par_fitm
+    integer:: set_par_fitm
+    fitm = par_fitm
+    set_par_fitm = 0
+end function
+
+function get_par_fitmi(par_fitmi)
+    use inputparam, only: fitmi
+    implicit none
+    double precision:: par_fitmi
+    integer:: get_par_fitmi
+    par_fitmi = fitmi
+    get_par_fitmi = 0
+end function
+
+function set_par_fitmi(par_fitmi)
+    use inputparam, only: fitmi
+    implicit none
+    double precision:: par_fitmi
+    integer:: set_par_fitmi
+    fitmi = par_fitmi
+    set_par_fitmi = 0
+end function
+
+function get_par_fitmi_default(par_fitmi_default)
+    use inputparam, only: fitmi_default
+    implicit none
+    double precision:: par_fitmi_default
+    integer:: get_par_fitmi_default
+    par_fitmi_default = fitmi_default
+    get_par_fitmi_default = 0
+end function
+
+function set_par_fitmi_default(par_fitmi_default)
+    use inputparam, only: fitmi_default
+    implicit none
+    double precision:: par_fitmi_default
+    integer:: set_par_fitmi_default
+    fitmi_default = par_fitmi_default
+    set_par_fitmi_default = 0
+end function
+
+function get_par_deltal(par_deltal)
+    use inputparam, only: deltal
+    implicit none
+    double precision:: par_deltal
+    integer:: get_par_deltal
+    par_deltal = deltal
+    get_par_deltal = 0
+end function
+
+function set_par_deltal(par_deltal)
+    use inputparam, only: deltal
+    implicit none
+    double precision:: par_deltal
+    integer:: set_par_deltal
+    deltal = par_deltal
+    set_par_deltal = 0
+end function
+
+function get_par_deltat(par_deltat)
+    use inputparam, only: deltat
+    implicit none
+    double precision:: par_deltat
+    integer:: get_par_deltat
+    par_deltat = deltat
+    get_par_deltat = 0
+end function
+
+function set_par_deltat(par_deltat)
+    use inputparam, only: deltat
+    implicit none
+    double precision:: par_deltat
+    integer:: set_par_deltat
+    deltat = par_deltat
+    set_par_deltat = 0
+end function
+
+function get_par_elph(par_elph)
+    use inputparam, only: elph
+    implicit none
+    double precision:: par_elph
+    integer:: get_par_elph
+    par_elph = elph
+    get_par_elph = 0
+end function
+
+function set_par_elph(par_elph)
+    use inputparam, only: elph
+    implicit none
+    double precision:: par_elph
+    integer:: set_par_elph
+    elph = par_elph
+    set_par_elph = 0
+end function
+
+function get_par_dovhp(par_dovhp)
+    use inputparam, only: dovhp
+    implicit none
+    double precision:: par_dovhp
+    integer:: get_par_dovhp
+    par_dovhp = dovhp
+    get_par_dovhp = 0
+end function
+
+function set_par_dovhp(par_dovhp)
+    use inputparam, only: dovhp
+    implicit none
+    double precision:: par_dovhp
+    integer:: set_par_dovhp
+    dovhp = par_dovhp
+    set_par_dovhp = 0
+end function
+
+function get_par_dunder(par_dunder)
+    use inputparam, only: dunder
+    implicit none
+    double precision:: par_dunder
+    integer:: get_par_dunder
+    par_dunder = dunder
+    get_par_dunder = 0
+end function
+
+function set_par_dunder(par_dunder)
+    use inputparam, only: dunder
+    implicit none
+    double precision:: par_dunder
+    integer:: set_par_dunder
+    dunder = par_dunder
+    set_par_dunder = 0
+end function
+
+function get_par_gkorm(par_gkorm)
+    use inputparam, only: gkorm
+    implicit none
+    double precision:: par_gkorm
+    integer:: get_par_gkorm
+    par_gkorm = gkorm
+    get_par_gkorm = 0
+end function
+
+function set_par_gkorm(par_gkorm)
+    use inputparam, only: gkorm
+    implicit none
+    double precision:: par_gkorm
+    integer:: set_par_gkorm
+    gkorm = par_gkorm
+    set_par_gkorm = 0
+end function
+
+function get_par_alph(par_alph)
+    use inputparam, only: alph
+    implicit none
+    double precision:: par_alph
+    integer:: get_par_alph
+    par_alph = alph
+    get_par_alph = 0
+end function
+
+function set_par_alph(par_alph)
+    use inputparam, only: alph
+    implicit none
+    double precision:: par_alph
+    integer:: set_par_alph
+    alph = par_alph
+    set_par_alph = 0
+end function
+
+function get_par_agdr(par_agdr)
+    use inputparam, only: agdr
+    implicit none
+    double precision:: par_agdr
+    integer:: get_par_agdr
+    par_agdr = agdr
+    get_par_agdr = 0
+end function
+
+function set_par_agdr(par_agdr)
+    use inputparam, only: agdr
+    implicit none
+    double precision:: par_agdr
+    integer:: set_par_agdr
+    agdr = par_agdr
+    set_par_agdr = 0
+end function
+
+function get_par_faktor(par_faktor)
+    use inputparam, only: faktor
+    implicit none
+    double precision:: par_faktor
+    integer:: get_par_faktor
+    par_faktor = faktor
+    get_par_faktor = 0
+end function
+
+function set_par_faktor(par_faktor)
+    use inputparam, only: faktor
+    implicit none
+    double precision:: par_faktor
+    integer:: set_par_faktor
+    faktor = par_faktor
+    set_par_faktor = 0
+end function
+
+function get_par_dgrp(par_dgrp)
+    use inputparam, only: dgrp
+    implicit none
+    double precision:: par_dgrp
+    integer:: get_par_dgrp
+    par_dgrp = dgrp
+    get_par_dgrp = 0
+end function
+
+function set_par_dgrp(par_dgrp)
+    use inputparam, only: dgrp
+    implicit none
+    double precision:: par_dgrp
+    integer:: set_par_dgrp
+    dgrp = par_dgrp
+    set_par_dgrp = 0
+end function
+
+function get_par_dgrl(par_dgrl)
+    use inputparam, only: dgrl
+    implicit none
+    double precision:: par_dgrl
+    integer:: get_par_dgrl
+    par_dgrl = dgrl
+    get_par_dgrl = 0
+end function
+
+function set_par_dgrl(par_dgrl)
+    use inputparam, only: dgrl
+    implicit none
+    double precision:: par_dgrl
+    integer:: set_par_dgrl
+    dgrl = par_dgrl
+    set_par_dgrl = 0
+end function
+
+function get_par_dgry(par_dgry)
+    use inputparam, only: dgry
+    implicit none
+    double precision:: par_dgry
+    integer:: get_par_dgry
+    par_dgry = dgry
+    get_par_dgry = 0
+end function
+
+function set_par_dgry(par_dgry)
+    use inputparam, only: dgry
+    implicit none
+    double precision:: par_dgry
+    integer:: set_par_dgry
+    dgry = par_dgry
+    set_par_dgry = 0
+end function
+
+function get_par_dgrc(par_dgrc)
+    use inputparam, only: dgrc
+    implicit none
+    double precision:: par_dgrc
+    integer:: get_par_dgrc
+    par_dgrc = dgrc
+    get_par_dgrc = 0
+end function
+
+function set_par_dgrc(par_dgrc)
+    use inputparam, only: dgrc
+    implicit none
+    double precision:: par_dgrc
+    integer:: set_par_dgrc
+    dgrc = par_dgrc
+    set_par_dgrc = 0
+end function
+
+function get_par_dgro(par_dgro)
+    use inputparam, only: dgro
+    implicit none
+    double precision:: par_dgro
+    integer:: get_par_dgro
+    par_dgro = dgro
+    get_par_dgro = 0
+end function
+
+function set_par_dgro(par_dgro)
+    use inputparam, only: dgro
+    implicit none
+    double precision:: par_dgro
+    integer:: set_par_dgro
+    dgro = par_dgro
+    set_par_dgro = 0
+end function
+
+function get_par_dgr20(par_dgr20)
+    use inputparam, only: dgr20
+    implicit none
+    double precision:: par_dgr20
+    integer:: get_par_dgr20
+    par_dgr20 = dgr20
+    get_par_dgr20 = 0
+end function
+
+function set_par_dgr20(par_dgr20)
+    use inputparam, only: dgr20
+    implicit none
+    double precision:: par_dgr20
+    integer:: set_par_dgr20
+    dgr20 = par_dgr20
+    set_par_dgr20 = 0
+end function
+
+function get_par_xcn(par_xcn)
+    use inputparam, only: xcn
+    implicit none
+    double precision:: par_xcn
+    integer:: get_par_xcn
+    par_xcn = xcn
+    get_par_xcn = 0
+end function
+
+function set_par_xcn(par_xcn)
+    use inputparam, only: xcn
+    implicit none
+    double precision:: par_xcn
+    integer:: set_par_xcn
+    xcn = par_xcn
+    set_par_xcn = 0
+end function
+
+function get_par_starname(par_starname)
+    use inputparam, only: starname
+    implicit none
+    character(256):: par_starname
+    integer:: get_par_starname
+    par_starname = starname
+    get_par_starname = 0
+end function
+
+function set_par_starname(par_starname)
+    use inputparam, only: starname
+    implicit none
+    character(256):: par_starname
+    integer:: set_par_starname
+    starname = par_starname
+    set_par_starname = 0
+end function
+! **** End Parameters
+
 function commit_parameters()
     implicit none
     integer:: commit_parameters
