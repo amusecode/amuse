@@ -559,7 +559,7 @@ index 3f392789..6b3ec533 100644
 +      rewind(iounit)
 +
 +      ! Namelists get written in captials
-+      upper_name = StrUpCase(name)
++      upper_name = trim(StrUpCase(name))//'=' 
 +      val = ''
 +      ! Search for name inside namelist
 +      do 
@@ -648,7 +648,7 @@ index efaca552..44a3bf7e 100644
 +         rewind(iounit)
 +   
 +         ! Namelists get written in captials
-+         upper_name = StrUpCase(name)
++         upper_name = trim(StrUpCase(name))//'=' 
 +         val = ''
 +         ! Search for name inside namelist
 +         do 
