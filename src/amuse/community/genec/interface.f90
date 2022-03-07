@@ -517,8 +517,8 @@ function get_firstlast_zone(first, last)
     !integer:: index_of_the_star
     integer:: first, last
     integer:: get_firstlast_zone
-    first = 1
-    last = m
+    first = 0
+    last = m-1
     get_firstlast_zone = 0
 end function
 
