@@ -4169,6 +4169,7 @@ class Genec(StellarEvolution, InternalStellarStructure):
         handler.add_method('RUN', 'get_pressure_at_zone')
         handler.add_method('RUN', 'get_radius')
         handler.add_method('RUN', 'get_radius_at_zone')
+        handler.add_method('RUN', 'set_radius_at_zone')
         handler.add_method('RUN', 'get_temperature_at_zone')
         handler.add_method('RUN', 'get_density_at_zone')
         handler.add_method('RUN', 'get_luminosity_at_zone')
@@ -4190,30 +4191,45 @@ class Genec(StellarEvolution, InternalStellarStructure):
             (units.MSun, handler.NO_UNIT, handler.NO_UNIT),
             (handler.INDEX, handler.ERROR_CODE)
         )
-        handler.add_method(
-            "get_radius",
-            (handler.INDEX,),
-            (units.cm, handler.ERROR_CODE,)
-        )
-        handler.add_method(
-            "get_number_of_zones",
-            (handler.INDEX,),
-            (handler.NO_UNIT, handler.ERROR_CODE,)
-        )
-        handler.add_method(
-            "get_radius_at_zone",
-            (handler.INDEX, handler.NO_UNIT,),
-            (units.cm, handler.ERROR_CODE,)
-        )
-        handler.add_method(
-            "get_temperature_at_zone",
-            (handler.INDEX, handler.NO_UNIT,),
-            (units.K, handler.ERROR_CODE,)
-        )
+        # handler.add_method(
+        #     "get_radius",
+        #     (handler.INDEX,),
+        #     (units.RSun, handler.ERROR_CODE,)
+        # )
+        # handler.add_method(
+        #     "get_number_of_zones",
+        #     (handler.INDEX,),
+        #     (handler.NO_UNIT, handler.ERROR_CODE,)
+        # )
+        # handler.add_method(
+        #     "get_radius_at_zone",
+        #     (handler.INDEX, handler.NO_UNIT,),
+        #     (units.cm, handler.ERROR_CODE,)
+        # )
+        # handler.add_method(
+        #     "set_radius_at_zone",
+        #     (handler.INDEX, handler.NO_UNIT, units.cm),
+        #     (handler.ERROR_CODE,)
+        # )
+        # handler.add_method(
+        #     "get_temperature_at_zone",
+        #     (handler.INDEX, handler.NO_UNIT,),
+        #     (units.K, handler.ERROR_CODE,)
+        # )
+        # handler.add_method(
+        #     "set_temperature_at_zone",
+        #     (handler.INDEX, handler.NO_UNIT, units.K),
+        #     (handler.ERROR_CODE,)
+        # )
         handler.add_method(
             "get_luminosity_at_zone",
             (handler.INDEX, handler.NO_UNIT,),
             (units.erg/units.s, handler.ERROR_CODE,)
+        )
+        handler.add_method(
+            "set_luminosity_at_zone",
+            (handler.INDEX, handler.NO_UNIT,units.erg/units.s),
+            (handler.ERROR_CODE,)
         )
     # def define_parameters(self, handler):
 
