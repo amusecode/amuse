@@ -1459,42 +1459,6 @@ class GenecInterface(
         return function
 
     @legacy_function
-    def get_par_amuseinterface():
-        'get parameter amuseinterface'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'amuseinterface', dtype='bool',
-            direction=function.OUT,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            Got the value.
-        -1 - ERROR
-            Unable to get.
-        '''
-        return function
-
-    @legacy_function
-    def set_par_amuseinterface():
-        'set parameter amuseinterface'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'amuseinterface', dtype='bool',
-            direction=function.IN,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            The value has been set.
-        -1 - ERROR
-            Unable to set.
-        -2 - ERROR
-            Cannot set at this point, already running.
-        '''
-        return function
-
-    @legacy_function
     def get_par_var_rates():
         'get parameter var_rates'
         function = LegacyFunctionSpecification()
@@ -3714,13 +3678,6 @@ class Genec(StellarEvolution, InternalStellarStructure):
             "set_par_itests",
             "itests",
             "GENEC parameter itests",
-        )
-
-        handler.add_method_parameter(
-            "get_par_amuseinterface",
-            "set_par_amuseinterface",
-            "amuseinterface",
-            "GENEC parameter amuseinterface",
         )
 
         handler.add_method_parameter(
