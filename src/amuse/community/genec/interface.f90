@@ -1780,6 +1780,16 @@ function get_age(index_of_the_star, age)
     get_age = 0
 end function
 
+function set_age(index_of_the_star, age)
+    use timestep, only: alter
+    implicit none
+    integer:: index_of_the_star
+    double precision:: age
+    integer:: set_age
+    alter = age
+    set_age = 0
+end function
+
 function get_density_at_zone(index_of_the_star, zone, rho_i)
     use strucmod, only: rho, m
     implicit none
@@ -1794,6 +1804,20 @@ function get_density_at_zone(index_of_the_star, zone, rho_i)
     get_density_at_zone = 0
 end function
 
+function set_density_at_zone(index_of_the_star, zone, rho_i)
+    use strucmod, only: rho, m
+    implicit none
+    integer:: index_of_the_star
+    integer:: zone, i
+    double precision:: rho_i
+    integer:: set_density_at_zone
+    i = m - zone
+    if (zone <= m) then
+        rho(i) = log(rho_i)
+    end if
+    set_density_at_zone = 0
+end function
+
 function get_luminosity(index_of_the_star, luminosity)
     !use strucmod, only: s, m
     use caramodele, only: gls
@@ -1804,6 +1828,18 @@ function get_luminosity(index_of_the_star, luminosity)
     !luminosity = exp(s(m))  ! in cgs units, so erg/s?
     luminosity = gls
     get_luminosity = 0
+end function
+
+function set_luminosity(index_of_the_star, luminosity)
+    !use strucmod, only: s, m
+    use caramodele, only: gls
+    implicit none
+    integer:: index_of_the_star
+    double precision:: luminosity
+    integer:: set_luminosity
+    !luminosity = exp(s(m))  ! in cgs units, so erg/s?
+    gls = luminosity
+    set_luminosity = 0
 end function
 
 function get_luminosity_at_zone(index_of_the_star, zone, lum_i)
@@ -1819,6 +1855,20 @@ function get_luminosity_at_zone(index_of_the_star, zone, lum_i)
         lum_i = exp(s(i)) - 1
     end if
     get_luminosity_at_zone = 0
+end function
+
+function set_luminosity_at_zone(index_of_the_star, zone, lum_i)
+    use strucmod, only: s, m
+    implicit none
+    integer:: index_of_the_star
+    integer:: zone, i
+    double precision:: lum_i
+    integer:: set_luminosity_at_zone
+    i = m - zone
+    if (zone <= m) then
+        s(i) = log(lum_i + 1)
+    end if
+    set_luminosity_at_zone = 0
 end function
 
 function get_mass_fraction_at_zone(index_of_the_star, zone, dq_i)
@@ -1846,6 +1896,15 @@ function get_mass(index_of_the_star, mass)
     integer:: get_mass, index_of_the_star
     mass = gms
     get_mass = 0
+end function
+
+function set_mass(index_of_the_star, mass)
+    use amuse_helpers, only:mstar  ! this is initial mass only?
+    implicit none
+    integer:: set_mass, index_of_the_star
+    double precision:: mass
+    mstar = mass
+    set_mass = 0
 end function
 
 function get_mass_of_species(index_of_the_star, species, species_mass)
@@ -1990,11 +2049,96 @@ function get_mass_fraction_of_species_at_zone(index_of_the_star, species, zone, 
     get_mass_fraction_of_species_at_zone = 0
 end function
 
+function set_mass_fraction_of_species_at_zone(index_of_the_star, species, zone, Xj_i)
+    use strucmod, only: m
+    use abundmod, only: &
+        x,y3,y,xc12,xc13,xc14,xn14,xn15,xo16,xo17,xo18,xf18,xf19,xne20,xne21,xne22,xna23,xmg24,&
+        xmg25,xmg26,xal26,xal27,xsi28,xprot,xneut,xbid,xbid1
+    implicit none
+    integer:: index_of_the_star
+    integer:: species, zone, i
+    double precision:: Xj_i
+    integer:: set_mass_fraction_of_species_at_zone
+    i = m - zone
+    if (zone <= m) then
+        select case(species)
+      case(1)
+          x(i) = Xj_i
+      case(2)
+          y3(i) = Xj_i
+      case(3)
+          y(i) = Xj_i
+      case(4)
+          xc12(i) = Xj_i
+      case(5)
+          xc13(i) = Xj_i
+      case(6)
+          xn14(i) = Xj_i
+      case(7)
+          xn14(i) = Xj_i
+      case(8)
+          xo16(i) = Xj_i
+      case(9)
+          xo17(i) = Xj_i
+      case(10)
+          xo18(i) = Xj_i
+      case(11)
+          xne20(i) = Xj_i
+      case(12)
+          xne22(i) = Xj_i
+      case(13)
+          xmg24(i) = Xj_i
+      case(14)
+          xmg25(i) = Xj_i
+      case(15)
+          xmg26(i) = Xj_i
+      case(16)
+          xc14(i) = Xj_i
+      case(17)
+          xf18(i) = Xj_i
+      case(18)
+          xf19(i) = Xj_i
+      case(19)
+          xne21(i) = Xj_i
+      case(20)
+          xna23(i) = Xj_i
+      case(21)
+          xal26(i) = Xj_i
+      case(22)
+          xal27(i) = Xj_i
+      case(23)
+          xsi28(i) = Xj_i
+      case(24)
+          xneut(i) = Xj_i
+      case(25)
+          xprot(i) = Xj_i
+      case(26)
+          xbid(i) = Xj_i
+      case(27)
+          xbid1(i) = Xj_i
+      !case default
+      end select
+    end if
+
+    set_mass_fraction_of_species_at_zone = 0
+end function
+
 function get_metallicity(metallicity)
+    use amuse_helpers, only: zini
     implicit none
     double precision:: metallicity
     integer:: get_metallicity
+    metallicity = zini
     get_metallicity = 0
+end function
+
+function set_metallicity(metallicity)
+    use amuse_helpers, only: zini
+    implicit none
+    double precision:: metallicity
+    integer:: set_metallicity
+    zini = metallicity
+    set_metallicity = 0
 end function
 
 function get_mu_at_zone(index_of_the_star, zone, mu_i)
@@ -2065,11 +2209,11 @@ function get_name_of_species(index_of_the_star, species, species_name)
     !xXXYY: as above
     get_name_of_species = 0
 end function
-
+! 
 function get_number_of_particles()
     implicit none
     integer:: get_number_of_particles
-    get_number_of_particles = 0
+    get_number_of_particles = -1
 end function
 
 function get_number_of_species(index_of_the_star, n_species)
@@ -2141,14 +2285,41 @@ function get_pressure_at_zone(index_of_the_star, zone, P_i)
     get_pressure_at_zone = 0
 end function
 
-function get_radius(index_of_the_star, radius)
-    use strucmod, only: r, m
+function set_pressure_at_zone(index_of_the_star, zone, P_i)
+    use strucmod, only: p, m
     implicit none
     integer:: index_of_the_star
-    double precision:: radius
+    integer:: zone, i
+    double precision:: P_i
+    integer:: set_pressure_at_zone
+    if (zone <= m) then
+        i = m - zone
+        p(i) = log(P_i)
+    end if
+    set_pressure_at_zone = 0
+end function
+
+function get_radius(index_of_the_star, am_radius)
+    use caramodele, only: radius
+    !use strucmod, only: r, m
+    implicit none
+    integer:: index_of_the_star
+    double precision:: am_radius
     integer:: get_radius
-    radius = exp(r(1))  ! in cm
+    am_radius = 10**radius
+    !radius = exp(r(1))  ! in cm
     get_radius = 0
+end function
+
+function set_radius(index_of_the_star, am_radius)
+    use caramodele, only: radius
+    !use strucmod, only: r, m
+    implicit none
+    integer:: index_of_the_star
+    double precision:: am_radius
+    integer:: set_radius
+    radius = log10(am_radius)
+    set_radius = 0
 end function
 
 function get_radius_at_zone(index_of_the_star, zone, R_i)
@@ -2163,6 +2334,20 @@ function get_radius_at_zone(index_of_the_star, zone, R_i)
         R_i = exp(r(i))  ! in cm
     end if
     get_radius_at_zone = 0
+end function
+
+function set_radius_at_zone(index_of_the_star, zone, R_i)
+    use strucmod, only: r, m
+    implicit none
+    integer:: index_of_the_star
+    integer:: zone, i
+    double precision:: R_i
+    integer:: set_radius_at_zone
+    i = m - zone
+    if (zone <= m) then
+        r(i) = log(R_i)
+    end if
+    set_radius_at_zone = 0
 end function
 
 function get_stellar_type(index_of_the_star, stellar_type)
@@ -2251,20 +2436,6 @@ function recommit_particles()
     recommit_particles = 0
 end function
 
-function set_density_at_zone(index_of_the_star, zone, rho_i)
-    use strucmod, only: rho, m
-    implicit none
-    integer:: index_of_the_star
-    integer:: zone, i
-    double precision:: rho_i
-    integer:: set_density_at_zone
-    i = m - zone
-    if (zone <= m) then
-        rho(i) = log(rho_i)
-    end if
-    set_density_at_zone = 0
-end function
-
 function set_genec_path(path)
     use evol, only: input_dir
     implicit none
@@ -2283,112 +2454,6 @@ function set_starname(index_of_the_star)
     starname = 'AmuseStar'
     write(starname, '(i10.10)') index_of_the_star
     set_starname = 0
-end function
-
-function set_mass(index_of_the_star, mass)
-    use amuse_helpers, only:mstar  ! this is initial mass only?
-    implicit none
-    integer:: set_mass, index_of_the_star
-    double precision:: mass
-    mstar = mass
-    set_mass = 0
-end function
-
-function set_mass_fraction_of_species_at_zone(index_of_the_star, species, zone, Xj_i)
-    use strucmod, only: m
-    use abundmod, only: &
-        x,y3,y,xc12,xc13,xc14,xn14,xn15,xo16,xo17,xo18,xf18,xf19,xne20,xne21,xne22,xna23,xmg24,&
-        xmg25,xmg26,xal26,xal27,xsi28,xprot,xneut,xbid,xbid1
-    implicit none
-    integer:: index_of_the_star
-    integer:: species, zone, i
-    double precision:: Xj_i
-    integer:: set_mass_fraction_of_species_at_zone
-    i = m - zone
-    if (zone <= m) then
-        select case(species)
-      case(1)
-          x(i) = Xj_i
-      case(2)
-          y3(i) = Xj_i
-      case(3)
-          y(i) = Xj_i
-      case(4)
-          xc12(i) = Xj_i
-      case(5)
-          xc13(i) = Xj_i
-      case(6)
-          xn14(i) = Xj_i
-      case(7)
-          xn14(i) = Xj_i
-      case(8)
-          xo16(i) = Xj_i
-      case(9)
-          xo17(i) = Xj_i
-      case(10)
-          xo18(i) = Xj_i
-      case(11)
-          xne20(i) = Xj_i
-      case(12)
-          xne22(i) = Xj_i
-      case(13)
-          xmg24(i) = Xj_i
-      case(14)
-          xmg25(i) = Xj_i
-      case(15)
-          xmg26(i) = Xj_i
-      case(16)
-          xc14(i) = Xj_i
-      case(17)
-          xf18(i) = Xj_i
-      case(18)
-          xf19(i) = Xj_i
-      case(19)
-          xne21(i) = Xj_i
-      case(20)
-          xna23(i) = Xj_i
-      case(21)
-          xal26(i) = Xj_i
-      case(22)
-          xal27(i) = Xj_i
-      case(23)
-          xsi28(i) = Xj_i
-      case(24)
-          xneut(i) = Xj_i
-      case(25)
-          xprot(i) = Xj_i
-      case(26)
-          xbid(i) = Xj_i
-      case(27)
-          xbid1(i) = Xj_i
-      !case default
-      end select
-    end if
-
-    set_mass_fraction_of_species_at_zone = 0
-end function
-
-function set_metallicity(metallicity)
-    use amuse_helpers, only: zini
-    implicit none
-    double precision:: metallicity
-    integer:: set_metallicity
-    zini = metallicity
-    set_metallicity = 0
-end function
-
-function set_radius_at_zone(index_of_the_star, zone, R_i)
-    use strucmod, only: r, m
-    implicit none
-    integer:: index_of_the_star
-    integer:: zone, i
-    double precision:: R_i
-    integer:: set_radius_at_zone
-    i = m - zone
-    if (zone <= m) then
-        r(i) = log(R_i)
-    end if
-    set_radius_at_zone = 0
 end function
 
 function set_temperature_at_zone(index_of_the_star, zone, T_i)
