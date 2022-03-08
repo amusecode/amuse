@@ -1924,6 +1924,23 @@ function get_mass_fraction_at_zone(index_of_the_star, zone, dq_i)
     get_mass_fraction_at_zone = 0
 end function
 
+function set_mass_fraction_at_zone(index_of_the_star, zone, dq_i)
+    use strucmod, only: q, m
+    implicit none
+    integer:: index_of_the_star
+    integer:: zone, i
+    double precision:: dq_i
+    integer:: set_mass_fraction_at_zone
+    i = m - zone
+    if (i == 1) then
+        q(i) = log(dq_i)
+    else if (i <= m) then
+        !dq_i = 1-exp(q(zone+1))
+        q(i) = log(exp(q(i-1)) + dq_i)  ! this won't do
+    end if
+    set_mass_fraction_at_zone = -1 ! This function is incomplete!
+end function
+
 function get_mass(index_of_the_star, mass)
     use inputparam, only: starname
     use caramodele, only: gms
