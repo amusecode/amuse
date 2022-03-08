@@ -21,6 +21,9 @@ module mesa_interface
     integer, parameter :: L_CENTER=2
     integer, parameter :: V_CENTER=3
 
+    character(len=256),dimension(max_star_handles) :: restart_name = ''
+
+
     contains
 
 ! ***********************************************************************
@@ -32,6 +35,7 @@ module mesa_interface
         use star_job_ctrls_io, only: set_default_star_job_controls, store_star_job_controls
         integer, intent(out) :: id
         integer, intent(out) :: ierr
+        integer :: i
         type (star_info), pointer :: s
 
         call alloc_star(id, ierr)
@@ -132,8 +136,14 @@ module mesa_interface
         integer, intent(in) :: id
         character(len=*), intent(in) :: filename
         integer, intent(out) :: ierr
+        type (star_info), pointer :: s
 
-        call star_load_restart_photo(id, filename, ierr)
+        call star_ptr(id, s, ierr)
+        if (failed('star_ptr',ierr)) return
+
+        s% photo_directory = '.'
+        restart_name(id) = trim(filename)
+
 
     end subroutine load_mesa_photo
 
@@ -196,13 +206,13 @@ module mesa_interface
         call star_ptr(id, s, ierr)
         if (failed('star_ptr',ierr)) return
 
-        restart = .false.
         call init_callback(id) ! Call here and in evolve_controls as there are options that 
                                ! need to be set before and after the other inlist options get set
         id_from_read_star_job = id
-        call before_evolve_loop(.true., .false., restart, &
+
+        call before_evolve_loop(.true., .true., restart, &
             null_binary_controls, extras_controls, &
-            id_from_read_star_job, s% inlist_fname, "restart_photo", &
+            id_from_read_star_job, s% inlist_fname, restart_name(id), &
             dbg, 0, id, ierr)
 
         if (failed('before_evolve_loop',ierr)) return
@@ -233,6 +243,13 @@ module mesa_interface
 
             ! Set zbase if its not been set yet
             if(s%kap_rq% zbase == -1) s%kap_rq% zbase = s%initial_z            
+
+            ! Override photo_directory otherwise we look in photos/ instead of ./
+            ! This does nothing for 15140 but later versions can use this to set 
+            ! the folder for the restart photo to the current directory.
+            if(len_trim(restart_name(id)) > 0) then
+                s%photo_directory = '.'
+            end if
 
             call rse_extras_controls(id, ierr)
   

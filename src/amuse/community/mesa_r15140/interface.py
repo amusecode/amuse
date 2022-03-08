@@ -1176,7 +1176,7 @@ class MESA(StellarEvolution, InternalStellarStructure):
 
         star_types = ['native_stars', 'pre_ms_stars',
                     'pre_built_stars', 'pure_he_stars',
-                    'imported_stars'
+                    'imported_stars','photo_stars',
                     ]
 
         handler.define_super_set('particles', star_types,
@@ -1197,6 +1197,10 @@ class MESA(StellarEvolution, InternalStellarStructure):
         handler.define_set('pre_built_stars', 'index_of_the_star')
         handler.set_new('pre_built_stars', 'load_model')
         handler.set_delete('pre_built_stars', 'delete_star')
+
+        handler.define_set('photo_stars', 'index_of_the_star')
+        handler.set_new('photo_stars', 'load_photo')
+        handler.set_delete('photo_stars', 'delete_star')
 
         handler.define_set('pure_he_stars', 'index_of_the_star')
         handler.set_new('pure_he_stars', 'new_pure_he_particle')

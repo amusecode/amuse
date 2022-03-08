@@ -219,6 +219,7 @@ module amuse_mesa
       load_photo = 0
 
    end function load_photo
+   
    subroutine set_amuse_options(AMUSE_id)
       ! Dont call this directly as variables will be reset during initlization
       ! Instead it must be used as a calback function in finish_init_star()

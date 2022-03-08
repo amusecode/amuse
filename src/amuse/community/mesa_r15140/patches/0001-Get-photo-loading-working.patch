@@ -1,0 +1,27 @@
+From c88aa257d210e840ef4d50bb69fa894f20e9822c Mon Sep 17 00:00:00 2001
+From: Robert Farmer <robert.j.farmer37@gmail.com>
+Date: Tue, 8 Mar 2022 18:39:33 +0100
+Subject: [PATCH] Get photo loading working
+
+---
+ star/job/run_star_support.f90 | 4 ----
+ 1 file changed, 4 deletions(-)
+
+diff --git a/star/job/run_star_support.f90 b/star/job/run_star_support.f90
+index 8cb1a57c..a3b00518 100644
+--- a/star/job/run_star_support.f90
++++ b/star/job/run_star_support.f90
+@@ -287,10 +287,6 @@
+          if (len_trim(s% op_mono_data_cache_filename) == 0) &
+             call get_environment_variable( &
+                "MESA_OP_MONO_DATA_CACHE_FILENAME", s% op_mono_data_cache_filename)         
+-         if (restart_filename /= "restart_photo") then
+-            temp_fname  = trim(s% photo_directory) // '/' // trim(restart_filename)
+-            restart_filename  = trim(temp_fname)
+-         end if
+ 
+          if (okay_to_restart) then
+             restart = doing_a_restart(restart_filename)
+-- 
+2.35.1
+
