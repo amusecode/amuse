@@ -570,7 +570,7 @@ class MESAInterface(
                 return '.true.'
             else:
                 return '.false.'
-        elif isinstance(value, int) or isinstance(value, float):
+        elif isinstance(value, (int, float)):
             return str(value)
         else:
             if '"' not in value and "'" not in value:
@@ -595,7 +595,7 @@ class MESAInterface(
                 pass
             return val
 
-        if isinstance(value, list) or isinstance(value, numpy.ndarray):
+        if isinstance(value, (list, numpy.ndarray)):
             result = numpy.array([process(i) for i in value])
         else:
             result = process(value)
