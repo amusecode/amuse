@@ -7,7 +7,7 @@ from amuse.units.generic_unit_converter import ConvertBetweenGenericAndSiUnits
 from amuse.units.quantities import zero, VectorQuantity
 from amuse.datamodel import Particle, Particles, ParticlesSuperset
 from amuse.community.interface.gd import GravitationalDynamics
-from amuse.support.codes.stopping_conditions import StoppingConditions
+from amuse.community.interface.stopping_conditions import StoppingConditions
 from amuse.ext.sink import SinkParticles, new_sink_particles
 from amuse.ext import sink
 

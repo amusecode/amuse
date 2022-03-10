@@ -830,7 +830,7 @@ class SamplePointWithInterpolation(object):
     def index_for_000_cell(self):
         offset = self.point - self.grid[0,0,0].position
         indices = (offset / self.grid.cellsize())
-        return numpy.floor(indices).astype(numpy.int)
+        return numpy.floor(indices).astype(numpy.int32)
 
     @late
     def index_for_111_cell(self):
@@ -1050,7 +1050,7 @@ class NonOverlappingGridsIndexer(object):
         
         for x in self.grids:
             index = (x.get_maximum_position() / smallest_boxsize)
-            index = numpy.floor(index).astype(numpy.int)
+            index = numpy.floor(index).astype(numpy.int32)
             max_index = numpy.where(index > max_index, index, max_index)
             
         self.grids_on_index = numpy.zeros(max_index, 'int')
@@ -1059,20 +1059,20 @@ class NonOverlappingGridsIndexer(object):
             bottom_left = x.get_minimum_position()
             index_of_grid = (bottom_left / smallest_boxsize)
             size = ((x.get_maximum_position() - x.get_minimum_position()) / smallest_boxsize)
-            i,j,k = numpy.floor(index_of_grid).astype(numpy.int)
-            ni,nj,nk = numpy.floor(size).astype(numpy.int)
+            i,j,k = numpy.floor(index_of_grid).astype(numpy.int32)
+            ni,nj,nk = numpy.floor(size).astype(numpy.int32)
             self.grids_on_index[i:i+ni,j:j+nj,k:k+nk] = index
         
         
     def grid_for_point(self, position):
         index = ((position - self.minimum_position) / self.smallest_boxsize)
-        index = numpy.floor(index).astype(numpy.int)
+        index = numpy.floor(index).astype(numpy.int32)
         index_of_grid = self.grids_on_index[tuple(index)]
         return self.grids[index_of_grid]
         
     def grids_for_points(self, points):
         index = ((points - self.minimum_position) / self.smallest_boxsize)
-        index = numpy.floor(index).astype(numpy.int)
+        index = numpy.floor(index).astype(numpy.int32)
         index_of_grid = self.grids_on_index[tuple(index)]
         return self.grids[index_of_grid]
 

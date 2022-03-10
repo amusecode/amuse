@@ -2,7 +2,7 @@ import os.path
 from amuse.community import *
 from amuse.community.interface.gd import GravitationalDynamicsInterface, GravitationalDynamics
 
-class BonsaiInterface2(CodeInterface, LiteratureReferencesMixIn, GravitationalDynamicsInterface, 
+class Bonsai2Interface(CodeInterface, LiteratureReferencesMixIn, GravitationalDynamicsInterface, 
         StoppingConditionInterface, CodeWithDataDirectories):
     """
         .. [#] Bedorf J., Gaburov E., Fujii M. S., Nitadori K. Ishiyama T., Portegies Zwart S.,
@@ -230,7 +230,7 @@ class Bonsai2(GravitationalDynamics):
         self.stopping_conditions = StoppingConditions(self)
         
         
-        legacy_interface = BonsaiInterface2(**options)
+        legacy_interface = Bonsai2Interface(**options)
         GravitationalDynamics.__init__(
             self,
             legacy_interface,
