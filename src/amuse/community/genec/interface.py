@@ -2328,6 +2328,7 @@ class GenecInterface(
         function.addParameter(
             'vwant', dtype='float64',
             direction=function.OUT,
+            unit=units.kms
         )
         function.result_type = 'int32'
         function.result_doc = '''
