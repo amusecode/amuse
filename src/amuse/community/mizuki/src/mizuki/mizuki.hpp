@@ -65,10 +65,9 @@ void setPressure(PS::ParticleSystem<FP_sph>& psys){
 }
 
 
-class Sui {
+class Mizuki {
 private:
     PS::S64 nstep;
-    PS::F64 time;
     PS::S64 id_offset;
     PS::S64 N_sph_max;
     PS::F32 theta_gravity;
@@ -91,9 +90,10 @@ private:
 public:
     PS::ParticleSystem<FP_nbody> psys_nbody;
     PS::ParticleSystem<FP_sph> psys_sph;
+    PS::F64 time;
     PS::F64 epsilon_gravity;
     PS::F64 dt_max;
-    Sui() {
+    Mizuki() {
         this->boundary_condition = PS::BOUNDARY_CONDITION_OPEN;
         this->nstep = 0;
         this->time = 0.;

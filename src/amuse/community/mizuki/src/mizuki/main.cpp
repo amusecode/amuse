@@ -22,13 +22,13 @@
 #include "mathematical_constants.h"
 #include "physical_constants.h"
 #include "user_defined.hpp"
-#include "sui.hpp"
+#include "mizuki.hpp"
 
-static Sui* sui=NULL;
+static Mizuki* mizuki=NULL;
 
 int main(int argc, char* argv[]){
     // Initialize FDPS
-    sui = new Sui;
+    mizuki = new Mizuki;
     PS::S64 id;
     PS::F64 mass;
     PS::F64 x;
@@ -39,8 +39,8 @@ int main(int argc, char* argv[]){
     PS::F64 vz;
     PS::F64 eng;
 
-    sui->initialize(argc, argv);
-    sui->set_defaults();
+    mizuki->initialize(argc, argv);
+    mizuki->set_defaults();
 
     // Populate SPH with AMUSE here
     PS::S32 N_sph = 10000;
@@ -53,25 +53,25 @@ int main(int argc, char* argv[]){
 	vy = 0.;
 	vz = 0.;
 	eng = 100.;
-        sui->add_hydro_particle(
+        mizuki->add_hydro_particle(
 			i, mass, x, y, z, vx, vy, vz, eng
 			);
     }
-    PS::F64vec pos = sui->get_position(50);
+    PS::F64vec pos = mizuki->get_position(50);
     x = pos.x;
     y = pos.y;
     z = pos.z;
     std::cout << id << " " << x << " " << y << " " << z << std::endl;
     
     // Commit particles
-    sui->commit_particles();
+    mizuki->commit_particles();
 
-    std::cout << "There are " << sui->get_number_of_particles_sph()
+    std::cout << "There are " << mizuki->get_number_of_particles_sph()
 	    << " particles!" << std::endl;
 
     // Finalize FDPS
-    sui->finalize();
-    delete sui;
-    sui = NULL;
+    mizuki->finalize();
+    delete mizuki;
+    mizuki = NULL;
     return 0;
 }

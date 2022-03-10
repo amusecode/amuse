@@ -39,7 +39,7 @@ endif
 
 CPPOBJS = $(patsubst %.cpp, %.o, $(wildcard *.cpp))
 CPPHDRS = $(wildcard *.h)
-PROGRAM = sui.out
+PROGRAM = mizuki.out
 
 .PHONY:	clean all
 
