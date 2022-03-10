@@ -176,6 +176,7 @@ int set_stopping_condition_timeout_parameter(double value){
 }
 
 int get_time(double * time){
+    *time = mizuki->time;
     return 0;
 }
 
