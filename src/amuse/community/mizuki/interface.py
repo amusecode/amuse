@@ -18,7 +18,7 @@ from amuse.community.interface.stopping_conditions import (
 from amuse.units import nbody_system
 
 
-class SuiInterface(
+class MizukiInterface(
     CodeInterface,
     LiteratureReferencesMixIn,
     GravitationalDynamicsInterface,
@@ -26,10 +26,10 @@ class SuiInterface(
     # GravityFieldInterface,
 ):
     """
-    Sui: based on nbody+sph example of FDPS
+    Mizuki: based on c++ nbody+sph example of FDPS
 
     References:
-        .. [#] Iwasawa et al.
+        .. [#] Iwasawa et al. (FDPS)
     """
 
     include_headers = ['worker_code.h', 'stopcond.h']
@@ -37,7 +37,7 @@ class SuiInterface(
     def __init__(self, **keyword_arguments):
         CodeInterface.__init__(
             self,
-            name_of_the_worker="sui_worker",
+            name_of_the_worker="mizuki_worker",
             **keyword_arguments
         )
         LiteratureReferencesMixIn.__init__(self)
@@ -59,7 +59,7 @@ class SuiInterface(
 
 
     def get_state(self, index_of_the_particle):
-        return self.get_state_hydro(index_of_the_particle)
+        return self.get_state_sph(index_of_the_particle)
 
     @legacy_function
     def get_state_sph():
@@ -319,8 +319,8 @@ class SuiInterface(
         return function
 
 
-class Sui(GravitationalDynamics,):
-    __interface__ = SuiInterface
+class Mizuki(GravitationalDynamics,):
+    __interface__ = MizukiInterface
 
     def __init__(
         self,
@@ -331,7 +331,7 @@ class Sui(GravitationalDynamics,):
 
         GravitationalDynamics.__init__(
             self,
-            SuiInterface(**options),
+            MizukiInterface(**options),
             convert_nbody,
             **options
         )

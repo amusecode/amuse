@@ -10,7 +10,7 @@ MPICXX   ?= mpicxx
 use_phantom_grape_x86 = no  # speedup from ~1M particles or so?
 
 FDPS_PATH = src/FDPS/src
-SUI_PATH = src/sui
+SUI_PATH = src/mizuki
 
 INCLUDE += -I $(FDPS_PATH) -I $(SUI_PATH)
 
@@ -45,7 +45,7 @@ LDFLAGS += -lm $(MUSE_LD_FLAGS)
 OBJS = interface.o
 
 
-all: sui_worker $(CODELIB)
+all: mizuki_worker $(CODELIB)
 
 $(CODELIB):
 	$(PG_BUILD)
@@ -56,19 +56,19 @@ $(CODELIB):
 clean:
 	$(RM) -rf __pycache__
 	$(RM) -f *.so *.o *.pyc worker_code.cc worker_code.h
-	$(RM) *~ sui_worker worker_code.cc
+	$(RM) *~ mizuki_worker worker_code.cc
 	make -C src clean
 
 distclean: clean
 	make -C src distclean
 
 worker_code.cc: interface.py
-	$(CODE_GENERATOR) --type=c interface.py SuiInterface -o $@
+	$(CODE_GENERATOR) --type=c interface.py MizukiInterface -o $@
 
 worker_code.h: interface.py
-	$(CODE_GENERATOR) --type=H  -i amuse.support.codes.stopping_conditions.StoppingConditionInterface interface.py SuiInterface -o $@
+	$(CODE_GENERATOR) --type=H  -i amuse.support.codes.stopping_conditions.StoppingConditionInterface interface.py MizukiInterface -o $@
 
-sui_worker: worker_code.cc worker_code.h $(CODELIB) $(OBJS) interface.h
+mizuki_worker: worker_code.cc worker_code.h $(CODELIB) $(OBJS) interface.h
 	$(MPICXX) $(CXXFLAGS) $(SC_FLAGS) $(LDFLAGS) $< $(OBJS) -o $@
 
 interface.o: interface.cc

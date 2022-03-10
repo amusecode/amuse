@@ -1,23 +1,23 @@
 #include "worker_code.h"
 #include "stopcond.h"
-#include "src/sui/user_defined.hpp"
-#include "src/sui/sui.hpp"
+#include "src/mizuki/user_defined.hpp"
+#include "src/mizuki/mizuki.hpp"
 
-static Sui* sui = new Sui;
+static Mizuki* mizuki = new Mizuki;
 
 int initialize_code(){
-    sui->initialize();
+    mizuki->initialize();
     return 0;
 }
 
 int commit_particles(){
-    sui->commit_particles();
+    mizuki->commit_particles();
     return 0;
 }
 
 int new_sph_particle(int * index_of_the_particle, double mass, double x,
     double y, double z, double vx, double vy, double vz, double eng, double h){
-    *index_of_the_particle = sui->add_sph_particle(
+    *index_of_the_particle = mizuki->add_sph_particle(
             mass, x, y, z, vx, vy, vz, eng, h*2
             );
     return 0;
@@ -29,20 +29,20 @@ int new_particle(int * index_of_the_particle, double mass, double x,
 }
 
 int get_mass(int index_of_the_particle, double * mass){
-    FP_sph* p = &(sui->psys_sph[index_of_the_particle]);
+    FP_sph* p = &(mizuki->psys_sph[index_of_the_particle]);
     *mass = p->mass;
     return 0;
 }
 
 int set_mass(int index_of_the_particle, double mass){
-    FP_sph* p = &(sui->psys_sph[index_of_the_particle]);
+    FP_sph* p = &(mizuki->psys_sph[index_of_the_particle]);
     p->mass = mass;
     return 0;
 }
 
 int get_position(int index_of_the_particle, double * x, double * y, 
     double * z){
-    FP_sph* p = &(sui->psys_sph[index_of_the_particle]);
+    FP_sph* p = &(mizuki->psys_sph[index_of_the_particle]);
     *x = p->pos.x;
     *y = p->pos.y;
     *z = p->pos.z;
@@ -51,7 +51,7 @@ int get_position(int index_of_the_particle, double * x, double * y,
 
 int set_position(int index_of_the_particle, double x, double y, 
     double z){
-    FP_sph* p = &(sui->psys_sph[index_of_the_particle]);
+    FP_sph* p = &(mizuki->psys_sph[index_of_the_particle]);
     p->pos.x = x;
     p->pos.y = y;
     p->pos.z = z;
@@ -60,7 +60,7 @@ int set_position(int index_of_the_particle, double x, double y,
 
 int get_velocity(int index_of_the_particle, double * vx, double * vy, 
     double * vz){
-    FP_sph* p = &(sui->psys_sph[index_of_the_particle]);
+    FP_sph* p = &(mizuki->psys_sph[index_of_the_particle]);
     *vx = p->vel.x;
     *vy = p->vel.y;
     *vz = p->vel.z;
@@ -69,7 +69,7 @@ int get_velocity(int index_of_the_particle, double * vx, double * vy,
 
 int set_velocity(int index_of_the_particle, double vx, double vy, 
     double vz){
-    FP_sph* p = &(sui->psys_sph[index_of_the_particle]);
+    FP_sph* p = &(mizuki->psys_sph[index_of_the_particle]);
     p->vel.x = vx;
     p->vel.y = vy;
     p->vel.z = vz;
@@ -77,49 +77,49 @@ int set_velocity(int index_of_the_particle, double vx, double vy,
 }
 
 int get_internal_energy(int index_of_the_particle, double * eng){
-    FP_sph* p = &(sui->psys_sph[index_of_the_particle]);
+    FP_sph* p = &(mizuki->psys_sph[index_of_the_particle]);
     *eng = p->eng;
     return 0;
 }
 
 int set_internal_energy(int index_of_the_particle, double eng){
-    FP_sph* p = &(sui->psys_sph[index_of_the_particle]);
+    FP_sph* p = &(mizuki->psys_sph[index_of_the_particle]);
     p->eng = eng;
     return 0;
 }
 
 int get_smoothing_length(int index_of_the_particle, double * smth){
-    FP_sph* p = &(sui->psys_sph[index_of_the_particle]);
+    FP_sph* p = &(mizuki->psys_sph[index_of_the_particle]);
     *smth = p->smth/2;
     return 0;
 }
 
 int set_smoothing_length(int index_of_the_particle, double smth){
-    FP_sph* p = &(sui->psys_sph[index_of_the_particle]);
+    FP_sph* p = &(mizuki->psys_sph[index_of_the_particle]);
     p->smth = smth*2;
     return 0;
 }
 
 int get_radius(int index_of_the_particle, double * radius){
-    FP_sph* p = &(sui->psys_sph[index_of_the_particle]);
+    FP_sph* p = &(mizuki->psys_sph[index_of_the_particle]);
     *radius = p->smth/2;
     return 0;
 }
 
 int set_radius(int index_of_the_particle, double radius){
-    FP_sph* p = &(sui->psys_sph[index_of_the_particle]);
+    FP_sph* p = &(mizuki->psys_sph[index_of_the_particle]);
     p->smth = radius*2;
     return 0;
 }
 
 int get_density(int index_of_the_particle, double * dens){
-    FP_sph* p = &(sui->psys_sph[index_of_the_particle]);
+    FP_sph* p = &(mizuki->psys_sph[index_of_the_particle]);
     *dens = p->dens;
     return 0;
 }
 
 int get_pressure(int index_of_the_particle, double * pres){
-    FP_sph* p = &(sui->psys_sph[index_of_the_particle]);
+    FP_sph* p = &(mizuki->psys_sph[index_of_the_particle]);
     *pres = p->pres;
     return 0;
 }
@@ -127,7 +127,7 @@ int get_pressure(int index_of_the_particle, double * pres){
 int get_state_sph(int index_of_the_particle, double * mass, double * x, 
     double * y, double * z, double * vx, double * vy, double * vz, 
     double * eng, double * smth){
-    FP_sph* p = &(sui->psys_sph[index_of_the_particle]);
+    FP_sph* p = &(mizuki->psys_sph[index_of_the_particle]);
     *mass = p->mass;
     *x = p->pos.x;
     *y = p->pos.y;
@@ -143,7 +143,7 @@ int get_state_sph(int index_of_the_particle, double * mass, double * x,
 int set_state_sph(int index_of_the_particle, double mass, double x, 
     double y, double z, double vx, double vy, double vz, 
     double eng, double smth){
-    FP_sph* p = &(sui->psys_sph[index_of_the_particle]);
+    FP_sph* p = &(mizuki->psys_sph[index_of_the_particle]);
     p->mass = mass;
     p->pos.x = x;
     p->pos.y = y;
@@ -159,7 +159,7 @@ int set_state_sph(int index_of_the_particle, double mass, double x,
 int get_state(int index_of_the_particle, double * mass, double * x, 
     double * y, double * z, double * vx, double * vy, double * vz, 
     double * radius){
-    FP_sph* p = &(sui->psys_sph[index_of_the_particle]);
+    FP_sph* p = &(mizuki->psys_sph[index_of_the_particle]);
     *mass = p->mass;
     *x = p->pos.x;
     *y = p->pos.y;
@@ -228,7 +228,7 @@ int get_total_mass(double * mass){
 }
 
 int evolve_model(double time){
-    sui->evolve_model(time);
+    mizuki->evolve_model(time);
     return 0;
 }
 
@@ -253,7 +253,7 @@ int get_begin_time(double * time){
 }
 
 int get_eps2(double * epsilon_squared){
-    *epsilon_squared = sui->epsilon_gravity * sui->epsilon_gravity;
+    *epsilon_squared = mizuki->epsilon_gravity * mizuki->epsilon_gravity;
     return 0;
 }
 
@@ -293,7 +293,7 @@ int get_stopping_condition_minimum_density_parameter(double * value){
 }
 
 int get_time_step(double * time_step){
-    *time_step = sui->dt_max;
+    *time_step = mizuki->dt_max;
     return 0;
 }
 
@@ -384,7 +384,7 @@ int get_stopping_condition_info(int index, int * type,
 
 int get_acceleration(int index_of_the_particle, double * ax, double * ay, 
     double * az){
-    FP_sph* p = &(sui->psys_sph[index_of_the_particle]);
+    FP_sph* p = &(mizuki->psys_sph[index_of_the_particle]);
     *ax = p->acc_hydro.x + p->acc_grav.x;
     *ay = p->acc_hydro.y + p->acc_grav.y;
     *az = p->acc_hydro.z + p->acc_grav.z;
