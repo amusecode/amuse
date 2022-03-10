@@ -298,6 +298,11 @@ int get_time_step(double * time_step){
     return 0;
 }
 
+int set_time_step(double time_step){
+    mizuki->dt_max = time_step;
+    return 0;
+}
+
 int recommit_particles(){
     return 0;
 }
