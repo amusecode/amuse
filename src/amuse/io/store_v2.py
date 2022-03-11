@@ -20,6 +20,7 @@ from amuse.datamodel import Particles
 from amuse.datamodel import Particle
 from amuse.datamodel import AttributeStorage
 from amuse.datamodel import LinkedArray
+from amuse.datamodel import Grid
 from amuse.datamodel import GridPoint
 from amuse.datamodel import AbstractSet
 
@@ -996,7 +997,7 @@ class StoreHDF(object):
         try:
             class_of_the_container = unpickle_from_string(group.attrs["class_of_the_container"])
         except:
-            class_of_the_container = Grids
+            class_of_the_container = Grid 
             
         shape = tuple(group["shape"])
         
