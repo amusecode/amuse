@@ -124,8 +124,8 @@ public:
         this->nthrds = PS::Comm::getNumberOfThread();
         if (PS::Comm::getRank() == 0) {
             std::cout << "=================================" << std::endl
-                      << " This is a test program of "       << std::endl
-                      << " FDPS"                             << std::endl
+                      << " This is Mizuki,                 " << std::endl
+                      << " we are using FDPS               " << std::endl
                       << " # of processes is " << this->nprocs     << std::endl
                       << " # of thread is    " << this->nthrds     << std::endl
                       << "=================================" << std::endl;
