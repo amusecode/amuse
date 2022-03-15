@@ -1,0 +1,31 @@
+From 6ea558d8678142b6d729e296a9d76a6ea35aba99 Mon Sep 17 00:00:00 2001
+From: Robert Farmer <r.j.farmer@uva.nl>
+Date: Tue, 16 Feb 2021 11:55:31 +0100
+Subject: [PATCH 1/6] Fix astero builds when disabled
+
+---
+ astero/make/makefile_base | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
+
+diff --git a/astero/make/makefile_base b/astero/make/makefile_base
+index 961ccc0..529fc98 100644
+--- a/astero/make/makefile_base
++++ b/astero/make/makefile_base
+@@ -137,3 +137,13 @@ ifeq ($(NODEPS),)
+   -include .depend
+ 
+ endif
++
++ifeq ($(USE_GYRE),NO)
++gyre_support.mod : gyre_support_stub.o
++	@true
++endif
++
++ifeq ($(USE_PGSTAR),NO)
++pgstar_astero_plots.mod : pgstar_astero_plots_stub.o
++	@true
++endif
+\ No newline at end of file
+-- 
+2.29.2
+

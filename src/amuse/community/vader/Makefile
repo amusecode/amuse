@@ -7,8 +7,8 @@ MPICXX   ?= mpicxx
 MPICC    ?= mpicc
 
 CFLAGS   += -Wall -g 
-CXXFLAGS += $(CFLAGS) 
-LDFLAGS  += -lm -lgsl -lgslcblas $(MUSE_LD_FLAGS) 
+CXXFLAGS += $(CFLAGS) $(GSL_FLAGS)
+LDFLAGS  += $(GSL_LIBS) $(MUSE_LD_FLAGS) 
 
 OBJS = interface.o
 

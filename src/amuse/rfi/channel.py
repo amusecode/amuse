@@ -224,7 +224,7 @@ class MPIMessage(AbstractMessage):
                 begin = begin + size + 1
                 
             logger.debug("got %d strings of size %s, data = %s", total, sizes, strings)
-            return strings
+            return numpy.array(strings)
         else:
             return []
         
@@ -1634,7 +1634,7 @@ class SocketMessage(AbstractMessage):
                 strings.append(data_bytes[begin:begin + size].decode('utf-8'))
                 begin = begin + size + 1
 
-            return strings
+            return numpy.array(strings)
         else:
             return []
             

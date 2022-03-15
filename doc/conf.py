@@ -12,6 +12,7 @@
 # serve to show the default.
 
 import sys, os
+import datetime
 
 is_running_in_rtd = os.environ.get('READTHEDOCS', None) == 'True'
 
@@ -62,7 +63,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'AMUSE'
-copyright = u'2009-2020 The AMUSE Team'
+copyright = u'2009 - %i The AMUSE Team'%datetime.date.today().year
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the

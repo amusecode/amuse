@@ -17,14 +17,19 @@ except ImportError:
     HAS_MATPLOTLIB = False
 
 
+default_options = dict()
+
+
 class TestHacs64Interface(TestWithMPI):
 
     def test0(self):
-        instance = Hacs64Interface()
+        instance = self.new_instance_of_an_optional_code(
+            Hacs64Interface, **default_options)
         instance.stop()
     
     def test1(self):
-        instance = Hacs64Interface()
+        instance = self.new_instance_of_an_optional_code(
+            Hacs64Interface, **default_options)
         instance.initialize_code()
         instance.commit_parameters()
     
@@ -50,7 +55,8 @@ class TestHacs64Interface(TestWithMPI):
         instance.stop()
 
     def test2(self):
-        instance = Hacs64Interface()
+        instance = self.new_instance_of_an_optional_code(
+            Hacs64Interface, **default_options)
         instance.initialize_code()
         instance.commit_parameters()
 
@@ -75,7 +81,8 @@ class TestHacs64Interface(TestWithMPI):
         instance.stop()
         
     def test3(self):
-        instance = Hacs64Interface()
+        instance = self.new_instance_of_an_optional_code(
+            Hacs64Interface, **default_options)
         instance.initialize_code()
         self.assertEqual(0, instance.set_nmax(10))
         self.assertEqual((10,0), tuple(instance.get_nmax()))
@@ -95,7 +102,8 @@ class TestHacs64Interface(TestWithMPI):
         instance.stop()
  
     def test4(self):
-        instance = Hacs64Interface()
+        instance = self.new_instance_of_an_optional_code(
+            Hacs64Interface, **default_options)
         instance.initialize_code()
         self.assertEqual(0, instance.set_h2max(0.1))
         self.assertEqual((0.1,0), tuple(instance.get_h2max()))
@@ -114,7 +122,8 @@ class TestHacs64Interface(TestWithMPI):
         instance.stop()
         
     def test5(self):
-        instance = Hacs64Interface()
+        instance = self.new_instance_of_an_optional_code(
+            Hacs64Interface, **default_options)
         instance.initialize_code()
         instance.commit_parameters()
         
@@ -132,7 +141,8 @@ class TestHacs64Interface(TestWithMPI):
         instance.stop()
 
     def test6(self):
-        instance = Hacs64Interface()
+        instance = self.new_instance_of_an_optional_code(
+            Hacs64Interface, **default_options)
         instance.initialize_code()
         instance.commit_parameters()
         
@@ -149,7 +159,8 @@ class TestHacs64Interface(TestWithMPI):
         instance.stop()
        
     def test7(self):
-        instance = Hacs64Interface()
+        instance = self.new_instance_of_an_optional_code(
+            Hacs64Interface, **default_options)
         instance.initialize_code()
         instance.set_eps2(0.1 * 0.1)
         instance.commit_parameters()
@@ -173,7 +184,8 @@ class TestHacs64Interface(TestWithMPI):
         
 
     def test8(self):
-        instance = Hacs64Interface()
+        instance = self.new_instance_of_an_optional_code(
+            Hacs64Interface, **default_options)
         instance.initialize_code()
         instance.set_eps2(0)
         instance.commit_parameters()
@@ -193,7 +205,8 @@ class TestHacs64Interface(TestWithMPI):
     
     def test9(self):
         print("Test Hacs64Interface evolve_model")
-        instance = Hacs64Interface()
+        instance = self.new_instance_of_an_optional_code(
+            Hacs64Interface, **default_options)
         self.assertEqual(0, instance.initialize_code())
         #self.assertEquals(0, instance.set_eta_irr(0.14))
         #self.assertEquals(0, instance.set_eta_reg(0.001))
@@ -241,7 +254,8 @@ class _TestHacs64(TestWithMPI):
     def test1(self):
         convert_nbody = nbody_system.nbody_to_si(1.0 | units.MSun, 149.5e6 | units.km)
     
-        instance = Hacs64(convert_nbody)
+        instance = self.new_instance_of_an_optional_code(
+            Hacs64, convert_nbody, **default_options)
         instance.initialize_code()
         instance.parameters.epsilon_squared = 0.0 | units.AU**2
         instance.dt_dia = 5000
@@ -278,7 +292,8 @@ class _TestHacs64(TestWithMPI):
     def test2(self):
         convert_nbody = nbody_system.nbody_to_si(1.0 | units.MSun, 149.5e6 | units.km)
     
-        instance = Hacs64(convert_nbody)
+        instance = self.new_instance_of_an_optional_code(
+            Hacs64, convert_nbody, **default_options)
         instance.initialize_code()
         instance.parameters.epsilon_squared = 0.0 | units.AU**2
         instance.dt_dia = 5000
@@ -320,7 +335,8 @@ class _TestHacs64(TestWithMPI):
     def test3(self):
         convert_nbody = nbody_system.nbody_to_si(1.0 | units.MSun, 149.5e6 | units.km)
 
-        instance = Hacs64(convert_nbody)
+        instance = self.new_instance_of_an_optional_code(
+            Hacs64, convert_nbody, **default_options)
         instance.initialize_code()
         instance.parameters.epsilon_squared = 0.00001 | units.AU**2
         instance.dt_dia = 5000
@@ -351,7 +367,8 @@ class _TestHacs64(TestWithMPI):
     def test4(self):
         convert_nbody = nbody_system.nbody_to_si(5.0 | units.kg, 10.0 | units.m)
 
-        instance = Hacs64(convert_nbody)
+        instance = self.new_instance_of_an_optional_code(
+            Hacs64, convert_nbody, **default_options)
         instance.initialize_code()
         
         particles = datamodel.Particles(2)
@@ -376,7 +393,8 @@ class _TestHacs64(TestWithMPI):
     def test5(self):
         convert_nbody = nbody_system.nbody_to_si(5.0 | units.kg, 10.0 | units.m)
 
-        instance = Hacs64(convert_nbody)
+        instance = self.new_instance_of_an_optional_code(
+            Hacs64, convert_nbody, **default_options)
         instance.initialize_code()
         
         particles = datamodel.Particles(2)
@@ -402,7 +420,8 @@ class _TestHacs64(TestWithMPI):
     def test6(self):
         print("Test6: Testing Hacs64 parameters")
         convert_nbody = nbody_system.nbody_to_si(1.0 | units.yr, 1.0 | units.AU)
-        instance = Hacs64(convert_nbody)
+        instance = self.new_instance_of_an_optional_code(
+            Hacs64, convert_nbody, **default_options)
         
         value = instance.get_eps2()
         self.assertEqual(0.0 | units.AU**2 , value)
@@ -453,7 +472,8 @@ class _TestHacs64(TestWithMPI):
         initial_direction = math.atan((earth.velocity[0]/earth.velocity[1]))
         final_direction = []
         for log_eps2 in range(-9,10,2):
-            instance = Hacs64(convert_nbody)
+            instance = self.new_instance_of_an_optional_code(
+                Hacs64, convert_nbody, **default_options)
             instance.initialize_code()
             instance.parameters.epsilon_squared = 10.0**log_eps2 | units.AU ** 2
             instance.particles.add_particles(particles)
@@ -480,7 +500,8 @@ class _TestHacs64(TestWithMPI):
         particles.z = 0 | nbody_system.length
         particles.velocity = [[2, 0, 0], [-2, 0, 0]]*3 + [[-4, 0, 0]] | nbody_system.speed
         
-        instance = Hacs64()
+        instance = self.new_instance_of_an_optional_code(
+            Hacs64, **default_options)
         instance.initialize_code()
         instance.parameters.set_defaults()
         instance.particles.add_particles(particles)
@@ -526,7 +547,8 @@ class _TestHacs64(TestWithMPI):
     def test9(self):
         convert_nbody = nbody_system.nbody_to_si(1.0 | units.MSun, 149.5e6 | units.km)
     
-        instance = Hacs64(convert_nbody)
+        instance = self.new_instance_of_an_optional_code(
+            Hacs64, convert_nbody, **default_options)
         instance.initialize_code()
         instance.parameters.epsilon_squared = 0.0 | units.AU**2
         instance.parameters.pair_factor = 1e14
@@ -555,7 +577,8 @@ class _TestHacs64(TestWithMPI):
     def test10(self):
         convert_nbody = nbody_system.nbody_to_si(1.0 | units.MSun, 149.5e6 | units.km)
     
-        instance = Hacs64(convert_nbody)
+        instance = self.new_instance_of_an_optional_code(
+            Hacs64, convert_nbody, **default_options)
         instance.initialize_code()
         instance.parameters.epsilon_squared = 0.0 | units.AU**2
         instance.parameters.stopping_conditions_number_of_steps = 10
@@ -585,7 +608,8 @@ class _TestHacs64(TestWithMPI):
         particles.vz =  0 | nbody_system.speed
         particles.mass = 1.0 | nbody_system.mass
        
-        instance = Hacs64()
+        instance = self.new_instance_of_an_optional_code(
+            Hacs64, **default_options)
         instance.initialize_code()
         instance.parameters.stopping_conditions_number_of_steps = 2
         self.assertEqual(instance.parameters.stopping_conditions_number_of_steps, 2)
@@ -608,7 +632,8 @@ class _TestHacs64(TestWithMPI):
         particles.vz =  [0.0,0.0]| nbody_system.speed
         particles.mass = [0.1,0.1] | nbody_system.mass
        
-        instance = Hacs64()
+        instance = self.new_instance_of_an_optional_code(
+            Hacs64, **default_options)
         instance.initialize_code()
         instance.parameters.stopping_conditions_out_of_box_size = .5 | nbody_system.length
         self.assertEqual(instance.parameters.stopping_conditions_out_of_box_size, .5 | nbody_system.length)
@@ -622,7 +647,8 @@ class _TestHacs64(TestWithMPI):
     def test13(self):
         particles = plummer.new_plummer_model(31)
        
-        instance = Hacs64(number_of_workers=1)#, debugger="xterm")
+        instance = self.new_instance_of_an_optional_code(
+            Hacs64, number_of_workers=1, **default_options)
         instance.initialize_code()
         instance.parameters.epsilon_squared = 0.01 | nbody_system.length ** 2
         instance.particles.add_particles(particles)
@@ -633,7 +659,8 @@ class _TestHacs64(TestWithMPI):
         instance.stop()
         positions_per_workers = []
         for n in [2,3,4,5]:
-            instance = Hacs64(number_of_workers=n)
+            instance = self.new_instance_of_an_optional_code(
+                Hacs64, number_of_workers=n, **default_options)
             instance.initialize_code()
             instance.parameters.epsilon_squared = 0.01 | nbody_system.length ** 2
             instance.particles.add_particles(particles)
@@ -648,7 +675,8 @@ class _TestHacs64(TestWithMPI):
             self.assertAlmostEqual(expected_positions, positions_per_workers[index], 15)
     
     def test14(self):
-        instance = Hacs64()
+        instance = self.new_instance_of_an_optional_code(
+            Hacs64, **default_options)
         instance.initialize_code()
         instance.parameters.epsilon_squared = 0.00001 | nbody_system.length**2
         

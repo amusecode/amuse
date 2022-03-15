@@ -226,10 +226,14 @@ class bilinear_2D_remapper(object):
         if self._weights is None:
             self._calculate_weights()
         
+        mapped_values=[]
         for attribute, target_name in zip(attributes, target_names):
             values=getattr(self.source,attribute)
             samples=self._evaluate(values)
-            setattr(self.target, target_name, samples)
+            mapped_values.append(samples)
+
+        self.target.set_values_in_store(None, target_names, mapped_values)
+
 
 class nearest_2D_remapper(object):
     def __init__(self, source, target, check_inside=True):
@@ -276,11 +280,15 @@ class nearest_2D_remapper(object):
             target_names=attributes
         if self._indices is None:
             self._calculate_weights()
-        
+
+        mapped_values=[]
         for attribute, target_name in zip(attributes, target_names):
             values=getattr(self.source,attribute)
             samples=self._evaluate(values)
-            setattr(self.target, target_name, samples)
+            mapped_values.append(samples)
+
+        self.target.set_values_in_store(None, target_names, mapped_values)
+
 
 def conservative_spherical_remapper(*args,**kwargs):
     raise Exception("conservative_spherical_remapper has moved to omuse.ext")
