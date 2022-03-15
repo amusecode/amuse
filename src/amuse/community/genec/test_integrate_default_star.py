@@ -1,9 +1,14 @@
 import numpy
+import time
 
 from amuse.datamodel import Particle
 from amuse.units import units
 from amuse.community.genec import Genec
 from amuse.io import write_set_to_file
+from amuse.support.console import set_printing_strategy
+
+import matplotlib.pyplot as plt
+from plot_models import StellarModelPlot
 
 
 def write_backup(
@@ -64,15 +69,51 @@ def write_backup(
     )
     return
 
+
+MASS_UNIT = units.MSun
+LENGTH_UNIT = units.RSun
+TIME_UNIT = units.Myr
+MASSLOSS_UNIT = units.MSun / units.yr
+TEMPERATURE_UNIT = units.K
+LUMINOSITY_UNIT = units.LSun
+SPEEDUP_UNIT = units.Myr / units.minute
+set_printing_strategy(
+    "custom",
+    preferred_units=[
+        MASS_UNIT, LENGTH_UNIT, TIME_UNIT, MASSLOSS_UNIT, TEMPERATURE_UNIT,
+        LUMINOSITY_UNIT, SPEEDUP_UNIT
+    ],
+    precision=4,
+    prefix="",
+    separator=" [",
+    suffix="]",
+)
+
+
 star = Particle(mass=7 | units.MSun, metallicity=0.014)
-evo = Genec()
+evo = Genec(redirection="none")
+# evo = Genec()
 star_in_evo = evo.fullparticles.add_particle(star)
 
+plt.ion()
+
 plot_every = -1
-save_every = 100
+save_every = 1000
+store_every = 10
+plot_time = 2 | units.s
+plot_models = 20
 step = 0
 
+model_of_last_save = 0
+model_of_last_plot = 0
+time_start = time.time() | units.s
+time_of_last_plot = 0 | units.s
+age_of_last_plot = star_in_evo.age
+
+plotting = StellarModelPlot(star_in_evo)
+
 while True:
+    time_elapsed = (time.time() | units.s) - time_start
     star = star_in_evo.copy()
     # number_of_zones = star_in_evo.get_number_of_zones()
     # density_profile = star_in_evo.get_density_profile()
@@ -82,9 +123,33 @@ while True:
     # pressure_profile = star_in_evo.get_pressure_profile()
     chemical_abundance_profile = star_in_evo.get_chemical_abundance_profiles()
 
-    print(evo.particles[0])
-    print(star.age.in_(units.Myr), star.mass.in_(units.MSun))
-    if step%save_every == 0:
+    # print(evo.fullparticles[0])
+    # print(evo.fullparticles[0].get_number_of_species())
+    # print(evo.fullparticles[0].get_names_of_species())
+    # exit()
+    print(
+        star.age.in_(units.Myr),
+        star.mass.in_(units.MSun),
+        star.radius.in_(units.RSun),
+        star.temperature.in_(units.K),
+        star.luminosity.in_(units.LSun),
+    )
+    if step % store_every == 0:
+        plotting.update(star_in_evo)
+    if (
+        (time_elapsed - time_of_last_plot) > plot_time
+        or step - model_of_last_plot > plot_models
+    ):
+        speed = (
+            (star.age - age_of_last_plot).value_in(units.Myr)
+            / (time_elapsed - time_of_last_plot).value_in(units.minute)
+        ) | units.Myr / units.minute
+        plotting.plot_all(speed=speed)
+        model_of_last_plot = step
+        time_of_last_plot = time_elapsed
+        age_of_last_plot = star.age
+
+    if step % save_every == 0:
         write_backup(
             step,
             star,
