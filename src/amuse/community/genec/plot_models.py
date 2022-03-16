@@ -3,6 +3,7 @@ import matplotlib
 import matplotlib.pyplot as plt
 from amuse.units import units
 
+
 class StellarModelPlot:
     def __init__(self, star):
         self.default_units = {
@@ -24,28 +25,32 @@ class StellarModelPlot:
         self.__central_abundance = {}
         self.__species = star.get_names_of_species()
         # self.__zones = star.get_number_of_zones()
+        self.__abundances = star.get_chemical_abundance_profiles()
         for species in self.__species:
             self.__central_abundance[species] = []
 
         self.__figures = {
-            "1": plt.figure(figsize=(12, 8)),
-            # "2": plt.figure(),
+            "1": plt.figure(num="Evolution", figsize=(8, 6)),
+            "2": plt.figure(num="Structure", figsize=(8, 6)),
         }
+        for figure in self.__figures.values():
+            figure.set_tight_layout(True)
 
-        self.__initialised_hr = False
-        self.__initialised_temp_dens = False
-        self.__initialised_central_abundance = False
-        self.__initialised_kippenhahn = False
+        self.__initialised = []
 
         self.__axes = {
             "HR": self.__figures["1"].add_subplot(2, 2, 1),
             "temp_dens": self.__figures["1"].add_subplot(2, 2, 2),
             "central abundance": self.__figures["1"].add_subplot(2, 2, 3),
             "Kippenhahn diagram": self.__figures["1"].add_subplot(2, 2, 4),
+            "Abundance profile": self.__figures["2"].add_subplot(2, 2, 1),
+            "gradient": self.__figures["2"].add_subplot(2, 2, 2),
+            "Luminosity and energy production": self.__figures["2"].add_subplot(2, 2, 3),
+            "Temperature and pressure": self.__figures["2"].add_subplot(2, 2, 4),
         }
         # self.__ax_hr = fig.add_subplot(2, 2, 1)
         self.update(star)
-        self.plot_all(initialise=True)
+        self.plot_all()
 
     def update(self, star):
         self.star = star
@@ -57,10 +62,10 @@ class StellarModelPlot:
         self.__central_density.append(star.central_density)
         self.__central_temperature.append(star.central_temperature)
         # self.__zones = star.get_number_of_zones()
-        abundances = star.get_chemical_abundance_profiles()
+        self.__abundances = star.get_chemical_abundance_profiles()
         for i, species in enumerate(self.__species):
             self.__central_abundance[species].append(
-                abundances[i, 0]
+                self.__abundances[i, 0]
             )
 
     def draw(self, verbose=False, speed=0 | units.Myr / units.minute):
@@ -69,18 +74,21 @@ class StellarModelPlot:
                 print(f"drawing figure {i}")
 
             fig.suptitle(
-                f"star age = {self.star.age.in_(units.Myr)}, "
-                f"radius = {self.star.radius.in_(units.RSun)}, "
+                f"age: {self.star.age.in_(units.Myr)}, "
+                f"mass: {self.star.mass.in_(units.MSun)}, "
+                f"radius: {self.star.radius.in_(units.RSun)}, "
                 # f"log(speedup) = {numpy.log10(speed):.2f}"
-                f"speedup = {speed.in_(units.Myr / units.minute)}"
+                f"speed: {speed.in_(units.Myr / units.minute)}"
             )
             fig.canvas.draw_idle()
             fig.canvas.flush_events()
 
     def initialise_hr(self):
+        title = 'HR'
         unit_temp = self.default_units['temperature']
         unit_lum = self.default_units['luminosity']
-        ax = self.__axes['HR']
+        ax = self.__axes[title]
+        ax.set_title(title)
         log_tstar = numpy.log10(
             self.star.temperature.value_in(unit_temp)
         )
@@ -109,15 +117,15 @@ class StellarModelPlot:
             edgecolor=None,
             alpha=0.5,
         )
-        ax.set_title('HR')
-        self.__initialised_hr = True
+        self.__initialised.append(title)
 
     def plot_hr(self):
-        if not self.__initialised_hr:
+        title = 'HR'
+        if title not in self.__initialised:
             self.initialise_hr()
         unit_temp = self.default_units['temperature']
         unit_lum = self.default_units['luminosity']
-        ax = self.__axes['HR']
+        ax = self.__axes[title]
         log_temperature = numpy.log10(
             self.__temperature.value_in(unit_temp)
         )
@@ -140,9 +148,11 @@ class StellarModelPlot:
         self.__hr_star.set_offsets(offsets)
 
     def initialise_temp_dens(self):
+        title = 'temp_dens'
         unit_temp = self.default_units['temperature']
         unit_dens = self.default_units['density']
-        ax = self.__axes['temp_dens']
+        ax = self.__axes[title]
+        ax.set_title(title)
         log_central_density_star = numpy.log10(
             self.star.central_density.value_in(unit_dens)
         )
@@ -172,15 +182,15 @@ class StellarModelPlot:
             edgecolor=None,
             alpha=0.5,
         )
-        ax.set_title('temp/dens')
-        self.__initialised_temp_dens = True
+        self.__initialised.append(title)
 
     def plot_temp_dens(self):
-        if not self.__initialised_temp_dens:
+        title = 'temp_dens'
+        if title not in self.__initialised:
             self.initialise_temp_dens()
         unit_temp = self.default_units['temperature']
         unit_dens = self.default_units['density']
-        ax = self.__axes['temp_dens']
+        ax = self.__axes[title]
         log_central_density = numpy.log10(
             self.__central_density.value_in(unit_dens)
         )
@@ -203,15 +213,17 @@ class StellarModelPlot:
         self.__temp_dens_star.set_offsets(offsets)
 
     def initialise_central_abundance(self):
+        title = 'central abundance'
         unit_age = self.default_units['age']
-        ax = self.__axes['central abundance']
+        ax = self.__axes[title]
+        ax.set_title(title)
 
         ax.set_xlim(
             -0.05,
             0.05,
         )
         ax.set_ylim(-0.05, 1.05)
-        ax.set_xlabel(f'age {unit_age})')
+        ax.set_xlabel(f'age ({unit_age})')
         ax.set_ylabel(f'abundance fraction')
         ax.ticklabel_format(
             style='sci',
@@ -228,14 +240,14 @@ class StellarModelPlot:
                 # linewidth=2,
             )
             self.__central_abundance_plots.append(plot)
-        ax.set_title('central abundance')
-        self.__initialised_central_abundance = True
+        self.__initialised.append(title)
 
     def plot_central_abundance(self):
-        if not self.__initialised_central_abundance:
+        title = 'central abundance'
+        if title not in self.__initialised:
             self.initialise_central_abundance()
         unit_age = self.default_units['age']
-        ax = self.__axes['central abundance']
+        ax = self.__axes[title]
         xmax = self.star.age.value_in(unit_age) * 1.05
         xmin = (self.star.age.value_in(unit_age) - xmax)
         ax.set_xlim(xmin, xmax)
@@ -248,18 +260,20 @@ class StellarModelPlot:
             )
 
     def initialise_kippenhahn(self):
+        title = 'Kippenhahn diagram'
         unit_age = self.default_units['age']
-        ax = self.__axes['Kippenhahn diagram']
-        ax.set_title('Kippenhahn diagram')
+        ax = self.__axes[title]
+        ax.set_title(title)
         ax.set_xlim(
             -0.05,
             0.05,
         )
-        ax.set_xlabel(f'age {unit_age})')
-        self.__initialised_kippenhahn = True
+        ax.set_xlabel(f'age ({unit_age})')
+        self.__initialised.append(title)
 
     def plot_kippenhahn(self):
-        if not self.__initialised_kippenhahn:
+        title = 'Kippenhahn diagram'
+        if title not in self.__initialised:
             self.initialise_kippenhahn()
         unit_age = self.default_units['age']
         ax = self.__axes['Kippenhahn diagram']
@@ -267,12 +281,96 @@ class StellarModelPlot:
         xmin = (self.star.age.value_in(unit_age) - xmax)
         ax.set_xlim(xmin, xmax)
 
-    def plot_all(self, initialise=False, speed=0 | units.Myr / units.minute):
+    def initialise_abundance_profile(self):
+        title = "Abundance profile"
+        ax = self.__axes[title]
+        ax.set_title(title)
+        ax.set_xlim(0, 1)
+        ax.set_ylim(-4, 0)
+        ax.set_xlabel('M$_{\\rm r}$/M$_{\\rm tot}$')
+        self.__initialised.append(title)
+        self.__abundance_plots = []
+        radius_profile = self.star.radius_profile
+        relative_radius_profile = radius_profile / radius_profile[-1]
+        for i, species in enumerate(self.__species):
+            plot, = ax.plot(
+                relative_radius_profile,
+                numpy.log10(self.__abundances[i]),
+                label=species,
+            )
+            self.__abundance_plots.append(plot)
+        self.__initialised.append(title)
+
+    def plot_abundance_profile(self):
+        title = "Abundance profile"
+        if title not in self.__initialised:
+            self.initialise_abundance_profile()
+        radius_profile = self.star.radius_profile
+        relative_radius_profile = radius_profile / radius_profile[-1]
+        for i, species in enumerate(self.__species):
+            self.__abundance_plots[i].set_xdata(
+                relative_radius_profile
+            )
+            self.__abundance_plots[i].set_ydata(
+                numpy.log10(self.__abundances[i])
+            )
+
+    def initialise_gradient(self):
+        title = "gradient"
+        ax = self.__axes[title]
+        ax.set_title(title)
+        ax.set_xlim(0, 1)
+        ax.set_xlabel('M$_{\\rm r}$/M$_{\\rm tot}$')
+        self.__initialised.append(title)
+
+    def plot_gradient(self):
+        title = "gradient"
+        if title not in self.__initialised:
+            self.initialise_gradient()
+
+    def initialise_luminosity_energy_production(self):
+        title = "Luminosity and energy production"
+        ax = self.__axes[title]
+        ax.set_title(title)
+        ax.set_xlim(0, 1)
+        ax.set_xlabel('M$_{\\rm r}$/M$_{\\rm tot}$')
+        self.__initialised.append(title)
+
+    def plot_luminosity_energy_production(self):
+        title = "Luminosity and energy production"
+        if title not in self.__initialised:
+            self.initialise_luminosity_energy_production()
+
+    def initialise_temperature_pressure(self):
+        title = "Temperature and pressure"
+        ax = self.__axes[title]
+        ax.set_title(title)
+        ax.set_xlim(0, 1)
+        ax.set_xlabel('M$_{\\rm r}$/M$_{\\rm tot}$')
+        self.__initialised.append(title)
+
+    def plot_temperature_pressure(self):
+        title = "Temperature and pressure"
+        if title not in self.__initialised:
+            self.initialise_temperature_pressure()
+
+    def plot_figure_evolution(self):
         self.plot_hr()
         self.plot_temp_dens()
         self.plot_central_abundance()
         self.plot_kippenhahn()
 
+    def plot_figure_structure(self):
+        self.plot_abundance_profile()
+        self.plot_gradient()
+        self.plot_luminosity_energy_production()
+        self.plot_temperature_pressure()
+
+    def plot_all(self, speed=0 | units.Myr / units.minute):
+        self.plot_figure_evolution()
+        self.plot_figure_structure()
+
         self.draw(speed=speed)
         plt.tight_layout()
         plt.pause(0.01)
+        # plt.show(block=False)
