@@ -85,22 +85,27 @@ set_printing_strategy(
     ],
     precision=4,
     prefix="",
-    separator=" [",
-    suffix="]",
+    separator=" ",
+    # separator=" [",
+    suffix="",
+    # suffix="]",
 )
 
 
-star = Particle(mass=7 | units.MSun, metallicity=0.014)
+star = Particle(mass=7.0 | units.MSun, metallicity=0.014)
 evo = Genec(redirection="none")
 # evo = Genec()
 star_in_evo = evo.fullparticles.add_particle(star)
 
+font = {
+    'size': 8,
+}
+plt.rc('font', **font)
 plt.ion()
 
-plot_every = -1
 save_every = 1000
-store_every = 10
-plot_time = 2 | units.s
+store_every = 1
+plot_time = 1 | units.s
 plot_models = 20
 step = 0
 
