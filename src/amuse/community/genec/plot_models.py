@@ -290,11 +290,10 @@ class StellarModelPlot:
         ax.set_xlabel('M$_{\\rm r}$/M$_{\\rm tot}$')
         self.__initialised.append(title)
         self.__abundance_plots = []
-        radius_profile = self.star.radius_profile
-        relative_radius_profile = radius_profile / radius_profile[-1]
+        mass_profile = self.star.get_cumulative_mass_profile()
         for i, species in enumerate(self.__species):
             plot, = ax.plot(
-                relative_radius_profile,
+                mass_profile,
                 numpy.log10(self.__abundances[i]),
                 label=species,
             )
@@ -305,11 +304,10 @@ class StellarModelPlot:
         title = "Abundance profile"
         if title not in self.__initialised:
             self.initialise_abundance_profile()
-        radius_profile = self.star.radius_profile
-        relative_radius_profile = radius_profile / radius_profile[-1]
+        mass_profile = self.star.get_cumulative_mass_profile()
         for i, species in enumerate(self.__species):
             self.__abundance_plots[i].set_xdata(
-                relative_radius_profile
+                mass_profile
             )
             self.__abundance_plots[i].set_ydata(
                 numpy.log10(self.__abundances[i])
@@ -321,6 +319,7 @@ class StellarModelPlot:
         ax.set_title(title)
         ax.set_xlim(0, 1)
         ax.set_xlabel('M$_{\\rm r}$/M$_{\\rm tot}$')
+        mass_profile = self.star.get_cumulative_mass_profile()
         self.__initialised.append(title)
 
     def plot_gradient(self):
@@ -334,6 +333,7 @@ class StellarModelPlot:
         ax.set_title(title)
         ax.set_xlim(0, 1)
         ax.set_xlabel('M$_{\\rm r}$/M$_{\\rm tot}$')
+        mass_profile = self.star.get_cumulative_mass_profile()
         self.__initialised.append(title)
 
     def plot_luminosity_energy_production(self):
@@ -347,6 +347,7 @@ class StellarModelPlot:
         ax.set_title(title)
         ax.set_xlim(0, 1)
         ax.set_xlabel('M$_{\\rm r}$/M$_{\\rm tot}$')
+        mass_profile = self.star.get_cumulative_mass_profile()
         self.__initialised.append(title)
 
     def plot_temperature_pressure(self):
