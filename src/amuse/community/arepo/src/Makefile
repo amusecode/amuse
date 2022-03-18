@@ -1,4 +1,4 @@
-GSL_INCL  = -I/opt/Homebrew/include  # Need to make GSL_INCL generalisable.
+GSL_INCL  = -I/opt/Homebrew/include  # TODO: Need to make GSL_INCL generalisable.
 
 CFLAGS   += -Wall -g $(GSL_INCL)
 CXXFLAGS += $(CFLAGS) 
