@@ -263,11 +263,11 @@ class StellarModelPlot:
             self.__central_abundance_plots[i].set_ydata(
                 self.__central_abundance[species]
             )
-        if self.__central_abundance[self.__species[0]] < 1e-4:
-            ax.set_xscale('log')
-            ax.set_xlim(1, xmax)
-        else:
-            ax.set_xscale('linear')
+        # if self.__central_abundance[self.__species[0]] < 1e-4:
+        #     ax.set_xscale('log')
+        #     ax.set_xlim(1, xmax)
+        # else:
+        #     ax.set_xscale('linear')
 
     def initialise_kippenhahn(self):
         title = 'Kippenhahn diagram'
