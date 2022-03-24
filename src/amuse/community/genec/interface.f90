@@ -1,6 +1,6 @@
 function initialize_code()
     use WriteSaveClose, only: quitafterclosing
-    use inputparam, only: amuseinterface, writetofiles
+    use inputparam, only: amuseinterface, writetofiles, readfromfiles
     use genec, only: initialise_genec
     use amuse_helpers, only: set_defaults
     use amuse_helpers, only: mstar, zini, starname
@@ -10,6 +10,7 @@ function initialize_code()
 
     amuseinterface = .true.
     writetofiles = .false.
+    readfromfiles = .false.
     input_dir = "./src/GENEC/code"
     call initialise_genec()
     call set_defaults()
@@ -65,6 +66,14 @@ function cleanup_code()
 end function
 
 ! **** Parameters
+
+function get_min_timestep_stop_condition(min_timestep_stop_condition)
+    use inputparam, only: dzeitj_min
+    implicit none
+    double precision:: min_timestep_stop_condition
+    integer:: get_min_timestep_stop_condition
+    get_min_timestep_stop_condition = 0
+end function
 
 function get_par_ipoly(par_ipoly)
     use inputparam, only: ipoly
@@ -1806,6 +1815,31 @@ function evolve_one_step(index_of_the_star)
     evolve_one_step = 0
 end function
 
+function finalize_stellar_model()
+    implicit none
+    integer:: finalize_stellar_model
+    finalize_stellar_model = 0
+end function
+
+function write_genec_model()
+    use inputparam, only: modanf
+    use WriteSaveClose, only: OpenAll
+    use genec, only: finalise, initialise_star
+    use inputparam, only: writetofiles
+    implicit none
+    integer:: write_genec_model
+    call finalise()
+    ! modanf = 0
+    writetofiles = .true.
+    call OpenAll()
+    call initialise_star()
+    !call finalise()
+    writetofiles = .false.
+    !call OpenAll()
+    !call initialise_star()
+    write_genec_model = 0
+end function
+
 function get_age(index_of_the_star, age)
     use timestep, only: alter
     implicit none
@@ -2224,15 +2258,15 @@ function get_name_of_species(index_of_the_star, species, species_name)
 
     character(len = 6), dimension(27):: species_names
 
-    species_names(1) = 'h'
-    species_names(2) = 'he3'
-    species_names(3) = 'he'
-    species_names(4) = 'c12'
-    species_names(5) = 'c13'
-    species_names(6) = 'n14'
-    species_names(7) = 'n15'
-    species_names(8) = 'o16'
-    species_names(9) = 'o17'
+    species_names(1)  = 'h'
+    species_names(2)  = 'he3'
+    species_names(3)  = 'he'
+    species_names(4)  = 'c12'
+    species_names(5)  = 'c13'
+    species_names(6)  = 'n14'
+    species_names(7)  = 'n15'
+    species_names(8)  = 'o16'
+    species_names(9)  = 'o17'
     species_names(10) = 'o18'
     species_names(11) = 'ne20'
     species_names(12) = 'ne22'
@@ -2275,11 +2309,11 @@ function get_number_of_species(index_of_the_star, n_species)
     integer:: index_of_the_star
     integer:: n_species
     integer:: get_number_of_species
-    if (ialflu==1) then
+    !if (ialflu==1) then
         n_species = 27
-    else
-        n_species = 15
-    end if
+    !else
+    !    n_species = 15
+    !end if
     get_number_of_species = 0
 end function
 

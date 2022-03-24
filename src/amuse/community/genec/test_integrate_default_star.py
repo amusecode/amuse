@@ -131,6 +131,7 @@ while True:
     # print(evo.fullparticles[0])
     # print(evo.fullparticles[0].get_number_of_species())
     # print(evo.fullparticles[0].get_names_of_species())
+    # print(evo.fullparticles[0].get_mass_profile())
     # exit()
     print(
         star.age.in_(units.Myr),
@@ -149,7 +150,7 @@ while True:
             (star.age - age_of_last_plot).value_in(units.Myr)
             / (time_elapsed - time_of_last_plot).value_in(units.minute)
         ) | units.Myr / units.minute
-        plotting.plot_all(speed=speed)
+        plotting.plot_all(speed=speed, step=step)
         model_of_last_plot = step
         time_of_last_plot = time_elapsed
         age_of_last_plot = star.age

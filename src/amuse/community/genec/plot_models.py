@@ -68,7 +68,7 @@ class StellarModelPlot:
                 self.__abundances[i, 0]
             )
 
-    def draw(self, verbose=False, speed=0 | units.Myr / units.minute):
+    def draw(self, verbose=False, speed=0 | units.Myr / units.minute, step=None):
         for i, fig in self.__figures.items():
             if verbose:
                 print(f"drawing figure {i}")
@@ -77,6 +77,7 @@ class StellarModelPlot:
                 f"age: {self.star.age.in_(units.Myr)}, "
                 f"mass: {self.star.mass.in_(units.MSun)}, "
                 f"radius: {self.star.radius.in_(units.RSun)}, "
+                f"step: {step}, "
                 # f"log(speedup) = {numpy.log10(speed):.2f}"
                 f"speed: {speed.in_(units.Myr / units.minute)}"
             )
@@ -208,8 +209,12 @@ class StellarModelPlot:
         self.__temp_dens_plot.set_xdata(log_central_density)
         self.__temp_dens_plot.set_ydata(log_central_temperature)
         offsets = self.__temp_dens_star.get_offsets()
-        offsets[:, 0] = [numpy.log10(self.star.central_density.value_in(unit_dens))]
-        offsets[:, 1] = [numpy.log10(self.star.central_temperature.value_in(unit_temp))]
+        offsets[:, 0] = [
+            numpy.log10(self.star.central_density.value_in(unit_dens))
+        ]
+        offsets[:, 1] = [
+            numpy.log10(self.star.central_temperature.value_in(unit_temp))
+        ]
         self.__temp_dens_star.set_offsets(offsets)
 
     def initialise_central_abundance(self):
@@ -224,7 +229,7 @@ class StellarModelPlot:
         )
         ax.set_ylim(-0.05, 1.05)
         ax.set_xlabel(f'age ({unit_age})')
-        ax.set_ylabel(f'abundance fraction')
+        ax.set_ylabel('abundance fraction')
         ax.ticklabel_format(
             style='sci',
             scilimits=(-3, 4),
@@ -258,6 +263,11 @@ class StellarModelPlot:
             self.__central_abundance_plots[i].set_ydata(
                 self.__central_abundance[species]
             )
+        if self.__central_abundance[0] < 1e-4:
+            ax.set_xscale('log')
+            ax.set_xlim(1, xmax)
+        else:
+            ax.set_xscale('linear')
 
     def initialise_kippenhahn(self):
         title = 'Kippenhahn diagram'
@@ -367,11 +377,11 @@ class StellarModelPlot:
         self.plot_luminosity_energy_production()
         self.plot_temperature_pressure()
 
-    def plot_all(self, speed=0 | units.Myr / units.minute):
+    def plot_all(self, speed=0 | units.Myr / units.minute, step=None):
         self.plot_figure_evolution()
         self.plot_figure_structure()
 
-        self.draw(speed=speed)
+        self.draw(speed=speed, step=step)
         plt.tight_layout()
         plt.pause(0.01)
         # plt.show(block=False)
