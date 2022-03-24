@@ -263,7 +263,7 @@ class StellarModelPlot:
             self.__central_abundance_plots[i].set_ydata(
                 self.__central_abundance[species]
             )
-        if self.__central_abundance[species[0]] < 1e-4:
+        if self.__central_abundance[self.__species[0]] < 1e-4:
             ax.set_xscale('log')
             ax.set_xlim(1, xmax)
         else:
