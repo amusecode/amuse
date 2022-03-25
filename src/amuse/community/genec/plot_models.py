@@ -262,10 +262,19 @@ class StellarModelPlot:
             self.__central_abundance_plots[i].set_xdata(
                 self.__age.value_in(unit_age)
             )
+            # if self.__phase == 1:
+            #     self.__central_abundance_plots[i].set_xdata(
+            #         self.__age.value_in(unit_age)
+            #     )
+            # else:
+            #     self.__central_abundance_plots[i].set_xdata(
+            #         # self.__age.value_in(unit_age)
+            #         (self.__star.age - self.__age).value_in(unit_age)
+            #     )
             self.__central_abundance_plots[i].set_ydata(
                 self.__central_abundance[species]
             )
-        # if self.__central_abundance[self.__species[0]] < 1e-4:
+        # if self.__phase > 1:  # central_abundance[self.__species[0]] < 1e-4:
         #     ax.set_xscale('log')
         #     ax.set_xlim(1, xmax)
         # else:
