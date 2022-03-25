@@ -10,6 +10,9 @@ from amuse.community.interface.se import StellarEvolution
 from amuse.community.interface.se import StellarEvolutionInterface
 from amuse.community.interface.se import InternalStellarStructure
 from amuse.community.interface.se import InternalStellarStructureInterface
+from amuse.community.interface.stopping_conditions import (
+    StoppingConditionInterface, StoppingConditions
+)
 from amuse.units import units
 
 
@@ -19,6 +22,7 @@ class GenecInterface(
     StellarEvolutionInterface,
     InternalStellarStructureInterface,
     CodeWithDataDirectories,
+    # StoppingConditionInterface,
 ):
     """
     GENEC is the Geneva Stellar Evolution Code
@@ -32,6 +36,18 @@ class GenecInterface(
             self, name_of_the_worker="genec_worker", **keyword_arguments)
         LiteratureReferencesMixIn.__init__(self)
         CodeWithDataDirectories.__init__(self)
+
+    @legacy_function
+    def finalize_stellar_model():
+        function = LegacyFunctionSpecification()
+        function.result_type = 'int32'
+        return function
+
+    @legacy_function
+    def write_genec_model():
+        function = LegacyFunctionSpecification()
+        function.result_type = 'int32'
+        return function
 
     @legacy_function
     def set_genec_path():
@@ -3463,11 +3479,849 @@ class GenecInterface(
         return function
 
 
+    @legacy_function
+    def get_mass_fraction_of_h_at_zone():
+        """
+        Retrieve the fractional abundance of h at the specified
+        zone/mesh-cell of the star.
+        """
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
+        function.addParameter(
+            'index_of_the_star', dtype='int32', direction=function.IN,
+            description="The index of the star to get the value of")
+        function.addParameter(
+            'zone', dtype='int32', direction=function.IN,
+            description="The zone/mesh-cell of the star to get the value of")
+        function.addParameter(
+            'Xj_i', dtype='float64', direction=function.OUT,
+            description=(
+                "The fractional chemical abundance variable at the specified "
+                "zone/mesh-cell of the star."
+            )
+        )
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            The value was retrieved.
+        -1 - ERROR
+            A star with the given index was not found.
+        """
+        return function
+
+
+    @legacy_function
+    def get_mass_fraction_of_he3_at_zone():
+        """
+        Retrieve the fractional abundance of he3 at the specified
+        zone/mesh-cell of the star.
+        """
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
+        function.addParameter(
+            'index_of_the_star', dtype='int32', direction=function.IN,
+            description="The index of the star to get the value of")
+        function.addParameter(
+            'zone', dtype='int32', direction=function.IN,
+            description="The zone/mesh-cell of the star to get the value of")
+        function.addParameter(
+            'Xj_i', dtype='float64', direction=function.OUT,
+            description=(
+                "The fractional chemical abundance variable at the specified "
+                "zone/mesh-cell of the star."
+            )
+        )
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            The value was retrieved.
+        -1 - ERROR
+            A star with the given index was not found.
+        """
+        return function
+
+
+    @legacy_function
+    def get_mass_fraction_of_he_at_zone():
+        """
+        Retrieve the fractional abundance of he at the specified
+        zone/mesh-cell of the star.
+        """
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
+        function.addParameter(
+            'index_of_the_star', dtype='int32', direction=function.IN,
+            description="The index of the star to get the value of")
+        function.addParameter(
+            'zone', dtype='int32', direction=function.IN,
+            description="The zone/mesh-cell of the star to get the value of")
+        function.addParameter(
+            'Xj_i', dtype='float64', direction=function.OUT,
+            description=(
+                "The fractional chemical abundance variable at the specified "
+                "zone/mesh-cell of the star."
+            )
+        )
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            The value was retrieved.
+        -1 - ERROR
+            A star with the given index was not found.
+        """
+        return function
+
+
+    @legacy_function
+    def get_mass_fraction_of_c12_at_zone():
+        """
+        Retrieve the fractional abundance of c12 at the specified
+        zone/mesh-cell of the star.
+        """
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
+        function.addParameter(
+            'index_of_the_star', dtype='int32', direction=function.IN,
+            description="The index of the star to get the value of")
+        function.addParameter(
+            'zone', dtype='int32', direction=function.IN,
+            description="The zone/mesh-cell of the star to get the value of")
+        function.addParameter(
+            'Xj_i', dtype='float64', direction=function.OUT,
+            description=(
+                "The fractional chemical abundance variable at the specified "
+                "zone/mesh-cell of the star."
+            )
+        )
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            The value was retrieved.
+        -1 - ERROR
+            A star with the given index was not found.
+        """
+        return function
+
+
+    @legacy_function
+    def get_mass_fraction_of_c13_at_zone():
+        """
+        Retrieve the fractional abundance of c13 at the specified
+        zone/mesh-cell of the star.
+        """
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
+        function.addParameter(
+            'index_of_the_star', dtype='int32', direction=function.IN,
+            description="The index of the star to get the value of")
+        function.addParameter(
+            'zone', dtype='int32', direction=function.IN,
+            description="The zone/mesh-cell of the star to get the value of")
+        function.addParameter(
+            'Xj_i', dtype='float64', direction=function.OUT,
+            description=(
+                "The fractional chemical abundance variable at the specified "
+                "zone/mesh-cell of the star."
+            )
+        )
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            The value was retrieved.
+        -1 - ERROR
+            A star with the given index was not found.
+        """
+        return function
+
+
+    @legacy_function
+    def get_mass_fraction_of_n14_at_zone():
+        """
+        Retrieve the fractional abundance of n14 at the specified
+        zone/mesh-cell of the star.
+        """
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
+        function.addParameter(
+            'index_of_the_star', dtype='int32', direction=function.IN,
+            description="The index of the star to get the value of")
+        function.addParameter(
+            'zone', dtype='int32', direction=function.IN,
+            description="The zone/mesh-cell of the star to get the value of")
+        function.addParameter(
+            'Xj_i', dtype='float64', direction=function.OUT,
+            description=(
+                "The fractional chemical abundance variable at the specified "
+                "zone/mesh-cell of the star."
+            )
+        )
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            The value was retrieved.
+        -1 - ERROR
+            A star with the given index was not found.
+        """
+        return function
+
+
+    @legacy_function
+    def get_mass_fraction_of_n15_at_zone():
+        """
+        Retrieve the fractional abundance of n15 at the specified
+        zone/mesh-cell of the star.
+        """
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
+        function.addParameter(
+            'index_of_the_star', dtype='int32', direction=function.IN,
+            description="The index of the star to get the value of")
+        function.addParameter(
+            'zone', dtype='int32', direction=function.IN,
+            description="The zone/mesh-cell of the star to get the value of")
+        function.addParameter(
+            'Xj_i', dtype='float64', direction=function.OUT,
+            description=(
+                "The fractional chemical abundance variable at the specified "
+                "zone/mesh-cell of the star."
+            )
+        )
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            The value was retrieved.
+        -1 - ERROR
+            A star with the given index was not found.
+        """
+        return function
+
+
+    @legacy_function
+    def get_mass_fraction_of_o16_at_zone():
+        """
+        Retrieve the fractional abundance of o16 at the specified
+        zone/mesh-cell of the star.
+        """
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
+        function.addParameter(
+            'index_of_the_star', dtype='int32', direction=function.IN,
+            description="The index of the star to get the value of")
+        function.addParameter(
+            'zone', dtype='int32', direction=function.IN,
+            description="The zone/mesh-cell of the star to get the value of")
+        function.addParameter(
+            'Xj_i', dtype='float64', direction=function.OUT,
+            description=(
+                "The fractional chemical abundance variable at the specified "
+                "zone/mesh-cell of the star."
+            )
+        )
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            The value was retrieved.
+        -1 - ERROR
+            A star with the given index was not found.
+        """
+        return function
+
+
+    @legacy_function
+    def get_mass_fraction_of_o17_at_zone():
+        """
+        Retrieve the fractional abundance of o17 at the specified
+        zone/mesh-cell of the star.
+        """
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
+        function.addParameter(
+            'index_of_the_star', dtype='int32', direction=function.IN,
+            description="The index of the star to get the value of")
+        function.addParameter(
+            'zone', dtype='int32', direction=function.IN,
+            description="The zone/mesh-cell of the star to get the value of")
+        function.addParameter(
+            'Xj_i', dtype='float64', direction=function.OUT,
+            description=(
+                "The fractional chemical abundance variable at the specified "
+                "zone/mesh-cell of the star."
+            )
+        )
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            The value was retrieved.
+        -1 - ERROR
+            A star with the given index was not found.
+        """
+        return function
+
+
+    @legacy_function
+    def get_mass_fraction_of_o18_at_zone():
+        """
+        Retrieve the fractional abundance of o18 at the specified
+        zone/mesh-cell of the star.
+        """
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
+        function.addParameter(
+            'index_of_the_star', dtype='int32', direction=function.IN,
+            description="The index of the star to get the value of")
+        function.addParameter(
+            'zone', dtype='int32', direction=function.IN,
+            description="The zone/mesh-cell of the star to get the value of")
+        function.addParameter(
+            'Xj_i', dtype='float64', direction=function.OUT,
+            description=(
+                "The fractional chemical abundance variable at the specified "
+                "zone/mesh-cell of the star."
+            )
+        )
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            The value was retrieved.
+        -1 - ERROR
+            A star with the given index was not found.
+        """
+        return function
+
+
+    @legacy_function
+    def get_mass_fraction_of_ne20_at_zone():
+        """
+        Retrieve the fractional abundance of ne20 at the specified
+        zone/mesh-cell of the star.
+        """
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
+        function.addParameter(
+            'index_of_the_star', dtype='int32', direction=function.IN,
+            description="The index of the star to get the value of")
+        function.addParameter(
+            'zone', dtype='int32', direction=function.IN,
+            description="The zone/mesh-cell of the star to get the value of")
+        function.addParameter(
+            'Xj_i', dtype='float64', direction=function.OUT,
+            description=(
+                "The fractional chemical abundance variable at the specified "
+                "zone/mesh-cell of the star."
+            )
+        )
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            The value was retrieved.
+        -1 - ERROR
+            A star with the given index was not found.
+        """
+        return function
+
+
+    @legacy_function
+    def get_mass_fraction_of_ne22_at_zone():
+        """
+        Retrieve the fractional abundance of ne22 at the specified
+        zone/mesh-cell of the star.
+        """
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
+        function.addParameter(
+            'index_of_the_star', dtype='int32', direction=function.IN,
+            description="The index of the star to get the value of")
+        function.addParameter(
+            'zone', dtype='int32', direction=function.IN,
+            description="The zone/mesh-cell of the star to get the value of")
+        function.addParameter(
+            'Xj_i', dtype='float64', direction=function.OUT,
+            description=(
+                "The fractional chemical abundance variable at the specified "
+                "zone/mesh-cell of the star."
+            )
+        )
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            The value was retrieved.
+        -1 - ERROR
+            A star with the given index was not found.
+        """
+        return function
+
+
+    @legacy_function
+    def get_mass_fraction_of_mg24_at_zone():
+        """
+        Retrieve the fractional abundance of mg24 at the specified
+        zone/mesh-cell of the star.
+        """
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
+        function.addParameter(
+            'index_of_the_star', dtype='int32', direction=function.IN,
+            description="The index of the star to get the value of")
+        function.addParameter(
+            'zone', dtype='int32', direction=function.IN,
+            description="The zone/mesh-cell of the star to get the value of")
+        function.addParameter(
+            'Xj_i', dtype='float64', direction=function.OUT,
+            description=(
+                "The fractional chemical abundance variable at the specified "
+                "zone/mesh-cell of the star."
+            )
+        )
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            The value was retrieved.
+        -1 - ERROR
+            A star with the given index was not found.
+        """
+        return function
+
+
+    @legacy_function
+    def get_mass_fraction_of_mg25_at_zone():
+        """
+        Retrieve the fractional abundance of mg25 at the specified
+        zone/mesh-cell of the star.
+        """
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
+        function.addParameter(
+            'index_of_the_star', dtype='int32', direction=function.IN,
+            description="The index of the star to get the value of")
+        function.addParameter(
+            'zone', dtype='int32', direction=function.IN,
+            description="The zone/mesh-cell of the star to get the value of")
+        function.addParameter(
+            'Xj_i', dtype='float64', direction=function.OUT,
+            description=(
+                "The fractional chemical abundance variable at the specified "
+                "zone/mesh-cell of the star."
+            )
+        )
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            The value was retrieved.
+        -1 - ERROR
+            A star with the given index was not found.
+        """
+        return function
+
+
+    @legacy_function
+    def get_mass_fraction_of_mg26_at_zone():
+        """
+        Retrieve the fractional abundance of mg26 at the specified
+        zone/mesh-cell of the star.
+        """
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
+        function.addParameter(
+            'index_of_the_star', dtype='int32', direction=function.IN,
+            description="The index of the star to get the value of")
+        function.addParameter(
+            'zone', dtype='int32', direction=function.IN,
+            description="The zone/mesh-cell of the star to get the value of")
+        function.addParameter(
+            'Xj_i', dtype='float64', direction=function.OUT,
+            description=(
+                "The fractional chemical abundance variable at the specified "
+                "zone/mesh-cell of the star."
+            )
+        )
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            The value was retrieved.
+        -1 - ERROR
+            A star with the given index was not found.
+        """
+        return function
+
+
+    @legacy_function
+    def get_mass_fraction_of_c14_at_zone():
+        """
+        Retrieve the fractional abundance of c14 at the specified
+        zone/mesh-cell of the star.
+        """
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
+        function.addParameter(
+            'index_of_the_star', dtype='int32', direction=function.IN,
+            description="The index of the star to get the value of")
+        function.addParameter(
+            'zone', dtype='int32', direction=function.IN,
+            description="The zone/mesh-cell of the star to get the value of")
+        function.addParameter(
+            'Xj_i', dtype='float64', direction=function.OUT,
+            description=(
+                "The fractional chemical abundance variable at the specified "
+                "zone/mesh-cell of the star."
+            )
+        )
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            The value was retrieved.
+        -1 - ERROR
+            A star with the given index was not found.
+        """
+        return function
+
+
+    @legacy_function
+    def get_mass_fraction_of_f18_at_zone():
+        """
+        Retrieve the fractional abundance of f18 at the specified
+        zone/mesh-cell of the star.
+        """
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
+        function.addParameter(
+            'index_of_the_star', dtype='int32', direction=function.IN,
+            description="The index of the star to get the value of")
+        function.addParameter(
+            'zone', dtype='int32', direction=function.IN,
+            description="The zone/mesh-cell of the star to get the value of")
+        function.addParameter(
+            'Xj_i', dtype='float64', direction=function.OUT,
+            description=(
+                "The fractional chemical abundance variable at the specified "
+                "zone/mesh-cell of the star."
+            )
+        )
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            The value was retrieved.
+        -1 - ERROR
+            A star with the given index was not found.
+        """
+        return function
+
+
+    @legacy_function
+    def get_mass_fraction_of_f19_at_zone():
+        """
+        Retrieve the fractional abundance of f19 at the specified
+        zone/mesh-cell of the star.
+        """
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
+        function.addParameter(
+            'index_of_the_star', dtype='int32', direction=function.IN,
+            description="The index of the star to get the value of")
+        function.addParameter(
+            'zone', dtype='int32', direction=function.IN,
+            description="The zone/mesh-cell of the star to get the value of")
+        function.addParameter(
+            'Xj_i', dtype='float64', direction=function.OUT,
+            description=(
+                "The fractional chemical abundance variable at the specified "
+                "zone/mesh-cell of the star."
+            )
+        )
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            The value was retrieved.
+        -1 - ERROR
+            A star with the given index was not found.
+        """
+        return function
+
+
+    @legacy_function
+    def get_mass_fraction_of_ne21_at_zone():
+        """
+        Retrieve the fractional abundance of ne21 at the specified
+        zone/mesh-cell of the star.
+        """
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
+        function.addParameter(
+            'index_of_the_star', dtype='int32', direction=function.IN,
+            description="The index of the star to get the value of")
+        function.addParameter(
+            'zone', dtype='int32', direction=function.IN,
+            description="The zone/mesh-cell of the star to get the value of")
+        function.addParameter(
+            'Xj_i', dtype='float64', direction=function.OUT,
+            description=(
+                "The fractional chemical abundance variable at the specified "
+                "zone/mesh-cell of the star."
+            )
+        )
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            The value was retrieved.
+        -1 - ERROR
+            A star with the given index was not found.
+        """
+        return function
+
+
+    @legacy_function
+    def get_mass_fraction_of_na23_at_zone():
+        """
+        Retrieve the fractional abundance of na23 at the specified
+        zone/mesh-cell of the star.
+        """
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
+        function.addParameter(
+            'index_of_the_star', dtype='int32', direction=function.IN,
+            description="The index of the star to get the value of")
+        function.addParameter(
+            'zone', dtype='int32', direction=function.IN,
+            description="The zone/mesh-cell of the star to get the value of")
+        function.addParameter(
+            'Xj_i', dtype='float64', direction=function.OUT,
+            description=(
+                "The fractional chemical abundance variable at the specified "
+                "zone/mesh-cell of the star."
+            )
+        )
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            The value was retrieved.
+        -1 - ERROR
+            A star with the given index was not found.
+        """
+        return function
+
+
+    @legacy_function
+    def get_mass_fraction_of_al26_at_zone():
+        """
+        Retrieve the fractional abundance of al26 at the specified
+        zone/mesh-cell of the star.
+        """
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
+        function.addParameter(
+            'index_of_the_star', dtype='int32', direction=function.IN,
+            description="The index of the star to get the value of")
+        function.addParameter(
+            'zone', dtype='int32', direction=function.IN,
+            description="The zone/mesh-cell of the star to get the value of")
+        function.addParameter(
+            'Xj_i', dtype='float64', direction=function.OUT,
+            description=(
+                "The fractional chemical abundance variable at the specified "
+                "zone/mesh-cell of the star."
+            )
+        )
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            The value was retrieved.
+        -1 - ERROR
+            A star with the given index was not found.
+        """
+        return function
+
+
+    @legacy_function
+    def get_mass_fraction_of_al27_at_zone():
+        """
+        Retrieve the fractional abundance of al27 at the specified
+        zone/mesh-cell of the star.
+        """
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
+        function.addParameter(
+            'index_of_the_star', dtype='int32', direction=function.IN,
+            description="The index of the star to get the value of")
+        function.addParameter(
+            'zone', dtype='int32', direction=function.IN,
+            description="The zone/mesh-cell of the star to get the value of")
+        function.addParameter(
+            'Xj_i', dtype='float64', direction=function.OUT,
+            description=(
+                "The fractional chemical abundance variable at the specified "
+                "zone/mesh-cell of the star."
+            )
+        )
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            The value was retrieved.
+        -1 - ERROR
+            A star with the given index was not found.
+        """
+        return function
+
+
+    @legacy_function
+    def get_mass_fraction_of_si28_at_zone():
+        """
+        Retrieve the fractional abundance of si28 at the specified
+        zone/mesh-cell of the star.
+        """
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
+        function.addParameter(
+            'index_of_the_star', dtype='int32', direction=function.IN,
+            description="The index of the star to get the value of")
+        function.addParameter(
+            'zone', dtype='int32', direction=function.IN,
+            description="The zone/mesh-cell of the star to get the value of")
+        function.addParameter(
+            'Xj_i', dtype='float64', direction=function.OUT,
+            description=(
+                "The fractional chemical abundance variable at the specified "
+                "zone/mesh-cell of the star."
+            )
+        )
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            The value was retrieved.
+        -1 - ERROR
+            A star with the given index was not found.
+        """
+        return function
+
+
+    @legacy_function
+    def get_mass_fraction_of_neut_at_zone():
+        """
+        Retrieve the fractional abundance of neut at the specified
+        zone/mesh-cell of the star.
+        """
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
+        function.addParameter(
+            'index_of_the_star', dtype='int32', direction=function.IN,
+            description="The index of the star to get the value of")
+        function.addParameter(
+            'zone', dtype='int32', direction=function.IN,
+            description="The zone/mesh-cell of the star to get the value of")
+        function.addParameter(
+            'Xj_i', dtype='float64', direction=function.OUT,
+            description=(
+                "The fractional chemical abundance variable at the specified "
+                "zone/mesh-cell of the star."
+            )
+        )
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            The value was retrieved.
+        -1 - ERROR
+            A star with the given index was not found.
+        """
+        return function
+
+
+    @legacy_function
+    def get_mass_fraction_of_prot_at_zone():
+        """
+        Retrieve the fractional abundance of prot at the specified
+        zone/mesh-cell of the star.
+        """
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
+        function.addParameter(
+            'index_of_the_star', dtype='int32', direction=function.IN,
+            description="The index of the star to get the value of")
+        function.addParameter(
+            'zone', dtype='int32', direction=function.IN,
+            description="The zone/mesh-cell of the star to get the value of")
+        function.addParameter(
+            'Xj_i', dtype='float64', direction=function.OUT,
+            description=(
+                "The fractional chemical abundance variable at the specified "
+                "zone/mesh-cell of the star."
+            )
+        )
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            The value was retrieved.
+        -1 - ERROR
+            A star with the given index was not found.
+        """
+        return function
+
+
+    @legacy_function
+    def get_mass_fraction_of_bid_at_zone():
+        """
+        Retrieve the fractional abundance of bid at the specified
+        zone/mesh-cell of the star.
+        """
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
+        function.addParameter(
+            'index_of_the_star', dtype='int32', direction=function.IN,
+            description="The index of the star to get the value of")
+        function.addParameter(
+            'zone', dtype='int32', direction=function.IN,
+            description="The zone/mesh-cell of the star to get the value of")
+        function.addParameter(
+            'Xj_i', dtype='float64', direction=function.OUT,
+            description=(
+                "The fractional chemical abundance variable at the specified "
+                "zone/mesh-cell of the star."
+            )
+        )
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            The value was retrieved.
+        -1 - ERROR
+            A star with the given index was not found.
+        """
+        return function
+
+
+    @legacy_function
+    def get_mass_fraction_of_bid1_at_zone():
+        """
+        Retrieve the fractional abundance of bid1 at the specified
+        zone/mesh-cell of the star.
+        """
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
+        function.addParameter(
+            'index_of_the_star', dtype='int32', direction=function.IN,
+            description="The index of the star to get the value of")
+        function.addParameter(
+            'zone', dtype='int32', direction=function.IN,
+            description="The zone/mesh-cell of the star to get the value of")
+        function.addParameter(
+            'Xj_i', dtype='float64', direction=function.OUT,
+            description=(
+                "The fractional chemical abundance variable at the specified "
+                "zone/mesh-cell of the star."
+            )
+        )
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            The value was retrieved.
+        -1 - ERROR
+            A star with the given index was not found.
+        """
+        return function
+
+
 class Genec(StellarEvolution, InternalStellarStructure):
 
     def __init__(self, **options):
         InCodeComponentImplementation.__init__(
             self,  GenecInterface(**options), **options)
+        # self.stopping_conditions = StoppingConditions(self)
         self.model_time = 0.0 | units.yr
 
     def define_parameters(self, handler):
@@ -4109,6 +4963,14 @@ class Genec(StellarEvolution, InternalStellarStructure):
             "GENEC parameter starname",
         )
 
+        handler.add_method_parameter(
+            "get_min_timestep_stop_condition",
+            "set_min_timestep_stop_condition",
+            "min_timestep_stop_condition",
+            "The minimum timestep stop condition",
+            default_value=1e-4 | units.julianyr
+        )
+
     def define_particle_sets(self, handler):
 
         # for particle_set in ['particles', 'fullparticles']:
@@ -4125,10 +4987,16 @@ class Genec(StellarEvolution, InternalStellarStructure):
             handler.add_getter(set_name, 'get_luminosity')
             handler.add_getter(set_name, 'get_temperature')
             handler.add_getter(set_name, 'get_time_step', names=('time_step',))
+            handler.add_getter(
+                set_name, 'get_number_of_zones', names=('n_zones',)
+            )
+            handler.add_getter(
+                set_name, 'get_number_of_species', names=('n_species',)
+            )
 
             # handler.add_method(set_name, 'get_number_of_zones')
             handler.add_method(set_name, 'get_number_of_zones')
-            
+
             # handler.add_method(set_name, 'get_radius_profile')
             # handler.add_method(set_name, 'get_temperature_profile')
             handler.add_method(set_name, 'get_luminosity_profile')
@@ -4139,37 +5007,234 @@ class Genec(StellarEvolution, InternalStellarStructure):
             handler.add_method(set_name, 'evolve_for')
             handler.set_delete(set_name, 'delete_star')
 
-        for particle_set in ["fullparticles",]:
             handler.add_gridded_getter(
-                particle_set,
+                set_name,
                 'get_radius_at_zone', 'get_firstlast_zone',
                 names=('radius_profile',)
             )
             handler.add_gridded_setter(
-                particle_set,
+                set_name,
                 'set_radius_at_zone', 'get_firstlast_zone',
                 names=('radius_profile',)
             )
             handler.add_gridded_getter(
-                particle_set,
+                set_name,
                 'get_temperature_at_zone', 'get_firstlast_zone',
                 names=('temperature_profile',)
             )
             handler.add_gridded_getter(
-                particle_set,
+                set_name,
                 'get_density_at_zone', 'get_firstlast_zone',
                 names=('density_profile',)
             )
             handler.add_gridded_getter(
-                particle_set,
+                set_name,
                 'get_luminosity_at_zone', 'get_firstlast_zone',
                 names=('luminosity_profile',)
             )
             handler.add_gridded_getter(
-                particle_set,
+                set_name,
                 'get_pressure_at_zone', 'get_firstlast_zone',
                 names=('pressure_profile',)
             )
+
+
+            handler.add_gridded_getter(
+                set_name,
+                'get_mass_fraction_of_h_at_zone',
+                'get_firstlast_zone',
+                names=('abundance_h',)
+            )
+
+            handler.add_gridded_getter(
+                set_name,
+                'get_mass_fraction_of_he3_at_zone',
+                'get_firstlast_zone',
+                names=('abundance_he3',)
+            )
+
+            handler.add_gridded_getter(
+                set_name,
+                'get_mass_fraction_of_he_at_zone',
+                'get_firstlast_zone',
+                names=('abundance_he',)
+            )
+
+            handler.add_gridded_getter(
+                set_name,
+                'get_mass_fraction_of_c12_at_zone',
+                'get_firstlast_zone',
+                names=('abundance_c12',)
+            )
+
+            handler.add_gridded_getter(
+                set_name,
+                'get_mass_fraction_of_c13_at_zone',
+                'get_firstlast_zone',
+                names=('abundance_c13',)
+            )
+
+            handler.add_gridded_getter(
+                set_name,
+                'get_mass_fraction_of_n14_at_zone',
+                'get_firstlast_zone',
+                names=('abundance_n14',)
+            )
+
+            handler.add_gridded_getter(
+                set_name,
+                'get_mass_fraction_of_n15_at_zone',
+                'get_firstlast_zone',
+                names=('abundance_n15',)
+            )
+
+            handler.add_gridded_getter(
+                set_name,
+                'get_mass_fraction_of_o16_at_zone',
+                'get_firstlast_zone',
+                names=('abundance_o16',)
+            )
+
+            handler.add_gridded_getter(
+                set_name,
+                'get_mass_fraction_of_o17_at_zone',
+                'get_firstlast_zone',
+                names=('abundance_o17',)
+            )
+
+            handler.add_gridded_getter(
+                set_name,
+                'get_mass_fraction_of_o18_at_zone',
+                'get_firstlast_zone',
+                names=('abundance_o18',)
+            )
+
+            handler.add_gridded_getter(
+                set_name,
+                'get_mass_fraction_of_ne20_at_zone',
+                'get_firstlast_zone',
+                names=('abundance_ne20',)
+            )
+
+            handler.add_gridded_getter(
+                set_name,
+                'get_mass_fraction_of_ne22_at_zone',
+                'get_firstlast_zone',
+                names=('abundance_ne22',)
+            )
+
+            handler.add_gridded_getter(
+                set_name,
+                'get_mass_fraction_of_mg24_at_zone',
+                'get_firstlast_zone',
+                names=('abundance_mg24',)
+            )
+
+            handler.add_gridded_getter(
+                set_name,
+                'get_mass_fraction_of_mg25_at_zone',
+                'get_firstlast_zone',
+                names=('abundance_mg25',)
+            )
+
+            handler.add_gridded_getter(
+                set_name,
+                'get_mass_fraction_of_mg26_at_zone',
+                'get_firstlast_zone',
+                names=('abundance_mg26',)
+            )
+
+            handler.add_gridded_getter(
+                set_name,
+                'get_mass_fraction_of_c14_at_zone',
+                'get_firstlast_zone',
+                names=('abundance_c14',)
+            )
+
+            handler.add_gridded_getter(
+                set_name,
+                'get_mass_fraction_of_f18_at_zone',
+                'get_firstlast_zone',
+                names=('abundance_f18',)
+            )
+
+            handler.add_gridded_getter(
+                set_name,
+                'get_mass_fraction_of_f19_at_zone',
+                'get_firstlast_zone',
+                names=('abundance_f19',)
+            )
+
+            handler.add_gridded_getter(
+                set_name,
+                'get_mass_fraction_of_ne21_at_zone',
+                'get_firstlast_zone',
+                names=('abundance_ne21',)
+            )
+
+            handler.add_gridded_getter(
+                set_name,
+                'get_mass_fraction_of_na23_at_zone',
+                'get_firstlast_zone',
+                names=('abundance_na23',)
+            )
+
+            handler.add_gridded_getter(
+                set_name,
+                'get_mass_fraction_of_al26_at_zone',
+                'get_firstlast_zone',
+                names=('abundance_al26',)
+            )
+
+            handler.add_gridded_getter(
+                set_name,
+                'get_mass_fraction_of_al27_at_zone',
+                'get_firstlast_zone',
+                names=('abundance_al27',)
+            )
+
+            handler.add_gridded_getter(
+                set_name,
+                'get_mass_fraction_of_si28_at_zone',
+                'get_firstlast_zone',
+                names=('abundance_si28',)
+            )
+
+            handler.add_gridded_getter(
+                set_name,
+                'get_mass_fraction_of_neut_at_zone',
+                'get_firstlast_zone',
+                names=('abundance_neut',)
+            )
+
+            handler.add_gridded_getter(
+                set_name,
+                'get_mass_fraction_of_prot_at_zone',
+                'get_firstlast_zone',
+                names=('abundance_prot',)
+            )
+
+            handler.add_gridded_getter(
+                set_name,
+                'get_mass_fraction_of_bid_at_zone',
+                'get_firstlast_zone',
+                names=('abundance_bid',)
+            )
+
+            handler.add_gridded_getter(
+                set_name,
+                'get_mass_fraction_of_bid1_at_zone',
+                'get_firstlast_zone',
+                names=('abundance_bid1',)
+            )
+
+            # for species in self.SPECIES_NAMES:
+            #     getter = f'get_{species}_at_zone'
+            #     handler.add_gridded_getter(
+            #         particle_set,
+            #         getter,
+            #         'get_firstlast_zone',
+            #     )
             # for species in species_name:
             #     handler.add_gridded_getter(
             #         particle_set,
@@ -4212,7 +5277,6 @@ class Genec(StellarEvolution, InternalStellarStructure):
         handler.add_method('RUN', 'get_pressure_at_zone')
         handler.add_method('RUN', 'get_radius')
         handler.add_method('RUN', 'get_radius_at_zone')
-        handler.add_method('RUN', 'set_radius_at_zone')
         handler.add_method('RUN', 'get_temperature_at_zone')
         handler.add_method('RUN', 'get_density_at_zone')
         handler.add_method('RUN', 'get_luminosity_at_zone')
@@ -4220,7 +5284,18 @@ class Genec(StellarEvolution, InternalStellarStructure):
         handler.add_method('RUN', 'get_time_step')
 
         # -> Update
-
+        handler.add_transition('RUN', 'UPDATE', 'finalize_stellar_model')
+        handler.add_method('UPDATE', 'set_chemical_abundance_profiles')
+        handler.add_method('UPDATE', 'set_mass_fraction_of_species_at_zone')
+        handler.add_method('UPDATE', 'set_number_of_zones')
+        # handler.add_method('UPDATE', 'set_radius')
+        handler.add_method('UPDATE', 'set_radius_at_zone')
+        handler.add_method('UPDATE', 'set_temperature_at_zone')
+        handler.add_method('UPDATE', 'set_density_at_zone')
+        handler.add_method('UPDATE', 'set_luminosity_at_zone')
+        handler.add_method('UPDATE', 'set_mass_fraction_at_zone')
+        # handler.add_method('UPDATE', 'set_time_step')
+        handler.add_transition('UPDATE', 'RUN', 'recommit_particles')
         # -> Run (recommit_particles)
 
         handler.add_method('UPDATE', 'set_starname')

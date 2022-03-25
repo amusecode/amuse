@@ -2296,7 +2296,276 @@ function get_name_of_species(index_of_the_star, species, species_name)
     !xXXYY: as above
     get_name_of_species = 0
 end function
-! 
+
+function get_mass_fraction_of_h_at_zone(index_of_the_star, zone, Xj_i)
+    implicit none
+    integer:: index_of_the_star, zone
+    double precision:: Xj_i
+    integer:: get_mass_fraction_of_species_at_zone
+    integer:: get_mass_fraction_of_h_at_zone
+    get_mass_fraction_of_h_at_zone = get_mass_fraction_of_species_at_zone(index_of_the_star, 1, zone, Xj_i)
+end function
+
+
+function get_mass_fraction_of_he3_at_zone(index_of_the_star, zone, Xj_i)
+    implicit none
+    integer:: index_of_the_star, zone
+    double precision:: Xj_i
+    integer:: get_mass_fraction_of_species_at_zone
+    integer:: get_mass_fraction_of_he3_at_zone
+    get_mass_fraction_of_he3_at_zone = get_mass_fraction_of_species_at_zone(index_of_the_star, 2, zone, Xj_i)
+end function
+
+
+function get_mass_fraction_of_he_at_zone(index_of_the_star, zone, Xj_i)
+    implicit none
+    integer:: index_of_the_star, zone
+    double precision:: Xj_i
+    integer:: get_mass_fraction_of_species_at_zone
+    integer:: get_mass_fraction_of_he_at_zone
+    get_mass_fraction_of_he_at_zone = get_mass_fraction_of_species_at_zone(index_of_the_star, 3, zone, Xj_i)
+end function
+
+
+function get_mass_fraction_of_c12_at_zone(index_of_the_star, zone, Xj_i)
+    implicit none
+    integer:: index_of_the_star, zone
+    double precision:: Xj_i
+    integer:: get_mass_fraction_of_species_at_zone
+    integer:: get_mass_fraction_of_c12_at_zone
+    get_mass_fraction_of_c12_at_zone = get_mass_fraction_of_species_at_zone(index_of_the_star, 4, zone, Xj_i)
+end function
+
+
+function get_mass_fraction_of_c13_at_zone(index_of_the_star, zone, Xj_i)
+    implicit none
+    integer:: index_of_the_star, zone
+    double precision:: Xj_i
+    integer:: get_mass_fraction_of_species_at_zone
+    integer:: get_mass_fraction_of_c13_at_zone
+    get_mass_fraction_of_c13_at_zone = get_mass_fraction_of_species_at_zone(index_of_the_star, 5, zone, Xj_i)
+end function
+
+
+function get_mass_fraction_of_n14_at_zone(index_of_the_star, zone, Xj_i)
+    implicit none
+    integer:: index_of_the_star, zone
+    double precision:: Xj_i
+    integer:: get_mass_fraction_of_species_at_zone
+    integer:: get_mass_fraction_of_n14_at_zone
+    get_mass_fraction_of_n14_at_zone = get_mass_fraction_of_species_at_zone(index_of_the_star, 6, zone, Xj_i)
+end function
+
+
+function get_mass_fraction_of_n15_at_zone(index_of_the_star, zone, Xj_i)
+    implicit none
+    integer:: index_of_the_star, zone
+    double precision:: Xj_i
+    integer:: get_mass_fraction_of_species_at_zone
+    integer:: get_mass_fraction_of_n15_at_zone
+    get_mass_fraction_of_n15_at_zone = get_mass_fraction_of_species_at_zone(index_of_the_star, 7, zone, Xj_i)
+end function
+
+
+function get_mass_fraction_of_o16_at_zone(index_of_the_star, zone, Xj_i)
+    implicit none
+    integer:: index_of_the_star, zone
+    double precision:: Xj_i
+    integer:: get_mass_fraction_of_species_at_zone
+    integer:: get_mass_fraction_of_o16_at_zone
+    get_mass_fraction_of_o16_at_zone = get_mass_fraction_of_species_at_zone(index_of_the_star, 8, zone, Xj_i)
+end function
+
+
+function get_mass_fraction_of_o17_at_zone(index_of_the_star, zone, Xj_i)
+    implicit none
+    integer:: index_of_the_star, zone
+    double precision:: Xj_i
+    integer:: get_mass_fraction_of_species_at_zone
+    integer:: get_mass_fraction_of_o17_at_zone
+    get_mass_fraction_of_o17_at_zone = get_mass_fraction_of_species_at_zone(index_of_the_star, 9, zone, Xj_i)
+end function
+
+
+function get_mass_fraction_of_o18_at_zone(index_of_the_star, zone, Xj_i)
+    implicit none
+    integer:: index_of_the_star, zone
+    double precision:: Xj_i
+    integer:: get_mass_fraction_of_species_at_zone
+    integer:: get_mass_fraction_of_o18_at_zone
+    get_mass_fraction_of_o18_at_zone = get_mass_fraction_of_species_at_zone(index_of_the_star, 10, zone, Xj_i)
+end function
+
+
+function get_mass_fraction_of_ne20_at_zone(index_of_the_star, zone, Xj_i)
+    implicit none
+    integer:: index_of_the_star, zone
+    double precision:: Xj_i
+    integer:: get_mass_fraction_of_species_at_zone
+    integer:: get_mass_fraction_of_ne20_at_zone
+    get_mass_fraction_of_ne20_at_zone = get_mass_fraction_of_species_at_zone(index_of_the_star, 11, zone, Xj_i)
+end function
+
+
+function get_mass_fraction_of_ne22_at_zone(index_of_the_star, zone, Xj_i)
+    implicit none
+    integer:: index_of_the_star, zone
+    double precision:: Xj_i
+    integer:: get_mass_fraction_of_species_at_zone
+    integer:: get_mass_fraction_of_ne22_at_zone
+    get_mass_fraction_of_ne22_at_zone = get_mass_fraction_of_species_at_zone(index_of_the_star, 12, zone, Xj_i)
+end function
+
+
+function get_mass_fraction_of_mg24_at_zone(index_of_the_star, zone, Xj_i)
+    implicit none
+    integer:: index_of_the_star, zone
+    double precision:: Xj_i
+    integer:: get_mass_fraction_of_species_at_zone
+    integer:: get_mass_fraction_of_mg24_at_zone
+    get_mass_fraction_of_mg24_at_zone = get_mass_fraction_of_species_at_zone(index_of_the_star, 13, zone, Xj_i)
+end function
+
+
+function get_mass_fraction_of_mg25_at_zone(index_of_the_star, zone, Xj_i)
+    implicit none
+    integer:: index_of_the_star, zone
+    double precision:: Xj_i
+    integer:: get_mass_fraction_of_species_at_zone
+    integer:: get_mass_fraction_of_mg25_at_zone
+    get_mass_fraction_of_mg25_at_zone = get_mass_fraction_of_species_at_zone(index_of_the_star, 14, zone, Xj_i)
+end function
+
+
+function get_mass_fraction_of_mg26_at_zone(index_of_the_star, zone, Xj_i)
+    implicit none
+    integer:: index_of_the_star, zone
+    double precision:: Xj_i
+    integer:: get_mass_fraction_of_species_at_zone
+    integer:: get_mass_fraction_of_mg26_at_zone
+    get_mass_fraction_of_mg26_at_zone = get_mass_fraction_of_species_at_zone(index_of_the_star, 15, zone, Xj_i)
+end function
+
+
+function get_mass_fraction_of_c14_at_zone(index_of_the_star, zone, Xj_i)
+    implicit none
+    integer:: index_of_the_star, zone
+    double precision:: Xj_i
+    integer:: get_mass_fraction_of_species_at_zone
+    integer:: get_mass_fraction_of_c14_at_zone
+    get_mass_fraction_of_c14_at_zone = get_mass_fraction_of_species_at_zone(index_of_the_star, 16, zone, Xj_i)
+end function
+
+
+function get_mass_fraction_of_f18_at_zone(index_of_the_star, zone, Xj_i)
+    implicit none
+    integer:: index_of_the_star, zone
+    double precision:: Xj_i
+    integer:: get_mass_fraction_of_species_at_zone
+    integer:: get_mass_fraction_of_f18_at_zone
+    get_mass_fraction_of_f18_at_zone = get_mass_fraction_of_species_at_zone(index_of_the_star, 17, zone, Xj_i)
+end function
+
+
+function get_mass_fraction_of_f19_at_zone(index_of_the_star, zone, Xj_i)
+    implicit none
+    integer:: index_of_the_star, zone
+    double precision:: Xj_i
+    integer:: get_mass_fraction_of_species_at_zone
+    integer:: get_mass_fraction_of_f19_at_zone
+    get_mass_fraction_of_f19_at_zone = get_mass_fraction_of_species_at_zone(index_of_the_star, 18, zone, Xj_i)
+end function
+
+
+function get_mass_fraction_of_ne21_at_zone(index_of_the_star, zone, Xj_i)
+    implicit none
+    integer:: index_of_the_star, zone
+    double precision:: Xj_i
+    integer:: get_mass_fraction_of_species_at_zone
+    integer:: get_mass_fraction_of_ne21_at_zone
+    get_mass_fraction_of_ne21_at_zone = get_mass_fraction_of_species_at_zone(index_of_the_star, 19, zone, Xj_i)
+end function
+
+
+function get_mass_fraction_of_na23_at_zone(index_of_the_star, zone, Xj_i)
+    implicit none
+    integer:: index_of_the_star, zone
+    double precision:: Xj_i
+    integer:: get_mass_fraction_of_species_at_zone
+    integer:: get_mass_fraction_of_na23_at_zone
+    get_mass_fraction_of_na23_at_zone = get_mass_fraction_of_species_at_zone(index_of_the_star, 20, zone, Xj_i)
+end function
+
+
+function get_mass_fraction_of_al26_at_zone(index_of_the_star, zone, Xj_i)
+    implicit none
+    integer:: index_of_the_star, zone
+    double precision:: Xj_i
+    integer:: get_mass_fraction_of_species_at_zone
+    integer:: get_mass_fraction_of_al26_at_zone
+    get_mass_fraction_of_al26_at_zone = get_mass_fraction_of_species_at_zone(index_of_the_star, 21, zone, Xj_i)
+end function
+
+
+function get_mass_fraction_of_al27_at_zone(index_of_the_star, zone, Xj_i)
+    implicit none
+    integer:: index_of_the_star, zone
+    double precision:: Xj_i
+    integer:: get_mass_fraction_of_species_at_zone
+    integer:: get_mass_fraction_of_al27_at_zone
+    get_mass_fraction_of_al27_at_zone = get_mass_fraction_of_species_at_zone(index_of_the_star, 22, zone, Xj_i)
+end function
+
+
+function get_mass_fraction_of_si28_at_zone(index_of_the_star, zone, Xj_i)
+    implicit none
+    integer:: index_of_the_star, zone
+    double precision:: Xj_i
+    integer:: get_mass_fraction_of_species_at_zone
+    integer:: get_mass_fraction_of_si28_at_zone
+    get_mass_fraction_of_si28_at_zone = get_mass_fraction_of_species_at_zone(index_of_the_star, 23, zone, Xj_i)
+end function
+
+
+function get_mass_fraction_of_neut_at_zone(index_of_the_star, zone, Xj_i)
+    implicit none
+    integer:: index_of_the_star, zone
+    double precision:: Xj_i
+    integer:: get_mass_fraction_of_species_at_zone
+    integer:: get_mass_fraction_of_neut_at_zone
+    get_mass_fraction_of_neut_at_zone = get_mass_fraction_of_species_at_zone(index_of_the_star, 24, zone, Xj_i)
+end function
+
+
+function get_mass_fraction_of_prot_at_zone(index_of_the_star, zone, Xj_i)
+    implicit none
+    integer:: index_of_the_star, zone
+    double precision:: Xj_i
+    integer:: get_mass_fraction_of_species_at_zone
+    integer:: get_mass_fraction_of_prot_at_zone
+    get_mass_fraction_of_prot_at_zone = get_mass_fraction_of_species_at_zone(index_of_the_star, 25, zone, Xj_i)
+end function
+
+
+function get_mass_fraction_of_bid_at_zone(index_of_the_star, zone, Xj_i)
+    implicit none
+    integer:: index_of_the_star, zone
+    double precision:: Xj_i
+    integer:: get_mass_fraction_of_species_at_zone
+    integer:: get_mass_fraction_of_bid_at_zone
+    get_mass_fraction_of_bid_at_zone = get_mass_fraction_of_species_at_zone(index_of_the_star, 26, zone, Xj_i)
+end function
+
+
+function get_mass_fraction_of_bid1_at_zone(index_of_the_star, zone, Xj_i)
+    implicit none
+    integer:: index_of_the_star, zone
+    double precision:: Xj_i
+    integer:: get_mass_fraction_of_species_at_zone
+    integer:: get_mass_fraction_of_bid1_at_zone
+    get_mass_fraction_of_bid1_at_zone = get_mass_fraction_of_species_at_zone(index_of_the_star, 27, zone, Xj_i)
+end function
+
 function get_number_of_particles()
     implicit none
     integer:: get_number_of_particles
