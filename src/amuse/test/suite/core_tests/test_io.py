@@ -2,6 +2,7 @@ from amuse.test import amusetest
 from amuse.support.exceptions import AmuseException
 
 import os
+import tempfile
 from amuse import io
 from amuse.io import base
 from amuse.units import nbody_system
@@ -402,3 +403,28 @@ class FormatTests(amusetest.TestCase):
             options = base.get_options_for_format('txt')
             self.assertTrue(len(options) >= 0)
 
+    def test_hdf5_compressed(self):
+        options = {
+            "version": "2.0",
+            "compression": "gzip",
+            "compression_opts": 5,
+        }
+        with tempfile.NamedTemporaryFile() as tmp:
+            filename = tmp.name
+            x = datamodel.Particles(2)
+            x.mass = [1.0, 2.0] | units.kg
+            io.write_set_to_file(x, filename, "hdf5", **options, overwrite_file=True)
+            x.mass = [10.0, 20.0] | units.kg
+            io.write_set_to_file(x, filename, "hdf5", append_to_file=True, **options)
+            x.mass = [100.0, 200.0] | units.kg
+            io.write_set_to_file(x, filename, "hdf5", append_to_file=True, **options)
+            y = io.read_set_from_file(filename, "hdf5", copy_history=False, close_file=False)
+            self.assertAlmostEqual(x.mass, y.mass, 8)
+            self.assertAlmostEqual([10.0, 20.0] | units.kg, y.previous_state().mass, 8)
+            self.assertAlmostEqual([1.0, 2.0] | units.kg, y.previous_state().previous_state().mass, 8)
+            self.assertEqual(y.previous_state().previous_state().previous_state(), None)
+            
+            io.write_set_to_file(x, filename, "hdf5", append_to_file=False, overwrite_file=True, **options)
+            y = io.read_set_from_file(filename, "hdf5")
+            self.assertAlmostEqual(x.mass, y.mass, 8)
+            self.assertEqual(y.previous_state().previous_state(), None)
