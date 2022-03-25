@@ -4,7 +4,7 @@ import time
 from amuse.datamodel import Particle
 from amuse.units import units
 from amuse.community.genec import Genec
-from amuse.io import write_set_to_file
+from amuse.io import write_set_to_file, read_set_from_file
 from amuse.support.console import set_printing_strategy
 
 import matplotlib.pyplot as plt
@@ -14,12 +14,8 @@ from plot_models import StellarModelPlot
 def write_backup(
     step,
     star,
-    # density,
-    # radius,
-    # temperature,
-    # luminosity,
-    # pressure,
     abundances,
+    append=True,
 ):
     # GENEC reads the following on a restore/resume:
     #   gms,alter,gls,teff,glsv,teffv,dzeitj,dzeit,dzeitv,xmini,ab,dm_lost,m,(q(i),p(i),t(i),r(i),s(i),x(i),y(i),&
@@ -46,27 +42,22 @@ def write_backup(
     #     read(51) period,r_core,vna,vnr
     #   endif
 
+    if append:
+        filename = f'star-{star.key}.amuse'
+    else:
+        filename = f'star-{star.key}-{step}.amuse'
     write_set_to_file(
         star.as_set(),
-        f'star-{star.key}-{step}.amuse'
+        filename,
+        timestamp=star.age if append else None,
+        append_to_file=append,
     )
-    # units = dict()
-    # units['density'] = f'{density.unit}'
-    # units['radius'] = f'{radius.unit}'
-    # units['temperature'] = f'{temperature.unit}'
-    # units['luminosity'] = f'{luminosity.unit}'
-    # units['pressure'] = f'{pressure.unit}'
-    
-    numpy.savez_compressed(
-        f'star-abundances-{star.key}-{step}.npz',
-        # units=units,
-        # density=density.value_in(density.unit),
-        # radius=radius.value_in(radius.unit),
-        # temperature=temperature.value_in(temperature.unit),
-        # luminosity=luminosity.value_in(luminosity.unit),
-        # pressure=pressure.value_in(pressure.unit),
-        abundances=abundances,
-    )
+
+    # For now, abundances aren't part of the single star particle
+    # numpy.savez_compressed(
+    #     f'star-abundances-{star.key}-{step}.npz',
+    #     abundances=abundances,
+    # )
     return
 
 
@@ -103,10 +94,10 @@ font = {
 plt.rc('font', **font)
 plt.ion()
 
-save_every = 1000
-store_every = 1
-plot_time = 1 | units.s
-plot_models = 20
+save_every = 10
+store_every = 10
+plot_time = 5 | units.s
+plot_models = 100
 step = 0
 
 model_of_last_save = 0
@@ -139,6 +130,7 @@ while True:
         star.radius.in_(units.RSun),
         star.temperature.in_(units.K),
         star.luminosity.in_(units.LSun),
+        evo.parameters.phase,
     )
     if step % store_every == 0:
         plotting.update(star_in_evo)
@@ -169,3 +161,10 @@ while True:
 
     star_in_evo.evolve_one_step()
     step += 1
+
+
+def read_saved_star_timeline(star_key):
+    star = read_set_from_file(f'star-{star_key}.amuse')[0]
+    age, radius = star.get_timeline_of_attribute_as_vector('radius')
+    print(age.in_(units.yr))
+    print(radius.in_(units.RSun))
