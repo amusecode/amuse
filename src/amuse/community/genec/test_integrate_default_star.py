@@ -94,8 +94,8 @@ font = {
 plt.rc('font', **font)
 plt.ion()
 
-save_every = 10
-store_every = 10
+save_every = 1
+store_every = 1
 plot_time = 5 | units.s
 plot_models = 100
 step = 0
@@ -133,7 +133,7 @@ while True:
         evo.parameters.phase,
     )
     if step % store_every == 0:
-        plotting.update(star_in_evo)
+        plotting.update(star_in_evo, phase=evo.parameters.phase)
     if (
         (time_elapsed - time_of_last_plot) > plot_time
         or step - model_of_last_plot > plot_models

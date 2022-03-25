@@ -15,6 +15,7 @@ class StellarModelPlot:
             'density': units.g * units.cm**-3,
         }
         self.star = star
+        self.__phase = 1
         self.__age = [] | self.default_units['age']
         self.__mass = [] | self.default_units['mass']
         self.__radius = [] | self.default_units['radius']
@@ -52,8 +53,9 @@ class StellarModelPlot:
         self.update(star)
         self.plot_all()
 
-    def update(self, star):
+    def update(self, star, phase=1):
         self.star = star
+        self.__phase = phase
         self.__age.append(star.age)
         self.__mass.append(star.mass)
         self.__radius.append(star.radius)
