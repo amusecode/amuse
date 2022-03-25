@@ -11,6 +11,13 @@ import matplotlib.pyplot as plt
 from plot_models import StellarModelPlot
 
 
+def read_saved_star_timeline(star_key):
+    star = read_set_from_file(f'star-{star_key}.amuse')[0]
+    age, radius = star.get_timeline_of_attribute_as_vector('radius')
+    print(age.in_(units.yr))
+    print(radius.in_(units.RSun))
+
+
 def write_backup(
     step,
     star,
@@ -51,6 +58,7 @@ def write_backup(
         filename,
         timestamp=star.age if append else None,
         append_to_file=append,
+        compression=True,
     )
 
     # For now, abundances aren't part of the single star particle
@@ -108,7 +116,7 @@ age_of_last_plot = star_in_evo.age
 
 plotting = StellarModelPlot(star_in_evo)
 
-while True:
+while step < 500:
     time_elapsed = (time.time() | units.s) - time_start
     star = star_in_evo.copy()
     # number_of_zones = star_in_evo.get_number_of_zones()
@@ -163,8 +171,4 @@ while True:
     step += 1
 
 
-def read_saved_star_timeline(star_key):
-    star = read_set_from_file(f'star-{star_key}.amuse')[0]
-    age, radius = star.get_timeline_of_attribute_as_vector('radius')
-    print(age.in_(units.yr))
-    print(radius.in_(units.RSun))
+print(f"Running {step} models took {(time.time() | units.s) - time_start}")
