@@ -28,6 +28,7 @@ class ArepoInterface(
     def __init__(self, **keyword_arguments):
         CodeInterface.__init__(self, name_of_the_worker="arepo_worker", **keyword_arguments)
         LiteratureReferencesMixIn.__init__(self)
+        # TODO: Determine whether need to inherit from CodeWithDataDirectories.
 
     @legacy_function
     def echo_int():
