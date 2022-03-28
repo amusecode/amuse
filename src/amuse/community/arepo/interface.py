@@ -1,6 +1,6 @@
 from amuse.community import *
 
-class arepoInterface(CodeInterface):
+class ArepoInterface(CodeInterface):
     
     include_headers = ['worker_code.h']
     
@@ -17,8 +17,8 @@ class arepoInterface(CodeInterface):
         return function
         
     
-class arepo(InCodeComponentImplementation):
+class Arepo(InCodeComponentImplementation):
 
     def __init__(self, **options):
-        InCodeComponentImplementation.__init__(self,  arepoInterface(**options), **options)
+        InCodeComponentImplementation.__init__(self,  ArepoInterface(**options), **options)
     
