@@ -1,6 +1,6 @@
-GSL_INCL  = -I/opt/Homebrew/include  # TODO: Need to make GSL_INCL generalisable.
+GSL_FLAGS  = -I/opt/Homebrew/include  # TODO: Need to make GSL_FLAGS generalisable.
 
-CFLAGS   += -Wall -g $(GSL_INCL)
+CFLAGS   += -Wall -g $(GSL_FLAGS)
 CXXFLAGS += $(CFLAGS) 
 LDFLAGS  += -lm $(MUSE_LD_FLAGS)
 
