@@ -12,6 +12,16 @@ class ArepoInterface(
     GravitationalDynamicsInterface,
     LiteratureReferencesMixIn
 ):
+    """
+    Arepo is a cosmological magnetohydrodynamical moving-mesh simulation code,
+    descended from GADGET.
+
+    References:
+        .. [#] Springel, V., 2010, MNRAS, 401, 791 (Arepo) [2010MNRAS.401..791S]
+        .. [#] Pakmor, R., Bauer, A., Springel, V., 2011, MNRAS, 418, 1392 (Magnetohydrodynamics Module) [2011MNRAS.418.1392P]
+        .. [#] Pakmor, R. et al., 2016, MNRAS, 455, 1134 (Gradient Estimation) [2016MNRAS.455.1134P]
+        .. [#] Weinberger, R., Springel, V., Pakmor, R., 2020, ApJS, 248, 32 (Public Code Release) [2020ApJS..248...32W]
+    """
 
     include_headers = ["worker_code.h"]
 
