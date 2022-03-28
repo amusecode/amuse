@@ -31,12 +31,10 @@ class ArepoInterface(
         # TODO: Determine whether need to inherit from CodeWithDataDirectories.
 
     @legacy_function
-    def echo_int():
+    def set_parameters():
         function = LegacyFunctionSpecification()
-        function.addParameter("int_in", dtype="int32", direction=function.IN)
-        function.addParameter("int_out", dtype="int32", direction=function.OUT)
+        function.addParameter("param_file", dtype="string", direction=function.IN)
         function.result_type = "int32"
-        function.can_handle_array = True
         return function
 
 
