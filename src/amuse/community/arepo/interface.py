@@ -1,6 +1,7 @@
 from amuse.community import *
+from amuse.community.interface.gd import GravitationalDynamicsInterface
 
-class ArepoInterface(CodeInterface):
+class ArepoInterface(CodeInterface, GravitationalDynamicsInterface):
     
     include_headers = ['worker_code.h']
     
