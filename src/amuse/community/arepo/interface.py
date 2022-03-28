@@ -1,4 +1,8 @@
-from amuse.community import *
+from amuse.community import CodeInterface
+from amuse.community import LegacyFunctionSpecification
+from amuse.community import legacy_function
+from amuse.community import LiteratureReferencesMixIn
+
 from amuse.community.interface.gd import GravitationalDynamicsInterface
 
 class ArepoInterface(
