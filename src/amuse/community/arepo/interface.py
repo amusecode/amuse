@@ -4,6 +4,7 @@ from amuse.community import legacy_function
 from amuse.community import LiteratureReferencesMixIn
 
 from amuse.community.interface.gd import GravitationalDynamicsInterface
+from amuse.community.interface.gd import GravitationalDynamics
 
 class ArepoInterface(
     CodeInterface,
@@ -26,8 +27,8 @@ class ArepoInterface(
         return function
         
     
-class Arepo(InCodeComponentImplementation):
+class Arepo(GravitationalDynamics):
 
     def __init__(self, **options):
-        InCodeComponentImplementation.__init__(self,  ArepoInterface(**options), **options)
+        GravitationalDynamics.__init__(self,  ArepoInterface(**options), **options)
     
