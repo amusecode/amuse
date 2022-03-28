@@ -1,3 +1,8 @@
+ifeq ($(origin AMUSE_DIR), undefined)
+	AMUSE_DIR := $(shell amusifier --get-amuse-dir)
+endif
+-include $(AMUSE_DIR)/config.mk
+
 GSL_FLAGS  = -I/opt/Homebrew/include  # TODO: Need to make GSL_FLAGS generalisable.
 
 CFLAGS   += -Wall -g $(GSL_FLAGS)
