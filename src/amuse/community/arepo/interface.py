@@ -1,12 +1,16 @@
 from amuse.community import *
 from amuse.community.interface.gd import GravitationalDynamicsInterface
 
-class ArepoInterface(CodeInterface, GravitationalDynamicsInterface):
+class ArepoInterface(
+    CodeInterface,
+    GravitationalDynamicsInterface,
+    LiteratureReferencesMixIn):
     
     include_headers = ['worker_code.h']
     
     def __init__(self, **keyword_arguments):
         CodeInterface.__init__(self, name_of_the_worker="arepo_worker", **keyword_arguments)
+        LiteratureReferencesMixIn.__init__(self)
     
     @legacy_function
     def echo_int():
