@@ -8,6 +8,7 @@ from amuse.io import write_set_to_file, read_set_from_file
 from amuse.support.console import set_printing_strategy
 
 import matplotlib.pyplot as plt
+import matplotlib.animation as animation
 from plot_models import StellarModelPlot
 
 
@@ -68,7 +69,7 @@ def write_backup(
     # )
     return
 
-
+ROTATING_STAR = True
 MASS_UNIT = units.MSun
 LENGTH_UNIT = units.RSun
 TIME_UNIT = units.Myr
@@ -94,12 +95,113 @@ set_printing_strategy(
 star = Particle(mass=7.0 | units.MSun, metallicity=0.014)
 evo = Genec(redirection="none")
 # evo = Genec()
+if ROTATING_STAR:
+    params = {
+        'vwant': 0.4,
+        'irot': 1,
+        'isol': 1,
+        'icoeff': 11,
+        'omega': 1e-5,
+        'fitm': 0.999,
+        'fitmi': 0.999,
+        'ifitm': 3,
+        # PhysicsParams
+        'irot': 1,
+        'isol': 1,
+        'imagn': 0,
+        'ialflu': 0,
+        'ianiso': 0,
+        'ipop3': 0,
+        'ibasnet': 0,
+        'phase': 1,
+        'var_rates': False,
+        'bintide': False,
+        # 'binM2': 0.00E+00,
+        'periodini': 0.00E+00,
+        'const_per': True,
+        # CompositionParams
+        'zinit':  1.40E-02,
+        'zsol':  0.140e-01,
+        'z': 0.261956006494962e-02,
+        'iopac': 3,
+        'ikappa': 5,
+        # RotationParams
+        'idiff': 0,
+        'iadvec': 0,
+        'istati': 0,
+        'icoeff': 11,
+        'fenerg': 0.100e+01,
+        'richac': 0.100e+01,
+        'igamma': 0,
+        'frein': 0.000e+00,
+        'K_Kawaler': 0.000e+00,
+        'Omega_saturation': 0.140e+02,
+        'rapcrilim': 0.99000,
+        'vwant': 0.400e+00,
+        'xfom': 0.100e+01,
+        'omega': 1.000000000000000E-05,
+        'xdial': 0.000,
+        'idialo': 0,
+        'idialu': 0,
+        'Add_Flux': True,
+        'diff_only': False,
+        'B_initial': 0.000e+00,
+        'add_diff': 0.000e+00,
+        # SurfaceParams
+        'imloss': 6,
+        'fmlos': 0.850e+00,
+        # 'RSG_Mdot': 0,
+        # 'noSupraEddMdot': False,
+        # 'Be_mdotfrac': 0.00,
+        # 'start_mdot': 0.80,
+        'ifitm': 3,
+        'fitmi': 0.999000000,
+        'fitm': 0.999000000,
+        'deltal': 0.02000,
+        'deltat': 0.02000,
+        'nndr': 1,
+        # ConvectionParams
+        'iledou': 0,
+        'idifcon': 0,
+        'elph': 1.600,
+        'my': 0,
+        'iover': 1,
+        'dovhp': 0.100,
+        'iunder': 0,
+        'dunder': 0.000,
+        # ConvergenceParams
+        'gkorm': 9.000,
+        'alph': 0.300,
+        'agdr': 0.10e-04,
+        'faktor': 1.00E+00,
+        'dgrp': 0.0100,
+        'dgrl': 0.0100,
+        'dgry': 0.00300,
+        'dgrc': 0.01000,
+        'dgro': 0.01000,
+        'dgr20':  0.100e-01,
+        'nbchx': 200,
+        'nrband': 1,
+        # TimeControle
+        'islow': 2,
+        'xcn': 1.000,
+        'icncst': 0,
+        'tauH_fit': 1,
+    }
+evo.parameters.vwant = 0.4
+print(evo.parameters.irot)
 star_in_evo = evo.fullparticles.add_particle(star)
-
+# for p in params.items():
+#     setattr(evo.parameters, p[0], p[1])
+evo.commit_particles()
+print(evo.parameters)
+# print(star_in_evo)
+#exit()
 font = {
     'size': 8,
 }
 plt.rc('font', **font)
+# iplt.switch_backend('macosx')
 plt.ion()
 
 save_every = 1
@@ -116,7 +218,7 @@ age_of_last_plot = star_in_evo.age
 
 plotting = StellarModelPlot(star_in_evo)
 
-while step < 500:
+while True:
     time_elapsed = (time.time() | units.s) - time_start
     star = star_in_evo.copy()
     # number_of_zones = star_in_evo.get_number_of_zones()
@@ -170,5 +272,7 @@ while step < 500:
     star_in_evo.evolve_one_step()
     step += 1
 
-
-print(f"Running {step} models took {(time.time() | units.s) - time_start}")
+runtime = (time.time() | units.s) - time_start
+print(
+    f"Running {step} models took {runtime.value_in(units.minute)} minutes"
+)

@@ -1,3 +1,4 @@
+import time
 import numpy
 import matplotlib
 import matplotlib.pyplot as plt
@@ -52,6 +53,7 @@ class StellarModelPlot:
         # self.__ax_hr = fig.add_subplot(2, 2, 1)
         self.update(star)
         self.plot_all()
+        plt.pause(0.01)
 
     def update(self, star, phase=1):
         self.star = star
@@ -149,6 +151,8 @@ class StellarModelPlot:
         offsets[:, 0] = [numpy.log10(self.star.temperature.value_in(unit_temp))]
         offsets[:, 1] = [numpy.log10(self.star.luminosity.value_in(unit_lum))]
         self.__hr_star.set_offsets(offsets)
+        # fig = self.__figures
+        # fig.canvas.draw_idle()
 
     def initialise_temp_dens(self):
         title = 'temp_dens'
@@ -394,5 +398,8 @@ class StellarModelPlot:
 
         self.draw(speed=speed, step=step)
         plt.tight_layout()
+
+        for fig in self.__figures.values():
+            fig.canvas.flush_events()
         plt.pause(0.01)
         # plt.show(block=False)
