@@ -1,12 +1,12 @@
 from amuse.test.amusetest import TestWithMPI
 
-from .interface import arepoInterface
+from .interface import ArepoInterface
 from .interface import arepo
 
-class arepoInterfaceTests(TestWithMPI):
+class ArepoInterfaceTests(TestWithMPI):
     
     def test1(self):
-        instance = arepoInterface()
+        instance = ArepoInterface()
         result,error = instance.echo_int(12)
         self.assertEquals(error, 0)
         self.assertEquals(result, 12)
