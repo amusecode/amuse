@@ -1,7 +1,7 @@
 from amuse.test.amusetest import TestWithMPI
 
 from .interface import ArepoInterface
-from .interface import arepo
+from .interface import Arepo
 
 class ArepoInterfaceTests(TestWithMPI):
     
