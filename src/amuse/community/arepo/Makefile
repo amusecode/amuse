@@ -30,10 +30,10 @@ $(CODELIB):
 	make -C src all
 
 worker_code.cc: interface.py
-	$(CODE_GENERATOR) --type=c interface.py arepoInterface -o $@
+	$(CODE_GENERATOR) --type=c interface.py ArepoInterface -o $@
 
 worker_code.h: interface.py
-	$(CODE_GENERATOR) --type=H interface.py arepoInterface -o $@
+	$(CODE_GENERATOR) --type=H interface.py ArepoInterface -o $@
 
 arepo_worker: worker_code.cc worker_code.h $(CODELIB) $(OBJS)
 	$(MPICXX) $(CXXFLAGS) $< $(OBJS) $(CODELIB) -o $@
