@@ -30,12 +30,15 @@ class ArepoInterface(
         LiteratureReferencesMixIn.__init__(self)
         # TODO: Determine whether need to inherit from CodeWithDataDirectories.
 
-    @legacy_function
-    def set_parameters():
-        function = LegacyFunctionSpecification()
-        function.addParameter("param_file", dtype="string", direction=function.IN)
-        function.result_type = "int32"
-        return function
+    # TODO: Pass parameter file to initialize_code(), and undo hardcoding of parameter file within the function.
+    # This function has been kept as a template for future functions.
+    
+    # @legacy_function
+    # def set_parameters():
+    #     function = LegacyFunctionSpecification()
+    #     function.addParameter("param_file", dtype="string", direction=function.IN)
+    #     function.result_type = "int32"
+    #     return function
 
 
 class Arepo(GravitationalDynamics):
