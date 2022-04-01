@@ -1,3 +1,4 @@
+# TODO: Determine whether this is needed as included in arepo/Makefile.
 ifeq ($(origin AMUSE_DIR), undefined)
 	AMUSE_DIR := $(shell amusifier --get-amuse-dir)
 endif
