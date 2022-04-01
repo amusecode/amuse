@@ -1,5 +1,76 @@
 #include "worker_code.h"
 
+#include "src/main/allvars.h"
+#include "src/main/proto.h"
+
+int initialize_code(){
+  MPI_Init(&argc, &argv);
+  MPI_Comm_rank(MPI_COMM_WORLD, &ThisTask);
+  MPI_Comm_size(MPI_COMM_WORLD, &NTask);
+
+  /* output a welcome message */
+  hello();
+
+  /* initialize CPU-time/Wallclock-time measurement */
+  init_cpu_log();
+
+  determine_compute_nodes();
+
+  for(PTask = 0; NTask > (1 << PTask); PTask++)
+    ;
+
+  begrun0();
+
+  strcpy(ParameterFile, "param.txt");  /* Removing command line parsing. argv[1] replaced with "param.txt". */
+  RestartFlag = 0;
+
+  begrun1(); /* set-up run  */
+
+  char fname[MAXLEN_PATH];
+  strcpy(fname, All.InitCondFile);
+
+  /* now we can load the file */
+
+#ifdef READ_DM_AS_GAS
+      read_ic(fname, (RestartFlag == 14) ? 0x02 : LOAD_TYPES);
+#else  /* #ifdef READ_DM_AS_GAS */
+      read_ic(fname, (RestartFlag == 14) ? 0x01 : LOAD_TYPES);
+#endif /* #ifdef READ_DM_AS_GAS #else */
+
+  /* init returns a status code, where a value of >=0 means that endrun() should be called. */
+  int status = init();
+
+  if(status >= 0)
+    {
+      if(status > 0)
+        mpi_printf("init() returned with %d\n", status);
+
+      cleanup_code();
+    }
+
+  begrun2();
+  return 0;
+}
+
+int cleanup_code(){
+  mpi_printf("Code run for %f seconds!\n", timediff(StartOfRun, second()));
+  mpi_printf("endrun called, calling MPI_Finalize()\nbye!\n\n");
+  fflush(stdout);
+
+#ifdef HAVE_HDF5
+  /*The hdf5 library will sometimes register an atexit() handler that calls its
+   * error handler. In AREPO this is set to my_hdf_error_handler, which calls
+   * MPI_Abort. Calling MPI_Abort after MPI_Finalize is not allowed.
+   * Hence unset the HDF error handler here
+   */
+  H5Eset_auto(NULL, NULL);
+#endif /* #ifdef HAVE_HDF5 */
+
+  MPI_Finalize();
+  exit(0);
+  return 0;
+}
+
 int get_mass(int index_of_the_particle, double * mass){
   return 0;
 }
@@ -118,15 +189,7 @@ int set_radius(int index_of_the_particle, double radius){
   return 0;
 }
 
-int cleanup_code(){
-  return 0;
-}
-
 int recommit_parameters(){
-  return 0;
-}
-
-int initialize_code(){
   return 0;
 }
 
