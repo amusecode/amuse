@@ -30,9 +30,7 @@ class ArepoInterface(
         LiteratureReferencesMixIn.__init__(self)
         # TODO: Determine whether need to inherit from CodeWithDataDirectories.
 
-    # TODO: Pass parameter file to initialize_code(), and undo hardcoding of parameter file within the function.
-    # This function has been kept as a template for future functions.
-    
+    # This function has been kept as a basic template for future functions.
     # @legacy_function
     # def set_parameters():
     #     function = LegacyFunctionSpecification()
@@ -45,3 +43,20 @@ class Arepo(GravitationalDynamics):
     
     def __init__(self, **options):
         GravitationalDynamics.__init__(self, ArepoInterface(**options), **options)
+
+    def initialize_code(self):
+        result = self.overridden().initialize_code()
+
+        # TODO: Pass parameter file to initialize_code(), and undo hardcoding of parameter file within the function.
+        # Could be done in the way in which Gadget2 sets the gadget_output_directory.
+        #self.parameters.gadget_output_directory = self.get_output_directory()
+        
+        return result
+
+    def define_methods(self, builder):
+        # TODO: Determine how to link this to Arepo's run() - the main simulation loop.
+        builder.add_method(
+            "run",
+            (),
+            (builder.ERROR_CODE)
+        )
