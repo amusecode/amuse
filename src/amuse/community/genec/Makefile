@@ -23,6 +23,7 @@ MODULES_F90_BASE = $(CODEDIR)/evol.f90  \
                    $(CODEDIR)/const.f90  \
                    $(CODEDIR)/caramodele.f90  \
                    $(CODEDIR)/inputparam.f90  \
+		   $(CODEDIR)/state.f90 \
                    $(CODEDIR)/interpolation.f90  \
                    $(CODEDIR)/nagmod.f90  \
                    $(CODEDIR)/SmallFunc.f90  \

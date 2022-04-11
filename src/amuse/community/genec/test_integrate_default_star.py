@@ -72,6 +72,7 @@ def write_backup(
 ROTATING_STAR = True
 MASS_UNIT = units.MSun
 LENGTH_UNIT = units.RSun
+SPEED_UNIT = units.kms
 TIME_UNIT = units.Myr
 MASSLOSS_UNIT = units.MSun / units.yr
 TEMPERATURE_UNIT = units.K
@@ -80,8 +81,8 @@ SPEEDUP_UNIT = units.Myr / units.minute
 set_printing_strategy(
     "custom",
     preferred_units=[
-        MASS_UNIT, LENGTH_UNIT, TIME_UNIT, MASSLOSS_UNIT, TEMPERATURE_UNIT,
-        LUMINOSITY_UNIT, SPEEDUP_UNIT
+        MASS_UNIT, LENGTH_UNIT, TIME_UNIT, SPEED_UNIT, MASSLOSS_UNIT,
+        TEMPERATURE_UNIT, LUMINOSITY_UNIT, SPEEDUP_UNIT
     ],
     precision=4,
     prefix="",
@@ -241,6 +242,9 @@ while True:
         star.temperature.in_(units.K),
         star.luminosity.in_(units.LSun),
         evo.parameters.phase,
+        star.surface_velocity,
+        star.abundance_h[0],
+        evo.parameters.vwant,
     )
     if step % store_every == 0:
         plotting.update(star_in_evo, phase=evo.parameters.phase)
@@ -270,6 +274,12 @@ while True:
         )
 
     star_in_evo.evolve_one_step()
+    if evo.parameters.stopping_condition != "none":
+        # star_in_evo.age == age_previous:
+        if step > 1:
+            print("Stopping - not evolving!")
+            print(f"Condition: {evo.parameters.stopping_condition}")
+            break
     step += 1
 
 runtime = (time.time() | units.s) - time_start

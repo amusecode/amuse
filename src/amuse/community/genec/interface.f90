@@ -22,42 +22,97 @@ function initialize_code()
     initialize_code = 0
 end function
 
-!function read_genec_model()
-!    ! This should only be called if no star has been initialised yet!
-!    use genec, only: amuseinterface
-!    use amuse_helpers, only: starname
-!    use inputparam, only:CharacteristicsParams,PhysicsParams,CompositionParams,RotationParams,&
-!        SurfaceParams,ConvectionParams,ConvergenceParams,TimeControle,VariousSettings
-!    implicit none
-!    character(*):: inputfilename
-!    integer:: read_genec_model
-!
-!    amuseinterface = .false. ! This will make initialise_star read the b file
-!    write(inputfilename, *) starname
-!    write(inputfilename, *) ".input"
-!    open(unit=4242, file=inputfilename)
-!    ! * Parse the CharacteristicsParams namelist *
-!    read(*,nml=CharacteristicsParams)
-!    ! * Parse the PhysicsParams namelist *
-!    read(*,nml=PhysicsParams)
-!    ! * Parse the CompositionParams namelist *
-!    read(*,nml=CompositionParams)
-!    ! * Parse the RotationParams namelist *
-!    read(*,nml=RotationParams)
-!    ! * Parse the SurfaceParams namelist *
-!    read(*,nml=SurfaceParams)
-!    ! * Parse the ConvectionParams namelist *
-!    read(*,nml=ConvectionParams)
-!    ! * Parse the ConvergenceParams namelist *
-!    read(*,nml=ConvergenceParams)
-!    ! * Parse the TimeControle namelist *
-!    read(*,nml=TimeControle)
-!    ! * Parse the VariousSettings namelist *
-!    read(*,nml=VariousSettings)
-!
-!    close(4242)
-!    read_genec_model = 0
-!end function
+function read_genec_model(index_of_the_star, cardfilename)
+    ! This should only be called if no star has been initialised yet!
+    use genec, only: amuseinterface
+    use amuse_helpers, only: starname
+    use inputparam, only:CharacteristicsParams,PhysicsParams,CompositionParams, &
+            RotationParams,SurfaceParams,ConvectionParams,ConvergenceParams, &
+            TimeControle,VariousSettings, &
+            isugi,bintide, &
+            modanf
+    use caramodele, only:gms,gls,teff,glsv,teffv,xmini,ab,dm_lost,xLtotbeg,zams_radius
+    use timestep, only:alter,dzeitj,dzeit,dzeitv
+    use strucmod, only:m,q,p,t,r,s,drl,drte,dk,drp,drt,drr,rlp,rlt,rlc,rrp,rrt,rrc,rtp, &
+            rtt,rtc, vp,vt,vr,vs, vna,vnr
+    use abundmod, only:x,y3,y,xc12,xc13,xc14,xn14,xn15,xo16,xo17,xo18,xf18,xf19,xne20,xne21, &
+            xne22,xna23,xmg24,xmg25,xmg26,xal26,xal27,xsi28,xprot,xneut,xbid,xbid1,vx, &
+            vy3,vy,vxc12,vxc13,vxc14,vxn14,vxn15,vxo16,vxo17,vxo18,vxf18,vxf19,vxne20, &
+            vxne21,vxne22,vxna23,vxmg24,vxmg25,vxmg26,vxal26g,vxal27,vxsi28,vxprot, &
+            vxneut,vxbid,vxbid1, &
+            nbelx,abelx,vabelx,mbelx,maxCNO, &
+            abundCheck
+    use rotmod, only: CorrOmega,vsuminenv,omegi,vomegi
+    use evol, only: npondcouche,kindreal
+    use diffadvmod, only: tdiff
+    use henyey_solver, only: nsugi
+    use bintidemod, only: period
+    use convection, only: r_core
+    implicit none
+    integer:: index_of_the_star
+    character(256):: cardfilename
+    character(5):: fnamein
+    character(256):: fname51
+    integer:: read_genec_model
+    integer:: i,ii
+    real(kindreal):: dlelexprev
+
+    amuseinterface = .false. ! This will make initialise_star read the b file
+    open(unit=42, file=cardfilename)
+    ! * Parse the CharacteristicsParams namelist *
+    read(42,nml=CharacteristicsParams)
+    ! * Parse the PhysicsParams namelist *
+    read(42,nml=PhysicsParams)
+    ! * Parse the CompositionParams namelist *
+    read(42,nml=CompositionParams)
+    ! * Parse the RotationParams namelist *
+    read(42,nml=RotationParams)
+    ! * Parse the SurfaceParams namelist *
+    read(42,nml=SurfaceParams)
+    ! * Parse the ConvectionParams namelist *
+    read(42,nml=ConvectionParams)
+    ! * Parse the ConvergenceParams namelist *
+    read(42,nml=ConvergenceParams)
+    ! * Parse the TimeControle namelist *
+    read(42,nml=TimeControle)
+    ! * Parse the VariousSettings namelist *
+    read(42,nml=VariousSettings)
+
+    close(42)
+    amuseinterface = .true. ! this will be false in a savefile, so set it to .true. again!
+
+    write(fnamein, '(i5.5)') modanf
+    fname51 = trim(starname)//'.b'//fnamein
+
+    open(unit=51, file=fname51, status='unknown',form='unformatted')
+    read(51)gms,alter,gls,teff,glsv,teffv,dzeitj,dzeit,dzeitv,xmini,ab,dm_lost,m, &
+            (q(i),p(i),t(i),r(i),s(i),x(i),y(i),xc12(i), &
+            vp(i),vt(i),vr(i),vs(i),xo16(i),vx(i),vy(i),vxc12(i),vxo16(i),i=1,m), &
+            drl,drte,dk,drp,drt,drr,rlp,rlt,rlc,rrp,rrt,rrc,rtp, &
+            rtt,rtc,tdiff,vsuminenv,(CorrOmega(i),i=1,npondcouche), &
+            xLtotbeg,dlelexprev,zams_radius
+
+    read(51) (y3(i),xc13(i),xn14(i),xn15(i),xo17(i),xo18(i),vy3(i),vxc13(i),vxn14(i),vxn15(i),vxo17(i),vxo18(i),xne20(i), &
+      xne22(i),xmg24(i),xmg25(i),xmg26(i),vxne20(i),vxne22(i),vxmg24(i),vxmg25(i),vxmg26(i),omegi(i),vomegi(i),i=1,m)
+    read(51) (xf19(i),xne21(i),xna23(i),xal26(i),xal27(i),xsi28(i),vxf19(i),vxne21(i),vxna23(i),vxal26g(i),vxal27(i),vxsi28(i), &
+      xneut(i),xprot(i),xc14(i),xf18(i),xbid(i),xbid1(i),vxneut(i),vxprot(i),vxc14(i),vxf18(i),vxbid(i),vxbid1(i),i=1,m)
+
+    do ii=1,nbelx
+     read(51) (abelx(ii,i),vabelx(ii,i),i=1,m)
+    enddo
+
+    if (isugi >= 1) then
+      read(51) nsugi
+    endif
+
+    if (bintide) then
+      read(51) period,r_core,vna,vnr
+    endif
+    close(51)
+
+    index_of_the_star = 1
+    read_genec_model = 0
+end function
 
 function cleanup_code()
     implicit none
@@ -903,58 +958,40 @@ function set_par_diff_only(par_diff_only)
     set_par_diff_only = 0
 end function
 
-function get_par_lowRSGMdot(par_lowRSGMdot)
-    use inputparam, only: lowRSGMdot
+function get_par_RSG_Mdot(par_RSG_Mdot)
+    use inputparam, only: RSG_Mdot
     implicit none
-    logical:: par_lowRSGMdot
-    integer:: get_par_lowRSGMdot
-    par_lowRSGMdot = lowRSGMdot
-    get_par_lowRSGMdot = 0
+    integer:: par_RSG_Mdot
+    integer:: get_par_RSG_Mdot
+    par_RSG_Mdot = RSG_Mdot
+    get_par_RSG_Mdot = 0
 end function
 
-function set_par_lowRSGMdot(par_lowRSGMdot)
-    use inputparam, only: lowRSGMdot
+function set_par_RSG_Mdot(par_RSG_Mdot)
+    use inputparam, only: RSG_Mdot
     implicit none
-    logical:: par_lowRSGMdot
-    integer:: set_par_lowRSGMdot
-    lowRSGMdot = par_lowRSGMdot
-    set_par_lowRSGMdot = 0
+    integer:: par_RSG_Mdot
+    integer:: set_par_RSG_Mdot
+    RSG_Mdot = par_RSG_Mdot
+    set_par_RSG_Mdot = 0
 end function
 
-function get_par_plot(par_plot)
-    use inputparam, only: plot
+function get_par_display_plot(par_display_plot)
+    use inputparam, only: display_plot
     implicit none
-    logical:: par_plot
-    integer:: get_par_plot
-    par_plot = plot
-    get_par_plot = 0
+    logical:: par_display_plot
+    integer:: get_par_display_plot
+    par_display_plot = display_plot
+    get_par_display_plot = 0
 end function
 
-function set_par_plot(par_plot)
-    use inputparam, only: plot
+function set_par_display_plot(par_display_plot)
+    use inputparam, only: display_plot
     implicit none
-    logical:: par_plot
-    integer:: set_par_plot
-    plot = par_plot
-    set_par_plot = 0
-end function
-
-function get_par_refresh(par_refresh)
-    use inputparam, only: refresh
-    implicit none
-    logical:: par_refresh
-    integer:: get_par_refresh
-    par_refresh = refresh
-    get_par_refresh = 0
-end function
-
-function set_par_refresh(par_refresh)
-    use inputparam, only: refresh
-    implicit none
-    logical:: par_refresh
-    integer:: set_par_refresh
-    refresh = par_refresh
-    set_par_refresh = 0
+    logical:: par_display_plot
+    integer:: set_par_display_plot
+    display_plot = par_display_plot
+    set_par_display_plot = 0
 end function
 
 function get_par_xyfiles(par_xyfiles)
@@ -1712,11 +1749,31 @@ function set_par_starname(par_starname)
     starname = par_starname
     set_par_starname = 0
 end function
+
+function get_par_stopping_condition(par_stopping_condition)
+    use State, only: stopping_condition
+    implicit none
+    character(15):: par_stopping_condition
+    integer:: get_par_stopping_condition
+    par_stopping_condition = stopping_condition
+    get_par_stopping_condition = 0
+end function
+
+function set_par_stopping_condition(par_stopping_condition)
+    use State, only: stopping_condition
+    implicit none
+    character(15):: par_stopping_condition
+    integer:: set_par_stopping_condition
+    stopping_condition = par_stopping_condition
+    set_par_stopping_condition = 0
+end function
 ! **** End Parameters
 
 function commit_parameters()
+    use State, only: stopping_condition
     implicit none
     integer:: commit_parameters
+    stopping_condition = ""
     commit_parameters = 0
 end function
 
@@ -1732,7 +1789,7 @@ function commit_particles()
     call OpenAll()
     !write(*,*) 'OpenAll done'
     call initialise_star()
-    nzmod = 1
+    ! nzmod = 10
     !write(*,*) 'initialise_star done'
     amuseinterface = .true. ! If we just read a b file, disable this again for continuing
     commit_particles = 0
@@ -1750,17 +1807,24 @@ function evolve_model(end_time)
     use WriteSaveClose, only: OpenAll
     use genec, only: evolve, modell, finalise
     use amuse_helpers, only: initialise_star
+    use State, only: stopping_condition
     implicit none
     double precision:: end_time
     integer:: evolve_model
+    stopping_condition = ""
     do while (alter < end_time)
+      if (stopping_condition == "") then
         write(*,*) "Current time: ", alter, ", evolving to: ", end_time
         !modell = 1
         call evolve()
         call finalise()
         call OpenAll()
         call initialise_star()
-        write(*,*) "*****Modell: ", modell
+        !write(*,*) "*****Modell: ", modell
+      else
+        write(*,*) "stopped: ", stopping_condition
+        exit
+      endif
     end do
     evolve_model = 0
 end function
@@ -1788,7 +1852,7 @@ function evolve_for(index_of_the_star, time)
         call finalise()
         call OpenAll()
         call initialise_star()
-        write(*,*) "*****Modell: ", modell
+        !write(*,*) "*****Modell: ", modell
     end do
 
     evolve_for = 0
@@ -1799,22 +1863,28 @@ function evolve_one_step(index_of_the_star)
     use WriteSaveClose, only: OpenAll
     use genec, only: evolve, modell, finalise
     use amuse_helpers, only: initialise_star
+    use State, only: stopping_condition
     use inputparam,only: modanf,nwseq,nzmod
     implicit none
     integer:: index_of_the_star
     integer:: evolve_one_step
     integer:: original_nzmod
-    original_nzmod = nzmod
-    nzmod = 1
+    !original_nzmod = nzmod
+    nzmod = 1000000
     write(*,*) "Evolving one step, current time: ", alter
     !modell = 1
-    call evolve()
-    call finalise()
-    call OpenAll()
-    call initialise_star() ! will set modell to 1
-    write(*,*) "Evolved one step, current time: ", alter
-    nzmod = original_nzmod
-    write(*,*) "*****modanf, nwseq, nzmod: ", modanf, nwseq, nzmod
+    if (stopping_condition == "") then
+      call evolve()
+      if (stopping_condition /= "") return
+      call finalise()
+      call OpenAll()
+      call initialise_star() ! will set modell to 1
+      write(*,*) "Evolved one step, current time: ", alter
+      !nzmod = original_nzmod
+      !write(*,*) "*****modanf, nwseq, nzmod: ", modanf, nwseq, nzmod
+    else
+      write(*,*) "stopped: ", stopping_condition
+    endif
     evolve_one_step = 0
 end function
 

@@ -98,6 +98,23 @@ class GenecInterface(
         """
         return function
 
+    @legacy_function
+    def read_genec_model():
+        """
+        Read a previously saved GENEC model
+        """
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = False
+        function.addParameter(
+            'index_of_the_star', dtype='int32', direction=function.OUT,
+            description="index of the star",
+        )
+        function.addParameter(
+            'cardfilename', dtype='string', direction=function.IN,
+            description="GENEC input card",
+        )
+        function.result_type = 'int32'
+        return function
     # Parameters
 
     @legacy_function
@@ -1721,11 +1738,11 @@ class GenecInterface(
         return function
 
     @legacy_function
-    def get_par_lowRSGMdot():
-        'get parameter lowRSGMdot'
+    def get_par_RSG_Mdot():
+        'get parameter RSG_Mdot'
         function = LegacyFunctionSpecification()
         function.addParameter(
-            'lowRSGMdot', dtype='bool',
+            'RSG_Mdot', dtype='int32',
             direction=function.OUT,
         )
         function.result_type = 'int32'
@@ -1738,11 +1755,11 @@ class GenecInterface(
         return function
 
     @legacy_function
-    def set_par_lowRSGMdot():
-        'set parameter lowRSGMdot'
+    def set_par_RSG_Mdot():
+        'set parameter RSG_Mdot'
         function = LegacyFunctionSpecification()
         function.addParameter(
-            'lowRSGMdot', dtype='bool',
+            'RSG_Mdot', dtype='int32',
             direction=function.IN,
         )
         function.result_type = 'int32'
@@ -1757,11 +1774,11 @@ class GenecInterface(
         return function
 
     @legacy_function
-    def get_par_plot():
-        'get parameter plot'
+    def get_par_display_plot():
+        'get parameter display_plot'
         function = LegacyFunctionSpecification()
         function.addParameter(
-            'plot', dtype='bool',
+            'display_plot', dtype='bool',
             direction=function.OUT,
         )
         function.result_type = 'int32'
@@ -1774,47 +1791,11 @@ class GenecInterface(
         return function
 
     @legacy_function
-    def set_par_plot():
-        'set parameter plot'
+    def set_par_display_plot():
+        'set parameter display_plot'
         function = LegacyFunctionSpecification()
         function.addParameter(
-            'plot', dtype='bool',
-            direction=function.IN,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            The value has been set.
-        -1 - ERROR
-            Unable to set.
-        -2 - ERROR
-            Cannot set at this point, already running.
-        '''
-        return function
-
-    @legacy_function
-    def get_par_refresh():
-        'get parameter refresh'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'refresh', dtype='bool',
-            direction=function.OUT,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            Got the value.
-        -1 - ERROR
-            Unable to get.
-        '''
-        return function
-
-    @legacy_function
-    def set_par_refresh():
-        'set parameter refresh'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'refresh', dtype='bool',
+            'display_plot', dtype='bool',
             direction=function.IN,
         )
         function.result_type = 'int32'
@@ -3339,7 +3320,66 @@ class GenecInterface(
         '''
         return function
 
+    @legacy_function
+    def get_par_stopping_condition():
+        'get parameter stopping_condition'
+        function = LegacyFunctionSpecification()
+        function.addParameter(
+            'stopping_condition', dtype='string',
+            direction=function.OUT,
+        )
+        function.result_type = 'int32'
+        function.result_doc = '''
+        0 - OK
+            Got the value.
+        -1 - ERROR
+            Unable to get.
+        '''
+        return function
+
+    @legacy_function
+    def set_par_stopping_condition():
+        'set parameter stopping_condition'
+        function = LegacyFunctionSpecification()
+        function.addParameter(
+            'stopping_condition', dtype='string',
+            direction=function.IN,
+        )
+        function.result_type = 'int32'
+        function.result_doc = '''
+        0 - OK
+            The value has been set.
+        -1 - ERROR
+            Unable to set.
+        -2 - ERROR
+            Cannot set at this point, already running.
+        '''
+        return function
+
     # End parameters
+
+    @legacy_function
+    def set_number_of_zones():
+        """
+        Set the current number of zones/mesh-cells of the star.
+        """
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
+        function.addParameter(
+            'index_of_the_star', dtype='int32', direction=function.IN,
+            description="The index of the star to get the value of")
+        function.addParameter(
+            'n_zones', dtype='int32', direction=function.IN,
+            description="The current number of zones/mesh-cells of the star."
+        )
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            The value was set.
+        -1 - ERROR
+            A star with the given index was not found.
+        """
+        return function
 
     @legacy_function
     def commit_parameters():
@@ -3522,6 +3562,35 @@ class GenecInterface(
         """
         return function
 
+    @legacy_function
+    def get_omegi_at_zone():
+        """
+        Retrieve the rotation rate at the specified
+        zone/mesh-cell of the star.
+        """
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
+        function.addParameter(
+            'index_of_the_star', dtype='int32', direction=function.IN,
+            description="The index of the star to get the value of")
+        function.addParameter(
+            'zone', dtype='int32', direction=function.IN,
+            description="The zone/mesh-cell of the star to get the value of")
+        function.addParameter(
+            'omegi_i', dtype='float64', direction=function.OUT,
+            description=(
+                "The rotation rate at the specified "
+                "zone/mesh-cell of the star."
+            )
+        )
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            The value was retrieved.
+        -1 - ERROR
+            A star with the given index was not found.
+        """
+        return function
 
     @legacy_function
     def get_mass_fraction_of_h_at_zone():
@@ -5531,24 +5600,17 @@ class Genec(StellarEvolution, InternalStellarStructure):
         )
 
         handler.add_method_parameter(
-            "get_par_lowRSGMdot",
-            "set_par_lowRSGMdot",
-            "lowRSGMdot",
-            "GENEC parameter lowRSGMdot",
+            "get_par_RSG_Mdot",
+            "set_par_RSG_Mdot",
+            "RSG_Mdot",
+            "GENEC parameter RSG_Mdot",
         )
 
         handler.add_method_parameter(
-            "get_par_plot",
-            "set_par_plot",
-            "plot",
-            "GENEC parameter plot",
-        )
-
-        handler.add_method_parameter(
-            "get_par_refresh",
-            "set_par_refresh",
-            "refresh",
-            "GENEC parameter refresh",
+            "get_par_display_plot",
+            "set_par_display_plot",
+            "display_plot",
+            "GENEC parameter display_plot",
         )
 
         handler.add_method_parameter(
@@ -5845,6 +5907,13 @@ class Genec(StellarEvolution, InternalStellarStructure):
             "GENEC parameter starname",
         )
 
+        handler.add_method_parameter(
+            "get_par_stopping_condition",
+            "set_par_stopping_condition",
+            "stopping_condition",
+            "GENEC parameter stopping_condition",
+        )
+
         # handler.add_method_parameter(
         #     "get_min_timestep_stop_condition",
         #     "set_min_timestep_stop_condition",
@@ -6048,7 +6117,11 @@ class Genec(StellarEvolution, InternalStellarStructure):
             (units.MSun, handler.NO_UNIT, handler.NO_UNIT),
             (handler.INDEX, handler.ERROR_CODE)
         )
-        # handler.add_method(
+        handler.add_method(
+            "read_genec_model",
+            (handler.NO_UNIT),
+            (handler.INDEX, handler.ERROR_CODE)
+        )        # handler.add_method(
         #     "get_radius",
         #     (handler.INDEX,),
         #     (units.RSun, handler.ERROR_CODE,)
