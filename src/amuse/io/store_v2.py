@@ -98,11 +98,11 @@ class HDF5Attribute(object):
         else:
             dtype = numpy.asanyarray(input).dtype
             if dtype.kind == 'U':
-                new_dtype = numpy.dtype('S' + dtype.itemsize * 4)
+                # new_dtype = numpy.dtype('S' + dtype.itemsize * 4)
                 dataset = group.create_dataset(
                     name,
                     shape=shape,
-                    dtype=dtype,  # FIXME new_dtype?
+                    dtype=dtype,
                     compression=cls.compression,
                     compression_opts=cls.compression_opts,
                 )
