@@ -46,11 +46,10 @@ In macOS Big Sur and later, you may have to add the following line to your .bash
     export SDKROOT=/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk
 
 In this section we assume a default macOS installation (up to Monterey) with MacPorts, but other methods (such as Homebrew) will also work.
-Please do not install packages using more than one package manager (MacPorts, Homebrew and/or Conda), as this will almost certainly lead to problems!
+**Please do not install packages using more than one package manager (MacPorts, Homebrew and/or Conda), as this will almost certainly lead to problems!**
 
 You can choose between openmpi and mpich as desired, both work with AMUSE. 
 Please make sure to set the compilers installed here as default, as it will greatly simplify things later on.
-In the examples below we choose GCC 9 as the compiler, but other versions of GCC should also work.
 
 * For openmpi:
 
