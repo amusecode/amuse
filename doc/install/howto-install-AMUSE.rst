@@ -7,7 +7,6 @@ Ubuntu
 ******
 
 You can choose between openmpi and mpich as desired, both work with AMUSE. Please do not install both!
-In the examples below we choose GCC-7 as the compiler, but more recent versions of GCC will also work.
 
 * For openmpi:
 
@@ -39,36 +38,37 @@ macOS
 
 
 On macOS, you will first need to install Xcode. You can do so via the app store.
+In the examples below we choose GCC-11 as the compiler. Older versions may not work on recent versions of macOS.
 In macOS Big Sur and later, you may have to add the following line to your .bashrc or .zshrc profile:
 
 .. code-block:: sh
 
     export SDKROOT=/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk
 
-In this section we assume a default macOS installation (up to Big Sur) with MacPorts, but other methods (such as Homebrew) will also work.
+In this section we assume a default macOS installation (up to Monterey) with MacPorts, but other methods (such as Homebrew) will also work.
+**Please do not install packages using more than one package manager (MacPorts, Homebrew and/or Conda), as this will almost certainly lead to problems!**
 
 You can choose between openmpi and mpich as desired, both work with AMUSE. 
 Please make sure to set the compilers installed here as default, as it will greatly simplify things later on.
-In the examples below we choose GCC 9 as the compiler, but other versions of GCC should also work.
 
 * For openmpi:
 
 .. code-block:: sh
 
-    sudo port install gcc9 openmpi-gcc9 hdf5 gsl cmake gmp mpfr fftw-3 +gcc9 openblas lapack
+    sudo port install gcc11 openmpi-gcc11 hdf5 gsl cmake gmp mpfr fftw-3 +gcc11 openblas lapack
     sudo port install python39
-    sudo port select --set mpi openmpi-gcc9-fortran
-    sudo port select --set gcc mp-gcc9
+    sudo port select --set mpi openmpi-gcc11-fortran
+    sudo port select --set gcc mp-gcc11
     sudo port select --set python3 python39
 
 * For mpich:
 
 .. code-block:: sh
 
-    sudo port install gcc9 mpich-gcc9 hdf5 gsl cmake gmp mpfr fftw-3 +gcc9 openblas lapack
+    sudo port install gcc11 mpich-gcc11 hdf5 gsl cmake gmp mpfr fftw-3 +gcc11 openblas lapack
     sudo port install python39
-    sudo port select --set mpi mpich-gcc9
-    sudo port select --set gcc mp-gcc9
+    sudo port select --set mpi mpich-gcc11
+    sudo port select --set gcc mp-gcc11
     sudo port select --set python3 python39
 
 
