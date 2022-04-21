@@ -298,7 +298,7 @@ class TestSeBaInterface(TestWithMPI):
         self.assertEqual(error, 0)
         mass, error = instance.get_mass(1)
         self.assertEqual(error, 0)
-        self.assertAlmostRelativeEqual(mass, 0.86679, 4)
+        self.assertAlmostRelativeEqual(mass, 0.902743, 4)
         mass, error = instance.get_mass(2)
         self.assertEqual(error, 0)
         self.assertAlmostRelativeEqual(mass, 0.3, 4)
