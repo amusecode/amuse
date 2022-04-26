@@ -623,7 +623,7 @@ class MethodWithUnitsDefinition(CodeMethodWrapperDefinition):
             parameter = input_parameters[index]
             if parameter in result:
                 raise ConvertArgumentsException(
-                    f"got multiple values for argument '{parameter}'"
+                    f"got multiple values for argument '{parameter}' "
                     f"of method {self.function_name}"
               )
             try:
