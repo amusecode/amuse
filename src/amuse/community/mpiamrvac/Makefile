@@ -14,7 +14,7 @@ FFLAGS += $(FCFLAGS)
 
 # gfortran flags
 ifneq (,$(findstring gfortran, $(notdir $(FORTRAN))))
-FFLAGS +=  -ffree-form
+FFLAGS += -std=legacy -ffree-form
 endif
 
 
