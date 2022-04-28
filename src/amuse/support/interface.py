@@ -336,7 +336,7 @@ class StateMethodDefinition(CodeMethodWrapperDefinition):
 
         if len(possible_paths) == 0:            
             # do again to get an exception.
-            message = "While calling {0} of {1}: ".format(self.function_name, self.interface.__class__.__name__)
+            message = "While calling {0} of {1}: ".format(self.function_name, type(self.interface))
             try:
                 self.state_machine._get_state_transition_path_to(stored_transitions[0][0])
             except exceptions.AmuseException as ex:
@@ -556,7 +556,7 @@ class MethodWithUnitsDefinition(CodeMethodWrapperDefinition):
         if errorcode in self.wrapped_object.errorcodes:
             raise exceptions.AmuseException(
                 f"Error when calling '{self.name}' of a "
-                f"'{type(self.wrapped_object).__name__}', errorcode is "
+                f"'{type(self.wrapped_object)}', errorcode is "
                 f"{errorcode}, error is "
                 f"'{self.wrapped_object.errorcodes[errorcode]}'",
                 errorcode
@@ -623,7 +623,7 @@ class MethodWithUnitsDefinition(CodeMethodWrapperDefinition):
             parameter = input_parameters[index]
             if parameter in result:
                 raise ConvertArgumentsException(
-                    f"got multiple values for argument '{parameter}'"
+                    f"got multiple values for argument '{parameter}' "
                     f"of method {self.function_name}"
               )
             try:

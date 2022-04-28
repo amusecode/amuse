@@ -738,7 +738,7 @@ class CodeCommand(Command):
         return result
     
     def call(self, arguments, buildlogfile = None, **keyword_arguments):
-        stringio = StringIO()
+        stringio = []
          
         self.announce(' '.join(arguments), log.DEBUG)
         
@@ -757,12 +757,16 @@ class CodeCommand(Command):
             if not buildlogfile is None:
                 buildlogfile.write(line)
             self.announce(line[:-1].decode("utf-8"), log.DEBUG)
-            stringio.write(str(line, 'utf-8'))
+            stringio.append(str(line, 'utf-8'))
             
         result = process.wait()
-        content = stringio.getvalue()
+        content = ''.join(stringio)
         
-        stringio.close()
+        if result!=0:
+            self.announce("error in call, tail output:\n", log.INFO)
+            self.announce(''.join(stringio[-100:]), log.INFO)
+            self.announce("-"*80, log.INFO)
+
         return result, content
         
     def build_environment(self):
