@@ -24,7 +24,9 @@ def main():
     gravity.add_system(planet_gravity, (star_gravity,) )
 ###BOOKLISTSTOP###
 
-    write_set_to_file(ss, filename, 'hdf5', append_to_file=False)
+    write_set_to_file(
+        solar_system, filename, 'hdf5', overwrite_file=True,
+    )
 
     Etot_init = gravity.kinetic_energy + gravity.potential_energy
     Etot_prev = Etot_init
@@ -41,7 +43,9 @@ def main():
 
         channel_from_star_to_framework.copy()
         channel_from_planet_to_framework.copy()
-        write_set_to_file(ss, filename, 'hdf5')
+        write_set_to_file(
+            solar_system, filename, 'hdf5', append_to_file=True,
+        )
 
         Ekin = gravity.kinetic_energy 
         Epot = gravity.potential_energy
