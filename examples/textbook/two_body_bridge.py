@@ -4,11 +4,11 @@ from amuse.couple import bridge
 from amuse.ext.solarsystem import new_solar_system
 
 def main():
-    filename = "SunAndEarth.hdf"
     ss = new_solar_system()
     star = ss[0]
     planet = ss[3]
     converter=nbody_system.nbody_to_si(star.mass,planet.position.length())
+    filename = "SunAndEarth.amuse"
 ###BOOKLISTSTART###
     star_gravity = ph4(converter)
     star_gravity.particles.add_particle(star)
