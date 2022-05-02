@@ -10,10 +10,10 @@ def main():
     converter=nbody_system.nbody_to_si(star.mass,planet.position.length())
     filename = "SunAndEarth.amuse"
 ###BOOKLISTSTART###
-    star_gravity = ph4(converter)
+    star_gravity = Ph4(converter)
     star_gravity.particles.add_particle(star)
 
-    planet_gravity = ph4(converter)
+    planet_gravity = Ph4(converter)
     planet_gravity.particles.add_particle(planet)
 
     channel_from_star_to_framework = star_gravity.particles.new_channel_to(ss)
