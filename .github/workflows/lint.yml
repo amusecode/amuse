@@ -44,4 +44,5 @@ jobs:
       #    flake8: true
       - name: Analysing the code with pylint
         run: |
-          pylint examples/textbook/*.py
+          # pylint examples/textbook/*.py -r y --evaluation="max(0, 0 if fatal else 10.0 - ((float(5 * error + warning + refactor + convention) / statement) * 10) )"
+          pylint examples/textbook/*.py -r y --evaluation="max(0, 0 if fatal else 10.0 - ((float(5 * error + warning) / statement) * 10) )"
