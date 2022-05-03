@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - updates/examples/textbook
   pull_request:
     branches:
       - main
