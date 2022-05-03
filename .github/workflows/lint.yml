@@ -18,14 +18,22 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Set up Python
-        uses: actions/setup-python@v1
+        uses: actions/setup-python@v2
         with:
-          python-version: 3.8
+          python-version: ${{ matrix.py-version }}
+          architecture: ${{ matrix.py-arch }}
 
       - name: Install Python dependencies
-        run: pip install flake8
+        run:
+          python -m pip install --upgrade pip
+          python -m pip install pylint pycodestyle pydocstyle flake8
 
-      - name: Run linters
-        uses: wearerequired/lint-action@v1
-        with:
-          flake8: true
+      #- name: Run linters
+      #  uses: wearerequired/lint-action@v1
+      #  with:
+      #    flake8: true
+      - name: Analysing the code with pylint
+        run:
+          for file in examples/textbook/*.py; do
+            pylint $file;
+          done
