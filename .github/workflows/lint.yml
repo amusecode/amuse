@@ -25,7 +25,7 @@ jobs:
           architecture: ${{ matrix.py-arch }}
 
       - name: Install Python dependencies
-        run:
+        run: |
           python -m pip install --upgrade pip
           python -m pip install pylint pycodestyle pydocstyle flake8
 
@@ -34,7 +34,7 @@ jobs:
       #  with:
       #    flake8: true
       - name: Analysing the code with pylint
-        run:
+        run: |
           for file in examples/textbook/*.py; do
             pylint $file;
           done
