@@ -41,21 +41,6 @@ all:	compile bhtree_worker
 python_worker.o: python_worker.c
 	$(CXX) $(CXXFLAGS) $(PYTHONDEV_CFLAGS) $(SC_FLAGS) $(LDFLAGS) -c -o $@ $< 
 	
-bhtree_worker_cython: bhtree_cython.so
-	$(CODE_GENERATOR) --type=cython -m script -x amuse.community.bhtree.interface BHTreeInterface -o $@ --cython-import bhtree_cython
-	
-bhtree_cython.so: bhtree_cython.o worker_code.h  $(CODELIB) $(OBJS)
-	$(MPICXX) -shared $(CXXFLAGS) $(PYTHONDEV_LDFLAGS) $(SC_FLAGS) $(AM_CFLAGS)  $(LDFLAGS) bhtree_cython.o $(OBJS) $(CODELIB) -o $@ $(SC_CLIBS) $(AM_LIBS) 
-
-bhtree_cython.o: bhtree_cython.c worker_code.h
-	$(MPICXX) $(CXXFLAGS) $(SC_FLAGS) $(AM_CFLAGS)  $(PYTHONDEV_CFLAGS) -c -o $@ $< 
-
-bhtree_cython.pyx: interface.py
-	$(CODE_GENERATOR) --type=cython -m mpi interface.py BHTreeInterface -o $@
-
-bhtree_cython.c: bhtree_cython.pyx
-	$(CYTHON) $< -o $@
-	
 compile: $(BHTC)
 
 $(BUILDDIR)/Makefile: $(BHTCDIR)/Makefile 
@@ -81,11 +66,10 @@ clean:
 	$(RM) -rf *.dSYM
 	$(RM) -Rf $(BUILDDIR) $(GPU_BUILDDIR)
 	$(RM) -f bhtree_worker_g6 bhtree_worker_gpu
-	$(RM) -f bhtree_worker_cython bhtree_cython.*  bhtree_worker_cython.*
 	make -C $(BHTCDIR) clean 
 
 worker_code.cc: interface.py
-	$(CODE_GENERATOR) --type=c --needs-mpi=false interface.py BHTreeInterface -o $@ --cython-import  bhtree_cython
+	$(CODE_GENERATOR) --type=c --needs-mpi=false interface.py BHTreeInterface -o $@
 
 worker_code.h: interface.py
 	$(CODE_GENERATOR) --type=h -i amuse.support.codes.stopping_conditions.StoppingConditionInterface  interface.py BHTreeInterface -o $@

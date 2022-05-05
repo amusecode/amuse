@@ -34,9 +34,9 @@ class KeplerInterface(CodeInterface,
     
     The relevant references are:
     .. [#] Goncalves Ferrari, Boekholt, Portegies Zwart; 2014 MNRAS, 440, 719 \
-               (SAKURA, method 0 -- default)
+               (SAKURA, method 0 -- default) [2014MNRAS.440..719G]
     .. [#] Pelupessy, Janes, Portegies Zwart; 2012, New Astronomy, 17, 711 \
-               (HUAYNO, method 1)
+               (HUAYNO, method 1) [2012NewA...17..711P]
     """
 
     include_headers = ['interface.h']

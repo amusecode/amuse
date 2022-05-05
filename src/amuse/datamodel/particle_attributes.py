@@ -491,7 +491,7 @@ def get_binaries(particles,hardness=10,G = constants.G):
                (particles.vy[a[j]]-particles.vy[a[i]])**2+ \
                (particles.vz[a[j]]-particles.vz[a[i]])**2 
             r=r2**0.5
-            eb=G*(particles.mass[i]+particles.mass[j])/r-0.5*v2
+            eb=G*(particles.mass[a[i]]+particles.mass[a[j]])/r-0.5*v2
             if eb > limitE:
                 binary=particles[[a[i],a[j]]].copy()
                 binary.hardness=eb/average_Ek
@@ -1068,7 +1068,7 @@ def box_counting_dimension(particles):
             [(r[0], r[1], r[2]) for r in (scaled_positions * boxes_per_dimension).astype(int)]
         )))
     
-    number_of_boxes_filled = numpy.array(number_of_boxes_filled, dtype=numpy.float)
+    number_of_boxes_filled = numpy.array(number_of_boxes_filled, dtype=numpy.float64)
     # When #filled-boxes ~ #particles, the dimension goes to 0. Exclude those values:
     upper_index = numpy.searchsorted(number_of_boxes_filled, 0.2 * len(particles))
     x = numpy.log(boxes_per_dimension_range[:upper_index])

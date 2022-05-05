@@ -1,6 +1,6 @@
-# generated automatically by aclocal 1.16.1 -*- Autoconf -*-
+# generated automatically by aclocal 1.16.3 -*- Autoconf -*-
 
-# Copyright (C) 1996-2018 Free Software Foundation, Inc.
+# Copyright (C) 1996-2020 Free Software Foundation, Inc.
 
 # This file is free software; the Free Software Foundation
 # gives unlimited permission to copy and/or distribute it,
@@ -12,7 +12,7 @@
 # PARTICULAR PURPOSE.
 
 m4_ifndef([AC_CONFIG_MACRO_DIRS], [m4_defun([_AM_CONFIG_MACRO_DIRS], [])m4_defun([AC_CONFIG_MACRO_DIRS], [_AM_CONFIG_MACRO_DIRS($@)])])
-# Copyright (C) 1999-2018 Free Software Foundation, Inc.
+# Copyright (C) 1999-2020 Free Software Foundation, Inc.
 #
 # This file is free software; the Free Software Foundation
 # gives unlimited permission to copy and/or distribute it,
@@ -95,12 +95,14 @@ AC_DEFUN([AM_PATH_PYTHON],
     m4_default([$3], [AC_MSG_ERROR([no suitable Python interpreter found])])
   else
 
-  dnl Query Python for its version number.  Getting [:3] seems to be
-  dnl the best way to do this; it's what "site.py" does in the standard
-  dnl library.
+  dnl Query Python for its version number.  Although site.py simply uses
+  dnl sys.version[:3], printing that failed with Python 3.10, since the
+  dnl trailing zero was eliminated. So now we output just the major
+  dnl and minor version numbers, as numbers. Apparently the tertiary
+  dnl version is not of interest.
 
   AC_CACHE_CHECK([for $am_display_PYTHON version], [am_cv_python_version],
-    [am_cv_python_version=`$PYTHON -c "import sys; sys.stdout.write(sys.version[[:3]])"`])
+    [am_cv_python_version=`$PYTHON -c "import sys; print('%u.%u' % sys.version_info[[:2]])"`])
   AC_SUBST([PYTHON_VERSION], [$am_cv_python_version])
 
   dnl Use the values of $prefix and $exec_prefix for the corresponding
@@ -250,7 +252,7 @@ for i in list(range(0, 4)): minverhex = (minverhex << 8) + minver[[i]]
 sys.exit(sys.hexversion < minverhex)"
   AS_IF([AM_RUN_LOG([$1 -c "$prog"])], [$3], [$4])])
 
-# Copyright (C) 2001-2018 Free Software Foundation, Inc.
+# Copyright (C) 2001-2020 Free Software Foundation, Inc.
 #
 # This file is free software; the Free Software Foundation
 # gives unlimited permission to copy and/or distribute it,
@@ -275,6 +277,8 @@ m4_include([m4/fortran.m4])
 m4_include([m4/gmp.m4])
 m4_include([m4/gsl.m4])
 m4_include([m4/java.m4])
+m4_include([m4/m4_ax_blas.m4])
+m4_include([m4/m4_ax_lapack.m4])
 m4_include([m4/m4_ax_lib_hdf5.m4])
 m4_include([m4/m4_ax_lib_netcdf4.m4])
 m4_include([m4/mpfr.m4])

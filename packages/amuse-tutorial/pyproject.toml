@@ -1,0 +1,8 @@
+[build-system]
+requires = [
+    'amuse-framework>=13.0.0',
+    'amuse-bhtree>=13.0.0',
+    'amuse-sse>=13.0.0',
+    'notebook',
+    'matplotlib'
+]

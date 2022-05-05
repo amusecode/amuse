@@ -1,6 +1,3 @@
-import sys
-import os
-from support.version import version
 from support.classifiers import classifiers
 
 from setuptools import setup, find_packages
@@ -13,11 +10,12 @@ license_ = "Apache License 2.0"
 url = 'http://www.amusecode.org/'
 install_requires = [
     'setuptools>=41.0.0',
+    'setuptools_scm',
     'pip>=19.0.0',
     'wheel>=0.32',
     'docutils>=0.6',
     'numpy>=1.2.2',
-    'nose>=0.11.1',
+    'pytest>=4.0',
     'h5py>=1.1.0',
 ]
 description = 'The Astrophysical Multipurpose Software Environment'
@@ -35,17 +33,6 @@ packages.append("amuse.community.interface")
 
 package_data = {
     'amuse.rfi.tools': ['*.template'],
-    'amuse.test.suite.core_tests': [
-        '*.txt', '*.dyn', '*.ini',
-        '*.nemo',
-        '*.dat', 'gadget_snapshot'
-    ],
-    'amuse.test.suite.codes_tests': [
-        '*.txt', 'test_sphray_data*'
-    ],
-    'amuse.test.suite.ticket_tests': [
-        '*.out'
-    ],
     'amuse': [
         '*rc'
     ]
@@ -53,8 +40,22 @@ package_data = {
 
 mapping_from_command_name_to_command_class=setup_commands()
 
+try:
+    from src.amuse.version import version
+    use_scm_version = False
+    setup_requires = []
+except ImportError:
+    version = False
+    setup_requires = ['setuptools_scm']
+    use_scm_version = {
+        "root": "../..",
+        "relative_to": __file__,
+        "write_to": "src/amuse/version.py",
+    }
 setup(
     name=name,
+    use_scm_version=use_scm_version,
+    setup_requires=setup_requires,
     version=version,
     classifiers=classifiers,
     url=url,

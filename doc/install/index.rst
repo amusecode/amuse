@@ -4,11 +4,7 @@ Installation
 .. toctree::
    :maxdepth: 1
    
-   howto-obtain-AMUSE
-   howto-install-prerequisites
    howto-install-AMUSE
    getting-started
-   configuration
-   documenting
    
 

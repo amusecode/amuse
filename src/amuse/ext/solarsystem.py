@@ -127,8 +127,8 @@ def get_position(mass_sun, mass_planet, ecc, semi, mean_anomaly, incl, argument,
   a2 = ([1.0, 0.0, 0.0], [0.0, numpy.cos(incl), -numpy.sin(incl)], [0.0, numpy.sin(incl), numpy.cos(incl)])
   a3 = ([numpy.cos(argument), -numpy.sin(argument), 0.0], [numpy.sin(argument), numpy.cos(argument), 0.0], [0.0, 0.0, 1.0])
   A = numpy.dot(numpy.dot(a1,a2),a3)
-  r_vec = numpy.dot(A,numpy.reshape(r,3,1))
-  v_vec = numpy.dot(A,numpy.reshape(v,3,1))
+  r_vec = numpy.dot(A,numpy.reshape(r,3,'F'))
+  v_vec = numpy.dot(A,numpy.reshape(v,3,'F'))
   
   # for relative vectors
   r[0] = r_vec[0]

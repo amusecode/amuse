@@ -16,7 +16,7 @@ community - a variety of existing codes of different physical domains, each with
             a uniform interface to enable coupling
 
 Help is available for each of these packages, e.g.:
-> amuse.sh
+> python
 >>> import amuse.ic
 >>> help(amuse.ic) # doctest: +ELLIPSIS
 Help on package amuse.ic in amuse:
@@ -25,13 +25,14 @@ Help on package amuse.ic in amuse:
 or (directly from the terminal):
 > pydoc amuse.ic
 """
+import sys
 import numpy
 
 def numpy_fix():
     try:
-      numpy.set_printoptions(legacy='1.13')
+        numpy.set_printoptions(legacy='1.13')
     except TypeError:
-      pass
+        pass
       
 numpy_fix()
 
@@ -46,4 +47,12 @@ try:
 except Exception as ex:
     message="Configuration not read in - or configuration invalid, exception:\n"+str(ex)
     config=NoConfig(message)
-    
+
+
+
+# always report AMUSE reference information
+try:
+    from amuse.support.literature import TrackLiteratureReferences
+    TrackLiteratureReferences.default()
+except:
+    pass

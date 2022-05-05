@@ -1,9 +1,12 @@
-AC_INIT([amuse],  m4_esyscmd_s([python support/version.py]))
+AC_CONFIG_MACRO_DIRS([m4])
+
+AC_INIT([amuse],[m4_esyscmd_s(python support/version.py)])
 AC_CONFIG_SRCDIR([src/amuse/__init__.py])
 
 AC_CONFIG_FILES([config.mk])
 AC_CONFIG_FILES([build.py:bin/amusifier.in],[chmod +x build.py])
 AC_CONFIG_FILES([bin/amusifier:build.py],[chmod +x bin/amusifier])
+AC_CONFIG_FILES([Makefile])
 
 #CODE_GENERATOR="\${AMUSE_DIR}/build.py"
 CODE_GENERATOR=amusifier
@@ -117,8 +120,6 @@ AC_LANG(C)
 AX_CUDA()
 
 AC_PROG_SED()
-
-
       
 AX_CHECK_CL()
 
@@ -184,6 +185,9 @@ AC_SUBST(SC_FCLIBS)
 AC_SUBST(SC_MPI_CLIBS)
 AC_SUBST(SC_MPI_FCLIBS)
 
+AX_LAPACK([AC_MSG_NOTICE([LAPACK and BLAS found ])], 
+          [AC_MSG_ERROR([LAPACK and/or BLAS not found])] )
+
 AX_FFTW()
 AX_GMP()
 AX_MPFR()
@@ -245,9 +249,9 @@ AC_CHECK_PYTHON_MODULE(h5py, version.version)
 AS_VERSION_COMPARE([$PYTHON_h5py_VERSION], [1.1.0],
         [AC_MSG_WARN([h5py version $PYTHON_h5py_VERSION found, but at least 1.1.0 needed])]
 )
-AC_CHECK_PYTHON_MODULE(nose, __version__)
-AS_VERSION_COMPARE([$PYTHON_nose_VERSION], [0.10],
-        [AC_MSG_ERROR([nose version $PYTHON_nose_VERSION found, but at least 0.11 needed])]
+AC_CHECK_PYTHON_MODULE(pytest, __version__)
+AS_VERSION_COMPARE([$PYTHON_pytest_VERSION], [2.999],
+        [AC_MSG_WARN([pytest version $PYTHON_pytest_VERSION found, but at least 3.0 needed])]
 )
 AC_CHECK_PYTHON_MODULE(docutils, __version__)
 AS_VERSION_COMPARE([$PYTHON_docutils_VERSION], [0.5],
@@ -270,6 +274,6 @@ AC_CHECK_PYTHON_MODULE(matplotlib)
 #AS_VERSION_COMPARE([$PYTHON_Cython_VERSION], [0.13],
 #        [AC_MSG_WARN([Cython version $PYTHON_Cython_VERSION found, but at least 0.13 needed])]
 #)
-AC_OUTPUT()
+AC_OUTPUT
 
  AC_MSG_NOTICE( Configuration done. Configuration written to config.mk )

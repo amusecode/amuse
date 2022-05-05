@@ -529,7 +529,7 @@ class InMemoryAttribute(object):
             shape = cls._determine_shape(shape, array)
             if dtype.kind == 'S' or dtype.kind == 'U':
                 return InMemoryStringAttribute(name, shape, dtype)
-            elif dtype == numpy.object:
+            elif dtype == object:
                 return InMemoryLinkedAttribute(name, shape)
             else:
                 return InMemoryUnitlessAttribute(name, shape, dtype)
@@ -680,7 +680,7 @@ class InMemoryLinkedAttribute(InMemoryAttribute):
         InMemoryAttribute.__init__(self, name)
         self.values = LinkedArray(numpy.empty(
             shape,
-            dtype = numpy.object
+            dtype = object
         ))
         
         

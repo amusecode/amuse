@@ -27,6 +27,7 @@ Reference documentation
    message-protocol
    distributed
    cartesius
+   slurm
    style_guide
    code_management
    glossary

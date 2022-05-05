@@ -129,10 +129,10 @@ def new_option_parser():
     result.add_option("-C", dest="C", default = "SeBa",
                       help="stellar evolution code [SeBa]")
     result.add_option("-N", dest="N", type="int",default = 3000,
-                      help="number of stars [10]")
+                      help="number of stars [3000]")
     result.add_option("-t", dest="t_end", unit=units.Myr,
                       type="float", default = 4500.0|units.Myr,
-                      help="end time of the simulation [100] Myr")
+                      help="end time of the simulation [4500] Myr")
     result.add_option("-z", dest="z", type="float", default = 0.02,
                       help="metalicity [0.02]")
     result.add_option("-p", dest="plot", action="store_true", default = False,

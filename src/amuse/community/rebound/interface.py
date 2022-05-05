@@ -24,7 +24,6 @@ class ReboundInterface(CodeInterface,
         
     """
     include_headers = ['worker_code.h', 'stopcond.h']
-    __so_module__ = 'rebound_cython'
 
     def __init__(self, **options):
         CodeInterface.__init__(self, name_of_the_worker="rebound_worker",
@@ -529,7 +528,7 @@ class Rebound(GravitationalDynamics, GravityFieldCode):
 
     def define_parameters(self, handler):
         self.stopping_conditions.define_parameters(handler)
-        GravitationalDynamics.define_parameters(self, handler)
+        #~ GravitationalDynamics.define_parameters(self, handler)
         
         handler.add_method_parameter(
             "get_time_step",

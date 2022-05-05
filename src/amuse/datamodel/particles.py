@@ -8,6 +8,7 @@ from amuse.datamodel import trees
 from amuse.units import constants
 from amuse.units import units
 from amuse.units import quantities
+from amuse.units import trigo
 from amuse.units.quantities import Quantity
 from amuse.units.quantities import new_quantity
 from amuse.units.quantities import is_quantity
@@ -1109,6 +1110,11 @@ class AbstractParticleSet(AbstractSet):
     def get_containing_set(self):
         return self
 
+    def get_subsets(self):
+        raise Exception("not implemented/ not a ParticlesSuperset or derived")
+
+    def get_subset(self, name):
+        raise Exception("not implemented/ not a ParticlesSuperset or derived")
 
 class Particles(AbstractParticleSet):
     """
@@ -1405,7 +1411,7 @@ class Particles(AbstractParticleSet):
     def is_quantity():
         return False
         
-    def new_particle(key = None, **keyword_arguments):
+    def new_particle(self, key = None, **keyword_arguments):
         return self.add_particle(Particle(key = key, **keyword_arguments))
         
 
@@ -2972,7 +2978,6 @@ class ParticlesWithAttributesTransformed(AbstractParticleSet):
             self._private.set_function
         )
 
-
     def get_valid_particles_mask(self):
         return self._private.particles.get_valid_particles_mask()
 
@@ -2992,19 +2997,22 @@ class ParticlesWithAttributesTransformed(AbstractParticleSet):
 
     def shallow_copy(self):
         copiedParticles =  self._private.particles.shallow_copy()
-        return ParticlesWithUnitsConverted(copiedParticles, self._private.converter)
+        return ParticlesWithAttributesTransformed(
+            copiedParticles,
+            self._private.get_function,
+            self._private.set_function,
+        )
 
     def unconverted_set(self):
         return self._private.particles
-
 
     def can_extend_attributes(self):
         return self._private.particles.can_extend_attributes()
 
     def add_particles_to_store(self, keys, attributes = [], values = []):
         converted_values = []
-        for quantity in values:
-            converted_quantity = self._private.converter.from_source_to_target(quantity)
+        for attribute, quantity in zip(attributes, values):
+            converted_quantity = self._private.set_function(attribute, quantity)
             converted_values.append(converted_quantity)
         self._private.particles.add_particles_to_store(keys, attributes, converted_values)
 
@@ -3068,26 +3076,242 @@ class ParticlesWithAttributesTransformed(AbstractParticleSet):
             timestamp = self._private.get_function("timestamp", timestamp)
         return timestamp
 
-    def savepointsavepoint(self, timestamp=None):
+    def savepoint(self, timestamp=None, **kwargs):
         if not timestamp is None:
-            timestamp = self._private.get_function("timestamp", timestamp)
-        return ParticlesWithUnitsConverted(
+            timestamp = self._private.set_function("timestamp", timestamp)
+        return ParticlesWithAttributesTransformed(
             self._private.particles.savepoint(timestamp),
-            self._private.converter
+            self._private.get_function,
+            self._private.set_function,
         )
 
     def previous_state(self):
-        return ParticlesWithUnitsConverted(
+        return ParticlesWithAttributesTransformed(
             self._private.particles.previous_state(),
             self._private.get_function,
             self._private.set_function,
         )
 
-    def get_unit_converter(self):
-        return self._private.converter.generic_to_si
+class TransformedParticles(ParticlesWithAttributesTransformed):
+    """
+    Particleset which is a view on the parent particle set with some attributes transformed.
+    
+    This is a more flexible reimplementation of ParticlesWithAttributesTransformed such
+    that general coordinate trasnformations are possible.
+    """
+
+    @classmethod
+    def translate(cls, particles, position, velocity):
+        def forward(x,y,z,vx,vy,vz):
+            return [x+position[0],
+                    y+position[1],
+                    z+position[2],
+                    vx+velocity[0],
+                    vy+velocity[1],
+                    vz+velocity[2],]
+
+        def reverse(x,y,z,vx,vy,vz):
+            return [x-position[0],
+                    y-position[1],
+                    z-position[2],
+                    vx-velocity[0],
+                    vy-velocity[1],
+                    vz-velocity[2],]
+
+        return cls(
+            particles,
+            ["x","y","z","vx","vy","vz"],
+            forward,
+            ["x","y","z","vx","vy","vz"],
+            reverse
+        )
+
+    @classmethod
+    def rotate_z(cls, particles, angle, omega):
+        def forward(x,y,vx,vy, inverse=False):
+            _angle=angle
+            _omega=omega
+            if inverse:
+                _angle=-angle
+                _omega=-omega
+    
+            C1 = vx + _omega*y
+            C2 = vy - _omega*x
+            x_ =  x * trigo.cos(_angle) + y * trigo.sin(_angle)
+            y_ = -x * trigo.sin(_angle) + y * trigo.cos(_angle)
+            vx_ = C1*trigo.cos(_angle) + C2*trigo.sin(_angle)
+            vy_ = C2*trigo.cos(_angle) - C1*trigo.sin(_angle)
+            return x_,y_,vx_,vy_
+
+        def reverse(x,y,vx,vy):
+            return forward(x,y,vx,vy, inverse=True)
+
+        return cls(
+            particles,
+            ["x","y","vx","vy"],
+            forward,
+            ["x","y","vx","vy"],
+            reverse
+        )
+
+    def __init__(self, particles, target_attributes, 
+        forward_transformation, source_attributes, reverse_transformation=None):
+        AbstractParticleSet.__init__(self, particles)
+
+        self._private.particles = particles
+        self._private.source_attributes=source_attributes
+        self._private.target_attributes=target_attributes
+        self._private.forward_transformation = forward_transformation
+        self._private.reverse_transformation = reverse_transformation
+        if forward_transformation is None:
+            self._private.forward_transformation = lambda *x:x
+            self._private.reverse_transformation = lambda *x:x
+          
+    def _factory(self, particles):
+        return TransformedParticles( particles,
+                    self._private.target_attributes,
+                    self._private.forward_transformation,
+                    self._private.source_attributes,
+                    self._private.reverse_transformation )
+
+    def compressed(self):
+        return self._factory(self._private.particles.compressed())
+
+    def shallow_copy(self):
+        copiedParticles =  self._private.particles.shallow_copy()
+        return self._factory(copiedParticles)
+
+    def get_values_in_store(self, indices, attributes):
+        
+        direct_attributes=[]
+        needs_transformation=False
+        for attribute in attributes:
+            if attribute in self._private.target_attributes:
+                needs_transformation=True
+            else:
+                direct_attributes.append(attribute)
+                
+        if needs_transformation:
+            sources=self._private.particles.get_values_in_store(indices, self._private.source_attributes)
+            targets=self._private.forward_transformation(*sources)
+        
+        if direct_attributes:
+            direct_values = self._private.particles.get_values_in_store(indices, direct_attributes)
+
+        values=[]
+        for attribute in attributes:
+            if attribute in self._private.target_attributes:
+                value=targets[self._private.target_attributes.index(attribute)]
+            else:
+                value=direct_values[direct_attributes.index(attribute)]
+            values.append(value)
+
+        converted_values = []
+        for attribute, quantity in zip(attributes, values):
+            if isinstance(quantity, LinkedArray):
+                objects = quantity
+                convert_objects = []
+                for x in objects:
+                    if x is None:
+                        convert_objects.append(x)
+                    else:
+                        transformed_x=self._factory(x.as_set())
+                        if isinstance(x, Particle):
+                            transformed_x=x[0]
+                        convert_objects.append(transformed_x)
+                convert_objects = LinkedArray(convert_objects)
+                converted_values.append(convert_objects)
+            else:
+                converted_values.append(quantity)
+        return converted_values
 
 
+    def set_values_in_store(self, indices, attributes, values):
+        _attributes=[]
+        _values=[]
+        needs_transformation=False
+        for attribute, value in zip(attributes, values):
+            if attribute in self._private.target_attributes:
+                needs_transformation=True
+            else:
+                _attributes.append(attribute)
+                _values.append(value)
 
+        if needs_transformation:
+            if self._private.reverse_transformation is None:
+                raise Exception("no reverse_transformation defined, view on particleset is readonly")
+            missing=[]
+            for attribute in self._private.target_attributes:
+                if attribute not in attributes:
+                    missing.append(attribute)
+
+            if missing:
+                sources=self._private.particles.get_values_in_store(indices, self._private.source_attributes)
+                targets=self._private.forward_transformation(*sources)
+            
+            args=[]    
+            for attribute in self._private.target_attributes:
+                if attribute in missing:
+                    value=targets[self._private.target_attributes.index(attribute)]
+                else:
+                    value=values[attributes.index(attribute)]
+                args.append(value)
+                
+            sources=self._private.reverse_transformation(*args)
+            for attribute,value in zip(self._private.source_attributes, sources):
+                _attributes.append(attribute)
+                _values.append(value)
+
+        self._private.particles.set_values_in_store(indices, _attributes, _values)
+
+    def add_particles_to_store(self, keys, attributes = [], values = []):
+        _attributes=[]
+        _values=[]
+        needs_transformation=False
+        for attribute, value in zip(attributes, values):
+            if attribute in self._private.target_attributes:
+                needs_transformation=True
+            else:
+                _attributes.append(attribute)
+                _values.append(value)
+
+        if needs_transformation:
+            if self._private.reverse_transformation is None:
+                raise Exception("no reverse_transformation defined, view on particleset is readonly")
+            missing=[]
+            for attribute in self._private.target_attributes:
+                if attribute not in attributes:
+                    missing.append(attribute)
+
+            if missing:
+                raise Exception("For this add_particle operation I am missing the following attributes:"+ str(missing))
+            
+            args=[]    
+            for attribute in self._private.target_attributes:
+                value=values[attributes.index(attribute)]
+                args.append(value)
+                
+            sources=self._private.reverse_transformation(*args)
+            for attribute,value in zip(self._private.source_attributes, sources):
+                _attributes.append(attribute)
+                _values.append(value)
+        self._private.particles.add_particles_to_store(keys, _attributes, _values)
+
+    def get_timestamp(self):
+        return self._private.particles.get_timestamp()
+
+    def savepoint(self, timestamp=None, **kwargs):
+        return self._factory(self._private.particles.savepoint(timestamp))
+
+    def previous_state(self):
+        return self._factory(self._private.particles.previous_state())
+
+    def get_subsets(self):
+        return list([  self._factory(particles) for particles in self._private.particles.get_subsets()])
+
+    def get_subset(self, name):
+        return self._factory(self._private.particles.get_subset(name))
+        
 
 class ParticleInformationChannel(object):
 
@@ -3294,7 +3518,7 @@ class ParticleInformationChannel(object):
             function=lambda *x : x
 
         if not self.to_particles.can_extend_attributes():
-            target_attributes = self.to_particles.get_defined_settable_attribute_names()
+            target_attributes = self.to_particles.get_settable_attribute_names_defined_in_store()
             if not set(target).issubset(set(target_attributes)):
                 raise Exception("trying to set unsettable attributes {0}".format(
                                 list(set(target)-set(target_attributes))) )

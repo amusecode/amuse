@@ -15,7 +15,7 @@ class HalogenInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesM
     from the distribution function of the models.
     
     Relevant references:
-        .. [#] Zemp M., Moore B., Stadel J., Carollo C.M. & Madau P. 2008, MNRAS, 386, 1543 
+        .. [#] Zemp M., Moore B., Stadel J., Carollo C.M. & Madau P. 2008, MNRAS, 386, 1543 [2008MNRAS.386.1543Z]
     """
     
     include_headers = ['worker_code.h']

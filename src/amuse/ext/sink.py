@@ -21,9 +21,10 @@ def angular_momentum(mass,position,velocity):
     Returns the angular momentum of the particles.
     """
     try:
-      return mass.reshape((-1,1)) * position.cross(velocity)
+        return mass.reshape((-1,1)) * position.cross(velocity)
     except:
-      return mass * position.cross(velocity)
+        return mass * position.cross(velocity)
+
 
 class SinkParticles(ParticlesOverlay):
 

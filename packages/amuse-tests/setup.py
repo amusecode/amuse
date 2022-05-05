@@ -1,9 +1,8 @@
-import sys
-import os
-from support.version import version, main_version
+#!/usr/bin/env python3
 from support.classifiers import classifiers
 
-from setuptools import setup, find_packages
+from setuptools import setup
+
 import support
 support.use("system")
 from support.setup_codes import setup_commands
@@ -14,7 +13,7 @@ author_email = 'info@amusecode.org'
 license_ = "Apache License 2.0"
 url = 'http://www.amusecode.org/'
 install_requires = [
-    'amuse-framework>=%s' % (main_version),
+    'amuse-framework',
 ]
 description = 'The Astrophysical Multipurpose Software Environment - tests'
 with open("README.md", "r") as fh:
@@ -25,30 +24,38 @@ extensions = []
 
 all_data_files = []
 
-packages=['amuse.test.suite.' + x for x in find_packages('test')]
+packages = [
+    'amuse.test.suite',
+    'amuse.test.suite.ext_tests', 
+    'amuse.test.suite.core_tests',
+    'amuse.test.suite.compile_tests', 
+    'amuse.test.suite.codes_tests',
+    'amuse.test.suite.ticket_tests', 
+    'amuse.test.suite.reports',
+]
 
 package_data = {
-    'amuse.rfi.tools': ['*.template'],
-    'amuse.test.suite.core_tests': [
-        '*.txt', '*.dyn', '*.ini',
-        '*.nemo',
-        '*.dat', 'gadget_snapshot'
-    ],
-    'amuse.test.suite.codes_tests': [
-        '*.txt', 'test_sphray_data*'
-    ],
-    'amuse.test.suite.ticket_tests': [
-        '*.out'
-    ],
-    'amuse': [
-        '*rc'
-    ]
 }
 
-mapping_from_command_name_to_command_class=setup_commands()
+mapping_from_command_name_to_command_class = setup_commands()
+
+try:
+    from src.amuse.test.suite.version import version
+    use_scm_version = False
+    setup_requires = []
+except ImportError:
+    version = False
+    setup_requires = ['setuptools_scm']
+    use_scm_version = {
+        "root": "../..",
+        "relative_to": __file__,
+        "write_to": "src/amuse/test/suite/version.py",
+    }
 
 setup(
     name=name,
+    use_scm_version=use_scm_version,
+    setup_requires=setup_requires,
     version=version,
     classifiers=classifiers,
     url=url,
@@ -62,7 +69,9 @@ setup(
     python_requires=">=3.5",
     cmdclass=mapping_from_command_name_to_command_class,
     ext_modules=extensions,
-    package_dir={'amuse.test.suite' :'test'},
+    package_dir={
+        'amuse.test.suite': 'src/amuse/test/suite',
+    },
     packages=packages,
     package_data=package_data,
     data_files=all_data_files,
