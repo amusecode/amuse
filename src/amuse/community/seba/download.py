@@ -96,7 +96,7 @@ def new_option_parser():
     result = OptionParser()
     result.add_option(
         "--seba-version",
-        default='01d81af6a04feb09fbd72272b088b63bd4e02117',
+        default='427cc7636257a8eeead4ab6783e292a102e5b522',
         dest="seba_version",
         help="SeBa commit hash to download",
         type="string"
