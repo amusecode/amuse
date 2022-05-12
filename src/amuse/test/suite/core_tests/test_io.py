@@ -60,14 +60,11 @@ class FrameworkTests(amusetest.TestCase):
     def test3(self):
         TestFileFormatProcessor.register()
         documentation =  base.write_set_to_file.__doc__
-        print(documentation)
         self.assertTrue("**123**,\n      Save files in a test format" in documentation)
     
     def test4(self):
         options = base.get_options_for_format('123')
         options.sort(key = lambda x: x[0])
-        for x in options:
-            print(x)
         name, description, default = options[0]
         self.assertEqual(name, 'add_comma')
         self.assertEqual(description, 'if True will add a comma between each value')

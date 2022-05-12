@@ -65,8 +65,8 @@ class AbstractGrid(AbstractSet):
     def get_timestamp(self):
         return self.collection_attributes.timestamp
         
-    def new_channel_to(self, other):
-        return GridInformationChannel(self, other)
+    def new_channel_to(self, other, attributes=None, target_names=None):
+        return GridInformationChannel(self, other, attributes, target_names)
     def new_remapping_channel_to(self, other, remapper):
         return GridRemappingChannel(self, other, remapper)
     
@@ -682,9 +682,11 @@ class GridInformationChannel(object):
     For each dimension copies cells from 0 - min(grid0.size, grid1.size).
     """
     
-    def __init__(self, source, target):
+    def __init__(self, source, target, attributes=None, target_names=None):
         self.source = source
         self.target = target
+        self.attributes = attributes
+        self.target_names = target_names
         self._reindex()
         
     def _reindex(self):
@@ -696,6 +698,22 @@ class GridInformationChannel(object):
         index = tuple(index)
         
         self.index = index
+
+
+    def reverse(self):
+        if self.target_names is None:
+            attributes = self.attributes
+            target_names = self.target_names
+        else:
+            attributes = self.target_names
+            target_names = self.attributes
+
+        return GridInformationChannel(
+            self.target,
+            self.source,
+            attributes,
+            target_names
+        )
         
     def get_values(self, attributes):
         values = self.source.get_values_in_store(self.index, attributes)
@@ -713,14 +731,16 @@ class GridInformationChannel(object):
         names_to_copy = set(from_names).intersection(set(to_names))
         return list(names_to_copy)
     
-    def copy_attributes(self, attributes, target_names=None):
+    def copy_attributes(self, attributes, target_names = None):
         if target_names is None:
-            target_names=attributes
+            target_names = attributes
         converted=self.get_values(attributes)        
         self.target.set_values_in_store(self.index, target_names, converted)
         
     def copy(self):
-        if not self.target.can_extend_attributes():
+        if not self.attributes is None:
+            self.copy_attributes(self.attributes, self.target_names)
+        elif not self.target.can_extend_attributes():
             self.copy_overlapping_attributes()
         else:
             self.copy_all_attributes()
