@@ -11,6 +11,40 @@ import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 from plot_models import StellarModelPlot
 
+from amuse.community.genec.interface import SPECIES_NAMES
+
+class NeedToSave:
+    def __init__(self):
+        self.model = 0
+        self.current = {
+            'luminosity': 0 | units.LSun,
+            'temperature': 0 | units.K,
+            'central_temperature': 0 | units.K,
+            'central_density': 0 | units.g * units.cm**-3,
+            'surface_velocity': 0 | units.kms,
+            'mass': 0 | units.MSun,
+            'time_step': 0 | units.s,
+        }
+        for species in SPECIES_NAMES.keys():
+            self.current[species] = []
+        self.previous = self.current.copy()
+        self.derivs = {}
+        for key in self.current.keys():
+            self.derivs[key] = 1
+        return
+
+    def get_values(self):
+        return self.current
+
+    @property
+    def save_next(self):
+        return True
+
+    def update(self, star):
+        self.previous = self.current.copy()
+        for key in self.current.keys():
+            self.current[key] = getattr(star, key)
+
 
 def read_saved_star_timeline(star_key):
     star = read_set_from_file(f'star-{star_key}.amuse')[0]
@@ -98,14 +132,6 @@ evo = Genec(redirection="none")
 # evo = Genec()
 if ROTATING_STAR:
     params = {
-        'vwant': 0.4,
-        'irot': 1,
-        'isol': 1,
-        'icoeff': 11,
-        'omega': 1e-5,
-        'fitm': 0.999,
-        'fitmi': 0.999,
-        'ifitm': 3,
         # PhysicsParams
         'irot': 1,
         'isol': 1,
@@ -189,15 +215,16 @@ if ROTATING_STAR:
         'icncst': 0,
         'tauH_fit': 1,
     }
-evo.parameters.vwant = 0.4
-print(evo.parameters.irot)
+# evo.parameters.vwant = 0.4
+evo.parameters.ipoly = 0
+# evo.parameters.idebug = 1
 star_in_evo = evo.fullparticles.add_particle(star)
+
 # for p in params.items():
 #     setattr(evo.parameters, p[0], p[1])
 evo.commit_particles()
-print(evo.parameters)
 # print(star_in_evo)
-#exit()
+# exit()
 font = {
     'size': 8,
 }
@@ -205,10 +232,10 @@ plt.rc('font', **font)
 # iplt.switch_backend('macosx')
 plt.ion()
 
-save_every = 1
-store_every = 1
+save_every = 10
+store_every = 10
 plot_time = 5 | units.s
-plot_models = 100
+plot_models = 200
 step = 0
 
 model_of_last_save = 0
@@ -217,9 +244,12 @@ time_start = time.time() | units.s
 time_of_last_plot = 0 | units.s
 age_of_last_plot = star_in_evo.age
 
-plotting = StellarModelPlot(star_in_evo)
+#plotting = StellarModelPlot(star_in_evo)
 
-while True:
+evo.parameters.nzmod = 100
+
+print("age   mass   radius   temp   lum   phase   vequat   h0   vwant")
+while step < 2:
     time_elapsed = (time.time() | units.s) - time_start
     star = star_in_evo.copy()
     # number_of_zones = star_in_evo.get_number_of_zones()
@@ -247,7 +277,8 @@ while True:
         evo.parameters.vwant,
     )
     if step % store_every == 0:
-        plotting.update(star_in_evo, phase=evo.parameters.phase)
+        pass
+        #plotting.update(star_in_evo, phase=evo.parameters.phase)
     if (
         (time_elapsed - time_of_last_plot) > plot_time
         or step - model_of_last_plot > plot_models
@@ -256,7 +287,7 @@ while True:
             (star.age - age_of_last_plot).value_in(units.Myr)
             / (time_elapsed - time_of_last_plot).value_in(units.minute)
         ) | units.Myr / units.minute
-        plotting.plot_all(speed=speed, step=step)
+        #plotting.plot_all(speed=speed, step=step)
         model_of_last_plot = step
         time_of_last_plot = time_elapsed
         age_of_last_plot = star.age
@@ -273,7 +304,9 @@ while True:
             chemical_abundance_profile,
         )
 
+    age_previous = star_in_evo.age
     star_in_evo.evolve_one_step()
+    print(f"Condition: {evo.parameters.stopping_condition}")
     if evo.parameters.stopping_condition != "none":
         # star_in_evo.age == age_previous:
         if step > 1:

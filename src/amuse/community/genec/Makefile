@@ -11,6 +11,7 @@ FC      = $(MPIFC)
 LDFLAGS  += -lm $(MUSE_LD_FLAGS)
 
 # FCFLAGS += -std=f95
+# FCFLAGS += -O0
 
 OBJS = interface.o
 
