@@ -3,6 +3,117 @@
 #include "src/main/allvars.h"
 #include "src/main/proto.h"
 
+// general interface functions:
+
+void set_default_parameters(){
+  // Relevant files
+  strcpy(All.InitCondFile, "./snap_010");
+  strcpy(All.OutputDir,   "./output");
+  strcpy(All.SnapshotFileBase, "snap");
+  strcpy(All.OutputListFilename, "./output_list.txt");
+
+  // File formats
+  All.ICFormat = 1;
+  All.SnapFormat = 3;
+
+  // CPU-time LimitUBelowThisDensity
+  All.TimeLimitCPU = 93000;
+  All.CpuTimeBetRestartFile = 12000;
+  All.ResubmitOn = 0;
+  strcpy(All.ResubmitCommand, "my-scriptfile");
+
+  // Memory allocation
+  All.MaxMemSize = 2500;
+
+  // Characteristics of run
+  All.TimeBegin = 0.0;
+  All.TimeMax = 1.0;
+
+  // Basic code options that set simulation type
+  All.ComovingIntegrationOn = 0;
+  All.PeriodicBoundariesOn = 0;
+  All.CoolingOn = 0;
+  All.StarformationOn = 0;
+
+  // Cosmological parameters
+  All.Omega0 = 0.0;
+  All.OmegaLambda = 0.0;
+  All.OmegaBaryon = 0.0;
+  All.HubbleParam = 1.0;
+  All.BoxSize = 100000.0;
+
+  // Output frequency and output parameters
+  All.OutputListOn = 1;
+  All.TimeBetSnapshot = 0.0;
+  All.TimeOfFirstSnapshot = 0.0;
+  All.TimeBetStatistics = 0.01;
+  All.NumFilesPerSnapshot = 1;
+  All.NumFilesWrittenInParallel = 1;
+
+  // Integration timing accuracy
+  All.TypeOfTimestepCriterion = 0;
+  All.ErrTolIntAccuracy = 0.012;
+  All.CourantFac = 0.3;
+  All.MaxSizeTimestep = 0.05;
+  All.MinSizeTimestep = 2.0e-9;
+
+  // Treatment of empty space and temp limits
+  All.InitGasTemp = 244.8095;
+  All.MinGasTemp = 5.0;
+  All.MinimumDensityOnStartUp = 1.0e-20;
+  All.LimitUBelowThisDensity = 0.0;
+  All.LimitUBelowCertainDensityToThisValue = 0.0;
+  All.MinEgySpec = 0.0;
+
+  // Tree algorithm, force accuracy, domain update frequency
+  All.TypeOfOpeningCriterion = 1;
+  All.ErrTolTheta = 0.7;
+  All.ErrTolForceAcc = 0.0025;
+  All.MultipleDomains = 8;
+  All.TopNodeFactor = 2.5;
+  All.ActivePartFracForNewDomainDecomp = 0.01;
+
+  // Initial density estimates
+  All.DesNumNgb = 64;
+  All.MaxNumNgbDeviation = 4;
+
+  // System of Units
+  All.UnitLength_in_cm = 3.085678e21;
+  All.UnitMass_in_g = 1.989e43;
+  All.UnitVelocity_in_cm_per_s = 1e5;
+
+  // Gravitational softening lengths
+  All.SofteningComovingType0 = 1.0;
+  All.SofteningComovingType1 = 1.0;
+
+  All.SofteningMaxPhysType0 = 1.0;
+  All.SofteningMaxPhysType1 = 1.0;
+
+  All.GasSoftFactor = 2.5;
+
+  All.SofteningTypeOfPartType0 = 0;
+  All.SofteningTypeOfPartType1 = 1;
+  All.SofteningTypeOfPartType2 = 1;
+  All.SofteningTypeOfPartType3 = 1;
+  All.SofteningTypeOfPartType4 = 1;
+  All.SofteningTypeOfPartType5 = 1;
+
+  All.MinimumComovingHydroSoftening = 1.0;
+  All.AdaptiveHydroSofteningSpacing = 1.2;
+
+  // Mesh regularization options
+  All.CellShapingSpeed = 0.5;
+  All.CellShapingFactor = 1.0;
+
+  // parameters that are fixed for AMUSE:
+  All.PartAllocFactor = 1.5; // Memory allocation parameter
+  All.TreeAllocFactor = 0.8; // Memory allocation parameter
+  All.BufferSize = 25;       // Memory allocation parameter
+  All.ResubmitOn = 0;              // Keep this turned off!
+  All.OutputListOn = 0;            // Keep this turned off
+  All.GravityConstantInternal = 0; // Keep this turned off
+}
+
 int initialize_code(){
   MPI_Init(&argc, &argv);
   MPI_Comm_rank(MPI_COMM_WORLD, &ThisTask);
@@ -21,7 +132,6 @@ int initialize_code(){
 
   begrun0();
 
-  strcpy(ParameterFile, "param.txt");  /* Removing command line parsing. argv[1] replaced with "param.txt". */
   RestartFlag = 0;
 
   begrun1(); /* set-up run  */
@@ -95,7 +205,7 @@ int get_total_radius(double * radius){
   return 0;
 }
 
-int new_particle(int * index_of_the_particle, double mass, double x, 
+int new_particle(int * index_of_the_particle, double mass, double x,
   double y, double z, double vx, double vy, double vz, double radius){
   return 0;
 }
@@ -120,7 +230,7 @@ int get_eps2(double * epsilon_squared){
   return 0;
 }
 
-int get_index_of_next_particle(int index_of_the_particle, 
+int get_index_of_next_particle(int index_of_the_particle,
   int * index_of_the_next_particle){
   return 0;
 }
@@ -137,13 +247,13 @@ int synchronize_model(){
   return 0;
 }
 
-int set_state(int index_of_the_particle, double mass, double x, double y, 
+int set_state(int index_of_the_particle, double mass, double x, double y,
   double z, double vx, double vy, double vz, double radius){
   return 0;
 }
 
-int get_state(int index_of_the_particle, double * mass, double * x, 
-  double * y, double * z, double * vx, double * vy, double * vz, 
+int get_state(int index_of_the_particle, double * mass, double * x,
+  double * y, double * z, double * vx, double * vy, double * vz,
   double * radius){
   return 0;
 }
@@ -164,7 +274,7 @@ int get_number_of_particles(int * number_of_particles){
   return 0;
 }
 
-int set_acceleration(int index_of_the_particle, double ax, double ay, 
+int set_acceleration(int index_of_the_particle, double ax, double ay,
   double az){
   return 0;
 }
@@ -197,12 +307,12 @@ int get_potential_energy(double * potential_energy){
   return 0;
 }
 
-int get_velocity(int index_of_the_particle, double * vx, double * vy, 
+int get_velocity(int index_of_the_particle, double * vx, double * vy,
   double * vz){
   return 0;
 }
 
-int get_position(int index_of_the_particle, double * x, double * y, 
+int get_position(int index_of_the_particle, double * x, double * y,
   double * z){
   return 0;
 }
@@ -211,7 +321,7 @@ int set_position(int index_of_the_particle, double x, double y, double z){
   return 0;
 }
 
-int get_acceleration(int index_of_the_particle, double * ax, double * ay, 
+int get_acceleration(int index_of_the_particle, double * ax, double * ay,
   double * az){
   return 0;
 }
@@ -224,8 +334,7 @@ int set_parameters(char * param_file){
   return 0;
 }
 
-int set_velocity(int index_of_the_particle, double vx, double vy, 
+int set_velocity(int index_of_the_particle, double vx, double vy,
   double vz){
   return 0;
 }
-
