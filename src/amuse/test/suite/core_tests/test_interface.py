@@ -85,7 +85,7 @@ class CodeInterfaceWithConvertedUnitsTests(amusetest.TestCase):
            
         self.assertEqual(instance.return_an_errorcode(0), None)
         self.assertRaises(Exception, lambda : instance.return_an_errorcode(-1),
-            expected_message="Error when calling 'return_an_errorcode' of a 'InCodeComponentImplementation', errorcode is -1"
+            expected_message="Error when calling 'return_an_errorcode' of a '<class 'amuse.support.interface.InCodeComponentImplementation'>', errorcode is -1"
         )
         
         
@@ -152,7 +152,7 @@ class CodeInterfaceWithUnitsOnLegacyFunctionTests(amusetest.TestCase):
         instance = interface.InCodeComponentImplementation(original)
         
         instance.get_handler("LEGACY").legacy_interface = TestImplementation()
-        self.assertRaises(Exception,instance.return_error, " Error when calling 'echo_one' of a 'InCodeComponentImplementation', errorcode is -1")
+        self.assertRaises(Exception,instance.return_error, " Error when calling 'echo_one' of a '<class 'amuse.support.interface.InCodeComponentImplementation'>', errorcode is -1")
 
     def test4(self): 
         class TestImplementation(object):
@@ -267,7 +267,7 @@ class CodeInterfaceWithMethodsAndPropertiesTests(amusetest.TestCase):
         handler.add_method('get_state_error', (handler.NO_UNIT,), (units.m, units.m, units.kg, handler.ERROR_CODE))
         
         self.assertRaises(AmuseException, instance.get_state_error, 1, 
-            expected_message = "Error when calling 'get_state_error' of a 'InCodeComponentImplementation', errorcode is -1.0")
+            expected_message = "Error when calling 'get_state_error' of a '<class 'amuse.support.interface.InCodeComponentImplementation'>', errorcode is -1.0")
             
 
 class ClassWithState(object):
@@ -482,7 +482,7 @@ class CodeInterfaceTests(amusetest.TestCase):
         self.assertEqual(instance.get_name_of_current_state(), 'ZERO')
         self.assertEqual(instance.returns_2(), 2)
         self.assertRaises(Exception, instance.returns_3, 
-            expected_message = "While calling returns_3 of InCodeComponentImplementation: No transition from current state state 'TWO' to state 'THREE' possible")
+            expected_message = "While calling returns_3 of <class 'amuse.support.interface.InCodeComponentImplementation'>: No transition from current state state 'TWO' to state 'THREE' possible")
         
     def test9(self):
         original = ClassWithState()
@@ -705,7 +705,7 @@ class CodeInterfaceTests(amusetest.TestCase):
         
         self.assertEqual(instance.get_name_of_current_state(), 'ZERO')
         self.assertRaises( Exception, instance.returns_2, expected_message=
-         "While calling returns_2 of InCodeComponentImplementation: No transition from current state state 'ZERO' to state 'TWO' possible")
+         "While calling returns_2 of <class 'amuse.support.interface.InCodeComponentImplementation'>: No transition from current state state 'ZERO' to state 'TWO' possible")
 
         
 class CodeInterfaceWithUnitsAndStateTests(amusetest.TestCase):
@@ -796,11 +796,11 @@ class CodeInterfaceWithErrorHandlingTests(amusetest.TestCase):
         self.assertEqual(instance.get_mass(), 10.0 | units.m)
         original.errorcode = -2
         self.assertRaises(AmuseException, instance.get_mass, expected_message = 
-            "Error when calling 'get_mass' of a 'InCodeComponentImplementation', errorcode is -2, error is 'no such method'")
+            "Error when calling 'get_mass' of a '<class 'amuse.support.interface.InCodeComponentImplementation'>', errorcode is -2, error is 'no such method'")
             
         original.errorcode = -1
         self.assertRaises(AmuseException, instance.get_mass, expected_message = 
-            "Error when calling 'get_mass' of a 'InCodeComponentImplementation', errorcode is -1")
+            "Error when calling 'get_mass' of a '<class 'amuse.support.interface.InCodeComponentImplementation'>', errorcode is -1")
             
 
 class CodeInterfaceWithParticlesTests(amusetest.TestCase):

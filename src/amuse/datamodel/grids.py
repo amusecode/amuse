@@ -65,8 +65,8 @@ class AbstractGrid(AbstractSet):
     def get_timestamp(self):
         return self.collection_attributes.timestamp
         
-    def new_channel_to(self, other):
-        return GridInformationChannel(self, other)
+    def new_channel_to(self, other, attributes=None, target_names=None):
+        return GridInformationChannel(self, other, attributes, target_names)
     def new_remapping_channel_to(self, other, remapper):
         return GridRemappingChannel(self, other, remapper)
     
@@ -682,9 +682,11 @@ class GridInformationChannel(object):
     For each dimension copies cells from 0 - min(grid0.size, grid1.size).
     """
     
-    def __init__(self, source, target):
+    def __init__(self, source, target, attributes=None, target_names=None):
         self.source = source
         self.target = target
+        self.attributes = attributes
+        self.target_names = target_names
         self._reindex()
         
     def _reindex(self):
@@ -696,6 +698,22 @@ class GridInformationChannel(object):
         index = tuple(index)
         
         self.index = index
+
+
+    def reverse(self):
+        if self.target_names is None:
+            attributes = self.attributes
+            target_names = self.target_names
+        else:
+            attributes = self.target_names
+            target_names = self.attributes
+
+        return GridInformationChannel(
+            self.target,
+            self.source,
+            attributes,
+            target_names
+        )
         
     def get_values(self, attributes):
         values = self.source.get_values_in_store(self.index, attributes)
@@ -713,14 +731,16 @@ class GridInformationChannel(object):
         names_to_copy = set(from_names).intersection(set(to_names))
         return list(names_to_copy)
     
-    def copy_attributes(self, attributes, target_names=None):
+    def copy_attributes(self, attributes, target_names = None):
         if target_names is None:
-            target_names=attributes
+            target_names = attributes
         converted=self.get_values(attributes)        
         self.target.set_values_in_store(self.index, target_names, converted)
         
     def copy(self):
-        if not self.target.can_extend_attributes():
+        if not self.attributes is None:
+            self.copy_attributes(self.attributes, self.target_names)
+        elif not self.target.can_extend_attributes():
             self.copy_overlapping_attributes()
         else:
             self.copy_all_attributes()
@@ -830,7 +850,7 @@ class SamplePointWithInterpolation(object):
     def index_for_000_cell(self):
         offset = self.point - self.grid[0,0,0].position
         indices = (offset / self.grid.cellsize())
-        return numpy.floor(indices).astype(numpy.int)
+        return numpy.floor(indices).astype(numpy.int32)
 
     @late
     def index_for_111_cell(self):
@@ -1050,7 +1070,7 @@ class NonOverlappingGridsIndexer(object):
         
         for x in self.grids:
             index = (x.get_maximum_position() / smallest_boxsize)
-            index = numpy.floor(index).astype(numpy.int)
+            index = numpy.floor(index).astype(numpy.int32)
             max_index = numpy.where(index > max_index, index, max_index)
             
         self.grids_on_index = numpy.zeros(max_index, 'int')
@@ -1059,20 +1079,20 @@ class NonOverlappingGridsIndexer(object):
             bottom_left = x.get_minimum_position()
             index_of_grid = (bottom_left / smallest_boxsize)
             size = ((x.get_maximum_position() - x.get_minimum_position()) / smallest_boxsize)
-            i,j,k = numpy.floor(index_of_grid).astype(numpy.int)
-            ni,nj,nk = numpy.floor(size).astype(numpy.int)
+            i,j,k = numpy.floor(index_of_grid).astype(numpy.int32)
+            ni,nj,nk = numpy.floor(size).astype(numpy.int32)
             self.grids_on_index[i:i+ni,j:j+nj,k:k+nk] = index
         
         
     def grid_for_point(self, position):
         index = ((position - self.minimum_position) / self.smallest_boxsize)
-        index = numpy.floor(index).astype(numpy.int)
+        index = numpy.floor(index).astype(numpy.int32)
         index_of_grid = self.grids_on_index[tuple(index)]
         return self.grids[index_of_grid]
         
     def grids_for_points(self, points):
         index = ((points - self.minimum_position) / self.smallest_boxsize)
-        index = numpy.floor(index).astype(numpy.int)
+        index = numpy.floor(index).astype(numpy.int32)
         index_of_grid = self.grids_on_index[tuple(index)]
         return self.grids[index_of_grid]
 

@@ -111,7 +111,7 @@ class StaggeredGrid(object):
         return corners            
 
     def map_elements_to_nodes_structured_larger(self, elements, nodes, elem_values):
-        node_values = numpy.zeros(self.nodes.shape, dtype=numpy.float)
+        node_values = numpy.zeros(self.nodes.shape, dtype=numpy.float64)
         node_values[1:,1:] = elem_values[:,:]
         node_values[0,:] = 0.0
         #assume the grid is cyclic east-west
@@ -119,7 +119,7 @@ class StaggeredGrid(object):
         return node_values
 
     def map_elements_to_nodes_structured_same_size(self, elements, nodes, elem_values):
-        node_values = numpy.zeros(self.nodes.shape, dtype=numpy.float)
+        node_values = numpy.zeros(self.nodes.shape, dtype=numpy.float64)
         node_values = elem_values[:]
         return node_values
     
@@ -148,7 +148,7 @@ class StaggeredGrid(object):
             if (len(element_values) != self.elements.size):
                 raise Exception("number of values passed does not match size of elements grid")
             #do a simple average value of the elements around the node
-            node_values = numpy.zeros(self.nodes.size, dtype=numpy.float)
+            node_values = numpy.zeros(self.nodes.size, dtype=numpy.float64)
             for i in range(len(node_values)):
                 num_neighbors = len(self.inverse_mapping[i])
                 value = 0.0
@@ -165,7 +165,7 @@ class StaggeredGrid(object):
     #this method is for structured grids where the nodes grid is exactly 1 grid point larger in each dimension
     def map_nodes_to_elements_structured_larger(self, elements, nodes, node_values):
         #do simple translation/shift of the values from the north-east corners of each grid cell to the cell centers
-        elem_values = numpy.zeros(self.elements.shape, dtype=numpy.float)
+        elem_values = numpy.zeros(self.elements.shape, dtype=numpy.float64)
         elem_values = node_values[1:,1:]
         return elem_values
 
@@ -173,7 +173,7 @@ class StaggeredGrid(object):
     #the grid is assumed to be cyclic east-west
     def map_nodes_to_elements_structured_same_size(self, elements, nodes, node_values):
         #do simple translation/shift of the values from the north-east corners of each grid cell to the cell centers
-        elem_values = numpy.zeros(self.elements.shape, dtype=numpy.float)
+        elem_values = numpy.zeros(self.elements.shape, dtype=numpy.float64)
         elem_values = node_values.flatten()
         return elem_values
 
@@ -202,7 +202,7 @@ class StaggeredGrid(object):
             if (len(node_values) != self.nodes.size):
                 raise Exception("number of values passed does not match size of nodes grid")
 
-            elem_values = numpy.zeros(self.elements.size, dtype=numpy.float)
+            elem_values = numpy.zeros(self.elements.size, dtype=numpy.float64)
 
             #do a simple average value of the nodes around the element
             for i in range(len(elem_values)):

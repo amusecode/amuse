@@ -1,3 +1,8 @@
+import inspect
+import itertools
+from collections import defaultdict
+import numpy
+
 from amuse.units import nbody_system
 from amuse.units import generic_unit_system
 from amuse.units import quantities
@@ -13,16 +18,11 @@ from amuse.support.core import late
 from amuse.support import exceptions
 from amuse.support import state
 
-import inspect
-import numpy
-
 from amuse import datamodel
 from amuse.datamodel import base
 from amuse.datamodel import parameters
 from amuse.datamodel import incode_storage
 
-import itertools
-from collections import defaultdict
 
 class ConvertArgumentsException(core.IncompatibleUnitsException):
     formatstring = "{0}"
@@ -37,16 +37,16 @@ class OldObjectsBindingMixin(object):
         self.particles.copy_values_of_all_attributes_to(particles)
 
 class MethodArgumentOrResultType(object):
-     _returns_result=True
-     
-     def append_result_value(self, method, definition, value, result):
-         result.append(self.convert_result_value(method, definition, value))
-         
-     def convert_result_value(self, method, definition, value):
-         return value
-         
-     def convert_argument_value(self, method, definition, value):
-         return value
+    _returns_result = True
+
+    def append_result_value(self, method, definition, value, result):
+        result.append(self.convert_result_value(method, definition, value))
+
+    def convert_result_value(self, method, definition, value):
+        return value
+
+    def convert_argument_value(self, method, definition, value):
+        return value
 
 class NoUnitMethodArgumentOrResultType(MethodArgumentOrResultType):
     def __reduce__(self):
@@ -57,7 +57,7 @@ class UnitMethodArgumentOrResultType(MethodArgumentOrResultType):
         return (_get_result_type, ("UNIT",))
 
 class ErrorCodeMethodArgumentOrResultType(MethodArgumentOrResultType):
-    _returns_result=False
+    _returns_result = False
 
     def append_result_value(self, method, definition, value, result):
         self.convert_result_value(method, definition, value)
@@ -97,13 +97,13 @@ def _get_result_type(name):
         return MethodWithUnitsDefinition.ERROR_CODE
     elif name == "INDEX":
         return MethodWithUnitsDefinition.INDEX
-        
-    
+
+
 class LinkMethodArgumentOrResultType(MethodArgumentOrResultType):
-    
+
     def __init__(self, linked_set_name):
         self.linked_set_name = linked_set_name
-    
+
     def get_linked_set(self, method, definition):
         # method might provide a shorter path to the interface object
         # and is cleaner as definition might move to interface class later
@@ -112,18 +112,18 @@ class LinkMethodArgumentOrResultType(MethodArgumentOrResultType):
         except Exception as ex:
             print(ex)
             raise ex
-        
+
     def convert_result_value(self, method, definition, value):
         linked_set = self.get_linked_set(method, definition)
         storage = linked_set._private.attribute_storage
         keys = storage._get_keys_for_indices_in_the_code(value)
-        result = base.LinkedArray(numpy.empty(len(keys), dtype= numpy.object))
+        result = base.LinkedArray(numpy.empty(len(keys), dtype=object))
         for index in range(len(keys)):
             key = keys[index]
             if key >= 0:
                 result[index] = linked_set._get_particle(key)
         return result
-     
+
     def convert_argument_value(self, method, definition, value):
         linked_set = self.get_linked_set(method, definition)
         storage = linked_set._private.attribute_storage
@@ -173,8 +173,8 @@ class LegacyInterfaceHandler(HandleCodeInterfaceAttributeAccess):
         return name in self.method_instances or hasattr(self.legacy_interface, name)
 
     def get_attribute(self, name, result):
-        
-        if not name in self.method_instances:
+
+        if name not in self.method_instances:
             attr = getattr(self.legacy_interface, name)      
             if hasattr(attr, '__call__'):
                 self.method_instances[name] = ProxyingMethodWrapper(self.legacy_interface, name)
@@ -186,10 +186,8 @@ class LegacyInterfaceHandler(HandleCodeInterfaceAttributeAccess):
     def attribute_names(self):
         return set(dir(self.legacy_interface))
 
-
     def has_name(self, name):
         return name == 'LEGACY'
-
 
 
 class HandleConvertUnits(HandleCodeInterfaceAttributeAccess, CodeMethodWrapperDefinition):
@@ -300,14 +298,14 @@ class StateMethodDefinition(CodeMethodWrapperDefinition):
     def remove_transition(self, from_name, to_name):
         index = -1
         for i, transition in enumerate(self.transitions):
-            from_state, to_state= transition
+            from_state, to_state = transition
             if from_name == from_state.name and to_name == to_state.name:
                 index = i
         if index >= 0:
             del self.transitions[index]
-        
-    def new_method(self, method = None):
-        if method == None:
+
+    def new_method(self, method=None):
+        if method is None:
             if self.is_determining_method:
                 raise Exception("A state is defined for a method with name '{0}', but the method is not implemented".format(self.function_name))
             self.is_determining_method = True
@@ -315,7 +313,7 @@ class StateMethodDefinition(CodeMethodWrapperDefinition):
                 method = getattr(self.interface, self.function_name)
             finally:
                 self.is_determining_method = False
-            
+
         return CodeMethodWrapper(method, self)
 
     def precall(self, method):
@@ -327,7 +325,7 @@ class StateMethodDefinition(CodeMethodWrapperDefinition):
                 return to_state
             else:
                 stored_transitions.append((from_state, to_state))
-        
+
         possible_paths = []
         for from_state, to_state  in stored_transitions:
             try:
@@ -335,10 +333,10 @@ class StateMethodDefinition(CodeMethodWrapperDefinition):
                 possible_paths.append([transition_path, to_state])
             except Exception as ex:
                 pass
-        
+
         if len(possible_paths) == 0:            
             # do again to get an exception.
-            message="While calling {0} of {1}: ".format(self.function_name, self.interface.__class__.__name__)
+            message = "While calling {0} of {1}: ".format(self.function_name, type(self.interface))
             try:
                 self.state_machine._get_state_transition_path_to(stored_transitions[0][0])
             except exceptions.AmuseException as ex:
@@ -347,13 +345,12 @@ class StateMethodDefinition(CodeMethodWrapperDefinition):
                 ex.arguments = tuple(args)
                 raise ex
             except Exception as ex:
-                
                 args = list(ex.args)
                 args[0] = message+str(args[0])
                 ex.args = tuple(args)
                 raise ex
-        
-        for path, to_state in sorted(possible_paths, key = lambda x: len(x[0])):
+
+        for path, to_state in sorted(possible_paths, key=lambda x: len(x[0])):
             for transition in path:
                 transition.do()
             return to_state
@@ -366,7 +363,7 @@ class StateMethodDefinition(CodeMethodWrapperDefinition):
             return
         else:
             self.state_machine._current_state = to_state
-            
+
     def __str__(self):
         return "<StateMethod {0}>".format(self.function_name)
 
@@ -377,7 +374,6 @@ class HandleState(HandleCodeInterfaceAttributeAccess):
         self._mapping_from_name_to_state_method = {}
         self.interface = interface
         self._state_machine = state.StateMachine(interface, **options)
-
 
     def supports(self, name, was_found):
         if name == 'state_machine':
@@ -391,7 +387,6 @@ class HandleState(HandleCodeInterfaceAttributeAccess):
         else:
             return self._mapping_from_name_to_state_method[name].new_method(value)
 
-
     def attribute_names(self):
         result = set(self._mapping_from_name_to_state_method.keys())
         result.add('state_machine')
@@ -401,8 +396,14 @@ class HandleState(HandleCodeInterfaceAttributeAccess):
         self._state_machine.new_state(name)
 
     def _add_state_method(self, from_state, to_state, function_name):
-        if not function_name in self._mapping_from_name_to_state_method:
-            state_method = StateMethodDefinition(self._state_machine, self.interface, from_state, to_state, function_name)
+        if function_name not in self._mapping_from_name_to_state_method:
+            state_method = StateMethodDefinition(
+                self._state_machine,
+                self.interface,
+                from_state,
+                to_state,
+                function_name,
+            )
             self._mapping_from_name_to_state_method[function_name] = state_method
         else:
             state_method = self._mapping_from_name_to_state_method[function_name]
@@ -418,41 +419,53 @@ class HandleState(HandleCodeInterfaceAttributeAccess):
         Define a method that can run when the interface is in the
         provided state.
         """
-        self._add_state_method( self._state_machine.new_state(state_name), None, function_name)
+        self._add_state_method(
+            self._state_machine.new_state(state_name),
+            None,
+            function_name,
+        )
 
+    def add_transition(self, from_name, to_name, function_name, is_auto=True):
 
-    def add_transition(self, from_name, to_name, function_name, is_auto = True):
-    
-        transition = self._state_machine.new_transition(from_name, to_name, is_auto)
-    
-        definition = StateMethodDefinition(self._state_machine, self.interface, transition.from_state, transition.to_state, function_name)
-    
+        transition = self._state_machine.new_transition(
+            from_name, to_name, is_auto,
+        )
+
+        definition = StateMethodDefinition(
+            self._state_machine,
+            self.interface,
+            transition.from_state,
+            transition.to_state,
+            function_name,
+        )
+
         transition.method = definition
-    
-        self._add_state_method(transition.from_state, transition.to_state, function_name)
-    
-    
+
+        self._add_state_method(
+            transition.from_state,
+            transition.to_state,
+            function_name,
+        )
+
     def remove_transition(self, from_name, to_name, function_name):
-    
+
         self._state_machine.remove_transition(from_name, to_name)
-    
+
         self._remove_state_method(from_name, to_name, function_name)
 
 
-    def add_transition_to_method(self, state_name, function_name, is_auto = True):
+    def add_transition_to_method(self, state_name, function_name, is_auto=True):
         """
-        Define a method that can run in any state and will transition the interface
-        to the provided state.
+        Define a method that can run in any state and will transition the
+        interface to the provided state.
         """
-        
+
         transition = self._state_machine.new_transition(None, state_name, is_auto)
-        
-    
+
         definition = StateMethodDefinition(self._state_machine, self.interface, transition.from_state, transition.to_state, function_name)
         transition.method = definition
     
         self._add_state_method(None, transition.to_state, function_name)
-
 
     def do_automatic_state_transitions(self, boolean):
         self._state_machine._do_automatic_state_transitions = boolean
@@ -460,21 +473,16 @@ class HandleState(HandleCodeInterfaceAttributeAccess):
     def set_initial_state(self, name):
         self._state_machine.set_initial_state(name)
 
-
     def setup(self, object):
         object.define_state(self)
-
 
     def has_name(self, name):
         return name == 'STATE'
 
-
-
-
     def get_name_of_current_state(self):
         return self._state_machine.get_name_of_current_state()
-    
-    
+
+
 class MethodWithUnits(CodeMethodWrapper):
 
     def __init__(self, original_method, definition):
@@ -483,7 +491,7 @@ class MethodWithUnits(CodeMethodWrapper):
     @late
     def index_input_attributes(self):
         return self.definition.index_input_attributes
-    
+
     @late
     def nbody_input_attributes(self):
         return self.definition.nbody_input_attributes
@@ -493,10 +501,9 @@ class MethodWithUnits(CodeMethodWrapper):
         return self.definition.index_output_attributes
 
 
-
 class MethodWithUnitsDefinition(CodeMethodWrapperDefinition):
 
-    ERROR_CODE =  ErrorCodeMethodArgumentOrResultType()
+    ERROR_CODE = ErrorCodeMethodArgumentOrResultType()
     NO_UNIT = NoUnitMethodArgumentOrResultType()
     UNIT = UnitMethodArgumentOrResultType()
     INDEX = IndexMethodArgumentOrResultType()
@@ -518,37 +525,49 @@ class MethodWithUnitsDefinition(CodeMethodWrapperDefinition):
             self.handle_return_value = self.handle_as_errorcode
         else:
             self.handle_return_value = self.handle_as_unit
-            
+
     def __getstate__(self):
         result = {}
         result.update(self.__dict__)
         del result['handle_return_value']
         return result
-        
+
     def __setstate__(self, state):
         self.__dict__ = state
         if self.return_units is None:
             self.handle_return_value = self.handle_as_errorcode
         else:
             self.handle_return_value = self.handle_as_unit
-            
-        
+
     def check_wrapped_method(self, method):
         if method.method_is_legacy or method.method_is_code:
             self.check_outputs_of_method(method)
             self.check_inputs_of_method(method)
-        
+
     def new_method(self, original_method):
         if self.has_same_name_as_original:
             return MethodWithUnits(original_method, self)
         else:
-            return MethodWithUnits(getattr(self.wrapped_object, self.function_name), self)
+            return MethodWithUnits(
+                getattr(self.wrapped_object, self.function_name), self
+            )
 
     def handle_errorcode(self, errorcode):
         if errorcode in self.wrapped_object.errorcodes:
-            raise exceptions.AmuseException("Error when calling '{0}' of a '{1}', errorcode is {2}, error is '{3}'".format(self.name, type(self.wrapped_object).__name__, errorcode,  self.wrapped_object.errorcodes[errorcode]), errorcode)
+            raise exceptions.AmuseException(
+                f"Error when calling '{self.name}' of a "
+                f"'{type(self.wrapped_object)}', errorcode is "
+                f"{errorcode}, error is "
+                f"'{self.wrapped_object.errorcodes[errorcode]}'",
+                errorcode
+            )
         elif errorcode < 0:
-            raise exceptions.AmuseException("Error when calling '{0}' of a '{1}', errorcode is {2}".format(self.name, type(self.wrapped_object).__name__, errorcode), errorcode)
+            raise exceptions.AmuseException(
+                f"Error when calling '{self.name}' of a "
+                f"'{type(self.wrapped_object)}', errorcode is "
+                f"{errorcode}",
+                errorcode
+            )
         else:
             return errorcode
 
@@ -564,16 +583,17 @@ class MethodWithUnitsDefinition(CodeMethodWrapperDefinition):
 
     def handle_as_unit(self, method, return_value):
         if not self.is_return_units_iterable:
-            return self.return_units.convert_result_value(method, self, return_value)
+            return self.return_units.convert_result_value(
+                method, self, return_value)
         else:
             if not hasattr(return_value, '__iter__'):
                 return_value = [return_value]
-                
+
             result = []
             for value, unit in zip(return_value, self.return_units):
                 unit.append_result_value(method, self, value, result)
-                    
-            if len(result) == 1:                
+
+            if len(result) == 1:
                 return result[0]
             else:
                 return result
@@ -596,13 +616,16 @@ class MethodWithUnitsDefinition(CodeMethodWrapperDefinition):
                 elif self.units[index] == self.UNIT:
                     result[parameter] = keyword_arguments[parameter]
                 else:
-                    result[parameter] = quantities.value_in(keyword_arguments[parameter],self.units[index])
+                    result[parameter] = quantities.value_in(
+                        keyword_arguments[parameter],self.units[index])
 
         for index, argument in enumerate(list_arguments):
             parameter = input_parameters[index]
             if parameter in result:
-              raise ConvertArgumentsException(
-              "got multiple values for argument '{0}' of method {1}".format(parameter, self.function_name))
+                raise ConvertArgumentsException(
+                    f"got multiple values for argument '{parameter}' "
+                    f"of method {self.function_name}"
+              )
             try:
                 if self.units[index] == self.NO_UNIT:
                     if is_quantity(argument):
@@ -621,39 +644,45 @@ class MethodWithUnitsDefinition(CodeMethodWrapperDefinition):
                     else:
                         result[parameter] = quantities.value_in(argument,self.units[index])
             except core.IncompatibleUnitsException as ex:
-                raise ConvertArgumentsException("error while converting parameter '{0}', error: {1}".format(parameter, ex))
+                raise ConvertArgumentsException(
+                    f"error while converting parameter '{parameter}', "
+                    f"error: {ex}"
+                )
             except Exception as ex:
-                raise exceptions.AmuseException("error while converting parameter '{0}', error: {1}".format(parameter, ex))
-        
+                raise exceptions.AmuseException(
+                    f"error while converting parameter '{parameter}', "
+                    f"error: {ex}"
+                )
+
         return (), result
 
     def convert_result(self, method, result):
         return self.handle_return_value(method, result)
-    
+
     # this function tries to determine the size of results from definition
-    # its a bit ad-hoc. in spite of what the name suggests it determines it from scratch
-    # (and not converting the index from the wrapped function's result_index)    
+    # it's a bit ad-hoc.
+    # in spite of what the name suggests it determines it from scratch
+    # (and not converting the index from the wrapped function's result_index)
     def convert_result_index(self, method):
         if self.return_units is None:
             return None
         else:
             if not self.is_return_units_iterable:
                 return None
-            else:                
+            else:
                 nresult = 0
                 for unit in self.return_units:
-                    if not hasattr(unit,"_returns_result"):
-                        nresult+=1
+                    if not hasattr(unit, "_returns_result"):
+                        nresult += 1
                     else:
                         if unit._returns_result:
-                            nresult+=1
+                            nresult += 1
                 
                 return list(range(nresult))
 
     @late
     def has_same_name_as_original(self):
         return self.function_name == self.name
-
 
     @late
     def index_input_attributes(self):
@@ -672,13 +701,13 @@ class MethodWithUnitsDefinition(CodeMethodWrapperDefinition):
 
 
     def check_inputs_of_method(self, method):
-    
+
         specification = method.legacy_specification
         if specification is None:
             return
-            
-        number_expected_inputs  = len(specification.input_parameters)
-            
+
+        number_expected_inputs = len(specification.input_parameters)
+
         if self.units:
             if hasattr(self.units, '__len__'):
                 number_specified_inputs = len(self.units)
@@ -686,22 +715,26 @@ class MethodWithUnitsDefinition(CodeMethodWrapperDefinition):
                 number_specified_inputs = 1
         else:
             number_specified_inputs = 0
-            
+
         if number_expected_inputs != number_specified_inputs:
-            raise IncorrectMethodDefinition(self.name, type(self.wrapped_object).__name__, number_expected_inputs, number_specified_inputs, 'inputs')
-    
-    
+            raise IncorrectMethodDefinition(
+                self.name,
+                type(self.wrapped_object).__name__,
+                number_expected_inputs,
+                number_specified_inputs,
+                'inputs'
+            )
 
     def check_outputs_of_method(self, method):
-    
+
         specification = method.legacy_specification
         if specification is None:
             return
-            
-        number_expected_outputs  = len(specification.output_parameters)
-        if specification.result_type != None:
-            number_expected_outputs  += 1
-            
+
+        number_expected_outputs = len(specification.output_parameters)
+        if specification.result_type is not None:
+            number_expected_outputs += 1
+   
         if self.return_units:
             if hasattr(self.return_units, '__len__'):
                 number_specified_outputs = len(self.return_units)
@@ -709,14 +742,20 @@ class MethodWithUnitsDefinition(CodeMethodWrapperDefinition):
                 number_specified_outputs = 1
         else:
             number_specified_outputs = 0
-        
+
         if number_expected_outputs == 1 and  number_specified_outputs == 0:
-            return#defualt error checks for one output
-            
+            return  # default error checks for one output
+
         if number_expected_outputs != number_specified_outputs:
-            raise IncorrectMethodDefinition(self.name, type(self.wrapped_object).__name__, number_expected_outputs, number_specified_outputs, 'outputs')
-    
-    
+            raise IncorrectMethodDefinition(
+                self.name,
+                type(self.wrapped_object).__name__,
+                number_expected_outputs,
+                number_specified_outputs,
+                'outputs'
+            )
+
+
 class HandleMethodsWithUnits(object):
     ERROR_CODE = MethodWithUnitsDefinition.ERROR_CODE
     NO_UNIT = MethodWithUnitsDefinition.NO_UNIT
@@ -729,20 +768,20 @@ class HandleMethodsWithUnits(object):
         self.interface = interface
         self.setup_units_from_legacy_interface()
         self.method_instances = {}
-    
+
     def setup_units_from_legacy_interface(self):
         for name, specification in self.interface_function_specifications():
             units = [x.unit for x in specification.input_parameters]
             return_units = [x.unit for x in specification.output_parameters]
-            
+
             if not specification.result_type is None:
                 if specification.result_unit is None:
                     return_units.append(MethodWithUnitsDefinition.ERROR_CODE)
                 else:
                     return_units.append(specification.result_unit)
-                    
-            default_to_nounit = lambda y : MethodWithUnitsDefinition.NO_UNIT if y is None else y
-            
+
+            default_to_nounit = lambda y: MethodWithUnitsDefinition.NO_UNIT if y is None else y
+
             return_units = [ default_to_nounit(x) for x in return_units]
             units = [default_to_nounit(x) for x in units]
             definition = MethodWithUnitsDefinition(
@@ -764,7 +803,7 @@ class HandleMethodsWithUnits(object):
             value = getattr(interface_type, x)
             if hasattr(value, 'specification') and hasattr(value.specification, 'input_parameters'):
                 result.append( [x,value.specification])
-        result.sort(key= lambda x: x[1].id)
+        result.sort(key=lambda x: x[1].id)
         return result
         
     def supports(self, name, was_found):
@@ -780,7 +819,7 @@ class HandleMethodsWithUnits(object):
     def attribute_names(self):
         return set(self.method_definitions.keys())
 
-    def add_method(self, original_name, units, return_unit = None,  public_name = None):
+    def add_method(self, original_name, units, return_unit=None,  public_name=None):
         if public_name is None:
             public_name = original_name
 
@@ -798,7 +837,6 @@ class HandleMethodsWithUnits(object):
 
     def setup(self, object):
         object.define_methods(self)
-
 
 
 class PropertyWithUnitsDefinition(object):
@@ -832,11 +870,9 @@ class PropertyWithUnitsDefinition(object):
         else:
             return self.unit.new_quantity(function_or_attribute)
 
-
     @late
     def has_same_name_as_original(self):
         return self.function_or_attribute_name == self.public_name
-
 
 
 class HandlePropertiesWithUnits(HandleCodeInterfaceAttributeAccess):
@@ -853,7 +889,7 @@ class HandlePropertiesWithUnits(HandleCodeInterfaceAttributeAccess):
     def attribute_names(self):
         return set(self.property_definitions.keys())
 
-    def add_property(self, function_name, unit = None, public_name = None):
+    def add_property(self, function_name, unit=None, public_name=None):
         if public_name is None:
             if function_name.startswith('get_'):
                 public_name = function_name[4:]
@@ -882,7 +918,7 @@ class HandleParameters(HandleCodeInterfaceAttributeAccess):
     def __init__(self, interface):
         self.property_definitions = {}
         self.interface = interface
-        self.definitions = defaultdict(list,parameters=[])
+        self.definitions = defaultdict(list, parameters=[])
         self.parameters = {}
 
     def supports(self, name, was_found):
@@ -891,21 +927,21 @@ class HandleParameters(HandleCodeInterfaceAttributeAccess):
     def get_attribute(self, name, value):
         # note: parameters can be added after init, not yet removed
 
-        name=name or 'parameters'
+        name = name or 'parameters'
 
         if name not in self.parameters:
-            d=self.definitions[name]
+            d = self.definitions[name]
             self.parameters[name] = parameters.new_parameters_instance_with_docs(d, self.interface)
         else:
             self.parameters[name].update()       
-        result=self.parameters[name]
+        result = self.parameters[name]
         return result
 
     def attribute_names(self):
         return set(self.definitions.keys())
 
     def add_method_parameter(self, get_method, set_method, name, description, 
-            default_value = None,must_set_before_get = False, is_vector = False,
+            default_value=None, must_set_before_get=False, is_vector=False,
             parameter_set='parameters'):
         if is_vector:
             definition = parameters.ModuleVectorMethodParameterDefinition(
@@ -914,7 +950,7 @@ class HandleParameters(HandleCodeInterfaceAttributeAccess):
                 name,
                 description,
                 default_value,
-                must_set_before_get = must_set_before_get
+                must_set_before_get=must_set_before_get
             )
         else:
             definition = parameters.ModuleMethodParameterDefinition(
@@ -923,11 +959,18 @@ class HandleParameters(HandleCodeInterfaceAttributeAccess):
                 name,
                 description,
                 default_value,
-                must_set_before_get = must_set_before_get
+                must_set_before_get=must_set_before_get
             )
         self.definitions[parameter_set].append(definition)
-        
-    def add_alias_parameter(self, name, aliased_name, description,parameter_set='parameters',alias_set=None):
+
+    def add_alias_parameter(
+        self,
+        name,
+        aliased_name,
+        description,
+        parameter_set='parameters',
+        alias_set=None,
+    ):
         definition = parameters.AliasParameterDefinition(
             name,
             aliased_name,
@@ -936,8 +979,15 @@ class HandleParameters(HandleCodeInterfaceAttributeAccess):
         )
         self.definitions[parameter_set].append(definition)
 
-
-    def add_caching_parameter(self, function_name, parameter_name, name, description, default_value = None,parameter_set='parameters'):
+    def add_caching_parameter(
+        self,
+        function_name,
+        parameter_name,
+        name,
+        description,
+        default_value=None,
+        parameter_set='parameters',
+    ):
         definition = parameters.ModuleCachingParameterDefinition(
             function_name,
             parameter_name,
@@ -947,7 +997,15 @@ class HandleParameters(HandleCodeInterfaceAttributeAccess):
         )
         self.definitions[parameter_set].append(definition)
 
-    def add_boolean_parameter(self, get_method, set_method, name, description, default_value = None,parameter_set='parameters'):
+    def add_boolean_parameter(
+        self,
+        get_method,
+        set_method,
+        name,
+        description,
+        default_value=None,
+        parameter_set='parameters',
+    ):
         definition = parameters.ModuleBooleanParameterDefinition(
             get_method,
             set_method,
@@ -957,13 +1015,37 @@ class HandleParameters(HandleCodeInterfaceAttributeAccess):
         )
         self.definitions[parameter_set].append(definition)
 
-    def add_default_form_parameter(self,name,description,default,parameter_set='parameters'):
-        if isinstance(default,bool):
-          self.add_boolean_parameter("get_"+name,"set_"+name,name,description,default,parameter_set='parameters')
+    def add_default_form_parameter(
+        self, name, description, default, parameter_set='parameters'
+    ):
+        if isinstance(default, bool):
+            self.add_boolean_parameter(
+                "get_"+name,
+                "set_"+name,
+                name,
+                description,
+                default,
+                parameter_set='parameters'
+            )
         else:
-          self.add_method_parameter("get_"+name,"set_"+name,name,description,default,parameter_set='parameters')
+            self.add_method_parameter(
+                "get_"+name,
+                "set_"+name,
+                name,
+                description,
+                default,
+                parameter_set='parameters',
+            )
 
-    def add_array_parameter(self, get_method, set_method, range_method, name, description,parameter_set='parameters'):
+    def add_array_parameter(
+        self,
+        get_method,
+        set_method,
+        range_method,
+        name,
+        description,
+        parameter_set='parameters',
+    ):
         definition = parameters.ModuleArrayParameterDefinition(
             get_method,
             set_method,
@@ -979,9 +1061,13 @@ class HandleParameters(HandleCodeInterfaceAttributeAccess):
     def setup(self, object):
         object.define_parameters(self)
 
-
-
-    def add_vector_parameter(self, name, description, parameter_names,parameter_set='parameters'):
+    def add_vector_parameter(
+        self,
+        name,
+        description,
+        parameter_names,
+        parameter_set='parameters',
+    ):
         default_value = None
         for parameter_name in parameter_names:
             for defined_parameter in self.definitions[parameter_set]:
@@ -1000,10 +1086,22 @@ class HandleParameters(HandleCodeInterfaceAttributeAccess):
         )
         self.definitions[parameter_set].append(definition)
 
-    def add_interface_parameter(self, name, description, default_value,state_guard=None,parameter_set='parameters'):        
-        definition=parameters.InterfaceParameterDefinition(name,description,default_value,state_guard=state_guard)
+    def add_interface_parameter(
+        self,
+        name,
+        description,
+        default_value,
+        state_guard=None,
+        parameter_set='parameters',
+    ):
+        definition = parameters.InterfaceParameterDefinition(
+            name,
+            description,
+            default_value,
+            state_guard=state_guard,
+        )
         self.definitions[parameter_set].append(definition)
-    
+
 class HandleErrorCodes(HandleCodeInterfaceAttributeAccess):
     def __init__(self, interface):
         self.error_codes = {}
@@ -1029,8 +1127,8 @@ class HandleErrorCodes(HandleCodeInterfaceAttributeAccess):
 
 
 class AbstractParticleSetDefinition(object):
-    
-    def set_new(self, name_of_new_particle_method, names = None):
+
+    def set_new(self, name_of_new_particle_method, names=None):
         self.new_particle_method = (name_of_new_particle_method, names)
         
     def set_grid_range(self, name_of_the_get_range_method):
@@ -1039,34 +1137,34 @@ class AbstractParticleSetDefinition(object):
     def set_delete(self, name_of_delete_particle_method):
         self.name_of_delete_particle_method = name_of_delete_particle_method
 
-    def add_getter(self, name_of_the_getter, names = None):
+    def add_getter(self, name_of_the_getter, names=None):
         self.getters.append((name_of_the_getter, names))
 
-    def add_setter(self, name_of_the_setter, names = None):
+    def add_setter(self, name_of_the_setter, names=None):
         self.setters.append((name_of_the_setter, names))
     
-    def add_gridded_getter(self, name_of_the_getter, name_of_the_range_method, names = None):
+    def add_gridded_getter(self, name_of_the_getter, name_of_the_range_method, names=None):
         self.gridded_getters.append((name_of_the_getter,name_of_the_range_method, names))
         
-    def add_gridded_setter(self, name_of_the_setter, name_of_the_range_method, names = None):
+    def add_gridded_setter(self, name_of_the_setter, name_of_the_range_method, names=None):
         self.gridded_setters.append((name_of_the_setter,name_of_the_range_method, names))
         
-    def add_attribute(self, name_of_the_attribute, name_of_the_method, names = None):
+    def add_attribute(self, name_of_the_attribute, name_of_the_method, names=None):
         self.attributes.append((name_of_the_attribute,name_of_the_method, names))
 
-    def add_query(self, name_of_the_query, names = (), public_name = None):
+    def add_query(self, name_of_the_query, names=(), public_name=None):
         if not public_name:
             public_name = name_of_the_query
         self.queries.append((name_of_the_query, names, public_name))
 
 
-    def add_method(self, name_of_the_method, public_name = None):
+    def add_method(self, name_of_the_method, public_name=None):
         if not public_name:
             public_name = name_of_the_method
         self.methods.append((name_of_the_method, public_name))
 
 
-    def add_select_from_particle(self, name, names = (), public_name = None):
+    def add_select_from_particle(self, name, names=(), public_name=None):
         if not public_name:
             public_name = name
         self.selects_form_particle.append((name, names, public_name))
@@ -1076,14 +1174,14 @@ class AbstractParticleSetDefinition(object):
     
     
 
-    def add_subselect_in_set(self, name, set_query_arguments_name = None, get_number_of_particles_name = None,  public_name = None):
+    def add_subselect_in_set(self, name, set_query_arguments_name=None, get_number_of_particles_name=None,  public_name=None):
         if not public_name:
             public_name = name
         self.subselects_in_set.append((name, set_query_arguments_name, get_number_of_particles_name, public_name))
     
 
     
-    def add_subselect_from_particle(self, name, get_number_of_particles_name = None,  public_name = None):
+    def add_subselect_from_particle(self, name, get_number_of_particles_name=None,  public_name=None):
         if not public_name:
             public_name = name
         self.subselects_from_particle.append((name, get_number_of_particles_name, public_name))
@@ -1093,7 +1191,7 @@ class ParticleSetDefinition(AbstractParticleSetDefinition):
     def __init__(self, handler):
         self.handler = handler
         self.name_of_indexing_attribute = 'index_of_the_particle'
-        self.new_particle_method = ('new_particle',(), None)
+        self.new_particle_method = ('new_particle', (), None)
         self.name_of_delete_particle_method = 'delete_particle'
         self.name_of_number_of_particles_method = 'get_number_of_particles'
         self.setters = []
@@ -1147,7 +1245,7 @@ class ParticleSetDefinition(AbstractParticleSetDefinition):
         new_particle_method = incode_storage.NewParticleMethod(getattr(interface, name), names)
     
         delete_particle_method = getattr(interface, self.name_of_delete_particle_method)
-        number_of_particles_method = None#getattr(interface, self.name_of_number_of_particles_method)
+        number_of_particles_method = None  # getattr(interface, self.name_of_number_of_particles_method)
     
         return incode_storage.InCodeAttributeStorage(
             interface,
@@ -1163,9 +1261,9 @@ class ParticleSetDefinition(AbstractParticleSetDefinition):
     def new_set_instance(self, handler):
         storage = self.new_storage(handler.interface)
         if self.is_inmemory:
-            result = self.particles_factory(handler.interface, storage = storage)
+            result = self.particles_factory(handler.interface, storage=storage)
         else:
-            result = self.particles_factory(storage = storage)
+            result = self.particles_factory(storage=storage)
             
         queries = self.new_queries(handler.interface)
         for x in queries:
@@ -1175,11 +1273,10 @@ class ParticleSetDefinition(AbstractParticleSetDefinition):
         for x in selects:
             result.add_function_attribute(x.public_name, x.apply_on_all)
             result.add_particle_function_attribute(x.public_name, x.apply_on_one)
-        
-        
+
         selects = self.new_subselects_from_particle(handler.interface)
         for x in selects:
-        #result.add_function_attribute(x.public_name, x.apply_on_all)
+        # result.add_function_attribute(x.public_name, x.apply_on_all)
             result.add_particle_function_attribute(x.public_name, x.apply_on_one)
             
         selects = self.new_subselects_in_set(handler.interface)
@@ -1279,8 +1376,8 @@ class GridDefinition(AbstractParticleSetDefinition):
         self.name_of_the_get_range_method = 'get_range'
         self.setters = []
         self.getters = []
-        self.gridded_setters=[]
-        self.gridded_getters=[]
+        self.gridded_setters = []
+        self.gridded_getters = []
         self.particles_factory = grid_class
         self.extra_keyword_arguments_for_getters_and_setters = {}
 
@@ -1324,15 +1421,15 @@ class GridDefinition(AbstractParticleSetDefinition):
 
     def new_set_instance(self, handler):
         storage = self.new_storage(handler.interface)
-        result = self.particles_factory(storage = storage)
+        result = self.particles_factory(storage=storage)
         if self.axes_names is not None:
             result.add_vector_attribute("position",self.axes_names)
         return result
 
 class CodeInMemoryParticles(datamodel.Particles):
 
-    def __init__(self, code_interface = None, storage = None):
-        datamodel.Particles.__init__(self, storage = storage)
+    def __init__(self, code_interface=None, storage=None):
+        datamodel.Particles.__init__(self, storage=storage)
         self._private.code_interface = code_interface
 
 class HandleParticles(HandleCodeInterfaceAttributeAccess):
@@ -1368,33 +1465,33 @@ class HandleParticles(HandleCodeInterfaceAttributeAccess):
         object.define_data_sets(self)
         object.define_grids(self)
 
-    def define_set(self, name, name_of_indexing_attribute = 'index_of_the_particle', state_guard=None):
+    def define_set(self, name, name_of_indexing_attribute='index_of_the_particle', state_guard=None):
         definition = ParticleSetDefinition(self)
         definition.name_of_indexing_attribute = name_of_indexing_attribute
         definition.state_guard = state_guard
         self.mapping_from_name_to_set_definition[name] = definition
 
-    def define_super_set(self, name, particle_subsets, index_to_default_set = None, state_guard=None):
+    def define_super_set(self, name, particle_subsets, index_to_default_set=None, state_guard=None):
         definition = ParticleSupersetDefinition(self, particle_subsets, index_to_default_set)
         definition.state_guard = state_guard
         self.mapping_from_name_to_set_definition[name] = definition
 
-    def define_inmemory_set(self, name, particles_factory = CodeInMemoryParticles, state_guard=None):
+    def define_inmemory_set(self, name, particles_factory=CodeInMemoryParticles, state_guard=None):
         definition = ParticleSetDefinition(self)
         definition.is_inmemory = True
         definition.particles_factory = particles_factory
         definition.state_guard = state_guard
         self.mapping_from_name_to_set_definition[name] = definition
     
-    def define_grid(self, name, name_of_indexing_attribute = 'index_of_the_particle', axes_names = None, grid_class=datamodel.Grid, state_guard=None):
-        definition = GridDefinition(self, grid_class = grid_class)
+    def define_grid(self, name, name_of_indexing_attribute='index_of_the_particle', axes_names=None, grid_class=datamodel.Grid, state_guard=None):
+        definition = GridDefinition(self, grid_class=grid_class)
         definition.name_of_indexing_attribute = name_of_indexing_attribute
         definition.axes_names = axes_names
         definition.state_guard = state_guard
         self.mapping_from_name_to_set_definition[name] = definition
         
-    def set_new(self, name_of_the_set, name_of_new_particle_method, names = None):
-        self.mapping_from_name_to_set_definition[name_of_the_set].set_new(name_of_new_particle_method, names = names)
+    def set_new(self, name_of_the_set, name_of_new_particle_method, names=None):
+        self.mapping_from_name_to_set_definition[name_of_the_set].set_new(name_of_new_particle_method, names=names)
         
     def set_grid_range(self, name_of_the_set, name_of_the_get_range_method):
         self.mapping_from_name_to_set_definition[name_of_the_set].set_grid_range(name_of_the_get_range_method)
@@ -1402,46 +1499,46 @@ class HandleParticles(HandleCodeInterfaceAttributeAccess):
     def set_delete(self, name_of_the_set, name_of_delete_particle_method):
         self.mapping_from_name_to_set_definition[name_of_the_set].set_delete(name_of_delete_particle_method)
 
-    def add_getter(self, name_of_the_set, name_of_the_getter, names = None):
-        self.mapping_from_name_to_set_definition[name_of_the_set].add_getter(name_of_the_getter, names = names)
+    def add_getter(self, name_of_the_set, name_of_the_getter, names=None):
+        self.mapping_from_name_to_set_definition[name_of_the_set].add_getter(name_of_the_getter, names=names)
         
-    def add_setter(self, name_of_the_set, name_of_the_setter, names = None):
-        self.mapping_from_name_to_set_definition[name_of_the_set].add_setter(name_of_the_setter, names = names)
+    def add_setter(self, name_of_the_set, name_of_the_setter, names=None):
+        self.mapping_from_name_to_set_definition[name_of_the_set].add_setter(name_of_the_setter, names=names)
 
-    def add_gridded_getter(self, name_of_the_set, name_of_the_getter, name_of_the_range_method, names = None):
-        self.mapping_from_name_to_set_definition[name_of_the_set].add_gridded_getter(name_of_the_getter, name_of_the_range_method, names = names)
+    def add_gridded_getter(self, name_of_the_set, name_of_the_getter, name_of_the_range_method, names=None):
+        self.mapping_from_name_to_set_definition[name_of_the_set].add_gridded_getter(name_of_the_getter, name_of_the_range_method, names=names)
     
-    def add_gridded_setter(self, name_of_the_set, name_of_the_setter, name_of_the_range_method, names = None):
-        self.mapping_from_name_to_set_definition[name_of_the_set].add_gridded_setter(name_of_the_setter, name_of_the_range_method, names = names)
+    def add_gridded_setter(self, name_of_the_set, name_of_the_setter, name_of_the_range_method, names=None):
+        self.mapping_from_name_to_set_definition[name_of_the_set].add_gridded_setter(name_of_the_setter, name_of_the_range_method, names=names)
     
-    def add_attribute(self, name_of_the_set, name_of_the_attribute, name_of_the_method, names = None):
-        self.mapping_from_name_to_set_definition[name_of_the_set].add_attribute(name_of_the_attribute, name_of_the_method, names = names)
+    def add_attribute(self, name_of_the_set, name_of_the_attribute, name_of_the_method, names=None):
+        self.mapping_from_name_to_set_definition[name_of_the_set].add_attribute(name_of_the_attribute, name_of_the_method, names=names)
 
-    def add_query(self, name_of_the_set, name_of_the_query, names = (), public_name = None):
-        self.mapping_from_name_to_set_definition[name_of_the_set].add_query(name_of_the_query, names = names, public_name = public_name)
+    def add_query(self, name_of_the_set, name_of_the_query, names=(), public_name=None):
+        self.mapping_from_name_to_set_definition[name_of_the_set].add_query(name_of_the_query, names=names, public_name=public_name)
 
-    def add_method(self, name_of_the_set, name_of_the_method, public_name = None):
-        self.mapping_from_name_to_set_definition[name_of_the_set].add_method(name_of_the_method, public_name = public_name)
+    def add_method(self, name_of_the_set, name_of_the_method, public_name=None):
+        self.mapping_from_name_to_set_definition[name_of_the_set].add_method(name_of_the_method, public_name=public_name)
 
-    def add_select_from_particle(self, name_of_the_set, name, names = (), public_name = None):
-        self.mapping_from_name_to_set_definition[name_of_the_set].add_select_from_particle(name, names = names, public_name = public_name)
+    def add_select_from_particle(self, name_of_the_set, name, names=(), public_name=None):
+        self.mapping_from_name_to_set_definition[name_of_the_set].add_select_from_particle(name, names=names, public_name=public_name)
         
     def define_extra_keywords(self, name_of_the_set, dictionary):
         self.mapping_from_name_to_set_definition[name_of_the_set].define_extra_keywords(dictionary)    
     
-    def add_subselect_in_set(self, name_of_the_set, name, set_query_arguments_name = None, get_number_of_particles_name = None,  public_name = None):
+    def add_subselect_in_set(self, name_of_the_set, name, set_query_arguments_name=None, get_number_of_particles_name=None,  public_name=None):
         self.mapping_from_name_to_set_definition[name_of_the_set].add_subselect_in_set(
             name, 
-            set_query_arguments_name = set_query_arguments_name, 
-            get_number_of_particles_name = get_number_of_particles_name,  
-            public_name = public_name
+            set_query_arguments_name=set_query_arguments_name, 
+            get_number_of_particles_name=get_number_of_particles_name,  
+            public_name=public_name
         )
         
-    def add_subselect_from_particle(self, name_of_the_set, name, get_number_of_particles_name = None,  public_name = None):
+    def add_subselect_from_particle(self, name_of_the_set, name, get_number_of_particles_name=None,  public_name=None):
         self.mapping_from_name_to_set_definition[name_of_the_set].add_subselect_from_particle(
             name, 
-            get_number_of_particles_name = get_number_of_particles_name,  
-            public_name = public_name
+            get_number_of_particles_name=get_number_of_particles_name,  
+            public_name=public_name
         )
 
     def _cleanup_instances(self):
@@ -1544,7 +1641,7 @@ class InCodeComponentImplementation(OldObjectsBindingMixin, OptionalAttributes):
         
     def _create_new_grid(self, builder_function, **extra_arguments):
         handler = self.get_handler('PARTICLES')
-        definition = GridDefinition(handler, grid_class = extra_arguments.get("grid_class", datamodel.Grid))
+        definition = GridDefinition(handler, grid_class=extra_arguments.get("grid_class", datamodel.Grid))
         builder_function(definition, **extra_arguments)
         return definition.new_set_instance(handler)
         
@@ -1570,7 +1667,7 @@ class IncorrectMethodDefinition(IncorrectWrappedMethodException):
 
 class PropertyDefinition(object):
 
-    def __init__(self, handler, functionname, publicname, keyword_arguments = {}):
+    def __init__(self, handler, functionname, publicname, keyword_arguments={}):
         self.functionname = functionname
         self.publicname = publicname
         self.handler = handler
