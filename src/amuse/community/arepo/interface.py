@@ -40,23 +40,25 @@ class ArepoInterface(
 
 
 class Arepo(GravitationalDynamics):
-    
+
     def __init__(self, **options):
         GravitationalDynamics.__init__(self, ArepoInterface(**options), **options)
 
     def initialize_code(self):
         result = self.overridden().initialize_code()
 
-        # TODO: Pass parameter file to initialize_code(), and undo hardcoding of parameter file within the function.
-        # Could be done in the way in which Gadget2 sets the gadget_output_directory.
-        #self.parameters.gadget_output_directory = self.get_output_directory()
-        
         return result
 
     def define_methods(self, builder):
         # TODO: Determine how to link this to Arepo's run() - the main simulation loop.
         builder.add_method(
-            "run",
+            "run_sim",
+            (),
+            (builder.ERROR_CODE)
+        )
+        # When simulation is finished, shutdown HDF5 & MPI, and exit(0)
+        builder.add_method(
+            "cleanup_code",
             (),
             (builder.ERROR_CODE)
         )

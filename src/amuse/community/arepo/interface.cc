@@ -134,6 +134,7 @@ int initialize_code(){
 
   RestartFlag = 0;
 
+  set_default_parameters();
   begrun1(); /* set-up run  */
 
   char fname[MAXLEN_PATH];
@@ -159,6 +160,12 @@ int initialize_code(){
     }
 
   begrun2();
+  return 0;
+}
+
+int run_sim() {
+  /* This run command is for the Arepo simulation */
+  run();
   return 0;
 }
 

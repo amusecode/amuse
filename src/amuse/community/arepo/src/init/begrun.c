@@ -101,7 +101,7 @@ void begrun0(void)
  */
 void begrun1(void)
 {
-  read_parameter_file(ParameterFile); /* ... read in parameters for this run */
+  /* read_parameter_file(ParameterFile);  ... read in parameters for this run */
 
   check_parameters(); /* consistency check of parameters */
 
