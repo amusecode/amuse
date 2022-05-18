@@ -83,38 +83,39 @@ void set_default_parameters(){
   All.UnitVelocity_in_cm_per_s = 1e5;
 
   // Gravitational softening lengths
-  All.SofteningComovingType0 = 1.0;
-  All.SofteningComovingType1 = 1.0;
-
-  All.SofteningMaxPhysType0 = 1.0;
-  All.SofteningMaxPhysType1 = 1.0;
-
+  All.SofteningComoving[0] = 1.0;
+  All.SofteningComoving[1] = 1.0;
+  All.SofteningMaxPhys[0] = 1.0;
+  All.SofteningMaxPhys[1] = 1.0;
   All.GasSoftFactor = 2.5;
 
-  All.SofteningTypeOfPartType0 = 0;
-  All.SofteningTypeOfPartType1 = 1;
-  All.SofteningTypeOfPartType2 = 1;
-  All.SofteningTypeOfPartType3 = 1;
-  All.SofteningTypeOfPartType4 = 1;
-  All.SofteningTypeOfPartType5 = 1;
 
-  All.MinimumComovingHydroSoftening = 1.0;
-  All.AdaptiveHydroSofteningSpacing = 1.2;
+  All.SofteningTypeOfPartType[0] = 0;
+  All.SofteningTypeOfPartType[1] = 1;
+  All.SofteningTypeOfPartType[2] = 1;
+  All.SofteningTypeOfPartType[3] = 1;
+  All.SofteningTypeOfPartType[4] = 1;
+  All.SofteningTypeOfPartType[5] = 1;
+  #ifdef ADAPTIVE_HYDRO_SOFTENING
+    All.MinimumComovingHydroSoftening = 1.0;
+    All.AdaptiveHydroSofteningSpacing = 1.2;
+  #endif
 
   // Mesh regularization options
   All.CellShapingSpeed = 0.5;
   All.CellShapingFactor = 1.0;
 
   // parameters that are fixed for AMUSE:
-  All.PartAllocFactor = 1.5; // Memory allocation parameter
   All.TreeAllocFactor = 0.8; // Memory allocation parameter
-  All.BufferSize = 25;       // Memory allocation parameter
   All.ResubmitOn = 0;              // Keep this turned off!
   All.OutputListOn = 0;            // Keep this turned off
   All.GravityConstantInternal = 0; // Keep this turned off
 }
 
 int initialize_code(){
+  int argc = 0;
+  char **argv=NULL;
+
   MPI_Init(&argc, &argv);
   MPI_Comm_rank(MPI_COMM_WORLD, &ThisTask);
   MPI_Comm_size(MPI_COMM_WORLD, &NTask);
