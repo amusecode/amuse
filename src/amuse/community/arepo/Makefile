@@ -6,7 +6,7 @@ endif
 -include $(AMUSE_DIR)/config.mk
 
 MPICXX   ?= mpicxx
-
+CXX = $(MPICXX)
 CFLAGS   += -Wall -g
 CXXFLAGS += $(CFLAGS) 
 LDFLAGS  += -lm $(MUSE_LD_FLAGS)
