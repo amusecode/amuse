@@ -1,11 +1,14 @@
+MPICXX ?= mpicxx
+MPICC ?= mpicc
 # TODO: Determine whether this is needed as included in arepo/Makefile.
 ifeq ($(origin AMUSE_DIR), undefined)
 	AMUSE_DIR := $(shell amusifier --get-amuse-dir)
 endif
 -include $(AMUSE_DIR)/config.mk
 
-GSL_FLAGS  = -I/opt/Homebrew/include  # TODO: Need to make GSL_FLAGS generalisable.
+CC       =  $(MPICC)  # sets the C-compiler
 
+# GSL_FLAGS  = -I/opt/Homebrew/include  # TODO: Need to make GSL_FLAGS generalisable.
 CFLAGS   += -Wall -g $(GSL_FLAGS)
 CXXFLAGS += $(CFLAGS) 
 LDFLAGS  += -lm $(MUSE_LD_FLAGS)
@@ -17,7 +20,7 @@ SUBDIR = add_backgroundgrid cooling debug_md5 domain fof gitversion gravity \
 	time_integration utils
 SRCS = $(foreach fd, $(SUBDIR), $(wildcard $(fd)/*.c))
 
-CODEOBJS = test.o $(SRCS:c=o)
+CODEOBJS = $(SRCS:c=o)
 
 AR = ar ruv
 RANLIB = ranlib
