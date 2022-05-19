@@ -2,8 +2,8 @@
 extern "C" {
 #endif
 
-#include "src/allvars.h"
-#include "src/proto.h"
+#include "src/main/allvars.h"
+#include "src/main/proto.h"
 
 #ifdef __cplusplus
 }
