@@ -12,7 +12,7 @@ from amuse.community.fi.interface import FiMap
 
 
 def gas_mean_molecular_weight(
-    h2ratio=1,
+    h2ratio=0.5,
 ):
     "Return mean molecular weight of hydrogen gas"
     meanmwt = (
@@ -175,7 +175,7 @@ class MapHydro():
 
         mapper = FiMap(converter, mode="openmp", redirection="none")
         # if not hasattr(gas, "radius"):
-        gas.radius = gas.h_smooth
+        # gas.radius = gas.h_smooth
         mapper.particles.add_particles(gas)
 
         rotation_matrix = new_rotation_matrix(
@@ -404,19 +404,24 @@ class MapHydro():
 
         gas = self.__gas
         if hasattr(gas, "mu"):
+            print(f"h2ratio: {gas.mu.mean()}")
             meanmwt = gas.mu
         elif hasattr(gas, "h2ratio"):
+            print(f"h2ratio: {gas.h2ratio.mean()}")
             meanmwt = gas_mean_molecular_weight(gas.h2ratio)
         else:
             meanmwt = gas_mean_molecular_weight()
         temperature = u_to_temperature(gas.u, meanmwt=meanmwt)
+        print(f"temperature range: {min(temperature)} - {max(temperature)}")
         self.__mapper.particles.weight = temperature.value_in(
             self.__unit_temperature)
         counts = self.counts
-        self.__maps.temperature = (
-            self.__mapper.image.pixel_value.transpose(
-            ) | self.__unit_temperature
-        ) / counts
+        self.__maps.temperature = numpy.nan_to_num(
+            self.__mapper.image.pixel_value.transpose(),
+            # / counts,
+            nan=0,
+        ) | self.__unit_temperature
+        print(f"min/max: {self.__maps.temperature.min()} - {self.__maps.temperature.max()}")
         return self.__maps.temperature
 
     @property

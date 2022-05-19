@@ -281,14 +281,15 @@ def plot_hydro_and_stars(
             (maps.stars is not None)
             and not maps.stars.is_empty()
     ):
-        s = 0.1 * (
+        s = 1 * (
             (maps.stars.mass / (7 | units.MSun))**(3.5 / 2)
         )
+        # s = 0.5
         x = getattr(maps.stars, 'x').value_in(length_unit)
         y = getattr(maps.stars, 'y').value_in(length_unit)
         z = getattr(maps.stars, 'z').value_in(length_unit)
         c = (
-            "black" if plot in [
+            "cyan" if plot in [
                 "temperature",
             ]
             else "white"
@@ -303,9 +304,11 @@ def plot_hydro_and_stars(
     if cax:
         cbar = plt.colorbar(gasplot, cax=cax)
         if gasplot_unit == units.MSun * units.pc**-2:
-            cbar.set_label("log (M$_{\odot}$ / parsec$^2$)")
+            cbar.set_label("log10(M$_{\odot}$ / parsec$^2$)")
         elif gasplot_unit == units.Myr**-1:
             cbar.set_label("Myr$^{-1}$")
+        elif gasplot_unit == units.K:
+            cbar.set_label("log10(temp [K])")
         else:
             cbar.set_label("%s" % gasplot_unit)
 
