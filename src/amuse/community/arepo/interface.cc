@@ -1,7 +1,12 @@
+#ifndef NOMPI
+#include <mpi.h>
+#endif
+
 #include "worker_code.h"
 
 #include "src/main/allvars.h"
 #include "src/main/proto.h"
+#include "src/main/run.c"
 
 // general interface functions:
 
@@ -155,7 +160,7 @@ int initialize_code(){
   if(status >= 0)
     {
       if(status > 0)
-        mpi_printf("init() returned with %d\n", status);
+        printf("init() returned with %d\n", status);
 
       cleanup_code();
     }
@@ -171,8 +176,8 @@ int run_sim() {
 }
 
 int cleanup_code(){
-  mpi_printf("Code run for %f seconds!\n", timediff(StartOfRun, second()));
-  mpi_printf("endrun called, calling MPI_Finalize()\nbye!\n\n");
+  printf("Code run for %f seconds!\n", timediff(StartOfRun, second()));
+  printf("endrun called, calling MPI_Finalize()\nbye!\n\n");
   fflush(stdout);
 
 #ifdef HAVE_HDF5
