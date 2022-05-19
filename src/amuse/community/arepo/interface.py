@@ -23,7 +23,7 @@ class ArepoInterface(
         .. [#] Weinberger, R., Springel, V., Pakmor, R., 2020, ApJS, 248, 32 (Public Code Release) [2020ApJS..248...32W]
     """
 
-    include_headers = ["worker_code.h"]
+    include_headers = ["worker_code.h", "inteface.h"]
 
     def __init__(self, **keyword_arguments):
         CodeInterface.__init__(self, name_of_the_worker="arepo_worker", **keyword_arguments)

@@ -4,12 +4,6 @@
 
 #include "worker_code.h"
 
-#include "src/main/allvars.h"
-#include "src/main/proto.h"
-
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 // general interface functions:
 
@@ -136,12 +130,6 @@ int initialize_code(){
 
   determine_compute_nodes();
 
-  for(PTask = 0; NTask > (1 << PTask); PTask++)
-    ;
-
-  begrun0();
-
-  RestartFlag = 0;
 
   set_default_parameters();
   begrun1(); /* set-up run  */
@@ -354,6 +342,5 @@ int set_velocity(int index_of_the_particle, double vx, double vy,
   double vz){
   return 0;
 }
-#ifdef __cplusplus
-}
-#endif
+
+
