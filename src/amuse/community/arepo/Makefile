@@ -38,5 +38,5 @@ worker_code.h: interface.py
 arepo_worker: worker_code.cc worker_code.h $(CODELIB) $(OBJS)
 	$(MPICXX) $(CXXFLAGS) $< $(OBJS) $(CODELIB) -o $@
 
-# .cc.o: $<
-# 	$(CXX) $(CXXFLAGS) $(GSL_FLAGS) -c -o $@ $< 
+.cc.o: $<
+	$(MPICXX) $(CXXFLAGS) $(CODELIB) -c -o $@ $< 
