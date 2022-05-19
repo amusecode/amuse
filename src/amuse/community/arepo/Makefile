@@ -8,7 +8,7 @@ endif
 MPICXX   ?= mpicxx
 CXX = $(MPICXX)
 CFLAGS   += -Wall -g
-CXXFLAGS += $(CFLAGS) 
+CXXFLAGS += $(CFLAGS) $(GSL_FLAGS)
 LDFLAGS  += -lm $(MUSE_LD_FLAGS)
 
 OBJS = interface.o
@@ -38,5 +38,5 @@ worker_code.h: interface.py
 arepo_worker: worker_code.cc worker_code.h $(CODELIB) $(OBJS)
 	$(MPICXX) $(CXXFLAGS) $< $(OBJS) $(CODELIB) -o $@
 
-.cc.o: $<
-	$(CXX) $(CXXFLAGS) $(GSL_FLAGS) -c -o $@ $< 
+# .cc.o: $<
+# 	$(CXX) $(CXXFLAGS) $(GSL_FLAGS) -c -o $@ $< 
