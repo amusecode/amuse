@@ -39,4 +39,4 @@ arepo_worker: worker_code.cc worker_code.h $(CODELIB) $(OBJS)
 	$(MPICXX) $(CXXFLAGS) $< $(OBJS) $(CODELIB) -o $@
 
 .cc.o: $<
-	$(CXX) $(CXXFLAGS) -c -o $@ $< 
+	$(CXX) $(CXXFLAGS) $(GSL_FLAGS) -c -o $@ $< 
