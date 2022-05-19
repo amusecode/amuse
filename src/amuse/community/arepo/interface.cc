@@ -7,6 +7,10 @@
 #include "src/main/allvars.h"
 #include "src/main/proto.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 // general interface functions:
 
 void set_default_parameters(){
@@ -350,3 +354,6 @@ int set_velocity(int index_of_the_particle, double vx, double vy,
   double vz){
   return 0;
 }
+#ifdef __cplusplus
+}
+#endif
