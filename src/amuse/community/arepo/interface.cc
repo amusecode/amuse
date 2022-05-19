@@ -6,7 +6,6 @@
 
 #include "src/main/allvars.h"
 #include "src/main/proto.h"
-#include "src/main/run.c"
 
 // general interface functions:
 
