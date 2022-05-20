@@ -17,11 +17,15 @@ def main():
     
     star =  Particle()
     star.mass = 12.0 | units.MSun
-    stop_radius = 100 | units.RSun
+    stop_radius = 90 | units.RSun # Avoid the model going through a blue loop
     
     stellar_evolution = MESA()
     se_star = stellar_evolution.particles.add_particle(star)
     
+    # This method is only really useful if you need a helium star from an exisiting model
+    # With the new interface you can do: stellar_evolution.pure_he_stars.add_particles(star)
+    # Which is much faster
+
     print("Evolving a", star.mass, "star with",
           stellar_evolution.__class__.__name__, end=' ') 
     print("until its radius exceeds", stop_radius)
