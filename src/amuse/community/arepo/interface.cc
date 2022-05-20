@@ -1,11 +1,16 @@
+#include <cstdio>
+#include <cstring>
+
 #ifndef NOMPI
 #include <mpi.h>
 #endif
 
+#include "interface.h"
 #include "worker_code.h"
 
-
 // general interface functions:
+
+using namespace std;
 
 void set_default_parameters(){
   // Relevant files
