@@ -41,4 +41,7 @@ $(CODELIB): $(CODEOBJS)
 	$(RANLIB) $@
 
 .cc.o: $<
-	$(CXX) $(CXXFLAGS) -c -o $@ $< 
+	$(MPICXX) $(CXXFLAGS) -c -o $@ $< 
+
+.c.o: $<
+	$(MPICC) $(CXXFLAGS) -c -o $@ $< 

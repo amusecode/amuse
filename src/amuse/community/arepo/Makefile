@@ -26,7 +26,7 @@ clean:
 distclean: clean
 	make -C src distclean
 
-$(CODELIB):
+$(CODELIB): .FORCE
 	make -C src all
 
 worker_code.cc: interface.py
@@ -40,3 +40,5 @@ arepo_worker: worker_code.cc worker_code.h $(CODELIB) $(OBJS)
 
 .cc.o: $<
 	$(MPICXX) $(CXXFLAGS) $(CODELIB) -c -o $@ $< 
+
+.FORCE:
