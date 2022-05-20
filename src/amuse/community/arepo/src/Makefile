@@ -16,11 +16,12 @@ LDFLAGS  += -lm $(MUSE_LD_FLAGS)
 CODELIB = libarepo.a
 
 SUBDIR = add_backgroundgrid cooling debug_md5 domain fof gitversion gravity \
-	hydro init io main mesh mpi_utils ngbtree star_formation subfind \
+	hydro init io mesh mesh/voronoi mpi_utils ngbtree star_formation subfind \
 	time_integration utils
 SRCS = $(foreach fd, $(SUBDIR), $(wildcard $(fd)/*.c))
 
 CODEOBJS = $(SRCS:c=o)
+CODEOBJS += main/allvars.o main/run.o main/main.o
 
 AR = ar ruv
 RANLIB = ranlib

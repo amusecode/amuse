@@ -58,7 +58,7 @@
  *
  *  \return status of exit; 0 for normal exit.
  */
-int main(int argc, char **argv)
+int no_main(int argc, char **argv)
 {
 // #ifdef IMPOSE_PINNING
 //   detect_topology();

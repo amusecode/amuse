@@ -84,7 +84,7 @@ void begrun0(void)
 
   if(ThisTask == 0)
     {
-      output_compile_time_options();
+//      output_compile_time_options();
     }
 }
 
