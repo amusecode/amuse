@@ -3,7 +3,7 @@
 #endif
 
 #include "worker_code.h"
-
+#include "interface.h"
 
 // general interface functions:
 
