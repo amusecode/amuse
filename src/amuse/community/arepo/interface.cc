@@ -121,10 +121,7 @@ void set_default_parameters(){
 }
 
 int initialize_code(){
-  int argc = 0;
-  char **argv=NULL;
 
-  MPI_Init(&argc, &argv);
   MPI_Comm_rank(MPI_COMM_WORLD, &ThisTask);
   MPI_Comm_size(MPI_COMM_WORLD, &NTask);
 
