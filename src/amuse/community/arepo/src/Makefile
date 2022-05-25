@@ -23,6 +23,10 @@ SRCS = $(foreach fd, $(SUBDIR), $(wildcard $(fd)/*.c))
 CODEOBJS = $(SRCS:c=o)
 CODEOBJS += main/allvars.o main/run.o main/main.o
 
+AREPOFLAGS += -DGRAVITY_NOT_PERIODIC  # no periodic boundaries by default
+
+CXXFLAGS += $(AREPOFLAGS)
+
 AR = ar ruv
 RANLIB = ranlib
 RM = rm
