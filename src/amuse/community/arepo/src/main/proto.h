@@ -598,7 +598,7 @@ hid_t my_H5Pcreate(hid_t class_id);
 herr_t my_H5Pclose(hid_t plist);
 herr_t my_H5Pset_chunk(hid_t plist, int ndims, const hsize_t *dim);
 herr_t my_H5Pset_shuffle(hid_t plist_id);
-herr_t my_H5Pset_deflate(hid_t plist_id, uint level);
+herr_t my_H5Pset_deflate(hid_t plist_id, unsigned int level);
 herr_t my_H5Pset_fletcher32(hid_t plist_id);
 #endif /* #ifdef HDF5_FILTERS */
 
