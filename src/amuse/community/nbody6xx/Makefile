@@ -11,7 +11,7 @@ FORTRAN ?= $(FC)
 LDFLAGS  += -lm $(MUSE_LD_FLAGS) 
 
 # check for gfortran, this catches link and compiler wrappers
-ifeq ($(findstring GNU, $(shell $(FC) --version)), GNU)
+ifeq ($(findstring GNU, $(shell $(FORTRAN) --version)), GNU)
 FCFLAGS2+=-ffixed-form -xf77-cpp-input
 endif
 
