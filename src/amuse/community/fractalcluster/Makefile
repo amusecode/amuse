@@ -7,8 +7,8 @@ endif
 
 MPIFC ?= mpif90
 MPIF90 ?= $(MPIFC)
-FORTRAN ?= gfortran
 FC ?= gfortran
+FORTRAN ?= $(FC)
 
 SRC=src
 
@@ -19,7 +19,7 @@ LIBS+=$(SRC)/libfractal.a
 PIC=#-fPIC
 
 # check for gfortran, this catches link and compiler wrappers
-ifeq ($(findstring GNU, $(shell $(FC) --version)), GNU)
+ifeq ($(findstring GNU, $(shell $(FORTRAN) --version)), GNU)
 FFLAGS= $(FCFLAGS) -fdefault-real-8 -cpp -O3
 endif
 
