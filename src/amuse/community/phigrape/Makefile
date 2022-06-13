@@ -64,7 +64,8 @@ CFLAGS += -g  $(OPTS)
 FFLAGS += -g $(OPTS)
 FFLAGS += -I./src/
 
-ifeq ($(findstring gfortran, $(shell $(FC) --help)), gfortran)
+# check for gfortran, this catches link and compiler wrappers
+ifeq ($(findstring GNU, $(shell $(FC) --version)), GNU)
 else
 GLLIB += -lguide
 endif
