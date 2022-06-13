@@ -18,7 +18,8 @@ LIBS+=$(SRC)/libfractal.a
 
 PIC=#-fPIC
 
-ifeq ($(findstring gfortran, $(notdir $(FORTRAN))), gfortran)
+# check for gfortran, this catches link and compiler wrappers
+ifeq ($(findstring GNU, $(shell $(FC) --version)), GNU)
 FFLAGS= $(FCFLAGS) -fdefault-real-8 -cpp -O3
 endif
 
