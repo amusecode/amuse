@@ -191,6 +191,23 @@ class MMAMSInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesMix
         function.addParameter('dump_mixed_flag', dtype='int32', direction=function.OUT)
         function.result_type = 'i'
         return function
+
+    @legacy_function
+    def set_mass_loss_do_const_flag():
+        """Set the dump_mixed flag: specifies whether the returned products must be mixed first."""
+        function = LegacyFunctionSpecification()
+        function.addParameter('mass_loss_do_const_flag', dtype='int32', direction=function.IN)
+        function.result_type = 'i'
+        return function
+    
+    @legacy_function
+    def get_mass_loss_do_const_flag():
+        """Get the dump_mixed flag: specifies whether the returned products must be mixed first."""
+        function = LegacyFunctionSpecification()
+        function.addParameter('mass_loss_do_const_flag', dtype='int32', direction=function.OUT)
+        function.result_type = 'i'
+        return function
+
     
     @legacy_function
     def set_target_n_shells_mixing():
@@ -282,6 +299,14 @@ class MMAMS(CommonCode):
             "dump_mixed_flag",
             "dump_mixed flag: specifies whether the returned products must be mixed first",
             True
+        )
+
+        handler.add_boolean_parameter(
+            "get_mass_loss_do_const_flag",
+            "set_mass_loss_do_const_flag",
+            "mass_loss_do_const",
+            "mass_loss_do_const flag: whether to use const mass loss fraction (True) or the original Gaburov 2008 fromulation",
+            False
         )
         
         handler.add_boolean_parameter(
