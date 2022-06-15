@@ -249,6 +249,15 @@ int get_mass_loss_do_const_flag(int *flag){
     return 0;
 }
 
+int set_const_mass_loss(double x){
+    const_mass_loss = x;
+    return 0;
+}
+int get_const_mass_loss(double *x){
+    *x = const_mass_loss;
+    return 0;
+}
+
 
 
 int set_target_n_shells_mixing(int target_n_shells_mixing_in){

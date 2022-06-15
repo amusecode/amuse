@@ -208,7 +208,23 @@ class MMAMSInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesMix
         function.result_type = 'i'
         return function
 
-    
+
+    @legacy_function
+    def get_const_mass_loss():
+        """Get the const_mass_loss"""
+        function = LegacyFunctionSpecification()
+        function.addParameter('const_mass_loss', dtype='float64', direction=function.OUT)
+        function.result_type = 'i'
+        return function
+
+    @legacy_function
+    def set_const_mass_loss():
+        """Set the const_mass_loss"""
+        function = LegacyFunctionSpecification()
+        function.addParameter('const_mass_loss', dtype='float64', direction=function.IN)
+        function.result_type = 'i'
+        return function
+
     @legacy_function
     def set_target_n_shells_mixing():
         """Set the target number of shells for mixed models."""
@@ -308,6 +324,15 @@ class MMAMS(CommonCode):
             "mass_loss_do_const flag: whether to use const mass loss fraction (True) or the original Gaburov 2008 fromulation",
             False
         )
+
+        handler.add_method_parameter(
+            "get_const_mass_loss",
+            "set_const_mass_loss",
+            "constant_mass_loss",
+            "if do_const=True, specify what the constant mass loss fraction used is",
+            0.1
+        )
+
         
         handler.add_boolean_parameter(
             "get_do_shock_heating_flag",
