@@ -39,6 +39,9 @@ code:
 
 
 download:
+	$(RM) -Rf .pc
+	$(RM) -Rf src
+	mkdir src
 	$(DOWNLOAD_FROM_WEB)
 
 src: vader_src
@@ -46,23 +49,8 @@ src: vader_src
 	cp Makefile_vader src/Makefile
 
 
-ifdef DOWNLOAD_CODES
 vader_src:
 	make -C . download
-else
-vader_src:
-	@echo ""
-	@echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
-	@echo ""
-	@echo "DOWNLOAD_CODES is not set. VADER will not be downloaded and build."
-	@echo "If you do want VADER, set DOWNLOAD_CODES to 1."
-	@echo "bash> export DOWNLOAD_CODES=1"
-	@echo "csh> setenv DOWNLOAD_CODES 1"
-	@echo ""
-	@echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
-	@echo ""
-	@exit -1
-endif 
 
 
 clean:
