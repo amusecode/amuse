@@ -48,10 +48,6 @@ class EVtwinInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolution
     set_density_at_zone = None
     set_temperature_at_zone = None
 
-    @property
-    def default_path_to_ev_database(self):
-        return self.get_code_src_directory()
-
     @legacy_function
     def new_zams_star():
         """
