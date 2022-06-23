@@ -16,9 +16,9 @@ int commit_particles(){
 }
 
 int new_sph_particle(int * index_of_the_particle, double mass, double x,
-    double y, double z, double vx, double vy, double vz, double eng, double h){
+    double y, double z, double vx, double vy, double vz, double eng){
     *index_of_the_particle = mizuki->add_sph_particle(
-            mass, x, y, z, vx, vy, vz, eng, h*2
+            mass, x, y, z, vx, vy, vz, eng
             );
     return 0;
 }
@@ -142,7 +142,7 @@ int get_state_sph(int index_of_the_particle, double * mass, double * x,
 
 int set_state_sph(int index_of_the_particle, double mass, double x, 
     double y, double z, double vx, double vy, double vz, 
-    double eng, double smth){
+    double eng){
     FP_sph* p = &(mizuki->psys_sph[index_of_the_particle]);
     p->mass = mass;
     p->pos.x = x;
@@ -152,7 +152,6 @@ int set_state_sph(int index_of_the_particle, double mass, double x,
     p->vel.y = vy;
     p->vel.z = vz;
     p->eng = eng;
-    p->smth = smth*2;
     return 0;
 }
 
@@ -300,6 +299,7 @@ int get_time_step(double * time_step){
 
 int set_time_step(double time_step){
     mizuki->dt_max = time_step;
+    mizuki->getTimeStep();
     return 0;
 }
 

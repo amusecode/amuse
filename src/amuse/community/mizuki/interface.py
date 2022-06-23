@@ -51,9 +51,9 @@ class MizukiInterface(
         )
         for x in ['mass', 'x', 'y', 'z', 'vx', 'vy', 'vz', 'u']:
             function.addParameter(x, dtype='float64', direction=function.IN)
-        function.addParameter(
-            'h_smooth', dtype='float64', direction=function.IN, default=0.01,
-        )
+        # function.addParameter(
+        #     'h_smooth', dtype='float64', direction=function.IN, default=0.01,
+        # )
         function.result_type = 'int32'
         return function
 
@@ -137,9 +137,9 @@ class MizukiInterface(
         function.addParameter(
             'u', dtype='float64', direction=function.IN,
             description="The new specific energy of the particle")
-        function.addParameter(
-            'h_smooth', dtype='float64', direction=function.IN,
-            description="The new smoothing length of the particle")
+        # function.addParameter(
+        #     'h_smooth', dtype='float64', direction=function.IN,
+        #     description="The new smoothing length of the particle")
         function.result_type = 'int32'
         function.result_doc = """
         0 - OK
@@ -263,19 +263,19 @@ class MizukiInterface(
         function.result_type = 'int32'
         return function
 
-    @legacy_function
-    def set_smoothing_length():
-        function = LegacyFunctionSpecification()
-        function.can_handle_array = True
-        function.addParameter(
-            'index_of_the_particle', dtype='int32', direction=function.IN)
-        function.addParameter(
-            'h_smooth', dtype='float64', direction=function.IN,
-            description="Smoothing length",
-            unit=nbody_system.length,
-        )
-        function.result_type = 'int32'
-        return function
+    # @legacy_function
+    # def set_smoothing_length():
+    #     function = LegacyFunctionSpecification()
+    #     function.can_handle_array = True
+    #     function.addParameter(
+    #         'index_of_the_particle', dtype='int32', direction=function.IN)
+    #     function.addParameter(
+    #         'h_smooth', dtype='float64', direction=function.IN,
+    #         description="Smoothing length",
+    #         unit=nbody_system.length,
+    #     )
+    #     function.result_type = 'int32'
+    #     return function
 
     @legacy_function
     def get_internal_energy():
@@ -288,6 +288,25 @@ class MizukiInterface(
             description='Specific energy',
         )
         function.result_type = 'int32'
+        return function
+
+    @legacy_function
+    def set_internal_energy():
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
+        function.addParameter(
+            'index_of_the_particle', dtype='int32', direction=function.IN,
+            description='',
+        )
+        function.addParameter(
+            'u', dtype='float64', direction=function.IN,
+            description='',
+        )
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+        -1 - ERROR
+        """
         return function
 
     @legacy_function
@@ -318,6 +337,33 @@ class MizukiInterface(
         function.result_type = 'int32'
         return function
 
+    @legacy_function
+    def get_time_step():
+        function = LegacyFunctionSpecification()
+        function.addParameter(
+            'time_step', dtype='float64', direction=function.OUT,
+            unit=nbody_system.time,
+        )
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+        -1 - ERROR
+        """
+        return function
+
+    @legacy_function
+    def set_time_step():
+        function = LegacyFunctionSpecification()
+        function.addParameter(
+            'time_step', dtype='float64', direction=function.IN,
+            unit=nbody_system.time,
+        )
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+        -1 - ERROR
+        """
+        return function
 
 class Mizuki(GravitationalDynamics,):
     __interface__ = MizukiInterface
@@ -359,6 +405,13 @@ class Mizuki(GravitationalDynamics,):
         self.stopping_conditions.define_state(handler)
 
     def define_parameters(self, handler):
+        handler.add_method_parameter(
+            "get_time_step",
+            "set_time_step",
+            "time_step",
+            "Maximum internal time step",
+            default_value=0.01 | nbody_system.time
+        )
         # handler.add_method_parameter(
         #     "get_eps2",
         #     "set_eps2",
@@ -424,7 +477,7 @@ class Mizuki(GravitationalDynamics,):
         handler.add_setter('gas_particles', 'set_internal_energy')
         # handler.add_getter('gas_particles', 'get_dinternal_energy_dt')
         handler.add_getter('gas_particles', 'get_smoothing_length')
-        handler.add_setter('gas_particles', 'set_smoothing_length')
+        # handler.add_setter('gas_particles', 'set_smoothing_length')
         handler.add_getter('gas_particles', 'get_density', names=('rho',))
         handler.add_getter('gas_particles', 'get_density', names=('density',))
         handler.add_getter('gas_particles', 'get_pressure')
@@ -461,7 +514,7 @@ class Mizuki(GravitationalDynamics,):
                 nbody_system.speed,
                 nbody_system.speed,
                 nbody_system.specific_energy,
-                nbody_system.length,
+                # nbody_system.length,
             ),
             (
                 handler.INDEX,
@@ -500,7 +553,6 @@ class Mizuki(GravitationalDynamics,):
                 nbody_system.speed,
                 nbody_system.speed,
                 nbody_system.specific_energy,
-                nbody_system.length,
             ),
             (
                 handler.ERROR_CODE,
@@ -528,16 +580,16 @@ class Mizuki(GravitationalDynamics,):
             )
         )
 
-        handler.add_method(
-            "set_smoothing_length",
-            (
-                handler.INDEX,
-                nbody_system.length,
-            ),
-            (
-                handler.ERROR_CODE,
-            )
-        )
+        # handler.add_method(
+        #     "set_smoothing_length",
+        #     (
+        #         handler.INDEX,
+        #         nbody_system.length,
+        #     ),
+        #     (
+        #         handler.ERROR_CODE,
+        #     )
+        # )
 
         handler.add_method(
             "get_pressure",

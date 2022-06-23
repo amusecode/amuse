@@ -219,8 +219,7 @@ public:
         PS::F64 vx,
         PS::F64 vy,
         PS::F64 vz,
-        PS::F64 eng,
-        PS::F64 smth
+        PS::F64 eng
         )
     {
         const PS::S64 N_sph = psys_sph.getNumberOfParticleLocal();
@@ -250,7 +249,7 @@ public:
         p.dens = 0.0;
         p.ent = 0.0;
         p.pres = 0.0;
-        p.smth = smth;
+        p.smth = 0.0;
         p.gradh = 0.0;
         p.divv = 0.0;
         p.rotv = 0.0;
