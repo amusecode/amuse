@@ -337,6 +337,19 @@ class Hermite(GravitationalDynamics, GravityFieldCode):
             (handler.NO_UNIT, ),
             (handler.ERROR_CODE,)
         )
+
+        handler.add_method(
+            "get_acceleration",
+            (
+                handler.NO_UNIT,
+            ),
+            (
+                nbody_system.acceleration,
+                nbody_system.acceleration,
+                nbody_system.acceleration,
+                handler.ERROR_CODE
+            )
+        )
         
         self.stopping_conditions.define_methods(handler)
     
