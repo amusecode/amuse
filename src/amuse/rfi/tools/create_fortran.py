@@ -1441,6 +1441,8 @@ class GenerateAFortranSourcecodeStringFromASpecificationClass(GenerateASourcecod
     def start(self):
         self.use_iso_c_bindings = config.compilers.fc_iso_c_bindings
 
+        self.out + GETSET_WORKING_DIRECTORY.format("" if not config.compilers.ifort_version else "  use ifport")
+
         self.out + 'program amuse_worker_program'
         self.out.indent()
         
