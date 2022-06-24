@@ -632,6 +632,7 @@ class EVtwin(StellarEvolution, InternalStellarStructure):
         self.model_time = 0.0 | units.yr
 
     def define_parameters(self, handler):
+        StellarEvolution.define_parameters(self,handler)
         handler.add_boolean_parameter(
             "get_verbosity",
             "set_verbosity",
