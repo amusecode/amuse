@@ -1128,6 +1128,24 @@ MAIN_STRING = """
     stop
   end if
 """
+
+GETSET_WORKING_DIRECTORY="""
+
+function set_working_directory(directory) result(ret)
+    integer :: ret
+    character(*), intent(in) :: directory
+    ret = chdir(directory)
+end function 
+
+function get_working_directory(directory) result(ret)
+    integer :: ret
+    character(*), intent(out) :: directory
+    ret = getcwd(directory)
+end function 
+
+"""
+
+
         
 class GenerateAFortranStringOfAFunctionSpecification(GenerateASourcecodeString):
     MAX_STRING_LEN = 256
@@ -1453,6 +1471,9 @@ class GenerateAFortranSourcecodeStringFromASpecificationClass(GenerateASourcecod
         self.out.lf().lf() + 'CONTAINS'
         
         self.out + POLLING_FUNCTIONS_STRING
+
+        self.out + GETSET_WORKING_DIRECTORY
+
             
         if self.must_generate_mpi:
             self.out + INTERNAL_FUNCTIONS_STRING

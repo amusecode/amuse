@@ -772,6 +772,12 @@ class CodeInterface(OptionalAttributes):
         #~ self.channel.initialize_mpi = self.initialize_mpi
         
         self.channel.start()
+
+        # change to the working directory
+        if self.working_directory:
+            result=self.set_working_directory(self.working_directory)
+            if result!=0:
+                raise Exception(f"Changing to working directory {self.working_directory} failed")
         
         # must register stop interfaces after channel start
         # if done before, the mpi atexit will be registered 
@@ -1025,6 +1031,24 @@ class CodeInterface(OptionalAttributes):
     def get_code_module_directory(self):
         return os.path.dirname(inspect.getmodule(self).__file__)
 
+    @option(sections=("channel",))
+    def working_directory(self):
+        return None
+
+    @legacy_function
+    def set_working_directory():
+        function = LegacyFunctionSpecification()  
+        function.addParameter('working_directory', dtype='string', direction=function.IN)
+        function.result_type = 'int32'
+        return function
+
+    @legacy_function
+    def get_working_directory():
+        function = LegacyFunctionSpecification()  
+        function.addParameter('working_directory', dtype='string', direction=function.OUT)
+        function.result_type = 'int32'
+        return function
+
 
 class CodeWithDataDirectories(object):
     
@@ -1075,7 +1099,8 @@ class CodeWithDataDirectories(object):
         if self.output_data_root_directory:
             return os.path.join(self.output_data_root_directory, self.module_name, 'output')
         else:
-            return os.path.join(".","__amuse_code_output", self.module_name) # note problem for multiple codes
+            working_directory=self.get_working_directory()['working_directory']
+            return os.path.join(working_directory,"__amuse_code_output", self.module_name) # note problem for multiple codes
     
     @option(type="string", sections=('data',))
     def amuse_root_directory(self):
