@@ -38,19 +38,14 @@ class TestStaggeredGrid(amusetest.TestCase):
 
         values = numpy.random.random(shape)
 
-        print(values)
         elements.values = values
 
         nodes.values = grid.map_elements_to_nodes(values)
-        print(nodes.values)
 
         remapped_values = grid.map_nodes_to_elements(nodes.values)
-        print(remapped_values)
 
         before_sum = values.sum()
         after_sum = remapped_values.sum()
-
-        print('before', before_sum, 'after', after_sum)
 
         self.assertEqual(after_sum, before_sum, msg="Sum of values before and after remapping should be the same")
 
@@ -79,23 +74,17 @@ class TestStaggeredGrid(amusetest.TestCase):
         nodes.lat = (lats[1:,1:] | units.rad)
         nodes.lon = (lons[1:,1:] | units.rad)
 
-        print(elements, nodes)
         grid = StaggeredGrid(elements, nodes, get_corners=lambda: numpy.array([lons, lats]))
 
         values = numpy.random.random(shape)
-        print(values)
         elements.values = values
 
         nodes.values = grid.map_elements_to_nodes(values)
-        print(nodes.values)
 
         remapped_values = grid.map_nodes_to_elements(nodes.values)
-        print(remapped_values)
 
         before_sum = values.sum()
         after_sum = remapped_values.sum()
-
-        print('before', before_sum, 'after', after_sum)
 
         self.assertEqual(after_sum, before_sum, msg="Sum of values before and after remapping should be the same")
 
@@ -158,19 +147,14 @@ class TestStaggeredGrid(amusetest.TestCase):
         grid = StaggeredGrid(elements, nodes)
 
         values = numpy.random.random(num_elems)
-        print(values)
         elements.values = values
 
         nodes.values = grid.map_elements_to_nodes(values)
-        print(nodes.values)
 
         remapped_values = grid.map_nodes_to_elements(nodes.values)
-        print(remapped_values)
 
         before_sum = values.sum()
         after_sum = remapped_values.sum()
-
-        print('before', before_sum, 'after', after_sum)
 
         self.assertAlmostEqual(after_sum, before_sum, msg="Sum of values before and after remapping should be the same")
 

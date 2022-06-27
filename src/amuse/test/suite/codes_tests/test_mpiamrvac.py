@@ -53,7 +53,6 @@ class TestMpiAmrVacInterface(TestWithMPI):
         
     def test4(self):
         instance = self.new_instance_of_an_optional_code(MpiAmrVacInterface)
-        print(instance.default_parameters_filename)
         instance.set_parameters_filename(instance.default_parameters_filename)
         error = instance.initialize_code()
         self.assertEqual(error, 0)
@@ -79,7 +78,6 @@ class TestMpiAmrVacInterface(TestWithMPI):
     
     def test5(self):
         instance = self.new_instance_of_an_optional_code(MpiAmrVacInterface)
-        print(instance.default_parameters_filename)
         instance.set_parameters_filename(instance.default_parameters_filename)
         error = instance.initialize_code()
         self.assertEqual(error, 0)
@@ -109,7 +107,6 @@ class TestMpiAmrVacInterface(TestWithMPI):
     
     def test6(self):
         instance = self.new_instance_of_an_optional_code(MpiAmrVacInterface)
-        print(instance.default_parameters_filename)
         instance.set_parameters_filename(instance.default_parameters_filename)
         error = instance.initialize_code()
         self.assertEqual(error, 0)
@@ -139,7 +136,6 @@ class TestMpiAmrVacInterface(TestWithMPI):
 
     def test7(self):
         instance = self.new_instance_of_an_optional_code(MpiAmrVacInterface)
-        print(instance.default_parameters_filename)
         instance.set_parameters_filename(instance.default_parameters_filename)
         error = instance.initialize_code()
         self.assertEqual(error, 0)
@@ -176,7 +172,6 @@ class TestMpiAmrVacInterface(TestWithMPI):
         
     def test8(self):
         instance = self.new_instance_of_an_optional_code(MpiAmrVacInterface)
-        print(instance.default_parameters_filename)
         instance.set_parameters_filename(instance.default_parameters_filename)
         error = instance.initialize_code()
         self.assertEqual(error, 0)
@@ -200,7 +195,6 @@ class TestMpiAmrVacInterface(TestWithMPI):
     def test9(self): 
 
         instance = self.new_instance_of_an_optional_code(MpiAmrVacInterface)
-        print(instance.default_parameters_filename)
         instance.set_parameters_filename(instance.default_parameters_filename)
         error = instance.initialize_code()
         self.assertEqual(error, 0)
@@ -268,11 +262,9 @@ class TestMpiAmrVac(TestWithMPI):
         
         for grid in grids:
             position = grids[0].position
-            print(position.shape)
             for i in range(3):
                 max_x = position[...,i].amax()
                 min_x = position[...,i].amin()
-                print(max_x, min_x)
                 
                 self.assertTrue(min_x >= 0.5 | generic_unit_system.length)
                 self.assertTrue(min_x <= 11.5 | generic_unit_system.length)
@@ -368,7 +360,6 @@ class TestMpiAmrVac(TestWithMPI):
         
         has_advanced = instance.refine_grid()
         grids = list(instance.itergrids())
-        print(len(grids))
         self.assertFalse(has_advanced)
         instance.stop()
 
@@ -555,7 +546,6 @@ class TestMpiAmrVac(TestWithMPI):
         #self.assertAlmostRelativeEquals(igrid.rhovz, 0.1 * 1.0 * 0.1 | generic_unit_system.momentum_density);
 
         instance.evolve_model(0.3 | generic_unit_system.time)
-        print(instance.model_time)
         grids = list(instance.itergrids())
         self.assertEqual(len(grids), 1)
         igrid = grids[0]
@@ -647,9 +637,7 @@ class TestMpiAmrVac(TestWithMPI):
         instance.evolve_model(1.0 | generic_unit_system.time)
         
         self.assertTrue(instance.stopping_conditions.number_of_steps_detection.is_set())
-        rho = instance.itergrids().next().rho[...,0,0]
-        print(rho)
-        print(instance.model_time)
+        rho = next(instance.itergrids()).rho[...,0,0]
         self.assertAlmostRelativeEquals(rho[7], 0.01 | density)
         self.assertTrue(rho[0] < 0.015 | density)
         self.assertTrue( instance.model_time < 1.0 | generic_unit_system.time)
@@ -657,8 +645,7 @@ class TestMpiAmrVac(TestWithMPI):
         
         instance.stopping_conditions.number_of_steps_detection.disable()
         instance.evolve_model(0.1 | generic_unit_system.time)
-        rho = instance.itergrids().next().rho[...,0,0]
-        print(rho)
+        rho = next(instance.itergrids()).rho[...,0,0]
         self.assertAlmostRelativeEquals( instance.model_time, 0.1 | generic_unit_system.time)
         self.assertAlmostRelativeEquals(rho[7], 0.012812 | density, 3)
         self.assertTrue(rho[0] < 0.015 | density)
@@ -705,19 +692,15 @@ class TestMpiAmrVac(TestWithMPI):
         instance.evolve_model(1.0 | generic_unit_system.time)
         
         self.assertTrue(instance.stopping_conditions.timeout_detection.is_set())
-        rho = instance.itergrids().next().rho[...,0,0]
-        print(rho)
-        print(instance.model_time)
+        rho = next(instance.itergrids()).rho[...,0,0]
         self.assertAlmostRelativeEquals(rho.mean(), 0.0125 | density)
         self.assertTrue( instance.model_time < 1.0 | generic_unit_system.time)
         
         
         instance.stopping_conditions.timeout_detection.disable()
-        print(instance.model_time.round(2))
         tnext =  instance.model_time.round(2) + (0.2 | generic_unit_system.time)
         instance.evolve_model(tnext)
-        rho = instance.itergrids().next().rho[...,0,0]
-        print(rho)
+        rho = next(instance.itergrids()).rho[...,0,0]
         self.assertAlmostRelativeEquals( instance.model_time.round(2) ,tnext)
         self.assertAlmostRelativeEquals(rho.mean(), 0.0125 | density)
         self.assertTrue(rho[0] < 0.015 | density)
@@ -881,8 +864,8 @@ class TestMpiAmrVac(TestWithMPI):
             dt = 0.1 | generic_unit_system.time
             instance.evolve_model(dt)
             dt = instance.model_time
-            for igrid in instance.itergrids():
-                print(ax * dt* rho, ax, instance.model_time)
+            #~ for igrid in instance.itergrids():
+                #~ print(ax * dt* rho, ax, instance.model_time)
             self.assertEqual(len(list(instance.itergrids())), 4)
               
             for igrid in instance.itergrids():
@@ -908,7 +891,6 @@ class TestMpiAmrVac(TestWithMPI):
             inmem.energy =  1.0 | generic_unit_system.energy_density
             from_model_to_code = inmem.new_channel_to(x)
             from_model_to_code.copy()
-            print(inmem.rho)
         rho, rhovx, rhovy, rhovx, rhoenergy = instance.get_hydro_state_at_point(0.5| generic_unit_system.length,0.0| generic_unit_system.length,0.0| generic_unit_system.length)
         
         self.assertEqual(rho , 0.5 | generic_unit_system.density)
@@ -965,7 +947,6 @@ class TestMpiAmrVac(TestWithMPI):
             inmem.energy =  1.0 | generic_unit_system.energy_density
             from_model_to_code = inmem.new_channel_to(x)
             from_model_to_code.copy()
-            print(inmem.rho[0], inmem.y[0], inmem.x[0])
         rho, rhovx, rhovy, rhovx, rhoenergy = instance.get_hydro_state_at_point(0.5| generic_unit_system.length,0.5| generic_unit_system.length,0.0| generic_unit_system.length)
         
         self.assertEqual(rho , 0.5 | generic_unit_system.density)

@@ -1,1 +1,6 @@
-from .interface import Mesa
+try:
+  from .interface import Mesa
+except:
+  # fix for pip install error
+  pass
+  
