@@ -40,7 +40,7 @@ aarsethzare_worker: worker_code.f90 $(CODELIB) $(OBJS)
 	$(MPIFC) $(FCFLAGS) $(FS_FLAGS) $(LDFLAGS) -cpp worker_code.f90 $(OBJS) $(CODELIB) $(FS_LIBS) -o $@  $(LIBS)
 	
 worker_code.h: interface.py
-	$(CODE_GENERATOR) --type=h -i amuse.support.codes.stopping_conditions.StoppingConditionInterface interface.py AarsethZareInterface -o $@
+	$(CODE_GENERATOR) --type=h -i amuse.community.interface.stopping_conditions.StoppingConditionInterface interface.py AarsethZareInterface -o $@
 
 	
 %.o: %.f90

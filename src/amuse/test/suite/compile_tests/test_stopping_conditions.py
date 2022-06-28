@@ -3,7 +3,7 @@ from amuse.test import compile_tools
 from amuse.test.amusetest import get_amuse_root_dir
 
 #cello
-from amuse.support.codes import stopping_conditions
+from amuse.community.interface import stopping_conditions
 from amuse.support.interface import InCodeComponentImplementation
 
 import os

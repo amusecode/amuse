@@ -271,7 +271,7 @@ Set stopping conditions table
         Index of the particle involved in the stopping condition.
         The index of the last particle must be -1
 
-.. autoclass:: amuse.support.codes.stopping_conditions.StoppingConditionInterface
+.. autoclass:: amuse.community.interface.stopping_conditions.StoppingConditionInterface
     :members:
 
 This interface contains a lot of functions and implementing it
