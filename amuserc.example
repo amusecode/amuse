@@ -105,6 +105,13 @@
 # setting this option to False. 
 
 # must_disconnect_on_stop=True
+
+# on some MPI installations, idle workers cycle 100% cpu, if this is causing
+# performance issues set the following. This increases the latency 
+# for communication
+
+# polling_interval_in_milliseconds=10
+
 ###################################################################
 
 [data]
@@ -124,7 +131,7 @@
 # input_data_root_directory=/usr/share/amuse/data
 
 # Some codes in AMUSE write data while running.
-# By defailt AMUSE will use `amuse_root_dir`/data.
+# By default AMUSE will use `amuse_root_dir`/data.
 # You can specify a different directory. If you give 
 # a relative path, a directy relative to your current working directory
 # will be used. AMUSE will create the directory if it does not already
@@ -132,5 +139,10 @@
 
 # input_data_root_directory=.
 
+[sockets_channel]
 
+# when the sockets channel is used, the following may be necessary
+# (experiment in case of problems)
+
+# close_fds=False
 
