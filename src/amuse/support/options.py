@@ -211,6 +211,14 @@ class option(object):
     def STRING(self, section, options):
         return options.get(section, self.name)
 
+    def DICT(self, section, options):
+        opts=options.get(section, self.name).split(",")
+        result=dict()
+        for o in opts:
+          key,value=o.split("=")
+          result[key.strip()]=value.strip()
+        return result
+
     def default_validator(self, value):
         return value
 

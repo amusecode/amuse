@@ -224,7 +224,7 @@ class TestParticleLinkToParticles(amusetest.TestCase):
     def test0(self):
         particles1 = datamodel.Particles(keys=[9,10,11,12])
         particles1.mass = [1,2,3,4] | units.kg
-        x = numpy.empty((10,), dtype=numpy.object)
+        x = numpy.empty((10,), dtype=object)
         index = numpy.asarray([1])
         x[index] = particles1
         print(x)

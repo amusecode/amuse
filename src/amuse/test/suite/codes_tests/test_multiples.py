@@ -1,12 +1,7 @@
-# nosetests --nocapture --nologcapture -w test/codes_tests --tests=test_multiples 
-
 from amuse.test.amusetest import TestWithMPI
 
-import os
-import sys
+import tempfile
 import numpy
-import time
-import math
 
 from amuse.community.hermite.interface import Hermite
 from amuse.community.kepler.interface import Kepler
@@ -21,6 +16,7 @@ from amuse.ic import plummer
 from amuse.couple import multiples
 from amuse.couple import encounters
 from amuse import io
+
 
 class TestSimpleMultiples(TestWithMPI):
     previous = None
@@ -65,7 +61,7 @@ class TestSimpleMultiples(TestWithMPI):
         mass_fraction_particle_1 = mass1 / (total_mass)
     
         if keyoffset >= 0:
-            binary = datamodel.Particles(keys=list(range(keyoffset, keyoffset+2)))
+            binary = datamodel.Particles(keys=range(keyoffset, keyoffset+2))
         else:
             binary = datamodel.Particles(2)
             
@@ -952,7 +948,7 @@ class TestSimpleMultiples(TestWithMPI):
         
         
         n = 10
-        singles = datamodel.Particles(keys = list(range(1,n+1)))
+        singles = datamodel.Particles(keys = range(1,n+1))
         singles.mass = 1 | nbody_system.mass
         for x in range(n):
             singles[x].position = [x*x, 0, 0] | nbody_system.length
@@ -976,49 +972,53 @@ class TestSimpleMultiples(TestWithMPI):
         self.assertEqual(len(multiples_code.singles_in_binaries), 2)
         self.assertEqual(id(multiples_code.components_of_multiples), id(multiples_code.multiples[0].components[0].particles_set))
         print(multiples_code.multiples[0].components)
-        io.write_set_to_file(
+        with tempfile.NamedTemporaryFile() as temp:
+            io.write_set_to_file(
+                (
+                    multiples_code.singles, 
+                    multiples_code.singles_in_binaries, 
+                    multiples_code.binaries,  
+                    multiples_code.components_of_multiples, 
+                    multiples_code.multiples
+                ),
+                temp.name,
+                # "multiples.hdf5", 
+                "hdf5",
+                overwrite_file=True,
+                version = "2.0",
+                names = (
+                    "singles",
+                    "singles_in_binaries",
+                    "binaries",
+                    "components_of_multiples",
+                    "multiples"
+                )
+                )
+            
+            multiples_code_loaded  = encounters.Multiples(
+                gravity_code = Hermite(),
+                handle_encounter_code = encounters.StickyHandleEncounter()
+            )
+            
             (
-                multiples_code.singles, 
-                multiples_code.singles_in_binaries, 
-                multiples_code.binaries,  
-                multiples_code.components_of_multiples, 
-                multiples_code.multiples
-            ), 
-            "multiples.hdf5", 
-            "hdf5",
-            version = "2.0",
-            names = (
-                "singles",
-                "singles_in_binaries",
-                "binaries",
-                "components_of_multiples",
-                "multiples"
+                singles,
+                singles_in_binaries,
+                binaries,
+                components_of_multiples,
+                multiples
+            ) = io.read_set_from_file(
+                temp.name,
+                # "multiples.hdf5", 
+                "hdf5",
+                version = "2.0",
+                names = (
+                    "singles",
+                    "singles_in_binaries",
+                    "binaries",
+                    "components_of_multiples",
+                    "multiples"
+                )
             )
-            )
-        
-        multiples_code_loaded  = encounters.Multiples(
-            gravity_code = Hermite(),
-            handle_encounter_code = encounters.StickyHandleEncounter()
-        )
-        
-        (
-            singles,
-            singles_in_binaries,
-            binaries,
-            components_of_multiples,
-            multiples
-        ) = io.read_set_from_file(
-            "multiples.hdf5", 
-            "hdf5",
-            version = "2.0",
-            names = (
-                "singles",
-                "singles_in_binaries",
-                "binaries",
-                "components_of_multiples",
-                "multiples"
-            )
-        )
         self.assertEqual(len(multiples), 1)
         self.assertEqual(len(singles), 8)
         self.assertEqual(len(binaries), 1)

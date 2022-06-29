@@ -47,6 +47,9 @@ class Parameters(object):
         self._instance().before_set_parameter()
 
         return self.get_parameter(name).set_value(value)
+        
+    def __getitem__(self, name):
+        return self.get_parameter(name)
 
     def names(self):
         return list(self._mapping_from_name_to_definition.keys())
@@ -104,6 +107,7 @@ class Parameters(object):
         for name in self.names():
             yield self.get_parameter(name)
     
+    __iter__=iter_parameters
     
 
     def send_cached_parameters_to_code(self):
@@ -595,6 +599,21 @@ class Parameter(object):
 
     def get_cached_value(self):
         return self.definition.get_value(self, self.parameter_set._instance())
+    
+    @property
+    def name(self):
+        return self.definition.name
+
+    @property
+    def description(self):
+        return self.definition.description
+
+    @property
+    def value(self):
+        return self.get_value()
+
+    def __str__(self):
+        return self.name
     
     
 class ModuleVectorMethodParameterDefinition(ModuleMethodParameterDefinition):

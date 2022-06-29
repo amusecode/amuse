@@ -14,7 +14,12 @@ FORTRAN ?= gfortran
 PYTHON ?= python
 FC      ?= $(FORTRAN)
 MPIFC += $(FCFLAGS)
+
+GFVERSION10PLUS := $(shell expr `${FC} -dumpversion | cut -f1 -d.` \>= 10)
+ifeq (${GFVERSION10PLUS}, 1)
 MPIFC += -fallow-invalid-boz -std=legacy
+endif
+
 export FC MPIFC
 
 MESA_MAKE_DIR=./mesa_reqs
@@ -34,7 +39,7 @@ STAR_WORK_OBJS = \
    $(MESA_MAKE_DIR)/create_zams.o $(MESA_MAKE_DIR)/sample_zams.o \
    $(MESA_MAKE_DIR)/run_star.o 
 
-ZAMS_DIR = $(AMUSE_DIR)/data/mesa/output/star_data/starting_models
+ZAMS_DIR = $(AMUSE_DIR)/data/mesa_r2208/output/star_data/starting_models
 ZAMS_DATA = $(ZAMS_DIR)/zams_z20m3.data
 
 CODE_GENERATOR ?= $(AMUSE_DIR)/build.py

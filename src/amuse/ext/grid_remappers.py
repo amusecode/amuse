@@ -4,7 +4,7 @@ from amuse.units import units
 
 from amuse.units.quantities import is_quantity, value_in, to_quantity
 
-from amuse.datamodel import UnstructuredGrid, StructuredGrid,StructuredBaseGrid
+from amuse.datamodel import UnstructuredGrid, StructuredGrid, StructuredBaseGrid, RegularBaseGrid
 
 try:
   import matplotlib
@@ -166,28 +166,53 @@ class interpolating_2D_remapper(object):
         channel3.copy_attributes(target_names)    
 
 class bilinear_2D_remapper(object):
-    def __init__(self, source, target, check_inside=True):
+    def __init__(self, source, target, check_inside=True, do_slices=False):
         """ this class maps a source grid to a target grid using bilinear 
             interpolation. If check_inside=True, raise exception if any 
-            target point outside source grid. 
+            target point outside source grid. If the grids are 3 dimensional
+            it can be used to do a 2D interpolation of each level if shapes 
+            are the same and positions are the same in the 3rd dimension.
         """
-        if len(source.shape) !=2:
-            raise Exception("source grid is not 2D")
-        if not isinstance(source, StructuredBaseGrid):
-            raise Exception("source grid is not instance of RegularBaseGrid")
+        if len(source.shape)!=2 and not do_slices:
+            raise Exception("source grid is not 2D, set do_slices=True remapping by slices")
+        if len(source.shape)!=len(target.shape):
+            raise Exception("incompatible shapes")
+        if len(source.shape)!=2:
+            if numpy.any(source.shape[2:]!=target.shape[2:]):
+                raise Exception("source and target need same shapes (after dim 2)")
+        if not isinstance(source, RegularBaseGrid):
+            raise Exception(f"source grid ({type(source)}) is not instance of RegularBaseGrid")
 
         self.source=source
         self.target=target
         self._axes_names=source.get_axes_names()
+        if len(source.shape)!=2:
+            for x in self._axes_names[2:]:
+                if numpy.any(getattr(source[0,0],x)!=getattr(target[0,0],x)):
+                    print(getattr(source[0,0],x))
+                    print(getattr(target[0,0],x))
+                    raise Exception(f"positions not the same on axes {x}")
         self.check_inside=check_inside
         self._weights=None
         self._indices=None
 
     def _calculate_weights(self):
-        x0=getattr(self.source[0,0], self._axes_names[0])
-        x1=getattr(self.source[1,1], self._axes_names[0])
-        y0=getattr(self.source[0,0], self._axes_names[1])
-        y1=getattr(self.source[1,1], self._axes_names[1])
+        x0=to_quantity( getattr(self.source[0,0], self._axes_names[0]) )
+        x1=to_quantity( getattr(self.source[1,1], self._axes_names[0]) )
+        y0=to_quantity( getattr(self.source[0,0], self._axes_names[1]) )
+        y1=to_quantity( getattr(self.source[1,1], self._axes_names[1]) )
+
+        # guaranteed by grid being RegularBaseGrid
+        assert x0.max()==x0.min()
+        assert x1.max()==x1.min()
+        assert y0.max()==y0.min()
+        assert y1.max()==y1.min()
+
+        x0=x0.min()
+        x1=x1.min()
+        y0=y0.min()
+        y1=y1.min()
+
         dx=x1-x0
         dy=y1-y0
                 
@@ -209,6 +234,11 @@ class bilinear_2D_remapper(object):
         wy=numpy.clip(wy,0.,1.)
 
         self._weights=[wx,wy]
+
+        while(len(ix.shape)>2):
+          ix=numpy.amax(ix,axis=-1)
+          iy=numpy.amax(iy,axis=-1)
+          
         self._indices=[ix,iy]
       
     def _evaluate(self, values):
@@ -226,10 +256,14 @@ class bilinear_2D_remapper(object):
         if self._weights is None:
             self._calculate_weights()
         
+        mapped_values=[]
         for attribute, target_name in zip(attributes, target_names):
             values=getattr(self.source,attribute)
             samples=self._evaluate(values)
-            setattr(self.target, target_name, samples)
+            mapped_values.append(samples)
+
+        self.target.set_values_in_store(None, target_names, mapped_values)
+
 
 class nearest_2D_remapper(object):
     def __init__(self, source, target, check_inside=True):
@@ -239,7 +273,7 @@ class nearest_2D_remapper(object):
         """
         if len(source.shape) !=2:
             raise Exception("source grid is not 2D")
-        if not isinstance(source, StructuredBaseGrid):
+        if not isinstance(source, RegularBaseGrid):
             raise Exception("source grid is not instance of RegularBaseGrid")
 
         self.source=source
@@ -276,11 +310,15 @@ class nearest_2D_remapper(object):
             target_names=attributes
         if self._indices is None:
             self._calculate_weights()
-        
+
+        mapped_values=[]
         for attribute, target_name in zip(attributes, target_names):
             values=getattr(self.source,attribute)
             samples=self._evaluate(values)
-            setattr(self.target, target_name, samples)
+            mapped_values.append(samples)
+
+        self.target.set_values_in_store(None, target_names, mapped_values)
+
 
 def conservative_spherical_remapper(*args,**kwargs):
     raise Exception("conservative_spherical_remapper has moved to omuse.ext")

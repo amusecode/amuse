@@ -25,13 +25,14 @@ Help on package amuse.ic in amuse:
 or (directly from the terminal):
 > pydoc amuse.ic
 """
+import sys
 import numpy
 
 def numpy_fix():
     try:
-      numpy.set_printoptions(legacy='1.13')
+        numpy.set_printoptions(legacy='1.13')
     except TypeError:
-      pass
+        pass
       
 numpy_fix()
 
@@ -50,6 +51,8 @@ except Exception as ex:
 
 
 # always report AMUSE reference information
-from amuse.support.literature import TrackLiteratureReferences
-
-TrackLiteratureReferences.default()
+try:
+    from amuse.support.literature import TrackLiteratureReferences
+    TrackLiteratureReferences.default()
+except:
+    pass

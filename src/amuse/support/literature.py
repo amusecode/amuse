@@ -76,7 +76,7 @@ class TrackLiteratureReferences:
             sys.excepthook = self.original_excepthook
         self.original_excepthook = None
         
-        if self.must_show_literature_references_atexit:
+        if self.must_show_literature_references_atexit and not "--no-report-references" in sys.argv:
             string = self.all_literature_references_string()
             if string:
                 prefix = """

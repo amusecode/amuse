@@ -1650,7 +1650,7 @@ SUBROUTINE POTHALO(X1,Y1,Z1,POT)
        IF(X2*UA2+Y2*UB2+Z2*UC2.LE.1.D0)THEN
           P1=X2*V100+Y2*V010+Z2*V001
           P2=-(x2*y2*v110+x2*z2*v101+y2*z2*v011)
-          P3=-0.5Q0*(v000+x2*x2*v200+y2*y2*v020+z2*z2*v002)
+          P3=-0.5*(v000+x2*x2*v200+y2*y2*v020+z2*z2*v002)
           POT=CTE1*(P1+P2+P3)
           
        ELSE

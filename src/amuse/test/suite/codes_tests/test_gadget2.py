@@ -951,7 +951,7 @@ class TestGadget2(TestWithMPI):
         t_end = (n_timescales * self.default_convert_nbody.to_si(1.0 | nbody_system.time)).as_quantity_in(units.Myr)
         print("Evolving to ("+str(n_timescales), "nbody timescales): ", t_end)
         n_steps = 5
-        times = (t_end * (list(range(1, n_steps+1))) / (1.0 * n_steps)).as_quantity_in(units.Myr)
+        times = (t_end * (range(1, n_steps+1)) / (1.0 * n_steps)).as_quantity_in(units.Myr)
         
         instance = Gadget2(self.default_converter, **default_options)
         instance.parameters.max_size_timestep = t_end
@@ -1007,7 +1007,7 @@ class TestGadget2(TestWithMPI):
         t_end = (n_timescales * self.default_convert_nbody.to_si(1.0 | nbody_system.time)).as_quantity_in(units.Myr)
         print("Evolving to ("+str(n_timescales), "nbody timescales): ", t_end)
         n_steps = 100
-        times = (t_end * (list(range(1, n_steps+1))) / (1.0 * n_steps)).as_quantity_in(units.Myr)
+        times = (t_end * (range(1, n_steps+1)) / (1.0 * n_steps)).as_quantity_in(units.Myr)
         
         instance = Gadget2(self.default_converter, **default_options)
         instance.parameters.max_size_timestep = t_end

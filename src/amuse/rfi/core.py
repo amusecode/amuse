@@ -346,32 +346,26 @@ class legacy_function(object):
     @late
     def crc32(self):
         try:
-        
             from zlib import crc32
-            try:
-                if crc32('amuse')&0xffffffff == 0xc0cc9367:
-                    return crc32
-            except Exception:
-                #python 3, crc32 needs bytes...
-                def python3_crc32(x):
-                    x = crc32(bytes(x, 'ascii'))
-                    return x - ((x & 0x80000000) <<1)
-                if python3_crc32('amuse')&0xffffffff == 0xc0cc9367:
-                    return python3_crc32
+            # python 3, crc32 needs bytes...
+
+            def python3_crc32(x):
+                x = crc32(bytes(x, 'ascii'))
+                return x - ((x & 0x80000000) << 1)
+
+            if python3_crc32('amuse') & 0xffffffff == 0xc0cc9367:
+                return python3_crc32
         except Exception:
             pass
         try:
             from binascii import crc32
-            try:
-                if crc32('amuse')&0xffffffff == 0xc0cc9367:
-                    return crc32
-            except Exception:
-                #python 3, crc32 needs bytes...
-                def python3_crc32(x):
-                    x = crc32(bytes(x, 'ascii'))
-                    return x - ((x & 0x80000000) <<1)
-                if python3_crc32('amuse')&0xffffffff == 0xc0cc9367:
-                    return python3_crc32
+            # python 3, crc32 needs bytes...
+
+            def python3_crc32(x):
+                x = crc32(bytes(x, 'ascii'))
+                return x - ((x & 0x80000000) << 1)
+            if python3_crc32('amuse') & 0xffffffff == 0xc0cc9367:
+                return python3_crc32
         except Exception:
             pass
         
@@ -775,7 +769,7 @@ class CodeInterface(OptionalAttributes):
         self.channel.redirect_stdout_file = self.redirection_filenames[0]
         self.channel.redirect_stderr_file = self.redirection_filenames[1]
         self.channel.polling_interval_in_milliseconds = self.polling_interval_in_milliseconds
-        self.channel.initialize_mpi = self.initialize_mpi
+        #~ self.channel.initialize_mpi = self.initialize_mpi
         
         self.channel.start()
         
@@ -912,8 +906,6 @@ class CodeInterface(OptionalAttributes):
     def channel_type(self):
         return 'mpi'
     
-
-
     @option(type="boolean", sections=("channel",))
     def initialize_mpi(self):
         """Is MPI initialized in the code or not. Defaults to True if MPI is available"""

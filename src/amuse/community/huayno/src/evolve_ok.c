@@ -10,9 +10,9 @@
 #include "evolve.h"
 #include "evolve_ok.h"
 
-struct forces zeroforces = {0, NULL, NULL};
+struct forces zeroforces = {0, NULL};
 
-#define IS_ZEROFORCES(F) (((F).n == 0) && ((F).forc == NULL) && ((F).last == NULL))
+#define IS_ZEROFORCES(F) (((F).n == 0) && ((F).forc == NULL))
 
 #define LOG_FORCES(F) \
 { \
@@ -20,6 +20,9 @@ struct forces zeroforces = {0, NULL, NULL};
     printf("%u\t%u\t%f\n", (F).forc[i].parti->id, (F).forc[i].partj->id, (F).forc[i].timestep); \
   } \
 };
+
+#define LASTFORCE(s)   ((s).forc==NULL || (s).n==0 ? NULL : (s).forc+(s).n-1)
+
 
 static void ok_timestep_cpu(int clevel,struct forces f, DOUBLE dt)
 {
@@ -42,7 +45,7 @@ static void ok_split(FLOAT dt, struct forces f, struct forces *slow, struct forc
   UINT i = 0;
   struct force *left, *right;
   left = f.forc;
-  right = f.last;
+  right = LASTFORCE(f);
   dt=fabs(dt);
   while (1)
   {
@@ -60,7 +63,7 @@ static void ok_split(FLOAT dt, struct forces f, struct forces *slow, struct forc
     }
   }
   if (left->timestep < dt) left++;
-  slow->n = f.last - left + 1;
+  slow->n = LASTFORCE(f) - left + 1;
   fast->n = left - f.forc;
   if (fast->n == 1)
   {
@@ -70,26 +73,23 @@ static void ok_split(FLOAT dt, struct forces f, struct forces *slow, struct forc
   if (slow->n > 0)
   {
     slow->forc = f.forc + fast->n;
-    slow->last = f.last;//slow->part+slow->n-1;
   }
   if (fast->n > 0)
   {
     fast->forc = f.forc;
-    fast->last = f.forc + fast->n - 1;
   }
   if (fast->n + slow->n != f.n)
     ENDRUN("forces split error 2: fast->n=%u slow->n=%u f.n=%u\n", fast->n, slow->n, f.n);
   //for (i = 0; i < f.n; i++) f.forc[i].level = clevel;
 }
 
-struct forces ok_main_forces = {0, NULL, NULL};
+struct forces ok_main_forces = {0, NULL};
 
 void evolve_ok_init(struct sys s)
 {
   UINT n_forces = s.n * s.n - s.n;
   if (ok_main_forces.forc != NULL) ENDRUN("OK (re)allocation error");
   ok_main_forces.forc = (struct force *) malloc(n_forces * sizeof(struct force));
-  ok_main_forces.last = &(ok_main_forces.forc[n_forces - 1]);
   ok_main_forces.n = n_forces;
 
   // initialize pointers of the forces structure
@@ -100,8 +100,8 @@ void evolve_ok_init(struct sys s)
     {
       if (i != j)
       {
-        ok_main_forces.forc[k].parti = &( s.part[i] );
-        ok_main_forces.forc[k].partj = &( s.part[j] );
+        ok_main_forces.forc[k].parti = GETPART(s,i);
+        ok_main_forces.forc[k].partj = GETPART(s,j);
         k++;
       }
     }

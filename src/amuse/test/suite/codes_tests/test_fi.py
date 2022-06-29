@@ -168,7 +168,7 @@ class TestFiInterface(TestWithMPI):
         x, y, z = gas.x.value_in(units.kpc), gas.y.value_in(units.kpc), gas.z.value_in(units.kpc)
         vx, vy, vz = [[0.0] * number_sph_particles] * 3
         u = [0.05] * number_sph_particles
-        indices = list(range(1,number_sph_particles+1))
+        indices = range(1,number_sph_particles+1)
         
         instance=FiInterface()
         instance.initialize_code()

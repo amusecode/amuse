@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 from support.setup_codes import setup_commands
 from support.misc import find_data_files
 
-name = 'amuse'
+name = 'amuse-devel'
 author = 'The AMUSE team'
 author_email = 'info@amusecode.org'
 license_ = "Apache License 2.0"

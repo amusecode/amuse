@@ -1,10 +1,8 @@
 from amuse.community import *
 from amuse.test.amusetest import TestWithMPI
 
-from amuse.community.bonsai2.interface import BonsaiInterface2, Bonsai2
+from amuse.community.bonsai2.interface import Bonsai2Interface, Bonsai2
 
-import os
-import sys 
 import numpy
 
 from amuse.units import nbody_system
@@ -35,7 +33,7 @@ class TestBonsaiInterface(TestWithMPI):
         vz=plummer.vz.number
 
 
-        instance = self.new_instance_of_an_optional_code(BonsaiInterface2, **default_options)
+        instance = self.new_instance_of_an_optional_code(Bonsai2Interface, **default_options)
         self.assertEqual(0, instance.initialize_code())
         self.assertEqual([0, 0], list(instance.get_number_of_particles().values()))
         ids, errors = instance.new_particle(mass,x,y,z,vx,vy,vz,radius)
@@ -44,10 +42,10 @@ class TestBonsaiInterface(TestWithMPI):
         self.assertEqual(0, instance.commit_particles())
         
         self.assertEqual([500, 0], list(instance.get_number_of_particles().values()))
-        masses, errors = instance.get_mass(list(range(500)))
+        masses, errors = instance.get_mass(range(500))
         self.assertEqual(0, errors)
         self.assertAlmostEqual(0.002, masses)
-        masses,xs,ys,zs,vxs,vys,vzs,radii, errors = instance.get_state(list(range(500)))
+        masses,xs,ys,zs,vxs,vys,vzs,radii, errors = instance.get_state(range(500))
         self.assertEqual(0, errors)
         self.assertAlmostRelativeEquals(xs, x, 6)
         

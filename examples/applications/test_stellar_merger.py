@@ -204,7 +204,7 @@ def head_on_stellar_merger(
     potential_energies = [] | units.J
     thermal_energies = [] | units.J
 
-    print "Evolving to:", t_end
+    print("Evolving to:", t_end)
     for time, i_step in [(i*t_end/n_steps, i) for i in range(1, n_steps+1)]:
         hydro_legacy_code.evolve_model(time)
         times.append(time)

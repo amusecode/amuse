@@ -71,18 +71,18 @@ class HalogenInterfaceTests(TestWithMPI):
         self.assertEqual(instance.generate_particles(), 0)
         self.assertEqual(list(instance.get_number_of_particles_updated().values()), [number_of_particles, 0])
         
-        masses, errors = instance.get_mass(list(range(number_of_particles)))
+        masses, errors = instance.get_mass(range(number_of_particles))
         self.assertEqual(errors, numpy.zeros(number_of_particles))
         self.assertEqual(masses, numpy.ones(number_of_particles)/number_of_particles)
         
-        x_positions, y_positions, z_positions, errors = instance.get_position(list(range(number_of_particles)))
+        x_positions, y_positions, z_positions, errors = instance.get_position(range(number_of_particles))
         self.assertEqual(errors, numpy.zeros(number_of_particles))
         self.assertAlmostEqual(numpy.array([numpy.mean(x_positions), numpy.mean(y_positions), 
             numpy.mean(z_positions)]), numpy.array([0.0]*3))
         self.assertAlmostEqual(numpy.array([numpy.mean(abs(x_positions)), numpy.mean(abs(y_positions)), 
             numpy.mean(abs(z_positions))]), numpy.array([1.0]*3), 1)
         
-        x_velocities, y_velocities, z_velocities, errors = instance.get_velocity(list(range(number_of_particles)))
+        x_velocities, y_velocities, z_velocities, errors = instance.get_velocity(range(number_of_particles))
         self.assertEqual(errors, numpy.zeros(number_of_particles))
         self.assertAlmostEqual(numpy.array([numpy.mean(x_velocities), numpy.mean(y_velocities), 
             numpy.mean(z_velocities)]), numpy.array([0.0]*3))

@@ -9,6 +9,10 @@ endif
 MPICXX ?= mpicxx
 MPICC ?= mpicc
 MPIFC ?= mpif90
+GFVERSION10PLUS := $(shell expr `${FC} -dumpversion | cut -f1 -d.` \>= 10)
+ ifeq (${GFVERSION10PLUS}, 1)
+ MPIFC += -fallow-argument-mismatch
+ endif
 MPIF90 ?= $(MPIFC)
 FC = $(MPIF90)
 CC = $(MPICC)
@@ -60,7 +64,8 @@ CFLAGS += -g  $(OPTS)
 FFLAGS += -g $(OPTS)
 FFLAGS += -I./src/
 
-ifeq ($(findstring gfortran, $(shell $(FC) --help)), gfortran)
+# check for gfortran, this catches link and compiler wrappers
+ifeq ($(findstring GNU, $(shell $(FC) --version)), GNU)
 else
 GLLIB += -lguide
 endif
