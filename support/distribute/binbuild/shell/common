@@ -1,9 +1,0 @@
-export PYTHONHOME=${DIR}
-export PATH=${PYTHONHOME}/bin:${PATH}
-export LD_LIBRARY_PATH=${PYTHONHOME}/lib:${LD_LIBRARY_PATH}
-export DYLD_FALLBACK_LIBRARY_PATH=${PYTHONHOME}/lib:${DYLD_FALLBACK_LIBRARY_PATH}
-export PYTHONPATH=${PYTHONHOME}/customize
-export PYTHON=${PYTHONHOME}/python
-export AMUSERC=${DIR}/amuserc
-
-gethostip `hostname` > /dev/null || ( echo warning hostname may not resolve: check your /etc/hosts && sleep 2 )
