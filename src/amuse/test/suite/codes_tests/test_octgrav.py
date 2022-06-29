@@ -125,7 +125,7 @@ class TestAmuseInterface(TestWithMPI):
         plummer_size = 500
         convert_nbody = nbody_system.nbody_to_si(1.0 | units.MSun, 149.5e6 | units.km)
         stars =  new_plummer_model(plummer_size, convert_nbody)
-        stars.radius = list(range(1, plummer_size+1))|units.km
+        stars.radius = range(1, plummer_size+1)|units.km
 
         instance = self.new_instance_of_an_optional_code(Octgrav, convert_nbody)
         instance.particles.add_particles(stars)
