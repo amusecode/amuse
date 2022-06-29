@@ -7,7 +7,7 @@ on:
   push:
     branches: [ "main", "actions/lint_test_and_package" ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ "main", "actions/lint_test_and_package" ]
 
 jobs:
   build:
