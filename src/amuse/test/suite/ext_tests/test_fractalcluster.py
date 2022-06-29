@@ -34,7 +34,7 @@ class TestFractalCluster(amusetest.TestCase):
     def test4(self):
         print("Test with masses")
         target_number_of_particles = 100
-        masses = (list(range(1,11)) | units.MSun) * 1.0
+        masses = (range(1,11) | units.MSun) * 1.0
         convert_nbody = nbody_system.nbody_to_si(1000 | units.MSun, 1 | units.parsec) 
         particles = new_fractal_cluster_model(masses=masses, convert_nbody=convert_nbody, do_scale=True)
         
@@ -51,7 +51,7 @@ class TestFractalCluster(amusetest.TestCase):
     def test5(self):
         print("Test with masses, with correct mass unit in converter")
         target_number_of_particles = 100
-        masses = (list(range(1,11)) | units.MSun) * 1.0
+        masses = (range(1,11) | units.MSun) * 1.0
         convert_nbody = nbody_system.nbody_to_si(masses.sum(), 1 | units.parsec) 
         particles = new_fractal_cluster_model(masses=masses, convert_nbody=convert_nbody, do_scale=True)
         

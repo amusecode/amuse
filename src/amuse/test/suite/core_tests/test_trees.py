@@ -15,7 +15,7 @@ class TestBinaryTree(amusetest.TestCase):
     
     def test1(self):
         particles = Particles(10)
-        particles.mass = list(range(10)) | units.kg
+        particles.mass = range(10) | units.kg
         particles[0].child1 = particles[1]
         particles[0].child2 = particles[2]
         
@@ -34,7 +34,7 @@ class TestBinaryTree(amusetest.TestCase):
     def test2(self):
         n = 100000
         particles = Particles(n)
-        particles.mass = list(range(n)) | units.kg
+        particles.mass = range(n) | units.kg
         particles[n-1].child1 = particles[0]
         particles[n-1].child2 = particles[1]
         
@@ -54,7 +54,7 @@ class TestBinaryTree(amusetest.TestCase):
     def test3(self):
         n = 10
         particles = Particles(n)
-        particles.mass = list(range(n)) | units.kg
+        particles.mass = range(n) | units.kg
         particles[0].child1 = particles[1]
         particles[0].child2 = particles[2]
         particles[1].child1 = particles[3]
@@ -77,7 +77,7 @@ class TestBinaryTree(amusetest.TestCase):
 
     def test4(self):
         particles = Particles(10)
-        particles.mass = list(range(10)) | units.kg
+        particles.mass = range(10) | units.kg
         particles[0].child1 = particles[1]
         particles[0].child2 = particles[2]
         particles[1].child1 = particles[3]
@@ -94,7 +94,7 @@ class TestBinaryTree(amusetest.TestCase):
 
     def test5(self):
         particles = Particles(10)
-        particles.mass = list(range(10)) | units.kg
+        particles.mass = range(10) | units.kg
         particles[0].child1 = particles[1]
         particles[0].child2 = particles[2]
         particles[1].child1 = particles[3]
@@ -123,7 +123,7 @@ class TestBinaryTree(amusetest.TestCase):
     def test6(self):
         
         particles = Particles(10)
-        particles.mass = list(range(10)) | units.kg
+        particles.mass = range(10) | units.kg
         particles[0].child1 = particles[1]
         particles[0].child2 = particles[2]
         particles[1].child1 = particles[3]
@@ -147,7 +147,7 @@ class TestBinaryTree(amusetest.TestCase):
     def test7(self):
         
         particles = Particles(10)
-        particles.mass = list(range(10)) | units.kg
+        particles.mass = range(10) | units.kg
         particles[0].child1 = particles[1]
         particles[0].child2 = particles[2]
         particles[1].child1 = particles[3]
@@ -174,7 +174,7 @@ class TestBinaryTree(amusetest.TestCase):
     
     def test8(self):
         particles = Particles(10)
-        particles.mass = list(range(10)) | units.kg
+        particles.mass = range(10) | units.kg
         particles[0].child1 = particles[1]
         particles[0].child2 = particles[2]
         particles[1].child1 = particles[3]
@@ -190,7 +190,7 @@ class TestChildTree(amusetest.TestCase):
     
     def test1(self):
         particles = Particles(10)
-        particles.mass = list(range(10)) | units.kg
+        particles.mass = range(10) | units.kg
         particles[0].child1 = particles[1]
         particles[0].child2 = particles[2]
         
@@ -212,7 +212,7 @@ class TestChildTree(amusetest.TestCase):
     
     def test2(self):
         particles = Particles(10)
-        particles.mass = list(range(10)) | units.kg
+        particles.mass = range(10) | units.kg
         particles[0].child1 = particles[1]
         particles[0].child2 = particles[2]
         
@@ -231,7 +231,7 @@ class TestChildTree(amusetest.TestCase):
 
     def test3(self):
         particles = Particles(10)
-        particles.mass = list(range(10)) | units.kg
+        particles.mass = range(10) | units.kg
         particles[0].child1 = particles[1]
         particles[0].child2 = particles[2]
         particles[1].child1 = particles[3]
@@ -256,7 +256,7 @@ class TestChildTree(amusetest.TestCase):
         
     def test4(self):
         particles = Particles(10)
-        particles.mass = list(range(10)) | units.kg
+        particles.mass = range(10) | units.kg
         particles[0].child1 = particles[2]
         particles[0].child2 = particles[1]
         particles[1].child1 = particles[4]
@@ -277,7 +277,7 @@ class TestChildTree(amusetest.TestCase):
     def test5(self):
         
         particles = Particles(10)
-        particles.mass = list(range(10)) | units.kg
+        particles.mass = range(10) | units.kg
         particles[0].child1 = particles[1]
         particles[0].child2 = particles[2]
         particles[1].child1 = particles[3]
