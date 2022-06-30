@@ -51,6 +51,7 @@ class MizukiInterface(
         )
         for x in ['mass', 'x', 'y', 'z', 'vx', 'vy', 'vz', 'u']:
             function.addParameter(x, dtype='float64', direction=function.IN)
+        # NOTE: Do not set h_smooth manually - it will be calculated by Mizuki!
         # function.addParameter(
         #     'h_smooth', dtype='float64', direction=function.IN, default=0.01,
         # )

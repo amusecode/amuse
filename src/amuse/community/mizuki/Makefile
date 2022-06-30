@@ -1,8 +1,8 @@
 # standard amuse configuration include
 # config.mk will be made after ./configure has run
-#ifeq ($(origin AMUSE_DIR), undefined)
+ifeq ($(origin AMUSE_DIR), undefined)
 AMUSE_DIR := $(shell amusifier --get-amuse-dir)
-#endif
+endif
 -include $(AMUSE_DIR)/config.mk
 
 MPICXX   ?= mpicxx
@@ -26,7 +26,7 @@ CXXFLAGS += -DENABLE_VARIABLE_SMOOTHING_LENGTH
 # CXXFLAGS += -DUSE_ENTROPY
 # CXXFLAGS += -DUSE_BALSARA_SWITCH
 # CXXFLAGS += -DUSE_PRESCR_OF_THOMAS_COUCHMAN_1992
-CXXFLAGS += -DISOTHERMAL_EOS
+# CXXFLAGS += -DISOTHERMAL_EOS
 
 ifeq ($(use_phantom_grape_x86),yes)
   PG_ROOT = $(FDPS_PATH)/phantom_grape_x86/G5/newton/libpg5
@@ -68,7 +68,7 @@ worker_code.cc: interface.py
 worker_code.h: interface.py
 	$(CODE_GENERATOR) --type=H  -i amuse.support.codes.stopping_conditions.StoppingConditionInterface interface.py MizukiInterface -o $@
 
-mizuki_worker: worker_code.cc worker_code.h $(CODELIB) $(OBJS) interface.h
+mizuki_worker: worker_code.cc worker_code.h $(CODELIB) $(OBJS) interface.hpp
 	$(MPICXX) $(CXXFLAGS) $(SC_FLAGS) $(LDFLAGS) $< $(OBJS) -o $@
 
 interface.o: interface.cc
