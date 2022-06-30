@@ -21,6 +21,7 @@
 
 #include "leapfrog.hpp"
 #include "mathematical_constants.h"
+//#include "user_defined.hpp"
 
 void calcDensity(PS::ParticleSystem<FP_sph> & psys,
                  PS::DomainInfo & dinfo, 
@@ -92,12 +93,15 @@ public:
     PS::ParticleSystem<FP_sph> psys_sph;
     PS::F64 time;
     PS::F64 epsilon_gravity;
+    //std::str equation_of_state = "isothermal";
     PS::F64 dt_max;
+    PS::F64 dt_min;
     Mizuki() {
         this->boundary_condition = PS::BOUNDARY_CONDITION_OPEN;
         this->nstep = 0;
         this->time = 0.;
-        this->dt_max = 1./64.;
+        this->dt_max = 1./64.; // 2**6
+        this->dt_min = 1./1048576.; // 2**20
         this->id_offset = 0;
         this->epsilon_gravity = 1.0e-4;
         this->theta_gravity = 0.5;
@@ -204,6 +208,7 @@ public:
                 this->dt = std::min(this->dt, psys_sph[i].dt);
         }
         }
+	this->dt = std::max(this->dt, this->dt_min);
         this->dt = PS::Comm::getMinValue(this->dt);
     }
 
@@ -225,7 +230,6 @@ public:
         const PS::S64 N_sph = psys_sph.getNumberOfParticleLocal();
         FP_sph p;
         //psys_sph.setNumberOfParticleLocal(N_sph+1);
-        this->id_offset += 1;
         p.id = id_offset;
         p.mass = mass;
         p.pos.x = x;
@@ -249,7 +253,7 @@ public:
         p.dens = 0.0;
         p.ent = 0.0;
         p.pres = 0.0;
-        p.smth = 0.0;
+        p.smth = 0.1;
         p.gradh = 0.0;
         p.divv = 0.0;
         p.rotv = 0.0;
@@ -264,6 +268,7 @@ public:
         p.eng_half = 0;
         p.ent_half = 0;
         this->psys_sph.addOneParticle(p);
+        this->id_offset += 1;
         //std::cout << id << " " << x << " " << y << " " << z << std::endl;
         return p.id;
     }
