@@ -15,8 +15,8 @@ from sphinx.util.docstrings import prepare_docstring
 # Taken from gh#sphinx-doc/sphinx#9326
 def force_decode(string: str, encoding: str) -> str:
     """Forcibly get a unicode string out of a bytestring."""
-    warnings.warn('force_decode() is deprecated.',
-                  RemovedInSphinx50Warning, stacklevel=2)
+    #~ warnings.warn('force_decode() is deprecated.',
+                  #~ RemovedInSphinx50Warning, stacklevel=2)
     if isinstance(string, bytes):
         try:
             if encoding:
