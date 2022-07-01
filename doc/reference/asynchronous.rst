@@ -77,7 +77,7 @@ Asynchronous variable access::
     xpos = request.result() # retrieve result. Implicit wait for the request to finish
   
 Requests can be used in arithmetic operations, and such operation returns a new 
-request that can be waited on (with the corresponding result):
+request that can be waited on (with the corresponding result)::
 
     x1=h1.particles.request.x
     x2=h2.particles.request.x
