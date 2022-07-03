@@ -13,11 +13,11 @@ can be made asynchronous, by appending ``.asynchronous`` to the method's
 name or (preferred) adding a keyword argument ``return=request``.
 When such asynchronous call is made to a code, the Python script
 continues to run while the call is being made.  The Python script can
-then perform computations or calls to other codes in OMUSE.
+then perform computations or calls to other codes in AMUSE.
 Subsequent calls to the same code instance can be made, but they
 will be performed in sequence.
 
-An asynchronous OMUSE function call returns  immediately,
+An asynchronous AMUSE function call returns  immediately,
 i.e. it does not wait for the worker code to finish the function.
 Instead of the normal return value, the asynchronous function returns a request
 object, which can be used to access the result of the function call later.
