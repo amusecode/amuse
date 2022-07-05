@@ -32,18 +32,51 @@ class TestsForIssue850(amusetest.TestCase):
         channel_stars = code.particles.new_channel_to(stars)
         channel_stars.copy()
 
-        end_time = 15.6001481751 | units.Myr
+        end_time = 13500. | units.Myr
 
         code.evolve_model(end_time)
         channel_stars.copy()
+
+        # All stars need to have evolved
         print(
             f"t: {end_time}, m: {stars[0].mass} {stars[1].mass} {stars[2].mass} "
         )
+        for i in range(len(stars)):
+            self.assertNotEqual(stars[i].mass, stars[i].initial_mass)
+
+    def test_does_seba_evolve_stars_not_in_binary(self):
+        """
+        Tests if SeBa evolves any star that is not in a binary if a binary is
+        added.
+        """
+        stars, binary = self.create_stars_and_binaries(binary_pair=[0, 1])
+        additional_stars = Particles(5)
+        additional_stars.original_mass = [11, 20, 4, 2, 1] | units.MSun
+        additional_stars.mass = additional_stars.original_mass
+        stars.add_particles(additional_stars)
+
+        code = SeBa()
+        code.particles.add_particles(stars)
+        code.binaries.add_particles(binary)
+
+        channel_stars = code.particles.new_channel_to(stars)
+        channel_binary = code.binaries.new_channel_to(binary)
+        channel_stars.copy()
+        channel_binary.copy()
+
+        end_time = 13500. | units.Myr
+
+        code.evolve_model(end_time)
+        channel_stars.copy()
+        channel_binary.copy()
+
         # All stars need to have evolved
-        self.assertNotEqual(stars[0].mass, stars[0].initial_mass)
-        self.assertNotEqual(stars[1].mass, stars[1].initial_mass)
-        self.assertNotEqual(stars[2].mass, stars[2].initial_mass)
-        # self.assertEqual(a, b)
+        print(
+            f"t: {end_time}, m: {stars[0].mass} {stars[1].mass} {stars[2].mass} "
+        )
+        for i in range(len(stars)):
+            self.assertNotEqual(stars[i].mass, stars[i].initial_mass)
+
 
     def test_do_all_stars_evolve_default_binary(self):
         "Test if all stars evolve (default order binary)"
@@ -58,19 +91,18 @@ class TestsForIssue850(amusetest.TestCase):
         channel_stars.copy()
         channel_binary.copy()
 
-        end_time = 15.6001481751 | units.Myr
+        end_time = 13500. | units.Myr
 
         code.evolve_model(end_time)
         channel_stars.copy()
         channel_binary.copy()
+
+        # All stars need to have evolved
         print(
             f"t: {end_time}, m: {stars[0].mass} {stars[1].mass} {stars[2].mass} "
         )
-        # All stars need to have evolved
-        self.assertNotEqual(stars[0].mass, stars[0].initial_mass)
-        self.assertNotEqual(stars[1].mass, stars[1].initial_mass)
-        self.assertNotEqual(stars[2].mass, stars[2].initial_mass)
-        # self.assertEqual(a, b)
+        for i in range(len(stars)):
+            self.assertNotEqual(stars[i].mass, stars[i].initial_mass)
 
     def test_do_all_stars_evolve_alternative_binary(self):
         "Test if all stars evolve (other stars in the binary)"
@@ -85,21 +117,54 @@ class TestsForIssue850(amusetest.TestCase):
         channel_stars.copy()
         channel_binary.copy()
 
-        end_time = 15.6001481751 | units.Myr
+        end_time = 13500. | units.Myr
 
         code.evolve_model(end_time)
         channel_stars.copy()
         channel_binary.copy()
+        
+        # All stars need to have evolved
         print(
             f"t: {end_time}, m: {stars[0].mass} {stars[1].mass} {stars[2].mass} "
         )
+        for i in range(len(stars)):
+            self.assertNotEqual(stars[i].mass, stars[i].initial_mass)
+
+    def test_do_all_stars_evolve_alternative_binary_extra_stars(self):
+        "Test if all stars evolve (other stars in the binary, extra stars)"
+        stars, binary = self.create_stars_and_binaries(binary_pair=[0, 2])
+        additional_stars = Particles(5)
+        additional_stars.original_mass = [11, 20, 4, 2, 1] | units.MSun
+        additional_stars.mass = additional_stars.original_mass
+        stars.add_particles(additional_stars)
+
+        code = SeBa()
+        code.particles.add_particles(stars)
+        code.binaries.add_particles(binary)
+
+        channel_stars = code.particles.new_channel_to(stars)
+        channel_binary = code.binaries.new_channel_to(binary)
+        channel_stars.copy()
+        channel_binary.copy()
+
+        end_time = 13500. | units.Myr
+
+        code.evolve_model(end_time)
+        channel_stars.copy()
+        channel_binary.copy()
+        
         # All stars need to have evolved
-        self.assertNotEqual(stars[0].mass, stars[0].initial_mass)
-        self.assertNotEqual(stars[1].mass, stars[1].initial_mass)
-        self.assertNotEqual(stars[2].mass, stars[2].initial_mass)
-        # self.assertEqual(a, b)
+        print(
+            f"t: {end_time}, m: {stars[0].mass} {stars[1].mass} {stars[2].mass} "
+        )
+        for i in range(len(stars)):
+            self.assertNotEqual(stars[i].mass, stars[i].initial_mass)
 
 
 if __name__ == "__main__":
     x = TestsForIssue850()
-    x.test_evolve_binary()
+    x.test_do_all_stars_evolve_no_binary()
+    x.test_does_seba_evolve_stars_not_in_binary()
+    x.test_do_all_stars_evolve_default_binary()
+    x.test_do_all_stars_evolve_alternative_binary_extra_stars()
+    x.test_do_all_stars_evolve_alternative_binary()
