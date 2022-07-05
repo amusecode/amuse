@@ -22,8 +22,58 @@ class TestsForIssue850(amusetest.TestCase):
 
         return stars, binary
 
-    def test_do_all_stars_evolve(self):
-        "Test if all stars evolve"
+    def test_do_all_stars_evolve_no_binary(self):
+        "Test if all stars evolve (no binaries)"
+        stars, binary = self.create_stars_and_binaries(binary_pair=[0, 1])
+
+        code = SeBa()
+        code.particles.add_particles(stars)
+
+        channel_stars = code.particles.new_channel_to(stars)
+        channel_stars.copy()
+
+        end_time = 15.6001481751 | units.Myr
+
+        code.evolve_model(end_time)
+        channel_stars.copy()
+        print(
+            f"t: {end_time}, m: {stars[0].mass} {stars[1].mass} {stars[2].mass} "
+        )
+        # All stars need to have evolved
+        self.assertNotEqual(stars[0].mass, stars[0].initial_mass)
+        self.assertNotEqual(stars[1].mass, stars[1].initial_mass)
+        self.assertNotEqual(stars[2].mass, stars[2].initial_mass)
+        # self.assertEqual(a, b)
+
+    def test_do_all_stars_evolve_default_binary(self):
+        "Test if all stars evolve (default order binary)"
+        stars, binary = self.create_stars_and_binaries(binary_pair=[0, 1])
+
+        code = SeBa()
+        code.particles.add_particles(stars)
+        code.binaries.add_particles(binary)
+
+        channel_stars = code.particles.new_channel_to(stars)
+        channel_binary = code.binaries.new_channel_to(binary)
+        channel_stars.copy()
+        channel_binary.copy()
+
+        end_time = 15.6001481751 | units.Myr
+
+        code.evolve_model(end_time)
+        channel_stars.copy()
+        channel_binary.copy()
+        print(
+            f"t: {end_time}, m: {stars[0].mass} {stars[1].mass} {stars[2].mass} "
+        )
+        # All stars need to have evolved
+        self.assertNotEqual(stars[0].mass, stars[0].initial_mass)
+        self.assertNotEqual(stars[1].mass, stars[1].initial_mass)
+        self.assertNotEqual(stars[2].mass, stars[2].initial_mass)
+        # self.assertEqual(a, b)
+
+    def test_do_all_stars_evolve_alternative_binary(self):
+        "Test if all stars evolve (other stars in the binary)"
         stars, binary = self.create_stars_and_binaries(binary_pair=[0, 2])
 
         code = SeBa()
