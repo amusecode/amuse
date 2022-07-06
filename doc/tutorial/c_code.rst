@@ -90,13 +90,14 @@ Please ensure that amuse is setup correctly, this can be verified by running the
 Environment variables
 ~~~~~~~~~~~~~~~~~~~~~
 It should not be necessary to set any environment variables, 
-In exceptional cases (ie non pip install) it may be necessary to set
-the 'AMUSE_DIR' and 'PYTHONPATH.' 
+In exceptional cases (ie non-pip install) it may be necessary to set
+the 'AMUSE_DIR' and 'PYTHONPATH' and 'PATH'. 
 
 .. code-block:: bash
 
     > export AMUSE_DIR=<path to the amuse root directory>
     > export PYTHONPATH=${PYTHONPATH}:${AMUSE_DIR}/src
+    > export PATH=${PATH}:${AMUSE_DIR}/bin
 
 The name of our project
 ~~~~~~~~~~~~~~~~~~~~~~~
