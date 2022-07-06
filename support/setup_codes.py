@@ -39,8 +39,6 @@ from subprocess import call, Popen, PIPE, STDOUT
 
 if supportrc["framework_install"]:
     from .generate_main import generate_main
-    from .build_latex import build_latex
-    from .run_tests import run_tests
   
 try:
     from numpy.distutils import fcompiler
@@ -1278,9 +1276,7 @@ def setup_commands():
             {
                 'configure_codes': ConfigureCodes,
                 'generate_install_ini': GenerateInstallIni,
-                'build_latex': build_latex,
                 'generate_main': generate_main,
-                'tests': run_tests,
             }
         )
         build.sub_commands.insert(0, ('configure_codes', None))
