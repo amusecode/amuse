@@ -17,7 +17,6 @@ BUILDDIR = build
 PERIODIC_BUILDDIR = build_periodic
 OPENMP_BUILDDIR = build_mp
 
-CODE_GENERATOR ?= $(AMUSE_DIR)/build.py
 
 
 GLOBJECTS=$(BUILDDIR)/fthread.o $(BUILDDIR)/fi_viewer.o $(BUILDDIR)/libpt.a

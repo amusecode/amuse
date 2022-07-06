@@ -541,7 +541,6 @@ class CodeCommand(Command):
         if supportrc["framework_install"]:
             configpath=os.path.abspath(os.getcwd())
             self.copy_file(os.path.join(configpath,"config.mk"), self.build_temp) 
-            self.copy_file(os.path.join(configpath,"build.py"), self.build_temp) 
         #~ self.copy_tree(os.path.join(configpath,"support"), os.path.join(self.build_temp,"support") )
         #~ self.copy_tree(os.path.join(configpath,"src"), os.path.join(self.build_temp,"src") )
         path=os.path.join(self.build_temp,"src")

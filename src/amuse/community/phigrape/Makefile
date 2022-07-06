@@ -19,7 +19,6 @@ CC = $(MPICC)
 GL_PATH ?= /data/pelupes/libraries/f90gl-1.2.11
 
 
-CODE_GENERATOR ?= $(AMUSE_DIR)/build.py
 
 SRCDIR = src
 

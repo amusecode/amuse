@@ -22,7 +22,6 @@ AM_CFLAGS = -I$(AMUSE_DIR)/lib/amuse_mpi
 
 CODELIB =  src/SeBa/sstar/libsstar.a src/SeBa/dstar/libdstar.a 
 
-CODE_GENERATOR ?= $(AMUSE_DIR)/build.py
 
 DOWNLOAD_FROM_WEB = $(PYTHON) ./download.py
 

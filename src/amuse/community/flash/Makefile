@@ -15,7 +15,6 @@ OBJS = interface.o
 
 CODELIB = src/libflash.a
 
-CODE_GENERATOR ?= $(AMUSE_DIR)/build.py
 
 drive_loc = ./src/FLASH4.2.2/object
 #drive_loc = ./src/FLASH4.2-mod/object

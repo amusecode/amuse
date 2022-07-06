@@ -24,7 +24,6 @@ CODELIB = src/bonsai/runtime/libbonsai_amuse.a
 
 DOWNLOAD_FROM_WEB = $(PYTHON) ./download.py
 
-CODE_GENERATOR ?= $(AMUSE_DIR)/build.py
 
 all: compile bonsai_worker 
 

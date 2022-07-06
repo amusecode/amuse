@@ -22,7 +22,6 @@ OBJS = libraryInterface.o
 
 CODELIB = src/libbonsai.a
 
-CODE_GENERATOR ?= $(AMUSE_DIR)/build.py
 
 all: compile bonsai_worker 
 

@@ -23,7 +23,6 @@ OBJS = interface.o
 
 CODELIB = src/libnbody6xx.a
 
-CODE_GENERATOR ?= $(AMUSE_DIR)/build.py
 
 all: nbody6xx_worker 
 

@@ -13,7 +13,6 @@ LDFLAGS  += -lm $(MUSE_LD_FLAGS)
 
 OBJS = interface.o
 
-CODE_GENERATOR ?= $(AMUSE_DIR)/build.py
 
 RM ?= rm
 JAVAC ?= javac

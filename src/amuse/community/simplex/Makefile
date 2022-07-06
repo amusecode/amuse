@@ -8,7 +8,6 @@ endif
 MPICXX ?= mpicxx
 export MPICXX
 
-CODE_GENERATOR ?= $(AMUSE_DIR)/build.py
 
 SRCDIR = src
 OBJDIR = $(SRCDIR)/obj

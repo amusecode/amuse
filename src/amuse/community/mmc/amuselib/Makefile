@@ -1,3 +1,10 @@
+# standard amuse configuration include
+# config.mk will be made after ./configure has run
+ifeq ($(origin AMUSE_DIR), undefined)
+  AMUSE_DIR := $(shell amusifier --get-amuse-dir)
+endif
+-include ${AMUSE_DIR}/config.mk
+
 MPICXX   ?= mpicxx
 CXX = $(MPICXX)
 
@@ -9,8 +16,6 @@ export CFLAGS CXXFLAGS LDFLAGS
 
 OBJS = interface.o
 CODELIB = src/libsupport.a
-AMUSE_DIR?=../../../../..
-CODE_GENERATOR = $(AMUSE_DIR)/build.py
 
 all: support_worker
 

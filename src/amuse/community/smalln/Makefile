@@ -27,7 +27,6 @@ AM_CFLAGS = -I$(AMUSE_DIR)/lib/amuse_mpi
 
 CODELIB = src/libsmallN.a
 
-CODE_GENERATOR ?= $(AMUSE_DIR)/build.py
 
 all: $(ALL)
 

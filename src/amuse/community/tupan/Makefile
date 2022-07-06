@@ -12,7 +12,6 @@ CFFI_AVAILABLE := $(shell $(PYTHON) -c "import cffi"  1>&2 2> /dev/null && echo 
 
 
 
-CODE_GENERATOR ?= $(AMUSE_DIR)/build.py
 
 all: code build install test tupan_worker
 

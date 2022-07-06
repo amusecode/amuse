@@ -18,7 +18,6 @@ GPU_BUILDDIR = build_gpu
 
 OBJS = interface.o 
 
-CODE_GENERATOR ?= $(AMUSE_DIR)/build.py
 
 CODELIB = $(BUILDDIR)/libbhtree.a
 GPUCODELIB = $(GPU_BUILDDIR)/libbhtree.a
