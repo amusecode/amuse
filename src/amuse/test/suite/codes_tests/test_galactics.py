@@ -68,7 +68,7 @@ class GalactICsInterfaceTests(TestWithMPI):
         self.assertEqual(list(instance.get_number_of_particles_updated().values()), [number_of_particles, 0])
         
         mass_disk, mass_bulge, mass_halo = 26.578816771507263, 14.632800221443176, 1184.2350006103516
-        masses, errors = instance.get_mass(list(range(number_of_particles)))
+        masses, errors = instance.get_mass(range(number_of_particles))
         self.assertEqual(errors, numpy.zeros(number_of_particles))
         self.assertAlmostRelativeEquals(masses, numpy.concatenate((
             numpy.ones(n_particles_disk)*mass_disk/n_particles_disk, 
@@ -76,7 +76,7 @@ class GalactICsInterfaceTests(TestWithMPI):
             numpy.ones(n_particles_halo)*mass_halo/n_particles_halo,
         )), 3)
         
-        x_positions, y_positions, z_positions, errors = instance.get_position(list(range(number_of_particles)))
+        x_positions, y_positions, z_positions, errors = instance.get_position(range(number_of_particles))
         self.assertEqual(errors, numpy.zeros(number_of_particles))
         self.assertAlmostEqual(numpy.array([numpy.mean(x_positions), numpy.mean(y_positions), 
             numpy.mean(z_positions)]), numpy.array([0.0]*3), 5)
@@ -97,7 +97,7 @@ class GalactICsInterfaceTests(TestWithMPI):
             numpy.array([94.242819476127622,88.41320479869843 , 85.234394512176507]), 3)
 
         
-        x_velocities, y_velocities, z_velocities, errors = instance.get_velocity(list(range(number_of_particles)))
+        x_velocities, y_velocities, z_velocities, errors = instance.get_velocity(range(number_of_particles))
         self.assertEqual(errors, numpy.zeros(number_of_particles))
         self.assertAlmostEqual(numpy.array([numpy.mean(x_velocities), numpy.mean(y_velocities), 
             numpy.mean(z_velocities)]), numpy.array([0.0]*3))
@@ -133,7 +133,7 @@ class GalactICsInterfaceTests(TestWithMPI):
 
         
         
-        masses, errors = instance.get_mass(list(range(number_of_particles_halo)))
+        masses, errors = instance.get_mass(range(number_of_particles_halo))
         self.assertEqual(errors, numpy.zeros(number_of_particles_halo))
         self.assertAlmostRelativeEquals(masses, numpy.ones(number_of_particles_halo)*masses[0])
         total_mass = masses.sum() 
@@ -147,14 +147,14 @@ class GalactICsInterfaceTests(TestWithMPI):
 
         expected_mean_vel = numpy.array([0.92904859858192501, 0.94953939936682585, 0.92897711758688095])
             
-        x_positions, y_positions, z_positions, errors = instance.get_position(list(range(number_of_particles_halo)))
+        x_positions, y_positions, z_positions, errors = instance.get_position(range(number_of_particles_halo))
         self.assertEqual(errors, numpy.zeros(number_of_particles_halo))
         self.assertAlmostEqual(numpy.array([numpy.mean(x_positions), numpy.mean(y_positions), 
             numpy.mean(z_positions)]), numpy.array([0.0]*3), 5)
         self.assertAlmostRelativeEquals(numpy.array([numpy.mean(abs(x_positions)), numpy.mean(abs(y_positions)), 
             numpy.mean(abs(z_positions))]), expected_mean_pos, 3)
         
-        x_velocities, y_velocities, z_velocities, errors = instance.get_velocity(list(range(number_of_particles_halo)))
+        x_velocities, y_velocities, z_velocities, errors = instance.get_velocity(range(number_of_particles_halo))
         self.assertEqual(errors, numpy.zeros(number_of_particles_halo))
         self.assertAlmostEqual(numpy.array([numpy.mean(x_velocities), numpy.mean(y_velocities), 
             numpy.mean(z_velocities)]), numpy.array([0.0]*3))

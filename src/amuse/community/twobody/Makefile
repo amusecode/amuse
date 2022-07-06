@@ -5,7 +5,6 @@ ifeq ($(origin AMUSE_DIR), undefined)
 endif
 -include ${AMUSE_DIR}/config.mk
 
-CODE_GENERATOR ?= $(AMUSE_DIR)/build.py
 
 all:twobody_worker
 

@@ -15,7 +15,6 @@ CXX ?= g++
 
 CXXFLAGS ?= -Wall -g -O2
 CXXFLAGS += -std=c++11
-CODE_GENERATOR ?= $(AMUSE_DIR)/build.py
 
 CODELIB = src/libadaptb.a
 OBJ = interface.o

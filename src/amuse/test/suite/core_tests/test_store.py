@@ -1063,7 +1063,7 @@ class TestStoreHDFV2(amusetest.TestCase, _AbstractTestStoreHDF):
         x = Particles(10)
         x.mass = 1 | units.kg
         y = Particles(20)
-        y.id = list(range(20))
+        y.id = range(20)
         x[0].y = y[5:7]
 
         io.write_set_to_file(x, output_file,"amuse", version=self.store_version())

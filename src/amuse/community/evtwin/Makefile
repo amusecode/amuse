@@ -10,7 +10,6 @@ FORTRAN ?= gfortran
 FC ?= $(FORTRAN)
 
 
-CODE_GENERATOR ?= $(AMUSE_DIR)/build.py
 
 SRCDIR=src/trunk
 BUILDDIR=build

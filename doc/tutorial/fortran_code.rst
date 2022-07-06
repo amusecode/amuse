@@ -74,53 +74,27 @@ The suggested procedure for creating a new interface is as follows:
 Before we start
 ---------------
 
-This tutorial assumes you have a working amuse environment. Please 
-ensure that amuse is setup correctly by running 'nosetests' in the 
-amuse directory.
+This tutorial assumes you have a working amuse or amuse development build,
+preferrably in seperated environment (virtualenv, venv or conda etc). 
+Please ensure that amuse is setup correctly, this can be verified by running the 
+'amusifier' .
+
+.. code-block:: bash
+
+    > amusifier --help
 
 Environment variables
 ~~~~~~~~~~~~~~~~~~~~~
-To simplify the work in the coming sections, we first define the 
-environment variable 'AMUSE_DIR'. This environment variable must 
-point to the root directory of AMUSE (this is the directory 
-containing the build.py script).
+It should not be necessary to set any environment variables, 
+In exceptional cases (ie non-pip install) it may be necessary to set
+the 'AMUSE_DIR' and 'PYTHONPATH' and 'PATH'. 
 
 .. code-block:: bash
 
     > export AMUSE_DIR=<path to the amuse root directory>
-    
-or in a c shell:
-
-.. code-block:: csh
-
-    > setenv AMUSE_DIR <path to the amuse root directory>
-
-After building the code, we want to run and test the code. Check if 
-amuse is available in your python path by running the following code 
-on the command line.
-
-.. code-block:: bash
-
-    > python -c "import amuse"
-    Traceback (most recent call last):
-    File "<string>", line 1, in <module>
-    ImportError: No module named amuse
-    
-If this code ends in a "ImportError" as shown in the example, the 
-PYTHONPATH environment variable must be extended with the src directory
-in AMUSE_DIR. 
-We can do so by using one of the following commands.
-
-.. code-block:: bash
-
     > export PYTHONPATH=${PYTHONPATH}:${AMUSE_DIR}/src
-    
-or in a c shell:
+    > export PATH=${PATH}:${AMUSE_DIR}/bin
 
-.. code-block:: csh
-
-    > setenv AMUSE_DIR ${PYTHONPATH}:${AMUSE_DIR}/src
-    
     
 The name of our project
 ~~~~~~~~~~~~~~~~~~~~~~~
@@ -131,11 +105,11 @@ Creating the initial directory structure
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 First we need to create a directory for our project and put some 
 files in it to help build the code. The fastest method to setup the 
-directory is by using the build.py script.
+directory is by using the amusifier script.
 
 .. code-block:: bash
 
-    > $AMUSE_DIR/build.py --type=f90 --mode=dir NearestNeighbor
+    > amusifier --type=f90 --mode=dir NearestNeighbor
 
 The script will generate a directory with all the files needed to 
 start our project. It has also generates a very small legacy code 
@@ -144,23 +118,36 @@ module::
 
     > cd nearestneighbor/
     > make all
-    > $AMUSE_DIR/amuse.sh -c 'from interface import NearestNeighbor; print NearestNeighbor().echo_int(10)' 
+    > python -c 'from interface import NearestNeighborInterface; print(NearestNeighborInterface().echo_int(10))' 
     OrderedDictionary({'int_out':10, '__result':0})
-    > nosetests -v
-    .
-    ----------------------------------------------------------------------
-    Ran 1 test in 0.556s
 
-    OK
+    Thank you for using AMUSE!
+    In this session you have used the modules below. Please cite any relevant articles:
     
+    
+      "AMUSE (2022.6.4.dev23+g5e4ce6624)"
+        https://doi.org/10.5281/zenodo.4946130
+        [2018araa.book.....P] Portegies Zwart, S. & McMillan, S.L.W., 2018
+        [2013CoPhC.183..456P] ** Portegies Zwart, S. et al., 2013
+        [2013A&A...557A..84P] ** Pelupessy, F. I. et al., 2013
+        [2009NewA...14..369P] Portegies Zwart, S. et al., 2009
+    > pytest
+    ========================================= test session starts =========================================
+    platform linux -- Python 3.8.13, pytest-7.1.2, pluggy-1.0.0
+    rootdir: /home/amuseuser/code/amuse/nearestneighbor
+    collected 1 item                                                                                      
+
+    test_nearestneighbor2.py .                                                                      [100%]
+
+    ========================================== 1 passed in 2.10s =========================================
     
 .. note::
 
-    The build.py script can be used to generate a range of files. To
+    The amusifier script can be used to generate a range of files. To
     see what this file can do you can run the script with a --help
     parameter, like so::
 
-        > $AMUSE_DIR/build.py --help
+        > amusifier --help
 
 The Legacy Code
 ---------------
@@ -170,7 +157,7 @@ access the code. For this tutorial we will implement our legacy code.
 
 When a legacy code is integrated all interface code is put in one 
 directory and all the legacy code is put in a **src** directory 
-placed under this directory. The build.py script created a **src** 
+placed under this directory. The amusifier script created a **src** 
 directory for us, and we will put the nearest neighbor algorithm in 
 this directory.
 
@@ -644,7 +631,7 @@ editor and replace the contents of this file with:
 
 We can generate a stub from the interface code with::
 
-    > $AMUSE_DIR/build.py --type=f90 --mode=stub interface.py NearestNeighborInterface -o interface.f90
+    > amusifier --type=f90 --mode=stub interface.py NearestNeighborInterface -o interface.f90
 
 The generated **interface.f90** replaces the original file generated in
 the previous section. 

@@ -18,7 +18,6 @@ SEQUOIA_INC = -DSEQUOIA -I$(SEQ_LIB)/include
 CUDA_LIBS ?= -lcuda -L$(CUDA_TK)/lib -L$(CUDA_TK)/lib64 -lcudart
 CUDA_INC = -I$(CUDA_TK)/include
 
-CODE_GENERATOR ?= $(AMUSE_DIR)/build.py
 
 CODELIB_GPU = src/libpikachu_gpu.a
 CODELIB_GPU_LARGE_N = src/libpikachu_gpu_large_n.a

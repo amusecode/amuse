@@ -42,7 +42,6 @@ STAR_WORK_OBJS = \
 ZAMS_DIR = $(AMUSE_DIR)/data/mesa_r2208/output/star_data/starting_models
 ZAMS_DATA = $(ZAMS_DIR)/zams_z20m3.data
 
-CODE_GENERATOR ?= $(AMUSE_DIR)/build.py
 DOWNLOAD_FROM_WEB = $(PYTHON) ./download.py
 PATCH_FILES = $(PYTHON) ./patch_files.py
 

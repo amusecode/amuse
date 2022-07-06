@@ -11,7 +11,6 @@ CXXFLAGS ?= -Wall -g -O2
 SAPPORO_LIBS ?= -L$(AMUSE_DIR)/lib/sapporo_light -lsapporo
 CUDA_LIBS ?= -L$(CUDA_TK)/lib -L$(CUDA_TK)/lib64 -lcudart
 
-CODE_GENERATOR ?= $(AMUSE_DIR)/build.py
 
 
 CODELIB = src/libmi6.a

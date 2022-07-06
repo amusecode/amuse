@@ -16,7 +16,6 @@ OBJS = interface.o
 
 CODELIB = src/libaarsethzare.a
 
-CODE_GENERATOR ?= $(AMUSE_DIR)/build.py
 
 AM_LIBS = -L$(AMUSE_DIR)/lib/amuse_mpi -lamuse_mpi
 AM_CFLAGS = -I$(AMUSE_DIR)/lib/amuse_mpi

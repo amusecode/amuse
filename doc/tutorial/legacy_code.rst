@@ -105,13 +105,11 @@ the build process.
 
 .. code-block:: make
     :linenos:
-    
-    ifndef AMUSE_DIR
-        AMUSE_DIR=../../../..
+    ifeq ($(origin AMUSE_DIR), undefined)
+      AMUSE_DIR := $(shell amusifier --get-amuse-dir)
     endif
-
-    CODE_GENERATOR = $(AMUSE_DIR)/build.py
-
+    -include ${AMUSE_DIR}/config.mk
+  
     CXXFLAGS = -Wall -g -DTOOLBOX  $(MUSE_INCLUDE_DIR)
     LDFLAGS = -lm $(MUSE_LD_FLAGS)
 

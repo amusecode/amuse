@@ -1,9 +1,11 @@
-AMUSE_DIR?=../../../..
+# standard amuse configuration include
+# config.mk will be made after ./configure has run
+ifeq ($(origin AMUSE_DIR), undefined)
+  AMUSE_DIR := $(shell amusifier --get-amuse-dir)
+endif
 -include ${AMUSE_DIR}/config.mk
 
 PYTHON ?= python
-
-CODE_GENERATOR = $(AMUSE_DIR)/build.py
 
 all: code sakura_worker
 

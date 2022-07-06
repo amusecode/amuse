@@ -22,7 +22,6 @@ OBJS = integrator.o interface.o
 ifeq ($(origin AMUSE_DIR), undefined)
   AMUSE_DIR := $(shell amusifier --get-amuse-dir)
 endif
-CODE_GENERATOR ?= $(AMUSE_DIR)/build.py
 
 CUDA_LIBDIRS ?= -L$(CUDA_TK)/lib -L$(CUDA_TK)/lib64
 CUDA_LIBS ?= -lcudart

@@ -43,7 +43,6 @@ CODELIBCPU = $(BUILDDIRCPU)/libhacs64cpu.a
 
 AMUSE_DIR ?= ../../../..
 
-CODE_GENERATOR ?= $(AMUSE_DIR)/build.py
 
 all: $(ALL)
 

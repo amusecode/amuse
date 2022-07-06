@@ -1,5 +1,7 @@
-AMUSE_DIR?=../../..
-include ${AMUSE_DIR}/config.mk
+ifeq ($(origin AMUSE_DIR), undefined)
+  AMUSE_DIR := $(shell amusifier --get-amuse-dir)
+endif
+-include $(AMUSE_DIR)/config.mk
 
 
 all:stopcondf.o
