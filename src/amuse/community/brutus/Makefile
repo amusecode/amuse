@@ -28,7 +28,6 @@ CXXFLAGS ?= -Wall -g -O2
 
 CXXFLAGS += $(MPFR_FLAGS) -std=c++0x -I../mpfrc++
 
-CODE_GENERATOR ?= $(AMUSE_DIR)/build.py
 
 CODELIB = src/libbrutus.a
 OBJ = interface.o

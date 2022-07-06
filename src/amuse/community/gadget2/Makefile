@@ -13,7 +13,6 @@ TARGETS := $(patsubst makefile_options_%, gadget2_worker_%, ${shell ls makefile_
 
 BUILDDIR = build
 
-CODE_GENERATOR ?= $(AMUSE_DIR)/build.py
 
 #PROFLIBS ?= -L$(AMUSE_DIR)/lib/ibis/src/profiling -libisprofiling -lmpi
 

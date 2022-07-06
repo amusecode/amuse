@@ -15,7 +15,6 @@ OBJ = interface.o
 
 CODELIB = src/libhalogen.a
 
-CODE_GENERATOR ?= $(AMUSE_DIR)/build.py
 
 all: halogen_worker 
 

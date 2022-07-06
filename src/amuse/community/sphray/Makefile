@@ -12,7 +12,6 @@ FC ?= gfortran
 
 SRC=src
 
-CODE_GENERATOR ?= $(AMUSE_DIR)/build.py
 
 CODE_LIBS=$(SRC)/libsphray.a
 

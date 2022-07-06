@@ -7,7 +7,6 @@ endif
 
 MPICXX ?= mpicxx
 
-CODE_GENERATOR ?= $(AMUSE_DIR)/build.py
 
 BUILDDIR = build
 SRCMAKEDIR   = src/mmas2

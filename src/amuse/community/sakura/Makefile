@@ -13,7 +13,6 @@ CXX = $(MPICXX)
 
 CXXFLAGS ?= -Wall -g -O2
 
-CODE_GENERATOR ?= $(AMUSE_DIR)/build.py
 
 CODELIB = src/libsakura.a
 OBJ = interface.o

@@ -17,7 +17,6 @@ CXXFLAGS ?= $(CFLAGS)
 LDFLAGS += -lm $(MUSE_LD_FLAGS)
 
 A_OBJS = interface.o
-CODE_GENERATOR ?= $(PYTHON) $(AMUSE_DIR)/build.py
 
 #PROFLIBS ?= -L$(AMUSE_DIR)/lib/ibis/src/profiling -libisprofiling -lmpi
 

@@ -11,7 +11,6 @@ CXXFLAGS += -DDIFFERENT_MASSES
 OBJ = interface.o
 
 CODELIB = src/libhop.a
-CODE_GENERATOR ?= $(AMUSE_DIR)/build.py
 
 all: hop_worker 
 

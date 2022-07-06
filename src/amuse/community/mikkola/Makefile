@@ -21,7 +21,6 @@ export F77FLAGS
 
 CODELIB = src/libMikkola.a
 
-CODE_GENERATOR ?= $(AMUSE_DIR)/build.py
 
 all: mikkola_worker 
 

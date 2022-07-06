@@ -45,7 +45,6 @@ CODELIB_GPU = src/libph4gpu.a
 
 AMUSE_DIR ?= ../../../..
 
-CODE_GENERATOR ?= $(AMUSE_DIR)/build.py
 
 all: $(ALL)
 
