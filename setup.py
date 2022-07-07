@@ -44,8 +44,7 @@ classifiers = [
 
 extensions = []
 
-all_data_files = find_data_files(
-    'data', 'share/amuse/data', '*', recursive=True)
+all_data_files = []
 all_data_files.append(('share/amuse', ['./config.mk']))
 
 packages = find_packages('src')

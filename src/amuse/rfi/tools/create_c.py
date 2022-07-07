@@ -36,8 +36,8 @@ HEADER_CODE_STRING = """
 #else
 	#include <sys/socket.h>
 	#include <netinet/in.h>
+  #include <unistd.h>
 	#include <netdb.h>
-	#include <unistd.h>
 	#include <netinet/tcp.h>
   #include <arpa/inet.h>
 #endif
@@ -1043,6 +1043,28 @@ int main(int argc, char *argv[]) {
 
 """
 
+GETSET_WORKING_DIRECTORY="""
+char path_buffer[4096];
+
+
+int set_working_directory(char *c) {
+  return chdir(c);
+}
+
+int get_working_directory(char **c) {
+  if(getcwd( path_buffer , sizeof(path_buffer))==NULL) {
+    return -1;
+  } else { 
+    *c=path_buffer;
+    return 0;
+  }
+}
+"""
+
+
+
+
+
 class MakeCCodeString(GenerateASourcecodeString):
     @late
     def dtype_to_spec(self):
@@ -1271,6 +1293,8 @@ class GenerateACSourcecodeStringFromASpecificationClass\
         self.out.lf() + CONSTANTS_AND_GLOBAL_VARIABLES_STRING
         
         self.out.lf() + POLLING_FUNCTIONS_STRING
+
+        self.out.lf() + GETSET_WORKING_DIRECTORY
         
         if self.must_generate_mpi:
             self.out.lf() + RECV_HEADER_SLEEP_STRING

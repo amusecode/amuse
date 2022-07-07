@@ -1128,6 +1128,26 @@ MAIN_STRING = """
     stop
   end if
 """
+
+GETSET_WORKING_DIRECTORY="""
+
+function set_working_directory(directory) result(ret)
+    {0}
+    integer :: ret
+    character(*), intent(in) :: directory
+    ret = chdir(directory)
+end function 
+
+function get_working_directory(directory) result(ret)
+    {0}
+    integer :: ret
+    character(*), intent(out) :: directory
+    ret = getcwd(directory)
+end function 
+
+"""
+
+
         
 class GenerateAFortranStringOfAFunctionSpecification(GenerateASourcecodeString):
     MAX_STRING_LEN = 256
@@ -1421,6 +1441,8 @@ class GenerateAFortranSourcecodeStringFromASpecificationClass(GenerateASourcecod
     def start(self):
         self.use_iso_c_bindings = config.compilers.fc_iso_c_bindings
 
+        self.out + GETSET_WORKING_DIRECTORY.format("" if not config.compilers.ifort_version else "  use ifport")
+
         self.out + 'program amuse_worker_program'
         self.out.indent()
         
@@ -1453,7 +1475,9 @@ class GenerateAFortranSourcecodeStringFromASpecificationClass(GenerateASourcecod
         self.out.lf().lf() + 'CONTAINS'
         
         self.out + POLLING_FUNCTIONS_STRING
-            
+
+        self.out + GETSET_WORKING_DIRECTORY.format("" if not config.compilers.ifort_version else "  use ifport")
+
         if self.must_generate_mpi:
             self.out + INTERNAL_FUNCTIONS_STRING
             

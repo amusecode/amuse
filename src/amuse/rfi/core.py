@@ -772,6 +772,12 @@ class CodeInterface(OptionalAttributes):
         #~ self.channel.initialize_mpi = self.initialize_mpi
         
         self.channel.start()
+
+        # change to the working directory
+        if self.working_directory:
+            result=self.set_working_directory(self.working_directory)
+            if result!=0:
+                raise Exception(f"Changing to working directory {self.working_directory} failed")
         
         # must register stop interfaces after channel start
         # if done before, the mpi atexit will be registered 
@@ -1022,6 +1028,26 @@ class CodeInterface(OptionalAttributes):
         function.result_type = 'int32'
         return function
         
+    def get_code_module_directory(self):
+        return os.path.dirname(inspect.getmodule(self).__file__)
+
+    @option(sections=("channel",))
+    def working_directory(self):
+        return None
+
+    @legacy_function
+    def set_working_directory():
+        function = LegacyFunctionSpecification()  
+        function.addParameter('working_directory', dtype='string', direction=function.IN)
+        function.result_type = 'int32'
+        return function
+
+    @legacy_function
+    def get_working_directory():
+        function = LegacyFunctionSpecification()  
+        function.addParameter('working_directory', dtype='string', direction=function.OUT)
+        function.result_type = 'int32'
+        return function
 
 
 class CodeWithDataDirectories(object):
@@ -1060,14 +1086,21 @@ class CodeWithDataDirectories(object):
         Returns the root name of the directory for the 
         application data files.
         """
-        return os.path.join(self.input_data_root_directory, self.module_name, 'input')
-    
+        if self.input_data_root_directory:
+            return os.path.join(self.input_data_root_directory, self.module_name, 'input')
+        else:
+            return os.path.join(self.get_code_module_directory(),"data", "input")
+          
     def get_output_directory(self):
         """
         Returns the root name of the directory to use by the 
         application to store it's output / temporary files in.
         """
-        return os.path.join(self.output_data_root_directory, self.module_name, 'output')
+        if self.output_data_root_directory:
+            return os.path.join(self.output_data_root_directory, self.module_name, 'output')
+        else:
+            working_directory=self.get_working_directory()['working_directory']
+            return os.path.join(working_directory,"__amuse_code_output", self.module_name) # note problem for multiple codes
     
     @option(type="string", sections=('data',))
     def amuse_root_directory(self):
@@ -1081,7 +1114,7 @@ class CodeWithDataDirectories(object):
         """
         The root directory of the input data, read only directories
         """
-        return os.path.join(self.amuse_root_directory, 'data')
+        return None
         
     @option(type="string", sections=('data',))
     def output_data_root_directory(self):
@@ -1089,14 +1122,8 @@ class CodeWithDataDirectories(object):
         The root directory of the output data,
         read - write directory
         """
-        return os.path.join(self.amuse_root_directory, 'data')
+        return None
     
-    def get_code_src_directory(self):
-        """
-        Returns the root name of the application's source code directory.
-        """
-        return os.path.join(self.amuse_root_directory, 'src', 'amuse', 'community', self.module_name, 'src')
-        
 class PythonCodeInterface(CodeInterface):
     """
     Base class for codes having a python implementation

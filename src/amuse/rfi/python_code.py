@@ -515,6 +515,20 @@ class PythonImplementation(object):
         self.freeworld = newcomm
         return 0
         
+    def set_working_directory(self, d):
+        try:
+          os.chdir(d)
+          return 0
+        except Exception:
+          return -1
+
+    def get_working_directory(self, d):
+        try:
+          d.value=os.getcwd()
+          return 0
+        except Exception:
+          return -1
+
 
 
 
