@@ -82,7 +82,7 @@ worker_code.cc: interface.py
 	$(CODE_GENERATOR) --type=c interface.py AthenaInterface -o $@
 
 worker_code.h: interface.py
-	$(CODE_GENERATOR) --type=h interface.py -i amuse.support.codes.stopping_conditions.StoppingConditionInterface AthenaInterface -o $@
+	$(CODE_GENERATOR) --type=h interface.py -i amuse.community.interface.stopping_conditions.StoppingConditionInterface AthenaInterface -o $@
 
 $(BUILDDIR)/Makefile: $(ATHENA_DIR)/Makefile.in
 	cp -r $(ATHENA_DIR) $(BUILDDIR)

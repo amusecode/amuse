@@ -46,7 +46,7 @@ worker_code.cc: interface.py
 	$(CODE_GENERATOR) --type=c interface.py BrutusInterface -o $@
 
 worker_code.h: interface.py
-	$(CODE_GENERATOR) --type=H -i amuse.support.codes.stopping_conditions.StoppingConditionInterface interface.py BrutusInterface -o $@
+	$(CODE_GENERATOR) --type=H -i amuse.community.interface.stopping_conditions.StoppingConditionInterface interface.py BrutusInterface -o $@
 
 brutus_worker: worker_code.cc worker_code.h $(CODELIB) $(OBJ)
 	$(MPICXX) $(CXXFLAGS) $(MPFR_FLAGS) $(SC_FLAGS) -I./src $< $(CODELIB) $(OBJ) -o $@  -L./src -lbrutus $(SC_CLIBS) $(LIBS)

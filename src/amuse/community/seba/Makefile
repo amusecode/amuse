@@ -50,7 +50,7 @@ worker_code.cc: interface.py
 	CFLAGS="$(CFLAGS)" $(CODE_GENERATOR) --type=c interface.py SeBaInterface -o $@
 
 worker_code.h: interface.py
-	$(CODE_GENERATOR) --type=h -i amuse.support.codes.stopping_conditions.StoppingConditionInterface interface.py SeBaInterface -o $@
+	$(CODE_GENERATOR) --type=h -i amuse.community.interface.stopping_conditions.StoppingConditionInterface interface.py SeBaInterface -o $@
 
 seba_worker: worker_code.cc worker_code.h $(CODELIB) $(AMUSE_OBJS)
 	$(MPICXX) $(CXXFLAGS)  $(LDFLAGS) $< $(AMUSE_OBJS) $(CODELIB) $(LIBS) -o $@  $(LIBS) $(SC_CLIBS) 

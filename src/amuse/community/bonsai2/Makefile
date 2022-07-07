@@ -86,7 +86,7 @@ worker_code.cc: interface.py
 	$(CODE_GENERATOR) --type=c interface.py BonsaiInterface2 -o $@
 
 worker_code.h: interface.py
-	$(CODE_GENERATOR) --type=h -i amuse.support.codes.stopping_conditions.StoppingConditionInterface  interface.py BonsaiInterface2 -o $@
+	$(CODE_GENERATOR) --type=h -i amuse.community.interface.stopping_conditions.StoppingConditionInterface  interface.py BonsaiInterface2 -o $@
 
 
 bonsai_worker: worker_code.cc worker_code.h $(CODELIB) $(OBJS)
