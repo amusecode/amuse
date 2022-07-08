@@ -36,7 +36,7 @@ jobs:
     - name: AMUSE code builds
       run: |
         make framework
-        make seba.code
+        make seba.code bse.code
     - name: test issue850
       run: |
         pytest --pyargs amuse.test.suite.ticket_tests.test_issue850 -s
