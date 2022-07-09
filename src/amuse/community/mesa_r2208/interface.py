@@ -1,5 +1,6 @@
 import os
 import numpy
+import shutil
 from operator import itemgetter
 
 from amuse.community import *
@@ -40,7 +41,7 @@ class MESAInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolutionIn
 
     @option(type="string", sections=('data'))
     def default_path_to_MESA_data(self):
-        return os.path.join(self.amuse_root_directory, 'src', 'amuse', 'community', 'mesa_r2208', 'src', 'mesa', 'data')
+        return os.path.join(os.path.dirname(__file__), 'data', 'data')
     
     @legacy_function
     def set_MESA_paths():
@@ -949,8 +950,8 @@ class MESA(StellarEvolution, InternalStellarStructure):
         model_path = os.path.join(output_dir, 'star_data', 'starting_models')
         if not self.channel_type == 'distributed':
             self.ensure_data_directory_exists(model_path)
-        if not os.path.isfile(os.path.join(model_path, 'zams_z20m3.data.gz')):
-            model_file=os.path.join(self.get_data_directory(), 'star_data', 'starting_models', 'zams_z20m3.data.gz')
+        if not os.path.isfile(os.path.join(model_path, 'zams_z20m3.data')):
+            model_file=os.path.join(self.get_data_directory(), 'star_data', 'starting_models', 'zams_z20m3.data')
             shutil.copy(model_file, model_path)
         
         self.set_MESA_paths(
