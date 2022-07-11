@@ -340,8 +340,8 @@ module mesa_interface
         s% history_interval = -1
         s% profile_interval = -1
         s% photo_interval = -1
-        s% terminal_interval = -1
-        s% write_header_frequency =-1
+        s% terminal_interval = 1
+        s% write_header_frequency = 100
 
         mesa_temp_caches_dir = trim(temp_dir) 
 
