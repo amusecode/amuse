@@ -295,6 +295,7 @@ module mesa_interface
     subroutine  set_init_options(id, &
                                 mass, &
                                 mesa_dir_in, &
+                                mesa_data_dir_in, &
                                 output_folder, &
                                 inlist, &
                                 metallicity,&
@@ -305,7 +306,7 @@ module mesa_interface
                                 temp_dir &
                                 )
         integer, intent(in) :: id
-        character(len=*), intent(in) :: mesa_dir_in, output_folder, inlist, gyre_in, temp_dir
+        character(len=*), intent(in) :: mesa_dir_in, mesa_data_dir_in, output_folder, inlist, gyre_in, temp_dir
         real(dp), intent(in) :: mass, metallicity,&
                                 max_age_stop_condition, &
                                 min_timestep_stop_condition
@@ -324,6 +325,8 @@ module mesa_interface
 
         call const_init(mesa_dir_in, ierr)
         if (failed('const_init',ierr)) return 
+
+        mesa_data_dir = mesa_data_dir_in
 
         s% inlist_fname = inlist
 
