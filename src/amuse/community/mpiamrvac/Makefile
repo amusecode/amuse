@@ -12,8 +12,8 @@ LDFLAGS  += -lm $(MUSE_LD_FLAGS)
 
 FFLAGS += $(FCFLAGS)
 
-# gfortran flags
-ifneq (,$(findstring gfortran, $(notdir $(FORTRAN))))
+# check for gfortran, this catches link and compiler wrappers
+ifeq ($(findstring GNU, $(shell $(FC) --version)), GNU)
 FFLAGS += -std=legacy -ffree-form
 endif
 

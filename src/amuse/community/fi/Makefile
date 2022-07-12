@@ -40,7 +40,8 @@ F77FLAGS =
 # gfortran flags
 $(info  $(shell echo $(notdir $(FORTRAN)) |cut -f1 -d- ))
 $(info  $(findstring gfortran, $(shell echo $(notdir $(FORTRAN)) |cut -f1 -d- )))
-ifneq (,$(findstring gfortran, $(notdir $(FORTRAN))))
+# check for gfortran, this catches link and compiler wrappers
+ifeq ($(findstring GNU, $(shell $(FC) --version)), GNU)
 FFLAGS = $(FCFLAGS) -fdefault-real-8 -O3 -ffree-line-length-256 -frecord-marker=4 $(PIC)
 endif
 
