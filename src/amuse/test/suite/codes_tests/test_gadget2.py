@@ -362,6 +362,7 @@ class TestGadget2Interface(TestWithMPI):
     
     
 class TestGadget2(TestWithMPI):
+    classname = "<class 'amuse.community.gadget2.interface.Gadget2'>"
 
     UnitLength = 3.085678e21 | units.cm     # ~ 1.0 kpc
     UnitMass = 1.989e43 | units.g           # 1.0e10 solar masses
@@ -843,8 +844,7 @@ class TestGadget2(TestWithMPI):
             instance.evolve_model,
             1.0 | generic_unit_system.time,
             expected_message=( 
-                "Error when calling 'evolve_model' of a "
-                "'<class 'amuse.community.gadget2.interface.Gadget2'>', "
+                f"Error when calling 'evolve_model' of a '{self.classname}', "
                 "errorcode is -5, error is 'CPU-time limit reached.'"
             )
         )
@@ -854,8 +854,7 @@ class TestGadget2(TestWithMPI):
             instance.evolve_model,
             0.5 * instance.model_time,
             expected_message=( 
-                "Error when calling 'evolve_model' of a "
-                "'<class 'amuse.community.gadget2.interface.Gadget2'>', "
+                f"Error when calling 'evolve_model' of a '{self.classname}', "
                 "errorcode is -6, error is 'Can't evolve backwards in time.'"
             )
         )
@@ -932,8 +931,7 @@ class TestGadget2(TestWithMPI):
             instance.evolve_model,
             1.0e13 | units.yr,
             expected_message=(
-                "Error when calling 'evolve_model' of a "
-                "'<class 'amuse.community.gadget2.interface.Gadget2'>', "
+                f"Error when calling 'evolve_model' of a '{self.classname}', "
                 "errorcode is -8, error is 'A particle was assigned a timestep"
                 " of size zero. The code_time_unit used may be too large.'"
             )
@@ -966,8 +964,7 @@ class TestGadget2(TestWithMPI):
             instance.evolve_model,
             1.1e-13 | units.yr,
             expected_message=(
-                "Error when calling 'evolve_model' of a "
-                "'<class 'amuse.community.gadget2.interface.Gadget2'>', "
+                f"Error when calling 'evolve_model' of a '{self.classname}', "
                 "errorcode is -7, error is "
                 "'Can't evolve further than time_max.'"
             )
@@ -978,8 +975,7 @@ class TestGadget2(TestWithMPI):
             instance.evolve_model,
             1.0e-14 | units.yr,
             expected_message=(
-                "Error when calling 'evolve_model' of a "
-                "'<class 'amuse.community.gadget2.interface.Gadget2'>', "
+                f"Error when calling 'evolve_model' of a '{self.classname}', "
                 "errorcode is -6, error is 'Can't evolve backwards in time.'"
             )
         )
@@ -1212,14 +1208,29 @@ class TestGadget2(TestWithMPI):
         instance.dm_particles.add_particles(particles)
         
         instance.evolve_to_redshift(19.9)
-        self.assertRaises(AmuseException, instance.evolve_model, 1|units.Myr, expected_message=
-            "Error when calling 'evolve_model' of a 'Gadget2', errorcode is -9, error is "
-            "'This function should not be used with the current value of comoving_integration_flag'")
+        self.assertRaises(
+            AmuseException,
+            instance.evolve_model,
+            1 | units.Myr,
+            expected_message=(
+                f"Error when calling 'evolve_model' of a '{self.classname}', "
+                "errorcode is -9, error is 'This function should not be used "
+                "with the current value of comoving_integration_flag'"
+            )
+        )
         
         self.assertAlmostEqual(instance.model_redshift, 19.9, 5)
-        self.assertRaises(AmuseException, getattr, instance, "model_time", expected_message=
-            "Error when calling 'get_time' of a 'Gadget2', errorcode is -9, error is "
-            "'This function should not be used with the current value of comoving_integration_flag'")
+        self.assertRaises(
+            AmuseException,
+            getattr,
+            instance,
+            "model_time",
+            expected_message=(
+                f"Error when calling 'get_time' of a '{self.classname}', "
+                "errorcode is -9, error is 'This function should not be used "
+                "with the current value of comoving_integration_flag'"
+            )
+        )
         instance.stop()
     
     def xtest26(self):
