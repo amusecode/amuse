@@ -399,7 +399,8 @@ class TestFi(TestWithMPI):
         convert_nbody = nbody_system.nbody_to_si(1.0 | units.MSun, 1.0 | units.AU)
         instance = Fi(convert_nbody)
         instance.initialize_code()
-        self.assertTrue('data/fi/input/' in instance.legacy_interface.get_fi_data_directory()['fi_data_directory'])
+        print(instance.legacy_interface.get_fi_data_directory()['fi_data_directory'])
+        self.assertTrue('fi/data/input/' in instance.legacy_interface.get_fi_data_directory()['fi_data_directory'])
         self.assertEqual(instance.legacy_interface.get_fi_data_directory()['fi_data_directory'], 
             instance.get_data_directory()+'/')
         
