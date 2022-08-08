@@ -918,18 +918,26 @@ class TestGadget2(TestWithMPI):
     def test20(self):
         print("Testing zero timestep exceptions")
         number_sph_particles = 1000
-        gas = new_evrard_gas_sphere(number_sph_particles, self.default_convert_nbody, seed = 1234)
+        gas = new_evrard_gas_sphere(number_sph_particles, self.default_convert_nbody, seed=1234)
         
         wrong_converter = generic_unit_converter.ConvertBetweenGenericAndSiUnits(
-            self.UnitLength, 
-            self.UnitMass, 
+            self.UnitLength,
+            self.UnitMass,
             1.0e15 * units.yr
         )
         instance = Gadget2(wrong_converter, **default_options)
         instance.gas_particles.add_particles(gas)
-        self.assertRaises(AmuseException, instance.evolve_model, 1.0e13 | units.yr, expected_message = 
-            "Error when calling 'evolve_model' of a 'Gadget2', errorcode is -8, error is 'A particle "
-            "was assigned a timestep of size zero. The code_time_unit used may be too large.'")
+        self.assertRaises(
+            AmuseException,
+            instance.evolve_model,
+            1.0e13 | units.yr,
+            expected_message=(
+                "Error when calling 'evolve_model' of a "
+                "'<class 'amuse.community.gadget2.interface.Gadget2'>', "
+                "errorcode is -8, error is 'A particle was assigned a timestep"
+                " of size zero. The code_time_unit used may be too large.'"
+            )
+        )
         instance.stop()
         
         instance = Gadget2(wrong_converter, **default_options)
@@ -953,11 +961,28 @@ class TestGadget2(TestWithMPI):
         instance = Gadget2(wrong_converter, **default_options)
         instance.parameters.max_size_timestep = 3.0e-14 | units.yr
         instance.gas_particles.add_particles(gas)
-        self.assertRaises(AmuseException, instance.evolve_model, 1.1e-13 | units.yr, expected_message = 
-            "Error when calling 'evolve_model' of a 'Gadget2', errorcode is -7, error is 'Can't evolve further than time_max.'")
+        self.assertRaises(
+            AmuseException,
+            instance.evolve_model,
+            1.1e-13 | units.yr,
+            expected_message=(
+                "Error when calling 'evolve_model' of a "
+                "'<class 'amuse.community.gadget2.interface.Gadget2'>', "
+                "errorcode is -7, error is "
+                "'Can't evolve further than time_max.'"
+            )
+        )
         instance.evolve_model(3.0e-14 | units.yr)
-        self.assertRaises(AmuseException, instance.evolve_model, 1.0e-14 | units.yr, expected_message = 
-            "Error when calling 'evolve_model' of a 'Gadget2', errorcode is -6, error is 'Can't evolve backwards in time.'")
+        self.assertRaises(
+            AmuseException,
+            instance.evolve_model,
+            1.0e-14 | units.yr,
+            expected_message=(
+                "Error when calling 'evolve_model' of a "
+                "'<class 'amuse.community.gadget2.interface.Gadget2'>', "
+                "errorcode is -6, error is 'Can't evolve backwards in time.'"
+            )
+        )
         instance.stop()
     
     def test22(self):
