@@ -838,11 +838,27 @@ class TestGadget2(TestWithMPI):
         instance = Gadget2(self.default_converter, **default_options)
         instance.parameters.time_limit_cpu = 0.001 | units.s
         instance.gas_particles.add_particles(gas)
-        self.assertRaises(AmuseException, instance.evolve_model, 1.0 | generic_unit_system.time, expected_message = 
-            "Error when calling 'evolve_model' of a 'Gadget2', errorcode is -5, error is 'CPU-time limit reached.'")
+        self.assertRaises(
+            AmuseException,
+            instance.evolve_model,
+            1.0 | generic_unit_system.time,
+            expected_message=( 
+                "Error when calling 'evolve_model' of a "
+                "'<class 'amuse.community.gadget2.interface.Gadget2'>', "
+                "errorcode is -5, error is 'CPU-time limit reached.'"
+            )
+        )
         instance.parameters.time_limit_cpu = 10.0 | units.s
-        self.assertRaises(AmuseException, instance.evolve_model, 0.5 * instance.model_time, expected_message = 
-            "Error when calling 'evolve_model' of a 'Gadget2', errorcode is -6, error is 'Can't evolve backwards in time.'")
+        self.assertRaises(
+            AmuseException,
+            instance.evolve_model,
+            0.5 * instance.model_time,
+            expected_message=( 
+                "Error when calling 'evolve_model' of a "
+                "'<class 'amuse.community.gadget2.interface.Gadget2'>', "
+                "errorcode is -6, error is 'Can't evolve backwards in time.'"
+            )
+        )
         instance.stop()
     
     def test18(self):
