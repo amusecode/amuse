@@ -558,15 +558,5 @@ public class Code implements CodeInterface {
         return 0;
     }
 
-    @Override
-    public int get_working_directory(String[] dir) {
-        return -2; // not implemented
-    }
-
-    @Override
-    public int set_working_directory(String dir) {
-        return -2; // not implemented
-    }
-
     
 }

@@ -10,7 +10,7 @@ from amuse.community import *
 
 class {0.name_of_the_community_interface_class}({0.name_of_the_superclass_for_the_community_code_interface_class}):
     
-    include_headers = ['worker_code.h']
+    {0.include_headers_or_modules}
     
     def __init__(self, **keyword_arguments):
         {0.name_of_the_superclass_for_the_community_code_interface_class}.__init__(self, name_of_the_worker="{0.name_of_the_community_code}_worker", **keyword_arguments)
@@ -241,6 +241,10 @@ class CreateADirectoryAndPopulateItWithFiles(OptionalAttributes):
     def amuse_root_dir(self):
         return get_amuse_root_dir()
         
+    @late
+    def include_headers_or_modules(self):
+        return "include_headers = ['worker_code.h']"
+        
     def start(self):
         
         self.make_directories()
@@ -320,6 +324,9 @@ OBJS = {0.name_of_the_interface_code}.o
 
 CODELIB = src/lib{0.name_of_the_community_code}.a
 
+# needed if code functions are accessed through a module
+FCFLAGS+= -I$(realpath ./src)
+
 all: {0.name_of_the_community_code}_worker 
 
 clean:
@@ -383,13 +390,20 @@ END FUNCTION
 """
 
 interface_examplefile_template_fortran = """\
-FUNCTION echo_int(input, output)
-    INTEGER echo
-    INTEGER echo_int
-    INTEGER input, output
-    output = echo(input)
-    echo_int = 0
-END FUNCTION
+module {0.name_of_the_interface_module}
+
+
+contains
+
+  function echo_int(input, output)
+      integer :: echo
+      integer :: echo_int
+      integer ::  input, output
+      output = echo(input)
+      echo_int = 0
+  end function
+
+end module
 
 """
 class CreateADirectoryAndPopulateItWithFilesForAFortranCode(CreateADirectoryAndPopulateItWithFiles):
@@ -401,7 +415,15 @@ class CreateADirectoryAndPopulateItWithFilesForAFortranCode(CreateADirectoryAndP
     @late
     def path_of_the_interface_examplefile(self):
         return os.path.join(self.path_of_the_community_code, self.name_of_the_interface_code + '.f90')
-            
+
+    @late
+    def include_headers_or_modules(self):
+        return 'use_modules=["{0}"]'.format(self.name_of_the_interface_module)
+
+    @late
+    def name_of_the_interface_module(self):
+        return '{0}Interface'.format(self.name_of_the_community_code)
+
     def make_makefile(self):
         
         with open(self.path_of_the_makefile, "w") as f:
@@ -418,6 +440,6 @@ class CreateADirectoryAndPopulateItWithFilesForAFortranCode(CreateADirectoryAndP
             f.write(string)
         
         with open(self.path_of_the_interface_examplefile, "w") as f:
-            string = interface_examplefile_template_fortran
+            string = interface_examplefile_template_fortran.format(self)
             f.write(string)
 

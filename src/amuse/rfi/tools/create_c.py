@@ -1380,8 +1380,8 @@ class GenerateACHeaderStringFromASpecificationClass\
         return True
     
     def must_include_interface_function_in_output(self, x):
-        if x.specification.name.startswith("internal__"):
-            return False
+        if hasattr(x.specification,"internal_provided"):
+                return False
             
         for cls in self.ignore_functions_from_specification_classes:
             if hasattr(cls, x.specification.name):
@@ -1430,7 +1430,7 @@ class GenerateACStubStringFromASpecificationClass\
         return create_definition.CreateCStub()
 
     def must_include_interface_function_in_output(self, x):
-        return not x.specification.name.startswith("internal__")
+        return not hasattr(x.specification,"internal_provided")
      
     def start(self):  
     

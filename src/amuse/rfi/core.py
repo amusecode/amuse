@@ -865,6 +865,7 @@ class CodeInterface(OptionalAttributes):
         function = LegacyFunctionSpecification() 
         function.addParameter('polling_interval', dtype='int32', direction=function.OUT)
         function.result_type = 'int32'
+        function.internal_provided=True
         return function
         
     @legacy_function
@@ -872,6 +873,7 @@ class CodeInterface(OptionalAttributes):
         function = LegacyFunctionSpecification()  
         function.addParameter('polling_interval', dtype='int32', direction=function.IN)
         function.result_type = 'int32'
+        function.internal_provided=True
         return function
         
     @legacy_function
@@ -879,6 +881,7 @@ class CodeInterface(OptionalAttributes):
         function = LegacyFunctionSpecification()  
         function.addParameter('port_identifier', dtype='string', direction=function.OUT)
         function.result_type = 'int32'
+        function.internal_provided=True
         return function
         
     @legacy_function
@@ -887,6 +890,7 @@ class CodeInterface(OptionalAttributes):
         function.addParameter('port_identifier', dtype='string', direction=function.IN)
         function.addParameter('comm_identifier', dtype='int32', direction=function.OUT)
         function.result_type = 'int32'
+        function.internal_provided=True
         return function
         
     @legacy_function
@@ -895,6 +899,7 @@ class CodeInterface(OptionalAttributes):
         function.addParameter('port_identifier', dtype='string', direction=function.IN)
         function.addParameter('comm_identifier', dtype='int32', direction=function.OUT)
         function.result_type = 'int32'
+        function.internal_provided=True
         return function
         
     @legacy_function
@@ -902,6 +907,7 @@ class CodeInterface(OptionalAttributes):
         function = LegacyFunctionSpecification()  
         function.addParameter('comm_identifier', dtype='int32', direction=function.IN)
         function.result_type = 'int32'
+        function.internal_provided=True
         return function
         
         
@@ -1026,6 +1032,7 @@ class CodeInterface(OptionalAttributes):
         function.addParameter('modulename', dtype='string', direction=function.IN)
         function.addParameter('classname', dtype='string', direction=function.IN)
         function.result_type = 'int32'
+        function.internal_provided=True
         return function
         
     def get_code_module_directory(self):
@@ -1040,6 +1047,7 @@ class CodeInterface(OptionalAttributes):
         function = LegacyFunctionSpecification()  
         function.addParameter('working_directory', dtype='string', direction=function.IN)
         function.result_type = 'int32'
+        function.internal_provided=True
         return function
 
     @legacy_function
@@ -1047,8 +1055,8 @@ class CodeInterface(OptionalAttributes):
         function = LegacyFunctionSpecification()  
         function.addParameter('working_directory', dtype='string', direction=function.OUT)
         function.result_type = 'int32'
+        function.internal_provided=True
         return function
-
 
 class CodeWithDataDirectories(object):
     
