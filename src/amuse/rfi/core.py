@@ -508,8 +508,7 @@ class ParameterSpecification(object):
     def has_default_value(self):
         return not self.default is None
     
-    
-    
+        
 class LegacyFunctionSpecification(object):
     """
     Specification of a legacy function.
@@ -548,7 +547,10 @@ class LegacyFunctionSpecification(object):
     LENGTH = object()
     """Used to specify that a parameter is used as the length parameter for the other parameters"""
     
-    def __init__(self):
+    def __init__(self, counter=[0]): # counter serves to be able to put specs in anything resembling sane order (=input order)
+        counter[0]+=1
+        self.nspec=counter[0]
+
         self.parameters = []
         self.name = None
         self.id = None
