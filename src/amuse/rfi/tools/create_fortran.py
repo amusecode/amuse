@@ -1537,7 +1537,7 @@ class GenerateAFortranSourcecodeStringFromASpecificationClass(GenerateASourcecod
                 if specification.result_type is None:
                     continue
                 if specification.result_type == 'string':
-                    type = 'CHARACTER(len=255)'
+                    type = 'character(len=255)'
                 else:
                     spec = self.dtype_to_spec[specification.result_type]
                     type = spec.type
@@ -1662,7 +1662,7 @@ class GenerateAFortranStubStringFromASpecificationClass\
         
         return True
         
-    def output_modules(self,skip):
+    def output_modules(self,skip=0):
         self.out.n()
         if hasattr(self.specification_class, 'use_modules'):
             for x in self.specification_class.use_modules[skip:]:

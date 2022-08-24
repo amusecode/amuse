@@ -8,28 +8,86 @@ from amuse.support.options import OptionalAttributes
 interface_file_template = """\
 from amuse.community import *
 
+# low level interface class
 class {0.name_of_the_community_interface_class}({0.name_of_the_superclass_for_the_community_code_interface_class}):
     
     {0.include_headers_or_modules}
     
     def __init__(self, **keyword_arguments):
         {0.name_of_the_superclass_for_the_community_code_interface_class}.__init__(self, name_of_the_worker="{0.name_of_the_community_code}_worker", **keyword_arguments)
+ 
+# here you must specify the prototypes of the interface functions:
     
     @legacy_function
     def echo_int():
         function = LegacyFunctionSpecification()  
-        function.addParameter('int_in', dtype='int32', direction=function.IN)
-        function.addParameter('int_out', dtype='int32', direction=function.OUT)
+        function.addParameter('int_in', dtype='int32', direction=function.IN, unit=None)
+        function.addParameter('int_out', dtype='int32', direction=function.OUT, unit=None)
         function.result_type = 'int32'
         function.can_handle_array = True
         return function
+
+# optionally, this can be shortened to:
+#    @remote_function(can_handle_array=True)
+#    def echo_int(int_in='i'):
+#        returns (int_out='i')
+
         
-    
+# high level interface class    
 class {0.name_of_the_code_interface_class}({0.name_of_the_superclass_for_the_code_interface_class}):
 
     def __init__(self, **options):
         {0.name_of_the_superclass_for_the_code_interface_class}.__init__(self,  {0.name_of_the_community_interface_class}(**options), **options)
-    
+
+# typically the high level specification also contains the following:
+
+# the definition of the state model of the code
+    def define_state(self, handler):
+# for example:
+#        handler.set_initial_state('UNINITIALIZED')
+#        handler.add_transition('!UNINITIALIZED!STOPPED', 'END', 'cleanup_code')
+#        handler.add_transition('END', 'STOPPED', 'stop', False)
+#        handler.add_transition(
+#            'UNINITIALIZED', 'INITIALIZED', 'initialize_code')
+#        handler.add_method('STOPPED', 'stop')
+        pass
+
+# the definition of any properties
+    def define_properties(self, handler):
+#        handler.add_property('name_of_the_getter', public_name="name_of_the_property")
+        pass
+
+# the definition of the parameters
+    def define_parameters(self, handler):
+#        handler.add_method_parameter(
+#            "name_of_the_getter",
+#            "name_of_the_setter",
+#            "parameter_name",
+#            "description", 
+#            default_value = <default value>
+#        )
+        pass
+
+# the definition of the code data stores, either particle sets:
+    def define_particle_sets(self, handler):
+#        handler.define_set('particles', 'index_of_the_particle')
+#        handler.set_new('particles', 'new_particle')
+#        handler.set_delete('particles', 'delete_particle')
+#        handler.add_setter('particles', 'set_state')
+#        handler.add_getter('particles', 'get_state')
+#        handler.add_setter('particles', 'set_mass')
+#        handler.add_getter('particles', 'get_mass', names=('mass',))
+        pass
+
+# and/or grids:
+    def define_grids(self, handler):
+#        handler.define_grid('grid',axes_names = ["x", "y"], grid_class=StructuredGrid)
+#        handler.set_grid_range('grid', '_grid_range')
+#        handler.add_getter('grid', 'get_grid_position', names=["x", "y"])
+#        handler.add_getter('grid', 'get_rho', names=["density"])
+#        handler.add_setter('grid', 'set_rho', names=["density"])
+        pass
+
 """
 
 test_file_template = """\
@@ -383,10 +441,10 @@ $(CODELIB): $(CODEOBJS)
 """
 
 code_examplefile_template_fortran = """\
-FUNCTION echo(input)
-    INTEGER echo, input
+function echo(input)
+    integer echo, input
     echo = input
-END FUNCTION
+end function
 """
 
 interface_examplefile_template_fortran = """\
