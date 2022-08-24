@@ -48,8 +48,8 @@ class TestGenerateAFortranStubStringFromASpecificationClass(amusetest.TestCase):
         x.start()
         outputstring = x.result        
         print(x.result)
-        self.assertContainsString(outputstring, "FUNCTION echo_int(int_in, int_out)")
-        self.assertContainsString(outputstring, "INTEGER :: echo_int")
+        self.assertContainsString(outputstring, "function echo_int(int_in, int_out)")
+        self.assertContainsString(outputstring, "integer :: echo_int")
         
     def test2(self):
         x = create_fortran.GenerateAFortranStubStringFromASpecificationClass()
