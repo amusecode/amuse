@@ -428,7 +428,7 @@ void run_mpi(int argc, char *argv[]) {
     sigemptyset(&handler.sa_mask);
     handler.sa_flags = 0;
 
-    for (int i = 0; i < (sizeof abort_signals) / (sizeof abort_signals[0]); i++) {
+    for (int i = 0; i < int ((sizeof abort_signals) / (sizeof abort_signals[0])); i++) {
         int result = sigaction(abort_signals[i], &handler, NULL);
         if (result == -1) {
             perror("Error installing signal handler");
