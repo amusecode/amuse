@@ -37,6 +37,15 @@ class {0.name_of_the_community_interface_class}({0.name_of_the_superclass_for_th
 class {0.name_of_the_code_interface_class}({0.name_of_the_superclass_for_the_code_interface_class}):
 
     def __init__(self, **options):
+
+# the following alternative __init__ signature is appropiate for codes that use an unspecified unit system
+# (ie the quantities have dimension but no definite scale) 
+$
+#    def __init__(self, unit_converter=None, **options):        
+#        self.unit_converter=unit_converter
+#
+# in this case you also need to use the define_converter below        
+        
         {0.name_of_the_superclass_for_the_code_interface_class}.__init__(self,  {0.name_of_the_community_interface_class}(**options), **options)
 
 # typically the high level specification also contains the following:
@@ -87,6 +96,15 @@ class {0.name_of_the_code_interface_class}({0.name_of_the_superclass_for_the_cod
 #        handler.add_getter('grid', 'get_rho', names=["density"])
 #        handler.add_setter('grid', 'set_rho', names=["density"])
         pass
+
+# this handles unit conversion if an (optional) unit converter is specified
+#    def define_converter(self, handler):
+#        if self.unit_converter is not None:
+#            handler.set_converter(
+#                self.unit_converter.as_converter_from_si_to_generic()
+#            )
+
+
 
 """
 
