@@ -22,6 +22,7 @@ AM_CFLAGS = -I$(AMUSE_DIR)/lib/amuse_mpi
 
 CODELIB =  src/SeBa/sstar/libsstar.a src/SeBa/dstar/libdstar.a 
 
+.PHONY: download clean distclean
 
 DOWNLOAD_FROM_WEB = $(PYTHON) ./download.py
 
@@ -39,11 +40,13 @@ clean:
 	$(RM) -r *.dSYM
 	@-make -C src/SeBa clean
 
-distclean:
+distclean: clean
 	$(RM) -f *.so *.o *.pyc worker_code.cc worker_code.h
 	$(RM) *~ worker_code
+	$(RM) -Rf src
+	
 
-$(CODELIB): download src/SeBa
+$(CODELIB): src/SeBa
 	cd src/SeBa; make -C. CXX="$(CXX) $(CXXFLAGS)"
 
 worker_code.cc: interface.py
@@ -57,3 +60,6 @@ seba_worker: worker_code.cc worker_code.h $(CODELIB) $(AMUSE_OBJS)
 
 .cc.o: $<
 	$(CXX) $(CXXFLAGS) -c -o $@ $<
+
+src/SeBa:
+	make -C . download
