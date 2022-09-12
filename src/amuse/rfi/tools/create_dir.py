@@ -147,7 +147,7 @@ all: {0.name_of_the_community_code}_worker
 
 clean:
 \t$(RM) -rf __pycache__
-\t$(RM) -f *.so *.o *.pyc worker_code.cc worker_code.h 
+\t$(RM) -f *.so *.o *.pyc worker_code.cc worker_code.h
 \t$(RM) *~ {0.name_of_the_community_code}_worker worker_code.cc
 \tmake -C src clean
 
@@ -187,7 +187,7 @@ all: $(CODELIB)
 
 
 clean:
-\t$(RM) -f *.o *.a
+\t$(RM) -f *.o *.a 
 
 distclean: clean
 
@@ -407,8 +407,8 @@ all: {0.name_of_the_community_code}_worker
 
 clean:
 \t$(RM) -rf __pycache__
-\t$(RM) -f *.so *.o *.pyc worker_code.cc worker_code.h 
-\t$(RM) *~ worker_code worker_code.f90
+\t$(RM) -f *.mod *.so *.o *.pyc worker_code.cc worker_code.h 
+\t$(RM) *~ {0.name_of_the_community_code}_worker worker_code.f90
 \tmake -C src clean
 
 distclean: clean
@@ -444,7 +444,7 @@ RM = rm
 all: $(CODELIB) 
 
 clean:
-\t$(RM) -f *.o *.a
+\t$(RM) -f *.o *.a *.mod
 
 distclean: clean
 
@@ -483,7 +483,7 @@ end module
 
 """
 class CreateADirectoryAndPopulateItWithFilesForAFortranCode(CreateADirectoryAndPopulateItWithFiles):
-   
+        
     @late
     def path_of_the_code_examplefile(self):
         return os.path.join(self.path_of_the_source_code, 'test.f90')
