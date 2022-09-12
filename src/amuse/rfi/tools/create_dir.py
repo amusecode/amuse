@@ -40,7 +40,7 @@ class {0.name_of_the_code_interface_class}({0.name_of_the_superclass_for_the_cod
 
 # the following alternative __init__ signature is appropiate for codes that use an unspecified unit system
 # (ie the quantities have dimension but no definite scale) 
-$
+#
 #    def __init__(self, unit_converter=None, **options):        
 #        self.unit_converter=unit_converter
 #
