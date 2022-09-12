@@ -1519,7 +1519,7 @@ class GenerateAFortranSourcecodeStringFromASpecificationClass(GenerateASourcecod
                 self.out.n() + 'use ' + x 
                 
     def must_include_declaration_of_function(self, x):
-        if x.specification.name.startswith("internal__"):
+        if hasattr(x.specification,"internal_provided"):
             return False
         
         return True
@@ -1537,7 +1537,7 @@ class GenerateAFortranSourcecodeStringFromASpecificationClass(GenerateASourcecod
                 if specification.result_type is None:
                     continue
                 if specification.result_type == 'string':
-                    type = 'CHARACTER(len=255)'
+                    type = 'character(len=255)'
                 else:
                     spec = self.dtype_to_spec[specification.result_type]
                     type = spec.type
@@ -1627,20 +1627,33 @@ class GenerateAFortranStubStringFromASpecificationClass\
         return result
         
     def start(self):  
+
+        if hasattr(self.specification_class, 'use_modules'):
+          self.out.lf() + 'module {0}'.format(self.specification_class.use_modules[0])
         
-        self.output_modules()
+          self.out.indent()
         
+        self.output_modules(1)
+        
+        if hasattr(self.specification_class, 'use_modules'):
+          self.out.lf() + "contains"
+
         self.out.lf()
         
         self.output_sourcecode_for_functions()
         
         self.out.lf()
+
+        if hasattr(self.specification_class, 'use_modules'):
+            self.out.dedent()
+            self.out.lf() + "end module"
+            self.out.lf()
         
         self._result = self.out.string
         
     
     def must_include_interface_function_in_output(self, x):
-        if x.specification.name.startswith("internal__"):
+        if hasattr(x.specification,"internal_provided"):
             return False
             
         for cls in self.ignore_functions_from_specification_classes:
@@ -1649,10 +1662,10 @@ class GenerateAFortranStubStringFromASpecificationClass\
         
         return True
         
-    def output_modules(self):
+    def output_modules(self,skip=0):
         self.out.n()
         if hasattr(self.specification_class, 'use_modules'):
-            for x in self.specification_class.use_modules:
+            for x in self.specification_class.use_modules[skip:]:
                 self.out.n() + 'use ' + x 
         
     

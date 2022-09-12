@@ -1187,7 +1187,7 @@ class GenerateAJavaStringOfAFunctionSpecification(MakeJavaCodeString):
         self.output_lines_with_number_of_outputs()
         
         
-        if self.specification.name.startswith("internal__"):
+        if hasattr(self.specification,"internal_provided"):
             self.out.lf() + "//" +  self.specification.name + " ignored"
         else:
             self.output_declare_variables()
@@ -1439,7 +1439,7 @@ class GenerateAJavaInterfaceStringFromASpecificationClass\
     
         
     def must_include_interface_function_in_output(self, x):
-        if x.specification.name.startswith("internal__"):
+        if hasattr(x.specification,"internal_provided"):
             return False
             
         for cls in self.ignore_functions_from_specification_classes:

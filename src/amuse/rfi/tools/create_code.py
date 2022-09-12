@@ -55,7 +55,7 @@ class GenerateASourcecodeStringFromASpecificationClass(GenerateASourcecodeString
             value = getattr(self.specification_class, x)
             if isinstance(value, legacy_function):
                 interface_functions.append(value)
-        interface_functions.sort(key= lambda x: x.specification.id)
+        interface_functions.sort(key= lambda x: x.specification.nspec)
         return interface_functions
         
     @late

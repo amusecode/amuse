@@ -428,7 +428,7 @@ void run_mpi(int argc, char *argv[]) {
     sigemptyset(&handler.sa_mask);
     handler.sa_flags = 0;
 
-    for (int i = 0; i < (sizeof abort_signals) / (sizeof abort_signals[0]); i++) {
+    for (int i = 0; i < int ((sizeof abort_signals) / (sizeof abort_signals[0])); i++) {
         int result = sigaction(abort_signals[i], &handler, NULL);
         if (result == -1) {
             perror("Error installing signal handler");
@@ -1380,8 +1380,8 @@ class GenerateACHeaderStringFromASpecificationClass\
         return True
     
     def must_include_interface_function_in_output(self, x):
-        if x.specification.name.startswith("internal__"):
-            return False
+        if hasattr(x.specification,"internal_provided"):
+                return False
             
         for cls in self.ignore_functions_from_specification_classes:
             if hasattr(cls, x.specification.name):
@@ -1430,7 +1430,7 @@ class GenerateACStubStringFromASpecificationClass\
         return create_definition.CreateCStub()
 
     def must_include_interface_function_in_output(self, x):
-        return not x.specification.name.startswith("internal__")
+        return not hasattr(x.specification,"internal_provided")
      
     def start(self):  
     
