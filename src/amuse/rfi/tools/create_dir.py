@@ -37,17 +37,17 @@ class {0.name_of_the_community_interface_class}({0.name_of_the_superclass_for_th
 class {0.name_of_the_code_interface_class}({0.name_of_the_superclass_for_the_code_interface_class}):
 
     def __init__(self, **options):
+        {0.name_of_the_superclass_for_the_code_interface_class}.__init__(self,  {0.name_of_the_community_interface_class}(**options), **options)
 
-# the following alternative __init__ signature is appropiate for codes that use an unspecified unit system
+# the following alternative __init__ is appropiate for codes that use an unspecified unit system
 # (ie the quantities have dimension but no definite scale) 
 #
 #    def __init__(self, unit_converter=None, **options):        
 #        self.unit_converter=unit_converter
+#        {0.name_of_the_superclass_for_the_code_interface_class}.__init__(self,  {0.name_of_the_community_interface_class}(**options), **options)
 #
 # in this case you also need to use the define_converter below        
         
-        {0.name_of_the_superclass_for_the_code_interface_class}.__init__(self,  {0.name_of_the_community_interface_class}(**options), **options)
-
 # typically the high level specification also contains the following:
 
 # the definition of the state model of the code
