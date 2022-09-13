@@ -46,6 +46,24 @@ function initialize_code()
   initialize_code = 0
 end function
 
+function set_grid_name(gridname)
+  use VariousParameters, only: grid
+  implicit none
+  character(256) :: gridname
+  integer :: set_grid_name
+  grid = gridname
+  set_grid_name = 0
+end function
+
+function get_grid_name(gridname)
+  use VariousParameters, only: grid
+  implicit none
+  character(256) :: gridname
+  integer :: get_grid_name
+  gridname = grid
+  get_grid_name = 0
+end function
+
 function set_models_path(path)
   use VariousParameters, only: Std_Path
   implicit none
@@ -86,7 +104,8 @@ function evolve_star(&
       i_logTeff_lgd,i_mean_gravity,i_GV,i_GbpV,i_GrpV,i_Gflag,i_crossing_nb_F,i_crossing_nb_1O,i_P_F, &
       i_Pdot_P_F,i_omi_omr_F,i_P_1O,i_Pdot_P_1O,i_omi_omr_1O, &
       i_al26_cen, i_c12_cen, i_c13_cen, i_h1_cen, i_he4_cen, i_l_tot, i_mcc, i_mdot_enhencement, &
-      i_n14_cen, i_ne20_cen, i_ne22_cen, i_o16_cen, i_o17_cen, i_omega_cen, i_rhoc
+      i_n14_cen, i_ne20_cen, i_ne22_cen, i_o16_cen, i_o17_cen, i_omega_cen, i_rhoc, &
+      i_time
   use InterpolationLoop, only:Initialise_Position_and_factor
   use interpolmod, only: All_Positions_and_factors,Make_InterpolatedModel,Make_TimeModel
   use Additional_Data, only: Compute_Additional,Compute_Additional_Single
@@ -108,6 +127,8 @@ function evolve_star(&
           ab_core_C12(n), ab_core_C13(n), ab_core_N14(n), ab_core_O16(n), ab_core_O17(n), ab_core_Ne20(n),&
           ab_core_Ne22(n), ab_core_Al26(n), omega_surf(n), omega_core(n), RpReq(n), MdMd0(n),&
           v_crit1(n), v_crit2(n), v_eq(n), OmOmcr(n), Gamma_Ed(n), MdotMech(n), Ltot(n)
+
+  double precision :: maximum_age
   integer :: evolve_star
   !integer :: StarType(n)
 
@@ -146,8 +167,6 @@ function evolve_star(&
   i = 1  
   Current_Number = 1
 
-  !write(*,*) metallicity(i), initial_mass(i), omega(i), log10(age(i)), n
-
   do while (i <= n)
   !StarType = 1  ! Main sequence star as default
 
@@ -163,18 +182,15 @@ function evolve_star(&
   Star_mass = initial_mass(i)
   Star_omega = omega(i)
   Star_AoV = Fixed_AoV
-  age_log = log10(age(i))  ! age in (julian)year?
+  age_log = log10(age(i))  ! age in julian years
 
-  !write(*,*) Star_mass, Star_Z, Star_omega, age_log
-
-  !call Amuse_SingleModelMode
   inoise = 0
   if (iangle /= 3) then
           iangle = 0
   endif
 
   ! Number of stars to compute
-  star_number = Table_Line_Number
+  !star_number = Table_Line_Number
   
   call init_AoV
   ! if (iangle == 4) then
@@ -194,7 +210,14 @@ function evolve_star(&
           Z_Position,Z_factor,mass_Position,mass_factor,omega_Position, &
           omega_factor,Interpolated_Model)
 
-  call Make_TimeModel(Interpolated_Model,age_log,CurrentTime_Model(Current_Number))
+  ! Check if age is in range for SYCLIST
+  maximum_age = Interpolated_Model%Data_Table(Table_Line_Number,i_time)
+  
+  if (age(i) <= maximum_age ) then ! we're OK
+          call Make_TimeModel(Interpolated_Model,age_log,CurrentTime_Model(Current_Number))
+  else ! we're not OK
+          write(*,*) "Star with initial mass ", Star_mass, "is out of range (", age(i), ">", maximum_age, ")i!"
+  endif
   call Compute_Additional(CurrentTime_Model(Current_Number))
   
   !! Computation of the additional quantities.

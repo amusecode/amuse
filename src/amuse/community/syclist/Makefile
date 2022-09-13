@@ -7,9 +7,6 @@ endif
 
 MPIFC ?= mpif90
 FC      = $(MPIFC)
-AR = ar ruv
-RANLIB = ranlib
-RM = rm
 
 FCFLAGS+= -Isrc/SYCLIST
 LDFLAGS  += -lm $(MUSE_LD_FLAGS)
@@ -20,7 +17,13 @@ CODEDIR = src/SYCLIST
 CODELIB = $(CODEDIR)/libsyclist.a
 
 
+DOWNLOAD_FROM_WEB = $(PYTHON) ./download.py
+
+
 all: syclist_worker 
+
+download:
+	$(DOWNLOAD_FROM_WEB)
 
 clean:
 	$(RM) -rf __pycache__
@@ -31,7 +34,7 @@ clean:
 distclean: clean
 	make -C $(CODEDIR) distclean
 
-$(CODELIB):
+$(CODELIB): #download
 	make -C $(CODEDIR) libsyclist.a
 
 worker_code.f90: interface.py

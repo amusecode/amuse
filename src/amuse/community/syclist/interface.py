@@ -100,6 +100,28 @@ class SyclistInterface(
         return function
 
     @legacy_function
+    def set_grid_name():
+        function = LegacyFunctionSpecification()
+        function.addParameter(
+            'gridname', dtype='string', direction=function.IN,
+            description="Grids name",
+        )
+        function.result_type = 'int32'
+        function.result_doc = ''
+        return function
+
+    @legacy_function
+    def get_grid_name():
+        function = LegacyFunctionSpecification()
+        function.addParameter(
+            'gridname', dtype='string', direction=function.OUT,
+            description="Grids name",
+        )
+        function.result_type = 'int32'
+        function.result_doc = ''
+        return function
+
+    @legacy_function
     def evolve_star():
         function = LegacyFunctionSpecification()
         # function.name = 'evolve_star'
@@ -303,6 +325,13 @@ class Syclist(
             "models_path",
             "Path where the models are stored",
             "./src/SYCLIST/inputs/"
+        )
+        handler.add_method_parameter(
+            "get_grid_name",
+            "set_grid_name",
+            "grid",
+            "Grids name",
+            "Grids2012"
         )
         # set defaults for metallicity, rotation etc
 
