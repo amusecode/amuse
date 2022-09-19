@@ -39,6 +39,7 @@ AM_CFLAGS = -I$(AMUSE_DIR)/lib/amuse_mpi
 
 all: rebound_worker 
 
+DOWNLOAD_CODES?=1
 
 ifdef DOWNLOAD_CODES
 $(CODEDIR)/Makefile:
