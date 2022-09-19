@@ -7,6 +7,7 @@ PYTHON ?= python
 
 ARGPARSE_AVAILABLE := $(shell $(PYTHON) -c "import argparse"  1>&2 2> /dev/null && echo "yes" || echo "no")
 
+DOWNLOAD_CODES?=1
 
 CLASSNAME=KromeInterface
 
@@ -45,7 +46,7 @@ archive_root:
 
 download: latest_tested.tar.gz  archive_root
 
-update: distclean download
+update: distclean download_git
 
 download_git:
 	git clone https://bitbucket.org/tgrassi/krome.git
