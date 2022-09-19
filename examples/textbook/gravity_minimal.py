@@ -1,34 +1,27 @@
-import time
 from amuse.lab import Hermite 
 from amuse.lab import nbody_system
-from amuse.lab import new_king_model
+from amuse.lab import new_plummer_model
 
-def gravity_minimal(N, W0, t_end):
-    bodies = new_king_model(N, W0)
-    bodies.scale_to_standard()
+def gravity_minimal(N, t_end):
+    stars = new_plummer_model(N)
 
     gravity = Hermite()
-    gravity.particles.add_particles(bodies)
-    Etot_init = gravity.kinetic_energy + gravity.potential_energy
+    gravity.particles.add_particles(stars)
 
-    start_time = time.time()
+    initial_total_energy = gravity.kinetic_energy + gravity.potential_energy
+
     gravity.evolve_model(t_end)
-    dtime = time.time() - start_time 
 
-    Ekin = gravity.kinetic_energy 
-    Epot = gravity.potential_energy
-
-    Etot = Ekin + Epot
-    dE = (Etot_init-Etot)/Etot
-    print("T =", gravity.get_time(), " CPU time:", dtime, "[s]")
-    print("M =", bodies.mass.sum(), " E = ", Etot, " Q = ", -Ekin/Epot)
-    print("dE =", dE)
+    total_energy = gravity.kinetic_energy + gravity.potential_energy
     
-    gravity.stop()
+    energy_error = (initial_total_energy-total_energy)/initial_total_energy
     
+    print("model time =", gravity.model_time)
+    print("total mass = ", stars.total_mass(), "total energy = ", total_energy)
+    print("relative energy error =", energy_error)
+        
 if __name__ in ('__main__'):
     N = 100
-    W0 = 7.0
     t_end = 1 | nbody_system.time
-    gravity_minimal(N, W0, t_end)
+    gravity_minimal(N, t_end)
 
