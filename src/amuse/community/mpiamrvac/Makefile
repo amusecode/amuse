@@ -12,8 +12,8 @@ LDFLAGS  += -lm $(MUSE_LD_FLAGS)
 
 FFLAGS += $(FCFLAGS)
 
-# gfortran flags
-ifneq (,$(findstring gfortran, $(notdir $(FORTRAN))))
+# check for gfortran, this catches link and compiler wrappers
+ifeq ($(findstring GNU, $(shell $(FC) --version)), GNU)
 FFLAGS += -std=legacy -ffree-form
 endif
 
@@ -58,7 +58,6 @@ CODELIB2DACC = $(TWOD_BUILDDIR_ACC)/$(LIBNAME)
 CODELIB1DACC = $(ONED_BUILDDIR_ACC)/$(LIBNAME)
 CODELIBACC = $(BUILDDIR_ACC)/$(LIBNAME)
 
-CODE_GENERATOR ?= $(AMUSE_DIR)/build.py
 
 DOWNLOAD_FROM_WEB = $(PYTHON) ./download.py
 PATCH_FILES = $(PYTHON) ./patch_files.py

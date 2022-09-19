@@ -264,7 +264,7 @@ if __name__ == '__main__':
     command.insert(0, sys.executable)
     
     returncode = call(command, close_fds=False)
-    
+        
     with open(logfile, 'a') as stream:
         stream.write('end {{0}} {{1}}\\n'.format(command[0], returncode))
         stream.flush()
@@ -660,14 +660,14 @@ class TestInterface(TestWithMPI):
         self.assertTrue(list(doubles) == [1.0*i for i in range(N)])
         sums = x.sum_doubles([1.0*i for i in range(N)], [1.0*i for i in range(N)])
         self.assertTrue(list(sums) == [2.0*i for i in range(N)])
-        products = x.multiply_ints(list(range(N)), list(range(N)))
+        products = x.multiply_ints(range(N), range(N))
         self.assertTrue(list(products) == [i*i for i in range(N)])
         N = 101
         doubles = x.echo_double([1.0*i for i in range(N)])
         self.assertTrue(list(doubles) == [1.0*i for i in range(N)])
         sums = x.sum_doubles([1.0*i for i in range(N)], [1.0*i for i in range(N)])
         self.assertTrue(list(sums) == [2.0*i for i in range(N)])
-        products = x.multiply_ints(list(range(N)), list(range(N)))
+        products = x.multiply_ints(range(N), range(N))
         self.assertTrue(list(products) == [i*i for i in range(N)])
         x.stop()
 
@@ -728,22 +728,22 @@ class TestInterface(TestWithMPI):
         print("Testing must_handle_array for Python codes")
         instance = self.ForTestingInterface()
 
-        x, y, z, err = instance.get_position(list(range(100)))
+        x, y, z, err = instance.get_position(range(100))
         self.assertEqual(err, 0)
         self.assertEqual(x, numpy.arange(0.0, 300.0, 3.0))
         self.assertEqual(y, numpy.arange(1.0, 300.0, 3.0))
         self.assertEqual(z, numpy.arange(2.0, 300.0, 3.0))
-        x, y, z, err = instance.get_position(list(range(101)))
+        x, y, z, err = instance.get_position(range(101))
         self.assertEqual(err, -1)
         self.assertEqual(list(instance.get_position(1).values()), [3.0, 4.0, 5.0, 0])
 
-        err = instance.set_position(list(range(100)), numpy.arange(100.0), numpy.arange(100.0, 200.0), numpy.arange(200.0, 300.0))
+        err = instance.set_position(range(100), numpy.arange(100.0), numpy.arange(100.0, 200.0), numpy.arange(200.0, 300.0))
         self.assertEqual(err, 0)
-        err = instance.set_position(list(range(101)), numpy.arange(101.0), numpy.arange(101.0, 202.0), numpy.arange(202.0, 303.0))
+        err = instance.set_position(range(101), numpy.arange(101.0), numpy.arange(101.0, 202.0), numpy.arange(202.0, 303.0))
         self.assertEqual(err, -1)
         err = instance.set_position(0, -1.0, -2.0, -3.0)
 
-        x, y, z, err = instance.get_position(list(range(100)))
+        x, y, z, err = instance.get_position(range(100))
         self.assertEqual(err, 0)
         self.assertEqual(x, numpy.concatenate(([-1.0], numpy.arange(1.0, 100.0))))
         self.assertEqual(y, numpy.concatenate(([-2.0], numpy.arange(101.0, 200.0))))
@@ -846,19 +846,21 @@ class TestInterface(TestWithMPI):
             use_python_interpreter=True,
             python_interpreter=exe
         )
-        x, y, z, err = instance.get_position(list(range(100)))
+        x, y, z, err = instance.get_position(range(100))
         self.assertEqual(err, 0)
         self.assertEqual(x, numpy.arange(0.0, 300.0, 3.0))
         self.assertEqual(y, numpy.arange(1.0, 300.0, 3.0))
         self.assertEqual(z, numpy.arange(2.0, 300.0, 3.0))
 
         instance.stop()
-        time.sleep(0.3)
+        # this is quite long, but apparently necessary
+        time.sleep(2.)
 
         self.assertTrue(os.path.exists(log))
 
         with open(log, 'r') as f:
             loglines = f.read().splitlines()
+        print(loglines)
 
         self.assertEqual(len(loglines), 2)
 
@@ -891,14 +893,14 @@ class TestInterface(TestWithMPI):
             python_interpreter=exe,
             redirection="none"
         )
-        x, y, z, err = instance.get_position(list(range(100)))
+        x, y, z, err = instance.get_position(range(100))
         self.assertEqual(err, 0)
         self.assertEqual(x, numpy.arange(0.0, 300.0, 3.0))
         self.assertEqual(y, numpy.arange(1.0, 300.0, 3.0))
         self.assertEqual(z, numpy.arange(2.0, 300.0, 3.0))
 
         instance.stop()
-        time.sleep(0.3)
+        time.sleep(2.)
 
         self.assertTrue(os.path.exists(log))
 
@@ -926,6 +928,9 @@ class TestInterface(TestWithMPI):
             self.assertEqual(output1, 100000)
         instance.stop()
 
+# these test might need special configuration, e.g. for openmpi:
+# run "ompi-server --no-daemonize -r -"
+# and set OMPI_MCA_pmix_server_uri="<uri>" with <uri> the reported uri
     def test26(self):
         self.check_for_mpi()
         instance1 = self.ForTestingInterface()
@@ -944,6 +949,8 @@ class TestInterface(TestWithMPI):
         self.assertEqual(error1, 0)
         self.assertEqual(error2, 0)
 
+# this test requires that instance1 and instance2 use MPIchannel
+# note shutdown of remote process triggers (ignored) invalid communicator error
     def test27(self):
         self.check_for_mpi()
         instance1 = self.ForTestingInterface(redirection="none")
@@ -970,6 +977,8 @@ class TestInterface(TestWithMPI):
         result, errorcode = instance1.echo_string("world")
         self.assertEqual(errorcode, 0)
         self.assertEqual(result, "world")
+        instance1.stop()
+        instance2.stop()
 
     def test28(self):
         x = self.ForTestingInterface()

@@ -97,6 +97,9 @@ class MESAInterface(
             'mesa_dir', dtype='string', direction=function.IN,
             description="Path to the MESA directory.")
         function.addParameter(
+            'mesa_data_dir', dtype='string', direction=function.IN,
+            description="Path to the MESA data directory. Normally this would be mesa_dir/data")
+        function.addParameter(
             'local_data_path', dtype='string', direction=function.IN,
             description="Path to the data directory.")
         function.addParameter(
@@ -1130,6 +1133,7 @@ class MESA(StellarEvolution, InternalStellarStructure):
         self.set_MESA_paths(
             inlist,
             self.default_path_to_MESA,
+            self.default_path_to_MESA_data,
             output_dir,
             gyre_in,
             self.default_tmp_dir
@@ -1726,7 +1730,7 @@ class MESA(StellarEvolution, InternalStellarStructure):
 
         handler.add_method(
             "set_MESA_paths",
-            (handler.NO_UNIT,handler.NO_UNIT,handler.NO_UNIT,handler.NO_UNIT,handler.NO_UNIT),
+            (handler.NO_UNIT,handler.NO_UNIT,handler.NO_UNIT,handler.NO_UNIT,handler.NO_UNIT,handler.NO_UNIT),
             (handler.ERROR_CODE,)
         )
 

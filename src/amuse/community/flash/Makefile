@@ -15,7 +15,6 @@ OBJS = interface.o
 
 CODELIB = src/libflash.a
 
-CODE_GENERATOR ?= $(AMUSE_DIR)/build.py
 
 drive_loc = ./src/FLASH4.2.2/object
 #drive_loc = ./src/FLASH4.2-mod/object
@@ -43,7 +42,7 @@ $(CODEDIR)/makefile:
 	@echo "*** Unfortunately due to flash download restrictions;"
 	@echo "*** FLASH CANNOT be download automatically by this makefile"
 	@echo "*** Please register and download flash yourself"
-	@echo "*** You can do so at http://flash.uchicago.edu/site/flashcode/coderequest/"
+	@echo "*** You can do so at https://flash.rochester.edu/site/flashcode/coderequest/"
 	@echo ""
 	@echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
 	@echo ""
@@ -55,7 +54,7 @@ download:
 	@echo "*** Unfortunately due to flash download restrictions;"
 	@echo "*** FLASH CANNOT be download automatically by this makefile"
 	@echo "*** Please register and download flash yourself"
-	@echo "*** You can do so at http://flash.uchicago.edu/site/flashcode/coderequest/"
+	@echo "*** You can do so at https://flash.rochester.edu/site/flashcode/coderequest/"
 	@echo ""
 	@make -s --no-print-directory -C . raise_error
 

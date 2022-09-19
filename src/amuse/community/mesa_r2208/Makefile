@@ -39,14 +39,13 @@ STAR_WORK_OBJS = \
    $(MESA_MAKE_DIR)/create_zams.o $(MESA_MAKE_DIR)/sample_zams.o \
    $(MESA_MAKE_DIR)/run_star.o 
 
-ZAMS_DIR = $(AMUSE_DIR)/data/mesa_r2208/output/star_data/starting_models
-ZAMS_DATA = $(ZAMS_DIR)/zams_z20m3.data
+ZAMS_DIR = ./data/input/star_data/starting_models
+ZAMS_DATA = zams_z20m3.data
 
-CODE_GENERATOR ?= $(AMUSE_DIR)/build.py
 DOWNLOAD_FROM_WEB = $(PYTHON) ./download.py
 PATCH_FILES = $(PYTHON) ./patch_files.py
 
-all:	mesa_worker $(ZAMS_DATA)
+all:	mesa_worker $(ZAMS_DATA) data/data
 
 ifdef DOWNLOAD_CODES
 $(MESA_DIR)/install:
@@ -88,7 +87,7 @@ distclean: clean
 	$(RM) -Rf .pc
 
 $(ZAMS_DATA):
-	gunzip -c $(ZAMS_DATA).gz > $(ZAMS_DATA)
+	gunzip -c $(ZAMS_DATA).gz > $(ZAMS_DIR)/$(ZAMS_DATA)
 
 mesa_worker:	worker_code.f90 interface.o $(STAR_WORK_OBJS)
 	$(MPIF90) $(FCFLAGS) $(FFLAGS) $(LDFLAGS) $(FCopenmp) $(FS_FLAGS) $^ -o $@ $(LOAD_MESA_STAR) $(FS_LIBS)  $(LIBS)
@@ -104,3 +103,6 @@ $(MESA_LIB):  $(MESA_DIR)/install
 interface.o: interface.f $(MESA_LIB)
 	make -s --no-print-directory -C $(MESA_MAKE_DIR) star FFLAGS="$(FCFLAGS)"
 	$(WORK_COMPILE) -I$(INCLUDE_DIR) -I$(MESA_MAKE_DIR) -o $@ $<
+
+data/data:
+	cp -r src/mesa/data data/

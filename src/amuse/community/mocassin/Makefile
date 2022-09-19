@@ -13,7 +13,6 @@ export FORTRAN
 
 OBJS = interface.o
 
-CODE_GENERATOR ?= $(AMUSE_DIR)/build.py
 
 VERSION = 2.02.70
 CODEDIR = src/mocassin.$(VERSION)

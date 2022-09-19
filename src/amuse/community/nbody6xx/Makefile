@@ -10,7 +10,8 @@ FORTRAN ?= $(FC)
 
 LDFLAGS  += -lm $(MUSE_LD_FLAGS) 
 
-ifeq ($(findstring gfortran, $(notdir $(FORTRAN))), gfortran)
+# check for gfortran, this catches link and compiler wrappers
+ifeq ($(findstring GNU, $(shell $(FORTRAN) --version)), GNU)
 FCFLAGS2+=-ffixed-form -xf77-cpp-input
 endif
 
@@ -22,7 +23,6 @@ OBJS = interface.o
 
 CODELIB = src/libnbody6xx.a
 
-CODE_GENERATOR ?= $(AMUSE_DIR)/build.py
 
 all: nbody6xx_worker 
 

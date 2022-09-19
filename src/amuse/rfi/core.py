@@ -508,8 +508,7 @@ class ParameterSpecification(object):
     def has_default_value(self):
         return not self.default is None
     
-    
-    
+        
 class LegacyFunctionSpecification(object):
     """
     Specification of a legacy function.
@@ -548,7 +547,10 @@ class LegacyFunctionSpecification(object):
     LENGTH = object()
     """Used to specify that a parameter is used as the length parameter for the other parameters"""
     
-    def __init__(self):
+    def __init__(self, counter=[0]): # counter serves to be able to put specs in anything resembling sane order (=input order)
+        counter[0]+=1
+        self.nspec=counter[0]
+
         self.parameters = []
         self.name = None
         self.id = None
@@ -772,6 +774,12 @@ class CodeInterface(OptionalAttributes):
         #~ self.channel.initialize_mpi = self.initialize_mpi
         
         self.channel.start()
+
+        # change to the working directory
+        if self.working_directory:
+            result=self.set_working_directory(self.working_directory)
+            if result!=0:
+                raise Exception(f"Changing to working directory {self.working_directory} failed")
         
         # must register stop interfaces after channel start
         # if done before, the mpi atexit will be registered 
@@ -859,6 +867,7 @@ class CodeInterface(OptionalAttributes):
         function = LegacyFunctionSpecification() 
         function.addParameter('polling_interval', dtype='int32', direction=function.OUT)
         function.result_type = 'int32'
+        function.internal_provided=True
         return function
         
     @legacy_function
@@ -866,6 +875,7 @@ class CodeInterface(OptionalAttributes):
         function = LegacyFunctionSpecification()  
         function.addParameter('polling_interval', dtype='int32', direction=function.IN)
         function.result_type = 'int32'
+        function.internal_provided=True
         return function
         
     @legacy_function
@@ -873,6 +883,7 @@ class CodeInterface(OptionalAttributes):
         function = LegacyFunctionSpecification()  
         function.addParameter('port_identifier', dtype='string', direction=function.OUT)
         function.result_type = 'int32'
+        function.internal_provided=True
         return function
         
     @legacy_function
@@ -881,6 +892,7 @@ class CodeInterface(OptionalAttributes):
         function.addParameter('port_identifier', dtype='string', direction=function.IN)
         function.addParameter('comm_identifier', dtype='int32', direction=function.OUT)
         function.result_type = 'int32'
+        function.internal_provided=True
         return function
         
     @legacy_function
@@ -889,6 +901,7 @@ class CodeInterface(OptionalAttributes):
         function.addParameter('port_identifier', dtype='string', direction=function.IN)
         function.addParameter('comm_identifier', dtype='int32', direction=function.OUT)
         function.result_type = 'int32'
+        function.internal_provided=True
         return function
         
     @legacy_function
@@ -896,6 +909,7 @@ class CodeInterface(OptionalAttributes):
         function = LegacyFunctionSpecification()  
         function.addParameter('comm_identifier', dtype='int32', direction=function.IN)
         function.result_type = 'int32'
+        function.internal_provided=True
         return function
         
         
@@ -1020,9 +1034,31 @@ class CodeInterface(OptionalAttributes):
         function.addParameter('modulename', dtype='string', direction=function.IN)
         function.addParameter('classname', dtype='string', direction=function.IN)
         function.result_type = 'int32'
+        function.internal_provided=True
         return function
         
+    def get_code_module_directory(self):
+        return os.path.dirname(inspect.getmodule(self).__file__)
 
+    @option(sections=("channel",))
+    def working_directory(self):
+        return None
+
+    @legacy_function
+    def set_working_directory():
+        function = LegacyFunctionSpecification()  
+        function.addParameter('working_directory', dtype='string', direction=function.IN)
+        function.result_type = 'int32'
+        function.internal_provided=True
+        return function
+
+    @legacy_function
+    def get_working_directory():
+        function = LegacyFunctionSpecification()  
+        function.addParameter('working_directory', dtype='string', direction=function.OUT)
+        function.result_type = 'int32'
+        function.internal_provided=True
+        return function
 
 class CodeWithDataDirectories(object):
     
@@ -1060,14 +1096,21 @@ class CodeWithDataDirectories(object):
         Returns the root name of the directory for the 
         application data files.
         """
-        return os.path.join(self.input_data_root_directory, self.module_name, 'input')
-    
+        if self.input_data_root_directory:
+            return os.path.join(self.input_data_root_directory, self.module_name, 'input')
+        else:
+            return os.path.join(self.get_code_module_directory(),"data", "input")
+          
     def get_output_directory(self):
         """
         Returns the root name of the directory to use by the 
         application to store it's output / temporary files in.
         """
-        return os.path.join(self.output_data_root_directory, self.module_name, 'output')
+        if self.output_data_root_directory:
+            return os.path.join(self.output_data_root_directory, self.module_name, 'output')
+        else:
+            working_directory=self.get_working_directory()['working_directory']
+            return os.path.join(working_directory,"__amuse_code_output", self.module_name) # note problem for multiple codes
     
     @option(type="string", sections=('data',))
     def amuse_root_directory(self):
@@ -1081,7 +1124,7 @@ class CodeWithDataDirectories(object):
         """
         The root directory of the input data, read only directories
         """
-        return os.path.join(self.amuse_root_directory, 'data')
+        return None
         
     @option(type="string", sections=('data',))
     def output_data_root_directory(self):
@@ -1089,14 +1132,8 @@ class CodeWithDataDirectories(object):
         The root directory of the output data,
         read - write directory
         """
-        return os.path.join(self.amuse_root_directory, 'data')
+        return None
     
-    def get_code_src_directory(self):
-        """
-        Returns the root name of the application's source code directory.
-        """
-        return os.path.join(self.amuse_root_directory, 'src', 'amuse', 'community', self.module_name, 'src')
-        
 class PythonCodeInterface(CodeInterface):
     """
     Base class for codes having a python implementation

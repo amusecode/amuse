@@ -13,7 +13,7 @@ from amuse.rfi.tools import create_c
 from amuse.rfi import async_request
 from amuse.rfi.core import *
 
-from . import test_c_implementation
+import  test_c_implementation
 
 from amuse.test import compile_tools
 
@@ -713,6 +713,32 @@ class TestASync(TestWithMPI):
         
         instance1.stop()
 
+    def test26(self):
+        """ test a lot of calls"""
+        instances=[]
+        for i in range(20):
+          instances.append(ForTesting(self.exefile, channel_type="sockets"))
+  
+        import time
+
+        print("ready")
+        time.sleep(1)
+        
+        print("start")
+        t1=time.time()
+        pool=[]
+        for i in instances:
+          print(i, "submit")
+          pool.append(i.do_sleep(5, return_request=True))
+        
+        for i,p in enumerate(pool):
+          print("result:", i, p.result())
+        t2=time.time()
+        print(t2-t1)
+        for i in instances:
+          i.stop()
+      
+
     def test30(self):
         """ test a grid attribute request """
         instance1 = ForTesting(self.exefile, redirection="none")
@@ -866,4 +892,8 @@ class TestASyncDistributed(TestASync):
         if 'HYDRA_CONTROL_FD' in os.environ or 'PMI_FD' in os.environ:
             cls.skip('cannot run the socket tests under hydra process manager')
 
-
+if __name__=="__main__":
+    TestASync.setup_class()
+    t=TestASync()
+  
+    t.test26()

@@ -46,7 +46,7 @@ class TestStickySpheres(TestCase):
             "Mass-loss fraction must be in the range [0, 1)")
         
         particles = Particles(6)
-        particles.mass = list(range(1, 7)) | units.kg
+        particles.mass = range(1, 7) | units.kg
         particles.position = [[i, 1.0, 2.0] for i in range(1, 7)] | units.m
         particles.velocity = [
                 [1.0, 0.0, 1.0], [0.0, -1.0, -1.0],

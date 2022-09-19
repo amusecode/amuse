@@ -26,7 +26,7 @@ long_description_content_type = "text/markdown"
 extensions = []
 
 all_data_files = []
-all_data_files.append(('share/amuse', ['./config.mk', './build.py']))
+all_data_files.append(('share/amuse', ['./config.mk']))
 
 packages = find_packages('src', exclude=["amuse.community.*"])
 packages.append("amuse.community.interface")
@@ -66,7 +66,7 @@ setup(
     long_description=long_description,
     long_description_content_type=long_description_content_type,
     install_requires=install_requires,
-    python_requires=">=3.5",
+    python_requires=">=3.7",
     extras_require = {
         "MPI" : ["mpi4py>=1.1.0"]
     },

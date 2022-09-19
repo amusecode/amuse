@@ -32,7 +32,6 @@ LIB_OBJ = $(CODEDIR)/src/rebound.o $(CODEDIR)/src/tree.o $(CODEDIR)/src/particle
 
 DOWNLOAD_FROM_WEB = $(PYTHON) ./download.py
 PATCH_FILES = $(PYTHON) ./patch_files.py
-CODE_GENERATOR ?= $(AMUSE_DIR)/build.py
 
 AM_LIBS = -L$(AMUSE_DIR)/lib/amuse_mpi -lamuse_mpi
 AM_CFLAGS = -I$(AMUSE_DIR)/lib/amuse_mpi
@@ -93,7 +92,7 @@ worker_code.cc: interface.py
 	$(CODE_GENERATOR) --type=c interface.py ReboundInterface -o $@
 
 worker_code.h: interface.py
-	$(CODE_GENERATOR) --type=h interface.py  -i amuse.support.codes.stopping_conditions.StoppingConditionInterface ReboundInterface -o $@
+	$(CODE_GENERATOR) --type=h interface.py  -i amuse.community.interface.stopping_conditions.StoppingConditionInterface ReboundInterface -o $@
 
 rebound_worker: worker_code.cc worker_code.h $(CODELIB) $(OBJS)
 	$(MPICXX) $(CXXFLAGS) $(SC_FLAGS) $(LDFLAGS) -I$(CODEDIR)/src $< $(OBJS) $(CODELIB) $(SC_CLIBS)  -o $@

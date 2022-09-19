@@ -433,9 +433,17 @@ class TestEVtwin(TestWithMPI):
             self.assertTrue(stars[i].mass <= masses[i])
             self.assertTrue(stars[i].time_step <= max_age)
 
-        self.assertRaises(AmuseException, instance.evolve_model, end_time = 2*max_age,
-            expected_message = "Error when calling 'evolve_for' of a 'EVtwin', errorcode "
-                "is 5, error is 'Age greater than maximum age limit.'")
+        self.assertRaises(
+            AmuseException,
+            instance.evolve_model,
+            end_time=2*max_age,
+            expected_message=(
+                "Error when calling 'evolve_for' of a "
+                "'<class 'amuse.community.evtwin.interface.EVtwin'>', "
+                "errorcode is 5, error is 'Age greater than maximum "
+                "age limit.'"
+            )
+        )
 
         instance.stop()
 

@@ -35,7 +35,6 @@ WORK_SRC_DIR=./
 
 export OPENMP_FCFLAGS=$(OPENMP_FCFLAG)
 
-CODE_GENERATOR ?= $(AMUSE_DIR)/build.py
 DOWNLOAD_FROM_WEB = $(PYTHON) ./download.py
 BUILD_DEP = $(PYTHON) ./build-dep.py
 PATCHES_DIR=./patches

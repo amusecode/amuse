@@ -13,7 +13,6 @@ F77FLAGS += -qfixed  							  #
 endif  											  # NG has some doubts
 
 
-CODE_GENERATOR ?= $(AMUSE_DIR)/build.py
 
 OBJ	= src/comenv.o src/corerd.o src/deltat.o src/dgcore.o \
 	  src/evolv3.o src/gntage.o src/hrdiag.o src/instar.o \

@@ -257,16 +257,16 @@ class BaseGrid(AbstractGrid):
         return new_regular_grid(*args,**kwargs)
 
     def get_axes_names(self):
+        if hasattr(self.collection_attributes, "axes_names"):
+            return self.collection_attributes.axes_names        
+        if hasattr(self, "_axes_names"):
+            return self._axes_names
+        if "position" in self._derived_attributes:
+            return self._derived_attributes["position"].attribute_names
         if "position" in self.GLOBAL_DERIVED_ATTRIBUTES:
-            result=self.GLOBAL_DERIVED_ATTRIBUTES["position"].attribute_names
-        elif "position" in self._derived_attributes:
-            result=self._derived_attributes["position"].attribute_names
-        else:
-            try:
-              result=self._axes_names
-            except:
-              raise Exception("do not know how to find axes_names")
-        return list(result)
+            return self.GLOBAL_DERIVED_ATTRIBUTES["position"].attribute_names
+
+        raise Exception("do not know how to find axes_names")
 
 class UnstructuredGrid(BaseGrid):
     GLOBAL_DERIVED_ATTRIBUTES=CompositeDictionary(BaseGrid.GLOBAL_DERIVED_ATTRIBUTES)

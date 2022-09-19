@@ -9,8 +9,25 @@ from sphinx import addnodes
 
 from amuse.rfi.core import is_mpd_running
 from sphinx.ext.autodoc import AttributeDocumenter, ModuleLevelDocumenter
-from sphinx.util import force_decode
 from sphinx.util.docstrings import prepare_docstring
+
+
+# Taken from gh#sphinx-doc/sphinx#9326
+def force_decode(string: str, encoding: str) -> str:
+    """Forcibly get a unicode string out of a bytestring."""
+    #~ warnings.warn('force_decode() is deprecated.',
+                  #~ RemovedInSphinx50Warning, stacklevel=2)
+    if isinstance(string, bytes):
+        try:
+            if encoding:
+                string = string.decode(encoding)
+            else:
+                # try decoding with utf-8, should only work for real UTF-8
+                string = string.decode()
+        except UnicodeError:
+            # last resort -- can't fail
+            string = string.decode('latin1')
+    return string
 
 class ParametersAttributeDocumenter(AttributeDocumenter):
     """

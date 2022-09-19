@@ -276,7 +276,7 @@ class TestHiGPUs(TestWithMPI):
         instance.parameters.eps = 0.0 | nbody_system.length
         instance.commit_parameters()  
         particles = datamodel.Particles(6)
-        particles.mass = nbody_system.mass.new_quantity(list(range(1,7)))
+        particles.mass = nbody_system.mass.new_quantity(range(1,7))
         particles.radius =   0.00001 | nbody_system.length
         particles.position = [[-1.0,0.0,0.0],[1.0,0.0,0.0],[0.0,-1.0,0.0],[0.0,1.0,0.0],[0.0,0.0,-1.0],[0.0,0.0,1.0]] | nbody_system.length
         particles.velocity = [[0.0,0.0,0.0],[0.0,0.0,0.0],[0.0,0.0,0.0],[0.0,0.0,0.0],[0.0,0.0,0.0],[0.0,0.0,0.0]] | nbody_system.speed

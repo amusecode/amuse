@@ -24,7 +24,6 @@ CODELIB = src/bonsai/runtime/libbonsai_amuse.a
 
 DOWNLOAD_FROM_WEB = $(PYTHON) ./download.py
 
-CODE_GENERATOR ?= $(AMUSE_DIR)/build.py
 
 all: compile bonsai_worker 
 
@@ -87,7 +86,7 @@ worker_code.cc: interface.py
 	$(CODE_GENERATOR) --type=c interface.py BonsaiInterface2 -o $@
 
 worker_code.h: interface.py
-	$(CODE_GENERATOR) --type=h -i amuse.support.codes.stopping_conditions.StoppingConditionInterface  interface.py BonsaiInterface2 -o $@
+	$(CODE_GENERATOR) --type=h -i amuse.community.interface.stopping_conditions.StoppingConditionInterface  interface.py BonsaiInterface2 -o $@
 
 
 bonsai_worker: worker_code.cc worker_code.h $(CODELIB) $(OBJS)

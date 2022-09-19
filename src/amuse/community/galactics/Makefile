@@ -10,7 +10,8 @@ CFLAGS ?= -O3
 
 FC ?= gfortran
 FORTRAN ?= $(FC)
-ifeq ($(findstring gfortran, $(shell $(FORTRAN) --help)), gfortran)
+# check for gfortran, this catches link and compiler wrappers
+ifeq ($(findstring GNU, $(shell $(FORTRAN) --version)), GNU)
 FFLAGS = $(FCFLAGS) -ffixed-line-length-0 -O -fno-backslash
 endif
 ifeq ($(findstring ifort, $(notdir $(FORTRAN))), ifort)

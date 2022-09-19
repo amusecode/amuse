@@ -160,7 +160,7 @@ class TestNonNumericUnits(amusetest.TestCase):
         test_unit = core.enumeration_unit(
             "test", 
             "test",
-            list(range(5))
+            range(5)
         )
         self.assertEqual(5, len(list(test_unit.quantities())))
         self.assertEqual(1 | test_unit, 1 | test_unit)

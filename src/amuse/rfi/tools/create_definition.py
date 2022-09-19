@@ -150,9 +150,9 @@ class CreateFortranStub(object):
     @late 
     def subprogram_string(self):
         if self.specification_is_for_function:
-            return 'FUNCTION'
+            return 'function'
         else:
-            return 'SUBROUTINE'
+            return 'subroutine'
             
     @late
     def dtype_to_parameters(self):
@@ -166,11 +166,11 @@ class CreateFortranStub(object):
     @late
     def dtype_to_fortrantype(self):
         return {
-            'int32':'INTEGER', 
-            'float64':'DOUBLE PRECISION', 
-            'float32':'REAL',
-            'string':'CHARACTER(LEN=*)',
-            'bool':'LOGICAL',
+            'int32':'integer', 
+            'float64':'double precision', 
+            'float32':'real',
+            'string':'character(len=*)',
+            'bool':'logical',
         }
         
     def output_subprogram_start(self):
@@ -197,7 +197,7 @@ class CreateFortranStub(object):
         self.out.dedent()
         
         if not self.output_definition_only:
-            self.out.lf() + 'IMPLICIT NONE'
+            self.out.lf() + 'implicit none'
         
 
     def output_parameter_type_definiton_lines(self):
@@ -236,7 +236,7 @@ class CreateFortranStub(object):
     def output_subprogram_end(self):
         self.out.dedent()
         self.out.lf()
-        self.out + 'END ' + self.subprogram_string
+        self.out + 'end ' + self.subprogram_string
 
     def output_subprogram_content(self):
         if not self.specification.result_type is None:

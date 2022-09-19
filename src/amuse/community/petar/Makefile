@@ -10,13 +10,13 @@ INCLUDE  += -I src/PeTar/src -I src/SDAR/src -I src/FDPS/src
 
 MPIFLAGS +=  -DPARTICLE_SIMULATOR_MPI_PARALLEL -DMPICH_IGNORE_CXX_SEEKC
 
-CXXFLAGS = ${INCLUDE} -fPIC -O2 -Wall -std=c++11  -fopenmp
+CXXFLAGS = ${INCLUDE} -fPIC -O2 -Wall -std=c++17  -fopenmp
 
 # arch
-CXXFLAGS += -march=core-avx2
-CXXFLAGS += -D INTRINSIC_X86
-CXXFLAGS += -D USE_SIMD
-CXXFLAGS += -D DIV_FIX
+# CXXFLAGS += -march=core-avx2
+# CXXFLAGS += -D INTRINSIC_X86
+# CXXFLAGS += -D USE_SIMD
+# CXXFLAGS += -D DIV_FIX
 
 CXXFLAGS += -D PARTICLE_SIMULATOR_THREAD_PARALLEL 
 # MPI
@@ -86,7 +86,7 @@ worker_code.cc: interface.py
 	$(CODE_GENERATOR) --type=c interface.py petarInterface -o $@
 
 worker_code.h: interface.py 
-	$(CODE_GENERATOR) --type=H -i amuse.support.codes.stopping_conditions.StoppingConditionInterface interface.py petarInterface -o $@
+	$(CODE_GENERATOR) --type=H -i amuse.community.interface.stopping_conditions.StoppingConditionInterface interface.py petarInterface -o $@
 
 petar_worker: worker_code.cc worker_code.h $(CODELIB) $(OBJS) interface.h
 	$(MPICXX) $(CXXFLAGS) $(SC_FLAGS) $(AM_CFLAGS) $(LDFLAGS) $< $(OBJS) $(CODELIB) -o $@ $(SC_MPI_CLIBS) $(LIBS) $(AM_LIBS)
