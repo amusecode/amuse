@@ -15,13 +15,15 @@ CFFI_AVAILABLE := $(shell $(PYTHON) -c "import cffi"  1>&2 2> /dev/null && echo 
 
 all: code build install test tupan_worker
 
-code: tupan/setup.py
+code: src/setup.py
+
+DOWNLOAD_CODES?=1
 
 ifdef DOWNLOAD_CODES
-tupan/setup.py:
+src/setup.py:
 	make -C . download
 else
-tupan/setup.py:
+src/setup.py:
 	@echo ""
 	@echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
 	@echo ""
@@ -36,15 +38,15 @@ tupan/setup.py:
 endif 
 
 download:
-	git clone -b master https://github.com/ggf84/tupan.git
+	git clone -b master https://github.com/ggf84/tupan.git src
 
 build:
-	cp tupan.cfg ./tupan/tupan/
-	(cd tupan; python setup.py build)
+	cp tupan.cfg ./src/tupan/
+	(cd src; python setup.py build)
 
 install:
 	mkdir install
-	(cd tupan; python setup.py install --prefix=../install)
+	(cd src; python setup.py install --prefix=../install)
 
 test:
 	@echo
@@ -64,11 +66,12 @@ tupan_worker: interface.py
 	
 
 clean:
-	(cd tupan; python setup.py clean -a)
-	rm -f *.pyc; 
-	rm -f tupan_worker tupan_worker_sockets
-	rm -rf install
+	-cd src && python setup.py clean -a
+	-rm -f *.pyc; 
+	-rm -f tupan_worker tupan_worker_sockets
+	-rm -rf install
 
 distclean: clean
-	rm -f *.pyc; rm -rf tupan;
+	-rm -f *.pyc
+	-rm -rf src __pycache__
 
