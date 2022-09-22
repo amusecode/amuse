@@ -30,7 +30,7 @@ class GetCodeFromHttp(object):
             cwd=os.path.join(self.src_directory())
         )
         subprocess.call(
-            ['mv', 'mocassin.{version}'.format(version = self.version), 'mocassin'],
+            ['ln','-s', 'mocassin.{version}'.format(version = self.version), 'mocassin'],
             cwd = os.path.join(self.src_directory())
         )
         print("done")
