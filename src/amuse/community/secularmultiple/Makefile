@@ -13,15 +13,15 @@ CXX = $(MPICXX)
 CXXFLAGS += -g -DTOOLBOX -O3 $(MUSE_INCLUDE_DIR)
 LDFLAGS+ = -lm $(MUSE_LD_FLAGS)
 
-OBJS = $(SRCDIR)/interface.o $(SRCDIR)/src/types.o $(SRCDIR)/src/evolve.o  \
-$(SRCDIR)/src/structure.o $(SRCDIR)/src/ODE_system.o \
-$(SRCDIR)/src/root_finding.o $(SRCDIR)/src/newtonian.o \
-$(SRCDIR)/src/postnewtonian.o $(SRCDIR)/src/tides.o \
-$(SRCDIR)/src/external.o $(SRCDIR)/src/VRR.o $(SRCDIR)/src/cvode/cvode.o \
-$(SRCDIR)/src/cvode/cvode_dense.o $(SRCDIR)/src/cvode/cvode_direct.o \
-$(SRCDIR)/src/cvode/cvode_io.o $(SRCDIR)/src/cvode/nvector_serial.o \
-$(SRCDIR)/src/cvode/sundials_dense.o $(SRCDIR)/src/cvode/sundials_direct.o \
-$(SRCDIR)/src/cvode/sundials_math.o $(SRCDIR)/src/cvode/sundials_nvector.o 
+OBJS = interface.o ./src/types.o ./src/evolve.o  \
+./src/structure.o ./src/ODE_system.o \
+./src/root_finding.o ./src/newtonian.o \
+./src/postnewtonian.o ./src/tides.o \
+./src/external.o ./src/VRR.o ./src/cvode/cvode.o \
+./src/cvode/cvode_dense.o ./src/cvode/cvode_direct.o \
+./src/cvode/cvode_io.o ./src/cvode/nvector_serial.o \
+./src/cvode/sundials_dense.o ./src/cvode/sundials_direct.o \
+./src/cvode/sundials_math.o ./src/cvode/sundials_nvector.o 
 
 all: secularmultiple_worker
 
