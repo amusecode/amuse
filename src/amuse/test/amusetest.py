@@ -227,8 +227,8 @@ class TestCase(unittest.TestCase):
     @staticmethod
     def skip(reason):
         try:
-            from nose.plugins import skip
-            raise skip.SkipTest(reason)
+            from pytest import skip
+            skip(reason)
         except ImportError:
             if hasattr(unittest, 'SkipTest'):
                 raise unittest.SkipTest(reason)

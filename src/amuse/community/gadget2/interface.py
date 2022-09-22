@@ -32,9 +32,9 @@ class Gadget2Interface(
     dynamic range which is, in principle, unlimited. 
     
     The relevant references are:
-        .. [#] Springel V., 2005, MNRAS, 364, 1105  (GADGET-2)
-        .. [#] Springel V., Yoshida N., White S. D. M., 2001, New Astronomy, 6, 51  (GADGET-1)
-        .. [#] Durier F., Dalla Vecchia C., 2011, MNRAS (Time integration scheme fix)
+        .. [#] Springel V., 2005, MNRAS, 364, 1105  (GADGET-2) [2005MNRAS.364.1105S]
+        .. [#] Springel V., Yoshida N., White S. D. M., 2001, New Astronomy, 6, 51  (GADGET-1) [2001NewA....6...79S]
+        .. [#] Durier F., Dalla Vecchia C., 2012, MNRAS (Time integration scheme fix) [2012MNRAS.419..465D]
     """
     include_headers = ['interface.h', 'worker_code.h', 'stopcond.h']
 

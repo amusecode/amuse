@@ -14,4 +14,4 @@ def create_title(name):
     return '\n'.join(lines) 
 
 if __name__ == '__main__':
-    print create_title(sys.argv[1])
+    print(create_title(sys.argv[1]))

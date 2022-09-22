@@ -1,6 +1,8 @@
 # standard amuse configuration include
 # config.mk will be made after ./configure has run
-AMUSE_DIR?=$(realpath ../../../..)
+ifeq ($(origin AMUSE_DIR), undefined)
+  AMUSE_DIR := $(shell amusifier --get-amuse-dir)
+endif
 -include ${AMUSE_DIR}/config.mk
 
 # Makefile to build the worker code.  First draft was auto-generated;
@@ -25,7 +27,6 @@ AM_CFLAGS = -I$(AMUSE_DIR)/lib/amuse_mpi
 
 CODELIB = src/libsmallN.a
 
-CODE_GENERATOR = $(AMUSE_DIR)/build.py
 
 all: $(ALL)
 
@@ -36,28 +37,10 @@ worker_code.cc: interface.py
 	$(CODE_GENERATOR) --type=c interface.py SmallNInterface -o $@
 
 interface.h: interface.py
-	$(CODE_GENERATOR) --type=h interface.py -i amuse.support.codes.stopping_conditions.StoppingConditionInterface  SmallNInterface -o $@
+	$(CODE_GENERATOR) --type=h interface.py -i amuse.community.interface.stopping_conditions.StoppingConditionInterface  SmallNInterface -o $@
 
 smallN_worker: worker_code.cc interface.h $(CODELIB) $(OBJS)
 	$(MPICXX) $(CXXFLAGS) $(LDFLAGS) worker_code.cc $(OBJS) $(CODELIB) -o $@ $(LDFLAGS) $(LIBS)
-
-
-smalln_worker_cython: smalln_cython.so
-	$(CODE_GENERATOR) --type=cython -m script -x amuse.community.smalln.interface SmallNInterface -o $@ --cython-import smalln_cython
-	
-smalln_cython.so: smalln_cython.o interface.o interface.h  $(CODELIB) $(A_OBJS)
-	$(MPICXX) -shared $(CFLAGS) $(PYTHONDEV_LDFLAGS) $(AM_CFLAGS) $(SC_FLAGS) $(LDFLAGS) smalln_cython.o interface.o $(A_OBJS) $(CODELIB) -o $@ $(SC_CLIBS) $(AM_LIBS) 
-
-smalln_cython.o: smalln_cython.c interface.h
-	$(MPICC) $(CFLAGS) $(SC_FLAGS) $(AM_CFLAGS) $(PYTHONDEV_CFLAGS) -c -o $@ $< 
-
-smalln_cython.c: smalln_cython.pyx
-	$(CYTHON) $< -o $@
-	
-smalln_cython.pyx: interface.py
-	$(CODE_GENERATOR) --type=cython -m mpi interface.py SmallNInterface -o $@
-
-	
 
 %.o: %.cc
 	$(MPICXX) $(CXXFLAGS) -c -o $@ $< 
@@ -65,7 +48,6 @@ smalln_cython.pyx: interface.py
 clean:
 	$(RM) -r -f *.so *.dSYM *.o *.pyc worker_code.cc interface.h 
 	$(RM) -f *~ smallN_worker worker_code.cc
-	$(RM) -f smalln_worker_cython smalln_cython.so smalln_cython.o smalln_cython.c smalln_cython.pyx
 	make -C src clean
 
 distclean: clean

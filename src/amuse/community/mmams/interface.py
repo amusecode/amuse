@@ -22,7 +22,7 @@ class MMAMSInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesMix
     post-collision effect.
     
     Relevant references:
-        .. [#] Gaburov E., Lombardi J. C. & Portegies Zwart S., 2008, MNRAS, 383, L5
+        .. [#] Gaburov E., Lombardi J. C. & Portegies Zwart S., 2008, MNRAS, 383, L5 [2008MNRAS.383L...5G]
     """
     include_headers = ['worker_code.h']
     
@@ -496,3 +496,6 @@ class MMAMS(CommonCode):
 
 MakeMeAMassiveStarInterface = MMAMSInterface
 MakeMeAMassiveStar = MMAMS
+
+
+Mmams = MMAMS

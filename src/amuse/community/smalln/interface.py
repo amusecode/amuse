@@ -18,7 +18,6 @@ class SmallNInterface(CodeInterface,
     # Interface specification.
 
     include_headers = ['interface.h', 'stopcond.h']
-    __so_module__ = 'smalln_cython'
 
     def __init__(self, **options):
         CodeInterface.__init__(
@@ -444,3 +443,6 @@ class SmallN(GravitationalDynamics):
           
         self.stopping_conditions.define_state(handler)     
 
+
+
+Smalln = SmallN

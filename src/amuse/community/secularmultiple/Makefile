@@ -1,5 +1,5 @@
-ifndef AMUSE_DIR
-    AMUSE_DIR=$(shell amusifier --get-amuse-dir)
+ifeq ($(origin AMUSE_DIR), undefined)
+  AMUSE_DIR := $(shell amusifier --get-amuse-dir)
 endif
 
 -include ${AMUSE_DIR}/config.mk
@@ -9,10 +9,6 @@ MPICC ?= mpicc
 
 CC = $(MPICC)
 CXX = $(MPICXX)
-
-SRCDIR=secularmultiple
-
-CODE_GENERATOR = $(AMUSE_DIR)/build.py
 
 CXXFLAGS += -g -DTOOLBOX -O3 $(MUSE_INCLUDE_DIR)
 LDFLAGS+ = -lm $(MUSE_LD_FLAGS)
@@ -30,10 +26,10 @@ $(SRCDIR)/src/cvode/sundials_math.o $(SRCDIR)/src/cvode/sundials_nvector.o
 all: secularmultiple_worker
 
 clean:
-	rm -f *.so *.o *.pyc worker_code.cc $(SRCDIR)/src/*.o*
+	rm -f *.so *.o *.pyc worker_code.cc ./src/*.o*
 	
 distclean: clean
-	rm -rf $(SRCDIR)
+	rm -rf src
 	
 worker_code.cc: worker_code.h interface.py
 	$(CODE_GENERATOR) --type=c interface.py SecularMultipleInterface -o $@
@@ -69,4 +65,4 @@ secularmultiple/interface.cpp:
 endif 
 
 download:
-	git clone -b master https://github.com/hamers/secularmultiple.git $(SRCDIR)
+	git clone -b master https://github.com/hamers/secularmultiple.git src

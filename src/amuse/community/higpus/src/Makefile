@@ -23,8 +23,8 @@ MYINCLUDE := -I./lib/
 LIBS := -lm -fopenmp
 
 GXXOPTS := -O3 -fopenmp -Wall -W
-NVCCFLAGS := -O3 --compiler-bindir=/usr/bin/$(CXX) -Xcompiler "$(GXXOPTS) $(MYOPTS) $(MPI_FCFLAGS)" $(CUDAINCLUDE) $(MYINCLUDE)
-CXXFLAGS += $(GXXOPTS) $(MYOPTS) $(CUDAINCLUDE) $(MYINCLUDE) $(MPI_CLIBS)
+NVCCFLAGS := -O3 -Xcompiler "$(GXXOPTS) $(MYOPTS) $(MPI_FCFLAGS) $(MPI_CFLAGS)" $(CUDAINCLUDE) $(MYINCLUDE) $(NVCC_FLAGS)
+CXXFLAGS += $(GXXOPTS) $(MYOPTS) $(CUDAINCLUDE) $(MYINCLUDE) $(MPI_CLIBS) $(MPI_CFLAGS)
 
 CUDAOBJS = 	./src/cuda/main.cu.o \
                 ./src/cuda/cpu_func.cu.o \

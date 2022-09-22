@@ -15,7 +15,7 @@ class PhiGRAPEInterface(
     StoppingConditionInterface,
     GravityFieldInterface):
     """
-        .. [#] Harfst, S., Gualandris, A., Merritt, D., Spurzem, R., Portegies Zwart, S., & Berczik, P. 2007, New Astronomy, 12, 357
+        .. [#] Harfst, S., Gualandris, A., Merritt, D., Spurzem, R., Portegies Zwart, S., & Berczik, P. 2007, New Astronomy, 12, 357 [2007NewA...12..357H]
     """
 
     MODE_G6LIB = 'g6lib'
@@ -278,3 +278,6 @@ class PhiGRAPE(GravitationalDynamics, GravityFieldCode):
         GravitationalDynamics.define_particle_sets(self, handler)
         self.stopping_conditions.define_particle_set(handler)
         
+
+
+Phigrape = PhiGRAPE

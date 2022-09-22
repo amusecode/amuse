@@ -930,3 +930,6 @@ class mmc(InCodeComponentImplementation):
 
     def __init__(self):
         InCodeComponentImplementation.__init__(self,  mmcInterface())
+
+
+Mmc = mmc

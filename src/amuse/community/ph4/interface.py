@@ -18,6 +18,8 @@ class ph4Interface(CodeInterface,
     """
     Parallel, GPU-accelerated, N-body integration module with block
     time steps, using a 4th-order Hermite integration scheme.
+
+        .. [#] [2018araa.book.....P] Portegies Zwart, S. & McMillan, S.L.W., 2018    
     """
 
     # Interface specification.
@@ -714,3 +716,6 @@ class ph4(GravitationalDynamics,GravityFieldCode):
                           names=('potential_in_code',))
         
         self.stopping_conditions.define_particle_set(handler)
+
+
+Ph4 = ph4

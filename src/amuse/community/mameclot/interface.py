@@ -228,3 +228,6 @@ if __name__=="__main__":
     pyplot.plot(cluster1.x.number,cluster1.y.number,"r.")
     pyplot.plot(cluster2.x.number,cluster2.y.number,"g.")
     pyplot.show()
+
+
+Mameclot = mameclot

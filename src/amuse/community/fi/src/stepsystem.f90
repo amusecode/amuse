@@ -1,18 +1,18 @@
 subroutine corrpos(ctimestp,rc)
   include 'globals.h'
-  character*7 rc
+  character(len=*) :: rc
   integer :: i,p,k,ctimestp(*)
   real dt2,rcsign,acceff,dt
 
-  if(rc(1:4).NE.'sync'.AND.rc(1:6).NE.'desync') &
+  if(rc.NE.'sync'.AND.rc.NE.'desync') &
     call terror('unknown sync option in corrpos')
-  if(rc(1:4).EQ.'sync') then
+  if(rc.EQ.'sync') then
     if(syncflag.EQ.0) return
     syncflag=0
     rcsign=-1.
     if(verbosity.GT.0) print*,'<corrpos> sync'
   endif
-  if(rc(1:6).EQ.'desync') then	
+  if(rc.EQ.'desync') then	
     if(syncflag.EQ.1) return
     syncflag=1
     rcsign=1.

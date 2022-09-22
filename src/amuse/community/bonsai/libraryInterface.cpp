@@ -736,6 +736,7 @@ int get_gravity_at_point(double eps, double x, double y, double z,
   double dx;
   double dy;
   double dz;
+  double F;
   double fx = 0;
   double fy = 0;
   double fz = 0;

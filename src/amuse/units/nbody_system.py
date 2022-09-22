@@ -66,9 +66,6 @@ class nbody_unit(core.base_unit):
     def is_generic(self):
         return True
     
-    
-nbody_system = core.system('nbody')
-
 length = generic_unit_system.length
 time =  generic_unit_system.time
 mass =  generic_unit_system.mass
@@ -96,13 +93,13 @@ class SiToNBodyConverter(object):
         self.nbody_to_si = nbody_to_si
     
     def from_source_to_target(self, quantity):
-        if hasattr(quantity, 'unit'):
+        if hasattr(quantity, 'unit') and not quantity.unit.is_non_numeric():
             return self.nbody_to_si.to_nbody(quantity)
         else:
             return quantity
         
     def from_target_to_source(self, quantity):
-        if hasattr(quantity, 'unit'):
+        if hasattr(quantity, 'unit') and not quantity.unit.is_non_numeric():
             return self.nbody_to_si.to_si(quantity)
         else:
             return quantity

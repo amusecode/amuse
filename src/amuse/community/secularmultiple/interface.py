@@ -1382,3 +1382,6 @@ class SecularMultiple(InCodeComponentImplementation):
 
     def set_positions_and_velocities(self):
         self.set_positions_and_velocities_interface()
+
+
+Secularmultiple = SecularMultiple

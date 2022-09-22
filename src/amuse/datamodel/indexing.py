@@ -121,7 +121,7 @@ def combine_indices(index0, index1):
             result = []
             result.extend(index0[:index])
             continuation = combine_indices(index0[index], index1)
-            if isinstance(continuation, collections.Sequence):
+            if isinstance(continuation, collections.abc.Sequence):
                 result.extend(continuation)
             else: 
                 result.append(continuation)

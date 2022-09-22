@@ -53,6 +53,11 @@ cm = named('centimeter','cm',0.01*m)
 erg = named('erg','erg', 1e-7 * J)
 barye = named('barye', 'Ba', 0.1*Pa)
 
+# imperial distance units
+inch = named('inch', 'in', 0.0254 * m)
+foot = named('foot', 'ft', 0.3048 * m)
+mile = named('mile', 'mi', 1609.344 * m)
+
 percent = named('percent', '%', 0.01 * none)
 metallicity = core.none_unit('metallicity', 'metallicity')
 
@@ -63,24 +68,26 @@ stellar_type = core.enumeration_unit(
     'stellar_type',
     None,
     [
-        "deeply or fully convective low mass MS star",
-        "Main Sequence star",
-        "Hertzsprung Gap",
-        "First Giant Branch",
-        "Core Helium Burning",
-        "First Asymptotic Giant Branch",
-        "Second Asymptotic Giant Branch",
-        "Main Sequence Naked Helium star",
-        "Hertzsprung Gap Naked Helium star",
-        "Giant Branch Naked Helium star",
-        "Helium White Dwarf",
-        "Carbon/Oxygen White Dwarf",
-        "Oxygen/Neon White Dwarf",
-        "Neutron Star",
-        "Black Hole",
-        "Massless Supernova",
-        "Unknown stellar type",
-        "Pre-main-sequence Star"
+        "deeply or fully convective low mass MS star",  # 0
+        "Main Sequence star",  # 1
+        "Hertzsprung Gap",  # 2
+        "First Giant Branch",  # 3
+        "Core Helium Burning",  # 4
+        "First Asymptotic Giant Branch",  # 5
+        "Second Asymptotic Giant Branch",  # 6
+        "Main Sequence Naked Helium star",  # 7
+        "Hertzsprung Gap Naked Helium star",  # 8
+        "Giant Branch Naked Helium star",  # 9
+        "Helium White Dwarf",  # 10
+        "Carbon/Oxygen White Dwarf",  # 11
+        "Oxygen/Neon White Dwarf",  # 12
+        "Neutron Star",  # 13
+        "Black Hole",  # 14
+        "Massless Supernova",  # 15
+        "Unknown stellar type",  # 16
+        "Pre-main-sequence Star",  # 17
+        "Planet",  # 18
+        "Brown Dwarf",  # 19
     ]
 )
 

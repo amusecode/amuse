@@ -2758,3 +2758,6 @@ class MpiAmrVac(CommonCode):
         self.stopping_conditions.define_state(handler)    
     
 
+
+
+Mpiamrvac = MpiAmrVac

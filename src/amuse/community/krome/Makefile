@@ -1,29 +1,31 @@
-AMUSE_DIR?=../../../..
+ifeq ($(origin AMUSE_DIR), undefined)
+  AMUSE_DIR := $(shell amusifier --get-amuse-dir)
+endif
 -include ${AMUSE_DIR}/config.mk
 
 PYTHON ?= python
 
 ARGPARSE_AVAILABLE := $(shell $(PYTHON) -c "import argparse"  1>&2 2> /dev/null && echo "yes" || echo "no")
 
-CODE_GENERATOR = $(AMUSE_DIR)/build.py
+DOWNLOAD_CODES?=1
 
 CLASSNAME=KromeInterface
 
-FFLAGS += $(FCFLAGS) -O2 -ffree-line-length-none
+FFLAGS += $(FCFLAGS) -std=legacy -O2 -ffree-line-length-none
 INCL = -I./src/ -I./src/krome/build/
 
 all: src/krome src/libchem.a test krome_worker
 
 ifdef DOWNLOAD_CODES
 src/krome:
-	make -C . download
+	make -C . download_git
 else
 src/krome:
 	@echo ""
 	@echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
 	@echo ""
 	@echo "DOWNLOAD_CODES is not set. Krome will not be downloaded and build."
-	@echo "If you do want Athena, set DOWNLOAD_CODES to 1."
+	@echo "If you do want Krome, set DOWNLOAD_CODES to 1."
 	@echo "bash> export DOWNLOAD_CODES=1"
 	@echo "csh> setenv DOWNLOAD_CODES 1"
 	@echo ""
@@ -44,7 +46,7 @@ archive_root:
 
 download: latest_tested.tar.gz  archive_root
 
-update: distclean download
+update: distclean download_git
 
 download_git:
 	git clone https://bitbucket.org/tgrassi/krome.git

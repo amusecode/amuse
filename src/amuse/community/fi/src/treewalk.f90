@@ -39,7 +39,7 @@ subroutine pcond_treewalk(node,p,nterms)
   h=hsmooth(p)
   ppos=pos(p,1:3)
   peps=epsgrav(p)
-  acc4=acc(p,4)   
+  acc4=aacc(p)   
   call cond_treewalk(node,ppos,peps,acc4,0.,nterms)    
 end subroutine
 
@@ -81,7 +81,7 @@ subroutine ptreewalk(node,p,nterms)
   real :: ppos(3),peps,acc4
   ppos=pos(p,1:3)
   peps=epsgrav(p)
-  acc4=acc(p,4)
+  acc4=aacc(p)
   call treewalk(node,ppos,peps,acc4,0.,nterms)
 end subroutine
 
@@ -468,7 +468,7 @@ subroutine pretreewalk(k,kmax,nbuf,buf,ntodo,todo)
     p=pactive(k)
     ntodo=ntodo+1; todo(ntodo)=p
     if(.not.directsum) then
-      ppos=pos(p,1:3); pacc4=acc(p,4); peps=epsgrav(p)
+      ppos=pos(p,1:3); pacc4=aacc(p); peps=epsgrav(p)
       scale=getlocalscale(ppos)/bh_tol
       scale=MIN(eps*3,scale)
       scale2=scale**2
@@ -494,7 +494,7 @@ subroutine pretreewalk(k,kmax,nbuf,buf,ntodo,todo)
       enddo
       do ib=1,ntodo
         q=todo(ib)
-        qpos=pos(q,1:3); qacc4=acc(q,4); qeps=epsgrav(q)
+        qpos=pos(q,1:3); qacc4=aacc(q); qeps=epsgrav(q)
         seps=MAX(seps,qeps)
         dist2=sum((spos-qpos)**2)         
         delta=MAX(delta,sqrt(dist2))

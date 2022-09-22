@@ -15,10 +15,9 @@ class HermiteInterface(CodeInterface,
     using the Hermite integration scheme.
 
 
-    .. [#] Hut, P., Makino, J. & McMillan, S., *Astrophysical Journal Letters* , **443**, L93-L96 (1995)
+    .. [#] Hut, P., Makino, J. & McMillan, S., *Astrophysical Journal Letters* , **443**, L93-L96 (1995) [1995ApJ...443L..93H]
     """
     include_headers = ['worker_code.h', 'stopcond.h']
-    __so_module__ = 'hermite_cython'
 
     def __init__(self, **options):
         CodeInterface.__init__(self, name_of_the_worker="hermite_worker",

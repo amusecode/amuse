@@ -1,6 +1,8 @@
 # standard amuse configuration include
 # config.mk will be made after ./configure has run
-AMUSE_DIR?=../../../..
+ifeq ($(origin AMUSE_DIR), undefined)
+  AMUSE_DIR := $(shell amusifier --get-amuse-dir)
+endif
 -include ${AMUSE_DIR}/config.mk
 
 MPIFC ?= mpif90
@@ -8,7 +10,6 @@ FORTRAN ?= gfortran
 FC ?= $(FORTRAN)
 
 
-CODE_GENERATOR = $(AMUSE_DIR)/build.py
 
 SRCDIR=src/trunk
 BUILDDIR=build
@@ -33,7 +34,9 @@ $(BUILDDIR)/Makefile: $(CMAKE_DEPS)
 
 clean:
 	rm -f *.pyc worker_code.f90 evtwin_worker
-	make -C $(BUILDDIR) clean
+	-make -C $(BUILDDIR) clean
+
+distclean: clean
 	rm -rf $(BUILDDIR)
 	rm -f $(EVTWINLIB)
 	rm -rf $(SRCDIR)/lib

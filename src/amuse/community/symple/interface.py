@@ -353,3 +353,6 @@ class symple(GravitationalDynamics, GravityFieldCode):
         handler.add_getter('particles', 'get_dmdt')
 
         self.stopping_conditions.define_particle_set(handler)
+
+
+Symple = symple

@@ -6,7 +6,7 @@ module BarAndSpiralsInterface
   !THEN POSITIONS AND VELOCITIES HERE ARE ASSUMED TO BE IN THE SAME FRAME
       IMPLICIT NONE
       real*8 :: omegs2, fourpi
-      real*8 :: tin,totalmass, MB1
+      real*8 :: totalmass, MB1
       real*8 :: A2,B2,C2,UA2,UB2,UC2,XK,UA2B2,UA2C2,UB2C2,SUA2C2
       real*8:: V000,V100,V010,V001,V110,V101,V011,V200,V020,V002,V111,V210,V201,V120,V102,V012,V300,V030,V003, V021
       real*8 :: CTE0,CTE1,CTE2
@@ -38,6 +38,7 @@ module BarAndSpiralsInterface
       double precision :: axirat= 0.32
       double precision :: omegs= 5. ! in 10km/s*kpc^-1. Counterclockwise system
       double precision :: nbt= 0
+      double precision :: tin= 0
       double precision :: tgrow
 
       ! constants for spiral arms
@@ -186,7 +187,7 @@ module BarAndSpiralsInterface
       write(*,*)'bar mass: ', barmas
  
            
-      TIN=0.D0
+      !TIN=0.D0
       IF(OMEGS.NE.0.D0)THEN
          TGROW=TIN+(NBT*2.D0*PI/abs(OMEGS))
       ELSE
@@ -384,6 +385,19 @@ module BarAndSpiralsInterface
         value = nbt
         get_nbt = 0
       end function get_nbt
+
+      integer function set_tin(value)
+        double precision :: value
+        tin = value
+        set_tin = 0
+      end function set_tin
+      
+      integer function get_tin(value)
+        double precision :: value
+        value = tin
+        get_tin = 0
+      end function get_tin
+
       
       integer function get_tgrowth(value)
         double precision :: value
@@ -1636,7 +1650,7 @@ SUBROUTINE POTHALO(X1,Y1,Z1,POT)
        IF(X2*UA2+Y2*UB2+Z2*UC2.LE.1.D0)THEN
           P1=X2*V100+Y2*V010+Z2*V001
           P2=-(x2*y2*v110+x2*z2*v101+y2*z2*v011)
-          P3=-0.5Q0*(v000+x2*x2*v200+y2*y2*v020+z2*z2*v002)
+          P3=-0.5*(v000+x2*x2*v200+y2*y2*v020+z2*z2*v002)
           POT=CTE1*(P1+P2+P3)
           
        ELSE

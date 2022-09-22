@@ -1318,3 +1318,6 @@ class SimpleXSplitSet(SimpleX):
         handler.add_method('INITIALIZED', 'set_metal_cooling')
         handler.add_method('INITIALIZED', 'set_recombination_radiation')
         handler.add_method('INITIALIZED', 'set_collisional_ionization')
+
+
+Simplex = SimpleX

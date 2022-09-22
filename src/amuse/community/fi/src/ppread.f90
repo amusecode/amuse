@@ -94,7 +94,7 @@ subroutine postprocessread
   if(verbosity.GT.0) print*,'...init grav...'
   call zeroacc
   call zeropot
-  acc(1:nbodies,4)=0.
+  aacc(1:nbodies)=0.
   call gravity('both')
   if(.not.directsum.and.gdgop) then
     call zeroacc

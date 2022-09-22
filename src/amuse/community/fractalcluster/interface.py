@@ -12,7 +12,7 @@ class FractalClusterInterface(CodeInterface,  LiteratureReferencesMixIn):
     subunits forcing the number of cells if force=.true.
     
     reference:
-        .. [#] Simon Goodwin & Ant Whitworth (2004, A&A, 413, 929)
+        .. [#] Simon Goodwin & Ant Whitworth (2004, A&A, 413, 929) [2004A&A...413..929G]
 
     """
 
@@ -274,3 +274,6 @@ def new_fractal_cluster_model(*list_arguments, **keyword_arguments):
     """
     uc = MakeFractalCluster(*list_arguments, **keyword_arguments)
     return uc.result
+
+
+Fractalcluster = FractalCluster

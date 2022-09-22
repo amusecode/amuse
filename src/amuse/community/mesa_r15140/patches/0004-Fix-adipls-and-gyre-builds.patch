@@ -1,0 +1,26 @@
+From 4d459cff62ef431eda13247a66dbdd4f7993bfe7 Mon Sep 17 00:00:00 2001
+From: Robert Farmer <r.j.farmer@uva.nl>
+Date: Tue, 16 Feb 2021 11:57:30 +0100
+Subject: [PATCH 4/6] Fix adipls and gyre builds
+
+---
+ adipls/adipack.c/adipls/geninh.d.f | 1 +
+ adipls/test/ck                     | 2 +-
+ gyre/test/ck                       | 2 +-
+ 3 files changed, 3 insertions(+), 2 deletions(-)
+
+diff --git a/adipls/adipack.c/adipls/geninh.d.f b/adipls/adipack.c/adipls/geninh.d.f
+index 2c37698..7727441 100644
+--- a/adipls/adipack.c/adipls/geninh.d.f
++++ b/adipls/adipack.c/adipls/geninh.d.f
+@@ -54,6 +54,7 @@ c
+ c  dummy routine
+ c
+       implicit double precision (a-h,o-z)
++      dimension x(nn),y(iy,nn)
+       external rhs
+       return
+       end
+-- 
+2.29.2
+

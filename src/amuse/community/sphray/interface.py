@@ -1010,3 +1010,6 @@ class SPHRay(CommonCode):
         handler.add_method('INITIALIZED', 'set_boundary')
         handler.add_method('INITIALIZED', 'set_H_caseA')
         handler.add_method('INITIALIZED', 'set_He_caseA')
+
+
+Sphray = SPHRay

@@ -19,7 +19,7 @@ from amuse.community.interface.common import CommonCodeInterface, CommonCode
 
 class HopInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesMixIn):
     '''
-        .. [#] Eisenstein, DJ, Hut, P, HOP: A new group-finding algorithm for N-body simulations, ApJ 498 (1998)
+        .. [#] Eisenstein, DJ, Hut, P, HOP: A new group-finding algorithm for N-body simulations, ApJ 498 (1998) [1998ApJ...498..137E]
     '''
     include_headers = ['worker_code.h']
     

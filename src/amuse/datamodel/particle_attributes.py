@@ -491,7 +491,7 @@ def get_binaries(particles,hardness=10,G = constants.G):
                (particles.vy[a[j]]-particles.vy[a[i]])**2+ \
                (particles.vz[a[j]]-particles.vz[a[i]])**2 
             r=r2**0.5
-            eb=G*(particles.mass[i]+particles.mass[j])/r-0.5*v2
+            eb=G*(particles.mass[a[i]]+particles.mass[a[j]])/r-0.5*v2
             if eb > limitE:
                 binary=particles[[a[i],a[j]]].copy()
                 binary.hardness=eb/average_Ek
@@ -677,8 +677,10 @@ def mass_segregation_Gini_coefficient(particles, unit_converter=None, density_we
     
     return (mfmnf[1:]+mfmnf[:-1]).sum()/2/(len(mf)-1.)
 
-def LagrangianRadii(stars, unit_converter=None, mf=[0.01,0.02,0.05,0.1,0.2,0.5,0.75,0.9,1],
-        cm=None, number_of_neighbours=7, reuse_hop=False, hop=HopContainer()):
+def LagrangianRadii(
+    stars, unit_converter="auto", mf=[0.01,0.02,0.05,0.1,0.2,0.5,0.75,0.9,1],
+    cm=None, number_of_neighbours=7, reuse_hop=False, hop=HopContainer(),
+):
     """
     Calculate lagrangian radii. Output is radii, mass fraction 
 
@@ -691,6 +693,20 @@ def LagrangianRadii(stars, unit_converter=None, mf=[0.01,0.02,0.05,0.1,0.2,0.5,0
     0.856966667972 length
     """
     import bisect
+    if unit_converter == "auto":
+        # Try to determine the right unit base, using the mass
+        mass_base_unit = stars.mass.unit.base[0][1]
+        if mass_base_unit is units.kg:
+            # Set converter lengths to be something that seems reasonable
+            converter_mass = stars.total_mass() / len(stars)
+            converter_length = (stars.position - stars.center_of_mass()).lengths().mean()
+            unit_converter = nbody_system.nbody_to_si(
+                converter_mass, converter_length,
+            )
+        elif mass_base_unit is nbody_system.mass:
+            unit_converter = None
+        else:
+            unit_converter = None
     if cm is None:
         cm,rcore,rhocore = stars.densitycentre_coreradius_coredens(
             unit_converter=unit_converter,
@@ -1068,7 +1084,7 @@ def box_counting_dimension(particles):
             [(r[0], r[1], r[2]) for r in (scaled_positions * boxes_per_dimension).astype(int)]
         )))
     
-    number_of_boxes_filled = numpy.array(number_of_boxes_filled, dtype=numpy.float)
+    number_of_boxes_filled = numpy.array(number_of_boxes_filled, dtype=numpy.float64)
     # When #filled-boxes ~ #particles, the dimension goes to 0. Exclude those values:
     upper_index = numpy.searchsorted(number_of_boxes_filled, 0.2 * len(particles))
     x = numpy.log(boxes_per_dimension_range[:upper_index])

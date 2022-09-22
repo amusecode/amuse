@@ -7,6 +7,8 @@ import sys, os, re, subprocess
 import os.path
 import datetime
 import stat
+from copy import deepcopy
+from os.path import abspath
 
 from . import supportrc
 
@@ -15,12 +17,8 @@ try:
 except ImportError:
     warnings.warn( "numpy etc needed during build; operation may fail" )
 
-try:
-    import configparser
-    from io import StringIO
-except ImportError:
-    import ConfigParser as configparser
-    from StringIO import StringIO
+import configparser
+from io import StringIO
 
 from stat import ST_MODE
 from distutils import sysconfig
@@ -41,8 +39,6 @@ from subprocess import call, Popen, PIPE, STDOUT
 
 if supportrc["framework_install"]:
     from .generate_main import generate_main
-    from .build_latex import build_latex
-    from .run_tests import run_tests
   
 try:
     from numpy.distutils import fcompiler
@@ -543,7 +539,6 @@ class CodeCommand(Command):
         if supportrc["framework_install"]:
             configpath=os.path.abspath(os.getcwd())
             self.copy_file(os.path.join(configpath,"config.mk"), self.build_temp) 
-            self.copy_file(os.path.join(configpath,"build.py"), self.build_temp) 
         #~ self.copy_tree(os.path.join(configpath,"support"), os.path.join(self.build_temp,"support") )
         #~ self.copy_tree(os.path.join(configpath,"src"), os.path.join(self.build_temp,"src") )
         path=os.path.join(self.build_temp,"src")
@@ -734,11 +729,13 @@ class CodeCommand(Command):
                 if(index_of_the_colon > 0):
                     targetname = line[len(name + '_worker_'):index_of_the_colon]
                     if '%' not in targetname: result.append((line[:index_of_the_colon], targetname,))
+        
+        result=list(set(result))
                     
         return result
     
     def call(self, arguments, buildlogfile = None, **keyword_arguments):
-        stringio = StringIO()
+        stringio = []
          
         self.announce(' '.join(arguments), log.DEBUG)
         
@@ -756,13 +753,17 @@ class CodeCommand(Command):
             
             if not buildlogfile is None:
                 buildlogfile.write(line)
-            self.announce(line[:-1], log.DEBUG)
-            stringio.write(str(line, 'utf-8'))
+            self.announce(line[:-1].decode("utf-8"), log.DEBUG)
+            stringio.append(str(line, 'utf-8'))
             
         result = process.wait()
-        content = stringio.getvalue()
+        content = ''.join(stringio)
         
-        stringio.close()
+        if result!=0:
+            self.announce("error in call, tail output:\n", log.INFO)
+            self.announce(''.join(stringio[-100:]), log.INFO)
+            self.announce("-"*80, log.INFO)
+
         return result, content
         
     def build_environment(self):
@@ -849,11 +850,17 @@ class BuildCodes(CodeCommand):
             output.write('\n')
             output.flush()
         
+        if environment.get('AMUSE_USE_CCACHE', 0) != "1" or "CCACHE_BASEDIR" in environment:
+            build_environment = environment
+        else:
+            build_environment = deepcopy(environment)
+            build_environment["CCACHE_BASEDIR"] = abspath(directory)
+
         with open(buildlog, "ab") as output:
             result, resultcontent = self.call(
                 ['make','-C', directory, target], 
                 output,
-                env = environment
+                env = build_environment
             )
         
         with open(buildlog, "a") as output:
@@ -1269,9 +1276,7 @@ def setup_commands():
             {
                 'configure_codes': ConfigureCodes,
                 'generate_install_ini': GenerateInstallIni,
-                'build_latex': build_latex,
                 'generate_main': generate_main,
-                'tests': run_tests,
             }
         )
         build.sub_commands.insert(0, ('configure_codes', None))

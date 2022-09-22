@@ -18,8 +18,7 @@ class KromeInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesMix
     
     KROME - a package to embed chemistry in astrophysical simulations
 
-    .. [#] Grassi, T.; Bovino, S.; Schleicher, D. R. G.; Prieto, J.; Seifried, D.; Simoncini, E.; Gianturco, F. A.
-           MNRAS, 439, 3, p.2386-2419
+    .. [#] Grassi, T.; Bovino, S.; Schleicher, D. R. G.; Prieto, J.; Seifried, D.; Simoncini, E.; Gianturco, F. A., MNRAS, 439, 3, p.2386-2419 [2014MNRAS.439.2386G]
     """
 
     def __init__(self, **options):

@@ -1,13 +1,12 @@
 import weakref
 import numpy
+
 from amuse.units import nbody_system
 from amuse.units import generic_unit_system
 from amuse.units import quantities
 from amuse.units.core import IncompatibleUnitsException
 from amuse.units.quantities import is_quantity
 from amuse.support import exceptions
-
-import warnings
 
 from amuse.support.core import OrderedDictionary
 
@@ -41,12 +40,16 @@ class Parameters(object):
 
     def __setattr__(self, name, value):
         if not name in self._mapping_from_name_to_definition:
-            warnings.warn("tried to set unknown parameter '{0}' for a '{1}' object".format(name, type(self._instance()).__name__), exceptions.AmuseWarning)
-            return
+            #~ print "Did you mean to set one of these parameters?\n", \
+                #~ "\n  ".join(self._mapping_from_name_to_definition.keys())
+            raise exceptions.CoreException("tried to set unknown parameter '{0}' for a '{1}' object".format(name, type(self._instance()).__name__))
         
         self._instance().before_set_parameter()
 
         return self.get_parameter(name).set_value(value)
+        
+    def __getitem__(self, name):
+        return self.get_parameter(name)
 
     def names(self):
         return list(self._mapping_from_name_to_definition.keys())
@@ -104,6 +107,7 @@ class Parameters(object):
         for name in self.names():
             yield self.get_parameter(name)
     
+    __iter__=iter_parameters
     
 
     def send_cached_parameters_to_code(self):
@@ -158,12 +162,11 @@ class Parameters(object):
     def reset_from_memento(self, memento):
         for name in memento.names():
             if not name in self._mapping_from_name_to_definition:
-                warnings.warn("tried to set unknown parameter '{0}' for a '{1}' object".format(name, type(self._instance()).__name__), exceptions.AmuseWarning)
-                return
+                raise exceptions.CoreException("tried to set unknown parameter '{0}' for a '{1}' object".format(name, type(self._instance()).__name__))
             
             if self.get_parameter(name).is_readonly():
                 if not getattr(memento, name) == getattr(self, name):
-                    warnings.warn("tried to change read-only parameter '{0}' for a '{1}' object".format(name, type(self._instance()).__name__), exceptions.AmuseWarning)
+                    raise exceptions.CoreException("tried to change read-only parameter '{0}' for a '{1}' object".format(name, type(self._instance()).__name__))
             else:
                 setattr(self, name, getattr(memento, name))
             
@@ -200,8 +203,7 @@ class ParametersMemento(object):
 
     def __setattr__(self, name, value):
         if not name in self._mapping_from_name_to_value:
-            warnings.warn("tried to set unknown parameter '{0}'".format(name), exceptions.AmuseWarning)
-            return
+            raise exceptions.CoreException("tried to set unknown parameter '{0}'".format(name))
             
         self._mapping_from_name_to_value[name] = value
 
@@ -309,8 +311,8 @@ class ParametersWithUnitsConverted(object):
 
     def __setattr__(self, name, value):
         if not name in self._original._mapping_from_name_to_definition:
-            warnings.warn("tried to set unknown parameter '{0}' for a '{1}' object".format(name, type(self._instance()).__name__), exceptions.AmuseWarning)
-            return
+            raise exceptions.CoreException("Could not set unknown parameter '{0}' for a '{1}' object".format(name, type(self._original()).__name__))
+
         try:
             setattr(self._original, name, self._converter.from_source_to_target(value))
         except IncompatibleUnitsException as ex:
@@ -597,6 +599,21 @@ class Parameter(object):
 
     def get_cached_value(self):
         return self.definition.get_value(self, self.parameter_set._instance())
+    
+    @property
+    def name(self):
+        return self.definition.name
+
+    @property
+    def description(self):
+        return self.definition.description
+
+    @property
+    def value(self):
+        return self.get_value()
+
+    def __str__(self):
+        return self.name
     
     
 class ModuleVectorMethodParameterDefinition(ModuleMethodParameterDefinition):

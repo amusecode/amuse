@@ -1,6 +1,8 @@
 # standard amuse configuration include
 # config.mk will be made after ./configure has run
-AMUSE_DIR?=../../../..
+ifeq ($(origin AMUSE_DIR), undefined)
+  AMUSE_DIR := $(shell amusifier --get-amuse-dir)
+endif
 -include ${AMUSE_DIR}/config.mk
 
 MPIFC ?= mpif90
@@ -11,7 +13,6 @@ SRC=src
 BUILDDIR = build
 MPI_BUILDDIR = build_mpi
 
-CODE_GENERATOR = $(AMUSE_DIR)/build.py
 
 NOMPILIBS=$(BUILDDIR)/libcapreole.a
 MPILIBS=$(MPI_BUILDDIR)/libcapreole_mpi.a
@@ -32,6 +33,11 @@ PIC=#-fPIC
 
 ifeq ($(FORTRAN), gfortran)
 FFLAGS += $(PIC) $(FCFLAGS)
+endif
+
+GFVERSION10PLUS := $(shell expr `${FC} -dumpversion | cut -f1 -d.` \>= 10)
+ifeq (${GFVERSION10PLUS}, 1)
+MPIFC += -fallow-argument-mismatch
 endif
 
 ifeq  ($(FORTRAN), ifort)

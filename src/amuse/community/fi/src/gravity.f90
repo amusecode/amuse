@@ -21,7 +21,7 @@
  if(option.NE.'pot ') THEN
   do i=1,npactive
     p=pactive(i)
-    acc(p,4)=SQRT(acc(p,1)**2+acc(p,2)**2+acc(p,3)**2)
+    aacc(p)=SQRT(acc(p,1)**2+acc(p,2)**2+acc(p,3)**2)
   enddo
  endif
  end subroutine

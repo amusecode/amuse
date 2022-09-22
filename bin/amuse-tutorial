@@ -1,0 +1,15 @@
+#!/bin/bash
+
+echo starting the tutorial..
+
+gethostip `hostname` > /dev/null || ( echo warning hostname may not resolve: check your /etc/hosts && sleep 2 )
+
+AMUSEDIR=`amusifier --get-amuse-dir`
+
+RUNDIR=${PWD}/amuse-tutorial
+
+mkdir -p $RUNDIR
+
+cp ${AMUSEDIR}/tutorial/*.ipynb ${RUNDIR}/
+
+jupyter notebook --notebook-dir=${RUNDIR}

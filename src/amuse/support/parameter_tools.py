@@ -1,7 +1,7 @@
 import numpy
 
 from configparser import ConfigParser
-from collections import defaultdict
+from collections import defaultdict, OrderedDict
 from io import StringIO
 
 try:
@@ -22,16 +22,21 @@ dtype_str={ str: "str",
             bool: "bool",
             int: "int32",
             float: "float64",
+            complex: "complex",
+            list: "list",
+            dict: "dict",
+            OrderedDict: "OrderedDict",
           }
 
 def parameter_list_py_code(parameters, label="parameters"):
     header="""from omuse.units import units
+from collections import OrderedDict
 
 {label} = (
 
 """.format(label=label)
 
-    template='  dict(name={name}, group_name={group}, short={short}, dtype={dtype}, default={default}, description={description}, ptype={ptype}),\n'
+    template='  dict(group_name={group}, name={name}, short={short}, dtype={dtype}, default={default}, description={description}, ptype={ptype}),\n'
 
     footer=""")
     """
@@ -71,7 +76,7 @@ class _CodeWithFileParameters(object):
         for p in self._parameters.values():
             if p["ptype"] not in self._ptypes:
                 continue
-            parameter_set_name=p.get("set_name", self._prefix+p["group_name"] )
+            parameter_set_name=p.get("set_name", None) or self._prefix+p["group_name"].replace(" ","_")
             if parameter_set_name not in _tmp:
                 _tmp[parameter_set_name]=[ x.name for x in handler.definitions[parameter_set_name] ]
             if not p["name"] in _tmp[parameter_set_name]:  
@@ -84,7 +89,7 @@ class _CodeWithFileParameters(object):
         for p in self._parameters.values():
             if p["ptype"] not in self._ptypes:
                 continue
-            parameter_set_name=p.get("set_name", None) or self._prefix+p["group_name"]
+            parameter_set_name=p.get("set_name", None) or self._prefix+p["group_name"].replace(" ","_")
             parameter_set=getattr(self, parameter_set_name)
             name=p["name"]
             value=p.get("value", p["default"])
@@ -136,8 +141,8 @@ class _CodeWithFileParameters(object):
             name=p["name"]
             group_name=p["group_name"]
             short=p["short"]
-            parameter_set_name=p.get("set_name", group_name)
-            parameter_set=getattr(self, self._prefix+parameter_set_name)
+            parameter_set_name=p.get("set_name", None) or self._prefix+p["group_name"].replace(" ","_")
+            parameter_set=getattr(self, parameter_set_name)
             if is_quantity(p["default"]):
                 value=to_quantity(getattr(parameter_set, name)).value_in(p["default"].unit)
             else:
@@ -166,8 +171,8 @@ class CodeWithNamelistParameters(_CodeWithFileParameters):
         self._file=None
 
     def _read_file(self, inputfile):
-        _nml_params = f90nml.read(inputfile)
-        rawvals=dict()
+        _nml_params = f90nml.read(inputfile).todict()
+        rawvals=OrderedDict()
 
         for group, d in _nml_params.items():
             for short, val in d.items():
@@ -177,17 +182,23 @@ class CodeWithNamelistParameters(_CodeWithFileParameters):
         return rawvals, dict()
 
     def _write_file(self, outputfile, rawvals, do_patch=False, nml_file=None):
-        patch=defaultdict( dict )
+        patch=OrderedDict()
 
         for key,rawval in rawvals.items():
             if rawval is None:  # omit if value is None
                 continue
             if isinstance(rawval,numpy.ndarray):
                 rawval=list(rawval)  # necessary until f90nml supports numpy arrays
+            if key[1] not in patch:
+              patch[key[1]]=OrderedDict()
             patch[key[1]][key[0]]=rawval
         
         if do_patch:
-            f90nml.patch(nml_file or self._nml_file,patch,outputfile)
+            _tmp=f90nml.read(nml_file or self._nml_file)
+            _tmp.update(patch)
+            f90nml.write(_tmp, outputfile, force=True)      
+            # workaround because this can produce errors (f90nml 1.1.2):
+            #~ f90nml.patch(nml_file or self._nml_file,f90nml.Namelist(patch),outputfile)
         else:
             f90nml.write(patch, outputfile, force=True)      
 
@@ -200,6 +211,9 @@ class CodeWithNamelistParameters(_CodeWithFileParameters):
     def output_format_value(self,value):
         return value
 
+    def interpret_value(self,value, dtype=None):
+        return value   # dtype, arrays should be handled by f90nml 
+
 
 class CodeWithIniFileParameters(_CodeWithFileParameters):
     """
@@ -210,7 +224,9 @@ class CodeWithIniFileParameters(_CodeWithFileParameters):
     read and write INI files. Every section corresponds to a different parameter set.
     """
     _ptypes=["ini", "ini+normal"]
-    def __init__(self, _parameters=dict(), prefix="ini_"):
+    def __init__(self, _parameters=None, prefix="ini_"):
+        if _parameters is None:
+          _parameters=dict()
         self._parameters=dict([((x["name"],x["group_name"]),x) for x in _parameters])
         self._optionxform=str
         self._prefix=prefix
@@ -256,7 +272,7 @@ class CodeWithIniFileParameters(_CodeWithFileParameters):
         return rawvals
 
     def _convert(self, value, dtype):
-        if dtype is "bool":
+        if dtype=="bool":
             if value.lower() in ["0", "false", "off","no"]:
                 return False
             else:
@@ -266,6 +282,8 @@ class CodeWithIniFileParameters(_CodeWithFileParameters):
         return numpy.fromstring(value, sep=",")[0]
 
     def interpret_value(self,value, dtype=None):
+        if value=="":
+            return value
         if value.find(',')>=0:
             return [self._convert(x, dtype) for x in value.split(",")]
         return self._convert(value, dtype)
@@ -283,7 +301,6 @@ class CodeWithIniFileParameters(_CodeWithFileParameters):
 
             if isinstance(rawval, list):
                 rawval=','.join(rawval)
-                
             parser.set(section,short,self.output_format_value(rawval))
 
         f=open(outputfile, "w")
@@ -292,9 +309,9 @@ class CodeWithIniFileParameters(_CodeWithFileParameters):
 
     def output_format_value(self,value):
         if isinstance(value, list):
-          return ','.join(value)
+          return ','.join([str(v) for v in value])
         else:
-          return value
+          return str(value)
         
     def write_inifile_parameters(self, outputfile):
         return self.write_parameters(outputfile)

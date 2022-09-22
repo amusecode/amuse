@@ -21,6 +21,7 @@ class SSEInterface(CodeInterface, common.CommonCodeInterface , LiteratureReferen
     
         .. [#] Hurley J.R., Pols O.R., Tout C.A., 2000, MNRAS, 315, 543:
         .. [#] ... "Comprehensive analytic formulae for stellar evolution as a function of mass and metallicity"
+        .. [#] [2000MNRAS.315..543H]
     """
     def __init__(self, **options):
         CodeInterface.__init__(self, name_of_the_worker="sse_worker", **options)
@@ -454,3 +455,6 @@ class SSE(common.CommonCode):
 
     def update_time_steps(self):
         pass
+
+
+Sse = SSE
