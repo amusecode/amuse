@@ -132,7 +132,8 @@ int initialize_code(){
   init_cpu_log();
 
   determine_compute_nodes();
-
+  // Needed to check available memory
+  mpi_report_committable_memory();
 
   set_default_parameters();
   begrun1(); /* set-up run  */
