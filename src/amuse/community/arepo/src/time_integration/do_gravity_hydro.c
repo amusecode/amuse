@@ -265,7 +265,7 @@ void find_gravity_timesteps_and_do_gravity_step_first_half(void)
     }
 
   /* reconstruct list of active particles because it is used for other things too (i.e. wind particles) */
-  timebin_make_list_of_active_particles_up_to_timebin(&TimeBinsGravity, All.HighestActiveTimeBin);
+  timebin_make_list_of_active_particles_up_to_timebin(&TimeBinsGravity, All.HighestSynchronizedTimeBin);
   sumup_large_ints(1, &TimeBinsGravity.NActiveParticles, &TimeBinsGravity.GlobalNActiveParticles);
 #else /* #ifdef HIERARCHICAL_GRAVITY */
 
@@ -276,7 +276,7 @@ void find_gravity_timesteps_and_do_gravity_step_first_half(void)
     timebin_make_list_of_active_particles_up_to_timebin(&TimeBinsGravity, TIMEBINS);
   else
 #endif /* #ifdef FORCE_EQUAL_TIMESTEPS */
-    timebin_make_list_of_active_particles_up_to_timebin(&TimeBinsGravity, All.HighestActiveTimeBin);
+    timebin_make_list_of_active_particles_up_to_timebin(&TimeBinsGravity, All.HighestSynchronizedTimeBin);
   sumup_large_ints(1, &TimeBinsGravity.NActiveParticles, &TimeBinsGravity.GlobalNActiveParticles);
 
   mpi_printf("KICKS: 1st gravity for highest active timebin=%d:  particles %lld\n", All.HighestActiveTimeBin,

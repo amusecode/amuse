@@ -847,7 +847,7 @@ herr_t my_H5Pset_shuffle(hid_t plist_id)
  *
  *  \return Non-negative value if successful.
  */
-herr_t my_H5Pset_deflate(hid_t plist_id, uint level)
+herr_t my_H5Pset_deflate(hid_t plist_id, unsigned int level)
 {
   herr_t status = H5Pset_deflate(plist_id, level);
   if(status < 0)
