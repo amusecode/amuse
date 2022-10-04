@@ -27,36 +27,15 @@ flash_obj = $(filter-out  $(ignore_obj), $(allflash_obj))
 
 all: flash_worker 
 
-ifdef DOWNLOAD_CODES
 $(CODEDIR)/makefile:
-	make -C . download
-else
-$(CODEDIR)/makefile:
-	@echo ""
-	@echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
-	@echo ""
-	@echo "DOWNLOAD_CODES is not set. FLASH will not be downloaded and build."
-	@echo "If you do want FLASH, set DOWNLOAD_CODES to 1."
-	@echo "bash> export DOWNLOAD_CODES=1"
-	@echo "csh> setenv DOWNLOAD_CODES 1"
-	@echo "*** Unfortunately due to flash download restrictions;"
-	@echo "*** FLASH CANNOT be download automatically by this makefile"
-	@echo "*** Please register and download flash yourself"
-	@echo "*** You can do so at https://flash.rochester.edu/site/flashcode/coderequest/"
-	@echo ""
-	@echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
-	@echo ""
-	@make -s --no-print-directory -C . raise_error
-endif
-
-download:
 	@echo ""
 	@echo "*** Unfortunately due to flash download restrictions;"
 	@echo "*** FLASH CANNOT be download automatically by this makefile"
 	@echo "*** Please register and download flash yourself"
 	@echo "*** You can do so at https://flash.rochester.edu/site/flashcode/coderequest/"
 	@echo ""
-	@make -s --no-print-directory -C . raise_error
+	@echo "*** aafter downloading, extract or copy the source to $(CODEDIR) such that a $(CODEDIR)/makefile exists"
+	@exit -1
 
 clean:
 	$(RM) -f *.so *.o *.pyc worker_code.cc worker_code.h #flash.par
