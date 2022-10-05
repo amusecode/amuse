@@ -26,7 +26,7 @@ from amuse.ext.derived_grav_systems import copycat
 from amuse.ext.bridge import bridge
 
 from amuse.io import write_set_to_file
-from amuse.support.data import ParticlesWithUnitsConverted
+from amuse.datamodel import ParticlesWithUnitsConverted
 from amuse.datamodel import Particles
 
 def make_map(sph,N=100,L=1):

@@ -63,3 +63,7 @@ def is_generic_unit(unit):
         if x.is_generic():
             return True
     return False
+
+def generic_to_si(*arg):
+    from amuse.units import generic_unit_converter
+    return generic_unit_converter.ConvertBetweenGenericAndSiUnits(*arg)

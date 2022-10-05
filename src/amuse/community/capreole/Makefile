@@ -13,7 +13,6 @@ SRC=src
 BUILDDIR = build
 MPI_BUILDDIR = build_mpi
 
-CODE_GENERATOR ?= $(AMUSE_DIR)/build.py
 
 NOMPILIBS=$(BUILDDIR)/libcapreole.a
 MPILIBS=$(MPI_BUILDDIR)/libcapreole_mpi.a

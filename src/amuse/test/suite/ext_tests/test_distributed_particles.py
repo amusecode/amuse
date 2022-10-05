@@ -433,7 +433,7 @@ class DistributedParticlesImplementation(object):
         real_particles, local_offset, local_size, global_size  = self.references_to_particles[reference_in]
         filename=filebase+"_%6.6i"%self.rank
         write_set_to_file(real_particles, filename, fileformat, 
-           local_offset=local_offset, local_size=local_size, global_size=global_size)
+           local_offset=local_offset, local_size=local_size, global_size=global_size, overwrite_file=True)
         filenames = self.mpi_comm.gather(filename, root = 0)
         if self.rank==0:
           value= filenames
@@ -482,7 +482,7 @@ class DistributedParticlesImplementation(object):
 def generate_set_example_function(start,end,*args,**kwargs):
     from amuse.datamodel import Particles
     p=Particles(end-start)
-    p.index=list(range(start,end))
+    p.index=range(start,end)
     return p
 
 def distributed_king_generator(start,end,*args,**kwargs):
@@ -628,10 +628,10 @@ class TestDistributedParticles(TestWithMPI):
             number_of_workers = 4
         )
         self.assertEqual(len(x) , 40)
-        x.mass = list(range(40)) 
+        x.mass = range(40) 
         self.assertEqual(len(x[15:25]), 10)
         self.assertEqual(x[15:25].mass, list(range(15,25)))
-        x[15:25].mass = list(range(10))
+        x[15:25].mass = range(10)
         self.assertEqual(x[15:25].mass, list(range(10)))
             
     def test11(self):

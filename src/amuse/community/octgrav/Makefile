@@ -22,7 +22,6 @@ OBJS = integrator.o interface.o
 ifeq ($(origin AMUSE_DIR), undefined)
   AMUSE_DIR := $(shell amusifier --get-amuse-dir)
 endif
-CODE_GENERATOR ?= $(AMUSE_DIR)/build.py
 
 CUDA_LIBDIRS ?= -L$(CUDA_TK)/lib -L$(CUDA_TK)/lib64
 CUDA_LIBS ?= -lcudart
@@ -57,7 +56,7 @@ worker_code.cc: interface.py
 	$(CODE_GENERATOR) --type=c interface.py OctgravInterface -o $@ 
 
 worker_code.h: interface.py
-	$(CODE_GENERATOR) --type=h -i amuse.support.codes.stopping_conditions.StoppingConditionInterface interface.py OctgravInterface -o $@
+	$(CODE_GENERATOR) --type=h -i amuse.community.interface.stopping_conditions.StoppingConditionInterface interface.py OctgravInterface -o $@
 
 octgrav_worker: worker_code.cc worker_code.h $(OBJS)
 	$(MPICXX) $(CXXFLAGS) $(SC_FLAGS) $(LDFLAGS) $< $(OBJS) $(CODELIB) -o $@ $(SC_MPI_CLIBS) $(LIBS)

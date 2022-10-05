@@ -23,7 +23,6 @@ OBJS = interface.o
 
 CODELIB = src/libkepler.a
 
-CODE_GENERATOR ?= $(AMUSE_DIR)/build.py
 
 all: $(ALL)
 

@@ -51,7 +51,7 @@ class StellarEvolutionCodeForTesting(object):
     
     def __init__(self, particles=Particles(6)):
         particles.mass = 1 | units.MSun
-        particles.radius = list(range(1, len(particles)+1)) | units.RSun
+        particles.radius = range(1, len(particles)+1) | units.RSun
         self.particles = particles
     
 
@@ -59,7 +59,7 @@ class StellarEvolutionCodeWithInternalStructureForTesting(object):
     
     def __init__(self, particles=Particles(6)):
         particles.mass = 1 | units.MSun
-        particles.radius = list(range(1, len(particles)+1)) | units.RSun
+        particles.radius = range(1, len(particles)+1) | units.RSun
         particles.type = "native star" 
         self.particles = particles
     
@@ -239,7 +239,7 @@ class TestCollisionHandler(TestCase):
         gravity = GravityCodeForTesting()
         self.assertEqual(len(gravity.particles), 6)
         gravity.particles.mass = [1, 1, 2, 2, 3, 3,] | units.MSun
-        gravity.particles.radius = list(range(101, 107)) | units.RSun
+        gravity.particles.radius = range(101, 107) | units.RSun
         
         collision_code = StickySpheres(mass_loss=0.1)
         

@@ -3,7 +3,7 @@ from amuse.test import compile_tools
 from amuse.test.amusetest import get_amuse_root_dir
 
 #cello
-from amuse.support.codes import stopping_conditions
+from amuse.community.interface import stopping_conditions
 from amuse.support.interface import InCodeComponentImplementation
 
 import os
@@ -320,7 +320,7 @@ class TestInterface(_AbstractTestInterface):
     def test7(self):
         instance = ForTesting(self.exefile)
         particles = datamodel.Particles(20)
-        particles.mass = list(range(1, 21)) | units.kg
+        particles.mass = range(1, 21) | units.kg
         instance.particles.add_particles(particles)
         instance.reset_stopping_conditions()
         
@@ -419,7 +419,7 @@ class TestInterfaceMP(_AbstractTestInterface):
         pair_detection = instance.stopping_conditions.pair_detection
         
         particles = datamodel.Particles(20)
-        particles.mass = list(range(1, 21)) | units.kg
+        particles.mass = range(1, 21) | units.kg
         instance.particles.add_particles(particles)
         
         instance.stopping_conditions.pair_detection.enable()
@@ -455,7 +455,7 @@ class TestInterfaceMP(_AbstractTestInterface):
         pair_detection = instance.stopping_conditions.pair_detection
         
         particles = datamodel.Particles(20)
-        particles.mass = list(range(1, 21)) | units.kg
+        particles.mass = range(1, 21) | units.kg
         instance.particles.add_particles(particles)
         
         instance.stopping_conditions.pair_detection.enable()
@@ -493,7 +493,7 @@ class TestInterfaceMP(_AbstractTestInterface):
         pair_detection = instance.stopping_conditions.pair_detection
         
         particles = datamodel.Particles(20)
-        particles.mass = list(range(1, 21)) | units.kg
+        particles.mass = range(1, 21) | units.kg
         instance.particles.add_particles(particles)
         
         instance.stopping_conditions.pair_detection.enable()
@@ -542,7 +542,7 @@ class TestInterfaceMP(_AbstractTestInterface):
         pair_detection = instance.stopping_conditions.pair_detection
         
         particles = datamodel.Particles(20)
-        particles.mass = list(range(1, 21)) | units.kg
+        particles.mass = range(1, 21) | units.kg
         instance.particles.add_particles(particles)
         
         instance.stopping_conditions.pair_detection.enable()
@@ -652,7 +652,7 @@ class _TestInterfaceFortranSingleProcess(TestWithMPI, _AbstractTestInterfaceFort
     def test6(self):
         instance = ForTesting(self.exefile, number_of_workers = self.get_number_of_workers())
         particles = datamodel.Particles(20)
-        particles.mass = list(range(1, 21)) | units.kg
+        particles.mass = range(1, 21) | units.kg
         instance.particles.add_particles(particles)
         instance.reset_stopping_conditions()
         
@@ -768,7 +768,7 @@ class TestInterfaceFortranModuleMultiprocess(TestWithMPI, _AbstractTestInterface
         pair_detection = instance.stopping_conditions.pair_detection
         
         particles = datamodel.Particles(20)
-        particles.mass = list(range(1, 21)) | units.kg
+        particles.mass = range(1, 21) | units.kg
         instance.particles.add_particles(particles)
         
         instance.stopping_conditions.pair_detection.enable()
@@ -805,7 +805,7 @@ class TestInterfaceFortranModuleMultiprocess(TestWithMPI, _AbstractTestInterface
         pair_detection = instance.stopping_conditions.pair_detection
         
         particles = datamodel.Particles(20)
-        particles.mass = list(range(1, 21)) | units.kg
+        particles.mass = range(1, 21) | units.kg
         instance.particles.add_particles(particles)
         
         instance.stopping_conditions.pair_detection.enable()
@@ -843,7 +843,7 @@ class TestInterfaceFortranModuleMultiprocess(TestWithMPI, _AbstractTestInterface
         pair_detection = instance.stopping_conditions.pair_detection
         
         particles = datamodel.Particles(20)
-        particles.mass = list(range(1, 21)) | units.kg
+        particles.mass = range(1, 21) | units.kg
         instance.particles.add_particles(particles)
         
         instance.stopping_conditions.pair_detection.enable()
@@ -892,7 +892,7 @@ class TestInterfaceFortranModuleMultiprocess(TestWithMPI, _AbstractTestInterface
         pair_detection = instance.stopping_conditions.pair_detection
         
         particles = datamodel.Particles(20)
-        particles.mass = list(range(1, 21)) | units.kg
+        particles.mass = range(1, 21) | units.kg
         instance.particles.add_particles(particles)
         
         instance.stopping_conditions.pair_detection.enable()

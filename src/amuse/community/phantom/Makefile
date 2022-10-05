@@ -19,8 +19,6 @@ FCFLAGS += -L${CODELIBDIR} -lphantom-amuse
 
 CODEDIR = src/phantom
 
-CODE_GENERATOR = $(AMUSE_DIR)/build.py
-
 SETUP = amuse
 SYSTEM = gfortran
 

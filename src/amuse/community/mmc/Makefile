@@ -16,7 +16,6 @@ OBJS = interface.o
 CODELIB = src/libmmc.a
 
 MMC_DATA_DIR = ../../../../data/mmc
-CODE_GENERATOR ?= $(AMUSE_DIR)/build.py
 
 SRCINC = -I./src
 

@@ -22,7 +22,6 @@ OBJS = libraryInterface.o
 
 CODELIB = src/libbonsai.a
 
-CODE_GENERATOR ?= $(AMUSE_DIR)/build.py
 
 all: compile bonsai_worker 
 
@@ -56,7 +55,7 @@ worker_code.cc: interface.py
 	$(CODE_GENERATOR) --type=c interface.py BonsaiInterface -o $@
 
 worker_code.h: interface.py
-	$(CODE_GENERATOR) --type=h -i amuse.support.codes.stopping_conditions.StoppingConditionInterface  interface.py BonsaiInterface -o $@
+	$(CODE_GENERATOR) --type=h -i amuse.community.interface.stopping_conditions.StoppingConditionInterface  interface.py BonsaiInterface -o $@
 
 
 bonsai_worker: worker_code.cc worker_code.h $(CODELIB) $(OBJS)
