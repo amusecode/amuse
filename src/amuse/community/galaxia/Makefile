@@ -11,7 +11,6 @@ FC ?= gfortran
 FSLIB ?= -L$(AMUSE_DIR)/lib/forsockets -lforsockets 
 FSINC ?= -I$(AMUSE_DIR)/lib/forsockets
 
-CODE_GENERATOR ?= $(AMUSE_DIR)/build.py
 
 OBJ	= interface.o
 

@@ -18,7 +18,6 @@ GPU_BUILDDIR = build_gpu
 
 OBJS = interface.o 
 
-CODE_GENERATOR ?= $(AMUSE_DIR)/build.py
 
 CODELIB = $(BUILDDIR)/libbhtree.a
 GPUCODELIB = $(GPU_BUILDDIR)/libbhtree.a
@@ -72,7 +71,7 @@ worker_code.cc: interface.py
 	$(CODE_GENERATOR) --type=c --needs-mpi=false interface.py BHTreeInterface -o $@
 
 worker_code.h: interface.py
-	$(CODE_GENERATOR) --type=h -i amuse.support.codes.stopping_conditions.StoppingConditionInterface  interface.py BHTreeInterface -o $@
+	$(CODE_GENERATOR) --type=h -i amuse.community.interface.stopping_conditions.StoppingConditionInterface  interface.py BHTreeInterface -o $@
 
 bhtree_worker: worker_code.cc worker_code.h $(CODELIB) $(OBJS)
 	$(MPICXX) $(CXXFLAGS) $(SC_FLAGS) $(LDFLAGS) worker_code.cc $(OBJS) $(CODELIB) -o $@ $(SC_CLIBS) $(LIBS)

@@ -94,6 +94,20 @@ class TestGridRemappers_bilinear(TestCase):
         self.assertEqual(target.xcopy,numpy.clip(target.x,0.5,9.5))
         self.assertEqual(target.ycopy,numpy.clip(target.y,0.5,19.5))
 
+    def test5(self):
+        source=new_regular_grid((10,20, 5),[1.*10,1.*20,1.])
+        target=new_regular_grid((10,20, 5),[1.5*10,1.5*20,1.],offset=[-0.5,-0.5, 0.])
+        
+        source.xcopy=source.x
+        source.ycopy=source.y
+        
+        remapper=grid_remappers.bilinear_2D_remapper(source,target, check_inside=False, do_slices=True)
+        remapper.forward_mapping(["xcopy","ycopy"])
+        self.assertEqual(target.xcopy,numpy.clip(target.x,0.5,9.5))
+        self.assertEqual(target.ycopy,numpy.clip(target.y,0.5,19.5))
+
+
+
 class TestGridRemappers_nearest(TestCase):
 
     def test1(self):

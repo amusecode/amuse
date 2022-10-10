@@ -23,11 +23,11 @@ class TestMocassinInterface(TestWithMPI):
         instance.set_input_directory(instance.get_default_input_directory())
         instance.set_constant_hydrogen_density(900.0)
         instance.commit_parameters()
-        indices_x = list(range(1,12,1))
+        indices_x = range(1,12,1)
         x,y,z,error = instance.get_position_of_index(indices_x,[1]*len(indices_x), [1]*len(indices_x))
     
         self.assertEqual(error, 0)
-        for index, expected_x in enumerate(list(range(-100, 120, 20))):
+        for index, expected_x in enumerate(range(-100, 120, 20)):
             self.assertAlmostRelativeEqual(x[index], expected_x, 6)
             self.assertAlmostRelativeEqual(y[index], -100)
             self.assertAlmostRelativeEqual(z[index], -100)
@@ -62,18 +62,18 @@ class TestMocassinInterface(TestWithMPI):
         x, error = instance.get_number_of_elements_used()
         self.assertEqual(0, error)
         self.assertEqual(x, 7)
-        indices_x = list(range(1,12,1))
+        indices_x = range(1,12,1)
         is_active,error = instance.get_grid_active(indices_x,[1]*len(indices_x), [1]*len(indices_x), 1)
         self.assertEqual(0, error)
         is_active=numpy.array(is_active,dtype=bool)
         self.assertEqual([True,True,True,True,True,True,True,True,True,True,True] , is_active)
         
         
-        indices_x = list(range(5,12,1))
+        indices_x = range(5,12,1)
         temperatures,error = instance.get_grid_electron_temperature(indices_x,[1]*len(indices_x), [1]*len(indices_x), 1)
         self.assertEqual(0, error)
         self.assertEqual([6000.0] * len(indices_x), temperatures)
-        indices_x = list(range(1,5,1))
+        indices_x = range(1,5,1)
         temperatures,error = instance.get_grid_electron_temperature(indices_x,[1]*len(indices_x), [1]*len(indices_x), 1)
         self.assertEqual(0, error)
         self.assertEqual([6000.0] * len(indices_x), temperatures)
@@ -120,7 +120,7 @@ class TestMocassinInterface(TestWithMPI):
         instance.iterate()
         
         
-        indices_x = list(range(1,12,1))
+        indices_x = range(1,12,1)
         temperatures,error = instance.get_grid_electron_temperature(indices_x,[1]*len(indices_x), [1]*len(indices_x), 1)
         self.assertEqual(0, error)
         print(temperatures)

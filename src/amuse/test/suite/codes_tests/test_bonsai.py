@@ -44,10 +44,10 @@ class TestBonsaiInterface(TestWithMPI):
         self.assertEqual(0, instance.commit_particles())
         
         self.assertEqual([500, 0], list(instance.get_number_of_particles().values()))
-        masses, errors = instance.get_mass(list(range(500)))
+        masses, errors = instance.get_mass(range(500))
         self.assertEqual(0, errors)
         self.assertAlmostEqual(0.002, masses)
-        masses,xs,ys,zs,vxs,vys,vzs,radii, errors = instance.get_state(list(range(500)))
+        masses,xs,ys,zs,vxs,vys,vzs,radii, errors = instance.get_state(range(500))
         self.assertEqual(0, errors)
         self.assertAlmostRelativeEquals(xs, x, 6)
         

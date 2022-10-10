@@ -10,7 +10,6 @@ MPIFC ?= openmpif90
 FC = $(MPIFC)
 SRC=src
 
-CODE_GENERATOR ?= $(AMUSE_DIR)/build.py
 
 CODE_LIBS=$(SRC)/libmercury.a
 

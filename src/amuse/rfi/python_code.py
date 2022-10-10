@@ -192,7 +192,7 @@ class PythonImplementation(object):
         dtype_to_count = self.get_dtype_to_count(specification)
         
         
-        if specification.name.startswith('internal__'):
+        if hasattr(specification, "internal_provided"):
             method = getattr(self, specification.name)
         else:
             method = getattr(self.implementation, specification.name)
@@ -515,6 +515,20 @@ class PythonImplementation(object):
         self.freeworld = newcomm
         return 0
         
+    def set_working_directory(self, d):
+        try:
+          os.chdir(d)
+          return 0
+        except Exception:
+          return -1
+
+    def get_working_directory(self, d):
+        try:
+          d.value=os.getcwd()
+          return 0
+        except Exception:
+          return -1
+
 
 
 
@@ -529,7 +543,7 @@ class CythonImplementation(PythonImplementation):
         
         if specification.name == '_stop_worker':
             method = lambda : None
-        elif specification.name.startswith('internal__'):
+        elif hasattr(specification,"internal_provided"):
             method = getattr(self, specification.name)
         else:
             method = getattr(self.implementation, specification.name)

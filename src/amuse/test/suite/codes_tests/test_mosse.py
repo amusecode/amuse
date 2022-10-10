@@ -683,7 +683,7 @@ class TestSSE(TestWithMPI):
     def test17(self):
         print("evolve_one_step and evolve_for after particle removal and addition")
         particles = Particles(10)
-        particles.mass = list(range(1, 11)) | units.MSun
+        particles.mass = range(1, 11) | units.MSun
         instance = MOSSE()
         instance.particles.add_particles(particles)
         self.assertAlmostEqual(instance.particles.age, 0.0 | units.yr)

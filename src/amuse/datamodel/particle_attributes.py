@@ -677,8 +677,10 @@ def mass_segregation_Gini_coefficient(particles, unit_converter=None, density_we
     
     return (mfmnf[1:]+mfmnf[:-1]).sum()/2/(len(mf)-1.)
 
-def LagrangianRadii(stars, unit_converter=None, mf=[0.01,0.02,0.05,0.1,0.2,0.5,0.75,0.9,1],
-        cm=None, number_of_neighbours=7, reuse_hop=False, hop=HopContainer()):
+def LagrangianRadii(
+    stars, unit_converter="auto", mf=[0.01,0.02,0.05,0.1,0.2,0.5,0.75,0.9,1],
+    cm=None, number_of_neighbours=7, reuse_hop=False, hop=HopContainer(),
+):
     """
     Calculate lagrangian radii. Output is radii, mass fraction 
 
@@ -691,6 +693,20 @@ def LagrangianRadii(stars, unit_converter=None, mf=[0.01,0.02,0.05,0.1,0.2,0.5,0
     0.856966667972 length
     """
     import bisect
+    if unit_converter == "auto":
+        # Try to determine the right unit base, using the mass
+        mass_base_unit = stars.mass.unit.base[0][1]
+        if mass_base_unit is units.kg:
+            # Set converter lengths to be something that seems reasonable
+            converter_mass = stars.total_mass() / len(stars)
+            converter_length = (stars.position - stars.center_of_mass()).lengths().mean()
+            unit_converter = nbody_system.nbody_to_si(
+                converter_mass, converter_length,
+            )
+        elif mass_base_unit is nbody_system.mass:
+            unit_converter = None
+        else:
+            unit_converter = None
     if cm is None:
         cm,rcore,rhocore = stars.densitycentre_coreradius_coredens(
             unit_converter=unit_converter,

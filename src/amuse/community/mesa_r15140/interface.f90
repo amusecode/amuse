@@ -1,7 +1,7 @@
 module amuse_support
    implicit none
    character (len=4096) :: AMUSE_inlist_path
-   character (len=4096) :: AMUSE_mesa_dir
+   character (len=4096) :: AMUSE_mesa_dir,AMUSE_mesa_data_dir ! Normally $MESA_DIR and $MESA_DIR/data
    character (len=4096) :: AMUSE_local_data_dir ! Used for output starting_models
    character (len=4096) :: AMUSE_gyre_in_file 
    character (len=4096) :: AMUSE_temp_dir ! Used for mesa_temp_caches support
@@ -40,15 +40,17 @@ module amuse_mesa
 
 ! Set the paths to the inlist and the data directory
    integer function set_MESA_paths(AMUSE_inlist_path_in, &
-         AMUSE_mesa_dir_in, AMUSE_local_data_dir_in, AMUSE_gyre_in_file_in,&
+         AMUSE_mesa_dir_in, AMUSE_mesa_data_dir_in, &
+         AMUSE_local_data_dir_in, AMUSE_gyre_in_file_in,&
          AMUSE_temp_dir_in)
       
       character(*), intent(in) :: AMUSE_inlist_path_in, &
          AMUSE_mesa_dir_in, AMUSE_local_data_dir_in,  AMUSE_gyre_in_file_in, &
-         AMUSE_temp_dir_in
+         AMUSE_temp_dir_in, AMUSE_mesa_data_dir_in
 
       AMUSE_inlist_path = AMUSE_inlist_path_in
       AMUSE_mesa_dir = AMUSE_mesa_dir_in
+      AMUSE_mesa_data_dir = AMUSE_mesa_data_dir_in
       AMUSE_local_data_dir = AMUSE_local_data_dir_in
       AMUSE_gyre_in_file =  AMUSE_gyre_in_file_in
       AMUSE_temp_dir = AMUSE_temp_dir_in
@@ -228,6 +230,7 @@ module amuse_mesa
       call set_init_options(AMUSE_id, &
                            AMUSE_mass, &
                            AMUSE_mesa_dir, &
+                           AMUSE_mesa_data_dir, &
                            AMUSE_local_data_dir, &
                            AMUSE_inlist_path, &
                            AMUSE_metallicity,&
