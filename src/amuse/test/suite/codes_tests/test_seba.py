@@ -529,7 +529,7 @@ class TestSeBa(TestWithMPI):
         self.assertAlmostRelativeEquals(instance.particles.age, [30,30] |units.Myr)
         self.assertAlmostRelativeEquals(instance.model_time, 30 | units.Myr)
         self.assertAlmostRelativeEquals(instance.particles[0].mass, 1.2507 | units.MSun, 4)
-        self.assertAlmostRelativeEquals(instance.particles[1].mass, 8.9340 | units.MSun, 4)
+        self.assertAlmostRelativeEquals(instance.particles[1].mass, 8.9351 | units.MSun, 4)
         stars = Particles(2)
         stars[0].mass = 10.0 | units.MSun
         stars[1].mass = 9 | units.MSun
@@ -541,7 +541,7 @@ class TestSeBa(TestWithMPI):
         self.assertAlmostRelativeEquals(instance.model_time, 60 | units.Myr)
         self.assertAlmostRelativeEquals(instance.particles.age, [60,60,30,30] | units.Myr)
         self.assertAlmostRelativeEquals(instance.particles[2].mass, 1.2507 | units.MSun, 4)
-        self.assertAlmostRelativeEquals(instance.particles[3].mass, 8.9340 | units.MSun, 4)
+        self.assertAlmostRelativeEquals(instance.particles[3].mass, 8.9351 | units.MSun, 4)
 
     def test_supernova_stopping_condition(self):
         """ Test supernova stopping condition """

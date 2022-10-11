@@ -632,6 +632,22 @@ int get_apsidal_motion_constant(int index_of_the_star, double * apsidal_motion_c
     return error_code;
 }
 
+int get_zeta_thermal(int index_of_the_star, double * zeta_thermal){
+    int error_code = 0;
+    node * seba_node = get_seba_node_from_index(index_of_the_star, &error_code);
+    if(error_code < 0) {return error_code;}
+    *zeta_thermal = seba_node->get_starbase()->zeta_thermal();
+    return error_code;
+}
+
+int get_zeta_adiabatic(int index_of_the_star, double * zeta_adiabatic){
+    int error_code = 0;
+    node * seba_node = get_seba_node_from_index(index_of_the_star, &error_code);
+    if(error_code < 0) {return error_code;}
+    *zeta_adiabatic = seba_node->get_starbase()->zeta_adiabatic();
+    return error_code;
+}
+
 int get_rotation_period(int index_of_the_star, double * rotation_period){
     int error_code = 0;
     node * seba_node = get_seba_node_from_index(index_of_the_star, &error_code);
