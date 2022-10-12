@@ -26,6 +26,7 @@ all_data_files = []
 
 packages = [
     'amuse.community.mesa',
+    'amuse.community.mesa_r15140',
 ]
 
 package_data = {
