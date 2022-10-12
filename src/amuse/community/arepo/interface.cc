@@ -15,7 +15,7 @@ using namespace std;
 
 void set_default_parameters(){
   // Relevant files
-  strcpy(All.InitCondFile, "./snap_010");
+  strcpy(All.InitCondFile, "./ICs");
   strcpy(All.OutputDir,   "./output");
   strcpy(All.SnapshotFileBase, "snap");
   strcpy(All.OutputListFilename, "./output_list.txt");
@@ -52,7 +52,7 @@ void set_default_parameters(){
 
   // Output frequency and output parameters
   All.OutputListOn = 1;
-  All.TimeBetSnapshot = 0.0;
+  All.TimeBetSnapshot = 0.1;
   All.TimeOfFirstSnapshot = 0.0;
   All.TimeBetStatistics = 0.01;
   All.NumFilesPerSnapshot = 1;
@@ -161,6 +161,8 @@ int initialize_code(){
     }
 
   begrun2();
+  /* TODO run() temporarily added to initialization for testing */
+  run();
   return 0;
 }
 

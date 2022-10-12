@@ -24,8 +24,12 @@ CODEOBJS = $(SRCS:c=o)
 CODEOBJS += main/allvars.o main/run.o main/main.o
 
 AREPOFLAGS += -DGRAVITY_NOT_PERIODIC  # no periodic boundaries by default
+AREPOFLAGS += -DHAVE_HDF5 -DH5_USE_16_API
 
 CXXFLAGS += $(AREPOFLAGS)
+
+# Add includes
+CXXFLAGS += $(HDF5_FLAGS)
 
 AR = ar ruv
 RANLIB = ranlib
