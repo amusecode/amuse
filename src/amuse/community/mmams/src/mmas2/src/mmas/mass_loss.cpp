@@ -18,7 +18,7 @@ real mmas::mass_loss() {
 //   } else {
 
   if(do_const)
-    f_ml=const_mass_loss;
+    f_ml=100*const_mass_loss; // because const_mass_loss is a fraction, while mass_loss returns percentage
   else
   { 
     f_ml = 8.36 * pow(q, -2.58) * pow(2*q/(1+q), 4.28);
