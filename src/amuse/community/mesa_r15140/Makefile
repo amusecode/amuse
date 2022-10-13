@@ -43,25 +43,8 @@ include $(PATCHES_DIR)/makefile_header_non_mesasdk
 
 all:	mesa_worker 
 
-ifdef DOWNLOAD_CODES
 $(MESA_DIR)/install:
 	make -C . download
-else
-$(MESA_DIR)/install:
-		@echo ""
-		@echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
-		@echo ""
-		@echo "DOWNLOAD_CODES is not set. MESA will not be downloaded and built."
-		@echo "If you do want MESA, set DOWNLOAD_CODES to 1."
-		@echo "bash> export DOWNLOAD_CODES=1"
-		@echo "csh> setenv DOWNLOAD_CODES 1"
-		@echo "Note: MESA is quite large (2.5 GB downloaded, 19 GB built) and"
-		@echo "requires gfortran (version >= 9.0.0)."
-		@echo ""
-		@echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
-		@echo ""
-		@make -s --no-print-directory -C . raise_error
-endif
 
 download:
 	$(RM) -Rf src
