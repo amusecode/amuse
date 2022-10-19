@@ -302,7 +302,7 @@ Save the file and recompile the code.
 
     > make clean
     > make all
-    > nosetests
+    > pysetest
     .
     ----------------------------------------------------------------------
     Ran 1 test in 0.427s
@@ -337,7 +337,7 @@ Let's run the test, and see if everything is working:
 
 .. code-block:: bash
 
-    > nosetests
+    > pysetest
     ..
     ----------------------------------------------------------------------
     Ran 2 test in 0.491s
@@ -741,7 +741,7 @@ We need to rebuild the code, and after building run the tests.
 .. code-block:: bash
 
     > make all
-    > nosetests
+    > pytest
     .
     ----------------------------------------------------------------------
     Ran 1 test in 0.427s
@@ -770,7 +770,7 @@ directory do:
 
     > make clean
     > make all
-    > nosetests
+    > pytest
     .
     ----------------------------------------------------------------------
     Ran 1 test in 0.311s
