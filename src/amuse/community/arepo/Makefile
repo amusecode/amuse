@@ -36,7 +36,7 @@ worker_code.h: interface.py
 	$(CODE_GENERATOR) --type=H interface.py ArepoInterface -o $@
 
 arepo_worker: worker_code.cc worker_code.h $(CODELIB) $(OBJS)
-	$(MPICXX) $(CXXFLAGS) $(GSL_FLAGS) $< $(OBJS) $(CODELIB) -o $@ $(GMP_LIBS) $(GSL_LIBS)
+	$(MPICXX) $(CXXFLAGS) $(GSL_FLAGS) $< $(OBJS) $(CODELIB) -o $@ $(GMP_LIBS) $(GSL_LIBS) $(HDF5_FLAGS) $(HDF5_LIBS)
 
 .cc.o: $<
 	$(MPICXX) $(CXXFLAGS) $(CODELIB) -c -o $@ $< 
