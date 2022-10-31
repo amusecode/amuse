@@ -215,7 +215,7 @@ if ROTATING_STAR:
         'icncst': 0,
         'tauH_fit': 1,
     }
-# evo.parameters.vwant = 0.4
+evo.parameters.vwant = 0.4
 evo.parameters.ipoly = 0
 # evo.parameters.idebug = 1
 star_in_evo = evo.fullparticles.add_particle(star)
@@ -244,12 +244,13 @@ time_start = time.time() | units.s
 time_of_last_plot = 0 | units.s
 age_of_last_plot = star_in_evo.age
 
-#plotting = StellarModelPlot(star_in_evo)
+plotting = StellarModelPlot(star_in_evo)
 
-evo.parameters.nzmod = 100
+# evo.parameters.nzmod = 100
+evo.parameters.n_snap = 0
 
 print("age   mass   radius   temp   lum   phase   vequat   h0   vwant")
-while step < 2:
+while step < 10000:
     time_elapsed = (time.time() | units.s) - time_start
     star = star_in_evo.copy()
     # number_of_zones = star_in_evo.get_number_of_zones()
@@ -277,8 +278,8 @@ while step < 2:
         evo.parameters.vwant,
     )
     if step % store_every == 0:
-        pass
-        #plotting.update(star_in_evo, phase=evo.parameters.phase)
+        # pass
+        plotting.update(star_in_evo, phase=evo.parameters.phase)
     if (
         (time_elapsed - time_of_last_plot) > plot_time
         or step - model_of_last_plot > plot_models
@@ -287,7 +288,7 @@ while step < 2:
             (star.age - age_of_last_plot).value_in(units.Myr)
             / (time_elapsed - time_of_last_plot).value_in(units.minute)
         ) | units.Myr / units.minute
-        #plotting.plot_all(speed=speed, step=step)
+        plotting.plot_all(speed=speed, step=step)
         model_of_last_plot = step
         time_of_last_plot = time_elapsed
         age_of_last_plot = star.age
@@ -306,13 +307,13 @@ while step < 2:
 
     age_previous = star_in_evo.age
     star_in_evo.evolve_one_step()
-    print(f"Condition: {evo.parameters.stopping_condition}")
-    if evo.parameters.stopping_condition != "none":
-        # star_in_evo.age == age_previous:
-        if step > 1:
-            print("Stopping - not evolving!")
-            print(f"Condition: {evo.parameters.stopping_condition}")
-            break
+    # print(f"Condition: {evo.parameters.stopping_condition}")
+    # if evo.parameters.stopping_condition != "none":
+    #     # star_in_evo.age == age_previous:
+    #     if step > 1:
+    #         print("Stopping - not evolving!")
+    #         print(f"Condition: {evo.parameters.stopping_condition}")
+    #         break
     step += 1
 
 runtime = (time.time() | units.s) - time_start
