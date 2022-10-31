@@ -43,7 +43,7 @@ worker_code.f90: interface.py
 	$(CODE_GENERATOR) --type=f90 interface.py GenecInterface -o $@
 
 genec_worker: worker_code.f90 $(CODELIB) $(OBJS)
-	$(MPIFC) $(FCFLAGS) $(FS_FLAGS) $< $(OBJS) -l$(CODELIB) $(FS_LIBS) -o $@
+	$(MPIFC) $(FCFLAGS) $(FS_FLAGS) $< $(OBJS) -o $@ -l$(CODELIB) $(FS_LIBS)
 
 %.o: %.f90
 	$(FC) $(FCFLAGS) -c -o $@ $<
