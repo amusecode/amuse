@@ -118,6 +118,42 @@ class GenecInterface(
     # Parameters
 
     @legacy_function
+    def get_par_n_snap():
+        'get parameter n_snap'
+        function = LegacyFunctionSpecification()
+        function.addParameter(
+            'n_snap', dtype='int32',
+            direction=function.OUT,
+        )
+        function.result_type = 'int32'
+        function.result_doc = '''
+        0 - OK
+            Got the value.
+        -1 - ERROR
+            Unable to get.
+        '''
+        return function
+
+    @legacy_function
+    def set_par_n_snap():
+        'set parameter n_snap'
+        function = LegacyFunctionSpecification()
+        function.addParameter(
+            'n_snap', dtype='int32',
+            direction=function.IN,
+        )
+        function.result_type = 'int32'
+        function.result_doc = '''
+        0 - OK
+            The value has been set.
+        -1 - ERROR
+            Unable to set.
+        -2 - ERROR
+            Cannot set at this point, already running.
+        '''
+        return function
+
+    @legacy_function
     def get_par_ipoly():
         'get parameter ipoly'
         function = LegacyFunctionSpecification()
@@ -5912,6 +5948,13 @@ class Genec(StellarEvolution, InternalStellarStructure):
             "set_par_stopping_condition",
             "stopping_condition",
             "GENEC parameter stopping_condition",
+        )
+
+        handler.add_method_parameter(
+            "get_par_n_snap",
+            "set_par_n_snap",
+            "n_snap",
+            "GENEC snapshot writing",
         )
 
         # handler.add_method_parameter(

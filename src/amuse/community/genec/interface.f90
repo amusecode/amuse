@@ -1,6 +1,6 @@
 function initialize_code()
-    use WriteSaveClose, only: quitafterclosing
-    use inputparam, only: amuseinterface, writetofiles, readfromfiles
+    !use WriteSaveClose, only: quitafterclosing
+    use inputparam, only: amuseinterface
     use genec, only: initialise_genec
     use amuse_helpers, only: set_defaults
     use amuse_helpers, only: mstar, zini, starname
@@ -9,15 +9,13 @@ function initialize_code()
     integer:: initialize_code
 
     amuseinterface = .true.
-    writetofiles = .false.
-    readfromfiles = .false.
     input_dir = "./src/GENEC/code"
     call initialise_genec()
     call set_defaults()
     starname = "AmuseDefaultStar"
     mstar = 7.0
     zini = 0.014
-    quitafterclosing = .false.    
+    !quitafterclosing = .false.    
 
     initialize_code = 0
 end function
@@ -128,6 +126,24 @@ function get_min_timestep_stop_condition(min_timestep_stop_condition)
     double precision:: min_timestep_stop_condition
     integer:: get_min_timestep_stop_condition
     get_min_timestep_stop_condition = 0
+end function
+
+function get_par_n_snap(n_snap_out)
+    use inputparam, only: n_snap
+    implicit none
+    integer:: n_snap_out
+    integer:: get_par_n_snap
+    n_snap_out = n_snap
+    get_par_n_snap = 0
+end function
+
+function set_par_n_snap(n_snap_in)
+    use inputparam, only: n_snap
+    implicit none
+    integer:: n_snap_in
+    integer:: set_par_n_snap
+    n_snap = n_snap_in
+    set_par_n_snap= 0
 end function
 
 function get_par_ipoly(par_ipoly)
@@ -1817,9 +1833,9 @@ function evolve_model(end_time)
         write(*,*) "Current time: ", alter, ", evolving to: ", end_time
         !modell = 1
         call evolve()
-        call finalise()
-        call OpenAll()
-        call initialise_star()
+        !call finalise()
+        !call OpenAll()
+        !call initialise_star()
         !write(*,*) "*****Modell: ", modell
       else
         write(*,*) "stopped: ", stopping_condition
@@ -1849,9 +1865,9 @@ function evolve_for(index_of_the_star, time)
         write(*,*) "Current time: ", alter, ", evolving to: ", end_time
         !modell = 1
         call evolve()
-        call finalise()
-        call OpenAll()
-        call initialise_star()
+        !call finalise()
+        !call OpenAll()
+        !call initialise_star()
         !write(*,*) "*****Modell: ", modell
     end do
 
@@ -1876,9 +1892,9 @@ function evolve_one_step(index_of_the_star)
     if (stopping_condition == "") then
       call evolve()
       if (stopping_condition /= "") return
-      call finalise()
-      call OpenAll()
-      call initialise_star() ! will set modell to 1
+      !call finalise()
+      !call OpenAll()
+      !call initialise_star() ! will set modell to 1
       write(*,*) "Evolved one step, current time: ", alter
       !nzmod = original_nzmod
       !write(*,*) "*****modanf, nwseq, nzmod: ", modanf, nwseq, nzmod
@@ -1899,16 +1915,13 @@ function write_genec_model()
     use WriteSaveClose, only: OpenAll
     use genec, only: finalise
     use amuse_helpers, only: initialise_star
-    use inputparam, only: writetofiles
     implicit none
     integer:: write_genec_model
     call finalise()
     ! modanf = 0
-    writetofiles = .true.
     call OpenAll()
     call initialise_star()
     !call finalise()
-    writetofiles = .false.
     !call OpenAll()
     !call initialise_star()
     write_genec_model = 0
