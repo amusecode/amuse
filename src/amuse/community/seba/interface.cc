@@ -547,6 +547,8 @@ int recall_memory_one_step(int index_of_the_star){
     if(error_code < 0) {return error_code;}
 
     seba_node->get_starbase()->recall_memory();    
+    seba_time = seba_node->get_starbase()->get_current_time() - seba_node->get_starbase()->get_time_offset();	
+    
     return error_code;
 }
 
