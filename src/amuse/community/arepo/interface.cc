@@ -36,6 +36,7 @@ void set_default_parameters(){
   // Characteristics of run
   All.TimeBegin = 0.0;
   All.TimeMax = 1.0;
+  All.TimeStep = 0.1;
 
   // Basic code options that set simulation type
   All.ComovingIntegrationOn = 0;
@@ -136,6 +137,9 @@ int initialize_code(){
   mpi_report_committable_memory();
 
   set_default_parameters();
+
+  // May not need to do this (we want AMUSE to manage this)
+  // MPI_Bcast(&All, sizeof(struct global_data_all_processes), MPI_BYTE, 0, MPI_COMM_WORLD);
   begrun1(); /* set-up run  */
 
   char fname[MAXLEN_PATH];
