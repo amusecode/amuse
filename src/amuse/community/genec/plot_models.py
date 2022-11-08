@@ -16,6 +16,8 @@ class StellarModelPlot:
             'density': units.g * units.cm**-3,
         }
         self.star = star
+        self.__n_zones = 0
+        self.__redraw = True
         self.__phase = 1
         self.__age = [] | self.default_units['age']
         self.__mass = [] | self.default_units['mass']
@@ -57,6 +59,9 @@ class StellarModelPlot:
 
     def update(self, star, phase=1):
         self.star = star
+        if self.__n_zones != star.n_zones:
+            self.__redraw = True
+            self.__n_zones = star.n_zones
         self.__phase = phase
         self.__age.append(star.age)
         self.__mass.append(star.mass)
@@ -72,7 +77,9 @@ class StellarModelPlot:
                 self.__abundances[i, 0]
             )
 
-    def draw(self, verbose=False, speed=0 | units.Myr / units.minute, step=None):
+    def draw(
+        self, verbose=False, speed=0 | units.Myr / units.minute, step=None
+    ):
         for i, fig in self.__figures.items():
             if verbose:
                 print(f"drawing figure {i}")
@@ -327,9 +334,20 @@ class StellarModelPlot:
 
     def plot_abundance_profile(self):
         title = "Abundance profile"
-        if title not in self.__initialised:
+        if self.__redraw:
+            title = "Abundance profile"
+            ax = self.__axes[title]
+            ax.clear()
+        if (
+            title not in self.__initialised
+            or self.__redraw
+        ):
             self.initialise_abundance_profile()
         mass_profile = self.star.get_cumulative_mass_profile()
+        # Must reinitialise in some way if the number of zones has changed!
+        # if len(mass_profile) != len(self.__abundance_plots[0].get_xdata()):
+        #     self.initialise_abundance_profile()
+
         for i, species in enumerate(self.__species):
             self.__abundance_plots[i].set_xdata(
                 mass_profile
@@ -401,5 +419,6 @@ class StellarModelPlot:
 
         for fig in self.__figures.values():
             fig.canvas.flush_events()
+        self.__redraw = False
         plt.pause(0.01)
         # plt.show(block=False)
