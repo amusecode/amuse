@@ -22,7 +22,7 @@ void set_default_parameters(){
 
   // File formats
   All.ICFormat = 1;
-  All.SnapFormat = 3;
+  All.SnapFormat = 1;
 
   // CPU-time LimitUBelowThisDensity
   All.TimeLimitCPU = 93000;
