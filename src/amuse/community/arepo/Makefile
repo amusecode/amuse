@@ -19,6 +19,7 @@ AREPOFLAGS += -DTREE_BASED_TIMESTEPS                     # non-local timestep cr
 AREPOFLAGS += -DDOUBLEPRECISION=1                        # Mode of double precision: not defined: single; 1: full double precision 2: mixed, 3: mixed, fewer single precisions; unless short of memory, use 1.
 AREPOFLAGS += -DNGB_TREE_DOUBLEPRECISION                 # if this is enabled, double precision is used for the neighbor node extension
 AREPOFLAGS += -DPROCESS_TIMES_OF_OUTPUTLIST              # goes through times of output list prior to starting the simulaiton to ensure that outputs are written as close to the desired time as possible (as opposed to at next possible time if this flag is not active)
+AREPOFLAGS += -DMULTIPLE_RESTARTS
 # AREPOFLAGS += -DHAVE_HDF5                                # needed when HDF5 I/O support is desired (recommended)
 # AREPOFLAGS += -DDEBUG                                    # enables core-dumps
 

@@ -441,6 +441,11 @@ int check_for_interruption_of_run(void)
           printf("reaching time-limit. stopping.\n");
           stopflag = 2;
         }
+
+      if(All.Time >= All.TimeMax)
+        {
+          stopflag = 1;  // AMUSE stop: time reached. Emulate stop file behaviour.
+        }
     }
 
   MPI_Bcast(&stopflag, 1, MPI_INT, 0, MPI_COMM_WORLD);

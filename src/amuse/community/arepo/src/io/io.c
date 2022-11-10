@@ -366,6 +366,7 @@ void savepositions(int num, int subbox_flag)
   char buf[500];
   int n, filenr, gr, ngroups, masterTask, lastTask;
   double t0, t1;
+  return;
 
   t0 = second();
   CPU_Step[CPU_MISC] += measure_time();
