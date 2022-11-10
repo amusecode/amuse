@@ -35,8 +35,8 @@ void set_default_parameters(){
 
   // Characteristics of run
   All.TimeBegin = 0.0;
-  All.TimeMax = 1.0;
-  All.TimeStep = 0.1;
+  All.TimeMax = 2.7;
+  All.TimeStep = 0.00314159;
 
   // Basic code options that set simulation type
   All.ComovingIntegrationOn = 0;
@@ -166,7 +166,6 @@ int initialize_code(){
 
   begrun2();
   /* TODO run() temporarily added to initialization for testing */
-  run();
   return 0;
 }
 
@@ -229,6 +228,10 @@ int get_total_mass(double * mass){
 }
 
 int evolve_model(double time){
+  printf("AMUSE interface: setting TimeMax from %g to %g\n", All.TimeMax, time);
+  All.TimeMax = time;
+  //All.TimeStep = time - All.Time;
+  run();
   return 0;
 }
 
