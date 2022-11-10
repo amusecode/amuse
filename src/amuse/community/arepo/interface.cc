@@ -138,6 +138,8 @@ int initialize_code(){
 
   set_default_parameters();
 
+  RestartFlag = 0;
+
   // May not need to do this (we want AMUSE to manage this)
   // MPI_Bcast(&All, sizeof(struct global_data_all_processes), MPI_BYTE, 0, MPI_COMM_WORLD);
   begrun1(); /* set-up run  */
