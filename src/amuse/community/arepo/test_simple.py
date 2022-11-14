@@ -5,10 +5,14 @@ from amuse.units import nbody_system
 # Check code runs without errors
 x = Arepo(redirection="none")
 x.initialize_code()
-print("Evolving")
-x.evolve_model(0.00001)
-print("Evolving another step")
-x.evolve_model(0.00002)
+print(x.get_position(21057));
+print(x.get_position(21060));
+
+#print("Evolving")
+#x.evolve_model(0.00001)
+#print("Evolving another step")
+#x.evolve_model(0.00002)
+
 #x.run_sim()
 #END_TIME = 1.0 | s
 #x.evolve_model(END_TIME)

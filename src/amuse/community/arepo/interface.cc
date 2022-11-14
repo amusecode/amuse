@@ -331,9 +331,26 @@ int get_velocity(int index_of_the_particle, double * vx, double * vy,
   return 0;
 }
 
+static int find_particle_with_ID(int particle_id) {
+  for (int p = 0; p<NumPart; p++) {
+    if (P[p].ID == particle_id) {
+      return p;
+    }
+  }
+  return -1;
+}
+
 int get_position(int index_of_the_particle, double * x, double * y,
   double * z){
-  return 0;
+    // numparts parrticles in p array
+    int p = find_particle_with_ID(index_of_the_particle);
+    if (p >= 0) {
+      *x = P[p].Pos[0];
+      *y = P[p].Pos[1];
+      *z = P[p].Pos[2];
+      return 0;
+    }
+    return -3;
 }
 
 int set_position(int index_of_the_particle, double x, double y, double z){
