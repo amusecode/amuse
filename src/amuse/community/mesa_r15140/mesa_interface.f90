@@ -582,7 +582,6 @@ module mesa_interface
         s% max_age = s% star_age + delta_t
         s% num_adjusted_dt_steps_before_max_age =  -1
 
-        s%dt_next = delta_t * secyer
         evolve_loop: do 
             call do_evolve_one_step(id, result, ierr)
             if (result /= keep_going) then
@@ -598,6 +597,7 @@ module mesa_interface
 
         ! In case you want to evolve further
         s% max_age = old_age
+        if(s% dt_next==0) s% dt_next = s% dt
 
         s% doing_first_model_of_run = .false.
 
