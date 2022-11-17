@@ -196,8 +196,25 @@ int cleanup_code(){
   return 0;
 }
 
+// Naive search for ID
+// TODO: Implement this with a map (reverse look-up), possibly with a check
+// to see if the ID is wrong and we need to re-create the map
+static int find_particle_with_ID(int particle_id) {
+  for (int p = 0; p<NumPart; p++) {
+    if (P[p].ID == particle_id) {
+      return p;
+    }
+  }
+  return -1;
+}
+
 int get_mass(int index_of_the_particle, double * mass){
-  return 0;
+  int p = find_particle_with_ID(index_of_the_particle);
+  if (p >= 0) {
+    *mass = P[p].Mass;
+    return 0;
+  }
+  return -3;
 }
 
 int commit_particles(){
@@ -205,6 +222,7 @@ int commit_particles(){
 }
 
 int get_time(double * time){
+  *time = All.Time;
   return 0;
 }
 
@@ -242,6 +260,7 @@ int set_eps2(double epsilon_squared){
 }
 
 int get_begin_time(double * time){
+  *time = All.TimeBegin;
   return 0;
 }
 
@@ -274,10 +293,12 @@ int set_state(int index_of_the_particle, double mass, double x, double y,
 int get_state(int index_of_the_particle, double * mass, double * x,
   double * y, double * z, double * vx, double * vy, double * vz,
   double * radius){
+    // Arepo has delaunay cell radii.
   return 0;
 }
 
 int get_time_step(double * time_step){
+  *time_step = All.TimeStep;
   return 0;
 }
 
@@ -311,6 +332,7 @@ int get_radius(int index_of_the_particle, double * radius){
 }
 
 int set_begin_time(double time){
+  All.TimeBegin = time;
   return 0;
 }
 
@@ -328,16 +350,14 @@ int get_potential_energy(double * potential_energy){
 
 int get_velocity(int index_of_the_particle, double * vx, double * vy,
   double * vz){
-  return 0;
-}
-
-static int find_particle_with_ID(int particle_id) {
-  for (int p = 0; p<NumPart; p++) {
-    if (P[p].ID == particle_id) {
-      return p;
-    }
+  int p = find_particle_with_ID(index_of_the_particle);
+  if (p >= 0) {
+    *vx = P[p].Vel[0];
+    *vy = P[p].Vel[1];
+    *vz = P[p].Vel[2];
+    return 0;
   }
-  return -1;
+  return -3;
 }
 
 int get_position(int index_of_the_particle, double * x, double * y,
@@ -359,6 +379,7 @@ int set_position(int index_of_the_particle, double x, double y, double z){
 
 int get_acceleration(int index_of_the_particle, double * ax, double * ay,
   double * az){
+    // TODO: allvars.h defines a GravAccel vector if this is what we want?
   return 0;
 }
 
