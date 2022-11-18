@@ -1,5 +1,6 @@
 #include <cstdio>
 #include <cstring>
+#include <map>
 
 #ifndef NOMPI
 #include <mpi.h>
@@ -12,6 +13,13 @@
 // general interface functions:
 
 using namespace std;
+
+
+// Global ID_RLOOKUP will be initalized by create_ID_reverse_lookup in
+// initialize_code()
+map<MyIDType, size_t> ID_RLOOKUP;
+static void create_ID_reverse_lookup();
+
 
 void set_default_parameters(){
   // Relevant files
@@ -167,7 +175,8 @@ int initialize_code(){
     }
 
   begrun2();
-  /* TODO run() temporarily added to initialization for testing */
+  create_ID_reverse_lookup();
+
   return 0;
 }
 
@@ -196,14 +205,39 @@ int cleanup_code(){
   return 0;
 }
 
-// Naive search for ID
-// TODO: Implement this with a map (reverse look-up), possibly with a check
-// to see if the ID is wrong and we need to re-create the map
+static void create_ID_reverse_lookup() {
+  map<MyIDType, size_t> id_rlookup_local;
+  for (size_t i = 0; i < NumPart; i++) {
+    MyIDType id = P[i].ID;
+    id_rlookup_local[id] = i;
+  }
+  ID_RLOOKUP = id_rlookup_local;
+}
+
 static int find_particle_with_ID(int particle_id) {
-  for (int p = 0; p<NumPart; p++) {
-    if (P[p].ID == particle_id) {
-      return p;
+  for (int j = 0; j < 2; ++j) {
+    // If there's a problem, rebuild ID_RLOOKUP and retry once
+    // These cautious checks may add unnecessary overhead
+
+    auto it = ID_RLOOKUP.find(particle_id);
+
+    if (it == ID_RLOOKUP.end()) {
+      // particle_id wasn't in the map - rebuild ID_RLOOKUP and try again
+      cout << "AMUSE: Rebuilding particle_ID lookup.\n";
+      create_ID_reverse_lookup();
+      continue;
     }
+
+    size_t particle_pos = (*it).second;
+
+    if (P[particle_pos].ID != particle_id) {
+      // particle_id had the wrong value - rebuild ID_RLOOKUP and try again
+      cout << "AMUSE: Rebuilding particle ID lookup table.\n";
+      create_ID_reverse_lookup();
+      continue;
+    }
+
+    return particle_pos;
   }
   return -1;
 }
@@ -362,7 +396,6 @@ int get_velocity(int index_of_the_particle, double * vx, double * vy,
 
 int get_position(int index_of_the_particle, double * x, double * y,
   double * z){
-    // numparts parrticles in p array
     int p = find_particle_with_ID(index_of_the_particle);
     if (p >= 0) {
       *x = P[p].Pos[0];

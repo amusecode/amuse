@@ -5,8 +5,8 @@ from amuse.units import nbody_system
 # Check code runs without errors
 x = Arepo(redirection="none")
 x.initialize_code()
-print(x.get_position(21057));
-print(x.get_position(21060));
+print(x.get_position(21057))  # This is the ID of P[0]
+print(x.get_position(21060))
 
 #print("Evolving")
 #x.evolve_model(0.00001)
