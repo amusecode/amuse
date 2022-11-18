@@ -256,6 +256,7 @@ int commit_particles(){
 }
 
 int get_time(double * time){
+  if (ThisTask) {return 0;}
   *time = All.Time;
   return 0;
 }
@@ -290,16 +291,19 @@ int evolve_model(double time){
 }
 
 int set_eps2(double epsilon_squared){
-  return 0;
+  if (ThisTask) {return 0;}
+  return -2;
 }
 
 int get_begin_time(double * time){
+  if (ThisTask) {return 0;}
   *time = All.TimeBegin;
   return 0;
 }
 
 int get_eps2(double * epsilon_squared){
-  return 0;
+  if (ThisTask) {return 0;}
+  return -2;
 }
 
 int get_index_of_next_particle(int index_of_the_particle,
@@ -332,6 +336,7 @@ int get_state(int index_of_the_particle, double * mass, double * x,
 }
 
 int get_time_step(double * time_step){
+  if (ThisTask) {return 0;}
   *time_step = All.TimeStep;
   return 0;
 }
@@ -345,12 +350,14 @@ int get_kinetic_energy(double * kinetic_energy){
 }
 
 int get_number_of_particles(int * number_of_particles){
+  if (ThisTask) {return 0;}
+  *number_of_particles = All.TotNumPart;
   return 0;
 }
 
 int set_acceleration(int index_of_the_particle, double ax, double ay,
   double az){
-  return 0;
+  return -2;
 }
 
 int get_center_of_mass_position(double * x, double * y, double * z){
@@ -362,7 +369,7 @@ int get_center_of_mass_velocity(double * vx, double * vy, double * vz){
 }
 
 int get_radius(int index_of_the_particle, double * radius){
-  return 0;
+  return -2;
 }
 
 int set_begin_time(double time){
@@ -371,7 +378,7 @@ int set_begin_time(double time){
 }
 
 int set_radius(int index_of_the_particle, double radius){
-  return 0;
+  return -2;
 }
 
 int recommit_parameters(){
