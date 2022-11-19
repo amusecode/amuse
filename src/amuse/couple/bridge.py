@@ -89,7 +89,7 @@ import threading
 from amuse.units import quantities
 from amuse.units import units, constants, generic_unit_system, nbody_system
 from amuse import datamodel
-from amuse.support.exceptions import AmuseException
+from amuse.support.exceptions import AmuseException, CoreException
 
 
 
@@ -320,12 +320,13 @@ class GravityCodeInField(object):
             required_attributes.append('h_smooth')
         self.required_attributes = lambda p, x : x in required_attributes
 
-        if not hasattr(self.code,"parameters"):
-            self.zero_smoothing=True
-        elif not hasattr(self.code.parameters,"epsilon_squared"):
-            self.zero_smoothing=True
-        else:
-            self.zero_smoothing=zero_smoothing
+        try:
+            hasattr(self.code.parameters, "epsilon_squared")
+            self.zero_smoothing = zero_smoothing
+        except AttributeError:
+            self.zero_smoothing = True
+        except CoreException:  # hasattr will fail with an exception
+            self.zero_smoothing = True
 
 
     def evolve_model(self,tend,timestep=None):
