@@ -33,9 +33,12 @@ jobs:
     - name: Install amuse
       run: |
         pip install -e .
-    - name: AMUSE code builds
+    - name: build AMUSE framework
       run: |
-        python setup.py develop_build
+        make framework
+    - name: build SSE and BHTree
+      run: |
+        make sse.code bhtree.code
     - name: check installation
       run: |
         amusifier --get-amuse-configmk

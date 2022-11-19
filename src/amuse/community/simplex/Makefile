@@ -23,7 +23,6 @@ GLOBJS = $(OBJDIR)/amuse_interface_gl.o
 HEALPIX_PATH = $(PLUGINS)/HEALPix/
 QHULL_PATH = $(PLUGINS)/qhull-2012.1/
 
-HDF5_PATH = /Users/jppaarde/sw/hdf5-1.6.10/installed
 HDF5_FLAGS ?= -I$(HDF5_PATH)/include
 HDF5_LIBS  ?= -L$(HDF5_PATH)/lib -lhdf5 -lz
 
@@ -39,7 +38,6 @@ LIBS =  $(HDF5_LIBS) \
         -L$(QHULL_PATH)/lib -lqhullstatic \
         -L$(HEALPIX_PATH)/lib  -lhealpix_cxx
 
-GL_PATH ?= /home/inti/libraries/f90gl-1.2.11
 GLINCLUDE = -I/usr/include/GL -I$(GL_PATH)/include/GL/
 GLLIB = -L$(GL_PATH)/lib -lf90GLU -lf90GL -lf90glut  -lGLU -lGL -lglut  #-lguide 
 GLLIBS= $(GLLIB) -lGL -lGLU -L/home/inti/libraries/freeglut-2.4.0/src/.libs -lglut \
