@@ -323,6 +323,8 @@ class GravityCodeInField(object):
         try:
             epsilon_squared = self.code.parameters.epsilon_squared
             self.zero_smoothing = zero_smoothing
+        except AttributeError:
+            self.zero_smoothing = True 
         except CoreException:  # hasattr will fail with an exception
             self.zero_smoothing = True
 
