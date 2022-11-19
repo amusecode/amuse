@@ -321,10 +321,10 @@ class GravityCodeInField(object):
         self.required_attributes = lambda p, x : x in required_attributes
 
         try:
-            epsilon_squared = self.code.parameters.epsilon_squared
+            hasattr(self.code.parameters, "epsilon_squared")
             self.zero_smoothing = zero_smoothing
         except AttributeError:
-            self.zero_smoothing = True 
+            self.zero_smoothing = True
         except CoreException:  # hasattr will fail with an exception
             self.zero_smoothing = True
 
