@@ -36,6 +36,9 @@ jobs:
     - name: build AMUSE framework
       run: |
         make framework
+    - name: build SSE and BHTree
+      run: |
+        make sse.code bhtree.code
     - name: check installation
       run: |
         amusifier --get-amuse-configmk
