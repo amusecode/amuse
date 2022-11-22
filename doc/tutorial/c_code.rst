@@ -302,7 +302,7 @@ Save the file and recompile the code.
 
     > make clean
     > make all
-    > nosetests
+    > pysetest
     .
     ----------------------------------------------------------------------
     Ran 1 test in 0.427s
@@ -337,7 +337,7 @@ Let's run the test, and see if everything is working:
 
 .. code-block:: bash
 
-    > nosetests
+    > pysetest
     ..
     ----------------------------------------------------------------------
     Ran 2 test in 0.491s
@@ -469,9 +469,9 @@ test_nearestneighbor.py class and add this method:
         
         n0, n1, n2 = instance.find_nearest_neighbors(x,y,z)
         
-        self.assertEquals(n0, [2,1,2,3])
-        self.assertEquals(n1, [3,3,4,2])
-        self.assertEquals(n2, [4,4,1,1])
+        self.assertEquals(n0, [1,0,1,2])
+        self.assertEquals(n1, [2,2,3,1])
+        self.assertEquals(n2, [3,3,0,0])
         
         instance.stop()
 
@@ -741,7 +741,7 @@ We need to rebuild the code, and after building run the tests.
 .. code-block:: bash
 
     > make all
-    > nosetests
+    > pytest
     .
     ----------------------------------------------------------------------
     Ran 1 test in 0.427s
@@ -770,7 +770,7 @@ directory do:
 
     > make clean
     > make all
-    > nosetests
+    > pytest
     .
     ----------------------------------------------------------------------
     Ran 1 test in 0.311s

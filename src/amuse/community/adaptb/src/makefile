@@ -12,9 +12,8 @@ CXXFLAGS ?= -Wall -g -O2
 CXXFLAGS += -std=c++11
 CFLAGS ?= -Wall -g -O2
 
-GMP_LIBS ?= -L/home/boekholt/Packages/ -lgmp
-MPFR_LIBS ?= -L/home/boekholt/Packages/ -lmpfr
-MPFR_FLAGS ?= -I/home/boekholt/Packages/
+GMP_LIBS ?= -lgmp
+MPFR_LIBS ?= -lmpfr
 LIBS = $(MPFR_LIBS) $(GMP_LIBS)
 
 ###################################################################

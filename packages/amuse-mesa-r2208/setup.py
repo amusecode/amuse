@@ -7,16 +7,15 @@ import support
 support.use("system")
 from support.setup_codes import setup_commands
 
-name = 'amuse-mesa'
+name = 'amuse-mesa-r2208'
 author = 'The AMUSE team'
 author_email = 'info@amusecode.org'
 license_ = "Apache License 2.0"
 url = 'http://www.amusecode.org/'
 install_requires = [
     'amuse-framework',
-    'amuse-mesa-r15140',
 ]
-description = 'The Astrophysical Multipurpose Software Environment - MESA'
+description = 'The Astrophysical Multipurpose Software Environment - MESA (r2208)'
 with open("README.md", "r") as fh:
     long_description = fh.read()
 long_description_content_type = "text/markdown"
@@ -26,7 +25,7 @@ extensions = []
 all_data_files = []
 
 packages = [
-    'amuse.community.mesa',
+    'amuse.community.mesa_r2208',
 ]
 
 package_data = {
@@ -35,7 +34,7 @@ package_data = {
 mapping_from_command_name_to_command_class = setup_commands()
 
 try:
-    from src.amuse.community.mesa.version import version
+    from src.amuse.community.mesa_r2208.version import version
     use_scm_version = False
     setup_requires = []
 except ImportError:
@@ -44,7 +43,7 @@ except ImportError:
     use_scm_version = {
         "root": "../..",
         "relative_to": __file__,
-        "write_to": "src/amuse/community/mesa/version.py",
+        "write_to": "src/amuse/community/mesa_r2208/version.py",
     }
 
 setup(
@@ -65,7 +64,7 @@ setup(
     cmdclass=mapping_from_command_name_to_command_class,
     ext_modules=extensions,
     package_dir={
-        'amuse.community.mesa': 'src/amuse/community/mesa',
+        'amuse.community.mesa_r2208': 'src/amuse/community/mesa_r2208',
     },
     packages=packages,
     package_data=package_data,
