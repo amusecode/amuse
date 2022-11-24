@@ -12,8 +12,7 @@ class FractalClusterInterface(CodeInterface,  LiteratureReferencesMixIn):
     subunits forcing the number of cells if force=.true.
     
     reference:
-        .. [#] Simon Goodwin & Ant Whitworth (2004, A&A, 413, 929) [2004A&A...413..929G]
-
+        .. [#] ADS:2004A&A...413..929G (Simon Goodwin & Ant Whitworth (2004, A&A, 413, 929))
     """
 
     def __init__(self, **options):

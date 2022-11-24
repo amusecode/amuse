@@ -19,6 +19,9 @@ class SecularMultipleInterface(CodeInterface):
     A code to compute the secular (orbit-averaged) gravitational dynamics of hierarchical multiple systems composed of nested binary orbits (simplex-type systems). with any configuration and any number of bodies. A particle can repesent a binary (`is_binary = True') or a body (`is_binary = False'). The structure of the system is determined by linking to other particles with the attributes child1 and child2. Tidal interactions and relativistic corrections are included in an ad hoc fashion (tides: treating the companion as a single body, even if it is not; relativistic terms: only including binary-binary interactions).
     
     November 2017: Updates for external perturbations (flybys & supernovae), detailed in Hamers (2018, in prep)
+
+    .. [#] ADS:2016MNRAS.459.2827H
+    .. [#] ADS:2018MNRAS.476.4139H
     
     """
     include_headers = ['interface.h','src/types.h','src/evolve.h','src/ODE_system.h']

@@ -4,9 +4,7 @@ from amuse.community.interface.gd import GravitationalDynamicsInterface
 
 class EticsInterface(CodeInterface, GravitationalDynamicsInterface, LiteratureReferencesMixIn):
     """
-        .. [#] Meiron, Y., Li, B., Holley-Bockelmann, K., & Spurzem, R. 2014, ApJ, 792, 98:
-        .. [#] ... "Expansion techniques for collisionless stellar dynamical simulations"
-        .. [#] [2014ApJ...792...98M]
+        .. [#] ADS:2014ApJ...792...98M (Meiron, Y., Li, B., Holley-Bockelmann, K., & Spurzem, R. 2014, ApJ, 792, 98)
     """
 
     include_headers = ['worker_code.h']

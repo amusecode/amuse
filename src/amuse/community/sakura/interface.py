@@ -6,7 +6,7 @@ MODULES_MISSING = False
 class SakuraInterface(CodeInterface, GravitationalDynamicsInterface, LiteratureReferencesMixIn, 
         StoppingConditionInterface, CodeWithDataDirectories):
     """
-    Sakura (Ferrari et al. 2014)
+    .. [#] ADS:2014MNRAS.440..719G (Goncalves Ferrari, Boekholt, Portegies Zwart; 2014 MNRAS, 440, 719
     """
     include_headers = ['worker_code.h', 'stopcond.h']
 
