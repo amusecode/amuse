@@ -17,6 +17,7 @@ except ImportError:
 
 import atexit
 import sys
+from os.path import exists
 import traceback
 import importlib
 
@@ -31,7 +32,7 @@ LiteratureReference = namedtuple(
 
 class TrackLiteratureReferences:
     """
-        .. [#] https://doi.org/10.5281/zenodo.4946130
+        .. [#] https://doi.org/10.5281/zenodo.1435860
         .. [#] [2018araa.book.....P] Portegies Zwart, S. & McMillan, S.L.W., 2018
         .. [#] [2013CoPhC.183..456P] ** Portegies Zwart, S. et al., 2013
         .. [#] [2013A&A...557A..84P] ** Pelupessy, F. I. et al., 2013
@@ -54,7 +55,10 @@ class TrackLiteratureReferences:
     def register(self):
         self.original_excepthook = sys.excepthook
         sys.excepthook = self.exception_hook
-        atexit.register(self.atexit_hook)
+        if "--bibtex" in sys.argv:
+            atexit.register(self.atexit_bibtex_hook)
+        else:
+            atexit.register(self.atexit_hook)
         
     @classmethod
     def suppress_output(cls):
@@ -70,6 +74,39 @@ class TrackLiteratureReferences:
         #print ''.join(lines)
    
         self.original_excepthook(*arguments)
+
+    def atexit_bibtex_hook(self):
+        if not self.original_excepthook is None:
+            sys.excepthook = self.original_excepthook
+        self.original_excepthook = None
+        
+        if self.must_show_literature_references_atexit and not "--no-report-references" in sys.argv:
+            string = self.all_literature_references_string()
+            if string:
+                tex_filename = f"bib-{sys.argv[0]}.tex"
+                bib_filename = f"bib-{sys.argv[0]}.bib"
+                filenumber = 0
+                while exists(tex_filename) or exists(bib_filename):
+                    filenumber += 1
+                    tex_filename = f"bib-{sys.argv[0]}-{filenumber}.tex"
+                    bib_filename = f"bib-{sys.argv[0]}-{filenumber}.bib"
+
+                terminal_message = f"""
+
+Thank you for using AMUSE!
+In this session you have used several AMUSE modules. 
+Please use the {tex_filename} and {bib_filename} files to include the relevant citations.
+
+"""
+                prefix = "In this article, we used AMUSE and the following AMUSE modules:"
+                with open(tex_filename, 'w') as tex_out:
+                    tex_out.write(
+                        f"{prefix}"
+                        f"{self.all_literature_references_string()}"
+                    )
+                print(terminal_message)
+        
+
         
     def atexit_hook(self):
         if not self.original_excepthook is None:
