@@ -3356,41 +3356,41 @@ class GenecInterface(
         '''
         return function
 
-    @legacy_function
-    def get_par_stopping_condition():
-        'get parameter stopping_condition'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'stopping_condition', dtype='string',
-            direction=function.OUT,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            Got the value.
-        -1 - ERROR
-            Unable to get.
-        '''
-        return function
+    # @legacy_function
+    # def get_par_stopping_condition():
+    #     'get parameter stopping_condition'
+    #     function = LegacyFunctionSpecification()
+    #     function.addParameter(
+    #         'stopping_condition', dtype='string',
+    #         direction=function.OUT,
+    #     )
+    #     function.result_type = 'int32'
+    #     function.result_doc = '''
+    #     0 - OK
+    #         Got the value.
+    #     -1 - ERROR
+    #         Unable to get.
+    #     '''
+    #     return function
 
-    @legacy_function
-    def set_par_stopping_condition():
-        'set parameter stopping_condition'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'stopping_condition', dtype='string',
-            direction=function.IN,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            The value has been set.
-        -1 - ERROR
-            Unable to set.
-        -2 - ERROR
-            Cannot set at this point, already running.
-        '''
-        return function
+    # @legacy_function
+    # def set_par_stopping_condition():
+    #     'set parameter stopping_condition'
+    #     function = LegacyFunctionSpecification()
+    #     function.addParameter(
+    #         'stopping_condition', dtype='string',
+    #         direction=function.IN,
+    #     )
+    #     function.result_type = 'int32'
+    #     function.result_doc = '''
+    #     0 - OK
+    #         The value has been set.
+    #     -1 - ERROR
+    #         Unable to set.
+    #     -2 - ERROR
+    #         Cannot set at this point, already running.
+    #     '''
+    #     return function
 
     # End parameters
 
@@ -5943,12 +5943,12 @@ class Genec(StellarEvolution, InternalStellarStructure):
             "GENEC parameter starname",
         )
 
-        handler.add_method_parameter(
-            "get_par_stopping_condition",
-            "set_par_stopping_condition",
-            "stopping_condition",
-            "GENEC parameter stopping_condition",
-        )
+        # handler.add_method_parameter(
+        #     "get_par_stopping_condition",
+        #     "set_par_stopping_condition",
+        #     "stopping_condition",
+        #     "GENEC parameter stopping_condition",
+        # )
 
         handler.add_method_parameter(
             "get_par_n_snap",

@@ -10,7 +10,7 @@ FC = $(MPIFC)
 
 LDFLAGS  += -lm $(MUSE_LD_FLAGS)
 
-FCFLAGS += -std=f95
+FCFLAGS += -Isrc/GENEC/code
 # FCFLAGS += -O0
 
 OBJS = interface.o
@@ -43,7 +43,7 @@ worker_code.f90: interface.py
 	$(CODE_GENERATOR) --type=f90 interface.py GenecInterface -o $@
 
 genec_worker: worker_code.f90 $(CODELIB) $(OBJS)
-	$(MPIFC) $(FCFLAGS) $(FS_FLAGS) $< $(OBJS) -o $@ -l$(CODELIB) $(FS_LIBS)
+	$(MPIFC) $(FCFLAGS) $(FS_FLAGS) $< $(OBJS) -o $@ $(CODELIB) $(FS_LIBS)
 
 %.o: %.f90
 	$(FC) $(FCFLAGS) -c -o $@ $<

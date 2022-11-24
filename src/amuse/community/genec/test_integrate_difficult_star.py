@@ -103,7 +103,7 @@ def write_backup(
     # )
     return
 
-ROTATING_STAR = False
+ROTATING_STAR = True
 MASS_UNIT = units.MSun
 LENGTH_UNIT = units.RSun
 SPEED_UNIT = units.kms
@@ -130,96 +130,14 @@ star_difficult = Particle(
     mass=60 | units.MSun,
     metallicity=0.014,
 )
-star = Particle(mass=7.0 | units.MSun, metallicity=0.014)
+star = Particle(mass=60.0 | units.MSun, metallicity=0.014)
 evo = Genec(redirection="none")
-# evo.parameters.idebug = 2
 # evo = Genec()
 if ROTATING_STAR:
-    params = {
-        # PhysicsParams
-        'irot': 1,
-        'isol': 1,
-        'imagn': 0,
-        'ialflu': 0,
-        'ianiso': 1,
-        'ipop3': 0,
-        'ibasnet': 0,
-        'phase': 1,
-        'var_rates': False,
-        'bintide': False,
-        # 'binM2': 0.00E+00,
-        'periodini': 0.00E+00,
-        'const_per': True,
-        # CompositionParams
-        'zinit':  1.40E-02,
-        'zsol':  0.140e-01,
-        'z': 0.261956006494962e-02,
-        'iopac': 3,
-        'ikappa': 5,
-        # RotationParams
-        'idiff': 0,
-        'iadvec': 0,
-        'istati': 0,
-        'icoeff': 11,
-        'fenerg': 0.100e+01,
-        'richac': 0.100e+01,
-        'igamma': 0,
-        'frein': 0.000e+00,
-        'K_Kawaler': 0.000e+00,
-        'Omega_saturation': 0.140e+02,
-        'rapcrilim': 0.99000,
-        'vwant': 0.400e+00,
-        'xfom': 0.100e+01,
-        'omega': 1.000000000000000E-05,
-        'xdial': 0.000,
-        'idialo': 0,
-        'idialu': 0,
-        'Add_Flux': True,
-        'diff_only': False,
-        'B_initial': 0.000e+00,
-        'add_diff': 0.000e+00,
-        # SurfaceParams
-        'imloss': 6,
-        'fmlos': 0.850e+00,
-        # 'RSG_Mdot': 0,
-        # 'noSupraEddMdot': False,
-        # 'Be_mdotfrac': 0.00,
-        # 'start_mdot': 0.80,
-        'ifitm': 3,
-        'fitmi': 0.999000000,
-        'fitm': 0.999000000,
-        'deltal': 0.02000,
-        'deltat': 0.02000,
-        'nndr': 1,
-        # ConvectionParams
-        'iledou': 0,
-        'idifcon': 0,
-        'elph': 1.600,
-        'my': 0,
-        'iover': 1,
-        'dovhp': 0.100,
-        'iunder': 0,
-        'dunder': 0.000,
-        # ConvergenceParams
-        'gkorm': 9.000,
-        'alph': 0.300,
-        'agdr': 0.10e-04,
-        'faktor': 1.00E+00,
-        'dgrp': 0.0100,
-        'dgrl': 0.0100,
-        'dgry': 0.00300,
-        'dgrc': 0.01000,
-        'dgro': 0.01000,
-        'dgr20':  0.100e-01,
-        'nbchx': 200,
-        'nrband': 1,
-        # TimeControle
-        'islow': 0,
-        'xcn': 1.000,
-        'icncst': 0,
-        'tauH_fit': 1,
-    }
     evo.parameters.vwant = 0.7
+    evo.parameters.ianiso = 1
+    # evo.parameters.irot = 1
+    # evo.parameters.starname = "AmuseDifficultStar"
 else:
     evo.parameters.vwant = 0.0
 evo.parameters.ipoly = 0
@@ -229,8 +147,8 @@ star_in_evo = evo.fullparticles.add_particle(star)
 # for p in params.items():
 #     setattr(evo.parameters, p[0], p[1])
 evo.commit_particles()
+print(evo.parameters)
 # print(star_in_evo)
-# exit()
 font = {
     'size': 8,
 }
@@ -285,7 +203,7 @@ while True:
         evo.parameters.vwant,
         evo.parameters.xcn,
     )
-    print(f"step: {step} time: {star.age} timestep: {star.time_step} xcn: {evo.parameters.xcn}")
+    print(f"step: {step} time: {star.age} timestep: {star.time_step} xcn: {evo.parameters.xcn}")    
     if (step % store_every == 0) and plotting is not None:
         plotting.update(star_in_evo, phase=evo.parameters.phase)
         if (

@@ -1,14 +1,14 @@
 function initialize_code()
     !use WriteSaveClose, only: quitafterclosing
-    use inputparam, only: amuseinterface
     use genec, only: initialise_genec
-    use amuse_helpers, only: set_defaults
-    use amuse_helpers, only: mstar, zini, starname
+    use helpers, only: set_defaults
+    use helpers, only: mstar, zini, starname
     use evol, only: input_dir
+    use inputparam, only: libgenec
     implicit none
     integer:: initialize_code
 
-    amuseinterface = .true.
+    libgenec = .true.
     input_dir = "./src/GENEC/code"
     call initialise_genec()
     call set_defaults()
@@ -22,8 +22,7 @@ end function
 
 function read_genec_model(index_of_the_star, cardfilename)
     ! This should only be called if no star has been initialised yet!
-    use genec, only: amuseinterface
-    use amuse_helpers, only: starname
+    use helpers, only: starname
     use inputparam, only:CharacteristicsParams,PhysicsParams,CompositionParams, &
             RotationParams,SurfaceParams,ConvectionParams,ConvergenceParams, &
             TimeControle,VariousSettings, &
@@ -55,7 +54,6 @@ function read_genec_model(index_of_the_star, cardfilename)
     integer:: i,ii
     real(kindreal):: dlelexprev
 
-    amuseinterface = .false. ! This will make initialise_star read the b file
     open(unit=42, file=cardfilename)
     ! * Parse the CharacteristicsParams namelist *
     read(42,nml=CharacteristicsParams)
@@ -77,7 +75,6 @@ function read_genec_model(index_of_the_star, cardfilename)
     read(42,nml=VariousSettings)
 
     close(42)
-    amuseinterface = .true. ! this will be false in a savefile, so set it to .true. again!
 
     write(fnamein, '(i5.5)') modanf
     fname51 = trim(starname)//'.b'//fnamein
@@ -864,24 +861,6 @@ function set_par_itests(par_itests)
     integer:: set_par_itests
     itests = par_itests
     set_par_itests = 0
-end function
-
-function get_par_amuseinterface(par_amuseinterface)
-    use inputparam, only: amuseinterface
-    implicit none
-    logical:: par_amuseinterface
-    integer:: get_par_amuseinterface
-    par_amuseinterface = amuseinterface
-    get_par_amuseinterface = 0
-end function
-
-function set_par_amuseinterface(par_amuseinterface)
-    use inputparam, only: amuseinterface
-    implicit none
-    logical:: par_amuseinterface
-    integer:: set_par_amuseinterface
-    amuseinterface = par_amuseinterface
-    set_par_amuseinterface = 0
 end function
 
 function get_par_var_rates(par_var_rates)
@@ -1766,48 +1745,28 @@ function set_par_starname(par_starname)
     set_par_starname = 0
 end function
 
-function get_par_stopping_condition(par_stopping_condition)
-    use State, only: stopping_condition
-    implicit none
-    character(15):: par_stopping_condition
-    integer:: get_par_stopping_condition
-    par_stopping_condition = stopping_condition
-    get_par_stopping_condition = 0
-end function
-
-function set_par_stopping_condition(par_stopping_condition)
-    use State, only: stopping_condition
-    implicit none
-    character(15):: par_stopping_condition
-    integer:: set_par_stopping_condition
-    stopping_condition = par_stopping_condition
-    set_par_stopping_condition = 0
-end function
 ! **** End Parameters
 
 function commit_parameters()
-    use State, only: stopping_condition
     implicit none
     integer:: commit_parameters
-    stopping_condition = ""
     commit_parameters = 0
 end function
 
 function commit_particles()
-    use genec, only: amuseinterface
-    use amuse_helpers, only: initialise_star, makeini
+    use helpers, only: makeini
+    use genec, only: initialise_star
     use WriteSaveClose, only: OpenAll
     use inputparam, only: nzmod
     implicit none
     integer:: commit_particles
     call makeini()  ! this will actually override some things from set_defaults now! FIXME
+    nzmod = 1
     !write(*,*) 'makeini done'
-    call OpenAll()
+    !call OpenAll()
     !write(*,*) 'OpenAll done'
     call initialise_star()
-    ! nzmod = 10
     !write(*,*) 'initialise_star done'
-    amuseinterface = .true. ! If we just read a b file, disable this again for continuing
     commit_particles = 0
 end function
 
@@ -1820,27 +1779,15 @@ end function
 
 function evolve_model(end_time)
     use timestep, only: alter
-    use WriteSaveClose, only: OpenAll
-    use genec, only: evolve, modell, finalise
-    use amuse_helpers, only: initialise_star
-    use State, only: stopping_condition
     implicit none
     double precision:: end_time
+    integer:: evolve_one_step
     integer:: evolve_model
-    stopping_condition = ""
+    !stopping_condition = ""
     do while (alter < end_time)
-      if (stopping_condition == "") then
+      !if (stopping_condition == "") then
         write(*,*) "Current time: ", alter, ", evolving to: ", end_time
-        !modell = 1
-        call evolve()
-        !call finalise()
-        !call OpenAll()
-        !call initialise_star()
-        !write(*,*) "*****Modell: ", modell
-      else
-        write(*,*) "stopped: ", stopping_condition
-        exit
-      endif
+        evolve_model = evolve_one_step(0)
     end do
     evolve_model = 0
 end function
@@ -1850,25 +1797,15 @@ function evolve_for(index_of_the_star, time)
     ! set max time to current time plus argument
     ! evolve
     use timestep, only: alter
-    use WriteSaveClose, only: OpenAll
-    use genec, only: evolve, modell, finalise
-    use amuse_helpers, only: initialise_star
     implicit none
     integer:: index_of_the_star
+    integer:: evolve_one_step
     double precision:: time, end_time
     integer:: evolve_for
-    !if (alter == 0.) then
-    !    call initialise_star()
-    !endif
     end_time = alter+time
     do while (alter < end_time)
         write(*,*) "Current time: ", alter, ", evolving to: ", end_time
-        !modell = 1
-        call evolve()
-        !call finalise()
-        !call OpenAll()
-        !call initialise_star()
-        !write(*,*) "*****Modell: ", modell
+        evolve_for = evolve_one_step(index_of_the_star)
     end do
 
     evolve_for = 0
@@ -1877,30 +1814,32 @@ end function
 function evolve_one_step(index_of_the_star)
     use timestep, only: alter
     use WriteSaveClose, only: OpenAll
-    use genec, only: evolve, modell, finalise
-    use amuse_helpers, only: initialise_star
-    use State, only: stopping_condition
-    use inputparam,only: modanf,nwseq,nzmod
+    use genec, only: evolve, modell, finalise, veryFirst
+    use inputparam,only: modanf,nwseq,nzmod,end_at_phase,end_at_model
+    use genec, only: n_snap
     implicit none
     integer:: index_of_the_star
     integer:: evolve_one_step
     integer:: original_nzmod
     !original_nzmod = nzmod
-    nzmod = 1000000
-    write(*,*) "Evolving one step, current time: ", alter
-    !modell = 1
-    if (stopping_condition == "") then
+    nzmod = 1
+    n_snap = 0
+    end_at_phase=4
+    end_at_model=0
+    !write(*,*) "Evolving one step, current time: ", alter
+    !if (stopping_condition == "") then
       call evolve()
-      if (stopping_condition /= "") return
-      !call finalise()
+      !if (stopping_condition /= "") return
+      call finalise()
       !call OpenAll()
       !call initialise_star() ! will set modell to 1
-      write(*,*) "Evolved one step, current time: ", alter
+      !write(*,*) "Evolved one step, current time: ", alter
       !nzmod = original_nzmod
       !write(*,*) "*****modanf, nwseq, nzmod: ", modanf, nwseq, nzmod
-    else
-      write(*,*) "stopped: ", stopping_condition
-    endif
+    !else
+    !  write(*,*) "stopped: ", stopping_condition
+    !endif
+    veryFirst = .false.
     evolve_one_step = 0
 end function
 
@@ -1911,20 +1850,20 @@ function finalize_stellar_model()
 end function
 
 function write_genec_model()
-    use inputparam, only: modanf
-    use WriteSaveClose, only: OpenAll
-    use genec, only: finalise
-    use amuse_helpers, only: initialise_star
+    !use inputparam, only: modanf
+    !use WriteSaveClose, only: OpenAll
+    !use genec, only: finalise
+    !use helpers, only: initialise_star
     implicit none
     integer:: write_genec_model
-    call finalise()
+    !call finalise()
     ! modanf = 0
-    call OpenAll()
-    call initialise_star()
+    !call OpenAll()
+    !call initialise_star()
     !call finalise()
     !call OpenAll()
     !call initialise_star()
-    write_genec_model = 0
+    write_genec_model = -1
 end function
 
 function get_age(index_of_the_star, age)
@@ -2098,7 +2037,7 @@ function get_mass(index_of_the_star, mass)
 end function
 
 function set_mass(index_of_the_star, mass)
-    use amuse_helpers, only:mstar  ! this is initial mass only?
+    use helpers, only:mstar  ! this is initial mass only?
     implicit none
     integer:: set_mass, index_of_the_star
     double precision:: mass
@@ -2323,7 +2262,7 @@ function set_mass_fraction_of_species_at_zone(index_of_the_star, species, zone, 
 end function
 
 function get_metallicity(metallicity)
-    use amuse_helpers, only: zini
+    use helpers, only: zini
     implicit none
     double precision:: metallicity
     integer:: get_metallicity
@@ -2332,7 +2271,7 @@ function get_metallicity(metallicity)
 end function
 
 function set_metallicity(metallicity)
-    use amuse_helpers, only: zini
+    use helpers, only: zini
     implicit none
     double precision:: metallicity
     integer:: set_metallicity
@@ -3158,7 +3097,7 @@ function get_time(time)
 end function
 
 function new_particle(index_of_the_star, mass, metallicity, am_starname)
-    use amuse_helpers, only: starname, mstar, zini
+    use helpers, only: starname, mstar, zini
     implicit none
     integer:: index_of_the_star, key
     double precision:: mass, metallicity
@@ -3183,9 +3122,9 @@ function recommit_particles()
     use WriteSaveClose, only: OpenAll
     implicit none
     integer:: recommit_particles
-    call finalise()
-    call OpenAll()
-    call initialise_star()
+    !call finalise()
+    !call OpenAll()
+    !call initialise_star()
     recommit_particles = 0
 end function
 
@@ -3200,7 +3139,7 @@ function set_genec_path(path)
 end function
 
 function set_starname(index_of_the_star)
-    use amuse_helpers, only:starname
+    use helpers, only:starname
     implicit none
     integer:: set_starname, index_of_the_star
     ! Only allow this at the initialisation time!
