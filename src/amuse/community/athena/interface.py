@@ -34,12 +34,12 @@ class AthenaInterface(CodeInterface, MagnetohydrodynamicsInterface, LiteratureRe
     different Riemann solvers and spatial reconstruction methods.
     
     The relevant references are:
-        .. [#] Gardiner & Stone 2005, JCP, 205, 509  (2D JCP Method) [2005JCoPh.205..509G]
-        .. [#] Gardiner & Stone 2007, JCP, 227, 4123 (3D JCP Method) [2008JCoPh.227.4123G]
-        .. [#] Stone et al. 2008, ApJS, 178, 137 (Method) [2008ApJS..178..137S]
-        .. [#] Stone & Gardiner 2009, NewA, 14, 139 (van Leer Integrator) [2009NewA...14..139S]
-        .. [#] Skinner & Ostriker 2010, ApJ, 188, 290 (Cylindrical Integrator) [2010ApJS..188..290S]
-        .. [#] Stone & Gardiner 2010, ApJS, 189, 142 (Shearing Box Method) [2010ApJS..189..142S]
+        .. [#] ADS:2005JCoPh.205..509G (Gardiner & Stone 2005, JCP, 205, 509 (2D JCP Method))
+        .. [#] ADS:2008JCoPh.227.4123G (Gardiner & Stone 2007, JCP, 227, 4123 (3D JCP Method))
+        .. [#] ADS:2008ApJS..178..137S (Stone et al. 2008, ApJS, 178, 137 (Method))
+        .. [#] ADS:2009NewA...14..139S (Stone & Gardiner 2009, NewA, 14, 139 (van Leer Integrator))
+        .. [#] ADS:2010ApJS..188..290S (Skinner & Ostriker 2010, ApJ, 188, 290 (Cylindrical Integrator))
+        .. [#] ADS:2010ApJS..189..142S (Stone & Gardiner 2010, ApJS, 189, 142 (Shearing Box Method))
     """
     
     include_headers = ['worker_code.h', 'stopcond.h']

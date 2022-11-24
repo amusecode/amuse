@@ -21,7 +21,7 @@ from os.path import exists
 import traceback
 import importlib
 
-ClassWithLiteratureReferences = namedtuple(\
+ClassWithLiteratureReferences = namedtuple(
     "ClassWithLiteratureReferences", 
     "name_of_class_with_refs literature_references_of_class"
 )
@@ -32,11 +32,11 @@ LiteratureReference = namedtuple(
 
 class TrackLiteratureReferences:
     """
-        .. [#] https://doi.org/10.5281/zenodo.1435860
-        .. [#] [2018araa.book.....P] Portegies Zwart, S. & McMillan, S.L.W., 2018
-        .. [#] [2013CoPhC.183..456P] ** Portegies Zwart, S. et al., 2013
-        .. [#] [2013A&A...557A..84P] ** Pelupessy, F. I. et al., 2013
-        .. [#] [2009NewA...14..369P] Portegies Zwart, S. et al., 2009
+        .. [#] DOI:10.5281/zenodo.1435860
+        .. [#] ADS:2018araa.book.....P (Portegies Zwart, S. & McMillan, S.L.W., 2018)
+        .. [#] ADS:2013CoPhC.183..456P ** (Portegies Zwart, S. et al., 2013)
+        .. [#] ADS:2013A&A...557A..84P ** (Pelupessy, F. I. et al., 2013)
+        .. [#] ADS:2009NewA...14..369P (Portegies Zwart, S. et al., 2009)
     """
     INSTANCE = None
     
@@ -81,8 +81,9 @@ class TrackLiteratureReferences:
         self.original_excepthook = None
         
         if self.must_show_literature_references_atexit and not "--no-report-references" in sys.argv:
-            string = self.all_literature_references_string()
-            if string:
+            texstring = self.all_literature_references_texstring()
+            bibstring = self.all_literature_references_bibstring()
+            if texstring:
                 tex_filename = f"bib-{sys.argv[0]}.tex"
                 bib_filename = f"bib-{sys.argv[0]}.bib"
                 filenumber = 0
@@ -98,15 +99,15 @@ In this session you have used several AMUSE modules.
 Please use the {tex_filename} and {bib_filename} files to include the relevant citations.
 
 """
-                prefix = "In this article, we used AMUSE and the following AMUSE modules:"
                 with open(tex_filename, 'w') as tex_out:
                     tex_out.write(
-                        f"{prefix}"
-                        f"{self.all_literature_references_string()}"
+                        f"{texstring}"
+                    )
+                with open(bib_filename, 'w') as bib_out:
+                    bib_out.write(
+                        f"{bibstring}"
                     )
                 print(terminal_message)
-        
-
         
     def atexit_hook(self):
         if not self.original_excepthook is None:
@@ -122,8 +123,44 @@ Thank you for using AMUSE!
 In this session you have used the modules below. Please cite any relevant articles:
 
 """
-                print(prefix + self.all_literature_references_string())
-        
+                print(prefix + string)
+
+    def get_literature_dict_of_class(self, cls):
+        """
+        get the name and bibkeys from the class, as a dict.
+        """
+        result = {}
+        for current_class in cls.__mro__:
+            docstring_in = current_class.__doc__
+            if docstring_in:
+                if hasattr(current_class, "version"):
+                    version = current_class.version()
+                else:
+                    version = amuse_version
+                name = current_class.__name__
+                if name.endswith("Interface"):
+                    name = "AMUSE-" + name[:-9]
+                objectname = "{name} ({version})".format(
+                    name=name,
+                    version=version,
+                )
+                doctree = core.publish_doctree(source = docstring_in)
+                ref_keys = list(doctree.ids.keys())
+                natsort(ref_keys)
+                ref_values = [doctree.ids[key] for key in ref_keys]
+                for ikey, ival in zip(ref_keys, ref_values):
+                    if isinstance(ival, nodes.footnote):
+                        line = ival.rawsource.split()[0]
+                        if (
+                            line.startswith('ADS:')
+                            or line.startswith('DOI:')
+                        ):
+                            if objectname in result.keys():
+                                result[objectname] += [line[4:]]
+                            else:
+                                result[objectname] = [line[4:]]
+                                # [ival.rawsource.split()[0].strip('[]')]
+        return result
     
     def get_literature_list_of_class(self, cls):
         """
@@ -164,7 +201,16 @@ In this session you have used the modules below. Please cite any relevant articl
                         )
                     )
         return result
-    
+
+    def get_literature_dict(self, include={}):
+        result = include
+        for x in self.registered_classes:
+            if sys.version_info.major == 3 and sys.version_info.minor >= 9:
+                result |= self.get_literature_dict_of_class(x)
+            else:
+                result = {**result, **self.get_literature_dict_of_class(x)}
+        return result
+
     def get_literature_list(self):
         result = []
         for x in self.registered_classes:
@@ -174,18 +220,59 @@ In this session you have used the modules below. Please cite any relevant articl
     def all_literature_references_string(self):
         lines = []
         for s in self.get_literature_list():
-            lines.append('\n\t"%s"' % s.name_of_class_with_refs)
+            lines.append(
+                f'\n\t"{s.name_of_class_with_refs}"'
+            )
             for literature_reference_of_class_item in s.literature_references_of_class:
-                lines.append('\t\t%s' % (literature_reference_of_class_item.footnote))
+                lines.append(
+                    f'\t\t{literature_reference_of_class_item.footnote}'
+                )
         
-        lines.append('\n\t"AMUSE (%s)"' % amuse_version)
+        lines.append(f'\n\t"AMUSE (amuse_version)"')
         amuse_list = self.get_literature_list_of_class(type(self))
         for x in amuse_list:
             for literature_reference_of_class_item in x.literature_references_of_class:
-                lines.append('\t\t%s' % (literature_reference_of_class_item.footnote))
+                lines.append(
+                    f'\t\t{literature_reference_of_class_item.footnote}'
+                )
             
         return "\n".join(lines)
-        
+
+    def all_literature_references_texstring(self):
+        result = 'In this article, we used the following AMUSE modules: '
+        result += f'AMUSE-framework {amuse_version} \\citep{{'
+        amuse_lib = self.get_literature_dict_of_class(type(self))
+        for i, name in enumerate(amuse_lib.keys()):
+            for j, key in enumerate(amuse_lib[name]):
+                result += f'{key}'
+                if j != len(amuse_lib[name]) - 1:
+                    result += ', '
+        result += '}'
+
+        lib = self.get_literature_dict()
+        for i, name in enumerate(lib.keys()):
+            result += (
+                f', {name} \\citep{{'
+            )
+            for j, key in enumerate(lib[name]):
+                result += f'{key}'
+                if j != len(lib[name]) - 1:
+                    result += ', '
+            result += '}'
+        result += '.\n'
+
+        return result
+
+    def all_literature_references_bibstring(self):
+        result = ''
+        lib = self.get_literature_dict(
+            include=self.get_literature_dict_of_class(type(self))
+        )
+        for i, name in enumerate(lib.keys()):
+            for j, key in enumerate(lib[name]):
+                result += f'{key}\n'
+        return result
+
     def names_of_classes_with_references(self):
         return [x.name_of_class_with_refs for x in self.get_literature_list()]
 
