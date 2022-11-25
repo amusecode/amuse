@@ -17,9 +17,12 @@ except ImportError:
 
 import atexit
 import sys
+import shutil
 from os.path import exists
 import traceback
 import importlib
+import amuse
+
 
 ClassWithLiteratureReferences = namedtuple(
     "ClassWithLiteratureReferences", 
@@ -82,7 +85,6 @@ class TrackLiteratureReferences:
         
         if self.must_show_literature_references_atexit and not "--no-report-references" in sys.argv:
             texstring = self.all_literature_references_texstring()
-            bibstring = self.all_literature_references_bibstring()
             if texstring:
                 tex_filename = f"bib-{sys.argv[0]}.tex"
                 bib_filename = f"bib-{sys.argv[0]}.bib"
@@ -95,7 +97,7 @@ class TrackLiteratureReferences:
                 terminal_message = f"""
 
 Thank you for using AMUSE!
-In this session you have used several AMUSE modules. 
+In this session you have used the modules below. 
 Please use the {tex_filename} and {bib_filename} files to include the relevant citations.
 
 """
@@ -103,12 +105,10 @@ Please use the {tex_filename} and {bib_filename} files to include the relevant c
                     tex_out.write(
                         f"{texstring}"
                     )
-                with open(bib_filename, 'w') as bib_out:
-                    bib_out.write(
-                        f"{bibstring}"
-                    )
+                shutil.copyfile(amuse.get_data('AMUSE.bib'), bib_filename)
                 print(terminal_message)
-        
+                print(self.all_literature_references_string())
+
     def atexit_hook(self):
         if not self.original_excepthook is None:
             sys.excepthook = self.original_excepthook
@@ -228,7 +228,7 @@ In this session you have used the modules below. Please cite any relevant articl
                     f'\t\t{literature_reference_of_class_item.footnote}'
                 )
         
-        lines.append(f'\n\t"AMUSE (amuse_version)"')
+        lines.append(f'\n\t"AMUSE ({amuse_version})"')
         amuse_list = self.get_literature_list_of_class(type(self))
         for x in amuse_list:
             for literature_reference_of_class_item in x.literature_references_of_class:
