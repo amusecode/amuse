@@ -97,7 +97,7 @@ class TrackLiteratureReferences:
                 terminal_message = f"""
 
 Thank you for using AMUSE!
-In this session you have used the modules below. 
+In this session you have used the modules below.
 Please use the {tex_filename} and {bib_filename} files to include the relevant citations.
 
 """
@@ -148,7 +148,7 @@ In this session you have used the modules below. Please cite any relevant articl
                 ref_keys = list(doctree.ids.keys())
                 natsort(ref_keys)
                 ref_values = [doctree.ids[key] for key in ref_keys]
-                for ikey, ival in zip(ref_keys, ref_values):
+                for ival in ref_values:
                     if isinstance(ival, nodes.footnote):
                         line = ival.rawsource.split()[0]
                         if (
@@ -161,10 +161,11 @@ In this session you have used the modules below. Please cite any relevant articl
                                 result[objectname] = [line[4:]]
                                 # [ival.rawsource.split()[0].strip('[]')]
         return result
-    
+
     def get_literature_list_of_class(self, cls):
         """
-        filter the refs from the docstring, if there are no refs nothing is appended
+        filter the refs from the docstring, if there are no refs nothing is
+        appended
         """
 
         result = []
@@ -202,8 +203,8 @@ In this session you have used the modules below. Please cite any relevant articl
                     )
         return result
 
-    def get_literature_dict(self, include={}):
-        result = include
+    def get_literature_dict(self):
+        result = {}
         for x in self.registered_classes:
             if sys.version_info.major == 3 and sys.version_info.minor >= 9:
                 result |= self.get_literature_dict_of_class(x)
@@ -242,7 +243,7 @@ In this session you have used the modules below. Please cite any relevant articl
         result = 'In this article, we used the following AMUSE modules: '
         result += f'AMUSE-framework {amuse_version} \\citep{{'
         amuse_lib = self.get_literature_dict_of_class(type(self))
-        for i, name in enumerate(amuse_lib.keys()):
+        for name in amuse_lib.keys():
             for j, key in enumerate(amuse_lib[name]):
                 result += f'{key}'
                 if j != len(amuse_lib[name]) - 1:
@@ -261,16 +262,6 @@ In this session you have used the modules below. Please cite any relevant articl
             result += '}'
         result += '.\n'
 
-        return result
-
-    def all_literature_references_bibstring(self):
-        result = ''
-        lib = self.get_literature_dict(
-            include=self.get_literature_dict_of_class(type(self))
-        )
-        for i, name in enumerate(lib.keys()):
-            for j, key in enumerate(lib[name]):
-                result += f'{key}\n'
         return result
 
     def names_of_classes_with_references(self):
