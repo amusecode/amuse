@@ -327,7 +327,7 @@ def try_int(s):
     "Convert to integer if possible."
     try:
         return int(s)
-    except:
+    except ValueError:
         return s
 
 
