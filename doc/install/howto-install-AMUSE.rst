@@ -117,19 +117,21 @@ Probably, you’ll want to install these Python modules too:
     pip install scipy astropy jupyter pandas seaborn matplotlib
 
 Now we can finally install AMUSE itself.
-This is done easiest via pip:
-
-.. code-block:: sh
-
-    pip install amuse-framework
-    pip install amuse
-
-If you only require a subset of AMUSE, you can install any of the individual packages as such:
+This is done easiest via pip, installing first the framework and then any of the required packages:
 
 .. code-block:: sh
 
     pip install amuse-framework
     pip install amuse-$(community_code_name)
+
+Alternatively, you may try to install all of AMUSE in one go:
+
+.. code-block:: sh
+
+    pip install amuse
+
+However, this may fail if any of the packages fail to build. 
+Installing the packages separately is generally a faster and more successful method.
 
 
 
