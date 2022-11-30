@@ -46,7 +46,7 @@ class TestsForIssue850(amusetest.TestCase):
             self.assertNotEqual(stars[i].mass, stars[i].initial_mass)
         instance.stop()
         
-    def test_do_all_stars_evolve_no_binary_bse(self):
+    def _test_do_all_stars_evolve_no_binary_bse(self):
         self.test_do_all_stars_evolve_no_binary(code=Bse)
 
     def test_does_seba_evolve_stars_not_in_binary(self, code=Seba):
@@ -54,6 +54,7 @@ class TestsForIssue850(amusetest.TestCase):
         Tests if code evolves any star that is not in a binary if a binary is
         added.
         """
+        set_printing_strategy('default')
         stars, binary = self.create_stars_and_binaries(binary_pair=[0, 1])
         additional_stars = Particles(5)
         additional_stars.original_mass = [11, 20, 4, 2, 1] | units.MSun
@@ -83,7 +84,7 @@ class TestsForIssue850(amusetest.TestCase):
             self.assertNotEqual(stars[i].mass, stars[i].initial_mass)
         instance.stop()
 
-    def test_does_bse_evolve_stars_not_in_binary(self):
+    def _test_does_bse_evolve_stars_not_in_binary(self):
         self.test_does_seba_evolve_stars_not_in_binary(code=Bse)
 
     def test_do_all_stars_evolve_default_binary(self):
