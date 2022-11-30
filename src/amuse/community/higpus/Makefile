@@ -56,7 +56,6 @@ OBJS = interface.o
 
 CODELIB = src/libhigpus.a
 
-CODE_GENERATOR ?= $(AMUSE_DIR)/build.py
 
 all: $(ALL)
 

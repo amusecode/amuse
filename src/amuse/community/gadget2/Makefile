@@ -13,7 +13,6 @@ TARGETS := $(patsubst makefile_options_%, gadget2_worker_%, ${shell ls makefile_
 
 BUILDDIR = build
 
-CODE_GENERATOR ?= $(AMUSE_DIR)/build.py
 
 #PROFLIBS ?= -L$(AMUSE_DIR)/lib/ibis/src/profiling -libisprofiling -lmpi
 
@@ -87,5 +86,5 @@ worker_code.cc: interface.py worker_code.h
 	$(CODE_GENERATOR) --type=c $< Gadget2Interface -o $@ 
 
 worker_code.h: interface.py
-	$(CODE_GENERATOR) --type=h $< -i amuse.support.codes.stopping_conditions.StoppingConditionInterface Gadget2Interface -o $@
+	$(CODE_GENERATOR) --type=h $< -i amuse.community.interface.stopping_conditions.StoppingConditionInterface Gadget2Interface -o $@
 

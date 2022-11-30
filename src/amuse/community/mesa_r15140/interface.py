@@ -97,6 +97,9 @@ class MESAInterface(
             'mesa_dir', dtype='string', direction=function.IN,
             description="Path to the MESA directory.")
         function.addParameter(
+            'mesa_data_dir', dtype='string', direction=function.IN,
+            description="Path to the MESA data directory. Normally this would be mesa_dir/data")
+        function.addParameter(
             'local_data_path', dtype='string', direction=function.IN,
             description="Path to the data directory.")
         function.addParameter(
@@ -203,8 +206,22 @@ class MESAInterface(
 
 
     @remote_function
-    def set_time_step(index_of_the_star='i', time_step='d' | units.julianyr):
+    def set_time_step(index_of_the_star='i', time_step='d' | units.s):
         returns ()
+
+    @legacy_function
+    def get_time_step():
+        """
+        Retrieve the current time step
+        """
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
+        function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
+            , description="The index of the star to get the value of")
+        function.addParameter('time_step', dtype='float64', direction=function.OUT
+            , description="Current timestep")
+        function.result_type = 'int32'
+        return function
 
     @legacy_function
     def get_core_mass():
@@ -1130,6 +1147,7 @@ class MESA(StellarEvolution, InternalStellarStructure):
         self.set_MESA_paths(
             inlist,
             self.default_path_to_MESA,
+            self.default_path_to_MESA_data,
             output_dir,
             gyre_in,
             self.default_tmp_dir
@@ -1726,7 +1744,7 @@ class MESA(StellarEvolution, InternalStellarStructure):
 
         handler.add_method(
             "set_MESA_paths",
-            (handler.NO_UNIT,handler.NO_UNIT,handler.NO_UNIT,handler.NO_UNIT,handler.NO_UNIT),
+            (handler.NO_UNIT,handler.NO_UNIT,handler.NO_UNIT,handler.NO_UNIT,handler.NO_UNIT,handler.NO_UNIT),
             (handler.ERROR_CODE,)
         )
 

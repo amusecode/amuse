@@ -86,7 +86,7 @@ worker_code.cc: interface.py
 	$(CODE_GENERATOR) --type=c interface.py petarInterface -o $@
 
 worker_code.h: interface.py 
-	$(CODE_GENERATOR) --type=H -i amuse.support.codes.stopping_conditions.StoppingConditionInterface interface.py petarInterface -o $@
+	$(CODE_GENERATOR) --type=H -i amuse.community.interface.stopping_conditions.StoppingConditionInterface interface.py petarInterface -o $@
 
 petar_worker: worker_code.cc worker_code.h $(CODELIB) $(OBJS) interface.h
 	$(MPICXX) $(CXXFLAGS) $(SC_FLAGS) $(AM_CFLAGS) $(LDFLAGS) $< $(OBJS) $(CODELIB) -o $@ $(SC_MPI_CLIBS) $(LIBS) $(AM_LIBS)

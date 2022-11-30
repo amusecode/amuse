@@ -44,7 +44,6 @@ SELFGRAV_AMUSE_OBJS = $(SELFGRAV_BUILDDIR)/interface_$(VERSION).o
 MHD_AMUSE_OBJS = $(MHD_BUILDDIR)/interface_$(VERSION).o
 SCALAR_AMUSE_OBJS = $(SCALAR_BUILDDIR)/interface_$(VERSION).o
 
-CODE_GENERATOR ?= $(AMUSE_DIR)/build.py
 DOWNLOAD_FROM_WEB = $(PYTHON) ./download.py
 PATCH_FILES = $(PYTHON) ./patch_files.py
 
@@ -83,7 +82,7 @@ worker_code.cc: interface.py
 	$(CODE_GENERATOR) --type=c interface.py AthenaInterface -o $@
 
 worker_code.h: interface.py
-	$(CODE_GENERATOR) --type=h interface.py -i amuse.support.codes.stopping_conditions.StoppingConditionInterface AthenaInterface -o $@
+	$(CODE_GENERATOR) --type=h interface.py -i amuse.community.interface.stopping_conditions.StoppingConditionInterface AthenaInterface -o $@
 
 $(BUILDDIR)/Makefile: $(ATHENA_DIR)/Makefile.in
 	cp -r $(ATHENA_DIR) $(BUILDDIR)
