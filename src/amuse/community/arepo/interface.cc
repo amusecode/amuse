@@ -175,7 +175,6 @@ int initialize_code(){
     }
 
   begrun2();
-  create_ID_reverse_lookup();
 
   return 0;
 }
@@ -223,7 +222,7 @@ static int find_particle_with_ID(int particle_id) {
 
     if (it == ID_RLOOKUP.end()) {
       // particle_id wasn't in the map - rebuild ID_RLOOKUP and try again
-      cout << "AMUSE: Rebuilding particle_ID lookup.\n";
+      cout << "AMUSE: Rebuilding particle_ID lookup (ID not found).\n";
       create_ID_reverse_lookup();
       continue;
     }
@@ -232,7 +231,7 @@ static int find_particle_with_ID(int particle_id) {
 
     if (P[particle_pos].ID != particle_id) {
       // particle_id had the wrong value - rebuild ID_RLOOKUP and try again
-      cout << "AMUSE: Rebuilding particle ID lookup table.\n";
+      cout << "AMUSE: Rebuilding particle ID lookup table (ID index changed).\n";
       create_ID_reverse_lookup();
       continue;
     }
@@ -256,6 +255,7 @@ int commit_particles(){
 }
 
 int get_time(double * time){
+  // Return error code if calling from non-zero task
   if (ThisTask) {return 0;}
   *time = All.Time;
   return 0;
@@ -291,6 +291,7 @@ int evolve_model(double time){
 }
 
 int set_eps2(double epsilon_squared){
+  // This looks bizarre
   if (ThisTask) {return 0;}
   return -2;
 }
