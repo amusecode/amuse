@@ -61,6 +61,8 @@ class GenecInterface(
         .. [#] The Geneva Stellar Evolution Group
     """
 
+    use_modules = ['AmuseInterface', ]
+
     def __init__(self, **keyword_arguments):
         CodeInterface.__init__(
             self, name_of_the_worker="genec_worker", **keyword_arguments)
@@ -98,23 +100,23 @@ class GenecInterface(
         """
         return function
 
-    @legacy_function
-    def read_genec_model():
-        """
-        Read a previously saved GENEC model
-        """
-        function = LegacyFunctionSpecification()
-        function.can_handle_array = False
-        function.addParameter(
-            'index_of_the_star', dtype='int32', direction=function.OUT,
-            description="index of the star",
-        )
-        function.addParameter(
-            'cardfilename', dtype='string', direction=function.IN,
-            description="GENEC input card",
-        )
-        function.result_type = 'int32'
-        return function
+    # @legacy_function
+    # def read_genec_model():
+    #     """
+    #     Read a previously saved GENEC model
+    #     """
+    #     function = LegacyFunctionSpecification()
+    #     function.can_handle_array = False
+    #     function.addParameter(
+    #         'index_of_the_star', dtype='int32', direction=function.OUT,
+    #         description="index of the star",
+    #     )
+    #     function.addParameter(
+    #         'cardfilename', dtype='string', direction=function.IN,
+    #         description="GENEC input card",
+    #     )
+    #     function.result_type = 'int32'
+    #     return function
     # Parameters
 
     @legacy_function

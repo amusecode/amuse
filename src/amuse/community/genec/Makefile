@@ -30,13 +30,13 @@ clean:
 	$(RM) $(CODEDIR)/*.o
 	$(RM) $(INI_CODEDIR)/*.o
 	$(RM) *.mod
-	make -C $(CODEDIR) -f make_genec clean
+	make -C $(CODEDIR) clean
 
 distclean: clean
 	make -C src distclean
 
 $(CODELIB): #$(OBJECTS)
-	make -C $(CODEDIR) -f make_genec libgenec.a
+	make -C $(CODEDIR) libgenec.a
 	# @$(COMPILER) -shared $(FFLAGS) $(OBJECTS) $(LDFLAGS) -o $(CODELIB)
 
 worker_code.f90: interface.py

@@ -1,8 +1,22 @@
+module AmuseInterface
+    use helpers, only: InitialGenecStar,GenecStar,genec_star
+    use evol, only: kindreal,ldi,npondcouche
+
+    type(genec_star) :: StarInGenec
+    type(genec_star) :: BackupStarInGenec
+    integer :: number_of_stars = 0
+    public:: StarInGenec,BackupStarInGenec,number_of_stars
+contains
+
+function restore_star()
+    implicit none
+    integer:: restore_star
+    restore_star = 0
+end function
+
 function initialize_code()
     !use WriteSaveClose, only: quitafterclosing
     use genec, only: initialise_genec
-    use helpers, only: set_defaults
-    use helpers, only: mstar, zini, starname
     use evol, only: input_dir
     use inputparam, only: libgenec
     implicit none
@@ -11,101 +25,16 @@ function initialize_code()
     libgenec = .true.
     input_dir = "./src/GENEC/code"
     call initialise_genec()
-    call set_defaults()
-    starname = "AmuseDefaultStar"
-    mstar = 7.0
-    zini = 0.014
-    !quitafterclosing = .false.    
 
     initialize_code = 0
 end function
 
 function read_genec_model(index_of_the_star, cardfilename)
     ! This should only be called if no star has been initialised yet!
-    use helpers, only: starname
-    use inputparam, only:CharacteristicsParams,PhysicsParams,CompositionParams, &
-            RotationParams,SurfaceParams,ConvectionParams,ConvergenceParams, &
-            TimeControle,VariousSettings, &
-            isugi,bintide, &
-            modanf
-    use caramodele, only:gms,gls,teff,glsv,teffv,xmini,ab,dm_lost,xLtotbeg,zams_radius
-    use timestep, only:alter,dzeitj,dzeit,dzeitv
-    use strucmod, only:m,q,p,t,r,s,drl,drte,dk,drp,drt,drr,rlp,rlt,rlc,rrp,rrt,rrc,rtp, &
-            rtt,rtc, vp,vt,vr,vs, vna,vnr
-    use abundmod, only:x,y3,y,xc12,xc13,xc14,xn14,xn15,xo16,xo17,xo18,xf18,xf19,xne20,xne21, &
-            xne22,xna23,xmg24,xmg25,xmg26,xal26,xal27,xsi28,xprot,xneut,xbid,xbid1,vx, &
-            vy3,vy,vxc12,vxc13,vxc14,vxn14,vxn15,vxo16,vxo17,vxo18,vxf18,vxf19,vxne20, &
-            vxne21,vxne22,vxna23,vxmg24,vxmg25,vxmg26,vxal26g,vxal27,vxsi28,vxprot, &
-            vxneut,vxbid,vxbid1, &
-            nbelx,abelx,vabelx,mbelx,maxCNO, &
-            abundCheck
-    use rotmod, only: CorrOmega,vsuminenv,omegi,vomegi
-    use evol, only: npondcouche,kindreal
-    use diffadvmod, only: tdiff
-    use henyey_solver, only: nsugi
-    use bintidemod, only: period
-    use convection, only: r_core
     implicit none
     integer:: index_of_the_star
     character(256):: cardfilename
-    character(5):: fnamein
-    character(256):: fname51
     integer:: read_genec_model
-    integer:: i,ii
-    real(kindreal):: dlelexprev
-
-    open(unit=42, file=cardfilename)
-    ! * Parse the CharacteristicsParams namelist *
-    read(42,nml=CharacteristicsParams)
-    ! * Parse the PhysicsParams namelist *
-    read(42,nml=PhysicsParams)
-    ! * Parse the CompositionParams namelist *
-    read(42,nml=CompositionParams)
-    ! * Parse the RotationParams namelist *
-    read(42,nml=RotationParams)
-    ! * Parse the SurfaceParams namelist *
-    read(42,nml=SurfaceParams)
-    ! * Parse the ConvectionParams namelist *
-    read(42,nml=ConvectionParams)
-    ! * Parse the ConvergenceParams namelist *
-    read(42,nml=ConvergenceParams)
-    ! * Parse the TimeControle namelist *
-    read(42,nml=TimeControle)
-    ! * Parse the VariousSettings namelist *
-    read(42,nml=VariousSettings)
-
-    close(42)
-
-    write(fnamein, '(i5.5)') modanf
-    fname51 = trim(starname)//'.b'//fnamein
-
-    open(unit=51, file=fname51, status='unknown',form='unformatted')
-    read(51)gms,alter,gls,teff,glsv,teffv,dzeitj,dzeit,dzeitv,xmini,ab,dm_lost,m, &
-            (q(i),p(i),t(i),r(i),s(i),x(i),y(i),xc12(i), &
-            vp(i),vt(i),vr(i),vs(i),xo16(i),vx(i),vy(i),vxc12(i),vxo16(i),i=1,m), &
-            drl,drte,dk,drp,drt,drr,rlp,rlt,rlc,rrp,rrt,rrc,rtp, &
-            rtt,rtc,tdiff,vsuminenv,(CorrOmega(i),i=1,npondcouche), &
-            xLtotbeg,dlelexprev,zams_radius
-
-    read(51) (y3(i),xc13(i),xn14(i),xn15(i),xo17(i),xo18(i),vy3(i),vxc13(i),vxn14(i),vxn15(i),vxo17(i),vxo18(i),xne20(i), &
-      xne22(i),xmg24(i),xmg25(i),xmg26(i),vxne20(i),vxne22(i),vxmg24(i),vxmg25(i),vxmg26(i),omegi(i),vomegi(i),i=1,m)
-    read(51) (xf19(i),xne21(i),xna23(i),xal26(i),xal27(i),xsi28(i),vxf19(i),vxne21(i),vxna23(i),vxal26g(i),vxal27(i),vxsi28(i), &
-      xneut(i),xprot(i),xc14(i),xf18(i),xbid(i),xbid1(i),vxneut(i),vxprot(i),vxc14(i),vxf18(i),vxbid(i),vxbid1(i),i=1,m)
-
-    do ii=1,nbelx
-     read(51) (abelx(ii,i),vabelx(ii,i),i=1,m)
-    enddo
-
-    if (isugi >= 1) then
-      read(51) nsugi
-    endif
-
-    if (bintide) then
-      read(51) period,r_core,vna,vnr
-    endif
-    close(51)
-
-    index_of_the_star = 1
     read_genec_model = 0
 end function
 
@@ -117,10 +46,27 @@ end function
 
 ! **** Parameters
 
-function get_min_timestep_stop_condition(min_timestep_stop_condition)
-    use inputparam, only: dzeitj_min
+function get_model_number(model_number)
+    use genec, only: nwmd
     implicit none
-    double precision:: min_timestep_stop_condition
+    integer:: model_number
+    integer:: get_model_number
+    model_number = nwmd
+    get_model_number = 0
+end function
+
+function set_model_number(model_number)
+    use genec, only: nwmd
+    implicit none
+    integer:: model_number
+    integer:: set_model_number
+    nwmd = model_number
+    set_model_number = 0
+end function
+
+function get_min_timestep_stop_condition(min_timestep_stop_condition)
+    implicit none
+    real(kindreal):: min_timestep_stop_condition
     integer:: get_min_timestep_stop_condition
     get_min_timestep_stop_condition = 0
 end function
@@ -1046,7 +992,7 @@ end function
 function get_par_index_poly(par_index_poly)
     use inputparam, only: index_poly
     implicit none
-    double precision:: par_index_poly
+    real(kindreal):: par_index_poly
     integer:: get_par_index_poly
     par_index_poly = index_poly
     get_par_index_poly = 0
@@ -1055,7 +1001,7 @@ end function
 function set_par_index_poly(par_index_poly)
     use inputparam, only: index_poly
     implicit none
-    double precision:: par_index_poly
+    real(kindreal):: par_index_poly
     integer:: set_par_index_poly
     index_poly = par_index_poly
     set_par_index_poly = 0
@@ -1064,7 +1010,7 @@ end function
 function get_par_binm2(par_binm2)
     use inputparam, only: binm2
     implicit none
-    double precision:: par_binm2
+    real(kindreal):: par_binm2
     integer:: get_par_binm2
     par_binm2 = binm2
     get_par_binm2 = 0
@@ -1073,7 +1019,7 @@ end function
 function set_par_binm2(par_binm2)
     use inputparam, only: binm2
     implicit none
-    double precision:: par_binm2
+    real(kindreal):: par_binm2
     integer:: set_par_binm2
     binm2 = par_binm2
     set_par_binm2 = 0
@@ -1082,7 +1028,7 @@ end function
 function get_par_periodini(par_periodini)
     use inputparam, only: periodini
     implicit none
-    double precision:: par_periodini
+    real(kindreal):: par_periodini
     integer:: get_par_periodini
     par_periodini = periodini
     get_par_periodini = 0
@@ -1091,7 +1037,7 @@ end function
 function set_par_periodini(par_periodini)
     use inputparam, only: periodini
     implicit none
-    double precision:: par_periodini
+    real(kindreal):: par_periodini
     integer:: set_par_periodini
     periodini = par_periodini
     set_par_periodini = 0
@@ -1100,7 +1046,7 @@ end function
 function get_par_zinit(par_zinit)
     use inputparam, only: zinit
     implicit none
-    double precision:: par_zinit
+    real(kindreal):: par_zinit
     integer:: get_par_zinit
     par_zinit = zinit
     get_par_zinit = 0
@@ -1109,7 +1055,7 @@ end function
 function set_par_zinit(par_zinit)
     use inputparam, only: zinit
     implicit none
-    double precision:: par_zinit
+    real(kindreal):: par_zinit
     integer:: set_par_zinit
     zinit = par_zinit
     set_par_zinit = 0
@@ -1118,7 +1064,7 @@ end function
 function get_par_zsol(par_zsol)
     use inputparam, only: zsol
     implicit none
-    double precision:: par_zsol
+    real(kindreal):: par_zsol
     integer:: get_par_zsol
     par_zsol = zsol
     get_par_zsol = 0
@@ -1127,7 +1073,7 @@ end function
 function set_par_zsol(par_zsol)
     use inputparam, only: zsol
     implicit none
-    double precision:: par_zsol
+    real(kindreal):: par_zsol
     integer:: set_par_zsol
     zsol = par_zsol
     set_par_zsol = 0
@@ -1136,7 +1082,7 @@ end function
 function get_par_z(par_z)
     use inputparam, only: z
     implicit none
-    double precision:: par_z
+    real(kindreal):: par_z
     integer:: get_par_z
     par_z = z
     get_par_z = 0
@@ -1145,7 +1091,7 @@ end function
 function set_par_z(par_z)
     use inputparam, only: z
     implicit none
-    double precision:: par_z
+    real(kindreal):: par_z
     integer:: set_par_z
     z = par_z
     set_par_z = 0
@@ -1154,7 +1100,7 @@ end function
 function get_par_fenerg(par_fenerg)
     use inputparam, only: fenerg
     implicit none
-    double precision:: par_fenerg
+    real(kindreal):: par_fenerg
     integer:: get_par_fenerg
     par_fenerg = fenerg
     get_par_fenerg = 0
@@ -1163,7 +1109,7 @@ end function
 function set_par_fenerg(par_fenerg)
     use inputparam, only: fenerg
     implicit none
-    double precision:: par_fenerg
+    real(kindreal):: par_fenerg
     integer:: set_par_fenerg
     fenerg = par_fenerg
     set_par_fenerg = 0
@@ -1172,7 +1118,7 @@ end function
 function get_par_richac(par_richac)
     use inputparam, only: richac
     implicit none
-    double precision:: par_richac
+    real(kindreal):: par_richac
     integer:: get_par_richac
     par_richac = richac
     get_par_richac = 0
@@ -1181,7 +1127,7 @@ end function
 function set_par_richac(par_richac)
     use inputparam, only: richac
     implicit none
-    double precision:: par_richac
+    real(kindreal):: par_richac
     integer:: set_par_richac
     richac = par_richac
     set_par_richac = 0
@@ -1190,7 +1136,7 @@ end function
 function get_par_frein(par_frein)
     use inputparam, only: frein
     implicit none
-    double precision:: par_frein
+    real(kindreal):: par_frein
     integer:: get_par_frein
     par_frein = frein
     get_par_frein = 0
@@ -1199,7 +1145,7 @@ end function
 function set_par_frein(par_frein)
     use inputparam, only: frein
     implicit none
-    double precision:: par_frein
+    real(kindreal):: par_frein
     integer:: set_par_frein
     frein = par_frein
     set_par_frein = 0
@@ -1208,7 +1154,7 @@ end function
 function get_par_K_Kawaler(par_K_Kawaler)
     use inputparam, only: K_Kawaler
     implicit none
-    double precision:: par_K_Kawaler
+    real(kindreal):: par_K_Kawaler
     integer:: get_par_K_Kawaler
     par_K_Kawaler = K_Kawaler
     get_par_K_Kawaler = 0
@@ -1217,7 +1163,7 @@ end function
 function set_par_K_Kawaler(par_K_Kawaler)
     use inputparam, only: K_Kawaler
     implicit none
-    double precision:: par_K_Kawaler
+    real(kindreal):: par_K_Kawaler
     integer:: set_par_K_Kawaler
     K_Kawaler = par_K_Kawaler
     set_par_K_Kawaler = 0
@@ -1226,7 +1172,7 @@ end function
 function get_par_Omega_saturation(par_Omega_saturation)
     use inputparam, only: Omega_saturation
     implicit none
-    double precision:: par_Omega_saturation
+    real(kindreal):: par_Omega_saturation
     integer:: get_par_Omega_saturation
     par_Omega_saturation = Omega_saturation
     get_par_Omega_saturation = 0
@@ -1235,7 +1181,7 @@ end function
 function set_par_Omega_saturation(par_Omega_saturation)
     use inputparam, only: Omega_saturation
     implicit none
-    double precision:: par_Omega_saturation
+    real(kindreal):: par_Omega_saturation
     integer:: set_par_Omega_saturation
     Omega_saturation = par_Omega_saturation
     set_par_Omega_saturation = 0
@@ -1244,7 +1190,7 @@ end function
 function get_par_rapcrilim(par_rapcrilim)
     use inputparam, only: rapcrilim
     implicit none
-    double precision:: par_rapcrilim
+    real(kindreal):: par_rapcrilim
     integer:: get_par_rapcrilim
     par_rapcrilim = rapcrilim
     get_par_rapcrilim = 0
@@ -1253,7 +1199,7 @@ end function
 function set_par_rapcrilim(par_rapcrilim)
     use inputparam, only: rapcrilim
     implicit none
-    double precision:: par_rapcrilim
+    real(kindreal):: par_rapcrilim
     integer:: set_par_rapcrilim
     rapcrilim = par_rapcrilim
     set_par_rapcrilim = 0
@@ -1262,7 +1208,7 @@ end function
 function get_par_vwant(par_vwant)
     use inputparam, only: vwant
     implicit none
-    double precision:: par_vwant
+    real(kindreal):: par_vwant
     integer:: get_par_vwant
     par_vwant = vwant
     get_par_vwant = 0
@@ -1271,7 +1217,7 @@ end function
 function set_par_vwant(par_vwant)
     use inputparam, only: vwant
     implicit none
-    double precision:: par_vwant
+    real(kindreal):: par_vwant
     integer:: set_par_vwant
     vwant = par_vwant
     set_par_vwant = 0
@@ -1280,7 +1226,7 @@ end function
 function get_par_xfom(par_xfom)
     use inputparam, only: xfom
     implicit none
-    double precision:: par_xfom
+    real(kindreal):: par_xfom
     integer:: get_par_xfom
     par_xfom = xfom
     get_par_xfom = 0
@@ -1289,7 +1235,7 @@ end function
 function set_par_xfom(par_xfom)
     use inputparam, only: xfom
     implicit none
-    double precision:: par_xfom
+    real(kindreal):: par_xfom
     integer:: set_par_xfom
     xfom = par_xfom
     set_par_xfom = 0
@@ -1298,7 +1244,7 @@ end function
 function get_par_omega(par_omega)
     use inputparam, only: omega
     implicit none
-    double precision:: par_omega
+    real(kindreal):: par_omega
     integer:: get_par_omega
     par_omega = omega
     get_par_omega = 0
@@ -1307,7 +1253,7 @@ end function
 function set_par_omega(par_omega)
     use inputparam, only: omega
     implicit none
-    double precision:: par_omega
+    real(kindreal):: par_omega
     integer:: set_par_omega
     omega = par_omega
     set_par_omega = 0
@@ -1316,7 +1262,7 @@ end function
 function get_par_xdial(par_xdial)
     use inputparam, only: xdial
     implicit none
-    double precision:: par_xdial
+    real(kindreal):: par_xdial
     integer:: get_par_xdial
     par_xdial = xdial
     get_par_xdial = 0
@@ -1325,7 +1271,7 @@ end function
 function set_par_xdial(par_xdial)
     use inputparam, only: xdial
     implicit none
-    double precision:: par_xdial
+    real(kindreal):: par_xdial
     integer:: set_par_xdial
     xdial = par_xdial
     set_par_xdial = 0
@@ -1334,7 +1280,7 @@ end function
 function get_par_B_initial(par_B_initial)
     use inputparam, only: B_initial
     implicit none
-    double precision:: par_B_initial
+    real(kindreal):: par_B_initial
     integer:: get_par_B_initial
     par_B_initial = B_initial
     get_par_B_initial = 0
@@ -1343,7 +1289,7 @@ end function
 function set_par_B_initial(par_B_initial)
     use inputparam, only: B_initial
     implicit none
-    double precision:: par_B_initial
+    real(kindreal):: par_B_initial
     integer:: set_par_B_initial
     B_initial = par_B_initial
     set_par_B_initial = 0
@@ -1352,7 +1298,7 @@ end function
 function get_par_add_diff(par_add_diff)
     use inputparam, only: add_diff
     implicit none
-    double precision:: par_add_diff
+    real(kindreal):: par_add_diff
     integer:: get_par_add_diff
     par_add_diff = add_diff
     get_par_add_diff = 0
@@ -1361,7 +1307,7 @@ end function
 function set_par_add_diff(par_add_diff)
     use inputparam, only: add_diff
     implicit none
-    double precision:: par_add_diff
+    real(kindreal):: par_add_diff
     integer:: set_par_add_diff
     add_diff = par_add_diff
     set_par_add_diff = 0
@@ -1370,7 +1316,7 @@ end function
 function get_par_fmlos(par_fmlos)
     use inputparam, only: fmlos
     implicit none
-    double precision:: par_fmlos
+    real(kindreal):: par_fmlos
     integer:: get_par_fmlos
     par_fmlos = fmlos
     get_par_fmlos = 0
@@ -1379,7 +1325,7 @@ end function
 function set_par_fmlos(par_fmlos)
     use inputparam, only: fmlos
     implicit none
-    double precision:: par_fmlos
+    real(kindreal):: par_fmlos
     integer:: set_par_fmlos
     fmlos = par_fmlos
     set_par_fmlos = 0
@@ -1388,7 +1334,7 @@ end function
 function get_par_fitm(par_fitm)
     use inputparam, only: fitm
     implicit none
-    double precision:: par_fitm
+    real(kindreal):: par_fitm
     integer:: get_par_fitm
     par_fitm = fitm
     get_par_fitm = 0
@@ -1397,7 +1343,7 @@ end function
 function set_par_fitm(par_fitm)
     use inputparam, only: fitm
     implicit none
-    double precision:: par_fitm
+    real(kindreal):: par_fitm
     integer:: set_par_fitm
     fitm = par_fitm
     set_par_fitm = 0
@@ -1406,7 +1352,7 @@ end function
 function get_par_fitmi(par_fitmi)
     use inputparam, only: fitmi
     implicit none
-    double precision:: par_fitmi
+    real(kindreal):: par_fitmi
     integer:: get_par_fitmi
     par_fitmi = fitmi
     get_par_fitmi = 0
@@ -1415,7 +1361,7 @@ end function
 function set_par_fitmi(par_fitmi)
     use inputparam, only: fitmi
     implicit none
-    double precision:: par_fitmi
+    real(kindreal):: par_fitmi
     integer:: set_par_fitmi
     fitmi = par_fitmi
     set_par_fitmi = 0
@@ -1424,7 +1370,7 @@ end function
 function get_par_fitmi_default(par_fitmi_default)
     use inputparam, only: fitmi_default
     implicit none
-    double precision:: par_fitmi_default
+    real(kindreal):: par_fitmi_default
     integer:: get_par_fitmi_default
     par_fitmi_default = fitmi_default
     get_par_fitmi_default = 0
@@ -1433,7 +1379,7 @@ end function
 function set_par_fitmi_default(par_fitmi_default)
     use inputparam, only: fitmi_default
     implicit none
-    double precision:: par_fitmi_default
+    real(kindreal):: par_fitmi_default
     integer:: set_par_fitmi_default
     fitmi_default = par_fitmi_default
     set_par_fitmi_default = 0
@@ -1442,7 +1388,7 @@ end function
 function get_par_deltal(par_deltal)
     use inputparam, only: deltal
     implicit none
-    double precision:: par_deltal
+    real(kindreal):: par_deltal
     integer:: get_par_deltal
     par_deltal = deltal
     get_par_deltal = 0
@@ -1451,7 +1397,7 @@ end function
 function set_par_deltal(par_deltal)
     use inputparam, only: deltal
     implicit none
-    double precision:: par_deltal
+    real(kindreal):: par_deltal
     integer:: set_par_deltal
     deltal = par_deltal
     set_par_deltal = 0
@@ -1460,7 +1406,7 @@ end function
 function get_par_deltat(par_deltat)
     use inputparam, only: deltat
     implicit none
-    double precision:: par_deltat
+    real(kindreal):: par_deltat
     integer:: get_par_deltat
     par_deltat = deltat
     get_par_deltat = 0
@@ -1469,7 +1415,7 @@ end function
 function set_par_deltat(par_deltat)
     use inputparam, only: deltat
     implicit none
-    double precision:: par_deltat
+    real(kindreal):: par_deltat
     integer:: set_par_deltat
     deltat = par_deltat
     set_par_deltat = 0
@@ -1478,7 +1424,7 @@ end function
 function get_par_elph(par_elph)
     use inputparam, only: elph
     implicit none
-    double precision:: par_elph
+    real(kindreal):: par_elph
     integer:: get_par_elph
     par_elph = elph
     get_par_elph = 0
@@ -1487,7 +1433,7 @@ end function
 function set_par_elph(par_elph)
     use inputparam, only: elph
     implicit none
-    double precision:: par_elph
+    real(kindreal):: par_elph
     integer:: set_par_elph
     elph = par_elph
     set_par_elph = 0
@@ -1496,7 +1442,7 @@ end function
 function get_par_dovhp(par_dovhp)
     use inputparam, only: dovhp
     implicit none
-    double precision:: par_dovhp
+    real(kindreal):: par_dovhp
     integer:: get_par_dovhp
     par_dovhp = dovhp
     get_par_dovhp = 0
@@ -1505,7 +1451,7 @@ end function
 function set_par_dovhp(par_dovhp)
     use inputparam, only: dovhp
     implicit none
-    double precision:: par_dovhp
+    real(kindreal):: par_dovhp
     integer:: set_par_dovhp
     dovhp = par_dovhp
     set_par_dovhp = 0
@@ -1514,7 +1460,7 @@ end function
 function get_par_dunder(par_dunder)
     use inputparam, only: dunder
     implicit none
-    double precision:: par_dunder
+    real(kindreal):: par_dunder
     integer:: get_par_dunder
     par_dunder = dunder
     get_par_dunder = 0
@@ -1523,7 +1469,7 @@ end function
 function set_par_dunder(par_dunder)
     use inputparam, only: dunder
     implicit none
-    double precision:: par_dunder
+    real(kindreal):: par_dunder
     integer:: set_par_dunder
     dunder = par_dunder
     set_par_dunder = 0
@@ -1532,7 +1478,7 @@ end function
 function get_par_gkorm(par_gkorm)
     use inputparam, only: gkorm
     implicit none
-    double precision:: par_gkorm
+    real(kindreal):: par_gkorm
     integer:: get_par_gkorm
     par_gkorm = gkorm
     get_par_gkorm = 0
@@ -1541,7 +1487,7 @@ end function
 function set_par_gkorm(par_gkorm)
     use inputparam, only: gkorm
     implicit none
-    double precision:: par_gkorm
+    real(kindreal):: par_gkorm
     integer:: set_par_gkorm
     gkorm = par_gkorm
     set_par_gkorm = 0
@@ -1550,7 +1496,7 @@ end function
 function get_par_alph(par_alph)
     use inputparam, only: alph
     implicit none
-    double precision:: par_alph
+    real(kindreal):: par_alph
     integer:: get_par_alph
     par_alph = alph
     get_par_alph = 0
@@ -1559,7 +1505,7 @@ end function
 function set_par_alph(par_alph)
     use inputparam, only: alph
     implicit none
-    double precision:: par_alph
+    real(kindreal):: par_alph
     integer:: set_par_alph
     alph = par_alph
     set_par_alph = 0
@@ -1568,7 +1514,7 @@ end function
 function get_par_agdr(par_agdr)
     use inputparam, only: agdr
     implicit none
-    double precision:: par_agdr
+    real(kindreal):: par_agdr
     integer:: get_par_agdr
     par_agdr = agdr
     get_par_agdr = 0
@@ -1577,7 +1523,7 @@ end function
 function set_par_agdr(par_agdr)
     use inputparam, only: agdr
     implicit none
-    double precision:: par_agdr
+    real(kindreal):: par_agdr
     integer:: set_par_agdr
     agdr = par_agdr
     set_par_agdr = 0
@@ -1586,7 +1532,7 @@ end function
 function get_par_faktor(par_faktor)
     use inputparam, only: faktor
     implicit none
-    double precision:: par_faktor
+    real(kindreal):: par_faktor
     integer:: get_par_faktor
     par_faktor = faktor
     get_par_faktor = 0
@@ -1595,7 +1541,7 @@ end function
 function set_par_faktor(par_faktor)
     use inputparam, only: faktor
     implicit none
-    double precision:: par_faktor
+    real(kindreal):: par_faktor
     integer:: set_par_faktor
     faktor = par_faktor
     set_par_faktor = 0
@@ -1604,7 +1550,7 @@ end function
 function get_par_dgrp(par_dgrp)
     use inputparam, only: dgrp
     implicit none
-    double precision:: par_dgrp
+    real(kindreal):: par_dgrp
     integer:: get_par_dgrp
     par_dgrp = dgrp
     get_par_dgrp = 0
@@ -1613,7 +1559,7 @@ end function
 function set_par_dgrp(par_dgrp)
     use inputparam, only: dgrp
     implicit none
-    double precision:: par_dgrp
+    real(kindreal):: par_dgrp
     integer:: set_par_dgrp
     dgrp = par_dgrp
     set_par_dgrp = 0
@@ -1622,7 +1568,7 @@ end function
 function get_par_dgrl(par_dgrl)
     use inputparam, only: dgrl
     implicit none
-    double precision:: par_dgrl
+    real(kindreal):: par_dgrl
     integer:: get_par_dgrl
     par_dgrl = dgrl
     get_par_dgrl = 0
@@ -1631,7 +1577,7 @@ end function
 function set_par_dgrl(par_dgrl)
     use inputparam, only: dgrl
     implicit none
-    double precision:: par_dgrl
+    real(kindreal):: par_dgrl
     integer:: set_par_dgrl
     dgrl = par_dgrl
     set_par_dgrl = 0
@@ -1640,7 +1586,7 @@ end function
 function get_par_dgry(par_dgry)
     use inputparam, only: dgry
     implicit none
-    double precision:: par_dgry
+    real(kindreal):: par_dgry
     integer:: get_par_dgry
     par_dgry = dgry
     get_par_dgry = 0
@@ -1649,7 +1595,7 @@ end function
 function set_par_dgry(par_dgry)
     use inputparam, only: dgry
     implicit none
-    double precision:: par_dgry
+    real(kindreal):: par_dgry
     integer:: set_par_dgry
     dgry = par_dgry
     set_par_dgry = 0
@@ -1658,7 +1604,7 @@ end function
 function get_par_dgrc(par_dgrc)
     use inputparam, only: dgrc
     implicit none
-    double precision:: par_dgrc
+    real(kindreal):: par_dgrc
     integer:: get_par_dgrc
     par_dgrc = dgrc
     get_par_dgrc = 0
@@ -1667,7 +1613,7 @@ end function
 function set_par_dgrc(par_dgrc)
     use inputparam, only: dgrc
     implicit none
-    double precision:: par_dgrc
+    real(kindreal):: par_dgrc
     integer:: set_par_dgrc
     dgrc = par_dgrc
     set_par_dgrc = 0
@@ -1676,7 +1622,7 @@ end function
 function get_par_dgro(par_dgro)
     use inputparam, only: dgro
     implicit none
-    double precision:: par_dgro
+    real(kindreal):: par_dgro
     integer:: get_par_dgro
     par_dgro = dgro
     get_par_dgro = 0
@@ -1685,7 +1631,7 @@ end function
 function set_par_dgro(par_dgro)
     use inputparam, only: dgro
     implicit none
-    double precision:: par_dgro
+    real(kindreal):: par_dgro
     integer:: set_par_dgro
     dgro = par_dgro
     set_par_dgro = 0
@@ -1694,7 +1640,7 @@ end function
 function get_par_dgr20(par_dgr20)
     use inputparam, only: dgr20
     implicit none
-    double precision:: par_dgr20
+    real(kindreal):: par_dgr20
     integer:: get_par_dgr20
     par_dgr20 = dgr20
     get_par_dgr20 = 0
@@ -1703,7 +1649,7 @@ end function
 function set_par_dgr20(par_dgr20)
     use inputparam, only: dgr20
     implicit none
-    double precision:: par_dgr20
+    real(kindreal):: par_dgr20
     integer:: set_par_dgr20
     dgr20 = par_dgr20
     set_par_dgr20 = 0
@@ -1712,7 +1658,7 @@ end function
 function get_par_xcn(par_xcn)
     use inputparam, only: xcn
     implicit none
-    double precision:: par_xcn
+    real(kindreal):: par_xcn
     integer:: get_par_xcn
     par_xcn = xcn
     get_par_xcn = 0
@@ -1721,7 +1667,7 @@ end function
 function set_par_xcn(par_xcn)
     use inputparam, only: xcn
     implicit none
-    double precision:: par_xcn
+    real(kindreal):: par_xcn
     integer:: set_par_xcn
     xcn = par_xcn
     set_par_xcn = 0
@@ -1732,7 +1678,11 @@ function get_par_starname(par_starname)
     implicit none
     character(256):: par_starname
     integer:: get_par_starname
-    par_starname = starname
+    if (StarInGenec%initialised) then
+        par_starname = StarInGenec%starname
+    else
+        par_starname = InitialGenecStar%starname
+    endif
     get_par_starname = 0
 end function
 
@@ -1741,7 +1691,7 @@ function set_par_starname(par_starname)
     implicit none
     character(256):: par_starname
     integer:: set_par_starname
-    starname = par_starname
+    InitialGenecStar%starname = par_starname
     set_par_starname = 0
 end function
 
@@ -1754,13 +1704,14 @@ function commit_parameters()
 end function
 
 function commit_particles()
-    use helpers, only: makeini
+    use makeini, only: make_initial_star
     use genec, only: initialise_star
     use WriteSaveClose, only: OpenAll
     use inputparam, only: nzmod
     implicit none
     integer:: commit_particles
-    call makeini()  ! this will actually override some things from set_defaults now! FIXME
+    ! makeini will actually override some things from set_defaults now! FIXME
+    call make_initial_star()
     nzmod = 1
     !write(*,*) 'makeini done'
     !call OpenAll()
@@ -1770,7 +1721,7 @@ function commit_particles()
     commit_particles = 0
 end function
 
-function delete_star()
+function delete_star(index_of_the_star)
     implicit none
     integer:: index_of_the_star
     integer:: delete_star
@@ -1780,10 +1731,11 @@ end function
 function evolve_model(end_time)
     use timestep, only: alter
     implicit none
-    double precision:: end_time
-    integer:: evolve_one_step
+    real(kindreal):: end_time
     integer:: evolve_model
     !stopping_condition = ""
+    type(genec_star) :: PreviousStarInGenec
+    PreviousStarInGenec = StarInGenec
     do while (alter < end_time)
       !if (stopping_condition == "") then
         write(*,*) "Current time: ", alter, ", evolving to: ", end_time
@@ -1799,8 +1751,7 @@ function evolve_for(index_of_the_star, time)
     use timestep, only: alter
     implicit none
     integer:: index_of_the_star
-    integer:: evolve_one_step
-    double precision:: time, end_time
+    real(kindreal):: time, end_time
     integer:: evolve_for
     end_time = alter+time
     do while (alter < end_time)
@@ -1826,6 +1777,7 @@ function evolve_one_step(index_of_the_star)
     n_snap = 0
     end_at_phase=4
     end_at_model=0
+
     !write(*,*) "Evolving one step, current time: ", alter
     !if (stopping_condition == "") then
       call evolve()
@@ -1870,7 +1822,7 @@ function get_age(index_of_the_star, age)
     use timestep, only: alter
     implicit none
     integer:: index_of_the_star
-    double precision:: age
+    real(kindreal):: age
     integer:: get_age
     age = alter
     get_age = 0
@@ -1880,7 +1832,7 @@ function set_age(index_of_the_star, age)
     use timestep, only: alter
     implicit none
     integer:: index_of_the_star
-    double precision:: age
+    real(kindreal):: age
     integer:: set_age
     alter = age
     set_age = 0
@@ -1890,7 +1842,7 @@ function get_surface_velocity(index_of_the_star, surface_velocity)
     use genec, only: vequat
     implicit none
     integer:: index_of_the_star
-    double precision:: surface_velocity
+    real(kindreal):: surface_velocity
     integer:: get_surface_velocity
     surface_velocity = vequat
     get_surface_velocity = 0
@@ -1902,7 +1854,7 @@ function get_omegi_at_zone(index_of_the_star, zone, omegi_i)
     implicit none
     integer:: index_of_the_star
     integer:: get_omegi_at_zone
-    double precision:: omegi_i
+    real(kindreal):: omegi_i
     integer:: zone, i
     i = m - zone
     if (zone <= m) then
@@ -1916,7 +1868,7 @@ function get_density_at_zone(index_of_the_star, zone, rho_i)
     implicit none
     integer:: index_of_the_star
     integer:: zone, i
-    double precision:: rho_i
+    real(kindreal):: rho_i
     integer:: get_density_at_zone
     i = m - zone
     if (zone <= m) then
@@ -1930,7 +1882,7 @@ function set_density_at_zone(index_of_the_star, zone, rho_i)
     implicit none
     integer:: index_of_the_star
     integer:: zone, i
-    double precision:: rho_i
+    real(kindreal):: rho_i
     integer:: set_density_at_zone
     i = m - zone
     if (zone <= m) then
@@ -1944,7 +1896,7 @@ function get_luminosity(index_of_the_star, luminosity)
     use caramodele, only: gls
     implicit none
     integer:: index_of_the_star
-    double precision:: luminosity
+    real(kindreal):: luminosity
     integer:: get_luminosity
     !luminosity = exp(s(m))  ! in cgs units, so erg/s?
     luminosity = gls
@@ -1956,7 +1908,7 @@ function set_luminosity(index_of_the_star, luminosity)
     use caramodele, only: gls
     implicit none
     integer:: index_of_the_star
-    double precision:: luminosity
+    real(kindreal):: luminosity
     integer:: set_luminosity
     !luminosity = exp(s(m))  ! in cgs units, so erg/s?
     gls = luminosity
@@ -1968,7 +1920,7 @@ function get_luminosity_at_zone(index_of_the_star, zone, lum_i)
     implicit none
     integer:: index_of_the_star
     integer:: zone, i
-    double precision:: lum_i
+    real(kindreal):: lum_i
     integer:: get_luminosity_at_zone
     i = m - zone
     if (zone <= m) then
@@ -1983,7 +1935,7 @@ function set_luminosity_at_zone(index_of_the_star, zone, lum_i)
     implicit none
     integer:: index_of_the_star
     integer:: zone, i
-    double precision:: lum_i
+    real(kindreal):: lum_i
     integer:: set_luminosity_at_zone
     i = m - zone
     if (zone <= m) then
@@ -1997,7 +1949,7 @@ function get_mass_fraction_at_zone(index_of_the_star, zone, dq_i)
     implicit none
     integer:: index_of_the_star
     integer:: zone, i
-    double precision:: dq_i
+    real(kindreal):: dq_i
     integer:: get_mass_fraction_at_zone
     i = m - zone
     if (i == 1) then
@@ -2014,7 +1966,7 @@ function set_mass_fraction_at_zone(index_of_the_star, zone, dq_i)
     implicit none
     integer:: index_of_the_star
     integer:: zone, i
-    double precision:: dq_i
+    real(kindreal):: dq_i
     integer:: set_mass_fraction_at_zone
     i = m - zone
     if (i == 1) then
@@ -2027,21 +1979,19 @@ function set_mass_fraction_at_zone(index_of_the_star, zone, dq_i)
 end function
 
 function get_mass(index_of_the_star, mass)
-    use inputparam, only: starname
     use caramodele, only: gms
     implicit none
-    double precision:: mass
+    real(kindreal):: mass
     integer:: get_mass, index_of_the_star
     mass = gms
     get_mass = 0
 end function
 
 function set_mass(index_of_the_star, mass)
-    use helpers, only:mstar  ! this is initial mass only?
     implicit none
     integer:: set_mass, index_of_the_star
-    double precision:: mass
-    mstar = mass
+    real(kindreal):: mass
+    InitialGenecStar%mstar = mass
     set_mass = 0
 end function
 
@@ -2049,7 +1999,7 @@ function get_mass_of_species(index_of_the_star, species, species_mass)
     implicit none
     integer:: index_of_the_star
     integer:: species
-    double precision:: species_mass
+    real(kindreal):: species_mass
     integer:: get_mass_of_species
     get_mass_of_species = 0
     select case(species)
@@ -2120,7 +2070,7 @@ function get_mass_fraction_of_species_at_zone(index_of_the_star, species, zone, 
     implicit none
     integer:: index_of_the_star
     integer:: species, zone, i
-    double precision:: Xj_i
+    real(kindreal):: Xj_i
     integer:: get_mass_fraction_of_species_at_zone
     i = m-zone
     if (zone <= m) then
@@ -2195,7 +2145,7 @@ function set_mass_fraction_of_species_at_zone(index_of_the_star, species, zone, 
     implicit none
     integer:: index_of_the_star
     integer:: species, zone, i
-    double precision:: Xj_i
+    real(kindreal):: Xj_i
     integer:: set_mass_fraction_of_species_at_zone
     i = m - zone
     if (zone <= m) then
@@ -2262,20 +2212,18 @@ function set_mass_fraction_of_species_at_zone(index_of_the_star, species, zone, 
 end function
 
 function get_metallicity(metallicity)
-    use helpers, only: zini
     implicit none
-    double precision:: metallicity
+    real(kindreal):: metallicity
     integer:: get_metallicity
-    metallicity = zini
+    metallicity = InitialGenecStar%zini
     get_metallicity = 0
 end function
 
 function set_metallicity(metallicity)
-    use helpers, only: zini
     implicit none
-    double precision:: metallicity
+    real(kindreal):: metallicity
     integer:: set_metallicity
-    zini = metallicity
+    InitialGenecStar%zini = metallicity
     set_metallicity = 0
 end function
 
@@ -2284,8 +2232,7 @@ function get_mu_at_zone(index_of_the_star, zone, mu_i)
     implicit none
     integer:: index_of_the_star
     integer:: zone, i
-    integer:: get_mass_fraction_of_species_at_zone
-    double precision:: mu_i, X, Y3, Y
+    real(kindreal):: mu_i, X, Y3, Y
     integer:: err
     integer:: get_mu_at_zone
     i = (m - zone)
@@ -2351,8 +2298,7 @@ end function
 function get_mass_fraction_of_h_at_zone(index_of_the_star, zone, Xj_i)
     implicit none
     integer:: index_of_the_star, zone
-    double precision:: Xj_i
-    integer:: get_mass_fraction_of_species_at_zone
+    real(kindreal):: Xj_i
     integer:: get_mass_fraction_of_h_at_zone
     get_mass_fraction_of_h_at_zone = get_mass_fraction_of_species_at_zone(index_of_the_star, 1, zone, Xj_i)
 end function
@@ -2361,8 +2307,7 @@ end function
 function get_mass_fraction_of_he3_at_zone(index_of_the_star, zone, Xj_i)
     implicit none
     integer:: index_of_the_star, zone
-    double precision:: Xj_i
-    integer:: get_mass_fraction_of_species_at_zone
+    real(kindreal):: Xj_i
     integer:: get_mass_fraction_of_he3_at_zone
     get_mass_fraction_of_he3_at_zone = get_mass_fraction_of_species_at_zone(index_of_the_star, 2, zone, Xj_i)
 end function
@@ -2371,8 +2316,7 @@ end function
 function get_mass_fraction_of_he_at_zone(index_of_the_star, zone, Xj_i)
     implicit none
     integer:: index_of_the_star, zone
-    double precision:: Xj_i
-    integer:: get_mass_fraction_of_species_at_zone
+    real(kindreal):: Xj_i
     integer:: get_mass_fraction_of_he_at_zone
     get_mass_fraction_of_he_at_zone = get_mass_fraction_of_species_at_zone(index_of_the_star, 3, zone, Xj_i)
 end function
@@ -2381,8 +2325,7 @@ end function
 function get_mass_fraction_of_c12_at_zone(index_of_the_star, zone, Xj_i)
     implicit none
     integer:: index_of_the_star, zone
-    double precision:: Xj_i
-    integer:: get_mass_fraction_of_species_at_zone
+    real(kindreal):: Xj_i
     integer:: get_mass_fraction_of_c12_at_zone
     get_mass_fraction_of_c12_at_zone = get_mass_fraction_of_species_at_zone(index_of_the_star, 4, zone, Xj_i)
 end function
@@ -2391,8 +2334,7 @@ end function
 function get_mass_fraction_of_c13_at_zone(index_of_the_star, zone, Xj_i)
     implicit none
     integer:: index_of_the_star, zone
-    double precision:: Xj_i
-    integer:: get_mass_fraction_of_species_at_zone
+    real(kindreal):: Xj_i
     integer:: get_mass_fraction_of_c13_at_zone
     get_mass_fraction_of_c13_at_zone = get_mass_fraction_of_species_at_zone(index_of_the_star, 5, zone, Xj_i)
 end function
@@ -2401,8 +2343,7 @@ end function
 function get_mass_fraction_of_n14_at_zone(index_of_the_star, zone, Xj_i)
     implicit none
     integer:: index_of_the_star, zone
-    double precision:: Xj_i
-    integer:: get_mass_fraction_of_species_at_zone
+    real(kindreal):: Xj_i
     integer:: get_mass_fraction_of_n14_at_zone
     get_mass_fraction_of_n14_at_zone = get_mass_fraction_of_species_at_zone(index_of_the_star, 6, zone, Xj_i)
 end function
@@ -2411,8 +2352,7 @@ end function
 function get_mass_fraction_of_n15_at_zone(index_of_the_star, zone, Xj_i)
     implicit none
     integer:: index_of_the_star, zone
-    double precision:: Xj_i
-    integer:: get_mass_fraction_of_species_at_zone
+    real(kindreal):: Xj_i
     integer:: get_mass_fraction_of_n15_at_zone
     get_mass_fraction_of_n15_at_zone = get_mass_fraction_of_species_at_zone(index_of_the_star, 7, zone, Xj_i)
 end function
@@ -2421,8 +2361,7 @@ end function
 function get_mass_fraction_of_o16_at_zone(index_of_the_star, zone, Xj_i)
     implicit none
     integer:: index_of_the_star, zone
-    double precision:: Xj_i
-    integer:: get_mass_fraction_of_species_at_zone
+    real(kindreal):: Xj_i
     integer:: get_mass_fraction_of_o16_at_zone
     get_mass_fraction_of_o16_at_zone = get_mass_fraction_of_species_at_zone(index_of_the_star, 8, zone, Xj_i)
 end function
@@ -2431,8 +2370,7 @@ end function
 function get_mass_fraction_of_o17_at_zone(index_of_the_star, zone, Xj_i)
     implicit none
     integer:: index_of_the_star, zone
-    double precision:: Xj_i
-    integer:: get_mass_fraction_of_species_at_zone
+    real(kindreal):: Xj_i
     integer:: get_mass_fraction_of_o17_at_zone
     get_mass_fraction_of_o17_at_zone = get_mass_fraction_of_species_at_zone(index_of_the_star, 9, zone, Xj_i)
 end function
@@ -2441,8 +2379,7 @@ end function
 function get_mass_fraction_of_o18_at_zone(index_of_the_star, zone, Xj_i)
     implicit none
     integer:: index_of_the_star, zone
-    double precision:: Xj_i
-    integer:: get_mass_fraction_of_species_at_zone
+    real(kindreal):: Xj_i
     integer:: get_mass_fraction_of_o18_at_zone
     get_mass_fraction_of_o18_at_zone = get_mass_fraction_of_species_at_zone(index_of_the_star, 10, zone, Xj_i)
 end function
@@ -2451,8 +2388,7 @@ end function
 function get_mass_fraction_of_ne20_at_zone(index_of_the_star, zone, Xj_i)
     implicit none
     integer:: index_of_the_star, zone
-    double precision:: Xj_i
-    integer:: get_mass_fraction_of_species_at_zone
+    real(kindreal):: Xj_i
     integer:: get_mass_fraction_of_ne20_at_zone
     get_mass_fraction_of_ne20_at_zone = get_mass_fraction_of_species_at_zone(index_of_the_star, 11, zone, Xj_i)
 end function
@@ -2461,8 +2397,7 @@ end function
 function get_mass_fraction_of_ne22_at_zone(index_of_the_star, zone, Xj_i)
     implicit none
     integer:: index_of_the_star, zone
-    double precision:: Xj_i
-    integer:: get_mass_fraction_of_species_at_zone
+    real(kindreal):: Xj_i
     integer:: get_mass_fraction_of_ne22_at_zone
     get_mass_fraction_of_ne22_at_zone = get_mass_fraction_of_species_at_zone(index_of_the_star, 12, zone, Xj_i)
 end function
@@ -2471,8 +2406,7 @@ end function
 function get_mass_fraction_of_mg24_at_zone(index_of_the_star, zone, Xj_i)
     implicit none
     integer:: index_of_the_star, zone
-    double precision:: Xj_i
-    integer:: get_mass_fraction_of_species_at_zone
+    real(kindreal):: Xj_i
     integer:: get_mass_fraction_of_mg24_at_zone
     get_mass_fraction_of_mg24_at_zone = get_mass_fraction_of_species_at_zone(index_of_the_star, 13, zone, Xj_i)
 end function
@@ -2481,8 +2415,7 @@ end function
 function get_mass_fraction_of_mg25_at_zone(index_of_the_star, zone, Xj_i)
     implicit none
     integer:: index_of_the_star, zone
-    double precision:: Xj_i
-    integer:: get_mass_fraction_of_species_at_zone
+    real(kindreal):: Xj_i
     integer:: get_mass_fraction_of_mg25_at_zone
     get_mass_fraction_of_mg25_at_zone = get_mass_fraction_of_species_at_zone(index_of_the_star, 14, zone, Xj_i)
 end function
@@ -2491,8 +2424,7 @@ end function
 function get_mass_fraction_of_mg26_at_zone(index_of_the_star, zone, Xj_i)
     implicit none
     integer:: index_of_the_star, zone
-    double precision:: Xj_i
-    integer:: get_mass_fraction_of_species_at_zone
+    real(kindreal):: Xj_i
     integer:: get_mass_fraction_of_mg26_at_zone
     get_mass_fraction_of_mg26_at_zone = get_mass_fraction_of_species_at_zone(index_of_the_star, 15, zone, Xj_i)
 end function
@@ -2501,8 +2433,7 @@ end function
 function get_mass_fraction_of_c14_at_zone(index_of_the_star, zone, Xj_i)
     implicit none
     integer:: index_of_the_star, zone
-    double precision:: Xj_i
-    integer:: get_mass_fraction_of_species_at_zone
+    real(kindreal):: Xj_i
     integer:: get_mass_fraction_of_c14_at_zone
     get_mass_fraction_of_c14_at_zone = get_mass_fraction_of_species_at_zone(index_of_the_star, 16, zone, Xj_i)
 end function
@@ -2511,8 +2442,7 @@ end function
 function get_mass_fraction_of_f18_at_zone(index_of_the_star, zone, Xj_i)
     implicit none
     integer:: index_of_the_star, zone
-    double precision:: Xj_i
-    integer:: get_mass_fraction_of_species_at_zone
+    real(kindreal):: Xj_i
     integer:: get_mass_fraction_of_f18_at_zone
     get_mass_fraction_of_f18_at_zone = get_mass_fraction_of_species_at_zone(index_of_the_star, 17, zone, Xj_i)
 end function
@@ -2521,8 +2451,7 @@ end function
 function get_mass_fraction_of_f19_at_zone(index_of_the_star, zone, Xj_i)
     implicit none
     integer:: index_of_the_star, zone
-    double precision:: Xj_i
-    integer:: get_mass_fraction_of_species_at_zone
+    real(kindreal):: Xj_i
     integer:: get_mass_fraction_of_f19_at_zone
     get_mass_fraction_of_f19_at_zone = get_mass_fraction_of_species_at_zone(index_of_the_star, 18, zone, Xj_i)
 end function
@@ -2531,8 +2460,7 @@ end function
 function get_mass_fraction_of_ne21_at_zone(index_of_the_star, zone, Xj_i)
     implicit none
     integer:: index_of_the_star, zone
-    double precision:: Xj_i
-    integer:: get_mass_fraction_of_species_at_zone
+    real(kindreal):: Xj_i
     integer:: get_mass_fraction_of_ne21_at_zone
     get_mass_fraction_of_ne21_at_zone = get_mass_fraction_of_species_at_zone(index_of_the_star, 19, zone, Xj_i)
 end function
@@ -2541,8 +2469,7 @@ end function
 function get_mass_fraction_of_na23_at_zone(index_of_the_star, zone, Xj_i)
     implicit none
     integer:: index_of_the_star, zone
-    double precision:: Xj_i
-    integer:: get_mass_fraction_of_species_at_zone
+    real(kindreal):: Xj_i
     integer:: get_mass_fraction_of_na23_at_zone
     get_mass_fraction_of_na23_at_zone = get_mass_fraction_of_species_at_zone(index_of_the_star, 20, zone, Xj_i)
 end function
@@ -2551,8 +2478,7 @@ end function
 function get_mass_fraction_of_al26_at_zone(index_of_the_star, zone, Xj_i)
     implicit none
     integer:: index_of_the_star, zone
-    double precision:: Xj_i
-    integer:: get_mass_fraction_of_species_at_zone
+    real(kindreal):: Xj_i
     integer:: get_mass_fraction_of_al26_at_zone
     get_mass_fraction_of_al26_at_zone = get_mass_fraction_of_species_at_zone(index_of_the_star, 21, zone, Xj_i)
 end function
@@ -2561,8 +2487,7 @@ end function
 function get_mass_fraction_of_al27_at_zone(index_of_the_star, zone, Xj_i)
     implicit none
     integer:: index_of_the_star, zone
-    double precision:: Xj_i
-    integer:: get_mass_fraction_of_species_at_zone
+    real(kindreal):: Xj_i
     integer:: get_mass_fraction_of_al27_at_zone
     get_mass_fraction_of_al27_at_zone = get_mass_fraction_of_species_at_zone(index_of_the_star, 22, zone, Xj_i)
 end function
@@ -2571,8 +2496,7 @@ end function
 function get_mass_fraction_of_si28_at_zone(index_of_the_star, zone, Xj_i)
     implicit none
     integer:: index_of_the_star, zone
-    double precision:: Xj_i
-    integer:: get_mass_fraction_of_species_at_zone
+    real(kindreal):: Xj_i
     integer:: get_mass_fraction_of_si28_at_zone
     get_mass_fraction_of_si28_at_zone = get_mass_fraction_of_species_at_zone(index_of_the_star, 23, zone, Xj_i)
 end function
@@ -2581,8 +2505,7 @@ end function
 function get_mass_fraction_of_neut_at_zone(index_of_the_star, zone, Xj_i)
     implicit none
     integer:: index_of_the_star, zone
-    double precision:: Xj_i
-    integer:: get_mass_fraction_of_species_at_zone
+    real(kindreal):: Xj_i
     integer:: get_mass_fraction_of_neut_at_zone
     get_mass_fraction_of_neut_at_zone = get_mass_fraction_of_species_at_zone(index_of_the_star, 24, zone, Xj_i)
 end function
@@ -2591,8 +2514,7 @@ end function
 function get_mass_fraction_of_prot_at_zone(index_of_the_star, zone, Xj_i)
     implicit none
     integer:: index_of_the_star, zone
-    double precision:: Xj_i
-    integer:: get_mass_fraction_of_species_at_zone
+    real(kindreal):: Xj_i
     integer:: get_mass_fraction_of_prot_at_zone
     get_mass_fraction_of_prot_at_zone = get_mass_fraction_of_species_at_zone(index_of_the_star, 25, zone, Xj_i)
 end function
@@ -2601,8 +2523,7 @@ end function
 function get_mass_fraction_of_bid_at_zone(index_of_the_star, zone, Xj_i)
     implicit none
     integer:: index_of_the_star, zone
-    double precision:: Xj_i
-    integer:: get_mass_fraction_of_species_at_zone
+    real(kindreal):: Xj_i
     integer:: get_mass_fraction_of_bid_at_zone
     get_mass_fraction_of_bid_at_zone = get_mass_fraction_of_species_at_zone(index_of_the_star, 26, zone, Xj_i)
 end function
@@ -2611,8 +2532,7 @@ end function
 function get_mass_fraction_of_bid1_at_zone(index_of_the_star, zone, Xj_i)
     implicit none
     integer:: index_of_the_star, zone
-    double precision:: Xj_i
-    integer:: get_mass_fraction_of_species_at_zone
+    real(kindreal):: Xj_i
     integer:: get_mass_fraction_of_bid1_at_zone
     get_mass_fraction_of_bid1_at_zone = get_mass_fraction_of_species_at_zone(index_of_the_star, 27, zone, Xj_i)
 end function
@@ -2621,8 +2541,7 @@ end function
 function set_mass_fraction_of_h_at_zone(index_of_the_star, zone, Xj_i)
     implicit none
     integer:: index_of_the_star, zone
-    double precision:: Xj_i
-    integer:: set_mass_fraction_of_species_at_zone
+    real(kindreal):: Xj_i
     integer:: set_mass_fraction_of_h_at_zone
     set_mass_fraction_of_h_at_zone = set_mass_fraction_of_species_at_zone(index_of_the_star, 1, zone, Xj_i)
 end function
@@ -2631,8 +2550,7 @@ end function
 function set_mass_fraction_of_he3_at_zone(index_of_the_star, zone, Xj_i)
     implicit none
     integer:: index_of_the_star, zone
-    double precision:: Xj_i
-    integer:: set_mass_fraction_of_species_at_zone
+    real(kindreal):: Xj_i
     integer:: set_mass_fraction_of_he3_at_zone
     set_mass_fraction_of_he3_at_zone = set_mass_fraction_of_species_at_zone(index_of_the_star, 2, zone, Xj_i)
 end function
@@ -2641,8 +2559,7 @@ end function
 function set_mass_fraction_of_he_at_zone(index_of_the_star, zone, Xj_i)
     implicit none
     integer:: index_of_the_star, zone
-    double precision:: Xj_i
-    integer:: set_mass_fraction_of_species_at_zone
+    real(kindreal):: Xj_i
     integer:: set_mass_fraction_of_he_at_zone
     set_mass_fraction_of_he_at_zone = set_mass_fraction_of_species_at_zone(index_of_the_star, 3, zone, Xj_i)
 end function
@@ -2651,8 +2568,7 @@ end function
 function set_mass_fraction_of_c12_at_zone(index_of_the_star, zone, Xj_i)
     implicit none
     integer:: index_of_the_star, zone
-    double precision:: Xj_i
-    integer:: set_mass_fraction_of_species_at_zone
+    real(kindreal):: Xj_i
     integer:: set_mass_fraction_of_c12_at_zone
     set_mass_fraction_of_c12_at_zone = set_mass_fraction_of_species_at_zone(index_of_the_star, 4, zone, Xj_i)
 end function
@@ -2661,8 +2577,7 @@ end function
 function set_mass_fraction_of_c13_at_zone(index_of_the_star, zone, Xj_i)
     implicit none
     integer:: index_of_the_star, zone
-    double precision:: Xj_i
-    integer:: set_mass_fraction_of_species_at_zone
+    real(kindreal):: Xj_i
     integer:: set_mass_fraction_of_c13_at_zone
     set_mass_fraction_of_c13_at_zone = set_mass_fraction_of_species_at_zone(index_of_the_star, 5, zone, Xj_i)
 end function
@@ -2671,8 +2586,7 @@ end function
 function set_mass_fraction_of_n14_at_zone(index_of_the_star, zone, Xj_i)
     implicit none
     integer:: index_of_the_star, zone
-    double precision:: Xj_i
-    integer:: set_mass_fraction_of_species_at_zone
+    real(kindreal):: Xj_i
     integer:: set_mass_fraction_of_n14_at_zone
     set_mass_fraction_of_n14_at_zone = set_mass_fraction_of_species_at_zone(index_of_the_star, 6, zone, Xj_i)
 end function
@@ -2681,8 +2595,7 @@ end function
 function set_mass_fraction_of_n15_at_zone(index_of_the_star, zone, Xj_i)
     implicit none
     integer:: index_of_the_star, zone
-    double precision:: Xj_i
-    integer:: set_mass_fraction_of_species_at_zone
+    real(kindreal):: Xj_i
     integer:: set_mass_fraction_of_n15_at_zone
     set_mass_fraction_of_n15_at_zone = set_mass_fraction_of_species_at_zone(index_of_the_star, 7, zone, Xj_i)
 end function
@@ -2691,8 +2604,7 @@ end function
 function set_mass_fraction_of_o16_at_zone(index_of_the_star, zone, Xj_i)
     implicit none
     integer:: index_of_the_star, zone
-    double precision:: Xj_i
-    integer:: set_mass_fraction_of_species_at_zone
+    real(kindreal):: Xj_i
     integer:: set_mass_fraction_of_o16_at_zone
     set_mass_fraction_of_o16_at_zone = set_mass_fraction_of_species_at_zone(index_of_the_star, 8, zone, Xj_i)
 end function
@@ -2701,8 +2613,7 @@ end function
 function set_mass_fraction_of_o17_at_zone(index_of_the_star, zone, Xj_i)
     implicit none
     integer:: index_of_the_star, zone
-    double precision:: Xj_i
-    integer:: set_mass_fraction_of_species_at_zone
+    real(kindreal):: Xj_i
     integer:: set_mass_fraction_of_o17_at_zone
     set_mass_fraction_of_o17_at_zone = set_mass_fraction_of_species_at_zone(index_of_the_star, 9, zone, Xj_i)
 end function
@@ -2711,8 +2622,7 @@ end function
 function set_mass_fraction_of_o18_at_zone(index_of_the_star, zone, Xj_i)
     implicit none
     integer:: index_of_the_star, zone
-    double precision:: Xj_i
-    integer:: set_mass_fraction_of_species_at_zone
+    real(kindreal):: Xj_i
     integer:: set_mass_fraction_of_o18_at_zone
     set_mass_fraction_of_o18_at_zone = set_mass_fraction_of_species_at_zone(index_of_the_star, 10, zone, Xj_i)
 end function
@@ -2721,8 +2631,7 @@ end function
 function set_mass_fraction_of_ne20_at_zone(index_of_the_star, zone, Xj_i)
     implicit none
     integer:: index_of_the_star, zone
-    double precision:: Xj_i
-    integer:: set_mass_fraction_of_species_at_zone
+    real(kindreal):: Xj_i
     integer:: set_mass_fraction_of_ne20_at_zone
     set_mass_fraction_of_ne20_at_zone = set_mass_fraction_of_species_at_zone(index_of_the_star, 11, zone, Xj_i)
 end function
@@ -2731,8 +2640,7 @@ end function
 function set_mass_fraction_of_ne22_at_zone(index_of_the_star, zone, Xj_i)
     implicit none
     integer:: index_of_the_star, zone
-    double precision:: Xj_i
-    integer:: set_mass_fraction_of_species_at_zone
+    real(kindreal):: Xj_i
     integer:: set_mass_fraction_of_ne22_at_zone
     set_mass_fraction_of_ne22_at_zone = set_mass_fraction_of_species_at_zone(index_of_the_star, 12, zone, Xj_i)
 end function
@@ -2741,8 +2649,7 @@ end function
 function set_mass_fraction_of_mg24_at_zone(index_of_the_star, zone, Xj_i)
     implicit none
     integer:: index_of_the_star, zone
-    double precision:: Xj_i
-    integer:: set_mass_fraction_of_species_at_zone
+    real(kindreal):: Xj_i
     integer:: set_mass_fraction_of_mg24_at_zone
     set_mass_fraction_of_mg24_at_zone = set_mass_fraction_of_species_at_zone(index_of_the_star, 13, zone, Xj_i)
 end function
@@ -2751,8 +2658,7 @@ end function
 function set_mass_fraction_of_mg25_at_zone(index_of_the_star, zone, Xj_i)
     implicit none
     integer:: index_of_the_star, zone
-    double precision:: Xj_i
-    integer:: set_mass_fraction_of_species_at_zone
+    real(kindreal):: Xj_i
     integer:: set_mass_fraction_of_mg25_at_zone
     set_mass_fraction_of_mg25_at_zone = set_mass_fraction_of_species_at_zone(index_of_the_star, 14, zone, Xj_i)
 end function
@@ -2761,8 +2667,7 @@ end function
 function set_mass_fraction_of_mg26_at_zone(index_of_the_star, zone, Xj_i)
     implicit none
     integer:: index_of_the_star, zone
-    double precision:: Xj_i
-    integer:: set_mass_fraction_of_species_at_zone
+    real(kindreal):: Xj_i
     integer:: set_mass_fraction_of_mg26_at_zone
     set_mass_fraction_of_mg26_at_zone = set_mass_fraction_of_species_at_zone(index_of_the_star, 15, zone, Xj_i)
 end function
@@ -2771,8 +2676,7 @@ end function
 function set_mass_fraction_of_c14_at_zone(index_of_the_star, zone, Xj_i)
     implicit none
     integer:: index_of_the_star, zone
-    double precision:: Xj_i
-    integer:: set_mass_fraction_of_species_at_zone
+    real(kindreal):: Xj_i
     integer:: set_mass_fraction_of_c14_at_zone
     set_mass_fraction_of_c14_at_zone = set_mass_fraction_of_species_at_zone(index_of_the_star, 16, zone, Xj_i)
 end function
@@ -2781,8 +2685,7 @@ end function
 function set_mass_fraction_of_f18_at_zone(index_of_the_star, zone, Xj_i)
     implicit none
     integer:: index_of_the_star, zone
-    double precision:: Xj_i
-    integer:: set_mass_fraction_of_species_at_zone
+    real(kindreal):: Xj_i
     integer:: set_mass_fraction_of_f18_at_zone
     set_mass_fraction_of_f18_at_zone = set_mass_fraction_of_species_at_zone(index_of_the_star, 17, zone, Xj_i)
 end function
@@ -2791,8 +2694,7 @@ end function
 function set_mass_fraction_of_f19_at_zone(index_of_the_star, zone, Xj_i)
     implicit none
     integer:: index_of_the_star, zone
-    double precision:: Xj_i
-    integer:: set_mass_fraction_of_species_at_zone
+    real(kindreal):: Xj_i
     integer:: set_mass_fraction_of_f19_at_zone
     set_mass_fraction_of_f19_at_zone = set_mass_fraction_of_species_at_zone(index_of_the_star, 18, zone, Xj_i)
 end function
@@ -2801,8 +2703,7 @@ end function
 function set_mass_fraction_of_ne21_at_zone(index_of_the_star, zone, Xj_i)
     implicit none
     integer:: index_of_the_star, zone
-    double precision:: Xj_i
-    integer:: set_mass_fraction_of_species_at_zone
+    real(kindreal):: Xj_i
     integer:: set_mass_fraction_of_ne21_at_zone
     set_mass_fraction_of_ne21_at_zone = set_mass_fraction_of_species_at_zone(index_of_the_star, 19, zone, Xj_i)
 end function
@@ -2811,8 +2712,7 @@ end function
 function set_mass_fraction_of_na23_at_zone(index_of_the_star, zone, Xj_i)
     implicit none
     integer:: index_of_the_star, zone
-    double precision:: Xj_i
-    integer:: set_mass_fraction_of_species_at_zone
+    real(kindreal):: Xj_i
     integer:: set_mass_fraction_of_na23_at_zone
     set_mass_fraction_of_na23_at_zone = set_mass_fraction_of_species_at_zone(index_of_the_star, 20, zone, Xj_i)
 end function
@@ -2821,8 +2721,7 @@ end function
 function set_mass_fraction_of_al26_at_zone(index_of_the_star, zone, Xj_i)
     implicit none
     integer:: index_of_the_star, zone
-    double precision:: Xj_i
-    integer:: set_mass_fraction_of_species_at_zone
+    real(kindreal):: Xj_i
     integer:: set_mass_fraction_of_al26_at_zone
     set_mass_fraction_of_al26_at_zone = set_mass_fraction_of_species_at_zone(index_of_the_star, 21, zone, Xj_i)
 end function
@@ -2831,8 +2730,7 @@ end function
 function set_mass_fraction_of_al27_at_zone(index_of_the_star, zone, Xj_i)
     implicit none
     integer:: index_of_the_star, zone
-    double precision:: Xj_i
-    integer:: set_mass_fraction_of_species_at_zone
+    real(kindreal):: Xj_i
     integer:: set_mass_fraction_of_al27_at_zone
     set_mass_fraction_of_al27_at_zone = set_mass_fraction_of_species_at_zone(index_of_the_star, 22, zone, Xj_i)
 end function
@@ -2841,8 +2739,7 @@ end function
 function set_mass_fraction_of_si28_at_zone(index_of_the_star, zone, Xj_i)
     implicit none
     integer:: index_of_the_star, zone
-    double precision:: Xj_i
-    integer:: set_mass_fraction_of_species_at_zone
+    real(kindreal):: Xj_i
     integer:: set_mass_fraction_of_si28_at_zone
     set_mass_fraction_of_si28_at_zone = set_mass_fraction_of_species_at_zone(index_of_the_star, 23, zone, Xj_i)
 end function
@@ -2851,8 +2748,7 @@ end function
 function set_mass_fraction_of_neut_at_zone(index_of_the_star, zone, Xj_i)
     implicit none
     integer:: index_of_the_star, zone
-    double precision:: Xj_i
-    integer:: set_mass_fraction_of_species_at_zone
+    real(kindreal):: Xj_i
     integer:: set_mass_fraction_of_neut_at_zone
     set_mass_fraction_of_neut_at_zone = set_mass_fraction_of_species_at_zone(index_of_the_star, 24, zone, Xj_i)
 end function
@@ -2861,8 +2757,7 @@ end function
 function set_mass_fraction_of_prot_at_zone(index_of_the_star, zone, Xj_i)
     implicit none
     integer:: index_of_the_star, zone
-    double precision:: Xj_i
-    integer:: set_mass_fraction_of_species_at_zone
+    real(kindreal):: Xj_i
     integer:: set_mass_fraction_of_prot_at_zone
     set_mass_fraction_of_prot_at_zone = set_mass_fraction_of_species_at_zone(index_of_the_star, 25, zone, Xj_i)
 end function
@@ -2871,8 +2766,7 @@ end function
 function set_mass_fraction_of_bid_at_zone(index_of_the_star, zone, Xj_i)
     implicit none
     integer:: index_of_the_star, zone
-    double precision:: Xj_i
-    integer:: set_mass_fraction_of_species_at_zone
+    real(kindreal):: Xj_i
     integer:: set_mass_fraction_of_bid_at_zone
     set_mass_fraction_of_bid_at_zone = set_mass_fraction_of_species_at_zone(index_of_the_star, 26, zone, Xj_i)
 end function
@@ -2881,16 +2775,17 @@ end function
 function set_mass_fraction_of_bid1_at_zone(index_of_the_star, zone, Xj_i)
     implicit none
     integer:: index_of_the_star, zone
-    double precision:: Xj_i
-    integer:: set_mass_fraction_of_species_at_zone
+    real(kindreal):: Xj_i
     integer:: set_mass_fraction_of_bid1_at_zone
     set_mass_fraction_of_bid1_at_zone = set_mass_fraction_of_species_at_zone(index_of_the_star, 27, zone, Xj_i)
 end function
 
-function get_number_of_particles()
+function get_number_of_particles(n)
     implicit none
+    integer:: n
     integer:: get_number_of_particles
-    get_number_of_particles = -1
+    n = 1
+    get_number_of_particles = 0
 end function
 
 function get_number_of_species(index_of_the_star, n_species)
@@ -2923,31 +2818,21 @@ function get_firstlast_species_number(first, last)
 end function
 
 function get_number_of_zones(index_of_the_star, n_zones)
-    use inputparam, only: starname
     use strucmod, only: m
     implicit none
     integer:: index_of_the_star
     integer:: n_zones
     integer:: get_number_of_zones
-    !if (char(index_of_the_star) /= starname) then
-    !    get_number_of_zones = -1
-    !    return
-    !end if
     n_zones = m
     get_number_of_zones = 0
 end function
 
 function set_number_of_zones(index_of_the_star, n_zones)
-    use inputparam, only: starname
     use strucmod, only: m
     implicit none
     integer:: index_of_the_star
     integer:: n_zones
     integer:: set_number_of_zones
-    !if (char(index_of_the_star) /= starname) then
-    !    get_number_of_zones = -1
-    !    return
-    !end if
     m = n_zones
     set_number_of_zones = 0
 end function
@@ -2968,7 +2853,7 @@ function get_pressure_at_zone(index_of_the_star, zone, P_i)
     implicit none
     integer:: index_of_the_star
     integer:: zone, i
-    double precision:: P_i
+    real(kindreal):: P_i
     integer:: get_pressure_at_zone
     if (zone <= m) then
         i = m - zone
@@ -2982,7 +2867,7 @@ end function
 !    implicit none
 !    integer:: index_of_the_star
 !    integer:: zone, i
-!    double precision:: P_i
+!    real(kindreal):: P_i
 !    integer:: set_pressure_at_zone
 !    if (zone <= m) then
 !        i = m - zone
@@ -2996,7 +2881,7 @@ function get_radius(index_of_the_star, am_radius)
     !use strucmod, only: r, m
     implicit none
     integer:: index_of_the_star
-    double precision:: am_radius
+    real(kindreal):: am_radius
     integer:: get_radius
     am_radius = 10**radius
     !radius = exp(r(1))  ! in cm
@@ -3008,7 +2893,7 @@ function set_radius(index_of_the_star, am_radius)
     !use strucmod, only: r, m
     implicit none
     integer:: index_of_the_star
-    double precision:: am_radius
+    real(kindreal):: am_radius
     integer:: set_radius
     radius = log10(am_radius)
     set_radius = 0
@@ -3019,7 +2904,7 @@ function get_radius_at_zone(index_of_the_star, zone, R_i)
     implicit none
     integer:: index_of_the_star
     integer:: zone, i
-    double precision:: R_i
+    real(kindreal):: R_i
     integer:: get_radius_at_zone
     i = m - zone
     if (zone <= m) then
@@ -3033,7 +2918,7 @@ function set_radius_at_zone(index_of_the_star, zone, R_i)
     implicit none
     integer:: index_of_the_star
     integer:: zone, i
-    double precision:: R_i
+    real(kindreal):: R_i
     integer:: set_radius_at_zone
     i = m - zone
     if (zone <= m) then
@@ -3054,7 +2939,7 @@ function get_temperature(index_of_the_star, temperature)
     use caramodele, only: teff
     implicit none
     integer:: index_of_the_star
-    double precision:: temperature
+    real(kindreal):: temperature
     integer:: get_temperature
     temperature = teff
     get_temperature = 0
@@ -3065,7 +2950,7 @@ function get_temperature_at_zone(index_of_the_star, zone, T_i)
     implicit none
     integer:: index_of_the_star
     integer:: zone, i
-    double precision:: T_i
+    real(kindreal):: T_i
     integer:: get_temperature_at_zone
     i = m - zone
     if (zone <= m) then
@@ -3081,7 +2966,7 @@ function get_time_step(index_of_the_star, time_step)
     use timestep, only: dzeitj
     implicit none
     integer:: index_of_the_star
-    double precision:: time_step
+    real(kindreal):: time_step
     integer:: get_time_step
     time_step = dzeitj
     get_time_step = 0
@@ -3090,23 +2975,32 @@ end function
 function get_time(time)
     use timestep, only: alter
     implicit none
-    double precision:: time
+    real(kindreal):: time
     integer:: get_time
     time = alter
     get_time = 0
 end function
 
+function star_to_genec()
+    ! copy values from StarInGenec to Genec
+end function
+
+function star_from_genec()
+    ! copy values to StarInGenec from Genec
+end function
+
 function new_particle(index_of_the_star, mass, metallicity, am_starname)
-    use helpers, only: starname, mstar, zini
     implicit none
     integer:: index_of_the_star, key
-    double precision:: mass, metallicity
+    real(kindreal):: mass, metallicity
     integer:: new_particle
     character(len=12):: am_starname
-    starname = am_starname !'AmuseStar'!write(starname, '(i10.10)') key
-    index_of_the_star = 1
-    mstar = mass
-    zini = metallicity
+    number_of_stars = number_of_stars + 1
+    InitialGenecStar%starname = am_starname
+    InitialGenecStar%index_of_the_star = number_of_stars
+    InitialGenecStar%mstar = mass
+    InitialGenecStar%zini = metallicity
+    InitialGenecStar%idefaut = 1
     
     new_particle = 0
 end function
@@ -3131,7 +3025,7 @@ end function
 function set_genec_path(path)
     use evol, only: input_dir
     implicit none
-    character(len = :), allocatable:: path
+    character(len=200):: path
     integer:: set_genec_path
 
     input_dir = path
@@ -3139,12 +3033,9 @@ function set_genec_path(path)
 end function
 
 function set_starname(index_of_the_star)
-    use helpers, only:starname
     implicit none
     integer:: set_starname, index_of_the_star
-    ! Only allow this at the initialisation time!
-    starname = 'AmuseStar'
-    write(starname, '(i10.10)') index_of_the_star
+    InitialGenecStar%starname = 'AmuseStar'
     set_starname = 0
 end function
 
@@ -3153,7 +3044,7 @@ function set_temperature_at_zone(index_of_the_star, zone, T_i)
     implicit none
     integer:: index_of_the_star
     integer:: zone, i
-    double precision:: T_i
+    real(kindreal):: T_i
     integer:: set_temperature_at_zone
     i = m - zone
     if (zone <= m) then
@@ -3162,3 +3053,5 @@ function set_temperature_at_zone(index_of_the_star, zone, T_i)
     
     set_temperature_at_zone = 0
 end function
+
+end module AmuseInterface
