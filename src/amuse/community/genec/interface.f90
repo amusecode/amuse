@@ -1753,39 +1753,11 @@ function evolve_one_step(index_of_the_star)
     integer:: index_of_the_star
     integer:: evolve_one_step
     integer:: original_nzmod
-    !original_nzmod = nzmod
     nzmod = 1
     n_snap = 0
-    !end_at_phase=4
-    !end_at_model=0
 
-    !write(*,*) "Evolving one step, current time: ", alter
-    !if (stopping_condition == "") then
-      call evolve()
-      !if (stopping_condition /= "") return
-      call finalise()
-      if (GenecStar%stopped .and. mod(GenecStar%nwmd,10) <= 5) then
-        ! rollback and don't increase timestep
-        GenecStar = BackupGenecStar
-        GenecStar%xcn = 1.0
-      elseif (GenecStar%stopped) then
-        GenecStar = BackupBackupGenecStar
-        BackupGenecStar = BackupBackupGenecStar
-        GenecStar%xcn = 1.0
-      endif
-      if (mod(GenecStar%nwmd, 10)==0) then
-        ! move backups along
-        BackupBackupGenecStar = BackupGenecStar
-        BackupGenecStar = GenecStar
-      endif
-      !call OpenAll()
-      !call initialise_star() ! will set modell to 1
-      !write(*,*) "Evolved one step, current time: ", alter
-      !nzmod = original_nzmod
-      !write(*,*) "*****modanf, nwseq, nzmod: ", modanf, nwseq, nzmod
-    !else
-    !  write(*,*) "stopped: ", stopping_condition
-    !endif
+    call evolve()
+    call finalise()
     veryFirst = .false.
     evolve_one_step = 0
 end function
