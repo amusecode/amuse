@@ -1,0 +1,45 @@
+# This workflow will install Python dependencies, run tests and lint with a single version of Python
+# For more information see: https://help.github.com/actions/language-and-framework-guides/using-python-with-github-actions
+
+name: test_issue_850
+
+on:
+  push:
+    branches: [ bug/850 ]
+  pull_request:
+    branches: [ main, bug/850 ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up JDK 1.8
+      uses: actions/setup-java@v1
+      with:
+        java-version: 1.8
+    - name: Set up Python 3.8
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.8
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        sudo apt-get install gfortran libopenblas-dev libhdf5-openmpi-dev libgsl0-dev cmake libfftw3-3 libfftw3-dev libmpfr6 libmpfr-dev
+        pip install numpy scipy matplotlib docutils mpi4py pytest pytest-timeout
+        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+    - name: Install amuse
+      run: |
+        pip install -e .
+    - name: AMUSE code builds
+      run: |
+        make framework
+        make seba.code bse.code
+    - name: test issue850
+      run: |
+        pytest --pyargs amuse.test.suite.ticket_tests.test_issue850 -s
+      env:
+        OMPI_MCA_rmaps_base_oversubscribe: 1
+        OMPI_MCA_btl_tcp_if_include: lo

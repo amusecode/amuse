@@ -321,7 +321,7 @@ class _Defaults(options.OptionalAttributes):
 
     @options.option(sections=['output',])
     def printing_strategy(self):
-        return 'simple'
+        return 'default'
 
 DefaultPrintingStrategy.register()
 NoUnitsPrintingStrategy.register()
