@@ -18,7 +18,7 @@ class StellarModelPlot:
         self.star = star
         self.__n_zones = 0
         self.__redraw = True
-        self.__phase = 1
+        # self.__phase = 1
         self.__age = [] | self.default_units['age']
         self.__mass = [] | self.default_units['mass']
         self.__radius = [] | self.default_units['radius']
@@ -42,6 +42,8 @@ class StellarModelPlot:
 
         self.__initialised = []
 
+        ax_temp = self.__figures["2"].add_subplot(2, 2, 4)
+        ax_pres = ax_temp.twinx()
         self.__axes = {
             "HR": self.__figures["1"].add_subplot(2, 2, 1),
             "temp_dens": self.__figures["1"].add_subplot(2, 2, 2),
@@ -50,19 +52,21 @@ class StellarModelPlot:
             "Abundance profile": self.__figures["2"].add_subplot(2, 2, 1),
             "gradient": self.__figures["2"].add_subplot(2, 2, 2),
             "Luminosity and energy production": self.__figures["2"].add_subplot(2, 2, 3),
-            "Temperature and pressure": self.__figures["2"].add_subplot(2, 2, 4),
+            "Temperature and pressure": (
+                ax_temp,
+                ax_pres,
+            ),
         }
         # self.__ax_hr = fig.add_subplot(2, 2, 1)
         self.update(star)
         self.plot_all()
         plt.pause(0.01)
 
-    def update(self, star, phase=1):
+    def update(self, star):
         self.star = star
         if self.__n_zones != star.n_zones:
             self.__redraw = True
             self.__n_zones = star.n_zones
-        self.__phase = phase
         self.__age.append(star.age)
         self.__mass.append(star.mass)
         self.__radius.append(star.radius)
@@ -241,7 +245,19 @@ class StellarModelPlot:
             0.05,
         )
         ax.set_ylim(-0.05, 1.05)
-        ax.set_xlabel(f'age ({unit_age})')
+        if (self.star.phase > 0 and len(self.__age) > 2):
+            ax.set_xlabel(f'log age/{unit_age}')
+            time_xdata = numpy.log10(
+                0.01 +
+                (
+                    1.0 * self.__age[-1].value_in(unit_age)
+                    # - self.__age[-2].value_in(unit_age)
+                )
+                - self.__age.value_in(unit_age)
+            )
+        else:
+            ax.set_xlabel(f'age ({unit_age})')
+            time_xdata = self.__age.value_in(unit_age)
         ax.set_ylabel('abundance fraction')
         ax.ticklabel_format(
             style='sci',
@@ -251,7 +267,7 @@ class StellarModelPlot:
         self.__central_abundance_plots = []
         for i, species in enumerate(self.__species):
             plot, = ax.plot(
-                [self.star.age.value_in(unit_age)],
+                [time_xdata],
                 [self.__central_abundance[species]],
                 label=species,
                 # color='red',
@@ -266,12 +282,26 @@ class StellarModelPlot:
             self.initialise_central_abundance()
         unit_age = self.default_units['age']
         ax = self.__axes[title]
-        xmax = self.star.age.value_in(unit_age) * 1.05
-        xmin = (self.star.age.value_in(unit_age) - xmax)
+        if (self.star.phase > 0 and len(self.__age) > 2):
+            ax.set_xlabel(f'log age/{unit_age}')
+            time_xdata = numpy.log10(
+                0.01 +
+                (
+                    1.0 * self.__age[-1].value_in(unit_age)
+                    # - self.__age[-2].value_in(unit_age)
+                )
+                - self.__age.value_in(unit_age)
+            )
+        else:
+            ax.set_xlabel(f'age ({unit_age})')
+            time_xdata = self.__age.value_in(unit_age)
+
+        xmax = max(time_xdata) + 0.05
+        xmin = min(time_xdata)
         ax.set_xlim(xmin, xmax)
         for i, species in enumerate(self.__species):
             self.__central_abundance_plots[i].set_xdata(
-                self.__age.value_in(unit_age)
+                time_xdata
             )
             # if self.__phase == 1:
             #     self.__central_abundance_plots[i].set_xdata(
@@ -335,7 +365,6 @@ class StellarModelPlot:
     def plot_abundance_profile(self):
         title = "Abundance profile"
         if self.__redraw:
-            title = "Abundance profile"
             ax = self.__axes[title]
             ax.clear()
         if (
@@ -359,44 +388,190 @@ class StellarModelPlot:
     def initialise_gradient(self):
         title = "gradient"
         ax = self.__axes[title]
+        self.__gradient_plots = []
         ax.set_title(title)
         ax.set_xlim(0, 1)
         ax.set_xlabel('M$_{\\rm r}$/M$_{\\rm tot}$')
+        ax.set_ylabel('Nabla_(rad-ad-mu)')
         mass_profile = self.star.get_cumulative_mass_profile()
+        nabla_rad = self.star.nabla_rad_profile
+        nabla_ad = self.star.nabla_ad_profile
+        nabla_mu = self.star.nabla_mu_profile
+        min_nabla = min(
+            min(nabla_ad),
+            min(nabla_rad),
+            min(nabla_mu),
+            0
+        )
+        max_nabla = max(
+            max(nabla_ad),
+            max(nabla_rad),
+            # max(nabla_mu),
+            0
+        )
+        plot_1, = ax.plot(mass_profile, nabla_ad, label='Nabla_ad')
+        plot_2, = ax.plot(mass_profile, nabla_rad, label='Nabla_rad')
+        plot_3, = ax.plot(mass_profile, nabla_mu, label='Nabla_mu')
+        ax.plot(mass_profile, 0*mass_profile, linestyle='--', color='black')
+        ax.set_ylim((min_nabla, max_nabla))
+        self.__gradient_plots.append(plot_1)
+        self.__gradient_plots.append(plot_2)
+        self.__gradient_plots.append(plot_3)
         self.__initialised.append(title)
 
     def plot_gradient(self):
         title = "gradient"
-        if title not in self.__initialised:
+        if self.__redraw:
+            ax = self.__axes[title]
+            ax.clear()
+        if (
+            title not in self.__initialised
+            or self.__redraw
+        ):
             self.initialise_gradient()
+            return
+        ax = self.__axes[title]
+        mass_profile = self.star.get_cumulative_mass_profile()
+        nabla_rad = self.star.nabla_rad_profile
+        nabla_ad = self.star.nabla_ad_profile
+        nabla_mu = self.star.nabla_mu_profile
+        min_nabla = min(
+            min(nabla_ad),
+            min(nabla_rad)
+        )
+        max_nabla = max(
+            max(nabla_ad),
+            max(nabla_rad)
+        )
+        ax.set_ylim((min_nabla, max_nabla))
+        for i in range(3):
+            self.__gradient_plots[i].set_xdata(
+                mass_profile
+            )
+        self.__gradient_plots[0].set_ydata(nabla_ad)
+        self.__gradient_plots[1].set_ydata(nabla_rad)
+        self.__gradient_plots[2].set_ydata(nabla_mu)
+
 
     def initialise_luminosity_energy_production(self):
         title = "Luminosity and energy production"
         ax = self.__axes[title]
+        self.__lum_en_plots = []
         ax.set_title(title)
         ax.set_xlim(0, 1)
         ax.set_xlabel('M$_{\\rm r}$/M$_{\\rm tot}$')
         mass_profile = self.star.get_cumulative_mass_profile()
+        luminosity_profile = self.star.luminosity_profile.value_in(
+            units.LSun
+        )
+        luminosity_profile = luminosity_profile / max(luminosity_profile)
+        plot_lum, = ax.plot(
+            mass_profile, luminosity_profile, label="lum",
+        )
+        ax.set_ylim(
+            (
+                min(luminosity_profile)-0.1,
+                max(luminosity_profile)+0.1,
+            )
+        )
+        self.__lum_en_plots.append(plot_lum)
         self.__initialised.append(title)
 
     def plot_luminosity_energy_production(self):
         title = "Luminosity and energy production"
-        if title not in self.__initialised:
+        if self.__redraw:
+            ax = self.__axes[title]
+            ax.clear()
+        if (
+            title not in self.__initialised
+            or self.__redraw
+        ):
             self.initialise_luminosity_energy_production()
+            return
+        ax = self.__axes[title]
+        mass_profile = self.star.get_cumulative_mass_profile()
+        luminosity_profile = self.star.luminosity_profile.value_in(
+            units.LSun
+        )
+        luminosity_profile = luminosity_profile / max(luminosity_profile)
+
+        self.__lum_en_plots[0].set_xdata(
+            mass_profile
+        )
+        self.__lum_en_plots[0].set_ydata(
+            luminosity_profile
+        )
+        ax.set_ylim(
+            (
+                min(luminosity_profile)-0.1,
+                max(luminosity_profile)+0.1,
+            )
+        )
 
     def initialise_temperature_pressure(self):
         title = "Temperature and pressure"
-        ax = self.__axes[title]
+        ax = self.__axes[title][0]
+        self.__temp_pres_plots = []
         ax.set_title(title)
         ax.set_xlim(0, 1)
         ax.set_xlabel('M$_{\\rm r}$/M$_{\\rm tot}$')
+        ax.set_ylabel('log(T)')
+        ax_pres = self.__axes[title][1]
+        ax_pres.set_ylabel('log(P)')
         mass_profile = self.star.get_cumulative_mass_profile()
+        temperature_profile = numpy.log10(
+            self.star.temperature_profile.value_in(units.K)
+        )
+        pressure_profile = numpy.log10(
+            self.star.pressure_profile.number
+        )
+        plot_temp, = ax.plot(
+            mass_profile, temperature_profile, label="temp",
+        )
+        plot_pres, = ax_pres.plot(
+            mass_profile, pressure_profile, label="pres",
+            color='black'
+        )
+        self.__temp_pres_plots.append(
+            plot_temp
+        )
+        self.__temp_pres_plots.append(
+            plot_pres
+        )
         self.__initialised.append(title)
 
     def plot_temperature_pressure(self):
         title = "Temperature and pressure"
-        if title not in self.__initialised:
+        if self.__redraw:
+            for i in (0, 1):
+                ax = self.__axes[title][i]
+                ax.clear()
+        if (
+            title not in self.__initialised
+            or self.__redraw
+        ):
             self.initialise_temperature_pressure()
+            return
+        ax = self.__axes[title][0]
+        ax_pres = self.__axes[title][1]
+        mass_profile = self.star.get_cumulative_mass_profile()
+        temperature_profile = numpy.log10(
+            self.star.temperature_profile.value_in(units.K)
+        )
+        pressure_profile = numpy.log10(
+            self.star.pressure_profile.number
+        )
+        for i in (0, 1):
+            self.__temp_pres_plots[i].set_xdata(
+                mass_profile
+            )
+        self.__temp_pres_plots[0].set_ydata(
+            temperature_profile
+        )
+        self.__temp_pres_plots[1].set_ydata(
+            pressure_profile
+        )
+
 
     def plot_figure_evolution(self):
         self.plot_hr()

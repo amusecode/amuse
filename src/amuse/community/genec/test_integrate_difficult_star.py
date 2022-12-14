@@ -12,6 +12,15 @@ import matplotlib.animation as animation
 from plot_models import StellarModelPlot
 
 from amuse.community.genec.interface import SPECIES_NAMES
+import logging
+
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s: %(message)s',
+    datefmt='%Y%m%d %H:%M:%S'
+)
+logger = logging.getLogger(__name__)
+# logger.setLevel(logging.DEBUG)
 
 class NeedToSave:
     def __init__(self):
@@ -130,7 +139,7 @@ star_difficult = Particle(
     mass=60 | units.MSun,
     metallicity=0.014,
 )
-star = Particle(mass=60.0 | units.MSun, metallicity=0.014)
+star = Particle(mass=60.0 | units.MSun, metallicity=0.014, starname="RotatingStar")
 evo = Genec(redirection="none")
 # evo = Genec()
 if ROTATING_STAR:
@@ -141,13 +150,13 @@ if ROTATING_STAR:
 else:
     evo.parameters.vwant = 0.0
 evo.parameters.ipoly = 0
-# evo.parameters.idebug = 1
 star_in_evo = evo.fullparticles.add_particle(star)
+# evo.parameters.idebug = 2
 
 # for p in params.items():
 #     setattr(evo.parameters, p[0], p[1])
-evo.commit_particles()
-print(evo.parameters)
+# evo.commit_particles()
+# print(evo.parameters)
 # print(star_in_evo)
 font = {
     'size': 8,
@@ -197,15 +206,15 @@ while True:
         star.radius.in_(units.RSun),
         star.temperature.in_(units.K),
         star.luminosity.in_(units.LSun),
-        evo.parameters.phase,
+        star.phase,
         star.surface_velocity,
         star.abundance_h[0],
         evo.parameters.vwant,
         evo.parameters.xcn,
     )
-    print(f"step: {step} time: {star.age} timestep: {star.time_step} xcn: {evo.parameters.xcn}")    
+    print(f"step: {step} time: {star.age} timestep: {star.time_step} xcn: {evo.parameters.xcn}")
     if (step % store_every == 0) and plotting is not None:
-        plotting.update(star_in_evo, phase=evo.parameters.phase)
+        plotting.update(star_in_evo)
         if (
             (time_elapsed - time_of_last_plot) > plot_time
             or step - model_of_last_plot > plot_models
