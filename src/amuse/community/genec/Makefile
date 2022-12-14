@@ -11,7 +11,7 @@ FC = $(MPIFC)
 LDFLAGS  += -lm $(MUSE_LD_FLAGS)
 
 FCFLAGS += -Isrc/GENEC/code
-# FCFLAGS += -O0
+FCFLAGS += -O0
 
 OBJS = interface.o
 

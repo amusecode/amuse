@@ -552,42 +552,6 @@ class GenecInterface(
         return function
 
     @legacy_function
-    def get_par_phase():
-        'get parameter phase'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'phase', dtype='int32',
-            direction=function.OUT,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            Got the value.
-        -1 - ERROR
-            Unable to get.
-        '''
-        return function
-
-    @legacy_function
-    def set_par_phase():
-        'set parameter phase'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'phase', dtype='int32',
-            direction=function.IN,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            The value has been set.
-        -1 - ERROR
-            Unable to set.
-        -2 - ERROR
-            Cannot set at this point, already running.
-        '''
-        return function
-
-    @legacy_function
     def get_par_iopac():
         'get parameter iopac'
         function = LegacyFunctionSpecification()
@@ -3426,15 +3390,20 @@ class GenecInterface(
         return function
 
     @legacy_function
-    def set_starname():
+    def get_starname():
         """
-        Set the star name (identical to AMUSE particle key?)
+        Get the star name (identical to AMUSE particle key?)
         """
         function = LegacyFunctionSpecification()
+        function.can_handle_array = True
         function.addParameter(
             'index_of_the_star', dtype='int32',
-            direction=function.IN,
+            direction=function.OUT,
             description="The star's key"
+        )
+        function.addParameter(
+            'starname', dtype='string', direction=function.IN,
+            description="star name",
         )
         function.result_type = 'int32'
         function.result_doc = """
@@ -3446,6 +3415,82 @@ class GenecInterface(
             Cannot set at this point, already running.
         """
         return function
+
+    @legacy_function
+    def set_starname():
+        """
+        Set the star name (identical to AMUSE particle key?)
+        """
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
+        function.addParameter(
+            'index_of_the_star', dtype='int32',
+            direction=function.IN,
+            description="The star's key"
+        )
+        function.addParameter(
+            'starname', dtype='string', direction=function.OUT,
+            description="star name",
+        )
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            The value has been set.
+        -1 - ERROR
+            Unable to set.
+        -2 - ERROR
+            Cannot set at this point, already running.
+        """
+        return function
+
+    @legacy_function
+    def get_phase():
+        'get phase'
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
+        function.addParameter(
+            'index_of_the_star', dtype='int32',
+            direction=function.IN,
+            description="The star's key"
+        )
+        function.addParameter(
+            'phase', dtype='int32',
+            direction=function.OUT,
+        )
+        function.result_type = 'int32'
+        function.result_doc = '''
+        0 - OK
+            Got the value.
+        -1 - ERROR
+            Unable to get.
+        '''
+        return function
+
+    @legacy_function
+    def set_phase():
+        'set phase'
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
+        function.addParameter(
+            'index_of_the_star', dtype='int32',
+            direction=function.IN,
+            description="The star's key"
+        )
+        function.addParameter(
+            'phase', dtype='int32',
+            direction=function.IN,
+        )
+        function.result_type = 'int32'
+        function.result_doc = '''
+        0 - OK
+            The value has been set.
+        -1 - ERROR
+            Unable to set.
+        -2 - ERROR
+            Cannot set at this point, already running.
+        '''
+        return function
+
 
     @legacy_function
     def new_particle():
@@ -3524,6 +3569,7 @@ class GenecInterface(
         )
         function.addParameter(
             'lum_i', dtype='float64', direction=function.OUT,
+            unit=units.LSun,
             description=(
                 "The luminosity at the specified zone/mesh-cell of the star."
             )
@@ -3566,6 +3612,96 @@ class GenecInterface(
             The value was retrieved.
         -1 - ERROR
             A star with the given index was not found.
+        """
+        return function
+
+    @legacy_function
+    def get_nabla_rad_at_zone():
+        """
+        Retrieve nabla_rad at the specified zone/mesh-cell of the star.
+        """
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
+        function.addParameter(
+            'index_of_the_star', dtype='int32', direction=function.IN,
+            description="The index of the star to get the value of")
+        function.addParameter(
+            'zone', dtype='int32', direction=function.IN,
+            description="The zone/mesh-cell of the star to get the value of")
+        function.addParameter(
+            'nabla_rad', dtype='float64', direction=function.OUT,
+            description=(
+                "nabla_rad at the specified zone/mesh-cell of the star."
+            )
+        )
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            The value was retrieved.
+        -1 - ERROR
+            A star with the given index was not found.
+        -2 - ERROR
+            A zone with the given index was not found.
+        """
+        return function
+
+    @legacy_function
+    def get_nabla_ad_at_zone():
+        """
+        Retrieve nabla_rad at the specified zone/mesh-cell of the star.
+        """
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
+        function.addParameter(
+            'index_of_the_star', dtype='int32', direction=function.IN,
+            description="The index of the star to get the value of")
+        function.addParameter(
+            'zone', dtype='int32', direction=function.IN,
+            description="The zone/mesh-cell of the star to get the value of")
+        function.addParameter(
+            'nabla_ad', dtype='float64', direction=function.OUT,
+            description=(
+                "nabla_ad at the specified zone/mesh-cell of the star."
+            )
+        )
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            The value was retrieved.
+        -1 - ERROR
+            A star with the given index was not found.
+        -2 - ERROR
+            A zone with the given index was not found.
+        """
+        return function
+
+    @legacy_function
+    def get_nabla_mu_at_zone():
+        """
+        Retrieve nabla_rad at the specified zone/mesh-cell of the star.
+        """
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
+        function.addParameter(
+            'index_of_the_star', dtype='int32', direction=function.IN,
+            description="The index of the star to get the value of")
+        function.addParameter(
+            'zone', dtype='int32', direction=function.IN,
+            description="The zone/mesh-cell of the star to get the value of")
+        function.addParameter(
+            'nabla_mu', dtype='float64', direction=function.OUT,
+            description=(
+                "nabla_mu at the specified zone/mesh-cell of the star."
+            )
+        )
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            The value was retrieved.
+        -1 - ERROR
+            A star with the given index was not found.
+        -2 - ERROR
+            A zone with the given index was not found.
         """
         return function
 
@@ -5400,13 +5536,6 @@ class Genec(StellarEvolution, InternalStellarStructure):
         )
 
         handler.add_method_parameter(
-            "get_par_phase",
-            "set_par_phase",
-            "phase",
-            "GENEC parameter phase",
-        )
-
-        handler.add_method_parameter(
             "get_par_iopac",
             "set_par_iopac",
             "iopac",
@@ -5977,6 +6106,7 @@ class Genec(StellarEvolution, InternalStellarStructure):
             )
             handler.set_new(set_name, 'new_particle')
 
+            handler.add_getter(set_name, 'get_phase', names=('phase',))
             handler.add_getter(set_name, 'get_radius')
             handler.add_getter(set_name, 'get_mass')
             handler.add_getter(set_name, 'get_age')
@@ -5999,7 +6129,7 @@ class Genec(StellarEvolution, InternalStellarStructure):
 
             # handler.add_method(set_name, 'get_radius_profile')
             # handler.add_method(set_name, 'get_temperature_profile')
-            handler.add_method(set_name, 'get_luminosity_profile')
+            # handler.add_method(set_name, 'get_luminosity_profile')
             handler.add_method(set_name, 'get_mass_profile')
             handler.add_method(set_name, 'get_cumulative_mass_profile')
             handler.add_getter(
@@ -6009,6 +6139,24 @@ class Genec(StellarEvolution, InternalStellarStructure):
             handler.add_method(set_name, 'evolve_one_step')
             handler.add_method(set_name, 'evolve_for')
             handler.set_delete(set_name, 'delete_star')
+
+            handler.add_gridded_getter(
+                set_name,
+                'get_nabla_rad_at_zone', 'get_firstlast_zone',
+                names=('nabla_rad_profile',)
+            )
+
+            handler.add_gridded_getter(
+                set_name,
+                'get_nabla_ad_at_zone', 'get_firstlast_zone',
+                names=('nabla_ad_profile',)
+            )
+
+            handler.add_gridded_getter(
+                set_name,
+                'get_nabla_mu_at_zone', 'get_firstlast_zone',
+                names=('nabla_mu_profile',)
+            )
 
             handler.add_gridded_getter(
                 set_name,
@@ -6045,12 +6193,7 @@ class Genec(StellarEvolution, InternalStellarStructure):
             handler.add_gridded_getter(
                 set_name,
                 'get_luminosity_at_zone', 'get_firstlast_zone',
-                names=('luminosity_profile',)
-            )
-            handler.add_gridded_getter(
-                set_name,
-                'set_luminosity_at_zone', 'get_firstlast_zone',
-                names=('luminosity_profile',)
+                names=('luminosity_profile',),
             )
 
             handler.add_gridded_getter(
@@ -6106,7 +6249,7 @@ class Genec(StellarEvolution, InternalStellarStructure):
         # -> Run (commit_particles)
         handler.add_transition('EDIT', 'RUN', 'commit_particles')
 
-        for state in ["RUN", "UPDATE"]:
+        for state in ["UPDATE"]:
             handler.add_method(state, 'get_chemical_abundance_profiles')
             handler.add_method(state, 'get_mass_fraction_of_species_at_zone')
             handler.add_method(state, 'get_mu_at_zone')
@@ -6120,7 +6263,7 @@ class Genec(StellarEvolution, InternalStellarStructure):
             handler.add_method(state, 'get_temperature_at_zone')
             handler.add_method(state, 'get_density_at_zone')
             handler.add_method(state, 'get_luminosity')
-            handler.add_method(state, 'get_luminosity_at_zone')
+            # handler.add_method(state, 'get_luminosity_at_zone')
             handler.add_method(state, 'get_time_step')
             handler.add_method(state, 'get_mass')
             handler.add_method(state, 'get_age')
@@ -6140,7 +6283,7 @@ class Genec(StellarEvolution, InternalStellarStructure):
         handler.add_method('UPDATE', 'set_radius_at_zone')
         handler.add_method('UPDATE', 'set_temperature_at_zone')
         handler.add_method('UPDATE', 'set_density_at_zone')
-        handler.add_method('UPDATE', 'set_luminosity_at_zone')
+        # handler.add_method('UPDATE', 'set_luminosity_at_zone')
         handler.add_method('UPDATE', 'set_mass_fraction_at_zone')
         # handler.add_method('UPDATE', 'set_time_step')
         handler.add_transition('UPDATE', 'RUN', 'recommit_particles')
@@ -6196,16 +6339,16 @@ class Genec(StellarEvolution, InternalStellarStructure):
         #     (handler.INDEX, handler.NO_UNIT, units.K),
         #     (handler.ERROR_CODE,)
         # )
-        handler.add_method(
-            "get_luminosity_at_zone",
-            (handler.INDEX, handler.NO_UNIT,),
-            (units.erg/units.s, handler.ERROR_CODE,)
-        )
-        handler.add_method(
-            "set_luminosity_at_zone",
-            (handler.INDEX, handler.NO_UNIT, units.erg/units.s),
-            (handler.ERROR_CODE,)
-        )
+        # handler.add_method(
+        #     "get_luminosity_at_zone",
+        #     (handler.INDEX, handler.NO_UNIT,),
+        #     (units.erg/units.s, handler.ERROR_CODE,)
+        # )
+        # handler.add_method(
+        #     "set_luminosity_at_zone",
+        #     (handler.INDEX, handler.NO_UNIT, units.erg/units.s),
+        #     (handler.ERROR_CODE,)
+        # )
         handler.add_method(
             "get_surface_velocity",
             (handler.INDEX),
@@ -6213,21 +6356,21 @@ class Genec(StellarEvolution, InternalStellarStructure):
         )
     # def define_parameters(self, handler):
 
-    def get_luminosity_profile(
-            self,
-            indices_of_the_stars,
-            number_of_zones=None,
-    ):
-        indices_of_the_stars = self._check_number_of_indices(
-            indices_of_the_stars,
-            action_string="Querying luminosity profiles"
-        )
-        if number_of_zones is None:
-            number_of_zones = self.get_number_of_zones(indices_of_the_stars)
-        return self.get_luminosity_at_zone(
-            [indices_of_the_stars]*number_of_zones,
-            list(range(number_of_zones)) | units.none
-        )
+    # def get_luminosity_profile(
+    #         self,
+    #         indices_of_the_stars,
+    #         number_of_zones=None,
+    # ):
+    #     indices_of_the_stars = self._check_number_of_indices(
+    #         indices_of_the_stars,
+    #         action_string="Querying luminosity profiles"
+    #     )
+    #     if number_of_zones is None:
+    #         number_of_zones = self.get_number_of_zones(indices_of_the_stars)
+    #     return self.get_luminosity_at_zone(
+    #         [indices_of_the_stars]*number_of_zones,
+    #         list(range(number_of_zones)) | units.none
+    #     )
 
     def get_mass_profile(
         self,
