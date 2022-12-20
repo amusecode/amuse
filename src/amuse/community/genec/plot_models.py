@@ -248,10 +248,6 @@ class StellarModelPlot:
         ax = self.__axes[title]
         ax.set_title(title)
 
-        ax.set_xlim(
-            -0.05,
-            0.05,
-        )
         ax.set_ylim(-0.05, 1.05)
         if (self.star.phase > 1 and len(self.__age) > 2):
             ax.set_xlabel(f'log age/{unit_age}')
@@ -266,6 +262,10 @@ class StellarModelPlot:
         else:
             ax.set_xlabel(f'age ({unit_age})')
             time_xdata = self.__age.value_in(unit_age)
+        xmax = max(time_xdata) + 0.05
+        xmin = min(time_xdata)
+        ax.set_xlim(xmin, xmax)
+
         ax.set_ylabel('abundance fraction')
         ax.ticklabel_format(
             style='sci',
@@ -304,6 +304,9 @@ class StellarModelPlot:
             ax.set_xlabel(f'age ({unit_age})')
             time_xdata = self.__age.value_in(unit_age)
 
+        xmax = max(time_xdata) + 0.05
+        xmin = min(time_xdata)
+        ax.set_xlim(xmin, xmax)
         for i, species in enumerate(self.__mainspecies):
             self.__central_abundance_plots[i].set_xdata(
                 time_xdata
@@ -409,7 +412,7 @@ class StellarModelPlot:
             min(nabla_ad),
             min(nabla_rad),
             min(nabla_mu),
-            -0.05
+            -0.1
         )
         max_nabla = max(
             max(nabla_ad),

@@ -235,15 +235,7 @@ evo.parameters.ipoly = 0
 star_in_evo = evo.fullparticles.add_particle(star)  # NOTE: this will now reset parameters...
 # evo.parameters.idebug = 2
 # print(star_in_evo)
-star_in_evo.evolve_one_step()
-star_in_evo.evolve_one_step()
-exit()
 
-# for p in params.items():
-#     setattr(evo.parameters, p[0], p[1])
-# evo.commit_particles()
-# print(evo.parameters)
-#print(star_in_evo.get_radius_at_zone(0))
 font = {
     'size': 8,
 }
