@@ -2740,6 +2740,45 @@ function set_radius(index_of_the_star, am_radius)
     set_radius = 0
 end function
 
+function get_eps_at_zone(index_of_the_star, zone, eps)
+    implicit none
+    integer:: index_of_the_star
+    integer:: zone, i
+    real(kindreal):: eps
+    integer:: get_eps_at_zone
+    i = GenecStar%m - zone
+    if (zone <= GenecStar%m) then
+        eps = GenecStar%eps(i)
+    end if
+    get_eps_at_zone = 0
+end function
+
+function get_epsy_at_zone(index_of_the_star, zone, epsy)
+    implicit none
+    integer:: index_of_the_star
+    integer:: zone, i
+    real(kindreal):: epsy
+    integer:: get_epsy_at_zone
+    i = GenecStar%m - zone
+    if (zone <= GenecStar%m) then
+        epsy = GenecStar%epsy(i)
+    end if
+    get_epsy_at_zone = 0
+end function
+
+function get_eps_c_adv_at_zone(index_of_the_star, zone, eps_c_adv)
+    implicit none
+    integer:: index_of_the_star
+    integer:: zone, i
+    real(kindreal):: eps_c_adv
+    integer:: get_eps_c_adv_at_zone
+    i = GenecStar%m - zone
+    if (zone <= GenecStar%m) then
+        eps_c_adv = GenecStar%eps_c_adv(i)
+    end if
+    get_eps_c_adv_at_zone = 0
+end function
+
 function get_nabla_rad_at_zone(index_of_the_star, zone, nabla_rad)
     implicit none
     integer:: index_of_the_star

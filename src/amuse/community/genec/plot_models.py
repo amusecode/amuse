@@ -1,6 +1,6 @@
 import sys
 import time
-import numpy
+import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
 from amuse.units import units
@@ -28,11 +28,13 @@ class StellarModelPlot:
         self.__central_density = [] | self.default_units['density']
         self.__central_temperature = [] | self.default_units['temperature']
         self.__central_abundance = {}
-        self.__species = star.get_names_of_species()
+        self.__species = np.array(star.get_names_of_species())
+        self.__mainspecies = ["H", "He", "C12", "N14", "O16", "Ne20"]
+        # , "Si", "Ni", "Fe"]
         # self.__zones = star.get_number_of_zones()
         self.__abundances = star.get_chemical_abundance_profiles()
         for species in self.__species:
-            self.__central_abundance[species] = []
+            self.__central_abundance[species.capitalize()] = []
 
         self.__figures = {
             "1": plt.figure(num="Evolution", figsize=(8, 6)),
@@ -45,6 +47,8 @@ class StellarModelPlot:
 
         ax_temp = self.__figures["2"].add_subplot(2, 2, 4)
         ax_pres = ax_temp.twinx()
+        ax_lum = self.__figures["2"].add_subplot(2, 2, 3)
+        ax_energy = ax_lum.twinx()
         self.__axes = {
             "HR": self.__figures["1"].add_subplot(2, 2, 1),
             "temp_dens": self.__figures["1"].add_subplot(2, 2, 2),
@@ -52,7 +56,10 @@ class StellarModelPlot:
             "Kippenhahn diagram": self.__figures["1"].add_subplot(2, 2, 4),
             "Abundance profile": self.__figures["2"].add_subplot(2, 2, 1),
             "gradient": self.__figures["2"].add_subplot(2, 2, 2),
-            "Luminosity and energy production": self.__figures["2"].add_subplot(2, 2, 3),
+            "Luminosity and energy production": (
+                ax_lum,
+                ax_energy,
+            ),
             "Temperature and pressure": (
                 ax_temp,
                 ax_pres,
@@ -78,7 +85,7 @@ class StellarModelPlot:
         # self.__zones = star.get_number_of_zones()
         self.__abundances = star.get_chemical_abundance_profiles()
         for i, species in enumerate(self.__species):
-            self.__central_abundance[species].append(
+            self.__central_abundance[species.capitalize()].append(
                 self.__abundances[i, 0]
             )
 
@@ -94,7 +101,7 @@ class StellarModelPlot:
                 f"mass: {self.star.mass.in_(units.MSun)}, "
                 f"radius: {self.star.radius.in_(units.RSun)}, "
                 f"step: {step}, "
-                # f"log(speedup) = {numpy.log10(speed):.2f}"
+                # f"log(speedup) = {np.log10(speed):.2f}"
                 f"speed: {speed.in_(units.Myr / units.minute)}"
             )
             fig.canvas.draw_idle()
@@ -106,29 +113,29 @@ class StellarModelPlot:
         unit_lum = self.default_units['luminosity']
         ax = self.__axes[title]
         ax.set_title(title)
-        log_tstar = numpy.log10(
+        log_tstar = np.log10(
             self.star.temperature.value_in(unit_temp)
         )
         ax.set_xlim(
             log_tstar + 0.1,
             log_tstar - 0.1,
         )
-        log_lstar = numpy.log10(
+        log_lstar = np.log10(
             self.star.luminosity.value_in(unit_lum)
         )
         ax.set_ylim(log_lstar - 0.1, log_lstar + 0.1)
         ax.set_xlabel(f'log (temperature / {unit_temp})')
         ax.set_ylabel(f'log (luminosity / {unit_lum})')
-        ax.ticklabel_format(style='sci',scilimits=(-3,4),axis='both')
+        ax.ticklabel_format(style='sci', scilimits=(-3, 4), axis='both')
         self.__hr_plot, = ax.plot(
-            [numpy.log10(self.star.temperature.value_in(unit_temp))],
-            [numpy.log10(self.star.luminosity.value_in(unit_lum))],
+            [np.log10(self.star.temperature.value_in(unit_temp))],
+            [np.log10(self.star.luminosity.value_in(unit_lum))],
             # color='red',
             # linewidth=2,
         )
         self.__hr_star = ax.scatter(
-            [numpy.log10(self.star.temperature.value_in(unit_temp))],
-            [numpy.log10(self.star.luminosity.value_in(unit_lum))],
+            [np.log10(self.star.temperature.value_in(unit_temp))],
+            [np.log10(self.star.luminosity.value_in(unit_lum))],
             facecolor='red',
             s=40,
             edgecolor=None,
@@ -143,10 +150,10 @@ class StellarModelPlot:
         unit_temp = self.default_units['temperature']
         unit_lum = self.default_units['luminosity']
         ax = self.__axes[title]
-        log_temperature = numpy.log10(
+        log_temperature = np.log10(
             self.__temperature.value_in(unit_temp)
         )
-        log_luminosity = numpy.log10(
+        log_luminosity = np.log10(
             self.__luminosity.value_in(unit_lum)
         )
         ax.set_xlim(
@@ -160,8 +167,8 @@ class StellarModelPlot:
         self.__hr_plot.set_xdata(log_temperature)
         self.__hr_plot.set_ydata(log_luminosity)
         offsets = self.__hr_star.get_offsets()
-        offsets[:, 0] = [numpy.log10(self.star.temperature.value_in(unit_temp))]
-        offsets[:, 1] = [numpy.log10(self.star.luminosity.value_in(unit_lum))]
+        offsets[:, 0] = [np.log10(self.star.temperature.value_in(unit_temp))]
+        offsets[:, 1] = [np.log10(self.star.luminosity.value_in(unit_lum))]
         self.__hr_star.set_offsets(offsets)
         # fig = self.__figures
         # fig.canvas.draw_idle()
@@ -172,14 +179,14 @@ class StellarModelPlot:
         unit_dens = self.default_units['density']
         ax = self.__axes[title]
         ax.set_title(title)
-        log_central_density_star = numpy.log10(
+        log_central_density_star = np.log10(
             self.star.central_density.value_in(unit_dens)
         )
         ax.set_xlim(
             log_central_density_star - 0.1,
             log_central_density_star + 0.1
         )
-        log_central_temperature_star = numpy.log10(
+        log_central_temperature_star = np.log10(
             self.star.central_temperature.value_in(unit_temp)
         )
         ax.set_ylim(
@@ -188,7 +195,7 @@ class StellarModelPlot:
         )
         ax.set_xlabel(f'log (rho$_c$ / {unit_dens})')
         ax.set_ylabel(f'log (temp$_c$ / {unit_temp})')
-        ax.ticklabel_format(style='sci',scilimits=(-3,4),axis='both')
+        ax.ticklabel_format(style='sci', scilimits=(-3, 4), axis='both')
         self.__temp_dens_plot, = ax.plot(
             [],
             [],
@@ -210,10 +217,10 @@ class StellarModelPlot:
         unit_temp = self.default_units['temperature']
         unit_dens = self.default_units['density']
         ax = self.__axes[title]
-        log_central_density = numpy.log10(
+        log_central_density = np.log10(
             self.__central_density.value_in(unit_dens)
         )
-        log_central_temperature = numpy.log10(
+        log_central_temperature = np.log10(
             self.__central_temperature.value_in(unit_temp)
         )
         ax.set_xlim(
@@ -228,10 +235,10 @@ class StellarModelPlot:
         self.__temp_dens_plot.set_ydata(log_central_temperature)
         offsets = self.__temp_dens_star.get_offsets()
         offsets[:, 0] = [
-            numpy.log10(self.star.central_density.value_in(unit_dens))
+            np.log10(self.star.central_density.value_in(unit_dens))
         ]
         offsets[:, 1] = [
-            numpy.log10(self.star.central_temperature.value_in(unit_temp))
+            np.log10(self.star.central_temperature.value_in(unit_temp))
         ]
         self.__temp_dens_star.set_offsets(offsets)
 
@@ -248,7 +255,7 @@ class StellarModelPlot:
         ax.set_ylim(-0.05, 1.05)
         if (self.star.phase > 1 and len(self.__age) > 2):
             ax.set_xlabel(f'log age/{unit_age}')
-            time_xdata = numpy.log10(
+            time_xdata = np.log10(
                 0.01 +
                 (
                     1.0 * self.__age[-1].value_in(unit_age)
@@ -266,7 +273,7 @@ class StellarModelPlot:
             axis='both',
         )
         self.__central_abundance_plots = []
-        for i, species in enumerate(self.__species):
+        for i, species in enumerate(self.__mainspecies):
             plot, = ax.plot(
                 [-time_xdata],
                 [self.__central_abundance[species]],
@@ -285,7 +292,7 @@ class StellarModelPlot:
         ax = self.__axes[title]
         if (self.star.phase > 1 and len(self.__age) > 2):
             ax.set_xlabel(f'log age/{unit_age}')
-            time_xdata = numpy.log10(
+            time_xdata = -np.log10(
                 0.01 +
                 (
                     1.0 * self.__age[-1].value_in(unit_age)
@@ -297,12 +304,9 @@ class StellarModelPlot:
             ax.set_xlabel(f'age ({unit_age})')
             time_xdata = self.__age.value_in(unit_age)
 
-        xmax = max(time_xdata) + 0.05
-        xmin = min(time_xdata)
-        ax.set_xlim(xmin, xmax)
-        for i, species in enumerate(self.__species):
+        for i, species in enumerate(self.__mainspecies):
             self.__central_abundance_plots[i].set_xdata(
-                -time_xdata
+                time_xdata
             )
             # if self.__phase == 1:
             #     self.__central_abundance_plots[i].set_xdata(
@@ -314,7 +318,7 @@ class StellarModelPlot:
             #         (self.__star.age - self.__age).value_in(unit_age)
             #     )
             self.__central_abundance_plots[i].set_ydata(
-                self.__central_abundance[species]
+                self.__central_abundance[species.capitalize()]
             )
         # if self.__phase > 1:  # central_abundance[self.__species[0]] < 1e-4:
         #     ax.set_xscale('log')
@@ -354,13 +358,15 @@ class StellarModelPlot:
         self.__initialised.append(title)
         self.__abundance_plots = []
         mass_profile = self.star.get_cumulative_mass_profile()
-        for i, species in enumerate(self.__species):
+        for i, species in enumerate(self.__mainspecies):
+            j = np.argmax(species.lower() == self.__species)
             plot, = ax.plot(
                 mass_profile,
-                numpy.log10(self.__abundances[i]),
+                np.log10(self.__abundances[j]),
                 label=species,
             )
             self.__abundance_plots.append(plot)
+        # ax.legend()
         self.__initialised.append(title)
 
     def plot_abundance_profile(self):
@@ -378,12 +384,13 @@ class StellarModelPlot:
         # if len(mass_profile) != len(self.__abundance_plots[0].get_xdata()):
         #     self.initialise_abundance_profile()
 
-        for i, species in enumerate(self.__species):
+        for i, species in enumerate(self.__mainspecies):
+            j = np.argmax(species.lower() == self.__species)
             self.__abundance_plots[i].set_xdata(
                 mass_profile
             )
             self.__abundance_plots[i].set_ydata(
-                numpy.log10(self.__abundances[i])
+                np.log10(self.__abundances[j])
             )
 
     def initialise_gradient(self):
@@ -402,7 +409,7 @@ class StellarModelPlot:
             min(nabla_ad),
             min(nabla_rad),
             min(nabla_mu),
-            0
+            -0.05
         )
         max_nabla = max(
             max(nabla_ad),
@@ -412,7 +419,7 @@ class StellarModelPlot:
         )
         plot_1, = ax.plot(mass_profile, nabla_ad, label='Nabla_ad')
         plot_2, = ax.plot(mass_profile, nabla_rad, label='Nabla_rad')
-        plot_3, = ax.plot(mass_profile, nabla_mu, label='Nabla_mu')
+        plot_3, = ax.plot(mass_profile, nabla_mu, label='Nabla_mu', alpha=0.5)
         ax.plot(mass_profile, 0*mass_profile, linestyle='--', color='black')
         ax.set_ylim((min_nabla, min(max_nabla, 10)))
         self.__gradient_plots.append(plot_1)
@@ -438,13 +445,16 @@ class StellarModelPlot:
         nabla_mu = self.star.nabla_mu_profile
         min_nabla = min(
             min(nabla_ad),
-            min(nabla_rad)
+            min(nabla_rad),
+            min(nabla_mu),
+            -0.05
         )
         max_nabla = max(
             max(nabla_ad),
-            max(nabla_rad)
+            max(nabla_rad),
+            0
         )
-        ax.set_ylim((min_nabla, max_nabla))
+        ax.set_ylim((min_nabla, min(max_nabla, 10)))
         for i in range(3):
             self.__gradient_plots[i].set_xdata(
                 mass_profile
@@ -456,58 +466,105 @@ class StellarModelPlot:
 
     def initialise_luminosity_energy_production(self):
         title = "Luminosity and energy production"
-        ax = self.__axes[title]
+        ax_lum = self.__axes[title][0]
+        ax_energy = self.__axes[title][1]
         self.__lum_en_plots = []
-        ax.set_title(title)
-        ax.set_xlim(0, 1)
-        ax.set_xlabel('M$_{\\rm r}$/M$_{\\rm tot}$')
+        ax_lum.set_title(title)
+        ax_lum.set_xlim(0, 1)
+        ax_energy.set_xlim(0, 1)
+        ax_lum.set_xlabel('M$_{\\rm r}$/M$_{\\rm tot}$')
         mass_profile = self.star.get_cumulative_mass_profile()
         luminosity_profile = self.star.luminosity_profile.value_in(
             units.LSun
         )
         luminosity_profile = luminosity_profile / max(luminosity_profile)
-        plot_lum, = ax.plot(
-            mass_profile, luminosity_profile, label="lum",
+        plot_lum, = ax_lum.plot(
+            mass_profile, luminosity_profile, label="lum", color="black"
         )
-        ax.set_ylim(
+        ax_lum.set_ylim(
             (
                 min(luminosity_profile)-0.1,
                 max(luminosity_profile)+0.1,
             )
         )
+
+        eps = self.star.get_eps_profile()
+        eps[eps <= 0.] = 1e-32
+        eps_H_log = np.log10(eps)
+        epsy = self.star.get_epsy_profile()
+        epsy[epsy <= 0.] = 1e-32
+        eps_He_log = np.log10(epsy)
+        max_eps = max(max(eps_H_log), max(eps_He_log))
+        min_eps = max(min(eps_H_log), 2)
+
+        ax_energy.set_ylim(
+            (min_eps, max_eps)
+        )
+        plot_eps, = ax_energy.plot(
+            mass_profile,
+            eps_H_log, label="eps_H",
+        )
+        plot_epsy, = ax_energy.plot(
+            mass_profile,
+            eps_He_log, label="eps_He",
+        )        
         self.__lum_en_plots.append(plot_lum)
+        self.__lum_en_plots.append(plot_eps)
+        self.__lum_en_plots.append(plot_epsy)
         self.__initialised.append(title)
 
     def plot_luminosity_energy_production(self):
         title = "Luminosity and energy production"
         if self.__redraw:
-            ax = self.__axes[title]
-            ax.clear()
+            ax_lum = self.__axes[title][0]
+            ax_lum.clear()
+            ax_energy = self.__axes[title][1]
+            ax_energy.clear()
         if (
             title not in self.__initialised
             or self.__redraw
         ):
             self.initialise_luminosity_energy_production()
             return
-        ax = self.__axes[title]
+        ax_lum = self.__axes[title][0]
+        ax_energy = self.__axes[title][1]
         mass_profile = self.star.get_cumulative_mass_profile()
         luminosity_profile = self.star.luminosity_profile.value_in(
             units.LSun
         )
         luminosity_profile = luminosity_profile / max(luminosity_profile)
 
-        self.__lum_en_plots[0].set_xdata(
-            mass_profile
-        )
+        for i, plot in enumerate(self.__lum_en_plots):
+            plot.set_xdata(
+                mass_profile
+            )
         self.__lum_en_plots[0].set_ydata(
             luminosity_profile
         )
-        ax.set_ylim(
+        ax_lum.set_ylim(
             (
                 min(luminosity_profile)-0.1,
                 max(luminosity_profile)+0.1,
             )
         )
+        eps = self.star.get_eps_profile()
+        eps[eps <= 0.] = 1e-32
+        eps_H_log = np.log10(eps)
+        epsy = self.star.get_epsy_profile()
+        epsy[epsy <= 0.] = 1e-32
+        eps_He_log = np.log10(epsy)
+        max_eps = max(max(eps_H_log), max(eps_He_log))
+        min_eps = max(min(eps_H_log), 2)
+
+        ax_energy.set_ylim(
+            (min_eps, max_eps)
+        )
+        for i, ydata in enumerate(
+            [eps_H_log, eps_He_log, ]
+        ):
+            self.__lum_en_plots[1+i].set_ydata(
+                ydata,
+            )
 
     def initialise_temperature_pressure(self):
         title = "Temperature and pressure"
@@ -520,10 +577,10 @@ class StellarModelPlot:
         ax_pres = self.__axes[title][1]
         ax_pres.set_ylabel('log(P)')
         mass_profile = self.star.get_cumulative_mass_profile()
-        temperature_profile = numpy.log10(
+        temperature_profile = np.log10(
             self.star.temperature_profile.value_in(units.K)
         )
-        pressure_profile = numpy.log10(
+        pressure_profile = np.log10(
             self.star.pressure_profile.number
         )
         plot_temp, = ax.plot(
@@ -556,10 +613,10 @@ class StellarModelPlot:
         ax = self.__axes[title][0]
         ax_pres = self.__axes[title][1]
         mass_profile = self.star.get_cumulative_mass_profile()
-        temperature_profile = numpy.log10(
+        temperature_profile = np.log10(
             self.star.temperature_profile.value_in(units.K)
         )
-        pressure_profile = numpy.log10(
+        pressure_profile = np.log10(
             self.star.pressure_profile.number
         )
         for i in (0, 1):

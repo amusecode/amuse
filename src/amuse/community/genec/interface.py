@@ -3616,6 +3616,96 @@ class GenecInterface(
         return function
 
     @legacy_function
+    def get_eps_at_zone():
+        """
+        Retrieve eps at the specified zone/mesh-cell of the star.
+        """
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
+        function.addParameter(
+            'index_of_the_star', dtype='int32', direction=function.IN,
+            description="The index of the star to get the value of")
+        function.addParameter(
+            'zone', dtype='int32', direction=function.IN,
+            description="The zone/mesh-cell of the star to get the value of")
+        function.addParameter(
+            'eps', dtype='float64', direction=function.OUT,
+            description=(
+                "eps at the specified zone/mesh-cell of the star."
+            )
+        )
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            The value was retrieved.
+        -1 - ERROR
+            A star with the given index was not found.
+        -2 - ERROR
+            A zone with the given index was not found.
+        """
+        return function
+
+    @legacy_function
+    def get_epsy_at_zone():
+        """
+        Retrieve epsy at the specified zone/mesh-cell of the star.
+        """
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
+        function.addParameter(
+            'index_of_the_star', dtype='int32', direction=function.IN,
+            description="The index of the star to get the value of")
+        function.addParameter(
+            'zone', dtype='int32', direction=function.IN,
+            description="The zone/mesh-cell of the star to get the value of")
+        function.addParameter(
+            'epsy', dtype='float64', direction=function.OUT,
+            description=(
+                "epsy at the specified zone/mesh-cell of the star."
+            )
+        )
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            The value was retrieved.
+        -1 - ERROR
+            A star with the given index was not found.
+        -2 - ERROR
+            A zone with the given index was not found.
+        """
+        return function
+
+    @legacy_function
+    def get_eps_c_adv_at_zone():
+        """
+        Retrieve eps at the specified zone/mesh-cell of the star.
+        """
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
+        function.addParameter(
+            'index_of_the_star', dtype='int32', direction=function.IN,
+            description="The index of the star to get the value of")
+        function.addParameter(
+            'zone', dtype='int32', direction=function.IN,
+            description="The zone/mesh-cell of the star to get the value of")
+        function.addParameter(
+            'eps_c_adv', dtype='float64', direction=function.OUT,
+            description=(
+                "eps_c_adv at the specified zone/mesh-cell of the star."
+            )
+        )
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            The value was retrieved.
+        -1 - ERROR
+            A star with the given index was not found.
+        -2 - ERROR
+            A zone with the given index was not found.
+        """
+        return function
+
+    @legacy_function
     def get_nabla_rad_at_zone():
         """
         Retrieve nabla_rad at the specified zone/mesh-cell of the star.
@@ -6098,8 +6188,8 @@ class Genec(StellarEvolution, InternalStellarStructure):
 
     def define_particle_sets(self, handler):
 
-        # for particle_set in ['particles', 'fullparticles']:
-        for set_name in ['fullparticles']:
+        # for set_name in ['fullparticles']:
+        for set_name in ['particles', 'fullparticles']:
             handler.define_set(set_name, 'index_of_the_star')
             InternalStellarStructure.define_particle_sets(
                 self, handler, set_name=set_name
@@ -6131,6 +6221,9 @@ class Genec(StellarEvolution, InternalStellarStructure):
             # handler.add_method(set_name, 'get_temperature_profile')
             # handler.add_method(set_name, 'get_luminosity_profile')
             handler.add_method(set_name, 'get_mass_profile')
+            handler.add_method(set_name, 'get_eps_profile')
+            handler.add_method(set_name, 'get_epsy_profile')
+            handler.add_method(set_name, 'get_eps_c_adv_profile')
             handler.add_method(set_name, 'get_cumulative_mass_profile')
             handler.add_getter(
                 set_name, 'get_surface_velocity', names=('surface_velocity',)
@@ -6158,6 +6251,21 @@ class Genec(StellarEvolution, InternalStellarStructure):
                 names=('nabla_mu_profile',)
             )
 
+            handler.add_gridded_getter(
+                set_name,
+                'get_eps_at_zone', 'get_firstlast_zone',
+                names=('eps_profile',)
+            )
+            handler.add_gridded_getter(
+                set_name,
+                'get_epsy_at_zone', 'get_firstlast_zone',
+                names=('epsy_profile',)
+            )
+            handler.add_gridded_getter(
+                set_name,
+                'get_eps_c_adv_at_zone', 'get_firstlast_zone',
+                names=('eps_c_adv_profile',)
+            )
             handler.add_gridded_getter(
                 set_name,
                 'get_radius_at_zone', 'get_firstlast_zone',
@@ -6222,15 +6330,15 @@ class Genec(StellarEvolution, InternalStellarStructure):
                     names=(f'abundance_{species}',)
                 )
 
-    @property
-    def particles(self):
-        basic_attributes = [
-            "age", "mass", "radius", "temperature", "luminosity",
-        ]
-        return ParticlesWithFilteredAttributes(
-            self.fullparticles,
-            basic_attributes,
-        )
+    # @property
+    # def particles(self):
+    #     basic_attributes = [
+    #         "age", "mass", "radius", "temperature", "luminosity",
+    #     ]
+    #     return ParticlesWithFilteredAttributes(
+    #         self.fullparticles,
+    #         basic_attributes,
+    #     )
 
     def define_state(self, handler):
         StellarEvolution.define_state(self, handler)
@@ -6258,6 +6366,9 @@ class Genec(StellarEvolution, InternalStellarStructure):
             handler.add_method(state, 'get_pressure_at_zone')
             handler.add_method(state, 'get_radius')
             handler.add_method(state, 'get_radius_at_zone')
+            handler.add_method(state, 'get_eps_at_zone')
+            handler.add_method(state, 'get_epsy_at_zone')
+            handler.add_method(state, 'get_eps_c_adv_at_zone')
             handler.add_method(state, 'get_surface_velocity')
             handler.add_method(state, 'get_temperature')
             handler.add_method(state, 'get_temperature_at_zone')
@@ -6314,11 +6425,11 @@ class Genec(StellarEvolution, InternalStellarStructure):
         #     (handler.INDEX,),
         #     (units.RSun, handler.ERROR_CODE,)
         # )
-        # handler.add_method(
-        #     "get_number_of_zones",
-        #     (handler.INDEX,),
-        #     (handler.NO_UNIT, handler.ERROR_CODE,)
-        # )
+        handler.add_method(
+            "get_number_of_zones",
+            (handler.INDEX,),
+            (handler.NO_UNIT, handler.ERROR_CODE,)
+        )
         # handler.add_method(
         #     "get_radius_at_zone",
         #     (handler.INDEX, handler.NO_UNIT,),
@@ -6371,6 +6482,54 @@ class Genec(StellarEvolution, InternalStellarStructure):
     #         [indices_of_the_stars]*number_of_zones,
     #         list(range(number_of_zones)) | units.none
     #     )
+
+    def get_eps_profile(
+        self,
+        indices_of_the_stars,
+        number_of_zones=None,
+    ):
+        indices_of_the_stars = self._check_number_of_indices(
+            indices_of_the_stars,
+            action_string="Querying eps profiles"
+        )
+        if number_of_zones is None:
+            number_of_zones = self.get_number_of_zones(indices_of_the_stars)
+        return self.get_eps_at_zone(
+            [indices_of_the_stars]*number_of_zones,
+            list(range(number_of_zones)) | units.none
+        )
+
+    def get_epsy_profile(
+        self,
+        indices_of_the_stars,
+        number_of_zones=None,
+    ):
+        indices_of_the_stars = self._check_number_of_indices(
+            indices_of_the_stars,
+            action_string="Querying epsy profiles"
+        )
+        if number_of_zones is None:
+            number_of_zones = self.get_number_of_zones(indices_of_the_stars)
+        return self.get_epsy_at_zone(
+            [indices_of_the_stars]*number_of_zones,
+            list(range(number_of_zones)) | units.none
+        )
+
+    def get_eps_c_adv_profile(
+        self,
+        indices_of_the_stars,
+        number_of_zones=None,
+    ):
+        indices_of_the_stars = self._check_number_of_indices(
+            indices_of_the_stars,
+            action_string="Querying eps_c_adv profiles"
+        )
+        if number_of_zones is None:
+            number_of_zones = self.get_number_of_zones(indices_of_the_stars)
+        return self.get_eps_c_adv_at_zone(
+            [indices_of_the_stars]*number_of_zones,
+            list(range(number_of_zones)) | units.none
+        )
 
     def get_mass_profile(
         self,
