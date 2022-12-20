@@ -3678,7 +3678,7 @@ class GenecInterface(
     @legacy_function
     def get_eps_c_adv_at_zone():
         """
-        Retrieve eps at the specified zone/mesh-cell of the star.
+        Retrieve eps_c_adv at the specified zone/mesh-cell of the star.
         """
         function = LegacyFunctionSpecification()
         function.can_handle_array = True
@@ -3692,6 +3692,156 @@ class GenecInterface(
             'eps_c_adv', dtype='float64', direction=function.OUT,
             description=(
                 "eps_c_adv at the specified zone/mesh-cell of the star."
+            )
+        )
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            The value was retrieved.
+        -1 - ERROR
+            A star with the given index was not found.
+        -2 - ERROR
+            A zone with the given index was not found.
+        """
+        return function
+
+    @legacy_function
+    def get_eps_ne_adv_at_zone():
+        """
+        Retrieve eps_ne_adv at the specified zone/mesh-cell of the star.
+        """
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
+        function.addParameter(
+            'index_of_the_star', dtype='int32', direction=function.IN,
+            description="The index of the star to get the value of")
+        function.addParameter(
+            'zone', dtype='int32', direction=function.IN,
+            description="The zone/mesh-cell of the star to get the value of")
+        function.addParameter(
+            'eps_ne_adv', dtype='float64', direction=function.OUT,
+            description=(
+                "eps_ne_adv at the specified zone/mesh-cell of the star."
+            )
+        )
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            The value was retrieved.
+        -1 - ERROR
+            A star with the given index was not found.
+        -2 - ERROR
+            A zone with the given index was not found.
+        """
+        return function
+
+    @legacy_function
+    def get_eps_o_adv_at_zone():
+        """
+        Retrieve eps_o_adv at the specified zone/mesh-cell of the star.
+        """
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
+        function.addParameter(
+            'index_of_the_star', dtype='int32', direction=function.IN,
+            description="The index of the star to get the value of")
+        function.addParameter(
+            'zone', dtype='int32', direction=function.IN,
+            description="The zone/mesh-cell of the star to get the value of")
+        function.addParameter(
+            'eps_o_adv', dtype='float64', direction=function.OUT,
+            description=(
+                "eps_o_adv at the specified zone/mesh-cell of the star."
+            )
+        )
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            The value was retrieved.
+        -1 - ERROR
+            A star with the given index was not found.
+        -2 - ERROR
+            A zone with the given index was not found.
+        """
+        return function
+
+    @legacy_function
+    def get_eps_si_adv_at_zone():
+        """
+        Retrieve eps_si_adv at the specified zone/mesh-cell of the star.
+        """
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
+        function.addParameter(
+            'index_of_the_star', dtype='int32', direction=function.IN,
+            description="The index of the star to get the value of")
+        function.addParameter(
+            'zone', dtype='int32', direction=function.IN,
+            description="The zone/mesh-cell of the star to get the value of")
+        function.addParameter(
+            'eps_si_adv', dtype='float64', direction=function.OUT,
+            description=(
+                "eps_si_adv at the specified zone/mesh-cell of the star."
+            )
+        )
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            The value was retrieved.
+        -1 - ERROR
+            A star with the given index was not found.
+        -2 - ERROR
+            A zone with the given index was not found.
+        """
+        return function
+
+    @legacy_function
+    def get_eps_grav_at_zone():
+        """
+        Retrieve eps_grav at the specified zone/mesh-cell of the star.
+        """
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
+        function.addParameter(
+            'index_of_the_star', dtype='int32', direction=function.IN,
+            description="The index of the star to get the value of")
+        function.addParameter(
+            'zone', dtype='int32', direction=function.IN,
+            description="The zone/mesh-cell of the star to get the value of")
+        function.addParameter(
+            'eps_grav', dtype='float64', direction=function.OUT,
+            description=(
+                "eps_grav at the specified zone/mesh-cell of the star."
+            )
+        )
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            The value was retrieved.
+        -1 - ERROR
+            A star with the given index was not found.
+        -2 - ERROR
+            A zone with the given index was not found.
+        """
+        return function
+
+    @legacy_function
+    def get_eps_nu_at_zone():
+        """
+        Retrieve eps_nu at the specified zone/mesh-cell of the star.
+        """
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
+        function.addParameter(
+            'index_of_the_star', dtype='int32', direction=function.IN,
+            description="The index of the star to get the value of")
+        function.addParameter(
+            'zone', dtype='int32', direction=function.IN,
+            description="The zone/mesh-cell of the star to get the value of")
+        function.addParameter(
+            'eps_nu', dtype='float64', direction=function.OUT,
+            description=(
+                "eps_nu at the specified zone/mesh-cell of the star."
             )
         )
         function.result_type = 'int32'
@@ -6224,6 +6374,11 @@ class Genec(StellarEvolution, InternalStellarStructure):
             handler.add_method(set_name, 'get_eps_profile')
             handler.add_method(set_name, 'get_epsy_profile')
             handler.add_method(set_name, 'get_eps_c_adv_profile')
+            handler.add_method(set_name, 'get_eps_ne_adv_profile')
+            handler.add_method(set_name, 'get_eps_o_adv_profile')
+            handler.add_method(set_name, 'get_eps_si_adv_profile')
+            handler.add_method(set_name, 'get_eps_grav_profile')
+            handler.add_method(set_name, 'get_eps_nu_profile')
             handler.add_method(set_name, 'get_cumulative_mass_profile')
             handler.add_getter(
                 set_name, 'get_surface_velocity', names=('surface_velocity',)
@@ -6265,6 +6420,31 @@ class Genec(StellarEvolution, InternalStellarStructure):
                 set_name,
                 'get_eps_c_adv_at_zone', 'get_firstlast_zone',
                 names=('eps_c_adv_profile',)
+            )
+            handler.add_gridded_getter(
+                set_name,
+                'get_eps_ne_adv_at_zone', 'get_firstlast_zone',
+                names=('eps_ne_adv_profile',)
+            )
+            handler.add_gridded_getter(
+                set_name,
+                'get_eps_o_adv_at_zone', 'get_firstlast_zone',
+                names=('eps_o_adv_profile',)
+            )
+            handler.add_gridded_getter(
+                set_name,
+                'get_eps_si_adv_at_zone', 'get_firstlast_zone',
+                names=('eps_si_adv_profile',)
+            )
+            handler.add_gridded_getter(
+                set_name,
+                'get_eps_grav_at_zone', 'get_firstlast_zone',
+                names=('eps_grav_profile',)
+            )
+            handler.add_gridded_getter(
+                set_name,
+                'get_eps_nu_at_zone', 'get_firstlast_zone',
+                names=('eps_nu_profile',)
             )
             handler.add_gridded_getter(
                 set_name,
@@ -6369,6 +6549,11 @@ class Genec(StellarEvolution, InternalStellarStructure):
             handler.add_method(state, 'get_eps_at_zone')
             handler.add_method(state, 'get_epsy_at_zone')
             handler.add_method(state, 'get_eps_c_adv_at_zone')
+            handler.add_method(state, 'get_eps_ne_adv_at_zone')
+            handler.add_method(state, 'get_eps_o_adv_at_zone')
+            handler.add_method(state, 'get_eps_si_adv_at_zone')
+            handler.add_method(state, 'get_eps_grav_at_zone')
+            handler.add_method(state, 'get_eps_nu_at_zone')
             handler.add_method(state, 'get_surface_velocity')
             handler.add_method(state, 'get_temperature')
             handler.add_method(state, 'get_temperature_at_zone')
@@ -6527,6 +6712,86 @@ class Genec(StellarEvolution, InternalStellarStructure):
         if number_of_zones is None:
             number_of_zones = self.get_number_of_zones(indices_of_the_stars)
         return self.get_eps_c_adv_at_zone(
+            [indices_of_the_stars]*number_of_zones,
+            list(range(number_of_zones)) | units.none
+        )
+
+    def get_eps_ne_adv_profile(
+        self,
+        indices_of_the_stars,
+        number_of_zones=None,
+    ):
+        indices_of_the_stars = self._check_number_of_indices(
+            indices_of_the_stars,
+            action_string="Querying eps_c_adv profiles"
+        )
+        if number_of_zones is None:
+            number_of_zones = self.get_number_of_zones(indices_of_the_stars)
+        return self.get_eps_ne_adv_at_zone(
+            [indices_of_the_stars]*number_of_zones,
+            list(range(number_of_zones)) | units.none
+        )
+
+    def get_eps_o_adv_profile(
+        self,
+        indices_of_the_stars,
+        number_of_zones=None,
+    ):
+        indices_of_the_stars = self._check_number_of_indices(
+            indices_of_the_stars,
+            action_string="Querying eps_c_adv profiles"
+        )
+        if number_of_zones is None:
+            number_of_zones = self.get_number_of_zones(indices_of_the_stars)
+        return self.get_eps_o_adv_at_zone(
+            [indices_of_the_stars]*number_of_zones,
+            list(range(number_of_zones)) | units.none
+        )
+
+    def get_eps_si_adv_profile(
+        self,
+        indices_of_the_stars,
+        number_of_zones=None,
+    ):
+        indices_of_the_stars = self._check_number_of_indices(
+            indices_of_the_stars,
+            action_string="Querying eps_c_adv profiles"
+        )
+        if number_of_zones is None:
+            number_of_zones = self.get_number_of_zones(indices_of_the_stars)
+        return self.get_eps_si_adv_at_zone(
+            [indices_of_the_stars]*number_of_zones,
+            list(range(number_of_zones)) | units.none
+        )
+
+    def get_eps_grav_profile(
+        self,
+        indices_of_the_stars,
+        number_of_zones=None,
+    ):
+        indices_of_the_stars = self._check_number_of_indices(
+            indices_of_the_stars,
+            action_string="Querying eps_c_adv profiles"
+        )
+        if number_of_zones is None:
+            number_of_zones = self.get_number_of_zones(indices_of_the_stars)
+        return self.get_eps_grav_at_zone(
+            [indices_of_the_stars]*number_of_zones,
+            list(range(number_of_zones)) | units.none
+        )
+
+    def get_eps_nu_profile(
+        self,
+        indices_of_the_stars,
+        number_of_zones=None,
+    ):
+        indices_of_the_stars = self._check_number_of_indices(
+            indices_of_the_stars,
+            action_string="Querying eps_c_adv profiles"
+        )
+        if number_of_zones is None:
+            number_of_zones = self.get_number_of_zones(indices_of_the_stars)
+        return self.get_eps_nu_at_zone(
             [indices_of_the_stars]*number_of_zones,
             list(range(number_of_zones)) | units.none
         )

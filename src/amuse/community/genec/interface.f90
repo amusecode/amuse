@@ -2779,6 +2779,71 @@ function get_eps_c_adv_at_zone(index_of_the_star, zone, eps_c_adv)
     get_eps_c_adv_at_zone = 0
 end function
 
+function get_eps_ne_adv_at_zone(index_of_the_star, zone, eps_ne_adv)
+    implicit none
+    integer:: index_of_the_star
+    integer:: zone, i
+    real(kindreal):: eps_ne_adv
+    integer:: get_eps_ne_adv_at_zone
+    i = GenecStar%m - zone
+    if (zone <= GenecStar%m) then
+        eps_ne_adv = GenecStar%eps_ne_adv(i)
+    end if
+    get_eps_ne_adv_at_zone = 0
+end function
+
+function get_eps_o_adv_at_zone(index_of_the_star, zone, eps_o_adv)
+    implicit none
+    integer:: index_of_the_star
+    integer:: zone, i
+    real(kindreal):: eps_o_adv
+    integer:: get_eps_o_adv_at_zone
+    i = GenecStar%m - zone
+    if (zone <= GenecStar%m) then
+        eps_o_adv = GenecStar%eps_o_adv(i)
+    end if
+    get_eps_o_adv_at_zone = 0
+end function
+
+function get_eps_si_adv_at_zone(index_of_the_star, zone, eps_si_adv)
+    implicit none
+    integer:: index_of_the_star
+    integer:: zone, i
+    real(kindreal):: eps_si_adv
+    integer:: get_eps_si_adv_at_zone
+    i = GenecStar%m - zone
+    if (zone <= GenecStar%m) then
+        eps_si_adv = GenecStar%eps_si_adv(i)
+    end if
+    get_eps_si_adv_at_zone = 0
+end function
+
+function get_eps_grav_at_zone(index_of_the_star, zone, eps_grav)
+    implicit none
+    integer:: index_of_the_star
+    integer:: zone, i
+    real(kindreal):: eps_grav
+    integer:: get_eps_grav_at_zone
+    i = GenecStar%m - zone
+    if (zone <= GenecStar%m) then
+        eps_grav = GenecStar%eps_grav(i)
+    end if
+    get_eps_grav_at_zone = 0
+end function
+
+function get_eps_nu_at_zone(index_of_the_star, zone, eps_nu)
+    implicit none
+    integer:: index_of_the_star
+    integer:: zone, i
+    real(kindreal):: eps_nu
+    integer:: get_eps_nu_at_zone
+    i = GenecStar%m - zone
+    if (zone <= GenecStar%m) then
+        eps_nu = GenecStar%eps_nu(i)
+    end if
+    get_eps_nu_at_zone = 0
+end function
+
 function get_nabla_rad_at_zone(index_of_the_star, zone, nabla_rad)
     implicit none
     integer:: index_of_the_star
