@@ -1,3 +1,4 @@
+import sys
 import time
 import numpy
 import matplotlib
@@ -245,7 +246,7 @@ class StellarModelPlot:
             0.05,
         )
         ax.set_ylim(-0.05, 1.05)
-        if (self.star.phase > 0 and len(self.__age) > 2):
+        if (self.star.phase > 1 and len(self.__age) > 2):
             ax.set_xlabel(f'log age/{unit_age}')
             time_xdata = numpy.log10(
                 0.01 +
@@ -267,7 +268,7 @@ class StellarModelPlot:
         self.__central_abundance_plots = []
         for i, species in enumerate(self.__species):
             plot, = ax.plot(
-                [time_xdata],
+                [-time_xdata],
                 [self.__central_abundance[species]],
                 label=species,
                 # color='red',
@@ -282,7 +283,7 @@ class StellarModelPlot:
             self.initialise_central_abundance()
         unit_age = self.default_units['age']
         ax = self.__axes[title]
-        if (self.star.phase > 0 and len(self.__age) > 2):
+        if (self.star.phase > 1 and len(self.__age) > 2):
             ax.set_xlabel(f'log age/{unit_age}')
             time_xdata = numpy.log10(
                 0.01 +
@@ -301,7 +302,7 @@ class StellarModelPlot:
         ax.set_xlim(xmin, xmax)
         for i, species in enumerate(self.__species):
             self.__central_abundance_plots[i].set_xdata(
-                time_xdata
+                -time_xdata
             )
             # if self.__phase == 1:
             #     self.__central_abundance_plots[i].set_xdata(
@@ -348,7 +349,7 @@ class StellarModelPlot:
         ax = self.__axes[title]
         ax.set_title(title)
         ax.set_xlim(0, 1)
-        ax.set_ylim(-4, 0)
+        ax.set_ylim(-4.05, 0.05)
         ax.set_xlabel('M$_{\\rm r}$/M$_{\\rm tot}$')
         self.__initialised.append(title)
         self.__abundance_plots = []
@@ -413,7 +414,7 @@ class StellarModelPlot:
         plot_2, = ax.plot(mass_profile, nabla_rad, label='Nabla_rad')
         plot_3, = ax.plot(mass_profile, nabla_mu, label='Nabla_mu')
         ax.plot(mass_profile, 0*mass_profile, linestyle='--', color='black')
-        ax.set_ylim((min_nabla, max_nabla))
+        ax.set_ylim((min_nabla, min(max_nabla, 10)))
         self.__gradient_plots.append(plot_1)
         self.__gradient_plots.append(plot_2)
         self.__gradient_plots.append(plot_3)
@@ -597,3 +598,14 @@ class StellarModelPlot:
         self.__redraw = False
         plt.pause(0.01)
         # plt.show(block=False)
+
+
+def main():
+    # star = read_set_from_file(sys.argv[1])[0]
+    # plotting = StellarModelPlot()
+
+    return
+
+
+if __name__ == "__main__":
+    main()

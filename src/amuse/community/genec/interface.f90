@@ -54,20 +54,18 @@ end function
 ! **** Parameters
 
 function get_model_number(model_number)
-    use genec, only: nwmd
     implicit none
     integer:: model_number
     integer:: get_model_number
-    model_number = nwmd
+    model_number = GenecStar%nwmd
     get_model_number = 0
 end function
 
 function set_model_number(model_number)
-    use genec, only: nwmd
     implicit none
     integer:: model_number
     integer:: set_model_number
-    nwmd = model_number
+    GenecStar%nwmd = model_number
     set_model_number = 0
 end function
 
@@ -87,11 +85,10 @@ function get_par_n_snap(n_snap_out)
 end function
 
 function set_par_n_snap(n_snap_in)
-    use inputparam, only: n_snap
     implicit none
     integer:: n_snap_in
     integer:: set_par_n_snap
-    n_snap = n_snap_in
+    GenecStar%n_snap = n_snap_in
     set_par_n_snap= 0
 end function
 
@@ -120,11 +117,10 @@ function get_par_nwseq(par_nwseq)
 end function
 
 function set_par_nwseq(par_nwseq)
-    use inputparam, only: nwseq
     implicit none
     integer:: par_nwseq
     integer:: set_par_nwseq
-    nwseq = par_nwseq
+    GenecStar%nwseq = par_nwseq
     set_par_nwseq = 0
 end function
 
@@ -137,11 +133,10 @@ function get_par_modanf(par_modanf)
 end function
 
 function set_par_modanf(par_modanf)
-    use inputparam, only: modanf
     implicit none
     integer:: par_modanf
     integer:: set_par_modanf
-    modanf = par_modanf
+    GenecStar%modanf = par_modanf
     set_par_modanf = 0
 end function
 
@@ -154,11 +149,10 @@ function get_par_nzmod(par_nzmod)
 end function
 
 function set_par_nzmod(par_nzmod)
-    use inputparam, only: nzmod
     implicit none
     integer:: par_nzmod
     integer:: set_par_nzmod
-    nzmod = par_nzmod
+    GenecStar%nzmod = par_nzmod
     set_par_nzmod = 0
 end function
 
@@ -171,11 +165,10 @@ function get_par_irot(par_irot)
 end function
 
 function set_par_irot(par_irot)
-    use inputparam, only: irot
     implicit none
     integer:: par_irot
     integer:: set_par_irot
-    irot = par_irot
+    GenecStar%irot = par_irot
     set_par_irot = 0
 end function
 
@@ -188,11 +181,10 @@ function get_par_isol(par_isol)
 end function
 
 function set_par_isol(par_isol)
-    use inputparam, only: isol
     implicit none
     integer:: par_isol
     integer:: set_par_isol
-    isol = par_isol
+    GenecStar%isol = par_isol
     set_par_isol = 0
 end function
 
@@ -205,11 +197,10 @@ function get_par_imagn(par_imagn)
 end function
 
 function set_par_imagn(par_imagn)
-    use inputparam, only: imagn
     implicit none
     integer:: par_imagn
     integer:: set_par_imagn
-    imagn = par_imagn
+    GenecStar%imagn = par_imagn
     set_par_imagn = 0
 end function
 
@@ -222,11 +213,10 @@ function get_par_ialflu(par_ialflu)
 end function
 
 function set_par_ialflu(par_ialflu)
-    use inputparam, only: ialflu
     implicit none
     integer:: par_ialflu
     integer:: set_par_ialflu
-    ialflu = par_ialflu
+    GenecStar%ialflu = par_ialflu
     set_par_ialflu = 0
 end function
 
@@ -239,11 +229,10 @@ function get_par_ianiso(par_ianiso)
 end function
 
 function set_par_ianiso(par_ianiso)
-    use inputparam, only: ianiso
     implicit none
     integer:: par_ianiso
     integer:: set_par_ianiso
-    ianiso = par_ianiso
+    GenecStar%ianiso = par_ianiso
     set_par_ianiso = 0
 end function
 
@@ -256,11 +245,10 @@ function get_par_ipop3(par_ipop3)
 end function
 
 function set_par_ipop3(par_ipop3)
-    use inputparam, only: ipop3
     implicit none
     integer:: par_ipop3
     integer:: set_par_ipop3
-    ipop3 = par_ipop3
+    GenecStar%ipop3 = par_ipop3
     set_par_ipop3 = 0
 end function
 
@@ -273,11 +261,10 @@ function get_par_ibasnet(par_ibasnet)
 end function
 
 function set_par_ibasnet(par_ibasnet)
-    use inputparam, only: ibasnet
     implicit none
     integer:: par_ibasnet
     integer:: set_par_ibasnet
-    ibasnet = par_ibasnet
+    GenecStar%ibasnet = par_ibasnet
     set_par_ibasnet = 0
 end function
 
@@ -290,11 +277,10 @@ function get_par_iopac(par_iopac)
 end function
 
 function set_par_iopac(par_iopac)
-    use inputparam, only: iopac
     implicit none
     integer:: par_iopac
     integer:: set_par_iopac
-    iopac = par_iopac
+    GenecStar%iopac = par_iopac
     set_par_iopac = 0
 end function
 
@@ -307,452 +293,402 @@ function get_par_ikappa(par_ikappa)
 end function
 
 function set_par_ikappa(par_ikappa)
-    use inputparam, only: ikappa
     implicit none
     integer:: par_ikappa
     integer:: set_par_ikappa
-    ikappa = par_ikappa
+    GenecStar%ikappa = par_ikappa
     set_par_ikappa = 0
 end function
 
 function get_par_idiff(par_idiff)
-    use inputparam, only: idiff
     implicit none
     integer:: par_idiff
     integer:: get_par_idiff
-    par_idiff = idiff
+    par_idiff = GenecStar%idiff
     get_par_idiff = 0
 end function
 
 function set_par_idiff(par_idiff)
-    use inputparam, only: idiff
     implicit none
     integer:: par_idiff
     integer:: set_par_idiff
-    idiff = par_idiff
+    GenecStar%idiff = par_idiff
     set_par_idiff = 0
 end function
 
 function get_par_iadvec(par_iadvec)
-    use inputparam, only: iadvec
     implicit none
     integer:: par_iadvec
     integer:: get_par_iadvec
-    par_iadvec = iadvec
+    par_iadvec = GenecStar%iadvec
     get_par_iadvec = 0
 end function
 
 function set_par_iadvec(par_iadvec)
-    use inputparam, only: iadvec
     implicit none
     integer:: par_iadvec
     integer:: set_par_iadvec
-    iadvec = par_iadvec
+    GenecStar%iadvec = par_iadvec
     set_par_iadvec = 0
 end function
 
 function get_par_istati(par_istati)
-    use inputparam, only: istati
     implicit none
     integer:: par_istati
     integer:: get_par_istati
-    par_istati = istati
+    par_istati = GenecStar%istati
     get_par_istati = 0
 end function
 
 function set_par_istati(par_istati)
-    use inputparam, only: istati
     implicit none
     integer:: par_istati
     integer:: set_par_istati
-    istati = par_istati
+    GenecStar%istati = par_istati
     set_par_istati = 0
 end function
 
 function get_par_icoeff(par_icoeff)
-    use inputparam, only: icoeff
     implicit none
     integer:: par_icoeff
     integer:: get_par_icoeff
-    par_icoeff = icoeff
+    par_icoeff = GenecStar%icoeff
     get_par_icoeff = 0
 end function
 
 function set_par_icoeff(par_icoeff)
-    use inputparam, only: icoeff
     implicit none
     integer:: par_icoeff
     integer:: set_par_icoeff
-    icoeff = par_icoeff
+    GenecStar%icoeff = par_icoeff
     set_par_icoeff = 0
 end function
 
 function get_par_igamma(par_igamma)
-    use inputparam, only: igamma
     implicit none
     integer:: par_igamma
     integer:: get_par_igamma
-    par_igamma = igamma
+    par_igamma = GenecStar%igamma
     get_par_igamma = 0
 end function
 
 function set_par_igamma(par_igamma)
-    use inputparam, only: igamma
     implicit none
     integer:: par_igamma
     integer:: set_par_igamma
-    igamma = par_igamma
+    GenecStar%igamma = par_igamma
     set_par_igamma = 0
 end function
 
 function get_par_idialo(par_idialo)
-    use inputparam, only: idialo
     implicit none
     integer:: par_idialo
     integer:: get_par_idialo
-    par_idialo = idialo
+    par_idialo = GenecStar%idialo
     get_par_idialo = 0
 end function
 
 function set_par_idialo(par_idialo)
-    use inputparam, only: idialo
     implicit none
     integer:: par_idialo
     integer:: set_par_idialo
-    idialo = par_idialo
+    GenecStar%idialo = par_idialo
     set_par_idialo = 0
 end function
 
 function get_par_idialu(par_idialu)
-    use inputparam, only: idialu
     implicit none
     integer:: par_idialu
     integer:: get_par_idialu
-    par_idialu = idialu
+    par_idialu = GenecStar%idialu
     get_par_idialu = 0
 end function
 
 function set_par_idialu(par_idialu)
-    use inputparam, only: idialu
     implicit none
     integer:: par_idialu
     integer:: set_par_idialu
-    idialu = par_idialu
+    GenecStar%idialu = par_idialu
     set_par_idialu = 0
 end function
 
 function get_par_imloss(par_imloss)
-    use inputparam, only: imloss
     implicit none
     integer:: par_imloss
     integer:: get_par_imloss
-    par_imloss = imloss
+    par_imloss = GenecStar%imloss
     get_par_imloss = 0
 end function
 
 function set_par_imloss(par_imloss)
-    use inputparam, only: imloss
     implicit none
     integer:: par_imloss
     integer:: set_par_imloss
-    imloss = par_imloss
+    GenecStar%imloss = par_imloss
     set_par_imloss = 0
 end function
 
 function get_par_ifitm(par_ifitm)
-    use inputparam, only: ifitm
     implicit none
     integer:: par_ifitm
     integer:: get_par_ifitm
-    par_ifitm = ifitm
+    par_ifitm = GenecStar%ifitm
     get_par_ifitm = 0
 end function
 
 function set_par_ifitm(par_ifitm)
-    use inputparam, only: ifitm
     implicit none
     integer:: par_ifitm
     integer:: set_par_ifitm
-    ifitm = par_ifitm
+    GenecStar%ifitm = par_ifitm
     set_par_ifitm = 0
 end function
 
 function get_par_nndr(par_nndr)
-    use inputparam, only: nndr
     implicit none
     integer:: par_nndr
     integer:: get_par_nndr
-    par_nndr = nndr
+    par_nndr = GenecStar%nndr
     get_par_nndr = 0
 end function
 
 function set_par_nndr(par_nndr)
-    use inputparam, only: nndr
     implicit none
     integer:: par_nndr
     integer:: set_par_nndr
-    nndr = par_nndr
+    GenecStar%nndr = par_nndr
     set_par_nndr = 0
 end function
 
 function get_par_iledou(par_iledou)
-    use inputparam, only: iledou
     implicit none
     integer:: par_iledou
     integer:: get_par_iledou
-    par_iledou = iledou
+    par_iledou = GenecStar%iledou
     get_par_iledou = 0
 end function
 
 function set_par_iledou(par_iledou)
-    use inputparam, only: iledou
     implicit none
     integer:: par_iledou
     integer:: set_par_iledou
-    iledou = par_iledou
+    GenecStar%iledou = par_iledou
     set_par_iledou = 0
 end function
 
 function get_par_idifcon(par_idifcon)
-    use inputparam, only: idifcon
     implicit none
     integer:: par_idifcon
     integer:: get_par_idifcon
-    par_idifcon = idifcon
+    par_idifcon = GenecStar%idifcon
     get_par_idifcon = 0
 end function
 
 function set_par_idifcon(par_idifcon)
-    use inputparam, only: idifcon
     implicit none
     integer:: par_idifcon
     integer:: set_par_idifcon
-    idifcon = par_idifcon
+    GenecStar%idifcon = par_idifcon
     set_par_idifcon = 0
 end function
 
 function get_par_my(par_my)
-    use inputparam, only: my
     implicit none
     integer:: par_my
     integer:: get_par_my
-    par_my = my
+    par_my = GenecStar%my
     get_par_my = 0
 end function
 
 function set_par_my(par_my)
-    use inputparam, only: my
     implicit none
     integer:: par_my
     integer:: set_par_my
-    my = par_my
+    GenecStar%my = par_my
     set_par_my = 0
 end function
 
 function get_par_iover(par_iover)
-    use inputparam, only: iover
     implicit none
     integer:: par_iover
     integer:: get_par_iover
-    par_iover = iover
+    par_iover = GenecStar%iover
     get_par_iover = 0
 end function
 
 function set_par_iover(par_iover)
-    use inputparam, only: iover
     implicit none
     integer:: par_iover
     integer:: set_par_iover
-    iover = par_iover
+    GenecStar%iover = par_iover
     set_par_iover = 0
 end function
 
 function get_par_iunder(par_iunder)
-    use inputparam, only: iunder
     implicit none
     integer:: par_iunder
     integer:: get_par_iunder
-    par_iunder = iunder
+    par_iunder = GenecStar%iunder
     get_par_iunder = 0
 end function
 
 function set_par_iunder(par_iunder)
-    use inputparam, only: iunder
     implicit none
     integer:: par_iunder
     integer:: set_par_iunder
-    iunder = par_iunder
+    GenecStar%iunder = par_iunder
     set_par_iunder = 0
 end function
 
 function get_par_nbchx(par_nbchx)
-    use inputparam, only: nbchx
     implicit none
     integer:: par_nbchx
     integer:: get_par_nbchx
-    par_nbchx = nbchx
+    par_nbchx = GenecStar%nbchx
     get_par_nbchx = 0
 end function
 
 function set_par_nbchx(par_nbchx)
-    use inputparam, only: nbchx
     implicit none
     integer:: par_nbchx
     integer:: set_par_nbchx
-    nbchx = par_nbchx
+    GenecStar%nbchx = par_nbchx
     set_par_nbchx = 0
 end function
 
 function get_par_nrband(par_nrband)
-    use inputparam, only: nrband
     implicit none
     integer:: par_nrband
     integer:: get_par_nrband
-    par_nrband = nrband
+    par_nrband = GenecStar%nrband
     get_par_nrband = 0
 end function
 
 function set_par_nrband(par_nrband)
-    use inputparam, only: nrband
     implicit none
     integer:: par_nrband
     integer:: set_par_nrband
-    nrband = par_nrband
+    GenecStar%nrband = par_nrband
     set_par_nrband = 0
 end function
 
 function get_par_islow(par_islow)
-    use inputparam, only: islow
     implicit none
     integer:: par_islow
     integer:: get_par_islow
-    par_islow = islow
+    par_islow = GenecStar%islow
     get_par_islow = 0
 end function
 
 function set_par_islow(par_islow)
-    use inputparam, only: islow
     implicit none
     integer:: par_islow
     integer:: set_par_islow
-    islow = par_islow
+    GenecStar%islow = par_islow
     set_par_islow = 0
 end function
 
 function get_par_icncst(par_icncst)
-    use inputparam, only: icncst
     implicit none
     integer:: par_icncst
     integer:: get_par_icncst
-    par_icncst = icncst
+    par_icncst = GenecStar%icncst
     get_par_icncst = 0
 end function
 
 function set_par_icncst(par_icncst)
-    use inputparam, only: icncst
     implicit none
     integer:: par_icncst
     integer:: set_par_icncst
-    icncst = par_icncst
+    GenecStar%icncst = par_icncst
     set_par_icncst = 0
 end function
 
 function get_par_tauH_fit(par_tauH_fit)
-    use inputparam, only: tauH_fit
     implicit none
     integer:: par_tauH_fit
     integer:: get_par_tauH_fit
-    par_tauH_fit = tauH_fit
+    par_tauH_fit = GenecStar%tauH_fit
     get_par_tauH_fit = 0
 end function
 
 function set_par_tauH_fit(par_tauH_fit)
-    use inputparam, only: tauH_fit
     implicit none
     integer:: par_tauH_fit
     integer:: set_par_tauH_fit
-    tauH_fit = par_tauH_fit
+    GenecStar%tauH_fit = par_tauH_fit
     set_par_tauH_fit = 0
 end function
 
 function get_par_iauto(par_iauto)
-    use inputparam, only: iauto
     implicit none
     integer:: par_iauto
     integer:: get_par_iauto
-    par_iauto = iauto
+    par_iauto = GenecStar%iauto
     get_par_iauto = 0
 end function
 
 function set_par_iauto(par_iauto)
-    use inputparam, only: iauto
     implicit none
     integer:: par_iauto
     integer:: set_par_iauto
-    iauto = par_iauto
+    GenecStar%iauto = par_iauto
     set_par_iauto = 0
 end function
 
 function get_par_iprn(par_iprn)
-    use inputparam, only: iprn
     implicit none
     integer:: par_iprn
     integer:: get_par_iprn
-    par_iprn = iprn
+    par_iprn = GenecStar%iprn
     get_par_iprn = 0
 end function
 
 function set_par_iprn(par_iprn)
-    use inputparam, only: iprn
     implicit none
     integer:: par_iprn
     integer:: set_par_iprn
-    iprn = par_iprn
+    GenecStar%iprn = par_iprn
     set_par_iprn = 0
 end function
 
 function get_par_iout(par_iout)
-    use inputparam, only: iout
     implicit none
     integer:: par_iout
     integer:: get_par_iout
-    par_iout = iout
+    par_iout = GenecStar%iout
     get_par_iout = 0
 end function
 
 function set_par_iout(par_iout)
-    use inputparam, only: iout
     implicit none
     integer:: par_iout
     integer:: set_par_iout
-    iout = par_iout
+    GenecStar%iout = par_iout
     set_par_iout = 0
 end function
 
 function get_par_itmin(par_itmin)
-    use inputparam, only: itmin
     implicit none
     integer:: par_itmin
     integer:: get_par_itmin
-    par_itmin = itmin
+    par_itmin = GenecStar%itmin
     get_par_itmin = 0
 end function
 
 function set_par_itmin(par_itmin)
-    use inputparam, only: itmin
     implicit none
     integer:: par_itmin
     integer:: set_par_itmin
-    itmin = par_itmin
+    GenecStar%itmin = par_itmin
     set_par_itmin = 0
 end function
 
 function get_par_idebug(par_idebug)
-    use inputparam, only: idebug
     implicit none
     integer:: par_idebug
     integer:: get_par_idebug
-    par_idebug = idebug
+    par_idebug = GenecStar%idebug
     get_par_idebug = 0
 end function
 
@@ -765,200 +701,178 @@ function set_par_idebug(par_idebug)
 end function
 
 function get_par_itests(par_itests)
-    use inputparam, only: itests
     implicit none
     integer:: par_itests
     integer:: get_par_itests
-    par_itests = itests
+    par_itests = GenecStar%itests
     get_par_itests = 0
 end function
 
 function set_par_itests(par_itests)
-    use inputparam, only: itests
     implicit none
     integer:: par_itests
     integer:: set_par_itests
-    itests = par_itests
+    GenecStar%itests = par_itests
     set_par_itests = 0
 end function
 
 function get_par_var_rates(par_var_rates)
-    use inputparam, only: var_rates
     implicit none
     logical:: par_var_rates
     integer:: get_par_var_rates
-    par_var_rates = var_rates
+    par_var_rates = GenecStar%var_rates
     get_par_var_rates = 0
 end function
 
 function set_par_var_rates(par_var_rates)
-    use inputparam, only: var_rates
     implicit none
     logical:: par_var_rates
     integer:: set_par_var_rates
-    var_rates = par_var_rates
+    GenecStar%var_rates = par_var_rates
     set_par_var_rates = 0
 end function
 
 function get_par_bintide(par_bintide)
-    use inputparam, only: bintide
     implicit none
     logical:: par_bintide
     integer:: get_par_bintide
-    par_bintide = bintide
+    par_bintide = GenecStar%bintide
     get_par_bintide = 0
 end function
 
 function set_par_bintide(par_bintide)
-    use inputparam, only: bintide
     implicit none
     logical:: par_bintide
     integer:: set_par_bintide
-    bintide = par_bintide
+    GenecStar%bintide = par_bintide
     set_par_bintide = 0
 end function
 
 function get_par_const_per(par_const_per)
-    use inputparam, only: const_per
     implicit none
     logical:: par_const_per
     integer:: get_par_const_per
-    par_const_per = const_per
+    par_const_per = GenecStar%const_per
     get_par_const_per = 0
 end function
 
 function set_par_const_per(par_const_per)
-    use inputparam, only: const_per
     implicit none
     logical:: par_const_per
     integer:: set_par_const_per
-    const_per = par_const_per
+    GenecStar%const_per = par_const_per
     set_par_const_per = 0
 end function
 
 function get_par_Add_Flux(par_Add_Flux)
-    use inputparam, only: Add_Flux
     implicit none
     logical:: par_Add_Flux
     integer:: get_par_Add_Flux
-    par_Add_Flux = Add_Flux
+    par_Add_Flux = GenecStar%Add_Flux
     get_par_Add_Flux = 0
 end function
 
 function set_par_Add_Flux(par_Add_Flux)
-    use inputparam, only: Add_Flux
     implicit none
     logical:: par_Add_Flux
     integer:: set_par_Add_Flux
-    Add_Flux = par_Add_Flux
+    GenecStar%Add_Flux = par_Add_Flux
     set_par_Add_Flux = 0
 end function
 
 function get_par_diff_only(par_diff_only)
-    use inputparam, only: diff_only
     implicit none
     logical:: par_diff_only
     integer:: get_par_diff_only
-    par_diff_only = diff_only
+    par_diff_only = GenecStar%diff_only
     get_par_diff_only = 0
 end function
 
 function set_par_diff_only(par_diff_only)
-    use inputparam, only: diff_only
     implicit none
     logical:: par_diff_only
     integer:: set_par_diff_only
-    diff_only = par_diff_only
+    GenecStar%diff_only = par_diff_only
     set_par_diff_only = 0
 end function
 
 function get_par_RSG_Mdot(par_RSG_Mdot)
-    use inputparam, only: RSG_Mdot
     implicit none
     integer:: par_RSG_Mdot
     integer:: get_par_RSG_Mdot
-    par_RSG_Mdot = RSG_Mdot
+    par_RSG_Mdot = GenecStar%RSG_Mdot
     get_par_RSG_Mdot = 0
 end function
 
 function set_par_RSG_Mdot(par_RSG_Mdot)
-    use inputparam, only: RSG_Mdot
     implicit none
     integer:: par_RSG_Mdot
     integer:: set_par_RSG_Mdot
-    RSG_Mdot = par_RSG_Mdot
+    GenecStar%RSG_Mdot = par_RSG_Mdot
     set_par_RSG_Mdot = 0
 end function
 
 function get_par_display_plot(par_display_plot)
-    use inputparam, only: display_plot
     implicit none
     logical:: par_display_plot
     integer:: get_par_display_plot
-    par_display_plot = display_plot
+    par_display_plot = GenecStar%display_plot
     get_par_display_plot = 0
 end function
 
 function set_par_display_plot(par_display_plot)
-    use inputparam, only: display_plot
     implicit none
     logical:: par_display_plot
     integer:: set_par_display_plot
-    display_plot = par_display_plot
+    GenecStar%display_plot = par_display_plot
     set_par_display_plot = 0
 end function
 
 function get_par_xyfiles(par_xyfiles)
-    use inputparam, only: xyfiles
     implicit none
     logical:: par_xyfiles
     integer:: get_par_xyfiles
-    par_xyfiles = xyfiles
+    par_xyfiles = GenecStar%xyfiles
     get_par_xyfiles = 0
 end function
 
 function set_par_xyfiles(par_xyfiles)
-    use inputparam, only: xyfiles
     implicit none
     logical:: par_xyfiles
     integer:: set_par_xyfiles
-    xyfiles = par_xyfiles
+    GenecStar%xyfiles = par_xyfiles
     set_par_xyfiles = 0
 end function
 
 function get_par_verbose(par_verbose)
-    use inputparam, only: verbose
     implicit none
     logical:: par_verbose
     integer:: get_par_verbose
-    par_verbose = verbose
+    par_verbose = GenecStar%verbose
     get_par_verbose = 0
 end function
 
 function set_par_verbose(par_verbose)
-    use inputparam, only: verbose
     implicit none
     logical:: par_verbose
     integer:: set_par_verbose
-    verbose = par_verbose
+    GenecStar%verbose = par_verbose
     set_par_verbose = 0
 end function
 
 function get_par_stop_deg(par_stop_deg)
-    use inputparam, only: stop_deg
     implicit none
     logical:: par_stop_deg
     integer:: get_par_stop_deg
-    par_stop_deg = stop_deg
+    par_stop_deg = GenecStar%stop_deg
     get_par_stop_deg = 0
 end function
 
 function set_par_stop_deg(par_stop_deg)
-    use inputparam, only: stop_deg
     implicit none
     logical:: par_stop_deg
     integer:: set_par_stop_deg
-    stop_deg = par_stop_deg
+    GenecStar%stop_deg = par_stop_deg
     set_par_stop_deg = 0
 end function
 
@@ -1177,20 +1091,18 @@ function set_par_rapcrilim(par_rapcrilim)
 end function
 
 function get_par_vwant(par_vwant)
-    use inputparam, only: vwant
     implicit none
     real(kindreal):: par_vwant
     integer:: get_par_vwant
-    par_vwant = vwant
+    par_vwant = InitialGenecStar%vwant
     get_par_vwant = 0
 end function
 
 function set_par_vwant(par_vwant)
-    use inputparam, only: vwant
     implicit none
     real(kindreal):: par_vwant
     integer:: set_par_vwant
-    vwant = par_vwant
+    InitialGenecStar%vwant = par_vwant
     set_par_vwant = 0
 end function
 
@@ -1789,12 +1701,11 @@ function get_age(index_of_the_star, age)
 end function
 
 function set_age(index_of_the_star, age)
-    use timestep, only: alter
     implicit none
     integer:: index_of_the_star
     real(kindreal):: age
     integer:: set_age
-    alter = age
+    GenecStar%alter = age
     set_age = 0
 end function
 
@@ -1836,14 +1747,14 @@ function get_density_at_zone(index_of_the_star, zone, rho_i)
 end function
 
 function set_density_at_zone(index_of_the_star, zone, rho_i)
-    use strucmod, only: rho, m
+    use strucmod, only: rho
     implicit none
     integer:: index_of_the_star
     integer:: zone, i
     real(kindreal):: rho_i
     integer:: set_density_at_zone
-    i = m - zone
-    if (zone <= m) then
+    i = GenecStar%m - zone
+    if (zone <= GenecStar%m) then
         rho(i) = log(rho_i)
     end if
     set_density_at_zone = 0
@@ -1860,19 +1771,16 @@ function get_luminosity(index_of_the_star, luminosity)
 end function
 
 function set_luminosity(index_of_the_star, luminosity)
-    !use strucmod, only: s, m
-    use caramodele, only: gls
     implicit none
     integer:: index_of_the_star
     real(kindreal):: luminosity
     integer:: set_luminosity
     !luminosity = exp(s(m))  ! in cgs units, so erg/s?
-    gls = luminosity
+    GenecStar%gls = luminosity
     set_luminosity = 0
 end function
 
 function get_luminosity_at_zone(index_of_the_star, zone, lum_i)
-    use strucmod, only: s, m
     implicit none
     integer:: index_of_the_star
     integer:: zone, i
@@ -1887,15 +1795,14 @@ function get_luminosity_at_zone(index_of_the_star, zone, lum_i)
 end function
 
 function set_luminosity_at_zone(index_of_the_star, zone, lum_i)
-    use strucmod, only: s, m
     implicit none
     integer:: index_of_the_star
     integer:: zone, i
     real(kindreal):: lum_i
     integer:: set_luminosity_at_zone
-    i = m - zone
-    if (zone <= m) then
-        s(i) = log(lum_i + 1)
+    i = GenecStar%m - zone
+    if (zone <= GenecStar%m) then
+        GenecStar%s(i) = log(lum_i + 1)
     end if
     set_luminosity_at_zone = 0
 end function
@@ -1917,24 +1824,22 @@ function get_mass_fraction_at_zone(index_of_the_star, zone, dq_i)
 end function
 
 function set_mass_fraction_at_zone(index_of_the_star, zone, dq_i)
-    use strucmod, only: q, m
     implicit none
     integer:: index_of_the_star
     integer:: zone, i
     real(kindreal):: dq_i
     integer:: set_mass_fraction_at_zone
-    i = m - zone
+    i = GenecStar%m - zone
     if (i == 1) then
-        q(i) = log(dq_i)
-    else if (i <= m) then
+        GenecStar%q(i) = log(dq_i)
+    else if (i <= GenecStar%m) then
         !dq_i = 1-exp(q(zone+1))
-        q(i) = log(exp(q(i-1)) + dq_i)  ! this won't do
+        GenecStar%q(i) = log(exp(GenecStar%q(i-1)) + dq_i)  ! this won't do
     end if
     set_mass_fraction_at_zone = -1 ! This function is incomplete!
 end function
 
 function get_mass(index_of_the_star, mass)
-    use caramodele, only: gms
     implicit none
     real(kindreal):: mass
     integer:: get_mass, index_of_the_star
@@ -2089,72 +1994,68 @@ function get_mass_fraction_of_species_at_zone(index_of_the_star, species, zone, 
 end function
 
 function set_mass_fraction_of_species_at_zone(index_of_the_star, species, zone, Xj_i)
-    use strucmod, only: m
-    use abundmod, only: &
-        x,y3,y,xc12,xc13,xc14,xn14,xn15,xo16,xo17,xo18,xf18,xf19,xne20,xne21,xne22,xna23,xmg24,&
-        xmg25,xmg26,xal26,xal27,xsi28,xprot,xneut,xbid,xbid1
     implicit none
     integer:: index_of_the_star
     integer:: species, zone, i
     real(kindreal):: Xj_i
     integer:: set_mass_fraction_of_species_at_zone
-    i = m - zone
-    if (zone <= m) then
+    i = GenecStar%m - zone
+    if (zone <= GenecStar%m) then
         select case(species)
       case(1)
-          x(i) = Xj_i
+          GenecStar%x(i) = Xj_i
       case(2)
-          y3(i) = Xj_i
+          GenecStar%y3(i) = Xj_i
       case(3)
-          y(i) = Xj_i
+          GenecStar%y(i) = Xj_i
       case(4)
-          xc12(i) = Xj_i
+          GenecStar%xc12(i) = Xj_i
       case(5)
-          xc13(i) = Xj_i
+          GenecStar%xc13(i) = Xj_i
       case(6)
-          xn14(i) = Xj_i
+          GenecStar%xn14(i) = Xj_i
       case(7)
-          xn14(i) = Xj_i
+          GenecStar%xn14(i) = Xj_i
       case(8)
-          xo16(i) = Xj_i
+          GenecStar%xo16(i) = Xj_i
       case(9)
-          xo17(i) = Xj_i
+          GenecStar%xo17(i) = Xj_i
       case(10)
-          xo18(i) = Xj_i
+          GenecStar%xo18(i) = Xj_i
       case(11)
-          xne20(i) = Xj_i
+          GenecStar%xne20(i) = Xj_i
       case(12)
-          xne22(i) = Xj_i
+          GenecStar%xne22(i) = Xj_i
       case(13)
-          xmg24(i) = Xj_i
+          GenecStar%xmg24(i) = Xj_i
       case(14)
-          xmg25(i) = Xj_i
+          GenecStar%xmg25(i) = Xj_i
       case(15)
-          xmg26(i) = Xj_i
+          GenecStar%xmg26(i) = Xj_i
       case(16)
-          xc14(i) = Xj_i
+          GenecStar%xc14(i) = Xj_i
       case(17)
-          xf18(i) = Xj_i
+          GenecStar%xf18(i) = Xj_i
       case(18)
-          xf19(i) = Xj_i
+          GenecStar%xf19(i) = Xj_i
       case(19)
-          xne21(i) = Xj_i
+          GenecStar%xne21(i) = Xj_i
       case(20)
-          xna23(i) = Xj_i
+          GenecStar%xna23(i) = Xj_i
       case(21)
-          xal26(i) = Xj_i
+          GenecStar%xal26(i) = Xj_i
       case(22)
-          xal27(i) = Xj_i
+          GenecStar%xal27(i) = Xj_i
       case(23)
-          xsi28(i) = Xj_i
+          GenecStar%xsi28(i) = Xj_i
       case(24)
-          xneut(i) = Xj_i
+          GenecStar%xneut(i) = Xj_i
       case(25)
-          xprot(i) = Xj_i
+          GenecStar%xprot(i) = Xj_i
       case(26)
-          xbid(i) = Xj_i
+          GenecStar%xbid(i) = Xj_i
       case(27)
-          xbid1(i) = Xj_i
+          GenecStar%xbid1(i) = Xj_i
       !case default
       end select
     end if
@@ -2179,7 +2080,6 @@ function set_metallicity(metallicity)
 end function
 
 function get_mu_at_zone(index_of_the_star, zone, mu_i)
-    use strucmod, only: m
     implicit none
     integer:: index_of_the_star
     integer:: zone, i
@@ -2740,27 +2640,25 @@ function get_number_of_particles(n)
 end function
 
 function get_number_of_species(index_of_the_star, n_species)
-    use inputparam, only: ialflu
     implicit none
     integer:: index_of_the_star
     integer:: n_species
     integer:: get_number_of_species
-    !if (ialflu==1) then
-        n_species = 27
-    !else
-    !    n_species = 15
-    !end if
+    if (GenecStar%ialflu==1) then
+       n_species = 27
+    else
+        n_species = 15
+    end if
     get_number_of_species = 0
 end function
 
 function get_firstlast_species_number(first, last)
-    use inputparam, only: ialflu
     implicit none
     !integer:: index_of_the_star
     integer:: first, last
     integer:: get_firstlast_species_number
     first = 1
-    if (ialflu==1) then
+    if (GenecStar%ialflu==1) then
         last = 27
     else
         last = 15
@@ -2778,12 +2676,11 @@ function get_number_of_zones(index_of_the_star, n_zones)
 end function
 
 function set_number_of_zones(index_of_the_star, n_zones)
-    use strucmod, only: m
     implicit none
     integer:: index_of_the_star
     integer:: n_zones
     integer:: set_number_of_zones
-    m = n_zones
+    GenecStar%m = n_zones
     set_number_of_zones = 0
 end function
 
@@ -2825,8 +2722,6 @@ end function
 !end function
 
 function get_radius(index_of_the_star, am_radius)
-    use caramodele, only: radius
-    !use strucmod, only: r, m
     implicit none
     integer:: index_of_the_star
     real(kindreal):: am_radius
@@ -2837,13 +2732,11 @@ function get_radius(index_of_the_star, am_radius)
 end function
 
 function set_radius(index_of_the_star, am_radius)
-    use caramodele, only: radius
-    !use strucmod, only: r, m
     implicit none
     integer:: index_of_the_star
     real(kindreal):: am_radius
     integer:: set_radius
-    radius = log10(am_radius)
+    GenecStar%radius = log10(am_radius)
     set_radius = 0
 end function
 
@@ -2900,15 +2793,14 @@ function get_radius_at_zone(index_of_the_star, zone, R_i)
 end function
 
 function set_radius_at_zone(index_of_the_star, zone, R_i)
-    use strucmod, only: r, m
     implicit none
     integer:: index_of_the_star
     integer:: zone, i
     real(kindreal):: R_i
     integer:: set_radius_at_zone
-    i = m - zone
-    if (zone <= m) then
-        r(i) = log(R_i)
+    i = GenecStar%m - zone
+    if (zone <= GenecStar%m) then
+        GenecStar%r(i) = log(R_i)
     end if
     set_radius_at_zone = 0
 end function
@@ -2922,7 +2814,6 @@ function get_stellar_type(index_of_the_star, stellar_type)
 end function
 
 function get_temperature(index_of_the_star, temperature)
-    use caramodele, only: teff
     implicit none
     integer:: index_of_the_star
     real(kindreal):: temperature
@@ -2932,15 +2823,14 @@ function get_temperature(index_of_the_star, temperature)
 end function
 
 function get_temperature_at_zone(index_of_the_star, zone, T_i)
-    use strucmod, only: t, m
     implicit none
     integer:: index_of_the_star
     integer:: zone, i
     real(kindreal):: T_i
     integer:: get_temperature_at_zone
-    i = m - zone
-    if (zone <= m) then
-        T_i = exp(t(i))
+    i = GenecStar%m - zone
+    if (zone <= GenecStar%m) then
+        T_i = exp(GenecStar%t(i))
     else
         get_temperature_at_zone = -2
         return
@@ -2949,7 +2839,6 @@ function get_temperature_at_zone(index_of_the_star, zone, T_i)
 end function
 
 function get_time_step(index_of_the_star, time_step)
-    use timestep, only: dzeitj
     implicit none
     integer:: index_of_the_star
     real(kindreal):: time_step
@@ -2959,20 +2848,11 @@ function get_time_step(index_of_the_star, time_step)
 end function
 
 function get_time(time)
-    use timestep, only: alter
     implicit none
     real(kindreal):: time
     integer:: get_time
-    time = alter
+    time = GenecStar%alter
     get_time = 0
-end function
-
-function star_to_genec()
-    ! copy values from GenecStar to Genec
-end function
-
-function star_from_genec()
-    ! copy values to GenecStar from Genec
 end function
 
 function new_particle(index_of_the_star, mass, metallicity, am_starname)
@@ -3049,15 +2929,14 @@ function set_phase(index_of_the_star, phase)
 end function
 
 function set_temperature_at_zone(index_of_the_star, zone, T_i)
-    use strucmod, only: t, m
     implicit none
     integer:: index_of_the_star
     integer:: zone, i
     real(kindreal):: T_i
     integer:: set_temperature_at_zone
-    i = m - zone
-    if (zone <= m) then
-        t(i) = log(T_i)
+    i = GenecStar%m - zone
+    if (zone <= GenecStar%m) then
+        GenecStar%t(i) = log(T_i)
     end if
     
     set_temperature_at_zone = 0
