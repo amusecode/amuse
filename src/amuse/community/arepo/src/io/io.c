@@ -1247,7 +1247,7 @@ void write_file(char *fname, int writeTask, int lastTask, int subbox_flag)
               write_parameters_attributes_in_hdf5(hdf5_paramsgrp);
 
               hdf5_configgrp = my_H5Gcreate(hdf5_file, "/Config", 0);
-              write_compile_time_options_in_hdf5(hdf5_configgrp);
+              // write_compile_time_options_in_hdf5(hdf5_configgrp);
 #endif /* #ifdef HAVE_HDF5 */
             }
           else

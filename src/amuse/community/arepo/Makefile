@@ -19,13 +19,15 @@ AREPOFLAGS += -DTREE_BASED_TIMESTEPS                     # non-local timestep cr
 AREPOFLAGS += -DDOUBLEPRECISION=1                        # Mode of double precision: not defined: single; 1: full double precision 2: mixed, 3: mixed, fewer single precisions; unless short of memory, use 1.
 AREPOFLAGS += -DNGB_TREE_DOUBLEPRECISION                 # if this is enabled, double precision is used for the neighbor node extension
 AREPOFLAGS += -DPROCESS_TIMES_OF_OUTPUTLIST              # goes through times of output list prior to starting the simulaiton to ensure that outputs are written as close to the desired time as possible (as opposed to at next possible time if this flag is not active)
-# AREPOFLAGS += -DHAVE_HDF5                                # needed when HDF5 I/O support is desired (recommended)
+AREPOFLAGS += -DHAVE_HDF5                                # needed when HDF5 I/O support is desired (recommended)
 # AREPOFLAGS += -DDEBUG                                    # enables core-dumps
+
+HDF5_FLAGS += -DH5_USE_16_API
 
 MPICXX   ?= mpicxx
 CXX = $(MPICXX)
 CFLAGS   += -Wall -g
-CXXFLAGS += $(CFLAGS) $(GSL_FLAGS) $(AREPOFLAGS)
+CXXFLAGS += $(CFLAGS) $(GSL_FLAGS) $(AREPOFLAGS) $(HDF5_FLAGS)
 LDFLAGS  += -lm $(MUSE_LD_FLAGS)
 
 OBJS = interface.o
@@ -54,7 +56,7 @@ worker_code.h: interface.py
 	$(CODE_GENERATOR) --type=H interface.py ArepoInterface -o $@
 
 arepo_worker: worker_code.cc worker_code.h $(CODELIB) $(OBJS)
-	$(MPICXX) $(CXXFLAGS) $(GSL_FLAGS) $< $(OBJS) $(CODELIB) -o $@ $(GMP_LIBS) $(GSL_LIBS) $(HDF5_FLAGS) $(HDF5_LIBS)
+	$(MPICXX) $(CXXFLAGS) $(GSL_FLAGS) $(HDF5_FLAGS) $< $(OBJS) $(CODELIB) -o $@ $(GMP_LIBS) $(GSL_LIBS) $(HDF5_LIBS)
 
 .cc.o: $<
 	$(MPICXX) $(CXXFLAGS) $(CODELIB) -c -o $@ $< 

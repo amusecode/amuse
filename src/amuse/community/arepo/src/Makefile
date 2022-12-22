@@ -11,7 +11,11 @@ CC       =  $(MPICC)  # sets the C-compiler
 # GSL_FLAGS  = -I/opt/Homebrew/include  # TODO: Need to make GSL_FLAGS generalisable.
 CFLAGS   += -Wall -g $(GSL_FLAGS)
 CXXFLAGS += $(CFLAGS) 
-LDFLAGS  += -lm $(MUSE_LD_FLAGS)
+
+HDF5_FLAGS += -DH5_USE_16_API
+
+LDFLAGS  += -lm $(MUSE_LD_FLAGS) $(HDF5_FLAGS)
+LIBS += $(HDF5_LIBS)
 
 CODELIB = libarepo.a
 
@@ -65,7 +69,7 @@ $(CODELIB): $(CODEOBJS)
 	$(RANLIB) $@
 
 .cc.o: $<
-	$(MPICXX) $(CXXFLAGS) -c -o $@ $< 
+	$(MPICXX) $(CXXFLAGS) -c -o $@ $< $(LIBS) 
 
 .c.o: $<
-	$(MPICC) $(CXXFLAGS) -c -o $@ $< 
+	$(MPICC) $(CXXFLAGS) -c -o $@ $< $(LIBS) 
