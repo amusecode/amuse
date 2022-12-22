@@ -30,6 +30,22 @@ class ArepoInterface(
         LiteratureReferencesMixIn.__init__(self)
         # TODO: Determine whether need to inherit from CodeWithDataDirectories.
 
+    @legacy_function
+    def get_pressure():
+        function = LegacyFunctionSpecification()
+        function.addParameter("index_of_the_particle", dtype="int32", direction=function.IN)
+        function.addParameter("p", dtype="float64", direction=function.OUT)
+        function.result_type = "int32"
+        return function
+
+    @legacy_function
+    def get_density():
+        function = LegacyFunctionSpecification()
+        function.addParameter("index_of_the_particle", dtype="int32", direction=function.IN)
+        function.addParameter("rho", dtype="float64", direction=function.OUT)
+        function.result_type = "int32"
+        return function
+
     # This function has been kept as a basic template for future functions.
     # @legacy_function
     # def set_parameters():

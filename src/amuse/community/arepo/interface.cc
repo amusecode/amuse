@@ -420,8 +420,14 @@ int set_position(int index_of_the_particle, double x, double y, double z){
 
 int get_acceleration(int index_of_the_particle, double * ax, double * ay,
   double * az){
-    // TODO: allvars.h defines a GravAccel vector if this is what we want?
-  return 0;
+    int p = find_particle_with_ID(index_of_the_particle);
+    if (p < 0) {
+      return p;
+    }
+    *ax = P[p].GravAccel[0];
+    *ay = P[p].GravAccel[1];
+    *az = P[p].GravAccel[2];
+    return 0;
 }
 
 int commit_parameters(){
@@ -437,4 +443,34 @@ int set_velocity(int index_of_the_particle, double vx, double vy,
   return 0;
 }
 
+int get_pressure(int index_of_the_particle, double * p){
+  int p_idx = find_particle_with_ID(index_of_the_particle);
+  if (p_idx < 0) {
+    printf("AREPO: Particle with ID %d not found in P", index_of_the_particle);
+    return p_idx;
+  }
 
+  if (P[p_idx].Type > 0){
+    printf("AREPO: Particle with index %d not gas", index_of_the_particle);
+    return -2;
+  }
+
+  *p = SphP[p_idx].Pressure;
+  return 0;
+}
+
+int get_density(int index_of_the_particle, double * rho){
+  int p_idx = find_particle_with_ID(index_of_the_particle);
+  if (p_idx < 0) {
+    printf("AREPO: Particle with ID %d not found in P", index_of_the_particle);
+    return p_idx;
+  }
+
+  if (P[p_idx].Type > 0){
+    printf("AREPO: Particle with index %d not gas", index_of_the_particle);
+    return -2;
+  }
+
+  *rho = SphP[p_idx].Density;
+  return 0;
+}
