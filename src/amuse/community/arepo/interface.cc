@@ -120,13 +120,114 @@ void set_default_parameters(){
 
   // Mesh regularization options
   All.CellShapingSpeed = 0.5;
-  All.CellShapingFactor = 1.0;
+  #ifndef REGULARIZE_MESH_FACE_ANGLE  // Compiler error if flag defined
+    All.CellShapingFactor = 1.0;
+  #endif
 
   // parameters that are fixed for AMUSE:
   All.TreeAllocFactor = 0.8; // Memory allocation parameter
   All.ResubmitOn = 0;              // Keep this turned off!
   All.OutputListOn = 0;            // Keep this turned off
   All.GravityConstantInternal = 0; // Keep this turned off
+}
+
+void set_noh_3d_parameters(){
+  // Relevant files
+  strcpy(All.InitCondFile, "./IC");
+  strcpy(All.OutputDir,   "./output");
+  strcpy(All.SnapshotFileBase, "snap");
+  strcpy(All.OutputListFilename, "./output_list.txt");
+
+  All.ICFormat = 3;
+
+  All.SnapFormat = 3;
+  All.NumFilesPerSnapshot = 1;
+  All.NumFilesWrittenInParallel = 1;
+
+  All.ResubmitOn = 0;
+  strcpy(All.ResubmitCommand, "my-scriptfile");
+  All.OutputListOn = 0;
+
+  All.CoolingOn = 0;
+  All.StarformationOn = 0;
+
+  All.Omega0 = 0.0;
+  All.OmegaBaryon = 0.0;
+  All.OmegaLambda = 0.0;
+  All.HubbleParam = 1.0;
+
+  All.BoxSize = 6.0;
+  All.PeriodicBoundariesOn = 1;
+  All.ComovingIntegrationOn = 0;
+
+  All.MaxMemSize = 2500;
+
+  All.TimeOfFirstSnapshot = 10.0;
+  All.CpuTimeBetRestartFile = 9000;
+  All.TimeLimitCPU = 90000;
+
+  All.TimeBetStatistics = 0.005;
+  All.TimeBegin = 0.0;
+  All.TimeMax = 2.0;
+  All.TimeBetSnapshot = 0.5;
+
+  All.UnitVelocity_in_cm_per_s = 1.0;
+  All.UnitLength_in_cm = 1.0;
+  All.UnitMass_in_g = 1.0;
+  All.GravityConstantInternal = 0.0;
+
+  All.ErrTolIntAccuracy = 0.1;
+  All.ErrTolTheta = 0.1;
+  All.ErrTolForceAcc = 0.1;
+
+  All.MaxSizeTimestep = 0.5;
+  All.MinSizeTimestep = 1e-5;
+  All.CourantFac = 0.3;
+
+  All.LimitUBelowThisDensity = 0.0;
+  All.LimitUBelowCertainDensityToThisValue = 0.0;
+  All.DesNumNgb = 64;
+  All.MaxNumNgbDeviation = 2;
+
+  All.MultipleDomains = 2;
+  All.TopNodeFactor = 4;
+  All.ActivePartFracForNewDomainDecomp = 0.1;
+
+  All.TypeOfTimestepCriterion = 0;
+  All.TypeOfOpeningCriterion = 1;
+  All.GasSoftFactor = 0.01;
+
+  All.SofteningComoving[0] = 0.1;
+  All.SofteningComoving[1] = 0.1;
+  All.SofteningComoving[2] = 0.1;
+  All.SofteningComoving[3] = 0.1;
+  All.SofteningComoving[4] = 0.1;
+  All.SofteningComoving[5] = 0.1;
+
+  All.SofteningMaxPhys[0] =  0.1;
+  All.SofteningMaxPhys[1] =  0.1;
+  All.SofteningMaxPhys[2] =  0.1;
+  All.SofteningMaxPhys[3] =  0.1;
+  All.SofteningMaxPhys[4] =  0.1;
+  All.SofteningMaxPhys[5] =  0.1;
+
+  All.SofteningTypeOfPartType[0] = 0;
+  All.SofteningTypeOfPartType[1] = 1;
+  All.SofteningTypeOfPartType[2] = 1;
+  All.SofteningTypeOfPartType[3] = 1;
+  All.SofteningTypeOfPartType[4] = 1;
+  All.SofteningTypeOfPartType[5] = 1;
+
+  All.InitGasTemp = 0.0;
+  All.MinGasTemp = 0.0;
+  All.MinEgySpec = 0.0;
+  All.MinimumDensityOnStartUp = 0.0;
+
+  All.CellShapingSpeed = 0.5;
+  #ifdef REGULARIZE_MESH_FACE_ANGLE
+    All.CellMaxAngleFactor = 2.25;
+  #endif
+
 }
 
 int initialize_code(){
@@ -144,7 +245,9 @@ int initialize_code(){
   // Needed to check available memory
   mpi_report_committable_memory();
 
-  set_default_parameters();
+  // set_default_parameters();
+  set_noh_3d_parameters();
+
 
   RestartFlag = 0;
 
