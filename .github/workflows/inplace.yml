@@ -52,7 +52,7 @@ jobs:
         amusifier --get-amuse-configmk
         pip list
     - name: archive build log
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v3.1.1
       with:
           name: buildlog
           path: build.log
