@@ -53,6 +53,6 @@
 #/apps/ @octocat
 #/apps/github
 
-/src/amuse/community/phantom @rieder
+/src/amuse/community/phantom @amusecode/community-phantom
 /src/amuse/community/seba @amusecode/community-seba
 /src/amuse/community/mesa_r15140 @amusecode/community-mesa
