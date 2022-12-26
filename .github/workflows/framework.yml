@@ -1,0 +1,53 @@
+# This workflow will install AMUSE framework, and run core tests
+name: 'Build and test framework'
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    name: 'Build AMUSE framework'
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        mpi: [ 'mpich', 'openmpi']
+    steps:
+      - uses: actions/checkout@v3
+      - uses: ./.github/actions/setup-amuse
+  test:
+    name: 'Test AMUSE framework'
+    needs: build
+    steps:
+      - name: build SSE and BHTree
+        run: |
+          make sse.code bhtree.code
+      - name: check installation
+        run: |
+          amusifier --get-amuse-configmk
+          pip list
+      - name: archive build log
+        uses: actions/upload-artifact@v3.1.1
+        with:
+          name: buildlog
+          path: build.log
+      - name: test core_tests
+        run: |
+          pytest --pyargs amuse.test.suite.core_tests -s
+      - name: test compile_tests
+        run: |
+          ip link show
+          echo $OMPI_MCA_btl_tcp_if_include
+          pytest -k "not test29" --pyargs amuse.test.suite.compile_tests.test_c_implementation -sv
+        env:
+          OMPI_MCA_rmaps_base_oversubscribe: 1
+          OMPI_MCA_btl_tcp_if_include: lo
+      - name: test code_tests
+        run: |
+          pytest  --pyargs amuse.test.suite.codes_tests.test_bhtree -sv
+          pytest  --pyargs amuse.test.suite.codes_tests.test_sse -sv
+        env:
+          OMPI_MCA_rmaps_base_oversubscribe: 1
+          OMPI_MCA_btl_tcp_if_include: lo
