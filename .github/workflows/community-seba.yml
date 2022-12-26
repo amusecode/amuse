@@ -1,6 +1,6 @@
 # This workflow will install AMUSE and SeBa and run SeBa tests with a single version of Python
 
-name: community/seba
+name: Build and test SeBa
 
 on:
   push:
