@@ -19,6 +19,7 @@ jobs:
       - uses: ./.github/actions/setup-amuse
   test:
     name: 'Test AMUSE framework'
+    runs-on: ubuntu-latest
     needs: build
     steps:
       - name: build SSE and BHTree
