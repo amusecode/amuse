@@ -1,6 +1,24 @@
 name: 'Setup AMUSE'
-description: 'This workflow will setup and install AMUSE'
+description: 'This workflow will setup and install AMUSE, build a community code and test it'
 
+inputs:
+  mpi:
+    description: "mpi to test (openmpi / mpich)"
+    default: "openmpi"
+  python:
+    description: "Python version to use"
+    default: 3.8
+  java-version:
+    description: "Java version to use"
+    default: "17"
+  java-distribution:
+    description: "Java distribution to use"
+    default: "zulu"
+  community_code:
+    description: "Community code to build and test"
+    required: true
+    default: "hermite"
+    
 runs:
   using: "composite"
   steps:
@@ -8,16 +26,16 @@ runs:
     - name: Setup MPI
       uses: mpi4py/setup-mpi@v1
       with:
-        mpi: 'openmpi'
-    - name: Set up JDK 1.8
+        mpi: ${{inputs.mpi}}
+    - name: Setup Java
       uses: actions/setup-java@v3.9.0
       with:
-        distribution: 'zulu' # See 'Supported distributions' for available options
-        java-version: '17'
+        distribution: ${{inputs.java-distribution}}
+        java-version: ${{inputs.java-version}}
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
-        python-version: 3.8
+        python-version: ${{inputs.python}}
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
@@ -30,3 +48,21 @@ runs:
     - name: build AMUSE framework
       run: |
         make framework
+    - name: build ${{inputs.community_code}}
+      run: |
+        make ${{inputs.community_code}}.code
+    - name: check installation
+      run: |
+        amusifier --get-amuse-configmk
+        pip list
+    - name: archive build log
+      uses: actions/upload-artifact@v3.1.1
+      with:
+          name: buildlog
+          path: build.log
+    - name: test ${{inputs.community_code}}
+      run: |         
+        pytest --pyargs amuse.test.suite.codes_tests.test_${{inputs.community_code}} -sv
+      env:
+        OMPI_MCA_rmaps_base_oversubscribe: 1
+        OMPI_MCA_btl_tcp_if_include: lo
