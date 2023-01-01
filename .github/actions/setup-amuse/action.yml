@@ -42,15 +42,19 @@ runs:
         sudo apt-get install gfortran libopenblas-dev libhdf5-openmpi-dev libgsl0-dev cmake libfftw3-3 libfftw3-dev libmpfr6 libmpfr-dev
         pip install numpy scipy matplotlib docutils mpi4py pytest pytest-timeout
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+      shell: bash
     - name: Install amuse
       run: |
         pip install -e .
+      shell: bash
     - name: build AMUSE framework
       run: |
         make framework
+      shell: bash
     - name: build ${{inputs.community_code}}
       run: |
         make ${{inputs.community_code}}.code
+      shell: bash
     - name: check installation
       run: |
         amusifier --get-amuse-configmk
@@ -63,6 +67,7 @@ runs:
     - name: test ${{inputs.community_code}}
       run: |         
         pytest --pyargs amuse.test.suite.codes_tests.test_${{inputs.community_code}} -sv
+      shell: bash
       env:
         OMPI_MCA_rmaps_base_oversubscribe: 1
         OMPI_MCA_btl_tcp_if_include: lo
