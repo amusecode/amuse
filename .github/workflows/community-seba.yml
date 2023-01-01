@@ -6,9 +6,13 @@ on:
   push:
     paths:
       - src/amuse/community/seba
+      - src/amuse/test/suite/codes_tests/test_seba.py
+      - .github/workflows/community-seba.yml
   pull_request:
     paths:
       - src/amuse/community/seba
+      - src/amuse/test/suite/codes_tests/test_seba.py 
+      - .github/workflows/community-seba.yml
 
 jobs:
   build:
