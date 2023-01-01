@@ -1087,7 +1087,7 @@ class SeBa(se.StellarEvolution):
         handler.add_getter('particles', 'get_core_radius', names = ('core_radius',))
         handler.add_getter('particles', 'get_age', names = ('age',))
         handler.add_getter('particles', 'get_time_step', names = ('time_step',))
-        #handler.add_getter('particles', 'get_spin', names = ('spin',))
+        # handler.add_getter('particles', 'get_spin', names = ('spin',))
         handler.add_getter('particles', 'get_luminosity', names = ('luminosity',))
         handler.add_getter('particles', 'get_temperature', names = ('temperature',))
         handler.add_getter('particles', 'get_natal_kick_velocity', names = ('natal_kick_x','natal_kick_y','natal_kick_z'))
@@ -1099,7 +1099,7 @@ class SeBa(se.StellarEvolution):
         handler.add_getter('particles', 'get_zeta_adiabatic', names = ('zeta_adiabatic',))        
         handler.add_getter('particles', 'get_rotation_period', names = ('rotation_period',))
         handler.add_setter('particles', 'set_rotation_period', names = ('rotation_period',))
-        
+
         handler.add_getter('particles', 'get_relative_age', names = ('relative_age',))
         handler.add_getter('particles', 'get_relative_mass', names = ('relative_mass',))
         handler.add_getter('particles', 'get_wind_mass_loss_rate', names = ('wind_mass_loss_rate',))
@@ -1113,7 +1113,6 @@ class SeBa(se.StellarEvolution):
         handler.add_method('particles', 'merge_with_other_star')
         handler.add_method('particles', 'get_fallback')
         handler.add_method('particles', 'get_time_step')
-        
 
         handler.define_set('binaries', 'index_of_the_star')
         handler.set_new('binaries', 'new_binary')
@@ -1128,14 +1127,12 @@ class SeBa(se.StellarEvolution):
         handler.add_setter('binaries', 'set_semi_major_axis', names = ('semi_major_axis',))
         handler.add_setter('binaries', 'set_eccentricity', names = ('eccentricity',))
         handler.add_method('binaries', 'merge_the_binary')
-        
 
-        
+
     def define_state(self, handler):
         se.StellarEvolution.define_state(self, handler)
-        
-        self.stopping_conditions.define_state(handler)
 
+        self.stopping_conditions.define_state(handler)
 
 
 Seba = SeBa
