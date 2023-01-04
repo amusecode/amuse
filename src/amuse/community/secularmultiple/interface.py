@@ -21,7 +21,8 @@ class SecularMultipleInterface(CodeInterface):
     November 2017: Updates for external perturbations (flybys & supernovae), detailed in Hamers (2018, in prep)
     
     """
-    include_headers = ['interface.h','src/types.h','src/evolve.h','src/ODE_system.h']
+    include_headers = ['worker_code.h']
+    #~ include_headers = ['interface.h','src/types.h','src/evolve.h','src/ODE_system.h']
 
     def __init__(self, **options):
 #         CodeInterface.__init__(self, name_of_the_worker="secularmultiple_worker", **options)
@@ -33,11 +34,12 @@ class SecularMultipleInterface(CodeInterface):
 
     ### particles ###
     @legacy_function
-    def new_particle():
+    def add_particle():
         function = LegacyFunctionSpecification()
         function.can_handle_array = True
         function.addParameter('index_of_the_particle',  dtype='int32',      direction=function.OUT, unit=INDEX)
         function.addParameter('is_binary',              dtype='bool',       direction=function.IN,  unit=NO_UNIT)
+        function.addParameter('is_external',            dtype='bool',       direction=function.IN,  unit=NO_UNIT)
         function.result_type = 'int32'
         return function
         
@@ -88,20 +90,20 @@ class SecularMultipleInterface(CodeInterface):
         return function
 
     @legacy_function
-    def set_mass_dot_external():
+    def set_mass_dot():
         function = LegacyFunctionSpecification()
         function.can_handle_array = True
         function.addParameter('index_of_the_particle',  dtype='int32',      direction=function.IN,  unit=INDEX)        
-        function.addParameter('mass_dot_external',      dtype='float64',    direction=function.IN,  unit=unit_m/unit_t)
+        function.addParameter('mass_dot',               dtype='float64',    direction=function.IN,  unit=unit_m/unit_t)
         function.result_type = 'int32'
         return function
         
     @legacy_function
-    def get_mass_dot_external():
+    def get_mass_dot():
         function = LegacyFunctionSpecification()
         function.can_handle_array = True
         function.addParameter('index_of_the_particle',  dtype='int32',      direction=function.IN,  unit=INDEX)        
-        function.addParameter('mass_dot_external',      dtype='float64',    direction=function.OUT, unit=unit_m/unit_t)
+        function.addParameter('mass_dot',               dtype='float64',    direction=function.OUT, unit=unit_m/unit_t)
         function.result_type = 'int32'
         return function
 
@@ -111,6 +113,7 @@ class SecularMultipleInterface(CodeInterface):
         function.can_handle_array = True
         function.addParameter('index_of_the_particle',  dtype='int32',      direction=function.IN,  unit=INDEX)        
         function.addParameter('radius',                   dtype='float64',    direction=function.IN,  unit=unit_l)
+        function.addParameter('radius_dot_external',    dtype='float64',    direction=function.IN,  unit=unit_l/unit_t)
         function.result_type = 'int32'
         return function
         
@@ -120,42 +123,7 @@ class SecularMultipleInterface(CodeInterface):
         function.can_handle_array = True
         function.addParameter('index_of_the_particle',  dtype='int32',      direction=function.IN,  unit=INDEX)        
         function.addParameter('radius',                   dtype='float64',    direction=function.OUT, unit=unit_l)
-        function.result_type = 'int32'
-        return function
-
-    @legacy_function
-    def set_radius_dot_external():
-        function = LegacyFunctionSpecification()
-        function.can_handle_array = True
-        function.addParameter('index_of_the_particle',  dtype='int32',      direction=function.IN,  unit=INDEX)        
-        function.addParameter('radius_dot_external',    dtype='float64',    direction=function.IN,  unit=unit_l/unit_t)
-        function.result_type = 'int32'
-        return function
-        
-    @legacy_function
-    def get_radius_dot_external():
-        function = LegacyFunctionSpecification()
-        function.can_handle_array = True
-        function.addParameter('index_of_the_particle',  dtype='int32',      direction=function.IN,  unit=INDEX)        
         function.addParameter('radius_dot_external',    dtype='float64',    direction=function.OUT, unit=unit_l/unit_t)
-        function.result_type = 'int32'
-        return function
-
-    @legacy_function
-    def set_radius_ddot_external():
-        function = LegacyFunctionSpecification()
-        function.can_handle_array = True
-        function.addParameter('index_of_the_particle',  dtype='int32',      direction=function.IN,  unit=INDEX)        
-        function.addParameter('radius_ddot_external',    dtype='float64',    direction=function.IN,  unit=unit_l/(unit_t**2))
-        function.result_type = 'int32'
-        return function
-        
-    @legacy_function
-    def get_radius_ddot_external():
-        function = LegacyFunctionSpecification()
-        function.can_handle_array = True
-        function.addParameter('index_of_the_particle',  dtype='int32',      direction=function.IN,  unit=INDEX)        
-        function.addParameter('radius_ddot_external',    dtype='float64',    direction=function.OUT, unit=unit_l/(unit_t**2))
         function.result_type = 'int32'
         return function
         
@@ -187,42 +155,42 @@ class SecularMultipleInterface(CodeInterface):
         return function
 
 
-    @legacy_function
-    def set_true_anomaly():
-        function = LegacyFunctionSpecification()
-        function.can_handle_array = True
-        function.addParameter('index_of_the_particle',  dtype='int32',      direction=function.IN,  unit=INDEX)        
-        function.addParameter('true_anomaly',           dtype='float64',      direction=function.IN,  unit=NO_UNIT)
-        function.result_type = 'int32'
-        return function
+    #~ @legacy_function
+    #~ def set_true_anomaly():
+        #~ function = LegacyFunctionSpecification()
+        #~ function.can_handle_array = True
+        #~ function.addParameter('index_of_the_particle',  dtype='int32',      direction=function.IN,  unit=INDEX)        
+        #~ function.addParameter('true_anomaly',           dtype='float64',      direction=function.IN,  unit=NO_UNIT)
+        #~ function.result_type = 'int32'
+        #~ return function
         
-    @legacy_function
-    def get_true_anomaly():
-        function = LegacyFunctionSpecification()
-        function.can_handle_array = True
-        function.addParameter('index_of_the_particle',  dtype='int32',      direction=function.IN,  unit=INDEX)        
-        function.addParameter('true_anomaly',           dtype='float64',      direction=function.OUT, unit=NO_UNIT)
-        function.result_type = 'int32'
-        return function
+    #~ @legacy_function
+    #~ def get_true_anomaly():
+        #~ function = LegacyFunctionSpecification()
+        #~ function.can_handle_array = True
+        #~ function.addParameter('index_of_the_particle',  dtype='int32',      direction=function.IN,  unit=INDEX)        
+        #~ function.addParameter('true_anomaly',           dtype='float64',      direction=function.OUT, unit=NO_UNIT)
+        #~ function.result_type = 'int32'
+        #~ return function
 
 
-    @legacy_function
-    def set_sample_orbital_phases_randomly():
-        function = LegacyFunctionSpecification()
-        function.can_handle_array = True
-        function.addParameter('index_of_the_particle',              dtype='int32',      direction=function.IN,  unit=INDEX)        
-        function.addParameter('sample_orbital_phases_randomly',     dtype='bool',      direction=function.IN,  unit=NO_UNIT)
-        function.result_type = 'int32'
-        return function
+    #~ @legacy_function
+    #~ def set_sample_orbital_phases_randomly():
+        #~ function = LegacyFunctionSpecification()
+        #~ function.can_handle_array = True
+        #~ function.addParameter('index_of_the_particle',              dtype='int32',      direction=function.IN,  unit=INDEX)        
+        #~ function.addParameter('sample_orbital_phases_randomly',     dtype='bool',      direction=function.IN,  unit=NO_UNIT)
+        #~ function.result_type = 'int32'
+        #~ return function
         
-    @legacy_function
-    def get_sample_orbital_phases_randomly():
-        function = LegacyFunctionSpecification()
-        function.can_handle_array = True
-        function.addParameter('index_of_the_particle',              dtype='int32',      direction=function.IN,  unit=INDEX)        
-        function.addParameter('sample_orbital_phases_randomly',     dtype='bool',      direction=function.OUT, unit=NO_UNIT)
-        function.result_type = 'int32'
-        return function
+    #~ @legacy_function
+    #~ def get_sample_orbital_phases_randomly():
+        #~ function = LegacyFunctionSpecification()
+        #~ function.can_handle_array = True
+        #~ function.addParameter('index_of_the_particle',              dtype='int32',      direction=function.IN,  unit=INDEX)        
+        #~ function.addParameter('sample_orbital_phases_randomly',     dtype='bool',      direction=function.OUT, unit=NO_UNIT)
+        #~ function.result_type = 'int32'
+        #~ return function
 
 
 
@@ -230,330 +198,38 @@ class SecularMultipleInterface(CodeInterface):
     #################################################
     ### user-specified instantaneous perturbation ###
     #################################################
+
+    #~ @legacy_function
+    #~ def set_instantaneous_perturbation():
+        #~ function = LegacyFunctionSpecification()
+        #~ function.can_handle_array = True
+        #~ function.addParameter('index_of_the_particle',                      dtype='int32',      direction=function.IN,  unit=INDEX)        
+        #~ function.addParameter('instantaneous_perturbation_delta_mass',      dtype='float64',      direction=function.IN,  unit=unit_m)
+        #~ function.addParameter('instantaneous_perturbation_delta_position_x',dtype='float64',      direction=function.IN,  unit=unit_l)
+        #~ function.addParameter('instantaneous_perturbation_delta_position_y',dtype='float64',      direction=function.IN,  unit=unit_l)
+        #~ function.addParameter('instantaneous_perturbation_delta_position_z',dtype='float64',      direction=function.IN,  unit=unit_l)
+        #~ function.addParameter('instantaneous_perturbation_delta_velocity_x',dtype='float64',      direction=function.IN,  unit=unit_l/unit_t)
+        #~ function.addParameter('instantaneous_perturbation_delta_velocity_y',dtype='float64',      direction=function.IN,  unit=unit_l/unit_t)
+        #~ function.addParameter('instantaneous_perturbation_delta_velocity_z',dtype='float64',      direction=function.IN,  unit=unit_l/unit_t)
+        #~ function.result_type = 'int32'
+        #~ return function
+
+        
+    #~ @legacy_function
+    #~ def set_external_properties():
+        #~ function = LegacyFunctionSpecification()
+        #~ function.can_handle_array = True
+        #~ function.addParameter('index_of_the_external_particle',  dtype='int32',      direction=function.IN,  unit=INDEX)        
+        #~ function.addParameter('mass',                   dtype='float64',    direction=function.IN,  unit=unit_m)
+        #~ function.addParameter('t_ref',                  dtype='float64',    direction=function.IN,  unit=unit_t)
+        #~ function.result_type = 'int32'
+        #~ return function
+        #~ function.addParameter('periapse_distance',               dtype='float64',    direction=function.OUT, unit=unit_l)
+        #~ function.addParameter('eccentricity',               dtype='float64',    direction=function.IN,  unit=NO_UNIT)
+# 3 more
+
+
     
-    @legacy_function
-    def set_instantaneous_perturbation_delta_mass():
-        function = LegacyFunctionSpecification()
-        function.can_handle_array = True
-        function.addParameter('index_of_the_particle',                      dtype='int32',      direction=function.IN,  unit=INDEX)        
-        function.addParameter('instantaneous_perturbation_delta_mass',      dtype='float64',      direction=function.IN,  unit=unit_m)
-        function.result_type = 'int32'
-        return function
-        
-    @legacy_function
-    def get_instantaneous_perturbation_delta_mass():
-        function = LegacyFunctionSpecification()
-        function.can_handle_array = True
-        function.addParameter('index_of_the_particle',                      dtype='int32',      direction=function.IN,  unit=INDEX)        
-        function.addParameter('instantaneous_perturbation_delta_mass',      dtype='float64',      direction=function.OUT, unit=unit_m)
-        function.result_type = 'int32'
-        return function
-    
-    
-    @legacy_function
-    def set_instantaneous_perturbation_delta_position():
-        function = LegacyFunctionSpecification()
-        function.can_handle_array = True
-        function.addParameter('index_of_the_particle',                      dtype='int32',      direction=function.IN,  unit=INDEX)        
-        function.addParameter('instantaneous_perturbation_delta_position_x',dtype='float64',      direction=function.IN,  unit=unit_l)
-        function.addParameter('instantaneous_perturbation_delta_position_y',dtype='float64',      direction=function.IN,  unit=unit_l)
-        function.addParameter('instantaneous_perturbation_delta_position_z',dtype='float64',      direction=function.IN,  unit=unit_l)
-        function.result_type = 'int32'
-        return function
-        
-    @legacy_function
-    def get_instantaneous_perturbation_delta_position():
-        function = LegacyFunctionSpecification()
-        function.can_handle_array = True
-        function.addParameter('index_of_the_particle',                      dtype='int32',      direction=function.IN,  unit=INDEX)        
-        function.addParameter('instantaneous_perturbation_delta_position_x',dtype='float64',      direction=function.OUT, unit=unit_l)
-        function.addParameter('instantaneous_perturbation_delta_position_y',dtype='float64',      direction=function.OUT, unit=unit_l)
-        function.addParameter('instantaneous_perturbation_delta_position_z',dtype='float64',      direction=function.OUT, unit=unit_l)
-        function.result_type = 'int32'
-        return function
-
-
-    @legacy_function
-    def set_instantaneous_perturbation_delta_velocity():
-        function = LegacyFunctionSpecification()
-        function.can_handle_array = True
-        function.addParameter('index_of_the_particle',                      dtype='int32',      direction=function.IN,  unit=INDEX)        
-        function.addParameter('instantaneous_perturbation_delta_velocity_x',dtype='float64',      direction=function.IN,  unit=unit_l/unit_t)
-        function.addParameter('instantaneous_perturbation_delta_velocity_y',dtype='float64',      direction=function.IN,  unit=unit_l/unit_t)
-        function.addParameter('instantaneous_perturbation_delta_velocity_z',dtype='float64',      direction=function.IN,  unit=unit_l/unit_t)
-        function.result_type = 'int32'
-        return function
-        
-    @legacy_function
-    def get_instantaneous_perturbation_delta_velocity():
-        function = LegacyFunctionSpecification()
-        function.can_handle_array = True
-        function.addParameter('index_of_the_particle',                      dtype='int32',      direction=function.IN,  unit=INDEX)        
-        function.addParameter('instantaneous_perturbation_delta_velocity_x',dtype='float64',      direction=function.OUT, unit=unit_l/unit_t)
-        function.addParameter('instantaneous_perturbation_delta_velocity_y',dtype='float64',      direction=function.OUT, unit=unit_l/unit_t)
-        function.addParameter('instantaneous_perturbation_delta_velocity_z',dtype='float64',      direction=function.OUT, unit=unit_l/unit_t)
-        function.result_type = 'int32'
-        return function
-
-
-
-
-    ##########################
-    ### external particles ###
-    ##########################
-    
-    @legacy_function
-    def new_external_particle():
-        function = LegacyFunctionSpecification()
-        function.can_handle_array = True
-        function.addParameter('index_of_the_external_particle',  dtype='int32',      direction=function.OUT, unit=INDEX)
-        function.addParameter('mass',                   dtype='float64',    direction=function.IN,  unit=unit_m)
-        function.result_type = 'int32'
-        return function
-        
-    @legacy_function
-    def delete_external_particle():
-        function = LegacyFunctionSpecification()  
-        function.addParameter('index_of_the_external_particle',  dtype='int32',      direction=function.IN,  unit=INDEX)
-        function.result_type = 'int32'
-        return function
-        
-        
-    @legacy_function
-    def set_external_mass():
-        function = LegacyFunctionSpecification()
-        function.can_handle_array = True
-        function.addParameter('index_of_the_external_particle',  dtype='int32',      direction=function.IN,  unit=INDEX)        
-        function.addParameter('mass',                   dtype='float64',    direction=function.IN,  unit=unit_m)
-        function.result_type = 'int32'
-        return function
-        
-    @legacy_function
-    def get_external_mass():
-        function = LegacyFunctionSpecification()
-        function.can_handle_array = True
-        function.addParameter('index_of_the_external_particle',  dtype='int32',      direction=function.IN,  unit=INDEX)        
-        function.addParameter('mass',                   dtype='float64',    direction=function.OUT, unit=unit_m)
-        function.result_type = 'int32'
-        return function
-
-
-    @legacy_function
-    def set_external_path():
-        function = LegacyFunctionSpecification()
-        function.can_handle_array = True
-        function.addParameter('index_of_the_external_particle',  dtype='int32',      direction=function.IN,  unit=INDEX)        
-        function.addParameter('path',                   dtype='int32',    direction=function.IN,  unit=NO_UNIT)
-        function.result_type = 'int32'
-        return function
-        
-    @legacy_function
-    def get_external_path():
-        function = LegacyFunctionSpecification()
-        function.can_handle_array = True
-        function.addParameter('index_of_the_external_particle',  dtype='int32',      direction=function.IN,  unit=INDEX)        
-        function.addParameter('path',                   dtype='int32',    direction=function.OUT, unit=NO_UNIT)
-        function.result_type = 'int32'
-        return function
-
-
-    @legacy_function
-    def set_external_mode():
-        function = LegacyFunctionSpecification()
-        function.can_handle_array = True
-        function.addParameter('index_of_the_external_particle',  dtype='int32',      direction=function.IN,  unit=INDEX)        
-        function.addParameter('mode',                   dtype='int32',    direction=function.IN,  unit=NO_UNIT)
-        function.result_type = 'int32'
-        return function
-        
-    @legacy_function
-    def get_external_mode():
-        function = LegacyFunctionSpecification()
-        function.can_handle_array = True
-        function.addParameter('index_of_the_external_particle',  dtype='int32',      direction=function.IN,  unit=INDEX)        
-        function.addParameter('mode',                   dtype='int32',    direction=function.OUT, unit=NO_UNIT)
-        function.result_type = 'int32'
-        return function
-        
-        
-    @legacy_function
-    def set_external_t_ref():
-        function = LegacyFunctionSpecification()
-        function.can_handle_array = True
-        function.addParameter('index_of_the_external_particle',  dtype='int32',      direction=function.IN,  unit=INDEX)        
-        function.addParameter('t_ref',                  dtype='float64',    direction=function.IN,  unit=unit_t)
-        function.result_type = 'int32'
-        return function
-        
-    @legacy_function
-    def get_external_t_ref():
-        function = LegacyFunctionSpecification()
-        function.can_handle_array = True
-        function.addParameter('index_of_the_external_particle',  dtype='int32',      direction=function.IN,  unit=INDEX)        
-        function.addParameter('t_ref',                  dtype='float64',    direction=function.OUT, unit=unit_t)
-        function.result_type = 'int32'
-        return function
-
-    @legacy_function
-    def set_external_t_passed():
-        function = LegacyFunctionSpecification()
-        function.can_handle_array = True
-        function.addParameter('index_of_the_external_particle',  dtype='int32',      direction=function.IN,  unit=INDEX)        
-        function.addParameter('t_passed',               dtype='float64',    direction=function.IN,  unit=unit_t)
-        function.result_type = 'int32'
-        return function
-        
-    @legacy_function
-    def get_external_t_passed():
-        function = LegacyFunctionSpecification()
-        function.can_handle_array = True
-        function.addParameter('index_of_the_external_particle',  dtype='int32',      direction=function.IN,  unit=INDEX)        
-        function.addParameter('t_passed',               dtype='float64',    direction=function.OUT, unit=unit_t)
-        function.result_type = 'int32'
-        return function
-
-    @legacy_function
-    def set_external_r0_vectors():
-        function = LegacyFunctionSpecification()
-        function.can_handle_array = True
-        function.addParameter('index_of_the_external_particle',  dtype='int32',      direction=function.IN,  unit=INDEX)        
-        function.addParameter('r0_vec_x',               dtype='float64',    direction=function.IN,  unit=unit_l)
-        function.addParameter('r0_vec_y',               dtype='float64',    direction=function.IN,  unit=unit_l)
-        function.addParameter('r0_vec_z',               dtype='float64',    direction=function.IN,  unit=unit_l)
-        function.result_type = 'int32'
-        return function
-        
-    @legacy_function
-    def get_external_r0_vectors():
-        function = LegacyFunctionSpecification()
-        function.can_handle_array = True
-        function.addParameter('index_of_the_external_particle',  dtype='int32',      direction=function.IN,  unit=INDEX)        
-        function.addParameter('r0_vec_x',               dtype='float64',    direction=function.OUT, unit=unit_l)
-        function.addParameter('r0_vec_y',               dtype='float64',    direction=function.OUT, unit=unit_l)
-        function.addParameter('r0_vec_z',               dtype='float64',    direction=function.OUT, unit=unit_l)
-        function.result_type = 'int32'
-        return function
-
-
-    @legacy_function
-    def set_external_rdot_vectors():
-        function = LegacyFunctionSpecification()
-        function.can_handle_array = True
-        function.addParameter('index_of_the_external_particle',  dtype='int32',      direction=function.IN,  unit=INDEX)        
-        function.addParameter('rdot_vec_x',             dtype='float64',    direction=function.IN,  unit=unit_l/unit_t)
-        function.addParameter('rdot_vec_y',             dtype='float64',    direction=function.IN,  unit=unit_l/unit_t)
-        function.addParameter('rdot_vec_z',             dtype='float64',    direction=function.IN,  unit=unit_l/unit_t)
-        function.result_type = 'int32'
-        return function
-        
-    @legacy_function
-    def get_external_rdot_vectors():
-        function = LegacyFunctionSpecification()
-        function.can_handle_array = True
-        function.addParameter('index_of_the_external_particle',  dtype='int32',      direction=function.IN,  unit=INDEX)        
-        function.addParameter('rdot_vec_x',             dtype='float64',    direction=function.OUT, unit=unit_l/unit_t)
-        function.addParameter('rdot_vec_y',             dtype='float64',    direction=function.OUT, unit=unit_l/unit_t)
-        function.addParameter('rdot_vec_z',             dtype='float64',    direction=function.OUT, unit=unit_l/unit_t)
-        function.result_type = 'int32'
-        return function
-
-
-    @legacy_function
-    def set_external_periapse_distance():
-        function = LegacyFunctionSpecification()
-        function.can_handle_array = True
-        function.addParameter('index_of_the_external_particle',  dtype='int32',      direction=function.IN,  unit=INDEX)        
-        function.addParameter('periapse_distance',               dtype='float64',    direction=function.IN,  unit=unit_l)
-        function.result_type = 'int32'
-        return function
-        
-    @legacy_function
-    def get_external_periapse_distance():
-        function = LegacyFunctionSpecification()
-        function.can_handle_array = True
-        function.addParameter('index_of_the_external_particle',  dtype='int32',      direction=function.IN,  unit=INDEX)        
-        function.addParameter('periapse_distance',               dtype='float64',    direction=function.OUT, unit=unit_l)
-        function.result_type = 'int32'
-        return function
-        
-        
-    @legacy_function
-    def set_external_eccentricity():
-        function = LegacyFunctionSpecification()
-        function.can_handle_array = True
-        function.addParameter('index_of_the_external_particle',  dtype='int32',      direction=function.IN,  unit=INDEX)        
-        function.addParameter('eccentricity',               dtype='float64',    direction=function.IN,  unit=NO_UNIT)
-        function.result_type = 'int32'
-        return function
-        
-    @legacy_function
-    def get_external_eccentricity():
-        function = LegacyFunctionSpecification()
-        function.can_handle_array = True
-        function.addParameter('index_of_the_external_particle',  dtype='int32',      direction=function.IN,  unit=INDEX)        
-        function.addParameter('eccentricity',               dtype='float64',    direction=function.OUT, unit=NO_UNIT)
-        function.result_type = 'int32'
-        return function
-                
-        
-    @legacy_function
-    def set_external_e_hat_vectors():
-        function = LegacyFunctionSpecification()
-        function.can_handle_array = True
-        function.addParameter('index_of_the_external_particle',  dtype='int32',      direction=function.IN,  unit=INDEX)        
-        function.addParameter('e_hat_vec_x',             dtype='float64',    direction=function.IN,  unit=NO_UNIT)
-        function.addParameter('e_hat_vec_y',             dtype='float64',    direction=function.IN,  unit=NO_UNIT)
-        function.addParameter('e_hat_vec_z',             dtype='float64',    direction=function.IN,  unit=NO_UNIT)
-        function.result_type = 'int32'
-        return function
-        
-    @legacy_function
-    def get_external_e_hat_vectors():
-        function = LegacyFunctionSpecification()
-        function.can_handle_array = True
-        function.addParameter('index_of_the_external_particle',  dtype='int32',      direction=function.IN,  unit=INDEX)        
-        function.addParameter('e_hat_vec_x',             dtype='float64',    direction=function.OUT, unit=NO_UNIT)
-        function.addParameter('e_hat_vec_y',             dtype='float64',    direction=function.OUT, unit=NO_UNIT)
-        function.addParameter('e_hat_vec_z',             dtype='float64',    direction=function.OUT, unit=NO_UNIT)
-        function.result_type = 'int32'
-        return function
-
-
-    @legacy_function
-    def set_external_h_hat_vectors():
-        function = LegacyFunctionSpecification()
-        function.can_handle_array = True
-        function.addParameter('index_of_the_external_particle',  dtype='int32',      direction=function.IN,  unit=INDEX)        
-        function.addParameter('h_hat_vec_x',             dtype='float64',    direction=function.IN,  unit=NO_UNIT)
-        function.addParameter('h_hat_vec_y',             dtype='float64',    direction=function.IN,  unit=NO_UNIT)
-        function.addParameter('h_hat_vec_z',             dtype='float64',    direction=function.IN,  unit=NO_UNIT)
-        function.result_type = 'int32'
-        return function
-        
-    @legacy_function
-    def get_external_h_hat_vectors():
-        function = LegacyFunctionSpecification()
-        function.can_handle_array = True
-        function.addParameter('index_of_the_external_particle',  dtype='int32',      direction=function.IN,  unit=INDEX)        
-        function.addParameter('h_hat_vec_x',             dtype='float64',    direction=function.OUT, unit=NO_UNIT)
-        function.addParameter('h_hat_vec_y',             dtype='float64',    direction=function.OUT, unit=NO_UNIT)
-        function.addParameter('h_hat_vec_z',             dtype='float64',    direction=function.OUT, unit=NO_UNIT)
-        function.result_type = 'int32'
-        return function
-
-
-    @legacy_function
-    def get_external_r_vectors():
-        function = LegacyFunctionSpecification()
-        function.can_handle_array = True
-        function.addParameter('index_of_the_external_particle',  dtype='int32',      direction=function.IN,  unit=INDEX)        
-        function.addParameter('r_vec_x',             dtype='float64',    direction=function.OUT, unit=unit_l)
-        function.addParameter('r_vec_y',             dtype='float64',    direction=function.OUT, unit=unit_l)
-        function.addParameter('r_vec_z',             dtype='float64',    direction=function.OUT, unit=unit_l)
-        function.result_type = 'int32'
-        return function
-        
-
 
     ####################
     ### spin vectors ###
@@ -582,7 +258,7 @@ class SecularMultipleInterface(CodeInterface):
         return function   
 
     @legacy_function
-    def set_spin_vector_dot_external():
+    def set_spin_vector_dot():
         function = LegacyFunctionSpecification()
         function.can_handle_array = True
         function.addParameter('index_of_the_particle',  dtype='int32',      direction=function.IN,  unit=INDEX)
@@ -593,7 +269,7 @@ class SecularMultipleInterface(CodeInterface):
         return function
         
     @legacy_function
-    def get_spin_vector_dot_external():
+    def get_spin_vector_dot():
         function = LegacyFunctionSpecification()
         function.can_handle_array = True
         function.addParameter('index_of_the_particle',  dtype='int32',      direction=function.IN,  unit=INDEX)
@@ -622,47 +298,47 @@ class SecularMultipleInterface(CodeInterface):
         function.result_type = 'int32'
         return function
         
-    @legacy_function
-    def get_orbital_vectors():
-        function = LegacyFunctionSpecification()
-        function.can_handle_array = True
-        function.addParameter('index_of_the_particle',  dtype='int32',      direction=function.IN,  unit=INDEX)
-        function.addParameter('e_vec_x',                dtype='float64',    direction=function.OUT, unit=NO_UNIT)
-        function.addParameter('e_vec_y',                dtype='float64',    direction=function.OUT, unit=NO_UNIT)
-        function.addParameter('e_vec_z',                dtype='float64',    direction=function.OUT, unit=NO_UNIT)
-        function.addParameter('h_vec_x',                dtype='float64',    direction=function.OUT, unit=unit_h)
-        function.addParameter('h_vec_y',                dtype='float64',    direction=function.OUT, unit=unit_h)
-        function.addParameter('h_vec_z',                dtype='float64',    direction=function.OUT, unit=unit_h)
-        function.result_type = 'int32'
-        return function    
+    #~ @legacy_function
+    #~ def get_orbital_vectors():
+        #~ function = LegacyFunctionSpecification()
+        #~ function.can_handle_array = True
+        #~ function.addParameter('index_of_the_particle',  dtype='int32',      direction=function.IN,  unit=INDEX)
+        #~ function.addParameter('e_vec_x',                dtype='float64',    direction=function.OUT, unit=NO_UNIT)
+        #~ function.addParameter('e_vec_y',                dtype='float64',    direction=function.OUT, unit=NO_UNIT)
+        #~ function.addParameter('e_vec_z',                dtype='float64',    direction=function.OUT, unit=NO_UNIT)
+        #~ function.addParameter('h_vec_x',                dtype='float64',    direction=function.OUT, unit=unit_h)
+        #~ function.addParameter('h_vec_y',                dtype='float64',    direction=function.OUT, unit=unit_h)
+        #~ function.addParameter('h_vec_z',                dtype='float64',    direction=function.OUT, unit=unit_h)
+        #~ function.result_type = 'int32'
+        #~ return function    
 
-    @legacy_function
-    def set_orbital_vectors_dot_external():
-        function = LegacyFunctionSpecification()
-        function.can_handle_array = True
-        function.addParameter('index_of_the_particle',  dtype='int32',      direction=function.IN,  unit=INDEX)
-        function.addParameter('e_vec_x_dot_external',   dtype='float64',    direction=function.IN,  unit=1.0/unit_t)
-        function.addParameter('e_vec_y_dot_external',   dtype='float64',    direction=function.IN,  unit=1.0/unit_t)
-        function.addParameter('e_vec_z_dot_external',   dtype='float64',    direction=function.IN,  unit=1.0/unit_t)
-        function.addParameter('h_vec_x_dot_external',   dtype='float64',    direction=function.IN,  unit=unit_h/unit_t)
-        function.addParameter('h_vec_y_dot_external',   dtype='float64',    direction=function.IN,  unit=unit_h/unit_t)
-        function.addParameter('h_vec_z_dot_external',   dtype='float64',    direction=function.IN,  unit=unit_h/unit_t)
-        function.result_type = 'int32'
-        return function
+    #~ @legacy_function
+    #~ def set_orbital_vectors_dot_external():
+        #~ function = LegacyFunctionSpecification()
+        #~ function.can_handle_array = True
+        #~ function.addParameter('index_of_the_particle',  dtype='int32',      direction=function.IN,  unit=INDEX)
+        #~ function.addParameter('e_vec_x_dot_external',   dtype='float64',    direction=function.IN,  unit=1.0/unit_t)
+        #~ function.addParameter('e_vec_y_dot_external',   dtype='float64',    direction=function.IN,  unit=1.0/unit_t)
+        #~ function.addParameter('e_vec_z_dot_external',   dtype='float64',    direction=function.IN,  unit=1.0/unit_t)
+        #~ function.addParameter('h_vec_x_dot_external',   dtype='float64',    direction=function.IN,  unit=unit_h/unit_t)
+        #~ function.addParameter('h_vec_y_dot_external',   dtype='float64',    direction=function.IN,  unit=unit_h/unit_t)
+        #~ function.addParameter('h_vec_z_dot_external',   dtype='float64',    direction=function.IN,  unit=unit_h/unit_t)
+        #~ function.result_type = 'int32'
+        #~ return function
         
-    @legacy_function
-    def get_orbital_vectors_dot_external():
-        function = LegacyFunctionSpecification()
-        function.can_handle_array = True
-        function.addParameter('index_of_the_particle',  dtype='int32',      direction=function.IN,  unit=INDEX)
-        function.addParameter('e_vec_x_dot_external',   dtype='float64',    direction=function.OUT, unit=1.0/unit_t)
-        function.addParameter('e_vec_y_dot_external',   dtype='float64',    direction=function.OUT, unit=1.0/unit_t)
-        function.addParameter('e_vec_z_dot_external',   dtype='float64',    direction=function.OUT, unit=1.0/unit_t)
-        function.addParameter('h_vec_x_dot_external',   dtype='float64',    direction=function.OUT, unit=unit_h/unit_t)
-        function.addParameter('h_vec_y_dot_external',   dtype='float64',    direction=function.OUT, unit=unit_h/unit_t)
-        function.addParameter('h_vec_z_dot_external',   dtype='float64',    direction=function.OUT, unit=unit_h/unit_t)
-        function.result_type = 'int32'
-        return function            
+    #~ @legacy_function
+    #~ def get_orbital_vectors_dot_external():
+        #~ function = LegacyFunctionSpecification()
+        #~ function.can_handle_array = True
+        #~ function.addParameter('index_of_the_particle',  dtype='int32',      direction=function.IN,  unit=INDEX)
+        #~ function.addParameter('e_vec_x_dot_external',   dtype='float64',    direction=function.OUT, unit=1.0/unit_t)
+        #~ function.addParameter('e_vec_y_dot_external',   dtype='float64',    direction=function.OUT, unit=1.0/unit_t)
+        #~ function.addParameter('e_vec_z_dot_external',   dtype='float64',    direction=function.OUT, unit=1.0/unit_t)
+        #~ function.addParameter('h_vec_x_dot_external',   dtype='float64',    direction=function.OUT, unit=unit_h/unit_t)
+        #~ function.addParameter('h_vec_y_dot_external',   dtype='float64',    direction=function.OUT, unit=unit_h/unit_t)
+        #~ function.addParameter('h_vec_z_dot_external',   dtype='float64',    direction=function.OUT, unit=unit_h/unit_t)
+        #~ function.result_type = 'int32'
+        #~ return function            
 
 
     @legacy_function
@@ -764,258 +440,258 @@ class SecularMultipleInterface(CodeInterface):
     ### PN terms ###
     ################
             
-    @legacy_function
-    def set_include_pairwise_1PN_terms():
-        function = LegacyFunctionSpecification()
-        function.can_handle_array = True
-        function.addParameter('index_of_the_particle',  dtype='int32',      direction=function.IN, unit=NO_UNIT)
-        function.addParameter('include_pairwise_1PN_terms', dtype='bool',   direction=function.IN, unit=NO_UNIT)
-        function.result_type = 'int32'
-        return function
+    #~ @legacy_function
+    #~ def set_include_pairwise_1PN_terms():
+        #~ function = LegacyFunctionSpecification()
+        #~ function.can_handle_array = True
+        #~ function.addParameter('index_of_the_particle',  dtype='int32',      direction=function.IN, unit=NO_UNIT)
+        #~ function.addParameter('include_pairwise_1PN_terms', dtype='bool',   direction=function.IN, unit=NO_UNIT)
+        #~ function.result_type = 'int32'
+        #~ return function
 
-    @legacy_function
-    def get_include_pairwise_1PN_terms():
-        function = LegacyFunctionSpecification()
-        function.can_handle_array = True
-        function.addParameter('index_of_the_particle',  dtype='int32',      direction=function.IN, unit=NO_UNIT)
-        function.addParameter('include_pairwise_1PN_terms', dtype='bool',   direction=function.OUT,unit=NO_UNIT)
-        function.result_type = 'int32'
-        return function
+    #~ @legacy_function
+    #~ def get_include_pairwise_1PN_terms():
+        #~ function = LegacyFunctionSpecification()
+        #~ function.can_handle_array = True
+        #~ function.addParameter('index_of_the_particle',  dtype='int32',      direction=function.IN, unit=NO_UNIT)
+        #~ function.addParameter('include_pairwise_1PN_terms', dtype='bool',   direction=function.OUT,unit=NO_UNIT)
+        #~ function.result_type = 'int32'
+        #~ return function
 
 
-    @legacy_function
-    def set_include_pairwise_25PN_terms():
-        function = LegacyFunctionSpecification()
-        function.can_handle_array = True
-        function.addParameter('index_of_the_particle',  dtype='int32',      direction=function.IN, unit=NO_UNIT)
-        function.addParameter('include_pairwise_25PN_terms', dtype='bool',  direction=function.IN, unit=NO_UNIT)
-        function.result_type = 'int32'
-        return function
+    #~ @legacy_function
+    #~ def set_include_pairwise_25PN_terms():
+        #~ function = LegacyFunctionSpecification()
+        #~ function.can_handle_array = True
+        #~ function.addParameter('index_of_the_particle',  dtype='int32',      direction=function.IN, unit=NO_UNIT)
+        #~ function.addParameter('include_pairwise_25PN_terms', dtype='bool',  direction=function.IN, unit=NO_UNIT)
+        #~ function.result_type = 'int32'
+        #~ return function
 
-    @legacy_function
-    def get_include_pairwise_25PN_terms():
-        function = LegacyFunctionSpecification()
-        function.can_handle_array = True
-        function.addParameter('index_of_the_particle',  dtype='int32',      direction=function.IN, unit=NO_UNIT)
-        function.addParameter('include_pairwise_25PN_terms', dtype='bool',  direction=function.OUT,unit=NO_UNIT)
-        function.result_type = 'int32'
-        return function
+    #~ @legacy_function
+    #~ def get_include_pairwise_25PN_terms():
+        #~ function = LegacyFunctionSpecification()
+        #~ function.can_handle_array = True
+        #~ function.addParameter('index_of_the_particle',  dtype='int32',      direction=function.IN, unit=NO_UNIT)
+        #~ function.addParameter('include_pairwise_25PN_terms', dtype='bool',  direction=function.OUT,unit=NO_UNIT)
+        #~ function.result_type = 'int32'
+        #~ return function
 
 
     #############
     ### tides ###
     #############
 
-    @legacy_function
-    def set_tides_method():
-        function = LegacyFunctionSpecification()
-        function.can_handle_array = True
-        function.addParameter('index_of_the_particle',          dtype='int32',      direction=function.IN,  unit=NO_UNIT)
-        function.addParameter('tides_method',                   dtype='int32',      direction=function.IN,  unit=NO_UNIT)
-        function.result_type = 'int32'
-        return function
+    #~ @legacy_function
+    #~ def set_tides_method():
+        #~ function = LegacyFunctionSpecification()
+        #~ function.can_handle_array = True
+        #~ function.addParameter('index_of_the_particle',          dtype='int32',      direction=function.IN,  unit=NO_UNIT)
+        #~ function.addParameter('tides_method',                   dtype='int32',      direction=function.IN,  unit=NO_UNIT)
+        #~ function.result_type = 'int32'
+        #~ return function
 
-    @legacy_function
-    def get_tides_method():
-        function = LegacyFunctionSpecification()
-        function.can_handle_array = True
-        function.addParameter('index_of_the_particle',          dtype='int32',      direction=function.IN,  unit=NO_UNIT)
-        function.addParameter('tides_method',                   dtype='int32',      direction=function.OUT, unit=NO_UNIT)
-        function.result_type = 'int32'
-        return function
+    #~ @legacy_function
+    #~ def get_tides_method():
+        #~ function = LegacyFunctionSpecification()
+        #~ function.can_handle_array = True
+        #~ function.addParameter('index_of_the_particle',          dtype='int32',      direction=function.IN,  unit=NO_UNIT)
+        #~ function.addParameter('tides_method',                   dtype='int32',      direction=function.OUT, unit=NO_UNIT)
+        #~ function.result_type = 'int32'
+        #~ return function
         
-    @legacy_function
-    def set_include_tidal_friction_terms():
-        function = LegacyFunctionSpecification()
-        function.can_handle_array = True
-        function.addParameter('index_of_the_particle',  dtype='int32',      direction=function.IN, unit=NO_UNIT)
-        function.addParameter('include_tidal_friction_terms', dtype='bool',  direction=function.IN, unit=NO_UNIT)
-        function.result_type = 'int32'
-        return function
+    #~ @legacy_function
+    #~ def set_include_tidal_friction_terms():
+        #~ function = LegacyFunctionSpecification()
+        #~ function.can_handle_array = True
+        #~ function.addParameter('index_of_the_particle',  dtype='int32',      direction=function.IN, unit=NO_UNIT)
+        #~ function.addParameter('include_tidal_friction_terms', dtype='bool',  direction=function.IN, unit=NO_UNIT)
+        #~ function.result_type = 'int32'
+        #~ return function
 
-    @legacy_function
-    def get_include_tidal_friction_terms():
-        function = LegacyFunctionSpecification()
-        function.can_handle_array = True
-        function.addParameter('index_of_the_particle',  dtype='int32',      direction=function.IN, unit=NO_UNIT)
-        function.addParameter('include_tidal_friction_terms', dtype='bool',  direction=function.OUT,unit=NO_UNIT)
-        function.result_type = 'int32'
-        return function
+    #~ @legacy_function
+    #~ def get_include_tidal_friction_terms():
+        #~ function = LegacyFunctionSpecification()
+        #~ function.can_handle_array = True
+        #~ function.addParameter('index_of_the_particle',  dtype='int32',      direction=function.IN, unit=NO_UNIT)
+        #~ function.addParameter('include_tidal_friction_terms', dtype='bool',  direction=function.OUT,unit=NO_UNIT)
+        #~ function.result_type = 'int32'
+        #~ return function
 
-    @legacy_function
-    def set_include_tidal_bulges_precession_terms():
-        function = LegacyFunctionSpecification()
-        function.can_handle_array = True
-        function.addParameter('index_of_the_particle',  dtype='int32',      direction=function.IN, unit=NO_UNIT)
-        function.addParameter('include_tidal_bulges_precession_terms', dtype='bool',  direction=function.IN, unit=NO_UNIT)
-        function.result_type = 'int32'
-        return function
+    #~ @legacy_function
+    #~ def set_include_tidal_bulges_precession_terms():
+        #~ function = LegacyFunctionSpecification()
+        #~ function.can_handle_array = True
+        #~ function.addParameter('index_of_the_particle',  dtype='int32',      direction=function.IN, unit=NO_UNIT)
+        #~ function.addParameter('include_tidal_bulges_precession_terms', dtype='bool',  direction=function.IN, unit=NO_UNIT)
+        #~ function.result_type = 'int32'
+        #~ return function
 
-    @legacy_function
-    def get_include_tidal_bulges_precession_terms():
-        function = LegacyFunctionSpecification()
-        function.can_handle_array = True
-        function.addParameter('index_of_the_particle',  dtype='int32',      direction=function.IN, unit=NO_UNIT)
-        function.addParameter('include_tidal_bulges_precession_terms', dtype='bool',  direction=function.OUT,unit=NO_UNIT)
-        function.result_type = 'int32'
-        return function
+    #~ @legacy_function
+    #~ def get_include_tidal_bulges_precession_terms():
+        #~ function = LegacyFunctionSpecification()
+        #~ function.can_handle_array = True
+        #~ function.addParameter('index_of_the_particle',  dtype='int32',      direction=function.IN, unit=NO_UNIT)
+        #~ function.addParameter('include_tidal_bulges_precession_terms', dtype='bool',  direction=function.OUT,unit=NO_UNIT)
+        #~ function.result_type = 'int32'
+        #~ return function
 
-    @legacy_function
-    def set_include_rotation_precession_terms():
-        function = LegacyFunctionSpecification()
-        function.can_handle_array = True
-        function.addParameter('index_of_the_particle',  dtype='int32',      direction=function.IN, unit=NO_UNIT)
-        function.addParameter('include_rotation_precession_terms', dtype='bool',  direction=function.IN, unit=NO_UNIT)
-        function.result_type = 'int32'
-        return function
+    #~ @legacy_function
+    #~ def set_include_rotation_precession_terms():
+        #~ function = LegacyFunctionSpecification()
+        #~ function.can_handle_array = True
+        #~ function.addParameter('index_of_the_particle',  dtype='int32',      direction=function.IN, unit=NO_UNIT)
+        #~ function.addParameter('include_rotation_precession_terms', dtype='bool',  direction=function.IN, unit=NO_UNIT)
+        #~ function.result_type = 'int32'
+        #~ return function
 
-    @legacy_function
-    def get_include_rotation_precession_terms():
-        function = LegacyFunctionSpecification()
-        function.can_handle_array = True
-        function.addParameter('index_of_the_particle',  dtype='int32',      direction=function.IN, unit=NO_UNIT)
-        function.addParameter('include_rotation_precession_terms', dtype='bool',  direction=function.OUT,unit=NO_UNIT)
-        function.result_type = 'int32'
-        return function
+    #~ @legacy_function
+    #~ def get_include_rotation_precession_terms():
+        #~ function = LegacyFunctionSpecification()
+        #~ function.can_handle_array = True
+        #~ function.addParameter('index_of_the_particle',  dtype='int32',      direction=function.IN, unit=NO_UNIT)
+        #~ function.addParameter('include_rotation_precession_terms', dtype='bool',  direction=function.OUT,unit=NO_UNIT)
+        #~ function.result_type = 'int32'
+        #~ return function
 
-    @legacy_function
-    def set_minimum_eccentricity_for_tidal_precession():
-        function = LegacyFunctionSpecification()
-        function.can_handle_array = True
-        function.addParameter('index_of_the_particle',  dtype='int32',      direction=function.IN, unit=NO_UNIT)
-        function.addParameter('minimum_eccentricity_for_tidal_precession', dtype='float64',  direction=function.IN, unit=NO_UNIT)
-        function.result_type = 'int32'
-        return function
+    #~ @legacy_function
+    #~ def set_minimum_eccentricity_for_tidal_precession():
+        #~ function = LegacyFunctionSpecification()
+        #~ function.can_handle_array = True
+        #~ function.addParameter('index_of_the_particle',  dtype='int32',      direction=function.IN, unit=NO_UNIT)
+        #~ function.addParameter('minimum_eccentricity_for_tidal_precession', dtype='float64',  direction=function.IN, unit=NO_UNIT)
+        #~ function.result_type = 'int32'
+        #~ return function
 
-    @legacy_function
-    def get_minimum_eccentricity_for_tidal_precession():
-        function = LegacyFunctionSpecification()
-        function.can_handle_array = True
-        function.addParameter('index_of_the_particle',  dtype='int32',      direction=function.IN, unit=NO_UNIT)
-        function.addParameter('minimum_eccentricity_for_tidal_precession', dtype='float64',  direction=function.OUT,unit=NO_UNIT)
-        function.result_type = 'int32'
-        return function
+    #~ @legacy_function
+    #~ def get_minimum_eccentricity_for_tidal_precession():
+        #~ function = LegacyFunctionSpecification()
+        #~ function.can_handle_array = True
+        #~ function.addParameter('index_of_the_particle',  dtype='int32',      direction=function.IN, unit=NO_UNIT)
+        #~ function.addParameter('minimum_eccentricity_for_tidal_precession', dtype='float64',  direction=function.OUT,unit=NO_UNIT)
+        #~ function.result_type = 'int32'
+        #~ return function
 
     ### physical parameters ###
             
-    @legacy_function
-    def set_tides_apsidal_motion_constant():
-        function = LegacyFunctionSpecification()
-        function.can_handle_array = True
-        function.addParameter('index_of_the_particle',                  dtype='int32',      direction=function.IN,  unit=NO_UNIT)
-        function.addParameter('tides_apsidal_motion_constant',          dtype='float64',    direction=function.IN,  unit=NO_UNIT)
-        function.result_type = 'int32'
-        return function
-    @legacy_function
-    def get_tides_apsidal_motion_constant():
-        function = LegacyFunctionSpecification()
-        function.can_handle_array = True
-        function.addParameter('index_of_the_particle',                  dtype='int32',      direction=function.IN,   unit=NO_UNIT)
-        function.addParameter('tides_apsidal_motion_constant',          dtype='float64',    direction=function.OUT,  unit=NO_UNIT)
-        function.result_type = 'int32'
-        return function
+    #~ @legacy_function
+    #~ def set_tides_apsidal_motion_constant():
+        #~ function = LegacyFunctionSpecification()
+        #~ function.can_handle_array = True
+        #~ function.addParameter('index_of_the_particle',                  dtype='int32',      direction=function.IN,  unit=NO_UNIT)
+        #~ function.addParameter('tides_apsidal_motion_constant',          dtype='float64',    direction=function.IN,  unit=NO_UNIT)
+        #~ function.result_type = 'int32'
+        #~ return function
+    #~ @legacy_function
+    #~ def get_tides_apsidal_motion_constant():
+        #~ function = LegacyFunctionSpecification()
+        #~ function.can_handle_array = True
+        #~ function.addParameter('index_of_the_particle',                  dtype='int32',      direction=function.IN,   unit=NO_UNIT)
+        #~ function.addParameter('tides_apsidal_motion_constant',          dtype='float64',    direction=function.OUT,  unit=NO_UNIT)
+        #~ function.result_type = 'int32'
+        #~ return function
 
-    @legacy_function
-    def set_tides_gyration_radius():
-        function = LegacyFunctionSpecification()
-        function.can_handle_array = True
-        function.addParameter('index_of_the_particle',                  dtype='int32',      direction=function.IN,  unit=NO_UNIT)
-        function.addParameter('tides_gyration_radius',                  dtype='float64',    direction=function.IN,  unit=NO_UNIT)
-        function.result_type = 'int32'
-        return function
-    @legacy_function
-    def get_tides_gyration_radius():
-        function = LegacyFunctionSpecification()
-        function.can_handle_array = True
-        function.addParameter('index_of_the_particle',                  dtype='int32',      direction=function.IN,   unit=NO_UNIT)
-        function.addParameter('tides_gyration_radius',                  dtype='float64',    direction=function.OUT,  unit=NO_UNIT)
-        function.result_type = 'int32'
-        return function
+    #~ @legacy_function
+    #~ def set_tides_gyration_radius():
+        #~ function = LegacyFunctionSpecification()
+        #~ function.can_handle_array = True
+        #~ function.addParameter('index_of_the_particle',                  dtype='int32',      direction=function.IN,  unit=NO_UNIT)
+        #~ function.addParameter('tides_gyration_radius',                  dtype='float64',    direction=function.IN,  unit=NO_UNIT)
+        #~ function.result_type = 'int32'
+        #~ return function
+    #~ @legacy_function
+    #~ def get_tides_gyration_radius():
+        #~ function = LegacyFunctionSpecification()
+        #~ function.can_handle_array = True
+        #~ function.addParameter('index_of_the_particle',                  dtype='int32',      direction=function.IN,   unit=NO_UNIT)
+        #~ function.addParameter('tides_gyration_radius',                  dtype='float64',    direction=function.OUT,  unit=NO_UNIT)
+        #~ function.result_type = 'int32'
+        #~ return function
 
-    @legacy_function
-    def set_tides_viscous_time_scale():
-        function = LegacyFunctionSpecification()
-        function.can_handle_array = True
-        function.addParameter('index_of_the_particle',                  dtype='int32',      direction=function.IN,  unit=NO_UNIT)
-        function.addParameter('tides_viscous_time_scale',               dtype='float64',    direction=function.IN,  unit=unit_t)
-        function.result_type = 'int32'
-        return function
-    @legacy_function
-    def get_tides_viscous_time_scale():
-        function = LegacyFunctionSpecification()
-        function.can_handle_array = True
-        function.addParameter('index_of_the_particle',                  dtype='int32',      direction=function.IN,   unit=NO_UNIT)
-        function.addParameter('tides_viscous_time_scale',               dtype='float64',    direction=function.OUT,  unit=unit_t)
-        function.result_type = 'int32'
-        return function
+    #~ @legacy_function
+    #~ def set_tides_viscous_time_scale():
+        #~ function = LegacyFunctionSpecification()
+        #~ function.can_handle_array = True
+        #~ function.addParameter('index_of_the_particle',                  dtype='int32',      direction=function.IN,  unit=NO_UNIT)
+        #~ function.addParameter('tides_viscous_time_scale',               dtype='float64',    direction=function.IN,  unit=unit_t)
+        #~ function.result_type = 'int32'
+        #~ return function
+    #~ @legacy_function
+    #~ def get_tides_viscous_time_scale():
+        #~ function = LegacyFunctionSpecification()
+        #~ function.can_handle_array = True
+        #~ function.addParameter('index_of_the_particle',                  dtype='int32',      direction=function.IN,   unit=NO_UNIT)
+        #~ function.addParameter('tides_viscous_time_scale',               dtype='float64',    direction=function.OUT,  unit=unit_t)
+        #~ function.result_type = 'int32'
+        #~ return function
 
-    @legacy_function
-    def set_tides_viscous_time_scale_prescription():
-        function = LegacyFunctionSpecification()
-        function.can_handle_array = True
-        function.addParameter('index_of_the_particle',                  dtype='int32',      direction=function.IN, unit=NO_UNIT)
-        function.addParameter('tides_viscous_time_scale_prescription',  dtype='int32',      direction=function.IN, unit=NO_UNIT)
-        function.result_type = 'int32'
-        return function
-    @legacy_function
-    def get_tides_viscous_time_scale_prescription():
-        function = LegacyFunctionSpecification()
-        function.can_handle_array = True
-        function.addParameter('index_of_the_particle',                  dtype='int32',      direction=function.IN, unit=NO_UNIT)
-        function.addParameter('tides_viscous_time_scale_prescription',  dtype='int32',      direction=function.OUT,unit=NO_UNIT)
-        function.result_type = 'int32'
-        return function
+    #~ @legacy_function
+    #~ def set_tides_viscous_time_scale_prescription():
+        #~ function = LegacyFunctionSpecification()
+        #~ function.can_handle_array = True
+        #~ function.addParameter('index_of_the_particle',                  dtype='int32',      direction=function.IN, unit=NO_UNIT)
+        #~ function.addParameter('tides_viscous_time_scale_prescription',  dtype='int32',      direction=function.IN, unit=NO_UNIT)
+        #~ function.result_type = 'int32'
+        #~ return function
+    #~ @legacy_function
+    #~ def get_tides_viscous_time_scale_prescription():
+        #~ function = LegacyFunctionSpecification()
+        #~ function.can_handle_array = True
+        #~ function.addParameter('index_of_the_particle',                  dtype='int32',      direction=function.IN, unit=NO_UNIT)
+        #~ function.addParameter('tides_viscous_time_scale_prescription',  dtype='int32',      direction=function.OUT,unit=NO_UNIT)
+        #~ function.result_type = 'int32'
+        #~ return function
 
-    @legacy_function
-    def set_convective_envelope_mass():
-        function = LegacyFunctionSpecification()
-        function.can_handle_array = True
-        function.addParameter('index_of_the_particle',                  dtype='int32',      direction=function.IN,  unit=NO_UNIT)
-        function.addParameter('convective_envelope_mass',               dtype='float64',    direction=function.IN,  unit=unit_m)
-        function.result_type = 'int32'
-        return function
-    @legacy_function
-    def get_convective_envelope_mass():
-        function = LegacyFunctionSpecification()
-        function.can_handle_array = True
-        function.addParameter('index_of_the_particle',                  dtype='int32',      direction=function.IN,   unit=NO_UNIT)
-        function.addParameter('convective_envelope_mass',               dtype='float64',    direction=function.OUT,  unit=unit_m)
-        function.result_type = 'int32'
-        return function
+    #~ @legacy_function
+    #~ def set_convective_envelope_mass():
+        #~ function = LegacyFunctionSpecification()
+        #~ function.can_handle_array = True
+        #~ function.addParameter('index_of_the_particle',                  dtype='int32',      direction=function.IN,  unit=NO_UNIT)
+        #~ function.addParameter('convective_envelope_mass',               dtype='float64',    direction=function.IN,  unit=unit_m)
+        #~ function.result_type = 'int32'
+        #~ return function
+    #~ @legacy_function
+    #~ def get_convective_envelope_mass():
+        #~ function = LegacyFunctionSpecification()
+        #~ function.can_handle_array = True
+        #~ function.addParameter('index_of_the_particle',                  dtype='int32',      direction=function.IN,   unit=NO_UNIT)
+        #~ function.addParameter('convective_envelope_mass',               dtype='float64',    direction=function.OUT,  unit=unit_m)
+        #~ function.result_type = 'int32'
+        #~ return function
 
-    @legacy_function
-    def set_convective_envelope_radius():
-        function = LegacyFunctionSpecification()
-        function.can_handle_array = True
-        function.addParameter('index_of_the_particle',                  dtype='int32',      direction=function.IN,  unit=NO_UNIT)
-        function.addParameter('convective_envelope_radius',             dtype='float64',    direction=function.IN,  unit=unit_l)
-        function.result_type = 'int32'
-        return function
-    @legacy_function
-    def get_convective_envelope_radius():
-        function = LegacyFunctionSpecification()
-        function.can_handle_array = True
-        function.addParameter('index_of_the_particle',                  dtype='int32',      direction=function.IN,   unit=NO_UNIT)
-        function.addParameter('convective_envelope_radius',             dtype='float64',    direction=function.OUT,  unit=unit_l)
-        function.result_type = 'int32'
-        return function
+    #~ @legacy_function
+    #~ def set_convective_envelope_radius():
+        #~ function = LegacyFunctionSpecification()
+        #~ function.can_handle_array = True
+        #~ function.addParameter('index_of_the_particle',                  dtype='int32',      direction=function.IN,  unit=NO_UNIT)
+        #~ function.addParameter('convective_envelope_radius',             dtype='float64',    direction=function.IN,  unit=unit_l)
+        #~ function.result_type = 'int32'
+        #~ return function
+    #~ @legacy_function
+    #~ def get_convective_envelope_radius():
+        #~ function = LegacyFunctionSpecification()
+        #~ function.can_handle_array = True
+        #~ function.addParameter('index_of_the_particle',                  dtype='int32',      direction=function.IN,   unit=NO_UNIT)
+        #~ function.addParameter('convective_envelope_radius',             dtype='float64',    direction=function.OUT,  unit=unit_l)
+        #~ function.result_type = 'int32'
+        #~ return function
         
-    @legacy_function
-    def set_luminosity():
-        function = LegacyFunctionSpecification()
-        function.can_handle_array = True
-        function.addParameter('index_of_the_particle',                  dtype='int32',      direction=function.IN,  unit=NO_UNIT)
-        function.addParameter('luminosity',                             dtype='float64',    direction=function.IN,  unit=unit_lum)
-        function.result_type = 'int32'
-        return function
-    @legacy_function
-    def get_luminosity():
-        function = LegacyFunctionSpecification()
-        function.can_handle_array = True
-        function.addParameter('index_of_the_particle',                  dtype='int32',      direction=function.IN,   unit=NO_UNIT)
-        function.addParameter('luminosity',                             dtype='float64',    direction=function.OUT,  unit=unit_lum)
-        function.result_type = 'int32'
-        return function
+    #~ @legacy_function
+    #~ def set_luminosity():
+        #~ function = LegacyFunctionSpecification()
+        #~ function.can_handle_array = True
+        #~ function.addParameter('index_of_the_particle',                  dtype='int32',      direction=function.IN,  unit=NO_UNIT)
+        #~ function.addParameter('luminosity',                             dtype='float64',    direction=function.IN,  unit=unit_lum)
+        #~ function.result_type = 'int32'
+        #~ return function
+    #~ @legacy_function
+    #~ def get_luminosity():
+        #~ function = LegacyFunctionSpecification()
+        #~ function.can_handle_array = True
+        #~ function.addParameter('index_of_the_particle',                  dtype='int32',      direction=function.IN,   unit=NO_UNIT)
+        #~ function.addParameter('luminosity',                             dtype='float64',    direction=function.OUT,  unit=unit_lum)
+        #~ function.result_type = 'int32'
+        #~ return function
 
 
 
@@ -1027,193 +703,193 @@ class SecularMultipleInterface(CodeInterface):
     ####################
 
     ### secular breakdown ###
-    @legacy_function
-    def set_check_for_secular_breakdown():
-        function = LegacyFunctionSpecification()
-        function.can_handle_array = True
-        function.addParameter('index_of_the_particle',          dtype='int32',      direction=function.IN,  unit=NO_UNIT)
-        function.addParameter('check_for_secular_breakdown',    dtype='bool',       direction=function.IN,  unit=NO_UNIT)
-        function.result_type = 'int32'
-        return function
+    #~ @legacy_function
+    #~ def set_check_for_secular_breakdown():
+        #~ function = LegacyFunctionSpecification()
+        #~ function.can_handle_array = True
+        #~ function.addParameter('index_of_the_particle',          dtype='int32',      direction=function.IN,  unit=NO_UNIT)
+        #~ function.addParameter('check_for_secular_breakdown',    dtype='bool',       direction=function.IN,  unit=NO_UNIT)
+        #~ function.result_type = 'int32'
+        #~ return function
 
-    @legacy_function
-    def get_check_for_secular_breakdown():
-        function = LegacyFunctionSpecification()
-        function.can_handle_array = True
-        function.addParameter('index_of_the_particle',          dtype='int32',      direction=function.IN,  unit=NO_UNIT)
-        function.addParameter('check_for_secular_breakdown',    dtype='bool',       direction=function.OUT, unit=NO_UNIT)
-        function.result_type = 'int32'
-        return function
+    #~ @legacy_function
+    #~ def get_check_for_secular_breakdown():
+        #~ function = LegacyFunctionSpecification()
+        #~ function.can_handle_array = True
+        #~ function.addParameter('index_of_the_particle',          dtype='int32',      direction=function.IN,  unit=NO_UNIT)
+        #~ function.addParameter('check_for_secular_breakdown',    dtype='bool',       direction=function.OUT, unit=NO_UNIT)
+        #~ function.result_type = 'int32'
+        #~ return function
 
 
     ### dynamical instablity ###
-    @legacy_function
-    def set_check_for_dynamical_instability():
-        function = LegacyFunctionSpecification()
-        function.can_handle_array = True
-        function.addParameter('index_of_the_particle',          dtype='int32',      direction=function.IN,  unit=NO_UNIT)
-        function.addParameter('check_for_dynamical_instability',dtype='bool',       direction=function.IN,  unit=NO_UNIT)
-        function.result_type = 'int32'
-        return function
+    #~ @legacy_function
+    #~ def set_check_for_dynamical_instability():
+        #~ function = LegacyFunctionSpecification()
+        #~ function.can_handle_array = True
+        #~ function.addParameter('index_of_the_particle',          dtype='int32',      direction=function.IN,  unit=NO_UNIT)
+        #~ function.addParameter('check_for_dynamical_instability',dtype='bool',       direction=function.IN,  unit=NO_UNIT)
+        #~ function.result_type = 'int32'
+        #~ return function
 
-    @legacy_function
-    def get_check_for_dynamical_instability():
-        function = LegacyFunctionSpecification()
-        function.can_handle_array = True
-        function.addParameter('index_of_the_particle',          dtype='int32',      direction=function.IN,  unit=NO_UNIT)
-        function.addParameter('check_for_dynamical_instability',dtype='bool',       direction=function.OUT, unit=NO_UNIT)
-        function.result_type = 'int32'
-        return function
+    #~ @legacy_function
+    #~ def get_check_for_dynamical_instability():
+        #~ function = LegacyFunctionSpecification()
+        #~ function.can_handle_array = True
+        #~ function.addParameter('index_of_the_particle',          dtype='int32',      direction=function.IN,  unit=NO_UNIT)
+        #~ function.addParameter('check_for_dynamical_instability',dtype='bool',       direction=function.OUT, unit=NO_UNIT)
+        #~ function.result_type = 'int32'
+        #~ return function
 
-    @legacy_function
-    def set_dynamical_instability_criterion():
-        function = LegacyFunctionSpecification()
-        function.can_handle_array = True
-        function.addParameter('index_of_the_particle',          dtype='int32',      direction=function.IN,  unit=NO_UNIT)
-        function.addParameter('dynamical_instability_criterion',dtype='int32',      direction=function.IN,  unit=NO_UNIT)
-        function.result_type = 'int32'
-        return function
+    #~ @legacy_function
+    #~ def set_dynamical_instability_criterion():
+        #~ function = LegacyFunctionSpecification()
+        #~ function.can_handle_array = True
+        #~ function.addParameter('index_of_the_particle',          dtype='int32',      direction=function.IN,  unit=NO_UNIT)
+        #~ function.addParameter('dynamical_instability_criterion',dtype='int32',      direction=function.IN,  unit=NO_UNIT)
+        #~ function.result_type = 'int32'
+        #~ return function
 
-    @legacy_function
-    def get_dynamical_instability_criterion():
-        function = LegacyFunctionSpecification()
-        function.can_handle_array = True
-        function.addParameter('index_of_the_particle',          dtype='int32',      direction=function.IN,  unit=NO_UNIT)
-        function.addParameter('dynamical_instability_criterion',dtype='int32',      direction=function.OUT, unit=NO_UNIT)
-        function.result_type = 'int32'
-        return function
+    #~ @legacy_function
+    #~ def get_dynamical_instability_criterion():
+        #~ function = LegacyFunctionSpecification()
+        #~ function.can_handle_array = True
+        #~ function.addParameter('index_of_the_particle',          dtype='int32',      direction=function.IN,  unit=NO_UNIT)
+        #~ function.addParameter('dynamical_instability_criterion',dtype='int32',      direction=function.OUT, unit=NO_UNIT)
+        #~ function.result_type = 'int32'
+        #~ return function
 
-    @legacy_function
-    def set_dynamical_instability_central_particle():
-        function = LegacyFunctionSpecification()
-        function.can_handle_array = True
-        function.addParameter('index_of_the_particle',                              dtype='int32',      direction=function.IN,  unit=NO_UNIT)
-        function.addParameter('dynamical_instability_central_particle',             dtype='int32',      direction=function.IN,  unit=LINK('particles'))
-        function.result_type = 'int32'
-        return function
+    #~ @legacy_function
+    #~ def set_dynamical_instability_central_particle():
+        #~ function = LegacyFunctionSpecification()
+        #~ function.can_handle_array = True
+        #~ function.addParameter('index_of_the_particle',                              dtype='int32',      direction=function.IN,  unit=NO_UNIT)
+        #~ function.addParameter('dynamical_instability_central_particle',             dtype='int32',      direction=function.IN,  unit=LINK('particles'))
+        #~ function.result_type = 'int32'
+        #~ return function
 
-    @legacy_function
-    def get_dynamical_instability_central_particle():
-        function = LegacyFunctionSpecification()
-        function.can_handle_array = True
-        function.addParameter('index_of_the_particle',                              dtype='int32',      direction=function.IN,  unit=NO_UNIT)
-        function.addParameter('dynamical_instability_central_particle',             dtype='int32',      direction=function.OUT, unit=LINK('particles'))
-        function.result_type = 'int32'
-        return function
+    #~ @legacy_function
+    #~ def get_dynamical_instability_central_particle():
+        #~ function = LegacyFunctionSpecification()
+        #~ function.can_handle_array = True
+        #~ function.addParameter('index_of_the_particle',                              dtype='int32',      direction=function.IN,  unit=NO_UNIT)
+        #~ function.addParameter('dynamical_instability_central_particle',             dtype='int32',      direction=function.OUT, unit=LINK('particles'))
+        #~ function.result_type = 'int32'
+        #~ return function
         
-    @legacy_function
-    def set_dynamical_instability_K_parameter():
-        function = LegacyFunctionSpecification()
-        function.can_handle_array = True
-        function.addParameter('index_of_the_particle',                          dtype='float64',      direction=function.IN,  unit=NO_UNIT)
-        function.addParameter('dynamical_instability_K_parameter',              dtype='float64',      direction=function.IN,  unit=NO_UNIT)
-        function.result_type = 'int32'
-        return function
+    #~ @legacy_function
+    #~ def set_dynamical_instability_K_parameter():
+        #~ function = LegacyFunctionSpecification()
+        #~ function.can_handle_array = True
+        #~ function.addParameter('index_of_the_particle',                          dtype='float64',      direction=function.IN,  unit=NO_UNIT)
+        #~ function.addParameter('dynamical_instability_K_parameter',              dtype='float64',      direction=function.IN,  unit=NO_UNIT)
+        #~ function.result_type = 'int32'
+        #~ return function
 
-    @legacy_function
-    def get_dynamical_instability_K_parameter():
-        function = LegacyFunctionSpecification()
-        function.can_handle_array = True
-        function.addParameter('index_of_the_particle',                          dtype='float64',      direction=function.IN,  unit=NO_UNIT)
-        function.addParameter('dynamical_instability_K_parameter',              dtype='float64',      direction=function.OUT, unit=NO_UNIT)
-        function.result_type = 'int32'
-        return function
+    #~ @legacy_function
+    #~ def get_dynamical_instability_K_parameter():
+        #~ function = LegacyFunctionSpecification()
+        #~ function.can_handle_array = True
+        #~ function.addParameter('index_of_the_particle',                          dtype='float64',      direction=function.IN,  unit=NO_UNIT)
+        #~ function.addParameter('dynamical_instability_K_parameter',              dtype='float64',      direction=function.OUT, unit=NO_UNIT)
+        #~ function.result_type = 'int32'
+        #~ return function
 
 
     ### physical collision / orbit crossing ###
-    @legacy_function
-    def set_check_for_physical_collision_or_orbit_crossing():
-        function = LegacyFunctionSpecification()
-        function.can_handle_array = True
-        function.addParameter('index_of_the_particle',                          dtype='int32',      direction=function.IN,  unit=NO_UNIT)
-        function.addParameter('check_for_physical_collision_or_orbit_crossing', dtype='bool',       direction=function.IN,  unit=NO_UNIT)
-        function.result_type = 'int32'
-        return function
+    #~ @legacy_function
+    #~ def set_check_for_physical_collision_or_orbit_crossing():
+        #~ function = LegacyFunctionSpecification()
+        #~ function.can_handle_array = True
+        #~ function.addParameter('index_of_the_particle',                          dtype='int32',      direction=function.IN,  unit=NO_UNIT)
+        #~ function.addParameter('check_for_physical_collision_or_orbit_crossing', dtype='bool',       direction=function.IN,  unit=NO_UNIT)
+        #~ function.result_type = 'int32'
+        #~ return function
 
-    @legacy_function
-    def get_check_for_physical_collision_or_orbit_crossing():
-        function = LegacyFunctionSpecification()
-        function.can_handle_array = True
-        function.addParameter('index_of_the_particle',                          dtype='int32',      direction=function.IN,  unit=NO_UNIT)
-        function.addParameter('check_for_physical_collision_or_orbit_crossing', dtype='bool',       direction=function.OUT, unit=NO_UNIT)
-        function.result_type = 'int32'
-        return function
+    #~ @legacy_function
+    #~ def get_check_for_physical_collision_or_orbit_crossing():
+        #~ function = LegacyFunctionSpecification()
+        #~ function.can_handle_array = True
+        #~ function.addParameter('index_of_the_particle',                          dtype='int32',      direction=function.IN,  unit=NO_UNIT)
+        #~ function.addParameter('check_for_physical_collision_or_orbit_crossing', dtype='bool',       direction=function.OUT, unit=NO_UNIT)
+        #~ function.result_type = 'int32'
+        #~ return function
 
 
     ### minimum periapse distance reached ###
-    @legacy_function
-    def set_check_for_minimum_periapse_distance():
-        function = LegacyFunctionSpecification()
-        function.can_handle_array = True
-        function.addParameter('index_of_the_particle',                          dtype='int32',      direction=function.IN,  unit=NO_UNIT)
-        function.addParameter('check_for_minimum_periapse_distance',            dtype='bool',       direction=function.IN,  unit=NO_UNIT)
-        function.result_type = 'int32'
-        return function
+    #~ @legacy_function
+    #~ def set_check_for_minimum_periapse_distance():
+        #~ function = LegacyFunctionSpecification()
+        #~ function.can_handle_array = True
+        #~ function.addParameter('index_of_the_particle',                          dtype='int32',      direction=function.IN,  unit=NO_UNIT)
+        #~ function.addParameter('check_for_minimum_periapse_distance',            dtype='bool',       direction=function.IN,  unit=NO_UNIT)
+        #~ function.result_type = 'int32'
+        #~ return function
 
-    @legacy_function
-    def get_check_for_minimum_periapse_distance():
-        function = LegacyFunctionSpecification()
-        function.can_handle_array = True
-        function.addParameter('index_of_the_particle',                          dtype='int32',      direction=function.IN,  unit=NO_UNIT)
-        function.addParameter('check_for_minimum_periapse_distance',            dtype='bool',       direction=function.OUT, unit=NO_UNIT)
-        function.result_type = 'int32'
-        return function
+    #~ @legacy_function
+    #~ def get_check_for_minimum_periapse_distance():
+        #~ function = LegacyFunctionSpecification()
+        #~ function.can_handle_array = True
+        #~ function.addParameter('index_of_the_particle',                          dtype='int32',      direction=function.IN,  unit=NO_UNIT)
+        #~ function.addParameter('check_for_minimum_periapse_distance',            dtype='bool',       direction=function.OUT, unit=NO_UNIT)
+        #~ function.result_type = 'int32'
+        #~ return function
 
-    @legacy_function
-    def set_check_for_minimum_periapse_distance_value():
-        function = LegacyFunctionSpecification()
-        function.can_handle_array = True
-        function.addParameter('index_of_the_particle',                          dtype='int32',      direction=function.IN,  unit=NO_UNIT)
-        function.addParameter('check_for_minimum_periapse_distance_value',      dtype='float64',    direction=function.IN,  unit=unit_l)
-        function.result_type = 'int32'
-        return function
+    #~ @legacy_function
+    #~ def set_check_for_minimum_periapse_distance_value():
+        #~ function = LegacyFunctionSpecification()
+        #~ function.can_handle_array = True
+        #~ function.addParameter('index_of_the_particle',                          dtype='int32',      direction=function.IN,  unit=NO_UNIT)
+        #~ function.addParameter('check_for_minimum_periapse_distance_value',      dtype='float64',    direction=function.IN,  unit=unit_l)
+        #~ function.result_type = 'int32'
+        #~ return function
 
-    @legacy_function
-    def get_check_for_minimum_periapse_distance_value():
-        function = LegacyFunctionSpecification()
-        function.can_handle_array = True
-        function.addParameter('index_of_the_particle',                          dtype='int32',      direction=function.IN,  unit=NO_UNIT)
-        function.addParameter('check_for_minimum_periapse_distance_value',      dtype='float64',    direction=function.OUT, unit=unit_l)
-        function.result_type = 'int32'
-        return function
+    #~ @legacy_function
+    #~ def get_check_for_minimum_periapse_distance_value():
+        #~ function = LegacyFunctionSpecification()
+        #~ function.can_handle_array = True
+        #~ function.addParameter('index_of_the_particle',                          dtype='int32',      direction=function.IN,  unit=NO_UNIT)
+        #~ function.addParameter('check_for_minimum_periapse_distance_value',      dtype='float64',    direction=function.OUT, unit=unit_l)
+        #~ function.result_type = 'int32'
+        #~ return function
 
 
     ### RLOF at pericentre ###
-    @legacy_function
-    def set_check_for_RLOF_at_pericentre():
-        function = LegacyFunctionSpecification()
-        function.can_handle_array = True
-        function.addParameter('index_of_the_particle',          dtype='int32',      direction=function.IN,  unit=NO_UNIT)
-        function.addParameter('check_for_RLOF_at_pericentre',   dtype='bool',       direction=function.IN,  unit=NO_UNIT)
-        function.result_type = 'int32'
-        return function
+    #~ @legacy_function
+    #~ def set_check_for_RLOF_at_pericentre():
+        #~ function = LegacyFunctionSpecification()
+        #~ function.can_handle_array = True
+        #~ function.addParameter('index_of_the_particle',          dtype='int32',      direction=function.IN,  unit=NO_UNIT)
+        #~ function.addParameter('check_for_RLOF_at_pericentre',   dtype='bool',       direction=function.IN,  unit=NO_UNIT)
+        #~ function.result_type = 'int32'
+        #~ return function
 
-    @legacy_function
-    def get_check_for_RLOF_at_pericentre():
-        function = LegacyFunctionSpecification()
-        function.can_handle_array = True
-        function.addParameter('index_of_the_particle',          dtype='int32',      direction=function.IN,  unit=NO_UNIT)
-        function.addParameter('check_for_RLOF_at_pericentre',   dtype='bool',       direction=function.OUT, unit=NO_UNIT)
-        function.result_type = 'int32'
-        return function
+    #~ @legacy_function
+    #~ def get_check_for_RLOF_at_pericentre():
+        #~ function = LegacyFunctionSpecification()
+        #~ function.can_handle_array = True
+        #~ function.addParameter('index_of_the_particle',          dtype='int32',      direction=function.IN,  unit=NO_UNIT)
+        #~ function.addParameter('check_for_RLOF_at_pericentre',   dtype='bool',       direction=function.OUT, unit=NO_UNIT)
+        #~ function.result_type = 'int32'
+        #~ return function
 
-    @legacy_function
-    def set_check_for_RLOF_at_pericentre_use_sepinsky_fit():
-        function = LegacyFunctionSpecification()
-        function.can_handle_array = True
-        function.addParameter('index_of_the_particle',                              dtype='int32',      direction=function.IN,  unit=NO_UNIT)
-        function.addParameter('check_for_RLOF_at_pericentre_use_sepinsky_fit',      dtype='bool',       direction=function.IN,  unit=NO_UNIT)
-        function.result_type = 'int32'
-        return function
+    #~ @legacy_function
+    #~ def set_check_for_RLOF_at_pericentre_use_sepinsky_fit():
+        #~ function = LegacyFunctionSpecification()
+        #~ function.can_handle_array = True
+        #~ function.addParameter('index_of_the_particle',                              dtype='int32',      direction=function.IN,  unit=NO_UNIT)
+        #~ function.addParameter('check_for_RLOF_at_pericentre_use_sepinsky_fit',      dtype='bool',       direction=function.IN,  unit=NO_UNIT)
+        #~ function.result_type = 'int32'
+        #~ return function
 
-    @legacy_function
-    def get_check_for_RLOF_at_pericentre_use_sepinsky_fit():
-        function = LegacyFunctionSpecification()
-        function.can_handle_array = True
-        function.addParameter('index_of_the_particle',                          dtype='int32',      direction=function.IN,  unit=NO_UNIT)
-        function.addParameter('check_for_RLOF_at_pericentre_use_sepinsky_fit',  dtype='bool',       direction=function.OUT, unit=NO_UNIT)
-        function.result_type = 'int32'
-        return function
+    #~ @legacy_function
+    #~ def get_check_for_RLOF_at_pericentre_use_sepinsky_fit():
+        #~ function = LegacyFunctionSpecification()
+        #~ function.can_handle_array = True
+        #~ function.addParameter('index_of_the_particle',                          dtype='int32',      direction=function.IN,  unit=NO_UNIT)
+        #~ function.addParameter('check_for_RLOF_at_pericentre_use_sepinsky_fit',  dtype='bool',       direction=function.OUT, unit=NO_UNIT)
+        #~ function.result_type = 'int32'
+        #~ return function
 
 
     ### retrieve root finding state ###
@@ -1341,75 +1017,75 @@ class SecularMultipleInterface(CodeInterface):
     ### terms ###
     #############
 
-    @legacy_function
-    def get_include_quadrupole_order_terms():
-        function = LegacyFunctionSpecification()
-        function.addParameter('value',                  dtype='bool',       direction=function.OUT, unit=NO_UNIT)
-        function.result_type = 'int32'
-        return function
+    #~ @legacy_function
+    #~ def get_include_quadrupole_order_terms():
+        #~ function = LegacyFunctionSpecification()
+        #~ function.addParameter('value',                  dtype='bool',       direction=function.OUT, unit=NO_UNIT)
+        #~ function.result_type = 'int32'
+        #~ return function
 
-    @legacy_function
-    def set_include_quadrupole_order_terms():
-        function = LegacyFunctionSpecification()
-        function.addParameter('value',                  dtype='bool',       direction=function.IN,  unit=NO_UNIT)
-        function.result_type = 'int32'
-        return function
+    #~ @legacy_function
+    #~ def set_include_quadrupole_order_terms():
+        #~ function = LegacyFunctionSpecification()
+        #~ function.addParameter('value',                  dtype='bool',       direction=function.IN,  unit=NO_UNIT)
+        #~ function.result_type = 'int32'
+        #~ return function
         
-    @legacy_function
-    def get_include_octupole_order_binary_pair_terms():
-        function = LegacyFunctionSpecification()
-        function.addParameter('value',                  dtype='bool',       direction=function.OUT, unit=NO_UNIT)
-        function.result_type = 'int32'
-        return function
+    #~ @legacy_function
+    #~ def get_include_octupole_order_binary_pair_terms():
+        #~ function = LegacyFunctionSpecification()
+        #~ function.addParameter('value',                  dtype='bool',       direction=function.OUT, unit=NO_UNIT)
+        #~ function.result_type = 'int32'
+        #~ return function
 
-    @legacy_function
-    def set_include_octupole_order_binary_pair_terms():
-        function = LegacyFunctionSpecification()
-        function.addParameter('value',                  dtype='bool',       direction=function.IN,  unit=NO_UNIT)
-        function.result_type = 'int32'
-        return function
+    #~ @legacy_function
+    #~ def set_include_octupole_order_binary_pair_terms():
+        #~ function = LegacyFunctionSpecification()
+        #~ function.addParameter('value',                  dtype='bool',       direction=function.IN,  unit=NO_UNIT)
+        #~ function.result_type = 'int32'
+        #~ return function
 
-    @legacy_function
-    def get_include_octupole_order_binary_triplet_terms():
-        function = LegacyFunctionSpecification()
-        function.addParameter('value',                  dtype='bool',       direction=function.OUT, unit=NO_UNIT)
-        function.result_type = 'int32'
-        return function
+    #~ @legacy_function
+    #~ def get_include_octupole_order_binary_triplet_terms():
+        #~ function = LegacyFunctionSpecification()
+        #~ function.addParameter('value',                  dtype='bool',       direction=function.OUT, unit=NO_UNIT)
+        #~ function.result_type = 'int32'
+        #~ return function
 
-    @legacy_function
-    def set_include_octupole_order_binary_triplet_terms():
-        function = LegacyFunctionSpecification()
-        function.addParameter('value',                  dtype='bool',       direction=function.IN,  unit=NO_UNIT)
-        function.result_type = 'int32'
-        return function
+    #~ @legacy_function
+    #~ def set_include_octupole_order_binary_triplet_terms():
+        #~ function = LegacyFunctionSpecification()
+        #~ function.addParameter('value',                  dtype='bool',       direction=function.IN,  unit=NO_UNIT)
+        #~ function.result_type = 'int32'
+        #~ return function
 
-    @legacy_function
-    def get_include_hexadecupole_order_binary_pair_terms():
-        function = LegacyFunctionSpecification()
-        function.addParameter('value',                  dtype='bool',       direction=function.OUT, unit=NO_UNIT)
-        function.result_type = 'int32'
-        return function
+    #~ @legacy_function
+    #~ def get_include_hexadecupole_order_binary_pair_terms():
+        #~ function = LegacyFunctionSpecification()
+        #~ function.addParameter('value',                  dtype='bool',       direction=function.OUT, unit=NO_UNIT)
+        #~ function.result_type = 'int32'
+        #~ return function
 
-    @legacy_function
-    def set_include_hexadecupole_order_binary_pair_terms():
-        function = LegacyFunctionSpecification()
-        function.addParameter('value',                  dtype='bool',       direction=function.IN,  unit=NO_UNIT)
-        function.result_type = 'int32'
-        return function
+    #~ @legacy_function
+    #~ def set_include_hexadecupole_order_binary_pair_terms():
+        #~ function = LegacyFunctionSpecification()
+        #~ function.addParameter('value',                  dtype='bool',       direction=function.IN,  unit=NO_UNIT)
+        #~ function.result_type = 'int32'
+        #~ return function
 
-    @legacy_function
-    def get_include_dotriacontupole_order_binary_pair_terms():
-        function = LegacyFunctionSpecification()
-        function.addParameter('value',                  dtype='bool',       direction=function.OUT, unit=NO_UNIT)
-        function.result_type = 'int32'
-        return function
+    #~ @legacy_function
+    #~ def get_include_dotriacontupole_order_binary_pair_terms():
+        #~ function = LegacyFunctionSpecification()
+        #~ function.addParameter('value',                  dtype='bool',       direction=function.OUT, unit=NO_UNIT)
+        #~ function.result_type = 'int32'
+        #~ return function
 
-    @legacy_function
-    def set_include_dotriacontupole_order_binary_pair_terms():
-        function = LegacyFunctionSpecification()
-        function.addParameter('value',                  dtype='bool',       direction=function.IN,  unit=NO_UNIT)
-        function.result_type = 'int32'
-        return function
+    #~ @legacy_function
+    #~ def set_include_dotriacontupole_order_binary_pair_terms():
+        #~ function = LegacyFunctionSpecification()
+        #~ function.addParameter('value',                  dtype='bool',       direction=function.IN,  unit=NO_UNIT)
+        #~ function.result_type = 'int32'
+        #~ return function
         
 class SecularMultiple(InCodeComponentImplementation):
 
