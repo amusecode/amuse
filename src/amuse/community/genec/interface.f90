@@ -13,21 +13,21 @@ module AmuseInterface
     public:: BackupGenecStar,number_of_stars
 contains
 
-function restore_star()
+integer function restore_star()
     implicit none
-    integer:: restore_star
     restore_star = 0
 end function
 
-function initialize_code()
+integer function initialize_code()
     !use WriteSaveClose, only: quitafterclosing
     use genec, only: initialise_genec
     use evol, only: input_dir
     use inputparam, only: libgenec
     use io_definitions
     implicit none
-    integer:: initialize_code
 
+    !io_runfile = 6
+    !io_logs = 6
     libgenec = .true.
     !io_logs = 6
     input_dir = "./src/GENEC/code"
@@ -36,1547 +36,1613 @@ function initialize_code()
     initialize_code = 0
 end function
 
-function read_genec_model(index_of_the_star, cardfilename)
+integer function read_genec_model(index_of_the_star, cardfilename)
     ! This should only be called if no star has been initialised yet!
     implicit none
     integer:: index_of_the_star
     character(256):: cardfilename
-    integer:: read_genec_model
     read_genec_model = 0
 end function
 
-function cleanup_code()
+integer function cleanup_code()
     implicit none
-    integer:: cleanup_code
     cleanup_code = 0
 end function
 
 ! **** Parameters
 
-function get_model_number(model_number)
+integer function get_model_number(model_number)
     implicit none
     integer:: model_number
-    integer:: get_model_number
     model_number = GenecStar%nwmd
     get_model_number = 0
 end function
 
-function set_model_number(model_number)
+integer function set_model_number(model_number)
     implicit none
     integer:: model_number
-    integer:: set_model_number
     GenecStar%nwmd = model_number
     set_model_number = 0
 end function
 
-function get_min_timestep_stop_condition(min_timestep_stop_condition)
+integer function get_min_timestep_stop_condition(min_timestep_stop_condition)
     implicit none
     real(kindreal):: min_timestep_stop_condition
-    integer:: get_min_timestep_stop_condition
     get_min_timestep_stop_condition = 0
 end function
 
-function get_par_n_snap(n_snap_out)
-    implicit none
-    integer:: n_snap_out
-    integer:: get_par_n_snap
-    n_snap_out = GenecStar%n_snap
-    get_par_n_snap = 0
-end function
 
-function set_par_n_snap(n_snap_in)
-    implicit none
-    integer:: n_snap_in
-    integer:: set_par_n_snap
-    GenecStar%n_snap = n_snap_in
-    set_par_n_snap= 0
-end function
+!#########
 
-function get_par_ipoly(par_ipoly)
-    implicit none
-    integer:: par_ipoly
-    integer:: get_par_ipoly
-    par_ipoly = InitialGenecStar%ipoly
-    get_par_ipoly = 0
-end function
 
-function set_par_ipoly(par_ipoly)
-    implicit none
-    integer:: par_ipoly
-    integer:: set_par_ipoly
-    InitialGenecStar%ipoly = par_ipoly
-    set_par_ipoly = 0
-end function
+integer function get_initialised(index_of_the_particle, initialised)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    logical, intent(out):: initialised
+    initialised = GenecStar%initialised
+    get_initialised = 0
+end function get_initialised
+
+integer function set_initialised(index_of_the_particle, initialised)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    logical, intent(in):: initialised
+    GenecStar%initialised = initialised
+    set_initialised = 0
+end function set_initialised
+
+integer function get_starname(index_of_the_particle, starname)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    character(len=256), intent(out):: starname
+    starname = GenecStar%starname
+    get_starname = 0
+end function get_starname
+
+integer function set_starname(index_of_the_particle, starname)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    character(len=256), intent(in):: starname
+    GenecStar%starname = starname
+    set_starname = 0
+end function set_starname
+
+integer function get_nwseq(index_of_the_particle, nwseq)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(out):: nwseq
+    nwseq = GenecStar%nwseq
+    get_nwseq = 0
+end function get_nwseq
+
+integer function set_nwseq(index_of_the_particle, nwseq)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: nwseq
+    GenecStar%nwseq = nwseq
+    set_nwseq = 0
+end function set_nwseq
+
+integer function get_modanf(index_of_the_particle, modanf)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(out):: modanf
+    modanf = GenecStar%modanf
+    get_modanf = 0
+end function get_modanf
+
+integer function set_modanf(index_of_the_particle, modanf)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: modanf
+    GenecStar%modanf = modanf
+    set_modanf = 0
+end function set_modanf
+
+integer function get_nzmod(index_of_the_particle, nzmod)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(out):: nzmod
+    nzmod = GenecStar%nzmod
+    get_nzmod = 0
+end function get_nzmod
+
+integer function set_nzmod(index_of_the_particle, nzmod)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: nzmod
+    GenecStar%nzmod = nzmod
+    set_nzmod = 0
+end function set_nzmod
+
+integer function get_end_at_phase(index_of_the_particle, end_at_phase)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(out):: end_at_phase
+    end_at_phase = GenecStar%end_at_phase
+    get_end_at_phase = 0
+end function get_end_at_phase
+
+integer function set_end_at_phase(index_of_the_particle, end_at_phase)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: end_at_phase
+    GenecStar%end_at_phase = end_at_phase
+    set_end_at_phase = 0
+end function set_end_at_phase
+
+integer function get_end_at_model(index_of_the_particle, end_at_model)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(out):: end_at_model
+    end_at_model = GenecStar%end_at_model
+    get_end_at_model = 0
+end function get_end_at_model
+
+integer function set_end_at_model(index_of_the_particle, end_at_model)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: end_at_model
+    GenecStar%end_at_model = end_at_model
+    set_end_at_model = 0
+end function set_end_at_model
+
+integer function get_irot(index_of_the_particle, irot)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(out):: irot
+    irot = GenecStar%irot
+    get_irot = 0
+end function get_irot
+
+integer function set_irot(index_of_the_particle, irot)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: irot
+    GenecStar%irot = irot
+    set_irot = 0
+end function set_irot
+
+integer function get_isol(index_of_the_particle, isol)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(out):: isol
+    isol = GenecStar%isol
+    get_isol = 0
+end function get_isol
+
+integer function set_isol(index_of_the_particle, isol)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: isol
+    GenecStar%isol = isol
+    set_isol = 0
+end function set_isol
+
+integer function get_imagn(index_of_the_particle, imagn)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(out):: imagn
+    imagn = GenecStar%imagn
+    get_imagn = 0
+end function get_imagn
+
+integer function set_imagn(index_of_the_particle, imagn)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: imagn
+    GenecStar%imagn = imagn
+    set_imagn = 0
+end function set_imagn
+
+integer function get_ialflu(index_of_the_particle, ialflu)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(out):: ialflu
+    ialflu = GenecStar%ialflu
+    get_ialflu = 0
+end function get_ialflu
+
+integer function set_ialflu(index_of_the_particle, ialflu)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: ialflu
+    GenecStar%ialflu = ialflu
+    set_ialflu = 0
+end function set_ialflu
+
+integer function get_ianiso(index_of_the_particle, ianiso)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(out):: ianiso
+    ianiso = GenecStar%ianiso
+    get_ianiso = 0
+end function get_ianiso
+
+integer function set_ianiso(index_of_the_particle, ianiso)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: ianiso
+    GenecStar%ianiso = ianiso
+    set_ianiso = 0
+end function set_ianiso
+
+integer function get_ipop3(index_of_the_particle, ipop3)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(out):: ipop3
+    ipop3 = GenecStar%ipop3
+    get_ipop3 = 0
+end function get_ipop3
+
+integer function set_ipop3(index_of_the_particle, ipop3)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: ipop3
+    GenecStar%ipop3 = ipop3
+    set_ipop3 = 0
+end function set_ipop3
+
+integer function get_ibasnet(index_of_the_particle, ibasnet)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(out):: ibasnet
+    ibasnet = GenecStar%ibasnet
+    get_ibasnet = 0
+end function get_ibasnet
+
+integer function set_ibasnet(index_of_the_particle, ibasnet)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: ibasnet
+    GenecStar%ibasnet = ibasnet
+    set_ibasnet = 0
+end function set_ibasnet
+
+integer function get_phase(index_of_the_particle, phase)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(out):: phase
+    phase = GenecStar%phase
+    get_phase = 0
+end function get_phase
+
+integer function set_phase(index_of_the_particle, phase)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: phase
+    GenecStar%phase = phase
+    set_phase = 0
+end function set_phase
+
+integer function get_var_rates(index_of_the_particle, var_rates)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    logical, intent(out):: var_rates
+    var_rates = GenecStar%var_rates
+    get_var_rates = 0
+end function get_var_rates
+
+integer function set_var_rates(index_of_the_particle, var_rates)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    logical, intent(in):: var_rates
+    GenecStar%var_rates = var_rates
+    set_var_rates = 0
+end function set_var_rates
+
+integer function get_bintide(index_of_the_particle, bintide)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    logical, intent(out):: bintide
+    bintide = GenecStar%bintide
+    get_bintide = 0
+end function get_bintide
+
+integer function set_bintide(index_of_the_particle, bintide)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    logical, intent(in):: bintide
+    GenecStar%bintide = bintide
+    set_bintide = 0
+end function set_bintide
+
+integer function get_binm2(index_of_the_particle, binm2)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(out):: binm2
+    binm2 = GenecStar%binm2
+    get_binm2 = 0
+end function get_binm2
+
+integer function set_binm2(index_of_the_particle, binm2)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(in):: binm2
+    GenecStar%binm2 = binm2
+    set_binm2 = 0
+end function set_binm2
+
+integer function get_periodini(index_of_the_particle, periodini)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(out):: periodini
+    periodini = GenecStar%periodini
+    get_periodini = 0
+end function get_periodini
+
+integer function set_periodini(index_of_the_particle, periodini)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(in):: periodini
+    GenecStar%periodini = periodini
+    set_periodini = 0
+end function set_periodini
+
+integer function get_const_per(index_of_the_particle, const_per)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    logical, intent(out):: const_per
+    const_per = GenecStar%const_per
+    get_const_per = 0
+end function get_const_per
+
+integer function set_const_per(index_of_the_particle, const_per)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    logical, intent(in):: const_per
+    GenecStar%const_per = const_per
+    set_const_per = 0
+end function set_const_per
+
+integer function get_iprezams(index_of_the_particle, iprezams)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(out):: iprezams
+    iprezams = GenecStar%iprezams
+    get_iprezams = 0
+end function get_iprezams
+
+integer function set_iprezams(index_of_the_particle, iprezams)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: iprezams
+    GenecStar%iprezams = iprezams
+    set_iprezams = 0
+end function set_iprezams
+
+integer function get_zinit(index_of_the_particle, zinit)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(out):: zinit
+    zinit = GenecStar%zinit
+    get_zinit = 0
+end function get_zinit
+
+integer function set_zinit(index_of_the_particle, zinit)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(in):: zinit
+    GenecStar%zinit = zinit
+    set_zinit = 0
+end function set_zinit
+
+integer function get_zsol(index_of_the_particle, zsol)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(out):: zsol
+    zsol = GenecStar%zsol
+    get_zsol = 0
+end function get_zsol
+
+integer function set_zsol(index_of_the_particle, zsol)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(in):: zsol
+    GenecStar%zsol = zsol
+    set_zsol = 0
+end function set_zsol
+
+integer function get_z(index_of_the_particle, z)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(out):: z
+    z = GenecStar%z
+    get_z = 0
+end function get_z
+
+integer function set_z(index_of_the_particle, z)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(in):: z
+    GenecStar%z = z
+    set_z = 0
+end function set_z
+
+integer function get_iopac(index_of_the_particle, iopac)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(out):: iopac
+    iopac = GenecStar%iopac
+    get_iopac = 0
+end function get_iopac
+
+integer function set_iopac(index_of_the_particle, iopac)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: iopac
+    GenecStar%iopac = iopac
+    set_iopac = 0
+end function set_iopac
+
+integer function get_ikappa(index_of_the_particle, ikappa)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(out):: ikappa
+    ikappa = GenecStar%ikappa
+    get_ikappa = 0
+end function get_ikappa
+
+integer function set_ikappa(index_of_the_particle, ikappa)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: ikappa
+    GenecStar%ikappa = ikappa
+    set_ikappa = 0
+end function set_ikappa
+
+integer function get_idiff(index_of_the_particle, idiff)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(out):: idiff
+    idiff = GenecStar%idiff
+    get_idiff = 0
+end function get_idiff
+
+integer function set_idiff(index_of_the_particle, idiff)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: idiff
+    GenecStar%idiff = idiff
+    set_idiff = 0
+end function set_idiff
+
+integer function get_iadvec(index_of_the_particle, iadvec)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(out):: iadvec
+    iadvec = GenecStar%iadvec
+    get_iadvec = 0
+end function get_iadvec
 
-function get_par_nwseq(par_nwseq)
-    implicit none
-    integer:: par_nwseq
-    integer:: get_par_nwseq
-    par_nwseq = GenecStar%nwseq
-    get_par_nwseq = 0
-end function
+integer function set_iadvec(index_of_the_particle, iadvec)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: iadvec
+    GenecStar%iadvec = iadvec
+    set_iadvec = 0
+end function set_iadvec
 
-function set_par_nwseq(par_nwseq)
-    implicit none
-    integer:: par_nwseq
-    integer:: set_par_nwseq
-    GenecStar%nwseq = par_nwseq
-    set_par_nwseq = 0
-end function
+integer function get_istati(index_of_the_particle, istati)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(out):: istati
+    istati = GenecStar%istati
+    get_istati = 0
+end function get_istati
 
-function get_par_modanf(par_modanf)
-    implicit none
-    integer:: par_modanf
-    integer:: get_par_modanf
-    par_modanf = GenecStar%modanf
-    get_par_modanf = 0
-end function
+integer function set_istati(index_of_the_particle, istati)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: istati
+    GenecStar%istati = istati
+    set_istati = 0
+end function set_istati
 
-function set_par_modanf(par_modanf)
-    implicit none
-    integer:: par_modanf
-    integer:: set_par_modanf
-    GenecStar%modanf = par_modanf
-    set_par_modanf = 0
-end function
+integer function get_icoeff(index_of_the_particle, icoeff)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(out):: icoeff
+    icoeff = GenecStar%icoeff
+    get_icoeff = 0
+end function get_icoeff
 
-function get_par_nzmod(par_nzmod)
-    implicit none
-    integer:: par_nzmod
-    integer:: get_par_nzmod
-    par_nzmod = GenecStar%nzmod
-    get_par_nzmod = 0
-end function
+integer function set_icoeff(index_of_the_particle, icoeff)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: icoeff
+    GenecStar%icoeff = icoeff
+    set_icoeff = 0
+end function set_icoeff
 
-function set_par_nzmod(par_nzmod)
-    implicit none
-    integer:: par_nzmod
-    integer:: set_par_nzmod
-    GenecStar%nzmod = par_nzmod
-    set_par_nzmod = 0
-end function
+integer function get_fenerg(index_of_the_particle, fenerg)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(out):: fenerg
+    fenerg = GenecStar%fenerg
+    get_fenerg = 0
+end function get_fenerg
 
-function get_par_irot(par_irot)
-    implicit none
-    integer:: par_irot
-    integer:: get_par_irot
-    par_irot = GenecStar%irot
-    get_par_irot = 0
-end function
+integer function set_fenerg(index_of_the_particle, fenerg)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(in):: fenerg
+    GenecStar%fenerg = fenerg
+    set_fenerg = 0
+end function set_fenerg
 
-function set_par_irot(par_irot)
-    implicit none
-    integer:: par_irot
-    integer:: set_par_irot
-    GenecStar%irot = par_irot
-    set_par_irot = 0
-end function
+integer function get_richac(index_of_the_particle, richac)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(out):: richac
+    richac = GenecStar%richac
+    get_richac = 0
+end function get_richac
 
-function get_par_isol(par_isol)
-    implicit none
-    integer:: par_isol
-    integer:: get_par_isol
-    par_isol = GenecStar%isol
-    get_par_isol = 0
-end function
+integer function set_richac(index_of_the_particle, richac)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(in):: richac
+    GenecStar%richac = richac
+    set_richac = 0
+end function set_richac
 
-function set_par_isol(par_isol)
-    implicit none
-    integer:: par_isol
-    integer:: set_par_isol
-    GenecStar%isol = par_isol
-    set_par_isol = 0
-end function
+integer function get_igamma(index_of_the_particle, igamma)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(out):: igamma
+    igamma = GenecStar%igamma
+    get_igamma = 0
+end function get_igamma
 
-function get_par_imagn(par_imagn)
-    implicit none
-    integer:: par_imagn
-    integer:: get_par_imagn
-    par_imagn = GenecStar%imagn
-    get_par_imagn = 0
-end function
+integer function set_igamma(index_of_the_particle, igamma)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: igamma
+    GenecStar%igamma = igamma
+    set_igamma = 0
+end function set_igamma
 
-function set_par_imagn(par_imagn)
-    implicit none
-    integer:: par_imagn
-    integer:: set_par_imagn
-    GenecStar%imagn = par_imagn
-    set_par_imagn = 0
-end function
+integer function get_frein(index_of_the_particle, frein)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(out):: frein
+    frein = GenecStar%frein
+    get_frein = 0
+end function get_frein
 
-function get_par_ialflu(par_ialflu)
-    implicit none
-    integer:: par_ialflu
-    integer:: get_par_ialflu
-    par_ialflu = GenecStar%ialflu
-    get_par_ialflu = 0
-end function
+integer function set_frein(index_of_the_particle, frein)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(in):: frein
+    GenecStar%frein = frein
+    set_frein = 0
+end function set_frein
 
-function set_par_ialflu(par_ialflu)
-    implicit none
-    integer:: par_ialflu
-    integer:: set_par_ialflu
-    GenecStar%ialflu = par_ialflu
-    set_par_ialflu = 0
-end function
+integer function get_K_Kawaler(index_of_the_particle, K_Kawaler)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(out):: K_Kawaler
+    K_Kawaler = GenecStar%K_Kawaler
+    get_K_Kawaler = 0
+end function get_K_Kawaler
 
-function get_par_ianiso(par_ianiso)
-    implicit none
-    integer:: par_ianiso
-    integer:: get_par_ianiso
-    par_ianiso = GenecStar%ianiso
-    get_par_ianiso = 0
-end function
+integer function set_K_Kawaler(index_of_the_particle, K_Kawaler)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(in):: K_Kawaler
+    GenecStar%K_Kawaler = K_Kawaler
+    set_K_Kawaler = 0
+end function set_K_Kawaler
 
-function set_par_ianiso(par_ianiso)
-    implicit none
-    integer:: par_ianiso
-    integer:: set_par_ianiso
-    GenecStar%ianiso = par_ianiso
-    set_par_ianiso = 0
-end function
+integer function get_Omega_saturation(index_of_the_particle, Omega_saturation)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(out):: Omega_saturation
+    Omega_saturation = GenecStar%Omega_saturation
+    get_Omega_saturation = 0
+end function get_Omega_saturation
 
-function get_par_ipop3(par_ipop3)
-    implicit none
-    integer:: par_ipop3
-    integer:: get_par_ipop3
-    par_ipop3 = GenecStar%ipop3
-    get_par_ipop3 = 0
-end function
+integer function set_Omega_saturation(index_of_the_particle, Omega_saturation)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(in):: Omega_saturation
+    GenecStar%Omega_saturation = Omega_saturation
+    set_Omega_saturation = 0
+end function set_Omega_saturation
 
-function set_par_ipop3(par_ipop3)
-    implicit none
-    integer:: par_ipop3
-    integer:: set_par_ipop3
-    GenecStar%ipop3 = par_ipop3
-    set_par_ipop3 = 0
-end function
+integer function get_rapcrilim(index_of_the_particle, rapcrilim)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(out):: rapcrilim
+    rapcrilim = GenecStar%rapcrilim
+    get_rapcrilim = 0
+end function get_rapcrilim
 
-function get_par_ibasnet(par_ibasnet)
-    implicit none
-    integer:: par_ibasnet
-    integer:: get_par_ibasnet
-    par_ibasnet = GenecStar%ibasnet
-    get_par_ibasnet = 0
-end function
+integer function set_rapcrilim(index_of_the_particle, rapcrilim)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(in):: rapcrilim
+    GenecStar%rapcrilim = rapcrilim
+    set_rapcrilim = 0
+end function set_rapcrilim
 
-function set_par_ibasnet(par_ibasnet)
-    implicit none
-    integer:: par_ibasnet
-    integer:: set_par_ibasnet
-    GenecStar%ibasnet = par_ibasnet
-    set_par_ibasnet = 0
-end function
+integer function get_vwant(index_of_the_particle, vwant)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(out):: vwant
+    vwant = GenecStar%vwant
+    get_vwant = 0
+end function get_vwant
 
-function get_par_iopac(par_iopac)
-    implicit none
-    integer:: par_iopac
-    integer:: get_par_iopac
-    par_iopac = GenecStar%iopac
-    get_par_iopac = 0
-end function
+integer function set_vwant(index_of_the_particle, vwant)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(in):: vwant
+    GenecStar%vwant = vwant
+    set_vwant = 0
+end function set_vwant
 
-function set_par_iopac(par_iopac)
-    implicit none
-    integer:: par_iopac
-    integer:: set_par_iopac
-    GenecStar%iopac = par_iopac
-    set_par_iopac = 0
-end function
+integer function get_xfom(index_of_the_particle, xfom)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(out):: xfom
+    xfom = GenecStar%xfom
+    get_xfom = 0
+end function get_xfom
 
-function get_par_ikappa(par_ikappa)
-    implicit none
-    integer:: par_ikappa
-    integer:: get_par_ikappa
-    par_ikappa = GenecStar%ikappa
-    get_par_ikappa = 0
-end function
+integer function set_xfom(index_of_the_particle, xfom)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(in):: xfom
+    GenecStar%xfom = xfom
+    set_xfom = 0
+end function set_xfom
 
-function set_par_ikappa(par_ikappa)
-    implicit none
-    integer:: par_ikappa
-    integer:: set_par_ikappa
-    GenecStar%ikappa = par_ikappa
-    set_par_ikappa = 0
-end function
+integer function get_omega(index_of_the_particle, omega)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(out):: omega
+    omega = GenecStar%omega
+    get_omega = 0
+end function get_omega
 
-function get_par_idiff(par_idiff)
-    implicit none
-    integer:: par_idiff
-    integer:: get_par_idiff
-    par_idiff = GenecStar%idiff
-    get_par_idiff = 0
-end function
+integer function set_omega(index_of_the_particle, omega)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(in):: omega
+    GenecStar%omega = omega
+    set_omega = 0
+end function set_omega
 
-function set_par_idiff(par_idiff)
-    implicit none
-    integer:: par_idiff
-    integer:: set_par_idiff
-    GenecStar%idiff = par_idiff
-    set_par_idiff = 0
-end function
+integer function get_xdial(index_of_the_particle, xdial)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(out):: xdial
+    xdial = GenecStar%xdial
+    get_xdial = 0
+end function get_xdial
 
-function get_par_iadvec(par_iadvec)
-    implicit none
-    integer:: par_iadvec
-    integer:: get_par_iadvec
-    par_iadvec = GenecStar%iadvec
-    get_par_iadvec = 0
-end function
+integer function set_xdial(index_of_the_particle, xdial)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(in):: xdial
+    GenecStar%xdial = xdial
+    set_xdial = 0
+end function set_xdial
 
-function set_par_iadvec(par_iadvec)
-    implicit none
-    integer:: par_iadvec
-    integer:: set_par_iadvec
-    GenecStar%iadvec = par_iadvec
-    set_par_iadvec = 0
-end function
+integer function get_idialo(index_of_the_particle, idialo)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(out):: idialo
+    idialo = GenecStar%idialo
+    get_idialo = 0
+end function get_idialo
 
-function get_par_istati(par_istati)
-    implicit none
-    integer:: par_istati
-    integer:: get_par_istati
-    par_istati = GenecStar%istati
-    get_par_istati = 0
-end function
+integer function set_idialo(index_of_the_particle, idialo)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: idialo
+    GenecStar%idialo = idialo
+    set_idialo = 0
+end function set_idialo
 
-function set_par_istati(par_istati)
-    implicit none
-    integer:: par_istati
-    integer:: set_par_istati
-    GenecStar%istati = par_istati
-    set_par_istati = 0
-end function
+integer function get_idialu(index_of_the_particle, idialu)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(out):: idialu
+    idialu = GenecStar%idialu
+    get_idialu = 0
+end function get_idialu
 
-function get_par_icoeff(par_icoeff)
-    implicit none
-    integer:: par_icoeff
-    integer:: get_par_icoeff
-    par_icoeff = GenecStar%icoeff
-    get_par_icoeff = 0
-end function
+integer function set_idialu(index_of_the_particle, idialu)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: idialu
+    GenecStar%idialu = idialu
+    set_idialu = 0
+end function set_idialu
 
-function set_par_icoeff(par_icoeff)
-    implicit none
-    integer:: par_icoeff
-    integer:: set_par_icoeff
-    GenecStar%icoeff = par_icoeff
-    set_par_icoeff = 0
-end function
+integer function get_Add_Flux(index_of_the_particle, Add_Flux)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    logical, intent(out):: Add_Flux
+    Add_Flux = GenecStar%Add_Flux
+    get_Add_Flux = 0
+end function get_Add_Flux
 
-function get_par_igamma(par_igamma)
-    implicit none
-    integer:: par_igamma
-    integer:: get_par_igamma
-    par_igamma = GenecStar%igamma
-    get_par_igamma = 0
-end function
+integer function set_Add_Flux(index_of_the_particle, Add_Flux)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    logical, intent(in):: Add_Flux
+    GenecStar%Add_Flux = Add_Flux
+    set_Add_Flux = 0
+end function set_Add_Flux
 
-function set_par_igamma(par_igamma)
-    implicit none
-    integer:: par_igamma
-    integer:: set_par_igamma
-    GenecStar%igamma = par_igamma
-    set_par_igamma = 0
-end function
+integer function get_diff_only(index_of_the_particle, diff_only)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    logical, intent(out):: diff_only
+    diff_only = GenecStar%diff_only
+    get_diff_only = 0
+end function get_diff_only
 
-function get_par_idialo(par_idialo)
-    implicit none
-    integer:: par_idialo
-    integer:: get_par_idialo
-    par_idialo = GenecStar%idialo
-    get_par_idialo = 0
-end function
+integer function set_diff_only(index_of_the_particle, diff_only)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    logical, intent(in):: diff_only
+    GenecStar%diff_only = diff_only
+    set_diff_only = 0
+end function set_diff_only
 
-function set_par_idialo(par_idialo)
-    implicit none
-    integer:: par_idialo
-    integer:: set_par_idialo
-    GenecStar%idialo = par_idialo
-    set_par_idialo = 0
-end function
+integer function get_B_initial(index_of_the_particle, B_initial)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(out):: B_initial
+    B_initial = GenecStar%B_initial
+    get_B_initial = 0
+end function get_B_initial
 
-function get_par_idialu(par_idialu)
-    implicit none
-    integer:: par_idialu
-    integer:: get_par_idialu
-    par_idialu = GenecStar%idialu
-    get_par_idialu = 0
-end function
+integer function set_B_initial(index_of_the_particle, B_initial)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(in):: B_initial
+    GenecStar%B_initial = B_initial
+    set_B_initial = 0
+end function set_B_initial
 
-function set_par_idialu(par_idialu)
-    implicit none
-    integer:: par_idialu
-    integer:: set_par_idialu
-    GenecStar%idialu = par_idialu
-    set_par_idialu = 0
-end function
+integer function get_add_diff(index_of_the_particle, add_diff)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(out):: add_diff
+    add_diff = GenecStar%add_diff
+    get_add_diff = 0
+end function get_add_diff
 
-function get_par_imloss(par_imloss)
-    implicit none
-    integer:: par_imloss
-    integer:: get_par_imloss
-    par_imloss = GenecStar%imloss
-    get_par_imloss = 0
-end function
+integer function set_add_diff(index_of_the_particle, add_diff)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(in):: add_diff
+    GenecStar%add_diff = add_diff
+    set_add_diff = 0
+end function set_add_diff
 
-function set_par_imloss(par_imloss)
-    implicit none
-    integer:: par_imloss
-    integer:: set_par_imloss
-    GenecStar%imloss = par_imloss
-    set_par_imloss = 0
-end function
+integer function get_n_mag(index_of_the_particle, n_mag)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(out):: n_mag
+    n_mag = GenecStar%n_mag
+    get_n_mag = 0
+end function get_n_mag
 
-function get_par_ifitm(par_ifitm)
-    implicit none
-    integer:: par_ifitm
-    integer:: get_par_ifitm
-    par_ifitm = GenecStar%ifitm
-    get_par_ifitm = 0
-end function
+integer function set_n_mag(index_of_the_particle, n_mag)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: n_mag
+    GenecStar%n_mag = n_mag
+    set_n_mag = 0
+end function set_n_mag
 
-function set_par_ifitm(par_ifitm)
-    implicit none
-    integer:: par_ifitm
-    integer:: set_par_ifitm
-    GenecStar%ifitm = par_ifitm
-    set_par_ifitm = 0
-end function
+integer function get_alpha_F(index_of_the_particle, alpha_F)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(out):: alpha_F
+    alpha_F = GenecStar%alpha_F
+    get_alpha_F = 0
+end function get_alpha_F
 
-function get_par_nndr(par_nndr)
-    implicit none
-    integer:: par_nndr
-    integer:: get_par_nndr
-    par_nndr = GenecStar%nndr
-    get_par_nndr = 0
-end function
+integer function set_alpha_F(index_of_the_particle, alpha_F)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(in):: alpha_F
+    GenecStar%alpha_F = alpha_F
+    set_alpha_F = 0
+end function set_alpha_F
 
-function set_par_nndr(par_nndr)
-    implicit none
-    integer:: par_nndr
-    integer:: set_par_nndr
-    GenecStar%nndr = par_nndr
-    set_par_nndr = 0
-end function
+integer function get_nsmooth(index_of_the_particle, nsmooth)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(out):: nsmooth
+    nsmooth = GenecStar%nsmooth
+    get_nsmooth = 0
+end function get_nsmooth
 
-function get_par_iledou(par_iledou)
-    implicit none
-    integer:: par_iledou
-    integer:: get_par_iledou
-    par_iledou = GenecStar%iledou
-    get_par_iledou = 0
-end function
+integer function set_nsmooth(index_of_the_particle, nsmooth)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: nsmooth
+    GenecStar%nsmooth = nsmooth
+    set_nsmooth = 0
+end function set_nsmooth
 
-function set_par_iledou(par_iledou)
-    implicit none
-    integer:: par_iledou
-    integer:: set_par_iledou
-    GenecStar%iledou = par_iledou
-    set_par_iledou = 0
-end function
+integer function get_qminsmooth(index_of_the_particle, qminsmooth)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    logical, intent(out):: qminsmooth
+    qminsmooth = GenecStar%qminsmooth
+    get_qminsmooth = 0
+end function get_qminsmooth
 
-function get_par_idifcon(par_idifcon)
-    implicit none
-    integer:: par_idifcon
-    integer:: get_par_idifcon
-    par_idifcon = GenecStar%idifcon
-    get_par_idifcon = 0
-end function
+integer function set_qminsmooth(index_of_the_particle, qminsmooth)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    logical, intent(in):: qminsmooth
+    GenecStar%qminsmooth = qminsmooth
+    set_qminsmooth = 0
+end function set_qminsmooth
 
-function set_par_idifcon(par_idifcon)
-    implicit none
-    integer:: par_idifcon
-    integer:: set_par_idifcon
-    GenecStar%idifcon = par_idifcon
-    set_par_idifcon = 0
-end function
+integer function get_imloss(index_of_the_particle, imloss)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(out):: imloss
+    imloss = GenecStar%imloss
+    get_imloss = 0
+end function get_imloss
 
-function get_par_my(par_my)
-    implicit none
-    integer:: par_my
-    integer:: get_par_my
-    par_my = GenecStar%my
-    get_par_my = 0
-end function
+integer function set_imloss(index_of_the_particle, imloss)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: imloss
+    GenecStar%imloss = imloss
+    set_imloss = 0
+end function set_imloss
 
-function set_par_my(par_my)
-    implicit none
-    integer:: par_my
-    integer:: set_par_my
-    GenecStar%my = par_my
-    set_par_my = 0
-end function
+integer function get_fmlos(index_of_the_particle, fmlos)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(out):: fmlos
+    fmlos = GenecStar%fmlos
+    get_fmlos = 0
+end function get_fmlos
 
-function get_par_iover(par_iover)
-    implicit none
-    integer:: par_iover
-    integer:: get_par_iover
-    par_iover = GenecStar%iover
-    get_par_iover = 0
-end function
+integer function set_fmlos(index_of_the_particle, fmlos)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(in):: fmlos
+    GenecStar%fmlos = fmlos
+    set_fmlos = 0
+end function set_fmlos
 
-function set_par_iover(par_iover)
-    implicit none
-    integer:: par_iover
-    integer:: set_par_iover
-    GenecStar%iover = par_iover
-    set_par_iover = 0
-end function
+integer function get_ifitm(index_of_the_particle, ifitm)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(out):: ifitm
+    ifitm = GenecStar%ifitm
+    get_ifitm = 0
+end function get_ifitm
 
-function get_par_iunder(par_iunder)
-    implicit none
-    integer:: par_iunder
-    integer:: get_par_iunder
-    par_iunder = GenecStar%iunder
-    get_par_iunder = 0
-end function
+integer function set_ifitm(index_of_the_particle, ifitm)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: ifitm
+    GenecStar%ifitm = ifitm
+    set_ifitm = 0
+end function set_ifitm
 
-function set_par_iunder(par_iunder)
-    implicit none
-    integer:: par_iunder
-    integer:: set_par_iunder
-    GenecStar%iunder = par_iunder
-    set_par_iunder = 0
-end function
+integer function get_fitm(index_of_the_particle, fitm)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(out):: fitm
+    fitm = GenecStar%fitm
+    get_fitm = 0
+end function get_fitm
 
-function get_par_nbchx(par_nbchx)
-    implicit none
-    integer:: par_nbchx
-    integer:: get_par_nbchx
-    par_nbchx = GenecStar%nbchx
-    get_par_nbchx = 0
-end function
+integer function set_fitm(index_of_the_particle, fitm)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(in):: fitm
+    GenecStar%fitm = fitm
+    set_fitm = 0
+end function set_fitm
 
-function set_par_nbchx(par_nbchx)
-    implicit none
-    integer:: par_nbchx
-    integer:: set_par_nbchx
-    GenecStar%nbchx = par_nbchx
-    set_par_nbchx = 0
-end function
+integer function get_fitmi(index_of_the_particle, fitmi)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(out):: fitmi
+    fitmi = GenecStar%fitmi
+    get_fitmi = 0
+end function get_fitmi
 
-function get_par_nrband(par_nrband)
-    implicit none
-    integer:: par_nrband
-    integer:: get_par_nrband
-    par_nrband = GenecStar%nrband
-    get_par_nrband = 0
-end function
+integer function set_fitmi(index_of_the_particle, fitmi)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(in):: fitmi
+    GenecStar%fitmi = fitmi
+    set_fitmi = 0
+end function set_fitmi
 
-function set_par_nrband(par_nrband)
-    implicit none
-    integer:: par_nrband
-    integer:: set_par_nrband
-    GenecStar%nrband = par_nrband
-    set_par_nrband = 0
-end function
+integer function get_deltal(index_of_the_particle, deltal)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(out):: deltal
+    deltal = GenecStar%deltal
+    get_deltal = 0
+end function get_deltal
 
-function get_par_islow(par_islow)
-    implicit none
-    integer:: par_islow
-    integer:: get_par_islow
-    par_islow = GenecStar%islow
-    get_par_islow = 0
-end function
+integer function set_deltal(index_of_the_particle, deltal)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(in):: deltal
+    GenecStar%deltal = deltal
+    set_deltal = 0
+end function set_deltal
 
-function set_par_islow(par_islow)
-    implicit none
-    integer:: par_islow
-    integer:: set_par_islow
-    GenecStar%islow = par_islow
-    set_par_islow = 0
-end function
+integer function get_deltat(index_of_the_particle, deltat)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(out):: deltat
+    deltat = GenecStar%deltat
+    get_deltat = 0
+end function get_deltat
 
-function get_par_icncst(par_icncst)
-    implicit none
-    integer:: par_icncst
-    integer:: get_par_icncst
-    par_icncst = GenecStar%icncst
-    get_par_icncst = 0
-end function
+integer function set_deltat(index_of_the_particle, deltat)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(in):: deltat
+    GenecStar%deltat = deltat
+    set_deltat = 0
+end function set_deltat
 
-function set_par_icncst(par_icncst)
-    implicit none
-    integer:: par_icncst
-    integer:: set_par_icncst
-    GenecStar%icncst = par_icncst
-    set_par_icncst = 0
-end function
+integer function get_nndr(index_of_the_particle, nndr)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(out):: nndr
+    nndr = GenecStar%nndr
+    get_nndr = 0
+end function get_nndr
 
-function get_par_tauH_fit(par_tauH_fit)
-    implicit none
-    integer:: par_tauH_fit
-    integer:: get_par_tauH_fit
-    par_tauH_fit = GenecStar%tauH_fit
-    get_par_tauH_fit = 0
-end function
+integer function set_nndr(index_of_the_particle, nndr)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: nndr
+    GenecStar%nndr = nndr
+    set_nndr = 0
+end function set_nndr
 
-function set_par_tauH_fit(par_tauH_fit)
-    implicit none
-    integer:: par_tauH_fit
-    integer:: set_par_tauH_fit
-    GenecStar%tauH_fit = par_tauH_fit
-    set_par_tauH_fit = 0
-end function
+integer function get_RSG_Mdot(index_of_the_particle, RSG_Mdot)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(out):: RSG_Mdot
+    RSG_Mdot = GenecStar%RSG_Mdot
+    get_RSG_Mdot = 0
+end function get_RSG_Mdot
 
-function get_par_iauto(par_iauto)
-    implicit none
-    integer:: par_iauto
-    integer:: get_par_iauto
-    par_iauto = GenecStar%iauto
-    get_par_iauto = 0
-end function
+integer function set_RSG_Mdot(index_of_the_particle, RSG_Mdot)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: RSG_Mdot
+    GenecStar%RSG_Mdot = RSG_Mdot
+    set_RSG_Mdot = 0
+end function set_RSG_Mdot
 
-function set_par_iauto(par_iauto)
-    implicit none
-    integer:: par_iauto
-    integer:: set_par_iauto
-    GenecStar%iauto = par_iauto
-    set_par_iauto = 0
-end function
+integer function get_SupraEddMdot(index_of_the_particle, SupraEddMdot)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    logical, intent(out):: SupraEddMdot
+    SupraEddMdot = GenecStar%SupraEddMdot
+    get_SupraEddMdot = 0
+end function get_SupraEddMdot
 
-function get_par_iprn(par_iprn)
-    implicit none
-    integer:: par_iprn
-    integer:: get_par_iprn
-    par_iprn = GenecStar%iprn
-    get_par_iprn = 0
-end function
+integer function set_SupraEddMdot(index_of_the_particle, SupraEddMdot)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    logical, intent(in):: SupraEddMdot
+    GenecStar%SupraEddMdot = SupraEddMdot
+    set_SupraEddMdot = 0
+end function set_SupraEddMdot
 
-function set_par_iprn(par_iprn)
-    implicit none
-    integer:: par_iprn
-    integer:: set_par_iprn
-    GenecStar%iprn = par_iprn
-    set_par_iprn = 0
-end function
+integer function get_Be_mdotfrac(index_of_the_particle, Be_mdotfrac)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(out):: Be_mdotfrac
+    Be_mdotfrac = GenecStar%Be_mdotfrac
+    get_Be_mdotfrac = 0
+end function get_Be_mdotfrac
 
-function get_par_iout(par_iout)
-    implicit none
-    integer:: par_iout
-    integer:: get_par_iout
-    par_iout = GenecStar%iout
-    get_par_iout = 0
-end function
+integer function set_Be_mdotfrac(index_of_the_particle, Be_mdotfrac)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(in):: Be_mdotfrac
+    GenecStar%Be_mdotfrac = Be_mdotfrac
+    set_Be_mdotfrac = 0
+end function set_Be_mdotfrac
 
-function set_par_iout(par_iout)
-    implicit none
-    integer:: par_iout
-    integer:: set_par_iout
-    GenecStar%iout = par_iout
-    set_par_iout = 0
-end function
+integer function get_start_mdot(index_of_the_particle, start_mdot)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(out):: start_mdot
+    start_mdot = GenecStar%start_mdot
+    get_start_mdot = 0
+end function get_start_mdot
 
-function get_par_itmin(par_itmin)
-    implicit none
-    integer:: par_itmin
-    integer:: get_par_itmin
-    par_itmin = GenecStar%itmin
-    get_par_itmin = 0
-end function
+integer function set_start_mdot(index_of_the_particle, start_mdot)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(in):: start_mdot
+    GenecStar%start_mdot = start_mdot
+    set_start_mdot = 0
+end function set_start_mdot
 
-function set_par_itmin(par_itmin)
-    implicit none
-    integer:: par_itmin
-    integer:: set_par_itmin
-    GenecStar%itmin = par_itmin
-    set_par_itmin = 0
-end function
+integer function get_iledou(index_of_the_particle, iledou)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(out):: iledou
+    iledou = GenecStar%iledou
+    get_iledou = 0
+end function get_iledou
 
-function get_par_idebug(par_idebug)
-    implicit none
-    integer:: par_idebug
-    integer:: get_par_idebug
-    par_idebug = GenecStar%idebug
-    get_par_idebug = 0
-end function
+integer function set_iledou(index_of_the_particle, iledou)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: iledou
+    GenecStar%iledou = iledou
+    set_iledou = 0
+end function set_iledou
 
-function set_par_idebug(par_idebug)
-    implicit none
-    integer:: par_idebug
-    integer:: set_par_idebug
-    GenecStar%idebug = par_idebug
-    set_par_idebug = 0
-end function
+integer function get_idifcon(index_of_the_particle, idifcon)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(out):: idifcon
+    idifcon = GenecStar%idifcon
+    get_idifcon = 0
+end function get_idifcon
 
-function get_par_itests(par_itests)
-    implicit none
-    integer:: par_itests
-    integer:: get_par_itests
-    par_itests = GenecStar%itests
-    get_par_itests = 0
-end function
+integer function set_idifcon(index_of_the_particle, idifcon)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: idifcon
+    GenecStar%idifcon = idifcon
+    set_idifcon = 0
+end function set_idifcon
 
-function set_par_itests(par_itests)
-    implicit none
-    integer:: par_itests
-    integer:: set_par_itests
-    GenecStar%itests = par_itests
-    set_par_itests = 0
-end function
+integer function get_iover(index_of_the_particle, iover)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(out):: iover
+    iover = GenecStar%iover
+    get_iover = 0
+end function get_iover
 
-function get_par_var_rates(par_var_rates)
-    implicit none
-    logical:: par_var_rates
-    integer:: get_par_var_rates
-    par_var_rates = GenecStar%var_rates
-    get_par_var_rates = 0
-end function
+integer function set_iover(index_of_the_particle, iover)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: iover
+    GenecStar%iover = iover
+    set_iover = 0
+end function set_iover
 
-function set_par_var_rates(par_var_rates)
-    implicit none
-    logical:: par_var_rates
-    integer:: set_par_var_rates
-    GenecStar%var_rates = par_var_rates
-    set_par_var_rates = 0
-end function
+integer function get_elph(index_of_the_particle, elph)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(out):: elph
+    elph = GenecStar%elph
+    get_elph = 0
+end function get_elph
 
-function get_par_bintide(par_bintide)
-    implicit none
-    logical:: par_bintide
-    integer:: get_par_bintide
-    par_bintide = GenecStar%bintide
-    get_par_bintide = 0
-end function
+integer function set_elph(index_of_the_particle, elph)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(in):: elph
+    GenecStar%elph = elph
+    set_elph = 0
+end function set_elph
 
-function set_par_bintide(par_bintide)
-    implicit none
-    logical:: par_bintide
-    integer:: set_par_bintide
-    GenecStar%bintide = par_bintide
-    set_par_bintide = 0
-end function
+integer function get_my(index_of_the_particle, my)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(out):: my
+    my = GenecStar%my
+    get_my = 0
+end function get_my
 
-function get_par_const_per(par_const_per)
-    implicit none
-    logical:: par_const_per
-    integer:: get_par_const_per
-    par_const_per = GenecStar%const_per
-    get_par_const_per = 0
-end function
+integer function set_my(index_of_the_particle, my)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: my
+    GenecStar%my = my
+    set_my = 0
+end function set_my
 
-function set_par_const_per(par_const_per)
-    implicit none
-    logical:: par_const_per
-    integer:: set_par_const_per
-    GenecStar%const_per = par_const_per
-    set_par_const_per = 0
-end function
+integer function get_dovhp(index_of_the_particle, dovhp)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(out):: dovhp
+    dovhp = GenecStar%dovhp
+    get_dovhp = 0
+end function get_dovhp
 
-function get_par_Add_Flux(par_Add_Flux)
-    implicit none
-    logical:: par_Add_Flux
-    integer:: get_par_Add_Flux
-    par_Add_Flux = GenecStar%Add_Flux
-    get_par_Add_Flux = 0
-end function
+integer function set_dovhp(index_of_the_particle, dovhp)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(in):: dovhp
+    GenecStar%dovhp = dovhp
+    set_dovhp = 0
+end function set_dovhp
 
-function set_par_Add_Flux(par_Add_Flux)
-    implicit none
-    logical:: par_Add_Flux
-    integer:: set_par_Add_Flux
-    GenecStar%Add_Flux = par_Add_Flux
-    set_par_Add_Flux = 0
-end function
+integer function get_iunder(index_of_the_particle, iunder)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(out):: iunder
+    iunder = GenecStar%iunder
+    get_iunder = 0
+end function get_iunder
 
-function get_par_diff_only(par_diff_only)
-    implicit none
-    logical:: par_diff_only
-    integer:: get_par_diff_only
-    par_diff_only = GenecStar%diff_only
-    get_par_diff_only = 0
-end function
+integer function set_iunder(index_of_the_particle, iunder)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: iunder
+    GenecStar%iunder = iunder
+    set_iunder = 0
+end function set_iunder
 
-function set_par_diff_only(par_diff_only)
-    implicit none
-    logical:: par_diff_only
-    integer:: set_par_diff_only
-    GenecStar%diff_only = par_diff_only
-    set_par_diff_only = 0
-end function
+integer function get_dunder(index_of_the_particle, dunder)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(out):: dunder
+    dunder = GenecStar%dunder
+    get_dunder = 0
+end function get_dunder
+
+integer function set_dunder(index_of_the_particle, dunder)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(in):: dunder
+    GenecStar%dunder = dunder
+    set_dunder = 0
+end function set_dunder
+
+integer function get_gkorm(index_of_the_particle, gkorm)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(out):: gkorm
+    gkorm = GenecStar%gkorm
+    get_gkorm = 0
+end function get_gkorm
+
+integer function set_gkorm(index_of_the_particle, gkorm)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(in):: gkorm
+    GenecStar%gkorm = gkorm
+    set_gkorm = 0
+end function set_gkorm
+
+integer function get_alph(index_of_the_particle, alph)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(out):: alph
+    alph = GenecStar%alph
+    get_alph = 0
+end function get_alph
+
+integer function set_alph(index_of_the_particle, alph)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(in):: alph
+    GenecStar%alph = alph
+    set_alph = 0
+end function set_alph
+
+integer function get_agdr(index_of_the_particle, agdr)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(out):: agdr
+    agdr = GenecStar%agdr
+    get_agdr = 0
+end function get_agdr
+
+integer function set_agdr(index_of_the_particle, agdr)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(in):: agdr
+    GenecStar%agdr = agdr
+    set_agdr = 0
+end function set_agdr
+
+integer function get_faktor(index_of_the_particle, faktor)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(out):: faktor
+    faktor = GenecStar%faktor
+    get_faktor = 0
+end function get_faktor
+
+integer function set_faktor(index_of_the_particle, faktor)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(in):: faktor
+    GenecStar%faktor = faktor
+    set_faktor = 0
+end function set_faktor
+
+integer function get_dgrp(index_of_the_particle, dgrp)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(out):: dgrp
+    dgrp = GenecStar%dgrp
+    get_dgrp = 0
+end function get_dgrp
+
+integer function set_dgrp(index_of_the_particle, dgrp)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(in):: dgrp
+    GenecStar%dgrp = dgrp
+    set_dgrp = 0
+end function set_dgrp
+
+integer function get_dgrl(index_of_the_particle, dgrl)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(out):: dgrl
+    dgrl = GenecStar%dgrl
+    get_dgrl = 0
+end function get_dgrl
+
+integer function set_dgrl(index_of_the_particle, dgrl)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(in):: dgrl
+    GenecStar%dgrl = dgrl
+    set_dgrl = 0
+end function set_dgrl
+
+integer function get_dgry(index_of_the_particle, dgry)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(out):: dgry
+    dgry = GenecStar%dgry
+    get_dgry = 0
+end function get_dgry
+
+integer function set_dgry(index_of_the_particle, dgry)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(in):: dgry
+    GenecStar%dgry = dgry
+    set_dgry = 0
+end function set_dgry
+
+integer function get_dgrc(index_of_the_particle, dgrc)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(out):: dgrc
+    dgrc = GenecStar%dgrc
+    get_dgrc = 0
+end function get_dgrc
+
+integer function set_dgrc(index_of_the_particle, dgrc)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(in):: dgrc
+    GenecStar%dgrc = dgrc
+    set_dgrc = 0
+end function set_dgrc
+
+integer function get_dgro(index_of_the_particle, dgro)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(out):: dgro
+    dgro = GenecStar%dgro
+    get_dgro = 0
+end function get_dgro
+
+integer function set_dgro(index_of_the_particle, dgro)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(in):: dgro
+    GenecStar%dgro = dgro
+    set_dgro = 0
+end function set_dgro
+
+integer function get_dgr20(index_of_the_particle, dgr20)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(out):: dgr20
+    dgr20 = GenecStar%dgr20
+    get_dgr20 = 0
+end function get_dgr20
+
+integer function set_dgr20(index_of_the_particle, dgr20)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(in):: dgr20
+    GenecStar%dgr20 = dgr20
+    set_dgr20 = 0
+end function set_dgr20
+
+integer function get_nbchx(index_of_the_particle, nbchx)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(out):: nbchx
+    nbchx = GenecStar%nbchx
+    get_nbchx = 0
+end function get_nbchx
+
+integer function set_nbchx(index_of_the_particle, nbchx)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: nbchx
+    GenecStar%nbchx = nbchx
+    set_nbchx = 0
+end function set_nbchx
+
+integer function get_nrband(index_of_the_particle, nrband)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(out):: nrband
+    nrband = GenecStar%nrband
+    get_nrband = 0
+end function get_nrband
+
+integer function set_nrband(index_of_the_particle, nrband)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: nrband
+    GenecStar%nrband = nrband
+    set_nrband = 0
+end function set_nrband
+
+integer function get_xcn(index_of_the_particle, xcn)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(out):: xcn
+    xcn = GenecStar%xcn
+    get_xcn = 0
+end function get_xcn
+
+integer function set_xcn(index_of_the_particle, xcn)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(in):: xcn
+    GenecStar%xcn = xcn
+    set_xcn = 0
+end function set_xcn
+
+integer function get_islow(index_of_the_particle, islow)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(out):: islow
+    islow = GenecStar%islow
+    get_islow = 0
+end function get_islow
+
+integer function set_islow(index_of_the_particle, islow)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: islow
+    GenecStar%islow = islow
+    set_islow = 0
+end function set_islow
+
+integer function get_icncst(index_of_the_particle, icncst)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(out):: icncst
+    icncst = GenecStar%icncst
+    get_icncst = 0
+end function get_icncst
+
+integer function set_icncst(index_of_the_particle, icncst)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: icncst
+    GenecStar%icncst = icncst
+    set_icncst = 0
+end function set_icncst
+
+integer function get_tauH_fit(index_of_the_particle, tauH_fit)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(out):: tauH_fit
+    tauH_fit = GenecStar%tauH_fit
+    get_tauH_fit = 0
+end function get_tauH_fit
+
+integer function set_tauH_fit(index_of_the_particle, tauH_fit)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: tauH_fit
+    GenecStar%tauH_fit = tauH_fit
+    set_tauH_fit = 0
+end function set_tauH_fit
+
+integer function get_display_plot(index_of_the_particle, display_plot)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    logical, intent(out):: display_plot
+    display_plot = GenecStar%display_plot
+    get_display_plot = 0
+end function get_display_plot
+
+integer function set_display_plot(index_of_the_particle, display_plot)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    logical, intent(in):: display_plot
+    GenecStar%display_plot = display_plot
+    set_display_plot = 0
+end function set_display_plot
+
+integer function get_iauto(index_of_the_particle, iauto)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(out):: iauto
+    iauto = GenecStar%iauto
+    get_iauto = 0
+end function get_iauto
+
+integer function set_iauto(index_of_the_particle, iauto)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: iauto
+    GenecStar%iauto = iauto
+    set_iauto = 0
+end function set_iauto
+
+integer function get_iprn(index_of_the_particle, iprn)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(out):: iprn
+    iprn = GenecStar%iprn
+    get_iprn = 0
+end function get_iprn
+
+integer function set_iprn(index_of_the_particle, iprn)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: iprn
+    GenecStar%iprn = iprn
+    set_iprn = 0
+end function set_iprn
+
+integer function get_iout(index_of_the_particle, iout)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(out):: iout
+    iout = GenecStar%iout
+    get_iout = 0
+end function get_iout
+
+integer function set_iout(index_of_the_particle, iout)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: iout
+    GenecStar%iout = iout
+    set_iout = 0
+end function set_iout
+
+integer function get_itmin(index_of_the_particle, itmin)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(out):: itmin
+    itmin = GenecStar%itmin
+    get_itmin = 0
+end function get_itmin
+
+integer function set_itmin(index_of_the_particle, itmin)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: itmin
+    GenecStar%itmin = itmin
+    set_itmin = 0
+end function set_itmin
+
+integer function get_xyfiles(index_of_the_particle, xyfiles)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    logical, intent(out):: xyfiles
+    xyfiles = GenecStar%xyfiles
+    get_xyfiles = 0
+end function get_xyfiles
+
+integer function set_xyfiles(index_of_the_particle, xyfiles)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    logical, intent(in):: xyfiles
+    GenecStar%xyfiles = xyfiles
+    set_xyfiles = 0
+end function set_xyfiles
+
+integer function get_idebug(index_of_the_particle, idebug)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(out):: idebug
+    idebug = GenecStar%idebug
+    get_idebug = 0
+end function get_idebug
+
+integer function set_idebug(index_of_the_particle, idebug)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: idebug
+    GenecStar%idebug = idebug
+    set_idebug = 0
+end function set_idebug
+
+integer function get_itests(index_of_the_particle, itests)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(out):: itests
+    itests = GenecStar%itests
+    get_itests = 0
+end function get_itests
+
+integer function set_itests(index_of_the_particle, itests)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: itests
+    GenecStar%itests = itests
+    set_itests = 0
+end function set_itests
+
+integer function get_verbose(index_of_the_particle, verbose)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    logical, intent(out):: verbose
+    verbose = GenecStar%verbose
+    get_verbose = 0
+end function get_verbose
+
+integer function set_verbose(index_of_the_particle, verbose)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    logical, intent(in):: verbose
+    GenecStar%verbose = verbose
+    set_verbose = 0
+end function set_verbose
+
+integer function get_stop_deg(index_of_the_particle, stop_deg)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    logical, intent(out):: stop_deg
+    stop_deg = GenecStar%stop_deg
+    get_stop_deg = 0
+end function get_stop_deg
+
+integer function set_stop_deg(index_of_the_particle, stop_deg)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    logical, intent(in):: stop_deg
+    GenecStar%stop_deg = stop_deg
+    set_stop_deg = 0
+end function set_stop_deg
+
+integer function get_n_snap(index_of_the_particle, n_snap)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(out):: n_snap
+    n_snap = GenecStar%n_snap
+    get_n_snap = 0
+end function get_n_snap
+
+integer function set_n_snap(index_of_the_particle, n_snap)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: n_snap
+    GenecStar%n_snap = n_snap
+    set_n_snap = 0
+end function set_n_snap
 
-function get_par_RSG_Mdot(par_RSG_Mdot)
-    implicit none
-    integer:: par_RSG_Mdot
-    integer:: get_par_RSG_Mdot
-    par_RSG_Mdot = GenecStar%RSG_Mdot
-    get_par_RSG_Mdot = 0
-end function
-
-function set_par_RSG_Mdot(par_RSG_Mdot)
-    implicit none
-    integer:: par_RSG_Mdot
-    integer:: set_par_RSG_Mdot
-    GenecStar%RSG_Mdot = par_RSG_Mdot
-    set_par_RSG_Mdot = 0
-end function
-
-function get_par_display_plot(par_display_plot)
-    implicit none
-    logical:: par_display_plot
-    integer:: get_par_display_plot
-    par_display_plot = GenecStar%display_plot
-    get_par_display_plot = 0
-end function
-
-function set_par_display_plot(par_display_plot)
-    implicit none
-    logical:: par_display_plot
-    integer:: set_par_display_plot
-    GenecStar%display_plot = par_display_plot
-    set_par_display_plot = 0
-end function
-
-function get_par_xyfiles(par_xyfiles)
-    implicit none
-    logical:: par_xyfiles
-    integer:: get_par_xyfiles
-    par_xyfiles = GenecStar%xyfiles
-    get_par_xyfiles = 0
-end function
-
-function set_par_xyfiles(par_xyfiles)
-    implicit none
-    logical:: par_xyfiles
-    integer:: set_par_xyfiles
-    GenecStar%xyfiles = par_xyfiles
-    set_par_xyfiles = 0
-end function
-
-function get_par_verbose(par_verbose)
-    implicit none
-    logical:: par_verbose
-    integer:: get_par_verbose
-    par_verbose = GenecStar%verbose
-    get_par_verbose = 0
-end function
-
-function set_par_verbose(par_verbose)
-    implicit none
-    logical:: par_verbose
-    integer:: set_par_verbose
-    GenecStar%verbose = par_verbose
-    set_par_verbose = 0
-end function
-
-function get_par_stop_deg(par_stop_deg)
-    implicit none
-    logical:: par_stop_deg
-    integer:: get_par_stop_deg
-    par_stop_deg = GenecStar%stop_deg
-    get_par_stop_deg = 0
-end function
-
-function set_par_stop_deg(par_stop_deg)
-    implicit none
-    logical:: par_stop_deg
-    integer:: set_par_stop_deg
-    GenecStar%stop_deg = par_stop_deg
-    set_par_stop_deg = 0
-end function
-
-function get_par_index_poly(par_index_poly)
-    implicit none
-    real(kindreal):: par_index_poly
-    integer:: get_par_index_poly
-    par_index_poly = InitialGenecStar%n
-    get_par_index_poly = 0
-end function
-
-function set_par_index_poly(par_index_poly)
-    implicit none
-    real(kindreal):: par_index_poly
-    integer:: set_par_index_poly
-    InitialGenecStar%n = par_index_poly
-    set_par_index_poly = 0
-end function
-
-function get_par_binm2(par_binm2)
-    use inputparam, only: binm2
-    implicit none
-    real(kindreal):: par_binm2
-    integer:: get_par_binm2
-    par_binm2 = binm2
-    get_par_binm2 = 0
-end function
-
-function set_par_binm2(par_binm2)
-    use inputparam, only: binm2
-    implicit none
-    real(kindreal):: par_binm2
-    integer:: set_par_binm2
-    binm2 = par_binm2
-    set_par_binm2 = 0
-end function
-
-function get_par_periodini(par_periodini)
-    use inputparam, only: periodini
-    implicit none
-    real(kindreal):: par_periodini
-    integer:: get_par_periodini
-    par_periodini = periodini
-    get_par_periodini = 0
-end function
-
-function set_par_periodini(par_periodini)
-    use inputparam, only: periodini
-    implicit none
-    real(kindreal):: par_periodini
-    integer:: set_par_periodini
-    periodini = par_periodini
-    set_par_periodini = 0
-end function
-
-function get_par_zinit(par_zinit)
-    use inputparam, only: zinit
-    implicit none
-    real(kindreal):: par_zinit
-    integer:: get_par_zinit
-    par_zinit = zinit
-    get_par_zinit = 0
-end function
-
-function set_par_zinit(par_zinit)
-    use inputparam, only: zinit
-    implicit none
-    real(kindreal):: par_zinit
-    integer:: set_par_zinit
-    zinit = par_zinit
-    set_par_zinit = 0
-end function
-
-function get_par_zsol(par_zsol)
-    use inputparam, only: zsol
-    implicit none
-    real(kindreal):: par_zsol
-    integer:: get_par_zsol
-    par_zsol = zsol
-    get_par_zsol = 0
-end function
-
-function set_par_zsol(par_zsol)
-    use inputparam, only: zsol
-    implicit none
-    real(kindreal):: par_zsol
-    integer:: set_par_zsol
-    zsol = par_zsol
-    set_par_zsol = 0
-end function
-
-function get_par_z(par_z)
-    use inputparam, only: z
-    implicit none
-    real(kindreal):: par_z
-    integer:: get_par_z
-    par_z = z
-    get_par_z = 0
-end function
-
-function set_par_z(par_z)
-    use inputparam, only: z
-    implicit none
-    real(kindreal):: par_z
-    integer:: set_par_z
-    z = par_z
-    set_par_z = 0
-end function
-
-function get_par_fenerg(par_fenerg)
-    use inputparam, only: fenerg
-    implicit none
-    real(kindreal):: par_fenerg
-    integer:: get_par_fenerg
-    par_fenerg = fenerg
-    get_par_fenerg = 0
-end function
-
-function set_par_fenerg(par_fenerg)
-    use inputparam, only: fenerg
-    implicit none
-    real(kindreal):: par_fenerg
-    integer:: set_par_fenerg
-    fenerg = par_fenerg
-    set_par_fenerg = 0
-end function
-
-function get_par_richac(par_richac)
-    use inputparam, only: richac
-    implicit none
-    real(kindreal):: par_richac
-    integer:: get_par_richac
-    par_richac = richac
-    get_par_richac = 0
-end function
-
-function set_par_richac(par_richac)
-    use inputparam, only: richac
-    implicit none
-    real(kindreal):: par_richac
-    integer:: set_par_richac
-    richac = par_richac
-    set_par_richac = 0
-end function
-
-function get_par_frein(par_frein)
-    use inputparam, only: frein
-    implicit none
-    real(kindreal):: par_frein
-    integer:: get_par_frein
-    par_frein = frein
-    get_par_frein = 0
-end function
-
-function set_par_frein(par_frein)
-    use inputparam, only: frein
-    implicit none
-    real(kindreal):: par_frein
-    integer:: set_par_frein
-    frein = par_frein
-    set_par_frein = 0
-end function
-
-function get_par_K_Kawaler(par_K_Kawaler)
-    use inputparam, only: K_Kawaler
-    implicit none
-    real(kindreal):: par_K_Kawaler
-    integer:: get_par_K_Kawaler
-    par_K_Kawaler = K_Kawaler
-    get_par_K_Kawaler = 0
-end function
-
-function set_par_K_Kawaler(par_K_Kawaler)
-    use inputparam, only: K_Kawaler
-    implicit none
-    real(kindreal):: par_K_Kawaler
-    integer:: set_par_K_Kawaler
-    K_Kawaler = par_K_Kawaler
-    set_par_K_Kawaler = 0
-end function
-
-function get_par_Omega_saturation(par_Omega_saturation)
-    use inputparam, only: Omega_saturation
-    implicit none
-    real(kindreal):: par_Omega_saturation
-    integer:: get_par_Omega_saturation
-    par_Omega_saturation = Omega_saturation
-    get_par_Omega_saturation = 0
-end function
-
-function set_par_Omega_saturation(par_Omega_saturation)
-    use inputparam, only: Omega_saturation
-    implicit none
-    real(kindreal):: par_Omega_saturation
-    integer:: set_par_Omega_saturation
-    Omega_saturation = par_Omega_saturation
-    set_par_Omega_saturation = 0
-end function
-
-function get_par_rapcrilim(par_rapcrilim)
-    use inputparam, only: rapcrilim
-    implicit none
-    real(kindreal):: par_rapcrilim
-    integer:: get_par_rapcrilim
-    par_rapcrilim = rapcrilim
-    get_par_rapcrilim = 0
-end function
-
-function set_par_rapcrilim(par_rapcrilim)
-    use inputparam, only: rapcrilim
-    implicit none
-    real(kindreal):: par_rapcrilim
-    integer:: set_par_rapcrilim
-    rapcrilim = par_rapcrilim
-    set_par_rapcrilim = 0
-end function
-
-function get_par_vwant(par_vwant)
-    implicit none
-    real(kindreal):: par_vwant
-    integer:: get_par_vwant
-    par_vwant = InitialGenecStar%vwant
-    get_par_vwant = 0
-end function
-
-function set_par_vwant(par_vwant)
-    implicit none
-    real(kindreal):: par_vwant
-    integer:: set_par_vwant
-    InitialGenecStar%vwant = par_vwant
-    set_par_vwant = 0
-end function
-
-function get_par_xfom(par_xfom)
-    use inputparam, only: xfom
-    implicit none
-    real(kindreal):: par_xfom
-    integer:: get_par_xfom
-    par_xfom = xfom
-    get_par_xfom = 0
-end function
-
-function set_par_xfom(par_xfom)
-    use inputparam, only: xfom
-    implicit none
-    real(kindreal):: par_xfom
-    integer:: set_par_xfom
-    xfom = par_xfom
-    set_par_xfom = 0
-end function
-
-function get_par_omega(par_omega)
-    use inputparam, only: omega
-    implicit none
-    real(kindreal):: par_omega
-    integer:: get_par_omega
-    par_omega = omega
-    get_par_omega = 0
-end function
-
-function set_par_omega(par_omega)
-    use inputparam, only: omega
-    implicit none
-    real(kindreal):: par_omega
-    integer:: set_par_omega
-    omega = par_omega
-    set_par_omega = 0
-end function
-
-function get_par_xdial(par_xdial)
-    use inputparam, only: xdial
-    implicit none
-    real(kindreal):: par_xdial
-    integer:: get_par_xdial
-    par_xdial = xdial
-    get_par_xdial = 0
-end function
-
-function set_par_xdial(par_xdial)
-    use inputparam, only: xdial
-    implicit none
-    real(kindreal):: par_xdial
-    integer:: set_par_xdial
-    xdial = par_xdial
-    set_par_xdial = 0
-end function
-
-function get_par_B_initial(par_B_initial)
-    use inputparam, only: B_initial
-    implicit none
-    real(kindreal):: par_B_initial
-    integer:: get_par_B_initial
-    par_B_initial = B_initial
-    get_par_B_initial = 0
-end function
-
-function set_par_B_initial(par_B_initial)
-    use inputparam, only: B_initial
-    implicit none
-    real(kindreal):: par_B_initial
-    integer:: set_par_B_initial
-    B_initial = par_B_initial
-    set_par_B_initial = 0
-end function
-
-function get_par_add_diff(par_add_diff)
-    use inputparam, only: add_diff
-    implicit none
-    real(kindreal):: par_add_diff
-    integer:: get_par_add_diff
-    par_add_diff = add_diff
-    get_par_add_diff = 0
-end function
-
-function set_par_add_diff(par_add_diff)
-    use inputparam, only: add_diff
-    implicit none
-    real(kindreal):: par_add_diff
-    integer:: set_par_add_diff
-    add_diff = par_add_diff
-    set_par_add_diff = 0
-end function
-
-function get_par_fmlos(par_fmlos)
-    use inputparam, only: fmlos
-    implicit none
-    real(kindreal):: par_fmlos
-    integer:: get_par_fmlos
-    par_fmlos = fmlos
-    get_par_fmlos = 0
-end function
-
-function set_par_fmlos(par_fmlos)
-    use inputparam, only: fmlos
-    implicit none
-    real(kindreal):: par_fmlos
-    integer:: set_par_fmlos
-    fmlos = par_fmlos
-    set_par_fmlos = 0
-end function
-
-function get_par_fitm(par_fitm)
-    use inputparam, only: fitm
-    implicit none
-    real(kindreal):: par_fitm
-    integer:: get_par_fitm
-    par_fitm = fitm
-    get_par_fitm = 0
-end function
-
-function set_par_fitm(par_fitm)
-    use inputparam, only: fitm
-    implicit none
-    real(kindreal):: par_fitm
-    integer:: set_par_fitm
-    fitm = par_fitm
-    set_par_fitm = 0
-end function
-
-function get_par_fitmi(par_fitmi)
-    use inputparam, only: fitmi
-    implicit none
-    real(kindreal):: par_fitmi
-    integer:: get_par_fitmi
-    par_fitmi = fitmi
-    get_par_fitmi = 0
-end function
-
-function set_par_fitmi(par_fitmi)
-    use inputparam, only: fitmi
-    implicit none
-    real(kindreal):: par_fitmi
-    integer:: set_par_fitmi
-    fitmi = par_fitmi
-    set_par_fitmi = 0
-end function
-
-function get_par_fitmi_default(par_fitmi_default)
-    use inputparam, only: fitmi_default
-    implicit none
-    real(kindreal):: par_fitmi_default
-    integer:: get_par_fitmi_default
-    par_fitmi_default = fitmi_default
-    get_par_fitmi_default = 0
-end function
-
-function set_par_fitmi_default(par_fitmi_default)
-    use inputparam, only: fitmi_default
-    implicit none
-    real(kindreal):: par_fitmi_default
-    integer:: set_par_fitmi_default
-    fitmi_default = par_fitmi_default
-    set_par_fitmi_default = 0
-end function
-
-function get_par_deltal(par_deltal)
-    use inputparam, only: deltal
-    implicit none
-    real(kindreal):: par_deltal
-    integer:: get_par_deltal
-    par_deltal = deltal
-    get_par_deltal = 0
-end function
-
-function set_par_deltal(par_deltal)
-    use inputparam, only: deltal
-    implicit none
-    real(kindreal):: par_deltal
-    integer:: set_par_deltal
-    deltal = par_deltal
-    set_par_deltal = 0
-end function
-
-function get_par_deltat(par_deltat)
-    use inputparam, only: deltat
-    implicit none
-    real(kindreal):: par_deltat
-    integer:: get_par_deltat
-    par_deltat = deltat
-    get_par_deltat = 0
-end function
-
-function set_par_deltat(par_deltat)
-    use inputparam, only: deltat
-    implicit none
-    real(kindreal):: par_deltat
-    integer:: set_par_deltat
-    deltat = par_deltat
-    set_par_deltat = 0
-end function
-
-function get_par_elph(par_elph)
-    use inputparam, only: elph
-    implicit none
-    real(kindreal):: par_elph
-    integer:: get_par_elph
-    par_elph = elph
-    get_par_elph = 0
-end function
-
-function set_par_elph(par_elph)
-    use inputparam, only: elph
-    implicit none
-    real(kindreal):: par_elph
-    integer:: set_par_elph
-    elph = par_elph
-    set_par_elph = 0
-end function
-
-function get_par_dovhp(par_dovhp)
-    use inputparam, only: dovhp
-    implicit none
-    real(kindreal):: par_dovhp
-    integer:: get_par_dovhp
-    par_dovhp = dovhp
-    get_par_dovhp = 0
-end function
-
-function set_par_dovhp(par_dovhp)
-    use inputparam, only: dovhp
-    implicit none
-    real(kindreal):: par_dovhp
-    integer:: set_par_dovhp
-    dovhp = par_dovhp
-    set_par_dovhp = 0
-end function
-
-function get_par_dunder(par_dunder)
-    use inputparam, only: dunder
-    implicit none
-    real(kindreal):: par_dunder
-    integer:: get_par_dunder
-    par_dunder = dunder
-    get_par_dunder = 0
-end function
-
-function set_par_dunder(par_dunder)
-    use inputparam, only: dunder
-    implicit none
-    real(kindreal):: par_dunder
-    integer:: set_par_dunder
-    dunder = par_dunder
-    set_par_dunder = 0
-end function
-
-function get_par_gkorm(par_gkorm)
-    use inputparam, only: gkorm
-    implicit none
-    real(kindreal):: par_gkorm
-    integer:: get_par_gkorm
-    par_gkorm = gkorm
-    get_par_gkorm = 0
-end function
-
-function set_par_gkorm(par_gkorm)
-    use inputparam, only: gkorm
-    implicit none
-    real(kindreal):: par_gkorm
-    integer:: set_par_gkorm
-    gkorm = par_gkorm
-    set_par_gkorm = 0
-end function
-
-function get_par_alph(par_alph)
-    use inputparam, only: alph
-    implicit none
-    real(kindreal):: par_alph
-    integer:: get_par_alph
-    par_alph = alph
-    get_par_alph = 0
-end function
-
-function set_par_alph(par_alph)
-    use inputparam, only: alph
-    implicit none
-    real(kindreal):: par_alph
-    integer:: set_par_alph
-    alph = par_alph
-    set_par_alph = 0
-end function
-
-function get_par_agdr(par_agdr)
-    use inputparam, only: agdr
-    implicit none
-    real(kindreal):: par_agdr
-    integer:: get_par_agdr
-    par_agdr = agdr
-    get_par_agdr = 0
-end function
-
-function set_par_agdr(par_agdr)
-    use inputparam, only: agdr
-    implicit none
-    real(kindreal):: par_agdr
-    integer:: set_par_agdr
-    agdr = par_agdr
-    set_par_agdr = 0
-end function
-
-function get_par_faktor(par_faktor)
-    use inputparam, only: faktor
-    implicit none
-    real(kindreal):: par_faktor
-    integer:: get_par_faktor
-    par_faktor = faktor
-    get_par_faktor = 0
-end function
-
-function set_par_faktor(par_faktor)
-    use inputparam, only: faktor
-    implicit none
-    real(kindreal):: par_faktor
-    integer:: set_par_faktor
-    faktor = par_faktor
-    set_par_faktor = 0
-end function
-
-function get_par_dgrp(par_dgrp)
-    use inputparam, only: dgrp
-    implicit none
-    real(kindreal):: par_dgrp
-    integer:: get_par_dgrp
-    par_dgrp = dgrp
-    get_par_dgrp = 0
-end function
-
-function set_par_dgrp(par_dgrp)
-    use inputparam, only: dgrp
-    implicit none
-    real(kindreal):: par_dgrp
-    integer:: set_par_dgrp
-    dgrp = par_dgrp
-    set_par_dgrp = 0
-end function
-
-function get_par_dgrl(par_dgrl)
-    use inputparam, only: dgrl
-    implicit none
-    real(kindreal):: par_dgrl
-    integer:: get_par_dgrl
-    par_dgrl = dgrl
-    get_par_dgrl = 0
-end function
-
-function set_par_dgrl(par_dgrl)
-    use inputparam, only: dgrl
-    implicit none
-    real(kindreal):: par_dgrl
-    integer:: set_par_dgrl
-    dgrl = par_dgrl
-    set_par_dgrl = 0
-end function
-
-function get_par_dgry(par_dgry)
-    use inputparam, only: dgry
-    implicit none
-    real(kindreal):: par_dgry
-    integer:: get_par_dgry
-    par_dgry = dgry
-    get_par_dgry = 0
-end function
-
-function set_par_dgry(par_dgry)
-    use inputparam, only: dgry
-    implicit none
-    real(kindreal):: par_dgry
-    integer:: set_par_dgry
-    dgry = par_dgry
-    set_par_dgry = 0
-end function
-
-function get_par_dgrc(par_dgrc)
-    use inputparam, only: dgrc
-    implicit none
-    real(kindreal):: par_dgrc
-    integer:: get_par_dgrc
-    par_dgrc = dgrc
-    get_par_dgrc = 0
-end function
-
-function set_par_dgrc(par_dgrc)
-    use inputparam, only: dgrc
-    implicit none
-    real(kindreal):: par_dgrc
-    integer:: set_par_dgrc
-    dgrc = par_dgrc
-    set_par_dgrc = 0
-end function
-
-function get_par_dgro(par_dgro)
-    use inputparam, only: dgro
-    implicit none
-    real(kindreal):: par_dgro
-    integer:: get_par_dgro
-    par_dgro = dgro
-    get_par_dgro = 0
-end function
-
-function set_par_dgro(par_dgro)
-    use inputparam, only: dgro
-    implicit none
-    real(kindreal):: par_dgro
-    integer:: set_par_dgro
-    dgro = par_dgro
-    set_par_dgro = 0
-end function
-
-function get_par_dgr20(par_dgr20)
-    use inputparam, only: dgr20
-    implicit none
-    real(kindreal):: par_dgr20
-    integer:: get_par_dgr20
-    par_dgr20 = dgr20
-    get_par_dgr20 = 0
-end function
-
-function set_par_dgr20(par_dgr20)
-    use inputparam, only: dgr20
-    implicit none
-    real(kindreal):: par_dgr20
-    integer:: set_par_dgr20
-    dgr20 = par_dgr20
-    set_par_dgr20 = 0
-end function
-
-function get_par_xcn(par_xcn)
-    use inputparam, only: xcn
-    implicit none
-    real(kindreal):: par_xcn
-    integer:: get_par_xcn
-    par_xcn = xcn
-    get_par_xcn = 0
-end function
-
-function set_par_xcn(par_xcn)
-    use inputparam, only: xcn
-    implicit none
-    real(kindreal):: par_xcn
-    integer:: set_par_xcn
-    xcn = par_xcn
-    set_par_xcn = 0
-end function
-
-function get_par_starname(par_starname)
-    use inputparam, only: starname
-    implicit none
-    character(256):: par_starname
-    integer:: get_par_starname
-    if (GenecStar%initialised) then
-        par_starname = GenecStar%starname
-    else
-        par_starname = InitialGenecStar%starname
-    endif
-    get_par_starname = 0
-end function
-
-function set_par_starname(par_starname)
-    use inputparam, only: starname
-    implicit none
-    character(256):: par_starname
-    integer:: set_par_starname
-    InitialGenecStar%starname = par_starname
-    set_par_starname = 0
-end function
 
 ! **** End Parameters
 
@@ -2959,6 +3025,10 @@ function get_time(time)
     get_time = 0
 end function
 
+
+
+
+
 function new_particle(index_of_the_star, mass, metallicity, am_starname)
     implicit none
     integer:: index_of_the_star, key
@@ -2973,6 +3043,453 @@ function new_particle(index_of_the_star, mass, metallicity, am_starname)
     InitialGenecStar%idefaut = 1
     
     new_particle = 0
+end function
+
+function new_stellar_model(&
+      integer_of_the_star,&
+      initialised, starname, nwseq, modanf, nzmod, end_at_phase, end_at_model, irot, isol, imagn, ialflu, ianiso, ipop3,&
+      ibasnet, phase, var_rates, bintide, binm2, periodini, const_per, iprezams, zinit, zsol, z, iopac, ikappa, idiff, iadvec,&
+      istati, icoeff, fenerg, richac, igamma, frein, K_Kawaler, Omega_saturation, rapcrilim, vwant, xfom, omega, xdial, idialo,&
+      idialu, Add_Flux, diff_only, B_initial, add_diff, n_mag, alpha_F, nsmooth, qminsmooth, imloss, fmlos, ifitm, fitm, fitmi,&
+      deltal, deltat, nndr, RSG_Mdot, SupraEddMdot, Be_mdotfrac, start_mdot, iledou, idifcon, iover, elph, my, dovhp, iunder,&
+      dunder, gkorm, alph, agdr, faktor, dgrp, dgrl, dgry, dgrc, dgro, dgr20, nbchx, nrband, xcn, islow, icncst, tauH_fit,&
+      display_plot, iauto, iprn, iout, itmin, xyfiles, idebug, itests, verbose, stop_deg, n_snap,&
+      m,gms,alter,gls,teff,glsv,teffv,dzeitj,dzeit,dzeitv,xmini,summas,ab,dm_lost,&
+      q,p,t,r,s,x,y3,y,xc12,xc13,xn14,xn15,xo16,xo17,xo18,xne20,xne22,xmg24,xmg25,xmg26,xf19,xne21,xna23,xal27,xsi28,&
+      xc14,xf18,xal26,xneut,xprot,omegi,xbid,xbid1,vp,vt,vr,vs,vx,vy,vy3,vxc12,vxc13,vxn14,vxn15,vxo16,vxo17,vxo18,&
+      vxne20,vxne22,vxmg24,vxmg25,vxmg26,vxf19,vxne21,vxna23,vxal27,vxsi28,vxc14,vxf18,vxal26g,vxneut,vxprot,vomegi,&
+      vxbid,vxbid1&
+      )
+    implicit none
+    integer:: integer_of_the_star
+    logical, intent(in):: &
+            initialised,var_rates,bintide,const_per,Add_Flux,diff_only,qminsmooth,SupraEddMdot,display_plot,xyfiles,verbose,&
+            stop_deg
+    integer, intent(in):: &
+            nwseq,modanf,nzmod,end_at_phase,end_at_model,irot,isol,imagn,ialflu,ianiso,ipop3,ibasnet,phase,iprezams,iopac,ikappa,&
+            idiff,iadvec,istati,icoeff,igamma,idialo,idialu,n_mag,nsmooth,imloss,ifitm,nndr,RSG_Mdot,iledou,idifcon,iover,my,&
+            iunder,nbchx,nrband,islow,icncst,tauH_fit,iauto,iprn,iout,itmin,idebug,itests,n_snap
+    real(kindreal), intent(in):: &
+            binm2,periodini,zinit,zsol,z,fenerg,richac,frein,K_Kawaler,Omega_saturation,rapcrilim,vwant,xfom,omega,xdial,&
+            B_initial,add_diff,alpha_F,fmlos,fitm,fitmi,deltal,deltat,Be_mdotfrac,start_mdot,elph,dovhp,dunder,gkorm,alph,&
+            agdr,faktor,dgrp,dgrl,dgry,dgrc,dgro,dgr20,xcn
+    character(len=200), intent(in):: &
+            starname
+    integer, intent(in) :: m
+    real(kindreal), intent(in) :: &
+            gms,alter,gls,teff,glsv,teffv,dzeitj,dzeit,dzeitv,xmini,summas,ab,&
+            dm_lost
+    !real(kindreal), dimension(ldi) :: &
+    real(kindreal), dimension(m), intent(in):: &
+            q,p,t,r,s,x,y3,y,xc12,xc13,xn14,xn15,xo16,xo17,xo18,xne20,xne22,xmg24,xmg25,xmg26,xf19,xne21,xna23,xal27,xsi28,&
+            xc14,xf18,xal26,xneut,xprot,omegi,xbid,xbid1,vp,vt,vr,vs,vx,vy,vy3,vxc12,vxc13,vxn14,vxn15,vxo16,vxo17,vxo18,&
+            vxne20,vxne22,vxmg24,vxmg25,vxmg26,vxf19,vxne21,vxna23,vxal27,vxsi28,vxc14,vxf18,vxal26g,vxneut,vxprot,vomegi,&
+            vxbid,vxbid1
+    integer:: new_stellar_model
+
+    GenecStar%initialised      = initialised
+    GenecStar%starname         = starname
+    !GenecStar%nwmd             = nwmd
+    GenecStar%nwseq            = nwseq            
+    GenecStar%modanf           = modanf
+    GenecStar%nzmod            = nzmod
+    GenecStar%end_at_phase     = end_at_phase
+    GenecStar%end_at_model     = end_at_model
+    GenecStar%irot             = irot
+    GenecStar%isol             = isol
+    GenecStar%imagn            = imagn
+    GenecStar%ialflu           = ialflu
+    GenecStar%ianiso           = ianiso
+    GenecStar%ipop3            = ipop3
+    GenecStar%ibasnet          = ibasnet
+    GenecStar%phase            = phase
+    GenecStar%iprezams         = iprezams
+    GenecStar%var_rates        = var_rates
+    GenecStar%bintide          = bintide
+    GenecStar%binm2            = binm2
+    GenecStar%periodini        = periodini
+    GenecStar%const_per        = const_per
+    GenecStar%iopac            = iopac
+    GenecStar%ikappa           = ikappa
+    GenecStar%zinit            = zinit
+    GenecStar%zsol             = zsol
+    GenecStar%z                = z
+    GenecStar%idiff            = idiff
+    GenecStar%iadvec           = iadvec
+    GenecStar%istati           = istati
+    GenecStar%icoeff           = icoeff
+    GenecStar%igamma           = igamma
+    GenecStar%idialo           = idialo
+    GenecStar%idialu           = idialu
+    GenecStar%n_mag            = n_mag
+    GenecStar%nsmooth          = nsmooth
+    GenecStar%fenerg           = fenerg
+    GenecStar%richac           = richac
+    GenecStar%frein            = frein
+    GenecStar%K_Kawaler        = K_Kawaler
+    GenecStar%Omega_saturation = Omega_saturation
+    GenecStar%rapcrilim        = rapcrilim
+    GenecStar%vwant            = vwant
+    GenecStar%xfom             = xfom
+    GenecStar%omega            = omega
+    GenecStar%xdial            = xdial
+    GenecStar%B_initial        = B_initial
+    GenecStar%add_diff         = add_diff
+    GenecStar%alpha_F          = alpha_F
+    GenecStar%Add_Flux         = Add_Flux
+    GenecStar%diff_only        = diff_only
+    GenecStar%qminsmooth       = qminsmooth
+    GenecStar%imloss           = imloss
+    GenecStar%ifitm            = ifitm
+    GenecStar%nndr             = nndr
+    GenecStar%RSG_Mdot         = RSG_Mdot
+    GenecStar%fmlos            = fmlos
+    GenecStar%fitm             = fitm
+    GenecStar%fitmi            = fitmi
+    GenecStar%deltal           = deltal
+    GenecStar%deltat           = deltat
+    GenecStar%Be_mdotfrac      = Be_mdotfrac
+    GenecStar%start_mdot       = start_mdot
+    GenecStar%SupraEddMdot     = SupraEddMdot
+    GenecStar%iledou           = iledou
+    GenecStar%idifcon          = idifcon
+    GenecStar%my               = my
+    GenecStar%iover            = iover
+    GenecStar%iunder           = iunder
+    GenecStar%elph             = elph
+    GenecStar%dovhp            = dovhp
+    GenecStar%dunder           = dunder
+    GenecStar%nbchx            = nbchx
+    GenecStar%nrband           = nrband
+    GenecStar%gkorm            = gkorm
+    GenecStar%alph             = alph
+    GenecStar%agdr             = agdr
+    GenecStar%faktor           = faktor
+    GenecStar%dgrp             = dgrp
+    GenecStar%dgrl             = dgrl
+    GenecStar%dgry             = dgry
+    GenecStar%dgrc             = dgrc
+    GenecStar%dgro             = dgro
+    GenecStar%dgr20            = dgr20
+    GenecStar%islow            = islow
+    GenecStar%icncst           = icncst
+    GenecStar%tauH_fit         = tauH_fit
+    GenecStar%xcn              = xcn
+    GenecStar%iauto            = iauto
+    GenecStar%iprn             = iprn
+    GenecStar%iout             = iout
+    GenecStar%itmin            = itmin
+    GenecStar%idebug           = idebug
+    GenecStar%itests           = itests
+    GenecStar%n_snap           = n_snap
+    GenecStar%display_plot     = display_plot
+    GenecStar%xyfiles          = xyfiles
+    GenecStar%verbose          = verbose
+    GenecStar%stop_deg         = stop_deg
+
+    GenecStar%m                = m
+    GenecStar%gms              = gms
+    GenecStar%alter            = alter
+    GenecStar%gls              = gls
+    GenecStar%teff             = teff
+    GenecStar%glsv             = glsv
+    GenecStar%teffv            = teffv
+    GenecStar%dzeitj           = dzeitj
+    GenecStar%dzeit            = dzeit
+    GenecStar%dzeitv           = dzeitv
+    GenecStar%summas           = summas
+    GenecStar%xmini            = xmini
+    GenecStar%ab               = ab
+    GenecStar%dm_lost          = dm_lost
+    GenecStar%q                = q
+    GenecStar%p                = p
+    GenecStar%t                = t
+    GenecStar%r                = r
+    GenecStar%s                = s
+    GenecStar%x                = x
+    GenecStar%y                = y
+    GenecStar%xc12             = xc12
+    GenecStar%vp               = vp
+    GenecStar%vt               = vt
+    GenecStar%vr               = vr
+    GenecStar%vs               = vs
+    GenecStar%xo16             = xo16
+    GenecStar%vx               = vx
+    GenecStar%vy               = vy
+    GenecStar%vxc12            = vxc12
+    GenecStar%vxo16            = vxo16
+    GenecStar%y3               = y3
+    GenecStar%xc13             = xc13
+    GenecStar%xn14             = xn14
+    GenecStar%xn15             = xn15
+    GenecStar%xo17             = xo17
+    GenecStar%xo18             = xo18
+    GenecStar%vy3              = vy3
+    GenecStar%vxc13            = vxc13
+    GenecStar%vxn14            = vxn14
+    GenecStar%vxn15            = vxn15
+    GenecStar%vxo17            = vxo17
+    GenecStar%vxo18            = vxo18
+    GenecStar%xne20            = xne20
+    GenecStar%xne22            = xne22
+    GenecStar%xmg24            = xmg24
+    GenecStar%xmg25            = xmg25
+    GenecStar%xmg26            = xmg26
+    GenecStar%vxne20           = vxne20
+    GenecStar%vxne22           = vxne22
+    GenecStar%vxmg24           = vxmg24
+    GenecStar%vxmg25           = vxmg25
+    GenecStar%vxmg26           = vxmg26
+    GenecStar%omegi            = omegi
+    GenecStar%vomegi           = vomegi
+    GenecStar%xf19             = xf19
+    GenecStar%xne21            = xne21
+    GenecStar%xna23            = xna23
+    GenecStar%xal26            = xal26
+    GenecStar%xal27            = xal27
+    GenecStar%xsi28            = xsi28
+    GenecStar%vxf19            = vxf19
+    GenecStar%vxne21           = vxne21
+    GenecStar%vxna23           = vxna23
+    GenecStar%vxal26g          = vxal26g
+    GenecStar%vxal27           = vxal27
+    GenecStar%vxsi28           = vxsi28
+    GenecStar%xneut            = xneut
+    GenecStar%xprot            = xprot
+    GenecStar%xc14             = xc14
+    GenecStar%xf18             = xf18
+    GenecStar%xbid             = xbid
+    GenecStar%xbid1            = xbid1
+    GenecStar%vxneut           = vxneut
+    GenecStar%vxprot           = vxprot
+    GenecStar%vxc14            = vxc14
+    GenecStar%vxf18            = vxf18
+    GenecStar%vxbid            = vxbid
+    GenecStar%vxbid1           = vxbid1
+
+    new_stellar_model = 0
+end function
+
+function get_stellar_model(&
+      integer_of_the_star,&
+      initialised, starname, nwseq, modanf, nzmod, end_at_phase, end_at_model, irot, isol, imagn, ialflu, ianiso, ipop3,&
+      ibasnet, phase, var_rates, bintide, binm2, periodini, const_per, iprezams, zinit, zsol, z, iopac, ikappa, idiff, iadvec,&
+      istati, icoeff, fenerg, richac, igamma, frein, K_Kawaler, Omega_saturation, rapcrilim, vwant, xfom, omega, xdial, idialo,&
+      idialu, Add_Flux, diff_only, B_initial, add_diff, n_mag, alpha_F, nsmooth, qminsmooth, imloss, fmlos, ifitm, fitm, fitmi,&
+      deltal, deltat, nndr, RSG_Mdot, SupraEddMdot, Be_mdotfrac, start_mdot, iledou, idifcon, iover, elph, my, dovhp, iunder,&
+      dunder, gkorm, alph, agdr, faktor, dgrp, dgrl, dgry, dgrc, dgro, dgr20, nbchx, nrband, xcn, islow, icncst, tauH_fit,&
+      display_plot, iauto, iprn, iout, itmin, xyfiles, idebug, itests, verbose, stop_deg, n_snap,&
+      m,gms,alter,gls,teff,glsv,teffv,dzeitj,dzeit,dzeitv,xmini,summas,ab,dm_lost,&
+      q,p,t,r,s,x,y3,y,xc12,xc13,xn14,xn15,xo16,xo17,xo18,xne20,xne22,xmg24,xmg25,xmg26,xf19,xne21,xna23,xal27,xsi28,&
+      xc14,xf18,xal26,xneut,xprot,omegi,xbid,xbid1,vp,vt,vr,vs,vx,vy,vy3,vxc12,vxc13,vxn14,vxn15,vxo16,vxo17,vxo18,&
+      vxne20,vxne22,vxmg24,vxmg25,vxmg26,vxf19,vxne21,vxna23,vxal27,vxsi28,vxc14,vxf18,vxal26g,vxneut,vxprot,vomegi,&
+      vxbid,vxbid1&
+      )
+    implicit none
+    integer:: integer_of_the_star
+    logical, intent(out):: &
+            initialised,var_rates,bintide,const_per,Add_Flux,diff_only,qminsmooth,SupraEddMdot,display_plot,xyfiles,verbose,&
+            stop_deg
+    integer, intent(out):: &
+            nwseq,modanf,nzmod,end_at_phase,end_at_model,irot,isol,imagn,ialflu,ianiso,ipop3,ibasnet,phase,iprezams,iopac,ikappa,&
+            idiff,iadvec,istati,icoeff,igamma,idialo,idialu,n_mag,nsmooth,imloss,ifitm,nndr,RSG_Mdot,iledou,idifcon,iover,my,&
+            iunder,nbchx,nrband,islow,icncst,tauH_fit,iauto,iprn,iout,itmin,idebug,itests,n_snap
+    real(kindreal), intent(out):: &
+            binm2,periodini,zinit,zsol,z,fenerg,richac,frein,K_Kawaler,Omega_saturation,rapcrilim,vwant,xfom,omega,xdial,&
+            B_initial,add_diff,alpha_F,fmlos,fitm,fitmi,deltal,deltat,Be_mdotfrac,start_mdot,elph,dovhp,dunder,gkorm,alph,&
+            agdr,faktor,dgrp,dgrl,dgry,dgrc,dgro,dgr20,xcn
+    character(len=200), intent(out):: &
+            starname
+    integer, intent(out) :: m
+    real(kindreal), intent(out) :: &
+            gms,alter,gls,teff,glsv,teffv,dzeitj,dzeit,dzeitv,xmini,summas,ab,&
+            dm_lost
+    real(kindreal), dimension(GenecStar%m), intent(out):: &
+            q,p,t,r,s,x,y3,y,xc12,xc13,xn14,xn15,xo16,xo17,xo18,xne20,xne22,xmg24,xmg25,xmg26,xf19,xne21,xna23,xal27,xsi28,&
+            xc14,xf18,xal26,xneut,xprot,omegi,xbid,xbid1,vp,vt,vr,vs,vx,vy,vy3,vxc12,vxc13,vxn14,vxn15,vxo16,vxo17,vxo18,&
+            vxne20,vxne22,vxmg24,vxmg25,vxmg26,vxf19,vxne21,vxna23,vxal27,vxsi28,vxc14,vxf18,vxal26g,vxneut,vxprot,vomegi,&
+            vxbid,vxbid1
+    integer:: get_stellar_model
+
+    initialised      = GenecStar%initialised
+    starname         = GenecStar%starname
+    nwseq            = GenecStar%nwseq            
+    modanf           = GenecStar%modanf
+    nzmod            = GenecStar%nzmod
+    end_at_phase     = GenecStar%end_at_phase
+    end_at_model     = GenecStar%end_at_model
+    irot             = GenecStar%irot
+    isol             = GenecStar%isol
+    imagn            = GenecStar%imagn
+    ialflu           = GenecStar%ialflu
+    ianiso           = GenecStar%ianiso
+    ipop3            = GenecStar%ipop3
+    ibasnet          = GenecStar%ibasnet
+    phase            = GenecStar%phase
+    iprezams         = GenecStar%iprezams
+    var_rates        = GenecStar%var_rates
+    bintide          = GenecStar%bintide
+    binm2            = GenecStar%binm2
+    periodini        = GenecStar%periodini
+    const_per        = GenecStar%const_per
+    iopac            = GenecStar%iopac
+    ikappa           = GenecStar%ikappa
+    zinit            = GenecStar%zinit
+    zsol             = GenecStar%zsol
+    z                = GenecStar%z
+    idiff            = GenecStar%idiff
+    iadvec           = GenecStar%iadvec
+    istati           = GenecStar%istati
+    icoeff           = GenecStar%icoeff
+    igamma           = GenecStar%igamma
+    idialo           = GenecStar%idialo
+    idialu           = GenecStar%idialu
+    n_mag            = GenecStar%n_mag
+    nsmooth          = GenecStar%nsmooth
+    fenerg           = GenecStar%fenerg
+    richac           = GenecStar%richac
+    frein            = GenecStar%frein
+    K_Kawaler        = GenecStar%K_Kawaler
+    Omega_saturation = GenecStar%Omega_saturation
+    rapcrilim        = GenecStar%rapcrilim
+    vwant            = GenecStar%vwant
+    xfom             = GenecStar%xfom
+    omega            = GenecStar%omega
+    xdial            = GenecStar%xdial
+    B_initial        = GenecStar%B_initial
+    add_diff         = GenecStar%add_diff
+    alpha_F          = GenecStar%alpha_F
+    Add_Flux         = GenecStar%Add_Flux
+    diff_only        = GenecStar%diff_only
+    qminsmooth       = GenecStar%qminsmooth
+    imloss           = GenecStar%imloss
+    ifitm            = GenecStar%ifitm
+    nndr             = GenecStar%nndr
+    RSG_Mdot         = GenecStar%RSG_Mdot
+    fmlos            = GenecStar%fmlos
+    fitm             = GenecStar%fitm
+    fitmi            = GenecStar%fitmi
+    deltal           = GenecStar%deltal
+    deltat           = GenecStar%deltat
+    Be_mdotfrac      = GenecStar%Be_mdotfrac
+    start_mdot       = GenecStar%start_mdot
+    SupraEddMdot     = GenecStar%SupraEddMdot
+    iledou           = GenecStar%iledou
+    idifcon          = GenecStar%idifcon
+    my               = GenecStar%my
+    iover            = GenecStar%iover
+    iunder           = GenecStar%iunder
+    elph             = GenecStar%elph
+    dovhp            = GenecStar%dovhp
+    dunder           = GenecStar%dunder
+    nbchx            = GenecStar%nbchx
+    nrband           = GenecStar%nrband
+    gkorm            = GenecStar%gkorm
+    alph             = GenecStar%alph
+    agdr             = GenecStar%agdr
+    faktor           = GenecStar%faktor
+    dgrp             = GenecStar%dgrp
+    dgrl             = GenecStar%dgrl
+    dgry             = GenecStar%dgry
+    dgrc             = GenecStar%dgrc
+    dgro             = GenecStar%dgro
+    dgr20            = GenecStar%dgr20
+    islow            = GenecStar%islow
+    icncst           = GenecStar%icncst
+    tauH_fit         = GenecStar%tauH_fit
+    xcn              = GenecStar%xcn
+    iauto            = GenecStar%iauto
+    iprn             = GenecStar%iprn
+    iout             = GenecStar%iout
+    itmin            = GenecStar%itmin
+    idebug           = GenecStar%idebug
+    itests           = GenecStar%itests
+    n_snap           = GenecStar%n_snap
+    display_plot     = GenecStar%display_plot
+    xyfiles          = GenecStar%xyfiles
+    verbose          = GenecStar%verbose
+    stop_deg         = GenecStar%stop_deg
+                                 
+    m                = GenecStar%m
+    gms              = GenecStar%gms
+    alter            = GenecStar%alter
+    gls              = GenecStar%gls
+    teff             = GenecStar%teff
+    glsv             = GenecStar%glsv
+    teffv            = GenecStar%teffv
+    dzeitj           = GenecStar%dzeitj
+    dzeit            = GenecStar%dzeit
+    dzeitv           = GenecStar%dzeitv
+    summas           = GenecStar%summas
+    xmini            = GenecStar%xmini
+    ab               = GenecStar%ab
+    dm_lost          = GenecStar%dm_lost
+    q                = GenecStar%q
+    p                = GenecStar%p
+    t                = GenecStar%t
+    r                = GenecStar%r
+    s                = GenecStar%s
+    x                = GenecStar%x
+    y                = GenecStar%y
+    xc12             = GenecStar%xc12
+    vp               = GenecStar%vp
+    vt               = GenecStar%vt
+    vr               = GenecStar%vr
+    vs               = GenecStar%vs
+    xo16             = GenecStar%xo16
+    vx               = GenecStar%vx
+    vy               = GenecStar%vy
+    vxc12            = GenecStar%vxc12
+    vxo16            = GenecStar%vxo16
+    y3               = GenecStar%y3
+    xc13             = GenecStar%xc13
+    xn14             = GenecStar%xn14
+    xn15             = GenecStar%xn15
+    xo17             = GenecStar%xo17
+    xo18             = GenecStar%xo18
+    vy3              = GenecStar%vy3
+    vxc13            = GenecStar%vxc13
+    vxn14            = GenecStar%vxn14
+    vxn15            = GenecStar%vxn15
+    vxo17            = GenecStar%vxo17
+    vxo18            = GenecStar%vxo18
+    xne20            = GenecStar%xne20
+    xne22            = GenecStar%xne22
+    xmg24            = GenecStar%xmg24
+    xmg25            = GenecStar%xmg25
+    xmg26            = GenecStar%xmg26
+    vxne20           = GenecStar%vxne20
+    vxne22           = GenecStar%vxne22
+    vxmg24           = GenecStar%vxmg24
+    vxmg25           = GenecStar%vxmg25
+    vxmg26           = GenecStar%vxmg26
+    omegi            = GenecStar%omegi
+    vomegi           = GenecStar%vomegi
+    xf19             = GenecStar%xf19
+    xne21            = GenecStar%xne21
+    xna23            = GenecStar%xna23
+    xal26            = GenecStar%xal26
+    xal27            = GenecStar%xal27
+    xsi28            = GenecStar%xsi28
+    vxf19            = GenecStar%vxf19
+    vxne21           = GenecStar%vxne21
+    vxna23           = GenecStar%vxna23
+    vxal26g          = GenecStar%vxal26g
+    vxal27           = GenecStar%vxal27
+    vxsi28           = GenecStar%vxsi28
+    xneut            = GenecStar%xneut
+    xprot            = GenecStar%xprot
+    xc14             = GenecStar%xc14
+    xf18             = GenecStar%xf18
+    xbid             = GenecStar%xbid
+    xbid1            = GenecStar%xbid1
+    vxneut           = GenecStar%vxneut
+    vxprot           = GenecStar%vxprot
+    vxc14            = GenecStar%vxc14
+    vxf18            = GenecStar%vxf18
+    vxbid            = GenecStar%vxbid
+    vxbid1           = GenecStar%vxbid1
+    get_stellar_model = 0
 end function
 
 function recommit_parameters()
@@ -3000,37 +3517,37 @@ function set_genec_path(path)
     set_genec_path = 0
 end function
 
-function get_starname(index_of_the_star, am_starname)
-    implicit none
-    integer:: get_starname, index_of_the_star
-    character(len=200):: am_starname
-    am_starname = InitialGenecStar%starname
-    get_starname = 0
-end function
+!function get_starname(index_of_the_star, am_starname)
+!    implicit none
+!    integer:: get_starname, index_of_the_star
+!    character(len=200):: am_starname
+!    am_starname = InitialGenecStar%starname
+!    get_starname = 0
+!end function
+!
+!function set_starname(index_of_the_star, am_starname)
+!    implicit none
+!    integer:: set_starname, index_of_the_star
+!    character(len=200):: am_starname
+!    InitialGenecStar%starname = am_starname
+!    set_starname = 0
+!end function
 
-function set_starname(index_of_the_star, am_starname)
-    implicit none
-    integer:: set_starname, index_of_the_star
-    character(len=200):: am_starname
-    InitialGenecStar%starname = am_starname
-    set_starname = 0
-end function
-
-function get_phase(index_of_the_star, phase)
-    implicit none
-    integer:: index_of_the_star, phase
-    integer:: get_phase
-    phase = GenecStar%phase
-    get_phase = 0
-end function
-
-function set_phase(index_of_the_star, phase)
-    implicit none
-    integer:: index_of_the_star, phase
-    integer:: set_phase
-    GenecStar%phase = phase
-    set_phase = 0
-end function
+!function get_phase(index_of_the_star, phase)
+!    implicit none
+!    integer:: index_of_the_star, phase
+!    integer:: get_phase
+!    phase = GenecStar%phase
+!    get_phase = 0
+!end function
+!
+!function set_phase(index_of_the_star, phase)
+!    implicit none
+!    integer:: index_of_the_star, phase
+!    integer:: set_phase
+!    GenecStar%phase = phase
+!    set_phase = 0
+!end function
 
 function set_temperature_at_zone(index_of_the_star, zone, T_i)
     implicit none

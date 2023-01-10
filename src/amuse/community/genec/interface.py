@@ -1,11 +1,16 @@
-import numpy
+"""
+Interface for GENEC.
+"""
+
+import numpy as np
 from amuse.datamodel import ParticlesWithFilteredAttributes
 from amuse.community import CodeInterface
 from amuse.community import LegacyFunctionSpecification
-from amuse.community import legacy_function
+from amuse.community import legacy_function, remote_function
 from amuse.community import LiteratureReferencesMixIn
 from amuse.community import CodeWithDataDirectories
 from amuse.community import InCodeComponentImplementation
+from amuse.community import NO_UNIT, ERROR_CODE
 from amuse.community.interface.se import StellarEvolution
 from amuse.community.interface.se import StellarEvolutionInterface
 from amuse.community.interface.se import InternalStellarStructure
@@ -45,6 +50,193 @@ SPECIES_NAMES = {
     'bid1': 27,
 }
 
+GENEC_STAR_PROPERTIES = {
+    'n_snap': ('int32', NO_UNIT, "number of steps between snapshots [0]"),
+    #'ipoly': ('int32', NO_UNIT, "polytropic index"),
+}
+
+GENEC_STAR_PARAMETERS = {
+    'initialised': ['bool', NO_UNIT, "True if the star is an intialised model"],
+    'starname': ['string', NO_UNIT, "Name of the star"],
+    'nwseq': ['int32', NO_UNIT, ""],
+    'modanf': ['int32', NO_UNIT, ""],
+    'nzmod': ['int32', NO_UNIT, ""],
+    'end_at_phase': ['int32', NO_UNIT, "Stop if this phase is reached"],
+    'end_at_model': ['int32', NO_UNIT, "Stop if this model number is reached"],
+    'irot': ['int32', NO_UNIT, ""],
+    'isol': ['int32', NO_UNIT, ""],
+    'imagn': ['int32', NO_UNIT, ""],
+    'ialflu': ['int32', NO_UNIT, ""],
+    'ianiso': ['int32', NO_UNIT, ""],
+    'ipop3': ['int32', NO_UNIT, ""],
+    'ibasnet': ['int32', NO_UNIT, ""],
+    'phase': ['int32', NO_UNIT, ""],
+    'var_rates': ['bool', NO_UNIT, ""],
+    'bintide': ['bool', NO_UNIT, ""],
+    'binm2': ['float64', NO_UNIT, ""],
+    'periodini': ['float64', NO_UNIT, ""],
+    'const_per': ['bool', NO_UNIT, ""],
+    'iprezams': ['int32', NO_UNIT, ""],
+    'zinit': ['float64', NO_UNIT, ""],
+    'zsol': ['float64', NO_UNIT, ""],
+    'z': ['float64', NO_UNIT, ""],
+    'iopac': ['int32', NO_UNIT, ""],
+    'ikappa': ['int32', NO_UNIT, ""],
+    'idiff': ['int32', NO_UNIT, ""],
+    'iadvec': ['int32', NO_UNIT, ""],
+    'istati': ['int32', NO_UNIT, ""],
+    'icoeff': ['int32', NO_UNIT, ""],
+    'fenerg': ['float64', NO_UNIT, ""],
+    'richac': ['float64', NO_UNIT, ""],
+    'igamma': ['int32', NO_UNIT, ""],
+    'frein': ['float64', NO_UNIT, ""],
+    'K_Kawaler': ['float64', NO_UNIT, ""],
+    'Omega_saturation': ['float64', NO_UNIT, ""],
+    'rapcrilim': ['float64', NO_UNIT, ""],
+    'vwant': ['float64', NO_UNIT, ""],
+    'xfom': ['float64', NO_UNIT, ""],
+    'omega': ['float64', NO_UNIT, ""],
+    'xdial': ['float64', NO_UNIT, ""],
+    'idialo': ['int32', NO_UNIT, ""],
+    'idialu': ['int32', NO_UNIT, ""],
+    'Add_Flux': ['bool', NO_UNIT, ""],
+    'diff_only': ['bool', NO_UNIT, ""],
+    'B_initial': ['float64', NO_UNIT, ""],
+    'add_diff': ['float64', NO_UNIT, ""],
+    'n_mag': ['int32', NO_UNIT, ""],
+    'alpha_F': ['float64', NO_UNIT, ""],
+    'nsmooth': ['int32', NO_UNIT, ""],
+    'qminsmooth': ['bool', NO_UNIT, ""],
+    'imloss': ['int32', NO_UNIT, ""],
+    'fmlos': ['float64', NO_UNIT, ""],
+    'ifitm': ['int32', NO_UNIT, ""],
+    'fitm': ['float64', NO_UNIT, ""],
+    'fitmi': ['float64', NO_UNIT, ""],
+    'deltal': ['float64', NO_UNIT, ""],
+    'deltat': ['float64', NO_UNIT, ""],
+    'nndr': ['int32', NO_UNIT, ""],
+    'RSG_Mdot': ['int32', NO_UNIT, ""],
+    'SupraEddMdot': ['bool', NO_UNIT, ""],
+    'Be_mdotfrac': ['float64', NO_UNIT, ""],
+    'start_mdot': ['float64', NO_UNIT, ""],
+    'iledou': ['int32', NO_UNIT, ""],
+    'idifcon': ['int32', NO_UNIT, ""],
+    'iover': ['int32', NO_UNIT, ""],
+    'elph': ['float64', NO_UNIT, ""],
+    'my': ['int32', NO_UNIT, ""],
+    'dovhp': ['float64', NO_UNIT, ""],
+    'iunder': ['int32', NO_UNIT, ""],
+    'dunder': ['float64', NO_UNIT, ""],
+    'gkorm': ['float64', NO_UNIT, ""],
+    'alph': ['float64', NO_UNIT, ""],
+    'agdr': ['float64', NO_UNIT, ""],
+    'faktor': ['float64', NO_UNIT, ""],
+    'dgrp': ['float64', NO_UNIT, ""],
+    'dgrl': ['float64', NO_UNIT, ""],
+    'dgry': ['float64', NO_UNIT, ""],
+    'dgrc': ['float64', NO_UNIT, ""],
+    'dgro': ['float64', NO_UNIT, ""],
+    'dgr20': ['float64', NO_UNIT, ""],
+    'nbchx': ['int32', NO_UNIT, ""],
+    'nrband': ['int32', NO_UNIT, ""],
+    'xcn': ['float64', NO_UNIT, ""],
+    'islow': ['int32', NO_UNIT, ""],
+    'icncst': ['int32', NO_UNIT, ""],
+    'tauH_fit': ['int32', NO_UNIT, ""],
+    'display_plot': ['bool', NO_UNIT, ""],
+    'iauto': ['int32', NO_UNIT, ""],
+    'iprn': ['int32', NO_UNIT, ""],
+    'iout': ['int32', NO_UNIT, ""],
+    'itmin': ['int32', NO_UNIT, ""],
+    'xyfiles': ['bool', NO_UNIT, ""],
+    'idebug': ['int32', NO_UNIT, ""],
+    'itests': ['int32', NO_UNIT, ""],
+    'verbose': ['bool', NO_UNIT, ""],
+    'stop_deg': ['bool', NO_UNIT, ""],
+    'n_snap': ['int32', NO_UNIT, "number of steps between snapshots [0]"],
+}
+
+GENEC_STAR_STRUCTURE = {
+    'm': ['int32', NO_UNIT, "number of zones"],
+    'gms': ['float64', units.MSun, "total mass"],
+    'alter': ['float64', units.julianyr, "stellar age"],
+    'gls': ['float64', NO_UNIT, ""],
+    'teff': ['float64', units.K, "effective temperature"],
+    'glsv': ['float64', NO_UNIT, ""],
+    'teffv': ['float64', units.K, "previous effective temperature"],
+    'dzeitj': ['float64', units.julianyr, "time step"],
+    'dzeit': ['float64', units.s, "time step"],
+    'dzeitv': ['float64', units.s, "previous time step"],
+    'xmini': ['float64', NO_UNIT, ""],
+    'summas': ['float64', units.MSun, "total mass"],
+    'ab': ['float64', NO_UNIT, ""],
+    'dm_lost': ['float64', units.MSun, "total mass lost"],
+    'q': ['float64', NO_UNIT, ""],
+    'p': ['float64', NO_UNIT, ""],
+    't': ['float64', NO_UNIT, ""],
+    'r': ['float64', NO_UNIT, ""],
+    's': ['float64', NO_UNIT, ""],
+    'x': ['float64', NO_UNIT, "H fraction"],
+    'y3': ['float64', NO_UNIT, "He3 fraction"],
+    'y': ['float64', NO_UNIT, "He fraction"],
+    'xc12': ['float64', NO_UNIT, "C12 fraction"],
+    'xc13': ['float64', NO_UNIT, "C13 fraction"],
+    'xn14': ['float64', NO_UNIT, "N14 fraction"],
+    'xn15': ['float64', NO_UNIT, ""],
+    'xo16': ['float64', NO_UNIT, ""],
+    'xo17': ['float64', NO_UNIT, ""],
+    'xo18': ['float64', NO_UNIT, ""],
+    'xne20': ['float64', NO_UNIT, ""],
+    'xne22': ['float64', NO_UNIT, ""],
+    'xmg24': ['float64', NO_UNIT, ""],
+    'xmg25': ['float64', NO_UNIT, ""],
+    'xmg26': ['float64', NO_UNIT, ""],
+    'xf19': ['float64', NO_UNIT, ""],
+    'xne21': ['float64', NO_UNIT, ""],
+    'xna23': ['float64', NO_UNIT, ""],
+    'xal27': ['float64', NO_UNIT, ""],
+    'xsi28': ['float64', NO_UNIT, ""],
+    'xc14': ['float64', NO_UNIT, ""],
+    'xf18': ['float64', NO_UNIT, ""],
+    'xal26': ['float64', NO_UNIT, ""],
+    'xneut': ['float64', NO_UNIT, "Neutron fraction"],
+    'xprot': ['float64', NO_UNIT, "Proton fraction"],
+    'omegi': ['float64', NO_UNIT, "Rotation"],
+    'xbid': ['float64', NO_UNIT, ""],
+    'xbid1': ['float64', NO_UNIT, ""],
+    'vp': ['float64', NO_UNIT, ""],
+    'vt': ['float64', NO_UNIT, ""],
+    'vr': ['float64', NO_UNIT, ""],
+    'vs': ['float64', NO_UNIT, ""],
+    'vx': ['float64', NO_UNIT, ""],
+    'vy': ['float64', NO_UNIT, ""],
+    'vy3': ['float64', NO_UNIT, ""],
+    'vxc12': ['float64', NO_UNIT, ""],
+    'vxc13': ['float64', NO_UNIT, ""],
+    'vxn14': ['float64', NO_UNIT, ""],
+    'vxn15': ['float64', NO_UNIT, ""],
+    'vxo16': ['float64', NO_UNIT, ""],
+    'vxo17': ['float64', NO_UNIT, ""],
+    'vxo18': ['float64', NO_UNIT, ""],
+    'vxne20': ['float64', NO_UNIT, ""],
+    'vxne22': ['float64', NO_UNIT, ""],
+    'vxmg24': ['float64', NO_UNIT, ""],
+    'vxmg25': ['float64', NO_UNIT, ""],
+    'vxmg26': ['float64', NO_UNIT, ""],
+    'vxf19': ['float64', NO_UNIT, ""],
+    'vxne21': ['float64', NO_UNIT, ""],
+    'vxna23': ['float64', NO_UNIT, ""],
+    'vxal27': ['float64', NO_UNIT, ""],
+    'vxsi28': ['float64', NO_UNIT, ""],
+    'vxc14': ['float64', NO_UNIT, ""],
+    'vxf18': ['float64', NO_UNIT, ""],
+    'vxal26g': ['float64', NO_UNIT, ""],
+    'vxneut': ['float64', NO_UNIT, ""],
+    'vxprot': ['float64', NO_UNIT, ""],
+    'vomegi': ['float64', NO_UNIT, ""],
+    'vxbid': ['float64', NO_UNIT, ""],
+    'vxbid1': ['float64', NO_UNIT, ""],
+}
 
 class GenecInterface(
     CodeInterface,
@@ -75,3252 +267,793 @@ class GenecInterface(
         function.result_type = 'int32'
         return function
 
-    @legacy_function
-    def write_genec_model():
-        function = LegacyFunctionSpecification()
-        function.result_type = 'int32'
-        return function
-
-    @legacy_function
-    def set_genec_path():
-        """
-        set path to Genec data directories
-        """
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'genec_path', dtype='string', direction=function.IN,
-            description="Path to Genec",
-        )
-        function.result_type = 'int32'
-        function.result_doc = """
-        0 - OK
-            Current value was set
-        -1 - ERROR
-            Directory does not exist
-        """
-        return function
-
-    # @legacy_function
-    # def read_genec_model():
-    #     """
-    #     Read a previously saved GENEC model
-    #     """
-    #     function = LegacyFunctionSpecification()
-    #     function.can_handle_array = False
-    #     function.addParameter(
-    #         'index_of_the_star', dtype='int32', direction=function.OUT,
-    #         description="index of the star",
-    #     )
-    #     function.addParameter(
-    #         'cardfilename', dtype='string', direction=function.IN,
-    #         description="GENEC input card",
-    #     )
-    #     function.result_type = 'int32'
-    #     return function
-    # Parameters
-
-    @legacy_function
-    def get_par_n_snap():
-        'get parameter n_snap'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'n_snap', dtype='int32',
-            direction=function.OUT,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            Got the value.
-        -1 - ERROR
-            Unable to get.
-        '''
-        return function
-
-    @legacy_function
-    def set_par_n_snap():
-        'set parameter n_snap'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'n_snap', dtype='int32',
-            direction=function.IN,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            The value has been set.
-        -1 - ERROR
-            Unable to set.
-        -2 - ERROR
-            Cannot set at this point, already running.
-        '''
-        return function
-
-    @legacy_function
-    def get_par_ipoly():
-        'get parameter ipoly'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'ipoly', dtype='int32',
-            direction=function.OUT,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            Got the value.
-        -1 - ERROR
-            Unable to get.
-        '''
-        return function
-
-    @legacy_function
-    def set_par_ipoly():
-        'set parameter ipoly'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'ipoly', dtype='int32',
-            direction=function.IN,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            The value has been set.
-        -1 - ERROR
-            Unable to set.
-        -2 - ERROR
-            Cannot set at this point, already running.
-        '''
-        return function
-
-    @legacy_function
-    def get_par_nwseq():
-        'get parameter nwseq'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'nwseq', dtype='int32',
-            direction=function.OUT,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            Got the value.
-        -1 - ERROR
-            Unable to get.
-        '''
-        return function
-
-    @legacy_function
-    def set_par_nwseq():
-        'set parameter nwseq'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'nwseq', dtype='int32',
-            direction=function.IN,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            The value has been set.
-        -1 - ERROR
-            Unable to set.
-        -2 - ERROR
-            Cannot set at this point, already running.
-        '''
-        return function
-
-    @legacy_function
-    def get_par_modanf():
-        'get parameter modanf'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'modanf', dtype='int32',
-            direction=function.OUT,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            Got the value.
-        -1 - ERROR
-            Unable to get.
-        '''
-        return function
-
-    @legacy_function
-    def set_par_modanf():
-        'set parameter modanf'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'modanf', dtype='int32',
-            direction=function.IN,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            The value has been set.
-        -1 - ERROR
-            Unable to set.
-        -2 - ERROR
-            Cannot set at this point, already running.
-        '''
-        return function
-
-    @legacy_function
-    def get_par_nzmod():
-        'get parameter nzmod'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'nzmod', dtype='int32',
-            direction=function.OUT,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            Got the value.
-        -1 - ERROR
-            Unable to get.
-        '''
-        return function
-
-    @legacy_function
-    def set_par_nzmod():
-        'set parameter nzmod'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'nzmod', dtype='int32',
-            direction=function.IN,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            The value has been set.
-        -1 - ERROR
-            Unable to set.
-        -2 - ERROR
-            Cannot set at this point, already running.
-        '''
-        return function
-
-    @legacy_function
-    def get_par_irot():
-        'get parameter irot'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'irot', dtype='int32',
-            direction=function.OUT,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            Got the value.
-        -1 - ERROR
-            Unable to get.
-        '''
-        return function
-
-    @legacy_function
-    def set_par_irot():
-        'set parameter irot'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'irot', dtype='int32',
-            direction=function.IN,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            The value has been set.
-        -1 - ERROR
-            Unable to set.
-        -2 - ERROR
-            Cannot set at this point, already running.
-        '''
-        return function
-
-    @legacy_function
-    def get_par_isol():
-        'get parameter isol'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'isol', dtype='int32',
-            direction=function.OUT,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            Got the value.
-        -1 - ERROR
-            Unable to get.
-        '''
-        return function
-
-    @legacy_function
-    def set_par_isol():
-        'set parameter isol'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'isol', dtype='int32',
-            direction=function.IN,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            The value has been set.
-        -1 - ERROR
-            Unable to set.
-        -2 - ERROR
-            Cannot set at this point, already running.
-        '''
-        return function
-
-    @legacy_function
-    def get_par_imagn():
-        'get parameter imagn'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'imagn', dtype='int32',
-            direction=function.OUT,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            Got the value.
-        -1 - ERROR
-            Unable to get.
-        '''
-        return function
-
-    @legacy_function
-    def set_par_imagn():
-        'set parameter imagn'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'imagn', dtype='int32',
-            direction=function.IN,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            The value has been set.
-        -1 - ERROR
-            Unable to set.
-        -2 - ERROR
-            Cannot set at this point, already running.
-        '''
-        return function
-
-    @legacy_function
-    def get_par_ialflu():
-        'get parameter ialflu'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'ialflu', dtype='int32',
-            direction=function.OUT,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            Got the value.
-        -1 - ERROR
-            Unable to get.
-        '''
-        return function
-
-    @legacy_function
-    def set_par_ialflu():
-        'set parameter ialflu'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'ialflu', dtype='int32',
-            direction=function.IN,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            The value has been set.
-        -1 - ERROR
-            Unable to set.
-        -2 - ERROR
-            Cannot set at this point, already running.
-        '''
-        return function
-
-    @legacy_function
-    def get_par_ianiso():
-        'get parameter ianiso'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'ianiso', dtype='int32',
-            direction=function.OUT,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            Got the value.
-        -1 - ERROR
-            Unable to get.
-        '''
-        return function
-
-    @legacy_function
-    def set_par_ianiso():
-        'set parameter ianiso'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'ianiso', dtype='int32',
-            direction=function.IN,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            The value has been set.
-        -1 - ERROR
-            Unable to set.
-        -2 - ERROR
-            Cannot set at this point, already running.
-        '''
-        return function
-
-    @legacy_function
-    def get_par_ipop3():
-        'get parameter ipop3'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'ipop3', dtype='int32',
-            direction=function.OUT,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            Got the value.
-        -1 - ERROR
-            Unable to get.
-        '''
-        return function
-
-    @legacy_function
-    def set_par_ipop3():
-        'set parameter ipop3'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'ipop3', dtype='int32',
-            direction=function.IN,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            The value has been set.
-        -1 - ERROR
-            Unable to set.
-        -2 - ERROR
-            Cannot set at this point, already running.
-        '''
-        return function
-
-    @legacy_function
-    def get_par_ibasnet():
-        'get parameter ibasnet'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'ibasnet', dtype='int32',
-            direction=function.OUT,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            Got the value.
-        -1 - ERROR
-            Unable to get.
-        '''
-        return function
-
-    @legacy_function
-    def set_par_ibasnet():
-        'set parameter ibasnet'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'ibasnet', dtype='int32',
-            direction=function.IN,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            The value has been set.
-        -1 - ERROR
-            Unable to set.
-        -2 - ERROR
-            Cannot set at this point, already running.
-        '''
-        return function
-
-    @legacy_function
-    def get_par_iopac():
-        'get parameter iopac'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'iopac', dtype='int32',
-            direction=function.OUT,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            Got the value.
-        -1 - ERROR
-            Unable to get.
-        '''
-        return function
-
-    @legacy_function
-    def set_par_iopac():
-        'set parameter iopac'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'iopac', dtype='int32',
-            direction=function.IN,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            The value has been set.
-        -1 - ERROR
-            Unable to set.
-        -2 - ERROR
-            Cannot set at this point, already running.
-        '''
-        return function
-
-    @legacy_function
-    def get_par_ikappa():
-        'get parameter ikappa'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'ikappa', dtype='int32',
-            direction=function.OUT,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            Got the value.
-        -1 - ERROR
-            Unable to get.
-        '''
-        return function
-
-    @legacy_function
-    def set_par_ikappa():
-        'set parameter ikappa'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'ikappa', dtype='int32',
-            direction=function.IN,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            The value has been set.
-        -1 - ERROR
-            Unable to set.
-        -2 - ERROR
-            Cannot set at this point, already running.
-        '''
-        return function
-
-    @legacy_function
-    def get_par_idiff():
-        'get parameter idiff'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'idiff', dtype='int32',
-            direction=function.OUT,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            Got the value.
-        -1 - ERROR
-            Unable to get.
-        '''
-        return function
-
-    @legacy_function
-    def set_par_idiff():
-        'set parameter idiff'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'idiff', dtype='int32',
-            direction=function.IN,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            The value has been set.
-        -1 - ERROR
-            Unable to set.
-        -2 - ERROR
-            Cannot set at this point, already running.
-        '''
-        return function
-
-    @legacy_function
-    def get_par_iadvec():
-        'get parameter iadvec'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'iadvec', dtype='int32',
-            direction=function.OUT,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            Got the value.
-        -1 - ERROR
-            Unable to get.
-        '''
-        return function
-
-    @legacy_function
-    def set_par_iadvec():
-        'set parameter iadvec'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'iadvec', dtype='int32',
-            direction=function.IN,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            The value has been set.
-        -1 - ERROR
-            Unable to set.
-        -2 - ERROR
-            Cannot set at this point, already running.
-        '''
-        return function
-
-    @legacy_function
-    def get_par_istati():
-        'get parameter istati'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'istati', dtype='int32',
-            direction=function.OUT,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            Got the value.
-        -1 - ERROR
-            Unable to get.
-        '''
-        return function
-
-    @legacy_function
-    def set_par_istati():
-        'set parameter istati'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'istati', dtype='int32',
-            direction=function.IN,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            The value has been set.
-        -1 - ERROR
-            Unable to set.
-        -2 - ERROR
-            Cannot set at this point, already running.
-        '''
-        return function
-
-    @legacy_function
-    def get_par_icoeff():
-        'get parameter icoeff'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'icoeff', dtype='int32',
-            direction=function.OUT,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            Got the value.
-        -1 - ERROR
-            Unable to get.
-        '''
-        return function
-
-    @legacy_function
-    def set_par_icoeff():
-        'set parameter icoeff'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'icoeff', dtype='int32',
-            direction=function.IN,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            The value has been set.
-        -1 - ERROR
-            Unable to set.
-        -2 - ERROR
-            Cannot set at this point, already running.
-        '''
-        return function
-
-    @legacy_function
-    def get_par_igamma():
-        'get parameter igamma'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'igamma', dtype='int32',
-            direction=function.OUT,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            Got the value.
-        -1 - ERROR
-            Unable to get.
-        '''
-        return function
-
-    @legacy_function
-    def set_par_igamma():
-        'set parameter igamma'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'igamma', dtype='int32',
-            direction=function.IN,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            The value has been set.
-        -1 - ERROR
-            Unable to set.
-        -2 - ERROR
-            Cannot set at this point, already running.
-        '''
-        return function
-
-    @legacy_function
-    def get_par_idialo():
-        'get parameter idialo'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'idialo', dtype='int32',
-            direction=function.OUT,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            Got the value.
-        -1 - ERROR
-            Unable to get.
-        '''
-        return function
-
-    @legacy_function
-    def set_par_idialo():
-        'set parameter idialo'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'idialo', dtype='int32',
-            direction=function.IN,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            The value has been set.
-        -1 - ERROR
-            Unable to set.
-        -2 - ERROR
-            Cannot set at this point, already running.
-        '''
-        return function
-
-    @legacy_function
-    def get_par_idialu():
-        'get parameter idialu'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'idialu', dtype='int32',
-            direction=function.OUT,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            Got the value.
-        -1 - ERROR
-            Unable to get.
-        '''
-        return function
-
-    @legacy_function
-    def set_par_idialu():
-        'set parameter idialu'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'idialu', dtype='int32',
-            direction=function.IN,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            The value has been set.
-        -1 - ERROR
-            Unable to set.
-        -2 - ERROR
-            Cannot set at this point, already running.
-        '''
-        return function
-
-    @legacy_function
-    def get_par_imloss():
-        'get parameter imloss'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'imloss', dtype='int32',
-            direction=function.OUT,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            Got the value.
-        -1 - ERROR
-            Unable to get.
-        '''
-        return function
-
-    @legacy_function
-    def set_par_imloss():
-        'set parameter imloss'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'imloss', dtype='int32',
-            direction=function.IN,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            The value has been set.
-        -1 - ERROR
-            Unable to set.
-        -2 - ERROR
-            Cannot set at this point, already running.
-        '''
-        return function
-
-    @legacy_function
-    def get_par_ifitm():
-        'get parameter ifitm'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'ifitm', dtype='int32',
-            direction=function.OUT,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            Got the value.
-        -1 - ERROR
-            Unable to get.
-        '''
-        return function
-
-    @legacy_function
-    def set_par_ifitm():
-        'set parameter ifitm'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'ifitm', dtype='int32',
-            direction=function.IN,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            The value has been set.
-        -1 - ERROR
-            Unable to set.
-        -2 - ERROR
-            Cannot set at this point, already running.
-        '''
-        return function
-
-    @legacy_function
-    def get_par_nndr():
-        'get parameter nndr'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'nndr', dtype='int32',
-            direction=function.OUT,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            Got the value.
-        -1 - ERROR
-            Unable to get.
-        '''
-        return function
-
-    @legacy_function
-    def set_par_nndr():
-        'set parameter nndr'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'nndr', dtype='int32',
-            direction=function.IN,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            The value has been set.
-        -1 - ERROR
-            Unable to set.
-        -2 - ERROR
-            Cannot set at this point, already running.
-        '''
-        return function
-
-    @legacy_function
-    def get_par_iledou():
-        'get parameter iledou'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'iledou', dtype='int32',
-            direction=function.OUT,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            Got the value.
-        -1 - ERROR
-            Unable to get.
-        '''
-        return function
-
-    @legacy_function
-    def set_par_iledou():
-        'set parameter iledou'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'iledou', dtype='int32',
-            direction=function.IN,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            The value has been set.
-        -1 - ERROR
-            Unable to set.
-        -2 - ERROR
-            Cannot set at this point, already running.
-        '''
-        return function
-
-    @legacy_function
-    def get_par_idifcon():
-        'get parameter idifcon'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'idifcon', dtype='int32',
-            direction=function.OUT,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            Got the value.
-        -1 - ERROR
-            Unable to get.
-        '''
-        return function
-
-    @legacy_function
-    def set_par_idifcon():
-        'set parameter idifcon'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'idifcon', dtype='int32',
-            direction=function.IN,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            The value has been set.
-        -1 - ERROR
-            Unable to set.
-        -2 - ERROR
-            Cannot set at this point, already running.
-        '''
-        return function
-
-    @legacy_function
-    def get_par_my():
-        'get parameter my'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'my', dtype='int32',
-            direction=function.OUT,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            Got the value.
-        -1 - ERROR
-            Unable to get.
-        '''
-        return function
-
-    @legacy_function
-    def set_par_my():
-        'set parameter my'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'my', dtype='int32',
-            direction=function.IN,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            The value has been set.
-        -1 - ERROR
-            Unable to set.
-        -2 - ERROR
-            Cannot set at this point, already running.
-        '''
-        return function
-
-    @legacy_function
-    def get_par_iover():
-        'get parameter iover'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'iover', dtype='int32',
-            direction=function.OUT,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            Got the value.
-        -1 - ERROR
-            Unable to get.
-        '''
-        return function
-
-    @legacy_function
-    def set_par_iover():
-        'set parameter iover'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'iover', dtype='int32',
-            direction=function.IN,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            The value has been set.
-        -1 - ERROR
-            Unable to set.
-        -2 - ERROR
-            Cannot set at this point, already running.
-        '''
-        return function
-
-    @legacy_function
-    def get_par_iunder():
-        'get parameter iunder'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'iunder', dtype='int32',
-            direction=function.OUT,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            Got the value.
-        -1 - ERROR
-            Unable to get.
-        '''
-        return function
-
-    @legacy_function
-    def set_par_iunder():
-        'set parameter iunder'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'iunder', dtype='int32',
-            direction=function.IN,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            The value has been set.
-        -1 - ERROR
-            Unable to set.
-        -2 - ERROR
-            Cannot set at this point, already running.
-        '''
-        return function
-
-    @legacy_function
-    def get_par_nbchx():
-        'get parameter nbchx'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'nbchx', dtype='int32',
-            direction=function.OUT,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            Got the value.
-        -1 - ERROR
-            Unable to get.
-        '''
-        return function
-
-    @legacy_function
-    def set_par_nbchx():
-        'set parameter nbchx'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'nbchx', dtype='int32',
-            direction=function.IN,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            The value has been set.
-        -1 - ERROR
-            Unable to set.
-        -2 - ERROR
-            Cannot set at this point, already running.
-        '''
-        return function
-
-    @legacy_function
-    def get_par_nrband():
-        'get parameter nrband'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'nrband', dtype='int32',
-            direction=function.OUT,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            Got the value.
-        -1 - ERROR
-            Unable to get.
-        '''
-        return function
-
-    @legacy_function
-    def set_par_nrband():
-        'set parameter nrband'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'nrband', dtype='int32',
-            direction=function.IN,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            The value has been set.
-        -1 - ERROR
-            Unable to set.
-        -2 - ERROR
-            Cannot set at this point, already running.
-        '''
-        return function
-
-    @legacy_function
-    def get_par_islow():
-        'get parameter islow'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'islow', dtype='int32',
-            direction=function.OUT,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            Got the value.
-        -1 - ERROR
-            Unable to get.
-        '''
-        return function
-
-    @legacy_function
-    def set_par_islow():
-        'set parameter islow'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'islow', dtype='int32',
-            direction=function.IN,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            The value has been set.
-        -1 - ERROR
-            Unable to set.
-        -2 - ERROR
-            Cannot set at this point, already running.
-        '''
-        return function
-
-    @legacy_function
-    def get_par_icncst():
-        'get parameter icncst'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'icncst', dtype='int32',
-            direction=function.OUT,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            Got the value.
-        -1 - ERROR
-            Unable to get.
-        '''
-        return function
-
-    @legacy_function
-    def set_par_icncst():
-        'set parameter icncst'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'icncst', dtype='int32',
-            direction=function.IN,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            The value has been set.
-        -1 - ERROR
-            Unable to set.
-        -2 - ERROR
-            Cannot set at this point, already running.
-        '''
-        return function
-
-    @legacy_function
-    def get_par_tauH_fit():
-        'get parameter tauH_fit'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'tauH_fit', dtype='int32',
-            direction=function.OUT,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            Got the value.
-        -1 - ERROR
-            Unable to get.
-        '''
-        return function
-
-    @legacy_function
-    def set_par_tauH_fit():
-        'set parameter tauH_fit'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'tauH_fit', dtype='int32',
-            direction=function.IN,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            The value has been set.
-        -1 - ERROR
-            Unable to set.
-        -2 - ERROR
-            Cannot set at this point, already running.
-        '''
-        return function
-
-    @legacy_function
-    def get_par_iauto():
-        'get parameter iauto'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'iauto', dtype='int32',
-            direction=function.OUT,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            Got the value.
-        -1 - ERROR
-            Unable to get.
-        '''
-        return function
-
-    @legacy_function
-    def set_par_iauto():
-        'set parameter iauto'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'iauto', dtype='int32',
-            direction=function.IN,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            The value has been set.
-        -1 - ERROR
-            Unable to set.
-        -2 - ERROR
-            Cannot set at this point, already running.
-        '''
-        return function
-
-    @legacy_function
-    def get_par_iprn():
-        'get parameter iprn'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'iprn', dtype='int32',
-            direction=function.OUT,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            Got the value.
-        -1 - ERROR
-            Unable to get.
-        '''
-        return function
-
-    @legacy_function
-    def set_par_iprn():
-        'set parameter iprn'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'iprn', dtype='int32',
-            direction=function.IN,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            The value has been set.
-        -1 - ERROR
-            Unable to set.
-        -2 - ERROR
-            Cannot set at this point, already running.
-        '''
-        return function
-
-    @legacy_function
-    def get_par_iout():
-        'get parameter iout'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'iout', dtype='int32',
-            direction=function.OUT,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            Got the value.
-        -1 - ERROR
-            Unable to get.
-        '''
-        return function
-
-    @legacy_function
-    def set_par_iout():
-        'set parameter iout'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'iout', dtype='int32',
-            direction=function.IN,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            The value has been set.
-        -1 - ERROR
-            Unable to set.
-        -2 - ERROR
-            Cannot set at this point, already running.
-        '''
-        return function
-
-    @legacy_function
-    def get_par_itmin():
-        'get parameter itmin'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'itmin', dtype='int32',
-            direction=function.OUT,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            Got the value.
-        -1 - ERROR
-            Unable to get.
-        '''
-        return function
-
-    @legacy_function
-    def set_par_itmin():
-        'set parameter itmin'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'itmin', dtype='int32',
-            direction=function.IN,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            The value has been set.
-        -1 - ERROR
-            Unable to set.
-        -2 - ERROR
-            Cannot set at this point, already running.
-        '''
-        return function
-
-    @legacy_function
-    def get_par_idebug():
-        'get parameter idebug'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'idebug', dtype='int32',
-            direction=function.OUT,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            Got the value.
-        -1 - ERROR
-            Unable to get.
-        '''
-        return function
-
-    @legacy_function
-    def set_par_idebug():
-        'set parameter idebug'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'idebug', dtype='int32',
-            direction=function.IN,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            The value has been set.
-        -1 - ERROR
-            Unable to set.
-        -2 - ERROR
-            Cannot set at this point, already running.
-        '''
-        return function
-
-    @legacy_function
-    def get_par_itests():
-        'get parameter itests'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'itests', dtype='int32',
-            direction=function.OUT,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            Got the value.
-        -1 - ERROR
-            Unable to get.
-        '''
-        return function
-
-    @legacy_function
-    def set_par_itests():
-        'set parameter itests'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'itests', dtype='int32',
-            direction=function.IN,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            The value has been set.
-        -1 - ERROR
-            Unable to set.
-        -2 - ERROR
-            Cannot set at this point, already running.
-        '''
-        return function
-
-    @legacy_function
-    def get_par_var_rates():
-        'get parameter var_rates'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'var_rates', dtype='bool',
-            direction=function.OUT,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            Got the value.
-        -1 - ERROR
-            Unable to get.
-        '''
-        return function
-
-    @legacy_function
-    def set_par_var_rates():
-        'set parameter var_rates'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'var_rates', dtype='bool',
-            direction=function.IN,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            The value has been set.
-        -1 - ERROR
-            Unable to set.
-        -2 - ERROR
-            Cannot set at this point, already running.
-        '''
-        return function
-
-    @legacy_function
-    def get_par_bintide():
-        'get parameter bintide'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'bintide', dtype='bool',
-            direction=function.OUT,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            Got the value.
-        -1 - ERROR
-            Unable to get.
-        '''
-        return function
-
-    @legacy_function
-    def set_par_bintide():
-        'set parameter bintide'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'bintide', dtype='bool',
-            direction=function.IN,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            The value has been set.
-        -1 - ERROR
-            Unable to set.
-        -2 - ERROR
-            Cannot set at this point, already running.
-        '''
-        return function
-
-    @legacy_function
-    def get_par_const_per():
-        'get parameter const_per'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'const_per', dtype='bool',
-            direction=function.OUT,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            Got the value.
-        -1 - ERROR
-            Unable to get.
-        '''
-        return function
-
-    @legacy_function
-    def set_par_const_per():
-        'set parameter const_per'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'const_per', dtype='bool',
-            direction=function.IN,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            The value has been set.
-        -1 - ERROR
-            Unable to set.
-        -2 - ERROR
-            Cannot set at this point, already running.
-        '''
-        return function
-
-    @legacy_function
-    def get_par_Add_Flux():
-        'get parameter Add_Flux'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'Add_Flux', dtype='bool',
-            direction=function.OUT,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            Got the value.
-        -1 - ERROR
-            Unable to get.
-        '''
-        return function
-
-    @legacy_function
-    def set_par_Add_Flux():
-        'set parameter Add_Flux'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'Add_Flux', dtype='bool',
-            direction=function.IN,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            The value has been set.
-        -1 - ERROR
-            Unable to set.
-        -2 - ERROR
-            Cannot set at this point, already running.
-        '''
-        return function
-
-    @legacy_function
-    def get_par_diff_only():
-        'get parameter diff_only'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'diff_only', dtype='bool',
-            direction=function.OUT,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            Got the value.
-        -1 - ERROR
-            Unable to get.
-        '''
-        return function
-
-    @legacy_function
-    def set_par_diff_only():
-        'set parameter diff_only'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'diff_only', dtype='bool',
-            direction=function.IN,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            The value has been set.
-        -1 - ERROR
-            Unable to set.
-        -2 - ERROR
-            Cannot set at this point, already running.
-        '''
-        return function
-
-    @legacy_function
-    def get_par_RSG_Mdot():
-        'get parameter RSG_Mdot'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'RSG_Mdot', dtype='int32',
-            direction=function.OUT,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            Got the value.
-        -1 - ERROR
-            Unable to get.
-        '''
-        return function
-
-    @legacy_function
-    def set_par_RSG_Mdot():
-        'set parameter RSG_Mdot'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'RSG_Mdot', dtype='int32',
-            direction=function.IN,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            The value has been set.
-        -1 - ERROR
-            Unable to set.
-        -2 - ERROR
-            Cannot set at this point, already running.
-        '''
-        return function
-
-    @legacy_function
-    def get_par_display_plot():
-        'get parameter display_plot'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'display_plot', dtype='bool',
-            direction=function.OUT,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            Got the value.
-        -1 - ERROR
-            Unable to get.
-        '''
-        return function
-
-    @legacy_function
-    def set_par_display_plot():
-        'set parameter display_plot'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'display_plot', dtype='bool',
-            direction=function.IN,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            The value has been set.
-        -1 - ERROR
-            Unable to set.
-        -2 - ERROR
-            Cannot set at this point, already running.
-        '''
-        return function
-
-    @legacy_function
-    def get_par_xyfiles():
-        'get parameter xyfiles'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'xyfiles', dtype='bool',
-            direction=function.OUT,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            Got the value.
-        -1 - ERROR
-            Unable to get.
-        '''
-        return function
-
-    @legacy_function
-    def set_par_xyfiles():
-        'set parameter xyfiles'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'xyfiles', dtype='bool',
-            direction=function.IN,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            The value has been set.
-        -1 - ERROR
-            Unable to set.
-        -2 - ERROR
-            Cannot set at this point, already running.
-        '''
-        return function
-
-    @legacy_function
-    def get_par_verbose():
-        'get parameter verbose'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'verbose', dtype='bool',
-            direction=function.OUT,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            Got the value.
-        -1 - ERROR
-            Unable to get.
-        '''
-        return function
-
-    @legacy_function
-    def set_par_verbose():
-        'set parameter verbose'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'verbose', dtype='bool',
-            direction=function.IN,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            The value has been set.
-        -1 - ERROR
-            Unable to set.
-        -2 - ERROR
-            Cannot set at this point, already running.
-        '''
-        return function
-
-    @legacy_function
-    def get_par_stop_deg():
-        'get parameter stop_deg'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'stop_deg', dtype='bool',
-            direction=function.OUT,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            Got the value.
-        -1 - ERROR
-            Unable to get.
-        '''
-        return function
-
-    @legacy_function
-    def set_par_stop_deg():
-        'set parameter stop_deg'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'stop_deg', dtype='bool',
-            direction=function.IN,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            The value has been set.
-        -1 - ERROR
-            Unable to set.
-        -2 - ERROR
-            Cannot set at this point, already running.
-        '''
-        return function
-
-    @legacy_function
-    def get_par_index_poly():
-        'get parameter index_poly'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'index_poly', dtype='float64',
-            direction=function.OUT,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            Got the value.
-        -1 - ERROR
-            Unable to get.
-        '''
-        return function
-
-    @legacy_function
-    def set_par_index_poly():
-        'set parameter index_poly'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'index_poly', dtype='float64',
-            direction=function.IN,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            The value has been set.
-        -1 - ERROR
-            Unable to set.
-        -2 - ERROR
-            Cannot set at this point, already running.
-        '''
-        return function
-    @legacy_function
-    def get_par_binm2():
-        'get parameter binm2'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'binm2', dtype='float64',
-            direction=function.OUT,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            Got the value.
-        -1 - ERROR
-            Unable to get.
-        '''
-        return function
-
-    @legacy_function
-    def set_par_binm2():
-        'set parameter binm2'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'binm2', dtype='float64',
-            direction=function.IN,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            The value has been set.
-        -1 - ERROR
-            Unable to set.
-        -2 - ERROR
-            Cannot set at this point, already running.
-        '''
-        return function
-
-    @legacy_function
-    def get_par_periodini():
-        'get parameter periodini'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'periodini', dtype='float64',
-            direction=function.OUT,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            Got the value.
-        -1 - ERROR
-            Unable to get.
-        '''
-        return function
-
-    @legacy_function
-    def set_par_periodini():
-        'set parameter periodini'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'periodini', dtype='float64',
-            direction=function.IN,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            The value has been set.
-        -1 - ERROR
-            Unable to set.
-        -2 - ERROR
-            Cannot set at this point, already running.
-        '''
-        return function
-
-    @legacy_function
-    def get_par_zinit():
-        'get parameter zinit'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'zinit', dtype='float64',
-            direction=function.OUT,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            Got the value.
-        -1 - ERROR
-            Unable to get.
-        '''
-        return function
-
-    @legacy_function
-    def set_par_zinit():
-        'set parameter zinit'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'zinit', dtype='float64',
-            direction=function.IN,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            The value has been set.
-        -1 - ERROR
-            Unable to set.
-        -2 - ERROR
-            Cannot set at this point, already running.
-        '''
-        return function
-
-    @legacy_function
-    def get_par_zsol():
-        'get parameter zsol'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'zsol', dtype='float64',
-            direction=function.OUT,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            Got the value.
-        -1 - ERROR
-            Unable to get.
-        '''
-        return function
-
-    @legacy_function
-    def set_par_zsol():
-        'set parameter zsol'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'zsol', dtype='float64',
-            direction=function.IN,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            The value has been set.
-        -1 - ERROR
-            Unable to set.
-        -2 - ERROR
-            Cannot set at this point, already running.
-        '''
-        return function
-
-    @legacy_function
-    def get_par_z():
-        'get parameter z'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'z', dtype='float64',
-            direction=function.OUT,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            Got the value.
-        -1 - ERROR
-            Unable to get.
-        '''
-        return function
-
-    @legacy_function
-    def set_par_z():
-        'set parameter z'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'z', dtype='float64',
-            direction=function.IN,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            The value has been set.
-        -1 - ERROR
-            Unable to set.
-        -2 - ERROR
-            Cannot set at this point, already running.
-        '''
-        return function
-
-    @legacy_function
-    def get_par_fenerg():
-        'get parameter fenerg'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'fenerg', dtype='float64',
-            direction=function.OUT,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            Got the value.
-        -1 - ERROR
-            Unable to get.
-        '''
-        return function
-
-    @legacy_function
-    def set_par_fenerg():
-        'set parameter fenerg'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'fenerg', dtype='float64',
-            direction=function.IN,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            The value has been set.
-        -1 - ERROR
-            Unable to set.
-        -2 - ERROR
-            Cannot set at this point, already running.
-        '''
-        return function
-
-    @legacy_function
-    def get_par_richac():
-        'get parameter richac'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'richac', dtype='float64',
-            direction=function.OUT,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            Got the value.
-        -1 - ERROR
-            Unable to get.
-        '''
-        return function
-
-    @legacy_function
-    def set_par_richac():
-        'set parameter richac'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'richac', dtype='float64',
-            direction=function.IN,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            The value has been set.
-        -1 - ERROR
-            Unable to set.
-        -2 - ERROR
-            Cannot set at this point, already running.
-        '''
-        return function
-
-    @legacy_function
-    def get_par_frein():
-        'get parameter frein'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'frein', dtype='float64',
-            direction=function.OUT,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            Got the value.
-        -1 - ERROR
-            Unable to get.
-        '''
-        return function
-
-    @legacy_function
-    def set_par_frein():
-        'set parameter frein'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'frein', dtype='float64',
-            direction=function.IN,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            The value has been set.
-        -1 - ERROR
-            Unable to set.
-        -2 - ERROR
-            Cannot set at this point, already running.
-        '''
-        return function
-
-    @legacy_function
-    def get_par_K_Kawaler():
-        'get parameter K_Kawaler'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'K_Kawaler', dtype='float64',
-            direction=function.OUT,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            Got the value.
-        -1 - ERROR
-            Unable to get.
-        '''
-        return function
-
-    @legacy_function
-    def set_par_K_Kawaler():
-        'set parameter K_Kawaler'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'K_Kawaler', dtype='float64',
-            direction=function.IN,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            The value has been set.
-        -1 - ERROR
-            Unable to set.
-        -2 - ERROR
-            Cannot set at this point, already running.
-        '''
-        return function
-
-    @legacy_function
-    def get_par_Omega_saturation():
-        'get parameter Omega_saturation'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'Omega_saturation', dtype='float64',
-            direction=function.OUT,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            Got the value.
-        -1 - ERROR
-            Unable to get.
-        '''
-        return function
-
-    @legacy_function
-    def set_par_Omega_saturation():
-        'set parameter Omega_saturation'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'Omega_saturation', dtype='float64',
-            direction=function.IN,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            The value has been set.
-        -1 - ERROR
-            Unable to set.
-        -2 - ERROR
-            Cannot set at this point, already running.
-        '''
-        return function
-
-    @legacy_function
-    def get_par_rapcrilim():
-        'get parameter rapcrilim'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'rapcrilim', dtype='float64',
-            direction=function.OUT,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            Got the value.
-        -1 - ERROR
-            Unable to get.
-        '''
-        return function
-
-    @legacy_function
-    def set_par_rapcrilim():
-        'set parameter rapcrilim'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'rapcrilim', dtype='float64',
-            direction=function.IN,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            The value has been set.
-        -1 - ERROR
-            Unable to set.
-        -2 - ERROR
-            Cannot set at this point, already running.
-        '''
-        return function
-
-    @legacy_function
-    def get_par_vwant():
-        'get parameter vwant'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'vwant', dtype='float64',
-            direction=function.OUT,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            Got the value.
-        -1 - ERROR
-            Unable to get.
-        '''
-        return function
-
-    @legacy_function
-    def set_par_vwant():
-        'set parameter vwant'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'vwant', dtype='float64',
-            direction=function.IN,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            The value has been set.
-        -1 - ERROR
-            Unable to set.
-        -2 - ERROR
-            Cannot set at this point, already running.
-        '''
-        return function
-
-    @legacy_function
-    def get_par_xfom():
-        'get parameter xfom'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'xfom', dtype='float64',
-            direction=function.OUT,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            Got the value.
-        -1 - ERROR
-            Unable to get.
-        '''
-        return function
-
-    @legacy_function
-    def set_par_xfom():
-        'set parameter xfom'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'xfom', dtype='float64',
-            direction=function.IN,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            The value has been set.
-        -1 - ERROR
-            Unable to set.
-        -2 - ERROR
-            Cannot set at this point, already running.
-        '''
-        return function
-
-    @legacy_function
-    def get_par_omega():
-        'get parameter omega'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'omega', dtype='float64',
-            direction=function.OUT,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            Got the value.
-        -1 - ERROR
-            Unable to get.
-        '''
-        return function
-
-    @legacy_function
-    def set_par_omega():
-        'set parameter omega'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'omega', dtype='float64',
-            direction=function.IN,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            The value has been set.
-        -1 - ERROR
-            Unable to set.
-        -2 - ERROR
-            Cannot set at this point, already running.
-        '''
-        return function
-
-    @legacy_function
-    def get_par_xdial():
-        'get parameter xdial'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'xdial', dtype='float64',
-            direction=function.OUT,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            Got the value.
-        -1 - ERROR
-            Unable to get.
-        '''
-        return function
-
-    @legacy_function
-    def set_par_xdial():
-        'set parameter xdial'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'xdial', dtype='float64',
-            direction=function.IN,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            The value has been set.
-        -1 - ERROR
-            Unable to set.
-        -2 - ERROR
-            Cannot set at this point, already running.
-        '''
-        return function
-
-    @legacy_function
-    def get_par_B_initial():
-        'get parameter B_initial'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'B_initial', dtype='float64',
-            direction=function.OUT,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            Got the value.
-        -1 - ERROR
-            Unable to get.
-        '''
-        return function
-
-    @legacy_function
-    def set_par_B_initial():
-        'set parameter B_initial'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'B_initial', dtype='float64',
-            direction=function.IN,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            The value has been set.
-        -1 - ERROR
-            Unable to set.
-        -2 - ERROR
-            Cannot set at this point, already running.
-        '''
-        return function
-
-    @legacy_function
-    def get_par_add_diff():
-        'get parameter add_diff'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'add_diff', dtype='float64',
-            direction=function.OUT,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            Got the value.
-        -1 - ERROR
-            Unable to get.
-        '''
-        return function
-
-    @legacy_function
-    def set_par_add_diff():
-        'set parameter add_diff'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'add_diff', dtype='float64',
-            direction=function.IN,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            The value has been set.
-        -1 - ERROR
-            Unable to set.
-        -2 - ERROR
-            Cannot set at this point, already running.
-        '''
-        return function
-
-    @legacy_function
-    def get_par_fmlos():
-        'get parameter fmlos'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'fmlos', dtype='float64',
-            direction=function.OUT,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            Got the value.
-        -1 - ERROR
-            Unable to get.
-        '''
-        return function
-
-    @legacy_function
-    def set_par_fmlos():
-        'set parameter fmlos'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'fmlos', dtype='float64',
-            direction=function.IN,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            The value has been set.
-        -1 - ERROR
-            Unable to set.
-        -2 - ERROR
-            Cannot set at this point, already running.
-        '''
-        return function
-
-    @legacy_function
-    def get_par_fitm():
-        'get parameter fitm'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'fitm', dtype='float64',
-            direction=function.OUT,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            Got the value.
-        -1 - ERROR
-            Unable to get.
-        '''
-        return function
-
-    @legacy_function
-    def set_par_fitm():
-        'set parameter fitm'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'fitm', dtype='float64',
-            direction=function.IN,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            The value has been set.
-        -1 - ERROR
-            Unable to set.
-        -2 - ERROR
-            Cannot set at this point, already running.
-        '''
-        return function
-
-    @legacy_function
-    def get_par_fitmi():
-        'get parameter fitmi'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'fitmi', dtype='float64',
-            direction=function.OUT,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            Got the value.
-        -1 - ERROR
-            Unable to get.
-        '''
-        return function
-
-    @legacy_function
-    def set_par_fitmi():
-        'set parameter fitmi'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'fitmi', dtype='float64',
-            direction=function.IN,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            The value has been set.
-        -1 - ERROR
-            Unable to set.
-        -2 - ERROR
-            Cannot set at this point, already running.
-        '''
-        return function
-
-    @legacy_function
-    def get_par_fitmi_default():
-        'get parameter fitmi_default'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'fitmi_default', dtype='float64',
-            direction=function.OUT,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            Got the value.
-        -1 - ERROR
-            Unable to get.
-        '''
-        return function
-
-    @legacy_function
-    def set_par_fitmi_default():
-        'set parameter fitmi_default'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'fitmi_default', dtype='float64',
-            direction=function.IN,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            The value has been set.
-        -1 - ERROR
-            Unable to set.
-        -2 - ERROR
-            Cannot set at this point, already running.
-        '''
-        return function
-
-    @legacy_function
-    def get_par_deltal():
-        'get parameter deltal'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'deltal', dtype='float64',
-            direction=function.OUT,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            Got the value.
-        -1 - ERROR
-            Unable to get.
-        '''
-        return function
-
-    @legacy_function
-    def set_par_deltal():
-        'set parameter deltal'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'deltal', dtype='float64',
-            direction=function.IN,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            The value has been set.
-        -1 - ERROR
-            Unable to set.
-        -2 - ERROR
-            Cannot set at this point, already running.
-        '''
-        return function
-
-    @legacy_function
-    def get_par_deltat():
-        'get parameter deltat'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'deltat', dtype='float64',
-            direction=function.OUT,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            Got the value.
-        -1 - ERROR
-            Unable to get.
-        '''
-        return function
-
-    @legacy_function
-    def set_par_deltat():
-        'set parameter deltat'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'deltat', dtype='float64',
-            direction=function.IN,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            The value has been set.
-        -1 - ERROR
-            Unable to set.
-        -2 - ERROR
-            Cannot set at this point, already running.
-        '''
-        return function
-
-    @legacy_function
-    def get_par_elph():
-        'get parameter elph'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'elph', dtype='float64',
-            direction=function.OUT,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            Got the value.
-        -1 - ERROR
-            Unable to get.
-        '''
-        return function
-
-    @legacy_function
-    def set_par_elph():
-        'set parameter elph'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'elph', dtype='float64',
-            direction=function.IN,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            The value has been set.
-        -1 - ERROR
-            Unable to set.
-        -2 - ERROR
-            Cannot set at this point, already running.
-        '''
-        return function
-
-    @legacy_function
-    def get_par_dovhp():
-        'get parameter dovhp'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'dovhp', dtype='float64',
-            direction=function.OUT,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            Got the value.
-        -1 - ERROR
-            Unable to get.
-        '''
-        return function
-
-    @legacy_function
-    def set_par_dovhp():
-        'set parameter dovhp'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'dovhp', dtype='float64',
-            direction=function.IN,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            The value has been set.
-        -1 - ERROR
-            Unable to set.
-        -2 - ERROR
-            Cannot set at this point, already running.
-        '''
-        return function
-
-    @legacy_function
-    def get_par_dunder():
-        'get parameter dunder'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'dunder', dtype='float64',
-            direction=function.OUT,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            Got the value.
-        -1 - ERROR
-            Unable to get.
-        '''
-        return function
-
-    @legacy_function
-    def set_par_dunder():
-        'set parameter dunder'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'dunder', dtype='float64',
-            direction=function.IN,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            The value has been set.
-        -1 - ERROR
-            Unable to set.
-        -2 - ERROR
-            Cannot set at this point, already running.
-        '''
-        return function
-
-    @legacy_function
-    def get_par_gkorm():
-        'get parameter gkorm'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'gkorm', dtype='float64',
-            direction=function.OUT,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            Got the value.
-        -1 - ERROR
-            Unable to get.
-        '''
-        return function
-
-    @legacy_function
-    def set_par_gkorm():
-        'set parameter gkorm'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'gkorm', dtype='float64',
-            direction=function.IN,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            The value has been set.
-        -1 - ERROR
-            Unable to set.
-        -2 - ERROR
-            Cannot set at this point, already running.
-        '''
-        return function
-
-    @legacy_function
-    def get_par_alph():
-        'get parameter alph'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'alph', dtype='float64',
-            direction=function.OUT,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            Got the value.
-        -1 - ERROR
-            Unable to get.
-        '''
-        return function
-
-    @legacy_function
-    def set_par_alph():
-        'set parameter alph'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'alph', dtype='float64',
-            direction=function.IN,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            The value has been set.
-        -1 - ERROR
-            Unable to set.
-        -2 - ERROR
-            Cannot set at this point, already running.
-        '''
-        return function
-
-    @legacy_function
-    def get_par_agdr():
-        'get parameter agdr'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'agdr', dtype='float64',
-            direction=function.OUT,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            Got the value.
-        -1 - ERROR
-            Unable to get.
-        '''
-        return function
-
-    @legacy_function
-    def set_par_agdr():
-        'set parameter agdr'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'agdr', dtype='float64',
-            direction=function.IN,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            The value has been set.
-        -1 - ERROR
-            Unable to set.
-        -2 - ERROR
-            Cannot set at this point, already running.
-        '''
-        return function
-
-    @legacy_function
-    def get_par_faktor():
-        'get parameter faktor'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'faktor', dtype='float64',
-            direction=function.OUT,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            Got the value.
-        -1 - ERROR
-            Unable to get.
-        '''
-        return function
-
-    @legacy_function
-    def set_par_faktor():
-        'set parameter faktor'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'faktor', dtype='float64',
-            direction=function.IN,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            The value has been set.
-        -1 - ERROR
-            Unable to set.
-        -2 - ERROR
-            Cannot set at this point, already running.
-        '''
-        return function
-
-    @legacy_function
-    def get_par_dgrp():
-        'get parameter dgrp'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'dgrp', dtype='float64',
-            direction=function.OUT,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            Got the value.
-        -1 - ERROR
-            Unable to get.
-        '''
-        return function
-
-    @legacy_function
-    def set_par_dgrp():
-        'set parameter dgrp'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'dgrp', dtype='float64',
-            direction=function.IN,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            The value has been set.
-        -1 - ERROR
-            Unable to set.
-        -2 - ERROR
-            Cannot set at this point, already running.
-        '''
-        return function
-
-    @legacy_function
-    def get_par_dgrl():
-        'get parameter dgrl'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'dgrl', dtype='float64',
-            direction=function.OUT,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            Got the value.
-        -1 - ERROR
-            Unable to get.
-        '''
-        return function
-
-    @legacy_function
-    def set_par_dgrl():
-        'set parameter dgrl'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'dgrl', dtype='float64',
-            direction=function.IN,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            The value has been set.
-        -1 - ERROR
-            Unable to set.
-        -2 - ERROR
-            Cannot set at this point, already running.
-        '''
-        return function
-
-    @legacy_function
-    def get_par_dgry():
-        'get parameter dgry'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'dgry', dtype='float64',
-            direction=function.OUT,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            Got the value.
-        -1 - ERROR
-            Unable to get.
-        '''
-        return function
-
-    @legacy_function
-    def set_par_dgry():
-        'set parameter dgry'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'dgry', dtype='float64',
-            direction=function.IN,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            The value has been set.
-        -1 - ERROR
-            Unable to set.
-        -2 - ERROR
-            Cannot set at this point, already running.
-        '''
-        return function
-
-    @legacy_function
-    def get_par_dgrc():
-        'get parameter dgrc'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'dgrc', dtype='float64',
-            direction=function.OUT,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            Got the value.
-        -1 - ERROR
-            Unable to get.
-        '''
-        return function
-
-    @legacy_function
-    def set_par_dgrc():
-        'set parameter dgrc'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'dgrc', dtype='float64',
-            direction=function.IN,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            The value has been set.
-        -1 - ERROR
-            Unable to set.
-        -2 - ERROR
-            Cannot set at this point, already running.
-        '''
-        return function
-
-    @legacy_function
-    def get_par_dgro():
-        'get parameter dgro'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'dgro', dtype='float64',
-            direction=function.OUT,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            Got the value.
-        -1 - ERROR
-            Unable to get.
-        '''
-        return function
-
-    @legacy_function
-    def set_par_dgro():
-        'set parameter dgro'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'dgro', dtype='float64',
-            direction=function.IN,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            The value has been set.
-        -1 - ERROR
-            Unable to set.
-        -2 - ERROR
-            Cannot set at this point, already running.
-        '''
-        return function
-
-    @legacy_function
-    def get_par_dgr20():
-        'get parameter dgr20'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'dgr20', dtype='float64',
-            direction=function.OUT,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            Got the value.
-        -1 - ERROR
-            Unable to get.
-        '''
-        return function
-
-    @legacy_function
-    def set_par_dgr20():
-        'set parameter dgr20'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'dgr20', dtype='float64',
-            direction=function.IN,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            The value has been set.
-        -1 - ERROR
-            Unable to set.
-        -2 - ERROR
-            Cannot set at this point, already running.
-        '''
-        return function
-
-    @legacy_function
-    def get_par_xcn():
-        'get parameter xcn'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'xcn', dtype='float64',
-            direction=function.OUT,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            Got the value.
-        -1 - ERROR
-            Unable to get.
-        '''
-        return function
-
-    @legacy_function
-    def set_par_xcn():
-        'set parameter xcn'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'xcn', dtype='float64',
-            direction=function.IN,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            The value has been set.
-        -1 - ERROR
-            Unable to set.
-        -2 - ERROR
-            Cannot set at this point, already running.
-        '''
-        return function
-
-    @legacy_function
-    def get_par_starname():
-        'get parameter starname'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'starname', dtype='string',
-            direction=function.OUT,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            Got the value.
-        -1 - ERROR
-            Unable to get.
-        '''
-        return function
-
-    @legacy_function
-    def set_par_starname():
-        'set parameter starname'
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'starname', dtype='string',
-            direction=function.IN,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            The value has been set.
-        -1 - ERROR
-            Unable to set.
-        -2 - ERROR
-            Cannot set at this point, already running.
-        '''
-        return function
+    @remote_function
+    def set_genec_path(genec_path='s'):
+        returns ()
+
+    @remote_function(can_handle_array=True)
+    def get_initialised(index_of_the_particle='i'):
+        returns (initialised='bool')
+
+    @remote_function(can_handle_array=True)
+    def set_initialised(index_of_the_particle='i', initialised='bool'):
+        returns ()
+
+    @remote_function(can_handle_array=True)
+    def get_starname(index_of_the_particle='i'):
+        returns (starname='string')
+
+    @remote_function(can_handle_array=True)
+    def set_starname(index_of_the_particle='i', starname='string'):
+        returns ()
+
+    @remote_function(can_handle_array=True)
+    def get_nwseq(index_of_the_particle='i'):
+        returns (nwseq='int32')
+
+    @remote_function(can_handle_array=True)
+    def set_nwseq(index_of_the_particle='i', nwseq='int32'):
+        returns ()
+
+    @remote_function(can_handle_array=True)
+    def get_modanf(index_of_the_particle='i'):
+        returns (modanf='int32')
+
+    @remote_function(can_handle_array=True)
+    def set_modanf(index_of_the_particle='i', modanf='int32'):
+        returns ()
+
+    @remote_function(can_handle_array=True)
+    def get_nzmod(index_of_the_particle='i'):
+        returns (nzmod='int32')
+
+    @remote_function(can_handle_array=True)
+    def set_nzmod(index_of_the_particle='i', nzmod='int32'):
+        returns ()
+
+    @remote_function(can_handle_array=True)
+    def get_end_at_phase(index_of_the_particle='i'):
+        returns (end_at_phase='int32')
+
+    @remote_function(can_handle_array=True)
+    def set_end_at_phase(index_of_the_particle='i', end_at_phase='int32'):
+        returns ()
+
+    @remote_function(can_handle_array=True)
+    def get_end_at_model(index_of_the_particle='i'):
+        returns (end_at_model='int32')
+
+    @remote_function(can_handle_array=True)
+    def set_end_at_model(index_of_the_particle='i', end_at_model='int32'):
+        returns ()
+
+    @remote_function(can_handle_array=True)
+    def get_irot(index_of_the_particle='i'):
+        returns (irot='int32')
+
+    @remote_function(can_handle_array=True)
+    def set_irot(index_of_the_particle='i', irot='int32'):
+        returns ()
+
+    @remote_function(can_handle_array=True)
+    def get_isol(index_of_the_particle='i'):
+        returns (isol='int32')
+
+    @remote_function(can_handle_array=True)
+    def set_isol(index_of_the_particle='i', isol='int32'):
+        returns ()
+
+    @remote_function(can_handle_array=True)
+    def get_imagn(index_of_the_particle='i'):
+        returns (imagn='int32')
+
+    @remote_function(can_handle_array=True)
+    def set_imagn(index_of_the_particle='i', imagn='int32'):
+        returns ()
+
+    @remote_function(can_handle_array=True)
+    def get_ialflu(index_of_the_particle='i'):
+        returns (ialflu='int32')
+
+    @remote_function(can_handle_array=True)
+    def set_ialflu(index_of_the_particle='i', ialflu='int32'):
+        returns ()
+
+    @remote_function(can_handle_array=True)
+    def get_ianiso(index_of_the_particle='i'):
+        returns (ianiso='int32')
+
+    @remote_function(can_handle_array=True)
+    def set_ianiso(index_of_the_particle='i', ianiso='int32'):
+        returns ()
+
+    @remote_function(can_handle_array=True)
+    def get_ipop3(index_of_the_particle='i'):
+        returns (ipop3='int32')
+
+    @remote_function(can_handle_array=True)
+    def set_ipop3(index_of_the_particle='i', ipop3='int32'):
+        returns ()
+
+    @remote_function(can_handle_array=True)
+    def get_ibasnet(index_of_the_particle='i'):
+        returns (ibasnet='int32')
+
+    @remote_function(can_handle_array=True)
+    def set_ibasnet(index_of_the_particle='i', ibasnet='int32'):
+        returns ()
+
+    @remote_function(can_handle_array=True)
+    def get_phase(index_of_the_particle='i'):
+        returns (phase='int32')
+
+    @remote_function(can_handle_array=True)
+    def set_phase(index_of_the_particle='i', phase='int32'):
+        returns ()
+
+    @remote_function(can_handle_array=True)
+    def get_var_rates(index_of_the_particle='i'):
+        returns (var_rates='bool')
+
+    @remote_function(can_handle_array=True)
+    def set_var_rates(index_of_the_particle='i', var_rates='bool'):
+        returns ()
+
+    @remote_function(can_handle_array=True)
+    def get_bintide(index_of_the_particle='i'):
+        returns (bintide='bool')
+
+    @remote_function(can_handle_array=True)
+    def set_bintide(index_of_the_particle='i', bintide='bool'):
+        returns ()
+
+    @remote_function(can_handle_array=True)
+    def get_binm2(index_of_the_particle='i'):
+        returns (binm2='float64')
+
+    @remote_function(can_handle_array=True)
+    def set_binm2(index_of_the_particle='i', binm2='float64'):
+        returns ()
+
+    @remote_function(can_handle_array=True)
+    def get_periodini(index_of_the_particle='i'):
+        returns (periodini='float64')
+
+    @remote_function(can_handle_array=True)
+    def set_periodini(index_of_the_particle='i', periodini='float64'):
+        returns ()
+
+    @remote_function(can_handle_array=True)
+    def get_const_per(index_of_the_particle='i'):
+        returns (const_per='bool')
+
+    @remote_function(can_handle_array=True)
+    def set_const_per(index_of_the_particle='i', const_per='bool'):
+        returns ()
+
+    @remote_function(can_handle_array=True)
+    def get_iprezams(index_of_the_particle='i'):
+        returns (iprezams='int32')
+
+    @remote_function(can_handle_array=True)
+    def set_iprezams(index_of_the_particle='i', iprezams='int32'):
+        returns ()
+
+    @remote_function(can_handle_array=True)
+    def get_zinit(index_of_the_particle='i'):
+        returns (zinit='float64')
+
+    @remote_function(can_handle_array=True)
+    def set_zinit(index_of_the_particle='i', zinit='float64'):
+        returns ()
+
+    @remote_function(can_handle_array=True)
+    def get_zsol(index_of_the_particle='i'):
+        returns (zsol='float64')
+
+    @remote_function(can_handle_array=True)
+    def set_zsol(index_of_the_particle='i', zsol='float64'):
+        returns ()
+
+    @remote_function(can_handle_array=True)
+    def get_z(index_of_the_particle='i'):
+        returns (z='float64')
+
+    @remote_function(can_handle_array=True)
+    def set_z(index_of_the_particle='i', z='float64'):
+        returns ()
+
+    @remote_function(can_handle_array=True)
+    def get_iopac(index_of_the_particle='i'):
+        returns (iopac='int32')
+
+    @remote_function(can_handle_array=True)
+    def set_iopac(index_of_the_particle='i', iopac='int32'):
+        returns ()
+
+    @remote_function(can_handle_array=True)
+    def get_ikappa(index_of_the_particle='i'):
+        returns (ikappa='int32')
+
+    @remote_function(can_handle_array=True)
+    def set_ikappa(index_of_the_particle='i', ikappa='int32'):
+        returns ()
+
+    @remote_function(can_handle_array=True)
+    def get_idiff(index_of_the_particle='i'):
+        returns (idiff='int32')
+
+    @remote_function(can_handle_array=True)
+    def set_idiff(index_of_the_particle='i', idiff='int32'):
+        returns ()
+
+    @remote_function(can_handle_array=True)
+    def get_iadvec(index_of_the_particle='i'):
+        returns (iadvec='int32')
+
+    @remote_function(can_handle_array=True)
+    def set_iadvec(index_of_the_particle='i', iadvec='int32'):
+        returns ()
+
+    @remote_function(can_handle_array=True)
+    def get_istati(index_of_the_particle='i'):
+        returns (istati='int32')
+
+    @remote_function(can_handle_array=True)
+    def set_istati(index_of_the_particle='i', istati='int32'):
+        returns ()
+
+    @remote_function(can_handle_array=True)
+    def get_icoeff(index_of_the_particle='i'):
+        returns (icoeff='int32')
+
+    @remote_function(can_handle_array=True)
+    def set_icoeff(index_of_the_particle='i', icoeff='int32'):
+        returns ()
+
+    @remote_function(can_handle_array=True)
+    def get_fenerg(index_of_the_particle='i'):
+        returns (fenerg='float64')
+
+    @remote_function(can_handle_array=True)
+    def set_fenerg(index_of_the_particle='i', fenerg='float64'):
+        returns ()
+
+    @remote_function(can_handle_array=True)
+    def get_richac(index_of_the_particle='i'):
+        returns (richac='float64')
+
+    @remote_function(can_handle_array=True)
+    def set_richac(index_of_the_particle='i', richac='float64'):
+        returns ()
+
+    @remote_function(can_handle_array=True)
+    def get_igamma(index_of_the_particle='i'):
+        returns (igamma='int32')
+
+    @remote_function(can_handle_array=True)
+    def set_igamma(index_of_the_particle='i', igamma='int32'):
+        returns ()
+
+    @remote_function(can_handle_array=True)
+    def get_frein(index_of_the_particle='i'):
+        returns (frein='float64')
+
+    @remote_function(can_handle_array=True)
+    def set_frein(index_of_the_particle='i', frein='float64'):
+        returns ()
+
+    @remote_function(can_handle_array=True)
+    def get_K_Kawaler(index_of_the_particle='i'):
+        returns (K_Kawaler='float64')
+
+    @remote_function(can_handle_array=True)
+    def set_K_Kawaler(index_of_the_particle='i', K_Kawaler='float64'):
+        returns ()
+
+    @remote_function(can_handle_array=True)
+    def get_Omega_saturation(index_of_the_particle='i'):
+        returns (Omega_saturation='float64')
+
+    @remote_function(can_handle_array=True)
+    def set_Omega_saturation(index_of_the_particle='i', Omega_saturation='float64'):
+        returns ()
+
+    @remote_function(can_handle_array=True)
+    def get_rapcrilim(index_of_the_particle='i'):
+        returns (rapcrilim='float64')
+
+    @remote_function(can_handle_array=True)
+    def set_rapcrilim(index_of_the_particle='i', rapcrilim='float64'):
+        returns ()
+
+    @remote_function(can_handle_array=True)
+    def get_vwant(index_of_the_particle='i'):
+        returns (vwant='float64')
+
+    @remote_function(can_handle_array=True)
+    def set_vwant(index_of_the_particle='i', vwant='float64'):
+        returns ()
+
+    @remote_function(can_handle_array=True)
+    def get_xfom(index_of_the_particle='i'):
+        returns (xfom='float64')
+
+    @remote_function(can_handle_array=True)
+    def set_xfom(index_of_the_particle='i', xfom='float64'):
+        returns ()
+
+    @remote_function(can_handle_array=True)
+    def get_omega(index_of_the_particle='i'):
+        returns (omega='float64')
+
+    @remote_function(can_handle_array=True)
+    def set_omega(index_of_the_particle='i', omega='float64'):
+        returns ()
+
+    @remote_function(can_handle_array=True)
+    def get_xdial(index_of_the_particle='i'):
+        returns (xdial='float64')
+
+    @remote_function(can_handle_array=True)
+    def set_xdial(index_of_the_particle='i', xdial='float64'):
+        returns ()
+
+    @remote_function(can_handle_array=True)
+    def get_idialo(index_of_the_particle='i'):
+        returns (idialo='int32')
+
+    @remote_function(can_handle_array=True)
+    def set_idialo(index_of_the_particle='i', idialo='int32'):
+        returns ()
+
+    @remote_function(can_handle_array=True)
+    def get_idialu(index_of_the_particle='i'):
+        returns (idialu='int32')
+
+    @remote_function(can_handle_array=True)
+    def set_idialu(index_of_the_particle='i', idialu='int32'):
+        returns ()
+
+    @remote_function(can_handle_array=True)
+    def get_Add_Flux(index_of_the_particle='i'):
+        returns (Add_Flux='bool')
+
+    @remote_function(can_handle_array=True)
+    def set_Add_Flux(index_of_the_particle='i', Add_Flux='bool'):
+        returns ()
+
+    @remote_function(can_handle_array=True)
+    def get_diff_only(index_of_the_particle='i'):
+        returns (diff_only='bool')
+
+    @remote_function(can_handle_array=True)
+    def set_diff_only(index_of_the_particle='i', diff_only='bool'):
+        returns ()
+
+    @remote_function(can_handle_array=True)
+    def get_B_initial(index_of_the_particle='i'):
+        returns (B_initial='float64')
+
+    @remote_function(can_handle_array=True)
+    def set_B_initial(index_of_the_particle='i', B_initial='float64'):
+        returns ()
+
+    @remote_function(can_handle_array=True)
+    def get_add_diff(index_of_the_particle='i'):
+        returns (add_diff='float64')
+
+    @remote_function(can_handle_array=True)
+    def set_add_diff(index_of_the_particle='i', add_diff='float64'):
+        returns ()
+
+    @remote_function(can_handle_array=True)
+    def get_n_mag(index_of_the_particle='i'):
+        returns (n_mag='int32')
+
+    @remote_function(can_handle_array=True)
+    def set_n_mag(index_of_the_particle='i', n_mag='int32'):
+        returns ()
+
+    @remote_function(can_handle_array=True)
+    def get_alpha_F(index_of_the_particle='i'):
+        returns (alpha_F='float64')
+
+    @remote_function(can_handle_array=True)
+    def set_alpha_F(index_of_the_particle='i', alpha_F='float64'):
+        returns ()
+
+    @remote_function(can_handle_array=True)
+    def get_nsmooth(index_of_the_particle='i'):
+        returns (nsmooth='int32')
+
+    @remote_function(can_handle_array=True)
+    def set_nsmooth(index_of_the_particle='i', nsmooth='int32'):
+        returns ()
+
+    @remote_function(can_handle_array=True)
+    def get_qminsmooth(index_of_the_particle='i'):
+        returns (qminsmooth='bool')
+
+    @remote_function(can_handle_array=True)
+    def set_qminsmooth(index_of_the_particle='i', qminsmooth='bool'):
+        returns ()
+
+    @remote_function(can_handle_array=True)
+    def get_imloss(index_of_the_particle='i'):
+        returns (imloss='int32')
+
+    @remote_function(can_handle_array=True)
+    def set_imloss(index_of_the_particle='i', imloss='int32'):
+        returns ()
+
+    @remote_function(can_handle_array=True)
+    def get_fmlos(index_of_the_particle='i'):
+        returns (fmlos='float64')
+
+    @remote_function(can_handle_array=True)
+    def set_fmlos(index_of_the_particle='i', fmlos='float64'):
+        returns ()
+
+    @remote_function(can_handle_array=True)
+    def get_ifitm(index_of_the_particle='i'):
+        returns (ifitm='int32')
+
+    @remote_function(can_handle_array=True)
+    def set_ifitm(index_of_the_particle='i', ifitm='int32'):
+        returns ()
+
+    @remote_function(can_handle_array=True)
+    def get_fitm(index_of_the_particle='i'):
+        returns (fitm='float64')
+
+    @remote_function(can_handle_array=True)
+    def set_fitm(index_of_the_particle='i', fitm='float64'):
+        returns ()
+
+    @remote_function(can_handle_array=True)
+    def get_fitmi(index_of_the_particle='i'):
+        returns (fitmi='float64')
+
+    @remote_function(can_handle_array=True)
+    def set_fitmi(index_of_the_particle='i', fitmi='float64'):
+        returns ()
+
+    @remote_function(can_handle_array=True)
+    def get_deltal(index_of_the_particle='i'):
+        returns (deltal='float64')
+
+    @remote_function(can_handle_array=True)
+    def set_deltal(index_of_the_particle='i', deltal='float64'):
+        returns ()
+
+    @remote_function(can_handle_array=True)
+    def get_deltat(index_of_the_particle='i'):
+        returns (deltat='float64')
+
+    @remote_function(can_handle_array=True)
+    def set_deltat(index_of_the_particle='i', deltat='float64'):
+        returns ()
+
+    @remote_function(can_handle_array=True)
+    def get_nndr(index_of_the_particle='i'):
+        returns (nndr='int32')
+
+    @remote_function(can_handle_array=True)
+    def set_nndr(index_of_the_particle='i', nndr='int32'):
+        returns ()
+
+    @remote_function(can_handle_array=True)
+    def get_RSG_Mdot(index_of_the_particle='i'):
+        returns (RSG_Mdot='int32')
+
+    @remote_function(can_handle_array=True)
+    def set_RSG_Mdot(index_of_the_particle='i', RSG_Mdot='int32'):
+        returns ()
+
+    @remote_function(can_handle_array=True)
+    def get_SupraEddMdot(index_of_the_particle='i'):
+        returns (SupraEddMdot='bool')
+
+    @remote_function(can_handle_array=True)
+    def set_SupraEddMdot(index_of_the_particle='i', SupraEddMdot='bool'):
+        returns ()
+
+    @remote_function(can_handle_array=True)
+    def get_Be_mdotfrac(index_of_the_particle='i'):
+        returns (Be_mdotfrac='float64')
+
+    @remote_function(can_handle_array=True)
+    def set_Be_mdotfrac(index_of_the_particle='i', Be_mdotfrac='float64'):
+        returns ()
+
+    @remote_function(can_handle_array=True)
+    def get_start_mdot(index_of_the_particle='i'):
+        returns (start_mdot='float64')
+
+    @remote_function(can_handle_array=True)
+    def set_start_mdot(index_of_the_particle='i', start_mdot='float64'):
+        returns ()
+
+    @remote_function(can_handle_array=True)
+    def get_iledou(index_of_the_particle='i'):
+        returns (iledou='int32')
+
+    @remote_function(can_handle_array=True)
+    def set_iledou(index_of_the_particle='i', iledou='int32'):
+        returns ()
+
+    @remote_function(can_handle_array=True)
+    def get_idifcon(index_of_the_particle='i'):
+        returns (idifcon='int32')
+
+    @remote_function(can_handle_array=True)
+    def set_idifcon(index_of_the_particle='i', idifcon='int32'):
+        returns ()
+
+    @remote_function(can_handle_array=True)
+    def get_iover(index_of_the_particle='i'):
+        returns (iover='int32')
+
+    @remote_function(can_handle_array=True)
+    def set_iover(index_of_the_particle='i', iover='int32'):
+        returns ()
+
+    @remote_function(can_handle_array=True)
+    def get_elph(index_of_the_particle='i'):
+        returns (elph='float64')
+
+    @remote_function(can_handle_array=True)
+    def set_elph(index_of_the_particle='i', elph='float64'):
+        returns ()
+
+    @remote_function(can_handle_array=True)
+    def get_my(index_of_the_particle='i'):
+        returns (my='int32')
+
+    @remote_function(can_handle_array=True)
+    def set_my(index_of_the_particle='i', my='int32'):
+        returns ()
+
+    @remote_function(can_handle_array=True)
+    def get_dovhp(index_of_the_particle='i'):
+        returns (dovhp='float64')
+
+    @remote_function(can_handle_array=True)
+    def set_dovhp(index_of_the_particle='i', dovhp='float64'):
+        returns ()
+
+    @remote_function(can_handle_array=True)
+    def get_iunder(index_of_the_particle='i'):
+        returns (iunder='int32')
+
+    @remote_function(can_handle_array=True)
+    def set_iunder(index_of_the_particle='i', iunder='int32'):
+        returns ()
+
+    @remote_function(can_handle_array=True)
+    def get_dunder(index_of_the_particle='i'):
+        returns (dunder='float64')
+
+    @remote_function(can_handle_array=True)
+    def set_dunder(index_of_the_particle='i', dunder='float64'):
+        returns ()
+
+    @remote_function(can_handle_array=True)
+    def get_gkorm(index_of_the_particle='i'):
+        returns (gkorm='float64')
+
+    @remote_function(can_handle_array=True)
+    def set_gkorm(index_of_the_particle='i', gkorm='float64'):
+        returns ()
+
+    @remote_function(can_handle_array=True)
+    def get_alph(index_of_the_particle='i'):
+        returns (alph='float64')
+
+    @remote_function(can_handle_array=True)
+    def set_alph(index_of_the_particle='i', alph='float64'):
+        returns ()
+
+    @remote_function(can_handle_array=True)
+    def get_agdr(index_of_the_particle='i'):
+        returns (agdr='float64')
+
+    @remote_function(can_handle_array=True)
+    def set_agdr(index_of_the_particle='i', agdr='float64'):
+        returns ()
+
+    @remote_function(can_handle_array=True)
+    def get_faktor(index_of_the_particle='i'):
+        returns (faktor='float64')
+
+    @remote_function(can_handle_array=True)
+    def set_faktor(index_of_the_particle='i', faktor='float64'):
+        returns ()
+
+    @remote_function(can_handle_array=True)
+    def get_dgrp(index_of_the_particle='i'):
+        returns (dgrp='float64')
+
+    @remote_function(can_handle_array=True)
+    def set_dgrp(index_of_the_particle='i', dgrp='float64'):
+        returns ()
+
+    @remote_function(can_handle_array=True)
+    def get_dgrl(index_of_the_particle='i'):
+        returns (dgrl='float64')
+
+    @remote_function(can_handle_array=True)
+    def set_dgrl(index_of_the_particle='i', dgrl='float64'):
+        returns ()
+
+    @remote_function(can_handle_array=True)
+    def get_dgry(index_of_the_particle='i'):
+        returns (dgry='float64')
+
+    @remote_function(can_handle_array=True)
+    def set_dgry(index_of_the_particle='i', dgry='float64'):
+        returns ()
+
+    @remote_function(can_handle_array=True)
+    def get_dgrc(index_of_the_particle='i'):
+        returns (dgrc='float64')
+
+    @remote_function(can_handle_array=True)
+    def set_dgrc(index_of_the_particle='i', dgrc='float64'):
+        returns ()
+
+    @remote_function(can_handle_array=True)
+    def get_dgro(index_of_the_particle='i'):
+        returns (dgro='float64')
+
+    @remote_function(can_handle_array=True)
+    def set_dgro(index_of_the_particle='i', dgro='float64'):
+        returns ()
+
+    @remote_function(can_handle_array=True)
+    def get_dgr20(index_of_the_particle='i'):
+        returns (dgr20='float64')
+
+    @remote_function(can_handle_array=True)
+    def set_dgr20(index_of_the_particle='i', dgr20='float64'):
+        returns ()
+
+    @remote_function(can_handle_array=True)
+    def get_nbchx(index_of_the_particle='i'):
+        returns (nbchx='int32')
+
+    @remote_function(can_handle_array=True)
+    def set_nbchx(index_of_the_particle='i', nbchx='int32'):
+        returns ()
+
+    @remote_function(can_handle_array=True)
+    def get_nrband(index_of_the_particle='i'):
+        returns (nrband='int32')
+
+    @remote_function(can_handle_array=True)
+    def set_nrband(index_of_the_particle='i', nrband='int32'):
+        returns ()
+
+    @remote_function(can_handle_array=True)
+    def get_xcn(index_of_the_particle='i'):
+        returns (xcn='float64')
+
+    @remote_function(can_handle_array=True)
+    def set_xcn(index_of_the_particle='i', xcn='float64'):
+        returns ()
+
+    @remote_function(can_handle_array=True)
+    def get_islow(index_of_the_particle='i'):
+        returns (islow='int32')
+
+    @remote_function(can_handle_array=True)
+    def set_islow(index_of_the_particle='i', islow='int32'):
+        returns ()
+
+    @remote_function(can_handle_array=True)
+    def get_icncst(index_of_the_particle='i'):
+        returns (icncst='int32')
+
+    @remote_function(can_handle_array=True)
+    def set_icncst(index_of_the_particle='i', icncst='int32'):
+        returns ()
+
+    @remote_function(can_handle_array=True)
+    def get_tauH_fit(index_of_the_particle='i'):
+        returns (tauH_fit='int32')
+
+    @remote_function(can_handle_array=True)
+    def set_tauH_fit(index_of_the_particle='i', tauH_fit='int32'):
+        returns ()
+
+    @remote_function(can_handle_array=True)
+    def get_display_plot(index_of_the_particle='i'):
+        returns (display_plot='bool')
+
+    @remote_function(can_handle_array=True)
+    def set_display_plot(index_of_the_particle='i', display_plot='bool'):
+        returns ()
+
+    @remote_function(can_handle_array=True)
+    def get_iauto(index_of_the_particle='i'):
+        returns (iauto='int32')
+
+    @remote_function(can_handle_array=True)
+    def set_iauto(index_of_the_particle='i', iauto='int32'):
+        returns ()
+
+    @remote_function(can_handle_array=True)
+    def get_iprn(index_of_the_particle='i'):
+        returns (iprn='int32')
+
+    @remote_function(can_handle_array=True)
+    def set_iprn(index_of_the_particle='i', iprn='int32'):
+        returns ()
+
+    @remote_function(can_handle_array=True)
+    def get_iout(index_of_the_particle='i'):
+        returns (iout='int32')
+
+    @remote_function(can_handle_array=True)
+    def set_iout(index_of_the_particle='i', iout='int32'):
+        returns ()
+
+    @remote_function(can_handle_array=True)
+    def get_itmin(index_of_the_particle='i'):
+        returns (itmin='int32')
+
+    @remote_function(can_handle_array=True)
+    def set_itmin(index_of_the_particle='i', itmin='int32'):
+        returns ()
+
+    @remote_function(can_handle_array=True)
+    def get_xyfiles(index_of_the_particle='i'):
+        returns (xyfiles='bool')
+
+    @remote_function(can_handle_array=True)
+    def set_xyfiles(index_of_the_particle='i', xyfiles='bool'):
+        returns ()
+
+    @remote_function(can_handle_array=True)
+    def get_idebug(index_of_the_particle='i'):
+        returns (idebug='int32')
+
+    @remote_function(can_handle_array=True)
+    def set_idebug(index_of_the_particle='i', idebug='int32'):
+        returns ()
+
+    @remote_function(can_handle_array=True)
+    def get_itests(index_of_the_particle='i'):
+        returns (itests='int32')
+
+    @remote_function(can_handle_array=True)
+    def set_itests(index_of_the_particle='i', itests='int32'):
+        returns ()
+
+    @remote_function(can_handle_array=True)
+    def get_verbose(index_of_the_particle='i'):
+        returns (verbose='bool')
+
+    @remote_function(can_handle_array=True)
+    def set_verbose(index_of_the_particle='i', verbose='bool'):
+        returns ()
+
+    @remote_function(can_handle_array=True)
+    def get_stop_deg(index_of_the_particle='i'):
+        returns (stop_deg='bool')
+
+    @remote_function(can_handle_array=True)
+    def set_stop_deg(index_of_the_particle='i', stop_deg='bool'):
+        returns ()
+
+    @remote_function(can_handle_array=True)
+    def get_n_snap(index_of_the_particle='i'):
+        returns (n_snap='int32')
+
+    @remote_function(can_handle_array=True)
+    def set_n_snap(index_of_the_particle='i', n_snap='int32'):
+        returns ()
 
     # @legacy_function
     # def get_par_stopping_condition():
@@ -3390,109 +1123,6 @@ class GenecInterface(
         return function
 
     @legacy_function
-    def get_starname():
-        """
-        Get the star name (identical to AMUSE particle key?)
-        """
-        function = LegacyFunctionSpecification()
-        function.can_handle_array = True
-        function.addParameter(
-            'index_of_the_star', dtype='int32',
-            direction=function.OUT,
-            description="The star's key"
-        )
-        function.addParameter(
-            'starname', dtype='string', direction=function.IN,
-            description="star name",
-        )
-        function.result_type = 'int32'
-        function.result_doc = """
-        0 - OK
-            The value has been set.
-        -1 - ERROR
-            Unable to set.
-        -2 - ERROR
-            Cannot set at this point, already running.
-        """
-        return function
-
-    @legacy_function
-    def set_starname():
-        """
-        Set the star name (identical to AMUSE particle key?)
-        """
-        function = LegacyFunctionSpecification()
-        function.can_handle_array = True
-        function.addParameter(
-            'index_of_the_star', dtype='int32',
-            direction=function.IN,
-            description="The star's key"
-        )
-        function.addParameter(
-            'starname', dtype='string', direction=function.OUT,
-            description="star name",
-        )
-        function.result_type = 'int32'
-        function.result_doc = """
-        0 - OK
-            The value has been set.
-        -1 - ERROR
-            Unable to set.
-        -2 - ERROR
-            Cannot set at this point, already running.
-        """
-        return function
-
-    @legacy_function
-    def get_phase():
-        'get phase'
-        function = LegacyFunctionSpecification()
-        function.can_handle_array = True
-        function.addParameter(
-            'index_of_the_star', dtype='int32',
-            direction=function.IN,
-            description="The star's key"
-        )
-        function.addParameter(
-            'phase', dtype='int32',
-            direction=function.OUT,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            Got the value.
-        -1 - ERROR
-            Unable to get.
-        '''
-        return function
-
-    @legacy_function
-    def set_phase():
-        'set phase'
-        function = LegacyFunctionSpecification()
-        function.can_handle_array = True
-        function.addParameter(
-            'index_of_the_star', dtype='int32',
-            direction=function.IN,
-            description="The star's key"
-        )
-        function.addParameter(
-            'phase', dtype='int32',
-            direction=function.IN,
-        )
-        function.result_type = 'int32'
-        function.result_doc = '''
-        0 - OK
-            The value has been set.
-        -1 - ERROR
-            Unable to set.
-        -2 - ERROR
-            Cannot set at this point, already running.
-        '''
-        return function
-
-
-    @legacy_function
     def new_particle():
         """
         Define a new star in the code. The star will start with the given mass.
@@ -3526,6 +1156,73 @@ class GenecInterface(
         -1 - ERROR
             New star could not be created.
         """
+        return function
+
+    @legacy_function
+    def new_stellar_model():
+        """
+        New star from an existing model
+        """
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = False
+        function.addParameter(
+            'index_of_the_star', dtype='int32', direction=function.OUT,
+            description=(
+                "The new index for the star. This index can be used to refer "
+                "to this star in other functions"
+            )
+        )
+        for parameter in GENEC_STAR_PARAMETERS:
+            function.addParameter(
+                parameter,
+                dtype=GENEC_STAR_PARAMETERS[parameter][0],
+                unit=GENEC_STAR_PARAMETERS[parameter][1],
+                description=GENEC_STAR_PARAMETERS[parameter][2],
+                direction=function.IN,
+            )
+        for parameter in GENEC_STAR_STRUCTURE:
+            function.addParameter(
+                parameter,
+                dtype=GENEC_STAR_STRUCTURE[parameter][0],
+                unit=GENEC_STAR_STRUCTURE[parameter][1],
+                description=GENEC_STAR_STRUCTURE[parameter][2],
+                direction=function.IN,
+            )
+
+        function.result_type = 'int32'
+        return function
+
+    @legacy_function
+    def get_stellar_model():
+        """
+        Get an existing model
+        """
+        function = LegacyFunctionSpecification()
+        function.must_handle_array = True
+        function.addParameter(
+            'index_of_the_star', dtype='int32', direction=function.IN,
+            description=(
+                "The new index for the star. This index can be used to refer "
+                "to this star in other functions"
+            )
+        )
+        for parameter in GENEC_STAR_PARAMETERS:
+            function.addParameter(
+                parameter,
+                dtype=GENEC_STAR_PARAMETERS[parameter][0],
+                unit=GENEC_STAR_PARAMETERS[parameter][1],
+                description=GENEC_STAR_PARAMETERS[parameter][2],
+                direction=function.OUT,
+            )
+        for parameter in GENEC_STAR_STRUCTURE:
+            function.addParameter(
+                parameter,
+                dtype=GENEC_STAR_STRUCTURE[parameter][0],
+                unit=GENEC_STAR_STRUCTURE[parameter][1],
+                description=GENEC_STAR_STRUCTURE[parameter][2],
+                direction=function.OUT,
+            )
+        function.result_type = 'int32'
         return function
 
     @legacy_function
@@ -5698,635 +3395,12 @@ class Genec(StellarEvolution, InternalStellarStructure):
             default_value=self.data_directory
         )
 
-        handler.add_method_parameter(
-            "get_par_ipoly",
-            "set_par_ipoly",
-            "ipoly",
-            "GENEC parameter ipoly",
-        )
-
-        handler.add_method_parameter(
-            "get_par_nwseq",
-            "set_par_nwseq",
-            "nwseq",
-            "GENEC parameter nwseq",
-        )
-
-        handler.add_method_parameter(
-            "get_par_modanf",
-            "set_par_modanf",
-            "modanf",
-            "GENEC parameter modanf",
-        )
-
-        handler.add_method_parameter(
-            "get_par_nzmod",
-            "set_par_nzmod",
-            "nzmod",
-            "GENEC parameter nzmod",
-        )
-
-        handler.add_method_parameter(
-            "get_par_irot",
-            "set_par_irot",
-            "irot",
-            "GENEC parameter irot",
-        )
-
-        handler.add_method_parameter(
-            "get_par_isol",
-            "set_par_isol",
-            "isol",
-            "GENEC parameter isol",
-        )
-
-        handler.add_method_parameter(
-            "get_par_imagn",
-            "set_par_imagn",
-            "imagn",
-            "GENEC parameter imagn",
-        )
-
-        handler.add_method_parameter(
-            "get_par_ialflu",
-            "set_par_ialflu",
-            "ialflu",
-            "GENEC parameter ialflu",
-        )
-
-        handler.add_method_parameter(
-            "get_par_ianiso",
-            "set_par_ianiso",
-            "ianiso",
-            "GENEC parameter ianiso",
-        )
-
-        handler.add_method_parameter(
-            "get_par_ipop3",
-            "set_par_ipop3",
-            "ipop3",
-            "GENEC parameter ipop3",
-        )
-
-        handler.add_method_parameter(
-            "get_par_ibasnet",
-            "set_par_ibasnet",
-            "ibasnet",
-            "GENEC parameter ibasnet",
-        )
-
-        handler.add_method_parameter(
-            "get_par_iopac",
-            "set_par_iopac",
-            "iopac",
-            "GENEC parameter iopac",
-        )
-
-        handler.add_method_parameter(
-            "get_par_ikappa",
-            "set_par_ikappa",
-            "ikappa",
-            "GENEC parameter ikappa",
-        )
-
-        handler.add_method_parameter(
-            "get_par_idiff",
-            "set_par_idiff",
-            "idiff",
-            "GENEC parameter idiff",
-        )
-
-        handler.add_method_parameter(
-            "get_par_iadvec",
-            "set_par_iadvec",
-            "iadvec",
-            "GENEC parameter iadvec",
-        )
-
-        handler.add_method_parameter(
-            "get_par_istati",
-            "set_par_istati",
-            "istati",
-            "GENEC parameter istati",
-        )
-
-        handler.add_method_parameter(
-            "get_par_icoeff",
-            "set_par_icoeff",
-            "icoeff",
-            "GENEC parameter icoeff",
-        )
-
-        handler.add_method_parameter(
-            "get_par_igamma",
-            "set_par_igamma",
-            "igamma",
-            "GENEC parameter igamma",
-        )
-
-        handler.add_method_parameter(
-            "get_par_idialo",
-            "set_par_idialo",
-            "idialo",
-            "GENEC parameter idialo",
-        )
-
-        handler.add_method_parameter(
-            "get_par_idialu",
-            "set_par_idialu",
-            "idialu",
-            "GENEC parameter idialu",
-        )
-
-        handler.add_method_parameter(
-            "get_par_imloss",
-            "set_par_imloss",
-            "imloss",
-            "GENEC parameter imloss",
-        )
-
-        handler.add_method_parameter(
-            "get_par_ifitm",
-            "set_par_ifitm",
-            "ifitm",
-            "GENEC parameter ifitm",
-        )
-
-        handler.add_method_parameter(
-            "get_par_nndr",
-            "set_par_nndr",
-            "nndr",
-            "GENEC parameter nndr",
-        )
-
-        handler.add_method_parameter(
-            "get_par_iledou",
-            "set_par_iledou",
-            "iledou",
-            "GENEC parameter iledou",
-        )
-
-        handler.add_method_parameter(
-            "get_par_idifcon",
-            "set_par_idifcon",
-            "idifcon",
-            "GENEC parameter idifcon",
-        )
-
-        handler.add_method_parameter(
-            "get_par_my",
-            "set_par_my",
-            "my",
-            "GENEC parameter my",
-        )
-
-        handler.add_method_parameter(
-            "get_par_iover",
-            "set_par_iover",
-            "iover",
-            "GENEC parameter iover",
-        )
-
-        handler.add_method_parameter(
-            "get_par_iunder",
-            "set_par_iunder",
-            "iunder",
-            "GENEC parameter iunder",
-        )
-
-        handler.add_method_parameter(
-            "get_par_nbchx",
-            "set_par_nbchx",
-            "nbchx",
-            "GENEC parameter nbchx",
-        )
-
-        handler.add_method_parameter(
-            "get_par_nrband",
-            "set_par_nrband",
-            "nrband",
-            "GENEC parameter nrband",
-        )
-
-        handler.add_method_parameter(
-            "get_par_islow",
-            "set_par_islow",
-            "islow",
-            "GENEC parameter islow",
-        )
-
-        handler.add_method_parameter(
-            "get_par_icncst",
-            "set_par_icncst",
-            "icncst",
-            "GENEC parameter icncst",
-        )
-
-        handler.add_method_parameter(
-            "get_par_tauH_fit",
-            "set_par_tauH_fit",
-            "tauH_fit",
-            "GENEC parameter tauH_fit",
-        )
-
-        handler.add_method_parameter(
-            "get_par_iauto",
-            "set_par_iauto",
-            "iauto",
-            "GENEC parameter iauto",
-        )
-
-        handler.add_method_parameter(
-            "get_par_iprn",
-            "set_par_iprn",
-            "iprn",
-            "GENEC parameter iprn",
-        )
-
-        handler.add_method_parameter(
-            "get_par_iout",
-            "set_par_iout",
-            "iout",
-            "GENEC parameter iout",
-        )
-
-        handler.add_method_parameter(
-            "get_par_itmin",
-            "set_par_itmin",
-            "itmin",
-            "GENEC parameter itmin",
-        )
-
-        handler.add_method_parameter(
-            "get_par_idebug",
-            "set_par_idebug",
-            "idebug",
-            "GENEC parameter idebug",
-        )
-
-        handler.add_method_parameter(
-            "get_par_itests",
-            "set_par_itests",
-            "itests",
-            "GENEC parameter itests",
-        )
-
-        handler.add_method_parameter(
-            "get_par_var_rates",
-            "set_par_var_rates",
-            "var_rates",
-            "GENEC parameter var_rates",
-        )
-
-        handler.add_method_parameter(
-            "get_par_bintide",
-            "set_par_bintide",
-            "bintide",
-            "GENEC parameter bintide",
-        )
-
-        handler.add_method_parameter(
-            "get_par_const_per",
-            "set_par_const_per",
-            "const_per",
-            "GENEC parameter const_per",
-        )
-
-        handler.add_method_parameter(
-            "get_par_Add_Flux",
-            "set_par_Add_Flux",
-            "Add_Flux",
-            "GENEC parameter Add_Flux",
-        )
-
-        handler.add_method_parameter(
-            "get_par_diff_only",
-            "set_par_diff_only",
-            "diff_only",
-            "GENEC parameter diff_only",
-        )
-
-        handler.add_method_parameter(
-            "get_par_RSG_Mdot",
-            "set_par_RSG_Mdot",
-            "RSG_Mdot",
-            "GENEC parameter RSG_Mdot",
-        )
-
-        handler.add_method_parameter(
-            "get_par_display_plot",
-            "set_par_display_plot",
-            "display_plot",
-            "GENEC parameter display_plot",
-        )
-
-        handler.add_method_parameter(
-            "get_par_xyfiles",
-            "set_par_xyfiles",
-            "xyfiles",
-            "GENEC parameter xyfiles",
-        )
-
-        handler.add_method_parameter(
-            "get_par_verbose",
-            "set_par_verbose",
-            "verbose",
-            "GENEC parameter verbose",
-        )
-
-        handler.add_method_parameter(
-            "get_par_stop_deg",
-            "set_par_stop_deg",
-            "stop_deg",
-            "GENEC parameter stop_deg",
-        )
-
-        handler.add_method_parameter(
-            "get_par_index_poly",
-            "set_par_index_poly",
-            "index_poly",
-            "GENEC parameter index_poly",
-        )
-
-        handler.add_method_parameter(
-            "get_par_binm2",
-            "set_par_binm2",
-            "binm2",
-            "GENEC parameter binm2",
-        )
-
-        handler.add_method_parameter(
-            "get_par_periodini",
-            "set_par_periodini",
-            "periodini",
-            "GENEC parameter periodini",
-        )
-
-        handler.add_method_parameter(
-            "get_par_zinit",
-            "set_par_zinit",
-            "zinit",
-            "GENEC parameter zinit",
-        )
-
-        handler.add_method_parameter(
-            "get_par_zsol",
-            "set_par_zsol",
-            "zsol",
-            "GENEC parameter zsol",
-        )
-
-        handler.add_method_parameter(
-            "get_par_z",
-            "set_par_z",
-            "z",
-            "GENEC parameter z",
-        )
-
-        handler.add_method_parameter(
-            "get_par_fenerg",
-            "set_par_fenerg",
-            "fenerg",
-            "GENEC parameter fenerg",
-        )
-
-        handler.add_method_parameter(
-            "get_par_richac",
-            "set_par_richac",
-            "richac",
-            "GENEC parameter richac",
-        )
-
-        handler.add_method_parameter(
-            "get_par_frein",
-            "set_par_frein",
-            "frein",
-            "GENEC parameter frein",
-        )
-
-        handler.add_method_parameter(
-            "get_par_K_Kawaler",
-            "set_par_K_Kawaler",
-            "K_Kawaler",
-            "GENEC parameter K_Kawaler",
-        )
-
-        handler.add_method_parameter(
-            "get_par_Omega_saturation",
-            "set_par_Omega_saturation",
-            "Omega_saturation",
-            "GENEC parameter Omega_saturation",
-        )
-
-        handler.add_method_parameter(
-            "get_par_rapcrilim",
-            "set_par_rapcrilim",
-            "rapcrilim",
-            "GENEC parameter rapcrilim",
-        )
-
-        handler.add_method_parameter(
-            "get_par_vwant",
-            "set_par_vwant",
-            "vwant",
-            "GENEC parameter vwant",
-        )
-
-        handler.add_method_parameter(
-            "get_par_xfom",
-            "set_par_xfom",
-            "xfom",
-            "GENEC parameter xfom",
-        )
-
-        handler.add_method_parameter(
-            "get_par_omega",
-            "set_par_omega",
-            "omega",
-            "GENEC parameter omega",
-        )
-
-        handler.add_method_parameter(
-            "get_par_xdial",
-            "set_par_xdial",
-            "xdial",
-            "GENEC parameter xdial",
-        )
-
-        handler.add_method_parameter(
-            "get_par_B_initial",
-            "set_par_B_initial",
-            "B_initial",
-            "GENEC parameter B_initial",
-        )
-
-        handler.add_method_parameter(
-            "get_par_add_diff",
-            "set_par_add_diff",
-            "add_diff",
-            "GENEC parameter add_diff",
-        )
-
-        handler.add_method_parameter(
-            "get_par_fmlos",
-            "set_par_fmlos",
-            "fmlos",
-            "GENEC parameter fmlos",
-        )
-
-        handler.add_method_parameter(
-            "get_par_fitm",
-            "set_par_fitm",
-            "fitm",
-            "GENEC parameter fitm",
-        )
-
-        handler.add_method_parameter(
-            "get_par_fitmi",
-            "set_par_fitmi",
-            "fitmi",
-            "GENEC parameter fitmi",
-        )
-
-        handler.add_method_parameter(
-            "get_par_fitmi_default",
-            "set_par_fitmi_default",
-            "fitmi_default",
-            "GENEC parameter fitmi_default",
-        )
-
-        handler.add_method_parameter(
-            "get_par_deltal",
-            "set_par_deltal",
-            "deltal",
-            "GENEC parameter deltal",
-        )
-
-        handler.add_method_parameter(
-            "get_par_deltat",
-            "set_par_deltat",
-            "deltat",
-            "GENEC parameter deltat",
-        )
-
-        handler.add_method_parameter(
-            "get_par_elph",
-            "set_par_elph",
-            "elph",
-            "GENEC parameter elph",
-        )
-
-        handler.add_method_parameter(
-            "get_par_dovhp",
-            "set_par_dovhp",
-            "dovhp",
-            "GENEC parameter dovhp",
-        )
-
-        handler.add_method_parameter(
-            "get_par_dunder",
-            "set_par_dunder",
-            "dunder",
-            "GENEC parameter dunder",
-        )
-
-        handler.add_method_parameter(
-            "get_par_gkorm",
-            "set_par_gkorm",
-            "gkorm",
-            "GENEC parameter gkorm",
-        )
-
-        handler.add_method_parameter(
-            "get_par_alph",
-            "set_par_alph",
-            "alph",
-            "GENEC parameter alph",
-        )
-
-        handler.add_method_parameter(
-            "get_par_agdr",
-            "set_par_agdr",
-            "agdr",
-            "GENEC parameter agdr",
-        )
-
-        handler.add_method_parameter(
-            "get_par_faktor",
-            "set_par_faktor",
-            "faktor",
-            "GENEC parameter faktor",
-        )
-
-        handler.add_method_parameter(
-            "get_par_dgrp",
-            "set_par_dgrp",
-            "dgrp",
-            "GENEC parameter dgrp",
-        )
-
-        handler.add_method_parameter(
-            "get_par_dgrl",
-            "set_par_dgrl",
-            "dgrl",
-            "GENEC parameter dgrl",
-        )
-
-        handler.add_method_parameter(
-            "get_par_dgry",
-            "set_par_dgry",
-            "dgry",
-            "GENEC parameter dgry",
-        )
-
-        handler.add_method_parameter(
-            "get_par_dgrc",
-            "set_par_dgrc",
-            "dgrc",
-            "GENEC parameter dgrc",
-        )
-
-        handler.add_method_parameter(
-            "get_par_dgro",
-            "set_par_dgro",
-            "dgro",
-            "GENEC parameter dgro",
-        )
-
-        handler.add_method_parameter(
-            "get_par_dgr20",
-            "set_par_dgr20",
-            "dgr20",
-            "GENEC parameter dgr20",
-        )
-
-        handler.add_method_parameter(
-            "get_par_xcn",
-            "set_par_xcn",
-            "xcn",
-            "GENEC parameter xcn",
-        )
-
-        handler.add_method_parameter(
-            "get_par_starname",
-            "set_par_starname",
-            "starname",
-            "GENEC parameter starname",
-        )
-
         # handler.add_method_parameter(
         #     "get_par_stopping_condition",
         #     "set_par_stopping_condition",
         #     "stopping_condition",
         #     "GENEC parameter stopping_condition",
         # )
-
-        handler.add_method_parameter(
-            "get_par_n_snap",
-            "set_par_n_snap",
-            "n_snap",
-            "GENEC snapshot writing",
-        )
 
         # handler.add_method_parameter(
         #     "get_min_timestep_stop_condition",
@@ -6346,6 +3420,12 @@ class Genec(StellarEvolution, InternalStellarStructure):
             )
             handler.set_new(set_name, 'new_particle')
 
+            for particle_property in GENEC_STAR_PARAMETERS:
+                handler.add_getter(
+                    set_name,
+                    f'get_{particle_property}',
+                    names=(particle_property,)
+                )
             handler.add_getter(set_name, 'get_phase', names=('phase',))
             handler.add_getter(set_name, 'get_radius')
             handler.add_getter(set_name, 'get_mass')
@@ -6531,13 +3611,15 @@ class Genec(StellarEvolution, InternalStellarStructure):
         handler.add_method
 
         # -> Edit (commit_parameters)
-        handler.add_method('EDIT', 'set_starname')
+        #handler.add_method('EDIT', 'set_starname')
         # handler.add_method('EDIT', 'new_particle')
 
         # -> Run (commit_particles)
         handler.add_transition('EDIT', 'RUN', 'commit_particles')
 
         for state in ["UPDATE"]:
+            for particle_property in GENEC_STAR_PARAMETERS:
+                handler.add_method(state, f'get_{particle_property}')
             handler.add_method(state, 'get_chemical_abundance_profiles')
             handler.add_method(state, 'get_mass_fraction_of_species_at_zone')
             handler.add_method(state, 'get_mu_at_zone')
@@ -6571,6 +3653,9 @@ class Genec(StellarEvolution, InternalStellarStructure):
 
         # -> Update
         handler.add_transition('RUN', 'UPDATE', 'finalize_stellar_model')
+
+        handler.add_method('UPDATE', 'set_n_snap')
+        #handler.add_method('UPDATE', 'set_ipoly')
         handler.add_method('UPDATE', 'set_chemical_abundance_profiles')
         handler.add_method('UPDATE', 'set_mass_fraction_of_species_at_zone')
         handler.add_method('UPDATE', 'set_number_of_zones')
@@ -6590,7 +3675,7 @@ class Genec(StellarEvolution, InternalStellarStructure):
                 )
         # -> Run (recommit_particles)
 
-        handler.add_method('UPDATE', 'set_starname')
+        #handler.add_method('UPDATE', 'set_starname')
         # handler.add_method('UPDATE', 'new_particle')
 
     def define_methods(self, handler):
@@ -6601,6 +3686,31 @@ class Genec(StellarEvolution, InternalStellarStructure):
             (units.MSun, handler.NO_UNIT, handler.NO_UNIT),
             (handler.INDEX, handler.ERROR_CODE)
         )
+
+        # NEW_STELLAR_MODEL_IN = []
+        # NEW_STELLAR_MODEL_IN += [p[1][1] for p in GENEC_STAR_PARAMETERS.items()]
+        # NEW_STELLAR_MODEL_IN += [p[1][1] for p in GENEC_STAR_STRUCTURE.items()]
+
+        # handler.add_method(
+        #     "new_stellar_model",
+        #     (
+        #         NEW_STELLAR_MODEL_IN,
+        #     ),
+        #     (
+        #         handler.INDEX, handler.ERROR_CODE
+        #     )
+        # )
+
+        # GET_STELLAR_MODEL_OUT = []
+        # GET_STELLAR_MODEL_OUT += [p[1][1] for p in GENEC_STAR_PARAMETERS.items()]
+        # GET_STELLAR_MODEL_OUT += [p[1][1] for p in GENEC_STAR_STRUCTURE.items()]
+        # GET_STELLAR_MODEL_OUT.append(handler.ERROR_CODE)
+
+        # handler.add_method(
+        #     "get_stellar_model",
+        #     (handler.INDEX,),
+        #     tuple(GET_STELLAR_MODEL_OUT)
+        # )
         handler.add_method(
             "read_genec_model",
             (handler.NO_UNIT),
@@ -6817,3 +3927,99 @@ class Genec(StellarEvolution, InternalStellarStructure):
         frac_profile = self.get_mass_profile(
             indices_of_the_stars, number_of_zones=number_of_zones)
         return frac_profile.cumsum()
+
+    def new_particle_from_model(
+        self, internal_structure, current_age=0 | units.julianyr, key=None
+    ):
+        self.new_stellar_model(
+            internal_structure[0], internal_structure[1],
+            internal_structure[2], internal_structure[3],
+            internal_structure[4], internal_structure[5],
+            internal_structure[6], internal_structure[7],
+            internal_structure[8], internal_structure[9],
+            internal_structure[10], internal_structure[11],
+            internal_structure[12], internal_structure[13],
+            internal_structure[14], internal_structure[15],
+            internal_structure[16], internal_structure[17],
+            internal_structure[18], internal_structure[19],
+            internal_structure[20], internal_structure[21],
+            internal_structure[22], internal_structure[23],
+            internal_structure[24], internal_structure[25],
+            internal_structure[26], internal_structure[27],
+            internal_structure[28], internal_structure[29],
+            internal_structure[30], internal_structure[31],
+            internal_structure[32], internal_structure[33],
+            internal_structure[34], internal_structure[35],
+            internal_structure[36], internal_structure[37],
+            internal_structure[38], internal_structure[39],
+            internal_structure[40], internal_structure[41],
+            internal_structure[42], internal_structure[43],
+            internal_structure[44], internal_structure[45],
+            internal_structure[46], internal_structure[47],
+            internal_structure[48], internal_structure[49],
+            internal_structure[50], internal_structure[51],
+            internal_structure[52], internal_structure[53],
+            internal_structure[54], internal_structure[55],
+            internal_structure[56], internal_structure[57],
+            internal_structure[58], internal_structure[59],
+            internal_structure[60], internal_structure[61],
+            internal_structure[62], internal_structure[63],
+            internal_structure[64], internal_structure[65],
+            internal_structure[66], internal_structure[67],
+            internal_structure[68], internal_structure[69],
+            internal_structure[70], internal_structure[71],
+            internal_structure[72], internal_structure[73],
+            internal_structure[74], internal_structure[75],
+            internal_structure[76], internal_structure[77],
+            internal_structure[78], internal_structure[79],
+            internal_structure[80], internal_structure[81],
+            internal_structure[82], internal_structure[83],
+            internal_structure[84], internal_structure[85],
+            internal_structure[86], internal_structure[87],
+            internal_structure[88], internal_structure[89],
+            internal_structure[90], internal_structure[91],
+            internal_structure[92], internal_structure[93],
+            internal_structure[94], internal_structure[95],
+            internal_structure[96], internal_structure[97],
+            internal_structure[98], internal_structure[99],
+            internal_structure[100], internal_structure[101],
+            internal_structure[102], internal_structure[103],
+            internal_structure[104], internal_structure[105],
+            internal_structure[106], internal_structure[107],
+            internal_structure[108], internal_structure[109],
+            internal_structure[110], internal_structure[111],
+            internal_structure[112], internal_structure[113],
+            internal_structure[114], internal_structure[115],
+            internal_structure[116], internal_structure[117],
+            internal_structure[118], internal_structure[119],
+            internal_structure[120], internal_structure[121],
+            internal_structure[122], internal_structure[123],
+            internal_structure[124], internal_structure[125],
+            internal_structure[126], internal_structure[127],
+            internal_structure[128], internal_structure[129],
+            internal_structure[130], internal_structure[131],
+            internal_structure[132], internal_structure[133],
+            internal_structure[134], internal_structure[135],
+            internal_structure[136], internal_structure[137],
+            internal_structure[138], internal_structure[139],
+            internal_structure[140], internal_structure[141],
+            internal_structure[142], internal_structure[143],
+            internal_structure[144], internal_structure[145],
+            internal_structure[146], internal_structure[147],
+            internal_structure[148], internal_structure[149],
+            internal_structure[150], internal_structure[151],
+            internal_structure[152], internal_structure[153],
+            internal_structure[154], internal_structure[155],
+            internal_structure[156], internal_structure[157],
+            internal_structure[158], internal_structure[159],
+            internal_structure[160], internal_structure[161],
+            internal_structure[162], internal_structure[163],
+            internal_structure[164], internal_structure[165],
+            internal_structure[166], internal_structure[167],
+            internal_structure[168], internal_structure[169],
+            internal_structure[170], internal_structure[171],
+            internal_structure[172], internal_structure[173],
+            internal_structure[174], internal_structure[175],
+            internal_structure[176],
+            )
+        return
