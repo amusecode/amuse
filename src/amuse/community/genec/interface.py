@@ -50,192 +50,196 @@ SPECIES_NAMES = {
     'bid1': 27,
 }
 
-GENEC_STAR_PROPERTIES = {
-    'n_snap': ('int32', NO_UNIT, "number of steps between snapshots [0]"),
-    #'ipoly': ('int32', NO_UNIT, "polytropic index"),
-}
-
+# Parameters (but individual to each star)
 GENEC_STAR_PARAMETERS = {
-    'initialised': ['bool', NO_UNIT, "True if the star is an intialised model"],
-    'starname': ['string', NO_UNIT, "Name of the star"],
-    'nwseq': ['int32', NO_UNIT, ""],
-    'modanf': ['int32', NO_UNIT, ""],
-    'nzmod': ['int32', NO_UNIT, ""],
-    'end_at_phase': ['int32', NO_UNIT, "Stop if this phase is reached"],
-    'end_at_model': ['int32', NO_UNIT, "Stop if this model number is reached"],
-    'irot': ['int32', NO_UNIT, ""],
-    'isol': ['int32', NO_UNIT, ""],
-    'imagn': ['int32', NO_UNIT, ""],
-    'ialflu': ['int32', NO_UNIT, ""],
-    'ianiso': ['int32', NO_UNIT, ""],
-    'ipop3': ['int32', NO_UNIT, ""],
-    'ibasnet': ['int32', NO_UNIT, ""],
-    'phase': ['int32', NO_UNIT, ""],
-    'var_rates': ['bool', NO_UNIT, ""],
-    'bintide': ['bool', NO_UNIT, ""],
-    'binm2': ['float64', NO_UNIT, ""],
-    'periodini': ['float64', NO_UNIT, ""],
-    'const_per': ['bool', NO_UNIT, ""],
-    'iprezams': ['int32', NO_UNIT, ""],
-    'zinit': ['float64', NO_UNIT, ""],
-    'zsol': ['float64', NO_UNIT, ""],
-    'z': ['float64', NO_UNIT, ""],
-    'iopac': ['int32', NO_UNIT, ""],
-    'ikappa': ['int32', NO_UNIT, ""],
-    'idiff': ['int32', NO_UNIT, ""],
-    'iadvec': ['int32', NO_UNIT, ""],
-    'istati': ['int32', NO_UNIT, ""],
-    'icoeff': ['int32', NO_UNIT, ""],
-    'fenerg': ['float64', NO_UNIT, ""],
-    'richac': ['float64', NO_UNIT, ""],
-    'igamma': ['int32', NO_UNIT, ""],
-    'frein': ['float64', NO_UNIT, ""],
-    'K_Kawaler': ['float64', NO_UNIT, ""],
-    'Omega_saturation': ['float64', NO_UNIT, ""],
-    'rapcrilim': ['float64', NO_UNIT, ""],
-    'vwant': ['float64', NO_UNIT, ""],
-    'xfom': ['float64', NO_UNIT, ""],
-    'omega': ['float64', NO_UNIT, ""],
-    'xdial': ['float64', NO_UNIT, ""],
-    'idialo': ['int32', NO_UNIT, ""],
-    'idialu': ['int32', NO_UNIT, ""],
-    'Add_Flux': ['bool', NO_UNIT, ""],
-    'diff_only': ['bool', NO_UNIT, ""],
-    'B_initial': ['float64', NO_UNIT, ""],
-    'add_diff': ['float64', NO_UNIT, ""],
-    'n_mag': ['int32', NO_UNIT, ""],
-    'alpha_F': ['float64', NO_UNIT, ""],
-    'nsmooth': ['int32', NO_UNIT, ""],
-    'qminsmooth': ['bool', NO_UNIT, ""],
-    'imloss': ['int32', NO_UNIT, ""],
-    'fmlos': ['float64', NO_UNIT, ""],
-    'ifitm': ['int32', NO_UNIT, ""],
-    'fitm': ['float64', NO_UNIT, ""],
-    'fitmi': ['float64', NO_UNIT, ""],
-    'deltal': ['float64', NO_UNIT, ""],
-    'deltat': ['float64', NO_UNIT, ""],
-    'nndr': ['int32', NO_UNIT, ""],
-    'RSG_Mdot': ['int32', NO_UNIT, ""],
-    'SupraEddMdot': ['bool', NO_UNIT, ""],
-    'Be_mdotfrac': ['float64', NO_UNIT, ""],
-    'start_mdot': ['float64', NO_UNIT, ""],
-    'iledou': ['int32', NO_UNIT, ""],
-    'idifcon': ['int32', NO_UNIT, ""],
-    'iover': ['int32', NO_UNIT, ""],
-    'elph': ['float64', NO_UNIT, ""],
-    'my': ['int32', NO_UNIT, ""],
-    'dovhp': ['float64', NO_UNIT, ""],
-    'iunder': ['int32', NO_UNIT, ""],
-    'dunder': ['float64', NO_UNIT, ""],
-    'gkorm': ['float64', NO_UNIT, ""],
-    'alph': ['float64', NO_UNIT, ""],
-    'agdr': ['float64', NO_UNIT, ""],
-    'faktor': ['float64', NO_UNIT, ""],
-    'dgrp': ['float64', NO_UNIT, ""],
-    'dgrl': ['float64', NO_UNIT, ""],
-    'dgry': ['float64', NO_UNIT, ""],
-    'dgrc': ['float64', NO_UNIT, ""],
-    'dgro': ['float64', NO_UNIT, ""],
-    'dgr20': ['float64', NO_UNIT, ""],
-    'nbchx': ['int32', NO_UNIT, ""],
-    'nrband': ['int32', NO_UNIT, ""],
-    'xcn': ['float64', NO_UNIT, ""],
-    'islow': ['int32', NO_UNIT, ""],
-    'icncst': ['int32', NO_UNIT, ""],
-    'tauH_fit': ['int32', NO_UNIT, ""],
-    'display_plot': ['bool', NO_UNIT, ""],
-    'iauto': ['int32', NO_UNIT, ""],
-    'iprn': ['int32', NO_UNIT, ""],
-    'iout': ['int32', NO_UNIT, ""],
-    'itmin': ['int32', NO_UNIT, ""],
-    'xyfiles': ['bool', NO_UNIT, ""],
-    'idebug': ['int32', NO_UNIT, ""],
-    'itests': ['int32', NO_UNIT, ""],
-    'verbose': ['bool', NO_UNIT, ""],
-    'stop_deg': ['bool', NO_UNIT, ""],
-    'n_snap': ['int32', NO_UNIT, "number of steps between snapshots [0]"],
+    # 'GENEC name: [dtype, unit, description, AMUSE name (optional)]
+    'initialised': ['bool', '', "True if the star is an intialised model"],
+    'starname': ['string', '', "Name of the star"],
+    'nwseq': ['int32', '', ""],
+    'modanf': ['int32', '', ""],
+    'nzmod': ['int32', '', ""],
+    'end_at_phase': ['int32', '', "Stop if this phase is reached"],
+    'end_at_model': ['int32', '', "Stop if this model number is reached"],
+    'irot': ['int32', '', ""],
+    'isol': ['int32', '', ""],
+    'imagn': ['int32', '', ""],
+    'ialflu': ['int32', '', ""],
+    'ianiso': ['int32', '', ""],
+    'ipop3': ['int32', '', ""],
+    'ibasnet': ['int32', '', ""],
+    'phase': ['int32', '', ""],
+    'var_rates': ['bool', '', ""],
+    'bintide': ['bool', '', ""],
+    'binm2': ['float64', '', ""],
+    'periodini': ['float64', '', ""],
+    'const_per': ['bool', '', ""],
+    'iprezams': ['int32', '', ""],
+    'zinit': ['float64', '', ""],
+    'zsol': ['float64', '', ""],
+    'z': ['float64', '', ""],
+    'iopac': ['int32', '', ""],
+    'ikappa': ['int32', '', ""],
+    'idiff': ['int32', '', ""],
+    'iadvec': ['int32', '', ""],
+    'istati': ['int32', '', ""],
+    'icoeff': ['int32', '', ""],
+    'fenerg': ['float64', '', ""],
+    'richac': ['float64', '', ""],
+    'igamma': ['int32', '', ""],
+    'frein': ['float64', '', ""],
+    'K_Kawaler': ['float64', '', ""],
+    'Omega_saturation': ['float64', '', ""],
+    'rapcrilim': ['float64', '', ""],
+    'vwant': ['float64', '', ""],
+    'xfom': ['float64', '', ""],
+    'omega': ['float64', '', ""],
+    'xdial': ['float64', '', ""],
+    'idialo': ['int32', '', ""],
+    'idialu': ['int32', '', ""],
+    'Add_Flux': ['bool', '', ""],
+    'diff_only': ['bool', '', ""],
+    'B_initial': ['float64', '', ""],
+    'add_diff': ['float64', '', ""],
+    'n_mag': ['int32', '', ""],
+    'alpha_F': ['float64', '', ""],
+    'nsmooth': ['int32', '', ""],
+    'qminsmooth': ['bool', '', ""],
+    'imloss': ['int32', '', ""],
+    'fmlos': ['float64', '', ""],
+    'ifitm': ['int32', '', ""],
+    'fitm': ['float64', '', ""],
+    'fitmi': ['float64', '', ""],
+    'deltal': ['float64', '', ""],
+    'deltat': ['float64', '', ""],
+    'nndr': ['int32', '', ""],
+    'RSG_Mdot': ['int32', '', ""],
+    'SupraEddMdot': ['bool', '', ""],
+    'Be_mdotfrac': ['float64', '', ""],
+    'start_mdot': ['float64', '', ""],
+    'iledou': ['int32', '', ""],
+    'idifcon': ['int32', '', ""],
+    'iover': ['int32', '', ""],
+    'elph': ['float64', '', ""],
+    'my': ['int32', '', ""],
+    'dovhp': ['float64', '', ""],
+    'iunder': ['int32', '', ""],
+    'dunder': ['float64', '', ""],
+    'gkorm': ['float64', '', ""],
+    'alph': ['float64', '', ""],
+    'agdr': ['float64', '', ""],
+    'faktor': ['float64', '', ""],
+    'dgrp': ['float64', '', ""],
+    'dgrl': ['float64', '', ""],
+    'dgry': ['float64', '', ""],
+    'dgrc': ['float64', '', ""],
+    'dgro': ['float64', '', ""],
+    'dgr20': ['float64', '', ""],
+    'nbchx': ['int32', '', ""],
+    'nrband': ['int32', '', ""],
+    'xcn': ['float64', '', ""],
+    'islow': ['int32', '', ""],
+    'icncst': ['int32', '', ""],
+    'tauH_fit': ['int32', '', ""],
+    'display_plot': ['bool', '', ""],
+    'iauto': ['int32', '', ""],
+    'iprn': ['int32', '', ""],
+    'iout': ['int32', '', ""],
+    'itmin': ['int32', '', ""],
+    'xyfiles': ['bool', '', ""],
+    'idebug': ['int32', '', ""],
+    'itests': ['int32', '', ""],
+    'verbose': ['bool', '', ""],
+    'stop_deg': ['bool', '', ""],
+    'n_snap': ['int32', '', "number of steps between snapshots [0]"],
 }
 
+# Stellar properties (but global for the star)
+GENEC_STAR_PROPERTIES = {
+    # 'GENEC name: [dtype, unit, description, AMUSE name (optional)]
+    'm': ['int32', '', "number of zones", "n_zones"],
+    'gms': ['float64', 'MSun', "total mass", 'mass'],
+    'alter': ['float64', 'julianyr', "stellar age", 'age'],
+    'gls': ['float64', 'LSun', "", 'luminosity'],
+    'teff': ['float64', 'K', "effective temperature", 'temperature'],
+    'glsv': ['float64', 'LSun', "previous luminosity"],
+    'teffv': ['float64', 'K', "previous effective temperature"],
+    'dzeitj': ['float64', 'julianyr', "time step", 'time_step'],
+    'dzeit': ['float64', 's', "time step"],
+    'dzeitv': ['float64', 's', "previous time step"],
+    'xmini': ['float64', 'MSun', "", 'initial_mass'],
+    'summas': ['float64', 'MSun', "total mass"],
+    'ab': ['float64', '', ""],
+    'dm_lost': ['float64', 'MSun', "total mass lost"],
+}
+
+# Structural properties (m layers)
 GENEC_STAR_STRUCTURE = {
-    'm': ['int32', NO_UNIT, "number of zones"],
-    'gms': ['float64', units.MSun, "total mass"],
-    'alter': ['float64', units.julianyr, "stellar age"],
-    'gls': ['float64', NO_UNIT, ""],
-    'teff': ['float64', units.K, "effective temperature"],
-    'glsv': ['float64', NO_UNIT, ""],
-    'teffv': ['float64', units.K, "previous effective temperature"],
-    'dzeitj': ['float64', units.julianyr, "time step"],
-    'dzeit': ['float64', units.s, "time step"],
-    'dzeitv': ['float64', units.s, "previous time step"],
-    'xmini': ['float64', NO_UNIT, ""],
-    'summas': ['float64', units.MSun, "total mass"],
-    'ab': ['float64', NO_UNIT, ""],
-    'dm_lost': ['float64', units.MSun, "total mass lost"],
-    'q': ['float64', NO_UNIT, ""],
-    'p': ['float64', NO_UNIT, ""],
-    't': ['float64', NO_UNIT, ""],
-    'r': ['float64', NO_UNIT, ""],
-    's': ['float64', NO_UNIT, ""],
-    'x': ['float64', NO_UNIT, "H fraction"],
-    'y3': ['float64', NO_UNIT, "He3 fraction"],
-    'y': ['float64', NO_UNIT, "He fraction"],
-    'xc12': ['float64', NO_UNIT, "C12 fraction"],
-    'xc13': ['float64', NO_UNIT, "C13 fraction"],
-    'xn14': ['float64', NO_UNIT, "N14 fraction"],
-    'xn15': ['float64', NO_UNIT, ""],
-    'xo16': ['float64', NO_UNIT, ""],
-    'xo17': ['float64', NO_UNIT, ""],
-    'xo18': ['float64', NO_UNIT, ""],
-    'xne20': ['float64', NO_UNIT, ""],
-    'xne22': ['float64', NO_UNIT, ""],
-    'xmg24': ['float64', NO_UNIT, ""],
-    'xmg25': ['float64', NO_UNIT, ""],
-    'xmg26': ['float64', NO_UNIT, ""],
-    'xf19': ['float64', NO_UNIT, ""],
-    'xne21': ['float64', NO_UNIT, ""],
-    'xna23': ['float64', NO_UNIT, ""],
-    'xal27': ['float64', NO_UNIT, ""],
-    'xsi28': ['float64', NO_UNIT, ""],
-    'xc14': ['float64', NO_UNIT, ""],
-    'xf18': ['float64', NO_UNIT, ""],
-    'xal26': ['float64', NO_UNIT, ""],
-    'xneut': ['float64', NO_UNIT, "Neutron fraction"],
-    'xprot': ['float64', NO_UNIT, "Proton fraction"],
-    'omegi': ['float64', NO_UNIT, "Rotation"],
-    'xbid': ['float64', NO_UNIT, ""],
-    'xbid1': ['float64', NO_UNIT, ""],
-    'vp': ['float64', NO_UNIT, ""],
-    'vt': ['float64', NO_UNIT, ""],
-    'vr': ['float64', NO_UNIT, ""],
-    'vs': ['float64', NO_UNIT, ""],
-    'vx': ['float64', NO_UNIT, ""],
-    'vy': ['float64', NO_UNIT, ""],
-    'vy3': ['float64', NO_UNIT, ""],
-    'vxc12': ['float64', NO_UNIT, ""],
-    'vxc13': ['float64', NO_UNIT, ""],
-    'vxn14': ['float64', NO_UNIT, ""],
-    'vxn15': ['float64', NO_UNIT, ""],
-    'vxo16': ['float64', NO_UNIT, ""],
-    'vxo17': ['float64', NO_UNIT, ""],
-    'vxo18': ['float64', NO_UNIT, ""],
-    'vxne20': ['float64', NO_UNIT, ""],
-    'vxne22': ['float64', NO_UNIT, ""],
-    'vxmg24': ['float64', NO_UNIT, ""],
-    'vxmg25': ['float64', NO_UNIT, ""],
-    'vxmg26': ['float64', NO_UNIT, ""],
-    'vxf19': ['float64', NO_UNIT, ""],
-    'vxne21': ['float64', NO_UNIT, ""],
-    'vxna23': ['float64', NO_UNIT, ""],
-    'vxal27': ['float64', NO_UNIT, ""],
-    'vxsi28': ['float64', NO_UNIT, ""],
-    'vxc14': ['float64', NO_UNIT, ""],
-    'vxf18': ['float64', NO_UNIT, ""],
-    'vxal26g': ['float64', NO_UNIT, ""],
-    'vxneut': ['float64', NO_UNIT, ""],
-    'vxprot': ['float64', NO_UNIT, ""],
-    'vomegi': ['float64', NO_UNIT, ""],
-    'vxbid': ['float64', NO_UNIT, ""],
-    'vxbid1': ['float64', NO_UNIT, ""],
+    # 'GENEC name: [dtype, unit, description, AMUSE name (optional)]
+    'q': ['float64', '', ""],
+    'p': ['float64', '', ""],
+    't': ['float64', '', ""],
+    'r': ['float64', '', ""],
+    's': ['float64', '', ""],
+    'x': ['float64', '', "H fraction"],
+    'y3': ['float64', '', "He3 fraction"],
+    'y': ['float64', '', "He fraction"],
+    'xc12': ['float64', '', "C12 fraction"],
+    'xc13': ['float64', '', "C13 fraction"],
+    'xn14': ['float64', '', "N14 fraction"],
+    'xn15': ['float64', '', ""],
+    'xo16': ['float64', '', ""],
+    'xo17': ['float64', '', ""],
+    'xo18': ['float64', '', ""],
+    'xne20': ['float64', '', ""],
+    'xne22': ['float64', '', ""],
+    'xmg24': ['float64', '', ""],
+    'xmg25': ['float64', '', ""],
+    'xmg26': ['float64', '', ""],
+    'xf19': ['float64', '', ""],
+    'xne21': ['float64', '', ""],
+    'xna23': ['float64', '', ""],
+    'xal27': ['float64', '', ""],
+    'xsi28': ['float64', '', ""],
+    'xc14': ['float64', '', ""],
+    'xf18': ['float64', '', ""],
+    'xal26': ['float64', '', ""],
+    'xneut': ['float64', '', "Neutron fraction"],
+    'xprot': ['float64', '', "Proton fraction"],
+    'omegi': ['float64', '', "Rotation"],
+    'xbid': ['float64', '', ""],
+    'xbid1': ['float64', '', ""],
+    'vp': ['float64', '', ""],
+    'vt': ['float64', '', ""],
+    'vr': ['float64', '', ""],
+    'vs': ['float64', '', ""],
+    'vx': ['float64', '', ""],
+    'vy': ['float64', '', ""],
+    'vy3': ['float64', '', ""],
+    'vxc12': ['float64', '', ""],
+    'vxc13': ['float64', '', ""],
+    'vxn14': ['float64', '', ""],
+    'vxn15': ['float64', '', ""],
+    'vxo16': ['float64', '', ""],
+    'vxo17': ['float64', '', ""],
+    'vxo18': ['float64', '', ""],
+    'vxne20': ['float64', '', ""],
+    'vxne22': ['float64', '', ""],
+    'vxmg24': ['float64', '', ""],
+    'vxmg25': ['float64', '', ""],
+    'vxmg26': ['float64', '', ""],
+    'vxf19': ['float64', '', ""],
+    'vxne21': ['float64', '', ""],
+    'vxna23': ['float64', '', ""],
+    'vxal27': ['float64', '', ""],
+    'vxsi28': ['float64', '', ""],
+    'vxc14': ['float64', '', ""],
+    'vxf18': ['float64', '', ""],
+    'vxal26g': ['float64', '', ""],
+    'vxneut': ['float64', '', ""],
+    'vxprot': ['float64', '', ""],
+    'vomegi': ['float64', '', ""],
+    'vxbid': ['float64', '', ""],
+    'vxbid1': ['float64', '', ""],
 }
 
 class GenecInterface(
@@ -1055,66 +1059,122 @@ class GenecInterface(
     def set_n_snap(index_of_the_particle='i', n_snap='int32'):
         returns ()
 
-    # @legacy_function
-    # def get_par_stopping_condition():
-    #     'get parameter stopping_condition'
-    #     function = LegacyFunctionSpecification()
-    #     function.addParameter(
-    #         'stopping_condition', dtype='string',
-    #         direction=function.OUT,
-    #     )
-    #     function.result_type = 'int32'
-    #     function.result_doc = '''
-    #     0 - OK
-    #         Got the value.
-    #     -1 - ERROR
-    #         Unable to get.
-    #     '''
-    #     return function
+    # end Parameters
 
-    # @legacy_function
-    # def set_par_stopping_condition():
-    #     'set parameter stopping_condition'
-    #     function = LegacyFunctionSpecification()
-    #     function.addParameter(
-    #         'stopping_condition', dtype='string',
-    #         direction=function.IN,
-    #     )
-    #     function.result_type = 'int32'
-    #     function.result_doc = '''
-    #     0 - OK
-    #         The value has been set.
-    #     -1 - ERROR
-    #         Unable to set.
-    #     -2 - ERROR
-    #         Cannot set at this point, already running.
-    #     '''
-    #     return function
+    # begin Properties
+    @remote_function(can_handle_array=True)
+    def get_m(index_of_the_particle='i'):
+        returns (m='int32')
 
-    # End parameters
+    @remote_function(can_handle_array=True)
+    def set_m(index_of_the_particle='i', m='int32'):
+        returns ()
 
-    @legacy_function
-    def set_number_of_zones():
-        """
-        Set the current number of zones/mesh-cells of the star.
-        """
-        function = LegacyFunctionSpecification()
-        function.can_handle_array = True
-        function.addParameter(
-            'index_of_the_star', dtype='int32', direction=function.IN,
-            description="The index of the star to get the value of")
-        function.addParameter(
-            'n_zones', dtype='int32', direction=function.IN,
-            description="The current number of zones/mesh-cells of the star."
-        )
-        function.result_type = 'int32'
-        function.result_doc = """
-        0 - OK
-            The value was set.
-        -1 - ERROR
-            A star with the given index was not found.
-        """
-        return function
+    @remote_function(can_handle_array=True)
+    def get_gms(index_of_the_particle='i'):
+        returns (gms='float64' | units.MSun)
+
+    @remote_function(can_handle_array=True)
+    def set_gms(index_of_the_particle='i', gms='float64' | units.MSun):
+        returns ()
+
+    @remote_function(can_handle_array=True)
+    def get_alter(index_of_the_particle='i'):
+        returns (alter='float64' | units.julianyr)
+
+    @remote_function(can_handle_array=True)
+    def set_alter(index_of_the_particle='i', alter='float64' | units.julianyr):
+        returns ()
+
+    @remote_function(can_handle_array=True)
+    def get_gls(index_of_the_particle='i'):
+        returns (gls='float64' | units.LSun)
+
+    @remote_function(can_handle_array=True)
+    def set_gls(index_of_the_particle='i', gls='float64' | units.LSun):
+        returns ()
+
+    @remote_function(can_handle_array=True)
+    def get_teff(index_of_the_particle='i'):
+        returns (teff='float64' | units.K)
+
+    @remote_function(can_handle_array=True)
+    def set_teff(index_of_the_particle='i', teff='float64' | units.K):
+        returns ()
+
+    @remote_function(can_handle_array=True)
+    def get_glsv(index_of_the_particle='i'):
+        returns (glsv='float64' | units.LSun)
+
+    @remote_function(can_handle_array=True)
+    def set_glsv(index_of_the_particle='i', glsv='float64' | units.LSun):
+        returns ()
+
+    @remote_function(can_handle_array=True)
+    def get_teffv(index_of_the_particle='i'):
+        returns (teffv='float64' | units.K)
+
+    @remote_function(can_handle_array=True)
+    def set_teffv(index_of_the_particle='i', teffv='float64' | units.K):
+        returns ()
+
+    @remote_function(can_handle_array=True)
+    def get_dzeitj(index_of_the_particle='i'):
+        returns (dzeitj='float64' | units.julianyr)
+
+    @remote_function(can_handle_array=True)
+    def set_dzeitj(index_of_the_particle='i', dzeitj='float64' | units.julianyr):
+        returns ()
+
+    @remote_function(can_handle_array=True)
+    def get_dzeit(index_of_the_particle='i'):
+        returns (dzeit='float64' | units.s)
+
+    @remote_function(can_handle_array=True)
+    def set_dzeit(index_of_the_particle='i', dzeit='float64' | units.s):
+        returns ()
+
+    @remote_function(can_handle_array=True)
+    def get_dzeitv(index_of_the_particle='i'):
+        returns (dzeitv='float64' | units.s)
+
+    @remote_function(can_handle_array=True)
+    def set_dzeitv(index_of_the_particle='i', dzeitv='float64' | units.s):
+        returns ()
+
+    @remote_function(can_handle_array=True)
+    def get_xmini(index_of_the_particle='i'):
+        returns (xmini='float64' | units.MSun)
+
+    @remote_function(can_handle_array=True)
+    def set_xmini(index_of_the_particle='i', xmini='float64' | units.MSun):
+        returns ()
+
+    @remote_function(can_handle_array=True)
+    def get_summas(index_of_the_particle='i'):
+        returns (summas='float64' | units.MSun)
+
+    @remote_function(can_handle_array=True)
+    def set_summas(index_of_the_particle='i', summas='float64' | units.MSun):
+        returns ()
+
+    @remote_function(can_handle_array=True)
+    def get_ab(index_of_the_particle='i'):
+        returns (ab='float64')
+
+    @remote_function(can_handle_array=True)
+    def set_ab(index_of_the_particle='i', ab='float64'):
+        returns ()
+
+    @remote_function(can_handle_array=True)
+    def get_dm_lost(index_of_the_particle='i'):
+        returns (dm_lost='float64' | units.MSun)
+
+    @remote_function(can_handle_array=True)
+    def set_dm_lost(index_of_the_particle='i', dm_lost='float64' | units.MSun):
+        returns ()
+
+    # end Properties
 
     @legacy_function
     def commit_parameters():
@@ -1172,20 +1232,20 @@ class GenecInterface(
                 "to this star in other functions"
             )
         )
-        for parameter in GENEC_STAR_PARAMETERS:
+        for parameter in {
+            **GENEC_STAR_PARAMETERS,
+            **GENEC_STAR_PROPERTIES,
+            **GENEC_STAR_STRUCTURE
+        }.items():
+            if parameter[1][1] == "":
+                unit = NO_UNIT
+            else:
+                unit = getattr(units, parameter[1][1])
             function.addParameter(
-                parameter,
-                dtype=GENEC_STAR_PARAMETERS[parameter][0],
-                unit=GENEC_STAR_PARAMETERS[parameter][1],
-                description=GENEC_STAR_PARAMETERS[parameter][2],
-                direction=function.IN,
-            )
-        for parameter in GENEC_STAR_STRUCTURE:
-            function.addParameter(
-                parameter,
-                dtype=GENEC_STAR_STRUCTURE[parameter][0],
-                unit=GENEC_STAR_STRUCTURE[parameter][1],
-                description=GENEC_STAR_STRUCTURE[parameter][2],
+                parameter[0],
+                dtype=parameter[1][0],
+                unit=unit,
+                description=parameter[1][2],
                 direction=function.IN,
             )
 
@@ -1206,20 +1266,16 @@ class GenecInterface(
                 "to this star in other functions"
             )
         )
-        for parameter in GENEC_STAR_PARAMETERS:
+        for parameter in {
+            **GENEC_STAR_PARAMETERS,
+            **GENEC_STAR_PROPERTIES,
+            **GENEC_STAR_STRUCTURE
+        }.items():
             function.addParameter(
-                parameter,
-                dtype=GENEC_STAR_PARAMETERS[parameter][0],
-                unit=GENEC_STAR_PARAMETERS[parameter][1],
-                description=GENEC_STAR_PARAMETERS[parameter][2],
-                direction=function.OUT,
-            )
-        for parameter in GENEC_STAR_STRUCTURE:
-            function.addParameter(
-                parameter,
-                dtype=GENEC_STAR_STRUCTURE[parameter][0],
-                unit=GENEC_STAR_STRUCTURE[parameter][1],
-                description=GENEC_STAR_STRUCTURE[parameter][2],
+                parameter[0],
+                dtype=parameter[1][0],
+                unit=parameter[1][1],
+                description=parameter[1][2],
                 direction=function.OUT,
             )
         function.result_type = 'int32'
@@ -3420,13 +3476,22 @@ class Genec(StellarEvolution, InternalStellarStructure):
             )
             handler.set_new(set_name, 'new_particle')
 
-            for particle_property in GENEC_STAR_PARAMETERS:
+            for parameter in {
+                **GENEC_STAR_PARAMETERS,
+                **GENEC_STAR_PROPERTIES,
+                # **GENEC_STAR_STRUCTURE
+            }.items():
+                if len(parameter[1]) == 4:
+                    names = (
+                        parameter[1][3],
+                    )
+                else:
+                    names = (parameter[0],)
                 handler.add_getter(
                     set_name,
-                    f'get_{particle_property}',
-                    names=(particle_property,)
+                    f'get_{parameter[0]}',
+                    names=names,
                 )
-            handler.add_getter(set_name, 'get_phase', names=('phase',))
             handler.add_getter(set_name, 'get_radius')
             handler.add_getter(set_name, 'get_mass')
             handler.add_getter(set_name, 'get_age')
@@ -3434,18 +3499,8 @@ class Genec(StellarEvolution, InternalStellarStructure):
             handler.add_getter(set_name, 'get_temperature')
             handler.add_getter(set_name, 'get_time_step', names=('time_step',))
             handler.add_getter(
-                set_name, 'get_number_of_zones', names=('n_zones',)
-            )
-            handler.add_setter(
-                set_name, 'set_number_of_zones', names=('n_zones',)
-            )
-            handler.add_getter(
                 set_name, 'get_number_of_species', names=('n_species',)
             )
-
-            # handler.add_method(set_name, 'get_number_of_zones')
-            handler.add_method(set_name, 'get_number_of_zones')
-            handler.add_method(set_name, 'set_number_of_zones')
 
             # handler.add_method(set_name, 'get_radius_profile')
             # handler.add_method(set_name, 'get_temperature_profile')
@@ -3608,23 +3663,25 @@ class Genec(StellarEvolution, InternalStellarStructure):
         # I.e. must do initialize_code and commit_parameters FIRST!
 
         # Initialized (initialize_code)
-        handler.add_method
+        # handler.add_method
 
         # -> Edit (commit_parameters)
-        #handler.add_method('EDIT', 'set_starname')
+        # handler.add_method('EDIT', 'set_starname')
         # handler.add_method('EDIT', 'new_particle')
 
         # -> Run (commit_particles)
         handler.add_transition('EDIT', 'RUN', 'commit_particles')
 
         for state in ["UPDATE"]:
-            for particle_property in GENEC_STAR_PARAMETERS:
-                handler.add_method(state, f'get_{particle_property}')
+            for parameter in {
+                **GENEC_STAR_PARAMETERS,
+                **GENEC_STAR_PROPERTIES,
+            }:
+                handler.add_method(state, f'get_{parameter[0]}')
             handler.add_method(state, 'get_chemical_abundance_profiles')
             handler.add_method(state, 'get_mass_fraction_of_species_at_zone')
             handler.add_method(state, 'get_mu_at_zone')
             handler.add_method(state, 'get_number_of_species')
-            handler.add_method(state, 'get_number_of_zones')
             handler.add_method(state, 'get_pressure_at_zone')
             handler.add_method(state, 'get_radius')
             handler.add_method(state, 'get_radius_at_zone')
@@ -3658,7 +3715,6 @@ class Genec(StellarEvolution, InternalStellarStructure):
         #handler.add_method('UPDATE', 'set_ipoly')
         handler.add_method('UPDATE', 'set_chemical_abundance_profiles')
         handler.add_method('UPDATE', 'set_mass_fraction_of_species_at_zone')
-        handler.add_method('UPDATE', 'set_number_of_zones')
         # handler.add_method('UPDATE', 'set_radius')
         # handler.add_method('UPDATE', 'set_pressure_at_zone')
         handler.add_method('UPDATE', 'set_radius_at_zone')
@@ -3687,96 +3743,17 @@ class Genec(StellarEvolution, InternalStellarStructure):
             (handler.INDEX, handler.ERROR_CODE)
         )
 
-        # NEW_STELLAR_MODEL_IN = []
-        # NEW_STELLAR_MODEL_IN += [p[1][1] for p in GENEC_STAR_PARAMETERS.items()]
-        # NEW_STELLAR_MODEL_IN += [p[1][1] for p in GENEC_STAR_STRUCTURE.items()]
-
-        # handler.add_method(
-        #     "new_stellar_model",
-        #     (
-        #         NEW_STELLAR_MODEL_IN,
-        #     ),
-        #     (
-        #         handler.INDEX, handler.ERROR_CODE
-        #     )
-        # )
-
-        # GET_STELLAR_MODEL_OUT = []
-        # GET_STELLAR_MODEL_OUT += [p[1][1] for p in GENEC_STAR_PARAMETERS.items()]
-        # GET_STELLAR_MODEL_OUT += [p[1][1] for p in GENEC_STAR_STRUCTURE.items()]
-        # GET_STELLAR_MODEL_OUT.append(handler.ERROR_CODE)
-
-        # handler.add_method(
-        #     "get_stellar_model",
-        #     (handler.INDEX,),
-        #     tuple(GET_STELLAR_MODEL_OUT)
-        # )
         handler.add_method(
             "read_genec_model",
             (handler.NO_UNIT),
             (handler.INDEX, handler.ERROR_CODE)
-        )        # handler.add_method(
-        #     "get_radius",
-        #     (handler.INDEX,),
-        #     (units.RSun, handler.ERROR_CODE,)
-        # )
-        handler.add_method(
-            "get_number_of_zones",
-            (handler.INDEX,),
-            (handler.NO_UNIT, handler.ERROR_CODE,)
         )
-        # handler.add_method(
-        #     "get_radius_at_zone",
-        #     (handler.INDEX, handler.NO_UNIT,),
-        #     (units.cm, handler.ERROR_CODE,)
-        # )
-        # handler.add_method(
-        #     "set_radius_at_zone",
-        #     (handler.INDEX, handler.NO_UNIT, units.cm),
-        #     (handler.ERROR_CODE,)
-        # )
-        # handler.add_method(
-        #     "get_temperature_at_zone",
-        #     (handler.INDEX, handler.NO_UNIT,),
-        #     (units.K, handler.ERROR_CODE,)
-        # )
-        # handler.add_method(
-        #     "set_temperature_at_zone",
-        #     (handler.INDEX, handler.NO_UNIT, units.K),
-        #     (handler.ERROR_CODE,)
-        # )
-        # handler.add_method(
-        #     "get_luminosity_at_zone",
-        #     (handler.INDEX, handler.NO_UNIT,),
-        #     (units.erg/units.s, handler.ERROR_CODE,)
-        # )
-        # handler.add_method(
-        #     "set_luminosity_at_zone",
-        #     (handler.INDEX, handler.NO_UNIT, units.erg/units.s),
-        #     (handler.ERROR_CODE,)
-        # )
+
         handler.add_method(
             "get_surface_velocity",
             (handler.INDEX),
             (units.km/units.s, handler.ERROR_CODE,)
         )
-    # def define_parameters(self, handler):
-
-    # def get_luminosity_profile(
-    #         self,
-    #         indices_of_the_stars,
-    #         number_of_zones=None,
-    # ):
-    #     indices_of_the_stars = self._check_number_of_indices(
-    #         indices_of_the_stars,
-    #         action_string="Querying luminosity profiles"
-    #     )
-    #     if number_of_zones is None:
-    #         number_of_zones = self.get_number_of_zones(indices_of_the_stars)
-    #     return self.get_luminosity_at_zone(
-    #         [indices_of_the_stars]*number_of_zones,
-    #         list(range(number_of_zones)) | units.none
-    #     )
 
     def get_eps_profile(
         self,
@@ -3788,7 +3765,7 @@ class Genec(StellarEvolution, InternalStellarStructure):
             action_string="Querying eps profiles"
         )
         if number_of_zones is None:
-            number_of_zones = self.get_number_of_zones(indices_of_the_stars)
+            number_of_zones = self.get_m(indices_of_the_stars)
         return self.get_eps_at_zone(
             [indices_of_the_stars]*number_of_zones,
             list(range(number_of_zones)) | units.none
@@ -3804,7 +3781,7 @@ class Genec(StellarEvolution, InternalStellarStructure):
             action_string="Querying epsy profiles"
         )
         if number_of_zones is None:
-            number_of_zones = self.get_number_of_zones(indices_of_the_stars)
+            number_of_zones = self.get_m(indices_of_the_stars)
         return self.get_epsy_at_zone(
             [indices_of_the_stars]*number_of_zones,
             list(range(number_of_zones)) | units.none
@@ -3820,7 +3797,7 @@ class Genec(StellarEvolution, InternalStellarStructure):
             action_string="Querying eps_c_adv profiles"
         )
         if number_of_zones is None:
-            number_of_zones = self.get_number_of_zones(indices_of_the_stars)
+            number_of_zones = self.get_m(indices_of_the_stars)
         return self.get_eps_c_adv_at_zone(
             [indices_of_the_stars]*number_of_zones,
             list(range(number_of_zones)) | units.none
@@ -3836,7 +3813,7 @@ class Genec(StellarEvolution, InternalStellarStructure):
             action_string="Querying eps_c_adv profiles"
         )
         if number_of_zones is None:
-            number_of_zones = self.get_number_of_zones(indices_of_the_stars)
+            number_of_zones = self.get_m(indices_of_the_stars)
         return self.get_eps_ne_adv_at_zone(
             [indices_of_the_stars]*number_of_zones,
             list(range(number_of_zones)) | units.none
@@ -3852,7 +3829,7 @@ class Genec(StellarEvolution, InternalStellarStructure):
             action_string="Querying eps_c_adv profiles"
         )
         if number_of_zones is None:
-            number_of_zones = self.get_number_of_zones(indices_of_the_stars)
+            number_of_zones = self.get_m(indices_of_the_stars)
         return self.get_eps_o_adv_at_zone(
             [indices_of_the_stars]*number_of_zones,
             list(range(number_of_zones)) | units.none
@@ -3868,7 +3845,7 @@ class Genec(StellarEvolution, InternalStellarStructure):
             action_string="Querying eps_c_adv profiles"
         )
         if number_of_zones is None:
-            number_of_zones = self.get_number_of_zones(indices_of_the_stars)
+            number_of_zones = self.get_m(indices_of_the_stars)
         return self.get_eps_si_adv_at_zone(
             [indices_of_the_stars]*number_of_zones,
             list(range(number_of_zones)) | units.none
@@ -3884,7 +3861,7 @@ class Genec(StellarEvolution, InternalStellarStructure):
             action_string="Querying eps_c_adv profiles"
         )
         if number_of_zones is None:
-            number_of_zones = self.get_number_of_zones(indices_of_the_stars)
+            number_of_zones = self.get_m(indices_of_the_stars)
         return self.get_eps_grav_at_zone(
             [indices_of_the_stars]*number_of_zones,
             list(range(number_of_zones)) | units.none
@@ -3900,7 +3877,7 @@ class Genec(StellarEvolution, InternalStellarStructure):
             action_string="Querying eps_c_adv profiles"
         )
         if number_of_zones is None:
-            number_of_zones = self.get_number_of_zones(indices_of_the_stars)
+            number_of_zones = self.get_m(indices_of_the_stars)
         return self.get_eps_nu_at_zone(
             [indices_of_the_stars]*number_of_zones,
             list(range(number_of_zones)) | units.none
@@ -3916,7 +3893,7 @@ class Genec(StellarEvolution, InternalStellarStructure):
             action_string="Querying mass profiles"
         )
         if number_of_zones is None:
-            number_of_zones = self.get_number_of_zones(indices_of_the_stars)
+            number_of_zones = self.get_m(indices_of_the_stars)
         return self.get_mass_fraction_at_zone(
             [indices_of_the_stars]*number_of_zones,
             list(range(number_of_zones)) | units.none

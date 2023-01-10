@@ -1643,8 +1643,235 @@ integer function set_n_snap(index_of_the_particle, n_snap)
     set_n_snap = 0
 end function set_n_snap
 
-
 ! **** End Parameters
+
+! **** Begin Properties
+integer function get_m(index_of_the_particle, m)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(out):: m
+    m = GenecStar%m
+    get_m = 0
+end function get_m
+
+integer function set_m(index_of_the_particle, m)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: m
+    GenecStar%m = m
+    set_m = 0
+end function set_m
+
+integer function get_gms(index_of_the_particle, gms)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(out):: gms
+    gms = GenecStar%gms
+    get_gms = 0
+end function get_gms
+
+integer function set_gms(index_of_the_particle, gms)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(in):: gms
+    GenecStar%gms = gms
+    set_gms = 0
+end function set_gms
+
+integer function get_alter(index_of_the_particle, alter)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(out):: alter
+    alter = GenecStar%alter
+    get_alter = 0
+end function get_alter
+
+integer function set_alter(index_of_the_particle, alter)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(in):: alter
+    GenecStar%alter = alter
+    set_alter = 0
+end function set_alter
+
+integer function get_gls(index_of_the_particle, gls)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(out):: gls
+    gls = GenecStar%gls
+    get_gls = 0
+end function get_gls
+
+integer function set_gls(index_of_the_particle, gls)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(in):: gls
+    GenecStar%gls = gls
+    set_gls = 0
+end function set_gls
+
+integer function get_teff(index_of_the_particle, teff)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(out):: teff
+    teff = GenecStar%teff
+    get_teff = 0
+end function get_teff
+
+integer function set_teff(index_of_the_particle, teff)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(in):: teff
+    GenecStar%teff = teff
+    set_teff = 0
+end function set_teff
+
+integer function get_glsv(index_of_the_particle, glsv)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(out):: glsv
+    glsv = GenecStar%glsv
+    get_glsv = 0
+end function get_glsv
+
+integer function set_glsv(index_of_the_particle, glsv)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(in):: glsv
+    GenecStar%glsv = glsv
+    set_glsv = 0
+end function set_glsv
+
+integer function get_teffv(index_of_the_particle, teffv)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(out):: teffv
+    teffv = GenecStar%teffv
+    get_teffv = 0
+end function get_teffv
+
+integer function set_teffv(index_of_the_particle, teffv)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(in):: teffv
+    GenecStar%teffv = teffv
+    set_teffv = 0
+end function set_teffv
+
+integer function get_dzeitj(index_of_the_particle, dzeitj)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(out):: dzeitj
+    dzeitj = GenecStar%dzeitj
+    get_dzeitj = 0
+end function get_dzeitj
+
+integer function set_dzeitj(index_of_the_particle, dzeitj)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(in):: dzeitj
+    GenecStar%dzeitj = dzeitj
+    set_dzeitj = 0
+end function set_dzeitj
+
+integer function get_dzeit(index_of_the_particle, dzeit)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(out):: dzeit
+    dzeit = GenecStar%dzeit
+    get_dzeit = 0
+end function get_dzeit
+
+integer function set_dzeit(index_of_the_particle, dzeit)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(in):: dzeit
+    GenecStar%dzeit = dzeit
+    set_dzeit = 0
+end function set_dzeit
+
+integer function get_dzeitv(index_of_the_particle, dzeitv)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(out):: dzeitv
+    dzeitv = GenecStar%dzeitv
+    get_dzeitv = 0
+end function get_dzeitv
+
+integer function set_dzeitv(index_of_the_particle, dzeitv)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(in):: dzeitv
+    GenecStar%dzeitv = dzeitv
+    set_dzeitv = 0
+end function set_dzeitv
+
+integer function get_xmini(index_of_the_particle, xmini)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(out):: xmini
+    xmini = GenecStar%xmini
+    get_xmini = 0
+end function get_xmini
+
+integer function set_xmini(index_of_the_particle, xmini)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(in):: xmini
+    GenecStar%xmini = xmini
+    set_xmini = 0
+end function set_xmini
+
+integer function get_summas(index_of_the_particle, summas)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(out):: summas
+    summas = GenecStar%summas
+    get_summas = 0
+end function get_summas
+
+integer function set_summas(index_of_the_particle, summas)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(in):: summas
+    GenecStar%summas = summas
+    set_summas = 0
+end function set_summas
+
+integer function get_ab(index_of_the_particle, ab)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(out):: ab
+    ab = GenecStar%ab
+    get_ab = 0
+end function get_ab
+
+integer function set_ab(index_of_the_particle, ab)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(in):: ab
+    GenecStar%ab = ab
+    set_ab = 0
+end function set_ab
+
+integer function get_dm_lost(index_of_the_particle, dm_lost)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(out):: dm_lost
+    dm_lost = GenecStar%dm_lost
+    get_dm_lost = 0
+end function get_dm_lost
+
+integer function set_dm_lost(index_of_the_particle, dm_lost)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(in):: dm_lost
+    GenecStar%dm_lost = dm_lost
+    set_dm_lost = 0
+end function set_dm_lost
+
+! **** End Properties
+
 
 function finalize_stellar_model()
     implicit none
