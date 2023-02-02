@@ -1,9 +1,10 @@
 module AmuseInterface
     use storage, only:&
-            InitialGenecStar,InitialNetwork,&
+            InitialGenecStar,&
             GenecStar,genec_star
     use helpers, only:&
-            copy_to_genec_star,copy_from_genec_star
+            copy_to_genec_star,copy_namelists_from_genec_star,copy_from_genec_star,&
+            copy_structure_from_genec_star
     use evol, only: kindreal,ldi,npondcouche
 
     type(genec_star) :: BackupBackupGenecStar
@@ -71,9 +72,1102 @@ integer function get_min_timestep_stop_condition(min_timestep_stop_condition)
     get_min_timestep_stop_condition = 0
 end function
 
+function finalize_stellar_model()
+    implicit none
+    integer:: finalize_stellar_model
+    !write(*,*) "copy to GenecStar"
+    !call copy_to_genec_star(GenecStar)
+    !write(*,*) GenecStar
+    finalize_stellar_model = 0
+end function
 
-!#########
+function commit_parameters()
+    implicit none
+    integer:: commit_parameters
+    commit_parameters = 0
+end function
 
+function commit_particles()
+    use makeini, only: make_initial_star
+    use genec, only: initialise_star
+    implicit none
+    integer:: commit_particles
+    ! makeini will actually override some things from set_defaults now! FIXME
+    if (.not.GenecStar%initialised) then
+        write(*,*) 'i:', GenecStar%nbzel
+        call make_initial_star()
+        write(*,*) 'm_i_s:', GenecStar%nbzel
+        call copy_from_genec_star(GenecStar)
+        write(*,*) 'c_f_g_s:', GenecStar%nbzel
+        call initialise_star()
+        GenecStar%initialised = .true.
+        write(*,*) 'i_s:', GenecStar%nbzel
+        call copy_to_genec_star(GenecStar)
+    else
+        ! "read" GENEC star namelists
+        write(*,*) "call copy_namelists_from_genec_star(GenecStar)"
+        call copy_namelists_from_genec_star(GenecStar)
+        ! Initialise values not in GENEC star
+        ! but this also resets some values that are read, so...
+        write(*,*) 'call initialise_star()'
+        call initialise_star()
+        ! "read" the GENEC star structure
+        write(*,*) 'call copy_structure_from_genec_star(GenecStar)'
+        call copy_structure_from_genec_star(GenecStar)
+        ! and then copy back - some things may have changed?
+        write(*,*) 'call copy_to_genec_star(GenecStar)'
+        call copy_to_genec_star(GenecStar)
+    endif
+    write(*,*) "COMMIT PARTICLES DONE"
+    commit_particles = 0
+end function
+
+function delete_star(index_of_the_star)
+    implicit none
+    integer:: index_of_the_star
+    integer:: delete_star
+    delete_star = -1  ! not supported
+end function
+
+function evolve_model(end_time)
+    use timestep, only: alter
+    implicit none
+    real(kindreal):: end_time
+    integer:: evolve_model
+    !stopping_condition = ""
+
+    do while (alter < end_time)
+        !if (stopping_condition == "") then
+        write(*,*) "Current time: ", alter, ", evolving to: ", end_time
+        evolve_model = evolve_one_step(0)
+    end do
+    !call copy_to_genec_star(GenecStar)
+    evolve_model = 0
+end function
+
+function evolve_for(index_of_the_star, time)
+    ! get current time
+    ! set max time to current time plus argument
+    ! evolve
+    use timestep, only: alter
+    implicit none
+    integer:: index_of_the_star
+    real(kindreal):: time, end_time
+    integer:: evolve_for
+    end_time = alter+time
+    do while (alter < end_time)
+        write(*,*) "Current time: ", alter, ", evolving to: ", end_time
+        evolve_for = evolve_one_step(index_of_the_star)
+    end do
+    !call copy_to_genec_star(GenecStar)
+
+    evolve_for = 0
+end function
+
+function evolve_one_step(index_of_the_star)
+    use timestep, only: alter
+    use WriteSaveClose, only: OpenAll
+    use genec, only: evolve, modell, finalise, veryFirst
+    use inputparam,only: modanf,nwseq,nzmod,end_at_phase,end_at_model
+    use genec, only: n_snap
+    implicit none
+    integer:: index_of_the_star
+    integer:: evolve_one_step
+    integer:: original_nzmod
+    nzmod = 1
+    n_snap = 0
+
+    call evolve()
+    call finalise()
+    veryFirst = .false.
+    call copy_to_genec_star(GenecStar)
+    evolve_one_step = 0
+end function
+
+function write_genec_model()
+    !use inputparam, only: modanf
+    !use WriteSaveClose, only: OpenAll
+    !use genec, only: finalise
+    !use helpers, only: initialise_star
+    implicit none
+    integer:: write_genec_model
+    !call finalise()
+    ! modanf = 0
+    !call OpenAll()
+    !call initialise_star()
+    !call finalise()
+    !call OpenAll()
+    !call initialise_star()
+    write_genec_model = -1
+end function
+
+function get_age(index_of_the_star, age)
+    implicit none
+    integer:: index_of_the_star
+    real(kindreal):: age
+    integer:: get_age
+    age = GenecStar%alter
+    get_age = 0
+end function
+
+function set_age(index_of_the_star, age)
+    implicit none
+    integer:: index_of_the_star
+    real(kindreal):: age
+    integer:: set_age
+    GenecStar%alter = age
+    set_age = 0
+end function
+
+function get_surface_velocity(index_of_the_star, surface_velocity)
+    use genec, only: vequat
+    implicit none
+    integer:: index_of_the_star
+    real(kindreal):: surface_velocity
+    integer:: get_surface_velocity
+    surface_velocity = vequat
+    get_surface_velocity = 0
+end function
+
+function get_density_at_zone(index_of_the_star, zone, rho_i)
+    use strucmod, only: rho
+    implicit none
+    integer:: index_of_the_star
+    integer:: zone, i
+    real(kindreal):: rho_i
+    integer:: get_density_at_zone
+    i = GenecStar%m - zone
+    if (zone <= GenecStar%m) then
+        rho_i = exp(rho(i))
+    end if
+    get_density_at_zone = 0
+end function
+
+function set_density_at_zone(index_of_the_star, zone, rho_i)
+    use strucmod, only: rho
+    implicit none
+    integer:: index_of_the_star
+    integer:: zone, i
+    real(kindreal):: rho_i
+    integer:: set_density_at_zone
+    i = GenecStar%m - zone
+    if (zone <= GenecStar%m) then
+        rho(i) = log(rho_i)
+    end if
+    set_density_at_zone = 0
+end function
+
+function get_luminosity(index_of_the_star, luminosity)
+    implicit none
+    integer:: index_of_the_star
+    real(kindreal):: luminosity
+    integer:: get_luminosity
+    !luminosity = exp(s(m))  ! in cgs units, so erg/s?
+    luminosity = GenecStar%gls
+    get_luminosity = 0
+end function
+
+function set_luminosity(index_of_the_star, luminosity)
+    implicit none
+    integer:: index_of_the_star
+    real(kindreal):: luminosity
+    integer:: set_luminosity
+    !luminosity = exp(s(m))  ! in cgs units, so erg/s?
+    GenecStar%gls = luminosity
+    set_luminosity = 0
+end function
+
+function get_radius_at_zone(index_of_the_star, zone, R_i)
+    implicit none
+    integer:: index_of_the_star
+    integer:: zone, i
+    real(kindreal):: R_i
+    integer:: get_radius_at_zone
+    i = GenecStar%m - zone
+    if (zone <= GenecStar%m) then
+        R_i = exp(GenecStar%r(i))  ! in cm
+    end if
+    get_radius_at_zone = 0
+end function
+
+function set_radius_at_zone(index_of_the_star, zone, R_i)
+    implicit none
+    integer:: index_of_the_star
+    integer:: zone, i
+    real(kindreal):: R_i
+    integer:: set_radius_at_zone
+    i = GenecStar%m - zone
+    if (zone <= GenecStar%m) then
+        GenecStar%r(i) = log(R_i)
+    end if
+    set_radius_at_zone = 0
+end function
+
+function get_luminosity_at_zone(index_of_the_star, zone, lum_i)
+    implicit none
+    integer:: index_of_the_star
+    integer:: zone, i
+    real(kindreal):: lum_i
+    integer:: get_luminosity_at_zone
+    i = GenecStar%m - zone
+    if (zone <= GenecStar%m) then
+        !lum_i = exp(s(zone+1))
+        lum_i = exp(GenecStar%s(i)) - 1
+    end if
+    get_luminosity_at_zone = 0
+end function
+
+function set_luminosity_at_zone(index_of_the_star, zone, lum_i)
+    implicit none
+    integer:: index_of_the_star
+    integer:: zone, i
+    real(kindreal):: lum_i
+    integer:: set_luminosity_at_zone
+    i = GenecStar%m - zone
+    if (zone <= GenecStar%m) then
+        GenecStar%s(i) = log(lum_i + 1)
+    end if
+    set_luminosity_at_zone = 0
+end function
+
+function get_mass_fraction_at_zone(index_of_the_star, zone, dq_i)
+    implicit none
+    integer:: index_of_the_star
+    integer:: zone, i
+    real(kindreal):: dq_i
+    integer:: get_mass_fraction_at_zone
+    i = GenecStar%m - zone
+    if (i == 1) then
+        dq_i = exp(GenecStar%q(i))
+    else if (i <= GenecStar%m) then
+        !dq_i = 1-exp(q(zone+1))
+        dq_i = (exp(GenecStar%q(i)) - exp(GenecStar%q(i-1)))
+    end if
+    get_mass_fraction_at_zone = 0
+end function
+
+function set_mass_fraction_at_zone(index_of_the_star, zone, dq_i)
+    implicit none
+    integer:: index_of_the_star
+    integer:: zone, i
+    real(kindreal):: dq_i
+    integer:: set_mass_fraction_at_zone
+    i = GenecStar%m - zone
+    if (i == 1) then
+        GenecStar%q(i) = log(dq_i)
+    else if (i <= GenecStar%m) then
+        !dq_i = 1-exp(q(zone+1))
+        GenecStar%q(i) = log(exp(GenecStar%q(i-1)) + dq_i)  ! this won't do
+    end if
+    set_mass_fraction_at_zone = -1 ! This function is incomplete!
+end function
+
+function get_mass(index_of_the_star, mass)
+    implicit none
+    real(kindreal):: mass
+    integer:: get_mass, index_of_the_star
+    mass = GenecStar%gms
+    get_mass = 0
+end function
+
+function set_mass(index_of_the_star, mass)
+    implicit none
+    integer:: set_mass, index_of_the_star
+    real(kindreal):: mass
+    InitialGenecStar%mstar = mass
+    set_mass = 0
+end function
+
+function get_mass_of_species(index_of_the_star, species, species_mass)
+    implicit none
+    integer:: index_of_the_star
+    integer:: species
+    real(kindreal):: species_mass
+    integer:: get_mass_of_species
+    get_mass_of_species = 0
+    select case(species)
+    case(1)
+        species_mass = 1.
+    case(2)
+        species_mass = 3.
+    case(3)
+        species_mass = 4.
+    case(4)
+        species_mass = 12.
+    case(5)
+        species_mass = 13.
+    case(6)
+        species_mass = 14.
+    case(7)
+        species_mass = 15.
+    case(8)
+        species_mass = 16.
+    case(9)
+        species_mass = 17.
+    case(10)
+        species_mass = 18.
+    case(11)
+        species_mass = 20.
+    case(12)
+        species_mass = 22.
+    case(13)
+        species_mass = 24.
+    case(14)
+        species_mass = 25.
+    case(15)
+        species_mass = 26.
+    case(16)
+        species_mass = 14.
+    case(17)
+        species_mass = 18.
+    case(18)
+        species_mass = 19.
+    case(19)
+        species_mass = 21.
+    case(20)
+        species_mass = 23.
+    case(21)
+        species_mass = 26.
+    case(22)
+        species_mass = 27.
+    case(23)
+        species_mass = 28.
+    case(24)
+        species_mass = 1. !neut(i)
+    case(25)
+        species_mass = 1. !prot(i)
+!    case(26)
+!        species_mass = bid(i)
+!    case(27)
+!        species_mass = bid1(i)
+    case default
+        species_mass = 0.
+    end select
+end function
+
+function get_mass_fraction_of_species_at_zone(index_of_the_star, species, zone, Xj_i)
+    implicit none
+    integer:: index_of_the_star
+    integer:: species, zone, i
+    real(kindreal):: Xj_i
+    integer:: get_mass_fraction_of_species_at_zone
+    i = GenecStar%m-zone
+    if (zone <= GenecStar%m) then
+      select case(species)
+      case(1)
+          Xj_i = GenecStar%x(i)
+      case(2)
+          Xj_i = GenecStar%y3(i)
+      case(3)
+          Xj_i = GenecStar%y(i)
+      case(4)
+          Xj_i = GenecStar%xc12(i)
+      case(5)
+          Xj_i = GenecStar%xc13(i)
+      case(6)
+          Xj_i = GenecStar%xn14(i)
+      case(7)
+          Xj_i = GenecStar%xn15(i)
+      case(8)
+          Xj_i = GenecStar%xo16(i)
+      case(9)
+          Xj_i = GenecStar%xo17(i)
+      case(10)
+          Xj_i = GenecStar%xo18(i)
+      case(11)
+          Xj_i = GenecStar%xne20(i)
+      case(12)
+          Xj_i = GenecStar%xne22(i)
+      case(13)
+          Xj_i = GenecStar%xmg24(i)
+      case(14)
+          Xj_i = GenecStar%xmg25(i)
+      case(15)
+          Xj_i = GenecStar%xmg26(i)
+      case(16)
+          Xj_i = GenecStar%xc14(i)
+      case(17)
+          Xj_i = GenecStar%xf18(i)
+      case(18)
+          Xj_i = GenecStar%xf19(i)
+      case(19)
+          Xj_i = GenecStar%xne21(i)
+      case(20)
+          Xj_i = GenecStar%xna23(i)
+      case(21)
+          Xj_i = GenecStar%xal26(i)
+      case(22)
+          Xj_i = GenecStar%xal27(i)
+      case(23)
+          Xj_i = GenecStar%xsi28(i)
+      case(24)
+          Xj_i = GenecStar%xneut(i)
+      case(25)
+          Xj_i = GenecStar%xprot(i)
+      case(26)
+          Xj_i = GenecStar%xbid(i)
+      case(27)
+          Xj_i = GenecStar%xbid1(i)
+      case default
+          Xj_i = 0
+      end select
+    end if
+
+    get_mass_fraction_of_species_at_zone = 0
+end function
+
+function set_mass_fraction_of_species_at_zone(index_of_the_star, species, zone, Xj_i)
+    implicit none
+    integer:: index_of_the_star
+    integer:: species, zone, i
+    real(kindreal):: Xj_i
+    integer:: set_mass_fraction_of_species_at_zone
+    i = GenecStar%m - zone
+    if (zone <= GenecStar%m) then
+        select case(species)
+      case(1)
+          GenecStar%x(i) = Xj_i
+      case(2)
+          GenecStar%y3(i) = Xj_i
+      case(3)
+          GenecStar%y(i) = Xj_i
+      case(4)
+          GenecStar%xc12(i) = Xj_i
+      case(5)
+          GenecStar%xc13(i) = Xj_i
+      case(6)
+          GenecStar%xn14(i) = Xj_i
+      case(7)
+          GenecStar%xn14(i) = Xj_i
+      case(8)
+          GenecStar%xo16(i) = Xj_i
+      case(9)
+          GenecStar%xo17(i) = Xj_i
+      case(10)
+          GenecStar%xo18(i) = Xj_i
+      case(11)
+          GenecStar%xne20(i) = Xj_i
+      case(12)
+          GenecStar%xne22(i) = Xj_i
+      case(13)
+          GenecStar%xmg24(i) = Xj_i
+      case(14)
+          GenecStar%xmg25(i) = Xj_i
+      case(15)
+          GenecStar%xmg26(i) = Xj_i
+      case(16)
+          GenecStar%xc14(i) = Xj_i
+      case(17)
+          GenecStar%xf18(i) = Xj_i
+      case(18)
+          GenecStar%xf19(i) = Xj_i
+      case(19)
+          GenecStar%xne21(i) = Xj_i
+      case(20)
+          GenecStar%xna23(i) = Xj_i
+      case(21)
+          GenecStar%xal26(i) = Xj_i
+      case(22)
+          GenecStar%xal27(i) = Xj_i
+      case(23)
+          GenecStar%xsi28(i) = Xj_i
+      case(24)
+          GenecStar%xneut(i) = Xj_i
+      case(25)
+          GenecStar%xprot(i) = Xj_i
+      case(26)
+          GenecStar%xbid(i) = Xj_i
+      case(27)
+          GenecStar%xbid1(i) = Xj_i
+      !case default
+      end select
+    end if
+
+    set_mass_fraction_of_species_at_zone = 0
+end function
+
+function get_metallicity(metallicity)
+    implicit none
+    real(kindreal):: metallicity
+    integer:: get_metallicity
+    metallicity = InitialGenecStar%zini
+    get_metallicity = 0
+end function
+
+function set_metallicity(metallicity)
+    implicit none
+    real(kindreal):: metallicity
+    integer:: set_metallicity
+    InitialGenecStar%zini = metallicity
+    set_metallicity = 0
+end function
+
+function get_mu_at_zone(index_of_the_star, zone, mu_i)
+    implicit none
+    integer:: index_of_the_star
+    integer:: zone, i
+    real(kindreal):: mu_i, X, Y3, Y
+    integer:: err
+    integer:: get_mu_at_zone
+    i = (GenecStar%m - zone)
+    if (zone <= GenecStar%m) then
+        mu_i = 0.0d0
+        err = get_mass_fraction_of_species_at_zone(index_of_the_star, 1, zone, X)
+        err = get_mass_fraction_of_species_at_zone(index_of_the_star, 2, zone, Y3)
+        err = get_mass_fraction_of_species_at_zone(index_of_the_star, 3, zone, Y)
+
+        mu_i = (4.0 / (2.0 + 6 * X - (Y+Y3)))
+    end if
+    get_mu_at_zone = 0
+end function
+
+function get_name_of_species(index_of_the_star, species, species_name)
+    implicit none
+    integer:: index_of_the_star
+    integer:: species
+    character(len = 6):: species_name
+    integer:: get_name_of_species
+
+    character(len = 6), dimension(27):: species_names
+
+    species_names(1)  = 'h'
+    species_names(2)  = 'he3'
+    species_names(3)  = 'he'
+    species_names(4)  = 'c12'
+    species_names(5)  = 'c13'
+    species_names(6)  = 'n14'
+    species_names(7)  = 'n15'
+    species_names(8)  = 'o16'
+    species_names(9)  = 'o17'
+    species_names(10) = 'o18'
+    species_names(11) = 'ne20'
+    species_names(12) = 'ne22'
+    species_names(13) = 'mg24'
+    species_names(14) = 'mg25'
+    species_names(15) = 'mg26'
+    species_names(16) = 'c14'
+    species_names(17) = 'f18'
+    species_names(18) = 'f19'
+    species_names(19) = 'ne21'
+    species_names(20) = 'na23'
+    species_names(21) = 'al26'
+    species_names(22) = 'al27'
+    species_names(23) = 'si28'
+    species_names(24) = 'neut'
+    species_names(25) = 'prot'
+    species_names(26) = 'bid'
+    species_names(27) = 'bid1'
+    species_name = species_names(species)
+    !x: H1
+    !y: He4
+    !y3: He3
+    !xneut: neutron
+    !xprot: proton
+    !xc12: C12
+    !xXYY: XYY - X element YY mass number
+    !xXXYY: as above
+    get_name_of_species = 0
+end function
+
+function get_number_of_particles(n)
+    implicit none
+    integer:: n
+    integer:: get_number_of_particles
+    n = 1
+    get_number_of_particles = 0
+end function
+
+function get_number_of_species(index_of_the_star, n_species)
+    implicit none
+    integer:: index_of_the_star
+    integer:: n_species
+    integer:: get_number_of_species
+    if (GenecStar%ialflu==1) then
+       n_species = 27
+    else
+        n_species = 15
+    end if
+    get_number_of_species = 0
+end function
+
+function get_firstlast_species_number(first, last)
+    implicit none
+    !integer:: index_of_the_star
+    integer:: first, last
+    integer:: get_firstlast_species_number
+    first = 1
+    if (GenecStar%ialflu==1) then
+        last = 27
+    else
+        last = 15
+    end if
+    get_firstlast_species_number = 0
+end function
+
+function get_number_of_zones(index_of_the_star, n_zones)
+    implicit none
+    integer:: index_of_the_star
+    integer:: n_zones
+    integer:: get_number_of_zones
+    n_zones = GenecStar%m
+    get_number_of_zones = 0
+end function
+
+function set_number_of_zones(index_of_the_star, n_zones)
+    implicit none
+    integer:: index_of_the_star
+    integer:: n_zones
+    integer:: set_number_of_zones
+    GenecStar%m = n_zones
+    set_number_of_zones = 0
+end function
+
+function get_firstlast_zone(index_of_the_star, first, last)
+    implicit none
+    integer:: index_of_the_star
+    integer:: first, last
+    integer:: get_firstlast_zone
+    first = 0
+    last = GenecStar%m-1
+    get_firstlast_zone = 0
+end function
+
+function get_pressure_at_zone(index_of_the_star, zone, P_i)
+    implicit none
+    integer:: index_of_the_star
+    integer:: zone, i
+    real(kindreal):: P_i
+    integer:: get_pressure_at_zone
+    if (zone <= GenecStar%m) then
+        i = GenecStar%m - zone
+        P_i = exp(GenecStar%p(i))
+    end if
+    get_pressure_at_zone = 0
+end function
+
+!function set_pressure_at_zone(index_of_the_star, zone, P_i)
+!    use strucmod, only: p, m
+!    implicit none
+!    integer:: index_of_the_star
+!    integer:: zone, i
+!    real(kindreal):: P_i
+!    integer:: set_pressure_at_zone
+!    if (zone <= m) then
+!        i = m - zone
+!        p(i) = log(P_i)
+!    end if
+!    set_pressure_at_zone = 0
+!end function
+
+function get_radius(index_of_the_star, am_radius)
+    implicit none
+    integer:: index_of_the_star
+    real(kindreal):: am_radius
+    integer:: get_radius
+    am_radius = 10**GenecStar%radius
+    !radius = exp(r(1))  ! in cm
+    get_radius = 0
+end function
+
+function set_radius(index_of_the_star, am_radius)
+    implicit none
+    integer:: index_of_the_star
+    real(kindreal):: am_radius
+    integer:: set_radius
+    GenecStar%radius = log10(am_radius)
+    set_radius = 0
+end function
+
+function get_stellar_type(index_of_the_star, stellar_type)
+    implicit none
+    integer:: index_of_the_star
+    integer:: stellar_type
+    integer:: get_stellar_type
+    get_stellar_type = -1
+end function
+
+function get_temperature(index_of_the_star, temperature)
+    implicit none
+    integer:: index_of_the_star
+    real(kindreal):: temperature
+    integer:: get_temperature
+    temperature = GenecStar%teff
+    get_temperature = 0
+end function
+
+function get_temperature_at_zone(index_of_the_star, zone, T_i)
+    implicit none
+    integer:: index_of_the_star
+    integer:: zone, i
+    real(kindreal):: T_i
+    integer:: get_temperature_at_zone
+    i = GenecStar%m - zone
+    if (zone <= GenecStar%m) then
+        T_i = exp(GenecStar%t(i))
+    else
+        get_temperature_at_zone = -2
+        return
+    end if
+    get_temperature_at_zone = 0
+end function
+
+function get_time_step(index_of_the_star, time_step)
+    implicit none
+    integer:: index_of_the_star
+    real(kindreal):: time_step
+    integer:: get_time_step
+    time_step = GenecStar%dzeitj
+    get_time_step = 0
+end function
+
+function get_time(time)
+    implicit none
+    real(kindreal):: time
+    integer:: get_time
+    time = GenecStar%alter
+    get_time = 0
+end function
+
+function new_particle(index_of_the_star, mass, metallicity, am_starname)
+    implicit none
+    integer:: index_of_the_star, key
+    real(kindreal):: mass, metallicity
+    integer:: new_particle
+    character(len=12):: am_starname
+    number_of_stars = number_of_stars + 1
+    InitialGenecStar%starname = am_starname
+    InitialGenecStar%index_of_the_star = number_of_stars
+    InitialGenecStar%mstar = mass
+    InitialGenecStar%zini = metallicity
+    InitialGenecStar%idefaut = 1
+    index_of_the_star = InitialGenecStar%index_of_the_star
+    
+    new_particle = 0
+end function
+
+!function new_stellar_model(&
+!      integer_of_the_star,&
+!      initialised, starname, nwseq, modanf, nzmod, end_at_phase, end_at_model, irot, isol, imagn, ialflu, ianiso, ipop3,&
+!      ibasnet, phase, var_rates, bintide, binm2, periodini, const_per, iprezams, zinit, zsol, z, iopac, ikappa, idiff, iadvec,&
+!      istati, icoeff, fenerg, richac, igamma, frein, K_Kawaler, Omega_saturation, rapcrilim, vwant, xfom, omega, xdial, idialo,&
+!      idialu, Add_Flux, diff_only, B_initial, add_diff, n_mag, alpha_F, nsmooth, qminsmooth, imloss, fmlos, ifitm, fitm, fitmi,&
+!      deltal, deltat, nndr, RSG_Mdot, SupraEddMdot, Be_mdotfrac, start_mdot, iledou, idifcon, iover, elph, my, dovhp, iunder,&
+!      dunder, gkorm, alph, agdr, faktor, dgrp, dgrl, dgry, dgrc, dgro, dgr20, nbchx, nrband, xcn, islow, icncst, tauH_fit,&
+!      display_plot, iauto, iprn, iout, itmin, xyfiles, idebug, itests, verbose, stop_deg, n_snap,&
+!      m,gms,alter,gls,teff,glsv,teffv,dzeitj,dzeit,dzeitv,xmini,summas,ab,dm_lost,&
+!      mbelx,xtefflast,xllast,xrholast,xclast,xtclast,inum,nsugi,period,r_core,vna,vnr,&
+!      q,p,t,r,s,x,y3,y,xc12,xc13,xn14,xn15,xo16,xo17,xo18,xne20,xne22,xmg24,xmg25,xmg26,xf19,xne21,xna23,xal27,xsi28,&
+!      xc14,xf18,xal26,xneut,xprot,omegi,xbid,xbid1,vp,vt,vr,vs,vx,vy,vy3,vxc12,vxc13,vxn14,vxn15,vxo16,vxo17,vxo18,&
+!      vxne20,vxne22,vxmg24,vxmg25,vxmg26,vxf19,vxne21,vxna23,vxal27,vxsi28,vxc14,vxf18,vxal26,vxneut,vxprot,vomegi,&
+!      vxbid,vxbid1,&
+!      abelx,vabelx&
+!      )
+!    implicit none
+!    integer:: integer_of_the_star
+!    logical, intent(in):: &
+!            initialised,var_rates,bintide,const_per,Add_Flux,diff_only,qminsmooth,SupraEddMdot,display_plot,xyfiles,verbose,&
+!            stop_deg
+!    integer, intent(in):: &
+!            nwseq,modanf,nzmod,end_at_phase,end_at_model,irot,isol,imagn,ialflu,ianiso,ipop3,ibasnet,phase,iprezams,iopac,ikappa,&
+!            idiff,iadvec,istati,icoeff,igamma,idialo,idialu,n_mag,nsmooth,imloss,ifitm,nndr,RSG_Mdot,iledou,idifcon,iover,my,&
+!            iunder,nbchx,nrband,islow,icncst,tauH_fit,iauto,iprn,iout,itmin,idebug,itests,n_snap
+!    real(kindreal), intent(in):: &
+!            binm2,periodini,zinit,zsol,z,fenerg,richac,frein,K_Kawaler,Omega_saturation,rapcrilim,vwant,xfom,omega,xdial,&
+!            B_initial,add_diff,alpha_F,fmlos,fitm,fitmi,deltal,deltat,Be_mdotfrac,start_mdot,elph,dovhp,dunder,gkorm,alph,&
+!            agdr,faktor,dgrp,dgrl,dgry,dgrc,dgro,dgr20,xcn
+!    character(len=200), intent(in):: &
+!            starname
+!    integer, intent(in) :: m
+!    real(kindreal), intent(in) :: &
+!            gms,alter,gls,teff,glsv,teffv,dzeitj,dzeit,dzeitv,xmini,summas,ab,&
+!            dm_lost
+!    !real(kindreal), dimension(ldi) :: &
+!    integer, intent(in):: mbelx
+!    integer, intent(in):: inum,nsugi
+!    real(kindreal), intent(in):: &
+!            xtefflast,xllast,xrholast,xclast,xtclast,period,r_core,vna,vnr
+!    real(kindreal), dimension(m), intent(in):: &
+!            q,p,t,r,s,x,y3,y,xc12,xc13,xn14,xn15,xo16,xo17,xo18,xne20,xne22,xmg24,xmg25,xmg26,xf19,xne21,xna23,xal27,xsi28,&
+!            xc14,xf18,xal26,xneut,xprot,omegi,xbid,xbid1,vp,vt,vr,vs,vx,vy,vy3,vxc12,vxc13,vxn14,vxn15,vxo16,vxo17,vxo18,&
+!            vxne20,vxne22,vxmg24,vxmg25,vxmg26,vxf19,vxne21,vxna23,vxal27,vxsi28,vxc14,vxf18,vxal26,vxneut,vxprot,vomegi,&
+!            vxbid,vxbid1
+!    real(kindreal), dimension(mbelx,m), intent(in):: &
+!            abelx,vabelx
+!    integer:: new_stellar_model
+!
+!    GenecStar%initialised      = initialised
+!    GenecStar%starname         = starname
+!    !GenecStar%nwmd             = nwmd
+!    GenecStar%nwseq            = nwseq            
+!    GenecStar%modanf           = modanf
+!    GenecStar%nzmod            = nzmod
+!    GenecStar%end_at_phase     = end_at_phase
+!    GenecStar%end_at_model     = end_at_model
+!    GenecStar%irot             = irot
+!    GenecStar%isol             = isol
+!    GenecStar%imagn            = imagn
+!    GenecStar%ialflu           = ialflu
+!    GenecStar%ianiso           = ianiso
+!    GenecStar%ipop3            = ipop3
+!    GenecStar%ibasnet          = ibasnet
+!    GenecStar%phase            = phase
+!    GenecStar%iprezams         = iprezams
+!    GenecStar%var_rates        = var_rates
+!    GenecStar%bintide          = bintide
+!    GenecStar%binm2            = binm2
+!    GenecStar%periodini        = periodini
+!    GenecStar%const_per        = const_per
+!    GenecStar%iopac            = iopac
+!    GenecStar%ikappa           = ikappa
+!    GenecStar%zinit            = zinit
+!    GenecStar%zsol             = zsol
+!    GenecStar%z                = z
+!    GenecStar%idiff            = idiff
+!    GenecStar%iadvec           = iadvec
+!    GenecStar%istati           = istati
+!    GenecStar%icoeff           = icoeff
+!    GenecStar%igamma           = igamma
+!    GenecStar%idialo           = idialo
+!    GenecStar%idialu           = idialu
+!    GenecStar%n_mag            = n_mag
+!    GenecStar%nsmooth          = nsmooth
+!    GenecStar%fenerg           = fenerg
+!    GenecStar%richac           = richac
+!    GenecStar%frein            = frein
+!    GenecStar%K_Kawaler        = K_Kawaler
+!    GenecStar%Omega_saturation = Omega_saturation
+!    GenecStar%rapcrilim        = rapcrilim
+!    GenecStar%vwant            = vwant
+!    GenecStar%xfom             = xfom
+!    GenecStar%omega            = omega
+!    GenecStar%xdial            = xdial
+!    GenecStar%B_initial        = B_initial
+!    GenecStar%add_diff         = add_diff
+!    GenecStar%alpha_F          = alpha_F
+!    GenecStar%Add_Flux         = Add_Flux
+!    GenecStar%diff_only        = diff_only
+!    GenecStar%qminsmooth       = qminsmooth
+!    GenecStar%imloss           = imloss
+!    GenecStar%ifitm            = ifitm
+!    GenecStar%nndr             = nndr
+!    GenecStar%RSG_Mdot         = RSG_Mdot
+!    GenecStar%fmlos            = fmlos
+!    GenecStar%fitm             = fitm
+!    GenecStar%fitmi            = fitmi
+!    GenecStar%deltal           = deltal
+!    GenecStar%deltat           = deltat
+!    GenecStar%Be_mdotfrac      = Be_mdotfrac
+!    GenecStar%start_mdot       = start_mdot
+!    GenecStar%SupraEddMdot     = SupraEddMdot
+!    GenecStar%iledou           = iledou
+!    GenecStar%idifcon          = idifcon
+!    GenecStar%my               = my
+!    GenecStar%iover            = iover
+!    GenecStar%iunder           = iunder
+!    GenecStar%elph             = elph
+!    GenecStar%dovhp            = dovhp
+!    GenecStar%dunder           = dunder
+!    GenecStar%nbchx            = nbchx
+!    GenecStar%nrband           = nrband
+!    GenecStar%gkorm            = gkorm
+!    GenecStar%alph             = alph
+!    GenecStar%agdr             = agdr
+!    GenecStar%faktor           = faktor
+!    GenecStar%dgrp             = dgrp
+!    GenecStar%dgrl             = dgrl
+!    GenecStar%dgry             = dgry
+!    GenecStar%dgrc             = dgrc
+!    GenecStar%dgro             = dgro
+!    GenecStar%dgr20            = dgr20
+!    GenecStar%islow            = islow
+!    GenecStar%icncst           = icncst
+!    GenecStar%tauH_fit         = tauH_fit
+!    GenecStar%xcn              = xcn
+!    GenecStar%iauto            = iauto
+!    GenecStar%iprn             = iprn
+!    GenecStar%iout             = iout
+!    GenecStar%itmin            = itmin
+!    GenecStar%idebug           = idebug
+!    GenecStar%itests           = itests
+!    GenecStar%n_snap           = n_snap
+!    GenecStar%display_plot     = display_plot
+!    GenecStar%xyfiles          = xyfiles
+!    GenecStar%verbose          = verbose
+!    GenecStar%stop_deg         = stop_deg
+!
+!    GenecStar%m                = m
+!    GenecStar%gms              = gms
+!    GenecStar%alter            = alter
+!    GenecStar%gls              = gls
+!    GenecStar%teff             = teff
+!    GenecStar%glsv             = glsv
+!    GenecStar%teffv            = teffv
+!    GenecStar%dzeitj           = dzeitj
+!    GenecStar%dzeit            = dzeit
+!    GenecStar%dzeitv           = dzeitv
+!    GenecStar%summas           = summas
+!    GenecStar%xmini            = xmini
+!    GenecStar%ab               = ab
+!    GenecStar%dm_lost          = dm_lost
+!
+!    GenecStar%mbelx            = mbelx
+!    GenecStar%xteffprev        = xteffprev
+!    GenecStar%xlprev           = xlprev   
+!    GenecStar%xrhoprev         = xrhoprev 
+!    GenecStar%xcprev           = xcprev   
+!    GenecStar%xtcprev          = xtcprev  
+!    GenecStar%inum             = inum     
+!    GenecStar%nsugi            = nsugi    
+!    GenecStar%period           = period   
+!    GenecStar%r_core           = r_core   
+!    GenecStar%vna              = vna      
+!    GenecStar%vnr              = vnr      
+!
+!    GenecStar%q                = q
+!    GenecStar%p                = p
+!    GenecStar%t                = t
+!    GenecStar%r                = r
+!    GenecStar%s                = s
+!    GenecStar%x                = x
+!    GenecStar%y                = y
+!    GenecStar%xc12             = xc12
+!    GenecStar%vp               = vp
+!    GenecStar%vt               = vt
+!    GenecStar%vr               = vr
+!    GenecStar%vs               = vs
+!    GenecStar%xo16             = xo16
+!    GenecStar%vx               = vx
+!    GenecStar%vy               = vy
+!    GenecStar%vxc12            = vxc12
+!    GenecStar%vxo16            = vxo16
+!    GenecStar%y3               = y3
+!    GenecStar%xc13             = xc13
+!    GenecStar%xn14             = xn14
+!    GenecStar%xn15             = xn15
+!    GenecStar%xo17             = xo17
+!    GenecStar%xo18             = xo18
+!    GenecStar%vy3              = vy3
+!    GenecStar%vxc13            = vxc13
+!    GenecStar%vxn14            = vxn14
+!    GenecStar%vxn15            = vxn15
+!    GenecStar%vxo17            = vxo17
+!    GenecStar%vxo18            = vxo18
+!    GenecStar%xne20            = xne20
+!    GenecStar%xne22            = xne22
+!    GenecStar%xmg24            = xmg24
+!    GenecStar%xmg25            = xmg25
+!    GenecStar%xmg26            = xmg26
+!    GenecStar%vxne20           = vxne20
+!    GenecStar%vxne22           = vxne22
+!    GenecStar%vxmg24           = vxmg24
+!    GenecStar%vxmg25           = vxmg25
+!    GenecStar%vxmg26           = vxmg26
+!    GenecStar%omegi            = omegi
+!    GenecStar%vomegi           = vomegi
+!    GenecStar%xf19             = xf19
+!    GenecStar%xne21            = xne21
+!    GenecStar%xna23            = xna23
+!    GenecStar%xal26            = xal26
+!    GenecStar%xal27            = xal27
+!    GenecStar%xsi28            = xsi28
+!    GenecStar%vxf19            = vxf19
+!    GenecStar%vxne21           = vxne21
+!    GenecStar%vxna23           = vxna23
+!    GenecStar%vxal26           = vxal26
+!    GenecStar%vxal27           = vxal27
+!    GenecStar%vxsi28           = vxsi28
+!    GenecStar%xneut            = xneut
+!    GenecStar%xprot            = xprot
+!    GenecStar%xc14             = xc14
+!    GenecStar%xf18             = xf18
+!    GenecStar%xbid             = xbid
+!    GenecStar%xbid1            = xbid1
+!    GenecStar%vxneut           = vxneut
+!    GenecStar%vxprot           = vxprot
+!    GenecStar%vxc14            = vxc14
+!    GenecStar%vxf18            = vxf18
+!    GenecStar%vxbid            = vxbid
+!    GenecStar%vxbid1           = vxbid1
+!
+!    GenecStar%abelx            = abelx
+!    GenecStar%vabelx           = vabelx
+!
+!    new_stellar_model = 0
+!end function
+
+function recommit_parameters()
+    implicit none
+    integer:: recommit_parameters
+    recommit_parameters = 0
+end function
+
+function recommit_particles()
+    use genec, only: initialise_star
+    implicit none
+    integer:: recommit_particles
+    !write(*,*) "copy from GenecStar"
+    !call copy_from_genec_star(GenecStar)
+
+    ! "read" GENEC star namelists
+    write(*,*) "call copy_namelists_from_genec_star(GenecStar)"
+    call copy_namelists_from_genec_star(GenecStar)
+    ! Initialise values not in GENEC star
+    ! but this also resets some values that are read, so...
+    write(*,*) 'call initialise_star()'
+    call initialise_star()
+    ! "read" the GENEC star structure
+    write(*,*) 'call copy_structure_from_genec_star(GenecStar)'
+    call copy_structure_from_genec_star(GenecStar)
+    ! and then copy back - some things may have changed?
+    write(*,*) 'call copy_to_genec_star(GenecStar)'
+    call copy_to_genec_star(GenecStar)
+    recommit_particles = 0
+end function
+
+function set_genec_path(path)
+    use evol, only: input_dir
+    implicit none
+    character(len=200):: path
+    integer:: set_genec_path
+
+    input_dir = path
+    set_genec_path = 0
+end function
+
+function set_temperature_at_zone(index_of_the_star, zone, T_i)
+    implicit none
+    integer:: index_of_the_star
+    integer:: zone, i
+    real(kindreal):: T_i
+    integer:: set_temperature_at_zone
+    i = GenecStar%m - zone
+    if (zone <= GenecStar%m) then
+        GenecStar%t(i) = log(T_i)
+    end if
+    
+    set_temperature_at_zone = 0
+end function
+
+
+
+
+
+!!!!!!!!!
+integer function get_veryFirst(index_of_the_particle, veryFirst)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    logical, intent(out):: veryFirst
+    veryFirst = GenecStar%veryFirst
+    get_veryFirst = 0
+end function get_veryFirst
+
+integer function set_veryFirst(index_of_the_particle, veryFirst)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    logical, intent(in):: veryFirst
+    GenecStar%veryFirst = veryFirst
+    set_veryFirst = 0
+end function set_veryFirst
 
 integer function get_initialised(index_of_the_particle, initialised)
     implicit none
@@ -94,7 +1188,7 @@ end function set_initialised
 integer function get_starname(index_of_the_particle, starname)
     implicit none
     integer, intent(in):: index_of_the_particle
-    character(len=256), intent(out):: starname
+    character(256), intent(out):: starname
     starname = GenecStar%starname
     get_starname = 0
 end function get_starname
@@ -102,10 +1196,26 @@ end function get_starname
 integer function set_starname(index_of_the_particle, starname)
     implicit none
     integer, intent(in):: index_of_the_particle
-    character(len=256), intent(in):: starname
+    character(256), intent(in):: starname
     GenecStar%starname = starname
     set_starname = 0
 end function set_starname
+
+integer function get_nwmd(index_of_the_particle, nwmd)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(out):: nwmd
+    nwmd = GenecStar%nwmd
+    get_nwmd = 0
+end function get_nwmd
+
+integer function set_nwmd(index_of_the_particle, nwmd)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: nwmd
+    GenecStar%nwmd = nwmd
+    set_nwmd = 0
+end function set_nwmd
 
 integer function get_nwseq(index_of_the_particle, nwseq)
     implicit none
@@ -1643,9 +2753,6 @@ integer function set_n_snap(index_of_the_particle, n_snap)
     set_n_snap = 0
 end function set_n_snap
 
-! **** End Parameters
-
-! **** Begin Properties
 integer function get_m(index_of_the_particle, m)
     implicit none
     integer, intent(in):: index_of_the_particle
@@ -1870,1924 +2977,2744 @@ integer function set_dm_lost(index_of_the_particle, dm_lost)
     set_dm_lost = 0
 end function set_dm_lost
 
-! **** End Properties
-
-
-function finalize_stellar_model()
+integer function get_mbelx(index_of_the_particle, mbelx)
     implicit none
-    integer:: finalize_stellar_model
-    call copy_to_genec_star(GenecStar)
-    finalize_stellar_model = 0
-end function
+    integer, intent(in):: index_of_the_particle
+    integer, intent(out):: mbelx
+    mbelx = GenecStar%mbelx
+    get_mbelx = 0
+end function get_mbelx
 
-function commit_parameters()
+integer function set_mbelx(index_of_the_particle, mbelx)
     implicit none
-    integer:: commit_parameters
-    commit_parameters = 0
-end function
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: mbelx
+    GenecStar%mbelx = mbelx
+    set_mbelx = 0
+end function set_mbelx
 
-function commit_particles()
-    use makeini, only: make_initial_star
-    use genec, only: initialise_star
-    use WriteSaveClose, only: OpenAll
-    use inputparam, only: nzmod
+integer function get_xtefflast(index_of_the_particle, xtefflast)
     implicit none
-    integer:: commit_particles
-    ! makeini will actually override some things from set_defaults now! FIXME
-    call make_initial_star()
-    call copy_from_genec_star(GenecStar)
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(out):: xtefflast
+    xtefflast = GenecStar%xtefflast
+    get_xtefflast = 0
+end function get_xtefflast
 
-    !nzmod = 1
-    !write(*,*) 'makeini done'
-    !call OpenAll()
-    !write(*,*) 'OpenAll done'
-    call initialise_star()
-    !call copy_network_to_star(InitialNetwork, GenecStar)
-    call copy_to_genec_star(GenecStar)
-    !write(*,*) 'initialise_star done'
-    commit_particles = 0
-end function
-
-function delete_star(index_of_the_star)
+integer function set_xtefflast(index_of_the_particle, xtefflast)
     implicit none
-    integer:: index_of_the_star
-    integer:: delete_star
-    delete_star = -1  ! not supported
-end function
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(in):: xtefflast
+    GenecStar%xtefflast = xtefflast
+    set_xtefflast = 0
+end function set_xtefflast
 
-function evolve_model(end_time)
-    use timestep, only: alter
+integer function get_xllast(index_of_the_particle, xllast)
     implicit none
-    real(kindreal):: end_time
-    integer:: evolve_model
-    !stopping_condition = ""
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(out):: xllast
+    xllast = GenecStar%xllast
+    get_xllast = 0
+end function get_xllast
 
-    do while (alter < end_time)
-        !if (stopping_condition == "") then
-        write(*,*) "Current time: ", alter, ", evolving to: ", end_time
-        evolve_model = evolve_one_step(0)
-    end do
-    evolve_model = 0
-end function
-
-function evolve_for(index_of_the_star, time)
-    ! get current time
-    ! set max time to current time plus argument
-    ! evolve
-    use timestep, only: alter
+integer function set_xllast(index_of_the_particle, xllast)
     implicit none
-    integer:: index_of_the_star
-    real(kindreal):: time, end_time
-    integer:: evolve_for
-    end_time = alter+time
-    do while (alter < end_time)
-        write(*,*) "Current time: ", alter, ", evolving to: ", end_time
-        evolve_for = evolve_one_step(index_of_the_star)
-    end do
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(in):: xllast
+    GenecStar%xllast = xllast
+    set_xllast = 0
+end function set_xllast
 
-    evolve_for = 0
-end function
-
-function evolve_one_step(index_of_the_star)
-    use timestep, only: alter
-    use WriteSaveClose, only: OpenAll
-    use genec, only: evolve, modell, finalise, veryFirst
-    use inputparam,only: modanf,nwseq,nzmod,end_at_phase,end_at_model
-    use genec, only: n_snap
+integer function get_xrholast(index_of_the_particle, xrholast)
     implicit none
-    integer:: index_of_the_star
-    integer:: evolve_one_step
-    integer:: original_nzmod
-    nzmod = 1
-    n_snap = 0
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(out):: xrholast
+    xrholast = GenecStar%xrholast
+    get_xrholast = 0
+end function get_xrholast
 
-    call evolve()
-    call finalise()
-    veryFirst = .false.
-    evolve_one_step = 0
-end function
-
-function write_genec_model()
-    !use inputparam, only: modanf
-    !use WriteSaveClose, only: OpenAll
-    !use genec, only: finalise
-    !use helpers, only: initialise_star
+integer function set_xrholast(index_of_the_particle, xrholast)
     implicit none
-    integer:: write_genec_model
-    !call finalise()
-    ! modanf = 0
-    !call OpenAll()
-    !call initialise_star()
-    !call finalise()
-    !call OpenAll()
-    !call initialise_star()
-    write_genec_model = -1
-end function
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(in):: xrholast
+    GenecStar%xrholast = xrholast
+    set_xrholast = 0
+end function set_xrholast
 
-function get_age(index_of_the_star, age)
+integer function get_xclast(index_of_the_particle, xclast)
     implicit none
-    integer:: index_of_the_star
-    real(kindreal):: age
-    integer:: get_age
-    age = GenecStar%alter
-    get_age = 0
-end function
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(out):: xclast
+    xclast = GenecStar%xclast
+    get_xclast = 0
+end function get_xclast
 
-function set_age(index_of_the_star, age)
+integer function set_xclast(index_of_the_particle, xclast)
     implicit none
-    integer:: index_of_the_star
-    real(kindreal):: age
-    integer:: set_age
-    GenecStar%alter = age
-    set_age = 0
-end function
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(in):: xclast
+    GenecStar%xclast = xclast
+    set_xclast = 0
+end function set_xclast
 
-function get_surface_velocity(index_of_the_star, surface_velocity)
-    use genec, only: vequat
+integer function get_xtclast(index_of_the_particle, xtclast)
     implicit none
-    integer:: index_of_the_star
-    real(kindreal):: surface_velocity
-    integer:: get_surface_velocity
-    surface_velocity = vequat
-    get_surface_velocity = 0
-end function
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(out):: xtclast
+    xtclast = GenecStar%xtclast
+    get_xtclast = 0
+end function get_xtclast
 
-function get_omegi_at_zone(index_of_the_star, zone, omegi_i)
+integer function set_xtclast(index_of_the_particle, xtclast)
     implicit none
-    integer:: index_of_the_star
-    integer:: get_omegi_at_zone
-    real(kindreal):: omegi_i
-    integer:: zone, i
-    i = GenecStar%m - zone
-    if (zone <= GenecStar%m) then
-        omegi_i = GenecStar%omegi(i)
-    end if
-    get_omegi_at_zone = 0
-end function
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(in):: xtclast
+    GenecStar%xtclast = xtclast
+    set_xtclast = 0
+end function set_xtclast
 
-function get_density_at_zone(index_of_the_star, zone, rho_i)
-    use strucmod, only: rho
+integer function get_inum(index_of_the_particle, inum)
     implicit none
-    integer:: index_of_the_star
-    integer:: zone, i
-    real(kindreal):: rho_i
-    integer:: get_density_at_zone
-    i = GenecStar%m - zone
-    if (zone <= GenecStar%m) then
-        rho_i = exp(rho(i))
-    end if
-    get_density_at_zone = 0
-end function
+    integer, intent(in):: index_of_the_particle
+    integer, intent(out):: inum
+    inum = GenecStar%inum
+    get_inum = 0
+end function get_inum
 
-function set_density_at_zone(index_of_the_star, zone, rho_i)
-    use strucmod, only: rho
+integer function set_inum(index_of_the_particle, inum)
     implicit none
-    integer:: index_of_the_star
-    integer:: zone, i
-    real(kindreal):: rho_i
-    integer:: set_density_at_zone
-    i = GenecStar%m - zone
-    if (zone <= GenecStar%m) then
-        rho(i) = log(rho_i)
-    end if
-    set_density_at_zone = 0
-end function
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: inum
+    GenecStar%inum = inum
+    set_inum = 0
+end function set_inum
 
-function get_luminosity(index_of_the_star, luminosity)
+integer function get_nsugi(index_of_the_particle, nsugi)
     implicit none
-    integer:: index_of_the_star
-    real(kindreal):: luminosity
-    integer:: get_luminosity
-    !luminosity = exp(s(m))  ! in cgs units, so erg/s?
-    luminosity = GenecStar%gls
-    get_luminosity = 0
-end function
+    integer, intent(in):: index_of_the_particle
+    integer, intent(out):: nsugi
+    nsugi = GenecStar%nsugi
+    get_nsugi = 0
+end function get_nsugi
 
-function set_luminosity(index_of_the_star, luminosity)
+integer function set_nsugi(index_of_the_particle, nsugi)
     implicit none
-    integer:: index_of_the_star
-    real(kindreal):: luminosity
-    integer:: set_luminosity
-    !luminosity = exp(s(m))  ! in cgs units, so erg/s?
-    GenecStar%gls = luminosity
-    set_luminosity = 0
-end function
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: nsugi
+    GenecStar%nsugi = nsugi
+    set_nsugi = 0
+end function set_nsugi
 
-function get_luminosity_at_zone(index_of_the_star, zone, lum_i)
+integer function get_period(index_of_the_particle, period)
     implicit none
-    integer:: index_of_the_star
-    integer:: zone, i
-    real(kindreal):: lum_i
-    integer:: get_luminosity_at_zone
-    i = GenecStar%m - zone
-    if (zone <= GenecStar%m) then
-        !lum_i = exp(s(zone+1))
-        lum_i = exp(GenecStar%s(i)) - 1
-    end if
-    get_luminosity_at_zone = 0
-end function
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(out):: period
+    period = GenecStar%period
+    get_period = 0
+end function get_period
 
-function set_luminosity_at_zone(index_of_the_star, zone, lum_i)
+integer function set_period(index_of_the_particle, period)
     implicit none
-    integer:: index_of_the_star
-    integer:: zone, i
-    real(kindreal):: lum_i
-    integer:: set_luminosity_at_zone
-    i = GenecStar%m - zone
-    if (zone <= GenecStar%m) then
-        GenecStar%s(i) = log(lum_i + 1)
-    end if
-    set_luminosity_at_zone = 0
-end function
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(in):: period
+    GenecStar%period = period
+    set_period = 0
+end function set_period
 
-function get_mass_fraction_at_zone(index_of_the_star, zone, dq_i)
+integer function get_r_core(index_of_the_particle, r_core)
     implicit none
-    integer:: index_of_the_star
-    integer:: zone, i
-    real(kindreal):: dq_i
-    integer:: get_mass_fraction_at_zone
-    i = GenecStar%m - zone
-    if (i == 1) then
-        dq_i = exp(GenecStar%q(i))
-    else if (i <= GenecStar%m) then
-        !dq_i = 1-exp(q(zone+1))
-        dq_i = (exp(GenecStar%q(i)) - exp(GenecStar%q(i-1)))
-    end if
-    get_mass_fraction_at_zone = 0
-end function
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(out):: r_core
+    r_core = GenecStar%r_core
+    get_r_core = 0
+end function get_r_core
 
-function set_mass_fraction_at_zone(index_of_the_star, zone, dq_i)
+integer function set_r_core(index_of_the_particle, r_core)
     implicit none
-    integer:: index_of_the_star
-    integer:: zone, i
-    real(kindreal):: dq_i
-    integer:: set_mass_fraction_at_zone
-    i = GenecStar%m - zone
-    if (i == 1) then
-        GenecStar%q(i) = log(dq_i)
-    else if (i <= GenecStar%m) then
-        !dq_i = 1-exp(q(zone+1))
-        GenecStar%q(i) = log(exp(GenecStar%q(i-1)) + dq_i)  ! this won't do
-    end if
-    set_mass_fraction_at_zone = -1 ! This function is incomplete!
-end function
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(in):: r_core
+    GenecStar%r_core = r_core
+    set_r_core = 0
+end function set_r_core
 
-function get_mass(index_of_the_star, mass)
+integer function get_vna(index_of_the_particle, vna)
     implicit none
-    real(kindreal):: mass
-    integer:: get_mass, index_of_the_star
-    mass = GenecStar%gms
-    get_mass = 0
-end function
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(out):: vna
+    vna = GenecStar%vna
+    get_vna = 0
+end function get_vna
 
-function set_mass(index_of_the_star, mass)
+integer function set_vna(index_of_the_particle, vna)
     implicit none
-    integer:: set_mass, index_of_the_star
-    real(kindreal):: mass
-    InitialGenecStar%mstar = mass
-    set_mass = 0
-end function
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(in):: vna
+    GenecStar%vna = vna
+    set_vna = 0
+end function set_vna
 
-function get_mass_of_species(index_of_the_star, species, species_mass)
+integer function get_vnr(index_of_the_particle, vnr)
     implicit none
-    integer:: index_of_the_star
-    integer:: species
-    real(kindreal):: species_mass
-    integer:: get_mass_of_species
-    get_mass_of_species = 0
-    select case(species)
-    case(1)
-        species_mass = 1.
-    case(2)
-        species_mass = 3.
-    case(3)
-        species_mass = 4.
-    case(4)
-        species_mass = 12.
-    case(5)
-        species_mass = 13.
-    case(6)
-        species_mass = 14.
-    case(7)
-        species_mass = 15.
-    case(8)
-        species_mass = 16.
-    case(9)
-        species_mass = 17.
-    case(10)
-        species_mass = 18.
-    case(11)
-        species_mass = 20.
-    case(12)
-        species_mass = 22.
-    case(13)
-        species_mass = 24.
-    case(14)
-        species_mass = 25.
-    case(15)
-        species_mass = 26.
-    case(16)
-        species_mass = 14.
-    case(17)
-        species_mass = 18.
-    case(18)
-        species_mass = 19.
-    case(19)
-        species_mass = 21.
-    case(20)
-        species_mass = 23.
-    case(21)
-        species_mass = 26.
-    case(22)
-        species_mass = 27.
-    case(23)
-        species_mass = 28.
-    case(24)
-        species_mass = 1. !neut(i)
-    case(25)
-        species_mass = 1. !prot(i)
-!    case(26)
-!        species_mass = bid(i)
-!    case(27)
-!        species_mass = bid1(i)
-    case default
-        species_mass = 0.
-    end select
-end function
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(out):: vnr
+    vnr = GenecStar%vnr
+    get_vnr = 0
+end function get_vnr
 
-function get_mass_fraction_of_species_at_zone(index_of_the_star, species, zone, Xj_i)
+integer function set_vnr(index_of_the_particle, vnr)
     implicit none
-    integer:: index_of_the_star
-    integer:: species, zone, i
-    real(kindreal):: Xj_i
-    integer:: get_mass_fraction_of_species_at_zone
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(in):: vnr
+    GenecStar%vnr = vnr
+    set_vnr = 0
+end function set_vnr
+
+integer function get_q_at_zone(index_of_the_particle, zone, q)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: zone
+    real(kindreal), intent(out):: q
+    integer:: i
+    get_q_at_zone = -1
     i = GenecStar%m-zone
-    if (zone <= GenecStar%m) then
-      select case(species)
-      case(1)
-          Xj_i = GenecStar%x(i)
-      case(2)
-          Xj_i = GenecStar%y3(i)
-      case(3)
-          Xj_i = GenecStar%y(i)
-      case(4)
-          Xj_i = GenecStar%xc12(i)
-      case(5)
-          Xj_i = GenecStar%xc13(i)
-      case(6)
-          Xj_i = GenecStar%xn14(i)
-      case(7)
-          Xj_i = GenecStar%xn15(i)
-      case(8)
-          Xj_i = GenecStar%xo16(i)
-      case(9)
-          Xj_i = GenecStar%xo17(i)
-      case(10)
-          Xj_i = GenecStar%xo18(i)
-      case(11)
-          Xj_i = GenecStar%xne20(i)
-      case(12)
-          Xj_i = GenecStar%xne22(i)
-      case(13)
-          Xj_i = GenecStar%xmg24(i)
-      case(14)
-          Xj_i = GenecStar%xmg25(i)
-      case(15)
-          Xj_i = GenecStar%xmg26(i)
-      case(16)
-          Xj_i = GenecStar%xc14(i)
-      case(17)
-          Xj_i = GenecStar%xf18(i)
-      case(18)
-          Xj_i = GenecStar%xf19(i)
-      case(19)
-          Xj_i = GenecStar%xne21(i)
-      case(20)
-          Xj_i = GenecStar%xna23(i)
-      case(21)
-          Xj_i = GenecStar%xal26(i)
-      case(22)
-          Xj_i = GenecStar%xal27(i)
-      case(23)
-          Xj_i = GenecStar%xsi28(i)
-      case(24)
-          Xj_i = GenecStar%xneut(i)
-      case(25)
-          Xj_i = GenecStar%xprot(i)
-      case(26)
-          Xj_i = GenecStar%xbid(i)
-      case(27)
-          Xj_i = GenecStar%xbid1(i)
-      case default
-          Xj_i = 0
-      end select
+    if (.true.) then
+        q = GenecStar%q(i)
+        get_q_at_zone = 0
     end if
+end function get_q_at_zone
 
-    get_mass_fraction_of_species_at_zone = 0
-end function
-
-function set_mass_fraction_of_species_at_zone(index_of_the_star, species, zone, Xj_i)
+integer function set_q_at_zone(index_of_the_particle, zone, q)
     implicit none
-    integer:: index_of_the_star
-    integer:: species, zone, i
-    real(kindreal):: Xj_i
-    integer:: set_mass_fraction_of_species_at_zone
-    i = GenecStar%m - zone
-    if (zone <= GenecStar%m) then
-        select case(species)
-      case(1)
-          GenecStar%x(i) = Xj_i
-      case(2)
-          GenecStar%y3(i) = Xj_i
-      case(3)
-          GenecStar%y(i) = Xj_i
-      case(4)
-          GenecStar%xc12(i) = Xj_i
-      case(5)
-          GenecStar%xc13(i) = Xj_i
-      case(6)
-          GenecStar%xn14(i) = Xj_i
-      case(7)
-          GenecStar%xn14(i) = Xj_i
-      case(8)
-          GenecStar%xo16(i) = Xj_i
-      case(9)
-          GenecStar%xo17(i) = Xj_i
-      case(10)
-          GenecStar%xo18(i) = Xj_i
-      case(11)
-          GenecStar%xne20(i) = Xj_i
-      case(12)
-          GenecStar%xne22(i) = Xj_i
-      case(13)
-          GenecStar%xmg24(i) = Xj_i
-      case(14)
-          GenecStar%xmg25(i) = Xj_i
-      case(15)
-          GenecStar%xmg26(i) = Xj_i
-      case(16)
-          GenecStar%xc14(i) = Xj_i
-      case(17)
-          GenecStar%xf18(i) = Xj_i
-      case(18)
-          GenecStar%xf19(i) = Xj_i
-      case(19)
-          GenecStar%xne21(i) = Xj_i
-      case(20)
-          GenecStar%xna23(i) = Xj_i
-      case(21)
-          GenecStar%xal26(i) = Xj_i
-      case(22)
-          GenecStar%xal27(i) = Xj_i
-      case(23)
-          GenecStar%xsi28(i) = Xj_i
-      case(24)
-          GenecStar%xneut(i) = Xj_i
-      case(25)
-          GenecStar%xprot(i) = Xj_i
-      case(26)
-          GenecStar%xbid(i) = Xj_i
-      case(27)
-          GenecStar%xbid1(i) = Xj_i
-      !case default
-      end select
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: zone
+    real(kindreal), intent(in):: q
+    integer:: i
+    set_q_at_zone = -1
+    i = GenecStar%m-zone
+    if (.true.) then
+        GenecStar%q(i) = q
+        set_q_at_zone = 0
     end if
+end function set_q_at_zone
 
-    set_mass_fraction_of_species_at_zone = 0
-end function
-
-function get_metallicity(metallicity)
+integer function get_p_at_zone(index_of_the_particle, zone, p)
     implicit none
-    real(kindreal):: metallicity
-    integer:: get_metallicity
-    metallicity = InitialGenecStar%zini
-    get_metallicity = 0
-end function
-
-function set_metallicity(metallicity)
-    implicit none
-    real(kindreal):: metallicity
-    integer:: set_metallicity
-    InitialGenecStar%zini = metallicity
-    set_metallicity = 0
-end function
-
-function get_mu_at_zone(index_of_the_star, zone, mu_i)
-    implicit none
-    integer:: index_of_the_star
-    integer:: zone, i
-    real(kindreal):: mu_i, X, Y3, Y
-    integer:: err
-    integer:: get_mu_at_zone
-    i = (GenecStar%m - zone)
-    if (zone <= GenecStar%m) then
-        mu_i = 0.0d0
-        err = get_mass_fraction_of_species_at_zone(index_of_the_star, 1, zone, X)
-        err = get_mass_fraction_of_species_at_zone(index_of_the_star, 2, zone, Y3)
-        err = get_mass_fraction_of_species_at_zone(index_of_the_star, 3, zone, Y)
-
-        mu_i = (4.0 / (2.0 + 6 * X - (Y+Y3)))
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: zone
+    real(kindreal), intent(out):: p
+    integer:: i
+    get_p_at_zone = -1
+    i = GenecStar%m-zone
+    if (.true.) then
+        p = GenecStar%p(i)
+        get_p_at_zone = 0
     end if
-    get_mu_at_zone = 0
-end function
+end function get_p_at_zone
 
-function get_name_of_species(index_of_the_star, species, species_name)
+integer function set_p_at_zone(index_of_the_particle, zone, p)
     implicit none
-    integer:: index_of_the_star
-    integer:: species
-    character(len = 6):: species_name
-    integer:: get_name_of_species
-
-    character(len = 6), dimension(27):: species_names
-
-    species_names(1)  = 'h'
-    species_names(2)  = 'he3'
-    species_names(3)  = 'he'
-    species_names(4)  = 'c12'
-    species_names(5)  = 'c13'
-    species_names(6)  = 'n14'
-    species_names(7)  = 'n15'
-    species_names(8)  = 'o16'
-    species_names(9)  = 'o17'
-    species_names(10) = 'o18'
-    species_names(11) = 'ne20'
-    species_names(12) = 'ne22'
-    species_names(13) = 'mg24'
-    species_names(14) = 'mg25'
-    species_names(15) = 'mg26'
-    species_names(16) = 'c14'
-    species_names(17) = 'f18'
-    species_names(18) = 'f19'
-    species_names(19) = 'ne21'
-    species_names(20) = 'na23'
-    species_names(21) = 'al26'
-    species_names(22) = 'al27'
-    species_names(23) = 'si28'
-    species_names(24) = 'neut'
-    species_names(25) = 'prot'
-    species_names(26) = 'bid'
-    species_names(27) = 'bid1'
-    species_name = species_names(species)
-    !x: H1
-    !y: He4
-    !y3: He3
-    !xneut: neutron
-    !xprot: proton
-    !xc12: C12
-    !xXYY: XYY - X element YY mass number
-    !xXXYY: as above
-    get_name_of_species = 0
-end function
-
-function get_mass_fraction_of_h_at_zone(index_of_the_star, zone, Xj_i)
-    implicit none
-    integer:: index_of_the_star, zone
-    real(kindreal):: Xj_i
-    integer:: get_mass_fraction_of_h_at_zone
-    get_mass_fraction_of_h_at_zone = get_mass_fraction_of_species_at_zone(index_of_the_star, 1, zone, Xj_i)
-end function
-
-
-function get_mass_fraction_of_he3_at_zone(index_of_the_star, zone, Xj_i)
-    implicit none
-    integer:: index_of_the_star, zone
-    real(kindreal):: Xj_i
-    integer:: get_mass_fraction_of_he3_at_zone
-    get_mass_fraction_of_he3_at_zone = get_mass_fraction_of_species_at_zone(index_of_the_star, 2, zone, Xj_i)
-end function
-
-
-function get_mass_fraction_of_he_at_zone(index_of_the_star, zone, Xj_i)
-    implicit none
-    integer:: index_of_the_star, zone
-    real(kindreal):: Xj_i
-    integer:: get_mass_fraction_of_he_at_zone
-    get_mass_fraction_of_he_at_zone = get_mass_fraction_of_species_at_zone(index_of_the_star, 3, zone, Xj_i)
-end function
-
-
-function get_mass_fraction_of_c12_at_zone(index_of_the_star, zone, Xj_i)
-    implicit none
-    integer:: index_of_the_star, zone
-    real(kindreal):: Xj_i
-    integer:: get_mass_fraction_of_c12_at_zone
-    get_mass_fraction_of_c12_at_zone = get_mass_fraction_of_species_at_zone(index_of_the_star, 4, zone, Xj_i)
-end function
-
-
-function get_mass_fraction_of_c13_at_zone(index_of_the_star, zone, Xj_i)
-    implicit none
-    integer:: index_of_the_star, zone
-    real(kindreal):: Xj_i
-    integer:: get_mass_fraction_of_c13_at_zone
-    get_mass_fraction_of_c13_at_zone = get_mass_fraction_of_species_at_zone(index_of_the_star, 5, zone, Xj_i)
-end function
-
-
-function get_mass_fraction_of_n14_at_zone(index_of_the_star, zone, Xj_i)
-    implicit none
-    integer:: index_of_the_star, zone
-    real(kindreal):: Xj_i
-    integer:: get_mass_fraction_of_n14_at_zone
-    get_mass_fraction_of_n14_at_zone = get_mass_fraction_of_species_at_zone(index_of_the_star, 6, zone, Xj_i)
-end function
-
-
-function get_mass_fraction_of_n15_at_zone(index_of_the_star, zone, Xj_i)
-    implicit none
-    integer:: index_of_the_star, zone
-    real(kindreal):: Xj_i
-    integer:: get_mass_fraction_of_n15_at_zone
-    get_mass_fraction_of_n15_at_zone = get_mass_fraction_of_species_at_zone(index_of_the_star, 7, zone, Xj_i)
-end function
-
-
-function get_mass_fraction_of_o16_at_zone(index_of_the_star, zone, Xj_i)
-    implicit none
-    integer:: index_of_the_star, zone
-    real(kindreal):: Xj_i
-    integer:: get_mass_fraction_of_o16_at_zone
-    get_mass_fraction_of_o16_at_zone = get_mass_fraction_of_species_at_zone(index_of_the_star, 8, zone, Xj_i)
-end function
-
-
-function get_mass_fraction_of_o17_at_zone(index_of_the_star, zone, Xj_i)
-    implicit none
-    integer:: index_of_the_star, zone
-    real(kindreal):: Xj_i
-    integer:: get_mass_fraction_of_o17_at_zone
-    get_mass_fraction_of_o17_at_zone = get_mass_fraction_of_species_at_zone(index_of_the_star, 9, zone, Xj_i)
-end function
-
-
-function get_mass_fraction_of_o18_at_zone(index_of_the_star, zone, Xj_i)
-    implicit none
-    integer:: index_of_the_star, zone
-    real(kindreal):: Xj_i
-    integer:: get_mass_fraction_of_o18_at_zone
-    get_mass_fraction_of_o18_at_zone = get_mass_fraction_of_species_at_zone(index_of_the_star, 10, zone, Xj_i)
-end function
-
-
-function get_mass_fraction_of_ne20_at_zone(index_of_the_star, zone, Xj_i)
-    implicit none
-    integer:: index_of_the_star, zone
-    real(kindreal):: Xj_i
-    integer:: get_mass_fraction_of_ne20_at_zone
-    get_mass_fraction_of_ne20_at_zone = get_mass_fraction_of_species_at_zone(index_of_the_star, 11, zone, Xj_i)
-end function
-
-
-function get_mass_fraction_of_ne22_at_zone(index_of_the_star, zone, Xj_i)
-    implicit none
-    integer:: index_of_the_star, zone
-    real(kindreal):: Xj_i
-    integer:: get_mass_fraction_of_ne22_at_zone
-    get_mass_fraction_of_ne22_at_zone = get_mass_fraction_of_species_at_zone(index_of_the_star, 12, zone, Xj_i)
-end function
-
-
-function get_mass_fraction_of_mg24_at_zone(index_of_the_star, zone, Xj_i)
-    implicit none
-    integer:: index_of_the_star, zone
-    real(kindreal):: Xj_i
-    integer:: get_mass_fraction_of_mg24_at_zone
-    get_mass_fraction_of_mg24_at_zone = get_mass_fraction_of_species_at_zone(index_of_the_star, 13, zone, Xj_i)
-end function
-
-
-function get_mass_fraction_of_mg25_at_zone(index_of_the_star, zone, Xj_i)
-    implicit none
-    integer:: index_of_the_star, zone
-    real(kindreal):: Xj_i
-    integer:: get_mass_fraction_of_mg25_at_zone
-    get_mass_fraction_of_mg25_at_zone = get_mass_fraction_of_species_at_zone(index_of_the_star, 14, zone, Xj_i)
-end function
-
-
-function get_mass_fraction_of_mg26_at_zone(index_of_the_star, zone, Xj_i)
-    implicit none
-    integer:: index_of_the_star, zone
-    real(kindreal):: Xj_i
-    integer:: get_mass_fraction_of_mg26_at_zone
-    get_mass_fraction_of_mg26_at_zone = get_mass_fraction_of_species_at_zone(index_of_the_star, 15, zone, Xj_i)
-end function
-
-
-function get_mass_fraction_of_c14_at_zone(index_of_the_star, zone, Xj_i)
-    implicit none
-    integer:: index_of_the_star, zone
-    real(kindreal):: Xj_i
-    integer:: get_mass_fraction_of_c14_at_zone
-    get_mass_fraction_of_c14_at_zone = get_mass_fraction_of_species_at_zone(index_of_the_star, 16, zone, Xj_i)
-end function
-
-
-function get_mass_fraction_of_f18_at_zone(index_of_the_star, zone, Xj_i)
-    implicit none
-    integer:: index_of_the_star, zone
-    real(kindreal):: Xj_i
-    integer:: get_mass_fraction_of_f18_at_zone
-    get_mass_fraction_of_f18_at_zone = get_mass_fraction_of_species_at_zone(index_of_the_star, 17, zone, Xj_i)
-end function
-
-
-function get_mass_fraction_of_f19_at_zone(index_of_the_star, zone, Xj_i)
-    implicit none
-    integer:: index_of_the_star, zone
-    real(kindreal):: Xj_i
-    integer:: get_mass_fraction_of_f19_at_zone
-    get_mass_fraction_of_f19_at_zone = get_mass_fraction_of_species_at_zone(index_of_the_star, 18, zone, Xj_i)
-end function
-
-
-function get_mass_fraction_of_ne21_at_zone(index_of_the_star, zone, Xj_i)
-    implicit none
-    integer:: index_of_the_star, zone
-    real(kindreal):: Xj_i
-    integer:: get_mass_fraction_of_ne21_at_zone
-    get_mass_fraction_of_ne21_at_zone = get_mass_fraction_of_species_at_zone(index_of_the_star, 19, zone, Xj_i)
-end function
-
-
-function get_mass_fraction_of_na23_at_zone(index_of_the_star, zone, Xj_i)
-    implicit none
-    integer:: index_of_the_star, zone
-    real(kindreal):: Xj_i
-    integer:: get_mass_fraction_of_na23_at_zone
-    get_mass_fraction_of_na23_at_zone = get_mass_fraction_of_species_at_zone(index_of_the_star, 20, zone, Xj_i)
-end function
-
-
-function get_mass_fraction_of_al26_at_zone(index_of_the_star, zone, Xj_i)
-    implicit none
-    integer:: index_of_the_star, zone
-    real(kindreal):: Xj_i
-    integer:: get_mass_fraction_of_al26_at_zone
-    get_mass_fraction_of_al26_at_zone = get_mass_fraction_of_species_at_zone(index_of_the_star, 21, zone, Xj_i)
-end function
-
-
-function get_mass_fraction_of_al27_at_zone(index_of_the_star, zone, Xj_i)
-    implicit none
-    integer:: index_of_the_star, zone
-    real(kindreal):: Xj_i
-    integer:: get_mass_fraction_of_al27_at_zone
-    get_mass_fraction_of_al27_at_zone = get_mass_fraction_of_species_at_zone(index_of_the_star, 22, zone, Xj_i)
-end function
-
-
-function get_mass_fraction_of_si28_at_zone(index_of_the_star, zone, Xj_i)
-    implicit none
-    integer:: index_of_the_star, zone
-    real(kindreal):: Xj_i
-    integer:: get_mass_fraction_of_si28_at_zone
-    get_mass_fraction_of_si28_at_zone = get_mass_fraction_of_species_at_zone(index_of_the_star, 23, zone, Xj_i)
-end function
-
-
-function get_mass_fraction_of_neut_at_zone(index_of_the_star, zone, Xj_i)
-    implicit none
-    integer:: index_of_the_star, zone
-    real(kindreal):: Xj_i
-    integer:: get_mass_fraction_of_neut_at_zone
-    get_mass_fraction_of_neut_at_zone = get_mass_fraction_of_species_at_zone(index_of_the_star, 24, zone, Xj_i)
-end function
-
-
-function get_mass_fraction_of_prot_at_zone(index_of_the_star, zone, Xj_i)
-    implicit none
-    integer:: index_of_the_star, zone
-    real(kindreal):: Xj_i
-    integer:: get_mass_fraction_of_prot_at_zone
-    get_mass_fraction_of_prot_at_zone = get_mass_fraction_of_species_at_zone(index_of_the_star, 25, zone, Xj_i)
-end function
-
-
-function get_mass_fraction_of_bid_at_zone(index_of_the_star, zone, Xj_i)
-    implicit none
-    integer:: index_of_the_star, zone
-    real(kindreal):: Xj_i
-    integer:: get_mass_fraction_of_bid_at_zone
-    get_mass_fraction_of_bid_at_zone = get_mass_fraction_of_species_at_zone(index_of_the_star, 26, zone, Xj_i)
-end function
-
-
-function get_mass_fraction_of_bid1_at_zone(index_of_the_star, zone, Xj_i)
-    implicit none
-    integer:: index_of_the_star, zone
-    real(kindreal):: Xj_i
-    integer:: get_mass_fraction_of_bid1_at_zone
-    get_mass_fraction_of_bid1_at_zone = get_mass_fraction_of_species_at_zone(index_of_the_star, 27, zone, Xj_i)
-end function
-
-
-function set_mass_fraction_of_h_at_zone(index_of_the_star, zone, Xj_i)
-    implicit none
-    integer:: index_of_the_star, zone
-    real(kindreal):: Xj_i
-    integer:: set_mass_fraction_of_h_at_zone
-    set_mass_fraction_of_h_at_zone = set_mass_fraction_of_species_at_zone(index_of_the_star, 1, zone, Xj_i)
-end function
-
-
-function set_mass_fraction_of_he3_at_zone(index_of_the_star, zone, Xj_i)
-    implicit none
-    integer:: index_of_the_star, zone
-    real(kindreal):: Xj_i
-    integer:: set_mass_fraction_of_he3_at_zone
-    set_mass_fraction_of_he3_at_zone = set_mass_fraction_of_species_at_zone(index_of_the_star, 2, zone, Xj_i)
-end function
-
-
-function set_mass_fraction_of_he_at_zone(index_of_the_star, zone, Xj_i)
-    implicit none
-    integer:: index_of_the_star, zone
-    real(kindreal):: Xj_i
-    integer:: set_mass_fraction_of_he_at_zone
-    set_mass_fraction_of_he_at_zone = set_mass_fraction_of_species_at_zone(index_of_the_star, 3, zone, Xj_i)
-end function
-
-
-function set_mass_fraction_of_c12_at_zone(index_of_the_star, zone, Xj_i)
-    implicit none
-    integer:: index_of_the_star, zone
-    real(kindreal):: Xj_i
-    integer:: set_mass_fraction_of_c12_at_zone
-    set_mass_fraction_of_c12_at_zone = set_mass_fraction_of_species_at_zone(index_of_the_star, 4, zone, Xj_i)
-end function
-
-
-function set_mass_fraction_of_c13_at_zone(index_of_the_star, zone, Xj_i)
-    implicit none
-    integer:: index_of_the_star, zone
-    real(kindreal):: Xj_i
-    integer:: set_mass_fraction_of_c13_at_zone
-    set_mass_fraction_of_c13_at_zone = set_mass_fraction_of_species_at_zone(index_of_the_star, 5, zone, Xj_i)
-end function
-
-
-function set_mass_fraction_of_n14_at_zone(index_of_the_star, zone, Xj_i)
-    implicit none
-    integer:: index_of_the_star, zone
-    real(kindreal):: Xj_i
-    integer:: set_mass_fraction_of_n14_at_zone
-    set_mass_fraction_of_n14_at_zone = set_mass_fraction_of_species_at_zone(index_of_the_star, 6, zone, Xj_i)
-end function
-
-
-function set_mass_fraction_of_n15_at_zone(index_of_the_star, zone, Xj_i)
-    implicit none
-    integer:: index_of_the_star, zone
-    real(kindreal):: Xj_i
-    integer:: set_mass_fraction_of_n15_at_zone
-    set_mass_fraction_of_n15_at_zone = set_mass_fraction_of_species_at_zone(index_of_the_star, 7, zone, Xj_i)
-end function
-
-
-function set_mass_fraction_of_o16_at_zone(index_of_the_star, zone, Xj_i)
-    implicit none
-    integer:: index_of_the_star, zone
-    real(kindreal):: Xj_i
-    integer:: set_mass_fraction_of_o16_at_zone
-    set_mass_fraction_of_o16_at_zone = set_mass_fraction_of_species_at_zone(index_of_the_star, 8, zone, Xj_i)
-end function
-
-
-function set_mass_fraction_of_o17_at_zone(index_of_the_star, zone, Xj_i)
-    implicit none
-    integer:: index_of_the_star, zone
-    real(kindreal):: Xj_i
-    integer:: set_mass_fraction_of_o17_at_zone
-    set_mass_fraction_of_o17_at_zone = set_mass_fraction_of_species_at_zone(index_of_the_star, 9, zone, Xj_i)
-end function
-
-
-function set_mass_fraction_of_o18_at_zone(index_of_the_star, zone, Xj_i)
-    implicit none
-    integer:: index_of_the_star, zone
-    real(kindreal):: Xj_i
-    integer:: set_mass_fraction_of_o18_at_zone
-    set_mass_fraction_of_o18_at_zone = set_mass_fraction_of_species_at_zone(index_of_the_star, 10, zone, Xj_i)
-end function
-
-
-function set_mass_fraction_of_ne20_at_zone(index_of_the_star, zone, Xj_i)
-    implicit none
-    integer:: index_of_the_star, zone
-    real(kindreal):: Xj_i
-    integer:: set_mass_fraction_of_ne20_at_zone
-    set_mass_fraction_of_ne20_at_zone = set_mass_fraction_of_species_at_zone(index_of_the_star, 11, zone, Xj_i)
-end function
-
-
-function set_mass_fraction_of_ne22_at_zone(index_of_the_star, zone, Xj_i)
-    implicit none
-    integer:: index_of_the_star, zone
-    real(kindreal):: Xj_i
-    integer:: set_mass_fraction_of_ne22_at_zone
-    set_mass_fraction_of_ne22_at_zone = set_mass_fraction_of_species_at_zone(index_of_the_star, 12, zone, Xj_i)
-end function
-
-
-function set_mass_fraction_of_mg24_at_zone(index_of_the_star, zone, Xj_i)
-    implicit none
-    integer:: index_of_the_star, zone
-    real(kindreal):: Xj_i
-    integer:: set_mass_fraction_of_mg24_at_zone
-    set_mass_fraction_of_mg24_at_zone = set_mass_fraction_of_species_at_zone(index_of_the_star, 13, zone, Xj_i)
-end function
-
-
-function set_mass_fraction_of_mg25_at_zone(index_of_the_star, zone, Xj_i)
-    implicit none
-    integer:: index_of_the_star, zone
-    real(kindreal):: Xj_i
-    integer:: set_mass_fraction_of_mg25_at_zone
-    set_mass_fraction_of_mg25_at_zone = set_mass_fraction_of_species_at_zone(index_of_the_star, 14, zone, Xj_i)
-end function
-
-
-function set_mass_fraction_of_mg26_at_zone(index_of_the_star, zone, Xj_i)
-    implicit none
-    integer:: index_of_the_star, zone
-    real(kindreal):: Xj_i
-    integer:: set_mass_fraction_of_mg26_at_zone
-    set_mass_fraction_of_mg26_at_zone = set_mass_fraction_of_species_at_zone(index_of_the_star, 15, zone, Xj_i)
-end function
-
-
-function set_mass_fraction_of_c14_at_zone(index_of_the_star, zone, Xj_i)
-    implicit none
-    integer:: index_of_the_star, zone
-    real(kindreal):: Xj_i
-    integer:: set_mass_fraction_of_c14_at_zone
-    set_mass_fraction_of_c14_at_zone = set_mass_fraction_of_species_at_zone(index_of_the_star, 16, zone, Xj_i)
-end function
-
-
-function set_mass_fraction_of_f18_at_zone(index_of_the_star, zone, Xj_i)
-    implicit none
-    integer:: index_of_the_star, zone
-    real(kindreal):: Xj_i
-    integer:: set_mass_fraction_of_f18_at_zone
-    set_mass_fraction_of_f18_at_zone = set_mass_fraction_of_species_at_zone(index_of_the_star, 17, zone, Xj_i)
-end function
-
-
-function set_mass_fraction_of_f19_at_zone(index_of_the_star, zone, Xj_i)
-    implicit none
-    integer:: index_of_the_star, zone
-    real(kindreal):: Xj_i
-    integer:: set_mass_fraction_of_f19_at_zone
-    set_mass_fraction_of_f19_at_zone = set_mass_fraction_of_species_at_zone(index_of_the_star, 18, zone, Xj_i)
-end function
-
-
-function set_mass_fraction_of_ne21_at_zone(index_of_the_star, zone, Xj_i)
-    implicit none
-    integer:: index_of_the_star, zone
-    real(kindreal):: Xj_i
-    integer:: set_mass_fraction_of_ne21_at_zone
-    set_mass_fraction_of_ne21_at_zone = set_mass_fraction_of_species_at_zone(index_of_the_star, 19, zone, Xj_i)
-end function
-
-
-function set_mass_fraction_of_na23_at_zone(index_of_the_star, zone, Xj_i)
-    implicit none
-    integer:: index_of_the_star, zone
-    real(kindreal):: Xj_i
-    integer:: set_mass_fraction_of_na23_at_zone
-    set_mass_fraction_of_na23_at_zone = set_mass_fraction_of_species_at_zone(index_of_the_star, 20, zone, Xj_i)
-end function
-
-
-function set_mass_fraction_of_al26_at_zone(index_of_the_star, zone, Xj_i)
-    implicit none
-    integer:: index_of_the_star, zone
-    real(kindreal):: Xj_i
-    integer:: set_mass_fraction_of_al26_at_zone
-    set_mass_fraction_of_al26_at_zone = set_mass_fraction_of_species_at_zone(index_of_the_star, 21, zone, Xj_i)
-end function
-
-
-function set_mass_fraction_of_al27_at_zone(index_of_the_star, zone, Xj_i)
-    implicit none
-    integer:: index_of_the_star, zone
-    real(kindreal):: Xj_i
-    integer:: set_mass_fraction_of_al27_at_zone
-    set_mass_fraction_of_al27_at_zone = set_mass_fraction_of_species_at_zone(index_of_the_star, 22, zone, Xj_i)
-end function
-
-
-function set_mass_fraction_of_si28_at_zone(index_of_the_star, zone, Xj_i)
-    implicit none
-    integer:: index_of_the_star, zone
-    real(kindreal):: Xj_i
-    integer:: set_mass_fraction_of_si28_at_zone
-    set_mass_fraction_of_si28_at_zone = set_mass_fraction_of_species_at_zone(index_of_the_star, 23, zone, Xj_i)
-end function
-
-
-function set_mass_fraction_of_neut_at_zone(index_of_the_star, zone, Xj_i)
-    implicit none
-    integer:: index_of_the_star, zone
-    real(kindreal):: Xj_i
-    integer:: set_mass_fraction_of_neut_at_zone
-    set_mass_fraction_of_neut_at_zone = set_mass_fraction_of_species_at_zone(index_of_the_star, 24, zone, Xj_i)
-end function
-
-
-function set_mass_fraction_of_prot_at_zone(index_of_the_star, zone, Xj_i)
-    implicit none
-    integer:: index_of_the_star, zone
-    real(kindreal):: Xj_i
-    integer:: set_mass_fraction_of_prot_at_zone
-    set_mass_fraction_of_prot_at_zone = set_mass_fraction_of_species_at_zone(index_of_the_star, 25, zone, Xj_i)
-end function
-
-
-function set_mass_fraction_of_bid_at_zone(index_of_the_star, zone, Xj_i)
-    implicit none
-    integer:: index_of_the_star, zone
-    real(kindreal):: Xj_i
-    integer:: set_mass_fraction_of_bid_at_zone
-    set_mass_fraction_of_bid_at_zone = set_mass_fraction_of_species_at_zone(index_of_the_star, 26, zone, Xj_i)
-end function
-
-
-function set_mass_fraction_of_bid1_at_zone(index_of_the_star, zone, Xj_i)
-    implicit none
-    integer:: index_of_the_star, zone
-    real(kindreal):: Xj_i
-    integer:: set_mass_fraction_of_bid1_at_zone
-    set_mass_fraction_of_bid1_at_zone = set_mass_fraction_of_species_at_zone(index_of_the_star, 27, zone, Xj_i)
-end function
-
-function get_number_of_particles(n)
-    implicit none
-    integer:: n
-    integer:: get_number_of_particles
-    n = 1
-    get_number_of_particles = 0
-end function
-
-function get_number_of_species(index_of_the_star, n_species)
-    implicit none
-    integer:: index_of_the_star
-    integer:: n_species
-    integer:: get_number_of_species
-    if (GenecStar%ialflu==1) then
-       n_species = 27
-    else
-        n_species = 15
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: zone
+    real(kindreal), intent(in):: p
+    integer:: i
+    set_p_at_zone = -1
+    i = GenecStar%m-zone
+    if (.true.) then
+        GenecStar%p(i) = p
+        set_p_at_zone = 0
     end if
-    get_number_of_species = 0
-end function
+end function set_p_at_zone
 
-function get_firstlast_species_number(first, last)
+integer function get_t_at_zone(index_of_the_particle, zone, t)
     implicit none
-    !integer:: index_of_the_star
-    integer:: first, last
-    integer:: get_firstlast_species_number
-    first = 1
-    if (GenecStar%ialflu==1) then
-        last = 27
-    else
-        last = 15
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: zone
+    real(kindreal), intent(out):: t
+    integer:: i
+    get_t_at_zone = -1
+    i = GenecStar%m-zone
+    if (.true.) then
+        t = GenecStar%t(i)
+        get_t_at_zone = 0
     end if
-    get_firstlast_species_number = 0
-end function
+end function get_t_at_zone
 
-function get_number_of_zones(index_of_the_star, n_zones)
+integer function set_t_at_zone(index_of_the_particle, zone, t)
     implicit none
-    integer:: index_of_the_star
-    integer:: n_zones
-    integer:: get_number_of_zones
-    n_zones = GenecStar%m
-    get_number_of_zones = 0
-end function
-
-function set_number_of_zones(index_of_the_star, n_zones)
-    implicit none
-    integer:: index_of_the_star
-    integer:: n_zones
-    integer:: set_number_of_zones
-    GenecStar%m = n_zones
-    set_number_of_zones = 0
-end function
-
-function get_firstlast_zone(first, last)
-    implicit none
-    !integer:: index_of_the_star
-    integer:: first, last
-    integer:: get_firstlast_zone
-    first = 0
-    last = GenecStar%m-1
-    get_firstlast_zone = 0
-end function
-
-function get_pressure_at_zone(index_of_the_star, zone, P_i)
-    implicit none
-    integer:: index_of_the_star
-    integer:: zone, i
-    real(kindreal):: P_i
-    integer:: get_pressure_at_zone
-    if (zone <= GenecStar%m) then
-        i = GenecStar%m - zone
-        P_i = exp(GenecStar%p(i))
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: zone
+    real(kindreal), intent(in):: t
+    integer:: i
+    set_t_at_zone = -1
+    i = GenecStar%m-zone
+    if (.true.) then
+        GenecStar%t(i) = t
+        set_t_at_zone = 0
     end if
-    get_pressure_at_zone = 0
-end function
+end function set_t_at_zone
 
-!function set_pressure_at_zone(index_of_the_star, zone, P_i)
-!    use strucmod, only: p, m
-!    implicit none
-!    integer:: index_of_the_star
-!    integer:: zone, i
-!    real(kindreal):: P_i
-!    integer:: set_pressure_at_zone
-!    if (zone <= m) then
-!        i = m - zone
-!        p(i) = log(P_i)
-!    end if
-!    set_pressure_at_zone = 0
-!end function
-
-function get_radius(index_of_the_star, am_radius)
+integer function get_r_at_zone(index_of_the_particle, zone, r)
     implicit none
-    integer:: index_of_the_star
-    real(kindreal):: am_radius
-    integer:: get_radius
-    am_radius = 10**GenecStar%radius
-    !radius = exp(r(1))  ! in cm
-    get_radius = 0
-end function
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: zone
+    real(kindreal), intent(out):: r
+    integer:: i
+    get_r_at_zone = -1
+    i = GenecStar%m-zone
+    if (.true.) then
+        r = GenecStar%r(i)
+        get_r_at_zone = 0
+    end if
+end function get_r_at_zone
 
-function set_radius(index_of_the_star, am_radius)
+integer function set_r_at_zone(index_of_the_particle, zone, r)
     implicit none
-    integer:: index_of_the_star
-    real(kindreal):: am_radius
-    integer:: set_radius
-    GenecStar%radius = log10(am_radius)
-    set_radius = 0
-end function
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: zone
+    real(kindreal), intent(in):: r
+    integer:: i
+    set_r_at_zone = -1
+    i = GenecStar%m-zone
+    if (.true.) then
+        GenecStar%r(i) = r
+        set_r_at_zone = 0
+    end if
+end function set_r_at_zone
 
-function get_eps_at_zone(index_of_the_star, zone, eps)
+integer function get_s_at_zone(index_of_the_particle, zone, s)
     implicit none
-    integer:: index_of_the_star
-    integer:: zone, i
-    real(kindreal):: eps
-    integer:: get_eps_at_zone
-    i = GenecStar%m - zone
-    if (zone <= GenecStar%m) then
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: zone
+    real(kindreal), intent(out):: s
+    integer:: i
+    get_s_at_zone = -1
+    i = GenecStar%m-zone
+    if (.true.) then
+        s = GenecStar%s(i)
+        get_s_at_zone = 0
+    end if
+end function get_s_at_zone
+
+integer function set_s_at_zone(index_of_the_particle, zone, s)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: zone
+    real(kindreal), intent(in):: s
+    integer:: i
+    set_s_at_zone = -1
+    i = GenecStar%m-zone
+    if (.true.) then
+        GenecStar%s(i) = s
+        set_s_at_zone = 0
+    end if
+end function set_s_at_zone
+
+integer function get_x_at_zone(index_of_the_particle, zone, x)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: zone
+    real(kindreal), intent(out):: x
+    integer:: i
+    get_x_at_zone = -1
+    i = GenecStar%m-zone
+    if (.true.) then
+        x = GenecStar%x(i)
+        get_x_at_zone = 0
+    end if
+end function get_x_at_zone
+
+integer function set_x_at_zone(index_of_the_particle, zone, x)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: zone
+    real(kindreal), intent(in):: x
+    integer:: i
+    set_x_at_zone = -1
+    i = GenecStar%m-zone
+    if (.true.) then
+        GenecStar%x(i) = x
+        set_x_at_zone = 0
+    end if
+end function set_x_at_zone
+
+integer function get_y3_at_zone(index_of_the_particle, zone, y3)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: zone
+    real(kindreal), intent(out):: y3
+    integer:: i
+    get_y3_at_zone = -1
+    i = GenecStar%m-zone
+    if (.true.) then
+        y3 = GenecStar%y3(i)
+        get_y3_at_zone = 0
+    end if
+end function get_y3_at_zone
+
+integer function set_y3_at_zone(index_of_the_particle, zone, y3)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: zone
+    real(kindreal), intent(in):: y3
+    integer:: i
+    set_y3_at_zone = -1
+    i = GenecStar%m-zone
+    if (.true.) then
+        GenecStar%y3(i) = y3
+        set_y3_at_zone = 0
+    end if
+end function set_y3_at_zone
+
+integer function get_y_at_zone(index_of_the_particle, zone, y)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: zone
+    real(kindreal), intent(out):: y
+    integer:: i
+    get_y_at_zone = -1
+    i = GenecStar%m-zone
+    if (.true.) then
+        y = GenecStar%y(i)
+        get_y_at_zone = 0
+    end if
+end function get_y_at_zone
+
+integer function set_y_at_zone(index_of_the_particle, zone, y)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: zone
+    real(kindreal), intent(in):: y
+    integer:: i
+    set_y_at_zone = -1
+    i = GenecStar%m-zone
+    if (.true.) then
+        GenecStar%y(i) = y
+        set_y_at_zone = 0
+    end if
+end function set_y_at_zone
+
+integer function get_xc12_at_zone(index_of_the_particle, zone, xc12)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: zone
+    real(kindreal), intent(out):: xc12
+    integer:: i
+    get_xc12_at_zone = -1
+    i = GenecStar%m-zone
+    if (.true.) then
+        xc12 = GenecStar%xc12(i)
+        get_xc12_at_zone = 0
+    end if
+end function get_xc12_at_zone
+
+integer function set_xc12_at_zone(index_of_the_particle, zone, xc12)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: zone
+    real(kindreal), intent(in):: xc12
+    integer:: i
+    set_xc12_at_zone = -1
+    i = GenecStar%m-zone
+    if (.true.) then
+        GenecStar%xc12(i) = xc12
+        set_xc12_at_zone = 0
+    end if
+end function set_xc12_at_zone
+
+integer function get_xc13_at_zone(index_of_the_particle, zone, xc13)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: zone
+    real(kindreal), intent(out):: xc13
+    integer:: i
+    get_xc13_at_zone = -1
+    i = GenecStar%m-zone
+    if (.true.) then
+        xc13 = GenecStar%xc13(i)
+        get_xc13_at_zone = 0
+    end if
+end function get_xc13_at_zone
+
+integer function set_xc13_at_zone(index_of_the_particle, zone, xc13)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: zone
+    real(kindreal), intent(in):: xc13
+    integer:: i
+    set_xc13_at_zone = -1
+    i = GenecStar%m-zone
+    if (.true.) then
+        GenecStar%xc13(i) = xc13
+        set_xc13_at_zone = 0
+    end if
+end function set_xc13_at_zone
+
+integer function get_xn14_at_zone(index_of_the_particle, zone, xn14)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: zone
+    real(kindreal), intent(out):: xn14
+    integer:: i
+    get_xn14_at_zone = -1
+    i = GenecStar%m-zone
+    if (.true.) then
+        xn14 = GenecStar%xn14(i)
+        get_xn14_at_zone = 0
+    end if
+end function get_xn14_at_zone
+
+integer function set_xn14_at_zone(index_of_the_particle, zone, xn14)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: zone
+    real(kindreal), intent(in):: xn14
+    integer:: i
+    set_xn14_at_zone = -1
+    i = GenecStar%m-zone
+    if (.true.) then
+        GenecStar%xn14(i) = xn14
+        set_xn14_at_zone = 0
+    end if
+end function set_xn14_at_zone
+
+integer function get_xn15_at_zone(index_of_the_particle, zone, xn15)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: zone
+    real(kindreal), intent(out):: xn15
+    integer:: i
+    get_xn15_at_zone = -1
+    i = GenecStar%m-zone
+    if (.true.) then
+        xn15 = GenecStar%xn15(i)
+        get_xn15_at_zone = 0
+    end if
+end function get_xn15_at_zone
+
+integer function set_xn15_at_zone(index_of_the_particle, zone, xn15)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: zone
+    real(kindreal), intent(in):: xn15
+    integer:: i
+    set_xn15_at_zone = -1
+    i = GenecStar%m-zone
+    if (.true.) then
+        GenecStar%xn15(i) = xn15
+        set_xn15_at_zone = 0
+    end if
+end function set_xn15_at_zone
+
+integer function get_xo16_at_zone(index_of_the_particle, zone, xo16)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: zone
+    real(kindreal), intent(out):: xo16
+    integer:: i
+    get_xo16_at_zone = -1
+    i = GenecStar%m-zone
+    if (.true.) then
+        xo16 = GenecStar%xo16(i)
+        get_xo16_at_zone = 0
+    end if
+end function get_xo16_at_zone
+
+integer function set_xo16_at_zone(index_of_the_particle, zone, xo16)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: zone
+    real(kindreal), intent(in):: xo16
+    integer:: i
+    set_xo16_at_zone = -1
+    i = GenecStar%m-zone
+    if (.true.) then
+        GenecStar%xo16(i) = xo16
+        set_xo16_at_zone = 0
+    end if
+end function set_xo16_at_zone
+
+integer function get_xo17_at_zone(index_of_the_particle, zone, xo17)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: zone
+    real(kindreal), intent(out):: xo17
+    integer:: i
+    get_xo17_at_zone = -1
+    i = GenecStar%m-zone
+    if (.true.) then
+        xo17 = GenecStar%xo17(i)
+        get_xo17_at_zone = 0
+    end if
+end function get_xo17_at_zone
+
+integer function set_xo17_at_zone(index_of_the_particle, zone, xo17)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: zone
+    real(kindreal), intent(in):: xo17
+    integer:: i
+    set_xo17_at_zone = -1
+    i = GenecStar%m-zone
+    if (.true.) then
+        GenecStar%xo17(i) = xo17
+        set_xo17_at_zone = 0
+    end if
+end function set_xo17_at_zone
+
+integer function get_xo18_at_zone(index_of_the_particle, zone, xo18)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: zone
+    real(kindreal), intent(out):: xo18
+    integer:: i
+    get_xo18_at_zone = -1
+    i = GenecStar%m-zone
+    if (.true.) then
+        xo18 = GenecStar%xo18(i)
+        get_xo18_at_zone = 0
+    end if
+end function get_xo18_at_zone
+
+integer function set_xo18_at_zone(index_of_the_particle, zone, xo18)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: zone
+    real(kindreal), intent(in):: xo18
+    integer:: i
+    set_xo18_at_zone = -1
+    i = GenecStar%m-zone
+    if (.true.) then
+        GenecStar%xo18(i) = xo18
+        set_xo18_at_zone = 0
+    end if
+end function set_xo18_at_zone
+
+integer function get_xne20_at_zone(index_of_the_particle, zone, xne20)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: zone
+    real(kindreal), intent(out):: xne20
+    integer:: i
+    get_xne20_at_zone = -1
+    i = GenecStar%m-zone
+    if (.true.) then
+        xne20 = GenecStar%xne20(i)
+        get_xne20_at_zone = 0
+    end if
+end function get_xne20_at_zone
+
+integer function set_xne20_at_zone(index_of_the_particle, zone, xne20)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: zone
+    real(kindreal), intent(in):: xne20
+    integer:: i
+    set_xne20_at_zone = -1
+    i = GenecStar%m-zone
+    if (.true.) then
+        GenecStar%xne20(i) = xne20
+        set_xne20_at_zone = 0
+    end if
+end function set_xne20_at_zone
+
+integer function get_xne22_at_zone(index_of_the_particle, zone, xne22)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: zone
+    real(kindreal), intent(out):: xne22
+    integer:: i
+    get_xne22_at_zone = -1
+    i = GenecStar%m-zone
+    if (.true.) then
+        xne22 = GenecStar%xne22(i)
+        get_xne22_at_zone = 0
+    end if
+end function get_xne22_at_zone
+
+integer function set_xne22_at_zone(index_of_the_particle, zone, xne22)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: zone
+    real(kindreal), intent(in):: xne22
+    integer:: i
+    set_xne22_at_zone = -1
+    i = GenecStar%m-zone
+    if (.true.) then
+        GenecStar%xne22(i) = xne22
+        set_xne22_at_zone = 0
+    end if
+end function set_xne22_at_zone
+
+integer function get_xmg24_at_zone(index_of_the_particle, zone, xmg24)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: zone
+    real(kindreal), intent(out):: xmg24
+    integer:: i
+    get_xmg24_at_zone = -1
+    i = GenecStar%m-zone
+    if (.true.) then
+        xmg24 = GenecStar%xmg24(i)
+        get_xmg24_at_zone = 0
+    end if
+end function get_xmg24_at_zone
+
+integer function set_xmg24_at_zone(index_of_the_particle, zone, xmg24)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: zone
+    real(kindreal), intent(in):: xmg24
+    integer:: i
+    set_xmg24_at_zone = -1
+    i = GenecStar%m-zone
+    if (.true.) then
+        GenecStar%xmg24(i) = xmg24
+        set_xmg24_at_zone = 0
+    end if
+end function set_xmg24_at_zone
+
+integer function get_xmg25_at_zone(index_of_the_particle, zone, xmg25)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: zone
+    real(kindreal), intent(out):: xmg25
+    integer:: i
+    get_xmg25_at_zone = -1
+    i = GenecStar%m-zone
+    if (.true.) then
+        xmg25 = GenecStar%xmg25(i)
+        get_xmg25_at_zone = 0
+    end if
+end function get_xmg25_at_zone
+
+integer function set_xmg25_at_zone(index_of_the_particle, zone, xmg25)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: zone
+    real(kindreal), intent(in):: xmg25
+    integer:: i
+    set_xmg25_at_zone = -1
+    i = GenecStar%m-zone
+    if (.true.) then
+        GenecStar%xmg25(i) = xmg25
+        set_xmg25_at_zone = 0
+    end if
+end function set_xmg25_at_zone
+
+integer function get_xmg26_at_zone(index_of_the_particle, zone, xmg26)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: zone
+    real(kindreal), intent(out):: xmg26
+    integer:: i
+    get_xmg26_at_zone = -1
+    i = GenecStar%m-zone
+    if (.true.) then
+        xmg26 = GenecStar%xmg26(i)
+        get_xmg26_at_zone = 0
+    end if
+end function get_xmg26_at_zone
+
+integer function set_xmg26_at_zone(index_of_the_particle, zone, xmg26)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: zone
+    real(kindreal), intent(in):: xmg26
+    integer:: i
+    set_xmg26_at_zone = -1
+    i = GenecStar%m-zone
+    if (.true.) then
+        GenecStar%xmg26(i) = xmg26
+        set_xmg26_at_zone = 0
+    end if
+end function set_xmg26_at_zone
+
+integer function get_xf19_at_zone(index_of_the_particle, zone, xf19)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: zone
+    real(kindreal), intent(out):: xf19
+    integer:: i
+    get_xf19_at_zone = -1
+    i = GenecStar%m-zone
+    if (.true.) then
+        xf19 = GenecStar%xf19(i)
+        get_xf19_at_zone = 0
+    end if
+end function get_xf19_at_zone
+
+integer function set_xf19_at_zone(index_of_the_particle, zone, xf19)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: zone
+    real(kindreal), intent(in):: xf19
+    integer:: i
+    set_xf19_at_zone = -1
+    i = GenecStar%m-zone
+    if (.true.) then
+        GenecStar%xf19(i) = xf19
+        set_xf19_at_zone = 0
+    end if
+end function set_xf19_at_zone
+
+integer function get_xne21_at_zone(index_of_the_particle, zone, xne21)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: zone
+    real(kindreal), intent(out):: xne21
+    integer:: i
+    get_xne21_at_zone = -1
+    i = GenecStar%m-zone
+    if (.true.) then
+        xne21 = GenecStar%xne21(i)
+        get_xne21_at_zone = 0
+    end if
+end function get_xne21_at_zone
+
+integer function set_xne21_at_zone(index_of_the_particle, zone, xne21)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: zone
+    real(kindreal), intent(in):: xne21
+    integer:: i
+    set_xne21_at_zone = -1
+    i = GenecStar%m-zone
+    if (.true.) then
+        GenecStar%xne21(i) = xne21
+        set_xne21_at_zone = 0
+    end if
+end function set_xne21_at_zone
+
+integer function get_xna23_at_zone(index_of_the_particle, zone, xna23)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: zone
+    real(kindreal), intent(out):: xna23
+    integer:: i
+    get_xna23_at_zone = -1
+    i = GenecStar%m-zone
+    if (.true.) then
+        xna23 = GenecStar%xna23(i)
+        get_xna23_at_zone = 0
+    end if
+end function get_xna23_at_zone
+
+integer function set_xna23_at_zone(index_of_the_particle, zone, xna23)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: zone
+    real(kindreal), intent(in):: xna23
+    integer:: i
+    set_xna23_at_zone = -1
+    i = GenecStar%m-zone
+    if (.true.) then
+        GenecStar%xna23(i) = xna23
+        set_xna23_at_zone = 0
+    end if
+end function set_xna23_at_zone
+
+integer function get_xal27_at_zone(index_of_the_particle, zone, xal27)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: zone
+    real(kindreal), intent(out):: xal27
+    integer:: i
+    get_xal27_at_zone = -1
+    i = GenecStar%m-zone
+    if (.true.) then
+        xal27 = GenecStar%xal27(i)
+        get_xal27_at_zone = 0
+    end if
+end function get_xal27_at_zone
+
+integer function set_xal27_at_zone(index_of_the_particle, zone, xal27)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: zone
+    real(kindreal), intent(in):: xal27
+    integer:: i
+    set_xal27_at_zone = -1
+    i = GenecStar%m-zone
+    if (.true.) then
+        GenecStar%xal27(i) = xal27
+        set_xal27_at_zone = 0
+    end if
+end function set_xal27_at_zone
+
+integer function get_xsi28_at_zone(index_of_the_particle, zone, xsi28)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: zone
+    real(kindreal), intent(out):: xsi28
+    integer:: i
+    get_xsi28_at_zone = -1
+    i = GenecStar%m-zone
+    if (.true.) then
+        xsi28 = GenecStar%xsi28(i)
+        get_xsi28_at_zone = 0
+    end if
+end function get_xsi28_at_zone
+
+integer function set_xsi28_at_zone(index_of_the_particle, zone, xsi28)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: zone
+    real(kindreal), intent(in):: xsi28
+    integer:: i
+    set_xsi28_at_zone = -1
+    i = GenecStar%m-zone
+    if (.true.) then
+        GenecStar%xsi28(i) = xsi28
+        set_xsi28_at_zone = 0
+    end if
+end function set_xsi28_at_zone
+
+integer function get_xc14_at_zone(index_of_the_particle, zone, xc14)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: zone
+    real(kindreal), intent(out):: xc14
+    integer:: i
+    get_xc14_at_zone = -1
+    i = GenecStar%m-zone
+    if (.true.) then
+        xc14 = GenecStar%xc14(i)
+        get_xc14_at_zone = 0
+    end if
+end function get_xc14_at_zone
+
+integer function set_xc14_at_zone(index_of_the_particle, zone, xc14)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: zone
+    real(kindreal), intent(in):: xc14
+    integer:: i
+    set_xc14_at_zone = -1
+    i = GenecStar%m-zone
+    if (.true.) then
+        GenecStar%xc14(i) = xc14
+        set_xc14_at_zone = 0
+    end if
+end function set_xc14_at_zone
+
+integer function get_xf18_at_zone(index_of_the_particle, zone, xf18)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: zone
+    real(kindreal), intent(out):: xf18
+    integer:: i
+    get_xf18_at_zone = -1
+    i = GenecStar%m-zone
+    if (.true.) then
+        xf18 = GenecStar%xf18(i)
+        get_xf18_at_zone = 0
+    end if
+end function get_xf18_at_zone
+
+integer function set_xf18_at_zone(index_of_the_particle, zone, xf18)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: zone
+    real(kindreal), intent(in):: xf18
+    integer:: i
+    set_xf18_at_zone = -1
+    i = GenecStar%m-zone
+    if (.true.) then
+        GenecStar%xf18(i) = xf18
+        set_xf18_at_zone = 0
+    end if
+end function set_xf18_at_zone
+
+integer function get_xal26_at_zone(index_of_the_particle, zone, xal26)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: zone
+    real(kindreal), intent(out):: xal26
+    integer:: i
+    get_xal26_at_zone = -1
+    i = GenecStar%m-zone
+    if (.true.) then
+        xal26 = GenecStar%xal26(i)
+        get_xal26_at_zone = 0
+    end if
+end function get_xal26_at_zone
+
+integer function set_xal26_at_zone(index_of_the_particle, zone, xal26)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: zone
+    real(kindreal), intent(in):: xal26
+    integer:: i
+    set_xal26_at_zone = -1
+    i = GenecStar%m-zone
+    if (.true.) then
+        GenecStar%xal26(i) = xal26
+        set_xal26_at_zone = 0
+    end if
+end function set_xal26_at_zone
+
+integer function get_xneut_at_zone(index_of_the_particle, zone, xneut)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: zone
+    real(kindreal), intent(out):: xneut
+    integer:: i
+    get_xneut_at_zone = -1
+    i = GenecStar%m-zone
+    if (.true.) then
+        xneut = GenecStar%xneut(i)
+        get_xneut_at_zone = 0
+    end if
+end function get_xneut_at_zone
+
+integer function set_xneut_at_zone(index_of_the_particle, zone, xneut)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: zone
+    real(kindreal), intent(in):: xneut
+    integer:: i
+    set_xneut_at_zone = -1
+    i = GenecStar%m-zone
+    if (.true.) then
+        GenecStar%xneut(i) = xneut
+        set_xneut_at_zone = 0
+    end if
+end function set_xneut_at_zone
+
+integer function get_xprot_at_zone(index_of_the_particle, zone, xprot)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: zone
+    real(kindreal), intent(out):: xprot
+    integer:: i
+    get_xprot_at_zone = -1
+    i = GenecStar%m-zone
+    if (.true.) then
+        xprot = GenecStar%xprot(i)
+        get_xprot_at_zone = 0
+    end if
+end function get_xprot_at_zone
+
+integer function set_xprot_at_zone(index_of_the_particle, zone, xprot)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: zone
+    real(kindreal), intent(in):: xprot
+    integer:: i
+    set_xprot_at_zone = -1
+    i = GenecStar%m-zone
+    if (.true.) then
+        GenecStar%xprot(i) = xprot
+        set_xprot_at_zone = 0
+    end if
+end function set_xprot_at_zone
+
+integer function get_omegi_at_zone(index_of_the_particle, zone, omegi)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: zone
+    real(kindreal), intent(out):: omegi
+    integer:: i
+    get_omegi_at_zone = -1
+    i = GenecStar%m-zone
+    if (.true.) then
+        omegi = GenecStar%omegi(i)
+        get_omegi_at_zone = 0
+    end if
+end function get_omegi_at_zone
+
+integer function set_omegi_at_zone(index_of_the_particle, zone, omegi)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: zone
+    real(kindreal), intent(in):: omegi
+    integer:: i
+    set_omegi_at_zone = -1
+    i = GenecStar%m-zone
+    if (.true.) then
+        GenecStar%omegi(i) = omegi
+        set_omegi_at_zone = 0
+    end if
+end function set_omegi_at_zone
+
+integer function get_xbid_at_zone(index_of_the_particle, zone, xbid)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: zone
+    real(kindreal), intent(out):: xbid
+    integer:: i
+    get_xbid_at_zone = -1
+    i = GenecStar%m-zone
+    if (.true.) then
+        xbid = GenecStar%xbid(i)
+        get_xbid_at_zone = 0
+    end if
+end function get_xbid_at_zone
+
+integer function set_xbid_at_zone(index_of_the_particle, zone, xbid)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: zone
+    real(kindreal), intent(in):: xbid
+    integer:: i
+    set_xbid_at_zone = -1
+    i = GenecStar%m-zone
+    if (.true.) then
+        GenecStar%xbid(i) = xbid
+        set_xbid_at_zone = 0
+    end if
+end function set_xbid_at_zone
+
+integer function get_xbid1_at_zone(index_of_the_particle, zone, xbid1)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: zone
+    real(kindreal), intent(out):: xbid1
+    integer:: i
+    get_xbid1_at_zone = -1
+    i = GenecStar%m-zone
+    if (.true.) then
+        xbid1 = GenecStar%xbid1(i)
+        get_xbid1_at_zone = 0
+    end if
+end function get_xbid1_at_zone
+
+integer function set_xbid1_at_zone(index_of_the_particle, zone, xbid1)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: zone
+    real(kindreal), intent(in):: xbid1
+    integer:: i
+    set_xbid1_at_zone = -1
+    i = GenecStar%m-zone
+    if (.true.) then
+        GenecStar%xbid1(i) = xbid1
+        set_xbid1_at_zone = 0
+    end if
+end function set_xbid1_at_zone
+
+integer function get_vp_at_zone(index_of_the_particle, zone, vp)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: zone
+    real(kindreal), intent(out):: vp
+    integer:: i
+    get_vp_at_zone = -1
+    i = GenecStar%m-zone
+    if (.true.) then
+        vp = GenecStar%vp(i)
+        get_vp_at_zone = 0
+    end if
+end function get_vp_at_zone
+
+integer function set_vp_at_zone(index_of_the_particle, zone, vp)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: zone
+    real(kindreal), intent(in):: vp
+    integer:: i
+    set_vp_at_zone = -1
+    i = GenecStar%m-zone
+    if (.true.) then
+        GenecStar%vp(i) = vp
+        set_vp_at_zone = 0
+    end if
+end function set_vp_at_zone
+
+integer function get_vt_at_zone(index_of_the_particle, zone, vt)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: zone
+    real(kindreal), intent(out):: vt
+    integer:: i
+    get_vt_at_zone = -1
+    i = GenecStar%m-zone
+    if (.true.) then
+        vt = GenecStar%vt(i)
+        get_vt_at_zone = 0
+    end if
+end function get_vt_at_zone
+
+integer function set_vt_at_zone(index_of_the_particle, zone, vt)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: zone
+    real(kindreal), intent(in):: vt
+    integer:: i
+    set_vt_at_zone = -1
+    i = GenecStar%m-zone
+    if (.true.) then
+        GenecStar%vt(i) = vt
+        set_vt_at_zone = 0
+    end if
+end function set_vt_at_zone
+
+integer function get_vr_at_zone(index_of_the_particle, zone, vr)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: zone
+    real(kindreal), intent(out):: vr
+    integer:: i
+    get_vr_at_zone = -1
+    i = GenecStar%m-zone
+    if (.true.) then
+        vr = GenecStar%vr(i)
+        get_vr_at_zone = 0
+    end if
+end function get_vr_at_zone
+
+integer function set_vr_at_zone(index_of_the_particle, zone, vr)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: zone
+    real(kindreal), intent(in):: vr
+    integer:: i
+    set_vr_at_zone = -1
+    i = GenecStar%m-zone
+    if (.true.) then
+        GenecStar%vr(i) = vr
+        set_vr_at_zone = 0
+    end if
+end function set_vr_at_zone
+
+integer function get_vs_at_zone(index_of_the_particle, zone, vs)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: zone
+    real(kindreal), intent(out):: vs
+    integer:: i
+    get_vs_at_zone = -1
+    i = GenecStar%m-zone
+    if (.true.) then
+        vs = GenecStar%vs(i)
+        get_vs_at_zone = 0
+    end if
+end function get_vs_at_zone
+
+integer function set_vs_at_zone(index_of_the_particle, zone, vs)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: zone
+    real(kindreal), intent(in):: vs
+    integer:: i
+    set_vs_at_zone = -1
+    i = GenecStar%m-zone
+    if (.true.) then
+        GenecStar%vs(i) = vs
+        set_vs_at_zone = 0
+    end if
+end function set_vs_at_zone
+
+integer function get_vx_at_zone(index_of_the_particle, zone, vx)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: zone
+    real(kindreal), intent(out):: vx
+    integer:: i
+    get_vx_at_zone = -1
+    i = GenecStar%m-zone
+    if (.true.) then
+        vx = GenecStar%vx(i)
+        get_vx_at_zone = 0
+    end if
+end function get_vx_at_zone
+
+integer function set_vx_at_zone(index_of_the_particle, zone, vx)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: zone
+    real(kindreal), intent(in):: vx
+    integer:: i
+    set_vx_at_zone = -1
+    i = GenecStar%m-zone
+    if (.true.) then
+        GenecStar%vx(i) = vx
+        set_vx_at_zone = 0
+    end if
+end function set_vx_at_zone
+
+integer function get_vy_at_zone(index_of_the_particle, zone, vy)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: zone
+    real(kindreal), intent(out):: vy
+    integer:: i
+    get_vy_at_zone = -1
+    i = GenecStar%m-zone
+    if (.true.) then
+        vy = GenecStar%vy(i)
+        get_vy_at_zone = 0
+    end if
+end function get_vy_at_zone
+
+integer function set_vy_at_zone(index_of_the_particle, zone, vy)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: zone
+    real(kindreal), intent(in):: vy
+    integer:: i
+    set_vy_at_zone = -1
+    i = GenecStar%m-zone
+    if (.true.) then
+        GenecStar%vy(i) = vy
+        set_vy_at_zone = 0
+    end if
+end function set_vy_at_zone
+
+integer function get_vy3_at_zone(index_of_the_particle, zone, vy3)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: zone
+    real(kindreal), intent(out):: vy3
+    integer:: i
+    get_vy3_at_zone = -1
+    i = GenecStar%m-zone
+    if (.true.) then
+        vy3 = GenecStar%vy3(i)
+        get_vy3_at_zone = 0
+    end if
+end function get_vy3_at_zone
+
+integer function set_vy3_at_zone(index_of_the_particle, zone, vy3)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: zone
+    real(kindreal), intent(in):: vy3
+    integer:: i
+    set_vy3_at_zone = -1
+    i = GenecStar%m-zone
+    if (.true.) then
+        GenecStar%vy3(i) = vy3
+        set_vy3_at_zone = 0
+    end if
+end function set_vy3_at_zone
+
+integer function get_vxc12_at_zone(index_of_the_particle, zone, vxc12)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: zone
+    real(kindreal), intent(out):: vxc12
+    integer:: i
+    get_vxc12_at_zone = -1
+    i = GenecStar%m-zone
+    if (.true.) then
+        vxc12 = GenecStar%vxc12(i)
+        get_vxc12_at_zone = 0
+    end if
+end function get_vxc12_at_zone
+
+integer function set_vxc12_at_zone(index_of_the_particle, zone, vxc12)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: zone
+    real(kindreal), intent(in):: vxc12
+    integer:: i
+    set_vxc12_at_zone = -1
+    i = GenecStar%m-zone
+    if (.true.) then
+        GenecStar%vxc12(i) = vxc12
+        set_vxc12_at_zone = 0
+    end if
+end function set_vxc12_at_zone
+
+integer function get_vxc13_at_zone(index_of_the_particle, zone, vxc13)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: zone
+    real(kindreal), intent(out):: vxc13
+    integer:: i
+    get_vxc13_at_zone = -1
+    i = GenecStar%m-zone
+    if (.true.) then
+        vxc13 = GenecStar%vxc13(i)
+        get_vxc13_at_zone = 0
+    end if
+end function get_vxc13_at_zone
+
+integer function set_vxc13_at_zone(index_of_the_particle, zone, vxc13)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: zone
+    real(kindreal), intent(in):: vxc13
+    integer:: i
+    set_vxc13_at_zone = -1
+    i = GenecStar%m-zone
+    if (.true.) then
+        GenecStar%vxc13(i) = vxc13
+        set_vxc13_at_zone = 0
+    end if
+end function set_vxc13_at_zone
+
+integer function get_vxn14_at_zone(index_of_the_particle, zone, vxn14)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: zone
+    real(kindreal), intent(out):: vxn14
+    integer:: i
+    get_vxn14_at_zone = -1
+    i = GenecStar%m-zone
+    if (.true.) then
+        vxn14 = GenecStar%vxn14(i)
+        get_vxn14_at_zone = 0
+    end if
+end function get_vxn14_at_zone
+
+integer function set_vxn14_at_zone(index_of_the_particle, zone, vxn14)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: zone
+    real(kindreal), intent(in):: vxn14
+    integer:: i
+    set_vxn14_at_zone = -1
+    i = GenecStar%m-zone
+    if (.true.) then
+        GenecStar%vxn14(i) = vxn14
+        set_vxn14_at_zone = 0
+    end if
+end function set_vxn14_at_zone
+
+integer function get_vxn15_at_zone(index_of_the_particle, zone, vxn15)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: zone
+    real(kindreal), intent(out):: vxn15
+    integer:: i
+    get_vxn15_at_zone = -1
+    i = GenecStar%m-zone
+    if (.true.) then
+        vxn15 = GenecStar%vxn15(i)
+        get_vxn15_at_zone = 0
+    end if
+end function get_vxn15_at_zone
+
+integer function set_vxn15_at_zone(index_of_the_particle, zone, vxn15)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: zone
+    real(kindreal), intent(in):: vxn15
+    integer:: i
+    set_vxn15_at_zone = -1
+    i = GenecStar%m-zone
+    if (.true.) then
+        GenecStar%vxn15(i) = vxn15
+        set_vxn15_at_zone = 0
+    end if
+end function set_vxn15_at_zone
+
+integer function get_vxo16_at_zone(index_of_the_particle, zone, vxo16)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: zone
+    real(kindreal), intent(out):: vxo16
+    integer:: i
+    get_vxo16_at_zone = -1
+    i = GenecStar%m-zone
+    if (.true.) then
+        vxo16 = GenecStar%vxo16(i)
+        get_vxo16_at_zone = 0
+    end if
+end function get_vxo16_at_zone
+
+integer function set_vxo16_at_zone(index_of_the_particle, zone, vxo16)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: zone
+    real(kindreal), intent(in):: vxo16
+    integer:: i
+    set_vxo16_at_zone = -1
+    i = GenecStar%m-zone
+    if (.true.) then
+        GenecStar%vxo16(i) = vxo16
+        set_vxo16_at_zone = 0
+    end if
+end function set_vxo16_at_zone
+
+integer function get_vxo17_at_zone(index_of_the_particle, zone, vxo17)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: zone
+    real(kindreal), intent(out):: vxo17
+    integer:: i
+    get_vxo17_at_zone = -1
+    i = GenecStar%m-zone
+    if (.true.) then
+        vxo17 = GenecStar%vxo17(i)
+        get_vxo17_at_zone = 0
+    end if
+end function get_vxo17_at_zone
+
+integer function set_vxo17_at_zone(index_of_the_particle, zone, vxo17)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: zone
+    real(kindreal), intent(in):: vxo17
+    integer:: i
+    set_vxo17_at_zone = -1
+    i = GenecStar%m-zone
+    if (.true.) then
+        GenecStar%vxo17(i) = vxo17
+        set_vxo17_at_zone = 0
+    end if
+end function set_vxo17_at_zone
+
+integer function get_vxo18_at_zone(index_of_the_particle, zone, vxo18)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: zone
+    real(kindreal), intent(out):: vxo18
+    integer:: i
+    get_vxo18_at_zone = -1
+    i = GenecStar%m-zone
+    if (.true.) then
+        vxo18 = GenecStar%vxo18(i)
+        get_vxo18_at_zone = 0
+    end if
+end function get_vxo18_at_zone
+
+integer function set_vxo18_at_zone(index_of_the_particle, zone, vxo18)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: zone
+    real(kindreal), intent(in):: vxo18
+    integer:: i
+    set_vxo18_at_zone = -1
+    i = GenecStar%m-zone
+    if (.true.) then
+        GenecStar%vxo18(i) = vxo18
+        set_vxo18_at_zone = 0
+    end if
+end function set_vxo18_at_zone
+
+integer function get_vxne20_at_zone(index_of_the_particle, zone, vxne20)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: zone
+    real(kindreal), intent(out):: vxne20
+    integer:: i
+    get_vxne20_at_zone = -1
+    i = GenecStar%m-zone
+    if (.true.) then
+        vxne20 = GenecStar%vxne20(i)
+        get_vxne20_at_zone = 0
+    end if
+end function get_vxne20_at_zone
+
+integer function set_vxne20_at_zone(index_of_the_particle, zone, vxne20)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: zone
+    real(kindreal), intent(in):: vxne20
+    integer:: i
+    set_vxne20_at_zone = -1
+    i = GenecStar%m-zone
+    if (.true.) then
+        GenecStar%vxne20(i) = vxne20
+        set_vxne20_at_zone = 0
+    end if
+end function set_vxne20_at_zone
+
+integer function get_vxne22_at_zone(index_of_the_particle, zone, vxne22)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: zone
+    real(kindreal), intent(out):: vxne22
+    integer:: i
+    get_vxne22_at_zone = -1
+    i = GenecStar%m-zone
+    if (.true.) then
+        vxne22 = GenecStar%vxne22(i)
+        get_vxne22_at_zone = 0
+    end if
+end function get_vxne22_at_zone
+
+integer function set_vxne22_at_zone(index_of_the_particle, zone, vxne22)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: zone
+    real(kindreal), intent(in):: vxne22
+    integer:: i
+    set_vxne22_at_zone = -1
+    i = GenecStar%m-zone
+    if (.true.) then
+        GenecStar%vxne22(i) = vxne22
+        set_vxne22_at_zone = 0
+    end if
+end function set_vxne22_at_zone
+
+integer function get_vxmg24_at_zone(index_of_the_particle, zone, vxmg24)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: zone
+    real(kindreal), intent(out):: vxmg24
+    integer:: i
+    get_vxmg24_at_zone = -1
+    i = GenecStar%m-zone
+    if (.true.) then
+        vxmg24 = GenecStar%vxmg24(i)
+        get_vxmg24_at_zone = 0
+    end if
+end function get_vxmg24_at_zone
+
+integer function set_vxmg24_at_zone(index_of_the_particle, zone, vxmg24)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: zone
+    real(kindreal), intent(in):: vxmg24
+    integer:: i
+    set_vxmg24_at_zone = -1
+    i = GenecStar%m-zone
+    if (.true.) then
+        GenecStar%vxmg24(i) = vxmg24
+        set_vxmg24_at_zone = 0
+    end if
+end function set_vxmg24_at_zone
+
+integer function get_vxmg25_at_zone(index_of_the_particle, zone, vxmg25)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: zone
+    real(kindreal), intent(out):: vxmg25
+    integer:: i
+    get_vxmg25_at_zone = -1
+    i = GenecStar%m-zone
+    if (.true.) then
+        vxmg25 = GenecStar%vxmg25(i)
+        get_vxmg25_at_zone = 0
+    end if
+end function get_vxmg25_at_zone
+
+integer function set_vxmg25_at_zone(index_of_the_particle, zone, vxmg25)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: zone
+    real(kindreal), intent(in):: vxmg25
+    integer:: i
+    set_vxmg25_at_zone = -1
+    i = GenecStar%m-zone
+    if (.true.) then
+        GenecStar%vxmg25(i) = vxmg25
+        set_vxmg25_at_zone = 0
+    end if
+end function set_vxmg25_at_zone
+
+integer function get_vxmg26_at_zone(index_of_the_particle, zone, vxmg26)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: zone
+    real(kindreal), intent(out):: vxmg26
+    integer:: i
+    get_vxmg26_at_zone = -1
+    i = GenecStar%m-zone
+    if (.true.) then
+        vxmg26 = GenecStar%vxmg26(i)
+        get_vxmg26_at_zone = 0
+    end if
+end function get_vxmg26_at_zone
+
+integer function set_vxmg26_at_zone(index_of_the_particle, zone, vxmg26)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: zone
+    real(kindreal), intent(in):: vxmg26
+    integer:: i
+    set_vxmg26_at_zone = -1
+    i = GenecStar%m-zone
+    if (.true.) then
+        GenecStar%vxmg26(i) = vxmg26
+        set_vxmg26_at_zone = 0
+    end if
+end function set_vxmg26_at_zone
+
+integer function get_vxf19_at_zone(index_of_the_particle, zone, vxf19)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: zone
+    real(kindreal), intent(out):: vxf19
+    integer:: i
+    get_vxf19_at_zone = -1
+    i = GenecStar%m-zone
+    if (.true.) then
+        vxf19 = GenecStar%vxf19(i)
+        get_vxf19_at_zone = 0
+    end if
+end function get_vxf19_at_zone
+
+integer function set_vxf19_at_zone(index_of_the_particle, zone, vxf19)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: zone
+    real(kindreal), intent(in):: vxf19
+    integer:: i
+    set_vxf19_at_zone = -1
+    i = GenecStar%m-zone
+    if (.true.) then
+        GenecStar%vxf19(i) = vxf19
+        set_vxf19_at_zone = 0
+    end if
+end function set_vxf19_at_zone
+
+integer function get_vxne21_at_zone(index_of_the_particle, zone, vxne21)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: zone
+    real(kindreal), intent(out):: vxne21
+    integer:: i
+    get_vxne21_at_zone = -1
+    i = GenecStar%m-zone
+    if (.true.) then
+        vxne21 = GenecStar%vxne21(i)
+        get_vxne21_at_zone = 0
+    end if
+end function get_vxne21_at_zone
+
+integer function set_vxne21_at_zone(index_of_the_particle, zone, vxne21)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: zone
+    real(kindreal), intent(in):: vxne21
+    integer:: i
+    set_vxne21_at_zone = -1
+    i = GenecStar%m-zone
+    if (.true.) then
+        GenecStar%vxne21(i) = vxne21
+        set_vxne21_at_zone = 0
+    end if
+end function set_vxne21_at_zone
+
+integer function get_vxna23_at_zone(index_of_the_particle, zone, vxna23)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: zone
+    real(kindreal), intent(out):: vxna23
+    integer:: i
+    get_vxna23_at_zone = -1
+    i = GenecStar%m-zone
+    if (.true.) then
+        vxna23 = GenecStar%vxna23(i)
+        get_vxna23_at_zone = 0
+    end if
+end function get_vxna23_at_zone
+
+integer function set_vxna23_at_zone(index_of_the_particle, zone, vxna23)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: zone
+    real(kindreal), intent(in):: vxna23
+    integer:: i
+    set_vxna23_at_zone = -1
+    i = GenecStar%m-zone
+    if (.true.) then
+        GenecStar%vxna23(i) = vxna23
+        set_vxna23_at_zone = 0
+    end if
+end function set_vxna23_at_zone
+
+integer function get_vxal27_at_zone(index_of_the_particle, zone, vxal27)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: zone
+    real(kindreal), intent(out):: vxal27
+    integer:: i
+    get_vxal27_at_zone = -1
+    i = GenecStar%m-zone
+    if (.true.) then
+        vxal27 = GenecStar%vxal27(i)
+        get_vxal27_at_zone = 0
+    end if
+end function get_vxal27_at_zone
+
+integer function set_vxal27_at_zone(index_of_the_particle, zone, vxal27)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: zone
+    real(kindreal), intent(in):: vxal27
+    integer:: i
+    set_vxal27_at_zone = -1
+    i = GenecStar%m-zone
+    if (.true.) then
+        GenecStar%vxal27(i) = vxal27
+        set_vxal27_at_zone = 0
+    end if
+end function set_vxal27_at_zone
+
+integer function get_vxsi28_at_zone(index_of_the_particle, zone, vxsi28)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: zone
+    real(kindreal), intent(out):: vxsi28
+    integer:: i
+    get_vxsi28_at_zone = -1
+    i = GenecStar%m-zone
+    if (.true.) then
+        vxsi28 = GenecStar%vxsi28(i)
+        get_vxsi28_at_zone = 0
+    end if
+end function get_vxsi28_at_zone
+
+integer function set_vxsi28_at_zone(index_of_the_particle, zone, vxsi28)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: zone
+    real(kindreal), intent(in):: vxsi28
+    integer:: i
+    set_vxsi28_at_zone = -1
+    i = GenecStar%m-zone
+    if (.true.) then
+        GenecStar%vxsi28(i) = vxsi28
+        set_vxsi28_at_zone = 0
+    end if
+end function set_vxsi28_at_zone
+
+integer function get_vxc14_at_zone(index_of_the_particle, zone, vxc14)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: zone
+    real(kindreal), intent(out):: vxc14
+    integer:: i
+    get_vxc14_at_zone = -1
+    i = GenecStar%m-zone
+    if (.true.) then
+        vxc14 = GenecStar%vxc14(i)
+        get_vxc14_at_zone = 0
+    end if
+end function get_vxc14_at_zone
+
+integer function set_vxc14_at_zone(index_of_the_particle, zone, vxc14)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: zone
+    real(kindreal), intent(in):: vxc14
+    integer:: i
+    set_vxc14_at_zone = -1
+    i = GenecStar%m-zone
+    if (.true.) then
+        GenecStar%vxc14(i) = vxc14
+        set_vxc14_at_zone = 0
+    end if
+end function set_vxc14_at_zone
+
+integer function get_vxf18_at_zone(index_of_the_particle, zone, vxf18)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: zone
+    real(kindreal), intent(out):: vxf18
+    integer:: i
+    get_vxf18_at_zone = -1
+    i = GenecStar%m-zone
+    if (.true.) then
+        vxf18 = GenecStar%vxf18(i)
+        get_vxf18_at_zone = 0
+    end if
+end function get_vxf18_at_zone
+
+integer function set_vxf18_at_zone(index_of_the_particle, zone, vxf18)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: zone
+    real(kindreal), intent(in):: vxf18
+    integer:: i
+    set_vxf18_at_zone = -1
+    i = GenecStar%m-zone
+    if (.true.) then
+        GenecStar%vxf18(i) = vxf18
+        set_vxf18_at_zone = 0
+    end if
+end function set_vxf18_at_zone
+
+integer function get_vxal26_at_zone(index_of_the_particle, zone, vxal26)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: zone
+    real(kindreal), intent(out):: vxal26
+    integer:: i
+    get_vxal26_at_zone = -1
+    i = GenecStar%m-zone
+    if (.true.) then
+        vxal26 = GenecStar%vxal26(i)
+        get_vxal26_at_zone = 0
+    end if
+end function get_vxal26_at_zone
+
+integer function set_vxal26_at_zone(index_of_the_particle, zone, vxal26)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: zone
+    real(kindreal), intent(in):: vxal26
+    integer:: i
+    set_vxal26_at_zone = -1
+    i = GenecStar%m-zone
+    if (.true.) then
+        GenecStar%vxal26(i) = vxal26
+        set_vxal26_at_zone = 0
+    end if
+end function set_vxal26_at_zone
+
+integer function get_vxneut_at_zone(index_of_the_particle, zone, vxneut)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: zone
+    real(kindreal), intent(out):: vxneut
+    integer:: i
+    get_vxneut_at_zone = -1
+    i = GenecStar%m-zone
+    if (.true.) then
+        vxneut = GenecStar%vxneut(i)
+        get_vxneut_at_zone = 0
+    end if
+end function get_vxneut_at_zone
+
+integer function set_vxneut_at_zone(index_of_the_particle, zone, vxneut)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: zone
+    real(kindreal), intent(in):: vxneut
+    integer:: i
+    set_vxneut_at_zone = -1
+    i = GenecStar%m-zone
+    if (.true.) then
+        GenecStar%vxneut(i) = vxneut
+        set_vxneut_at_zone = 0
+    end if
+end function set_vxneut_at_zone
+
+integer function get_vxprot_at_zone(index_of_the_particle, zone, vxprot)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: zone
+    real(kindreal), intent(out):: vxprot
+    integer:: i
+    get_vxprot_at_zone = -1
+    i = GenecStar%m-zone
+    if (.true.) then
+        vxprot = GenecStar%vxprot(i)
+        get_vxprot_at_zone = 0
+    end if
+end function get_vxprot_at_zone
+
+integer function set_vxprot_at_zone(index_of_the_particle, zone, vxprot)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: zone
+    real(kindreal), intent(in):: vxprot
+    integer:: i
+    set_vxprot_at_zone = -1
+    i = GenecStar%m-zone
+    if (.true.) then
+        GenecStar%vxprot(i) = vxprot
+        set_vxprot_at_zone = 0
+    end if
+end function set_vxprot_at_zone
+
+integer function get_vomegi_at_zone(index_of_the_particle, zone, vomegi)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: zone
+    real(kindreal), intent(out):: vomegi
+    integer:: i
+    get_vomegi_at_zone = -1
+    i = GenecStar%m-zone
+    if (.true.) then
+        vomegi = GenecStar%vomegi(i)
+        get_vomegi_at_zone = 0
+    end if
+end function get_vomegi_at_zone
+
+integer function set_vomegi_at_zone(index_of_the_particle, zone, vomegi)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: zone
+    real(kindreal), intent(in):: vomegi
+    integer:: i
+    set_vomegi_at_zone = -1
+    i = GenecStar%m-zone
+    if (.true.) then
+        GenecStar%vomegi(i) = vomegi
+        set_vomegi_at_zone = 0
+    end if
+end function set_vomegi_at_zone
+
+integer function get_vxbid_at_zone(index_of_the_particle, zone, vxbid)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: zone
+    real(kindreal), intent(out):: vxbid
+    integer:: i
+    get_vxbid_at_zone = -1
+    i = GenecStar%m-zone
+    if (.true.) then
+        vxbid = GenecStar%vxbid(i)
+        get_vxbid_at_zone = 0
+    end if
+end function get_vxbid_at_zone
+
+integer function set_vxbid_at_zone(index_of_the_particle, zone, vxbid)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: zone
+    real(kindreal), intent(in):: vxbid
+    integer:: i
+    set_vxbid_at_zone = -1
+    i = GenecStar%m-zone
+    if (.true.) then
+        GenecStar%vxbid(i) = vxbid
+        set_vxbid_at_zone = 0
+    end if
+end function set_vxbid_at_zone
+
+integer function get_vxbid1_at_zone(index_of_the_particle, zone, vxbid1)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: zone
+    real(kindreal), intent(out):: vxbid1
+    integer:: i
+    get_vxbid1_at_zone = -1
+    i = GenecStar%m-zone
+    if (.true.) then
+        vxbid1 = GenecStar%vxbid1(i)
+        get_vxbid1_at_zone = 0
+    end if
+end function get_vxbid1_at_zone
+
+integer function set_vxbid1_at_zone(index_of_the_particle, zone, vxbid1)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: zone
+    real(kindreal), intent(in):: vxbid1
+    integer:: i
+    set_vxbid1_at_zone = -1
+    i = GenecStar%m-zone
+    if (.true.) then
+        GenecStar%vxbid1(i) = vxbid1
+        set_vxbid1_at_zone = 0
+    end if
+end function set_vxbid1_at_zone
+
+integer function get_abelx_at_zone(index_of_the_particle, zone, element, abelx)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: zone
+    integer, intent(in):: element
+    real(kindreal), intent(out):: abelx
+    integer:: i
+    get_abelx_at_zone = -1
+    i = GenecStar%m-zone
+    if (.true.) then
+        abelx = GenecStar%abelx(element,i)
+        get_abelx_at_zone = 0
+    end if
+end function get_abelx_at_zone
+
+integer function set_abelx_at_zone(index_of_the_particle, zone, element, abelx)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: zone
+    integer, intent(in):: element
+    real(kindreal), intent(in):: abelx
+    integer:: i
+    set_abelx_at_zone = -1
+    i = GenecStar%m-zone
+    if (.true.) then
+        GenecStar%abelx(element,i) = abelx
+        set_abelx_at_zone = 0
+    end if
+end function set_abelx_at_zone
+
+integer function get_vabelx_at_zone(index_of_the_particle, zone, element, vabelx)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: zone
+    integer, intent(in):: element
+    real(kindreal), intent(out):: vabelx
+    integer:: i
+    get_vabelx_at_zone = -1
+    i = GenecStar%m-zone
+    if (.true.) then
+        vabelx = GenecStar%vabelx(element,i)
+        get_vabelx_at_zone = 0
+    end if
+end function get_vabelx_at_zone
+
+integer function set_vabelx_at_zone(index_of_the_particle, zone, element, vabelx)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: zone
+    integer, intent(in):: element
+    real(kindreal), intent(in):: vabelx
+    integer:: i
+    set_vabelx_at_zone = -1
+    i = GenecStar%m-zone
+    if (.true.) then
+        GenecStar%vabelx(element,i) = vabelx
+        set_vabelx_at_zone = 0
+    end if
+end function set_vabelx_at_zone
+
+integer function get_eps_at_zone(index_of_the_particle, zone, eps)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: zone
+    real(kindreal), intent(out):: eps
+    integer:: i
+    get_eps_at_zone = -1
+    i = GenecStar%m-zone
+    if (.true.) then
         eps = GenecStar%eps(i)
+        get_eps_at_zone = 0
     end if
-    get_eps_at_zone = 0
-end function
+end function get_eps_at_zone
 
-function get_epsy_at_zone(index_of_the_star, zone, epsy)
+integer function get_epsy_at_zone(index_of_the_particle, zone, epsy)
     implicit none
-    integer:: index_of_the_star
-    integer:: zone, i
-    real(kindreal):: epsy
-    integer:: get_epsy_at_zone
-    i = GenecStar%m - zone
-    if (zone <= GenecStar%m) then
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: zone
+    real(kindreal), intent(out):: epsy
+    integer:: i
+    get_epsy_at_zone = -1
+    i = GenecStar%m-zone
+    if (.true.) then
         epsy = GenecStar%epsy(i)
+        get_epsy_at_zone = 0
     end if
-    get_epsy_at_zone = 0
-end function
+end function get_epsy_at_zone
 
-function get_eps_c_adv_at_zone(index_of_the_star, zone, eps_c_adv)
+integer function get_eps_c_adv_at_zone(index_of_the_particle, zone, eps_c_adv)
     implicit none
-    integer:: index_of_the_star
-    integer:: zone, i
-    real(kindreal):: eps_c_adv
-    integer:: get_eps_c_adv_at_zone
-    i = GenecStar%m - zone
-    if (zone <= GenecStar%m) then
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: zone
+    real(kindreal), intent(out):: eps_c_adv
+    integer:: i
+    get_eps_c_adv_at_zone = -1
+    i = GenecStar%m-zone
+    if (.true.) then
         eps_c_adv = GenecStar%eps_c_adv(i)
+        get_eps_c_adv_at_zone = 0
     end if
-    get_eps_c_adv_at_zone = 0
-end function
+end function get_eps_c_adv_at_zone
 
-function get_eps_ne_adv_at_zone(index_of_the_star, zone, eps_ne_adv)
+integer function get_eps_ne_adv_at_zone(index_of_the_particle, zone, eps_ne_adv)
     implicit none
-    integer:: index_of_the_star
-    integer:: zone, i
-    real(kindreal):: eps_ne_adv
-    integer:: get_eps_ne_adv_at_zone
-    i = GenecStar%m - zone
-    if (zone <= GenecStar%m) then
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: zone
+    real(kindreal), intent(out):: eps_ne_adv
+    integer:: i
+    get_eps_ne_adv_at_zone = -1
+    i = GenecStar%m-zone
+    if (.true.) then
         eps_ne_adv = GenecStar%eps_ne_adv(i)
+        get_eps_ne_adv_at_zone = 0
     end if
-    get_eps_ne_adv_at_zone = 0
-end function
+end function get_eps_ne_adv_at_zone
 
-function get_eps_o_adv_at_zone(index_of_the_star, zone, eps_o_adv)
+integer function get_eps_o_adv_at_zone(index_of_the_particle, zone, eps_o_adv)
     implicit none
-    integer:: index_of_the_star
-    integer:: zone, i
-    real(kindreal):: eps_o_adv
-    integer:: get_eps_o_adv_at_zone
-    i = GenecStar%m - zone
-    if (zone <= GenecStar%m) then
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: zone
+    real(kindreal), intent(out):: eps_o_adv
+    integer:: i
+    get_eps_o_adv_at_zone = -1
+    i = GenecStar%m-zone
+    if (.true.) then
         eps_o_adv = GenecStar%eps_o_adv(i)
+        get_eps_o_adv_at_zone = 0
     end if
-    get_eps_o_adv_at_zone = 0
-end function
+end function get_eps_o_adv_at_zone
 
-function get_eps_si_adv_at_zone(index_of_the_star, zone, eps_si_adv)
+integer function get_eps_si_adv_at_zone(index_of_the_particle, zone, eps_si_adv)
     implicit none
-    integer:: index_of_the_star
-    integer:: zone, i
-    real(kindreal):: eps_si_adv
-    integer:: get_eps_si_adv_at_zone
-    i = GenecStar%m - zone
-    if (zone <= GenecStar%m) then
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: zone
+    real(kindreal), intent(out):: eps_si_adv
+    integer:: i
+    get_eps_si_adv_at_zone = -1
+    i = GenecStar%m-zone
+    if (.true.) then
         eps_si_adv = GenecStar%eps_si_adv(i)
+        get_eps_si_adv_at_zone = 0
     end if
-    get_eps_si_adv_at_zone = 0
-end function
+end function get_eps_si_adv_at_zone
 
-function get_eps_grav_at_zone(index_of_the_star, zone, eps_grav)
+integer function get_eps_grav_at_zone(index_of_the_particle, zone, eps_grav)
     implicit none
-    integer:: index_of_the_star
-    integer:: zone, i
-    real(kindreal):: eps_grav
-    integer:: get_eps_grav_at_zone
-    i = GenecStar%m - zone
-    if (zone <= GenecStar%m) then
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: zone
+    real(kindreal), intent(out):: eps_grav
+    integer:: i
+    get_eps_grav_at_zone = -1
+    i = GenecStar%m-zone
+    if (.true.) then
         eps_grav = GenecStar%eps_grav(i)
+        get_eps_grav_at_zone = 0
     end if
-    get_eps_grav_at_zone = 0
-end function
+end function get_eps_grav_at_zone
 
-function get_eps_nu_at_zone(index_of_the_star, zone, eps_nu)
+integer function get_eps_nu_at_zone(index_of_the_particle, zone, eps_nu)
     implicit none
-    integer:: index_of_the_star
-    integer:: zone, i
-    real(kindreal):: eps_nu
-    integer:: get_eps_nu_at_zone
-    i = GenecStar%m - zone
-    if (zone <= GenecStar%m) then
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: zone
+    real(kindreal), intent(out):: eps_nu
+    integer:: i
+    get_eps_nu_at_zone = -1
+    i = GenecStar%m-zone
+    if (.true.) then
         eps_nu = GenecStar%eps_nu(i)
+        get_eps_nu_at_zone = 0
     end if
-    get_eps_nu_at_zone = 0
-end function
+end function get_eps_nu_at_zone
 
-function get_nabla_rad_at_zone(index_of_the_star, zone, nabla_rad)
+integer function get_nabla_rad_at_zone(index_of_the_particle, zone, nabla_rad)
     implicit none
-    integer:: index_of_the_star
-    integer:: zone, i
-    real(kindreal):: nabla_rad
-    integer:: get_nabla_rad_at_zone
-    i = GenecStar%m - zone
-    if (zone <= GenecStar%m) then
-        nabla_rad = GenecStar%Nabla_rad(i)
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: zone
+    real(kindreal), intent(out):: nabla_rad
+    integer:: i
+    get_nabla_rad_at_zone = -1
+    i = GenecStar%m-zone
+    if (.true.) then
+        nabla_rad = GenecStar%nabla_rad(i)
+        get_nabla_rad_at_zone = 0
     end if
-    get_nabla_rad_at_zone = 0
-end function
+end function get_nabla_rad_at_zone
 
-function get_nabla_ad_at_zone(index_of_the_star, zone, nabla_ad)
+integer function get_nabla_ad_at_zone(index_of_the_particle, zone, nabla_ad)
     implicit none
-    integer:: index_of_the_star
-    integer:: zone, i
-    real(kindreal):: nabla_ad
-    integer:: get_nabla_ad_at_zone
-    i = GenecStar%m - zone
-    if (zone <= GenecStar%m) then
-        nabla_ad = GenecStar%Nabla_ad(i)
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: zone
+    real(kindreal), intent(out):: nabla_ad
+    integer:: i
+    get_nabla_ad_at_zone = -1
+    i = GenecStar%m-zone
+    if (.true.) then
+        nabla_ad = GenecStar%nabla_ad(i)
+        get_nabla_ad_at_zone = 0
     end if
-    get_nabla_ad_at_zone = 0
-end function
+end function get_nabla_ad_at_zone
 
-function get_nabla_mu_at_zone(index_of_the_star, zone, nabla_mu)
+integer function get_nabla_mu_at_zone(index_of_the_particle, zone, nabla_mu)
     implicit none
-    integer:: index_of_the_star
-    integer:: zone, i
-    real(kindreal):: nabla_mu
-    integer:: get_nabla_mu_at_zone
-    i = GenecStar%m - zone
-    if (zone <= GenecStar%m) then
-        nabla_mu = GenecStar%Nabla_mu(i)
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: zone
+    real(kindreal), intent(out):: nabla_mu
+    integer:: i
+    get_nabla_mu_at_zone = -1
+    i = GenecStar%m-zone
+    if (.true.) then
+        nabla_mu = GenecStar%nabla_mu(i)
+        get_nabla_mu_at_zone = 0
     end if
-    get_nabla_mu_at_zone = 0
-end function
+end function get_nabla_mu_at_zone
 
-function get_radius_at_zone(index_of_the_star, zone, R_i)
+integer function get_xlostneu(index_of_the_particle, xlostneu)
     implicit none
-    integer:: index_of_the_star
-    integer:: zone, i
-    real(kindreal):: R_i
-    integer:: get_radius_at_zone
-    i = GenecStar%m - zone
-    if (zone <= GenecStar%m) then
-        R_i = exp(GenecStar%r(i))  ! in cm
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(out):: xlostneu
+    xlostneu = GenecStar%xlostneu
+    get_xlostneu = 0
+end function get_xlostneu
+
+integer function set_xlostneu(index_of_the_particle, xlostneu)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(in):: xlostneu
+    GenecStar%xlostneu = xlostneu
+    set_xlostneu = 0
+end function set_xlostneu
+
+integer function get_nbzel(index_of_the_particle, i, nbzel)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: i
+    integer, intent(out):: nbzel
+    get_nbzel = -1
+    if ((i > 0) .and. (i < 9)) then
+        nbzel = GenecStar%nbzel(i)
+        get_nbzel = 0
     end if
-    get_radius_at_zone = 0
-end function
+end function get_nbzel
 
-function set_radius_at_zone(index_of_the_star, zone, R_i)
+integer function set_nbzel(index_of_the_particle, i, nbzel)
     implicit none
-    integer:: index_of_the_star
-    integer:: zone, i
-    real(kindreal):: R_i
-    integer:: set_radius_at_zone
-    i = GenecStar%m - zone
-    if (zone <= GenecStar%m) then
-        GenecStar%r(i) = log(R_i)
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: i
+    integer, intent(in):: nbzel
+    set_nbzel = -1
+    if ((i > 0) .and. (i < 9)) then
+        GenecStar%nbzel(i) = nbzel
+        set_nbzel = 0
     end if
-    set_radius_at_zone = 0
-end function
+end function set_nbzel
 
-function get_stellar_type(index_of_the_star, stellar_type)
+integer function get_nbael(index_of_the_particle, i, nbael)
     implicit none
-    integer:: index_of_the_star
-    integer:: stellar_type
-    integer:: get_stellar_type
-    get_stellar_type = -1
-end function
-
-function get_temperature(index_of_the_star, temperature)
-    implicit none
-    integer:: index_of_the_star
-    real(kindreal):: temperature
-    integer:: get_temperature
-    temperature = GenecStar%teff
-    get_temperature = 0
-end function
-
-function get_temperature_at_zone(index_of_the_star, zone, T_i)
-    implicit none
-    integer:: index_of_the_star
-    integer:: zone, i
-    real(kindreal):: T_i
-    integer:: get_temperature_at_zone
-    i = GenecStar%m - zone
-    if (zone <= GenecStar%m) then
-        T_i = exp(GenecStar%t(i))
-    else
-        get_temperature_at_zone = -2
-        return
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: i
+    integer, intent(out):: nbael
+    get_nbael = -1
+    if ((i > 0) .and. (i < 9)) then
+        nbael = GenecStar%nbael(i)
+        get_nbael = 0
     end if
-    get_temperature_at_zone = 0
-end function
+end function get_nbael
 
-function get_time_step(index_of_the_star, time_step)
+integer function set_nbael(index_of_the_particle, i, nbael)
     implicit none
-    integer:: index_of_the_star
-    real(kindreal):: time_step
-    integer:: get_time_step
-    time_step = GenecStar%dzeitj
-    get_time_step = 0
-end function
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: i
+    integer, intent(in):: nbael
+    set_nbael = -1
+    if ((i > 0) .and. (i < 9)) then
+        GenecStar%nbael(i) = nbael
+        set_nbael = 0
+    end if
+end function set_nbael
 
-function get_time(time)
+integer function get_abels(index_of_the_particle, i, abels)
     implicit none
-    real(kindreal):: time
-    integer:: get_time
-    time = GenecStar%alter
-    get_time = 0
-end function
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: i
+    real(kindreal), intent(out):: abels
+    get_abels = -1
+    if ((i > 0) .and. (i < 9)) then
+        abels = GenecStar%abels(i)
+        get_abels = 0
+    end if
+end function get_abels
 
-
-
-
-
-function new_particle(index_of_the_star, mass, metallicity, am_starname)
+integer function set_abels(index_of_the_particle, i, abels)
     implicit none
-    integer:: index_of_the_star, key
-    real(kindreal):: mass, metallicity
-    integer:: new_particle
-    character(len=12):: am_starname
-    number_of_stars = number_of_stars + 1
-    InitialGenecStar%starname = am_starname
-    InitialGenecStar%index_of_the_star = number_of_stars
-    InitialGenecStar%mstar = mass
-    InitialGenecStar%zini = metallicity
-    InitialGenecStar%idefaut = 1
-    
-    new_particle = 0
-end function
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: i
+    real(kindreal), intent(in):: abels
+    set_abels = -1
+    if ((i > 0) .and. (i < 9)) then
+        GenecStar%abels(i) = abels
+        set_abels = 0
+    end if
+end function set_abels
+
+integer function get_xnetalu(index_of_the_particle, i, xnetalu)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: i
+    real(kindreal), intent(out):: xnetalu
+    get_xnetalu = -1
+    if ((i > 0) .and. (i < 6)) then
+        xnetalu = GenecStar%xnetalu(i)
+        get_xnetalu = 0
+    end if
+end function get_xnetalu
+
+integer function set_xnetalu(index_of_the_particle, i, xnetalu)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: i
+    real(kindreal), intent(in):: xnetalu
+    set_xnetalu = -1
+    if ((i > 0) .and. (i < 6)) then
+        GenecStar%xnetalu(i) = xnetalu
+        set_xnetalu = 0
+    end if
+end function set_xnetalu
 
 function new_stellar_model(&
-      integer_of_the_star,&
-      initialised, starname, nwseq, modanf, nzmod, end_at_phase, end_at_model, irot, isol, imagn, ialflu, ianiso, ipop3,&
-      ibasnet, phase, var_rates, bintide, binm2, periodini, const_per, iprezams, zinit, zsol, z, iopac, ikappa, idiff, iadvec,&
-      istati, icoeff, fenerg, richac, igamma, frein, K_Kawaler, Omega_saturation, rapcrilim, vwant, xfom, omega, xdial, idialo,&
-      idialu, Add_Flux, diff_only, B_initial, add_diff, n_mag, alpha_F, nsmooth, qminsmooth, imloss, fmlos, ifitm, fitm, fitmi,&
-      deltal, deltat, nndr, RSG_Mdot, SupraEddMdot, Be_mdotfrac, start_mdot, iledou, idifcon, iover, elph, my, dovhp, iunder,&
-      dunder, gkorm, alph, agdr, faktor, dgrp, dgrl, dgry, dgrc, dgro, dgr20, nbchx, nrband, xcn, islow, icncst, tauH_fit,&
-      display_plot, iauto, iprn, iout, itmin, xyfiles, idebug, itests, verbose, stop_deg, n_snap,&
-      m,gms,alter,gls,teff,glsv,teffv,dzeitj,dzeit,dzeitv,xmini,summas,ab,dm_lost,&
-      q,p,t,r,s,x,y3,y,xc12,xc13,xn14,xn15,xo16,xo17,xo18,xne20,xne22,xmg24,xmg25,xmg26,xf19,xne21,xna23,xal27,xsi28,&
-      xc14,xf18,xal26,xneut,xprot,omegi,xbid,xbid1,vp,vt,vr,vs,vx,vy,vy3,vxc12,vxc13,vxn14,vxn15,vxo16,vxo17,vxo18,&
-      vxne20,vxne22,vxmg24,vxmg25,vxmg26,vxf19,vxne21,vxna23,vxal27,vxsi28,vxc14,vxf18,vxal26g,vxneut,vxprot,vomegi,&
-      vxbid,vxbid1&
+      index_of_the_star,&
+      initialised,veryFirst,starname,nwmd,nwseq,modanf,nzmod,end_at_phase,end_at_model,&
+      irot,isol,imagn,&
+      ialflu,ianiso,ipop3,ibasnet,phase,var_rates,bintide,binm2,periodini,const_per,iprezams,zinit,&
+      zsol,z,iopac,ikappa,idiff,iadvec,istati,icoeff,fenerg,richac,igamma,frein,K_Kawaler,&
+      Omega_saturation,rapcrilim,vwant,xfom,omega,xdial,idialo,idialu,Add_Flux,diff_only,B_initial,&
+      add_diff,n_mag,alpha_F,nsmooth,qminsmooth,imloss,fmlos,ifitm,fitm,fitmi,deltal,deltat,nndr,&
+      RSG_Mdot,SupraEddMdot,Be_mdotfrac,start_mdot,iledou,idifcon,iover,elph,my,dovhp,iunder,&
+      dunder,gkorm,alph,agdr,faktor,dgrp,dgrl,dgry,dgrc,dgro,dgr20,nbchx,nrband,xcn,islow,icncst,&
+      tauH_fit,display_plot,iauto,iprn,iout,itmin,xyfiles,idebug,itests,verbose,stop_deg,n_snap,m,&
+      gms,alter,gls,teff,glsv,teffv,dzeitj,dzeit,dzeitv,xmini,summas,ab,dm_lost,mbelx,xtefflast,&
+      xllast,xrholast,xclast,xtclast,inum,nsugi,period,r_core,vna,vnr,q,p,t,r,s,x,y3,y,xc12,xc13,&
+      xn14,xn15,xo16,xo17,xo18,xne20,xne22,xmg24,xmg25,xmg26,xf19,xne21,xna23,xal27,xsi28,xc14,&
+      xf18,xal26,xneut,xprot,omegi,xbid,xbid1,vp,vt,vr,vs,vx,vy,vy3,vxc12,vxc13,vxn14,vxn15,vxo16,&
+      vxo17,vxo18,vxne20,vxne22,vxmg24,vxmg25,vxmg26,vxf19,vxne21,vxna23,vxal27,vxsi28,vxc14,vxf18,&
+      vxal26,vxneut,vxprot,vomegi,vxbid,vxbid1,&
+      xlostneu,&
+      n&
       )
     implicit none
-    integer:: integer_of_the_star
+    integer:: index_of_the_star, n
+
     logical, intent(in):: &
-            initialised,var_rates,bintide,const_per,Add_Flux,diff_only,qminsmooth,SupraEddMdot,display_plot,xyfiles,verbose,&
-            stop_deg
+             initialised, veryFirst
+    character(256), intent(in):: &
+             starname
     integer, intent(in):: &
-            nwseq,modanf,nzmod,end_at_phase,end_at_model,irot,isol,imagn,ialflu,ianiso,ipop3,ibasnet,phase,iprezams,iopac,ikappa,&
-            idiff,iadvec,istati,icoeff,igamma,idialo,idialu,n_mag,nsmooth,imloss,ifitm,nndr,RSG_Mdot,iledou,idifcon,iover,my,&
-            iunder,nbchx,nrband,islow,icncst,tauH_fit,iauto,iprn,iout,itmin,idebug,itests,n_snap
+             nwmd,nwseq,modanf,nzmod,end_at_phase,end_at_model,irot,isol,imagn,&
+             ialflu,ianiso,ipop3,ibasnet,phase
+    logical, intent(in):: &
+             var_rates,bintide
     real(kindreal), intent(in):: &
-            binm2,periodini,zinit,zsol,z,fenerg,richac,frein,K_Kawaler,Omega_saturation,rapcrilim,vwant,xfom,omega,xdial,&
-            B_initial,add_diff,alpha_F,fmlos,fitm,fitmi,deltal,deltat,Be_mdotfrac,start_mdot,elph,dovhp,dunder,gkorm,alph,&
-            agdr,faktor,dgrp,dgrl,dgry,dgrc,dgro,dgr20,xcn
-    character(len=200), intent(in):: &
-            starname
-    integer, intent(in) :: m
-    real(kindreal), intent(in) :: &
-            gms,alter,gls,teff,glsv,teffv,dzeitj,dzeit,dzeitv,xmini,summas,ab,&
-            dm_lost
-    !real(kindreal), dimension(ldi) :: &
+             binm2,periodini
+    logical, intent(in):: &
+             const_per
+    integer, intent(in):: &
+             iprezams
+    real(kindreal), intent(in):: &
+             zinit,&
+             zsol,z
+    integer, intent(in):: &
+             iopac,ikappa,idiff,iadvec,istati,icoeff
+    real(kindreal), intent(in):: &
+             fenerg,richac
+    integer, intent(in):: &
+             igamma
+    real(kindreal), intent(in):: &
+             frein,K_Kawaler,&
+             Omega_saturation,rapcrilim,vwant,xfom,omega,xdial
+    integer, intent(in):: &
+             idialo,idialu
+    logical, intent(in):: &
+             Add_Flux,diff_only
+    real(kindreal), intent(in):: &
+             B_initial,&
+             add_diff
+    integer, intent(in):: &
+             n_mag
+    real(kindreal), intent(in):: &
+             alpha_F
+    integer, intent(in):: &
+             nsmooth
+    logical, intent(in):: &
+             qminsmooth
+    integer, intent(in):: &
+             imloss
+    real(kindreal), intent(in):: &
+             fmlos
+    integer, intent(in):: &
+             ifitm
+    real(kindreal), intent(in):: &
+             fitm,fitmi,deltal,deltat
+    integer, intent(in):: &
+             nndr,&
+             RSG_Mdot
+    logical, intent(in):: &
+             SupraEddMdot
+    real(kindreal), intent(in):: &
+             Be_mdotfrac,start_mdot
+    integer, intent(in):: &
+             iledou,idifcon,iover
+    real(kindreal), intent(in):: &
+             elph
+    integer, intent(in):: &
+             my
+    real(kindreal), intent(in):: &
+             dovhp
+    integer, intent(in):: &
+             iunder
+    real(kindreal), intent(in):: &
+             dunder,&
+             gkorm,alph,agdr,faktor,dgrp,dgrl,dgry,dgrc,dgro,dgr20
+    integer, intent(in):: &
+             nbchx,nrband
+    real(kindreal), intent(in):: &
+             xcn
+    integer, intent(in):: &
+             islow,icncst,&
+             tauH_fit
+    logical, intent(in):: &
+             display_plot
+    integer, intent(in):: &
+             iauto,iprn,iout,itmin
+    logical, intent(in):: &
+             xyfiles
+    integer, intent(in):: &
+             idebug,itests
+    logical, intent(in):: &
+             verbose,stop_deg
+    integer, intent(in):: &
+             n_snap,m
+    real(kindreal), intent(in):: &
+             gms,&
+             alter,gls,teff,glsv,teffv,dzeitj,dzeit,dzeitv,xmini,summas,ab,dm_lost
+    integer, intent(in):: &
+             mbelx
+    real(kindreal), intent(in):: &
+             xtefflast,&
+             xllast,xrholast,xclast,xtclast
+    integer, intent(in):: &
+             inum,nsugi
+    real(kindreal), intent(in):: &
+             period,r_core,vna,vnr
     real(kindreal), dimension(m), intent(in):: &
-            q,p,t,r,s,x,y3,y,xc12,xc13,xn14,xn15,xo16,xo17,xo18,xne20,xne22,xmg24,xmg25,xmg26,xf19,xne21,xna23,xal27,xsi28,&
-            xc14,xf18,xal26,xneut,xprot,omegi,xbid,xbid1,vp,vt,vr,vs,vx,vy,vy3,vxc12,vxc13,vxn14,vxn15,vxo16,vxo17,vxo18,&
-            vxne20,vxne22,vxmg24,vxmg25,vxmg26,vxf19,vxne21,vxna23,vxal27,vxsi28,vxc14,vxf18,vxal26g,vxneut,vxprot,vomegi,&
-            vxbid,vxbid1
+             q,p,t,r,s,x,y3,y,xc12,&
+             xc13,xn14,xn15,xo16,xo17,xo18,xne20,xne22,xmg24,xmg25,xmg26,xf19,xne21,xna23,xal27,&
+             xsi28,xc14,xf18,xal26,xneut,xprot,omegi,xbid,xbid1,vp,vt,vr,vs,vx,vy,vy3,vxc12,vxc13,&
+             vxn14,vxn15,vxo16,vxo17,vxo18,vxne20,vxne22,vxmg24,vxmg25,vxmg26,vxf19,vxne21,vxna23,&
+             vxal27,vxsi28,vxc14,vxf18,vxal26,vxneut,vxprot,vomegi,vxbid,vxbid1
+    real(kindreal), intent(in):: &
+            xlostneu
+            
     integer:: new_stellar_model
 
-    GenecStar%initialised      = initialised
-    GenecStar%starname         = starname
-    !GenecStar%nwmd             = nwmd
-    GenecStar%nwseq            = nwseq            
-    GenecStar%modanf           = modanf
-    GenecStar%nzmod            = nzmod
-    GenecStar%end_at_phase     = end_at_phase
-    GenecStar%end_at_model     = end_at_model
-    GenecStar%irot             = irot
-    GenecStar%isol             = isol
-    GenecStar%imagn            = imagn
-    GenecStar%ialflu           = ialflu
-    GenecStar%ianiso           = ianiso
-    GenecStar%ipop3            = ipop3
-    GenecStar%ibasnet          = ibasnet
-    GenecStar%phase            = phase
-    GenecStar%iprezams         = iprezams
-    GenecStar%var_rates        = var_rates
-    GenecStar%bintide          = bintide
-    GenecStar%binm2            = binm2
-    GenecStar%periodini        = periodini
-    GenecStar%const_per        = const_per
-    GenecStar%iopac            = iopac
-    GenecStar%ikappa           = ikappa
-    GenecStar%zinit            = zinit
-    GenecStar%zsol             = zsol
-    GenecStar%z                = z
-    GenecStar%idiff            = idiff
-    GenecStar%iadvec           = iadvec
-    GenecStar%istati           = istati
-    GenecStar%icoeff           = icoeff
-    GenecStar%igamma           = igamma
-    GenecStar%idialo           = idialo
-    GenecStar%idialu           = idialu
-    GenecStar%n_mag            = n_mag
-    GenecStar%nsmooth          = nsmooth
-    GenecStar%fenerg           = fenerg
-    GenecStar%richac           = richac
-    GenecStar%frein            = frein
-    GenecStar%K_Kawaler        = K_Kawaler
+    write(*,*) "*****N: ", n
+
+    GenecStar%initialised = initialised
+    GenecStar%starname = starname
+    GenecStar%nwmd = nwmd
+    GenecStar%nwseq = nwseq
+    GenecStar%modanf = modanf
+    GenecStar%nzmod = nzmod
+    GenecStar%end_at_phase = end_at_phase
+    GenecStar%end_at_model = end_at_model
+    GenecStar%irot = irot
+    GenecStar%isol = isol
+    GenecStar%imagn = imagn
+    GenecStar%ialflu = ialflu
+    GenecStar%ianiso = ianiso
+    GenecStar%ipop3 = ipop3
+    GenecStar%ibasnet = ibasnet
+    GenecStar%phase = phase
+    GenecStar%var_rates = var_rates
+    GenecStar%bintide = bintide
+    GenecStar%binm2 = binm2
+    GenecStar%periodini = periodini
+    GenecStar%const_per = const_per
+    GenecStar%iprezams = iprezams
+    GenecStar%zinit = zinit
+    GenecStar%zsol = zsol
+    GenecStar%z = z
+    GenecStar%iopac = iopac
+    GenecStar%ikappa = ikappa
+    GenecStar%idiff = idiff
+    GenecStar%iadvec = iadvec
+    GenecStar%istati = istati
+    GenecStar%icoeff = icoeff
+    GenecStar%fenerg = fenerg
+    GenecStar%richac = richac
+    GenecStar%igamma = igamma
+    GenecStar%frein = frein
+    GenecStar%K_Kawaler = K_Kawaler
     GenecStar%Omega_saturation = Omega_saturation
-    GenecStar%rapcrilim        = rapcrilim
-    GenecStar%vwant            = vwant
-    GenecStar%xfom             = xfom
-    GenecStar%omega            = omega
-    GenecStar%xdial            = xdial
-    GenecStar%B_initial        = B_initial
-    GenecStar%add_diff         = add_diff
-    GenecStar%alpha_F          = alpha_F
-    GenecStar%Add_Flux         = Add_Flux
-    GenecStar%diff_only        = diff_only
-    GenecStar%qminsmooth       = qminsmooth
-    GenecStar%imloss           = imloss
-    GenecStar%ifitm            = ifitm
-    GenecStar%nndr             = nndr
-    GenecStar%RSG_Mdot         = RSG_Mdot
-    GenecStar%fmlos            = fmlos
-    GenecStar%fitm             = fitm
-    GenecStar%fitmi            = fitmi
-    GenecStar%deltal           = deltal
-    GenecStar%deltat           = deltat
-    GenecStar%Be_mdotfrac      = Be_mdotfrac
-    GenecStar%start_mdot       = start_mdot
-    GenecStar%SupraEddMdot     = SupraEddMdot
-    GenecStar%iledou           = iledou
-    GenecStar%idifcon          = idifcon
-    GenecStar%my               = my
-    GenecStar%iover            = iover
-    GenecStar%iunder           = iunder
-    GenecStar%elph             = elph
-    GenecStar%dovhp            = dovhp
-    GenecStar%dunder           = dunder
-    GenecStar%nbchx            = nbchx
-    GenecStar%nrband           = nrband
-    GenecStar%gkorm            = gkorm
-    GenecStar%alph             = alph
-    GenecStar%agdr             = agdr
-    GenecStar%faktor           = faktor
-    GenecStar%dgrp             = dgrp
-    GenecStar%dgrl             = dgrl
-    GenecStar%dgry             = dgry
-    GenecStar%dgrc             = dgrc
-    GenecStar%dgro             = dgro
-    GenecStar%dgr20            = dgr20
-    GenecStar%islow            = islow
-    GenecStar%icncst           = icncst
-    GenecStar%tauH_fit         = tauH_fit
-    GenecStar%xcn              = xcn
-    GenecStar%iauto            = iauto
-    GenecStar%iprn             = iprn
-    GenecStar%iout             = iout
-    GenecStar%itmin            = itmin
-    GenecStar%idebug           = idebug
-    GenecStar%itests           = itests
-    GenecStar%n_snap           = n_snap
-    GenecStar%display_plot     = display_plot
-    GenecStar%xyfiles          = xyfiles
-    GenecStar%verbose          = verbose
-    GenecStar%stop_deg         = stop_deg
+    GenecStar%rapcrilim = rapcrilim
+    GenecStar%vwant = vwant
+    GenecStar%xfom = xfom
+    GenecStar%omega = omega
+    GenecStar%xdial = xdial
+    GenecStar%idialo = idialo
+    GenecStar%idialu = idialu
+    GenecStar%Add_Flux = Add_Flux
+    GenecStar%diff_only = diff_only
+    GenecStar%B_initial = B_initial
+    GenecStar%add_diff = add_diff
+    GenecStar%n_mag = n_mag
+    GenecStar%alpha_F = alpha_F
+    GenecStar%nsmooth = nsmooth
+    GenecStar%qminsmooth = qminsmooth
+    GenecStar%imloss = imloss
+    GenecStar%fmlos = fmlos
+    GenecStar%ifitm = ifitm
+    GenecStar%fitm = fitm
+    GenecStar%fitmi = fitmi
+    GenecStar%deltal = deltal
+    GenecStar%deltat = deltat
+    GenecStar%nndr = nndr
+    GenecStar%RSG_Mdot = RSG_Mdot
+    GenecStar%SupraEddMdot = SupraEddMdot
+    GenecStar%Be_mdotfrac = Be_mdotfrac
+    GenecStar%start_mdot = start_mdot
+    GenecStar%iledou = iledou
+    GenecStar%idifcon = idifcon
+    GenecStar%iover = iover
+    GenecStar%elph = elph
+    GenecStar%my = my
+    GenecStar%dovhp = dovhp
+    GenecStar%iunder = iunder
+    GenecStar%dunder = dunder
+    GenecStar%gkorm = gkorm
+    GenecStar%alph = alph
+    GenecStar%agdr = agdr
+    GenecStar%faktor = faktor
+    GenecStar%dgrp = dgrp
+    GenecStar%dgrl = dgrl
+    GenecStar%dgry = dgry
+    GenecStar%dgrc = dgrc
+    GenecStar%dgro = dgro
+    GenecStar%dgr20 = dgr20
+    GenecStar%nbchx = nbchx
+    GenecStar%nrband = nrband
+    GenecStar%xcn = xcn
+    GenecStar%islow = islow
+    GenecStar%icncst = icncst
+    GenecStar%tauH_fit = tauH_fit
+    GenecStar%display_plot = display_plot
+    GenecStar%iauto = iauto
+    GenecStar%iprn = iprn
+    GenecStar%iout = iout
+    GenecStar%itmin = itmin
+    GenecStar%xyfiles = xyfiles
+    GenecStar%idebug = idebug
+    GenecStar%itests = itests
+    GenecStar%verbose = verbose
+    GenecStar%stop_deg = stop_deg
+    GenecStar%n_snap = n_snap
+    GenecStar%m = m
+    GenecStar%gms = gms
+    GenecStar%alter = alter
+    GenecStar%gls = gls
+    GenecStar%teff = teff
+    GenecStar%glsv = glsv
+    GenecStar%teffv = teffv
+    GenecStar%dzeitj = dzeitj
+    GenecStar%dzeit = dzeit
+    GenecStar%dzeitv = dzeitv
+    GenecStar%xmini = xmini
+    GenecStar%summas = summas
+    GenecStar%ab = ab
+    GenecStar%dm_lost = dm_lost
+    GenecStar%mbelx = mbelx
+    GenecStar%xtefflast = xtefflast
+    GenecStar%xllast = xllast
+    GenecStar%xrholast = xrholast
+    GenecStar%xclast = xclast
+    GenecStar%xtclast = xtclast
+    GenecStar%inum = inum
+    GenecStar%nsugi = nsugi
+    GenecStar%period = period
+    GenecStar%r_core = r_core
+    GenecStar%vna = vna
+    GenecStar%vnr = vnr
+    GenecStar%xlostneu = xlostneu
+    GenecStar%q = 0.d0
+    GenecStar%q = q
+    GenecStar%p = 0.d0
+    GenecStar%p = p
+    GenecStar%t = 0.d0
+    GenecStar%t = t
+    GenecStar%r = 0.d0
+    GenecStar%r = r
+    GenecStar%s = 0.d0
+    GenecStar%s = s
+    GenecStar%x = 0.d0
+    GenecStar%x = x
+    GenecStar%y3 = 0.d0
+    GenecStar%y3 = y3
+    GenecStar%y = 0.d0
+    GenecStar%y = y
+    GenecStar%xc12 = 0.d0
+    GenecStar%xc12 = xc12
+    GenecStar%xc13 = 0.d0
+    GenecStar%xc13 = xc13
+    GenecStar%xn14 = 0.d0
+    GenecStar%xn14 = xn14
+    GenecStar%xn15 = 0.d0
+    GenecStar%xn15 = xn15
+    GenecStar%xo16 = 0.d0
+    GenecStar%xo16 = xo16
+    GenecStar%xo17 = 0.d0
+    GenecStar%xo17 = xo17
+    GenecStar%xo18 = 0.d0
+    GenecStar%xo18 = xo18
+    GenecStar%xne20 = 0.d0
+    GenecStar%xne20 = xne20
+    GenecStar%xne22 = 0.d0
+    GenecStar%xne22 = xne22
+    GenecStar%xmg24 = 0.d0
+    GenecStar%xmg24 = xmg24
+    GenecStar%xmg25 = 0.d0
+    GenecStar%xmg25 = xmg25
+    GenecStar%xmg26 = 0.d0
+    GenecStar%xmg26 = xmg26
+    GenecStar%xf19 = 0.d0
+    GenecStar%xf19 = xf19
+    GenecStar%xne21 = 0.d0
+    GenecStar%xne21 = xne21
+    GenecStar%xna23 = 0.d0
+    GenecStar%xna23 = xna23
+    GenecStar%xal27 = 0.d0
+    GenecStar%xal27 = xal27
+    GenecStar%xsi28 = 0.d0
+    GenecStar%xsi28 = xsi28
+    GenecStar%xc14 = 0.d0
+    GenecStar%xc14 = xc14
+    GenecStar%xf18 = 0.d0
+    GenecStar%xf18 = xf18
+    GenecStar%xal26 = 0.d0
+    GenecStar%xal26 = xal26
+    GenecStar%xneut = 0.d0
+    GenecStar%xneut = xneut
+    GenecStar%xprot = 0.d0
+    GenecStar%xprot = xprot
+    GenecStar%omegi = 0.d0
+    GenecStar%omegi = omegi
+    GenecStar%xbid = 0.d0
+    GenecStar%xbid = xbid
+    GenecStar%xbid1 = 0.d0
+    GenecStar%xbid1 = xbid1
+    GenecStar%vp = 0.d0
+    GenecStar%vp = vp
+    GenecStar%vt = 0.d0
+    GenecStar%vt = vt
+    GenecStar%vr = 0.d0
+    GenecStar%vr = vr
+    GenecStar%vs = 0.d0
+    GenecStar%vs = vs
+    GenecStar%vx = 0.d0
+    GenecStar%vx = vx
+    GenecStar%vy = 0.d0
+    GenecStar%vy = vy
+    GenecStar%vy3 = 0.d0
+    GenecStar%vy3 = vy3
+    GenecStar%vxc12 = 0.d0
+    GenecStar%vxc12 = vxc12
+    GenecStar%vxc13 = 0.d0
+    GenecStar%vxc13 = vxc13
+    GenecStar%vxn14 = 0.d0
+    GenecStar%vxn14 = vxn14
+    GenecStar%vxn15 = 0.d0
+    GenecStar%vxn15 = vxn15
+    GenecStar%vxo16 = 0.d0
+    GenecStar%vxo16 = vxo16
+    GenecStar%vxo17 = 0.d0
+    GenecStar%vxo17 = vxo17
+    GenecStar%vxo18 = 0.d0
+    GenecStar%vxo18 = vxo18
+    GenecStar%vxne20 = 0.d0
+    GenecStar%vxne20 = vxne20
+    GenecStar%vxne22 = 0.d0
+    GenecStar%vxne22 = vxne22
+    GenecStar%vxmg24 = 0.d0
+    GenecStar%vxmg24 = vxmg24
+    GenecStar%vxmg25 = 0.d0
+    GenecStar%vxmg25 = vxmg25
+    GenecStar%vxmg26 = 0.d0
+    GenecStar%vxmg26 = vxmg26
+    GenecStar%vxf19 = 0.d0
+    GenecStar%vxf19 = vxf19
+    GenecStar%vxne21 = 0.d0
+    GenecStar%vxne21 = vxne21
+    GenecStar%vxna23 = 0.d0
+    GenecStar%vxna23 = vxna23
+    GenecStar%vxal27 = 0.d0
+    GenecStar%vxal27 = vxal27
+    GenecStar%vxsi28 = 0.d0
+    GenecStar%vxsi28 = vxsi28
+    GenecStar%vxc14 = 0.d0
+    GenecStar%vxc14 = vxc14
+    GenecStar%vxf18 = 0.d0
+    GenecStar%vxf18 = vxf18
+    GenecStar%vxal26 = 0.d0
+    GenecStar%vxal26 = vxal26
+    GenecStar%vxneut = 0.d0
+    GenecStar%vxneut = vxneut
+    GenecStar%vxprot = 0.d0
+    GenecStar%vxprot = vxprot
+    GenecStar%vomegi = 0.d0
+    GenecStar%vomegi = vomegi
+    GenecStar%vxbid = 0.d0
+    GenecStar%vxbid = vxbid
+    GenecStar%vxbid1 = 0.d0
+    GenecStar%vxbid1 = vxbid1
+    GenecStar%abelx(:,:) = 0.
+    GenecStar%vabelx(:,:) = 0.
 
-    GenecStar%m                = m
-    GenecStar%gms              = gms
-    GenecStar%alter            = alter
-    GenecStar%gls              = gls
-    GenecStar%teff             = teff
-    GenecStar%glsv             = glsv
-    GenecStar%teffv            = teffv
-    GenecStar%dzeitj           = dzeitj
-    GenecStar%dzeit            = dzeit
-    GenecStar%dzeitv           = dzeitv
-    GenecStar%summas           = summas
-    GenecStar%xmini            = xmini
-    GenecStar%ab               = ab
-    GenecStar%dm_lost          = dm_lost
-    GenecStar%q                = q
-    GenecStar%p                = p
-    GenecStar%t                = t
-    GenecStar%r                = r
-    GenecStar%s                = s
-    GenecStar%x                = x
-    GenecStar%y                = y
-    GenecStar%xc12             = xc12
-    GenecStar%vp               = vp
-    GenecStar%vt               = vt
-    GenecStar%vr               = vr
-    GenecStar%vs               = vs
-    GenecStar%xo16             = xo16
-    GenecStar%vx               = vx
-    GenecStar%vy               = vy
-    GenecStar%vxc12            = vxc12
-    GenecStar%vxo16            = vxo16
-    GenecStar%y3               = y3
-    GenecStar%xc13             = xc13
-    GenecStar%xn14             = xn14
-    GenecStar%xn15             = xn15
-    GenecStar%xo17             = xo17
-    GenecStar%xo18             = xo18
-    GenecStar%vy3              = vy3
-    GenecStar%vxc13            = vxc13
-    GenecStar%vxn14            = vxn14
-    GenecStar%vxn15            = vxn15
-    GenecStar%vxo17            = vxo17
-    GenecStar%vxo18            = vxo18
-    GenecStar%xne20            = xne20
-    GenecStar%xne22            = xne22
-    GenecStar%xmg24            = xmg24
-    GenecStar%xmg25            = xmg25
-    GenecStar%xmg26            = xmg26
-    GenecStar%vxne20           = vxne20
-    GenecStar%vxne22           = vxne22
-    GenecStar%vxmg24           = vxmg24
-    GenecStar%vxmg25           = vxmg25
-    GenecStar%vxmg26           = vxmg26
-    GenecStar%omegi            = omegi
-    GenecStar%vomegi           = vomegi
-    GenecStar%xf19             = xf19
-    GenecStar%xne21            = xne21
-    GenecStar%xna23            = xna23
-    GenecStar%xal26            = xal26
-    GenecStar%xal27            = xal27
-    GenecStar%xsi28            = xsi28
-    GenecStar%vxf19            = vxf19
-    GenecStar%vxne21           = vxne21
-    GenecStar%vxna23           = vxna23
-    GenecStar%vxal26g          = vxal26g
-    GenecStar%vxal27           = vxal27
-    GenecStar%vxsi28           = vxsi28
-    GenecStar%xneut            = xneut
-    GenecStar%xprot            = xprot
-    GenecStar%xc14             = xc14
-    GenecStar%xf18             = xf18
-    GenecStar%xbid             = xbid
-    GenecStar%xbid1            = xbid1
-    GenecStar%vxneut           = vxneut
-    GenecStar%vxprot           = vxprot
-    GenecStar%vxc14            = vxc14
-    GenecStar%vxf18            = vxf18
-    GenecStar%vxbid            = vxbid
-    GenecStar%vxbid1           = vxbid1
-
+    call copy_from_genec_star(GenecStar)
     new_stellar_model = 0
-end function
+end function new_stellar_model
 
-function get_stellar_model(&
-      integer_of_the_star,&
-      initialised, starname, nwseq, modanf, nzmod, end_at_phase, end_at_model, irot, isol, imagn, ialflu, ianiso, ipop3,&
-      ibasnet, phase, var_rates, bintide, binm2, periodini, const_per, iprezams, zinit, zsol, z, iopac, ikappa, idiff, iadvec,&
-      istati, icoeff, fenerg, richac, igamma, frein, K_Kawaler, Omega_saturation, rapcrilim, vwant, xfom, omega, xdial, idialo,&
-      idialu, Add_Flux, diff_only, B_initial, add_diff, n_mag, alpha_F, nsmooth, qminsmooth, imloss, fmlos, ifitm, fitm, fitmi,&
-      deltal, deltat, nndr, RSG_Mdot, SupraEddMdot, Be_mdotfrac, start_mdot, iledou, idifcon, iover, elph, my, dovhp, iunder,&
-      dunder, gkorm, alph, agdr, faktor, dgrp, dgrl, dgry, dgrc, dgro, dgr20, nbchx, nrband, xcn, islow, icncst, tauH_fit,&
-      display_plot, iauto, iprn, iout, itmin, xyfiles, idebug, itests, verbose, stop_deg, n_snap,&
-      m,gms,alter,gls,teff,glsv,teffv,dzeitj,dzeit,dzeitv,xmini,summas,ab,dm_lost,&
-      q,p,t,r,s,x,y3,y,xc12,xc13,xn14,xn15,xo16,xo17,xo18,xne20,xne22,xmg24,xmg25,xmg26,xf19,xne21,xna23,xal27,xsi28,&
-      xc14,xf18,xal26,xneut,xprot,omegi,xbid,xbid1,vp,vt,vr,vs,vx,vy,vy3,vxc12,vxc13,vxn14,vxn15,vxo16,vxo17,vxo18,&
-      vxne20,vxne22,vxmg24,vxmg25,vxmg26,vxf19,vxne21,vxna23,vxal27,vxsi28,vxc14,vxf18,vxal26g,vxneut,vxprot,vomegi,&
-      vxbid,vxbid1&
-      )
-    implicit none
-    integer:: integer_of_the_star
-    logical, intent(out):: &
-            initialised,var_rates,bintide,const_per,Add_Flux,diff_only,qminsmooth,SupraEddMdot,display_plot,xyfiles,verbose,&
-            stop_deg
-    integer, intent(out):: &
-            nwseq,modanf,nzmod,end_at_phase,end_at_model,irot,isol,imagn,ialflu,ianiso,ipop3,ibasnet,phase,iprezams,iopac,ikappa,&
-            idiff,iadvec,istati,icoeff,igamma,idialo,idialu,n_mag,nsmooth,imloss,ifitm,nndr,RSG_Mdot,iledou,idifcon,iover,my,&
-            iunder,nbchx,nrband,islow,icncst,tauH_fit,iauto,iprn,iout,itmin,idebug,itests,n_snap
-    real(kindreal), intent(out):: &
-            binm2,periodini,zinit,zsol,z,fenerg,richac,frein,K_Kawaler,Omega_saturation,rapcrilim,vwant,xfom,omega,xdial,&
-            B_initial,add_diff,alpha_F,fmlos,fitm,fitmi,deltal,deltat,Be_mdotfrac,start_mdot,elph,dovhp,dunder,gkorm,alph,&
-            agdr,faktor,dgrp,dgrl,dgry,dgrc,dgro,dgr20,xcn
-    character(len=200), intent(out):: &
-            starname
-    integer, intent(out) :: m
-    real(kindreal), intent(out) :: &
-            gms,alter,gls,teff,glsv,teffv,dzeitj,dzeit,dzeitv,xmini,summas,ab,&
-            dm_lost
-    real(kindreal), dimension(GenecStar%m), intent(out):: &
-            q,p,t,r,s,x,y3,y,xc12,xc13,xn14,xn15,xo16,xo17,xo18,xne20,xne22,xmg24,xmg25,xmg26,xf19,xne21,xna23,xal27,xsi28,&
-            xc14,xf18,xal26,xneut,xprot,omegi,xbid,xbid1,vp,vt,vr,vs,vx,vy,vy3,vxc12,vxc13,vxn14,vxn15,vxo16,vxo17,vxo18,&
-            vxne20,vxne22,vxmg24,vxmg25,vxmg26,vxf19,vxne21,vxna23,vxal27,vxsi28,vxc14,vxf18,vxal26g,vxneut,vxprot,vomegi,&
-            vxbid,vxbid1
-    integer:: get_stellar_model
 
-    initialised      = GenecStar%initialised
-    starname         = GenecStar%starname
-    nwseq            = GenecStar%nwseq            
-    modanf           = GenecStar%modanf
-    nzmod            = GenecStar%nzmod
-    end_at_phase     = GenecStar%end_at_phase
-    end_at_model     = GenecStar%end_at_model
-    irot             = GenecStar%irot
-    isol             = GenecStar%isol
-    imagn            = GenecStar%imagn
-    ialflu           = GenecStar%ialflu
-    ianiso           = GenecStar%ianiso
-    ipop3            = GenecStar%ipop3
-    ibasnet          = GenecStar%ibasnet
-    phase            = GenecStar%phase
-    iprezams         = GenecStar%iprezams
-    var_rates        = GenecStar%var_rates
-    bintide          = GenecStar%bintide
-    binm2            = GenecStar%binm2
-    periodini        = GenecStar%periodini
-    const_per        = GenecStar%const_per
-    iopac            = GenecStar%iopac
-    ikappa           = GenecStar%ikappa
-    zinit            = GenecStar%zinit
-    zsol             = GenecStar%zsol
-    z                = GenecStar%z
-    idiff            = GenecStar%idiff
-    iadvec           = GenecStar%iadvec
-    istati           = GenecStar%istati
-    icoeff           = GenecStar%icoeff
-    igamma           = GenecStar%igamma
-    idialo           = GenecStar%idialo
-    idialu           = GenecStar%idialu
-    n_mag            = GenecStar%n_mag
-    nsmooth          = GenecStar%nsmooth
-    fenerg           = GenecStar%fenerg
-    richac           = GenecStar%richac
-    frein            = GenecStar%frein
-    K_Kawaler        = GenecStar%K_Kawaler
-    Omega_saturation = GenecStar%Omega_saturation
-    rapcrilim        = GenecStar%rapcrilim
-    vwant            = GenecStar%vwant
-    xfom             = GenecStar%xfom
-    omega            = GenecStar%omega
-    xdial            = GenecStar%xdial
-    B_initial        = GenecStar%B_initial
-    add_diff         = GenecStar%add_diff
-    alpha_F          = GenecStar%alpha_F
-    Add_Flux         = GenecStar%Add_Flux
-    diff_only        = GenecStar%diff_only
-    qminsmooth       = GenecStar%qminsmooth
-    imloss           = GenecStar%imloss
-    ifitm            = GenecStar%ifitm
-    nndr             = GenecStar%nndr
-    RSG_Mdot         = GenecStar%RSG_Mdot
-    fmlos            = GenecStar%fmlos
-    fitm             = GenecStar%fitm
-    fitmi            = GenecStar%fitmi
-    deltal           = GenecStar%deltal
-    deltat           = GenecStar%deltat
-    Be_mdotfrac      = GenecStar%Be_mdotfrac
-    start_mdot       = GenecStar%start_mdot
-    SupraEddMdot     = GenecStar%SupraEddMdot
-    iledou           = GenecStar%iledou
-    idifcon          = GenecStar%idifcon
-    my               = GenecStar%my
-    iover            = GenecStar%iover
-    iunder           = GenecStar%iunder
-    elph             = GenecStar%elph
-    dovhp            = GenecStar%dovhp
-    dunder           = GenecStar%dunder
-    nbchx            = GenecStar%nbchx
-    nrband           = GenecStar%nrband
-    gkorm            = GenecStar%gkorm
-    alph             = GenecStar%alph
-    agdr             = GenecStar%agdr
-    faktor           = GenecStar%faktor
-    dgrp             = GenecStar%dgrp
-    dgrl             = GenecStar%dgrl
-    dgry             = GenecStar%dgry
-    dgrc             = GenecStar%dgrc
-    dgro             = GenecStar%dgro
-    dgr20            = GenecStar%dgr20
-    islow            = GenecStar%islow
-    icncst           = GenecStar%icncst
-    tauH_fit         = GenecStar%tauH_fit
-    xcn              = GenecStar%xcn
-    iauto            = GenecStar%iauto
-    iprn             = GenecStar%iprn
-    iout             = GenecStar%iout
-    itmin            = GenecStar%itmin
-    idebug           = GenecStar%idebug
-    itests           = GenecStar%itests
-    n_snap           = GenecStar%n_snap
-    display_plot     = GenecStar%display_plot
-    xyfiles          = GenecStar%xyfiles
-    verbose          = GenecStar%verbose
-    stop_deg         = GenecStar%stop_deg
-                                 
-    m                = GenecStar%m
-    gms              = GenecStar%gms
-    alter            = GenecStar%alter
-    gls              = GenecStar%gls
-    teff             = GenecStar%teff
-    glsv             = GenecStar%glsv
-    teffv            = GenecStar%teffv
-    dzeitj           = GenecStar%dzeitj
-    dzeit            = GenecStar%dzeit
-    dzeitv           = GenecStar%dzeitv
-    summas           = GenecStar%summas
-    xmini            = GenecStar%xmini
-    ab               = GenecStar%ab
-    dm_lost          = GenecStar%dm_lost
-    q                = GenecStar%q
-    p                = GenecStar%p
-    t                = GenecStar%t
-    r                = GenecStar%r
-    s                = GenecStar%s
-    x                = GenecStar%x
-    y                = GenecStar%y
-    xc12             = GenecStar%xc12
-    vp               = GenecStar%vp
-    vt               = GenecStar%vt
-    vr               = GenecStar%vr
-    vs               = GenecStar%vs
-    xo16             = GenecStar%xo16
-    vx               = GenecStar%vx
-    vy               = GenecStar%vy
-    vxc12            = GenecStar%vxc12
-    vxo16            = GenecStar%vxo16
-    y3               = GenecStar%y3
-    xc13             = GenecStar%xc13
-    xn14             = GenecStar%xn14
-    xn15             = GenecStar%xn15
-    xo17             = GenecStar%xo17
-    xo18             = GenecStar%xo18
-    vy3              = GenecStar%vy3
-    vxc13            = GenecStar%vxc13
-    vxn14            = GenecStar%vxn14
-    vxn15            = GenecStar%vxn15
-    vxo17            = GenecStar%vxo17
-    vxo18            = GenecStar%vxo18
-    xne20            = GenecStar%xne20
-    xne22            = GenecStar%xne22
-    xmg24            = GenecStar%xmg24
-    xmg25            = GenecStar%xmg25
-    xmg26            = GenecStar%xmg26
-    vxne20           = GenecStar%vxne20
-    vxne22           = GenecStar%vxne22
-    vxmg24           = GenecStar%vxmg24
-    vxmg25           = GenecStar%vxmg25
-    vxmg26           = GenecStar%vxmg26
-    omegi            = GenecStar%omegi
-    vomegi           = GenecStar%vomegi
-    xf19             = GenecStar%xf19
-    xne21            = GenecStar%xne21
-    xna23            = GenecStar%xna23
-    xal26            = GenecStar%xal26
-    xal27            = GenecStar%xal27
-    xsi28            = GenecStar%xsi28
-    vxf19            = GenecStar%vxf19
-    vxne21           = GenecStar%vxne21
-    vxna23           = GenecStar%vxna23
-    vxal26g          = GenecStar%vxal26g
-    vxal27           = GenecStar%vxal27
-    vxsi28           = GenecStar%vxsi28
-    xneut            = GenecStar%xneut
-    xprot            = GenecStar%xprot
-    xc14             = GenecStar%xc14
-    xf18             = GenecStar%xf18
-    xbid             = GenecStar%xbid
-    xbid1            = GenecStar%xbid1
-    vxneut           = GenecStar%vxneut
-    vxprot           = GenecStar%vxprot
-    vxc14            = GenecStar%vxc14
-    vxf18            = GenecStar%vxf18
-    vxbid            = GenecStar%vxbid
-    vxbid1           = GenecStar%vxbid1
-    get_stellar_model = 0
-end function
-
-function recommit_parameters()
-    implicit none
-    integer:: recommit_parameters
-    recommit_parameters = 0
-end function
-
-function recommit_particles()
-    implicit none
-    integer:: recommit_particles
-    !call finalise()
-    !call OpenAll()
-    !call initialise_star()
-    recommit_particles = 0
-end function
-
-function set_genec_path(path)
-    use evol, only: input_dir
-    implicit none
-    character(len=200):: path
-    integer:: set_genec_path
-
-    input_dir = path
-    set_genec_path = 0
-end function
-
-!function get_starname(index_of_the_star, am_starname)
-!    implicit none
-!    integer:: get_starname, index_of_the_star
-!    character(len=200):: am_starname
-!    am_starname = InitialGenecStar%starname
-!    get_starname = 0
-!end function
-!
-!function set_starname(index_of_the_star, am_starname)
-!    implicit none
-!    integer:: set_starname, index_of_the_star
-!    character(len=200):: am_starname
-!    InitialGenecStar%starname = am_starname
-!    set_starname = 0
-!end function
-
-!function get_phase(index_of_the_star, phase)
-!    implicit none
-!    integer:: index_of_the_star, phase
-!    integer:: get_phase
-!    phase = GenecStar%phase
-!    get_phase = 0
-!end function
-!
-!function set_phase(index_of_the_star, phase)
-!    implicit none
-!    integer:: index_of_the_star, phase
-!    integer:: set_phase
-!    GenecStar%phase = phase
-!    set_phase = 0
-!end function
-
-function set_temperature_at_zone(index_of_the_star, zone, T_i)
-    implicit none
-    integer:: index_of_the_star
-    integer:: zone, i
-    real(kindreal):: T_i
-    integer:: set_temperature_at_zone
-    i = GenecStar%m - zone
-    if (zone <= GenecStar%m) then
-        GenecStar%t(i) = log(T_i)
-    end if
-    
-    set_temperature_at_zone = 0
-end function
-
+!!!!!!!!!
 end module AmuseInterface
