@@ -17,7 +17,7 @@ class TestPrintingStrategy(amusetest.TestCase):
  
     def test1(self):
         print("Testing get/set of printing strategy")
-        self.assertEqual(get_current_printing_strategy(), console.SimplePrintingStrategy)
+        self.assertEqual(get_current_printing_strategy(), console.DefaultPrintingStrategy)
         set_printing_strategy("no_unit")
         self.assertEqual(get_current_printing_strategy(), console.NoUnitsPrintingStrategy)
         set_printing_strategy("default")
