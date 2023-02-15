@@ -4,7 +4,7 @@ module AmuseInterface
             GenecStar,genec_star
     use helpers, only:&
             copy_to_genec_star,copy_namelists_from_genec_star,copy_from_genec_star,&
-            copy_structure_from_genec_star
+            copy_structure_from_genec_star,copy_initial_structure_from_genec_star
     use evol, only: kindreal,ldi,npondcouche
 
     type(genec_star) :: BackupBackupGenecStar
@@ -165,17 +165,15 @@ function evolve_for(index_of_the_star, time)
 end function
 
 function evolve_one_step(index_of_the_star)
-    use timestep, only: alter
-    use WriteSaveClose, only: OpenAll
-    use genec, only: evolve, modell, finalise, veryFirst
-    use inputparam,only: modanf,nwseq,nzmod,end_at_phase,end_at_model
+    use genec, only: evolve, finalise, veryFirst
+    use inputparam, only: nzmod
     use genec, only: n_snap
     implicit none
     integer:: index_of_the_star
     integer:: evolve_one_step
-    integer:: original_nzmod
-    nzmod = 1
-    n_snap = 0
+    !integer:: original_nzmod
+    !nzmod = 1
+    !n_snap = 0
 
     call evolve()
     call finalise()
@@ -5711,7 +5709,7 @@ function new_stellar_model(&
     GenecStar%abelx(:,:) = 0.
     GenecStar%vabelx(:,:) = 0.
 
-    call copy_from_genec_star(GenecStar)
+    call init_or_restore_star(GenecStar)
     new_stellar_model = 0
 end function new_stellar_model
 
