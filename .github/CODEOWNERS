@@ -5,7 +5,7 @@
 # the repo. Unless a later match takes precedence,
 # @global-owner1 and @global-owner2 will be requested for
 # review when someone opens a pull request.
-*       @rieder @ipelupessy
+*       @amusecode/framework
 
 # Order is important; the last matching pattern takes the most
 # precedence. When someone opens a pull request that only
@@ -53,5 +53,6 @@
 #/apps/ @octocat
 #/apps/github
 
-/src/amuse/community/phantom @rieder
-/src/amuse/community/seba @silviatoonen
+/src/amuse/community/phantom @amusecode/community-phantom
+/src/amuse/community/seba @amusecode/community-seba
+/src/amuse/community/mesa_r15140 @amusecode/community-mesa

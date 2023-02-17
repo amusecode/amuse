@@ -137,9 +137,9 @@ class Hydro:
 
     def write_set_to_file(self, index):
         filename = "hydro_molecular_cloud_collapse_i{0:04}.amuse".format(index)
-        write_set_to_file(self.gas_particles, filename, "amuse", append_to_file=False)
+        write_set_to_file(self.gas_particles, filename, "amuse")
         if len(self.star_particles):
-            write_set_to_file(self.star_particles, filename, "amuse")  # , attribute_names=self.star_attributes)
+            write_set_to_file(self.star_particles, filename, "amuse", append_to_file=True)  # , attribute_names=self.star_attributes)
 
     @property
     def model_time(self):
