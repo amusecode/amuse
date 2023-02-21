@@ -338,8 +338,8 @@
       ! can you split your star_job inlist into pieces using the following controls.
       ! BTW: it works recursively, so the extras can read extras too.
 
-         read_extra_star_job_inlist1 = .false.
-         extra_star_job_inlist1_name = 'undefined'
+         read_extra_star_job_inlist1 = .true.
+         extra_star_job_inlist1_name = 'inlist'
             ! if read_extra_star_job_inlist1 is true, then read &star_job from this namelist file
 
             ! if you try one of the following prebuilt extras,
@@ -2116,8 +2116,8 @@
       ! can you split your controls inlist into pieces using the following parameters.
       ! BTW: it works recursively, so the extras can read extras too.
 
-         read_extra_controls_inlist1 = .false.
-         extra_controls_inlist1_name = 'undefined'
+         read_extra_controls_inlist1 = .true.
+         extra_controls_inlist1_name = 'inlist'
             ! if read_extra_controls_inlist1 is true, then read &controls from this namelist file
          
             ! if you try one of the following prebuilt extras,

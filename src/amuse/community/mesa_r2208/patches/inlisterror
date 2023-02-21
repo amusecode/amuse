@@ -1,0 +1,32 @@
+Index: mesa/star/private/ctrls_io.f
+===================================================================
+--- mesa.orig/star/private/ctrls_io.f	2023-02-21 10:41:58.643935871 +0100
++++ mesa/star/private/ctrls_io.f	2023-02-21 10:42:43.572324304 +0100
+@@ -1746,6 +1746,10 @@
+             unit=alloc_iounit(ierr); if (ierr /= 0) return
+             open(unit=unit, file=trim(filename), action='read', delim='quote', status='old', iostat=ierr)
+             if (ierr /= 0) then
++               if(level>1) then
++                  ierr=0
++                  return ! Dont error if we dont find the file beyond the first level
++               end if
+                write(message, *) 'Failed to open control namelist file ', trim(filename)
+                call alert(ierr, message)
+                write(*, '(a)') trim(message)
+
+
+Index: mesa/star/test/src/run_star_support.f
+===================================================================
+--- mesa.orig/star/test/src/run_star_support.f	2023-02-21 10:41:58.625936116 +0100
++++ mesa/star/test/src/run_star_support.f	2023-02-21 10:42:22.691608537 +0100
+@@ -900,6 +900,10 @@
+          
+          open(unit=unit, file=trim(filename), action='read', delim='quote', iostat=ierr)
+          if (ierr /= 0) then
++            if(level>1) then
++               ierr=0
++               return ! Dont error if we dont find the file beyond the first level
++            end if
+             write(message, *) 'Failed to open control namelist file ', trim(filename)
+             call alert(ierr, message)
+             write(*,*) trim(message)
