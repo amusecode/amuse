@@ -956,6 +956,8 @@ class MESA(StellarEvolution, InternalStellarStructure):
 
         if 'inlist' in options:
             inlist_path = options['inlist']
+            if not os.path.exists(inlist_path):
+                raise ValueError('Named inlist does not exist, maybe its in a different folder?')
         else:
             inlist_path = self.default_path_to_inlist
         
