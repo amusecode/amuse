@@ -966,6 +966,7 @@ class MESA(StellarEvolution, InternalStellarStructure):
         )
         self.model_time = 0.0 | units.yr
         self.mesa_version = "2208"
+        self.inlist = inlist_path
         
     
     def define_parameters(self, handler):
