@@ -953,22 +953,14 @@ class MESA(StellarEvolution, InternalStellarStructure):
         if not os.path.isfile(os.path.join(model_path, 'zams_z20m3.data')):
             model_file=os.path.join(self.get_data_directory(), 'star_data', 'starting_models', 'zams_z20m3.data')
             shutil.copy(model_file, model_path)
-
-        if 'inlist' in options:
-            inlist_path = options['inlist']
-            if not os.path.exists(inlist_path):
-                raise ValueError('Named inlist does not exist, maybe its in a different folder?')
-        else:
-            inlist_path = self.default_path_to_inlist
         
         self.set_MESA_paths(
-            inlist_path, 
+            self.default_path_to_inlist, 
             self.default_path_to_MESA_data, 
             output_dir
         )
         self.model_time = 0.0 | units.yr
         self.mesa_version = "2208"
-        self.inlist = inlist_path
         
     
     def define_parameters(self, handler):
