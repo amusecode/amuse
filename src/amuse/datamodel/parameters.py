@@ -544,7 +544,7 @@ class ModuleMethodParameterDefinition(ParameterDefinition):
         if self.set_method is None:
             raise exceptions.CoreException(
                 f"Could not set value for parameter '{self.name}' of a "
-                "'{type(object).__name__}' object, parameter is read-only"
+                f"'{type(object).__name__}' object, parameter is read-only"
             )
         getattr(object, self.set_method)(quantity)
         
