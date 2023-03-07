@@ -283,8 +283,6 @@ class ScalarQuantity(Quantity):
         # Quantity.__init__(self, unit)
         # commented out super call, this speeds thing up
         self.unit = unit
-        if isinstance(number, str):
-            number = float(number)
         if unit.dtype is None:
             self.number = number
         else:
