@@ -32,11 +32,11 @@ class MESAInterface(
     The supported stellar mass range is from about 1M_jupiter to >100 Msun.
 
     References:
-        .. [#] Paxton, Bildsten, Dotter, Herwig, Lesaffre & Timmes 2011, ApJS, arXiv:1009.1622 [2011ApJS..192....3P]
-        .. [#] Paxton, Cantiello, Arras, Bildsten, Brown, Dotter, Mankovich, Montgomery, Stello, Timmes, Townsend, 2013, ApJS, arXiv:1301.0319, [2013ApJS..208....4P]
-        .. [#] Paxton, Marchant, Schwab, Bauer, Bildsten, Cantiello, Dessart, Farmer, Hu, Langer, Townsend, Townsley, Timmes, 2015, ApJS, arXiv:1506.03146, [2015ApJS..220...15P]
-        .. [#] Paxton, Schwab, Bauer, Bildsten, Blinnikov, Duffell, Farmer, Goldberg, Marchant, Sorokina, Thoul, Townsend, Timmes, 2018, arXiv:1710.08424, [2018ApJS..234...34P] 
-        .. [#] Paxton, Smolec, Schwab, Gautschy, Bildsten, Cantiello, Dotter, Farmer, Goldberg, Jermyn, Kanbur, Marchant, Thoul, Townsend, Wolf, Zhang, Timmes, [2019ApJS..243...10P]
+        .. [#] ADS:2011ApJS..192....3P (Paxton, Bildsten, Dotter, Herwig, Lesaffre & Timmes 2011, ApJS)
+        .. [#] ADS:2013ApJS..208....4P (Paxton, Cantiello, Arras, Bildsten, Brown, Dotter, Mankovich, Montgomery, Stello, Timmes, Townsend, 2013, ApJS)
+        .. [#] ADS:2015ApJS..220...15P (Paxton, Marchant, Schwab, Bauer, Bildsten, Cantiello, Dessart, Farmer, Hu, Langer, Townsend, Townsley, Timmes, 2015, ApJS)
+        .. [#] ADS:2018ApJS..234...34P (Paxton, Schwab, Bauer, Bildsten, Blinnikov, Duffell, Farmer, Goldberg, Marchant, Sorokina, Thoul, Townsend, Timmes, 2018, ApJS)
+        .. [#] ADS:2019ApJS..243...10P (Paxton, Smolec, Schwab, Gautschy, Bildsten, Cantiello, Dotter, Farmer, Goldberg, Jermyn, Kanbur, Marchant, Thoul, Townsend, Wolf, Zhang, Timmes, 2019, ApJS)
         .. [#] http://mesa.sourceforge.net/
         .. [#] https://docs.mesastar.org/en/latest/reference.html
     """

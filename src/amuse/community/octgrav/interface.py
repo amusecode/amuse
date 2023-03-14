@@ -11,9 +11,8 @@ class OctgravInterface(
     StoppingConditionInterface,
     GravityFieldInterface):
     """
-        .. [#] Gaburov E., Bedorf J., Portegies Zwart S., "A gravitational tree code on graphics processing units:
-               Implementation in CUDA", 2010, Proc. C. Sc., 1, 1119 [2010ProCS...1.1119G]
-        .. [#] main MUSE paper, arXiv/0807.1996 [2009NewA...14..369P]
+        .. [#] ADS:2010ProCS...1.1119G (Gaburov E., Bedorf J., Portegies Zwart S., 2010, Proc. C. Sc., 1, 1119:
+        .. [#] ... "A gravitational tree code on graphics processing units: Implementation in CUDA"
     """
 
     include_headers = ['interface.h', 'parameters.h', 'worker_code.h', 'local.h', 'stopcond.h']

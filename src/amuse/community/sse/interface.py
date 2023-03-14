@@ -19,9 +19,8 @@ class SSEInterface(CodeInterface, common.CommonCodeInterface , LiteratureReferen
     follows the evolution of rotational angular momentum for the star. Full 
     details can be found in the SSE paper:
     
-        .. [#] Hurley J.R., Pols O.R., Tout C.A., 2000, MNRAS, 315, 543:
-        .. [#] ... "Comprehensive analytic formulae for stellar evolution as a function of mass and metallicity"
-        .. [#] [2000MNRAS.315..543H]
+        .. [#] ADS:2000MNRAS.315..543H (Hurley J.R., Pols O.R., Tout C.A., 2000, MNRAS, 315, 543:
+        .. [#] ... "Comprehensive analytic formulae for stellar evolution as a function of mass and metallicity")
     """
     def __init__(self, **options):
         CodeInterface.__init__(self, name_of_the_worker="sse_worker", **options)

@@ -33,10 +33,10 @@ class KeplerInterface(CodeInterface,
     See the example kepler_orbiters_planets_around_sun.py.
     
     The relevant references are:
-    .. [#] Goncalves Ferrari, Boekholt, Portegies Zwart; 2014 MNRAS, 440, 719 \
-               (SAKURA, method 0 -- default) [2014MNRAS.440..719G]
-    .. [#] Pelupessy, Janes, Portegies Zwart; 2012, New Astronomy, 17, 711 \
-               (HUAYNO, method 1) [2012NewA...17..711P]
+    .. [#] ADS:2014MNRAS.440..719G (Goncalves Ferrari, Boekholt, Portegies Zwart; 2014 MNRAS, 440, 719
+    .. [#] ... (SAKURA, method 0 -- default)
+    .. [#] ADS:2012NewA...17..711P (Pelupessy, Janes, Portegies Zwart; 2012, New Astronomy, 17, 711
+    .. [#] ... (HUAYNO, method 1))
     """
 
     include_headers = ['interface.h']

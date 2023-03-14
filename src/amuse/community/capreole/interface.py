@@ -1,28 +1,27 @@
 from amuse.community import *
-
-
-
 from amuse.community.interface.hydro import HydrodynamicsInterface
 from amuse.community.interface.common import CommonCode
-
-
 from amuse.units.generic_unit_system import *
+
+
 class CapreoleInterface(
-    CodeInterface, 
+    CodeInterface,
     HydrodynamicsInterface,
     StoppingConditionInterface,
     LiteratureReferencesMixIn
-    ):
+):
     """
-    Capreole is a grid-based astrophysical hydrodynamics code developed by Garrelt Mellema. 
-    It works in one, two dimensions, and three spatial dimensions and is programmed in 
-    Fortran 90. It is parallelized with MPI. For the hydrodynamics it relies on the 
-    Roe-Eulderink-Mellema (REM) solver, which is an approximate Riemann solver for arbitrary
-    metrics. It can solve different hydrodynamics problems. Capreole has run on single 
-    processors, but also on massively parallel systems (e.g. 512 processors on a BlueGene/L).
-    
+    Capreole is a grid-based astrophysical hydrodynamics code developed by
+    Garrelt Mellema. It works in one, two dimensions, and three spatial
+    dimensions and is programmed in Fortran 90. It is parallelized with MPI.
+    For the hydrodynamics it relies on the Roe-Eulderink-Mellema (REM) solver,
+    which is an approximate Riemann solver for arbitrary metrics. It can solve
+    different hydrodynamics problems. Capreole has run on single processors,
+    but also on massively parallel systems (e.g. 512 processors on a
+    BlueGene/L).
+
     The reference for Capreole (original version):
-        .. [#] Mellema, Eulderink & Icke 1991, A&A 252, 718 [1991A&A...252..718M]
+        .. [#] ADS:1991A&A...252..718M (Mellema, Eulderink & Icke 1991, A&A 252, 718)
     """
     
     

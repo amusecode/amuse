@@ -10,7 +10,8 @@ class VaderInterface(CodeInterface,
 	VADER is a code simulating the evolution of viscous thin accretion
 	disks. It is developed by Mark Krumholz and John Forbes [1]. 
 
-	.. [#] Krumholz, M. R. and Forbes, J. C., VADER: A Flexible, Robust, Open-Source Code for Simulating Viscous Thin Accretion Disks, Astronomy and Computing, Vol. 11 (2015)
+    .. [#] ADS:2015A&C....11....1K (Krumholz, M. R. and Forbes, J. C., Astronomy and Computing, Vol. 11 (2015):
+    .. [#] ... VADER: A Flexible, Robust, Open-Source Code for Simulating Viscous Thin Accretion Disks)
 	"""
 		
 	include_headers = ['worker_code.h']
