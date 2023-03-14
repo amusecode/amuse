@@ -26,7 +26,7 @@ long_description_content_type = "text/markdown"
 extensions = []
 
 all_data_files = []
-all_data_files.append(('share/amuse', ['./config.mk', './build.py']))
+all_data_files.append(('share/amuse', ['./config.mk']))
 
 packages = find_packages('src', exclude=["amuse.community.*"])
 packages.append("amuse.community.interface")

@@ -362,6 +362,7 @@ class TestGadget2Interface(TestWithMPI):
     
     
 class TestGadget2(TestWithMPI):
+    classname = "<class 'amuse.community.gadget2.interface.Gadget2'>"
 
     UnitLength = 3.085678e21 | units.cm     # ~ 1.0 kpc
     UnitMass = 1.989e43 | units.g           # 1.0e10 solar masses
@@ -378,7 +379,10 @@ class TestGadget2(TestWithMPI):
         print("Testing Gadget initialization")
         instance = Gadget2(self.default_converter, **default_options)
         instance.initialize_code()
-        self.assertTrue(os.path.join("gadget2","output") in str(instance.parameters.gadget_output_directory))
+        self.assertTrue(
+            os.path.join("__amuse_code_output", "gadget2")
+            in str(instance.parameters.gadget_output_directory)
+        )
         instance.commit_parameters()
         instance.cleanup_code()
         instance.stop()
@@ -835,11 +839,25 @@ class TestGadget2(TestWithMPI):
         instance = Gadget2(self.default_converter, **default_options)
         instance.parameters.time_limit_cpu = 0.001 | units.s
         instance.gas_particles.add_particles(gas)
-        self.assertRaises(AmuseException, instance.evolve_model, 1.0 | generic_unit_system.time, expected_message = 
-            "Error when calling 'evolve_model' of a 'Gadget2', errorcode is -5, error is 'CPU-time limit reached.'")
+        self.assertRaises(
+            AmuseException,
+            instance.evolve_model,
+            1.0 | generic_unit_system.time,
+            expected_message=( 
+                f"Error when calling 'evolve_model' of a '{self.classname}', "
+                "errorcode is -5, error is 'CPU-time limit reached.'"
+            )
+        )
         instance.parameters.time_limit_cpu = 10.0 | units.s
-        self.assertRaises(AmuseException, instance.evolve_model, 0.5 * instance.model_time, expected_message = 
-            "Error when calling 'evolve_model' of a 'Gadget2', errorcode is -6, error is 'Can't evolve backwards in time.'")
+        self.assertRaises(
+            AmuseException,
+            instance.evolve_model,
+            0.5 * instance.model_time,
+            expected_message=( 
+                f"Error when calling 'evolve_model' of a '{self.classname}', "
+                "errorcode is -6, error is 'Can't evolve backwards in time.'"
+            )
+        )
         instance.stop()
     
     def test18(self):
@@ -899,18 +917,25 @@ class TestGadget2(TestWithMPI):
     def test20(self):
         print("Testing zero timestep exceptions")
         number_sph_particles = 1000
-        gas = new_evrard_gas_sphere(number_sph_particles, self.default_convert_nbody, seed = 1234)
+        gas = new_evrard_gas_sphere(number_sph_particles, self.default_convert_nbody, seed=1234)
         
         wrong_converter = generic_unit_converter.ConvertBetweenGenericAndSiUnits(
-            self.UnitLength, 
-            self.UnitMass, 
+            self.UnitLength,
+            self.UnitMass,
             1.0e15 * units.yr
         )
         instance = Gadget2(wrong_converter, **default_options)
         instance.gas_particles.add_particles(gas)
-        self.assertRaises(AmuseException, instance.evolve_model, 1.0e13 | units.yr, expected_message = 
-            "Error when calling 'evolve_model' of a 'Gadget2', errorcode is -8, error is 'A particle "
-            "was assigned a timestep of size zero. The code_time_unit used may be too large.'")
+        self.assertRaises(
+            AmuseException,
+            instance.evolve_model,
+            1.0e13 | units.yr,
+            expected_message=(
+                f"Error when calling 'evolve_model' of a '{self.classname}', "
+                "errorcode is -8, error is 'A particle was assigned a timestep"
+                " of size zero. The code_time_unit used may be too large.'"
+            )
+        )
         instance.stop()
         
         instance = Gadget2(wrong_converter, **default_options)
@@ -934,11 +959,26 @@ class TestGadget2(TestWithMPI):
         instance = Gadget2(wrong_converter, **default_options)
         instance.parameters.max_size_timestep = 3.0e-14 | units.yr
         instance.gas_particles.add_particles(gas)
-        self.assertRaises(AmuseException, instance.evolve_model, 1.1e-13 | units.yr, expected_message = 
-            "Error when calling 'evolve_model' of a 'Gadget2', errorcode is -7, error is 'Can't evolve further than time_max.'")
+        self.assertRaises(
+            AmuseException,
+            instance.evolve_model,
+            1.1e-13 | units.yr,
+            expected_message=(
+                f"Error when calling 'evolve_model' of a '{self.classname}', "
+                "errorcode is -7, error is "
+                "'Can't evolve further than time_max.'"
+            )
+        )
         instance.evolve_model(3.0e-14 | units.yr)
-        self.assertRaises(AmuseException, instance.evolve_model, 1.0e-14 | units.yr, expected_message = 
-            "Error when calling 'evolve_model' of a 'Gadget2', errorcode is -6, error is 'Can't evolve backwards in time.'")
+        self.assertRaises(
+            AmuseException,
+            instance.evolve_model,
+            1.0e-14 | units.yr,
+            expected_message=(
+                f"Error when calling 'evolve_model' of a '{self.classname}', "
+                "errorcode is -6, error is 'Can't evolve backwards in time.'"
+            )
+        )
         instance.stop()
     
     def test22(self):
@@ -951,7 +991,7 @@ class TestGadget2(TestWithMPI):
         t_end = (n_timescales * self.default_convert_nbody.to_si(1.0 | nbody_system.time)).as_quantity_in(units.Myr)
         print("Evolving to ("+str(n_timescales), "nbody timescales): ", t_end)
         n_steps = 5
-        times = (t_end * (list(range(1, n_steps+1))) / (1.0 * n_steps)).as_quantity_in(units.Myr)
+        times = (t_end * (range(1, n_steps+1)) / (1.0 * n_steps)).as_quantity_in(units.Myr)
         
         instance = Gadget2(self.default_converter, **default_options)
         instance.parameters.max_size_timestep = t_end
@@ -1007,7 +1047,7 @@ class TestGadget2(TestWithMPI):
         t_end = (n_timescales * self.default_convert_nbody.to_si(1.0 | nbody_system.time)).as_quantity_in(units.Myr)
         print("Evolving to ("+str(n_timescales), "nbody timescales): ", t_end)
         n_steps = 100
-        times = (t_end * (list(range(1, n_steps+1))) / (1.0 * n_steps)).as_quantity_in(units.Myr)
+        times = (t_end * (range(1, n_steps+1)) / (1.0 * n_steps)).as_quantity_in(units.Myr)
         
         instance = Gadget2(self.default_converter, **default_options)
         instance.parameters.max_size_timestep = t_end
@@ -1168,14 +1208,29 @@ class TestGadget2(TestWithMPI):
         instance.dm_particles.add_particles(particles)
         
         instance.evolve_to_redshift(19.9)
-        self.assertRaises(AmuseException, instance.evolve_model, 1|units.Myr, expected_message=
-            "Error when calling 'evolve_model' of a 'Gadget2', errorcode is -9, error is "
-            "'This function should not be used with the current value of comoving_integration_flag'")
+        self.assertRaises(
+            AmuseException,
+            instance.evolve_model,
+            1 | units.Myr,
+            expected_message=(
+                f"Error when calling 'evolve_model' of a '{self.classname}', "
+                "errorcode is -9, error is 'This function should not be used "
+                "with the current value of comoving_integration_flag'"
+            )
+        )
         
         self.assertAlmostEqual(instance.model_redshift, 19.9, 5)
-        self.assertRaises(AmuseException, getattr, instance, "model_time", expected_message=
-            "Error when calling 'get_time' of a 'Gadget2', errorcode is -9, error is "
-            "'This function should not be used with the current value of comoving_integration_flag'")
+        self.assertRaises(
+            AmuseException,
+            getattr,
+            instance,
+            "model_time",
+            expected_message=(
+                f"Error when calling 'get_time' of a '{self.classname}', "
+                "errorcode is -9, error is 'This function should not be used "
+                "with the current value of comoving_integration_flag'"
+            )
+        )
         instance.stop()
     
     def xtest26(self):

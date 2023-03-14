@@ -8,11 +8,14 @@ author_email = 'info@amusecode.org'
 license_ = "Apache License 2.0"
 url = 'http://www.amusecode.org/'
 install_requires = [
+    'setuptools>=41.0.0',
+    'setuptools_scm',
+    'pip>=19.0.0',
     'wheel>=0.32',
     'docutils>=0.6',
     'numpy>=1.2.2',
     'pytest>=4.0',
-    'mpi4py>=1.1.0',
+    # 'mpi4py>=1.1.0',
     'h5py>=1.1.0',
 ]
 description = 'The Astrophysical Multipurpose Software Environment'
@@ -29,10 +32,10 @@ classifiers = [
     'Operating System :: MacOS :: MacOS X',
     'Operating System :: POSIX',
     'Programming Language :: Python :: 3',
-    'Programming Language :: Python :: 3.5',
-    'Programming Language :: Python :: 3.6',
     'Programming Language :: Python :: 3.7',
     'Programming Language :: Python :: 3.8',
+    'Programming Language :: Python :: 3.9',
+    'Programming Language :: Python :: 3.10',
     'Programming Language :: C',
     'Programming Language :: C++',
     'Programming Language :: Fortran',
@@ -41,12 +44,13 @@ classifiers = [
 
 extensions = []
 
-all_data_files = find_data_files(
-    'data', 'share/amuse/data', '*', recursive=True)
-all_data_files.append(('share/amuse', ['./config.mk', './build.py']))
+all_data_files = []
+all_data_files.append(('share/amuse', ['./config.mk']))
 
 packages = find_packages('src')
-packages.extend(['amuse.examples.' + x for x in find_packages('examples')])
+packages.extend(
+    ['amuse.examples.' + x for x in find_packages('examples')]
+)
 
 package_data = {
     'amuse.rfi.tools': ['*.template'],
@@ -83,6 +87,10 @@ setup(
     long_description=long_description,
     long_description_content_type=long_description_content_type,
     install_requires=install_requires,
+    python_requires=">=3.7",
+    extras_require = {
+        "MPI" : ["mpi4py>=1.1.0"]
+    },
     cmdclass=mapping_from_command_name_to_command_class,
     ext_modules=extensions,
     package_dir={'': 'src', 'amuse.examples': 'examples'},
@@ -90,5 +98,4 @@ setup(
     package_data=package_data,
     data_files=all_data_files,
     scripts=["bin/amusifier", "bin/amuse-tutorial", ],
-    python_requires=">=3.5"
 )

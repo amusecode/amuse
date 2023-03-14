@@ -19,7 +19,7 @@ class ph4Interface(CodeInterface,
     Parallel, GPU-accelerated, N-body integration module with block
     time steps, using a 4th-order Hermite integration scheme.
 
-        .. [#] [2018araa.book.....P] Portegies Zwart, S. & McMillan, S.L.W., 2018    
+        .. [#] ADS:2018araa.book.....P (Portegies Zwart, S. & McMillan, S.L.W., 2018)
     """
 
     # Interface specification.

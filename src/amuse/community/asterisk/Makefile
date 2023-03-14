@@ -13,7 +13,6 @@ LDFLAGS  += -lm $(MUSE_LD_FLAGS)
 
 OBJS = interface.o
 
-CODE_GENERATOR ?= $(AMUSE_DIR)/build.py
 
 RM ?= rm
 JAVAC ?= javac
@@ -87,7 +86,7 @@ worker.jar: Worker.java CodeInterface.java Code.java CodeParticle.java src/lib/a
 	$(RM) -rf tmp
 
 asterisk_worker_java: java_check src/lib/asterisk.jar worker.jar
-	$(CODE_GENERATOR) -x --type=java --mode=script interface.py AsteriskInterface -o $@
+	$(CODE_GENERATOR) -x --type=java --mode=script interface AsteriskInterface -o $@
 
 .cc.o: $<
 	$(CXX) $(CXXFLAGS) -c -o $@ $< 

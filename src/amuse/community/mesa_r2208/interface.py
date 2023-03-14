@@ -1,5 +1,6 @@
 import os
 import numpy
+import shutil
 from operator import itemgetter
 
 from amuse.community import *
@@ -25,8 +26,8 @@ class MESAInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolutionIn
     about 0.1 to 100 Msun.
     
     References:
-        .. [#] Paxton, Bildsten, Dotter, Herwig, Lesaffre & Timmes 2011, ApJS, arXiv:1009.1622 [2011ApJS..192....3P]
-        .. [#] http://mesa.sourceforge.net/
+        .. [#] ADS:2011ApJS..192....3P (Paxton, Bildsten, Dotter, Herwig, Lesaffre & Timmes 2011, ApJS,
+        .. [#] http://mesa.sourceforge.net/)
     """
     def __init__(self, **options):
         CodeInterface.__init__(self, name_of_the_worker="mesa_worker", **options)
@@ -40,7 +41,7 @@ class MESAInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolutionIn
 
     @option(type="string", sections=('data'))
     def default_path_to_MESA_data(self):
-        return os.path.join(self.amuse_root_directory, 'src', 'amuse', 'community', 'mesa_r2208', 'src', 'mesa', 'data')
+        return os.path.join(os.path.dirname(__file__), 'data', 'data')
     
     @legacy_function
     def set_MESA_paths():
@@ -946,16 +947,28 @@ class MESA(StellarEvolution, InternalStellarStructure):
         InCodeComponentImplementation.__init__(self, MESAInterface(**options), **options)
         
         output_dir = self.get_output_directory()
+        model_path = os.path.join(output_dir, 'star_data', 'starting_models')
         if not self.channel_type == 'distributed':
-            self.ensure_data_directory_exists(os.path.join(output_dir, 'star_data', 'starting_models'))
+            self.ensure_data_directory_exists(model_path)
+        if not os.path.isfile(os.path.join(model_path, 'zams_z20m3.data')):
+            model_file=os.path.join(self.get_data_directory(), 'star_data', 'starting_models', 'zams_z20m3.data')
+            shutil.copy(model_file, model_path)
+
+        if 'inlist' in options:
+            inlist_path = options['inlist']
+            if not os.path.exists(inlist_path):
+                raise ValueError('Named inlist does not exist, maybe its in a different folder?')
+        else:
+            inlist_path = self.default_path_to_inlist
         
         self.set_MESA_paths(
-            self.default_path_to_inlist, 
+            inlist_path, 
             self.default_path_to_MESA_data, 
             output_dir
         )
         self.model_time = 0.0 | units.yr
         self.mesa_version = "2208"
+        self.inlist = inlist_path
         
     
     def define_parameters(self, handler):

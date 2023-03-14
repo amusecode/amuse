@@ -22,7 +22,7 @@ class MMAMSInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesMix
     post-collision effect.
     
     Relevant references:
-        .. [#] Gaburov E., Lombardi J. C. & Portegies Zwart S., 2008, MNRAS, 383, L5 [2008MNRAS.383L...5G]
+        .. [#] ADS:2008MNRAS.383L...5G (Gaburov E., Lombardi J. C. & Portegies Zwart S., 2008, MNRAS, 383, L5)
     """
     include_headers = ['worker_code.h']
     
@@ -191,7 +191,40 @@ class MMAMSInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesMix
         function.addParameter('dump_mixed_flag', dtype='int32', direction=function.OUT)
         function.result_type = 'i'
         return function
+
+    @legacy_function
+    def set_mass_loss_do_const_flag():
+        """Set the dump_mixed flag: specifies whether the returned products must be mixed first."""
+        function = LegacyFunctionSpecification()
+        function.addParameter('mass_loss_do_const_flag', dtype='int32', direction=function.IN)
+        function.result_type = 'i'
+        return function
     
+    @legacy_function
+    def get_mass_loss_do_const_flag():
+        """Get the dump_mixed flag: specifies whether the returned products must be mixed first."""
+        function = LegacyFunctionSpecification()
+        function.addParameter('mass_loss_do_const_flag', dtype='int32', direction=function.OUT)
+        function.result_type = 'i'
+        return function
+
+
+    @legacy_function
+    def get_const_mass_loss():
+        """Get the const_mass_loss"""
+        function = LegacyFunctionSpecification()
+        function.addParameter('const_mass_loss', dtype='float64', direction=function.OUT)
+        function.result_type = 'i'
+        return function
+
+    @legacy_function
+    def set_const_mass_loss():
+        """Set the const_mass_loss"""
+        function = LegacyFunctionSpecification()
+        function.addParameter('const_mass_loss', dtype='float64', direction=function.IN)
+        function.result_type = 'i'
+        return function
+
     @legacy_function
     def set_target_n_shells_mixing():
         """Set the target number of shells for mixed models."""
@@ -283,6 +316,23 @@ class MMAMS(CommonCode):
             "dump_mixed flag: specifies whether the returned products must be mixed first",
             True
         )
+
+        handler.add_boolean_parameter(
+            "get_mass_loss_do_const_flag",
+            "set_mass_loss_do_const_flag",
+            "mass_loss_do_const",
+            "mass_loss_do_const flag: whether to use const mass loss fraction (True) or the original Gaburov 2008 fromulation",
+            False
+        )
+
+        handler.add_method_parameter(
+            "get_const_mass_loss",
+            "set_const_mass_loss",
+            "constant_mass_loss",
+            "if do_const=True, specify what the constant mass loss fraction used is",
+            0.1
+        )
+
         
         handler.add_boolean_parameter(
             "get_do_shock_heating_flag",

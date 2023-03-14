@@ -1,5 +1,5 @@
 # AMUSE: The Astrophysical Multipurpose Software Environment
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3466805.svg)](https://doi.org/10.5281/zenodo.3466805)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.1435860.svg)](https://doi.org/10.5281/zenodo.1435860)
 [![PyPI version](https://badge.fury.io/py/amuse.svg)](https://badge.fury.io/py/amuse)
 
 This repository contains the AMUSE software. With AMUSE you can write
@@ -54,7 +54,7 @@ Linux install instructions.
 Python
 ======
 
-AMUSE needs Python 3 version >=3.5 installed preferably with pip and 
+AMUSE needs Python 3 version >=3.7 installed preferably with pip and 
 virtualenv. It may be necessary to update pip to a recent version.
 If you cannot use Python 3, legacy support for Python 2 is available in the 
 AMUSE 12 release and the python2 branch.
@@ -64,7 +64,7 @@ Installing Prerequisites
 
 The following libraries need to be installed:
 
-* HDF (version 1.6.5 - 1.8.x)
+* HDF (version 1.6.5 - 1.12.x)
 * MPI (OpenMPI or MPICH)
 
 The following are needed for some codes:
@@ -87,8 +87,8 @@ This will build and install AMUSE with an extensive set of codes.
 If necessary this will also install some required Python packages:
 
 * Numpy (version >= 1.3.0)
-* h5py (version >= 1.2.0)
-* mpi4py (version >= 1.0)
+* h5py (version >= 1.2.2)
+* mpi4py (version >= 1.1.0)
 * pytest (version >= 5.0)
 * docutils (version >= 0.6)
 

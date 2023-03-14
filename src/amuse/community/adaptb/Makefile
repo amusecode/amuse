@@ -5,9 +5,8 @@ ifeq ($(origin AMUSE_DIR), undefined)
 endif
 -include ${AMUSE_DIR}/config.mk
 
-GMP_LIBS ?= -L/home/boekholt/Packages/ -lgmp
-MPFR_LIBS ?= -L/home/boekholt/Packages/ -lmpfr
-MPFR_FLAGS ?= -I/home/boekholt/Packages/
+GMP_LIBS ?= -lgmp
+MPFR_LIBS ?= -lmpfr
 LIBS += $(MPFR_LIBS) $(GMP_LIBS)
 
 MPICXX   ?= mpicxx
@@ -15,7 +14,6 @@ CXX ?= g++
 
 CXXFLAGS ?= -Wall -g -O2
 CXXFLAGS += -std=c++11
-CODE_GENERATOR ?= $(AMUSE_DIR)/build.py
 
 CODELIB = src/libadaptb.a
 OBJ = interface.o
@@ -34,7 +32,7 @@ worker_code.cc: interface.py
 	$(CODE_GENERATOR) --type=c interface.py AdaptbInterface -o $@
 
 worker_code.h: interface.py
-	$(CODE_GENERATOR) --type=h -i amuse.support.codes.stopping_conditions.StoppingConditionInterface interface.py AdaptbInterface -o $@
+	$(CODE_GENERATOR) --type=h -i amuse.community.interface.stopping_conditions.StoppingConditionInterface interface.py AdaptbInterface -o $@
 
 adaptb_worker: worker_code.cc worker_code.h $(CODELIB) $(OBJ)
 	$(MPICXX) $(CXXFLAGS) $(SC_FLAGS) $(LDFLAGS) -I./src $< $(CODELIB) $(OBJ) -o $@  -L./src -ladaptb $(SC_CLIBS) $(LIBS)
