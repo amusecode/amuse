@@ -8,7 +8,7 @@ import logging
 import numpy
 from amuse.units import units, constants, nbody_system
 from amuse.datamodel.rotation import new_rotation_matrix, rotate
-from amuse.community.fi.interface import FiMap
+from amuse.community.fi import FiMap
 
 
 def gas_mean_molecular_weight(
@@ -190,48 +190,6 @@ class MapHydro():
             [0, 0, -1],
         )
         mapper.parameters.image_target = self.__origin
-        # # positive x = up
-        # if y_axis == 'x':
-        #     mapper.parameters.upvector = [1, 0, 0]
-        #     if x_axis == 'y':
-        #         # negative z = top layer
-        #         mapper.parameters.projection_direction = [0, 0, 1]
-        #     elif x_axis == 'z':
-        #         # positive y = top layer
-        #         mapper.parameters.projection_direction = [0, -1, 0]
-        #     else:
-        #         raise ValueError(
-        #             'Incorrect value for x_axis or y_axis'
-        #         )
-
-        # # positive y = up
-        # if y_axis == 'y':
-        #     mapper.parameters.upvector = [0, 1, 0]
-        #     if x_axis == 'x':
-        #         # positive z = top layer
-        #         mapper.parameters.projection_direction = [0, 0, -1]
-        #     elif x_axis == 'z':
-        #         # negative x = top layer
-        #         mapper.parameters.projection_direction = [1, 0, 0]
-        #     else:
-        #         raise ValueError(
-        #             'Incorrect value for x_axis or y_axis'
-        #         )
-
-        # # positive z = up
-        # if y_axis == 'z':
-        #     mapper.parameters.upvector = [0, 0, 1]
-        #     if x_axis == 'x':
-        #         # negative y = top layer
-        #         mapper.parameters.projection_direction = [0, 1, 0]
-        #     elif x_axis == 'y':
-        #         # positive x = top layer
-        #         mapper.parameters.projection_direction = [-1, 0, 0]
-        #     else:
-        #         raise ValueError(
-        #             'Incorrect value for x_axis or y_axis'
-        #         )
-
         mapper.parameters.image_width = self.__width
         mapper.parameters.image_size = [self.__bins_x, self.__bins_y]
         self.__mapper = mapper
@@ -415,13 +373,16 @@ class MapHydro():
         print(f"temperature range: {min(temperature)} - {max(temperature)}")
         self.__mapper.particles.weight = temperature.value_in(
             self.__unit_temperature)
-        counts = self.counts
+        # counts = self.counts
         self.__maps.temperature = numpy.nan_to_num(
             self.__mapper.image.pixel_value.transpose(),
             # / counts,
             nan=0,
         ) | self.__unit_temperature
-        print(f"min/max: {self.__maps.temperature.min()} - {self.__maps.temperature.max()}")
+        print(
+            f"min/max: {self.__maps.temperature.min()} "
+            f"- {self.__maps.temperature.max()}"
+        )
         return self.__maps.temperature
 
     @property
