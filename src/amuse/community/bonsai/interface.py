@@ -13,9 +13,7 @@ class BonsaiInterface(CodeInterface,
                       SinglePointGravityFieldInterface):
 
     """
-        .. [#] Bedorf J., Gaburov E., Portegies Zwart S., "A sparse octree
-        .. [#] gravitational N-body code that runs entirely on the GPU processor",
-        .. [#] 2012, JCoPh, 231, 2825 [2012JCoPh.231.2825B]
+        .. [#] ADS:2012JCoPh.231.2825B (Bedorf J., Gaburov E., Portegies Zwart S., 2012, JCoPh, 231, 2825)
     """
 
     include_headers = ['worker_code.h', 'stopcond.h']

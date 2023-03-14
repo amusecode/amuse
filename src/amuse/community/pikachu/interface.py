@@ -11,9 +11,8 @@ class PikachuInterface(CodeInterface, GravitationalDynamicsInterface, Literature
     Hybrid N-body module, combining a tree (Barnes & Hut) to approximate long-range 
     forces, with direct summation of the forces from neighbour particles.
     
-    .. [#] Iwasawa, M., Portegies Zwart, S., Makino, J., GPU-enabled particle-particle particle-tree 
-    scheme for simulating dense stellar cluster system, *Computational Astrophysics and Cosmology*,
-    **2**, 6 (2015) [2015ComAC...2....6I]
+    .. [#] ADS:2015ComAC...2....6I (Iwasawa, M., Portegies Zwart, S., Makino, J., *Computational Astrophysics and Cosmology*, **2**, 6 (2015):
+    .. [#] ... "GPU-enabled particle-particle particle-tree scheme for simulating dense stellar cluster system")
     
     """
     include_headers = ['worker_code.h', 'stopcond.h', 'interface.h']

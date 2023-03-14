@@ -34,6 +34,9 @@ class SecularMultipleInterface(CodeInterface):
 
     November 2017: Updates for external perturbations (flybys & supernovae),
     detailed in Hamers (2018, in prep)
+
+    .. [#] ADS:2016MNRAS.459.2827H
+    .. [#] ADS:2018MNRAS.476.4139H
     """
     include_headers = [
         'interface.h', 'src/types.h', 'src/evolve.h', 'src/ODE_system.h'

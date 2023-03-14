@@ -26,7 +26,10 @@ or (directly from the terminal):
 > pydoc amuse.ic
 """
 import sys
+import os
 import numpy
+
+_AMUSE_ROOT = os.path.abspath(os.path.dirname(__file__))
 
 def numpy_fix():
     try:
@@ -56,3 +59,6 @@ try:
     TrackLiteratureReferences.default()
 except:
     pass
+
+def get_data(path):
+    return os.path.join(_AMUSE_ROOT, 'data', path)
