@@ -32,8 +32,10 @@ class Parameters(object):
         #if name.startswith('__'):
         #    return object.__getattribute__(self, name)
         if not name in self._mapping_from_name_to_definition:
-            raise exceptions.CoreException("tried to get unknown parameter '{0}' for a '{1}' object".format(name, type(self._instance()).__name__))
-        
+            raise exceptions.CoreException(
+                f"tried to get unknown parameter '{name}' "
+                f"for a '{type(self._instance()).__name__}' object"
+            )
         self._instance().before_get_parameter()
         
         return self.get_parameter(name).get_value()
@@ -42,7 +44,10 @@ class Parameters(object):
         if not name in self._mapping_from_name_to_definition:
             #~ print "Did you mean to set one of these parameters?\n", \
                 #~ "\n  ".join(self._mapping_from_name_to_definition.keys())
-            raise exceptions.CoreException("tried to set unknown parameter '{0}' for a '{1}' object".format(name, type(self._instance()).__name__))
+            raise exceptions.CoreException(
+                f"tried to set unknown parameter '{name}' for a "
+                f"'{type(self._instance()).__name__}' object"
+            )
         
         self._instance().before_set_parameter()
 
@@ -71,7 +76,10 @@ class Parameters(object):
 
     def get_default_value_for(self, name):
         if not name in self._mapping_from_name_to_definition:
-            raise exceptions.CoreException("tried to get default value of unknown parameter '{0}' for a '{1}' object".format(name, type(self._instance()).__name__))
+            raise exceptions.CoreException(
+                f"tried to get default value of unknown parameter '{name}'"
+                f"for a '{type(self._instance()).__name__}' object"
+            )
     
         definition = self._mapping_from_name_to_definition[name]
         return definition.get_default_value(self)
@@ -162,11 +170,17 @@ class Parameters(object):
     def reset_from_memento(self, memento):
         for name in memento.names():
             if not name in self._mapping_from_name_to_definition:
-                raise exceptions.CoreException("tried to set unknown parameter '{0}' for a '{1}' object".format(name, type(self._instance()).__name__))
+                raise exceptions.CoreException(
+                    f"tried to set unknown parameter '{name}' for a "
+                    f"'{type(self._instance()).__name__}' object"
+                )
             
             if self.get_parameter(name).is_readonly():
                 if not getattr(memento, name) == getattr(self, name):
-                    raise exceptions.CoreException("tried to change read-only parameter '{0}' for a '{1}' object".format(name, type(self._instance()).__name__))
+                    raise exceptions.CoreException(
+                        f"tried to change read-only parameter '{name}' for a "
+                        f"'{type(self._instance()).__name__}' object"
+                    )
             else:
                 setattr(self, name, getattr(memento, name))
             
@@ -196,14 +210,18 @@ class ParametersMemento(object):
 
     def __getattr__(self, name):
         if not name in self._mapping_from_name_to_value:
-            raise exceptions.CoreException("tried to get unknown parameter '{0}'".format(name))
+            raise exceptions.CoreException(
+                f"tried to get unknown parameter '{name}'"
+            )
             
         
         return self._mapping_from_name_to_value[name]
 
     def __setattr__(self, name, value):
         if not name in self._mapping_from_name_to_value:
-            raise exceptions.CoreException("tried to set unknown parameter '{0}'".format(name))
+            raise exceptions.CoreException(
+                f"tried to set unknown parameter '{name}'"
+            )
             
         self._mapping_from_name_to_value[name] = value
 
@@ -222,9 +240,13 @@ class ParametersMemento(object):
 
     def get_default_value_for(self, name):
         if not name in self._mapping_from_name_to_value:
-            raise exceptions.CoreException("tried to get default value of unknown parameter '{0}'".format(name))
+            raise exceptions.CoreException(
+                f"tried to get default value of unknown parameter '{name}'"
+            )
     
-        raise exceptions.CoreException("tried to get default value, for a parameter in a parameters memento")
+        raise exceptions.CoreException(
+            "tried to get default value, for a parameter in a parameters memento"
+        )
 
 
     def __str__(self):
@@ -311,7 +333,10 @@ class ParametersWithUnitsConverted(object):
 
     def __setattr__(self, name, value):
         if not name in self._original._mapping_from_name_to_definition:
-            raise exceptions.CoreException("Could not set unknown parameter '{0}' for a '{1}' object".format(name, type(self._original()).__name__))
+            raise exceptions.CoreException(
+                f"Could not set unknown parameter '{name}' for a "
+                f"'{type(self._original()).__name__}' object"
+            )
 
         try:
             setattr(self._original, name, self._converter.from_source_to_target(value))
@@ -517,8 +542,10 @@ class ModuleMethodParameterDefinition(ParameterDefinition):
         #        quantity = quantity | self.unit
         
         if self.set_method is None:
-            raise exceptions.CoreException("Could not set value for parameter '{0}' of a '{1}' object, parameter is read-only".format(self.name, type(object).__name__))
-        
+            raise exceptions.CoreException(
+                f"Could not set value for parameter '{self.name}' of a "
+                f"'{type(object).__name__}' object, parameter is read-only"
+            )
         getattr(object, self.set_method)(quantity)
         
         if self.get_method is None:
@@ -633,7 +660,10 @@ class ModuleVectorMethodParameterDefinition(ModuleMethodParameterDefinition):
             
     def set_value(self, parameter, object, vector_quantity):
         if self.set_method is None:
-            raise exceptions.CoreException("Could not set value for parameter '{0}' of a '{1}' object, parameter is read-only".format(self.name, type(object).__name__))
+            raise exceptions.CoreException(
+                f"Could not set value for parameter '{self.name}' of a "
+                f"'{type(object).__name__}' object, parameter is read-only"
+            )
         
         getattr(object, self.set_method)(*vector_quantity)
         
@@ -712,7 +742,10 @@ class ModuleArrayParameterDefinition(ParameterDefinition):
     def set_value(self, parameter, object, quantity):
         
         if self.set_method is None:
-            raise exceptions.CoreException("Could not set value for parameter '{0}' of a '{1}' object, parameter is read-only".format(self.name, type(object).__name__))
+            raise exceptions.CoreException(
+                "Could not set value for parameter '{self.name}' of a "
+                "'{type(object).__name__}' object, parameter is read-only"
+            )
         
         irange=getattr(object, self.range_method)()
         index=numpy.arange(irange[0],irange[1]+1)

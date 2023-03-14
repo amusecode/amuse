@@ -1090,10 +1090,10 @@ class MESAInterface(
 
     def get_accrete_composition_metals(self, index_of_the_star):
         result = {}
-        for element in ['li','be','b','c','n','o','f','ne','mg','al','si','p',
+        for element in ['li','be','b','c','n','o','f','ne','na','mg','al','si','p',
                         's','cl','ar','k','ca','sc','ti','v','cr','mn','fe',
                         'co','ni','cu','zn']:
-            r = self.get_control(index_of_the_star,'z_fraction_'+element)
+            r = self.get_control(index_of_the_star,f'z_fraction_{element}')
             result[element] = r['value']
 
         return result
@@ -1102,13 +1102,13 @@ class MESAInterface(
         '''
         Sets the accretion composition based on the following elements:
 
-        'li','be','b','c','n','o','f','ne','mg','al','si','p'
+        'li','be','b','c','n','o','f','ne','na','mg','al','si','p'
         's','cl','ar','k','ca','sc','ti','v','cr','mn','fe',
         'co','ni','cu','zn'
 
         Thus to set the li accretion fraction to 1/2 then pass li=0.5
 
-        If an element is not set then its left with its currernt value
+        If an element is not set then its left with its current value
 
         These must sum to 1.0 (the total z fraction is set by setting the non_metals to the 1-Z value)
 
@@ -1116,11 +1116,11 @@ class MESAInterface(
 
         result = {}
         for element,value in kwargs.items():
-            if element not in ['li','be','b','c','n','o','f','ne','mg','al','si','p',
+            if element not in ['li','be','b','c','n','o','f','ne','na','mg','al','si','p',
                         's','cl','ar','k','ca','sc','ti','v','cr','mn','fe',
                         'co','ni','cu','zn']:
-                raise ValueError("Bad element "+str(element))
-            r = self.set_control(index_of_the_star,'z_fraction_'+element,value)
+                raise ValueError(f"Bad element {element}")
+            r = self.set_control(index_of_the_star,f'z_fraction_{element}',value)
         return r
 
 
