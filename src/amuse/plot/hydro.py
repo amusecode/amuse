@@ -19,7 +19,7 @@ from amuse.units import units, nbody_system
 from amuse.units.quantities import as_vector_quantity
 from amuse.datamodel.rotation import new_rotation_matrix
 
-from .mapper import MapHydro
+from amuse.plot.mapper import MapHydro
 
 
 logger = logging.getLogger(__name__)
@@ -47,7 +47,7 @@ def plot_column_density(
     vmax=4,
     cmap='viridis',
 ):
-    cmap = copy.copy(matplotlib.cm.get_cmap(cmap))
+    cmap = copy.copy(matplotlib.colormaps[cmap])
     cmap.set_bad('k', alpha=1.0)
 
     column_density = maps.column_density
@@ -69,7 +69,7 @@ def plot_temperature(
     vmax=5,
     cmap="inferno",
 ):
-    cmap = copy.copy(matplotlib.cm.get_cmap(cmap))
+    cmap = copy.copy(matplotlib.colormaps[cmap])
     cmap.set_bad('k', alpha=1.0)
     temperature_map = maps.temperature
     logscale_temperature_map = numpy.log10(
@@ -276,7 +276,7 @@ def plot_hydro_and_stars(
             origin="lower",
         )
 
-    cmap = copy.copy(matplotlib.cm.get_cmap("coolwarm"))
+    cmap = copy.copy(matplotlib.colormaps["coolwarm"])
 
     if (
             (maps.stars is not None)
@@ -295,7 +295,7 @@ def plot_hydro_and_stars(
             ]
             else "white"
         )
-        ax.scatter(x, y, s=s, c=c, cmap=cmap, lw=0)
+        ax.scatter(x, y, s=s, c=c, lw=0)
 
     ax.set_xlabel("%s (%s)" % (maps.axes[0], length_unit))
     ax.set_ylabel("%s (%s)" % (maps.axes[1], length_unit))
@@ -349,28 +349,28 @@ def new_argument_parser():
     parser.add_argument(
         '-x',
         dest='x',
-        default=0,
+        default=0 | units.pc,
         type=units.pc,
         help='Central X coordinate',
     )
     parser.add_argument(
         '-y',
         dest='y',
-        default=0,
+        default=0 | units.pc,
         type=units.pc,
         help='Central Y coordinate',
     )
     parser.add_argument(
         '-z',
         dest='z',
-        default=0,
+        default=0 | units.pc,
         type=units.pc,
         help='Central Z coordinate',
     )
     parser.add_argument(
         '-w',
         dest='w',
-        default=10,
+        default=10 | units.pc,
         type=units.pc,
         help='Width',
     )
