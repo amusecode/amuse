@@ -46,7 +46,7 @@ class GetCodeFromHttp:
         filepath = os.path.join(self.src_directory(), filename)
         print(f"downloading version {self.version} from {url} to {filename}")
         if which('wget') is not None:
-            arguments = ['wget', url]
+            arguments = ['wget', '--user-agent="Mozilla"', url]
             subprocess.call(
                 arguments,
                 cwd=os.path.join(self.src_directory())
