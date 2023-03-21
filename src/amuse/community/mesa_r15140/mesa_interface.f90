@@ -84,8 +84,8 @@ module mesa_interface
     end subroutine load_inlist
 
 
-    subroutine create_pre_main_sequence(id, ierr)
-        integer, intent(in) :: id
+    subroutine create_pre_main_sequence(id, num_steps, ierr)
+        integer, intent(in) :: id, num_steps
         integer, intent(out) :: ierr
 
         type (star_info), pointer :: s
@@ -95,6 +95,10 @@ module mesa_interface
 
         s% job% create_pre_main_sequence_model = .true.
         s% job% load_saved_model = .false.
+        if (num_steps>0) then
+            s% job% pre_ms_relax_num_steps = num_steps
+            s% job% pre_ms_relax_to_start_radiative_core = .false.
+        end if
 
     end subroutine create_pre_main_sequence
 
