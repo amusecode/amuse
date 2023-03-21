@@ -205,7 +205,7 @@ module mesa_interface
         integer, intent(out) :: ierr
         logical :: restart
         type (star_info), pointer :: s
-        logical, parameter :: dbg=.true.
+        logical, parameter :: dbg=.false.
 
         call star_ptr(id, s, ierr)
         if (failed('star_ptr',ierr)) return
@@ -506,7 +506,7 @@ module mesa_interface
 
         integer :: model_number
         logical :: continue_evolve_loop, first_try
-        logical,parameter :: dbg=.true.
+        logical,parameter :: dbg=.false.
 
         ierr = MESA_SUCESS
 
