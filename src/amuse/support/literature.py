@@ -101,7 +101,6 @@ class TrackLiteratureReferences:
 
                 terminal_message = f"""
 
-Thank you for using AMUSE!
 In this session you have used the modules below.
 Please use the {tex_filename} and {bib_filename} files to include the relevant
 citations.

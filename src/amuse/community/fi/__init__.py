@@ -1,1 +1,1 @@
-from .interface import Fi
+from .interface import Fi, FiMap

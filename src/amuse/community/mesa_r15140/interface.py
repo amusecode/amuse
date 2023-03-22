@@ -1336,6 +1336,7 @@ class MESA(StellarEvolution, InternalStellarStructure):
         handler.add_method('EDIT', 'new_pre_ms_particle')
         handler.add_method('UPDATE', 'new_pre_ms_particle')
         handler.add_transition('RUN', 'UPDATE', 'new_pre_ms_particle', False)
+        handler.add_transition('RUN', 'UPDATE', 'load_photo', False)
         handler.add_method('EDIT', 'finalize_stellar_model')
         handler.add_method('UPDATE', 'finalize_stellar_model')
         handler.add_transition('RUN', 'UPDATE', 'finalize_stellar_model', False)

@@ -2,19 +2,17 @@
 
 import subprocess
 import os
-import sys
-import time
 import urllib.request
 import urllib.parse
 import urllib.error
+from shutil import which
 from optparse import OptionParser
-import glob
-import shutil
 import stat
 
-class GetCodeFromHttp(object):
-    url_template = ''
+
+class GetCodeFromHttp:
     filename_template = "mesa-r{version}.zip"
+    url_template = ''
     version = ""
     zip=True
     unpack=True
@@ -40,16 +38,27 @@ class GetCodeFromHttp(object):
         print("done")
 
     def start(self):
-        try:
+        if not os.path.exists('src'):
             os.mkdir('src')
-        except FileExistsError:
-            pass
 
         url = self.url_template.format(version=self.version)
         filename = self.filename_template.format(version=self.version)
         filepath = os.path.join(self.src_directory(), filename)
         print(f"downloading version {self.version} from {url} to {filename}")
-        urllib.request.urlretrieve(url, filepath)
+        if which('wget') is not None:
+            arguments = ['wget', '--user-agent="Mozilla"', url]
+            subprocess.call(
+                arguments,
+                cwd=os.path.join(self.src_directory())
+            )
+        elif which('curl') is not None:
+            arguments = ['curl', '-L', '-O', url]
+            subprocess.call(
+                arguments,
+                cwd=os.path.join(self.src_directory())
+            )
+        else:
+            urllib.request.urlretrieve(url, filepath)
         print("downloading finished")
         self.unpack_downloaded_file(filename)
 
