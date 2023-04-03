@@ -1040,24 +1040,24 @@ class BuildCodes(CodeCommand):
             else:
                 level = log.INFO
             if not_build:
-                self.announce("Community codes not built (because of errors):",  level = level)
+                self.announce("Community codes not built (because of errors/ missing libraries):",  level = level)
                 self.announce("="*80,  level = level)
                 for x in not_build:
                     self.announce(' * {0}'.format(x), level =  level)
             if not_build_special:
-                self.announce("Optional builds failed, need special libraries:",  level = level)
+                self.announce("Optional builds skipped, need special libraries:",  level = level)
                 for x in sorted(not_build_special.keys()):
                     self.announce(' * {0} - {1}'.format(x, ', '.join(not_build_special[x])), level = level)
             if is_cuda_needed:
-                self.announce("Optional builds failed, need CUDA/GPU libraries:",  level = level)
+                self.announce("Optional builds skipped, need CUDA/GPU libraries:",  level = level)
                 for x in is_cuda_needed:
                     self.announce(' * {0}'.format(x), level = level)
             if are_python_imports_needed:
-                self.announce("Optional builds failed, need additional python packages:",  level = level)
+                self.announce("Optional builds skipped, need additional python packages:",  level = level)
                 for x in are_python_imports_needed:
                     self.announce(' * {0}'.format(x), level = level)
             if is_download_needed:
-                self.announce("Optional builds failed, need separate download",  level = level)
+                self.announce("Optional builds skipped, need separate download",  level = level)
                 for x in is_download_needed:
                     self.announce(' * {0} , make {0}.code DOWNLOAD_CODES=1'.format(x), level = level)
 
@@ -1085,6 +1085,7 @@ class BuildCodes(CodeCommand):
             ),  
             level = level
         )
+        self.announce("(not all codes and libraries need to be built)")
         
         if self.config and (not hasattr(self.config, 'java') or not hasattr(self.config.java, 'is_enabled')):
             self.announce(
