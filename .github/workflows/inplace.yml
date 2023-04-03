@@ -74,4 +74,4 @@ jobs:
       env:
         OMPI_MCA_rmaps_base_oversubscribe: 1
         OMPI_MCA_btl_tcp_if_include: lo
-
+        OMPI_MCA_pmix_server_max_wait: 10
