@@ -30,10 +30,11 @@ from distutils import log
 from distutils import spawn
 from distutils import file_util
 from distutils.errors import DistutilsError
-from distutils.command.build import build
 from distutils.command.clean import clean
 from distutils.command.install import install
+from setuptools.command.build import build
 from setuptools.command.develop import develop
+from setuptools.command.editable_wheel import editable_wheel
 
 from subprocess import call, Popen, PIPE, STDOUT
 
@@ -1250,6 +1251,20 @@ class Develop(develop):
 
         develop.run(self)
 
+class Editable_wheel(editable_wheel):
+
+    sub_commands=list(develop.sub_commands)
+
+    def run(self):
+        build.sub_commands.remove( ('build_codes', None) )
+        build.sub_commands.append( ('build_libraries_in_place', None) )
+        
+        # this ensures sub commands are run first (only run once)
+        for cmd_name in self.get_sub_commands():
+            self.run_command(cmd_name)
+
+        editable_wheel.run(self)
+
 def setup_commands():
     mapping_from_command_name_to_command_class = {
         'build_codes': BuildCodes,
@@ -1263,7 +1278,8 @@ def setup_commands():
         'build_libraries_in_place': BuildLibraries_inplace,
         'install_libraries': InstallLibraries,
         'develop' : Develop,
-        'develop_build' : BuildCodes_inplace
+        'develop_build' : BuildCodes_inplace,
+        'editable_wheel' : Editable_wheel
     }
     
     build.sub_commands.append(('build_codes', None))
