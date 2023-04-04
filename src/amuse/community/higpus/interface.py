@@ -1,8 +1,14 @@
+import os
+
 from amuse.community import *
 from amuse.community.interface.gd import GravitationalDynamics 
 from amuse.community.interface.gd import GravitationalDynamicsInterface
 
-class HiGPUsInterface(CodeInterface, GravitationalDynamicsInterface):
+class HiGPUsInterface(CodeInterface, 
+                      GravitationalDynamicsInterface,
+                      LiteratureReferencesMixIn,
+                      CodeWithDataDirectories
+                      ):
     
 
     """
@@ -10,6 +16,11 @@ class HiGPUsInterface(CodeInterface, GravitationalDynamicsInterface):
     libraries to fully exploit all the capabilities offered by hybrid supercomputing platforms. Moreover, it is implemented using block 
     time steps such to be able to deal with stiff problems like highly collisional gravitational N-body 
     problems.
+
+    NOTE_1: the code works with nbody units ( G = 1 ): please check the parameters, more info are given in the README file
+    NOTE_2: the evolve method requires an input time (in nbody units) greater than or equal of the maximum time step ( 't' > or = 'max_step')
+    NOTE_3: the code only seems to work when the number of particles is a power of 2
+
 
     .. [#] ADS:2013JCoPh.236..580C (R. Capuzzo-Dolcetta, M. Spera, D.Punzo, *Journal of Computational Physics*, Volume 236, 1 March 2013, Pages 580-593:
     .. [#] ... 'A fully parallel, high precision, N-body code running on hybrid computing platforms')
@@ -20,6 +31,10 @@ class HiGPUsInterface(CodeInterface, GravitationalDynamicsInterface):
             
     def __init__(self, **keyword_arguments):
         CodeInterface.__init__(self, name_of_the_worker="higpus_worker_gpu", **keyword_arguments)
+        LiteratureReferencesMixIn.__init__(self)
+        CodeWithDataDirectories.__init__(self)
+        
+
     
     @legacy_function
     def echo_int():
@@ -348,7 +363,7 @@ class HiGPUs(GravitationalDynamics):
             "set_eta4",                                 
             "eta4",                  
             "timestep parameter",    
-            default_value = 0.01 | units.none
+            default_value = 0.01 
         )
 
         handler.add_method_parameter(
@@ -356,7 +371,7 @@ class HiGPUs(GravitationalDynamics):
             "set_eta6",                          
             "eta6",                             
             "timestep parameter",                
-            default_value = 0.4 | units.none
+            default_value = 0.4 
         )
 
         handler.add_method_parameter(
@@ -413,7 +428,7 @@ class HiGPUs(GravitationalDynamics):
             "set_number_of_Threads",              
             "Threads",                            
             "Threads per block",                  
-            default_value = 128 | units.none
+            default_value = 128
         )
 
         handler.add_method_parameter(
@@ -421,7 +436,7 @@ class HiGPUs(GravitationalDynamics):
             "set_number_of_Print",                
             "n_Print",                            
             "start number to print file",         
-            default_value = 1000000 | units.none
+            default_value = 1000000
         )
 
         handler.add_method_parameter(
@@ -461,7 +476,7 @@ class HiGPUs(GravitationalDynamics):
             "set_output_path_name",
             "output_path_name",
             "output path name",
-            default_value = "./data/" | units.none
+            default_value = "./data/" 
         )
 
         handler.add_method_parameter(
@@ -469,7 +484,7 @@ class HiGPUs(GravitationalDynamics):
             "set_number_of_GPU",                  
             "n_gpu",                              
             "number of gpus per node",            
-            default_value = 2 | units.none
+            default_value = 1 
         )
 
 
@@ -643,7 +658,7 @@ class HiGPUs(GravitationalDynamics):
         handler.add_method(
             "set_eta6",
             (
-                units.none
+                handler.NO_UNIT
             ),
             (
                 handler.ERROR_CODE
@@ -654,7 +669,7 @@ class HiGPUs(GravitationalDynamics):
             "get_eta6",
             (),
             (
-                units.none,
+                handler.NO_UNIT,
                 handler.ERROR_CODE
             )
         )
@@ -662,7 +677,7 @@ class HiGPUs(GravitationalDynamics):
         handler.add_method(
             "set_eta4",
             (
-                units.none
+                handler.NO_UNIT
             ),
             (
                      handler.ERROR_CODE
@@ -673,7 +688,7 @@ class HiGPUs(GravitationalDynamics):
             "get_eta4",
             (),
             (
-                units.none,
+                handler.NO_UNIT,
                 handler.ERROR_CODE
             )
         )
@@ -682,7 +697,7 @@ class HiGPUs(GravitationalDynamics):
         handler.add_method(
             "set_number_of_GPU",
             (
-                     units.none
+                     handler.NO_UNIT
             ),
             (
                      handler.ERROR_CODE
@@ -693,7 +708,7 @@ class HiGPUs(GravitationalDynamics):
             "get_number_of_GPU",
             (),
             (
-                     units.none,
+                     handler.NO_UNIT,
                 handler.ERROR_CODE
             )
         )
@@ -702,7 +717,7 @@ class HiGPUs(GravitationalDynamics):
             "get_number_of_particles",
             (),
             (
-                units.none,
+                handler.NO_UNIT,
                 handler.ERROR_CODE
             )
         )
@@ -711,7 +726,7 @@ class HiGPUs(GravitationalDynamics):
         handler.add_method(
             "set_number_of_Threads",
             (
-                units.none
+                handler.NO_UNIT
             ),
             (
                      handler.ERROR_CODE
@@ -722,7 +737,7 @@ class HiGPUs(GravitationalDynamics):
             "get_number_of_Threads",
             (),
             (
-                     units.none,
+                     handler.NO_UNIT,
                 handler.ERROR_CODE
             )
         )
@@ -730,7 +745,7 @@ class HiGPUs(GravitationalDynamics):
         handler.add_method(
             "set_number_of_Print",
             (
-                     units.none
+                     handler.NO_UNIT
             ),
             (
                      handler.ERROR_CODE
@@ -741,7 +756,7 @@ class HiGPUs(GravitationalDynamics):
             "get_number_of_Print",
             (),
             (
-                     units.none,
+                     handler.NO_UNIT,
                 handler.ERROR_CODE
             )
         )
@@ -806,7 +821,7 @@ class HiGPUs(GravitationalDynamics):
         handler.add_method(
             "set_gpu_name",
             (
-                units.none
+                handler.NO_UNIT
             ),
             (
                 handler.ERROR_CODE
@@ -817,7 +832,7 @@ class HiGPUs(GravitationalDynamics):
             "get_gpu_name",
             (),
             (
-                     units.none,
+                     handler.NO_UNIT,
                 handler.ERROR_CODE
             )
         )
@@ -825,7 +840,7 @@ class HiGPUs(GravitationalDynamics):
         handler.add_method(
             "set_output_path_name",
             (
-                units.none
+                handler.NO_UNIT
             ),
             (
                 handler.ERROR_CODE
@@ -836,7 +851,7 @@ class HiGPUs(GravitationalDynamics):
             "get_output_path_name",
             (),
             (
-                units.none,
+                handler.NO_UNIT,
                 handler.ERROR_CODE
             )
         )
@@ -845,7 +860,18 @@ class HiGPUs(GravitationalDynamics):
     def define_particle_sets(self, handler):
         GravitationalDynamics.define_particle_sets(self, handler)
 
+    def initialize_code(self):
+        self.overridden().initialize_code()
+        self.parameters.send_not_set_parameters_to_code()
 
+        self.parameters.output_path_name=self.output_directory
+
+    def commit_particles(self):
+        n=len(self.particles)
+        if (n & (n-1) != 0):
+            raise Exception(f"Higpus needs a power of two number of particles not {n}, try padding with zero mass particles")
+      
+        self.overridden().commit_particles()
 
 
 Higpus = HiGPUs

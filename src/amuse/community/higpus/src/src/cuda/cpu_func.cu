@@ -31,6 +31,7 @@ HostError CPU_memcheck(const char *file, const int line, string path){
 		string temp;
 		temp = path + "cpu_memory.dat";
 		output_name = to_char(temp);
+        
 		meminfo.open(output_name);
 		if(!meminfo)
          return HNoFile;
@@ -50,6 +51,7 @@ HostError CPU_memcheck(const char *file, const int line, string path){
    	isNumeric_int(to_char(str2),&memfree);
 
    	proc>>str1>>str2>>str3;
+		if(str1!="Buffers:") proc>>str1>>str2>>str3; // MemAvailable: may come first?
 		if(str1!="Buffers:")
 			return HInvalidMeminfo;
    	isNumeric_int(to_char(str2),&membuf);
@@ -58,7 +60,6 @@ HostError CPU_memcheck(const char *file, const int line, string path){
 		if(str1!="Cached:")
 			return HInvalidMeminfo;
    	isNumeric_int(to_char(str2),&cached);
-
 
 		meminfo<<fixed<<setprecision(1);
 		float used = memtot/1024.0 - memfree/1024.0 - membuf/1024.0 - cached/1024.0;

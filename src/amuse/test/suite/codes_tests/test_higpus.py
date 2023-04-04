@@ -206,16 +206,11 @@ class TestHiGPUs(TestWithMPI):
     def test1(self):
         convert_nbody = nbody_system.nbody_to_si(1.0 | units.MSun, 149.5e6 | units.km)
         instance = self.new_instance_of_an_optional_code(HiGPUs, convert_nbody)
-        instance.initialize_code()
-    
-        instance.parameters.eta6 = 0.01
-        instance.parameters.eps = 0.0 | units.km
-        instance.commit_parameters()
+
         stars = self.new_system_of_sun_and_earth()
         earth = stars[1]
     
         instance.particles.add_particles(stars)
-        instance.commit_particles()
         instance.evolve_model(365 | units.day)
     
         instance.particles.copy_values_of_all_attributes_to(stars)
@@ -235,8 +230,6 @@ class TestHiGPUs(TestWithMPI):
         instance.particles.copy_values_of_all_attributes_to(stars)
         position_after_half_a_rotation = earth.position.value_in(units.AU)[1]
         self.assertAlmostEqual(-position_at_start, position_after_half_a_rotation, 2)
-        
-        instance.cleanup_code()
         
         instance.stop()
 
@@ -262,8 +255,6 @@ class TestHiGPUs(TestWithMPI):
          
         instance.particles.mass =  [17.0, 33.0] | units.kg
         
-        instance.commit_particles()
-
         self.assertEqual(instance.get_mass(0), 17.0| units.kg) 
         self.assertEqual(instance.get_mass(1), 33.0| units.kg)  
         
@@ -275,11 +266,11 @@ class TestHiGPUs(TestWithMPI):
         instance.initialize_code()
         instance.parameters.eps = 0.0 | nbody_system.length
         instance.commit_parameters()  
-        particles = datamodel.Particles(6)
-        particles.mass = nbody_system.mass.new_quantity(range(1,7))
+        particles = datamodel.Particles(4)
+        particles.mass = nbody_system.mass.new_quantity(range(1,5))
         particles.radius =   0.00001 | nbody_system.length
-        particles.position = [[-1.0,0.0,0.0],[1.0,0.0,0.0],[0.0,-1.0,0.0],[0.0,1.0,0.0],[0.0,0.0,-1.0],[0.0,0.0,1.0]] | nbody_system.length
-        particles.velocity = [[0.0,0.0,0.0],[0.0,0.0,0.0],[0.0,0.0,0.0],[0.0,0.0,0.0],[0.0,0.0,0.0],[0.0,0.0,0.0]] | nbody_system.speed
+        particles.position = [[-1.0,0.0,0.0],[1.0,0.0,0.0],[0.0,-1.0,0.0],[0.0,1.0,0.0]] | nbody_system.length
+        particles.velocity = [[0.0,0.0,0.0],[0.0,0.0,0.0],[0.0,0.0,0.0],[0.0,0.0,0.0]] | nbody_system.speed
         
         instance.particles.add_particles(particles)
         
@@ -342,7 +333,7 @@ class TestHiGPUs(TestWithMPI):
         instance.parameters.eta6 = 0.01
         instance.commit_parameters()
 
-        stars = new_plummer_model(100)
+        stars = new_plummer_model(64)
         
         instance.particles.add_particles(stars)
         instance.commit_particles()
@@ -421,6 +412,50 @@ class TestHiGPUs(TestWithMPI):
         self.assertEqual( instance.parameters.max_step ,  pow(2.,-3.0) | nbody_system.time)
         self.assertEqual( instance.parameters.min_step ,  pow(2.,-30.0) | nbody_system.time)
         self.assertEqual( instance.parameters.gpu_name ,  "")
-        self.assertEqual( instance.parameters.n_gpu ,  2)
+        self.assertEqual( instance.parameters.n_gpu ,  1)
         instance.cleanup_code()
         instance.stop()
+
+    def test8(self):
+       
+        instance = self.new_instance_of_an_optional_code(HiGPUs)
+        
+        particles=new_plummer_model(128)
+                
+        instance.particles.add_particles(particles)
+        
+        E0=instance.kinetic_energy+instance.potential_energy
+        
+        instance.evolve_model(1. | nbody_system.time)
+
+        E1=instance.kinetic_energy+instance.potential_energy
+
+        self.assertLess(abs(E1-E0)/abs(E0), 1.e-6)
+        
+        
+        instance.stop()
+
+    def test9(self):
+       
+        instance = self.new_instance_of_an_optional_code(HiGPUs)
+                
+        particles=new_plummer_model(128)
+                
+        particles[0:64].mass*=0        
+        particles[64:].mass*=2        
+                
+        instance.particles.add_particles(particles)
+        
+        E0=instance.kinetic_energy+instance.potential_energy
+        
+        instance.evolve_model(1. | nbody_system.time)
+
+        E1=instance.kinetic_energy+instance.potential_energy
+
+        self.assertLess(abs(E1-E0)/abs(E0), 1.e-6)
+        
+        
+        instance.stop()
+        
+        
+
