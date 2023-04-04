@@ -31,12 +31,8 @@ class BSEInterface(CodeInterface, common.CommonCodeInterface , LiteratureReferen
     response of the secondary to accretion and the outcome of any merger events are in 
     place in BSE and the details can be found in the BSE paper:
     
-        .. [#] Hurley J.R., Tout C.A., & Pols O.R., 2002, MNRAS, 329, 897:
-        .. [#] ... Evolution of binary stars and the effect of tides on binary populations
-        .. [#] [2002MNRAS.329..897H]
-        .. [#] Hurley J.R., Pols O.R., Tout C.A., 2000, MNRAS, 315, 543:
-        .. [#] ... Comprehensive analytic formulae for stellar evolution as a function of mass and metallicity
-        .. [#] [2000MNRAS.315..543H]
+        .. [#] ADS:2002MNRAS.329..897H (Hurley J.R., Tout C.A., & Pols O.R., 2002, MNRAS, 329, 897)
+        .. [#] ADS:2000MNRAS.315..543H (Hurley J.R., Pols O.R., Tout C.A., 2000, MNRAS, 315, 543)
     """
     def __init__(self, **options):
         CodeInterface.__init__(self, name_of_the_worker="bse_worker", **options)

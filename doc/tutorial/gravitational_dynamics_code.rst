@@ -16,7 +16,7 @@ the previous example. Thus, we can create the initial directory structure of our
 
 .. code-block:: bash
 
-    > $AMUSE_DIR/build.py --type=c --mode=dir SimpleGrav
+    > amusifier --type=c --mode=dir SimpleGrav
 
 
 The Legacy Code

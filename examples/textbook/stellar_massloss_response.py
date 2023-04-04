@@ -38,6 +38,7 @@ def main(Mstar, z, dmdt):
     stellar.parameters.metallicity = z
     bodies = Particles(mass=Mstar)
     stellar.particles.add_particles(bodies)
+    stellar = turnon_massloss(stellar)
     channel_to_framework = stellar.particles.new_channel_to(bodies)
     copy_argument = ["age", "mass", "radius", "stellar_type"]
     while stellar.particles[0].stellar_type < Second_Asymptotic_Giant_Branch:
@@ -49,6 +50,19 @@ def main(Mstar, z, dmdt):
               bodies[0].radius, dmdt, bodies[0].stellar_type)
     stellar.stop()
 ###BOOKLISTSTOP2###
+
+def turnon_massloss(stellar):
+    if stellar.mesa_version == '2208':
+        return stellar # Mass loss defaults to on in this version
+    else:
+        for particle in stellar.particles:
+            particle.set_control('cool_wind_RGB_scheme','Reimers')
+            particle.set_control('Reimers_scaling_factor',0.1)
+            particle.set_control('cool_wind_AGB_scheme','Blocker')
+            particle.set_control('Blocker_scaling_factor',0.5)
+            particle.set_control('RGB_to_AGB_wind_switch',10**-4)
+    return stellar
+
     
 def new_option_parser():
     from amuse.units.optparse import OptionParser

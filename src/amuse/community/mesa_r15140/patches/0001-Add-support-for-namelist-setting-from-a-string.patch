@@ -1,0 +1,773 @@
+From e8ba846368d3f64090bea41cbcf7645946785967 Mon Sep 17 00:00:00 2001
+From: Robert Farmer <r.j.farmer@uva.nl>
+Date: Fri, 16 Jul 2021 11:29:50 +0200
+Subject: [PATCH] Add support for namelist setting from a string
+
+---
+ binary/private/binary_ctrls_io.f90     | 66 ++++++++++++++++++
+ binary/private/binary_job_ctrls_io.f90 | 67 ++++++++++++++++++
+ binary/public/binary_lib.f90           | 66 ++++++++++++++++++
+ eos/private/eos_ctrls_io.f90           | 71 ++++++++++++++++++-
+ eos/public/eos_lib.f90                 | 31 +++++++++
+ kap/private/kap_ctrls_io.f90           | 95 +++++++++++++++++++++++++-
+ kap/public/kap_lib.f90                 | 30 ++++++++
+ star/private/ctrls_io.f90              | 67 ++++++++++++++++++
+ star/private/pgstar_ctrls_io.f90       |  1 -
+ star/private/star_job_ctrls_io.f90     | 70 +++++++++++++++++++
+ star/public/star_lib.f90               | 62 +++++++++++++++++
+ 11 files changed, 623 insertions(+), 3 deletions(-)
+
+diff --git a/binary/private/binary_ctrls_io.f90 b/binary/private/binary_ctrls_io.f90
+index 8c8c2aa5..45c3cc6e 100644
+--- a/binary/private/binary_ctrls_io.f90
++++ b/binary/private/binary_ctrls_io.f90
+@@ -779,5 +779,71 @@
+       end subroutine write_binary_controls
+ 
+ 
++      subroutine get_binary_control(b, name, val, ierr)
++         use utils_lib, only: StrUpCase
++         type (binary_info), pointer :: b
++         character(len=*),intent(in) :: name
++         character(len=*), intent(out) :: val
++         integer, intent(out) :: ierr
++   
++         character(len(name)+1) :: upper_name
++         character(len=512) :: str
++         integer :: iounit,iostat,ind,i
++   
++   
++         ! First save current controls
++         call set_binary_controls_for_writing(b, ierr)
++         if(ierr/=0) return
++   
++         ! Write namelist to temporay file
++         open(newunit=iounit,status='scratch')
++         write(iounit,nml=binary_controls)
++         rewind(iounit)
++   
++         ! Namelists get written in captials
++         upper_name = trim(StrUpCase(name))//'=' 
++         val = ''
++         ! Search for name inside namelist
++         do 
++            read(iounit,'(A)',iostat=iostat) str
++            ind = index(trim(str),trim(upper_name))
++            if( ind /= 0 ) then
++               val = str(ind+len_trim(upper_name):len_trim(str)-1) ! Remove final comma and starting =
++               do i=1,len(val)
++                  if(val(i:i)=='"') val(i:i) = ' '
++               end do
++               exit
++            end if
++            if(is_iostat_end(iostat)) exit
++         end do   
++   
++         if(len_trim(val) == 0 .and. ind==0) ierr = -1
++   
++         close(iounit)
++   
++      end subroutine get_binary_control
++   
++      subroutine set_binary_control(b, name, val, ierr)
++         type (binary_info), pointer :: b
++         character(len=*), intent(in) :: name, val
++         character(len=len(name)+len(val)+19) :: tmp
++         integer, intent(out) :: ierr
++   
++         ! First save current controls
++         call set_binary_controls_for_writing(b, ierr)
++         if(ierr/=0) return
++   
++         tmp=''
++         tmp = '&binary_controls '//trim(name)//'='//trim(val)//' /'
++   
++         ! Load into namelist
++         read(tmp, nml=binary_controls)
++   
++         ! Add to star
++         call store_binary_controls(b, ierr)
++         if(ierr/=0) return
++   
++      end subroutine set_binary_control
++
+       end module binary_ctrls_io
+ 
+diff --git a/binary/private/binary_job_ctrls_io.f90 b/binary/private/binary_job_ctrls_io.f90
+index 7730e067..4211fbc4 100644
+--- a/binary/private/binary_job_ctrls_io.f90
++++ b/binary/private/binary_job_ctrls_io.f90
+@@ -306,5 +306,72 @@
+       end subroutine do_write_binary_job
+ 
+ 
++      subroutine get_binary_job(b, name, val, ierr)
++         use utils_lib, only: StrUpCase
++         type (binary_info), pointer :: b
++         character(len=*),intent(in) :: name
++         character(len=*), intent(out) :: val
++         integer, intent(out) :: ierr
++   
++         character(len(name)+1) :: upper_name
++         character(len=512) :: str
++         integer :: iounit,iostat,ind,i
++   
++   
++         ! First save current controls
++         call set_binary_job_controls_for_writing(b, ierr)
++         if(ierr/=0) return
++   
++         ! Write namelist to temporay file
++         open(newunit=iounit,status='scratch')
++         write(iounit,nml=binary_job)
++         rewind(iounit)
++   
++         ! Namelists get written in captials
++         upper_name = trim(StrUpCase(name))//'=' 
++         val = ''
++         ! Search for name inside namelist
++         do 
++            read(iounit,'(A)',iostat=iostat) str
++            ind = index(trim(str),trim(upper_name))
++            if( ind /= 0 ) then
++               val = str(ind+len_trim(upper_name):len_trim(str)-1) ! Remove final comma and starting =
++               do i=1,len(val)
++                  if(val(i:i)=='"') val(i:i) = ' '
++               end do
++               exit
++            end if
++            if(is_iostat_end(iostat)) exit
++         end do   
++   
++         if(len_trim(val) == 0 .and. ind==0 ) ierr = -1
++   
++         close(iounit)
++   
++      end subroutine get_binary_job
++   
++      subroutine set_binary_job(b, name, val, ierr)
++         type (binary_info), pointer :: b
++         character(len=*), intent(in) :: name, val
++         character(len=len(name)+len(val)+14) :: tmp
++         integer, intent(out) :: ierr
++   
++         ! First save current controls
++         call set_binary_job_controls_for_writing(b, ierr)
++         if(ierr/=0) return
++   
++         tmp=''
++         tmp = '&binary_job '//trim(name)//'='//trim(val)//' /'
++   
++         ! Load into namelist
++         read(tmp, nml=binary_job)
++   
++         ! Add to star
++         call store_binary_job_controls(b, ierr)
++         if(ierr/=0) return
++   
++      end subroutine set_binary_job
++
++
+       end module binary_job_ctrls_io
+ 
+diff --git a/binary/public/binary_lib.f90 b/binary/public/binary_lib.f90
+index e7699043..8c1c902e 100644
+--- a/binary/public/binary_lib.f90
++++ b/binary/public/binary_lib.f90
+@@ -163,5 +163,71 @@
+          call eval_wind_xfer_fractions(binary_id, ierr)
+       end subroutine binary_eval_wind_xfer_fractions
+ 
++
++      subroutine binary_get_control_namelist(binary_id, name, val, ierr)
++         use binary_ctrls_io, only: get_binary_control
++         use binary_def, only: binary_info, binary_ptr
++         integer, intent(in) :: binary_id
++         character(len=*),intent(in) :: name
++         character(len=*),intent(out) :: val
++         integer, intent(out) :: ierr
++         type (binary_info), pointer :: b
++
++         ierr = 0
++         call binary_ptr(binary_id, b, ierr)
++         if(ierr/=0) return
++         call get_binary_control(b, name, val, ierr)
++
++      end subroutine binary_get_control_namelist
++
++      subroutine binary_set_control_namelist(binary_id, name, val, ierr)
++         use binary_ctrls_io, only: set_binary_control
++         use binary_def, only: binary_info, binary_ptr
++         integer, intent(in) :: binary_id
++         character(len=*),intent(in) :: name
++         character(len=*),intent(in) :: val
++         integer, intent(out) :: ierr
++         type (binary_info), pointer :: b
++
++         ierr = 0
++         call binary_ptr(binary_id, b, ierr)
++         if(ierr/=0) return
++         call set_binary_control(b, name, val, ierr)
++
++      end subroutine binary_set_control_namelist
++
++
++      subroutine binary_get_star_job_namelist(binary_id, name, val, ierr)
++         use binary_job_ctrls_io, only: get_binary_job
++         use binary_def, only: binary_info, binary_ptr
++         integer, intent(in) :: binary_id
++         character(len=*),intent(in) :: name
++         character(len=*),intent(out) :: val
++         integer, intent(out) :: ierr
++         type (binary_info), pointer :: b
++
++         ierr = 0
++         call binary_ptr(binary_id, b, ierr)
++         if(ierr/=0) return
++         call get_binary_job(b, name, val, ierr)
++
++      end subroutine binary_get_star_job_namelist
++
++      subroutine binary_set_star_job_namelist(binary_id, name, val, ierr)
++         use binary_job_ctrls_io, only: set_binary_job
++         use binary_def, only: binary_info, binary_ptr
++         integer, intent(in) :: binary_id
++         character(len=*),intent(in) :: name
++         character(len=*),intent(in) :: val
++         integer, intent(out) :: ierr
++         type (binary_info), pointer :: b
++
++         ierr = 0
++         call binary_ptr(binary_id, b, ierr)
++         if(ierr/=0) return
++         call set_binary_job(b, name, val, ierr)
++
++      end subroutine binary_set_star_job_namelist
++
+       end module binary_lib
+ 
+diff --git a/eos/private/eos_ctrls_io.f90 b/eos/private/eos_ctrls_io.f90
+index 216f65f9..3876080f 100644
+--- a/eos/private/eos_ctrls_io.f90
++++ b/eos/private/eos_ctrls_io.f90
+@@ -31,7 +31,7 @@
+ 
+    implicit none
+ 
+-   public :: read_namelist, write_namelist
++   public :: read_namelist, write_namelist, set_eos_controls, get_eos_controls
+    private
+ 
+    logical :: use_max_SCVH_for_PT, use_max_CMS_for_PT
+@@ -628,5 +628,74 @@
+    end subroutine set_controls_for_writing
+    
+ 
++   subroutine get_eos_controls(rq, name, val, ierr)
++      use utils_lib, only: StrUpCase
++      type (EoS_General_Info), pointer :: rq
++      character(len=*),intent(in) :: name
++      character(len=*), intent(out) :: val
++      integer, intent(out) :: ierr
++
++      character(len(name)+1) :: upper_name
++      character(len=512) :: str
++      integer :: iounit,iostat,ind,i
++
++      ierr = 0
++
++
++      ! First save current controls
++      call set_controls_for_writing(rq)
++
++      ! Write namelist to temporay file
++      open(newunit=iounit,status='scratch')
++      write(iounit,nml=eos)
++      rewind(iounit)
++
++      ! Namelists get written in captials
++      upper_name = trim(StrUpCase(name))//'=' 
++      val = ''
++      ! Search for name inside namelist
++      do 
++         read(iounit,'(A)',iostat=iostat) str
++         ind = index(trim(str),trim(upper_name))
++         if( ind /= 0 ) then
++            val = str(ind+len_trim(upper_name):len_trim(str)-1) ! Remove final comma and starting =
++            do i=1,len(val)
++               if(val(i:i)=='"') val(i:i) = ' '
++            end do
++            exit
++         end if
++         if(is_iostat_end(iostat)) exit
++      end do   
++
++      if(len_trim(val) == 0 .and. ind==0) ierr = -1
++
++      close(iounit)
++
++   end subroutine get_eos_controls
++
++   subroutine set_eos_controls(rq, name, val, ierr)
++      type (EoS_General_Info), pointer :: rq
++      character(len=*), intent(in) :: name, val
++      character(len=len(name)+len(val)+8) :: tmp
++      integer, intent(out) :: ierr
++
++      ierr = 0
++
++      ! First save current eos_controls
++      call set_controls_for_writing(rq)
++
++      tmp=''
++      tmp = '&eos '//trim(name)//'='//trim(val)//' /'
++
++      ! Load into namelist
++      read(tmp, nml=eos)
++
++      ! Add to eos
++      call store_controls(rq)
++      if(ierr/=0) return
++
++   end subroutine set_eos_controls
++
++
+    end module eos_ctrls_io
+ 
+diff --git a/eos/public/eos_lib.f90 b/eos/public/eos_lib.f90
+index 15c0d719..918defaf 100644
+--- a/eos/public/eos_lib.f90
++++ b/eos/public/eos_lib.f90
+@@ -1795,4 +1795,35 @@
+       end subroutine num_eos_files_loaded
+ 
+ 
++      subroutine eos_get_control_namelist(handle, name, val, ierr)
++         use eos_def
++         use eos_ctrls_io, only: get_eos_controls
++         integer, intent(in) :: handle ! eos handle; from star, pass s% eos_handle
++         character(len=*),intent(in) :: name
++         character(len=*),intent(out) :: val
++         integer, intent(out) :: ierr
++         type (EoS_General_Info), pointer :: rq
++         ierr = 0
++         call get_eos_ptr(handle,rq,ierr)
++         if(ierr/=0) return
++         call get_eos_controls(rq, name, val, ierr)
++
++      end subroutine eos_get_control_namelist
++
++      subroutine eos_set_control_namelist(handle, name, val, ierr)
++         use eos_def
++         use eos_ctrls_io, only: set_eos_controls
++         integer, intent(in) :: handle ! eos handle; from star, pass s% eos_handle
++         character(len=*),intent(in) :: name
++         character(len=*),intent(in) :: val
++         integer, intent(out) :: ierr
++         type (EoS_General_Info), pointer :: rq
++         ierr = 0
++         call get_eos_ptr(handle,rq,ierr)
++         if(ierr/=0) return
++         call set_eos_controls(rq, name, val, ierr)
++
++      end subroutine eos_set_control_namelist
++
++
+       end module eos_lib
+diff --git a/kap/private/kap_ctrls_io.f90 b/kap/private/kap_ctrls_io.f90
+index e206855f..bc0a8774 100644
+--- a/kap/private/kap_ctrls_io.f90
++++ b/kap/private/kap_ctrls_io.f90
+@@ -31,7 +31,7 @@
+ 
+    implicit none
+ 
+-   public :: read_namelist, write_namelist
++   public :: read_namelist, write_namelist, get_kap_controls, set_kap_controls
+    private
+ 
+    real(dp) :: Zbase
+@@ -453,7 +453,100 @@
+ 
+    subroutine set_controls_for_writing(rq)
+       type (Kap_General_Info), pointer :: rq
++
++      Zbase = rq% Zbase
++
++      kap_blend_logT_upper_bdy = rq% kap_blend_logT_upper_bdy
++      kap_blend_logT_lower_bdy = rq% kap_blend_logT_lower_bdy
++
++      cubic_interpolation_in_X = rq% cubic_interpolation_in_X
++      cubic_interpolation_in_Z = rq% cubic_interpolation_in_Z
++
++      include_electron_conduction = rq% include_electron_conduction
++
++      use_Zbase_for_Type1 = rq% use_Zbase_for_Type1
++      use_Type2_opacities = rq% use_Type2_opacities
++
++      kap_Type2_full_off_X = rq% kap_Type2_full_off_X
++      kap_Type2_full_on_X = rq% kap_Type2_full_on_X
++      kap_Type2_full_off_dZ = rq% kap_Type2_full_off_dZ
++      kap_Type2_full_on_dZ = rq% kap_Type2_full_on_dZ
++
++      show_info = rq% show_info
++
++
+    end subroutine set_controls_for_writing
+ 
+ 
++
++   subroutine get_kap_controls(rq, name, val, ierr)
++      use utils_lib, only: StrUpCase
++      type (kap_General_Info), pointer :: rq
++      character(len=*),intent(in) :: name
++      character(len=*), intent(out) :: val
++      integer, intent(out) :: ierr
++
++      character(len(name)+1) :: upper_name
++      character(len=512) :: str
++      integer :: iounit,iostat,ind,i
++
++      ierr = 0
++
++
++      ! First save current controls
++      call set_controls_for_writing(rq)
++
++      ! Write namelist to temporay file
++      open(newunit=iounit,status='scratch')
++      write(iounit,nml=kap)
++      rewind(iounit)
++
++      ! Namelists get written in captials
++      upper_name =  trim(StrUpCase(name))//'=' 
++      val = ''
++      ! Search for name inside namelist
++      do 
++         read(iounit,'(A)',iostat=iostat) str
++         ind = index(trim(str),trim(upper_name))
++         if( ind /= 0 ) then
++            val = str(ind+len_trim(upper_name):len_trim(str)-1) ! Remove final comma and starting =
++            do i=1,len(val)
++               if(val(i:i)=='"') val(i:i) = ' '
++            end do
++            exit
++         end if
++         if(is_iostat_end(iostat)) exit
++      end do   
++
++      if(len_trim(val) == 0 .and. ind==0 ) ierr = -1
++
++      close(iounit)
++
++   end subroutine get_kap_controls
++
++   subroutine set_kap_controls(rq, name, val, ierr)
++      type (kap_General_Info), pointer :: rq
++      character(len=*), intent(in) :: name, val
++      character(len=len(name)+len(val)+8) :: tmp
++      integer, intent(out) :: ierr
++
++      ierr = 0
++
++      ! First save current kap_controls
++      call set_controls_for_writing(rq)
++
++      tmp=''
++      tmp = '&kap '//trim(name)//'='//trim(val)//' /'
++
++      ! Load into namelist
++      read(tmp, nml=kap)
++
++      ! Add to kap
++      call store_controls(rq,ierr)
++      if(ierr/=0) return
++
++   end subroutine set_kap_controls
++
++
++
+    end module kap_ctrls_io
+diff --git a/kap/public/kap_lib.f90 b/kap/public/kap_lib.f90
+index 942aec11..f093cbb9 100644
+--- a/kap/public/kap_lib.f90
++++ b/kap/public/kap_lib.f90
+@@ -555,6 +555,36 @@
+       end subroutine get_op_mono_args
+ 
+ 
++      subroutine kap_get_control_namelist(handle, name, val, ierr)
++         use kap_def
++         use kap_ctrls_io, only: get_kap_controls
++         integer, intent(in) :: handle ! kap handle; from star, pass s% kap_handle
++         character(len=*),intent(in) :: name
++         character(len=*),intent(out) :: val
++         integer, intent(out) :: ierr
++         type (kap_General_Info), pointer :: rq
++         ierr = 0
++         call kap_ptr(handle,rq,ierr)
++         if(ierr/=0) return
++         call get_kap_controls(rq, name, val, ierr)
++
++      end subroutine kap_get_control_namelist
++
++      subroutine kap_set_control_namelist(handle, name, val, ierr)
++         use kap_def
++         use kap_ctrls_io, only: set_kap_controls
++         integer, intent(in) :: handle ! kap handle; from star, pass s% kap_handle
++         character(len=*),intent(in) :: name
++         character(len=*),intent(in) :: val
++         integer, intent(out) :: ierr
++         type (kap_General_Info), pointer :: rq
++         ierr = 0
++         call kap_ptr(handle,rq,ierr)
++         if(ierr/=0) return
++         call set_kap_controls(rq, name, val, ierr)
++
++      end subroutine kap_set_control_namelist
++
+ 
+       end module kap_lib
+ 
+diff --git a/star/private/ctrls_io.f90 b/star/private/ctrls_io.f90
+index 3f392789..6b3ec533 100644
+--- a/star/private/ctrls_io.f90
++++ b/star/private/ctrls_io.f90
+@@ -4171,5 +4171,72 @@ solver_test_partials_sink_name = s% solver_test_partials_sink_name
+ 
+  end subroutine set_controls_for_writing
+ 
++   subroutine get_control(s, name, val, ierr)
++      use utils_lib, only: StrUpCase
++      type (star_info), pointer :: s
++      character(len=*),intent(in) :: name
++      character(len=*), intent(out) :: val
++      integer, intent(out) :: ierr
++
++      character(len(name)+1) :: upper_name
++      character(len=512) :: str
++      integer :: iounit,iostat,ind,i
++
++
++      ! First save current controls
++      call set_controls_for_writing(s, ierr)
++      if(ierr/=0) return
++
++      ! Write namelist to temporay file
++      open(newunit=iounit,status='scratch')
++      write(iounit,nml=controls)
++      rewind(iounit)
++
++      ! Namelists get written in captials
++      upper_name = trim(StrUpCase(name))//'=' 
++      val = ''
++      ! Search for name inside namelist
++      do 
++         read(iounit,'(A)',iostat=iostat) str
++         ind = index(trim(str),trim(upper_name))
++         if( ind /= 0 ) then
++            val = str(ind+len_trim(upper_name):len_trim(str)-1) ! Remove final comma and starting =
++            do i=1,len(val)
++               if(val(i:i)=='"') val(i:i) = ' '
++            end do
++            exit
++         end if
++         if(is_iostat_end(iostat)) exit
++      end do   
++
++      if(len_trim(val) == 0 .and. ind==0 ) ierr = -1
++
++      close(iounit)
++
++   end subroutine get_control
++
++   subroutine set_control(s, name, val, ierr)
++      type (star_info), pointer :: s
++      character(len=*), intent(in) :: name, val
++      character(len=len(name)+len(val)+13) :: tmp
++      integer, intent(out) :: ierr
++
++      ! First save current controls
++      call set_controls_for_writing(s, ierr)
++      if(ierr/=0) return
++
++      tmp=''
++      tmp = '&controls '//trim(name)//'='//trim(val)//' /'
++
++      ! Load into namelist
++      read(tmp, nml=controls)
++
++      ! Add to star
++      call store_controls(s, ierr)
++      if(ierr/=0) return
++
++   end subroutine set_control
++
++
+  end module ctrls_io
+ 
+diff --git a/star/private/pgstar_ctrls_io.f90 b/star/private/pgstar_ctrls_io.f90
+index 95df7a73..9b9c0257 100644
+--- a/star/private/pgstar_ctrls_io.f90
++++ b/star/private/pgstar_ctrls_io.f90
+@@ -6626,6 +6626,5 @@
+ 
+       end subroutine set_default_pgstar_controls
+ 
+-
+       end module pgstar_ctrls_io
+ 
+diff --git a/star/private/star_job_ctrls_io.f90 b/star/private/star_job_ctrls_io.f90
+index efaca552..44a3bf7e 100644
+--- a/star/private/star_job_ctrls_io.f90
++++ b/star/private/star_job_ctrls_io.f90
+@@ -1790,5 +1790,75 @@
+       end subroutine do_write_star_job
+ 
+ 
++      subroutine get_star_job(s, name, val, ierr)
++         use utils_lib, only: StrUpCase
++         type (star_info), pointer :: s
++         character(len=*),intent(in) :: name
++         character(len=*), intent(out) :: val
++         integer, intent(out) :: ierr
++   
++         character(len(name)+1) :: upper_name
++         character(len=512) :: str
++         integer :: iounit,iostat,ind,i
++   
++         ierr = 0
++
++         ! First save current controls
++         call set_star_job_controls_for_writing(s, ierr)
++         if(ierr/=0) return
++   
++         ! Write namelist to temporay file
++         open(newunit=iounit,status='scratch')
++         write(iounit,nml=star_job)
++         rewind(iounit)
++   
++         ! Namelists get written in captials
++         upper_name = trim(StrUpCase(name))//'=' 
++         val = ''
++         ! Search for name inside namelist
++         do 
++            read(iounit,'(A)',iostat=iostat) str
++            ind = index(trim(str),trim(upper_name))
++            if( ind /= 0 ) then
++               val = str(ind+len_trim(upper_name):len_trim(str)-1) ! Remove final comma and starting =
++               do i=1,len(val)
++                  if(val(i:i)=='"') val(i:i) = ' '
++               end do
++               exit
++            end if
++            if(is_iostat_end(iostat)) exit
++         end do   
++   
++         if(len_trim(val) == 0 .and. ind==0 ) ierr = -1
++   
++         close(iounit)
++   
++      end subroutine get_star_job
++   
++      subroutine set_star_job(s, name, val, ierr)
++         type (star_info), pointer :: s
++         character(len=*), intent(in) :: name, val
++         character(len=len(name)+len(val)+12) :: tmp
++         integer, intent(out) :: ierr
++   
++         ierr = 0
++
++         ! First save current star_job
++         call set_star_job_controls_for_writing(s, ierr)
++         if(ierr/=0) return
++   
++         tmp=''
++         tmp = '&star_job '//trim(name)//'='//trim(val)//'/'
++   
++         ! Load into namelist
++         read(tmp, nml=star_job)
++   
++         ! Add to star
++         call store_star_job_controls(s, ierr)
++         if(ierr/=0) return
++   
++      end subroutine set_star_job
++
++
+       end module star_job_ctrls_io
+ 
+diff --git a/star/public/star_lib.f90 b/star/public/star_lib.f90
+index e90e31b7..6055d283 100644
+--- a/star/public/star_lib.f90
++++ b/star/public/star_lib.f90
+@@ -3380,4 +3380,66 @@
+       end subroutine star_init_star_handles
+       
+       
++      subroutine star_get_control_namelist(id, name, val, ierr)
++         use ctrls_io, only: get_control
++         integer, intent(in) :: id
++         character(len=*),intent(in) :: name
++         character(len=*),intent(out) :: val
++         integer, intent(out) :: ierr
++         type (star_info), pointer :: s
++
++         ierr = 0
++         call star_ptr(id, s, ierr)
++         if(ierr/=0) return
++         call get_control(s, name, val, ierr)
++
++      end subroutine star_get_control_namelist
++
++      subroutine star_set_control_namelist(id, name, val, ierr)
++         use ctrls_io, only: set_control
++         integer, intent(in) :: id
++         character(len=*),intent(in) :: name
++         character(len=*),intent(in) :: val
++         integer, intent(out) :: ierr
++         type (star_info), pointer :: s
++
++         ierr = 0
++         call star_ptr(id, s, ierr)
++         if(ierr/=0) return
++         call set_control(s, name, val, ierr)
++
++      end subroutine star_set_control_namelist
++
++
++      subroutine star_get_star_job_namelist(id, name, val, ierr)
++         use star_job_ctrls_io, only: get_star_job
++         integer, intent(in) :: id
++         character(len=*),intent(in) :: name
++         character(len=*),intent(out) :: val
++         integer, intent(out) :: ierr
++         type (star_info), pointer :: s
++
++         ierr = 0
++         call star_ptr(id, s, ierr)
++         if(ierr/=0) return
++         call get_star_job(s, name, val, ierr)
++
++      end subroutine star_get_star_job_namelist
++
++      subroutine star_set_star_job_namelist(id, name, val, ierr)
++         use star_job_ctrls_io, only: set_star_job
++         integer, intent(in) :: id
++         character(len=*),intent(in) :: name
++         character(len=*),intent(in) :: val
++         integer, intent(out) :: ierr
++         type (star_info), pointer :: s
++
++         ierr = 0
++         call star_ptr(id, s, ierr)
++         if(ierr/=0) return
++         call set_star_job(s, name, val, ierr)
++
++      end subroutine star_set_star_job_namelist
++
++
+       end module star_lib
+-- 
+2.31.1
+

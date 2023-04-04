@@ -10,7 +10,6 @@ FORTRAN ?= gfortran
 FC ?= $(FORTRAN)
 
 
-CODE_GENERATOR ?= $(AMUSE_DIR)/build.py
 
 SRCDIR=src/trunk
 BUILDDIR=build
@@ -35,7 +34,9 @@ $(BUILDDIR)/Makefile: $(CMAKE_DEPS)
 
 clean:
 	rm -f *.pyc worker_code.f90 evtwin_worker
-	make -C $(BUILDDIR) clean
+	-make -C $(BUILDDIR) clean
+
+distclean: clean
 	rm -rf $(BUILDDIR)
 	rm -f $(EVTWINLIB)
 	rm -rf $(SRCDIR)/lib

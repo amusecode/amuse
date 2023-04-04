@@ -25,7 +25,7 @@ def new_binary(
     total_mass = mass1 + mass2
     mass_fraction_particle_1 = mass1 / (total_mass)
 
-    binary = Particles(keys=list(range(keyoffset, keyoffset+2)))
+    binary = Particles(keys=range(keyoffset, keyoffset+2))
     binary[0].mass = mass1
     binary[1].mass = mass2
     binary.child1 = None

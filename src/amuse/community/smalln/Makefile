@@ -27,7 +27,6 @@ AM_CFLAGS = -I$(AMUSE_DIR)/lib/amuse_mpi
 
 CODELIB = src/libsmallN.a
 
-CODE_GENERATOR ?= $(AMUSE_DIR)/build.py
 
 all: $(ALL)
 
@@ -38,7 +37,7 @@ worker_code.cc: interface.py
 	$(CODE_GENERATOR) --type=c interface.py SmallNInterface -o $@
 
 interface.h: interface.py
-	$(CODE_GENERATOR) --type=h interface.py -i amuse.support.codes.stopping_conditions.StoppingConditionInterface  SmallNInterface -o $@
+	$(CODE_GENERATOR) --type=h interface.py -i amuse.community.interface.stopping_conditions.StoppingConditionInterface  SmallNInterface -o $@
 
 smallN_worker: worker_code.cc interface.h $(CODELIB) $(OBJS)
 	$(MPICXX) $(CXXFLAGS) $(LDFLAGS) worker_code.cc $(OBJS) $(CODELIB) -o $@ $(LDFLAGS) $(LIBS)

@@ -224,7 +224,7 @@ class MPIMessage(AbstractMessage):
                 begin = begin + size + 1
                 
             logger.debug("got %d strings of size %s, data = %s", total, sizes, strings)
-            return strings
+            return numpy.array(strings)
         else:
             return []
         
@@ -568,6 +568,11 @@ class AbstractMessageChannel(OptionalAttributes):
     @classmethod
     def is_multithreading_supported(cls):
         return True
+
+    @option(type="boolean", sections=("channel",))
+    def initialize_mpi(self):
+        """Is MPI initialized in the code or not. Defaults to True if MPI is available"""
+        return config.mpi.is_enabled
             
     @option(type='string', sections=("channel",))
     def worker_code_suffix(self):
@@ -1429,7 +1434,7 @@ m.run_mpi_channel('{2}')"""
             block = client_socket.recv(block_size)
             blocks.append(block)
             bytes_left -= len(block)
-        return ''.join(blocks)
+        return bytearray().join(blocks)
         
             
     def _createAServerUNIXSocket(self, name_of_the_directory, name_of_the_socket=None):
@@ -1634,7 +1639,7 @@ class SocketMessage(AbstractMessage):
                 strings.append(data_bytes[begin:begin + size].decode('utf-8'))
                 begin = begin + size + 1
 
-            return strings
+            return numpy.array(strings)
         else:
             return []
             

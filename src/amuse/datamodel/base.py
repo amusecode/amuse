@@ -1702,6 +1702,9 @@ class LinkedArray(numpy.ndarray):
                 result.append(type(x))
                 
         return result
+        
+# this class seems not to be used at all
+# in fact it is not clear what it is...
 class FixedLinkedArray(LinkedArray):
     """Links between particles and particle sets are stored in LinkedArrays.
     """
@@ -1735,7 +1738,10 @@ class FixedLinkedArray(LinkedArray):
             memento = dict()
 
         if must_copy:
-            new_container = x.copy(memento, keep_structure = True, filter_attributes = filter_attributes)
+            raise Exception("unfixed syntax error")
+            # the following needs to be tested
+            # was new_container = x.copy(memento, keep_structure = True, filter_attributes = filter_attributes)
+            new_container = from_container.copy(memento, keep_structure = True, filter_attributes = filter_attributes)
         else:
             if from_container is None or self.linked_set is from_container:
                 new_container = to_container

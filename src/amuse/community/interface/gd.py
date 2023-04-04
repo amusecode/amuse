@@ -1355,6 +1355,19 @@ class GravitationalDynamics(common.CommonCode):
         )
 
         handler.add_method(
+            "get_acceleration",
+            (
+                handler.NO_UNIT,
+            ),
+            (
+                nbody_system.acceleration,
+                nbody_system.acceleration,
+                nbody_system.acceleration,
+                handler.ERROR_CODE
+            )
+        )
+
+        handler.add_method(
             "get_potential",
             (
                 handler.NO_UNIT,

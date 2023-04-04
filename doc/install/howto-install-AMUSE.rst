@@ -7,7 +7,6 @@ Ubuntu
 ******
 
 You can choose between openmpi and mpich as desired, both work with AMUSE. Please do not install both!
-In the examples below we choose GCC-7 as the compiler, but more recent versions of GCC will also work.
 
 * For openmpi:
 
@@ -39,36 +38,38 @@ macOS
 
 
 On macOS, you will first need to install Xcode. You can do so via the app store.
+In the examples below we choose GCC-11 as the compiler. Older versions may not work on recent versions of macOS.
 In macOS Big Sur and later, you may have to add the following line to your .bashrc or .zshrc profile:
 
 .. code-block:: sh
 
     export SDKROOT=/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk
 
-In this section we assume a default macOS installation (up to Big Sur) with MacPorts, but other methods (such as Homebrew) will also work.
+In this section we assume a default macOS installation (up to Monterey) with MacPorts, but other methods (such as Homebrew) will also work.
+**Please do not install packages using more than one package manager (MacPorts, Homebrew and/or Conda), as this will almost certainly lead to problems!**
+On a Mac with an Apple Silicon chip (M1 and later) please use gcc12 (or later), earlier versions of gcc may not always work.
 
 You can choose between openmpi and mpich as desired, both work with AMUSE. 
 Please make sure to set the compilers installed here as default, as it will greatly simplify things later on.
-In the examples below we choose GCC 9 as the compiler, but other versions of GCC should also work.
 
 * For openmpi:
 
 .. code-block:: sh
 
-    sudo port install gcc9 openmpi-gcc9 hdf5 gsl cmake gmp mpfr fftw-3 +gcc9 openblas lapack
+    sudo port install gcc12 openmpi-gcc12 hdf5 gsl cmake gmp mpfr fftw-3 +gcc12 openblas lapack
     sudo port install python39
-    sudo port select --set mpi openmpi-gcc9-fortran
-    sudo port select --set gcc mp-gcc9
+    sudo port select --set mpi openmpi-gcc12-fortran
+    sudo port select --set gcc mp-gcc12
     sudo port select --set python3 python39
 
 * For mpich:
 
 .. code-block:: sh
 
-    sudo port install gcc9 mpich-gcc9 hdf5 gsl cmake gmp mpfr fftw-3 +gcc9 openblas lapack
+    sudo port install gcc12 mpich-gcc12 hdf5 gsl cmake gmp mpfr fftw-3 +gcc12 openblas lapack
     sudo port install python39
-    sudo port select --set mpi mpich-gcc9
-    sudo port select --set gcc mp-gcc9
+    sudo port select --set mpi mpich-gcc12
+    sudo port select --set gcc mp-gcc12
     sudo port select --set python3 python39
 
 
@@ -116,19 +117,21 @@ Probably, you’ll want to install these Python modules too:
     pip install scipy astropy jupyter pandas seaborn matplotlib
 
 Now we can finally install AMUSE itself.
-This is done easiest via pip:
-
-.. code-block:: sh
-
-    pip install amuse-framework
-    pip install amuse
-
-If you only require a subset of AMUSE, you can install any of the individual packages as such:
+This is done easiest via pip, installing first the framework and then any of the required packages:
 
 .. code-block:: sh
 
     pip install amuse-framework
     pip install amuse-$(community_code_name)
+
+Alternatively, you may try to install all of AMUSE in one go:
+
+.. code-block:: sh
+
+    pip install amuse
+
+However, this may fail if any of the packages fail to build. 
+Installing the packages separately is generally a faster and more successful method.
 
 
 

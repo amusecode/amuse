@@ -37,7 +37,7 @@ class HDF5FileFormatProcessor(base.FileFormatProcessor):
     
     provided_formats = ['hdf5', 'amuse']
     
-    def __init__(self, filename = None, set = None, format = None):
+    def __init__(self, filename=None, set=None, format=None):
         base.FileFormatProcessor.__init__(self, filename, set, format)
     
     def load(self):
@@ -49,12 +49,15 @@ class HDF5FileFormatProcessor(base.FileFormatProcessor):
             
     def load_base(self):
         processor = store_v2.StoreHDF(
-                self.filename, 
-                open_for_writing = False, 
-                append_to_file = self.append_to_file or self.allow_writing, 
-                copy_history = self.copy_history,
-                overwrite_file = self.overwrite_file )
-        if not processor.is_correct_version():                
+            self.filename,
+            open_for_writing=False,
+            append_to_file=self.append_to_file or self.allow_writing,
+            copy_history=self.copy_history,
+            overwrite_file=self.overwrite_file,
+            compression=False,
+            compression_opts=None,
+        )
+        if not processor.is_correct_version():
             processor.close()
             processor = store_v1.StoreHDF(
                     self.filename, 
@@ -94,10 +97,12 @@ class HDF5FileFormatProcessor(base.FileFormatProcessor):
                 raise Exception("You are trying to append to a file that was not written in version 1.0 format")
         else:
             processor = store_v2.StoreHDF(
-                self.filename, 
-                append_to_file = self.append_to_file, 
-                open_for_writing = True,
-                overwrite_file = self.overwrite_file            
+                self.filename,
+                append_to_file=self.append_to_file,
+                open_for_writing=True,
+                overwrite_file=self.overwrite_file,
+                compression=self.compression,
+                compression_opts=self.compression_opts
             )
         
             if not processor.is_correct_version():
@@ -170,3 +175,14 @@ class HDF5FileFormatProcessor(base.FileFormatProcessor):
         """If set to True, overwrite file if it exists, otherwise writing an existing
         file generates an exception"""
         return False
+
+    @base.format_option
+    def compression(self):
+        """If set to False, don't use compression, otherwise use specified compression
+        mode (defaults to False, True means 'gzip')"""
+        return False
+
+    @base.format_option
+    def compression_opts(self):
+        "Compression level to use if using compression (0-9, defaults to None)"
+        return None

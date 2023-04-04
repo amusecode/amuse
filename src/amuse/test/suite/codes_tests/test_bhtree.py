@@ -375,7 +375,7 @@ class TestBHTree(TestWithMPI):
         self.assertEqual(instance.get_mass(indices)[0], 15.0| units.kg)
         
         self.assertRaises(AmuseException, instance.get_mass, [4,5], 
-            expected_message = "Error when calling 'get_mass' of a 'BHTree', errorcode is -1")
+            expected_message = "Error when calling 'get_mass' of a '<class 'amuse.community.bhtree.interface.BHTree'>', errorcode is -1")
         
         instance.cleanup_code()
         instance.stop()

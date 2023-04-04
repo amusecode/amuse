@@ -14,7 +14,6 @@ ifneq (,$(findstring xlf, $(notdir $(FORTRAN))))
 F77FLAGS += -qfixed
 endif
 
-CODE_GENERATOR ?= $(AMUSE_DIR)/build.py
 
 FSLIBS ?= -L$(AMUSE_DIR)/lib/forsockets -lforsockets
 FSINC ?= -I$(AMUSE_DIR)/lib/forsockets
@@ -38,7 +37,7 @@ clean:
 
 sse_worker:	worker_code.f90  interface.o  $(OBJ)
 	make -C src sse CMPLR=$(FORTRAN) FFLAGS="$(FCFLAGS) $(F77FLAGS)"
-	$(MPIF90) $(FS_FLAGS) $(LDFLAGS) $^ -o $@ $(FS_LIBS) $(LIBS)
+	$(MPIF90) $(FCFLAGS) $(FS_FLAGS) $(LDFLAGS) $^ -o $@ $(FS_LIBS) $(LIBS)
 	
 worker_code.f90: interface.py
 	$(CODE_GENERATOR) --type=f90 interface.py SSEInterface -o $@

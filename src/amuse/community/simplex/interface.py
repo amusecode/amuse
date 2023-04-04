@@ -13,10 +13,10 @@ class SimpleXInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesM
     an optimal way for fast radiative transfer calculations.
     
     The relevant references are:
-        .. [#] Kruip, C.J.H., Ph. D. thesis, University of Leiden (2011)
-        .. [#] Paardekooper, J.-P., Ph. D. thesis, University of Leiden (2010)
-        .. [#] Paardekooper, J.-P., Kruip, C.J.H., Icke, V. 2010, A&A, 515, A79 (SimpleX2)
-        .. [#] Ritzerveld, J., & Icke, V. 2006, Phys. Rev. E, 74, 26704 (SimpleX)
+        .. [#] ADS:2011PhDT........13K (Kruip, C.J.H., Ph. D. thesis, University of Leiden (2011))
+        .. [#] ADS:2010PhDT........63P (Paardekooper, J.-P., Ph. D. thesis, University of Leiden (2010))
+        .. [#] ADS:2010A&A...515A..79P (Paardekooper, J.-P., Kruip, C.J.H., Icke, V. 2010, A&A, 515, A79 (SimpleX2))
+        .. [#] ADS:2006PhRvE..74b6704R (Ritzerveld, J., & Icke, V. 2006, Phys. Rev. E, 74, 26704 (SimpleX))
     """
     include_headers=['worker_code.h']
     

@@ -50,17 +50,17 @@ class GlobalOptions(object):
 
         # installed
         result = os.path.abspath(os.path.join(this, "..", "..", "..", "..", "..", "share", "amuse"))
-        if os.path.exists(os.path.join(result, 'build.py')):
+        if os.path.exists(os.path.join(result, 'config.mk')):
             return result
 
         # for some virtualenv setups
         result = os.path.abspath(os.path.join(this, "..", "..", "..", "..", "..", "..", "share", "amuse"))
-        if os.path.exists(os.path.join(result, 'build.py')):
+        if os.path.exists(os.path.join(result, 'config.mk')):
             return result
 
         # in-place
         result = os.path.abspath(os.path.join(this, "..", "..", ".."))
-        if os.path.exists(os.path.join(result, 'build.py')):
+        if os.path.exists(os.path.join(result, 'config.mk')):
             return result
 
         raise exceptions.AmuseException("Could not locate AMUSE root directory! set the AMUSE_DIR variable")
