@@ -136,6 +136,8 @@ class MESAInterface(
             , description="The new index for the star. This index can be used to refer to this star in other functions")
         function.addParameter('mass', dtype='float64', direction=function.IN
             , description="The initial mass of the star")
+        function.addParameter('num_steps', dtype='int32', direction=function.IN, default=-1
+            , description="Number of steps to take during pre-MS relaxation process. If negative uses MESA's default choice")
         function.result_type = 'int32'
         return function
 
@@ -1356,7 +1358,7 @@ class MESA(StellarEvolution, InternalStellarStructure):
         StellarEvolution.define_methods(self, handler)
         handler.add_method(
             "new_pre_ms_particle",
-            (units.MSun),
+            (units.MSun, units.none),
             (handler.INDEX, handler.ERROR_CODE)
         )
         handler.add_method(
