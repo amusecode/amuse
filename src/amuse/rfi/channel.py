@@ -709,7 +709,6 @@ Please do a 'make clean; make' in the root directory.
 
         current_type = type
         while not current_type.__bases__[0] is object:
-            print(current_type.__bases__[0])
             directory_of_this_module = os.path.dirname(inspect.getfile(current_type))
             full_name_of_the_worker = os.path.join(directory_of_this_module, exe_name)
             full_name_of_the_worker = os.path.normpath(os.path.abspath(full_name_of_the_worker))
@@ -1841,7 +1840,7 @@ class SocketChannel(AbstractMessageChannel):
 
     def remote_env_string(self, hostname):
         if self.remote_env is None:
-          if hostname in self.remote_envs:
+          if hostname in self.remote_envs.keys():
             return "source "+self.remote_envs[hostname]+"\n"
           else:
             return ""
@@ -1866,7 +1865,7 @@ class SocketChannel(AbstractMessageChannel):
 
         # get remote amuse package dir
         command=self.remote_env_string(self.hostname)+ \
-                "amusifier --get-amuse-dir" +"\n"
+                "amusifier --get-amuse-package-dir" +"\n"
       
         proc=Popen(args,stdout=PIPE, stdin=PIPE, executable="ssh")
         out,err=proc.communicate(command.encode())
@@ -1993,7 +1992,7 @@ class SocketChannel(AbstractMessageChannel):
         """close open file descriptors when spawning child process"""
         return False
 
-    @option(type="boolean", sections=("sockets_channel",))
+    @option(type="dict", sections=("sockets_channel",))
     def remote_envs(self):
         """ dict of remote machine - enviroment (source ..)  pairs """
         return dict()
