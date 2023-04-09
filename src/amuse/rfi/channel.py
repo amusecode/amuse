@@ -808,6 +808,8 @@ Please do a 'make clean; make' in the root directory.
         self._communicated_splitted_message = True
         self._merged_results_splitted_message = dtype_to_result
 
+    def makedirs(self,directory):
+        os.makedirs(directory)
 
 
 AbstractMessageChannel.DEBUGGERS = {
@@ -1738,6 +1740,12 @@ class SocketChannel(AbstractMessageChannel):
                 
         if self.hostname == None:
             self.hostname="localhost"
+
+        if self.hostname not in ['localhost',socket.gethostname()]:
+          self.remote=True
+          self.must_check_if_worker_is_up_to_date=False
+        else:
+          self.remote=False
                     
         self.id = 0
         
@@ -1933,10 +1941,6 @@ class SocketChannel(AbstractMessageChannel):
 
     def start(self):
         
-        remote=False
-        if self.hostname not in ['localhost',socket.gethostname()]:
-          remote=True
-
         server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                 
         server_address=self.get_host_ip(self.hostname)
@@ -1955,12 +1959,12 @@ class SocketChannel(AbstractMessageChannel):
         self.stdout = None
         self.stderr = None
         
-        if remote:
+        if self.remote:
             command,arguments=self.generate_remote_command_and_arguments(self.hostname,server_address,str(server_socket.getsockname()[1]))
         else:
             command,arguments=self.generate_command_and_arguments(server_address,str(server_socket.getsockname()[1]))
                     
-        if remote:
+        if self.remote:
           logger.debug("starting remote process on %s with command `%s`, arguments `%s` and environment '%s'", self.hostname, command, arguments, os.environ)
           ssh_command=self.remote_env_string(self.hostname)+" ".join(arguments)
           arguments=["ssh","-T", self.hostname]
@@ -2170,6 +2174,17 @@ class SocketChannel(AbstractMessageChannel):
         ip=s.getsockname()[0]
         s.close()
         return ip
+
+    def makedirs(self,directory):
+      if self.remote:
+        args=["ssh","-T", self.hostname]
+        command=f"mkdir -p {directory}\n"
+        proc=Popen(args,stdout=PIPE, stdin=PIPE, executable="ssh")
+        out,err=proc.communicate(command.encode())
+      else:
+        os.makedirs(directory)
+        
+
       
 
 class OutputHandler(threading.Thread):
