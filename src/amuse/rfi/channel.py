@@ -913,7 +913,6 @@ class MpiChannel(AbstractMessageChannel):
         self.interpreter_executable = interpreter_executable
                 
         if not legacy_interface_type is None:
-            print(">>", legacy_interface_type)
             self.full_name_of_the_worker = self.get_full_name_of_the_worker(legacy_interface_type)
         else:
             self.full_name_of_the_worker = self.name_of_the_worker
