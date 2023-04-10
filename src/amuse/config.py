@@ -10,15 +10,15 @@ def parse_configmk_lines(lines,label):
     cfgvars = dict()
     if "amuse configuration" not in lines[0]:
         raise Exception(
-            "{0} is not an amuse configuration file".format(label)
+            f"{label} is not an amuse configuration file"
         )
     for line in lines:
         if "=" in line:
             var, value = line.split("=", 1)
             if value.startswith("@") and value.endswith("@"):
                 warnings.warn(
-                    "possible configuration error/ unconfigured variable in"
-                    " {0}".format(label)
+                    f"possible configuration error/ unconfigured variable in"
+                    f" {label}"
                 )
             cfgvars[var] = value.strip()
     return cfgvars
