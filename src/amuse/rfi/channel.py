@@ -1251,17 +1251,11 @@ class MpiChannel(AbstractMessageChannel):
         self._is_inuse = False
         self._communicated_splitted_message = False
         self.inuse_semaphore = threading.Semaphore()
-        
-
-
 
     @option(sections=("channel",))
     def job_scheduler(self):
         """Name of the job scheduler to use when starting the code, if given will use job scheduler to find list of hostnames for spawning"""
         return ""
-        
-
-
 
     def get_info_from_job_scheduler(self, name, number_of_workers = 1):
         if name == "slurm":
@@ -1281,7 +1275,7 @@ class MpiChannel(AbstractMessageChannel):
                 for _ in range(tasks):
                     all_nodes.append(node)
             cls._scheduler_nodes = all_nodes
-            cls._scheduler_index = 1     # start at 1 assumes that the python script is running on the first node as the first task
+            cls._scheduler_index = 1  # start at 1 assumes that the python script is running on the first node as the first task
             cls._scheduler_initialized = True
             print("NODES:", cls._scheduler_nodes)
         hostnames = []
@@ -1295,7 +1289,7 @@ class MpiChannel(AbstractMessageChannel):
         host = ','.join(hostnames)
         print("HOST:", host, cls._scheduler_index, os.environ['SLURM_TASKS_PER_NODE'])
         info = MPI.Info.Create()
-        info['host'] = host                                                     #actually in mpich and openmpi, the host parameter is interpreted as a comma separated list of host names,
+        info['host'] = host   # actually in mpich and openmpi, the host parameter is interpreted as a comma separated list of host names,
         return info
 
 
@@ -1477,20 +1471,16 @@ m.run_mpi_channel('{2}')"""
                 if len(x) > len(result):
                     result = x
         return result
-        
-            
-
 
     @option(choices=AbstractMessageChannel.DEBUGGERS.keys(), sections=("channel",))
     def debugger(self):
         """Name of the debugger to use when starting the code"""
         return "none"
-    
-    
 
     @option(type="boolean")
     def check_mpi(self):
         return True
+
 
 class SocketMessage(AbstractMessage):
       
@@ -1683,7 +1673,6 @@ class SocketMessage(AbstractMessage):
         self.send_doubles(socket, self.encoded_units)
         
         # logger.debug("message send")
-    
 
     def send_doubles(self, socket, array):
         if len(array) > 0:
@@ -1721,7 +1710,8 @@ class SocketMessage(AbstractMessage):
         if len(array) > 0:
             data_buffer = numpy.array(array, dtype='int64')
             socket.sendall(data_buffer.tobytes())
-        
+
+
 class SocketChannel(AbstractMessageChannel):
     
     def __init__(self, name_of_the_worker, legacy_interface_type=None, interpreter_executable=None, 
@@ -1741,10 +1731,10 @@ class SocketChannel(AbstractMessageChannel):
             self.hostname="localhost"
 
         if self.hostname not in ['localhost',socket.gethostname()]:
-          self.remote=True
-          self.must_check_if_worker_is_up_to_date=False
+            self.remote=True
+            self.must_check_if_worker_is_up_to_date=False
         else:
-          self.remote=False
+            self.remote=False
                     
         self.id = 0
         
@@ -1760,7 +1750,6 @@ class SocketChannel(AbstractMessageChannel):
         self.socket = None
     
         self.remote_env=remote_env
-    
 
     @option(sections=("channel",))
     def mpiexec(self):
@@ -1773,10 +1762,6 @@ class SocketChannel(AbstractMessageChannel):
     def mpiexec_number_of_workers_flag(self):
         """flag to use, so that the number of workers are defined"""
         return '-n'
-    
-
-    
-
 
     @late
     def debugger_method(self):
@@ -1935,9 +1920,6 @@ class SocketChannel(AbstractMessageChannel):
 
         return command,arguments
 
-        
-
-
     def start(self):
         
         server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -2083,8 +2065,6 @@ class SocketChannel(AbstractMessageChannel):
             message.send(self.socket)
 
             self._is_inuse = True
-        
-
 
     def recv_message(self, call_id, function_id, handle_as_array, has_units=False):
            
@@ -2095,7 +2075,6 @@ class SocketChannel(AbstractMessageChannel):
             self._communicated_splitted_message = False
             del self._merged_results_splitted_message
             return x
-        
         
         message = SocketMessage()
         
@@ -2119,8 +2098,6 @@ class SocketChannel(AbstractMessageChannel):
             return message.to_result(handle_as_array), message.encoded_units
         else:
             return message.to_result(handle_as_array)
-        
-
 
     def nonblocking_recv_message(self, call_id, function_id, handle_as_array, has_units=False):
         request = SocketMessage().nonblocking_receive(self.socket)
@@ -2182,9 +2159,7 @@ class SocketChannel(AbstractMessageChannel):
         out,err=proc.communicate(command.encode())
       else:
         os.makedirs(directory)
-        
 
-      
 
 class OutputHandler(threading.Thread):
     
@@ -2231,6 +2206,7 @@ class OutputHandler(threading.Thread):
             # logger.debug("got %d bytes", len(data))
             
             self.stream.write(data)
+
 
 class DistributedChannel(AbstractMessageChannel):
             
@@ -2315,8 +2291,6 @@ class DistributedChannel(AbstractMessageChannel):
         logger.debug("worker dir is %s", self.worker_dir)
             
         self._is_inuse = False
-      
-
 
     def check_if_worker_is_up_to_date(self, object):
 #         if self.hostname != 'localhost':
