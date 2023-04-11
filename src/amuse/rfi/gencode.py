@@ -25,7 +25,7 @@ from amuse.rfi.tools import create_java
 from amuse.rfi.tools import create_dir
 from amuse.rfi.tools import create_python_worker
     
-from amuse.support import get_amuse_root_dir, get_amuse_directory_root
+from amuse.support import get_amuse_root_dir, get_amuse_package_dir
 from amuse.support.literature import TrackLiteratureReferences    
 
 def get_amuse_directory():
@@ -384,7 +384,7 @@ def amusifier():
         print(get_amuse_root_dir())
         exit(0)
     elif uc.options.get_amuse_package_dir:
-        print(get_amuse_directory_root())
+        print(get_amuse_package_dir())
         exit(0)
     elif uc.options.get_amuse_configmk:
         with open(os.path.join(get_amuse_root_dir(), "config.mk")) as f:

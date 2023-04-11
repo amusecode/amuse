@@ -35,7 +35,7 @@ except ImportError:
 from amuse.support.options import OptionalAttributes, option, GlobalOptions
 from amuse.support.core import late
 from amuse.support import exceptions
-from amuse.support import get_amuse_root_dir, get_amuse_directory_root
+from amuse.support import get_amuse_root_dir, get_amuse_package_dir
 from amuse.rfi import run_command_redirected
 from amuse.config import parse_configmk_lines
 
@@ -1863,7 +1863,7 @@ class SocketChannel(AbstractMessageChannel):
         out,err=proc.communicate(command.encode())
       
         remote_package_dir=out.decode().strip(" \n\t")
-        local_package_dir=get_amuse_directory_root()
+        local_package_dir=get_amuse_package_dir()
                 
         mpiexec=remote_config["MPIEXEC"]
         initialize_mpi=remote_config["MPI_ENABLED"] == 'yes'
