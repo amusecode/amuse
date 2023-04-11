@@ -1955,7 +1955,7 @@ class SocketChannel(AbstractMessageChannel):
           self.process.stdin.close()
         else:
           logger.debug("starting process with command `%s`, arguments `%s` and environment '%s'", command, arguments, os.environ)
-          print(arguments)
+          # ~ print(arguments)
           self.process = Popen(arguments, executable=command, stdin=PIPE, stdout=None, stderr=None, close_fds=self.close_fds)
 
         logger.debug("waiting for connection from worker")
