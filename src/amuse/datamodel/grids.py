@@ -268,6 +268,9 @@ class BaseGrid(AbstractGrid):
 
         raise Exception("do not know how to find axes_names")
 
+    def set_axes_names(self, value):
+        self.add_vector_attribute('position', value)
+
 class UnstructuredGrid(BaseGrid):
     GLOBAL_DERIVED_ATTRIBUTES=CompositeDictionary(BaseGrid.GLOBAL_DERIVED_ATTRIBUTES)
 class StructuredBaseGrid(BaseGrid):
