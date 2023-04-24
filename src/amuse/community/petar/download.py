@@ -115,7 +115,7 @@ def new_option_parser():
     )
     result.add_option(
         "--fdps-version",
-        default='7b02b365b7377c0d5239bf309a2012e71575ef97',
+        default='55b2bafd316805bad22057cf4ee96217735279bf',
         dest="fdps_version",
         help="FDPS commit hash to download",
         type="string"
