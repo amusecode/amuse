@@ -14,6 +14,7 @@ license_ = "Apache License 2.0"
 url = 'http://www.amusecode.org/'
 install_requires = [
     'amuse-framework',
+    'amuse-mesa-r15140',
 ]
 description = 'The Astrophysical Multipurpose Software Environment - MESA'
 with open("README.md", "r") as fh:
@@ -65,7 +66,6 @@ setup(
     ext_modules=extensions,
     package_dir={
         'amuse.community.mesa': 'src/amuse/community/mesa',
-        'amuse.community.mesa_r15140': 'src/amuse/community/mesa_r15140',
     },
     packages=packages,
     package_data=package_data,

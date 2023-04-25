@@ -47,6 +47,7 @@ In macOS Big Sur and later, you may have to add the following line to your .bash
 
 In this section we assume a default macOS installation (up to Monterey) with MacPorts, but other methods (such as Homebrew) will also work.
 **Please do not install packages using more than one package manager (MacPorts, Homebrew and/or Conda), as this will almost certainly lead to problems!**
+On a Mac with an Apple Silicon chip (M1 and later) please use gcc12 (or later), earlier versions of gcc may not always work.
 
 You can choose between openmpi and mpich as desired, both work with AMUSE. 
 Please make sure to set the compilers installed here as default, as it will greatly simplify things later on.
@@ -55,20 +56,20 @@ Please make sure to set the compilers installed here as default, as it will grea
 
 .. code-block:: sh
 
-    sudo port install gcc11 openmpi-gcc11 hdf5 gsl cmake gmp mpfr fftw-3 +gcc11 openblas lapack
+    sudo port install gcc12 openmpi-gcc12 hdf5 gsl cmake gmp mpfr fftw-3 +gcc12 openblas lapack
     sudo port install python39
-    sudo port select --set mpi openmpi-gcc11-fortran
-    sudo port select --set gcc mp-gcc11
+    sudo port select --set mpi openmpi-gcc12-fortran
+    sudo port select --set gcc mp-gcc12
     sudo port select --set python3 python39
 
 * For mpich:
 
 .. code-block:: sh
 
-    sudo port install gcc11 mpich-gcc11 hdf5 gsl cmake gmp mpfr fftw-3 +gcc11 openblas lapack
+    sudo port install gcc12 mpich-gcc12 hdf5 gsl cmake gmp mpfr fftw-3 +gcc12 openblas lapack
     sudo port install python39
-    sudo port select --set mpi mpich-gcc11
-    sudo port select --set gcc mp-gcc11
+    sudo port select --set mpi mpich-gcc12
+    sudo port select --set gcc mp-gcc12
     sudo port select --set python3 python39
 
 

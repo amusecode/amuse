@@ -684,7 +684,7 @@ class TestParticlesChannel(amusetest.TestCase):
         particles1.mass = 1| units.kg
 
         particles2 = particles1.copy()
-        particles2.stellar_mass = list(range(2)) * (1.0 | units.kg)
+        particles2.stellar_mass = range(2) | units.kg
         particles2.mass = 0 | units.kg
 
         self.assertFalse(hasattr(particles1, 'stellar_mass'))
@@ -1334,18 +1334,16 @@ class TestParticlesExtra(amusetest.TestCase):
 
     def test11(self):
         particles = datamodel.Particles(3)
-        print(list(range(3))| units.kg)
-        particles.mass = list(range(3))| units.kg
-        particles.nounit = list(range(3))
-        print(particles.mass)
-        self.assertAlmostRelativeEquals( particles.mass ,list(range(3))| units.kg)
+        particles.mass = range(3)| units.kg
+        particles.nounit = range(3)
+        self.assertAlmostRelativeEquals( particles.mass, [0,1,2] | units.kg)
         self.assertAlmostRelativeEquals( particles.nounit , [0, 1, 2])
 
 
 
     def xtest12(self):
         particles = datamodel.Particles(3)
-        particles.mass = list(range(3))| units.kg
+        particles.mass = range(3)| units.kg
         particles[0].child = particles[1]
         particles[1].child = particles[2]
         print(particles[0].child)
@@ -1364,7 +1362,7 @@ class TestParticlesExtra(amusetest.TestCase):
         masses = [i | nbody_system.mass for i in range(10)]
         particles.mass = masses
         print(particles.mass)
-        self.assertEqual(particles.mass, list(range(10)) | nbody_system.mass)
+        self.assertEqual(particles.mass, range(10) | nbody_system.mass)
 
         # List of vector quantities:
         positions = [(i, 2*i, 3*i) | units.m for i in range(10)]
@@ -2818,7 +2816,7 @@ class TestParticlesWithChildren(amusetest.TestCase):
         code.particles = code_particles
 
         memory_particles = datamodel.Particles(keys = 100 * (1 + numpy.arange(10)) )
-        memory_particles.mass = list(range(10)) | units.kg
+        memory_particles.mass = range(10) | units.kg
 
         code_particles.add_particles(memory_particles)
 
@@ -4934,9 +4932,9 @@ class TestParticlesOverlay(amusetest.TestCase):
 
     def test8(self):
         set1 = datamodel.Particles(10)
-        set1.x = list(range(10)) | units.kg
+        set1.x = range(10) | units.kg
         set2 = datamodel.ParticlesOverlay(set1)
-        set2.y = (list(range(10)) | units.m) * 2
+        set2.y = (range(10) | units.m) * 2
         print(set2)
         set1.remove_particle(set1[0])
         set1.remove_particle(set1[4])

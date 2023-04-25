@@ -15,6 +15,8 @@ try:
 except:
   matplotlib_available=False
 
+from warnings import warn
+
 class interpolating_2D_remapper(object):
     def __init__(self, source, target,axes_names=None):
         """ this class maps a source grid to a target grid using linear 
@@ -191,7 +193,7 @@ class bilinear_2D_remapper(object):
                 if numpy.any(getattr(source[0,0],x)!=getattr(target[0,0],x)):
                     print(getattr(source[0,0],x))
                     print(getattr(target[0,0],x))
-                    raise Exception(f"positions not the same on axes {x}")
+                    warn(f"positions (possibly) not the same on axes {x}")
         self.check_inside=check_inside
         self._weights=None
         self._indices=None

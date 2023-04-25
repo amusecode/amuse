@@ -13,17 +13,15 @@ SRC=src
 BUILDDIR = build
 MPI_BUILDDIR = build_mpi
 
-CODE_GENERATOR ?= $(AMUSE_DIR)/build.py
 
 NOMPILIBS=$(BUILDDIR)/libcapreole.a
 MPILIBS=$(MPI_BUILDDIR)/libcapreole_mpi.a
 
 GLOBJECTS=$(SRC)/fthread.o $(SRC)/viewer.o $(SRC)/libpt.a
 
-GLINCLUDE = -I/usr/include/GL -I/home/inti/libraries/f90gl-1.2.11/include/GL/
+GLINCLUDE = -I/usr/include/GL
 
-GLLIB = -L/home/inti/libraries/f90gl-1.2.11/lib \
--lf90GLU -lf90GL -lf90glut  -lGLU -lGL -lglut  
+GLLIB = -lf90GLU -lf90GL -lf90glut  -lGLU -lGL -lglut  
 
 X11LIB = -L/usr/X11R6/lib64 -lXaw -lXt -lXmu -lXi -lXext -lX11
 

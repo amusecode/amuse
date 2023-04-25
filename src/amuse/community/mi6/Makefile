@@ -11,7 +11,6 @@ CXXFLAGS ?= -Wall -g -O2
 SAPPORO_LIBS ?= -L$(AMUSE_DIR)/lib/sapporo_light -lsapporo
 CUDA_LIBS ?= -L$(CUDA_TK)/lib -L$(CUDA_TK)/lib64 -lcudart
 
-CODE_GENERATOR ?= $(AMUSE_DIR)/build.py
 
 
 CODELIB = src/libmi6.a
@@ -55,7 +54,7 @@ worker_code.cc: interface.py
 	$(CODE_GENERATOR) --type=c interface.py MI6Interface -o $@
 
 worker_code.h: interface.py
-	$(CODE_GENERATOR) --type=h -i amuse.support.codes.stopping_conditions.StoppingConditionInterface interface.py MI6Interface -o $@
+	$(CODE_GENERATOR) --type=h -i amuse.community.interface.stopping_conditions.StoppingConditionInterface interface.py MI6Interface -o $@
 
 mi6_worker: worker_code.cc worker_code.h $(CODELIB) $(OBJS)
 	$(MPICXX) $(CXXFLAGS) $(SC_FLAGS) $(LDFLAGS) -I./src  $< $(OBJS) $(CODELIB) -o $@ -L./src -lmi6 $(SC_CLIBS)  $(LIBS)

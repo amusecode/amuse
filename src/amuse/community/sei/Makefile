@@ -16,7 +16,6 @@ LDFLAGS  += -lm $(MUSE_LD_FLAGS)
 OBJS = interface.o
 
 CODELIB = src/libsei.a
-CODE_GENERATOR ?= $(AMUSE_DIR)/build.py
 
 all: sei_worker 
 

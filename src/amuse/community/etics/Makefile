@@ -19,7 +19,6 @@ OBJS = interface.o
 
 CODELIB = build/libetics.a
 
-CODE_GENERATOR ?= $(AMUSE_DIR)/build.py
 
 CUDA_TK ?= /usr/local/cuda/
 CUDA_LIBS ?= -L$(CUDA_TK)/lib -L$(CUDA_TK)/lib64 -lcuda 
