@@ -32,11 +32,11 @@ class MESAInterface(
     The supported stellar mass range is from about 1M_jupiter to >100 Msun.
 
     References:
-        .. [#] Paxton, Bildsten, Dotter, Herwig, Lesaffre & Timmes 2011, ApJS, arXiv:1009.1622 [2011ApJS..192....3P]
-        .. [#] Paxton, Cantiello, Arras, Bildsten, Brown, Dotter, Mankovich, Montgomery, Stello, Timmes, Townsend, 2013, ApJS, arXiv:1301.0319, [2013ApJS..208....4P]
-        .. [#] Paxton, Marchant, Schwab, Bauer, Bildsten, Cantiello, Dessart, Farmer, Hu, Langer, Townsend, Townsley, Timmes, 2015, ApJS, arXiv:1506.03146, [2015ApJS..220...15P]
-        .. [#] Paxton, Schwab, Bauer, Bildsten, Blinnikov, Duffell, Farmer, Goldberg, Marchant, Sorokina, Thoul, Townsend, Timmes, 2018, arXiv:1710.08424, [2018ApJS..234...34P] 
-        .. [#] Paxton, Smolec, Schwab, Gautschy, Bildsten, Cantiello, Dotter, Farmer, Goldberg, Jermyn, Kanbur, Marchant, Thoul, Townsend, Wolf, Zhang, Timmes, [2019ApJS..243...10P]
+        .. [#] ADS:2011ApJS..192....3P (Paxton, Bildsten, Dotter, Herwig, Lesaffre & Timmes 2011, ApJS)
+        .. [#] ADS:2013ApJS..208....4P (Paxton, Cantiello, Arras, Bildsten, Brown, Dotter, Mankovich, Montgomery, Stello, Timmes, Townsend, 2013, ApJS)
+        .. [#] ADS:2015ApJS..220...15P (Paxton, Marchant, Schwab, Bauer, Bildsten, Cantiello, Dessart, Farmer, Hu, Langer, Townsend, Townsley, Timmes, 2015, ApJS)
+        .. [#] ADS:2018ApJS..234...34P (Paxton, Schwab, Bauer, Bildsten, Blinnikov, Duffell, Farmer, Goldberg, Marchant, Sorokina, Thoul, Townsend, Timmes, 2018, ApJS)
+        .. [#] ADS:2019ApJS..243...10P (Paxton, Smolec, Schwab, Gautschy, Bildsten, Cantiello, Dotter, Farmer, Goldberg, Jermyn, Kanbur, Marchant, Thoul, Townsend, Wolf, Zhang, Timmes, 2019, ApJS)
         .. [#] http://mesa.sourceforge.net/
         .. [#] https://docs.mesastar.org/en/latest/reference.html
     """
@@ -136,6 +136,8 @@ class MESAInterface(
             , description="The new index for the star. This index can be used to refer to this star in other functions")
         function.addParameter('mass', dtype='float64', direction=function.IN
             , description="The initial mass of the star")
+        function.addParameter('num_steps', dtype='int32', direction=function.IN, default=-1
+            , description="Number of steps to take during pre-MS relaxation process. If negative uses MESA's default choice")
         function.result_type = 'int32'
         return function
 
@@ -1090,10 +1092,10 @@ class MESAInterface(
 
     def get_accrete_composition_metals(self, index_of_the_star):
         result = {}
-        for element in ['li','be','b','c','n','o','f','ne','mg','al','si','p',
+        for element in ['li','be','b','c','n','o','f','ne','na','mg','al','si','p',
                         's','cl','ar','k','ca','sc','ti','v','cr','mn','fe',
                         'co','ni','cu','zn']:
-            r = self.get_control(index_of_the_star,'z_fraction_'+element)
+            r = self.get_control(index_of_the_star,f'z_fraction_{element}')
             result[element] = r['value']
 
         return result
@@ -1102,13 +1104,13 @@ class MESAInterface(
         '''
         Sets the accretion composition based on the following elements:
 
-        'li','be','b','c','n','o','f','ne','mg','al','si','p'
+        'li','be','b','c','n','o','f','ne','na','mg','al','si','p'
         's','cl','ar','k','ca','sc','ti','v','cr','mn','fe',
         'co','ni','cu','zn'
 
         Thus to set the li accretion fraction to 1/2 then pass li=0.5
 
-        If an element is not set then its left with its currernt value
+        If an element is not set then its left with its current value
 
         These must sum to 1.0 (the total z fraction is set by setting the non_metals to the 1-Z value)
 
@@ -1116,11 +1118,11 @@ class MESAInterface(
 
         result = {}
         for element,value in kwargs.items():
-            if element not in ['li','be','b','c','n','o','f','ne','mg','al','si','p',
+            if element not in ['li','be','b','c','n','o','f','ne','na','mg','al','si','p',
                         's','cl','ar','k','ca','sc','ti','v','cr','mn','fe',
                         'co','ni','cu','zn']:
-                raise ValueError("Bad element "+str(element))
-            r = self.set_control(index_of_the_star,'z_fraction_'+element,value)
+                raise ValueError(f"Bad element {element}")
+            r = self.set_control(index_of_the_star,f'z_fraction_{element}',value)
         return r
 
 
@@ -1336,6 +1338,7 @@ class MESA(StellarEvolution, InternalStellarStructure):
         handler.add_method('EDIT', 'new_pre_ms_particle')
         handler.add_method('UPDATE', 'new_pre_ms_particle')
         handler.add_transition('RUN', 'UPDATE', 'new_pre_ms_particle', False)
+        handler.add_transition('RUN', 'UPDATE', 'load_photo', False)
         handler.add_method('EDIT', 'finalize_stellar_model')
         handler.add_method('UPDATE', 'finalize_stellar_model')
         handler.add_transition('RUN', 'UPDATE', 'finalize_stellar_model', False)
@@ -1355,7 +1358,7 @@ class MESA(StellarEvolution, InternalStellarStructure):
         StellarEvolution.define_methods(self, handler)
         handler.add_method(
             "new_pre_ms_particle",
-            (units.MSun),
+            (units.MSun, units.none),
             (handler.INDEX, handler.ERROR_CODE)
         )
         handler.add_method(

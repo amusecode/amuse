@@ -21,14 +21,12 @@ class MOSSEInterface(CodeInterface, common.CommonCodeInterface , LiteratureRefer
     to calculate the velocity kick due to electron-capture SNe. More details about MOSSE can
     be found in paper:
 
-        .. [#] Nicola Giacobbo, Michela Mapelli & Mario Spera, 2018, MNRAS, 474, 2959:
-        .. [#] ... Merging black hole binaries: the effects of progenitor s metallicity, mass-loss rate and Eddington factor
-        .. [#] [2018MNRAS.474.2959G]
+        .. [#] ADS:2018MNRAS.474.2959G (Nicola Giacobbo, Michela Mapelli & Mario Spera, 2018, MNRAS, 474, 2959:
+        .. [#] ... Merging black hole binaries: the effects of progenitor s metallicity, mass-loss rate and Eddington factor)
 
     The details about SSE can be found in the SSE paper:
-        ..  Hurley J.R., Pols O.R., Tout C.A., 2000, MNRAS, 315, 543:
-        ..  ... Comprehensive analytic formulae for stellar evolution as a function of mass and metallicity
-        ..  [2000MNRAS.315..543H]
+        .. [#] ADS:2000MNRAS.315..543H (Hurley J.R., Pols O.R., Tout C.A., 2000, MNRAS, 315, 543:
+        .. [#] ... Comprehensive analytic formulae for stellar evolution as a function of mass and metallicity)
     """
     def __init__(self, **options):
         CodeInterface.__init__(self, name_of_the_worker="mosse_worker", **options)

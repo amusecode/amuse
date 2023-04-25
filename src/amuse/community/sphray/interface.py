@@ -16,7 +16,7 @@ class SPHRayInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesMi
     component. 
 
     The relevant references are:
-        .. [#] Altay, Gabriel; Croft, Rupert A. C.; Pelupessy, Inti, 2008, MNRAS 386
+        .. [#] ADS:2008MNRAS.386.1931A (Altay, Gabriel; Croft, Rupert A. C.; Pelupessy, Inti, 2008, MNRAS 386)
     """
 
     def __init__(self,  **options):

@@ -239,7 +239,7 @@ class CustomPrintingStrategy(PrintingStrategyWithPreferredUnits):
         return self.prefix
 
     def string_number(self, quantity):
-        return self.numbers_to_string(quantity, precision = self.precision)
+        return self.numbers_to_string(quantity, precision=self.precision)
 
     def string_separator(self):
         return self.separator
@@ -321,7 +321,7 @@ class _Defaults(options.OptionalAttributes):
 
     @options.option(sections=['output',])
     def printing_strategy(self):
-        return 'simple'
+        return 'default'
 
 DefaultPrintingStrategy.register()
 NoUnitsPrintingStrategy.register()

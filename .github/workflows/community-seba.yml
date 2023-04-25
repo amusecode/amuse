@@ -1,0 +1,67 @@
+# This workflow will install AMUSE and SeBa and run SeBa tests with a single version of Python
+
+name: Build and test SeBa
+
+on:
+  push:
+    paths:
+      - src/amuse/community/seba
+  pull_request:
+    paths:
+      - src/amuse/community/seba
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        mpi: [ 'mpich', 'openmpi']
+        python: [ 3.8 ]
+        java-version: [ '17' ]
+    name: Test AMUSE with ${{ matrix.mpi }}
+    steps:
+    - uses: actions/checkout@v3
+    - name: Setup MPI
+      uses: mpi4py/setup-mpi@v1
+      with:
+        mpi: ${{ matrix.mpi }}
+    - name: Set up JDK ${{ matrix.java-version }}
+      uses: actions/setup-java@v3.9.0
+      with:
+        distribution: 'zulu' # See 'Supported distributions' for available options
+        java-version: ${{ matrix.java-version }}
+    - name: Set up Python ${{ matrix.python }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python }}
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        sudo apt-get install gfortran libopenblas-dev libhdf5-openmpi-dev libgsl0-dev cmake libfftw3-3 libfftw3-dev libmpfr6 libmpfr-dev
+        pip install numpy scipy matplotlib docutils mpi4py pytest pytest-timeout
+        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+    - name: Install amuse
+      run: |
+        pip install -e .
+    - name: build AMUSE framework
+      run: |
+        make framework
+    - name: build SeBa
+      run: |
+        make seba.code
+    - name: check installation
+      run: |
+        amusifier --get-amuse-configmk
+        pip list
+    - name: archive build log
+      uses: actions/upload-artifact@v3.1.1
+      with:
+          name: buildlog
+          path: build.log
+    - name: test seba
+      run: |
+        pytest --pyargs amuse.test.suite.codes_tests.test_seba -sv
+      env:
+        OMPI_MCA_rmaps_base_oversubscribe: 1
+        OMPI_MCA_btl_tcp_if_include: lo

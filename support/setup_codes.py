@@ -30,10 +30,11 @@ from distutils import log
 from distutils import spawn
 from distutils import file_util
 from distutils.errors import DistutilsError
-from distutils.command.build import build
 from distutils.command.clean import clean
 from distutils.command.install import install
+from setuptools.command.build import build
 from setuptools.command.develop import develop
+from setuptools.command.editable_wheel import editable_wheel
 
 from subprocess import call, Popen, PIPE, STDOUT
 
@@ -1040,24 +1041,24 @@ class BuildCodes(CodeCommand):
             else:
                 level = log.INFO
             if not_build:
-                self.announce("Community codes not built (because of errors):",  level = level)
+                self.announce("Community codes not built (because of errors/ missing libraries):",  level = level)
                 self.announce("="*80,  level = level)
                 for x in not_build:
                     self.announce(' * {0}'.format(x), level =  level)
             if not_build_special:
-                self.announce("Optional builds failed, need special libraries:",  level = level)
+                self.announce("Optional builds skipped, need special libraries:",  level = level)
                 for x in sorted(not_build_special.keys()):
                     self.announce(' * {0} - {1}'.format(x, ', '.join(not_build_special[x])), level = level)
             if is_cuda_needed:
-                self.announce("Optional builds failed, need CUDA/GPU libraries:",  level = level)
+                self.announce("Optional builds skipped, need CUDA/GPU libraries:",  level = level)
                 for x in is_cuda_needed:
                     self.announce(' * {0}'.format(x), level = level)
             if are_python_imports_needed:
-                self.announce("Optional builds failed, need additional python packages:",  level = level)
+                self.announce("Optional builds skipped, need additional python packages:",  level = level)
                 for x in are_python_imports_needed:
                     self.announce(' * {0}'.format(x), level = level)
             if is_download_needed:
-                self.announce("Optional builds failed, need separate download",  level = level)
+                self.announce("Optional builds skipped, need separate download",  level = level)
                 for x in is_download_needed:
                     self.announce(' * {0} , make {0}.code DOWNLOAD_CODES=1'.format(x), level = level)
 
@@ -1085,6 +1086,7 @@ class BuildCodes(CodeCommand):
             ),  
             level = level
         )
+        self.announce("(not all codes and libraries need to be built)")
         
         if self.config and (not hasattr(self.config, 'java') or not hasattr(self.config.java, 'is_enabled')):
             self.announce(
@@ -1249,6 +1251,20 @@ class Develop(develop):
 
         develop.run(self)
 
+class Editable_wheel(editable_wheel):
+
+    sub_commands=list(develop.sub_commands)
+
+    def run(self):
+        build.sub_commands.remove( ('build_codes', None) )
+        build.sub_commands.append( ('build_libraries_in_place', None) )
+        
+        # this ensures sub commands are run first (only run once)
+        for cmd_name in self.get_sub_commands():
+            self.run_command(cmd_name)
+
+        editable_wheel.run(self)
+
 def setup_commands():
     mapping_from_command_name_to_command_class = {
         'build_codes': BuildCodes,
@@ -1262,7 +1278,8 @@ def setup_commands():
         'build_libraries_in_place': BuildLibraries_inplace,
         'install_libraries': InstallLibraries,
         'develop' : Develop,
-        'develop_build' : BuildCodes_inplace
+        'develop_build' : BuildCodes_inplace,
+        'editable_wheel' : Editable_wheel
     }
     
     build.sub_commands.append(('build_codes', None))

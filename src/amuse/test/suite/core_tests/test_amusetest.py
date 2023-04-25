@@ -13,7 +13,7 @@ class TestAmusetestTestCase(TestCase):
         self.assertEqual(1 | units.m, [1,1,1] | units.m)
         self.assertRaises(self.failureException, self.assertEqual, 1 | units.m, 0 | units.m)
         self.assertRaises(self.failureException, self.assertEqual, 
-            1 | units.m, 0 | units.m, expected_message = "1.0 m != 0.0 m")
+            1 | units.m, 0 | units.m, expected_message = "1 m != 0 m")
     
     def test2(self):
         self.assertAlmostEqual(1 | units.m, 1 | units.m)

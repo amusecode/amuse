@@ -184,7 +184,7 @@ AC_SUBST(SC_MPI_CLIBS)
 AC_SUBST(SC_MPI_FCLIBS)
 
 AX_LAPACK([AC_MSG_NOTICE([LAPACK and BLAS found ])], 
-          [AC_MSG_ERROR([LAPACK and/or BLAS not found])] )
+          [AC_MSG_NOTICE([LAPACK and/or BLAS not found])] )
 
 AX_FFTW()
 AX_GMP()

@@ -15,10 +15,10 @@ class SeBaInterface(CodeInterface, se.StellarEvolutionInterface, LiteratureRefer
     metallicity.  SeBa includes prescriptions for mass loss by stellar
     winds, supernova and supports binary evolution.
 
-        .. [#] ** Portegies Zwart S.F. & Verbunt F., 1996, A&A, 309, 179:
-        .. [#] ... "Population synthesis of high-mass binaries"
-        .. [#] Toonen, S., Nelemans, G., Portegies Zwart S.F., 2012, A&A, 546A, 70T
-        .. [#] ... "Supernova Type Ia progenitors from merging double white dwarfs. Using a new population synthesis model"
+        .. [#] ADS:1996A&A...309..179P (Portegies Zwart S.F. & Verbunt F., 1996, A&A, 309, 179:
+        .. [#] ... "Population synthesis of high-mass binaries")
+        .. [#] ADS:2012A&A...546A..70T (Toonen, S., Nelemans, G., Portegies Zwart S.F., 2012, A&A, 546A, 70T
+        .. [#] ... "Supernova Type Ia progenitors from merging double white dwarfs. Using a new population synthesis model")
     """
 
     include_headers = ['worker_code.h', 'stopcond.h']

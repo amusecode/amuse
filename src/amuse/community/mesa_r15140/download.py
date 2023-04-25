@@ -2,19 +2,17 @@
 
 import subprocess
 import os
-import sys
-import time
 import urllib.request
 import urllib.parse
 import urllib.error
+from shutil import which
 from optparse import OptionParser
-import glob
-import shutil
 import stat
 
-class GetCodeFromHttp(object):
-    url_template = ''
+
+class GetCodeFromHttp:
     filename_template = "mesa-r{version}.zip"
+    url_template = ''
     version = ""
     zip=True
     unpack=True
@@ -26,12 +24,12 @@ class GetCodeFromHttp(object):
         return os.path.join(self.directory(), 'src')
 
     def unpack_downloaded_file(self, filename):
-        print("unpacking", filename)
+        print(f"unpacking {filename}")
         if self.unpack:
             if self.zip:
                 arguments = ['unzip']
             else:
-                arguments = ['tar','xvf']
+                arguments = ['tar', 'xvf']
             arguments.append(filename)
             subprocess.call(
                 arguments,
@@ -40,16 +38,27 @@ class GetCodeFromHttp(object):
         print("done")
 
     def start(self):
-        try:
+        if not os.path.exists('src'):
             os.mkdir('src')
-        except FileExistsError:
-            pass
 
         url = self.url_template.format(version=self.version)
         filename = self.filename_template.format(version=self.version)
         filepath = os.path.join(self.src_directory(), filename)
-        print("downloading version", self.version, "from", url, "to", filename)
-        urllib.request.urlretrieve(url, filepath)
+        print(f"downloading version {self.version} from {url} to {filename}")
+        if which('wget') is not None:
+            arguments = ['wget', '--user-agent="Mozilla"', url]
+            subprocess.call(
+                arguments,
+                cwd=os.path.join(self.src_directory())
+            )
+        elif which('curl') is not None:
+            arguments = ['curl', '-L', '-O', url]
+            subprocess.call(
+                arguments,
+                cwd=os.path.join(self.src_directory())
+            )
+        else:
+            urllib.request.urlretrieve(url, filepath)
         print("downloading finished")
         self.unpack_downloaded_file(filename)
 
@@ -71,7 +80,7 @@ def get_crlibm():
     instance.url_template = 'http://www.astro.wisc.edu/~townsend/resource/download/sdk2/src/crlibm-{version}.tar.gz'
     instance.filename_template='crlibm-{version}.tar.gz'
     instance.version = '1.0beta4'
-    instance.zip=False
+    instance.zip = False
     instance.start()  
 
 def get_fpx3deps():
@@ -79,8 +88,8 @@ def get_fpx3deps():
     instance.url_template = 'https://raw.githubusercontent.com/rhdtownsend/sdk2/master/profile/common/fpx3/fpx3_deps'
     instance.filename_template='fpx3_deps'
     instance.version = ''
-    instance.zip=False
-    instance.unpack=False
+    instance.zip = False
+    instance.unpack = False
     instance.start()  
 
 def get_fpx3():
@@ -88,7 +97,7 @@ def get_fpx3():
     instance.url_template = 'http://www.astro.wisc.edu/~townsend/resource/download/sdk2/src/fpx3.tar.gz'
     instance.filename_template='fpx3.tar.gz'
     instance.version = ''
-    instance.zip=False
+    instance.zip = False
     instance.start()  
 
 def get_lapack95():
@@ -96,7 +105,7 @@ def get_lapack95():
     instance.url_template = 'http://www.astro.wisc.edu/~townsend/resource/download/sdk2/src/lapack95.tgz'
     instance.filename_template='lapack95.tar.gz'
     instance.version = ''
-    instance.zip=False
+    instance.zip = False
     instance.start()      
 
 def get_mesa():
@@ -107,7 +116,7 @@ def get_mesa():
     else:
         instance.url_template = "https://zenodo.org/record/4311514/files/mesa-r{version}.zip"
 
-    instance.version='15140'
+    instance.version = '15140'
     instance.start()   
 
 def get_hdf5():
@@ -115,7 +124,7 @@ def get_hdf5():
     instance.url_template = "https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.12/hdf5-{version}/src/hdf5-{version}.tar.bz2"
     instance.filename_template='hdf-{version}.tar.bz2'
     instance.version = '1.12.0'
-    instance.zip=False
+    instance.zip = False
     instance.start()      
 
 

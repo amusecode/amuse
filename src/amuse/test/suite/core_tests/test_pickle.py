@@ -117,7 +117,7 @@ class TestPicklingOfUnitsAndQuantities(amusetest.TestCase):
         
         
     def test10(self):
-        quantity = 1.0 | parsec
+        quantity = 1  | parsec
         path=os.path.abspath(os.path.join(self.get_path_to_results(), "test10.pickle"))
         with open(path, "wb") as stream: 
             pickle.dump(quantity, stream)

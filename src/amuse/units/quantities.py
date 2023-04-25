@@ -19,9 +19,8 @@ try:
 except ImportError:
     HAS_ASTROPY = False
 
-"""
-"""
-class Quantity(object):
+
+class Quantity:
     """
     A Quantity objects represents a scalar or vector with a
     specific unit. Quantity is an abstract base class
@@ -182,9 +181,6 @@ class Quantity(object):
         """
         return new_quantity(numpy.sqrt(self.number), (self.unit ** 0.5).to_simple_form())
 
-
-
-
     def as_quantity_in(self, another_unit):
         """
         Reproduce quantity in another unit.
@@ -198,7 +194,7 @@ class Quantity(object):
         factor = self.unit.conversion_factor_from(another_unit)
         return new_quantity(self.number * factor, another_unit)
 
-    in_=as_quantity_in
+    in_ = as_quantity_in
 
     def as_string_in(self, another_unit):
         """
@@ -287,6 +283,11 @@ class ScalarQuantity(Quantity):
         # Quantity.__init__(self, unit)
         # commented out super call, this speeds thing up
         self.unit = unit
+        if isinstance(number, str):
+            try:
+                number = float(number)
+            except ValueError:  # needed to handle interfaces
+                pass
         if unit.dtype is None:
             self.number = number
         else:
@@ -1097,7 +1098,7 @@ class NonNumericQuantity(Quantity):
         Quantity.__init__(self, unit)
         self.value = value
         if not unit.is_valid_value(value):
-            raise exceptions.AmuseException("<{0}> is not a valid value for {1!r}".format(value, unit))
+            raise exceptions.AmuseException(f"<{value}> is not a valid value for {unit!r}")
 
     def as_quantity_in(self, another_unit):
         if not another_unit == self.unit:
@@ -1115,7 +1116,7 @@ class NonNumericQuantity(Quantity):
         return self.unit.value_to_string(self.value)
 
     def __repr__(self):
-        return 'quantity<'+str(self.value)+ ' - ' +str(self)+'>'
+        return f'quantity<{str(self.value)} - {str(self)}>'
 
 
     def as_vector_with_length(self, length):
@@ -1128,7 +1129,6 @@ class NonNumericQuantity(Quantity):
         array = numpy.zeros(length, dtype=self.unit.dtype)
         return new_quantity(array, self.unit)
 
-
     def __getstate__(self):
         return (self.unit, self.value)
 
@@ -1136,13 +1136,14 @@ class NonNumericQuantity(Quantity):
         self.unit = x[0]
         self.value = x[1]
 
+
 class AdaptingVectorQuantity(VectorQuantity):
     """
     Adapting vector quanity objects will adapt their units to the
     first object added to the vector
     """
 
-    def __init__(self, value = [], unit = None):
+    def __init__(self, value=[], unit=None):
         VectorQuantity.__init__(self, value, unit)
         del self._number
         self._number_list = list(value)
@@ -1194,7 +1195,10 @@ class AdaptingVectorQuantity(VectorQuantity):
         else:
             return console.current_printing_strategy.quantity_to_string(self)
 
-__array_like =  (list, tuple, numpy.ndarray, range)
+
+__array_like = (list, tuple, numpy.ndarray, range)
+
+
 def new_quantity(value, unit):
     """Create a new Quantity object.
 
@@ -1209,10 +1213,13 @@ def new_quantity(value, unit):
         return NonNumericQuantity(value, unit)
     return ScalarQuantity(value, unit)
 
+
 def new_quantity_from_unit(unit, value):
     return new_quantity(value, unit)
 
+
 core.unit.new_quantity = new_quantity_from_unit
+
 
 def new_quantity_nonone(value, unit):
     """Create a new Quantity object.
@@ -1233,17 +1240,21 @@ def new_quantity_nonone(value, unit):
         return NonNumericQuantity(value, unit)
     return ScalarQuantity(value, unit)
 
+
 def is_quantity(x):
     return hasattr(x, "is_quantity") and x.is_quantity()
 
+
 def is_unit(x):
     return hasattr(x, "base")
+
 
 def isNumber(x):
     try:
         return 0 == x*0
     except:
         return False
+
 
 def as_vector_quantity(value):
     if is_quantity(value): 
@@ -1262,17 +1273,21 @@ def as_vector_quantity(value):
             else:
                 raise Exception("Cannot convert '{0!r}' to a vector quantity".format(value))
 
+
 def to_quantity(x):
     if is_quantity(x):
         return x
     else:
         return new_quantity(x, none)
 
+
 def as_quantity_in(x,unit):
     return to_quantity(x).as_quantity_in(unit)
 
+
 def value_in(x,unit):
     return to_quantity(x).value_in(unit)
+
 
 def concatenate(quantities):
     first = quantities[0]
@@ -1283,21 +1298,24 @@ def concatenate(quantities):
     concatenated = numpy.concatenate(numbers)
     return VectorQuantity(concatenated, unit)
 
-def column_stack( args ):
-    args_=[to_quantity(x) for x in args]
-    units=set([x.unit for x in args_])
-    if len(units)==1:
-      return new_quantity(numpy.column_stack([x.number for x in args_]),args_[0].unit)
-    else:
-      return numpy.column_stack(args)
 
-def stack( args ):
-    args_=[to_quantity(x) for x in args]
-    units=set([x.unit for x in args_])
+def column_stack(args):
+    args_ = [to_quantity(x) for x in args]
+    units = set([x.unit for x in args_])
     if len(units)==1:
-      return new_quantity(numpy.stack([x.number for x in args_]),args_[0].unit)
+        return new_quantity(numpy.column_stack([x.number for x in args_]),args_[0].unit)
     else:
-      return numpy.stack(args)
+        return numpy.column_stack(args)
+
+
+def stack(args):
+    args_ = [to_quantity(x) for x in args]
+    units = set([x.unit for x in args_])
+    if len(units) == 1:
+        return new_quantity(numpy.stack([x.number for x in args_]),args_[0].unit)
+    else:
+        return numpy.stack(args)
+
 
 def arange(start, stop, step):
     if not is_quantity(start):
@@ -1325,6 +1343,7 @@ def linspace(start, stop, num = 50,  endpoint=True, retstep=False):
     else:
         return new_quantity(array, unit)
 
+
 def separate_numbers_and_units(values):
     number = []
     unit = []
@@ -1338,12 +1357,14 @@ def separate_numbers_and_units(values):
 
     return number, unit
 
+
 def meshgrid(*xi, **kwargs):
     unitless_xi, units = separate_numbers_and_units(xi)
 
     result = numpy.meshgrid(*unitless_xi, **kwargs)
 
     return [matrix | unit for matrix, unit in zip(result, units)]
+
 
 def polyfit(x, y, deg):
     (x_number, y_number), (x_unit, y_unit) = separate_numbers_and_units([x, y])
@@ -1352,6 +1373,7 @@ def polyfit(x, y, deg):
     fit = [f | y_unit/(x_unit**(deg-i)) for i, f in enumerate(fit)]
 
     return fit
+
 
 def polyval(p, x):
     if len(p) == 1:
@@ -1375,8 +1397,10 @@ def searchsorted(a, v, **kwargs):
     else:
         return numpy.searchsorted(a, v, **kwargs)
 
+
 def sign(x):
     return numpy.sign(to_quantity(x).number)
+
 
 if HAS_ASTROPY:
     def to_astropy(quantity):
@@ -1409,6 +1433,7 @@ if HAS_ASTROPY:
             elif base_unit[1] == amuse.units.si.cd:
                 ap_quantity = ap_quantity * astropy.units.cd**base_unit[0]
         return ap_quantity
+
 
     def from_astropy(ap_quantity):
         "Convert a quantity from Astropy to AMUSE"

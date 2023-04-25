@@ -795,13 +795,13 @@ int new_binary(
     if(error_code < 0) {return error_code;}
     
     if (child1 == seba_insertion_point) {
-        seba_insertion_point = child1->get_younger_sister();
+        seba_insertion_point = child1->get_elder_sister();
     }
     if (child2 == seba_insertion_point) {
-        seba_insertion_point = child2->get_younger_sister();
+        seba_insertion_point = child2->get_elder_sister();
     }
     if (child1 == seba_insertion_point) {
-        seba_insertion_point = child1->get_younger_sister();
+        seba_insertion_point = child1->get_elder_sister();
     }
     detach_node_from_general_tree(child1);
     detach_node_from_general_tree(child2);   

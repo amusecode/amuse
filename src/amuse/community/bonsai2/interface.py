@@ -5,14 +5,8 @@ from amuse.community.interface.gd import GravitationalDynamicsInterface, Gravita
 class Bonsai2Interface(CodeInterface, LiteratureReferencesMixIn, GravitationalDynamicsInterface, 
         StoppingConditionInterface, CodeWithDataDirectories):
     """
-        .. [#] Bedorf J., Gaburov E., Fujii M. S., Nitadori K. Ishiyama T., Portegies Zwart S.,
-        ...[#] "24.77 Pflops on a gravitational tree-code to simulate the Milky Way Galaxy
-        ...[#] with 18600 GPUs", 2014, SC'14 proceedings, 54-65 [2014hpcn.conf...54B]
-        ...[#] https://doi.org/10.1109/SC.2014.10
-
-        .. [#] Bedorf J., Gaburov E., Portegies Zwart S., "A sparse octree
-        .. [#] gravitational N-body code that runs entirely on the GPU processor",
-        .. [#] 2012, JCoPh, 231, 2825 [2012JCoPh.231.2825B]
+        .. [#] ADS:2014hpcn.conf...54B (Bedorf J., et al., 2014, SC'14 proceedings, 54-65, https://doi.org/10.1109/SC.2014.10)
+        .. [#] ADS:2012JCoPh.231.2825B (Bedorf J., Gaburov E., Portegies Zwart S., 2012, JCoPh, 231, 2825)
     """
 
     include_headers = ['worker_code.h', 'stopcond.h']

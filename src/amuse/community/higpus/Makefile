@@ -12,7 +12,7 @@ endif
 # for most users (most users have no gpu).
 # to easily create code in this directory run:
 # make code
-ALL	 = 
+ALL	 = higpus_worker_gpu
 
 # all the ?= lines work as follows
 # if the variable is already defined, it will keep it's pre-defined value.
@@ -61,7 +61,7 @@ all: $(ALL)
 
 code: higpus_worker_gpu
 
-$(CODELIB):
+$(CODELIB): FORCE
 	make -C src all 
 
 worker_code.cc: interface.py
@@ -80,3 +80,5 @@ clean:
 	$(RM) -f *.so *.o *.pyc worker_code.cc worker_code.h
 	$(RM) *~ higpus_worker higpus_worker_gpu worker_code.cc
 	make -C src clean
+
+FORCE:
