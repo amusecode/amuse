@@ -30,7 +30,7 @@ jobs:
         python -m pip install flake8 pytest
         # don't install requirements.txt as mpi4py will fail...
         # if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-        python -m pip install setuptools setuptools_scm wheel docutils numpy h5py
+        python -m pip install setuptools>65 setuptools_scm wheel docutils numpy h5py
     - name: Lint with flake8
       run: |
         # stop the build if there are Python syntax errors or undefined names
