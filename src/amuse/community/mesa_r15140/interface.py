@@ -914,7 +914,7 @@ class MESAInterface(
         """
         Get gyre data. 
 
-        This returns a list of dicts where each element of the list coresponds to one mode
+        This returns a list of dicts where each element of the list corresponds to one mode
         
         Each dict contains the pg,p,g and complex frequency for the mode as well as
         arrays of r/R, xi_r, xi_h, and dwdx for the mode
@@ -963,7 +963,6 @@ class MESAInterface(
         """
         Retrieve the current mixing_length_ratio of the star.
         """
-
         return self.get_control(index_of_the_star,'mixing_length_alpha')
 
     def set_mixing_length_ratio(self,index_of_the_star, mixing_length_ratio):
@@ -1125,6 +1124,81 @@ class MESAInterface(
             r = self.set_control(index_of_the_star,f'z_fraction_{element}',value)
         return r
 
+
+    @legacy_function
+    def solve_one_step():
+        """
+        Takes one step forward, but does not handle retries or redo's. 
+        Must call solve_one_step_pre first and solve_one_step_post afterwards
+        """
+        function = LegacyFunctionSpecification()
+        function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
+            , description="The index of the star to get the value of")
+        function.addParameter('first_try', dtype='bool', direction=function.IN
+            , description="If this is the first attempt at taking this timestep")
+        function.addParameter('result', dtype='int32', direction=function.OUT
+            , description="What the star should do next (keep going, redo, retry, terminate)")
+        function.result_type = 'int32'
+        return function
+
+
+    @legacy_function
+    def solve_one_step_pre():
+        """
+        Prepares to takes one step forward, but does not handle retries or redo's. 
+        Called before solve_one_step
+        """
+        function = LegacyFunctionSpecification()
+        function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
+            , description="The index of the star to get the value of")
+        function.addParameter('result', dtype='int32', direction=function.OUT
+            , description="What the star should do next (keep going, redo, retry, terminate)")
+        function.result_type = 'int32'
+        return function
+
+    @legacy_function
+    def solve_one_step_post():
+        """
+        After taking one step forward cleanup the model, but does not handle retries or redo's. 
+        Called after solve_one_step
+        """
+        function = LegacyFunctionSpecification()
+        function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
+            , description="The index of the star to get the value of")
+        function.addParameter('result', dtype='int32', direction=function.OUT
+            , description="What the star should do next (keep going, redo, retry, terminate)")
+        function.result_type = 'int32'
+        return function
+
+    @legacy_function
+    def prepare_retry_step():
+        """
+        Prepares to retry a step with a new dt.
+        Does not actually take the step
+        """
+        function = LegacyFunctionSpecification()
+        function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
+            , description="The index of the star to get the value of")
+        function.addParameter('dt_next', dtype='float64', direction=function.IN
+            , description="New timestep to try")
+        function.addParameter('result', dtype='int32', direction=function.OUT
+            , description="What the star should do next (keep going, redo, retry, terminate)")
+        function.result_type = 'int32'
+        return function
+
+    @legacy_function
+    def prepare_redo_step():
+        """
+        Prepares to redo a step (a step with the same dt but where you have changed other options like the mdot)
+        Does not actually take the step
+        """
+        function = LegacyFunctionSpecification()
+        function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
+            , description="The index of the star to get the value of")
+        function.addParameter('result', dtype='int32', direction=function.OUT
+            , description="What the star should do next (keep going, redo, retry, terminate)")
+        function.result_type = 'int32'
+        return function
 
 
 class MESA(StellarEvolution, InternalStellarStructure):
@@ -1332,6 +1406,13 @@ class MESA(StellarEvolution, InternalStellarStructure):
             handler.add_method(particle_set_name, 'set_dutch_wind_efficiency')     
             handler.add_method(particle_set_name, 'get_blocker_wind_efficiency')
             handler.add_method(particle_set_name, 'set_blocker_wind_efficiency')
+
+            handler.add_method(particle_set_name, 'solve_one_step')
+            handler.add_method(particle_set_name, 'solve_one_step_pre')
+            handler.add_method(particle_set_name, 'solve_one_step_post')
+            handler.add_method(particle_set_name, 'prepare_retry_step')
+            handler.add_method(particle_set_name, 'prepare_redo_step')
+
 
     def define_state(self, handler):
         StellarEvolution.define_state(self, handler)
@@ -1774,6 +1855,36 @@ class MESA(StellarEvolution, InternalStellarStructure):
             "set_accrete_composition_metals_identifier",
             (handler.INDEX,handler.NO_UNIT),
             (handler.ERROR_CODE)
+        )
+
+        handler.add_method(
+            "solve_one_step",
+            (handler.INDEX, handler.NO_UNIT),
+            (handler.NO_UNIT,handler.ERROR_CODE)
+        )
+
+        handler.add_method(
+            "solve_one_step_pre",
+            (handler.INDEX),
+            (handler.NO_UNIT,handler.ERROR_CODE)
+        )
+
+        handler.add_method(
+            "solve_one_step_post",
+            (handler.INDEX),
+            (handler.NO_UNIT,handler.ERROR_CODE)
+        )
+
+        handler.add_method(
+            "prepare_retry_step",
+            (handler.INDEX, units.s),
+            (handler.NO_UNIT,handler.ERROR_CODE)
+        )
+
+        handler.add_method(
+            "prepare_redo_step",
+            (handler.INDEX),
+            (handler.NO_UNIT,handler.ERROR_CODE)
         )
 
     def initialize_module_with_default_parameters(self):
