@@ -1170,6 +1170,12 @@ class MESA(StellarEvolution, InternalStellarStructure):
         InternalStellarStructure.define_methods(self, handler)
         StellarEvolution.define_methods(self, handler)
         handler.add_method(
+            "evolve_for",
+            (handler.INDEX, units.julianyr),
+            (handler.ERROR_CODE,)
+        )
+
+        handler.add_method(
             "new_pre_ms_particle",
             (units.MSun),
             (handler.INDEX, handler.ERROR_CODE)

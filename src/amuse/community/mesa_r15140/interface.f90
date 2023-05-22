@@ -140,8 +140,9 @@ module amuse_mesa
    end function load_model
 
 ! Create a new pre-main-sequence star
-   integer function new_pre_ms_particle(AMUSE_id, AMUSE_value)
+   integer function new_pre_ms_particle(AMUSE_id, AMUSE_value, num_steps)
       integer, intent(out) :: AMUSE_id
+      integer :: num_steps
       double precision :: AMUSE_value
       integer ::  ierr, id
 
@@ -155,7 +156,7 @@ module amuse_mesa
       AMUSE_id = id
       number_of_particles = AMUSE_id
 
-      call create_pre_main_sequence(AMUSE_id, ierr)
+      call create_pre_main_sequence(AMUSE_id, num_steps, ierr)
       if(ierr/=MESA_SUCESS) return
 
       call finish_init_star(AMUSE_id, set_amuse_options, ierr)

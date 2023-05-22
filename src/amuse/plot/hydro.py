@@ -4,6 +4,7 @@
 Plot hydro and/or stars
 """
 import os
+import sys
 import logging
 import numpy
 import copy

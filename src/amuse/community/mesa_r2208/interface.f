@@ -1777,17 +1777,22 @@
       type (star_info), pointer :: s
       integer :: ierr
       integer :: do_evolve_one_step
+      double precision :: end_time
 
       evolve_for = 0
       call get_star_ptr(AMUSE_id, s, ierr)
       if (evolve_failed('get_star_ptr', ierr, evolve_for, -1)) return
 
-      target_times(AMUSE_id) = target_times(AMUSE_id) + AMUSE_delta_t * secyer
+      end_time = s% time + AMUSE_delta_t * secyer
 
       evolve_loop: do while(evolve_for == 0 .and. &
-            (s% time + s% min_timestep_limit < target_times(AMUSE_id))) ! evolve one step per loop
+            (s% time  < end_time)) ! evolve one step per loop
+            if((s% time + s% dt_next) > end_time) then ! Handle final step
+               s% dt_next = end_time - s% time
+            end if
          evolve_for = do_evolve_one_step(AMUSE_id)
       end do evolve_loop
+
    end function evolve_for
 
 ! Return the maximum age stop condition

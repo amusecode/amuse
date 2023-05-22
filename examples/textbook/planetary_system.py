@@ -101,8 +101,8 @@ def main(Mstar, Ndisk, fmdisk, Rmin, Rmax, t_end, n_steps):
     filename = "planetary_system_i{0:04}.amuse".format(index)
     write_set_to_file(star_and_planets, filename, 'amuse',
                       attribute_names=planet_attributes,
-                      append_to_file=False)
-    write_set_to_file(disk, filename, 'amuse', attribute_names=disk_attributes)
+                      overwrite_file=True)
+    write_set_to_file(disk, filename, 'amuse', attribute_names=disk_attributes, append_to_file=True)
     
     gravity_hydro = bridge.Bridge(use_threading=False)
     gravity_hydro.add_system(gravity, (hydro,) )
@@ -133,9 +133,9 @@ def main(Mstar, Ndisk, fmdisk, Rmin, Rmax, t_end, n_steps):
         filename = "planetary_system_i{0:04}.amuse".format(index)
         write_set_to_file(star_and_planets, filename, 'amuse',
                           attribute_names=planet_attributes,
-                          append_to_file=False)
+                          overwrite_file=True)
         write_set_to_file(disk, filename, 'amuse',
-                          attribute_names=disk_attributes)
+                          attribute_names=disk_attributes, append_to_file=True)
 
         Ekin = gravity_hydro.kinetic_energy 
         Epot = gravity_hydro.potential_energy

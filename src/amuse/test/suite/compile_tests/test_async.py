@@ -13,7 +13,7 @@ from amuse.rfi.tools import create_c
 from amuse.rfi import async_request
 from amuse.rfi.core import *
 
-import  test_c_implementation
+from . import  test_c_implementation
 
 from amuse.test import compile_tools
 
