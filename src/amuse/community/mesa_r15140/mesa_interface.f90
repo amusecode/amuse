@@ -569,6 +569,95 @@ module mesa_interface
     end subroutine do_evolve_one_step
 
 
+    integer function do_prepare_for_redo(id)
+        integer, intent(in) :: id
+        do_prepare_for_redo = star_prepare_to_redo(id)
+    end function do_prepare_for_redo
+
+    integer function do_prepare_for_retry(id)
+        integer, intent(in) :: id
+        do_prepare_for_retry = star_prepare_to_retry(id)
+    end function do_prepare_for_retry
+
+
+    subroutine do_solve_one_step_pre(id, result, ierr)
+        integer, intent(in) :: id
+        integer, intent(out) :: result, ierr
+        type (star_info), pointer :: s 
+
+        integer :: model_number
+        logical :: continue_evolve_loop, first_try
+        logical,parameter :: dbg=.false.
+
+        ierr = MESA_SUCESS
+
+        call star_ptr(id, s, ierr)
+        if (failed('star_ptr',ierr)) return
+
+        call before_step_loop(s% id, ierr)
+        if (failed('before_step_loop',ierr)) return
+
+        result = s% extras_start_step(id)  
+        if (result /= keep_going) return      
+
+
+    end subroutine do_solve_one_step_pre
+
+
+    subroutine do_solve_one_step(id, first_try, result, ierr)
+        integer, intent(in) :: id
+        logical, intent(in) :: first_try
+        integer, intent(out) :: result, ierr
+        type (star_info), pointer :: s 
+
+        integer :: model_number
+        logical :: continue_evolve_loop
+        logical,parameter :: dbg=.false.
+
+        ierr = MESA_SUCESS
+
+        call star_ptr(id, s, ierr)
+        if (failed('star_ptr',ierr)) return
+
+
+        result = star_evolve_step(id, first_try)
+        if (result == keep_going) result = star_check_model(id)
+        if (result == keep_going) result = s% extras_check_model(id)
+        if (result == keep_going) result = star_pick_next_timestep(id)            
+        if (result == keep_going) return
+
+    end subroutine do_solve_one_step
+
+
+    subroutine do_solve_one_step_post(id, result, ierr)
+        integer, intent(in) :: id
+        integer, intent(out) :: result, ierr
+        type (star_info), pointer :: s 
+
+        integer :: model_number
+        logical :: continue_evolve_loop, first_try
+        logical,parameter :: dbg=.false.
+
+        ierr = MESA_SUCESS
+
+        call star_ptr(id, s, ierr)
+        if (failed('star_ptr',ierr)) return
+
+
+        s% doing_first_model_of_run = .false.
+
+        call after_step_loop(s% id, s% inlist_fname, &
+            dbg, result, ierr)
+        if (failed('after_step_loop',ierr)) return
+        
+        call do_saves(id, ierr)
+        if (failed('do_saves',ierr)) return
+
+        call flush()
+
+    end subroutine do_solve_one_step_post
+
+
     subroutine evolve_until(id, delta_t, ierr)
         integer, intent(in) :: id
         real(dp), intent(in) :: delta_t
@@ -639,6 +728,7 @@ module mesa_interface
         s% model_number = new_number
 
     end subroutine set_model_number
+
     subroutine set_timestep(id, dt_next, ierr)
         integer, intent(in) :: id
         real(dp), intent(in) :: dt_next
@@ -648,6 +738,19 @@ module mesa_interface
         if (failed('set_dt_next',ierr)) return
 
     end subroutine set_timestep
+
+    subroutine set_current_dt(id, dt, ierr)
+        integer, intent(in) :: id
+        real(dp), intent(in) :: dt
+        integer, intent(out) :: ierr
+        type (star_info), pointer :: s 
+
+        call star_ptr(id, s, ierr)
+        if (failed('set_dt',ierr)) return
+
+        s% dt = dt
+
+    end subroutine set_current_dt
 
     subroutine set_new_mass(id, new_mass, ierr)
         integer, intent(in) :: id
