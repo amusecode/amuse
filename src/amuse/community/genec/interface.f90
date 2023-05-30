@@ -4,7 +4,7 @@ module AmuseInterface
             GenecStar,genec_star
     use helpers, only:&
             copy_to_genec_star,copy_namelists_from_genec_star,copy_from_genec_star,&
-            copy_structure_from_genec_star,copy_initial_structure_from_genec_star
+            copy_structure_from_genec_star,copy2_from_genec_star
     use evol, only: kindreal,ldi,npondcouche
 
     type(genec_star) :: BackupBackupGenecStar
@@ -13,6 +13,240 @@ module AmuseInterface
     integer :: evolve_steps
     public:: BackupGenecStar,number_of_stars
 contains
+
+subroutine init_or_restore_star(Star)
+  ! This function replaces read_parameters and initialise_star in genec.f90
+  use genec
+  implicit none
+  type(genec_star), intent(in) :: Star
+
+  call copy_namelists_from_genec_star(Star)
+
+  if (idebug > 0) then
+    verbose = .true.
+  endif
+
+  if (idebug > 1) then
+    write(*,*) 'initialisations...'
+  endif
+
+  tzero=999999999.d0
+
+  idern=0
+  id1=0
+  id2=5
+  dm_lost=0.d0
+
+  agdp = agdr    ! )
+  agds = agdr    ! ) bounds on the corrections in henyey
+  agdt = agdr    ! )
+
+  if (.not. Star%initialised) then
+  dgrp = dgrp*um ! maximum allowed variation in Ln P
+  dgrl = dgrl*um ! maximum allowed variation in Ln S
+  endif
+
+  !if (nwseq == 1) then
+  !  restart = 0
+  !else
+  !  restart = nwseq
+  !endif
+
+  !if (modanf == 0) then
+  !  if (idebug > 1) then
+  !    write(*,*) 'initial values check and corrections'
+  !  endif
+  !  if (faktor /= 1.d0) then
+  !    faktor = 1.d0
+  !    write(*,*) 'First model: faktor set to 1'
+  !  endif
+  !  if (phase /= 1) then
+  !    phase = 1
+  !    write(*,*) 'First model: phase set to 1'
+  !  endif
+  !  if (irot == 1 .and. isol /= 1) then
+  !    isol = 1
+  !    write(*,*) 'First model: isol set to 1'
+  !  endif
+  !endif
+
+  if (idebug > 1) then
+    write(*,*) 'restoring network'
+  endif
+  call restore_network(z)
+
+  if (ialflu == 1) then
+    xnetalu = Star%xnetalu
+    zabelx = zabelx-xnetalu(1)-xnetalu(2)-xnetalu(3)-xnetalu(4)
+  endif
+
+  !if (isugi >= 1 .and. nwseq  ==  1) then
+  !  nsugi=mmax
+  !endif
+
+  !inum = 0
+  !if (nzmod > 1) then
+  !  modell = mod(nwseq,nzmod)
+  !else
+  !  modell = 1
+  !endif
+  !nzmodini = nzmod
+  !if (.not. libgenec) then
+  !write(*,*) "\n\n\n\n ******FFFFFFFFF", veryFirst, "\n\n", nwmd, nwseq, "\n\n\n"
+  if (nwmd == 0) then
+    nwmd = nwseq
+  endif
+  !nwseqini = nwseq
+
+  ! Initial model
+  if (modanf == 0) then
+! security if initial file is missing the iprezams parameter
+    if (vwant>epsilon(vwant) .and. iprezams==0) then
+      write(*,*) 'VWANT/=0 --> IPREZAMS set to 1'
+      iprezams=1
+    endif
+    if (idebug > 1) then
+      write(*,*) 'Reading of initial structure'
+    endif
+    call copy_structure_from_genec_star(Star)
+    !read(*,nml=IniStruc)
+    xmini=summas
+    zams_radius = 0.d0
+    if (bintide) then
+      period = periodini*day
+    endif
+    if (irot == 1 .and. isol>=1 .and. omega /= omegi(1)) then
+      omegi(:) = omega
+    endif
+    if (alter == 0.d0) then
+      firstmods = .true.
+    else
+      firstmods = .false.
+    endif
+
+    if (fitm /= exphi(q(1))) then
+      q(1) = log10(1.d0 - fitm)
+    endif
+
+    if (ialflu == 1) then
+      xf19(:)=xnetalu(1)
+      xne21(:)=xnetalu(2)
+      xna23(:)=xnetalu(3)
+      xal26(:)=0.d0
+      xal27(:)=xnetalu(4)
+      xsi28(:)=xnetalu(5)
+      xneut(:)=0.d0
+      xprot(:)=0.d0
+      xc14(:)=0.d0
+      xf18(:)=0.d0
+      xbid1(:)=0.d0
+
+      xsi28(:)=0.d0
+      bibib = &
+              1.d0-x(1)-y(1)-y3(1)-xc12(1)-xc13(1)-xn14(1)-xn15(1)-xo16(1)-xo17(1)-xo18(1)-xne22(1)&
+              -xmg24(1)-xmg25(1)-xmg26(1)-xne20(1)-xf19(1)-xne21(1)-xal27(1)-xsi28(1)-xna23(1)
+
+      do ii=1,nbelx
+        bibib=bibib-abels(ii)
+      enddo
+
+      xbid(1:m)=bibib
+    else
+      xf19(:)=0.d0
+      xne21(:)=0.d0
+      xna23(:)=0.d0
+      xal26(:)=0.d0
+      xal27(:)=0.d0
+      xsi28(:)=0.d0
+      xneut(:)=0.d0
+      xprot(:)=0.d0
+      xc14(:)=0.d0
+      xf18(:)=0.d0
+      xbid1(:)=0.d0
+    endif
+
+! for each shell give same value
+    zabelx=z
+    do ii=1,nbelx
+      abelx(ii,:)=abels(ii)
+      zabelx=zabelx-abels(ii)
+    enddo
+    if (ialflu == 1) then
+      zabelx=zabelx-xf19(1)-xne21(1)-xna23(1)-xal27(1)
+    endif
+    write(*,*) 'z,zabelx,m',z,zabelx,m
+
+    if (isugi >= 1) then
+      nsugi = m
+    endif
+
+    NPcoucheEff = npondcouche
+
+    !call write4
+
+    ab=ab*um
+    q(:)=q(:)*um
+    p(:)=p(:)*um
+    t(:)=t(:)*um
+    r(:)=r(:)*um
+    s(:)=s(:)*um
+    vp(:)=vp(:)*um
+    vt(:)=vt(:)*um
+    vr(:)=vr(:)*um
+    vs(:)=vs(:)*um
+    veryFirst = .true.
+
+  else ! modanf > 0
+
+    call copy_structure_from_genec_star(Star)
+    !write(*,*) 's1/vs1 (helpers): ', s(1), vs(1)
+
+    !vvsuminenv = vsuminenv
+
+    ! if (phase > 1 .and. CorrOmega(npondcouche) < -100.d0) then
+    !   NPcoucheEff = npondcoucheAdv
+    ! else
+    !   NPcoucheEff = npondcouche
+    ! endif
+
+    ! if (irot /= 0) then
+    !   if (idebug > 1) then
+    !     write(*,*) 'call momevo'
+    !   endif
+    !   call momevo(r,vomegi,xltod,CorrOmega,.true.)
+    ! endif
+
+    ! if (x(1) > 7.d-1) then
+    !   xini = x(1)
+    !   if (x(m) > (xini - 5.d-3)) then
+    !     firstmods = .true.
+    !   else
+    !     firstmods = .false.
+    !   endif
+    ! else
+    !   firstmods = .false.
+    ! endif
+
+    ! if (irot==1 .and. isol>=1 .and. abs(vwant)>1.0d-5) then
+    !   omegi(1:m)=sqrt(xfom)*omegi(1:m)
+    ! endif
+
+    !call write4
+
+    !write(*,*) 'call fitmshift'
+    !call fitmshift
+
+  endif ! modanf
+
+  ! ftfp initialisation
+  !call initgeo
+
+  if (ialflu==0 .and. xmini<=9.d0) then
+    ichem = 1
+  endif
+
+end subroutine init_or_restore_star
+
 
 integer function restore_star()
     implicit none
@@ -87,37 +321,86 @@ function commit_parameters()
     commit_parameters = 0
 end function
 
+subroutine restore_network(z)
+!----------------------------------------------------------------------
+  use evol, only: input_dir
+  use inputparam,only: idebug,libgenec
+  use abundmod,only: mbelx,abels,xlostneu,nbzel,nbael
+  use storage, only: GenecStar
+
+  implicit none
+
+  integer:: i,ii,ierror
+  integer:: nbelx  ! FIXME: store this somewhere?
+  real(kindreal),intent(in):: z
+  real(kindreal):: zabelx  ! FIXME: store?
+  character (256):: namenet,namereac
+!----------------------------------------------------------------------
+! Reading network information (elements, ...)
+! first add elements to the program
+  ierror = 0
+  i = 1
+  xlostneu = GenecStar%xlostneu
+  nbzel = GenecStar%nbzel
+  nbael = GenecStar%nbael
+  abels = GenecStar%abels
+  do while (i <= size(abels))
+   if (GenecStar%verbose) then
+     write(*,*) nbzel(i), nbael(i), abels(i)
+   endif
+   i = i+1
+  enddo
+
+  nbelx = i-1
+
+  zabelx = z
+  do ii = 1, nbelx
+   zabelx = zabelx - abels(ii)
+  enddo
+
+  if (nbelx > mbelx) then
+    write(*,*) 'nbelx= ',nbelx,' > mbelx= ',mbelx
+    stop 'stop in restore_network'
+  endif
+
+  if (.false.) then  ! skip this for now - fixme later --SR
+! then decide which element are followed in netnewr.f
+  if (GenecStar%phase < 4) then
+    namenet=trim(input_dir)//'inputs/netinit.inCNE'
+    namereac=trim(input_dir)//'inputs/vit.datCNE'
+  else
+    namenet=trim(input_dir)//'inputs/netinit.inCNEO'
+    namereac=trim(input_dir)//'inputs/vit.datCNEO'
+  endif
+
+  if (idebug > 0) then
+    write(*,*) 'call readnetZA'
+  endif
+  call  readnetZA
+  if (idebug > 0) then
+    write(*,*) 'call readreac'
+  endif
+  call readreac
+  endif ! .false.
+
+  return
+
+end subroutine restore_network
+
 function commit_particles()
     use makeini, only: make_initial_star
     use genec, only: initialise_star
     implicit none
     integer:: commit_particles
     ! makeini will actually override some things from set_defaults now! FIXME
+
     if (.not.GenecStar%initialised) then
-        write(*,*) 'i:', GenecStar%nbzel
         call make_initial_star()
-        write(*,*) 'm_i_s:', GenecStar%nbzel
         call copy_from_genec_star(GenecStar)
-        write(*,*) 'c_f_g_s:', GenecStar%nbzel
-        call initialise_star()
         GenecStar%initialised = .true.
-        write(*,*) 'i_s:', GenecStar%nbzel
-        call copy_to_genec_star(GenecStar)
-    else
-        ! "read" GENEC star namelists
-        write(*,*) "call copy_namelists_from_genec_star(GenecStar)"
-        call copy_namelists_from_genec_star(GenecStar)
-        ! Initialise values not in GENEC star
-        ! but this also resets some values that are read, so...
-        write(*,*) 'call initialise_star()'
-        call initialise_star()
-        ! "read" the GENEC star structure
-        write(*,*) 'call copy_structure_from_genec_star(GenecStar)'
-        call copy_structure_from_genec_star(GenecStar)
-        ! and then copy back - some things may have changed?
-        write(*,*) 'call copy_to_genec_star(GenecStar)'
         call copy_to_genec_star(GenecStar)
     endif
+    call init_or_restore_star(GenecStar)
     write(*,*) "COMMIT PARTICLES DONE"
     commit_particles = 0
 end function
@@ -165,16 +448,21 @@ function evolve_for(index_of_the_star, time)
 end function
 
 function evolve_one_step(index_of_the_star)
-    use genec, only: evolve, finalise, veryFirst
-    use inputparam, only: nzmod
+    use timestep, only: alter
+    use WriteSaveClose, only: OpenAll
+    use genec, only: evolve, modell, finalise, veryFirst
+    use inputparam,only: modanf,nwseq,nzmod,end_at_phase,end_at_model
     use genec, only: n_snap
+    use genec, only: m
+    use abundmod, only: x
     implicit none
     integer:: index_of_the_star
     integer:: evolve_one_step
-    !integer:: original_nzmod
-    !nzmod = 1
-    !n_snap = 0
+    integer:: original_nzmod
 
+    nzmod = 1
+    modell = 1
+    n_snap = 0
     call evolve()
     call finalise()
     veryFirst = .false.
@@ -1151,6 +1439,22 @@ end function
 
 
 !!!!!!!!!
+integer function get_modell(index_of_the_particle, modell)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(out):: modell
+    modell = GenecStar%modell
+    get_modell = 0
+end function get_modell
+
+integer function set_modell(index_of_the_particle, modell)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: modell
+    GenecStar%modell = modell
+    set_modell = 0
+end function set_modell
+
 integer function get_veryFirst(index_of_the_particle, veryFirst)
     implicit none
     integer, intent(in):: index_of_the_particle
@@ -2079,6 +2383,22 @@ integer function set_fitmi(index_of_the_particle, fitmi)
     set_fitmi = 0
 end function set_fitmi
 
+integer function get_fitmi_default(index_of_the_particle, fitmi_default)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(out):: fitmi_default
+    fitmi_default = GenecStar%fitmi_default
+    get_fitmi_default = 0
+end function get_fitmi_default
+
+integer function set_fitmi_default(index_of_the_particle, fitmi_default)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(in):: fitmi_default
+    GenecStar%fitmi_default = fitmi_default
+    set_fitmi_default = 0
+end function set_fitmi_default
+
 integer function get_deltal(index_of_the_particle, deltal)
     implicit none
     integer, intent(in):: index_of_the_particle
@@ -2751,22 +3071,6 @@ integer function set_n_snap(index_of_the_particle, n_snap)
     set_n_snap = 0
 end function set_n_snap
 
-integer function get_m(index_of_the_particle, m)
-    implicit none
-    integer, intent(in):: index_of_the_particle
-    integer, intent(out):: m
-    m = GenecStar%m
-    get_m = 0
-end function get_m
-
-integer function set_m(index_of_the_particle, m)
-    implicit none
-    integer, intent(in):: index_of_the_particle
-    integer, intent(in):: m
-    GenecStar%m = m
-    set_m = 0
-end function set_m
-
 integer function get_gms(index_of_the_particle, gms)
     implicit none
     integer, intent(in):: index_of_the_particle
@@ -2927,22 +3231,6 @@ integer function set_xmini(index_of_the_particle, xmini)
     set_xmini = 0
 end function set_xmini
 
-integer function get_summas(index_of_the_particle, summas)
-    implicit none
-    integer, intent(in):: index_of_the_particle
-    real(kindreal), intent(out):: summas
-    summas = GenecStar%summas
-    get_summas = 0
-end function get_summas
-
-integer function set_summas(index_of_the_particle, summas)
-    implicit none
-    integer, intent(in):: index_of_the_particle
-    real(kindreal), intent(in):: summas
-    GenecStar%summas = summas
-    set_summas = 0
-end function set_summas
-
 integer function get_ab(index_of_the_particle, ab)
     implicit none
     integer, intent(in):: index_of_the_particle
@@ -2974,6 +3262,278 @@ integer function set_dm_lost(index_of_the_particle, dm_lost)
     GenecStar%dm_lost = dm_lost
     set_dm_lost = 0
 end function set_dm_lost
+
+integer function get_m(index_of_the_particle, m)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(out):: m
+    m = GenecStar%m
+    get_m = 0
+end function get_m
+
+integer function set_m(index_of_the_particle, m)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: m
+    GenecStar%m = m
+    set_m = 0
+end function set_m
+
+integer function get_summas(index_of_the_particle, summas)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(out):: summas
+    summas = GenecStar%summas
+    get_summas = 0
+end function get_summas
+
+integer function set_summas(index_of_the_particle, summas)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(in):: summas
+    GenecStar%summas = summas
+    set_summas = 0
+end function set_summas
+
+integer function get_dk(index_of_the_particle, dk)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(out):: dk
+    dk = GenecStar%dk
+    get_dk = 0
+end function get_dk
+
+integer function set_dk(index_of_the_particle, dk)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(in):: dk
+    GenecStar%dk = dk
+    set_dk = 0
+end function set_dk
+
+integer function get_rlp(index_of_the_particle, rlp)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(out):: rlp
+    rlp = GenecStar%rlp
+    get_rlp = 0
+end function get_rlp
+
+integer function set_rlp(index_of_the_particle, rlp)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(in):: rlp
+    GenecStar%rlp = rlp
+    set_rlp = 0
+end function set_rlp
+
+integer function get_rlt(index_of_the_particle, rlt)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(out):: rlt
+    rlt = GenecStar%rlt
+    get_rlt = 0
+end function get_rlt
+
+integer function set_rlt(index_of_the_particle, rlt)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(in):: rlt
+    GenecStar%rlt = rlt
+    set_rlt = 0
+end function set_rlt
+
+integer function get_rlc(index_of_the_particle, rlc)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(out):: rlc
+    rlc = GenecStar%rlc
+    get_rlc = 0
+end function get_rlc
+
+integer function set_rlc(index_of_the_particle, rlc)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(in):: rlc
+    GenecStar%rlc = rlc
+    set_rlc = 0
+end function set_rlc
+
+integer function get_rrp(index_of_the_particle, rrp)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(out):: rrp
+    rrp = GenecStar%rrp
+    get_rrp = 0
+end function get_rrp
+
+integer function set_rrp(index_of_the_particle, rrp)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(in):: rrp
+    GenecStar%rrp = rrp
+    set_rrp = 0
+end function set_rrp
+
+integer function get_rrt(index_of_the_particle, rrt)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(out):: rrt
+    rrt = GenecStar%rrt
+    get_rrt = 0
+end function get_rrt
+
+integer function set_rrt(index_of_the_particle, rrt)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(in):: rrt
+    GenecStar%rrt = rrt
+    set_rrt = 0
+end function set_rrt
+
+integer function get_rrc(index_of_the_particle, rrc)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(out):: rrc
+    rrc = GenecStar%rrc
+    get_rrc = 0
+end function get_rrc
+
+integer function set_rrc(index_of_the_particle, rrc)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(in):: rrc
+    GenecStar%rrc = rrc
+    set_rrc = 0
+end function set_rrc
+
+integer function get_rtp(index_of_the_particle, rtp)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(out):: rtp
+    rtp = GenecStar%rtp
+    get_rtp = 0
+end function get_rtp
+
+integer function set_rtp(index_of_the_particle, rtp)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(in):: rtp
+    GenecStar%rtp = rtp
+    set_rtp = 0
+end function set_rtp
+
+integer function get_rtt(index_of_the_particle, rtt)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(out):: rtt
+    rtt = GenecStar%rtt
+    get_rtt = 0
+end function get_rtt
+
+integer function set_rtt(index_of_the_particle, rtt)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(in):: rtt
+    GenecStar%rtt = rtt
+    set_rtt = 0
+end function set_rtt
+
+integer function get_rtc(index_of_the_particle, rtc)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(out):: rtc
+    rtc = GenecStar%rtc
+    get_rtc = 0
+end function get_rtc
+
+integer function set_rtc(index_of_the_particle, rtc)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(in):: rtc
+    GenecStar%rtc = rtc
+    set_rtc = 0
+end function set_rtc
+
+integer function get_tdiff(index_of_the_particle, tdiff)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(out):: tdiff
+    tdiff = GenecStar%tdiff
+    get_tdiff = 0
+end function get_tdiff
+
+integer function set_tdiff(index_of_the_particle, tdiff)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(in):: tdiff
+    GenecStar%tdiff = tdiff
+    set_tdiff = 0
+end function set_tdiff
+
+integer function get_suminenv(index_of_the_particle, suminenv)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(out):: suminenv
+    suminenv = GenecStar%suminenv
+    get_suminenv = 0
+end function get_suminenv
+
+integer function set_suminenv(index_of_the_particle, suminenv)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(in):: suminenv
+    GenecStar%suminenv = suminenv
+    set_suminenv = 0
+end function set_suminenv
+
+integer function get_xltotbeg(index_of_the_particle, xltotbeg)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(out):: xltotbeg
+    xltotbeg = GenecStar%xltotbeg
+    get_xltotbeg = 0
+end function get_xltotbeg
+
+integer function set_xltotbeg(index_of_the_particle, xltotbeg)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(in):: xltotbeg
+    GenecStar%xltotbeg = xltotbeg
+    set_xltotbeg = 0
+end function set_xltotbeg
+
+integer function get_dlelexprev(index_of_the_particle, dlelexprev)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(out):: dlelexprev
+    dlelexprev = GenecStar%dlelexprev
+    get_dlelexprev = 0
+end function get_dlelexprev
+
+integer function set_dlelexprev(index_of_the_particle, dlelexprev)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(in):: dlelexprev
+    GenecStar%dlelexprev = dlelexprev
+    set_dlelexprev = 0
+end function set_dlelexprev
+
+integer function get_zams_radius(index_of_the_particle, zams_radius)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(out):: zams_radius
+    zams_radius = GenecStar%zams_radius
+    get_zams_radius = 0
+end function get_zams_radius
+
+integer function set_zams_radius(index_of_the_particle, zams_radius)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(in):: zams_radius
+    GenecStar%zams_radius = zams_radius
+    set_zams_radius = 0
+end function set_zams_radius
 
 integer function get_mbelx(index_of_the_particle, mbelx)
     implicit none
@@ -3166,6 +3726,22 @@ integer function set_vnr(index_of_the_particle, vnr)
     GenecStar%vnr = vnr
     set_vnr = 0
 end function set_vnr
+
+integer function get_xlostneu(index_of_the_particle, xlostneu)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(out):: xlostneu
+    xlostneu = GenecStar%xlostneu
+    get_xlostneu = 0
+end function get_xlostneu
+
+integer function set_xlostneu(index_of_the_particle, xlostneu)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    real(kindreal), intent(in):: xlostneu
+    GenecStar%xlostneu = xlostneu
+    set_xlostneu = 0
+end function set_xlostneu
 
 integer function get_q_at_zone(index_of_the_particle, zone, q)
     implicit none
@@ -5047,6 +5623,96 @@ integer function set_vabelx_at_zone(index_of_the_particle, zone, element, vabelx
     end if
 end function set_vabelx_at_zone
 
+integer function get_drl(index_of_the_particle, number, drl)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: number
+    real(kindreal), intent(out):: drl
+    drl = GenecStar%drl(number)
+    get_drl = 0
+end function get_drl
+
+integer function set_drl(index_of_the_particle, number, drl)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: number
+    real(kindreal), intent(in):: drl
+    GenecStar%drl(number) = drl
+    set_drl = 0
+end function set_drl
+
+integer function get_drte(index_of_the_particle, number, drte)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: number
+    real(kindreal), intent(out):: drte
+    drte = GenecStar%drte(number)
+    get_drte = 0
+end function get_drte
+
+integer function set_drte(index_of_the_particle, number, drte)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: number
+    real(kindreal), intent(in):: drte
+    GenecStar%drte(number) = drte
+    set_drte = 0
+end function set_drte
+
+integer function get_drp(index_of_the_particle, number, drp)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: number
+    real(kindreal), intent(out):: drp
+    drp = GenecStar%drp(number)
+    get_drp = 0
+end function get_drp
+
+integer function set_drp(index_of_the_particle, number, drp)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: number
+    real(kindreal), intent(in):: drp
+    GenecStar%drp(number) = drp
+    set_drp = 0
+end function set_drp
+
+integer function get_drt(index_of_the_particle, number, drt)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: number
+    real(kindreal), intent(out):: drt
+    drt = GenecStar%drt(number)
+    get_drt = 0
+end function get_drt
+
+integer function set_drt(index_of_the_particle, number, drt)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: number
+    real(kindreal), intent(in):: drt
+    GenecStar%drt(number) = drt
+    set_drt = 0
+end function set_drt
+
+integer function get_drr(index_of_the_particle, number, drr)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: number
+    real(kindreal), intent(out):: drr
+    drr = GenecStar%drr(number)
+    get_drr = 0
+end function get_drr
+
+integer function set_drr(index_of_the_particle, number, drr)
+    implicit none
+    integer, intent(in):: index_of_the_particle
+    integer, intent(in):: number
+    real(kindreal), intent(in):: drr
+    GenecStar%drr(number) = drr
+    set_drr = 0
+end function set_drr
+
 integer function get_eps_at_zone(index_of_the_particle, zone, eps)
     implicit none
     integer, intent(in):: index_of_the_particle
@@ -5201,22 +5867,6 @@ integer function get_nabla_mu_at_zone(index_of_the_particle, zone, nabla_mu)
     end if
 end function get_nabla_mu_at_zone
 
-integer function get_xlostneu(index_of_the_particle, xlostneu)
-    implicit none
-    integer, intent(in):: index_of_the_particle
-    real(kindreal), intent(out):: xlostneu
-    xlostneu = GenecStar%xlostneu
-    get_xlostneu = 0
-end function get_xlostneu
-
-integer function set_xlostneu(index_of_the_particle, xlostneu)
-    implicit none
-    integer, intent(in):: index_of_the_particle
-    real(kindreal), intent(in):: xlostneu
-    GenecStar%xlostneu = xlostneu
-    set_xlostneu = 0
-end function set_xlostneu
-
 integer function get_nbzel(index_of_the_particle, i, nbzel)
     implicit none
     integer, intent(in):: index_of_the_particle
@@ -5315,17 +5965,22 @@ end function set_xnetalu
 
 function new_stellar_model(&
       index_of_the_star,&
-      initialised,veryFirst,starname,nwmd,nwseq,modanf,nzmod,end_at_phase,end_at_model,&
-      irot,isol,imagn,&
-      ialflu,ianiso,ipop3,ibasnet,phase,var_rates,bintide,binm2,periodini,const_per,iprezams,zinit,&
-      zsol,z,iopac,ikappa,idiff,iadvec,istati,icoeff,fenerg,richac,igamma,frein,K_Kawaler,&
+      modell,veryFirst,&
+      initialised,starname,nwmd,nwseq,modanf,nzmod,end_at_phase,end_at_model,&
+      irot,isol,imagn,ialflu,ianiso,ipop3,ibasnet,phase,var_rates,bintide,binm2,periodini,const_per,iprezams,&
+      zinit,zsol,z,iopac,ikappa,&
+      idiff,iadvec,istati,icoeff,fenerg,richac,igamma,frein,K_Kawaler,&
       Omega_saturation,rapcrilim,vwant,xfom,omega,xdial,idialo,idialu,Add_Flux,diff_only,B_initial,&
-      add_diff,n_mag,alpha_F,nsmooth,qminsmooth,imloss,fmlos,ifitm,fitm,fitmi,deltal,deltat,nndr,&
-      RSG_Mdot,SupraEddMdot,Be_mdotfrac,start_mdot,iledou,idifcon,iover,elph,my,dovhp,iunder,&
-      dunder,gkorm,alph,agdr,faktor,dgrp,dgrl,dgry,dgrc,dgro,dgr20,nbchx,nrband,xcn,islow,icncst,&
-      tauH_fit,display_plot,iauto,iprn,iout,itmin,xyfiles,idebug,itests,verbose,stop_deg,n_snap,m,&
-      gms,alter,gls,teff,glsv,teffv,dzeitj,dzeit,dzeitv,xmini,summas,ab,dm_lost,mbelx,xtefflast,&
-      xllast,xrholast,xclast,xtclast,inum,nsugi,period,r_core,vna,vnr,q,p,t,r,s,x,y3,y,xc12,xc13,&
+      add_diff,n_mag,alpha_F,nsmooth,qminsmooth,&
+      imloss,fmlos,ifitm,fitm,fitmi,fitmi_default,deltal,deltat,nndr,RSG_Mdot,SupraEddMdot,Be_mdotfrac,start_mdot,&
+      iledou,idifcon,iover,elph,my,dovhp,iunder,dunder,&
+      gkorm,alph,agdr,faktor,dgrp,dgrl,dgry,dgrc,dgro,dgr20,nbchx,nrband,&
+      xcn,islow,icncst,tauH_fit,&
+      display_plot,iauto,iprn,iout,itmin,xyfiles,idebug,itests,verbose,stop_deg,n_snap,&
+      gms,alter,gls,teff,glsv,teffv,dzeitj,dzeit,dzeitv,xmini,ab,dm_lost,m,summas,&
+      dk,rlp,rlt,rlc,rrp,rrt,rrc,rtp,rtt,rtc,tdiff,suminenv,xltotbeg,dlelexprev,radius,zams_radius,& ! new!
+      mbelx,xtefflast,xllast,xrholast,xclast,xtclast,inum,nsugi,period,r_core,vna,vnr,&
+      q,p,t,r,s,x,y3,y,xc12,xc13,&
       xn14,xn15,xo16,xo17,xo18,xne20,xne22,xmg24,xmg25,xmg26,xf19,xne21,xna23,xal27,xsi28,xc14,&
       xf18,xal26,xneut,xprot,omegi,xbid,xbid1,vp,vt,vr,vs,vx,vy,vy3,vxc12,vxc13,vxn14,vxn15,vxo16,&
       vxo17,vxo18,vxne20,vxne22,vxmg24,vxmg25,vxmg26,vxf19,vxne21,vxna23,vxal27,vxsi28,vxc14,vxf18,&
@@ -5336,6 +5991,8 @@ function new_stellar_model(&
     implicit none
     integer:: index_of_the_star, n
 
+    integer, intent(in):: &
+             modell
     logical, intent(in):: &
              initialised, veryFirst
     character(256), intent(in):: &
@@ -5385,7 +6042,7 @@ function new_stellar_model(&
     integer, intent(in):: &
              ifitm
     real(kindreal), intent(in):: &
-             fitm,fitmi,deltal,deltat
+             fitm,fitmi,fitmi_default,deltal,deltat
     integer, intent(in):: &
              nndr,&
              RSG_Mdot
@@ -5428,6 +6085,8 @@ function new_stellar_model(&
     real(kindreal), intent(in):: &
              gms,&
              alter,gls,teff,glsv,teffv,dzeitj,dzeit,dzeitv,xmini,summas,ab,dm_lost
+    real(kindreal), intent(in):: &  ! FIXME
+            dk,rlp,rlt,rlc,rrp,rrt,rrc,rtp,rtt,rtc,tdiff,suminenv,xltotbeg,dlelexprev,radius,zams_radius
     integer, intent(in):: &
              mbelx
     real(kindreal), intent(in):: &
@@ -5450,6 +6109,8 @@ function new_stellar_model(&
 
     write(*,*) "*****N: ", n
 
+    GenecStar%modell = modell
+    GenecStar%veryFirst = veryFirst
     GenecStar%initialised = initialised
     GenecStar%starname = starname
     GenecStar%nwmd = nwmd
@@ -5458,6 +6119,7 @@ function new_stellar_model(&
     GenecStar%nzmod = nzmod
     GenecStar%end_at_phase = end_at_phase
     GenecStar%end_at_model = end_at_model
+    !----
     GenecStar%irot = irot
     GenecStar%isol = isol
     GenecStar%imagn = imagn
@@ -5477,6 +6139,7 @@ function new_stellar_model(&
     GenecStar%z = z
     GenecStar%iopac = iopac
     GenecStar%ikappa = ikappa
+    !----
     GenecStar%idiff = idiff
     GenecStar%iadvec = iadvec
     GenecStar%istati = istati
@@ -5486,6 +6149,7 @@ function new_stellar_model(&
     GenecStar%igamma = igamma
     GenecStar%frein = frein
     GenecStar%K_Kawaler = K_Kawaler
+    !----
     GenecStar%Omega_saturation = Omega_saturation
     GenecStar%rapcrilim = rapcrilim
     GenecStar%vwant = vwant
@@ -5497,16 +6161,19 @@ function new_stellar_model(&
     GenecStar%Add_Flux = Add_Flux
     GenecStar%diff_only = diff_only
     GenecStar%B_initial = B_initial
+    !----
     GenecStar%add_diff = add_diff
     GenecStar%n_mag = n_mag
     GenecStar%alpha_F = alpha_F
     GenecStar%nsmooth = nsmooth
     GenecStar%qminsmooth = qminsmooth
+    !----
     GenecStar%imloss = imloss
     GenecStar%fmlos = fmlos
     GenecStar%ifitm = ifitm
     GenecStar%fitm = fitm
     GenecStar%fitmi = fitmi
+    GenecStar%fitmi_default = fitmi_default
     GenecStar%deltal = deltal
     GenecStar%deltat = deltat
     GenecStar%nndr = nndr
@@ -5514,6 +6181,7 @@ function new_stellar_model(&
     GenecStar%SupraEddMdot = SupraEddMdot
     GenecStar%Be_mdotfrac = Be_mdotfrac
     GenecStar%start_mdot = start_mdot
+    !----
     GenecStar%iledou = iledou
     GenecStar%idifcon = idifcon
     GenecStar%iover = iover
@@ -5522,6 +6190,7 @@ function new_stellar_model(&
     GenecStar%dovhp = dovhp
     GenecStar%iunder = iunder
     GenecStar%dunder = dunder
+    !----
     GenecStar%gkorm = gkorm
     GenecStar%alph = alph
     GenecStar%agdr = agdr
@@ -5534,10 +6203,12 @@ function new_stellar_model(&
     GenecStar%dgr20 = dgr20
     GenecStar%nbchx = nbchx
     GenecStar%nrband = nrband
+    !----
     GenecStar%xcn = xcn
     GenecStar%islow = islow
     GenecStar%icncst = icncst
     GenecStar%tauH_fit = tauH_fit
+    !----
     GenecStar%display_plot = display_plot
     GenecStar%iauto = iauto
     GenecStar%iprn = iprn
@@ -5549,7 +6220,7 @@ function new_stellar_model(&
     GenecStar%verbose = verbose
     GenecStar%stop_deg = stop_deg
     GenecStar%n_snap = n_snap
-    GenecStar%m = m
+    !----
     GenecStar%gms = gms
     GenecStar%alter = alter
     GenecStar%gls = gls
@@ -5560,9 +6231,29 @@ function new_stellar_model(&
     GenecStar%dzeit = dzeit
     GenecStar%dzeitv = dzeitv
     GenecStar%xmini = xmini
-    GenecStar%summas = summas
     GenecStar%ab = ab
     GenecStar%dm_lost = dm_lost
+    GenecStar%m = m
+    GenecStar%summas = summas
+    !----
+    GenecStar%dk = dk
+    GenecStar%rlp = rlp
+    GenecStar%rlt = rlt
+    GenecStar%rlc = rlc
+    GenecStar%rrp = rrp
+    GenecStar%rrt = rrt
+    GenecStar%rrc = rrc
+    GenecStar%rtp = rtp
+    GenecStar%rtt = rtt
+    GenecStar%rtc = rtc
+    GenecStar%tdiff = tdiff
+    GenecStar%suminenv = suminenv
+    GenecStar%xltotbeg = xltotbeg
+    GenecStar%dlelexprev = dlelexprev
+    GenecStar%radius = log10(radius)
+    GenecStar%zams_radius = zams_radius
+    !----
+
     GenecStar%mbelx = mbelx
     GenecStar%xtefflast = xtefflast
     GenecStar%xllast = xllast
@@ -5575,141 +6266,78 @@ function new_stellar_model(&
     GenecStar%r_core = r_core
     GenecStar%vna = vna
     GenecStar%vnr = vnr
+    !----
+    GenecStar%q(:m) = q
+    GenecStar%p(:m) = p
+    GenecStar%t(:m) = t
+    GenecStar%r(:m) = r
+    GenecStar%s(:m) = s
+    GenecStar%x(:m) = x
+    GenecStar%y3(:m) = y3
+    GenecStar%y(:m) = y
+    GenecStar%xc12(:m) = xc12
+    GenecStar%xc13(:m) = xc13
+    GenecStar%xn14(:m) = xn14
+    GenecStar%xn15(:m) = xn15
+    GenecStar%xo16(:m) = xo16
+    GenecStar%xo17(:m) = xo17
+    GenecStar%xo18(:m) = xo18
+    GenecStar%xne20(:m) = xne20
+    GenecStar%xne22(:m) = xne22
+    GenecStar%xmg24(:m) = xmg24
+    GenecStar%xmg25(:m) = xmg25
+    GenecStar%xmg26(:m) = xmg26
+    GenecStar%xf19(:m) = xf19
+    GenecStar%xne21(:m) = xne21
+    GenecStar%xna23(:m) = xna23
+    GenecStar%xal27(:m) = xal27
+    GenecStar%xsi28(:m) = xsi28
+    GenecStar%xc14(:m) = xc14
+    GenecStar%xf18(:m) = xf18
+    GenecStar%xal26(:m) = xal26
+    GenecStar%xneut(:m) = xneut
+    GenecStar%xprot(:m) = xprot
+    GenecStar%omegi(:m) = omegi
+    !----
+    GenecStar%xbid(:m) = xbid
+    GenecStar%xbid1(:m) = xbid1
+    GenecStar%vp(:m) = vp
+    GenecStar%vt(:m) = vt
+    GenecStar%vr(:m) = vr
+    GenecStar%vs(:m) = vs
+    GenecStar%vx(:m) = vx
+    GenecStar%vy(:m) = vy
+    GenecStar%vy3(:m) = vy3
+    GenecStar%vxc12(:m) = vxc12
+    GenecStar%vxc13(:m) = vxc13
+    GenecStar%vxn14(:m) = vxn14
+    GenecStar%vxn15(:m) = vxn15
+    GenecStar%vxo16(:m) = vxo16
+    GenecStar%vxo17(:m) = vxo17
+    GenecStar%vxo18(:m) = vxo18
+    GenecStar%vxne20(:m) = vxne20
+    GenecStar%vxne22(:m) = vxne22
+    GenecStar%vxmg24(:m) = vxmg24
+    GenecStar%vxmg25(:m) = vxmg25
+    GenecStar%vxmg26(:m) = vxmg26
+    GenecStar%vxf19(:m) = vxf19
+    GenecStar%vxne21(:m) = vxne21
+    GenecStar%vxna23(:m) = vxna23
+    GenecStar%vxal27(:m) = vxal27
+    GenecStar%vxsi28(:m) = vxsi28
+    GenecStar%vxc14(:m) = vxc14
+    GenecStar%vxf18(:m) = vxf18
+    GenecStar%vxal26(:m) = vxal26
+    GenecStar%vxneut(:m) = vxneut
+    GenecStar%vxprot(:m) = vxprot
+    GenecStar%vomegi(:m) = vomegi
+    GenecStar%vxbid(:m) = vxbid
+    GenecStar%vxbid1(:m) = vxbid1
     GenecStar%xlostneu = xlostneu
-    GenecStar%q = 0.d0
-    GenecStar%q = q
-    GenecStar%p = 0.d0
-    GenecStar%p = p
-    GenecStar%t = 0.d0
-    GenecStar%t = t
-    GenecStar%r = 0.d0
-    GenecStar%r = r
-    GenecStar%s = 0.d0
-    GenecStar%s = s
-    GenecStar%x = 0.d0
-    GenecStar%x = x
-    GenecStar%y3 = 0.d0
-    GenecStar%y3 = y3
-    GenecStar%y = 0.d0
-    GenecStar%y = y
-    GenecStar%xc12 = 0.d0
-    GenecStar%xc12 = xc12
-    GenecStar%xc13 = 0.d0
-    GenecStar%xc13 = xc13
-    GenecStar%xn14 = 0.d0
-    GenecStar%xn14 = xn14
-    GenecStar%xn15 = 0.d0
-    GenecStar%xn15 = xn15
-    GenecStar%xo16 = 0.d0
-    GenecStar%xo16 = xo16
-    GenecStar%xo17 = 0.d0
-    GenecStar%xo17 = xo17
-    GenecStar%xo18 = 0.d0
-    GenecStar%xo18 = xo18
-    GenecStar%xne20 = 0.d0
-    GenecStar%xne20 = xne20
-    GenecStar%xne22 = 0.d0
-    GenecStar%xne22 = xne22
-    GenecStar%xmg24 = 0.d0
-    GenecStar%xmg24 = xmg24
-    GenecStar%xmg25 = 0.d0
-    GenecStar%xmg25 = xmg25
-    GenecStar%xmg26 = 0.d0
-    GenecStar%xmg26 = xmg26
-    GenecStar%xf19 = 0.d0
-    GenecStar%xf19 = xf19
-    GenecStar%xne21 = 0.d0
-    GenecStar%xne21 = xne21
-    GenecStar%xna23 = 0.d0
-    GenecStar%xna23 = xna23
-    GenecStar%xal27 = 0.d0
-    GenecStar%xal27 = xal27
-    GenecStar%xsi28 = 0.d0
-    GenecStar%xsi28 = xsi28
-    GenecStar%xc14 = 0.d0
-    GenecStar%xc14 = xc14
-    GenecStar%xf18 = 0.d0
-    GenecStar%xf18 = xf18
-    GenecStar%xal26 = 0.d0
-    GenecStar%xal26 = xal26
-    GenecStar%xneut = 0.d0
-    GenecStar%xneut = xneut
-    GenecStar%xprot = 0.d0
-    GenecStar%xprot = xprot
-    GenecStar%omegi = 0.d0
-    GenecStar%omegi = omegi
-    GenecStar%xbid = 0.d0
-    GenecStar%xbid = xbid
-    GenecStar%xbid1 = 0.d0
-    GenecStar%xbid1 = xbid1
-    GenecStar%vp = 0.d0
-    GenecStar%vp = vp
-    GenecStar%vt = 0.d0
-    GenecStar%vt = vt
-    GenecStar%vr = 0.d0
-    GenecStar%vr = vr
-    GenecStar%vs = 0.d0
-    GenecStar%vs = vs
-    GenecStar%vx = 0.d0
-    GenecStar%vx = vx
-    GenecStar%vy = 0.d0
-    GenecStar%vy = vy
-    GenecStar%vy3 = 0.d0
-    GenecStar%vy3 = vy3
-    GenecStar%vxc12 = 0.d0
-    GenecStar%vxc12 = vxc12
-    GenecStar%vxc13 = 0.d0
-    GenecStar%vxc13 = vxc13
-    GenecStar%vxn14 = 0.d0
-    GenecStar%vxn14 = vxn14
-    GenecStar%vxn15 = 0.d0
-    GenecStar%vxn15 = vxn15
-    GenecStar%vxo16 = 0.d0
-    GenecStar%vxo16 = vxo16
-    GenecStar%vxo17 = 0.d0
-    GenecStar%vxo17 = vxo17
-    GenecStar%vxo18 = 0.d0
-    GenecStar%vxo18 = vxo18
-    GenecStar%vxne20 = 0.d0
-    GenecStar%vxne20 = vxne20
-    GenecStar%vxne22 = 0.d0
-    GenecStar%vxne22 = vxne22
-    GenecStar%vxmg24 = 0.d0
-    GenecStar%vxmg24 = vxmg24
-    GenecStar%vxmg25 = 0.d0
-    GenecStar%vxmg25 = vxmg25
-    GenecStar%vxmg26 = 0.d0
-    GenecStar%vxmg26 = vxmg26
-    GenecStar%vxf19 = 0.d0
-    GenecStar%vxf19 = vxf19
-    GenecStar%vxne21 = 0.d0
-    GenecStar%vxne21 = vxne21
-    GenecStar%vxna23 = 0.d0
-    GenecStar%vxna23 = vxna23
-    GenecStar%vxal27 = 0.d0
-    GenecStar%vxal27 = vxal27
-    GenecStar%vxsi28 = 0.d0
-    GenecStar%vxsi28 = vxsi28
-    GenecStar%vxc14 = 0.d0
-    GenecStar%vxc14 = vxc14
-    GenecStar%vxf18 = 0.d0
-    GenecStar%vxf18 = vxf18
-    GenecStar%vxal26 = 0.d0
-    GenecStar%vxal26 = vxal26
-    GenecStar%vxneut = 0.d0
-    GenecStar%vxneut = vxneut
-    GenecStar%vxprot = 0.d0
-    GenecStar%vxprot = vxprot
-    GenecStar%vomegi = 0.d0
-    GenecStar%vomegi = vomegi
-    GenecStar%vxbid = 0.d0
-    GenecStar%vxbid = vxbid
-    GenecStar%vxbid1 = 0.d0
-    GenecStar%vxbid1 = vxbid1
-    GenecStar%abelx(:,:) = 0.
-    GenecStar%vabelx(:,:) = 0.
+    !GenecStar%abelx(:,:) = 0.
+    !GenecStar%vabelx(:,:) = 0.
 
-    call init_or_restore_star(GenecStar)
+    !call copy_from_genec_star(GenecStar)
     new_stellar_model = 0
 end function new_stellar_model
 

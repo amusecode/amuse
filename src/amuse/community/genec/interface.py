@@ -50,14 +50,20 @@ SPECIES_NAMES = {
     'bid1': 27,
 }
 
+GENEC_AMUSE_SPECIFIC = {
+    'modell': ['int32', '', ''],
+    'veryFirst': ['bool', '', ''],
+}
+
 # Parameters (but individual to each star)
 GENEC_STAR_CHARACTERISTICS = {
     # 'GENEC name': [dtype, unit, description, AMUSE name (optional)]
     'initialised': ['bool', '', "True if the star is an intialised model"],
-    'veryFirst': ['bool', '', 'very first model?'],
     'starname': ['string', '', "Name of the star"],
-    'nwmd': ['int32', '', 'model number'],
-    'nwseq': ['int32', '', "number of the first model in the time-step series"],
+    'nwmd': ['int32', '', "model number"],
+    'nwseq': [
+        'int32', '', "number of the first model in the time-step series"
+    ],
     'modanf': ['int32', '', ".b file number"],
     'nzmod': ['int32', '', "number of models in a run"],
     'end_at_phase': ['int32', '', "Stop if this phase is reached"],
@@ -73,7 +79,10 @@ GENEC_STAR_PHYSICS = {
     'ipop3': ['int32', '', "Z=0 models if set to 1"],
     'ibasnet': ['int32', '', "extended nuclear network if set to 1"],
     'phase': ['int32', '', "fusion phases"],
-    'var_rates': ['bool', '', "allows to use different reaction rate files if set to True"],
+    'var_rates': [
+        'bool', '',
+        "allows to use different reaction rate files if set to True"
+    ],
     'bintide': ['bool', '', "tidal interaction in binaries if set to True"],
     'binm2': ['float64', '', "mass of the companion"],
     'periodini': ['float64', '', "initial period of the binary"],
@@ -90,54 +99,137 @@ GENEC_STAR_COMPOSITION = {
 }
 
 GENEC_STAR_ROTATION = {
-    'idiff': ['int32', '', "computation of the diffusion of Omega and chemicals if set to 1"],
-    'iadvec': ['int32', '', "advecto-diffusive version of the transport of Omega if set to 1"],
-    'istati': ['int32', '', "only local conservation of angular momentum if set to 1"],
-    'icoeff': ['int32', '', "prescription to be used for the diffusion coefficients"],
-    'fenerg': ['float64', '', "fraction of the shear energy used for the mixing"],
+    'idiff': [
+        'int32', '',
+        "computation of the diffusion of Omega and chemicals if set to 1"
+    ],
+    'iadvec': [
+        'int32', '',
+        "advecto-diffusive version of the transport of Omega if set to 1"
+    ],
+    'istati': [
+        'int32', '',
+        "only local conservation of angular momentum if set to 1"
+    ],
+    'icoeff': [
+        'int32', '', "prescription to be used for the diffusion coefficients"],
+    'fenerg': [
+        'float64', '', "fraction of the shear energy used for the mixing"],
     'richac': ['float64', '', "critical Richardson number value"],
-    'igamma': ['int32', '', "treatment of the shear according to M&M96 if set to 1"],
+    'igamma': [
+        'int32', '', "treatment of the shear according to M&M96 if set to 1"
+    ],
     'frein': ['float64', '', "magnetic braking if ≠ 0"],
-    'K_Kawaler': ['float64', '', "K parameter in Kawaler1998 magnetic braking law"],
-    'Omega_saturation': ['float64', '', "Ωsat in Kawaler magnetic braking law"],
-    'rapcrilim': ['float64', '', "maximum Ωcrit ratio before the onset of mechanical mass loss"],
-    'vwant': ['float64', '', "chosen velocity on the ZAMS (Veq if > 1.0, V/Vcrit if 0<vwant<1, Ω/Ωcrit if -1<vwant<0"],
+    'K_Kawaler': [
+        'float64', '', "K parameter in Kawaler1998 magnetic braking law"
+    ],
+    'Omega_saturation': [
+        'float64', '', "Ωsat in Kawaler magnetic braking law"
+    ],
+    'rapcrilim': [
+        'float64', '',
+        "maximum Ωcrit ratio before the onset of mechanical mass loss"
+    ],
+    'vwant': [
+        'float64', '',
+        "chosen velocity on the ZAMS (Veq if > 1.0, V/Vcrit if 0<vwant<1, "
+        "Ω/Ωcrit if -1<vwant<0"
+    ],
     'xfom': ['float64', '', "multiplying factor for surface Ω"],
     'omega': ['float64', '', "surface Ω"],
     'xdial': ['float64', '', ""],
     'idialo': ['int32', '', ""],
     'idialu': ['int32', '', ""],
-    'Add_Flux': ['bool', '', "improves the angular momentum conservation treatment if set to True"],
-    'diff_only': ['bool', '', "applies the tidal mixing only in timesteps where we use diffusion (and not advection) if set to True"],
-    'B_initial': ['float64', '', "if >0, switches on the wind quenching, and evolves the magnetic field strength according to the conservation of magnetic flux"],
-    'add_diff': ['float64', '', "additional viscosity value, used to increase the core-envelope coupling"],
+    'Add_Flux': [
+        'bool', '',
+        "improves the angular momentum conservation treatment if set to True"
+    ],
+    'diff_only': [
+        'bool', '',
+        "applies the tidal mixing only in timesteps where we use diffusion "
+        "(and not advection) if set to True"
+    ],
+    'B_initial': [
+        'float64', '',
+        "if >0, switches on the wind quenching, and evolves the magnetic "
+        "field strength according to the conservation of magnetic flux"
+    ],
+    'add_diff': [
+        'float64', '',
+        "additional viscosity value, used to increase the core-envelope "
+        "coupling"
+    ],
     'n_mag': ['int32', '', "type of treatment for magnetic fields"],
-    'alpha_F': ['float64', '', "α parameter in Fuller+ 2019. Values higher than 1 lower the threshold to trigger the instability (Qmin) and increase the magnetic viscosity (increased transport)"],
-    'nsmooth': ['int32', '', "number of layers used for smoothing the Ω gradient (used by Mag_diff_general). Default value is nsmooth=1, recommended value for Fuller+ 2019 is nsmooth=5"],
-    'qminsmooth': ['bool', '', "mag. instability always considered if set to True"],
+    'alpha_F': [
+        'float64', '',
+        "α parameter in Fuller+ 2019. Values higher than 1 lower the "
+        "threshold to trigger the instability (Qmin) and increase the "
+        "magnetic viscosity (increased transport)"
+    ],
+    'nsmooth': [
+        'int32', '',
+        "number of layers used for smoothing the Ω gradient (used by "
+        "Mag_diff_general). Default value is nsmooth=1, recommended "
+        "value for Fuller+ 2019 is nsmooth=5"
+    ],
+    'qminsmooth': [
+        'bool', '', "mag. instability always considered if set to True"
+    ],
 }
 
 GENEC_STAR_SURFACE = {
     'imloss': ['int32', '', "choice of the mass-loss prescription"],
-    'fmlos': ['float64', '', "except for IMLOSS=2 or 3, multiplying factor applied to the mass loss"],
-    'ifitm': ['int32', '', "management of the changes of fitm during redward evolution (and/or blueward evolution after a RSG phase)"],
+    'fmlos': [
+        'float64', '',
+        "except for IMLOSS=2 or 3, multiplying factor applied to the mass loss"
+    ],
+    'ifitm': [
+        'int32', '',
+        "management of the changes of fitm during redward evolution (and/or "
+        "blueward evolution after a RSG phase)"
+    ],
     'fitm': ['float64', '', "mass included in the interior"],
-    'fitmi': ['float64', '', "max value of FITM to which the star will come back when going back to the blue"],
+    'fitmi': [
+        'float64', '',
+        "max value of FITM to which the star will come back when going back "
+        "to the blue"
+    ],
+    'fitmi_default': [
+        'float64', '',
+        '', '',
+    ],
     'deltal': ['float64', '', "triangle size for L at the surface"],
     'deltat': ['float64', '', "triangle size for T at the surface"],
-    'nndr': ['int32', '', "management of the behaviour of (L,Teff) with respect to the triangle"],
+    'nndr': [
+        'int32', '',
+        "management of the behaviour of (L,Teff) with respect to the triangle"
+    ],
     'RSG_Mdot': ['int32', '', "mass-loss recipe used for RSG"],
-    'SupraEddMdot': ['bool', '', "x3 multiplication factor to the wind in case of supra-Eddington layers if set to True"],
+    'SupraEddMdot': [
+        'bool', '',
+        "x3 multiplication factor to the wind in case of supra-Eddington "
+        "layers if set to True"
+    ],
     'Be_mdotfrac': ['float64', '', ""],
-    'start_mdot': ['float64', '', "value of Ω/Ωcrit at which the Be mass loss starts to apply"],
+    'start_mdot': [
+        'float64', '',
+        "value of Ω/Ωcrit at which the Be mass loss starts to apply"
+    ],
 }
 
 GENEC_STAR_CONVECTION = {
     'iledou': ['int32', '', "Ledoux criterion for convection if set to 1"],
-    'idifcon': ['int32', '', "convection treated as a diffusion if set to 1 (used during O-b and Si-b)"],
+    'idifcon': [
+        'int32', '',
+        "convection treated as a diffusion if set to 1 (used during O-b "
+        "and Si-b)"
+    ],
     'iover': ['int32', '', "overshooting taken into account if set to 1"],
     'elph': ['float64', '', "mixing length for the external convective zone"],
-    'my': ['int32', '', "integration of the envelope on ρ rather than P if set to 1"],
+    'my': [
+        'int32', '',
+        "integration of the envelope on ρ rather than P if set to 1"
+    ],
     'dovhp': ['float64', '', "value of the α overshooting parameter Λ = α HP"],
     'iunder': ['int32', '', "undershooting taken into account if set to 1"],
     'dunder': ['float64', '', "value of the undershooting parameter"],
@@ -145,44 +237,114 @@ GENEC_STAR_CONVECTION = {
 
 GENEC_STAR_CONVERGENCE = {
     'gkorm': ['float64', '', "accepted deviation on the structure variables"],
-    'alph': ['float64', '', "fraction of the correction applied for the next iteration"],
-    'agdr': ['float64', '', "absolute value of the maximum correction accepted on r, s, P and T"],
-    'faktor': ['float64', '', "parameter allowing to 'compensate' (during the computation only) for layers with Lr > Ltot, and hence avoid dL/dr < 0"],
-    'dgrp': ['float64', '', "relative variations (from one layer to the other) accepted on P"],
-    'dgrl': ['float64', '', "relative variations (from one layer to the other) accepted on L"],
-    'dgry': ['float64', '', "relative variations (from one layer to the other) accepted on 4He"],
-    'dgrc': ['float64', '', "relative variations (from one layer to the other) accepted on 12C"],
-    'dgro': ['float64', '', "relative variations (from one layer to the other) accepted on 16O"],
-    'dgr20': ['float64', '', "relative variations (from one layer to the other) accepted on ?"],
-    'nbchx': ['int32', '', "iteration number for the computation of the change in chemical composition"],
-    'nrband': ['int32', '', "iteration number for the chemicals between model n and n+1"],
+    'alph': [
+        'float64', '',
+        "fraction of the correction applied for the next iteration"
+    ],
+    'agdr': [
+        'float64', '',
+        "absolute value of the maximum correction accepted on r, s, P and T"
+    ],
+    'faktor': [
+        'float64', '',
+        "parameter allowing to 'compensate' (during the computation only) for "
+        "layers with Lr > Ltot, and hence avoid dL/dr < 0"
+    ],
+    'dgrp': [
+        'float64', '',
+        "relative variations (from one layer to the other) accepted on P"
+    ],
+    'dgrl': [
+        'float64', '',
+        "relative variations (from one layer to the other) accepted on L"
+    ],
+    'dgry': [
+        'float64', '',
+        "relative variations (from one layer to the other) accepted on 4He"
+    ],
+    'dgrc': [
+        'float64', '',
+        "relative variations (from one layer to the other) accepted on 12C"
+    ],
+    'dgro': [
+        'float64', '',
+        "relative variations (from one layer to the other) accepted on 16O"
+    ],
+    'dgr20': [
+        'float64', '',
+        "relative variations (from one layer to the other) accepted on ?"
+    ],
+    'nbchx': [
+        'int32', '',
+        "iteration number for the computation of the change in chemical "
+        "composition"
+    ],
+    'nrband': [
+        'int32', '',
+        "iteration number for the chemicals between model n and n+1"],
 }
 
 GENEC_STAR_TIME = {
-    'xcn': ['float64', '', "multiplying factor applied on the time step for the next run"],
-    'islow': ['int32', '', "slow version of the program if not 0 by modification of the ideal nuclear time step ratxcn"],
+    'xcn': [
+        'float64', '',
+        "multiplying factor applied on the time step for the next run"
+    ],
+    'islow': [
+        'int32', '',
+        "slow version of the program if not 0 by modification of the ideal "
+        "nuclear time step ratxcn"
+    ],
     'icncst': ['int32', '', "constant time step (equivalent to xcn=1.0)"],
-    'tauH_fit': ['int32', '', "used to set the maximal timestep in case of critical velocity, as a fraction of the MS lifetime"],
+    'tauH_fit': [
+        'int32', '',
+        "used to set the maximal timestep in case of critical velocity, as a "
+        "fraction of the MS lifetime"
+    ],
 }
 
 GENEC_STAR_VARIOUS = {
-    'display_plot': ['bool', '', "display of the pgplot window if set to True"],
-    'iauto': ['int32', '', "management of the parameters change through the different phases of the evolution"],
-    'iprn': ['int32', '', "the full structure is printed every iprn models. If iprn > nzmod, only one structure will be printed, the one corresponding to model nwseq"],
-    'iout': ['int32', '', "number of layers used for the smoothing of the diffusion gradient at the border of the convective zones"],
+    'display_plot': [
+        'bool', '', "display of the pgplot window if set to True"
+    ],
+    'iauto': [
+        'int32', '',
+        "management of the parameters change through the different phases of "
+        "the evolution"
+    ],
+    'iprn': [
+        'int32', '',
+        "the full structure is printed every iprn models. If iprn > nzmod, "
+        "only one structure will be printed, the one corresponding to model "
+        "nwseq"
+    ],
+    'iout': [
+        'int32', '',
+        "number of layers used for the smoothing of the diffusion gradient "
+        "at the border of the convective zones"
+    ],
     'itmin': ['int32', '', "minimal number of iterations in henyey"],
     'xyfiles': ['bool', '', ""],
-    'idebug': ['int32', '', "addition of some terminal printings useful for the debugging, with different possible levels. All values > 0 set verbose=True"],
+    'idebug': [
+        'int32', '',
+        "addition of some terminal printings useful for the debugging, with "
+        "different possible levels. All values > 0 set verbose=True"
+    ],
     'itests': ['int32', '', "use of a flag to test some pieces of code"],
-    'verbose': ['bool', '', "increases the level of printings on the terminal and the .l file"],
-    'stop_deg': ['bool', '', "automatically stops a computation when Tc becomes degenerate"],
+    'verbose': [
+        'bool', '',
+        "increases the level of printings on the terminal and the .l file"
+    ],
+    'stop_deg': [
+        'bool', '',
+        "automatically stops a computation when Tc becomes degenerate"
+    ],
     'n_snap': ['int32', '', "number of steps between snapshots [0]"],
 }
 
 # Stellar properties (but global for the star)
+# i.e.: b file (not shells)
 GENEC_STAR_PROPERTIES = {
     # 'GENEC name: [dtype, unit, description, AMUSE name (empty = not used)]
-    'm': ['int32', '', "number of zones", "n_zones"],
     'gms': ['float64', 'MSun', "total mass", "mass"],
     'alter': ['float64', 'julianyr', "stellar age", "age"],
     'gls': ['float64', 'LSun', "stellar luminosity", "luminosity"],
@@ -193,12 +355,27 @@ GENEC_STAR_PROPERTIES = {
     'dzeit': ['float64', 's', "time step (s)", ""],
     'dzeitv': ['float64', 's', "previous time step", ""],
     'xmini': ['float64', 'MSun', "initial mass", "initial_mass"],
-    'summas': ['float64', 'MSun', "total mass", ""],
     'ab': ['float64', '', "binary separation", ""],
     'dm_lost': ['float64', 'MSun', "total mass lost", ""],
-}
-
-GENEC_STAR_EXTRA = {
+    'm': ['int32', '', "number of zones", "n_zones"],
+    'summas': ['float64', 'MSun', "total mass", ""],  # = xmini
+    # then a bunch of layered stuff, then
+    "dk": ['float64', '', '', ''],
+    "rlp": ['float64', '', '', ''],
+    "rlt": ['float64', '', '', ''],
+    "rlc": ['float64', '', '', ''],
+    "rrp": ['float64', '', '', ''],
+    "rrt": ['float64', '', '', ''],
+    "rrc": ['float64', '', '', ''],
+    "rtp": ['float64', '', '', ''],
+    "rtt": ['float64', '', '', ''],
+    "rtc": ['float64', '', '', ''],
+    "tdiff": ['float64', '', '', ''],
+    "suminenv": ['float64', '', '', ''],
+    "xltotbeg": ['float64', '', '', ''],
+    "dlelexprev": ['float64', '', '', ''],
+    "radius": ['float64', 'RSun', '', ''],
+    "zams_radius": ['float64', '', '', ''],
     'mbelx': ['int32', '', "number of extra elements"],
     'xtefflast': ['float64', '', ""],
     'xllast': ['float64', '', ""],
@@ -213,8 +390,20 @@ GENEC_STAR_EXTRA = {
     'vnr': ['float64', '', "radiative gradient in the envelope"],
 }
 
+GENEC_ARRAY_3 = {
+    "drl": ['float64', '', '', ''],  # length 3
+    "drte": ['float64', '', '', ''],  # length 3
+    "drp": ['float64', '', '', ''],  # length 3
+    "drt": ['float64', '', '', ''],  # length 3
+    "drr": ['float64', '', '', ''],  # length 3
+}
+
+GENEC_ARRAY_NPONDCOUCHE = {
+    "CorrOmega": ['float64', '', '', ''],
+}
+
 # Structural properties (m layers)
-GENEC_STAR_STRUCTURE = {
+GENEC_ZONE = {
     # 'GENEC name: [dtype, unit, description, AMUSE name (optional)
     'q': ['float64', '', "ln(1-Mr/M)"],
     'p': ['float64', '', "ln(pressure)"],
@@ -284,24 +473,9 @@ GENEC_STAR_STRUCTURE = {
 }
 
 # Structural properties (mbelx elements, m layers)
-GENEC_STAR_STRUCTURE_EXTRA = {
+GENEC_ARRAY_MBELX_M = {
     'abelx': ['float64', '', "extra elements"],
     'vabelx': ['float64', '', "previous extra elements"],
-}
-
-# These are not (re)stored / set, but they are calculated e.g. for plotting
-GENEC_STAR_STRUCTURE_DERIVED = {
-    'eps': ['float64', '', ""],
-    'epsy': ['float64', '', ""],
-    'eps_c_adv': ['float64', '', ""],
-    'eps_ne_adv': ['float64', '', ""],
-    'eps_o_adv': ['float64', '', ""],
-    'eps_si_adv': ['float64', '', ""],
-    'eps_grav': ['float64', '', ""],
-    'eps_nu': ['float64', '', ""],
-    'nabla_rad': ['float64', '', ""],
-    'nabla_ad': ['float64', '', ""],
-    'nabla_mu': ['float64', '', ""],
 }
 
 GENEC_NETDEF_SCALARS = {
@@ -316,6 +490,21 @@ GENEC_NETALU_ARRAYS = {
     'xnetalu': ['float64', '', 'length 5'],
 }
 
+# These are not (re)stored / set, but they are calculated e.g. for plotting
+GENEC_ZONE_DERIVED = {
+    'eps': ['float64', '', ""],
+    'epsy': ['float64', '', ""],
+    'eps_c_adv': ['float64', '', ""],
+    'eps_ne_adv': ['float64', '', ""],
+    'eps_o_adv': ['float64', '', ""],
+    'eps_si_adv': ['float64', '', ""],
+    'eps_grav': ['float64', '', ""],
+    'eps_nu': ['float64', '', ""],
+    'nabla_rad': ['float64', '', ""],
+    'nabla_ad': ['float64', '', ""],
+    'nabla_mu': ['float64', '', ""],
+}
+
 ALL_SETTERS = {
     **GENEC_STAR_CHARACTERISTICS,
     **GENEC_STAR_PHYSICS,
@@ -327,11 +516,17 @@ ALL_SETTERS = {
     **GENEC_STAR_TIME,
     **GENEC_STAR_VARIOUS,
     **GENEC_STAR_PROPERTIES,
-    **GENEC_STAR_EXTRA,
-    **GENEC_STAR_STRUCTURE,
-    **GENEC_STAR_STRUCTURE_EXTRA,
+    **GENEC_NETDEF_SCALARS,
+    **GENEC_ARRAY_3,
+    **GENEC_ARRAY_NPONDCOUCHE,
+    **GENEC_ZONE,
+    **GENEC_ARRAY_MBELX_M,
+    **GENEC_NETDEF_ARRAYS,
+    **GENEC_NETALU_ARRAYS,
 }
+
 SCALAR_SETTERS = {
+    **GENEC_AMUSE_SPECIFIC,
     **GENEC_STAR_CHARACTERISTICS,
     **GENEC_STAR_PHYSICS,
     **GENEC_STAR_COMPOSITION,
@@ -342,32 +537,21 @@ SCALAR_SETTERS = {
     **GENEC_STAR_TIME,
     **GENEC_STAR_VARIOUS,
     **GENEC_STAR_PROPERTIES,
-    **GENEC_STAR_EXTRA,
     **GENEC_NETDEF_SCALARS,
 }
 
 VECTOR_SETTERS = {
-    **GENEC_STAR_STRUCTURE,
-    **GENEC_STAR_STRUCTURE_EXTRA,
-}
-ALL_GETTERS = {
-    **GENEC_STAR_CHARACTERISTICS,
-    **GENEC_STAR_PHYSICS,
-    **GENEC_STAR_COMPOSITION,
-    **GENEC_STAR_ROTATION,
-    **GENEC_STAR_SURFACE,
-    **GENEC_STAR_CONVECTION,
-    **GENEC_STAR_CONVERGENCE,
-    **GENEC_STAR_TIME,
-    **GENEC_STAR_VARIOUS,
-    **GENEC_STAR_PROPERTIES,
-    **GENEC_STAR_EXTRA,
-    **GENEC_STAR_STRUCTURE,
-    **GENEC_STAR_STRUCTURE_EXTRA,
-    **GENEC_STAR_STRUCTURE_DERIVED,
-    **GENEC_NETDEF_SCALARS,
+    **GENEC_ARRAY_3,
+    **GENEC_ARRAY_NPONDCOUCHE,
+    **GENEC_ZONE,
+    **GENEC_ARRAY_MBELX_M,
     **GENEC_NETDEF_ARRAYS,
     **GENEC_NETALU_ARRAYS,
+}
+
+ALL_GETTERS = {
+    **ALL_SETTERS,
+    **GENEC_ZONE_DERIVED,
 }
 
 
@@ -469,7 +653,7 @@ class GenecInterface(
                 description=parameter[1][2],
                 direction=function.IN,
             )
-        for parameter in GENEC_STAR_STRUCTURE.items():
+        for parameter in GENEC_ZONE.items():
             if parameter[1][1] == "":
                 unit = NO_UNIT
             else:
@@ -502,6 +686,10 @@ class GenecInterface(
         returns (first='i', last='i')
 
     @remote_function(can_handle_array=True)
+    def get_mass_fraction_at_zone(index_of_the_particle='i', zone='i'):
+        returns (dq_i='d')
+
+    @remote_function(can_handle_array=True)
     def get_surface_velocity(index_of_the_particle='i'):
         returns (surface_velocity='d')
 
@@ -513,6 +701,16 @@ class GenecInterface(
     def get_mass_of_species(index_of_the_particle='i', species='i'):
         returns (species_mass='d')
 
+    @remote_function(can_handle_array=True)
+    def get_modell(index_of_the_particle='i'):
+        returns (modell='int32')
+
+    @remote_function(can_handle_array=True)
+    def set_modell(
+        index_of_the_particle='i',
+        modell='int32',
+    ):
+        returns ()
 
     @remote_function(can_handle_array=True)
     def get_veryFirst(index_of_the_particle='i'):
@@ -1153,6 +1351,17 @@ class GenecInterface(
         returns ()
 
     @remote_function(can_handle_array=True)
+    def get_fitmi_default(index_of_the_particle='i'):
+        returns (fitmi_default='float64')
+
+    @remote_function(can_handle_array=True)
+    def set_fitmi_default(
+        index_of_the_particle='i',
+        fitmi_default='float64',
+    ):
+        returns ()
+
+    @remote_function(can_handle_array=True)
     def get_deltal(index_of_the_particle='i'):
         returns (deltal='float64')
 
@@ -1615,17 +1824,6 @@ class GenecInterface(
         returns ()
 
     @remote_function(can_handle_array=True)
-    def get_m(index_of_the_particle='i'):
-        returns (m='int32')
-
-    @remote_function(can_handle_array=True)
-    def set_m(
-        index_of_the_particle='i',
-        m='int32',
-    ):
-        returns ()
-
-    @remote_function(can_handle_array=True)
     def get_gms(index_of_the_particle='i'):
         returns (gms='float64' | units.MSun)
 
@@ -1736,17 +1934,6 @@ class GenecInterface(
         returns ()
 
     @remote_function(can_handle_array=True)
-    def get_summas(index_of_the_particle='i'):
-        returns (summas='float64' | units.MSun)
-
-    @remote_function(can_handle_array=True)
-    def set_summas(
-        index_of_the_particle='i',
-        summas='float64' | units.MSun,
-    ):
-        returns ()
-
-    @remote_function(can_handle_array=True)
     def get_ab(index_of_the_particle='i'):
         returns (ab='float64')
 
@@ -1765,6 +1952,193 @@ class GenecInterface(
     def set_dm_lost(
         index_of_the_particle='i',
         dm_lost='float64' | units.MSun,
+    ):
+        returns ()
+
+    @remote_function(can_handle_array=True)
+    def get_m(index_of_the_particle='i'):
+        returns (m='int32')
+
+    @remote_function(can_handle_array=True)
+    def set_m(
+        index_of_the_particle='i',
+        m='int32',
+    ):
+        returns ()
+
+    @remote_function(can_handle_array=True)
+    def get_summas(index_of_the_particle='i'):
+        returns (summas='float64' | units.MSun)
+
+    @remote_function(can_handle_array=True)
+    def set_summas(
+        index_of_the_particle='i',
+        summas='float64' | units.MSun,
+    ):
+        returns ()
+
+    @remote_function(can_handle_array=True)
+    def get_dk(index_of_the_particle='i'):
+        returns (dk='float64')
+
+    @remote_function(can_handle_array=True)
+    def set_dk(
+        index_of_the_particle='i',
+        dk='float64',
+    ):
+        returns ()
+
+    @remote_function(can_handle_array=True)
+    def get_rlp(index_of_the_particle='i'):
+        returns (rlp='float64')
+
+    @remote_function(can_handle_array=True)
+    def set_rlp(
+        index_of_the_particle='i',
+        rlp='float64',
+    ):
+        returns ()
+
+    @remote_function(can_handle_array=True)
+    def get_rlt(index_of_the_particle='i'):
+        returns (rlt='float64')
+
+    @remote_function(can_handle_array=True)
+    def set_rlt(
+        index_of_the_particle='i',
+        rlt='float64',
+    ):
+        returns ()
+
+    @remote_function(can_handle_array=True)
+    def get_rlc(index_of_the_particle='i'):
+        returns (rlc='float64')
+
+    @remote_function(can_handle_array=True)
+    def set_rlc(
+        index_of_the_particle='i',
+        rlc='float64',
+    ):
+        returns ()
+
+    @remote_function(can_handle_array=True)
+    def get_rrp(index_of_the_particle='i'):
+        returns (rrp='float64')
+
+    @remote_function(can_handle_array=True)
+    def set_rrp(
+        index_of_the_particle='i',
+        rrp='float64',
+    ):
+        returns ()
+
+    @remote_function(can_handle_array=True)
+    def get_rrt(index_of_the_particle='i'):
+        returns (rrt='float64')
+
+    @remote_function(can_handle_array=True)
+    def set_rrt(
+        index_of_the_particle='i',
+        rrt='float64',
+    ):
+        returns ()
+
+    @remote_function(can_handle_array=True)
+    def get_rrc(index_of_the_particle='i'):
+        returns (rrc='float64')
+
+    @remote_function(can_handle_array=True)
+    def set_rrc(
+        index_of_the_particle='i',
+        rrc='float64',
+    ):
+        returns ()
+
+    @remote_function(can_handle_array=True)
+    def get_rtp(index_of_the_particle='i'):
+        returns (rtp='float64')
+
+    @remote_function(can_handle_array=True)
+    def set_rtp(
+        index_of_the_particle='i',
+        rtp='float64',
+    ):
+        returns ()
+
+    @remote_function(can_handle_array=True)
+    def get_rtt(index_of_the_particle='i'):
+        returns (rtt='float64')
+
+    @remote_function(can_handle_array=True)
+    def set_rtt(
+        index_of_the_particle='i',
+        rtt='float64',
+    ):
+        returns ()
+
+    @remote_function(can_handle_array=True)
+    def get_rtc(index_of_the_particle='i'):
+        returns (rtc='float64')
+
+    @remote_function(can_handle_array=True)
+    def set_rtc(
+        index_of_the_particle='i',
+        rtc='float64',
+    ):
+        returns ()
+
+    @remote_function(can_handle_array=True)
+    def get_tdiff(index_of_the_particle='i'):
+        returns (tdiff='float64')
+
+    @remote_function(can_handle_array=True)
+    def set_tdiff(
+        index_of_the_particle='i',
+        tdiff='float64',
+    ):
+        returns ()
+
+    @remote_function(can_handle_array=True)
+    def get_suminenv(index_of_the_particle='i'):
+        returns (suminenv='float64')
+
+    @remote_function(can_handle_array=True)
+    def set_suminenv(
+        index_of_the_particle='i',
+        suminenv='float64',
+    ):
+        returns ()
+
+    @remote_function(can_handle_array=True)
+    def get_xltotbeg(index_of_the_particle='i'):
+        returns (xltotbeg='float64')
+
+    @remote_function(can_handle_array=True)
+    def set_xltotbeg(
+        index_of_the_particle='i',
+        xltotbeg='float64',
+    ):
+        returns ()
+
+    @remote_function(can_handle_array=True)
+    def get_dlelexprev(index_of_the_particle='i'):
+        returns (dlelexprev='float64')
+
+    @remote_function(can_handle_array=True)
+    def set_dlelexprev(
+        index_of_the_particle='i',
+        dlelexprev='float64',
+    ):
+        returns ()
+
+    @remote_function(can_handle_array=True)
+    def get_zams_radius(index_of_the_particle='i'):
+        returns (zams_radius='float64')
+
+    @remote_function(can_handle_array=True)
+    def set_zams_radius(
+        index_of_the_particle='i',
+        zams_radius='float64',
     ):
         returns ()
 
@@ -1897,6 +2271,17 @@ class GenecInterface(
     def set_vnr(
         index_of_the_particle='i',
         vnr='float64',
+    ):
+        returns ()
+
+    @remote_function(can_handle_array=True)
+    def get_xlostneu(index_of_the_particle='i'):
+        returns (xlostneu='float64')
+
+    @remote_function(can_handle_array=True)
+    def set_xlostneu(
+        index_of_the_particle='i',
+        xlostneu='float64',
     ):
         returns ()
 
@@ -2709,6 +3094,66 @@ class GenecInterface(
         returns ()
 
     @remote_function(can_handle_array=True)
+    def get_drl(
+        index_of_the_particle='i', number='i'
+    ):
+        returns (drl='float64')
+
+    @remote_function(can_handle_array=True)
+    def set_drl(
+        index_of_the_particle='i', number='i',
+        drl='float64'):
+        returns ()
+
+    @remote_function(can_handle_array=True)
+    def get_drte(
+        index_of_the_particle='i', number='i'
+    ):
+        returns (drte='float64')
+
+    @remote_function(can_handle_array=True)
+    def set_drte(
+        index_of_the_particle='i', number='i',
+        drte='float64'):
+        returns ()
+
+    @remote_function(can_handle_array=True)
+    def get_drp(
+        index_of_the_particle='i', number='i'
+    ):
+        returns (drp='float64')
+
+    @remote_function(can_handle_array=True)
+    def set_drp(
+        index_of_the_particle='i', number='i',
+        drp='float64'):
+        returns ()
+
+    @remote_function(can_handle_array=True)
+    def get_drt(
+        index_of_the_particle='i', number='i'
+    ):
+        returns (drt='float64')
+
+    @remote_function(can_handle_array=True)
+    def set_drt(
+        index_of_the_particle='i', number='i',
+        drt='float64'):
+        returns ()
+
+    @remote_function(can_handle_array=True)
+    def get_drr(
+        index_of_the_particle='i', number='i'
+    ):
+        returns (drr='float64')
+
+    @remote_function(can_handle_array=True)
+    def set_drr(
+        index_of_the_particle='i', number='i',
+        drr='float64'):
+        returns ()
+
+    @remote_function(can_handle_array=True)
     def get_eps_at_zone(
         index_of_the_particle='i', zone='i'
     ):
@@ -2773,17 +3218,6 @@ class GenecInterface(
         index_of_the_particle='i', zone='i'
     ):
         returns (nabla_mu='float64')
-
-    @remote_function(can_handle_array=True)
-    def get_xlostneu(index_of_the_particle='i'):
-        returns (xlostneu='float64')
-
-    @remote_function(can_handle_array=True)
-    def set_xlostneu(
-        index_of_the_particle='i',
-        xlostneu='float64',
-    ):
-        returns ()
 
     @remote_function(can_handle_array=True)
     def get_nbzel(
@@ -2904,6 +3338,7 @@ class Genec(StellarEvolution, InternalStellarStructure):
             # handler.add_method(set_name, 'get_radius_profile')
             # handler.add_method(set_name, 'get_temperature_profile')
             # handler.add_method(set_name, 'get_luminosity_profile')
+            handler.add_method(set_name, 'get_phase')
             handler.add_method(set_name, 'get_mass_profile')
             handler.add_method(set_name, 'get_eps_profile')
             handler.add_method(set_name, 'get_epsy_profile')
@@ -2914,6 +3349,7 @@ class Genec(StellarEvolution, InternalStellarStructure):
             handler.add_method(set_name, 'get_eps_grav_profile')
             handler.add_method(set_name, 'get_eps_nu_profile')
             handler.add_method(set_name, 'get_cumulative_mass_profile')
+            handler.add_method(set_name, 'get_mass_fraction_at_zone')
 
             handler.add_method(set_name, 'evolve_one_step')
             handler.add_method(set_name, 'evolve_for')
@@ -2985,7 +3421,14 @@ class Genec(StellarEvolution, InternalStellarStructure):
         # -> Update
         handler.add_transition('RUN', 'UPDATE', 'finalize_stellar_model')
 
-        handler.add_method("UPDATE", 'new_particle_from_model')
+        for state in ["EDIT", "UPDATE"]:
+            for method in (
+                "new_particle_from_model", "new_stellar_model",
+                "set_abelx_at_zone", "set_vabelx_at_zone", "set_nbzel",
+                "set_nbael", "set_abels", "set_xnetalu"
+            ):
+                handler.add_method(state, method)
+
         for state in ["UPDATE", "RUN"]:
             for parameter in ALL_GETTERS:
                 handler.add_method(state, f'get_{parameter[0]}')
@@ -3022,7 +3465,7 @@ class Genec(StellarEvolution, InternalStellarStructure):
                 )
 
         handler.add_method('UPDATE', 'set_n_snap')
-        #handler.add_method('UPDATE', 'set_ipoly')
+        # handler.add_method('UPDATE', 'set_ipoly')
         handler.add_method('UPDATE', 'set_chemical_abundance_profiles')
         handler.add_method('UPDATE', 'set_mass_fraction_of_species_at_zone')
         # handler.add_method('UPDATE', 'set_radius')
@@ -3216,13 +3659,15 @@ class Genec(StellarEvolution, InternalStellarStructure):
         return frac_profile.cumsum()
 
     def get_internal_structure(self, index_of_the_star):
-        internal_structure = {}
+        internal_structure = {
+            # 'veryFirst': self.get_veryFirst(index_of_the_star),
+        }
         for star_property in SCALAR_SETTERS:
             func = getattr(self, f'get_{star_property}')
             internal_structure[star_property] = func(index_of_the_star)
         number_of_zones = self.get_m(index_of_the_star)
         for structure_property in {
-            **GENEC_STAR_STRUCTURE,
+            **GENEC_ZONE,
         }:
             func = getattr(self, f'get_{structure_property}_at_zone')
             # internal_structure.append(func(index_of_the_star))
@@ -3233,7 +3678,7 @@ class Genec(StellarEvolution, InternalStellarStructure):
             )
         extra_elements = self.get_mbelx(index_of_the_star)
         for structure_property in {
-            **GENEC_STAR_STRUCTURE_EXTRA,
+            **GENEC_ARRAY_MBELX_M,
         }:
             func = getattr(self, f'get_{structure_property}_at_zone')
             x = np.array([])
@@ -3264,14 +3709,27 @@ class Genec(StellarEvolution, InternalStellarStructure):
                 index_of_the_star,
                 (list(range(1, 6)) | units.none)
             )
+        for array_3_property in {
+            **GENEC_ARRAY_3,
+        }:
+            func = getattr(self, f'get_{array_3_property}')
+
+            internal_structure[array_3_property] = func(
+                index_of_the_star,
+                (list(range(1, 4)) | units.none)
+            )
+
         return internal_structure
 
     def new_particle_from_model(
         self, internal_structure, current_age=0 | units.julianyr, key=None
     ):
         index_of_the_particle = self.new_stellar_model(
-            internal_structure['initialised'],
+            # Extra - for AMUSE
+            internal_structure['modell'],
             internal_structure['veryFirst'],
+            # Characteristics
+            internal_structure['initialised'],
             internal_structure['starname'],
             internal_structure['nwmd'],
             internal_structure['nwseq'],
@@ -3279,6 +3737,7 @@ class Genec(StellarEvolution, InternalStellarStructure):
             internal_structure['nzmod'],
             internal_structure['end_at_phase'],
             internal_structure['end_at_model'],
+            # Physics
             internal_structure['irot'],
             internal_structure['isol'],
             internal_structure['imagn'],
@@ -3293,11 +3752,13 @@ class Genec(StellarEvolution, InternalStellarStructure):
             internal_structure['periodini'],
             internal_structure['const_per'],
             internal_structure['iprezams'],
+            # Composition
             internal_structure['zinit'],
             internal_structure['zsol'],
             internal_structure['z'],
             internal_structure['iopac'],
             internal_structure['ikappa'],
+            # Rotation
             internal_structure['idiff'],
             internal_structure['iadvec'],
             internal_structure['istati'],
@@ -3323,11 +3784,13 @@ class Genec(StellarEvolution, InternalStellarStructure):
             internal_structure['alpha_F'],
             internal_structure['nsmooth'],
             internal_structure['qminsmooth'],
+            # Surface
             internal_structure['imloss'],
             internal_structure['fmlos'],
             internal_structure['ifitm'],
             internal_structure['fitm'],
             internal_structure['fitmi'],
+            internal_structure['fitmi_default'],
             internal_structure['deltal'],
             internal_structure['deltat'],
             internal_structure['nndr'],
@@ -3335,6 +3798,7 @@ class Genec(StellarEvolution, InternalStellarStructure):
             internal_structure['SupraEddMdot'],
             internal_structure['Be_mdotfrac'],
             internal_structure['start_mdot'],
+            # Convection
             internal_structure['iledou'],
             internal_structure['idifcon'],
             internal_structure['iover'],
@@ -3343,6 +3807,7 @@ class Genec(StellarEvolution, InternalStellarStructure):
             internal_structure['dovhp'],
             internal_structure['iunder'],
             internal_structure['dunder'],
+            # Convergence
             internal_structure['gkorm'],
             internal_structure['alph'],
             internal_structure['agdr'],
@@ -3355,10 +3820,12 @@ class Genec(StellarEvolution, InternalStellarStructure):
             internal_structure['dgr20'],
             internal_structure['nbchx'],
             internal_structure['nrband'],
+            # Time
             internal_structure['xcn'],
             internal_structure['islow'],
             internal_structure['icncst'],
             internal_structure['tauH_fit'],
+            # Various
             internal_structure['display_plot'],
             internal_structure['iauto'],
             internal_structure['iprn'],
@@ -3370,7 +3837,7 @@ class Genec(StellarEvolution, InternalStellarStructure):
             internal_structure['verbose'],
             internal_structure['stop_deg'],
             internal_structure['n_snap'],
-            internal_structure['m'],
+            # Properties
             internal_structure['gms'],
             internal_structure['alter'],
             internal_structure['gls'],
@@ -3381,9 +3848,26 @@ class Genec(StellarEvolution, InternalStellarStructure):
             internal_structure['dzeit'],
             internal_structure['dzeitv'],
             internal_structure['xmini'],
-            internal_structure['summas'],
             internal_structure['ab'],
             internal_structure['dm_lost'],
+            internal_structure['m'],
+            internal_structure['summas'],
+            internal_structure['dk'],
+            internal_structure['rlp'],
+            internal_structure['rlt'],
+            internal_structure['rlc'],
+            internal_structure['rrp'],
+            internal_structure['rrt'],
+            internal_structure['rrc'],
+            internal_structure['rtp'],
+            internal_structure['rtt'],
+            internal_structure['rtc'],
+            internal_structure['tdiff'],
+            internal_structure['suminenv'],
+            internal_structure['xltotbeg'],
+            internal_structure['dlelexprev'],
+            internal_structure['radius'],
+            internal_structure['zams_radius'],
             internal_structure['mbelx'],
             internal_structure['xtefflast'],
             internal_structure['xllast'],
@@ -3396,6 +3880,7 @@ class Genec(StellarEvolution, InternalStellarStructure):
             internal_structure['r_core'],
             internal_structure['vna'],
             internal_structure['vnr'],
+            # Zone
             internal_structure['q'],
             internal_structure['p'],
             internal_structure['t'],
@@ -3461,6 +3946,7 @@ class Genec(StellarEvolution, InternalStellarStructure):
             internal_structure['vomegi'],
             internal_structure['vxbid'],
             internal_structure['vxbid1'],
+            # netdef scalars
             internal_structure['xlostneu'],
             # internal_structure['abelx'],
             # internal_structure['vabelx'],
@@ -3494,5 +3980,26 @@ class Genec(StellarEvolution, InternalStellarStructure):
             self.set_xnetalu(
                 index_of_the_particle, i+1,
                 internal_structure['xnetalu'][i]
+            )
+        for i in range(3):
+            self.set_drl(
+                index_of_the_particle, i+1,
+                internal_structure['drl'][i]
+            )
+            self.set_drte(
+                index_of_the_particle, i+1,
+                internal_structure['drte'][i]
+            )
+            self.set_drp(
+                index_of_the_particle, i+1,
+                internal_structure['drp'][i]
+            )
+            self.set_drt(
+                index_of_the_particle, i+1,
+                internal_structure['drt'][i]
+            )
+            self.set_drr(
+                index_of_the_particle, i+1,
+                internal_structure['drr'][i]
             )
         return
