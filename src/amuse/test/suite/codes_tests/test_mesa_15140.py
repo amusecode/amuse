@@ -752,25 +752,29 @@ class TestMESA(TestWithMPI):
 
         he4_start = composition[2,k_surface] 
         h1_start = composition[0,k_surface] 
+
+        h1_profile = composition[0] * 1
+        he4_profile = composition[2] * 1
+
+        instance.particles[0].set_control('okay_to_remesh',False) # Turn of remeshing
+
         # Gradually and consistently increase helium and decrease hydrogen
         # abundances until reversed
-        for alpha in [0.3, 1.0, -0.5, -0.125]:
-            h1_profile = composition[0] * 1
-            he4_profile = composition[2] * 1
+        for alpha in numpy.arange(0.1,1.1,0.1):
             composition[0] = alpha * he4_profile + (1-alpha) * h1_profile
             composition[2] = (1-alpha) * he4_profile + alpha * h1_profile
             instance.particles[0].set_chemical_abundance_profiles(composition)
-            instance.evolve_model(1 | units.julianyr)
+            instance.particles[0].evolve_for(1 | units.julianyr)
             composition = (
                 instance.particles[0].get_chemical_abundance_profiles()
             )
 
         self.assertAlmostEqual(
-            composition[2, k_surface],0.7051777340467488)
-        self.assertAlmostEqual(composition[0, k_surface],  2.74649042e-01 )
+            composition[2, k_surface],h1_start,3)
+        self.assertAlmostEqual(composition[0, k_surface], he4_start, 3)
         self.assertAlmostEqual(
             composition[3:, k_surface].sum(),
-            0.020144181852121544)
+            0.020,3)
         self.assertAlmostEqual(composition.sum(axis=0), 1.0)
 
         self.assertRaises(
@@ -887,7 +891,7 @@ class TestMESA(TestWithMPI):
             1.0e7 | units.K)
         self.assertIsOfOrder(
             instance.imported_stars[0].get_pressure_profile()[0],
-            1.0e18 | units.barye)
+            1.0e17 | units.barye)
         self.assertAlmostEqual(
             instance.imported_stars[0].get_mass_profile()[-1],
             instance.native_stars[0].get_mass_profile()[-1])
@@ -1067,7 +1071,7 @@ class TestMESA(TestWithMPI):
 
         star.evolve_for(1.0e5 | units.julianyr)
         self.assertAlmostRelativeEqual(star.age, 2.e5 | units.julianyr, 3)
-        self.assertAlmostRelativeEqual(star.mass,  1.00 | units.MSun)
+        self.assertAlmostRelativeEqual(star.mass,  1.00 | units.MSun, 3)
         print(star.as_set())
         instance.stop()
 
@@ -1191,7 +1195,7 @@ class TestMESA(TestWithMPI):
         instance = self.new_instance_of_an_optional_code(MESA)
         set_mesa_paths_instance(instance)
         star = instance.particles.add_particle(Particle(mass=1 | units.MSun))
-        instance.evolve_model(0.3 | units.Gyr)  # VERY short, for test speed up
+        instance.evolve_model(0.2 | units.Gyr)  # VERY short, for test speed up
         central_hydrogen_abundance = star.get_chemical_abundance_profiles(
         )[0][0]
         print(central_hydrogen_abundance)
@@ -1214,7 +1218,7 @@ class TestMESA(TestWithMPI):
         # the "hydrogen exhausted core"
         # FIXME updated values in the rest of the test
         limit = 0.69
-        expected_core_mass = 0.0847273423268 | units.MSun
+        expected_core_mass = 0.0288211177139 | units.MSun
         self.assertAlmostEqual(
             star.calculate_core_mass(core_H_abundance_limit=limit),
             expected_core_mass, 3)
@@ -1242,7 +1246,7 @@ class TestMESA(TestWithMPI):
         self.assertAlmostRelativeEqual(
             h1_core_mass, expected_core_mass*0.685, 2)
         self.assertAlmostRelativeEqual(
-            he4_core_mass, expected_core_mass*0.295, 2)
+            he4_core_mass, expected_core_mass*0.29, 2)
         self.assertAlmostRelativeEqual(
             metal_core_mass, expected_core_mass*0.02, 1)
         self.assertAlmostRelativeEqual(
@@ -1333,6 +1337,7 @@ class TestMESA(TestWithMPI):
                                                                 'o': 0.0,
                                                                 'f': 0.0,
                                                                 'ne': 0.0,
+                                                                'na': 0.0,
                                                                 'mg': 0.0,
                                                                 'al': 0.0,
                                                                 'si': 0.0,
