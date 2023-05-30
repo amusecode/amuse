@@ -249,7 +249,7 @@ class StellarModelPlot:
         ax.set_title(title)
 
         ax.set_ylim(-0.05, 1.05)
-        if (self.star.phase > 1 and len(self.__age) > 2):
+        if (self.star.get_phase() > 1 and len(self.__age) > 2):
             ax.set_xlabel(f'log age/{unit_age}')
             time_xdata = np.log10(
                 0.01 +
@@ -290,7 +290,7 @@ class StellarModelPlot:
             self.initialise_central_abundance()
         unit_age = self.default_units['age']
         ax = self.__axes[title]
-        if (self.star.phase > 1 and len(self.__age) > 2):
+        if (self.star.get_phase() > 1 and len(self.__age) > 2):
             ax.set_xlabel(f'log age/{unit_age}')
             time_xdata = -np.log10(
                 0.01 +
