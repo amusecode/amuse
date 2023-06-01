@@ -2092,6 +2092,7 @@ integer function set_vwant(index_of_the_particle, vwant)
     integer, intent(in):: index_of_the_particle
     real(kindreal), intent(in):: vwant
     GenecStar%vwant = vwant
+    InitialGenecStar%vwant = vwant
     set_vwant = 0
 end function set_vwant
 
