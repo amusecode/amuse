@@ -239,7 +239,7 @@ subroutine init_or_restore_star(Star)
   endif ! modanf
 
   ! ftfp initialisation
-  !call initgeo
+  call initgeo
 
   if (ialflu==0 .and. xmini<=9.d0) then
     ichem = 1
@@ -2086,7 +2086,7 @@ integer function get_vwant(index_of_the_particle, vwant)
     implicit none
     integer, intent(in):: index_of_the_particle
     real(kindreal), intent(out):: vwant
-    vwant = GenecStar%vwant
+    vwant = InitialGenecStar%vwant
     get_vwant = 0
 end function get_vwant
 
@@ -2096,7 +2096,6 @@ integer function set_vwant(index_of_the_particle, vwant)
     real(kindreal), intent(in):: vwant
     if (.not.GenecStar%initialised) then
         InitialGenecStar%vwant = vwant
-        GenecStar%vwant = vwant
         set_vwant = 0
     else
         write(*,*) "This function should not be called when the star is already initialised"

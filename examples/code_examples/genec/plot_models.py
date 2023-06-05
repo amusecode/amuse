@@ -405,9 +405,9 @@ class StellarModelPlot:
         ax.set_xlabel('M$_{\\rm r}$/M$_{\\rm tot}$')
         ax.set_ylabel('Nabla_(rad-ad-mu)')
         mass_profile = self.star.get_cumulative_mass_profile()
-        nabla_rad = self.star.nabla_rad_profile
-        nabla_ad = self.star.nabla_ad_profile
-        nabla_mu = self.star.nabla_mu_profile
+        nabla_rad = self.star.get_nabla_rad_profile()
+        nabla_ad = self.star.get_nabla_ad_profile()
+        nabla_mu = self.star.get_nabla_mu_profile()
         min_nabla = min(
             min(nabla_ad),
             min(nabla_rad),
