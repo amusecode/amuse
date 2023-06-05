@@ -325,15 +325,13 @@ subroutine restore_network(z)
 !----------------------------------------------------------------------
   use evol, only: input_dir
   use inputparam,only: idebug,libgenec
-  use abundmod,only: mbelx,abels,xlostneu,nbzel,nbael
+  use abundmod,only: mbelx,abels,xlostneu,nbzel,nbael,zabelx,nbelx
   use storage, only: GenecStar
 
   implicit none
 
   integer:: i,ii,ierror
-  integer:: nbelx  ! FIXME: store this somewhere?
   real(kindreal),intent(in):: z
-  real(kindreal):: zabelx  ! FIXME: store?
   character (256):: namenet,namereac
 !----------------------------------------------------------------------
 ! Reading network information (elements, ...)
@@ -660,8 +658,13 @@ function set_mass(index_of_the_star, mass)
     implicit none
     integer:: set_mass, index_of_the_star
     real(kindreal):: mass
-    InitialGenecStar%mstar = mass
-    set_mass = 0
+    if (.not.GenecStar%initialised) then
+        InitialGenecStar%mstar = mass
+        set_mass = 0
+    else
+        write(*,*) "This function should not be called when the star is already initialised"
+        set_mass = -2
+    endif
 end function
 
 function get_mass_of_species(index_of_the_star, species, species_mass)
@@ -2091,8 +2094,14 @@ integer function set_vwant(index_of_the_particle, vwant)
     implicit none
     integer, intent(in):: index_of_the_particle
     real(kindreal), intent(in):: vwant
-    GenecStar%vwant = vwant
-    set_vwant = 0
+    if (.not.GenecStar%initialised) then
+        InitialGenecStar%vwant = vwant
+        GenecStar%vwant = vwant
+        set_vwant = 0
+    else
+        write(*,*) "This function should not be called when the star is already initialised"
+        set_vwant = -2
+    endif
 end function set_vwant
 
 integer function get_xfom(index_of_the_particle, xfom)
