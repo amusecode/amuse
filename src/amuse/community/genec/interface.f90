@@ -174,7 +174,6 @@ subroutine init_or_restore_star(Star)
     if (ialflu == 1) then
       zabelx=zabelx-xf19(1)-xne21(1)-xna23(1)-xal27(1)
     endif
-    write(*,*) 'z,zabelx,m',z,zabelx,m
 
     if (isugi >= 1) then
       nsugi = m
@@ -342,7 +341,7 @@ subroutine restore_network(z)
   nbzel = GenecStar%nbzel
   nbael = GenecStar%nbael
   abels = GenecStar%abels
-  do while (i <= size(abels))
+  do while (nbael(i) > 0)
    if (GenecStar%verbose) then
      write(*,*) nbzel(i), nbael(i), abels(i)
    endif
