@@ -1390,25 +1390,27 @@ function recommit_parameters()
 end function
 
 function recommit_particles()
-    use genec, only: initialise_star
+    !use genec, only: initialise_star
     implicit none
     integer:: recommit_particles
     !write(*,*) "copy from GenecStar"
     !call copy_from_genec_star(GenecStar)
 
     ! "read" GENEC star namelists
-    write(*,*) "call copy_namelists_from_genec_star(GenecStar)"
-    call copy_namelists_from_genec_star(GenecStar)
-    ! Initialise values not in GENEC star
-    ! but this also resets some values that are read, so...
-    write(*,*) 'call initialise_star()'
-    call initialise_star()
-    ! "read" the GENEC star structure
-    write(*,*) 'call copy_structure_from_genec_star(GenecStar)'
-    call copy_structure_from_genec_star(GenecStar)
-    ! and then copy back - some things may have changed?
-    write(*,*) 'call copy_to_genec_star(GenecStar)'
-    call copy_to_genec_star(GenecStar)
+    !write(*,*) "call copy_namelists_from_genec_star(GenecStar)"
+    !call copy_namelists_from_genec_star(GenecStar)
+    !! Initialise values not in GENEC star
+    !! but this also resets some values that are read, so...
+    !write(*,*) 'call initialise_star()'
+    !call initialise_star()
+    !! "read" the GENEC star structure
+    !write(*,*) 'call copy_structure_from_genec_star(GenecStar)'
+    !call copy_structure_from_genec_star(GenecStar)
+    !! and then copy back - some things may have changed?
+    !write(*,*) 'call copy_to_genec_star(GenecStar)'
+    !call copy_to_genec_star(GenecStar)
+    write(*,*) "recommit particles after a change"
+    call copy_from_genec_star(GenecStar)
     recommit_particles = 0
 end function
 
