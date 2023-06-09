@@ -84,8 +84,8 @@ GENEC_STAR_PHYSICS = {
         "allows to use different reaction rate files if set to True"
     ],
     'bintide': ['bool', '', "tidal interaction in binaries if set to True"],
-    'binm2': ['float64', '', "mass of the companion"],
-    'periodini': ['float64', '', "initial period of the binary"],
+    'binm2': ['float64', 'MSun', "mass of the companion"],
+    'periodini': ['float64', 'day', "initial period of the binary"],
     'const_per': ['bool', '', "keep constant period if True"],
     'iprezams': ['int32', '', ""],
 }
@@ -346,13 +346,13 @@ GENEC_STAR_VARIOUS = {
 GENEC_STAR_PROPERTIES = {
     # 'GENEC name: [dtype, unit, description, AMUSE name (empty = not used)]
     'gms': ['float64', 'MSun', "total mass", "mass"],
-    'alter': ['float64', 'julianyr', "stellar age", "age"],
+    'alter': ['float64', 'yr', "stellar age", "age"],
     'gls': ['float64', 'LSun', "stellar luminosity", "luminosity"],
     'teff': ['float64', 'K', "effective temperature", "temperature"],
     'glsv': ['float64', 'LSun', "previous luminosity"],
     'teffv': ['float64', 'K', "previous temperature"],
-    'dzeitj': ['float64', 'julianyr', "time step (yr)", "time_step"],
-    'dzeit': ['float64', 's', "time step (s)", ""],
+    'dzeitj': ['float64', 'yr', "time step (yr)", ""],
+    'dzeit': ['float64', 's', "time step (s)", "time_step"],
     'dzeitv': ['float64', 's', "previous time step", ""],
     'xmini': ['float64', 'MSun', "initial mass", "initial_mass"],
     'ab': ['float64', '', "binary separation", ""],
@@ -923,23 +923,23 @@ class GenecInterface(
 
     @remote_function(can_handle_array=True)
     def get_binm2(index_of_the_particle='i'):
-        returns (binm2='float64')
+        returns (binm2='float64' | units.MSun)
 
     @remote_function(can_handle_array=True)
     def set_binm2(
         index_of_the_particle='i',
-        binm2='float64',
+        binm2='float64' | units.MSun,
     ):
         returns ()
 
     @remote_function(can_handle_array=True)
     def get_periodini(index_of_the_particle='i'):
-        returns (periodini='float64')
+        returns (periodini='float64' | units.day)
 
     @remote_function(can_handle_array=True)
     def set_periodini(
         index_of_the_particle='i',
-        periodini='float64',
+        periodini='float64' | units.day,
     ):
         returns ()
 
@@ -1891,12 +1891,12 @@ class GenecInterface(
 
     @remote_function(can_handle_array=True)
     def get_dzeitj(index_of_the_particle='i'):
-        returns (dzeitj='float64' | units.julianyr)
+        returns (dzeitj='float64' | units.yr)
 
     @remote_function(can_handle_array=True)
     def set_dzeitj(
         index_of_the_particle='i',
-        dzeitj='float64' | units.julianyr,
+        dzeitj='float64' | units.yr,
     ):
         returns ()
 
@@ -1908,6 +1908,13 @@ class GenecInterface(
     def set_dzeit(
         index_of_the_particle='i',
         dzeit='float64' | units.s,
+    ):
+        returns ()
+
+    @remote_function(can_handle_array=True)
+    def set_time_step(
+        index_of_the_particle='i',
+        time_step='float64' | units.s,
     ):
         returns ()
 
@@ -3302,7 +3309,7 @@ class Genec(StellarEvolution, InternalStellarStructure):
 
     def define_particle_sets(self, handler):
 
-        for set_name in ['particles']:
+        for set_name in ['particles', ]:
             handler.define_set(set_name, 'index_of_the_particle')
             InternalStellarStructure.define_particle_sets(
                 self, handler, set_name=set_name
@@ -3330,7 +3337,8 @@ class Genec(StellarEvolution, InternalStellarStructure):
             # handler.add_getter(set_name, 'get_age')
             # handler.add_getter(set_name, 'get_luminosity')
             # handler.add_getter(set_name, 'get_temperature')
-            # handler.add_getter(set_name, 'get_time_step', names=('time_step',))
+            handler.add_getter(set_name, 'get_time_step', names=('time_step',))
+            handler.add_setter(set_name, 'set_time_step', names=('time_step',))
             # handler.add_getter(
             #     set_name, 'get_number_of_species', names=('n_species',)
             # )
@@ -3463,6 +3471,9 @@ class Genec(StellarEvolution, InternalStellarStructure):
                 handler.add_method(
                     state, f'get_mass_fraction_of_{species}_at_zone'
                 )
+        for state in ["EDIT", "UPDATE"]:
+            for parameter in ALL_SETTERS:
+                handler.add_method(state, f'set_{parameter[0]}')
 
         handler.add_method('UPDATE', 'set_n_snap')
         # handler.add_method('UPDATE', 'set_ipoly')
@@ -3722,7 +3733,7 @@ class Genec(StellarEvolution, InternalStellarStructure):
         return internal_structure
 
     def new_particle_from_model(
-        self, internal_structure, current_age=0 | units.julianyr, key=None
+        self, internal_structure, current_age=0 | units.yr, key=None
     ):
         index_of_the_particle = self.new_stellar_model(
             # Extra - for AMUSE
