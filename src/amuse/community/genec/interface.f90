@@ -394,10 +394,10 @@ function commit_particles()
     if (.not.GenecStar%initialised) then
         call make_initial_star()
         call copy_from_genec_star(GenecStar)
-        GenecStar%initialised = .true.
         call copy_to_genec_star(GenecStar)
     endif
     call init_or_restore_star(GenecStar)
+    GenecStar%initialised = .true.
     write(*,*) "COMMIT PARTICLES DONE"
     commit_particles = 0
 end function
@@ -1104,8 +1104,18 @@ function get_time_step(index_of_the_star, time_step)
     integer:: index_of_the_star
     real(kindreal):: time_step
     integer:: get_time_step
-    time_step = GenecStar%dzeitj
-    get_time_step = 0
+    get_time_step = get_dzeit(index_of_the_star, time_step)
+    !time_step = GenecStar%dzeitj
+    !time_step = GenecStar%dzeit
+    !get_time_step = 0
+end function
+
+function set_time_step(index_of_the_star, time_step)
+    implicit none
+    integer:: index_of_the_star
+    real(kindreal):: time_step
+    integer:: set_time_step
+    set_time_step = set_dzeit(index_of_the_star, time_step)
 end function
 
 function get_time(time)
@@ -3201,10 +3211,12 @@ integer function get_dzeit(index_of_the_particle, dzeit)
 end function get_dzeit
 
 integer function set_dzeit(index_of_the_particle, dzeit)
+    use const, only: year
     implicit none
     integer, intent(in):: index_of_the_particle
     real(kindreal), intent(in):: dzeit
     GenecStar%dzeit = dzeit
+    GenecStar%dzeitj = dzeit / year
     set_dzeit = 0
 end function set_dzeit
 
