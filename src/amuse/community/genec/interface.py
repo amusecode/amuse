@@ -59,7 +59,7 @@ GENEC_AMUSE_SPECIFIC = {
 GENEC_STAR_CHARACTERISTICS = {
     # 'GENEC name': [dtype, unit, description, AMUSE name (optional)]
     'initialised': ['bool', '', "True if the star is an intialised model"],
-    'starname': ['string', '', "Name of the star"],
+    'star_name': ['string', '', "Name of the star"],
     'nwmd': ['int32', '', "model number"],
     'nwseq': [
         'int32', '', "number of the first model in the time-step series"
@@ -83,15 +83,30 @@ GENEC_STAR_PHYSICS = {
         'bool', '',
         "allows to use different reaction rate files if set to True"
     ],
-    'bintide': ['bool', '', "tidal interaction in binaries if set to True"],
-    'binm2': ['float64', 'MSun', "mass of the companion"],
-    'periodini': ['float64', 'day', "initial period of the binary"],
+    'bintide': [
+        'bool',
+        '',
+        "tidal interaction in binaries if set to True",
+        "binary_enable_tides",
+    ],
+    'binm2': [
+        'float64',
+        'MSun',
+        "mass of the companion",
+        "binary_companion_mass",
+    ],
+    'periodini': [
+        'float64',
+        'day',
+        "initial period of the binary",
+        "binary_initial_period",
+    ],
     'const_per': ['bool', '', "keep constant period if True"],
     'iprezams': ['int32', '', ""],
 }
 
 GENEC_STAR_COMPOSITION = {
-    'zinit': ['float64', '', "initial metallicity of the model"],
+    'initial_metallicity': ['float64', '', "initial metallicity of the model"],
     'zsol': ['float64', '', "reference solar metallicity"],
     'z': ['float64', '', "abundance of the neglected isotopes"],
     'iopac': ['int32', '', "choice of the opacity table if ikappa = 5"],
@@ -130,10 +145,12 @@ GENEC_STAR_ROTATION = {
         'float64', '',
         "maximum Ωcrit ratio before the onset of mechanical mass loss"
     ],
-    'vwant': [
-        'float64', '',
-        "chosen velocity on the ZAMS (Veq if > 1.0, V/Vcrit if 0<vwant<1, "
-        "Ω/Ωcrit if -1<vwant<0"
+    'zams_velocity': [
+        'float64',
+        '',
+        "chosen velocity on the ZAMS (Veq if > 1.0, V/Vcrit if 0<zams_velocity<1, "
+        "Ω/Ωcrit if -1<zams_velocity<0",
+        'zams_velocity'
     ],
     'xfom': ['float64', '', "multiplying factor for surface Ω"],
     'omega': ['float64', '', "surface Ω"],
@@ -188,15 +205,20 @@ GENEC_STAR_SURFACE = {
         "management of the changes of fitm during redward evolution (and/or "
         "blueward evolution after a RSG phase)"
     ],
-    'fitm': ['float64', '', "mass included in the interior"],
+    'fitm': [
+        'float64',
+        '',
+        "mass included in the interior",
+    ],
     'fitmi': [
         'float64', '',
         "max value of FITM to which the star will come back when going back "
-        "to the blue"
+        "to the blue",
     ],
     'fitmi_default': [
         'float64', '',
-        '', '',
+        '',
+        '',
     ],
     'deltal': ['float64', '', "triangle size for L at the surface"],
     'deltat': ['float64', '', "triangle size for T at the surface"],
@@ -612,7 +634,11 @@ class GenecInterface(
             default=0.014,
             description="The initial metallicity of the star (default: 0.014)")
         function.addParameter(
-            'starname', dtype='string', direction=function.IN,
+            'zams_velocity', dtype='float64', direction=function.IN,
+            default=0.0,
+            description="The desired ZAMS velocity of the star (default: 0.0)")
+        function.addParameter(
+            'star_name', dtype='string', direction=function.IN,
             default='AmuseStar', description="The star's name")
         # function.addParameter(
         #     'age_tag', dtype='float64', direction=function.IN,
@@ -735,13 +761,13 @@ class GenecInterface(
         returns ()
 
     @remote_function(can_handle_array=True)
-    def get_starname(index_of_the_particle='i'):
-        returns (starname='string')
+    def get_star_name(index_of_the_particle='i'):
+        returns (star_name='string')
 
     @remote_function(can_handle_array=True)
-    def set_starname(
+    def set_star_name(
         index_of_the_particle='i',
-        starname='string',
+        star_name='string',
     ):
         returns ()
 
@@ -966,13 +992,13 @@ class GenecInterface(
         returns ()
 
     @remote_function(can_handle_array=True)
-    def get_zinit(index_of_the_particle='i'):
-        returns (zinit='float64')
+    def get_initial_metallicity(index_of_the_particle='i'):
+        returns (initial_metallicity='float64')
 
     @remote_function(can_handle_array=True)
-    def set_zinit(
+    def set_initial_metallicity(
         index_of_the_particle='i',
-        zinit='float64',
+        initial_metallicity='float64',
     ):
         returns ()
 
@@ -1142,13 +1168,13 @@ class GenecInterface(
         returns ()
 
     @remote_function(can_handle_array=True)
-    def get_vwant(index_of_the_particle='i'):
-        returns (vwant='float64')
+    def get_zams_velocity(index_of_the_particle='i'):
+        returns (zams_velocity='float64')
 
     @remote_function(can_handle_array=True)
-    def set_vwant(
+    def set_zams_velocity(
         index_of_the_particle='i',
-        vwant='float64',
+        zams_velocity='float64',
     ):
         returns ()
 
@@ -3329,6 +3355,11 @@ class Genec(StellarEvolution, InternalStellarStructure):
                         f'get_{parameter[0]}',
                         names=names,
                     )
+                    handler.add_setter(
+                        set_name,
+                        f'set_{parameter[0]}',
+                        names=names,
+                    )
             handler.add_getter(set_name, 'get_radius')
             handler.add_getter(
                 set_name, 'get_surface_velocity', names=('surface_velocity',)
@@ -3363,7 +3394,7 @@ class Genec(StellarEvolution, InternalStellarStructure):
             handler.add_method(set_name, 'evolve_for')
             handler.set_delete(set_name, 'delete_star')
 
-            handler.add_method(set_name, 'get_starname')
+            handler.add_method(set_name, 'get_star_name')
             handler.add_method(set_name, 'get_internal_structure')
 
             # for star_prop in [
@@ -3412,14 +3443,14 @@ class Genec(StellarEvolution, InternalStellarStructure):
         StellarEvolution.define_state(self, handler)
         # InternalStellarStructure.define_state(self, handler)
 
-        # Only allow setting of starname in EDIT or UPDATE states
+        # Only allow setting of star_name in EDIT or UPDATE states
         # I.e. must do initialize_code and commit_parameters FIRST!
 
         # Initialized (initialize_code)
         # handler.add_method
 
         # -> Edit (commit_parameters)
-        # handler.add_method('EDIT', 'set_starname')
+        # handler.add_method('EDIT', 'set_star_name')
         # handler.add_method('EDIT', 'new_particle')
 
         # -> Run (commit_particles)
@@ -3495,7 +3526,7 @@ class Genec(StellarEvolution, InternalStellarStructure):
                 )
         # -> Run (recommit_particles)
 
-        # handler.add_method('UPDATE', 'set_starname')
+        # handler.add_method('UPDATE', 'set_star_name')
         # handler.add_method('UPDATE', 'new_particle')
 
     def define_methods(self, handler):
@@ -3503,7 +3534,7 @@ class Genec(StellarEvolution, InternalStellarStructure):
         StellarEvolution.define_methods(self, handler)
         handler.add_method(
             "new_particle",
-            (units.MSun, handler.NO_UNIT, handler.NO_UNIT),
+            (units.MSun, handler.NO_UNIT, handler.NO_UNIT, handler.NO_UNIT),
             (handler.INDEX, handler.ERROR_CODE)
         )
 
@@ -3741,7 +3772,7 @@ class Genec(StellarEvolution, InternalStellarStructure):
             internal_structure['veryFirst'],
             # Characteristics
             internal_structure['initialised'],
-            internal_structure['starname'],
+            internal_structure['star_name'],
             internal_structure['nwmd'],
             internal_structure['nwseq'],
             internal_structure['modanf'],
@@ -3764,7 +3795,7 @@ class Genec(StellarEvolution, InternalStellarStructure):
             internal_structure['const_per'],
             internal_structure['iprezams'],
             # Composition
-            internal_structure['zinit'],
+            internal_structure['initial_metallicity'],
             internal_structure['zsol'],
             internal_structure['z'],
             internal_structure['iopac'],
@@ -3781,7 +3812,7 @@ class Genec(StellarEvolution, InternalStellarStructure):
             internal_structure['K_Kawaler'],
             internal_structure['Omega_saturation'],
             internal_structure['rapcrilim'],
-            internal_structure['vwant'],
+            internal_structure['zams_velocity'],
             internal_structure['xfom'],
             internal_structure['omega'],
             internal_structure['xdial'],

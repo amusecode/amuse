@@ -658,7 +658,7 @@ function set_mass(index_of_the_star, mass)
     integer:: set_mass, index_of_the_star
     real(kindreal):: mass
     if (.not.GenecStar%initialised) then
-        InitialGenecStar%mstar = mass
+        InitialGenecStar%initial_mass = mass
         set_mass = 0
     else
         write(*,*) "This function should not be called when the star is already initialised"
@@ -878,7 +878,7 @@ function get_metallicity(metallicity)
     implicit none
     real(kindreal):: metallicity
     integer:: get_metallicity
-    metallicity = InitialGenecStar%zini
+    metallicity = InitialGenecStar%initial_metallicity
     get_metallicity = 0
 end function
 
@@ -886,7 +886,7 @@ function set_metallicity(metallicity)
     implicit none
     real(kindreal):: metallicity
     integer:: set_metallicity
-    InitialGenecStar%zini = metallicity
+    InitialGenecStar%initial_metallicity = metallicity
     set_metallicity = 0
 end function
 
@@ -1126,17 +1126,18 @@ function get_time(time)
     get_time = 0
 end function
 
-function new_particle(index_of_the_star, mass, metallicity, am_starname)
+function new_particle(index_of_the_star, initial_mass, initial_metallicity, zams_velocity, star_name)
     implicit none
     integer:: index_of_the_star, key
-    real(kindreal):: mass, metallicity
+    real(kindreal):: initial_mass, initial_metallicity, zams_velocity
     integer:: new_particle
-    character(len=12):: am_starname
+    character(len=12):: star_name
     number_of_stars = number_of_stars + 1
-    InitialGenecStar%starname = am_starname
+    InitialGenecStar%star_name = star_name
     InitialGenecStar%index_of_the_star = number_of_stars
-    InitialGenecStar%mstar = mass
-    InitialGenecStar%zini = metallicity
+    InitialGenecStar%initial_mass = initial_mass
+    InitialGenecStar%initial_metallicity = initial_metallicity
+    InitialGenecStar%zams_velocity = zams_velocity
     InitialGenecStar%idefaut = 1
     index_of_the_star = InitialGenecStar%index_of_the_star
     
@@ -1501,21 +1502,21 @@ integer function set_initialised(index_of_the_particle, initialised)
     set_initialised = 0
 end function set_initialised
 
-integer function get_starname(index_of_the_particle, starname)
+integer function get_star_name(index_of_the_particle, star_name)
     implicit none
     integer, intent(in):: index_of_the_particle
-    character(256), intent(out):: starname
-    starname = GenecStar%starname
-    get_starname = 0
-end function get_starname
+    character(256), intent(out):: star_name
+    star_name = GenecStar%star_name
+    get_star_name = 0
+end function get_star_name
 
-integer function set_starname(index_of_the_particle, starname)
+integer function set_star_name(index_of_the_particle, star_name)
     implicit none
     integer, intent(in):: index_of_the_particle
-    character(256), intent(in):: starname
-    GenecStar%starname = starname
-    set_starname = 0
-end function set_starname
+    character(256), intent(in):: star_name
+    GenecStar%star_name = star_name
+    set_star_name = 0
+end function set_star_name
 
 integer function get_nwmd(index_of_the_particle, nwmd)
     implicit none
@@ -1837,21 +1838,21 @@ integer function set_iprezams(index_of_the_particle, iprezams)
     set_iprezams = 0
 end function set_iprezams
 
-integer function get_zinit(index_of_the_particle, zinit)
+integer function get_initial_metallicity(index_of_the_particle, initial_metallicity)
     implicit none
     integer, intent(in):: index_of_the_particle
-    real(kindreal), intent(out):: zinit
-    zinit = GenecStar%zinit
-    get_zinit = 0
-end function get_zinit
+    real(kindreal), intent(out):: initial_metallicity
+    initial_metallicity = GenecStar%initial_metallicity
+    get_initial_metallicity = 0
+end function get_initial_metallicity
 
-integer function set_zinit(index_of_the_particle, zinit)
+integer function set_initial_metallicity(index_of_the_particle, initial_metallicity)
     implicit none
     integer, intent(in):: index_of_the_particle
-    real(kindreal), intent(in):: zinit
-    GenecStar%zinit = zinit
-    set_zinit = 0
-end function set_zinit
+    real(kindreal), intent(in):: initial_metallicity
+    GenecStar%initial_metallicity = initial_metallicity
+    set_initial_metallicity = 0
+end function set_initial_metallicity
 
 integer function get_zsol(index_of_the_particle, zsol)
     implicit none
@@ -2093,26 +2094,26 @@ integer function set_rapcrilim(index_of_the_particle, rapcrilim)
     set_rapcrilim = 0
 end function set_rapcrilim
 
-integer function get_vwant(index_of_the_particle, vwant)
+integer function get_zams_velocity(index_of_the_particle, zams_velocity)
     implicit none
     integer, intent(in):: index_of_the_particle
-    real(kindreal), intent(out):: vwant
-    vwant = InitialGenecStar%vwant
-    get_vwant = 0
-end function get_vwant
+    real(kindreal), intent(out):: zams_velocity
+    zams_velocity = InitialGenecStar%zams_velocity
+    get_zams_velocity = 0
+end function get_zams_velocity
 
-integer function set_vwant(index_of_the_particle, vwant)
+integer function set_zams_velocity(index_of_the_particle, zams_velocity)
     implicit none
     integer, intent(in):: index_of_the_particle
-    real(kindreal), intent(in):: vwant
+    real(kindreal), intent(in):: zams_velocity
     if (.not.GenecStar%initialised) then
-        InitialGenecStar%vwant = vwant
-        set_vwant = 0
+        InitialGenecStar%zams_velocity = zams_velocity
+        set_zams_velocity = 0
     else
         write(*,*) "This function should not be called when the star is already initialised"
-        set_vwant = -2
+        set_zams_velocity = -2
     endif
-end function set_vwant
+end function set_zams_velocity
 
 integer function get_xfom(index_of_the_particle, xfom)
     implicit none
@@ -5987,11 +5988,11 @@ end function set_xnetalu
 function new_stellar_model(&
       index_of_the_star,&
       modell,veryFirst,&
-      initialised,starname,nwmd,nwseq,modanf,nzmod,end_at_phase,end_at_model,&
+      initialised,star_name,nwmd,nwseq,modanf,nzmod,end_at_phase,end_at_model,&
       irot,isol,imagn,ialflu,ianiso,ipop3,ibasnet,phase,var_rates,bintide,binm2,periodini,const_per,iprezams,&
-      zinit,zsol,z,iopac,ikappa,&
+      initial_metallicity,zsol,z,iopac,ikappa,&
       idiff,iadvec,istati,icoeff,fenerg,richac,igamma,frein,K_Kawaler,&
-      Omega_saturation,rapcrilim,vwant,xfom,omega,xdial,idialo,idialu,Add_Flux,diff_only,B_initial,&
+      Omega_saturation,rapcrilim,zams_velocity,xfom,omega,xdial,idialo,idialu,Add_Flux,diff_only,B_initial,&
       add_diff,n_mag,alpha_F,nsmooth,qminsmooth,&
       imloss,fmlos,ifitm,fitm,fitmi,fitmi_default,deltal,deltat,nndr,RSG_Mdot,SupraEddMdot,Be_mdotfrac,start_mdot,&
       iledou,idifcon,iover,elph,my,dovhp,iunder,dunder,&
@@ -6017,7 +6018,7 @@ function new_stellar_model(&
     logical, intent(in):: &
              initialised, veryFirst
     character(256), intent(in):: &
-             starname
+             star_name
     integer, intent(in):: &
              nwmd,nwseq,modanf,nzmod,end_at_phase,end_at_model,irot,isol,imagn,&
              ialflu,ianiso,ipop3,ibasnet,phase
@@ -6030,7 +6031,7 @@ function new_stellar_model(&
     integer, intent(in):: &
              iprezams
     real(kindreal), intent(in):: &
-             zinit,&
+             initial_metallicity,&
              zsol,z
     integer, intent(in):: &
              iopac,ikappa,idiff,iadvec,istati,icoeff
@@ -6040,7 +6041,7 @@ function new_stellar_model(&
              igamma
     real(kindreal), intent(in):: &
              frein,K_Kawaler,&
-             Omega_saturation,rapcrilim,vwant,xfom,omega,xdial
+             Omega_saturation,rapcrilim,zams_velocity,xfom,omega,xdial
     integer, intent(in):: &
              idialo,idialu
     logical, intent(in):: &
@@ -6133,7 +6134,7 @@ function new_stellar_model(&
     GenecStar%modell = modell
     GenecStar%veryFirst = veryFirst
     GenecStar%initialised = initialised
-    GenecStar%starname = starname
+    GenecStar%star_name = star_name
     GenecStar%nwmd = nwmd
     GenecStar%nwseq = nwseq
     GenecStar%modanf = modanf
@@ -6155,7 +6156,7 @@ function new_stellar_model(&
     GenecStar%periodini = periodini
     GenecStar%const_per = const_per
     GenecStar%iprezams = iprezams
-    GenecStar%zinit = zinit
+    GenecStar%initial_metallicity = initial_metallicity
     GenecStar%zsol = zsol
     GenecStar%z = z
     GenecStar%iopac = iopac
@@ -6173,7 +6174,7 @@ function new_stellar_model(&
     !----
     GenecStar%Omega_saturation = Omega_saturation
     GenecStar%rapcrilim = rapcrilim
-    GenecStar%vwant = vwant
+    GenecStar%zams_velocity = zams_velocity
     GenecStar%xfom = xfom
     GenecStar%omega = omega
     GenecStar%xdial = xdial
