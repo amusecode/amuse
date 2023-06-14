@@ -11,6 +11,7 @@ from amuse.community import LiteratureReferencesMixIn
 from amuse.community import CodeWithDataDirectories
 from amuse.community import InCodeComponentImplementation
 from amuse.community import NO_UNIT, ERROR_CODE
+from amuse.community.interface import common
 from amuse.community.interface.se import StellarEvolution
 from amuse.community.interface.se import StellarEvolutionInterface
 from amuse.community.interface.se import InternalStellarStructure
@@ -60,7 +61,7 @@ GENEC_STAR_CHARACTERISTICS = {
     # 'GENEC name': [dtype, unit, description, AMUSE name (optional)]
     'initialised': ['bool', '', "True if the star is an intialised model"],
     'star_name': ['string', '', "Name of the star"],
-    'nwmd': ['int32', '', "model number"],
+    'nwmd': ['int32', '', "model number", "step"],
     'nwseq': [
         'int32', '', "number of the first model in the time-step series"
     ],
@@ -374,7 +375,7 @@ GENEC_STAR_PROPERTIES = {
     'glsv': ['float64', 'LSun', "previous luminosity"],
     'teffv': ['float64', 'K', "previous temperature"],
     'dzeitj': ['float64', 'yr', "time step (yr)", ""],
-    'dzeit': ['float64', 's', "time step (s)", "time_step"],
+    'dzeit': ['float64', 's', "time step (s)", ""],
     'dzeitv': ['float64', 's', "previous time step", ""],
     'xmini': ['float64', 'MSun', "initial mass", "initial_mass"],
     'ab': ['float64', '', "binary separation", ""],
@@ -1917,12 +1918,12 @@ class GenecInterface(
 
     @remote_function(can_handle_array=True)
     def get_dzeitj(index_of_the_particle='i'):
-        returns (dzeitj='float64' | units.yr)
+        returns (dzeitj='float64' | units.julianyr)
 
     @remote_function(can_handle_array=True)
     def set_dzeitj(
         index_of_the_particle='i',
-        dzeitj='float64' | units.yr,
+        dzeitj='float64' | units.julianyr,
     ):
         returns ()
 
@@ -1936,6 +1937,12 @@ class GenecInterface(
         dzeit='float64' | units.s,
     ):
         returns ()
+
+    @remote_function(can_handle_array=True)
+    def get_time_step(
+        index_of_the_particle='i', 
+    ):
+        returns (time_step='float64' | units.s)
 
     @remote_function(can_handle_array=True)
     def set_time_step(
@@ -3440,22 +3447,30 @@ class Genec(StellarEvolution, InternalStellarStructure):
     #     )
 
     def define_state(self, handler):
-        StellarEvolution.define_state(self, handler)
+        common.CommonCode.define_state(self, handler)
+        # StellarEvolution.define_state(self, handler)
         # InternalStellarStructure.define_state(self, handler)
 
         # Only allow setting of star_name in EDIT or UPDATE states
         # I.e. must do initialize_code and commit_parameters FIRST!
 
         # Initialized (initialize_code)
-        # handler.add_method
+        handler.add_transition('UNINITIALIZED', 'INITIALIZED', 'initialize_code')
 
         # -> Edit (commit_parameters)
+        handler.add_transition('INITIALIZED', 'EDIT', 'commit_parameters')
         # handler.add_method('EDIT', 'set_star_name')
-        # handler.add_method('EDIT', 'new_particle')
+        handler.add_method('EDIT', 'new_particle')
+        handler.add_method('UPDATE', 'new_particle')
+
+        handler.add_transition(
+            'RUN', 'UPDATE', 'finalize_stellar_model', False)
 
         # -> Run (commit_particles)
-        # handler.add_transition('EDIT', 'RUN', 'commit_particles')
-        # handler.add_method('RUN', 'evolve_one_step')
+        handler.add_transition('EDIT', 'RUN', 'commit_particles')
+        handler.add_transition('EDIT', 'UPDATE', 'commit_particles')
+        handler.add_method('RUN', 'evolve_one_step')
+        handler.add_method('!UPDATE', 'evolve_one_step')
 
         # -> Update
         handler.add_transition('RUN', 'UPDATE', 'finalize_stellar_model')
@@ -3502,9 +3517,10 @@ class Genec(StellarEvolution, InternalStellarStructure):
                 handler.add_method(
                     state, f'get_mass_fraction_of_{species}_at_zone'
                 )
-        for state in ["EDIT", "UPDATE"]:
+        for state in ["EDIT", "UPDATE", "!RUN"]:
             for parameter in ALL_SETTERS:
                 handler.add_method(state, f'set_{parameter[0]}')
+            handler.add_method(state, 'set_time_step')
 
         handler.add_method('UPDATE', 'set_n_snap')
         # handler.add_method('UPDATE', 'set_ipoly')
@@ -3543,6 +3559,13 @@ class Genec(StellarEvolution, InternalStellarStructure):
         #     (handler.NO_UNIT),
         #     (handler.INDEX, handler.ERROR_CODE)
         # )
+
+        # specifically add this here since the unit is different
+        handler.add_method(  
+            "get_time_step",
+            (handler.INDEX,),
+            (units.s, handler.ERROR_CODE,)
+        )
 
         handler.add_method(
             "get_surface_velocity",

@@ -1,10 +1,12 @@
 module AmuseInterface
     use storage, only:&
-            InitialGenecStar,&
             GenecStar,genec_star
     use helpers, only:&
-            copy_to_genec_star,copy_namelists_from_genec_star,copy_from_genec_star,&
-            copy_structure_from_genec_star,copy2_from_genec_star
+            copy_to_genec_star,&
+            copy_namelists_from_genec_star,&
+            copy_from_genec_star,&
+            copy_structure_from_genec_star,&
+            copy2_from_genec_star
     use evol, only: kindreal,ldi,npondcouche
 
     type(genec_star) :: BackupBackupGenecStar
@@ -387,17 +389,25 @@ end subroutine restore_network
 function commit_particles()
     use makeini, only: make_initial_star
     use genec, only: initialise_star
+    use genec, only: evolve, modell, finalise, veryFirst
     implicit none
     integer:: commit_particles
     ! makeini will actually override some things from set_defaults now! FIXME
 
     if (.not.GenecStar%initialised) then
         call make_initial_star()
+        GenecStar%nzmod = 1
+        GenecStar%modell = 1
+        GenecStar%n_snap = 0
         call copy_from_genec_star(GenecStar)
         call copy_to_genec_star(GenecStar)
     endif
     call init_or_restore_star(GenecStar)
     GenecStar%initialised = .true.
+    call evolve()
+    call finalise()
+    call copy_to_genec_star(GenecStar)
+    veryFirst = .false.
     write(*,*) "COMMIT PARTICLES DONE"
     commit_particles = 0
 end function
@@ -658,7 +668,7 @@ function set_mass(index_of_the_star, mass)
     integer:: set_mass, index_of_the_star
     real(kindreal):: mass
     if (.not.GenecStar%initialised) then
-        InitialGenecStar%initial_mass = mass
+        GenecStar%initial_mass = mass
         set_mass = 0
     else
         write(*,*) "This function should not be called when the star is already initialised"
@@ -878,7 +888,7 @@ function get_metallicity(metallicity)
     implicit none
     real(kindreal):: metallicity
     integer:: get_metallicity
-    metallicity = InitialGenecStar%initial_metallicity
+    metallicity = GenecStar%initial_metallicity
     get_metallicity = 0
 end function
 
@@ -886,7 +896,7 @@ function set_metallicity(metallicity)
     implicit none
     real(kindreal):: metallicity
     integer:: set_metallicity
-    InitialGenecStar%initial_metallicity = metallicity
+    GenecStar%initial_metallicity = metallicity
     set_metallicity = 0
 end function
 
@@ -1133,13 +1143,13 @@ function new_particle(index_of_the_star, initial_mass, initial_metallicity, zams
     integer:: new_particle
     character(len=12):: star_name
     number_of_stars = number_of_stars + 1
-    InitialGenecStar%star_name = star_name
-    InitialGenecStar%index_of_the_star = number_of_stars
-    InitialGenecStar%initial_mass = initial_mass
-    InitialGenecStar%initial_metallicity = initial_metallicity
-    InitialGenecStar%zams_velocity = zams_velocity
-    InitialGenecStar%idefaut = 1
-    index_of_the_star = InitialGenecStar%index_of_the_star
+    GenecStar%star_name = star_name
+    GenecStar%index_of_the_star = number_of_stars
+    GenecStar%initial_mass = initial_mass
+    GenecStar%initial_metallicity = initial_metallicity
+    GenecStar%zams_velocity = zams_velocity
+    GenecStar%idefaut = 1
+    index_of_the_star = GenecStar%index_of_the_star
     
     new_particle = 0
 end function
@@ -2098,7 +2108,7 @@ integer function get_zams_velocity(index_of_the_particle, zams_velocity)
     implicit none
     integer, intent(in):: index_of_the_particle
     real(kindreal), intent(out):: zams_velocity
-    zams_velocity = InitialGenecStar%zams_velocity
+    zams_velocity = GenecStar%zams_velocity
     get_zams_velocity = 0
 end function get_zams_velocity
 
@@ -2107,7 +2117,7 @@ integer function set_zams_velocity(index_of_the_particle, zams_velocity)
     integer, intent(in):: index_of_the_particle
     real(kindreal), intent(in):: zams_velocity
     if (.not.GenecStar%initialised) then
-        InitialGenecStar%zams_velocity = zams_velocity
+        GenecStar%zams_velocity = zams_velocity
         set_zams_velocity = 0
     else
         write(*,*) "This function should not be called when the star is already initialised"
