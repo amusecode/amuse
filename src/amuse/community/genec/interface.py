@@ -73,7 +73,11 @@ GENEC_STAR_CHARACTERISTICS = {
 
 GENEC_STAR_PHYSICS = {
     'irot': ['int32', '', "rotating if set to 1"],
-    'isol': ['int32', '', "solid rotation if set to 1"],
+    'isol': [
+        'int32',
+        '',
+        "solid rotation if set to 1",
+    ],
     'imagn': ['int32', '', "internal magnetic fields (0=none, 1=included)"],
     'ialflu': ['int32', '', "Ne-Na and Mg-Al networks if set to 1"],
     'ianiso': ['int32', '', "wind anisotropy if set to 1", "anisotropic_wind"],
@@ -102,7 +106,12 @@ GENEC_STAR_PHYSICS = {
         "initial period of the binary",
         "binary_initial_period",
     ],
-    'const_per': ['bool', '', "keep constant period if True"],
+    'const_per': [
+        'bool',
+        '',
+        "keep constant period if True",
+        "binary_constant_period",
+    ],
     'iprezams': ['int32', '', ""],
 }
 
@@ -154,7 +163,11 @@ GENEC_STAR_ROTATION = {
         'zams_velocity'
     ],
     'xfom': ['float64', '', "multiplying factor for surface Ω"],
-    'omega': ['float64', '', "surface Ω"],
+    'omega': [
+        'float64',
+        '',
+        "surface Ω",
+    ],
     'xdial': ['float64', '', ""],
     'idialo': ['int32', '', ""],
     'idialu': ['int32', '', ""],
@@ -168,24 +181,28 @@ GENEC_STAR_ROTATION = {
         "(and not advection) if set to True"
     ],
     'B_initial': [
-        'float64', '',
+        'float64',
+        '',
         "if >0, switches on the wind quenching, and evolves the magnetic "
         "field strength according to the conservation of magnetic flux"
     ],
     'add_diff': [
-        'float64', '',
+        'float64',
+        '',
         "additional viscosity value, used to increase the core-envelope "
         "coupling"
     ],
     'n_mag': ['int32', '', "type of treatment for magnetic fields"],
     'alpha_F': [
-        'float64', '',
+        'float64',
+        '',
         "α parameter in Fuller+ 2019. Values higher than 1 lower the "
         "threshold to trigger the instability (Qmin) and increase the "
         "magnetic viscosity (increased transport)"
     ],
     'nsmooth': [
-        'int32', '',
+        'int32',
+        '',
         "number of layers used for smoothing the Ω gradient (used by "
         "Mag_diff_general). Default value is nsmooth=1, recommended "
         "value for Fuller+ 2019 is nsmooth=5"
@@ -198,7 +215,8 @@ GENEC_STAR_ROTATION = {
 GENEC_STAR_SURFACE = {
     'imloss': ['int32', '', "choice of the mass-loss prescription"],
     'fmlos': [
-        'float64', '',
+        'float64',
+        '',
         "except for IMLOSS=2 or 3, multiplying factor applied to the mass loss"
     ],
     'ifitm': [
@@ -309,18 +327,25 @@ GENEC_STAR_CONVERGENCE = {
 
 GENEC_STAR_TIME = {
     'xcn': [
-        'float64', '',
+        'float64',
+        '',
         "multiplying factor applied on the time step for the next run"
     ],
     'islow': [
-        'int32', '',
+        'int32',
+        '',
         "slow version of the program if not 0 by modification of the ideal "
         "nuclear time step ratxcn"
     ],
-    'icncst': ['int32', '', "constant time step (equivalent to xcn=1.0)"],
+    'icncst': [
+        'int32',
+        '',
+        "constant time step (equivalent to xcn=1.0)",
+    ],
     'tauH_fit': [
-        'int32', '',
-        "used to set the maximal timestep in case of critical velocity, as a "
+        'int32',
+        '',
+        "used to set the maximum timestep in case of critical velocity, as a "
         "fraction of the MS lifetime"
     ],
 }
