@@ -387,28 +387,19 @@ subroutine restore_network(z)
 end subroutine restore_network
 
 function commit_particles()
-    use makeini, only: make_initial_star
     use genec, only: initialise_star
     use genec, only: evolve, modell, finalise, veryFirst
     implicit none
     integer:: commit_particles
     ! makeini will actually override some things from set_defaults now! FIXME
 
-    if (.not.GenecStar%initialised) then
-        call make_initial_star()
-        GenecStar%nzmod = 1
-        GenecStar%modell = 1
-        GenecStar%n_snap = 0
-        call copy_from_genec_star(GenecStar)
-        call copy_to_genec_star(GenecStar)
-    endif
+    call copy_from_genec_star(GenecStar)
     call init_or_restore_star(GenecStar)
     GenecStar%initialised = .true.
     call evolve()
     call finalise()
     call copy_to_genec_star(GenecStar)
     veryFirst = .false.
-    write(*,*) "COMMIT PARTICLES DONE"
     commit_particles = 0
 end function
 
@@ -1137,6 +1128,7 @@ function get_time(time)
 end function
 
 function new_particle(index_of_the_star, initial_mass, initial_metallicity, zams_velocity, star_name)
+    use makeini, only: make_initial_star
     implicit none
     integer:: index_of_the_star, key
     real(kindreal):: initial_mass, initial_metallicity, zams_velocity
@@ -1150,7 +1142,13 @@ function new_particle(index_of_the_star, initial_mass, initial_metallicity, zams
     GenecStar%zams_velocity = zams_velocity
     GenecStar%idefaut = 1
     index_of_the_star = GenecStar%index_of_the_star
-    
+
+    call make_initial_star()
+    GenecStar%nzmod = 1
+    GenecStar%modell = 1
+    GenecStar%n_snap = 0
+    call copy_from_genec_star(GenecStar)
+    call copy_to_genec_star(GenecStar)
     new_particle = 0
 end function
 

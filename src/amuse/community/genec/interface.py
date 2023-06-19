@@ -3521,6 +3521,8 @@ class Genec(StellarEvolution, InternalStellarStructure):
             for parameter in ALL_SETTERS:
                 handler.add_method(state, f'set_{parameter[0]}')
             handler.add_method(state, 'set_time_step')
+        for state in ["!UPDATE"]:
+            handler.add_method(state, "set_bintide")
 
         handler.add_method('UPDATE', 'set_n_snap')
         # handler.add_method('UPDATE', 'set_ipoly')
