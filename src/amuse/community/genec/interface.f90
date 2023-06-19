@@ -6,7 +6,6 @@ module AmuseInterface
             copy_namelists_from_genec_star,&
             copy_from_genec_star,&
             copy_structure_from_genec_star,&
-            copy2_from_genec_star
     use evol, only: kindreal,ldi,npondcouche
 
     type(genec_star) :: BackupBackupGenecStar
@@ -458,9 +457,6 @@ function evolve_one_step(index_of_the_star)
     integer:: evolve_one_step
     integer:: original_nzmod
 
-    nzmod = 1
-    modell = 1
-    n_snap = 0
     call evolve()
     call finalise()
     veryFirst = .false.

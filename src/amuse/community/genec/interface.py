@@ -3484,9 +3484,7 @@ class Genec(StellarEvolution, InternalStellarStructure):
 
         # -> Run (commit_particles)
         handler.add_transition('EDIT', 'RUN', 'commit_particles')
-        handler.add_transition('EDIT', 'UPDATE', 'commit_particles')
         handler.add_method('RUN', 'evolve_one_step')
-        handler.add_method('!UPDATE', 'evolve_one_step')
 
         # -> Update
         handler.add_transition('RUN', 'UPDATE', 'finalize_stellar_model')
