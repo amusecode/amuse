@@ -115,7 +115,6 @@ def write_backup(
     # )
     return
 
-ROTATING_STAR = False
 MASS_UNIT = units.MSun
 LENGTH_UNIT = units.RSun
 SPEED_UNIT = units.kms
@@ -150,20 +149,13 @@ else:
         mass=7.0 | units.MSun,
         metallicity=0.014,
         starname="AmuseStar",
+        zams_velocity=0.,
     )
 evo = Genec(redirection="none")
-# evo.parameters.idebug = 2
 # evo = Genec()
-if ROTATING_STAR:
-    star.vwant = 0.7
-else:
-    star.vwant = 0.0
-star.ipoly = 0
 
 # NOTE: this will now reset parameters...
 star_in_evo = evo.particles.add_particle(star)
-# evo.parameters.idebug = 2
-# print(star_in_evo)
 
 font = {
     'size': 8,
@@ -188,7 +180,6 @@ plotting = None
 plotting = StellarModelPlot(star_in_evo)
 
 # evo.parameters.nzmod = 100
-evo.parameters.n_snap = 0
 
 print("age   mass   radius   temp   lum   phase   vequat   h0   vwant  xcn")
 while True:
@@ -213,13 +204,9 @@ while True:
         star.radius.in_(units.RSun),
         star.temperature.in_(units.K),
         star.luminosity.in_(units.LSun),
-        # star.phase,
         star.surface_velocity,
-        star.abundance_h[0],
-        star.vwant,
-        star.xcn,
     )
-    print(f"step: {step} time: {star.age} timestep: {star.time_step} xcn: {evo.parameters.xcn}")
+    print(f"step: {step} time: {star.age} timestep: {star.time_step}")
     if (step % store_every == 0) and plotting is not None:
         plotting.update(star_in_evo)
         if (

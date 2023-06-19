@@ -1,3 +1,4 @@
+import sys
 import numpy
 import time
 
@@ -21,6 +22,7 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 # logger.setLevel(logging.DEBUG)
+
 
 class NeedToSave:
     def __init__(self):
@@ -112,15 +114,14 @@ def write_backup(
     # )
     return
 
-ROTATING_STAR = True
 MASS_UNIT = units.MSun
 LENGTH_UNIT = units.RSun
 SPEED_UNIT = units.kms
-TIME_UNIT = units.Myr
-MASSLOSS_UNIT = units.MSun / units.yr
+TIME_UNIT = units.mega(units.julianyr)
+MASSLOSS_UNIT = units.MSun / units.julianyr
 TEMPERATURE_UNIT = units.K
 LUMINOSITY_UNIT = units.LSun
-SPEEDUP_UNIT = units.Myr / units.minute
+SPEEDUP_UNIT = units.mega(units.julianyr) / units.minute
 set_printing_strategy(
     "custom",
     preferred_units=[
@@ -139,25 +140,19 @@ star_difficult = Particle(
     mass=60 | units.MSun,
     metallicity=0.014,
 )
-star = Particle(mass=60.0 | units.MSun, metallicity=0.014, starname="RotatingStar")
-evo = Genec(redirection="none")
-# evo = Genec()
-if ROTATING_STAR:
-    evo.parameters.vwant = 0.7
-    evo.parameters.ianiso = 1
-    # evo.parameters.irot = 1
-    # evo.parameters.starname = "AmuseDifficultStar"
-else:
-    evo.parameters.vwant = 0.0
-evo.parameters.ipoly = 0
-star_in_evo = evo.fullparticles.add_particle(star)
-# evo.parameters.idebug = 2
 
-# for p in params.items():
-#     setattr(evo.parameters, p[0], p[1])
-# evo.commit_particles()
-# print(evo.parameters)
-# print(star_in_evo)
+star = Particle(
+    mass=60.0 | units.MSun,
+    metallicity=0.014,
+    starname="RotatingStar",
+    zams_velocity=0.7,
+)
+# evo = Genec(redirection="none")
+evo = Genec()
+
+star_in_evo = evo.particles.add_particle(star)
+star_in_evo.anisotropic_wind = True
+
 font = {
     'size': 8,
 }
@@ -178,13 +173,14 @@ time_of_last_plot = 0 | units.s
 age_of_last_plot = star_in_evo.age
 
 plotting = None
-plotting = StellarModelPlot(star_in_evo)
+# plotting = StellarModelPlot(star_in_evo)
 
 # evo.parameters.nzmod = 100
-evo.parameters.n_snap = 0
 
+print(star_in_evo)
+print(dir(star_in_evo))
 print("age   mass   radius   temp   lum   phase   vequat   h0   vwant  xcn")
-while True:
+while star_in_evo.step < 61:
     time_elapsed = (time.time() | units.s) - time_start
     star = star_in_evo.copy()
     # number_of_zones = star_in_evo.get_number_of_zones()
@@ -195,24 +191,22 @@ while True:
     # pressure_profile = star_in_evo.get_pressure_profile()
     chemical_abundance_profile = star_in_evo.get_chemical_abundance_profiles()
 
-    # print(evo.fullparticles[0])
-    # print(evo.fullparticles[0].get_number_of_species())
-    # print(evo.fullparticles[0].get_names_of_species())
-    # print(evo.fullparticles[0].get_mass_profile())
+    # print(evo.particles[0])
+    # print(evo.particles[0].get_number_of_species())
+    # print(evo.particles[0].get_names_of_species())
+    # print(evo.particles[0].get_mass_profile())
     # exit()
     print(
-        star.age.in_(units.Myr),
+        star.age.in_(units.mega(units.julianyr)),
         star.mass.in_(units.MSun),
         star.radius.in_(units.RSun),
         star.temperature.in_(units.K),
         star.luminosity.in_(units.LSun),
-        star.phase,
         star.surface_velocity,
-        star.abundance_h[0],
-        evo.parameters.vwant,
-        evo.parameters.xcn,
+        star_in_evo.get_ialflu(),
+        star_in_evo.anisotropic_wind,
     )
-    print(f"step: {step} time: {star.age} timestep: {star.time_step} xcn: {evo.parameters.xcn}")
+    print(f"step: {step} time: {star.age} timestep: {star.time_step}")
     if (step % store_every == 0) and plotting is not None:
         plotting.update(star_in_evo)
         if (
@@ -220,9 +214,9 @@ while True:
             or step - model_of_last_plot > plot_models
         ):
             speed = (
-                (star.age - age_of_last_plot).value_in(units.Myr)
+                (star.age - age_of_last_plot).value_in(units.mega(units.julianyr))
                 / (time_elapsed - time_of_last_plot).value_in(units.minute)
-            ) | units.Myr / units.minute
+            ) | units.mega(units.julianyr) / units.minute
             plotting.plot_all(speed=speed, step=step)
             model_of_last_plot = step
             time_of_last_plot = time_elapsed

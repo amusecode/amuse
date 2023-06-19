@@ -443,9 +443,9 @@ class StellarModelPlot:
             return
         ax = self.__axes[title]
         mass_profile = self.star.get_cumulative_mass_profile()
-        nabla_rad = self.star.nabla_rad_profile
-        nabla_ad = self.star.nabla_ad_profile
-        nabla_mu = self.star.nabla_mu_profile
+        nabla_rad = self.star.get_nabla_rad_profile()
+        nabla_ad = self.star.get_nabla_ad_profile()
+        nabla_mu = self.star.get_nabla_mu_profile()
         min_nabla = min(
             min(nabla_ad),
             min(nabla_rad),
@@ -477,7 +477,7 @@ class StellarModelPlot:
         ax_energy.set_xlim(0, 1)
         ax_lum.set_xlabel('M$_{\\rm r}$/M$_{\\rm tot}$')
         mass_profile = self.star.get_cumulative_mass_profile()
-        luminosity_profile = self.star.luminosity_profile.value_in(
+        luminosity_profile = self.star.get_luminosity_profile().value_in(
             units.LSun
         )
         luminosity_profile = luminosity_profile / max(luminosity_profile)
@@ -532,7 +532,7 @@ class StellarModelPlot:
         ax_lum = self.__axes[title][0]
         ax_energy = self.__axes[title][1]
         mass_profile = self.star.get_cumulative_mass_profile()
-        luminosity_profile = self.star.luminosity_profile.value_in(
+        luminosity_profile = self.star.get_luminosity_profile().value_in(
             units.LSun
         )
         luminosity_profile = luminosity_profile / max(luminosity_profile)
@@ -581,10 +581,10 @@ class StellarModelPlot:
         ax_pres.set_ylabel('log(P)')
         mass_profile = self.star.get_cumulative_mass_profile()
         temperature_profile = np.log10(
-            self.star.temperature_profile.value_in(units.K)
+            self.star.get_temperature_profile().value_in(units.K)
         )
         pressure_profile = np.log10(
-            self.star.pressure_profile.number
+            self.star.get_pressure_profile().number
         )
         plot_temp, = ax.plot(
             mass_profile, temperature_profile, label="temp",
@@ -617,10 +617,10 @@ class StellarModelPlot:
         ax_pres = self.__axes[title][1]
         mass_profile = self.star.get_cumulative_mass_profile()
         temperature_profile = np.log10(
-            self.star.temperature_profile.value_in(units.K)
+            self.star.get_temperature_profile().value_in(units.K)
         )
         pressure_profile = np.log10(
-            self.star.pressure_profile.number
+            self.star.get_pressure_profile().number
         )
         for i in (0, 1):
             self.__temp_pres_plots[i].set_xdata(

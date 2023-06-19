@@ -76,7 +76,7 @@ GENEC_STAR_PHYSICS = {
     'isol': ['int32', '', "solid rotation if set to 1"],
     'imagn': ['int32', '', "internal magnetic fields (0=none, 1=included)"],
     'ialflu': ['int32', '', "Ne-Na and Mg-Al networks if set to 1"],
-    'ianiso': ['int32', '', "wind anisotropy if set to 1"],
+    'ianiso': ['int32', '', "wind anisotropy if set to 1", "anisotropic_wind"],
     'ipop3': ['int32', '', "Z=0 models if set to 1"],
     'ibasnet': ['int32', '', "extended nuclear network if set to 1"],
     'phase': ['int32', '', "fusion phases"],
@@ -3367,6 +3367,18 @@ class Genec(StellarEvolution, InternalStellarStructure):
                         f'set_{parameter[0]}',
                         names=names,
                     )
+                elif parameter[0] not in [
+                    "radius",
+                ]:
+                    handler.add_method(
+                        set_name,
+                        f'get_{parameter[0]}',
+                    )
+                    handler.add_method(
+                        set_name,
+                        f'set_{parameter[0]}',
+                    )
+
             handler.add_getter(set_name, 'get_radius')
             handler.add_getter(
                 set_name, 'get_surface_velocity', names=('surface_velocity',)
@@ -3394,6 +3406,10 @@ class Genec(StellarEvolution, InternalStellarStructure):
             handler.add_method(set_name, 'get_eps_si_adv_profile')
             handler.add_method(set_name, 'get_eps_grav_profile')
             handler.add_method(set_name, 'get_eps_nu_profile')
+            handler.add_method(set_name, 'get_nabla_rad_profile')
+            handler.add_method(set_name, 'get_nabla_ad_profile')
+            handler.add_method(set_name, 'get_nabla_mu_profile')
+            handler.add_method(set_name, 'get_luminosity_profile')
             handler.add_method(set_name, 'get_cumulative_mass_profile')
             handler.add_method(set_name, 'get_mass_fraction_at_zone')
 
@@ -3523,6 +3539,9 @@ class Genec(StellarEvolution, InternalStellarStructure):
             handler.add_method(state, 'set_time_step')
         for state in ["!UPDATE"]:
             handler.add_method(state, "set_bintide")
+            handler.add_method(state, "set_zams_velocity")
+        for state in ["!EDIT"]:
+            handler.add_method(state, "set_zams_velocity")
 
         handler.add_method('UPDATE', 'set_n_snap')
         # handler.add_method('UPDATE', 'set_ipoly')
@@ -3724,6 +3743,70 @@ class Genec(StellarEvolution, InternalStellarStructure):
         frac_profile = self.get_mass_profile(
             indices_of_the_stars, number_of_zones=number_of_zones)
         return frac_profile.cumsum()
+
+    def get_nabla_rad_profile(
+        self,
+        indices_of_the_stars,
+        number_of_zones=None,
+    ):
+        indices_of_the_stars = self._check_number_of_indices(
+            indices_of_the_stars,
+            action_string="Querying nabla_rad profiles"
+        )
+        if number_of_zones is None:
+            number_of_zones = self.get_m(indices_of_the_stars)
+        return self.get_nabla_rad_at_zone(
+            [indices_of_the_stars]*number_of_zones,
+            list(range(number_of_zones)) | units.none
+        )
+
+    def get_nabla_ad_profile(
+        self,
+        indices_of_the_stars,
+        number_of_zones=None,
+    ):
+        indices_of_the_stars = self._check_number_of_indices(
+            indices_of_the_stars,
+            action_string="Querying nabla_ad profiles"
+        )
+        if number_of_zones is None:
+            number_of_zones = self.get_m(indices_of_the_stars)
+        return self.get_nabla_ad_at_zone(
+            [indices_of_the_stars]*number_of_zones,
+            list(range(number_of_zones)) | units.none
+        )
+
+    def get_nabla_mu_profile(
+        self,
+        indices_of_the_stars,
+        number_of_zones=None,
+    ):
+        indices_of_the_stars = self._check_number_of_indices(
+            indices_of_the_stars,
+            action_string="Querying nabla_mu profiles"
+        )
+        if number_of_zones is None:
+            number_of_zones = self.get_m(indices_of_the_stars)
+        return self.get_nabla_mu_at_zone(
+            [indices_of_the_stars]*number_of_zones,
+            list(range(number_of_zones)) | units.none
+        )
+
+    def get_luminosity_profile(
+        self,
+        indices_of_the_stars,
+        number_of_zones=None,
+    ):
+        indices_of_the_stars = self._check_number_of_indices(
+            indices_of_the_stars,
+            action_string="Querying luminosity profiles"
+        )
+        if number_of_zones is None:
+            number_of_zones = self.get_m(indices_of_the_stars)
+        return self.get_luminosity_at_zone(
+            [indices_of_the_stars]*number_of_zones,
+            list(range(number_of_zones)) | units.none
+        )
 
     def get_internal_structure(self, index_of_the_star):
         internal_structure = {
