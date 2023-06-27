@@ -394,12 +394,12 @@ GENEC_STAR_VARIOUS = {
 GENEC_STAR_PROPERTIES = {
     # 'GENEC name: [dtype, unit, description, AMUSE name (empty = not used)]
     'gms': ['float64', 'MSun', "total mass", "mass"],
-    'alter': ['float64', 'yr', "stellar age", "age"],
+    'alter': ['float64', 'julianyr', "stellar age", "age"],
     'gls': ['float64', 'LSun', "stellar luminosity", "luminosity"],
     'teff': ['float64', 'K', "effective temperature", "temperature"],
     'glsv': ['float64', 'LSun', "previous luminosity"],
     'teffv': ['float64', 'K', "previous temperature"],
-    'dzeitj': ['float64', 'yr', "time step (yr)", ""],
+    'dzeitj': ['float64', 'julianyr', "time step (julian yr)", ""],
     'dzeit': ['float64', 's', "time step (s)", ""],
     'dzeitv': ['float64', 's', "previous time step", ""],
     'xmini': ['float64', 'MSun', "initial mass", "initial_mass"],
@@ -554,6 +554,7 @@ GENEC_ZONE_DERIVED = {
 }
 
 ALL_SETTERS = {
+    **GENEC_AMUSE_SPECIFIC,
     **GENEC_STAR_CHARACTERISTICS,
     **GENEC_STAR_PHYSICS,
     **GENEC_STAR_COMPOSITION,
@@ -638,6 +639,21 @@ class GenecInterface(
     def commit_parameters():
         returns ()
 
+    @remote_function
+    def evolve_model(end_time='float64' | units.s):
+        returns ()
+
+    # @remote_function
+    # def new_particle(
+    #     mass=units.MSun,
+    #     metallicity=0.014,
+    #     zams_velocity=0.0,
+    #     star_name='AmuseStar',
+    #     magnetic=0,
+    #     anisotropic=0,
+    # ):
+    #     returns (index_of_the_particle='int32')
+
     @legacy_function
     def new_particle():
         """
@@ -647,28 +663,14 @@ class GenecInterface(
         function.can_handle_array = False
         function.addParameter(
             'index_of_the_particle', dtype='int32', direction=function.OUT,
-            description=(
-                "The new index for the star. This index can be used to refer "
-                "to this star in other functions"
-            )
         )
-        function.addParameter(
-            'mass', dtype='float64', direction=function.IN,
-            description="The initial mass of the star")
-        function.addParameter(
-            'metallicity', dtype='float64', direction=function.IN,
-            default=0.014,
-            description="The initial metallicity of the star (default: 0.014)")
-        function.addParameter(
-            'zams_velocity', dtype='float64', direction=function.IN,
-            default=0.0,
-            description="The desired ZAMS velocity of the star (default: 0.0)")
-        function.addParameter(
-            'star_name', dtype='string', direction=function.IN,
-            default='AmuseStar', description="The star's name")
-        # function.addParameter(
-        #     'age_tag', dtype='float64', direction=function.IN,
-        #     description="Starting age of the star *to be specified exactly*")
+        function.addParameter('mass', dtype='float64', direction=function.IN)
+        function.addParameter('metallicity', dtype='float64', direction=function.IN, default=0.014,)
+        function.addParameter('zams_velocity', dtype='float64', direction=function.IN, default=0.0,)
+        function.addParameter('star_name', dtype='string', direction=function.IN, default='AmuseStar',)
+        function.addParameter('magnetic', dtype='i', direction=function.IN, default=0,)
+        function.addParameter('anisotropic', dtype='i', direction=function.IN, default=0,)
+
         function.result_type = 'int32'
         function.result_doc = """
         0 - OK
@@ -3440,6 +3442,7 @@ class Genec(StellarEvolution, InternalStellarStructure):
 
             handler.add_method(set_name, 'evolve_one_step')
             handler.add_method(set_name, 'evolve_for')
+            handler.add_method(set_name, 'evolve_model')
             handler.set_delete(set_name, 'delete_star')
 
             handler.add_method(set_name, 'get_star_name')
@@ -3498,14 +3501,19 @@ class Genec(StellarEvolution, InternalStellarStructure):
         # Initialized (initialize_code)
         handler.add_transition('UNINITIALIZED', 'INITIALIZED', 'initialize_code')
 
+        # handler.add_method(state, "set_bintide")
+        # handler.add_method(state, "set_zams_velocity")
         # -> Edit (commit_parameters)
         handler.add_transition('INITIALIZED', 'EDIT', 'commit_parameters')
         # handler.add_method('EDIT', 'set_star_name')
-        handler.add_method('EDIT', 'new_particle')
-        handler.add_method('UPDATE', 'new_particle')
 
-        handler.add_transition(
-            'RUN', 'UPDATE', 'finalize_stellar_model', False)
+        for method in (
+            "new_particle",
+            "new_particle_from_model", "new_stellar_model",
+            "set_abelx_at_zone", "set_vabelx_at_zone", "set_nbzel",
+            "set_nbael", "set_abels", "set_xnetalu"
+        ):
+            handler.add_method('EDIT', method)
 
         # -> Run (commit_particles)
         handler.add_transition('EDIT', 'RUN', 'commit_particles')
@@ -3514,57 +3522,42 @@ class Genec(StellarEvolution, InternalStellarStructure):
         # -> Update
         handler.add_transition('RUN', 'UPDATE', 'finalize_stellar_model')
 
-        for state in ["EDIT", "UPDATE"]:
-            for method in (
-                "new_particle_from_model", "new_stellar_model",
-                "set_abelx_at_zone", "set_vabelx_at_zone", "set_nbzel",
-                "set_nbael", "set_abels", "set_xnetalu"
-            ):
-                handler.add_method(state, method)
+        for parameter in ALL_GETTERS:
+            handler.add_method('UPDATE', f'get_{parameter}')
+        # handler.add_method('UPDATE', 'get_internal_structure')
+        handler.add_method('UPDATE', 'get_radius')
+        handler.add_method('UPDATE', 'get_number_of_species')
+        handler.add_method('UPDATE', 'get_temperature')
+        handler.add_method('UPDATE', 'get_luminosity')
+        handler.add_method('UPDATE', 'get_time_step')
+        handler.add_method('UPDATE', 'get_mass')
+        handler.add_method('UPDATE', 'get_age')
+        handler.add_method('UPDATE', 'get_surface_velocity')
+        handler.add_method('UPDATE', 'get_chemical_abundance_profiles')
+        handler.add_method('UPDATE', 'get_mass_fraction_at_zone')
+        handler.add_method('UPDATE', 'get_mass_fraction_of_species_at_zone')
+        handler.add_method('UPDATE', 'get_mu_at_zone')
+        handler.add_method('UPDATE', 'get_pressure_at_zone')
+        handler.add_method('UPDATE', 'get_radius_at_zone')
+        # handler.add_method('UPDATE', 'get_eps_at_zone')
+        # handler.add_method('UPDATE', 'get_epsy_at_zone')
+        # handler.add_method('UPDATE', 'get_eps_c_adv_at_zone')
+        # handler.add_method('UPDATE', 'get_eps_ne_adv_at_zone')
+        # handler.add_method('UPDATE', 'get_eps_o_adv_at_zone')
+        # handler.add_method('UPDATE', 'get_eps_si_adv_at_zone')
+        # handler.add_method('UPDATE', 'get_eps_grav_at_zone')
+        # handler.add_method('UPDATE', 'get_eps_nu_at_zone')
+        handler.add_method('UPDATE', 'get_temperature_at_zone')
+        handler.add_method('UPDATE', 'get_density_at_zone')
+        # handler.add_method('UPDATE', 'get_luminosity_at_zone')
+        for species in SPECIES_NAMES:
+            handler.add_method(
+                'UPDATE', f'get_mass_fraction_of_{species}_at_zone'
+            )
 
-        for state in ["UPDATE", "RUN"]:
-            for parameter in ALL_GETTERS:
-                handler.add_method(state, f'get_{parameter[0]}')
-            handler.add_method(state, 'get_internal_structure')
-            handler.add_method(state, 'get_radius')
-            handler.add_method(state, 'get_number_of_species')
-            handler.add_method(state, 'get_temperature')
-            handler.add_method(state, 'get_luminosity')
-            handler.add_method(state, 'get_time_step')
-            handler.add_method(state, 'get_mass')
-            handler.add_method(state, 'get_age')
-            handler.add_method(state, 'get_surface_velocity')
-
-            handler.add_method(state, 'get_chemical_abundance_profiles')
-            handler.add_method(state, 'get_mass_fraction_at_zone')
-            handler.add_method(state, 'get_mass_fraction_of_species_at_zone')
-            handler.add_method(state, 'get_mu_at_zone')
-            handler.add_method(state, 'get_pressure_at_zone')
-            handler.add_method(state, 'get_radius_at_zone')
-            # handler.add_method(state, 'get_eps_at_zone')
-            # handler.add_method(state, 'get_epsy_at_zone')
-            # handler.add_method(state, 'get_eps_c_adv_at_zone')
-            # handler.add_method(state, 'get_eps_ne_adv_at_zone')
-            # handler.add_method(state, 'get_eps_o_adv_at_zone')
-            # handler.add_method(state, 'get_eps_si_adv_at_zone')
-            # handler.add_method(state, 'get_eps_grav_at_zone')
-            # handler.add_method(state, 'get_eps_nu_at_zone')
-            handler.add_method(state, 'get_temperature_at_zone')
-            handler.add_method(state, 'get_density_at_zone')
-            # handler.add_method(state, 'get_luminosity_at_zone')
-            for species in SPECIES_NAMES:
-                handler.add_method(
-                    state, f'get_mass_fraction_of_{species}_at_zone'
-                )
-        for state in ["EDIT", "UPDATE", "!RUN"]:
-            for parameter in ALL_SETTERS:
-                handler.add_method(state, f'set_{parameter[0]}')
-            handler.add_method(state, 'set_time_step')
-        for state in ["!UPDATE"]:
-            handler.add_method(state, "set_bintide")
-            handler.add_method(state, "set_zams_velocity")
-        for state in ["!EDIT"]:
-            handler.add_method(state, "set_zams_velocity")
+        for parameter in ALL_SETTERS:
+            handler.add_method('UPDATE', f'set_{parameter[0]}')
+        handler.add_method('UPDATE', 'set_time_step')
 
         handler.add_method('UPDATE', 'set_n_snap')
         # handler.add_method('UPDATE', 'set_ipoly')
@@ -3594,7 +3587,11 @@ class Genec(StellarEvolution, InternalStellarStructure):
         StellarEvolution.define_methods(self, handler)
         handler.add_method(
             "new_particle",
-            (units.MSun, handler.NO_UNIT, handler.NO_UNIT, handler.NO_UNIT),
+            (
+                units.MSun,
+                handler.NO_UNIT, handler.NO_UNIT, handler.NO_UNIT,
+                handler.NO_UNIT, handler.NO_UNIT,
+            ),
             (handler.INDEX, handler.ERROR_CODE)
         )
 
@@ -3615,6 +3612,12 @@ class Genec(StellarEvolution, InternalStellarStructure):
             "get_surface_velocity",
             (handler.INDEX),
             (units.km/units.s, handler.ERROR_CODE,)
+        )
+
+        handler.add_method(
+            "evolve_for",
+            (handler.INDEX, units.julianyr),
+            (handler.ERROR_CODE,)
         )
 
     def get_eps_profile(

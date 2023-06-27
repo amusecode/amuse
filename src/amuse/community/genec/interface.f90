@@ -100,7 +100,8 @@ subroutine init_or_restore_star(Star)
   !nwseqini = nwseq
 
   ! Initial model
-  if (modanf == 0) then
+  if (.not.Star%initialised) then
+    write(*,*) "Unititialised star, initialising"
 ! security if initial file is missing the iprezams parameter
     if (vwant>epsilon(vwant) .and. iprezams==0) then
       write(*,*) 'VWANT/=0 --> IPREZAMS set to 1'
@@ -196,8 +197,8 @@ subroutine init_or_restore_star(Star)
     vs(:)=vs(:)*um
     veryFirst = .true.
 
-  else ! modanf > 0
-
+  else ! already initialised
+    write(*,*) "Already initialised star, just copying"
     call copy_structure_from_genec_star(Star)
     !write(*,*) 's1/vs1 (helpers): ', s(1), vs(1)
 
@@ -236,7 +237,7 @@ subroutine init_or_restore_star(Star)
     !write(*,*) 'call fitmshift'
     !call fitmshift
 
-  endif ! modanf
+  endif ! Star%initialised
 
   ! ftfp initialisation
   call initgeo
@@ -267,6 +268,9 @@ integer function initialize_code()
     !io_logs = 6
     input_dir = "./src/GENEC/code"
     call initialise_genec()
+    ! Send output to /dev/null
+    open(io_logs, file='/dev/null', status='unknown',form='formatted',access='append')
+    
 
     initialize_code = 0
 end function
@@ -280,7 +284,9 @@ integer function read_genec_model(index_of_the_star, cardfilename)
 end function
 
 integer function cleanup_code()
+    use io_definitions
     implicit none
+    close(io_logs)
     cleanup_code = 0
 end function
 
@@ -306,11 +312,12 @@ integer function get_min_timestep_stop_condition(min_timestep_stop_condition)
     get_min_timestep_stop_condition = 0
 end function
 
-function finalize_stellar_model()
+integer function finalize_stellar_model()
+    !use genec, only: finalise
     implicit none
-    integer:: finalize_stellar_model
+    write(*,*) "FINALIZE_STELLAR_MODEL"
     !write(*,*) "copy to GenecStar"
-    !call copy_to_genec_star(GenecStar)
+    call copy_to_genec_star(GenecStar)
     !write(*,*) GenecStar
     finalize_stellar_model = 0
 end function
@@ -388,15 +395,23 @@ end subroutine restore_network
 function commit_particles()
     use genec, only: initialise_star
     use genec, only: evolve, modell, finalise, veryFirst
+    use genec, only: nzmod, modanf, m
     implicit none
     integer:: commit_particles
+    integer:: nzmod_tmp
     ! makeini will actually override some things from set_defaults now! FIXME
 
     call copy_from_genec_star(GenecStar)
     call init_or_restore_star(GenecStar)
-    GenecStar%initialised = .true.
-    call evolve()
-    call finalise()
+    if (.not. GenecStar%initialised) then
+        GenecStar%initialised = .true.
+        nzmod_tmp = nzmod
+        nzmod = 1
+        call evolve()
+        !modanf = 1
+        nzmod = nzmod_tmp
+        call finalise()
+    endif
     call copy_to_genec_star(GenecStar)
     veryFirst = .false.
     commit_particles = 0
@@ -409,59 +424,58 @@ function delete_star(index_of_the_star)
     delete_star = -1  ! not supported
 end function
 
-function evolve_model(end_time)
+integer function evolve_model(end_time)
+    use inputparam, only: end_at_time
     use timestep, only: alter
+    use genec, only: evolve
     implicit none
     real(kindreal):: end_time
-    integer:: evolve_model
     !stopping_condition = ""
+    end_at_time = end_time
+    call evolve()
 
-    do while (alter < end_time)
-        !if (stopping_condition == "") then
-        write(*,*) "Current time: ", alter, ", evolving to: ", end_time
-        evolve_model = evolve_one_step(0)
-    end do
+    !do while (alter < end_time)
+    !    !if (stopping_condition == "") then
+    !    !write(*,*) "Current time: ", alter, ", evolving to: ", end_time
+    !    evolve_model = evolve_one_step(0)
+    !end do
     !call copy_to_genec_star(GenecStar)
-    evolve_model = 0
+    evolve_model = 0  !finalize_stellar_model()
+    
 end function
 
-function evolve_for(index_of_the_star, time)
+integer function evolve_for(index_of_the_star, time)
     ! get current time
     ! set max time to current time plus argument
     ! evolve
+    use inputparam, only: end_at_time
     use timestep, only: alter
+    use genec, only: evolve
     implicit none
     integer:: index_of_the_star
-    real(kindreal):: time, end_time
-    integer:: evolve_for
-    end_time = alter+time
-    do while (alter < end_time)
-        write(*,*) "Current time: ", alter, ", evolving to: ", end_time
-        evolve_for = evolve_one_step(index_of_the_star)
-    end do
+    real(kindreal):: time
+    end_at_time = alter+time
+    write(*,*) "end_at_time: ", end_at_time
+    call evolve()
+    !do while (alter < end_time)
+        !write(*,*) "Current time: ", alter, ", evolving to: ", end_time
+        !evolve_for = evolve_one_step(index_of_the_star)
+    !end do
     !call copy_to_genec_star(GenecStar)
 
-    evolve_for = 0
+    evolve_for = 0  !finalize_stellar_model()
 end function
 
-function evolve_one_step(index_of_the_star)
-    use timestep, only: alter
-    use WriteSaveClose, only: OpenAll
-    use genec, only: evolve, modell, finalise, veryFirst
-    use inputparam,only: modanf,nwseq,nzmod,end_at_phase,end_at_model
-    use genec, only: n_snap
-    use genec, only: m
-    use abundmod, only: x
+integer function evolve_one_step(index_of_the_star)
+    use caramodele, only: nwmd
+    use genec, only: evolve, finalise, veryFirst, modanf
     implicit none
     integer:: index_of_the_star
-    integer:: evolve_one_step
-    integer:: original_nzmod
 
     call evolve()
-    call finalise()
-    veryFirst = .false.
-    call copy_to_genec_star(GenecStar)
-    evolve_one_step = 0
+    nwmd = nwmd+1
+
+    evolve_one_step = 0  !finalize_stellar_model()
 end function
 
 function write_genec_model()
@@ -1120,11 +1134,20 @@ function get_time(time)
     get_time = 0
 end function
 
-function new_particle(index_of_the_star, initial_mass, initial_metallicity, zams_velocity, star_name)
+function new_particle(&
+                index_of_the_star,&
+                initial_mass,&
+                initial_metallicity,&
+                zams_velocity,&
+                star_name,&
+                magnetic,&
+                anisotropic&
+                )
     use makeini, only: make_initial_star
     implicit none
     integer:: index_of_the_star, key
     real(kindreal):: initial_mass, initial_metallicity, zams_velocity
+    integer:: magnetic, anisotropic
     integer:: new_particle
     character(len=12):: star_name
     number_of_stars = number_of_stars + 1
@@ -1134,6 +1157,8 @@ function new_particle(index_of_the_star, initial_mass, initial_metallicity, zams
     GenecStar%initial_metallicity = initial_metallicity
     GenecStar%zams_velocity = zams_velocity
     GenecStar%idefaut = 1
+    GenecStar%imagn = magnetic
+    GenecStar%ianiso = anisotropic
     index_of_the_star = GenecStar%index_of_the_star
 
     call make_initial_star()
@@ -5718,27 +5743,48 @@ end function set_xnetalu
 
 function new_stellar_model(&
       index_of_the_star,&
-      modell,veryFirst,&
-      initialised,star_name,nwmd,nwseq,modanf,nzmod,end_at_phase,end_at_model,&
-      irot,isol,imagn,ialflu,ianiso,ipop3,ibasnet,phase,var_rates,bintide,binm2,periodini,const_per,iprezams,&
-      initial_metallicity,zsol,z,iopac,ikappa,&
-      idiff,iadvec,istati,icoeff,fenerg,richac,igamma,frein,K_Kawaler,&
-      Omega_saturation,rapcrilim,zams_velocity,xfom,omega,xdial,idialo,idialu,Add_Flux,diff_only,B_initial,&
-      add_diff,n_mag,alpha_F,nsmooth,qminsmooth,&
-      imloss,fmlos,ifitm,fitm,fitmi,fitmi_default,deltal,deltat,nndr,RSG_Mdot,SupraEddMdot,Be_mdotfrac,start_mdot,&
-      iledou,idifcon,iover,elph,my,dovhp,iunder,dunder,&
-      gkorm,alph,agdr,faktor,dgrp,dgrl,dgry,dgrc,dgro,dgr20,nbchx,nrband,&
-      xcn,islow,icncst,tauH_fit,&
-      display_plot,iauto,iprn,iout,itmin,xyfiles,idebug,itests,verbose,stop_deg,n_snap,&
-      gms,alter,gls,teff,glsv,teffv,dzeitj,dzeit,dzeitv,xmini,ab,dm_lost,m,summas,&
-      dk,rlp,rlt,rlc,rrp,rrt,rrc,rtp,rtt,rtc,tdiff,suminenv,xltotbeg,dlelexprev,radius,zams_radius,& ! new!
-      mbelx,xtefflast,xllast,xrholast,xclast,xtclast,inum,nsugi,period,r_core,vna,vnr,&
-      q,p,t,r,s,x,y3,y,xc12,xc13,&
-      xn14,xn15,xo16,xo17,xo18,xne20,xne22,xmg24,xmg25,xmg26,xf19,xne21,xna23,xal27,xsi28,xc14,&
-      xf18,xal26,xneut,xprot,omegi,xbid,xbid1,vp,vt,vr,vs,vx,vy,vy3,vxc12,vxc13,vxn14,vxn15,vxo16,&
-      vxo17,vxo18,vxne20,vxne22,vxmg24,vxmg25,vxmg26,vxf19,vxne21,vxna23,vxal27,vxsi28,vxc14,vxf18,&
-      vxal26,vxneut,vxprot,vomegi,vxbid,vxbid1,&
-      xlostneu,&
+      modell,veryFirst,initialised,star_name,nwmd,&
+      nwseq,modanf,nzmod,end_at_phase,end_at_model,&
+      irot,isol,imagn,ialflu,ianiso,&
+      ipop3,ibasnet,phase,var_rates,bintide,&
+      binm2,periodini,const_per,iprezams,initial_metallicity,&
+      zsol,z,iopac,ikappa,idiff,&
+      iadvec,istati,icoeff,fenerg,richac,&
+      igamma,frein,K_Kawaler,Omega_saturation,rapcrilim,&
+      zams_velocity,xfom,omega,xdial,idialo,&
+      idialu,Add_Flux,diff_only,B_initial,add_diff,&
+      n_mag,alpha_F,nsmooth,qminsmooth,imloss,&
+      fmlos,ifitm,fitm,fitmi,fitmi_default,&
+      deltal,deltat,nndr,RSG_Mdot,SupraEddMdot,&
+      Be_mdotfrac,start_mdot,iledou,idifcon,iover,&
+      elph,my,dovhp,iunder,dunder,&
+      gkorm,alph,agdr,faktor,dgrp,&
+      dgrl,dgry,dgrc,dgro,dgr20,&
+      nbchx,nrband,xcn,islow,icncst,&
+      tauH_fit,display_plot,iauto,iprn,iout,&
+      itmin,xyfiles,idebug,itests,verbose,&
+      stop_deg,n_snap,gms,alter,gls,&
+      teff,glsv,teffv,dzeitj,dzeit,&
+      dzeitv,xmini,ab,dm_lost,m,&
+      summas,dk,rlp,rlt,rlc,&
+      rrp,rrt,rrc,rtp,rtt,&
+      rtc,tdiff,suminenv,xltotbeg,dlelexprev,&
+      radius,zams_radius,mbelx,xtefflast,xllast,&
+      xrholast,xclast,xtclast,inum,nsugi,&
+      period,r_core,vna,vnr,q,&
+      p,t,r,s,x,&
+      y3,y,xc12,xc13,xn14,&
+      xn15,xo16,xo17,xo18,xne20,&
+      xne22,xmg24,xmg25,xmg26,xf19,&
+      xne21,xna23,xal27,xsi28,xc14,&
+      xf18,xal26,xneut,xprot,omegi,&
+      xbid,xbid1,vp,vt,vr,&
+      vs,vx,vy,vy3,vxc12,&
+      vxc13,vxn14,vxn15,vxo16,vxo17,&
+      vxo18,vxne20,vxne22,vxmg24,vxmg25,&
+      vxmg26,vxf19,vxne21,vxna23,vxal27,&
+      vxsi28,vxc14,vxf18,vxal26,vxneut,&
+      vxprot,vomegi,vxbid,vxbid1,xlostneu,&
       n&
       )
     implicit none
@@ -6090,7 +6136,7 @@ function new_stellar_model(&
     !GenecStar%abelx(:,:) = 0.
     !GenecStar%vabelx(:,:) = 0.
 
-    !call copy_from_genec_star(GenecStar)
+    call copy_from_genec_star(GenecStar)
     new_stellar_model = 0
 end function new_stellar_model
 
