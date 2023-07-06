@@ -53,7 +53,7 @@ clean:
 #	make -C src clean
 
 distclean: clean
-	rm -rf src $(FILELIST)
+	rm -rf src
 
 #$(CODELIB):
 #	make -C src all
