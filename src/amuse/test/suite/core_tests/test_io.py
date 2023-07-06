@@ -10,7 +10,7 @@ from amuse.units import units
 from amuse import datamodel
 
 
-class TestFileFormatProcessor(base.FileFormatProcessor):
+class ForTestFileFormatProcessor(base.FileFormatProcessor):
     """
     Save files in a test format
 
@@ -21,7 +21,7 @@ class TestFileFormatProcessor(base.FileFormatProcessor):
 
     def __init__(self, filename=None, set=None, format=None):
         base.FileFormatProcessor.__init__(self, filename, set, format)
-        TestFileFormatProcessor.instance = self
+        ForTestFileFormatProcessor.instance = self
         self.stored = False
 
     @base.format_option
@@ -44,24 +44,24 @@ class TestFileFormatProcessor(base.FileFormatProcessor):
 class FrameworkTests(amusetest.TestCase):
 
     def test1(self):
-        options = TestFileFormatProcessor.get_options()
+        options = ForTestFileFormatProcessor.get_options()
         self.assertTrue('add_comma' in options)
         self.assertTrue('save_fast' in options)
-        TestFileFormatProcessor.register()
+        ForTestFileFormatProcessor.register()
         base.write_set_to_file(None, "test.txt", format="123")
-        self.assertEqual(TestFileFormatProcessor.instance.set, None)
-        self.assertEqual(TestFileFormatProcessor.instance.filename, "test.txt")
-        self.assertEqual(TestFileFormatProcessor.instance.format, "123")
-        self.assertTrue(TestFileFormatProcessor.instance.stored)
-        self.assertTrue(TestFileFormatProcessor.instance.add_comma)
+        self.assertEqual(ForTestFileFormatProcessor.instance.set, None)
+        self.assertEqual(ForTestFileFormatProcessor.instance.filename, "test.txt")
+        self.assertEqual(ForTestFileFormatProcessor.instance.format, "123")
+        self.assertTrue(ForTestFileFormatProcessor.instance.stored)
+        self.assertTrue(ForTestFileFormatProcessor.instance.add_comma)
 
     def test2(self):
-        TestFileFormatProcessor.register()
+        ForTestFileFormatProcessor.register()
         base.write_set_to_file(None, "test.txt", format="123", add_comma=False)
-        self.assertFalse(TestFileFormatProcessor.instance.add_comma)
+        self.assertFalse(ForTestFileFormatProcessor.instance.add_comma)
 
     def test3(self):
-        TestFileFormatProcessor.register()
+        ForTestFileFormatProcessor.register()
         documentation = base.write_set_to_file.__doc__
         self.assertTrue("**123**,\n      Save files in a test format" in documentation)
 

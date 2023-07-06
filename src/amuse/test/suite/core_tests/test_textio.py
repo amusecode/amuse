@@ -3,6 +3,7 @@ from io import StringIO
 import textwrap
 import os
 import numpy
+import tempfile
 
 from amuse import io
 from amuse.io import text
@@ -72,12 +73,12 @@ class TableFormattedTextTests(amusetest.TestCase):
         x = datamodel.Particles(2)
         x.mass = [1.0, 2.0] | units.MSun
         x.radius = [3.0, 4.0] | units.RSun
-        io.write_set_to_file(x, "test.csv", "txt", attribute_types=(units.MSun, units.RSun))
-        with open("test.csv", "r") as f:
-            contents = f.read()
+        with tempfile.NamedTemporaryFile() as tmp:
+            filename = tmp.name
+            io.write_set_to_file(x, filename, "txt", attribute_types=(units.MSun, units.RSun))
+            with open(filename, "r") as f:
+                contents = f.read()
         self.assertEqual("#mass radius\n#MSun RSun\n1.0 3.0\n2.0 4.0\n", contents)
-
-        os.remove("test.csv")
 
     def test4(self):
         mass = [1.0, 2.0, 3.0] | generic_unit_system.mass
@@ -101,30 +102,31 @@ class TableFormattedTextTests(amusetest.TestCase):
             "#mass radius\n#MSun RSun\n1.0 3.0 {0}\n2.0 4.0 {1}\n".format(x[0].key, x[1].key),
         ]
         for column_index, expected_content in enumerate(expected):
-            io.write_set_to_file(
-                x,
-                "test.csv",
-                "txt",
-                key_in_column=column_index,
-                attribute_types=(units.MSun, units.RSun)
-            )
+            with tempfile.NamedTemporaryFile() as tmp:
+                filename = tmp.name
+                io.write_set_to_file(
+                    x,
+                    filename,
+                    "txt",
+                    key_in_column=column_index,
+                    attribute_types=(units.MSun, units.RSun)
+                )
 
-            with open("test.csv", "r") as f:
-                contents = f.read()
+                with open(filename, "r") as f:
+                    contents = f.read()
 
-            self.assertEqual(expected_content, contents)
+                self.assertEqual(expected_content, contents)
 
-            y = io.read_set_from_file(
-                "test.csv",
-                "txt",
-                key_in_column=column_index,
-                attribute_types=(units.MSun, units.RSun),
-                attribute_names=('mass', 'radius')
-            )
+                y = io.read_set_from_file(
+                    filename,
+                    "txt",
+                    key_in_column=column_index,
+                    attribute_types=(units.MSun, units.RSun),
+                    attribute_names=('mass', 'radius')
+                )
 
             self.assertEqual(y[0], x[0])
             self.assertEqual(y[1], x[1])
-        os.remove("test.csv")
 
     def test6(self):
         p = datamodel.Particles(2)
@@ -154,20 +156,20 @@ class TableFormattedTextTests(amusetest.TestCase):
         self.assertEqual("#a b c\n#- m m\n1.0 2.0 3.0\n4.0 5.0 6.0\n", contents)
 
     def test8(self):
-        table = io.ReportTable(
-            "test.csv",
-            "txt",
-            attribute_types=(units.MSun, units.RSun)
-        )
-        table.add_row(1.0 | units.MSun, 3.0 | units.RSun)
-        table.add_row(2.0 | units.MSun, 4.0 | units.RSun)
-        table.close()
+        with tempfile.NamedTemporaryFile() as tmp:
+            filename = tmp.name
+            table = io.ReportTable(
+                filename,
+                "txt",
+                attribute_types=(units.MSun, units.RSun)
+            )
+            table.add_row(1.0 | units.MSun, 3.0 | units.RSun)
+            table.add_row(2.0 | units.MSun, 4.0 | units.RSun)
+            table.close()
 
-        with open("test.csv", "r") as f:
-            contents = f.read()
+            with open(filename, "r") as f:
+                contents = f.read()
         self.assertEqual("#MSun RSun\n1.0 3.0\n2.0 4.0\n", contents)
-
-        os.remove("test.csv")
 
     def test9(self):
         p = datamodel.Particles(5)
@@ -175,26 +177,28 @@ class TableFormattedTextTests(amusetest.TestCase):
         p.b = [10, 11, 12, 13, 14] | units.m
         p.c = [20, 21, 22, 23, 24] | units.m
 
-        io.write_set_to_file(
-            p,
-            "test.csv",
-            "txt",
-            attribute_names=('a', 'b', 'c'),
-            attribute_types=(None, units.m, units.m),
-            maximum_number_of_lines_buffered=1,
-        )
-        with open("test.csv", "r") as f:
-            contents = f.read()
+        with tempfile.NamedTemporaryFile() as tmp:
+            filename = tmp.name
+            io.write_set_to_file(
+                p,
+                filename,
+                "txt",
+                attribute_names=('a', 'b', 'c'),
+                attribute_types=(None, units.m, units.m),
+                maximum_number_of_lines_buffered=1,
+            )
+            with open(filename, "r") as f:
+                contents = f.read()
 
-        expected_contents = '#a b c\n#- m m\n1.0 10.0 20.0\n2.0 11.0 21.0\n3.0 12.0 22.0\n4.0 13.0 23.0\n5.0 14.0 24.0\n'
-        self.assertEqual(expected_contents, contents)
-        p2 = io.read_set_from_file(
-            "test.csv",
-            "txt",
-            attribute_names=('a', 'b', 'c'),
-            attribute_types=(None, units.m, units.m),
-            maximum_number_of_lines_buffered=1,
-        )
+            expected_contents = '#a b c\n#- m m\n1.0 10.0 20.0\n2.0 11.0 21.0\n3.0 12.0 22.0\n4.0 13.0 23.0\n5.0 14.0 24.0\n'
+            self.assertEqual(expected_contents, contents)
+            p2 = io.read_set_from_file(
+                filename,
+                "txt",
+                attribute_names=('a', 'b', 'c'),
+                attribute_types=(None, units.m, units.m),
+                maximum_number_of_lines_buffered=1,
+            )
         self.assertAlmostRelativeEquals(p2.a, p.a)
         self.assertAlmostRelativeEquals(p2.b, p.b)
         self.assertAlmostRelativeEquals(p2.c, p.c)
@@ -204,27 +208,29 @@ class TableFormattedTextTests(amusetest.TestCase):
         p.a = [1.0, 2.0, 3.0, 4.0, 5.0]
         p.b = [10, 11, 12, 13, 14] | units.m
         p.c = [20, 21, 22, 23, 24] | units.m
-        io.write_set_to_file(
-            p,
-            "test.csv",
-            "txt",
-            attribute_names=('a', 'b', 'c'),
-            attribute_types=(None, units.m, units.m),
-            maximum_number_of_lines_buffered=1,
-            key_in_column=0
-        )
-        with open("test.csv", "r") as f:
-            contents = f.read()
-        expected_contents = '#a b c\n#- m m\n30 1.0 10.0 20.0\n31 2.0 11.0 21.0\n32 3.0 12.0 22.0\n33 4.0 13.0 23.0\n34 5.0 14.0 24.0\n'
-        self.assertEqual(expected_contents, contents)
-        p2 = io.read_set_from_file(
-            "test.csv",
-            "txt",
-            attribute_names=('a', 'b', 'c'),
-            attribute_types=(None, units.m, units.m),
-            maximum_number_of_lines_buffered=1,
-            key_in_column=0
-        )
+        with tempfile.NamedTemporaryFile() as tmp:
+            filename = tmp.name
+            io.write_set_to_file(
+                p,
+                filename,
+                "txt",
+                attribute_names=('a', 'b', 'c'),
+                attribute_types=(None, units.m, units.m),
+                maximum_number_of_lines_buffered=1,
+                key_in_column=0
+            )
+            with open(filename, "r") as f:
+                contents = f.read()
+            expected_contents = '#a b c\n#- m m\n30 1.0 10.0 20.0\n31 2.0 11.0 21.0\n32 3.0 12.0 22.0\n33 4.0 13.0 23.0\n34 5.0 14.0 24.0\n'
+            self.assertEqual(expected_contents, contents)
+            p2 = io.read_set_from_file(
+                filename,
+                "txt",
+                attribute_names=('a', 'b', 'c'),
+                attribute_types=(None, units.m, units.m),
+                maximum_number_of_lines_buffered=1,
+                key_in_column=0
+            )
         self.assertEqual(p2.key, p.key)
         self.assertAlmostRelativeEquals(p2.a, p.a)
         self.assertAlmostRelativeEquals(p2.b, p.b)
@@ -234,23 +240,25 @@ class TableFormattedTextTests(amusetest.TestCase):
         p = datamodel.Particles(200)
         p.a = 2 | units.m
 
-        io.write_set_to_file(
-            p,
-            "test.csv",
-            "txt",
-            attribute_names=('a'),
-            attribute_types=(units.m,),
-            maximum_number_of_lines_buffered=10,
-            key_in_column=0
-        )
-        p2 = io.read_set_from_file(
-            "test.csv",
-            "txt",
-            attribute_names=('a'),
-            attribute_types=(units.m,),
-            maximum_number_of_lines_buffered=10,
-            key_in_column=0
-        )
+        with tempfile.NamedTemporaryFile() as tmp:
+            filename = tmp.name
+            io.write_set_to_file(
+                p,
+                filename,
+                "txt",
+                attribute_names=('a'),
+                attribute_types=(units.m,),
+                maximum_number_of_lines_buffered=10,
+                key_in_column=0
+            )
+            p2 = io.read_set_from_file(
+                filename,
+                "txt",
+                attribute_names=('a'),
+                attribute_types=(units.m,),
+                maximum_number_of_lines_buffered=10,
+                key_in_column=0
+            )
         self.assertEqual(p2.key, p.key)
         self.assertAlmostRelativeEquals(p2.a, p.a)
 
@@ -260,30 +268,32 @@ class TableFormattedTextTests(amusetest.TestCase):
         daltons.name = ["Joe", "William", "Jack", "Averell"]
         daltons.length = [1.1, 1.4, 1.7, 2.0] | core.unit_with_specific_dtype(units.m, "float32")
         daltons.age = [21, 20, 19, 18] | core.unit_with_specific_dtype(units.yr, "int32")
-        path = os.path.abspath(os.path.join(self.get_path_to_results(), "daltons.txt"))
-        io.write_set_to_file(
-            daltons,
-            path,
-            "txt",
-            attribute_names=('name', 'length', 'age'),
-            attribute_types=(None, units.m, units.yr),
-            maximum_number_of_lines_buffered=2,
-            key_in_column=0
-        )
-        with open(path, "r") as f:
-            contents = f.read()
-        expected_contents = '#name length age\n#- m yr\n30 Joe 1.1 21\n31 William 1.4 20\n32 Jack 1.7 19\n33 Averell 2.0 18\n'
-        self.assertEqual(expected_contents, contents)
-
-        read = io.read_set_from_file(
-            path,
-            "txt",
-            attribute_names=('name', 'length', 'age'),
-            attribute_types=(None, units.m, units.yr),
-            attribute_dtypes=("str", "float32", "int32"),
-            maximum_number_of_lines_buffered=2,
-            key_in_column=0
-        )
+        with tempfile.NamedTemporaryFile() as tmp:
+            filename = tmp.name
+            path = os.path.abspath(os.path.join(self.get_path_to_results(), filename))
+            io.write_set_to_file(
+                daltons,
+                path,
+                "txt",
+                attribute_names=('name', 'length', 'age'),
+                attribute_types=(None, units.m, units.yr),
+                maximum_number_of_lines_buffered=2,
+                key_in_column=0
+            )
+            with open(path, "r") as f:
+                contents = f.read()
+            expected_contents = '#name length age\n#- m yr\n30 Joe 1.1 21\n31 William 1.4 20\n32 Jack 1.7 19\n33 Averell 2.0 18\n'
+            self.assertEqual(expected_contents, contents)
+    
+            read = io.read_set_from_file(
+                path,
+                "txt",
+                attribute_names=('name', 'length', 'age'),
+                attribute_types=(None, units.m, units.yr),
+                attribute_dtypes=("str", "float32", "int32"),
+                maximum_number_of_lines_buffered=2,
+                key_in_column=0
+            )
         self.assertEqual(read.key, daltons.key)
         self.assertEqual(read.name, daltons.name)
         self.assertEqual(read.length, daltons.length)
@@ -296,22 +306,24 @@ class TableFormattedTextTests(amusetest.TestCase):
         p = datamodel.Particles(100)
         p.a = numpy.arange(0, 1, 0.01) | units.m
 
-        path = os.path.abspath(os.path.join(self.get_path_to_results(), "test.csv"))
+        with tempfile.NamedTemporaryFile() as tmp:
+            filename = tmp.name
+            path = os.path.abspath(os.path.join(self.get_path_to_results(), filename))
 
-        io.write_set_to_file(
-            p,
-            path,
-            "amuse-txt",
-            attribute_names=('a'),
-            maximum_number_of_lines_buffered=10,
-            key_in_column=0
-        )
-        p2 = io.read_set_from_file(
-            path,
-            "txt",
-            maximum_number_of_lines_buffered=10,
-            key_in_column=0
-        )
+            io.write_set_to_file(
+                p,
+                path,
+                "amuse-txt",
+                attribute_names=('a'),
+                maximum_number_of_lines_buffered=10,
+                key_in_column=0
+            )
+            p2 = io.read_set_from_file(
+                path,
+                "txt",
+                maximum_number_of_lines_buffered=10,
+                key_in_column=0
+            )
         self.assertEqual(p2.key, p.key)
         self.assertAlmostRelativeEquals(p2.a, p.a)
 
@@ -320,19 +332,21 @@ class TableFormattedTextTests(amusetest.TestCase):
         p.a = numpy.arange(0, 1, 0.01) | units.m
         p.b = numpy.arange(0, 1, 0.01)
 
-        io.write_set_to_file(
-            p,
-            "test.csv",
-            "amuse-txt",
-            maximum_number_of_lines_buffered=10,
-            key_in_column=0
-        )
-        p2 = io.read_set_from_file(
-            "test.csv",
-            "txt",
-            maximum_number_of_lines_buffered=10,
-            key_in_column=0
-        )
+        with tempfile.NamedTemporaryFile() as tmp:
+            filename = tmp.name
+            io.write_set_to_file(
+                p,
+                filename,
+                "amuse-txt",
+                maximum_number_of_lines_buffered=10,
+                key_in_column=0
+            )
+            p2 = io.read_set_from_file(
+                filename,
+                "txt",
+                maximum_number_of_lines_buffered=10,
+                key_in_column=0
+            )
         self.assertEqual(p2.key, p.key)
         self.assertAlmostRelativeEquals(p2.a, p.a)
         self.assertAlmostRelativeEquals(p2.b, p.b)
