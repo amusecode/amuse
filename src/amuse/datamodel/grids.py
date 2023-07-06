@@ -558,13 +558,15 @@ class SubGrid(AbstractGrid):
         return [x[self._private.indices] for x in self._original_set().indices()]
         
     def __eq__(self, other):
-        if self._private.grid!=other._private.grid:
-          return False
-        else:
-          if numpy.all(numpy.array(self.indices())==numpy.array(other.indices())):
-            return True
-          else:
+        if self._private.grid != other._private.grid:
             return False
+        elif self.shape != other.shape:
+            return False
+        else:
+            if numpy.all(numpy.array(self.indices())==numpy.array(other.indices())):
+                return True
+            else:
+                return False
         
     def __ne__(self,other):
         return not(self==other)
