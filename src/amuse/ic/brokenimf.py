@@ -117,7 +117,7 @@ class MultiplePartIMF(object):
 
             result.append(factor)
         total = sum(result, 0.0)
-        return numpy.array(result)/total
+        return numpy.array(result)/total if bool(total) else numpy.array(result)
 
     def mass_mean(self):
         result = 0 | units.MSun
