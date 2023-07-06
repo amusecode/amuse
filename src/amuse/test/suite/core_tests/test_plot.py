@@ -13,6 +13,7 @@ try:
 except ImportError:
     HAS_MATPLOTLIB = False
 
+
 class TestPlot(amusetest.TestCase):
 
     def test1(self):
@@ -65,9 +66,8 @@ class TestPlot(amusetest.TestCase):
 
         self.assertEqual("[Myr]", self.xaxis().get_label_text())
         self.assertEqual("[AU]", self.yaxis().get_label_text())
-        self.assertAlmostRelativeEquals(    0., pyplot.xlim()[0], 2)
+        self.assertAlmostRelativeEquals(0., pyplot.xlim()[0], 2)
         self.assertAlmostRelativeEquals(0.0001, pyplot.xlim()[1], 1)
-       
 
     def test4(self):
         """ Test text in a plot """
@@ -81,7 +81,7 @@ class TestPlot(amusetest.TestCase):
 
         aplot.plot(x, y)
 
-        text = aplot.text(50|units.yr, 0.5|units.AU, "test text")
+        text = aplot.text(50 | units.yr, 0.5 | units.AU, "test text")
 
         self.assertEqual(50., text.get_position()[0])
         self.assertAlmostEqual(107.546995464, text.get_position()[1])
@@ -97,7 +97,7 @@ class TestPlot(amusetest.TestCase):
         y = numpy.linspace(0, 200, 100) | units.RSun
         yerr = [2e5]*len(y) | units.km
 
-        line = aplot.errorbar(x, y, yerr=yerr, capsize = 10)
+        line = aplot.errorbar(x, y, yerr=yerr, capsize=10)
         points, caps, bars = line
         bottoms, tops = caps
         error_height = tops.get_ydata()[0] - bottoms.get_ydata()[0]
@@ -116,7 +116,7 @@ class TestPlot(amusetest.TestCase):
 
         line = aplot.plot(x, y)
 
-        aplot.xlim(0|units.yr, 2e9|units.s)
+        aplot.xlim(0 | units.yr, 2e9 | units.s)
 
         self.assertAlmostEqual(0, pyplot.xlim()[0])
         self.assertAlmostEqual(63.37752924, pyplot.xlim()[1])
@@ -143,11 +143,11 @@ class TestPlot(amusetest.TestCase):
         self.assertEqual(-10, pyplot.xlim()[0])
         self.assertEqual(90, pyplot.xlim()[1])
 
-        aplot.ylim([-12, 110]|units.RSun)
+        aplot.ylim([-12, 110] | units.RSun)
         self.assertEqual(-12, pyplot.ylim()[0])
         self.assertEqual(110, pyplot.ylim()[1])
 
-        aplot.ylim(ymin=1e6|units.km)
+        aplot.ylim(ymin=1e6 | units.km)
         self.assertAlmostEqual(1.43781452, pyplot.ylim()[0])
         self.assertEqual(110, pyplot.ylim()[1])
 
@@ -185,11 +185,11 @@ class TestPlot(amusetest.TestCase):
         self.assertEqual("[m]", self.xaxis().get_label_text())
         self.assertEqual("[m]", self.yaxis().get_label_text())
 
-        con = aplot.contour(X, Y, Z, levels=[500000, 1000000]|units.cm**2)
+        con = aplot.contour(X, Y, Z, levels=[500000, 1000000] | units.cm**2)
 
         self.assertEqual([50, 100], con.get_array())
 
-        con = aplot.contour(X, Y, Z, [0.0002, 0.0003]|units.km**2)
+        con = aplot.contour(X, Y, Z, [0.0002, 0.0003] | units.km**2)
 
         self.assertEqual([200, 300], con.get_array())
 

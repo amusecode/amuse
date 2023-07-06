@@ -120,7 +120,6 @@ class TestPhantomInterface(TestWithMPI):
         self.assertEqual(1, ieos)
 
 
-
 class TestPhantom(TestWithMPI):
     def test_initialise(self):
         instance = Phantom()
