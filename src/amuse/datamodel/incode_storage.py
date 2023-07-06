@@ -1134,7 +1134,7 @@ class InCodeGridAttributeStorage(AbstractInCodeAttributeStorage):
             elif len(array_of_indices[0].shape) == 0:
                 value = returned_value[0]
             else:
-                if len(returned_value)!=numpy.product(array_of_indices[0].shape):
+                if len(returned_value)!=numpy.prod(array_of_indices[0].shape):
                     raise Exception("unexpected mismatch of array shapes")
                 if isinstance(returned_value,list):
                   returned_value=numpy.asarray(returned_value)
