@@ -558,7 +558,6 @@ class SubGrid(AbstractGrid):
         return [x[self._private.indices] for x in self._original_set().indices()]
         
     def __eq__(self, other):
-        print(self.shape, other.shape)
         if self._private.grid != other._private.grid:
             return False
         elif self.shape != other.shape:
