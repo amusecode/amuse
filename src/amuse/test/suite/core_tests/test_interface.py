@@ -1466,7 +1466,7 @@ class TestGridWithBinding5(amusetest.TestCase):
 
         def __init__(self):
             self.storage = numpy.arange(
-                numpy.product(self.shape)).reshape(self.shape)
+                numpy.prod(self.shape)).reshape(self.shape)
 
         def get_range(self):
             return (0, self.shape[0]-1, 0, self.shape[1]-1)
@@ -1520,7 +1520,7 @@ class TestGridWithBinding6(amusetest.TestCase):
 
         def __init__(self):
             self.storage = numpy.arange(
-                numpy.product(self.shape)).reshape(self.shape).astype(numpy.dtype(str))
+                numpy.prod(self.shape)).reshape(self.shape).astype(numpy.dtype(str))
 
         def get_range(self):
             return (0, self.shape[0]-1, 0, self.shape[1]-1)
