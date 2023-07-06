@@ -4,7 +4,7 @@
 #
 AC_DEFUN([AX_FFTW],[
         AC_ARG_WITH(fftw,
-             AC_HELP_STRING([--with-fftw=PFX], [Prefix where FFTW has been installed] ),
+             AS_HELP_STRING([--with-fftw=PFX],[Prefix where FFTW has been installed ]),
              [
                 test "$withval" = no && AC_MSG_WARN([fftw is a required package for some modules])
                 test "$withval" = yes || fftw_prefix="$withval" 
