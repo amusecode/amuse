@@ -24,6 +24,7 @@ from amuse.rfi.tools.create_python_worker import CreateAPythonWorker
 
 from amuse.support import exceptions
 
+
 class ForTestingInterface(PythonCodeInterface):
 
     def __init__(self, **options):
@@ -278,7 +279,7 @@ class ForTestingImplementation(object):
     def __init__(self):
         self.masses = [0.0] * 100
         self._particle_data = numpy.reshape(numpy.arange(300.0), (-1, 3))
-        self.maxindex  = 0
+        self.maxindex = 0
 
     def new_particle(self,  mass, other, index_of_the_particle):
         try:
@@ -957,7 +958,7 @@ class TestInterface(TestWithMPI):
         instance2 = self.ForTestingInterface(redirection="none")
         encoded_interface = pickle.dumps(instance1, 0)
         decoded_interface = pickle.loads(encoded_interface)
-        #pickle.loads(pickle.dumps(instance1,0))
+        # pickle.loads(pickle.dumps(instance1,0))
         portname, error = instance2.internal__open_port()
         request1 = instance2.internal__accept_on_port.asynchronous(portname)
         request2 = instance1.internal__connect_to_port.asynchronous(portname)
@@ -982,6 +983,7 @@ class TestInterface(TestWithMPI):
 
     def test28(self):
         x = self.ForTestingInterface()
+
         def next_request(index):
             if index < 3:
                 return x.sleep.asynchronous(0.1)
@@ -1003,6 +1005,7 @@ class TestInterface(TestWithMPI):
         x = self.ForTestingInterface()
         y = self.ForTestingInterface()
         sequenced_requests_indices = []
+
         def next_request(index):
             if index < 4:
                 sequenced_requests_indices.append(index)
@@ -1046,9 +1049,9 @@ class TestInterface(TestWithMPI):
     def test30(self):
         instance = self.ForTesting()
         input = [1.0, 2.0, 3.0]
-        output =  instance.sum_doubles(input, 5)
+        output = instance.sum_doubles(input, 5)
         self.assertAlmostRelativeEquals(output, [6.0, 7.0, 8.0])
-        output =  instance.sum_doubles(5, input)
+        output = instance.sum_doubles(5, input)
         self.assertAlmostRelativeEquals(output, [6.0, 7.0, 8.0])
 
     def test31(self):
@@ -1080,7 +1083,7 @@ class TestInterface(TestWithMPI):
 
     def test34(self):
         x = self.ForTestingInterface()
-        #self.assertException(x.echo_quantities_error, [20, 30, 40] | units.m)
+        # self.assertException(x.echo_quantities_error, [20, 30, 40] | units.m)
         quantity_out, error = x.echo_quantities([20, 30, 40] | units.m)
         self.assertEqual(error, 0)
         self.assertEqual(quantity_out, [200, 300, 400] | (units.m/units.s))
@@ -1118,4 +1121,3 @@ class TestInterface(TestWithMPI):
         out = x.echo_bool([True, False, True])
         self.assertEqual(out, [True, False, True])
         x.stop()
-

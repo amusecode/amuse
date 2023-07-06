@@ -12,16 +12,17 @@ from amuse.support.interface import InCodeComponentImplementation
 class BaseTestModule(object):
     def before_get_parameter(self):
         return
-        
+
     def before_set_parameter(self):
         return
-        
+
+
 class TestMethodParameterDefintions(amusetest.TestCase):
     def test1(self):
         class TestModule(BaseTestModule):
             def get_test(self):
                 return 123 | units.m
-    
+
         o = TestModule()
         set = parameters.Parameters([parameters.ModuleMethodParameterDefinition(
             "get_test",
@@ -41,20 +42,21 @@ class TestMethodParameterDefintions(amusetest.TestCase):
             "test_name",
             "a test parameter",
             0.1 | units.m)
+
         class TestModule(BaseTestModule):
             def get_test(self):
                 return self.x
+
             def set_test(self, value):
                 self.x = value
-                
+
         o = TestModule()
         set = parameters.Parameters([definition,], o)
         x = set.get_parameter("test_name")
-        x.set_value(10|units.m)
-        self.assertEqual(o.x, 10|units.m)
+        x.set_value(10 | units.m)
+        self.assertEqual(o.x, 10 | units.m)
         value = x.get_value()
-        self.assertEqual(value, 10|units.m)
-
+        self.assertEqual(value, 10 | units.m)
 
     def test3(self):
         definition = parameters.ModuleMethodParameterDefinition(
@@ -63,17 +65,19 @@ class TestMethodParameterDefintions(amusetest.TestCase):
             "test_name",
             "a test parameter",
             0.1 | units.no_unit)
+
         class TestModule(BaseTestModule):
             def get_test(self):
                 return self.x
+
             def set_test(self, value):
                 self.x = value
-    
+
         o = TestModule()
         set = parameters.Parameters([definition,], o)
         x = set.get_parameter("test_name")
-        x.set_value(10|units.none)
-        self.assertEqual(o.x, 10|units.none)
+        x.set_value(10 | units.none)
+        self.assertEqual(o.x, 10 | units.none)
         value = x.get_value()
         self.assertEqual(value, 10)
 
@@ -89,6 +93,7 @@ class TestMethodParameterDefintions(amusetest.TestCase):
         class TestModule(BaseTestModule):
             def get_test(self):
                 return self.x
+
             def set_test(self, value):
                 self.x = value
 
@@ -111,7 +116,6 @@ class TestMethodParameterDefintions(amusetest.TestCase):
 
         self.assertEqual(1 | units.km, instance.parameters.test_name)
         self.assertEqual(1000 | units.m, instance.x)
-
 
     def test5(self):
         parameter_definition = parameters.ModuleMethodParameterDefinition(
@@ -125,6 +129,7 @@ class TestMethodParameterDefintions(amusetest.TestCase):
         class TestModule(BaseTestModule):
             def get_test(self):
                 return self.x
+
             def set_test(self, value):
                 self.x = value
 
@@ -148,8 +153,6 @@ class TestMethodParameterDefintions(amusetest.TestCase):
         self.assertEqual(1 | units.km, instance.parameters.test_name)
         self.assertEqual(1000 | units.m, instance.x)
 
-
-
     def test6(self):
         parameter_definition = parameters.ModuleMethodParameterDefinition(
             "get_test",
@@ -162,6 +165,7 @@ class TestMethodParameterDefintions(amusetest.TestCase):
         class TestModule(BaseTestModule):
             def get_test(self):
                 return self.x
+
             def set_test(self, value):
                 self.x = value
 
@@ -178,15 +182,13 @@ class TestMethodParameterDefintions(amusetest.TestCase):
 
         instance = TestInterface()
 
-
         instance.parameters.test_name = "bla"
 
         self.assertEqual("bla", instance.x)
 
         instance.parameters.test_name = "bla"
-        self.assertEqual("bla", instance.x )
+        self.assertEqual("bla", instance.x)
 
-  
     def test8(self):
         parameter_definition = parameters.ModuleMethodParameterDefinition(
             "get_test",
@@ -199,9 +201,9 @@ class TestMethodParameterDefintions(amusetest.TestCase):
         class TestModule(BaseTestModule):
             def get_test(self):
                 return self.x
+
             def set_test(self, value):
                 self.x = value
-
 
         instance = TestModule()
 
@@ -210,7 +212,6 @@ class TestMethodParameterDefintions(amusetest.TestCase):
         p.set_defaults()
 
         self.assertEqual(11.0 | units.m, instance.x)
-
 
     def test9(self):
         parameter_definition = parameters.ModuleMethodParameterDefinition(
@@ -224,19 +225,19 @@ class TestMethodParameterDefintions(amusetest.TestCase):
         class TestModule(BaseTestModule):
             def get_test(self):
                 return self.x
+
             def set_test(self, value):
                 self.x = value
-
 
         instance = TestModule()
 
         p = parameters.Parameters([parameter_definition], instance)
 
-        self.assertRaises(AmuseException, lambda: p.unknown, 
-            expected_message = "tried to get unknown parameter 'unknown' for a 'TestModule' object")
+        self.assertRaises(AmuseException, lambda: p.unknown,
+            expected_message="tried to get unknown parameter 'unknown' for a 'TestModule' object")
 
         self.assertRaises(AmuseException, setattr, p, "unknown", 1.0 | units.m,
-            expected_message = "tried to set unknown parameter 'unknown' for a 'TestModule' object")
+            expected_message="tried to set unknown parameter 'unknown' for a 'TestModule' object")
 
     def test10(self):
         parameter_definition = parameters.ModuleMethodParameterDefinition(
@@ -246,26 +247,25 @@ class TestMethodParameterDefintions(amusetest.TestCase):
             "a test parameter",
             11.0 | units.m
         )
-    
+
         class TestModule(BaseTestModule):
             def get_test(self):
                 return self.x
+
             def set_test(self, value):
                 self.x = value
-    
-    
+
         instance = TestModule()
-    
+
         p = parameters.Parameters([parameter_definition], instance)
         instance.x = 1 | units.m
         self.assertEqual(p.test_name, 1 | units.m)
-        
+
         def try_set_read_only_parameter(parameter_set):
             parameter_set.test_name = 2 | units.m
-        
-        self.assertRaises(AmuseException, try_set_read_only_parameter, p, 
-            expected_message = "Could not set value for parameter 'test_name' of a 'TestModule' object, parameter is read-only")
 
+        self.assertRaises(AmuseException, try_set_read_only_parameter, p,
+            expected_message="Could not set value for parameter 'test_name' of a 'TestModule' object, parameter is read-only")
 
     def test11(self):
         parameter_definition1 = parameters.ModuleMethodParameterDefinition(
@@ -275,7 +275,7 @@ class TestMethodParameterDefintions(amusetest.TestCase):
             "a test parameter",
             11.0 | units.m
         )
-        
+
         parameter_definition2 = parameters.ModuleMethodParameterDefinition(
             "get_test1",
             "set_test1",
@@ -283,32 +283,34 @@ class TestMethodParameterDefintions(amusetest.TestCase):
             "a test parameter",
             12.0 | units.m
         )
-    
+
         class TestModule(BaseTestModule):
             def get_test(self):
                 return self.x
+
             def set_test(self, value):
                 self.x = value
+
             def get_test1(self):
                 return self.y
+
             def set_test1(self, value):
                 self.y = value
-    
-    
+
         instance = TestModule()
-    
+
         p = parameters.Parameters([parameter_definition1, parameter_definition2], instance)
         instance.x = 1 | units.m
         instance.y = 2 | units.m
         self.assertEqual(p.test_name, 1 | units.m)
         self.assertEqual(p.test_name2, 2 | units.m)
-        
+
         p.test_name = 20 | units.m
         p.send_not_set_parameters_to_code()
-        
+
         self.assertEqual(instance.x, 20 | units.m)
         self.assertEqual(instance.y, 12 | units.m)
-        
+
     def test12(self):
         parameter_definition = parameters.ModuleVectorMethodParameterDefinition(
             "get_test",
@@ -322,7 +324,7 @@ class TestMethodParameterDefintions(amusetest.TestCase):
         class TestModule(BaseTestModule):
             def get_test(self):
                 return self.x, self.y, self.z
-                
+
             def set_test(self, x, y, z):
                 self.x = x
                 self.y = y
@@ -344,18 +346,19 @@ class TestMethodParameterDefintions(amusetest.TestCase):
         self.assertTrue('test_name' in list(instance.parameters.names()))
 
         self.assertEqual([0.1, 0.2, 0.3] | units.km, instance.parameters.test_name)
-        
+
         instance.parameters.test_name = [1, 2, 3] | units.km
 
         self.assertEqual([1, 2, 3] | units.km, instance.parameters.test_name)
-        
+
         self.assertEqual(1000 | units.m, instance.x)
-        
+
+
 class TestInterfaceParameterDefintions(amusetest.TestCase):
     def test1(self):
         class TestModule(BaseTestModule):
             pass
-                
+
         o = TestModule()
         set = parameters.Parameters([parameters.InterfaceParameterDefinition(
             "test_name",
@@ -371,15 +374,16 @@ class TestInterfaceParameterDefintions(amusetest.TestCase):
             "test_name",
             "a test parameter",
             0.1 | units.m)
+
         class TestModule(BaseTestModule):
             pass
-            
+
         o = TestModule()
         set = parameters.Parameters([definition,], o)
         x = set.get_parameter("test_name")
-        x.set_value(10|units.m)
+        x.set_value(10 | units.m)
         value = x.get_value()
-        self.assertEqual(value, 10|units.m)
+        self.assertEqual(value, 10 | units.m)
 
     def test4(self):
         parameter_definition = parameters.InterfaceParameterDefinition(
@@ -391,6 +395,7 @@ class TestInterfaceParameterDefintions(amusetest.TestCase):
         class TestModule(BaseTestModule):
             def get_test(self):
                 return self.x
+
             def set_test(self, value):
                 self.x = value
 
@@ -424,10 +429,12 @@ class TestInterfaceParameterDefintions(amusetest.TestCase):
         class TestModule(BaseTestModule):
             def get_test(self):
                 return self.x
+
             def set_test(self, value):
                 self.x = value
+
             def before_(self):
-                self.before_called=True
+                self.before_called = True
                 pass
 
         class TestModuleBinding(object):
@@ -445,11 +452,12 @@ class TestInterfaceParameterDefintions(amusetest.TestCase):
 
         self.assertTrue('test_name' in list(instance.parameters.names()))
 
-        self.assertRaises(Exception,lambda: getattr(instance,"before_called"))
+        self.assertRaises(Exception, lambda: getattr(instance, "before_called"))
         instance.parameters.test_name = 1 | units.km
 
         self.assertEqual(1 | units.km, instance.parameters.test_name)
-        self.assertEqual(instance.before_called,True)
+        self.assertEqual(instance.before_called, True)
+
 
 class TestParameters(amusetest.TestCase):
     def test1(self):
@@ -466,9 +474,9 @@ class TestParameters(amusetest.TestCase):
 
             def get_test(self):
                 return self.x
+
             def set_test(self, value):
                 self.x = value
-
 
         o = TestModule()
         x = parameters.Parameters([parameter_definition], o)
@@ -492,13 +500,12 @@ class TestParameters(amusetest.TestCase):
 
             def get_test(self):
                 return self.x
-                
+
             def set_test(self, value):
                 self.x = value
 
         o = TestModule()
         x = parameters.Parameters([parameter_definition], o)
-
 
         self.assertEqual(x.test_name, 123 | nbody_system.length)
 
@@ -512,12 +519,10 @@ class TestParameters(amusetest.TestCase):
         self.assertAlmostEqual(y.test_name.value_in(units.m), 246.0, 6)
         y.test_name = 500 | units.m
 
-
         self.assertAlmostEqual(y.test_name.value_in(units.m), 500.0, 6)
         print(x.test_name, o.x)
         self.assertAlmostEqual(x.test_name.value_in(nbody_system.length), 250.0, 6)
         self.assertAlmostEqual(o.x, 250.0 | nbody_system.length, 6)
-
 
     def test3(self):
         parameter_definition = parameters.ModuleMethodParameterDefinition(
@@ -533,6 +538,7 @@ class TestParameters(amusetest.TestCase):
 
             def get_test(self):
                 return self.x
+
             def set_test(self, value):
                 self.x = value
 
@@ -571,6 +577,7 @@ class TestParameters(amusetest.TestCase):
 
             def get_test(self):
                 return self.x
+
             def set_test(self, value):
                 self.x = value
 
@@ -607,12 +614,12 @@ class TestParameters(amusetest.TestCase):
 
             def get_test(self):
                 return self.x
+
             def set_test(self, value):
                 self.x = value
 
         o = TestModule()
         x = parameters.Parameters([parameter_definition], o)
-
 
         self.assertTrue("test_name" in str(x))
         self.assertTrue("123.0 length" in str(x))
@@ -648,10 +655,13 @@ class TestParameters(amusetest.TestCase):
 
             def get_test(self):
                 return self.x
+
             def set_test(self, value):
                 self.x = value
+
             def get_test1(self):
                 return self.y
+
             def set_test1(self, value):
                 self.y = value
 
@@ -668,8 +678,8 @@ class TestParameters(amusetest.TestCase):
                 x,
                 convert_nbody.as_converter_from_si_to_generic()
             )
-        self.assertEqual(getattr(y,"phys_test_name"), 123.0 | units.m)
-        self.assertAlmostEqual(getattr(y,"nbody_test_name"), 246.0 | units.m)
+        self.assertEqual(getattr(y, "phys_test_name"), 123.0 | units.m)
+        self.assertAlmostEqual(getattr(y, "nbody_test_name"), 246.0 | units.m)
         y.phys_test_name = 1234.0 | units.m
         self.assertEqual(y.phys_test_name, 1234.0 | units.m)
         y.nbody_test_name = 12345.0 | nbody_system.length
@@ -699,8 +709,9 @@ class TestParameters(amusetest.TestCase):
 
             def get_nbody(self):
                 return self.x
+
             def get_string(self):
-                return str(10 * self.x.number )
+                return str(10 * self.x.number)
 
         o = TestModule()
         x = parameters.Parameters([string_parameter_definition, nbody_parameter_definition], o)
@@ -715,8 +726,8 @@ class TestParameters(amusetest.TestCase):
                 x,
                 convert_nbody.as_converter_from_si_to_generic()
             )
-        self.assertEqual(getattr(y,"string_par_name"), "1230.0")
-        self.assertAlmostEqual(getattr(y,"nbody_par_name"), 246.0 | units.m)
+        self.assertEqual(getattr(y, "string_par_name"), "1230.0")
+        self.assertAlmostEqual(getattr(y, "nbody_par_name"), 246.0 | units.m)
 
     def test7(self):
         parameter_definition1 = parameters.ModuleCachingParameterDefinition(
@@ -726,7 +737,7 @@ class TestParameters(amusetest.TestCase):
             "a test parameter (1)",
             11.0 | units.m
         )
-    
+
         parameter_definition2 = parameters.ModuleCachingParameterDefinition(
             "initialize_vars",
             "arg2",
@@ -734,16 +745,15 @@ class TestParameters(amusetest.TestCase):
             "a test parameter (2)",
             12.0 | units.m
         )
-    
+
         class TestModule(BaseTestModule):
             x = 123 | units.m
             y = 456 | units.m
-    
+
             def initialize_vars(self, arg1, arg2):
                 self.x = arg1
                 self.y = arg2
-    
-    
+
         o = TestModule()
         x = parameters.Parameters([parameter_definition1, parameter_definition2], o)
         x.test_par1 = 20 | units.m
@@ -755,8 +765,6 @@ class TestParameters(amusetest.TestCase):
         x.send_cached_parameters_to_code()
         self.assertEqual(o.x, 20 | units.m)
         self.assertEqual(o.y, 12 | units.m)
-    
-    
 
     def test8(self):
         parameter_definition1 = parameters.ModuleCachingParameterDefinition(
@@ -766,7 +774,7 @@ class TestParameters(amusetest.TestCase):
             "a test parameter (1)",
             11.0 | units.m
         )
-    
+
         parameter_definition2 = parameters.ModuleCachingParameterDefinition(
             "initialize_vars",
             "arg2",
@@ -774,7 +782,7 @@ class TestParameters(amusetest.TestCase):
             "a test parameter (2)",
             12.0 | units.m
         )
-    
+
         parameter_definition3 = parameters.ModuleCachingParameterDefinition(
             "initialize_vars2",
             "arg1",
@@ -782,31 +790,28 @@ class TestParameters(amusetest.TestCase):
             "a test parameter (3)",
             14.0 | units.m
         )
-    
+
         class TestModule(BaseTestModule):
             x = 123 | units.m
             y = 456 | units.m
             z = 100 | units.m
-    
+
             def initialize_vars(self, arg1, arg2):
                 self.x = arg1
                 self.y = arg2
                 return 0
-    
+
             def initialize_vars2(self, arg1):
                 self.z = arg1
                 return 0
-    
-    
+
         o = TestModule()
         x = parameters.Parameters([parameter_definition1, parameter_definition2, parameter_definition3], o)
-        
+
         x.send_cached_parameters_to_code()
         self.assertEqual(o.x, 11 | units.m)
         self.assertEqual(o.y, 12 | units.m)
         self.assertEqual(o.z, 14 | units.m)
-    
-    
 
     def test9(self):
         parameter_definition1 = parameters.ModuleMethodParameterDefinition(
@@ -816,7 +821,7 @@ class TestParameters(amusetest.TestCase):
             "a test parameter",
             11.0 | units.m
         )
-        
+
         parameter_definition2 = parameters.ModuleMethodParameterDefinition(
             "get_test1",
             "set_test1",
@@ -824,36 +829,38 @@ class TestParameters(amusetest.TestCase):
             "a test parameter",
             12.0 | units.m
         )
-    
+
         paramer_definition3 = parameters.VectorParameterDefinition(
             "test_vector",
             "vector of parameters",
             ["test_name", "test_name2"],
             [11.0, 12.0] | units.m
         )
-        
+
         class TestModule(BaseTestModule):
             def get_test(self):
                 return self.x
+
             def set_test(self, value):
                 self.x = value
+
             def get_test1(self):
                 return self.y
+
             def set_test1(self, value):
                 self.y = value
-    
-    
+
         instance = TestModule()
         instance.x = 1 | units.m
         instance.y = 2 | units.m
-        
+
         p = parameters.Parameters([parameter_definition1, parameter_definition2, paramer_definition3], instance)
-       
-        self.assertEqual(p.test_vector, (1,2) | units.m)
-        p.test_vector = (3,4) | units.m
+
+        self.assertEqual(p.test_vector, (1, 2) | units.m)
+        p.test_vector = (3, 4) | units.m
         self.assertEqual(instance.x, 3 | units.m)
         self.assertEqual(instance.y, 4 | units.m)
-    
+
     def test10(self):
         print("Testing ParametersWithUnitsConverted on vector parameters")
         definitions = []
@@ -865,38 +872,43 @@ class TestParameters(amusetest.TestCase):
                 "a test parameter",
                 10.0 | generic_unit_system.length
             ))
-        
+
         definitions.append(parameters.VectorParameterDefinition(
             "mesh_length",
             "length of the model in the x, y and z directions",
             ("length_x", "length_y", "length_z"),
             [10, 10, 10] | generic_unit_system.length
         ))
-        
+
         class TestModule(BaseTestModule):
             x = 123.0 | generic_unit_system.length
             y = 456.0 | generic_unit_system.length
             z = 789.0 | generic_unit_system.length
-            
+
             def get_length_x(self):
                 return self.x
+
             def set_length_x(self, value):
                 self.x = value
+
             def get_length_y(self):
                 return self.y
+
             def set_length_y(self, value):
                 self.y = value
+
             def get_length_z(self):
                 return self.z
+
             def set_length_z(self, value):
                 self.z = value
-        
+
         o = TestModule()
         x = parameters.Parameters(definitions, o)
-        
+
         self.assertTrue("mesh_length" in str(x))
         self.assertTrue("[123.0, 456.0, 789.0] length" in str(x))
-        
+
         converter = generic_unit_converter.ConvertBetweenGenericAndSiUnits(2.0 | units.m, 4.0 | units.kg, 6.0 | units.s)
         y = parameters.ParametersWithUnitsConverted(
                 x,
@@ -904,29 +916,33 @@ class TestParameters(amusetest.TestCase):
             )
         self.assertTrue("mesh_length" in str(y))
         self.assertTrue("[246.0, 912.0, 1578.0] m" in str(y))
-    
-    
+
     def test11(self):
         print("Testing ParametersWithUnitsConverted on vector parameters, using add_vector_parameter")
-        
+
         class TestModule(BaseTestModule):
             x = 123.0 | generic_unit_system.length
             y = 456.0 | generic_unit_system.length
             z = 789.0 | generic_unit_system.length
-            
+
             def get_length_x(self):
                 return self.x
+
             def set_length_x(self, value):
                 self.x = value
+
             def get_length_y(self):
                 return self.y
+
             def set_length_y(self, value):
                 self.y = value
+
             def get_length_z(self):
                 return self.z
+
             def set_length_z(self, value):
                 self.z = value
-        
+
         o = TestModule()
         parameters_handler = HandleParameters(o)
         parameters_handler.add_vector_parameter(
@@ -936,17 +952,17 @@ class TestParameters(amusetest.TestCase):
         )
         for par_name in ["length_x", "length_y", "length_z"]:
             parameters_handler.add_method_parameter(
-                "get_"+par_name, 
+                "get_"+par_name,
                 "set_"+par_name,
-                par_name, 
-                "a test parameter", 
-                default_value = 10.0 | generic_unit_system.length,
+                par_name,
+                "a test parameter",
+                default_value=10.0 | generic_unit_system.length,
             )
-        
+
         x = parameters_handler.get_attribute(None, None)
         self.assertTrue("mesh_length" in str(x))
         self.assertTrue("[123.0, 456.0, 789.0] length" in str(x))
-        
+
         converter = generic_unit_converter.ConvertBetweenGenericAndSiUnits(2.0 | units.m, 4.0 | units.kg, 6.0 | units.s)
         y = parameters.ParametersWithUnitsConverted(
                 x,
@@ -954,7 +970,7 @@ class TestParameters(amusetest.TestCase):
             )
         self.assertTrue("mesh_length" in str(y))
         self.assertTrue("[246.0, 912.0, 1578.0] m" in str(y))
-    
+
     def test12(self):
         definition = parameters.ModuleMethodParameterDefinition(
             "get_test",
@@ -963,33 +979,35 @@ class TestParameters(amusetest.TestCase):
             "a test parameter",
             0.1 | units.m
         )
+
         class TestModule(BaseTestModule):
             def get_test(self):
                 return self.x
+
             def set_test(self, value):
                 self.x = value
-                
+
         o = TestModule()
         set = parameters.Parameters([definition,], o)
-        set.test_name = 10|units.m
-        
-        self.assertEqual(o.x, 10|units.m)
-        self.assertEqual(set.test_name, 10|units.m)
-        
+        set.test_name = 10 | units.m
+
+        self.assertEqual(o.x, 10 | units.m)
+        self.assertEqual(set.test_name, 10 | units.m)
+
         memento = set.copy()
-        self.assertEqual(memento.test_name, 10|units.m)
-        set.test_name = 20|units.m
-        
-        self.assertEqual(o.x, 20|units.m)
-        self.assertEqual(set.test_name, 20|units.m)
-        self.assertEqual(memento.test_name, 10|units.m)
-        
+        self.assertEqual(memento.test_name, 10 | units.m)
+        set.test_name = 20 | units.m
+
+        self.assertEqual(o.x, 20 | units.m)
+        self.assertEqual(set.test_name, 20 | units.m)
+        self.assertEqual(memento.test_name, 10 | units.m)
+
         set.reset_from_memento(memento)
-        
-        self.assertEqual(o.x, 10|units.m)
-        self.assertEqual(set.test_name, 10|units.m)
-        self.assertEqual(memento.test_name, 10|units.m)
-    
+
+        self.assertEqual(o.x, 10 | units.m)
+        self.assertEqual(set.test_name, 10 | units.m)
+        self.assertEqual(memento.test_name, 10 | units.m)
+
     def test13(self):
         definition = parameters.ModuleMethodParameterDefinition(
             "get_test",
@@ -998,36 +1016,38 @@ class TestParameters(amusetest.TestCase):
             "a read-only test parameter",
             0.1 | units.m
         )
+
         class TestModule(BaseTestModule):
             x = 0.1 | units.m
+
             def get_test(self):
                 return self.x
-        
+
         o = TestModule()
         set = parameters.Parameters([definition,], o)
-        
+
         self.assertRaises(AmuseException, setattr, set, "test_name", 1.0 | units.m,
-            expected_message = "Could not set value for parameter 'test_name' of a 'TestModule' object, parameter is read-only")
-        
-        self.assertEqual(o.x, 0.1|units.m)
-        self.assertEqual(set.test_name, 0.1|units.m)
-        
+            expected_message="Could not set value for parameter 'test_name' of a 'TestModule' object, parameter is read-only")
+
+        self.assertEqual(o.x, 0.1 | units.m)
+        self.assertEqual(set.test_name, 0.1 | units.m)
+
         memento = set.copy()
-        self.assertEqual(memento.test_name, 0.1|units.m)
-        
+        self.assertEqual(memento.test_name, 0.1 | units.m)
+
         set.reset_from_memento(memento)
-        self.assertEqual(o.x, 0.1|units.m)
-        self.assertEqual(set.test_name, 0.1|units.m)
-        
+        self.assertEqual(o.x, 0.1 | units.m)
+        self.assertEqual(set.test_name, 0.1 | units.m)
+
         memento.test_name = 2.0 | units.m
-        self.assertEqual(memento.test_name, 2.0|units.m)
+        self.assertEqual(memento.test_name, 2.0 | units.m)
 
         self.assertRaises(AmuseException, set.reset_from_memento, memento,
-            expected_message = "tried to change read-only parameter 'test_name' for a 'TestModule' object")
-                
-        self.assertEqual(o.x, 0.1|units.m)
-        self.assertEqual(set.test_name, 0.1|units.m)
-        self.assertEqual(memento.test_name, 2.0|units.m)
+            expected_message="tried to change read-only parameter 'test_name' for a 'TestModule' object")
+
+        self.assertEqual(o.x, 0.1 | units.m)
+        self.assertEqual(set.test_name, 0.1 | units.m)
+        self.assertEqual(memento.test_name, 2.0 | units.m)
 
     def test14(self):
         definition = parameters.InterfaceParameterDefinition(
@@ -1035,20 +1055,21 @@ class TestParameters(amusetest.TestCase):
             "a read-only test parameter",
             0.1 | units.m
         )
+
         class TestModule(BaseTestModule):
             pass
-        
+
         o = TestModule()
         set = parameters.Parameters([definition,], o)
-        
-        self.assertEqual(set.test_name, 0.1|units.m)
-        
+
+        self.assertEqual(set.test_name, 0.1 | units.m)
+
         memento = set.copy()
-        self.assertEqual(memento.test_name, 0.1|units.m)
-        memento.test_name=2.|units.m
-        
+        self.assertEqual(memento.test_name, 0.1 | units.m)
+        memento.test_name = 2. | units.m
+
         set.reset_from_memento(memento)
-        self.assertEqual(set.test_name, 2.|units.m)
+        self.assertEqual(set.test_name, 2. | units.m)
 
     def test15(self):
         definition = parameters.InterfaceParameterDefinition(
@@ -1056,24 +1077,25 @@ class TestParameters(amusetest.TestCase):
             "a read-only test parameter",
             0.1
         )
+
         class TestModule(BaseTestModule):
             pass
-        
+
         o = TestModule()
         set = parameters.Parameters([definition,], o)
-        
+
         import numpy
-        b=numpy.array(2)
-        set.test_name=b
-        b*=2
-        self.assertEqual(set.test_name,2)
-        
+        b = numpy.array(2)
+        set.test_name = b
+        b *= 2
+        self.assertEqual(set.test_name, 2)
+
     def test16(self):
         print("Testing add_interface_parameter")
-        
+
         class TestModule(BaseTestModule):
-          pass
-        
+            pass
+
         o = TestModule()
         parameters_handler = HandleParameters(o)
         parameters_handler.add_vector_parameter(
@@ -1081,17 +1103,17 @@ class TestParameters(amusetest.TestCase):
             "length of the model in the x, y and z directions",
             ("length_x", "length_y", "length_z")
         )
-        for i,par_name in enumerate(["length_x", "length_y", "length_z"]):
+        for i, par_name in enumerate(["length_x", "length_y", "length_z"]):
             parameters_handler.add_interface_parameter(
-                par_name, 
-                "a test parameter", 
-                default_value = i*10.0 | generic_unit_system.length,
+                par_name,
+                "a test parameter",
+                default_value=i*10.0 | generic_unit_system.length,
             )
-        
+
         x = parameters_handler.get_attribute(None, None)
         self.assertTrue("mesh_length" in str(x))
         self.assertTrue("[0.0, 10.0, 20.0] length" in str(x))
-        
+
         converter = generic_unit_converter.ConvertBetweenGenericAndSiUnits(2.0 | units.m, 4.0 | units.kg, 6.0 | units.s)
         y = parameters.ParametersWithUnitsConverted(
                 x,
@@ -1099,20 +1121,22 @@ class TestParameters(amusetest.TestCase):
             )
         self.assertTrue("mesh_length" in str(y))
         self.assertTrue("[0.0, 20.0, 40.0] m" in str(y))
-        
+
     def test17(self):
         print("Testing ParametersWithUnitsConverted on vector parameters, using add_vector_parameter")
-        
+
         class TestModule(BaseTestModule):
-            x = [1.,2.,3.] | generic_unit_system.length
-            
-            def get_length(self,i):
+            x = [1., 2., 3.] | generic_unit_system.length
+
+            def get_length(self, i):
                 return self.x[i]
-            def set_length(self, i,value):
+
+            def set_length(self, i, value):
                 self.x[i] = value
+
             def range(self):
-                return 0,len(self.x)-1
-        
+                return 0, len(self.x)-1
+
         o = TestModule()
         parameters_handler = HandleParameters(o)
         parameters_handler.add_array_parameter(
@@ -1122,7 +1146,7 @@ class TestParameters(amusetest.TestCase):
             "length",
             "description"
         )
-        
+
         x = parameters_handler.get_attribute(None, None)
         self.assertTrue("length" in str(x))
         self.assertTrue("[1.0, 2.0, 3.0] length" in str(x))
@@ -1137,159 +1161,166 @@ class TestParameters(amusetest.TestCase):
                 "param",
                 "a test parameter"
         ))
-        
+
         class TestModule(BaseTestModule):
-            x = [1.,2.,3.] | generic_unit_system.length
-            
-            def get(self,i):
+            x = [1., 2., 3.] | generic_unit_system.length
+
+            def get(self, i):
                 return self.x[i]
-            def set(self,i, value):
+
+            def set(self, i, value):
                 self.x[i] = value
+
             def range(self):
                 return 0, len(self.x)-1
-        
+
         o = TestModule()
         x = parameters.Parameters(definitions, o)
-        
-        self.assertEqual(x.param, [1.,2.,3.] | generic_unit_system.length)
-        x.param*=2
-        self.assertEqual(x.param, [2.,4.,6.] | generic_unit_system.length)
-        
+
+        self.assertEqual(x.param, [1., 2., 3.] | generic_unit_system.length)
+        x.param *= 2
+        self.assertEqual(x.param, [2., 4., 6.] | generic_unit_system.length)
+
     def test19(self):
         print("Testing multiple parameter sets")
-        
+
         class TestModule(BaseTestModule):
             x = 123.0 | generic_unit_system.length
             y = 456.0 | generic_unit_system.length
             z = 789.0 | generic_unit_system.length
-            
+
             def get_length_x(self):
                 return self.x
+
             def set_length_x(self, value):
                 self.x = value
+
             def get_length_y(self):
                 return self.y
+
             def set_length_y(self, value):
                 self.y = value
+
             def get_length_z(self):
                 return self.z
+
             def set_length_z(self, value):
                 self.z = value
-        
+
         o = TestModule()
         parameters_handler = HandleParameters(o)
         for par_name in ["length_x", "length_y", "length_z"]:
             parameters_handler.add_method_parameter(
-                "get_"+par_name, 
+                "get_"+par_name,
                 "set_"+par_name,
-                par_name, 
-                "a test parameter", 
-                default_value = 10.0 | generic_unit_system.length,
-                parameter_set = par_name+"_set"
+                par_name,
+                "a test parameter",
+                default_value=10.0 | generic_unit_system.length,
+                parameter_set=par_name+"_set"
             )
-        
-        for i,par_name in enumerate(["length_x", "length_y", "length_z"]):
+
+        for i, par_name in enumerate(["length_x", "length_y", "length_z"]):
             x = parameters_handler.get_attribute(par_name+"_set", None)
-            self.assertTrue([123.0, 456.0, 789.0][i] == getattr(x,par_name).number)
-        
+            self.assertTrue([123.0, 456.0, 789.0][i] == getattr(x, par_name).number)
+
     def test20(self):
         print("Testing multiple parameter sets 2")
-        
+
         class TestInterface(BaseTestModule):
-            x = 123.0 
+            x = 123.0
             y = 456.0
-            
+
             def get_x(self):
                 return self.x
+
             def set_x(self, value):
                 self.x = value
+
             def get_y(self):
                 return self.y
+
             def set_y(self, value):
                 self.y = value
 
-
         class Testing(InCodeComponentImplementation):
-    
+
             def __init__(self, **options):
-                  InCodeComponentImplementation.__init__(self, TestInterface(), **options)
+                InCodeComponentImplementation.__init__(self, TestInterface(), **options)
 
-            def define_parameters(self,object):
-                  object.add_method_parameter(
-                    "get_x", "set_x", "x", "test parameter", 123.
-                  )
-                  object.add_method_parameter(
-                    "get_y", "set_y", "y", "test parameter 2", 456.,
-                    parameter_set="parameters2"
-                  )
-                  object.add_alias_parameter(
-                    "y_alias","y", " new y", parameter_set="parameters2"
-                  )
+            def define_parameters(self, object):
+                object.add_method_parameter(
+                  "get_x", "set_x", "x", "test parameter", 123.
+                )
+                object.add_method_parameter(
+                  "get_y", "set_y", "y", "test parameter 2", 456.,
+                  parameter_set="parameters2"
+                )
+                object.add_alias_parameter(
+                  "y_alias", "y", " new y", parameter_set="parameters2"
+                )
 
-        t=Testing()
+        t = Testing()
 
-        self.assertEqual(set(t.parameter_set_names()), set(('parameters','parameters2')))
+        self.assertEqual(set(t.parameter_set_names()), set(('parameters', 'parameters2')))
 
-        self.assertEqual(t.parameters.x,123.)
-        self.assertEqual(t.parameters2.y,456.)
-        t.parameters2.y=789.
-        self.assertEqual(t.parameters2.y,789.)
-        self.assertEqual(t.parameters2.y_alias,789.)
+        self.assertEqual(t.parameters.x, 123.)
+        self.assertEqual(t.parameters2.y, 456.)
+        t.parameters2.y = 789.
+        self.assertEqual(t.parameters2.y, 789.)
+        self.assertEqual(t.parameters2.y_alias, 789.)
 
     def test21(self):
         print("Test change in parameter sets")
-        
+
         class TestInterface(BaseTestModule):
-            x = 123.0 
+            x = 123.0
             y = 456.0
-            
+
             def get_x(self):
                 return self.x
+
             def set_x(self, value):
                 self.x = value
+
             def get_y(self):
                 return self.y
+
             def set_y(self, value):
                 self.y = value
 
-
         class Testing(InCodeComponentImplementation):
-    
+
             def __init__(self, **options):
-                  InCodeComponentImplementation.__init__(self, TestInterface(), **options)
+                InCodeComponentImplementation.__init__(self, TestInterface(), **options)
 
-            def define_parameters(self,handler):
-                  handler.add_method_parameter(
-                    "get_x", "set_x", "x", "test parameter", 123.
-                  )
+            def define_parameters(self, handler):
+                handler.add_method_parameter(
+                  "get_x", "set_x", "x", "test parameter", 123.
+                )
+
             def define_additional_parameters(self):
-                  handler=self.get_handler('PARAMETER')
-                  handler.add_method_parameter(
-                    "get_y", "set_y", "y", "test parameter 2", 456.,
-                    parameter_set="parameters2"
-                  )
-                  handler.add_alias_parameter(
-                    "y_alias","y", " new y", parameter_set="parameters2"
-                  )
-                  handler.add_method_parameter(
-                    "get_y", "set_y", "y", "test parameter", 456.
-                  )
+                handler = self.get_handler('PARAMETER')
+                handler.add_method_parameter(
+                  "get_y", "set_y", "y", "test parameter 2", 456.,
+                  parameter_set="parameters2"
+                )
+                handler.add_alias_parameter(
+                  "y_alias", "y", " new y", parameter_set="parameters2"
+                )
+                handler.add_method_parameter(
+                  "get_y", "set_y", "y", "test parameter", 456.
+                )
 
-
-
-
-        t=Testing()
+        t = Testing()
 
         self.assertEqual(set(t.parameter_set_names()), set(('parameters',)))
-        
-        
+
         t.define_additional_parameters()
-        self.assertEqual(set(t.parameter_set_names()), set(('parameters','parameters2')))
+        self.assertEqual(set(t.parameter_set_names()), set(('parameters', 'parameters2')))
 
-        self.assertEqual(t.parameters.x,123.)
-        self.assertEqual(t.parameters2.y,456.)
-        t.parameters2.y=789.
-        self.assertEqual(t.parameters2.y,789.)
-        self.assertEqual(t.parameters2.y_alias,789.)
-        self.assertEqual(t.parameters.y,789.)
-
+        self.assertEqual(t.parameters.x, 123.)
+        self.assertEqual(t.parameters2.y, 456.)
+        t.parameters2.y = 789.
+        self.assertEqual(t.parameters2.y, 789.)
+        self.assertEqual(t.parameters2.y_alias, 789.)
+        self.assertEqual(t.parameters.y, 789.)

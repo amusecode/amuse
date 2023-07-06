@@ -87,7 +87,6 @@ class TestEVtwinInterface(TestWithMPI):
         self.assertEqual(0, error)
         instance.stop()
 
-
     def test5(self):
         print("Testing basic operations (new_particle_method, evolve_one_step etc.)...")
         instance = EVtwinInterface()
@@ -142,7 +141,7 @@ class TestEVtwinInterface(TestWithMPI):
         (value, error) = instance.get_max_age_stop_condition()
         self.assertEqual(0, error)
         self.assertEqual(2.0e12, value)
-        for x in range(10,14):
+        for x in range(10, 14):
             error = instance.set_max_age_stop_condition(10 ** x)
             self.assertEqual(0, error)
             (value, error) = instance.get_max_age_stop_condition()
@@ -152,7 +151,7 @@ class TestEVtwinInterface(TestWithMPI):
         (value, error) = instance.get_min_timestep_stop_condition()
         self.assertEqual(0, error)
         self.assertAlmostEqual(1.0e6, value, 5)
-        for x in range(-3,2):
+        for x in range(-3, 2):
             error = instance.set_min_timestep_stop_condition(10 ** x)
             self.assertEqual(0, error)
             (value, error) = instance.get_min_timestep_stop_condition()
@@ -174,7 +173,7 @@ class TestEVtwinInterface(TestWithMPI):
         (value, error) = instance.get_number_of_ionization_elements()
         self.assertEqual(0, error)
         self.assertEqual(5, value)
-        for x in range(1,10):
+        for x in range(1, 10):
             error = instance.set_number_of_ionization_elements(x)
             self.assertEqual(0, error)
             (value, error) = instance.get_number_of_ionization_elements()
@@ -235,7 +234,6 @@ class TestEVtwinInterface(TestWithMPI):
         self.assertEqual(indices, [1, 2])
 
         self.assertEqual(0, instance.commit_particles())
-
 
         for index in indices:
             self.assertEqual(0, instance.evolve_one_step(index))
@@ -317,7 +315,7 @@ class TestEVtwin(TestWithMPI):
         self.assertAlmostEqual(instance.particles.luminosity, 0.7098065 | units.LSun, 6)
         self.assertAlmostEqual(instance.particles.radius, 0.8892833 | units.RSun, 6)
 
-        instance.evolve_model(4.8|units.Gyr)
+        instance.evolve_model(4.8 | units.Gyr)
 
         self.assertAlmostEqual(instance.particles.mass, 0.999921335 | units.MSun, 6)
         self.assertAlmostEqual(instance.particles.luminosity, 1.04448714 | units.LSun, 6)
@@ -397,11 +395,11 @@ class TestEVtwin(TestWithMPI):
 
     def test4(self):
         print("Testing max age stop condition...")
-        #masses = [.5, 1.0, 1.5] | units.MSun # Test with fewer particles for speed-up.
+        # masses = [.5, 1.0, 1.5] | units.MSun # Test with fewer particles for speed-up.
         masses = [.5] | units.MSun
         max_age = 9.0 | units.Myr
 
-        number_of_stars=len(masses)
+        number_of_stars = len(masses)
         stars = Particles(number_of_stars)
         for i, star in enumerate(stars):
             star.mass = masses[i]
@@ -423,7 +421,7 @@ class TestEVtwin(TestWithMPI):
 
         from_code_to_model = instance.particles.new_channel_to(stars)
 
-        instance.evolve_model(end_time = 8.0 | units.Myr)
+        instance.evolve_model(end_time=8.0 | units.Myr)
         from_code_to_model.copy()
 
         for i in range(number_of_stars):
@@ -453,16 +451,16 @@ class TestEVtwin(TestWithMPI):
         particles = Particles(3)
         particles.mass = 0.3 | units.MSun
 
-        instance = EVtwin()#redirection="none")
+        instance = EVtwin()  # redirection="none")
         instance.initialize_code()
         instance.parameters.verbosity = True
         instance.commit_parameters()
         stars = instance.particles
-        self.assertEqual(len(stars), 0) # before creation
+        self.assertEqual(len(stars), 0)  # before creation
         stars.add_particles(particles[:-1])
         instance.commit_particles()
         instance.evolve_model(1.0 | units.Myr)
-        self.assertEqual(len(stars), 2) # before remove
+        self.assertEqual(len(stars), 2)  # before remove
         self.assertAlmostEqual(stars.age, 1.0 | units.Myr)
 
         stars.remove_particle(particles[0])
@@ -472,12 +470,12 @@ class TestEVtwin(TestWithMPI):
         self.assertAlmostEqual(stars[0].age, 2.0 | units.Myr)
 
         stars.add_particles(particles[::2])
-        self.assertEqual(len(stars), 3) # it's back...
+        self.assertEqual(len(stars), 3)  # it's back...
         self.assertAlmostEqual(stars[0].age, 2.0 | units.Myr)
         self.assertAlmostEqual(stars[1].age, 0.0 | units.Myr)
-        self.assertAlmostEqual(stars[2].age, 0.0 | units.Myr) # ... and rejuvenated.
+        self.assertAlmostEqual(stars[2].age, 0.0 | units.Myr)  # ... and rejuvenated.
 
-        instance.evolve_model(3.0 | units.Myr) # The young stars keep their age offset from the old star
+        instance.evolve_model(3.0 | units.Myr)  # The young stars keep their age offset from the old star
         self.assertAlmostEqual(stars.age, [3.0, 1.0, 1.0] | units.Myr)
         instance.evolve_model(4.0 | units.Myr)
         self.assertAlmostEqual(stars.age, [4.0, 2.0, 2.0] | units.Myr)
@@ -495,17 +493,17 @@ class TestEVtwin(TestWithMPI):
         self.assertEqual(instance.particles.get_number_of_zones(), [199, 199])
         self.assertEqual(len(instance.particles[0].get_radius_profile()), 199)
         self.assertRaises(AmuseException, instance.particles.get_radius_profile,
-            expected_message = "Querying radius profiles of more than one particle at a time is not supported.")
+            expected_message="Querying radius profiles of more than one particle at a time is not supported.")
         self.assertEqual(len(instance.particles[1].get_density_profile()), 199)
         self.assertIsOfOrder(instance.particles[0].get_radius_profile()[-1],          1.0 | units.RSun)
         self.assertIsOfOrder(instance.particles[0].get_temperature_profile()[0],  1.0e7 | units.K)
         self.assertIsOfOrder(instance.particles[0].get_temperature_profile()[-1],  5.0e3 | units.K)
         radius1 = instance.particles[0].get_radius_profile()
         radius2 = radius1[:-1]
-        radius2.prepend(0|units.m)
+        radius2.prepend(0 | units.m)
         delta_radius_cubed = (radius1**3 - radius2**3)
         total_mass = (4./3. * pi * instance.particles[0].get_density_profile() * delta_radius_cubed).sum()
-        self.assertAlmostRelativeEqual(total_mass, stars[0].mass, places = 1)
+        self.assertAlmostRelativeEqual(total_mass, stars[0].mass, places=1)
         self.assertAlmostEqual(instance.particles[0].get_mu_profile()[:100], [0.62]*100 | units.amu, places=1)
         instance.stop()
 
@@ -518,10 +516,10 @@ class TestEVtwin(TestWithMPI):
         instance.commit_parameters()
         instance.particles.add_particles(stars)
         instance.commit_particles()
-        number_of_zones   = instance.particles.get_number_of_zones()[0]
+        number_of_zones = instance.particles.get_number_of_zones()[0]
         number_of_species = instance.particles.get_number_of_species()[0]
-        composition       = instance.particles[0].get_chemical_abundance_profiles()
-        species_names     = instance.particles[0].get_names_of_species()
+        composition = instance.particles[0].get_chemical_abundance_profiles()
+        species_names = instance.particles[0].get_names_of_species()
         self.assertEqual(number_of_zones,    199)
         self.assertEqual(number_of_species,    9)
         self.assertEqual(len(species_names),  number_of_species)
@@ -530,7 +528,7 @@ class TestEVtwin(TestWithMPI):
         self.assertEqual(species_names, ['h1', 'he4', 'c12', 'n14', 'o16', 'ne20', 'mg24', 'si28', 'fe56'])
         self.assertAlmostEqual(composition[0, -1],        0.7, 3)
         self.assertAlmostEqual(composition[1, -1],        0.3 - instance.parameters.metallicity, 3)
-        self.assertAlmostEqual(composition[2:,-1].sum(),  instance.parameters.metallicity, 3)
+        self.assertAlmostEqual(composition[2:, -1].sum(),  instance.parameters.metallicity, 3)
         self.assertAlmostEqual(composition.sum(axis=0), [1.0]*number_of_zones)
         instance.stop()
 
@@ -546,11 +544,11 @@ class TestEVtwin(TestWithMPI):
         instance.evolve_model(11.7 | units.Gyr)
         self.assertTrue(instance.particles[0].age >= 11.7 | units.Gyr)
         print(instance.particles[0].stellar_type)
-#~        self.assertTrue(str(instance.particles[0].stellar_type) == "First Giant Branch")
-        number_of_zones   = instance.particles.get_number_of_zones()[0]
+# ~        self.assertTrue(str(instance.particles[0].stellar_type) == "First Giant Branch")
+        number_of_zones = instance.particles.get_number_of_zones()[0]
         number_of_species = instance.particles.get_number_of_species()[0]
-        composition       = instance.particles[0].get_chemical_abundance_profiles()
-        species_names     = instance.particles[0].get_names_of_species()
+        composition = instance.particles[0].get_chemical_abundance_profiles()
+        species_names = instance.particles[0].get_names_of_species()
         self.assertEqual(number_of_zones,    199)
         self.assertEqual(number_of_species,    9)
         self.assertEqual(len(species_names),  number_of_species)
@@ -559,20 +557,20 @@ class TestEVtwin(TestWithMPI):
         self.assertEqual(species_names, ['h1', 'he4', 'c12', 'n14', 'o16', 'ne20', 'mg24', 'si28', 'fe56'])
         self.assertAlmostRelativeEquals(composition[0, -1],        0.7 | units.none, 1)
         self.assertAlmostRelativeEquals(composition[1, -1],        0.3 - instance.parameters.metallicity, 1)
-        self.assertAlmostRelativeEquals(composition[2:,-1].sum(),  instance.parameters.metallicity, 1)
+        self.assertAlmostRelativeEquals(composition[2:, -1].sum(),  instance.parameters.metallicity, 1)
         self.assertAlmostEqual(composition.sum(axis=0), [1.0]*number_of_zones | units.none)
         self.assertAlmostEqual(composition[0, 0],        0.00 | units.none)
         self.assertAlmostEqual(composition[1, 0],        1.00 - instance.parameters.metallicity, 3)
-        self.assertAlmostEqual(composition[2:,0].sum(),  instance.parameters.metallicity, 3)
+        self.assertAlmostEqual(composition[2:, 0].sum(),  instance.parameters.metallicity, 3)
         instance.stop()
 
     def test9(self):
         print("Test for saving and loading the stellar structure model")
         filenames = ["test1.dump", "test2.dump"]
         filenames = [os.path.join(get_path_to_results(), name) for name in filenames]
-        instance = EVtwin()#redirection="none")
+        instance = EVtwin()  # redirection="none")
         instance.parameters.verbosity = True
-        instance.particles.add_particles(Particles(mass = [0.5, 0.8] | units.MSun))
+        instance.particles.add_particles(Particles(mass=[0.5, 0.8] | units.MSun))
         instance.evolve_model()
         instance.particles.write_star_to_file(filenames)
         copies = Particles(2)
@@ -582,10 +580,10 @@ class TestEVtwin(TestWithMPI):
         print(instance.particles)
         import warnings
         warnings.warn("this test's precision has been temporarily (2017) decreased")
-        # the reason for this is that the deviation is compiler dependend (and does only happen 
+        # the reason for this is that the deviation is compiler dependend (and does only happen
         # on some machine/compiler/OS combinations)
         # it may have something to do with initialization of variables in evtwin
-        #~ self.assertAlmostRelativeEquals(instance.particles.temperature, [3644, 4783, 3644, 4783] | units.K, 3)
+        # ~ self.assertAlmostRelativeEquals(instance.particles.temperature, [3644, 4783, 3644, 4783] | units.K, 3)
         self.assertAlmostRelativeEquals(instance.particles.temperature, [3644, 4783, 3644, 4783] | units.K, 2)
         instance.stop()
 
@@ -603,7 +601,7 @@ class TestEVtwin(TestWithMPI):
         density_profile = instance.particles[0].get_density_profile()
 
         self.assertRaises(AmuseException, instance.particles[0].set_density_profile, density_profile[2:],
-            expected_message = "The length of the supplied vector (197) does not match the number of "
+            expected_message="The length of the supplied vector (197) does not match the number of "
             "mesh zones of the star (199).")
 
         mass_factor = 1.1
@@ -614,10 +612,10 @@ class TestEVtwin(TestWithMPI):
 
         outer_radius = instance.particles[0].get_radius_profile()
         inner_radius = outer_radius[:-1]
-        inner_radius.prepend(0|units.m)
+        inner_radius.prepend(0 | units.m)
         delta_radius_cubed = (outer_radius**3 - inner_radius**3)
         integrated_mass = (4./3.*pi*delta_radius_cubed*instance.particles[0].get_density_profile()).sum()
-        self.assertAlmostRelativeEqual(integrated_mass, star.mass*mass_factor, places = 3)
+        self.assertAlmostRelativeEqual(integrated_mass, star.mass*mass_factor, places=3)
         instance.stop()
         del instance
 
@@ -632,28 +630,28 @@ class TestEVtwin(TestWithMPI):
         instance.commit_particles()
         instance.evolve_model()
 
-        composition       = instance.particles[0].get_chemical_abundance_profiles()
+        composition = instance.particles[0].get_chemical_abundance_profiles()
         h1_profile = composition[0] * 1
         he4_profile = composition[1] * 1
-        k_surface = -1 # index to the outer mesh cell (surface)
+        k_surface = -1  # index to the outer mesh cell (surface)
 
         self.assertAlmostEqual(composition[0, k_surface],  0.7 | units.none, 4)
         self.assertAlmostEqual(composition[1, k_surface],  (0.3 | units.none) - instance.parameters.metallicity, 4)
-        self.assertAlmostEqual(composition[2: , k_surface].sum(),  instance.parameters.metallicity, 4)
+        self.assertAlmostEqual(composition[2:, k_surface].sum(),  instance.parameters.metallicity, 4)
 
         composition[0] = he4_profile
         composition[1] = h1_profile
         instance.particles[0].set_chemical_abundance_profiles(composition)
         instance.evolve_model()
 
-        composition       = instance.particles[0].get_chemical_abundance_profiles()
+        composition = instance.particles[0].get_chemical_abundance_profiles()
         self.assertAlmostEqual(composition[0, k_surface],  (0.3 | units.none) - instance.parameters.metallicity, 4)
         self.assertAlmostEqual(composition[1, k_surface],  0.7 | units.none, 4)
-        self.assertAlmostEqual(composition[2: , k_surface].sum(),  instance.parameters.metallicity, 4)
+        self.assertAlmostEqual(composition[2:, k_surface].sum(),  instance.parameters.metallicity, 4)
         self.assertAlmostEqual(composition.sum(axis=0), 1.0 | units.none)
 
         self.assertRaises(AmuseException, instance.particles[0].set_chemical_abundance_profiles, composition[:7],
-            expected_message = "The length of the supplied vector (7) does not match the number of "
+            expected_message="The length of the supplied vector (7) does not match the number of "
             "chemical species of the star (8).")
         instance.stop()
         del instance
@@ -661,17 +659,17 @@ class TestEVtwin(TestWithMPI):
     def test11(self):
         print("Test for importing new stellar models")
         instance = EVtwin()
-#~        instance.parameters.import_model_entropy_force = 1.0
-#~        instance.parameters.import_model_entropy_accuracy = 1.0e-1
+# ~        instance.parameters.import_model_entropy_force = 1.0
+# ~        instance.parameters.import_model_entropy_accuracy = 1.0e-1
         instance.parameters.verbosity = True
-        instance.particles.add_particles(Particles(mass = [0.8] | units.MSun))
+        instance.particles.add_particles(Particles(mass=[0.8] | units.MSun))
         instance.evolve_model()
 
         instance.new_particle_from_model(instance.particles[0].get_internal_structure())
         # The above line is equivalent with:
-        #copy = Particles(1)
-        #copy.internal_structure = instance.particles[0].get_internal_structure()
-        #instance.particles.add_particles(copy)
+        # copy = Particles(1)
+        # copy.internal_structure = instance.particles[0].get_internal_structure()
+        # instance.particles.add_particles(copy)
 
         number_of_zones = instance.particles[0].get_number_of_zones()
         self.assertEqual(len(instance.particles), 2)
@@ -680,7 +678,7 @@ class TestEVtwin(TestWithMPI):
         self.assertIsOfOrder(instance.particles[1].get_temperature_profile()[0],  1.0e7 | units.K)
         self.assertIsOfOrder(instance.particles[1].get_pressure_profile()[0],      1.0e17 | units.barye)
 
-        instance.evolve_model(keep_synchronous = False)
+        instance.evolve_model(keep_synchronous=False)
         self.assertAlmostRelativeEqual(
             instance.particles[0].temperature, instance.particles[1].temperature, 2)
         self.assertAlmostRelativeEqual(
@@ -691,7 +689,7 @@ class TestEVtwin(TestWithMPI):
         print("Test for importing new stellar models, also check long-term evolution")
         instance = EVtwin()
         instance.parameters.verbosity = True
-        instance.particles.add_particles(Particles(mass = [0.8] | units.MSun))
+        instance.particles.add_particles(Particles(mass=[0.8] | units.MSun))
         instance.evolve_model()
 
         copy = Particles(1)
@@ -705,15 +703,15 @@ class TestEVtwin(TestWithMPI):
         self.assertIsOfOrder(instance.particles[1].get_temperature_profile()[0],  1.0e7 | units.K)
         self.assertIsOfOrder(instance.particles[1].get_pressure_profile()[0],      1.0e17 | units.barye)
 
-        t1, l1 = simulate_evolution_tracks(instance.particles[0], end_time=26.5|units.Gyr)
-        t2, l2 = simulate_evolution_tracks(instance.particles[1], end_time=26.5|units.Gyr)
+        t1, l1 = simulate_evolution_tracks(instance.particles[0], end_time=26.5 | units.Gyr)
+        t2, l2 = simulate_evolution_tracks(instance.particles[1], end_time=26.5 | units.Gyr)
         instance.stop()
 
-        i1 = t1.argmax() # Maximum temperature ~ turnoff main sequence
+        i1 = t1.argmax()  # Maximum temperature ~ turnoff main sequence
         i2 = t2.argmax()
         self.assertAlmostRelativeEqual(t1[i1], t2[i2], 2)
         self.assertAlmostRelativeEqual(l1[i1], l2[i2], 2)
-        #plot_tracks(t1, l1, t2, l2)
+        # plot_tracks(t1, l1, t2, l2)
 
     def xslowtest11(self):
         print("Test 11: Continue the stellar evolution of a 'merger product' - WIP")
@@ -811,21 +809,21 @@ class TestEVtwin(TestWithMPI):
 
         print("evolve_model without arguments: use shared timestep = 0.99*min(particles.time_step)")
         instance.evolve_model()
-        self.assertAlmostEqual(instance.particles.age, 0.99*([1876.53255132,1876.53255132,1876.53255132] | units.yr), 3)
-        self.assertAlmostEqual(instance.particles.time_step, [70465.105509,6063.68785133,1876.53255132] | units.yr, 3)
+        self.assertAlmostEqual(instance.particles.age, 0.99*([1876.53255132, 1876.53255132, 1876.53255132] | units.yr), 3)
+        self.assertAlmostEqual(instance.particles.time_step, [70465.105509, 6063.68785133, 1876.53255132] | units.yr, 3)
         self.assertAlmostEqual(instance.model_time, 0.99*1876.53255132 | units.yr, 3)
 
         print("evolve_model with end_time: take timesteps, until end_time is reached exactly")
         instance.evolve_model(15000 | units.yr)
         self.assertAlmostEqual(instance.particles.age, [15000.0, 15000.0, 15000.0] | units.yr, 3)
-        self.assertAlmostEqual(instance.particles.time_step, [ 84558.1266108,7276.4254216,2251.83906159] | units.yr, 3)
+        self.assertAlmostEqual(instance.particles.time_step, [84558.1266108, 7276.4254216, 2251.83906159] | units.yr, 3)
         self.assertAlmostEqual(instance.model_time, 15000.0 | units.yr, 3)
 
         print("evolve_model with keep_synchronous: use non-shared timestep, particle ages will typically diverge")
-        instance.evolve_model(keep_synchronous = False)
-        self.assertAlmostEqual(instance.particles.age, (15000 | units.yr) + ([ 84558.1266108,7276.4254216,2251.83906159] | units.yr), 3)
-        self.assertAlmostRelativeEquals(instance.particles.time_step, [101469.751933,8731.71050591,2702.2068739] | units.yr, 1)
-        self.assertAlmostEqual(instance.model_time, 15000.0 | units.yr, 3) # Unchanged!
+        instance.evolve_model(keep_synchronous=False)
+        self.assertAlmostEqual(instance.particles.age, (15000 | units.yr) + ([84558.1266108, 7276.4254216, 2251.83906159] | units.yr), 3)
+        self.assertAlmostRelativeEquals(instance.particles.time_step, [101469.751933, 8731.71050591, 2702.2068739] | units.yr, 1)
+        self.assertAlmostEqual(instance.model_time, 15000.0 | units.yr, 3)  # Unchanged!
         instance.stop()
 
     def test14(self):
@@ -848,7 +846,7 @@ class TestEVtwin(TestWithMPI):
         instance.stop()
         print("ok")
 
-        print("initialize_code(), commit_parameters(), (re)commit_particles(), " \
+        print("initialize_code(), commit_parameters(), (re)commit_particles(), "
             "and cleanup_code() should be called automatically:", end=' ')
         instance = EVtwin()
         self.assertEqual(instance.get_name_of_current_state(), 'UNINITIALIZED')
@@ -869,62 +867,62 @@ class TestEVtwin(TestWithMPI):
     def slowtest15(self):
         print("test evolution of 1000 star sampled over flattish IMF")
 
-        number_of_stars=1000
+        number_of_stars = 1000
 
         from amuse.ic.salpeter import new_salpeter_mass_distribution
         import numpy
 
         class notsorandom(object):
-            def random(self,N):
+            def random(self, N):
                 return numpy.array(range(N))/(N-1.)
 
         masses = new_salpeter_mass_distribution(
             number_of_stars,
-            mass_min = 0.1 | units.MSun,
-            mass_max = 100.0 | units.MSun,
-            alpha = -1.01,random=notsorandom()
+            mass_min=0.1 | units.MSun,
+            mass_max=100.0 | units.MSun,
+            alpha=-1.01, random=notsorandom()
         )
 
         stars = Particles(mass=masses)
 
-        instance=EVtwin()
-        instance.parameters.maximum_number_of_stars=number_of_stars
-        instance.parameters.min_timestep_stop_condition=.001 | units.s
+        instance = EVtwin()
+        instance.parameters.maximum_number_of_stars = number_of_stars
+        instance.parameters.min_timestep_stop_condition = .001 | units.s
         instance.particles.add_particles(stars)
 
-        i=0
+        i = 0
         for p in instance.particles:
-          print(i,p.mass)
-          p.evolve_for(0.1 | units.Myr)
-          i+=1
+            print(i, p.mass)
+            p.evolve_for(0.1 | units.Myr)
+            i += 1
 
     def xslowtest16(self):
         print("test full evolution of 1000 star sampled over flattish IMF")
 
-        number_of_stars=1000
+        number_of_stars = 1000
 
         from amuse.ic.salpeter import new_salpeter_mass_distribution
         import numpy
 
         class notsorandom(object):
-            def random(self,N):
+            def random(self, N):
                 return numpy.array(range(N))/(N-1.)
 
         masses = new_salpeter_mass_distribution(
             number_of_stars,
-            mass_min = 0.1 | units.MSun,
-            mass_max = 100.0 | units.MSun,
-            alpha = -1.01,random=notsorandom()
+            mass_min=0.1 | units.MSun,
+            mass_max=100.0 | units.MSun,
+            alpha=-1.01, random=notsorandom()
         )
 
         stars = Particles(mass=masses)
 
-        instance=EVtwin()
-        instance.parameters.maximum_number_of_stars=number_of_stars
+        instance = EVtwin()
+        instance.parameters.maximum_number_of_stars = number_of_stars
         instance.particles.add_particles(stars)
 
         for p in instance.particles:
-          p.evolve_for(13.2 | units.Gyr)
+            p.evolve_for(13.2 | units.Gyr)
 
     def slowtest17(self):
         """
@@ -933,53 +931,53 @@ class TestEVtwin(TestWithMPI):
         star masses and which star is evolved first.
         """
         exceptions = []
-        for i, (masses, indices) in  enumerate([
+        for i, (masses, indices) in enumerate([
                 (
                     [1.21372730283, 1.22207032494, 11.21372730283] | units.MSun,
-                    (0,1)
+                    (0, 1)
                 ),
                 (
                     [1.21372730283, 1.22207032494, 1.21372730283] | units.MSun,
-                    (0,1)
+                    (0, 1)
                 ),
                 (
                     [1.21372730283, 1.22207032494, 1.21372730283] | units.MSun,
-                    (1,0)
+                    (1, 0)
                 ),
                 (
                     [1.21372730283, 1.22207032494] | units.MSun,
-                    (0,1)
+                    (0, 1)
                 ),
                 (
                     [1.21372730283, 11.22207032494, 1.21372730283] | units.MSun,
-                    (0,1)
+                    (0, 1)
                 ),
                 (
                     [1.21372730283, 1.21372730283, 1.21372730283] | units.MSun,
-                    (0,1)
+                    (0, 1)
                 ),
                 (
                     [1.21372730283, 1.22207032494, 1.21372730283] | units.MSun,
-                    (0,1)
+                    (0, 1)
                 ),
                 (
                     [0.101, 1.22207032494, 1.21372730283] | units.MSun,
-                    (0,1)
+                    (0, 1)
                 )
             ]):
 
             stars = Particles(mass=masses)
 
-            instance=EVtwin()
+            instance = EVtwin()
             instance.particles.add_particles(stars)
 
             try:
                 index_in_indices = 0
-                instance.particles[indices[index_in_indices]].evolve_for(0.1| units.Myr)
+                instance.particles[indices[index_in_indices]].evolve_for(0.1 | units.Myr)
                 index_in_indices = 1
-                instance.particles[indices[index_in_indices]].evolve_for(0.1| units.Myr)
+                instance.particles[indices[index_in_indices]].evolve_for(0.1 | units.Myr)
             except AmuseException as ex:
-                exceptions.append( [i, masses, indices, index_in_indices] )
+                exceptions.append([i, masses, indices, index_in_indices])
 
             instance.stop()
 
@@ -996,12 +994,12 @@ class TestEVtwin(TestWithMPI):
 
     def xtest18(self):
         print("Testing EVtwin calculate_core_mass")
-        instance = EVtwin()#redirection="none")
-        star = instance.particles.add_particle(Particle(mass=1|units.MSun))
-        instance.evolve_model(0.4|units.Gyr) # VERY short, for test speed up
+        instance = EVtwin()  # redirection="none")
+        star = instance.particles.add_particle(Particle(mass=1 | units.MSun))
+        instance.evolve_model(0.4 | units.Gyr)  # VERY short, for test speed up
         central_hydrogen_abundance = star.get_chemical_abundance_profiles()[0][0]
-        self.assertTrue(central_hydrogen_abundance < 0.68) # some hydrogen is burned
-        self.assertTrue(central_hydrogen_abundance > 0.67) # ... but not that much yet
+        self.assertTrue(central_hydrogen_abundance < 0.68)  # some hydrogen is burned
+        self.assertTrue(central_hydrogen_abundance > 0.67)  # ... but not that much yet
         self.assertEqual(star.calculate_core_mass(core_H_abundance_limit=0.67), 0 | units.MSun)
         self.assertAlmostEqual(star.calculate_core_mass(core_H_abundance_limit=0.71), 1 | units.MSun, 1)
 
@@ -1033,7 +1031,7 @@ class TestEVtwin(TestWithMPI):
     def xtest19(self):
         print("Testing EVtwin central_temperature and central_density")
         instance = EVtwin()
-        stars = instance.particles.add_particles(Particles(mass=[0.1, 1, 10]|units.MSun))
+        stars = instance.particles.add_particles(Particles(mass=[0.1, 1, 10] | units.MSun))
         self.assertIsOfOrder(stars.central_temperature, [4e6, 13e6, 31e6] | units.K)
         self.assertIsOfOrder(stars.central_density, [400, 77, 9] | units.g * units.cm**-3)
         instance.stop()
@@ -1042,8 +1040,8 @@ class TestEVtwin(TestWithMPI):
         print("Testing EVtwin manual mass transfer rate")
         instance = EVtwin()
         instance.parameters.verbosity = True
-        stars = instance.particles.add_particles(Particles(mass=[0.8, 0.8]|units.MSun))
-        stars[0].mass_transfer_rate = -1e-8|units.MSun/units.yr
+        stars = instance.particles.add_particles(Particles(mass=[0.8, 0.8] | units.MSun))
+        stars[0].mass_transfer_rate = -1e-8 | units.MSun/units.yr
         instance.evolve_model()
         # NOTE! no mass transfer during the initial step:
         self.assertEqual(stars[0].mass, stars[1].mass)
@@ -1053,11 +1051,11 @@ class TestEVtwin(TestWithMPI):
         instance.evolve_model()
         self.assertTrue(stars[0].mass < stars[1].mass)
         # NOTE 2! actual mass transfer rate 10x lower:
-        self.assertAlmostRelativeEqual((stars[0].mass-mass) / (stars[0].age-age), -1.0e-9|units.MSun/units.yr, 4)
+        self.assertAlmostRelativeEqual((stars[0].mass-mass) / (stars[0].age-age), -1.0e-9 | units.MSun/units.yr, 4)
         instance.stop()
 
 
-def simulate_evolution_tracks(star, end_time=1|units.Gyr):
+def simulate_evolution_tracks(star, end_time=1 | units.Gyr):
     luminosity_at_time = [] | units.LSun
     temperature_at_time = [] | units.K
     while star.age < end_time:
@@ -1067,10 +1065,11 @@ def simulate_evolution_tracks(star, end_time=1|units.Gyr):
         print(star.age)
     return temperature_at_time, luminosity_at_time
 
+
 def plot_tracks(temperature1, luminosity1, temperature2, luminosity2):
     from matplotlib import pyplot
     from amuse.plot import loglog, xlabel, ylabel
-    pyplot.figure(figsize = (8, 6))
+    pyplot.figure(figsize=(8, 6))
     pyplot.title('Hertzsprung-Russell diagram', fontsize=12)
     loglog(temperature1, luminosity1)
     loglog(temperature2, luminosity2)
@@ -1078,4 +1077,3 @@ def plot_tracks(temperature1, luminosity1, temperature2, luminosity2):
     ylabel('Luminosity')
     pyplot.xlim(pyplot.xlim()[::-1])
     pyplot.show()
-
