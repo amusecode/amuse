@@ -183,7 +183,9 @@ class interpolating_2D_remapper(object):
 
 
 class bilinear_2D_remapper(object):
-    def __init__(self, source, target, check_inside=True, do_slices=False):
+    def __init__(
+        self, source, target, check_inside=True, do_slices=False, x_periodic=False
+    ):
         """this class maps a source grid to a target grid using bilinear
         interpolation. If check_inside=True, raise exception if any
         target point outside source grid. If the grids are 3 dimensional
@@ -214,6 +216,7 @@ class bilinear_2D_remapper(object):
                     print(getattr(target[0, 0], x))
                     warn(f"positions (possibly) not the same on axes {x}")
         self.check_inside = check_inside
+        self.x_periodic = x_periodic
         self._weights = None
         self._indices = None
 
@@ -242,18 +245,36 @@ class bilinear_2D_remapper(object):
 
         ix = numpy.floor((x - x0) / dx).astype(int)
         iy = numpy.floor((y - y0) / dy).astype(int)
+
+        ix2 = ix + 1
+        iy2 = iy + 1
+
+        if self.x_periodic:
+            numpy.place(ix, ix == -1, self.source.shape[0] - 1)
+            numpy.place(ix, ix == self.source.shape[0], 0)
+            numpy.place(ix2, ix2 == self.source.shape[0], 0)
+
         if self.check_inside:
             if (
                 numpy.any(ix < 0)
-                or numpy.any(ix > self.source.shape[0] - 2)
+                or numpy.any(ix > self.source.shape[0] - 1)
                 or numpy.any(iy < 0)
-                or numpy.any(iy > self.source.shape[1] - 2)
+                or numpy.any(iy > self.source.shape[1] - 1)
+                or numpy.any(ix2 < 0)
+                or numpy.any(ix2 > self.source.shape[0] - 1)
+                or numpy.any(iy2 < 0)
+                or numpy.any(iy2 > self.source.shape[1] - 1)
             ):
                 raise Exception(
                     "target not fully inside (restricted) source grid as required"
                 )
-        ix = numpy.clip(ix, 0, self.source.shape[0] - 2)
-        iy = numpy.clip(iy, 0, self.source.shape[1] - 2)
+
+        if not self.x_periodic:
+            ix = numpy.clip(ix, 0, self.source.shape[0] - 1)
+            ix2 = numpy.clip(ix2, 0, self.source.shape[0] - 1)
+
+        iy = numpy.clip(iy, 0, self.source.shape[1] - 1)
+        iy2 = numpy.clip(iy2, 0, self.source.shape[1] - 1)
 
         wx = (x0 + (ix + 1) * dx - x) / dx
         wy = (y0 + (iy + 1) * dy - y) / dy
@@ -265,17 +286,19 @@ class bilinear_2D_remapper(object):
         while len(ix.shape) > 2:
             ix = numpy.amax(ix, axis=-1)
             iy = numpy.amax(iy, axis=-1)
+            ix2 = numpy.amax(ix2, axis=-1)
+            iy2 = numpy.amax(iy2, axis=-1)
 
-        self._indices = [ix, iy]
+        self._indices = [ix, ix2, iy, iy2]
 
     def _evaluate(self, values):
-        ix, iy = self._indices
+        ix, ix2, iy, iy2 = self._indices
         wx, wy = self._weights
         result = (
             wx * wy * values[ix, iy]
-            + (1.0 - wx) * wy * values[ix + 1, iy]
-            + wx * (1.0 - wy) * values[ix, iy + 1]
-            + (1.0 - wx) * (1.0 - wy) * values[ix + 1, iy + 1]
+            + (1.0 - wx) * wy * values[ix2, iy]
+            + wx * (1.0 - wy) * values[ix, iy2]
+            + (1.0 - wx) * (1.0 - wy) * values[ix2, iy2]
         )
         return result
 
