@@ -1,13 +1,13 @@
 # This workflow will install Python dependencies, run tests and lint with a single version of Python
 # For more information see: https://help.github.com/actions/language-and-framework-guides/using-python-with-github-actions
 
-name: inplace
+name: test_issue_850
 
 on:
   push:
-    branches: [ main ]
+    branches: [ bug/850 ]
   pull_request:
-    branches: [ main ]
+    branches: [ main, bug/850 ]
 
 jobs:
   build:
@@ -35,32 +35,11 @@ jobs:
         pip install -e .
     - name: AMUSE code builds
       run: |
-        python setup.py develop_build
-    - name: check installation
+        make framework
+        make seba.code bse.code
+    - name: test issue850
       run: |
-        amusifier --get-amuse-configmk
-        pip list
-    - name: archive build log
-      uses: actions/upload-artifact@v1
-      with:
-          name: buildlog
-          path: build.log
-    - name: test core_tests
-      run: |
-        pytest --pyargs amuse.test.suite.core_tests -s
-    - name: test compile_tests
-      run: |
-        ip link show
-        echo $OMPI_MCA_btl_tcp_if_include
-        pytest -k "not test29" --pyargs amuse.test.suite.compile_tests.test_c_implementation -sv
+        pytest --pyargs amuse.test.suite.ticket_tests.test_issue850 -s
       env:
         OMPI_MCA_rmaps_base_oversubscribe: 1
         OMPI_MCA_btl_tcp_if_include: lo
-    - name: test code_tests
-      run: |
-        pytest  --pyargs amuse.test.suite.codes_tests.test_bhtree -sv
-        pytest  --pyargs amuse.test.suite.codes_tests.test_sse -sv
-      env:
-        OMPI_MCA_rmaps_base_oversubscribe: 1
-        OMPI_MCA_btl_tcp_if_include: lo
-

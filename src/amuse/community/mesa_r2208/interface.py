@@ -26,8 +26,8 @@ class MESAInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolutionIn
     about 0.1 to 100 Msun.
     
     References:
-        .. [#] Paxton, Bildsten, Dotter, Herwig, Lesaffre & Timmes 2011, ApJS, arXiv:1009.1622 [2011ApJS..192....3P]
-        .. [#] http://mesa.sourceforge.net/
+        .. [#] ADS:2011ApJS..192....3P (Paxton, Bildsten, Dotter, Herwig, Lesaffre & Timmes 2011, ApJS,
+        .. [#] http://mesa.sourceforge.net/)
     """
     def __init__(self, **options):
         CodeInterface.__init__(self, name_of_the_worker="mesa_worker", **options)
@@ -953,14 +953,22 @@ class MESA(StellarEvolution, InternalStellarStructure):
         if not os.path.isfile(os.path.join(model_path, 'zams_z20m3.data')):
             model_file=os.path.join(self.get_data_directory(), 'star_data', 'starting_models', 'zams_z20m3.data')
             shutil.copy(model_file, model_path)
+
+        if 'inlist' in options:
+            inlist_path = options['inlist']
+            if not os.path.exists(inlist_path):
+                raise ValueError('Named inlist does not exist, maybe its in a different folder?')
+        else:
+            inlist_path = self.default_path_to_inlist
         
         self.set_MESA_paths(
-            self.default_path_to_inlist, 
+            inlist_path, 
             self.default_path_to_MESA_data, 
             output_dir
         )
         self.model_time = 0.0 | units.yr
         self.mesa_version = "2208"
+        self.inlist = inlist_path
         
     
     def define_parameters(self, handler):
@@ -1161,6 +1169,12 @@ class MESA(StellarEvolution, InternalStellarStructure):
     def define_methods(self, handler):
         InternalStellarStructure.define_methods(self, handler)
         StellarEvolution.define_methods(self, handler)
+        handler.add_method(
+            "evolve_for",
+            (handler.INDEX, units.julianyr),
+            (handler.ERROR_CODE,)
+        )
+
         handler.add_method(
             "new_pre_ms_particle",
             (units.MSun),

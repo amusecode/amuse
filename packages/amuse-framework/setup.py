@@ -38,14 +38,14 @@ package_data = {
     ]
 }
 
-mapping_from_command_name_to_command_class=setup_commands()
+mapping_from_command_name_to_command_class = setup_commands()
 
 try:
     from src.amuse.version import version
     use_scm_version = False
     setup_requires = []
 except ImportError:
-    version = False
+    version = None
     setup_requires = ['setuptools_scm']
     use_scm_version = {
         "root": "../..",
@@ -67,8 +67,8 @@ setup(
     long_description_content_type=long_description_content_type,
     install_requires=install_requires,
     python_requires=">=3.7",
-    extras_require = {
-        "MPI" : ["mpi4py>=1.1.0"]
+    extras_require={
+        "MPI": ["mpi4py>=1.1.0"]
     },
     cmdclass=mapping_from_command_name_to_command_class,
     ext_modules=extensions,
@@ -76,5 +76,5 @@ setup(
     packages=packages,
     package_data=package_data,
     data_files=all_data_files,
-    scripts=[ "bin/amusifier" ],
+    scripts=["bin/amusifier", ],
 )

@@ -166,7 +166,7 @@ endif
 # export LD_LIBRARY_PATH=$MESA_DIR/utils/hdf5/lib:$LD_LIBRARY_PATH
 
 # These are if you are using the sdk hdf5 implementation
-LOAD_HDF5 = -L${MESA_DIR}/lib -ldl -lhdf5_fortran -lhdf5 -lz
+LOAD_HDF5 = -L${MESA_DIR}/lib -lhdf5_fortran -lhdf5 -lz -ldl
 INCLUDE_HDF5 = -I${MESA_DIR}/include
 
 # If not YES then we don't use HDF5, thus you wont have access to custom weak rates

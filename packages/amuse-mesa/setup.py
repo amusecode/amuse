@@ -65,7 +65,6 @@ setup(
     ext_modules=extensions,
     package_dir={
         'amuse.community.mesa': 'src/amuse/community/mesa',
-        'amuse.community.mesa_r15140': 'src/amuse/community/mesa_r15140',
     },
     packages=packages,
     package_data=package_data,

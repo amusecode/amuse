@@ -60,7 +60,7 @@ int initialize_code(){
 	GPUNAME="";
 	particle_id_counter = 0;
 	if(rank_higpus == 0){
-		cout<<"NOTE_1: the code works with nbody units ( G = 1 ): please check the parameters, more info are given in the README file"<<endl;
+		  cout<<"NOTE_1: the code works with nbody units ( G = 1 ): please check the parameters, more info are given in the README file"<<endl;
       cout<<"NOTE_2: the evolve method requires an input time (in nbody units) greater than or equal of the maximum time step ( 't' > or = 'max_step') "<<endl;
       cout<<"NOTE_3: the code only seems to work when the number of particles is a power of 2"<<endl;
 	}
@@ -437,7 +437,7 @@ int get_output_path_name(char ** output_path_name){
 }
 
 int set_output_path_name(char *output_path_name){
-	   path = to_string(output_path_name);
+	   path = to_string(output_path_name)+"/";
 		   return 0;
 }
 

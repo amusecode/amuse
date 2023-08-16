@@ -19,6 +19,7 @@ import pickle
 import sys
 import os
 
+
 class TestPicklingOfUnitsAndQuantities(amusetest.TestCase):
 
     def test1(self):
@@ -28,7 +29,6 @@ class TestPicklingOfUnitsAndQuantities(amusetest.TestCase):
         unpickled_km = pickle.loads(pickled_km)
         self.assertEqual(1000, unpickled_km.value_in(m))
 
-
     def test2(self):
         km = 1000 * m
         quantity = 12.0 | km
@@ -37,23 +37,17 @@ class TestPicklingOfUnitsAndQuantities(amusetest.TestCase):
         unpickled_quantity = pickle.loads(pickled_quantity)
         self.assertEqual(12000, unpickled_quantity.value_in(m))
         self.assertEqual(quantity, unpickled_quantity)
-    
-    
 
     def test3(self):
         pickled_si_sytem = pickle.dumps(si.system)
         unpickled_si_sytem = pickle.loads(pickled_si_sytem)
         self.assertTrue(unpickled_si_sytem is si.system)
-    
-    
 
     def test4(self):
         quantity = 12.0 | nbody_system.energy
         pickled_quantity = pickle.dumps(quantity)
         unpickled_quantity = pickle.loads(pickled_quantity)
         self.assertEqual(quantity, unpickled_quantity)
-    
-    
 
     def test5(self):
         quantity = 12.0 | parsec
@@ -62,8 +56,6 @@ class TestPicklingOfUnitsAndQuantities(amusetest.TestCase):
         self.assertEqual(quantity, unpickled_quantity)
         self.assertEqual(str(quantity), str(unpickled_quantity))
         self.assertEqual(12.0, unpickled_quantity.value_in(parsec))
-    
-    
 
     def test6(self):
         quantity = [12.0, 15.0] | parsec
@@ -71,8 +63,6 @@ class TestPicklingOfUnitsAndQuantities(amusetest.TestCase):
         unpickled_quantity = pickle.loads(pickled_quantity)
         self.assertEqual(quantity, unpickled_quantity)
         self.assertEqual(str(quantity), str(unpickled_quantity))
-    
-    
 
     def test7(self):
         quantity = zero
@@ -81,7 +71,7 @@ class TestPicklingOfUnitsAndQuantities(amusetest.TestCase):
         self.assertEqual(quantity, unpickled_quantity)
         self.assertTrue(quantity is unpickled_quantity)
         self.assertEqual(str(quantity), str(unpickled_quantity))
-    
+
     def test8(self):
         quantity = 1 | nbody_system.time
         pickled_quantity = pickle.dumps(quantity)
@@ -91,57 +81,49 @@ class TestPicklingOfUnitsAndQuantities(amusetest.TestCase):
 
     def test9(self):
         quantity = 1.3 | nbody_system.time
-        path=os.path.abspath(os.path.join(self.get_path_to_results(), "test9.pickle"))
+        path = os.path.abspath(os.path.join(self.get_path_to_results(), "test9.pickle"))
 
-        with open(path, "wb") as stream: 
+        with open(path, "wb") as stream:
             pickle.dump(quantity, stream)
-        
+
         pythonpath = os.pathsep.join(sys.path)
         env = os.environ.copy()
         env['PYTHONPATH'] = pythonpath
         code = "import pickle;stream = open('{0}', 'rb'); print(str(pickle.load(stream)));stream.close()".format(path)
-       
+
         process = subprocess.Popen([
                 sys.executable,
                 "-c",
                 code,
                "--no-report-references"
-            ]
-            , stdout=subprocess.PIPE
-            , stderr=subprocess.PIPE
-            ,env = env
+            ], stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=env
         )
         unpickled_quantity_string, error_string = process.communicate()
-        self.assertEqual(process.returncode, 0)        
-        self.assertEqual(str(quantity),unpickled_quantity_string.strip().decode('utf-8'))
-        
-        
+        self.assertEqual(process.returncode, 0)
+        self.assertEqual(str(quantity), unpickled_quantity_string.strip().decode('utf-8'))
+
     def test10(self):
-        quantity = 1  | parsec
-        path=os.path.abspath(os.path.join(self.get_path_to_results(), "test10.pickle"))
-        with open(path, "wb") as stream: 
+        quantity = 1 | parsec
+        path = os.path.abspath(os.path.join(self.get_path_to_results(), "test10.pickle"))
+        with open(path, "wb") as stream:
             pickle.dump(quantity, stream)
-               
+
         pythonpath = os.pathsep.join(sys.path)
         env = os.environ.copy()
         env['PYTHONPATH'] = pythonpath
         code = "import pickle;stream = open('{0}', 'rb'); print(str(pickle.load(stream)));stream.close()".format(path)
-       
+
         process = subprocess.Popen([
                 sys.executable,
                 "-c",
                code,
                "--no-report-references"
-            ]
-            , stdout=subprocess.PIPE
-            , stderr=subprocess.PIPE
-            , env = env
+            ], stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=env
         )
         unpickled_quantity_string, error_string = process.communicate()
         self.assertEqual(process.returncode, 0)
-        self.assertEqual(str(quantity),unpickled_quantity_string.strip().decode('utf-8'))
-        
-    
+        self.assertEqual(str(quantity), unpickled_quantity_string.strip().decode('utf-8'))
+
     def test11(self):
         value = 1 | stellar_type
         self.assertEqual(1 | stellar_type, value)
@@ -149,16 +131,16 @@ class TestPicklingOfUnitsAndQuantities(amusetest.TestCase):
         unpickled_value = pickle.loads(pickled)
         self.assertEqual(1 | stellar_type, unpickled_value)
 
-        
+
 class TestPicklingOfParticleSets(amusetest.TestCase):
 
     def test1(self):
         particles = Particles(4)
-        particles.mass = [1,2,3,4] | km
+        particles.mass = [1, 2, 3, 4] | km
         pickled_particles = pickle.dumps(particles)
         unpickled_particles = pickle.loads(pickled_particles)
-        self.assertAlmostRelativeEquals(unpickled_particles.mass, [1,2,3,4] | km)
-    
+        self.assertAlmostRelativeEquals(unpickled_particles.mass, [1, 2, 3, 4] | km)
+
     def test2(self):
         particles = Particles(4)
         particles.mass = [1, 2, 3, 6] | kg
@@ -168,7 +150,6 @@ class TestPicklingOfParticleSets(amusetest.TestCase):
         unpickled_particles = pickle.loads(pickled_particles)
         self.assertAlmostRelativeEquals(unpickled_particles.mass, [1, 2, 3, 6] | kg)
         self.assertEqual(unpickled_particles.center_of_mass(), [2, 3, 0] | m)
-    
 
     def test3(self):
         particles = Particles(4)
@@ -177,7 +158,7 @@ class TestPicklingOfParticleSets(amusetest.TestCase):
         self.assertEqual(particles.center_of_mass(), [2, 3, 0] | m)
         pickled_particles = pickle.dumps(particles)
         unpickled_particles = pickle.loads(pickled_particles)
-        pickled_particles = pickle.dumps(particles)     #dump it twice! 
+        pickled_particles = pickle.dumps(particles)  # dump it twice!
         unpickled_particles = pickle.loads(pickled_particles)
         self.assertAlmostRelativeEquals(unpickled_particles.mass, [1, 2, 3, 6] | kg)
         self.assertEqual(unpickled_particles.center_of_mass(), [2, 3, 0] | m)
@@ -188,23 +169,22 @@ class TestPicklingOfParticleSets(amusetest.TestCase):
         particles.position = [[0, 0, 0], [3, 0, 0], [0, 4, 0], [3, 4, 0]] | m
         pickled_particles = pickle.dumps(list(particles))
         unpickled_particles = pickle.loads(pickled_particles)
-        self.assertEqual(len(unpickled_particles) , 4)
+        self.assertEqual(len(unpickled_particles), 4)
         unpickled_particles = Particles(particles=unpickled_particles)
         self.assertAlmostRelativeEquals(unpickled_particles.mass, [1, 2, 3, 6] | kg)
         self.assertEqual(unpickled_particles.center_of_mass(), [2, 3, 0] | m)
 
 
-
-
 class BaseTestModule(object):
     def before_get_parameter(self):
         return
-        
+
     def before_set_parameter(self):
         return
-        
+
+
 class TestPicklingOfParameters(amusetest.TestCase):
-    
+
     def test1(self):
         definition = parameters.ModuleMethodParameterDefinition(
             "get_test",
@@ -213,25 +193,25 @@ class TestPicklingOfParameters(amusetest.TestCase):
             "a test parameter",
             0.1 | m
         )
+
         class TestModule(BaseTestModule):
             def get_test(self):
                 return self.x
+
             def set_test(self, value):
                 self.x = value
-                
+
         o = TestModule()
         set = parameters.Parameters([definition,], o)
-        set.test_name = 10| m
-        
-        self.assertEqual(o.x, 10|m)
-        self.assertEqual(set.test_name, 10|m)
-        
-        memento = set.copy()
-        self.assertEqual(memento.test_name, 10|m)
+        set.test_name = 10 | m
 
-        pickled_memento=pickle.dumps(memento)
-        unpickled_memento=pickle.loads(pickled_memento)
-        
+        self.assertEqual(o.x, 10 | m)
+        self.assertEqual(set.test_name, 10 | m)
+
+        memento = set.copy()
+        self.assertEqual(memento.test_name, 10 | m)
+
+        pickled_memento = pickle.dumps(memento)
+        unpickled_memento = pickle.loads(pickled_memento)
+
         self.assertEqual(memento.test_name, unpickled_memento.test_name)
-        
-        

@@ -7,8 +7,9 @@ from amuse.units import constants
 from amuse.units import nbody_system
 from amuse.units import quantities
 from amuse import datamodel
-class Test(amusetest.TestCase):
 
+
+class Test(amusetest.TestCase):
 
     def test(self):
         directory = os.path.dirname(__file__)
@@ -16,8 +17,8 @@ class Test(amusetest.TestCase):
         instance.convert_to_particles(os.path.join(directory, 'plummer_100.ini'))
         rev_instance = phigrape.Particles2Inp()
         output = os.path.join(self.get_path_to_results(), 'plummer_back_100.ini')
-        rev_instance.convert_to_inp(instance.Particles,output)
-    
+        rev_instance.convert_to_inp(instance.Particles, output)
+
         control_instance = phigrape.Inp2Particles()
         control_instance.convert_to_particles(os.path.join(directory, output))
 

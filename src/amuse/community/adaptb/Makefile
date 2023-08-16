@@ -5,9 +5,8 @@ ifeq ($(origin AMUSE_DIR), undefined)
 endif
 -include ${AMUSE_DIR}/config.mk
 
-GMP_LIBS ?= -L/home/boekholt/Packages/ -lgmp
-MPFR_LIBS ?= -L/home/boekholt/Packages/ -lmpfr
-MPFR_FLAGS ?= -I/home/boekholt/Packages/
+GMP_LIBS ?= -lgmp
+MPFR_LIBS ?= -lmpfr
 LIBS += $(MPFR_LIBS) $(GMP_LIBS)
 
 MPICXX   ?= mpicxx

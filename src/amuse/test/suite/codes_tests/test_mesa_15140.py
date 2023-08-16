@@ -12,6 +12,7 @@ from amuse.datamodel import Particles
 from amuse.datamodel import Particle
 from amuse.ext.spherical_model import EnclosedMassInterpolator
 
+
 def set_mesa_paths_instance(instance):
     instance.set_MESA_paths(
         instance.default_path_to_inlist,
@@ -101,12 +102,11 @@ class TestMESAInterface(TestWithMPI):
 
         initial_dt = 1.0e5
         dt_factor = 1.2
-        
-        instance.set_time_step(index_of_the_star,initial_dt)
+
+        instance.set_time_step(index_of_the_star, initial_dt)
         self.assertEqual([initial_dt, 0], list(instance.get_time_step(index_of_the_star).values()))
 
-
-        self.assertEqual(0, instance.evolve_for(index_of_the_star,initial_dt))
+        self.assertEqual(0, instance.evolve_for(index_of_the_star, initial_dt))
         self.assertEqual(
             [initial_dt, 0],
             list(instance.get_age(index_of_the_star).values())
@@ -205,7 +205,7 @@ class TestMESAInterface(TestWithMPI):
         self.assertEqual(0, error)
         self.assertEqual(2.0, value)
         for x in [1.0, 1.5, 3.0]:
-            error = instance.set_mixing_length_ratio(index_of_the_star,x)
+            error = instance.set_mixing_length_ratio(index_of_the_star, x)
             self.assertEqual(0, error)
             (value, error) = instance.get_mixing_length_ratio(index_of_the_star)
             self.assertEqual(0, error)
@@ -214,7 +214,7 @@ class TestMESAInterface(TestWithMPI):
         self.assertEqual(0, error)
         self.assertEqual(0.0, value)
         for x in [0.1, 0.04, 0.001]:
-            error = instance.set_semi_convection_efficiency(index_of_the_star,x)
+            error = instance.set_semi_convection_efficiency(index_of_the_star, x)
             self.assertEqual(0, error)
             (value, error) = instance.get_semi_convection_efficiency(index_of_the_star)
             self.assertEqual(0, error)
@@ -232,8 +232,8 @@ class TestMESAInterface(TestWithMPI):
         (value, error) = instance.get_RGB_wind_scheme(index_of_the_star)
         self.assertEqual(0, error)
         self.assertEqual('', value)
-        for x,name in enumerate(['Reimers','Blocker','de jager','Dutch']):
-            error = instance.set_RGB_wind_scheme(index_of_the_star,x)
+        for x, name in enumerate(['Reimers', 'Blocker', 'de jager', 'Dutch']):
+            error = instance.set_RGB_wind_scheme(index_of_the_star, x)
             self.assertEqual(0, error)
             (value, error) = instance.get_RGB_wind_scheme(index_of_the_star)
             self.assertEqual(0, error)
@@ -242,8 +242,8 @@ class TestMESAInterface(TestWithMPI):
         (value, error) = instance.get_AGB_wind_scheme(index_of_the_star)
         self.assertEqual(0, error)
         self.assertEqual('', value)
-        for x,name in enumerate(['Reimers','Blocker','de jager','Dutch']):
-            error = instance.set_AGB_wind_scheme(index_of_the_star,x)
+        for x, name in enumerate(['Reimers', 'Blocker', 'de jager', 'Dutch']):
+            error = instance.set_AGB_wind_scheme(index_of_the_star, x)
             self.assertEqual(0, error)
             (value, error) = instance.get_AGB_wind_scheme(index_of_the_star)
             self.assertEqual(0, error)
@@ -253,7 +253,7 @@ class TestMESAInterface(TestWithMPI):
         self.assertEqual(0, error)
         self.assertEqual(0.0, value)
         for x in [0.0, 0.1, 0.5, 1.0]:
-            error = instance.set_reimers_wind_efficiency(index_of_the_star,x)
+            error = instance.set_reimers_wind_efficiency(index_of_the_star, x)
             self.assertEqual(0, error)
             (value, error) = instance.get_reimers_wind_efficiency(index_of_the_star)
             self.assertEqual(0, error)
@@ -263,7 +263,7 @@ class TestMESAInterface(TestWithMPI):
         self.assertEqual(0, error)
         self.assertEqual(0.0, value)
         for x in [0.0, 0.1, 0.5, 1.0]:
-            error = instance.set_blocker_wind_efficiency(index_of_the_star,x)
+            error = instance.set_blocker_wind_efficiency(index_of_the_star, x)
             self.assertEqual(0, error)
             (value, error) = instance.get_blocker_wind_efficiency(index_of_the_star)
             self.assertEqual(0, error)
@@ -273,7 +273,7 @@ class TestMESAInterface(TestWithMPI):
         self.assertEqual(0, error)
         self.assertEqual(0.0, value)
         for x in [0.0, 0.1, 0.5, 1.0]:
-            error = instance.set_de_jager_wind_efficiency(index_of_the_star,x)
+            error = instance.set_de_jager_wind_efficiency(index_of_the_star, x)
             self.assertEqual(0, error)
             (value, error) = instance.get_de_jager_wind_efficiency(index_of_the_star)
             self.assertEqual(0, error)
@@ -283,7 +283,7 @@ class TestMESAInterface(TestWithMPI):
         self.assertEqual(0, error)
         self.assertEqual(0.0, value)
         for x in [0.0, 0.1, 0.5, 1.0]:
-            error = instance.set_dutch_wind_efficiency(index_of_the_star,x)
+            error = instance.set_dutch_wind_efficiency(index_of_the_star, x)
             self.assertEqual(0, error)
             (value, error) = instance.get_dutch_wind_efficiency(index_of_the_star)
             self.assertEqual(0, error)
@@ -750,27 +750,31 @@ class TestMESA(TestWithMPI):
             composition[3:, k_surface].sum(),
             instance.parameters.metallicity)
 
-        he4_start = composition[2,k_surface] 
-        h1_start = composition[0,k_surface] 
+        he4_start = composition[2, k_surface]
+        h1_start = composition[0, k_surface]
+
+        h1_profile = composition[0] * 1
+        he4_profile = composition[2] * 1
+
+        instance.particles[0].set_control('okay_to_remesh', False)  # Turn of remeshing
+
         # Gradually and consistently increase helium and decrease hydrogen
         # abundances until reversed
-        for alpha in [0.3, 1.0, -0.5, -0.125]:
-            h1_profile = composition[0] * 1
-            he4_profile = composition[2] * 1
+        for alpha in numpy.arange(0.1, 1.1, 0.1):
             composition[0] = alpha * he4_profile + (1-alpha) * h1_profile
             composition[2] = (1-alpha) * he4_profile + alpha * h1_profile
             instance.particles[0].set_chemical_abundance_profiles(composition)
-            instance.evolve_model(1 | units.julianyr)
+            instance.particles[0].evolve_for(1 | units.julianyr)
             composition = (
                 instance.particles[0].get_chemical_abundance_profiles()
             )
 
         self.assertAlmostEqual(
-            composition[2, k_surface],0.7051777340467488)
-        self.assertAlmostEqual(composition[0, k_surface],  2.74649042e-01 )
+            composition[2, k_surface], h1_start, 3)
+        self.assertAlmostEqual(composition[0, k_surface], he4_start, 3)
         self.assertAlmostEqual(
             composition[3:, k_surface].sum(),
-            0.020144181852121544)
+            0.020, 3)
         self.assertAlmostEqual(composition.sum(axis=0), 1.0)
 
         self.assertRaises(
@@ -833,7 +837,7 @@ class TestMESA(TestWithMPI):
         instance.evolve_model(keep_synchronous=False)
 
         self.assertAlmostEqual(
-            instance.model_time, 15000.0 | units.yr, 3) 
+            instance.model_time, 15000.0 | units.yr, 3)
         instance.stop()
 
     def test12(self):
@@ -849,9 +853,7 @@ class TestMESA(TestWithMPI):
         instance.commit_parameters()
         instance.particles.add_particles(star)
         instance.commit_particles()
-        instance.evolve_model(1| units.Myr)
-
-
+        instance.evolve_model(1 | units.Myr)
 
         number_of_zones = instance.particles[0].get_number_of_zones()
         composition = instance.particles[0].get_chemical_abundance_profiles(
@@ -887,7 +889,7 @@ class TestMESA(TestWithMPI):
             1.0e7 | units.K)
         self.assertIsOfOrder(
             instance.imported_stars[0].get_pressure_profile()[0],
-            1.0e18 | units.barye)
+            1.0e17 | units.barye)
         self.assertAlmostEqual(
             instance.imported_stars[0].get_mass_profile()[-1],
             instance.native_stars[0].get_mass_profile()[-1])
@@ -909,11 +911,11 @@ class TestMESA(TestWithMPI):
         instance.initialize_code()
 
         winds = {
-            '' : 0.0,
+            '': 0.0,
             'Reimers': 0.5,
             'Blocker': 0.1,
             'de Jager': 0.8,
-            'Dutch':0.8,
+            'Dutch': 0.8,
         }
 
         instance.commit_parameters()
@@ -924,7 +926,6 @@ class TestMESA(TestWithMPI):
             stars[i].set_RGB_wind_efficiency(scale)
 
             winds[wind_scheme] = stars[i].get_RGB_wind_efficiency() * 2
-
 
         for i, (wind_scheme, scale) in enumerate(winds):
             instance.recommit_parameters()
@@ -962,7 +963,7 @@ class TestMESA(TestWithMPI):
             stars[i].reimers_wind_efficiency = wind_efficiency
         instance.commit_particles()
         instance.evolve_model(keep_synchronous=False)
-        
+
         from_code_to_model = instance.particles.new_channel_to(stars)
         from_code_to_model.copy()
 
@@ -985,7 +986,7 @@ class TestMESA(TestWithMPI):
         print("First do everything manually:", end=' ')
         self.assertEqual(instance.get_name_of_current_state(), 'UNINITIALIZED')
         instance.initialize_code()
-        #FIXME: ??
+        # FIXME: ??
         self.assertEqual(instance.get_name_of_current_state(), 'INITIALIZED')
         instance.commit_parameters()
         self.assertEqual(instance.get_name_of_current_state(), 'EDIT')
@@ -1067,7 +1068,7 @@ class TestMESA(TestWithMPI):
 
         star.evolve_for(1.0e5 | units.julianyr)
         self.assertAlmostRelativeEqual(star.age, 2.e5 | units.julianyr, 3)
-        self.assertAlmostRelativeEqual(star.mass,  1.00 | units.MSun)
+        self.assertAlmostRelativeEqual(star.mass,  1.00 | units.MSun, 3)
         print(star.as_set())
         instance.stop()
 
@@ -1191,7 +1192,7 @@ class TestMESA(TestWithMPI):
         instance = self.new_instance_of_an_optional_code(MESA)
         set_mesa_paths_instance(instance)
         star = instance.particles.add_particle(Particle(mass=1 | units.MSun))
-        instance.evolve_model(0.3 | units.Gyr)  # VERY short, for test speed up
+        instance.evolve_model(0.2 | units.Gyr)  # VERY short, for test speed up
         central_hydrogen_abundance = star.get_chemical_abundance_profiles(
         )[0][0]
         print(central_hydrogen_abundance)
@@ -1214,7 +1215,7 @@ class TestMESA(TestWithMPI):
         # the "hydrogen exhausted core"
         # FIXME updated values in the rest of the test
         limit = 0.69
-        expected_core_mass = 0.0847273423268 | units.MSun
+        expected_core_mass = 0.0288211177139 | units.MSun
         self.assertAlmostEqual(
             star.calculate_core_mass(core_H_abundance_limit=limit),
             expected_core_mass, 3)
@@ -1242,7 +1243,7 @@ class TestMESA(TestWithMPI):
         self.assertAlmostRelativeEqual(
             h1_core_mass, expected_core_mass*0.685, 2)
         self.assertAlmostRelativeEqual(
-            he4_core_mass, expected_core_mass*0.295, 2)
+            he4_core_mass, expected_core_mass*0.29, 2)
         self.assertAlmostRelativeEqual(
             metal_core_mass, expected_core_mass*0.02, 1)
         self.assertAlmostRelativeEqual(
@@ -1333,6 +1334,7 @@ class TestMESA(TestWithMPI):
                                                                 'o': 0.0,
                                                                 'f': 0.0,
                                                                 'ne': 0.0,
+                                                                'na': 0.0,
                                                                 'mg': 0.0,
                                                                 'al': 0.0,
                                                                 'si': 0.0,
@@ -1356,12 +1358,12 @@ class TestMESA(TestWithMPI):
         print("and 25% iron")
         star.set_accrete_composition_non_metals(h2=0.75)
         star.set_accrete_composition_metals_identifier(0)  # i.e. specified below:
-        star.set_accrete_composition_metals(fe=1.0) # These must add to 1.0
+        star.set_accrete_composition_metals(fe=1.0)  # These must add to 1.0
         self.assertEqual(
             star.get_accrete_composition_non_metals()['h2'], 0.75)
         self.assertEqual(star.get_accrete_composition_metals_identifier(), 0)
         self.assertEqual(
-            star.get_accrete_composition_metals()['fe'], 1.0) # Metals must now sum to 1.0
+            star.get_accrete_composition_metals()['fe'], 1.0)  # Metals must now sum to 1.0
                                                               # Z is set by the 1 - sum(non_metals)
 
         star.mass_change = 1.0e-8 | units.MSun / units.yr

@@ -15,11 +15,11 @@ class PhiGRAPEInterface(
     StoppingConditionInterface,
     GravityFieldInterface):
     """
-        .. [#] Harfst, S., Gualandris, A., Merritt, D., Spurzem, R., Portegies Zwart, S., & Berczik, P. 2007, New Astronomy, 12, 357 [2007NewA...12..357H]
+    .. [#] ADS:2007NewA...12..357H (Harfst, S., Gualandris, A., Merritt, D., Spurzem, R., Portegies Zwart, S., & Berczik, P. 2007, New Astronomy, 12, 357)
     """
 
     MODE_G6LIB = 'g6lib'
-    MODE_GPU   = 'gpu'
+    MODE_GPU = 'gpu'
     MODE_GRAPE = 'grape'
 
     def __init__(self, mode = MODE_G6LIB, number_of_workers = 1, **options):

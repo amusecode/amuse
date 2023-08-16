@@ -53,7 +53,7 @@ clean:
 #	make -C src clean
 
 distclean: clean
-	rm -rf src $(FILELIST)
+	rm -rf src
 
 #$(CODELIB):
 #	make -C src all
@@ -65,11 +65,6 @@ download:
 	$(RM) -Rf src
 	mkdir src
 	$(DOWNLOAD_FROM_WEB)
-	cp src/PeTar/amuse-interface/interface.py ./
-	cp src/PeTar/amuse-interface/interface.h ./
-	cp src/PeTar/amuse-interface/interface.cc ./
-
-
 
 __init__.py:
 	touch $@

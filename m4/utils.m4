@@ -63,7 +63,7 @@ AC_DEFUN([AX_IFORT_VERSION], [
 #
 # AC_FIND_LIB(LIBRARY, FUNCTION, LIST-OF-DIRECTORIES [, ACTION-IF-FOUND
 #		[, ACTION-IF-NOT-FOUND [, OTHER-LIBRARIES ]]])
-AC_DEFUN(AC_FIND_LIB,
+AC_DEFUN([AC_FIND_LIB],
     [AC_MSG_CHECKING([directories for -l$1])
     #
     # A lot of this is taken from AC_CHECK_LIB.  Note that we always check
@@ -80,22 +80,18 @@ AC_DEFUN(AC_FIND_LIB,
         else
             LIBS="$LIBS -L$dir -l$1 $6"
         fi
-        AC_TRY_LINK(
-    ifelse([$2], [main], , # Avoid conflicting decl of main.
-    [/* Override any gcc2 internal prototype to avoid an error.  */
-    ]
-    [/* We use char because int might match the return type of a gcc2
+        AC_LINK_IFELSE([AC_LANG_PROGRAM([[ifelse($2, main, , # Avoid conflicting decl of main.
+    /* Override any gcc2 internal prototype to avoid an error.  */
+    
+    /* We use char because int might match the return type of a gcc2
         builtin and then its argument prototype would still apply.  */
     char $2();
-    ]),
-        [$2()],
-        if test "X$dir" = "X"; then
+    )]], [[$2()]])],[if test "X$dir" = "X"; then
             eval "ac_cv_lib_$ac_lib_var=yes"
         else
             eval "ac_cv_lib_$ac_lib_var=$dir"
         fi
-        break,
-        eval "ac_cv_lib_$ac_lib_var=no")
+        break],[eval "ac_cv_lib_$ac_lib_var=no"])
         LIBS="$ac_cache_save_LIBS"
     done
     ])#
