@@ -189,6 +189,52 @@ local int translate_stellar_type_to_int(stellar_type stp, const real mass) {
 }
 
 
+local stellar_type translate_int_to_stellar_type(int type_number) {
+  stellar_type stp;
+  switch (type_number) {
+    case 19:
+      stp = Brown_Dwarf;
+    case 0:
+    case 1:
+      stp = Main_Sequence;
+    case 2:
+      stp = Hertzsprung_Gap;
+    case 3:
+      stp = Sub_Giant;
+    case 4:
+      stp = Horizontal_Branch;
+    case 5:
+    case 6:
+      stp = Super_Giant;
+//      stp = Hyper_Giant;
+    case 7:
+      stp = Helium_Star;
+    case 8:
+    case 9:
+      stp = Helium_Giant;
+    case 10:
+      stp = Helium_Dwarf;
+    case 11:
+      stp = Carbon_Dwarf;
+    case 12:
+      stp = Oxygen_Dwarf;
+    case 13:
+      stp = Neutron_Star;
+    case 14:
+      stp = Black_Hole;
+    case 15:
+      stp = Disintegrated;
+    case 17:
+      stp = Proto_Star;
+    case 18:
+      stp = Planet;
+    case -1:
+      stp = no_of_stellar_type;
+    return stp;
+  }
+}
+
+
 
 local int translate_binary_type_to_int(binary_type btp) {
   switch (btp) {
@@ -418,6 +464,41 @@ int new_particle(int * index_of_the_star, double mass){
     
     return 0;
 }
+
+
+int new_advanced_particle(int * index_of_the_star, double mass, int type_number, double radius, double relative_mass, double core_mass, double CO_core_mass, double age){
+
+    node * new_node = new node();
+    new_node->set_label(next_seba_id);
+    new_node->set_parent(seba_root);
+    new_node->set_mass(mass);
+    mapping_from_id_to_node[next_seba_id] = new_node;
+    
+    if(seba_insertion_point == 0) {
+        seba_insertion_point = new_node;
+        seba_root->set_oldest_daughter(new_node);
+    } else {
+        seba_insertion_point->set_younger_sister(new_node);
+        new_node->set_elder_sister(seba_insertion_point);
+        seba_insertion_point = new_node;
+    }
+    
+    stellar_type seba_stellar_type = translate_int_to_stellar_type(type_number);
+    
+    addstar(new_node, seba_time, seba_stellar_type, seba_metallicity, 0, false);
+    new_node->get_starbase()->set_time_offset(seba_time);
+    *index_of_the_star = next_seba_id;
+    
+    next_seba_id++;
+    
+//    new_node->get_starbase()->set_radius
+    
+    
+    return 0;
+}
+
+
+
 
 int delete_star(int index_of_the_star){
     
@@ -728,6 +809,7 @@ int get_wind_mass_loss_rate(int index_of_the_star, double * wind_mass_loss_rate)
 
 
 
+
 int evolve_one_step(int index_of_the_star){
     int error_code = 0;
     int n_steps_per_phase = 10;
@@ -966,3 +1048,20 @@ int set_rotation_period(int index_of_the_star, double value){
     return error_code;
 }
 
+
+int get_binary_type(int index_of_the_star, double * value){
+    int error_code = 0;
+    node * seba_node = get_seba_node_from_index(index_of_the_star, &error_code);
+    if(error_code < 0) {return error_code;}
+    *value= seba_node->get_starbase()->get_bin_type();
+    return error_code;
+}
+
+int get_mass_transfer_type(int index_of_the_star, double * value){
+    int error_code = 0;
+    node * seba_node = get_seba_node_from_index(index_of_the_star, &error_code);
+    if(error_code < 0) {return error_code;}
+//    *value= seba_node->get_starbase()->get_mass_transfer_type();
+    *value = 0.;
+    return error_code;
+}
