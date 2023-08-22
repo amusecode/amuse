@@ -145,6 +145,47 @@ class SeBaInterface(CodeInterface, se.StellarEvolutionInterface, LiteratureRefer
             A binary with the given index was not found.
         """
         return function
+        
+    @legacy_function
+    def get_binary_type():
+        """
+        Retrieve the current binary type of the binary star.
+        """
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
+        function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
+            , description="The index of the star to get the value of")
+        function.addParameter('value', dtype='float64', direction=function.OUT
+            , description="The current binary type.")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            The value has been set.
+        -1 - ERROR
+            A binary with the given index was not found.
+        """
+        return function
+
+    @legacy_function
+    def get_mass_transfer_type():
+        """
+        Retrieve the current mass transfer type of the binary star.
+        """
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
+        function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
+            , description="The index of the star to get the value of")
+        function.addParameter('value', dtype='float64', direction=function.OUT
+            , description="The current mass transfer type.")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            The value has been set.
+        -1 - ERROR
+            A binary with the given index was not found.
+        """
+        return function
+        
 
     @legacy_function
     def get_core_mass():
@@ -896,6 +937,16 @@ class SeBa(se.StellarEvolution):
             (units.RSun, handler.ERROR_CODE,)
         )
         handler.add_method(
+            "get_binary_type",
+            (handler.INDEX,),
+            (handler.NO_UNIT, handler.ERROR_CODE,)
+        )
+        handler.add_method(
+            "get_mass_transfer_type",
+            (handler.INDEX,),
+            (handler.NO_UNIT, handler.ERROR_CODE,)
+        )        
+        handler.add_method(
             "get_core_mass",
             (handler.INDEX,),
             (units.MSun, handler.ERROR_CODE,)
@@ -1120,13 +1171,17 @@ class SeBa(se.StellarEvolution):
         handler.set_delete('binaries', 'delete_binary')
 
         handler.add_getter('binaries', 'get_semi_major_axis', names = ('semi_major_axis',))
+        handler.add_setter('binaries', 'set_semi_major_axis', names = ('semi_major_axis',))
         handler.add_getter('binaries', 'get_eccentricity', names = ('eccentricity',))
+        handler.add_setter('binaries', 'set_eccentricity', names = ('eccentricity',))
+
         handler.add_getter('binaries', 'get_mass', names = ('mass',))
         handler.add_getter('binaries', 'get_time_step', names = ('time_step',))
         handler.add_getter('binaries', 'get_age', names = ('age',))
         handler.add_getter("binaries", 'get_children_of_binary')
-        handler.add_setter('binaries', 'set_semi_major_axis', names = ('semi_major_axis',))
-        handler.add_setter('binaries', 'set_eccentricity', names = ('eccentricity',))
+        handler.add_getter('binaries', 'get_binary_type', names = ('binary_type',))
+        handler.add_getter('binaries', 'get_mass_transfer_type', names = ('mass_transfer_type',))
+
         handler.add_method('binaries', 'merge_the_binary')
         
 
