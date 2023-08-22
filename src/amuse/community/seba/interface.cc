@@ -1049,19 +1049,3 @@ int set_rotation_period(int index_of_the_star, double value){
 }
 
 
-int get_binary_type(int index_of_the_star, double * value){
-    int error_code = 0;
-    node * seba_node = get_seba_node_from_index(index_of_the_star, &error_code);
-    if(error_code < 0) {return error_code;}
-    *value= seba_node->get_starbase()->get_bin_type();
-    return error_code;
-}
-
-int get_mass_transfer_type(int index_of_the_star, double * value){
-    int error_code = 0;
-    node * seba_node = get_seba_node_from_index(index_of_the_star, &error_code);
-    if(error_code < 0) {return error_code;}
-//    *value= seba_node->get_starbase()->get_mass_transfer_type();
-    *value = 0.;
-    return error_code;
-}
