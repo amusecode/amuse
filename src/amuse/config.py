@@ -6,27 +6,28 @@ configuration from config.mk
 import os
 import warnings
 
-
-def parse_configmk(filename):
-    configfile = open(filename, "r")
-    lines = configfile.readlines()
-    configfile.close()
+def parse_configmk_lines(lines,label):
     cfgvars = dict()
     if "amuse configuration" not in lines[0]:
         raise Exception(
-            "file: {0} is not an amuse configuration file".format(filename)
+            f"{label} is not an amuse configuration file"
         )
     for line in lines:
         if "=" in line:
             var, value = line.split("=", 1)
             if value.startswith("@") and value.endswith("@"):
                 warnings.warn(
-                    "possible configuration error/ unconfigured variable in"
-                    " {0}".format(filename)
+                    f"possible configuration error/ unconfigured variable in"
+                    f" {label}"
                 )
             cfgvars[var] = value.strip()
     return cfgvars
 
+def parse_configmk(filename):
+    configfile = open(filename, "r")
+    lines = configfile.readlines()
+    configfile.close()
+    return parse_configmk_lines(lines, "file " + filename)
 
 try:
     configmk = parse_configmk("config.mk")
