@@ -190,47 +190,46 @@ local int translate_stellar_type_to_int(stellar_type stp, const real mass) {
 
 
 local stellar_type translate_int_to_stellar_type(int type_number) {
-  stellar_type stp;
+
   switch (type_number) {
     case 19:
-      stp = Brown_Dwarf;
+      return Brown_Dwarf;
     case 0:
     case 1:
-      stp = Main_Sequence;
+      return Main_Sequence;
     case 2:
-      stp = Hertzsprung_Gap;
+      return Hertzsprung_Gap;
     case 3:
-      stp = Sub_Giant;
+      return Sub_Giant;
     case 4:
-      stp = Horizontal_Branch;
+      return Horizontal_Branch;
     case 5:
     case 6:
-      stp = Super_Giant;
-//      stp = Hyper_Giant;
+      return Super_Giant;
+//      return Hyper_Giant;
     case 7:
-      stp = Helium_Star;
+      return Helium_Star;
     case 8:
     case 9:
-      stp = Helium_Giant;
+      return Helium_Giant;
     case 10:
-      stp = Helium_Dwarf;
+      return Helium_Dwarf;
     case 11:
-      stp = Carbon_Dwarf;
+      return Carbon_Dwarf;
     case 12:
-      stp = Oxygen_Dwarf;
+      return Oxygen_Dwarf;
     case 13:
-      stp = Neutron_Star;
+      return Neutron_Star;
     case 14:
-      stp = Black_Hole;
+      return Black_Hole;
     case 15:
-      stp = Disintegrated;
+      return Disintegrated;
     case 17:
-      stp = Proto_Star;
+      return Proto_Star;
     case 18:
-      stp = Planet;
+      return Planet;
     case -1:
-      stp = no_of_stellar_type;
-    return stp;
+      return no_of_stellar_type;
   }
 }
 
@@ -466,8 +465,11 @@ int new_particle(int * index_of_the_star, double mass){
 }
 
 
-int new_advanced_particle(int * index_of_the_star, double mass, int type_number, double radius, double relative_mass, double core_mass, double CO_core_mass, double age){
+int new_advanced_particle(int * index_of_the_star, double mass,  double relative_mass, int type_number,  double age, double core_mass, double COcore_mass,  double radius){
 
+    if (relative_mass == 0) return new_particle(index_of_the_star, mass);
+    if (age < 0) return -1;
+ 
     node * new_node = new node();
     new_node->set_label(next_seba_id);
     new_node->set_parent(seba_root);
@@ -483,15 +485,18 @@ int new_advanced_particle(int * index_of_the_star, double mass, int type_number,
         seba_insertion_point = new_node;
     }
     
-    stellar_type seba_stellar_type = translate_int_to_stellar_type(type_number);
-    
+    stellar_type seba_stellar_type = translate_int_to_stellar_type(type_number);    
+
     addstar(new_node, seba_time, seba_stellar_type, seba_metallicity, 0, false);
     new_node->get_starbase()->set_time_offset(seba_time);
     *index_of_the_star = next_seba_id;
     
     next_seba_id++;
     
-//    new_node->get_starbase()->set_radius
+    new_node->get_starbase()->set_relative_age(age);
+    new_node->get_starbase()->set_core_mass(core_mass);
+    new_node->get_starbase()->set_COcore_mass(COcore_mass);
+    new_node->get_starbase()->set_effective_radius(radius);
     
     
     return 0;

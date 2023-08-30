@@ -63,23 +63,23 @@ class SeBaInterface(CodeInterface, se.StellarEvolutionInterface, LiteratureRefer
             'mass', dtype='float64', direction=function.IN,
             description="The initial mass of the star")
         function.addParameter(
-            'stellar_type', dtype='int32', direction=function.IN,
-            description="The initial mass of the star")
+            'relative_mass', dtype='float64', direction=function.IN, default=0,
+            description="The initial relative mass of the star")
         function.addParameter(
-            'radius', dtype='float64', direction=function.IN,
-            description="The initial mass of the star")
+            'stellar_type', dtype='int32', direction=function.IN, default=0,
+            description="The initial stellar type of the star")
         function.addParameter(
-            'relative_mass', dtype='float64', direction=function.IN,
-            description="The initial mass of the star")
+            'age', dtype='float64', direction=function.IN, default=0,
+            description="The initial age of the star")
         function.addParameter(
-            'core_mass', dtype='float64', direction=function.IN,
-            description="The initial mass of the star")
+            'core_mass', dtype='float64', direction=function.IN, default=0, 
+            description="The initial core mass of the star")
         function.addParameter(
-            'CO_core_mass', dtype='float64', direction=function.IN,
-            description="The initial mass of the star")
+            'COcore_mass', dtype='float64', direction=function.IN, default=0,
+            description="The initial CO core mass of the star")
         function.addParameter(
-            'age', dtype='float64', direction=function.IN,
-            description="The initial mass of the star")
+            'radius', dtype='float64', direction=function.IN, default=0,
+            description="The initial radius of the star")
         # function.addParameter(
         #     'age_tag', dtype='float64', direction=function.IN,
         #     description="Starting age of the star *to be specified exactly*")
@@ -923,7 +923,7 @@ class SeBa(se.StellarEvolution):
         )
         handler.add_method(
             "new_advanced_particle",
-            (units.MSun, units.stellar_type, units.RSun, units.MSun, units.MSun, units.MSun, units.Myr),
+            (units.MSun, units.MSun, units.stellar_type, units.Myr, units.MSun, units.MSun, units.RSun),
             (handler.INDEX, handler.ERROR_CODE)
         )        
         handler.add_method(
@@ -1135,7 +1135,7 @@ class SeBa(se.StellarEvolution):
         handler.add_getter('particles', 'get_stellar_type', names = ('stellar_type',))
         handler.add_getter('particles', 'get_mass', names = ('mass',))
         handler.add_getter('particles', 'get_core_mass', names = ('core_mass',))
-        handler.add_getter('particles', 'get_COcore_mass', names = ('CO_core_mass',))
+        handler.add_getter('particles', 'get_COcore_mass', names = ('COcore_mass',))
         handler.add_getter('particles', 'get_envelope_mass', names = ('envelope_mass',))
         handler.add_getter('particles', 'get_core_radius', names = ('core_radius',))
         handler.add_getter('particles', 'get_age', names = ('age',))
