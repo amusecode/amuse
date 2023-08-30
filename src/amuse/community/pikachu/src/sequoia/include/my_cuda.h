@@ -249,7 +249,7 @@ namespace my_dev {
     {
       switch(ccMajor)
       {
-        case 1:
+/*        case 1:
           switch(ccMinor)
           {
             case 0:
@@ -277,6 +277,16 @@ namespace my_dev {
               break;            
           }
           break;             
+          */
+      case 3:
+          defaultComputeMode = CU_TARGET_COMPUTE_30;
+          break;
+      case 6:
+          defaultComputeMode = CU_TARGET_COMPUTE_60;
+          break;
+      case 7:
+          defaultComputeMode = CU_TARGET_COMPUTE_70;
+          break;
       }  
    }    
     

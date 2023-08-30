@@ -20,12 +20,18 @@ from amuse.datamodel import Particles
 from amuse.datamodel import Particle
 from amuse.datamodel import AttributeStorage
 from amuse.datamodel import LinkedArray
+from amuse.datamodel import Grid
 from amuse.datamodel import GridPoint
 from amuse.datamodel import AbstractSet
+from amuse.datamodel.base import VectorAttribute
+
 
 from amuse.io import store_v1
 
 import warnings
+
+import logging
+logger = logging.getLogger(__name__)
 
 def pickle_to_string(value):
     return numpy.void(pickle.dumps(value, protocol=0))
@@ -34,6 +40,8 @@ def unpickle_from_string(value):
     return pickle.loads(value, encoding='bytes')
     
 class HDF5Attribute(object):
+    compression = False
+    compression_opts = None
     
     def __init__(self, name):
         self.name = name
@@ -62,26 +70,56 @@ class HDF5Attribute(object):
             if not hasattr(shape, '__iter__'): 
                 shape = shape,
             dtype = numpy.asanyarray(input.number).dtype
-            dataset = group.create_dataset(name, shape=shape, dtype=dtype)
+            dataset = group.create_dataset(
+                name,
+                shape=shape,
+                dtype=dtype,
+                compression=cls.compression,
+                compression_opts=cls.compression_opts,
+            )
             dataset.attrs["units"] = input.unit.to_simple_form().reference_string().encode('ascii')
             return HDF5VectorQuantityAttribute(name, dataset, input.unit)                                     
         elif hasattr(input, 'as_set'):
             raise Exception("adding a linked attribute to a set stored in a HDF file is not supported, alternative is to copy the set and save it")
             subgroup = group.create_group(name)
-            group.create_dataset('keys', shape=shape, dtype=input.key.dtype)
-            group.create_dataset('masked', shape=shape, dtype=numpy.bool)
+            group.create_dataset(
+                'keys',
+                shape=shape,
+                dtype=input.key.dtype,
+                compression=cls.compression,
+                compression_opts=cls.compression_opts,
+            )
+            group.create_dataset(
+                'masked',
+                shape=shape,
+                dtype=numpy.bool,
+                compression=cls.compression,
+                compression_opts=cls.compression_opts,
+            )
             return HDF5LinkedAttribute(name, subgroup)                                     
         else:
             dtype = numpy.asanyarray(input).dtype
             if dtype.kind == 'U':
-                new_dtype = numpy.dtype('S' + dtype.itemsize * 4)
-                dataset = group.create_dataset(name, shape=shape, dtype=dtype)
+                # new_dtype = numpy.dtype('S' + dtype.itemsize * 4)
+                dataset = group.create_dataset(
+                    name,
+                    shape=shape,
+                    dtype=dtype,
+                    compression=cls.compression,
+                    compression_opts=cls.compression_opts,
+                )
                 dataset.attrs["units"] = "UNICODE".encode('ascii')
                 return HDF5UnicodeAttribute(name, dataset)
             else:
-                if not hasattr(shape, '__iter__'): 
+                if not hasattr(shape, '__iter__'):
                     shape = shape,
-                dataset = group.create_dataset(name, shape=shape, dtype=dtype)
+                dataset = group.create_dataset(
+                    name,
+                    shape=shape,
+                    dtype=dtype,
+                    compression=cls.compression,
+                    compression_opts=cls.compression_opts,
+                )
                 dataset.attrs["units"] = "none".encode('ascii')
                 return HDF5UnitlessAttribute(name, dataset)
 
@@ -127,6 +165,8 @@ class HDF5Attribute(object):
         pass
 
 class HDF5VectorQuantityAttribute(HDF5Attribute):
+    compression = False
+    compression_opts = None
     
     def __init__(self, name, dataset, unit):
         HDF5Attribute.__init__(self, name)
@@ -169,7 +209,13 @@ class HDF5VectorQuantityAttribute(HDF5Attribute):
     
         parent = self.dataset.parent
         del parent[self.name]
-        self.dataset = parent.create_dataset(self.name, shape=newshape, dtype=values.dtype)
+        self.dataset = parent.create_dataset(
+            self.name,
+            shape=newshape,
+            dtype=values.dtype,
+            compression=self.compression,
+            compression_opts=self.compression_opts,
+        )
         self.dataset[:oldlength] = values[:]
 
     def get_length(self):
@@ -193,7 +239,13 @@ class HDF5VectorQuantityAttribute(HDF5Attribute):
         
         parent = self.dataset.parent
         del parent[self.name]
-        self.dataset = parent.create_dataset(self.name, shape=values.shape, dtype=values.dtype)
+        self.dataset = parent.create_dataset(
+            self.name,
+            shape=values.shape,
+            dtype=values.dtype,
+            compression=self.compression,
+            compression_opts=self.compression_opts,
+        )
         self.dataset[:] = values[:]
         
         
@@ -202,6 +254,8 @@ class HDF5VectorQuantityAttribute(HDF5Attribute):
         return True
 
 class HDF5UnitlessAttribute(HDF5Attribute):
+    compression = False
+    compression_opts = None
     
     def __init__(self, name, dataset):
         HDF5Attribute.__init__(self, name)
@@ -236,7 +290,13 @@ class HDF5UnitlessAttribute(HDF5Attribute):
     
         parent = self.dataset.parent
         del parent[self.name]
-        self.dataset = parent.create_dataset(self.name, shape=newshape, dtype=values.dtype)
+        self.dataset = parent.create_dataset(
+            self.name,
+            shape=newshape,
+            dtype=values.dtype,
+            compression=self.compression,
+            compression_opts=self.compression_opts,
+        )
         self.dataset[:oldlength] = values[:]
 
     def get_length(self):
@@ -260,7 +320,13 @@ class HDF5UnitlessAttribute(HDF5Attribute):
         
         parent = self.dataset.parent
         del parent[self.name]
-        self.dataset = parent.create_dataset(self.name, shape=values.shape, dtype=values.dtype)
+        self.dataset = parent.create_dataset(
+            self.name,
+            shape=values.shape,
+            dtype=values.dtype,
+            compression=self.compression,
+            compression_opts=self.compression_opts,
+        )
         self.dataset[:] = values[:]
 
     def has_units(self):
@@ -293,7 +359,7 @@ class HDF5LinkedAttribute(HDF5Attribute):
             grid_indices = self.indices_dataset[:][indices]
         else:
             grid_indices = numpy.zeros(shape)
-        result = LinkedArray(numpy.empty(shape, dtype = numpy.object))
+        result = LinkedArray(numpy.empty(shape, dtype = object))
         if len(shape) == 0:
             # we have one unique value, happens with grids
             result = self.convert_to_object(kinds, references, keys, grid_indices)
@@ -380,14 +446,26 @@ class HDF5LinkedAttribute(HDF5Attribute):
     
         parent = self.group
         del parent['keys']
-        self.keys = parent.create_dataset('keys', shape=newshape, dtype=values.dtype)
+        self.keys = parent.create_dataset(
+            'keys',
+            shape=newshape,
+            dtype=values.dtype,
+            compression=self.compression,
+            compression_opts=self.compression_opts,
+        )
         self.keys[:oldlength] = values[:]
         
         values = numpy.empty(shape=self.masked.shape, dtype=self.masked.dtype)
         values[:] = self.masked[:]
         parent = self.group
         del parent['masked']
-        self.masked = parent.create_dataset('masked', shape=newshape, dtype=values.dtype)
+        self.masked = parent.create_dataset(
+            'masked',
+            shape=newshape,
+            dtype=values.dtype,
+            compression=self.compression,
+            compression_opts=self.compression_opts,
+        )
         self.masked[:oldlength] = values[:]
         
 
@@ -420,7 +498,13 @@ class HDF5LinkedAttribute(HDF5Attribute):
         
         parent = self.dataset.parent
         del parent[self.name]
-        self.dataset = parent.create_dataset(self.name, shape=values.shape, dtype=values.dtype)
+        self.dataset = parent.create_dataset(
+            self.name,
+            shape=values.shape,
+            dtype=values.dtype,
+            compression=self.compression,
+            compression_opts=self.compression_opts,
+        )
         self.dataset[:] = values[:]
 
     def has_units(self):
@@ -624,30 +708,45 @@ class UneresolvedAttributeLink(object):
 class StoreHDF(object):
     INFO_GROUP_NAME = 'AMUSE_INF'
     DATA_GROUP_NAME = 'data'
-    
-    def __init__(self, filename, append_to_file=True, open_for_writing = True, copy_history = False, return_working_copy = False):
+
+    def __init__(
+        self,
+        filename,
+        append_to_file=True,
+        open_for_writing=True,
+        copy_history=False,
+        overwrite_file=False,
+        compression=False,
+        compression_opts=None,
+    ):
+        self.compression = compression
+        self.compression_opts = compression_opts
         if h5py is None:
-            raise AmuseException("h5py module not available, cannot use hdf5 files")
-            
-        if not append_to_file and open_for_writing and os.path.exists(filename):
-            os.remove(filename)
-            
-        if append_to_file:
-            if open_for_writing:
-                self.hdf5file = h5py.File(filename,'a')
-            else:
-                if os.access(filename, os.W_OK):
-                    self.hdf5file = h5py.File(filename,'a')
+            raise exceptions.AmuseException(
+                "h5py module not available, cannot use hdf5 files")
+
+        logger.info(
+            f"opening {filename} with options {append_to_file} "
+            f"{open_for_writing} {copy_history} {overwrite_file}"
+        )
+
+        if not append_to_file and open_for_writing:
+            if os.path.exists(filename):
+                if overwrite_file:
+                    os.remove(filename)
                 else:
-                    self.hdf5file = h5py.File(filename,'r')
+                    raise FileExistsError("Opening file for write with overwrite_file is False but file {0} exists".format(filename))
+
+        if append_to_file:
+            if os.access(filename, os.F_OK) and not os.access(filename, os.W_OK):
+                   raise Exception("Opening file for append but file {0} is not writeable".format(filename))
+            self.hdf5file = h5py.File(filename,'a')
+        elif open_for_writing:
+            self.hdf5file = h5py.File(filename,'w')
         else:
-            if open_for_writing:
-                self.hdf5file = h5py.File(filename,'w')
-            else:
-                self.hdf5file = h5py.File(filename,'r')
+            self.hdf5file = h5py.File(filename,'r')
         
         self.copy_history = copy_history
-        self.return_working_copy = return_working_copy
         self.mapping_from_groupid_to_set = {}
         
         #warnings.warn("amuse hdf storage version 2.0 is still in development, do not use it for production scripts")
@@ -741,10 +840,16 @@ class StoreHDF(object):
         group.attrs["class_of_the_particles"] = pickle_to_string(particles._factory_for_new_collection())
             
         keys = particles.get_all_keys_in_store()
-        dataset = group.create_dataset("keys", data=keys)
+        dataset = group.create_dataset(
+            "keys",
+            data=keys,
+            compression=self.compression,
+            compression_opts=self.compression_opts,
+        )
         self.hdf5file.flush()
         self.store_collection_attributes(particles, group, extra_attributes, links)
         self.store_values(particles, group, links)
+        self.store_selected_derived_attributes(particles,group)    
             
         mapping_from_setid_to_group[id(particles)] = group
         
@@ -759,8 +864,14 @@ class StoreHDF(object):
         
         group.attrs["type"] = 'grid'.encode("ascii")
         group.attrs["class_of_the_container"] = pickle_to_string(grid._factory_for_new_collection())
-        group.create_dataset("shape", data=numpy.asarray(grid.shape))
+        group.create_dataset(
+            "shape",
+            data=numpy.asarray(grid.shape),
+            compression=self.compression,
+            compression_opts=self.compression_opts,
+        )
     
+        self.store_selected_derived_attributes(grid, group)
         self.store_collection_attributes(grid, group, extra_attributes, links)
         self.store_values(grid, group, links)
         
@@ -789,28 +900,55 @@ class StoreHDF(object):
         for attribute, quantity in zip(container.get_attribute_names_defined_in_store(), all_values):
             if is_quantity(quantity):
                 value = quantity.value_in(quantity.unit)
-                dataset = attributes_group.create_dataset(attribute, data=value)
+                dataset = attributes_group.create_dataset(
+                    attribute,
+                    data=value,
+                    compression=self.compression,
+                    compression_opts=self.compression_opts,
+                )
                 dataset.attrs["units"] = quantity.unit.to_simple_form().reference_string().encode("ascii")
             elif isinstance(quantity, LinkedArray):
                 self.store_linked_array(attribute, attributes_group, quantity, group, links)
             else:
                 dtype = numpy.asanyarray(quantity).dtype
                 if dtype.kind == 'U':
-                    dataset = attributes_group.create_dataset(attribute, data=numpy.char.encode(quantity,  'UTF-32BE'))
+                    dataset = attributes_group.create_dataset(
+                        attribute,
+                        data=numpy.char.encode(quantity, 'UTF-32BE'),
+                        compression=self.compression,
+                        compression_opts=self.compression_opts,
+                    )
                     dataset.attrs["units"] = "UNICODE".encode('ascii')
                 else:
-                    dataset = attributes_group.create_dataset(attribute, data=quantity)
+                    dataset = attributes_group.create_dataset(
+                        attribute,
+                        data=quantity,
+                        compression=self.compression,
+                        compression_opts=self.compression_opts,
+                    )
                     dataset.attrs["units"] = "none".encode('ascii')
                 
+    def store_selected_derived_attributes(self, container, group):
+        saving=dict()
+        for key in container._derived_attributes.keys():
+            attr=container._derived_attributes[key]
+            if key not in container.GLOBAL_DERIVED_ATTRIBUTES and isinstance(attr, VectorAttribute):
+                saving[key]=attr
+        if len(saving): 
+            group.attrs["extra_vector_attributes"]=pickle_to_string(saving)
     
-
     def store_linked_array(self, attribute, attributes_group, quantity, group, links):
         subgroup = attributes_group.create_group(attribute)
         shape = quantity.shape
         kind_array = numpy.zeros(shape, dtype = numpy.int16)
         ref_dtype = h5py.special_dtype(ref=h5py.Reference)
         ref_array = numpy.empty(shape, dtype = ref_dtype)
-        ref_dataset = subgroup.create_dataset('ref', data=ref_array)
+        ref_dataset = subgroup.create_dataset(
+            'ref',
+            data=ref_array,
+            compression=self.compression,
+            compression_opts=self.compression_opts,
+        )
         key_array = numpy.zeros(shape, dtype = numpy.uint64)
         
         max_len_grid_indices = 0
@@ -866,10 +1004,25 @@ class StoreHDF(object):
             else:
                 raise Exception("unsupported type {0}".format(type(object)))
         if max_len_grid_indices > 0:
-            subgroup.create_dataset('indices', data=indices_array)
+            subgroup.create_dataset(
+                'indices',
+                data=indices_array,
+                compression=self.compression,
+                compression_opts=self.compression_opts,
+            )
             
-        subgroup.create_dataset('keys', data=key_array)
-        subgroup.create_dataset('kind', data=kind_array)
+        subgroup.create_dataset(
+            'keys',
+            data=key_array,
+            compression=self.compression,
+            compression_opts=self.compression_opts,
+        )
+        subgroup.create_dataset(
+            'kind',
+            data=kind_array,
+            compression=self.compression,
+            compression_opts=self.compression_opts,
+        )
         subgroup.attrs["units"] = "link".encode("ascii")
     
 
@@ -959,8 +1112,6 @@ class StoreHDF(object):
                 result[x] = self.load_container(self.named_group(x))
             return result
                 
-
-
     def load_sets(self, names):
         result = []
         for x in names:
@@ -987,16 +1138,16 @@ class StoreHDF(object):
        
             self.mapping_from_groupid_to_set[group.id] = particles
             self.load_collection_attributes(particles, group)
-        
-        
+        if "extra_vector_attributes" in group.attrs.keys():
+            self.load_extra_derived_attributes(particles, group)
+                
         return particles
-        
         
     def load_grid_from_group(self, group):
         try:
             class_of_the_container = unpickle_from_string(group.attrs["class_of_the_container"])
         except:
-            class_of_the_container = Grids
+            class_of_the_container = Grid 
             
         shape = tuple(group["shape"])
         
@@ -1004,8 +1155,15 @@ class StoreHDF(object):
         container._private.attribute_storage = HDF5GridAttributeStorage(shape, group, self)
         self.mapping_from_groupid_to_set[group.id] = container
         self.load_collection_attributes(container, group)
+        if "extra_vector_attributes" in group.attrs.keys():
+            self.load_extra_derived_attributes(container, group)
         
         return container
+    
+    def load_extra_derived_attributes(self, container, group):
+        attrs=unpickle_from_string(group.attrs["extra_vector_attributes"])
+        for key, attr in attrs.items():
+            container._derived_attributes[key]=attr
     
     def load_from_group(self, group):
         container_type = group.attrs['type'] if isinstance(group.attrs['type'], str) else group.attrs['type'].decode('ascii') 
@@ -1088,12 +1246,13 @@ class StoreHDF(object):
         else:
             return self.hdf5file.require_group(name)
         
-
     def close(self):
         if not self.hdf5file is None:
             self.hdf5file.flush()
             self.hdf5file.close()
             self.hdf5file = None
+
+
 class HDF5UnicodeAttribute(HDF5UnitlessAttribute):
     
     def __init__(self, name, dataset):
@@ -1108,11 +1267,9 @@ class HDF5UnicodeAttribute(HDF5UnitlessAttribute):
             encoded = self.dataset[:][indices]
         return numpy.char.decode(encoded, 'UTF-32BE')
 
-
     def set_values(self, indices, values):
         self.dataset[indices] = numpy.char.encode(values, 'UTF-32LE')
     
-
     def get_value(self, index):
         return self.dataset[index].decode('UTF-32BE')
 

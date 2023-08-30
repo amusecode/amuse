@@ -1,6 +1,8 @@
 # standard amuse configuration include
 # config.mk will be made after ./configure has run
-AMUSE_DIR?=../../../..
+ifeq ($(origin AMUSE_DIR), undefined)
+  AMUSE_DIR := $(shell amusifier --get-amuse-dir)
+endif
 -include ${AMUSE_DIR}/config.mk
 
 MPICXX   ?= openmpicxx
@@ -18,11 +20,38 @@ INCLUDES = -I$(CUDA_TK)/include $(SC_FLAGS)
 
 OBJS = libraryInterface.o
 
-CODELIB = src/runtime/libbonsai_amuse.a
+CODELIB = src/bonsai/runtime/libbonsai_amuse.a
 
-CODE_GENERATOR = $(AMUSE_DIR)/build.py
+DOWNLOAD_FROM_WEB = $(PYTHON) ./download.py
+
+DOWNLOAD_CODES?=1
 
 all: compile bonsai_worker 
+
+ifdef DOWNLOAD_CODES
+$(CODEDIR)/Makefile:
+	make -C . download
+else
+$(CODEDIR)/Makefile:
+	@echo ""
+	@echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+	@echo ""
+	@echo "DOWNLOAD_CODES is not set. Bonsai2 will not be downloaded and built."
+	@echo "If you do want Bonsai2, set DOWNLOAD_CODES to 1."
+	@echo "bash> export DOWNLOAD_CODES=1"
+	@echo "csh> setenv DOWNLOAD_CODES 1"
+	@echo ""
+	@echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+	@echo ""
+	@make -s --no-print-directory -C . raise_error
+endif
+
+download:
+	$(RM) -Rf .pc
+	$(RM) -Rf src
+	mkdir src
+	$(DOWNLOAD_FROM_WEB)
+	$(PATCH_FILES)
 
 $(CUDA_TK):
 	@echo ""
@@ -40,7 +69,11 @@ $(CUDA_TK):
 	@make -s --no-print-directory -C . raise_error
 
 
-compile: $(CUDA_TK) $(CODELIB) 
+compile: $(CUDA_TK) $(CODELIB)
+	cd src/bonsai/runtime
+	cmake -DUSE_MPI=0 -DUSE_MPIMT=0 -DCMAKE_BUILD_TYPE=RelWithDebInfo -DUSE_THRUST=1 -DUSE_CUB=0
+	make -j
+	make
 
 clean:
 	$(RM) -f *.so *.o *.pyc worker_code.cc worker_code.h 
@@ -54,7 +87,7 @@ worker_code.cc: interface.py
 	$(CODE_GENERATOR) --type=c interface.py BonsaiInterface2 -o $@
 
 worker_code.h: interface.py
-	$(CODE_GENERATOR) --type=h -i amuse.support.codes.stopping_conditions.StoppingConditionInterface  interface.py BonsaiInterface2 -o $@
+	$(CODE_GENERATOR) --type=h -i amuse.community.interface.stopping_conditions.StoppingConditionInterface  interface.py BonsaiInterface2 -o $@
 
 
 bonsai_worker: worker_code.cc worker_code.h $(CODELIB) $(OBJS)

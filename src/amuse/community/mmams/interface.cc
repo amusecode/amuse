@@ -1,5 +1,6 @@
 #include "src/mmas2/src/mmas/mmas.h"
 #include "src/mmas2/src/eos/eos.h"
+#include "src/mmas2/src/mmas/mass_loss.h"
 #include "worker_code.h"
 #include <map>
 #include <gsl/gsl_errno.h>
@@ -11,6 +12,7 @@ int dump_mixed = 1;
 int target_n_shells_mixing = 200;
 int target_n_shells = 10000;
 int flag_do_shock_heating = 1;
+int mass_loss_do_const_flag = false;
 
 
 int number_of_particles = 0;
@@ -40,6 +42,7 @@ int cleanup_code(){
 }
 
 int commit_parameters(){
+    do_const=mass_loss_do_const_flag;
     return 0;
 }
 
@@ -236,6 +239,26 @@ int get_dump_mixed_flag(int *dump_mixed_flag){
     *dump_mixed_flag = dump_mixed;
     return 0;
 }
+
+int set_mass_loss_do_const_flag(int flag){
+    mass_loss_do_const_flag = flag;
+    return 0;
+}
+int get_mass_loss_do_const_flag(int *flag){
+    *flag = mass_loss_do_const_flag;
+    return 0;
+}
+
+int set_const_mass_loss(double x){
+    const_mass_loss = x;
+    return 0;
+}
+int get_const_mass_loss(double *x){
+    *x = const_mass_loss;
+    return 0;
+}
+
+
 
 int set_target_n_shells_mixing(int target_n_shells_mixing_in){
     target_n_shells_mixing = target_n_shells_mixing_in;

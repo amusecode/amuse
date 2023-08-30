@@ -35,8 +35,9 @@ except ImportError:
 from amuse.support.options import OptionalAttributes, option, GlobalOptions
 from amuse.support.core import late
 from amuse.support import exceptions
-from amuse.support import get_amuse_root_dir
+from amuse.support import get_amuse_root_dir, get_amuse_package_dir
 from amuse.rfi import run_command_redirected
+from amuse.config import parse_configmk_lines
 
 from amuse.rfi import slurm
 
@@ -220,11 +221,11 @@ class MPIMessage(AbstractMessage):
             strings = []
             begin = 0
             for size in sizes:
-                strings.append(data_bytes[begin:begin + size].tostring().decode('latin_1'))
+                strings.append(data_bytes[begin:begin + size].tobytes().decode('latin_1'))
                 begin = begin + size + 1
                 
             logger.debug("got %d strings of size %s, data = %s", total, sizes, strings)
-            return strings
+            return numpy.array(strings)
         else:
             return []
         
@@ -292,7 +293,7 @@ class MPIMessage(AbstractMessage):
         lengths = numpy.array( [len(s) for s in array] ,dtype='i')
         
         chars=(chr(0).join(array)+chr(0)).encode("utf-8")
-        chars = numpy.fromstring(chars, dtype='uint8')
+        chars = numpy.frombuffer(chars, dtype='uint8')
 
         if len(chars) != lengths.sum()+len(lengths):
             raise Exception("send_strings size mismatch {0} vs {1}".format( len(chars) , lengths.sum()+len(lengths) ))
@@ -437,8 +438,13 @@ class AbstractMessageChannel(OptionalAttributes):
         OptionalAttributes.__init__(self, **options)
     
     @classmethod
-    def GDB(cls, full_name_of_the_worker, channel, interpreter_executable=None):
-        arguments = ['-hold', '-display', os.environ['DISPLAY'], '-e', 'gdb', '--args']
+    def GDB(cls, full_name_of_the_worker, channel, interpreter_executable=None, immediate_run=True):
+        arguments = ['-hold', '-display', os.environ['DISPLAY'], '-e', 'gdb']
+        
+        if immediate_run:
+            arguments.extend([ '-ex', 'run'])
+        
+        arguments.extend(['--args'])
         
         if not interpreter_executable is None:
             arguments.append(interpreter_executable)
@@ -449,7 +455,7 @@ class AbstractMessageChannel(OptionalAttributes):
         return command, arguments
 
     @classmethod
-    def LLDB(cls, full_name_of_the_worker, channel, interpreter_executable=None):
+    def LLDB(cls, full_name_of_the_worker, channel, interpreter_executable=None, immediate_run=True):
         arguments = ['-hold', '-display', os.environ['DISPLAY'], '-e', 'lldb', '--']
 
         if not interpreter_executable is None:
@@ -461,7 +467,7 @@ class AbstractMessageChannel(OptionalAttributes):
         return command, arguments
 
     @classmethod
-    def DDD(cls, full_name_of_the_worker, channel, interpreter_executable=None):
+    def DDD(cls, full_name_of_the_worker, channel, interpreter_executable=None, immediate_run=True):
         if os.name == 'nt':
             arguments = [full_name_of_the_worker, "--args",full_name_of_the_worker]
             command = channel.adg_exe
@@ -478,7 +484,7 @@ class AbstractMessageChannel(OptionalAttributes):
             return command, arguments
         
     @classmethod
-    def VALGRIND(cls, full_name_of_the_worker, channel, interpreter_executable=None):
+    def VALGRIND(cls, full_name_of_the_worker, channel, interpreter_executable=None, immediate_run=True):
         # arguments = ['-hold', '-display', os.environ['DISPLAY'], '-e', 'valgrind',  full_name_of_the_worker]
         arguments = []
         
@@ -491,7 +497,7 @@ class AbstractMessageChannel(OptionalAttributes):
         
         
     @classmethod
-    def XTERM(cls, full_name_of_the_worker, channel, interpreter_executable=None):
+    def XTERM(cls, full_name_of_the_worker, channel, interpreter_executable=None, immediate_run=True):
         arguments = ['-hold', '-display', os.environ['DISPLAY'], '-e']
         
         if not interpreter_executable is None:
@@ -504,9 +510,10 @@ class AbstractMessageChannel(OptionalAttributes):
         
 
     @classmethod
-    def REDIRECT(cls, full_name_of_the_worker, stdoutname, stderrname, command=None, interpreter_executable=None, **options):
+    def REDIRECT(cls, full_name_of_the_worker, stdoutname, stderrname, command=None, 
+                      interpreter_executable=None, run_command_redirected_file=None  ):
         
-        fname = run_command_redirected.__file__                
+        fname = run_command_redirected_file or run_command_redirected.__file__                
         arguments = [fname , stdoutname, stderrname]
         
         if not interpreter_executable is None:
@@ -520,7 +527,7 @@ class AbstractMessageChannel(OptionalAttributes):
         return command, arguments
     
     @classmethod
-    def GDBR(cls, full_name_of_the_worker, channel, interpreter_executable=None):
+    def GDBR(cls, full_name_of_the_worker, channel, interpreter_executable=None, immediate_run=True):
         "remote gdb, can run without xterm"
         
         arguments = ['localhost:{0}'.format(channel.debugger_port)]
@@ -534,7 +541,7 @@ class AbstractMessageChannel(OptionalAttributes):
         return command, arguments
         
     @classmethod
-    def NODEBUGGER(cls, full_name_of_the_worker, channel, interpreter_executable=None):
+    def NODEBUGGER(cls, full_name_of_the_worker, channel, interpreter_executable=None, immediate_run=True):
         if not interpreter_executable is None:
             return interpreter_executable, [full_name_of_the_worker]
         else:
@@ -542,7 +549,7 @@ class AbstractMessageChannel(OptionalAttributes):
             
     
     @classmethod
-    def STRACE(cls, full_name_of_the_worker, channel, interpreter_executable=None):
+    def STRACE(cls, full_name_of_the_worker, channel, interpreter_executable=None, immediate_run=True):
         arguments = ['-ostrace-out',  '-ff']
         if not interpreter_executable is None:
             arguments.append(interpreter_executable)
@@ -551,7 +558,7 @@ class AbstractMessageChannel(OptionalAttributes):
         return command, arguments
         
     @classmethod
-    def CUSTOM(cls, full_name_of_the_worker, channel, interpreter_executable=None):
+    def CUSTOM(cls, full_name_of_the_worker, channel, interpreter_executable=None, immediate_run=True):
         arguments = list(shlex.split(channel.custom_args))
         if not interpreter_executable is None:
             arguments.append(interpreter_executable)
@@ -563,6 +570,11 @@ class AbstractMessageChannel(OptionalAttributes):
     @classmethod
     def is_multithreading_supported(cls):
         return True
+
+    @option(type="boolean", sections=("channel",))
+    def initialize_mpi(self):
+        """Is MPI initialized in the code or not. Defaults to True if MPI is available"""
+        return config.mpi.is_enabled
             
     @option(type='string', sections=("channel",))
     def worker_code_suffix(self):
@@ -604,6 +616,10 @@ class AbstractMessageChannel(OptionalAttributes):
     @option(type="string", sections=("channel",))
     def custom_args(self):
         return '--hold -e gdb --args'
+
+    @option(type='boolean', sections=("channel",))
+    def debugger_immediate_run(self):
+        return True
     
     @option(type='boolean', sections=("channel",))
     def must_check_if_worker_is_up_to_date(self):
@@ -792,6 +808,8 @@ Please do a 'make clean; make' in the root directory.
         self._communicated_splitted_message = True
         self._merged_results_splitted_message = dtype_to_result
 
+    def makedirs(self,directory):
+        os.makedirs(directory)
 
 
 AbstractMessageChannel.DEBUGGERS = {
@@ -910,14 +928,19 @@ class MpiChannel(AbstractMessageChannel):
             self.info['host'] = self.hostname
         else:
             if self.job_scheduler:
-                self.info = self.get_info_from_job_scheduler(self.job_scheduler)
+                self.info = self.get_info_from_job_scheduler(self.job_scheduler, self.number_of_workers)
             else:
-                self.info = MPI.INFO_NULL
+                self.info = MPI.Info.Create()
+                
+        for key,value in self.mpi_info_options.items():     
+            self.info[key]=value
             
         self.cached = None
         self.intercomm = None
         self._is_inuse = False
         self._communicated_splitted_message = False
+
+        logger.debug("MPI channel created with info items: %s", str(self.info.items()))
     
 
     @classmethod
@@ -979,7 +1002,10 @@ class MpiChannel(AbstractMessageChannel):
     def debugger(self):
         """Name of the debugger to use when starting the code"""
         return "none"
-        
+
+    @option(type="dict", sections=("channel",))
+    def mpi_info_options(self):
+        return dict()
     
     @option(type="int", sections=("channel",))
     def max_message_length(self):
@@ -1041,9 +1067,14 @@ class MpiChannel(AbstractMessageChannel):
         return MPI.COMM_WORLD.rank == 0
         
     def start(self):
+
+        logger.debug("starting mpi worker process")
+
+        logger.debug("mpi_enabled: %s", str(self.initialize_mpi))
         
         if not self.debugger_method is None:
-            command, arguments = self.debugger_method(self.full_name_of_the_worker, self, interpreter_executable=self.interpreter_executable)
+            command, arguments = self.debugger_method(self.full_name_of_the_worker, self, 
+                interpreter_executable=self.interpreter_executable, immediate_run=self.debugger_immediate_run)
         else:
             if not self.can_redirect_output or (self.redirect_stdout_file == 'none' and self.redirect_stderr_file == 'none'):
                 
@@ -1056,7 +1087,11 @@ class MpiChannel(AbstractMessageChannel):
             else:
                 command, arguments = self.REDIRECT(self.full_name_of_the_worker, self.redirect_stdout_file, self.redirect_stderr_file, command=self.python_exe_for_redirection, interpreter_executable=self.interpreter_executable)
 
+        logger.debug("spawning %d mpi processes with command `%s`, arguments `%s` and environment '%s'", self.number_of_workers, command, arguments, os.environ)
+
         self.intercomm = MPI.COMM_SELF.Spawn(command, arguments, self.number_of_workers, info=self.info)
+
+        logger.debug("worker spawn done")
             
         
         
@@ -1216,17 +1251,11 @@ class MpiChannel(AbstractMessageChannel):
         self._is_inuse = False
         self._communicated_splitted_message = False
         self.inuse_semaphore = threading.Semaphore()
-        
-
-
 
     @option(sections=("channel",))
     def job_scheduler(self):
         """Name of the job scheduler to use when starting the code, if given will use job scheduler to find list of hostnames for spawning"""
         return ""
-        
-
-
 
     def get_info_from_job_scheduler(self, name, number_of_workers = 1):
         if name == "slurm":
@@ -1246,7 +1275,7 @@ class MpiChannel(AbstractMessageChannel):
                 for _ in range(tasks):
                     all_nodes.append(node)
             cls._scheduler_nodes = all_nodes
-            cls._scheduler_index = 1     # start at 1 assumes that the python script is running on the first node as the first task
+            cls._scheduler_index = 1  # start at 1 assumes that the python script is running on the first node as the first task
             cls._scheduler_initialized = True
             print("NODES:", cls._scheduler_nodes)
         hostnames = []
@@ -1260,7 +1289,7 @@ class MpiChannel(AbstractMessageChannel):
         host = ','.join(hostnames)
         print("HOST:", host, cls._scheduler_index, os.environ['SLURM_TASKS_PER_NODE'])
         info = MPI.Info.Create()
-        info['host'] = host                                                     #actually in mpich and openmpi, the host parameter is interpreted as a comma separated list of host names,
+        info['host'] = host   # actually in mpich and openmpi, the host parameter is interpreted as a comma separated list of host names,
         return info
 
 
@@ -1403,7 +1432,7 @@ m.run_mpi_channel('{2}')"""
             block = client_socket.recv(block_size)
             blocks.append(block)
             bytes_left -= len(block)
-        return ''.join(blocks)
+        return bytearray().join(blocks)
         
             
     def _createAServerUNIXSocket(self, name_of_the_directory, name_of_the_socket=None):
@@ -1442,20 +1471,16 @@ m.run_mpi_channel('{2}')"""
                 if len(x) > len(result):
                     result = x
         return result
-        
-            
-
 
     @option(choices=AbstractMessageChannel.DEBUGGERS.keys(), sections=("channel",))
     def debugger(self):
         """Name of the debugger to use when starting the code"""
         return "none"
-    
-    
 
     @option(type="boolean")
     def check_mpi(self):
         return True
+
 
 class SocketMessage(AbstractMessage):
       
@@ -1608,7 +1633,7 @@ class SocketMessage(AbstractMessage):
                 strings.append(data_bytes[begin:begin + size].decode('utf-8'))
                 begin = begin + size + 1
 
-            return strings
+            return numpy.array(strings)
         else:
             return []
             
@@ -1635,9 +1660,9 @@ class SocketMessage(AbstractMessage):
         
         # logger.debug("sending message with flags %s and header %s", flags, header)
         
-        socket.sendall(flags.tostring())
+        socket.sendall(flags.tobytes())
 
-        socket.sendall(header.tostring())
+        socket.sendall(header.tobytes())
 
         self.send_ints(socket, self.ints)
         self.send_longs(socket, self.longs)
@@ -1648,22 +1673,21 @@ class SocketMessage(AbstractMessage):
         self.send_doubles(socket, self.encoded_units)
         
         # logger.debug("message send")
-    
 
     def send_doubles(self, socket, array):
         if len(array) > 0:
             data_buffer = numpy.array(array, dtype='f8')
-            socket.sendall(data_buffer.tostring())
+            socket.sendall(data_buffer.tobytes())
             
     def send_ints(self, socket, array):
         if len(array) > 0:
             data_buffer = numpy.array(array, dtype='int32')
-            socket.sendall(data_buffer.tostring())
+            socket.sendall(data_buffer.tobytes())
             
     def send_floats(self, socket, array):
         if len(array) > 0:
             data_buffer = numpy.array(array, dtype='f4')
-            socket.sendall(data_buffer.tostring())
+            socket.sendall(data_buffer.tobytes())
             
     def send_strings(self, socket, array):
         if len(array) > 0:
@@ -1680,16 +1704,18 @@ class SocketMessage(AbstractMessage):
     def send_booleans(self, socket, array):
         if len(array) > 0:
             data_buffer = numpy.array(array, dtype='b')
-            socket.sendall(data_buffer.tostring())
+            socket.sendall(data_buffer.tobytes())
 
     def send_longs(self, socket, array):
         if len(array) > 0:
             data_buffer = numpy.array(array, dtype='int64')
-            socket.sendall(data_buffer.tostring())
-        
+            socket.sendall(data_buffer.tobytes())
+
+
 class SocketChannel(AbstractMessageChannel):
     
-    def __init__(self, name_of_the_worker, legacy_interface_type=None, interpreter_executable=None, **options):
+    def __init__(self, name_of_the_worker, legacy_interface_type=None, interpreter_executable=None, 
+          remote_env=None, **options):
         AbstractMessageChannel.__init__(self, **options)
         
         #logging.getLogger().setLevel(logging.DEBUG)
@@ -1700,10 +1726,16 @@ class SocketChannel(AbstractMessageChannel):
         self.name_of_the_worker = name_of_the_worker
 
         self.interpreter_executable = interpreter_executable
-        
-        if self.hostname != None and self.hostname not in ['localhost',socket.gethostname()]:
-            raise exceptions.CodeException("can only run codes on local machine using SocketChannel, not on %s", self.hostname)
-            
+                
+        if self.hostname == None:
+            self.hostname="localhost"
+
+        if self.hostname not in ['localhost',socket.gethostname()]:
+            self.remote=True
+            self.must_check_if_worker_is_up_to_date=False
+        else:
+            self.remote=False
+                    
         self.id = 0
         
         if not legacy_interface_type is None:
@@ -1717,7 +1749,7 @@ class SocketChannel(AbstractMessageChannel):
         self._communicated_splitted_message = False
         self.socket = None
     
-    
+        self.remote_env=remote_env
 
     @option(sections=("channel",))
     def mpiexec(self):
@@ -1730,10 +1762,6 @@ class SocketChannel(AbstractMessageChannel):
     def mpiexec_number_of_workers_flag(self):
         """flag to use, so that the number of workers are defined"""
         return '-n'
-    
-
-    
-
 
     @late
     def debugger_method(self):
@@ -1756,28 +1784,9 @@ class SocketChannel(AbstractMessageChannel):
                 
         raise exceptions.CodeException('worker still not started after 60 seconds')
 
-    
-
-    def start(self):
-        server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        
-        server_socket.bind(('', 0))
-        server_socket.settimeout(1.0)
-        server_socket.listen(1)
-        
-        logger.debug("starting socket worker process, listening for worker connection on %s", server_socket.getsockname())
-
-        #this option set by CodeInterface
-        logger.debug("mpi_enabled: %s", str(self.initialize_mpi))
-        
-        # set arguments to name of the worker, and port number we listen on 
-
-
-        self.stdout = None
-        self.stderr = None
-        
+    def generate_command_and_arguments(self,server_address,port):
         arguments = []
-        
+                
         if not self.debugger_method is None:
             command, arguments = self.debugger_method(self.full_name_of_the_worker, self, interpreter_executable=self.interpreter_executable)
         else:
@@ -1804,25 +1813,152 @@ class SocketChannel(AbstractMessageChannel):
             command = mpiexec[0]
 
             #append with port and hostname where the worker should connect            
-            arguments.append(str(server_socket.getsockname()[1]))
+            arguments.append(port)
             #hostname of this machine
-            arguments.append(str(socket.gethostname()))
-        
+            arguments.append(server_address)
+            
             #initialize MPI inside worker executable
             arguments.append('true')
         else:
             #append arguments with port and socket where the worker should connect            
-            arguments.append(str(server_socket.getsockname()[1]))
+            arguments.append(port)
             #local machine
-            arguments.append('localhost')
+            arguments.append(server_address)
         
             #do not initialize MPI inside worker executable
             arguments.append('false')
-            
-        logger.debug("starting process with command `%s`, arguments `%s` and environment '%s'", command, arguments, os.environ)
-        self.process = Popen(arguments, executable=command, stdin=PIPE, stdout=None, stderr=None, close_fds=True)
-        logger.debug("waiting for connection from worker")
 
+        return command,arguments
+
+    def remote_env_string(self, hostname):
+        if self.remote_env is None:
+          if hostname in self.remote_envs.keys():
+            return "source "+self.remote_envs[hostname]+"\n"
+          else:
+            return ""
+        else:
+          return "source "+self.remote_env +"\n"
+
+    def generate_remote_command_and_arguments(self,hostname, server_address,port):
+        
+        # get remote config
+        args=["ssh","-T", hostname]
+
+        command=self.remote_env_string(self.hostname)+ \
+                "amusifier --get-amuse-config" +"\n"
+      
+        proc=Popen(args,stdout=PIPE, stdin=PIPE, executable="ssh")
+        out,err=proc.communicate(command.encode())
+
+        try:
+            remote_config=parse_configmk_lines(out.decode().split("\n"),"remote config at "+self.hostname )
+        except:
+            raise Exception(f"failed getting remote config from {self.hostname} - please check remote_env argument ({self.remote_env})")
+
+        # get remote amuse package dir
+        command=self.remote_env_string(self.hostname)+ \
+                "amusifier --get-amuse-package-dir" +"\n"
+      
+        proc=Popen(args,stdout=PIPE, stdin=PIPE, executable="ssh")
+        out,err=proc.communicate(command.encode())
+      
+        remote_package_dir=out.decode().strip(" \n\t")
+        local_package_dir=get_amuse_package_dir()
+                
+        mpiexec=remote_config["MPIEXEC"]
+        initialize_mpi=remote_config["MPI_ENABLED"] == 'yes'
+        run_command_redirected_file=run_command_redirected.__file__.replace(local_package_dir,remote_package_dir)
+        interpreter_executable=None if self.interpreter_executable==None else remote_config["PYTHON"]
+        # dynamic python workers? (should be send over)
+        full_name_of_the_worker=self.full_name_of_the_worker.replace(local_package_dir,remote_package_dir)
+        python_exe_for_redirection=remote_config["PYTHON"]
+
+        if not self.debugger_method is None:
+            raise Exception("remote socket channel debugging not yet supported")
+            #command, arguments = self.debugger_method(self.full_name_of_the_worker, self, interpreter_executable=self.interpreter_executable)
+        else:
+            if self.redirect_stdout_file == 'none' and self.redirect_stderr_file == 'none':
+                
+                if interpreter_executable is None:
+                    command = full_name_of_the_worker
+                    arguments = []
+                else:
+                    command = interpreter_executable
+                    arguments = [full_name_of_the_worker]
+            else:
+                command, arguments = self.REDIRECT(full_name_of_the_worker, self.redirect_stdout_file, 
+                  self.redirect_stderr_file, command=python_exe_for_redirection, 
+                  interpreter_executable=interpreter_executable, 
+                  run_command_redirected_file=run_command_redirected_file)
+
+        #start arguments with command        
+        arguments.insert(0, command)
+
+        if initialize_mpi and len(mpiexec) > 0:
+            mpiexec = shlex.split(mpiexec)
+            # prepend with mpiexec and arguments back to front
+            arguments.insert(0, str(self.number_of_workers))
+            arguments.insert(0, self.mpiexec_number_of_workers_flag)
+            arguments[:0] = mpiexec
+            command = mpiexec[0]
+
+            #append with port and hostname where the worker should connect            
+            arguments.append(port)
+            #hostname of this machine
+            arguments.append(server_address)
+            
+            #initialize MPI inside worker executable
+            arguments.append('true')
+        else:
+            #append arguments with port and socket where the worker should connect            
+            arguments.append(port)
+            #local machine
+            arguments.append(server_address)
+        
+            #do not initialize MPI inside worker executable
+            arguments.append('false')
+
+        return command,arguments
+
+    def start(self):
+        
+        server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                
+        server_address=self.get_host_ip(self.hostname)
+                
+        server_socket.bind((server_address , 0))
+        server_socket.settimeout(1.0)
+        server_socket.listen(1)
+        
+        logger.debug("starting socket worker process, listening for worker connection on %s", server_socket.getsockname())
+
+        #this option set by CodeInterface
+        logger.debug("mpi_enabled: %s", str(self.initialize_mpi))
+        
+        # set arguments to name of the worker, and port number we listen on 
+
+        self.stdout = None
+        self.stderr = None
+        
+        if self.remote:
+            command,arguments=self.generate_remote_command_and_arguments(self.hostname,server_address,str(server_socket.getsockname()[1]))
+        else:
+            command,arguments=self.generate_command_and_arguments(server_address,str(server_socket.getsockname()[1]))
+                    
+        if self.remote:
+          logger.debug("starting remote process on %s with command `%s`, arguments `%s` and environment '%s'", self.hostname, command, arguments, os.environ)
+          ssh_command=self.remote_env_string(self.hostname)+" ".join(arguments)
+          arguments=["ssh","-T", self.hostname]
+          command="ssh"
+          self.process = Popen(arguments, executable=command, stdin=PIPE, stdout=None, stderr=None, close_fds=self.close_fds)
+          self.process.stdin.write(ssh_command.encode())
+          self.process.stdin.close()
+        else:
+          logger.debug("starting process with command `%s`, arguments `%s` and environment '%s'", command, arguments, os.environ)
+          # ~ print(arguments)
+          self.process = Popen(arguments, executable=command, stdin=PIPE, stdout=None, stderr=None, close_fds=self.close_fds)
+
+        logger.debug("waiting for connection from worker")
         self.socket, address = self.accept_worker_connection(server_socket, self.process)
         
         self.socket.setblocking(1)
@@ -1836,7 +1972,15 @@ class SocketChannel(AbstractMessageChannel):
         # logger.info("worker %s initialized", self.name_of_the_worker)
         
 
+    @option(type="boolean", sections=("sockets_channel",))
+    def close_fds(self):
+        """close open file descriptors when spawning child process"""
+        return False
 
+    @option(type="dict", sections=("sockets_channel",))
+    def remote_envs(self):
+        """ dict of remote machine - enviroment (source ..)  pairs """
+        return dict()
 
     @option(choices=AbstractMessageChannel.DEBUGGERS.keys(), sections=("channel",))
     def debugger(self):
@@ -1855,6 +1999,9 @@ class SocketChannel(AbstractMessageChannel):
         self.socket.close()
         
         self.socket = None
+
+        if not self.process.stdin is None:
+            self.process.stdin.close()
         
         # should lookinto using poll with a timeout or some other mechanism
         # when debugger method is on, no killing
@@ -1918,8 +2065,6 @@ class SocketChannel(AbstractMessageChannel):
             message.send(self.socket)
 
             self._is_inuse = True
-        
-
 
     def recv_message(self, call_id, function_id, handle_as_array, has_units=False):
            
@@ -1930,7 +2075,6 @@ class SocketChannel(AbstractMessageChannel):
             self._communicated_splitted_message = False
             del self._merged_results_splitted_message
             return x
-        
         
         message = SocketMessage()
         
@@ -1954,8 +2098,6 @@ class SocketChannel(AbstractMessageChannel):
             return message.to_result(handle_as_array), message.encoded_units
         else:
             return message.to_result(handle_as_array)
-        
-
 
     def nonblocking_recv_message(self, call_id, function_id, handle_as_array, has_units=False):
         request = SocketMessage().nonblocking_receive(self.socket)
@@ -1996,6 +2138,27 @@ class SocketChannel(AbstractMessageChannel):
         The MPI channel will split long messages into blocks of size max_message_length.
         """     
         return 1000000
+
+    def sanitize_host(self,hostname):
+        if "@" in hostname:
+          return hostname.split("@")[1]
+        return hostname
+    
+    def get_host_ip(self, client):
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.connect((self.sanitize_host(client), 80))
+        ip=s.getsockname()[0]
+        s.close()
+        return ip
+
+    def makedirs(self,directory):
+      if self.remote:
+        args=["ssh","-T", self.hostname]
+        command=f"mkdir -p {directory}\n"
+        proc=Popen(args,stdout=PIPE, stdin=PIPE, executable="ssh")
+        out,err=proc.communicate(command.encode())
+      else:
+        os.makedirs(directory)
 
 
 class OutputHandler(threading.Thread):
@@ -2043,6 +2206,7 @@ class OutputHandler(threading.Thread):
             # logger.debug("got %d bytes", len(data))
             
             self.stream.write(data)
+
 
 class DistributedChannel(AbstractMessageChannel):
             
@@ -2127,8 +2291,6 @@ class DistributedChannel(AbstractMessageChannel):
         logger.debug("worker dir is %s", self.worker_dir)
             
         self._is_inuse = False
-      
-
 
     def check_if_worker_is_up_to_date(self, object):
 #         if self.hostname != 'localhost':

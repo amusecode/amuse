@@ -34,6 +34,9 @@ import numpy
 
 from numpy import cos,sin
 
+from amuse.datamodel import TransformedParticles
+
+# same as below, retained for legacy
 def inertial_to_rotating(t,omega,parts):
   x=parts.x
   y=parts.y
@@ -51,10 +54,11 @@ def rotating_to_inertial(t,omega,parts):
 
 class Rotating_Bridge(bridge):
     def __init__(self, omega, **kwargs):
-        timestep=kwargs.pop('timestep')
-        self.omega= omega        
+        timestep=kwargs.pop('timestep', None)
+        self.omega=omega        
+        self.initial_angle=kwargs.pop('initial_angle', 0.)
         bridge.__init__(self, **kwargs)
-        self.timestep=timestep        
+        self.timestep=timestep
 
     def kick_system_rotational(self, system, partners, dt):
         parts=system.particles.copy()
@@ -109,3 +113,79 @@ class Rotating_Bridge(bridge):
     def jacobi_potential_energy(self):
         parts=self.particles
         return -0.5*(parts.mass*self.omega**2*(parts.x**2+parts.y**2)).sum()
+
+    def transform_inertial_to_rotating(self,x,y,vx,vy,inverse=False):
+        angle = self.initial_angle + self.omega*self.model_time
+        omega = self.omega
+        if inverse:
+            angle=-angle
+            omega=-omega
+
+        C1 = vx + omega*y
+        C2 = vy - omega*x
+        x_ =  x * numpy.cos(angle) + y * numpy.sin(angle)
+        y_ = -x * numpy.sin(angle) + y * numpy.cos(angle)
+        vx_ = C1*numpy.cos(angle) + C2*numpy.sin(angle)
+        vy_ = C2*numpy.cos(angle) - C1*numpy.sin(angle)
+        return x_,y_,vx_,vy_
+
+    def transform_rotating_to_inertial(self,x,y,vx,vy):
+        return self.transform_inertial_to_rotating(x,y,vx,vy, inverse=True)
+
+    # this return a view on self.particles
+    # which automatically updates 
+    # (uses above transforms for this reason)
+    @property
+    def particles_inertial_frame(self):
+        return TransformedParticles(self.particles, 
+                                    ["x","y","vx","vy"], 
+                                    self.transform_rotating_to_inertial,
+                                    ["x","y","vx","vy"],
+                                    self.transform_inertial_to_rotating,
+                                    )
+
+    @property
+    def gas_particles_inertial_frame(self):
+        return TransformedParticles(self.gas_particles, 
+                                    ["x","y","vx","vy"], 
+                                    self.transform_rotating_to_inertial,
+                                    ["x","y","vx","vy"],
+                                    self.transform_inertial_to_rotating,
+                                    )
+  
+class RotatingBridgeInertialParticles(Rotating_Bridge):
+    """
+    same as above, except non-inertial frame is hidden. Note that:
+    code.particles.get_subsets()[i]
+    gets a view on the ith code particles
+    
+    """
+    
+    @property
+    def particles(self):
+        arr=[]
+        for x in self.systems:
+            if hasattr(x,"particles"):
+                arr.append(x.particles)
+        particles=datamodel.ParticlesSuperset(arr) 
+        return TransformedParticles(particles, 
+                                    ["x","y","vx","vy"], 
+                                    self.transform_rotating_to_inertial,
+                                    ["x","y","vx","vy"],
+                                    self.transform_inertial_to_rotating,
+                                    )  
+
+    @property
+    def gas_particles(self):
+        arr=[]
+        for x in self.systems:
+            if hasattr(x,"gas_particles"):
+                arr.append(x.gas_particles)
+        particles=datamodel.ParticlesSuperset(arr) 
+
+        return TransformedParticles(particles, 
+                                    ["x","y","vx","vy"], 
+                                    self.transform_rotating_to_inertial,
+                                    ["x","y","vx","vy"],
+                                    self.transform_inertial_to_rotating,
+                                    )

@@ -296,3 +296,7 @@ class ParticlesTimeseries:
 
     def stellar_type(self, index=0):
         return self.list_value_in(self.particles[index].stellar_type, units.stellar_type)
+
+
+CachedSE = CachedStellarEvolution
+Cachedse = CachedStellarEvolution

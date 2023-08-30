@@ -13,18 +13,17 @@ class ReboundInterface(CodeInterface,
     """
     REBOUND - An open-source multi-purpose N-body code
     
-    .. [#] Rein, H., Liu, S.F., *Astronomy and Astrophysics* , **Volume 537**, A128 (2012)
+    .. [#] ADS:2012A&A...537A.128R (Rein, H., Liu, S.F., *Astronomy and Astrophysics* , **Volume 537**, A128 (2012))
     
     For different integrators, cite:
-    ... IAS15:  Rein, H., Spiegel, D.S., *MNRAS* , **Volume 446**, Issue 2, p.1424-1437 (2015)
-    ... WHFast: Rein, H., Tamayo, D., *MNRAS* , **Volume 452**, Issue 1, p.376-388 (2015)
+    .. [#] ADS:2015MNRAS.446.1424R (IAS15: Rein, H., Spiegel, D.S., *MNRAS* , **Volume 446**, Issue 2, p.1424-1437 (2015))
+    .. [#] ADS:2015MNRAS.452..376R (WHFast: Rein, H., Tamayo, D., *MNRAS* , **Volume 452**, Issue 1, p.376-388 (2015))
     ... Hermes: Silburt, A., et al., in prep.
-    ... SEI:    Rein, H., Tremaine, S., *MNRAS* , **Volume 415**, Issue 4, p.3168-3176 (2011)
-    ... JANUS:  Rein, H., Tamayo, D., *arXiv* , 1704.07715 (2017)
+    .. [#] ADS:2011MNRAS.415.3168R (SEI: Rein, H., Tremaine, S., *MNRAS* , **Volume 415**, Issue 4, p.3168-3176 (2011))
+    .. [#] ADS:2017MNRAS.467.2377R (JANUS: Rein, H., Tamayo, D., *arXiv* , 1704.07715 (2017))
         
     """
     include_headers = ['worker_code.h', 'stopcond.h']
-    __so_module__ = 'rebound_cython'
 
     def __init__(self, **options):
         CodeInterface.__init__(self, name_of_the_worker="rebound_worker",
@@ -529,7 +528,7 @@ class Rebound(GravitationalDynamics, GravityFieldCode):
 
     def define_parameters(self, handler):
         self.stopping_conditions.define_parameters(handler)
-        GravitationalDynamics.define_parameters(self, handler)
+        #~ GravitationalDynamics.define_parameters(self, handler)
         
         handler.add_method_parameter(
             "get_time_step",

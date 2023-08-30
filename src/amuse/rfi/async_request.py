@@ -263,10 +263,6 @@ class baseOperatorASyncRequest(DependentASyncRequest):
             self.parent=first
         self.request=FakeASyncRequest()        
         self.result_handlers = []
-        try:
-            self._result_index=first._result_index[index]
-        except:
-            self._result_index=None
                     
     def result(self):
         self.wait()

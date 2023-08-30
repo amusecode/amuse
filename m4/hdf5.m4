@@ -4,7 +4,7 @@
 #
 AC_DEFUN([AX_HDF5],[
         AC_ARG_WITH(hdf5,
-             AC_HELP_STRING([--with-hdf5=PFX], [Prefix where HDF5 has been installed] ),
+             AS_HELP_STRING([--with-hdf5=PFX],[Prefix where HDF5 has been installed ]),
              [
                 test "$withval" = no && AC_MSG_WARN([hdf5 is a required package for some modules])
                 test "$withval" = yes || hdf5_prefix="$withval" 

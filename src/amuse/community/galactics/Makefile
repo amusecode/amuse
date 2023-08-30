@@ -1,6 +1,8 @@
 # standard amuse configuration include
 # config.mk will be made after ./configure has run
-AMUSE_DIR?=../../../..
+ifeq ($(origin AMUSE_DIR), undefined)
+  AMUSE_DIR := $(shell amusifier --get-amuse-dir)
+endif
 -include ${AMUSE_DIR}/config.mk
 
 CC ?= gcc
@@ -8,7 +10,8 @@ CFLAGS ?= -O3
 
 FC ?= gfortran
 FORTRAN ?= $(FC)
-ifeq ($(findstring gfortran, $(shell $(FORTRAN) --help)), gfortran)
+# check for gfortran, this catches link and compiler wrappers
+ifeq ($(findstring GNU, $(shell $(FORTRAN) --version)), GNU)
 FFLAGS = $(FCFLAGS) -ffixed-line-length-0 -O -fno-backslash
 endif
 ifeq ($(findstring ifort, $(notdir $(FORTRAN))), ifort)
@@ -17,6 +20,13 @@ endif
 
 ifneq (,$(findstring xlf, $(notdir $(FORTRAN))))
 FFLAGS = $(FCFLAGS) -qfixed -qextname
+endif
+
+GFVERSION10PLUS := $(shell expr `${FC} -dumpversion | cut -f1 -d.` \>= 10)
+
+ifeq (${GFVERSION10PLUS}, 1)
+FFLAGS += -fallow-argument-mismatch
+FCFLAGS += -fallow-argument-mismatch
 endif
 
 

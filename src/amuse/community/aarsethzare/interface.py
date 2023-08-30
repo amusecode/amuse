@@ -7,8 +7,8 @@ class AarsethZareInterface(CodeInterface, LiteratureReferencesMixIn):
     Aarseth & Zare
 
     The relevant references are:
-        .. [#] Aarseth, S. & Zare, K., 1974, Celestial Mechanics 10, 185.
-        .. [#] Aarseth, S. & Zare, K., 1974, Celestial Mechanics 10, 516.
+        .. [#] ADS:1974CeMec..10..185A (Aarseth, S. & Zare, K., 1974, Celestial Mechanics 10, 185)
+        .. [#] ADS:1974CeMec..10..516A (Aarseth, S. & Zare, K., 1974, Celestial Mechanics 10, 516)
     """    
     #include_headers = ['worker_code.h']
 

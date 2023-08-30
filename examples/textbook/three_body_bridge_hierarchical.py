@@ -43,7 +43,7 @@ def main():
     channel_from_planet_to_framework = planet_gravity.particles.new_channel_to(ss)
     channel_from_moon_to_framework = moon_gravity.particles.new_channel_to(ss)
 
-    write_set_to_file(ss, filename, 'hdf5')
+    write_set_to_file(ss, filename, 'hdf5', overwrite_file=True)
 
 ###BOOKLISTSTART###    
     sp_gravity = bridge.Bridge()
@@ -72,7 +72,7 @@ def main():
         channel_from_star_to_framework.copy()
         channel_from_planet_to_framework.copy()
         channel_from_moon_to_framework.copy()
-        write_set_to_file(ss, filename, 'hdf5')
+        write_set_to_file(ss, filename, 'hdf5', append_to_file=True)
 
         Ekin = gravity.kinetic_energy 
         Epot = gravity.potential_energy

@@ -149,7 +149,7 @@ subroutine clean_array()
   i=0
   do while(n.LT.nbod)
     i=i+1
-    if(mass(i).GE.0) then
+    if(pindex(i).GE.0) then
       n=n+1
       mass(n)=mass(i)
       gpos(n,1:3)=gpos(i,1:3)
@@ -276,7 +276,8 @@ function map_remove_particle(id) result(ret)
     return
   endif  
 
-  mass(index)=-1
+  mass(index)=0
+  pindex(index)=-1
   nbod=nbod-1
 
   ret=0

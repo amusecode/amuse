@@ -5,7 +5,9 @@
 
 # standard amuse configuration include
 # config.mk will be made after ./configure has run
-AMUSE_DIR?=../../../..
+ifeq ($(origin AMUSE_DIR), undefined)
+  AMUSE_DIR := $(shell amusifier --get-amuse-dir)
+endif
 -include ${AMUSE_DIR}/config.mk
 
 ALL	 = hacs64_worker
@@ -34,12 +36,13 @@ SRCDIR = src
 BUILDDIRCPU = build_cpu
 CXXFLAGS += -I../src -I../src/ON_neib
 
+NVCCFLAGS ?= $(NVCC_FLAGS)
+
 CODELIB = src/libhacs64gpu.a
 CODELIBCPU = $(BUILDDIRCPU)/libhacs64cpu.a
 
 AMUSE_DIR ?= ../../../..
 
-CODE_GENERATOR = $(AMUSE_DIR)/build.py
 
 all: $(ALL)
 
@@ -78,7 +81,7 @@ worker_code.cc: interface.py
 	$(CODE_GENERATOR) --type=c interface.py Hacs64Interface -o $@
 	
 interface.h: interface.py
-	$(CODE_GENERATOR) --type=h  -i amuse.support.codes.stopping_conditions.StoppingConditionInterface interface.py Hacs64Interface -o $@
+	$(CODE_GENERATOR) --type=h  -i amuse.community.interface.stopping_conditions.StoppingConditionInterface interface.py Hacs64Interface -o $@
 
 hacs64_worker: worker_code.cc interface.h $(CODELIBCPU) $(OBJS)
 	$(MPICXX) $(CXXFLAGS) $(LDFLAGS) worker_code.cc $(OBJS) $(CODELIBCPU) -o $@  $(LDFLAGS)  $(LIBS)

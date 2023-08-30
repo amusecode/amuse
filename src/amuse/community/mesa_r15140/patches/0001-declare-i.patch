@@ -1,0 +1,24 @@
+From c902b293793e618589ed65b12a7c9d9f6b1d79d2 Mon Sep 17 00:00:00 2001
+From: Robert Farmer <r.j.farmer@uva.nl>
+Date: Fri, 17 Sep 2021 15:30:14 +0200
+Subject: [PATCH] declare i
+
+---
+ rates/private/eval_weak.f90 | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/rates/private/eval_weak.f90 b/rates/private/eval_weak.f90
+index 3e30a371..3843e76c 100644
+--- a/rates/private/eval_weak.f90
++++ b/rates/private/eval_weak.f90
+@@ -328,6 +328,7 @@
+          contains
+          
+          subroutine show_stuff
++            integer :: i
+             include 'formats.dek'
+             write(*,1) 'T9', T9
+             write(*,1) 'lYeRho', lYeRho
+-- 
+2.31.1
+

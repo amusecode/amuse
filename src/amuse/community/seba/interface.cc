@@ -1,4 +1,3 @@
-#include "node.h"
 #include "single_star.h"
 #include "main_sequence.h"
 #include "worker_code.h"
@@ -139,6 +138,7 @@ local int translate_stellar_type_to_int(stellar_type stp, const real mass) {
 
   switch (stp) {
     case Brown_Dwarf:
+      return 19;
     case Main_Sequence: 
       if (mass<0.1) {
             return 0;
@@ -174,7 +174,9 @@ local int translate_stellar_type_to_int(stellar_type stp, const real mass) {
     case Disintegrated:
       return 15;
     case Proto_Star:
+      return 17;
     case Planet:
+      return 18;
     case Static_Star:
     case SPZDCH_Star:
     case NAS: 
@@ -182,6 +184,51 @@ local int translate_stellar_type_to_int(stellar_type stp, const real mass) {
     case Double:
     case no_of_stellar_type:
       return -1;
+  }
+}
+
+
+local stellar_type translate_int_to_stellar_type(int type_number) {
+
+  switch (type_number) {
+    case 19:
+      return Brown_Dwarf;
+    case 0:
+    case 1:
+      return Main_Sequence;
+    case 2:
+      return Hertzsprung_Gap;
+    case 3:
+      return Sub_Giant;
+    case 4:
+      return Horizontal_Branch;
+    case 5:
+    case 6:
+      return Super_Giant;
+//      return Hyper_Giant;
+    case 7:
+      return Helium_Star;
+    case 8:
+    case 9:
+      return Helium_Giant;
+    case 10:
+      return Helium_Dwarf;
+    case 11:
+      return Carbon_Dwarf;
+    case 12:
+      return Oxygen_Dwarf;
+    case 13:
+      return Neutron_Star;
+    case 14:
+      return Black_Hole;
+    case 15:
+      return Disintegrated;
+    case 17:
+      return Proto_Star;
+    case 18:
+      return Planet;
+    case -1:
+      return no_of_stellar_type;
   }
 }
 
@@ -416,6 +463,47 @@ int new_particle(int * index_of_the_star, double mass){
     return 0;
 }
 
+
+int new_advanced_particle(int * index_of_the_star, double mass,  double relative_mass, int type_number,  double age, double core_mass, double COcore_mass,  double radius){
+
+    if (relative_mass == 0) return new_particle(index_of_the_star, mass);
+    if (age < 0) return -1;
+ 
+    node * new_node = new node();
+    new_node->set_label(next_seba_id);
+    new_node->set_parent(seba_root);
+    new_node->set_mass(mass);
+    mapping_from_id_to_node[next_seba_id] = new_node;
+    
+    if(seba_insertion_point == 0) {
+        seba_insertion_point = new_node;
+        seba_root->set_oldest_daughter(new_node);
+    } else {
+        seba_insertion_point->set_younger_sister(new_node);
+        new_node->set_elder_sister(seba_insertion_point);
+        seba_insertion_point = new_node;
+    }
+    
+    stellar_type seba_stellar_type = translate_int_to_stellar_type(type_number);    
+
+    addstar(new_node, seba_time, seba_stellar_type, seba_metallicity, 0, false);
+    new_node->get_starbase()->set_time_offset(seba_time);
+    *index_of_the_star = next_seba_id;
+    
+    next_seba_id++;
+    
+    new_node->get_starbase()->set_relative_age(age);
+    new_node->get_starbase()->set_core_mass(core_mass);
+    new_node->get_starbase()->set_COcore_mass(COcore_mass);
+    new_node->get_starbase()->set_effective_radius(radius);
+    
+    
+    return 0;
+}
+
+
+
+
 int delete_star(int index_of_the_star){
     
     map<int, nodeptr>::iterator i = mapping_from_id_to_node.find(index_of_the_star);
@@ -480,7 +568,7 @@ int get_COcore_mass(int index_of_the_star, double * mass){
 
 
 int change_mass(int index_of_the_star, double mass, double dt){
-    cout << "Enter change mass:"<< mass<< " "<< dt<<endl;
+//    cout << "Enter change mass:"<< mass<< " "<< dt<<endl;
     int error_code = 0;
     node * seba_node = get_seba_node_from_index(index_of_the_star, &error_code);
     if(error_code < 0) {return error_code;}
@@ -491,7 +579,7 @@ int change_mass(int index_of_the_star, double mass, double dt){
     else {
       mass *= -1;
       star *star = seba_node->get_starbase()->subtrac_mass_from_donor(dt, mass);
-      PRL(star);
+//      PRL(star);
     }
     return error_code;
 }
@@ -544,6 +632,8 @@ int recall_memory_one_step(int index_of_the_star){
     if(error_code < 0) {return error_code;}
 
     seba_node->get_starbase()->recall_memory();    
+    seba_time = seba_node->get_starbase()->get_current_time() - seba_node->get_starbase()->get_time_offset();	
+    
     return error_code;
 }
 
@@ -613,11 +703,51 @@ int get_stellar_type(int index_of_the_star, int * stellar_type){
     return error_code;
 }
 
-int get_gyration_radius_sq(int index_of_the_star, double * gyration_radius_sq){
+int get_gyration_radius(int index_of_the_star, double * gyration_radius){
     int error_code = 0;
     node * seba_node = get_seba_node_from_index(index_of_the_star, &error_code);
     if(error_code < 0) {return error_code;}
-    *gyration_radius_sq = seba_node->get_starbase()->gyration_radius_sq();
+    *gyration_radius = pow(seba_node->get_starbase()->gyration_radius_sq(),0.5);
+    return error_code;
+}
+
+int get_apsidal_motion_constant(int index_of_the_star, double * apsidal_motion_constant){
+    int error_code = 0;
+    node * seba_node = get_seba_node_from_index(index_of_the_star, &error_code);
+    if(error_code < 0) {return error_code;}
+    *apsidal_motion_constant = seba_node->get_starbase()->amc();
+    return error_code;
+}
+
+int get_zeta_thermal(int index_of_the_star, double * zeta_thermal){
+    int error_code = 0;
+    node * seba_node = get_seba_node_from_index(index_of_the_star, &error_code);
+    if(error_code < 0) {return error_code;}
+    *zeta_thermal = seba_node->get_starbase()->zeta_thermal();
+    return error_code;
+}
+
+int get_zeta_adiabatic(int index_of_the_star, double * zeta_adiabatic){
+    int error_code = 0;
+    node * seba_node = get_seba_node_from_index(index_of_the_star, &error_code);
+    if(error_code < 0) {return error_code;}
+    *zeta_adiabatic = seba_node->get_starbase()->zeta_adiabatic();
+    return error_code;
+}
+
+int get_rotation_period(int index_of_the_star, double * rotation_period){
+    int error_code = 0;
+    node * seba_node = get_seba_node_from_index(index_of_the_star, &error_code);
+    if(error_code < 0) {return error_code;}
+    *rotation_period = seba_node->get_starbase()->get_rotation_period();
+    return error_code;
+}
+
+int get_fallback(int index_of_the_star, double * fallback){
+    int error_code = 0;
+    node * seba_node = get_seba_node_from_index(index_of_the_star, &error_code);
+    if(error_code < 0) {return error_code;}
+    *fallback = seba_node->get_starbase()->get_fallback();
     return error_code;
 }
 
@@ -680,6 +810,7 @@ int get_wind_mass_loss_rate(int index_of_the_star, double * wind_mass_loss_rate)
     *wind_mass_loss_rate = seba_node->get_starbase()->get_wind_constant()*-1.;
     return error_code;
 }
+
 
 
 
@@ -750,13 +881,13 @@ int new_binary(
     if(error_code < 0) {return error_code;}
     
     if (child1 == seba_insertion_point) {
-        seba_insertion_point = child1->get_younger_sister();
+        seba_insertion_point = child1->get_elder_sister();
     }
     if (child2 == seba_insertion_point) {
-        seba_insertion_point = child2->get_younger_sister();
+        seba_insertion_point = child2->get_elder_sister();
     }
     if (child1 == seba_insertion_point) {
-        seba_insertion_point = child1->get_younger_sister();
+        seba_insertion_point = child1->get_elder_sister();
     }
     detach_node_from_general_tree(child1);
     detach_node_from_general_tree(child2);   
@@ -913,5 +1044,27 @@ int set_semi_major_axis(int index_of_the_star, double value){
 }
 
 
+int set_rotation_period(int index_of_the_star, double value){
+    int error_code = 0;
+    node * seba_node = get_seba_node_from_index(index_of_the_star, &error_code);
+    if(error_code < 0) {return error_code;}
+    seba_node->get_starbase()->set_rotation_period(value);
+    return error_code;
+}
 
+int get_binary_type(int index_of_the_star, double * value){
+    int error_code = 0;
+    node * seba_node = get_seba_node_from_index(index_of_the_star, &error_code);
+    if(error_code < 0) {return error_code;}
+    *value= seba_node->get_starbase()->get_bin_type();
+    return error_code;
+}
+
+int get_mass_transfer_type(int index_of_the_star, double * value){
+    int error_code = 0;
+    node * seba_node = get_seba_node_from_index(index_of_the_star, &error_code);
+    if(error_code < 0) {return error_code;}
+    *value= seba_node->get_starbase()->get_current_mass_transfer_type();
+    return error_code;
+}
 

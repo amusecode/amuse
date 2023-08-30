@@ -7,7 +7,6 @@ struct force {
 struct forces {
     UINT n;
     struct force *forc;
-    struct force *last;
 };
 extern struct forces zeroforces;
 

@@ -1,0 +1,88 @@
+From 530c280521cca8113b53385d2b26d15a0150726e Mon Sep 17 00:00:00 2001
+From: Rob Farmer <robert.j.farmer37@gmail.com>
+Date: Fri, 23 Dec 2022 13:41:38 +0000
+Subject: [PATCH] Patch error messages
+
+---
+ install | 58 ++++++++++-----------------------------------------------
+ 1 file changed, 10 insertions(+), 48 deletions(-)
+
+diff --git a/install b/install
+index c436c7cd..37492248 100755
+--- a/install
++++ b/install
+@@ -139,30 +139,9 @@ then
+ 	echo
+ 	echo "****************************************************************"
+ 	echo "*                                                              *"
+-	echo "*    You need to install ndiff before you can install mesa.    *"
+-	echo "*                                                              *"
+-	echo "*                                                              *"
+-	echo "*    But only if you are not using the SDK. If you see this    *"
+-	echo "*            message and are trying to use the sdk             *"
+-	echo "*         then please check your environment variables         *"
+-	echo "*                        are set first.                        *"
+-	echo "*                                                              *"
+-	echo "*                                                              *"
+-	echo "*    The ndiff tar file is in the mesa/utils directory.        *"
+-	echo "*    Unpack it anywhere (tar -zxvf ndiff-2.00.tar.gz),         *"
+-	echo "*    and cd to the ndiff directory.                            *"
+-	echo "*    Then do the usual sequence:                               *"
+-	echo "*                                                              *"
+-	echo "*           ./configure                                        *"
+-	echo "*           make all                                           *"
+-	echo "*           sudo make install                                  *"
+-	echo "*                                                              *"
+-	echo "*    Note: 'make check' seems to give lots of false alarms.    *"
+-	echo "*    I suggest skipping that step in the ndiff installation.   *"
+-	echo "*                                                              *"
+-	echo "*    BTW: there's another 'ndiff' out there in the unix world. *"
+-	echo "*           http://nmap.org/ndiff/                             *"
+-	echo "*    I'm sure it's a great tool, but it isn't what we need.    *"
++	echo "*                 ndiff was not found                          *"
++	echo *"                 please open a bug:                           *"
++	echo *"               https://github.com/amusecode/amuse             *"
+ 	echo "*                                                              *"
+ 	echo "****************************************************************"
+ 	echo
+@@ -173,30 +152,13 @@ makedepf90 > /dev/null
+ if [ $? -ne 0 ]
+ then
+ 	echo
+-	echo "*******************************************************************"
+-	echo "*                                                                 *"
+-	echo "*    You need to install makedepf90 before you can install mesa.  *"
+-	echo "*                                                                 *"
+-	echo "*                                                                 *"
+-	echo "*    But only if you are not using the SDK. If you see this       *"
+-	echo "*            message and are trying to use the sdk                *"
+-	echo "*         then please check your environment variables            *"
+-	echo "*                        are set first.                           *"
+-	echo "*                                                                 *"
+-	echo "*                                                                 *"
+-	echo "*    The makedepf90 tar file is in the mesa/utils directory.      *"
+-	echo "*    Unpack it anywhere (tar -zxvf makedepf90-2.8.8.tar.gz),      *"
+-	echo "*    and cd to the makedepf90-2.8.8 directory.                    *"
+-	echo "*    Then do the usual sequence:                                  *"
+-	echo "*                                                                 *"
+-	echo "*           ./configure                                           *"
+-	echo "*           make all                                              *"
+-	echo "*           sudo make install                                     *"
+-	echo "*                                                                 *"
+-	echo "*    Note: 'make test' doesn't seem to work. I suggest skipping   *"
+-	echo "*    that step in the makedepf90 installation.                    *"
+-	echo "*                                                                 *"
+-	echo "******************************************************************"
++	echo "****************************************************************"
++	echo "*                                                              *"
++	echo "*                 makedepf90 was not found                     *"
++	echo *"                 please open a bug:                           *"
++	echo *"               https://github.com/amusecode/amuse             *"
++	echo "*                                                              *"
++	echo "****************************************************************"
+ 	echo
+ 	exit 1
+ fi
+-- 
+2.38.1
+

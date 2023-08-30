@@ -1,0 +1,91 @@
+# standard amuse configuration include
+# config.mk will be made after ./configure has run
+ifeq ($(origin AMUSE_DIR), undefined)
+  AMUSE_DIR := $(shell amusifier --get-amuse-dir)
+endif
+-include ${AMUSE_DIR}/config.mk
+
+GFORTRAN_VERSION?=$(shell $(FC) -v 2>&1 | grep gcc\ version | cut -d\  -f3)
+GFORTRAN_MAJOR_MINOR=$(shell echo $(GFORTRAN_VERSION) | cut -s -d'.' -f1,2)
+#IFORT_VERSION?=$(shell $(FC) -v 2>&1 | cut -d\  -f2)
+#IFORT_MAJOR_MINOR=$(shell echo $(IFORT_VERSION) | cut -s -d'.' -f1,2)
+MPIF90 ?= mpif90
+FORTRAN ?= gfortran
+PYTHON ?= python
+FC      ?= $(FORTRAN)
+MPIFC += $(FCFLAGS)
+
+GFVERSION10PLUS := $(shell expr `${FC} -dumpversion | cut -f1 -d.` \>= 10)
+ifeq (${GFVERSION10PLUS}, 1)
+MPIFC += -fallow-invalid-boz -std=legacy
+endif
+
+export FC MPIFC
+
+MESA_MAKE_DIR=./mesa_reqs
+INCLUDE_DIR=./src/mesa/star/make
+MESA_DIR = ./src/mesa
+MESA_LIB=$(MESA_DIR)/lib/libstar.a
+
+export OPENMP_FCFLAGS=
+include $(MESA_MAKE_DIR)/makefile_header
+include $(MESA_MAKE_DIR)/makefile_include
+
+WORK_COMPILE = $(FC) $(FCbasic) $(FCopenmp) $(FCchecks) $(FCdebug) $(FCFLAGS)  $(FFLAGS)\
+   -I$(MESA_INCLUDE_DIR) -c $(FCfree)
+STAR_WORK_OBJS = \
+   $(MESA_MAKE_DIR)/run_star_support.o $(MESA_MAKE_DIR)/run_star_extras.o \
+   $(MESA_MAKE_DIR)/calibrate.o $(MESA_MAKE_DIR)/isochrone.o $(MESA_MAKE_DIR)/$(PGSTAR_OBJS) \
+   $(MESA_MAKE_DIR)/create_zams.o $(MESA_MAKE_DIR)/sample_zams.o \
+   $(MESA_MAKE_DIR)/run_star.o 
+
+ZAMS_DIR = ./data/input/star_data/starting_models
+ZAMS_DATA = zams_z20m3.data
+
+DOWNLOAD_FROM_WEB = $(PYTHON) ./download.py
+PATCH_FILES = $(PYTHON) ./patch_files.py
+
+all:	mesa_worker $(ZAMS_DATA) data/data
+
+$(MESA_DIR)/install:
+	make -C . download
+
+download:
+	$(RM) -Rf src
+	-mkdir src
+	$(DOWNLOAD_FROM_WEB)
+	$(PATCH_FILES)
+
+clean:
+	$(RM) -f *~ *.pyc *.mod *.o worker_code worker_code.f90 $(MESA_LIB)
+	$(RM) -f mesa_worker mesa_worker_sockets worker_code-sockets.f90
+	make -C $(MESA_MAKE_DIR) clean
+
+veryclean: clean
+	cd $(MESA_DIR); ./clean
+
+distclean: clean
+	$(RM) -Rf src
+	$(RM) -Rf src.*
+	$(RM) -Rf .pc
+
+$(ZAMS_DATA):
+	gunzip -c $(ZAMS_DATA).gz > $(ZAMS_DIR)/$(ZAMS_DATA)
+
+mesa_worker:	worker_code.f90 interface.o $(STAR_WORK_OBJS)
+	$(MPIF90) $(FCFLAGS) $(FFLAGS) $(LDFLAGS) $(FCopenmp) $(FS_FLAGS) $^ -o $@ $(LOAD_MESA_STAR) $(FS_LIBS)  $(LIBS)
+
+worker_code.f90: interface.py
+	$(CODE_GENERATOR) --type=f90 interface.py MESAInterface -o $@
+
+$(MESA_LIB):  $(MESA_DIR)/install
+	cp -f ./install $(MESA_DIR)
+	cp -f ./test_jina.f $(MESA_DIR)/jina/test/src/test_jina.f
+	cd $(MESA_DIR); ./install MPIFC="$(MPIFC) $(FCFLAGS)" OPENMP_FCFLAGS=
+
+interface.o: interface.f $(MESA_LIB)
+	make -s --no-print-directory -C $(MESA_MAKE_DIR) star FFLAGS="$(FCFLAGS)"
+	$(WORK_COMPILE) -I$(INCLUDE_DIR) -I$(MESA_MAKE_DIR) -o $@ $<
+
+data/data:
+	cp -r src/mesa/data data/

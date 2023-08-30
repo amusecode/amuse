@@ -27,8 +27,8 @@ test:
 krome/build/krome:
 	-(cd krome; ./krome $(KROME_OPTIONS) )
 	cd ..
-	sed -i 's/^fc *=.*/fc = $(FC)/' krome/build/Makefile
-	sed -i 's_^switch *= .*_switch = $(FFLAGS)_' krome/build/Makefile
+	sed -i.bak 's/^fc *=.*/fc = $(FC)/' krome/build/Makefile
+	sed -i.bak 's_^switch *= .*_switch = $(FFLAGS)_' krome/build/Makefile
 	make -C krome/build/
 
 libchem.a: krome/build/krome hash.o amuse_helpers.o

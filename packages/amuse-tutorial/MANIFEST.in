@@ -1,0 +1,11 @@
+include README.md
+include bin/amuse-tutorial
+include pyproject.toml
+include support/configpy.in
+
+recursive-include support *
+recursive-include tutorial *
+
+recursive-exclude support *.pyc *.o *~ ccache *.a
+
+

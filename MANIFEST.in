@@ -1,12 +1,14 @@
-include Makefile
+include Makefile.in
 include configure
 include README.txt
 include config.mk.in
 include bin/amusifier.in
 include amuserc.example
+include install-sh
+include config.sub
+include config.guess
 
 recursive-include src *
-recursive-include test *
 recursive-include lib *
 recursive-include data *
 recursive-include support *.py
@@ -26,7 +28,6 @@ recursive-include doc/plot_directive *.*
 recursive-exclude doc/build *.*
 
 recursive-exclude src *.pyc *.o *~ .pc ccache *.a
-recursive-exclude test *.pyc *.o *~ ccache *.000 fort.*
 recursive-exclude lib *.pyc *.o *~ ccache *.a
 
 prune lib/ibis

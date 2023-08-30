@@ -10,8 +10,8 @@
 #define RATIMESTEP
 #define RARVRATIO   1.
 
-#define FLOAT float
-#define FLOAT4 float4
+#define FLOAT double
+#define FLOAT4 double4
 #define BIGNUM HUGE_VALF
 
 __kernel void kick_kernel(

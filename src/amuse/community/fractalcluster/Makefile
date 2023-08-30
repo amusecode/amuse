@@ -1,22 +1,24 @@
 # standard amuse configuration include
 # config.mk will be made after ./configure has run
-AMUSE_DIR?=../../../..
+ifeq ($(origin AMUSE_DIR), undefined)
+  AMUSE_DIR := $(shell amusifier --get-amuse-dir)
+endif
 -include ${AMUSE_DIR}/config.mk
 
 MPIFC ?= mpif90
 MPIF90 ?= $(MPIFC)
-FORTRAN ?= gfortran
 FC ?= gfortran
+FORTRAN ?= $(FC)
 
 SRC=src
 
-CODE_GENERATOR = $(AMUSE_DIR)/build.py
 
 LIBS+=$(SRC)/libfractal.a
 
 PIC=#-fPIC
 
-ifeq ($(findstring gfortran, $(notdir $(FORTRAN))), gfortran)
+# check for gfortran, this catches link and compiler wrappers
+ifeq ($(findstring GNU, $(shell $(FORTRAN) --version)), GNU)
 FFLAGS= $(FCFLAGS) -fdefault-real-8 -cpp -O3
 endif
 

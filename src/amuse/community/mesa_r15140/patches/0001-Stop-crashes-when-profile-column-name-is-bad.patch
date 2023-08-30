@@ -1,0 +1,75 @@
+From 5b5dcd97d7d1e571edd3f7d0f774aa4180c55ee1 Mon Sep 17 00:00:00 2001
+From: Robert Farmer <r.j.farmer@uva.nl>
+Date: Thu, 15 Jul 2021 16:43:20 +0200
+Subject: [PATCH] Stop crashes when profile column name is bad
+
+---
+ star/public/star_lib.f90 | 31 ++++++++++++++++++++-----------
+ 1 file changed, 20 insertions(+), 11 deletions(-)
+
+diff --git a/star/public/star_lib.f90 b/star/public/star_lib.f90
+index c02ad62f..e90e31b7 100644
+--- a/star/public/star_lib.f90
++++ b/star/public/star_lib.f90
+@@ -3036,16 +3036,13 @@
+       end subroutine star_history_values
+ 
+ 
+-      integer function star_get_profile_id(s,name)
++      subroutine star_get_profile_id(s, name, id)
+          use profile_getval, only: get_profile_id
+          type (star_info), pointer :: s
+          character(len=*),intent(in) :: name
+-         star_get_profile_id = get_profile_id(s,name)
+-         if (star_get_profile_id < 0) THEN
+-            write(*,*) "FATAL ERROR Bad value for profile name ",trim(name)
+-            stop 'star_get_profile_id'
+-         end if
+-      end function star_get_profile_id
++         integer, intent(out) :: id
++         id = get_profile_id(s,name)
++      end subroutine star_get_profile_id
+ 
+ 
+       real(dp) function star_get_profile_val(s,id,k)
+@@ -3056,13 +3053,23 @@
+       end function star_get_profile_val
+ 
+ 
+-      real(dp) function star_get_profile_output(s,name,k)
++      subroutine star_get_profile_output(s, name, k, val, ierr)
+          use profile, only : get_profile_val
+          type (star_info), pointer :: s
+          character(len=*),intent(in) :: name
+          integer,intent(in) :: k
+-         star_get_profile_output = get_profile_val(s,star_get_profile_id(s,name),k)
+-      end function star_get_profile_output
++         integer, intent(out) :: ierr
++         real(dp), intent(out) :: val
++         integer :: id
++         ierr=0
++         val = -HUGE(val)
++         call star_get_profile_id(s, name, id)
++         if(id < 0) then
++         	ierr = -1
++         	return
++         end if
++         val = get_profile_val(s,id,k)
++      end subroutine star_get_profile_output
+ 
+       real(dp) function star_get_profile_output_by_id(id, name, k)
+          integer, intent(in) :: id
+@@ -3075,7 +3082,9 @@
+          if (ierr /= 0) then
+             return
+          end if
+-         star_get_profile_output_by_id = star_get_profile_output(s, name, k)
++         
++         call star_get_profile_output(s, name, k, star_get_profile_output_by_id, ierr)
++         	
+       end function star_get_profile_output_by_id
+ 
+ 
+-- 
+2.31.1
+

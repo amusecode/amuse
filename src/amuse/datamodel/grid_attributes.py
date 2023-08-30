@@ -123,8 +123,8 @@ def connectivity(grid):
     shape[-1] = 2**dim
     shape_with_boundary = numpy.asarray(cellcenters.shape) + 1
     shape_with_boundary = shape_with_boundary[:dim]
-    indices = numpy.arange(0, numpy.prod(shape_with_boundary), dtype = numpy.int).reshape(shape_with_boundary)
-    result = numpy.zeros(shape, dtype = numpy.int)
+    indices = numpy.arange(0, numpy.prod(shape_with_boundary), dtype=numpy.int32).reshape(shape_with_boundary)
+    result = numpy.zeros(shape, dtype=numpy.int32)
 
     for i in range(2**dim):
         slicing1=()
@@ -215,7 +215,7 @@ def get_index(grid, pos=None, **kwargs):
     pos=grid._get_array_of_positions_from_arguments(pos=pos,**kwargs)
     offset = pos - grid.get_minimum_position()
     indices = (offset / grid.cellsize())
-    return numpy.floor(indices).astype(numpy.int)
+    return numpy.floor(indices).astype(numpy.int32)
 
 @grids.BaseGrid.function_for_set
 def _get_array_of_positions_from_arguments(grid, **kwargs):

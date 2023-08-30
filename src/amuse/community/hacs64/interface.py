@@ -275,7 +275,7 @@ class Hacs64(GravitationalDynamics):
         update the particle set after changes in the code
         
         this implementation needs to move to the
-        amuse.support.data.incode_storage module, as
+        amuse.datamodel.incode_storage module, as
         it uses a lot of internal methods and info!
         
         """

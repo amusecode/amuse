@@ -24,9 +24,9 @@ from amuse.rfi.tools import create_fortran
 from amuse.rfi.tools import create_java
 from amuse.rfi.tools import create_dir
 from amuse.rfi.tools import create_python_worker
-from amuse.rfi.tools import create_cython
     
-from amuse.support import get_amuse_root_dir    
+from amuse.support import get_amuse_root_dir, get_amuse_package_dir
+from amuse.support.literature import TrackLiteratureReferences    
 
 def get_amuse_directory():
     filename_of_this_script = __file__
@@ -45,14 +45,6 @@ def get_amuse_directory():
             #~ return directory_of_this_script
         #~ else:
             #~ return os.path.abspath(directory_of_this_script)
-
-def get_amuse_directory_root():
-    filename_of_this_script = __file__
-    directory_of_this_script = os.path.dirname(os.path.dirname(filename_of_this_script))
-    if os.path.isabs(directory_of_this_script):
-        return directory_of_this_script
-    else:
-        return os.path.abspath(directory_of_this_script)
 
 def setup_sys_path():
     amuse_directory = os.environ["AMUSE_DIR"]
@@ -116,10 +108,10 @@ class ParseCommandLine(object):
         self.parser.add_option(
             "-t",
             "--type",
-            choices=["c","h", "H", "f90", "py", "java", "cython"],
+            choices=["c","h", "H", "f90", "py", "java"],
             default="c",
             dest="type",
-            help="TYPE of the code to generate. Can be one of c, h, H, f90, py, java or cython. <c> will generate c code. <h/H> will generate c/c++ header. <f90> will generate fortran 90 code. <py> will generate a python worker wrapper <java> will generate java interface or class, depending on mode. (Defaults to c)")
+            help="TYPE of the code to generate. Can be one of c, h, H, f90, py or java. <c> will generate c code. <h/H> will generate c/c++ header. <f90> will generate fortran 90 code. <py> will generate a python worker wrapper <java> will generate java interface or class, depending on mode. (Defaults to c)")
         
         self.parser.add_option(
             "-m",
@@ -166,23 +158,17 @@ class ParseCommandLine(object):
             help="Set the executable bit when generating the output file")
         
         self.parser.add_option(
-            "--cython-import",
-            default="",
-            dest="cython_import",
-            help="Name of the module to import for the cython worker (name of the .so file)")
-        
-        self.parser.add_option(
-            "--prefix",
-            default="",
-            dest="function_name_prefix",
-            help="Prefix for generated function names, relevant for cython")
-
-        self.parser.add_option(
             "--get-amuse-dir",
             action="store_true",
             default=False,
             dest="get_amuse_dir",
             help="Only output amuse directory")
+        self.parser.add_option(
+            "--get-amuse-package-dir",
+            action="store_true",
+            default=False,
+            dest="get_amuse_package_dir",
+            help="Only output the amuse package root directory")
         self.parser.add_option(
             "--get-amuse-configmk",
             action="store_true",
@@ -213,7 +199,7 @@ class ParseCommandLine(object):
         
         
     def parse_arguments(self):
-        if self.options.get_amuse_dir or self.options.get_amuse_configmk:
+        if self.options.get_amuse_dir or self.options.get_amuse_package_dir or self.options.get_amuse_configmk:
             return
         if self.options.mode == 'dir':
             if len(self.arguments) != 1:
@@ -335,9 +321,6 @@ def make_file(uc):
         ('java','script'): create_java.GenerateAJavaWorkerScript,
         ('py','sockets'): make_a_socket_python_worker,
         ('py','mpi'): make_a_mpi_python_worker,    
-        ('cython','script'): create_cython.GenerateACythonStartScriptStringFromASpecificationClass,
-        ('cython','mpi'): create_cython.GenerateACythonSourcecodeStringFromASpecificationClass,
-        ('cython', 'interface'): create_cython.GenerateAFortranInterfaceSourcecodeStringFromASpecificationClass
     }
     
     try:
@@ -352,8 +335,6 @@ def make_file(uc):
         builder.needs_mpi = settings.needs_mpi.lower() == 'true'
         builder.is_mpi_enabled = config.mpi.is_enabled
         builder.name_of_outputfile = settings.output
-        builder.cython_import = settings.cython_import
-        builder.function_name_prefix = settings.function_name_prefix
     except:
         uc.show_error_and_exit("'{0}' and '{1}' is not a valid combination of type and mode, cannot generate the code".format(settings.type, settings.mode))
     
@@ -394,11 +375,16 @@ def make_directory(uc):
     builder.start()
     
 def amusifier():
+    TrackLiteratureReferences.suppress_output()
+    
     uc = ParseCommandLine()
     uc.start()
     
     if uc.options.get_amuse_dir:
         print(get_amuse_root_dir())
+        exit(0)
+    elif uc.options.get_amuse_package_dir:
+        print(get_amuse_package_dir())
         exit(0)
     elif uc.options.get_amuse_configmk:
         with open(os.path.join(get_amuse_root_dir(), "config.mk")) as f:

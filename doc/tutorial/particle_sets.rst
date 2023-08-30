@@ -141,8 +141,8 @@ The result should be the same, but we'll check:
 
 .. code-block:: python
 
-    >>> hopefuly_empty = outersphere.difference(outersphere_alt)
-    >>> hopefuly_empty.is_empty()
+    >>> hopefully_empty = outersphere.difference(outersphere_alt)
+    >>> hopefully_empty.is_empty()
     True
     >>> len(outersphere - outersphere_alt2)==0
     True
@@ -297,7 +297,7 @@ The descendants of star 0 form a subset:
     >>> stars[0].children().mass.value_in(units.MSun)
     array([ 0.001])
     >>> stars[0].descendents().mass
-    quantity<[1.98892e+26, 1.98892e+27] kg>
+    quantity<[1.98892e+27, 1.98892e+26] kg>
 
 
 Methods to retreive physical properties of the particles set
