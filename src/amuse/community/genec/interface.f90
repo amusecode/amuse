@@ -1805,7 +1805,7 @@ end function
 function evolve_model(end_time)
     use timestep, only: alter
     use WriteSaveClose, only: OpenAll
-    use genec, only: evolve, modell, finalise
+    use genec, only: evolve, finalise
     use amuse_helpers, only: initialise_star
     use State, only: stopping_condition
     implicit none
@@ -1815,12 +1815,10 @@ function evolve_model(end_time)
     do while (alter < end_time)
       if (stopping_condition == "") then
         write(*,*) "Current time: ", alter, ", evolving to: ", end_time
-        !modell = 1
         call evolve()
         call finalise()
         call OpenAll()
         call initialise_star()
-        !write(*,*) "*****Modell: ", modell
       else
         write(*,*) "stopped: ", stopping_condition
         exit
@@ -1835,7 +1833,7 @@ function evolve_for(index_of_the_star, time)
     ! evolve
     use timestep, only: alter
     use WriteSaveClose, only: OpenAll
-    use genec, only: evolve, modell, finalise
+    use genec, only: evolve, finalise
     use amuse_helpers, only: initialise_star
     implicit none
     integer:: index_of_the_star
@@ -1847,12 +1845,10 @@ function evolve_for(index_of_the_star, time)
     end_time = alter+time
     do while (alter < end_time)
         write(*,*) "Current time: ", alter, ", evolving to: ", end_time
-        !modell = 1
         call evolve()
         call finalise()
         call OpenAll()
         call initialise_star()
-        !write(*,*) "*****Modell: ", modell
     end do
 
     evolve_for = 0
@@ -1861,18 +1857,15 @@ end function
 function evolve_one_step(index_of_the_star)
     use timestep, only: alter
     use WriteSaveClose, only: OpenAll
-    use genec, only: evolve, modell, finalise
+    use genec, only: evolve, finalise
     use amuse_helpers, only: initialise_star
     use State, only: stopping_condition
     use inputparam,only: modanf,nwseq,nzmod
     implicit none
     integer:: index_of_the_star
     integer:: evolve_one_step
-    integer:: original_nzmod
-    !original_nzmod = nzmod
-    nzmod = 1000000
+    nzmod = 100 !000000
     write(*,*) "Evolving one step, current time: ", alter
-    !modell = 1
     if (stopping_condition == "") then
       call evolve()
       if (stopping_condition /= "") return
@@ -1880,8 +1873,6 @@ function evolve_one_step(index_of_the_star)
       call OpenAll()
       call initialise_star() ! will set modell to 1
       write(*,*) "Evolved one step, current time: ", alter
-      !nzmod = original_nzmod
-      !write(*,*) "*****modanf, nwseq, nzmod: ", modanf, nwseq, nzmod
     else
       write(*,*) "stopped: ", stopping_condition
     endif
