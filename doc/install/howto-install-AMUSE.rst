@@ -170,3 +170,44 @@ individual codes can be build with:
     make {code}.code
 
 with {code} the name of the code in lower case. 
+
+Installation on using modules (tested for Snellius)
+***************************************************
+
+.. code-block:: sh
+
+    module load 2022
+    module load foss/2022a
+
+Load python.
+
+.. code-block::sh
+
+    module load Python/3.10.4-GCCcore-11.3.0 # or other version of python
+
+
+Following AMUSE documentation (see above), download/uograde the python pachage: (--user is required by Snellius)
+
+.. code-block::sh
+
+    pip3 install --user --upgrade pip
+    pip3 install --user numpy docutils mpi4py h5py wheel
+    pip3 install --user -e . # In the amuse home directory
+
+Note that the 2022 version of setuptools may be outdated, in which case you run
+
+.. code-block::sh
+
+    pip3 install --user --upgrade setuptools
+
+before you run
+
+.. code-block::sh
+
+    python setup.py develop_build
+
+Eventually, build AMUSE individual codes by running from the AMUSE directory:
+
+..code-block::sh
+
+    make {code}.code
