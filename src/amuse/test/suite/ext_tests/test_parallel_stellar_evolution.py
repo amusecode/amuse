@@ -36,10 +36,10 @@ class TestParallelStellarEvolution(TestCase):
         instance.commit_parameters()
         
         particles = Particles(5)
-        particles.mass = list(range(1, 1+len(particles))) | units.MSun
+        particles.mass = range(1, 1+len(particles)) | units.MSun
         incode = instance.particles.add_particles(particles)
         instance.commit_particles()
-        self.assertAlmostEqual(incode.mass, list(range(1, 1+len(particles))) | units.MSun)
+        self.assertAlmostEqual(incode.mass, range(1, 1+len(particles)) | units.MSun)
         print("Note that the order of instance.particles is different from the", end=' ')
         print("original particle order, since particles are distributed over 2 processes")
         self.assertAlmostEqual(instance.particles.mass, [1,3,5, 2,4] | units.MSun)
@@ -49,16 +49,16 @@ class TestParallelStellarEvolution(TestCase):
     def slowtest3(self):
         print("Testing ParallelStellarEvolution evolve_model")
         particles = Particles(4)
-        particles.mass = list(range(1, 1+len(particles))) | units.MSun
+        particles.mass = range(1, 1+len(particles)) | units.MSun
         
         serial = MESA()
         inserial = serial.particles.add_particles(particles)
-        self.assertAlmostEqual(inserial.mass, list(range(1, 1+len(particles))) | units.MSun)
+        self.assertAlmostEqual(inserial.mass, range(1, 1+len(particles)) | units.MSun)
         serial.evolve_model(0.2 | units.Myr)
         
         parallel = ParallelStellarEvolution(MESA, number_of_workers=3, **default_options)
         inparallel = parallel.particles.add_particles(particles)
-        self.assertAlmostEqual(inparallel.mass, list(range(1, 1+len(particles))) | units.MSun)
+        self.assertAlmostEqual(inparallel.mass, range(1, 1+len(particles)) | units.MSun)
         parallel.evolve_model(0.2 | units.Myr)
         self.assertEqual(parallel.model_time, 0.2 | units.Myr)
         self.assertTrue(numpy.all(inparallel.age >= (0.2 | units.Myr)))

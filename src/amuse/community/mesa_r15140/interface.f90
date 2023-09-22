@@ -1,7 +1,7 @@
 module amuse_support
    implicit none
    character (len=4096) :: AMUSE_inlist_path
-   character (len=4096) :: AMUSE_mesa_dir
+   character (len=4096) :: AMUSE_mesa_dir,AMUSE_mesa_data_dir ! Normally $MESA_DIR and $MESA_DIR/data
    character (len=4096) :: AMUSE_local_data_dir ! Used for output starting_models
    character (len=4096) :: AMUSE_gyre_in_file 
    character (len=4096) :: AMUSE_temp_dir ! Used for mesa_temp_caches support
@@ -40,15 +40,17 @@ module amuse_mesa
 
 ! Set the paths to the inlist and the data directory
    integer function set_MESA_paths(AMUSE_inlist_path_in, &
-         AMUSE_mesa_dir_in, AMUSE_local_data_dir_in, AMUSE_gyre_in_file_in,&
+         AMUSE_mesa_dir_in, AMUSE_mesa_data_dir_in, &
+         AMUSE_local_data_dir_in, AMUSE_gyre_in_file_in,&
          AMUSE_temp_dir_in)
       
       character(*), intent(in) :: AMUSE_inlist_path_in, &
          AMUSE_mesa_dir_in, AMUSE_local_data_dir_in,  AMUSE_gyre_in_file_in, &
-         AMUSE_temp_dir_in
+         AMUSE_temp_dir_in, AMUSE_mesa_data_dir_in
 
       AMUSE_inlist_path = AMUSE_inlist_path_in
       AMUSE_mesa_dir = AMUSE_mesa_dir_in
+      AMUSE_mesa_data_dir = AMUSE_mesa_data_dir_in
       AMUSE_local_data_dir = AMUSE_local_data_dir_in
       AMUSE_gyre_in_file =  AMUSE_gyre_in_file_in
       AMUSE_temp_dir = AMUSE_temp_dir_in
@@ -138,8 +140,9 @@ module amuse_mesa
    end function load_model
 
 ! Create a new pre-main-sequence star
-   integer function new_pre_ms_particle(AMUSE_id, AMUSE_value)
+   integer function new_pre_ms_particle(AMUSE_id, AMUSE_value, num_steps)
       integer, intent(out) :: AMUSE_id
+      integer :: num_steps
       double precision :: AMUSE_value
       integer ::  ierr, id
 
@@ -153,7 +156,7 @@ module amuse_mesa
       AMUSE_id = id
       number_of_particles = AMUSE_id
 
-      call create_pre_main_sequence(AMUSE_id, ierr)
+      call create_pre_main_sequence(AMUSE_id, num_steps, ierr)
       if(ierr/=MESA_SUCESS) return
 
       call finish_init_star(AMUSE_id, set_amuse_options, ierr)
@@ -228,6 +231,7 @@ module amuse_mesa
       call set_init_options(AMUSE_id, &
                            AMUSE_mass, &
                            AMUSE_mesa_dir, &
+                           AMUSE_mesa_data_dir, &
                            AMUSE_local_data_dir, &
                            AMUSE_inlist_path, &
                            AMUSE_metallicity,&
@@ -1302,6 +1306,78 @@ module amuse_mesa
 
 
 
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! Procedures for manually controlling how a step gets taken
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
+   integer function solve_one_step(AMUSE_ID, first_try, result)
+      integer, intent(in) :: AMUSE_ID
+      logical, intent(in) :: first_try
+      integer, intent(out) :: result
+      integer :: ierr 
+
+      ierr = 0
+
+      call do_solve_one_step(AMUSE_ID, first_try, result, ierr)
+      solve_one_step = ierr
+
+   end function solve_one_step
+
+   integer function solve_one_step_pre(AMUSE_ID, result)
+      integer, intent(in) :: AMUSE_ID
+      integer, intent(out) :: result
+      integer :: ierr 
+
+      call do_solve_one_step_pre(AMUSE_ID, result, ierr)
+      solve_one_step_pre = ierr
+
+   end function solve_one_step_pre
+
+
+   integer function solve_one_step_post(AMUSE_ID, result)
+      integer, intent(in) :: AMUSE_ID
+      integer, intent(out) :: result
+      integer :: ierr 
+
+      call do_solve_one_step_post(AMUSE_ID, result, ierr)
+      solve_one_step_post = ierr
+
+   end function solve_one_step_post
+
+
+   integer function prepare_retry_step(AMUSE_ID, dt, result)
+   ! Prepare toretake a timestep with a different dt
+   ! Does not actualy retry the step
+      integer, intent(in) :: AMUSE_ID
+      double precision,intent(in) :: dt
+      integer, intent(out) :: result
+      integer :: ierr 
+
+
+      call set_current_dt(AMUSE_ID, dt, ierr) ! Sets dt not dt_next
+      if(ierr/=MESA_SUCESS) then
+         prepare_retry_step = ierr
+         return
+      end if
+
+      result = do_prepare_for_retry(AMUSE_id)
+      prepare_retry_step = 0
+
+   end function prepare_retry_step
+
+
+   integer function prepare_redo_step(AMUSE_ID, result)
+   ! Retake the same timestep with the same dt. Useful when mdot changes
+   ! Does not actualy redo the step 
+      integer, intent(in) :: AMUSE_ID
+      integer, intent(out) :: result
+      integer :: ierr 
+
+      result = do_prepare_for_redo(AMUSE_id)
+      prepare_redo_step = 0
+
+   end function prepare_redo_step
 
 
 end module AMUSE_mesa

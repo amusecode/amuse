@@ -12,7 +12,6 @@ FORTRAN ?= $(FC)
 
 SRC=src
 
-CODE_GENERATOR ?= $(AMUSE_DIR)/build.py
 
 LIBS+=$(SRC)/libfractal.a
 

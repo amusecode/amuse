@@ -65,11 +65,6 @@ download:
 	$(RM) -Rf src
 	mkdir src
 	$(DOWNLOAD_FROM_WEB)
-	cp src/PeTar/amuse-interface/interface.py ./
-	cp src/PeTar/amuse-interface/interface.h ./
-	cp src/PeTar/amuse-interface/interface.cc ./
-
-
 
 __init__.py:
 	touch $@
@@ -86,7 +81,7 @@ worker_code.cc: interface.py
 	$(CODE_GENERATOR) --type=c interface.py petarInterface -o $@
 
 worker_code.h: interface.py 
-	$(CODE_GENERATOR) --type=H -i amuse.support.codes.stopping_conditions.StoppingConditionInterface interface.py petarInterface -o $@
+	$(CODE_GENERATOR) --type=H -i amuse.community.interface.stopping_conditions.StoppingConditionInterface interface.py petarInterface -o $@
 
 petar_worker: worker_code.cc worker_code.h $(CODELIB) $(OBJS) interface.h
 	$(MPICXX) $(CXXFLAGS) $(SC_FLAGS) $(AM_CFLAGS) $(LDFLAGS) $< $(OBJS) $(CODELIB) -o $@ $(SC_MPI_CLIBS) $(LIBS) $(AM_LIBS)

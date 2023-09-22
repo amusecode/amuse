@@ -26,7 +26,7 @@ class GetCodeFromHttp:
         return os.path.join(self.directory(), 'src')
 
     def unpack_downloaded_file(self, filename, name, version):
-        print("unpacking", filename)
+        print(f"unpacking {filename}")
         arguments = ['tar', '-xf']
         arguments.append(filename)
         subprocess.call(
@@ -36,7 +36,7 @@ class GetCodeFromHttp:
         subprocess.call(
             [
                 'mv',
-                '{name}-{version}'.format(name=name, version=version),
+                f'{name}-{version}',
                 name
             ],
             cwd=os.path.join(self.src_directory())
@@ -46,12 +46,12 @@ class GetCodeFromHttp:
     def start(self):
         if os.path.exists('src'):
             counter = 0
-            while os.path.exists('src.{0}'.format(counter)):
+            while os.path.exists(f'src.{counter}'):
                 counter += 1
                 if counter > 100:
                     print("too many backup directories")
                     break
-            os.rename('src', 'src.{0}'.format(counter))
+            os.rename('src', f'src.{counter}')
 
         os.mkdir('src')
 
@@ -59,10 +59,7 @@ class GetCodeFromHttp:
             url = url_template.format(version=self.version[i])
             filename = self.filename_template.format(version=self.version[i])
             filepath = os.path.join(self.src_directory(), filename)
-            print(
-                "downloading version", self.version[i],
-                "from", url, "to", filename
-            )
+            print(f"downloading version {self.version[i]} from {url} to {filename}")
             if which('wget') is not None:
                 arguments = ['wget', url]
                 subprocess.call(
@@ -96,7 +93,7 @@ def new_option_parser():
     result = OptionParser()
     result.add_option(
         "--seba-version",
-        default='b290e13a0603e1fda2ce3ca8cb758385f7c7e0e8',
+        default='2f6e7f37a53167b4b0dcd6c723dff7b5ee1aecba',
         dest="seba_version",
         help="SeBa commit hash to download",
         type="string"

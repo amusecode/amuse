@@ -13,7 +13,6 @@ export FORTRAN
 
 OBJS = interface.o
 
-CODE_GENERATOR ?= $(AMUSE_DIR)/build.py
 
 VERSION = 2.02.70
 CODEDIR = src/mocassin.$(VERSION)
@@ -34,8 +33,9 @@ OBJECTS = $(SOURCES:.f90=.o)
 DOWNLOAD_FROM_WEB = $(PYTHON) ./download.py
 PATCH_FILES = $(PYTHON) ./patch_files.py
 
+DOWNLOAD_CODES?=1
 
-FFLAGS   += -Wall -g -I$(CODEDIR)/source
+FFLAGS   += -Wall -g -I$(CODEDIR)/source -fallow-invalid-boz
 LDFLAGS  += -lm $(MUSE_LD_FLAGS)
 
 all: mocassin_worker 
@@ -60,7 +60,7 @@ endif
 
 download:
 	$(RM) -Rf .pc
-	$(DOWNLOAD_FROM_WEB) $(VERSION)
+	$(DOWNLOAD_FROM_WEB) --version $(VERSION)
 	$(PATCH_FILES)
 	make -C $(CODEDIR) clean
 
@@ -80,7 +80,7 @@ $(CODELIB): $(CODEDIR)/makefile
 	echo $(FC)
 	echo $(FORTRAN)
 	make -C $(CODEDIR) clean
-	make -C $(CODEDIR) all
+	make -C $(CODEDIR) all FFLAGS="$(FFLAGS)"
 
 worker_code.f90: interface.py
 	$(CODE_GENERATOR) --type=f90 interface.py MocassinInterface -o $@

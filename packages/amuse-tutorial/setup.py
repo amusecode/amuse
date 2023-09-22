@@ -58,4 +58,5 @@ setup(
     # cmdclass=mapping_from_command_name_to_command_class,
     data_files=all_data_files,
     scripts=["bin/amuse-tutorial"],
+    packages=[],
 )

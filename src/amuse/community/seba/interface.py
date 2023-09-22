@@ -15,10 +15,10 @@ class SeBaInterface(CodeInterface, se.StellarEvolutionInterface, LiteratureRefer
     metallicity.  SeBa includes prescriptions for mass loss by stellar
     winds, supernova and supports binary evolution.
 
-        .. [#] ** Portegies Zwart S.F. & Verbunt F., 1996, A&A, 309, 179:
-        .. [#] ... "Population synthesis of high-mass binaries"
-        .. [#] Toonen, S., Nelemans, G., Portegies Zwart S.F., 2012, A&A, 546A, 70T
-        .. [#] ... "Supernova Type Ia progenitors from merging double white dwarfs. Using a new population synthesis model"
+        .. [#] ADS:1996A&A...309..179P (Portegies Zwart S.F. & Verbunt F., 1996, A&A, 309, 179:
+        .. [#] ... "Population synthesis of high-mass binaries")
+        .. [#] ADS:2012A&A...546A..70T (Toonen, S., Nelemans, G., Portegies Zwart S.F., 2012, A&A, 546A, 70T
+        .. [#] ... "Supernova Type Ia progenitors from merging double white dwarfs. Using a new population synthesis model")
     """
 
     include_headers = ['worker_code.h', 'stopcond.h']
@@ -503,6 +503,49 @@ class SeBaInterface(CodeInterface, se.StellarEvolutionInterface, LiteratureRefer
             The code does not have support for retrieving the apsidal motion constant
         """
         return function
+
+
+
+    @legacy_function
+    def get_zeta_thermal():
+        """
+        Retrieve the current value of the zeta thermal (no units).
+        """
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
+        function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
+            , description="The index of the star to set the value of")
+        function.addParameter('zeta_thermal', dtype='float64', direction=function.OUT,
+            description = "The current value of the zeta thermal")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            Current value of the zeta thermal constant was retrieved
+        -1 - ERROR
+            The code does not have support for retrieving the zeta thermal constant
+        """
+        return function
+
+
+    @legacy_function
+    def get_zeta_adiabatic():
+        """
+        Retrieve the current value of the zeta adiabatic (no units).
+        """
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
+        function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
+            , description="The index of the star to set the value of")
+        function.addParameter('zeta_adiabatic', dtype='float64', direction=function.OUT,
+            description = "The current value of the zeta adiabatic")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            Current value of the zeta adiabatic constant was retrieved
+        -1 - ERROR
+            The code does not have support for retrieving the zeta adiabatic constant
+        """
+        return function
         
 
     @legacy_function
@@ -933,6 +976,16 @@ class SeBa(se.StellarEvolution):
             (units.none, handler.ERROR_CODE,)
         )        
         handler.add_method(
+            "get_zeta_thermal",
+            (handler.INDEX,),
+            (units.none, handler.ERROR_CODE,)
+        )        
+        handler.add_method(
+            "get_zeta_adiabatic",
+            (handler.INDEX,),
+            (units.none, handler.ERROR_CODE,)
+        )        
+        handler.add_method(
             "get_rotation_period",
             (handler.INDEX,),
             (units.s, handler.ERROR_CODE,)
@@ -1042,6 +1095,8 @@ class SeBa(se.StellarEvolution):
         handler.add_getter('particles', 'get_convective_envelope_radius', names = ('convective_envelope_radius',))
         handler.add_getter('particles', 'get_gyration_radius', names = ('gyration_radius',))
         handler.add_getter('particles', 'get_apsidal_motion_constant', names = ('apsidal_motion_constant',))        
+        handler.add_getter('particles', 'get_zeta_thermal', names = ('zeta_thermal',))        
+        handler.add_getter('particles', 'get_zeta_adiabatic', names = ('zeta_adiabatic',))        
         handler.add_getter('particles', 'get_rotation_period', names = ('rotation_period',))
         handler.add_setter('particles', 'set_rotation_period', names = ('rotation_period',))
         

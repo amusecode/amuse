@@ -548,7 +548,7 @@ class TestMMAMS(TestWithMPI):
         print("Test 8: MMAMS with MESA particles - multiple mergers")
         number_of_stars = 4
         stars = Particles(number_of_stars)
-        stars.mass = list(range(20, 20+number_of_stars)) | units.MSun
+        stars.mass = range(20, 20+number_of_stars) | units.MSun
         
         stellar_evolution = self.new_instance(MESA)
         if stellar_evolution is None:

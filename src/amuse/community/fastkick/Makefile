@@ -10,7 +10,6 @@ MPICXX ?= mpicxx
 OBJ = interface.o
 GPU_OBJ = interface.gpuo cuda_fastkick.o
 
-CODE_GENERATOR ?= $(PYTHON) $(AMUSE_DIR)/build.py
 
 NVCCFLAGS ?= $(NVCC_FLAGS)
 
