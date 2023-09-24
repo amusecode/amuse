@@ -171,8 +171,10 @@ individual codes can be build with:
 
 with {code} the name of the code in lower case. 
 
-Installation on using modules (tested for Snellius)
-***************************************************
+Installation on HPC systems using modules (tested for Snellius)
+***************************************************************
+
+Note that the modules on your local HPC system may be differently named.
 
 .. code-block:: sh
 
@@ -181,33 +183,43 @@ Installation on using modules (tested for Snellius)
 
 Load python.
 
-.. code-block::sh
+.. code-block:: sh
 
-    module load Python/3.10.4-GCCcore-11.3.0 # or other version of python
+    module load Python/3.10.4-GCCcore-11.3.0 # or another version of python, 3.7 or higher
 
 
-Following AMUSE documentation (see above), download/uograde the python pachage: (--user is required by Snellius)
+Following AMUSE documentation (see above), download/upgrade the python package: (--user is required by Snellius)
 
-.. code-block::sh
+.. code-block:: sh
 
-    pip3 install --user --upgrade pip
-    pip3 install --user numpy docutils mpi4py h5py wheel
-    pip3 install --user -e . # In the amuse home directory
+    mkdir MY_PROJECT_DIR
+    cd MY_PROJECT_DIR
+    python3 -m venv env  # initialise a Python virtual environment, which will contain all the packages we install
+    source env/bin/activate  # activate the virtual environment - this must be repeated every time you log in
+    pip install --upgrade pip
+    cd AMUSE_DIR  # change to where you downloaded AMUSE
+    pip install -r requirements.txt --upgrade  # install/upgrade all required packages
+    pip install matplotlib  # not required but highly recommended
+    pip install -e .
 
-Note that the 2022 version of setuptools may be outdated, in which case you run
+Now you can build the AMUSE framework with 
 
-.. code-block::sh
+.. code-block:: sh
 
-    pip3 install --user --upgrade setuptools
+    make framework
 
-before you run
+Finally, build AMUSE individual codes by running from the AMUSE directory:
 
-.. code-block::sh
-
-    python setup.py develop_build
-
-Eventually, build AMUSE individual codes by running from the AMUSE directory:
-
-..code-block::sh
+.. code-block:: sh
 
     make {code}.code
+
+When you log in again (and in your SLURM scripts), you will need to load the same modules and activate the same environment:
+
+.. code-block:: sh
+
+    module load 2022
+    module load foss/2022a
+    module load Python/3.10.4-GCCcore-11.3.0 # or another version of python, 3.7 or higher
+    cd MY_PROJECT_DIR
+    source env/bin/activate
