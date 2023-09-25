@@ -356,6 +356,48 @@ class petarInterface(
         """
         return function
 
+    @legacy_function
+    def get_output_step():
+        """
+        Get dt_output, the PeTar internal output time step (0.125)
+        """
+        function = LegacyFunctionSpecification()
+        function.addParameter(
+            'dt_output', dtype='float64', direction=function.OUT,
+            description=(
+                "dt_output, the PeTar internal output time step (0.125)"
+            )
+        )
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            the parameter was retrieved
+        -1 - ERROR
+            could not retrieve parameter
+        """
+        return function
+
+    @legacy_function
+    def set_output_step():
+        """
+        Set dt_output, the PeTar internal output time step (0.125)
+        """
+        function = LegacyFunctionSpecification()
+        function.addParameter(
+            'dt_output', dtype='float64', direction=function.IN,
+            description=(
+                "dt_output, the PeTar internal output time step (0.125)"
+            )
+        )
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            the parameter was set
+        -1 - ERROR
+            could not set parameter
+        """
+        return function
+
 
 class petar(GravitationalDynamics, GravityFieldCode):
 
@@ -441,6 +483,14 @@ class petar(GravitationalDynamics, GravityFieldCode):
             "dt_soft",
             "Tree time step (if zero, auto-determine)",
             default_value=0.0 | nbody_system.time
+        )
+
+        handler.add_method_parameter(
+            "get_output_step",
+            "set_output_step",
+            "dt_output",
+            "PeTar internal output time step (0.125)",
+            default_value=0.125 | nbody_system.time
         )
 
     def define_methods(self, handler):
@@ -535,6 +585,25 @@ class petar(GravitationalDynamics, GravityFieldCode):
 
         handler.add_method(
             "get_tree_step",
+            (),
+            (
+                nbody_system.time,
+                handler.ERROR_CODE,
+            )
+        )
+
+        handler.add_method(
+            "set_output_step",
+            (
+                nbody_system.time,
+            ),
+            (
+                handler.ERROR_CODE,
+            )
+        )
+
+        handler.add_method(
+            "get_output_step",
             (),
             (
                 nbody_system.time,

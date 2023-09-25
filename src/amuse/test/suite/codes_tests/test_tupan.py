@@ -32,10 +32,10 @@ class TestTupanInterface(TestWithMPI):
         self.assertEqual(0, instance.initialize_code())
         self.assertEqual(0, instance.commit_parameters())
 
-        id, error = instance.new_particle(mass = 11.0, radius = 2.0, x = 0.0, y = 0.0, z = 0.0, vx = 0.0, vy = 0.0, vz = 0.0)
+        id, error = instance.new_particle(mass=11.0, radius=2.0, x=0.0, y=0.0, z=0.0, vx=0.0, vy=0.0, vz=0.0)
         self.assertEqual(0, error)
         self.assertEqual(0, id)
-        id, error = instance.new_particle(mass = 21.0, radius = 5.0, x = 10.0, y = 0.0, z = 0.0, vx = 10.0, vy = 0.0, vz = 0.0)
+        id, error = instance.new_particle(mass=21.0, radius=5.0, x=10.0, y=0.0, z=0.0, vx=10.0, vy=0.0, vz=0.0)
         self.assertEqual(0, error)
         self.assertEqual(1, id)
         self.assertEqual(0, instance.commit_particles())
@@ -46,7 +46,7 @@ class TestTupanInterface(TestWithMPI):
         self.assertEqual(0,  retrieved_state2['__result'])
         self.assertEqual(11.0,  retrieved_state1['mass'])
         self.assertEqual(21.0,  retrieved_state2['mass'])
-        self.assertEqual( 0.0,  retrieved_state1['x'])
+        self.assertEqual(0.0,  retrieved_state1['x'])
         self.assertEqual(10.0,  retrieved_state2['x'])
 
         self.assertEqual(0, instance.cleanup_code())
@@ -60,34 +60,34 @@ class TestTupanInterface(TestWithMPI):
         self.assertEqual(0, instance.initialize_code())
         self.assertEqual(0, instance.commit_parameters())
         self.assertEqual([0, 0], list(instance.new_particle(0.01,  1, 0, 0,  0, 1, 0, 0.1).values()))
-        self.assertEqual([1, 0], list(instance.new_particle(0.02, -1, 0, 0,  0,-1, 0, 0.1).values()))
+        self.assertEqual([1, 0], list(instance.new_particle(0.02, -1, 0, 0,  0, -1, 0, 0.1).values()))
 ####        self.assertEquals(-1, instance.get_mass(1)['__result']) # Have to commit first
         self.assertEqual(0, instance.commit_particles())
 
         # getters
         mass, result = instance.get_mass(0)
         self.assertAlmostEqual(0.01, mass)
-        self.assertEqual(0,result)
+        self.assertEqual(0, result)
         radius, result = instance.get_radius(1)
         self.assertAlmostEqual(0.1, radius)
-        self.assertEqual(0,result)
-        self.assertEqual(-1, instance.get_mass(2)['__result']) # Particle not found
-        self.assertEqual([ 1, 0, 0,  0], list(instance.get_position(0).values()))
+        self.assertEqual(0, result)
+        self.assertEqual(-1, instance.get_mass(2)['__result'])  # Particle not found
+        self.assertEqual([1, 0, 0,  0], list(instance.get_position(0).values()))
         self.assertEqual([-1, 0, 0,  0], list(instance.get_position(1).values()))
-        self.assertEqual([ 0, 1, 0,  0], list(instance.get_velocity(0).values()))
-        self.assertEqual([ 0,-1, 0,  0], list(instance.get_velocity(1).values()))
+        self.assertEqual([0, 1, 0,  0], list(instance.get_velocity(0).values()))
+        self.assertEqual([0, -1, 0,  0], list(instance.get_velocity(1).values()))
 
         # setters
-        self.assertEqual(0, instance.set_state(0, 0.01, 1,2,3, 4,5,6, 0.1))
-        self.assertEqual([0.01, 1.0,2.0,3.0, 4.0,5.0,6.0, 0.1, 0], list(instance.get_state(0).values()))
+        self.assertEqual(0, instance.set_state(0, 0.01, 1, 2, 3, 4, 5, 6, 0.1))
+        self.assertEqual([0.01, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 0.1, 0], list(instance.get_state(0).values()))
         self.assertEqual(0, instance.set_mass(0, 0.02))
-        self.assertEqual([0.02, 1.0,2.0,3.0, 4.0,5.0,6.0, 0.1, 0], list(instance.get_state(0).values()))
+        self.assertEqual([0.02, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 0.1, 0], list(instance.get_state(0).values()))
         self.assertEqual(0, instance.set_radius(0, 0.2))
-        self.assertEqual([0.02, 1.0,2.0,3.0, 4.0,5.0,6.0, 0.2, 0], list(instance.get_state(0).values()))
-        self.assertEqual(0, instance.set_position(0, 10,20,30))
-        self.assertEqual([0.02, 10.0,20.0,30.0, 4.0,5.0,6.0, 0.2, 0], list(instance.get_state(0).values()))
-        self.assertEqual(0, instance.set_velocity(0, 40,50,60))
-        self.assertEqual([0.02, 10.0,20.0,30.0, 40.0,50.0,60.0, 0.2, 0], list(instance.get_state(0).values()))
+        self.assertEqual([0.02, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 0.2, 0], list(instance.get_state(0).values()))
+        self.assertEqual(0, instance.set_position(0, 10, 20, 30))
+        self.assertEqual([0.02, 10.0, 20.0, 30.0, 4.0, 5.0, 6.0, 0.2, 0], list(instance.get_state(0).values()))
+        self.assertEqual(0, instance.set_velocity(0, 40, 50, 60))
+        self.assertEqual([0.02, 10.0, 20.0, 30.0, 40.0, 50.0, 60.0, 0.2, 0], list(instance.get_state(0).values()))
 
         self.assertEqual(0, instance.cleanup_code())
         instance.stop()
@@ -135,21 +135,20 @@ class TestTupanInterface(TestWithMPI):
         self.assertEqual(0, instance.commit_parameters())
 
         self.assertEqual([0, 0], list(instance.new_particle(0.5,  0.5, 0, 0,  0, 0.5, 0, 0.001).values()))
-        self.assertEqual([1, 0], list(instance.new_particle(0.5, -0.5, 0, 0,  0,-0.5, 0, 0.001).values()))
+        self.assertEqual([1, 0], list(instance.new_particle(0.5, -0.5, 0, 0,  0, -0.5, 0, 0.001).values()))
         self.assertEqual(0, instance.commit_particles())
 
         P = 2 * math.pi
-        self.assertEqual(0, instance.evolve_model(P / 2)) # half an orbit
+        self.assertEqual(0, instance.evolve_model(P / 2))  # half an orbit
         for result, expected in zip(instance.get_position(0).values(), [-0.5, 0.0, 0.0, 0]):
             self.assertAlmostEqual(result, expected, 2)
 
-        self.assertEqual(0, instance.evolve_model(P)) # full orbit
+        self.assertEqual(0, instance.evolve_model(P))  # full orbit
         for result, expected in zip(instance.get_position(0).values(), [0.5, 0.0, 0.0, 0]):
             self.assertAlmostEqual(result, expected, 2)
 
         self.assertEqual(0, instance.cleanup_code())
         instance.stop()
-
 
 
 class TestTupan(TestWithMPI):
@@ -356,8 +355,8 @@ class TestTupan(TestWithMPI):
 
         tan_initial_direction = particles[1].vy/particles[1].vx
         self.assertAlmostEqual(tan_initial_direction, math.tan(math.pi/4))
-        tan_final_direction =  []
-        for log_eps2 in range(-9,10,2):
+        tan_final_direction = []
+        for log_eps2 in range(-9, 10, 2):
             instance = self.new_instance_of_an_optional_code(Tupan, converter)
             instance.initialize_code()
             instance.parameters.epsilon_squared = 10.0**log_eps2 | units.AU ** 2
@@ -366,7 +365,7 @@ class TestTupan(TestWithMPI):
             instance.particles.add_particles(particles)
             instance.commit_particles()
             instance.evolve_model(0.25 | units.yr)
-            tan_final_direction.append(instance.particles[1].velocity[1]/
+            tan_final_direction.append(instance.particles[1].velocity[1] /
                 instance.particles[1].velocity[0])
             instance.cleanup_code()
             instance.stop()
@@ -376,7 +375,7 @@ class TestTupan(TestWithMPI):
         self.assertAlmostEqual(tan_final_direction[-1], tan_initial_direction, 2)
         # Outcome is most sensitive to epsilon_squared when epsilon_squared = d(earth, sun)^2
         delta = [abs(tan_final_direction[i+1]-tan_final_direction[i]) for i in range(len(tan_final_direction)-1)]
-        self.assertEqual(delta[len(tan_final_direction)/2 -1], max(delta))
+        self.assertEqual(delta[len(tan_final_direction)/2 - 1], max(delta))
 
     def xtest08(self):
         if MODULES_MISSING:
@@ -389,8 +388,8 @@ class TestTupan(TestWithMPI):
 
         particles = Particles(2)
         particles.mass = 1.0 | nbody_system.mass
-        particles.radius =  0.0 | nbody_system.length
-        particles.position = [[0.0,0.0,0.0], [2.0,0.0,0.0]] | nbody_system.length
+        particles.radius = 0.0 | nbody_system.length
+        particles.position = [[0.0, 0.0, 0.0], [2.0, 0.0, 0.0]] | nbody_system.length
         particles.velocity = [[0.0, 0.0, 0.0], [0.0, 0.0, 0.0]] | nbody_system.speed
         instance.particles.add_particles(particles)
 
@@ -544,4 +543,3 @@ class TestTupan(TestWithMPI):
 
         instance.cleanup_code()
         instance.stop()
-

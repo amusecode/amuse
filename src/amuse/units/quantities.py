@@ -636,7 +636,16 @@ class VectorQuantity(Quantity):
         quantity = as_vector_quantity(quantity)
         if self.unit.is_zero():
             self.unit = quantity.unit
-        self._number[index] = quantity.value_in(self.unit)
+        if (
+            isinstance(quantity, VectorQuantity)
+        ):
+            if len(quantity) == 1:
+                self._number[index] = quantity[0].value_in(self.unit)
+            else:
+                self._number[index] = quantity[:].value_in(self.unit)
+        else:
+            self._number[index] = quantity.value_in(self.unit)
+
 
     @property
     def number(self):

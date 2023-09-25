@@ -60,7 +60,6 @@ class TestStellarWind(amusetest.TestCase):
 
         return stars
 
-
     def tearDown(self):
         set_printing_strategy('default')
 
@@ -841,7 +840,6 @@ class TestHeatingWind(TestStellarWind):
             star_wind.particles,
             attributes=["age", "radius", "mass", "luminosity", "temperature", "stellar_type"])
 
-
         dt = 5 | units.Myr
         t = 0 | units.Myr
         t_end = 31 | units.Myr
@@ -863,12 +861,10 @@ class TestHeatingWind(TestStellarWind):
 
             t += dt
 
-
         self.assertEqual(wind_N, [[0, 0], [32, 45], [57, 59], [114, 130], [302, 635], [1231, 5810], [2981, 285777]])
         supernova = wind_2
         sn_energy = (supernova.u * supernova.mass).sum()
         self.assertAlmostRelativeEqual(sn_energy, 1e49 | units.erg, 2)
-
 
     def test_supernova_manual(self):
         stev, star_wind, stars = self.setup_supernova()
@@ -877,7 +873,6 @@ class TestHeatingWind(TestStellarWind):
         chan = stev.particles.new_channel_to(
             star_wind.particles,
             attributes=["age", "radius", "mass", "luminosity", "temperature"])
-
 
         dt = 5 | units.Myr
         t = 0 | units.Myr
@@ -910,4 +905,4 @@ class TestHeatingWind(TestStellarWind):
         print(wind_N)
         print(wind_E)
         self.assertEqual(wind_N[-2:], [606194, 0])
-        self.assertAlmostRelativeEqual(wind_E[-2:], [1.e49, 0] | units.erg,7)
+        self.assertAlmostRelativeEqual(wind_E[-2:], [1.e49, 0] | units.erg, 7)

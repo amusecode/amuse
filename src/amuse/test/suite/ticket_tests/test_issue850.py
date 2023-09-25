@@ -7,10 +7,11 @@ from amuse.community.bse import Bse
 from amuse.support.console import set_printing_strategy
 from amuse.units import units
 
+
 class TestsForIssue850(amusetest.TestCase):
     def create_stars_and_binaries(self, binary_pair=[0, 1]):
         stars = Particles(3)
-        stars[0].initial_mass = 14 | units.MSun 
+        stars[0].initial_mass = 14 | units.MSun
         stars[1].initial_mass = 10 | units.MSun
         stars[2].initial_mass = 9 | units.MSun
         stars.mass = stars.initial_mass
@@ -45,7 +46,7 @@ class TestsForIssue850(amusetest.TestCase):
         for i in range(len(stars)):
             self.assertNotEqual(stars[i].mass, stars[i].initial_mass)
         instance.stop()
-        
+
     def _test_do_all_stars_evolve_no_binary_bse(self):
         self.test_do_all_stars_evolve_no_binary(code=Bse)
 
@@ -132,7 +133,7 @@ class TestsForIssue850(amusetest.TestCase):
         instance.evolve_model(end_time)
         channel_stars.copy()
         channel_binary.copy()
-        
+
         # All stars need to have evolved
         print(
             f"t: {end_time}, m: {stars[0].mass} {stars[1].mass} {stars[2].mass} "
@@ -163,7 +164,7 @@ class TestsForIssue850(amusetest.TestCase):
         instance.evolve_model(end_time)
         channel_stars.copy()
         channel_binary.copy()
-        
+
         # All stars need to have evolved
         print(
             f"t: {end_time}, m: {stars[0].mass} {stars[1].mass} {stars[2].mass} "

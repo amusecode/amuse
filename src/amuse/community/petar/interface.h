@@ -87,6 +87,10 @@ int get_tree_step(double * dt_soft);
 
 int set_tree_step(double dt_soft);
 
+int get_output_step(double * dt_output);
+
+int set_output_step(double dt_output);
+
 int get_kinetic_energy(double * kinetic_energy);
 
 int get_potential_energy(double * potential_energy);

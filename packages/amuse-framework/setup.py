@@ -45,7 +45,7 @@ try:
     use_scm_version = False
     setup_requires = []
 except ImportError:
-    version = False
+    version = None
     setup_requires = ['setuptools_scm']
     use_scm_version = {
         "root": "../..",

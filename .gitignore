@@ -491,3 +491,6 @@ src/amuse/community/seba/src
 packages/amuse*/dist
 packages/dist
 src/amuse/community/phantom/src
+
+# standard directory for a virtualenv
+env/
