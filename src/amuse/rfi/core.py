@@ -960,7 +960,9 @@ class CodeInterface(OptionalAttributes):
         if self.channel_type == 'mpi':
             if  MpiChannel.is_supported():
                 return MpiChannel
-            else:   
+            else:
+                warnings.warn("MPI (unexpectedly?) not available, falling back to sockets channel")
+                self.channel_type="sockets"   
                 return SocketChannel
                 
         elif self.channel_type == 'remote':
@@ -1064,15 +1066,17 @@ class CodeWithDataDirectories(object):
     
     
     def __init__(self):
-        if not self.channel_type == 'distributed':
+        if self.channel_type == 'distributed':
+            warnings.warn("Code with DistributedChannel wants to make output directory, check..")
+        else:
             self.ensure_data_directory_exists(self.get_output_directory())
     
     def ensure_data_directory_exists(self, directory):
         directory = os.path.expanduser(directory)
         directory = os.path.expandvars(directory)
-        
+                
         try:
-            os.makedirs(directory)
+            self.channel.makedirs(directory)
         except OSError as ex:
             if ex.errno == errno.EEXIST and os.path.isdir(directory):
                 pass

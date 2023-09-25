@@ -4,7 +4,7 @@
 #
 AC_DEFUN([AX_MPFR],[
         AC_ARG_WITH(mpfr,
-             AC_HELP_STRING([--with-mpfr=PFX], [Prefix where MPFR has been installed] ),
+             AS_HELP_STRING([--with-mpfr=PFX],[Prefix where MPFR has been installed ]),
              [
                 test "$withval" = no && AC_MSG_WARN([mpfr is a required package for some modules])
                 test "$withval" = yes || mpfr_prefix="$withval" 

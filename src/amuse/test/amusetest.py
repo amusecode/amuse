@@ -302,8 +302,8 @@ class TestDefaults(_Defaults):
 
     @late
     def temporarydir(self):
-        dirname=tempfile.mkdtemp()
-        print(("generating temporary dir for test results: {0}". format(dirname)))
+        dirname = tempfile.mkdtemp(dir="./")
+        print(f"generating temporary dir for test results: {dirname}")
         return dirname
 
     @options.option(sections=['test'])
@@ -317,7 +317,7 @@ class TestDefaults(_Defaults):
         test_results_dir = os.path.join(amuse_root_dir, self.name_of_testresults_directory)
         if os.path.exists(test_results_dir):
             try:
-                f = open(os.path.join(test_results_dir,'test.txt'),'w')
+                f = open(os.path.join(test_results_dir, 'test.txt'), 'w')
                 f.close()
                 return test_results_dir
             except IOError as ex:
@@ -327,9 +327,9 @@ class TestDefaults(_Defaults):
 
     @options.option(sections=['test'])
     def name_of_testresults_directory(self):
-        return 'test_results'
+        return self.temporarydir
 
-    @options.option(type='boolean',sections=['test'])
+    @options.option(type='boolean', sections=['test'])
     def can_run_tests_to_compile_modules(self):
         return True
 

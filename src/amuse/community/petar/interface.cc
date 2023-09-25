@@ -23,6 +23,7 @@ extern "C" {
 
     // flags
     static bool particle_list_change_flag=true;
+    static bool initial_particle_flag=false;
 
     // common
 
@@ -102,6 +103,8 @@ extern "C" {
         if(ptr->my_rank==0) std::cout<<"PETAR: recommit_parameters start\n";
 #endif
         ptr->input_parameters.n_glb.value = ptr->stat.n_real_glb;
+        ptr->input_parameters.update_changeover_flag = true;
+        ptr->input_parameters.update_rsearch_flag = true;
         ptr->initialParameters();
         ptr->initial_step_flag = false;
 
@@ -123,6 +126,15 @@ extern "C" {
 
     int new_particle(int* index_of_the_particle,  double mass, double x, double y, double z, double vx, double vy, double vz, double radius) {
         // if not yet initial the system
+#ifdef INTERFACE_DEBUG_PRINT
+        if (!ptr->read_data_flag && ptr->my_rank==0) {
+            std::cout<<"New particle, rank "<<ptr->my_rank<<std::endl;
+            std::cout<<std::setw(20)<<"ID";
+            ParticleBase::printColumnTitle(std::cout);
+            std::cout<<std::endl;
+        }
+#endif
+
         ptr->read_data_flag = true;
         
         PS::S64 id_offset = ptr->input_parameters.id_offset.value;
@@ -152,10 +164,25 @@ extern "C" {
             p.rank_org = ptr->my_rank;
             p.adr = n_loc;
 
+            if (initial_particle_flag) {
+                PS::F64 m_fac = p.mass*Ptcl::mean_mass_inv;
+                PS::F64 r_out = ptr->input_parameters.r_out.value;
+                PS::F64 r_in = r_out*ptr->input_parameters.ratio_r_cut.value;
+                p.changeover.setR(m_fac, r_in, r_out);
+                p.calcRSearch(ptr->input_parameters.dt_soft.value);
+            }
+            
             ptr->system_soft.addOneParticle(p);
 
             ptr->stat.n_real_loc++;
             *index_of_the_particle = p.id;
+#ifdef INTERFACE_DEBUG_PRINT
+            std::cout<<std::setprecision(14);
+            std::cout<<std::setw(20)<<p.id;
+            p.ParticleBase::printColumn(std::cout);
+            std::cout<<std::endl;
+#endif
+
         }
         ptr->stat.n_real_glb++;
 
@@ -548,7 +575,7 @@ extern "C" {
 
     int evolve_model(double time_next) {
 #ifdef INTERFACE_DEBUG_PRINT
-        if(ptr->my_rank==0) std::cout<<"PETAR: evolve models start\n";
+        if(ptr->my_rank==0) std::cout<<"PETAR: evolve models to "<<time_next<< "start\n";
 #endif
 
         if (ptr->stat.n_real_glb==0) {// escape if no particle
@@ -731,6 +758,7 @@ extern "C" {
         ptr->initialStep();
         ptr->reconstructIdAdrMap();
         particle_list_change_flag = false;
+        initial_particle_flag = true;
 #ifdef INTERFACE_DEBUG_PRINT
         if(ptr->my_rank==0) std::cout<<"PETAR: commit_particles end\n";
 #endif
@@ -858,6 +886,17 @@ extern "C" {
         *dt_soft = ptr->input_parameters.dt_soft.value;
         return 0;
     }
+
+    int set_output_step(double dt_snap) {
+        ptr->input_parameters.dt_snap.value = dt_snap;
+        return 0;
+    }
+
+    int get_output_step(double* dt_snap) {
+        *dt_snap = ptr->input_parameters.dt_snap.value;
+        return 0;
+    }
+
 
     //// set gravitational constant
     //int set_gravitational_constant(double G) {

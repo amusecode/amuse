@@ -73,7 +73,7 @@ class ConvertBetweenGenericAndSiUnits(object):
     """
 
     def __init__(self, *arguments_list):
-        
+
         self.check_arguments(arguments_list)
         
         self.values = arguments_list
@@ -81,22 +81,22 @@ class ConvertBetweenGenericAndSiUnits(object):
         self.units_of_values = [x.unit for x in self.values]
         self.system_rank = len(self.values)
         
-        self.new_base = numpy.mat(numpy.zeros((self.system_rank,self.system_rank)))
-        self.new_base_inv = numpy.mat(numpy.zeros((self.system_rank,self.system_rank)))
+        self.new_base = numpy.zeros((self.system_rank,self.system_rank))
+        self.new_base_inv = numpy.zeros((self.system_rank,self.system_rank))
     
         available_units = set()
         for unit in self.units_of_values:
             for factor, base_unit in unit.base:
                 available_units.add(base_unit)
-        if not len(available_units) is self.system_rank:
+        if len(available_units) is not self.system_rank:
             raise UnitsNotOrtogonalException(self.system_rank, len(available_units))
-        self.list_of_available_units = list(available_units)
-    
+        self.list_of_available_units = numpy.array(list(available_units))
+
         self.new_base = self.determine_new_base()
         rank_of_new_base = self.matrixrank(self.new_base)
         if rank_of_new_base < self.system_rank:
             raise UnitsNotOrtogonalException(self.system_rank, rank_of_new_base)
-        self.new_base_inv = self.new_base ** -1
+        self.new_base_inv = numpy.linalg.matrix_power(self.new_base, -1)
 
     def check_arguments(self, arguments):
         
@@ -107,25 +107,36 @@ class ConvertBetweenGenericAndSiUnits(object):
                 raise NotAQuantityException(index, x)
             if not x.is_scalar():
                 raise NotAScalarException(index, x)
-        
+
     def matrixrank(self, A, tol=1e-8):
-        s = numpy.linalg.svd(A,compute_uv=0)
-        return numpy.sum(numpy.where( s>tol, 1, 0 ) )
+        s = numpy.linalg.svd(A, compute_uv=0)
+        return numpy.sum(numpy.where(s > tol, 1, 0))
 
     def determine_new_base(self):
-        matrix = numpy.asmatrix(numpy.zeros((self.system_rank,self.system_rank)))
+        matrix = numpy.zeros((self.system_rank, self.system_rank))
         for row, value in enumerate(self.values):
             for n, unit in value.unit.base:
-                matrix[row, [i for i, j in enumerate(self.list_of_available_units) if j == unit]] = n
+                matrix[
+                    row,
+                    [
+                        column for column, available_unit in enumerate(
+                            self.list_of_available_units
+                        ) if available_unit == unit
+                    ]
+                ] = n
         return matrix
 
     @late
     def conversion_factors(self):
-        factors_of_the_bases = numpy.asmatrix(numpy.zeros((self.system_rank,1)))
+        factors_of_the_bases = numpy.zeros((self.system_rank,1))
         for row, value in enumerate(self.values):
             factors_of_the_bases[row] = value.number * value.unit.factor
         log_factors_of_the_bases = numpy.log(numpy.abs(factors_of_the_bases))
-        result = numpy.array(numpy.exp(self.new_base_inv*log_factors_of_the_bases))[:,0]
+        result = numpy.array(
+            numpy.exp(
+                numpy.matmul(self.new_base_inv, log_factors_of_the_bases)
+            )
+        )[:,0]
         return result
 
     @late
@@ -134,7 +145,7 @@ class ConvertBetweenGenericAndSiUnits(object):
         result = []
         generic_units = mass, length, time, temperature, current, luminous_intensity
 
-        for n, unit  in enumerate(self.list_of_available_units):
+        for n, unit in enumerate(self.list_of_available_units):
             conversion_factor_for_this_base_unit = conversion_factors[n]
             for generic_unit in generic_units:
                 if generic_unit.unit_in_si == unit:

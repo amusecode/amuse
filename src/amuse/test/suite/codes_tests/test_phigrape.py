@@ -19,13 +19,14 @@ except ImportError:
     HAS_MATPLOTLIB = False
 
 default_test_options = dict()
-#~default_test_options = dict(mode='gpu')
+# ~default_test_options = dict(mode='gpu')
+
 
 class TestMPIInterface(TestWithMPI):
-    
+
     def test0(self):
         instance = PhiGRAPEInterface(**default_test_options)
-        self.assertTrue("Harfst, S., Gualandris, A., Merritt, D., Spurzem, R., Portegies Zwart, S., & Berczik, P." 
+        self.assertTrue("Harfst, S., Gualandris, A., Merritt, D., Spurzem, R., Portegies Zwart, S., & Berczik, P."
             in instance.all_literature_references_string())
         instance.stop()
 
@@ -39,52 +40,39 @@ class TestMPIInterface(TestWithMPI):
         self.assertEqual(instance.get_number_of_particles()['number_of_particles'], 1)
         instance.cleanup_code()
         instance.stop()
-        
+
     def test2(self):
         instance = PhiGRAPEInterface(**default_test_options)
         for x in [0.101, 4.0]:
             error = instance.set_eps2(x)
-            self.assertEqual(error, 0)            
+            self.assertEqual(error, 0)
             value, error = instance.get_eps2()
             self.assertEqual(error, 0)
             self.assertEqual(x, value)
         instance.cleanup_code()
         instance.stop()
-    
+
     def test3(self):
         instance = PhiGRAPEInterface(**default_test_options)
         instance.initialize_code()
-        
-        instance.new_particle([11.0,12.0,13.0,14.0]
-            , [2.1,3.1,4.1,5.1]
-            , [2.2,3.2,4.2,5.2]
-            , [2.3,3.3,4.3,5.3]
-            , [2.4,3.4,4.4,5.4]
-            , [2.5,3.5,4.5,5.5]
-            , [2.6,3.6,4.6,5.6]
-            , [2.0,3.0,4.0,5.0])
+
+        instance.new_particle([11.0, 12.0, 13.0, 14.0], [2.1, 3.1, 4.1, 5.1], [2.2, 3.2, 4.2, 5.2], [2.3, 3.3, 4.3, 5.3], [2.4, 3.4, 4.4, 5.4], [2.5, 3.5, 4.5, 5.5], [2.6, 3.6, 4.6, 5.6], [2.0, 3.0, 4.0, 5.0])
         retrieved_state = instance.get_state(1)
         self.assertEqual(11.0,  retrieved_state['mass'])
-        retrieved_state = instance.get_state([2,3,4])
+        retrieved_state = instance.get_state([2, 3, 4])
         self.assertEqual(12.0,  retrieved_state['mass'][0])
         self.assertEqual(instance.get_number_of_particles()['number_of_particles'], 4)
         instance.cleanup_code()
         instance.stop()
-    
+
     def test5(self):
         instance = PhiGRAPEInterface(**default_test_options)
         instance.initialize_code()
         n = 4000
-        ids = [i for i in range(1,n)]
-        values = [1.0 * i for i in range(1,n)]
+        ids = [i for i in range(1, n)]
+        values = [1.0 * i for i in range(1, n)]
         instance.new_particle(
-              values
-            , values
-            , values
-            , values
-            , values
-            , values
-            , values)
+              values, values, values, values, values, values, values)
         retrieved_state = instance.get_state(3999)
         self.assertEqual(3999.0,  retrieved_state['mass'])
         instance.cleanup_code()
@@ -94,54 +82,48 @@ class TestMPIInterface(TestWithMPI):
         instance = PhiGRAPEInterface(**default_test_options)
         instance.initialize_code()
         n = 4000
-        ids = [i for i in range(1,n)]
-        values = [1.0 * i for i in range(1,n)]
+        ids = [i for i in range(1, n)]
+        values = [1.0 * i for i in range(1, n)]
         for i in range(n-1):
             instance.new_particle(
-                  values[i]
-                , values[i]
-                , values[i]
-                , values[i]
-                , values[i]
-                , values[i]
-                , values[i])
-                
+                  values[i], values[i], values[i], values[i], values[i], values[i], values[i])
+
         retrieved_state = instance.get_state(1)
         self.assertEqual(1.0,  retrieved_state['mass'])
         instance.cleanup_code()
         instance.stop()
 
     def test7(self):
-        instance = PhiGRAPEInterface(**default_test_options)#(debugger="xterm")
+        instance = PhiGRAPEInterface(**default_test_options)  # (debugger="xterm")
         instance.initialize_code()
-        
+
         instance.set_eps2(0.0**2)
-        instance.set_eta(0.01,0.02)
+        instance.set_eta(0.01, 0.02)
         instance.commit_parameters()
 
-        instance.new_particle( 
-            [1.0,1.0,1.0],
-            [1.0,0.0,-1.0],
-            [0.0,0.0,0.0],
-            [0.0,0.0,0.0],
-            [0.0,1.0,0.0],
-            [0.0,0.0,0.0],
-            [0.0,0.0,0.0] )
+        instance.new_particle(
+            [1.0, 1.0, 1.0],
+            [1.0, 0.0, -1.0],
+            [0.0, 0.0, 0.0],
+            [0.0, 0.0, 0.0],
+            [0.0, 1.0, 0.0],
+            [0.0, 0.0, 0.0],
+            [0.0, 0.0, 0.0])
         instance.recommit_particles()
-        Ep=instance.get_potential_energy()['potential_energy']
-        Ek=instance.get_kinetic_energy()['kinetic_energy']
-        self.assertEqual( Ek, 0.5)
-        self.assertEqual( Ep, -2.5)    
+        Ep = instance.get_potential_energy()['potential_energy']
+        Ek = instance.get_kinetic_energy()['kinetic_energy']
+        self.assertEqual(Ek, 0.5)
+        self.assertEqual(Ep, -2.5)
         instance.delete_particle(2)
         instance.recommit_particles()
-        n=instance.get_number_of_particles()['number_of_particles']
-        Ep=instance.get_potential_energy()['potential_energy']
-        Ek=instance.get_kinetic_energy()['kinetic_energy']
-    
-        self.assertEqual( n, 2)
-        self.assertEqual( Ek, 0.)
-        self.assertEqual( Ep, -0.5)    
-    
+        n = instance.get_number_of_particles()['number_of_particles']
+        Ep = instance.get_potential_energy()['potential_energy']
+        Ek = instance.get_kinetic_energy()['kinetic_energy']
+
+        self.assertEqual(n, 2)
+        self.assertEqual(Ek, 0.)
+        self.assertEqual(Ep, -0.5)
+
         instance.cleanup_code()
         instance.stop()
 
@@ -149,23 +131,23 @@ class TestMPIInterface(TestWithMPI):
         instance = PhiGRAPEInterface(**default_test_options)
         instance.initialize_code()
         instance.set_eps2(0.0**2)
-        instance.set_eta(0.01,0.02)
-        instance.new_particle( 
-            [0.01,0.01],
-            [10.,-10.],
-            [0.0,0.0],
-            [0.0,0.0],
-            [-5.0,5.0],
-            [0.0,0.0],
-            [0.0,0.0],
-            [0.1,0.1])
-        instance.commit_particles() 
-        #HAS NO RESULT...
-        result = instance.evolve_model(3.14159)  
-        
-        tnow=instance.get_time()['time']
-        print("after evolve(pi), tnow = %f" %  (tnow))
-        #self.assertEqual( id1, 1)
+        instance.set_eta(0.01, 0.02)
+        instance.new_particle(
+            [0.01, 0.01],
+            [10., -10.],
+            [0.0, 0.0],
+            [0.0, 0.0],
+            [-5.0, 5.0],
+            [0.0, 0.0],
+            [0.0, 0.0],
+            [0.1, 0.1])
+        instance.commit_particles()
+        # HAS NO RESULT...
+        result = instance.evolve_model(3.14159)
+
+        tnow = instance.get_time()['time']
+        print("after evolve(pi), tnow = %f" % (tnow))
+        # self.assertEqual( id1, 1)
         """
         instance.evolve(instance.get_time(),1)
         id2=instance.find_colliding_secondary(id1)
@@ -177,18 +159,17 @@ class TestMPIInterface(TestWithMPI):
         """
         instance.cleanup_code()
         instance.stop()
-        
-    
+
     def test8(self):
         instance = PhiGRAPEInterface(**default_test_options)
         instance.initialize_code()
         instance.set_eps2(0.1**2)
         instance.commit_parameters()
-        id1,errorcode = instance.new_particle(mass = 10.0, radius = 1.0, 
-            x = 0.0, y = 0.0, z = 0.0, vx = 0.0, vy = 0.0, vz = 0.0)
-        id2,errorcode = instance.new_particle(mass = 10.0, radius = 1.0, 
-            x = 2.0, y = 0.0, z = 0.0, vx = 10.0, vy = 0.0, vz = 0.0)
-        
+        id1, errorcode = instance.new_particle(mass=10.0, radius=1.0,
+            x=0.0, y=0.0, z=0.0, vx=0.0, vy=0.0, vz=0.0)
+        id2, errorcode = instance.new_particle(mass=10.0, radius=1.0,
+            x=2.0, y=0.0, z=0.0, vx=10.0, vy=0.0, vz=0.0)
+
         instance.commit_particles()
         potential, errorcode = instance.get_potential(id1)
         self.assertEqual(errorcode, 0)
@@ -200,15 +181,15 @@ class TestMPIInterface(TestWithMPI):
         instance.stop()
         self.assertEqual(errorcode, 0)
         self.assertAlmostRelativeEquals(total_potential, numpy.sum(potentials * [10.0, 10.0]) / 2.0)
-        
+
     def test9(self):
         instance = PhiGRAPEInterface(**default_test_options)
         instance.initialize_code()
         instance.set_eps2(0)
         instance.commit_parameters()
-        id1,errorcode = instance.new_particle(mass = 10.0, radius = 1.0, x = 0.0, y = 0.0, z = 0.0, vx = 0.0, vy = 0.0, vz = 0.0)
-        id2,errorcode = instance.new_particle(mass = 1.0, radius = 1.0, x = 2.0, y = 0.0, z = 0.0, vx = 10.0, vy = 0.0, vz = 0.0)
-        
+        id1, errorcode = instance.new_particle(mass=10.0, radius=1.0, x=0.0, y=0.0, z=0.0, vx=0.0, vy=0.0, vz=0.0)
+        id2, errorcode = instance.new_particle(mass=1.0, radius=1.0, x=2.0, y=0.0, z=0.0, vx=10.0, vy=0.0, vz=0.0)
+
         instance.commit_particles()
         potential, errorcode = instance.get_potential(id1)
         self.assertEqual(errorcode, 0)
@@ -217,100 +198,98 @@ class TestMPIInterface(TestWithMPI):
         potentials, errorcode = instance.get_potential([id1, id2])
         instance.cleanup_code()
         instance.stop()
-        
+
         self.assertAlmostRelativeEquals(total_potential, numpy.sum(potentials * [10.0, 1.0]) / 2.0)
-        
+
 
 class TestPhigrape(TestWithMPI):
     def new_system_of_sun_and_earth(self):
         stars = datamodel.Stars(2)
         sun = stars[0]
         sun.mass = units.MSun(1.0)
-        sun.position = units.m(numpy.array((0.0,0.0,0.0)))
-        sun.velocity = units.ms(numpy.array((0.0,0.0,0.0)))
+        sun.position = units.m(numpy.array((0.0, 0.0, 0.0)))
+        sun.velocity = units.ms(numpy.array((0.0, 0.0, 0.0)))
         sun.radius = units.RSun(1.0)
 
         earth = stars[1]
         earth.mass = units.kg(5.9736e24)
-        earth.radius = units.km(6371) 
-        earth.position = units.km(numpy.array((149.5e6,0.0,0.0)))
-        earth.velocity = units.ms(numpy.array((0.0,29800,0.0)))
-        
+        earth.radius = units.km(6371)
+        earth.position = units.km(numpy.array((149.5e6, 0.0, 0.0)))
+        earth.velocity = units.ms(numpy.array((0.0, 29800, 0.0)))
+
         return stars
-        
-    
+
     def test1(self):
         convert_nbody = nbody_system.nbody_to_si(1.0 | units.MSun, 149.5e6 | units.km)
-        instance = PhiGRAPE(convert_nbody, **default_test_options)#, debugger="xterm")
+        instance = PhiGRAPE(convert_nbody, **default_test_options)  # , debugger="xterm")
         instance.initialize_code()
         instance.parameters.set_defaults()
         instance.parameters.initial_timestep_parameter = 0.001
         instance.parameters.timestep_parameter = 0.001
-        
+
         stars = self.new_system_of_sun_and_earth()
         earth = stars[1]
         instance.particles.add_particles(stars)
         instance.commit_particles()
-    
+
         position_at_start = earth.position.value_in(units.AU)[0]
         instance.evolve_model(365 | units.day)
         instance.particles.copy_values_of_all_attributes_to(stars)
         position_after_full_rotation = earth.position.value_in(units.AU)[0]
         self.assertAlmostEqual(position_at_start, position_after_full_rotation, 2)
-        
+
         instance.evolve_model(365.0 + (365.0 / 2) | units.day)
         instance.particles.copy_values_of_all_attributes_to(stars)
         position_after_half_a_rotation = earth.position.value_in(units.AU)[0]
         self.assertAlmostEqual(-position_at_start, position_after_half_a_rotation, 2)
-        
-        instance.evolve_model(365.0 + (365.0 / 2) + (365.0 / 4)  | units.day)
+
+        instance.evolve_model(365.0 + (365.0 / 2) + (365.0 / 4) | units.day)
         instance.particles.copy_values_of_all_attributes_to(stars)
         position_after_half_a_rotation = earth.position.value_in(units.AU)[1]
         self.assertAlmostEqual(-position_at_start, position_after_half_a_rotation, 3)
-        
+
         instance.cleanup_code()
         instance.stop()
 
     def test2(self):
         convert_nbody = nbody_system.nbody_to_si(1.0 | units.MSun, 149.5e6 | units.km)
         instance = PhiGRAPE(convert_nbody, **default_test_options)
-        
+
         instance.initialize_code()
         instance.parameters.set_defaults()
-        
+
         stars = self.new_system_of_sun_and_earth()
         earth = stars[1]
         instance.particles.add_particles(stars)
         instance.commit_particles()
-    
-        for x in range(1,365,30):
+
+        for x in range(1, 365, 30):
             instance.evolve_model(x | units.day)
             instance.particles.copy_values_of_all_attributes_to(stars)
             stars.savepoint()
-        
+
         if HAS_MATPLOTLIB:
             figure = pyplot.figure()
-            plot = figure.add_subplot(1,1,1)
-            
+            plot = figure.add_subplot(1, 1, 1)
+
             x_points = earth.get_timeline_of_attribute("x")
             y_points = earth.get_timeline_of_attribute("y")
-            
+
             x_points_in_AU = [t_x[1].value_in(units.AU) for t_x in x_points]
             y_points_in_AU = [t_x1[1].value_in(units.AU) for t_x1 in y_points]
-            
-            plot.scatter(x_points_in_AU,y_points_in_AU, color = "b", marker = 'o')
-            
+
+            plot.scatter(x_points_in_AU, y_points_in_AU, color="b", marker='o')
+
             plot.set_xlim(-1.5, 1.5)
             plot.set_ylim(-1.5, 1.5)
-            
+
             test_results_path = self.get_path_to_results()
             output_file = os.path.join(test_results_path, "phiGRAPE-earth-sun2.svg")
             figure.savefig(output_file)
-        
+
         instance.cleanup_code()
         instance.stop()
-        
-    
+
     def test4(self):
         convert_nbody = nbody_system.nbody_to_si(5.0 | units.kg, 10.0 | units.m)
 
@@ -318,97 +297,96 @@ class TestPhigrape(TestWithMPI):
 
         instance.initialize_code()
         instance.parameters.set_defaults()
-        
+
         particles = datamodel.Particles(2)
         self.assertEqual(len(instance.particles), 0)
-        
+
         particles.mass = [15.0, 30.0] | units.kg
-        particles.radius =  [10.0, 20.0] | units.m
+        particles.radius = [10.0, 20.0] | units.m
         particles.position = [[10.0, 20.0, 30.0], [20.0, 40.0, 60.0]] | units.m
         particles.velocity = [[0.0, 0.0, 0.0], [0.0, 0.0, 0.0]] | units.m / units.s
 
-        
         instance.particles.add_particles(particles)
         self.assertEqual(len(instance.particles), 2)
-        
-        instance.particles.mass =  [17.0, 33.0] | units.kg
-        
-        self.assertEqual(instance.get_mass(1), 17.0| units.kg) 
-        self.assertEqual(instance.get_mass(2), 33.0| units.kg)  
-        
+
+        instance.particles.mass = [17.0, 33.0] | units.kg
+
+        self.assertEqual(instance.get_mass(1), 17.0 | units.kg)
+        self.assertEqual(instance.get_mass(2), 33.0 | units.kg)
+
         instance.stop()
-    
+
     def test5(self):
         instance = PhiGRAPE(**default_test_options)
         instance.initialize_code()
         instance.parameters.set_defaults()
-        
+
         particles = datamodel.Particles(2)
         particles.mass = [1.0, 1.0] | nbody_system.mass
-        particles.radius =  [0.0001, 0.0001] | nbody_system.length
-        particles.position = [[0.0,0.0,0.0], [2.0,0.0,0.0]] | nbody_system.length
+        particles.radius = [0.0001, 0.0001] | nbody_system.length
+        particles.position = [[0.0, 0.0, 0.0], [2.0, 0.0, 0.0]] | nbody_system.length
         particles.velocity = [[0.0, 0.0, 0.0], [0.0, 0.0, 0.0]] | nbody_system.speed
         instance.particles.add_particles(particles)
-        
+
         instance.commit_particles()
-        
+
         zero = 0.0 | nbody_system.length
-        fx, fy, fz = instance.get_gravity_at_point(zero, 1.0| nbody_system.length, zero, zero)
+        fx, fy, fz = instance.get_gravity_at_point(zero, 1.0 | nbody_system.length, zero, zero)
         self.assertAlmostEqual(fx, 0.0 | nbody_system.acceleration, 3)
         self.assertAlmostEqual(fy, 0.0 | nbody_system.acceleration, 3)
         self.assertAlmostEqual(fz, 0.0 | nbody_system.acceleration, 3)
         for x in (0.25, 0.5, 0.75):
-            x0 = x| nbody_system.length
+            x0 = x | nbody_system.length
             x1 = (2.0 - x) | nbody_system.length
             potential0 = instance.get_potential_at_point(zero, x0, zero, zero)
             potential1 = instance.get_potential_at_point(zero, x1, zero, zero)
             fx0, fy0, fz0 = instance.get_gravity_at_point(zero, x0, zero, zero)
             fx1, fy1, fz1 = instance.get_gravity_at_point(zero, x1, zero, zero)
-            
+
             self.assertAlmostEqual(fy0, 0.0 | nbody_system.acceleration, 3)
             self.assertAlmostEqual(fz0, 0.0 | nbody_system.acceleration, 3)
             self.assertAlmostEqual(fy1, 0.0 | nbody_system.acceleration, 3)
             self.assertAlmostEqual(fz1, 0.0 | nbody_system.acceleration, 3)
-            
+
             self.assertAlmostEqual(fx0, -1.0 * fx1, 5)
             fx = (-1.0 / (x0**2) + 1.0 / (x1**2)) * (1.0 | nbody_system.length ** 3 / nbody_system.time ** 2)
             self.assertAlmostEqual(fx, fx0, 2)
             self.assertAlmostEqual(potential0, potential1, 5)
-      
+
         instance.stop()
-        
+
     def test6(self):
         instance = PhiGRAPE(**default_test_options)
         instance.initialize_code()
         instance.parameters.set_defaults()
-        
+
         particles = datamodel.Particles(6)
-        particles.mass = nbody_system.mass.new_quantity(range(1,7))
-        particles.radius =   0.00001 | nbody_system.length
-        particles.position = [[-1.0,0.0,0.0],[1.0,0.0,0.0],[0.0,-1.0,0.0],[0.0,1.0,0.0],[0.0,0.0,-1.0],[0.0,0.0,1.0]] | nbody_system.length
-        particles.velocity = [[0.0,0.0,0.0],[0.0,0.0,0.0],[0.0,0.0,0.0],[0.0,0.0,0.0],[0.0,0.0,0.0],[0.0,0.0,0.0]] | nbody_system.speed
+        particles.mass = nbody_system.mass.new_quantity(range(1, 7))
+        particles.radius = 0.00001 | nbody_system.length
+        particles.position = [[-1.0, 0.0, 0.0], [1.0, 0.0, 0.0], [0.0, -1.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, -1.0], [0.0, 0.0, 1.0]] | nbody_system.length
+        particles.velocity = [[0.0, 0.0, 0.0], [0.0, 0.0, 0.0], [0.0, 0.0, 0.0], [0.0, 0.0, 0.0], [0.0, 0.0, 0.0], [0.0, 0.0, 0.0]] | nbody_system.speed
         instance.particles.add_particles(particles)
         instance.commit_particles()
         copyof = instance.particles.copy()
-        
-        self.assertEqual(2 | nbody_system.mass, copyof[1].mass)  
-        
+
+        self.assertEqual(2 | nbody_system.mass, copyof[1].mass)
+
         instance.stop()
-        
+
     def test7(self):
         instance = PhiGRAPE(**default_test_options)
         instance.initialize_code()
         instance.parameters.set_defaults()
-        
+
         particles = datamodel.Particles(2)
         particles.mass = [1.0, 1.0] | nbody_system.mass
-        particles.radius =  [0.0001, 0.0001] | nbody_system.length
-        particles.position = [[0.0,0.0,0.0], [2.0,0.0,0.0]] | nbody_system.length
+        particles.radius = [0.0001, 0.0001] | nbody_system.length
+        particles.position = [[0.0, 0.0, 0.0], [2.0, 0.0, 0.0]] | nbody_system.length
         particles.velocity = [[0.0, 0.0, 0.0], [0.0, 0.0, 0.0]] | nbody_system.speed
         instance.particles.add_particles(particles)
-        
+
         instance.commit_particles()
-        
+
         zero = [0.0, 0.0, 0.0] | nbody_system.length
         fx, fy, fz = instance.get_gravity_at_point(zero, [0.5, 1.0, 1.5] | nbody_system.length, zero, zero)
         self.assertAlmostRelativeEqual(fx[0], -3.55555555556 | nbody_system.acceleration, 5)
@@ -420,26 +398,26 @@ class TestPhigrape(TestWithMPI):
         self.assertAlmostRelativeEqual(fx[2], 3.55555555556 | nbody_system.acceleration, 5)
         self.assertAlmostRelativeEqual(fy[2], 0.0 | nbody_system.acceleration, 3)
         self.assertAlmostRelativeEqual(fz[2], 0.0 | nbody_system.acceleration, 3)
-        
+
         n = 512
         x = nbody_system.length.new_quantity(numpy.linspace(0.1, 1.9, n))
         zero = nbody_system.length.new_quantity(numpy.zeros(n))
         fx, fy, fz = instance.get_gravity_at_point(zero, x, zero, zero)
         for i in range(n//2):
             self.assertAlmostRelativeEqual(fx[i], - fx[n - 1 - i], 5)
-        
+
         instance.stop()
-        
+
     def test8(self):
         particles = datamodel.Particles(6)
-        particles.mass = nbody_system.mass.new_quantity(range(1,7))
-        particles.radius =   0.00001 | nbody_system.length
-        particles.position = [[-1.0,0.0,0.0],[1.0,0.0,0.0],[0.0,-1.0,0.0],[0.0,1.0,0.0],[0.0,0.0,-1.0],[0.0,0.0,1.0]] | nbody_system.length
-        particles.velocity = [[0.0,0.0,0.0],[0.0,0.0,0.0],[0.0,0.0,0.0],[0.0,0.0,0.0],[0.0,0.0,0.0],[0.0,0.0,0.0]] | nbody_system.speed
-        
-        for current_mode in ['g6lib','gpu','grape']:
+        particles.mass = nbody_system.mass.new_quantity(range(1, 7))
+        particles.radius = 0.00001 | nbody_system.length
+        particles.position = [[-1.0, 0.0, 0.0], [1.0, 0.0, 0.0], [0.0, -1.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, -1.0], [0.0, 0.0, 1.0]] | nbody_system.length
+        particles.velocity = [[0.0, 0.0, 0.0], [0.0, 0.0, 0.0], [0.0, 0.0, 0.0], [0.0, 0.0, 0.0], [0.0, 0.0, 0.0], [0.0, 0.0, 0.0]] | nbody_system.speed
+
+        for current_mode in ['g6lib', 'gpu', 'grape']:
             try:
-                instance = PhiGRAPE(mode = current_mode)
+                instance = PhiGRAPE(mode=current_mode)
             except:
                 print("Running PhiGRAPE with mode=" + current_mode, "was unsuccessful.")
             else:
@@ -451,72 +429,71 @@ class TestPhigrape(TestWithMPI):
                 instance.cleanup_code()
                 instance.stop()
                 print("ok")
-                
-    
+
     def test9(self):
         convert_nbody = nbody_system.nbody_to_si(1.0 | units.MSun, 149.5e6 | units.km)
-        instance = PhiGRAPE(convert_nbody, **default_test_options)#, debugger="xterm")
+        instance = PhiGRAPE(convert_nbody, **default_test_options)  # , debugger="xterm")
         instance.initialize_code()
-    
+
         instance.parameters.set_defaults()
         instance.parameters.initialize_gpu_once = 1
-        
+
         stars = self.new_system_of_sun_and_earth()
         earth = stars[1]
-    
+
         instance.particles.add_particles(stars)
         instance.commit_particles()
-    
+
         instance.evolve_model(365 | units.day)
-    
+
         instance.particles.copy_values_of_all_attributes_to(stars)
-        
+
         position_at_start = earth.position.value_in(units.AU)[0]
         position_after_full_rotation = earth.position.value_in(units.AU)[0]
         self.assertAlmostEqual(position_at_start, position_after_full_rotation, 6)
-        
+
         instance.evolve_model(365.0 + (365.0 / 2) | units.day)
-        
+
         instance.particles.copy_values_of_all_attributes_to(stars)
         position_after_half_a_rotation = earth.position.value_in(units.AU)[0]
         self.assertAlmostEqual(-position_at_start, position_after_half_a_rotation, 2)
-                
-        instance.evolve_model(365.0 + (365.0 / 2) + (365.0 / 4)  | units.day)
-        
+
+        instance.evolve_model(365.0 + (365.0 / 2) + (365.0 / 4) | units.day)
+
         instance.particles.copy_values_of_all_attributes_to(stars)
         position_after_half_a_rotation = earth.position.value_in(units.AU)[1]
-        #self.assertAlmostEqual(-position_at_start, position_after_half_a_rotation, 3)
-        
+        # self.assertAlmostEqual(-position_at_start, position_after_half_a_rotation, 3)
+
         instance.cleanup_code()
-        
+
         instance.stop()
 
     def test10(self):
         instance = PhiGRAPE(**default_test_options)
         instance.initialize_code()
         instance.parameters.set_defaults()
-        
+
         stars = new_plummer_model(100)
         stars.radius = 0 | nbody_system.length
-        
+
         instance.particles.add_particles(stars)
         channel = stars.new_channel_to(instance.particles)
-        
+
         instance.evolve_model(0.001 | nbody_system.time)
-    
+
         e0 = instance.kinetic_energy + instance.potential_energy
-        
+
         stars.mass *= 0.9
         channel.copy()
-        
+
         instance.synchronize_model()
-        
+
         e1 = instance.kinetic_energy + instance.potential_energy
-        
+
         delta_e = e1 - e0
-        
+
         self.assertTrue(e1 != e0)
-        
+
         instance.stop()
 
     def test11(self):
@@ -528,7 +505,7 @@ class TestPhigrape(TestWithMPI):
         particles.y = 0 | nbody_system.length
         particles.z = 0 | nbody_system.length
         particles.velocity = [[2, 0, 0], [-2, 0, 0]]*3 + [[-4, 0, 0]] | nbody_system.speed
-        
+
         instance = PhiGRAPE(redirection='none', **default_test_options)
         instance.initialize_code()
         instance.parameters.set_defaults()
@@ -536,28 +513,28 @@ class TestPhigrape(TestWithMPI):
         collisions = instance.stopping_conditions.collision_detection
         collisions.enable()
         instance.evolve_model(1.0 | nbody_system.time)
-        
+
         self.assertTrue(collisions.is_set())
         self.assertTrue(instance.model_time < 0.5 | nbody_system.time)
         self.assertEqual(len(collisions.particles(0)), 3)
         self.assertEqual(len(collisions.particles(1)), 3)
         self.assertEqual(len(particles - collisions.particles(0) - collisions.particles(1)), 1)
-        self.assertEqual(abs(collisions.particles(0).x - collisions.particles(1).x) < 
+        self.assertEqual(abs(collisions.particles(0).x - collisions.particles(1).x) <
                 (collisions.particles(0).radius + collisions.particles(1).radius),
                 [True, True, True])
-        
+
         sticky_merged = datamodel.Particles(len(collisions.particles(0)))
         sticky_merged.mass = collisions.particles(0).mass + collisions.particles(1).mass
         sticky_merged.radius = collisions.particles(0).radius
         for p1, p2, merged in zip(collisions.particles(0), collisions.particles(1), sticky_merged):
             merged.position = (p1 + p2).center_of_mass()
             merged.velocity = (p1 + p2).center_of_mass_velocity()
-        
+
         print(instance.model_time)
         print(instance.particles)
         instance.particles.remove_particles(collisions.particles(0) + collisions.particles(1))
         instance.particles.add_particles(sticky_merged)
-        
+
         instance.evolve_model(1.0 | nbody_system.time)
         print()
         print(instance.model_time)
@@ -567,29 +544,28 @@ class TestPhigrape(TestWithMPI):
         self.assertEqual(len(collisions.particles(0)), 1)
         self.assertEqual(len(collisions.particles(1)), 1)
         self.assertEqual(len(instance.particles - collisions.particles(0) - collisions.particles(1)), 2)
-        self.assertEqual(abs(collisions.particles(0).x - collisions.particles(1).x) < 
+        self.assertEqual(abs(collisions.particles(0).x - collisions.particles(1).x) <
                 (collisions.particles(0).radius + collisions.particles(1).radius),
                 [True])
         instance.stop()
 
-
     def test13(self):
         particles = datamodel.Particles(2)
-        particles.x = [0.0,10.0] | nbody_system.length
+        particles.x = [0.0, 10.0] | nbody_system.length
         particles.y = 0 | nbody_system.length
         particles.z = 0 | nbody_system.length
         particles.radius = 0.005 | nbody_system.length
-        particles.vx =  0 | nbody_system.speed
-        particles.vy =  0 | nbody_system.speed
-        particles.vz =  0 | nbody_system.speed
+        particles.vx = 0 | nbody_system.speed
+        particles.vy = 0 | nbody_system.speed
+        particles.vz = 0 | nbody_system.speed
         particles.mass = 1.0 | nbody_system.mass
-       
+
         instance = PhiGRAPE(**default_test_options)
         instance.initialize_code()
         instance.parameters.stopping_conditions_number_of_steps = 2
         self.assertEqual(instance.parameters.stopping_conditions_number_of_steps, 2)
         instance.parameters.epsilon_squared = (0.01 | nbody_system.length)**2
-        instance.particles.add_particles(particles) 
+        instance.particles.add_particles(particles)
         instance.stopping_conditions.number_of_steps_detection.enable()
         instance.evolve_model(10 | nbody_system.time)
         self.assertTrue(instance.stopping_conditions.number_of_steps_detection.is_set())
@@ -599,13 +575,13 @@ class TestPhigrape(TestWithMPI):
 
     def test14(self):
         particles = datamodel.Particles(2)
-        particles.x = [0.0,10.0] | nbody_system.length
+        particles.x = [0.0, 10.0] | nbody_system.length
         particles.y = 0 | nbody_system.length
         particles.z = 0 | nbody_system.length
         particles.radius = 0.005 | nbody_system.length
-        particles.vx =  0 | nbody_system.speed
-        particles.vy =  0 | nbody_system.speed
-        particles.vz =  0 | nbody_system.speed
+        particles.vx = 0 | nbody_system.speed
+        particles.vy = 0 | nbody_system.speed
+        particles.vz = 0 | nbody_system.speed
         particles.mass = 1.0 | nbody_system.mass
 
         very_short_time_to_evolve = 1 | units.s
@@ -616,164 +592,162 @@ class TestPhigrape(TestWithMPI):
         instance.parameters.stopping_conditions_timeout = very_short_time_to_evolve
         self.assertEqual(instance.parameters.stopping_conditions_timeout, very_short_time_to_evolve)
         instance.parameters.epsilon_squared = (0.01 | nbody_system.length)**2
-        instance.particles.add_particles(particles) 
+        instance.particles.add_particles(particles)
         instance.stopping_conditions.timeout_detection.enable()
         start = time.time()
         instance.evolve_model(very_long_time_to_evolve)
         end = time.time()
         self.assertTrue(instance.stopping_conditions.timeout_detection.is_set())
-        self.assertTrue((end-start)<very_short_time_to_evolve.value_in(units.s) + 2)#2 = some overhead compensation
+        self.assertTrue((end-start) < very_short_time_to_evolve.value_in(units.s) + 2)  # 2 = some overhead compensation
 
         instance.stop()
-        
-        
+
     def test15(self):
-        instance = PhiGRAPE(number_of_workers = 2, **default_test_options)#, redirection = "none")
+        instance = PhiGRAPE(number_of_workers=2, **default_test_options)  # , redirection = "none")
         instance.initialize_code()
         instance.parameters.set_defaults()
         print(1)
         particles = datamodel.Particles(2)
-        particles.x = [-1.0,1.0] | nbody_system.length
+        particles.x = [-1.0, 1.0] | nbody_system.length
         particles.y = 0 | nbody_system.length
         particles.z = 0 | nbody_system.length
         particles.radius = 0.005 | nbody_system.length
-        particles.vx =  0 | nbody_system.speed
-        particles.vy =  0 | nbody_system.speed
-        particles.vz =  0 | nbody_system.speed
+        particles.vx = 0 | nbody_system.speed
+        particles.vy = 0 | nbody_system.speed
+        particles.vz = 0 | nbody_system.speed
         particles.mass = 1.0 | nbody_system.mass
-        
+
         instance.particles.add_particles(particles)
         instance.commit_particles()
-    
+
         instance.evolve_model(0.01 | nbody_system.time)
-    
+
         instance.particles.copy_values_of_all_attributes_to(particles)
-        
+
         print(instance.particles.position.x)
         self.assertEqual(instance.particles[0].position.x, -instance.particles[1].position.x)
         self.assertAlmostRelativeEquals(instance.particles[1].position.x, 0.999969482111 | nbody_system.length, 6)
-        
+
         instance.evolve_model(0.10 | nbody_system.time)
-    
+
         instance.particles.copy_values_of_all_attributes_to(particles)
-        
+
         print(instance.particles.position.x)
         self.assertEqual(instance.particles[0].position.x, -instance.particles[1].position.x)
         self.assertAlmostRelativeEquals(instance.particles[1].position.x, 0.99804560161 | nbody_system.length, 6)
-        
+
         instance.evolve_model(0.50 | nbody_system.time)
-    
+
         instance.particles.copy_values_of_all_attributes_to(particles)
-        
+
         print(instance.particles.position.x)
         self.assertEqual(instance.particles[0].position.x, -instance.particles[1].position.x)
         self.assertAlmostRelativeEquals(instance.particles[1].position.x, 0.968416814302 | nbody_system.length, 6)
-        
+
         instance.cleanup_code()
-        
+
         instance.stop()
-    
-    
+
     def test16(self):
-        instance = PhiGRAPE(number_of_workers = 2, **default_test_options)
+        instance = PhiGRAPE(number_of_workers=2, **default_test_options)
         instance.initialize_code()
         instance.parameters.set_defaults()
         print(1)
         particles = datamodel.Particles(2)
-        particles.x = [-1.0,1.0] | nbody_system.length
+        particles.x = [-1.0, 1.0] | nbody_system.length
         particles.y = 0 | nbody_system.length
         particles.z = 0 | nbody_system.length
         particles.radius = 0.005 | nbody_system.length
-        particles.vx =  0 | nbody_system.speed
-        particles.vy =  0 | nbody_system.speed
-        particles.vz =  0 | nbody_system.speed
+        particles.vx = 0 | nbody_system.speed
+        particles.vy = 0 | nbody_system.speed
+        particles.vz = 0 | nbody_system.speed
         particles.mass = [1.0, 0.5] | nbody_system.mass
-        
+
         instance.particles.add_particles(particles)
         instance.commit_particles()
-    
+
         instance.evolve_model(0.01 | nbody_system.time)
-    
+
         instance.particles.copy_values_of_all_attributes_to(particles)
-        
+
         print(instance.particles.position.x)
         self.assertAlmostRelativeEquals(instance.particles[0].position.x, -0.999984741095 | nbody_system.length, 8)
         self.assertAlmostRelativeEquals(instance.particles[1].position.x,  0.999969482189 | nbody_system.length, 8)
-        
+
         instance.evolve_model(0.10 | nbody_system.time)
-    
+
         instance.particles.copy_values_of_all_attributes_to(particles)
-        
+
         print(instance.particles.position.x)
         self.assertAlmostRelativeEquals(instance.particles[0].position.x, -0.999022960148 | nbody_system.length, 8)
         self.assertAlmostRelativeEquals(instance.particles[1].position.x, 0.998045920305 | nbody_system.length, 8)
-        
+
         instance.evolve_model(0.50 | nbody_system.time)
-    
+
         instance.particles.copy_values_of_all_attributes_to(particles)
-        
+
         print(instance.particles.position.x)
         self.assertAlmostRelativeEquals(instance.particles[0].position.x, -0.984250788742 | nbody_system.length, 8)
         self.assertAlmostRelativeEquals(instance.particles[1].position.x, 0.968501583383 | nbody_system.length, 8)
-        
+
         instance.cleanup_code()
-        
+
         instance.stop()
-        
+
     def test17(self):
         convert_nbody = nbody_system.nbody_to_si(1.0 | units.MSun, 149.5e6 | units.km)
         instance = PhiGRAPE(convert_nbody, **default_test_options)
         instance.initialize_code()
-    
+
         instance.parameters.set_defaults()
         instance.parameters.initial_timestep_parameter = 0.001
         instance.parameters.timestep_parameter = 0.001
         instance.parameters.epsilon_squared = 0.0 | units.AU**2
-        
+
         stars = self.new_system_of_sun_and_earth()
         earth = stars[1]
-    
+
         instance.particles.add_particles(stars)
         instance.commit_particles()
-    
+
         position_at_start = earth.position.value_in(units.AU)[0]
         print(instance.particles[0].position.as_quantity_in(units.AU))
         print(instance.particles[1].position.as_quantity_in(units.AU))
         instance.evolve_model(365 | units.day)
         print(instance.particles[0].position.as_quantity_in(units.AU))
         print(instance.particles[1].position.as_quantity_in(units.AU))
-    
+
         instance.particles.copy_values_of_all_attributes_to(stars)
-        
+
         position_after_full_rotation = earth.position.value_in(units.AU)[0]
-        
+
         self.assertAlmostEqual(position_at_start, position_after_full_rotation, 3)
-        
+
         print(instance.particles[0].position.as_quantity_in(units.AU))
         instance.evolve_model(365.0 + (365.0 / 2) | units.day)
-        
+
         print(instance.particles[0].position.as_quantity_in(units.AU))
-        
+
         instance.particles.copy_values_of_all_attributes_to(stars)
         position_after_half_a_rotation = earth.position.value_in(units.AU)[0]
         self.assertAlmostEqual(-position_at_start, position_after_half_a_rotation, 2)
-                
-        instance.evolve_model(365.0 + (365.0 / 2) + (365.0 / 4)  | units.day)
-        
+
+        instance.evolve_model(365.0 + (365.0 / 2) + (365.0 / 4) | units.day)
+
         instance.particles.copy_values_of_all_attributes_to(stars)
         position_after_half_a_rotation = earth.position.value_in(units.AU)[1]
-        #self.assertAlmostEqual(-position_at_start, position_after_half_a_rotation, 3)
-        
+        # self.assertAlmostEqual(-position_at_start, position_after_half_a_rotation, 3)
+
         instance.cleanup_code()
-        
+
         instance.stop()
-    
+
     def test18(self):
         print("Testing PhiGRAPE delete_particle")
         number_of_particles = 15
         delete_order = [6, 9, 3, 1, 0, 2, 5]
         number_of_initial_deletes = 3
-        
+
         particles = datamodel.Particles(number_of_particles)
         particles.mass = range(1, number_of_particles + 1) | nbody_system.mass
         particles.radius = 0.01 | nbody_system.length
@@ -783,20 +757,20 @@ class TestPhigrape(TestWithMPI):
         particles.vx = range(number_of_particles) | nbody_system.speed
         particles.vy = 0 | nbody_system.speed
         particles.vz = 0 | nbody_system.speed
-        
+
         instance = PhiGRAPE(**default_test_options)
         instance.initialize_code()
         instance.parameters.set_defaults()
         initial_number_of_particles = number_of_particles - len(delete_order) + number_of_initial_deletes
         instance.particles.add_particles(particles[:initial_number_of_particles])
         index_new_particle = initial_number_of_particles
-        
+
         self.assertEqual(len(instance.particles), initial_number_of_particles)
         instance.evolve_model(0.01 | nbody_system.time)
         instance.particles.remove_particles(particles[delete_order[:number_of_initial_deletes]])
         number_of_deletes = number_of_initial_deletes
         self.assertEqual(len(instance.particles), initial_number_of_particles - number_of_deletes)
-        
+
         for i, particle_index in enumerate(delete_order[number_of_initial_deletes:]):
             instance.evolve_model((i+1) / 10.0 | nbody_system.time)
             instance.particles.remove_particle(particles[particle_index])
@@ -804,35 +778,32 @@ class TestPhigrape(TestWithMPI):
             instance.particles.add_particle(particles[index_new_particle])
             index_new_particle += 1
             self.assertEqual(len(instance.particles), initial_number_of_particles - number_of_deletes + i + 1)
-            self.assertAlmostEqual(particles[:index_new_particle].total_mass() - instance.particles.total_mass(), 
+            self.assertAlmostEqual(particles[:index_new_particle].total_mass() - instance.particles.total_mass(),
                 (delete_order[:number_of_deletes] | nbody_system.mass).sum() + (number_of_deletes | nbody_system.mass))
-        
+
         instance.stop()
-        
+
     def test19(self):
         converter = nbody_system.nbody_to_si(1 | units.MSun, 1 | units.parsec)
-        
+
         particles = datamodel.Particles(2)
         particles.mass = 100 | units.MSun
         particles.radius = 200 | units.RSun
-        particles[0].position = [0,0,0] | units.parsec
-        particles[1].position = [1,0,0] | units.parsec
-        particles.velocity = [0,0,0] |  units.km / units.s
-
+        particles[0].position = [0, 0, 0] | units.parsec
+        particles[1].position = [1, 0, 0] | units.parsec
+        particles.velocity = [0, 0, 0] | units.km / units.s
 
         code = PhiGRAPE(
-            converter, 
+            converter,
             PhiGRAPEInterface.MODE_G6LIB,
             number_of_workers=2
         )
         code.initialize_code()
         stop_cond = code.stopping_conditions.collision_detection
         stop_cond.enable()
-       
+
         code.particles.add_particles(particles)
 
-        code.evolve_model( 0.08 | nbody_system.time)
-        
-        self.assertTrue(stop_cond.is_set())
+        code.evolve_model(0.08 | nbody_system.time)
 
-    
+        self.assertTrue(stop_cond.is_set())

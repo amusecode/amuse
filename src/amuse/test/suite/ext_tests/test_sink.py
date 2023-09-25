@@ -18,11 +18,11 @@ from amuse.ic.plummer import new_plummer_model
 
 class TestSinkParticles(TestCase):
 
-    looping_over="sinks"
+    looping_over = "sinks"
 
     def test1(self):
         print("Testing SinkParticles initialization from new (blank) particle")
-        sinks = SinkParticles(Particles(2), sink_radius=[42.0,43.0]|units.RSun)
+        sinks = SinkParticles(Particles(2), sink_radius=[42.0, 43.0] | units.RSun)
 
         self.assertEqual(sinks.sink_radius, [42.0, 43.0] | units.RSun)
         self.assertEqual(sinks.mass, 0.0 | units.MSun)
@@ -30,9 +30,9 @@ class TestSinkParticles(TestCase):
         self.assertEqual(sinks.velocity, [0.0, 0.0, 0.0] | units.km/units.s)
         self.assertEqual(sinks.angular_momentum, [0.0, 0.0, 0.0] | units.kg*units.km**2/units.s)
 
-        sinks = SinkParticles(Particles(2), sink_radius=24.0|units.RSun, mass=[1.0,2.0]|units.MSun,
-            position=[1,2,3]|nbody_system.length, velocity=[4,5,6]|nbody_system.length/nbody_system.time,
-            angular_momentum=[9,8,7] | nbody_system.mass*nbody_system.length**2/nbody_system.time)
+        sinks = SinkParticles(Particles(2), sink_radius=24.0 | units.RSun, mass=[1.0, 2.0] | units.MSun,
+            position=[1, 2, 3] | nbody_system.length, velocity=[4, 5, 6] | nbody_system.length/nbody_system.time,
+            angular_momentum=[9, 8, 7] | nbody_system.mass*nbody_system.length**2/nbody_system.time)
         self.assertEqual(sinks.sink_radius, 24.0 | units.RSun)
         self.assertEqual(sinks.mass, [1.0, 2.0] | units.MSun)
         self.assertEqual(sinks.position, [1.0, 2.0, 3.0] | nbody_system.length)
@@ -42,25 +42,22 @@ class TestSinkParticles(TestCase):
     def test2(self):
         print("Testing SinkParticles initialization from existing particles")
         original = Particles(3)
-        self.assertRaises(AttributeError, SinkParticles, original, expected_message=
-            "You tried to access attribute 'radius' but this attribute is not defined for this set.")
+        self.assertRaises(AttributeError, SinkParticles, original, expected_message="You tried to access attribute 'radius' but this attribute is not defined for this set.")
         original.radius = 42.0 | units.RSun
         original.mass = 10.0 | units.MSun
         original.position = [[i, -i, 2*i] for i in range(3)] | units.parsec
         sinks = SinkParticles(original)
         self.assertEqual(sinks.sink_radius, 42.0 | units.RSun)
         self.assertEqual(sinks.mass, 10.0 | units.MSun)
-        self.assertEqual(sinks.position, [[0,0,0], [1,-1,2], [2,-2,4]] | units.parsec)
-        self.assertRaises(AttributeError, getattr, sinks, "bogus", expected_message=
-            "You tried to access attribute 'bogus' but this attribute is not defined for this set.")
+        self.assertEqual(sinks.position, [[0, 0, 0], [1, -1, 2], [2, -2, 4]] | units.parsec)
+        self.assertRaises(AttributeError, getattr, sinks, "bogus", expected_message="You tried to access attribute 'bogus' but this attribute is not defined for this set.")
 
     def test3(self):
         print("Testing SinkParticles initialization from existing particles in set")
         particles = Particles(10)
-        self.assertRaises(AttributeError, SinkParticles, particles[[4, 7]], expected_message=
-            "You tried to access attribute 'radius' but this attribute is not defined for this set.")
+        self.assertRaises(AttributeError, SinkParticles, particles[[4, 7]], expected_message="You tried to access attribute 'radius' but this attribute is not defined for this set.")
         particles.radius = 42.0 | units.RSun
-        particles.mass = range(1,11) | units.MSun
+        particles.mass = range(1, 11) | units.MSun
         particles.position = [[i, 2*i, 3*i] for i in range(10)] | units.parsec
 
         sinks = SinkParticles(particles[[4]])
@@ -69,13 +66,13 @@ class TestSinkParticles(TestCase):
         self.assertEqual(sinks.radius, 42.0 | units.RSun)
         self.assertEqual(sinks.position, [4.0, 8.0, 12.0] | units.parsec)
 
-        sinks = SinkParticles(particles[[4, 7]], sink_radius=[1,2]|units.AU)
+        sinks = SinkParticles(particles[[4, 7]], sink_radius=[1, 2] | units.AU)
         self.assertEqual(sinks.sink_radius, [1.0, 2.0] | units.AU)
         self.assertEqual(sinks.radius, 42.0 | units.RSun)
         self.assertEqual(sinks.mass, [5.0, 8.0] | units.MSun)
         self.assertEqual(sinks.position, [[4, 8, 12], [7, 14, 21]] | units.parsec)
 
-        self.assertEqual(set(['key', 'mass', 'radius', 'x', 'y', 'z', 'sink_radius', 'vx','vy','vz','lx','ly','lz']),
+        self.assertEqual(set(['key', 'mass', 'radius', 'x', 'y', 'z', 'sink_radius', 'vx', 'vy', 'vz', 'lx', 'ly', 'lz']),
             set(str(sinks).split("\n")[0].split()))
         self.assertEqual(set(['key', 'mass', 'radius', 'x', 'y', 'z']),
             set(str(particles).split("\n")[0].split()))
@@ -84,77 +81,78 @@ class TestSinkParticles(TestCase):
         print("Testing SinkParticles accrete")
         particles = Particles(10)
         particles.radius = 42.0 | units.RSun
-        particles.mass = range(1,11) | units.MSun
+        particles.mass = range(1, 11) | units.MSun
         particles.position = [[i, 2*i, 3*i] for i in range(10)] | units.parsec
         particles.velocity = [[i, 0, -i] for i in range(10)] | units.km/units.s
         particles.age = range(10) | units.Myr
 
         copy = particles.copy()
 
-        sinks = SinkParticles(particles[[3, 7]], sink_radius=[4,5]|units.parsec,looping_over=self.looping_over)
+        sinks = SinkParticles(particles[[3, 7]], sink_radius=[4, 5] | units.parsec, looping_over=self.looping_over)
         self.assertEqual(sinks.sink_radius, [4.0, 5.0] | units.parsec)
         self.assertEqual(sinks.mass, [4.0, 8.0] | units.MSun)
         self.assertEqual(sinks.position, [[3, 6, 9], [7, 14, 21]] | units.parsec)
 
         accreted = sinks.accrete(particles)
-        self.assertEqual(len(accreted), 4) # 4 particles were accreted
+        self.assertEqual(len(accreted), 4)  # 4 particles were accreted
         self.assertEqual(len(particles), 6)
-        self.assertEqual(sinks.mass, [12.0, 24.0] | units.MSun) # mass of sinks increased
+        self.assertEqual(sinks.mass, [12.0, 24.0] | units.MSun)  # mass of sinks increased
         self.assertEqual(sinks.get_intersecting_subset_in(particles).mass,
-            [12.0, 24.0] | units.MSun) # original particles' masses match
-        self.assertEqual(particles.total_mass(), copy.total_mass()) # total mass is conserved
-        self.assertEqual(particles.center_of_mass(), copy.center_of_mass()) # center of mass is conserved
-        self.assertEqual(particles.center_of_mass_velocity(), copy.center_of_mass_velocity()) # center of mass velocity is conserved
-        self.assertEqual(particles.total_momentum(), copy.total_momentum()) # momentum is conserved
-        self.assertEqual(particles.total_angular_momentum()+sinks.angular_momentum.sum(axis=0), copy.total_angular_momentum()) # angular_momentum is conserved
+            [12.0, 24.0] | units.MSun)  # original particles' masses match
+        self.assertEqual(particles.total_mass(), copy.total_mass())  # total mass is conserved
+        self.assertEqual(particles.center_of_mass(), copy.center_of_mass())  # center of mass is conserved
+        self.assertEqual(particles.center_of_mass_velocity(), copy.center_of_mass_velocity())  # center of mass velocity is conserved
+        self.assertEqual(particles.total_momentum(), copy.total_momentum())  # momentum is conserved
+        self.assertEqual(particles.total_angular_momentum()+sinks.angular_momentum.sum(axis=0), copy.total_angular_momentum())  # angular_momentum is conserved
 
         sinks.sink_radius = [4.0, 8.0] | units.parsec
         accreted = sinks.accrete(particles)
-        self.assertEqual(len(accreted), 2) # another 2 particles were accreted
+        self.assertEqual(len(accreted), 2)  # another 2 particles were accreted
         self.assertEqual(len(particles), 4)
-        self.assertEqual(sinks.mass, [12.0, 40.0] | units.MSun) # mass of sinks increased
+        self.assertEqual(sinks.mass, [12.0, 40.0] | units.MSun)  # mass of sinks increased
         self.assertEqual(sinks.get_intersecting_subset_in(particles).mass,
-            [12.0, 40.0] | units.MSun) # original particles' masses match
-        self.assertEqual(particles.total_mass(), copy.total_mass()) # total mass is conserved
-        self.assertEqual(particles.center_of_mass(), copy.center_of_mass()) # center of mass is conserved
-        self.assertEqual(particles.center_of_mass_velocity(), copy.center_of_mass_velocity()) # center of mass velocity is conserved
-        self.assertEqual(particles.total_momentum(), copy.total_momentum()) # momentum is conserved
-        self.assertEqual(particles.total_angular_momentum()+sinks.angular_momentum.sum(axis=0), copy.total_angular_momentum()) # angular_momentum is conserved
+            [12.0, 40.0] | units.MSun)  # original particles' masses match
+        self.assertEqual(particles.total_mass(), copy.total_mass())  # total mass is conserved
+        self.assertEqual(particles.center_of_mass(), copy.center_of_mass())  # center of mass is conserved
+        self.assertEqual(particles.center_of_mass_velocity(), copy.center_of_mass_velocity())  # center of mass velocity is conserved
+        self.assertEqual(particles.total_momentum(), copy.total_momentum())  # momentum is conserved
+        self.assertEqual(particles.total_angular_momentum()+sinks.angular_momentum.sum(axis=0), copy.total_angular_momentum())  # angular_momentum is conserved
 
     def test5(self):
         print("Testing SinkParticles accrete, one particle within two sinks' radii")
         particles = Particles(10)
         particles.radius = 42.0 | units.RSun
-        particles.mass = range(1,11) | units.MSun
+        particles.mass = range(1, 11) | units.MSun
         particles.position = [[i, 2*i, 3*i] for i in range(10)] | units.parsec
         particles.velocity = [[i, 0, -i] for i in range(10)] | units.km/units.s
         particles.age = range(10) | units.Myr
         copy = particles.copy()
 
-        sinks = SinkParticles(particles[[3, 7]], sink_radius=[4,12]|units.parsec,looping_over=self.looping_over)
+        sinks = SinkParticles(particles[[3, 7]], sink_radius=[4, 12] | units.parsec, looping_over=self.looping_over)
         self.assertEqual(sinks.sink_radius, [4.0, 12.0] | units.parsec)
         self.assertEqual(sinks.mass, [4.0, 8.0] | units.MSun)
         self.assertEqual(sinks.position, [[3, 6, 9], [7, 14, 21]] | units.parsec)
 
         sinks.accrete(particles)
-        self.assertEqual(len(particles), 4) # 6 particles were accreted
-        self.assertEqual(sinks.mass, [12.0, 40.0] | units.MSun) # mass of sinks increased
+        self.assertEqual(len(particles), 4)  # 6 particles were accreted
+        self.assertEqual(sinks.mass, [12.0, 40.0] | units.MSun)  # mass of sinks increased
         self.assertEqual(sinks.get_intersecting_subset_in(particles).mass,
-            [12.0, 40.0] | units.MSun) # original particles' masses match
-        self.assertEqual(particles.total_mass(), copy.total_mass()) # total mass is conserved
-        self.assertEqual(particles.center_of_mass(), copy.center_of_mass()) # center of mass is conserved
-        self.assertEqual(particles.center_of_mass_velocity(), copy.center_of_mass_velocity()) # center of mass velocity is conserved
-        self.assertEqual(particles.total_momentum(), copy.total_momentum()) # momentum is conserved
-        self.assertEqual(particles.total_angular_momentum()+sinks.angular_momentum.sum(axis=0), copy.total_angular_momentum()) # angular_momentum is conserved
+            [12.0, 40.0] | units.MSun)  # original particles' masses match
+        self.assertEqual(particles.total_mass(), copy.total_mass())  # total mass is conserved
+        self.assertEqual(particles.center_of_mass(), copy.center_of_mass())  # center of mass is conserved
+        self.assertEqual(particles.center_of_mass_velocity(), copy.center_of_mass_velocity())  # center of mass velocity is conserved
+        self.assertEqual(particles.total_momentum(), copy.total_momentum())  # momentum is conserved
+        self.assertEqual(particles.total_angular_momentum()+sinks.angular_momentum.sum(axis=0), copy.total_angular_momentum())  # angular_momentum is conserved
 
 
 class TestSinkParticlesLoopingOverSources(TestSinkParticles):
 
-    looping_over="sources"
+    looping_over = "sources"
+
 
 class TestNewSinkParticles(TestCase):
 
-    looping_over="sinks"
+    looping_over = "sinks"
 
     def test1(self):
         print("Test the documentation for new_sink_particles")
@@ -166,7 +164,7 @@ class TestNewSinkParticles(TestCase):
         cloud.mass = 1 | units.MSun
         cloud.position = [[0, 0, 0], [100, 100, 100], [200, 200, 200], [300, 300, 300]]*25 | units.parsec
         cloud.velocity = [[0, 0, 0], [1, 1, 1]]*50 | units.km / units.s
-        unit_converter = ConvertBetweenGenericAndSiUnits(1|units.m, 1|units.kg, 1|units.s)
+        unit_converter = ConvertBetweenGenericAndSiUnits(1 | units.m, 1 | units.kg, 1 | units.s)
         sph_code = Stub(unit_converter)
         sph_code.parameters.stopping_condition_maximum_density = 1 | units.kg / units.m**3
         sph_code.gas_particles.add_particles(cloud)
@@ -183,7 +181,7 @@ class TestNewSinkParticles(TestCase):
         clumps = density_limit_detection.particles().copy()
         sph_code.gas_particles.remove_particles(clumps)
 
-        sinks = new_sink_particles(clumps, sink_radius=1|units.parsec,looping_over=self.looping_over)
+        sinks = new_sink_particles(clumps, sink_radius=1 | units.parsec, looping_over=self.looping_over)
         self.assertEqual(sinks.sink_radius, 1.0 | units.parsec)
         self.assertEqual(sinks.mass, 1.0 | units.MSun)
         self.assertEqual(sinks.position,
@@ -229,14 +227,14 @@ class TestNewSinkParticles(TestCase):
         sph_code.gas_particles.remove_particles(clumps)
         clumps_in_code = sph_code.dm_particles.add_particles(clumps)
 
-        sinks = new_sink_particles(clumps_in_code,looping_over=self.looping_over)
+        sinks = new_sink_particles(clumps_in_code, looping_over=self.looping_over)
         self.assertEqual(sinks.sink_radius, clumps.radius)
         self.assertAlmostRelativeEqual(sinks.mass, UnitMass / number_gas_particles, 10)
         self.assertAlmostRelativeEqual(sinks.position, clumps.position, 10)
         self.assertEqual(len(sph_code.gas_particles), number_gas_particles - 1)
         self.assertAlmostRelativeEqual(sph_code.particles.total_mass(), UnitMass, 10)
         self.assertAlmostRelativeEqual(sph_code.gas_particles.total_mass(), UnitMass - sinks.total_mass(), 10)
-        self.assertEqual(set(sinks.get_attribute_names_defined_in_store()) - set(["sink_radius","lx","ly","lz"]),
+        self.assertEqual(set(sinks.get_attribute_names_defined_in_store()) - set(["sink_radius", "lx", "ly", "lz"]),
             set(sph_code.particles.get_attribute_names_defined_in_store()))
 
         sinks.accrete(sph_code.gas_particles)
@@ -245,7 +243,7 @@ class TestNewSinkParticles(TestCase):
         self.assertAlmostRelativeEqual(sph_code.particles.total_mass(), UnitMass, 10)
         self.assertAlmostRelativeEqual(sph_code.gas_particles.total_mass(), UnitMass - sinks.total_mass(), 10)
 
-        sinks.accrete(sph_code.particles) # Nothing happens: gas already gone, and cannot accrete itself
+        sinks.accrete(sph_code.particles)  # Nothing happens: gas already gone, and cannot accrete itself
         self.assertAlmostRelativeEqual(sinks.mass, 3 * UnitMass / number_gas_particles, 10)
         self.assertAlmostRelativeEqual(sph_code.particles.total_mass(), UnitMass, 10)
 
@@ -275,7 +273,7 @@ class TestNewSinkParticles(TestCase):
         sph_code.gas_particles.remove_particles(clumps)
         clumps_in_code = sph_code.dm_particles.add_particles(clumps)
 
-        sinks.add_sinks(clumps_in_code, sink_radius=0.1|units.kpc)
+        sinks.add_sinks(clumps_in_code, sink_radius=0.1 | units.kpc)
         self.assertEqual(sinks[1:].sink_radius, 0.1 | units.kpc)
         self.assertEqual(len(sph_code.gas_particles), number_gas_particles - 12)
         self.assertAlmostRelativeEqual(sinks.mass[1:], UnitMass / number_gas_particles, 10)
@@ -288,59 +286,60 @@ class TestNewSinkParticles(TestCase):
         self.assertAlmostRelativeEqual(sph_code.particles.total_mass().as_quantity_in(units.MSun), UnitMass, 10)
         self.assertAlmostRelativeEqual(sinks.mass, [7.0, 13.0, 15.0, 9.0, 11.0, 11.0] * UnitMass / number_gas_particles, 10)
 
+
 class TestNewSinkParticlesLoopingOverSources(TestNewSinkParticles):
 
-    looping_over="sources"
+    looping_over = "sources"
 
 
 class TestNonSphericalSinkParticles(TestCase):
 
     def test1(self):
         """ Test creating shapes and combining them """
-        shapes = sink.Sphere(1|units.RSun) | sink.Sphere(2|units.RSun)
+        shapes = sink.Sphere(1 | units.RSun) | sink.Sphere(2 | units.RSun)
         self.assertEqual(len(shapes.sub_shapes), 2)
-        shapes = sink.Sphere(1|units.RSun) | sink.Sphere(2|units.RSun) | sink.Spheroid([0.5, 0.5, 10]|units.RSun)
+        shapes = sink.Sphere(1 | units.RSun) | sink.Sphere(2 | units.RSun) | sink.Spheroid([0.5, 0.5, 10] | units.RSun)
         self.assertEqual(len(shapes.sub_shapes), 3)
 
     def test2(self):
         """ Test Spheroid sink accretion """
         particles = self.create_particle_grid()
 
-        spheroid = sink.Spheroid([5., 4., 1.]|units.RSun)
-        sink_particles = Particles(1, mass=10.|units.MSun, radius=0.|units.RSun, position=[[1., 1., 1.]]|units.RSun)
+        spheroid = sink.Spheroid([5., 4., 1.] | units.RSun)
+        sink_particles = Particles(1, mass=10. | units.MSun, radius=0. | units.RSun, position=[[1., 1., 1.]] | units.RSun)
         sinks = new_sink_particles(sink_particles, shapes=spheroid)
 
         accreted = sinks.accrete(particles)
         self.assertEqual(len(accreted), 161)
         self.assertEqual(len(particles), 1839)
-        self.assertEqual(accreted.x.max(), 4|units.RSun)
-        self.assertEqual(accreted.y.max(), 3|units.RSun)
-        self.assertEqual(accreted.z.max(), 0.5|units.RSun)
+        self.assertEqual(accreted.x.max(), 4 | units.RSun)
+        self.assertEqual(accreted.y.max(), 3 | units.RSun)
+        self.assertEqual(accreted.z.max(), 0.5 | units.RSun)
 
         spheroid.dimensions[2] = 3 | units.RSun
         accreted = sinks.accrete(particles)
         self.assertEqual(len(accreted), 324)
         self.assertEqual(len(particles), 1515)
-        self.assertEqual(accreted.x.max(), 4|units.RSun)
-        self.assertEqual(accreted.y.max(), 3|units.RSun)
-        self.assertEqual(accreted.z.max(), 2.5|units.RSun)
-        self.assertIsSubvector([3, 2, 2.5]|units.RSun, particles.position)
+        self.assertEqual(accreted.x.max(), 4 | units.RSun)
+        self.assertEqual(accreted.y.max(), 3 | units.RSun)
+        self.assertEqual(accreted.z.max(), 2.5 | units.RSun)
+        self.assertIsSubvector([3, 2, 2.5] | units.RSun, particles.position)
 
     def test3(self):
         """ Test compound sink accretion """
         particles = self.create_particle_grid()
 
-        shape = sink.Sphere(3.|units.RSun) | sink.Disc(*[5., 1.]|units.RSun)
-        sink_particles = Particles(1, mass=10.|units.MSun, radius=0.|units.RSun, position=[[1., 1., 1.]]|units.RSun)
+        shape = sink.Sphere(3. | units.RSun) | sink.Disc(*[5., 1.] | units.RSun)
+        sink_particles = Particles(1, mass=10. | units.MSun, radius=0. | units.RSun, position=[[1., 1., 1.]] | units.RSun)
         sinks = new_sink_particles(sink_particles, shapes=shape)
 
         accreted = sinks.accrete(particles)
         self.assertEqual(len(accreted), 319)
         self.assertEqual(len(particles), 1681)
-        self.assertEqual(accreted.x.max(), 4|units.RSun)
-        self.assertEqual(accreted.y.max(), 4|units.RSun)
-        self.assertEqual(accreted.z.max(), 2.5|units.RSun)
-        self.assertIsSubvector([2, 2, 1]|units.RSun, particles.position)
+        self.assertEqual(accreted.x.max(), 4 | units.RSun)
+        self.assertEqual(accreted.y.max(), 4 | units.RSun)
+        self.assertEqual(accreted.z.max(), 2.5 | units.RSun)
+        self.assertIsSubvector([2, 2, 1] | units.RSun, particles.position)
 
     def create_particle_grid(self):
         particles = Particles(2000)
@@ -469,7 +468,7 @@ class StubInterface(object):
 
 class Stub(GravitationalDynamics):
 
-    def __init__(self, unit_converter = None, **options):
+    def __init__(self, unit_converter=None, **options):
         self.stopping_conditions = StoppingConditions(self)
 
         GravitationalDynamics.__init__(
@@ -485,7 +484,7 @@ class Stub(GravitationalDynamics):
             "set_stopping_condition_maximum_density_parameter",
             "stopping_condition_maximum_density",
             "maximum density of a gas particle",
-            default_value = -1.0 | generic_unit_system.density
+            default_value=-1.0 | generic_unit_system.density
         )
 
     def define_methods(self, object):
@@ -496,8 +495,8 @@ class Stub(GravitationalDynamics):
             (object.INDEX, object.ERROR_CODE))
 
     def define_particle_sets(self, object):
-        object.define_super_set('particles', ['dm_particles','gas_particles'],
-            index_to_default_set = 0)
+        object.define_super_set('particles', ['dm_particles', 'gas_particles'],
+            index_to_default_set=0)
 
         object.define_set('dm_particles', 'index_of_the_particle')
         object.set_new('dm_particles', 'new_particle')
@@ -515,5 +514,3 @@ class Stub(GravitationalDynamics):
         object.add_getter('gas_particles', 'get_velocity', names=("vx", "vy", "vz"))
 
         object.add_query('particles', 'get_stopping_condition_particle_index')
-
-
