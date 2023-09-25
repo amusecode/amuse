@@ -5,7 +5,7 @@ module AmuseInterface
             copy_to_genec_star,&
             copy_namelists_from_genec_star,&
             copy_from_genec_star,&
-            copy_structure_from_genec_star,&
+            copy_structure_from_genec_star
     use evol, only: kindreal,ldi,npondcouche
 
     type(genec_star) :: BackupBackupGenecStar
