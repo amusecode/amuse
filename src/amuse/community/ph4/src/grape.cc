@@ -1,4 +1,3 @@
-
 #include "grape.h"
 
 // Local lookalikes for Sapporo interface functions.
