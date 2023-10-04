@@ -18,7 +18,7 @@ from collections import namedtuple
 from docutils import nodes
 from amuse.support import exceptions
 try:
-    from amuse.version import version as amuse_version
+    from amuse._version import version as amuse_version
 except ImportError:
     amuse_version = "unknown version"
 
