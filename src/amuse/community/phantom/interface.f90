@@ -444,14 +444,6 @@ function get_number_of_particles(n)
   get_number_of_particles=0
 end function
 
-function set_acceleration(index_of_the_particle, ax, ay, az)
-  implicit none
-  integer :: index_of_the_particle
-  double precision :: ax, ay, az
-  integer :: set_acceleration
-  set_acceleration=-1
-end function
-
 function get_center_of_mass_position(x, y, z)
   implicit none
   double precision :: x, y, z
