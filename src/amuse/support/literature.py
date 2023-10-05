@@ -141,8 +141,8 @@ Please cite any relevant articles:
         for current_class in cls.__mro__:
             docstring_in = current_class.__doc__
             if docstring_in:
-                if hasattr(current_class, "_version"):
-                    version = current_class._version()
+                if hasattr(current_class, "version"):
+                    version = current_class.version()
                 else:
                     version = amuse_version
                 name = current_class.__name__
@@ -176,8 +176,8 @@ Please cite any relevant articles:
         for current_class in cls.__mro__:
             docstring_in = current_class.__doc__
             if docstring_in:
-                if hasattr(current_class, "_version"):
-                    version = current_class._version()
+                if hasattr(current_class, "version"):
+                    version = current_class.version()
                 else:
                     version = amuse_version
                 name = current_class.__name__
@@ -283,12 +283,13 @@ class LiteratureReferencesMixIn(object):
             version = importlib.import_module(
                 '.._version',
                 cls.__module__
-            )._version
+            ).version
         except (ImportError, ValueError):
             try:
                 from amuse.version import version
+                version = f"framework {version}"
             except ImportError:
-                version = "unknown"
+                version = "unknown version"
         return version
 
     @classmethod
