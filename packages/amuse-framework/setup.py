@@ -40,23 +40,16 @@ package_data = {
 
 mapping_from_command_name_to_command_class = setup_commands()
 
-try:
-    from src.amuse.version import version
-    use_scm_version = False
-    setup_requires = []
-except ImportError:
-    version = None
-    setup_requires = ['setuptools_scm']
-    use_scm_version = {
-        "root": "../..",
-        "relative_to": __file__,
-        "write_to": "src/amuse/version.py",
-    }
+setup_requires = ['setuptools_scm']
+use_scm_version = {
+    "root": "../..",
+    "relative_to": __file__,
+    "version_file": "src/amuse/_version.py",
+}
 setup(
     name=name,
     use_scm_version=use_scm_version,
     setup_requires=setup_requires,
-    version=version,
     classifiers=classifiers,
     url=url,
     author_email=author_email,
