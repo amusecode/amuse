@@ -305,9 +305,9 @@ class _TestGravityCodes:
             # if they are implemented for the code, otherwise will call
             # get_state multiple times
             # todo, fi fails, need to check with inti
-            #self.assertAlmostRelativeEqual(instance.particles[-1].mass, new_particles[0].mass)
-            #self.assertAlmostRelativeEqual(instance.particles[-1].velocity, new_particles[0].velocity)
-            #self.assertAlmostRelativeEqual(instance.particles[-1].position, new_particles[0].position)
+            # self.assertAlmostRelativeEqual(instance.particles[-1].mass, new_particles[0].mass)
+            # self.assertAlmostRelativeEqual(instance.particles[-1].velocity, new_particles[0].velocity)
+            # self.assertAlmostRelativeEqual(instance.particles[-1].position, new_particles[0].position)
             instance.particles.synchronize_to(particles)
             self.assertEqual(len(particles), 99)
             self.assertEqual(particles[-1], new_particles[0])

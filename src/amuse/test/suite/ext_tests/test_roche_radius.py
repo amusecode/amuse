@@ -5,6 +5,7 @@ from amuse.units import units
 
 from amuse.ext.roche_radius import Roche_Orbit, sepinsky_formula
 
+
 class TestRocheRadius(amusetest.TestCase):
 
     def test1(self):
@@ -22,7 +23,6 @@ class TestRocheRadius(amusetest.TestCase):
         self.assertIsOfOrder(sepinsky_formula(q=1e-4, A=a_values), answers)
 
         self.assertIsOfOrder(sepinsky_formula(q=1e4, A=a_values), answers)
-
 
     def test2(self):
         """ Test the Roche_Orbit class """

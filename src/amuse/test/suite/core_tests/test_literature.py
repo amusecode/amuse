@@ -3,6 +3,7 @@ import docutils.core
 
 from amuse.support import literature
 
+
 class TestLiteratureRefs(unittest.TestCase):
     def setUp(self):
         literature.LiteratureReferencesMixIn.literature_list = []
@@ -15,6 +16,7 @@ class TestLiteratureRefs(unittest.TestCase):
                 .. [3] Dude, John, *The Intern. Foo Journal of Bars*, **51**, 1647--1751 (2009)  
                 .. [4] Hat, John, *The Ex. Foo Journal of Bars*, **51**, 1647--1751 (2009)  
             """
+
             def __init__(self):
                 literature.LiteratureReferencesMixIn.__init__(self)
 
@@ -23,7 +25,7 @@ class TestLiteratureRefs(unittest.TestCase):
             self.assertFalse("ClassLitrefs" in classname)
 
         instance = ClassLitrefs()
-        
+
         classnames = literature.LiteratureReferencesMixIn.names_of_classes_with_references()
         for classname in classnames:
             self.assertTrue("ClassLitrefs" in classname)
@@ -36,16 +38,17 @@ class TestLiteratureRefs(unittest.TestCase):
                 .. [3] Dude, John, *The Intern. Foo Journal of Bars*, **51**, 1647--1751 (2009)  
                 .. [4] Hat, John, *The Gal. Foo Journal of Bars*, **3**, 16--51 (2009)  
             """
+
             def __init__(self):
                 literature.LiteratureReferencesMixIn.__init__(self)
-        
+
         literature.TrackLiteratureReferences.default().registered_classes = set([])
         string = literature.LiteratureReferencesMixIn.all_literature_references_string()
         self.assertTrue("AMUSE" in string)
         self.assertTrue("2018araa.book.....P" in string)
 
         instance = ClassLitrefs()
-        
+
         string = literature.LiteratureReferencesMixIn.all_literature_references_string()
         literature.LiteratureReferencesMixIn.print_literature_references()
         self.assertFalse(".. [#] Gratia, Exem" in string)

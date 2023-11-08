@@ -77,7 +77,7 @@ def get_crmath():
 
 def get_crlibm():
     instance = GetCodeFromHttp()
-    instance.url_template = 'http://www.astro.wisc.edu/~townsend/resource/download/sdk2/src/crlibm-{version}.tar.gz'
+    instance.url_template = 'http://user.astro.wisc.edu/~townsend/resource/download/sdk2/src/crlibm-{version}.tar.gz'
     instance.filename_template='crlibm-{version}.tar.gz'
     instance.version = '1.0beta4'
     instance.zip = False
@@ -94,7 +94,7 @@ def get_fpx3deps():
 
 def get_fpx3():
     instance = GetCodeFromHttp()
-    instance.url_template = 'http://www.astro.wisc.edu/~townsend/resource/download/sdk2/src/fpx3.tar.gz'
+    instance.url_template = 'http://user.astro.wisc.edu/~townsend/resource/download/sdk2/src/fpx3.tar.gz'
     instance.filename_template='fpx3.tar.gz'
     instance.version = ''
     instance.zip = False
@@ -102,7 +102,7 @@ def get_fpx3():
 
 def get_lapack95():
     instance = GetCodeFromHttp()
-    instance.url_template = 'http://www.astro.wisc.edu/~townsend/resource/download/sdk2/src/lapack95.tgz'
+    instance.url_template = 'http://user.astro.wisc.edu/~townsend/resource/download/sdk2/src/lapack95.tgz'
     instance.filename_template='lapack95.tgz'
     instance.version = ''
     instance.zip = False

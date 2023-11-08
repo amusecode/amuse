@@ -8,6 +8,8 @@ from amuse.community.phigrape.interface import PhiGRAPEInterface, PhiGRAPE
 from amuse.units import nbody_system
 from amuse.units import units
 from amuse import datamodel
+
+
 class TestParameterDoc(amusetest.TestCase):
 
     def test_bhtree(self):
@@ -20,7 +22,7 @@ class TestParameterDoc(amusetest.TestCase):
         bhtree.parameters.timestep = 1.0 | units.s
         bhtree.parameters.opening_angle = 0.1
 
-        docstring =  bhtree.parameters.__doc__
+        docstring = bhtree.parameters.__doc__
 
         self.assertTrue("smoothing parameter for gravity calculations (default value:125000.0 m**2)" in docstring)
 
@@ -38,12 +40,11 @@ class TestParameterDoc(amusetest.TestCase):
 
         hermite.parameters.epsilon_squared = 10 | units.km**2
 
-        docstring =  hermite.parameters.__doc__
+        docstring = hermite.parameters.__doc__
         self.assertTrue("smoothing parameter for gravity calculations (default value:0.0 m**2)" in docstring)
 
         parameter_str_method_output = str(hermite.parameters)
         self.assertTrue("epsilon_squared: 10000000.0 m**2" in parameter_str_method_output)
-
 
     def test_phigrape(self):
 
@@ -52,7 +53,7 @@ class TestParameterDoc(amusetest.TestCase):
         phigrape = PhiGRAPE(convert_nbody)
         phigrape.parameters.epsilon_squared = 10 | units.km**2
 
-        docstring =  phigrape.parameters.__doc__
+        docstring = phigrape.parameters.__doc__
         print(docstring)
         self.assertTrue("smoothing parameter for gravity calculations (default value:0.0 m**2)" in docstring)
         self.assertTrue("timestep parameter (default value:0.02" in docstring)

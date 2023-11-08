@@ -4,7 +4,7 @@
 #
 AC_DEFUN([AX_GMP],[
         AC_ARG_WITH(gmp,
-             AC_HELP_STRING([--with-gmp=PFX], [Prefix where GMP has been installed] ),
+             AS_HELP_STRING([--with-gmp=PFX],[Prefix where GMP has been installed ]),
              [
                 test "$withval" = no && AC_MSG_WARN([gmp is a required package for some modules])
                 test "$withval" = yes || gmp_prefix="$withval" 

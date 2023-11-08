@@ -584,7 +584,7 @@ module amuse_mesa
       integer, intent(out) :: AMUSE_value
       integer :: ierr
       double precision :: lgR, mass, ch1, che3, che4, cc12, cne20
-      double precision :: lgL, lgLH, ah1, ahe3, ahe4, lgLHe
+      double precision :: lgL, lgLH, ah1, ahe3, ahe4, lgLHe, logg
       AMUSE_value = -99
       get_stellar_type = -1
 
@@ -618,9 +618,12 @@ module amuse_mesa
       call get_history_value(AMUSE_id,'average he4',ahe4, ierr)
       if(ierr/=MESA_SUCESS) return
 
+      call get_history_value(AMUSE_id,'photosphere_logg',logg, ierr)
+      if(ierr/=MESA_SUCESS) return
 
 
-      if (lgR > -1.0) then
+
+      if (logg < 6.0) then
          if(ch1 > 1d-4) then ! MS
             if(lgLH-lgL < -1 ) then ! Pre-main-sequence star
                AMUSE_value = 17
@@ -1306,6 +1309,78 @@ module amuse_mesa
 
 
 
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! Procedures for manually controlling how a step gets taken
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
+   integer function solve_one_step(AMUSE_ID, first_try, result)
+      integer, intent(in) :: AMUSE_ID
+      logical, intent(in) :: first_try
+      integer, intent(out) :: result
+      integer :: ierr 
+
+      ierr = 0
+
+      call do_solve_one_step(AMUSE_ID, first_try, result, ierr)
+      solve_one_step = ierr
+
+   end function solve_one_step
+
+   integer function solve_one_step_pre(AMUSE_ID, result)
+      integer, intent(in) :: AMUSE_ID
+      integer, intent(out) :: result
+      integer :: ierr 
+
+      call do_solve_one_step_pre(AMUSE_ID, result, ierr)
+      solve_one_step_pre = ierr
+
+   end function solve_one_step_pre
+
+
+   integer function solve_one_step_post(AMUSE_ID, result)
+      integer, intent(in) :: AMUSE_ID
+      integer, intent(out) :: result
+      integer :: ierr 
+
+      call do_solve_one_step_post(AMUSE_ID, result, ierr)
+      solve_one_step_post = ierr
+
+   end function solve_one_step_post
+
+
+   integer function prepare_retry_step(AMUSE_ID, dt, result)
+   ! Prepare toretake a timestep with a different dt
+   ! Does not actualy retry the step
+      integer, intent(in) :: AMUSE_ID
+      double precision,intent(in) :: dt
+      integer, intent(out) :: result
+      integer :: ierr 
+
+
+      call set_current_dt(AMUSE_ID, dt, ierr) ! Sets dt not dt_next
+      if(ierr/=MESA_SUCESS) then
+         prepare_retry_step = ierr
+         return
+      end if
+
+      result = do_prepare_for_retry(AMUSE_id)
+      prepare_retry_step = 0
+
+   end function prepare_retry_step
+
+
+   integer function prepare_redo_step(AMUSE_ID, result)
+   ! Retake the same timestep with the same dt. Useful when mdot changes
+   ! Does not actualy redo the step 
+      integer, intent(in) :: AMUSE_ID
+      integer, intent(out) :: result
+      integer :: ierr 
+
+      result = do_prepare_for_redo(AMUSE_id)
+      prepare_redo_step = 0
+
+   end function prepare_redo_step
 
 
 end module AMUSE_mesa

@@ -47,21 +47,25 @@ class GetCodeFromHttp:
         print("done")
 
     def start(self):
-        if os.path.exists('src'):
-            counter = 0
-            while os.path.exists('src.{0}'.format(counter)):
-                counter += 1
-                if counter > 100:
-                    print("too many backup directories")
-                    break
-            os.rename('src', 'src.{0}'.format(counter))
-
-        os.mkdir('src')
+        if not os.path.exists('src'):
+            os.mkdir('src')
+#            if not update_flag:
+#                return
+#            counter = 0
+#            while os.path.exists('src.{0}'.format(counter)):
+#                counter += 1
+#                if counter > 100:
+#                    print("too many backup directories")
+#                    break
+#            os.rename('src', 'src.{0}'.format(counter))
 
         for i, url_template in enumerate(self.url_template):
             url = url_template.format(version=self.version[i])
             filename = self.filename_template.format(version=self.version[i])
             filepath = os.path.join(self.src_directory(), filename)
+            if os.path.exists('src/'+self.name[i]):
+                print("src/%s exist" % self.name[i])
+                continue
             print(
                 "downloading version", self.version[i],
                 "from", url, "to", filename
