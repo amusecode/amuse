@@ -1,7 +1,7 @@
 print(
     "warning: amuse.units.optparse is deprecated, please use "
     "amuse.support.argparse instead (see "
-    "https://github.com/amusecode/amuse/...)"
+    "https://github.com/amusecode/amuse/pull/1011)"
 )
 
 import optparse
