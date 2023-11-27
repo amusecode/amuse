@@ -1,4 +1,8 @@
-
+print(
+    "warning: amuse.units.optparse is deprecated, please use "
+    "amuse.support.argparse instead (see "
+    "https://github.com/amusecode/amuse/...)"
+)
 
 import optparse
 import textwrap
@@ -110,7 +114,6 @@ class OptionParser(optparse.OptionParser):
              add_help_option=True,
              prog=None,
              epilog=None):
-
 
         if formatter is None:
             formatter = IndentedHelpFormatter()
