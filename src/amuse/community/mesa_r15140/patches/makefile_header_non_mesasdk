@@ -417,7 +417,7 @@ CP_IF_NEWER = $(MESA_DIR)/utils/cp_if_newer
 
 # makedepf90 invocation (depends on whether we have the SDK2-patched version that
 # supports the -X flag)
-ifneq ($(shell makedepf90 -V | grep sdk2),)
+ifneq ($(shell src/makedepf90 -V | grep sdk2),)
     MAKEDEPF90_IGNORE_MODS = intrinsic omp_lib iso_c_binding iso_fortran_env ieee_arithmetic crmath hdf5
     MAKEDEPF90 := $(MESA_DIR)/utils/makedepf90-2.8.8/makedepf90 -m %m.mod -X $(addprefix -u,$(MAKEDEPF90_IGNORE_MODS))
 else
