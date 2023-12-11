@@ -20,15 +20,37 @@ OBJS = interface.o
 
 CODELIB = src/librebound.a
 CODEDIR = src/rebound
-LIB_OBJ = $(CODEDIR)/src/rebound.o $(CODEDIR)/src/tree.o $(CODEDIR)/src/particle.o $(CODEDIR)/src/gravity.o \
-          $(CODEDIR)/src/integrator.o $(CODEDIR)/src/integrator_whfast.o $(CODEDIR)/src/integrator_whfasthelio.o \
-          $(CODEDIR)/src/integrator_ias15.o $(CODEDIR)/src/integrator_sei.o $(CODEDIR)/src/integrator_leapfrog.o \
-          $(CODEDIR)/src/integrator_hermes.o $(CODEDIR)/src/boundary.o \
-          $(CODEDIR)/src/collision.o $(CODEDIR)/src/tools.o \
-          $(CODEDIR)/src/communication_mpi.o $(CODEDIR)/src/display.o $(CODEDIR)/src/derivatives.o \
-          $(CODEDIR)/src/glad.o $(CODEDIR)/src/integrator_janus.o $(CODEDIR)/src/transformations.o \
-          $(CODEDIR)/src/simulationarchive.o $(CODEDIR)/src/output.o \
-          $(CODEDIR)/src/input.o \
+LIB_OBJ = \
+	  $(CODEDIR)/src/rebound.o \
+	  $(CODEDIR)/src/tree.o \
+	  $(CODEDIR)/src/particle.o \
+	  $(CODEDIR)/src/gravity.o \
+          $(CODEDIR)/src/integrator.o \
+	  $(CODEDIR)/src/integrator_whfast.o \
+	  $(CODEDIR)/src/integrator_whfast512.o \
+	  $(CODEDIR)/src/integrator_saba.o \
+          $(CODEDIR)/src/integrator_ias15.o \
+	  $(CODEDIR)/src/integrator_sei.o \
+	  $(CODEDIR)/src/integrator_bs.o \
+	  $(CODEDIR)/src/integrator_leapfrog.o \
+          $(CODEDIR)/src/integrator_mercurius.o \
+          $(CODEDIR)/src/integrator_eos.o \
+	  $(CODEDIR)/src/boundary.o \
+	  $(CODEDIR)/src/input.o \
+	  $(CODEDIR)/src/binarydiff.o \
+	  $(CODEDIR)/src/output.o \
+          $(CODEDIR)/src/collision.o \
+          $(CODEDIR)/src/communication_mpi.o \
+	  $(CODEDIR)/src/display.o \
+	  $(CODEDIR)/src/tools.o \
+	  $(CODEDIR)/src/rotations.o \
+	  $(CODEDIR)/src/derivatives.o \
+          $(CODEDIR)/src/simulationarchive.o \
+          $(CODEDIR)/src/glad.o \
+	  $(CODEDIR)/src/integrator_janus.o \
+	  $(CODEDIR)/src/transformations.o \
+	  $(CODEDIR)/src/fmemopen.o \
+          $(CODEDIR)/src/server.o
 
 DOWNLOAD_FROM_WEB = $(PYTHON) ./download.py
 PATCH_FILES = $(PYTHON) ./patch_files.py
@@ -39,25 +61,8 @@ AM_CFLAGS = -I$(AMUSE_DIR)/lib/amuse_mpi
 
 all: rebound_worker 
 
-DOWNLOAD_CODES?=1
-
-ifdef DOWNLOAD_CODES
 $(CODEDIR)/Makefile:
 	make -C . download
-else
-$(CODEDIR)/Makefile:
-	@echo ""
-	@echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
-	@echo ""
-	@echo "DOWNLOAD_CODES is not set. Rebound will not be downloaded and built."
-	@echo "If you do want Rebound, set DOWNLOAD_CODES to 1."
-	@echo "bash> export DOWNLOAD_CODES=1"
-	@echo "csh> setenv DOWNLOAD_CODES 1"
-	@echo ""
-	@echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
-	@echo ""
-	@make -s --no-print-directory -C . raise_error
-endif
 
 download:
 	$(RM) -Rf .pc
@@ -85,7 +90,7 @@ distclean:
 	$(RM) -Rf .pc
 
 $(CODELIB): $(CODEDIR)/Makefile
-	make -C $(CODEDIR) all CC=$(CC)
+	make -C $(CODEDIR) librebound CC=$(CC)
 	ar rv $(CODELIB) $(LIB_OBJ)
 	ranlib $(CODELIB)
 
