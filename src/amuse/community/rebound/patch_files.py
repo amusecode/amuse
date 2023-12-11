@@ -40,7 +40,7 @@ def is_quilt_installed():
         return False
 
     version_re = re.compile(r"(\d).(\d\d)")
-    match = version_re.match(stdoutstring)
+    match = version_re.match(str(stdoutstring))
     if not match:
         return False
 
