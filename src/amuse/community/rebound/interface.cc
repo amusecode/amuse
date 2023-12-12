@@ -161,8 +161,13 @@ int get_total_radius(double * radius){
     return 0;
 }
 
-int new_particle(int * index_of_the_particle, double mass, double x, 
-  double y, double z, double vx, double vy, double vz, double radius, int code_index){
+int new_particle(
+    int * index_of_the_particle,
+    double mass,
+    double x, double y, double z,
+    double vx, double vy, double vz,
+    double radius, int code_index
+    ){
       if(code_index < 0 || code_index >= (signed) codes.size()){
         *index_of_the_particle=0;
         return -10;
@@ -859,19 +864,19 @@ int _set_integrator(int value, int code_index){
             code->integrator = reb_simulation::REB_INTEGRATOR_JANUS;
             break;
 	case 9:
-	    code->integrator = reb_simulation::REB_INTEGRATOR_WHFAST512;
+	    code->integrator = reb_simulation::REB_INTEGRATOR_MERCURIUS;
 	    break;
 	case 10:
 	    code->integrator = reb_simulation::REB_INTEGRATOR_SABA;
 	    break;
 	case 11:
-	    code->integrator = reb_simulation::REB_INTEGRATOR_MERCURIUS;
-	    break;
-	case 12:
 	    code->integrator = reb_simulation::REB_INTEGRATOR_EOS;
 	    break;
-	case 13:
+	case 12:
 	    code->integrator = reb_simulation::REB_INTEGRATOR_BS;
+	    break;
+	case 21:
+	    code->integrator = reb_simulation::REB_INTEGRATOR_WHFAST512;
 	    break;
         default:
             code->integrator = reb_simulation::REB_INTEGRATOR_NONE;

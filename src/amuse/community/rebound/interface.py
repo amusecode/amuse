@@ -195,11 +195,11 @@ class ReboundInterface(
         "whfast-helio": 6,  # removed
         "none": 7,
         "janus": 8,
-        "whfast512": 9,
+        "mercurius": 9,
         "saba": 10,
-        "mercurius": 11,
-        "eos": 12,
-        "bs": 13,
+        "eos": 11,
+        "bs": 12,
+        "whfast512": 21,
     }
 
     def set_integrator(self, name, code_index=0):
