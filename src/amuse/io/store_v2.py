@@ -23,6 +23,8 @@ from amuse.datamodel import LinkedArray
 from amuse.datamodel import Grid
 from amuse.datamodel import GridPoint
 from amuse.datamodel import AbstractSet
+from amuse.datamodel.base import VectorAttribute
+
 
 from amuse.io import store_v1
 
@@ -738,11 +740,11 @@ class StoreHDF(object):
         if append_to_file:
             if os.access(filename, os.F_OK) and not os.access(filename, os.W_OK):
                    raise Exception("Opening file for append but file {0} is not writeable".format(filename))
-            self.hdf5file = h5py.File(filename,'a')
+            self.hdf5file = h5py.File(filename,'a',libver='latest')
         elif open_for_writing:
-            self.hdf5file = h5py.File(filename,'w')
+            self.hdf5file = h5py.File(filename,'w',libver='latest')
         else:
-            self.hdf5file = h5py.File(filename,'r')
+            self.hdf5file = h5py.File(filename,'r',libver='latest')
         
         self.copy_history = copy_history
         self.mapping_from_groupid_to_set = {}
@@ -847,6 +849,7 @@ class StoreHDF(object):
         self.hdf5file.flush()
         self.store_collection_attributes(particles, group, extra_attributes, links)
         self.store_values(particles, group, links)
+        self.store_selected_derived_attributes(particles,group)    
             
         mapping_from_setid_to_group[id(particles)] = group
         
@@ -868,6 +871,7 @@ class StoreHDF(object):
             compression_opts=self.compression_opts,
         )
     
+        self.store_selected_derived_attributes(grid, group)
         self.store_collection_attributes(grid, group, extra_attributes, links)
         self.store_values(grid, group, links)
         
@@ -924,8 +928,15 @@ class StoreHDF(object):
                     )
                     dataset.attrs["units"] = "none".encode('ascii')
                 
+    def store_selected_derived_attributes(self, container, group):
+        saving=dict()
+        for key in container._derived_attributes.keys():
+            attr=container._derived_attributes[key]
+            if key not in container.GLOBAL_DERIVED_ATTRIBUTES and isinstance(attr, VectorAttribute):
+                saving[key]=attr
+        if len(saving): 
+            group.attrs["extra_vector_attributes"]=pickle_to_string(saving)
     
-
     def store_linked_array(self, attribute, attributes_group, quantity, group, links):
         subgroup = attributes_group.create_group(attribute)
         shape = quantity.shape
@@ -1127,8 +1138,9 @@ class StoreHDF(object):
        
             self.mapping_from_groupid_to_set[group.id] = particles
             self.load_collection_attributes(particles, group)
-        
-        
+        if "extra_vector_attributes" in group.attrs.keys():
+            self.load_extra_derived_attributes(particles, group)
+                
         return particles
         
     def load_grid_from_group(self, group):
@@ -1143,8 +1155,15 @@ class StoreHDF(object):
         container._private.attribute_storage = HDF5GridAttributeStorage(shape, group, self)
         self.mapping_from_groupid_to_set[group.id] = container
         self.load_collection_attributes(container, group)
+        if "extra_vector_attributes" in group.attrs.keys():
+            self.load_extra_derived_attributes(container, group)
         
         return container
+    
+    def load_extra_derived_attributes(self, container, group):
+        attrs=unpickle_from_string(group.attrs["extra_vector_attributes"])
+        for key, attr in attrs.items():
+            container._derived_attributes[key]=attr
     
     def load_from_group(self, group):
         container_type = group.attrs['type'] if isinstance(group.attrs['type'], str) else group.attrs['type'].decode('ascii') 

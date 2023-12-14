@@ -25,7 +25,7 @@ from amuse.rfi.tools import create_java
 from amuse.rfi.tools import create_dir
 from amuse.rfi.tools import create_python_worker
     
-from amuse.support import get_amuse_root_dir    
+from amuse.support import get_amuse_root_dir, get_amuse_package_dir
 from amuse.support.literature import TrackLiteratureReferences    
 
 def get_amuse_directory():
@@ -45,14 +45,6 @@ def get_amuse_directory():
             #~ return directory_of_this_script
         #~ else:
             #~ return os.path.abspath(directory_of_this_script)
-
-def get_amuse_directory_root():
-    filename_of_this_script = __file__
-    directory_of_this_script = os.path.dirname(os.path.dirname(filename_of_this_script))
-    if os.path.isabs(directory_of_this_script):
-        return directory_of_this_script
-    else:
-        return os.path.abspath(directory_of_this_script)
 
 def setup_sys_path():
     amuse_directory = os.environ["AMUSE_DIR"]
@@ -172,6 +164,12 @@ class ParseCommandLine(object):
             dest="get_amuse_dir",
             help="Only output amuse directory")
         self.parser.add_option(
+            "--get-amuse-package-dir",
+            action="store_true",
+            default=False,
+            dest="get_amuse_package_dir",
+            help="Only output the amuse package root directory")
+        self.parser.add_option(
             "--get-amuse-configmk",
             action="store_true",
             default=False,
@@ -201,7 +199,7 @@ class ParseCommandLine(object):
         
         
     def parse_arguments(self):
-        if self.options.get_amuse_dir or self.options.get_amuse_configmk:
+        if self.options.get_amuse_dir or self.options.get_amuse_package_dir or self.options.get_amuse_configmk:
             return
         if self.options.mode == 'dir':
             if len(self.arguments) != 1:
@@ -384,6 +382,9 @@ def amusifier():
     
     if uc.options.get_amuse_dir:
         print(get_amuse_root_dir())
+        exit(0)
+    elif uc.options.get_amuse_package_dir:
+        print(get_amuse_package_dir())
         exit(0)
     elif uc.options.get_amuse_configmk:
         with open(os.path.join(get_amuse_root_dir(), "config.mk")) as f:

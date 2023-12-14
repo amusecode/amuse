@@ -483,14 +483,16 @@ test_python_sockets_implementation
 
 .idea
 
-src/amuse/community/petar/src
 src/amuse/community/bonsai2/src
-src/amuse/community/*/version.py
-src/amuse/version.py
+doc/interactive_tutorial/_version.py
+src/amuse/test/suite/_version.py
+src/amuse/community/*/_version.py
+src/amuse/_version.py
 src/amuse/community/petar/src
-src/amuse/community/petar/interface.cc
-src/amuse/community/petar/interface.h
 src/amuse/community/seba/src
 packages/amuse*/dist
 packages/dist
 src/amuse/community/phantom/src
+
+# standard directory for a virtualenv
+env/

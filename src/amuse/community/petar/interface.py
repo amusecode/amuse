@@ -25,11 +25,11 @@ class petarInterface(
     """
     Parallel, Particle-Particle & Particle-Tree & Few-body integration module
 
-    .. [#] Namekata D., et al., 2018, PASJ, 70, 70
-    .. [#] Iwasawa M., Tanikawa A., Hosono N., Nitadori K., Muranushi T., Makino J., 2016, PASJ, 68, 54
-    .. [#] Iwasawa M., Portegies Zwart S., Makino J., 2015, ComAC, 2, 6
-    .. [#] Wang, L., Nitadori, K., Makino, J., 2020, MNRAS, 493, 3398
-    .. [#] Wang, L., Iwasawa, M., Nitadori, K., Makino, J., 2020, MNRAS, accepted, ArXiv: 2006.16560 [astro-ph]
+    .. [#] ADS:2020MNRAS.497..536W (Wang, L., Iwasawa, M., Nitadori, K., Makino, J., 2020, MNRAS, 497, 536)
+    .. [#] ADS:2020MNRAS.493.3398W (Wang, L., Nitadori, K., Makino, J., 2020, MNRAS, 493, 3398)
+    .. [#] ADS:2018PASJ...70...70N (Namekata D., et al., 2018, PASJ, 70, 70)
+    .. [#] ADS:2016PASJ...68...54I (Iwasawa M., Tanikawa A., Hosono N., Nitadori K., Muranushi T., Makino J., 2016, PASJ, 68, 54)
+    .. [#] ADS:2015ComAC...2....6I (Iwasawa M., Portegies Zwart S., Makino J., 2015, ComAC, 2, 6)
     """
 
     include_headers = ['interface.h']
@@ -356,6 +356,48 @@ class petarInterface(
         """
         return function
 
+    @legacy_function
+    def get_output_step():
+        """
+        Get dt_output, the PeTar internal output time step (0.125)
+        """
+        function = LegacyFunctionSpecification()
+        function.addParameter(
+            'dt_output', dtype='float64', direction=function.OUT,
+            description=(
+                "dt_output, the PeTar internal output time step (0.125)"
+            )
+        )
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            the parameter was retrieved
+        -1 - ERROR
+            could not retrieve parameter
+        """
+        return function
+
+    @legacy_function
+    def set_output_step():
+        """
+        Set dt_output, the PeTar internal output time step (0.125)
+        """
+        function = LegacyFunctionSpecification()
+        function.addParameter(
+            'dt_output', dtype='float64', direction=function.IN,
+            description=(
+                "dt_output, the PeTar internal output time step (0.125)"
+            )
+        )
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            the parameter was set
+        -1 - ERROR
+            could not set parameter
+        """
+        return function
+
 
 class petar(GravitationalDynamics, GravityFieldCode):
 
@@ -441,6 +483,14 @@ class petar(GravitationalDynamics, GravityFieldCode):
             "dt_soft",
             "Tree time step (if zero, auto-determine)",
             default_value=0.0 | nbody_system.time
+        )
+
+        handler.add_method_parameter(
+            "get_output_step",
+            "set_output_step",
+            "dt_output",
+            "PeTar internal output time step (0.125)",
+            default_value=0.125 | nbody_system.time
         )
 
     def define_methods(self, handler):
@@ -535,6 +585,25 @@ class petar(GravitationalDynamics, GravityFieldCode):
 
         handler.add_method(
             "get_tree_step",
+            (),
+            (
+                nbody_system.time,
+                handler.ERROR_CODE,
+            )
+        )
+
+        handler.add_method(
+            "set_output_step",
+            (
+                nbody_system.time,
+            ),
+            (
+                handler.ERROR_CODE,
+            )
+        )
+
+        handler.add_method(
+            "get_output_step",
             (),
             (
                 nbody_system.time,

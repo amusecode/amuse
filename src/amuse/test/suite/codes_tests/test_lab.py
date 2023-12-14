@@ -8,9 +8,10 @@ from amuse.test.amusetest import get_path_to_results
 
 
 from amuse import lab
+
+
 class TestCodesInLab(amusetest.TestCase):
 
-    
     def test1(self):
         codes = (
             'SeBa',
@@ -22,7 +23,6 @@ class TestCodesInLab(amusetest.TestCase):
             'Bonsai',
             'Octgrav',
         )
-        
-        for code in codes:
-            self.assertTrue(hasattr(lab, code), msg = 'excpected class {0} in lab module, but the class was not found'.format(code))
 
+        for code in codes:
+            self.assertTrue(hasattr(lab, code), msg='excpected class {0} in lab module, but the class was not found'.format(code))

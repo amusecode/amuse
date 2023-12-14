@@ -27,24 +27,17 @@ all_data_files = find_data_files(
     'tutorial', 'share/amuse/tutorial', '*', recursive=True
 )
 
-try:
-    from tutorial.version import version
-    use_scm_version = False
-    setup_requires = []
-except ImportError:
-    version = False
-    setup_requires = ['setuptools_scm']
-    use_scm_version = {
-        "root": "../..",
-        "relative_to": __file__,
-        "write_to": "tutorial/version.py",
-    }
+setup_requires = ['setuptools_scm']
+use_scm_version = {
+    "root": "../..",
+    "relative_to": __file__,
+    "version_file": "tutorial/_version.py",
+}
 
 setup(
     name=name,
     use_scm_version=use_scm_version,
     setup_requires=setup_requires,
-    version=version,
     classifiers=classifiers,
     url=url,
     author_email=author_email,
@@ -54,7 +47,7 @@ setup(
     long_description=long_description,
     long_description_content_type=long_description_content_type,
     install_requires=install_requires,
-    python_requires=">=3.5",
+    python_requires=">=3.7",
     # cmdclass=mapping_from_command_name_to_command_class,
     data_files=all_data_files,
     scripts=["bin/amuse-tutorial"],

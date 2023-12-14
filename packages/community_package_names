@@ -21,9 +21,13 @@ Kepler-orbiters
 Mameclot
 Mercury
 Mikkola
+MESA
+MESA-r2208
+MESA-r15140
 MMAMS
 MOBSE
 MOSSE
+Nbody6xx
 PeTar
 ph4
 Phantom
@@ -37,3 +41,4 @@ SSE
 tests
 tutorial
 twobody
+Vader

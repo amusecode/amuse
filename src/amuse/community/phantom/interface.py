@@ -32,7 +32,7 @@ class PhantomInterface(
     The Phantom Smoothed Particle Hydrodynamics code, by Daniel Price et al.
 
     References:
-        .. [#] Price et al., 2018, PASA, Volume 35, id.e031 82 pp
+        .. [#] ADS:2018PASA...35...31P (Price et al., 2018, PASA, Volume 35, id.e031 82 pp)
     """
 
     def __init__(self, **options):

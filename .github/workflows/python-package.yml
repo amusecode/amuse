@@ -8,16 +8,13 @@ on:
     branches: [ "main" ]
   pull_request:
     branches: [ "main" ]
-
 jobs:
   build:
-
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
         python-version: ["3.7", "3.10"]
-
     steps:
     - uses: actions/checkout@v3
     - name: Set up Python ${{ matrix.python-version }}
@@ -30,7 +27,7 @@ jobs:
         python -m pip install flake8 pytest
         # don't install requirements.txt as mpi4py will fail...
         # if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-        python -m pip install setuptools setuptools_scm wheel docutils numpy h5py
+        python -m pip install --upgrade setuptools setuptools_scm wheel docutils numpy h5py
     - name: Lint with flake8
       run: |
         # stop the build if there are Python syntax errors or undefined names
@@ -43,6 +40,6 @@ jobs:
     - name: Test with pytest (only core tests)
       run: |
         pytest src/amuse/test/suite/core_tests
-    - name: Create packages
-      run: |
-        cd packages && sh generate_packages.sh
+#    - name: Create packages
+#      run: |
+#        cd packages && sh generate_packages.sh

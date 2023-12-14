@@ -20,7 +20,7 @@ except ImportError:
     HAS_ASTROPY = False
 
 
-class Quantity(object):
+class Quantity:
     """
     A Quantity objects represents a scalar or vector with a
     specific unit. Quantity is an abstract base class
@@ -181,9 +181,6 @@ class Quantity(object):
         """
         return new_quantity(numpy.sqrt(self.number), (self.unit ** 0.5).to_simple_form())
 
-
-
-
     def as_quantity_in(self, another_unit):
         """
         Reproduce quantity in another unit.
@@ -197,7 +194,7 @@ class Quantity(object):
         factor = self.unit.conversion_factor_from(another_unit)
         return new_quantity(self.number * factor, another_unit)
 
-    in_=as_quantity_in
+    in_ = as_quantity_in
 
     def as_string_in(self, another_unit):
         """
@@ -286,6 +283,11 @@ class ScalarQuantity(Quantity):
         # Quantity.__init__(self, unit)
         # commented out super call, this speeds thing up
         self.unit = unit
+        if isinstance(number, str):
+            try:
+                number = float(number)
+            except ValueError:  # needed to handle interfaces
+                pass
         if unit.dtype is None:
             self.number = number
         else:
@@ -634,7 +636,16 @@ class VectorQuantity(Quantity):
         quantity = as_vector_quantity(quantity)
         if self.unit.is_zero():
             self.unit = quantity.unit
-        self._number[index] = quantity.value_in(self.unit)
+        if (
+            isinstance(quantity, VectorQuantity)
+        ):
+            if len(quantity) == 1:
+                self._number[index] = quantity[0].value_in(self.unit)
+            else:
+                self._number[index] = quantity[:].value_in(self.unit)
+        else:
+            self._number[index] = quantity.value_in(self.unit)
+
 
     @property
     def number(self):

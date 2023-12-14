@@ -53,7 +53,7 @@ class OptionsTests(amusetest.TestCase):
         self.assertEqual(option.__get__(instance, type(instance)), True)
 
         option = options.option(OptionsTestsClass.float_option, type="float", global_options=global_options)
-        self.assertEqual(option.__get__(instance, type(instance)), 1.5) 
+        self.assertEqual(option.__get__(instance, type(instance)), 1.5)
 
     def test3(self):
         global_options = options.GlobalOptions()

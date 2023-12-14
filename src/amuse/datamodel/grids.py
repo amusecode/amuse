@@ -268,6 +268,9 @@ class BaseGrid(AbstractGrid):
 
         raise Exception("do not know how to find axes_names")
 
+    def set_axes_names(self, value):
+        self.add_vector_attribute('position', value)
+
 class UnstructuredGrid(BaseGrid):
     GLOBAL_DERIVED_ATTRIBUTES=CompositeDictionary(BaseGrid.GLOBAL_DERIVED_ATTRIBUTES)
 class StructuredBaseGrid(BaseGrid):
@@ -555,13 +558,15 @@ class SubGrid(AbstractGrid):
         return [x[self._private.indices] for x in self._original_set().indices()]
         
     def __eq__(self, other):
-        if self._private.grid!=other._private.grid:
-          return False
-        else:
-          if numpy.all(numpy.array(self.indices())==numpy.array(other.indices())):
-            return True
-          else:
+        if self._private.grid != other._private.grid:
             return False
+        elif self.shape != other.shape:
+            return False
+        else:
+            if numpy.all(numpy.array(self.indices())==numpy.array(other.indices())):
+                return True
+            else:
+                return False
         
     def __ne__(self,other):
         return not(self==other)

@@ -16,37 +16,38 @@ from amuse.rfi.core import *
 
 from . import test_c_implementation
 
+
 class TestCDistributedImplementationInterface(test_c_implementation.TestCImplementationInterface):
 
     @classmethod
     def setup_class(cls):
         cls.check_not_in_mpiexec()
         super(TestCDistributedImplementationInterface, cls).setup_class()
-        #~ print "Setting up distributed code"
-        #instance = DistributedAmuse(redirection='none')
-        cls.distinstance = cls.new_instance_of_an_optional_code(DistributedAmuse)#, redirection='none')
+        # ~ print "Setting up distributed code"
+        # instance = DistributedAmuse(redirection='none')
+        cls.distinstance = cls.new_instance_of_an_optional_code(DistributedAmuse)  # , redirection='none')
         cls.distinstance.parameters.debug = False
 
-        #~ print "Resources:"
-        #~ print cls.distinstance.resources
+        # ~ print "Resources:"
+        # ~ print cls.distinstance.resources
 
         pilot = Pilot()
-        pilot.resource_name='local'
-        pilot.node_count=1
-        pilot.time= 2|units.hour
-        pilot.slots_per_node=2
-        pilot.label='local'
+        pilot.resource_name = 'local'
+        pilot.node_count = 1
+        pilot.time = 2 | units.hour
+        pilot.slots_per_node = 2
+        pilot.label = 'local'
         cls.distinstance.pilots.add_pilot(pilot)
-        #~ print "Pilots:"
-        #~ print cls.distinstance.pilots
+        # ~ print "Pilots:"
+        # ~ print cls.distinstance.pilots
 
-        #~ print "Waiting for pilots"
+        # ~ print "Waiting for pilots"
         cls.distinstance.wait_for_pilots()
         cls.distinstance.use_for_all_workers()
 
     @classmethod
     def tearDown(cls):
-        #~ print "Stopping distributed code"
+        # ~ print "Stopping distributed code"
         cls.distinstance.stop()
 
     @classmethod
@@ -54,7 +55,7 @@ class TestCDistributedImplementationInterface(test_c_implementation.TestCImpleme
         """
         The tests will fork another process, if the test run
         is itself an mpi process, the tests may fail. 
-        
+
         For the hydra process manager the tests will fail.
         So skip the tests if we detect hydra
         """
@@ -65,4 +66,3 @@ class TestCDistributedImplementationInterface(test_c_implementation.TestCImpleme
 
     def test22(self):
         self.skip("this test uses mpi internals, skip here")
-

@@ -40,7 +40,7 @@ LDFLAGS  += -lm $(MUSE_LD_FLAGS)
 
 OBJS = interface.o 
 
-FILELIST=interface.cc interface.py interface.h
+DIRLIST=src/PeTar src/SDAR src/FDPS
 
 CODELIB = 
 
@@ -53,30 +53,23 @@ clean:
 #	make -C src clean
 
 distclean: clean
-	rm -rf src $(FILELIST)
+	rm -rf src
 
 #$(CODELIB):
 #	make -C src all
 
 DOWNLOAD_FROM_WEB = $(PYTHON) ./download.py
 
-download:
-	$(RM) -Rf .pc
-	$(RM) -Rf src
-	mkdir src
+$(DIRLIST):
+#	$(RM) -Rf .pc
+#	$(RM) -Rf src
+#       mkdir src
 	$(DOWNLOAD_FROM_WEB)
-	cp src/PeTar/amuse-interface/interface.py ./
-	cp src/PeTar/amuse-interface/interface.h ./
-	cp src/PeTar/amuse-interface/interface.cc ./
-
-
 
 __init__.py:
 	touch $@
 
-$(FILELIST): |download
-
-src/PeTar/src/get_version.hpp: src/PeTar/src/get_version.hpp.in |src/PeTar
+src/PeTar/src/get_version.hpp: |src/PeTar
 	sed 's/@VERSION@/'`cat src/PeTar/VERSION`'_'`cat src/SDAR/VERSION`'/g' src/PeTar/src/get_version.hpp.in >src/PeTar/src/get_version.hpp
 
 test_interface: $(OBJS) test_interface.o
@@ -91,5 +84,5 @@ worker_code.h: interface.py
 petar_worker: worker_code.cc worker_code.h $(CODELIB) $(OBJS) interface.h
 	$(MPICXX) $(CXXFLAGS) $(SC_FLAGS) $(AM_CFLAGS) $(LDFLAGS) $< $(OBJS) $(CODELIB) -o $@ $(SC_MPI_CLIBS) $(LIBS) $(AM_LIBS)
 
-interface.o: interface.cc src/PeTar/src/get_version.hpp 
+interface.o: interface.cc src/PeTar/src/get_version.hpp |$(DIRLIST)
 	$(MPICXX) $(CXXFLAGS) $(SC_FLAGS) -c -o $@ $< 

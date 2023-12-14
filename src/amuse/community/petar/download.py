@@ -47,21 +47,25 @@ class GetCodeFromHttp:
         print("done")
 
     def start(self):
-        if os.path.exists('src'):
-            counter = 0
-            while os.path.exists('src.{0}'.format(counter)):
-                counter += 1
-                if counter > 100:
-                    print("too many backup directories")
-                    break
-            os.rename('src', 'src.{0}'.format(counter))
-
-        os.mkdir('src')
+        if not os.path.exists('src'):
+            os.mkdir('src')
+#            if not update_flag:
+#                return
+#            counter = 0
+#            while os.path.exists('src.{0}'.format(counter)):
+#                counter += 1
+#                if counter > 100:
+#                    print("too many backup directories")
+#                    break
+#            os.rename('src', 'src.{0}'.format(counter))
 
         for i, url_template in enumerate(self.url_template):
             url = url_template.format(version=self.version[i])
             filename = self.filename_template.format(version=self.version[i])
             filepath = os.path.join(self.src_directory(), filename)
+            if os.path.exists('src/'+self.name[i]):
+                print("src/%s exist" % self.name[i])
+                continue
             print(
                 "downloading version", self.version[i],
                 "from", url, "to", filename
@@ -101,21 +105,21 @@ def new_option_parser():
     result = OptionParser()
     result.add_option(
         "--petar-version",
-        default='22437b74c6541fc9451607fb2933558bd6924a41',
+        default='6ccac364e83ab05e4dad27e6eb6abdf7e5c89bcc',
         dest="petar_version",
         help="PeTar commit hash to download",
         type="string"
     )
     result.add_option(
         "--sdar-version",
-        default='cebf0a9cbd17111c6917e1120452bb9f661e33b0',
+        default='a4ff4b3d076535684313a912ea31985c1431f827',
         dest="sdar_version",
         help="SDAR commit hash to download",
         type="string"
     )
     result.add_option(
         "--fdps-version",
-        default='7b02b365b7377c0d5239bf309a2012e71575ef97',
+        default='55b2bafd316805bad22057cf4ee96217735279bf',
         dest="fdps_version",
         help="FDPS commit hash to download",
         type="string"

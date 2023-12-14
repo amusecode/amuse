@@ -11,8 +11,8 @@ from optparse import OptionParser
 
 
 class GetCodeFromHttp(object):
-    url_template = "http://amuse.strw.leidenuniv.nl/codes/mesa-r{version}.tgz"
-    filename_template = "mesa-r{version}.tgz"
+    url_template = "https://zenodo.org/record/2603017/files/mesa-r{version}.zip"
+    filename_template = "mesa-r{version}.zip"
     version = ""
 
     def directory(self):
@@ -22,31 +22,35 @@ class GetCodeFromHttp(object):
         return os.path.join(self.directory(), 'src')
 
     def unpack_downloaded_file(self, filename):
-        print("unpacking", filename)
-        arguments = ['tar', '-xf']
+        print(f"unpacking {filename}")
+        arguments = ['unzip', ]
         arguments.append(filename)
         subprocess.call(
             arguments,
             cwd=os.path.join(self.src_directory())
+        )
+        os.rename(
+            f"{self.src_directory()}/mesa-r{self.version}",
+            f"{self.src_directory()}/mesa"
         )
         print("done")
 
     def start(self):
         if os.path.exists('src'):
             counter = 0
-            while os.path.exists('src.{0}'.format(counter)):
+            while os.path.exists(f'src.{counter}'):
                 counter += 1
                 if counter > 100:
                     print("too many backup directories")
                     break
-            os.rename('src', 'src.{0}'.format(counter))
+            os.rename('src', f'src.{counter}')
 
         os.mkdir('src')
 
         url = self.url_template.format(version=self.version)
         filename = self.filename_template.format(version=self.version)
         filepath = os.path.join(self.src_directory(), filename)
-        print("downloading version", self.version, "from", url, "to", filename)
+        print(f"downloading version {self.version} from {url} to {filename}")
         urllib.request.urlretrieve(url, filepath)
         print("downloading finished")
         self.unpack_downloaded_file(filename)

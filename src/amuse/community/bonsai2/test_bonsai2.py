@@ -13,42 +13,40 @@ from amuse.ic.plummer import new_plummer_model
 from amuse.support.exceptions import AmuseException
 
 default_options = dict()
-#default_options = dict(redirection="none")
-#default_options = dict(redirection="none", debugger="gdb")
+# default_options = dict(redirection="none")
+# default_options = dict(redirection="none", debugger="gdb")
 
 
 class TestBonsaiInterface(TestWithMPI):
-    
-    
+
     def test1(self):
         plummer_size = 500
-        plummer =  new_plummer_model(plummer_size)
-        mass=plummer.mass.number
-        radius=plummer.radius.number
-        x=plummer.x.number
-        y=plummer.y.number
-        z=plummer.z.number
-        vx=plummer.vx.number
-        vy=plummer.vy.number
-        vz=plummer.vz.number
-
+        plummer = new_plummer_model(plummer_size)
+        mass = plummer.mass.number
+        radius = plummer.radius.number
+        x = plummer.x.number
+        y = plummer.y.number
+        z = plummer.z.number
+        vx = plummer.vx.number
+        vy = plummer.vy.number
+        vz = plummer.vz.number
 
         instance = self.new_instance_of_an_optional_code(Bonsai2Interface, **default_options)
         self.assertEqual(0, instance.initialize_code())
         self.assertEqual([0, 0], list(instance.get_number_of_particles().values()))
-        ids, errors = instance.new_particle(mass,x,y,z,vx,vy,vz,radius)
+        ids, errors = instance.new_particle(mass, x, y, z, vx, vy, vz, radius)
         self.assertEqual(0, errors)
         self.assertEqual(list(range(plummer_size)), ids)
         self.assertEqual(0, instance.commit_particles())
-        
+
         self.assertEqual([500, 0], list(instance.get_number_of_particles().values()))
         masses, errors = instance.get_mass(range(500))
         self.assertEqual(0, errors)
         self.assertAlmostEqual(0.002, masses)
-        masses,xs,ys,zs,vxs,vys,vzs,radii, errors = instance.get_state(range(500))
+        masses, xs, ys, zs, vxs, vys, vzs, radii, errors = instance.get_state(range(500))
         self.assertEqual(0, errors)
         self.assertAlmostRelativeEquals(xs, x, 6)
-        
+
         self.assertEqual(0, instance.evolve_model(0.00001))
         energy_total_init = instance.get_potential_energy()["potential_energy"] + instance.get_kinetic_energy()["kinetic_energy"]
         self.assertEqual(0, instance.evolve_model(1))
@@ -58,7 +56,7 @@ class TestBonsaiInterface(TestWithMPI):
 
 
 class TestBonsai(TestWithMPI):
-    
+
     def test1(self):
         print("Testing Bonsai initialization")
         instance = self.new_instance_of_an_optional_code(Bonsai2, **default_options)
@@ -67,7 +65,7 @@ class TestBonsai(TestWithMPI):
         instance.cleanup_code()
         print("done")
         instance.stop()
-    
+
     def test2(self):
         print("Testing Bonsai parameters")
         instance = self.new_instance_of_an_optional_code(Bonsai2,  **default_options)
@@ -82,7 +80,7 @@ class TestBonsai(TestWithMPI):
         self.assertAlmostEqual(instance.parameters.epsilon_squared, 0.01 | nbody_system.length**2)
         self.assertAlmostEqual(instance.parameters.timestep, 0.001 | nbody_system.time)
         instance.stop()
-    
+
     def test3(self):
         print("Testing Bonsai, N-body units")
         instance = self.new_instance_of_an_optional_code(Bonsai2, **default_options)
@@ -93,36 +91,36 @@ class TestBonsai(TestWithMPI):
         instance.evolve_model(1.0 | nbody_system.time)
         self.assertAlmostEqual(instance.model_time, 1.0 | nbody_system.time)
         instance.stop()
-    
+
     def test4(self):
         print("Testing Bonsai, SI units")
         convert_nbody = nbody_system.nbody_to_si(100.0 | units.MSun, 1.0 | units.parsec)
         instance = self.new_instance_of_an_optional_code(Bonsai2, convert_nbody, **default_options)
         instance.initialize_code()
-        plummer = new_plummer_model(500, convert_nbody = convert_nbody)
+        plummer = new_plummer_model(500, convert_nbody=convert_nbody)
         instance.particles.add_particles(plummer)
         instance.commit_particles()
         instance.evolve_model(1 | nbody_system.time)
         instance.stop()
-    
+
     def test5(self):
         print("Testing Bonsai remove_particle")
         convert_nbody = nbody_system.nbody_to_si(100.0 | units.MSun, 1.0 | units.parsec)
         instance = self.new_instance_of_an_optional_code(Bonsai2, convert_nbody, **default_options)
         instance.initialize_code()
-        plummer = new_plummer_model(500, convert_nbody = convert_nbody)
+        plummer = new_plummer_model(500, convert_nbody=convert_nbody)
         instance.particles.add_particles(plummer)
         instance.commit_particles()
         instance.particles.remove_particle(plummer[0])
-#    self.assertRaises(AmuseException, instance.particles.remove_particle, plummer[0], 
+#    self.assertRaises(AmuseException, instance.particles.remove_particle, plummer[0],
 #            expected_message = "Error when calling 'delete_particle' of a 'Bonsai', errorcode is -2")
         print(instance.particles[0].mass)
         instance.stop()
-    
+
     def test6(self):
         print("Testing Bonsai states")
         plummer = new_plummer_model(500)
-        
+
         print("First do everything manually:")
         instance = self.new_instance_of_an_optional_code(Bonsai2, **default_options)
         self.assertEqual(instance.get_name_of_current_state(), 'UNINITIALIZED')
@@ -154,34 +152,31 @@ class TestBonsai(TestWithMPI):
         self.assertEqual(instance.get_name_of_current_state(), 'EVOLVED')
         instance.stop()
         self.assertEqual(instance.get_name_of_current_state(), 'STOPPED')
-    
+
     def test7(self):
         print("Testing Bonsai properties")
         numpy.random.seed(12345)
         plummer = new_plummer_model(500)
         instance = self.new_instance_of_an_optional_code(Bonsai2, **default_options)
         instance.particles.add_particles(plummer)
-        
+
         self.assertEqual(instance.model_time, 0.0 | nbody_system.time)
         instance.evolve_model(0.0001 | nbody_system.time)
         print(instance.model_time)
         self.assertTrue(instance.model_time >= 0.0001 | nbody_system.time)
         self.assertEqual(instance.model_time, 1.0 * instance.parameters.timestep)
-        
+
         self.assertAlmostEqual(instance.potential_energy, -0.50625962019 | nbody_system.energy)
         self.assertAlmostEqual(instance.kinetic_energy,    0.244611829519 | nbody_system.energy)
         self.assertAlmostEqual(instance.total_mass, 1.0 | nbody_system.mass)
-        
+
         E0 = instance.kinetic_energy + instance.potential_energy
 
-        self.assertRaises(AmuseException, getattr, instance, "total_radius", expected_message = 
-            "Error when calling 'get_total_radius' of a 'Bonsai2', errorcode is -2, "
+        self.assertRaises(AmuseException, getattr, instance, "total_radius", expected_message="Error when calling 'get_total_radius' of a 'Bonsai2', errorcode is -2, "
             "error is 'Called function is not implemented.'")
-        self.assertRaises(AmuseException, getattr, instance, "center_of_mass_position", expected_message = 
-            "Error when calling 'get_center_of_mass_position' of a 'Bonsai2', "
+        self.assertRaises(AmuseException, getattr, instance, "center_of_mass_position", expected_message="Error when calling 'get_center_of_mass_position' of a 'Bonsai2', "
             "errorcode is -2, error is 'Called function is not implemented.'")
-        self.assertRaises(AmuseException, getattr, instance, "center_of_mass_velocity", expected_message = 
-            "Error when calling 'get_center_of_mass_velocity' of a 'Bonsai2', "
+        self.assertRaises(AmuseException, getattr, instance, "center_of_mass_velocity", expected_message="Error when calling 'get_center_of_mass_velocity' of a 'Bonsai2', "
             "errorcode is -2, error is 'Called function is not implemented.'")
 
         instance.evolve_model(1.0 | nbody_system.time)
@@ -189,7 +184,7 @@ class TestBonsai(TestWithMPI):
         self.assertAlmostEqual(instance.potential_energy, -0.5115 | nbody_system.energy, 4)
         self.assertAlmostEqual(instance.kinetic_energy,    0.24986 | nbody_system.energy, 4)
         self.assertAlmostEqual(
-            instance.kinetic_energy + instance.potential_energy, 
+            instance.kinetic_energy + instance.potential_energy,
             E0, 4)
         instance.particles.remove_particle(plummer[2])
         instance.evolve_model(2.0 | nbody_system.time)
@@ -269,5 +264,4 @@ class TestBonsai(TestWithMPI):
         instance.particles.remove_particle(instance.particles[0])
         instance.evolve_model(0.1 | nbody_system.time)
         instance.stop()
-"""    
-
+"""
