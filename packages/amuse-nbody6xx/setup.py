@@ -7,7 +7,7 @@ import support
 support.use("system")
 from support.setup_codes import setup_commands
 
-name = 'amuse-athena'
+name = 'amuse-nbody6xx'
 author = 'The AMUSE team'
 author_email = 'info@amusecode.org'
 license_ = "Apache License 2.0"
@@ -15,7 +15,7 @@ url = 'http://www.amusecode.org/'
 install_requires = [
     'amuse-framework',
 ]
-description = 'The Astrophysical Multipurpose Software Environment - Athena'
+description = 'The Astrophysical Multipurpose Software Environment - Nbody6++'
 with open("README.md", "r") as fh:
     long_description = fh.read()
 long_description_content_type = "text/markdown"
@@ -25,7 +25,7 @@ extensions = []
 all_data_files = []
 
 packages = [
-    'amuse.community.athena',
+    'amuse.community.nbody6xx',
 ]
 
 package_data = {
@@ -37,7 +37,7 @@ setup_requires = ['setuptools_scm']
 use_scm_version = {
     "root": "../..",
     "relative_to": __file__,
-    "version_file": "src/amuse/community/athena/_version.py",
+    "version_file": "src/amuse/community/nbody6xx/_version.py",
 }
 
 setup(
@@ -57,7 +57,7 @@ setup(
     cmdclass=mapping_from_command_name_to_command_class,
     ext_modules=extensions,
     package_dir={
-        'amuse.community.athena': 'src/amuse/community/athena',
+        'amuse.community.nbody6xx': 'src/amuse/community/nbody6xx',
     },
     packages=packages,
     package_data=package_data,
