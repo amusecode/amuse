@@ -121,3 +121,68 @@ class TestPetar(TestWithMPI):
         request.wait()
         self.assertEqual(p.x, particles.x)
         self.assertEqual(p.vx, particles.vx)
+
+    def test_collision(self):
+        print("Testing collision_detection")
+        particles = datamodel.Particles(7)
+        particles.mass = [1, 2.01, 4.02, 8.03, 16.04, 32.05, 64.06]* (0.000001 | nbody_system.mass)
+        particles.radius = 0.01 | nbody_system.length
+        particles.x = [-101.0, -100.0, -0.5, 0.5, 100.0, 101.0, 104.0] | nbody_system.length
+        particles.y = 0 | nbody_system.length
+        particles.z = 0 | nbody_system.length
+        particles.velocity = [[2, 0, 0], [-2, 0, 0]]*3 + [[-4, 0, 0]] | nbody_system.speed
+        
+        instance = Petar(redirection="none")
+        instance.parameters.dt_soft = 1/128 | nbody_system.time
+        # instance.initialize_code()
+        # instance.parameters.set_defaults()
+        instance.parameters.epsilon_squared = 0 | nbody_system.length**2
+        instance.particles.add_particles(particles)
+        collisions = instance.stopping_conditions.collision_detection
+        collisions.enable()
+        
+        for i in range(len(particles)):
+            p = instance.particles[i]
+            print(i, p.key, p.mass, p.x, p.vx)
+        # print(instance.particles.x.value_in(nbody_system.length))
+        for i in range(3):  # PH4 can handle only one collision (=closest) at a time
+            for t in range(5):
+                instance.evolve_model((t*0.2) | nbody_system.time)
+                for i in range(len(particles)):
+                    p = instance.particles[i]
+                    print(i, p.key, p.mass, p.x, p.vx)
+            # print(instance.particles.x.value_in(nbody_system.length))
+            
+            self.assertTrue(collisions.is_set())
+            self.assertTrue(instance.model_time < 0.5 | nbody_system.time)
+            self.assertEqual(len(collisions.particles(0)), 1)
+            self.assertEqual(len(collisions.particles(1)), 1)
+            self.assertEqual(len(instance.particles - collisions.particles(0) - collisions.particles(1)), 5 - i)
+            self.assertEqual(abs(collisions.particles(0).x - collisions.particles(1).x) < 
+                (collisions.particles(0).radius + collisions.particles(1).radius), True)
+        
+            sticky_merged = datamodel.Particles(len(collisions.particles(0)))
+            sticky_merged.mass = collisions.particles(0).mass + collisions.particles(1).mass
+            sticky_merged.radius = collisions.particles(0).radius
+            for p1, p2, merged in zip(collisions.particles(0), collisions.particles(1), sticky_merged):
+                merged.position = (p1 + p2).center_of_mass()
+                merged.velocity = (p1 + p2).center_of_mass_velocity()
+        
+            print(instance.model_time)
+            print(instance.particles)
+            instance.particles.remove_particles(collisions.particles(0) + collisions.particles(1))
+            instance.particles.add_particles(sticky_merged)
+        
+        instance.evolve_model(1.0 | nbody_system.time)
+        print()
+        print(instance.model_time)
+        print(instance.particles)
+        self.assertTrue(collisions.is_set())
+        self.assertTrue(instance.model_time < 1.0 | nbody_system.time)
+        self.assertEqual(len(collisions.particles(0)), 1)
+        self.assertEqual(len(collisions.particles(1)), 1)
+        self.assertEqual(len(instance.particles - collisions.particles(0) - collisions.particles(1)), 2)
+        self.assertEqual(abs(collisions.particles(0).x - collisions.particles(1).x) < 
+                (collisions.particles(0).radius + collisions.particles(1).radius),
+                [True])
+        instance.stop()
