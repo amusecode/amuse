@@ -2,10 +2,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-extern "C"
-{
 #include "simple_hash.h"
-}
 
 static const char* whitespace = " \t\r\n";
 
@@ -34,7 +31,7 @@ int main(int argc, const char* argv[])
             int result;
             result=hash_lookup(&ht,key, &value);
             if (result==0)
-                printf("%u\n", (unsigned int) value);
+                printf("%zd\n", value);
             else
                 printf("None\n");
         }
@@ -61,9 +58,12 @@ int main(int argc, const char* argv[])
 
     // Dump entire table
     printf("{\n");
-    if(ht.m_zeroUsed) printf("    %u: %u,\n", ht.m_zeroCell.key, ht.m_zeroCell.value);
-    for(size_t i=0;i<ht.m_arraySize;i++) if(ht.m_cells[i].key) printf("    %u: %u,\n", ht.m_cells[i].key, ht.m_cells[i].value);
+    if(ht.m_zeroUsed) printf("    %zd: %zd,\n", ht.m_zeroCell.key, ht.m_zeroCell.value);
+    for(size_t i=0;i<ht.m_arraySize;i++)
+        if(ht.m_cells[i].key)
+            printf("    %zd: %zd,\n", ht.m_cells[i].key, ht.m_cells[i].value);
     printf("}\n");
     end_hash(&ht);
     return 0;
 }
+
