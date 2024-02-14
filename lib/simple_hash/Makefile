@@ -71,7 +71,7 @@ test: test_hash
 # Clean up
 .PHONY: clean
 clean:
-	rm -rf *.o *.a *.so test_hash
+	rm -rf *.o *.a *.so *.pc test_hash
 	rm -f support/config.mk support/config.log support/config.status
 
 .PHONY: distclean

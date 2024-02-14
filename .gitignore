@@ -7,6 +7,7 @@ config.status
 *.a
 *.so
 *.o
+*.pc
 *.pyc
 *.egg
 *.mod
