@@ -1,31 +1,67 @@
-ifeq ($(origin AMUSE_DIR), undefined)
-  AMUSE_DIR := $(shell amusifier --get-amuse-dir)
+HEADERS = amuse_mpi.h
+STATIC_LIB = libamuse_mpi.a
+PKG_CONFIG_FILE = libamuse_mpi.pc
+
+
+# Main targets
+.PHONY: all
+all: $(HEADERS) $(STATIC_LIB)
+
+.PHONY: install
+install: all $(PKG_CONFIG_FILE)
+	$(INSTALL) -m 644 $(HEADERS) $(PREFIX)/include/
+	$(INSTALL) -m 644 $(STATIC_LIB) $(PREFIX)/lib/$(STATIC_LIB)
+	$(INSTALL) -D -m 644 $(PKG_CONFIG_FILE) $(PREFIX)/lib/pkgconfig/$(PKG_CONFIG_FILE)
+
+
+# Run configure if needed
+ifeq (,$(filter clean distclean, $(MAKECMDGOALS)))
+
+include support/config.mk
+
+support/config.mk: support/config.mk.in
+	cd support && ./configure
+
 endif
--include $(AMUSE_DIR)/config.mk
 
-MPICC ?= mpicc
 
-LIBNAME = libamuse_mpi.a
+# Build the library
+CFLAGS += -std=c99 -O2 -fPIC
 
 OBJS = amuse_mpi.o
-#ifeq ($(FC_ISO_C_AVAILABLE), yes)
-#OBJS += stopcondf_isoc.o
-#OBJSMPI += stopcondf_isoc.o
-#endif
 
-all:$(LIBNAME)
+$(STATIC_LIB): $(OBJS)
+	$(AR) -r $(STATIC_LIB) $^
+	$(RANLIB) $(STATIC_LIB)
 
-CFLAGS += -fPIC
-
-$(LIBNAME): $(OBJS)
-	ar -r  $(LIBNAME) $^
-	ranlib $(LIBNAME)
-	
 %.o: %.c
 	$(MPICC) $(CFLAGS) -c -o $@ $<
-	
-%.o: %.F90
-	$(MPIFC) $(FCFLAGS) -c -o $@ $<
 
+
+# Define the pkg-config file
+define PKG_CONFIG_CONTENTS :=
+prefix=$(PREFIX)
+includedir=$${prefix}/include
+libdir=$${prefix}/lib
+
+Name: amuse_mpi
+Description: The amuse_mpi library
+Cflags: -I{includedir}
+Libs: -L$${libdir} -lamuse_mpi
+
+endef
+
+$(PKG_CONFIG_FILE):
+	$(file >$@,$(PKG_CONFIG_CONTENTS))
+
+
+# Clean up
+.PHONY: clean
 clean:
-	rm -Rf *.o *.a *.mod
+	rm -rf *.o *.a *.pc
+	rm -f support/config.mk support/config.log support/config.status
+
+.PHONY: distclean
+distclean: clean
+	rm -rf support/autom4te.cache support/configure~
+
