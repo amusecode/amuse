@@ -57,7 +57,7 @@ Libs: -L$${libdir} -lsimple_hash
 endef
 
 $(PKG_CONFIG_FILE):
-	$(file >$@, $(PKG_CONFIG_CONTENTS))
+	$(file >$@,$(PKG_CONFIG_CONTENTS))
 
 
 # Build and run tests

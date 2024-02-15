@@ -59,7 +59,7 @@ Libs: -L$${libdir} -lstopcond
 endef
 
 $(PKG_CONFIG_FILE):
-	$(file >$@, $(PKG_CONFIG_CONTENTS))
+	$(file >$@,$(PKG_CONFIG_CONTENTS))
 
 
 # MPI support
@@ -107,7 +107,7 @@ Libs: -L$${libdir} -lstopcondmpi
 endef
 
 $(PKG_CONFIG_FILE_MPI):
-	$(file >$@, $(PKG_CONFIG_CONTENTS_MPI))
+	$(file >$@,$(PKG_CONFIG_CONTENTS_MPI))
 
 endif
 
