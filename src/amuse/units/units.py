@@ -32,10 +32,10 @@ Ry = named('rydberg unit', 'Ry', (
 
 # astronomical units
 angstrom = named('angstrom', 'angstrom', 1e-10*m)
-AU = named('astronomical unit', 'AU', 149597870691.0 * m)
+AU = named('astronomical unit', 'au', 149597870691.0 * m)
 au = named('astronomical unit', 'au', 149597870691.0 * m)
-AUd = named('AU per day', 'AUd', 149597870691.0 * m / day)
-parsec = named('parsec', 'parsec', AU / numpy.tan(numpy.pi/(180*60*60)))
+AUd = named('au per day', 'aud', 149597870691.0 * m / day)
+parsec = named('parsec', 'parsec', au / numpy.tan(numpy.pi/(180*60*60)))
 kpc = named('kilo parsec', 'kpc', 10**3 * parsec)
 Mpc = named('mega parsec', 'Mpc', 10**6 * parsec)
 Gpc = named('giga parsec', 'Gpc', 10**9 * parsec)
