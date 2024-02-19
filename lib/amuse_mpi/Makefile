@@ -1,45 +1,16 @@
-HEADERS = amuse_mpi.h
-STATIC_LIB = libamuse_mpi.a
-PKG_CONFIG_FILE = libamuse_mpi.pc
+.PHONY: Makefile support/shared/lib-configure.mk
+include support/shared/lib-configure.mk
 
 
-# Main targets
-.PHONY: all
-all: $(HEADERS) $(STATIC_LIB)
+HEADERS_MPI = amuse_mpi.h
+STATIC_LIB_MPI = libamuse_mpi.a
+PKG_CONFIG_FILE_MPI = libamuse_mpi.pc
 
-.PHONY: install
-install: all $(PKG_CONFIG_FILE)
-	$(INSTALL) -m 644 $(HEADERS) $(PREFIX)/include/
-	$(INSTALL) -m 644 $(STATIC_LIB) $(PREFIX)/lib/$(STATIC_LIB)
-	$(INSTALL) -D -m 644 $(PKG_CONFIG_FILE) $(PREFIX)/lib/pkgconfig/$(PKG_CONFIG_FILE)
+CFLAGS += -g -O2 -std=c99
 
+OBJS = amuse_mpi.mo
 
-# Run configure if needed
-ifeq (,$(filter clean distclean, $(MAKECMDGOALS)))
-
-include support/config.mk
-
-support/config.mk: support/config.mk.in
-	cd support && ./configure
-
-endif
-
-
-# Build the library
-CFLAGS += -std=c99 -O2 -fPIC
-
-OBJS = amuse_mpi.o
-
-$(STATIC_LIB): $(OBJS)
-	$(AR) -r $(STATIC_LIB) $^
-	$(RANLIB) $(STATIC_LIB)
-
-%.o: %.c
-	$(MPICC) $(CFLAGS) -c -o $@ $<
-
-
-# Define the pkg-config file
-define PKG_CONFIG_CONTENTS :=
+define PKG_CONFIG_CONTENTS_MPI :=
 prefix=$(PREFIX)
 includedir=$${prefix}/include
 libdir=$${prefix}/lib
@@ -51,17 +22,7 @@ Libs: -L$${libdir} -lamuse_mpi
 
 endef
 
-$(PKG_CONFIG_FILE):
-	$(file >$@,$(PKG_CONFIG_CONTENTS))
 
-
-# Clean up
-.PHONY: clean
-clean:
-	rm -rf *.o *.a *.pc
-	rm -f support/config.mk support/config.log support/config.status
-
-.PHONY: distclean
-distclean: clean
-	rm -rf support/autom4te.cache support/configure~
+.PHONY: support/shared/lib-targets.mk
+include support/shared/lib-targets.mk
 
