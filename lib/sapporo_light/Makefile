@@ -1,60 +1,79 @@
-ifeq ($(origin AMUSE_DIR), undefined)
-  AMUSE_DIR := $(shell amusifier --get-amuse-dir)
-endif
--include $(AMUSE_DIR)/config.mk
-
-.SUFFIXES: .cu 
-
-CUDA_TK  ?= /disks/koppoel1/CUDA23/cuda
-
-CUDAPATH    ?= $(CUDA_TK)
-CUDAINCLUDE ?= -I$(CUDAPATH)/include 
-
-CXX  ?= g++
-CC   ?= gcc
-NVCC ?= $(CUDAPATH)/bin/nvcc
+.PHONY: Makefile support/shared/lib-configure.mk
+include support/shared/lib-configure.mk
 
 
-NVCCFLAGS :=  $(NVCC_FLAGS) -D_CONSOLE -D_DEBUG  -maxrregcount=32 $(CUDAINCLUDE)
-CXXFLAGS  := -g -DNGB $(CUDAINCLUDE)
-LDFLAGS   := 
+HEADERS = sapporo.h sapporo_defs.h sapporo_multi.h g6lib.h
+DYNAMIC_LIB = libsapporo.so
+STATIC_LIB = libsapporo.a
+PKG_CONFIG_FILE = sapporo_light.pc
 
-OBJS = \
-	sapporo.o \
-	send_fetch_data.o \
-	sapporoG6lib.o 
+NVCCFLAGS += -D_CONSOLE -D_DEBUG -maxrregcount=32
+CXXFLAGS += -DNGB -Wno-narrowing
+LIBS += -lcudart
 
-CUOBJS = host_evaluate_gravity.cu_o
-TARGET = libsapporo.a
+OBJS = sapporo.o send_fetch_data.o sapporoG6lib.o host_evaluate_gravity.o
 
-all:  $(CUDA_TK) $(TARGET) $(PROG)
+define PKG_CONFIG_CONTENTS :=
+prefix=$(PREFIX)
+includedir=$${prefix}/include
+libdir=$${prefix}/lib
 
-$(CUDA_TK):
-	@echo ""
-	@echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
-	@echo ""
-	@echo "------------"
-	@echo "CUDA_TK variable is not set to a valid path,"
-	@echo "please set the CUDA_TK variable to the directory"
-	@echo "where you installed CUDA"
-	@echo "the CUDA_TK directory must contain a bin directory with the <nvcc> executable"
-	@echo ""
-	@echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
-	@echo ""
-	@make -s --no-print-directory -C . raise_error
+Name: sapporo_light
+Description: The sapporo_light library
+Cflags: -I{includedir}
+Libs: -L$${libdir} -lsapporo
+Libs.private: -lcudart
+
+endef
+
+# Main targets
+.PHONY: all
+all: $(DYNAMIC_LIB) $(STATIC_LIB) $(DYNAMIC_LIB_MPI) $(STATIC_LIB_MPI)
+
+.DEFAULT_GOAL := all
+
+# Note that the pkg-config files get built at install time, because PREFIX
+# ends up inside of them, and it may not be defined when make all is called.
+.PHONY: install
+install: all $(PKG_CONFIG_FILE)
+	$(INSTALL) -m 644 $(HEADERS) $(PREFIX)/include/
+	$(INSTALL) -m 644 $(STATIC_LIB) $(PREFIX)/lib/$(STATIC_LIB)
+	$(INSTALL) -m 644 $(DYNAMIC_LIB) $(PREFIX)/lib/$(DYNAMIC_LIB)
+	$(INSTALL) -D -m 644 $(PKG_CONFIG_FILE) $(PREFIX)/lib/pkgconfig/$(PKG_CONFIG_FILE)
 
 
-$(TARGET): $(OBJS) $(CUOBJS)
-	ar qv $@ $^
-	ranlib $@
+# Build the library
 
-.cpp.o: 
-	$(CXX) $(CXXFLAGS) -c $< -o $@
+CFLAGS += -fPIC
+CXXFLAGS += -fPIC
+NVCCFLAGS += --compiler-options '-fPIC'
 
-%.cu_o:  %.cu
+$(DYNAMIC_LIB): $(OBJS) $(CUOBJS)
+	$(CC) -shared -o $@ $^ $(LIBS)
+
+$(STATIC_LIB): $(OBJS) $(CUOBJS)
+	$(AR) -r $(STATIC_LIB) $^
+	$(RANLIB) $(STATIC_LIB)
+
+%.o: %.c
+	$(CC) $(CFLAGS) -c -o $@ $<
+
+%.o: %.cpp
+	$(CC) $(CXXFLAGS) -c -o $@ $<
+
+%.o: %.cu
 	$(NVCC) $(NVCCFLAGS) -c $< -o $@
 
+$(PKG_CONFIG_FILE):
+	$(file >$@,$(PKG_CONFIG_CONTENTS))
+
+
+.PHONY: clean
 clean:
-	/bin/rm -rf *.o *.cu_o $(TARGET)
-	/bin/rm -rf test_gravity_block test_gravity_N2ngb
+	rm -rf *.o *.a *.so
+	rm -f support/config.mk support/config.log support/config.status
+
+.PHONY: distclean
+distclean: clean
+	rm -rf support/autom4te.cache support/configure~
 
