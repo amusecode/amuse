@@ -94,7 +94,7 @@ subroutine copypart(p,i) ! copy part p to spot i
   acc(i,1)=acc(p,1)
   acc(i,2)=acc(p,2)
   acc(i,3)=acc(p,3)
-  acc(i,4)=acc(p,4)
+  aacc(i)=aacc(p)
   phi(i)=phi(p)
   phiext(i)=phiext(p)
   epsgrav(i)=epsgrav(p)
@@ -200,7 +200,7 @@ subroutine zeropart(p,n)
   acc(p:p+n-1,1)=0
   acc(p:p+n-1,2)=0
   acc(p:p+n-1,3)=0
-  acc(p:p+n-1,4)=0
+  aacc(p:p+n-1)=0
   phi(p:p+n-1)=0
   phiext(p:p+n-1)=0
   epsgrav(p:p+n-1)=0

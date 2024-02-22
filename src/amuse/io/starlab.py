@@ -351,7 +351,7 @@ class StarlabFileFormatProcessor(base.FullTextFileFormatProcessor):
         xml2particles.dynamics_length_units = self.dynamics_length_units
         xml2particles.parse_xml(xml_string)
         unit_converter = None
-        if not self.nbody_to_si_converter is None:
+        if self.nbody_to_si_converter is not None:
             unit_converter = self.nbody_to_si_converter
         elif self.must_scale:
             if not self._is_valid_scaling_factor(xml2particles.mass_scale):

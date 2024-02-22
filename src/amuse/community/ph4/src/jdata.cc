@@ -423,7 +423,7 @@ void jdata::initialize_arrays()
 
     // *** To be refined.  Probably want to specify a scaling. ***
 
-    rmin = 2./nj;		// 90 degree turnaround in standard units
+    if (nj > 0) rmin = 2./nj;	// 90 degree turnaround in standard units
     dtmin = eta*(2./nj) * 4;	// for nn check: final 4 is a fudge factor
 				// -- not used??
     if (mpi_rank == 0) {
@@ -509,6 +509,8 @@ void jdata::set_initial_timestep(real fac, real limit, real limitm)
     // Assume acc and jerk have already been set.  Only set the time
     // step if it hasn't already been set.
 
+    if (nj <= 0) return;
+    
     for (int j = 0; j < nj; j++)
 	if (timestep[j] <= 0) {
 	    real a2 = 0, j2 = 0;
@@ -551,10 +553,12 @@ void jdata::set_initial_timestep(real fac, real limit, real limitm)
 	vector<real> temp;
 	for (int j = 0; j < nj; j++) temp.push_back(timestep[j]);
 	sort(temp.begin(), temp.end());
-	real dtmax = limitm*temp[nj/2];
-	// PRC(limitm); PRL(dtmax);
-	for (int j = 0; j < nj; j++) {
-	    while (timestep[j] > dtmax) timestep[j] /= 2;
+	if (nj > 0) {
+	    real dtmax = limitm*temp[nj/2];
+	    // PRC(limitm); PRL(dtmax);
+	    for (int j = 0; j < nj; j++) {
+		while (timestep[j] > dtmax) timestep[j] /= 2;
+	    }
 	}
     }
 }
@@ -567,6 +571,7 @@ void jdata::force_initial_timestep(real fac, real limit, real limitm)
 
     const char *in_function = "jdata::set_initial_timestep";
     if (DEBUG > 2 && mpi_rank == 0) PRL(in_function);
+    if (nj <= 0) return;
 
     // Assume acc and jerk have already been set.
 
@@ -578,6 +583,7 @@ real jdata::get_pot(bool reeval)		// default = false
 {
     const char *in_function = "jdata::get_pot";
     if (DEBUG > 2 && mpi_rank == 0) PRL(in_function);
+    if (nj <= 0) return 0;
 
     // Compute the total potential energy of the entire j-particle
     // set.  If no idata structure is specified, then just do a
@@ -646,6 +652,7 @@ real jdata::get_kin()
 {
     const char *in_function = "jdata::get_kin";
     if (DEBUG > 2 && mpi_rank == 0) PRL(in_function);
+    if (nj <= 0) return 0;
 
     // Return the total kinetic energy of the (predicted) j system.
 
@@ -656,6 +663,7 @@ real jdata::get_kin()
 	for (int k = 0; k < 3; k++) v2 += pow(pred_vel[j][k],2);
 	kin2 += mass[j]*v2;
     }
+    
     return kin2/2;
 }
 
@@ -663,6 +671,7 @@ real jdata::get_energy(bool reeval)		// default = false
 {
     const char *in_function = "jdata::get_energy";
     if (DEBUG > 2 && mpi_rank == 0) PRL(in_function);
+    if (nj <= 0) return 0;
 
     // Note: energy includes Emerge.
 
@@ -672,6 +681,7 @@ real jdata::get_energy(bool reeval)		// default = false
 
 real jdata::get_total_mass()
 {
+    if (nj <= 0) return 0;
     real mtot = 0;
     for (int j = 0; j < nj; j++) mtot += mass[j];
     return mtot;

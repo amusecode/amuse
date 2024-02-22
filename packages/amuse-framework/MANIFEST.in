@@ -1,15 +1,20 @@
 include configure
 include README.md
 include config.mk.in
+include Makefile.in
 include bin/amusifier.in
 include pyproject.toml
 include support/configpy.in
+include install-sh
+include config.sub
+include config.guess
 
 recursive-include src/amuse *
 recursive-include lib *
 recursive-include support *
 
 recursive-exclude src/amuse/community *
+recursive-exclude src/amuse/test/suite *
 
 include src/amuse/community/__init__.py
 recursive-include src/amuse/community/interface *

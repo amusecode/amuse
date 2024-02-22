@@ -2,7 +2,9 @@
 
 # standard amuse configuration include
 # config.mk will be made after ./configure has run
-AMUSE_DIR?=../../../..
+ifeq ($(origin AMUSE_DIR), undefined)
+  AMUSE_DIR := $(shell amusifier --get-amuse-dir)
+endif
 -include ${AMUSE_DIR}/config.mk
 
 # Set to empty string on purpose
@@ -10,7 +12,7 @@ AMUSE_DIR?=../../../..
 # for most users (most users have no gpu).
 # to easily create code in this directory run:
 # make code
-ALL	 = 
+ALL	 = higpus_worker_gpu
 
 # all the ?= lines work as follows
 # if the variable is already defined, it will keep it's pre-defined value.
@@ -45,7 +47,7 @@ MYINCLUDE := -I./lib/
 LIBS := -lm $(OPENMP_CFLAGS) $(MPI_CXXLIBS) $(CUDALIB)
 
 GXXOPTS := -O3 -fopenmp -Wall -W
-NVCCFLAGS := -O3 --compiler-bindir=/usr/bin/$(CXX) -Xcompiler "$(GXXOPTS) $(MYOPTS)" $(CUDAINCLUDE) $(MPI_CXXFLAGS) $(MYINCLUDE)
+NVCCFLAGS := -O3 --compiler-bindir=/usr/bin/$(CXX) -Xcompiler "$(GXXOPTS) $(MYOPTS)" $(CUDAINCLUDE) $(MPI_CXXFLAGS) $(MYINCLUDE) $(NVCC_FLAGS)
 CXXFLAGS += $(GXXOPTS) $(MYOPTS) $(CUDAINCLUDE) $(MPI_CXXFLAGS) $(MYINCLUDE)
 
 LDFLAGS = $(LIBS) $(CUDALIB) 
@@ -54,13 +56,12 @@ OBJS = interface.o
 
 CODELIB = src/libhigpus.a
 
-CODE_GENERATOR = $(AMUSE_DIR)/build.py
 
 all: $(ALL)
 
 code: higpus_worker_gpu
 
-$(CODELIB):
+$(CODELIB): FORCE
 	make -C src all 
 
 worker_code.cc: interface.py
@@ -79,3 +80,5 @@ clean:
 	$(RM) -f *.so *.o *.pyc worker_code.cc worker_code.h
 	$(RM) *~ higpus_worker higpus_worker_gpu worker_code.cc
 	make -C src clean
+
+FORCE:

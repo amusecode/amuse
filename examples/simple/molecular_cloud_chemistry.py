@@ -21,24 +21,22 @@ from amuse.ext.molecular_cloud import molecular_cloud
 
 gamma = 1.4
 meanmwt = 1.35 | units.amu
+ionization_rate=2.e-17 | units.s**-1
 
+def get_n_T_xi(density, u):
+    number_density=density/meanmwt
+    temperature=((gamma - 1) * meanmwt * u / constants.kB)
+    ionrate=ionization_rate*numpy.ones_like(density)
+    return (number_density, temperature, ionrate)
 
 def update_chem(sph_parts, chem_parts):
-    parts = sph_parts.empty_copy()
-    channel = sph_parts.new_channel_to(parts)
-    channel.copy_attributes(["density", "u"])
-    parts.number_density = parts.density / meanmwt
-    parts.temperature = ((gamma - 1) * meanmwt * parts.u / constants.kB)
-    parts.ionrate = 2.e-17 | units.s**-1
-    channel = parts.new_channel_to(chem_parts)
-    channel.copy_attributes(["number_density", "temperature", "ionrate"])
-
+    channel = sph_parts.new_channel_to(chem_parts)
+    channel.transform(["number_density", "temperature", "ionrate"], get_n_T_xi, ["density", "u"])
 
 def evolve_sph_with_chemistry(sph, chem, tend):
     sph.evolve_model(tend)
     update_chem(sph.particles, chem.particles)
     chem.evolve_model(tend)
-
 
 def run_mc(N=5000, Mcloud=10000. | units.MSun, Rcloud=1. | units.parsec):
     timestep = 0.005 | units.Myr
@@ -91,17 +89,17 @@ def run_mc(N=5000, Mcloud=10000. | units.MSun, Rcloud=1. | units.parsec):
         fh2 = chem.particles.abundances[:, chem.species["H2"]]
         co = chem.particles.abundances[:, chem.species["CO"]]
 
-        f.clear()
+        pyplot.clf()
         pyplot.loglog(n, fh2, 'r.')
         pyplot.loglog(n, co, 'g.')
         pyplot.xlim(1.e3, 1.e6)
         pyplot.ylim(1.e-6, 1)
         pyplot.xlabel("density (cm**-3)")
         pyplot.ylabel("H_2,CO abundance")
-        pyplot.draw()
+        f.canvas.flush_events()
 
     print("done. press key to exit")
-    raw_input()
+    input()
 
 
 if __name__ == "__main__":

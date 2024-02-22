@@ -116,8 +116,8 @@ NOMPI_MODULE_GLOBALS_STRING = """
 
 MPI_INTERNAL_FUNCTIONS_STRING = """
 FUNCTION internal__open_port(outval)
+    USE mpi
     IMPLICIT NONE
-    INCLUDE 'mpif.h'
     character(len=MPI_MAX_PORT_NAME+1), intent(out) :: outval
     INTEGER :: internal__open_port
     INTEGER :: ierror
@@ -126,8 +126,8 @@ FUNCTION internal__open_port(outval)
 END FUNCTION
 
 FUNCTION internal__accept_on_port(port_identifier, comm_identifier)
+    USE mpi
     IMPLICIT NONE
-    INCLUDE 'mpif.h'
     character(len=*), intent(in) :: port_identifier
     INTEGER, intent(out) :: comm_identifier
     INTEGER :: internal__accept_on_port
@@ -143,7 +143,7 @@ FUNCTION internal__accept_on_port(port_identifier, comm_identifier)
     call MPI_Comm_rank(MPI_COMM_WORLD, rank, ierror);
     IF (rank .EQ. 0) THEN
         call MPI_Comm_accept(port_identifier, MPI_INFO_NULL, 0,  MPI_COMM_SELF, communicator, ierror)
-        call MPI_Intercomm_merge(communicator, 0, mcommunicator, ierror)
+        call MPI_Intercomm_merge(communicator, .FALSE., mcommunicator, ierror)
         call MPI_Intercomm_create(MPI_COMM_WORLD, 0, mcommunicator, 1, 65, communicators(last_communicator_id), ierror)
         call MPI_Comm_free(mcommunicator, ierror)
         call MPI_Comm_free(communicator, ierror)
@@ -156,8 +156,8 @@ FUNCTION internal__accept_on_port(port_identifier, comm_identifier)
 END FUNCTION
 
 FUNCTION internal__connect_to_port(port_identifier, comm_identifier)
+    USE MPI
     IMPLICIT NONE
-    INCLUDE 'mpif.h'
     character(len=*), intent(in) :: port_identifier
     INTEGER, intent(out) :: comm_identifier
     INTEGER :: internal__connect_to_port
@@ -174,7 +174,7 @@ FUNCTION internal__connect_to_port(port_identifier, comm_identifier)
     
     IF (rank .EQ. 0) THEN
         call MPI_Comm_connect(port_identifier, MPI_INFO_NULL, 0,  MPI_COMM_SELF, communicator, ierror)
-        call MPI_Intercomm_merge(communicator, 1, mcommunicator, ierror)
+        call MPI_Intercomm_merge(communicator, .TRUE., mcommunicator, ierror)
         call MPI_Intercomm_create(MPI_COMM_WORLD, 0, mcommunicator, 0, 65, communicators(last_communicator_id), ierror)
         call MPI_Comm_free(mcommunicator, ierror)
         call MPI_Comm_free(communicator, ierror)
@@ -188,8 +188,8 @@ END FUNCTION
 
 
 FUNCTION  internal__activate_communicator(comm_identifier)
+    USE mpi
     IMPLICIT NONE
-    INCLUDE 'mpif.h'
     INTEGER, intent(in) :: comm_identifier
     INTEGER :: internal__activate_communicator
     
@@ -279,10 +279,9 @@ POLLING_FUNCTIONS_STRING = """
 RECV_HEADER_SLEEP_STRING = """
     SUBROUTINE mpi_recv_header(parent, ioerror)
         use iso_c_binding
+        use mpi
         implicit none
-        
-        INCLUDE 'mpif.h'
-      
+              
         integer,intent(in) :: parent
         integer,intent(inout) :: ioerror
         integer :: request_status(MPI_STATUS_SIZE),header_request
@@ -314,8 +313,8 @@ RECV_HEADER_SLEEP_STRING = """
 
 RECV_HEADER_WAIT_STRING = """
     SUBROUTINE mpi_recv_header(parent, ioerror)
+        use mpi
         implicit none
-        INCLUDE 'mpif.h'
         integer,intent(in) :: parent
         integer,intent(inout) :: ioerror
         integer :: request_status(MPI_STATUS_SIZE),header_request
@@ -333,10 +332,9 @@ EMPTY_RUN_LOOP_MPI_STRING = """
 
 RUN_LOOP_MPI_STRING = """
     SUBROUTINE run_loop_mpi
+      use mpi
       implicit none
-      
-      INCLUDE 'mpif.h'
-      
+            
       integer :: provided
       integer :: rank, parent, ioerror, max_call_count = 255
       integer :: must_run_loop, maximum_size, total_string_length
@@ -812,11 +810,10 @@ RUN_LOOP_SOCKETS_MPI_STRING = """
     SUBROUTINE run_loop_sockets_mpi
       use iso_c_binding
       use FortranSocketsInterface
+      use mpi
 
       implicit none
-      
-      include 'mpif.h'
-      
+            
       integer :: provided
       integer :: max_call_count = 255
       integer :: must_run_loop, maximum_size, total_string_length
@@ -1131,6 +1128,26 @@ MAIN_STRING = """
     stop
   end if
 """
+
+GETSET_WORKING_DIRECTORY="""
+
+function set_working_directory(directory) result(ret)
+    {0}
+    integer :: ret
+    character(*), intent(in) :: directory
+    ret = chdir(directory)
+end function 
+
+function get_working_directory(directory) result(ret)
+    {0}
+    integer :: ret
+    character(*), intent(out) :: directory
+    ret = getcwd(directory)
+end function 
+
+"""
+
+
         
 class GenerateAFortranStringOfAFunctionSpecification(GenerateASourcecodeString):
     MAX_STRING_LEN = 256
@@ -1424,6 +1441,8 @@ class GenerateAFortranSourcecodeStringFromASpecificationClass(GenerateASourcecod
     def start(self):
         self.use_iso_c_bindings = config.compilers.fc_iso_c_bindings
 
+        self.out + GETSET_WORKING_DIRECTORY.format("" if not config.compilers.ifort_version else "  use ifport")
+
         self.out + 'program amuse_worker_program'
         self.out.indent()
         
@@ -1456,7 +1475,9 @@ class GenerateAFortranSourcecodeStringFromASpecificationClass(GenerateASourcecod
         self.out.lf().lf() + 'CONTAINS'
         
         self.out + POLLING_FUNCTIONS_STRING
-            
+
+        self.out + GETSET_WORKING_DIRECTORY.format("" if not config.compilers.ifort_version else "  use ifport")
+
         if self.must_generate_mpi:
             self.out + INTERNAL_FUNCTIONS_STRING
             
@@ -1489,7 +1510,7 @@ class GenerateAFortranSourcecodeStringFromASpecificationClass(GenerateASourcecod
         self._result = self.out.string
 
     def output_mpi_include(self):
-        self.out.n() + "INCLUDE 'mpif.h'"
+        self.out.n() + "USE mpi"
         
     def output_modules(self):
         self.out.n()
@@ -1498,7 +1519,7 @@ class GenerateAFortranSourcecodeStringFromASpecificationClass(GenerateASourcecod
                 self.out.n() + 'use ' + x 
                 
     def must_include_declaration_of_function(self, x):
-        if x.specification.name.startswith("internal__"):
+        if hasattr(x.specification,"internal_provided"):
             return False
         
         return True
@@ -1516,7 +1537,7 @@ class GenerateAFortranSourcecodeStringFromASpecificationClass(GenerateASourcecod
                 if specification.result_type is None:
                     continue
                 if specification.result_type == 'string':
-                    type = 'CHARACTER(len=255)'
+                    type = 'character(len=255)'
                 else:
                     spec = self.dtype_to_spec[specification.result_type]
                     type = spec.type
@@ -1606,20 +1627,33 @@ class GenerateAFortranStubStringFromASpecificationClass\
         return result
         
     def start(self):  
+
+        if hasattr(self.specification_class, 'use_modules'):
+          self.out.lf() + 'module {0}'.format(self.specification_class.use_modules[0])
         
-        self.output_modules()
+          self.out.indent()
         
+        self.output_modules(1)
+        
+        if hasattr(self.specification_class, 'use_modules'):
+          self.out.lf() + "contains"
+
         self.out.lf()
         
         self.output_sourcecode_for_functions()
         
         self.out.lf()
+
+        if hasattr(self.specification_class, 'use_modules'):
+            self.out.dedent()
+            self.out.lf() + "end module"
+            self.out.lf()
         
         self._result = self.out.string
         
     
     def must_include_interface_function_in_output(self, x):
-        if x.specification.name.startswith("internal__"):
+        if hasattr(x.specification,"internal_provided"):
             return False
             
         for cls in self.ignore_functions_from_specification_classes:
@@ -1628,10 +1662,10 @@ class GenerateAFortranStubStringFromASpecificationClass\
         
         return True
         
-    def output_modules(self):
+    def output_modules(self,skip=0):
         self.out.n()
         if hasattr(self.specification_class, 'use_modules'):
-            for x in self.specification_class.use_modules:
+            for x in self.specification_class.use_modules[skip:]:
                 self.out.n() + 'use ' + x 
         
     

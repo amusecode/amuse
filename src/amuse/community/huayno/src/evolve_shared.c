@@ -8,16 +8,18 @@
 #include "evolve.h"
 #include "integrators_shared.h"
 
-void evolve_shared2(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt, int calc_timestep)
+void evolve_shared2(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt, FLOAT dtsys)
 {
-  FLOAT dtsys;
   CHECK_TIMESTEP(etime,stime,dt,clevel);
-  if(calc_timestep) timestep(clevel,s,s,SIGN(dt));
-  dtsys=global_timestep(s);
+  if(dtsys<0) 
+  {
+    timestep(clevel,s,s,SIGN(dt));
+    dtsys=global_timestep(s);
+  }
   if(dtsys < fabs(dt))
   {
-    evolve_shared2(clevel+1,s,stime, stime+dt/2,dt/2,0);
-    evolve_shared2(clevel+1,s,stime+dt/2, etime,dt/2,1);
+    evolve_shared2(clevel+1,s,stime, stime+dt/2,dt/2, dtsys);
+    evolve_shared2(clevel+1,s,stime+dt/2, etime,dt/2, -1.);
   }
   else
   {
@@ -27,14 +29,17 @@ void evolve_shared2(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE 
   }
 }
 
-void evolve_shared4(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt, int calc_timestep) {
-  FLOAT dtsys;
+void evolve_shared4(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt, FLOAT dtsys) 
+{
   CHECK_TIMESTEP(etime,stime,dt,clevel);
-  if(calc_timestep) timestep(clevel,s,s,SIGN(dt));
-  dtsys = global_timestep(s);
+  if(dtsys<0) 
+  {
+    timestep(clevel,s,s,SIGN(dt));
+    dtsys=global_timestep(s);
+  }
   if(dtsys < fabs(dt)) {
-    evolve_shared4(clevel+1,s,stime, stime+dt/2,dt/2,0);
-    evolve_shared4(clevel+1,s,stime+dt/2, etime,dt/2,1);
+    evolve_shared4(clevel+1,s,stime, stime+dt/2,dt/2, dtsys);
+    evolve_shared4(clevel+1,s,stime+dt/2, etime,dt/2, -1.);
   } else {
     diag->deepsteps++;
     diag->simtime+=dt;
@@ -42,14 +47,17 @@ void evolve_shared4(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE 
   }
 }
 
-void evolve_shared6(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt, int calc_timestep) {
-  FLOAT dtsys;
+void evolve_shared6(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt, FLOAT dtsys) 
+{
   CHECK_TIMESTEP(etime,stime,dt,clevel);
-  if(calc_timestep) timestep(clevel,s,s,SIGN(dt));
-  dtsys = global_timestep(s);
+  if(dtsys<0) 
+  {
+    timestep(clevel,s,s,SIGN(dt));
+    dtsys=global_timestep(s);
+  }
   if(dtsys < fabs(dt)) {
-    evolve_shared6(clevel+1,s,stime, stime+dt/2,dt/2,0);
-    evolve_shared6(clevel+1,s,stime+dt/2, etime,dt/2,1);
+    evolve_shared6(clevel+1,s,stime, stime+dt/2,dt/2, dtsys);
+    evolve_shared6(clevel+1,s,stime+dt/2, etime,dt/2, -1.);
   } else {
     diag->deepsteps++;
     diag->simtime+=dt;
@@ -57,14 +65,17 @@ void evolve_shared6(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE 
   }
 }
 
-void evolve_shared8(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt, int calc_timestep) {
-  FLOAT dtsys;
+void evolve_shared8(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt, FLOAT dtsys)
+{
   CHECK_TIMESTEP(etime,stime,dt,clevel);
-  if(calc_timestep) timestep(clevel,s,s,SIGN(dt));
-  dtsys = global_timestep(s);
+  if(dtsys<0) 
+  {
+    timestep(clevel,s,s,SIGN(dt));
+    dtsys=global_timestep(s);
+  }
   if(dtsys < fabs(dt)) {
-    evolve_shared8(clevel+1,s,stime, stime+dt/2,dt/2,0);
-    evolve_shared8(clevel+1,s,stime+dt/2, etime,dt/2,1);
+    evolve_shared8(clevel+1,s,stime, stime+dt/2,dt/2, dtsys);
+    evolve_shared8(clevel+1,s,stime+dt/2, etime,dt/2, -1.);
   } else {
     diag->deepsteps++;
     diag->simtime+=dt;
@@ -72,14 +83,18 @@ void evolve_shared8(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE 
   }
 }
 
-void evolve_shared10(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt, int calc_timestep) {
-  FLOAT dtsys;
+void evolve_shared10(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt, FLOAT dtsys) 
+{
   CHECK_TIMESTEP(etime,stime,dt,clevel);
-  if(calc_timestep) timestep(clevel,s,s,SIGN(dt));
+  if(dtsys<0) 
+  {
+    timestep(clevel,s,s,SIGN(dt));
+    dtsys=global_timestep(s);
+  }
   dtsys = global_timestep(s);
   if(dtsys < fabs(dt)) {
-    evolve_shared10(clevel+1,s,stime, stime+dt/2,dt/2,0);
-    evolve_shared10(clevel+1,s,stime+dt/2, etime,dt/2,1);
+    evolve_shared10(clevel+1,s,stime, stime+dt/2,dt/2, dtsys);
+    evolve_shared10(clevel+1,s,stime+dt/2, etime,dt/2, -1.);
   } else {
     diag->deepsteps++;
     diag->simtime+=dt;

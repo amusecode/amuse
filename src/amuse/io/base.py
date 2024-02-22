@@ -46,55 +46,55 @@ def _get_processor_factory(format):
         processor_factory = format
     
     return processor_factory
-    
+
+
 def write_set_to_file(
-    set,
-    filename,
-    format = 'csv', 
-    **format_specific_keyword_arguments):
+        set,
+        filename,
+        format='amuse',
+        **format_specific_keyword_arguments):
     """
     Write a set to the given file in the given format.
-    
+
     :argument filename: name of the file to write the data to
     :argument format: name of a registered format or
-        a :class:`FileFormatProcessor` subclass (must be a 
+        a :class:`FileFormatProcessor` subclass (must be a
         class and not an instance)
-    
+
     All other keywords are set as attributes on the fileformat processor. To
-    determine the supported options for a processor call 
+    determine the supported options for a processor call
     :func:`get_options_for_format`
     """
-        
+
     processor_factory = _get_processor_factory(format)
-    
-    processor = processor_factory(filename, set=set, format = format)
+
+    processor = processor_factory(filename, set=set, format=format)
     processor.set_options(format_specific_keyword_arguments)
     processor.store()
-    
+
 
 def read_set_from_file(
-    filename,
-    format = 'csv', 
-    **format_specific_keyword_arguments):
+        filename,
+        format='amuse',
+        **format_specific_keyword_arguments):
     """
     Read a set from the given file in the given format.
-    
+
     :argument filename: name of the file to read the data from
     :argument format: name of a registered format or
-        a :class:`FileFormatProcessor` subclass (must be a 
+        a :class:`FileFormatProcessor` subclass (must be a
         class and not an instance)
-    
+
     All other keywords are set as attributes on the fileformat processor. To
-    determine the supported options for a processor call 
+    determine the supported options for a processor call
     :func:`get_options_for_format`
     """
-    if not 'stream' in format_specific_keyword_arguments and not os.path.exists(filename):
+    if 'stream' not in format_specific_keyword_arguments and not os.path.exists(filename):
         raise IoException("Error: file '{0}' does not exist.".format(filename))
-        
-    
+
     processor_factory = _get_processor_factory(format)
-    
-    processor = processor_factory(filename, format = format)
+
+    processor = processor_factory(filename, format=format)
     processor.set_options(format_specific_keyword_arguments)
     return processor.load()
 
@@ -187,7 +187,7 @@ class ReportTable(object):
             
     
 def get_options_for_format(
-        format = 'csv', 
+        format = 'amuse', 
     ):
     """Retuns a list of tuples, each tuple contains the
     name of the option, a description of the option and

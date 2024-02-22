@@ -27,10 +27,10 @@ class FiInterface(
     future. (and I will think of a better name)
     
     The relevant references are:
-        .. [#] ** Hernquist & Katz, 1989, ApJS 70, 419
-        .. [#] ** Pelupessy, van der Werf & Icke, 2004, A&A 422, 55
-        .. [#] Pelupessy, PhD thesis 2005, Leiden Observatory
-        .. [#] Gerritsen & Icke, 1997, A&A 325, 972
+        .. [#] ADS:1989ApJS...70..419H ** (Hernquist & Katz, 1989, ApJS 70, 419)
+        .. [#] ADS:2004A&A...422...55P ** (Pelupessy, van der Werf & Icke, 2004, A&A 422, 55)
+        .. [#] ADS:2005PhDT........17P (Pelupessy, PhD thesis 2005, Leiden Observatory)
+        .. [#] ADS:1997A&A...325..972G (Gerritsen & Icke, 1997, A&A 325, 972)
     """
     get_total_radius=None
     get_total_mass=None
@@ -43,7 +43,7 @@ class FiInterface(
     
     MODE_NORMAL = 'normal'
     MODE_NORMAL_OPENMP = 'openmp'
-    MODE_PERIODIC_BOUNDARIES   = 'periodic'
+    MODE_PERIODIC_BOUNDARIES = 'periodic'
     
     def __init__(self, mode = MODE_NORMAL,  **options):
         self.mode = mode

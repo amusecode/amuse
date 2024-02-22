@@ -1,6 +1,6 @@
 #define FLOAT double
-#define CLFLOAT cl_float
-#define CLFLOAT4 cl_float4
+#define CLFLOAT cl_double
+#define CLFLOAT4 cl_double4
 #define DOUBLE long double
 #define INT int
 #define UINT unsigned int
@@ -12,12 +12,14 @@
 #define RARVRATIO   1.
 
 #define MPWORKLIMIT 1000
-#define CLWORKLIMIT 100000
+#define CLWORKLIMIT 40000
 
 #define MAXLEVEL  64
 
 #define COMPENSATED_SUMMP
-//#define COMPENSATED_SUMMV  
+//~ #define COMPENSATED_SUMMV  
+
+//~ #define CONSISTENCY_CHECKS // perform (time-consuming, but thorough) sanity checks
 
 struct particle
 {
@@ -46,11 +48,16 @@ struct jparticle
 
 struct sys
 {
-  UINT n; 
-  struct particle *part;
-  struct particle *last;
-  struct sys *next_cc; // used in the CC split only
+  UINT n, nzero; // n=total particles, nzero=# zero mass particles
+  struct particle *part; // start of particles, NULL iff n==0 
+  struct particle *zeropart; // start of zero mass particles nzero>0, otherwise NULL
 };
+
+#define GETPART(s, i)   ((i)<(s).n-(s).nzero ? (s).part+(i) : (s).zeropart+((i)-((s).n-(s).nzero)))    
+#define LAST(s)   ((s).part==NULL || (s).n-(s).nzero==0 ? NULL : (s).part+((s).n-(s).nzero)-1)
+#define LASTZERO(s)   ((s).zeropart==NULL || (s).nzero==0 ? NULL : (s).zeropart+(s).nzero-1)
+
+extern struct sys debugsys; // for monitoring purposes 
 
 enum intopt
 {
@@ -93,17 +100,22 @@ enum intopt
   CONSTANT6,   // 36
   CONSTANT8,   // 37
   CONSTANT10,   // 38
+  ERROR_CONTROL, // 39
+  CC_SHARED10, // 40
+  CCC_SHARED10 // 41
 };
 
 extern int verbosity;
 extern FLOAT eps2;
 extern FLOAT dt_param;
 #pragma omp threadprivate(dt_param)
+extern int accel_zero_mass;
 
 extern struct sys zerosys;
 
 extern int fixed_j;
 extern DOUBLE bs_target_error;
+extern int opencl_device_type;
 
 /* diagnostics */
 struct diagnostics {
@@ -133,8 +145,8 @@ void do_evolve(struct sys s, double dt, int inttype);
 
 void system_center_of_mass(struct sys s, DOUBLE *cmpos, DOUBLE *cmvel);
 void move_system(struct sys s, DOUBLE dpos[3],DOUBLE dvel[3],int dir);
-FLOAT system_potential_energy(struct sys s);
-FLOAT system_kinetic_energy(struct sys s);
+DOUBLE system_potential_energy(struct sys s);
+DOUBLE system_kinetic_energy(struct sys s);
 
 void drift(int clevel,struct sys s, DOUBLE etime, DOUBLE dt); /* drift sys */
 void kick(int clevel,struct sys s1, struct sys s2, DOUBLE dt); /* =kick sys1 for interactions with sys2  */
@@ -145,10 +157,13 @@ void dkd(int clevel,struct sys s1,struct sys s2, DOUBLE stime, DOUBLE etime, DOU
 void timestep(int clevel,struct sys s1, struct sys s2,int dir);
 FLOAT timestep_ij(struct particle *i, struct particle *j,int dir);
 FLOAT global_timestep(struct sys s);
+FLOAT max_global_timestep(struct sys s);
 
 void potential(struct sys s1, struct sys s2);
 
 struct sys join(struct sys s1,struct sys s2);
+void split_zeromass(struct sys *s);
+void verify_split_zeromass(struct sys s);
 
 #define SWAP(a,b,c) {c t;t=(a);(a)=(b);(b)=t;}
 

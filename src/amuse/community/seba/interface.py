@@ -15,14 +15,13 @@ class SeBaInterface(CodeInterface, se.StellarEvolutionInterface, LiteratureRefer
     metallicity.  SeBa includes prescriptions for mass loss by stellar
     winds, supernova and supports binary evolution.
 
-        .. [#] ** Portegies Zwart S.F. & Verbunt F., 1996, A&A, 309, 179:
-        .. [#] ... "Population synthesis of high-mass binaries"
-        .. [#] Toonen, S., Nelemans, G., Portegies Zwart S.F., 2012, A&A, 546A, 70T
-        .. [#] ... "Supernova Type Ia progenitors from merging double white dwarfs. Using a new population synthesis model"
+        .. [#] ADS:1996A&A...309..179P (Portegies Zwart S.F. & Verbunt F., 1996, A&A, 309, 179:
+        .. [#] ... "Population synthesis of high-mass binaries")
+        .. [#] ADS:2012A&A...546A..70T (Toonen, S., Nelemans, G., Portegies Zwart S.F., 2012, A&A, 546A, 70T
+        .. [#] ... "Supernova Type Ia progenitors from merging double white dwarfs. Using a new population synthesis model")
     """
 
     include_headers = ['worker_code.h', 'stopcond.h']
-    __so_module__ = 'seba_cython'
 
     def __init__(self, **options):
         CodeInterface.__init__(self, name_of_the_worker="seba_worker", **options)
@@ -45,6 +44,54 @@ class SeBaInterface(CodeInterface, se.StellarEvolutionInterface, LiteratureRefer
         function.result_type = 'int32'
         function.can_handle_array = True
         return function
+
+    @legacy_function
+    def new_advanced_particle():
+        """
+        Define a new star in the code. The star will start with the given mass.
+        """
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
+        function.addParameter(
+            'index_of_the_star', dtype='int32', direction=function.OUT,
+            description=(
+                "The new index for the star. This index can be used to refer "
+                "to this star in other functions"
+            )
+        )
+        function.addParameter(
+            'mass', dtype='float64', direction=function.IN,
+            description="The initial mass of the star")
+        function.addParameter(
+            'relative_mass', dtype='float64', direction=function.IN, default=0,
+            description="The initial relative mass of the star")
+        function.addParameter(
+            'stellar_type', dtype='int32', direction=function.IN, default=0,
+            description="The initial stellar type of the star")
+        function.addParameter(
+            'age', dtype='float64', direction=function.IN, default=0,
+            description="The initial age of the star")
+        function.addParameter(
+            'core_mass', dtype='float64', direction=function.IN, default=0, 
+            description="The initial core mass of the star")
+        function.addParameter(
+            'COcore_mass', dtype='float64', direction=function.IN, default=0,
+            description="The initial CO core mass of the star")
+        function.addParameter(
+            'radius', dtype='float64', direction=function.IN, default=0,
+            description="The initial radius of the star")
+        # function.addParameter(
+        #     'age_tag', dtype='float64', direction=function.IN,
+        #     description="Starting age of the star *to be specified exactly*")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            New star was loaded and the index_of_the_star parameter set.
+        -1 - ERROR
+            New star could not be created.
+        """
+        return function
+
 
     @legacy_function
     def new_binary():
@@ -146,6 +193,47 @@ class SeBaInterface(CodeInterface, se.StellarEvolutionInterface, LiteratureRefer
             A binary with the given index was not found.
         """
         return function
+        
+    @legacy_function
+    def get_binary_type():
+        """
+        Retrieve the current binary type of the binary star.
+        """
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
+        function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
+            , description="The index of the star to get the value of")
+        function.addParameter('value', dtype='float64', direction=function.OUT
+            , description="The current binary type.")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            The value has been set.
+        -1 - ERROR
+            A binary with the given index was not found.
+        """
+        return function
+
+    @legacy_function
+    def get_mass_transfer_type():
+        """
+        Retrieve the current mass transfer type of the binary star.
+        """
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
+        function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
+            , description="The index of the star to get the value of")
+        function.addParameter('value', dtype='float64', direction=function.OUT
+            , description="The current mass transfer type.")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            The value has been set.
+        -1 - ERROR
+            A binary with the given index was not found.
+        """
+        return function
+        
 
     @legacy_function
     def get_core_mass():
@@ -251,8 +339,6 @@ class SeBaInterface(CodeInterface, se.StellarEvolutionInterface, LiteratureRefer
             A binary with the given index was not found.
         """
         return function
-
-
 
     @legacy_function
     def refresh_memory():
@@ -374,6 +460,8 @@ class SeBaInterface(CodeInterface, se.StellarEvolutionInterface, LiteratureRefer
         """
         return function
 
+
+
     @legacy_function
     def get_children_of_binary():
         """
@@ -464,24 +552,150 @@ class SeBaInterface(CodeInterface, se.StellarEvolutionInterface, LiteratureRefer
 
 
     @legacy_function
-    def get_gyration_radius_sq():
+    def get_gyration_radius():
         """
-        Retrieve the current value of the square of the gyration radius (no units).
+        Retrieve the current value of the gyration radius (no units).
         """
         function = LegacyFunctionSpecification()
         function.can_handle_array = True
         function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
             , description="The index of the star to set the value of")
-        function.addParameter('gyration_radius_sq', dtype='float64', direction=function.OUT,
-            description = "The current value of the square of the gyration radius")
+        function.addParameter('gyration_radius', dtype='float64', direction=function.OUT,
+            description = "The current value of the gyration radius")
         function.result_type = 'int32'
         function.result_doc = """
         0 - OK
-            Current value of the square of the gyration radius was retrieved
+            Current value of the gyration radius was retrieved
         -1 - ERROR
-            The code does not have support for retrieving the square of the gyration radius
+            The code does not have support for retrieving the gyration radius
         """
         return function
+
+    @legacy_function
+    def get_apsidal_motion_constant():
+        """
+        Retrieve the current value of the apsidal motion constant (no units).
+        """
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
+        function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
+            , description="The index of the star to set the value of")
+        function.addParameter('apsidal_motion_constant', dtype='float64', direction=function.OUT,
+            description = "The current value of the apsidal motion constant")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            Current value of the apsidal motion constant was retrieved
+        -1 - ERROR
+            The code does not have support for retrieving the apsidal motion constant
+        """
+        return function
+
+
+
+    @legacy_function
+    def get_zeta_thermal():
+        """
+        Retrieve the current value of the zeta thermal (no units).
+        """
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
+        function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
+            , description="The index of the star to set the value of")
+        function.addParameter('zeta_thermal', dtype='float64', direction=function.OUT,
+            description = "The current value of the zeta thermal")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            Current value of the zeta thermal constant was retrieved
+        -1 - ERROR
+            The code does not have support for retrieving the zeta thermal constant
+        """
+        return function
+
+
+    @legacy_function
+    def get_zeta_adiabatic():
+        """
+        Retrieve the current value of the zeta adiabatic (no units).
+        """
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
+        function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
+            , description="The index of the star to set the value of")
+        function.addParameter('zeta_adiabatic', dtype='float64', direction=function.OUT,
+            description = "The current value of the zeta adiabatic")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            Current value of the zeta adiabatic constant was retrieved
+        -1 - ERROR
+            The code does not have support for retrieving the zeta adiabatic constant
+        """
+        return function
+        
+
+    @legacy_function
+    def get_rotation_period():
+        """
+        Retrieve the current value of the rotation period (sec).
+        """
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
+        function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
+            , description="The index of the star to set the value of")
+        function.addParameter('rotation_period', dtype='float64', direction=function.OUT,
+            description = "The current value of the rotation period")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            Current value of the rotation period was retrieved
+        -1 - ERROR
+            The code does not have support for retrieving the rotation period
+        """
+        return function
+
+    @legacy_function
+    def set_rotation_period():
+        """
+        Update the current rotation period of a star.
+        """
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
+        function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
+            , description="The index of the star to get the value of")
+        function.addParameter('value', dtype='float64', direction=function.IN
+            , description="The new rotation period.")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            The value has been set.
+        -1 - ERROR
+            A binary with the given index was not found.
+        """
+        return function
+
+    @legacy_function
+    def get_fallback():
+        """
+        Retrieve the value of fallback fraction during the SN.
+        """
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
+        function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
+            , description="The index of the star to set the value of")
+        function.addParameter('rotation_period', dtype='float64', direction=function.OUT,
+            description = "The current value of the rotation period")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            Value of the fallback fraction was retrieved
+        -1 - ERROR
+            The code does not have support for retrieving the fallback fraction
+        """
+        return function
+
+
 
     @legacy_function
     def get_relative_age():
@@ -749,6 +963,11 @@ class SeBa(se.StellarEvolution):
             (handler.ERROR_CODE,)
         )
         handler.add_method(
+            "new_advanced_particle",
+            (units.MSun, units.MSun, units.stellar_type, units.Myr, units.MSun, units.MSun, units.RSun),
+            (handler.INDEX, handler.ERROR_CODE)
+        )        
+        handler.add_method(
             "new_binary",
             (units.RSun, handler.NO_UNIT, handler.LINK('particles'), handler.LINK('particles')),
             (handler.INDEX, handler.ERROR_CODE,)
@@ -768,6 +987,16 @@ class SeBa(se.StellarEvolution):
             (handler.INDEX,),
             (units.RSun, handler.ERROR_CODE,)
         )
+        handler.add_method(
+            "get_binary_type",
+            (handler.INDEX,),
+            (handler.NO_UNIT, handler.ERROR_CODE,)
+        )
+        handler.add_method(
+            "get_mass_transfer_type",
+            (handler.INDEX,),
+            (handler.NO_UNIT, handler.ERROR_CODE,)
+        )        
         handler.add_method(
             "get_core_mass",
             (handler.INDEX,),
@@ -839,7 +1068,37 @@ class SeBa(se.StellarEvolution):
             (handler.ERROR_CODE,)
         )
         handler.add_method(
-            "get_gyration_radius_sq",
+            "get_gyration_radius",
+            (handler.INDEX,),
+            (units.none, handler.ERROR_CODE,)
+        )
+        handler.add_method(
+            "get_apsidal_motion_constant",
+            (handler.INDEX,),
+            (units.none, handler.ERROR_CODE,)
+        )        
+        handler.add_method(
+            "get_zeta_thermal",
+            (handler.INDEX,),
+            (units.none, handler.ERROR_CODE,)
+        )        
+        handler.add_method(
+            "get_zeta_adiabatic",
+            (handler.INDEX,),
+            (units.none, handler.ERROR_CODE,)
+        )        
+        handler.add_method(
+            "get_rotation_period",
+            (handler.INDEX,),
+            (units.s, handler.ERROR_CODE,)
+        )
+        handler.add_method(
+            "set_rotation_period",
+            (handler.INDEX, units.s,),
+            (handler.ERROR_CODE,)
+        )        
+        handler.add_method(
+            "get_fallback",
             (handler.INDEX,),
             (units.none, handler.ERROR_CODE,)
         )
@@ -918,14 +1177,16 @@ class SeBa(se.StellarEvolution):
     def define_particle_sets(self, handler):
 
         handler.define_set('particles', 'index_of_the_star')
-        handler.set_new('particles', 'new_particle')
+#        handler.set_new('particles', 'new_particle')
+        handler.set_new('particles', 'new_advanced_particle')        
         handler.set_delete('particles', 'delete_star')
-
+        
+        
         handler.add_getter('particles', 'get_radius', names = ('radius',))
         handler.add_getter('particles', 'get_stellar_type', names = ('stellar_type',))
         handler.add_getter('particles', 'get_mass', names = ('mass',))
         handler.add_getter('particles', 'get_core_mass', names = ('core_mass',))
-        handler.add_getter('particles', 'get_COcore_mass', names = ('CO_core_mass',))
+        handler.add_getter('particles', 'get_COcore_mass', names = ('COcore_mass',))
         handler.add_getter('particles', 'get_envelope_mass', names = ('envelope_mass',))
         handler.add_getter('particles', 'get_core_radius', names = ('core_radius',))
         handler.add_getter('particles', 'get_age', names = ('age',))
@@ -934,9 +1195,16 @@ class SeBa(se.StellarEvolution):
         handler.add_getter('particles', 'get_luminosity', names = ('luminosity',))
         handler.add_getter('particles', 'get_temperature', names = ('temperature',))
         handler.add_getter('particles', 'get_natal_kick_velocity', names = ('natal_kick_x','natal_kick_y','natal_kick_z'))
+        
         handler.add_getter('particles', 'get_convective_envelope_mass', names = ('convective_envelope_mass',))
         handler.add_getter('particles', 'get_convective_envelope_radius', names = ('convective_envelope_radius',))
-        handler.add_getter('particles', 'get_gyration_radius_sq', names = ('gyration_radius_sq',))
+        handler.add_getter('particles', 'get_gyration_radius', names = ('gyration_radius',))
+        handler.add_getter('particles', 'get_apsidal_motion_constant', names = ('apsidal_motion_constant',))        
+        handler.add_getter('particles', 'get_zeta_thermal', names = ('zeta_thermal',))        
+        handler.add_getter('particles', 'get_zeta_adiabatic', names = ('zeta_adiabatic',))        
+        handler.add_getter('particles', 'get_rotation_period', names = ('rotation_period',))
+        handler.add_setter('particles', 'set_rotation_period', names = ('rotation_period',))
+        
         handler.add_getter('particles', 'get_relative_age', names = ('relative_age',))
         handler.add_getter('particles', 'get_relative_mass', names = ('relative_mass',))
         handler.add_getter('particles', 'get_wind_mass_loss_rate', names = ('wind_mass_loss_rate',))
@@ -948,22 +1216,40 @@ class SeBa(se.StellarEvolution):
         handler.add_method('particles', 'refresh_memory')
         handler.add_method('particles', 'recall_memory_one_step')
         handler.add_method('particles', 'merge_with_other_star')
+        handler.add_method('particles', 'get_fallback')
+        handler.add_method('particles', 'get_time_step')
+        
 
         handler.define_set('binaries', 'index_of_the_star')
         handler.set_new('binaries', 'new_binary')
         handler.set_delete('binaries', 'delete_binary')
 
         handler.add_getter('binaries', 'get_semi_major_axis', names = ('semi_major_axis',))
+        handler.add_setter('binaries', 'set_semi_major_axis', names = ('semi_major_axis',))
         handler.add_getter('binaries', 'get_eccentricity', names = ('eccentricity',))
+        handler.add_setter('binaries', 'set_eccentricity', names = ('eccentricity',))
+
         handler.add_getter('binaries', 'get_mass', names = ('mass',))
         handler.add_getter('binaries', 'get_time_step', names = ('time_step',))
         handler.add_getter('binaries', 'get_age', names = ('age',))
         handler.add_getter("binaries", 'get_children_of_binary')
-        handler.add_setter('binaries', 'set_semi_major_axis', names = ('semi_major_axis',))
-        handler.add_setter('binaries', 'set_eccentricity', names = ('eccentricity',))
+        handler.add_getter('binaries', 'get_binary_type', names = ('binary_type',))
+        handler.add_getter('binaries', 'get_mass_transfer_type', names = ('mass_transfer_type',))
+
         handler.add_method('binaries', 'merge_the_binary')
+        
+
+        
     def define_state(self, handler):
         se.StellarEvolution.define_state(self, handler)
         
         self.stopping_conditions.define_state(handler)
+        
+        handler.add_method('EDIT', 'new_advanced_particle')
+        handler.add_method('UPDATE', 'new_advanced_particle')
+        handler.add_transition('RUN', 'UPDATE', 'new_advanced_particle', False)
 
+
+
+
+Seba = SeBa

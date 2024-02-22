@@ -271,7 +271,7 @@ Set stopping conditions table
         Index of the particle involved in the stopping condition.
         The index of the last particle must be -1
 
-.. autoclass:: amuse.support.codes.stopping_conditions.StoppingConditionInterface
+.. autoclass:: amuse.community.interface.stopping_conditions.StoppingConditionInterface
     :members:
 
 This interface contains a lot of functions and implementing it
@@ -603,5 +603,5 @@ the following steps.
 
 
 A good example of a code implementing the stopping conditions
-is the "hermite0" community code. The code can be found
-in the 'src/amuse/community/hermite0' directory.
+is the "hermite" community code. The code can be found
+in the 'src/amuse/community/hermite' directory.

@@ -49,7 +49,7 @@ ax_cv_[]_AC_LANG_ABBREV[]_compiler_ms=$ax_compiler_ms
 AC_DEFUN([AX_CHECK_CL],
 [
 AC_ARG_WITH(opencl,
-             AC_HELP_STRING([--with-opencl=PFX], [Prefix where OpenCl has been installed] ),
+             AS_HELP_STRING([--with-opencl=PFX],[Prefix where OpenCl has been installed ]),
              [
                 test "$withval" = no && AC_MSG_WARN([opencl is an optional package for sapporo2 ])
                 

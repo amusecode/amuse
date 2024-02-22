@@ -152,7 +152,7 @@ if test "$with_hdf5" = "yes"; then
             m4_case(m4_normalize([$1]),
                 [serial],   [h5cc],
                 [parallel], [h5pcc],
-                [h5cc h5pcc]),
+                [h5pcc h5cc]),
             [])
     else
         AC_MSG_CHECKING([Using provided HDF5 C wrapper])
@@ -257,7 +257,8 @@ HDF5 support is being disabled (equivalent to --with-hdf5=no).
           AC_MSG_WARN([Unable to compile HDF5 test program])
         fi
         dnl Look for HDF5's high level library
-        AC_HAVE_LIBRARY([hdf5_hl], [HDF5_LIBS="-lhdf5_hl $HDF5_LIBS"], [], [])
+        AC_CHECK_LIB([hdf5_hl],[main],[HDF5_LIBS="-lhdf5_hl $HDF5_LIBS"],[],[])ac_cv_lib_hdf5_hl=ac_cv_lib_hdf5_hl_main
+
 
         CC=$ax_lib_hdf5_save_CC
         CPPFLAGS=$ax_lib_hdf5_save_CPPFLAGS
@@ -275,6 +276,22 @@ HDF5 support is being disabled (equivalent to --with-hdf5=no).
 
             dnl Again, pry any remaining -Idir/-Ldir from compiler wrapper
             for arg in `$H5FC -show`
+            do
+              case "$arg" in #(
+                -I*) echo $HDF5_FFLAGS | $GREP -e "$arg" >/dev/null \
+                      || HDF5_FFLAGS="$HDF5_FFLAGS $arg"
+                  ;;#(
+                -L*) echo $HDF5_FFLAGS | $GREP -e "$arg" >/dev/null \
+                      || HDF5_FFLAGS="$HDF5_FFLAGS $arg"
+                     dnl HDF5 installs .mod files in with libraries,
+                     dnl but some compilers need to find them with -I
+                     echo $HDF5_FFLAGS | $GREP -e "-I${arg#-L}" >/dev/null \
+                      || HDF5_FFLAGS="$HDF5_FFLAGS -I${arg#-L}"
+                  ;;
+              esac
+            done
+
+            for arg in `$H5FC -showconfig | grep 'Fortran Flags'`
             do
               case "$arg" in #(
                 -I*) echo $HDF5_FFLAGS | $GREP -e "$arg" >/dev/null \

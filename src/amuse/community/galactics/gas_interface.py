@@ -4,6 +4,7 @@ import os.path
 import pickle
 import random
 import numpy
+import hashlib
 from subprocess import Popen, PIPE
 
 from amuse.units.core import *
@@ -223,7 +224,8 @@ class GaslactICsImplementation(object):
             pass
 
     def _data_directory(self,in_dbh,in_diskdf):
-        return os.path.join(self._output_directory, "model"+str(hash(in_dbh+in_diskdf)))
+        modelhash=hashlib.sha1((in_dbh+in_diskdf).encode()).hexdigest()
+        return os.path.join(self._output_directory, "model_"+modelhash)
         
     def model_present(self,model_present):
         in_dbh = self.generate_in_dbh_string()

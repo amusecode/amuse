@@ -89,10 +89,9 @@ AC_ARG_ENABLE(gsltest, [  --disable-gsltest       Do not try to compile and run 
               echo "*** Could not run GSL test program, checking why..."
               CFLAGS="$CFLAGS $GSL_FLAGS"
               LIBS="$LIBS $GSL_LIBS"
-              AC_TRY_LINK([
+              AC_LINK_IFELSE([AC_LANG_PROGRAM([[
     #include <stdio.h>
-    ],      [ return 0; ],
-            [ echo "*** The test program compiled, but did not run. This usually means"
+    ]], [[ return 0; ]])],[ echo "*** The test program compiled, but did not run. This usually means"
               echo "*** that the run-time linker is not finding GSL or finding the wrong"
               echo "*** version of GSL. If it is not finding GSL, you'll need to set your"
               echo "*** LD_LIBRARY_PATH environment variable, or edit /etc/ld.so.conf to point"
@@ -100,8 +99,7 @@ AC_ARG_ENABLE(gsltest, [  --disable-gsltest       Do not try to compile and run 
               echo "*** is required on your system"
           echo "***"
               echo "*** If you have an old version installed, it is best to remove it, although"
-              echo "*** you may also be able to get things to work by modifying LD_LIBRARY_PATH"],
-            [ echo "*** The test program failed to compile or link. See the file config.log for the"
+              echo "*** you may also be able to get things to work by modifying LD_LIBRARY_PATH"],[ echo "*** The test program failed to compile or link. See the file config.log for the"
               echo "*** exact error that occured. This usually means GSL was incorrectly installed"
               echo "*** or that you have moved GSL since it was installed. In the latter case, you"
               echo "*** may want to edit the gsl-config script: $GSL_CONFIG" ])

@@ -89,7 +89,7 @@ class CalculateCloudShock(object):
         result = instance.commit_parameters()
     
     def new_grid(self):
-        grid = Grid.create(self.dimensions_of_mesh, [1,1,1] | generic_unit_system.length)
+        grid = datamodel.Grid.create(self.dimensions_of_mesh, [1,1,1] | generic_unit_system.length)
         self.clear_grid(grid)
         return grid
     

@@ -1,6 +1,8 @@
 # standard amuse configuration include
 # config.mk will be made after ./configure has run
-AMUSE_DIR?=../../../..
+ifeq ($(origin AMUSE_DIR), undefined)
+  AMUSE_DIR := $(shell amusifier --get-amuse-dir)
+endif
 -include ${AMUSE_DIR}/config.mk
 
 ###############################################################
@@ -9,9 +11,9 @@ AMUSE_DIR?=../../../..
 # mpfr: http://www.mpfr.org/
 # mpfrc++: http://www.holoborodko.com/pavel/mpfr/
 # Change these paths in this Makefile and in src/makefile
-GMP_LIBS   ?= -L/data1/boekholt/Packages/mpreal_local/lib/ -lgmp  # libgmp.a
-MPFR_LIBS  ?= -L/data1/boekholt/Packages/mpreal_local/lib/ -lmpfr # libmpfr.a
-MPFR_FLAGS ?= -I/data1/boekholt/Packages/mpreal_local/include/    # mpreal.h
+GMP_LIBS   ?= -L/usr/lib/x86_64-linux-gnu/ -lgmp  # libgmp.a
+MPFR_LIBS  ?= -L/usr/lib/x86_64-linux-gnu/ -lmpfr # libmpfr.a
+MPFR_FLAGS += -I./mpfrc++    # mpreal.h
 ###############################################################
 
 LIBS += $(MPFR_LIBS) $(GMP_LIBS)
@@ -26,7 +28,6 @@ CXXFLAGS ?= -Wall -g -O2
 
 CXXFLAGS += $(MPFR_FLAGS) -std=c++0x -I../mpfrc++
 
-CODE_GENERATOR = $(AMUSE_DIR)/build.py
 
 CODELIB = src/libbrutus.a
 OBJ = interface.o
@@ -45,7 +46,7 @@ worker_code.cc: interface.py
 	$(CODE_GENERATOR) --type=c interface.py BrutusInterface -o $@
 
 worker_code.h: interface.py
-	$(CODE_GENERATOR) --type=H -i amuse.support.codes.stopping_conditions.StoppingConditionInterface interface.py BrutusInterface -o $@
+	$(CODE_GENERATOR) --type=H -i amuse.community.interface.stopping_conditions.StoppingConditionInterface interface.py BrutusInterface -o $@
 
 brutus_worker: worker_code.cc worker_code.h $(CODELIB) $(OBJ)
 	$(MPICXX) $(CXXFLAGS) $(MPFR_FLAGS) $(SC_FLAGS) -I./src $< $(CODELIB) $(OBJ) -o $@  -L./src -lbrutus $(SC_CLIBS) $(LIBS)

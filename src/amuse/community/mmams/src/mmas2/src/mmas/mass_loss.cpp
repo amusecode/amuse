@@ -1,4 +1,8 @@
 #include "mmas.h"
+#include "mass_loss.h"
+
+bool do_const=false;
+double const_mass_loss=0.1;
 
 
 /* This routine computes mass loss */
@@ -12,7 +16,13 @@ real mmas::mass_loss() {
 //   if (age < 0.75) {
 //     f_ml = 6.93 * pow(q, -2.11) * pow(2*q/(1+q), 4.16);
 //   } else {
-  f_ml = 8.36 * pow(q, -2.58) * pow(2*q/(1+q), 4.28);
+
+  if(do_const)
+    f_ml=100*const_mass_loss; // because const_mass_loss is a fraction, while mass_loss returns percentage
+  else
+  { 
+    f_ml = 8.36 * pow(q, -2.58) * pow(2*q/(1+q), 4.28);
+  }
 //   }		
   PRL(f_ml);
   return f_ml;

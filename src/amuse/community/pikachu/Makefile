@@ -1,6 +1,8 @@
 # standard amuse configuration include
 # config.mk will be made after ./configure has run
-AMUSE_DIR?=../../../..
+ifeq ($(origin AMUSE_DIR), undefined)
+  AMUSE_DIR := $(shell amusifier --get-amuse-dir)
+endif
 -include ${AMUSE_DIR}/config.mk
 
 MPICXX   ?= mpicxx
@@ -16,7 +18,6 @@ SEQUOIA_INC = -DSEQUOIA -I$(SEQ_LIB)/include
 CUDA_LIBS ?= -lcuda -L$(CUDA_TK)/lib -L$(CUDA_TK)/lib64 -lcudart
 CUDA_INC = -I$(CUDA_TK)/include
 
-CODE_GENERATOR = $(AMUSE_DIR)/build.py
 
 CODELIB_GPU = src/libpikachu_gpu.a
 CODELIB_GPU_LARGE_N = src/libpikachu_gpu_large_n.a
@@ -56,7 +57,7 @@ worker_code.cc: interface.py
 	$(CODE_GENERATOR) --type=c interface.py PikachuInterface -o $@
 
 worker_code.h: interface.py
-	$(CODE_GENERATOR) --type=h -i amuse.support.codes.stopping_conditions.StoppingConditionInterface interface.py PikachuInterface -o $@
+	$(CODE_GENERATOR) --type=h -i amuse.community.interface.stopping_conditions.StoppingConditionInterface interface.py PikachuInterface -o $@
 
 pikachu_worker: worker_code.cc worker_code.h $(CODELIB_GPU) $(OBJ)
 	$(MPICXX) $(CXXFLAGS) $(SC_FLAGS) $(LDFLAGS) -I./src $< -o $@ $(OBJ) $(CODELIB_GPU) $(SC_CLIBS) $(SEQUOIA_LIBS) $(CUDA_LIBS)  $(LIBS)

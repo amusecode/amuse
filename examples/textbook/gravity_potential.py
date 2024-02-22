@@ -45,8 +45,8 @@ class GalacticCenterGravityCode(object):
 
     def get_potential_at_point(self,eps,x,y,z):
         r=(x**2+y**2+z**2)**0.5
-        c=constant.G*self.mass/self.radius**self.alpha    
-        phi=c/(alpha-1)*(r**(self.alpha-1)-R**(self.alpha-1))
+        c=constants.G*self.mass/self.radius**self.alpha    
+        phi=c/(self.alpha-1)*(r**(self.alpha-1)-self.radius**(self.alpha-1))
         return phi    
         
 ###BOOKLISTSTART3###

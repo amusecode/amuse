@@ -6,7 +6,7 @@
 #include <stdio.h>
 
 
-int determine_binary_parents_and_levels(ParticlesMap *particlesMap, int *N_bodies, int *N_binaries, int *N_root_finding)
+void determine_binary_parents_and_levels(ParticlesMap *particlesMap, int *N_bodies, int *N_binaries, int *N_root_finding)
 {
     *N_bodies = 0;
     *N_binaries = 0;

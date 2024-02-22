@@ -1,7 +1,7 @@
-# standard amuse configuration include
-# config.mk will be made after ./configure has run
-AMUSE_DIR?=../..
--include ${AMUSE_DIR}/config.mk
+ifeq ($(origin AMUSE_DIR), undefined)
+  AMUSE_DIR := $(shell amusifier --get-amuse-dir)
+endif
+-include $(AMUSE_DIR)/config.mk
 
 
 CXX ?= g++
@@ -17,7 +17,7 @@ OFLAGS = -g -Wall -fopenmp
 CXXFLAGS =  -fPIC $(OFLAGS) -I$(CUDA_TK)/include  -D__INCLUDE_KERNELS__ $(CL_CFLAGS)
 
 NVCC      = $(CUDA_TK)/bin/nvcc  
-NVCCFLAGS ?= -arch=sm_20
+NVCCFLAGS ?= $(NVCC_FLAGS)
 
 export NVCCFLAGS NVCC CXXFLAGS
 

@@ -327,8 +327,7 @@ class StellarModel2SPH(object):
         return StellarModelInSPH(gas_particles=sph_particles, core_particle=None, core_radius=None)
 
 
-
-def convert_stellar_model_to_SPH(particle, number_of_sph_particles, **keyword_arguments):
+def convert_stellar_model_to_sph(particle, number_of_sph_particles, **keyword_arguments):
     """
     Requests the internal structure of the star from a Stellar Evolution
     legacy code and converts it into an SPH model consisting of the
@@ -347,11 +346,14 @@ def convert_stellar_model_to_SPH(particle, number_of_sph_particles, **keyword_ar
     converter = StellarModel2SPH(particle, number_of_sph_particles, **keyword_arguments)
     return converter.result
 
+# for compatibility
+convert_stellar_model_to_SPH = convert_stellar_model_to_sph
+
 def pickle_stellar_model(particle, pickle_file_name):
     """
-    Requests the internal structure of the star from a Stellar Evolution legacy
+    Requests the internal structure of the star from a Stellar Evolution community
     code and pickles it (stores it as a *.pkl file), for later use:
-    convert_stellar_model_to_SPH(None, ..., pickle_file = pickle_file_name)
+    convert_stellar_model_to_sph(None, ..., pickle_file=pickle_file_name)
     Using a pickled stellar model is significantly faster for modelling giants
     and other extremely evolved stars.
 

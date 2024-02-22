@@ -238,7 +238,7 @@ end subroutine
 subroutine bhmergers
   include 'globals.h'
   integer :: p,i,j,k,nneigh
-  real :: h2,dr,ppos(3),dv2,pvel(3),pacc(4),mp,bht,bheps,mdot
+  real :: h2,dr,ppos(3),dv2,pvel(3),pacc(3),paacc,mp,bht,bheps,mdot
 
   call bhtree
   
@@ -246,7 +246,8 @@ subroutine bhmergers
     p=nbodies-nbh+i
     ppos=pos(p,1:3)
     pvel=vel(p,1:3)
-    pacc=acc(p,1:4)
+    pacc=acc(p,1:3)
+    paacc=aacc(p)
     mp=mass(p)
     bht=tform(p)
     bheps=hsmooth(p)
@@ -268,7 +269,8 @@ subroutine bhmergers
             if(2*(mp+mass(k))/dr.GT.dv2) then       
               ppos=(ppos*mp+pos(k,1:3)*mass(k))/(mp+mass(k))
               pvel=(pvel*mp+vel(k,1:3)*mass(k))/(mp+mass(k))
-              pacc=(pacc*mp+acc(k,1:4)*mass(k))/(mp+mass(k))
+              pacc=(pacc*mp+acc(k,1:3)*mass(k))/(mp+mass(k))
+              paacc=(paacc*mp+aacc(k)*mass(k))/(mp+mass(k))
               mp=mp+mass(k)
               bht=MAX(bht,tform(k))
               bheps=MAX(bheps,hsmooth(k))
@@ -281,7 +283,8 @@ subroutine bhmergers
       enddo
       pos(p,1:3)=ppos
       vel(p,1:3)=pvel
-      acc(p,1:4)=pacc
+      acc(p,1:3)=pacc
+      aacc(p)=paacc
       mass(p)=mp
       tform(p)=bht
       hsmooth(p)=bheps

@@ -17,7 +17,7 @@ private :: ndim,nsubcell
     itimestp(:),nbexist(:),npercell(:),order_bodlist(:),  &
     otimestp(:),pactive(:),srlist(:),pshape(:),subp(:,:),templist(:)
 
-  real, allocatable :: acc(:,:),bottom(:,:),cellsize(:),csound(:),  &
+  real, allocatable :: aacc(:),acc(:,:),bottom(:,:),cellsize(:),csound(:),  &
     derad(:),drhodh(:),elecfrac(:),epsgrav(:),  &
     esnthdt(:),fuvheat(:),h2frac(:),hsmcurlv(:),  &
     hsmdivv(:),hsmooth(:),mass(:),mumaxdvh(:),oldderad(:),phi(:),  &
@@ -65,7 +65,8 @@ private :: ndim,nsubcell
    removedidssph(1:nbodsmax) & ! AMUSE, allocated list to store the id's
  )
  allocate( &
-   acc(1:nbodsmax,1:ndim+1),  &
+   aacc(1:nbodsmax), &
+   acc(1:nbodsmax,1:ndim),  &
    bottom(nbods1:nbodcell,ndim),  &
    cellsize(nbods1:nbodcell),  &
    csound(1:nsphmax),  &

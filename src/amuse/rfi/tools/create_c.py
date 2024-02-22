@@ -36,8 +36,8 @@ HEADER_CODE_STRING = """
 #else
 	#include <sys/socket.h>
 	#include <netinet/in.h>
+  #include <unistd.h>
 	#include <netdb.h>
-	#include <unistd.h>
 	#include <netinet/tcp.h>
   #include <arpa/inet.h>
 #endif
@@ -428,7 +428,7 @@ void run_mpi(int argc, char *argv[]) {
     sigemptyset(&handler.sa_mask);
     handler.sa_flags = 0;
 
-    for (int i = 0; i < (sizeof abort_signals) / (sizeof abort_signals[0]); i++) {
+    for (int i = 0; i < int ((sizeof abort_signals) / (sizeof abort_signals[0])); i++) {
         int result = sigaction(abort_signals[i], &handler, NULL);
         if (result == -1) {
             perror("Error installing signal handler");
@@ -1043,6 +1043,28 @@ int main(int argc, char *argv[]) {
 
 """
 
+GETSET_WORKING_DIRECTORY="""
+char path_buffer[4096];
+
+
+int set_working_directory(char *c) {
+  return chdir(c);
+}
+
+int get_working_directory(char **c) {
+  if(getcwd( path_buffer , sizeof(path_buffer))==NULL) {
+    return -1;
+  } else { 
+    *c=path_buffer;
+    return 0;
+  }
+}
+"""
+
+
+
+
+
 class MakeCCodeString(GenerateASourcecodeString):
     @late
     def dtype_to_spec(self):
@@ -1271,6 +1293,8 @@ class GenerateACSourcecodeStringFromASpecificationClass\
         self.out.lf() + CONSTANTS_AND_GLOBAL_VARIABLES_STRING
         
         self.out.lf() + POLLING_FUNCTIONS_STRING
+
+        self.out.lf() + GETSET_WORKING_DIRECTORY
         
         if self.must_generate_mpi:
             self.out.lf() + RECV_HEADER_SLEEP_STRING
@@ -1356,8 +1380,8 @@ class GenerateACHeaderStringFromASpecificationClass\
         return True
     
     def must_include_interface_function_in_output(self, x):
-        if x.specification.name.startswith("internal__"):
-            return False
+        if hasattr(x.specification,"internal_provided"):
+                return False
             
         for cls in self.ignore_functions_from_specification_classes:
             if hasattr(cls, x.specification.name):
@@ -1406,7 +1430,7 @@ class GenerateACStubStringFromASpecificationClass\
         return create_definition.CreateCStub()
 
     def must_include_interface_function_in_output(self, x):
-        return not x.specification.name.startswith("internal__")
+        return not hasattr(x.specification,"internal_provided")
      
     def start(self):  
     
