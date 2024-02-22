@@ -1,3 +1,7 @@
+"""
+Units supported in AMUSE
+"""
+
 import numpy
 from amuse.units.si import (
     named,

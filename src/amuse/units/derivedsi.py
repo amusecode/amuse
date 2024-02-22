@@ -1,3 +1,7 @@
+"""
+Common units that are derived from SI
+"""
+
 from amuse.units.si import (
     named,
     s,
@@ -7,7 +11,6 @@ from amuse.units.si import (
     none,
     k,
 )
-from amuse.units.si import *
 
 Hz = named("hertz", "Hz", 1 / s)
 MHz = named("megahertz", "MHz", 1e6 * Hz)
