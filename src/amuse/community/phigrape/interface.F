@@ -107,17 +107,6 @@ C---  get array address
 
       END
 
-      FUNCTION set_acceleration(id, ax, ay, az)
-      IMPLICIT NONE
-#include "src/general.inc"
-      INTEGER set_acceleration
-      INTEGER id
-      DOUBLE PRECISION ax, ay, az
-      
-      set_acceleration = -2
-      
-      END
-
       FUNCTION get_center_of_mass_position(Cx, Cy, Cz)
       IMPLICIT NONE      
 #include "src/general.inc"

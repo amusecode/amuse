@@ -41,8 +41,6 @@ int set_velocity(int index_of_the_particle, double vx, double vy, double vz);
 
 int get_acceleration(int index_of_the_particle, double * ax, double * ay, double * az);
 
-int set_acceleration(int index_of_the_particle, double ax, double ay, double az);
-
 int get_potential(int index_of_the_particle, double * potential);
 
 int evolve_model(double time);

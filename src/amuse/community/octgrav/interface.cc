@@ -704,11 +704,6 @@ int set_eps2(double epsilon_squared)
   return 0;
 }
 
-int set_acceleration(int index_of_the_particle, double ax, double ay, double az)
-{
-  return -2;
-}
-
 int synchronize_model()
 {
   return 0;

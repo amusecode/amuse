@@ -593,15 +593,6 @@ int recommit_particles(){
    return 0;
 }
 
-int set_acceleration(int index_of_the_particle, double ax, double ay, double az){
-	index_of_the_particle = 0;
-	ax = 0;
-	ay = 0;
-	az = 0;
-   if (rank_higpus == 0) cout<<"accelerations are stored only on GPU, you can't set it"<<endl;
-   return 0;
-}
-
 int get_center_of_mass_position(double * x, double * y, double * z){
    unsigned int ppG = (unsigned int) ceil ( (double) M / size_higpus);
 	double *sum = new double[4];

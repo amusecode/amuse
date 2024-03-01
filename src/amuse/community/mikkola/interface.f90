@@ -596,14 +596,6 @@ FUNCTION get_number_of_particles(number_of_particles)
   get_number_of_particles=number_of_particles_allocated
 END FUNCTION
 
-FUNCTION set_acceleration(index_of_the_particle, ax, ay, az)
-  IMPLICIT NONE
-  INTEGER :: set_acceleration
-  INTEGER :: index_of_the_particle
-  DOUBLE PRECISION :: ax, ay, az
-  set_acceleration=0
-END FUNCTION
-
 FUNCTION get_indices_of_colliding_particles(index_of_particle1,  &
     index_of_particle2)
   IMPLICIT NONE

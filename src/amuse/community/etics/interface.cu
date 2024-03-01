@@ -282,10 +282,6 @@ int recommit_particles() {
     return -2;
 }
 
-int set_acceleration(int index_of_the_particle, double ax, double ay, double az) {
-    return -2;
-}
-
 int get_center_of_mass_position(double *x, double *y, double *z) {
 //     vec3 CenterMass = thrust::transform_reduce(PPPPP.begin(), PPPPP.end(), CenterMassFunctor(mass), vec3(0,0,0), thrust::plus<vec3>());
 //     CenterMass = CenterMass * (1.0/N); //ugly should divide by the total mass

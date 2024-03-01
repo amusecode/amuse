@@ -592,20 +592,6 @@ int get_velocity(int index_of_the_particle,
 
 /****************/
 
-int set_acceleration(int index_of_the_particle,
-    double ax, double ay, double az)
-{
-    try
-    {
-        assert(nbody_ptr != NULL);
-        assert(nbody_ptr->is_sane());
-        return -1;
-    }
-    catch(assert_failed ex)
-    {
-        return handle_assert_failed(ex);
-    }    
-}
 int get_acceleration(int index_of_the_particle,
     double * ax, double * ay, double * az)
 {

@@ -570,10 +570,6 @@ int get_state(int particle_identifier, double *mass,
     return -3; // Not found!
 }
 
-int set_acceleration(int particle_identifier, double ax, double ay, double az) {
-    return -2; // Not implemented
-}
-
 int get_acceleration(int particle_identifier, double *ax, double *ay, double *az) {
     int index;
     if (found_particle(particle_identifier, &index)){

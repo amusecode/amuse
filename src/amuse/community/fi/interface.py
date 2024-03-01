@@ -36,7 +36,6 @@ class FiInterface(
     get_total_mass=None
     get_center_of_mass_position=None
     get_center_of_mass_velocity=None
-    set_acceleration=None
     get_acceleration=None
     
     use_modules=['StoppingConditions','AmuseInterface']

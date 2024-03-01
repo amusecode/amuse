@@ -533,24 +533,6 @@ extern "C" {
         return 0;
     }
 
-    int set_acceleration(int index_of_the_particle, double ax, double ay, double az) {
-        reconstruct_particle_list();
-        int index = ptr->getParticleAdrFromID(index_of_the_particle);
-        if (index>=0) {
-            FPSoft* p = &(ptr->system_soft[index]);
-            p->acc.x = ax; 
-            p->acc.y = ay; 
-            p->acc.z = az; 
-        }    
-#ifdef PARTICLE_SIMULATOR_MPI_PARALLEL
-        int check = PS::Comm::getMaxValue(index);
-        if (check==-1) return -1;
-#else
-        else return -1;
-#endif
-        return 0;
-    }
-
     int get_potential(int index_of_the_particle, double * potential) {
         reconstruct_particle_list();
         int index = ptr->getParticleAdrFromID(index_of_the_particle);

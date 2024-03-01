@@ -550,24 +550,6 @@ int get_potential(int id, double * potential){
   return 0;
 }
 
-int set_acceleration(int *id, double *ax, double *ay, double *az, int length){
-  getCurrentStateToHost();
-  
-  for(int i=0; i < length; i++)
-  {
-    int index_of_the_particle = getIdxFromId(id[i]);  
-    if(index_of_the_particle < 0)    return -3;
-    
-    bonsai->localTree.bodies_acc1[index_of_the_particle].x = ax[i];
-    bonsai->localTree.bodies_acc1[index_of_the_particle].y = ay[i];
-    bonsai->localTree.bodies_acc1[index_of_the_particle].z = az[i];
-  }
-  
-  bonsai->localTree.bodies_acc1.h2d();
-  
-  return 0;
-}
-
 int get_acceleration(int id, double * ax, double * ay, double * az){
   getCurrentStateToHost();
   int index_of_the_particle = getIdxFromId(id);  

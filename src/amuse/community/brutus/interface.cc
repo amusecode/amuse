@@ -675,5 +675,3 @@ int get_center_of_mass_velocity(double* vx, double* vy, double* vz){
 }
 
 int get_acceleration(int id, double* ax, double* ay, double* az){return -2;}
-int set_acceleration(int id, double ax, double ay, double az){return -2;}
-

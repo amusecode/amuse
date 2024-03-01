@@ -579,17 +579,6 @@ int get_velocity(int index_of_the_particle,
     return 0;
 }
 
-int set_acceleration(int index_of_the_particle,
-		     double ax, double ay, double az)
-{
-    int j = jd->get_inverse_id(index_of_the_particle);
-    if (j < 0) return -1;
-    jd->acc[j][0] = ax;
-    jd->acc[j][1] = ay;
-    jd->acc[j][2] = az;
-    return 0;
-}
-
 int get_acceleration(int index_of_the_particle,
 		     double * ax, double * ay, double * az)
 {

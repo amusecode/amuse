@@ -507,46 +507,6 @@ class GravitationalDynamicsInterface(common.CommonCodeInterface):
         return function
 
     @legacy_function
-    def set_acceleration():
-        """
-        Update the acceleration of a particle.
-        *Defined for symetry with the get_acceleration function.*
-        *Should be removed if physaccily unsound*
-        *Maybe moved to snapshot support functionality*
-        """
-        function = LegacyFunctionSpecification()
-        function.addParameter(
-            'index_of_the_particle', dtype='int32', direction=function.IN,
-            description=(
-                "Index of the particle for which the state is to be updated. "
-                "This index must have been returned by an earlier call to "
-                ":meth:`new_particle`"
-            )
-        )
-        function.addParameter(
-            'ax', dtype='float64', direction=function.IN,
-            description="The new acceleration vector of the particle")
-        function.addParameter(
-            'ay', dtype='float64', direction=function.IN,
-            description="The new acceleration vector of the particle")
-        function.addParameter(
-            'az', dtype='float64', direction=function.IN,
-            description="The new acceleration vector of the particle")
-        function.result_type = 'int32'
-        function.can_handle_array = True
-        function.result_doc = """
-        0 - OK
-            particle was found in the model and the information was set
-        -1 - ERROR
-            particle could not be found
-        -2 - ERROR
-            code does not support updating of a particle
-        -3 - ERROR
-            not yet implemented
-        """
-        return function
-
-    @legacy_function
     def get_potential():
         """
         Retrieve the potential at a particle position, for retrieving the

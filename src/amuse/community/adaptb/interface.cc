@@ -443,5 +443,4 @@ int get_kinetic_energy(double* ek){return -2;}
 int get_potential_energy(double* ep){return -2;}
 int get_center_of_mass_velocity(double* vx, double* vy, double* vz){return -2;}
 int get_acceleration(int id, double* ax, double* ay, double* az){return -2;}
-int set_acceleration(int id, double ax, double ay, double az){return -2;}
 

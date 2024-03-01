@@ -69,10 +69,6 @@ int cleanup_code()
     return 0;
 }
 
-int set_acceleration(int particle_identifier, double ax, double ay, double az) {
-    return -2; // Not implemented
-}
-
 int get_acceleration(int particle_identifier, double *ax, double *ay, double *az) {
     return -2; // Not implemented
 }

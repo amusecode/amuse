@@ -564,12 +564,6 @@ int get_number_of_particles(int *number_of_particles)
   return 0; 
 }
 
-int set_acceleration(int index_of_the_particle, double ax, double ay, double az)
-{
-  return -2;
-}
-
-
 int get_center_of_mass_position(double *x, double *y, double *z)
 {
   nbody_particle *np = bhtcs.get_particle_pointer();
