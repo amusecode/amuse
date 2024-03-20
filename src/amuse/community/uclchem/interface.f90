@@ -1,48 +1,49 @@
+
 function initialize_code() result(ret)
-    use uclchem
+    use uclchemwrap
     integer :: ret
     ret=chem_initialize()
   end function
   
   function cleanup_code() result(ret)
-    use uclchem
+    use uclchemwrap
     integer :: ret
     ret=chem_end()
   end function
   
   function commit_particles() result(ret)
-    use uclchem
+    use uclchemwrap
     integer :: ret
     ret=chem_commit_particles()
   end function
   
   function recommit_particles() result(ret)
-    use uclchem
+    use uclchemwrap
     integer :: ret
     ret=chem_commit_particles()
   end function
   
   function commit_parameters() result(ret)
-    use uclchem
+    use uclchemwrap
     integer :: ret
     ret=chem_commit_parameters()
   end function
   
   function recommit_parameters() result(ret)
-    use uclchem
+    use uclchemwrap
     integer :: ret
     ret=chem_commit_parameters()
   end function
   
   function get_number_of_particles(n) result(ret)
-    use uclchem
+    use uclchemwrap
     integer n,ret
     n=nparticle
     ret=0
   end function
   
   function new_particle(id,density,temperature,ionrate) result(ret)
-    use uclchem
+    use uclchemwrap
     integer :: ret,id
     double precision :: density,temperature,ionrate 
     ret=add_particle(id,density,temperature,ionrate)

@@ -64,7 +64,7 @@ class ChemicalModelingInterface(object):
         returns (index_of_species='i')
 
     @remote_function(can_handle_array=True)
-    def get_name_of_species(indec_of_species='i'):
+    def get_name_of_species(index_of_species='i'):
         """
         Get name of species with given index
         """
@@ -148,8 +148,27 @@ class ChemicalModeling(common.CommonCode):
             (handler.ERROR_CODE)
         )
         handler.add_method(
-            "get_index_of_species",
-            
+            "get_firstlast_abundance",
+            (),
+            (handler.NO_UNIT, handler.NO_UNIT, handler.ERROR_CODE),
         )
-    
+        handler.add_method(
+            "evolve_model",
+            (units.s),
+            (handler.ERROR_CODE)
+        )
+        handler.add_method(
+            "get_time",
+            (),
+            (units.s, handler.ERROR_CODE)
+        )
+
+    def define_particle_sets(self, handler):
+        handler.define_set('particles', 'id')
+        handler.set_new('particles', 'new_particle')
+        handler.set_delete('particles', 'delete_particle')
+        handler.add_setter('particles', 'set_state')
+        handler.add_getter('particles', 'get_state')
+        handler.add_gridded_getter('particles', 'get_abundance','get_firstlast_abundance', names = ('abundances',))
+        handler.add_gridded_setter('particles', 'set_abundance','get_firstlast_abundance', names = ('abundances',))
 
