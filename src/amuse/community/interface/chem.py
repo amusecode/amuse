@@ -107,10 +107,10 @@ class ChemicalModeling(common.CommonCode):
     def __init__(self,legacy_interface, **options):
         common.CommonCode.__init__(self, legacy_interface,**options)
         #Create dictionary of all species in the network
-        self.species = dict()
-        first, last = self.get_firstlast_abundance()
-        for i in range(first, last+1):
-            self.species[self.get_name_of_species(i)] = i-1
+        #self.species = dict()
+        #first, last = self.get_firstlast_abundance()
+        #for i in range(first, last+1):
+        #    self.species[self.get_name_of_species(i)] = i-1
     
     def define_methods(self, handler):
         common.CommonCode.define_methods(self, handler)
