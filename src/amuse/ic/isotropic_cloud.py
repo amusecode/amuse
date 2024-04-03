@@ -40,12 +40,15 @@ def relative_position_and_velocity_from_orbital_elements(
     mass1, mass2, semimajor_axis, eccentricity, mean_anomaly, seed=None
 ):
     """
-    Function that returns relative positions and velocity vectors or orbiters with masses
-    mass2 of the central body with mass mass1 in Cartesian coordinates;
-    for vectors of orbital elements -- semi-major axes, eccentricities, mean anomalies.
-    3D orientation of orbits (inclination, longitude of ascending node and argument of periapsis) are random.
-    (cos(incl) is uniform -1--1, longitude of ascending node and argument of periapsis are uniform 0--2pi)
-    Assuming mass1 is static in the center [0,0,0] m, [0,0,0] km/s (that is mass2<<mass1)
+    Function that returns relative positions and velocity vectors or orbiters
+    with masses mass2 of the central body with mass mass1 in Cartesian
+    coordinates; for vectors of orbital elements -- semi-major axes,
+    eccentricities, mean anomalies.
+    3D orientation of orbits (inclination, longitude of ascending node and
+    argument of periapsis) are random.  (cos(incl) is uniform -1--1, longitude
+    of ascending node and argument of periapsis are uniform 0--2pi)
+    Assuming mass1 is static in the center [0,0,0] m, [0,0,0] km/s (that is
+    mass2<<mass1)
     """
     position_vectors = []
     velocity_vectors = []
@@ -109,7 +112,7 @@ def ecc_random_power_with_min_peri(n, semi, min_peri, power=2.0):
     return x
 
 
-class SphericalIsotropicCloud(object):
+class SphericalIsotropicCloud:
     def __init__(
         self,
         targetN,
@@ -120,7 +123,9 @@ class SphericalIsotropicCloud(object):
         q_min=32.0 | units.AU,
         gamma=-1.5,
         seed=None,
+        **kwargs
     ):
+        self.kwargs = kwargs
         self.targetN = targetN
         self.m_star = m_star
         self.m_cloud = m_cloud
@@ -163,7 +168,7 @@ class SphericalIsotropicCloud(object):
     @property
     def result(self):
         masses, position_vectors, velocity_vectors = self.new_model()
-        result = Particles(self.targetN)
+        result = Particles(self.targetN, **self.kwargs)
         result.mass = masses
         result.position = position_vectors
         result.velocity = velocity_vectors
