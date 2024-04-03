@@ -17,7 +17,7 @@ from amuse import datamodel
 __all__ = ["new_plummer_gas_model"]
 
 
-class MakePlummerGasModel(object):
+class MakePlummerGasModel:
     def __init__(
         self,
         targetN,
@@ -26,7 +26,9 @@ class MakePlummerGasModel(object):
         rscale=1 / 1.695,
         mass_cutoff=0.999,
         do_scale=False,
+        **kwargs
     ):
+        self.kwargs = kwargs
         self.targetN = targetN
         self.convert_nbody = convert_nbody
         self.rscale = rscale
@@ -58,7 +60,7 @@ class MakePlummerGasModel(object):
     @property
     def result(self):
         mass, x, y, z, vx, vy, vz, u = self.new_model()
-        result = datamodel.Particles(self.actualN)
+        result = datamodel.Particles(self.actualN, **self.kwargs)
         result.mass = nbody_system.mass.new_quantity(mass)
         result.x = nbody_system.length.new_quantity(x)
         result.y = nbody_system.length.new_quantity(y)
@@ -76,7 +78,7 @@ class MakePlummerGasModel(object):
             internal_energy = result.thermal_energy()
             result.u *= (0.25 | nbody_system.energy) / internal_energy
 
-        if not self.convert_nbody is None:
+        if self.convert_nbody is not None:
             result = datamodel.ParticlesWithUnitsConverted(
                 result, self.convert_nbody.as_converter_from_si_to_generic()
             )
