@@ -14,7 +14,11 @@ from amuse import datamodel
 __all__ = ["new_king_model"]
 
 
-class MakeKingModel(object):
+class MakeKingModel:
+    """
+    Makes a distribution of particles following a King model
+    """
+
     def __init__(
         self,
         number_of_particles,
@@ -24,7 +28,9 @@ class MakeKingModel(object):
         beta=0.0,
         verbose=False,
         center_model=True,
+        **kwargs
     ):
+        self.kwargs = kwargs
         self.number_of_particles = number_of_particles
         self.convert_nbody = convert_nbody
         self.center_model = center_model
@@ -517,7 +523,7 @@ class MakeKingModel(object):
     @property
     def result(self):
         masses, positions, velocities = self.makeking()
-        result = datamodel.Particles(self.number_of_particles)
+        result = datamodel.Particles(self.number_of_particles, **self.kwargs)
         result.mass = nbody_system.mass.new_quantity(masses)
         result.position = nbody_system.length.new_quantity(positions)
         result.velocity = nbody_system.speed.new_quantity(velocities)
