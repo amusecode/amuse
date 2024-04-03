@@ -141,7 +141,7 @@ class MakePlummerModel:
         radius, theta, phi = self.new_velocities_spherical_coordinates(radius)
         vx, vy, vz = self.coordinates_from_spherical(radius, theta, phi)
 
-        result = datamodel.Particles(self.number_of_particles, self.kwargs)
+        result = datamodel.Particles(self.number_of_particles, **self.kwargs)
         result.mass = nbody_system.mass.new_quantity(masses)
         result.x = nbody_system.length.new_quantity(
             x.reshape(self.number_of_particles) / 1.695
