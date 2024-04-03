@@ -6,10 +6,10 @@ follow a spherically symmetric density profile of the form:
 rho = c * (1 + r**2)**(-5/2)
 """
 
+from math import pi, sqrt
+
 import numpy
 import numpy.random
-
-from math import pi, sqrt
 
 from amuse.units import nbody_system
 from amuse import datamodel
@@ -17,7 +17,7 @@ from amuse import datamodel
 __all__ = ["new_plummer_sphere", "new_plummer_model"]
 
 
-class MakePlummerModel(object):
+class MakePlummerModel:
     def __init__(
         self,
         number_of_particles,
@@ -27,14 +27,16 @@ class MakePlummerModel(object):
         do_scale=False,
         random_state=None,
         random=None,
+        **kwargs
     ):
+        self.kwargs = kwargs
         self.number_of_particles = number_of_particles
         self.convert_nbody = convert_nbody
         self.mass_cutoff = min(
             mass_cutoff, self.calculate_mass_cuttof_from_radius_cutoff(radius_cutoff)
         )
         self.do_scale = do_scale
-        if not random_state == None:
+        if random_state is not None:
             print("DO NOT USE RANDOM STATE")
 
         self.random_state = None
@@ -139,7 +141,7 @@ class MakePlummerModel(object):
         radius, theta, phi = self.new_velocities_spherical_coordinates(radius)
         vx, vy, vz = self.coordinates_from_spherical(radius, theta, phi)
 
-        result = datamodel.Particles(self.number_of_particles)
+        result = datamodel.Particles(self.number_of_particles, self.kwargs)
         result.mass = nbody_system.mass.new_quantity(masses)
         result.x = nbody_system.length.new_quantity(
             x.reshape(self.number_of_particles) / 1.695
@@ -165,7 +167,7 @@ class MakePlummerModel(object):
         if self.do_scale:
             result.scale_to_standard()
 
-        if not self.convert_nbody is None:
+        if self.convert_nbody is not None:
             result = datamodel.ParticlesWithUnitsConverted(
                 result, self.convert_nbody.as_converter_from_si_to_generic()
             )
