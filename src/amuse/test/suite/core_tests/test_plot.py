@@ -61,11 +61,11 @@ class TestPlot(amusetest.TestCase):
         x = numpy.linspace(0, 100, 100) | units.yr
         y = numpy.linspace(0, 200, 100) | units.RSun
 
-        set_printing_strategy('custom', preferred_units=[units.Myr, units.AU])
+        set_printing_strategy('custom', preferred_units=[units.Myr, units.au])
         aplot.plot(x, y)
 
         self.assertEqual("[Myr]", self.xaxis().get_label_text())
-        self.assertEqual("[AU]", self.yaxis().get_label_text())
+        self.assertEqual("[au]", self.yaxis().get_label_text())
         self.assertAlmostRelativeEquals(0., pyplot.xlim()[0], 2)
         self.assertAlmostRelativeEquals(0.0001, pyplot.xlim()[1], 1)
 
@@ -81,7 +81,7 @@ class TestPlot(amusetest.TestCase):
 
         aplot.plot(x, y)
 
-        text = aplot.text(50 | units.yr, 0.5 | units.AU, "test text")
+        text = aplot.text(50 | units.yr, 0.5 | units.au, "test text")
 
         self.assertEqual(50., text.get_position()[0])
         self.assertAlmostEqual(107.546995464, text.get_position()[1])
