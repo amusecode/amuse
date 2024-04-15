@@ -1,6 +1,10 @@
-!MODULE PhantomInterface
-!    
-!CONTAINS
+!module amuseinterface
+!  use allocutils, only:allocate_array
+!  implicit none
+!  integer, allocatable:: sph_particle_map(:)
+!
+!  call allocate_array('sph_particle_map', sph_particle_map, maxp)
+!contains
 
 function initialize_code()
   use StoppingConditions
@@ -8,7 +12,7 @@ function initialize_code()
   integer :: initialize_code
   integer :: error
   double precision :: polyk
-  call amuse_initialize_code()
+  call amuse_initialize_code_new()
 
   !error = set_support_for_condition(TIMEOUT_DETECTION)
   !error = set_support_for_condition(NUMBER_OF_STEPS_DETECTION)
@@ -202,6 +206,15 @@ function get_internal_energy(index_of_the_particle, u)
   get_internal_energy=0
 end function
 
+function get_particle_type(index_of_the_particle, itype)
+  implicit none
+  integer :: index_of_the_particle
+  integer :: itype
+  integer :: get_particle_type
+  !call amuse_get_particle_type(index_of_the_particle, itype)
+  get_particle_type = -1
+end function
+
 function get_index_of_first_particle(index_of_the_particle)
   implicit none
   integer :: index_of_the_particle
@@ -241,6 +254,7 @@ function evolve_model(tmax)
   integer :: is_density_limit_detection_enabled, stopping_index
   integer :: error
   double precision :: minimum_density_parameter, maximum_density_parameter, rho, radius
+  double precision :: time
 
   error = reset_stopping_conditions()
   error = is_stopping_condition_enabled(&
@@ -248,11 +262,12 @@ function evolve_model(tmax)
   error = get_stopping_condition_minimum_density_parameter(minimum_density_parameter)
   error = get_stopping_condition_maximum_density_parameter(maximum_density_parameter)
 
+  call amuse_get_time(time)
   call amuse_evolve_model(tmax)
   if (is_density_limit_detection_enabled > 0) then
       call amuse_get_number_of_sph_particles(nmax)
-      do i=1, nmax
-          call amuse_get_radius(i, radius)
+      do i=1, nmax  ! need to loop over sph particles, excluding 'dead' particles!
+          call amuse_get_radius(i, radius)  ! if hsmooth <= 0, particle is dead
           if (radius > 0) then
               call amuse_get_density(i, rho)
               if (&
@@ -265,6 +280,8 @@ function evolve_model(tmax)
                       error = set_stopping_condition_particle_index(stopping_index, 0, i)
                   endif
               endif
+          ! else
+          ! nmax += 1
           endif
       enddo
   endif
@@ -475,6 +492,24 @@ function get_radius(index_of_the_particle, radius)
   get_radius=0
 end function
 
+function get_sink_temperature(index_of_the_particle, temperature)
+  implicit none
+  integer :: index_of_the_particle
+  double precision :: temperature
+  integer :: get_sink_temperature
+  call amuse_get_sink_temperature(index_of_the_particle, temperature)
+  get_sink_temperature=0
+end function
+
+function get_sink_luminosity(index_of_the_particle, luminosity)
+  implicit none
+  integer :: index_of_the_particle
+  double precision :: luminosity
+  integer :: get_sink_luminosity
+  call amuse_get_sink_luminosity(index_of_the_particle, luminosity)
+  get_sink_luminosity=0
+end function
+
 function get_state_star(index_of_the_particle, mass, x, y, z, vx, vy, vz,  &
     tform, radius)
   implicit none
@@ -489,6 +524,14 @@ function set_begin_time(time)
   double precision :: time
   integer :: set_begin_time
   set_begin_time=-1
+end function
+
+integer function set_phantom_option(name, value, match)
+  implicit none
+  character(*), intent(inout):: name, value
+  logical, intent(inout):: match
+  call amuse_set_phantom_option(name, value, match)
+  set_phantom_option = 0
 end function
 
 function new_dm_particle(index_of_the_particle, mass, x, y, z, vx, vy, vz)
@@ -507,6 +550,7 @@ function new_sink_particle(index_of_the_particle, mass, x, y, z, vx, vy, vz, &
   integer :: index_of_the_particle
   double precision :: mass, x, y, z, vx, vy, vz, radius, h_smooth
   integer :: new_sink_particle
+  write(*,*) 'particle ', index_of_the_particle, ': radius set to ', radius
   call amuse_new_sink_particle(index_of_the_particle, mass, x, y, z, &
       vx, vy, vz, radius, h_smooth)
   new_sink_particle=0
@@ -519,6 +563,24 @@ function set_radius(index_of_the_particle, radius)
   integer :: set_radius
   call amuse_set_radius(index_of_the_particle, radius)
   set_radius=0
+end function
+
+function set_sink_temperature(index_of_the_particle, temperature)
+  implicit none
+  integer :: index_of_the_particle
+  double precision :: temperature
+  integer :: set_sink_temperature
+  call amuse_set_sink_temperature(index_of_the_particle, temperature)
+  set_sink_temperature=0
+end function
+
+function set_sink_luminosity(index_of_the_particle, luminosity)
+  implicit none
+  integer :: index_of_the_particle
+  double precision :: luminosity
+  integer :: set_sink_luminosity
+  call amuse_set_sink_luminosity(index_of_the_particle, luminosity)
+  set_sink_luminosity=0
 end function
 
 function recommit_parameters()
@@ -538,11 +600,23 @@ end function
 function get_state_sph(index_of_the_particle, mass, x, y, z, vx, vy, vz, u,  &
     h_smooth)
   implicit none
-  integer :: index_of_the_particle
+  integer :: index_of_the_particle, n
   double precision :: mass, x, y, z, vx, vy, vz, u, h_smooth
   integer :: get_state_sph
-  call amuse_get_state_gas(index_of_the_particle, mass, x, y, z, vx, vy, vz, u, h_smooth)
-  get_state_sph=0
+  get_state_sph = -1
+  call amuse_get_number_of_sph_particles(n)
+  if (index_of_the_particle < 1) then
+     get_state_sph = -2
+  elseif (index_of_the_particle > n) then
+     !write(*,*) index_of_the_particle, n, "error?"
+     call amuse_get_state_gas(index_of_the_particle, mass, x, y, z, vx, vy, vz, u, h_smooth)
+     !write(*,*) mass, x, y, z
+     !get_state_sph = -3
+     get_state_sph = 0
+  else
+     call amuse_get_state_gas(index_of_the_particle, mass, x, y, z, vx, vy, vz, u, h_smooth)
+     get_state_sph=0
+  endif
 end function
 
 function get_gravity_at_point(eps, x, y, z, ax, ay, az, npoints)
@@ -601,6 +675,7 @@ end function
 function commit_parameters()
   implicit none
   integer :: commit_parameters
+  call amuse_commit_parameters()
   commit_parameters=0
 end function
 
@@ -1133,4 +1208,25 @@ function get_constant_planckh(planckh)
     get_constant_planckh=0
 end function
 
-!END MODULE
+!integer function get_sonic_type(sonic_type)
+!    implicit none
+!    integer :: sonic_type
+!    call amuse_get_sonic_type(sonic_type)
+!    return 0
+!end function
+
+!integer function create_wind(time_step)
+!    use inject, only: inject_particles
+!    ! use inject_wind, only: inject_particles
+!    implicit none
+!    double precision :: time_step
+!
+!    ! Normally, Phantom would use/fill the position/velocity arrays of 
+!    ! gas/sink particles for this subroutine.
+!    ! We can just create a new array instead, and return the values to AMUSE
+!    !call inject_particles(time, dtlast, xyzh, vxyzu, xyzmh_ptmass, vxyz_ptmass,&
+!    !        npart, npart_old, npartoftype, dtinject)
+!    create_wind = 0
+!end function
+
+!end module
