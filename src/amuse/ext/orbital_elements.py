@@ -1,27 +1,28 @@
 """
-orbital element conversion and utility functions
+Orbital element conversion and utility functions
 
-this module provides:
+This module provides the following functions:
 
-generate_binaries
-orbital_elements
-get_orbital_elements_from_binary
-get_orbital_elements_from_binaries
-get_orbital_elements_from_arrays
+- generate_binaries
+- orbital_elements
+- get_orbital_elements_from_binary
+- get_orbital_elements_from_binaries
+- get_orbital_elements_from_arrays
 
-and the following deprecated functions (assume input
+And the following deprecated functions (which assume input
 or output angle floats to be degrees):
 
-new_binary_from_orbital_elements
-orbital_elements_from_binary
-orbital_elements_for_rel_posvel_arrays
+- new_binary_from_orbital_elements
+- orbital_elements_from_binary
+- orbital_elements_for_rel_posvel_arrays
 
 """
 
-import numpy
-
 import warnings
 
+import numpy
+
+from amuse.units.quantities import as_vector_quantity
 from amuse.units import units, constants, nbody_system
 from amuse.units.trigo import cos, sin, arccos, arctan2
 from amuse.datamodel import Particles, Particle
@@ -494,6 +495,8 @@ def get_orbital_elements_from_arrays(
     else:
         rel_position = rel_position_raw
         rel_velocity = rel_velocity_raw
+    rel_position = as_vector_quantity(rel_position)
+    rel_velocity = as_vector_quantity(rel_velocity)
 
     if G is None:
         G=derive_G(total_masses[0])

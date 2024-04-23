@@ -446,8 +446,8 @@ class KeplerTests(amusetest.TestCase):
             a3 = ([numpy.cos(w), -numpy.sin(w), 0.0], [numpy.sin(w), numpy.cos(w), 0.0], [0.0, 0.0, 1.0])
             A = numpy.dot(numpy.dot(a1, a2), a3)
 
-            r_vec = numpy.dot(A, numpy.reshape(ri, 3, 1))
-            v_vec = numpy.dot(A, numpy.reshape(vi, 3, 1))
+            r_vec = numpy.dot(A, numpy.reshape(ri, (3, 1)))
+            v_vec = numpy.dot(A, numpy.reshape(vi, (3, 1)))
 
             r = (0.0, 0.0, 0.0) | units.AU
             v = (0.0, 0.0, 0.0) | (units.AU / units.day)
