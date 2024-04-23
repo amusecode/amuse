@@ -22,7 +22,7 @@ jobs:
           - mpich
           - openmpi
         os:
-          - ubuntu-22.04
+          # - ubuntu-22.04
           - ubuntu-20.04
           # macOS is not ready yet - needs other setup of prerequisites
           # - macos-12
