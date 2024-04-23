@@ -1,11 +1,11 @@
-from amuse.test import amusetest
 from io import StringIO
 import textwrap
 import os
-import numpy
 import tempfile
+import numpy
 
 from amuse import io
+from amuse.test import amusetest
 from amuse.io import text
 from amuse.units import units
 from amuse.units import quantities, core
