@@ -533,7 +533,7 @@ class MakeKingModel:
         if self.do_scale:
             result.scale_to_standard()
 
-        if not self.convert_nbody is None:
+        if self.convert_nbody is not None:
             result = datamodel.ParticlesWithUnitsConverted(
                 result, self.convert_nbody.as_converter_from_si_to_generic()
             )
