@@ -264,7 +264,7 @@ class CalculateFieldForParticles:
     def _softening_lengths_squared_shared(self):
         return (
             self.smoothing_length_squared
-        )  # .as_vector_with_length(len(self.particles))
+        )
 
     def cleanup_code(self):
         self.particles = datamodel.Particles()
@@ -673,7 +673,7 @@ class Bridge:
         result = quantities.zero
         for x in self.codes:
             result += x.kinetic_energy
-        return result  # - self.kick_energy
+        return result
 
     @property
     def thermal_energy(self):

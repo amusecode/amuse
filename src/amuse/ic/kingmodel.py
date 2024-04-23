@@ -349,7 +349,7 @@ class MakeKingModel:
         found_index = False
         for i1 in range(
             self.index[i], self.index[i + 1] + 2
-        ):  # (i1 = self.indx[i]; i1 <= indx[i+1]+1; i1++)
+        ):
             if self.zm[i1] > rno:
                 found_index = True
                 break

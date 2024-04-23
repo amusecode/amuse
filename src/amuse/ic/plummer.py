@@ -33,7 +33,7 @@ class MakePlummerModel:
         self.number_of_particles = number_of_particles
         self.convert_nbody = convert_nbody
         self.mass_cutoff = min(
-            mass_cutoff, self.calculate_mass_cuttof_from_radius_cutoff(radius_cutoff)
+            mass_cutoff, self.calculate_mass_cutoff_from_radius_cutoff(radius_cutoff)
         )
         self.do_scale = do_scale
         if random_state is not None:
@@ -46,7 +46,7 @@ class MakePlummerModel:
         else:
             self.random = random
 
-    def calculate_mass_cuttof_from_radius_cutoff(self, radius_cutoff):
+    def calculate_mass_cutoff_from_radius_cutoff(self, radius_cutoff):
         if radius_cutoff > 99999:
             return 1.0
         scale_factor = 16.0 / (3.0 * pi)
