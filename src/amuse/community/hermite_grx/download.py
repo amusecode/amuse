@@ -77,7 +77,7 @@ def new_argument_parser():
     result = argparse.ArgumentParser()
     result.add_argument(
         "--seba-version",
-        default="e0cf110efc344011674b9d92d72b67629e2c1bd6",
+        default="c69fa0af018adbbd13d30a7e853c0179b8afbf7f",
         dest="hermite_grx_version",
         help="Hermite_GRX commit hash to download",
         type=str,
