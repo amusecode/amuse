@@ -574,11 +574,6 @@ int get_potential(int id, double *pot)
   return 0;
 }
 
-int set_acceleration(int id, double ax, double ay, double az)
-{
-  return -2;
-}
-
 int get_acceleration(int id, double *ax, double *ay, double *az)
 {
   return -2;
