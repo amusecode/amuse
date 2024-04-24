@@ -137,31 +137,6 @@ class Bonsai2Interface(CodeInterface, LiteratureReferencesMixIn, GravitationalDy
         return function        
         
     @legacy_function
-    def set_acceleration():
-        """
-        Set the velocity vector of a particle.
-        """
-        function = LegacyFunctionSpecification()
-        function.must_handle_array = True
-        function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN,
-            description = "Index of the particle to get the state from. This index must have been returned by an earlier call to :meth:`new_particle`")
-        function.addParameter('ax', dtype='float64', direction=function.IN, description = "The current x component of the velocity vector of the particle")
-        function.addParameter('ay', dtype='float64', direction=function.IN, description = "The current y component of the velocity vector of the particle")
-        function.addParameter('az', dtype='float64', direction=function.IN, description = "The current z component of the velocity vector of the particle")
-        function.addParameter('length', 'int32', function.LENGTH)
-        function.result_type = 'int32'
-        function.result_doc = """
-        0 - OK
-            current value was retrieved
-        -1 - ERROR
-            particle could not be found
-        -2 - ERROR
-            not yet implemented
-        """
-        return function        
-
-
-    @legacy_function
     def get_theta_for_tree():
         """
         Get theta, the opening angle for building the tree: between 0 and 1.
