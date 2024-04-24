@@ -1,4 +1,7 @@
-
+"""
+Overloaded option parser with unit support.
+Now deprecated, standard argparse can be used instead.
+"""
 
 import optparse
 import textwrap
