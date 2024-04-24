@@ -493,6 +493,7 @@ src/amuse/community/seba/src
 packages/amuse*/dist
 packages/dist
 src/amuse/community/phantom/src
+src/amuse/community/hermite_grx/src
 
 # standard directory for a virtualenv
 env/
