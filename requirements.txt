@@ -1,8 +1,9 @@
-setuptools>=65
-setuptools_scm>=6
-wheel>=0.30
-docutils>=0.18
-numpy>=1.18
-pytest>=3.0
-mpi4py>=3.0
-h5py>=3.0
+# These are requirements for the AMUSE framework. Other versions *might* be ok.
+setuptools >= 65, < 70
+setuptools_scm >= 6
+wheel >= 0.30
+docutils >= 0.18
+numpy >= 1.18
+pytest >= 3.0
+mpi4py >= 3.0
+h5py >= 3.0
