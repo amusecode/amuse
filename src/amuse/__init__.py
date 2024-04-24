@@ -52,7 +52,6 @@ except Exception as ex:
     config=NoConfig(message)
 
 
-
 # always report AMUSE reference information
 try:
     from amuse.support.literature import TrackLiteratureReferences

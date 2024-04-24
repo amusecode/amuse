@@ -740,11 +740,11 @@ class StoreHDF(object):
         if append_to_file:
             if os.access(filename, os.F_OK) and not os.access(filename, os.W_OK):
                    raise Exception("Opening file for append but file {0} is not writeable".format(filename))
-            self.hdf5file = h5py.File(filename,'a')
+            self.hdf5file = h5py.File(filename,'a',libver='latest')
         elif open_for_writing:
-            self.hdf5file = h5py.File(filename,'w')
+            self.hdf5file = h5py.File(filename,'w',libver='latest')
         else:
-            self.hdf5file = h5py.File(filename,'r')
+            self.hdf5file = h5py.File(filename,'r',libver='latest')
         
         self.copy_history = copy_history
         self.mapping_from_groupid_to_set = {}

@@ -73,7 +73,7 @@ static real t_evolve = t;                // Time requested by evolve.  Control r
                                 // system is computed by extrapolation.
 static real t_wanted = 0;
 static double begin_time = 0;
-static double end_time_accuracy_factor = 0.5;
+static double end_time_accuracy_factor = 0.0;
 
 static vector<int>  ident;
 static vector<real> mass, radius, potential;

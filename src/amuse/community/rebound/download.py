@@ -19,33 +19,30 @@ class GetCodeFromHttp(object):
         return os.path.abspath(os.path.dirname(__file__))
 
     def src_directory(self):
-        return os.path.join(self.directory(), 'src')
+        return os.path.join(self.directory(), "src")
 
     def unpack_downloaded_file(self, filename):
         print("unpacking", filename)
-        arguments = ['tar', '-xf']
+        arguments = ["tar", "-xf"]
         arguments.append(filename)
+        subprocess.call(arguments, cwd=os.path.join(self.src_directory()))
         subprocess.call(
-            arguments,
-            cwd=os.path.join(self.src_directory())
-        )
-        subprocess.call(
-            ['mv', 'rebound-{version}'.format(version = self.version), 'rebound'],
-            cwd = os.path.join(self.src_directory())
+            ["mv", "rebound-{version}".format(version=self.version), "rebound"],
+            cwd=os.path.join(self.src_directory()),
         )
         print("done")
 
     def start(self):
-        if os.path.exists('src'):
+        if os.path.exists("src"):
             counter = 0
-            while os.path.exists('src.{0}'.format(counter)):
+            while os.path.exists("src.{0}".format(counter)):
                 counter += 1
                 if counter > 100:
                     print("too many backup directories")
                     break
-            os.rename('src', 'src.{0}'.format(counter))
+            os.rename("src", "src.{0}".format(counter))
 
-        os.mkdir('src')
+        os.mkdir("src")
 
         url = self.url_template.format(version=self.version)
         filename = self.filename_template.format(version=self.version)
@@ -56,7 +53,7 @@ class GetCodeFromHttp(object):
         self.unpack_downloaded_file(filename)
 
 
-def main(version=''):
+def main(version=""):
     instance = GetCodeFromHttp()
     instance.version = version
     instance.start()
@@ -66,10 +63,10 @@ def new_option_parser():
     result = OptionParser()
     result.add_option(
         "--version",
-        default='31d117bdc92182073d0941c331f76e95f515bfc6',
+        default="31d117bdc92182073d0941c331f76e95f515bfc6",
         dest="version",
         help="version number to download",
-        type="string"
+        type="string",
     )
     return result
 

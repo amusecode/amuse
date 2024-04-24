@@ -1453,6 +1453,7 @@ int check_counts_and_free(int *count, int length){
 #ifndef NOMPI
         MPI_Reduce(count, NULL, length, MPI_INT, MPI_SUM, 0, GADGET_WORLD);
 #endif
+        delete[] count;
         return 0;
     } else {
 #ifndef NOMPI
