@@ -83,6 +83,35 @@ class petarInterface(
         """
         return function
 
+    @legacy_function
+    def get_binary_companion():
+        """
+        Get the binary state of a particle
+        """
+        function = LegacyFunctionSpecification()
+        function.addParameter(
+            'index_of_the_particle', dtype='int32', direction=function.IN,
+            description=(
+                "Index of the particle to get the state from. This index must "
+                "have been returned by an earlier call to :meth:`new_particle`"
+            )
+        )
+        function.addParameter(
+            'binary_companion', dtype='int32', direction=function.OUT,
+            description="The companion star, if the star is in a binary"
+        )
+        function.result_type = 'int32'
+        function.can_handle_array = True
+        function.result_doc = """
+        0 - OK
+            current value was retrieved
+        -1 - ERROR
+            particle could not be found
+        -2 - ERROR
+            not yet implemented
+        """
+        return function
+
     #@legacy_function
     #def get_gravitational_constant():
     #    """

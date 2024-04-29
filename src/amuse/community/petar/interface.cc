@@ -106,6 +106,7 @@ extern "C" {
         ptr->input_parameters.update_changeover_flag = true;
         ptr->input_parameters.update_rsearch_flag = true;
         ptr->initialParameters();
+        ptr->hard_manager.h4_manager.adjust_group_write_flag = true;
         ptr->initial_step_flag = false;
 
         // set stopping condtions support
@@ -386,6 +387,15 @@ extern "C" {
 #else
         else return -1;
 #endif
+        return 0;
+    }
+
+    int get_binary_companion(int index_of_the_particle, int * binary_companion){
+        reconstruct_particle_list();
+        int index = ptr->getParticleAdrFromID(index_of_the_particle);
+        FPSoft* p = &(ptr->system_soft[index]);
+        //*binary_companion = ptr->getParticleIDFromAdr(p->getBinaryPairID());
+        *binary_companion = p->getBinaryPairID();
         return 0;
     }
 
@@ -737,6 +747,7 @@ extern "C" {
         if (!ptr->read_data_flag) return -1;
         ptr->input_parameters.n_glb.value = ptr->stat.n_real_glb;
         ptr->initialParameters();
+        ptr->hard_manager.h4_manager.adjust_group_write_flag = true;
         ptr->initialStep();
         ptr->reconstructIdAdrMap();
         particle_list_change_flag = false;
