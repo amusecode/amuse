@@ -6,7 +6,7 @@ MODULE uclchemhelper
     IMPLICIT NONE
 CONTAINS
 
-    SUBROUTINE cloud(dictionary, outSpeciesIn,abundance_out,successFlag)
+    SUBROUTINE test_cloud(dictionary, outSpeciesIn,abundance_out, successFlag)
         !Subroutine to call a cloud model, used to interface with python
         ! Loads cloud specific subroutines and send to solveAbundances
         !
@@ -19,19 +19,82 @@ CONTAINS
 
         USE cloud_mod
 
-        CHARACTER(LEN=*) :: dictionary, outSpeciesIn
-        DOUBLE PRECISION :: abundance_out(500)
-        INTEGER :: successFlag
-        !f2py intent(in) dictionary,outSpeciesIn
-        !f2py intent(out) abundance_out,successFlag
+        CHARACTER(LEN=20),intent(in) :: dictionary
+        CHARACTER(LEN=4),intent(in) :: outSpeciesIn
+        DOUBLE PRECISION,intent(out) :: abundance_out(:)
+        INTEGER , intent(out):: successFlag
         successFlag=1
-
         CALL solveAbundances(dictionary, outSpeciesIn,successFlag,initializePhysics,updatePhysics,updateTargetTime,sublimation)
-
         IF ((ALLOCATED(outIndx)) .and. (successFlag .ge. 0)) THEN 
             abundance_out(1:SIZE(outIndx))=abund(outIndx,1)
         END IF 
-    END SUBROUTINE cloud
+    END SUBROUTINE test_cloud
+
+    SUBROUTINE get_rates(dictionary,abundancesIn,speciesIndx,rateIndxs,&
+        &speciesRates,successFlag,transfer,swap,bulk_layers)
+        !Given a species of interest, some parameters and abundances, this subroutine
+        !return the rate of all reactions that include that species plus some extra variables
+        !to allow for the calculation of the rate of bulk/surface ice transfer.
+        USE cloud_mod
+        USE network, only : nspec
+        CHARACTER(LEN=*):: dictionary
+        DOUBLE PRECISION :: abundancesIn(500),speciesRates(500)
+        DOUBLE PRECISION :: transfer,swap,bulk_layers
+        INTEGER:: rateIndxs(500),speciesIndx, successFlag
+        DOUBLE PRECISION :: ydot(nspec+1)
+        INTEGER :: speci,bulk_version,surface_version
+        !f2py intent(in) dictionary,abundancesIn,speciesIndx,rateIndxs
+        !f2py intent(out) speciesRates,successFlag,transfer,swap,bulk_layers
+        INCLUDE 'defaultparameters.f90'
+
+        CALL dictionaryParser(dictionary, "",successFlag)
+        IF (successFlag .lt. 0) THEN
+            WRITE(*,*) 'Error reading parameter dictionary'
+            RETURN
+        END IF
+        CALL coreInitializePhysics(successFlag)
+        CALL initializePhysics(successFlag)
+        IF (successFlag .lt. 0) then
+            WRITE(*,*) 'Error initializing physics'
+            RETURN
+        END IF
+
+        CALL initializeChemistry(readAbunds)
+        dstep=1
+        successFlag=1
+        abund(:nspec,dstep)=abundancesIn(:nspec)
+        abund(neq,dstep)=initialDens
+        currentTime=0.0
+        timeInYears=0.0
+
+        targetTime=1.0d-7
+        CALL updateChemistry(successFlag)
+
+        CALL F(NEQ,currentTime,abund(:,dstep),ydot)
+
+        speciesRates=rate(rateIndxs)
+
+        IF ((specname(speciesIndx)(1:1) .eq. "#") .or.&
+        & (specname(speciesIndx)(1:1) .eq. "@")) THEN
+            DO speci=1,nSpec
+                IF (specname(speci) .eq. "@"//specname(speciesIndx)(2:)) bulk_version=speci
+                IF (specname(speci) .eq. "#"//specname(speciesIndx)(2:)) surface_version=speci
+            END DO
+            IF (YDOT(nsurface) .lt. 0) THEN
+                transfer=YDOT(nsurface)*surfaceCoverage*abund(bulk_version,1)/safeBulk
+            ELSE
+                transfer=YDOT(nsurface)*surfaceCoverage*abund(surface_version,1)
+            END If
+            swap=totalSwap
+            bulk_layers=bulkLayersReciprocal
+        ELSE
+            swap=0.0
+            transfer=0.0
+            bulk_layers=0.0
+        END IF
+
+    END SUBROUTINE get_rates
+
 
     SUBROUTINE solveAbundances(dictionary,outSpeciesIn,successFlag,&
         &modelInitializePhysics,modelUpdatePhysics,updateTargetTime,&
@@ -51,7 +114,6 @@ CONTAINS
 
         INTEGER, INTENT(OUT) :: successFlag
         successFlag=1
-
         ! Set variables to default values
         INCLUDE 'defaultparameters.f90'
         !Read input parameters from the dictionary
@@ -136,7 +198,6 @@ CONTAINS
         LOGICAL :: ChemicalDuplicateCheck
         INTEGER :: posStart, posEnd, whileInteger,inputindx
         CHARACTER(LEN=100) :: inputParameter, inputValue
-
         close(10)
         close(11)
         close(7)
@@ -363,4 +424,41 @@ CONTAINS
         END DO
 
     END SUBROUTINE dictionaryParser
-END MODULE uclchemwrap
+
+    SUBROUTINE coefficientParser(coeffDictString,coeffArray)
+        !Similar to dictionaryParser, it reads a python dictionary
+        !however, it's intended to read pairs of reaction indices and coefficient values
+        !for the alpha, beta, and gama arrays.
+        ! No return value, just modifies the coeffArray
+        CHARACTER(LEN=*) :: coeffDictString
+        REAL(dp), INTENT(INOUT) :: coeffArray(*)
+        INTEGER :: inputIndx,posStart,posEnd
+        CHARACTER(LEN=100) :: inputValue
+        LOGICAL :: continue_flag
+        
+        continue_flag=.True.
+        DO WHILE (continue_flag)
+            !substring containing integer key
+            posStart=1
+            posEnd=SCAN(coeffDictString,':')
+            !read it into index integer
+            READ(coeffDictString(posStart:posEnd-1),*) inputindx
+
+            !substring including alpha value for the index.
+            posStart=posEnd+1
+            posEnd=SCAN(coeffDictString,',')
+            !last value will have a } instead of , so grab index and tell loop to finish
+            IF (posEnd .eq. 0) THEN
+                posEnd=SCAN(coeffDictString,"}")
+                continue_flag=.False.
+            END IF
+
+            !read that substring
+            inputValue=coeffDictString(posStart:posEnd-1)
+            READ(inputValue,*) coeffArray(inputIndx)
+            !update string to remove this entry
+            coeffDictString=coeffDictString(posEnd+1:)
+        END DO
+    END SUBROUTINE coefficientParser
+
+END MODULE uclchemhelper

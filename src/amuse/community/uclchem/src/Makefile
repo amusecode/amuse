@@ -6,7 +6,7 @@ SHELL = /bin/sh
 FC =gfortran
 #FC=ifort
 
-f2pyFC=gnu95 #this must match FC (ifort=intelem, gfortran=gnu95)
+#f2pyFC=gnu95 #this must match FC (ifort=intelem, gfortran=gnu95)
 
 #Unforgiving debugging flags
 #FFLAGS =-g -fbacktrace -Wall -fcheck=all -fPIC
@@ -32,6 +32,10 @@ CHEMISTRY_OBS = photoreactions.o surfacereactions.o chemistry.o
 main: constants.o  network.o ${PHYSICS_OBS} dvode.o ${CHEMISTRY_OBS} io.o wrap.f90 defaultparameters.f90
 	${FC} ${FFLAGS} -o ../../uclchem io.o ${PHYSICS_OBS} dvode.o ${CHEMISTRY_OBS} network.o wrap.f90 main.f90
 
+##module for compiling in amuse
+libchem.a: constants.o  network.o ${PHYSICS_OBS} dvode.o ${CHEMISTRY_OBS} io.o amuse_helpers.o defaultparameters.f90
+	${AR} crs libchem.a io.o ${PHYSICS_OBS} dvode.o ${CHEMISTRY_OBS} network.o amuse_helpers.o
+
 # The order here is the compilation order and it's vital that modules are compiled after their dependencies
 python: constants.o  network.o ${PHYSICS_OBS} dvode.o ${CHEMISTRY_OBS} io.o wrap.f90  defaultparameters.f90
 	python3 -m numpy.f2py -c --fcompiler=${f2pyFC} io.o ${PHYSICS_OBS} dvode.o ${CHEMISTRY_OBS} network.o -m uclchemwrap wrap.f90
@@ -46,4 +50,4 @@ sputtering.o: surfacereactions.o sputtering.f90
 	${FC} ${FFLAGS} -c $<
 
 clean: 
-	rm *.o *.mod *.so ../uclchem/*.so
+	rm -rf *.o *.mod *.so ../uclchem/*.so *.a
