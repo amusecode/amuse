@@ -28,5 +28,8 @@ jobs:
       - name: Run linters
         uses: wearerequired/lint-action@v2
         with:
+          auto_fix:  ${{ github.event_name == 'pull_request' }}
           black: true
-          flake8: true
+          black_auto_fix:  ${{ github.event_name == 'pull_request' }}
+          flake8: false
+          flake8_auto_fix: false
