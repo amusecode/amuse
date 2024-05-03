@@ -1,27 +1,28 @@
 """
-orbital element conversion and utility functions
+Orbital element conversion and utility functions
 
-this module provides:
+This module provides the following functions:
 
-generate_binaries
-orbital_elements
-get_orbital_elements_from_binary
-get_orbital_elements_from_binaries
-get_orbital_elements_from_arrays
+- generate_binaries
+- orbital_elements
+- get_orbital_elements_from_binary
+- get_orbital_elements_from_binaries
+- get_orbital_elements_from_arrays
 
-and the following deprecated functions (assume input
+And the following deprecated functions (which assume input
 or output angle floats to be degrees):
 
-new_binary_from_orbital_elements
-orbital_elements_from_binary
-orbital_elements_for_rel_posvel_arrays
+- new_binary_from_orbital_elements
+- orbital_elements_from_binary
+- orbital_elements_for_rel_posvel_arrays
 
 """
 
-import numpy
-
 import warnings
 
+import numpy
+
+from amuse.units.quantities import as_vector_quantity
 from amuse.units import units, constants, nbody_system
 from amuse.units.trigo import cos, sin, arccos, arctan2
 from amuse.datamodel import Particles, Particle
@@ -340,6 +341,9 @@ def new_binary_from_orbital_elements(
     inclination is given between 0 and 180 deg.
     angles are assumed to be in deg if no unit is given.
     """
+    warnings.warn(
+        "new_binary_from_orbital_elements is deprecated, use generate_binaries instead"
+    )
     def angle_with_unit(angle, default_unit=units.deg):
         try:
             default_unit = angle.unit
@@ -374,7 +378,7 @@ def new_binary_from_orbital_elements(
     return result
 
 
-def get_orbital_elements_from_binary(binary, G=None):
+def get_orbital_elements_from_binary(binary, G=None, return_dict=False):
     """
     Function that computes orbital elements from given two-particle set.
     Elements are computed for the second particle in this set and the
@@ -404,9 +408,20 @@ def get_orbital_elements_from_binary(binary, G=None):
         secondaries[0].velocity = binary.velocity
 
     (
-            mass1, mass2, semimajor_axis, eccentricity, true_anomaly,
-            inclination, long_asc_node, arg_per
-            ) = get_orbital_elements_from_binaries(primaries, secondaries, G=G)
+        mass1, mass2, semimajor_axis, eccentricity, true_anomaly,
+        inclination, long_asc_node, arg_per
+    ) = get_orbital_elements_from_binaries(primaries, secondaries, G=G)
+    if return_dict:
+        return {
+            "mass_primary": mass1[0],
+            "mass_secondary": mass2[0],
+            "semi_major_axis": semimajor_axis[0],
+            "eccentricity": eccentricity[0],
+            "true_anomaly": true_anomaly[0],
+            "inclination": inclination[0],
+            "longitude_of_the_ascending_node": long_asc_node[0],
+            "argument_of_periapsis": arg_per[0],
+        }
     return (
             mass1[0], mass2[0], semimajor_axis[0], eccentricity[0],
             true_anomaly[0], inclination[0], long_asc_node[0], arg_per[0])
@@ -414,9 +429,12 @@ def get_orbital_elements_from_binary(binary, G=None):
 
 def orbital_elements_from_binary(binary, G=None):
     (
-            mass1, mass2, semimajor_axis, eccentricity, true_anomaly,
-            inclination, long_asc_node, arg_per
-            ) = get_orbital_elements_from_binary(binary, G=G)
+        mass1, mass2, semimajor_axis, eccentricity, true_anomaly,
+        inclination, long_asc_node, arg_per
+    ) = get_orbital_elements_from_binary(binary, G=G)
+    warnings.warn(
+        "orbital_elements_from_binary is deprecated, use orbital_elements instead"
+    )
     return (
             mass1, mass2, semimajor_axis, eccentricity,
             true_anomaly.value_in(units.deg),
@@ -426,7 +444,8 @@ def orbital_elements_from_binary(binary, G=None):
 
 
 def get_orbital_elements_from_binaries(
-        primaries, secondaries, G=None):
+    primaries, secondaries, G=None, return_dict=False
+):
     """
     Function that computes orbital elements from given primaries and
     secondaries.
@@ -447,15 +466,25 @@ def get_orbital_elements_from_binaries(
     semimajor_axis, eccentricity, true_anomaly, inclination, long_asc_node, \
         arg_per = get_orbital_elements_from_arrays(
             position, velocity, total_mass, G=G)
-
+    if return_dict:
+        return {
+            "mass_primary": mass1,
+            "mass_secondary": mass2,
+            "semi_major_axis": semimajor_axis,
+            "eccentricity": eccentricity,
+            "true_anomaly": true_anomaly,
+            "inclination": inclination,
+            "longitude_of_the_ascending_node": long_asc_node,
+            "argument_of_periapsis": arg_per,
+        }
     return (
             mass1, mass2, semimajor_axis, eccentricity, true_anomaly,
             inclination, long_asc_node, arg_per)
 
 
 def get_orbital_elements_from_arrays(
-        rel_position_raw, rel_velocity_raw,
-        total_masses, G=None):
+    rel_position_raw, rel_velocity_raw, total_masses, G=None, return_dict=False
+):
     """
     Orbital elements from array of relative positions and velocities vectors,
     based on orbital_elements_from_binary and adapted to work for arrays (each
@@ -494,9 +523,11 @@ def get_orbital_elements_from_arrays(
     else:
         rel_position = rel_position_raw
         rel_velocity = rel_velocity_raw
+    rel_position = as_vector_quantity(rel_position)
+    rel_velocity = as_vector_quantity(rel_velocity)
 
     if G is None:
-        G=derive_G(total_masses[0])
+        G = derive_G(total_masses[0])
 
     separation = (rel_position**2).sum(axis=1)**0.5
     n_vec = len(rel_position)
@@ -616,10 +647,19 @@ def get_orbital_elements_from_arrays(
     sin_true_anomaly = ss2*(e_cross_pos**2).sum(axis=1)**0.5
     true_anomaly = arctan2(sin_true_anomaly, cos_true_anomaly)
 
+    if return_dict:
+        return {
+            "semi_major_axis": semimajor_axis,
+            "eccentricity": eccentricity,
+            "true_anomaly": true_anomaly,
+            "inclination": inc,
+            "longitude_of_the_ascending_node": long_asc_node,
+            "argument_of_periapsis": arg_per_mat,
+        }
     return (
-            semimajor_axis, eccentricity, true_anomaly,
-            inc, long_asc_node, arg_per_mat
-            )
+        semimajor_axis, eccentricity, true_anomaly,
+        inc, long_asc_node, arg_per_mat
+    )
 
 
 def orbital_elements(*args, **kwargs):
@@ -633,10 +673,10 @@ def orbital_elements(*args, **kwargs):
         else:
             raise Exception
     except Exception as ex:
-        if not ex.args: 
-            ex.args=()
+        if not ex.args:
+            ex.args = ()
         ex.args = ex.args + ("""
-  note: orbital elements takes as input either:
+  note: orbital_elements takes as input either:
   - single two particle set,
   - two sets of primaries and secondaries
   - arrays of rel. position, rel. velocity and masses
@@ -644,8 +684,12 @@ def orbital_elements(*args, **kwargs):
         raise
 
 def orbital_elements_for_rel_posvel_arrays(
-        rel_position_raw, rel_velocity_raw,
-        total_masses, G=None):
+    rel_position_raw, rel_velocity_raw, total_masses, G=None
+):
+    warnings.warn(
+        "orbital_elements_for_rel_posvel_arrays is deprecated, "
+        "use orbital_elements instead"
+    )
     (semimajor_axis, eccentricity, true_anomaly, inc, long_asc_node,
         arg_per_mat) = get_orbital_elements_from_arrays(
                 rel_position_raw, rel_velocity_raw, total_masses, G)
@@ -656,9 +700,9 @@ def orbital_elements_for_rel_posvel_arrays(
     arg_per_mat = arg_per_mat.value_in(units.deg)
 
     return (
-            semimajor_axis, eccentricity, true_anomaly,
-            inc, long_asc_node, arg_per_mat
-            )
+        semimajor_axis, eccentricity, true_anomaly, inc, long_asc_node,
+        arg_per_mat
+    )
 
 
 def normalize_vector(vecs, norm, one_dim=False):
