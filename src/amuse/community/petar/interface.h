@@ -31,6 +31,8 @@ int get_radius(int index_of_the_particle, double * radius);
 
 int set_radius(int index_of_the_particle, double radius);
 
+int get_binary_companion(int index_of_the_particle, int * binary_companion);
+
 int get_position(int index_of_the_particle, double * x, double * y, double * z);
 
 int set_position(int index_of_the_particle, double x, double y, double z);

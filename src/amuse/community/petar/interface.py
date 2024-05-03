@@ -603,6 +603,17 @@ class petar(GravitationalDynamics, GravityFieldCode):
         )
 
         handler.add_method(
+            "get_binary_companion",
+            (
+                handler.NO_UNIT,
+            ),
+            (
+                handler.NO_UNIT,
+                handler.ERROR_CODE,
+            )
+        )
+
+        handler.add_method(
             "set_tree_step",
             (
                 nbody_system.time,
@@ -643,6 +654,7 @@ class petar(GravitationalDynamics, GravityFieldCode):
     def define_particle_sets(self, handler):
         GravitationalDynamics.define_particle_sets(self, handler)
         self.stopping_conditions.define_particle_set(handler)
+        handler.add_getter('particles', 'get_binary_companion')
 
 
 PetarInterface = petarInterface

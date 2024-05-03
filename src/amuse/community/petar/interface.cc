@@ -49,7 +49,7 @@ extern "C" {
         // set print flag to rank 0
         ptr->input_parameters.print_flag = (ptr->my_rank==0) ? true: false;
         // set writing flag to false
-        ptr->input_parameters.write_style.value = 0;
+        ptr->input_parameters.write_style.value = 3;
 
         // default input
         int flag= ptr->readParameters(argc,argv);
@@ -392,10 +392,10 @@ extern "C" {
 
     int get_binary_companion(int index_of_the_particle, int * binary_companion){
         reconstruct_particle_list();
-        int index = ptr->getParticleAdrFromID(index_of_the_particle);
+        int index = 1 + ptr->getParticleAdrFromID(index_of_the_particle);
         FPSoft* p = &(ptr->system_soft[index]);
         //*binary_companion = ptr->getParticleIDFromAdr(p->getBinaryPairID());
-        *binary_companion = p->getBinaryPairID();
+        *binary_companion = p->getBinaryPairID() - 1;
         return 0;
     }
 
