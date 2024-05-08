@@ -5,7 +5,6 @@ import pytest
 
 from amuse.test import amusetest
 from amuse.units import units
-from amuse.units import generic_unit_system
 from amuse.units import constants
 from amuse.units import nbody_system
 from amuse.support.interface import ConvertArgumentsException
