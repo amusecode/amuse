@@ -5,6 +5,7 @@ from amuse.units import nbody_system
 from amuse.units import quantities
 from amuse.units import constants
 from amuse.units import units
+from amuse.units import generic_unit_system
 from amuse.units.quantities import zero
 from amuse.units.quantities import VectorQuantity
 from amuse.units.quantities import Quantity
@@ -32,14 +33,16 @@ def move_to_center(particles):
     particles.velocity -= particles.center_of_mass_velocity()
 
 
-def scale_to_standard(particles, convert_nbody = None,
-                      smoothing_length_squared = zero,
-                      virial_ratio = 0.5):
+def scale_to_standard(
+    particles, convert_nbody=None,
+    smoothing_length_squared=zero,
+    virial_ratio=0.5
+):
     """
-    Scale the particles to a standard NBODY model with G=1,
-    total_mass=1, and virial_radius=1 (or potential_energy=-0.5). 
-    In virial equilibrium (virial_ratio=0.5, default) the 
-    kinetic_energy=0.25 and the velocity_dispersion=1/sqrt(2).
+    Scale the particles to a standard NBODY model with G=1, total_mass=1, and
+    virial_radius=1 (or potential_energy=-0.5).  In virial equilibrium
+    (virial_ratio=0.5, default) the kinetic_energy=0.25 and the
+    velocity_dispersion=1/sqrt(2).
 
     :argument convert_nbody: the scaling is in nbody units,
         when the particles are in si units a convert_nbody is needed
@@ -49,9 +52,12 @@ def scale_to_standard(particles, convert_nbody = None,
         Q = virial_ratio > 0.5: supervirial, will expand
         Q = virial_ratio < 0.5: subvirial, will collapse
     """
-    if not convert_nbody is None:
-        particles = ParticlesWithUnitsConverted(particles, convert_nbody.as_converter_from_generic_to_si())
-        if not smoothing_length_squared is zero:
+    if convert_nbody is not None:
+        particles = ParticlesWithUnitsConverted(
+            particles,
+            convert_nbody.as_converter_from_generic_to_si()
+        )
+        if smoothing_length_squared is not zero:
             smoothing_length_squared = convert_nbody.to_nbody(smoothing_length_squared)
 
     # Proper order is to scale mass, then length, then velocities.
@@ -65,18 +71,21 @@ def scale_to_standard(particles, convert_nbody = None,
     scale_factor = ((1 | total_mass.unit) / total_mass)
     particles.mass *= scale_factor
 
-    potential_energy \
-        = particles.potential_energy(G=nbody_system.G,
-                         smoothing_length_squared = smoothing_length_squared)
+    potential_energy = particles.potential_energy(
+        G=nbody_system.G,
+        smoothing_length_squared=smoothing_length_squared
+    )
     target_energy = -0.5 | nbody_system.energy
-    scale_factor = (potential_energy / target_energy)	# unsoftened only...
+    scale_factor = (potential_energy / target_energy)  # unsoftened only...
     particles.position *= scale_factor
     if smoothing_length_squared == zero:
         potential_energy = target_energy
     else:
-        potential_energy = particles.potential_energy(G=nbody_system.G,
-            smoothing_length_squared = smoothing_length_squared)
-    
+        potential_energy = particles.potential_energy(
+            G=nbody_system.G,
+            smoothing_length_squared=smoothing_length_squared
+        )
+
     if virial_ratio == 0:
         scale_factor = 0
     else:
@@ -216,12 +225,14 @@ def kinetic_energy(particles):
     return 0.5 * m_v_squared.sum()
 
 
-def potential_energy(particles, smoothing_length_squared = zero, G = constants.G):
+def potential_energy(
+    particles, smoothing_length_squared=zero, G=None
+):
     """
     Returns the total potential energy of the particles in the particles set.
 
-    :argument smooting_length_squared: gravitational softening, added to every distance**2.
-    :argument G: gravitational constant, need to be changed for particles in different units systems
+    :argument smoothing_length_squared: gravitational softening, added to every distance**2.
+    :argument G: gravitational constant, automatically detected for SI and Nbody units.
 
     >>> from amuse.datamodel import Particles
     >>> particles = Particles(2)
@@ -232,6 +243,15 @@ def potential_energy(particles, smoothing_length_squared = zero, G = constants.G
     >>> particles.potential_energy()
     quantity<-6.67428e-11 m**2 * kg * s**-2>
     """
+
+    if G is None:
+        mass_base_unit = particles.mass.unit.base[0][1]
+        if mass_base_unit is units.kg:
+            G = constants.G
+        elif mass_base_unit is nbody_system.mass:
+            G = nbody_system.G
+        else:
+            raise ValueError(f"Invalid base unit for mass: {mass_base_unit}")
 
     if len(particles) < 2:
         return zero
@@ -743,13 +763,16 @@ def find_closest_particle_to(particles,x,y,z):
     d2=(particles.x-x)**2+(particles.y-y)**2+(particles.z-z)**2
     return particles[d2.number.argmin()]
 
-def potential_energy_in_field(particles, field_particles, smoothing_length_squared = zero, G = constants.G, just_potential = False):
+def potential_energy_in_field(
+    particles, field_particles,
+    smoothing_length_squared=zero, G=constants.G, just_potential=False
+):
     """
     Returns the total potential energy of the particles associated with an external 
     gravitational field, which is represented by the field_particles.
 
     :argument field_particles: the external field consists of these (i.e. potential energy is calculated relative to the field particles) 
-    :argument smooting_length_squared: gravitational softening, added to every distance**2.
+    :argument smoothing_length_squared: gravitational softening, added to every distance**2.
     :argument G: gravitational constant, need to be changed for particles in different units systems
 
     >>> from amuse.datamodel import Particles
@@ -768,7 +791,7 @@ def potential_energy_in_field(particles, field_particles, smoothing_length_squar
     """
     if len(field_particles) == 0:
         return zero * G
-        
+
     n = len(particles)
     dimensions = particles.position.shape[-1]
     transposed_positions = particles.position.reshape([n,1,dimensions]) 
