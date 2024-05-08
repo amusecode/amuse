@@ -1,24 +1,23 @@
-import numpy
+from functools import reduce
 from collections import namedtuple
+
+import numpy
 
 from amuse.units import nbody_system
 from amuse.units import quantities
 from amuse.units import constants
 from amuse.units import units
-from amuse.units import generic_unit_system
 from amuse.units.quantities import zero
 from amuse.units.quantities import VectorQuantity
-from amuse.units.quantities import Quantity
-from amuse.units.quantities import new_quantity
-from amuse.units.quantities import zero
 
 from amuse.support import exceptions
-from amuse.ext.basicgraph import Graph, MinimumSpanningTreeFromEdges, MinimumSpanningTree
+from amuse.ext.basicgraph import (
+    Graph, MinimumSpanningTreeFromEdges, MinimumSpanningTree
+)
 
-from amuse.datamodel import base
 from amuse.datamodel import rotation
 from amuse.datamodel import ParticlesWithUnitsConverted, AbstractParticleSet, Particle
-from functools import reduce
+
 
 def move_to_center(particles):
     """
