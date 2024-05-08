@@ -45,7 +45,7 @@ in the package.
   * Has the code been tested against previously existing codes in the same domain?
 
 **Code Quality**
-  * Is the code compatible with Python >=2.7?
+  * Is the code compatible with Python >=3.7?
   * Are there dependencies other than AMUSE, MPI, the Python Standard
     Library, and NumPy?
   * For compatibility reasons we prefer code that also works on older 

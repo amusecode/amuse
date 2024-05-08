@@ -298,8 +298,6 @@ int get_total_radius (double *radius) { return -2; }
 
 int get_acceleration (int index_of_the_particle, double *ax, double *ay, double *az) { return -2; }
 
-int set_acceleration (int index_of_the_particle, double  ax, double  ay, double  az) { return -2; }
-
 int get_potential (int index_of_the_particle, double *potential) { return -2; }
 
 int get_kinetic_energy (double *kinetic_energy) { return -1; }
