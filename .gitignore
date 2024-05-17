@@ -12,6 +12,8 @@ config.status
 *.egg
 *.mod
 *.mo
+*.class
+*.jar
 *.ptx
 *.dSYM
 build/
@@ -47,7 +49,6 @@ src/amuse/community/asterisk/CodeInterface.java
 src/amuse/community/asterisk/Worker.java
 src/amuse/community/asterisk/asterisk_worker_java
 src/amuse/community/asterisk/src/dist/
-src/amuse/community/asterisk/worker.jar
 src/amuse/community/athena/athena_worker
 src/amuse/community/athena/athena_worker_mhd
 src/amuse/community/athena/athena_worker_scalar
@@ -75,7 +76,6 @@ src/amuse/community/distributed/CodeInterface.java
 src/amuse/community/distributed/Worker.java
 src/amuse/community/distributed/distributed_worker_java
 src/amuse/community/distributed/src/dist/
-src/amuse/community/distributed/worker.jar
 src/amuse/community/etics/worker_code.cc
 src/amuse/community/etics/worker_code.h
 src/amuse/community/evtwin/build/
@@ -458,6 +458,7 @@ test_results/interface.f90
 job_server
 plummer_back_100.ini
 pythonexe
+src/tmp*
 src/amuse/community/evtwin/src/trunk/lib/
 src/amuse/community/mobse/src/mobse
 src/amuse/community/mosse/mosse_c.f90
