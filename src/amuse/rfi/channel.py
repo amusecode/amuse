@@ -654,6 +654,12 @@ class AbstractMessageChannel(OptionalAttributes):
                 continue
             value = getattr(my_class, x)
             if hasattr(value, 'crc32'):
+                if 'CodeInterface' in str(value.specification_function):
+                    continue
+                if 'StoppingConditionInterface' in str(value.specification_function):
+                    continue
+                if 'simplified_function_specification' in str(value.specification_function):
+                    continue
                 is_up_to_date = value.is_compiled_file_up_to_date(modificationtime_of_worker)
                 if not is_up_to_date:
                     raise exceptions.CodeException("""The worker code of the '{0}' interface class is not up to date.
@@ -973,6 +979,7 @@ class MpiChannel(AbstractMessageChannel):
     
     @classmethod
     def finialize_mpi_atexit(cls):
+        logger.debug('MPIChannel finializing MPI')
         if not MPI.Is_initialized():
             return
         if MPI.Is_finalized():
@@ -1007,7 +1014,7 @@ class MpiChannel(AbstractMessageChannel):
 
     @option(type="dict", sections=("channel",))
     def mpi_info_options(self):
-        return dict()
+        return {"map_by": "ppr:1:core:OVERSUBSCRIBE"}
     
     @option(type="int", sections=("channel",))
     def max_message_length(self):

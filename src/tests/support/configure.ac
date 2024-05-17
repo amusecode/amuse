@@ -1,0 +1,32 @@
+AC_CONFIG_MACRO_DIRS([shared/m4])
+AC_INIT([amuse-tests], [1.0])
+
+AC_PROG_CC()
+AC_SUBST(GCC)
+AC_PROG_CXX()
+AC_PROG_FC()
+
+AX_CHECK_CLASSPATH()
+AX_PROG_JAVAC()
+AX_PROG_JAVA()
+AX_PROG_JAR()
+
+AC_LANG_PUSH([C])
+AX_MPI()
+AC_LANG_POP([C])
+
+AC_LANG_PUSH([Fortran])
+AX_MPI()
+AC_LANG_POP([Fortran])
+
+AC_LANG_PUSH([C++])
+AX_MPI()
+AC_LANG_POP([C++])
+
+PKG_CHECK_MODULES([STOPCOND], [libstopcond])
+PKG_CHECK_MODULES([STOPCONDMPI], [libstopcondmpi])
+PKG_CHECK_MODULES([FORSOCKETS], [libforsockets])
+
+AC_CONFIG_FILES([config.mk])
+AC_OUTPUT
+

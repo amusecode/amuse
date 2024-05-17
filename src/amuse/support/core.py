@@ -533,7 +533,7 @@ class MultitonMetaClass(type):
         
     def __call__(mcls, *arguments):
         if arguments in mcls.__INSTANCES__:
-            return  mcls.__INSTANCES__[arguments]
+            return mcls.__INSTANCES__[arguments]
         else:
             instance = type.__call__(mcls, *arguments)
             mcls.__INSTANCES__[arguments] = instance
