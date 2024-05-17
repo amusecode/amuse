@@ -14,6 +14,7 @@ import socket
 import array
 import logging
 import shlex
+import shutil
 
 logger = logging.getLogger(__name__)
 
@@ -37,7 +38,6 @@ from amuse.support.core import late
 from amuse.support import exceptions
 from amuse.support import get_amuse_root_dir, get_amuse_package_dir
 from amuse.rfi import run_command_redirected
-from amuse.config import parse_configmk_lines
 
 from amuse.rfi import slurm
 
@@ -128,7 +128,6 @@ class MPIMessage(AbstractMessage):
     def receive_content(self, comm, header):
         # 4 flags as 8bit booleans in 1st 4 bytes of header
         # endiannes(not supported by MPI channel), error, unused, unused 
-
         flags = header.view(dtype='bool8')
         self.big_endian = flags[0]
         self.error = flags[1]
@@ -512,7 +511,6 @@ class AbstractMessageChannel(OptionalAttributes):
     @classmethod
     def REDIRECT(cls, full_name_of_the_worker, stdoutname, stderrname, command=None, 
                       interpreter_executable=None, run_command_redirected_file=None  ):
-        
         fname = run_command_redirected_file or run_command_redirected.__file__                
         arguments = [fname , stdoutname, stderrname]
         
@@ -574,8 +572,12 @@ class AbstractMessageChannel(OptionalAttributes):
     @option(type="boolean", sections=("channel",))
     def initialize_mpi(self):
         """Is MPI initialized in the code or not. Defaults to True if MPI is available"""
-        return config.mpi.is_enabled
-            
+        try:
+            MpiChannel.ensure_mpi_initialized()
+            return True
+        except ImportError:
+            return False
+
     @option(type='string', sections=("channel",))
     def worker_code_suffix(self):
         return ''
@@ -1128,8 +1130,6 @@ class MpiChannel(AbstractMessageChannel):
         
         
     def send_message(self, call_id, function_id, dtype_to_arguments={}, encoded_units = ()):
-
-        
         if self.intercomm is None:
             raise exceptions.CodeException("You've tried to send a message to a code that is not running")
         
@@ -1754,9 +1754,7 @@ class SocketChannel(AbstractMessageChannel):
     @option(sections=("channel",))
     def mpiexec(self):
         """mpiexec with arguments"""
-        if len(config.mpi.mpiexec):
-            return config.mpi.mpiexec
-        return ''
+        return shutil.which('mpiexec')
 
     @option(sections=("channel",))
     def mpiexec_number_of_workers_flag(self):
@@ -1840,7 +1838,11 @@ class SocketChannel(AbstractMessageChannel):
           return "source "+self.remote_env +"\n"
 
     def generate_remote_command_and_arguments(self,hostname, server_address,port):
-        
+        # Disabled when the new build system was introduced, because we need to make
+        # a new way of detecting the remote installation. The PyPI packages never
+        # included it anyway. TODO
+        raise Exception("Distributed AMUSE is disabled")
+
         # get remote config
         args=["ssh","-T", hostname]
 

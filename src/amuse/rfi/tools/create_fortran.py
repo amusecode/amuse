@@ -1,8 +1,6 @@
 from amuse.support.core import late
 from amuse.support import exceptions
 
-from amuse import config
-
 from amuse.rfi.tools.create_code import GenerateASourcecodeString
 from amuse.rfi.tools.create_code import GenerateASourcecodeStringFromASpecificationClass
 from amuse.rfi.tools.create_code import DTypeSpec
@@ -33,38 +31,6 @@ CONSTANTS_STRING = """
         HEADER_FLOAT_COUNT=7, HEADER_DOUBLE_COUNT=8, & 
         HEADER_BOOLEAN_COUNT=9, HEADER_STRING_COUNT=10, & 
         HEADER_SIZE=11, MAX_COMMUNICATORS = 2048)
-"""
-
-ARRAY_DEFINES_STRING = """
-  integer*4, target :: header_in(HEADER_SIZE)
-  integer*4, target :: header_out(HEADER_SIZE)
-  
-  integer*4, allocatable, target :: integers_in(:)
-  integer*4, allocatable, target :: integers_out(:)
-  
-  integer*8, allocatable, target :: longs_in(:)
-  integer*8, allocatable, target :: longs_out(:)
-  
-  real*4, allocatable, target :: floats_in(:)
-  real*4, allocatable, target :: floats_out(:)
-  
-  real*8, allocatable, target :: doubles_in(:)
-  real*8, allocatable, target :: doubles_out(:)
-
-  logical*1, allocatable, target :: c_booleans_in(:)
-  logical*1, allocatable, target :: c_booleans_out(:)
-
-  logical, allocatable, target :: booleans_in(:)
-  logical, allocatable, target :: booleans_out(:)
-  
-  integer*4, allocatable, target :: string_sizes_in(:)
-  integer*4, allocatable, target :: string_sizes_out(:)
-  
-  character (len=256), allocatable, target :: strings_in(:)
-  character (len=256), allocatable, target :: strings_out(:)
-  
-  character (len=100000) :: characters_in
-  character (len=100000) :: characters_out
 """
 
 ISO_ARRAY_DEFINES_STRING = """
@@ -308,19 +274,6 @@ RECV_HEADER_SLEEP_STRING = """
         else
             call MPI_Wait(header_request, request_status, ioerror)
         endif
-    END SUBROUTINE
-"""
-
-RECV_HEADER_WAIT_STRING = """
-    SUBROUTINE mpi_recv_header(parent, ioerror)
-        use mpi
-        implicit none
-        integer,intent(in) :: parent
-        integer,intent(inout) :: ioerror
-        integer :: request_status(MPI_STATUS_SIZE),header_request
-        
-        call MPI_Irecv(header_in, HEADER_SIZE, MPI_INTEGER, 0, 989, parent, header_request, ioerror)
-        call MPI_Wait(header_request, request_status, ioerror)
     END SUBROUTINE
 """
 
@@ -797,15 +750,6 @@ RUN_LOOP_SOCKETS_STRING = """
     end subroutine
 """
 
-EMPTY_RUN_LOOP_SOCKETS_STRING = """
-    subroutine run_loop_sockets
-    
-      print*, 'fortran: sockets channel not supported in this worker'
-      return
-    
-    end subroutine
-"""
-
 RUN_LOOP_SOCKETS_MPI_STRING = """
     SUBROUTINE run_loop_sockets_mpi
       use iso_c_binding
@@ -1132,18 +1076,16 @@ MAIN_STRING = """
 GETSET_WORKING_DIRECTORY="""
 
 function set_working_directory(directory) result(ret)
-    {0}
     integer :: ret
     character(*), intent(in) :: directory
     ret = chdir(directory)
-end function 
+end function
 
 function get_working_directory(directory) result(ret)
-    {0}
     integer :: ret
     character(*), intent(out) :: directory
     ret = getcwd(directory)
-end function 
+end function
 
 """
 
@@ -1439,17 +1381,14 @@ class GenerateAFortranSourcecodeStringFromASpecificationClass(GenerateASourcecod
         self.out.lf().lf()
    
     def start(self):
-        self.use_iso_c_bindings = config.compilers.fc_iso_c_bindings
-
-        self.out + GETSET_WORKING_DIRECTORY.format("" if not config.compilers.ifort_version else "  use ifport")
+        self.out + GETSET_WORKING_DIRECTORY.format("")
 
         self.out + 'program amuse_worker_program'
         self.out.indent()
         
         self.output_modules()
         
-        if self.use_iso_c_bindings:    
-            self.out.n() + 'use iso_c_binding'
+        self.out.n() + 'use iso_c_binding'
         
         self.out.n() + 'implicit none'
 
@@ -1464,11 +1403,7 @@ class GenerateAFortranSourcecodeStringFromASpecificationClass(GenerateASourcecod
         else:
             self.out.lf().lf() + NOMPI_MODULE_GLOBALS_STRING
             
-        if self.use_iso_c_bindings:
-            self.out.n() + ISO_ARRAY_DEFINES_STRING
-        else:
-            self.out.n() + ARRAY_DEFINES_STRING
-            
+        self.out.n() + ISO_ARRAY_DEFINES_STRING
         
         self.out.lf().lf() + MAIN_STRING
         
@@ -1476,30 +1411,23 @@ class GenerateAFortranSourcecodeStringFromASpecificationClass(GenerateASourcecod
         
         self.out + POLLING_FUNCTIONS_STRING
 
-        self.out + GETSET_WORKING_DIRECTORY.format("" if not config.compilers.ifort_version else "  use ifport")
+        self.out + GETSET_WORKING_DIRECTORY
 
         if self.must_generate_mpi:
             self.out + INTERNAL_FUNCTIONS_STRING
             
-            if self.use_iso_c_bindings:    
-                self.out + RECV_HEADER_SLEEP_STRING
-            else:
-                self.out + RECV_HEADER_WAIT_STRING
+            self.out + RECV_HEADER_SLEEP_STRING
                 
             self.out + RUN_LOOP_MPI_STRING
         else:
             self.out + NOMPI_INTERNAL_FUNCTIONS_STRING
             
             self.out + EMPTY_RUN_LOOP_MPI_STRING
-        if self.use_iso_c_bindings:
-            self.out.n() + RUN_LOOP_SOCKETS_STRING
+        self.out.n() + RUN_LOOP_SOCKETS_STRING
 
-            if self.must_generate_mpi:
-                self.out.n() + RUN_LOOP_SOCKETS_MPI_STRING
-            else:
-                self.out.n() + EMPTY_RUN_LOOP_SOCKETS_MPI_STRING
+        if self.must_generate_mpi:
+            self.out.n() + RUN_LOOP_SOCKETS_MPI_STRING
         else:
-            self.out.n() + EMPTY_RUN_LOOP_SOCKETS_STRING
             self.out.n() + EMPTY_RUN_LOOP_SOCKETS_MPI_STRING
         
         self.output_handle_call()

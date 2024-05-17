@@ -1,12 +1,10 @@
-import amuse
-
 import sys
 
 print(sys.path)
 
 
 def test():
-    amuse.config.compilers.fc_iso_c_bindings
+    import amuse
 
 
 if __name__ == "__main__":

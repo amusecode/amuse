@@ -4,21 +4,6 @@ import os
 
 from optparse import OptionParser
 
-# Should probably use an absolute import here (support.config), but
-# we're not guaranteed this script will always be in a support
-# subdirectory with an __init__.py file.
-#try:  # running as a module
-#    from . import config
-#except (ImportError, ValueError):  # running as a stand-alone script
-#    import config
-
-# setup_sys_path()
-
-# this should not be necessary?
-sys.path.insert(0,os.getcwd())
-
-from amuse import config
-
 from amuse.rfi.tools import create_c
 from amuse.rfi.tools import create_fortran
 from amuse.rfi.tools import create_java
@@ -28,34 +13,6 @@ from amuse.rfi.tools import create_python_worker
 from amuse.support import get_amuse_root_dir, get_amuse_package_dir
 from amuse.support.literature import TrackLiteratureReferences    
 
-def get_amuse_directory():
-    filename_of_this_script = __file__
-    directory_of_this_script = os.path.dirname(os.path.dirname(filename_of_this_script))
-    directory_of_this_script = os.path.join(directory_of_this_script, 'build', 'lib')
-    if os.path.isabs(directory_of_this_script):
-        return directory_of_this_script
-    else:
-        return os.path.abspath(directory_of_this_script)
-
-# in case of trouble consult old python 2:     
-    #~ def get_amuse_directory():
-        #~ filename_of_this_script = __file__
-        #~ directory_of_this_script = os.path.dirname(os.path.dirname(filename_of_this_script))
-        #~ if os.path.isabs(directory_of_this_script):
-            #~ return directory_of_this_script
-        #~ else:
-            #~ return os.path.abspath(directory_of_this_script)
-
-def setup_sys_path():
-    amuse_directory = os.environ["AMUSE_DIR"]
-    sys.path.insert(0, amuse_directory)
-    try:
-      src_root_directory = os.environ["MUSE_PACKAGE_DIR"]
-      sys.path.insert(0, src_root_directory)
-    except:
-      src_root_directory = amuse_directory
-    sys.path.insert(0, os.path.join(src_root_directory,"src"))
-    sys.path.append(os.getcwd())
 
 class ParseCommandLine(object):
     usage = """usage: %prog [options] name_of_module name_of_class_in_module.
@@ -156,27 +113,7 @@ class ParseCommandLine(object):
             default=False,
             dest="make_executable",
             help="Set the executable bit when generating the output file")
-        
-        self.parser.add_option(
-            "--get-amuse-dir",
-            action="store_true",
-            default=False,
-            dest="get_amuse_dir",
-            help="Only output amuse directory")
-        self.parser.add_option(
-            "--get-amuse-package-dir",
-            action="store_true",
-            default=False,
-            dest="get_amuse_package_dir",
-            help="Only output the amuse package root directory")
-        self.parser.add_option(
-            "--get-amuse-configmk",
-            action="store_true",
-            default=False,
-            dest="get_amuse_configmk",
-            help="dump amuse config.mk")
 
-        
         self.options = None
         self.arguments = None
         
@@ -199,8 +136,6 @@ class ParseCommandLine(object):
         
         
     def parse_arguments(self):
-        if self.options.get_amuse_dir or self.options.get_amuse_package_dir or self.options.get_amuse_configmk:
-            return
         if self.options.mode == 'dir':
             if len(self.arguments) != 1:
                 self.show_error_and_exit("incorrect number of arguments, need name of the code")
@@ -248,9 +183,6 @@ class ParseCommandLine(object):
         
     def show_error_and_exit(self, exception):
         self.parser.error(exception)
-        
-    
-    
     
     
 def module_name(string):
@@ -333,7 +265,7 @@ def make_file(uc):
         builder.ignore_functions_from_specification_classes = settings.ignore_classes
         builder.underscore_functions_from_specification_classes = settings.underscore_classes
         builder.needs_mpi = settings.needs_mpi.lower() == 'true'
-        builder.is_mpi_enabled = config.mpi.is_enabled
+        builder.is_mpi_enabled = True
         builder.name_of_outputfile = settings.output
     except:
         uc.show_error_and_exit("'{0}' and '{1}' is not a valid combination of type and mode, cannot generate the code".format(settings.type, settings.mode))
@@ -380,17 +312,7 @@ def amusifier():
     uc = ParseCommandLine()
     uc.start()
     
-    if uc.options.get_amuse_dir:
-        print(get_amuse_root_dir())
-        exit(0)
-    elif uc.options.get_amuse_package_dir:
-        print(get_amuse_package_dir())
-        exit(0)
-    elif uc.options.get_amuse_configmk:
-        with open(os.path.join(get_amuse_root_dir(), "config.mk")) as f:
-            print(f.read())
-            exit(0)
-    elif uc.options.mode == 'dir':
+    if uc.options.mode == 'dir':
         make_directory(uc)
     else:
         make_file(uc)
@@ -398,4 +320,3 @@ def amusifier():
 if __name__ == '__main__':
 
     amusifier()
-    
