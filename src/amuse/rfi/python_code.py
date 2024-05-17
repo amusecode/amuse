@@ -191,7 +191,6 @@ class PythonImplementation(object):
         specification = legacy_function.specification
         dtype_to_count = self.get_dtype_to_count(specification)
         
-        
         if hasattr(specification, "internal_provided"):
             method = getattr(self, specification.name)
         else:
@@ -347,12 +346,12 @@ class PythonImplementation(object):
     
     
 
-    def internal__set_message_polling_interval(self, inval):
-        self.polling_interval = inval
+    def internal__set_message_polling_interval(self, polling_interval):
+        self.polling_interval = polling_interval
         return 0
     
-    def internal__get_message_polling_interval(self, outval):
-        outval.value = self.polling_interval 
+    def internal__get_message_polling_interval(self, polling_interval):
+        polling_interval.value = self.polling_interval 
         return 0
         
     def get_null_info(self):
