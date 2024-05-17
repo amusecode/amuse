@@ -7,7 +7,7 @@ from amuse.datamodel.parameters import *
 from amuse.support.core import OrderedDictionary
 from amuse.support import exceptions
 
-from amuse.test import amusetest
+import amusetest
 import numpy
 import pickle
 from amuse.units import units
@@ -83,7 +83,7 @@ class CodeInterfaceWithConvertedUnitsTests(amusetest.TestCase):
 
         self.assertEqual(instance.return_an_errorcode(0), None)
         self.assertRaises(Exception, lambda: instance.return_an_errorcode(-1),
-            expected_message="Error when calling 'return_an_errorcode' of a '<class 'amuse.support.interface.InCodeComponentImplementation'>', errorcode is -1"
+            expected_message="Error when calling 'return_an_errorcode' of a 'InCodeComponentImplementation', errorcode is -1"
         )
 
 
@@ -260,7 +260,7 @@ class CodeInterfaceWithMethodsAndPropertiesTests(amusetest.TestCase):
         handler.add_method('get_state_error', (handler.NO_UNIT,), (units.m, units.m, units.kg, handler.ERROR_CODE))
 
         self.assertRaises(AmuseException, instance.get_state_error, 1,
-            expected_message="Error when calling 'get_state_error' of a '<class 'amuse.support.interface.InCodeComponentImplementation'>', errorcode is -1.0")
+            expected_message="Error when calling 'get_state_error' of a 'InCodeComponentImplementation', errorcode is -1.0")
 
 
 class ClassWithState(object):
@@ -751,10 +751,10 @@ class CodeInterfaceWithErrorHandlingTests(amusetest.TestCase):
 
         self.assertEqual(instance.get_mass(), 10.0 | units.m)
         original.errorcode = -2
-        self.assertRaises(AmuseException, instance.get_mass, expected_message="Error when calling 'get_mass' of a '<class 'amuse.support.interface.InCodeComponentImplementation'>', errorcode is -2, error is 'no such method'")
+        self.assertRaises(AmuseException, instance.get_mass, expected_message="Error when calling 'get_mass' of a 'InCodeComponentImplementation', errorcode is -2, error is 'no such method'")
 
         original.errorcode = -1
-        self.assertRaises(AmuseException, instance.get_mass, expected_message="Error when calling 'get_mass' of a '<class 'amuse.support.interface.InCodeComponentImplementation'>', errorcode is -1")
+        self.assertRaises(AmuseException, instance.get_mass, expected_message="Error when calling 'get_mass' of a 'InCodeComponentImplementation', errorcode is -1")
 
 
 class CodeInterfaceWithParticlesTests(amusetest.TestCase):

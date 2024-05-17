@@ -577,7 +577,7 @@ class MethodWithUnitsDefinition(CodeMethodWrapperDefinition):
         if errorcode in self.wrapped_object.errorcodes:
             raise exceptions.AmuseException(
                 f"Error when calling '{self.name}' of a "
-                f"'{type(self.wrapped_object)}', errorcode is "
+                f"'{type(self.wrapped_object).__qualname__}', errorcode is "
                 f"{errorcode}, error is "
                 f"'{self.wrapped_object.errorcodes[errorcode]}'",
                 errorcode,
@@ -585,7 +585,7 @@ class MethodWithUnitsDefinition(CodeMethodWrapperDefinition):
         elif errorcode < 0:
             raise exceptions.AmuseException(
                 f"Error when calling '{self.name}' of a "
-                f"'{type(self.wrapped_object)}', errorcode is "
+                f"'{type(self.wrapped_object).__qualname__}', errorcode is "
                 f"{errorcode}",
                 errorcode,
             )
