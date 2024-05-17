@@ -16,7 +16,8 @@ libdir=$${prefix}/lib
 
 Name: forsockets
 Description: The Fortran sockets library included with AMUSE
-Cflags: -I{includedir}
+Version: $(AMUSE_VERSION)
+Cflags: -I$${includedir}
 Libs: -L$${libdir} -lforsockets
 
 endef

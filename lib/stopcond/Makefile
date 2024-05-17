@@ -2,7 +2,7 @@
 include support/shared/lib-configure.mk
 
 
-HEADERS = stopcond.h stoppingconditions.mod
+HEADERS = stopcond.h stopcond.inc stoppingconditions.mod
 DYNAMIC_LIB = libstopcond.so
 STATIC_LIB = libstopcond.a
 PKG_CONFIG_FILE = libstopcond.pc
@@ -26,7 +26,8 @@ libdir=$${prefix}/lib
 
 Name: stopcond
 Description: The stopping conditions library included with AMUSE
-Cflags: -I{includedir}
+Version: $(AMUSE_VERSION)
+Cflags: -I$${includedir}
 Libs: -L$${libdir} -lstopcond
 
 endef
@@ -39,7 +40,8 @@ libdir=$${prefix}/lib
 
 Name: stopcondmpi
 Description: The stopping conditions library included with AMUSE, MPI version
-Cflags: -I{includedir}
+Version: $(AMUSE_VERSION)
+Cflags: -I$${includedir}
 Libs: -L$${libdir} -lstopcondmpi
 
 endef

@@ -1,0 +1,11 @@
+APT := @APT@
+DNF := @DNF@
+MACPORTS := @MACPORTS@
+HOMEBREW := @HOMEBREW@
+
+FEATURES := @FEATURES@
+
+define CONDA_LIST :=
+@CONDA_LIST@
+endef
+

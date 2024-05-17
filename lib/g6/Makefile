@@ -18,7 +18,8 @@ libdir=$${prefix}/lib
 
 Name: g6lib
 Description: GRAPE6 emulation library
-Cflags: -I{includedir}
+Version: $(AMUSE_VERSION)
+Cflags: -I$${includedir}
 Libs: -L$${libdir} -lg6
 
 endef

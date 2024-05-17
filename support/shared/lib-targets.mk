@@ -4,6 +4,7 @@ all: $(DYNAMIC_LIB) $(STATIC_LIB) $(DYNAMIC_LIB_MPI) $(STATIC_LIB_MPI)
 
 .DEFAULT_GOAL := all
 
+
 # Note that the pkg-config files get built at install time, because PREFIX
 # ends up inside of them, and it may not be defined when make all is called.
 .PHONY: install
@@ -58,7 +59,7 @@ $(PKG_CONFIG_FILE):
 
 ifdef DYNAMIC_LIB_MPI
 $(DYNAMIC_LIB_MPI): $(OBJS_MPI)
-	$(MPICC) $(LDFLAGS) -shared -o $@ $< $(MPILIBS) $(LIBS)
+	$(MPICC) $(LDFLAGS) -shared -o $@ $^ $(MPILIBS) $(LIBS)
 endif
 
 ifdef STATIC_LIB_MPI
@@ -70,8 +71,8 @@ endif
 %.mo: %.c
 	$(MPICC) $(CFLAGS) $(CFLAGS_MPI) -c -o $@ $<
 
-%.mo %.mod: %.f90
-	$(MPIFC) $(FCFLAGS) $(FCFLAGS_MPI) -c -o $@ $<
+%.mo %.mod &: %.f90
+	$(MPIFC) $(FCFLAGS) $(FCFLAGS_MPI) -c -o $*.mo $<
 
 $(PKG_CONFIG_FILE_MPI):
 	$(file >$@,$(PKG_CONFIG_CONTENTS_MPI))

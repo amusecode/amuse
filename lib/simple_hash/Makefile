@@ -17,7 +17,8 @@ libdir=$${prefix}/lib
 
 Name: simple_hash
 Description: The simple_hash hashmap library included with AMUSE
-Cflags: -I{includedir}
+Version: $(AMUSE_VERSION)
+Cflags: -I$${includedir}
 Libs: -L$${libdir} -lsimple_hash
 
 endef

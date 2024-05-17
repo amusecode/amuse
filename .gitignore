@@ -443,6 +443,7 @@ data/halogen/output/test*.ascii
 data/gadget2/output/ewald_spc_table_64_dbl.dat
 core
 core.*
+!core.py
 *test*.hdf5
 cluster.1
 cluster.2
@@ -451,7 +452,6 @@ test_results/code.c
 test_results/code.cc
 test_results/code.f90
 gas_interface
-interface
 test_results/interface-sockets.f90
 test_results/interface.cc
 test_results/interface.f90

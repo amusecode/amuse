@@ -1,0 +1,56 @@
+[project]
+name = "amuse-framework"
+dynamic = ["version"]
+requires-python = ">=3.7"
+dependencies = [
+    "docutils>=0.6",
+    "mpi4py>=1.1.0",
+    "numpy>=1.2.2",
+    "h5py>=1.1.0"
+]
+
+[project.optional-dependencies]
+MPI = ["mpi4py>=1.1.0"]
+
+[project.scripts]
+amusifier = "amuse.rfi.gencode:amusifier"
+
+[build-system]
+requires = ["hatchling", "versioningit"]
+build-backend = "hatchling.build"
+
+[tool.hatch.version]
+source = "versioningit"
+
+# This configuration matches what setuptools_scm did before
+[tool.versioningit.next-version]
+method = "smallest"
+
+[tool.versioningit.format]
+distance = "{next_version}.dev{distance}+{vcs}{rev}"
+dirty = "{base_version}+d{build_date:%Y%m%d}"
+distance-dirty = "{next_version}.dev{distance}+{vcs}{rev}.d{build_date:%Y%m%d}"
+
+[tool.hatch.build]
+skip-excluded-dirs = true
+
+[tool.hatch.build.targets.wheel]
+include = [
+        "amuse/*.py", "amuse/community/*.py", "amuse/community/interface/**/*.py",
+        "amuse/couple/**/*.py", "amuse/data/**/*.py", "amuse/datamodel/**/*.py",
+        "amuse/ext/**/*.py", "amuse/ic/**/*.py", "amuse/io/**/*.py",
+        "amuse/plot/**/*.py", "amuse/rfi/**/*.py", "amuse/rfi/tools/*.template",
+        "amuse/support/**/*.py", "amuse/units/**/*.py"]
+
+[tool.pytest.ini_options]
+pythonpath = [".", "tests/"]
+
+testpaths = [
+        "tests/core_tests",
+        "tests/compile_tests",
+        ]
+
+# These tests are disabled because they require community codes, or because they're
+# known to be broken.
+addopts = "-s -v --log-cli-level=debug --import-mode=importlib -k 'not test_fallback_stellar_evolution and not test_fractalcluster and not test_galactics_model and not test_halogen_model and not test_hydro_collision and not test_isotropic_cloud and not test_mameclot and not test_limepy and not (KeplerTests and test11) and not (TestNewSinkParticles and test3) and not (TestUniformSphericalDistribution and test10) and not (TestStellarModel2SPH and (test20 or test21)) and not test_parallel_stellar_evolution and not test_sph_to_grid and not test_sph_to_star and not (TestHeatingWind and test_supernova) and not (TestRotatingBridge and test1) and not test_issue123 and not test_issue850 and not test_ticket208'"
+

@@ -20,7 +20,8 @@ libdir=$${prefix}/lib
 
 Name: sapporo_light
 Description: The sapporo_light library
-Cflags: -I{includedir}
+Version: $(VERSION)
+Cflags: -I$${includedir}
 Libs: -L$${libdir} -lsapporo
 Libs.private: -lcudart
 
@@ -31,6 +32,23 @@ endef
 all: $(DYNAMIC_LIB) $(STATIC_LIB) $(DYNAMIC_LIB_MPI) $(STATIC_LIB_MPI)
 
 .DEFAULT_GOAL := all
+
+
+# Install into an active venv or Conda env if no location is specified
+ifdef VIRTUAL_ENV
+PREFIX ?= $(VIRTUAL_ENV)
+endif
+
+ifdef CONDA_PREFIX
+PREFIX ?= $(CONDA_PREFIX)
+endif
+
+ifndef PREFIX
+ifeq ($(MAKECMDGOALS),install)
+$(error PREFIX is not set and no virtualenv or Conda env is active.)
+endif
+endif
+
 
 # Note that the pkg-config files get built at install time, because PREFIX
 # ends up inside of them, and it may not be defined when make all is called.
