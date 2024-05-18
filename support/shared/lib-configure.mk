@@ -3,7 +3,6 @@ ifeq (,$(filter clean distclean, $(MAKECMDGOALS)))
 
 include support/config.mk
 
-.PHONY: support/config.mk
 support/config.mk: support/config.mk.in
 	cd support && ./configure $(CONFIGOPTS)
 

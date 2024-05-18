@@ -8,7 +8,7 @@ PKG_CONFIG_FILE_MPI = libamuse_mpi.pc
 
 CFLAGS += -g -O2 -std=c99
 
-OBJS = amuse_mpi.mo
+OBJS_MPI = amuse_mpi.mo
 
 define PKG_CONFIG_CONTENTS_MPI :=
 prefix=$(PREFIX)
