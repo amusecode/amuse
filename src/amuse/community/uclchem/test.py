@@ -9,7 +9,7 @@ particles.dens = 1.0 | units.g * units.cm**-3
 particles.temperature = 20 | units.K
 particles.ionrate = 10**-16 | units.s**-1
 print(particles)
-chem.particles.add_particles(particles)
+chem.particles.add_particle(particles)
 chem.particle_test()
 #print(chem.sim_cloud(outSpeciesIn=species, dictionary=dict))
 #print(test)

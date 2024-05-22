@@ -45,6 +45,7 @@
     use uclchemhelper
     integer :: ret,id
     double precision :: dens,temperature,ionrate 
+    print *, 'fortran'
     ret=add_particle(id,dens,temperature,ionrate)
   end function
   

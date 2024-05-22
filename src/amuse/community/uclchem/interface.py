@@ -33,6 +33,7 @@ class UclchemInterface(CodeInterface):
 
     @remote_function(can_handle_array=True)
     def new_particle(dens='d'|units.cm**-3,temperature='d'|units.K,ionrate='d'|units.s**-1):
+        print('here1')
         returns (id='i')
 
     @remote_function(can_handle_array=True)
