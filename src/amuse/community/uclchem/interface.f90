@@ -1,14 +1,14 @@
-  ! function initialize_code() result(ret)
-  !   use uclchemhelper
-  !   integer :: ret
-  !   ret=chem_initialize()
-  ! end function
+  function initialize_code() result(ret)
+    use uclchemhelper
+    integer :: ret
+    ret=chem_initialize()
+  end function
   
-  ! function cleanup_code() result(ret)
-  !   use uclchemhelper
-  !   integer :: ret
-  !   ret=chem_end()
-  ! end function
+  function cleanup_code() result(ret)
+    use uclchemhelper
+    integer :: ret
+    ret=chem_end()
+  end function
   
   ! function commit_particles() result(ret)
   !   use uclchemhelper
@@ -77,10 +77,10 @@
   end function
   
   function get_firstlast_abundance(first,last) result(ret)
-   use uclchemhelper
+   use network
    integer :: ret,first,last
    first=1
-   last=500 !nmols-TODO: get number of molecules from network ! this is the last species defined in amuse_helpers.f90
+   last=nSpec 
    ret=0
   end function
   

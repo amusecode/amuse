@@ -3,6 +3,7 @@ MODULE uclchemhelper
     USE chemistry
     USE io
     USE constants
+    use network
     IMPLICIT NONE
     type particle_type
         integer :: id
@@ -25,6 +26,23 @@ MODULE uclchemhelper
     integer, allocatable :: pid(:)
 
 CONTAINS
+    function chem_initialize()  result(ret)
+        integer :: ret
+        tcurrent=0.
+        nparticle=0
+        tot_id=0
+        nmols=nspec
+        if(.not.allocated(particles)) allocate(particles(NMAX))
+        particles(:)%density=0.
+        
+        ret=0
+    end function
+
+    function chem_end() result(ret)
+        integer :: ret 
+        if(allocated(particles)) deallocate(particles)
+        ret=0
+     end function
 
     function set_particle_state(id,density,temperature,ionrate) result(ret)
         integer :: ret

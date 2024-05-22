@@ -10,17 +10,14 @@ class UclchemInterface(CodeInterface):
             name_of_the_worker='uclchem_worker',
             **options
         )
-    @remote_function(can_handle_array=True)
-    def sim_cloud(outSpeciesIn='s', dictionary='s'):
-        returns (abundance_out='d')
     
     @remote_function(can_handle_array=True)
-    def set_state(id='i',dens='d'|units.g*units.cm**-3,temperature='d'|units.K,ionrate='d'|units.s**-1):
+    def set_state(id='i',dens='d'|units.cm**-3,temperature='d'|units.K,ionrate='d'|units.s**-1):
         returns ()
 
     @remote_function(can_handle_array=True)
     def get_state(id='i'):
-        returns (dens='d'|units.g*units.cm**-3,temperature='d'|units.K,ionrate='d'|units.s**-1)
+        returns (dens='d'|units.cm**-3,temperature='d'|units.K,ionrate='d'|units.s**-1)
 
     @remote_function(can_handle_array=True)
     def get_abundance(id='i', aid='i'):
@@ -35,7 +32,7 @@ class UclchemInterface(CodeInterface):
         returns (first='i',last='i')
 
     @remote_function(can_handle_array=True)
-    def new_particle(dens='d'|units.g*units.cm**-3,temperature='d'|units.K,ionrate='d'|units.s**-1):
+    def new_particle(dens='d'|units.cm**-3,temperature='d'|units.K,ionrate='d'|units.s**-1):
         returns (id='i')
 
     @remote_function(can_handle_array=True)
@@ -51,14 +48,9 @@ class Uclchem(ChemicalModeling):
     def define_methods(self, handler):
         CommonCode.define_methods(self, handler)
         handler.add_method(
-            'sim_cloud',
-            (handler.NO_UNIT, handler.NO_UNIT),
-            (handler.NO_UNIT, handler.ERROR_CODE)
-        )
-        handler.add_method(
             "set_state",
             (
-                handler.NO_UNIT,
+                handler.INDEX,
                 units.cm**-3,
                 units.K,
                 units.s**-1,

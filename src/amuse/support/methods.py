@@ -46,6 +46,8 @@ class AbstractCodeMethodWrapper(object):
         elif self.method_is_legacy:
             return [x.name for x in self.method.specification.input_parameters]
         else:
+            print('here')
+            print(self.method)
             args = inspect.getfullargspec(self.method).args
             if args:
                 if args[0] == 'self' or args[0] == 'cls':
