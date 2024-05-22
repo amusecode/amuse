@@ -41,48 +41,48 @@
   !   ret=0
   ! end function
   
-  ! function new_particle(id,dens,temperature,ionrate) result(ret)
-  !   use uclchemhelper
-  !   integer :: ret,id
-  !   double precision :: dens,temperature,ionrate 
-  !   ret=add_particle(id,dens,temperature,ionrate)
-  ! end function
+  function new_particle(id,dens,temperature,ionrate) result(ret)
+    use uclchemhelper
+    integer :: ret,id
+    double precision :: dens,temperature,ionrate 
+    ret=add_particle(id,dens,temperature,ionrate)
+  end function
   
-  ! function set_state(id,dens,temperature,ionrate) result(ret)   
-  !   use uclchemhelper
-  !   integer :: ret,id
-  !   double precision :: dens,temperature,ionrate
-  !   ret=set_particle_state(id,dens,temperature,ionrate)
-  ! end function
+  function set_state(id,dens,temperature,ionrate) result(ret)   
+    use uclchemhelper
+    integer :: ret,id
+    double precision :: dens,temperature,ionrate
+    ret=set_particle_state(id,dens,temperature,ionrate)
+  end function
   
-  ! function get_state(id,dens,temperature,ionrate) result(ret)   
-  !   use uclchemhelper
-  !   integer :: ret,id
-  !   double precision :: dens,temperature,ionrate
-  !   ret=get_particle_state(id,dens,temperature,ionrate)
-  ! end function
+  function get_state(id,dens,temperature,ionrate) result(ret)   
+    use uclchemhelper
+    integer :: ret,id
+    double precision :: dens,temperature,ionrate
+    ret=get_particle_state(id,dens,temperature,ionrate)
+  end function
   
-  ! function get_abundance(id,aid,x) result(ret)
-  !   use uclchemhelper
-  !   integer ret,id,aid
-  !   double precision x
-  !   ret=get_particle_abundance(id,aid,x)
-  ! end function
+  function get_abundance(id,aid,x) result(ret)
+    use uclchemhelper
+    integer :: ret,id,aid
+    double precision :: x
+    ret=get_particle_abundance(id,aid,x)
+  end function
   
-  ! function set_abundance(id,aid,x) result(ret)
-  !   use uclchemhelper
-  !   integer ret,id,aid
-  !   double precision x
-  !   ret=set_particle_abundance(id,aid,x)
-  ! end function
+  function set_abundance(id,aid,x) result(ret)
+    use uclchemhelper
+    integer ret,id,aid
+    double precision x
+    ret=set_particle_abundance(id,aid,x)
+  end function
   
-  ! !function get_firstlast_abundance(first,last) result(ret)
-  ! !  use uclchemhelper
-  ! !  integer ret,first,last
-  ! !  first=1
-  ! !  last=krome_nmols ! this is the last species defined in amuse_helpers.f90
-  ! !  ret=0
-  ! !end function
+  function get_firstlast_abundance(first,last) result(ret)
+   use uclchemhelper
+   integer :: ret,first,last
+   first=1
+   last=500 !nmols-TODO: get number of molecules from network ! this is the last species defined in amuse_helpers.f90
+   ret=0
+  end function
   
   ! !function get_name_of_species(index,s) result(ret)
   ! !  use uclchemhelper
@@ -119,30 +119,37 @@
   !   ret=chem_model_time(outtime)
   ! end function
   
-  ! function delete_particle(id) result(ret)
-  !   use uclchemhelper
-  !   integer :: ret,id
-  !   ret=remove_particle(id)
-  ! end function
-
-  function sim_cloud()
+  function delete_particle(id) result(ret)
     use uclchemhelper
-    DOUBLE PRECISION, allocatable :: abundance_out(:)
+    integer :: ret,id
+    ret=remove_particle(id)
+  end function
+
+
+  function sim_cloud(outSpeciesIn, dictionary, abundance_out) result(successFlag)
+    use uclchemhelper
+    DOUBLE PRECISION :: abundance_out
     character(len=20) :: outSpeciesIn
     character(len=20) :: dictionary
     INTEGER :: successFlag
     !abundance(:) = 0.00
-    outSpeciesIn = 'H H2'
-    dictionary = "{'outspecies': 2}"
+    !outSpeciesIn = 'H H2'
+    !dictionary = "{'outspecies': 2}"
+    !abundance_out(:) = 0.0_dp
     print *, 'check1'
-    if (allocated(abundance_out)) then
-      deallocate(abundance_out)
-    end if
+    !do i = 1, 500
+    !  abundance_out(i) = 0.0_dp
+    !end do
+    !if (allocated(abundance_out)) then
+    !  deallocate(abundance_out)
+    !end if
 
     print *,'check2'
-    allocate(abundance_out(500),source=0.0_dp)
+    !allocate(abundance_out(500),source=0.0_dp)
+    abundance_out=14
     print *, 'check3'
-    call test_cloud(dictionary, outSpeciesIn,abundance_out,successFlag)
+    !call test_cloud(dictionary, outSpeciesIn,abundance_out,successFlag)
     write(*,*) abundance_out
+    successFlag=0
   end function
   

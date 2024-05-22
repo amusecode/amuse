@@ -11,7 +11,7 @@ FC =gfortran
 #Unforgiving debugging flags
 #FFLAGS =-g -fbacktrace -Wall -fcheck=all -fPIC
 #Fast optimizing flags
-FFLAGS = -O3 -fPIC -ffree-line-length-0
+FFLAGS = -O3 -fPIC -ffree-line-length-0 -g
 
 
 ###############################################################################
@@ -33,8 +33,8 @@ main: constants.o  network.o ${PHYSICS_OBS} dvode.o ${CHEMISTRY_OBS} io.o wrap.f
 	${FC} ${FFLAGS} -o ../../uclchem io.o ${PHYSICS_OBS} dvode.o ${CHEMISTRY_OBS} network.o wrap.f90 main.f90
 
 ##module for compiling in amuse
-libchem.a: constants.o  network.o ${PHYSICS_OBS} dvode.o ${CHEMISTRY_OBS} io.o amuse_helpers.o defaultparameters.f90
-	${AR} crs libchem.a io.o ${PHYSICS_OBS} dvode.o ${CHEMISTRY_OBS} network.o amuse_helpers.o
+libchem.a: constants.o  network.o ${PHYSICS_OBS} dvode.o ${CHEMISTRY_OBS} io.o hash.o amuse_helpers.o defaultparameters.f90
+	${AR} crs libchem.a io.o ${PHYSICS_OBS} dvode.o ${CHEMISTRY_OBS} network.o hash.o amuse_helpers.o
 
 # The order here is the compilation order and it's vital that modules are compiled after their dependencies
 python: constants.o  network.o ${PHYSICS_OBS} dvode.o ${CHEMISTRY_OBS} io.o wrap.f90  defaultparameters.f90

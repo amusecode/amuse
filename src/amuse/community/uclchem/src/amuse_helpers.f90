@@ -4,8 +4,186 @@ MODULE uclchemhelper
     USE io
     USE constants
     IMPLICIT NONE
+    type particle_type
+        integer :: id
+        double precision :: density
+        double precision :: temperature
+        double precision :: ionrate
+        double precision :: abundances(500)
+    end type
+    integer :: nmols
+    type(particle_type), allocatable :: particles(:)
+  
+      double precision :: tcurrent  ! time unit = yr
+  
+    integer :: nparticle
+    integer :: tot_id
+
+    integer, parameter :: NMAX=1000000
+
+    logical :: particles_searcheable=.FALSE.
+    integer, allocatable :: pid(:)
+
 CONTAINS
 
+    function set_particle_state(id,density,temperature,ionrate) result(ret)
+        integer :: ret
+        integer :: id,index
+        double precision :: density, temperature, ionrate
+        index=find_particle(id)
+        if(index.LT.0) then
+        ret=index
+        return
+        endif
+
+        particles(index)%density=density
+        particles(index)%temperature=temperature
+        particles(index)%ionrate=ionrate
+        ret=0
+
+    end function
+
+    function get_particle_state(id,density,temperature,ionrate) result(ret)
+        integer :: ret
+        integer :: id,index
+        double precision :: density, temperature, ionrate
+        index=find_particle(id)
+        if(index.LT.0) then
+        ret=index
+        return
+        endif
+
+        density=particles(index)%density
+        temperature=particles(index)%temperature
+        ionrate=particles(index)%ionrate
+        ret=0
+
+    end function
+
+    function get_particle_abundance(id, aid, abundance) result(ret)
+        integer :: ret
+        integer :: id,index,aid
+        double precision :: abundance
+        index=find_particle(id)
+        if(index.LT.0) then
+          ret=index
+          return
+        endif
+        if(aid.LT.1.OR.aid.GT.500) then
+          ret=-1
+          return
+        endif
+        abundance=particles(index)%abundances(aid)
+        ret=0
+    end function
+
+    function set_particle_abundance(id, aid, abundance) result(ret)
+        integer :: ret
+        integer :: id,index,aid
+        double precision :: abundance
+        index=find_particle(id)
+        if(index.LT.0) then
+          ret=index
+          return
+        endif
+        if(aid.LT.1.OR.aid.GT.500) then
+          ret=-1
+          return
+        endif
+        particles(index)%abundances(aid)=abundance
+        ret=0
+      end function
+
+    function add_particle(id,density,temperature,ionrate) result(ret)
+        use network
+        integer :: ret
+        integer :: i,id
+        double precision :: density, temperature,ionrate
+        double precision :: x(500)
+        particles_searcheable=.FALSE.
+        id=new_id()  
+        i=nparticle+1
+      
+        if(i.GT.NMAX) then
+          ret=-1
+          return
+        endif
+        particles(i)%id=id
+        particles(i)%density=density
+        particles(i)%temperature=temperature
+        particles(i)%ionrate=ionrate
+        particles(i)%abundances=1.d-40
+        
+        if(density.GT.0) then
+          particles(i)%abundances(nh)  = 0.5 !H
+          particles(i)%abundances(nh2) = 0.5   !H2
+          particles(i)%abundances(nhe) = 0.1 !He
+          particles(i)%abundances(ncx) = 1.77d-04 !C+ (C is fully ionised by default)
+          particles(i)%abundances(no) = 3.34d-04 !O
+          particles(i)%abundances(nn) = 6.18d-05 !N
+        endif
+      
+        nparticle=nparticle+1
+        ret=0
+    end function
+
+    function remove_particle(id) result(ret)
+        integer :: ret
+        integer :: i,id
+        i=find_particle(id)
+        if(i.LE.0) then
+          ret=i
+          return
+        endif
+        if(particles(i)%density.LT.0) then
+          ret=-4
+          return
+        endif
+        particles(i)%density=-1.
+        ret=0
+    end function
+
+    function new_id()
+        integer new_id
+        tot_id=tot_id+1
+        new_id=tot_id
+    end function
+
+    function find_particle(id_) result(index)
+        use hashMod
+        type(hash_type),save ::  hash
+        integer id_,index
+        integer, save :: nbod=0
+        
+        if(.NOT.particles_searcheable) then
+          nbod=nparticle
+          if(allocated(pid)) deallocate(pid)
+          allocate(pid(nbod))
+          pid(1:nbod)=particles(1:nbod)%id
+          call initHash(nbod/2+1,nbod, pid,hash)
+          particles_searcheable=.TRUE.
+        endif
+        
+      
+        index=find(id_,pid,hash)
+      
+        if(index.LE.0) then   
+          index=-1
+          return
+        endif
+        if(index.GT.nbod) then
+          index=-2
+          return
+        endif
+        if(pid(index).NE.id_) then   
+          index=-3
+          return
+        endif
+        
+    end function
+      
+      
+      
     SUBROUTINE test_cloud(dictionary, outSpeciesIn,abundance_out, successFlag)
         !Subroutine to call a cloud model, used to interface with python
         ! Loads cloud specific subroutines and send to solveAbundances
