@@ -11,34 +11,72 @@ class UclchemInterface(CodeInterface):
             **options
         )
     
-    @remote_function(can_handle_array=True)
-    def set_state(id='i',dens='d'|units.cm**-3,temperature='d'|units.K,ionrate='d'|units.s**-1):
-        returns ()
+    @legacy_function
+    def set_state():
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
+        function.addParameter('id', dtype='i', direction=function.IN)
+        for x in ['number_density','temperature','ionrate']:
+            function.addParameter(x, dtype='d', direction=function.IN)
+        function.result_type = 'i'
+        return function
 
-    @remote_function(can_handle_array=True)
-    def get_state(id='i'):
-        returns (dens='d'|units.cm**-3,temperature='d'|units.K,ionrate='d'|units.s**-1)
+    @legacy_function
+    def get_state():
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
+        function.addParameter('id', dtype='i', direction=function.IN)
+        for x in ['number_density','temperature','ionrate']:
+            function.addParameter(x, dtype='d', direction=function.OUT)
+        function.result_type = 'i'
+        return function
 
-    @remote_function(can_handle_array=True)
-    def get_abundance(id='i', aid='i'):
-        returns (abundance='d')
+    @legacy_function
+    def get_abundance():
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
+        function.addParameter('id', dtype='i', direction=function.IN)
+        function.addParameter('aid', dtype='i', direction=function.IN)
+        function.addParameter('abundance', dtype='d', direction=function.OUT)
+        function.result_type = 'i'
+        return function
 
-    @remote_function(can_handle_array=True)
-    def set_abundance(id='i', aid='i', abundance='d'):
-        returns ()
+    @legacy_function
+    def set_abundance():
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
+        function.addParameter('id', dtype='i', direction=function.IN)
+        function.addParameter('aid', dtype='i', direction=function.IN)
+        function.addParameter('abundance', dtype='d', direction=function.IN)
+        function.result_type = 'i'
+        return function
 
-    @remote_function()
+    @legacy_function
     def get_firstlast_abundance():
-        returns (first='i',last='i')
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
+        function.addParameter('first', dtype='i', direction=function.OUT)
+        function.addParameter('last', dtype='i', direction=function.OUT)
+        function.result_type = 'i'
+        return function
 
-    @remote_function(can_handle_array=True)
-    def new_particle(dens='d'|units.cm**-3,temperature='d'|units.K,ionrate='d'|units.s**-1):
-        print('here1')
-        returns (id='i')
+    @legacy_function
+    def new_particle():
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
+        function.addParameter('id', dtype='int32', direction=function.OUT)
+        for x in ['dens','temperature','ionrate']:
+            function.addParameter(x, dtype='d', direction=function.IN)
+        function.result_type = 'i'
+        return function
 
-    @remote_function(can_handle_array=True)
-    def delete_particle(id='i'):
-        returns ()
+    @legacy_function   
+    def delete_particle():
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
+        function.addParameter('id', dtype='int32', direction=function.IN)
+        function.result_type = 'i'
+        return function
 
 class Uclchem(ChemicalModeling):
     def __init__(self, convert_nbody=None, **options):
