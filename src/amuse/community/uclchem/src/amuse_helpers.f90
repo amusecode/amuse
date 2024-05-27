@@ -38,6 +38,21 @@ CONTAINS
         ret=0
     end function
 
+    function chem_commit_parameters() result(ret)
+        integer :: ret
+        ret=0
+    end function
+
+    function chem_commit_particles() result (ret)
+        integer :: ret
+        integer :: n
+        integer :: i
+     
+        particles_searcheable=.FALSE.
+        nparticle=clean_particles(particles)
+        ret=0
+      end function
+
     function chem_end() result(ret)
         integer :: ret 
         if(allocated(particles)) deallocate(particles)
@@ -200,8 +215,39 @@ CONTAINS
         
     end function
       
-      
-      
+    function clean_particles(par) result(np)
+        integer :: left,right,np
+        type(particle_type), allocatable :: par(:)
+        type(particle_type) :: tmp
+        left=1
+        if(.NOT.allocated(par)) then
+          np = 0 
+          return  
+        endif
+        right=size(par)
+        if(right.EQ.0) then
+          np=0
+          return
+        endif 
+        do while(.TRUE.)
+          do while(par(left)%density.GT.0.AND.left.LT.right)
+            left=left+1
+          enddo
+          do while(par(right)%density.LE.0.AND.left.LT.right)
+            right=right-1  
+          enddo
+          if(left.LT.right) then
+            tmp=par(left)
+            par(left)=par(right)
+            par(right)=tmp
+          else
+            exit
+          endif
+        enddo
+        if(par(left)%density.GT.0) left=left+1
+        np=left-1
+    end function  
+    
     SUBROUTINE test_cloud(dictionary, outSpeciesIn,abundance_out, successFlag)
         !Subroutine to call a cloud model, used to interface with python
         ! Loads cloud specific subroutines and send to solveAbundances

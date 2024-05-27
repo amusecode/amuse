@@ -10,23 +10,23 @@
     ret=chem_end()
   end function
   
-  ! function commit_particles() result(ret)
-  !   use uclchemhelper
-  !   integer :: ret
-  !   ret=chem_commit_particles()
-  ! end function
+  function commit_particles() result(ret)
+    use uclchemhelper
+    integer :: ret
+    ret=chem_commit_particles()
+  end function
   
-  ! function recommit_particles() result(ret)
-  !   use uclchemhelper
-  !   integer :: ret
-  !   ret=chem_commit_particles()
-  ! end function
+  function recommit_particles() result(ret)
+    use uclchemhelper
+    integer :: ret
+    ret=chem_commit_particles()
+  end function
   
-  ! function commit_parameters() result(ret)
-  !   use uclchemhelper
-  !   integer :: ret
-  !   ret=chem_commit_parameters()
-  ! end function
+  function commit_parameters() result(ret)
+    use uclchemhelper
+    integer :: ret
+    ret=chem_commit_parameters()
+  end function
   
   ! function recommit_parameters() result(ret)
   !   use uclchemhelper
@@ -45,7 +45,6 @@
     use uclchemhelper
     integer :: ret,id
     double precision :: dens,temperature,ionrate 
-    print *, 'fortran'
     ret=add_particle(id,dens,temperature,ionrate)
   end function
   

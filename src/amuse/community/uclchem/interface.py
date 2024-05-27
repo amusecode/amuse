@@ -1,15 +1,36 @@
 from amuse.community.interface.chem import ChemicalModelingInterface
 from amuse.community.interface.chem import ChemicalModeling
-from amuse.community.interface.common import CommonCode
+from amuse.community.interface.common import CommonCode, CommonCodeInterface
 from amuse.community import *
 
-class UclchemInterface(CodeInterface):
+class UclchemInterface(CodeInterface, CommonCodeInterface):
     def __init__(self, mode = 'cpu', **options):
         CodeInterface.__init__(
             self,
             name_of_the_worker='uclchem_worker',
             **options
         )
+        
+    @legacy_function
+    def commit_particles():
+        function = LegacyFunctionSpecification()
+        function.result_type = 'i'
+        return function
+
+    @legacy_function
+    def recommit_particles():
+        function = LegacyFunctionSpecification()
+        function.result_type = 'i'
+        return function
+    
+    @legacy_function
+    def commit_parameters():
+        function = LegacyFunctionSpecification()
+        function.result_type = 'i'
+        return function
+
+    def recommit_parameters():
+        return self.commit_parameters()
     
     @legacy_function
     def set_state():
@@ -65,7 +86,7 @@ class UclchemInterface(CodeInterface):
         function = LegacyFunctionSpecification()
         function.can_handle_array = True
         function.addParameter('id', dtype='int32', direction=function.OUT)
-        for x in ['dens','temperature','ionrate']:
+        for x in ['number_density','temperature','ionrate']:
             function.addParameter(x, dtype='d', direction=function.IN)
         function.result_type = 'i'
         return function
@@ -78,11 +99,11 @@ class UclchemInterface(CodeInterface):
         function.result_type = 'i'
         return function
 
-class Uclchem(ChemicalModeling):
+class Uclchem(CommonCode):
     def __init__(self, convert_nbody=None, **options):
         legacy_interface = UclchemInterface(**options)
 
-        ChemicalModeling.__init__(self,legacy_interface)
+        InCodeComponentImplementation.__init__(self,legacy_interface)
     
     def define_methods(self, handler):
         CommonCode.define_methods(self, handler)
