@@ -79,7 +79,7 @@ develop-amuse-framework: install-libs
 
 .PHONY: package-amuse-framework
 package-amuse-framework: install-libs
-	cd src && pip install --no-cache-dir --no-deps --prefix ${PREFIX} .
+	cd src && python3 -m pip install -vv --no-cache-dir --no-deps --no-build-isolation --prefix ${PREFIX} .
 
 endif
 
