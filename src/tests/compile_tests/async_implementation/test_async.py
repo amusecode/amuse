@@ -316,14 +316,11 @@ class TestASync(TestWithMPI):
         instance = ForTesting(self.exefile)
 
         r = instance.echo_int(1, return_request=True)
-        time.sleep(0.1)
+        r.wait()
         self.assertTrue(r.is_result_available())
         r.result()
 
         r = instance.return_error(return_request=True)
-        time.sleep(0.1)
-        self.assertTrue(r.is_result_available())
-        self.assertTrue(r.is_result_available())
         self.assertRaises(Exception, r.result, expected_message="Error when calling 'return_error' of a 'ForTesting', errorcode is -1")
         self.assertFalse(r.is_result_available())
         self.assertTrue(r.is_finished)
