@@ -17,6 +17,7 @@ libdir=$${prefix}/lib
 
 Name: amuse_mpi
 Description: The amuse_mpi library
+Version: $(AMUSE_VERSION)
 Cflags: -I{includedir}
 Libs: -L$${libdir} -lamuse_mpi
 
