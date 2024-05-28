@@ -3,7 +3,7 @@ ifeq (,$(filter clean distclean, $(MAKECMDGOALS)))
 
 # Detect what features we have
 support/features.mk: support/features.mk.in support/configure
-	cd support && ./configure $(CONFIGOPTS)
+	cd support && ./configure $(CONFIGOPTS) || cat config.log
 
 include support/features.mk
 
