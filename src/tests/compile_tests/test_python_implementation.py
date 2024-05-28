@@ -245,7 +245,7 @@ class ForTestingInterface(PythonCodeInterface):
         return function
 
 
-basic_python_exe = """#!{executable}
+basic_python_exe = """#!/usr/bin/env python3
 import sys
 import os
 from subprocess import call
