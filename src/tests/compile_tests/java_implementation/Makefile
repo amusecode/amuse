@@ -3,8 +3,8 @@ all: worker.jar java_worker
 
 # TestInterface
 %.class: %.java
-	echo ${CLASSPATH}
-	$(JAVAC) $<
+	echo "classpath: ${CLASSPATH}"
+	$(JAVAC) -cp . $<
 
 Code.class: CodeInterface.class
 
