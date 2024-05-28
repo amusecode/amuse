@@ -7,7 +7,11 @@ AC_INIT([amuse], [1.0])
 #
 # If we're not in a Conda environment, then we'll detect features from the system, and
 # hope that the user hasn't made too big a mess of things.
-if test "x" != "x$CONDA_DEFAULT_ENV"
+#
+# Conda build environments for conda-forge have a different setup than normal Conda
+# environments, with different packages, so that the normal Conda mode doesn't work.
+# We use the normal detection as well in that case.
+if test "x" != "x$CONDA_DEFAULT_ENV" -a "x" = "x$CONDA_BUILD"
 then
     AS_ECHO([])
     AS_ECHO(['    Conda environment active, dependencies will be searched in Conda only,'])
