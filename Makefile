@@ -52,6 +52,17 @@ endif
 
 ifeq (,$(FW_MISSING_FEATURES))
 
+# Build sapporo_light separately so that we can build without CUDA
+ifneq (,$(filter cuda, $(FEATURES)))
+HAVE_CUDA := yes
+export HAVE_CUDA
+
+.PHONY: install-sapporo_light
+install-sapporo_light:
+	$(MAKE) -C lib install-sapporo_light
+endif
+
+
 .PHONY: install-libs
 install-libs:
 	$(MAKE) -C lib install
