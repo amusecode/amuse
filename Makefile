@@ -92,10 +92,12 @@ clean:
 	$(MAKE) -C support clean
 	$(MAKE) -C lib clean
 	$(MAKE) -C src/amuse/community clean
+	$(MAKE) -C src/tests clean
 
 .PHONY: distclean
 distclean:
 	$(MAKE) -C support distclean
 	$(MAKE) -C lib distclean
 	$(MAKE) -C src/amuse/community distclean
+	$(MAKE) -C src/tests distclean
 
