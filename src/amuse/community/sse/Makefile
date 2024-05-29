@@ -3,7 +3,8 @@
 ifeq ($(origin AMUSE_DIR), undefined)
   AMUSE_DIR := $(shell amusifier --get-amuse-dir)
 endif
--include ${AMUSE_DIR}/config.mk
+
+include _config.mk
 
 MPIF90 ?= $(MPIFC)
 
@@ -49,3 +50,6 @@ worker_code.f90: interface.py
 	$(FORTRAN) $(FFLAGS)  $(FCFLAGS) -c -o $@ $<
 
 distclean: clean
+
+_config.mk:
+	amusifier --get-amuse-configmk > _config.mk
