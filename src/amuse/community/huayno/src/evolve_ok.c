@@ -7,8 +7,13 @@
 #include <tgmath.h>
 #include <stdio.h>
 #include <stdlib.h>
+#ifdef _OPENMP
+#include <omp.h>
+#endif
 #include "evolve.h"
 #include "evolve_ok.h"
+// AMUSE STOPPING CONDITIONS SUPPORT
+#include <stopcond.h>
 
 struct forces zeroforces = {0, NULL};
 
@@ -150,6 +155,8 @@ static void ok_kick(int clevel,struct forces f, DOUBLE dt)
 
 void evolve_ok2(int clevel,struct sys s, struct forces f, DOUBLE stime, DOUBLE etime, DOUBLE dt, int calc_timestep)
 {
+  int is_collision_detection_enabled;
+  is_stopping_condition_enabled(COLLISION_DETECTION, &is_collision_detection_enabled);
   if (IS_ZEROFORCES(f) && clevel == 0) { f = ok_main_forces; }
   CHECK_TIMESTEP(etime,stime,dt,clevel);
   // all particles are drifted together
@@ -165,5 +172,40 @@ void evolve_ok2(int clevel,struct sys s, struct forces f, DOUBLE stime, DOUBLE e
   ok_split((FLOAT) dt, f, &slowf, &fastf);
   evolve_ok2(clevel+1,s, fastf, stime, stime+dt/2, dt/2, 0);
   ok_kick(clevel,slowf, dt);
+
+  if (is_collision_detection_enabled) {
+    UINT i, j;
+    FLOAT dx[3], dr2, radius_sum;
+    struct particle *ipart, *jpart;
+    #pragma omp parallel for if((ULONG) s.n*s.n>MPWORKLIMIT && !omp_in_parallel()) default(none) \
+    private(i,j,dx,dr2,radius_sum, ipart, jpart) \
+    shared(s)
+    for (i=0; i<s.n; i++) {
+        ipart=GETPART(s,i);
+        if (ipart->mass > 0){
+          for (j=i+1; j<s.n; j++) {
+              jpart=GETPART(s,j);
+              dx[0] = ipart->pos[0] - jpart->pos[0];
+              dx[1] = ipart->pos[1] - jpart->pos[1];
+              dx[2] = ipart->pos[2] - jpart->pos[2];
+              dr2 = dx[0]*dx[0] + dx[1]*dx[1] + dx[2]*dx[2];
+              radius_sum = ipart->radius + jpart->radius;
+              if (dr2 <= radius_sum*radius_sum) {
+                  #pragma omp critical
+                  {
+                      int stopping_index = next_index_for_stopping_condition();
+                      if (stopping_index >= 0) {
+                          set_stopping_condition_info(stopping_index, COLLISION_DETECTION);
+                          set_stopping_condition_particle_index(stopping_index, 0, ipart->id);
+                          set_stopping_condition_particle_index(stopping_index, 1, jpart->id);
+                          return;
+                      }
+                  }
+              }
+          }
+        }
+    }
+  }
+  
   evolve_ok2(clevel+1,s, fastf, stime+dt/2, etime, dt/2, 1);
 }
