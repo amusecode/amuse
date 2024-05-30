@@ -153,27 +153,7 @@ static void ok_kick(int clevel,struct forces f, DOUBLE dt)
   diag->kcount[clevel] += f.n;
 }
 
-void evolve_ok2(int clevel,struct sys s, struct forces f, DOUBLE stime, DOUBLE etime, DOUBLE dt, int calc_timestep)
-{
-  int is_collision_detection_enabled;
-  is_stopping_condition_enabled(COLLISION_DETECTION, &is_collision_detection_enabled);
-  if (IS_ZEROFORCES(f) && clevel == 0) { f = ok_main_forces; }
-  CHECK_TIMESTEP(etime,stime,dt,clevel);
-  // all particles are drifted together
-  if (f.n == 0)
-  {
-    diag->deepsteps++;
-    diag->simtime += dt;
-    drift(clevel,s, etime, dt);
-    return;
-  }
-  if (calc_timestep) ok_timestep_cpu(clevel,f, dt);
-  struct forces slowf = zeroforces, fastf = zeroforces;
-  ok_split((FLOAT) dt, f, &slowf, &fastf);
-  evolve_ok2(clevel+1,s, fastf, stime, stime+dt/2, dt/2, 0);
-  ok_kick(clevel,slowf, dt);
-
-  if (is_collision_detection_enabled) {
+static void detect_collisions(struct sys s){
     UINT i, j;
     FLOAT dx[3], dr2, radius_sum;
     struct particle *ipart, *jpart;
@@ -198,14 +178,36 @@ void evolve_ok2(int clevel,struct sys s, struct forces f, DOUBLE stime, DOUBLE e
                           set_stopping_condition_info(stopping_index, COLLISION_DETECTION);
                           set_stopping_condition_particle_index(stopping_index, 0, ipart->id);
                           set_stopping_condition_particle_index(stopping_index, 1, jpart->id);
-                          return;
                       }
                   }
               }
           }
         }
     }
+}
+
+void evolve_ok2(int clevel,struct sys s, struct forces f, DOUBLE stime, DOUBLE etime, DOUBLE dt, int calc_timestep)
+{
+  int is_collision_detection_enabled;
+  is_stopping_condition_enabled(COLLISION_DETECTION, &is_collision_detection_enabled);
+  if (IS_ZEROFORCES(f) && clevel == 0) { f = ok_main_forces; }
+  CHECK_TIMESTEP(etime,stime,dt,clevel);
+  // all particles are drifted together
+  if (f.n == 0)
+  {
+    diag->deepsteps++;
+    diag->simtime += dt;
+    drift(clevel,s, etime, dt);
+    return;
   }
-  
+  if (calc_timestep) ok_timestep_cpu(clevel,f, dt);
+  struct forces slowf = zeroforces, fastf = zeroforces;
+  ok_split((FLOAT) dt, f, &slowf, &fastf);
+  evolve_ok2(clevel+1,s, fastf, stime, stime+dt/2, dt/2, 0);
+  ok_kick(clevel,slowf, dt);
+  if (is_collision_detection_enabled) {
+    detect_collisions(s);
+    if (set_conditions & enabled_conditions) return;
+  }
   evolve_ok2(clevel+1,s, fastf, stime+dt/2, etime, dt/2, 1);
 }
