@@ -2,6 +2,7 @@ from amuse.community.interface.chem import ChemicalModelingInterface
 from amuse.community.interface.chem import ChemicalModeling
 from amuse.community.interface.common import CommonCode, CommonCodeInterface
 from amuse.community import *
+from pathlib import Path
 
 class UclchemInterface(CodeInterface, CommonCodeInterface):
     def __init__(self, mode = 'cpu', **options):
@@ -98,7 +99,54 @@ class UclchemInterface(CodeInterface, CommonCodeInterface):
         function.addParameter('id', dtype='int32', direction=function.IN)
         function.result_type = 'i'
         return function
+    
+    @legacy_function
+    def run_model():
+        function = LegacyFunctionSpecification()
+        function.addParameter('dictionary', dtype='s', direction=function.IN)
+        function.addParameter('out_species', dtype='s', direction=function.IN)
+        function.result_type = 'i'
+        return function
 
+    def evolve_model(self,tend):
+        print(tend)
+        dictionary, out_species= self._build_dict(tend=tend)
+        return self.run_model(dictionary, out_species)
+
+
+    def _build_dict(self, tend):
+        dictionary = dict()
+        outSpecies = ['H', 'H2']
+        #dictionary['initialTemp'] = self.particles.temperature.value_in(units.K)
+        #dictionary['initialDens'] = self.particles.number_density.value_in(units.cm**-3)
+        print(tend)
+        dictionary['finalTime'] = tend
+        _, dictionary, outSpecies = self._reform_inputs(dictionary, outSpecies)
+        return dictionary, outSpecies
+    
+    def _reform_inputs(self,param_dict, out_species):
+        if param_dict is None:
+            param_dict = {}
+        else:
+            # lower case (and conveniently copy so we don't edit) the user's dictionary
+            # this is key to UCLCHEM's "case insensitivity"
+            new_param_dict = {}
+            for k, v in param_dict.items():
+                assert k.lower() not in new_param_dict, f"Lower case key {k} is already in the dict, stopping"
+                if isinstance(v, Path):
+                    v = str(v)
+                new_param_dict[k.lower()] = v
+            param_dict = new_param_dict.copy()
+            del new_param_dict
+        if out_species is not None:
+            n_out = len(out_species)
+            param_dict["outspecies"] = n_out
+            out_species = " ".join(out_species)
+        else:
+            out_species = ""
+            n_out = 0
+        return n_out, param_dict, out_species
+    
 class Uclchem(CommonCode):
     def __init__(self, convert_nbody=None, **options):
         legacy_interface = UclchemInterface(**options)
@@ -182,6 +230,15 @@ class Uclchem(CommonCode):
             ),
             (
                 handler.ERROR_CODE,
+            )
+        )
+        handler.add_method(
+            "evolve_model",
+            (
+                units.yr
+            ),
+            (
+                handler.ERROR_CODE
             )
         )
         

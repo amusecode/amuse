@@ -105,12 +105,12 @@
   ! !  ret=0
   ! !end function
   
-  ! function evolve_model(tend) result(ret)
-  !   use uclchemhelper
-  !   integer :: ret
-  !   double precision :: tend  
-  !   ret=evolve_chem_model(tend)
-  ! end function
+  function run_model(dictionary, out_species) result(ret)
+    use uclchemhelper
+    integer :: ret 
+    character(len=*) :: dictionary, out_species
+    ret=simple_evolution(dictionary, out_species)
+  end function
   
   ! function get_time(outtime) result(ret)
   !   use uclchemhelper

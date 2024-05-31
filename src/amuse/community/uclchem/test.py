@@ -11,5 +11,5 @@ particles.ionrate = 10**-16 | units.s**-1
 print(particles)
 chem.particles.add_particle(particles)
 print(chem.particles.number_density)
-#print(chem.sim_cloud(outSpeciesIn=species, dictionary=dict))
-#print(test)
+chem.evolve_model(5.0e6|units.yr)
+print(chem.particles.abundances)

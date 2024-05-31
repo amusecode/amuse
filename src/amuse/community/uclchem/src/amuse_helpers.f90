@@ -247,7 +247,78 @@ CONTAINS
         if(par(left)%density.GT.0) left=left+1
         np=left-1
     end function  
-    
+
+    function simple_evolution(dictionary, outSpeciesIn) result(ret)
+        integer :: ret
+        integer :: i, iret
+        CHARACTER(LEN=20) :: dictionary
+        CHARACTER(LEN=4) :: outSpeciesIn
+
+        ret = 0
+
+        do i=1,nparticle
+            iret = evolve_1_particle(particles(i), dictionary, outSpeciesIn)
+            ret = min(iret,ret)
+        enddo
+    end function
+
+    function evolve_1_particle(part, dictionary, outSpeciesIn) result(ret)
+        use cloud_mod
+        CHARACTER(LEN=20) :: dictionary
+        CHARACTER(LEN=4) :: outSpeciesIn
+        type(particle_type) :: part
+        integer :: ret
+
+        print *, dictionary
+        print *, outSpeciesIn
+        INCLUDE 'defaultparameters.f90'
+        !Read input parameters from the dictionary
+        CALL dictionaryParser(dictionary, outSpeciesIn,ret)
+
+        dstep=1
+        currentTime=0.0
+        timeInYears=0.0
+
+        call coreInitializePhysics(ret)
+        CALL coreInitializePhysics(ret)
+
+        CALL initializeChemistry(readabunds=.FALSE.)
+        dstep=1
+
+        DO WHILE (((endAtFinalDensity) .and. (density(1) < finalDens)) .or. &
+            &((.not. endAtFinalDensity) .and. (timeInYears < finalTime)))
+          
+            currentTimeold=currentTime
+
+            !Each physics module has a subroutine to set the target time from the current time
+            CALL updateTargetTime
+            !loop over parcels, counting from centre out to edge of cloud
+            DO dstep=1,points
+                !reset time if this isn't first depth point
+                currentTime=currentTimeold
+                !update chemistry from currentTime to targetTime
+                CALL updateChemistry(ret)
+                IF (ret .lt. 0) THEN
+                    write(*,*) 'Error updating chemistry'
+                    RETURN
+                END IF
+
+                !get time in years for output, currentTime is now equal to targetTime
+                timeInYears= currentTime/SECONDS_PER_YEAR
+
+                !Update physics so it's correct for new currentTime and start of next time step
+                Call coreUpdatePhysics
+                !Sublimation checks if Sublimation should happen this time step and does it
+                CALL sublimation(abund)
+
+                !write this depth step now time, chemistry and physics are consistent
+                CALL output
+            END DO
+        END DO
+        part%abundances(1:SIZE(outIndx))=abund(outIndx,1)
+    end function
+
+
     SUBROUTINE test_cloud(dictionary, outSpeciesIn,abundance_out, successFlag)
         !Subroutine to call a cloud model, used to interface with python
         ! Loads cloud specific subroutines and send to solveAbundances
