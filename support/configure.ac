@@ -79,7 +79,15 @@ else
     AX_OPENMP([HAVE_OPENMP="yes"])
     AX_CUDA()
     AX_CHECK_CL()
-    AX_LAPACK()     # calls AX_BLAS automatically
+
+    # Avoid AX_BLAS crashing out due to lack of a Fortran compiler
+    if test "x" != "x$FC"
+    then
+        AX_LAPACK()     # calls AX_BLAS automatically
+    else
+        AS_ECHO(["Skipping LAPACK/BLAS detection because we don't have Fortran"])
+    fi
+
     AX_PATH_GSL(1.0, [FOUND_GSL=yes])
     AX_GMP()
     AX_MPFR()

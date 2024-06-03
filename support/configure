@@ -6993,7 +6993,11 @@ FOUND_CL=$have_cl
 
 
 
-    ac_ext=f
+
+    # Avoid AX_BLAS crashing out due to lack of a Fortran compiler
+    if test "x" != "x$FC"
+    then
+        ac_ext=f
 ac_compile='$F77 -c $FFLAGS conftest.$ac_ext >&5'
 ac_link='$F77 -o conftest$ac_exeext $FFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
 ac_compiler_gnu=$ac_cv_f77_compiler_gnu
@@ -9428,6 +9432,10 @@ else
 
 fi
      # calls AX_BLAS automatically
+    else
+        printf "%s\n" "Skipping LAPACK/BLAS detection because we don't have Fortran"
+    fi
+
 
 
 
