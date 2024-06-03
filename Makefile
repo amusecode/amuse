@@ -50,18 +50,21 @@ endif
 endif
 endif
 
-ifeq (,$(FW_MISSING_FEATURES))
 
-# Build sapporo_light separately so that we can build without CUDA
-ifneq (,$(filter cuda, $(FEATURES)))
+ifeq (,$(SAPPORO_LIGHT_MISSING_FEATURES))
+
+# Tell the lib/ build system that we have CUDA, so it will enable Sapporo
 HAVE_CUDA := yes
 export HAVE_CUDA
 
 .PHONY: install-sapporo_light
 install-sapporo_light:
 	$(MAKE) -C lib install-sapporo_light
+
 endif
 
+
+ifeq (,$(FW_MISSING_FEATURES))
 
 .PHONY: install-libs
 install-libs:
@@ -102,6 +105,7 @@ install: install-amuse-framework install-packages
 clean:
 	$(MAKE) -C support clean
 	$(MAKE) -C lib clean
+	$(MAKE) -C lib clean-sapporo_light
 	$(MAKE) -C src/amuse/community clean
 	$(MAKE) -C src/tests clean
 
@@ -109,6 +113,7 @@ clean:
 distclean:
 	$(MAKE) -C support distclean
 	$(MAKE) -C lib distclean
+	$(MAKE) -C lib distclean-sapporo_light
 	$(MAKE) -C src/amuse/community distclean
 	$(MAKE) -C src/tests distclean
 

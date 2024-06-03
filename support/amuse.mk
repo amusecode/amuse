@@ -6,11 +6,16 @@ support/features.mk: support/features.mk.in support/configure
 	cd support && ./configure $(CONFIGOPTS) || cat config.log
 
 include support/features.mk
+include support/format.mk
 
 
 # See if we can install the framework
 FW_REQ_FEATURES := gcc g++ gfortran python install mpi
 FW_MISSING_FEATURES := $(filter-out $(FEATURES), $(FW_REQ_FEATURES))
+
+# See if we can install Sapporo light
+SAPPORO_LIGHT_REQ_FEATURES := gcc g++ install cuda
+SAPPORO_LIGHT_MISSING_FEATURES := $(filter-out $(FEATURES), $(SAPPORO_LIGHT_REQ_FEATURES))
 
 # Lists of enabled and disabled packages, filled by the .amuse_dep.mk files
 ifeq (,$(FW_MISSING_FEATURES))
@@ -19,6 +24,12 @@ DISABLED_PACKAGES :=
 else
 ENABLED_PACKAGES :=
 DISABLED_PACKAGES := \namuse-framework (missing features: $(COLOR_RED)$(FW_MISSING_FEATURES)$(COLOR_END))
+endif
+
+ifeq (,$(SAPPORO_LIGHT_MISSING_FEATURES))
+ENABLED_PACKAGES += \nsapporo_light
+else
+DISABLED_PACKAGES += \nsapporo_light (missing features: $(COLOR_RED)$(SAPPORO_LIGHT_MISSING_FEATURES)$(COLOR_END))
 endif
 
 
