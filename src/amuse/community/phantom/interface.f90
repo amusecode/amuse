@@ -371,24 +371,24 @@ function synchronize_model()
 end function
 
 function set_state_sink(index_of_the_particle, mass, x, y, z, &
-        vx, vy, vz, radius, h_smooth)
+        vx, vy, vz, radius, accretion_radius, h_smooth)
   implicit none
   integer :: index_of_the_particle
-  double precision :: mass, x, y, z, vx, vy, vz, radius, h_smooth
+  double precision :: mass, x, y, z, vx, vy, vz, radius, accretion_radius, h_smooth
   integer :: set_state_sink
   call amuse_set_state_sink(index_of_the_particle, mass, x, y, z, &
-      vx, vy, vz, radius, h_smooth)
+      vx, vy, vz, radius, accretion_radius, h_smooth)
   set_state_sink=0
 end function
 
 function get_state_sink(index_of_the_particle, mass, x, y, z, &
-        vx, vy, vz, radius, h_smooth)
+        vx, vy, vz, radius, accretion_radius, h_smooth)
   implicit none
   integer :: index_of_the_particle
-  double precision :: mass, x, y, z, vx, vy, vz, radius, h_smooth
+  double precision :: mass, x, y, z, vx, vy, vz, radius, accretion_radius, h_smooth
   integer :: get_state_sink
   call amuse_get_state_sink(index_of_the_particle, mass, x, y, z, &
-      vx, vy, vz, radius, h_smooth)
+      vx, vy, vz, radius, accretion_radius, h_smooth)
   get_state_sink=0
 end function
 
@@ -492,6 +492,15 @@ function get_radius(index_of_the_particle, radius)
   get_radius=0
 end function
 
+function get_sink_accretion_radius(index_of_the_particle, radius)
+  implicit none
+  integer :: index_of_the_particle
+  double precision :: radius
+  integer :: get_sink_accretion_radius
+  call amuse_get_sink_accretion_radius(index_of_the_particle, radius)
+  get_sink_accretion_radius=0
+end function
+
 function get_sink_temperature(index_of_the_particle, temperature)
   implicit none
   integer :: index_of_the_particle
@@ -545,14 +554,13 @@ function new_dm_particle(index_of_the_particle, mass, x, y, z, vx, vy, vz)
 end function
 
 function new_sink_particle(index_of_the_particle, mass, x, y, z, vx, vy, vz, &
-        radius, h_smooth)
+        radius, accretion_radius, h_smooth)
   implicit none
   integer :: index_of_the_particle
-  double precision :: mass, x, y, z, vx, vy, vz, radius, h_smooth
+  double precision :: mass, x, y, z, vx, vy, vz, radius, accretion_radius, h_smooth
   integer :: new_sink_particle
-  write(*,*) 'particle ', index_of_the_particle, ': radius set to ', radius
   call amuse_new_sink_particle(index_of_the_particle, mass, x, y, z, &
-      vx, vy, vz, radius, h_smooth)
+      vx, vy, vz, radius, accretion_radius, h_smooth)
   new_sink_particle=0
 end function
 
@@ -563,6 +571,15 @@ function set_radius(index_of_the_particle, radius)
   integer :: set_radius
   call amuse_set_radius(index_of_the_particle, radius)
   set_radius=0
+end function
+
+function set_sink_accretion_radius(index_of_the_particle, radius)
+  implicit none
+  integer :: index_of_the_particle
+  double precision :: radius
+  integer :: set_sink_accretion_radius
+  call amuse_set_sink_accretion_radius(index_of_the_particle, radius)
+  set_sink_accretion_radius=0
 end function
 
 function set_sink_temperature(index_of_the_particle, temperature)

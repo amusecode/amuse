@@ -102,6 +102,9 @@ class PhantomInterface(
             function.addParameter(x, dtype='float64', direction=function.IN)
         function.addParameter(
             'radius', dtype='float64', direction=function.IN, default=0.01,
+        )
+        function.addParameter(
+            'accretion_radius', dtype='float64', direction=function.IN, default=0.01,
             # default should be h_acc
         )
         function.addParameter(
@@ -190,6 +193,9 @@ class PhantomInterface(
             description="The current velocity vector of the particle")
         function.addParameter(
             'radius', dtype='float64', direction=function.OUT,
+            description="The effective radius of the particle")
+        function.addParameter(
+            'accretion_radius', dtype='float64', direction=function.OUT,
             description="The accretion radius of the particle")
         function.addParameter(
             'h_smooth', dtype='float64', direction=function.OUT,
@@ -404,6 +410,9 @@ class PhantomInterface(
             description="The new velocity vector of the particle")
         function.addParameter(
             'radius', dtype='float64', direction=function.IN,
+            description="The effective radius of the particle")
+        function.addParameter(
+            'accretion_radius', dtype='float64', direction=function.IN,
             description="The accretion radius of the particle")
         function.addParameter(
             'h_smooth', dtype='float64', direction=function.IN,
@@ -418,6 +427,25 @@ class PhantomInterface(
             code does not support updating of a particle
         -3 - ERROR
             not yet implemented
+        """
+        return function
+
+    @legacy_function
+    def set_sink_accretion_radius():
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
+        function.addParameter(
+            'index_of_the_particle', dtype='int32', direction=function.IN,
+            description='',
+        )
+        function.addParameter(
+            'accretion_radius', dtype='float64', direction=function.IN,
+            description='',
+        )
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+        -1 - ERROR
         """
         return function
 
@@ -717,6 +745,25 @@ class PhantomInterface(
         function.addParameter(
             'co_abundance', dtype='float64', direction=function.OUT,
             description=''
+        )
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+        -1 - ERROR
+        """
+        return function
+
+    @legacy_function
+    def get_sink_accretion_radius():
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
+        function.addParameter(
+            'index_of_the_particle', dtype='int32', direction=function.IN,
+            description=''
+        )
+        function.addParameter(
+            'accretion_radius', dtype='float64', direction=function.OUT,
+            description="The accretion radius of the sink particle",
         )
         function.result_type = 'int32'
         function.result_doc = """
@@ -2026,6 +2073,8 @@ class Phantom(GravitationalDynamics, GravityFieldCode):
         handler.add_getter('sink_particles', 'get_acceleration')
         handler.add_getter('sink_particles', 'get_radius')
         handler.add_setter('sink_particles', 'set_radius')
+        handler.add_getter('sink_particles', 'get_sink_accretion_radius')
+        handler.add_setter('sink_particles', 'set_sink_accretion_radius')
         handler.add_getter('sink_particles', 'get_sink_temperature')
         handler.add_setter('sink_particles', 'set_sink_temperature')
         handler.add_getter('sink_particles', 'get_sink_luminosity')
@@ -2084,6 +2133,7 @@ class Phantom(GravitationalDynamics, GravityFieldCode):
                 generic_unit_system.speed,
                 generic_unit_system.speed,
                 generic_unit_system.speed,
+                generic_unit_system.length,
                 generic_unit_system.length,
                 generic_unit_system.length,
             ),
@@ -2181,6 +2231,7 @@ class Phantom(GravitationalDynamics, GravityFieldCode):
                 generic_unit_system.speed,
                 generic_unit_system.length,
                 generic_unit_system.length,
+                generic_unit_system.length,
                 handler.ERROR_CODE,
             )
         )
@@ -2198,8 +2249,31 @@ class Phantom(GravitationalDynamics, GravityFieldCode):
                 generic_unit_system.speed,
                 generic_unit_system.length,
                 generic_unit_system.length,
+                generic_unit_system.length,
             ),
             (
+                handler.ERROR_CODE,
+            )
+        )
+
+        handler.add_method(
+            "set_sink_accretion_radius",
+            (
+                handler.INDEX,
+                generic_unit_system.length,
+            ),
+            (
+                handler.ERROR_CODE,
+            )
+        )
+
+        handler.add_method(
+            "get_sink_accretion_radius",
+            (
+                handler.INDEX,
+            ),
+            (
+                generic_unit_system.length,
                 handler.ERROR_CODE,
             )
         )
