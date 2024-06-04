@@ -54,10 +54,11 @@ endif
 # ends up inside of them, and it may not be defined when make all is called.
 .PHONY: install
 install: all $(PKG_CONFIG_FILE)
+	mkdir -p $(PREFIX)/include $(PREFIX)/lib/pkgconfig
 	$(INSTALL) -m 644 $(HEADERS) $(PREFIX)/include/
 	$(INSTALL) -m 644 $(STATIC_LIB) $(PREFIX)/lib/$(STATIC_LIB)
 	$(INSTALL) -m 644 $(DYNAMIC_LIB) $(PREFIX)/lib/$(DYNAMIC_LIB)
-	$(INSTALL) -D -m 644 $(PKG_CONFIG_FILE) $(PREFIX)/lib/pkgconfig/$(PKG_CONFIG_FILE)
+	$(INSTALL) -m 644 $(PKG_CONFIG_FILE) $(PREFIX)/lib/pkgconfig/$(PKG_CONFIG_FILE)
 
 
 # Build the library
