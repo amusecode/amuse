@@ -2772,9 +2772,9 @@ fi
 
 
 
-    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for conda package openmpi" >&5
-printf %s "checking for conda package openmpi... " >&6; }
-    ax_conda_package_line="$(echo $ax_conda_list | tr '^' '\n' | grep '^openmpi ')"
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for conda package mpi" >&5
+printf %s "checking for conda package mpi... " >&6; }
+    ax_conda_package_line="$(echo $ax_conda_list | tr '^' '\n' | grep '^mpi ')"
     if test "$?" = "0"
 then :
 

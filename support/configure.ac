@@ -29,7 +29,7 @@ then
 
     AX_CONDA_PACKAGE(CMAKE, cmake)
 
-    AX_CONDA_PACKAGE(MPICC, openmpi)
+    AX_CONDA_PACKAGE(MPICC, mpi)
     AX_CONDA_PACKAGE(HAVE_OPENMP, openmp)
     AX_CONDA_PACKAGE(CUDA_TK, cuda-toolkit)
     AX_CONDA_PACKAGE(FOUND_CL, khronos-opencl-icd-loader)
