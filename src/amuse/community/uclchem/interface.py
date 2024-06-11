@@ -4,14 +4,20 @@ from amuse.community.interface.common import CommonCode, CommonCodeInterface
 from amuse.community import *
 from pathlib import Path
 
-class UclchemInterface(CodeInterface, CommonCodeInterface):
+class UclchemInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesMixIn):
+    """
+    UCLCHEM: A Gas-Grain Chemical Code for astrochemical modelling
+
+    .. [#] ADS:2017AJ....154...38H (Holdship, J. ; Viti, S, ; Jiménez-Serra, I.; Makrymallis, A. ; Priestley, F. , 2017, AJ)
+    """
     def __init__(self, mode = 'cpu', **options):
         CodeInterface.__init__(
             self,
             name_of_the_worker='uclchem_worker',
             **options
         )
-        
+        LiteratureReferencesMixIn.__init__(self)
+
     @legacy_function
     def commit_particles():
         function = LegacyFunctionSpecification()
@@ -159,9 +165,15 @@ class Uclchem(CommonCode):
     def _build_dict(self, tend):
         dictionary = dict()
         outSpecies = ['H', 'H2']
-        dictionary['initialTemp'] = self.particles.temperature.value_in(units.K)[0]
-        dictionary['initialDens'] = self.particles.number_density.value_in(units.cm**-3)[0]
-        dictionary['zeta'] = self.particles.ionrate.value_in(units.cr_ion)[0]
+        attributes = self.particles.get_attribute_names_defined_in_store()
+        if 'temperature' in attributes:
+            dictionary['initialTemp'] = self.particles.temperature.value_in(units.K)[0]
+        if 'number_density' in attributes:
+            dictionary['initialDens'] = self.particles.number_density.value_in(units.cm**-3)[0]
+        if 'ionrate' in attributes:
+            dictionary['zeta'] = self.particles.ionrate.value_in(units.cr_ion)[0]
+        if 'radfield' in attributes:
+            dictionary['radfield'] = self.particles.radfield.value_in(units.habing)[0]
         dictionary['finalTime'] = tend.value_in(units.yr)
         _, dictionary, outSpecies = self._reform_inputs(dictionary, outSpecies)
         return str(dictionary), str(outSpecies)

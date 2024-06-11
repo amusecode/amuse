@@ -81,7 +81,6 @@ CONTAINS
         integer :: id,index
         double precision :: density, temperature, ionrate
         index=find_particle(id)
-        print *, id
         if(index.LT.0) then
         ret=index
         return
@@ -314,8 +313,6 @@ CONTAINS
                 CALL output
             END DO
         END DO
-        print *, abund(outIndx,1)
-        print *, part%abundances(1:SIZE(outIndx))
         part%abundances(1:SIZE(outIndx))=abund(outIndx,1)
     end function
 
