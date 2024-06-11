@@ -161,6 +161,7 @@ class Uclchem(CommonCode):
         outSpecies = ['H', 'H2']
         dictionary['initialTemp'] = self.particles.temperature.value_in(units.K)[0]
         dictionary['initialDens'] = self.particles.number_density.value_in(units.cm**-3)[0]
+        dictionary['zeta'] = self.particles.ionrate.value_in(units.cr_ion)[0]
         dictionary['finalTime'] = tend.value_in(units.yr)
         _, dictionary, outSpecies = self._reform_inputs(dictionary, outSpecies)
         return str(dictionary), str(outSpecies)
