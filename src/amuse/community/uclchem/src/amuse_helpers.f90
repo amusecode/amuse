@@ -255,23 +255,20 @@ CONTAINS
         CHARACTER(LEN=*) :: outSpeciesIn
 
         ret = 0
+        INCLUDE 'defaultparameters.f90'
+        !Read input parameters from the dictionary
+        CALL dictionaryParser(dictionary, outSpeciesIn,ret)
 
         do i=1,nparticle
-            iret = evolve_1_particle(particles(i), dictionary, outSpeciesIn)
+            iret = evolve_1_particle(particles(i))
             ret = min(iret,ret)
         enddo
     end function
 
-    function evolve_1_particle(part, dictionary, outSpeciesIn) result(ret)
+    function evolve_1_particle(part) result(ret)
         use cloud_mod
-        CHARACTER(LEN=*) :: dictionary
-        CHARACTER(LEN=*) :: outSpeciesIn
         type(particle_type) :: part
-        integer :: ret
-
-        INCLUDE 'defaultparameters.f90'
-        !Read input parameters from the dictionary
-        CALL dictionaryParser(dictionary, outSpeciesIn,ret)
+        integer :: ret        
 
         dstep=1
         currentTime=0.0

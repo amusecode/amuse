@@ -176,6 +176,7 @@ class Uclchem(CommonCode):
             dictionary['radfield'] = self.particles.radfield.value_in(units.habing)[0]
         dictionary['finalTime'] = tend.value_in(units.yr)
         _, dictionary, outSpecies = self._reform_inputs(dictionary, outSpecies)
+        print(dictionary, outSpecies)
         return str(dictionary), str(outSpecies)
     
     def define_methods(self, handler):
