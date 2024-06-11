@@ -81,6 +81,7 @@ CONTAINS
         integer :: id,index
         double precision :: density, temperature, ionrate
         index=find_particle(id)
+        print *, id
         if(index.LT.0) then
         ret=index
         return
@@ -251,8 +252,8 @@ CONTAINS
     function simple_evolution(dictionary, outSpeciesIn) result(ret)
         integer :: ret
         integer :: i, iret
-        CHARACTER(LEN=20) :: dictionary
-        CHARACTER(LEN=4) :: outSpeciesIn
+        CHARACTER(LEN=*) :: dictionary
+        CHARACTER(LEN=*) :: outSpeciesIn
 
         ret = 0
 
@@ -264,13 +265,11 @@ CONTAINS
 
     function evolve_1_particle(part, dictionary, outSpeciesIn) result(ret)
         use cloud_mod
-        CHARACTER(LEN=20) :: dictionary
-        CHARACTER(LEN=4) :: outSpeciesIn
+        CHARACTER(LEN=*) :: dictionary
+        CHARACTER(LEN=*) :: outSpeciesIn
         type(particle_type) :: part
         integer :: ret
 
-        print *, dictionary
-        print *, outSpeciesIn
         INCLUDE 'defaultparameters.f90'
         !Read input parameters from the dictionary
         CALL dictionaryParser(dictionary, outSpeciesIn,ret)
@@ -315,6 +314,8 @@ CONTAINS
                 CALL output
             END DO
         END DO
+        print *, abund(outIndx,1)
+        print *, part%abundances(1:SIZE(outIndx))
         part%abundances(1:SIZE(outIndx))=abund(outIndx,1)
     end function
 

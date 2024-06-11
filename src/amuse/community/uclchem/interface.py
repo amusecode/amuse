@@ -109,7 +109,6 @@ class UclchemInterface(CodeInterface, CommonCodeInterface):
         return function
 
     def evolve_model(self,tend):
-        print(tend)
         dictionary, out_species= self._build_dict(tend=tend)
         return self.run_model(dictionary, out_species)
 
@@ -119,10 +118,9 @@ class UclchemInterface(CodeInterface, CommonCodeInterface):
         outSpecies = ['H', 'H2']
         #dictionary['initialTemp'] = self.particles.temperature.value_in(units.K)
         #dictionary['initialDens'] = self.particles.number_density.value_in(units.cm**-3)
-        print(tend)
         dictionary['finalTime'] = tend
         _, dictionary, outSpecies = self._reform_inputs(dictionary, outSpecies)
-        return dictionary, outSpecies
+        return str(dictionary), str(outSpecies)
     
     def _reform_inputs(self,param_dict, out_species):
         if param_dict is None:
@@ -152,6 +150,20 @@ class Uclchem(CommonCode):
         legacy_interface = UclchemInterface(**options)
 
         InCodeComponentImplementation.__init__(self,legacy_interface)
+
+    def evolve_model(self,tend):
+        dictionary, out_species= self._build_dict(tend=tend)
+        return self.run_model(dictionary, out_species)
+
+
+    def _build_dict(self, tend):
+        dictionary = dict()
+        outSpecies = ['H', 'H2']
+        dictionary['initialTemp'] = self.particles.temperature.value_in(units.K)[0]
+        dictionary['initialDens'] = self.particles.number_density.value_in(units.cm**-3)[0]
+        dictionary['finalTime'] = tend.value_in(units.yr)
+        _, dictionary, outSpecies = self._reform_inputs(dictionary, outSpecies)
+        return str(dictionary), str(outSpecies)
     
     def define_methods(self, handler):
         CommonCode.define_methods(self, handler)
