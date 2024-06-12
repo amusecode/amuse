@@ -28,12 +28,6 @@
     ret=chem_commit_parameters()
   end function
   
-  ! function recommit_parameters() result(ret)
-  !   use uclchemhelper
-  !   integer :: ret
-  !   ret=chem_commit_parameters()
-  ! end function
-  
   ! function get_number_of_particles(n) result(ret)
   !   use uclchemhelper
   !   integer n,ret
@@ -84,26 +78,31 @@
    ret=0
   end function
   
-  ! !function get_name_of_species(index,s) result(ret)
-  ! !  use uclchemhelper
-  ! !  integer ret,index
-  ! !  character*16 :: ss(krome_nmols),s
-  ! !  if(index.LT.1.OR.index.GT.krome_nmols) then
-  ! !    ret=-1
-  ! !    return
-  ! !  endif
-  ! !  ss=krome_get_names()
-  ! !  s=ss(index)
-  ! !  ret=0
-  ! !end function
+  function get_name_of_species(index,s) result(ret)
+   use network
+   integer ret,index
+   character*16 :: ss(nSpec),s
+   index = index + 1
+   if(index.LT.1.OR.index.GT.nSpec) then
+     ret=-1
+     return
+   endif
+   ss=specname
+   s=ss(index)
+   ret=0
+  end function
   
-  ! !function get_index_of_species(s,index) result(ret)
-  ! !  use uclchemhelper
-  ! !  integer ret,index
-  ! !  character*16 s
-  ! !  i=krome_get_index(s)
-  ! !  ret=0
-  ! !end function
+  function get_index_of_species(s,index) result(ret)
+   use network
+   integer ret,index
+   character*16 s
+   if (any(specname == s)) then
+    index = FINDLOC(specname, s, dim=1) - 1
+    ret = 0
+   else 
+    ret = 1
+   end if 
+  end function
   
   function run_model(dictionary, out_species) result(ret)
     use uclchemhelper

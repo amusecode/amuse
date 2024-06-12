@@ -87,7 +87,25 @@ class UclchemInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesM
         function.addParameter('last', dtype='i', direction=function.OUT)
         function.result_type = 'i'
         return function
-
+    
+    @legacy_function
+    def get_name_of_species():
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
+        function.addParameter('index', dtype='i', direction=function.IN)
+        function.addParameter('name', dtype='s', direction=function.OUT)
+        function.result_type = 'i'
+        return function
+    
+    @legacy_function
+    def get_index_of_species():
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
+        function.addParameter('name', dtype='s', direction=function.IN)
+        function.addParameter('index', dtype='i', direction=function.OUT)
+        function.result_type = 'i'
+        return function
+    
     @legacy_function
     def new_particle():
         function = LegacyFunctionSpecification()
