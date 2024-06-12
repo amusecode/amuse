@@ -71,13 +71,15 @@ install-libs:
 	$(MAKE) -C lib install
 
 .PHONY: install-amuse-framework
-install-amuse-framework: install-libs
+install-amuse-framework:
 	support/shared/uninstall.sh amuse-framework
+	$(MAKE) -C lib install
 	cd src && pip --no-cache-dir --debug install .
 
 .PHONY: develop-amuse-framework
-develop-amuse-framework: install-libs
+develop-amuse-framework:
 	support/shared/uninstall.sh amuse-framework
+	$(MAKE) -C lib install
 	cd src && pip install -e .
 
 .PHONY: package-amuse-framework

@@ -20,7 +20,7 @@ if test -n ${CONDA_DEFAULT_ENV} ; then
         # Conda is showing a pip-installed develop package. However, there may be a
         # conda package hidden underneath, so we're going to try to conda uninstall
         # anyway to fix that if needed. This will fail if everything is as it should
-        # be, so we make sure to output an error message to reduce confusion.
+        # be, so we make sure to inhibit the error message to reduce confusion.
         EXPECTING_FAIL=true
     fi
 
