@@ -11,5 +11,5 @@ clean_features:
 
 .PHONY: clean_comm_deps
 clean_comm_deps:
-	rm -f $(COMM_DEPS_MK)
+	rm -rf comm_deps_mk/*
 

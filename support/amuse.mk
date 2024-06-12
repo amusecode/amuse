@@ -50,6 +50,10 @@ include $(COMM_DEPS_MK)
 # if FEATURES contains all the dependencies of the worker. As a result, when making
 # 'install-packages' we will only try to build the packages that we have the
 # dependencies for and expect to build cleanly.
+#
+# Note: I tried using the file function instead of shell cat, but on GNU make 4.3 at
+# least, it doesn't strip the final newline as the docs say. The shell function strips
+# all newlines, which is better anyway as it's more robust.
 support/comm_deps_mk/%.mk: src/amuse/community/%
 	@mkdir -p $(dir $@)
 	@rm -f $@
@@ -57,7 +61,7 @@ support/comm_deps_mk/%.mk: src/amuse/community/%
 	@echo >>$@
 	@echo PACKAGE_NAME = $(notdir $(patsubst %.amuse_deps,%,$*)) >>$@
 	@echo >>$@
-	@echo 'REQUIRED_FEATURES := $(file < $<)' >>$@
+	@echo 'REQUIRED_FEATURES := $(shell cat $<)' >>$@
 	@echo 'MISSING_FEATURES := $$(filter-out $$(FEATURES), $$(REQUIRED_FEATURES))' >>$@
 	@echo >>$@
 	@echo 'ifeq (,$$(MISSING_FEATURES))' >>$@
@@ -65,7 +69,7 @@ support/comm_deps_mk/%.mk: src/amuse/community/%
 	@echo 'ENABLED_PACKAGES += \\n$(notdir $(patsubst %.amuse_deps,%,$*))' >>$@
 	@echo >>$@
 	@echo '%-$(notdir $(patsubst %.amuse_deps,%,$*)):' >>$@
-	@echo '\tmake -C $(dir $<)' $$\@ >>$@
+	@echo '\tmake -C $(dir $<)/..' $$\@ >>$@
 	@echo >>$@
 	@echo 'develop-packages: develop-$(notdir $(patsubst %.amuse_deps,%,$*))' >>$@
 	@echo >>$@
