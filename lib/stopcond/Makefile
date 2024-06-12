@@ -5,11 +5,11 @@ include support/shared/lib-configure.mk
 HEADERS = stopcond.h stopcond.inc stoppingconditions.mod
 DYNAMIC_LIB = libstopcond.so
 STATIC_LIB = libstopcond.a
-PKG_CONFIG_FILE = libstopcond.pc
+PKG_CONFIG_FILE = stopcond.pc
 
 DYNAMIC_LIB_MPI = libstopcondmpi.so
 STATIC_LIB_MPI = libstopcondmpi.a
-PKG_CONFIG_FILE_MPI = libstopcondmpi.pc
+PKG_CONFIG_FILE_MPI = stopcondmpi.pc
 
 CFLAGS_MPI += -DMPILIB
 FCFLAGS_MPI += -DMPILIB

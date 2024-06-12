@@ -4,7 +4,7 @@ include support/shared/lib-configure.mk
 HEADERS = simple_hash.h
 DYNAMIC_LIB = libsimple_hash.so
 STATIC_LIB = libsimple_hash.a
-PKG_CONFIG_FILE = libsimple_hash.pc
+PKG_CONFIG_FILE = simple_hash.pc
 
 CFLAGS += -O2 -g -std=c99
 

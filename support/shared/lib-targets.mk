@@ -50,7 +50,7 @@ CFLAGS += -fPIC
 FCFLAGS += -fPIC
 
 $(DYNAMIC_LIB): $(OBJS)
-	$(CC) -shared -o $@ $^
+	$(CC) -shared -o $@ $^ $(LIBS)
 
 $(STATIC_LIB): $(OBJS)
 	$(AR) -r $(STATIC_LIB) $^

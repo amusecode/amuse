@@ -68,7 +68,7 @@ CXXFLAGS += -fPIC
 NVCCFLAGS += --compiler-options '-fPIC'
 
 $(DYNAMIC_LIB): $(OBJS) $(CUOBJS)
-	$(CC) -shared -o $@ $^ $(LIBS)
+	$(CXX) -shared -o $@ $^ $(LIBS)
 
 $(STATIC_LIB): $(OBJS) $(CUOBJS)
 	$(AR) -r $(STATIC_LIB) $^
@@ -78,7 +78,7 @@ $(STATIC_LIB): $(OBJS) $(CUOBJS)
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 %.o: %.cpp
-	$(CC) $(CXXFLAGS) -c -o $@ $<
+	$(CXX) $(CXXFLAGS) -c -o $@ $<
 
 %.o: %.cu
 	$(NVCC) $(NVCCFLAGS) -c $< -o $@
@@ -89,7 +89,7 @@ $(PKG_CONFIG_FILE):
 
 .PHONY: clean
 clean:
-	rm -rf *.o *.a *.so
+	rm -rf *.o *.a *.so *.pc
 	rm -f support/config.mk support/config.log support/config.status
 
 .PHONY: distclean
