@@ -32,15 +32,18 @@ src/amuse.egg-info
 bin/amusifier
 
 # directories and files generated in make
-# some of these should be patterns (the worker_code.cc / f90 stuff)
 *_worker
+*_worker.h
+*_worker.c
+*_worker.cc
+*_worker.pyx
+*_worker.f90
+# to be removed once all workers conform to the new standard
 worker_code.c
 worker_code.h
 worker_code.cc
 worker_code.pyx
 worker_code.f90
-src/amuse/community/aarsethzare/aarsethzare_worker
-src/amuse/community/aarsethzare/worker_code.f90
 src/amuse/community/adaptb/adaptb_worker
 src/amuse/community/adaptb/src/integrator_MS.exe
 src/amuse/community/adaptb/worker_code.cc

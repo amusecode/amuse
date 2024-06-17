@@ -1,4 +1,4 @@
-from amuse.test.amusetest import TestWithMPI
+from amusetest import TestWithMPI
 import os
 import sys
 import numpy

@@ -1,46 +1,71 @@
-# standard amuse configuration include
-# config.mk will be made after ./configure has run
-ifeq ($(origin AMUSE_DIR), undefined)
-  AMUSE_DIR := $(shell amusifier --get-amuse-dir)
+ifneq (,$(filter-out clean distclean, $(MAKECMDGOALS)))
+include support/config.mk
 endif
--include ${AMUSE_DIR}/config.mk
 
-MPIFC ?= mpif90
-FORTRAN ?= gfortran
-FC ?= $(FORTRAN)
 
-FFLAGS   += -g
-LDFLAGS  += -lm $(MUSE_LD_FLAGS)
+# Detecting dependencies
+support/config.mk:
+	cd support && ./configure
 
-OBJS = interface.o
+
+# Building the code into a static library
+FFLAGS += $(AMUSE_MPI_CFLAGS) $(FORSOCKETS_CFLAGS)
+LDFLAGS +=
+LDLIBS += -lm $(AMUSE_MPI_LIBS) $(FORSOCKETS_LIBS)
 
 CODELIB = src/libaarsethzare.a
 
 
-AM_LIBS = -L$(AMUSE_DIR)/lib/amuse_mpi -lamuse_mpi
-AM_CFLAGS = -I$(AMUSE_DIR)/lib/amuse_mpi
+$(CODELIB): src/*.f
+	$(MAKE) -C src all
 
 
-all: aarsethzare_worker 
+# Building the workers
+cpu_worker.h: interface.py
+	amusifier --type=h interface.py AarsethZareInterface -o $@
 
-clean:
-	$(RM) -f *.so *.o *.pyc worker_code.cc worker_code.h 
-	$(RM) *~ aarsethzare_worker worker_code.f90 aarsethzare_worker_sockets worker_code-sockets.f90
-	$(RM) -f *.mod
-	make -C src clean
+cpu_worker.f90: interface.py
+	amusifier --type=f90 interface.py AarsethZareInterface -o $@
 
-$(CODELIB):  src/*.f
-	make -C src all
+cpu_worker: interface.o cpu_worker.o $(CODELIB)
+	$(MPIFC) -o cpu_worker $(LDFLAGS) $^ $(CODELIB) $(LDLIBS)
 
-worker_code.f90: interface.py
-	$(CODE_GENERATOR) --type=f90 interface.py AarsethZareInterface -o $@
-	
-aarsethzare_worker: worker_code.f90 $(CODELIB) $(OBJS)
-	$(MPIFC) $(FCFLAGS) $(FS_FLAGS) $(LDFLAGS) -cpp worker_code.f90 $(OBJS) $(CODELIB) $(FS_LIBS) -o $@  $(LIBS)
-	
-worker_code.h: interface.py
-	$(CODE_GENERATOR) --type=h -i amuse.community.interface.stopping_conditions.StoppingConditionInterface interface.py AarsethZareInterface -o $@
+cpu_worker.o: cpu_worker.f90
+	$(MPIFC) -c $(FFLAGS) $<
 
-	
 %.o: %.f90
-	$(FORTRAN) $(FFLAGS)  $(FCFLAGS) -c -o $@ $<
+	$(FC) -c $(FFLAGS) $<
+
+
+# Which packages contain which workers?
+amuse-aarsethzare_contains: cpu_worker
+
+
+# Building and installing packages
+develop-%: %_contains
+	support/shared/uninstall.sh $*
+	python -m pip install -e packages/$*
+
+install-%: %_contains
+	support/shared/uninstall.sh $*
+	python -m pip install packages/$*
+
+package-%: %_contains
+	python3 -m pip install -vv --no-cache-dir --no-deps --no-build-isolation --prefix ${PREFIX} packages/$*
+
+test-%:
+	cd packages/$* && pytest
+
+
+# Cleaning up
+.PHONY: clean
+clean:
+	$(MAKE) -C src clean
+	rm -rf *.o *worker*
+
+.PHONY: distclean
+distclean: clean
+	-$(MAKE) -C src clean
+	rm -f support/config.mk support/config.log support/config.status
+	rm -rf support/autom4te.cache
+

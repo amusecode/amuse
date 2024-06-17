@@ -94,10 +94,15 @@ test-amuse-framework:
 	$(MAKE) -C src/tests all
 	cd src/tests && pytest --pyargs core_tests compile_tests
 
+.PHONY: test-amuse-%
+test-amuse-%:
+	$(MAKE) -C src/amuse/community/$(firstword $(shell echo "$*" | tr '-' ' ')) test-amuse-$*
 
 .PHONY: install-packages
 
 .PHONY: develop-packages
+
+.PHONY: test-packages
 
 .PHONY: install
 install: install-amuse-framework install-packages
