@@ -95,7 +95,7 @@ jobs:
     - name: archive build log
       uses: actions/upload-artifact@v4
       with:
-          name: buildlog
+          name: buildlog-${{ matrix.mpi }}-${{ matrix.python }}
           path: build-${{ matrix.mpi }}-${{ matrix.python }}.log
 
     - name: test core_tests
