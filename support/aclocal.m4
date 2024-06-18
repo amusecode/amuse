@@ -1115,6 +1115,7 @@ else
 fi
 ])dnl AX_OPENMP
 
+m4_include([shared/m4/amuse_download.m4])
 m4_include([shared/m4/ax_mpi.m4])
 m4_include([shared/m4/conda_packages.m4])
 m4_include([shared/m4/cuda.m4])

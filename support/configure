@@ -795,6 +795,9 @@ FC
 CXX
 CC
 CONDA_LIST
+DOWNLOAD
+CURL
+WGET
 target_alias
 host_alias
 build_alias
@@ -2752,6 +2755,233 @@ fi
 
 
 
+    if test -n "$ac_tool_prefix"; then
+  # Extract the first word of "${ac_tool_prefix}wget", so it can be a program name with args.
+set dummy ${ac_tool_prefix}wget; ac_word=$2
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+printf %s "checking for $ac_word... " >&6; }
+if test ${ac_cv_prog_WGET+y}
+then :
+  printf %s "(cached) " >&6
+else $as_nop
+  if test -n "$WGET"; then
+  ac_cv_prog_WGET="$WGET" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  case $as_dir in #(((
+    '') as_dir=./ ;;
+    */) ;;
+    *) as_dir=$as_dir/ ;;
+  esac
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir$ac_word$ac_exec_ext"; then
+    ac_cv_prog_WGET="${ac_tool_prefix}wget"
+    printf "%s\n" "$as_me:${as_lineno-$LINENO}: found $as_dir$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+fi
+fi
+WGET=$ac_cv_prog_WGET
+if test -n "$WGET"; then
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $WGET" >&5
+printf "%s\n" "$WGET" >&6; }
+else
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+fi
+
+
+fi
+if test -z "$ac_cv_prog_WGET"; then
+  ac_ct_WGET=$WGET
+  # Extract the first word of "wget", so it can be a program name with args.
+set dummy wget; ac_word=$2
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+printf %s "checking for $ac_word... " >&6; }
+if test ${ac_cv_prog_ac_ct_WGET+y}
+then :
+  printf %s "(cached) " >&6
+else $as_nop
+  if test -n "$ac_ct_WGET"; then
+  ac_cv_prog_ac_ct_WGET="$ac_ct_WGET" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  case $as_dir in #(((
+    '') as_dir=./ ;;
+    */) ;;
+    *) as_dir=$as_dir/ ;;
+  esac
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir$ac_word$ac_exec_ext"; then
+    ac_cv_prog_ac_ct_WGET="wget"
+    printf "%s\n" "$as_me:${as_lineno-$LINENO}: found $as_dir$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+fi
+fi
+ac_ct_WGET=$ac_cv_prog_ac_ct_WGET
+if test -n "$ac_ct_WGET"; then
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_ct_WGET" >&5
+printf "%s\n" "$ac_ct_WGET" >&6; }
+else
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+fi
+
+  if test "x$ac_ct_WGET" = x; then
+    WGET=""
+  else
+    case $cross_compiling:$ac_tool_warned in
+yes:)
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: WARNING: using cross tools not prefixed with host triplet" >&5
+printf "%s\n" "$as_me: WARNING: using cross tools not prefixed with host triplet" >&2;}
+ac_tool_warned=yes ;;
+esac
+    WGET=$ac_ct_WGET
+  fi
+else
+  WGET="$ac_cv_prog_WGET"
+fi
+
+    if test -n "$ac_tool_prefix"; then
+  # Extract the first word of "${ac_tool_prefix}curl", so it can be a program name with args.
+set dummy ${ac_tool_prefix}curl; ac_word=$2
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+printf %s "checking for $ac_word... " >&6; }
+if test ${ac_cv_prog_CURL+y}
+then :
+  printf %s "(cached) " >&6
+else $as_nop
+  if test -n "$CURL"; then
+  ac_cv_prog_CURL="$CURL" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  case $as_dir in #(((
+    '') as_dir=./ ;;
+    */) ;;
+    *) as_dir=$as_dir/ ;;
+  esac
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir$ac_word$ac_exec_ext"; then
+    ac_cv_prog_CURL="${ac_tool_prefix}curl"
+    printf "%s\n" "$as_me:${as_lineno-$LINENO}: found $as_dir$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+fi
+fi
+CURL=$ac_cv_prog_CURL
+if test -n "$CURL"; then
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $CURL" >&5
+printf "%s\n" "$CURL" >&6; }
+else
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+fi
+
+
+fi
+if test -z "$ac_cv_prog_CURL"; then
+  ac_ct_CURL=$CURL
+  # Extract the first word of "curl", so it can be a program name with args.
+set dummy curl; ac_word=$2
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+printf %s "checking for $ac_word... " >&6; }
+if test ${ac_cv_prog_ac_ct_CURL+y}
+then :
+  printf %s "(cached) " >&6
+else $as_nop
+  if test -n "$ac_ct_CURL"; then
+  ac_cv_prog_ac_ct_CURL="$ac_ct_CURL" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  case $as_dir in #(((
+    '') as_dir=./ ;;
+    */) ;;
+    *) as_dir=$as_dir/ ;;
+  esac
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir$ac_word$ac_exec_ext"; then
+    ac_cv_prog_ac_ct_CURL="curl"
+    printf "%s\n" "$as_me:${as_lineno-$LINENO}: found $as_dir$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+fi
+fi
+ac_ct_CURL=$ac_cv_prog_ac_ct_CURL
+if test -n "$ac_ct_CURL"; then
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_ct_CURL" >&5
+printf "%s\n" "$ac_ct_CURL" >&6; }
+else
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+fi
+
+  if test "x$ac_ct_CURL" = x; then
+    CURL=""
+  else
+    case $cross_compiling:$ac_tool_warned in
+yes:)
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: WARNING: using cross tools not prefixed with host triplet" >&5
+printf "%s\n" "$as_me: WARNING: using cross tools not prefixed with host triplet" >&2;}
+ac_tool_warned=yes ;;
+esac
+    CURL=$ac_ct_CURL
+  fi
+else
+  CURL="$ac_cv_prog_CURL"
+fi
+
+
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for a wget or curl to download files with" >&5
+printf %s "checking for a wget or curl to download files with... " >&6; }
+    if test "x$WGET" != "x"
+    then
+        DOWNLOAD="$WGET -O -"
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
+    else
+        if test "x$CURL" != "x"
+        then
+            DOWNLOAD="$CURL -L"
+            { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
+        else
+            { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+        fi
+    fi
+
+
+
+
     { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for conda package cmake" >&5
 printf %s "checking for conda package cmake... " >&6; }
     ax_conda_package_line="$(echo $ax_conda_list | tr '^' '\n' | grep '^cmake ')"
@@ -4039,6 +4269,233 @@ esac
 else
   HOMEBREW="$ac_cv_prog_HOMEBREW"
 fi
+
+
+
+    if test -n "$ac_tool_prefix"; then
+  # Extract the first word of "${ac_tool_prefix}wget", so it can be a program name with args.
+set dummy ${ac_tool_prefix}wget; ac_word=$2
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+printf %s "checking for $ac_word... " >&6; }
+if test ${ac_cv_prog_WGET+y}
+then :
+  printf %s "(cached) " >&6
+else $as_nop
+  if test -n "$WGET"; then
+  ac_cv_prog_WGET="$WGET" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  case $as_dir in #(((
+    '') as_dir=./ ;;
+    */) ;;
+    *) as_dir=$as_dir/ ;;
+  esac
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir$ac_word$ac_exec_ext"; then
+    ac_cv_prog_WGET="${ac_tool_prefix}wget"
+    printf "%s\n" "$as_me:${as_lineno-$LINENO}: found $as_dir$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+fi
+fi
+WGET=$ac_cv_prog_WGET
+if test -n "$WGET"; then
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $WGET" >&5
+printf "%s\n" "$WGET" >&6; }
+else
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+fi
+
+
+fi
+if test -z "$ac_cv_prog_WGET"; then
+  ac_ct_WGET=$WGET
+  # Extract the first word of "wget", so it can be a program name with args.
+set dummy wget; ac_word=$2
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+printf %s "checking for $ac_word... " >&6; }
+if test ${ac_cv_prog_ac_ct_WGET+y}
+then :
+  printf %s "(cached) " >&6
+else $as_nop
+  if test -n "$ac_ct_WGET"; then
+  ac_cv_prog_ac_ct_WGET="$ac_ct_WGET" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  case $as_dir in #(((
+    '') as_dir=./ ;;
+    */) ;;
+    *) as_dir=$as_dir/ ;;
+  esac
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir$ac_word$ac_exec_ext"; then
+    ac_cv_prog_ac_ct_WGET="wget"
+    printf "%s\n" "$as_me:${as_lineno-$LINENO}: found $as_dir$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+fi
+fi
+ac_ct_WGET=$ac_cv_prog_ac_ct_WGET
+if test -n "$ac_ct_WGET"; then
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_ct_WGET" >&5
+printf "%s\n" "$ac_ct_WGET" >&6; }
+else
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+fi
+
+  if test "x$ac_ct_WGET" = x; then
+    WGET=""
+  else
+    case $cross_compiling:$ac_tool_warned in
+yes:)
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: WARNING: using cross tools not prefixed with host triplet" >&5
+printf "%s\n" "$as_me: WARNING: using cross tools not prefixed with host triplet" >&2;}
+ac_tool_warned=yes ;;
+esac
+    WGET=$ac_ct_WGET
+  fi
+else
+  WGET="$ac_cv_prog_WGET"
+fi
+
+    if test -n "$ac_tool_prefix"; then
+  # Extract the first word of "${ac_tool_prefix}curl", so it can be a program name with args.
+set dummy ${ac_tool_prefix}curl; ac_word=$2
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+printf %s "checking for $ac_word... " >&6; }
+if test ${ac_cv_prog_CURL+y}
+then :
+  printf %s "(cached) " >&6
+else $as_nop
+  if test -n "$CURL"; then
+  ac_cv_prog_CURL="$CURL" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  case $as_dir in #(((
+    '') as_dir=./ ;;
+    */) ;;
+    *) as_dir=$as_dir/ ;;
+  esac
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir$ac_word$ac_exec_ext"; then
+    ac_cv_prog_CURL="${ac_tool_prefix}curl"
+    printf "%s\n" "$as_me:${as_lineno-$LINENO}: found $as_dir$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+fi
+fi
+CURL=$ac_cv_prog_CURL
+if test -n "$CURL"; then
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $CURL" >&5
+printf "%s\n" "$CURL" >&6; }
+else
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+fi
+
+
+fi
+if test -z "$ac_cv_prog_CURL"; then
+  ac_ct_CURL=$CURL
+  # Extract the first word of "curl", so it can be a program name with args.
+set dummy curl; ac_word=$2
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+printf %s "checking for $ac_word... " >&6; }
+if test ${ac_cv_prog_ac_ct_CURL+y}
+then :
+  printf %s "(cached) " >&6
+else $as_nop
+  if test -n "$ac_ct_CURL"; then
+  ac_cv_prog_ac_ct_CURL="$ac_ct_CURL" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  case $as_dir in #(((
+    '') as_dir=./ ;;
+    */) ;;
+    *) as_dir=$as_dir/ ;;
+  esac
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir$ac_word$ac_exec_ext"; then
+    ac_cv_prog_ac_ct_CURL="curl"
+    printf "%s\n" "$as_me:${as_lineno-$LINENO}: found $as_dir$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+fi
+fi
+ac_ct_CURL=$ac_cv_prog_ac_ct_CURL
+if test -n "$ac_ct_CURL"; then
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_ct_CURL" >&5
+printf "%s\n" "$ac_ct_CURL" >&6; }
+else
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+fi
+
+  if test "x$ac_ct_CURL" = x; then
+    CURL=""
+  else
+    case $cross_compiling:$ac_tool_warned in
+yes:)
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: WARNING: using cross tools not prefixed with host triplet" >&5
+printf "%s\n" "$as_me: WARNING: using cross tools not prefixed with host triplet" >&2;}
+ac_tool_warned=yes ;;
+esac
+    CURL=$ac_ct_CURL
+  fi
+else
+  CURL="$ac_cv_prog_CURL"
+fi
+
+
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for a wget or curl to download files with" >&5
+printf %s "checking for a wget or curl to download files with... " >&6; }
+    if test "x$WGET" != "x"
+    then
+        DOWNLOAD="$WGET -O -"
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
+    else
+        if test "x$CURL" != "x"
+        then
+            DOWNLOAD="$CURL -L"
+            { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
+        else
+            { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+        fi
+    fi
+
 
 
     if test -n "$ac_tool_prefix"; then
@@ -11862,6 +12319,10 @@ if test "x" != "x${INSTALL}"
 then :
   FEATURES="${FEATURES} install"
 fi
+if test "x" != "x${DOWNLOAD}"
+then :
+  FEATURES="${FEATURES} download"
+fi
 if test "x" != "x${MPICC}"
 then :
   FEATURES="${FEATURES} mpi"
@@ -13065,6 +13526,5 @@ if test -n "$ac_unrecognized_opts" && test "$enable_option_checking" != no; then
   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: WARNING: unrecognized options: $ac_unrecognized_opts" >&5
 printf "%s\n" "$as_me: WARNING: unrecognized options: $ac_unrecognized_opts" >&2;}
 fi
-
 
 
