@@ -111,12 +111,12 @@
     ret=simple_evolution(dictionary, out_species)
   end function
   
-  ! function get_time(outtime) result(ret)
-  !   use uclchemhelper
-  !   integer :: ret
-  !   double precision :: outtime  
-  !   ret=chem_model_time(outtime)
-  ! end function
+  function get_time(time) result(ret)
+    use uclchemhelper
+    integer :: ret
+    double precision :: time  
+    ret=get_current_time(time)
+  end function
   
   function delete_particle(id) result(ret)
     use uclchemhelper

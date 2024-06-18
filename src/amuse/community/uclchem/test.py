@@ -16,8 +16,9 @@ channel = chem.particles.new_channel_to(particles)
 t=0|units.yr
 index_H = chem.get_index_of_species('H')
 for i in range(10):
-    chem.evolve_model(t)
     t += dt
+    chem.evolve_model(t)
     channel.copy()
     print(chem.particles.abundances[0][index_H])
+print(particles)
     

@@ -125,6 +125,13 @@ class UclchemInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesM
         return function
     
     @legacy_function
+    def get_time():
+        function = LegacyFunctionSpecification()
+        function.addParameter('time', dtype='float64',direction=function.OUT)
+        function.result_type = 'i'
+        return function
+    
+    @legacy_function
     def run_model():
         function = LegacyFunctionSpecification()
         function.addParameter('dictionary', dtype='s', direction=function.IN)
@@ -193,6 +200,7 @@ class Uclchem(CommonCode):
         if 'radfield' in attributes:
             dictionary['radfield'] = self.particles.radfield.value_in(units.habing)[0]
         dictionary['finalTime'] = tend.value_in(units.yr)
+        dictionary['currentTime'] = self.get_time().value_in(units.yr)
         _, dictionary, outSpecies = self._reform_inputs(dictionary, outSpecies)
         print(dictionary, outSpecies)
         return str(dictionary), str(outSpecies)
@@ -282,6 +290,15 @@ class Uclchem(CommonCode):
                 units.yr
             ),
             (
+                handler.ERROR_CODE
+            )
+        )
+        handler.add_method(
+            "get_time",
+            (
+            ),
+            (
+                units.yr,
                 handler.ERROR_CODE
             )
         )
