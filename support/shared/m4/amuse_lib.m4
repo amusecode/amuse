@@ -41,6 +41,18 @@ AC_DEFUN([AMUSE_LIB_STOPCOND], [
 ])
 
 
+# AMUSE_LIB_STOPCONDMPI()
+#
+# Searches for the AMUSE stopping conditions library and sets STOPCONDMPI_CFLAGS
+# and STOPCONDMPI_LIBS to the appropriate values if it is found.
+#
+# We use a different function here, to avoid getting a cached value from
+# AMUSE_LIB_STOPCOND if both are used. Seems like it indexes by function name.
+AC_DEFUN([AMUSE_LIB_STOPCONDMPI], [
+    AMUSE_LIB([STOPCONDMPI], [stopcondmpi], [stopcondmpi], [get_set_conditions_])
+])
+
+
 # AMUSE_LIB_AMUSE_MPI()
 #
 # Searches for the AMUSE MPI helper library and sets AMUSE_MPI_CFLAGS and

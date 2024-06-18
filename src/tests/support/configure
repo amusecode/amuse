@@ -5735,6 +5735,73 @@ printf "%s\n" "no" >&6; }
 	fi
 fi
 
+
+    amuse_save_LIBS="$LIBS"
+
+    # Search for the library, first directly then fall back to pkg-config
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for library containing is_condition_enabled" >&5
+printf %s "checking for library containing is_condition_enabled... " >&6; }
+if test ${ac_cv_search_is_condition_enabled+y}
+then :
+  printf %s "(cached) " >&6
+else $as_nop
+  ac_func_search_save_LIBS=$LIBS
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+char is_condition_enabled ();
+int
+main (void)
+{
+return is_condition_enabled ();
+  ;
+  return 0;
+}
+_ACEOF
+for ac_lib in '' stopcond
+do
+  if test -z "$ac_lib"; then
+    ac_res="none required"
+  else
+    ac_res=-l$ac_lib
+    LIBS="-l$ac_lib  $ac_func_search_save_LIBS"
+  fi
+  if ac_fn_c_try_link "$LINENO"
+then :
+  ac_cv_search_is_condition_enabled=$ac_res
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext
+  if test ${ac_cv_search_is_condition_enabled+y}
+then :
+  break
+fi
+done
+if test ${ac_cv_search_is_condition_enabled+y}
+then :
+
+else $as_nop
+  ac_cv_search_is_condition_enabled=no
+fi
+rm conftest.$ac_ext
+LIBS=$ac_func_search_save_LIBS
+fi
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_cv_search_is_condition_enabled" >&5
+printf "%s\n" "$ac_cv_search_is_condition_enabled" >&6; }
+ac_res=$ac_cv_search_is_condition_enabled
+if test "$ac_res" != no
+then :
+  test "$ac_res" = "none required" || LIBS="$ac_res $LIBS"
+
+        STOPCOND_LIBS="$LIBS"
+        STOPCOND_CFLAGS=""
+
+else $as_nop
+
+
 pkg_failed=no
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for STOPCOND" >&5
 printf %s "checking for STOPCOND... " >&6; }
@@ -5743,12 +5810,12 @@ if test -n "$STOPCOND_CFLAGS"; then
     pkg_cv_STOPCOND_CFLAGS="$STOPCOND_CFLAGS"
  elif test -n "$PKG_CONFIG"; then
     if test -n "$PKG_CONFIG" && \
-    { { printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"libstopcond\""; } >&5
-  ($PKG_CONFIG --exists --print-errors "libstopcond") 2>&5
+    { { printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"stopcond\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "stopcond") 2>&5
   ac_status=$?
   printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }; then
-  pkg_cv_STOPCOND_CFLAGS=`$PKG_CONFIG --cflags "libstopcond" 2>/dev/null`
+  pkg_cv_STOPCOND_CFLAGS=`$PKG_CONFIG --cflags "stopcond" 2>/dev/null`
 		      test "x$?" != "x0" && pkg_failed=yes
 else
   pkg_failed=yes
@@ -5760,12 +5827,12 @@ if test -n "$STOPCOND_LIBS"; then
     pkg_cv_STOPCOND_LIBS="$STOPCOND_LIBS"
  elif test -n "$PKG_CONFIG"; then
     if test -n "$PKG_CONFIG" && \
-    { { printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"libstopcond\""; } >&5
-  ($PKG_CONFIG --exists --print-errors "libstopcond") 2>&5
+    { { printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"stopcond\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "stopcond") 2>&5
   ac_status=$?
   printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }; then
-  pkg_cv_STOPCOND_LIBS=`$PKG_CONFIG --libs "libstopcond" 2>/dev/null`
+  pkg_cv_STOPCOND_LIBS=`$PKG_CONFIG --libs "stopcond" 2>/dev/null`
 		      test "x$?" != "x0" && pkg_failed=yes
 else
   pkg_failed=yes
@@ -5786,14 +5853,14 @@ else
         _pkg_short_errors_supported=no
 fi
         if test $_pkg_short_errors_supported = yes; then
-	        STOPCOND_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "libstopcond" 2>&1`
+	        STOPCOND_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "stopcond" 2>&1`
         else
-	        STOPCOND_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "libstopcond" 2>&1`
+	        STOPCOND_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "stopcond" 2>&1`
         fi
 	# Put the nasty error message in config.log where it belongs
 	echo "$STOPCOND_PKG_ERRORS" >&5
 
-	as_fn_error $? "Package requirements (libstopcond) were not met:
+	as_fn_error $? "Package requirements (stopcond) were not met:
 
 $STOPCOND_PKG_ERRORS
 
@@ -5826,6 +5893,83 @@ printf "%s\n" "yes" >&6; }
 
 fi
 
+fi
+
+
+    LIBS="$amuse_save_LIBS"
+
+
+
+
+
+
+
+    amuse_save_LIBS="$LIBS"
+
+    # Search for the library, first directly then fall back to pkg-config
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for library containing get_set_conditions_" >&5
+printf %s "checking for library containing get_set_conditions_... " >&6; }
+if test ${ac_cv_search_get_set_conditions_+y}
+then :
+  printf %s "(cached) " >&6
+else $as_nop
+  ac_func_search_save_LIBS=$LIBS
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+char get_set_conditions_ ();
+int
+main (void)
+{
+return get_set_conditions_ ();
+  ;
+  return 0;
+}
+_ACEOF
+for ac_lib in '' stopcondmpi
+do
+  if test -z "$ac_lib"; then
+    ac_res="none required"
+  else
+    ac_res=-l$ac_lib
+    LIBS="-l$ac_lib  $ac_func_search_save_LIBS"
+  fi
+  if ac_fn_c_try_link "$LINENO"
+then :
+  ac_cv_search_get_set_conditions_=$ac_res
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext
+  if test ${ac_cv_search_get_set_conditions_+y}
+then :
+  break
+fi
+done
+if test ${ac_cv_search_get_set_conditions_+y}
+then :
+
+else $as_nop
+  ac_cv_search_get_set_conditions_=no
+fi
+rm conftest.$ac_ext
+LIBS=$ac_func_search_save_LIBS
+fi
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_cv_search_get_set_conditions_" >&5
+printf "%s\n" "$ac_cv_search_get_set_conditions_" >&6; }
+ac_res=$ac_cv_search_get_set_conditions_
+if test "$ac_res" != no
+then :
+  test "$ac_res" = "none required" || LIBS="$ac_res $LIBS"
+
+        STOPCONDMPI_LIBS="$LIBS"
+        STOPCONDMPI_CFLAGS=""
+
+else $as_nop
+
+
 pkg_failed=no
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for STOPCONDMPI" >&5
 printf %s "checking for STOPCONDMPI... " >&6; }
@@ -5834,12 +5978,12 @@ if test -n "$STOPCONDMPI_CFLAGS"; then
     pkg_cv_STOPCONDMPI_CFLAGS="$STOPCONDMPI_CFLAGS"
  elif test -n "$PKG_CONFIG"; then
     if test -n "$PKG_CONFIG" && \
-    { { printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"libstopcondmpi\""; } >&5
-  ($PKG_CONFIG --exists --print-errors "libstopcondmpi") 2>&5
+    { { printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"stopcondmpi\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "stopcondmpi") 2>&5
   ac_status=$?
   printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }; then
-  pkg_cv_STOPCONDMPI_CFLAGS=`$PKG_CONFIG --cflags "libstopcondmpi" 2>/dev/null`
+  pkg_cv_STOPCONDMPI_CFLAGS=`$PKG_CONFIG --cflags "stopcondmpi" 2>/dev/null`
 		      test "x$?" != "x0" && pkg_failed=yes
 else
   pkg_failed=yes
@@ -5851,12 +5995,12 @@ if test -n "$STOPCONDMPI_LIBS"; then
     pkg_cv_STOPCONDMPI_LIBS="$STOPCONDMPI_LIBS"
  elif test -n "$PKG_CONFIG"; then
     if test -n "$PKG_CONFIG" && \
-    { { printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"libstopcondmpi\""; } >&5
-  ($PKG_CONFIG --exists --print-errors "libstopcondmpi") 2>&5
+    { { printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"stopcondmpi\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "stopcondmpi") 2>&5
   ac_status=$?
   printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }; then
-  pkg_cv_STOPCONDMPI_LIBS=`$PKG_CONFIG --libs "libstopcondmpi" 2>/dev/null`
+  pkg_cv_STOPCONDMPI_LIBS=`$PKG_CONFIG --libs "stopcondmpi" 2>/dev/null`
 		      test "x$?" != "x0" && pkg_failed=yes
 else
   pkg_failed=yes
@@ -5877,14 +6021,14 @@ else
         _pkg_short_errors_supported=no
 fi
         if test $_pkg_short_errors_supported = yes; then
-	        STOPCONDMPI_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "libstopcondmpi" 2>&1`
+	        STOPCONDMPI_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "stopcondmpi" 2>&1`
         else
-	        STOPCONDMPI_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "libstopcondmpi" 2>&1`
+	        STOPCONDMPI_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "stopcondmpi" 2>&1`
         fi
 	# Put the nasty error message in config.log where it belongs
 	echo "$STOPCONDMPI_PKG_ERRORS" >&5
 
-	as_fn_error $? "Package requirements (libstopcondmpi) were not met:
+	as_fn_error $? "Package requirements (stopcondmpi) were not met:
 
 $STOPCONDMPI_PKG_ERRORS
 
@@ -5917,6 +6061,83 @@ printf "%s\n" "yes" >&6; }
 
 fi
 
+fi
+
+
+    LIBS="$amuse_save_LIBS"
+
+
+
+
+
+
+
+    amuse_save_LIBS="$LIBS"
+
+    # Search for the library, first directly then fall back to pkg-config
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for library containing forsockets_close" >&5
+printf %s "checking for library containing forsockets_close... " >&6; }
+if test ${ac_cv_search_forsockets_close+y}
+then :
+  printf %s "(cached) " >&6
+else $as_nop
+  ac_func_search_save_LIBS=$LIBS
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+char forsockets_close ();
+int
+main (void)
+{
+return forsockets_close ();
+  ;
+  return 0;
+}
+_ACEOF
+for ac_lib in '' forsockets
+do
+  if test -z "$ac_lib"; then
+    ac_res="none required"
+  else
+    ac_res=-l$ac_lib
+    LIBS="-l$ac_lib  $ac_func_search_save_LIBS"
+  fi
+  if ac_fn_c_try_link "$LINENO"
+then :
+  ac_cv_search_forsockets_close=$ac_res
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext
+  if test ${ac_cv_search_forsockets_close+y}
+then :
+  break
+fi
+done
+if test ${ac_cv_search_forsockets_close+y}
+then :
+
+else $as_nop
+  ac_cv_search_forsockets_close=no
+fi
+rm conftest.$ac_ext
+LIBS=$ac_func_search_save_LIBS
+fi
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_cv_search_forsockets_close" >&5
+printf "%s\n" "$ac_cv_search_forsockets_close" >&6; }
+ac_res=$ac_cv_search_forsockets_close
+if test "$ac_res" != no
+then :
+  test "$ac_res" = "none required" || LIBS="$ac_res $LIBS"
+
+        FORSOCKETS_LIBS="$LIBS"
+        FORSOCKETS_CFLAGS=""
+
+else $as_nop
+
+
 pkg_failed=no
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for FORSOCKETS" >&5
 printf %s "checking for FORSOCKETS... " >&6; }
@@ -5925,12 +6146,12 @@ if test -n "$FORSOCKETS_CFLAGS"; then
     pkg_cv_FORSOCKETS_CFLAGS="$FORSOCKETS_CFLAGS"
  elif test -n "$PKG_CONFIG"; then
     if test -n "$PKG_CONFIG" && \
-    { { printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"libforsockets\""; } >&5
-  ($PKG_CONFIG --exists --print-errors "libforsockets") 2>&5
+    { { printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"forsockets\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "forsockets") 2>&5
   ac_status=$?
   printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }; then
-  pkg_cv_FORSOCKETS_CFLAGS=`$PKG_CONFIG --cflags "libforsockets" 2>/dev/null`
+  pkg_cv_FORSOCKETS_CFLAGS=`$PKG_CONFIG --cflags "forsockets" 2>/dev/null`
 		      test "x$?" != "x0" && pkg_failed=yes
 else
   pkg_failed=yes
@@ -5942,12 +6163,12 @@ if test -n "$FORSOCKETS_LIBS"; then
     pkg_cv_FORSOCKETS_LIBS="$FORSOCKETS_LIBS"
  elif test -n "$PKG_CONFIG"; then
     if test -n "$PKG_CONFIG" && \
-    { { printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"libforsockets\""; } >&5
-  ($PKG_CONFIG --exists --print-errors "libforsockets") 2>&5
+    { { printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"forsockets\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "forsockets") 2>&5
   ac_status=$?
   printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }; then
-  pkg_cv_FORSOCKETS_LIBS=`$PKG_CONFIG --libs "libforsockets" 2>/dev/null`
+  pkg_cv_FORSOCKETS_LIBS=`$PKG_CONFIG --libs "forsockets" 2>/dev/null`
 		      test "x$?" != "x0" && pkg_failed=yes
 else
   pkg_failed=yes
@@ -5968,14 +6189,14 @@ else
         _pkg_short_errors_supported=no
 fi
         if test $_pkg_short_errors_supported = yes; then
-	        FORSOCKETS_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "libforsockets" 2>&1`
+	        FORSOCKETS_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "forsockets" 2>&1`
         else
-	        FORSOCKETS_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "libforsockets" 2>&1`
+	        FORSOCKETS_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "forsockets" 2>&1`
         fi
 	# Put the nasty error message in config.log where it belongs
 	echo "$FORSOCKETS_PKG_ERRORS" >&5
 
-	as_fn_error $? "Package requirements (libforsockets) were not met:
+	as_fn_error $? "Package requirements (forsockets) were not met:
 
 $FORSOCKETS_PKG_ERRORS
 
@@ -6007,6 +6228,16 @@ else
 printf "%s\n" "yes" >&6; }
 
 fi
+
+fi
+
+
+    LIBS="$amuse_save_LIBS"
+
+
+
+
+
 
 ac_config_files="$ac_config_files config.mk"
 
