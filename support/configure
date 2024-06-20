@@ -2628,7 +2628,16 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 # Conda build environments for conda-forge have a different setup than normal Conda
 # environments, with different packages, so that the normal Conda mode doesn't work.
 # We use the normal detection as well in that case.
-if test "x" != "x$CONDA_DEFAULT_ENV" -a "x" = "x$CONDA_BUILD"
+if test "x" != "x$CONDA_BUILD"
+then
+    # Conda list doesn't work in conda build environments, and normal detection
+    # can be problematic because it picks up e.g. compilers from the system. So
+    # we assume that the conda metadata is correct, and that if it isn't there's
+    # an expert packages who can fix things.
+    printf "%s\n" "Conda package build detected, skipping checks for dependencies."
+    ASSUME_FEATURES="gcc g++ gfortran java python install download mpi openmp cuda opencl blas lapack gsl gmp mpfr fftw hdf5 netcdf4"
+
+elif test "x" != "x$CONDA_DEFAULT_ENV"
 then
     printf "%s\n"
     printf "%s\n" '    Conda environment active, dependencies will be searched in Conda only,'
@@ -12282,7 +12291,6 @@ fi
     # TODO: detect Sapporo using pkg-config
 fi
 
-
 # Create the FEATURES variable used by amuse.mk to decide what to build
 
 # This macro adds its first argument to FEATURES if the variable
@@ -12293,7 +12301,7 @@ fi
 # value specified in the third argument.
 
 
-FEATURES=""
+FEATURES="$ASSUME_FEATURES"
 
 if test "x" != "x${CC}"
 then :

@@ -11,7 +11,16 @@ AC_INIT([amuse], [1.0])
 # Conda build environments for conda-forge have a different setup than normal Conda
 # environments, with different packages, so that the normal Conda mode doesn't work.
 # We use the normal detection as well in that case.
-if test "x" != "x$CONDA_DEFAULT_ENV" -a "x" = "x$CONDA_BUILD"
+if test "x" != "x$CONDA_BUILD"
+then
+    # Conda list doesn't work in conda build environments, and normal detection
+    # can be problematic because it picks up e.g. compilers from the system. So
+    # we assume that the conda metadata is correct, and that if it isn't there's
+    # an expert packages who can fix things.
+    AS_ECHO(["Conda package build detected, skipping checks for dependencies."])
+    ASSUME_FEATURES="gcc g++ gfortran java python install download mpi openmp cuda opencl blas lapack gsl gmp mpfr fftw hdf5 netcdf4"
+
+elif test "x" != "x$CONDA_DEFAULT_ENV"
 then
     AS_ECHO([])
     AS_ECHO(['    Conda environment active, dependencies will be searched in Conda only,'])
@@ -101,7 +110,6 @@ else
     # TODO: detect Sapporo using pkg-config
 fi
 
-
 # Create the FEATURES variable used by amuse.mk to decide what to build
 
 # This macro adds its first argument to FEATURES if the variable
@@ -114,7 +122,7 @@ m4_define([ENABLE_FEATURE_IF_DEFINED],
 m4_define([ENABLE_FEATURE_IF_EQUALS],
           [AS_IF([test "x${$2}" = "x$3"], [FEATURES="${FEATURES} $1"])])
 
-FEATURES=""
+FEATURES="$ASSUME_FEATURES"
 
 ENABLE_FEATURE_IF_DEFINED([gcc], [CC])
 ENABLE_FEATURE_IF_DEFINED([g++], [CXX])
