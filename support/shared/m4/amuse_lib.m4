@@ -17,6 +17,9 @@
 AC_DEFUN([AMUSE_LIB], [
     amuse_save_LIBS="$LIBS"
 
+    # All AMUSE libs export C symbols
+    AC_LANG_PUSH([C])
+
     # Search for the library, first directly then fall back to pkg-config
     AC_SEARCH_LIBS([$4], [$3], [
         $1_LIBS="$LIBS"
@@ -24,6 +27,8 @@ AC_DEFUN([AMUSE_LIB], [
     ], [
         PKG_CHECK_MODULES([$1], [$2])
     ])
+
+    AC_LANG_POP([C])
 
     LIBS="$amuse_save_LIBS"
 
