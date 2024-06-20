@@ -59,9 +59,6 @@ $(STATIC_LIB): $(OBJS)
 %.o: %.c
 	$(CC) $(CFLAGS) -c -o $@ $<
 
-%.o %.mod &: %.f90
-	$(FC) $(FCFLAGS) -c -o $@ $<
-
 $(PKG_CONFIG_FILE):
 	$(file >$@,$(PKG_CONFIG_CONTENTS))
 
@@ -79,9 +76,6 @@ endif
 
 %.mo: %.c
 	$(MPICC) $(CFLAGS) $(CFLAGS_MPI) -c -o $@ $<
-
-%.mo %.mod &: %.f90
-	$(MPIFC) $(FCFLAGS) $(FCFLAGS_MPI) -c -o $*.mo $<
 
 $(PKG_CONFIG_FILE_MPI):
 	$(file >$@,$(PKG_CONFIG_CONTENTS_MPI))
