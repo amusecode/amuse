@@ -4,7 +4,6 @@ include support/shared/lib-configure.mk
 
 HEADERS = sapporo.h sapporo_defs.h sapporo_multi.h g6lib.h
 DYNAMIC_LIB = libsapporo.so
-STATIC_LIB = libsapporo.a
 PKG_CONFIG_FILE = sapporo_light.pc
 
 NVCCFLAGS += -D_CONSOLE -D_DEBUG -maxrregcount=32
@@ -23,13 +22,12 @@ Description: The sapporo_light library
 Version: $(VERSION)
 Cflags: -I$${includedir}
 Libs: -L$${libdir} -lsapporo
-Libs.private: -lcudart
 
 endef
 
 # Main targets
 .PHONY: all
-all: $(DYNAMIC_LIB) $(STATIC_LIB) $(DYNAMIC_LIB_MPI) $(STATIC_LIB_MPI)
+all: $(DYNAMIC_LIB) $(DYNAMIC_LIB_MPI)
 
 .DEFAULT_GOAL := all
 
@@ -56,7 +54,6 @@ endif
 install: all $(PKG_CONFIG_FILE)
 	mkdir -p $(PREFIX)/include $(PREFIX)/lib/pkgconfig
 	$(INSTALL) -m 644 $(HEADERS) $(PREFIX)/include/
-	$(INSTALL) -m 644 $(STATIC_LIB) $(PREFIX)/lib/$(STATIC_LIB)
 	$(INSTALL) -m 644 $(DYNAMIC_LIB) $(PREFIX)/lib/$(DYNAMIC_LIB)
 	$(INSTALL) -m 644 $(PKG_CONFIG_FILE) $(PREFIX)/lib/pkgconfig/$(PKG_CONFIG_FILE)
 
@@ -69,10 +66,6 @@ NVCCFLAGS += --compiler-options '-fPIC'
 
 $(DYNAMIC_LIB): $(OBJS) $(CUOBJS)
 	$(CXX) -shared -o $@ $^ $(LIBS)
-
-$(STATIC_LIB): $(OBJS) $(CUOBJS)
-	$(AR) -r $(STATIC_LIB) $^
-	$(RANLIB) $(STATIC_LIB)
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c -o $@ $<

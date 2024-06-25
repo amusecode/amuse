@@ -4,10 +4,9 @@ include support/shared/lib-configure.mk
 
 HEADERS = g6lib.h
 DYNAMIC_LIB = libg6.so
-STATIC_LIB = libg6.a
 PKG_CONFIG_FILE = g6lib.pc
 
-CFLAGS += -std=c99 -g -O2
+CFLAGS += -std=c99
 LIBS = -lm
 
 OBJS = g6lib.o

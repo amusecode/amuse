@@ -1,6 +1,6 @@
 # Main targets
 .PHONY: all
-all: $(DYNAMIC_LIB) $(STATIC_LIB) $(DYNAMIC_LIB_MPI) $(STATIC_LIB_MPI)
+all: $(DYNAMIC_LIB) $(DYNAMIC_LIB_MPI)
 
 .DEFAULT_GOAL := all
 
@@ -12,7 +12,7 @@ install: all $(PKG_CONFIG_FILE) $(PKG_CONFIG_FILE_MPI)
 ifneq (,$(HEADERS)$(HEADERS_MPI))
 	mkdir -p $(PREFIX)/include
 endif
-ifneq (,$(STATIC_LIB)$(DYNAMIC_LIB)$(STATIC_LIB_MPI)$(DYNAMIC_LIB_MPI))
+ifneq (,$(DYNAMIC_LIB)$(DYNAMIC_LIB_MPI))
 	mkdir -p $(PREFIX)/lib
 endif
 ifneq (,$(PKG_CONFIG_FILE)$(PKG_CONFIG_FILE_MPI))
@@ -20,9 +20,6 @@ ifneq (,$(PKG_CONFIG_FILE)$(PKG_CONFIG_FILE_MPI))
 endif
 ifdef HEADERS
 	$(INSTALL) -m 644 $(HEADERS) $(PREFIX)/include/
-endif
-ifdef STATIC_LIB
-	$(INSTALL) -m 644 $(STATIC_LIB) $(PREFIX)/lib/$(STATIC_LIB)
 endif
 ifdef DYNAMIC_LIB
 	$(INSTALL) -m 644 $(DYNAMIC_LIB) $(PREFIX)/lib/$(DYNAMIC_LIB)
@@ -32,9 +29,6 @@ ifdef PKG_CONFIG_FILE
 endif
 ifdef HEADERS_MPI
 	$(INSTALL) -m 644 $(HEADERS_MPI) $(PREFIX)/include/
-endif
-ifdef STATIC_LIB_MPI
-	$(INSTALL) -m 644 $(STATIC_LIB_MPI) $(PREFIX)/lib/$(STATIC_LIB_MPI)
 endif
 ifdef DYNAMIC_LIB_MPI
 	$(INSTALL) -m 644 $(DYNAMIC_LIB_MPI) $(PREFIX)/lib/$(DYNAMIC_LIB_MPI)
@@ -52,10 +46,6 @@ FCFLAGS += -fPIC
 $(DYNAMIC_LIB): $(OBJS)
 	$(CC) -shared -o $@ $^ $(LIBS)
 
-$(STATIC_LIB): $(OBJS)
-	$(AR) -r $(STATIC_LIB) $^
-	$(RANLIB) $(STATIC_LIB)
-
 %.o: %.c
 	$(CC) $(CFLAGS) -c -o $@ $<
 
@@ -66,12 +56,6 @@ $(PKG_CONFIG_FILE):
 ifdef DYNAMIC_LIB_MPI
 $(DYNAMIC_LIB_MPI): $(OBJS_MPI)
 	$(MPICC) $(LDFLAGS) -shared -o $@ $^ $(MPILIBS) $(LIBS)
-endif
-
-ifdef STATIC_LIB_MPI
-$(STATIC_LIB_MPI): $(OBJS_MPI)
-	$(AR) -r $(STATIC_LIB_MPI) $^
-	$(RANLIB) $(STATIC_LIB_MPI)
 endif
 
 %.mo: %.c

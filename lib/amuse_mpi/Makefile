@@ -3,10 +3,10 @@ include support/shared/lib-configure.mk
 
 
 HEADERS_MPI = amuse_mpi.h
-STATIC_LIB_MPI = libamuse_mpi.a
+DYNAMIC_LIB_MPI = libamuse_mpi.so
 PKG_CONFIG_FILE_MPI = amuse_mpi.pc
 
-CFLAGS += -g -O2 -std=c99
+CFLAGS += -std=c99
 
 OBJS_MPI = amuse_mpi.mo
 

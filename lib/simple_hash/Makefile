@@ -3,10 +3,9 @@ include support/shared/lib-configure.mk
 
 HEADERS = simple_hash.h
 DYNAMIC_LIB = libsimple_hash.so
-STATIC_LIB = libsimple_hash.a
 PKG_CONFIG_FILE = simple_hash.pc
 
-CFLAGS += -O2 -g -std=c99
+CFLAGS += -std=c99
 
 OBJS = simple_hash.o
 
@@ -25,8 +24,8 @@ endef
 
 
 # Build and run tests
-test_hash: test_hash.o $(STATIC_LIB)
-	$(CC) -o $@ $^
+test_hash: test_hash.o $(DYNAMIC_LIB)
+	$(CC) $(LDFLAGS) -L. -Wl,-rpath,$(PREFIX)/lib -o $@ $< -lsimple_hash
 
 test: test_hash
 	$(PYTHON) test.py ./test_hash 123456

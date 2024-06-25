@@ -4,11 +4,9 @@ include support/shared/lib-configure.mk
 
 HEADERS = stopcond.h stopcond.inc stoppingconditions.f90
 DYNAMIC_LIB = libstopcond.so
-STATIC_LIB = libstopcond.a
 PKG_CONFIG_FILE = stopcond.pc
 
 DYNAMIC_LIB_MPI = libstopcondmpi.so
-STATIC_LIB_MPI = libstopcondmpi.a
 PKG_CONFIG_FILE_MPI = stopcondmpi.pc
 
 CFLAGS_MPI += -DMPILIB

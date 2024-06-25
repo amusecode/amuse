@@ -4,7 +4,6 @@ include support/shared/lib-configure.mk
 
 HEADERS = forsockets.h fortransocketsinterface.f90
 DYNAMIC_LIB = libforsockets.so
-STATIC_LIB = libforsockets.a
 PKG_CONFIG_FILE = forsockets.pc
 
 OBJS = forsockets.o
