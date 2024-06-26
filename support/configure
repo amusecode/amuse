@@ -708,6 +708,8 @@ ac_header_c_list=
 ac_subst_vars='LTLIBOBJS
 LIBOBJS
 FEATURES
+SAPPORO_LIGHT_LIBS
+SAPPORO_LIGHT_CFLAGS
 NETCDF4_FLIBS
 NETCDF4_FFLAGS
 NETCDF4_FC
@@ -873,7 +875,9 @@ GMP_LIBS
 MPFR_CFLAGS
 MPFR_LIBS
 FFTW_CFLAGS
-FFTW_LIBS'
+FFTW_LIBS
+SAPPORO_LIGHT_CFLAGS
+SAPPORO_LIGHT_LIBS'
 
 
 # Initialize some variables set by options.
@@ -1537,6 +1541,10 @@ Some influential environment variables:
   MPFR_LIBS   linker flags for MPFR, overriding pkg-config
   FFTW_CFLAGS C compiler flags for FFTW, overriding pkg-config
   FFTW_LIBS   linker flags for FFTW, overriding pkg-config
+  SAPPORO_LIGHT_CFLAGS
+              C compiler flags for SAPPORO_LIGHT, overriding pkg-config
+  SAPPORO_LIGHT_LIBS
+              linker flags for SAPPORO_LIGHT, overriding pkg-config
 
 Use these variables to override the choices made by `configure' or to help
 it to find libraries and programs with nonstandard names/locations.
@@ -3239,7 +3247,24 @@ printf "%s\n" "no" >&6; }
 fi
 
 
-    # TODO: detect Sapporo Conda package
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for conda package sapporo_light" >&5
+printf %s "checking for conda package sapporo_light... " >&6; }
+    ax_conda_package_line="$(echo $ax_conda_list | tr '^' '\n' | grep '^sapporo_light ')"
+    if test "$?" = "0"
+then :
+
+        # SAPPORO_LIGHT_LIBS="$(AS_ECHO("$ax_conda_package_line") | tr -s ' ' | cut -f 2 -d ' ')"
+        SAPPORO_LIGHT_LIBS="yes"
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
+
+else $as_nop
+
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+
+fi
+
 
     # Export conda list output so make doesn't have to rerun it to detect pip and wheel
     CONDA_LIST="$ax_conda_list"
@@ -11842,8 +11867,6 @@ printf "%s\n" "#define HAVE_HDF5 1" >>confdefs.h
     fi
 fi
 
-    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: Have HDF5: $HAVE_HDF5" >&5
-printf "%s\n" "$as_me: Have HDF5: $HAVE_HDF5" >&6;}
 
 
 
@@ -12288,7 +12311,197 @@ printf "%s\n" "#define HAVE_NETCDF4 1" >>confdefs.h
 fi
 
 
-    # TODO: detect Sapporo using pkg-config
+
+
+    amuse_save_LIBS="$LIBS"
+
+    # All AMUSE libs export C symbols
+    ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+
+    # Search for the library, first directly then fall back to pkg-config
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for library containing get_device_count" >&5
+printf %s "checking for library containing get_device_count... " >&6; }
+if test ${ac_cv_search_get_device_count+y}
+then :
+  printf %s "(cached) " >&6
+else $as_nop
+  ac_func_search_save_LIBS=$LIBS
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+char get_device_count ();
+#ifdef F77_DUMMY_MAIN
+
+#  ifdef __cplusplus
+     extern "C"
+#  endif
+   int F77_DUMMY_MAIN() { return 1; }
+
+#endif
+int
+main (void)
+{
+return get_device_count ();
+  ;
+  return 0;
+}
+_ACEOF
+for ac_lib in '' sapporo
+do
+  if test -z "$ac_lib"; then
+    ac_res="none required"
+  else
+    ac_res=-l$ac_lib
+    LIBS="-l$ac_lib  $ac_func_search_save_LIBS"
+  fi
+  if ac_fn_c_try_link "$LINENO"
+then :
+  ac_cv_search_get_device_count=$ac_res
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext
+  if test ${ac_cv_search_get_device_count+y}
+then :
+  break
+fi
+done
+if test ${ac_cv_search_get_device_count+y}
+then :
+
+else $as_nop
+  ac_cv_search_get_device_count=no
+fi
+rm conftest.$ac_ext
+LIBS=$ac_func_search_save_LIBS
+fi
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_cv_search_get_device_count" >&5
+printf "%s\n" "$ac_cv_search_get_device_count" >&6; }
+ac_res=$ac_cv_search_get_device_count
+if test "$ac_res" != no
+then :
+  test "$ac_res" = "none required" || LIBS="$ac_res $LIBS"
+
+        SAPPORO_LIGHT_LIBS="$LIBS"
+        SAPPORO_LIGHT_CFLAGS=""
+
+else $as_nop
+
+
+pkg_failed=no
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for SAPPORO_LIGHT" >&5
+printf %s "checking for SAPPORO_LIGHT... " >&6; }
+
+if test -n "$SAPPORO_LIGHT_CFLAGS"; then
+    pkg_cv_SAPPORO_LIGHT_CFLAGS="$SAPPORO_LIGHT_CFLAGS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"sapporo_light\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "sapporo_light") 2>&5
+  ac_status=$?
+  printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_SAPPORO_LIGHT_CFLAGS=`$PKG_CONFIG --cflags "sapporo_light" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+if test -n "$SAPPORO_LIGHT_LIBS"; then
+    pkg_cv_SAPPORO_LIGHT_LIBS="$SAPPORO_LIGHT_LIBS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"sapporo_light\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "sapporo_light") 2>&5
+  ac_status=$?
+  printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_SAPPORO_LIGHT_LIBS=`$PKG_CONFIG --libs "sapporo_light" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+
+
+
+if test $pkg_failed = yes; then
+   	{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+
+if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
+        _pkg_short_errors_supported=yes
+else
+        _pkg_short_errors_supported=no
+fi
+        if test $_pkg_short_errors_supported = yes; then
+	        SAPPORO_LIGHT_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "sapporo_light" 2>&1`
+        else
+	        SAPPORO_LIGHT_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "sapporo_light" 2>&1`
+        fi
+	# Put the nasty error message in config.log where it belongs
+	echo "$SAPPORO_LIGHT_PKG_ERRORS" >&5
+
+	as_fn_error $? "Package requirements (sapporo_light) were not met:
+
+$SAPPORO_LIGHT_PKG_ERRORS
+
+Consider adjusting the PKG_CONFIG_PATH environment variable if you
+installed software in a non-standard prefix.
+
+Alternatively, you may set the environment variables SAPPORO_LIGHT_CFLAGS
+and SAPPORO_LIGHT_LIBS to avoid the need to call pkg-config.
+See the pkg-config man page for more details." "$LINENO" 5
+elif test $pkg_failed = untried; then
+     	{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+	{ { printf "%s\n" "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
+printf "%s\n" "$as_me: error: in \`$ac_pwd':" >&2;}
+as_fn_error $? "The pkg-config script could not be found or is too old.  Make sure it
+is in your PATH or set the PKG_CONFIG environment variable to the full
+path to pkg-config.
+
+Alternatively, you may set the environment variables SAPPORO_LIGHT_CFLAGS
+and SAPPORO_LIGHT_LIBS to avoid the need to call pkg-config.
+See the pkg-config man page for more details.
+
+To get pkg-config, see <http://pkg-config.freedesktop.org/>.
+See \`config.log' for more details" "$LINENO" 5; }
+else
+	SAPPORO_LIGHT_CFLAGS=$pkg_cv_SAPPORO_LIGHT_CFLAGS
+	SAPPORO_LIGHT_LIBS=$pkg_cv_SAPPORO_LIGHT_LIBS
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
+
+fi
+
+fi
+
+
+    ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+
+    LIBS="$amuse_save_LIBS"
+
+
+
+
+
 fi
 
 # Create the FEATURES variable used by amuse.mk to decide what to build
@@ -12378,6 +12591,10 @@ fi
 if test "x${FOUND_NETCDF}" = "xyes"
 then :
   FEATURES="${FEATURES} netcdf4"
+fi
+if test "x" != "x${SAPPORO_LIGHT_LIBS}"
+then :
+  FEATURES="${FEATURES} sapporo_light"
 fi
 
 

@@ -51,8 +51,7 @@ then
     AX_CONDA_PACKAGE(FOUND_FFTW, fftw)
     AX_CONDA_PACKAGE(with_hdf5, hdf5)
     AX_CONDA_PACKAGE(FOUND_NETCDF, netcdf4)
-
-    # TODO: detect Sapporo Conda package
+    AX_CONDA_PACKAGE(SAPPORO_LIGHT_LIBS, sapporo_light)
 
     # Export conda list output so make doesn't have to rerun it to detect pip and wheel
     CONDA_LIST="$ax_conda_list"
@@ -104,10 +103,9 @@ else
     AX_MPFR()
     AX_FFTW()
     AX_LIB_HDF5()
-    AC_MSG_NOTICE([Have HDF5: $HAVE_HDF5])
     AX_LIB_NETCDF4()
 
-    # TODO: detect Sapporo using pkg-config
+    AMUSE_LIB_SAPPORO_LIGHT()
 fi
 
 # Create the FEATURES variable used by amuse.mk to decide what to build
@@ -143,6 +141,7 @@ ENABLE_FEATURE_IF_EQUALS([mpfr], [FOUND_MPFR], [yes])
 ENABLE_FEATURE_IF_EQUALS([fftw], [FOUND_FFTW], [yes])
 ENABLE_FEATURE_IF_DEFINED([hdf5], [HDF5_VERSION])
 ENABLE_FEATURE_IF_EQUALS([netcdf4], [FOUND_NETCDF], [yes])
+ENABLE_FEATURE_IF_DEFINED([sapporo_light], [SAPPORO_LIGHT_LIBS])
 
 AC_SUBST(FEATURES)
 
