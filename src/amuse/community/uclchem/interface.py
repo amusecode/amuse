@@ -139,20 +139,6 @@ class UclchemInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesM
         function.result_type = 'i'
         return function
 
-    def evolve_model(self,tend):
-        dictionary, out_species= self._build_dict(tend=tend)
-        return self.run_model(dictionary, out_species)
-
-
-    def _build_dict(self, tend):
-        dictionary = dict()
-        outSpecies = ['H', 'H2']
-        #dictionary['initialTemp'] = self.particles.temperature.value_in(units.K)
-        #dictionary['initialDens'] = self.particles.number_density.value_in(units.cm**-3)
-        dictionary['finalTime'] = tend
-        _, dictionary, outSpecies = self._reform_inputs(dictionary, outSpecies)
-        return str(dictionary), str(outSpecies)
-    
     def _reform_inputs(self,param_dict, out_species):
         if param_dict is None:
             param_dict = {}
@@ -189,8 +175,9 @@ class Uclchem(CommonCode):
 
     def _build_dict(self, tend):
         dictionary = dict()
-        outSpecies = ['H', 'H2']
+        outSpecies = self.out_species
         attributes = self.particles.get_attribute_names_defined_in_store()
+        #print(self.particles[0])
         if 'temperature' in attributes:
             dictionary['initialTemp'] = self.particles.temperature.value_in(units.K)[0]
         if 'number_density' in attributes:
@@ -198,12 +185,20 @@ class Uclchem(CommonCode):
         if 'ionrate' in attributes:
             dictionary['zeta'] = self.particles.ionrate.value_in(units.cr_ion)[0]
         if 'radfield' in attributes:
+            print('here')
             dictionary['radfield'] = self.particles.radfield.value_in(units.habing)[0]
         dictionary['finalTime'] = tend.value_in(units.yr)
         dictionary['currentTime'] = self.get_time().value_in(units.yr)
         _, dictionary, outSpecies = self._reform_inputs(dictionary, outSpecies)
-        print(dictionary, outSpecies)
+        #print(dictionary, outSpecies)
         return str(dictionary), str(outSpecies)
+    
+    def define_parameters(self, handler):
+        handler.add_interface_parameter(
+            "out_species",
+            "Array of molecules to use",
+            default_value = ['H','H2']
+        )
     
     def define_methods(self, handler):
         CommonCode.define_methods(self, handler)

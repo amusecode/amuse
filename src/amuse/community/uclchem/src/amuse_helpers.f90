@@ -289,6 +289,7 @@ CONTAINS
 
         CALL initializeChemistry(readabunds=.FALSE.)
         dstep=1
+        abund(outIndx,1) = part%abundances(1:SIZE(outIndx))
 
         DO WHILE (((endAtFinalDensity) .and. (density(1) < finalDens)) .or. &
             &((.not. endAtFinalDensity) .and. (timeInYears < finalTime)))

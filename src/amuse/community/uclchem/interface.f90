@@ -123,32 +123,3 @@
     integer :: ret,id
     ret=remove_particle(id)
   end function
-
-
-  ! function sim_cloud(outSpeciesIn, dictionary, abundance_out) result(successFlag)
-  !   use uclchemhelper
-  !   DOUBLE PRECISION :: abundance_out
-  !   character(len=20) :: outSpeciesIn
-  !   character(len=20) :: dictionary
-  !   INTEGER :: successFlag
-  !   !abundance(:) = 0.00
-  !   !outSpeciesIn = 'H H2'
-  !   !dictionary = "{'outspecies': 2}"
-  !   !abundance_out(:) = 0.0_dp
-  !   print *, 'check1'
-  !   !do i = 1, 500
-  !   !  abundance_out(i) = 0.0_dp
-  !   !end do
-  !   !if (allocated(abundance_out)) then
-  !   !  deallocate(abundance_out)
-  !   !end if
-
-  !   print *,'check2'
-  !   !allocate(abundance_out(500),source=0.0_dp)
-  !   abundance_out=14
-  !   print *, 'check3'
-  !   !call test_cloud(dictionary, outSpeciesIn,abundance_out,successFlag)
-  !   write(*,*) abundance_out
-  !   successFlag=0
-  ! end function
-  
