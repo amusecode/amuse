@@ -27,7 +27,8 @@ chem.particles.add_particles(static_cloud)
 chem_channel = chem.particles.new_channel_to(static_cloud)
 
 t_end = 5.0e6|units.yr
-dt = np.logspace(0,np.log10(t_end.value_in(units.yr)), num = 200)
+#dt = np.logspace(0,np.log10(t_end.value_in(units.yr)), num = 200)
+#dt = np.linspace(0,5e6, num=200)
 t = 0|units.yr
 times = []
 index_H = chem.get_index_of_species('H')
@@ -49,11 +50,23 @@ names = ['H','H2','$H','H2O','$H2O','CO','$CO','$CH3OH','CH3OH']
 print(indices)
 
 
-for i in dt:
-    i = i|(units.yr)
-    chem.evolve_model(i)
+while t.value_in(units.yr) < t_end.value_in(units.yr):
+    if t > 1.0e6|units.yr:
+        t += 1.0e5|units.yr
+    elif t > 1.0e5|units.yr:
+        t += 1.0e4|units.yr
+    elif t > 1.0e4|units.yr:
+        t += 1.0e3|units.yr
+    elif t > 1.0e3|units.yr:
+        t += 100|units.yr
+    elif t > 0|units.yr:
+        t *= 10
+    else:
+        t = 1.0e-7|units.yr
+    chem.evolve_model(t)
     abundances = np.vstack((abundances,chem.particles.abundances[0][indices]))
     chem_channel.copy()
+    times.append(t.value_in(units.yr))
 
 # for i in range(len(indices)):
 #     if i in [0,1,3,5,8]:
@@ -61,15 +74,15 @@ for i in dt:
 #     else: 
 #         plt.plot(dt,abundances[1:,i], linestyle='dashed',label=names[i])
 print(chem.particles.abundances[0][indices])
-plt.plot(dt,abundances[1:,0], label='H')
-plt.plot(dt,abundances[1:,1], label='H2')
-plt.plot(dt,abundances[1:,2]+abundances[1:,3], linestyle='dashed',label='$H')
-plt.plot(dt,abundances[1:,4], label='H2O')
-plt.plot(dt,abundances[1:,5]+abundances[1:,6],linestyle='dashed', label='$H2O')
-plt.plot(dt, abundances[1:,7],label='CO')
-plt.plot(dt,abundances[1:,8]+abundances[1:,9],linestyle='dashed',label='$CO')
-plt.plot(dt,abundances[1:,10]+abundances[1:,11],linestyle='dashed',label='$CH3OH')
-plt.plot(dt,abundances[1:,11], label='CH3OH')
+plt.plot(times,abundances[1:,0], label='H')
+plt.plot(times,abundances[1:,1], label='H2')
+plt.plot(times,abundances[1:,2]+abundances[1:,3], linestyle='dashed',label='$H')
+plt.plot(times,abundances[1:,4], label='H2O')
+plt.plot(times,abundances[1:,5]+abundances[1:,6],linestyle='dashed', label='$H2O')
+plt.plot(times, abundances[1:,7],label='CO')
+plt.plot(times,abundances[1:,8]+abundances[1:,9],linestyle='dashed',label='$CO')
+plt.plot(times,abundances[1:,10]+abundances[1:,11],linestyle='dashed',label='$CH3OH')
+plt.plot(times,abundances[1:,11], label='CH3OH')
 plt.title('Static Cloud')
 plt.xlabel('Time (yr)') 
 plt.ylabel('Abundances')

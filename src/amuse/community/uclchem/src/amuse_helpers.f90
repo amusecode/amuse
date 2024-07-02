@@ -10,7 +10,7 @@ MODULE uclchemhelper
         double precision :: density
         double precision :: temperature
         double precision :: ionrate
-        double precision :: abundances(500)
+        double precision :: abundances(nSpec+1)
     end type
     integer :: nmols
     type(particle_type), allocatable :: particles(:)
@@ -149,11 +149,19 @@ CONTAINS
         
         if(density.GT.0) then
           particles(i)%abundances(nh)  = 0.5 !H
-          particles(i)%abundances(nh2) = 0.5   !H2
+          particles(i)%abundances(nh2) = 0.25   !H2
           particles(i)%abundances(nhe) = 0.1 !He
           particles(i)%abundances(ncx) = 1.77d-04 !C+ (C is fully ionised by default)
+          particles(i)%abundances(nc) = 1.d-10 !C
           particles(i)%abundances(no) = 3.34d-04 !O
           particles(i)%abundances(nn) = 6.18d-05 !N
+          particles(i)%abundances(nmg) = 2.256d-06 !Mg
+          particles(i)%abundances(np) = 7.78d-08 !P
+          particles(i)%abundances(nf) = 3.6d-08 !
+          particles(i)%abundances(nsx) = 3.51d-6 !S
+          particles(i)%abundances(nsix) = 1.78d-06 !Si
+          particles(i)%abundances(nclx) = 3.39d-08 !Cl
+          particles(i)%abundances(nelec) = 1.77d-04 + 3.51d-6 + 1.78d-06 + 3.39d-08 !electrons; sum of ions
         endif
       
         nparticle=nparticle+1
@@ -265,7 +273,7 @@ CONTAINS
         INCLUDE 'defaultparameters.f90'
         !Read input parameters from the dictionary
         CALL dictionaryParser(dictionary, outSpeciesIn,ret)
-
+        !print *, currentTime
         do i=1,nparticle
             iret = evolve_1_particle(particles(i))
             ret = min(iret,ret)
@@ -281,20 +289,20 @@ CONTAINS
         integer :: ret        
 
         dstep=1
-        currentTime=0.0
-        timeInYears=0.0
+        !currentTime=startTime
+        !timeInYears=startTime
 
         call coreInitializePhysics(ret)
         CALL coreInitializePhysics(ret)
 
         CALL initializeChemistry(readabunds=.FALSE.)
         dstep=1
-        abund(outIndx,1) = part%abundances(1:SIZE(outIndx))
-
+        abund(:,1) = part%abundances
         DO WHILE (((endAtFinalDensity) .and. (density(1) < finalDens)) .or. &
             &((.not. endAtFinalDensity) .and. (timeInYears < finalTime)))
           
             currentTimeold=currentTime
+            !print *, timeInYears
             !Each physics module has a subroutine to set the target time from the current time
             CALL updateTargetTime
             !loop over parcels, counting from centre out to edge of cloud
@@ -320,7 +328,8 @@ CONTAINS
                 CALL output
             END DO
         END DO
-        part%abundances(1:SIZE(outIndx))=abund(outIndx,1)
+        part%abundances=abund(:,1)
+        !print *, 'step'
     end function
 
     SUBROUTINE get_rates(dictionary,abundancesIn,speciesIndx,rateIndxs,&
