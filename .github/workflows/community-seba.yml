@@ -58,7 +58,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
           name: buildlog-${{ matrix.python }}-${{ matrix.mpi }}
-          path: build.log
+          path: build-${{ matrix.mpi }}-${{ matrix.python }}.log
     - name: test seba
       run: |
         pytest --pyargs amuse.test.suite.codes_tests.test_seba -sv
