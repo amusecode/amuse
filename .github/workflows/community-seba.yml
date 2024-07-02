@@ -54,6 +54,9 @@ jobs:
       run: |
         amusifier --get-amuse-configmk
         pip list
+    - name: move build log
+      run: |
+        mv build.log build-${{ matrix.mpi }}-${{ matrix.python }}.log
     - name: archive build log
       uses: actions/upload-artifact@v4
       with:
