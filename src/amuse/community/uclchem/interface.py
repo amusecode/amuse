@@ -4,7 +4,7 @@ from amuse.community.interface.common import CommonCode, CommonCodeInterface
 from amuse.community import *
 from pathlib import Path
 
-class UclchemInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesMixIn):
+class UCLchemInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesMixIn):
     """
     UCLCHEM: A Gas-Grain Chemical Code for astrochemical modelling
 
@@ -162,15 +162,18 @@ class UclchemInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesM
             n_out = 0
         return n_out, param_dict, out_species
     
-class Uclchem(CommonCode):
+class UCLchem(CommonCode):
     def __init__(self, convert_nbody=None, **options):
-        legacy_interface = UclchemInterface(**options)
-
+        legacy_interface = UCLchemInterface(**options)
+        self.uclchem_time = 0.0|units.yr
         InCodeComponentImplementation.__init__(self,legacy_interface)
 
     def evolve_model(self,tend):
+        assert tend > self.uclchem_time, 'end time must be larger than uclchem_time'
         dictionary, out_species= self._build_dict(tend=tend)
-        return self.run_model(dictionary, out_species)
+        output = self.run_model(dictionary, out_species)
+        self.uclchem_time = tend
+        return output
 
 
     def _build_dict(self, tend):
@@ -187,8 +190,10 @@ class Uclchem(CommonCode):
         if 'radfield' in attributes:
             print('here')
             dictionary['radfield'] = self.particles.radfield.value_in(units.habing)[0]
-        dictionary['finalTime'] = tend.value_in(units.yr)
-        dictionary['currentTime'] = self.get_time().value_in(units.yr)
+        print(tend)
+        print(self.uclchem_time)
+        dictionary['finalTime'] = tend.value_in(units.yr)-self.uclchem_time.value_in(units.yr)
+        #dictionary['currentTime'] = self.uclchem_time
         _, dictionary, outSpecies = self._reform_inputs(dictionary, outSpecies)
         #print(dictionary, outSpecies)
         return str(dictionary), str(outSpecies)

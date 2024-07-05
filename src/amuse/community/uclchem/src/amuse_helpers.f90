@@ -296,11 +296,12 @@ CONTAINS
         CALL coreInitializePhysics(ret)
 
         CALL initializeChemistry(readabunds=.FALSE.)
+        !call simpleDebug('amuse')
         dstep=1
         abund(:,1) = part%abundances
         DO WHILE (((endAtFinalDensity) .and. (density(1) < finalDens)) .or. &
             &((.not. endAtFinalDensity) .and. (timeInYears < finalTime)))
-          
+            write(*,*) currentTime, density, gasTemp
             currentTimeold=currentTime
             !print *, timeInYears
             !Each physics module has a subroutine to set the target time from the current time
@@ -308,6 +309,7 @@ CONTAINS
             !loop over parcels, counting from centre out to edge of cloud
             DO dstep=1,points
                 !reset time if this isn't first depth point
+
                 currentTime=currentTimeold
                 !update chemistry from currentTime to targetTime
                 CALL updateChemistry(ret)
@@ -329,7 +331,7 @@ CONTAINS
             END DO
         END DO
         part%abundances=abund(:,1)
-        !print *, 'step'
+        currentTime = 0.0
     end function
 
     SUBROUTINE get_rates(dictionary,abundancesIn,speciesIndx,rateIndxs,&

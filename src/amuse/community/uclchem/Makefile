@@ -4,7 +4,7 @@ endif
 -include ${AMUSE_DIR}/config.mk
 
 
-CLASSNAME=UclchemInterface
+CLASSNAME=UCLchemInterface
 
 FFLAGS += $(FCFLAGS) -std=legacy -O2 -ffree-line-length-none
 INCL = -I./src/ 
