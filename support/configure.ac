@@ -1,6 +1,8 @@
 AC_CONFIG_MACRO_DIRS([shared/m4])
 AC_INIT([amuse], [1.0])
 
+AC_CANONICAL_TARGET
+
 # If we have a Conda environment active, then we're going to do everything via Conda,
 # including the dependencies. So in this case, we'll detect installed Conda packages,
 # rather than searching the system for libraries in the usual way.
@@ -29,8 +31,14 @@ then
 
     AX_CONDA_LIST()
 
-    AX_CONDA_PACKAGE(CC, gcc)
-    AX_CONDA_PACKAGE(CXX, gxx)
+    if test "x$target_os" == "xlinux-gnu"
+    then
+        AX_CONDA_PACKAGE(CC, gcc)
+        AX_CONDA_PACKAGE(CXX, gxx)
+    else
+        AX_CONDA_PACKAGE(CC, clang)
+        AX_CONDA_PACKAGE(CXX, clangxx)
+    fi
     AX_CONDA_PACKAGE(FC, gfortran)
     AX_CONDA_PACKAGE(JAVAC, openjdk)
     AX_CONDA_PACKAGE(PYTHON, python)
