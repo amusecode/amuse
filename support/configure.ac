@@ -1,4 +1,5 @@
 AC_CONFIG_MACRO_DIRS([shared/m4])
+AC_CONFIG_AUX_DIR([shared])
 AC_INIT([amuse], [1.0])
 
 AC_CANONICAL_TARGET
