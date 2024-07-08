@@ -1,5 +1,7 @@
-import numpy
+from functools import reduce
 from collections import namedtuple
+
+import numpy
 
 from amuse.units import nbody_system
 from amuse.units import quantities
@@ -7,17 +9,26 @@ from amuse.units import constants
 from amuse.units import units
 from amuse.units.quantities import zero
 from amuse.units.quantities import VectorQuantity
-from amuse.units.quantities import Quantity
-from amuse.units.quantities import new_quantity
-from amuse.units.quantities import zero
 
 from amuse.support import exceptions
-from amuse.ext.basicgraph import Graph, MinimumSpanningTreeFromEdges, MinimumSpanningTree
+from amuse.ext.basicgraph import (
+    Graph, MinimumSpanningTreeFromEdges, MinimumSpanningTree
+)
 
-from amuse.datamodel import base
 from amuse.datamodel import rotation
 from amuse.datamodel import ParticlesWithUnitsConverted, AbstractParticleSet, Particle
-from functools import reduce
+
+
+def determine_gravitational_constant(particles):
+    mass_base_unit = particles.mass.unit.base[0][1]
+    if mass_base_unit is units.kg:
+        G = constants.G
+    elif mass_base_unit is nbody_system.mass:
+        G = nbody_system.G
+    else:
+        raise ValueError(f"Invalid base unit for mass: {mass_base_unit}")
+    return G
+
 
 def move_to_center(particles):
     """
@@ -32,14 +43,16 @@ def move_to_center(particles):
     particles.velocity -= particles.center_of_mass_velocity()
 
 
-def scale_to_standard(particles, convert_nbody = None,
-                      smoothing_length_squared = zero,
-                      virial_ratio = 0.5):
+def scale_to_standard(
+    particles, convert_nbody=None,
+    smoothing_length_squared=zero,
+    virial_ratio=0.5
+):
     """
-    Scale the particles to a standard NBODY model with G=1,
-    total_mass=1, and virial_radius=1 (or potential_energy=-0.5). 
-    In virial equilibrium (virial_ratio=0.5, default) the 
-    kinetic_energy=0.25 and the velocity_dispersion=1/sqrt(2).
+    Scale the particles to a standard NBODY model with G=1, total_mass=1, and
+    virial_radius=1 (or potential_energy=-0.5).  In virial equilibrium
+    (virial_ratio=0.5, default) the kinetic_energy=0.25 and the
+    velocity_dispersion=1/sqrt(2).
 
     :argument convert_nbody: the scaling is in nbody units,
         when the particles are in si units a convert_nbody is needed
@@ -49,9 +62,12 @@ def scale_to_standard(particles, convert_nbody = None,
         Q = virial_ratio > 0.5: supervirial, will expand
         Q = virial_ratio < 0.5: subvirial, will collapse
     """
-    if not convert_nbody is None:
-        particles = ParticlesWithUnitsConverted(particles, convert_nbody.as_converter_from_generic_to_si())
-        if not smoothing_length_squared is zero:
+    if convert_nbody is not None:
+        particles = ParticlesWithUnitsConverted(
+            particles,
+            convert_nbody.as_converter_from_generic_to_si()
+        )
+        if smoothing_length_squared is not zero:
             smoothing_length_squared = convert_nbody.to_nbody(smoothing_length_squared)
 
     # Proper order is to scale mass, then length, then velocities.
@@ -65,18 +81,21 @@ def scale_to_standard(particles, convert_nbody = None,
     scale_factor = ((1 | total_mass.unit) / total_mass)
     particles.mass *= scale_factor
 
-    potential_energy \
-        = particles.potential_energy(G=nbody_system.G,
-                         smoothing_length_squared = smoothing_length_squared)
+    potential_energy = particles.potential_energy(
+        G=nbody_system.G,
+        smoothing_length_squared=smoothing_length_squared
+    )
     target_energy = -0.5 | nbody_system.energy
-    scale_factor = (potential_energy / target_energy)	# unsoftened only...
+    scale_factor = (potential_energy / target_energy)  # unsoftened only...
     particles.position *= scale_factor
     if smoothing_length_squared == zero:
         potential_energy = target_energy
     else:
-        potential_energy = particles.potential_energy(G=nbody_system.G,
-            smoothing_length_squared = smoothing_length_squared)
-    
+        potential_energy = particles.potential_energy(
+            G=nbody_system.G,
+            smoothing_length_squared=smoothing_length_squared
+        )
+
     if virial_ratio == 0:
         scale_factor = 0
     else:
@@ -216,12 +235,14 @@ def kinetic_energy(particles):
     return 0.5 * m_v_squared.sum()
 
 
-def potential_energy(particles, smoothing_length_squared = zero, G = constants.G):
+def potential_energy(
+    particles, smoothing_length_squared=zero, G=None
+):
     """
     Returns the total potential energy of the particles in the particles set.
 
-    :argument smooting_length_squared: gravitational softening, added to every distance**2.
-    :argument G: gravitational constant, need to be changed for particles in different units systems
+    :argument smoothing_length_squared: gravitational softening, added to every distance**2.
+    :argument G: gravitational constant, automatically detected for SI and Nbody units.
 
     >>> from amuse.datamodel import Particles
     >>> particles = Particles(2)
@@ -232,6 +253,8 @@ def potential_energy(particles, smoothing_length_squared = zero, G = constants.G
     >>> particles.potential_energy()
     quantity<-6.67428e-11 m**2 * kg * s**-2>
     """
+    if G is None:
+        G = determine_gravitational_constant(particles)
 
     if len(particles) < 2:
         return zero
@@ -307,12 +330,12 @@ def specific_kinetic_energy(particles):
     return 0.5*(particles.vx**2+particles.vy**2+particles.vz**2)
 
 
-def particle_potential(set, particle, smoothing_length_squared = zero, G = constants.G):
+def particle_potential(particleset, particle, smoothing_length_squared=zero, G=None):
     """
     Returns the potential at the position of the particle.
 
-    :argument smooting_length_squared: gravitational softening, added to every distance**2.
-    :argument G: gravitational constant, need to be changed for particles in different units systems
+    :argument smoothing_length_squared: gravitational softening, added to every distance**2.
+    :argument G: gravitational constant, automatically detected for SI and Nbody units.
 
     >>> from amuse.datamodel import Particles
     >>> particles = Particles(2)
@@ -323,21 +346,25 @@ def particle_potential(set, particle, smoothing_length_squared = zero, G = const
     >>> particles[1].potential()
     quantity<-6.67428e-11 m**2 * s**-2>
     """
+    if G is None:
+        G = determine_gravitational_constant(particleset)
 
-    particles = set - particle
+    particles = particleset - particle
     dx = particle.x - particles.x
     dy = particle.y - particles.y
     dz = particle.z - particles.z
     dr_squared = (dx * dx) + (dy * dy) + (dz * dz)
     dr = (dr_squared+smoothing_length_squared).sqrt()
-    return - G * (particles.mass / dr).sum()
+    return -1 * G * (particles.mass / dr).sum()
 
-def particleset_potential(particles, smoothing_length_squared = zero, G = constants.G, gravity_code = None, block_size = 0):
+def particleset_potential(
+    particles, smoothing_length_squared=zero, G=None, gravity_code=None, block_size=0
+):
     """
     Returns the potential at the position of each particle in the set.
 
-    :argument smooting_length_squared: gravitational softening, added to every distance**2.
-    :argument G: gravitational constant, need to be changed for particles in different units systems
+    :argument smoothing_length_squared: gravitational softening, added to every distance**2.
+    :argument G: gravitational constant, automatically detected for SI and Nbody units.
 
     >>> from amuse.datamodel import Particles
     >>> particles = Particles(2)
@@ -348,32 +375,35 @@ def particleset_potential(particles, smoothing_length_squared = zero, G = consta
     >>> particles.potential()
     quantity<[-6.67428e-11, -6.67428e-11] m**2 * s**-2>
     """
+    if G is None:
+        G = determine_gravitational_constant(particles)
+
     n = len(particles)
     if block_size == 0:
-        max = 100000 * 100 #100m floats
+        max = 100000 * 100  # 100m floats
         block_size = max // n
         if block_size == 0:
-            block_size = 1 #if more than 100m particles, then do 1 by one
+            block_size = 1  # if more than 100m particles, then do 1 by one
 
     mass = particles.mass
     x_vector = particles.x
     y_vector = particles.y
     z_vector = particles.z
 
-    potentials = VectorQuantity.zeros(len(mass),mass.unit/x_vector.unit) 
+    potentials = VectorQuantity.zeros(len(mass), mass.unit/x_vector.unit) 
     inf_len = numpy.inf | x_vector.unit
     offset = 0
-    newshape =(n, 1)
+    newshape = (n, 1)
     x_vector_r = x_vector.reshape(newshape)
     y_vector_r = y_vector.reshape(newshape)
     z_vector_r = z_vector.reshape(newshape)
-    mass_r=mass.reshape(newshape)
+    mass_r = mass.reshape(newshape)
     while offset < n:
         if offset + block_size > n:
             block_size = n - offset
-        x = x_vector[offset:offset+block_size] 
-        y = y_vector[offset:offset+block_size] 
-        z = z_vector[offset:offset+block_size] 
+        x = x_vector[offset:offset+block_size]
+        y = y_vector[offset:offset+block_size]
+        z = z_vector[offset:offset+block_size]
         indices = numpy.arange(block_size)
         dx = x_vector_r - x 
         dy = y_vector_r - y
@@ -385,7 +415,7 @@ def particleset_potential(particles, smoothing_length_squared = zero, G = consta
         potentials += (mass[offset:offset+block_size]/dr).sum(axis=1)
         offset += block_size
 
-    return -G * potentials
+    return -1 * G * potentials
 
 
 def virial_radius(particles):
@@ -404,7 +434,10 @@ def virial_radius(particles):
     quantity<4.0 m>
     """
     if len(particles) < 2:
-        raise exceptions.AmuseException("Cannot calculate virial radius for a particles set with fewer than 2 particles.")
+        raise exceptions.AmuseException(
+            "Cannot calculate virial radius for a particles set with fewer than "
+            "2 particles."
+        )
     partial_sum = zero
 
     mass = particles.mass
@@ -601,9 +634,11 @@ def new_particle_from_cluster_core(particles, unit_converter=None, density_weigh
     result.radius = (weights.flatten() * (particles.position - result.position).lengths()).sum() / total_weight
     return result
 
-def bound_subset(particles, tidal_radius=None, unit_converter=None, density_weighting_power=2,
-        smoothing_length_squared=zero, G=constants.G, core=None,
-        reuse_hop=False, hop=HopContainer(), gravity_code=None):
+def bound_subset(
+    particles, tidal_radius=None, unit_converter=None,
+    density_weighting_power=2, smoothing_length_squared=zero, G=None,
+    core=None, reuse_hop=False, hop=HopContainer(), gravity_code=None
+):
     """
     find the particles bound to the cluster. Returns a subset of bound particles.
 
@@ -624,25 +659,32 @@ def bound_subset(particles, tidal_radius=None, unit_converter=None, density_weig
     >>> print len(plum.bound_subset(G=nbody_system.G))
     99
     """
+    if G is None:
+        G = determine_gravitational_constant(particles)
+
     if core is None:
-        core = particles.cluster_core(unit_converter, density_weighting_power, reuse_hop=reuse_hop, hop=hop)
-    position=particles.position-core.position
-    velocity=particles.velocity-core.velocity
-    
-    v2=velocity.lengths_squared()
-    r2=position.lengths_squared()
-    pot=particles.potential(smoothing_length_squared, G, gravity_code = gravity_code)
+        core = particles.cluster_core(
+            unit_converter, density_weighting_power, reuse_hop=reuse_hop, hop=hop
+        )
+    position = particles.position-core.position
+    velocity = particles.velocity-core.velocity
+
+    v2 = velocity.lengths_squared()
+    r2 = position.lengths_squared()
+    pot = particles.potential(smoothing_length_squared, G, gravity_code = gravity_code)
     
     if tidal_radius is None:
-      boundary_radius2=r2.max()
+        boundary_radius2 = r2.max()
     else:
-      boundary_radius2=tidal_radius**2
+        boundary_radius2 = tidal_radius**2
     
-    bs=numpy.where( (r2 <= boundary_radius2) & (pot+0.5*v2 < zero) )[0]
+    bs=numpy.where((r2 <= boundary_radius2) & (pot+0.5*v2 < zero))[0]
     return particles[bs]
 
-def mass_segregation_Gini_coefficient(particles, unit_converter=None, density_weighting_power=2,
-        core=None, reuse_hop=False, hop=HopContainer()):
+def mass_segregation_Gini_coefficient(
+    particles, unit_converter=None, density_weighting_power=2,
+    core=None, reuse_hop=False, hop=HopContainer()
+):
     """
     Converse & Stahler 2008 Gini coefficient for cluster.
 
@@ -661,28 +703,30 @@ def mass_segregation_Gini_coefficient(particles, unit_converter=None, density_we
     1.0
     """                   
     if core is None:
-      core = particles.cluster_core(unit_converter, density_weighting_power, reuse_hop=reuse_hop, hop=hop)
+        core = particles.cluster_core(
+            unit_converter, density_weighting_power, reuse_hop=reuse_hop, hop=hop
+        )
 
-    position=particles.position-core.position
+    position = particles.position-core.position
 
-    r2=position.lengths_squared().number
-    a=numpy.argsort(r2)
-    m=particles.mass.number[a]
-    
-    nf=1.*numpy.array(list(range(len(m))))/(len(m)-1.)
-    mf=m.cumsum()
-    mf=mf/mf[-1]
-    
-    mfmnf=2*(mf-nf)
-    
+    r2 = position.lengths_squared().number
+    a = numpy.argsort(r2)
+    m = particles.mass.number[a]
+
+    nf = 1. * numpy.array(list(range(len(m)))) / (len(m) - 1.)
+    mf = m.cumsum()
+    mf = mf/mf[-1]
+
+    mfmnf = 2*(mf-nf)
+
     return (mfmnf[1:]+mfmnf[:-1]).sum()/2/(len(mf)-1.)
 
 def LagrangianRadii(
-    stars, unit_converter="auto", mf=[0.01,0.02,0.05,0.1,0.2,0.5,0.75,0.9,1],
+    stars, unit_converter="auto", mf=[0.01, 0.02, 0.05, 0.1, 0.2, 0.5, 0.75, 0.9, 1],
     cm=None, number_of_neighbours=7, reuse_hop=False, hop=HopContainer(),
 ):
     """
-    Calculate lagrangian radii. Output is radii, mass fraction 
+    Calculate Lagrangian radii. Output is radii, mass fraction
 
     >>> import numpy
     >>> from amuse.ic.plummer import new_plummer_sphere
@@ -743,14 +787,18 @@ def find_closest_particle_to(particles,x,y,z):
     d2=(particles.x-x)**2+(particles.y-y)**2+(particles.z-z)**2
     return particles[d2.number.argmin()]
 
-def potential_energy_in_field(particles, field_particles, smoothing_length_squared = zero, G = constants.G, just_potential = False):
+
+def potential_energy_in_field(
+    particles, field_particles,
+    smoothing_length_squared=zero, G=None, just_potential=False
+):
     """
     Returns the total potential energy of the particles associated with an external 
     gravitational field, which is represented by the field_particles.
 
     :argument field_particles: the external field consists of these (i.e. potential energy is calculated relative to the field particles) 
-    :argument smooting_length_squared: gravitational softening, added to every distance**2.
-    :argument G: gravitational constant, need to be changed for particles in different units systems
+    :argument smoothing_length_squared: gravitational softening, added to every distance**2.
+    :argument G: gravitational constant, automatically detected for SI and Nbody units.
 
     >>> from amuse.datamodel import Particles
     >>> field_particles = Particles(2)
@@ -766,9 +814,12 @@ def potential_energy_in_field(particles, field_particles, smoothing_length_squar
     >>> particles.potential_energy_in_field(field_particles)
     quantity<-2.22476e-10 m**2 * kg * s**-2>
     """
+    if G is None:
+        G = determine_gravitational_constant(particles)
+
     if len(field_particles) == 0:
         return zero * G
-        
+
     n = len(particles)
     dimensions = particles.position.shape[-1]
     transposed_positions = particles.position.reshape([n,1,dimensions]) 
@@ -1092,15 +1143,18 @@ def box_counting_dimension(particles):
     fit_coefficients = numpy.polyfit(x, y, 1)
     return fit_coefficients[0]
 
-def dynamical_timescale(particles, mass_fraction=None, G=constants.G):
+def dynamical_timescale(particles, mass_fraction=None, G=None):
     """
     Compute the dynamical (i.e. free-fall) timescale of the particles set. This is 
-    the time it would take for a pressureless homogeneous sphere of this size and
+    the time it would take for a pressure-less homogeneous sphere of this size and
     average density to collapse. If 'mass_fraction' is supplied, only the inner 
     particles are considered in the computation of the size of the sphere. For 
     example, 'mass_fraction=0.95' ignores the positions of the outer particles 
     comprising 5% by mass (useful for density profiles with long tails).
     """
+    if G is None:
+        G = determine_gravitational_constant(particles)
+
     if mass_fraction is None:
         total_radius = particles.total_radius()
     else:
