@@ -7,9 +7,9 @@ import numpy as np
 from amuse.units.si import m, kg
 from amuse.units.derivedsi import W, km
 
+
 au = 149597870691.0 | m
 parsec = au / np.tan(np.pi / (180 * 60 * 60))
-lightyear = 9460730472580.8 | km
 Lsun = 3.839e26 | W
 Msun = 1.98892e30 | kg
 Rsun = 6.955e8 | m

@@ -4,6 +4,7 @@ Units supported in AMUSE
 
 import numpy
 from . import constants
+from . import physical_constants
 from . import astronomical_constants
 from . import quantities
 
@@ -50,7 +51,7 @@ parsec = named("parsec", "parsec", astronomical_constants.parsec.as_unit())
 kpc = named("kilo parsec", "kpc", 10**3 * parsec)
 Mpc = named("mega parsec", "Mpc", 10**6 * parsec)
 Gpc = named("giga parsec", "Gpc", 10**9 * parsec)
-lightyear = named("light year", "ly", astronomical_constants.lightyear.as_unit())
+lightyear = named("light year", "ly", (physical_constants.c * julianyr).as_unit())
 LSun = named("solar luminosity", "LSun", astronomical_constants.Lsun.as_unit())
 MSun = named("solar mass", "MSun", astronomical_constants.Msun.as_unit())
 RSun = named("solar radius", "RSun", astronomical_constants.Rsun.as_unit())
