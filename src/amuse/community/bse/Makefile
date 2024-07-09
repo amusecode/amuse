@@ -11,13 +11,11 @@ support/config.mk:
 FCFLAGS += $(FORSOCKETS_CFLAGS)
 LDLIBS += $(FORSOCKETS_LIBS) 
 
-##### Substitute CODE name #####
 BSEOBJ = src/comenv.o src/corerd.o src/deltat.o src/dgcore.o \
          src/evolv2.o src/gntage.o src/hrdiag.o src/instar.o \
          src/kick.o src/mix.o src/mlwind.o src/mrenv.o \
          src/ran3.o src/rl.o src/star.o src/zcnsts.o src/zfuncs.o
 
-##### Modify build command as needed #####
 # Building the workers
 bse_worker.f90: interface.py
 	amusifier --type=f90 interface.py BSEInterface -o $@
