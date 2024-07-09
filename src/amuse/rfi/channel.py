@@ -625,7 +625,7 @@ class AbstractMessageChannel(OptionalAttributes):
     
     @option(type='boolean', sections=("channel",))
     def must_check_if_worker_is_up_to_date(self):
-        return True
+        return False
 
     @option(type='boolean', sections=("channel",))
     def check_worker_location(self):
