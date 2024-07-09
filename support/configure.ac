@@ -21,7 +21,7 @@ then
     # we assume that the conda metadata is correct, and that if it isn't there's
     # an expert packages who can fix things.
     AS_ECHO(["Conda package build detected, skipping checks for dependencies."])
-    ASSUME_FEATURES="gcc g++ gfortran java python install download mpi openmp cuda opencl blas lapack gsl gmp mpfr fftw hdf5 netcdf4"
+    ASSUME_FEATURES="c c++ fortran java python cmake install download mpi openmp cuda opencl blas lapack gsl gmp mpfr fftw hdf5 netcdf4"
 
 elif test "x" != "x$CONDA_DEFAULT_ENV"
 then
@@ -131,11 +131,12 @@ m4_define([ENABLE_FEATURE_IF_EQUALS],
 
 FEATURES="$ASSUME_FEATURES"
 
-ENABLE_FEATURE_IF_DEFINED([gcc], [CC])
-ENABLE_FEATURE_IF_DEFINED([g++], [CXX])
-ENABLE_FEATURE_IF_DEFINED([gfortran], [FC])
+ENABLE_FEATURE_IF_DEFINED([c], [CC])
+ENABLE_FEATURE_IF_DEFINED([c++], [CXX])
+ENABLE_FEATURE_IF_DEFINED([fortran], [FC])
 ENABLE_FEATURE_IF_DEFINED([java], [JAVAC])
 ENABLE_FEATURE_IF_DEFINED([python], [PYTHON])
+ENABLE_FEATURE_IF_DEFINED([cmake], [CMAKE])
 ENABLE_FEATURE_IF_DEFINED([install], [INSTALL])
 ENABLE_FEATURE_IF_DEFINED([download], [DOWNLOAD])
 ENABLE_FEATURE_IF_DEFINED([mpi], [MPICC])

@@ -2765,7 +2765,7 @@ then
     # we assume that the conda metadata is correct, and that if it isn't there's
     # an expert packages who can fix things.
     printf "%s\n" "Conda package build detected, skipping checks for dependencies."
-    ASSUME_FEATURES="gcc g++ gfortran java python install download mpi openmp cuda opencl blas lapack gsl gmp mpfr fftw hdf5 netcdf4"
+    ASSUME_FEATURES="c c++ fortran java python cmake install download mpi openmp cuda opencl blas lapack gsl gmp mpfr fftw hdf5 netcdf4"
 
 elif test "x" != "x$CONDA_DEFAULT_ENV"
 then
@@ -12606,15 +12606,15 @@ FEATURES="$ASSUME_FEATURES"
 
 if test "x" != "x${CC}"
 then :
-  FEATURES="${FEATURES} gcc"
+  FEATURES="${FEATURES} c"
 fi
 if test "x" != "x${CXX}"
 then :
-  FEATURES="${FEATURES} g++"
+  FEATURES="${FEATURES} c++"
 fi
 if test "x" != "x${FC}"
 then :
-  FEATURES="${FEATURES} gfortran"
+  FEATURES="${FEATURES} fortran"
 fi
 if test "x" != "x${JAVAC}"
 then :
@@ -12623,6 +12623,10 @@ fi
 if test "x" != "x${PYTHON}"
 then :
   FEATURES="${FEATURES} python"
+fi
+if test "x" != "x${CMAKE}"
+then :
+  FEATURES="${FEATURES} cmake"
 fi
 if test "x" != "x${INSTALL}"
 then :

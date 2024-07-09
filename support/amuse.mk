@@ -10,11 +10,11 @@ include support/format.mk
 
 
 # See if we can install the framework
-FW_REQ_FEATURES := gcc g++ gfortran python install mpi
+FW_REQ_FEATURES := c c++ fortran python install mpi
 FW_MISSING_FEATURES := $(filter-out $(FEATURES), $(FW_REQ_FEATURES))
 
 # See if we can install Sapporo light
-SAPPORO_LIGHT_REQ_FEATURES := gcc g++ install cuda
+SAPPORO_LIGHT_REQ_FEATURES := c c++ install cuda
 SAPPORO_LIGHT_MISSING_FEATURES := $(filter-out $(FEATURES), $(SAPPORO_LIGHT_REQ_FEATURES))
 
 # Lists of enabled and disabled packages, filled by the .amuse_dep.mk files
