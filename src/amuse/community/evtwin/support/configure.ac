@@ -1,0 +1,25 @@
+AC_CONFIG_AUX_DIR([shared])
+AC_CONFIG_MACRO_DIRS([shared/m4])
+
+AC_INIT([amuse-evtwin], [1.0])
+
+# Pick up Conda env or virtualenv
+AMUSE_VENV()
+
+# Set the worker language
+AC_LANG([Fortran])
+
+# Find the compiler
+AC_PROG_FC()
+AX_FC_ISO_C_BINDING()
+
+# Find MPI
+AX_MPI()
+
+# Find AMUSE libraries
+AMUSE_LIB_FORSOCKETS()
+
+
+# Generate output
+AC_CONFIG_FILES([config.mk])
+AC_OUTPUT
