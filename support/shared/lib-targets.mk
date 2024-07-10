@@ -43,8 +43,18 @@ endif
 CFLAGS += -fPIC
 FCFLAGS += -fPIC
 
+ifneq (,$(AMUSE_ON_MACOS))
+# Tell the linker to point any workers built against this library to refer to it
+# via the RPATH, which will point to the environment with the library in it, so
+# that it can be found at run time.
+INSTALL_NAME = -install_name @rpath/$@
+else
+INSTALL_NAME =
+endif
+
+
 $(DYNAMIC_LIB): $(OBJS)
-	$(CC) -shared -o $@ $^ $(LIBS)
+	$(CC) $(LDFLAGS) $(INSTALL_NAME) -shared -o $@ $^ $(LIBS)
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c -o $@ $<
@@ -55,7 +65,7 @@ $(PKG_CONFIG_FILE):
 
 ifdef DYNAMIC_LIB_MPI
 $(DYNAMIC_LIB_MPI): $(OBJS_MPI)
-	$(MPICC) $(LDFLAGS) -shared -o $@ $^ $(MPILIBS) $(LIBS)
+	$(MPICC) $(LDFLAGS) $(INSTALL_NAME) -shared -o $@ $^ $(MPILIBS) $(LIBS)
 endif
 
 %.mo: %.c

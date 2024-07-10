@@ -1,3 +1,5 @@
+AMUSE_ON_MACOS = @AMUSE_ON_MACOS@
+
 CC = @CC@
 CXX = @CXX@
 

@@ -1,6 +1,8 @@
 AC_CONFIG_MACRO_DIRS([shared/m4])
 AC_INIT([amuse-lib-stopcond], [1.0])
 
+AMUSE_DETECT_OS()
+
 AC_PROG_CC()
 AC_PROG_CXX()
 
