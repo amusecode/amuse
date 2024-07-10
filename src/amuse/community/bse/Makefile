@@ -9,7 +9,7 @@ support/config.mk:
 
 # Building the code into a static library
 FCFLAGS += $(FORSOCKETS_CFLAGS)
-LDLIBS += $(FORSOCKETS_LIBS) 
+LDLIBS += $(FORSOCKETS_LIBS) $(LIBS)
 
 BSEOBJ = src/comenv.o src/corerd.o src/deltat.o src/dgcore.o \
          src/evolv2.o src/gntage.o src/hrdiag.o src/instar.o \
@@ -52,7 +52,7 @@ test-%:
 # Cleaning up
 .PHONY: clean
 clean:
-	rm -rf *.o src/*.o *worker*
+	rm -rf *.o src/*.o *worker* *.mod
 
 .PHONY: distclean
 distclean: clean
