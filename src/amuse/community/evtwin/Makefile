@@ -8,7 +8,7 @@ support/config.mk:
 	cd support && ./configure
 
 # Building the code into a static library
-FFLAGS += $(FORSOCKETS_CFLAGS) -std=legacy
+FFLAGS += $(FORSOCKETS_CFLAGS) -cpp
 LDFLAGS +=
 LDLIBS += $(FORSOCKETS_LIBS)
 
