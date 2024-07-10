@@ -1,49 +1,61 @@
-ifeq ($(origin AMUSE_DIR), undefined)
-  AMUSE_DIR := $(shell amusifier --get-amuse-dir)
+ifneq (,$(filter-out clean distclean, $(MAKECMDGOALS)))
+include support/config.mk
 endif
 
--include ${AMUSE_DIR}/config.mk 				  # NG has some doubts
 
-MPIF90 ?= $(MPIFC) 	
-	 							 
-FORTRAN ?= gfortran						   
-
-F77FLAGS =  									  # 
-ifneq (,$(findstring xlf, $(notdir $(FORTRAN))))  # 
-F77FLAGS += -qfixed  							  # 
-endif  											  # NG has some doubts
+# Detecting dependencies
+support/config.mk:
+	cd support && ./configure
 
 
+# Building the code into a static library
+FCFLAGS += $(FORSOCKETS_CFLAGS)
+LDLIBS += $(FORSOCKETS_LIBS) $(LIBS)
 
-FSLIBS ?= -L$(AMUSE_DIR)/lib/forsockets -lforsockets
-FSINC ?= -I$(AMUSE_DIR)/lib/forsockets
+MOSSEOBJ = src/deltat.o src/evolv1.o src/hrdiag.o  \
+	 	   src/kick.o src/mlwind.o src/mrenv.o \
+	  	   src/ran3.o src/pisn.f src/eddington.f src/fallback.f \
+	  	   src/star.o src/zcnsts.o src/zfuncs.o
 
-AM_LIBS = -L$(AMUSE_DIR)/lib/amuse_mpi -lamuse_mpi
-AM_CFLAGS = -I$(AMUSE_DIR)/lib/amuse_mpi
+# Building the workers
+mosse_worker.f90: interface.py
+	amusifier --type=f90 interface.py MOSSEInterface -o $@
 
-OBJ	= src/deltat.o src/evolv1.o src/hrdiag.o  \
-	  src/kick.o src/mlwind.o src/mrenv.o \
-	  src/ran3.o src/pisn.f src/eddington.f src/fallback.f \
-	  src/star.o src/zcnsts.o src/zfuncs.o
-	  
-all:	mosse_worker
+mosse_worker.o: mosse_worker.f90
+	$(MPIFC) -c $(FCFLAGS) $<
 
+%.o: %.f
+	$(FC) -c -o $@ $(FCFLAGS) $<
+
+mosse_worker: interface.o mosse_worker.o $(MOSSEOBJ)
+	$(MPIFC) -o mosse_worker $(LDFLAGS) $^ $(LDLIBS)
+
+
+# Which packages contain which workers?
+amuse-mosse_contains: mosse_worker
+
+# Building and installing packages
+develop-%: %_contains
+	support/shared/uninstall.sh $*
+	python -m pip install -e packages/$*
+
+install-%: %_contains
+	support/shared/uninstall.sh $*
+	python -m pip install packages/$*
+
+package-%: %_contains
+	python3 -m pip install -vv --no-cache-dir --no-deps --no-build-isolation --prefix ${PREFIX} packages/$*
+
+test-%:
+	cd packages/$* && pytest
+
+
+# Cleaning up
+.PHONY: clean
 clean:
-	$(RM) -f *~ *.so *.pyc *.o src/*.o src/mosse worker_code worker_code.f90
-	$(RM) -f mosse_worker mosse_worker_sockets worker_code-sockets.f90
-	$(RM) -f amuse_worker_module.mod
-	$(RM) -f forsockets.mod
+	rm -rf *.o src/*.o *worker* *.mod
 
-mosse_worker:	worker_code.f90  interface.o  $(OBJ)
-	make -C src mosse CMPLR=$(FORTRAN) FFLAGS="$(FCFLAGS) $(F77FLAGS)"
-	$(MPIF90) $(FS_FLAGS) $(LDFLAGS) $^ -o $@ $(FS_LIBS) $(LIBS)
-	
-worker_code.f90: interface.py
-	$(CODE_GENERATOR) --type=f90 interface.py MOSSEInterface -o $@
-	
-.f.o: $<                                                                 
-	$(FORTRAN) -c $(F77FLAGS) $(FCFLAGS) -o $@ $< 
-	
-%.o: %.f90
-	$(FORTRAN) $(FFLAGS)  $(FCFLAGS) -c -o $@ $<
-
+.PHONY: distclean
+distclean: clean
+	rm -f support/config.mk support/config.log support/config.status
+	rm -rf support/autom4te.cache
