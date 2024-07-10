@@ -437,7 +437,7 @@ class TestEVtwin(TestWithMPI):
             end_time=2*max_age,
             expected_message=(
                 "Error when calling 'evolve_for' of a "
-                "'<class 'amuse.community.evtwin.interface.EVtwin'>', "
+                "'EVtwin', "
                 "errorcode is 5, error is 'Age greater than maximum "
                 "age limit.'"
             )
