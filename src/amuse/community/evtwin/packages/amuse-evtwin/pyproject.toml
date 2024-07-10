@@ -25,14 +25,14 @@ distance-dirty = "{next_version}.dev{distance}+{vcs}{rev}.d{build_date:%Y%m%d}"
 skip-excluded-dirs = true
 
 [tool.hatch.build.targets.wheel]
-include = ["evtwin/**/*.py", "evtwin/data/"]
+include = ["evtwin/**/*.py"]
 exclude = [
     "evtwin/packages",
     "evtwin/support",
     "evtwin/src",
     "evtwin/tests"
     ]
-artifacts = ["evtwin/evtwin_worker"]
+artifacts = ["evtwin/evtwin_worker", "evtwin/data/"]
 
 [tool.hatch.build.targets.wheel.sources]
 "evtwin" = "amuse/community/evtwin"
