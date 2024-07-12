@@ -3,7 +3,7 @@ from amuse.community.interface.gd import *
 from amuse.community.interface.stopping_conditions import *
 
 
-class HermiteGRXInterface(
+class HermitegrxInterface(
     CodeInterface, GravitationalDynamicsInterface, StoppingConditionInterface
 ):
     include_headers = ["worker_code.h", "stopcond.h"]
@@ -423,11 +423,11 @@ class HermiteGRXInterface(
         return function
 
 
-class HermiteGRX(GravitationalDynamics):
+class Hermitegrx(GravitationalDynamics):
     def __init__(self, convert_nbody=None, **options):
         self.stopping_conditions = StoppingConditions(self)
 
-        legacy_interface = HermiteGRXInterface(**options)
+        legacy_interface = HermitegrxInterface(**options)
         GravitationalDynamics.__init__(self, legacy_interface, convert_nbody, **options)
 
     def define_state(self, object):
@@ -597,3 +597,8 @@ class HermiteGRX(GravitationalDynamics):
         object.add_getter("small_particles", "get_jerk")
 
         self.stopping_conditions.define_particle_set(object)
+
+
+# for backwards compatibility reasons
+HermiteGRXInterface = HermitegrxInterface
+HermiteGRX = Hermitegrx

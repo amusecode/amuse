@@ -21,18 +21,18 @@ jobs:
         java-version: [ '17' ]
     name: Test AMUSE with ${{ matrix.mpi }}
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Setup MPI
       uses: mpi4py/setup-mpi@v1
       with:
         mpi: ${{ matrix.mpi }}
     - name: Set up JDK ${{ matrix.java-version }}
-      uses: actions/setup-java@v3.9.0
+      uses: actions/setup-java@v4
       with:
         distribution: 'zulu' # See 'Supported distributions' for available options
         java-version: ${{ matrix.java-version }}
     - name: Set up Python ${{ matrix.python }}
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: ${{ matrix.python }}
     - name: Install dependencies
@@ -54,11 +54,14 @@ jobs:
       run: |
         amusifier --get-amuse-configmk
         pip list
+    - name: move build log
+      run: |
+        mv build.log build-${{ matrix.mpi }}-${{ matrix.python }}.log
     - name: archive build log
-      uses: actions/upload-artifact@v3.1.1
+      uses: actions/upload-artifact@v4
       with:
-          name: buildlog
-          path: build.log
+          name: buildlog-${{ matrix.python }}-${{ matrix.mpi }}
+          path: build-${{ matrix.mpi }}-${{ matrix.python }}.log
     - name: test seba
       run: |
         pytest --pyargs amuse.test.suite.codes_tests.test_seba -sv
