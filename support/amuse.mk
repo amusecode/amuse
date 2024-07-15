@@ -66,10 +66,10 @@ support/comm_deps_mk/%.mk: src/amuse/community/%
 	@echo >>$@
 	@echo 'ifeq (,$$(MISSING_FEATURES))' >>$@
 	@echo >>$@
-	@echo 'ENABLED_PACKAGES += \\n$(notdir $(patsubst %.amuse_deps,%,$*))' >>$@
+	@echo -e 'ENABLED_PACKAGES += \\n$(notdir $(patsubst %.amuse_deps,%,$*))' >>$@
 	@echo >>$@
 	@echo '%-$(notdir $(patsubst %.amuse_deps,%,$*)):' >>$@
-	@echo '\tmake -C $(dir $<)/..' $$\@ >>$@
+	@echo -e '\tmake -C $(dir $<)/..' $$\@ >>$@
 	@echo >>$@
 	@echo 'develop-packages: develop-$(notdir $(patsubst %.amuse_deps,%,$*))' >>$@
 	@echo >>$@
@@ -77,7 +77,7 @@ support/comm_deps_mk/%.mk: src/amuse/community/%
 	@echo >>$@
 	@echo else >>$@
 	@echo >>$@
-	@echo 'DISABLED_PACKAGES += \\n$(notdir $(patsubst %.amuse_deps,%,$*)) (missing features: $(COLOR_RED)$$(MISSING_FEATURES)$(COLOR_END))' >>$@
+	@echo -e 'DISABLED_PACKAGES += \\n$(notdir $(patsubst %.amuse_deps,%,$*)) (missing features: $(COLOR_RED)$$(MISSING_FEATURES)$(COLOR_END))' >>$@
 	@echo endif >>$@
 
 
