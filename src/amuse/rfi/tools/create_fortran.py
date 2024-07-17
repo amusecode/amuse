@@ -1383,8 +1383,6 @@ class GenerateAFortranSourcecodeStringFromASpecificationClass(GenerateASourcecod
     def start(self):
         self.out + GETSET_WORKING_DIRECTORY.format("")
 
-        self.out + "include 'fortransocketsinterface.f90'"
-
         self.out.n() + 'program amuse_worker_program'
         self.out.indent()
         

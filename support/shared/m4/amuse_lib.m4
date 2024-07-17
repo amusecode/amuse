@@ -16,6 +16,8 @@
 # function: name of a function in the library to use for the link check
 AC_DEFUN([AMUSE_LIB], [
     amuse_save_LIBS="$LIBS"
+    amuse_save_LIB_CFLAGS="$[$1][_CFLAGS]"
+    amuse_save_LIB_LIBS="$[$1][_LIBS]"
 
     # All AMUSE libs export C symbols
     AC_LANG_PUSH([C])
@@ -31,6 +33,24 @@ AC_DEFUN([AMUSE_LIB], [
     AC_LANG_POP([C])
 
     LIBS="$amuse_save_LIBS"
+
+    # If we have an active CONDA environment, assume that the lib is coming from
+    # there and add an additional flag so that .mod files can be found. Only really
+    # needed for stopcond, and hopefully conda-forge will give us a better solution
+    # soon.
+    if test "x$CONDA_PREFIX" != "x"
+    then
+        $1_CFLAGS="${$1_CFLAGS} -I${CONDA_PREFIX}/include"
+    fi
+
+    # If the user overrode the variables, go with what they set instead of
+    # what we just detected.
+    AS_IF([test "x$amuse_save_LIB_CFLAGS" != "x"], [
+        $1_CFLAGS="$amuse_save_LIB_CFLAGS"
+    ])
+    AS_IF([test "x$amuse_save_LIB_LIBS" != "x"], [
+        $1_LIBS="$amuse_save_LIB_LIBS"
+    ])
 
     AC_SUBST([$1][_CFLAGS])
     AC_SUBST([$1][_LIBS])

@@ -1,6 +1,6 @@
 # Main targets
 .PHONY: all
-all: $(DYNAMIC_LIB) $(DYNAMIC_LIB_MPI)
+all: $(HEADERS) $(DYNAMIC_LIB) $(DYNAMIC_LIB_MPI)
 
 .DEFAULT_GOAL := all
 
@@ -59,6 +59,9 @@ $(DYNAMIC_LIB): $(OBJS)
 %.o: %.c
 	$(CC) $(CFLAGS) -c -o $@ $<
 
+%.o %.mod &: %.f90
+	$(FC) $(FCFLAGS) -c -o $*.o $<
+
 $(PKG_CONFIG_FILE):
 	$(file >$@,$(PKG_CONFIG_CONTENTS))
 
@@ -70,6 +73,9 @@ endif
 
 %.mo: %.c
 	$(MPICC) $(CFLAGS) $(CFLAGS_MPI) -c -o $@ $<
+
+%.mo %.mod &: %.f90
+	$(MPIFC) $(FCFLAGS) $(CFLAGS_MPI) -c -o $*.mo $<
 
 $(PKG_CONFIG_FILE_MPI):
 	$(file >$@,$(PKG_CONFIG_CONTENTS_MPI))

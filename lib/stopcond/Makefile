@@ -2,7 +2,7 @@
 include support/shared/lib-configure.mk
 
 
-HEADERS = stopcond.h stopcond.inc stoppingconditions.f90
+HEADERS = stopcond.h stopcond.inc stoppingconditions.mod
 DYNAMIC_LIB = libstopcond.so
 PKG_CONFIG_FILE = stopcond.pc
 
@@ -12,8 +12,8 @@ PKG_CONFIG_FILE_MPI = stopcondmpi.pc
 CFLAGS_MPI += -DMPILIB
 FCFLAGS_MPI += -DMPILIB
 
-OBJS = stopcond.o
-OBJS_MPI = stopcond.mo
+OBJS = stopcond.o stoppingconditions.o
+OBJS_MPI = stopcond.mo stoppingconditions.mo
 
 
 # Define the pkg-config file

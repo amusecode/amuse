@@ -2,7 +2,7 @@
 include support/shared/lib-configure.mk
 
 
-HEADERS = forsockets.h fortransocketsinterface.f90
+HEADERS = forsockets.h fortransocketsinterface.mod
 DYNAMIC_LIB = libforsockets.so
 PKG_CONFIG_FILE = forsockets.pc
 

@@ -13,3 +13,4 @@
 
 m4_ifndef([AC_CONFIG_MACRO_DIRS], [m4_defun([_AM_CONFIG_MACRO_DIRS], [])m4_defun([AC_CONFIG_MACRO_DIRS], [_AM_CONFIG_MACRO_DIRS($@)])])
 m4_include([shared/m4/amuse_detect_os.m4])
+m4_include([shared/m4/fortran.m4])
