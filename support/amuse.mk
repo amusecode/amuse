@@ -57,28 +57,28 @@ include $(COMM_DEPS_MK)
 support/comm_deps_mk/%.mk: src/amuse/community/%
 	@mkdir -p $(dir $@)
 	@rm -f $@
-	@echo include support/format.mk >>$@
-	@echo >>$@
-	@echo PACKAGE_NAME = $(notdir $(patsubst %.amuse_deps,%,$*)) >>$@
-	@echo >>$@
-	@echo 'REQUIRED_FEATURES := $(shell cat $<)' >>$@
-	@echo 'MISSING_FEATURES := $$(filter-out $$(FEATURES), $$(REQUIRED_FEATURES))' >>$@
-	@echo >>$@
-	@echo 'ifeq (,$$(MISSING_FEATURES))' >>$@
-	@echo >>$@
-	@echo -e 'ENABLED_PACKAGES += \\n$(notdir $(patsubst %.amuse_deps,%,$*))' >>$@
-	@echo >>$@
-	@echo '%-$(notdir $(patsubst %.amuse_deps,%,$*)):' >>$@
-	@echo -e '\tmake -C $(dir $<)/..' $$\@ >>$@
-	@echo >>$@
-	@echo 'develop-packages: develop-$(notdir $(patsubst %.amuse_deps,%,$*))' >>$@
-	@echo >>$@
-	@echo 'install-packages: install-$(notdir $(patsubst %.amuse_deps,%,$*))' >>$@
-	@echo >>$@
-	@echo else >>$@
-	@echo >>$@
-	@echo -e 'DISABLED_PACKAGES += \\n$(notdir $(patsubst %.amuse_deps,%,$*)) (missing features: $(COLOR_RED)$$(MISSING_FEATURES)$(COLOR_END))' >>$@
-	@echo endif >>$@
+	@printf '%s\n' 'include support/format.mk' >>$@
+	@printf '\n' >>$@
+	@printf '%s\n' 'PACKAGE_NAME = $(notdir $(patsubst %.amuse_deps,%,$*))' >>$@
+	@printf '\n' >>$@
+	@printf '%s\n' 'REQUIRED_FEATURES := $(shell cat $<)' >>$@
+	@printf '%s\n' 'MISSING_FEATURES := $$(filter-out $$(FEATURES), $$(REQUIRED_FEATURES))' >>$@
+	@printf '\n' >>$@
+	@printf '%s\n' 'ifeq (,$$(MISSING_FEATURES))' >>$@
+	@printf '\n' >>$@
+	@printf '%s\n' 'ENABLED_PACKAGES += \n$(notdir $(patsubst %.amuse_deps,%,$*))' >>$@
+	@printf '\n' >>$@
+	@printf '%s\n' '%-$(notdir $(patsubst %.amuse_deps,%,$*)):' >>$@
+	@printf '\t%s\n' 'make -C $(dir $<)/.. $$@' >>$@
+	@printf '\n' >>$@
+	@printf '%s\n' 'develop-packages: develop-$(notdir $(patsubst %.amuse_deps,%,$*))' >>$@
+	@printf '\n' >>$@
+	@printf '%s\n' 'install-packages: install-$(notdir $(patsubst %.amuse_deps,%,$*))' >>$@
+	@printf '\n' >>$@
+	@printf '%s\n' 'else' >>$@
+	@printf '\n' >>$@
+	@printf '%s\n' 'DISABLED_PACKAGES += \n$(notdir $(patsubst %.amuse_deps,%,$*)) (missing features: $(COLOR_RED)$$(MISSING_FEATURES)$(COLOR_END))' >>$@
+	@printf '%s\n' 'endif' >>$@
 
 
 endif               # target is not clean or distclean
