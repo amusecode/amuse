@@ -60,9 +60,9 @@ class FiInterface(
         if mode == self.MODE_NORMAL:
             return 'fi_worker'
         elif mode == self.MODE_NORMAL_OPENMP:
-            return 'fi_worker_mp'
+            return 'fi_mp_worker'
         elif mode == self.MODE_PERIODIC_BOUNDARIES:
-            return 'fi_worker_periodic'
+            return 'fi_periodic_worker'
         else:
             return 'fi_worker'
     
@@ -3373,11 +3373,11 @@ class FiMapInterface(CodeInterface):
                      
     def name_of_the_worker(self, mode):
         if mode == self.MODE_NORMAL:
-            return 'fi_worker_map'
+            return 'fi_map_worker'
         elif mode == self.MODE_NORMAL_OPENMP:
-            return 'fi_worker_map_mp'
+            return 'fi_map_mp_worker'
         else:
-            return 'fi_worker_map'
+            return 'fi_map_worker'
   
     @legacy_function    
     def initialize_code():

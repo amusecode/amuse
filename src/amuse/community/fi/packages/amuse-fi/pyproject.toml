@@ -1,0 +1,49 @@
+[project]
+name = "amuse-fi"
+dynamic = ["version"]
+requires-python = ">=3.7"
+dependencies = [
+    "amuse-framework"
+]
+
+[build-system]
+requires = ["hatchling", "versioningit"]
+build-backend = "hatchling.build"
+
+[tool.hatch.version]
+source = "versioningit"
+
+[tool.versioningit.next-version]
+method = "smallest"
+
+[tool.versioningit.format]
+distance = "{next_version}.dev{distance}+{vcs}{rev}"
+dirty = "{base_version}+d{build_date:%Y%m%d}"
+distance-dirty = "{next_version}.dev{distance}+{vcs}{rev}.d{build_date:%Y%m%d}"
+
+[tool.hatch.build]
+skip-excluded-dirs = true
+
+[tool.hatch.build.targets.wheel]
+include = ["fi/**/*.py", "fi/data"]
+exclude = [
+    "fi/packages",
+    "fi/support",
+    "fi/src",
+    "fi/tests"
+    ]
+artifacts = [
+    "fi/fi_worker",
+    "fi/fi_map_worker",
+    "fi/fi_map_mp_worker",
+    "fi/fi_periodic_worker",
+    "fi/fi_mp_worker"]
+
+[tool.hatch.build.targets.wheel.sources]
+"fi" = "amuse/community/fi"
+
+[tool.pytest.ini_options]
+pythonpath = ["fi/tests/", "../../../../../tests"]
+
+testpaths = ["fi/tests"]
+

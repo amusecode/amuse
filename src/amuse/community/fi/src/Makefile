@@ -1,9 +1,4 @@
 ## makefile for treesph code
-AMUSE_DIR?=../../../../..
--include ${AMUSE_DIR}/config.mk
-
-SCINC ?= -I$(AMUSE_DIR)/lib/stopcond
-
 FC=ifort
 F2PY=f2py
 PIC=
