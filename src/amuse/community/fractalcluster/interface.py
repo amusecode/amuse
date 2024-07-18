@@ -20,7 +20,7 @@ class FractalClusterInterface(CodeInterface,  LiteratureReferencesMixIn):
         LiteratureReferencesMixIn.__init__(self)
 
     def name_of_the_worker(self):
-        return 'fractal_worker'
+        return 'fractalcluster_worker'
 
     @legacy_function
     def get_state():

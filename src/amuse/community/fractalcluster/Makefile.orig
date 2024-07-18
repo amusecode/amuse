@@ -1,0 +1,57 @@
+# standard amuse configuration include
+# config.mk will be made after ./configure has run
+ifeq ($(origin AMUSE_DIR), undefined)
+  AMUSE_DIR := $(shell amusifier --get-amuse-dir)
+endif
+-include ${AMUSE_DIR}/config.mk
+
+MPIFC ?= mpif90
+MPIF90 ?= $(MPIFC)
+FC ?= gfortran
+FORTRAN ?= $(FC)
+
+SRC=src
+
+
+LIBS+=$(SRC)/libfractal.a
+
+PIC=#-fPIC
+
+# check for gfortran, this catches link and compiler wrappers
+ifeq ($(findstring GNU, $(shell $(FORTRAN) --version)), GNU)
+FFLAGS= $(FCFLAGS) -fdefault-real-8 -cpp -O3
+endif
+
+ifeq ($(findstring ifort, $(notdir $(FORTRAN))), ifort)
+IFORTFLAGS= -r8 -u
+FFLAGS= $(FCFLAGS) $(IFORTFLAGS) -O2 
+endif
+
+FFLAGS2= -I./src/
+
+CLASSNAME=FractalClusterInterface
+
+all: fractal_worker
+
+%.o: %.f90 Makefile
+	$(FC) $(FFLAGS) $(FFLAGS2)  -c -o $@ $<
+
+%.o: %.F90 Makefile
+	$(FC) $(FFLAGS) $(FFLAGS2) -c -o $@ $<
+
+fractal_worker: fractal_worker.f90 interface.o
+	$(MPIF90) $(FFLAGS) $(FFLAGS2) $(FS_FLAGS) $(LDFLAGS) $^ -o $@ $(LIBS) $(FS_LIBS)  $(LIBS)
+
+fractal_worker.f90: interface.py
+	make -C src amuse_interface FFLAGS="$(FFLAGS)" FC="$(FC)"
+	$(CODE_GENERATOR) --type=f90 $< $(CLASSNAME) -o $@
+
+clean:
+	make -C src clean
+	$(RM) -f *.o *.pyc *.bck
+	$(RM) -f fractal_worker fractal_worker.f90
+	$(RM) -f fractal_worker_sockets fractal_worker-sockets.f90
+	$(RM) -f forsockets.mod
+	$(RM) -f amuse_worker_module.mod
+	$(RM) -f src/lib*.a
+
