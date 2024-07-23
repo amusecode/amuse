@@ -280,13 +280,9 @@ src/amuse/community/sakura/sakura_worker
 src/amuse/community/sakura/src/main.exe
 src/amuse/community/sakura/worker_code.cc
 src/amuse/community/sakura/worker_code.h
-src/amuse/community/seba/src/Makefile.inc
 src/amuse/community/seba/worker_code.cc
 src/amuse/community/seba/worker_code.h
 src/amuse/community/seba/seba_worker
-src/amuse/community/seba/src/dstar/Makefile.inc
-src/amuse/community/seba/src/rdc/Makefile.inc
-src/amuse/community/seba/src/starev
 src/amuse/community/sei/sei_worker
 src/amuse/community/sei/worker_code.cc
 src/amuse/community/sei/worker_code.h
@@ -364,9 +360,6 @@ src/amuse/community/kepler/kepler_worker_cython
 src/amuse/community/rebound/rebound_cython.cc
 src/amuse/community/rebound/rebound_cython.pyx
 src/amuse/community/rebound/rebound_worker_cython
-src/amuse/community/seba/seba_cython.cc
-src/amuse/community/seba/seba_cython.pyx
-src/amuse/community/seba/seba_worker_cython
 src/amuse/community/bhtree/bhtree_cython.c
 src/amuse/community/bhtree/bhtree_cython.pyx
 src/amuse/community/bhtree/bhtree_worker_cython
