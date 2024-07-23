@@ -21,7 +21,7 @@ then
     # we assume that the conda metadata is correct, and that if it isn't there's
     # an expert packages who can fix things.
     AS_ECHO(["Conda package build detected, skipping checks for dependencies."])
-    ASSUME_FEATURES="c c++ fortran java python cmake install download mpi openmp cuda opencl blas lapack gsl gmp mpfr fftw hdf5 netcdf4"
+    ASSUME_FEATURES="c c++ fortran java python cmake install download mpi openmp cuda opencl blas lapack gsl gmp mpfr fftw hdf5 netcdf4 sapporo_light"
 
 elif test "x" != "x$CONDA_DEFAULT_ENV"
 then
@@ -29,6 +29,11 @@ then
     AS_ECHO(['    Conda environment active, dependencies will be searched in Conda only,'])
     AS_ECHO(['    and must be installed via Conda to be detected.'])
     AS_ECHO([])
+
+    # Doesn't have a conda package yet, and needs to go before the compiler checks
+    # below because they mess up CC.
+    # AX_CONDA_PACKAGE(SAPPORO_LIGHT_LIBS, sapporo_light)
+    AMUSE_LIB_SAPPORO_LIGHT()
 
     AX_CONDA_LIST()
 
@@ -60,7 +65,6 @@ then
     AX_CONDA_PACKAGE(FOUND_FFTW, fftw)
     AX_CONDA_PACKAGE(with_hdf5, hdf5)
     AX_CONDA_PACKAGE(FOUND_NETCDF, netcdf4)
-    AX_CONDA_PACKAGE(SAPPORO_LIGHT_LIBS, sapporo_light)
 
     # Export conda list output so make doesn't have to rerun it to detect pip and wheel
     CONDA_LIST="$ax_conda_list"
@@ -151,7 +155,7 @@ ENABLE_FEATURE_IF_EQUALS([mpfr], [FOUND_MPFR], [yes])
 ENABLE_FEATURE_IF_EQUALS([fftw], [FOUND_FFTW], [yes])
 ENABLE_FEATURE_IF_DEFINED([hdf5], [HDF5_VERSION])
 ENABLE_FEATURE_IF_EQUALS([netcdf4], [FOUND_NETCDF], [yes])
-ENABLE_FEATURE_IF_DEFINED([sapporo_light], [SAPPORO_LIGHT_LIBS])
+ENABLE_FEATURE_IF_EQUALS([sapporo_light], [FOUND_SAPPORO_LIGHT], [yes])
 
 AC_SUBST(FEATURES)
 
