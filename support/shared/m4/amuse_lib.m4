@@ -24,10 +24,15 @@ AC_DEFUN([AMUSE_LIB], [
 
     # Search for the library, first directly then fall back to pkg-config
     AC_SEARCH_LIBS([$4], [$3], [
+        FOUND_$1="yes"
         $1_LIBS="$LIBS"
         $1_CFLAGS=""
     ], [
-        PKG_CHECK_MODULES([$1], [$2])
+        PKG_CHECK_MODULES([$1], [$2], [
+            FOUND_$1="yes"
+        ], [
+            FOUND_$1="no"
+        ])
     ])
 
     AC_LANG_POP([C])
@@ -38,7 +43,7 @@ AC_DEFUN([AMUSE_LIB], [
     # there and add an additional flag so that .mod files can be found. Only really
     # needed for stopcond, and hopefully conda-forge will give us a better solution
     # soon.
-    if test "x$CONDA_PREFIX" != "x"
+    if test "${FOUND_$1}" == "yes" -a "x$CONDA_PREFIX" != "x"
     then
         $1_CFLAGS="${$1_CFLAGS} -I${CONDA_PREFIX}/include"
     fi
@@ -52,6 +57,7 @@ AC_DEFUN([AMUSE_LIB], [
         $1_LIBS="$amuse_save_LIB_LIBS"
     ])
 
+    AC_SUBST([FOUND_][$1])
     AC_SUBST([$1][_CFLAGS])
     AC_SUBST([$1][_LIBS])
 ])
