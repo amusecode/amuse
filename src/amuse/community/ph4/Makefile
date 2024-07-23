@@ -1,83 +1,80 @@
-
-# Makefile to build the worker code.  First draft was auto-generated;
-# subsequent versions are hand-coded, so save a copy.  Note that
-# all compiles must use MPICXX, not CXX.
-
-# standard amuse configuration include
-# config.mk will be made after ./configure has run
-ifeq ($(origin AMUSE_DIR), undefined)
-  AMUSE_DIR := $(shell amusifier --get-amuse-dir)
+ifneq (,$(filter-out clean distclean, $(MAKECMDGOALS)))
+include support/config.mk
 endif
--include ${AMUSE_DIR}/config.mk
 
-ALL	 = ph4_worker # ph4_worker_gpu
-OPT	  = -I$(AMUSE_DIR)/lib/stopcond
 
-MPICXX   ?= mpicxx
+# Detecting dependencies
+support/config.mk:
+	cd support && ./configure
 
-CFLAGS   += -Wall -g -O2 $(OPT)
-CXXFLAGS += $(CFLAGS) 
-LDFLAGS  += -L$(AMUSE_DIR)/lib/stopcond -lstopcond -lm $(MUSE_LD_FLAGS)
 
-CUDA_TK  ?= /usr/local/cuda
-
-SAPPORO_LIBDIRS ?= -L$(AMUSE_DIR)/lib/sapporo_light
-SAPPORO_LIBS ?= $(SAPPORO_LIBDIRS) -lsapporo
-
-# Boost is needed by sapporo.
-
-BOOSTLIBS ?= -L/opt/local/lib -lboost_thread-mt
-
-CUDA_LIBDIRS ?= -L$(CUDA_TK)/lib -L$(CUDA_TK)/lib64
-CUDA_LIBS ?= $(CUDA_LIBDIRS) -lcudart
-
-LDFLAGS_GPU =	$(LDFLAGS) \
-		$(SAPPORO_LIBS) \
-		$(CUDA_LIBS) \
-		$(BOOSTLIBS)
-
-OBJS = interface.o
+# Building the code into a static library
+CFLAGS += $(STOPCOND_CFLAGS)
+LDLIBS += -lm $(STOPCOND_LIBS) 
 
 CODELIB = src/libph4.a
+CODELIB_SAPPORO = src/libph4gpu.a
 
-CODELIB_GPU = src/libph4gpu.a
-
-
-AMUSE_DIR ?= ../../../..
-
-
-all: $(ALL)
-
-save:
-	@ for f in Makefile interface.py interface.cc src/Makefile; do \
-		cp -p $$f $$f.save; done
 
 $(CODELIB):
-	make -C src all CXX='$(MPICXX)'
+	$(MAKE) -C src -j $(CPU_COUNT) all CXX='$(MPICXX)'
 
-$(CODELIB_GPU):
-	make -C src gpulib CXX=$(MPICXX)
+$(CODELIB_SAPPORO):
+	$(MAKE) -C src -j $(CPU_COUNT) gpulib CXX='$(MPICXX)' SAPPORO_LIBDIRS='$(SAPPORO_LIGHT_CFLAGS)' SAPPORO_LIBS='$(SAPPORO_LIGHT_LIBS)'
 
-worker_code.cc: interface.py
-	$(CODE_GENERATOR) --type=c interface.py ph4Interface -o $@
 
-interface.h: interface.py
-	$(CODE_GENERATOR) --type=h  -i amuse.community.interface.stopping_conditions.StoppingConditionInterface interface.py ph4Interface -o $@
+# Building the workers
 
-ph4_worker: worker_code.cc interface.h $(CODELIB) $(OBJS)
-	$(MPICXX) $(CXXFLAGS) $(LDFLAGS) worker_code.cc $(OBJS) $(CODELIB) -o $@ $(CODELIB) $(LDFLAGS)  $(LIBS)
+ph4_worker.h: interface.py
+	amusifier --type=h interface.py ph4Interface -o $@
 
-ph4_worker_gpu: worker_code.cc interface.h $(CODELIB_GPU) $(OBJS)
-	$(MPICXX) $(CXXFLAGS) worker_code.cc $(OBJS) $(CODELIB_GPU) -o $@ $(LDFLAGS_GPU) -DGPU  $(LIBS)
+ph4_worker.cc: interface.py
+	amusifier --type=c interface.py ph4Interface -o $@
+
+ph4_worker.o: ph4_worker.cc ph4_worker.h
+	$(MPICXX) -c -o $@ $(CFLAGS) $<
+
+ph4_worker: ph4_worker.o interface.o $(CODELIB)
+	$(MPICXX) -o $@ $(LDFLAGS) $^ $(LDLIBS)
+
+ph4_sapporo_worker: ph4_worker.o interface.o $(CODELIB_SAPPORO)
+	$(MPICXX) -o $@ $(LDFLAGS) $^ $(LDLIBS) $(SAPPORO_LIGHT_LIBS)
 
 %.o: %.cc
-	$(MPICXX) $(CXXFLAGS) -c -o $@ $< 
+	$(MPICXX) -o $@ -c $(CFLAGS) $<
 
-wclean:
-	$(RM) -r -f *.so *.dSYM *.o *.mpio *.pyc worker_code.cc interface.h 
-	$(RM) -f *~ ph4_worker ph4_worker_gpu ph4_worker_sockets ph4_worker_gpu_sockets
-	$(RM) -f worker_code.cc worker_code-sockets.cc
 
+# Which packages contain which workers?
+amuse-ph4_contains: ph4_worker
+
+amuse-ph4-sapporo_contains: ph4_sapporo_worker
+
+
+# Building and installing packages
+develop-%: %_contains
+	support/shared/uninstall.sh $*
+	python -m pip install -e packages/$*
+
+install-%: %_contains
+	support/shared/uninstall.sh $*
+	python -m pip install packages/$*
+
+package-%: %_contains
+	python3 -m pip install -vv --no-cache-dir --no-deps --no-build-isolation --prefix ${PREFIX} packages/$*
+
+test-%:
+	cd packages/$* && pytest
+
+
+# Cleaning up
+.PHONY: clean
 clean:
-	make wclean
-	make -C src clean
+	$(MAKE) -C src clean
+	rm -rf *.o *worker*
+
+.PHONY: distclean
+distclean: clean
+	$(MAKE) -C src clean
+	rm -f support/config.mk support/config.log support/config.status
+	rm -rf support/autom4te.cache
+
