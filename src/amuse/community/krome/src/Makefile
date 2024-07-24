@@ -9,15 +9,7 @@ LIBFILES= $(OBJECTS) hash.o amuse_helpers.o
 KROME_OPTIONS=-unsafe -iRHS -n networks/react_COthin -useN -clean -noVerbatimFile
 #  -compact
 
-ifeq ($(findstring ifort, $(notdir $(FORTRAN))), ifort)
-AR=xiar cru
-else
-AR=ar crs
-endif
-
-ifeq ($(findstring gfortran, $(notdir $(FORTRAN))), gfortran)
-FFLAGS += -ffree-line-length-none
-endif
+FFLAGS += -ffree-line-length-none -fallow-argument-mismatch
 
 amuse_interface:  libchem.a
 
@@ -25,16 +17,13 @@ test:
 
 # note the hard change of fortran compiler and options
 krome/build/krome:
-	-(cd krome; ./krome $(KROME_OPTIONS) )
-	cd ..
-	sed -i.bak 's/^fc *=.*/fc = $(FC)/' krome/build/Makefile
-	sed -i.bak 's_^switch *= .*_switch = $(FFLAGS)_' krome/build/Makefile
-	make -C krome/build/
+	cd krome && ./krome $(KROME_OPTIONS)
+	$(MAKE) -C krome/build/ fc="$(FC)" switch="$(FFLAGS)"
 
 libchem.a: krome/build/krome hash.o amuse_helpers.o
-	$(AR) $@ $(filter-out krome/build/test.o, $(wildcard krome/build/*.o)) hash.o amuse_helpers.o
+	$(AR) crs $@ $(filter-out krome/build/test.o, $(wildcard krome/build/*.o)) hash.o amuse_helpers.o
 
-%.o: %.f90
+%.o: %.f90 krome/build/krome
 	$(FC) $(FFLAGS) -Ikrome/build/ -c -o $@ $<
 
 clean:
