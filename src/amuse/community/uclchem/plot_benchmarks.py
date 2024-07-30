@@ -2,10 +2,10 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
 
-uclchem_data = pd.read_table('static-full.dat', skiprows=2, sep=',')
+uclchem_data = pd.read_table('phase1-full.dat', skiprows=2, sep=',')
 uclchem_data = uclchem_data.rename(columns=lambda x: x.strip())
 
-static_cloud_data =pd.read_table('static_cloud_benchmark.dat', sep=',')
+static_cloud_data =pd.read_table('freefall_benchmark.dat', sep=',')
 static_cloud_data = static_cloud_data.rename(columns=lambda x: x.strip())
 
 plt.plot(static_cloud_data['time'],static_cloud_data['H'], color='b', label='H')
@@ -28,7 +28,7 @@ plt.plot(uclchem_data['Time'], uclchem_data['#CO']+uclchem_data['@CO'],color='pu
 plt.plot(uclchem_data['Time'], uclchem_data['@CH3OH']+uclchem_data['#CH3OH'],color='grey',linestyle='dashed')
 plt.plot(uclchem_data['Time'], uclchem_data['CH3OH'],linestyle='dashed', color='brown')
 
-plt.title('Static Cloud')
+plt.title('Cloud in Freefall')
 plt.xlabel('Time (yr)') 
 plt.ylabel('Abundances')
 plt.xscale('log')
@@ -36,6 +36,10 @@ plt.yscale('log')
 plt.legend()
 plt.xlim(10,5e6)
 plt.ylim(1e-15)
-plt.savefig('static_cloud_zoom.pdf')
+plt.savefig('freefall_zoom.pdf')
 plt.show()
 plt.close()
+
+plt.plot(static_cloud_data['time'], static_cloud_data['density'])
+plt.plot(uclchem_data['Time'], uclchem_data['Density'],linestyle='dashed')
+plt.show()
