@@ -177,26 +177,28 @@ class UCLchem(CommonCode):
 
 
     def _build_dict(self, tend):
-        dictionary = dict()
+        dictionary_list = []
         outSpecies = self.out_species
         attributes = self.particles.get_attribute_names_defined_in_store()
         #print(self.particles[0])
-        if 'temperature' in attributes:
-            dictionary['initialTemp'] = self.particles.temperature.value_in(units.K)[0]
-        if 'number_density' in attributes:
-            dictionary['initialDens'] = self.particles.number_density.value_in(units.cm**-3)[0]
-        if 'ionrate' in attributes:
-            dictionary['zeta'] = self.particles.ionrate.value_in(units.cr_ion)[0]
-        if 'radfield' in attributes:
-            print('here')
-            dictionary['radfield'] = self.particles.radfield.value_in(units.habing)[0]
-        print(tend)
-        print(self.uclchem_time)
-        dictionary['finalTime'] = tend.value_in(units.yr)-self.uclchem_time.value_in(units.yr)
-        #dictionary['currentTime'] = self.uclchem_time
-        _, dictionary, outSpecies = self._reform_inputs(dictionary, outSpecies)
-        #print(dictionary, outSpecies)
-        return str(dictionary), str(outSpecies)
+        for i in range(len(self.particles.key)):
+            dictionary = dict()
+            if 'temperature' in attributes:
+                dictionary['initialTemp'] = self.particles.temperature.value_in(units.K)[i]
+            if 'number_density' in attributes:
+                dictionary['initialDens'] = self.particles.number_density.value_in(units.cm**-3)[i]
+            if 'ionrate' in attributes:
+                dictionary['zeta'] = self.particles.ionrate.value_in(units.cr_ion)[i]
+            if 'radfield' in attributes:
+                print('here')
+                dictionary['radfield'] = self.particles.radfield.value_in(units.habing)[i]
+            dictionary['finalTime'] = tend.value_in(units.yr)-self.uclchem_time.value_in(units.yr)
+            #dictionary['currentTime'] = self.uclchem_time
+            _, dictionary, outSpecies = self._reform_inputs(dictionary, outSpecies)
+            #print(dictionary, outSpecies)
+            dictionary_list.append(str(dictionary))
+        print(dictionary_list)
+        return dictionary_list, str(outSpecies)
     
     def define_parameters(self, handler):
         handler.add_interface_parameter(

@@ -107,7 +107,8 @@
   function run_model(dictionary, out_species) result(ret)
     use uclchemhelper
     integer :: ret 
-    character(len=*) :: dictionary, out_species
+    character(len=*) :: out_species
+    character(len=*) :: dictionary(nparticle)
     ret=simple_evolution(dictionary, out_species)
   end function
   

@@ -1,14 +1,18 @@
-from interface import Uclchem
+from interface import UCLchem
 from amuse.datamodel import Particles
 from amuse.units import units
 
-chem = Uclchem()
-particles = Particles(1)
-particles.number_density = 1.0e2 | units.cm**-3
-particles.temperature = 20 | units.K
-particles.ionrate = 10**-16 | units.s**-1
-particles.radfield = 1.5 | units.habing
+chem = UCLchem()
+particles = Particles(2)
+particles[0].number_density = 1.0e2 | units.cm**-3
+particles[0].temperature = 20 | units.K
+particles[0].ionrate = 10**-16 | units.s**-1
+particles[0].radfield = 1.5 | units.habing
 
+particles[1].number_density = 1.0e3 | units.cm**-3
+particles[1].temperature = 10 | units.K
+particles[1].ionrate = 5*10**-16 | units.s**-1
+particles[1].radfield = 3 | units.habing
 print(particles)
 chem.out_species = ['H','H2', '@H2']
 

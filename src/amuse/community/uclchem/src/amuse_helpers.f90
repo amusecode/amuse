@@ -266,15 +266,14 @@ CONTAINS
     function simple_evolution(dictionary, outSpeciesIn) result(ret)
         integer :: ret
         integer :: i, iret
-        CHARACTER(LEN=*) :: dictionary
+        CHARACTER(LEN=*) :: dictionary(:)
         CHARACTER(LEN=*) :: outSpeciesIn
 
         ret = 0
         INCLUDE 'defaultparameters.f90'
-        !Read input parameters from the dictionary
-        CALL dictionaryParser(dictionary, outSpeciesIn,ret)
-        !print *, currentTime
         do i=1,nparticle
+            print *, dictionary(i)
+            CALL dictionaryParser(dictionary(i), outSpeciesIn,ret)
             iret = evolve_1_particle(particles(i))
             ret = min(iret,ret)
         enddo
@@ -303,7 +302,7 @@ CONTAINS
             &((.not. endAtFinalDensity) .and. (timeInYears < finalTime)))
             write(*,*) currentTime, density, gasTemp
             currentTimeold=currentTime
-            !print *, timeInYears
+            print *, timeInYears
             !Each physics module has a subroutine to set the target time from the current time
             CALL updateTargetTime
             !loop over parcels, counting from centre out to edge of cloud
