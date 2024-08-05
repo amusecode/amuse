@@ -1,34 +1,57 @@
-# standard amuse configuration include
-# config.mk will be made after ./configure has run
-ifeq ($(origin AMUSE_DIR), undefined)
-  AMUSE_DIR := $(shell amusifier --get-amuse-dir)
+ifneq (,$(filter-out clean distclean, $(MAKECMDGOALS)))
+include support/config.mk
 endif
--include ${AMUSE_DIR}/config.mk
-
-MPIFC ?= mpif90
-FC ?= gfortran
-
-FSLIB ?= -L$(AMUSE_DIR)/lib/forsockets -lforsockets 
-FSINC ?= -I$(AMUSE_DIR)/lib/forsockets
 
 
-OBJ	= interface.o
+# Detecting dependencies
+support/config.mk:
+	cd support && ./configure
 
-all:    GalaxyModel_worker
+# Building the code into a static library
+FFLAGS += $(FORSOCKETS_CFLAGS)
+LDLIBS += $(FORSOCKETS_LIBS)
 
+LDLIBS += $(LAPACK_LIBS) $(BLAS_LIBS)
+
+# Building the workers
+interface.o: interface.f90
+	$(FC) $(FFLAGS) $(LDLIBS) -c -o $@ $<
+
+galaxia_worker.f90: interface.py
+	amusifier --type=f90 interface.py BarAndSpiralsInterface -o $@
+
+galaxia_worker.o: galaxia_worker.f90
+	$(MPIFC) -c $(FFLAGS) $<
+
+galaxia_worker: galaxia_worker.o interface.o
+	$(MPIFC) -o $@ $(LDFLAGS) $^ $(LDLIBS)
+
+# Which packages contain which workers?
+amuse-galaxia_contains: galaxia_worker
+
+
+# Building and installing packages
+develop-%: %_contains
+	support/shared/uninstall.sh $*
+	python -m pip install -e packages/$*
+
+install-%: %_contains
+	support/shared/uninstall.sh $*
+	python -m pip install packages/$*
+
+package-%: %_contains
+	python3 -m pip install -vv --no-cache-dir --no-deps --no-build-isolation --prefix ${PREFIX} packages/$*
+
+test-%:
+	cd packages/$* && pytest
+
+
+# Cleaning up
+.PHONY: clean
 clean:
-	rm -f  *~ *.pyc *.mod *.o GalaxyModel_worker worker_code.f90
+	rm -rf *.o *worker*
 
-
-$(OBJ): interface.f90
-	$(FC) -c $(FCFLAGS) -o $@ $< 
-
-GalaxyModel_worker:	worker_code.f90  $(OBJ)
-	$(MPIFC) $(FCFLAGS) $(FS_FLAGS) $^ -o $@  $(FS_LIBS) $(LAPACK_LIBS) $(BLAS_LIBS)
-
-.f90.o: $<
-	$(FC) -c $(FCFLAGS) -o $@ $< 
-
-worker_code.f90: interface.py
-	$(CODE_GENERATOR) --type=f90 interface.py  BarAndSpiralsInterface -o $@
-
+.PHONY: distclean
+distclean: clean
+	rm -f support/config.mk support/config.log support/config.status
+	rm -rf support/autom4te.cache
