@@ -1,7 +1,5 @@
 #!/bin/bash
 
--include ${AMUSE_DIR}/config.mk
-
 # NOTE: MESA is no longer supported on 32-bit systems.  This isn't by design;
 # we simply haven't been able to get it to work!  So if you really-really want 
 # to use an antique 32-bit system for mesa, you'll have to try to make it work yourself.
@@ -176,11 +174,7 @@ USE_HDF5 = YES
 
 
 # step 6) now do the mesa install
-ifeq ($(OPENMP_ENABLED), yes)
 USE_OPENMP = YES
-else
-USE_OPENMP = NO
-endif
 
 # step 7) Build shared libraries? Needed if you want mesa to be usable in python
 
@@ -417,7 +411,7 @@ CP_IF_NEWER = $(MESA_DIR)/utils/cp_if_newer
 
 # makedepf90 invocation (depends on whether we have the SDK2-patched version that
 # supports the -X flag)
-ifneq ($(shell src/makedepf90 -V | grep sdk2),)
+ifneq ($(shell $(MESA_DIR)/utils/makedepf90-2.8.8/makedepf90 -V | grep sdk2),)
     MAKEDEPF90_IGNORE_MODS = intrinsic omp_lib iso_c_binding iso_fortran_env ieee_arithmetic crmath hdf5
     MAKEDEPF90 := $(MESA_DIR)/utils/makedepf90-2.8.8/makedepf90 -m %m.mod -X $(addprefix -u,$(MAKEDEPF90_IGNORE_MODS))
 else

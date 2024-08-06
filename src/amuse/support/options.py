@@ -67,7 +67,7 @@ class GlobalOptions(object):
 
     @late
     def amuse_rootdirectory(self):
-        this = os.path.dirname(os.path.dirname(__file__))
+        this = os.path.dirname(__file__)
         return os.path.abspath(os.path.join(this, "..", "..", ".."))
 
     @late

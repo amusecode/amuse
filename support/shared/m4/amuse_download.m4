@@ -20,7 +20,8 @@ AC_DEFUN([AMUSE_DOWNLOAD], [
     AC_MSG_CHECKING([for a wget or curl to download files with])
     if test "x$WGET" != "x"
     then
-        DOWNLOAD="$WGET -O -"
+        # The MESA SDK server rejects wget, this is the official work-around
+        DOWNLOAD="$WGET -O --user-agent='' -"
         AC_MSG_RESULT([yes])
     else
         if test "x$CURL" != "x"

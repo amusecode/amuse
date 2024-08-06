@@ -56,7 +56,7 @@ class MESAInterface(
     _V_CENTER = 3
 
     def __init__(self, **options):
-        CodeInterface.__init__(self, name_of_the_worker="mesa_worker", **options)
+        CodeInterface.__init__(self, name_of_the_worker="mesa_r15140_worker", **options)
         LiteratureReferencesMixIn.__init__(self)
         CodeWithDataDirectories.__init__(self)
         self.mesa_version = "15140"
