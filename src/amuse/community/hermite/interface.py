@@ -248,7 +248,7 @@ class Hermite(GravitationalDynamics, GravityFieldCode):
                 
             Valid factors are between -1.0 and 1.0
             """,
-            default_value = 1.0
+            default_value = 0.0
         )
         handler.add_method_parameter(
             "get_dt_dia",
