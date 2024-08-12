@@ -1680,6 +1680,7 @@ class Phantom(GravitationalDynamics, GravityFieldCode):
         # Not doing this *really* complicates things as we'd need to change the
         # internal units used in Phantom as well.
         phantom_solarm = 1.9891e33 | units.g
+        phantom_au = 1.496e13 | units.cm
         phantom_pc = 3.086e18 | units.cm
         phantom_gg = 6.672041e-8 | units.cm**3 * units.g**-1 * units.s**-2
         # phantom_mass = 1.0 | units.MSun
@@ -1688,7 +1689,7 @@ class Phantom(GravitationalDynamics, GravityFieldCode):
         # phantom_length = (phantom_time**2 * phantom_gg * phantom_mass)**(1/3)
         phantom_mass = 1.0 * phantom_solarm
         # phantom_length = 0.1 * phantom_pc
-        phantom_length = 1.0 | units.au
+        phantom_length = 1.0 * phantom_au
         phantom_time = (phantom_length**3 / (phantom_gg*phantom_mass))**0.5
 
         unit_converter = ConvertBetweenGenericAndSiUnits(
@@ -1731,6 +1732,8 @@ class Phantom(GravitationalDynamics, GravityFieldCode):
         handler.add_transition('END', 'INITIALIZED', 'initialize_code', False)
         handler.add_method('END', 'initialize_code')
 
+        handler.add_method('INITIALIZED', 'set_phantom_option')
+        handler.add_method('EDIT', 'set_phantom_option')
         handler.add_transition('RUN', 'UPDATE', 'new_sph_particle', False)
         handler.add_method('EDIT', 'new_sph_particle')
         handler.add_method('UPDATE', 'new_sph_particle')
@@ -2304,7 +2307,7 @@ class Phantom(GravitationalDynamics, GravityFieldCode):
             "set_sink_luminosity",
             (
                 handler.INDEX,
-                units.LSun,
+                generic_unit_system.energy / generic_unit_system.time,
             ),
             (
                 handler.ERROR_CODE,
@@ -2317,7 +2320,7 @@ class Phantom(GravitationalDynamics, GravityFieldCode):
                 handler.INDEX,
             ),
             (
-                units.LSun,
+                generic_unit_system.energy / generic_unit_system.time,
                 handler.ERROR_CODE,
             )
         )
