@@ -58,6 +58,14 @@ def yotta(unit):
     return named("yotta" + unit.name, "Y" + unit.symbol, 1.0e24 * unit)
 
 
+def ronna(unit):
+    return named("ronna" + unit.name, "R" + unit.symbol, 1.0e27 * unit)
+
+
+def quetta(unit):
+    return named("quetta" + unit.name, "Q" + unit.symbol, 1.0e30 * unit)
+
+
 def deci(unit):
     return named("deci" + unit.name, "d" + unit.symbol, 0.1 * unit)
 
@@ -96,6 +104,14 @@ def zepto(unit):
 
 def yocto(unit):
     return named("yocto" + unit.name, "y" + unit.symbol, 1.0e-24 * unit)
+
+
+def ronto(unit):
+    return named("ronto" + unit.name, "r" + unit.symbol, 1.0e-27 * unit)
+
+
+def quecto(unit):
+    return named("quecto" + unit.name, "q" + unit.symbol, 1.0e-30 * unit)
 
 
 k = kilo
