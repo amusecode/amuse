@@ -43,6 +43,25 @@ class PhantomInterface(
         LiteratureReferencesMixIn.__init__(self)
 
     @legacy_function
+    def set_phantom_option():
+        function = LegacyFunctionSpecification()
+        function.addParameter(
+            'name', dtype='string', direction=function.IN
+        )
+        function.addParameter(
+            'value', dtype='string', direction=function.IN
+        )
+        function.addParameter(
+            'match', dtype='bool', direction=function.OUT
+        )
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+        -1 - ERROR
+        """
+        return function
+
+    @legacy_function
     def new_dm_particle():
         function = LegacyFunctionSpecification()
         function.can_handle_array = True
@@ -83,6 +102,9 @@ class PhantomInterface(
             function.addParameter(x, dtype='float64', direction=function.IN)
         function.addParameter(
             'radius', dtype='float64', direction=function.IN, default=0.01,
+        )
+        function.addParameter(
+            'accretion_radius', dtype='float64', direction=function.IN, default=0.01,
             # default should be h_acc
         )
         function.addParameter(
@@ -171,6 +193,9 @@ class PhantomInterface(
             description="The current velocity vector of the particle")
         function.addParameter(
             'radius', dtype='float64', direction=function.OUT,
+            description="The effective radius of the particle")
+        function.addParameter(
+            'accretion_radius', dtype='float64', direction=function.OUT,
             description="The accretion radius of the particle")
         function.addParameter(
             'h_smooth', dtype='float64', direction=function.OUT,
@@ -232,7 +257,11 @@ class PhantomInterface(
         0 - OK
             particle was removed from the model
         -1 - ERROR
-            particle could not be found
+            something went wrong
+        -2 - ERROR
+            wrong particle type
+        -3 - ERROR
+            particle index too large
         """
         return function
 
@@ -381,6 +410,9 @@ class PhantomInterface(
             description="The new velocity vector of the particle")
         function.addParameter(
             'radius', dtype='float64', direction=function.IN,
+            description="The effective radius of the particle")
+        function.addParameter(
+            'accretion_radius', dtype='float64', direction=function.IN,
             description="The accretion radius of the particle")
         function.addParameter(
             'h_smooth', dtype='float64', direction=function.IN,
@@ -395,6 +427,63 @@ class PhantomInterface(
             code does not support updating of a particle
         -3 - ERROR
             not yet implemented
+        """
+        return function
+
+    @legacy_function
+    def set_sink_accretion_radius():
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
+        function.addParameter(
+            'index_of_the_particle', dtype='int32', direction=function.IN,
+            description='',
+        )
+        function.addParameter(
+            'accretion_radius', dtype='float64', direction=function.IN,
+            description='',
+        )
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+        -1 - ERROR
+        """
+        return function
+
+    @legacy_function
+    def set_sink_temperature():
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
+        function.addParameter(
+            'index_of_the_particle', dtype='int32', direction=function.IN,
+            description='',
+        )
+        function.addParameter(
+            'temperature', dtype='float64', direction=function.IN,
+            description='',
+        )
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+        -1 - ERROR
+        """
+        return function
+
+    @legacy_function
+    def set_sink_luminosity():
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
+        function.addParameter(
+            'index_of_the_particle', dtype='int32', direction=function.IN,
+            description='',
+        )
+        function.addParameter(
+            'luminosity', dtype='float64', direction=function.IN,
+            description='',
+        )
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+        -1 - ERROR
         """
         return function
 
@@ -656,6 +745,63 @@ class PhantomInterface(
         function.addParameter(
             'co_abundance', dtype='float64', direction=function.OUT,
             description=''
+        )
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+        -1 - ERROR
+        """
+        return function
+
+    @legacy_function
+    def get_sink_accretion_radius():
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
+        function.addParameter(
+            'index_of_the_particle', dtype='int32', direction=function.IN,
+            description=''
+        )
+        function.addParameter(
+            'accretion_radius', dtype='float64', direction=function.OUT,
+            description="The accretion radius of the sink particle",
+        )
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+        -1 - ERROR
+        """
+        return function
+
+    @legacy_function
+    def get_sink_temperature():
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
+        function.addParameter(
+            'index_of_the_particle', dtype='int32', direction=function.IN,
+            description=''
+        )
+        function.addParameter(
+            'temperature', dtype='float64', direction=function.OUT,
+            description="The effective temperature of the sink particle",
+        )
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+        -1 - ERROR
+        """
+        return function
+
+    @legacy_function
+    def get_sink_luminosity():
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
+        function.addParameter(
+            'index_of_the_particle', dtype='int32', direction=function.IN,
+            description=''
+        )
+        function.addParameter(
+            'luminosity', dtype='float64', direction=function.OUT,
+            description="The luminosity of the sink particle",
         )
         function.result_type = 'int32'
         function.result_doc = """
@@ -1534,6 +1680,7 @@ class Phantom(GravitationalDynamics, GravityFieldCode):
         # Not doing this *really* complicates things as we'd need to change the
         # internal units used in Phantom as well.
         phantom_solarm = 1.9891e33 | units.g
+        phantom_au = 1.496e13 | units.cm
         phantom_pc = 3.086e18 | units.cm
         phantom_gg = 6.672041e-8 | units.cm**3 * units.g**-1 * units.s**-2
         # phantom_mass = 1.0 | units.MSun
@@ -1541,7 +1688,8 @@ class Phantom(GravitationalDynamics, GravityFieldCode):
         # phantom_time = 60 * 60 * 24 * 365.25 * 1e6 | units.s
         # phantom_length = (phantom_time**2 * phantom_gg * phantom_mass)**(1/3)
         phantom_mass = 1.0 * phantom_solarm
-        phantom_length = 0.1 * phantom_pc
+        # phantom_length = 0.1 * phantom_pc
+        phantom_length = 1.0 * phantom_au
         phantom_time = (phantom_length**3 / (phantom_gg*phantom_mass))**0.5
 
         unit_converter = ConvertBetweenGenericAndSiUnits(
@@ -1584,6 +1732,8 @@ class Phantom(GravitationalDynamics, GravityFieldCode):
         handler.add_transition('END', 'INITIALIZED', 'initialize_code', False)
         handler.add_method('END', 'initialize_code')
 
+        handler.add_method('INITIALIZED', 'set_phantom_option')
+        handler.add_method('EDIT', 'set_phantom_option')
         handler.add_transition('RUN', 'UPDATE', 'new_sph_particle', False)
         handler.add_method('EDIT', 'new_sph_particle')
         handler.add_method('UPDATE', 'new_sph_particle')
@@ -1926,6 +2076,12 @@ class Phantom(GravitationalDynamics, GravityFieldCode):
         handler.add_getter('sink_particles', 'get_acceleration')
         handler.add_getter('sink_particles', 'get_radius')
         handler.add_setter('sink_particles', 'set_radius')
+        handler.add_getter('sink_particles', 'get_sink_accretion_radius')
+        handler.add_setter('sink_particles', 'set_sink_accretion_radius')
+        handler.add_getter('sink_particles', 'get_sink_temperature')
+        handler.add_setter('sink_particles', 'set_sink_temperature')
+        handler.add_getter('sink_particles', 'get_sink_luminosity')
+        handler.add_setter('sink_particles', 'set_sink_luminosity')
         handler.add_getter('sink_particles', 'get_smoothing_length')
         handler.add_setter('sink_particles', 'set_smoothing_length')
 
@@ -1980,6 +2136,7 @@ class Phantom(GravitationalDynamics, GravityFieldCode):
                 generic_unit_system.speed,
                 generic_unit_system.speed,
                 generic_unit_system.speed,
+                generic_unit_system.length,
                 generic_unit_system.length,
                 generic_unit_system.length,
             ),
@@ -2077,6 +2234,7 @@ class Phantom(GravitationalDynamics, GravityFieldCode):
                 generic_unit_system.speed,
                 generic_unit_system.length,
                 generic_unit_system.length,
+                generic_unit_system.length,
                 handler.ERROR_CODE,
             )
         )
@@ -2094,8 +2252,75 @@ class Phantom(GravitationalDynamics, GravityFieldCode):
                 generic_unit_system.speed,
                 generic_unit_system.length,
                 generic_unit_system.length,
+                generic_unit_system.length,
             ),
             (
+                handler.ERROR_CODE,
+            )
+        )
+
+        handler.add_method(
+            "set_sink_accretion_radius",
+            (
+                handler.INDEX,
+                generic_unit_system.length,
+            ),
+            (
+                handler.ERROR_CODE,
+            )
+        )
+
+        handler.add_method(
+            "get_sink_accretion_radius",
+            (
+                handler.INDEX,
+            ),
+            (
+                generic_unit_system.length,
+                handler.ERROR_CODE,
+            )
+        )
+
+        handler.add_method(
+            "set_sink_temperature",
+            (
+                handler.INDEX,
+                units.K,
+            ),
+            (
+                handler.ERROR_CODE,
+            )
+        )
+
+        handler.add_method(
+            "get_sink_temperature",
+            (
+                handler.INDEX,
+            ),
+            (
+                units.K,
+                handler.ERROR_CODE,
+            )
+        )
+
+        handler.add_method(
+            "set_sink_luminosity",
+            (
+                handler.INDEX,
+                generic_unit_system.energy / generic_unit_system.time,
+            ),
+            (
+                handler.ERROR_CODE,
+            )
+        )
+
+        handler.add_method(
+            "get_sink_luminosity",
+            (
+                handler.INDEX,
+            ),
+            (
+                generic_unit_system.energy / generic_unit_system.time,
                 handler.ERROR_CODE,
             )
         )
