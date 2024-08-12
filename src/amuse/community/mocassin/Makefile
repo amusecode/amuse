@@ -35,7 +35,7 @@ PATCH_FILES = $(PYTHON) ./patch_files.py
 
 DOWNLOAD_CODES?=1
 
-FFLAGS   += -Wall -g -I$(CODEDIR)/source -fallow-invalid-boz
+FFLAGS   += -Wall -g -I$(CODEDIR)/source -fallow-invalid-boz -std=legacy
 LDFLAGS  += -lm $(MUSE_LD_FLAGS)
 
 all: mocassin_worker 

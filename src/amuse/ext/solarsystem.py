@@ -324,17 +324,20 @@ def new_solar_system(Julian_date=-1|units.day):
     else:
         return solar_system_in_time(Julian_date)
 
-def new_option_parser():
-    from amuse.units.optparse import OptionParser
-    result = OptionParser()
-    result.add_option("-d", dest="Julian_date", unit=units.day,
-                      type=float, default = 2438871.5|units.day,
-                      help="julian date [%default]")
+def new_argument_parser():
+    import argparse
+    result = argparse.ArgumentParser(
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+    )
+    result.add_argument(
+        "-d", dest="Julian_date", unit=units.day,
+        type=units.day, default=2438871.5 | units.day,
+        help="julian date"
+    )
     return result
 
-if __name__ in ('__main__', '__plot__'):
-  o, arguments  = new_option_parser().parse_args()
-  solar_system = new_solar_system(o.Julian_date)
-  print(solar_system)
 
-
+if __name__ == '__main__':
+    arguments = new_argument_parser().parse_args()
+    solar_system = new_solar_system(arguments.Julian_date)
+    print(solar_system)

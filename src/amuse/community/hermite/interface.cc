@@ -1287,24 +1287,6 @@ int get_acceleration(int id, double *ax, double *ay, double *az)
     }
 }
 
-int set_acceleration(int id, double ax, double ay, double az)
-{
-  unsigned int i = find(ident.begin(), ident.end(), id) - ident.begin();
-  if (i < ident.size())
-    {
-      acc[i][0] = ax;
-      acc[i][1] = ay;
-      acc[i][2] = az;
-      return 0;
-    }
-  else
-    {
-      return -2;
-    }
-
-  return -3;
-}
-
 int evolve_not_on_root() {
 
 #ifndef NOMPI

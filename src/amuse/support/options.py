@@ -13,7 +13,7 @@ except ImportError:
     pkg_resources = None
 
 
-class GlobalOptions(object):
+class GlobalOptions:
     INSTANCE = None
 
     def __init__(self):
@@ -22,14 +22,14 @@ class GlobalOptions(object):
 
     def load(self, preloadfp=None):
         if pkg_resources is not None:
-            if pkg_resources.resource_exists('amuse', 'amuserc'):
-                resourcerc = pkg_resources.resource_filename('amuse', 'amuserc')
+            if pkg_resources.resource_exists("amuse", "amuserc"):
+                resourcerc = pkg_resources.resource_filename("amuse", "amuserc")
                 self.config.read(resourcerc)
 
         rootrc = os.path.join(self.amuse_rootdirectory, self.rcfilename)
         datarc = os.path.join(self.amuse_data_location, self.rcfilename)
 
-        homedirrc = os.path.join(self.homedirectory, '.' + self.rcfilename)
+        homedirrc = os.path.join(self.homedirectory, "." + self.rcfilename)
 
         self.config.read(rootrc)
         self.config.read(datarc)
@@ -38,9 +38,13 @@ class GlobalOptions(object):
             self.config.read_file(preloadfp, "<amuserc>")
 
         self.config.read(homedirrc)
-        self.config.read(os.path.join(self.homedirectory, '.' + platform.node() + '_' + self.rcfilename))
-        if 'AMUSERC' in os.environ:
-            self.config.read(os.environ['AMUSERC'])
+        self.config.read(
+            os.path.join(
+                self.homedirectory, "." + platform.node() + "_" + self.rcfilename
+            )
+        )
+        if "AMUSERC" in os.environ:
+            self.config.read(os.environ["AMUSERC"])
         self.config.read(self.rcfilepath)
 
     @late
@@ -49,21 +53,27 @@ class GlobalOptions(object):
         this = os.path.dirname(os.path.abspath(__file__))
 
         # installed
-        result = os.path.abspath(os.path.join(this, "..", "..", "..", "..", "..", "share", "amuse"))
-        if os.path.exists(os.path.join(result, 'config.mk')):
+        result = os.path.abspath(
+            os.path.join(this, "..", "..", "..", "..", "..", "share", "amuse")
+        )
+        if os.path.exists(os.path.join(result, "config.mk")):
             return result
 
         # for some virtualenv setups
-        result = os.path.abspath(os.path.join(this, "..", "..", "..", "..", "..", "..", "share", "amuse"))
-        if os.path.exists(os.path.join(result, 'config.mk')):
+        result = os.path.abspath(
+            os.path.join(this, "..", "..", "..", "..", "..", "..", "share", "amuse")
+        )
+        if os.path.exists(os.path.join(result, "config.mk")):
             return result
 
         # in-place
         result = os.path.abspath(os.path.join(this, "..", "..", ".."))
-        if os.path.exists(os.path.join(result, 'config.mk')):
+        if os.path.exists(os.path.join(result, "config.mk")):
             return result
 
-        raise exceptions.AmuseException("Could not locate AMUSE root directory! set the AMUSE_DIR variable")
+        raise exceptions.AmuseException(
+            "Could not locate AMUSE root directory! set the AMUSE_DIR variable"
+        )
 
     @late
     def amuse_rootdirectory(self):
@@ -75,17 +85,17 @@ class GlobalOptions(object):
 
     @late
     def rcfilename(self):
-        return 'amuserc'
+        return "amuserc"
 
     @late
     def homedirectory(self):
-        path = ''
+        path = ""
         try:
             path = os.path.expanduser("~")
         except:
             pass
         if not os.path.isdir(path):
-            for evar in ('HOME', 'USERPROFILE', 'TMP'):
+            for evar in ("HOME", "USERPROFILE", "TMP"):
                 try:
                     path = os.environ[evar]
                     if os.path.isdir(path):
@@ -95,7 +105,7 @@ class GlobalOptions(object):
         if path:
             return path
         else:
-            raise RuntimeError('please define environment variable $HOME')
+            raise RuntimeError("please define environment variable $HOME")
 
     @classmethod
     def instance(cls, preloadfp=None):
@@ -126,7 +136,7 @@ class GlobalOptions(object):
         self.config.read_file(file)
 
 
-class option(object):
+class option:
     """Decorator to define an option
 
     :argument type: Type of the value, used when reading from the configuration file.
@@ -145,7 +155,15 @@ class option(object):
 
     """
 
-    def __init__(self, function=None, type="string", name=None, sections=(), choices=(), global_options=None):
+    def __init__(
+        self,
+        function=None,
+        type="string",
+        name=None,
+        sections=(),
+        choices=(),
+        global_options=None,
+    ):
         self.specification_method = function
 
         if name is not None:
@@ -159,7 +177,9 @@ class option(object):
         if hasattr(self, type.upper()):
             self.valuetype = getattr(self, type.upper())
         else:
-            raise exceptions.CoreException("'{0}' is not a valid type for option".format(type))
+            raise exceptions.CoreException(
+                "'{0}' is not a valid type for option".format(type)
+            )
 
         self.validator = self.default_validator
         self.choices = set(choices)
@@ -212,11 +232,11 @@ class option(object):
         return options.get(section, self.name)
 
     def DICT(self, section, options):
-        opts=options.get(section, self.name).split(",")
-        result=dict()
+        opts = options.get(section, self.name).split(",")
+        result = dict()
         for o in opts:
-          key,value=o.split("=")
-          result[key.strip()]=value.strip()
+            key, value = o.split("=")
+            result[key.strip()] = value.strip()
         return result
 
     def default_validator(self, value):
@@ -224,14 +244,18 @@ class option(object):
 
     def choice_validator(self, value):
         if value not in self.choices:
-            raise exceptions.CoreException("{0} is not a valid choice for option '{1}', valid values are: {2}".format(value, self.name, sorted(self.choices)))
+            raise exceptions.CoreException(
+                "{0} is not a valid choice for option '{1}', valid values are: {2}".format(
+                    value, self.name, sorted(self.choices)
+                )
+            )
         return value
 
     def get_sections(self, instance):
         result = []
         result.extend(instance.option_sections)
         result.append(instance.__class__.__name__)
-        lastname = instance.__class__.__name__.split('.')[-1]
+        lastname = instance.__class__.__name__.split(".")[-1]
         if not lastname == instance.__class__.__name__:
             result.append(lastname)
             result.append(lastname.lower())
@@ -248,7 +272,7 @@ class option(object):
             pass
 
 
-class OptionalAttributes(object):
+class OptionalAttributes:
     """
     Abstract superclass for all classes supporting optional
     attributes.
@@ -278,9 +302,9 @@ class OptionalAttributes(object):
                 "number of times to try to connect"
                 return 5
 
-    To code will first search for the value of the option in the 
-    *mysection*, if no value is found the *try* section is searched. 
-    For the following configuration file the **number_of_tries** 
+    To code will first search for the value of the option in the
+    *mysection*, if no value is found the *try* section is searched.
+    For the following configuration file the **number_of_tries**
     attribute will be 10 as the *mysection* section is searched first.
 
     :: ini
@@ -300,6 +324,7 @@ class OptionalAttributes(object):
         15
 
     """
+
     option_sections = ()
 
     def __init__(self, **optional_keyword_arguments):
@@ -318,7 +343,7 @@ class OptionalAttributes(object):
     def iter_options(self):
         cls = type(self)
         for x in dir(cls):
-            if x.startswith('_'):
+            if x.startswith("_"):
                 continue
             value = getattr(cls, x)
             if isinstance(value, option):

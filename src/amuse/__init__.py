@@ -25,40 +25,49 @@ Help on package amuse.ic in amuse:
 or (directly from the terminal):
 > pydoc amuse.ic
 """
+
 import sys
 import os
 import numpy
 
 _AMUSE_ROOT = os.path.abspath(os.path.dirname(__file__))
 
+
 def numpy_fix():
     try:
-        numpy.set_printoptions(legacy='1.13')
+        numpy.set_printoptions(legacy="1.13")
     except TypeError:
         pass
-      
+
+
 numpy_fix()
 
-class NoConfig(object):
+
+class NoConfig:
     def __init__(self, message):
-        self._message=message
+        self._message = message
+
     def __getattr__(self, attr):
         raise AttributeError(self._message)
 
+
 try:
     from . import config
-except Exception as ex:
-    message="Configuration not read in - or configuration invalid, exception:\n"+str(ex)
-    config=NoConfig(message)
-
+except FileNotFoundError as ex:
+    message = (
+        "Configuration not read in - or configuration invalid, exception:\n" + str(ex)
+    )
+    config = NoConfig(message)
 
 
 # always report AMUSE reference information
 try:
     from amuse.support.literature import TrackLiteratureReferences
+
     TrackLiteratureReferences.default()
 except:
     pass
 
+
 def get_data(path):
-    return os.path.join(_AMUSE_ROOT, 'data', path)
+    return os.path.join(_AMUSE_ROOT, "data", path)

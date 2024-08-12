@@ -844,6 +844,10 @@ int get_number_of_particles(int * number_of_particles){
 int evolve_system(double end_time) {
     int n_steps = 1;
     int n_steps_per_phase = 10;
+    // cannot evolve for a negative time
+    if (end_time < seba_time) {
+	return 0;
+    }
     real delta_t = (end_time - seba_time)/((real)n_steps);
     real out_time; 
     nodeptr bi;
