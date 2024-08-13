@@ -1,55 +1,67 @@
-# standard amuse configuration include
-# config.mk will be made after ./configure has run
-ifeq ($(origin AMUSE_DIR), undefined)
-  AMUSE_DIR := $(shell amusifier --get-amuse-dir)
-endif
--include ${AMUSE_DIR}/config.mk
-
-MPIFC ?= mpif90
-MPIF90 ?= $(MPIFC)
-FORTRAN ?= gfortran
-FC ?= gfortran
-
-SRC=src
-
-
-CODE_LIBS=$(SRC)/libsphray.a
-
-PIC=#-fPIC
-
-ifeq ($(findstring gfortran, $(notdir $(FORTRAN))), gfortran)
-FFLAGS= $(FCFLAGS) -cpp -O0  # problems with ANY optimizations in gfortran 4.4 and below
+ifneq (,$(filter-out clean distclean, $(MAKECMDGOALS)))
+include support/config.mk
 endif
 
-ifeq ($(findstring ifort, $(notdir $(FORTRAN))), ifort)
-IFORTFLAGS= -fpe0 -g -traceback -heap-arrays -fpp -u
-FFLAGS= $(FCFLAGS) $(IFORTFLAGS) -O3 -no-prec-div -p
-endif
 
-FFLAGS2= -I./src/
+# Detecting dependencies
+support/config.mk:
+	cd support && ./configure
 
-CLASSNAME=SPHRayInterface
 
-all: sphray_worker
+# Building the code into a static library
+DEPFLAGS += $(FORSOCKETS_CFLAGS)
+FCFLAGS += -cpp $(DEPFLAGS)
+LDFLAGS +=
+LDLIBS += $(FORSOCKETS_LIBS)
 
-%.o: %.f90 Makefile
-	$(FC) $(FFLAGS) $(FFLAGS2)  -c -o $@ $< 
+CODELIB = src/libsphray.a
 
-%.o: %.F90 Makefile
-	$(FC) $(FFLAGS) $(FFLAGS2) -c -o $@ $< 
 
-sphray_worker: sphray_worker.f90 interface.o
-	$(MPIF90) $(FFLAGS) $(FFLAGS2) $(FS_FLAGS) $(LDFLAGS) $^ -o $@ $(CODE_LIBS) $(SC_MPI_CLIBS) $(FS_LIBS) $(LIBS) 
+$(CODELIB):
+	$(MAKE) -C src -j 1 amuse_interface FFLAGS="$(FCFLAGS)" FC="$(FC)"
 
+
+# Building the workers
 sphray_worker.f90: interface.py
-	make -C src amuse_interface FFLAGS="$(FFLAGS)" FC="$(FC)"
-	$(CODE_GENERATOR) --type=f90 $< $(CLASSNAME) -o $@
+	amusifier --type=f90 interface.py SPHRayInterface -o $@
 
+sphray_worker.o: sphray_worker.f90
+	$(MPIFC) -c -o $@ $(FCFLAGS) $<
+
+sphray_worker: interface.o sphray_worker.o $(CODELIB)
+	$(MPIFC) -o $@ $(LDFLAGS) $^ $(LDLIBS)
+
+%.o: %.f90 $(CODELIB)
+	$(MPIFC) -o $@ -c $(FCFLAGS) -Isrc $<
+
+
+# Which packages contain which workers?
+amuse-sphray_contains: sphray_worker
+
+
+# Building and installing packages
+develop-%: %_contains
+	support/shared/uninstall.sh $*
+	python -m pip install -e packages/$*
+
+install-%: %_contains
+	support/shared/uninstall.sh $*
+	python -m pip install packages/$*
+
+package-%: %_contains
+	python3 -m pip install -vv --no-cache-dir --no-deps --no-build-isolation --prefix ${PREFIX} packages/$*
+
+test-%:
+	cd packages/$* && pytest
+
+
+# Cleaning up
+.PHONY: clean
 clean:
-	make -C src clean
-	$(RM) -f *.o *.pyc *.bck
-	$(RM) -f sphray_worker sphray_worker.f90
-	$(RM) -f sphray_worker_sockets sphray_worker-sockets.f90
-	$(RM) -f forsockets.mod
-	$(RM) -f amuse_worker_module.mod
-	$(RM) -f src/lib*.a
+	$(MAKE) -C src cleanall
+	rm -rf *.o *.mod *worker*
+
+.PHONY: distclean
+distclean: clean
+	rm -f support/config.mk support/config.log support/config.status
+	rm -rf support/autom4te.cache
