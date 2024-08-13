@@ -1,77 +1,73 @@
-ifeq ($(origin AMUSE_DIR), undefined)
-  AMUSE_DIR := $(shell amusifier --get-amuse-dir)
+ifneq (,$(filter-out clean distclean, $(MAKECMDGOALS)))
+include support/config.mk
 endif
--include ${AMUSE_DIR}/config.mk
-
-PYTHON ?= python
-
-PYOPENGL_AVAILABLE := $(shell $(PYTHON) -c "import OpenGL"  1>&2 2> /dev/null && echo "yes" || echo "no")
-PYIMAGE_AVAILABLE := $(shell $(PYTHON) -c "from PIL import Image"  1>&2 2> /dev/null && echo "yes" || echo "no")
-PYOPENCL_AVAILABLE := $(shell $(PYTHON) -c "import pyopencl"  1>&2 2> /dev/null && echo "yes" || echo "no")
-CFFI_AVAILABLE := $(shell $(PYTHON) -c "import cffi"  1>&2 2> /dev/null && echo "yes" || echo "no")
 
 
+# Detecting dependencies
+support/config.mk:
+	cd support && ./configure
 
 
-all: code build install test tupan_worker
+# Downloading the code
+tupan.tar.gz:
+	$(DOWNLOAD) https://github.com/ggf84/tupan/archive/refs/heads/master.tar.gz >$@
 
-code: src/setup.py
+src/tupan: tupan.tar.gz
+	tar xf $<
+	mv tupan-master src/tupan
+	# TODO: does the configured directory work?
+	cp tupan.cfg src/tupan/
 
-DOWNLOAD_CODES?=1
 
-ifdef DOWNLOAD_CODES
-src/setup.py:
-	make -C . download
-else
-src/setup.py:
-	@echo ""
-	@echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
-	@echo ""
-	@echo "DOWNLOAD_CODES is not set. tupan will not be downloaded and build."
-	@echo "If you do want Athena, set DOWNLOAD_CODES to 1."
-	@echo "bash> export DOWNLOAD_CODES=1"
-	@echo "csh> setenv DOWNLOAD_CODES 1"
-	@echo ""
-	@echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
-	@echo ""
-	@make -s --no-print-directory -C . raise_error
-endif 
+# Building and installing the tupan Python package
 
-download:
-	git clone -b master https://github.com/ggf84/tupan.git src
+# Ideally, Tupan would have Conda and PyPI packages, so that we could just have it as a
+# top-level dependency, and it would also help if it had its dependencies in the
+# setup.py metadata, but this works. Note that we don't install everything in Tupan's
+# requirements.txt, because not all of them are needed for use with AMUSE.
 
-build:
-	cp tupan.cfg ./src/tupan/
-	(cd src; python setup.py build)
-
-install:
-	mkdir install
-	(cd src; python setup.py install --prefix=../install)
-
-test:
-	@echo
-	@echo "Testing import of modules required for tupan (pyopencl, cffi):"
-ifeq ($(PYOPENCL_AVAILABLE),no)
-	$(warning "Python import (optional) not available: pyopencl")
+.PHONY: install_tupan
+install_tupan: | src/tupan
+ifneq ($(CONDA_PREFIX),)
+	conda install --yes cffi numpy scipy matplotlib
+else ifneq ($(VIRTUAL_ENV),)
+	pip install cffi numpy scipy matplotlib
 endif
-ifeq ($(CFFI_AVAILABLE),no)
-	$(error "Python imports not available: cffi")
-endif
-	@echo "Tests successful!"
-	@echo
+	cd src/tupan && pip install .
 
 
+# Building the workers
 tupan_worker: interface.py
-	$(CODE_GENERATOR) --type=py --mode=mpi -x interface TupanInterface TupanImplementation -o $@
-	
+	PYTHONPATH=. amusifier --type=py --mode=mpi -x interface TupanInterface TupanImplementation -o $@
 
+
+# Which packages contain which workers?
+amuse-tupan_contains: tupan_worker
+
+
+# Building and installing packages
+develop-%: %_contains install_tupan
+	support/shared/uninstall.sh $*
+	python -m pip install -e packages/$*
+
+install-%: %_contains install_tupan
+	support/shared/uninstall.sh $*
+	python -m pip install packages/$*
+
+package-%: %_contains
+	python3 -m pip install -vv --no-cache-dir --no-deps --no-build-isolation --prefix ${PREFIX} packages/$*
+
+test-%:
+	cd packages/$* && pytest
+
+
+# Cleaning up
+.PHONY: clean
 clean:
-	-cd src && python setup.py clean -a
-	-rm -f *.pyc; 
-	-rm -f tupan_worker tupan_worker_sockets
-	-rm -rf install
+	rm -rf *worker*
 
+.PHONY: distclean
 distclean: clean
-	-rm -f *.pyc
-	-rm -rf src __pycache__
-
+	rm -rf tupan.tar.gz src/tupan
+	rm -f support/config.mk support/config.log support/config.status
+	rm -rf support/autom4te.cache
