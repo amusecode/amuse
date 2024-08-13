@@ -391,7 +391,11 @@ class GalactICsInterface(PythonCodeInterface, CommonCodeInterface, LiteratureRef
             raise exceptions.CodeException(
                 "The worker code of the '{0}' interface class is not up to date.\n"
                 "Please do a 'make clean; make' in the root directory.".format(type(self).__name__))
-    
+
+    @property
+    def must_start_worker(self):
+        return True
+
     new_particle = None
     
     def delete_particle(self, index_of_the_particle):

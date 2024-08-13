@@ -1,77 +1,72 @@
-# standard amuse configuration include
-# config.mk will be made after ./configure has run
-ifeq ($(origin AMUSE_DIR), undefined)
-  AMUSE_DIR := $(shell amusifier --get-amuse-dir)
-endif
--include ${AMUSE_DIR}/config.mk
-
-CC ?= gcc
-CFLAGS ?= -O3
-
-FC ?= gfortran
-FORTRAN ?= $(FC)
-# check for gfortran, this catches link and compiler wrappers
-ifeq ($(findstring GNU, $(shell $(FORTRAN) --version)), GNU)
-FFLAGS = $(FCFLAGS) -ffixed-line-length-0 -O -fno-backslash
-endif
-ifeq ($(findstring ifort, $(notdir $(FORTRAN))), ifort)
-FFLAGS = $(FCFLAGS) -O3 -132 -nofor-main
-endif
-
-ifneq (,$(findstring xlf, $(notdir $(FORTRAN))))
-FFLAGS = $(FCFLAGS) -qfixed -qextname
-endif
-
-GFVERSION10PLUS := $(shell expr `${FC} -dumpversion | cut -f1 -d.` \>= 10)
-
-ifeq (${GFVERSION10PLUS}, 1)
-FFLAGS += -fallow-argument-mismatch
-FCFLAGS += -fallow-argument-mismatch
+ifneq (,$(filter-out clean distclean, $(MAKECMDGOALS)))
+include support/config.mk
 endif
 
 
-BINDIR = data/bin/
-EXES = $(BINDIR)dbh $(BINDIR)genhalo $(BINDIR)genbulge \
-  $(BINDIR)getfreqs $(BINDIR)gendisk $(BINDIR)diskdf $(BINDIR)toascii
-
-GASBINDIR = data/gbin/
-GASEXES = $(GASBINDIR)dbh $(GASBINDIR)genhalo $(GASBINDIR)genbulge  \
-  $(GASBINDIR)getfreqs $(GASBINDIR)gendisk $(GASBINDIR)diskdf $(GASBINDIR)gengas $(GASBINDIR)toascii
-
-all: $(BINDIR) $(EXES) $(GASBINDIR) $(GASEXES) 
-
-$(BINDIR):
-	mkdir -p $(BINDIR)
-
-$(GASBINDIR):
-	mkdir -p $(GASBINDIR)
-
-$(EXES): Makefile
-	mkdir -p src/bin
-	mkdir -p gas_src/bin
-	echo $(findstring xlf, $(notdir $(FORTRAN)))
-	make -C src/src all CC="$(CC)" CFLAGS="$(CFLAGS)" LDFLAGS="$(LDFLAGS)" F77="$(FC)" FFLAGS="$(FFLAGS)" F77FLAGS="$(F77FLAGS)"
-	make -C src/src install
-	make -C src/potsrc all CC="$(CC)" CFLAGS="$(CFLAGS)" LDFLAGS="$(LDFLAGS)" F77="$(FC)" FFLAGS="$(FFLAGS)" F77FLAGS="$(F77FLAGS)"
-	make -C src/potsrc install
-	cp src/bin/* $(BINDIR)/
+# Detecting dependencies
+support/config.mk:
+	cd support && ./configure
 
 
-$(GASEXES): Makefile 
-	echo $(findstring xlf, $(notdir $(FORTRAN)))
-	make -C gas_src/src all CC="$(CC)" CFLAGS="$(CFLAGS)" LDFLAGS="$(LDFLAGS)" F77="$(FC)" FFLAGS="$(FFLAGS)" FFLAGS2="$(FCFLAGS)" F77FLAGS="$(F77FLAGS)" PGSTUB=1
-	make -C gas_src/src install
-	cp gas_src/bin/* $(GASBINDIR)/
+# Building the code into a set of binaries
+CFLAGS += $(DEPFLAGS)
+FCFLAGS += -ffixed-line-length-0 -fno-backslash -fallow-argument-mismatch
+
+EXENAMES := dbh genhalo genbulge getfreqs gendisk diskdf toascii
+GASEXENAMES := $(EXENAMES) gengas
+
+EXES := $(patsubst %,data/bin/%,$(EXENAMES))
+GASEXES := $(patsubst %,data/gbin/%,$(GASEXENAMES))
+
+data/bin:
+	mkdir -p data/bin
+
+data/gbin:
+	mkdir -p data/gbin
+
+$(EXES) &: | data/bin
+	$(MAKE) -C src/src all CC="$(CC)" CFLAGS="$(CFLAGS)" F77="$(FC)" FFLAGS="$(FCFLAGS)" PGSTUB=1
+	$(MAKE)  -C src/src install
+	$(MAKE) -C src/potsrc all CC="$(CC)" CFLAGS="$(CFLAGS)" F77="$(FC)" FFLAGS="$(FCFLAGS)" PGSTUB=1
+	$(MAKE) -C src/potsrc install
+	cp src/bin/* data/bin/
+
+$(GASEXES) &: | data/gbin
+	$(MAKE) -C gas_src/src all CC="$(CC)" CFLAGS="$(CFLAGS)" F77="$(FC)" FFLAGS="$(FCFLAGS)" FFLAGS2="$(FCFLAGS)" PGSTUB=1
+	$(MAKE) -C gas_src/src install
+	cp gas_src/bin/* data/gbin/
 
 
+# Which packages contain which (pseudo-)workers?
+amuse-galactics_contains: $(EXES) $(GASEXES)
+
+
+# Building and installing packages
+develop-%: %_contains
+	support/shared/uninstall.sh $*
+	python -m pip install -e packages/$*
+
+install-%: %_contains
+	support/shared/uninstall.sh $*
+	python -m pip install packages/$*
+
+package-%: %_contains
+	python3 -m pip install -vv --no-cache-dir --no-deps --no-build-isolation --prefix ${PREFIX} packages/$*
+
+test-%:
+	cd packages/$* && pytest
+
+
+# Cleaning up
+.PHONY: clean
 clean:
-	make -C src/src clean
-	make -C gas_src/src purge
-	make -C src/potsrc clean
-	rm -f src/bin/*
-	rm -f gas_src/bin/*
+	$(MAKE) -C src/src clean
+	$(MAKE) -C src/potsrc clean
+	$(MAKE) -C gas_src/src clean
+	rm -rf packages/amuse-galactics/interface packages/amuse-galactics/__amuse_code_output
+	rm -rf *worker* data
 
+.PHONY: distclean
 distclean: clean
-	rm -f *.pyc
-	rm -rf data
-
+	rm -f support/config.mk support/config.log support/config.status
+	rm -rf support/autom4te.cache
