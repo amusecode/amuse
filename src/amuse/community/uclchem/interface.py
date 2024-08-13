@@ -134,9 +134,18 @@ class UCLchemInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesM
     @legacy_function
     def run_model():
         function = LegacyFunctionSpecification()
+        #function.must_handle_array=True
+        #function.addParameter('n_particles', dtype='i', direction=function.LENGTH)
         function.addParameter('dictionary', dtype='s', direction=function.IN)
-        function.addParameter('out_species', dtype='s', direction=function.IN)
+        #function.addParameter('out_species', dtype='s', direction=function.IN)
         function.result_type = 'i'
+        return function
+    
+    @legacy_function
+    def set_species():
+        function = LegacyFunctionSpecification()
+        function.addParameter('species', dtype='s',direction=function.IN)
+        function.result_type='i'
         return function
 
     def _reform_inputs(self,param_dict, out_species):
@@ -171,7 +180,11 @@ class UCLchem(CommonCode):
     def evolve_model(self,tend):
         assert tend > self.uclchem_time, 'end time must be larger than uclchem_time'
         dictionary, out_species= self._build_dict(tend=tend)
-        output = self.run_model(dictionary, out_species)
+        n_particles = len(self.particles.key)
+        print('dictionary',dictionary)
+        print('outspecies',out_species)
+        self.set_species(out_species)
+        output = self.run_model(dictionary)
         self.uclchem_time = tend
         return output
 
@@ -194,11 +207,9 @@ class UCLchem(CommonCode):
                 dictionary['radfield'] = self.particles.radfield.value_in(units.habing)[i]
             dictionary['finalTime'] = tend.value_in(units.yr)-self.uclchem_time.value_in(units.yr)
             #dictionary['currentTime'] = self.uclchem_time
-            _, dictionary, outSpecies = self._reform_inputs(dictionary, outSpecies)
-            #print(dictionary, outSpecies)
+            _, dictionary, outSpecies_out = self._reform_inputs(dictionary, outSpecies)
             dictionary_list.append(str(dictionary))
-        print(dictionary_list)
-        return dictionary_list, str(outSpecies)
+        return dictionary_list, str(outSpecies_out)
     
     def define_parameters(self, handler):
         handler.add_interface_parameter(

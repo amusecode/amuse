@@ -16,11 +16,11 @@ def run_benchmark(model='static', n_init=1e4|units.cm**-3, n_end=1e6|units.cm**-
     conv = nbody_system.nbody_to_si(R_cloud, M_cloud)
 #cloud = molecular_cloud(targetN=1000, convert_nbody=conv).result
 
-    cloud = Particles(1)
+    cloud = Particles(2)
     cloud.number_density = 1.001*n_init
     cloud.temperature = T_cloud
     cloud.ionrate = cr_ion_cloud
-
+    cloud[1].temperature = 2*T_cloud
     chem = UCLchem()
     chem.out_species = ["OH", "OCS", "CO", "CS", "CH3OH"]
     chem.particles.add_particles(cloud)
@@ -35,8 +35,8 @@ def run_benchmark(model='static', n_init=1e4|units.cm**-3, n_end=1e6|units.cm**-
     for i in range(last):
         species = species + ', ' + chem.get_name_of_species(i)
     print(chem.particles.number_density)
-    results = np.insert(chem.particles.abundances[0], 0,[t.value_in(units.yr),chem.particles.number_density[0].value_in(units.cm**-3)])
-    print(results)
+    results1 = np.insert(chem.particles.abundances[0], 0,[t.value_in(units.yr),chem.particles.number_density[0].value_in(units.cm**-3)])
+    results2 = np.insert(chem.particles.abundances[1], 0,[t.value_in(units.yr),chem.particles.number_density[1].value_in(units.cm**-3)])
     if model =='static':
         while t.value_in(units.yr) < t_end.value_in(units.yr):
             if t >= 1.0e6|units.yr:
@@ -56,11 +56,12 @@ def run_benchmark(model='static', n_init=1e4|units.cm**-3, n_end=1e6|units.cm**-
 #     t = t|units.yr
         chem.evolve_model(t)
         chem_channel.copy()
-        results = np.vstack((results, np.insert(chem.particles.abundances[0], 0, [t.value_in(units.yr),chem.particles.number_density[0].value_in(units.cm**-3)])))
+        results1 = np.vstack((results1, np.insert(chem.particles.abundances[0], 0, [t.value_in(units.yr),chem.particles.number_density[0].value_in(units.cm**-3)])))
+        results2 = np.vstack((results2, np.insert(chem.particles.abundances[1], 0, [t.value_in(units.yr),chem.particles.number_density[1].value_in(units.cm**-3)])))
         
     elif model =='freefall':
         t_old = t
-        while chem.particles.number_density < n_end:
+        while chem.particles[0].number_density < n_end:
             if t >= 1.0e6|units.yr:
                 t += 1.0e5|units.yr
             elif t >= 1.0e5|units.yr:
@@ -78,11 +79,15 @@ def run_benchmark(model='static', n_init=1e4|units.cm**-3, n_end=1e6|units.cm**-
             print(chem.particles.number_density)
             chem.evolve_model(t)
             chem_channel.copy()
-            results = np.vstack((results, np.insert(chem.particles.abundances[0], 0, [t.value_in(units.yr),chem.particles.number_density[0].value_in(units.cm**-3)])))
+            results1 = np.vstack((results1, np.insert(chem.particles.abundances[0], 0, [t.value_in(units.yr),chem.particles.number_density[0].value_in(units.cm**-3)])))
+            results2 = np.vstack((results2, np.insert(chem.particles.abundances[1], 0, [t.value_in(units.yr),chem.particles.number_density[1].value_in(units.cm**-3)])))
+
             t_old = t
             
 
-    np.savetxt(filename,results,header=species, delimiter = ',', comments=' ')
+    np.savetxt(filename+'_1.dat',results1,header=species, delimiter = ',', comments=' ')
+    np.savetxt(filename+'_2.dat',results2,header=species, delimiter = ',', comments=' ')
+
     chem.stop()
 
 def freefall_eq(density, initial_density, dt):
@@ -92,4 +97,4 @@ def freefall_eq(density, initial_density, dt):
 
 
 
-run_benchmark(model='freefall', n_init=1e2|units.cm**-3,filename='freefall_benchmark.dat')
+run_benchmark(model='freefall', n_init=1e2|units.cm**-3,filename='freefall_benchmark')

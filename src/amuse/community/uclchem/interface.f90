@@ -104,10 +104,9 @@
    end if 
   end function
   
-  function run_model(dictionary, out_species) result(ret)
+  function run_model(dictionary) result(ret)
     use uclchemhelper
-    integer :: ret 
-    character(len=*) :: out_species
+    integer :: ret
     character(len=*) :: dictionary(nparticle)
     ret=simple_evolution(dictionary, out_species)
   end function
@@ -123,4 +122,12 @@
     use uclchemhelper
     integer :: ret,id
     ret=remove_particle(id)
+  end function
+
+  function set_species(species) result(ret)
+    use uclchemhelper
+    integer :: ret 
+    character(len=*) :: species
+    out_species = species
+    ret = 0
   end function

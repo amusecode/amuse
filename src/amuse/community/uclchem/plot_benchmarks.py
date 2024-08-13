@@ -5,7 +5,7 @@ import numpy as np
 uclchem_data = pd.read_table('phase1-full.dat', skiprows=2, sep=',')
 uclchem_data = uclchem_data.rename(columns=lambda x: x.strip())
 
-static_cloud_data =pd.read_table('freefall_benchmark.dat', sep=',')
+static_cloud_data =pd.read_table('freefall_benchmark_2.dat', sep=',')
 static_cloud_data = static_cloud_data.rename(columns=lambda x: x.strip())
 
 plt.plot(static_cloud_data['time'],static_cloud_data['H'], color='b', label='H')
@@ -36,7 +36,7 @@ plt.yscale('log')
 plt.legend()
 plt.xlim(10,5e6)
 plt.ylim(1e-15)
-plt.savefig('freefall_zoom.pdf')
+plt.savefig('freefall_zoom_2.pdf')
 plt.show()
 plt.close()
 

@@ -20,6 +20,8 @@ MODULE uclchemhelper
     integer :: nparticle
     integer :: tot_id
 
+    character(len=500) :: out_species
+
     integer, parameter :: NMAX=1000000
 
     logical :: particles_searcheable=.FALSE.
@@ -271,8 +273,8 @@ CONTAINS
 
         ret = 0
         INCLUDE 'defaultparameters.f90'
+        print *, outSpeciesIn
         do i=1,nparticle
-            print *, dictionary(i)
             CALL dictionaryParser(dictionary(i), outSpeciesIn,ret)
             iret = evolve_1_particle(particles(i))
             ret = min(iret,ret)
@@ -300,9 +302,9 @@ CONTAINS
         abund(:,1) = part%abundances
         DO WHILE (((endAtFinalDensity) .and. (density(1) < finalDens)) .or. &
             &((.not. endAtFinalDensity) .and. (timeInYears < finalTime)))
-            write(*,*) currentTime, density, gasTemp
+            !write(*,*) currentTime, density, gasTemp
             currentTimeold=currentTime
-            print *, timeInYears
+            !print *, timeInYears
             !Each physics module has a subroutine to set the target time from the current time
             CALL updateTargetTime
             !loop over parcels, counting from centre out to edge of cloud
