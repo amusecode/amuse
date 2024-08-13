@@ -767,6 +767,7 @@ MPI_CLIBS
 MPI_CFLAGS
 MPICC
 CMAKE
+PERL5
 HOMEBREW
 MACPORTS
 DNF
@@ -777,6 +778,12 @@ JAVAC
 FC
 CXX
 CONDA_LIST
+PERL
+UNXZ
+BUNZIP2
+GUNZIP
+UNZIP
+TAR
 DOWNLOAD
 CURL
 WGET
@@ -2764,9 +2771,9 @@ then
     # Conda list doesn't work in conda build environments, and normal detection
     # can be problematic because it picks up e.g. compilers from the system. So
     # we assume that the conda metadata is correct, and that if it isn't there's
-    # an expert packages who can fix things.
+    # an expert packager who can fix things.
     printf "%s\n" "Conda package build detected, skipping checks for dependencies."
-    ASSUME_FEATURES="c c++ fortran java python cmake install download mpi openmp cuda opencl blas lapack gsl gmp mpfr fftw hdf5 netcdf4 sapporo_light"
+    ASSUME_FEATURES="c c++ fortran java python tar unzip gunzip bunzip2 unxz perl cmake install download mpi openmp cuda opencl blas lapack gsl gmp mpfr fftw hdf5 netcdf4 sapporo_light"
 
 elif test "x" != "x$CONDA_DEFAULT_ENV"
 then
@@ -4490,6 +4497,619 @@ printf "%s\n" "no" >&6; }
 
 
 
+    if test -n "$ac_tool_prefix"; then
+  # Extract the first word of "${ac_tool_prefix}tar", so it can be a program name with args.
+set dummy ${ac_tool_prefix}tar; ac_word=$2
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+printf %s "checking for $ac_word... " >&6; }
+if test ${ac_cv_prog_TAR+y}
+then :
+  printf %s "(cached) " >&6
+else $as_nop
+  if test -n "$TAR"; then
+  ac_cv_prog_TAR="$TAR" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  case $as_dir in #(((
+    '') as_dir=./ ;;
+    */) ;;
+    *) as_dir=$as_dir/ ;;
+  esac
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir$ac_word$ac_exec_ext"; then
+    ac_cv_prog_TAR="${ac_tool_prefix}tar"
+    printf "%s\n" "$as_me:${as_lineno-$LINENO}: found $as_dir$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+fi
+fi
+TAR=$ac_cv_prog_TAR
+if test -n "$TAR"; then
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $TAR" >&5
+printf "%s\n" "$TAR" >&6; }
+else
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+fi
+
+
+fi
+if test -z "$ac_cv_prog_TAR"; then
+  ac_ct_TAR=$TAR
+  # Extract the first word of "tar", so it can be a program name with args.
+set dummy tar; ac_word=$2
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+printf %s "checking for $ac_word... " >&6; }
+if test ${ac_cv_prog_ac_ct_TAR+y}
+then :
+  printf %s "(cached) " >&6
+else $as_nop
+  if test -n "$ac_ct_TAR"; then
+  ac_cv_prog_ac_ct_TAR="$ac_ct_TAR" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  case $as_dir in #(((
+    '') as_dir=./ ;;
+    */) ;;
+    *) as_dir=$as_dir/ ;;
+  esac
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir$ac_word$ac_exec_ext"; then
+    ac_cv_prog_ac_ct_TAR="tar"
+    printf "%s\n" "$as_me:${as_lineno-$LINENO}: found $as_dir$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+fi
+fi
+ac_ct_TAR=$ac_cv_prog_ac_ct_TAR
+if test -n "$ac_ct_TAR"; then
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_ct_TAR" >&5
+printf "%s\n" "$ac_ct_TAR" >&6; }
+else
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+fi
+
+  if test "x$ac_ct_TAR" = x; then
+    TAR=""
+  else
+    case $cross_compiling:$ac_tool_warned in
+yes:)
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: WARNING: using cross tools not prefixed with host triplet" >&5
+printf "%s\n" "$as_me: WARNING: using cross tools not prefixed with host triplet" >&2;}
+ac_tool_warned=yes ;;
+esac
+    TAR=$ac_ct_TAR
+  fi
+else
+  TAR="$ac_cv_prog_TAR"
+fi
+
+    if test -n "$ac_tool_prefix"; then
+  # Extract the first word of "${ac_tool_prefix}unzip", so it can be a program name with args.
+set dummy ${ac_tool_prefix}unzip; ac_word=$2
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+printf %s "checking for $ac_word... " >&6; }
+if test ${ac_cv_prog_UNZIP+y}
+then :
+  printf %s "(cached) " >&6
+else $as_nop
+  if test -n "$UNZIP"; then
+  ac_cv_prog_UNZIP="$UNZIP" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  case $as_dir in #(((
+    '') as_dir=./ ;;
+    */) ;;
+    *) as_dir=$as_dir/ ;;
+  esac
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir$ac_word$ac_exec_ext"; then
+    ac_cv_prog_UNZIP="${ac_tool_prefix}unzip"
+    printf "%s\n" "$as_me:${as_lineno-$LINENO}: found $as_dir$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+fi
+fi
+UNZIP=$ac_cv_prog_UNZIP
+if test -n "$UNZIP"; then
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $UNZIP" >&5
+printf "%s\n" "$UNZIP" >&6; }
+else
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+fi
+
+
+fi
+if test -z "$ac_cv_prog_UNZIP"; then
+  ac_ct_UNZIP=$UNZIP
+  # Extract the first word of "unzip", so it can be a program name with args.
+set dummy unzip; ac_word=$2
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+printf %s "checking for $ac_word... " >&6; }
+if test ${ac_cv_prog_ac_ct_UNZIP+y}
+then :
+  printf %s "(cached) " >&6
+else $as_nop
+  if test -n "$ac_ct_UNZIP"; then
+  ac_cv_prog_ac_ct_UNZIP="$ac_ct_UNZIP" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  case $as_dir in #(((
+    '') as_dir=./ ;;
+    */) ;;
+    *) as_dir=$as_dir/ ;;
+  esac
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir$ac_word$ac_exec_ext"; then
+    ac_cv_prog_ac_ct_UNZIP="unzip"
+    printf "%s\n" "$as_me:${as_lineno-$LINENO}: found $as_dir$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+fi
+fi
+ac_ct_UNZIP=$ac_cv_prog_ac_ct_UNZIP
+if test -n "$ac_ct_UNZIP"; then
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_ct_UNZIP" >&5
+printf "%s\n" "$ac_ct_UNZIP" >&6; }
+else
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+fi
+
+  if test "x$ac_ct_UNZIP" = x; then
+    UNZIP=""
+  else
+    case $cross_compiling:$ac_tool_warned in
+yes:)
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: WARNING: using cross tools not prefixed with host triplet" >&5
+printf "%s\n" "$as_me: WARNING: using cross tools not prefixed with host triplet" >&2;}
+ac_tool_warned=yes ;;
+esac
+    UNZIP=$ac_ct_UNZIP
+  fi
+else
+  UNZIP="$ac_cv_prog_UNZIP"
+fi
+
+    if test -n "$ac_tool_prefix"; then
+  # Extract the first word of "${ac_tool_prefix}gunzip", so it can be a program name with args.
+set dummy ${ac_tool_prefix}gunzip; ac_word=$2
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+printf %s "checking for $ac_word... " >&6; }
+if test ${ac_cv_prog_GUNZIP+y}
+then :
+  printf %s "(cached) " >&6
+else $as_nop
+  if test -n "$GUNZIP"; then
+  ac_cv_prog_GUNZIP="$GUNZIP" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  case $as_dir in #(((
+    '') as_dir=./ ;;
+    */) ;;
+    *) as_dir=$as_dir/ ;;
+  esac
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir$ac_word$ac_exec_ext"; then
+    ac_cv_prog_GUNZIP="${ac_tool_prefix}gunzip"
+    printf "%s\n" "$as_me:${as_lineno-$LINENO}: found $as_dir$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+fi
+fi
+GUNZIP=$ac_cv_prog_GUNZIP
+if test -n "$GUNZIP"; then
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $GUNZIP" >&5
+printf "%s\n" "$GUNZIP" >&6; }
+else
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+fi
+
+
+fi
+if test -z "$ac_cv_prog_GUNZIP"; then
+  ac_ct_GUNZIP=$GUNZIP
+  # Extract the first word of "gunzip", so it can be a program name with args.
+set dummy gunzip; ac_word=$2
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+printf %s "checking for $ac_word... " >&6; }
+if test ${ac_cv_prog_ac_ct_GUNZIP+y}
+then :
+  printf %s "(cached) " >&6
+else $as_nop
+  if test -n "$ac_ct_GUNZIP"; then
+  ac_cv_prog_ac_ct_GUNZIP="$ac_ct_GUNZIP" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  case $as_dir in #(((
+    '') as_dir=./ ;;
+    */) ;;
+    *) as_dir=$as_dir/ ;;
+  esac
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir$ac_word$ac_exec_ext"; then
+    ac_cv_prog_ac_ct_GUNZIP="gunzip"
+    printf "%s\n" "$as_me:${as_lineno-$LINENO}: found $as_dir$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+fi
+fi
+ac_ct_GUNZIP=$ac_cv_prog_ac_ct_GUNZIP
+if test -n "$ac_ct_GUNZIP"; then
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_ct_GUNZIP" >&5
+printf "%s\n" "$ac_ct_GUNZIP" >&6; }
+else
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+fi
+
+  if test "x$ac_ct_GUNZIP" = x; then
+    GUNZIP=""
+  else
+    case $cross_compiling:$ac_tool_warned in
+yes:)
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: WARNING: using cross tools not prefixed with host triplet" >&5
+printf "%s\n" "$as_me: WARNING: using cross tools not prefixed with host triplet" >&2;}
+ac_tool_warned=yes ;;
+esac
+    GUNZIP=$ac_ct_GUNZIP
+  fi
+else
+  GUNZIP="$ac_cv_prog_GUNZIP"
+fi
+
+    if test -n "$ac_tool_prefix"; then
+  # Extract the first word of "${ac_tool_prefix}bunzip2", so it can be a program name with args.
+set dummy ${ac_tool_prefix}bunzip2; ac_word=$2
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+printf %s "checking for $ac_word... " >&6; }
+if test ${ac_cv_prog_BUNZIP2+y}
+then :
+  printf %s "(cached) " >&6
+else $as_nop
+  if test -n "$BUNZIP2"; then
+  ac_cv_prog_BUNZIP2="$BUNZIP2" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  case $as_dir in #(((
+    '') as_dir=./ ;;
+    */) ;;
+    *) as_dir=$as_dir/ ;;
+  esac
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir$ac_word$ac_exec_ext"; then
+    ac_cv_prog_BUNZIP2="${ac_tool_prefix}bunzip2"
+    printf "%s\n" "$as_me:${as_lineno-$LINENO}: found $as_dir$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+fi
+fi
+BUNZIP2=$ac_cv_prog_BUNZIP2
+if test -n "$BUNZIP2"; then
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $BUNZIP2" >&5
+printf "%s\n" "$BUNZIP2" >&6; }
+else
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+fi
+
+
+fi
+if test -z "$ac_cv_prog_BUNZIP2"; then
+  ac_ct_BUNZIP2=$BUNZIP2
+  # Extract the first word of "bunzip2", so it can be a program name with args.
+set dummy bunzip2; ac_word=$2
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+printf %s "checking for $ac_word... " >&6; }
+if test ${ac_cv_prog_ac_ct_BUNZIP2+y}
+then :
+  printf %s "(cached) " >&6
+else $as_nop
+  if test -n "$ac_ct_BUNZIP2"; then
+  ac_cv_prog_ac_ct_BUNZIP2="$ac_ct_BUNZIP2" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  case $as_dir in #(((
+    '') as_dir=./ ;;
+    */) ;;
+    *) as_dir=$as_dir/ ;;
+  esac
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir$ac_word$ac_exec_ext"; then
+    ac_cv_prog_ac_ct_BUNZIP2="bunzip2"
+    printf "%s\n" "$as_me:${as_lineno-$LINENO}: found $as_dir$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+fi
+fi
+ac_ct_BUNZIP2=$ac_cv_prog_ac_ct_BUNZIP2
+if test -n "$ac_ct_BUNZIP2"; then
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_ct_BUNZIP2" >&5
+printf "%s\n" "$ac_ct_BUNZIP2" >&6; }
+else
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+fi
+
+  if test "x$ac_ct_BUNZIP2" = x; then
+    BUNZIP2=""
+  else
+    case $cross_compiling:$ac_tool_warned in
+yes:)
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: WARNING: using cross tools not prefixed with host triplet" >&5
+printf "%s\n" "$as_me: WARNING: using cross tools not prefixed with host triplet" >&2;}
+ac_tool_warned=yes ;;
+esac
+    BUNZIP2=$ac_ct_BUNZIP2
+  fi
+else
+  BUNZIP2="$ac_cv_prog_BUNZIP2"
+fi
+
+    if test -n "$ac_tool_prefix"; then
+  # Extract the first word of "${ac_tool_prefix}unxz", so it can be a program name with args.
+set dummy ${ac_tool_prefix}unxz; ac_word=$2
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+printf %s "checking for $ac_word... " >&6; }
+if test ${ac_cv_prog_UNXZ+y}
+then :
+  printf %s "(cached) " >&6
+else $as_nop
+  if test -n "$UNXZ"; then
+  ac_cv_prog_UNXZ="$UNXZ" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  case $as_dir in #(((
+    '') as_dir=./ ;;
+    */) ;;
+    *) as_dir=$as_dir/ ;;
+  esac
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir$ac_word$ac_exec_ext"; then
+    ac_cv_prog_UNXZ="${ac_tool_prefix}unxz"
+    printf "%s\n" "$as_me:${as_lineno-$LINENO}: found $as_dir$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+fi
+fi
+UNXZ=$ac_cv_prog_UNXZ
+if test -n "$UNXZ"; then
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $UNXZ" >&5
+printf "%s\n" "$UNXZ" >&6; }
+else
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+fi
+
+
+fi
+if test -z "$ac_cv_prog_UNXZ"; then
+  ac_ct_UNXZ=$UNXZ
+  # Extract the first word of "unxz", so it can be a program name with args.
+set dummy unxz; ac_word=$2
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+printf %s "checking for $ac_word... " >&6; }
+if test ${ac_cv_prog_ac_ct_UNXZ+y}
+then :
+  printf %s "(cached) " >&6
+else $as_nop
+  if test -n "$ac_ct_UNXZ"; then
+  ac_cv_prog_ac_ct_UNXZ="$ac_ct_UNXZ" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  case $as_dir in #(((
+    '') as_dir=./ ;;
+    */) ;;
+    *) as_dir=$as_dir/ ;;
+  esac
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir$ac_word$ac_exec_ext"; then
+    ac_cv_prog_ac_ct_UNXZ="unxz"
+    printf "%s\n" "$as_me:${as_lineno-$LINENO}: found $as_dir$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+fi
+fi
+ac_ct_UNXZ=$ac_cv_prog_ac_ct_UNXZ
+if test -n "$ac_ct_UNXZ"; then
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_ct_UNXZ" >&5
+printf "%s\n" "$ac_ct_UNXZ" >&6; }
+else
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+fi
+
+  if test "x$ac_ct_UNXZ" = x; then
+    UNXZ=""
+  else
+    case $cross_compiling:$ac_tool_warned in
+yes:)
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: WARNING: using cross tools not prefixed with host triplet" >&5
+printf "%s\n" "$as_me: WARNING: using cross tools not prefixed with host triplet" >&2;}
+ac_tool_warned=yes ;;
+esac
+    UNXZ=$ac_ct_UNXZ
+  fi
+else
+  UNXZ="$ac_cv_prog_UNXZ"
+fi
+
+    if test -n "$ac_tool_prefix"; then
+  # Extract the first word of "${ac_tool_prefix}perl", so it can be a program name with args.
+set dummy ${ac_tool_prefix}perl; ac_word=$2
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+printf %s "checking for $ac_word... " >&6; }
+if test ${ac_cv_prog_PERL+y}
+then :
+  printf %s "(cached) " >&6
+else $as_nop
+  if test -n "$PERL"; then
+  ac_cv_prog_PERL="$PERL" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  case $as_dir in #(((
+    '') as_dir=./ ;;
+    */) ;;
+    *) as_dir=$as_dir/ ;;
+  esac
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir$ac_word$ac_exec_ext"; then
+    ac_cv_prog_PERL="${ac_tool_prefix}perl"
+    printf "%s\n" "$as_me:${as_lineno-$LINENO}: found $as_dir$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+fi
+fi
+PERL=$ac_cv_prog_PERL
+if test -n "$PERL"; then
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $PERL" >&5
+printf "%s\n" "$PERL" >&6; }
+else
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+fi
+
+
+fi
+if test -z "$ac_cv_prog_PERL"; then
+  ac_ct_PERL=$PERL
+  # Extract the first word of "perl", so it can be a program name with args.
+set dummy perl; ac_word=$2
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+printf %s "checking for $ac_word... " >&6; }
+if test ${ac_cv_prog_ac_ct_PERL+y}
+then :
+  printf %s "(cached) " >&6
+else $as_nop
+  if test -n "$ac_ct_PERL"; then
+  ac_cv_prog_ac_ct_PERL="$ac_ct_PERL" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  case $as_dir in #(((
+    '') as_dir=./ ;;
+    */) ;;
+    *) as_dir=$as_dir/ ;;
+  esac
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir$ac_word$ac_exec_ext"; then
+    ac_cv_prog_ac_ct_PERL="perl"
+    printf "%s\n" "$as_me:${as_lineno-$LINENO}: found $as_dir$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+fi
+fi
+ac_ct_PERL=$ac_cv_prog_ac_ct_PERL
+if test -n "$ac_ct_PERL"; then
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_ct_PERL" >&5
+printf "%s\n" "$ac_ct_PERL" >&6; }
+else
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+fi
+
+  if test "x$ac_ct_PERL" = x; then
+    PERL=""
+  else
+    case $cross_compiling:$ac_tool_warned in
+yes:)
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: WARNING: using cross tools not prefixed with host triplet" >&5
+printf "%s\n" "$as_me: WARNING: using cross tools not prefixed with host triplet" >&2;}
+ac_tool_warned=yes ;;
+esac
+    PERL=$ac_ct_PERL
+  fi
+else
+  PERL="$ac_cv_prog_PERL"
+fi
+
+
 
     { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for conda package cmake" >&5
 printf %s "checking for conda package cmake... " >&6; }
@@ -6003,6 +6623,619 @@ printf "%s\n" "no" >&6; }
         fi
     fi
 
+
+
+    if test -n "$ac_tool_prefix"; then
+  # Extract the first word of "${ac_tool_prefix}tar", so it can be a program name with args.
+set dummy ${ac_tool_prefix}tar; ac_word=$2
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+printf %s "checking for $ac_word... " >&6; }
+if test ${ac_cv_prog_TAR+y}
+then :
+  printf %s "(cached) " >&6
+else $as_nop
+  if test -n "$TAR"; then
+  ac_cv_prog_TAR="$TAR" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  case $as_dir in #(((
+    '') as_dir=./ ;;
+    */) ;;
+    *) as_dir=$as_dir/ ;;
+  esac
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir$ac_word$ac_exec_ext"; then
+    ac_cv_prog_TAR="${ac_tool_prefix}tar"
+    printf "%s\n" "$as_me:${as_lineno-$LINENO}: found $as_dir$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+fi
+fi
+TAR=$ac_cv_prog_TAR
+if test -n "$TAR"; then
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $TAR" >&5
+printf "%s\n" "$TAR" >&6; }
+else
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+fi
+
+
+fi
+if test -z "$ac_cv_prog_TAR"; then
+  ac_ct_TAR=$TAR
+  # Extract the first word of "tar", so it can be a program name with args.
+set dummy tar; ac_word=$2
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+printf %s "checking for $ac_word... " >&6; }
+if test ${ac_cv_prog_ac_ct_TAR+y}
+then :
+  printf %s "(cached) " >&6
+else $as_nop
+  if test -n "$ac_ct_TAR"; then
+  ac_cv_prog_ac_ct_TAR="$ac_ct_TAR" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  case $as_dir in #(((
+    '') as_dir=./ ;;
+    */) ;;
+    *) as_dir=$as_dir/ ;;
+  esac
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir$ac_word$ac_exec_ext"; then
+    ac_cv_prog_ac_ct_TAR="tar"
+    printf "%s\n" "$as_me:${as_lineno-$LINENO}: found $as_dir$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+fi
+fi
+ac_ct_TAR=$ac_cv_prog_ac_ct_TAR
+if test -n "$ac_ct_TAR"; then
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_ct_TAR" >&5
+printf "%s\n" "$ac_ct_TAR" >&6; }
+else
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+fi
+
+  if test "x$ac_ct_TAR" = x; then
+    TAR=""
+  else
+    case $cross_compiling:$ac_tool_warned in
+yes:)
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: WARNING: using cross tools not prefixed with host triplet" >&5
+printf "%s\n" "$as_me: WARNING: using cross tools not prefixed with host triplet" >&2;}
+ac_tool_warned=yes ;;
+esac
+    TAR=$ac_ct_TAR
+  fi
+else
+  TAR="$ac_cv_prog_TAR"
+fi
+
+    if test -n "$ac_tool_prefix"; then
+  # Extract the first word of "${ac_tool_prefix}unzip", so it can be a program name with args.
+set dummy ${ac_tool_prefix}unzip; ac_word=$2
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+printf %s "checking for $ac_word... " >&6; }
+if test ${ac_cv_prog_UNZIP+y}
+then :
+  printf %s "(cached) " >&6
+else $as_nop
+  if test -n "$UNZIP"; then
+  ac_cv_prog_UNZIP="$UNZIP" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  case $as_dir in #(((
+    '') as_dir=./ ;;
+    */) ;;
+    *) as_dir=$as_dir/ ;;
+  esac
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir$ac_word$ac_exec_ext"; then
+    ac_cv_prog_UNZIP="${ac_tool_prefix}unzip"
+    printf "%s\n" "$as_me:${as_lineno-$LINENO}: found $as_dir$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+fi
+fi
+UNZIP=$ac_cv_prog_UNZIP
+if test -n "$UNZIP"; then
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $UNZIP" >&5
+printf "%s\n" "$UNZIP" >&6; }
+else
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+fi
+
+
+fi
+if test -z "$ac_cv_prog_UNZIP"; then
+  ac_ct_UNZIP=$UNZIP
+  # Extract the first word of "unzip", so it can be a program name with args.
+set dummy unzip; ac_word=$2
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+printf %s "checking for $ac_word... " >&6; }
+if test ${ac_cv_prog_ac_ct_UNZIP+y}
+then :
+  printf %s "(cached) " >&6
+else $as_nop
+  if test -n "$ac_ct_UNZIP"; then
+  ac_cv_prog_ac_ct_UNZIP="$ac_ct_UNZIP" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  case $as_dir in #(((
+    '') as_dir=./ ;;
+    */) ;;
+    *) as_dir=$as_dir/ ;;
+  esac
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir$ac_word$ac_exec_ext"; then
+    ac_cv_prog_ac_ct_UNZIP="unzip"
+    printf "%s\n" "$as_me:${as_lineno-$LINENO}: found $as_dir$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+fi
+fi
+ac_ct_UNZIP=$ac_cv_prog_ac_ct_UNZIP
+if test -n "$ac_ct_UNZIP"; then
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_ct_UNZIP" >&5
+printf "%s\n" "$ac_ct_UNZIP" >&6; }
+else
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+fi
+
+  if test "x$ac_ct_UNZIP" = x; then
+    UNZIP=""
+  else
+    case $cross_compiling:$ac_tool_warned in
+yes:)
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: WARNING: using cross tools not prefixed with host triplet" >&5
+printf "%s\n" "$as_me: WARNING: using cross tools not prefixed with host triplet" >&2;}
+ac_tool_warned=yes ;;
+esac
+    UNZIP=$ac_ct_UNZIP
+  fi
+else
+  UNZIP="$ac_cv_prog_UNZIP"
+fi
+
+    if test -n "$ac_tool_prefix"; then
+  # Extract the first word of "${ac_tool_prefix}gunzip", so it can be a program name with args.
+set dummy ${ac_tool_prefix}gunzip; ac_word=$2
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+printf %s "checking for $ac_word... " >&6; }
+if test ${ac_cv_prog_GUNZIP+y}
+then :
+  printf %s "(cached) " >&6
+else $as_nop
+  if test -n "$GUNZIP"; then
+  ac_cv_prog_GUNZIP="$GUNZIP" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  case $as_dir in #(((
+    '') as_dir=./ ;;
+    */) ;;
+    *) as_dir=$as_dir/ ;;
+  esac
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir$ac_word$ac_exec_ext"; then
+    ac_cv_prog_GUNZIP="${ac_tool_prefix}gunzip"
+    printf "%s\n" "$as_me:${as_lineno-$LINENO}: found $as_dir$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+fi
+fi
+GUNZIP=$ac_cv_prog_GUNZIP
+if test -n "$GUNZIP"; then
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $GUNZIP" >&5
+printf "%s\n" "$GUNZIP" >&6; }
+else
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+fi
+
+
+fi
+if test -z "$ac_cv_prog_GUNZIP"; then
+  ac_ct_GUNZIP=$GUNZIP
+  # Extract the first word of "gunzip", so it can be a program name with args.
+set dummy gunzip; ac_word=$2
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+printf %s "checking for $ac_word... " >&6; }
+if test ${ac_cv_prog_ac_ct_GUNZIP+y}
+then :
+  printf %s "(cached) " >&6
+else $as_nop
+  if test -n "$ac_ct_GUNZIP"; then
+  ac_cv_prog_ac_ct_GUNZIP="$ac_ct_GUNZIP" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  case $as_dir in #(((
+    '') as_dir=./ ;;
+    */) ;;
+    *) as_dir=$as_dir/ ;;
+  esac
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir$ac_word$ac_exec_ext"; then
+    ac_cv_prog_ac_ct_GUNZIP="gunzip"
+    printf "%s\n" "$as_me:${as_lineno-$LINENO}: found $as_dir$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+fi
+fi
+ac_ct_GUNZIP=$ac_cv_prog_ac_ct_GUNZIP
+if test -n "$ac_ct_GUNZIP"; then
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_ct_GUNZIP" >&5
+printf "%s\n" "$ac_ct_GUNZIP" >&6; }
+else
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+fi
+
+  if test "x$ac_ct_GUNZIP" = x; then
+    GUNZIP=""
+  else
+    case $cross_compiling:$ac_tool_warned in
+yes:)
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: WARNING: using cross tools not prefixed with host triplet" >&5
+printf "%s\n" "$as_me: WARNING: using cross tools not prefixed with host triplet" >&2;}
+ac_tool_warned=yes ;;
+esac
+    GUNZIP=$ac_ct_GUNZIP
+  fi
+else
+  GUNZIP="$ac_cv_prog_GUNZIP"
+fi
+
+    if test -n "$ac_tool_prefix"; then
+  # Extract the first word of "${ac_tool_prefix}bunzip2", so it can be a program name with args.
+set dummy ${ac_tool_prefix}bunzip2; ac_word=$2
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+printf %s "checking for $ac_word... " >&6; }
+if test ${ac_cv_prog_BUNZIP2+y}
+then :
+  printf %s "(cached) " >&6
+else $as_nop
+  if test -n "$BUNZIP2"; then
+  ac_cv_prog_BUNZIP2="$BUNZIP2" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  case $as_dir in #(((
+    '') as_dir=./ ;;
+    */) ;;
+    *) as_dir=$as_dir/ ;;
+  esac
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir$ac_word$ac_exec_ext"; then
+    ac_cv_prog_BUNZIP2="${ac_tool_prefix}bunzip2"
+    printf "%s\n" "$as_me:${as_lineno-$LINENO}: found $as_dir$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+fi
+fi
+BUNZIP2=$ac_cv_prog_BUNZIP2
+if test -n "$BUNZIP2"; then
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $BUNZIP2" >&5
+printf "%s\n" "$BUNZIP2" >&6; }
+else
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+fi
+
+
+fi
+if test -z "$ac_cv_prog_BUNZIP2"; then
+  ac_ct_BUNZIP2=$BUNZIP2
+  # Extract the first word of "bunzip2", so it can be a program name with args.
+set dummy bunzip2; ac_word=$2
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+printf %s "checking for $ac_word... " >&6; }
+if test ${ac_cv_prog_ac_ct_BUNZIP2+y}
+then :
+  printf %s "(cached) " >&6
+else $as_nop
+  if test -n "$ac_ct_BUNZIP2"; then
+  ac_cv_prog_ac_ct_BUNZIP2="$ac_ct_BUNZIP2" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  case $as_dir in #(((
+    '') as_dir=./ ;;
+    */) ;;
+    *) as_dir=$as_dir/ ;;
+  esac
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir$ac_word$ac_exec_ext"; then
+    ac_cv_prog_ac_ct_BUNZIP2="bunzip2"
+    printf "%s\n" "$as_me:${as_lineno-$LINENO}: found $as_dir$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+fi
+fi
+ac_ct_BUNZIP2=$ac_cv_prog_ac_ct_BUNZIP2
+if test -n "$ac_ct_BUNZIP2"; then
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_ct_BUNZIP2" >&5
+printf "%s\n" "$ac_ct_BUNZIP2" >&6; }
+else
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+fi
+
+  if test "x$ac_ct_BUNZIP2" = x; then
+    BUNZIP2=""
+  else
+    case $cross_compiling:$ac_tool_warned in
+yes:)
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: WARNING: using cross tools not prefixed with host triplet" >&5
+printf "%s\n" "$as_me: WARNING: using cross tools not prefixed with host triplet" >&2;}
+ac_tool_warned=yes ;;
+esac
+    BUNZIP2=$ac_ct_BUNZIP2
+  fi
+else
+  BUNZIP2="$ac_cv_prog_BUNZIP2"
+fi
+
+    if test -n "$ac_tool_prefix"; then
+  # Extract the first word of "${ac_tool_prefix}unxz", so it can be a program name with args.
+set dummy ${ac_tool_prefix}unxz; ac_word=$2
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+printf %s "checking for $ac_word... " >&6; }
+if test ${ac_cv_prog_UNXZ+y}
+then :
+  printf %s "(cached) " >&6
+else $as_nop
+  if test -n "$UNXZ"; then
+  ac_cv_prog_UNXZ="$UNXZ" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  case $as_dir in #(((
+    '') as_dir=./ ;;
+    */) ;;
+    *) as_dir=$as_dir/ ;;
+  esac
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir$ac_word$ac_exec_ext"; then
+    ac_cv_prog_UNXZ="${ac_tool_prefix}unxz"
+    printf "%s\n" "$as_me:${as_lineno-$LINENO}: found $as_dir$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+fi
+fi
+UNXZ=$ac_cv_prog_UNXZ
+if test -n "$UNXZ"; then
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $UNXZ" >&5
+printf "%s\n" "$UNXZ" >&6; }
+else
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+fi
+
+
+fi
+if test -z "$ac_cv_prog_UNXZ"; then
+  ac_ct_UNXZ=$UNXZ
+  # Extract the first word of "unxz", so it can be a program name with args.
+set dummy unxz; ac_word=$2
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+printf %s "checking for $ac_word... " >&6; }
+if test ${ac_cv_prog_ac_ct_UNXZ+y}
+then :
+  printf %s "(cached) " >&6
+else $as_nop
+  if test -n "$ac_ct_UNXZ"; then
+  ac_cv_prog_ac_ct_UNXZ="$ac_ct_UNXZ" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  case $as_dir in #(((
+    '') as_dir=./ ;;
+    */) ;;
+    *) as_dir=$as_dir/ ;;
+  esac
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir$ac_word$ac_exec_ext"; then
+    ac_cv_prog_ac_ct_UNXZ="unxz"
+    printf "%s\n" "$as_me:${as_lineno-$LINENO}: found $as_dir$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+fi
+fi
+ac_ct_UNXZ=$ac_cv_prog_ac_ct_UNXZ
+if test -n "$ac_ct_UNXZ"; then
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_ct_UNXZ" >&5
+printf "%s\n" "$ac_ct_UNXZ" >&6; }
+else
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+fi
+
+  if test "x$ac_ct_UNXZ" = x; then
+    UNXZ=""
+  else
+    case $cross_compiling:$ac_tool_warned in
+yes:)
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: WARNING: using cross tools not prefixed with host triplet" >&5
+printf "%s\n" "$as_me: WARNING: using cross tools not prefixed with host triplet" >&2;}
+ac_tool_warned=yes ;;
+esac
+    UNXZ=$ac_ct_UNXZ
+  fi
+else
+  UNXZ="$ac_cv_prog_UNXZ"
+fi
+
+    if test -n "$ac_tool_prefix"; then
+  # Extract the first word of "${ac_tool_prefix}perl", so it can be a program name with args.
+set dummy ${ac_tool_prefix}perl; ac_word=$2
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+printf %s "checking for $ac_word... " >&6; }
+if test ${ac_cv_prog_PERL5+y}
+then :
+  printf %s "(cached) " >&6
+else $as_nop
+  if test -n "$PERL5"; then
+  ac_cv_prog_PERL5="$PERL5" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  case $as_dir in #(((
+    '') as_dir=./ ;;
+    */) ;;
+    *) as_dir=$as_dir/ ;;
+  esac
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir$ac_word$ac_exec_ext"; then
+    ac_cv_prog_PERL5="${ac_tool_prefix}perl"
+    printf "%s\n" "$as_me:${as_lineno-$LINENO}: found $as_dir$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+fi
+fi
+PERL5=$ac_cv_prog_PERL5
+if test -n "$PERL5"; then
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $PERL5" >&5
+printf "%s\n" "$PERL5" >&6; }
+else
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+fi
+
+
+fi
+if test -z "$ac_cv_prog_PERL5"; then
+  ac_ct_PERL5=$PERL5
+  # Extract the first word of "perl", so it can be a program name with args.
+set dummy perl; ac_word=$2
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+printf %s "checking for $ac_word... " >&6; }
+if test ${ac_cv_prog_ac_ct_PERL5+y}
+then :
+  printf %s "(cached) " >&6
+else $as_nop
+  if test -n "$ac_ct_PERL5"; then
+  ac_cv_prog_ac_ct_PERL5="$ac_ct_PERL5" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  case $as_dir in #(((
+    '') as_dir=./ ;;
+    */) ;;
+    *) as_dir=$as_dir/ ;;
+  esac
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir$ac_word$ac_exec_ext"; then
+    ac_cv_prog_ac_ct_PERL5="perl"
+    printf "%s\n" "$as_me:${as_lineno-$LINENO}: found $as_dir$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+fi
+fi
+ac_ct_PERL5=$ac_cv_prog_ac_ct_PERL5
+if test -n "$ac_ct_PERL5"; then
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_ct_PERL5" >&5
+printf "%s\n" "$ac_ct_PERL5" >&6; }
+else
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+fi
+
+  if test "x$ac_ct_PERL5" = x; then
+    PERL5=""
+  else
+    case $cross_compiling:$ac_tool_warned in
+yes:)
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: WARNING: using cross tools not prefixed with host triplet" >&5
+printf "%s\n" "$as_me: WARNING: using cross tools not prefixed with host triplet" >&2;}
+ac_tool_warned=yes ;;
+esac
+    PERL5=$ac_ct_PERL5
+  fi
+else
+  PERL5="$ac_cv_prog_PERL5"
+fi
 
 
     if test -n "$ac_tool_prefix"; then
@@ -12832,6 +14065,30 @@ fi
 if test "x" != "x${DOWNLOAD}"
 then :
   FEATURES="${FEATURES} download"
+fi
+if test "x" != "x${TAR}"
+then :
+  FEATURES="${FEATURES} tar"
+fi
+if test "x" != "x${UNZIP}"
+then :
+  FEATURES="${FEATURES} unzip"
+fi
+if test "x" != "x${GUNZIP}"
+then :
+  FEATURES="${FEATURES} gunzip"
+fi
+if test "x" != "x${BUNZIP2}"
+then :
+  FEATURES="${FEATURES} bunzip2"
+fi
+if test "x" != "x${UNXZ}"
+then :
+  FEATURES="${FEATURES} unxz"
+fi
+if test "x" != "x${PERL}"
+then :
+  FEATURES="${FEATURES} perl"
 fi
 if test "x" != "x${MPICC}"
 then :

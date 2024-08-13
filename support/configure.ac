@@ -19,9 +19,9 @@ then
     # Conda list doesn't work in conda build environments, and normal detection
     # can be problematic because it picks up e.g. compilers from the system. So
     # we assume that the conda metadata is correct, and that if it isn't there's
-    # an expert packages who can fix things.
+    # an expert packager who can fix things.
     AS_ECHO(["Conda package build detected, skipping checks for dependencies."])
-    ASSUME_FEATURES="c c++ fortran java python cmake install download mpi openmp cuda opencl blas lapack gsl gmp mpfr fftw hdf5 netcdf4 sapporo_light"
+    ASSUME_FEATURES="c c++ fortran java python tar unzip gunzip bunzip2 unxz perl cmake install download mpi openmp cuda opencl blas lapack gsl gmp mpfr fftw hdf5 netcdf4 sapporo_light"
 
 elif test "x" != "x$CONDA_DEFAULT_ENV"
 then
@@ -51,6 +51,13 @@ then
     AX_CONDA_PACKAGE(INSTALL, coreutils)
 
     AMUSE_DOWNLOAD()
+    AC_CHECK_TOOL(TAR, tar)
+    AC_CHECK_TOOL(UNZIP, unzip)
+    AC_CHECK_TOOL(GUNZIP, gunzip)
+    AC_CHECK_TOOL(BUNZIP2, bunzip2)
+    AC_CHECK_TOOL(UNXZ, unxz)
+    AC_CHECK_TOOL(PERL, perl)
+
     AX_CONDA_PACKAGE(CMAKE, cmake)
 
     AX_CONDA_PACKAGE(MPICC, mpi)
@@ -96,6 +103,13 @@ else
     AC_CHECK_TOOL(HOMEBREW, brew)
 
     AMUSE_DOWNLOAD()
+    AC_CHECK_TOOL(TAR, tar)
+    AC_CHECK_TOOL(UNZIP, unzip)
+    AC_CHECK_TOOL(GUNZIP, gunzip)
+    AC_CHECK_TOOL(BUNZIP2, bunzip2)
+    AC_CHECK_TOOL(UNXZ, unxz)
+    AC_CHECK_TOOL(PERL5, perl)
+
     AC_CHECK_TOOL(CMAKE, cmake)
 
     AX_MPI()
@@ -143,6 +157,12 @@ ENABLE_FEATURE_IF_DEFINED([python], [PYTHON])
 ENABLE_FEATURE_IF_DEFINED([cmake], [CMAKE])
 ENABLE_FEATURE_IF_DEFINED([install], [INSTALL])
 ENABLE_FEATURE_IF_DEFINED([download], [DOWNLOAD])
+ENABLE_FEATURE_IF_DEFINED([tar], [TAR])
+ENABLE_FEATURE_IF_DEFINED([unzip], [UNZIP])
+ENABLE_FEATURE_IF_DEFINED([gunzip], [GUNZIP])
+ENABLE_FEATURE_IF_DEFINED([bunzip2], [BUNZIP2])
+ENABLE_FEATURE_IF_DEFINED([unxz], [UNXZ])
+ENABLE_FEATURE_IF_DEFINED([perl], [PERL])
 ENABLE_FEATURE_IF_DEFINED([mpi], [MPICC])
 ENABLE_FEATURE_IF_DEFINED([openmp], [HAVE_OPENMP])
 ENABLE_FEATURE_IF_DEFINED([cuda], [CUDA_TK])
