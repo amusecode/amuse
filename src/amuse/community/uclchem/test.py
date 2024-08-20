@@ -20,6 +20,7 @@ print('species', chem.out_species)
 dt = 1e5|units.yr
 chem.particles.add_particle(particles)
 channel = chem.particles.new_channel_to(particles)
+print('radiation:',chem.particles.radfield)
 t=0|units.yr
 index_H = chem.get_index_of_species('H')
 for i in range(10):

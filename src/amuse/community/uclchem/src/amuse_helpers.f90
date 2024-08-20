@@ -10,6 +10,7 @@ MODULE uclchemhelper
         double precision :: density
         double precision :: temperature
         double precision :: ionrate
+        double precision :: uvrad
         double precision :: abundances(nSpec+1)
     end type
     integer :: nmols
@@ -61,10 +62,10 @@ CONTAINS
         ret=0
      end function
 
-    function set_particle_state(id,density,temperature,ionrate) result(ret)
+    function set_particle_state(id,density,temperature,ionrate,uvrad) result(ret)
         integer :: ret
         integer :: id,index
-        double precision :: density, temperature, ionrate
+        double precision :: density, temperature, ionrate, uvrad
         index=find_particle(id)
         if(index.LT.0) then
         ret=index
@@ -74,14 +75,15 @@ CONTAINS
         particles(index)%density=density
         particles(index)%temperature=temperature
         particles(index)%ionrate=ionrate
+        particles(index)%uvrad=uvrad
         ret=0
 
     end function
 
-    function get_particle_state(id,density,temperature,ionrate) result(ret)
+    function get_particle_state(id,density,temperature,ionrate,uvrad) result(ret)
         integer :: ret
         integer :: id,index
-        double precision :: density, temperature, ionrate
+        double precision :: density, temperature, ionrate, uvrad
         index=find_particle(id)
         if(index.LT.0) then
         ret=index
@@ -91,6 +93,7 @@ CONTAINS
         density=particles(index)%density
         temperature=particles(index)%temperature
         ionrate=particles(index)%ionrate
+        uvrad=particles(index)%uvrad
         ret=0
 
     end function
@@ -129,11 +132,11 @@ CONTAINS
         ret=0
       end function
 
-    function add_particle(id,density,temperature,ionrate) result(ret)
+    function add_particle(id,density,temperature,ionrate,uvrad) result(ret)
         use network
         integer :: ret
         integer :: i,id
-        double precision :: density, temperature,ionrate
+        double precision :: density, temperature, ionrate, uvrad
         double precision :: x(500)
         particles_searcheable=.FALSE.
         id=new_id()  
@@ -147,6 +150,7 @@ CONTAINS
         particles(i)%density=density
         particles(i)%temperature=temperature
         particles(i)%ionrate=ionrate
+        particles(i)%uvrad=uvrad
         particles(i)%abundances=1.d-40
         
         if(density.GT.0) then

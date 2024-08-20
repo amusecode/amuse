@@ -44,7 +44,7 @@ class UCLchemInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesM
         function = LegacyFunctionSpecification()
         function.can_handle_array = True
         function.addParameter('id', dtype='i', direction=function.IN)
-        for x in ['number_density','temperature','ionrate']:
+        for x in ['number_density','temperature','ionrate','radfield']:
             function.addParameter(x, dtype='d', direction=function.IN)
         function.result_type = 'i'
         return function
@@ -54,7 +54,7 @@ class UCLchemInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesM
         function = LegacyFunctionSpecification()
         function.can_handle_array = True
         function.addParameter('id', dtype='i', direction=function.IN)
-        for x in ['number_density','temperature','ionrate']:
+        for x in ['number_density','temperature','ionrate','radfield']:
             function.addParameter(x, dtype='d', direction=function.OUT)
         function.result_type = 'i'
         return function
@@ -111,7 +111,7 @@ class UCLchemInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesM
         function = LegacyFunctionSpecification()
         function.can_handle_array = True
         function.addParameter('id', dtype='int32', direction=function.OUT)
-        for x in ['number_density','temperature','ionrate']:
+        for x in ['number_density','temperature','ionrate', 'radfield']:
             function.addParameter(x, dtype='d', direction=function.IN)
         function.result_type = 'i'
         return function
@@ -180,9 +180,6 @@ class UCLchem(CommonCode):
     def evolve_model(self,tend):
         assert tend > self.uclchem_time, 'end time must be larger than uclchem_time'
         dictionary, out_species= self._build_dict(tend=tend)
-        n_particles = len(self.particles.key)
-        print('dictionary',dictionary)
-        print('outspecies',out_species)
         self.set_species(out_species)
         output = self.run_model(dictionary)
         self.uclchem_time = tend
@@ -203,7 +200,6 @@ class UCLchem(CommonCode):
             if 'ionrate' in attributes:
                 dictionary['zeta'] = self.particles.ionrate.value_in(units.cr_ion)[i]
             if 'radfield' in attributes:
-                print('here')
                 dictionary['radfield'] = self.particles.radfield.value_in(units.habing)[i]
             dictionary['finalTime'] = tend.value_in(units.yr)-self.uclchem_time.value_in(units.yr)
             #dictionary['currentTime'] = self.uclchem_time
@@ -227,6 +223,7 @@ class UCLchem(CommonCode):
                 units.cm**-3,
                 units.K,
                 units.s**-1,
+                units.habing,
             ),
             (
                 handler.ERROR_CODE,
@@ -241,6 +238,7 @@ class UCLchem(CommonCode):
                 units.cm**-3,
                 units.K,
                 units.s**-1,
+                units.habing,
                 handler.ERROR_CODE,
             )
         )
@@ -282,6 +280,7 @@ class UCLchem(CommonCode):
                 units.cm**-3,
                 units.K,
                 units.s**-1,
+                units.habing
             ),
             (
                 handler.INDEX,

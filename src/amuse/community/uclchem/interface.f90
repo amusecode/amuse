@@ -35,25 +35,25 @@
   !   ret=0
   ! end function
   
-  function new_particle(id,dens,temperature,ionrate) result(ret)
+  function new_particle(id,dens,temperature,ionrate,uvrad) result(ret)
     use uclchemhelper
     integer :: ret,id
-    double precision :: dens,temperature,ionrate 
-    ret=add_particle(id,dens,temperature,ionrate)
+    double precision :: dens,temperature,ionrate,uvrad
+    ret=add_particle(id,dens,temperature,ionrate,uvrad)
   end function
   
-  function set_state(id,dens,temperature,ionrate) result(ret)   
+  function set_state(id,dens,temperature,ionrate,uvrad) result(ret)   
     use uclchemhelper
     integer :: ret,id
-    double precision :: dens,temperature,ionrate
-    ret=set_particle_state(id,dens,temperature,ionrate)
+    double precision :: dens,temperature,ionrate,uvrad
+    ret=set_particle_state(id,dens,temperature,ionrate,uvrad)
   end function
   
-  function get_state(id,dens,temperature,ionrate) result(ret)   
+  function get_state(id,dens,temperature,ionrate,uvrad) result(ret)   
     use uclchemhelper
     integer :: ret,id
-    double precision :: dens,temperature,ionrate
-    ret=get_particle_state(id,dens,temperature,ionrate)
+    double precision :: dens,temperature,ionrate,uvrad
+    ret=get_particle_state(id,dens,temperature,ionrate,uvrad)
   end function
   
   function get_abundance(id,aid,x) result(ret)
