@@ -1,4 +1,4 @@
-from amuse.community.bse.interface import BSE, BSEInterface
+from amuse.community.bse.interface import Bse, BseInterface
 
 from amuse.test.amusetest import TestWithMPI
 from amuse.units import units
@@ -8,7 +8,7 @@ from amuse.datamodel import Particles
 import numpy
 
 
-class TestBSEInterface(TestWithMPI):
+class TestBseInterface(TestWithMPI):
 
     class state(object):
         def __init__(self):
@@ -42,7 +42,7 @@ class TestBSEInterface(TestWithMPI):
 
     def test1(self):
         print("Test initialization...")
-        instance = BSEInterface()
+        instance = BseInterface()
         metallicity = 0.02
         neta = 0.5
         bwind = 0.0
@@ -78,7 +78,7 @@ class TestBSEInterface(TestWithMPI):
 
     def test2(self):
         print("Test basic operations (legacy functions evolve & get_time_step)...")
-        instance = BSEInterface()
+        instance = BseInterface()
         status = instance.initialize(0.02, 0.5, 0.0, 0.5, 1.0, 0.5, 0, 1, 0, 1, 0, 1, 3.0,
             29769, 0.05, 0.01, 0.02, 190.0, 1.0/8.0, 1.0, 3.0/2.0, 0.001, 1.0, -1.0)
 
@@ -145,7 +145,7 @@ class TestBSEInterface(TestWithMPI):
 
     def test3(self):
         print("Test whether the interface can handle arrays...")
-        instance = BSEInterface()
+        instance = BseInterface()
         status = instance.initialize(0.02, 0.5, 0.0, 0.5, 1.0, 0.5, 0, 1, 0, 1, 0, 1, 3.0,
             29769, 0.05, 0.01, 0.02, 190.0, 1.0/8.0, 1.0, 3.0/2.0, 0.001, 1.0, -1.0)
         masses1 = [10.0, 5.0, 4.0]
@@ -179,7 +179,7 @@ class TestBSEInterface(TestWithMPI):
     def test4(self):
         print("Test large number of particles...")
         number_of_particles = 2000
-        instance = BSEInterface()
+        instance = BseInterface()
         status = instance.initialize(0.02, 0.5, 0.0, 0.5, 1.0, 0.5, 0, 1, 0, 1, 0, 1, 3.0,
             29769, 0.05, 0.01, 0.02, 190.0, 1.0/8.0, 1.0, 3.0/2.0, 0.001, 1.0, -1.0)
         masses1 = [1.0 + ((x / 1.0*number_of_particles) * 10.0) for x in range(1, number_of_particles+1)]
@@ -210,11 +210,11 @@ class TestBSEInterface(TestWithMPI):
         instance.stop()
 
 
-class TestBSE(TestWithMPI):
+class TestBse(TestWithMPI):
 
     def test1(self):
         print("Testing evolution of a close binary system...")
-        instance = BSE()
+        instance = Bse()
         instance.initialize_code()
         instance.parameters.metallicity = 0.001
         instance.parameters.common_envelope_efficiency = 3.0
@@ -300,7 +300,7 @@ class TestBSE(TestWithMPI):
 
     def test2(self):
         print("Testing evolution of a wide binary system.")
-        instance = BSE()
+        instance = Bse()
         instance.parameters.metallicity = 0.001
         instance.parameters.common_envelope_efficiency = 3.0
         instance.parameters.Eddington_mass_transfer_limit_factor = 10.0
@@ -385,7 +385,7 @@ class TestBSE(TestWithMPI):
 
     def test3(self):
         print("Testing standard BSE example 2...")
-        instance = BSE()
+        instance = Bse()
         instance.parameters.common_envelope_efficiency = 3.0
         instance.parameters.Eddington_mass_transfer_limit_factor = 10.0
         instance.commit_parameters()
@@ -477,7 +477,7 @@ class TestBSE(TestWithMPI):
 
     def test4(self):
         print("Quick testing standard BSE example 2...")
-        instance = BSE()
+        instance = Bse()
         instance.parameters.common_envelope_efficiency = 3.0
         instance.parameters.Eddington_mass_transfer_limit_factor = 10.0
         instance.commit_parameters()
@@ -519,7 +519,7 @@ class TestBSE(TestWithMPI):
 
     def test5(self):
         print("Testing stellar collision...")
-        instance = BSE()
+        instance = Bse()
         instance.parameters.common_envelope_efficiency = 3.0
         instance.parameters.Eddington_mass_transfer_limit_factor = 10.0
         instance.commit_parameters()
@@ -562,7 +562,7 @@ class TestBSE(TestWithMPI):
 
     def test6(self):
         print("Testing additional parameters for initialization...")
-        instance = BSE()
+        instance = Bse()
         instance.initialize_code()
         self.assertEqual(instance.parameters.reimers_mass_loss_coefficient, 0.5)
         myvalue = 0.7
@@ -572,7 +572,7 @@ class TestBSE(TestWithMPI):
         self.assertEqual(instance.parameters.reimers_mass_loss_coefficient, myvalue)
         instance.stop()
 
-        instance = BSE()
+        instance = Bse()
         self.assertEqual(instance.parameters.reimers_mass_loss_coefficient, 0.5)
         myvalue = 0.7
         instance.parameters.reimers_mass_loss_coefficient = myvalue
@@ -584,7 +584,7 @@ class TestBSE(TestWithMPI):
     def test7(self):
         print("Test evolve_model optional arguments: end_time and keep_synchronous")
 
-        instance = BSE()
+        instance = Bse()
         instance.commit_parameters()
 
         stars = Particles(6)
@@ -631,7 +631,7 @@ class TestBSE(TestWithMPI):
     def test8(self):
         print("Testing adding and removing particles from stellar evolution code...")
 
-        instance = BSE()
+        instance = Bse()
         instance.initialize_code()
 
         stars = Particles(6)
@@ -679,7 +679,7 @@ class TestBSE(TestWithMPI):
 
     def test9(self):
         print("Testing BSE states")
-        instance = BSE()
+        instance = Bse()
 
         stars = Particles(2)
         stars.mass = [1.0, 0.2] | units.MSun
@@ -705,7 +705,7 @@ class TestBSE(TestWithMPI):
 
         print("initialize_code(), commit_parameters(), "
             "and cleanup_code() should be called automatically:", end=' ')
-        instance = BSE()
+        instance = Bse()
         self.assertEqual(instance.get_name_of_current_state(), 'UNINITIALIZED')
         instance.parameters.reimers_mass_loss_coefficient = 0.5
         self.assertEqual(instance.get_name_of_current_state(), 'INITIALIZED')

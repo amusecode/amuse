@@ -5,7 +5,7 @@ import shutil
 import numpy
 from subprocess import call
 
-from amuse.community.sse.interface import SSEInterface, SSE
+from amuse.community.sse.interface import SseInterface, Sse
 
 from amuse.test.amusetest import get_path_to_results, TestWithMPI
 from amuse import io
@@ -56,7 +56,7 @@ class TestMPIInterface(TestWithMPI):
             pts1, pts2, pts3)
 
     def test1(self):
-        sse = SSEInterface()
+        sse = SseInterface()
 
         metallicity = 0.02
 
@@ -85,7 +85,7 @@ class TestMPIInterface(TestWithMPI):
         sse.stop()
 
     def test2(self):
-        sse = SSEInterface()
+        sse = SseInterface()
 
         metallicity = 0.02
 
@@ -159,7 +159,7 @@ class TestMPIInterface(TestWithMPI):
         sse.stop()
 
     def test3(self):
-        sse = SSEInterface()
+        sse = SseInterface()
         self.initialize_module_with_default_parameters(sse)
         types = [1, 1, 1]
         masses = [10, 5, 4]
@@ -189,7 +189,7 @@ class TestMPIInterface(TestWithMPI):
         sse.stop()
 
     def test4(self):
-        sse = SSEInterface()
+        sse = SseInterface()
         self.initialize_module_with_default_parameters(sse)
         types = [1 for x in range(1, 4000)]
         masses = [1.0 + ((x / 4000.0) * 10.0) for x in range(1, 4000)]
@@ -219,10 +219,10 @@ class TestMPIInterface(TestWithMPI):
         sse.stop()
 
 
-class TestSSE(TestWithMPI):
+class TestSse(TestWithMPI):
 
     def test1(self):
-        sse = SSE()
+        sse = Sse()
         sse.commit_parameters()
         stars = Particles(1)
         star = stars[0]
@@ -290,7 +290,7 @@ class TestSSE(TestWithMPI):
         sse.stop()
 
     def test2(self):
-        sse = SSE()
+        sse = Sse()
         sse.commit_parameters()
         stars = Particles(1)
 
@@ -307,7 +307,7 @@ class TestSSE(TestWithMPI):
         sse.stop()
 
     def test3(self):
-        sse = SSE()
+        sse = Sse()
         sse.commit_parameters()
         stars = Particles(1)
 
@@ -332,7 +332,7 @@ class TestSSE(TestWithMPI):
         sse.stop()
 
     def test5(self):
-        sse = SSE()
+        sse = Sse()
         sse.commit_parameters()
         stars = Particles(1)
 
@@ -367,7 +367,7 @@ class TestSSE(TestWithMPI):
         stars.mass = masses
 
 #       Initialize stellar evolution code
-        instance = SSE()
+        instance = Sse()
         instance.commit_parameters()
         instance.particles.add_particles(stars)
         instance.commit_particles()
@@ -398,7 +398,7 @@ class TestSSE(TestWithMPI):
         stars = Particles(2)
         stars.mass = 1.0 | units.MSun
         for star in stars:
-            stellar_evolution = SSE()
+            stellar_evolution = Sse()
             stellar_evolution.commit_parameters()
             stellar_evolution.particles.add_particles(star.as_set())
             stellar_evolution.commit_particles()
@@ -412,7 +412,7 @@ class TestSSE(TestWithMPI):
         print("Solved: SSE_muse_interface.f sets initial_mass to mass when necessary.")
 
     def test8(self):
-        instance = SSE()
+        instance = Sse()
         self.assertEqual(instance.parameters.reimers_mass_loss_coefficient, 0.5)
         myvalue = 0.7
         instance.parameters.reimers_mass_loss_coefficient = myvalue
@@ -421,7 +421,7 @@ class TestSSE(TestWithMPI):
         self.assertEqual(instance.parameters.reimers_mass_loss_coefficient, myvalue)
         instance.stop()
 
-        instance = SSE()
+        instance = Sse()
         self.assertEqual(instance.parameters.reimers_mass_loss_coefficient, 0.5)
         myvalue = 0.7
         instance.parameters.reimers_mass_loss_coefficient = myvalue
@@ -432,7 +432,7 @@ class TestSSE(TestWithMPI):
 
     def test9(self):
         print("Test: large number of particles")
-        stellar_evolution = SSE(max_message_length=500)
+        stellar_evolution = Sse(max_message_length=500)
         stellar_evolution.commit_parameters()
         number_of_particles = 10000
         print("Has been tested with up to a million particles!")
@@ -444,7 +444,7 @@ class TestSSE(TestWithMPI):
         stellar_evolution.stop()
 
     def test10(self):
-        stellar_evolution = SSE()
+        stellar_evolution = Sse()
         stellar_evolution.commit_parameters()
         stars = Particles(10)
         stars.mass = 1.0 | units.MSun
@@ -465,7 +465,7 @@ class TestSSE(TestWithMPI):
         print("Test evolve_model optional arguments: end_time and keep_synchronous")
         stars = Particles(3)
         stars.mass = [1.0, 2.0, 3.0] | units.MSun
-        instance = SSE()
+        instance = Sse()
         instance.commit_parameters()
         instance.particles.add_particles(stars)
 
@@ -498,7 +498,7 @@ class TestSSE(TestWithMPI):
         particles = Particles(3)
         particles.mass = 1.0 | units.MSun
 
-        instance = SSE()
+        instance = Sse()
         instance.initialize_code()
         instance.commit_parameters()
         self.assertEqual(len(instance.particles), 0)  # before creation
@@ -531,7 +531,7 @@ class TestSSE(TestWithMPI):
         stars.mass = 1.0 | units.MSun
 
         print("First do everything manually:", end=' ')
-        instance = SSE()
+        instance = Sse()
         self.assertEqual(instance.get_name_of_current_state(), 'UNINITIALIZED')
         instance.initialize_code()
         self.assertEqual(instance.get_name_of_current_state(), 'INITIALIZED')
@@ -544,7 +544,7 @@ class TestSSE(TestWithMPI):
 
         print("initialize_code(), commit_parameters(), "
             "and cleanup_code() should be called automatically:", end=' ')
-        instance = SSE()
+        instance = Sse()
         self.assertEqual(instance.get_name_of_current_state(), 'UNINITIALIZED')
         instance.parameters.reimers_mass_loss_coefficient = 0.5
         self.assertEqual(instance.get_name_of_current_state(), 'INITIALIZED')
@@ -558,7 +558,7 @@ class TestSSE(TestWithMPI):
         print("Testing basic operations: evolve_one_step and evolve_for (on particle)")
         stars = Particles(2)
         stars.mass = 1.0 | units.MSun
-        instance = SSE()
+        instance = Sse()
         se_stars = instance.particles.add_particles(stars)
         self.assertAlmostEqual(se_stars.age, [0.0, 0.0] | units.yr)
 
@@ -580,7 +580,7 @@ class TestSSE(TestWithMPI):
         print("Testing basic operations: evolve_one_step and evolve_for (on subset)")
         stars = Particles(2)
         stars.mass = 1.0 | units.MSun
-        instance = SSE()
+        instance = Sse()
         se_stars = instance.particles.add_particles(stars)
         self.assertAlmostEqual(se_stars.age, [0.0, 0.0] | units.yr)
 
@@ -619,7 +619,7 @@ class TestSSE(TestWithMPI):
 
         stars = Particles(mass=masses)
 
-        instance = SSE()
+        instance = Sse()
         instance.particles.add_particles(stars)
 
         i = 0
@@ -649,7 +649,7 @@ class TestSSE(TestWithMPI):
 
         stars = Particles(mass=masses)
 
-        instance = SSE()
+        instance = Sse()
         instance.particles.add_particles(stars)
 
         i = 0
@@ -662,7 +662,7 @@ class TestSSE(TestWithMPI):
         print("evolve_one_step and evolve_for after particle removal and addition")
         particles = Particles(10)
         particles.mass = range(1, 11) | units.MSun
-        instance = SSE()
+        instance = Sse()
         instance.particles.add_particles(particles)
         self.assertAlmostEqual(instance.particles.age, 0.0 | units.yr)
         time_steps = numpy.linspace(0.1, 1.0, num=10) | units.Myr
@@ -689,10 +689,10 @@ class TestSSE(TestWithMPI):
 
     def test18(self):
         print("SSE validation")
-        sse_src_path = os.path.join(os.path.dirname(sys.modules[SSE.__module__].__file__), 'src')
+        sse_src_path = os.path.join(os.path.dirname(sys.modules[Sse.__module__].__file__), 'src')
         if not os.path.exists(os.path.join(sse_src_path, "evolve.in")):
             self.skip("Not in a source release")
-        instance = SSE()
+        instance = Sse()
         instance.particles.add_particle(Particle(mass=1.416 | units.MSun))
         instance.particles[0].evolve_for(7000.0 | units.Myr)
         evolved_star = instance.particles.copy()[0]
@@ -723,7 +723,7 @@ class TestSSE(TestWithMPI):
 
     def test19(self):
         print("SSE core_mass and CO_core_mass (high mass star)")
-        instance = SSE()
+        instance = Sse()
         star = instance.particles.add_particle(Particle(mass=30 | units.MSun))
         instance.evolve_model(5.8 | units.Myr)
         print(star.mass, star.core_mass, star.CO_core_mass, star.stellar_type)
@@ -759,7 +759,7 @@ class TestSSE(TestWithMPI):
 
     def test20(self):
         print("SSE core_mass and CO_core_mass (low mass stars)")
-        instance = SSE()
+        instance = Sse()
         stars = instance.particles.add_particles(Particles(mass=[0.6, 1.0] | units.MSun))
         instance.evolve_model(100 | units.Gyr)
         self.assertEqual(str(stars[0].stellar_type), "Helium White Dwarf")
@@ -773,7 +773,7 @@ class TestSSE(TestWithMPI):
         instance.stop()
 
     def test21(self):
-        instance = SSE()
+        instance = Sse()
         stars = instance.particles.add_particles(Particles(mass=30 | units.MSun))
         mass_loss_wind = stars[0].mass_loss_wind
         self.assertAlmostRelativeEquals(mass_loss_wind, 1.703e-07 | units.MSun / units.yr, 3)
@@ -785,7 +785,7 @@ class TestSSE(TestWithMPI):
         instance.stop()
 
     def test22(self):
-        instance = SSE()
+        instance = Sse()
         stars = instance.particles.add_particles(Particles(mass=[1.0, 10.0] | units.MSun))
         gyration_radius = stars.gyration_radius
         self.assertTrue(numpy.all(0.0 < gyration_radius))
@@ -798,7 +798,7 @@ class TestSSE(TestWithMPI):
         instance.stop()
 
     def test23(self):
-        instance = SSE()
+        instance = Sse()
         p = Particles(mass=[1.0, 10.0] | units.MSun, temperature=[10, 10] | units.K)
         stars = instance.particles.add_particles(p)
         channel = stars.new_channel_to(p)
