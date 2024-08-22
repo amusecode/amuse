@@ -20,7 +20,7 @@
       real*8 mxns_in, pts1_in, pts2_in, pts3_in
       real*8 sigma_in, beta_in, xi_in, acc2_in
       real*8 epsnov_in, eddfac_in, gamma_in
-      CHARACTER*8 label(14)
+      character*8 label(14)
       integer status
       include 'src/const_bse.h'
       common /SSE_init/ z, zpars
@@ -61,7 +61,7 @@ c     Input parameters are passed from MUSE, rather than being read here.
 *
 * Set the collision matrix.
 *
-      CALL instar
+      call instar
 *
       label(1) = 'INITIAL '
       label(2) = 'KW CHNGE'
@@ -145,15 +145,6 @@ c     Input parameters are passed from MUSE, rather than being read here.
 !      dtp = 0.0d0
 !      dtp = age+1
 
-c      call evolv2(type1,type2,initial_mass1,initial_mass2, 
-c     &         mass1, mass2, radius1, radius2, luminosity1, luminosity2, 
-c     &         core_mass1, core_mass2, core_radius1, core_radius2, 
-c     &         envelope_mass1, envelope_mass2, envelope_radius1, 
-c     &         envelope_radius2, spin1, spin2, epoch1, epoch2, 
-c     &         MS_lifetime1, MS_lifetime2, age, end_time, 
-c     &         dtp,z,zpars,
-c     &         orbital_period, eccentricity)
-
       call evolv2(kstar,mass0,mass,rad,lum,massc,radc,
      &            menv,renv,ospin,epoch,tms,
      &            age, end_time,dtp,z,zpars,
@@ -193,8 +184,6 @@ c     &         orbital_period, eccentricity)
      &      initial_mass2, mass1, mass2, MS_lifetime1,
      &      MS_lifetime2, epoch1, epoch2, age, time_step)
       
-cf2py intent(out) dt
-cf2py intent(in) kw, mass, age, mt, tm, epoch
       implicit none
       integer type1, type2
       real*8 initial_mass1, initial_mass2, mass1, mass2
