@@ -178,7 +178,8 @@ class UCLchem(CommonCode):
         InCodeComponentImplementation.__init__(self,legacy_interface)
 
     def evolve_model(self,tend):
-        assert tend > self.uclchem_time, 'end time must be larger than uclchem_time'
+        print(tend, self.uclchem_time)
+        assert tend >= self.uclchem_time, 'end time must be larger than uclchem_time'
         dictionary, out_species= self._build_dict(tend=tend)
         self.set_species(out_species)
         output = self.run_model(dictionary)

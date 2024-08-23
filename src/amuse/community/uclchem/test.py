@@ -1,7 +1,9 @@
-from interface import UCLchem
+from amuse.community.uclchem.interface import UCLchem
 from amuse.datamodel import Particles
 from amuse.units import units
+from amuse.community.fi.interface import Fi
 
+hydro = Fi
 chem = UCLchem()
 particles = Particles(2)
 particles[0].number_density = 1.0e2 | units.cm**-3
