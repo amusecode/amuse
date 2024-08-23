@@ -48,7 +48,7 @@ functions must get or set one scalar property (1 argument) or a vector property 
 
 
 .. autoclass:: amuse.community.interface.gd.GravitationalDynamicsInterface
-   :members: get_mass, set_mass, get_position, set_position, set_acceleration, get_acceleration, get_potential
+   :members: get_mass, set_mass, get_position, set_position, get_acceleration, get_potential
 
 
 Model evolution

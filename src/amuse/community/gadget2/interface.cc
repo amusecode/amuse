@@ -2114,10 +2114,6 @@ int get_acceleration(int *index, double * ax, double * ay, double * az, int leng
     return result;
 }
 
-int set_acceleration(int index, double ax, double ay, double az){
-    return -2;
-}
-
 int get_internal_energy(int *index, double *internal_energy, int length){
     int errors = 0;
     double *buffer = new double[length];

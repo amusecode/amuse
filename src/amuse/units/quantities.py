@@ -973,8 +973,8 @@ class VectorQuantity(Quantity):
     def T(self):
         return VectorQuantity(self.number.T, self.unit)
 
-    def mean(self, axis=None, dtype=None, out=None):
-        return new_quantity(self.number.mean(axis, dtype, out), self.unit)
+    def mean(self, *args, **kwargs):
+        return new_quantity(self.number.mean(*args, **kwargs), self.unit)
 
     def median(self, **kwargs):
         return new_quantity(numpy.median(self.number, **kwargs), self.unit)
