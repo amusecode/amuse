@@ -1,54 +1,76 @@
-# standard amuse configuration include
-# config.mk will be made after ./configure has run
-ifeq ($(origin AMUSE_DIR), undefined)
-  AMUSE_DIR := $(shell amusifier --get-amuse-dir)
+ifneq (,$(filter-out clean distclean, $(MAKECMDGOALS)))
+include support/config.mk
 endif
--include $(AMUSE_DIR)/config.mk
 
-MPIFC ?= mpif90
-FC      = $(MPIFC)
 
-LDFLAGS  += -lm $(MUSE_LD_FLAGS)
+# Detecting dependencies
+support/config.mk:
+	cd support && ./configure
 
-OBJS = interface.o
 
-CODELIBDIR = src/phantom/bin
+# Downloading the code
+VERSION = ca6907f5f9a95f866b1d7e520cc356ab8cec8dd0
+
+src/phantom.zip:
+	$(DOWNLOAD) https://github.com/rieder/phantom/archive/$(VERSION).zip >$@
+
+src/phantom: src/phantom.zip
+	unzip $<
+	mv phantom-$(VERSION) src/phantom
+
+
+# Building the code into a static library
+FCFLAGS += $(STOPCOND_CFLAGS) $(FORSOCKETS_CFLAGS) $(OPENMP_FCFLAGS)
+LDLIBS += -lm $(STOPCOND_LIBS) $(FORSOCKETS_LIBS)
+LDFLAGS += $(OPENMP_FCFLAGS)
+
 CODELIB = src/phantom/bin/libphantom-amuse.a
 
-FCFLAGS += -L${CODELIBDIR} -lphantom-amuse
-
-CODEDIR = src/phantom
-
-SETUP = amuse
-SYSTEM = gfortran
-
-DOWNLOAD_FROM_WEB = $(PYTHON) ./download.py
+$(CODELIB): | src/phantom
+	$(MAKE) -C src/phantom libphantom-amuse SETUP=amuse SYSTEM=gfortran OPENMP=yes
 
 
-all: phantom_worker 
+# Building the workers
+phantom_worker.f90: interface.py
+	amusifier --type=f90 interface.py PhantomInterface -o $@
 
-$(CODEDIR)/Makefile:
-	make -C . download
+phantom_worker.o: phantom_worker.f90
+	$(MPIFC) -c -o $@ $(FCFLAGS) $<
 
-download:
-	$(RM) -Rf src
-	mkdir src
-	$(DOWNLOAD_FROM_WEB)
-
-clean:
-	$(RM) -f *.so *.o *.pyc worker_code.cc worker_code.h 
-	$(RM) *~ worker_code worker_code.f90
-	$(RM) ${CODELIB}
-	make -C ${CODEDIR} clean
-
-$(CODELIB):$(CODEDIR)/Makefile download
-	make -C ${CODEDIR} libphantom-amuse SETUP=$(SETUP) SYSTEM=$(SYSTEM) OPENMP=yes
-
-worker_code.f90: interface.py
-	$(CODE_GENERATOR) --type=f90 interface.py PhantomInterface -o $@
-
-phantom_worker: worker_code.f90 $(CODELIB) $(OBJS)
-	$(MPIFC) $(FCFLAGS) $(FS_FLAGS) $< $(OBJS) $(CODELIB) $(SC_FCLIBS) $(FS_LIBS) -fopenmp -o $@
+phantom_worker: interface.o phantom_worker.o $(CODELIB)
+	$(MPIFC) -o $@ $(LDFLAGS) $^ $(LDLIBS)
 
 %.o: %.f90
-	$(FC) $(SC_FLAGS) $(FCFLAGS) -c -o $@ $<
+	$(MPIFC) -o $@ -c $(FCFLAGS) $<
+
+
+# Which packages contain which workers?
+amuse-phantom_contains: phantom_worker
+
+
+# Building and installing packages
+develop-%: %_contains
+	support/shared/uninstall.sh $*
+	python -m pip install -e packages/$*
+
+install-%: %_contains
+	support/shared/uninstall.sh $*
+	python -m pip install packages/$*
+
+package-%: %_contains
+	python3 -m pip install -vv --no-cache-dir --no-deps --no-build-isolation --prefix ${PREFIX} packages/$*
+
+test-%:
+	cd packages/$* && pytest
+
+
+# Cleaning up
+.PHONY: clean
+clean:
+	$(MAKE) -C src/phantom clean
+	rm -rf *.o *.mod *worker*
+
+.PHONY: distclean
+distclean: clean
+	rm -f support/config.mk support/config.log support/config.status
+	rm -rf support/autom4te.cache
