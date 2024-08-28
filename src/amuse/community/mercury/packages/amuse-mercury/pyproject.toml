@@ -1,0 +1,44 @@
+[project]
+name = "amuse-mercury"
+dynamic = ["version"]
+requires-python = ">=3.7"
+dependencies = [
+    "amuse-framework"
+]
+
+[build-system]
+requires = ["hatchling", "versioningit"]
+build-backend = "hatchling.build"
+
+[tool.hatch.version]
+source = "versioningit"
+
+[tool.versioningit.next-version]
+method = "smallest"
+
+[tool.versioningit.format]
+distance = "{next_version}.dev{distance}+{vcs}{rev}"
+dirty = "{base_version}+d{build_date:%Y%m%d}"
+distance-dirty = "{next_version}.dev{distance}+{vcs}{rev}.d{build_date:%Y%m%d}"
+
+[tool.hatch.build]
+skip-excluded-dirs = true
+
+[tool.hatch.build.targets.wheel]
+include = ["mercury/**/*.py"]
+exclude = [
+    "mercury/packages",
+    "mercury/support",
+    "mercury/src",
+    "mercury/tests"
+    ]
+artifacts = ["mercury/mercury_worker"]
+
+[tool.hatch.build.targets.wheel.sources]
+"mercury" = "amuse/community/mercury"
+
+[tool.pytest.ini_options]
+pythonpath = ["mercury/tests/", "../../../../../tests"]
+
+testpaths = ["mercury/tests"]
+
