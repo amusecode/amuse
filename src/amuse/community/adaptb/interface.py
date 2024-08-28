@@ -8,7 +8,7 @@ class AdaptbInterface(CodeInterface, GravitationalDynamicsInterface, LiteratureR
     """
     Adaptb (Accurate Dynamics with Arbitrary Precision by Tjarda Boekholt)
     """
-    include_headers = ['worker_code.h', 'stopcond.h']
+    include_headers = ['adaptb_worker.h', 'stopcond.h']
 
     def __init__(self, **options):
         CodeInterface.__init__(self, name_of_the_worker="adaptb_worker", **options)

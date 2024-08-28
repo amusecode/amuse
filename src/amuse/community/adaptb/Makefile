@@ -1,42 +1,76 @@
-# standard amuse configuration include
-# config.mk will be made after ./configure has run
-ifeq ($(origin AMUSE_DIR), undefined)
-  AMUSE_DIR := $(shell amusifier --get-amuse-dir)
+ifneq (,$(filter-out clean distclean, $(MAKECMDGOALS)))
+include support/config.mk
 endif
--include ${AMUSE_DIR}/config.mk
 
-GMP_LIBS ?= -lgmp
-MPFR_LIBS ?= -lmpfr
-LIBS += $(MPFR_LIBS) $(GMP_LIBS)
 
-MPICXX   ?= mpicxx
-CXX ?= g++
+# Detecting dependencies
+support/config.mk:
+	cd support && ./configure
 
-CXXFLAGS ?= -Wall -g -O2
-CXXFLAGS += -std=c++11
+
+# Building the code into a static library
+DEPFLAGS += $(STOPCOND_CFLAGS)
+DEPFLAGS += $(GMP_FLAGS) $(MPFR_FLAGS)
+
+CFLAGS += $(DEPFLAGS)
+
+LDLIBS += $(STOPCOND_LIBS)
+
+LDLIBS += $(GMP_LIBS)
+LDLIBS += $(MPFR_LIBS)
+
 
 CODELIB = src/libadaptb.a
-OBJ = interface.o
 
-all: adaptb_worker 
-
-clean:
-	rm -f *.so *.o *.pyc worker_code.cc worker_code.h 
-	rm -f *~ adaptb_worker
-	make -C src clean
 
 $(CODELIB):
-	make -C src all
+	$(MAKE) -C src -j $(CPU_COUNT) all
 
-worker_code.cc: interface.py
-	$(CODE_GENERATOR) --type=c interface.py AdaptbInterface -o $@
 
-worker_code.h: interface.py
-	$(CODE_GENERATOR) --type=h -i amuse.community.interface.stopping_conditions.StoppingConditionInterface interface.py AdaptbInterface -o $@
+# Building the workers
+adaptb_worker.h: interface.py
+	amusifier --type=h interface.py AdaptbInterface -o $@
 
-adaptb_worker: worker_code.cc worker_code.h $(CODELIB) $(OBJ)
-	$(MPICXX) $(CXXFLAGS) $(SC_FLAGS) $(LDFLAGS) -I./src $< $(CODELIB) $(OBJ) -o $@  -L./src -ladaptb $(SC_CLIBS) $(LIBS)
+adaptb_worker.cc: interface.py
+	amusifier --type=c interface.py AdaptbInterface -o $@
 
-interface.o: interface.cc
-	$(CXX) $(CXXFLAGS) $(MPFR_FLAGS)  $(SC_FLAGS) -I./src -c -o $@ $< 
+adaptb_worker.o: adaptb_worker.cc adaptb_worker.h
+	$(MPICXX) -c -o $@ $(CFLAGS) $<
 
+adaptb_worker: interface.o adaptb_worker.o $(CODELIB)
+	$(MPICXX) -o $@ $(LDFLAGS) $^ $(LDLIBS)
+
+interface.o: interface.cc adaptb_worker.h
+	$(MPICXX) -o $@ -c $(CFLAGS) -Isrc $<
+
+
+# Which packages contain which workers?
+amuse-adaptb_contains: adaptb_worker
+
+
+# Building and installing packages
+develop-%: %_contains
+	support/shared/uninstall.sh $*
+	python -m pip install -e packages/$*
+
+install-%: %_contains
+	support/shared/uninstall.sh $*
+	python -m pip install packages/$*
+
+package-%: %_contains
+	python3 -m pip install -vv --no-cache-dir --no-deps --no-build-isolation --prefix ${PREFIX} packages/$*
+
+test-%:
+	cd packages/$* && pytest
+
+
+# Cleaning up
+.PHONY: clean
+clean:
+	$(MAKE) -C src clean
+	rm -rf *.o *worker*
+
+.PHONY: distclean
+distclean: clean
+	rm -f support/config.mk support/config.log support/config.status
+	rm -rf support/autom4te.cache
