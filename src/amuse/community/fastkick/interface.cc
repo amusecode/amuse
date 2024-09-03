@@ -6,7 +6,7 @@
 #include <string>
 #include <cmath>
 #include <vector>
-#include "worker_code.h"
+#include "fastkick_worker.h"
 
 #ifdef GPU
 #include "cuda_fastkick.h"

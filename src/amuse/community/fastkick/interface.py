@@ -7,7 +7,7 @@ from amuse.community.interface.common import CommonCodeInterface, CommonCode
 class FastKickInterface(CodeInterface, CommonCodeInterface, GravityFieldInterface):
     """
     """
-    include_headers = ['worker_code.h']
+    include_headers = ['fastkick_worker.h']
 
     MODE_CPU = 'cpu'
     MODE_GPU = 'gpu'
@@ -19,7 +19,7 @@ class FastKickInterface(CodeInterface, CommonCodeInterface, GravityFieldInterfac
         if mode == self.MODE_CPU:
             return "fastkick_worker"
         if mode == self.MODE_GPU:
-            return "fastkick_worker_gpu"
+            return "fastkick_cuda_worker"
         else:
             return "fastkick_worker"
 
