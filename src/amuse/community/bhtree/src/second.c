@@ -10,7 +10,7 @@
  *             void second(&double): returns the cpu seconds
  *             void cpumin(&double): returns the cpu minutes
  */
- 
+
 #ifdef _WIN32
 #include <time.h>
 
@@ -21,16 +21,14 @@ void timer_init()
 	time(&start_time);
 }
 
-second(dtime)
-double * dtime;
+second(double * dtime)
 {
 	long int timenow;
 	time(&timenow);
 	*dtime = timenow - start_time;
 }
 
-cpumin(dmin)
-double *dmin ;
+cpumin(double * dmin)
 {
 	double sec;
 	second(&sec);
@@ -60,7 +58,7 @@ static double tstart;
 static struct timeval timearg;
 static struct timezone zonearg;
 
-#define RETURN_CPU    
+#define RETURN_CPU
 
 void timer_init()
 {
@@ -89,38 +87,12 @@ void tminit_()
     timer_init();
 }
 
-cpumin(t)
-double * t;
+void second_(double * t)
 {
-	xcpumin_(t);
-}
-
-double cpusec()
-{
-    double t;
-    second(&t);
-    return t;
-}
-second(t)
-double * t;
-{
-	second_(t);
-}
-xcpumin_(t)
-    double*t;
-{
-    double sec;
-    second_(&sec);
-    *t=sec/60.0;
-}
-
-second_(t)			
-double *t;
-{
-#ifdef RETURN_CPU    
+#ifdef RETURN_CPU
 #ifdef SOLARIS
     struct tms buffer;
-        
+
         if (times(&buffer) == -1) {
 	        printf("times() call failed\n");
 	        exit(1);
@@ -132,7 +104,7 @@ double *t;
 	fprintf(stderr,"getrusage failed\n");
     }
     *t =  usage.ru_utime.tv_sec + usage.ru_utime.tv_usec*1e-6;
-#endif      
+#endif
 #else
 #ifndef xxxx
     if(gettimeofday(&timearg,&zonearg)){
@@ -148,9 +120,33 @@ double *t;
     }
     *t  = it0*0.01 - tstart;
 #endif
-#endif    
+#endif
 }
 #endif
+
+void xcpumin_(double * t)
+{
+    double sec;
+    second_(&sec);
+    *t=sec/60.0;
+}
+
+void cpumin(double * t)
+{
+	xcpumin_(t);
+}
+
+void second(double * t)
+{
+	second_(t);
+}
+
+double cpusec()
+{
+    double t;
+    second(&t);
+    return t;
+}
 
 #ifdef TEST
 main()
@@ -172,10 +168,8 @@ typedef union double_and_int{
     unsigned int iwork;
     COMPTYPE fwork;
 } DOUBLE_INT;
-void c_assignbody_(pos,cpos,bsub)
-register COMPTYPE  pos[];
-register COMPTYPE  cpos[];
-int * bsub;
+
+void c_assignbody_(COMPTYPE pos[], COMPTYPE cpos[], int * bsub)
 {
     register int k,l,k1,k2;
     register DOUBLE_INT tmpx,tmpy,tmpz ;
@@ -209,7 +203,7 @@ int * bsub;
 	   tmpx.iwork,tmpy.iwork,tmpz.iwork,
 	   tmpx.iwork>>31,tmpy.iwork>>30,tmpz.iwork>>29,
 	   *bsub,k);
-#endif    
+#endif
 #endif
 }
 

@@ -6,7 +6,7 @@
  *    version 2:  Dec 1992   Piet Hut  --  adopted to the new C++-based starlab
  *    version 2.0A:  Dec 1998 Jun Makino  --  pskipopt() function added.
  *.............................................................................
- *  non-local function: 
+ *  non-local function:
  *    pgetopt
  *    pskipopt
  *.............................................................................
@@ -26,7 +26,7 @@
  *		mumble  -c -a -b 10
  *		mumble -b 10 -ca
  *		mumble -acb 10
- *  but the following versions are illegal, and will give error messages:      
+ *  but the following versions are illegal, and will give error messages:
  *		mumble -a -b10 -c
  *		mumble -ab10c
  * 		mumble -a -c -b
@@ -53,15 +53,15 @@ char *poptarg;
 
 /*-----------------------------------------------------------------------------
  *  pgetopt  --  each call to  pgetopt()  returns the next option encountered
- *               on the command line, starting from the beginning. If the 
- *               option occurs in the  optstr  string as well, the option 
- *               itself is returned (as the int value of the character; 
+ *               on the command line, starting from the beginning. If the
+ *               option occurs in the  optstr  string as well, the option
+ *               itself is returned (as the int value of the character;
  *               options are limited to one char). Otherwise, the character '?'
- *               is returned. If the end of the string is reached, the value 
+ *               is returned. If the end of the string is reached, the value
  *               -1 is returned.  If an option is followed by the character ':'
- *               in  optstr , then a command line argument is expected, 
+ *               in  optstr , then a command line argument is expected,
  *               separated by spaces. If such an argument if found, the pointer
- *                poptarg  is pointed at that string, so that the calling 
+ *                poptarg  is pointed at that string, so that the calling
  *               function can access the argument.  If such an argument is not
  *               found, an error message is given.
  *
@@ -74,24 +74,26 @@ char *poptarg;
  */
 static int  argv_counter = 1;       /* skip argv[0], the command name */
 static int  argv_offset = 0;
-int  pgetopt(int argc, char ** argv,  char * optstr)
+int  pgetopt(int argc, char ** argv,  char const * optstr)
     {
     int  optstr_counter;
     char  option_char;
-    
+
     if (argv_counter >= argc)
 	return(-1);                  /* signal that we've run out of options */
 
-    if (argv_offset == 0)
+    if (argv_offset == 0) {
     	if (argv[argv_counter][argv_offset] != '-')
 	    {
 	    cerr << "pgetopt: command line argument does not begin with -\n";
 	    exit(1);
 	    }
-	else
+	else {
 	    argv_offset++;
+	}
+    }
 
-#ifdef IN_STARLAB    
+#ifdef IN_STARLAB
 //  We have a legal switch.  First check to see if all we want to
 //  know is the STARLAB version number.
 
@@ -110,7 +112,7 @@ int  pgetopt(int argc, char ** argv,  char * optstr)
 	    {
 /*
  * prepare for the next call to pgetopt():
- */	
+ */
 	    if (argv[argv_counter][++argv_offset] == '\0')
 		{
 		argv_counter++;
@@ -138,7 +140,7 @@ int  pgetopt(int argc, char ** argv,  char * optstr)
 	poptarg = argv[argv_counter];
 /*
  * prepare for the next call to pgetopt():
- */	
+ */
 	argv_counter++;
 	argv_offset = 0;
 	}
@@ -146,14 +148,14 @@ int  pgetopt(int argc, char ** argv,  char * optstr)
         {
 /*
  * prepare for the next call to pgetopt():
- */	
+ */
 	if (argv[argv_counter][++argv_offset] == '\0')
 	    {
 	    argv_counter++;
 	    argv_offset = 0;
 	    }
 	}
-    
+
     return(option_char);
     }
 
