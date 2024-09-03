@@ -18,7 +18,9 @@ CXXFLAGS   = @CXXFLAGS@
 LIBS       = -lm @LIBS@
 # LIBS should get at least -lcuda -lcudart -lcudadevrt from the configure script
 CPPFLAGS   = -D$(METHOD) -DLMAX=$(LMAX) -DNMAX=$(NMAX) $(BOOST) @CPPFLAGS@
+ifneq ($(GPU_ARCH),)
 CUDAFLAGS  = -arch=sm_$(GPU_ARCH)
+endif
 STATICLIBS = @STATICLIBS@
 
 CODELIB = libetics.a
