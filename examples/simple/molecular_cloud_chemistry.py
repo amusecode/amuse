@@ -19,6 +19,7 @@ from amuse.community.krome.interface import Krome
 from amuse.community.uclchem.interface import UCLchem
 
 from amuse.ext.molecular_cloud import molecular_cloud
+from amuse.io import write_set_to_file
 
 gamma = 1.4
 meanmwt = 1.35 | units.amu
@@ -79,15 +80,20 @@ def run_mc(N=5000, Mcloud=10000. | units.MSun, Rcloud=1. | units.parsec):
     CO_index = chem.get_index_of_species('CO')
     tnow = sph.model_time
 
+    sph_channel = sph.particles.new_channel_to(parts)
+    chem_channel = chem.particles.new_channel_to(parts)
+
+
     f = pyplot.figure()
     pyplot.ion()
     pyplot.show()
 
     i = 0
-    results = numpy.concatenate(([0],(sph.particles.density / meanmwt).value_in(units.cm**-3),chem.particles.abundances[:, H2_index],chem.particles.abundances[:, CO_index]))
     while i < (end_time / timestep + 0.5):
         evolve_sph_with_chemistry(sph, chem, i * timestep)
         tnow = sph.model_time
+        sph_channel.copy()
+        chem_channel.copy()
         print("done with step:", i, tnow.in_(units.Myr))
         i += 1
 
@@ -95,8 +101,6 @@ def run_mc(N=5000, Mcloud=10000. | units.MSun, Rcloud=1. | units.parsec):
         fh2 = chem.particles.abundances[:, H2_index]
         co = chem.particles.abundances[:, CO_index]
         
-        result = numpy.concatenate(([i*timestep.value_in(units.Myr)],n,fh2,co))
-        results = numpy.vstack((results,result))
         pyplot.clf()
         pyplot.loglog(n, fh2, 'r.')
         pyplot.loglog(n, co, 'g.')
@@ -105,7 +109,8 @@ def run_mc(N=5000, Mcloud=10000. | units.MSun, Rcloud=1. | units.parsec):
         pyplot.xlabel("density (cm**-3)")
         pyplot.ylabel("H_2,CO abundance")
         f.canvas.flush_events()
-    numpy.savetxt('molecular_cloud_chemistry_uclchem.dat',results)
+        particles_to_save = parts.copy()
+        write_set_to_file(particles_to_save, "mol_cloud_uclchem_{}.txt".format(i), format='amuse',overwrite_file=True)
     print("done. press key to exit")
     input()
 
