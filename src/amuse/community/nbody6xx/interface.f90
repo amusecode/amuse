@@ -301,13 +301,6 @@
         get_acceleration = 0
       END FUNCTION
       
-      FUNCTION set_acceleration(index_of_the_particle, ax, ay, az)
-        INTEGER :: index_of_the_particle
-        DOUBLE PRECISION :: ax, ay, az
-        INTEGER :: set_acceleration
-        set_acceleration = -2
-      END FUNCTION
-      
       FUNCTION get_potential(index_of_the_particle, potential)
         INCLUDE 'src/common6.h'
         INTEGER :: index_of_the_particle

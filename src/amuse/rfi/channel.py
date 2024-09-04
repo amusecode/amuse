@@ -129,7 +129,7 @@ class MPIMessage(AbstractMessage):
         # 4 flags as 8bit booleans in 1st 4 bytes of header
         # endiannes(not supported by MPI channel), error, unused, unused 
 
-        flags = header.view(dtype='bool8')
+        flags = header.view(dtype='bool_')
         self.big_endian = flags[0]
         self.error = flags[1]
         self.is_continued = flags[2]
@@ -246,7 +246,7 @@ class MPIMessage(AbstractMessage):
         ], dtype='i')
         
         
-        flags = header.view(dtype='bool8')
+        flags = header.view(dtype='bool_')
         flags[0] = self.big_endian
         flags[1] = self.error
         flags[2] = len(self.encoded_units) > 0

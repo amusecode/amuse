@@ -379,12 +379,6 @@ int get_velocity(int index_of_the_particle,
     return 0;
 }
 
-int set_acceleration(int index_of_the_particle,
-		     double ax, double ay, double az)
-{
-    return -1;
-}
-
 int get_acceleration(int index_of_the_particle,
 		     double * ax, double * ay, double * az)
 {
