@@ -28,13 +28,6 @@
     ret=chem_commit_parameters()
   end function
   
-  ! function get_number_of_particles(n) result(ret)
-  !   use uclchemhelper
-  !   integer n,ret
-  !   n=nparticle
-  !   ret=0
-  ! end function
-  
   function new_particle(id,dens,temperature,ionrate,uvrad) result(ret)
     use uclchemhelper
     integer :: ret,id

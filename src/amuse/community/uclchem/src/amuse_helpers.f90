@@ -6,11 +6,12 @@ MODULE uclchemhelper
     use network
     IMPLICIT NONE
     type particle_type
+    !Particles are defined here
         integer :: id
-        double precision :: density
-        double precision :: temperature
-        double precision :: ionrate
-        double precision :: uvrad
+        double precision :: density !unit = cm^-3
+        double precision :: temperature !unit = K
+        double precision :: ionrate !unit = galactic cr ionization rate 
+        double precision :: uvrad !unit = Habing
         double precision :: abundances(nSpec+1)
     end type
     integer :: nmols
@@ -154,6 +155,7 @@ CONTAINS
         particles(i)%abundances=1.d-40
         
         if(density.GT.0) then
+          !values taken from the UCLchem default parameters
           particles(i)%abundances(nh)  = 0.5 !H
           particles(i)%abundances(nh2) = 0.25   !H2
           particles(i)%abundances(nhe) = 0.1 !He
@@ -197,6 +199,7 @@ CONTAINS
     end function
 
     function find_particle(id_) result(index)
+        !Function to find a particle with a given id. Taken from the Krome interface.
         use hashMod
         type(hash_type),save ::  hash
         integer id_,index
@@ -270,6 +273,7 @@ CONTAINS
     end function  
 
     function simple_evolution(dictionary, outSpeciesIn) result(ret)
+        !Evolves each particle seperately
         integer :: ret
         integer :: i, iret
         CHARACTER(LEN=*) :: dictionary(:)
@@ -294,22 +298,20 @@ CONTAINS
         integer :: ret        
 
         dstep=1
-        !currentTime=startTime
-        !timeInYears=startTime
+
 
         call coreInitializePhysics(ret)
         CALL coreInitializePhysics(ret)
 
         CALL initializeChemistry(readabunds=.FALSE.)
-        !call simpleDebug('amuse')
+
         dstep=1
+        !Make sure the saved abundances from previous steps are used
         abund(:,1) = part%abundances
         DO WHILE (((endAtFinalDensity) .and. (density(1) < finalDens)) .or. &
             &((.not. endAtFinalDensity) .and. (timeInYears < finalTime)))
-            !write(*,*) currentTime, density, gasTemp
             currentTimeold=currentTime
-            !print *, timeInYears
-            !Each physics module has a subroutine to set the target time from the current time
+            !In standard UCLchem, each physics module has its own timestep scheme.
             CALL updateTargetTime
             !loop over parcels, counting from centre out to edge of cloud
             DO dstep=1,points
@@ -335,6 +337,7 @@ CONTAINS
                 CALL output
             END DO
         END DO
+        !Save the computed abundances to the particle set
         part%abundances=abund(:,1)
         currentTime = 0.0
     end function

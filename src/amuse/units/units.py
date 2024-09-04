@@ -46,8 +46,6 @@ Ry = named(
     .as_quantity_in(eV)
     .as_unit(),
 )
-cr_ion = named("cosmic ray ionisation rate", "cr_ion", 1.3e-17 * s**-1)
-habing = named("habing", "hab", 1.6e-3 * erg * cm**-2 *s**-1)
 
 # astronomical units
 angstrom = named("angstrom", "angstrom", 1e-10 * m)
