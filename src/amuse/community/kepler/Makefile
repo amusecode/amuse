@@ -1,51 +1,76 @@
-# standard amuse configuration include
-# config.mk will be made after ./configure has run
-ifeq ($(origin AMUSE_DIR), undefined)
-  AMUSE_DIR := $(shell amusifier --get-amuse-dir)
+ifneq (,$(filter-out clean distclean, $(MAKECMDGOALS)))
+include support/config.mk
 endif
--include ${AMUSE_DIR}/config.mk
 
-# Makefile to build the worker code.  First draft was auto-generated;
-# subsequent versions are hand-coded, so save a copy.  Note that
-# all compiles must use MPICXX, not CXX.
 
-ALL	 = kepler_worker
-OPT	  = # -O4 don't use O4 it is not defined on normal gcc, but has special meaning on LLVM/clang gcc
+# Detecting dependencies
+support/config.mk:
+	cd support && ./configure
 
-AM_LIBS = -L$(AMUSE_DIR)/lib/amuse_mpi -lamuse_mpi
-AM_CFLAGS = -I$(AMUSE_DIR)/lib/amuse_mpi
+# Building the code into a static library
+DEPFLAGS += $(AMUSE_MPI_CFLAGS)
+DEPFLAGS += $(FORSOCKETS_CFLAGS)
 
-MPICXX   ?= mpicxx
+CFLAGS += $(DEPFLAGS)
+CFLAGS += -Isrc
 
-CFLAGS   += $(OPT) -Isrc
-CXXFLAGS += $(CFLAGS) 
-LDFLAGS  += -lm $(MUSE_LD_FLAGS)
+LDFLAGS +=
 
-OBJS = interface.o
+LDLIBS += $(FORSOCKETS_LIBS)
 
 CODELIB = src/libkepler.a
 
 
-all: $(ALL)
+# Buildind the code lib
+$(CODELIB): | src
+	$(MAKE) -C src all CXX='$(MPICXX)'
 
-$(CODELIB):
-	make -C src all CXX='$(MPICXX)'
-
-worker_code.cc: interface.py
-	$(CODE_GENERATOR) --type=c interface.py KeplerInterface -o $@
-
+# Building the workers
 interface.h: interface.py
-	$(CODE_GENERATOR) --type=h interface.py KeplerInterface -o $@
+	amusifier --type=h interface.py KeplerInterface -o $@
 
-kepler_worker: worker_code.cc interface.h $(CODELIB) $(OBJS)
-	$(MPICXX) $(CXXFLAGS) $(LDFLAGS) worker_code.cc $(OBJS) $(CODELIB) -o $@ $(LIBS)
+kepler_worker.cc: interface.py
+	amusifier --type=c interface.py KeplerInterface -o $@
+
+kepler_worker.o: kepler_worker.cc interface.h
+	$(MPICXX) -c -o $@ $(CFLAGS) $<
+
+kepler_worker: kepler_worker.o interface.o $(CODELIB)
+	$(MPICXX) -o $@ $(LDFLAGS) $^ $(LDLIBS)
 
 %.o: %.cc
-	$(MPICXX) $(CXXFLAGS) -c -o $@ $< 
+	$(MPICXX) -c $(CFLAGS) $<
 
+
+# Which packages contain which workers?
+amuse-kepler_contains: kepler_worker
+
+
+# Building and installing packages
+develop-%: %_contains
+	support/shared/uninstall.sh $*
+	python -m pip install -e packages/$*
+
+install-%: %_contains
+	support/shared/uninstall.sh $*
+	python -m pip install packages/$*
+
+package-%: %_contains
+	python3 -m pip install -vv --no-cache-dir --no-deps --no-build-isolation --prefix ${PREFIX} packages/$*
+
+test-%:
+	cd packages/$* && pytest
+
+
+# Cleaning up
+.PHONY: clean
 clean:
-	$(RM) -r -f *.so *.dSYM *.o *.pyc worker_code.cc interface.h 
-	$(RM) -f *~ kepler_worker worker_code.cc kepler_worker_sockets worker_code-sockets.cc
-	make -C src clean
+	$(MAKE) -C src clean
+	rm -rf *.o *worker*
 
+.PHONY: distclean
 distclean: clean
+	-$(MAKE) -C src clean
+	rm -f support/config.mk support/config.log support/config.status
+	rm -rf support/autom4te.cache
+
