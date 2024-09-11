@@ -6,3 +6,7 @@ write_to = "src/amuse/version.py"
 
 [flake8]
 max-line-length = 88
+
+[tool.black]
+line-length = 88
+target-version = ["py37"]
