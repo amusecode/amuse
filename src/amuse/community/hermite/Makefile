@@ -1,50 +1,66 @@
-# standard amuse configuration include
-# config.mk will be made after ./configure has run
-ifeq ($(origin AMUSE_DIR), undefined)
-  AMUSE_DIR := $(shell amusifier --get-amuse-dir)
-endif
--include ${AMUSE_DIR}/config.mk
-
-MPICXX ?= mpicxx
-MPICC ?= mpicc
-
-CC = $(MPICC)
-CXX = $(MPICXX)
-
-CFLAGS ?= -O3 -Wall -DTOOLBOX  $(MUSE_INCLUDE_DIR) 
-CXXFLAGS ?= $(CFLAGS) 
-
-LDFLAGS += -lm $(MUSE_LD_FLAGS)
-
-A_OBJS = interface.o
-ifeq ($(MPI_ENABLED),yes)
-AM_LIBS = -L$(AMUSE_DIR)/lib/amuse_mpi -lamuse_mpi
-AM_CFLAGS = -I$(AMUSE_DIR)/lib/amuse_mpi
+ifneq (,$(filter-out clean distclean, $(MAKECMDGOALS)))
+include support/config.mk
 endif
 
-#PROFLIBS ?= -L$(AMUSE_DIR)/lib/ibis/src/profiling -libisprofiling -lmpi
 
-all: hermite_worker
+# Detecting dependencies
+support/config.mk:
+	cd support && ./configure
 
-cleanall: clean 
-	$(RM) hermite_worker *~ worker_code hermite_worker_sockets
+# Building the code into a static library
+DEPFLAGS += $(STOPCOND_CFLAGS) $(STOPCONDMPI_CFLAGS) $(AMUSE_MPI_CFLAGS)
+DEPFLAGS += $(FORSOCKETS_CFLAGS)
 
-worker_code.cc: interface.py
-	$(CODE_GENERATOR) --type=c interface.py HermiteInterface -o $@
+CFLAGS += $(DEPFLAGS)
 
+LDFLAGS +=
+
+LDLIBS += -lm $(STOPCOND_LIBS) $(STOPCONDMPI_LIBS) $(AMUSE_MPI_LIBS)
+LDLIBS += $(FORSOCKETS_LIBS)
+
+
+# Building the workers
 worker_code.h: interface.py
-	$(CODE_GENERATOR) --type=h -i amuse.community.interface.stopping_conditions.StoppingConditionInterface interface.py HermiteInterface -o $@
+	amusifier --type=h -i amuse.community.interface.stopping_conditions.StoppingConditionInterface interface.py HermiteInterface -o $@
 
-hermite_worker:	worker_code.cc worker_code.h $(A_OBJS)
-	$(MPICXX) $(CXXFLAGS) $(SC_FLAGS) $(AM_CFLAGS) $(LDFLAGS) $< $(A_OBJS) -o $@ $(SC_MPI_CLIBS)  $(LIBS) $(AM_LIBS)
+hermite_worker.cc: interface.py
+	amusifier --type=c interface.py HermiteInterface -o $@
 
-.cc.o: $<
-	$(CXX) $(CXXFLAGS) $(SC_FLAGS) $(AM_CFLAGS) -c -o $@ $< 
+hermite_worker.o: hermite_worker.cc worker_code.h
+	$(MPICXX) -c -o $@ $(CFLAGS) $<
 
-.C.o:
-	$(CC) $(CFLAGS) $(SC_FLAGS) $(AM_CFLAGS) -c -o $@ $?
+hermite_worker: hermite_worker.o interface.o
+	$(MPICXX) -o $@ $(LDFLAGS) $^ $(LDLIBS)
 
+%.o: %.cc
+	$(MPICXX) -c $(CFLAGS) -o $@ $<
+
+# Which packages contain which workers?
+amuse-hermite_contains: hermite_worker
+
+
+# Building and installing packages
+develop-%: %_contains
+	support/shared/uninstall.sh $*
+	python -m pip install -e packages/$*
+
+install-%: %_contains
+	support/shared/uninstall.sh $*
+	python -m pip install packages/$*
+
+package-%: %_contains
+	python3 -m pip install -vv --no-cache-dir --no-deps --no-build-isolation --prefix ${PREFIX} packages/$*
+
+test-%:
+	cd packages/$* && pytest
+
+
+# Cleaning up
+.PHONY: clean
 clean:
-	rm -f *.so *.o *.pyc worker_code.cc worker_code.h
-	rm -f hermite_worker hermite_worker worker_code-sockets.cc hermite_worker_sockets
-	rm -rf *.dSYM
+	rm -rf *.o *worker*
+
+.PHONY: distclean
+distclean: clean
+	rm -f support/config.mk support/config.log support/config.status
+	rm -rf support/autom4te.cache
