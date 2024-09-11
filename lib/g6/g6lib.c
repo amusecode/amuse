@@ -109,7 +109,7 @@ inline double vec_dot(vector3 va, vector3 vb){
     return result;
 }
 
-inline clear_i_particle(g6_i_particle * particle) {
+inline void clear_i_particle(g6_i_particle * particle) {
     int k;
     for(k = 0; k < 3; k++) {
         particle->acc[k] = 0.0;
