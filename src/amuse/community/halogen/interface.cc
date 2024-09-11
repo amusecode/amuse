@@ -79,7 +79,7 @@ int commit_parameters(){
     if (commit_parameters_result) return commit_parameters_result;
     initialise_structure(gi,halo);
     t2 = ((DOUBLE) clock())/((DOUBLE) CLOCKS_PER_SEC);
-    fprintf(stderr,"Done in "OFD1" seconds.\n",t2-t1);
+    fprintf(stderr,"Done in " OFD1 " seconds.\n",t2-t1);
     return commit_parameters_result;
 }
 
@@ -97,24 +97,24 @@ int generate_particles(){
     
     // Set particle velocities
     t3 = ((DOUBLE) clock())/((DOUBLE) CLOCKS_PER_SEC);
-    fprintf(stderr,"Done in "OFD1" seconds.\nSetting particle velocities... \n",t3-t2);
+    fprintf(stderr,"Done in " OFD1 " seconds.\nSetting particle velocities... \n",t3-t2);
     set_velocities(gi,halo);
     
     // Set remaining attributes
     t4 = ((DOUBLE) clock())/((DOUBLE) CLOCKS_PER_SEC);
-    fprintf(stderr,"Done in "OFD1" seconds.\nSetting remaining particle attributes... \n",t4-t3);
+    fprintf(stderr,"Done in " OFD1 " seconds.\nSetting remaining particle attributes... \n",t4-t3);
     set_attributes(gi,halo);
     
     // Calculate a few things and do center of mass correction
     t5 = ((DOUBLE) clock())/((DOUBLE) CLOCKS_PER_SEC);
-    fprintf(stderr,"Done in "OFD1" seconds\nCalculating a few things, doing mass scaling and correct center of mass position and velocity... \n",t5-t4);
+    fprintf(stderr,"Done in " OFD1 " seconds\nCalculating a few things, doing mass scaling and correct center of mass position and velocity... \n",t5-t4);
     double_particles(halo);
     calculate_stuff(gi,bh,halo);
     
     // Write Output
     if (write_output) {
         t6 = ((DOUBLE) clock())/((DOUBLE) CLOCKS_PER_SEC);
-        fprintf(stderr,"Done in "OFD1" seconds\nWriting Output... \n",t6-t5);
+        fprintf(stderr,"Done in " OFD1 " seconds\nWriting Output... \n",t6-t5);
         
         sprintf(FILENAME,"%s.IC.ascii",INPUTNAME);
         file = fopen(FILENAME,"w");
@@ -159,69 +159,69 @@ int generate_particles(){
         fprintf(file,"N/A (executed by AMUSE)");
         fprintf(file,"\n\n");
         fprintf(file,"Model properties\n\n");
-        fprintf(file,"alpha = "OFD1"\n",halo->sp->alpha);
-        fprintf(file,"beta  = "OFD1"\n",halo->sp->beta);
-        fprintf(file,"gamma = "OFD1"\n",halo->sp->gamma);
-        fprintf(file,"rho0  = "OFD3" MU LU^-3\n",halo->sp->rho0);
+        fprintf(file,"alpha = " OFD1 "\n",halo->sp->alpha);
+        fprintf(file,"beta  = " OFD1 "\n",halo->sp->beta);
+        fprintf(file,"gamma = " OFD1 "\n",halo->sp->gamma);
+        fprintf(file,"rho0  = " OFD3 " MU LU^-3\n",halo->sp->rho0);
         fprintf(file,"\n");
         if (bh->mass > 0) {
-        fprintf(file,"MBH = "OFD3" MU\n",bh->mass);
+        fprintf(file,"MBH = " OFD3 " MU\n",bh->mass);
         fprintf(file,"\n");
         }
-        fprintf(file,"rs      = "OFD3" LU\n",halo->sp->rs);
-        fprintf(file,"rhalf   = "OFD3" LU\n",halo->sp->rhalf);
-        fprintf(file,"rvir    = "OFD3" LU\n",halo->sp->rvir);
-        fprintf(file,"rinner  = "OFD3" LU\n",gi->rinner);
-        fprintf(file,"router  = "OFD3" LU\n",gi->router);
+        fprintf(file,"rs      = " OFD3 " LU\n",halo->sp->rs);
+        fprintf(file,"rhalf   = " OFD3 " LU\n",halo->sp->rhalf);
+        fprintf(file,"rvir    = " OFD3 " LU\n",halo->sp->rvir);
+        fprintf(file,"rinner  = " OFD3 " LU\n",gi->rinner);
+        fprintf(file,"router  = " OFD3 " LU\n",gi->router);
         if (halo->sp->rcutoff != SBI) {
-            fprintf(file,"rcutoff = "OFD3" LU\n",halo->sp->rcutoff);
-            fprintf(file,"rdecay  = "OFD3" LU\n",halo->sp->rdecay);
+            fprintf(file,"rcutoff = " OFD3 " LU\n",halo->sp->rcutoff);
+            fprintf(file,"rdecay  = " OFD3 " LU\n",halo->sp->rdecay);
             }
         fprintf(file,"\n");
-        fprintf(file,"M(rs)      = "OFD3" MU\n",Menc(halo->sp->rs,gi));
-        fprintf(file,"M(rhalf)   = "OFD3" MU\n",Menc(halo->sp->rhalf,gi));
-        fprintf(file,"M(rvir)    = "OFD3" MU\n",Menc(halo->sp->rvir,gi));
-        fprintf(file,"M(rinner)  = "OFD3" MU\n",Menc(gi->rinner,gi));
-        fprintf(file,"M(router)  = "OFD3" MU\n",Menc(gi->router,gi));
+        fprintf(file,"M(rs)      = " OFD3 " MU\n",Menc(halo->sp->rs,gi));
+        fprintf(file,"M(rhalf)   = " OFD3 " MU\n",Menc(halo->sp->rhalf,gi));
+        fprintf(file,"M(rvir)    = " OFD3 " MU\n",Menc(halo->sp->rvir,gi));
+        fprintf(file,"M(rinner)  = " OFD3 " MU\n",Menc(gi->rinner,gi));
+        fprintf(file,"M(router)  = " OFD3 " MU\n",Menc(gi->router,gi));
         if (halo->sp->rcutoff != SBI) {
-        fprintf(file,"M(rcutoff) = "OFD3" MU\n",Menc(halo->sp->rcutoff,gi));
+        fprintf(file,"M(rcutoff) = " OFD3 " MU\n",Menc(halo->sp->rcutoff,gi));
         }
         fprintf(file,"\n");
         fprintf(file,"Sampling properties\n\n");
-        fprintf(file,"|Cr| = "OFD3" MU       Cr = ("OFD4", "OFD4", "OFD4") MU\n",gi->stuff->Cr[0],gi->stuff->Cr[1],gi->stuff->Cr[2],gi->stuff->Cr[3]);
-        fprintf(file,"|Cv| = "OFD3" MU TU^-1 Cv = ("OFD4", "OFD4", "OFD4") MU TU^-1\n",gi->stuff->Cv[0],gi->stuff->Cv[1],gi->stuff->Cv[2],gi->stuff->Cv[3]);
+        fprintf(file,"|Cr| = " OFD3 " MU       Cr = (" OFD4 ", " OFD4 ", " OFD4 ") MU\n",gi->stuff->Cr[0],gi->stuff->Cr[1],gi->stuff->Cr[2],gi->stuff->Cr[3]);
+        fprintf(file,"|Cv| = " OFD3 " MU TU^-1 Cv = (" OFD4 ", " OFD4 ", " OFD4 ") MU TU^-1\n",gi->stuff->Cv[0],gi->stuff->Cv[1],gi->stuff->Cv[2],gi->stuff->Cv[3]);
         fprintf(file,"\n");
-        fprintf(file,"Etot = "OFD4" MU LU^2 TU^-2\n",gi->stuff->Etot);
-        fprintf(file,"Ekin = "OFD4" MU LU^2 TU^-2\n",gi->stuff->Ekin);
-        fprintf(file,"Epot = "OFD4" MU LU^2 TU^-2\n",gi->stuff->Epot);
+        fprintf(file,"Etot = " OFD4 " MU LU^2 TU^-2\n",gi->stuff->Etot);
+        fprintf(file,"Ekin = " OFD4 " MU LU^2 TU^-2\n",gi->stuff->Ekin);
+        fprintf(file,"Epot = " OFD4 " MU LU^2 TU^-2\n",gi->stuff->Epot);
         fprintf(file,"Rvir = |2*Ekin/Epot| = %g\n",fabs(2*gi->stuff->Ekin/gi->stuff->Epot));
         fprintf(file,"\n");
-        fprintf(file,"Ntot                = "OFD3" = "OFI1"\n",(DOUBLE)gi->stuff->N,gi->stuff->N);
-        fprintf(file,"rimp                = "OFD3" LU\n",halo->rimp);
-        fprintf(file,"r1                  = "OFD3" LU\n",halo->r1);
-        fprintf(file,"r100                = "OFD3" LU\n",halo->r100);
-        fprintf(file,"Mtheo               = "OFD3" MU\n",bh->mass + halo->sp->M);
-        fprintf(file,"Msamp               = "OFD3" MU\n",gi->stuff->Mp);
-        fprintf(file,"(Msamp-Mtheo)/Mtheo = "OFD3"\n",gi->stuff->Mp/(bh->mass + halo->sp->M)-1.0);
-        fprintf(file,"Random seed         = "OFI1"\n",randomseed);
+        fprintf(file,"Ntot                = " OFD3 " = " OFI1 "\n",(DOUBLE)gi->stuff->N,gi->stuff->N);
+        fprintf(file,"rimp                = " OFD3 " LU\n",halo->rimp);
+        fprintf(file,"r1                  = " OFD3 " LU\n",halo->r1);
+        fprintf(file,"r100                = " OFD3 " LU\n",halo->r100);
+        fprintf(file,"Mtheo               = " OFD3 " MU\n",bh->mass + halo->sp->M);
+        fprintf(file,"Msamp               = " OFD3 " MU\n",gi->stuff->Mp);
+        fprintf(file,"(Msamp-Mtheo)/Mtheo = " OFD3 "\n",gi->stuff->Mp/(bh->mass + halo->sp->M)-1.0);
+        fprintf(file,"Random seed         = " OFI1 "\n",randomseed);
         fprintf(file,"\n");
         fprintf(file,"Times for individual steps\n\n");
-        fprintf(file,"Calculation of halo properties and initialisation of grid in r: "OFD1" seconds.\n",t1-t0);
-        fprintf(file,"Initialisation of grid for distribution function: "OFD1" seconds.\n",t2-t1);
-        fprintf(file,"Setting particle positions: "OFD1" seconds\n",t3-t2);
-        fprintf(file,"Setting particle velocities: "OFD1" seconds\n",t4-t3);
-        fprintf(file,"Setting remaining particle attributes: "OFD1" seconds\n",t5-t4);
-        fprintf(file,"Calculating a few things and correct center of mass: "OFD1" seconds\n",t6-t5);
+        fprintf(file,"Calculation of halo properties and initialisation of grid in r: " OFD1 " seconds.\n",t1-t0);
+        fprintf(file,"Initialisation of grid for distribution function: " OFD1 " seconds.\n",t2-t1);
+        fprintf(file,"Setting particle positions: " OFD1 " seconds\n",t3-t2);
+        fprintf(file,"Setting particle velocities: " OFD1 " seconds\n",t4-t3);
+        fprintf(file,"Setting remaining particle attributes: " OFD1 " seconds\n",t5-t4);
+        fprintf(file,"Calculating a few things and correct center of mass: " OFD1 " seconds\n",t6-t5);
         t7 = ((DOUBLE) clock())/((DOUBLE) CLOCKS_PER_SEC);
-        fprintf(file,"Writing output: "OFD1" seconds\n",t7-t6);
-        fprintf(file,"Total time: "OFD1" seconds\n",t7-t0);
+        fprintf(file,"Writing output: " OFD1 " seconds\n",t7-t6);
+        fprintf(file,"Total time: " OFD1 " seconds\n",t7-t0);
         fclose(file);
     } else { // in case no output is written
         t6 = t5;
         t7 = ((DOUBLE) clock())/((DOUBLE) CLOCKS_PER_SEC);
     }
     
-    fprintf(stderr,"Done in "OFD1" seconds\nTotal time needed was "OFD1" seconds\n",t7-t6,t7-t0);
+    fprintf(stderr,"Done in " OFD1 " seconds\nTotal time needed was " OFD1 " seconds\n",t7-t6,t7-t0);
     
     particles_generated = true;
     return 0;
