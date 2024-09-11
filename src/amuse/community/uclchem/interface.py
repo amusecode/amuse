@@ -1,9 +1,10 @@
-from amuse.community.interface.chem import ChemicalModelingInterface
-from amuse.community.interface.chem import ChemicalModeling
+#from amuse.community.interface.chem import ChemicalModelingInterface
+#from amuse.community.interface.chem import ChemicalModeling
 from amuse.community.interface.common import CommonCode, CommonCodeInterface
 from amuse.community import *
 from pathlib import Path
 
+from amuse.units.si import named
 class UCLchemInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesMixIn):
     """
     UCLCHEM: A Gas-Grain Chemical Code for astrochemical modelling
@@ -17,30 +18,39 @@ class UCLchemInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesM
             **options
         )
         LiteratureReferencesMixIn.__init__(self)
+        #New units used in chemical simulation
+        #cr_ion = named("cosmic ray ionisation rate", "cr_ion", 1.3e-17 * units.s**-1)
+        #habing = named("habing", "hab", 1.6e-3 * units.erg * units.cm**-2 * units.s**-1)
+        
 
     @legacy_function
     def commit_particles():
+        #Standard function
         function = LegacyFunctionSpecification()
         function.result_type = 'i'
         return function
 
     @legacy_function
     def recommit_particles():
+        #Standard function
         function = LegacyFunctionSpecification()
         function.result_type = 'i'
         return function
     
     @legacy_function
     def commit_parameters():
+        #Standard function; doesn't actually do anything, but is required 
         function = LegacyFunctionSpecification()
         function.result_type = 'i'
         return function
 
     def recommit_parameters():
+        #Standard function; for UCLchem it's just the same as commit_parameters()
         return self.commit_parameters()
     
     @legacy_function
     def set_state():
+        #Standard function; needs the same parameters as new_particles()
         function = LegacyFunctionSpecification()
         function.can_handle_array = True
         function.addParameter('id', dtype='i', direction=function.IN)
@@ -51,6 +61,7 @@ class UCLchemInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesM
 
     @legacy_function
     def get_state():
+        #Standard function; needs the same parameters as new_particles()
         function = LegacyFunctionSpecification()
         function.can_handle_array = True
         function.addParameter('id', dtype='i', direction=function.IN)
@@ -61,6 +72,7 @@ class UCLchemInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesM
 
     @legacy_function
     def get_abundance():
+        #Standard function
         function = LegacyFunctionSpecification()
         function.can_handle_array = True
         function.addParameter('id', dtype='i', direction=function.IN)
@@ -71,6 +83,7 @@ class UCLchemInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesM
 
     @legacy_function
     def set_abundance():
+        #Standard function
         function = LegacyFunctionSpecification()
         function.can_handle_array = True
         function.addParameter('id', dtype='i', direction=function.IN)
@@ -81,6 +94,7 @@ class UCLchemInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesM
 
     @legacy_function
     def get_firstlast_abundance():
+        #Standard function; mostly used internally, not really useful to most users
         function = LegacyFunctionSpecification()
         function.can_handle_array = True
         function.addParameter('first', dtype='i', direction=function.OUT)
@@ -90,6 +104,7 @@ class UCLchemInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesM
     
     @legacy_function
     def get_name_of_species():
+        #Standard function
         function = LegacyFunctionSpecification()
         function.can_handle_array = True
         function.addParameter('index', dtype='i', direction=function.IN)
@@ -99,6 +114,7 @@ class UCLchemInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesM
     
     @legacy_function
     def get_index_of_species():
+        #Standard function
         function = LegacyFunctionSpecification()
         function.can_handle_array = True
         function.addParameter('name', dtype='s', direction=function.IN)
@@ -108,6 +124,7 @@ class UCLchemInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesM
     
     @legacy_function
     def new_particle():
+        #Standard function; sets required parameters for the particle set
         function = LegacyFunctionSpecification()
         function.can_handle_array = True
         function.addParameter('id', dtype='int32', direction=function.OUT)
@@ -118,6 +135,7 @@ class UCLchemInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesM
 
     @legacy_function   
     def delete_particle():
+        #Standard function
         function = LegacyFunctionSpecification()
         function.can_handle_array = True
         function.addParameter('id', dtype='int32', direction=function.IN)
@@ -126,6 +144,7 @@ class UCLchemInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesM
     
     @legacy_function
     def get_time():
+        #Standard function
         function = LegacyFunctionSpecification()
         function.addParameter('time', dtype='float64',direction=function.OUT)
         function.result_type = 'i'
@@ -133,22 +152,23 @@ class UCLchemInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesM
     
     @legacy_function
     def run_model():
+        #Implementation here is UCLchem-specific; evolve_model is the function to call
         function = LegacyFunctionSpecification()
-        #function.must_handle_array=True
-        #function.addParameter('n_particles', dtype='i', direction=function.LENGTH)
         function.addParameter('dictionary', dtype='s', direction=function.IN)
-        #function.addParameter('out_species', dtype='s', direction=function.IN)
         function.result_type = 'i'
         return function
     
     @legacy_function
     def set_species():
+        #Standard function
         function = LegacyFunctionSpecification()
         function.addParameter('species', dtype='s',direction=function.IN)
         function.result_type='i'
         return function
 
     def _reform_inputs(self,param_dict, out_species):
+        #UCLchem-specific function; reforms the dictionary input to a string that is parsed in the FORTRAN layer
+        #Copied verbatim from the UCLchem source code
         if param_dict is None:
             param_dict = {}
         else:
@@ -176,9 +196,12 @@ class UCLchem(CommonCode):
         legacy_interface = UCLchemInterface(**options)
         self.uclchem_time = 0.0|units.yr
         InCodeComponentImplementation.__init__(self,legacy_interface)
+        #New units used in chemical simulation
+        #cr_ion = named("cosmic ray ionisation rate", "cr_ion", 1.3e-17 * units.s**-1)
+        #habing = named("habing", "hab", 1.6e-3 * units.erg * units.cm**-2 * units.s**-1)
 
     def evolve_model(self,tend):
-        print(tend, self.uclchem_time)
+        #Standard function; implementation is UCLchem-specific
         assert tend >= self.uclchem_time, 'end time must be larger than uclchem_time'
         dictionary, out_species= self._build_dict(tend=tend)
         self.set_species(out_species)
@@ -188,10 +211,10 @@ class UCLchem(CommonCode):
 
 
     def _build_dict(self, tend):
+        #UCLchem specific function; gets all relevant variables and creates a dictionary from them
         dictionary_list = []
         outSpecies = self.out_species
         attributes = self.particles.get_attribute_names_defined_in_store()
-        #print(self.particles[0])
         for i in range(len(self.particles.key)):
             dictionary = dict()
             if 'temperature' in attributes:
@@ -203,12 +226,12 @@ class UCLchem(CommonCode):
             if 'radfield' in attributes:
                 dictionary['radfield'] = self.particles.radfield.value_in(units.habing)[i]
             dictionary['finalTime'] = tend.value_in(units.yr)-self.uclchem_time.value_in(units.yr)
-            #dictionary['currentTime'] = self.uclchem_time
             _, dictionary, outSpecies_out = self._reform_inputs(dictionary, outSpecies)
             dictionary_list.append(str(dictionary))
         return dictionary_list, str(outSpecies_out)
     
     def define_parameters(self, handler):
+        #UCLchem-specific parameter
         handler.add_interface_parameter(
             "out_species",
             "Array of molecules to use",
