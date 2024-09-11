@@ -16,6 +16,7 @@ CFLAGS += -Isrc
 
 LDFLAGS +=
 
+LDLIBS += -lm $(AMUSE_MPI_LIBS)
 LDLIBS += $(FORSOCKETS_LIBS)
 
 CODELIB = src/libkepler.a

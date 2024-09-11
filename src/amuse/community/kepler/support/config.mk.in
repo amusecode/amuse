@@ -5,10 +5,6 @@ MPICXX = @MPICXX@
 
 CPU_COUNT = @CPU_COUNT@
 
-# Tools
-AR = @AR@
-RANLIB = @RANLIB@
-
 # General flags and libraries
 CFLAGS = @CFLAGS@
 LDFLAGS = @LDFLAGS@
