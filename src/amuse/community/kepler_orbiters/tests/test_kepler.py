@@ -1,7 +1,7 @@
 import numpy
 import struct
 
-from .interface import Kepler
+from amuse.community.kepler_orbiters.interface import Kepler
 
 from amuse.units import nbody_system
 from amuse.units import units,constants
