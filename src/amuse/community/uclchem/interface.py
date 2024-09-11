@@ -1,9 +1,10 @@
-from amuse.community.interface.chem import ChemicalModelingInterface
-from amuse.community.interface.chem import ChemicalModeling
+#from amuse.community.interface.chem import ChemicalModelingInterface
+#from amuse.community.interface.chem import ChemicalModeling
 from amuse.community.interface.common import CommonCode, CommonCodeInterface
 from amuse.community import *
 from pathlib import Path
 
+from amuse.units.si import named
 class UCLchemInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesMixIn):
     """
     UCLCHEM: A Gas-Grain Chemical Code for astrochemical modelling
@@ -15,11 +16,12 @@ class UCLchemInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesM
             self,
             name_of_the_worker='uclchem_worker',
             **options
-            #New units used in chemical simulation
-            cr_ion = named("cosmic ray ionisation rate", "cr_ion", 1.3e-17 * s**-1)
-            habing = named("habing", "hab", 1.6e-3 * erg * cm**-2 *s**-1)
         )
         LiteratureReferencesMixIn.__init__(self)
+        #New units used in chemical simulation
+        #cr_ion = named("cosmic ray ionisation rate", "cr_ion", 1.3e-17 * units.s**-1)
+        #habing = named("habing", "hab", 1.6e-3 * units.erg * units.cm**-2 * units.s**-1)
+        
 
     @legacy_function
     def commit_particles():
@@ -194,6 +196,9 @@ class UCLchem(CommonCode):
         legacy_interface = UCLchemInterface(**options)
         self.uclchem_time = 0.0|units.yr
         InCodeComponentImplementation.__init__(self,legacy_interface)
+        #New units used in chemical simulation
+        #cr_ion = named("cosmic ray ionisation rate", "cr_ion", 1.3e-17 * units.s**-1)
+        #habing = named("habing", "hab", 1.6e-3 * units.erg * units.cm**-2 * units.s**-1)
 
     def evolve_model(self,tend):
         #Standard function; implementation is UCLchem-specific
@@ -206,7 +211,7 @@ class UCLchem(CommonCode):
 
 
     def _build_dict(self, tend):
-        #UCLchem specific function; gets all relevant variables and createsa dictionary from them
+        #UCLchem specific function; gets all relevant variables and creates a dictionary from them
         dictionary_list = []
         outSpecies = self.out_species
         attributes = self.particles.get_attribute_names_defined_in_store()
