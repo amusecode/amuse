@@ -1,17 +1,25 @@
-#from amuse.community.interface.chem import ChemicalModelingInterface
-#from amuse.community.interface.chem import ChemicalModeling
+"""
+Interface for the UCLChem code
+"""
+from amuse.units import units
+# from amuse.community.interface.chem import ChemicalModelingInterface
+# from amuse.community.interface.chem import ChemicalModeling
 from amuse.community.interface.common import CommonCode, CommonCodeInterface
-from amuse.community import *
+from amuse.community import (
+    CodeInterface, LiteratureReferencesMixIn,
+    legacy_function, LegacyFunctionSpecification,
+    InCodeComponentImplementation,
+)
 from pathlib import Path
 
-from amuse.units.si import named
-class UCLchemInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesMixIn):
+
+class UclchemInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesMixIn):
     """
     UCLCHEM: A Gas-Grain Chemical Code for astrochemical modelling
 
     .. [#] ADS:2017AJ....154...38H (Holdship, J. ; Viti, S, ; Jiménez-Serra, I.; Makrymallis, A. ; Priestley, F. , 2017, AJ)
     """
-    def __init__(self, mode = 'cpu', **options):
+    def __init__(self, mode='cpu', **options):
         CodeInterface.__init__(
             self,
             name_of_the_worker='uclchem_worker',
@@ -21,7 +29,6 @@ class UCLchemInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesM
         #New units used in chemical simulation
         #cr_ion = named("cosmic ray ionisation rate", "cr_ion", 1.3e-17 * units.s**-1)
         #habing = named("habing", "hab", 1.6e-3 * units.erg * units.cm**-2 * units.s**-1)
-        
 
     @legacy_function
     def commit_particles():
@@ -191,9 +198,9 @@ class UCLchemInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesM
             n_out = 0
         return n_out, param_dict, out_species
     
-class UCLchem(CommonCode):
+class Uclchem(CommonCode):
     def __init__(self, convert_nbody=None, **options):
-        legacy_interface = UCLchemInterface(**options)
+        legacy_interface = UclchemInterface(**options)
         self.uclchem_time = 0.0|units.yr
         InCodeComponentImplementation.__init__(self,legacy_interface)
         #New units used in chemical simulation
