@@ -103,7 +103,7 @@ class Quantity:
         return False
 
     def __repr__(self):
-        return "quantity<" + str(self) + ">"
+        return f"quantity<{self}>"
 
     def __add__(self, other):
         if self.unit.is_zero():
@@ -1199,7 +1199,7 @@ class NonNumericQuantity(Quantity):
         return self.unit.value_to_string(self.value)
 
     def __repr__(self):
-        return f"quantity<{str(self.value)} - {str(self)}>"
+        return f"quantity<{self.value} - {self}>"
 
     def as_vector_with_length(self, length):
         return VectorQuantity(numpy.array([self.value] * length), self.unit)
