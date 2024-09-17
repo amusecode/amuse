@@ -334,7 +334,6 @@ class AbstractParticleSet(AbstractSet):
 
         rows = []
         for i in range(len(columns[0])):
-
             row = [x[i] for x in columns]
             rows.append(row)
 
@@ -1175,7 +1174,7 @@ class Particles(AbstractParticleSet):
         keys_generator=None,
         particles=None,
         is_working_copy=True,
-        **attributes
+        **attributes,
     ):
         AbstractParticleSet.__init__(self)
 
@@ -1535,7 +1534,6 @@ class BoundSupersetParticlesFunctionAttribute(object):
 
 
 class DerivedSupersetAttribute(DerivedAttribute):
-
     def __init__(self, name):
         self.name = name
 
@@ -1543,7 +1541,6 @@ class DerivedSupersetAttribute(DerivedAttribute):
         result = None
         offset = 0
         for subset in superset._private.particle_sets:
-
             subset_result = getattr(subset, self.name)
             if hasattr(subset_result, "__call__"):
                 if len(subset) > 0:
@@ -3040,7 +3037,6 @@ class ParticlesWithUnitsConverted(AbstractParticleSet):
         return self._private.particles.get_valid_particles_mask()
 
     def __getitem__(self, index):
-
         keys = self.get_all_keys_in_store()[index]
 
         if keys is ma.masked:
@@ -3217,7 +3213,6 @@ class ParticlesWithAttributesTransformed(AbstractParticleSet):
         return self._private.particles.get_valid_particles_mask()
 
     def __getitem__(self, index):
-
         keys = self.get_all_keys_in_store()[index]
 
         if keys is ma.masked:
@@ -3441,7 +3436,6 @@ class TransformedParticles(ParticlesWithAttributesTransformed):
         return self._factory(copiedParticles)
 
     def get_values_in_store(self, indices, attributes):
-
         direct_attributes = []
         needs_transformation = False
         for attribute in attributes:
@@ -3590,7 +3584,6 @@ class TransformedParticles(ParticlesWithAttributesTransformed):
 
 
 class ParticleInformationChannel(object):
-
     def __init__(
         self, from_particles, to_particles, attributes=None, target_names=None
     ):
@@ -3663,7 +3656,6 @@ class ParticleInformationChannel(object):
     def copy_attributes_async(
         self, attributes, target_names=None, async_get=True, async_set=False
     ):
-
         if target_names is None:
             target_names = attributes
 
@@ -3882,7 +3874,6 @@ class ParticlesWithNamespacedAttributesView(AbstractParticleSet):
         return self._private.particles.get_valid_particles_mask()
 
     def __getitem__(self, index):
-
         keys = self.get_all_keys_in_store()[index]
 
         if keys is ma.masked:
@@ -4054,7 +4045,7 @@ class Particle(object):
         particles_set=None,
         set_index=None,
         set_version=-1,
-        **keyword_arguments
+        **keyword_arguments,
     ):
         if particles_set is None:
             if key == None:
