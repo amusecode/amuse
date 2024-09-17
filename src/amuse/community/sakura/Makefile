@@ -1,41 +1,76 @@
-# standard amuse configuration include
-# config.mk will be made after ./configure has run
-ifeq ($(origin AMUSE_DIR), undefined)
-  AMUSE_DIR := $(shell amusifier --get-amuse-dir)
+ifneq (,$(filter-out clean distclean, $(MAKECMDGOALS)))
+include support/config.mk
 endif
--include ${AMUSE_DIR}/config.mk
 
-MPICXX ?= mpicxx
-MPICC ?= mpicc
 
-CC = $(MPICC)
-CXX = $(MPICXX)
+# Detecting dependencies
+support/config.mk:
+	cd support && ./configure
 
-CXXFLAGS ?= -Wall -g -O2
+# Building the code into a static library
+DEPFLAGS += $(STOPCOND_CFLAGS) $(STOPCONDMPI_CFLAGS) $(AMUSE_MPI_CFLAGS)
+DEPFLAGS += $(FORSOCKETS_CFLAGS)
 
+CFLAGS += $(DEPFLAGS)
+# CFLAGS += -Wall -g -O2
+
+LDFLAGS +=
+
+LDLIBS += -lm $(STOPCOND_LIBS) $(STOPCONDMPI_LIBS) $(AMUSE_MPI_LIBS)
+LDLIBS += $(FORSOCKETS_LIBS)
 
 CODELIB = src/libsakura.a
-OBJ = interface.o
 
-all: sakura_worker 
 
-clean:
-	rm -f *.so *.o *.pyc worker_code.cc worker_code.h 
-	rm -f *~ sakura_worker
-	make -C src clean
+$(CODELIB): | src
+	$(MAKE) -C src CXX='$(MPICXX)' CXXFLAGS='$(CFLAGS)' all
 
-$(CODELIB):
-	make -C src all
+interface.o: interface.cc worker_code.h
+	$(MPICXX) -I./src/ -c -o $@ $(CFLAGS) $<
 
-worker_code.cc: interface.py
-	$(CODE_GENERATOR) --type=c interface.py SakuraInterface -o $@
-
+# Building the workers
 worker_code.h: interface.py
-	$(CODE_GENERATOR) --type=h -i amuse.community.interface.stopping_conditions.StoppingConditionInterface interface.py SakuraInterface -o $@
+	amusifier --type=h -i amuse.community.interface.stopping_conditions.StoppingConditionInterface interface.py SakuraInterface -o $@
 
-sakura_worker: worker_code.cc worker_code.h $(CODELIB) $(OBJ)
-	$(MPICXX) $(CXXFLAGS) $(SC_FLAGS) $(LDFLAGS) -I./src $< $(CODELIB) $(OBJ) -o $@  -L./src -lsakura $(SC_CLIBS)
+sakura_worker.cc: interface.py
+	amusifier --type=c interface.py SakuraInterface -o $@
 
-interface.o: interface.cc
-	$(MPICXX) $(CXXFLAGS) $(SC_FLAGS) -I./src -c -o $@ $< 
+sakura_worker.o: sakura_worker.cc worker_code.h
+	$(MPICXX) -c -o $@ $(CFLAGS) $<
+
+sakura_worker: sakura_worker.o interface.o $(CODELIB)
+	$(MPICXX) -o $@ $(LDFLAGS) $^ $(LDLIBS)
+
+
+# Which packages contain which workers?
+amuse-sakura_contains: sakura_worker
+
+
+# Building and installing packages
+develop-%: %_contains
+	support/shared/uninstall.sh $*
+	python -m pip install -e packages/$*
+
+install-%: %_contains
+	support/shared/uninstall.sh $*
+	python -m pip install packages/$*
+
+package-%: %_contains
+	python3 -m pip install -vv --no-cache-dir --no-deps --no-build-isolation --prefix ${PREFIX} packages/$*
+
+test-%:
+	cd packages/$* && pytest
+
+
+# Cleaning up
+.PHONY: clean
+clean:
+	$(MAKE) -C src clean
+	rm -rf *.o *worker*
+
+.PHONY: distclean
+distclean: clean
+	-$(MAKE) -C src clean
+	rm -f support/config.mk support/config.log support/config.status
+	rm -rf support/autom4te.cache
 
