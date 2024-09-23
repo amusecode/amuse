@@ -7,7 +7,7 @@ MPIFC ?= mpif90
 FC    = $(MPIFC)
 
 FFLAGS   += 
-FFLAGS   += $(F77FLAGS)
+# FFLAGS   += $(F77FLAGS)
 LDFLAGS  += -lm 
 
 CODELIB = libMikkola.a
