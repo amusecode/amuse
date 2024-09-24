@@ -1,53 +1,78 @@
-# standard amuse configuration include
-# config.mk will be made after ./configure has run
-ifeq ($(origin AMUSE_DIR), undefined)
-  AMUSE_DIR := $(shell amusifier --get-amuse-dir)
+ifneq (,$(filter-out clean distclean, $(MAKECMDGOALS)))
+include support/config.mk
 endif
--include ${AMUSE_DIR}/config.mk
 
-# Makefile to build the worker code.  First draft was auto-generated;
-# subsequent versions are hand-coded, so save a copy.  Note that
-# all compiles must use MPICXX, not CXX.
 
-ALL	 = smallN_worker
-OPT	  = -I$(AMUSE_DIR)/lib/stopcond
+# Detecting dependencies
+support/config.mk:
+	cd support && ./configure
 
-MPICXX   ?= mpicxx
-SC_FLAGS ?= -I$(AMUSE_DIR)/lib/stopcond
-SC_CLIBS  ?=  -L$(AMUSE_DIR)/lib/stopcond -lstopcondmpi 
 
-CFLAGS   += -Wall -g $(OPT) -Isrc
-CXXFLAGS += $(CFLAGS) $(SC_FLAGS)
-LDFLAGS  += $(SC_CLIBS) -lm $(MUSE_LD_FLAGS)
+# Building the code into a static library
+DEPFLAGS += $(STOPCOND_CFLAGS) $(STOPCONDMPI_CFLAGS) $(AMUSE_MPI_CFLAGS)
+DEPFLAGS += $(FORSOCKETS_CFLAGS)
 
-OBJS = interface.o
+CFLAGS += $(DEPFLAGS)
+CFLAGS += -Wall -g -Isrc
 
-AM_LIBS = -L$(AMUSE_DIR)/lib/amuse_mpi -lamuse_mpi
-AM_CFLAGS = -I$(AMUSE_DIR)/lib/amuse_mpi
+LDFLAGS +=
+
+LDLIBS += -lm $(STOPCOND_LIBS) $(STOPCONDMPI_LIBS) $(AMUSE_MPI_LIBS)
+LDLIBS += $(FORSOCKETS_LIBS)
+
 
 CODELIB = src/libsmallN.a
 
 
-all: $(ALL)
+$(CODELIB): | src
+	$(MAKE) -C src all CXX='$(MPICXX)'
 
-$(CODELIB):
-	make -C src all CXX='$(MPICXX)'
+# Building the workers
+smalln_worker.h: interface.py
+	amusifier --type=h interface.py -i amuse.community.interface.stopping_conditions.StoppingConditionInterface SmallNInterface -o $@
 
-worker_code.cc: interface.py
-	$(CODE_GENERATOR) --type=c interface.py SmallNInterface -o $@
+smalln_worker.cc: interface.py
+	amusifier --type=c interface.py SmallNInterface -o $@
 
-interface.h: interface.py
-	$(CODE_GENERATOR) --type=h interface.py -i amuse.community.interface.stopping_conditions.StoppingConditionInterface  SmallNInterface -o $@
+interface.o: interface.cc
+	$(MPICXX) -c -o $@ $(CFLAGS) $<
 
-smallN_worker: worker_code.cc interface.h $(CODELIB) $(OBJS)
-	$(MPICXX) $(CXXFLAGS) $(LDFLAGS) worker_code.cc $(OBJS) $(CODELIB) -o $@ $(LDFLAGS) $(LIBS)
+smalln_worker.o: smalln_worker.cc smalln_worker.h
+	$(MPICXX) -c -o $@ $(CFLAGS) $<
 
-%.o: %.cc
-	$(MPICXX) $(CXXFLAGS) -c -o $@ $< 
+smalln_worker: smalln_worker.o interface.o $(CODELIB)
+	$(MPICXX) -o $@ $(LDFLAGS) $^ $(LDLIBS)
 
+
+# Which packages contain which workers?
+amuse-smalln_contains: smalln_worker
+
+
+# Building and installing packages
+develop-%: %_contains
+	support/shared/uninstall.sh $*
+	python -m pip install -e packages/$*
+
+install-%: %_contains
+	support/shared/uninstall.sh $*
+	python -m pip install packages/$*
+
+package-%: %_contains
+	python3 -m pip install -vv --no-cache-dir --no-deps --no-build-isolation --prefix ${PREFIX} packages/$*
+
+test-%:
+	cd packages/$* && pytest
+
+
+# Cleaning up
+.PHONY: clean
 clean:
-	$(RM) -r -f *.so *.dSYM *.o *.pyc worker_code.cc interface.h 
-	$(RM) -f *~ smallN_worker worker_code.cc
-	make -C src clean
+	$(MAKE) -C src clean
+	rm -rf *.o *worker*
 
+.PHONY: distclean
 distclean: clean
+	-$(MAKE) -C src clean
+	rm -f support/config.mk support/config.log support/config.status
+	rm -rf support/autom4te.cache
+
