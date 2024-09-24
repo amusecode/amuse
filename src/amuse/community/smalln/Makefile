@@ -25,20 +25,20 @@ CODELIB = src/libsmallN.a
 
 
 $(CODELIB): | src
-	$(MAKE) -C src all CXX='$(MPICXX)'
+	$(MAKE) -C src all CXXFLAGS='$(CFLAGS)' CXX='$(MPICXX)'
 
 # Building the workers
-smalln_worker.h: interface.py
+interface.h: interface.py
 	amusifier --type=h interface.py -i amuse.community.interface.stopping_conditions.StoppingConditionInterface SmallNInterface -o $@
 
 smalln_worker.cc: interface.py
 	amusifier --type=c interface.py SmallNInterface -o $@
 
-interface.o: interface.cc
+interface.o: interface.cc interface.h
 	$(MPICXX) -c -o $@ $(CFLAGS) $<
 
-smalln_worker.o: smalln_worker.cc smalln_worker.h
-	$(MPICXX) -c -o $@ $(CFLAGS) $<
+smalln_worker.o: smalln_worker.cc interface.h
+	$(MPICXX) -c -o $@ $(CFLAGS) $< 
 
 smalln_worker: smalln_worker.o interface.o $(CODELIB)
 	$(MPICXX) -o $@ $(LDFLAGS) $^ $(LDLIBS)
