@@ -27,10 +27,10 @@ class HiGPUsInterface(CodeInterface,
     """
 
 
-    include_headers = ['worker_code.h']
+    include_headers = ['higpus_cuda_worker.h']
             
     def __init__(self, **keyword_arguments):
-        CodeInterface.__init__(self, name_of_the_worker="higpus_worker_gpu", **keyword_arguments)
+        CodeInterface.__init__(self, name_of_the_worker="higpus_cuda_worker", **keyword_arguments)
         LiteratureReferencesMixIn.__init__(self)
         CodeWithDataDirectories.__init__(self)
         

@@ -1,84 +1,72 @@
-
-
-# standard amuse configuration include
-# config.mk will be made after ./configure has run
-ifeq ($(origin AMUSE_DIR), undefined)
-  AMUSE_DIR := $(shell amusifier --get-amuse-dir)
+ifneq (,$(filter-out clean distclean, $(MAKECMDGOALS)))
+include support/config.mk
 endif
--include ${AMUSE_DIR}/config.mk
 
-# Set to empty string on purpose
-# otherwhise will cause error in main makefile
-# for most users (most users have no gpu).
-# to easily create code in this directory run:
-# make code
-ALL	 = higpus_worker_gpu
 
-# all the ?= lines work as follows
-# if the variable is already defined, it will keep it's pre-defined value.
-# if the variable is not defined it will get the value after the ?= symbol.
-MPICXX   ?= mpicxx
+# Detecting dependencies
+support/config.mk:
+	cd support && ./configure
 
-CUDA_INSTALL_PATH := /usr/local/cuda
-MPI_INSTALL_PATH := /usr/lib64/openmpi/1.4-gcc
+# Building the code into a static library
+DEPFLAGS += $(OPENMP_CXXFLAGS) $(CUDA_FLAGS)
+CXXFLAGS += -O3 -Wall $(DEPFLAGS)
 
-NVCC ?= /usr/local/cuda/bin/nvcc
+NVCCFLAGS := -O3 -Xcompiler "$(CXXFLAGS) $(MPI_CXXFLAGS)" -Ilib
 
-#possible options : -DCHECK_ERRORS -DCHECK_TIMES -DPLUMMER -DUNROLL -DGPUCORR -DGALAXY
-MYOPTS := -DUNROLL -DCHECK_ERRORS 
+LDFLAGS += $(OPENMP_CXXFLAGS) $(CUDA_LDFLAGS)
 
-CUDAINCLUDE := -I$(CUDA_INSTALL_PATH)/include
-CUDALIB := -L$(CUDA_INSTALL_PATH)/lib64 -lcuda -lcudart
-
-MPIINCLUDE := -I$(MPI_INSTALL_PATH)/include
-MPILIB := -L$(MPI_INSTALL_PATH)/lib
-
-MPI_CXXFLAGS ?= $(MPIINCLUDE)
-MPI_CXXLIBS ?= $(MPILIB)  -lmpi -lmpi_cxx
-
-OPENMP_CFLAGS ?= -fopenmp
-
-MYINCLUDE := -I./lib/ 
-
-## for amuse, do not set a fixed LIBS line like this
-## LIBS := -lcuda -lcudart -lmpi -lmpi_cxx -lm -fopenmp
-## But make it depend on flags set in the config.mk file
-## (note all these variables have defaults in this makefile too, for unconfigured makes)
-LIBS := -lm $(OPENMP_CFLAGS) $(MPI_CXXLIBS) $(CUDALIB)
-
-GXXOPTS := -O3 -fopenmp -Wall -W
-NVCCFLAGS := -O3 --compiler-bindir=/usr/bin/$(CXX) -Xcompiler "$(GXXOPTS) $(MYOPTS)" $(CUDAINCLUDE) $(MPI_CXXFLAGS) $(MYINCLUDE) $(NVCC_FLAGS)
-CXXFLAGS += $(GXXOPTS) $(MYOPTS) $(CUDAINCLUDE) $(MPI_CXXFLAGS) $(MYINCLUDE)
-
-LDFLAGS = $(LIBS) $(CUDALIB) 
-
-OBJS = interface.o
+LDLIBS += -lcudart
 
 CODELIB = src/libhigpus.a
 
+$(CODELIB):
+	$(MAKE) -C src -j $(CPU_COUNT) all NVCC="$(NVCC)" NVCCFLAGS='$(NVCCFLAGS)' CXX="$(MPICXX)"
 
-all: $(ALL)
 
-code: higpus_worker_gpu
+# Building the workers
+higpus_cuda_worker.h: interface.py
+	amusifier --type=H interface.py HiGPUsInterface -o $@
 
-$(CODELIB): FORCE
-	make -C src all 
+higpus_cuda_worker.cc: interface.py
+	amusifier --type=c interface.py HiGPUsInterface -o $@
 
-worker_code.cc: interface.py
-	$(CODE_GENERATOR) --type=c interface.py HiGPUsInterface -o $@
-	
-worker_code.h: interface.py
-	$(CODE_GENERATOR) --type=H interface.py HiGPUsInterface -o $@
+higpus_cuda_worker.o: higpus_cuda_worker.cc higpus_cuda_worker.h
+	$(MPICXX) -c -o $@ $(CXXFLAGS) $<
 
-higpus_worker_gpu: worker_code.cc worker_code.h $(CODELIB) $(OBJS)
-	$(MPICXX) $(CXXFLAGS) $(LDFLAGS) worker_code.cc $(OBJS) $(CODELIB) -o $@ $(LDFLAGS)  $(LIBS)
+higpus_cuda_worker: higpus_cuda_worker.o interface.o $(CODELIB)
+	$(MPICXX) -o $@ $(LDFLAGS) $^ $(LDLIBS)
 
 %.o: %.cc
-	$(MPICXX) $(CXXFLAGS) -c -o $@ $< 
+	$(MPICXX) -o $@ -c $(CXXFLAGS) $<
 
+
+# Which packages contain which workers?
+amuse-higpus-cuda_contains: higpus_cuda_worker
+
+
+# Building and installing packages
+develop-%: %_contains
+	support/shared/uninstall.sh $*
+	python -m pip install -e packages/$*
+
+install-%: %_contains
+	support/shared/uninstall.sh $*
+	python -m pip install packages/$*
+
+package-%: %_contains
+	python3 -m pip install -vv --no-cache-dir --no-deps --no-build-isolation --prefix ${PREFIX} packages/$*
+
+test-%:
+	cd packages/$* && pytest
+
+
+# Cleaning up
+.PHONY: clean
 clean:
-	$(RM) -f *.so *.o *.pyc worker_code.cc worker_code.h
-	$(RM) *~ higpus_worker higpus_worker_gpu worker_code.cc
-	make -C src clean
+	$(MAKE) -C src clean
+	rm -rf *.o *worker*
 
-FORCE:
+.PHONY: distclean
+distclean: clean
+	rm -f support/config.mk support/config.log support/config.status
+	rm -rf support/autom4te.cache
