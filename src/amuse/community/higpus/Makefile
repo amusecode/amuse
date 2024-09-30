@@ -9,7 +9,10 @@ support/config.mk:
 
 # Building the code into a static library
 DEPFLAGS += $(OPENMP_CXXFLAGS) $(CUDA_FLAGS)
-CXXFLAGS += -O3 -Wall $(DEPFLAGS)
+CXXFLAGS += -O3 -Wall -DCHECK_ERRORS $(DEPFLAGS)
+
+# Custom options, should really be run-time
+# CXXFLAGS += -DCHECK_TIMES -DPLUMMER -DUNROLL -DGPUCORR -DGALAXY
 
 NVCCFLAGS := -O3 -Xcompiler "$(CXXFLAGS) $(MPI_CXXFLAGS)" -Ilib
 
