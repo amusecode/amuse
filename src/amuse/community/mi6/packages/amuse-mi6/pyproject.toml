@@ -1,0 +1,44 @@
+[project]
+name = "amuse-mi6"
+dynamic = ["version"]
+requires-python = ">=3.7"
+dependencies = [
+    "amuse-framework"
+]
+
+[build-system]
+requires = ["hatchling", "versioningit"]
+build-backend = "hatchling.build"
+
+[tool.hatch.version]
+source = "versioningit"
+
+[tool.versioningit.next-version]
+method = "smallest"
+
+[tool.versioningit.format]
+distance = "{next_version}.dev{distance}+{vcs}{rev}"
+dirty = "{base_version}+d{build_date:%Y%m%d}"
+distance-dirty = "{next_version}.dev{distance}+{vcs}{rev}.d{build_date:%Y%m%d}"
+
+[tool.hatch.build]
+skip-excluded-dirs = true
+
+[tool.hatch.build.targets.wheel]
+include = ["mi6/**/*.py"]
+exclude = [
+    "mi6/packages",
+    "mi6/support",
+    "mi6/src",
+    "mi6/tests"
+    ]
+artifacts = ["mi6/mi6_worker"]
+
+[tool.hatch.build.targets.wheel.sources]
+"mi6" = "amuse/community/mi6"
+
+[tool.pytest.ini_options]
+pythonpath = ["mi6/tests/", "../../../../../tests"]
+
+testpaths = ["mi6/tests"]
+
