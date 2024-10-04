@@ -1,49 +1,68 @@
-# standard amuse configuration include
-# config.mk will be made after ./configure has run
-ifeq ($(origin AMUSE_DIR), undefined)
-  AMUSE_DIR := $(shell amusifier --get-amuse-dir)
-endif
--include $(AMUSE_DIR)/config.mk
-
-MPIFC ?= mpif90
-FORTRAN ?= $(FC)
-
-LDFLAGS  += -lm $(MUSE_LD_FLAGS) 
-
-# check for gfortran, this catches link and compiler wrappers
-ifeq ($(findstring GNU, $(shell $(FORTRAN) --version)), GNU)
-FCFLAGS2+=-ffixed-form -xf77-cpp-input
+ifneq (,$(filter-out clean distclean, $(MAKECMDGOALS)))
+include support/config.mk
 endif
 
-ifeq ($(findstring ifort, $(notdir $(FORTRAN))), ifort)
-FCFLAGS2=-fpp -fixed
-endif
 
-OBJS = interface.o
+# Detecting dependencies
+support/config.mk:
+	cd support && ./configure
+
+
+# Building the code into a static library
+DEPFLAGS += $(FORSOCKETS_CFLAGS)
+FCFLAGS += $(DEPFLAGS)
+FFLAGS += -ffixed-form -xf77-cpp-input
+
+LDLIBS += $(FORSOCKETS_LIBS)
 
 CODELIB = src/libnbody6xx.a
 
 
-all: nbody6xx_worker 
-
-clean:
-	$(RM) -f *.so *.o *.pyc worker_code.cc worker_code.h 
-	$(RM) -f *~ nbody6xx_worker worker_code.f90
-	$(RM) -f amuse_interface.mod 
-	make -C src clean
-
 $(CODELIB):
-ifeq ($(MPI_ENABLED), no)
-	make -C src amuse
-else
-	make -C src amusepar
-endif
+	$(MAKE) -C src -j $(CPU_COUNT) amusepar MPIFC="$(MPIFC)" FCFLAGS="$(FFLAGS) $(FCFLAGS)"
 
-worker_code.f90: interface.py
-	$(CODE_GENERATOR) --type=f90 interface.py Nbody6xxInterface -o $@
 
-nbody6xx_worker: worker_code.f90 $(CODELIB) $(OBJS)
-	$(MPIFC) $(FCFLAGS) $(FS_FLAGS) $(LDFLAGS) $< $(OBJS) $(CODELIB) $(FS_LIBS) -o $@  $(LIBS)
+# Building the workers
+nbody6xx_worker.f90: interface.py
+	amusifier --type=f90 interface.py Nbody6xxInterface -o $@
 
-%.o: %.f90 
-	$(FC) $(FCFLAGS) $(FCFLAGS2) -Isrc/ -c -o $@ $<
+nbody6xx_worker.o: nbody6xx_worker.f90
+	$(MPIFC) -c -o $@ $(FCFLAGS) $<
+
+nbody6xx_worker: interface.o nbody6xx_worker.o $(CODELIB)
+	$(MPIFC) -o $@ $(LDFLAGS) $^ $(LDLIBS)
+
+%.o: %.f90
+	$(MPIFC) -o $@ -c $(FFLAGS) $(FCFLAGS) $<
+
+
+# Which packages contain which workers?
+amuse-nbody6xx_contains: nbody6xx_worker
+
+
+# Building and installing packages
+develop-%: %_contains
+	support/shared/uninstall.sh $*
+	python -m pip install -e packages/$*
+
+install-%: %_contains
+	support/shared/uninstall.sh $*
+	python -m pip install packages/$*
+
+package-%: %_contains
+	python3 -m pip install -vv --no-cache-dir --no-deps --no-build-isolation --prefix ${PREFIX} packages/$*
+
+test-%:
+	cd packages/$* && pytest
+
+
+# Cleaning up
+.PHONY: clean
+clean:
+	$(MAKE) -C src clean
+	rm -rf *.o *.mod *worker*
+
+.PHONY: distclean
+distclean: clean
+	rm -f support/config.mk support/config.log support/config.status
+	rm -rf support/autom4te.cache
