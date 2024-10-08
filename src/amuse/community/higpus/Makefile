@@ -68,6 +68,8 @@ test-%:
 clean:
 	$(MAKE) -C src clean
 	rm -rf *.o *worker*
+	rm -rf packages/amuse-higpus-cuda/.pytest_cache
+	rm -rf packages/amuse-higpus-cuda/__amuse_code_output
 
 .PHONY: distclean
 distclean: clean
