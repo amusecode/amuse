@@ -7,10 +7,6 @@ endif
 support/config.mk:
 	cd support && ./configure
 
-# TODO: remove the older versions
-VERSION = 4.1
-
-
 # Building the code into static libraries
 DEPFLAGS += $(STOPCOND_CFLAGS) $(AMUSE_MPI_CFLAGS) $(FFTW_FLAGS)
 
@@ -27,7 +23,7 @@ CONFIGOPTS_scalar = --enable-mpi --with-gas=hydro --enable-smr --with-nscalars=1
 
 build_%:
 	cp -r src/athena build_$*
-	cd build_$* && ln -fs ../../amuse_problem_$(VERSION).c src/problem.c
+	cd build_$* && ln -fs ../../amuse_problem_4.1.c src/problem.c
 
 build_%/Makefile: | build_%
 	cd build_$* && ./configure $(CONFIGOPTS_$*)
@@ -46,10 +42,10 @@ athena_worker.cc: interface.py
 athena_worker.o: athena_worker.cc athena_worker.h
 	$(MPICXX) -c -o $@ $(CFLAGS) $<
 
-athena_%_worker: build_%/interface_$(VERSION).o athena_worker.o build_%/$(CODELIB)
+athena_%_worker: build_%/interface_4.1.o athena_worker.o build_%/$(CODELIB)
 	$(MPICXX) -o $@ $(LDFLAGS) $^ $(LDLIBS)
 
-build_%/interface_$(VERSION).o: interface_$(VERSION).c athena_worker.h | build_%/Makefile
+build_%/interface_4.1.o: interface_4.1.c athena_worker.h | build_%/Makefile
 	$(MPICC) -o $@ -c $(CFLAGS) -Ibuild_$*/src $<
 
 
