@@ -1,94 +1,94 @@
-ifeq ($(origin AMUSE_DIR), undefined)
-  AMUSE_DIR := $(shell amusifier --get-amuse-dir)
-endif
--include ${AMUSE_DIR}/config.mk
-
-MPICXX   ?= mpicxx
-MPICC    ?= mpicc
-
-CFLAGS   += -Wall -g 
-CXXFLAGS += $(CFLAGS) $(GSL_FLAGS)
-LDFLAGS  += $(GSL_LIBS) $(MUSE_LD_FLAGS) 
-
-OBJS = interface.o
-
-DOWNLOAD_FROM_WEB = $(PYTHON) ./download.py
-
-PROB = none
-
-BUILDDIR = build
-
-.PHONY: all code download
-
-ifdef MAKE_CODE
-
-TARGETS := $(patsubst src/prob/userFunc_%.c, vader_worker_%, ${wildcard src/prob/userFunc_*.c})
-all: $(TARGETS)
-
-${TARGETS}: vader_worker_%: worker_code.cc worker_code.h interface_%.o $(BUILDDIR)_%/libvader.a
-	$(MPICXX) $(CXXFLAGS) $< interface_$*.o $(BUILDDIR)_$*/libvader.a -o $@ $(LDFLAGS)
-
-else
-
-all: src code
-
+ifneq (,$(filter-out clean distclean, $(MAKECMDGOALS)))
+include support/config.mk
 endif
 
-code:
-	make -C . MAKE_CODE=True
+
+# Detecting dependencies
+support/config.mk:
+	cd support && ./configure
 
 
-download:
-	$(RM) -Rf .pc
-	$(RM) -Rf src
-	mkdir src
-	$(DOWNLOAD_FROM_WEB)
+VERSION = 0e6357b451e6
+VADER_SRC = MJCWilhelm-vader-$(VERSION)
 
-src: vader_src
-	cp -r vader_src/vader_csrc src
+# Downloading the code
+vader.tar.gz:
+	$(DOWNLOAD) https://bitbucket.org/MJCWilhelm/vader/get/$(VERSION).tar.gz -O $@
+
+# Preparing source directory
+src: vader.tar.gz
+	mkdir -p src
+	tar -xvf $< -C src
+	cp -r src/MJCWilhelm-vader-$(VERSION)/vader_csrc/* src
 	cp Makefile_vader src/Makefile
 
 
-vader_src:
-	make -C . download
+# Building the code into a static library
+DEPFLAGS += $(AMUSE_MPI_CFLAGS)
+DEPFLAGS += $(FORSOCKETS_CFLAGS)
+DEPFLAGS += $(GSL_FLAGS)
+
+CFLAGS += $(DEPFLAGS)
+
+LDFLAGS +=
+
+LDLIBS += -lm $(AMUSE_MPI_LIBS)
+LDLIBS += $(FORSOCKETS_LIBS)
+LDLIBS += $(GSL_LIBS)
 
 
-clean:
-	$(RM) -f *.so *.o *.pyc worker_code.cc worker_code.h 
-	$(RM) *~ vader_worker_* worker_code.cc
-	$(RM) -Rf build_*
-#~ make -C src clean
+CODELIB = src/libvader.a
 
-vader_worker: download src code
+$(CODELIB): | src
+	$(MAKE) -C src -j 1 all MPICC='$(MPICC)' CXXFLAGS='$(CFLAGS)'
 
-$(BUILDDIR)_%: src
-	mkdir $@
-	
-$(BUILDDIR)_%/Makefile: src/Makefile | $(BUILDDIR)_%
-	cp src/Makefile $@
-	
-$(BUILDDIR)_%/userFunc.h: src/userFunc.h | $(BUILDDIR)_%
-	cp src/userFunc.h $@ 
 
-$(BUILDDIR)_%/vader_common.h: src/vader_common.h | $(BUILDDIR)_%
-	cp src/vader_common.h $@ 
-	
-$(BUILDDIR)_%/libvader.a: $(BUILDDIR)_%/Makefile $(BUILDDIR)_%/userFunc.h $(BUILDDIR)_%/vader_common.h
-	make -C $(BUILDDIR)_$* all PROB=$* VPATH=../src
-
-interface_%.o: interface.cc worker_code.h
-	$(MPICC) $(CXXFLAGS) -c -o $@ $<
-
-worker_code.cc: interface.py
-	$(CODE_GENERATOR) --type=c interface.py VaderInterface -o $@
-
+# Building the workers
 worker_code.h: interface.py
-	$(CODE_GENERATOR) --type=H interface.py VaderInterface -o $@
+	amusifier --type=h interface.py VaderInterface -o $@
 
-.cc.o: $<
-	$(MPICC) $(CXXFLAGS) -c -o $@ $< 
+vader_worker.cc: interface.py
+	amusifier --type=c interface.py VaderInterface -o $@
 
+interface.o: interface.cc $(CODELIB)
+	$(MPICC) -c -o $@ $(CFLAGS) $<
+
+vader_worker.o: vader_worker.cc worker_code.h
+	$(MPICC) -c -o $@ $(CFLAGS) $<
+
+vader_worker: vader_worker.o interface.o $(CODELIB)
+	$(MPICC) -o $@ $(LDFLAGS) $^ $(LDLIBS)
+
+
+# Which packages contain which workers?
+amuse-vader_contains: vader_worker
+
+
+# Building and installing packages
+develop-%: %_contains
+	support/shared/uninstall.sh $*
+	python -m pip install -e packages/$*
+
+install-%: %_contains
+	support/shared/uninstall.sh $*
+	python -m pip install packages/$*
+
+package-%: %_contains
+	python3 -m pip install -vv --no-cache-dir --no-deps --no-build-isolation --prefix ${PREFIX} packages/$*
+
+test-%:
+	cd packages/$* && pytest
+
+
+# Cleaning up
+.PHONY: clean
+clean:
+	$(MAKE) -C src clean
+	rm -rf *.o *worker*
+
+.PHONY: distclean
 distclean: clean
-	$(RM) -Rf src vader_src *.tar.gz
+	-$(MAKE) -C src clean
+	rm -f support/config.mk support/config.log support/config.status
+	rm -rf support/autom4te.cache
 
-.PRECIOUS: $(BUILDDIR)_% $(BUILDDIR)_%/Makefile $(BUILDDIR)_%/userFunc.h $(BUILDDIR)_%/vader_common.h
