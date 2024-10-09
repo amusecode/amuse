@@ -1,3 +1,5 @@
+from amuse.rfi.channel import LocalChannel
+import numpy
 import weakref
 import atexit
 import errno
@@ -46,10 +48,6 @@ This module implements the code to the define interfaces between python
 code and C++ or Fortran codes. It provides the abstract base
 class for all community codes.
 """
-
-import numpy
-
-from amuse.rfi.channel import LocalChannel
 
 
 def ensure_mpd_is_running():
@@ -529,7 +527,10 @@ def simplified_function_specification(must_handle_array=False, can_handle_array=
 
         def returns(**kwargs):
             start = flatsrc.find("returns(")
-            order = lambda k: flatsrc.find(k[0] + "=", start)
+
+            def order(k):
+                return flatsrc.find(k[0] + "=", start)
+
             out_arg.extend(sorted(kwargs.items(), key=order))
 
         f.__globals__["returns"] = returns
@@ -1365,7 +1366,7 @@ class CodeFunctionWithUnits(CodeFunction):
 
         handle_as_array = self.must_handle_as_array(dtype_to_values)
 
-        if not self.owner is None:
+        if self.owner is not None:
             CODE_LOG.info(
                 "start call '%s.%s'", self.owner.__name__, self.specification.name
             )
@@ -1397,7 +1398,7 @@ class CodeFunctionWithUnits(CodeFunction):
         output_units = self.convert_floats_to_units(output_encoded_units)
         result = self.converted_results(dtype_to_result, handle_as_array, output_units)
 
-        if not self.owner is None:
+        if self.owner is not None:
             CODE_LOG.info(
                 "end call '%s.%s'", self.owner.__name__, self.specification.name
             )
@@ -1485,7 +1486,7 @@ class CodeFunctionWithUnits(CodeFunction):
         for key, value in dtype_to_result.items():
             dtype_to_array[key] = list(reversed(value))
 
-        if not result_type is None:
+        if result_type is not None:
             return_value = dtype_to_array[result_type].pop()
 
         for parameter in self.specification.output_parameters:
@@ -1498,7 +1499,7 @@ class CodeFunctionWithUnits(CodeFunction):
                     result[parameter.name] | units[parameter.index_in_output]
                 )
 
-        if not result_type is None:
+        if result_type is not None:
             result["__result"] = return_value
 
         return result
