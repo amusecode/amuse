@@ -7,7 +7,6 @@ import logging
 import pydoc
 import traceback
 import random
-import sys
 import warnings
 
 import inspect
@@ -34,7 +33,7 @@ try:
     from amuse import config
 except ImportError as ex:
 
-    class config(object):
+    class config:
         is_mpi_enabled = False
 
 
@@ -84,7 +83,7 @@ def _typecode_to_datatype(typecode):
     raise exceptions.AmuseException("{0} is not a valid typecode".format(typecode))
 
 
-class CodeFunction(object):
+class CodeFunction:
 
     __doc__ = CodeDocStringProperty()
 
@@ -318,7 +317,7 @@ class CodeFunction(object):
         return str(self.specification)
 
 
-class legacy_function(object):
+class legacy_function:
 
     __doc__ = CodeDocStringProperty()
 
@@ -333,7 +332,7 @@ class legacy_function(object):
         a LegacyFunctionSpecification.
 
 
-        >>> class LegacyExample(object):
+        >>> class LegacyExample:
         ...     @legacy_function
         ...     def evolve():
         ...          specification = LegacyFunctionSpecification()
@@ -573,7 +572,7 @@ def remote_function(f=None, must_handle_array=False, can_handle_array=False):
     )
 
 
-class ParameterSpecification(object):
+class ParameterSpecification:
     def __init__(self, name, dtype, direction, description, default=None, unit=None):
         """Specification of a parameter of a legacy function"""
         self.name = name
@@ -601,7 +600,7 @@ class ParameterSpecification(object):
         return not self.default is None
 
 
-class LegacyFunctionSpecification(object):
+class LegacyFunctionSpecification:
     """
     Specification of a legacy function.
     Describes the name, result type and parameters of a
@@ -1185,7 +1184,7 @@ class CodeInterface(OptionalAttributes):
         return function
 
 
-class CodeWithDataDirectories(object):
+class CodeWithDataDirectories:
 
     def __init__(self):
         if self.channel_type == "distributed":
