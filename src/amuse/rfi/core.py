@@ -111,7 +111,7 @@ class CodeFunction:
 
         handle_as_array = self.must_handle_as_array(dtype_to_values)
 
-        if not self.owner is None:
+        if self.owner is not None:
             CODE_LOG.info(
                 "start call '%s.%s'", self.owner.__name__, self.specification.name
             )
@@ -140,7 +140,7 @@ class CodeFunction:
 
         result = self.converted_results(dtype_to_result, handle_as_array)
 
-        if not self.owner is None:
+        if self.owner is not None:
             CODE_LOG.info(
                 "end call '%s.%s'", self.owner.__name__, self.specification.name
             )
@@ -227,7 +227,7 @@ class CodeFunction:
         index = []
         for parameter in self.specification.output_parameters:
             index.append(parameter.name)
-        if not self.specification.result_type is None:
+        if self.specification.result_type is not None:
             index.append("__result")
         return index
 
@@ -259,13 +259,13 @@ class CodeFunction:
         for key, value in dtype_to_result.items():
             dtype_to_array[key] = list(reversed(value))
 
-        if not result_type is None:
+        if result_type is not None:
             return_value = dtype_to_array[result_type].pop()
 
         for parameter in self.specification.output_parameters:
             result[parameter.name] = dtype_to_array[parameter.datatype].pop()
 
-        if not result_type is None:
+        if result_type is not None:
             result["__result"] = return_value
 
         return result
@@ -770,7 +770,7 @@ class LegacyFunctionSpecification:
                 p + typecode_to_name[x.datatype]
                 p + " "
                 p + x.name
-            if not self.result_type is None:
+            if self.result_type is not None:
                 p + ", "
                 p + typecode_to_name[self.result_type]
                 p + " "
@@ -800,7 +800,7 @@ def stop_interfaces(exceptions=[]):
     """
     for reference in reversed(CodeInterface.instances):
         x = reference()
-        if not x is None and x.__class__.__name__ not in exceptions:
+        if x is not None and x.__class__.__name__ not in exceptions:
             try:
                 x._stop()
             except:
@@ -928,7 +928,7 @@ class CodeInterface(OptionalAttributes):
 
     @classmethod
     def retrieve_reusable_channel(cls):
-        if not "REUSE_INSTANCE" in cls.__dict__:
+        if "REUSE_INSTANCE" not in cls.__dict__:
             cls.REUSE_INSTANCE = set([])
         s = cls.REUSE_INSTANCE
         if len(s) > 0:
@@ -938,7 +938,7 @@ class CodeInterface(OptionalAttributes):
 
     @classmethod
     def store_reusable_channel(cls, instance):
-        if not "REUSE_INSTANCE" in cls.__dict__:
+        if "REUSE_INSTANCE" not in cls.__dict__:
             cls.REUSE_INSTANCE = set([])
         s = cls.REUSE_INSTANCE
         s.add(instance)
@@ -946,7 +946,7 @@ class CodeInterface(OptionalAttributes):
 
     @classmethod
     def stop_reusable_channels(cls):
-        if not "REUSE_INSTANCE" in cls.__dict__:
+        if "REUSE_INSTANCE" not in cls.__dict__:
             cls.REUSE_INSTANCE = set([])
         s = cls.REUSE_INSTANCE
         while len(s) > 0:
@@ -960,7 +960,7 @@ class CodeInterface(OptionalAttributes):
 
     def _stop(self):
         if hasattr(self, "channel"):
-            if not self.channel is None and self.channel.is_active():
+            if self.channel is not None and self.channel.is_active():
                 if self.reuse_worker:
                     self.store_reusable_channel(self.channel)
                     self.channel = None
@@ -1493,7 +1493,7 @@ class CodeFunctionWithUnits(CodeFunction):
             result[parameter.name] = dtype_to_array[parameter.datatype].pop()
             if (
                 self.specification.has_units
-                and not units[parameter.index_in_output] is None
+                and units[parameter.index_in_output] is not None
             ):
                 result[parameter.name] = (
                     result[parameter.name] | units[parameter.index_in_output]
