@@ -386,32 +386,21 @@ class legacy_function:
     def crc32(self):
         try:
             from zlib import crc32
+        except ImportError:
+            try:
+                from binascii import crc32
+            except ImportError:
+                raise Exception("No working crc32 implementation found!")
 
-            # python 3, crc32 needs bytes...
+        # python 3, crc32 needs bytes...
 
-            def python3_crc32(x):
-                x = crc32(bytes(x, "ascii"))
-                return x - ((x & 0x80000000) << 1)
+        def python3_crc32(x):
+            x = crc32(bytes(x, "ascii"))
+            return x - ((x & 0x80000000) << 1)
 
-            if python3_crc32("amuse") & 0xFFFFFFFF == 0xC0CC9367:
-                return python3_crc32
-        except Exception:
-            pass
-        try:
-            from binascii import crc32
+        if python3_crc32("amuse") & 0xFFFFFFFF == 0xC0CC9367:
+            return python3_crc32
 
-            # python 3, crc32 needs bytes...
-
-            def python3_crc32(x):
-                x = crc32(bytes(x, "ascii"))
-                return x - ((x & 0x80000000) << 1)
-
-            if python3_crc32("amuse") & 0xFFFFFFFF == 0xC0CC9367:
-                return python3_crc32
-        except Exception:
-            pass
-
-        raise Exception("No working crc32 implementation found!")
 
 
 def derive_dtype_unit_and_default(value):
