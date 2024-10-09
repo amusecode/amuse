@@ -12,15 +12,28 @@ from amuse.rfi.tools import create_definition
 from amuse.rfi.core import LegacyFunctionSpecification
 
 
-
-dtype_to_spec = DTypeToSpecDictionary({
-    'int32' : DTypeSpec('integers_in','integers_out','HEADER_INTEGER_COUNT', 'integer', 'integer'),
-    'int64' : DTypeSpec('longs_in', 'longs_out', 'HEADER_LONG_COUNT', 'integer*8', 'long'),
-    'float32' : DTypeSpec('floats_in', 'floats_out', 'HEADER_FLOAT_COUNT', 'real*4', 'float'),
-    'float64' : DTypeSpec('doubles_in', 'doubles_out', 'HEADER_DOUBLE_COUNT', 'real*8', 'double'),
-    'bool' : DTypeSpec('booleans_in', 'booleans_out', 'HEADER_BOOLEAN_COUNT', 'logical', 'boolean'),
-    'string' : DTypeSpec('strings_in', 'strings_out', 'HEADER_STRING_COUNT', 'integer*4', 'integer'),
-})
+dtype_to_spec = DTypeToSpecDictionary(
+    {
+        "int32": DTypeSpec(
+            "integers_in", "integers_out", "HEADER_INTEGER_COUNT", "integer", "integer"
+        ),
+        "int64": DTypeSpec(
+            "longs_in", "longs_out", "HEADER_LONG_COUNT", "integer*8", "long"
+        ),
+        "float32": DTypeSpec(
+            "floats_in", "floats_out", "HEADER_FLOAT_COUNT", "real*4", "float"
+        ),
+        "float64": DTypeSpec(
+            "doubles_in", "doubles_out", "HEADER_DOUBLE_COUNT", "real*8", "double"
+        ),
+        "bool": DTypeSpec(
+            "booleans_in", "booleans_out", "HEADER_BOOLEAN_COUNT", "logical", "boolean"
+        ),
+        "string": DTypeSpec(
+            "strings_in", "strings_out", "HEADER_STRING_COUNT", "integer*4", "integer"
+        ),
+    }
+)
 
 CONSTANTS_STRING = """
   integer HEADER_FLAGS, HEADER_CALL_ID, HEADER_FUNCTION_ID, HEADER_CALL_COUNT, & 
@@ -1129,7 +1142,7 @@ MAIN_STRING = """
   end if
 """
 
-GETSET_WORKING_DIRECTORY="""
+GETSET_WORKING_DIRECTORY = """
 
 function set_working_directory(directory) result(ret)
     {0}
@@ -1148,313 +1161,405 @@ end function
 """
 
 
-        
 class GenerateAFortranStringOfAFunctionSpecification(GenerateASourcecodeString):
     MAX_STRING_LEN = 256
-    
+
     @late
     def specification(self):
-        raise exceptions.AmuseException("No specification set, please set the specification first")
-    
+        raise exceptions.AmuseException(
+            "No specification set, please set the specification first"
+        )
+
     @late
     def underscore_functions_from_specification_classes(self):
         return []
-    
+
     @late
     def dtype_to_spec(self):
         return dtype_to_spec
-        
-    def index_string(self, index, must_copy_in_to_out = False):
+
+    def index_string(self, index, must_copy_in_to_out=False):
         if self.specification.must_handle_array and not must_copy_in_to_out:
             if index == 0:
-                return '1'
+                return "1"
             else:
-                return '( %d * call_count) + 1' % (index )
-        elif self.specification.can_handle_array or (self.specification.must_handle_array and must_copy_in_to_out):
+                return "( %d * call_count) + 1" % (index)
+        elif self.specification.can_handle_array or (
+            self.specification.must_handle_array and must_copy_in_to_out
+        ):
             if index == 0:
-                return 'i'
+                return "i"
             else:
                 if index == -1:
                     return "i - 1"
                 else:
-                    return '( %d * call_count) + i' % index
+                    return "( %d * call_count) + i" % index
         else:
             return index + 1
-            
-    def start(self):        
+
+    def start(self):
         self.specification.prepare_output_parameters()
-         
+
         self.output_casestmt_start()
         self.out.indent()
-        
-        #self.output_lines_before_with_clear_out_variables()
-        #self.output_lines_before_with_clear_input_variables()
-        
+
+        # self.output_lines_before_with_clear_out_variables()
+        # self.output_lines_before_with_clear_input_variables()
+
         if self.specification.must_handle_array:
             pass
         elif self.specification.can_handle_array:
-            self.out.lf() + 'do i = 1, call_count, 1'
+            self.out.lf() + "do i = 1, call_count, 1"
             self.out.indent()
-        
-        #self.output_lines_before_with_inout_variables()
+
+        # self.output_lines_before_with_inout_variables()
         self.output_function_start()
         self.output_function_parameters()
         self.output_function_end()
         self.output_lines_with_inout_variables()
-        
-        
+
         if self.specification.must_handle_array:
             if not self.specification.result_type is None:
                 spec = self.dtype_to_spec[self.specification.result_type]
-                self.out.lf() + 'DO i = 2, call_count'
+                self.out.lf() + "DO i = 2, call_count"
                 self.out.indent()
-                self.out.lf() + spec.output_var_name + '(i)' + ' = ' + spec.output_var_name + '(1)'
+                (
+                    self.out.lf()
+                    + spec.output_var_name
+                    + "(i)"
+                    + " = "
+                    + spec.output_var_name
+                    + "(1)"
+                )
                 self.out.dedent()
-                self.out.lf() + 'END DO'
+                self.out.lf() + "END DO"
         elif self.specification.can_handle_array:
             self.out.dedent()
-            self.out.lf() + 'end do'
-            
+            self.out.lf() + "end do"
+
         self.output_lines_with_number_of_outputs()
         self.output_casestmt_end()
         self.out.dedent()
         self._result = self.out.string
-        
+
     def output_function_parameters(self):
         self.out.indent()
-        
+
         first = True
-        
+
         for parameter in self.specification.parameters:
             spec = self.dtype_to_spec[parameter.datatype]
-            
+
             if first:
                 first = False
-                self.out + ' &'
+                self.out + " &"
             else:
-                self.out + ' ,&'
-                
+                self.out + " ,&"
+
             if parameter.direction == LegacyFunctionSpecification.IN:
-#                if parameter.datatype == 'string':
-#                    self.out.n() + 'input_characters('
-#                    self.out  + '( (' + self.index_string(parameter.input_index) + ')* ' + self.MAX_STRING_LEN + ')'
-#                    self.out  + ':' + '(((' + self.index_string(parameter.input_index) + ')* ' + self.MAX_STRING_LEN + ') +'
-#                    self.out  +  '(' + spec.input_var_name + '(' + self.index_string(parameter.input_index) + ')' + '-' 
-#                    self.out  + 'get_offset(' + self.index_string(parameter.input_index) + ' - 1 , '+spec.input_var_name +') ))'
-#                    self.out  + ')'
-#                else:
-                if parameter.datatype == 'string':
-                    self.out.n() + 'strings_in(' + self.index_string(parameter.input_index) + ')'
+                #                if parameter.datatype == 'string':
+                #                    self.out.n() + 'input_characters('
+                #                    self.out  + '( (' + self.index_string(parameter.input_index) + ')* ' + self.MAX_STRING_LEN + ')'
+                #                    self.out  + ':' + '(((' + self.index_string(parameter.input_index) + ')* ' + self.MAX_STRING_LEN + ') +'
+                #                    self.out  +  '(' + spec.input_var_name + '(' + self.index_string(parameter.input_index) + ')' + '-'
+                #                    self.out  + 'get_offset(' + self.index_string(parameter.input_index) + ' - 1 , '+spec.input_var_name +') ))'
+                #                    self.out  + ')'
+                #                else:
+                if parameter.datatype == "string":
+                    (
+                        self.out.n()
+                        + "strings_in("
+                        + self.index_string(parameter.input_index)
+                        + ")"
+                    )
                 else:
-                    self.out.n() + spec.input_var_name 
-                    self.out + '(' + self.index_string(parameter.input_index) + ')'
+                    self.out.n() + spec.input_var_name
+                    self.out + "(" + self.index_string(parameter.input_index) + ")"
             if parameter.direction == LegacyFunctionSpecification.INOUT:
-#                if parameter.datatype == 'string':
-#                    self.out.n() + 'output_characters('
-#                    self.out  + '((' + self.index_string(parameter.output_index) + ')* ' + self.MAX_STRING_LEN + ')'
-#                    self.out  + ':' + '(((' + self.index_string(parameter.output_index) + ')+1) * ' + self.MAX_STRING_LEN + ' - 1)'
-#                    self.out  + ')'
-#                else:
-#                if parameter.datatype == 'string':
-#                    self.out.n() + spec.input_var_name 
-#                    self.out + '(' + self.index_string(parameter.input_index) + ', :)'
-#                else:
-                    self.out.n() + spec.input_var_name 
-                    self.out + '(' + self.index_string(parameter.input_index) + ')'
+                #                if parameter.datatype == 'string':
+                #                    self.out.n() + 'output_characters('
+                #                    self.out  + '((' + self.index_string(parameter.output_index) + ')* ' + self.MAX_STRING_LEN + ')'
+                #                    self.out  + ':' + '(((' + self.index_string(parameter.output_index) + ')+1) * ' + self.MAX_STRING_LEN + ' - 1)'
+                #                    self.out  + ')'
+                #                else:
+                #                if parameter.datatype == 'string':
+                #                    self.out.n() + spec.input_var_name
+                #                    self.out + '(' + self.index_string(parameter.input_index) + ', :)'
+                #                else:
+                self.out.n() + spec.input_var_name
+                self.out + "(" + self.index_string(parameter.input_index) + ")"
             elif parameter.direction == LegacyFunctionSpecification.OUT:
-#                if parameter.datatype == 'string':
-#                    self.out.n() + 'output_characters('
-#                    self.out  + '((' + self.index_string(parameter.output_index) + ')* ' + self.MAX_STRING_LEN + ')'
-#                    self.out  + ':' + '(((' + self.index_string(parameter.output_index) + ')+1) * ' + self.MAX_STRING_LEN + ' - 1)'
-#                    self.out  + ')'
-#                else:
-#                if parameter.datatype == 'string':
-#                    self.out.n() + spec.output_var_name
-#                    self.out + '(' + self.index_string(parameter.output_index) + ')(1:50)'
-#                else:
-                    self.out.n() + spec.output_var_name
-                    self.out + '(' + self.index_string(parameter.output_index) + ')'
+                #                if parameter.datatype == 'string':
+                #                    self.out.n() + 'output_characters('
+                #                    self.out  + '((' + self.index_string(parameter.output_index) + ')* ' + self.MAX_STRING_LEN + ')'
+                #                    self.out  + ':' + '(((' + self.index_string(parameter.output_index) + ')+1) * ' + self.MAX_STRING_LEN + ' - 1)'
+                #                    self.out  + ')'
+                #                else:
+                #                if parameter.datatype == 'string':
+                #                    self.out.n() + spec.output_var_name
+                #                    self.out + '(' + self.index_string(parameter.output_index) + ')(1:50)'
+                #                else:
+                self.out.n() + spec.output_var_name
+                self.out + "(" + self.index_string(parameter.output_index) + ")"
             elif parameter.direction == LegacyFunctionSpecification.LENGTH:
-                self.out.n() + 'call_count'
-                
+                self.out.n() + "call_count"
+
         self.out.dedent()
-        
+
     def output_lines_with_inout_variables(self):
-        
         for parameter in self.specification.parameters:
             spec = self.dtype_to_spec[parameter.datatype]
-            
+
             if parameter.direction == LegacyFunctionSpecification.INOUT:
                 if self.specification.must_handle_array:
-                    self.out.lf() + 'DO i = 1, call_count'
-                    self.out.indent() 
-                    
-                self.out.n() + spec.output_var_name 
-                self.out + '(' + self.index_string(parameter.output_index, must_copy_in_to_out = True)  + ')' 
-                self.out + ' = ' 
-                self.out + spec.input_var_name + '(' + self.index_string(parameter.input_index, must_copy_in_to_out = True) + ')'
-        
+                    self.out.lf() + "DO i = 1, call_count"
+                    self.out.indent()
+
+                self.out.n() + spec.output_var_name
+                (
+                    self.out
+                    + "("
+                    + self.index_string(
+                        parameter.output_index, must_copy_in_to_out=True
+                    )
+                    + ")"
+                )
+                self.out + " = "
+                (
+                    self.out
+                    + spec.input_var_name
+                    + "("
+                    + self.index_string(parameter.input_index, must_copy_in_to_out=True)
+                    + ")"
+                )
+
                 if self.specification.must_handle_array:
-                    self.out.dedent() 
-                    self.out.lf() + 'END DO'
-    
+                    self.out.dedent()
+                    self.out.lf() + "END DO"
+
     def output_lines_before_with_clear_out_variables(self):
         for parameter in self.specification.parameters:
             spec = self.dtype_to_spec[parameter.datatype]
-            
+
             if parameter.is_output():
-                if parameter.datatype == 'string': 
-                    self.out.lf() + 'output_characters = "x"'  
+                if parameter.datatype == "string":
+                    self.out.lf() + 'output_characters = "x"'
                     return
-     
+
     def output_lines_before_with_clear_input_variables(self):
         for parameter in self.specification.parameters:
             spec = self.dtype_to_spec[parameter.datatype]
-            
+
             if parameter.is_input():
-                if parameter.datatype == 'string': 
-                    self.out.lf() + 'input_characters = "x"'  
+                if parameter.datatype == "string":
+                    self.out.lf() + 'input_characters = "x"'
                     return
-     
-                
-                    
+
     def output_lines_before_with_inout_variables(self):
-        
         for parameter in self.specification.parameters:
             spec = self.dtype_to_spec[parameter.datatype]
-            
-            
+
             if parameter.direction == LegacyFunctionSpecification.IN:
-                if parameter.datatype == 'string':
-                    self.out.n() + 'input_characters('
-                    self.out  + '( (' + self.index_string(parameter.input_index) + ')* ' + self.MAX_STRING_LEN + ')'
-                    self.out  + ':' + '(((' + self.index_string(parameter.input_index) + ')+1) * ' + self.MAX_STRING_LEN + ' - 1)'
-                    self.out  + ') = &'
+                if parameter.datatype == "string":
+                    self.out.n() + "input_characters("
+                    (
+                        self.out
+                        + "( ("
+                        + self.index_string(parameter.input_index)
+                        + ")* "
+                        + self.MAX_STRING_LEN
+                        + ")"
+                    )
+                    (
+                        self.out
+                        + ":"
+                        + "((("
+                        + self.index_string(parameter.input_index)
+                        + ")+1) * "
+                        + self.MAX_STRING_LEN
+                        + " - 1)"
+                    )
+                    self.out + ") = &"
                     self.out.lf()
-                    self.out + 'characters('
-                    self.out + 'get_offset(' + self.index_string(parameter.input_index) + ' - 1 , '+spec.input_var_name +')'
-                    self.out  + ':' + spec.input_var_name + '(' + self.index_string(parameter.input_index) + ')'
-                    self.out  + ')' 
-            
+                    self.out + "characters("
+                    (
+                        self.out
+                        + "get_offset("
+                        + self.index_string(parameter.input_index)
+                        + " - 1 , "
+                        + spec.input_var_name
+                        + ")"
+                    )
+                    (
+                        self.out
+                        + ":"
+                        + spec.input_var_name
+                        + "("
+                        + self.index_string(parameter.input_index)
+                        + ")"
+                    )
+                    self.out + ")"
+
             if parameter.direction == LegacyFunctionSpecification.INOUT:
-                if parameter.datatype == 'string':
-                    self.out.n() + 'output_characters('
-                    self.out  + '( (' + self.index_string(parameter.output_index) + ')* ' + self.MAX_STRING_LEN + ')'
-                    self.out  + ':' + '(((' + self.index_string(parameter.output_index) + ')+1) * ' + self.MAX_STRING_LEN + ' - 1)'
-                    self.out  + ') = &'
+                if parameter.datatype == "string":
+                    self.out.n() + "output_characters("
+                    (
+                        self.out
+                        + "( ("
+                        + self.index_string(parameter.output_index)
+                        + ")* "
+                        + self.MAX_STRING_LEN
+                        + ")"
+                    )
+                    (
+                        self.out
+                        + ":"
+                        + "((("
+                        + self.index_string(parameter.output_index)
+                        + ")+1) * "
+                        + self.MAX_STRING_LEN
+                        + " - 1)"
+                    )
+                    self.out + ") = &"
                     self.out.lf()
-                    self.out + 'characters('
-                    self.out + 'get_offset(' + self.index_string(parameter.input_index) + ' - 1 , '+spec.input_var_name +')'
-                    self.out  + ':' + spec.input_var_name + '(' + self.index_string(parameter.input_index) + ')'
-                    self.out  + ')' 
-                    
+                    self.out + "characters("
+                    (
+                        self.out
+                        + "get_offset("
+                        + self.index_string(parameter.input_index)
+                        + " - 1 , "
+                        + spec.input_var_name
+                        + ")"
+                    )
+                    (
+                        self.out
+                        + ":"
+                        + spec.input_var_name
+                        + "("
+                        + self.index_string(parameter.input_index)
+                        + ")"
+                    )
+                    self.out + ")"
+
     def output_lines_with_number_of_outputs(self):
         dtype_to_count = {}
-        
+
         for parameter in self.specification.output_parameters:
             count = dtype_to_count.get(parameter.datatype, 0)
             dtype_to_count[parameter.datatype] = count + 1
-                
+
         if not self.specification.result_type is None:
             count = dtype_to_count.get(self.specification.result_type, 0)
             dtype_to_count[self.specification.result_type] = count + 1
-            
-        for dtype in dtype_to_count:       
+
+        for dtype in dtype_to_count:
             spec = self.dtype_to_spec[dtype]
             count = dtype_to_count[dtype]
-            self.out.n() + 'header_out(' + spec.counter_name + ') = ' + count + ' * call_count'
+            (
+                self.out.n()
+                + "header_out("
+                + spec.counter_name
+                + ") = "
+                + count
+                + " * call_count"
+            )
             pass
-            
+
     def output_function_end(self):
-        self.out + ' &'
-        self.out.n() + ')'
-        
+        self.out + " &"
+        self.out.n() + ")"
+
     def output_function_start(self):
-        self.out.n() 
+        self.out.n()
         if not self.specification.result_type is None:
             spec = self.dtype_to_spec[self.specification.result_type]
-#            if self.specification.result_type == 'string':
-#                self.out + 'output_characters('
-#                self.out  + '( (' + self.index_string(0) + ')* ' + self.MAX_STRING_LEN + ')'
-#                self.out  + ':' + '(((' + self.index_string(0) + ')+1)*' + self.MAX_STRING_LEN + '-1)'
-#                self.out  + ') = &'
-#                self.out.lf()
-#            else:
+            #            if self.specification.result_type == 'string':
+            #                self.out + 'output_characters('
+            #                self.out  + '( (' + self.index_string(0) + ')* ' + self.MAX_STRING_LEN + ')'
+            #                self.out  + ':' + '(((' + self.index_string(0) + ')+1)*' + self.MAX_STRING_LEN + '-1)'
+            #                self.out  + ') = &'
+            #                self.out.lf()
+            #            else:
             self.out + spec.output_var_name
-            self.out + '(' + self.index_string(0) + ')' + ' = '
-        else:    
-            self.out + 'CALL ' 
-        self.out +  self.specification.name
+            self.out + "(" + self.index_string(0) + ")" + " = "
+        else:
+            self.out + "CALL "
+        self.out + self.specification.name
         if self.must_add_underscore_to_function(self.specification):
-            self.out + '_'
-        self.out + '('
-        
+            self.out + "_"
+        self.out + "("
+
     def output_casestmt_start(self):
-        self.out + 'CASE(' + self.specification.id + ')'
-        
+        self.out + "CASE(" + self.specification.id + ")"
+
     def output_casestmt_end(self):
-        self.out.n() 
-        
+        self.out.n()
+
     def must_add_underscore_to_function(self, x):
-           
         for cls in self.underscore_functions_from_specification_classes:
             if hasattr(cls, x.name):
                 return True
-        
+
         return False
-        
-        
-class GenerateAFortranSourcecodeStringFromASpecificationClass(GenerateASourcecodeStringFromASpecificationClass):
+
+
+class GenerateAFortranSourcecodeStringFromASpecificationClass(
+    GenerateASourcecodeStringFromASpecificationClass
+):
     MAX_STRING_LEN = 256
 
     @late
     def dtype_to_spec(self):
-        return dtype_to_spec 
-   
+        return dtype_to_spec
+
     @late
     def number_of_types(self):
         return len(self.dtype_to_spec)
-        
+
     @late
     def length_of_the_header(self):
         return 2 + self.number_of_types
-        
+
     @late
     def underscore_functions_from_specification_classes(self):
         return []
-        
+
     def output_sourcecode_for_function(self):
         result = GenerateAFortranStringOfAFunctionSpecification()
-        result.underscore_functions_from_specification_classes = self.underscore_functions_from_specification_classes
+        result.underscore_functions_from_specification_classes = (
+            self.underscore_functions_from_specification_classes
+        )
         return result
-    
+
     def output_needs_mpi(self):
-        self.out.lf() + 'logical NEEDS_MPI'
-        
-        if (hasattr(self, 'needs_mpi') and self.needs_mpi) and self.must_generate_mpi:
-                self.out.lf() + 'parameter (NEEDS_MPI=.true.)'
+        self.out.lf() + "logical NEEDS_MPI"
+
+        if (hasattr(self, "needs_mpi") and self.needs_mpi) and self.must_generate_mpi:
+            self.out.lf() + "parameter (NEEDS_MPI=.true.)"
         else:
-                self.out.lf() + 'parameter (NEEDS_MPI=.false.)'
-                
+            self.out.lf() + "parameter (NEEDS_MPI=.false.)"
+
         self.out.lf().lf()
-   
+
     def start(self):
         self.use_iso_c_bindings = config.compilers.fc_iso_c_bindings
 
-        self.out + GETSET_WORKING_DIRECTORY.format("" if not config.compilers.ifort_version else "  use ifport")
+        self.out + GETSET_WORKING_DIRECTORY.format(
+            "" if not config.compilers.ifort_version else "  use ifport"
+        )
 
-        self.out + 'program amuse_worker_program'
+        self.out + "program amuse_worker_program"
         self.out.indent()
-        
+
         self.output_modules()
-        
-        if self.use_iso_c_bindings:    
-            self.out.n() + 'use iso_c_binding'
-        
-        self.out.n() + 'implicit none'
+
+        if self.use_iso_c_bindings:
+            self.out.n() + "use iso_c_binding"
+
+        self.out.n() + "implicit none"
 
         self.out.n() + CONSTANTS_STRING
-        
+
         self.output_needs_mpi()
 
         self.output_maximum_constants()
@@ -1463,33 +1568,34 @@ class GenerateAFortranSourcecodeStringFromASpecificationClass(GenerateASourcecod
             self.out.lf().lf() + MODULE_GLOBALS_STRING
         else:
             self.out.lf().lf() + NOMPI_MODULE_GLOBALS_STRING
-            
+
         if self.use_iso_c_bindings:
             self.out.n() + ISO_ARRAY_DEFINES_STRING
         else:
             self.out.n() + ARRAY_DEFINES_STRING
-            
-        
+
         self.out.lf().lf() + MAIN_STRING
-        
-        self.out.lf().lf() + 'CONTAINS'
-        
+
+        self.out.lf().lf() + "CONTAINS"
+
         self.out + POLLING_FUNCTIONS_STRING
 
-        self.out + GETSET_WORKING_DIRECTORY.format("" if not config.compilers.ifort_version else "  use ifport")
+        self.out + GETSET_WORKING_DIRECTORY.format(
+            "" if not config.compilers.ifort_version else "  use ifport"
+        )
 
         if self.must_generate_mpi:
             self.out + INTERNAL_FUNCTIONS_STRING
-            
-            if self.use_iso_c_bindings:    
+
+            if self.use_iso_c_bindings:
                 self.out + RECV_HEADER_SLEEP_STRING
             else:
                 self.out + RECV_HEADER_WAIT_STRING
-                
+
             self.out + RUN_LOOP_MPI_STRING
         else:
             self.out + NOMPI_INTERNAL_FUNCTIONS_STRING
-            
+
             self.out + EMPTY_RUN_LOOP_MPI_STRING
         if self.use_iso_c_bindings:
             self.out.n() + RUN_LOOP_SOCKETS_STRING
@@ -1501,180 +1607,188 @@ class GenerateAFortranSourcecodeStringFromASpecificationClass(GenerateASourcecod
         else:
             self.out.n() + EMPTY_RUN_LOOP_SOCKETS_STRING
             self.out.n() + EMPTY_RUN_LOOP_SOCKETS_MPI_STRING
-        
+
         self.output_handle_call()
 
         self.out.dedent()
-        self.out.n() + 'end program amuse_worker_program'
+        self.out.n() + "end program amuse_worker_program"
 
         self._result = self.out.string
 
     def output_mpi_include(self):
         self.out.n() + "USE mpi"
-        
+
     def output_modules(self):
         self.out.n()
-        if hasattr(self.specification_class, 'use_modules'):
+        if hasattr(self.specification_class, "use_modules"):
             for x in self.specification_class.use_modules:
-                self.out.n() + 'use ' + x 
-                
+                self.out.n() + "use " + x
+
     def must_include_declaration_of_function(self, x):
-        if hasattr(x.specification,"internal_provided"):
+        if hasattr(x.specification, "internal_provided"):
             return False
-        
+
         return True
-        
-        
+
     def output_declarations_for_the_functions(self):
-        if not hasattr(self.specification_class, 'use_modules'):
+        if not hasattr(self.specification_class, "use_modules"):
             for x in self.interface_functions:
                 if not self.must_include_declaration_of_function(x):
                     continue
-                    
+
                 specification = x.specification
                 if specification.id == 0:
                     continue
                 if specification.result_type is None:
                     continue
-                if specification.result_type == 'string':
-                    type = 'character(len=255)'
+                if specification.result_type == "string":
+                    type = "character(len=255)"
                 else:
                     spec = self.dtype_to_spec[specification.result_type]
                     type = spec.type
-                self.out.lf() +  type + ' :: ' + specification.name
-                
+                self.out.lf() + type + " :: " + specification.name
+
                 if self.must_add_underscore_to_function(x):
-                    self.out + '_'
-        
-    
+                    self.out + "_"
+
     def must_add_underscore_to_function(self, x):
-           
         for cls in self.underscore_functions_from_specification_classes:
             if hasattr(cls, x.specification.name):
                 return True
-        
-        return False
-         
-    def output_handle_call(self):
-        
-        self.out.lf() + 'integer function handle_call()'
-        self.out.indent().n()
-        self.out.lf() + 'implicit none'
 
-        
-        self.output_declarations_for_the_functions()
-        
-        self.out.lf() + 'integer i, call_count'
-        self.out.lf() + 'call_count = header_in(HEADER_CALL_COUNT)'
-        self.out.lf() + 'handle_call = 1'
-        self.out.lf() + 'SELECT CASE (header_in(HEADER_FUNCTION_ID))'
+        return False
+
+    def output_handle_call(self):
+        self.out.lf() + "integer function handle_call()"
         self.out.indent().n()
-        self.out.lf() + 'CASE(0)'
-        self.out.indent().lf()+'handle_call = 0'
+        self.out.lf() + "implicit none"
+
+        self.output_declarations_for_the_functions()
+
+        self.out.lf() + "integer i, call_count"
+        self.out.lf() + "call_count = header_in(HEADER_CALL_COUNT)"
+        self.out.lf() + "handle_call = 1"
+        self.out.lf() + "SELECT CASE (header_in(HEADER_FUNCTION_ID))"
+        self.out.indent().n()
+        self.out.lf() + "CASE(0)"
+        self.out.indent().lf() + "handle_call = 0"
         self.out.dedent()
-        
+
         self.output_sourcecode_for_functions()
 
-        self.out.lf() + 'CASE DEFAULT'
+        self.out.lf() + "CASE DEFAULT"
         self.out.indent()
-        self.out.lf() + 'header_out(HEADER_STRING_COUNT) = 1'
-        self.out.lf() + 'header_out(HEADER_FLAGS) = IOR(header_out(HEADER_FLAGS), 256) '
-        self.out.lf() + "strings_out(1) = 'error, illegal function id'" 
+        self.out.lf() + "header_out(HEADER_STRING_COUNT) = 1"
+        self.out.lf() + "header_out(HEADER_FLAGS) = IOR(header_out(HEADER_FLAGS), 256) "
+        self.out.lf() + "strings_out(1) = 'error, illegal function id'"
         self.out.dedent()
-        
-        self.out.dedent().n() + 'END SELECT'
 
-        self.out.n() + 'return'
+        self.out.dedent().n() + "END SELECT"
+
+        self.out.n() + "return"
         self.out.dedent()
-        self.out.n() + 'end function'
-        
+        self.out.n() + "end function"
+
     def output_maximum_constants(self):
-                
-        self.out.lf() + 'integer MAX_INTEGERS_IN, MAX_INTEGERS_OUT, MAX_LONGS_IN, MAX_LONGS_OUT, &'
-        self.out.lf() + 'MAX_FLOATS_IN, MAX_FLOATS_OUT, MAX_DOUBLES_IN,MAX_DOUBLES_OUT, &'
-        self.out.lf() + 'MAX_BOOLEANS_IN,MAX_BOOLEANS_OUT, MAX_STRINGS_IN, MAX_STRINGS_OUT'
+        (
+            self.out.lf()
+            + "integer MAX_INTEGERS_IN, MAX_INTEGERS_OUT, MAX_LONGS_IN, MAX_LONGS_OUT, &"
+        )
+        (
+            self.out.lf()
+            + "MAX_FLOATS_IN, MAX_FLOATS_OUT, MAX_DOUBLES_IN,MAX_DOUBLES_OUT, &"
+        )
+        (
+            self.out.lf()
+            + "MAX_BOOLEANS_IN,MAX_BOOLEANS_OUT, MAX_STRINGS_IN, MAX_STRINGS_OUT"
+        )
         self.out.lf()
 
         for dtype in self.dtype_to_spec.keys():
             dtype_spec = self.dtype_to_spec[dtype]
-            maximum = self.mapping_from_dtype_to_maximum_number_of_inputvariables.get(dtype,0)
+            maximum = self.mapping_from_dtype_to_maximum_number_of_inputvariables.get(
+                dtype, 0
+            )
 
-            self.out.n() + 'parameter (MAX_' + dtype_spec.input_var_name.upper() + '=' + maximum + ')'
-            
-            maximum =self.mapping_from_dtype_to_maximum_number_of_outputvariables.get(dtype,0)
-            
-            self.out.n() + 'parameter (MAX_' + dtype_spec.output_var_name.upper() + '=' + maximum + ')'
-    
+            (
+                self.out.n()
+                + "parameter (MAX_"
+                + dtype_spec.input_var_name.upper()
+                + "="
+                + maximum
+                + ")"
+            )
 
-class GenerateAFortranStubStringFromASpecificationClass\
-    (GenerateASourcecodeStringFromASpecificationClass):
+            maximum = self.mapping_from_dtype_to_maximum_number_of_outputvariables.get(
+                dtype, 0
+            )
 
+            (
+                self.out.n()
+                + "parameter (MAX_"
+                + dtype_spec.output_var_name.upper()
+                + "="
+                + maximum
+                + ")"
+            )
+
+
+class GenerateAFortranStubStringFromASpecificationClass(
+    GenerateASourcecodeStringFromASpecificationClass
+):
     @late
     def dtype_to_spec(self):
         return dtype_to_spec
-  
+
     @late
     def ignore_functions_from_specification_classes(self):
         return []
-        
+
     @late
     def underscore_functions_from_specification_classes(self):
         return []
-        
+
     def output_sourcecode_for_function(self):
         result = create_definition.CreateFortranStub()
         result.output_definition_only = False
         return result
-        
-    def start(self):  
 
-        if hasattr(self.specification_class, 'use_modules'):
-          self.out.lf() + 'module {0}'.format(self.specification_class.use_modules[0])
-        
-          self.out.indent()
-        
+    def start(self):
+        if hasattr(self.specification_class, "use_modules"):
+            self.out.lf() + "module {0}".format(self.specification_class.use_modules[0])
+
+            self.out.indent()
+
         self.output_modules(1)
-        
-        if hasattr(self.specification_class, 'use_modules'):
-          self.out.lf() + "contains"
+
+        if hasattr(self.specification_class, "use_modules"):
+            self.out.lf() + "contains"
 
         self.out.lf()
-        
+
         self.output_sourcecode_for_functions()
-        
+
         self.out.lf()
 
-        if hasattr(self.specification_class, 'use_modules'):
+        if hasattr(self.specification_class, "use_modules"):
             self.out.dedent()
             self.out.lf() + "end module"
             self.out.lf()
-        
+
         self._result = self.out.string
-        
-    
+
     def must_include_interface_function_in_output(self, x):
-        if hasattr(x.specification,"internal_provided"):
+        if hasattr(x.specification, "internal_provided"):
             return False
-            
+
         for cls in self.ignore_functions_from_specification_classes:
             if hasattr(cls, x.specification.name):
                 return False
-        
-        return True
-        
-    def output_modules(self,skip=0):
-        self.out.n()
-        if hasattr(self.specification_class, 'use_modules'):
-            for x in self.specification_class.use_modules[skip:]:
-                self.out.n() + 'use ' + x 
-        
-    
-        
-        
 
-        
-       
-    
-        
-        
-        
+        return True
+
+    def output_modules(self, skip=0):
+        self.out.n()
+        if hasattr(self.specification_class, "use_modules"):
+            for x in self.specification_class.use_modules[skip:]:
+                self.out.n() + "use " + x

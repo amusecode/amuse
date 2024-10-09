@@ -223,164 +223,171 @@ int echo_int(int input, int * output){
 
 """
 
+
 class CreateADirectoryAndPopulateItWithFiles(OptionalAttributes):
-    
     @late
     def path_of_the_root_directory(self):
         return os.path.dirname(os.path.dirname(__file__))
-        
+
     @late
     def name_of_the_community_code(self):
         return self.name_of_the_code_interface_class.lower()
-        
+
     @late
     def name_of_the_python_module(self):
-        return 'interface.py'
-        
+        return "interface.py"
+
     @late
     def name_of_the_test_module(self):
-        return 'test_{0}.py'.format(self.name_of_the_community_code)
-    
+        return "test_{0}.py".format(self.name_of_the_community_code)
+
     @late
     def name_of_the_interface_code(self):
-        return 'interface'
-        
+        return "interface"
+
     @late
     def name_of_the_code_interface_class(self):
-        return 'MyCode'
-        
+        return "MyCode"
+
     @late
     def name_of_the_community_interface_class(self):
-        return self.name_of_the_code_interface_class + 'Interface'
-    
+        return self.name_of_the_code_interface_class + "Interface"
+
     @late
     def name_of_the_code_directory(self):
-        return 'src'
-    
+        return "src"
+
     @late
     def name_for_import_of_the_interface_module(self):
-        return '.' + self.name_of_the_python_module[:-3]
-        
+        return "." + self.name_of_the_python_module[:-3]
+
     @late
     def path_of_the_community_code(self):
-        return os.path.join(self.path_of_the_root_directory, self.name_of_the_community_code)
-        
+        return os.path.join(
+            self.path_of_the_root_directory, self.name_of_the_community_code
+        )
+
     @late
     def path_of_the_source_code(self):
-        return os.path.join(self.path_of_the_community_code, self.name_of_the_code_directory)
-        
+        return os.path.join(
+            self.path_of_the_community_code, self.name_of_the_code_directory
+        )
+
     @late
     def path_of_the_init_file(self):
-        return os.path.join(self.path_of_the_community_code, '__init__.py')
-        
+        return os.path.join(self.path_of_the_community_code, "__init__.py")
+
     @late
     def path_of_the_interface_file(self):
-        return os.path.join(self.path_of_the_community_code, self.name_of_the_python_module)
-    
+        return os.path.join(
+            self.path_of_the_community_code, self.name_of_the_python_module
+        )
+
     @late
     def path_of_the_test_file(self):
-        return os.path.join(self.path_of_the_community_code, self.name_of_the_test_module)
-        
+        return os.path.join(
+            self.path_of_the_community_code, self.name_of_the_test_module
+        )
+
     @late
     def path_of_the_makefile(self):
-        return os.path.join(self.path_of_the_community_code, 'Makefile')
-    
+        return os.path.join(self.path_of_the_community_code, "Makefile")
+
     @late
     def path_of_the_code_makefile(self):
-        return os.path.join(self.path_of_the_source_code, 'Makefile')
-        
+        return os.path.join(self.path_of_the_source_code, "Makefile")
+
     @late
     def path_of_the_code_examplefile(self):
         raise NotImplementedError()
-        
+
     @late
     def path_of_the_interface_examplefile(self):
         raise NotImplementedError()
-        
+
     @late
     def path_of_amuse(self):
         return self.amuse_root_dir
-        
+
     @late
     def reference_to_amuse_path(self):
         return os.path.relpath(self.path_of_amuse, self.path_of_the_community_code)
-        
-    @late 
+
+    @late
     def name_of_the_superclass_for_the_community_code_interface_class(self):
         return "CodeInterface"
-        
+
     @late
     def name_of_the_superclass_for_the_code_interface_class(self):
         return "InCodeComponentImplementation"
-        
+
     @late
     def amuse_root_dir(self):
         return get_amuse_root_dir()
-        
+
     @late
     def include_headers_or_modules(self):
         return "include_headers = ['worker_code.h']"
-        
+
     def start(self):
-        
         self.make_directories()
         self.make_python_files()
         self.make_makefile()
         self.make_example_files()
-        
-        
+
     def make_directories(self):
         os.mkdir(self.path_of_the_community_code)
         os.mkdir(self.path_of_the_source_code)
-        
+
     def make_python_files(self):
         with open(self.path_of_the_init_file, "w") as f:
             f.write("# generated file")
-        
+
         with open(self.path_of_the_interface_file, "w") as f:
             string = interface_file_template.format(self)
             f.write(string)
-        
+
         with open(self.path_of_the_test_file, "w") as f:
             string = test_file_template.format(self)
             f.write(string)
-        
+
     def make_makefile(self):
         pass
-            
+
     def make_example_files(self):
         pass
-        
-        
-class CreateADirectoryAndPopulateItWithFilesForACCode(CreateADirectoryAndPopulateItWithFiles):
-   
+
+
+class CreateADirectoryAndPopulateItWithFilesForACCode(
+    CreateADirectoryAndPopulateItWithFiles
+):
     @late
     def path_of_the_code_examplefile(self):
-        return os.path.join(self.path_of_the_source_code, 'test.cc')
-        
+        return os.path.join(self.path_of_the_source_code, "test.cc")
+
     @late
     def path_of_the_interface_examplefile(self):
-        return os.path.join(self.path_of_the_community_code, self.name_of_the_interface_code + '.cc')
-            
+        return os.path.join(
+            self.path_of_the_community_code, self.name_of_the_interface_code + ".cc"
+        )
+
     def make_makefile(self):
-        
         with open(self.path_of_the_makefile, "w") as f:
             string = makefile_template_cxx.format(self)
             f.write(string)
-            
+
     def make_example_files(self):
         with open(self.path_of_the_code_makefile, "w") as f:
             string = code_makefile_template_cxx.format(self)
             f.write(string)
-            
+
         with open(self.path_of_the_code_examplefile, "w") as f:
             string = code_examplefile_template_cxx
             f.write(string)
-        
+
         with open(self.path_of_the_interface_examplefile, "w") as f:
             string = interface_examplefile_template_cxx
             f.write(string)
-
 
 
 makefile_template_fortran = """\
@@ -482,15 +489,20 @@ contains
 end module
 
 """
-class CreateADirectoryAndPopulateItWithFilesForAFortranCode(CreateADirectoryAndPopulateItWithFiles):
-        
+
+
+class CreateADirectoryAndPopulateItWithFilesForAFortranCode(
+    CreateADirectoryAndPopulateItWithFiles
+):
     @late
     def path_of_the_code_examplefile(self):
-        return os.path.join(self.path_of_the_source_code, 'test.f90')
-        
+        return os.path.join(self.path_of_the_source_code, "test.f90")
+
     @late
     def path_of_the_interface_examplefile(self):
-        return os.path.join(self.path_of_the_community_code, self.name_of_the_interface_code + '.f90')
+        return os.path.join(
+            self.path_of_the_community_code, self.name_of_the_interface_code + ".f90"
+        )
 
     @late
     def include_headers_or_modules(self):
@@ -498,24 +510,22 @@ class CreateADirectoryAndPopulateItWithFilesForAFortranCode(CreateADirectoryAndP
 
     @late
     def name_of_the_interface_module(self):
-        return '{0}Interface'.format(self.name_of_the_community_code)
+        return "{0}Interface".format(self.name_of_the_community_code)
 
     def make_makefile(self):
-        
         with open(self.path_of_the_makefile, "w") as f:
             string = makefile_template_fortran.format(self)
             f.write(string)
-            
+
     def make_example_files(self):
         with open(self.path_of_the_code_makefile, "w") as f:
             string = code_makefile_template_fortran.format(self)
             f.write(string)
-            
+
         with open(self.path_of_the_code_examplefile, "w") as f:
             string = code_examplefile_template_fortran
             f.write(string)
-        
+
         with open(self.path_of_the_interface_examplefile, "w") as f:
             string = interface_examplefile_template_fortran.format(self)
             f.write(string)
-
