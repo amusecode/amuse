@@ -320,14 +320,14 @@ class legacy_function:
     __doc__ = CodeDocStringProperty()
 
     def __init__(self, specification_function):
-        """Decorator for legacy functions.
+        """
+        Decorator for legacy functions.
 
         The decorated function cannot have any arguments. This
         means the decorated function must not have a ``self``
         argument.
 
-        The decorated function must return
-        a LegacyFunctionSpecification.
+        The decorated function must return a LegacyFunctionSpecification.
 
 
         >>> class LegacyExample:
