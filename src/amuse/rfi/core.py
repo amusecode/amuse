@@ -1,3 +1,5 @@
+from amuse.rfi.channel import LocalChannel
+import numpy
 import weakref
 import atexit
 import errno
@@ -7,7 +9,6 @@ import logging
 import pydoc
 import traceback
 import random
-import sys
 import warnings
 
 import inspect
@@ -34,7 +35,7 @@ try:
     from amuse import config
 except ImportError as ex:
 
-    class config(object):
+    class config:
         is_mpi_enabled = False
 
 
@@ -47,10 +48,6 @@ This module implements the code to the define interfaces between python
 code and C++ or Fortran codes. It provides the abstract base
 class for all community codes.
 """
-
-import numpy
-
-from amuse.rfi.channel import LocalChannel
 
 
 def ensure_mpd_is_running():
@@ -84,7 +81,7 @@ def _typecode_to_datatype(typecode):
     raise exceptions.AmuseException("{0} is not a valid typecode".format(typecode))
 
 
-class CodeFunction(object):
+class CodeFunction:
 
     __doc__ = CodeDocStringProperty()
 
@@ -114,7 +111,7 @@ class CodeFunction(object):
 
         handle_as_array = self.must_handle_as_array(dtype_to_values)
 
-        if not self.owner is None:
+        if self.owner is not None:
             CODE_LOG.info(
                 "start call '%s.%s'", self.owner.__name__, self.specification.name
             )
@@ -143,7 +140,7 @@ class CodeFunction(object):
 
         result = self.converted_results(dtype_to_result, handle_as_array)
 
-        if not self.owner is None:
+        if self.owner is not None:
             CODE_LOG.info(
                 "end call '%s.%s'", self.owner.__name__, self.specification.name
             )
@@ -230,7 +227,7 @@ class CodeFunction(object):
         index = []
         for parameter in self.specification.output_parameters:
             index.append(parameter.name)
-        if not self.specification.result_type is None:
+        if self.specification.result_type is not None:
             index.append("__result")
         return index
 
@@ -262,13 +259,13 @@ class CodeFunction(object):
         for key, value in dtype_to_result.items():
             dtype_to_array[key] = list(reversed(value))
 
-        if not result_type is None:
+        if result_type is not None:
             return_value = dtype_to_array[result_type].pop()
 
         for parameter in self.specification.output_parameters:
             result[parameter.name] = dtype_to_array[parameter.datatype].pop()
 
-        if not result_type is None:
+        if result_type is not None:
             result["__result"] = return_value
 
         return result
@@ -318,22 +315,22 @@ class CodeFunction(object):
         return str(self.specification)
 
 
-class legacy_function(object):
+class legacy_function:
 
     __doc__ = CodeDocStringProperty()
 
     def __init__(self, specification_function):
-        """Decorator for legacy functions.
+        """
+        Decorator for legacy functions.
 
         The decorated function cannot have any arguments. This
         means the decorated function must not have a ``self``
         argument.
 
-        The decorated function must return
-        a LegacyFunctionSpecification.
+        The decorated function must return a LegacyFunctionSpecification.
 
 
-        >>> class LegacyExample(object):
+        >>> class LegacyExample:
         ...     @legacy_function
         ...     def evolve():
         ...          specification = LegacyFunctionSpecification()
@@ -389,32 +386,21 @@ class legacy_function(object):
     def crc32(self):
         try:
             from zlib import crc32
+        except ImportError:
+            try:
+                from binascii import crc32
+            except ImportError:
+                raise Exception("No working crc32 implementation found!")
 
-            # python 3, crc32 needs bytes...
+        # python 3, crc32 needs bytes...
 
-            def python3_crc32(x):
-                x = crc32(bytes(x, "ascii"))
-                return x - ((x & 0x80000000) << 1)
+        def python3_crc32(x):
+            x = crc32(bytes(x, "ascii"))
+            return x - ((x & 0x80000000) << 1)
 
-            if python3_crc32("amuse") & 0xFFFFFFFF == 0xC0CC9367:
-                return python3_crc32
-        except Exception:
-            pass
-        try:
-            from binascii import crc32
+        if python3_crc32("amuse") & 0xFFFFFFFF == 0xC0CC9367:
+            return python3_crc32
 
-            # python 3, crc32 needs bytes...
-
-            def python3_crc32(x):
-                x = crc32(bytes(x, "ascii"))
-                return x - ((x & 0x80000000) << 1)
-
-            if python3_crc32("amuse") & 0xFFFFFFFF == 0xC0CC9367:
-                return python3_crc32
-        except Exception:
-            pass
-
-        raise Exception("No working crc32 implementation found!")
 
 
 def derive_dtype_unit_and_default(value):
@@ -530,7 +516,10 @@ def simplified_function_specification(must_handle_array=False, can_handle_array=
 
         def returns(**kwargs):
             start = flatsrc.find("returns(")
-            order = lambda k: flatsrc.find(k[0] + "=", start)
+
+            def order(k):
+                return flatsrc.find(k[0] + "=", start)
+
             out_arg.extend(sorted(kwargs.items(), key=order))
 
         f.__globals__["returns"] = returns
@@ -573,7 +562,7 @@ def remote_function(f=None, must_handle_array=False, can_handle_array=False):
     )
 
 
-class ParameterSpecification(object):
+class ParameterSpecification:
     def __init__(self, name, dtype, direction, description, default=None, unit=None):
         """Specification of a parameter of a legacy function"""
         self.name = name
@@ -601,7 +590,7 @@ class ParameterSpecification(object):
         return not self.default is None
 
 
-class LegacyFunctionSpecification(object):
+class LegacyFunctionSpecification:
     """
     Specification of a legacy function.
     Describes the name, result type and parameters of a
@@ -770,7 +759,7 @@ class LegacyFunctionSpecification(object):
                 p + typecode_to_name[x.datatype]
                 p + " "
                 p + x.name
-            if not self.result_type is None:
+            if self.result_type is not None:
                 p + ", "
                 p + typecode_to_name[self.result_type]
                 p + " "
@@ -800,7 +789,7 @@ def stop_interfaces(exceptions=[]):
     """
     for reference in reversed(CodeInterface.instances):
         x = reference()
-        if not x is None and x.__class__.__name__ not in exceptions:
+        if x is not None and x.__class__.__name__ not in exceptions:
             try:
                 x._stop()
             except:
@@ -928,7 +917,7 @@ class CodeInterface(OptionalAttributes):
 
     @classmethod
     def retrieve_reusable_channel(cls):
-        if not "REUSE_INSTANCE" in cls.__dict__:
+        if "REUSE_INSTANCE" not in cls.__dict__:
             cls.REUSE_INSTANCE = set([])
         s = cls.REUSE_INSTANCE
         if len(s) > 0:
@@ -938,7 +927,7 @@ class CodeInterface(OptionalAttributes):
 
     @classmethod
     def store_reusable_channel(cls, instance):
-        if not "REUSE_INSTANCE" in cls.__dict__:
+        if "REUSE_INSTANCE" not in cls.__dict__:
             cls.REUSE_INSTANCE = set([])
         s = cls.REUSE_INSTANCE
         s.add(instance)
@@ -946,7 +935,7 @@ class CodeInterface(OptionalAttributes):
 
     @classmethod
     def stop_reusable_channels(cls):
-        if not "REUSE_INSTANCE" in cls.__dict__:
+        if "REUSE_INSTANCE" not in cls.__dict__:
             cls.REUSE_INSTANCE = set([])
         s = cls.REUSE_INSTANCE
         while len(s) > 0:
@@ -960,7 +949,7 @@ class CodeInterface(OptionalAttributes):
 
     def _stop(self):
         if hasattr(self, "channel"):
-            if not self.channel is None and self.channel.is_active():
+            if self.channel is not None and self.channel.is_active():
                 if self.reuse_worker:
                     self.store_reusable_channel(self.channel)
                     self.channel = None
@@ -1185,7 +1174,7 @@ class CodeInterface(OptionalAttributes):
         return function
 
 
-class CodeWithDataDirectories(object):
+class CodeWithDataDirectories:
 
     def __init__(self):
         if self.channel_type == "distributed":
@@ -1366,7 +1355,7 @@ class CodeFunctionWithUnits(CodeFunction):
 
         handle_as_array = self.must_handle_as_array(dtype_to_values)
 
-        if not self.owner is None:
+        if self.owner is not None:
             CODE_LOG.info(
                 "start call '%s.%s'", self.owner.__name__, self.specification.name
             )
@@ -1398,7 +1387,7 @@ class CodeFunctionWithUnits(CodeFunction):
         output_units = self.convert_floats_to_units(output_encoded_units)
         result = self.converted_results(dtype_to_result, handle_as_array, output_units)
 
-        if not self.owner is None:
+        if self.owner is not None:
             CODE_LOG.info(
                 "end call '%s.%s'", self.owner.__name__, self.specification.name
             )
@@ -1486,20 +1475,20 @@ class CodeFunctionWithUnits(CodeFunction):
         for key, value in dtype_to_result.items():
             dtype_to_array[key] = list(reversed(value))
 
-        if not result_type is None:
+        if result_type is not None:
             return_value = dtype_to_array[result_type].pop()
 
         for parameter in self.specification.output_parameters:
             result[parameter.name] = dtype_to_array[parameter.datatype].pop()
             if (
                 self.specification.has_units
-                and not units[parameter.index_in_output] is None
+                and units[parameter.index_in_output] is not None
             ):
                 result[parameter.name] = (
                     result[parameter.name] | units[parameter.index_in_output]
                 )
 
-        if not result_type is None:
+        if result_type is not None:
             result["__result"] = return_value
 
         return result

@@ -21,7 +21,7 @@ import inspect
 import warnings
 
 
-class KeyGenerator(object):
+class KeyGenerator:
     def __next__(self):
         pass
 
@@ -100,7 +100,7 @@ def set_random_key_generator(
     UniqueKeyGenerator = RandomNumberUniqueKeyGenerator(number_of_bits=number_of_bits)
 
 
-class AttributeStorage(object):
+class AttributeStorage:
     """
     Abstract base class of particle storage objects. Implemented by the
     storage classes and the particle sets
@@ -184,7 +184,7 @@ class AttributeStorage(object):
         return self.get_defined_attribute_names()
 
 
-class DerivedAttribute(object):
+class DerivedAttribute:
     """
     Abstract base class for calculated properties and
     methods on sets.
@@ -203,7 +203,7 @@ class DerivedAttribute(object):
         raise exceptions.AmuseException("cannot set value of a DerivedAttribute")
 
 
-class AbstractAttributeValue(object):
+class AbstractAttributeValue:
     def __str__(self):
         return self._values.__str__()
 
@@ -509,11 +509,13 @@ class CalculatedAttribute(DerivedAttribute):
 
 
 def new_particles_function_attribute_with_doc(function):
-    class BoundParticlesFunctionAttribute(object):
+    class BoundParticlesFunctionAttribute:
         if function.__doc__:
             __doc__ = (
-                "\n  Documentation on '{0}' particles function attribute:"
-                "\n\n".format(function.__name__) + function.__doc__
+                f"\n"
+                f"  Documentation on '{function.__name__}' particles function "
+                f"attribute:\n\n"
+                f"{function.__doc__}"
             )
         _function = staticmethod(function)
 
@@ -527,11 +529,13 @@ def new_particles_function_attribute_with_doc(function):
 
 
 def new_particle_function_attribute_with_doc(function):
-    class BoundParticleFunctionAttribute(object):
+    class BoundParticleFunctionAttribute:
         if function.__doc__:
             __doc__ = (
-                "\n  Documentation on '{0}' particle function attribute:"
-                "\n\n".format(function.__name__) + function.__doc__
+                f"\n"
+                f"  Documentation on '{function.__name__}' particle function "
+                f"attribute:\n\n"
+                f"{function.__doc__}"
             )
         _function = staticmethod(function)
 
@@ -549,11 +553,13 @@ def new_particle_function_attribute_with_doc(function):
 
 
 def new_caching_particles_function_attribute_with_doc(name, function):
-    class CachingBoundParticlesFunctionAttribute(object):
+    class CachingBoundParticlesFunctionAttribute:
         if function.__doc__:
             __doc__ = (
-                "\n  Documentation on '{0}' particles function attribute:"
-                "\n\n".format(function.__name__) + function.__doc__
+                f"\n"
+                f"  Documentation on '{function.__name__}' particles function "
+                f"attribute:\n\n"
+                f"{function.__doc__}"
             )
         _function = staticmethod(function)
         _name = name
@@ -655,7 +661,7 @@ class CachingFunctionAttribute(DerivedAttribute):
             )
 
 
-class CollectionAttributes(object):
+class CollectionAttributes:
     """
     Objects of this class store attributes for
     a particles collection or a grid.
@@ -676,7 +682,7 @@ class CollectionAttributes(object):
         try:
             return self._attributes[name]
         except KeyError:
-            raise AttributeError("uknown attribute: {0!r}".format(name))
+            raise AttributeError(f"unknown attribute: {name!r}")
 
     def __setattr__(self, name, value):
         self._attributes[name] = value
@@ -690,7 +696,7 @@ class CollectionAttributes(object):
     def __str__(self):
         lines = []
         for name, value in self._attributes.items():
-            lines.append("{0}: {1}".format(name, value))
+            lines.append(f"{name}: {value}")
         return "\n".join(lines)
 
     def _copy_for_collection(self, newcollection):
@@ -700,7 +706,7 @@ class CollectionAttributes(object):
         return iter(self._attributes.items())
 
 
-class CachedResults(object):
+class CachedResults:
     """
     Stores results for functions that only need to be called once
     """
@@ -712,7 +718,7 @@ class CachedResults(object):
         return {"results": {}}
 
 
-class PrivateProperties(object):
+class PrivateProperties:
     """
     Defined for superclasses to store private properties.
     Every set has :meth:`__setattr__` defined.
@@ -751,27 +757,24 @@ class PrivateProperties(object):
         return output
 
 
-class UndefinedAttribute(object):
+class UndefinedAttribute:
     def __get__(self, obj, type=None):
         raise AttributeError()
 
 
-class AsynchronuousAccessToSet(object):
+class AsynchronuousAccessToSet:
     """
-    Helper object to get asynchronuous acces to sets
+    Helper object to get asynchronous access to sets
     """
 
     def __init__(self, store):
         object.__setattr__(self, "_store", store)
 
     def __getattr__(self, name_of_the_attribute):
-        # ~ if name_of_the_attribute == '__setstate__':
-        # ~ raise AttributeError('type object {0!r} has no attribute {1!r}'.format(type(self._store), name_of_the_attribute))
         if name_of_the_attribute in self._store._derived_attributes:
             raise AttributeError(
-                "type object {0!r} cannot asynchronuously access attribute {1!r}".format(
-                    type(self._store), name_of_the_attribute
-                )
+                f"type object {type(self._store)!r} cannot asynchronously access "
+                f"attribute {name_of_the_attribute!r}"
             )
         try:
             return self._store._convert_to_entities_or_quantities(
@@ -785,34 +788,29 @@ class AsynchronuousAccessToSet(object):
                 in self._store.get_attribute_names_defined_in_store()
             ):
                 raise
-            else:
-                raise AttributeError(
-                    "You tried to access attribute '{0}'"
-                    " but this attribute is not defined for this set.".format(
-                        name_of_the_attribute
-                    )
-                )
+            raise AttributeError(
+                f"You tried to access attribute '{name_of_the_attribute}'"
+                f" but this attribute is not defined for this set."
+            ) from ex
 
     def __setattr__(self, name_of_the_attribute, value):
         value = self._store.check_attribute(value)
         if name_of_the_attribute in self._store._derived_attributes:
             raise AttributeError(
-                "type object {0!r} cannot asynchronuously access attribute {1!r}".format(
-                    type(self._store), name_of_the_attribute
-                )
+                f"type object {type(self._store)!r} cannot asynchronously access "
+                f"attribute {name_of_the_attribute!r}"
             )
-        else:
-            request = self._store.set_values_in_store_async(
-                self._store.get_all_indices_in_store(),
-                [name_of_the_attribute],
-                [self._store._convert_from_entities_or_quantities(value)],
-            )
+        request = self._store.set_values_in_store_async(
+            self._store.get_all_indices_in_store(),
+            [name_of_the_attribute],
+            [self._store._convert_from_entities_or_quantities(value)],
+        )
 
     def __setstate__(self, arg):
         self.__dict__.update(arg)
 
 
-class AbstractSet(object):
+class AbstractSet:
     """
     Abstract superclass of all sets of particles and grids.
     """
@@ -861,42 +859,33 @@ class AbstractSet(object):
             return self._request
         if name_of_the_attribute == "__setstate__":
             raise AttributeError(
-                "type object {0!r} has no attribute {1!r}".format(
-                    type(self), name_of_the_attribute
-                )
+                f"type object {type(self)!r} has no attribute {name_of_the_attribute!r}"
             )
         if name_of_the_attribute in self._derived_attributes:
             return self._derived_attributes[
                 name_of_the_attribute
             ].get_values_for_entities(self)
-        else:
-            try:
-                return self._convert_to_entities_or_quantities(
-                    self.get_all_values_of_attribute_in_store(name_of_the_attribute)
-                )
-            except Exception as ex:
-                if name_of_the_attribute in self.get_attribute_names_defined_in_store():
-                    raise
-                else:
-                    raise AttributeError(
-                        "You tried to access attribute '{0}'"
-                        " but this attribute is not defined for this set.".format(
-                            name_of_the_attribute
-                        )
-                    )
+        try:
+            return self._convert_to_entities_or_quantities(
+                self.get_all_values_of_attribute_in_store(name_of_the_attribute)
+            )
+        except Exception as ex:
+            if name_of_the_attribute in self.get_attribute_names_defined_in_store():
+                raise
+            raise AttributeError(
+                f"You tried to access attribute '{name_of_the_attribute}'"
+                f" but this attribute is not defined for this set."
+            ) from ex
 
     def _get_derived_attribute_value(self, name_of_the_attribute):
         if name_of_the_attribute in self._derived_attributes:
             return self._derived_attributes[
                 name_of_the_attribute
             ].get_values_for_entities(self)
-        else:
-            raise AttributeError(
-                "You tried to access attribute '{0}'"
-                " but this attribute is not defined for this set.".format(
-                    name_of_the_attribute
-                )
-            )
+        raise AttributeError(
+            f"You tried to access attribute '{name_of_the_attribute}'"
+            f" but this attribute is not defined for this set."
+        )
 
     def check_attribute(self, value):
         if not (is_quantity(value) or hasattr(value, "as_set")):
@@ -928,8 +917,7 @@ class AbstractSet(object):
             return self._derived_attributes[attribute].get_value_for_entity(
                 self, particle, index
             )
-        else:
-            return self.get_value_in_store(index, attribute)
+        return self.get_value_in_store(index, attribute)
 
     def _get_values_for_entity(self, index, attributes):
         return [x[0] for x in self.get_values_in_store([index], attributes)]
@@ -942,16 +930,14 @@ class AbstractSet(object):
             return self._derived_attributes[attribute].set_value_for_entity(
                 self, index, value
             )
-        else:
-            return self.set_values_in_store(
-                numpy.asarray([index]), [attribute], [value]
-            )
+        return self.set_values_in_store(
+            numpy.asarray([index]), [attribute], [value]
+        )
 
     def _convert_to_entities_or_quantities(self, x):
         if hasattr(x, "unit") and x.unit.iskey():
             return self._subset(x.number)
-        else:
-            return x
+        return x
 
     def _convert_to_entities_or_quantities_async(self, x):
         def handler(inner):
@@ -1756,7 +1742,7 @@ class LinkedArray(numpy.ndarray):
                 result[index] = copy_of_container
             else:
                 raise exceptions.AmuseException(
-                    "unkown type in link {0}, copy not implemented".format(type(x))
+                    f"unknown type in link {type(x)}, copy not implemented"
                 )
             index += 1
 
@@ -1774,7 +1760,7 @@ class LinkedArray(numpy.ndarray):
         from amuse.datamodel.grids import GridPoint
 
         if memento is None:
-            memento = dict()
+            memento = {}
 
         result = LinkedArray(numpy.empty_like(self))
         index = 0
@@ -1811,9 +1797,7 @@ class LinkedArray(numpy.ndarray):
                         result[index] = x
             else:
                 raise exceptions.AmuseException(
-                    "unkown type in link {0}, transfer link not implemented".format(
-                        type(x)
-                    )
+                    f"unknown type in link {type(x)}, transfer link not implemented"
                 )
 
         return result
@@ -1917,7 +1901,7 @@ class FixedLinkedArray(LinkedArray):
         filter_attributes=lambda particle_set, x: True,
     ):
         if memento is None:
-            memento = dict()
+            memento = {}
 
         if must_copy:
             raise Exception("unfixed syntax error")

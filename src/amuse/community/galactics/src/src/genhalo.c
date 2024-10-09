@@ -3,7 +3,7 @@
 // random skip factor, must be larger than the number of random draws per particle
 #define SKIP  100000
 
-main(argc,argv)
+int main(argc,argv)
 int argc;
 char **argv;
 {

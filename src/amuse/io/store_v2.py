@@ -1216,7 +1216,7 @@ class StoreHDF(object):
         referenced_group = self.derefence(reference)
         mapping_from_groupid_to_set = self.mapping_from_groupid_to_set
     
-        if not referenced_group.id in mapping_from_groupid_to_set:
+        if referenced_group.id not in mapping_from_groupid_to_set:
             linked_set = self.load_from_group(referenced_group)
         else:
             linked_set = mapping_from_groupid_to_set[referenced_group.id]

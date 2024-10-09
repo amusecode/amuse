@@ -8,20 +8,32 @@ from amuse.rfi.tools.create_code import DTypeToSpecDictionary
 from amuse.rfi.tools import create_definition
 from amuse.rfi.core import LegacyFunctionSpecification
 
-dtype_to_spec = DTypeToSpecDictionary({
-    'int32' : DTypeSpec('ints_in', 'ints_out',
-                    'HEADER_INTEGER_COUNT', 'int', 'MPI_INT'),
-    'int64' : DTypeSpec('longs_in', 'longs_out',
-                    'HEADER_LONG_COUNT', 'long long int', 'MPI_LONG_LONG_INT'),
-    'float32' : DTypeSpec('floats_in', 'floats_out',
-                    'HEADER_FLOAT_COUNT', 'float', 'MPI_FLOAT'),
-    'float64' : DTypeSpec('doubles_in', 'doubles_out',
-                    'HEADER_DOUBLE_COUNT', 'double', 'MPI_DOUBLE'),
-    'bool' : DTypeSpec('booleans_in', 'booleans_out',
-                    'HEADER_BOOLEAN_COUNT', 'bool', 'MPI_C_BOOL'),
-    'string' : DTypeSpec('strings_in', 'strings_out',
-                    'HEADER_STRING_COUNT', 'int', 'MPI_INTEGER'),
-})
+dtype_to_spec = DTypeToSpecDictionary(
+    {
+        "int32": DTypeSpec(
+            "ints_in", "ints_out", "HEADER_INTEGER_COUNT", "int", "MPI_INT"
+        ),
+        "int64": DTypeSpec(
+            "longs_in",
+            "longs_out",
+            "HEADER_LONG_COUNT",
+            "long long int",
+            "MPI_LONG_LONG_INT",
+        ),
+        "float32": DTypeSpec(
+            "floats_in", "floats_out", "HEADER_FLOAT_COUNT", "float", "MPI_FLOAT"
+        ),
+        "float64": DTypeSpec(
+            "doubles_in", "doubles_out", "HEADER_DOUBLE_COUNT", "double", "MPI_DOUBLE"
+        ),
+        "bool": DTypeSpec(
+            "booleans_in", "booleans_out", "HEADER_BOOLEAN_COUNT", "bool", "MPI_C_BOOL"
+        ),
+        "string": DTypeSpec(
+            "strings_in", "strings_out", "HEADER_STRING_COUNT", "int", "MPI_INTEGER"
+        ),
+    }
+)
 
 HEADER_CODE_STRING = """
 #ifndef NOMPI
@@ -1043,7 +1055,7 @@ int main(int argc, char *argv[]) {
 
 """
 
-GETSET_WORKING_DIRECTORY="""
+GETSET_WORKING_DIRECTORY = """
 char path_buffer[4096];
 
 
@@ -1062,402 +1074,441 @@ int get_working_directory(char **c) {
 """
 
 
-
-
-
 class MakeCCodeString(GenerateASourcecodeString):
     @late
     def dtype_to_spec(self):
         return dtype_to_spec
-       
-         
+
 
 class GenerateACStringOfAFunctionSpecification(MakeCCodeString):
     @late
     def specification(self):
-        raise exceptions.AmuseException("No specification set, please set the specification first")
-   
-        
+        raise exceptions.AmuseException(
+            "No specification set, please set the specification first"
+        )
+
     def start(self):
-        
         self.specification.prepare_output_parameters()
         self.output_casestmt_start()
         self.out.indent()
-        
+
         if self.specification.must_handle_array:
             pass
         elif self.specification.can_handle_array:
-            self.out.lf() + 'for (int i = 0 ; i < call_count; i++){'
+            self.out.lf() + "for (int i = 0 ; i < call_count; i++){"
             self.out.indent()
- 
+
         self.output_copy_inout_variables()
         self.output_function_start()
         self.output_function_parameters()
         self.output_function_end()
-        
+
         if self.specification.must_handle_array:
             if not self.specification.result_type is None:
                 spec = self.dtype_to_spec[self.specification.result_type]
-                self.out.lf() + 'for (int i = 1 ; i < call_count; i++){'
+                self.out.lf() + "for (int i = 1 ; i < call_count; i++){"
                 self.out.indent()
-                self.out.lf() + spec.output_var_name + '[i]' + ' = ' + spec.output_var_name + '[0]' + ';'
+                (
+                    self.out.lf()
+                    + spec.output_var_name
+                    + "[i]"
+                    + " = "
+                    + spec.output_var_name
+                    + "[0]"
+                    + ";"
+                )
                 self.out.dedent()
-                self.out.lf() + '}'
+                self.out.lf() + "}"
         elif self.specification.can_handle_array:
             self.out.dedent()
-            self.out.lf() + '}'
-        
+            self.out.lf() + "}"
+
         self.output_lines_with_number_of_outputs()
         self.output_casestmt_end()
         self.out.dedent()
         self._result = self.out.string
-    
+
     def index_string(self, index, must_copy_in_to_out=False):
         if self.specification.must_handle_array and not must_copy_in_to_out:
             if index == 0:
-                return '0'
+                return "0"
             else:
-                return '( %d * call_count)' % index
-        elif self.specification.can_handle_array or (self.specification.must_handle_array and must_copy_in_to_out):
+                return "( %d * call_count)" % index
+        elif self.specification.can_handle_array or (
+            self.specification.must_handle_array and must_copy_in_to_out
+        ):
             if index == 0:
-                return 'i'
+                return "i"
             else:
-                return '( %d * call_count) + i' % index
+                return "( %d * call_count) + i" % index
         else:
             return index
-    
-    
+
     def input_var(self, name, index):
         if self.specification.must_handle_array:
             self.output_var(name, index)
         else:
             self.out.n() + name
-            self.out + '[' + self.index_string(index) + ']'
-        
+            self.out + "[" + self.index_string(index) + "]"
+
     def output_var(self, name, index):
-        self.out.n() + '&' + name
-        self.out + '[' + self.index_string(index) + ']'
-    
+        self.out.n() + "&" + name
+        self.out + "[" + self.index_string(index) + "]"
+
     def output_function_parameters(self):
         self.out.indent()
-        
+
         first = True
-        
+
         for parameter in self.specification.parameters:
             spec = self.dtype_to_spec[parameter.datatype]
-            
+
             if first:
                 first = False
             else:
-                self.out + ' ,'
-                
+                self.out + " ,"
+
             if parameter.direction == LegacyFunctionSpecification.IN:
-                    self.input_var(spec.input_var_name, parameter.input_index)
+                self.input_var(spec.input_var_name, parameter.input_index)
             if parameter.direction == LegacyFunctionSpecification.INOUT:
-                    self.output_var(spec.output_var_name, parameter.output_index)
+                self.output_var(spec.output_var_name, parameter.output_index)
             elif parameter.direction == LegacyFunctionSpecification.OUT:
-                    self.output_var(spec.output_var_name, parameter.output_index)
+                self.output_var(spec.output_var_name, parameter.output_index)
             elif parameter.direction == LegacyFunctionSpecification.LENGTH:
-                self.out.n() + 'call_count'
-    
+                self.out.n() + "call_count"
+
         self.out.dedent()
-        
-        
+
     def output_copy_inout_variables(self):
         for parameter in self.specification.parameters:
             spec = self.dtype_to_spec[parameter.datatype]
-            
+
             if parameter.direction == LegacyFunctionSpecification.INOUT:
                 if self.specification.must_handle_array:
-                    self.out.lf() + 'for (int i = 0 ; i < call_count; i++){'
+                    self.out.lf() + "for (int i = 0 ; i < call_count; i++){"
                     self.out.indent()
 
                 self.out.n() + spec.output_var_name
-                self.out + '[' + self.index_string(parameter.output_index, must_copy_in_to_out=True) + ']'
-                self.out + ' = '
-                self.out + spec.input_var_name + '[' + self.index_string(parameter.input_index, must_copy_in_to_out=True) + ']' + ';'
-            
+                (
+                    self.out
+                    + "["
+                    + self.index_string(
+                        parameter.output_index, must_copy_in_to_out=True
+                    )
+                    + "]"
+                )
+                self.out + " = "
+                (
+                    self.out
+                    + spec.input_var_name
+                    + "["
+                    + self.index_string(parameter.input_index, must_copy_in_to_out=True)
+                    + "]"
+                    + ";"
+                )
+
                 if self.specification.must_handle_array:
                     self.out.dedent()
-                    self.out.lf() + '}'
-                                
+                    self.out.lf() + "}"
+
     def output_lines_with_number_of_outputs(self):
         dtype_to_count = {}
-        
+
         for parameter in self.specification.output_parameters:
             count = dtype_to_count.get(parameter.datatype, 0)
             dtype_to_count[parameter.datatype] = count + 1
-                
+
         if not self.specification.result_type is None:
             count = dtype_to_count.get(self.specification.result_type, 0)
             dtype_to_count[self.specification.result_type] = count + 1
-            
-        for dtype in dtype_to_count:       
+
+        for dtype in dtype_to_count:
             spec = self.dtype_to_spec[dtype]
             count = dtype_to_count[dtype]
-            self.out.n() 
-            self.out + 'header_out[' + spec.counter_name 
-            self.out + '] = ' + count + ' * call_count;'
+            self.out.n()
+            self.out + "header_out[" + spec.counter_name
+            self.out + "] = " + count + " * call_count;"
             pass
-            
+
     def output_function_end(self):
         if len(self.specification.parameters) > 0:
             self.out.n()
-            
-        self.out + ')' + ';'
-        
+
+        self.out + ")" + ";"
+
     def output_function_start(self):
-        self.out.n() 
+        self.out.n()
         if not self.specification.result_type is None:
             spec = self.dtype_to_spec[self.specification.result_type]
             self.out + spec.output_var_name
-            self.out + '[' + self.index_string(0) + ']' + ' = '
-        self.out + self.specification.name + '('
-        
+            self.out + "[" + self.index_string(0) + "]" + " = "
+        self.out + self.specification.name + "("
+
     def output_casestmt_start(self):
-        self.out + 'case ' + self.specification.id + ':'
-        
+        self.out + "case " + self.specification.id + ":"
+
     def output_casestmt_end(self):
-        self.out.n() + 'break;'
-        
-        
+        self.out.n() + "break;"
+
 
 class GenerateACHeaderDefinitionStringFromAFunctionSpecification(MakeCCodeString):
-   
-        
     def start(self):
         self.output_function_start()
         self.output_function_parameters()
         self.output_function_end()
         self._result = self.out.string
-            
-    def output_function_parameters(self):        
+
+    def output_function_parameters(self):
         first = True
-        
+
         for parameter in self.specification.parameters:
             spec = self.dtype_to_spec[parameter.datatype]
-            
+
             if first:
                 first = False
             else:
-                self.out + ', '
-                
-            if parameter.datatype == 'string':
-                self.out + 'char'
+                self.out + ", "
+
+            if parameter.datatype == "string":
+                self.out + "char"
             else:
                 self.out + spec.type
-            self.out + ' '
-            if parameter.is_output() or (parameter.is_input() and self.specification.must_handle_array):
-                self.out + '*' + ' '
-            if parameter.datatype == 'string':
-                self.out + '*' + ' '
+            self.out + " "
+            if parameter.is_output() or (
+                parameter.is_input() and self.specification.must_handle_array
+            ):
+                self.out + "*" + " "
+            if parameter.datatype == "string":
+                self.out + "*" + " "
             self.out + parameter.name
-                
-            
+
     def output_function_end(self):
-        self.out + ')' + ';'
-        
+        self.out + ")" + ";"
+
     def output_function_start(self):
         self.out.n()
         if not self.specification.result_type is None:
             spec = self.dtype_to_spec[self.specification.result_type]
             self.out + spec.type
-            self.out + ' '
+            self.out + " "
         else:
-            self.out + 'void' + ' '
-        self.out + self.specification.name + '('
-        
-class GenerateACSourcecodeStringFromASpecificationClass\
-    (GenerateASourcecodeStringFromASpecificationClass):
+            self.out + "void" + " "
+        self.out + self.specification.name + "("
 
+
+class GenerateACSourcecodeStringFromASpecificationClass(
+    GenerateASourcecodeStringFromASpecificationClass
+):
     @late
     def specification_class(self):
-        raise exceptions.AmuseException("No specification_class set, please set the specification_class first")
-    
+        raise exceptions.AmuseException(
+            "No specification_class set, please set the specification_class first"
+        )
+
     @late
     def dtype_to_spec(self):
         return dtype_to_spec
 
     def output_sourcecode_for_function(self):
         return GenerateACStringOfAFunctionSpecification()
-    
+
     def start(self):
         self.out + HEADER_CODE_STRING
 
         self.output_local_includes()
-        
+
         self.output_needs_mpi()
-        
+
         self.output_code_constants()
-        
+
         self.out.lf() + CONSTANTS_AND_GLOBAL_VARIABLES_STRING
-        
+
         self.out.lf() + POLLING_FUNCTIONS_STRING
 
         self.out.lf() + GETSET_WORKING_DIRECTORY
-        
+
         if self.must_generate_mpi:
             self.out.lf() + RECV_HEADER_SLEEP_STRING
-        
+
         self.output_handle_call()
-        
+
         self.out.lf() + FOOTER_CODE_STRING
-        
+
         self._result = self.out.string
-        
+
     def output_local_includes(self):
-        if hasattr(self.specification_class, 'include_headers'):
+        if hasattr(self.specification_class, "include_headers"):
             for x in self.specification_class.include_headers:
                 self.out.n() + '#include "' + x + '"'
         self.out.lf()
 
-        
     def output_needs_mpi(self):
         if self.needs_mpi and self.must_generate_mpi:
-            self.out.lf() + 'static bool NEEDS_MPI = true;'
+            self.out.lf() + "static bool NEEDS_MPI = true;"
         else:
-            self.out.lf() + 'static bool NEEDS_MPI = false;'
+            self.out.lf() + "static bool NEEDS_MPI = false;"
         self.out.lf().lf()
-    
+
     def output_code_constants(self):
         for dtype in self.dtype_to_spec.keys():
             dtype_spec = self.dtype_to_spec[dtype]
-            
-            maxin = self.mapping_from_dtype_to_maximum_number_of_inputvariables.get(dtype, 0)
-            self.out + 'static int MAX_' + dtype_spec.input_var_name.upper() + ' = ' + maxin + ";"
+
+            maxin = self.mapping_from_dtype_to_maximum_number_of_inputvariables.get(
+                dtype, 0
+            )
+            (
+                self.out
+                + "static int MAX_"
+                + dtype_spec.input_var_name.upper()
+                + " = "
+                + maxin
+                + ";"
+            )
             self.out.lf()
-            
-            maxout = self.mapping_from_dtype_to_maximum_number_of_outputvariables.get(dtype, 0)
-            self.out + 'static int MAX_' + dtype_spec.output_var_name.upper() + ' = ' + maxout + ";"
+
+            maxout = self.mapping_from_dtype_to_maximum_number_of_outputvariables.get(
+                dtype, 0
+            )
+            (
+                self.out
+                + "static int MAX_"
+                + dtype_spec.output_var_name.upper()
+                + " = "
+                + maxout
+                + ";"
+            )
             self.out.lf()
-            
+
     def output_handle_call(self):
-        self.out.lf().lf() + 'bool handle_call() {'
+        self.out.lf().lf() + "bool handle_call() {"
         self.out.indent()
-        
-        self.out.lf() + 'int call_count = header_in[HEADER_CALL_COUNT];'
-        
-        self.out.lf().lf() + 'switch(header_in[HEADER_FUNCTION_ID]) {'
+
+        self.out.lf() + "int call_count = header_in[HEADER_CALL_COUNT];"
+
+        self.out.lf().lf() + "switch(header_in[HEADER_FUNCTION_ID]) {"
         self.out.indent()
-        self.out.lf() + 'case 0:'
-        self.out.indent().lf() + 'return false;'
-        self.out.lf() + 'break;'
+        self.out.lf() + "case 0:"
+        self.out.indent().lf() + "return false;"
+        self.out.lf() + "break;"
         self.out.dedent()
-        
+
         self.output_sourcecode_for_functions()
-        
-        self.out.lf() + 'default:'
+
+        self.out.lf() + "default:"
         self.out.indent()
-        self.out.lf() + 'header_out[HEADER_FLAGS] = header_out[HEADER_FLAGS] | ERROR_FLAG;'
-        self.out.lf() + 'strings_out[0] = new char[100];'
-        self.out.lf() + 'sprintf(strings_out[0], "unknown function id: %d\\n", header_in[HEADER_FUNCTION_ID]);'
-        self.out.lf() + 'fprintf(stderr, "unknown function id: %d\\n", header_in[HEADER_FUNCTION_ID]);'
-        self.out.lf() + 'header_out[HEADER_STRING_COUNT] = 1;'
+        (
+            self.out.lf()
+            + "header_out[HEADER_FLAGS] = header_out[HEADER_FLAGS] | ERROR_FLAG;"
+        )
+        self.out.lf() + "strings_out[0] = new char[100];"
+        (
+            self.out.lf()
+            + 'sprintf(strings_out[0], "unknown function id: %d\\n", header_in[HEADER_FUNCTION_ID]);'
+        )
+        (
+            self.out.lf()
+            + 'fprintf(stderr, "unknown function id: %d\\n", header_in[HEADER_FUNCTION_ID]);'
+        )
+        self.out.lf() + "header_out[HEADER_STRING_COUNT] = 1;"
         self.out.dedent()
-        
-        self.out.dedent().lf() + '}'
+
+        self.out.dedent().lf() + "}"
         self.out.dedent()
-        self.out.indent().lf() + 'return true;'
-        self.out.dedent().lf() + '}'
+        self.out.indent().lf() + "return true;"
+        self.out.dedent().lf() + "}"
 
-class GenerateACHeaderStringFromASpecificationClass\
-    (GenerateASourcecodeStringFromASpecificationClass):
 
+class GenerateACHeaderStringFromASpecificationClass(
+    GenerateASourcecodeStringFromASpecificationClass
+):
     @late
     def ignore_functions_from_specification_classes(self):
         return []
-        
+
     @late
     def underscore_functions_from_specification_classes(self):
         return []
-        
+
     @late
     def dtype_to_spec(self):
         return dtype_to_spec
-        
+
     @late
     def make_extern_c(self):
         return True
-    
+
     def must_include_interface_function_in_output(self, x):
-        if hasattr(x.specification,"internal_provided"):
-                return False
-            
+        if hasattr(x.specification, "internal_provided"):
+            return False
+
         for cls in self.ignore_functions_from_specification_classes:
             if hasattr(cls, x.specification.name):
                 return False
-        
+
         return True
-        
+
     def output_sourcecode_for_function(self):
         return GenerateACHeaderDefinitionStringFromAFunctionSpecification()
-        
+
     def start(self):
-        self.out + '#include "stdbool.h"'  
+        self.out + '#include "stdbool.h"'
         self.out.lf()
         if self.make_extern_c:
             self.out + "#ifdef __cplusplus"
             self.out.lf() + 'extern "C" {'
             self.out.lf() + "#endif"
             self.out.lf()
-            
+
         self.output_sourcecode_for_functions()
-        
+
         if self.make_extern_c:
             self.out + "#ifdef __cplusplus"
-            self.out.lf() + '}'
+            self.out.lf() + "}"
             self.out.lf() + "#endif"
             self.out.lf()
-        
+
         self.out.lf()
-        
+
         self._result = self.out.string
-        
 
 
-class GenerateACStubStringFromASpecificationClass\
-    (GenerateASourcecodeStringFromASpecificationClass):
-
+class GenerateACStubStringFromASpecificationClass(
+    GenerateASourcecodeStringFromASpecificationClass
+):
     @late
     def dtype_to_spec(self):
         return dtype_to_spec
-        
+
     @late
     def make_extern_c(self):
         return False
-    
+
     def output_sourcecode_for_function(self):
         return create_definition.CreateCStub()
 
     def must_include_interface_function_in_output(self, x):
-        return not hasattr(x.specification,"internal_provided")
-     
-    def start(self):  
-    
+        return not hasattr(x.specification, "internal_provided")
+
+    def start(self):
         self.output_local_includes()
-        
+
         self.out.lf()
-        
+
         if self.make_extern_c:
             self.out + 'extern "C" {'
             self.out.indent().lf()
-            
+
         self.output_sourcecode_for_functions()
-        
+
         if self.make_extern_c:
-            self.out.dedent().lf() + '}'
-        
+            self.out.dedent().lf() + "}"
+
         self.out.lf()
-        
+
         self._result = self.out.string
-        
-    
+
     def output_local_includes(self):
         self.out.n()
-        if hasattr(self.specification_class, 'include_headers'):
+        if hasattr(self.specification_class, "include_headers"):
             for x in self.specification_class.include_headers:
                 self.out.n() + '#include "' + x + '"'
-    
-        
-        
-        

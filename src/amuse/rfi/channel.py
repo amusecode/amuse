@@ -44,9 +44,11 @@ from amuse.rfi import slurm
 from . import async_request
 
 class AbstractMessage(object):
-    
-    def __init__(self,
-        call_id=0, function_id=-1, call_count=1,
+    def __init__(
+        self,
+        call_id=0,
+        function_id=-1,
+        call_count=1,
         dtype_to_arguments={},
         error=False,
         big_endian=(sys.byteorder.lower() == 'big'),
@@ -115,7 +117,6 @@ class AbstractMessage(object):
         
     
 class MPIMessage(AbstractMessage):
-        
     def receive(self, comm):
         header = self.receive_header(comm)
         self.receive_content(comm, header)
@@ -321,7 +322,6 @@ class MPIMessage(AbstractMessage):
     
     
 class ServerSideMPIMessage(MPIMessage):
-    
     def mpi_receive(self, comm, array):
         request = comm.Irecv(array, source=0, tag=999)
         request.Wait()
@@ -356,7 +356,6 @@ class ServerSideMPIMessage(MPIMessage):
     
 
 class ClientSideMPIMessage(MPIMessage):
-    
     def mpi_receive(self, comm, array):
         comm.Bcast(array, root=0)
         
@@ -504,24 +503,29 @@ class AbstractMessageChannel(OptionalAttributes):
             arguments.append(interpreter_executable)
         
         arguments.append(full_name_of_the_worker)
-        
-        command = 'xterm'
+
+        command = "xterm"
         return command, arguments
-        
 
     @classmethod
-    def REDIRECT(cls, full_name_of_the_worker, stdoutname, stderrname, command=None, 
-                      interpreter_executable=None, run_command_redirected_file=None  ):
-        
-        fname = run_command_redirected_file or run_command_redirected.__file__                
-        arguments = [fname , stdoutname, stderrname]
-        
+    def REDIRECT(
+        cls,
+        full_name_of_the_worker,
+        stdoutname,
+        stderrname,
+        command=None,
+        interpreter_executable=None,
+        run_command_redirected_file=None,
+    ):
+        fname = run_command_redirected_file or run_command_redirected.__file__
+        arguments = [fname, stdoutname, stderrname]
+
         if not interpreter_executable is None:
             arguments.append(interpreter_executable)
-            
+
         arguments.append(full_name_of_the_worker)
-        
-        if command is None :
+
+        if command is None:
             command = sys.executable
         
         return command, arguments
@@ -659,7 +663,6 @@ Please do a 'make clean; make' in the root directory.
 """.format(type(object).__name__))
 
     def get_full_name_of_the_worker(self, type):
-
         if os.path.isabs(self.name_of_the_worker):
             full_name_of_the_worker=self.name_of_the_worker
  
@@ -766,9 +769,10 @@ Please do a 'make clean; make' in the root directory.
             
         return max(1, max(lengths))
 
-    def split_message(self, call_id, function_id, call_count, dtype_to_arguments, encoded_units = ()):
-        
-        if call_count<=1:
+    def split_message(
+        self, call_id, function_id, call_count, dtype_to_arguments, encoded_units=()
+    ):
+        if call_count <= 1:
             raise Exception("split message called with call_count<=1")
                 
         dtype_to_result = {}
@@ -1067,7 +1071,6 @@ class MpiChannel(AbstractMessageChannel):
         return MPI.COMM_WORLD.rank == 0
         
     def start(self):
-
         logger.debug("starting mpi worker process")
 
         logger.debug("mpi_enabled: %s", str(self.initialize_mpi))
@@ -1076,8 +1079,10 @@ class MpiChannel(AbstractMessageChannel):
             command, arguments = self.debugger_method(self.full_name_of_the_worker, self, 
                 interpreter_executable=self.interpreter_executable, immediate_run=self.debugger_immediate_run)
         else:
-            if not self.can_redirect_output or (self.redirect_stdout_file == 'none' and self.redirect_stderr_file == 'none'):
-                
+            if not self.can_redirect_output or (
+                self.redirect_stdout_file == "none"
+                and self.redirect_stderr_file == "none"
+            ):
                 if self.interpreter_executable is None:
                     command = self.full_name_of_the_worker
                     arguments = None
@@ -1127,9 +1132,9 @@ class MpiChannel(AbstractMessageChannel):
         return max(1, max(lengths))
         
         
-    def send_message(self, call_id, function_id, dtype_to_arguments={}, encoded_units = ()):
-
-        
+    def send_message(
+        self, call_id, function_id, dtype_to_arguments={}, encoded_units=()
+    ):
         if self.intercomm is None:
             raise exceptions.CodeException("You've tried to send a message to a code that is not running")
         
@@ -1155,9 +1160,7 @@ class MpiChannel(AbstractMessageChannel):
             )
             message.send(self.intercomm)
 
-
-    def recv_message(self, call_id, function_id, handle_as_array, has_units = False):
-        
+    def recv_message(self, call_id, function_id, handle_as_array, has_units=False):
         if self._communicated_splitted_message:
             x = self._merged_results_splitted_message
             self._communicated_splitted_message = False
@@ -1289,7 +1292,10 @@ class MpiChannel(AbstractMessageChannel):
         host = ','.join(hostnames)
         print("HOST:", host, cls._scheduler_index, os.environ['SLURM_TASKS_PER_NODE'])
         info = MPI.Info.Create()
-        info['host'] = host   # actually in mpich and openmpi, the host parameter is interpreted as a comma separated list of host names,
+
+        # actually in mpich and openmpi, the host parameter is interpreted as a
+        # comma separated list of host names,
+        info["host"] = host
         return info
 
 
@@ -1483,9 +1489,7 @@ m.run_mpi_channel('{2}')"""
 
 
 class SocketMessage(AbstractMessage):
-      
     def _receive_all(self, nbytes, thesocket):
-
         # logger.debug("receiving %d bytes", nbytes)
         
         result = []
@@ -1507,7 +1511,6 @@ class SocketMessage(AbstractMessage):
             return b""
             
     def receive(self, socket):
-        
         # logger.debug("receiving message")
         
         header_bytes = self._receive_all(44, socket)
@@ -1642,22 +1645,26 @@ class SocketMessage(AbstractMessage):
     
     
     def send(self, socket):
-        
-        flags = numpy.array([self.big_endian, self.error, len(self.encoded_units) > 0, False], dtype="b")
+        flags = numpy.array(
+            [self.big_endian, self.error, len(self.encoded_units) > 0, False], dtype="b"
+        )
 
-        header = numpy.array([
-            self.call_id,
-            self.function_id,
-            self.call_count,
-            len(self.ints),
-            len(self.longs),
-            len(self.floats),
-            len(self.doubles),
-            len(self.booleans),
-            len(self.strings),
-            len(self.encoded_units),
-        ], dtype='i')
-        
+        header = numpy.array(
+            [
+                self.call_id,
+                self.function_id,
+                self.call_count,
+                len(self.ints),
+                len(self.longs),
+                len(self.floats),
+                len(self.doubles),
+                len(self.booleans),
+                len(self.strings),
+                len(self.encoded_units),
+            ],
+            dtype="i",
+        )
+
         # logger.debug("sending message with flags %s and header %s", flags, header)
         
         socket.sendall(flags.tobytes())
@@ -1691,12 +1698,15 @@ class SocketMessage(AbstractMessage):
             
     def send_strings(self, socket, array):
         if len(array) > 0:
-            
-            lengths = numpy.array( [len(s) for s in array] ,dtype='int32')
-            chars=(chr(0).join(array)+chr(0)).encode("utf-8")
-            
-            if len(chars) != lengths.sum()+len(lengths):
-                raise Exception("send_strings size mismatch {0} vs {1}".format( len(chars) , lengths.sum()+len(lengths) ))
+            lengths = numpy.array([len(s) for s in array], dtype="int32")
+            chars = (chr(0).join(array) + chr(0)).encode("utf-8")
+
+            if len(chars) != lengths.sum() + len(lengths):
+                raise Exception(
+                    "send_strings size mismatch {0} vs {1}".format(
+                        len(chars), lengths.sum() + len(lengths)
+                    )
+                )
 
             self.send_ints(socket, lengths)
             socket.sendall(chars)
@@ -1713,9 +1723,14 @@ class SocketMessage(AbstractMessage):
 
 
 class SocketChannel(AbstractMessageChannel):
-    
-    def __init__(self, name_of_the_worker, legacy_interface_type=None, interpreter_executable=None, 
-          remote_env=None, **options):
+    def __init__(
+        self,
+        name_of_the_worker,
+        legacy_interface_type=None,
+        interpreter_executable=None,
+        remote_env=None,
+        **options,
+    ):
         AbstractMessageChannel.__init__(self, **options)
         
         #logging.getLogger().setLevel(logging.DEBUG)
@@ -1790,8 +1805,10 @@ class SocketChannel(AbstractMessageChannel):
         if not self.debugger_method is None:
             command, arguments = self.debugger_method(self.full_name_of_the_worker, self, interpreter_executable=self.interpreter_executable)
         else:
-            if self.redirect_stdout_file == 'none' and self.redirect_stderr_file == 'none':
-                
+            if (
+                self.redirect_stdout_file == "none"
+                and self.redirect_stderr_file == "none"
+            ):
                 if self.interpreter_executable is None:
                     command = self.full_name_of_the_worker
                     arguments = []
@@ -1837,10 +1854,9 @@ class SocketChannel(AbstractMessageChannel):
           else:
             return ""
         else:
-          return "source "+self.remote_env +"\n"
+            return "source " + self.remote_env + "\n"
 
-    def generate_remote_command_and_arguments(self,hostname, server_address,port):
-        
+    def generate_remote_command_and_arguments(self, hostname, server_address, port):
         # get remote config
         args=["ssh","-T", hostname]
 
@@ -1877,8 +1893,10 @@ class SocketChannel(AbstractMessageChannel):
             raise Exception("remote socket channel debugging not yet supported")
             #command, arguments = self.debugger_method(self.full_name_of_the_worker, self, interpreter_executable=self.interpreter_executable)
         else:
-            if self.redirect_stdout_file == 'none' and self.redirect_stderr_file == 'none':
-                
+            if (
+                self.redirect_stdout_file == "none"
+                and self.redirect_stderr_file == "none"
+            ):
                 if interpreter_executable is None:
                     command = full_name_of_the_worker
                     arguments = []
@@ -1921,7 +1939,6 @@ class SocketChannel(AbstractMessageChannel):
         return command,arguments
 
     def start(self):
-        
         server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                 
         server_address=self.get_host_ip(self.hostname)
@@ -2045,9 +2062,10 @@ class SocketChannel(AbstractMessageChannel):
             return 1
             
         return max(1, max(lengths))
-    
-    def send_message(self, call_id, function_id, dtype_to_arguments={}, encoded_units = ()):
-        
+
+    def send_message(
+        self, call_id, function_id, dtype_to_arguments={}, encoded_units=()
+    ):
         call_count = self.determine_length_from_data(dtype_to_arguments)
         
         # logger.info("sending message for call id %d, function %d, length %d", id, tag, length)
@@ -2067,7 +2085,6 @@ class SocketChannel(AbstractMessageChannel):
             self._is_inuse = True
 
     def recv_message(self, call_id, function_id, handle_as_array, has_units=False):
-           
         self._is_inuse = False
         
         if self._communicated_splitted_message:
@@ -2162,7 +2179,6 @@ class SocketChannel(AbstractMessageChannel):
 
 
 class OutputHandler(threading.Thread):
-    
     def __init__(self, stream, port):
         threading.Thread.__init__(self)
         self.stream = stream
@@ -2194,7 +2210,6 @@ class OutputHandler(threading.Thread):
         self.start()
         
     def run(self):
-        
         while True:
             # logger.debug("receiving data for output")
             data = self.socket.recv(1024)
@@ -2209,7 +2224,6 @@ class OutputHandler(threading.Thread):
 
 
 class DistributedChannel(AbstractMessageChannel):
-            
     default_distributed_instance = None
     
     @staticmethod
@@ -2399,9 +2413,10 @@ class DistributedChannel(AbstractMessageChannel):
             return 1
             
         return max(1, max(lengths))
-    
-    def send_message(self, call_id, function_id, dtype_to_arguments={}, encoded_units = None):
-        
+
+    def send_message(
+        self, call_id, function_id, dtype_to_arguments={}, encoded_units=None
+    ):
         call_count = self.determine_length_from_data(dtype_to_arguments)
         
         logger.debug("sending message for call id %d, function %d, length %d", call_id, function_id, call_count)
@@ -2421,7 +2436,6 @@ class DistributedChannel(AbstractMessageChannel):
         
 
     def recv_message(self, call_id, function_id, handle_as_array, has_units=False):
-           
         self._is_inuse = False
         
         if self._communicated_splitted_message:
@@ -2437,7 +2451,7 @@ class DistributedChannel(AbstractMessageChannel):
         if message.error:
             error_message=message.strings[0] if len(message.strings)>0 else "no error message"
             if message.call_id != call_id or message.function_id != function_id:
-                #~ self.stop() 
+                # self.stop() 
                 error_message+=" - code probably died, sorry."
             raise exceptions.CodeException("Error in worker: " + error_message)
 
@@ -2490,11 +2504,15 @@ class DistributedChannel(AbstractMessageChannel):
         return 1000000
 
 class LocalChannel(AbstractMessageChannel):
-            
-    
-    
-    def __init__(self, name_of_the_worker, legacy_interface_type=None, interpreter_executable=None,
-                   distributed_instance=None, dynamic_python_code=False, **options):
+    def __init__(
+        self,
+        name_of_the_worker,
+        legacy_interface_type=None,
+        interpreter_executable=None,
+        distributed_instance=None,
+        dynamic_python_code=False,
+        **options,
+    ):
         AbstractMessageChannel.__init__(self, **options)
         MpiChannel.ensure_mpi_initialized()
 
@@ -2537,11 +2555,10 @@ class LocalChannel(AbstractMessageChannel):
     
     def is_inuse(self):
         return self._is_inuse
-    
-    
-    
-    def send_message(self, call_id, function_id, dtype_to_arguments={}, encoded_units = None):
-        
+
+    def send_message(
+        self, call_id, function_id, dtype_to_arguments={}, encoded_units=None
+    ):
         call_count = self.determine_length_from_data(dtype_to_arguments)
         
         self.message = LocalMessage(call_id, function_id, call_count, dtype_to_arguments, encoded_units = encoded_units)
