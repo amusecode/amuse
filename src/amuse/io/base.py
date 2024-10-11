@@ -503,9 +503,9 @@ class FortranFileFormatProcessor(BinaryFileFormatProcessor):
         result = self.read_fortran_block_floats(file)
         return result.reshape(len(result) // size, size)
 
-    def write_fortran_block(self, file, input):
+    def write_fortran_block(self, file, input_raw):
         fileformat = self.endianness + "I"
-        input_bytes = bytearray(fileformat)
+        input_bytes = bytearray(input_raw)
         length_of_block = len(input_bytes)
         file.write(struct.pack(fileformat, length_of_block))
         file.write(input_bytes)
