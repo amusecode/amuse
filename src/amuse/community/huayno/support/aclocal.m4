@@ -13,9 +13,9 @@
 
 m4_ifndef([AC_CONFIG_MACRO_DIRS], [m4_defun([_AM_CONFIG_MACRO_DIRS], [])m4_defun([AC_CONFIG_MACRO_DIRS], [_AM_CONFIG_MACRO_DIRS($@)])])
 m4_include([shared/m4/amuse_lib.m4])
+m4_include([shared/m4/amuse_opencl.m4])
 m4_include([shared/m4/amuse_venv.m4])
 m4_include([shared/m4/ax_count_cpus.m4])
 m4_include([shared/m4/ax_mpi.m4])
 m4_include([shared/m4/ax_openmp.m4])
-m4_include([shared/m4/opencl.m4])
 m4_include([shared/m4/pkg.m4])

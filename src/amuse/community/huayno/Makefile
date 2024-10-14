@@ -9,74 +9,68 @@ support/config.mk:
 
 
 # Building the code into a static library
-DEPFLAGS += $(STOPCOND_CFLAGS) $(STOPCONDMPI_CFLAGS) $(AMUSE_MPI_CFLAGS)
-DEPFLAGS += $(FORSOCKETS_CFLAGS)
+DEPFLAGS += $(STOPCOND_CFLAGS) 
 CFLAGS += $(DEPFLAGS)
 
-OMP_FLAGS += $(OPENMP_CFLAGS) $(OPENMP_FFLAGS) $(OPENMP_CXXFLAGS)
+CFLAGS_CODELIB = $(CFLAGS) -std=gnu99
 
-OCL_FLAGS += $(CL_CFLAGS)
-OCL_FLAGS += -DEVOLVE_OPENCL
-INCLUDE += $(CL_FLAGS) -I.
+LDLIBS += -lm $(STOPCOND_LIBS)
 
-#ifneq (,$(findstring xlc, $(notdir $(CC))))
-#CFLAGS += -qlanglvl=extc99
-#else
-#CFLAGS += -std=gnu99
-#endif
+CODELIB = libhuayno.a    # relative to build dir
+CODELIB_OPENCL = build_opencl/libhuayno_cl.a
 
-LDFLAGS +=
+build:
+	mkdir build
 
-LDLIBS += -lm $(STOPCOND_LIBS) $(STOPCONDMPI_LIBS) $(AMUSE_MPI_LIBS)
-LDLIBS += $(FORSOCKETS_LIBS)
+build_%:
+	mkdir build_$*
 
-OCL_LDLIBS += $(CL_LIBS)
+build/$(CODELIB): src/Makefile | build
+	$(MAKE) -C build -j $(CPU_COUNT) -f ../src/Makefile all VPATH=../src CFLAGS="$(CFLAGS_CODELIB)" CXXFLAGS="$(CXXFLAGS)"
 
+build_openmp/$(CODELIB): src/Makefile | build_openmp
+	$(MAKE) -C build_openmp -j $(CPU_COUNT) -f ../src/Makefile all VPATH=../src CFLAGS="$(CFLAGS_CODELIB)" CXXFLAGS="$(CXXFLAGS)" OPENMP_CFLAGS="$(OPENMP_CFLAGS)"
 
-CODELIB = src/libhuayno.a
-CODELIB_OPENCL = src/libhuayno_cl.a
+$(CODELIB_OPENCL): src/Makefile | build_opencl
+	$(MAKE) -C build_opencl -j $(CPU_COUNT) -f ../src/Makefile libhuayno_cl.a VPATH=../src CFLAGS="$(CFLAGS_CODELIB) $(OPENCL_CFLAGS) -DEVOLVE_OPENCL -I." CXXFLAGS="$(CXXFLAGS)" LIBS="$(OPENCL_LIBS)"
 
-
-$(CODELIB): | src
-	$(MAKE) -C src libhuayno.a
-
-$(CODELIB_OPENCL): | src
-	$(MAKE) -C src libhuayno_cl.a
 
 interface.o: interface.c
-	$(MPICC) -I./src/ -c -o $@ $(CFLAGS) $<
+	$(MPICC) -Isrc -c -o $@ $(CFLAGS) $<
+
 
 # Building the workers
-worker_code.h: interface.py
+huayno_worker.h: interface.py
 	amusifier --type=h interface.py HuaynoInterface -o $@
 
 huayno_worker.cc: interface.py
 	amusifier --type=c interface.py HuaynoInterface -o $@
 
-
-huayno_worker.o: huayno_worker.cc worker_code.h
+huayno_worker.o: huayno_worker.cc huayno_worker.h
 	$(MPICXX) -c -o $@ $(CFLAGS) $<
 
-huayno_openmp_worker.o: huayno_worker.cc worker_code.h
-	$(MPICXX) -c -o $@ $(CFLAGS) $(OMP_FLAGS) $<
+huayno_openmp_worker.o: huayno_worker.cc huayno_worker.h
+	$(MPICXX) -c -o $@ $(CFLAGS) $(OPENMP_CFLAGS) $<
 
-huayno_opencl_worker.o: huayno_worker.cc worker_code.h
-	$(MPICXX) -c -o $@ $(CFLAGS) $(OCL_FLAGS) $(INCLUDE) $(OCL_LDLIBS) $<
+huayno_opencl_worker.o: huayno_worker.cc huayno_worker.h
+	$(MPICXX) -c -o $@ $(CFLAGS) -DEVOLVE_OPENCL $(OPENCL_CFLAGS) $<
 
 
-huayno_worker: huayno_worker.o interface.o $(CODELIB)
+huayno_worker: huayno_worker.o interface.o build/$(CODELIB)
 	$(MPICXX) -o $@ $(LDFLAGS) $^ $(LDLIBS)
 
-huayno_openmp_worker: huayno_openmp_worker.o interface.o $(CODELIB)
-	$(MPICXX) -o $@ $(LDFLAGS) $^ $(LDLIBS)
+huayno_openmp_worker: huayno_openmp_worker.o interface.o build_openmp/$(CODELIB)
+	$(MPICXX) -o $@ $(LDFLAGS) $(OPENMP_CFLAGS) $^ $(LDLIBS)
 
 huayno_opencl_worker: huayno_opencl_worker.o interface.o $(CODELIB_OPENCL)
-	$(MPICXX) -o $@ $(LDFLAGS) $^ $(LDLIBS)
+	$(MPICXX) -o $@ $(LDFLAGS) $^ $(LDLIBS) $(OPENCL_LIBS)
 
 
 # Which packages contain which workers?
 amuse-huayno_contains: huayno_worker
+
 amuse-huayno-openmp_contains: huayno_openmp_worker
+
 amuse-huayno-opencl_contains: huayno_opencl_worker
 
 
@@ -101,6 +95,7 @@ test-%:
 clean:
 	$(MAKE) -C src clean
 	rm -rf *.o *worker*
+	rm -rf build*
 
 .PHONY: distclean
 distclean: clean

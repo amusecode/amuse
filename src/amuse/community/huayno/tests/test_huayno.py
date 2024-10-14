@@ -498,29 +498,35 @@ class TestHuayno(TestWithMPI):
         print(sha.hexdigest())
         print("0af7eaea472989ea4be1bb0e2b8633d6b9af41e4")
 
-    def test15(self):
+    def do_test15(self, mode):
+        try:
+            instance = Huayno(mode=mode, number_of_workers=1)  # , debugger="xterm")
+        except:
+            self.skip(f"Could not create huayno with mode={mode}, not installed?")
+
         particles = plummer.new_plummer_model(512)
         expected_positions = None
-        for mode in ["cpu", "openmp", "opencl"]:
-            try:
-                instance = Huayno(mode=mode, number_of_workers=1)  # , debugger="xterm")
-            except:
-                print("Running huayno with mode=", mode, " was unsuccessful.")
-                continue
-            else:
-                print("Running huayno with mode=", mode, "... ")
 
-            instance.initialize_code()
-            instance.parameters.epsilon_squared = 0.01 | nbody_system.length ** 2
-            instance.particles.add_particles(particles)
+        instance.initialize_code()
+        instance.parameters.epsilon_squared = 0.01 | nbody_system.length ** 2
+        instance.particles.add_particles(particles)
 
-            instance.evolve_model(0.2 | nbody_system.time)
-            instance.synchronize_model()
-            if expected_positions is None:
-                expected_positions = instance.particles.position
-            else:
-                self.assertAlmostRelativeEquals(expected_positions, instance.particles.position, 8)
-            instance.stop()
+        instance.evolve_model(0.2 | nbody_system.time)
+        instance.synchronize_model()
+        if expected_positions is None:
+            expected_positions = instance.particles.position
+        else:
+            self.assertAlmostRelativeEquals(expected_positions, instance.particles.position, 8)
+        instance.stop()
+
+    def test15_cpu(self):
+        self.do_test15("cpu")
+
+    def test15_openmp(self):
+        self.do_test15("openmp")
+
+    def test15_opencl(self):
+        self.do_test15("opencl")
 
     def test16(self):
         instance = Huayno()
