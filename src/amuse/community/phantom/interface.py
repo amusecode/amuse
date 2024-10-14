@@ -5,6 +5,7 @@ from amuse.community import (
     LegacyFunctionSpecification,
     legacy_function,
     LiteratureReferencesMixIn,
+    CodeWithDataDirectories,
 )
 
 from amuse.community.interface.gd import (
@@ -22,11 +23,12 @@ from amuse.units.generic_unit_converter import ConvertBetweenGenericAndSiUnits
 
 
 class PhantomInterface(
-        CodeInterface,
-        LiteratureReferencesMixIn,
-        GravitationalDynamicsInterface,
-        StoppingConditionInterface,
-        # SinglePointGravityFieldInterface,
+    CodeInterface,
+    GravitationalDynamicsInterface,
+    LiteratureReferencesMixIn,
+    StoppingConditionInterface,
+    # GravityFieldInterface,
+    CodeWithDataDirectories,
 ):
     """
     The Phantom Smoothed Particle Hydrodynamics code, by Daniel Price et al.
@@ -34,6 +36,7 @@ class PhantomInterface(
     References:
         .. [#] ADS:2018PASA...35...31P (Price et al., 2018, PASA, Volume 35, id.e031 82 pp)
     """
+    use_modules = ["StoppingConditions", "AmuseInterface"]
 
     def __init__(self, **options):
         CodeInterface.__init__(
@@ -70,6 +73,14 @@ class PhantomInterface(
         )
         for x in ['mass', 'x', 'y', 'z', 'vx', 'vy', 'vz']:
             function.addParameter(x, dtype='float64', direction=function.IN)
+        function.result_type = 'int32'
+        return function
+
+    @legacy_function
+    def get_maximum_particle_index():
+        function = LegacyFunctionSpecification()
+        function.addParameter(
+            'norig', dtype='int32', direction=function.OUT)
         function.result_type = 'int32'
         return function
 
@@ -1667,6 +1678,28 @@ class PhantomInterface(
         """
         return function
 
+    @legacy_function
+    def get_number_of_new_gas_particles():
+        """
+        Returns the number of gas particles added since the last call to
+        update_particles.
+        """
+        function = LegacyFunctionSpecification()
+        function.addParameter(
+            "number_of_particles", dtype="int32", direction=function.OUT
+        )
+        function.result_type = "int32"
+        return function
+
+    @legacy_function
+    def reset_number_of_new_gas_particles():
+        """
+        Resets the counter for new gas particles to zero.
+        """
+        function = LegacyFunctionSpecification()
+        function.result_type = "int32"
+        return function
+
 
 class Phantom(GravitationalDynamics, GravityFieldCode):
     __interface__ = PhantomInterface
@@ -1723,6 +1756,22 @@ class Phantom(GravitationalDynamics, GravityFieldCode):
         # self.set_unit_length(self.unit_converter.to_si(generic_unit_system.length).value_in(units.cm))
         # self.set_unit_time(self.unit_converter.to_si(generic_unit_system.time).value_in(units.s))
         return result
+
+    def update_gas_particle_set(self):
+        """
+        Updates the gas particle set after changes in the code (e.g. added wind
+        particles).
+        """
+        number_of_new_gas_particles = self.get_number_of_new_gas_particles()
+        print(f"new particles: {number_of_new_gas_particles}")
+        if number_of_new_gas_particles:
+            nmax = self.get_maximum_particle_index()
+            self.gas_particles._private.attribute_storage._add_indices(
+                list(range(1 + nmax - number_of_new_gas_particles, 1 + nmax))
+            )
+            self.reset_number_of_new_gas_particles()
+            deleted_particles = self.gas_particles[self.gas_particles.mass.number == 0]
+            self.gas_particles.remove_particles(deleted_particles)
 
     def define_state(self, handler):
         GravitationalDynamics.define_state(self, handler)
