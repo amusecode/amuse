@@ -1,40 +1,78 @@
-# standard amuse configuration include
-# config.mk will be made after ./configure has run
-ifeq ($(origin AMUSE_DIR), undefined)
-  AMUSE_DIR := $(shell amusifier --get-amuse-dir)
+ifneq (,$(filter-out clean distclean, $(MAKECMDGOALS)))
+include support/config.mk
 endif
--include ${AMUSE_DIR}/config.mk
 
-MPICXX   ?= mpicxx
-CXX = $(MPICXX)
-CC = $(MPICC)
 
-CFLAGS   += -g
-CXXFLAGS += $(CFLAGS) 
-LDFLAGS  += -lm $(MUSE_LD_FLAGS)
+# Detecting dependencies
+support/config.mk:
+	cd support && ./configure
 
-OBJS = interface.o
+
+# Building the code into a static library
+DEPFLAGS += $(AMUSE_MPI_CFLAGS)
+
+CFLAGS += $(DEPFLAGS)
+FFLAGS += $(DEPFLAGS)
+
+LDFLAGS +=
+
+LDLIBS += -lm $(AMUSE_MPI_LIBS)
+
 
 CODELIB = src/libsei.a
 
-all: sei_worker 
 
-clean:
-	$(RM) -f *.so *.o *.pyc worker_code.cc worker_code.h 
-	$(RM) *~ sei_worker worker_code.cc
-	make -C src clean
+$(CODELIB): | src
+	$(MAKE) -C src -j 1 CC='$(MPICC)' all
 
-$(CODELIB):
-	make -C src all
+#$(MAKE) -C src -j 1 CC='$(MPICC)' CFLAGS='$(CFLAGS)' all
 
-worker_code.cc: interface.py
-	$(CODE_GENERATOR) --type=c interface.py SeiInterface -o $@
-
+# Building the workers
 worker_code.h: interface.py
-	$(CODE_GENERATOR) --type=h interface.py SeiInterface -o $@
+	amusifier --type=h interface.py SeiInterface -o $@
 
-sei_worker: worker_code.cc worker_code.h $(CODELIB) $(OBJS)
-	$(CXX) $(CXXFLAGS) $(LDFLAGS) $< $(OBJS) $(CODELIB) -o $@ -lm $(LIBS)
-	
-.cc.o: $<
-	$(CXX) $(CXXFLAGS) -c -o $@ $<
+sei_worker.cc: interface.py
+	amusifier --type=c interface.py SeiInterface -o $@
+
+interface.o: interface.cc interface.h worker_code.h
+	$(MPICXX) -c -o $@ $(CFLAGS) -I./src/ $<
+
+sei_worker.o: sei_worker.cc worker_code.h
+	$(MPICXX) -c -o $@ $(CFLAGS) $<
+
+sei_worker: sei_worker.o interface.o $(CODELIB)
+	$(MPICXX) -o $@ $(LDFLAGS) $^ $(LDLIBS)
+
+
+# Which packages contain which workers?
+amuse-sei_contains: sei_worker
+
+
+# Building and installing packages
+develop-%: %_contains
+	support/shared/uninstall.sh $*
+	python -m pip install -e packages/$*
+
+install-%: %_contains
+	support/shared/uninstall.sh $*
+	python -m pip install packages/$*
+
+package-%: %_contains
+	python3 -m pip install -vv --no-cache-dir --no-deps --no-build-isolation --prefix ${PREFIX} packages/$*
+
+test-%:
+	cd packages/$* && pytest
+
+
+# Cleaning up
+.PHONY: clean
+clean:
+	$(MAKE) -C src clean
+	rm -rf *.o *worker*
+
+.PHONY: distclean
+distclean: clean
+	-$(MAKE) -C src clean
+	rm -f support/config.mk support/config.log support/config.status
+	rm -rf support/autom4te.cache
+
