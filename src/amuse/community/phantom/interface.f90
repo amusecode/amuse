@@ -1,3 +1,8 @@
+module AmuseInterface
+  use AmusePhantom
+  use StoppingConditions
+
+contains
 !module amuseinterface
 !  use allocutils, only:allocate_array
 !  implicit none
@@ -6,20 +11,19 @@
 !  call allocate_array('sph_particle_map', sph_particle_map, maxp)
 !contains
 
-function initialize_code()
-  use StoppingConditions
+integer function initialize_code() result(ret)
   implicit none
-  integer :: initialize_code
+  !integer :: initialize_code
   integer :: error
   double precision :: polyk
-  call amuse_initialize_code_new()
+  call amuse_initialize_code()
 
   !error = set_support_for_condition(TIMEOUT_DETECTION)
   !error = set_support_for_condition(NUMBER_OF_STEPS_DETECTION)
   !error = set_support_for_condition(OUT_OF_BOX_DETECTION)
   error = set_support_for_condition(DENSITY_LIMIT_DETECTION)
   !error = set_support_for_condition(INTERNAL_ENERGY_LIMIT_DETECTION)
-  initialize_code=0
+  ret=0
 end function
 
 function cleanup_code()
@@ -27,6 +31,14 @@ function cleanup_code()
   integer :: cleanup_code
   call amuse_cleanup_code()
   cleanup_code=0
+end function
+
+function reset_new_particles_counter()
+  use AmusePhantom, only: new_particles_since_last_update
+  implicit none
+  integer :: reset_new_particles_counter
+  new_particles_since_last_update = 0
+  reset_new_particles_counter = 0
 end function
 
 function commit_particles()
@@ -337,6 +349,23 @@ function get_index_of_next_particle(index_of_the_particle,  &
   get_index_of_next_particle=-1
 end function
 
+function get_number_of_new_gas_particles(number)
+  use AmusePhantom, only: new_particles_since_last_update
+  implicit none
+  integer :: get_number_of_new_gas_particles
+  integer :: number
+  number = new_particles_since_last_update
+  get_number_of_new_gas_particles = 0
+end function
+
+function reset_number_of_new_gas_particles()
+  use AmusePhantom, only: new_particles_since_last_update
+  implicit none
+  integer :: reset_number_of_new_gas_particles
+  new_particles_since_last_update = 0
+  reset_number_of_new_gas_particles = 0
+end function
+
 function new_sph_particle(index_of_the_particle, mass, x, y, z, &
         vx, vy, vz, u, h_smooth)
   implicit none
@@ -377,7 +406,7 @@ function set_state_sink(index_of_the_particle, mass, x, y, z, &
   double precision :: mass, x, y, z, vx, vy, vz, radius, accretion_radius, h_smooth
   integer :: set_state_sink
   call amuse_set_state_sink(index_of_the_particle, mass, x, y, z, &
-      vx, vy, vz, radius, accretion_radius, h_smooth)
+      vx, vy, vz, radius, accretion_radius)
   set_state_sink=0
 end function
 
@@ -388,7 +417,7 @@ function get_state_sink(index_of_the_particle, mass, x, y, z, &
   double precision :: mass, x, y, z, vx, vy, vz, radius, accretion_radius, h_smooth
   integer :: get_state_sink
   call amuse_get_state_sink(index_of_the_particle, mass, x, y, z, &
-      vx, vy, vz, radius, accretion_radius, h_smooth)
+      vx, vy, vz, radius, accretion_radius)
   get_state_sink=0
 end function
 
@@ -451,6 +480,14 @@ function get_thermal_energy(thermal_energy)
   integer :: get_thermal_energy
   call amuse_get_thermal_energy(thermal_energy)
   get_thermal_energy=0
+end function
+
+function get_maximum_particle_index(i)
+  implicit none
+  integer :: i
+  integer :: get_maximum_particle_index
+  call amuse_get_norig(i)
+  get_maximum_particle_index=0
 end function
 
 function get_number_of_particles(n)
@@ -538,10 +575,10 @@ end function
 function new_dm_particle(index_of_the_particle, mass, x, y, z, vx, vy, vz)
   implicit none
   integer :: index_of_the_particle
-  double precision :: mass, x, y, z, vx, vy, vz, radius
+  double precision :: mass, x, y, z, vx, vy, vz
   integer :: new_dm_particle
   call amuse_new_dm_particle(index_of_the_particle, mass, x, y, z, &
-      vx, vy, vz, radius)
+      vx, vy, vz)
   new_dm_particle=0
 end function
 
@@ -606,25 +643,26 @@ function get_potential_energy(potential_energy)
   get_potential_energy=0
 end function
 
-function get_state_sph(index_of_the_particle, mass, x, y, z, vx, vy, vz, u,  &
+function get_state_sph(index_of_the_particle, mass, x, y, z, vx, vy, vz, u, &
     h_smooth)
   implicit none
   integer :: index_of_the_particle, n
   double precision :: mass, x, y, z, vx, vy, vz, u, h_smooth
   integer :: get_state_sph
   get_state_sph = -1
-  call amuse_get_number_of_sph_particles(n)
+  !call amuse_get_number_of_sph_particles(n)
+  call amuse_get_norig(n)
   if (index_of_the_particle < 1) then
      get_state_sph = -2
   elseif (index_of_the_particle > n) then
      !write(*,*) index_of_the_particle, n, "error?"
-     call amuse_get_state_gas(index_of_the_particle, mass, x, y, z, vx, vy, vz, u, h_smooth)
+     !call amuse_get_state_gas(index_of_the_particle, mass, x, y, z, vx, vy, vz, u, h_smooth, phantom_index)
      !write(*,*) mass, x, y, z
-     !get_state_sph = -3
-     get_state_sph = 0
+     get_state_sph = -3
+     !get_state_sph = 0
   else
      call amuse_get_state_gas(index_of_the_particle, mass, x, y, z, vx, vy, vz, u, h_smooth)
-     get_state_sph=0
+     get_state_sph = 0
   endif
 end function
 
@@ -1238,4 +1276,4 @@ end function
 !    create_wind = 0
 !end function
 
-!end module
+end module
