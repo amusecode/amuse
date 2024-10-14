@@ -331,7 +331,7 @@ class Huayno(GravitationalDynamics,GravityFieldCode):
             "set_opencl_device_type",
             "opencl_device_type",
             "set preferred OpenCL device type (0=default, 1=cpu, 2=gpu)",
-            default_value = 0
+            default_value = 2
         )
 
     def define_methods(self, handler):
