@@ -11,7 +11,7 @@ from .gravitational_dynamics import (
     GravitationalDynamicsDocumentation,
     GravitationalDynamics,
 )
-from .gravitational_dynamics import (
+from .gravity_field import (
     SinglePointGravityFieldInterface,
     GravityFieldInterface,
     GravityFieldCode,
