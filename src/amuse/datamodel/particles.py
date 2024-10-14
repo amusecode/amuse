@@ -469,14 +469,14 @@ class AbstractParticleSet(AbstractSet):
         >>> from amuse.units import units
         >>> original = Particles(2)
         >>> original.mass = 0 | units.m
-        >>> print hasattr(original, "mass")
+        >>> print(hasattr(original, "mass"))
         True
-        >>> print len(original)
+        >>> print(len(original))
         2
         >>> copy = original.empty_copy()
-        >>> print hasattr(copy, "mass")
+        >>> print(hasattr(copy, "mass"))
         False
-        >>> print len(copy)
+        >>> print(len(copy))
         2
 
         """
@@ -771,17 +771,16 @@ class AbstractParticleSet(AbstractSet):
 
     def synchronize_to(self, other_particles):
         """
-        Synchronize the particles of this set
-        with the contents of the provided set.
+        Synchronize the particles of this set with the contents of the provided
+        set.
 
-        After this call the `other_particles` set will have
-        the same particles as this set.
+        After this call the `other_particles` set will have the same particles
+        as this set.
 
-        This call will check if particles have been removed or
-        added it will not copy values of existing particles
-        over.
+        This call will check if particles have been removed or added, it will
+        not copy values of existing particles over.
 
-        :parameter other_particles: particle set wich has to be updated
+        :parameter other_particles: particle set which has to be updated
 
         >>> particles = Particles(2)
         >>> particles.x = [1.0, 2.0] | units.m
