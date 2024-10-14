@@ -4,7 +4,7 @@ import operator
 from . import channel
 
 
-class AbstractASyncRequest(object):
+class AbstractASyncRequest:
     def __bool__(self):
         return not self.is_finished
 
