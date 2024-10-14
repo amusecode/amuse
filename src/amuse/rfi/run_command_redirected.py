@@ -41,10 +41,10 @@ if __name__ == "__main__":
 
     stdin.close()
 
-    if not stdout is None:
+    if stdout is not None:
         stdout.close()
 
-    if not stderr is None:
+    if stderr is not None:
         stderr.close()
 
     sys.exit(returncode)
