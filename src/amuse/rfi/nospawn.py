@@ -1,10 +1,9 @@
-from amuse.rfi import core
-from amuse.rfi.python_code import CythonImplementation
-from mpi4py import MPI
-from amuse.rfi import channel
-from collections import namedtuple
-import sys
 import importlib
+from collections import namedtuple
+from mpi4py import MPI
+from amuse.rfi import core
+from amuse.rfi import channel
+from amuse.rfi.python_code import CythonImplementation
 
 Code = namedtuple("Code", ["cls", "number_of_workers", "args", "kwargs"])
 PythonCode = namedtuple(
@@ -64,9 +63,9 @@ def start_all(codes):
     if world.size < number_of_workers_needed:
         if rank == 0:
             raise Exception(
-                "cannot start all codes, the world size ({0}) is smaller than the number of requested codes ({1}) (which is always 1 + the sum of the all the number_of_worker fields)".format(
-                    world.size, number_of_workers_needed
-                )
+                f"Cannot start all codes, the world size ({world.size}) is smaller "
+                f"than the number of requested codes ({number_of_workers_needed}) "
+                f"(which is always 1 + the sum of the all the number_of_worker fields)"
             )
         else:
             return None
@@ -136,12 +135,12 @@ def start_empty():
     world = MPI.COMM_WORLD
     rank = world.rank
 
-    color = 0 if world.rank == 0 else 1
-    key = 0 if world.rank == 0 else world.rank - 1
+    color = 0 if rank == 0 else 1
+    key = 0 if rank == 0 else rank - 1
     newcomm = world.Split(color, key)
 
     localdup = world.Dup()
-    if world.rank == 0:
+    if rank == 0:
         result = []
         remote_leader = 1
         tag = 1
@@ -167,17 +166,16 @@ def start_empty():
         instance.must_disconnect = False
         world.Barrier()
         instance.start()
-        print("STOP...", world.rank)
+        print(f"STOP... {world.rank}")
         return None
 
 
 def get_code(rank, codes):
     if rank == 0:
         return None
-    else:
-        index = 1
-        for color, x in enumerate(codes):
-            if rank >= index and rank < index + x.number_of_workers:
-                return x
-            index += x.number_of_workers
+    index = 1
+    for color, x in enumerate(codes):
+        if rank >= index and rank < index + x.number_of_workers:
+            return x
+        index += x.number_of_workers
     return None
