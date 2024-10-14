@@ -1,7 +1,7 @@
 struct particle{
 	double x,y,z;
 	double vx,vy,vz;
-}particle;
+}; //particle;
 
 void operator_sei(double dt, struct particle *p);
 void operator_H0(double dt, struct particle* p);
