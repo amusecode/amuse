@@ -63,7 +63,12 @@ then
     AX_CONDA_PACKAGE(MPICC, mpi)
     AX_CONDA_PACKAGE(HAVE_OPENMP, openmp)
     AX_CONDA_PACKAGE(CUDA_TK, cuda-toolkit)
-    AX_CONDA_PACKAGE(FOUND_CL, khronos-opencl-icd-loader)
+    AX_CONDA_PACKAGE(FOUND_OPENCL, ocl-icd)
+    if test "$FOUND_OPENCL" == "no"
+    then
+        # ocl-icd is only for Linux, macOS and Windows use this one
+        AX_CONDA_PACKAGE(FOUND_OPENCL, khronos-opencl-icd-loader)
+    fi
     AX_CONDA_PACKAGE(LAPACK_LIBS, liblapack)
     AX_CONDA_PACKAGE(BLAS, libblas)
     AX_CONDA_PACKAGE(FOUND_GSL, gsl)
@@ -115,7 +120,7 @@ else
     AX_MPI()
     AX_OPENMP([HAVE_OPENMP="yes"])
     AX_CUDA()
-    AX_CHECK_CL()
+    AMUSE_OPENCL()
 
     # Avoid AX_BLAS crashing out due to lack of a Fortran compiler
     if test "x" != "x$FC"
@@ -166,7 +171,7 @@ ENABLE_FEATURE_IF_DEFINED([perl], [PERL])
 ENABLE_FEATURE_IF_DEFINED([mpi], [MPICC])
 ENABLE_FEATURE_IF_DEFINED([openmp], [HAVE_OPENMP])
 ENABLE_FEATURE_IF_DEFINED([cuda], [CUDA_TK])
-ENABLE_FEATURE_IF_EQUALS([opencl], [FOUND_CL], [yes])
+ENABLE_FEATURE_IF_EQUALS([opencl], [FOUND_OPENCL], [yes])
 ENABLE_FEATURE_IF_DEFINED([blas], [BLAS_LIBS])
 ENABLE_FEATURE_IF_DEFINED([lapack], [LAPACK_LIBS])
 ENABLE_FEATURE_IF_DEFINED([gsl], [FOUND_GSL])

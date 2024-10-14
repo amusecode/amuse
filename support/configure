@@ -754,9 +754,9 @@ FLIBS
 ac_ct_F77
 FFLAGS
 F77
-CL_LIBS
-CL_CFLAGS
-FOUND_CL
+OPENCL_LIBS
+OPENCL_CFLAGS
+FOUND_OPENCL
 CUDA_LDFLAGS
 CUDA_FLAGS
 NVCC
@@ -854,7 +854,6 @@ SHELL'
 ac_subst_files=''
 ac_user_opts='
 enable_option_checking
-with_opencl
 with_blas
 with_lapack
 with_gsl_prefix
@@ -1518,7 +1517,6 @@ Optional Features:
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
   --without-PACKAGE       do not use PACKAGE (same as --with-PACKAGE=no)
-  --with-opencl=PFX       Prefix where OpenCl has been installed
   --with-blas=<lib>       use BLAS library <lib>
   --with-lapack=<lib>     use LAPACK library <lib>
   --with-gsl-prefix=PFX   Prefix where GSL is installed (optional)
@@ -1788,39 +1786,6 @@ printf "%s\n" "$ac_res" >&6; }
 
 } # ac_fn_c_check_func
 
-# ac_fn_c_check_header_compile LINENO HEADER VAR INCLUDES
-# -------------------------------------------------------
-# Tests whether HEADER exists and can be compiled using the include files in
-# INCLUDES, setting the cache variable VAR accordingly.
-ac_fn_c_check_header_compile ()
-{
-  as_lineno=${as_lineno-"$1"} as_lineno_stack=as_lineno_stack=$as_lineno_stack
-  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $2" >&5
-printf %s "checking for $2... " >&6; }
-if eval test \${$3+y}
-then :
-  printf %s "(cached) " >&6
-else $as_nop
-  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-$4
-#include <$2>
-_ACEOF
-if ac_fn_c_try_compile "$LINENO"
-then :
-  eval "$3=yes"
-else $as_nop
-  eval "$3=no"
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
-fi
-eval ac_res=\$$3
-	       { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_res" >&5
-printf "%s\n" "$ac_res" >&6; }
-  eval $as_lineno_stack; ${as_lineno_stack:+:} unset as_lineno
-
-} # ac_fn_c_check_header_compile
-
 # ac_fn_f77_try_compile LINENO
 # ----------------------------
 # Try to compile conftest.$ac_ext, and return whether this succeeded.
@@ -1859,6 +1824,39 @@ fi
   as_fn_set_status $ac_retval
 
 } # ac_fn_f77_try_compile
+
+# ac_fn_c_check_header_compile LINENO HEADER VAR INCLUDES
+# -------------------------------------------------------
+# Tests whether HEADER exists and can be compiled using the include files in
+# INCLUDES, setting the cache variable VAR accordingly.
+ac_fn_c_check_header_compile ()
+{
+  as_lineno=${as_lineno-"$1"} as_lineno_stack=as_lineno_stack=$as_lineno_stack
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $2" >&5
+printf %s "checking for $2... " >&6; }
+if eval test \${$3+y}
+then :
+  printf %s "(cached) " >&6
+else $as_nop
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+$4
+#include <$2>
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"
+then :
+  eval "$3=yes"
+else $as_nop
+  eval "$3=no"
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
+fi
+eval ac_res=\$$3
+	       { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_res" >&5
+printf "%s\n" "$ac_res" >&6; }
+  eval $as_lineno_stack; ${as_lineno_stack:+:} unset as_lineno
+
+} # ac_fn_c_check_header_compile
 ac_configure_args_raw=
 for ac_arg
 do
@@ -5188,14 +5186,14 @@ printf "%s\n" "no" >&6; }
 fi
 
 
-    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for conda package khronos-opencl-icd-loader" >&5
-printf %s "checking for conda package khronos-opencl-icd-loader... " >&6; }
-    ax_conda_package_line="$(echo $ax_conda_list | tr '^' '\n' | grep '^khronos-opencl-icd-loader ')"
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for conda package ocl-icd" >&5
+printf %s "checking for conda package ocl-icd... " >&6; }
+    ax_conda_package_line="$(echo $ax_conda_list | tr '^' '\n' | grep '^ocl-icd ')"
     if test "$?" = "0"
 then :
 
-        # FOUND_CL="$(AS_ECHO("$ax_conda_package_line") | tr -s ' ' | cut -f 2 -d ' ')"
-        FOUND_CL="yes"
+        # FOUND_OPENCL="$(AS_ECHO("$ax_conda_package_line") | tr -s ' ' | cut -f 2 -d ' ')"
+        FOUND_OPENCL="yes"
         { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 printf "%s\n" "yes" >&6; }
 
@@ -5206,6 +5204,29 @@ printf "%s\n" "no" >&6; }
 
 fi
 
+    if test "$FOUND_OPENCL" == "no"
+    then
+        # ocl-icd is only for Linux, macOS and Windows use this one
+
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for conda package khronos-opencl-icd-loader" >&5
+printf %s "checking for conda package khronos-opencl-icd-loader... " >&6; }
+    ax_conda_package_line="$(echo $ax_conda_list | tr '^' '\n' | grep '^khronos-opencl-icd-loader ')"
+    if test "$?" = "0"
+then :
+
+        # FOUND_OPENCL="$(AS_ECHO("$ax_conda_package_line") | tr -s ' ' | cut -f 2 -d ' ')"
+        FOUND_OPENCL="yes"
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
+
+else $as_nop
+
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+
+fi
+
+    fi
 
     { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for conda package liblapack" >&5
 printf %s "checking for conda package liblapack... " >&6; }
@@ -8873,322 +8894,114 @@ ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $
 ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 
-    ac_header= ac_cache=
-for ac_item in $ac_header_c_list
-do
-  if test $ac_cache; then
-    ac_fn_c_check_header_compile "$LINENO" $ac_header ac_cv_header_$ac_cache "$ac_includes_default"
-    if eval test \"x\$ac_cv_header_$ac_cache\" = xyes; then
-      printf "%s\n" "#define $ac_item 1" >> confdefs.h
-    fi
-    ac_header= ac_cache=
-  elif test $ac_header; then
-    ac_cache=$ac_item
-  else
-    ac_header=$ac_item
-  fi
-done
 
+    amuse_save_CFLAGS="$CFLAGS"
+    amuse_save_LIBS="$LIBS"
 
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for OpenCL" >&5
+printf %s "checking for OpenCL... " >&6; }
 
-
-
-
-
-
-if test $ac_cv_header_stdlib_h = yes && test $ac_cv_header_string_h = yes
+    # If the user overrode the variables, then we'll use what they set and verify that
+    # it works.
+    if test "x$OPENCL_CFLAGS" != "x"
 then :
 
-printf "%s\n" "#define STDC_HEADERS 1" >>confdefs.h
+        amuse_user_OPENCL_CFLAGS="$OPENCL_CFLAGS"
+        CFLAGS="$OPENCL_CFLAGS $CFLAGS"
 
 fi
-
-
-# Check whether --with-opencl was given.
-if test ${with_opencl+y}
-then :
-  withval=$with_opencl;
-                test "$withval" = no && { printf "%s\n" "$as_me:${as_lineno-$LINENO}: WARNING: opencl is an optional package for sapporo2 " >&5
-printf "%s\n" "$as_me: WARNING: opencl is an optional package for sapporo2 " >&2;}
-
-                if test "x$withval" != xyes; then
-                   opencl_prefix="$withval"
-                    with_opencl=yes
-                fi
-                if test "x$withval" == xno; then
-                   with_opencl=no
-                fi
-
-else $as_nop
-   with_opencl=yes
-
-fi
-
-
-        if test "x$with_opencl" != xno
+    if test "x$OPENCL_LIBS" != "x"
 then :
 
+        amuse_user_OPENCL_LIBS="$OPENCL_LIBS"
+        LIBS="$OPENCL_LIBS $LIBS"
 
-if test x$opencl_prefix == x; then
-   if test x$PREFIX != x; then
-        opencl_prefix=$PREFIX
-   fi
 fi
 
-if test x$opencl_prefix != x; then
-    CL_CFLAGS="-I$opencl_prefix/include"
-    CL_LIBS_TRY="-L$opencl_prefix/lib -L$opencl_prefix/lib64 -L$opencl_prefix/lib/x86_64 -L$opencl_prefix/lib/x86"
-else
-    CL_LIBS_TRY=""
-fi
-
-ac_ext=c
+    # We only use OpenCL from C, in huayno
+    ac_ext=c
 ac_cpp='$CPP $CPPFLAGS'
 ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
 ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
 ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether we are using the Microsoft C compiler" >&5
-printf %s "checking whether we are using the Microsoft C compiler... " >&6; }
-if test ${ax_cv_c_compiler_ms+y}
-then :
-  printf %s "(cached) " >&6
-else $as_nop
-  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+
+    # Search for the headers
+
+
+    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
+
+        #if defined(__APPLE__) || defined(__MACOSX)
+        #include <OpenCL/cl.h>
+        #else
+        #include <CL/cl.h>
+        #endif
 
 int
 main (void)
 {
-#ifndef _MSC_VER
-       choke me
-#endif
-
+clFinish(0)
   ;
   return 0;
 }
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"
 then :
-  ax_compiler_ms=yes
+
+        # Search for the library as well
+        LIBS="-lOpenCL $LIBS"
+        cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+        #if defined(__APPLE__) || defined(__MACOSX)
+        #include <OpenCL/cl.h>
+        #else
+        #include <CL/cl.h>
+        #endif
+
+int
+main (void)
+{
+clFinish(0)
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"
+then :
+
+            FOUND_OPENCL="yes"
+            OPENCL_LIBS="-lOpenCL"
+            OPENCL_CFLAGS=""
+
 else $as_nop
-  ax_compiler_ms=no
+
+            FOUND_OPENCL="no"
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
+
+else $as_nop
+
+        FOUND_OPENCL="no"
+
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
-ax_cv_c_compiler_ms=$ax_compiler_ms
 
-fi
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ax_cv_c_compiler_ms" >&5
-printf "%s\n" "$ax_cv_c_compiler_ms" >&6; }
-
-ax_save_CPPFLAGS=$CPPFLAGS
-CPPFLAGS="$CL_CFLAGS $CPPFLAGS"
-ac_fn_c_check_header_compile "$LINENO" "CL/cl.h" "ac_cv_header_CL_cl_h" "$ac_includes_default"
-if test "x$ac_cv_header_CL_cl_h" = xyes
-then :
-  printf "%s\n" "#define HAVE_CL_CL_H 1" >>confdefs.h
-
-fi
-ac_fn_c_check_header_compile "$LINENO" "OpenCL/cl.h" "ac_cv_header_OpenCL_cl_h" "$ac_includes_default"
-if test "x$ac_cv_header_OpenCL_cl_h" = xyes
-then :
-  printf "%s\n" "#define HAVE_OPENCL_CL_H 1" >>confdefs.h
-
-fi
-
-CPPFLAGS=$ax_save_CPPFLAGS
-
-ac_fn_c_check_header_compile "$LINENO" "windows.h" "ac_cv_header_windows_h" "$ac_includes_default"
-if test "x$ac_cv_header_windows_h" = xyes
-then :
-  printf "%s\n" "#define HAVE_WINDOWS_H 1" >>confdefs.h
-
-fi
-
-
-
-
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for OpenCL library" >&5
-printf %s "checking for OpenCL library... " >&6; }
-if test ${ax_cv_check_cl_libcl+y}
-then :
-  printf %s "(cached) " >&6
-else $as_nop
-  ax_cv_check_cl_libcl=no
-case $host_cpu in
-  x86_64) ax_check_cl_libdir=lib64 ;;
-  *)      ax_check_cl_libdir=lib ;;
-esac
-ax_save_CPPFLAGS=$CPPFLAGS
-CPPFLAGS="$CPPFLAGS $CL_CFLAGS"
-ax_save_LIBS=$LIBS
-LIBS=""
-ax_check_libs="-lOpenCL -lCL"
-
-for cl_libflags in $CL_LIBS_TRY; do
-    for ax_lib in $ax_check_libs; do
-      if test X$ax_compiler_ms = Xyes
-then :
-  ax_try_lib=`echo $ax_lib | $SED -e 's/^-l//' -e 's/$/.lib/'`
-else $as_nop
-  ax_try_lib=$ax_lib
-fi
-      LIBS="$ax_try_lib $cl_libflags $ax_save_LIBS"
-      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-# if defined(HAVE_WINDOWS_H) && defined(_WIN32)
-#   include <windows.h>
-# endif
-# ifdef HAVE_CL_CL_H
-#   include <CL/cl.h>
-# elif defined(HAVE_OPENCL_CL_H)
-#   include <OpenCL/cl.h>
-# else
-#   error no cl.h
-# endif
-int
-main (void)
-{
-clFinish(0)
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_link "$LINENO"
-then :
-  ax_cv_check_cl_libcl=$ax_try_lib; break
-else $as_nop
-  ax_check_cl_nvidia_flags="-L/usr/$ax_check_cl_libdir/nvidia" LIBS="$ax_try_lib $ax_check_cl_nvidia_flags $cl_libflags $ax_save_LIBS"
-                   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-# if defined(HAVE_WINDOWS_H) && defined(_WIN32)
-#   include <windows.h>
-# endif
-# ifdef HAVE_CL_CL_H
-#   include <CL/cl.h>
-# elif defined(HAVE_OPENCL_CL_H)
-#   include <OpenCL/cl.h>
-# else
-#   error no cl.h
-# endif
-int
-main (void)
-{
-clFinish(0)
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_link "$LINENO"
-then :
-  ax_cv_check_cl_libcl="$ax_try_lib $ax_check_cl_nvidia_flags"; break
-else $as_nop
-  ax_check_cl_dylib_flag='-dylib_file /System/Library/Frameworks/OpenCL.framework/Versions/A/Libraries/libCL.dylib:/System/Library/Frameworks/OpenCL.framework/Versions/A/Libraries/libCL.dylib' LIBS="$ax_try_lib $ax_check_cl_dylib_flag $cl_libflags $ax_save_LIBS"
-                                  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-# if defined(HAVE_WINDOWS_H) && defined(_WIN32)
-#   include <windows.h>
-# endif
-# ifdef HAVE_CL_CL_H
-#   include <CL/cl.h>
-# elif defined(HAVE_OPENCL_CL_H)
-#   include <OpenCL/cl.h>
-# else
-#   error no cl.h
-# endif
-int
-main (void)
-{
-clFinish(0)
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_link "$LINENO"
-then :
-  ax_cv_check_cl_libcl="$ax_try_lib $ax_check_cl_dylib_flag"; break
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.beam \
-    conftest$ac_exeext conftest.$ac_ext
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.beam \
-    conftest$ac_exeext conftest.$ac_ext
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.beam \
-    conftest$ac_exeext conftest.$ac_ext
-    done
-    if test "X$ax_cv_check_cl_libcl" = Xno
-then :
-
-else $as_nop
-  break
-fi
-done
-
-if test "X$ax_cv_check_cl_libcl" = Xno -a X$no_x = Xyes
-then :
-  LIBS='-framework OpenCL'
-      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-# if defined(HAVE_WINDOWS_H) && defined(_WIN32)
-#   include <windows.h>
-# endif
-# ifdef HAVE_CL_CL_H
-#   include <CL/cl.h>
-# elif defined(HAVE_OPENCL_CL_H)
-#   include <OpenCL/cl.h>
-# else
-#   error no cl.h
-# endif
-int
-main (void)
-{
-clFinish(0)
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_link "$LINENO"
-then :
-  ax_cv_check_cl_libcl=$LIBS
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.beam \
-    conftest$ac_exeext conftest.$ac_ext
-fi
-
-LIBS=$ax_save_LIBS
-CPPFLAGS=$ax_save_CPPFLAGS
-fi
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ax_cv_check_cl_libcl" >&5
-printf "%s\n" "$ax_cv_check_cl_libcl" >&6; }
-
-
-if test "X$ax_cv_check_cl_libcl" = Xno
-then :
-  have_cl=no; CL_CFLAGS=""; CL_LIBS=""
-else $as_nop
-  have_cl=yes; CL_LIBS="$cl_libflags $ax_cv_check_cl_libcl"
-fi
-ac_ext=c
+    ac_ext=c
 ac_cpp='$CPP $CPPFLAGS'
 ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
 ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
 ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 
-else $as_nop
-  have_cl=no
-CL_CFLAGS=""
-CL_LIBS=""
+    LIBS="$amuse_save_LIBS"
+    CFLAGS="$amuse_save_CFLAGS"
 
-fi
-
-FOUND_CL=$have_cl
-
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $FOUND_OPENCL" >&5
+printf "%s\n" "$FOUND_OPENCL" >&6; }
 
 
 
@@ -11847,6 +11660,35 @@ rm -f core conftest.err conftest.$ac_objext conftest.beam \
   rm -f conf.gsltest
 
 
+    ac_header= ac_cache=
+for ac_item in $ac_header_c_list
+do
+  if test $ac_cache; then
+    ac_fn_c_check_header_compile "$LINENO" $ac_header ac_cv_header_$ac_cache "$ac_includes_default"
+    if eval test \"x\$ac_cv_header_$ac_cache\" = xyes; then
+      printf "%s\n" "#define $ac_item 1" >> confdefs.h
+    fi
+    ac_header= ac_cache=
+  elif test $ac_header; then
+    ac_cache=$ac_item
+  else
+    ac_header=$ac_item
+  fi
+done
+
+
+
+
+
+
+
+
+if test $ac_cv_header_stdlib_h = yes && test $ac_cv_header_string_h = yes
+then :
+
+printf "%s\n" "#define STDC_HEADERS 1" >>confdefs.h
+
+fi
 
 
 # Check whether --with-gmp was given.
@@ -14102,7 +13944,7 @@ if test "x" != "x${CUDA_TK}"
 then :
   FEATURES="${FEATURES} cuda"
 fi
-if test "x${FOUND_CL}" = "xyes"
+if test "x${FOUND_OPENCL}" = "xyes"
 then :
   FEATURES="${FEATURES} opencl"
 fi
