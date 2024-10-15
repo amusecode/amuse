@@ -1,105 +1,97 @@
-# standard amuse configuration include
-# config.mk will be made after ./configure has run
-ifeq ($(origin AMUSE_DIR), undefined)
-  AMUSE_DIR := $(shell amusifier --get-amuse-dir)
-endif
--include ${AMUSE_DIR}/config.mk
-
-MPIFC ?= mpif90
-FORTRAN ?= gfortran
-FC = $(MPIFC)
-
-SRC=src
-BUILDDIR = build
-MPI_BUILDDIR = build_mpi
-
-
-NOMPILIBS=$(BUILDDIR)/libcapreole.a
-MPILIBS=$(MPI_BUILDDIR)/libcapreole_mpi.a
-
-GLOBJECTS=$(SRC)/fthread.o $(SRC)/viewer.o $(SRC)/libpt.a
-
-GLINCLUDE = -I/usr/include/GL
-
-GLLIB = -lf90GLU -lf90GL -lf90glut  -lGLU -lGL -lglut  
-
-X11LIB = -L/usr/X11R6/lib64 -lXaw -lXt -lXmu -lXi -lXext -lX11
-
-THREADLIB = -L. -lpthread src/libpt.a
-
-OMPFLAGS= # -openmp -openmp_report0 
-PIC=#-fPIC
-
-ifeq ($(FORTRAN), gfortran)
-FFLAGS += $(PIC) $(FCFLAGS)
+ifneq (,$(filter-out clean distclean, $(MAKECMDGOALS)))
+include support/config.mk
 endif
 
-GFVERSION10PLUS := $(shell expr `${FC} -dumpversion | cut -f1 -d.` \>= 10)
-ifeq (${GFVERSION10PLUS}, 1)
-MPIFC += -fallow-argument-mismatch
-endif
+
+# Detecting dependencies
+support/config.mk:
+	cd support && ./configure
+
+
+# Building the code into a static library
+FFLAGS_MPI += $(AMUSE_MPI_CFLAGS) $(FORSOCKETS_CFLAGS) -fallow-argument-mismatch
+FFLAGS += $(FORSOCKETS_CFLAGS) -fallow-argument-mismatch
+
 
 ifeq  ($(FORTRAN), ifort)
-# ifort flags
-FFLAGS += -O -ip -u -g -traceback -fpp1 -DIFORT  $(PIC) $(FCFLAGS)
+FFLAGS_MPI += -O -ip -u -g -traceback -fpp1 -DIFORT
+FFLAGS += -O -ip -u -g -traceback -fpp1 -DIFORT
 endif
 
-MPI_FLAGS = -DMPI # 
 
-FFLAGS+= $(OMPFLAGS) 
+LDFLAGS += 
 
-FFLAGS2= 
 
-CLASSNAME=CapreoleInterface
+LDLIBS_MPI += -lm $(STOPCOND_LIBS) $(STOPCONDMPI_LIBS) $(AMUSE_MPI_LIBS) $(FORSOCKETS_LIBS)
+LDLIBS += -lm $(STOPCOND_LIBS) $(FORSOCKETS_LIBS)
 
-GLCLASSNAME=GLCapreoleInterface
 
-all: capreole_worker
+CODELIB_MPI = src/libcapreole_mpi.a
+CODELIB = src/libcapreole.a
 
-$(BUILDDIR)/%.o: %.F90 Makefile
-	$(FC) $(FFLAGS) $(FFLAGS2) -I$(BUILDDIR) $(SC_FLAGS) -c -o $@ $< 
-	
 
-$(MPI_BUILDDIR)/%.o: %.F90 Makefile
-	$(FC) $(FFLAGS) $(FFLAGS2) $(MPI_FLAGS) -I$(MPI_BUILDDIR) $(SC_FLAGS) -c -o $@ $< 
+$(CODELIB): | src
+	$(MAKE) -C src -j 1 amuse_interface F90FLAGS1="$(FFLAGS)" FC="$(FC)"
 
-$(BUILDDIR)/Makefile:
-	-mkdir $(BUILDDIR)
-	cp $(SRC)/Makefile $(BUILDDIR)/Makefile
+$(CODELIB_MPI): | src
+	$(MAKE) -C src -j 1 amuse_interface_mpi F90FLAGS1="$(FFLAGS_MPI)" FC="$(FC)" MPIFC="$(MPIFC)"
 
-$(NOMPILIBS): $(BUILDDIR)/Makefile
-	make -C $(BUILDDIR) amuse_interface  VPATH=../src F90FLAGS1="$(FFLAGS)" FC="$(FC)"
-	
-$(MPI_BUILDDIR)/Makefile:
-	-mkdir $(MPI_BUILDDIR)
-	cp $(SRC)/Makefile $(MPI_BUILDDIR)/Makefile
-	
-$(MPILIBS): $(MPI_BUILDDIR)/Makefile
-	make -C $(MPI_BUILDDIR) amuse_interface_mpi  VPATH=../src F90FLAGS1="$(FFLAGS)" FC="$(FC)" MPIFC="$(MPIFC)"
-	
-capreole_worker: $(NOMPILIBS) worker_code.f90 $(BUILDDIR)/interface.o
-	$(FC) $(FFLAGS) $(FFLAGS2)  -I$(BUILDDIR) $(SC_FLAGS) $(FS_FLAGS) $(LDFLAGS) $^ -o $@ $(NOMPILIBS) $(SC_CLIBS) $(FS_LIBS)  $(LIBS)
-	
-capreole_worker_mpi: $(MPILIBS) worker_code-mpi.f90 $(MPI_BUILDDIR)/interface.o
-	$(FC) $(FFLAGS) $(FFLAGS2) $(MPI_FLAGS) -I$(MPI_BUILDDIR) $(SC_FLAGS) $(FS_FLAGS) $(LDFLAGS) $^ -o $@ $(MPILIBS) $(SC_MPI_CLIBS) $(FS_LIBS)  $(LIBS)
 
-#capreole_worker_gl: $(NOMPILIBS) glworker.f90 $(BUILDDIR)/interface.o
-#	make -C src clean
-#	make -C src gl FFLAGS="$(FFLAGS)" FC="$(FC)"
-#	$(FC) $(FFLAGS) $(SC_FLAGS) $^ -o $@  $(GLOBJECTS) \
-#	$(GLLIB)  $(X11LIB) $(THREADLIB) $(NOMPILIBS) $(SC_FCLIBS)
+# Building the workers
+capreole_worker.f90: interface.py
+	amusifier --type=f90 interface.py -i amuse.community.interface.stopping_conditions.StoppingConditionInterface CapreoleInterface -o $@
 
-worker_code.f90: interface.py 
-	$(CODE_GENERATOR) --type=f90 $< $(CLASSNAME) -o $@
-	
-worker_code-mpi.f90: interface.py 
-	$(CODE_GENERATOR) --type=f90 $< $(CLASSNAME) -o $@
+capreole_worker.o: capreole_worker.f90
+	$(MPIFC) -c $(FFLAGS) $<
 
+capreole_worker_mpi.o: capreole_worker.f90
+	$(MPIFC) -c -o $@ $(FFLAGS_MPI) $<
+
+
+interface.o: interface.F90 $(CODELIB)
+	$(MPIFC) -c $(FFLAGS) -I./src/ $<
+
+interface_mpi.o: interface.F90 $(CODELIB_MPI)
+	$(MPIFC) -c -o $@ $(FFLAGS_MPI) -I./src/ $<
+
+
+capreole_worker: interface.o capreole_worker.o $(CODELIB)
+	$(MPIFC) -o $@ $(LDFLAGS) $^ $(LDLIBS)
+
+capreole_worker_mpi: interface_mpi.o capreole_worker_mpi.o $(CODELIB_MPI)
+	$(MPIFC) -o $@ $(LDFLAGS) $^ $(LDLIBS_MPI)
+
+
+# Which packages contain which workers?
+amuse-capreole-mpi_contains: capreole_worker_mpi
+amuse-capreole_contains: capreole_worker
+
+
+# Building and installing packages
+develop-%: %_contains
+	support/shared/uninstall.sh $*
+	python -m pip install -e packages/$*
+
+install-%: %_contains
+	support/shared/uninstall.sh $*
+	python -m pip install packages/$*
+
+package-%: %_contains
+	python3 -m pip install -vv --no-cache-dir --no-deps --no-build-isolation --prefix ${PREFIX} packages/$*
+
+test-%:
+	cd packages/$* && pytest
+
+
+# Cleaning up
+.PHONY: clean
 clean:
-	make -C src clean
-	$(RM) -f *.o *.pyc *.bck worker worker.f90 glworker glworker.f90 worker-sockets.F90 worker-sockets.f90
-	$(RM) -f worker_code.f90 worker_code-sockets.F90 worker_code-mpi.f90 worker_code.f90
-	$(RM) -f capreole_worker capreole_worker_mpi capreole_worker_gl worker_mpi.f90 capreole_worker_sockets
-	$(RM) -Rf build build_mpi
-	$(RM) -f amuse_worker_module.mod
-	$(RM) -f forsockets.mod
+	$(MAKE) -C src clean
+	rm -rf *.o *worker*
+
+.PHONY: distclean
+distclean: clean
+	-$(MAKE) -C src clean
+	rm -f support/config.mk support/config.log support/config.status
+	rm -rf support/autom4te.cache
+
