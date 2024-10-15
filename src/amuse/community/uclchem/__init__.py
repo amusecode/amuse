@@ -1,1 +1,1 @@
-from .interface import Uclchem
+from .interface import UCLchem

@@ -17,7 +17,7 @@ from amuse.community import (
 from pathlib import Path
 
 
-class UclchemInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesMixIn):
+class UCLchemInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesMixIn):
     """
     UCLCHEM: A Gas-Grain Chemical Code for astrochemical modelling
 
@@ -202,9 +202,9 @@ class UclchemInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesM
         return n_out, param_dict, out_species
 
 
-class Uclchem(CommonCode):
+class UCLchem(CommonCode):
     def __init__(self, convert_nbody=None, **options):
-        legacy_interface = UclchemInterface(**options)
+        legacy_interface = UCLchemInterface(**options)
         self.uclchem_time = 0.0 | units.yr
         InCodeComponentImplementation.__init__(self, legacy_interface)
         # New units used in chemical simulation
