@@ -58,8 +58,8 @@ class AbstractASyncRequest(object):
     def get_socket(self):
         raise Exception("not implemented")
         
-    #~ def is_pool(self):
-        #~ return False
+    # def is_pool(self):
+        # return False
         
     def join(self, other):
         if other is None:
@@ -82,8 +82,8 @@ class AbstractASyncRequest(object):
     def __getitem__(self, index):
         return IndexedASyncRequest(self,index)
 
-    #~ def __getattr__(self, name):
-        #~ print name, "<<"
+    # def __getattr__(self, name):
+        # print name, "<<"
         
     def __add__(self, other):
         return baseOperatorASyncRequest(self,other, operator.add)
@@ -127,8 +127,8 @@ class AbstractASyncRequest(object):
         else:
             yield self
        
-    #~ def __call__(self):
-        #~ return self.result()
+    # def __call__(self):
+        # return self.result()
         
 class DependentASyncRequest(AbstractASyncRequest):
     def __init__(self, parent, request_factory):
@@ -183,12 +183,12 @@ class DependentASyncRequest(AbstractASyncRequest):
             if self.request is None:
                 return False
 
-        #~ if not self.parent.is_finished:
-            #~ return False
+        # if not self.parent.is_finished:
+            # return False
 
         if self.request is None:
             return False
-            #~ raise Exception("something went wrong (exception of parent?)")
+            # raise Exception("something went wrong (exception of parent?)")
             
         return self.request.is_result_available()
 
@@ -607,7 +607,7 @@ class AsyncRequestsPool(object):
             return
         if async_request in self.registered_requests:
             return
-            #~ raise Exception("Request is already registered, cannot register a request more than once")
+            # raise Exception("Request is already registered, cannot register a request more than once")
             
         self.registered_requests.add(async_request)
         

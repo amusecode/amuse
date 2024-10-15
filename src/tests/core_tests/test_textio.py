@@ -1,9 +1,8 @@
-import amusetest
 from io import StringIO
 import textwrap
 import os
-import numpy
 import tempfile
+import numpy
 
 from amuse import io
 from amuse.io import text
@@ -11,6 +10,7 @@ from amuse.units import units
 from amuse.units import quantities, core
 from amuse.units import generic_unit_system
 from amuse import datamodel
+import amusetest
 
 
 class CursorTests(amusetest.TestCase):
@@ -284,7 +284,7 @@ class TableFormattedTextTests(amusetest.TestCase):
                 contents = f.read()
             expected_contents = '#name length age\n#- m yr\n30 Joe 1.1 21\n31 William 1.4 20\n32 Jack 1.7 19\n33 Averell 2.0 18\n'
             self.assertEqual(expected_contents, contents)
-    
+
             read = io.read_set_from_file(
                 path,
                 "txt",

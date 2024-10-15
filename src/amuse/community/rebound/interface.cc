@@ -569,21 +569,6 @@ int get_number_of_particles(int * number_of_particles){
     return 0;
 }
 
-int set_acceleration(int index_of_the_particle, double ax, double ay, 
-  double az){
-    particle_location particle = get_particle_from_identity(index_of_the_particle);
-    struct reb_particle* p = particle.p;
-    reb_simulation * code = particle.code;
-    if(p == NULL) {return -1;}
-    p->ax = ax;
-    p->ay = ay;
-    p->az = az;
-    if (code->integrator == reb_simulation::REB_INTEGRATOR_JANUS){
-        code->ri_janus.recalculate_integer_coordinates_this_timestep = 1;
-    }
-    return 0;
-}
-
 int get_center_of_mass_position(double * x, double * y, double * z){
     return 0;
 }

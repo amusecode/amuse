@@ -209,13 +209,13 @@ class TestPrintingStrategy(amusetest.TestCase):
         pi = 3.14 | units.none
         converter = nbody_system.nbody_to_si(1.0 | units.kg, 1.0 | units.kpc)
 
-        set_printing_strategy("custom", nbody_converter=converter, preferred_units=[units.amu, units.AU, units.minute, units.milli(units.K), units.erg], precision=3,
+        set_printing_strategy("custom", nbody_converter=converter, preferred_units=[units.amu, units.au, units.minute, units.milli(units.K), units.erg], precision=3,
             prefix="(> ", separator=" <|> ", suffix=" <)")
         self.assertEqual(str(mass), "(> 1.20e+57 <|> amu <)")
-        self.assertEqual(str(acc), "(> 7.31e-18 <|> AU * min**-2 <)")
-        self.assertEqual(str(position), "(> [2.06e+07, 4.13e+07, 6.19e+07] <|> AU <)")
+        self.assertEqual(str(acc), "(> 7.31e-18 <|> au * min**-2 <)")
+        self.assertEqual(str(position), "(> [2.06e+07, 4.13e+07, 6.19e+07] <|> au <)")
         self.assertEqual(str(power), "(> 6.00e+09 <|> erg / min <)")
-        self.assertEqual(str(constants.G), "(> 1.19e-67 <|> AU**3 * amu**-1 * min**-2 <)")
+        self.assertEqual(str(constants.G), "(> 1.19e-67 <|> au**3 * amu**-1 * min**-2 <)")
         self.assertEqual(str(constants.kB), "(> 1.38e-19 <|> erg * mK**-1 <)")
         self.assertEqual(str(temperature), "(> 5.00e+06 <|> mK <)")
         self.assertEqual(str(pi), "(> 3.14 <|> none <)")
@@ -226,7 +226,7 @@ class TestPrintingStrategy(amusetest.TestCase):
         mass = 2.0 | 0.5 * units.MSun
         acc = 0.23456 | 0.54321 * units.m * units.s**-2
         velocity = [-0.12345]*3 | units.km / units.s
-        position = [0.1234567890123456789, 0.2, 3.0] | units.AU
+        position = [0.1234567890123456789, 0.2, 3.0] | units.au
         positions = [position.number]*2 | position.unit
         multi_dimensional = [positions.number]*2 | positions.unit
         pi = 3.1415926535 | units.none
@@ -236,9 +236,9 @@ class TestPrintingStrategy(amusetest.TestCase):
         self.assertEqual(str(acc), "0.235 0.54321 * m * s**-2")
         self.assertEqual(str(velocity), "[-0.123, -0.123, -0.123] km / s")
         tmp = "[0.123, 0.200, 3.00]"
-        self.assertEqual(str(position), tmp + " AU")
-        self.assertEqual(str(positions), "["+tmp+", "+tmp+"] AU")
+        self.assertEqual(str(position), tmp + " au")
+        self.assertEqual(str(positions), "["+tmp+", "+tmp+"] au")
         self.assertEqual(str(multi_dimensional), "[["+tmp+", "+tmp +
-            "], ["+tmp+", "+tmp+"]] AU")
+            "], ["+tmp+", "+tmp+"]] au")
         self.assertEqual(str(pi), "3.14 none")
         set_printing_strategy("default")

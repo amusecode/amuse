@@ -415,6 +415,12 @@ class TestQuantities(amusetest.TestCase):
         x[0] = -1
         self.assertEqual(a, [1, 2, 3, 4, 5] | units.m)
 
+    def test_mean(self):
+        x = [1.0, 2.0, 3.0] | si.kg
+        mask = [True, True, False]
+        self.assertEqual(x.mean(), 2.0 | si.kg)
+        self.assertEqual(x.mean(where=mask), 1.5 | si.kg)
+
 
 class TestAdaptingVectorQuantities(amusetest.TestCase):
 

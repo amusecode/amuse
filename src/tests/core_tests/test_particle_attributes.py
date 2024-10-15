@@ -1,6 +1,7 @@
 import random
 import numpy.random
 import sys
+import pytest
 
 import amusetest
 from amuse.units import units
@@ -24,20 +25,20 @@ class TestParticlesAttributes(amusetest.TestCase):
         particles.mass = 0.4 | nbody_system.mass
         self.assertAlmostRelativeEquals(particles.total_mass(), 0.8 | nbody_system.mass)
         self.assertAlmostRelativeEquals(particles.kinetic_energy(), 0.4 | nbody_system.energy)
-        self.assertAlmostRelativeEquals(particles.potential_energy(G=nbody_system.G), -0.08 | nbody_system.energy)
+        self.assertAlmostRelativeEquals(particles.potential_energy(), -0.08 | nbody_system.energy)
         self.assertAlmostRelativeEquals(particles.virial_radius(), 4.0 | nbody_system.length)
         particles.scale_to_standard()
         self.assertAlmostRelativeEquals(particles.total_mass(), 1.0 | nbody_system.mass)
         self.assertAlmostRelativeEquals(particles.kinetic_energy(), 0.25 | nbody_system.energy)
-        self.assertAlmostRelativeEquals(particles.potential_energy(G=nbody_system.G), -0.5 | nbody_system.energy)
+        self.assertAlmostRelativeEquals(particles.potential_energy(), -0.5 | nbody_system.energy)
         self.assertAlmostRelativeEquals(particles.virial_radius(), 1.0 | nbody_system.length)
 
         particles.scale_to_standard(virial_ratio=1)  # unbound
         self.assertAlmostRelativeEquals(particles.kinetic_energy(), 0.5 | nbody_system.energy)
-        self.assertAlmostRelativeEquals(particles.potential_energy(G=nbody_system.G), -0.5 | nbody_system.energy)
+        self.assertAlmostRelativeEquals(particles.potential_energy(), -0.5 | nbody_system.energy)
         particles.scale_to_standard(virial_ratio=0)  # velocities zeroed
         self.assertAlmostRelativeEquals(particles.kinetic_energy(), 0 | nbody_system.energy)
-        self.assertAlmostRelativeEquals(particles.potential_energy(G=nbody_system.G), -0.5 | nbody_system.energy)
+        self.assertAlmostRelativeEquals(particles.potential_energy(), -0.5 | nbody_system.energy)
 
     def test2(self):
         print("Test basic particle attributes and scale_to_standard - SI units")
@@ -55,7 +56,7 @@ class TestParticlesAttributes(amusetest.TestCase):
         particles.scale_to_standard(convert_nbody)
         self.assertAlmostRelativeEquals(particles.total_mass(), convert_nbody.to_si(1.0 | nbody_system.mass))
         self.assertAlmostRelativeEquals(particles.kinetic_energy(), convert_nbody.to_si(0.25 | nbody_system.energy))
-        self.assertAlmostRelativeEquals(particles.potential_energy().as_quantity_in(units.J), convert_nbody.to_si(-0.5 | nbody_system.energy).as_quantity_in(units.J), 12)
+        self.assertAlmostRelativeEquals(particles.potential_energy().in_(units.J), convert_nbody.to_si(-0.5 | nbody_system.energy).as_quantity_in(units.J), 12)
         self.assertAlmostRelativeEquals(particles.virial_radius(), convert_nbody.to_si(1.0 | nbody_system.length))
 
         particles.scale_to_standard(convert_nbody, virial_ratio=1)  # unbound
@@ -437,3 +438,11 @@ class TestParticlesDomainAttributes(amusetest.TestCase):
         def set_a():
             particles[0].a = 1 | units.kg
         self.assertRaises(AttributeError, set_a)
+
+    def test_potential_energy(self):
+        particles = Particles(2)
+        particles.position = [[-1, 0, 0], [1, 0, 0]] | nbody_system.length
+        particles.velocity = [[-1, 0, 0], [1, 0, 0]] | nbody_system.length / nbody_system.time
+        particles.mass = 0.4 | units.cm
+        with pytest.raises(ValueError):
+            particles.potential_energy()

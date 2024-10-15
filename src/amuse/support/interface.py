@@ -204,7 +204,7 @@ class HandleConvertUnits(
         self.converter = None
 
     def supports(self, name, was_found):
-        return was_found and not self.converter is None
+        return was_found and self.converter is not None
 
     def get_attribute(self, name, attribute):
         if inspect.ismethod(attribute):
