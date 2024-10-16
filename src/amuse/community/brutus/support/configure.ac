@@ -24,8 +24,6 @@ AS_IF([test $RANLIB = ":"], [AC_MSG_ERROR([ranlib command not found.])])
 
 # Find AMUSE libraries
 AMUSE_LIB_STOPCOND()
-AMUSE_LIB_STOPCONDMPI()
-AMUSE_LIB_AMUSE_MPI()
 
 
 # Find external dependencies
