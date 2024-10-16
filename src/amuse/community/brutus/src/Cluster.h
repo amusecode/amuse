@@ -1,6 +1,4 @@
 #include <iostream>
-using namespace std;
-
 #include <vector>
 #include <cmath>
 #include <numeric> 
@@ -14,17 +12,17 @@ using namespace std;
 class Cluster : public Star { 
   public:
 
-  vector<Star> s;
+  std::vector<Star> s;
   mpreal eps2;
   mpreal time, dt, dt_last;
 
   Cluster() : Star() {}
 
-  Cluster(vector<double> data);
-  Cluster(vector<mpreal> data);
+  Cluster(std::vector<double> data);
+  Cluster(std::vector<mpreal> data);
 
-  vector<double> get_data_double();
-  vector<mpreal> get_data();    
+  std::vector<double> get_data_double();
+  std::vector<mpreal> get_data();    
 
   void calcAcceleration_dt();
   void calcAcceleration();
@@ -34,10 +32,10 @@ class Cluster : public Star {
 
   void step(mpreal &dt);
   
-  vector<mpreal> energies();
+  std::vector<mpreal> energies();
 
-  friend ostream & operator << (ostream &so, Cluster &cl) {
-    for (vector<Star>::iterator si = cl.s.begin(); si != cl.s.end(); ++si) {
+  friend std::ostream & operator << (std::ostream &so, Cluster &cl) {
+    for (std::vector<Star>::iterator si = cl.s.begin(); si != cl.s.end(); ++si) {
       so << *si;
     }
     return so;

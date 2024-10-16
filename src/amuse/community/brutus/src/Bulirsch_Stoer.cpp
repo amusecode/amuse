@@ -63,8 +63,8 @@ bool Bulirsch_Stoer::integrate(Cluster &cl, mpreal &dt) {
 bool Bulirsch_Stoer::step(Cluster &cl, mpreal &dt) {
   bool flag;
   int n;
-  vector<mpreal> h;
-  vector<Cluster> c;
+  std::vector<mpreal> h;
+  std::vector<Cluster> c;
   Cluster cl_exp0 = cl;
   Cluster cl_exp  = cl;
 
@@ -101,11 +101,11 @@ bool Bulirsch_Stoer::step(Cluster &cl, mpreal &dt) {
 
   return flag;
 }
-void Bulirsch_Stoer::extrapol(Cluster &cl_exp, vector<mpreal> &dt, vector<Cluster> &c) {
+void Bulirsch_Stoer::extrapol(Cluster &cl_exp, std::vector<mpreal> &dt, std::vector<Cluster> &c) {
   int M = dt.size();
   int N = c[0].s.size();
 
-  vector<mpreal> x_sample(M), y_sample(M), z_sample(M), vx_sample(M), vy_sample(M), vz_sample(M);
+  std::vector<mpreal> x_sample(M), y_sample(M), z_sample(M), vx_sample(M), vy_sample(M), vz_sample(M);
   for(int i=0; i<N; i++) {
     for(int j=0; j<M; j++) {
       x_sample[j]  = c[j].s[i].r[0];
@@ -123,7 +123,7 @@ void Bulirsch_Stoer::extrapol(Cluster &cl_exp, vector<mpreal> &dt, vector<Cluste
     cl_exp.s[i].v[2] = extrapolate(dt, vz_sample, "0.0");
   }
 }
-mpreal Bulirsch_Stoer::extrapolate(vector<mpreal> x, vector<mpreal> y, mpreal x0) {
+mpreal Bulirsch_Stoer::extrapolate(std::vector<mpreal> x, std::vector<mpreal> y, mpreal x0) {
   int N = x.size();
   if(N == 1) {
     return y[0];

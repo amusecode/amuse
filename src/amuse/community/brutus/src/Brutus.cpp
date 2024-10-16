@@ -12,7 +12,7 @@ Brutus::Brutus() {
 
   setup();
 }
-Brutus::Brutus(vector<mpreal> &data) {
+Brutus::Brutus(std::vector<mpreal> &data) {
   t = "0";
   this->data = data;
   N = data.size()/7;  
@@ -24,7 +24,7 @@ Brutus::Brutus(vector<mpreal> &data) {
 
   setup();
 }
-Brutus::Brutus(mpreal &t, vector<mpreal> &data, mpreal &tolerance) {
+Brutus::Brutus(mpreal &t, std::vector<mpreal> &data, mpreal &tolerance) {
   this->t = t;
   this->data = data;
   N = data.size()/7;  
@@ -36,7 +36,7 @@ Brutus::Brutus(mpreal &t, vector<mpreal> &data, mpreal &tolerance) {
 
   setup();
 }
-Brutus::Brutus(mpreal &t, vector<mpreal> &data, mpreal &tolerance, int &numBits) {
+Brutus::Brutus(mpreal &t, std::vector<mpreal> &data, mpreal &tolerance, int &numBits) {
   this->t = t;
   this->data = data;
   N = data.size()/7;  
@@ -49,7 +49,7 @@ Brutus::Brutus(mpreal &t, vector<mpreal> &data, mpreal &tolerance, int &numBits)
   setup();
 }
 
-void Brutus::set_data(vector<mpreal> &data) {
+void Brutus::set_data(std::vector<mpreal> &data) {
   this->data = data;
   N = data.size()/7; 
 
@@ -98,7 +98,7 @@ int Brutus::get_numBits(mpreal tolerance) {
   mpreal absloge = abs( log10(tolerance) );
   return 4*(int)absloge.toLong()+32;
 }
-mpreal Brutus::fit_slope(vector<mpreal> &x, vector<mpreal> &y) {
+mpreal Brutus::fit_slope(std::vector<mpreal> &x, std::vector<mpreal> &y) {
   mpreal a = "0";
   int N = x.size();
 
@@ -142,7 +142,7 @@ void Brutus::evolve(mpreal t_end) {
     bool converged = bs.integrate(cl, dt);
 
     if(!converged) {
-      cerr << "Not converged at " << t << "!" << endl;
+      std::cerr << "Not converged at " << t << "!" << std::endl;
       exit(1);
     }
 
@@ -154,12 +154,12 @@ void Brutus::evolve(mpreal t_end) {
 mpreal Brutus::get_t() {
   return t;
 }
-vector<mpreal> Brutus::get_data() {
+std::vector<mpreal> Brutus::get_data() {
   return data;
 }
-vector<double> Brutus::get_data_double() {
+std::vector<double> Brutus::get_data_double() {
   int N = data.size()/7;
-  vector<double> v(7*N, 0);
+  std::vector<double> v(7*N, 0);
   for(int i=0; i<N; i++) {
     for(int j=0; j<7; j++) {
       v[i*7+j] = data[i*7+j].toDouble();
@@ -167,9 +167,9 @@ vector<double> Brutus::get_data_double() {
   }
   return v;
 }
-vector<string> Brutus::get_data_string() {
+std::vector<std::string> Brutus::get_data_string() {
   int N = data.size()/7;
-  vector<string> v(7*N, "0");
+  std::vector<std::string> v(7*N, "0");
   for(int i=0; i<N; i++) {
     for(int j=0; j<7; j++) {
       v[i*7+j] = data[i*7+j].toString();
