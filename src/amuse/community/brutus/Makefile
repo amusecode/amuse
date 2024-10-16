@@ -20,7 +20,7 @@ CODELIB = src/libbrutus.a
 
 
 $(CODELIB):
-	$(MAKE) -C src -j 1 all CFLAGS='$(CFLAGS) -I../mpfrc++ -Wall'
+	$(MAKE) -C src -j $(CPU_COUNT) all CFLAGS='$(CFLAGS) -I../mpfrc++ -Wall'
 
 
 # Building the workers
