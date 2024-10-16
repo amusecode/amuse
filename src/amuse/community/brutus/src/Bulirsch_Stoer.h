@@ -24,8 +24,8 @@ class Bulirsch_Stoer {
 
   bool integrate(Cluster &cl, mpreal &dt);
   bool step(Cluster &cl, mpreal &dt);
-  void extrapol(Cluster &cl_exp, vector<mpreal> &dt, vector<Cluster> &c);
-  mpreal extrapolate(vector<mpreal> x, vector<mpreal> y, mpreal x0);
+  void extrapol(Cluster &cl_exp, std::vector<mpreal> &dt, std::vector<Cluster> &c);
+  mpreal extrapolate(std::vector<mpreal> x, std::vector<mpreal> y, mpreal x0);
   bool error_control(Cluster &c1, Cluster &c2);
 };
 
