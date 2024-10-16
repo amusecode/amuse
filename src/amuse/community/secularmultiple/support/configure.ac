@@ -8,6 +8,7 @@ AMUSE_VENV()
 
 # Set CPU_COUNT
 AX_COUNT_CPUS()
+AC_SUBST(CPU_COUNT)
 
 # Set the worker language
 AC_PROG_CC()

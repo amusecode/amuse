@@ -9,19 +9,9 @@ support/config.mk:
 
 
 # Building the code into a static library
-DEPFLAGS += $(AMUSE_MPI_CFLAGS)
-DEPFLAGS += $(FORSOCKETS_CFLAGS)
-
-CFLAGS += $(DEPFLAGS)
-
 CFLAGS += -g -DTOOLBOX -O3
 
 LDFLAGS +=
-
-LDLIBS += -lm $(AMUSE_MPI_LIBS)
-LDLIBS += $(FORSOCKETS_LIBS)
-
-SCR = src/
 
 OBJS = src/types.o src/evolve.o src/structure.o src/ODE_system.o src/root_finding.o src/newtonian.o src/postnewtonian.o src/tides.o src/external.o src/cvode/cvode.o src/cvode/cvode_dense.o src/cvode/cvode_direct.o src/cvode/cvode_io.o src/cvode/nvector_serial.o src/cvode/sundials_dense.o src/cvode/sundials_direct.o src/cvode/sundials_math.o src/cvode/sundials_nvector.o 
 
@@ -33,10 +23,10 @@ secularmultiple_worker.cc: interface.py
 	amusifier --type=c interface.py SecularMultipleInterface -o $@
 
 interface.o: interface.cpp
-	$(MPICXX) -I.$(SCR) -c -o $@ $(CFLAGS) $<
+	$(MPICXX) -Isrc -c -o $@ $(CFLAGS) $<
 
 secularmultiple_worker.o: secularmultiple_worker.cc
-	$(MPICXX) -I.$(SCR) -c -o $@ $(CFLAGS) $<
+	$(MPICXX) -Isrc -c -o $@ $(CFLAGS) $<
 
 secularmultiple_worker: secularmultiple_worker.o interface.o $(OBJS)
 	$(MPICXX) -o $@ $(LDFLAGS) $^ $(LDLIBS)
