@@ -31,9 +31,6 @@ secularmultiple_worker.o: secularmultiple_worker.cc
 secularmultiple_worker: secularmultiple_worker.o interface.o $(OBJS)
 	$(MPICXX) -o $@ $(LDFLAGS) $^ $(LDLIBS)
 
-%.o: %.cpp
-	$(MPICXX) -c -o $@ $(CFLAGS) $<
-
 
 # Which packages contain which workers?
 amuse-secularmultiple_contains: secularmultiple_worker
