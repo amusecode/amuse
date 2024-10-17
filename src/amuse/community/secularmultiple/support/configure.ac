@@ -21,11 +21,6 @@ AS_IF([test $AR = ":"], [AC_MSG_ERROR([ar command not found.])])
 AC_PROG_RANLIB()
 AS_IF([test $RANLIB = ":"], [AC_MSG_ERROR([ranlib command not found.])])
 
-# Find AMUSE libraries
-AMUSE_LIB_AMUSE_MPI()
-AMUSE_LIB_FORSOCKETS()
-
-
 # Find external dependencies
 AC_LANG_PUSH([C])
 AX_MPI()
