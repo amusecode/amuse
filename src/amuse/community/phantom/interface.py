@@ -9,8 +9,8 @@ from amuse.community import (
 )
 
 from amuse.community.interface.gd import (
-    GravitationalDynamicsInterface,
-    GravitationalDynamics,
+    GravitationalDynamics64Interface,
+    GravitationalDynamics64,
     # GravityFieldInterface,
     GravityFieldCode,
 )
@@ -24,7 +24,7 @@ from amuse.units.generic_unit_converter import ConvertBetweenGenericAndSiUnits
 
 class PhantomInterface(
     CodeInterface,
-    GravitationalDynamicsInterface,
+    GravitationalDynamics64Interface,
     LiteratureReferencesMixIn,
     StoppingConditionInterface,
     # GravityFieldInterface,
@@ -69,7 +69,7 @@ class PhantomInterface(
         function = LegacyFunctionSpecification()
         function.can_handle_array = True
         function.addParameter(
-            'index_of_the_particle', dtype='int32', direction=function.OUT,
+            'index_of_the_particle', dtype='int64', direction=function.OUT,
         )
         for x in ['mass', 'x', 'y', 'z', 'vx', 'vy', 'vz']:
             function.addParameter(x, dtype='float64', direction=function.IN)
@@ -80,7 +80,7 @@ class PhantomInterface(
     def get_maximum_particle_index():
         function = LegacyFunctionSpecification()
         function.addParameter(
-            'norig', dtype='int32', direction=function.OUT)
+            'norig', dtype='int64', direction=function.OUT)
         function.result_type = 'int32'
         return function
 
@@ -92,7 +92,7 @@ class PhantomInterface(
         function = LegacyFunctionSpecification()
         function.can_handle_array = True
         function.addParameter(
-            'index_of_the_particle', dtype='int32', direction=function.OUT,
+            'index_of_the_particle', dtype='int64', direction=function.OUT,
         )
         for x in ['mass', 'x', 'y', 'z', 'vx', 'vy', 'vz', 'u']:
             function.addParameter(x, dtype='float64', direction=function.IN)
@@ -107,7 +107,7 @@ class PhantomInterface(
         function = LegacyFunctionSpecification()
         function.can_handle_array = True
         function.addParameter(
-            'index_of_the_particle', dtype='int32', direction=function.OUT,
+            'index_of_the_particle', dtype='int64', direction=function.OUT,
         )
         for x in ['mass', 'x', 'y', 'z', 'vx', 'vy', 'vz']:
             function.addParameter(x, dtype='float64', direction=function.IN)
@@ -134,7 +134,7 @@ class PhantomInterface(
         function = LegacyFunctionSpecification()
         function.can_handle_array = True
         function.addParameter(
-            'index_of_the_particle', dtype='int32', direction=function.IN,
+            'index_of_the_particle', dtype='int64', direction=function.IN,
             description="""Index of the particle to get the state from. This
             index must have been returned by an earlier call to
             :meth:`new_particle`""")
@@ -177,7 +177,7 @@ class PhantomInterface(
         function = LegacyFunctionSpecification()
         function.can_handle_array = True
         function.addParameter(
-            'index_of_the_particle', dtype='int32', direction=function.IN,
+            'index_of_the_particle', dtype='int64', direction=function.IN,
             description="""Index of the particle to get the state from. This
             index must have been returned by an earlier call to
             :meth:`new_particle`""")
@@ -232,7 +232,7 @@ class PhantomInterface(
         function = LegacyFunctionSpecification()
         function.can_handle_array = True
         function.addParameter(
-            'index_of_the_particle', dtype='int32', direction=function.IN,
+            'index_of_the_particle', dtype='int64', direction=function.IN,
             description="""Index of the particle to get the state from. This
             index must have been returned by an earlier call to
             :meth:`new_particle`""")
@@ -285,7 +285,7 @@ class PhantomInterface(
         function = LegacyFunctionSpecification()
         function.can_handle_array = True
         function.addParameter(
-            'index_of_the_particle', dtype='int32', direction=function.IN,
+            'index_of_the_particle', dtype='int64', direction=function.IN,
             description="""Index of the particle for which the state is to be
             updated. This index must have been returned by an earlier call to
             :meth:`new_particle`""")
@@ -344,7 +344,7 @@ class PhantomInterface(
         function = LegacyFunctionSpecification()
         function.can_handle_array = True
         function.addParameter(
-            'index_of_the_particle', dtype='int32', direction=function.IN,
+            'index_of_the_particle', dtype='int64', direction=function.IN,
             description="""Index of the particle for which the state is to be
             updated. This index must have been returned by an earlier call to
             :meth:`new_particle`""")
@@ -394,7 +394,7 @@ class PhantomInterface(
         function = LegacyFunctionSpecification()
         function.can_handle_array = True
         function.addParameter(
-            'index_of_the_particle', dtype='int32', direction=function.IN,
+            'index_of_the_particle', dtype='int64', direction=function.IN,
             description="""Index of the particle for which the state is to be
             updated. This index must have been returned by an earlier call to
             :meth:`new_particle`""")
@@ -446,7 +446,7 @@ class PhantomInterface(
         function = LegacyFunctionSpecification()
         function.can_handle_array = True
         function.addParameter(
-            'index_of_the_particle', dtype='int32', direction=function.IN,
+            'index_of_the_particle', dtype='int64', direction=function.IN,
             description='',
         )
         function.addParameter(
@@ -465,7 +465,7 @@ class PhantomInterface(
         function = LegacyFunctionSpecification()
         function.can_handle_array = True
         function.addParameter(
-            'index_of_the_particle', dtype='int32', direction=function.IN,
+            'index_of_the_particle', dtype='int64', direction=function.IN,
             description='',
         )
         function.addParameter(
@@ -484,7 +484,7 @@ class PhantomInterface(
         function = LegacyFunctionSpecification()
         function.can_handle_array = True
         function.addParameter(
-            'index_of_the_particle', dtype='int32', direction=function.IN,
+            'index_of_the_particle', dtype='int64', direction=function.IN,
             description='',
         )
         function.addParameter(
@@ -503,7 +503,7 @@ class PhantomInterface(
         function = LegacyFunctionSpecification()
         function.can_handle_array = True
         function.addParameter(
-            'index_of_the_particle', dtype='int32', direction=function.IN,
+            'index_of_the_particle', dtype='int64', direction=function.IN,
             description='',
         )
         function.addParameter(
@@ -522,7 +522,7 @@ class PhantomInterface(
         function = LegacyFunctionSpecification()
         function.can_handle_array = True
         function.addParameter(
-            'index_of_the_particle', dtype='int32', direction=function.IN,
+            'index_of_the_particle', dtype='int64', direction=function.IN,
             description='',
         )
         function.addParameter(
@@ -541,7 +541,7 @@ class PhantomInterface(
         function = LegacyFunctionSpecification()
         function.can_handle_array = True
         function.addParameter(
-            'index_of_the_particle', dtype='int32', direction=function.IN,
+            'index_of_the_particle', dtype='int64', direction=function.IN,
             description='',
         )
         function.addParameter(
@@ -560,7 +560,7 @@ class PhantomInterface(
         function = LegacyFunctionSpecification()
         function.can_handle_array = True
         function.addParameter(
-            'index_of_the_particle', dtype='int32', direction=function.IN,
+            'index_of_the_particle', dtype='int64', direction=function.IN,
             description='',
         )
         function.addParameter(
@@ -579,7 +579,7 @@ class PhantomInterface(
         function = LegacyFunctionSpecification()
         function.can_handle_array = True
         function.addParameter(
-            'index_of_the_particle', dtype='int32', direction=function.IN,
+            'index_of_the_particle', dtype='int64', direction=function.IN,
             description='',
         )
         function.addParameter(
@@ -598,7 +598,7 @@ class PhantomInterface(
         function = LegacyFunctionSpecification()
         function.can_handle_array = True
         function.addParameter(
-            'index_of_the_particle', dtype='int32', direction=function.IN,
+            'index_of_the_particle', dtype='int64', direction=function.IN,
             description='',
         )
         function.addParameter(
@@ -617,7 +617,7 @@ class PhantomInterface(
         function = LegacyFunctionSpecification()
         function.can_handle_array = True
         function.addParameter(
-            'index_of_the_particle', dtype='int32', direction=function.IN,
+            'index_of_the_particle', dtype='int64', direction=function.IN,
             description='',
         )
         function.addParameter(
@@ -636,7 +636,7 @@ class PhantomInterface(
         function = LegacyFunctionSpecification()
         function.can_handle_array = True
         function.addParameter(
-            'index_of_the_particle', dtype='int32', direction=function.IN,
+            'index_of_the_particle', dtype='int64', direction=function.IN,
             description=''
         )
         function.addParameter(
@@ -655,7 +655,7 @@ class PhantomInterface(
         function = LegacyFunctionSpecification()
         function.can_handle_array = True
         function.addParameter(
-            'index_of_the_particle', dtype='int32', direction=function.IN,
+            'index_of_the_particle', dtype='int64', direction=function.IN,
             description='',
         )
         function.addParameter(
@@ -674,7 +674,7 @@ class PhantomInterface(
         function = LegacyFunctionSpecification()
         function.can_handle_array = True
         function.addParameter(
-            'index_of_the_particle', dtype='int32', direction=function.IN,
+            'index_of_the_particle', dtype='int64', direction=function.IN,
             description='',
         )
         function.addParameter(
@@ -693,7 +693,7 @@ class PhantomInterface(
         function = LegacyFunctionSpecification()
         function.can_handle_array = True
         function.addParameter(
-            'index_of_the_particle', dtype='int32', direction=function.IN,
+            'index_of_the_particle', dtype='int64', direction=function.IN,
             description='',
         )
         function.addParameter(
@@ -712,7 +712,7 @@ class PhantomInterface(
         function = LegacyFunctionSpecification()
         function.can_handle_array = True
         function.addParameter(
-            'index_of_the_particle', dtype='int32', direction=function.IN,
+            'index_of_the_particle', dtype='int64', direction=function.IN,
             description='',
         )
         function.addParameter(
@@ -731,7 +731,7 @@ class PhantomInterface(
         function = LegacyFunctionSpecification()
         function.can_handle_array = True
         function.addParameter(
-            'index_of_the_particle', dtype='int32', direction=function.IN,
+            'index_of_the_particle', dtype='int64', direction=function.IN,
             description='',
         )
         function.addParameter(
@@ -750,7 +750,7 @@ class PhantomInterface(
         function = LegacyFunctionSpecification()
         function.can_handle_array = True
         function.addParameter(
-            'index_of_the_particle', dtype='int32', direction=function.IN,
+            'index_of_the_particle', dtype='int64', direction=function.IN,
             description='',
         )
         function.addParameter(
@@ -769,7 +769,7 @@ class PhantomInterface(
         function = LegacyFunctionSpecification()
         function.can_handle_array = True
         function.addParameter(
-            'index_of_the_particle', dtype='int32', direction=function.IN,
+            'index_of_the_particle', dtype='int64', direction=function.IN,
             description=''
         )
         function.addParameter(
@@ -788,7 +788,7 @@ class PhantomInterface(
         function = LegacyFunctionSpecification()
         function.can_handle_array = True
         function.addParameter(
-            'index_of_the_particle', dtype='int32', direction=function.IN,
+            'index_of_the_particle', dtype='int64', direction=function.IN,
             description=''
         )
         function.addParameter(
@@ -807,7 +807,7 @@ class PhantomInterface(
         function = LegacyFunctionSpecification()
         function.can_handle_array = True
         function.addParameter(
-            'index_of_the_particle', dtype='int32', direction=function.IN,
+            'index_of_the_particle', dtype='int64', direction=function.IN,
             description=''
         )
         function.addParameter(
@@ -826,7 +826,7 @@ class PhantomInterface(
         function = LegacyFunctionSpecification()
         function.can_handle_array = True
         function.addParameter(
-            'index_of_the_particle', dtype='int32', direction=function.IN,
+            'index_of_the_particle', dtype='int64', direction=function.IN,
             description=''
         )
         function.addParameter(
@@ -845,7 +845,7 @@ class PhantomInterface(
         function = LegacyFunctionSpecification()
         function.can_handle_array = True
         function.addParameter(
-            'index_of_the_particle', dtype='int32', direction=function.IN,
+            'index_of_the_particle', dtype='int64', direction=function.IN,
             description=''
         )
         function.addParameter(
@@ -1701,7 +1701,7 @@ class PhantomInterface(
         return function
 
 
-class Phantom(GravitationalDynamics, GravityFieldCode):
+class Phantom(GravitationalDynamics64, GravityFieldCode):
     __interface__ = PhantomInterface
 
     def __init__(
@@ -1737,7 +1737,7 @@ class Phantom(GravitationalDynamics, GravityFieldCode):
 
         self.stopping_conditions = StoppingConditions(self)
 
-        GravitationalDynamics.__init__(
+        GravitationalDynamics64.__init__(
             self,
             PhantomInterface(**options),
             convert_nbody,
@@ -1774,7 +1774,7 @@ class Phantom(GravitationalDynamics, GravityFieldCode):
             self.gas_particles.remove_particles(deleted_particles)
 
     def define_state(self, handler):
-        GravitationalDynamics.define_state(self, handler)
+        GravitationalDynamics64.define_state(self, handler)
         GravityFieldCode.define_state(self, handler)
         # self.stopping_conditions.define_state(handler)
 
@@ -2137,7 +2137,7 @@ class Phantom(GravitationalDynamics, GravityFieldCode):
         self.stopping_conditions.define_particle_set(handler, 'particles')
 
     def define_methods(self, handler):
-        GravitationalDynamics.define_methods(self, handler)
+        GravitationalDynamics64.define_methods(self, handler)
 
         handler.add_method(
             "new_dm_particle",

@@ -405,8 +405,6 @@ test_results/code-sockets.f90
 test_results/code.c
 test_results/code.cc
 test_results/code.f90
-gas_interface
-interface
 test_results/interface-sockets.f90
 test_results/interface.cc
 test_results/interface.f90
