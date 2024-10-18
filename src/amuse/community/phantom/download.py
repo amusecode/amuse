@@ -70,7 +70,7 @@ def new_option_parser():
     result = OptionParser()
     result.add_option(
         "--version",
-        default="ca6907f5f9a95f866b1d7e520cc356ab8cec8dd0",
+        default="d39f1d6cc8218800187ccd104573ce26142f898e",
         dest="version",
         help="version number to download",
         type="string"
