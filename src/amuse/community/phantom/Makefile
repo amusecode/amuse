@@ -32,10 +32,10 @@ $(CODEDIR)/Makefile: download
 	#make -C . download
 
 download:
-	echo "not downloading"
-	#$(RM) -Rf src
-	#mkdir src
-	#$(DOWNLOAD_FROM_WEB)
+	#echo "not downloading"
+	$(RM) -Rf src
+	mkdir src
+	$(DOWNLOAD_FROM_WEB)
 
 clean:
 	$(RM) -f *.so *.o *.pyc worker_code.cc worker_code.h 
