@@ -16,3 +16,8 @@ from .gravity_field import (
     GravityFieldInterface,
     GravityFieldCode,
 )
+from .gravitational_dynamics_64 import (
+    GravitationalDynamics64Interface,
+    GravitationalDynamics64Documentation,
+    GravitationalDynamics64,
+)
