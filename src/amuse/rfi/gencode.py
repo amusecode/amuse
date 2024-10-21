@@ -39,13 +39,13 @@ def get_amuse_directory():
         return os.path.abspath(directory_of_this_script)
 
 # in case of trouble consult old python 2:     
-    #~ def get_amuse_directory():
-        #~ filename_of_this_script = __file__
-        #~ directory_of_this_script = os.path.dirname(os.path.dirname(filename_of_this_script))
-        #~ if os.path.isabs(directory_of_this_script):
-            #~ return directory_of_this_script
-        #~ else:
-            #~ return os.path.abspath(directory_of_this_script)
+    # def get_amuse_directory():
+        # filename_of_this_script = __file__
+        # directory_of_this_script = os.path.dirname(os.path.dirname(filename_of_this_script))
+        # if os.path.isabs(directory_of_this_script):
+            # return directory_of_this_script
+        # else:
+            # return os.path.abspath(directory_of_this_script)
 
 def setup_sys_path():
     amuse_directory = os.environ["AMUSE_DIR"]
