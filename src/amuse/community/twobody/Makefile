@@ -10,7 +10,7 @@ support/config.mk:
 
 # Building the workers
 twobody_worker: twobody.py
-	amusifier --type=py --mode=mpi -x interface.py TwoBodyInterface TwoBodyImplementation -o $@
+	PYTHONPATH=. amusifier --type=py --mode=mpi -x interface TwoBodyInterface TwoBodyImplementation -o $@
 
 
 # Which packages contain which workers?
