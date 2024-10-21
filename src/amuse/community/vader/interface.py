@@ -14,11 +14,11 @@ class VaderInterface(CodeInterface,
     .. [#] ... VADER: A Flexible, Robust, Open-Source Code for Simulating Viscous Thin Accretion Disks)
 	"""
 		
-	include_headers = ['worker_code.h']
+	include_headers = ['vader_worker.h']
 
 	def __init__(self, mode = 'none', **keyword_arguments):
 		CodeInterface.__init__(self,
-			name_of_the_worker="vader_worker_" + mode,
+			name_of_the_worker="vader_worker",
 			**keyword_arguments)
 		LiteratureReferencesMixIn.__init__(self)
 

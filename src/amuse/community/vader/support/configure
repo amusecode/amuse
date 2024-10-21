@@ -681,20 +681,14 @@ MPICXX
 GSL_CONFIG
 GSL_LIBS
 GSL_CFLAGS
+PKG_CONFIG_LIBDIR
+PKG_CONFIG_PATH
+PKG_CONFIG
 GSL_FLAGS
 MPILIBS
 MPI_CLIBS
 MPI_CFLAGS
 MPICC
-FOUND_FORSOCKETS
-FORSOCKETS_LIBS
-FORSOCKETS_CFLAGS
-FOUND_AMUSE_MPI
-AMUSE_MPI_LIBS
-AMUSE_MPI_CFLAGS
-PKG_CONFIG_LIBDIR
-PKG_CONFIG_PATH
-PKG_CONFIG
 DOWNLOAD
 CURL
 WGET
@@ -714,6 +708,7 @@ CPPFLAGS
 LDFLAGS
 CFLAGS
 CC
+CPU_COUNT
 EGREP
 GREP
 host_os
@@ -781,14 +776,10 @@ CPPFLAGS
 CXX
 CXXFLAGS
 CCC
+MPICC
 PKG_CONFIG
 PKG_CONFIG_PATH
 PKG_CONFIG_LIBDIR
-AMUSE_MPI_CFLAGS
-AMUSE_MPI_LIBS
-FORSOCKETS_CFLAGS
-FORSOCKETS_LIBS
-MPICC
 GSL_CFLAGS
 GSL_LIBS
 MPICXX'
@@ -1433,20 +1424,12 @@ Some influential environment variables:
               you have headers in a nonstandard directory <include dir>
   CXX         C++ compiler command
   CXXFLAGS    C++ compiler flags
+  MPICC       MPI C compiler command
   PKG_CONFIG  path to pkg-config utility
   PKG_CONFIG_PATH
               directories to add to pkg-config's search path
   PKG_CONFIG_LIBDIR
               path overriding pkg-config's built-in search path
-  AMUSE_MPI_CFLAGS
-              C compiler flags for AMUSE_MPI, overriding pkg-config
-  AMUSE_MPI_LIBS
-              linker flags for AMUSE_MPI, overriding pkg-config
-  FORSOCKETS_CFLAGS
-              C compiler flags for FORSOCKETS, overriding pkg-config
-  FORSOCKETS_LIBS
-              linker flags for FORSOCKETS, overriding pkg-config
-  MPICC       MPI C compiler command
   GSL_CFLAGS  C compiler flags for GSL, overriding pkg-config
   GSL_LIBS    linker flags for GSL, overriding pkg-config
   MPICXX      MPI C++ compiler command
@@ -3152,6 +3135,7 @@ else $as_nop
 printf "%s\n" "unable to detect (assuming 1)" >&6; }
 
 fi
+
 
 # Set the worker language
 # Find the compiler(s)
@@ -5005,540 +4989,13 @@ printf "%s\n" "no" >&6; }
 
 
 
-# Find AMUSE libraries
-
-
-
-
-
-
-
-
-if test "x$ac_cv_env_PKG_CONFIG_set" != "xset"; then
-	if test -n "$ac_tool_prefix"; then
-  # Extract the first word of "${ac_tool_prefix}pkg-config", so it can be a program name with args.
-set dummy ${ac_tool_prefix}pkg-config; ac_word=$2
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
-printf %s "checking for $ac_word... " >&6; }
-if test ${ac_cv_path_PKG_CONFIG+y}
-then :
-  printf %s "(cached) " >&6
-else $as_nop
-  case $PKG_CONFIG in
-  [\\/]* | ?:[\\/]*)
-  ac_cv_path_PKG_CONFIG="$PKG_CONFIG" # Let the user override the test with a path.
-  ;;
-  *)
-  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
-for as_dir in $PATH
-do
-  IFS=$as_save_IFS
-  case $as_dir in #(((
-    '') as_dir=./ ;;
-    */) ;;
-    *) as_dir=$as_dir/ ;;
-  esac
-    for ac_exec_ext in '' $ac_executable_extensions; do
-  if as_fn_executable_p "$as_dir$ac_word$ac_exec_ext"; then
-    ac_cv_path_PKG_CONFIG="$as_dir$ac_word$ac_exec_ext"
-    printf "%s\n" "$as_me:${as_lineno-$LINENO}: found $as_dir$ac_word$ac_exec_ext" >&5
-    break 2
-  fi
-done
-  done
-IFS=$as_save_IFS
-
-  ;;
-esac
-fi
-PKG_CONFIG=$ac_cv_path_PKG_CONFIG
-if test -n "$PKG_CONFIG"; then
-  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $PKG_CONFIG" >&5
-printf "%s\n" "$PKG_CONFIG" >&6; }
-else
-  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
-printf "%s\n" "no" >&6; }
-fi
-
-
-fi
-if test -z "$ac_cv_path_PKG_CONFIG"; then
-  ac_pt_PKG_CONFIG=$PKG_CONFIG
-  # Extract the first word of "pkg-config", so it can be a program name with args.
-set dummy pkg-config; ac_word=$2
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
-printf %s "checking for $ac_word... " >&6; }
-if test ${ac_cv_path_ac_pt_PKG_CONFIG+y}
-then :
-  printf %s "(cached) " >&6
-else $as_nop
-  case $ac_pt_PKG_CONFIG in
-  [\\/]* | ?:[\\/]*)
-  ac_cv_path_ac_pt_PKG_CONFIG="$ac_pt_PKG_CONFIG" # Let the user override the test with a path.
-  ;;
-  *)
-  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
-for as_dir in $PATH
-do
-  IFS=$as_save_IFS
-  case $as_dir in #(((
-    '') as_dir=./ ;;
-    */) ;;
-    *) as_dir=$as_dir/ ;;
-  esac
-    for ac_exec_ext in '' $ac_executable_extensions; do
-  if as_fn_executable_p "$as_dir$ac_word$ac_exec_ext"; then
-    ac_cv_path_ac_pt_PKG_CONFIG="$as_dir$ac_word$ac_exec_ext"
-    printf "%s\n" "$as_me:${as_lineno-$LINENO}: found $as_dir$ac_word$ac_exec_ext" >&5
-    break 2
-  fi
-done
-  done
-IFS=$as_save_IFS
-
-  ;;
-esac
-fi
-ac_pt_PKG_CONFIG=$ac_cv_path_ac_pt_PKG_CONFIG
-if test -n "$ac_pt_PKG_CONFIG"; then
-  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_pt_PKG_CONFIG" >&5
-printf "%s\n" "$ac_pt_PKG_CONFIG" >&6; }
-else
-  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
-printf "%s\n" "no" >&6; }
-fi
-
-  if test "x$ac_pt_PKG_CONFIG" = x; then
-    PKG_CONFIG=""
-  else
-    case $cross_compiling:$ac_tool_warned in
-yes:)
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: WARNING: using cross tools not prefixed with host triplet" >&5
-printf "%s\n" "$as_me: WARNING: using cross tools not prefixed with host triplet" >&2;}
-ac_tool_warned=yes ;;
-esac
-    PKG_CONFIG=$ac_pt_PKG_CONFIG
-  fi
-else
-  PKG_CONFIG="$ac_cv_path_PKG_CONFIG"
-fi
-
-fi
-if test -n "$PKG_CONFIG"; then
-	_pkg_min_version=0.9.0
-	{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking pkg-config is at least version $_pkg_min_version" >&5
-printf %s "checking pkg-config is at least version $_pkg_min_version... " >&6; }
-	if $PKG_CONFIG --atleast-pkgconfig-version $_pkg_min_version; then
-		{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-printf "%s\n" "yes" >&6; }
-	else
-		{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
-printf "%s\n" "no" >&6; }
-		PKG_CONFIG=""
-	fi
-fi
-
-
-    amuse_save_LIBS="$LIBS"
-    amuse_save_LIB_CFLAGS="$AMUSE_MPI_CFLAGS"
-    amuse_save_LIB_LIBS="$AMUSE_MPI_LIBS"
-
-    # All AMUSE libs export C symbols
-    ac_ext=c
-ac_cpp='$CPP $CPPFLAGS'
-ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
-ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
-ac_compiler_gnu=$ac_cv_c_compiler_gnu
-
-
-    # Search for the library, first directly then fall back to pkg-config
-    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for library containing get_comm_world" >&5
-printf %s "checking for library containing get_comm_world... " >&6; }
-if test ${ac_cv_search_get_comm_world+y}
-then :
-  printf %s "(cached) " >&6
-else $as_nop
-  ac_func_search_save_LIBS=$LIBS
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-/* Override any GCC internal prototype to avoid an error.
-   Use char because int might match the return type of a GCC
-   builtin and then its argument prototype would still apply.  */
-char get_comm_world ();
-int
-main (void)
-{
-return get_comm_world ();
-  ;
-  return 0;
-}
-_ACEOF
-for ac_lib in '' amuse_mpi
-do
-  if test -z "$ac_lib"; then
-    ac_res="none required"
-  else
-    ac_res=-l$ac_lib
-    LIBS="-l$ac_lib  $ac_func_search_save_LIBS"
-  fi
-  if ac_fn_c_try_link "$LINENO"
-then :
-  ac_cv_search_get_comm_world=$ac_res
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.beam \
-    conftest$ac_exeext
-  if test ${ac_cv_search_get_comm_world+y}
-then :
-  break
-fi
-done
-if test ${ac_cv_search_get_comm_world+y}
-then :
-
-else $as_nop
-  ac_cv_search_get_comm_world=no
-fi
-rm conftest.$ac_ext
-LIBS=$ac_func_search_save_LIBS
-fi
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_cv_search_get_comm_world" >&5
-printf "%s\n" "$ac_cv_search_get_comm_world" >&6; }
-ac_res=$ac_cv_search_get_comm_world
-if test "$ac_res" != no
-then :
-  test "$ac_res" = "none required" || LIBS="$ac_res $LIBS"
-
-        FOUND_AMUSE_MPI="yes"
-        AMUSE_MPI_LIBS="$LIBS"
-        AMUSE_MPI_CFLAGS=""
-
-else $as_nop
-
-
-pkg_failed=no
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for AMUSE_MPI" >&5
-printf %s "checking for AMUSE_MPI... " >&6; }
-
-if test -n "$AMUSE_MPI_CFLAGS"; then
-    pkg_cv_AMUSE_MPI_CFLAGS="$AMUSE_MPI_CFLAGS"
- elif test -n "$PKG_CONFIG"; then
-    if test -n "$PKG_CONFIG" && \
-    { { printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"amuse_mpi\""; } >&5
-  ($PKG_CONFIG --exists --print-errors "amuse_mpi") 2>&5
-  ac_status=$?
-  printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
-  test $ac_status = 0; }; then
-  pkg_cv_AMUSE_MPI_CFLAGS=`$PKG_CONFIG --cflags "amuse_mpi" 2>/dev/null`
-		      test "x$?" != "x0" && pkg_failed=yes
-else
-  pkg_failed=yes
-fi
- else
-    pkg_failed=untried
-fi
-if test -n "$AMUSE_MPI_LIBS"; then
-    pkg_cv_AMUSE_MPI_LIBS="$AMUSE_MPI_LIBS"
- elif test -n "$PKG_CONFIG"; then
-    if test -n "$PKG_CONFIG" && \
-    { { printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"amuse_mpi\""; } >&5
-  ($PKG_CONFIG --exists --print-errors "amuse_mpi") 2>&5
-  ac_status=$?
-  printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
-  test $ac_status = 0; }; then
-  pkg_cv_AMUSE_MPI_LIBS=`$PKG_CONFIG --libs "amuse_mpi" 2>/dev/null`
-		      test "x$?" != "x0" && pkg_failed=yes
-else
-  pkg_failed=yes
-fi
- else
-    pkg_failed=untried
-fi
-
-
-
-if test $pkg_failed = yes; then
-   	{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
-printf "%s\n" "no" >&6; }
-
-if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
-        _pkg_short_errors_supported=yes
-else
-        _pkg_short_errors_supported=no
-fi
-        if test $_pkg_short_errors_supported = yes; then
-	        AMUSE_MPI_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "amuse_mpi" 2>&1`
-        else
-	        AMUSE_MPI_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "amuse_mpi" 2>&1`
-        fi
-	# Put the nasty error message in config.log where it belongs
-	echo "$AMUSE_MPI_PKG_ERRORS" >&5
-
-
-            FOUND_AMUSE_MPI="no"
-
-elif test $pkg_failed = untried; then
-     	{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
-printf "%s\n" "no" >&6; }
-
-            FOUND_AMUSE_MPI="no"
-
-else
-	AMUSE_MPI_CFLAGS=$pkg_cv_AMUSE_MPI_CFLAGS
-	AMUSE_MPI_LIBS=$pkg_cv_AMUSE_MPI_LIBS
-        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-printf "%s\n" "yes" >&6; }
-
-            FOUND_AMUSE_MPI="yes"
-
-fi
-
-fi
-
-
-    ac_ext=c
-ac_cpp='$CPP $CPPFLAGS'
-ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
-ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
-ac_compiler_gnu=$ac_cv_c_compiler_gnu
-
-
-    LIBS="$amuse_save_LIBS"
-
-    # If we have an active CONDA environment, assume that the lib is coming from
-    # there and add an additional flag so that .mod files can be found. Only really
-    # needed for stopcond, and hopefully conda-forge will give us a better solution
-    # soon.
-    if test "${FOUND_AMUSE_MPI}" == "yes" -a "x$CONDA_PREFIX" != "x"
-    then
-        AMUSE_MPI_CFLAGS="${AMUSE_MPI_CFLAGS} -I${CONDA_PREFIX}/include"
-    fi
-
-    # If the user overrode the variables, go with what they set instead of
-    # what we just detected.
-    if test "x$amuse_save_LIB_CFLAGS" != "x"
-then :
-
-        AMUSE_MPI_CFLAGS="$amuse_save_LIB_CFLAGS"
-
-fi
-    if test "x$amuse_save_LIB_LIBS" != "x"
-then :
-
-        AMUSE_MPI_LIBS="$amuse_save_LIB_LIBS"
-
-fi
-
-
-
-
-
-
-
-
-    amuse_save_LIBS="$LIBS"
-    amuse_save_LIB_CFLAGS="$FORSOCKETS_CFLAGS"
-    amuse_save_LIB_LIBS="$FORSOCKETS_LIBS"
-
-    # All AMUSE libs export C symbols
-    ac_ext=c
-ac_cpp='$CPP $CPPFLAGS'
-ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
-ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
-ac_compiler_gnu=$ac_cv_c_compiler_gnu
-
-
-    # Search for the library, first directly then fall back to pkg-config
-    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for library containing forsockets_close" >&5
-printf %s "checking for library containing forsockets_close... " >&6; }
-if test ${ac_cv_search_forsockets_close+y}
-then :
-  printf %s "(cached) " >&6
-else $as_nop
-  ac_func_search_save_LIBS=$LIBS
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-/* Override any GCC internal prototype to avoid an error.
-   Use char because int might match the return type of a GCC
-   builtin and then its argument prototype would still apply.  */
-char forsockets_close ();
-int
-main (void)
-{
-return forsockets_close ();
-  ;
-  return 0;
-}
-_ACEOF
-for ac_lib in '' forsockets
-do
-  if test -z "$ac_lib"; then
-    ac_res="none required"
-  else
-    ac_res=-l$ac_lib
-    LIBS="-l$ac_lib  $ac_func_search_save_LIBS"
-  fi
-  if ac_fn_c_try_link "$LINENO"
-then :
-  ac_cv_search_forsockets_close=$ac_res
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.beam \
-    conftest$ac_exeext
-  if test ${ac_cv_search_forsockets_close+y}
-then :
-  break
-fi
-done
-if test ${ac_cv_search_forsockets_close+y}
-then :
-
-else $as_nop
-  ac_cv_search_forsockets_close=no
-fi
-rm conftest.$ac_ext
-LIBS=$ac_func_search_save_LIBS
-fi
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_cv_search_forsockets_close" >&5
-printf "%s\n" "$ac_cv_search_forsockets_close" >&6; }
-ac_res=$ac_cv_search_forsockets_close
-if test "$ac_res" != no
-then :
-  test "$ac_res" = "none required" || LIBS="$ac_res $LIBS"
-
-        FOUND_FORSOCKETS="yes"
-        FORSOCKETS_LIBS="$LIBS"
-        FORSOCKETS_CFLAGS=""
-
-else $as_nop
-
-
-pkg_failed=no
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for FORSOCKETS" >&5
-printf %s "checking for FORSOCKETS... " >&6; }
-
-if test -n "$FORSOCKETS_CFLAGS"; then
-    pkg_cv_FORSOCKETS_CFLAGS="$FORSOCKETS_CFLAGS"
- elif test -n "$PKG_CONFIG"; then
-    if test -n "$PKG_CONFIG" && \
-    { { printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"forsockets\""; } >&5
-  ($PKG_CONFIG --exists --print-errors "forsockets") 2>&5
-  ac_status=$?
-  printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
-  test $ac_status = 0; }; then
-  pkg_cv_FORSOCKETS_CFLAGS=`$PKG_CONFIG --cflags "forsockets" 2>/dev/null`
-		      test "x$?" != "x0" && pkg_failed=yes
-else
-  pkg_failed=yes
-fi
- else
-    pkg_failed=untried
-fi
-if test -n "$FORSOCKETS_LIBS"; then
-    pkg_cv_FORSOCKETS_LIBS="$FORSOCKETS_LIBS"
- elif test -n "$PKG_CONFIG"; then
-    if test -n "$PKG_CONFIG" && \
-    { { printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"forsockets\""; } >&5
-  ($PKG_CONFIG --exists --print-errors "forsockets") 2>&5
-  ac_status=$?
-  printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
-  test $ac_status = 0; }; then
-  pkg_cv_FORSOCKETS_LIBS=`$PKG_CONFIG --libs "forsockets" 2>/dev/null`
-		      test "x$?" != "x0" && pkg_failed=yes
-else
-  pkg_failed=yes
-fi
- else
-    pkg_failed=untried
-fi
-
-
-
-if test $pkg_failed = yes; then
-   	{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
-printf "%s\n" "no" >&6; }
-
-if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
-        _pkg_short_errors_supported=yes
-else
-        _pkg_short_errors_supported=no
-fi
-        if test $_pkg_short_errors_supported = yes; then
-	        FORSOCKETS_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "forsockets" 2>&1`
-        else
-	        FORSOCKETS_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "forsockets" 2>&1`
-        fi
-	# Put the nasty error message in config.log where it belongs
-	echo "$FORSOCKETS_PKG_ERRORS" >&5
-
-
-            FOUND_FORSOCKETS="no"
-
-elif test $pkg_failed = untried; then
-     	{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
-printf "%s\n" "no" >&6; }
-
-            FOUND_FORSOCKETS="no"
-
-else
-	FORSOCKETS_CFLAGS=$pkg_cv_FORSOCKETS_CFLAGS
-	FORSOCKETS_LIBS=$pkg_cv_FORSOCKETS_LIBS
-        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-printf "%s\n" "yes" >&6; }
-
-            FOUND_FORSOCKETS="yes"
-
-fi
-
-fi
-
-
-    ac_ext=c
-ac_cpp='$CPP $CPPFLAGS'
-ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
-ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
-ac_compiler_gnu=$ac_cv_c_compiler_gnu
-
-
-    LIBS="$amuse_save_LIBS"
-
-    # If we have an active CONDA environment, assume that the lib is coming from
-    # there and add an additional flag so that .mod files can be found. Only really
-    # needed for stopcond, and hopefully conda-forge will give us a better solution
-    # soon.
-    if test "${FOUND_FORSOCKETS}" == "yes" -a "x$CONDA_PREFIX" != "x"
-    then
-        FORSOCKETS_CFLAGS="${FORSOCKETS_CFLAGS} -I${CONDA_PREFIX}/include"
-    fi
-
-    # If the user overrode the variables, go with what they set instead of
-    # what we just detected.
-    if test "x$amuse_save_LIB_CFLAGS" != "x"
-then :
-
-        FORSOCKETS_CFLAGS="$amuse_save_LIB_CFLAGS"
-
-fi
-    if test "x$amuse_save_LIB_LIBS" != "x"
-then :
-
-        FORSOCKETS_LIBS="$amuse_save_LIB_LIBS"
-
-fi
-
-
-
-
-
-
-
-
 # Find external dependencies
 ac_ext=c
 ac_cpp='$CPP $CPPFLAGS'
 ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
 ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
 ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
 
 
 
@@ -5762,6 +5219,136 @@ printf "%s\n" "#define HAVE_MPI 1" >>confdefs.h
         :
 fi
 
+
+
+
+
+
+
+
+if test "x$ac_cv_env_PKG_CONFIG_set" != "xset"; then
+	if test -n "$ac_tool_prefix"; then
+  # Extract the first word of "${ac_tool_prefix}pkg-config", so it can be a program name with args.
+set dummy ${ac_tool_prefix}pkg-config; ac_word=$2
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+printf %s "checking for $ac_word... " >&6; }
+if test ${ac_cv_path_PKG_CONFIG+y}
+then :
+  printf %s "(cached) " >&6
+else $as_nop
+  case $PKG_CONFIG in
+  [\\/]* | ?:[\\/]*)
+  ac_cv_path_PKG_CONFIG="$PKG_CONFIG" # Let the user override the test with a path.
+  ;;
+  *)
+  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  case $as_dir in #(((
+    '') as_dir=./ ;;
+    */) ;;
+    *) as_dir=$as_dir/ ;;
+  esac
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir$ac_word$ac_exec_ext"; then
+    ac_cv_path_PKG_CONFIG="$as_dir$ac_word$ac_exec_ext"
+    printf "%s\n" "$as_me:${as_lineno-$LINENO}: found $as_dir$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+  ;;
+esac
+fi
+PKG_CONFIG=$ac_cv_path_PKG_CONFIG
+if test -n "$PKG_CONFIG"; then
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $PKG_CONFIG" >&5
+printf "%s\n" "$PKG_CONFIG" >&6; }
+else
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+fi
+
+
+fi
+if test -z "$ac_cv_path_PKG_CONFIG"; then
+  ac_pt_PKG_CONFIG=$PKG_CONFIG
+  # Extract the first word of "pkg-config", so it can be a program name with args.
+set dummy pkg-config; ac_word=$2
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+printf %s "checking for $ac_word... " >&6; }
+if test ${ac_cv_path_ac_pt_PKG_CONFIG+y}
+then :
+  printf %s "(cached) " >&6
+else $as_nop
+  case $ac_pt_PKG_CONFIG in
+  [\\/]* | ?:[\\/]*)
+  ac_cv_path_ac_pt_PKG_CONFIG="$ac_pt_PKG_CONFIG" # Let the user override the test with a path.
+  ;;
+  *)
+  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  case $as_dir in #(((
+    '') as_dir=./ ;;
+    */) ;;
+    *) as_dir=$as_dir/ ;;
+  esac
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir$ac_word$ac_exec_ext"; then
+    ac_cv_path_ac_pt_PKG_CONFIG="$as_dir$ac_word$ac_exec_ext"
+    printf "%s\n" "$as_me:${as_lineno-$LINENO}: found $as_dir$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+  ;;
+esac
+fi
+ac_pt_PKG_CONFIG=$ac_cv_path_ac_pt_PKG_CONFIG
+if test -n "$ac_pt_PKG_CONFIG"; then
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_pt_PKG_CONFIG" >&5
+printf "%s\n" "$ac_pt_PKG_CONFIG" >&6; }
+else
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+fi
+
+  if test "x$ac_pt_PKG_CONFIG" = x; then
+    PKG_CONFIG=""
+  else
+    case $cross_compiling:$ac_tool_warned in
+yes:)
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: WARNING: using cross tools not prefixed with host triplet" >&5
+printf "%s\n" "$as_me: WARNING: using cross tools not prefixed with host triplet" >&2;}
+ac_tool_warned=yes ;;
+esac
+    PKG_CONFIG=$ac_pt_PKG_CONFIG
+  fi
+else
+  PKG_CONFIG="$ac_cv_path_PKG_CONFIG"
+fi
+
+fi
+if test -n "$PKG_CONFIG"; then
+	_pkg_min_version=0.9.0
+	{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking pkg-config is at least version $_pkg_min_version" >&5
+printf %s "checking pkg-config is at least version $_pkg_min_version... " >&6; }
+	if $PKG_CONFIG --atleast-pkgconfig-version $_pkg_min_version; then
+		{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
+	else
+		{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+		PKG_CONFIG=""
+	fi
+fi
 
 
 # Check whether --with-gsl-prefix was given.

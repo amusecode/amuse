@@ -8,6 +8,7 @@ AMUSE_VENV()
 
 # Set CPU_COUNT
 AX_COUNT_CPUS()
+AC_SUBST(CPU_COUNT)
 
 # Set the worker language
 # Find the compiler(s)
@@ -24,11 +25,6 @@ AS_IF([test $RANLIB = ":"], [AC_MSG_ERROR([ranlib command not found.])])
 
 # Find something to download things with
 AMUSE_DOWNLOAD()
-
-
-# Find AMUSE libraries
-AMUSE_LIB_AMUSE_MPI()
-AMUSE_LIB_FORSOCKETS()
 
 
 # Find external dependencies

@@ -9,7 +9,6 @@ support/config.mk:
 
 
 VERSION = 0e6357b451e6
-VADER_SRC = MJCWilhelm-vader-$(VERSION)
 
 # Downloading the code
 vader.tar.gz:
@@ -24,40 +23,36 @@ src: vader.tar.gz
 
 
 # Building the code into a static library
-DEPFLAGS += $(AMUSE_MPI_CFLAGS)
-DEPFLAGS += $(FORSOCKETS_CFLAGS)
 DEPFLAGS += $(GSL_FLAGS)
 
 CFLAGS += $(DEPFLAGS)
 
 LDFLAGS +=
 
-LDLIBS += -lm $(AMUSE_MPI_LIBS)
-LDLIBS += $(FORSOCKETS_LIBS)
 LDLIBS += $(GSL_LIBS)
 
 
 CODELIB = src/libvader.a
 
 $(CODELIB): | src
-	$(MAKE) -C src -j 1 all MPICC='$(MPICC)' CXXFLAGS='$(CFLAGS)'
+	$(MAKE) -C src -j $(CPU_COUNT) all MPICC='$(MPICC)' CXXFLAGS='$(CFLAGS)'
 
 
 # Building the workers
-worker_code.h: interface.py
-	amusifier --type=h interface.py VaderInterface -o $@
+vader_worker.h: interface.py
+	amusifier --type=H interface.py VaderInterface -o $@
 
 vader_worker.cc: interface.py
 	amusifier --type=c interface.py VaderInterface -o $@
 
 interface.o: interface.cc $(CODELIB)
-	$(MPICC) -c -o $@ $(CFLAGS) $<
+	$(MPICXX) -c -o $@ $(CFLAGS) $<
 
-vader_worker.o: vader_worker.cc worker_code.h
-	$(MPICC) -c -o $@ $(CFLAGS) $<
+vader_worker.o: vader_worker.cc vader_worker.h
+	$(MPICXX) -c -o $@ $(CFLAGS) $<
 
 vader_worker: vader_worker.o interface.o $(CODELIB)
-	$(MPICC) -o $@ $(LDFLAGS) $^ $(LDLIBS)
+	$(MPICXX) -o $@ $(LDFLAGS) $^ $(LDLIBS)
 
 
 # Which packages contain which workers?
