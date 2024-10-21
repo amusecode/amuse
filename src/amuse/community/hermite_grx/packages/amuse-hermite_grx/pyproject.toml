@@ -1,0 +1,44 @@
+[project]
+name = "amuse-hermite_grx"
+dynamic = ["version"]
+requires-python = ">=3.7"
+dependencies = [
+    "amuse-framework"
+]
+
+[build-system]
+requires = ["hatchling", "versioningit"]
+build-backend = "hatchling.build"
+
+[tool.hatch.version]
+source = "versioningit"
+
+[tool.versioningit.next-version]
+method = "smallest"
+
+[tool.versioningit.format]
+distance = "{next_version}.dev{distance}+{vcs}{rev}"
+dirty = "{base_version}+d{build_date:%Y%m%d}"
+distance-dirty = "{next_version}.dev{distance}+{vcs}{rev}.d{build_date:%Y%m%d}"
+
+[tool.hatch.build]
+skip-excluded-dirs = true
+
+[tool.hatch.build.targets.wheel]
+include = ["hermite_grx/**/*.py"]
+exclude = [
+    "hermite_grx/packages",
+    "hermite_grx/support",
+    "hermite_grx/src",
+    "hermite_grx/tests"
+    ]
+artifacts = ["hermite_grx/hermite_grx_worker"]
+
+[tool.hatch.build.targets.wheel.sources]
+"hermite_grx" = "amuse/community/hermite_grx"
+
+[tool.pytest.ini_options]
+pythonpath = ["hermite_grx/tests/", "../../../../../tests"]
+
+testpaths = ["hermite_grx/tests"]
+
