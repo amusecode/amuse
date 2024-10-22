@@ -1,7 +1,7 @@
-Index: mocassin/src/mocassin.2.02.70/source/common_mod.f90
+Index: mocassin/src/mocassin/source/common_mod.f90
 ===================================================================
---- mocassin.orig/src/mocassin.2.02.70/source/common_mod.f90	2012-06-27 08:01:33.000000000 +0200
-+++ mocassin/src/mocassin.2.02.70/source/common_mod.f90	2012-11-08 11:02:34.328144911 +0100
+--- mocassin.orig/src/mocassin/source/common_mod.f90	2012-06-27 08:01:33.000000000 +0200
++++ mocassin/src/mocassin/source/common_mod.f90	2012-11-08 11:02:34.328144911 +0100
 @@ -379,19 +379,19 @@
      logical            :: lgPlaneIonization! plane parallel ionization?    
      logical            :: lgSymmetricXYZ   ! symmetric in x, y, and z?
@@ -35,10 +35,10 @@ Index: mocassin/src/mocassin.2.02.70/source/common_mod.f90
      character(len=30),pointer       :: grainLabel(:)    ! name of this species
  
      integer,pointer    :: viewPointPtheta(:), viewPointPphi(:)       ! viewing angles
-Index: mocassin/src/mocassin.2.02.70/source/grid_mod.f90
+Index: mocassin/src/mocassin/source/grid_mod.f90
 ===================================================================
---- mocassin.orig/src/mocassin.2.02.70/source/grid_mod.f90	2012-06-27 08:01:33.000000000 +0200
-+++ mocassin/src/mocassin.2.02.70/source/grid_mod.f90	2012-11-08 11:02:34.329144918 +0100
+--- mocassin.orig/src/mocassin/source/grid_mod.f90	2012-06-27 08:01:33.000000000 +0200
++++ mocassin/src/mocassin/source/grid_mod.f90	2012-11-08 11:02:34.329144918 +0100
 @@ -1794,12 +1794,15 @@
  
                Lstar(1) = (meanField/1.e36)*grid%xAxis(grid%nx)*grid%zAxis(grid%nz)

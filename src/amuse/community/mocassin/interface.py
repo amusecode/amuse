@@ -20,7 +20,8 @@ class MocassinInterface(CodeInterface, CommonCodeInterface,
         self._abundancies_table = None
     
     def get_default_input_directory(self):
-        return os.path.join(os.path.dirname(__file__), 'data', 'mocassin.{0}'.format(self.MOCASSIN_VERSION), '')
+        # Extra empty string to get a required trailing slash
+        return os.path.join(os.path.dirname(__file__), '')
     
     def setup_abundancies(self):
         abundancies_file_name = os.path.join(self.output_directory, 'tmp_abundancies_file')
