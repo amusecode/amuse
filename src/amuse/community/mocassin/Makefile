@@ -79,11 +79,10 @@ test-%:
 # Cleaning up
 .PHONY: clean
 clean:
-	$(MAKE) -C src clean
+	$(MAKE) -C src/mocassin clean
 	rm -rf *.o *.mod *worker*
 
 .PHONY: distclean
 distclean: clean
-	$(MAKE) -C src distclean
 	rm -f support/config.mk support/config.log support/config.status
 	rm -rf support/autom4te.cache
