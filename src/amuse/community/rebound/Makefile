@@ -1,102 +1,89 @@
-# standard amuse configuration include
-# config.mk will be made after ./configure has run
-ifeq ($(origin AMUSE_DIR), undefined)
-  AMUSE_DIR := $(shell amusifier --get-amuse-dir)
-endif
--include $(AMUSE_DIR)/config.mk
-
-MPICXX   ?= mpicxx
-
-CFLAGS   += -Wall -g -DCOLLISIONS_DUMMY -DLIBREBOUND
-CXXFLAGS += $(CFLAGS)  
-LDFLAGS  += -lm $(MUSE_LD_FLAGS)
-
-ifdef OPENMP_ENABLED
-export OPENMP=1
-CFLAGS   += $(OPENMP_CFLAGS)
+ifneq (,$(filter-out clean distclean, $(MAKECMDGOALS)))
+include support/config.mk
 endif
 
-OBJS = interface.o
+
+# Detecting dependencies
+support/config.mk:
+	cd support && ./configure
+
+
+# Downloading the code
+VERSION = 31d117bdc92182073d0941c331f76e95f515bfc6
+
+$(VERSION).tar.gz:
+	$(DOWNLOAD) https://github.com/hannorein/rebound/archive/$(VERSION).tar.gz >$@
+
+src/rebound: | $(VERSION).tar.gz
+	tar xf $|
+	mv rebound-$(VERSION) src
+
+
+# Building the code into a static library
+CFLAGS += $(OPENMP_CFLAGS) -DCOLLISIONS_DUMMY -DLIBREBOUND
+CXXFLAGS += $(STOPCOND_CFLAGS) $(OPENMP_CXXFLAGS)
+LDLIBS += $(STOPCOND_LIBS)
 
 CODELIB = src/librebound.a
-CODEDIR = src/rebound
-LIB_OBJ = $(CODEDIR)/src/rebound.o $(CODEDIR)/src/tree.o $(CODEDIR)/src/particle.o $(CODEDIR)/src/gravity.o \
-          $(CODEDIR)/src/integrator.o $(CODEDIR)/src/integrator_whfast.o $(CODEDIR)/src/integrator_whfasthelio.o \
-          $(CODEDIR)/src/integrator_ias15.o $(CODEDIR)/src/integrator_sei.o $(CODEDIR)/src/integrator_leapfrog.o \
-          $(CODEDIR)/src/integrator_hermes.o $(CODEDIR)/src/boundary.o \
-          $(CODEDIR)/src/collision.o $(CODEDIR)/src/tools.o \
-          $(CODEDIR)/src/communication_mpi.o $(CODEDIR)/src/display.o $(CODEDIR)/src/derivatives.o \
-          $(CODEDIR)/src/glad.o $(CODEDIR)/src/integrator_janus.o $(CODEDIR)/src/transformations.o \
-          $(CODEDIR)/src/simulationarchive.o $(CODEDIR)/src/output.o \
-          $(CODEDIR)/src/input.o \
 
-DOWNLOAD_FROM_WEB = $(PYTHON) ./download.py
-PATCH_FILES = $(PYTHON) ./patch_files.py
+OBJ_NAMES := rebound tree particle gravity integrator integrator_whfast
+OBJ_NAMES += integrator_whfasthelio integrator_ias15 integrator_sei integrator_leapfrog
+OBJ_NAMES += integrator_hermes boundary collision tools communication_mpi display
+OBJ_NAMES += derivatives glad integrator_janus transformations simulationarchive
+OBJ_NAMES += output input
 
-AM_LIBS = -L$(AMUSE_DIR)/lib/amuse_mpi -lamuse_mpi
-AM_CFLAGS = -I$(AMUSE_DIR)/lib/amuse_mpi
+OBJS := $(patsubst %,src/src/%.o,$(OBJ_NAMES))
+
+$(CODELIB): | src/rebound
+	$(MAKE) -C src -j $(CPU_COUNT) all CC='$(CC)' CFLAGS='$(CFLAGS)'
+	$(AR) rv $@ $(OBJS)
+	$(RANLIB) $(CODELIB)
 
 
-all: rebound_worker 
+# Building the workers
+rebound_worker.h: interface.py
+	amusifier --type=h interface.py -i amuse.community.interface.stopping_conditions.StoppingConditionInterface ReboundInterface -o $@
 
-DOWNLOAD_CODES?=1
+rebound_worker.cc: interface.py
+	amusifier --type=c interface.py ReboundInterface -o $@
 
-ifdef DOWNLOAD_CODES
-$(CODEDIR)/Makefile:
-	make -C . download
-else
-$(CODEDIR)/Makefile:
-	@echo ""
-	@echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
-	@echo ""
-	@echo "DOWNLOAD_CODES is not set. Rebound will not be downloaded and built."
-	@echo "If you do want Rebound, set DOWNLOAD_CODES to 1."
-	@echo "bash> export DOWNLOAD_CODES=1"
-	@echo "csh> setenv DOWNLOAD_CODES 1"
-	@echo ""
-	@echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
-	@echo ""
-	@make -s --no-print-directory -C . raise_error
-endif
+rebound_worker.o: rebound_worker.cc rebound_worker.h
+	$(MPICXX) -c -o $@ $(CXXFLAGS) $(OPENMP_CXXFLAGS) $<
 
-download:
-	$(RM) -Rf .pc
-	$(RM) -Rf src
-	mkdir src
-	$(DOWNLOAD_FROM_WEB)
-	$(PATCH_FILES)
+rebound_worker: interface.o rebound_worker.o $(CODELIB)
+	$(MPICXX) -o $@ $(LDFLAGS) $(OPENMP_CXXFLAGS) $^ $(LDLIBS)
 
+interface.o: interface.cc rebound_worker.h | src/rebound
+	$(MPICXX) -o $@ -c $(CXXFLAGS) -Isrc/src $<
+
+
+# Which packages contain which workers?
+amuse-rebound_contains: rebound_worker
+
+
+# Building and installing packages
+develop-%: %_contains
+	support/shared/uninstall.sh $*
+	python -m pip install -e packages/$*
+
+install-%: %_contains
+	support/shared/uninstall.sh $*
+	python -m pip install packages/$*
+
+package-%: %_contains
+	python3 -m pip install -vv --no-cache-dir --no-deps --no-build-isolation --prefix ${PREFIX} packages/$*
+
+test-%:
+	cd packages/$* && pytest
+
+
+# Cleaning up
+.PHONY: clean
 clean:
-	$(RM) -f *.so *.o *.pyc worker_code.cc worker_code.h 
-	$(RM) *~ rebound_worker worker_code.cc
-	$(RM) -Rf $(CODEDIR)/src/*.o
-	$(RM) -Rf $(CODEDIR)/src/*.so
-	$(RM) -Rf src/librebound.a
-	-make -C $(CODEDIR) clean
-	
-distclean:
-	$(RM) -f *.so *.o *.pyc worker_code.cc worker_code.h *.mod
-	$(RM) *~ rebound_worker
-	$(RM) -Rf src
-	$(RM) -Rf src.*
-	$(RM) -Rf $(CODEDIR)/src/*.o
-	$(RM) -Rf $(CODEDIR)/src/*.so
-	$(RM) -Rf src/librebound.a
-	$(RM) -Rf .pc
+	-$(MAKE) -C src clean
+	rm -rf *.o *worker*
 
-$(CODELIB): $(CODEDIR)/Makefile
-	make -C $(CODEDIR) all CC=$(CC)
-	ar rv $(CODELIB) $(LIB_OBJ)
-	ranlib $(CODELIB)
-
-worker_code.cc: interface.py
-	$(CODE_GENERATOR) --type=c interface.py ReboundInterface -o $@
-
-worker_code.h: interface.py
-	$(CODE_GENERATOR) --type=h interface.py  -i amuse.community.interface.stopping_conditions.StoppingConditionInterface ReboundInterface -o $@
-
-rebound_worker: worker_code.cc worker_code.h $(CODELIB) $(OBJS)
-	$(MPICXX) $(CXXFLAGS) $(SC_FLAGS) $(LDFLAGS) -I$(CODEDIR)/src $< $(OBJS) $(CODELIB) $(SC_CLIBS)  -o $@
-	
-.cc.o: $<
-	$(CXX) $(CXXFLAGS) $(SC_FLAGS) -I$(CODEDIR)/src -c -o $@ $< 
+.PHONY: distclean
+distclean: clean
+	rm -f support/config.mk support/config.log support/config.status
+	rm -rf support/autom4te.cache

@@ -1,4 +1,4 @@
-#include "worker_code.h"
+#include "rebound_worker.h"
 
 extern "C" {
 #define restrict 
