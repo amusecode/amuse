@@ -65,7 +65,7 @@ class Tsf2Particles(object):
 
     def return_numbers_in_brackets(self, line):
         numbers = []
-        indices = re.findall('\[[0-9]*\]',line)
+        indices = re.findall(r'\[[0-9]*\]',line)
         for i in indices:
             numbers.append((int)(i.strip('[').strip(']')))
         return numbers    
