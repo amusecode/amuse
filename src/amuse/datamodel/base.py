@@ -528,7 +528,7 @@ def new_particles_function_attribute_with_doc(function):
 
 def new_particle_function_attribute_with_doc(function):
     class BoundParticleFunctionAttribute(object):
-        if function.__doc__:
+        if function is not None and function.__doc__:
             __doc__ = (
                 "\n  Documentation on '{0}' particle function attribute:"
                 "\n\n".format(function.__name__) + function.__doc__

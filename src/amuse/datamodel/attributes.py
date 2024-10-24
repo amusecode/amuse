@@ -17,7 +17,7 @@ class DomainMetaclass(type):
     def __new__(metaclass, name, bases, dict):
         replacement_dictionary = {}
         for key, value in dict.items():
-            if isinstance(value, tuple):
+            if not key.startswith('__') and isinstance(value, tuple):
                 default_value, description = value
                 replacement_dictionary[key] = AttributeDefinition(
                     key, description, default_value.unit, default_value
