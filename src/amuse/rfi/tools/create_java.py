@@ -11,19 +11,16 @@ import sys
 import os
 import inspect
 
-dtype_to_spec = DTypeToSpecDictionary({
-    'int32' : DTypeSpec('Int', 'Int', '', 'int', ''),
-    'int64' : DTypeSpec('Long', 'Long',
-                    '', 'long', ''),
-    'float32' : DTypeSpec('Float', 'Float',
-                    '', 'float', ''),
-    'float64' : DTypeSpec('Double', 'Double',
-                    '', 'double', ''),
-    'bool' : DTypeSpec('Boolean', 'Boolean',
-                    '', 'boolean', ''),
-    'string' : DTypeSpec('String', 'String',
-                    '', 'String', ''),
-})
+dtype_to_spec = DTypeToSpecDictionary(
+    {
+        "int32": DTypeSpec("Int", "Int", "", "int", ""),
+        "int64": DTypeSpec("Long", "Long", "", "long", ""),
+        "float32": DTypeSpec("Float", "Float", "", "float", ""),
+        "float64": DTypeSpec("Double", "Double", "", "double", ""),
+        "bool": DTypeSpec("Boolean", "Boolean", "", "boolean", ""),
+        "string": DTypeSpec("String", "String", "", "String", ""),
+    }
+)
 
 IMPORTS_CODE_STRING = """
 import java.io.IOException;
@@ -1075,7 +1072,6 @@ AMUSE_MESSAGE_CLASS_CODE_STRING = """
 """
 
 
-
 FOOTER_CODE_STRING = """
   private final AmuseMessage request;
   private final AmuseMessage reply;
@@ -1160,21 +1156,22 @@ FOOTER_CODE_STRING = """
 
 """
 
+
 class MakeJavaCodeString(GenerateASourcecodeString):
     @late
     def dtype_to_spec(self):
         return dtype_to_spec
-       
-         
+
 
 class GenerateAJavaStringOfAFunctionSpecification(MakeJavaCodeString):
     @late
     def specification(self):
-        raise exceptions.AmuseException("No specification set, please set the specification first")
-   
-        
+        raise exceptions.AmuseException(
+            "No specification set, please set the specification first"
+        )
+
     def start(self):
-        #must and can handle array is the same thing in Java codes...
+        # must and can handle array is the same thing in Java codes...
         if self.specification.can_handle_array:
             self.specification.must_handle_array = True
 
@@ -1183,12 +1180,11 @@ class GenerateAJavaStringOfAFunctionSpecification(MakeJavaCodeString):
         self.out.indent()
         self.out.lf() + "{"
         self.out.indent()
-        
+
         self.output_lines_with_number_of_outputs()
-        
-        
-        if hasattr(self.specification,"internal_provided"):
-            self.out.lf() + "//" +  self.specification.name + " ignored"
+
+        if hasattr(self.specification, "internal_provided"):
+            self.out.lf() + "//" + self.specification.name + " ignored"
         else:
             self.output_declare_variables()
             self.output_function_start()
@@ -1201,280 +1197,369 @@ class GenerateAJavaStringOfAFunctionSpecification(MakeJavaCodeString):
         self.output_casestmt_end()
         self.out.dedent()
         self._result = self.out.string
-        
+
     def output_casestmt_start(self):
-        self.out + 'case ' + self.specification.id + ':'
-        
-              
+        self.out + "case " + self.specification.id + ":"
+
     def output_lines_with_number_of_outputs(self):
         dtype_to_count = {}
-        
+
         for parameter in self.specification.output_parameters:
             count = dtype_to_count.get(parameter.datatype, 0)
             dtype_to_count[parameter.datatype] = count + 1
-                
+
         if not self.specification.result_type is None:
             count = dtype_to_count.get(self.specification.result_type, 0)
             dtype_to_count[self.specification.result_type] = count + 1
-            
-        for dtype in dtype_to_count:       
+
+        for dtype in dtype_to_count:
             spec = self.dtype_to_spec[dtype]
             count = dtype_to_count[dtype]
-            self.out.lf() + 'reply.set' + spec.input_var_name + 'Count(' + count + ' * count);'
+            (
+                self.out.lf()
+                + "reply.set"
+                + spec.input_var_name
+                + "Count("
+                + count
+                + " * count);"
+            )
             pass
-        
-        self.out.lf() + 'reply.ensurePrimitiveCapacity();'
-            
-    
+
+        self.out.lf() + "reply.ensurePrimitiveCapacity();"
+
     def output_function_parameters(self):
         self.out.indent()
-        
+
         first = True
-        
+
         for parameter in self.specification.parameters:
             spec = self.dtype_to_spec[parameter.datatype]
-            
+
             if first:
                 first = False
             else:
-                self.out + ', '
-                
+                self.out + ", "
+
             if parameter.direction == LegacyFunctionSpecification.IN:
                 if self.specification.must_handle_array:
                     self.out + parameter.name
                 else:
-                    self.out + parameter.name + '[0]'
+                    self.out + parameter.name + "[0]"
             if parameter.direction == LegacyFunctionSpecification.INOUT:
-                    self.out + parameter.name
+                self.out + parameter.name
             elif parameter.direction == LegacyFunctionSpecification.OUT:
-                    self.out + parameter.name
+                self.out + parameter.name
             elif parameter.direction == LegacyFunctionSpecification.LENGTH:
-                self.out + 'count'
-    
+                self.out + "count"
+
         self.out.dedent()
 
     def output_declare_variables(self):
         if not self.specification.result_type is None:
             spec = self.dtype_to_spec[self.specification.result_type]
-            self.out.lf() + spec.type + ' functionResult;'
-        
+            self.out.lf() + spec.type + " functionResult;"
+
         for parameter in self.specification.parameters:
             spec = self.dtype_to_spec[parameter.datatype]
-            
-            if parameter.direction == LegacyFunctionSpecification.IN or parameter.direction == LegacyFunctionSpecification.INOUT :
-                self.out.lf() + spec.type + '[] ' + parameter.name + ' = request.get' + spec.input_var_name + 'Slice(' + parameter.input_index + ');'
+
+            if (
+                parameter.direction == LegacyFunctionSpecification.IN
+                or parameter.direction == LegacyFunctionSpecification.INOUT
+            ):
+                (
+                    self.out.lf()
+                    + spec.type
+                    + "[] "
+                    + parameter.name
+                    + " = request.get"
+                    + spec.input_var_name
+                    + "Slice("
+                    + parameter.input_index
+                    + ");"
+                )
             if parameter.direction == LegacyFunctionSpecification.OUT:
-                self.out.lf() + spec.type + '[] ' + parameter.name + ' = new ' +  spec.type + '[count];'
+                (
+                    self.out.lf()
+                    + spec.type
+                    + "[] "
+                    + parameter.name
+                    + " = new "
+                    + spec.type
+                    + "[count];"
+                )
 
     def output_function_start(self):
-        self.out.n() 
+        self.out.n()
         if not self.specification.result_type is None:
-            self.out + 'functionResult = '
-            
-        self.out + 'code.' + self.specification.name + '('
+            self.out + "functionResult = "
+
+        self.out + "code." + self.specification.name + "("
 
     def output_function_end(self):
-        self.out + ')' + ';'
-                
+        self.out + ")" + ";"
+
     def output_copy_output_variables(self):
         if not self.specification.result_type is None:
             spec = self.dtype_to_spec[self.specification.result_type]
-            self.out.lf() + 'reply.set' + spec.output_var_name + 'Slice(0, functionResult);'
+            (
+                self.out.lf()
+                + "reply.set"
+                + spec.output_var_name
+                + "Slice(0, functionResult);"
+            )
 
         for parameter in self.specification.parameters:
             spec = self.dtype_to_spec[parameter.datatype]
-            
-            if parameter.direction == LegacyFunctionSpecification.OUT or parameter.direction == LegacyFunctionSpecification.INOUT:
-                self.out.lf() + 'reply.set' + spec.output_var_name + 'Slice(' + parameter.output_index + ', ' + parameter.name + ');'
-  
-    def output_casestmt_end(self):
-        self.out.n() + 'break;'
 
-class GenerateAJavaFunctionDeclarationStringFromAFunctionSpecification(MakeJavaCodeString):
-   
-        
+            if (
+                parameter.direction == LegacyFunctionSpecification.OUT
+                or parameter.direction == LegacyFunctionSpecification.INOUT
+            ):
+                (
+                    self.out.lf()
+                    + "reply.set"
+                    + spec.output_var_name
+                    + "Slice("
+                    + parameter.output_index
+                    + ", "
+                    + parameter.name
+                    + ");"
+                )
+
+    def output_casestmt_end(self):
+        self.out.n() + "break;"
+
+
+class GenerateAJavaFunctionDeclarationStringFromAFunctionSpecification(
+    MakeJavaCodeString
+):
     def start(self):
-        #must and can handle array is the same thing in Java codes...
+        # must and can handle array is the same thing in Java codes...
         if self.specification.can_handle_array:
             self.specification.must_handle_array = True
-             
+
         self.output_function_parameter_types()
         self.output_function_start()
         self.output_function_parameters()
         self.output_function_end()
         self._result = self.out.string
-        
-    def output_function_parameter_types(self):        
+
+    def output_function_parameter_types(self):
         for parameter in self.specification.parameters:
-            if (parameter.direction == LegacyFunctionSpecification.IN):
-                self.out.lf() + '// parameter "' + parameter.name + '" is an input parameter'
-            elif (parameter.direction == LegacyFunctionSpecification.OUT):
-                self.out.lf() + '// parameter "' + parameter.name + '" is an output parameter'
-            elif (parameter.direction == LegacyFunctionSpecification.INOUT):
-                self.out.lf() + '// parameter "' + parameter.name + '" is an inout parameter'
-            elif (parameter.direction == LegacyFunctionSpecification.LENGTH):
-                self.out.lf() + '// parameter "' + parameter.name + '" is a length parameter'
-            
-    def output_function_parameters(self):        
+            if parameter.direction == LegacyFunctionSpecification.IN:
+                (
+                    self.out.lf()
+                    + '// parameter "'
+                    + parameter.name
+                    + '" is an input parameter'
+                )
+            elif parameter.direction == LegacyFunctionSpecification.OUT:
+                (
+                    self.out.lf()
+                    + '// parameter "'
+                    + parameter.name
+                    + '" is an output parameter'
+                )
+            elif parameter.direction == LegacyFunctionSpecification.INOUT:
+                (
+                    self.out.lf()
+                    + '// parameter "'
+                    + parameter.name
+                    + '" is an inout parameter'
+                )
+            elif parameter.direction == LegacyFunctionSpecification.LENGTH:
+                (
+                    self.out.lf()
+                    + '// parameter "'
+                    + parameter.name
+                    + '" is a length parameter'
+                )
+
+    def output_function_parameters(self):
         first = True
-        
+
         for parameter in self.specification.parameters:
             spec = self.dtype_to_spec[parameter.datatype]
-            
+
             if first:
                 first = False
             else:
-                self.out + ', '
-                
+                self.out + ", "
+
             self.out + spec.type
-            if ((self.specification.must_handle_array and parameter.is_input()) or parameter.is_output()):
-                self.out + '[]'
-                
-            self.out + ' '
+            if (
+                self.specification.must_handle_array and parameter.is_input()
+            ) or parameter.is_output():
+                self.out + "[]"
+
+            self.out + " "
             self.out + parameter.name
-                
-            
+
     def output_function_end(self):
-        self.out + ')' + ';'
-        
+        self.out + ")" + ";"
+
     def output_function_start(self):
         self.out.n()
         if not self.specification.result_type is None:
             spec = self.dtype_to_spec[self.specification.result_type]
             self.out + spec.type
-            self.out + ' '
+            self.out + " "
         else:
-            self.out + 'void' + ' '
-        self.out + self.specification.name + '('
-        
-class GenerateAJavaSourcecodeStringFromASpecificationClass\
-    (GenerateASourcecodeStringFromASpecificationClass):
+            self.out + "void" + " "
+        self.out + self.specification.name + "("
 
+
+class GenerateAJavaSourcecodeStringFromASpecificationClass(
+    GenerateASourcecodeStringFromASpecificationClass
+):
     @late
     def specification_class(self):
-        raise exceptions.AmuseException("No specification_class set, please set the specification_class first")
-    
+        raise exceptions.AmuseException(
+            "No specification_class set, please set the specification_class first"
+        )
+
     @late
     def dtype_to_spec(self):
         return dtype_to_spec
 
     def output_sourcecode_for_function(self):
         return GenerateAJavaStringOfAFunctionSpecification()
-    
+
     def start(self):
-        
         self.out.lf()
 
         self.out + IMPORTS_CODE_STRING
-        
-        self.out.lf() + 'class Worker {'
+
+        self.out.lf() + "class Worker {"
         self.out.indent().lf()
         self.out + AMUSE_MESSAGE_CLASS_CODE_STRING
 
-        
         self.output_handle_call()
-        
+
         self.out.lf() + FOOTER_CODE_STRING
 
         self.out.dedent().lf()
-        
+
         self.out.lf() + "}"
-        
+
         self._result = self.out.string
-        
+
     def output_code_constants(self):
         for dtype in list(self.dtype_to_spec.keys()):
             dtype_spec = self.dtype_to_spec[dtype]
-            
-            maxin = self.mapping_from_dtype_to_maximum_number_of_inputvariables.get(dtype, 0)
-            self.out + 'static int MAX_' + dtype_spec.input_var_name.upper() + ' = ' + maxin + ";"
+
+            maxin = self.mapping_from_dtype_to_maximum_number_of_inputvariables.get(
+                dtype, 0
+            )
+            (
+                self.out
+                + "static int MAX_"
+                + dtype_spec.input_var_name.upper()
+                + " = "
+                + maxin
+                + ";"
+            )
             self.out.lf()
-            
-            maxout = self.mapping_from_dtype_to_maximum_number_of_outputvariables.get(dtype, 0)
-            self.out + 'static int MAX_' + dtype_spec.output_var_name.upper() + ' = ' + maxout + ";"
+
+            maxout = self.mapping_from_dtype_to_maximum_number_of_outputvariables.get(
+                dtype, 0
+            )
+            (
+                self.out
+                + "static int MAX_"
+                + dtype_spec.output_var_name.upper()
+                + " = "
+                + maxout
+                + ";"
+            )
             self.out.lf()
-            
+
     def output_handle_call(self):
-        
-        self.out.lf().lf() + 'private boolean handleCall() throws IOException {'
+        self.out.lf().lf() + "private boolean handleCall() throws IOException {"
         self.out.indent()
-        
-        self.out.lf() + 'int count = request.getCallCount();'
-        
-        self.out.lf().lf() + 'switch (request.getFunctionID()) {'
+
+        self.out.lf() + "int count = request.getCallCount();"
+
+        self.out.lf().lf() + "switch (request.getFunctionID()) {"
         self.out.indent()
-        self.out.lf() + 'case 0:'
+        self.out.lf() + "case 0:"
         self.out.indent()
-        self.out.lf() + 'code.end();'
-        self.out.lf() + 'return false;'
+        self.out.lf() + "code.end();"
+        self.out.lf() + "return false;"
         self.out.dedent()
-        
+
         self.output_sourcecode_for_functions()
-        
-        self.out.lf() + 'default:'
+
+        self.out.lf() + "default:"
         self.out.indent()
-        self.out.lf() + 'System.err.println("unknown function id " + request.getFunctionID());'
-        self.out.lf() + 'reply.setError("unknown function id " + request.getFunctionID());'
+        (
+            self.out.lf()
+            + 'System.err.println("unknown function id " + request.getFunctionID());'
+        )
+        (
+            self.out.lf()
+            + 'reply.setError("unknown function id " + request.getFunctionID());'
+        )
         self.out.dedent()
-        
-        self.out.dedent().lf() + '}'
+
+        self.out.dedent().lf() + "}"
         self.out.dedent()
-        self.out.indent().lf() + 'return true;'
-        self.out.dedent().lf() + '}'
+        self.out.indent().lf() + "return true;"
+        self.out.dedent().lf() + "}"
 
-class GenerateAJavaInterfaceStringFromASpecificationClass\
-    (GenerateASourcecodeStringFromASpecificationClass):
 
+class GenerateAJavaInterfaceStringFromASpecificationClass(
+    GenerateASourcecodeStringFromASpecificationClass
+):
     @late
     def ignore_functions_from_specification_classes(self):
         return []
-        
+
     @late
     def underscore_functions_from_specification_classes(self):
         return []
-        
+
     @late
     def dtype_to_spec(self):
         return dtype_to_spec
-    
-        
+
     def must_include_interface_function_in_output(self, x):
-        if hasattr(x.specification,"internal_provided"):
+        if hasattr(x.specification, "internal_provided"):
             return False
-            
+
         for cls in self.ignore_functions_from_specification_classes:
             if hasattr(cls, x.specification.name):
                 return False
-        
+
         return True
-        
+
     def output_sourcecode_for_function(self):
         return GenerateAJavaFunctionDeclarationStringFromAFunctionSpecification()
-        
-    def start(self):  
-        self.out + 'public interface CodeInterface {'
-        self.out.indent().lf()
-        
-        self.out + 'public void end();'
-        self.out.lf() 
-            
-        self.output_sourcecode_for_functions()
-        
-        self.out.dedent().lf() + '}'
-        
-        self.out.lf()
-        
-        self._result = self.out.string
-     
-class GenerateAJavaWorkerScript(GenerateASourcecodeString):
 
+    def start(self):
+        self.out + "public interface CodeInterface {"
+        self.out.indent().lf()
+
+        self.out + "public void end();"
+        self.out.lf()
+
+        self.output_sourcecode_for_functions()
+
+        self.out.dedent().lf() + "}"
+
+        self.out.lf()
+
+        self._result = self.out.string
+
+
+class GenerateAJavaWorkerScript(GenerateASourcecodeString):
     @late
     def amuse_root_dir(self):
         return os.path.abspath(options.GlobalOptions.instance().amuse_rootdirectory)
 
     @late
     def code_dir(self):
-        codedir=os.path.split(self.code_directory())[-1]
+        codedir = os.path.split(self.code_directory())[-1]
         return os.path.join("community", codedir)
 
     @late
@@ -1484,37 +1569,35 @@ class GenerateAJavaWorkerScript(GenerateASourcecodeString):
     @late
     def template_dir(self):
         return os.path.dirname(__file__)
-        
+
     @late
     def template_string(self):
         path = self.template_dir
-        path = os.path.join(path, 'java_code_script.template')
-            
+        path = os.path.join(path, "java_code_script.template")
+
         with open(path, "r") as f:
             template_string = f.read()
-        
+
         return template_string
-    
+
     @staticmethod
     def classpath(classpath, code_dir):
         return ":".join([os.path.join(code_dir, x) for x in classpath])
-    
+
     def script_string(self):
         return self.template_string.format(
-            executable = sys.executable,
-            java = self.java,
-            classpath = self.classpath(self.specification_class.classpath, self.code_dir),
-            code_dir = self.code_dir,
-            amuse_root_dir = self.amuse_root_dir
-            )
-
+            executable=sys.executable,
+            java=self.java,
+            classpath=self.classpath(self.specification_class.classpath, self.code_dir),
+            code_dir=self.code_dir,
+            amuse_root_dir=self.amuse_root_dir,
+        )
 
     def code_directory(self):
         interface_module = inspect.getmodule(self.specification_class).__name__
         return os.path.dirname(inspect.getfile(self.specification_class))
-    
+
     def start(self):
         self.out + self.script_string()
-        
-        self._result = self.out.string
 
+        self._result = self.out.string

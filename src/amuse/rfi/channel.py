@@ -1,9 +1,8 @@
-import inspect
-import numpy
-import os.path
-import pickle as pickle
-
 import sys
+import inspect
+import os.path
+import pickle
+
 import struct
 import threading
 import select
@@ -14,16 +13,7 @@ import socket
 import array
 import logging
 import shlex
-
-logger = logging.getLogger(__name__)
-
-#
-# we want to use the automatic initialization and finalization
-# of the MPI library, but sometime MPI should not be imported
-# when importing the channel
-# so actual import is in function ensure_mpi_initialized
-#
-MPI = None
+import numpy
 
 from subprocess import Popen, PIPE
 
@@ -43,9 +33,18 @@ from amuse.rfi import slurm
 
 from . import async_request
 
+logger = logging.getLogger(__name__)
 
-class AbstractMessage(object):
+#
+# we want to use the automatic initialization and finalization
+# of the MPI library, but sometime MPI should not be imported
+# when importing the channel
+# so actual import is in function ensure_mpi_initialized
+#
+MPI = None
 
+
+class AbstractMessage:
     def __init__(
         self,
         call_id=0,
@@ -119,7 +118,6 @@ class AbstractMessage(object):
 
 
 class MPIMessage(AbstractMessage):
-
     def receive(self, comm):
         header = self.receive_header(comm)
         self.receive_content(comm, header)
@@ -330,7 +328,6 @@ class MPIMessage(AbstractMessage):
 
 
 class ServerSideMPIMessage(MPIMessage):
-
     def mpi_receive(self, comm, array):
         request = comm.Irecv(array, source=0, tag=999)
         request.Wait()
@@ -363,7 +360,6 @@ class ServerSideMPIMessage(MPIMessage):
 
 
 class ClientSideMPIMessage(MPIMessage):
-
     def mpi_receive(self, comm, array):
         comm.Bcast(array, root=0)
 
@@ -557,7 +553,6 @@ class AbstractMessageChannel(OptionalAttributes):
         interpreter_executable=None,
         run_command_redirected_file=None,
     ):
-
         fname = run_command_redirected_file or run_command_redirected.__file__
         arguments = [fname, stdoutname, stderrname]
 
@@ -733,7 +728,6 @@ Please do a 'make clean; make' in the root directory.
                     )
 
     def get_full_name_of_the_worker(self, type):
-
         if os.path.isabs(self.name_of_the_worker):
             full_name_of_the_worker = self.name_of_the_worker
 
@@ -876,7 +870,6 @@ Please do a 'make clean; make' in the root directory.
     def split_message(
         self, call_id, function_id, call_count, dtype_to_arguments, encoded_units=()
     ):
-
         if call_count <= 1:
             raise Exception("split message called with call_count<=1")
 
@@ -1198,7 +1191,6 @@ class MpiChannel(AbstractMessageChannel):
         return MPI.COMM_WORLD.rank == 0
 
     def start(self):
-
         logger.debug("starting mpi worker process")
 
         logger.debug("mpi_enabled: %s", str(self.initialize_mpi))
@@ -1215,7 +1207,6 @@ class MpiChannel(AbstractMessageChannel):
                 self.redirect_stdout_file == "none"
                 and self.redirect_stderr_file == "none"
             ):
-
                 if self.interpreter_executable is None:
                     command = self.full_name_of_the_worker
                     arguments = None
@@ -1277,7 +1268,6 @@ class MpiChannel(AbstractMessageChannel):
     def send_message(
         self, call_id, function_id, dtype_to_arguments={}, encoded_units=()
     ):
-
         if self.intercomm is None:
             raise exceptions.CodeException(
                 "You've tried to send a message to a code that is not running"
@@ -1314,7 +1304,6 @@ class MpiChannel(AbstractMessageChannel):
             message.send(self.intercomm)
 
     def recv_message(self, call_id, function_id, handle_as_array, has_units=False):
-
         if self._communicated_splitted_message:
             x = self._merged_results_splitted_message
             self._communicated_splitted_message = False
@@ -1479,9 +1468,10 @@ class MpiChannel(AbstractMessageChannel):
         host = ",".join(hostnames)
         print("HOST:", host, cls._scheduler_index, os.environ["SLURM_TASKS_PER_NODE"])
         info = MPI.Info.Create()
-        info["host"] = (
-            host  # actually in mpich and openmpi, the host parameter is interpreted as a comma separated list of host names,
-        )
+
+        # actually in mpich and openmpi, the host parameter is interpreted as a
+        # comma separated list of host names,
+        info["host"] = host
         return info
 
 
@@ -1707,9 +1697,7 @@ m.run_mpi_channel('{2}')"""
 
 
 class SocketMessage(AbstractMessage):
-
     def _receive_all(self, nbytes, thesocket):
-
         # logger.debug("receiving %d bytes", nbytes)
 
         result = []
@@ -1731,7 +1719,6 @@ class SocketMessage(AbstractMessage):
             return b""
 
     def receive(self, socket):
-
         # logger.debug("receiving message")
 
         header_bytes = self._receive_all(44, socket)
@@ -1862,7 +1849,6 @@ class SocketMessage(AbstractMessage):
         return async_request.ASyncSocketRequest(self, socket)
 
     def send(self, socket):
-
         flags = numpy.array(
             [self.big_endian, self.error, len(self.encoded_units) > 0, False], dtype="b"
         )
@@ -1916,7 +1902,6 @@ class SocketMessage(AbstractMessage):
 
     def send_strings(self, socket, array):
         if len(array) > 0:
-
             lengths = numpy.array([len(s) for s in array], dtype="int32")
             chars = (chr(0).join(array) + chr(0)).encode("utf-8")
 
@@ -1942,7 +1927,6 @@ class SocketMessage(AbstractMessage):
 
 
 class SocketChannel(AbstractMessageChannel):
-
     def __init__(
         self,
         name_of_the_worker,
@@ -2037,7 +2021,6 @@ class SocketChannel(AbstractMessageChannel):
                 self.redirect_stdout_file == "none"
                 and self.redirect_stderr_file == "none"
             ):
-
                 if self.interpreter_executable is None:
                     command = self.full_name_of_the_worker
                     arguments = []
@@ -2092,7 +2075,6 @@ class SocketChannel(AbstractMessageChannel):
             return "source " + self.remote_env + "\n"
 
     def generate_remote_command_and_arguments(self, hostname, server_address, port):
-
         # get remote config
         args = ["ssh", "-T", hostname]
 
@@ -2149,7 +2131,6 @@ class SocketChannel(AbstractMessageChannel):
                 self.redirect_stdout_file == "none"
                 and self.redirect_stderr_file == "none"
             ):
-
                 if interpreter_executable is None:
                     command = full_name_of_the_worker
                     arguments = []
@@ -2196,7 +2177,6 @@ class SocketChannel(AbstractMessageChannel):
         return command, arguments
 
     def start(self):
-
         server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
         server_address = self.get_host_ip(self.hostname)
@@ -2355,7 +2335,6 @@ class SocketChannel(AbstractMessageChannel):
     def send_message(
         self, call_id, function_id, dtype_to_arguments={}, encoded_units=()
     ):
-
         call_count = self.determine_length_from_data(dtype_to_arguments)
 
         # logger.info("sending message for call id %d, function %d, length %d", id, tag, length)
@@ -2386,7 +2365,6 @@ class SocketChannel(AbstractMessageChannel):
             self._is_inuse = True
 
     def recv_message(self, call_id, function_id, handle_as_array, has_units=False):
-
         self._is_inuse = False
 
         if self._communicated_splitted_message:
@@ -2508,7 +2486,6 @@ class SocketChannel(AbstractMessageChannel):
 
 
 class OutputHandler(threading.Thread):
-
     def __init__(self, stream, port):
         threading.Thread.__init__(self)
         self.stream = stream
@@ -2542,7 +2519,6 @@ class OutputHandler(threading.Thread):
         self.start()
 
     def run(self):
-
         while True:
             # logger.debug("receiving data for output")
             data = self.socket.recv(1024)
@@ -2557,7 +2533,6 @@ class OutputHandler(threading.Thread):
 
 
 class DistributedChannel(AbstractMessageChannel):
-
     default_distributed_instance = None
 
     @staticmethod
@@ -2796,7 +2771,6 @@ class DistributedChannel(AbstractMessageChannel):
     def send_message(
         self, call_id, function_id, dtype_to_arguments={}, encoded_units=None
     ):
-
         call_count = self.determine_length_from_data(dtype_to_arguments)
 
         logger.debug(
@@ -2828,7 +2802,6 @@ class DistributedChannel(AbstractMessageChannel):
             self._is_inuse = True
 
     def recv_message(self, call_id, function_id, handle_as_array, has_units=False):
-
         self._is_inuse = False
 
         if self._communicated_splitted_message:
@@ -2846,7 +2819,7 @@ class DistributedChannel(AbstractMessageChannel):
                 message.strings[0] if len(message.strings) > 0 else "no error message"
             )
             if message.call_id != call_id or message.function_id != function_id:
-                # ~ self.stop()
+                # self.stop()
                 error_message += " - code probably died, sorry."
             raise exceptions.CodeException("Error in worker: " + error_message)
 
@@ -2915,7 +2888,6 @@ class DistributedChannel(AbstractMessageChannel):
 
 
 class LocalChannel(AbstractMessageChannel):
-
     def __init__(
         self,
         name_of_the_worker,
@@ -2970,7 +2942,6 @@ class LocalChannel(AbstractMessageChannel):
     def send_message(
         self, call_id, function_id, dtype_to_arguments={}, encoded_units=None
     ):
-
         call_count = self.determine_length_from_data(dtype_to_arguments)
 
         self.message = LocalMessage(

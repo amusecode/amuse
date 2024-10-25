@@ -16,19 +16,34 @@ class IoException(exceptions.CoreException):
 class UnsupportedFormatException(IoException):
     """Raised when the given format is not supported by AMUSE."""
 
-    formatstring = "You tried to load or save a file with fileformat '{0}', but this format is not in the supported formats list"
+    formatstring = (
+        "You tried to load or save a file with fileformat '{0}', but this format "
+        "is not in the supported formats list"
+    )
 
 
 class CannotSaveException(IoException):
-    """Raised when the given format cannot save data (only reading of data is supported for the format)"""
+    """
+    Raised when the given format cannot save data (only reading of data is
+    supported for the format)
+    """
 
-    formatstring = "You tried to save a file with fileformat '{0}', but this format is not supported for writing files"
+    formatstring = (
+        "You tried to save a file with fileformat '{0}', but this format is not "
+        "supported for writing files"
+    )
 
 
 class CannotLoadException(IoException):
-    """Raised when the given format cannot read data (only saving of data is supported for the format)"""
+    """
+    Raised when the given format cannot read data (only saving of data is
+    supported for the format)
+    """
 
-    formatstring = "You tried to load a file with fileformat '{0}', but this format is not supported for reading files"
+    formatstring = (
+        "You tried to load a file with fileformat '{0}', but this format is not "
+        "supported for reading files"
+    )
 
 
 class format_option(late):
@@ -41,19 +56,19 @@ class format_option(late):
         return self.initializer.__name__
 
 
-def _get_processor_factory(format):
-    if isinstance(format, str):
-        if not format in registered_fileformat_processors:
-            raise UnsupportedFormatException(format)
-        processor_factory = registered_fileformat_processors[format]
+def _get_processor_factory(fileformat):
+    if isinstance(fileformat, str):
+        if fileformat not in registered_fileformat_processors:
+            raise UnsupportedFormatException(fileformat)
+        processor_factory = registered_fileformat_processors[fileformat]
     else:
-        processor_factory = format
+        processor_factory = fileformat
 
     return processor_factory
 
 
 def write_set_to_file(
-    set, filename, format="amuse", **format_specific_keyword_arguments
+    particleset, filename, format="amuse", **format_specific_keyword_arguments
 ):
     """
     Write a set to the given file in the given format.
@@ -70,7 +85,7 @@ def write_set_to_file(
 
     processor_factory = _get_processor_factory(format)
 
-    processor = processor_factory(filename, set=set, format=format)
+    processor = processor_factory(filename, set=particleset, format=format)
     processor.set_options(format_specific_keyword_arguments)
     processor.store()
 
@@ -100,7 +115,7 @@ def read_set_from_file(filename, format="amuse", **format_specific_keyword_argum
     return processor.load()
 
 
-class ReportTable(object):
+class ReportTable:
     """
     Report quantities and values to a file.
 
@@ -234,7 +249,7 @@ def _update_documentation_strings():
         method.__doc__ = new_doc
 
 
-class FileFormatProcessor(object):
+class FileFormatProcessor:
     """
     Abstract base class of all fileformat processors
 
@@ -445,56 +460,56 @@ class FortranFileFormatProcessor(BinaryFileFormatProcessor):
             return result.newbyteorder(self.endianness)
 
     def read_fortran_block(self, file):
-        """Returns one block read from file. Checks if the
-        block is consistant. Result is an array of bytes
         """
-        format = self.endianness + "I"
-        bytes = file.read(4)
-        if not bytes:
+        Returns one block read from file. Checks if the block is consistent.
+        Result is an array of bytes.
+        """
+        fileformat = self.endianness + "I"
+        bytesarray = file.read(4)
+        if not bytesarray:
             return None
-        length_of_block = struct.unpack(format, bytes)[0]
+        length_of_block = struct.unpack(fileformat, bytesarray)[0]
         result = file.read(length_of_block)
-        bytes = file.read(4)
-        length_of_block_after = struct.unpack(format, bytes)[0]
+        bytesarray = file.read(4)
+        length_of_block_after = struct.unpack(fileformat, bytesarray)[0]
         if length_of_block_after != length_of_block:
             raise IoException(
-                "Block is mangled sizes don't match before: {0}, after: {1}".format(
-                    length_of_block, length_of_block_after
-                )
+                f"Block is mangled sizes don't match before: {length_of_block}, "
+                f"after: {length_of_block_after}"
             )
         return result
 
     def read_fortran_block_floats(self, file):
-        bytes = self.read_fortran_block(file)
-        return numpy.frombuffer(bytes, dtype=self.float_type)
+        bytesarray = self.read_fortran_block(file)
+        return numpy.frombuffer(bytesarray, dtype=self.float_type)
 
     def read_fortran_block_doubles(self, file):
-        bytes = self.read_fortran_block(file)
-        return numpy.frombuffer(bytes, dtype=self.double_type)
+        bytesarray = self.read_fortran_block(file)
+        return numpy.frombuffer(bytesarray, dtype=self.double_type)
 
     def read_fortran_block_uints(self, file):
-        bytes = self.read_fortran_block(file)
-        return numpy.frombuffer(bytes, dtype=self.uint_type)
+        bytesarray = self.read_fortran_block(file)
+        return numpy.frombuffer(bytesarray, dtype=self.uint_type)
 
     def read_fortran_block_ulongs(self, file):
-        bytes = self.read_fortran_block(file)
-        return numpy.frombuffer(bytes, dtype=self.ulong_type)
+        bytesarray = self.read_fortran_block(file)
+        return numpy.frombuffer(bytesarray, dtype=self.ulong_type)
 
     def read_fortran_block_ints(self, file):
-        bytes = self.read_fortran_block(file)
-        return numpy.frombuffer(bytes, dtype=self.int_type)
+        bytesarray = self.read_fortran_block(file)
+        return numpy.frombuffer(bytesarray, dtype=self.int_type)
 
     def read_fortran_block_float_vectors(self, file, size=3):
         result = self.read_fortran_block_floats(file)
         return result.reshape(len(result) // size, size)
 
-    def write_fortran_block(self, file, input):
-        format = self.endianness + "I"
-        input_bytes = bytearray(input)
+    def write_fortran_block(self, file, input_raw):
+        fileformat = self.endianness + "I"
+        input_bytes = bytearray(input_raw)
         length_of_block = len(input_bytes)
-        file.write(struct.pack(format, length_of_block))
+        file.write(struct.pack(fileformat, length_of_block))
         file.write(input_bytes)
-        file.write(struct.pack(format, length_of_block))
+        file.write(struct.pack(fileformat, length_of_block))
 
     def write_fortran_block_floats(self, file, values):
         array = numpy.asarray(values, dtype=self.float_type)

@@ -6,7 +6,7 @@ endif
 -include ${AMUSE_DIR}/config.mk
 
 CC ?= gcc
-CFLAGS ?= -O3
+CFLAGS ?= -O3 
 
 FC ?= gfortran
 FORTRAN ?= $(FC)
