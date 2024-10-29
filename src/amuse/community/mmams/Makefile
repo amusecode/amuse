@@ -1,68 +1,83 @@
-# standard amuse configuration include
-# config.mk will be made after ./configure has run
-ifeq ($(origin AMUSE_DIR), undefined)
-  AMUSE_DIR := $(shell amusifier --get-amuse-dir)
+ifneq (,$(filter-out clean distclean, $(MAKECMDGOALS)))
+include support/config.mk
 endif
--include ${AMUSE_DIR}/config.mk
 
-MPICXX ?= mpicxx
 
+# Detecting dependencies
+support/config.mk:
+	cd support && ./configure
 
 BUILDDIR = build
-SRCMAKEDIR   = src/mmas2
-SRCDIR       = src/mmas2/src
-MMAS_DIR  = src/mmas2/src/mmas
-EOS_DIR   = src/mmas2/src/eos
-USM_DIR   = src/mmas2/src/usm
-STD_SRCMMAS_DIRDIR   = src/mmas2/src/std
-GSL_LIBS ?= -lgsl -lgslcblas -lm
 
-#INCLUDES = -I/opt/local/include -Isrc/mmas2/src
-INCLUDES = $(GSL_FLAGS)  -Isrc/mmas2/src
-LIBS +=  -L$(BUILDDIR)/src/mmas -l_mmas2 \
+# Building the code into a static library
+DEPFLAGS += $(AMUSE_MPI_CFLAGS)
+DEPFLAGS += $(GSL_FLAGS)
+
+CFLAGS += $(DEPFLAGS)
+
+LDFLAGS +=
+
+LDLIBS += -lm $(AMUSE_MPI_LIBS)
+LDLIBS += $(GSL_LIBS)
+
+LDLIBS += -L$(BUILDDIR)/src/mmas -l_mmas2 \
 	-L$(BUILDDIR)/src/eos -leos \
 	-L$(BUILDDIR)/src/usm -lusm \
-	-L$(BUILDDIR)/src/std -lstd \
-        $(GSL_LIBS)
+	-L$(BUILDDIR)/src/std -lstd
 
-OBJECTS = interface.o
-SOURCES = interface.cc
-
-CMAKE_GENERATOR ?= Unix Makefiles
-
-all: $(BUILDDIR)/Makefile  mmas2 mmams_worker
 
 $(BUILDDIR)/Makefile:
-	@-mkdir build
-	cd $(BUILDDIR) && cmake ../src/mmas2 -G "$(CMAKE_GENERATOR)" -DGSL_FLAGS="$(GSL_FLAGS)" -DGSL_LIBS="$(GSL_LIBS)"
-	
+	@-mkdir $(BUILDDIR)
+	cd $(BUILDDIR) && cmake ../src/mmas2 -DGSL_FLAGS="$(GSL_FLAGS)" -DGSL_LIBS="$(GSL_LIBS)"
+
 mmas2: $(BUILDDIR)/Makefile
-	make -C $(BUILDDIR)
+	$(MAKE) -C $(BUILDDIR) -j $(CPU_COUNT)
 
-worker_code.cc: interface.py
-	$(CODE_GENERATOR) --type=c $^ MakeMeAMassiveStarInterface -o $@
 
+# Building the workers
 worker_code.h: interface.py
-	$(CODE_GENERATOR) --type=h $^ MakeMeAMassiveStarInterface -o $@
+	amusifier --type=h interface.py MakeMeAMassiveStarInterface -o $@
 
-mmams_worker: worker_code.cc worker_code.h $(OBJECTS)
-	$(MPICXX) $(CXXFLAGS) $(LDFLAGS) $< $(OBJECTS) -o $@  $(LIBS)
+mmams_worker.cc: interface.py
+	amusifier --type=c interface.py MakeMeAMassiveStarInterface -o $@
 
-interface.o: interface.cc
-	$(MPICXX) $(CXXFLAGS) $(INCLUDES) -c -o $@ $< $(LIBS)
+interface.o: interface.cc worker_code.h mmas2
+	$(MPICXX) -c -o $@ $(CFLAGS) -Isrc/mmas2/src $<
 
+mmams_worker.o: mmams_worker.cc worker_code.h
+	$(MPICXX) -c -o $@ $(CFLAGS) $<
+
+mmams_worker: mmams_worker.o interface.o $(CODELIB)
+	$(MPICXX) -o $@ $(LDFLAGS) $^ $(LDLIBS)
+
+
+# Which packages contain which workers?
+amuse-mmams_contains: mmams_worker
+
+
+# Building and installing packages
+develop-%: %_contains
+	support/shared/uninstall.sh $*
+	python -m pip install -e packages/$*
+
+install-%: %_contains
+	support/shared/uninstall.sh $*
+	python -m pip install packages/$*
+
+package-%: %_contains
+	python3 -m pip install -vv --no-cache-dir --no-deps --no-build-isolation --prefix ${PREFIX} packages/$*
+
+test-%:
+	cd packages/$* && pytest
+
+
+# Cleaning up
+.PHONY: clean
 clean:
-	@-make -C $(SRCMAKEDIR) clean
-	cd $(SRCMAKEDIR)  && rm -rf CMakeCache.txt Makefile *.cmake *~ CMakeFiles
-	cd $(SRCDIR)      && rm -rf CMakeCache.txt Makefile *.cmake *~ CMakeFiles
-	cd $(MMAS_DIR) && rm -rf CMakeCache.txt Makefile *.cmake *~ CMakeFiles ccache
-	cd $(EOS_DIR)  && rm -rf CMakeCache.txt Makefile *.cmake *~ CMakeFiles ccache
-	cd $(USM_DIR)  && rm -rf CMakeCache.txt Makefile *.cmake *~ CMakeFiles ccache
-	cd $(STD_DIR)  && rm -rf CMakeCache.txt Makefile *.cmake *~ CMakeFiles ccache
-	rm -f *.pyc *.o
-	rm -f worker_code.cc worker_code.h mmams_worker
-	rm -f worker_code-sockets.cc mmams_worker_sockets
-	rm -rf build
+	rm -rf *.o *worker* $(BUILDDIR)
 
+.PHONY: distclean
 distclean: clean
+	rm -f support/config.mk support/config.log support/config.status
+	rm -rf support/autom4te.cache
 
