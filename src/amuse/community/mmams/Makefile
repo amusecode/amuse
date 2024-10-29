@@ -35,16 +35,16 @@ mmas2: $(BUILDDIR)/Makefile
 
 
 # Building the workers
-worker_code.h: interface.py
+mmams_worker.h: interface.py
 	amusifier --type=h interface.py MakeMeAMassiveStarInterface -o $@
 
 mmams_worker.cc: interface.py
 	amusifier --type=c interface.py MakeMeAMassiveStarInterface -o $@
 
-interface.o: interface.cc worker_code.h mmas2
+interface.o: interface.cc mmams_worker.h mmas2
 	$(MPICXX) -c -o $@ $(CFLAGS) -Isrc/mmas2/src $<
 
-mmams_worker.o: mmams_worker.cc worker_code.h
+mmams_worker.o: mmams_worker.cc mmams_worker.h
 	$(MPICXX) -c -o $@ $(CFLAGS) $<
 
 mmams_worker: mmams_worker.o interface.o $(CODELIB)

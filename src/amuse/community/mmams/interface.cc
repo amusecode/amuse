@@ -1,7 +1,7 @@
 #include "src/mmas2/src/mmas/mmas.h"
 #include "src/mmas2/src/eos/eos.h"
 #include "src/mmas2/src/mmas/mass_loss.h"
-#include "worker_code.h"
+#include "mmams_worker.h"
 #include <map>
 #include <gsl/gsl_errno.h>
 
@@ -63,7 +63,7 @@ int new_particle(int *index_of_the_particle, double mass){
 int delete_particle(int index_of_the_particle){
     map<long long, mmas*>::iterator iter1 = results.find(index_of_the_particle);
     map<long long, usm*>::iterator iter2 = usm_models.find(index_of_the_particle);
-    
+
     if (iter2 == usm_models.end())
         return -3;
     if (iter1 != results.end()){
@@ -94,7 +94,7 @@ inline void is_file(char *fn) {
 int read_usm(int *index_of_the_particle, char *usm_file){
     FILE *fmodel = NULL;
     usm *new_model = new usm;
-    
+
     is_file(usm_file);
     fmodel = fopen(usm_file, "r");
     new_model->read(fmodel, 1);
@@ -106,20 +106,20 @@ int read_usm(int *index_of_the_particle, char *usm_file){
     return 0;
 }
 
-int add_shell(int index_of_the_particle, double d_mass, double cumul_mass, 
-        double radius, double density, double pressure, 
-        double temperature, double luminosity, double molecular_weight, double H1, double He4, 
-        double C12, double N14, double O16, double Ne20, double Mg24, 
+int add_shell(int index_of_the_particle, double d_mass, double cumul_mass,
+        double radius, double density, double pressure,
+        double temperature, double luminosity, double molecular_weight, double H1, double He4,
+        double C12, double N14, double O16, double Ne20, double Mg24,
         double Si28, double Fe56){
     mass_shell shell;
     map<long long, usm*>::iterator it = usm_models.find(index_of_the_particle);
-    
+
     if (it == usm_models.end())
         return -3;
-    
+
     if (hashtable_up_to_date_for_particle_with_index == index_of_the_particle)
         hashtable_up_to_date_for_particle_with_index = -1;
-    
+
     shell.dm = d_mass;
     shell.mass = cumul_mass;
     shell.radius = radius;
@@ -138,7 +138,7 @@ int add_shell(int index_of_the_particle, double d_mass, double cumul_mass,
     shell.composition.Mg24 = Mg24;
     shell.composition.Si28 = Si28;
     shell.composition.Fe56 = Fe56;
-    
+
     if (it->second->get_num_shells() && shell.mass <= it->second->get_last_shell().mass)
         cerr << "Warning: shell ignored, because cumulative mass does not increase" << endl;
     else
@@ -146,24 +146,24 @@ int add_shell(int index_of_the_particle, double d_mass, double cumul_mass,
     return 0;
 }
 
-int get_stellar_model_element(int index_of_the_shell, int index_of_the_particle, 
-        double *d_mass, double *cumul_mass, double *radius, double *density, 
-        double *pressure, double *entropy, double *temperature, double *luminosity, 
-        double *molecular_weight, double *H1, double *He4, double *C12, double *N14, 
+int get_stellar_model_element(int index_of_the_shell, int index_of_the_particle,
+        double *d_mass, double *cumul_mass, double *radius, double *density,
+        double *pressure, double *entropy, double *temperature, double *luminosity,
+        double *molecular_weight, double *H1, double *He4, double *C12, double *N14,
         double *O16, double *Ne20, double *Mg24, double *Si28, double *Fe56){
     mass_shell shell;
     map<long long, usm*>::iterator it = usm_models.find(index_of_the_particle);
     if (it == usm_models.end())
         return -3;
-    
+
     if (index_of_the_shell >= it->second->get_num_shells())
         return -2;
-    
+
     if (hashtable_up_to_date_for_particle_with_index != index_of_the_particle){
         it->second->build_hashtable();
         hashtable_up_to_date_for_particle_with_index = index_of_the_particle;
     }
-    
+
     shell = it->second->get_shell(index_of_the_shell);
     *d_mass = shell.dm;
     *cumul_mass = shell.mass;
@@ -207,16 +207,16 @@ int merge_two_stars(int *id_product, int id_primary, int id_secondary) {
     float v_inf = 0.0;
     map<long long, usm*>::iterator it_primary = usm_models.find(id_primary);
     map<long long, usm*>::iterator it_secondary = usm_models.find(id_secondary);
-    
+
     if (it_primary == usm_models.end() || it_secondary == usm_models.end())
         return -3;
-    
+
     it_primary->second->build_hashtable();
     it_secondary->second->build_hashtable();
-    
+
     mmas *mmams = new mmas(*it_primary->second, *it_secondary->second, r_p, v_inf);
     results.insert(results.end(), std::pair<long long, mmas*>(particle_id_counter, mmams));
-    
+
     mmams->merge_stars_consistently(target_n_shells, flag_do_shock_heating);
     if (!dump_mixed) {
         usm_models.insert(usm_models.end(), std::pair<long long, usm*>(particle_id_counter, &(mmams->get_product())));
