@@ -495,20 +495,20 @@ class PythonImplementation(object):
 
     def internal__become_code(self, number_of_workers, modulename, classname):
         warnings.warn(" possible experimental code path?")
-        #~ print number_of_workers, modulename, classname
+        # print number_of_workers, modulename, classname
         world = self.freeworld
         color = 0 if world.rank < number_of_workers else 1
         key = world.rank if world.rank < number_of_workers else world.rank - number_of_workers
-        #~ print "CC,", color, key, world.rank, world.size
+        # print "CC,", color, key, world.rank, world.size
         newcomm = world.Split(color, key)
-        #~ print ("nc:", newcomm.size, newcomm.rank)
-        #~ print ("AA", self.world, color, self.world.rank, self.world.size)
+        # print ("nc:", newcomm.size, newcomm.rank)
+        # print ("AA", self.world, color, self.world.rank, self.world.size)
         try:
             new_intercomm = newcomm.Create_intercomm(0, self.world, 0, color)
         except Exception as ex:
             warnings.warn(str(ex))
             raise ex
-        #~ print ("nccc:", new_intercomm.Get_remote_size(), new_intercomm.rank)
+        # print ("nccc:", new_intercomm.Get_remote_size(), new_intercomm.rank)
         
         self.communicators.append(new_intercomm)
         self.id_to_activate = len(self.communicators) - 1
