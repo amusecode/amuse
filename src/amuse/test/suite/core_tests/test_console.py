@@ -242,3 +242,7 @@ class TestPrintingStrategy(amusetest.TestCase):
             "], ["+tmp+", "+tmp+"]] au")
         self.assertEqual(str(pi), "3.14 none")
         set_printing_strategy("default")
+
+    def test_latex(self):
+        self.assertEqual(str(units.MSun), "MSun")
+        self.assertEqual(str(units.MSun.latex()), r"M_{\odot}")
