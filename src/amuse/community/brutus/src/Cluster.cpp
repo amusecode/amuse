@@ -1,10 +1,10 @@
 #include "Cluster.h"
 
-Cluster::Cluster(vector<double> data) {
+Cluster::Cluster(std::vector<double> data) {
   int N = data.size()/7;
   s.resize(N);
   mpreal m;
-  vector<mpreal> r(3), v(3);
+  std::vector<mpreal> r(3), v(3);
   for(int i=0; i<N; i++) {
     m    = (mpreal)data[i*7+0];
     r[0] = (mpreal)data[i*7+1];
@@ -17,11 +17,11 @@ Cluster::Cluster(vector<double> data) {
   }
   this->time = 0;
 }
-Cluster::Cluster(vector<mpreal> data) {
+Cluster::Cluster(std::vector<mpreal> data) {
   int N = data.size()/7;
   s.resize(N);
   mpreal m;
-  vector<mpreal> r(3), v(3);
+  std::vector<mpreal> r(3), v(3);
   for(int i=0; i<N; i++) {
     m    = data[i*7+0];
     r[0] = data[i*7+1];
@@ -163,17 +163,17 @@ void Cluster::step(mpreal &dt) {
   updateVelocities(dt);
 }
     
-vector<mpreal> Cluster::energies() {
+std::vector<mpreal> Cluster::energies() {
   mpreal init = "0";
-  vector<mpreal> E(3), rij(3);
+  std::vector<mpreal> E(3), rij(3);
   E.assign(3,"0");
     
-  for (vector<Star>::iterator si = s.begin(); si != s.end(); ++si) {
+  for (std::vector<Star>::iterator si = s.begin(); si != s.end(); ++si) {
     E[1] += "0.5"*si->m*inner_product(si->v.begin(), si->v.end(), si->v.begin(), init); 
   }
     
-  for (vector<Star>::iterator si = s.begin(); si != s.end(); ++si) {
-    for (vector<Star>::iterator sj = si+1; sj != s.end(); ++sj) {
+  for (std::vector<Star>::iterator si = s.begin(); si != s.end(); ++si) {
+    for (std::vector<Star>::iterator sj = si+1; sj != s.end(); ++sj) {
       for (int i = 0; i != 3; ++i) 
         rij[i] = si->r[i]-sj->r[i];
       E[2] -= si->m*sj->m/sqrt(inner_product(rij.begin(), rij.end(),  rij.begin(), init)); 
@@ -183,9 +183,9 @@ vector<mpreal> Cluster::energies() {
   return E;
 }
 
-vector<double> Cluster::get_data_double() {
-  vector<double> ddata;  
-  for (vector<Star>::iterator si = s.begin(); si != s.end(); ++si) {
+std::vector<double> Cluster::get_data_double() {
+  std::vector<double> ddata;  
+  for (std::vector<Star>::iterator si = s.begin(); si != s.end(); ++si) {
     ddata.push_back(si->m.toDouble());
     ddata.push_back(si->r[0].toDouble());
     ddata.push_back(si->r[1].toDouble());
@@ -196,9 +196,9 @@ vector<double> Cluster::get_data_double() {
   }	  
   return ddata;
 }
-vector<mpreal> Cluster::get_data() {
-  vector<mpreal> ddata;  
-  for (vector<Star>::iterator si = s.begin(); si != s.end(); ++si) {
+std::vector<mpreal> Cluster::get_data() {
+  std::vector<mpreal> ddata;  
+  for (std::vector<Star>::iterator si = s.begin(); si != s.end(); ++si) {
     ddata.push_back(si->m);
     ddata.push_back(si->r[0]);
     ddata.push_back(si->r[1]);
