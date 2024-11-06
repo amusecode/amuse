@@ -34,13 +34,14 @@ class PhiGRAPEInterface(
                 raise AmuseException(
                         'number_of_workers > 1 is not supported, because phiGRAPE'
                         ' MPI support is broken. See'
-                        ' https://github.com/amusecode/amuse/issues/1090')
+                        ' https://github.com/amusecode/amuse/issues/1090'
+                        ' Please consider using Hermite or ph4 instead.')
             return 'phigrape_worker'
         elif mode == self.MODE_GPU:
-            if number_of_workers > 1:
-                raise AmuseException(
-                        'number_of_workers > 1 is not supported in GPU mode')
-            return 'phigrape_sapporo_worker'
+            raise AmuseException(
+                    'phiGRAPE GPU mode is broken. See'
+                     ' https://github.com/amusecode/amuse/issues/1090'
+                     ' Please consider using ph4 instead.')
         elif mode == self.MODE_GRAPE:
             raise AmuseException(
                     'GRAPE is no longer supported in this version of AMUSE')
