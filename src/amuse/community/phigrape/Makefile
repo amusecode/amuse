@@ -1,155 +1,116 @@
-# standard amuse configuration include
-# config.mk will be made after ./configure has run
-ifeq ($(origin AMUSE_DIR), undefined)
-  AMUSE_DIR := $(shell amusifier --get-amuse-dir)
-endif
--include ${AMUSE_DIR}/config.mk
-
-
-MPICXX ?= mpicxx
-MPICC ?= mpicc
-MPIFC ?= mpif90
-GFVERSION10PLUS := $(shell expr `${FC} -dumpversion | cut -f1 -d.` \>= 10)
- ifeq (${GFVERSION10PLUS}, 1)
- MPIFC += -fallow-argument-mismatch
- endif
-MPIF90 ?= $(MPIFC)
-FC = $(MPIF90)
-CC = $(MPICC)
-GL_PATH ?= /data/pelupes/libraries/f90gl-1.2.11
-
-
-
-SRCDIR = src
-
-MPI_BUILDDIR=build_mpi
-BUILDDIR = build
-
-CODELIB=$(BUILDDIR)/libphigrape.a
-
-GLOBJECTS=src/fthread.o src/viewer.o src/start_viewer.o src/libpt.a
-
-CUDA_SDK ?= /disks/koppoel1/CUDA23/cudasdk/C
-CUDA_TK  ?= /disks/koppoel1/CUDA23/cuda
-
-CUDA_LIBDIRS ?= -L$(CUDA_TK)/lib -L$(CUDA_TK)/lib64
-CUDA_LIBS ?= -lcudart
-
-SAPPORO_LIBDIRS ?= -L$(AMUSE_DIR)/lib/sapporo_light
-OPENMP_CFLAGS ?= 
-SAPPORO_LIBS ?= $(SAPPORO_LIBDIRS) -lsapporo $(OPENMP_CFLAGS)
-GRAPE6_LIBDIRS ?= -L$(GRAPE6)/lib
-
-BOOSTLIBS = -L/opt/local/lib -lboost_thread-mt
-LLIBSDIR =  $(GRAPE6_LIBDIRS)
-GPULIBS  =  $(SAPPORO_LIBS)  $(CUDA_LIBDIRS) $(CUDA_LIBS) -lpthread -L/usr/lib64 -lstdc++
-GRAPE6LIBS  ?= -lg6lx
-LIBS     +=  -lm -lpthread
-
-LIBRARIES= $(LLIBSDIR) $(LIBS)
-
-GLINCLUDE = -I/usr/include/GL -I$(GL_PATH)/include/GL/
-GLLIB = -L$(GL_PATH)/lib -lf90GLU -lf90GL -lf90glut  -lGLU -lGL -lglut
-
-X11LIB ?= -L/usr/X11R6/lib64 -lXaw -lXt -lXmu -lXi -lXext -lX11
-
-THREADLIB ?= -L. -lpthread src/libpt.a
-
-PGLIBS ?= -L. -lpg5
-
-G6LIBS ?= -L$(AMUSE_DIR)/lib/g6 -lg6
-
-CFLAGS += -g  $(OPTS)
-FFLAGS += -g $(OPTS)
-FFLAGS += -I./src/
-
-# check for gfortran, this catches link and compiler wrappers
-ifeq ($(findstring GNU, $(shell $(FC) --version)), GNU)
-else
-GLLIB += -lguide
+ifneq (,$(filter-out clean distclean, $(MAKECMDGOALS)))
+include support/config.mk
 endif
 
-all: debuginfo phigrape_worker 
 
-debuginfo:
-	@echo "making phigrape..; some debugging info follows:"
-	@echo $(SC_MPI_CLIBS)
+# Detecting dependencies
+support/config.mk:
+	cd support && ./configure
 
 
-$(BUILDDIR)/Makefile: $(SRCDIR)/Makefile 
-	-mkdir $(BUILDDIR) 
-	cp $(SRCDIR)/Makefile $(BUILDDIR)/Makefile
-	
-$(CODELIB): $(BUILDDIR)/Makefile
-	make -C $(BUILDDIR) all "FC=$(FC)" "OPTS=-DNOMPI" "CC=$(CC)" VPATH=../src
+# Building the code into a static library
+FFLAGS += -fallow-argument-mismatch $(FORSOCKETS_CFLAGS)
+FCFLAGS = $(FFLAGS)
 
-phigrape_worker: worker_code.f90 interface.o $(CODELIB)
-	$(MPIF90) $(FFLAGS) $(SC_FLAGS) $(FS_FLAGS) $(LDFLAGS) -DNOMPI $^ $(CODELIB) -o $@ $(OBJECTS) $(G6LIBS) $(LIBRARIES) $(SC_MPI_CLIBS) $(FS_LIBS)  $(LIBS)
+FCFLAGS_NOMPI := $(FCFLAGS) $(G6LIB_CFLAGS) $(STOPCONDMPI_CFLAGS) -DNOMPI
+FCFLAGS_MPI := $(FCFLAGS) $(G6LIB_CFLAGS) $(STOPCONDMPI_CFLAGS) -DMPI
+FCFLAGS_SAPPORO := $(FCFLAGS) $(SAPPORO_LIGHT_CFLAGS) $(STOPCOND_CFLAGS) -DNOMPI
 
-$(MPI_BUILDDIR)/Makefile: $(SRCDIR)/Makefile 
-	-mkdir $(MPI_BUILDDIR) 
-	cp $(SRCDIR)/Makefile $(MPI_BUILDDIR)/Makefile
-	
-$(MPI_BUILDDIR)/libphigrape.a:  $(MPI_BUILDDIR)/Makefile
-	make -C $(MPI_BUILDDIR) all "FC=$(FC)" "OPTS=-DMPI" "CC=$(CC)" VPATH=../src
-	
-phigrape_worker_mpi: worker_code.f90 interface.mpio $(MPI_BUILDDIR)/libphigrape.a
-	$(MPIF90) $(FFLAGS) $(SC_FLAGS) $(FS_FLAGS) $(LDFLAGS) -DMPI $^ $(MPI_BUILDDIR)/libphigrape.a -o $@ $(OBJECTS) $(G6LIBS) $(LIBRARIES) $(SC_MPI_CLIBS) $(FS_LIBS)  $(LIBS)
+LDLIBS += $(FORSOCKETS_LIBS)
 
-phigrape_worker_gl: glworker_code.f90 interface.o $(CODELIB)
-	make -C src gl "FC=$(FC)" "OPTS=-DNOMPI" "CC=$(CC)"
-	$(MPIF90) $(FFLAGS) -DNOMPI $(SC_FLAGS) $(FS_FLAGS) $(LDFLAGS) $^ $(CODELIB) -o $@ $(OBJECTS) $(G6LIBS) $(LIBRARIES) \
-	$(GLOBJECTS) $(GLLIB)  $(X11LIB) $(THREADLIB) $(LIBS) $(SC_MPI_CLIBS) $(FS_LIBS)  $(LIBS)
+LDLIBS_NOMPI := $(LDLIBS) $(STOPCONDMPI_LIBS) $(G6LIB_LIBS)
+LDLIBS_MPI := $(LDLIBS) $(STOPCONDMPI_LIBS) $(G6LIB_LIBS)
+LDLIBS_SAPPORO += $(LDLIBS) $(STOPCOND_LIBS) $(SAPPORO_LIGHT_LIBS)
 
-phigrape_worker_gpu: worker_code.f90 interface.o $(CODELIB)
-	$(MPIF90) $(FFLAGS) -DNOMPI $(SC_FLAGS) $(FS_FLAGS) $(LDFLAGS) $^ $(CODELIB) -o $@ $(OBJECTS) $(LIBRARIES) $(GPULIBS) $(SC_MPI_CLIBS) $(FS_LIBS)  $(LIBS)
+CODELIB_NOMPI = build_nompi/libphigrape.a
+CODELIB_MPI = build_mpi/libphigrape.a
+CODELIB_SAPPORO = build_sapporo/libphigrape.a
 
-phigrape_worker_gl_gpu: glworker_code.f90 interface.o $(CODELIB)
-	make -C src gl "FC=$(FC)" "OPTS=-DNOMPI" "CC=$(CC)"
-	$(MPIF90) $(FFLAGS) -DNOMPI $(SC_FLAGS) $(FS_FLAGS) $(LDFLAGS) $^ $(CODELIB) -o $@ $(OBJECTS) $(LIBRARIES) \
-	$(GLOBJECTS) $(GLLIB)  $(X11LIB) $(THREADLIB) $(LIBS) $(GPULIBS) $(SC_MPI_CLIBS) $(FS_LIBS)  $(LIBS)
 
-phigrape_worker_grape: worker_code.f90 interface.o $(CODELIB)
-	$(MPIF90) $(FFLAGS) -DNOMPI $(SC_FLAGS) $(FS_FLAGS) $(LDFLAGS) $^ $(CODELIB) -o $@ $(OBJECTS) $(LIBRARIES) $(GRAPE6LIBS) $(SC_FCLIBS) $(FS_LIBS)  $(LIBS)
+build_nompi:
+	mkdir -p $@
 
-worker_code.f90: interface.py
-	$(CODE_GENERATOR) --type=f90 interface.py PhiGRAPEInterface -o $@
+$(CODELIB_NOMPI): | build_nompi
+	$(MAKE) -C build_nompi -f ../src/Makefile -j 1 all FC="$(FC)" CC="$(CC)" OPTS="-DNOMPI" STOPCOND_CFLAGS="$(STOPCOND_CFLAGS)" STOPCOND_LIBS="$(STOPCOND_LIBS)" VPATH=../src
 
-glworker_code.f90: interface.py
-	$(CODE_GENERATOR) --type=f90 interface.py PhiGRAPEInterfaceGL -o $@
+build_mpi:
+	mkdir -p $@
 
+$(CODELIB_MPI): | build_mpi
+	$(MAKE) -C build_mpi -f ../src/Makefile -j 1 all FC="$(MPIFC)" CC="$(MPICC)" OPTS="-DMPI" STOPCOND_CFLAGS="$(STOPCONDMPI_CFLAGS)" STOPCOND_LIBS="$(STOPCONDMPI_LIBS)" VPATH=../src
+
+build_sapporo:
+	mkdir -p $@
+
+$(CODELIB_SAPPORO): | build_sapporo
+	$(MAKE) -C build_sapporo -f ../src/Makefile -j 1 all FC="$(FC)" CC="$(CC)" OPTS="-DNOMPI" STOPCOND_CFLAGS="$(STOPCOND_CFLAGS)" STOPCOND_LIBS="$(STOPCOND_LIBS)" VPATH=../src
+
+
+# Building the workers
+phigrape_worker.f90: interface.py
+	amusifier --type=f90 interface.py PhiGRAPEInterface -o $@
+
+
+phigrape_worker.o: phigrape_worker.f90
+	$(MPIFC) -c -o $@ -Isrc $(FCFLAGS) $<
+
+phigrape_worker: interface.o phigrape_worker.o $(CODELIB_NOMPI)
+	$(MPIFC) -o $@ $(LDFLAGS) $^ $(LDLIBS_NOMPI)
+
+interface.o: interface.F
+	$(MPIFC) -o $@ -c -Isrc $(FCFLAGS_NOMPI) $<
+
+
+phigrape_mpi_worker.o: phigrape_worker.f90
+	$(MPIFC) -c -o $@ -Isrc $(FCFLAGS_MPI) $<
+
+phigrape_mpi_worker: phigrape_mpi_worker.o interface_mpi.o $(CODELIB_MPI)
+	$(MPIFC) -o $@ $(LDFLAGS) $^ $(LDLIBS_MPI)
+
+interface_mpi.o: interface.F
+	$(MPIFC) -o $@ -c -Isrc $(FCFLAGS_MPI) $<
+
+
+phigrape_sapporo_worker.o: phigrape_worker.f90
+	$(MPIFC) -c -o $@ -Isrc $(FCFLAGS_SAPPORO) $<
+
+phigrape_sapporo_worker: interface_sapporo.o phigrape_sapporo_worker.o $(CODELIB_SAPPORO)
+	$(MPIFC) -o $@ $(LDFLAGS) $^ $(LDLIBS_SAPPORO)
+
+interface_sapporo.o: interface.F
+	$(MPIFC) -o $@ -c -Isrc $(FCFLAGS_SAPPORO) $<
+
+
+# Which packages contain which workers?
+amuse-phigrape_contains: phigrape_worker phigrape_mpi_worker
+
+amuse-phigrape-sapporo_contains: phigrape_sapporo_worker
+
+
+# Building and installing packages
+develop-%: %_contains
+	support/shared/uninstall.sh $*
+	python -m pip install -e packages/$*
+
+install-%: %_contains
+	support/shared/uninstall.sh $*
+	python -m pip install packages/$*
+
+package-%: %_contains
+	python3 -m pip install -vv --no-cache-dir --no-deps --no-build-isolation --prefix ${PREFIX} packages/$*
+
+test-%:
+	cd packages/$* && pytest
+
+
+# Cleaning up
+.PHONY: clean
 clean:
-	make -C src clean
-	rm -f *.pyc *.o *.mpio
-	rm -Rf build
-	rm -Rf build_mpi
-	rm -f worker_code_gpu worker_code_grape
-	rm -f worker_code worker_code.f90
-	rm -f worker_code-sockets.f90 phigrape_worker_sockets
-	rm -f glworker_code glworker_code.f90
-	rm -f glworker_code_gpu glworker_code_grape
-	rm -f phigrape_worker phigrape_worker_gl phigrape_worker_gl_gpu phigrape_worker_gpu
-	rm -f phigrape_worker_mpi 
-	rm -f phigrape_worker_gpu_sockets
-	rm -f forsockets.mod
+	$(MAKE) -C src clean
+	rm -rf *.o *.mod *worker*
+	rm -rf build_mpi build_sapporo
 
-__init__.py:
-	touch $@
-
-%.o: %.f90
-	$(FC)  $(FFLAGS) -c $<
-
-%.mpio: %.F
-	$(FC)  $(SC_FLAGS) -DMPI $(FFLAGS) -c $< -o $@
-
-%.o: %.F
-	$(FC)  $(SC_FLAGS) -DNOMPI $(FFLAGS) -c $<
-
-.f.o:
-	$(FC) $(FFLAGS) $(SC_FLAGS) -c $<
-
-.c.o:
-	$(CC) $(CFLAGS) -c $<
-
-.F.o:
-	$(FC) $(FFLAGS) $(SC_FLAGS) -c $<
+.PHONY: distclean
+distclean: clean
+	rm -f support/config.mk support/config.log support/config.status
+	rm -rf support/autom4te.cache
