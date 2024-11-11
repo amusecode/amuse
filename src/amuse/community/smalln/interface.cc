@@ -1,4 +1,4 @@
-#include "interface.h"
+#include "smalln_worker.h"
 
 // A stub of this file is machine generated, but the content is
 // hand-coded.  SAVE A COPY to avoid accidental overwriting!
