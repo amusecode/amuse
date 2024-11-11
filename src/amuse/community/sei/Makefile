@@ -23,21 +23,19 @@ CODELIB = src/libsei.a
 
 
 $(CODELIB): | src
-	$(MAKE) -C src -j 1 CC='$(MPICC)' all
-
-#$(MAKE) -C src -j 1 CC='$(MPICC)' CFLAGS='$(CFLAGS)' all
+	$(MAKE) -C src -j $(CPU_COUNT) CC='$(MPICC)' all
 
 # Building the workers
-worker_code.h: interface.py
+sei_worker.h: interface.py
 	amusifier --type=h interface.py SeiInterface -o $@
 
 sei_worker.cc: interface.py
 	amusifier --type=c interface.py SeiInterface -o $@
 
-interface.o: interface.cc interface.h worker_code.h
+interface.o: interface.cc interface.h sei_worker.h
 	$(MPICXX) -c -o $@ $(CFLAGS) -I./src/ $<
 
-sei_worker.o: sei_worker.cc worker_code.h
+sei_worker.o: sei_worker.cc sei_worker.h
 	$(MPICXX) -c -o $@ $(CFLAGS) $<
 
 sei_worker: sei_worker.o interface.o $(CODELIB)
