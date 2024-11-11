@@ -9,14 +9,12 @@ support/config.mk:
 
 # Building the code into a static library
 DEPFLAGS += $(STOPCOND_CFLAGS) $(STOPCONDMPI_CFLAGS) $(AMUSE_MPI_CFLAGS)
-DEPFLAGS += $(FORSOCKETS_CFLAGS)
 
 CFLAGS += $(DEPFLAGS)
 
 LDFLAGS +=
 
 LDLIBS += -lm $(STOPCOND_LIBS) $(STOPCONDMPI_LIBS) $(AMUSE_MPI_LIBS)
-LDLIBS += $(FORSOCKETS_LIBS)
 
 
 # Building the workers

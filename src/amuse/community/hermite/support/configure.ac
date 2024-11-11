@@ -1,13 +1,10 @@
 AC_CONFIG_AUX_DIR([shared])
 AC_CONFIG_MACRO_DIRS([shared/m4])
 
-AC_INIT([amuse-kepler_orbiters], [1.0])
+AC_INIT([amuse-hermite], [1.0])
 
 # Pick up Conda env or virtualenv
 AMUSE_VENV()
-
-# Set CPU_COUNT
-AX_COUNT_CPUS()
 
 # Set the worker language
 AC_PROG_CXX()

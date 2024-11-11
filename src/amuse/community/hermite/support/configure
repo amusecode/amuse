@@ -644,6 +644,7 @@ CPPFLAGS
 LDFLAGS
 CXXFLAGS
 CXX
+CPU_COUNT
 EGREP
 GREP
 host_os
@@ -3011,6 +3012,7 @@ else $as_nop
 printf "%s\n" "unable to detect (assuming 1)" >&6; }
 
 fi
+
 
 # Set the worker language
 
