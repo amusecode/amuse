@@ -22,7 +22,7 @@ class HopInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesMixIn
     .. [#] ADS:1998ApJ...498..137E (Eisenstein, DJ, Hut, P, ApJ 498 (1998):
     .. [#] ... HOP: A new group-finding algorithm for N-body simulations)
     '''
-    include_headers = ['worker_code.h']
+    include_headers = ['hop_worker.h']
     
     def __init__(self, **keyword_arguments):
         CodeInterface.__init__(self, name_of_the_worker="hop_worker", **keyword_arguments)

@@ -9,7 +9,6 @@ support/config.mk:
 
 # Building the code into a static library
 DEPFLAGS += $(AMUSE_MPI_CFLAGS)
-DEPFLAGS += $(FORSOCKETS_CFLAGS)
 
 CFLAGS += $(DEPFLAGS)
 CFLAGS += -DDIFFERENT_MASSES
@@ -17,25 +16,24 @@ CFLAGS += -DDIFFERENT_MASSES
 LDFLAGS +=
 
 LDLIBS += -lm $(AMUSE_MPI_LIBS)
-LDLIBS += $(FORSOCKETS_LIBS)
 
 
 CODELIB = src/libhop.a
 
 $(CODELIB): | src
-	$(MAKE) -C src all
+	$(MAKE) -C src -j $(CPU_COUNT) all
 
-interface.o: interface.cc worker_code.h
+interface.o: interface.cc hop_worker.h
 	$(MPICXX) -c -o $@ $(CFLAGS) $<
 
 # Building the workers
-worker_code.h: interface.py
+hop_worker.h: interface.py
 	amusifier --type=h interface.py HopInterface -o $@
 
 hop_worker.cc: interface.py
 	amusifier --type=c interface.py HopInterface -o $@
 
-hop_worker.o: hop_worker.cc worker_code.h
+hop_worker.o: hop_worker.cc hop_worker.h
 	$(MPICXX) -c -o $@ $(CFLAGS) $<
 
 hop_worker: hop_worker.o interface.o $(CODELIB)
