@@ -26,7 +26,7 @@
 #include <cstring>
 #include <fstream>
 
-#include "worker_code.h"
+#include "hermite_worker.h"
 
 #include <vector>
 #include <algorithm>

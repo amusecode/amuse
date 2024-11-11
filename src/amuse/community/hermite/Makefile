@@ -18,13 +18,13 @@ LDLIBS += -lm $(STOPCOND_LIBS) $(STOPCONDMPI_LIBS) $(AMUSE_MPI_LIBS)
 
 
 # Building the workers
-worker_code.h: interface.py
+hermite_worker.h: interface.py
 	amusifier --type=h -i amuse.community.interface.stopping_conditions.StoppingConditionInterface interface.py HermiteInterface -o $@
 
 hermite_worker.cc: interface.py
 	amusifier --type=c interface.py HermiteInterface -o $@
 
-hermite_worker.o: hermite_worker.cc worker_code.h
+hermite_worker.o: hermite_worker.cc hermite_worker.h
 	$(MPICXX) -c -o $@ $(CFLAGS) $<
 
 hermite_worker: hermite_worker.o interface.o
