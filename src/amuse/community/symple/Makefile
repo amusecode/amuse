@@ -9,29 +9,27 @@ support/config.mk:
 
 
 # Building the code into a static library
-DEPFLAGS += $(STOPCOND_CFLAGS) $(STOPCONDMPI_CFLAGS) $(AMUSE_MPI_CFLAGS)
-DEPFLAGS += $(FORSOCKETS_CFLAGS)
+DEPFLAGS += $(STOPCONDMPI_CFLAGS) $(AMUSE_MPI_CFLAGS)
 
 CFLAGS += $(DEPFLAGS)
 CFLAGS += -O3 -Wall -DTOOLBOX
 
 LDFLAGS +=
 
-LDLIBS += -lm $(STOPCOND_LIBS) $(STOPCONDMPI_LIBS) $(AMUSE_MPI_LIBS)
-LDLIBS += $(FORSOCKETS_LIBS)
+LDLIBS += -lm $(STOPCONDMPI_LIBS) $(AMUSE_MPI_LIBS)
 
 
 # Building the workers
-worker_code.h: interface.py
+symple_worker.h: interface.py
 	amusifier --type=h -i amuse.community.interface.stopping_conditions.StoppingConditionInterface interface.py sympleInterface -o $@
 
 symple_worker.cc: interface.py
 	amusifier --type=c interface.py sympleInterface -o $@
 
-interface.o: interface.cc worker_code.h vec3.h
+interface.o: interface.cc symple_worker.h vec3.h
 	$(MPICXX) -c -o $@ $(CFLAGS) $<
 
-symple_worker.o: symple_worker.cc worker_code.h
+symple_worker.o: symple_worker.cc symple_worker.h
 	$(MPICXX) -c -o $@ $(CFLAGS) $<
 
 symple_worker: symple_worker.o interface.o

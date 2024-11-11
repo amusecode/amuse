@@ -17,7 +17,7 @@ class sympleInterface(CodeInterface,
 
     .. [#] McMillan, S., 2017
     """
-    include_headers = ['worker_code.h', 'stopcond.h']
+    include_headers = ['symple_worker.h', 'stopcond.h']
 
     def __init__(self, **options):
         CodeInterface.__init__(self, name_of_the_worker="symple_worker",

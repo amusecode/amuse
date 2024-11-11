@@ -6,9 +6,6 @@ AC_INIT([amuse-symple], [1.0])
 # Pick up Conda env or virtualenv
 AMUSE_VENV()
 
-# Set CPU_COUNT
-AX_COUNT_CPUS()
-
 # Set the worker language
 AC_PROG_CC()
 AC_PROG_CXX()
@@ -22,10 +19,8 @@ AS_IF([test $RANLIB = ":"], [AC_MSG_ERROR([ranlib command not found.])])
 
 
 # Find AMUSE libraries
-AMUSE_LIB_STOPCOND()
 AMUSE_LIB_STOPCONDMPI()
 AMUSE_LIB_AMUSE_MPI()
-AMUSE_LIB_FORSOCKETS()
 
 
 # Find external dependencies
