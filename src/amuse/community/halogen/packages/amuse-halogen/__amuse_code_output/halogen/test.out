@@ -44,11 +44,11 @@ Random seed         = 1
 
 Times for individual steps
 
-Calculation of halo properties and initialisation of grid in r: 0.020014 seconds.
-Initialisation of grid for distribution function: 0.036449 seconds.
-Setting particle positions: 0.000419 seconds
-Setting particle velocities: 0.000415 seconds
-Setting remaining particle attributes: 2e-06 seconds
+Calculation of halo properties and initialisation of grid in r: 0.018954 seconds.
+Initialisation of grid for distribution function: 0.036054 seconds.
+Setting particle positions: 0.000406 seconds
+Setting particle velocities: 0.000418 seconds
+Setting remaining particle attributes: 1e-06 seconds
 Calculating a few things and correct center of mass: 5.3e-05 seconds
-Writing output: 0.002891 seconds
-Total time: 0.060243 seconds
+Writing output: 0.003112 seconds
+Total time: 0.058998 seconds

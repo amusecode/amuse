@@ -9,7 +9,6 @@ support/config.mk:
 
 # Building the code into a static library
 DEPFLAGS += $(AMUSE_MPI_CFLAGS)
-DEPFLAGS += $(FORSOCKETS_CFLAGS)
 
 CFLAGS += $(DEPFLAGS)
 CFLAGS += -Isrc
@@ -17,13 +16,12 @@ CFLAGS += -Isrc
 LDFLAGS +=
 
 LDLIBS += -lm $(AMUSE_MPI_LIBS)
-LDLIBS += $(FORSOCKETS_LIBS)
 
 
 CODELIB = src/libhalogen.a
 
 $(CODELIB): | src
-	$(MAKE) -C src all CC='$(CC)'
+	$(MAKE) -C src -j $(CPU_COUNT) all CC='$(CC)'
 
 interface.o: interface.cc worker_code.h
 	$(MPICXX) -c -o $@ $(CFLAGS) $<
