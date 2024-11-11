@@ -23,17 +23,17 @@ CODELIB = src/libhalogen.a
 $(CODELIB): | src
 	$(MAKE) -C src -j $(CPU_COUNT) all CC='$(CC)'
 
-interface.o: interface.cc worker_code.h
+interface.o: interface.cc halogen_worker.h
 	$(MPICXX) -c -o $@ $(CFLAGS) $<
 
 # Building the workers
-worker_code.h: interface.py
+halogen_worker.h: interface.py
 	amusifier --type=h interface.py HalogenInterface -o $@
 
 halogen_worker.cc: interface.py
 	amusifier --type=c interface.py HalogenInterface -o $@
 
-halogen_worker.o: halogen_worker.cc worker_code.h
+halogen_worker.o: halogen_worker.cc halogen_worker.h
 	$(MPICXX) -c -o $@ $(CFLAGS) $<
 
 halogen_worker: halogen_worker.o interface.o $(CODELIB)

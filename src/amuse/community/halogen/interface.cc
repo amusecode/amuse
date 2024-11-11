@@ -1,5 +1,5 @@
 #include "interface.h"
-#include "worker_code.h"
+#include "halogen_worker.h"
 #define MAXLEN_PATH 250
 
 // Default parameters:

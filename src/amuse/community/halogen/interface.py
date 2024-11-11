@@ -18,7 +18,7 @@ class HalogenInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesM
         .. [#] ADS:2008MNRAS.386.1543Z (Zemp M., Moore B., Stadel J., Carollo C.M. & Madau P. 2008, MNRAS, 386, 1543)
     """
     
-    include_headers = ['worker_code.h']
+    include_headers = ['halogen_worker.h']
     
     def __init__(self, **keyword_arguments):
         CodeInterface.__init__(self, name_of_the_worker="halogen_worker", **keyword_arguments)
