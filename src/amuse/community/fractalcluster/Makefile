@@ -13,8 +13,7 @@ LDLIBS += $(FORSOCKETS_LIBS)
 
 FFLAGS += -fdefault-real-8 -cpp -fallow-argument-mismatch
 
-SRCDIR=src
-CODELIB=$(SRCDIR)/libfractal.a
+CODELIB=src/libfractal.a
 
 
 # Building the workers
@@ -23,8 +22,8 @@ CODELIB=$(SRCDIR)/libfractal.a
 
 interface.o: $(CODELIB)
 
-$(CODELIB): $(SRCDIR)/*.f90
-	$(MAKE) -C $(SRCDIR) amuse_interface
+$(CODELIB): src/*.f90
+	$(MAKE) -C src amuse_interface
 
 fractalcluster_worker.f90: interface.py
 	amusifier --type=f90 interface.py FractalClusterInterface -o $@
