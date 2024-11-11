@@ -9,7 +9,6 @@ support/config.mk:
 
 # Building the code into a static library
 DEPFLAGS += $(AMUSE_MPI_CFLAGS)
-DEPFLAGS += $(FORSOCKETS_CFLAGS)
 
 CFLAGS += $(DEPFLAGS)
 CFLAGS += -Isrc
@@ -17,7 +16,6 @@ CFLAGS += -Isrc
 LDFLAGS +=
 
 LDLIBS += -lm $(AMUSE_MPI_LIBS)
-LDLIBS += $(FORSOCKETS_LIBS)
 
 CODELIB = src/libkepler.a
 
@@ -27,13 +25,13 @@ $(CODELIB): | src
 	$(MAKE) -C src all CXX='$(MPICXX)'
 
 # Building the workers
-interface.h: interface.py
+hepler_worker.h: interface.py
 	amusifier --type=h interface.py KeplerInterface -o $@
 
 kepler_worker.cc: interface.py
 	amusifier --type=c interface.py KeplerInterface -o $@
 
-kepler_worker.o: kepler_worker.cc interface.h
+kepler_worker.o: kepler_worker.cc hepler_worker.h
 	$(MPICXX) -c -o $@ $(CFLAGS) $<
 
 kepler_worker: kepler_worker.o interface.o $(CODELIB)
