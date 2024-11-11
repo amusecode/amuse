@@ -9,7 +9,7 @@ support/config.mk:
 
 
 # Building the code into a static library
-DEPFLAGS += $(STOPCOND_CFLAGS) $(STOPCONDMPI_CFLAGS) $(AMUSE_MPI_CFLAGS)
+DEPFLAGS += $(STOPCONDMPI_CFLAGS) $(AMUSE_MPI_CFLAGS)
 DEPFLAGS += $(FORSOCKETS_CFLAGS)
 
 CFLAGS += $(DEPFLAGS)
@@ -17,7 +17,7 @@ FFLAGS += $(DEPFLAGS)
 
 LDFLAGS +=
 
-LDLIBS += -lm $(STOPCOND_LIBS) $(STOPCONDMPI_LIBS) $(AMUSE_MPI_LIBS)
+LDLIBS += -lm $(STOPCONDMPI_LIBS) $(AMUSE_MPI_LIBS)
 LDLIBS += $(FORSOCKETS_LIBS)
 
 
@@ -33,15 +33,15 @@ CODELIB = src/libMikkola.a
 
 
 $(CODELIB): | src
-	$(MAKE) -C src all  # make -C src all F77FLAGS="$(F77FLAGS)"
+	$(MAKE) -C src -j $(CPU_COUNT) all  # make -C src all F77FLAGS="$(F77FLAGS)"
 
 
 # Building the workers
 mikkola_worker.f90: interface.py
 	amusifier --type=f90 interface.py MikkolaInterface -o $@
 
-mikkola_worker.o: mikkola_worker.f90
-	$(MPIFC) -c $(FFLAGS) $<
+mikkola_worker.o: mikkola_worker.f90 interface.o
+	$(MPIFC) -c $(FFLAGS) $^
 
 interface.o: interface.f90
 	$(FC) -c $(FFLAGS) $<

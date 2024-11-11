@@ -8,6 +8,7 @@ AMUSE_VENV()
 
 # Set CPU_COUNT
 AX_COUNT_CPUS()
+AC_SUBST(CPU_COUNT)
 
 # Set the worker language
 AC_PROG_FC()
@@ -20,10 +21,9 @@ AC_PROG_RANLIB()
 AS_IF([test $RANLIB = ":"], [AC_MSG_ERROR([ranlib command not found.])])
 
 # Find AMUSE libraries
-AMUSE_LIB_STOPCOND()
 AMUSE_LIB_STOPCONDMPI()
-AMUSE_LIB_AMUSE_MPI()
 AMUSE_LIB_FORSOCKETS()
+AMUSE_LIB_AMUSE_MPI()
 
 # Find external dependencies
 AC_LANG_PUSH([Fortran])
