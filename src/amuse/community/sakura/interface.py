@@ -8,7 +8,7 @@ class SakuraInterface(CodeInterface, GravitationalDynamicsInterface, LiteratureR
     """
     .. [#] ADS:2014MNRAS.440..719G (Goncalves Ferrari, Boekholt, Portegies Zwart; 2014 MNRAS, 440, 719
     """
-    include_headers = ['worker_code.h', 'stopcond.h']
+    include_headers = ['sakura_worker.h', 'stopcond.h']
 
     def __init__(self, **options):
         CodeInterface.__init__(self, name_of_the_worker="sakura_worker", **options)

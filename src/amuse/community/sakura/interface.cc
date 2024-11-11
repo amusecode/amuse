@@ -18,13 +18,13 @@ using namespace std;
 
 // AMUSE STOPPING CONDITIONS SUPPORT
 #include <stopcond.h>
-#include "worker_code.h"
+#include "sakura_worker.h"
 
 ////////////////////////////////////////////////////////
 // Declare global variables
 ////////////////////////////////////////////////////////
 int particle_id_counter = 0;
-vector<double> data, data_radius;
+vector<double> data_vector, data_radius;
 
 double t_begin;
 double dt;
@@ -71,7 +71,7 @@ int initialize_code() {
     sakura = new Sakura();
 
     particle_id_counter = 0;
-    data.clear();
+    data_vector.clear();
     data_radius.clear();
 
     t_begin = 0;
@@ -88,13 +88,13 @@ int initialize_code() {
 int new_particle_float64(int *particle_identifier, double mass, 
         double x, double y, double z, double vx, double vy, double vz, double radius) {
 
-    data.push_back(mass);
-    data.push_back(x);
-    data.push_back(y);
-    data.push_back(z);
-    data.push_back(vx);
-    data.push_back(vy);
-    data.push_back(vz);
+    data_vector.push_back(mass);
+    data_vector.push_back(x);
+    data_vector.push_back(y);
+    data_vector.push_back(z);
+    data_vector.push_back(vx);
+    data_vector.push_back(vy);
+    data_vector.push_back(vz);
 
     data_radius.push_back(radius);
 
@@ -105,11 +105,11 @@ int new_particle_float64(int *particle_identifier, double mass,
 int commit_particles() {
     Particles particles;
     particles.set_t(t_begin);
-    particles.set_N(data.size()/7);
-    particles.set_data(data);
+    particles.set_N(data_vector.size()/7);
+    particles.set_data(data_vector);
     sakura->set_particles(particles);
 
-    int numStar = data.size()/7;
+    int numStar = data_vector.size()/7;
     communicator->divide_work(numStar);
 
     return 0;
@@ -154,50 +154,50 @@ int get_mass(int id, double*mass) {
   if (id < 0 || id >= particle_id_counter){
     return -1;
   }
-  *mass = data[id*7+0];
+  *mass = data_vector[id*7+0];
   return 0;
 } 
 int set_mass(int id, double mass) {
   if (id < 0 || id >= particle_id_counter){
     return -1;
   }
-  data[id*7+0] = mass;
+  data_vector[id*7+0] = mass;
   return 0;
 }
 int get_position(int id, double* x, double* y, double* z) {
   if (id < 0 || id >= particle_id_counter){
     return -1;
   }
-  *x = data[id*7+1];
-  *y = data[id*7+2];
-  *z = data[id*7+3];
+  *x = data_vector[id*7+1];
+  *y = data_vector[id*7+2];
+  *z = data_vector[id*7+3];
   return 0;
 }
 int set_position(int id, double x, double y, double z) {
   if (id < 0 || id >= particle_id_counter){
     return -1;
   }
-  data[id*7+1] = x;
-  data[id*7+2] = y;
-  data[id*7+3] = z;
+  data_vector[id*7+1] = x;
+  data_vector[id*7+2] = y;
+  data_vector[id*7+3] = z;
   return 0;
 }
 int get_velocity(int id, double* vx, double* vy, double* vz) {
   if (id < 0 || id >= particle_id_counter){
     return -1;
   }
-  *vx = data[id*7+4];
-  *vy = data[id*7+5];
-  *vz = data[id*7+6];
+  *vx = data_vector[id*7+4];
+  *vy = data_vector[id*7+5];
+  *vz = data_vector[id*7+6];
   return 0;
 }
 int set_velocity(int id, double vx, double vy, double vz) {
   if (id < 0 || id >= particle_id_counter){
     return -1;
   }
-  data[id*7+4] = vx;
-  data[id*7+5] = vy;
-  data[id*7+6] = vz;
+  data_vector[id*7+4] = vx;
+  data_vector[id*7+5] = vy;
+  data_vector[id*7+6] = vz;
   return 0;
 }
 int get_state(int id, double* m, double* x, double* y, double* z, double* vx, double* vy, double* vz, double* radius) {
@@ -205,13 +205,13 @@ int get_state(int id, double* m, double* x, double* y, double* z, double* vx, do
     return -1;
   }
   *radius = data_radius[id];
-  *m = data[id*7+0];
-  *x = data[id*7+1];
-  *y = data[id*7+2];
-  *z = data[id*7+3];
-  *vx = data[id*7+4];
-  *vy = data[id*7+5];
-  *vz = data[id*7+6];
+  *m = data_vector[id*7+0];
+  *x = data_vector[id*7+1];
+  *y = data_vector[id*7+2];
+  *z = data_vector[id*7+3];
+  *vx = data_vector[id*7+4];
+  *vy = data_vector[id*7+5];
+  *vz = data_vector[id*7+6];
   return 0;
 }
 int set_state(int id, double m, double x, double y, double z, double vx, double vy, double vz, double radius) {
@@ -219,13 +219,13 @@ int set_state(int id, double m, double x, double y, double z, double vx, double 
     return -1;
   }
   data_radius[id] = radius;
-  data[id*7+0] = m;
-  data[id*7+1] = x;
-  data[id*7+2] = y;
-  data[id*7+3] = z;
-  data[id*7+4] = vx;
-  data[id*7+5] = vy;
-  data[id*7+6] = vz;
+  data_vector[id*7+0] = m;
+  data_vector[id*7+1] = x;
+  data_vector[id*7+2] = y;
+  data_vector[id*7+3] = z;
+  data_vector[id*7+4] = vx;
+  data_vector[id*7+5] = vy;
+  data_vector[id*7+6] = vz;
   return 0;
 }
 int get_radius(int id, double* radius){ 
@@ -245,13 +245,13 @@ int set_radius(int id, double radius) {
 
 int evolve_model(double t_end) {
     sakura->set_t(t);
-    sakura->update_particles(data);    
+    sakura->update_particles(data_vector);    
     sakura->set_dt(dt);
 
     sakura->evolve(t_end, *communicator);
 
     t = t_end;
-    data = sakura->get_data();
+    data_vector = sakura->get_data();
 
     return 0;
 }
@@ -323,22 +323,22 @@ int get_index_of_next_particle(int id, int* idnext){return -2;}
 
 int get_total_mass(double* M){ 
   Diagnostics diag;
-  *M = diag.get_mass(data);
+  *M = diag.get_mass(data_vector);
   return 0;
 }
 int get_kinetic_energy(double* ek) {
   Diagnostics diag;
-  *ek = diag.get_kinetic_energy(data);
+  *ek = diag.get_kinetic_energy(data_vector);
   return 0;
 }
 int get_potential_energy(double* ep) {
   Diagnostics diag;
-  *ep = diag.get_potential_energy(data);
+  *ep = diag.get_potential_energy(data_vector);
   return 0;
 }
 int get_center_of_mass_position(double* x , double* y, double* z){ 
   Diagnostics diag;
-  vector<double> rcm = diag.get_rcm(data);
+  vector<double> rcm = diag.get_rcm(data_vector);
   *x = rcm[0];
   *y = rcm[1];
   *z = rcm[2];
@@ -346,7 +346,7 @@ int get_center_of_mass_position(double* x , double* y, double* z){
 }
 int get_center_of_mass_velocity(double* vx, double* vy, double* vz){ 
   Diagnostics diag;
-  vector<double> vcm = diag.get_vcm(data);
+  vector<double> vcm = diag.get_vcm(data_vector);
   *vx = vcm[0];
   *vy = vcm[1];
   *vz = vcm[2];

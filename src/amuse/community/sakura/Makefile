@@ -8,34 +8,32 @@ support/config.mk:
 	cd support && ./configure
 
 # Building the code into a static library
-DEPFLAGS += $(STOPCOND_CFLAGS) $(STOPCONDMPI_CFLAGS) $(AMUSE_MPI_CFLAGS)
-DEPFLAGS += $(FORSOCKETS_CFLAGS)
+DEPFLAGS += $(STOPCONDMPI_CFLAGS) $(AMUSE_MPI_CFLAGS)
 
 CFLAGS += $(DEPFLAGS)
 # CFLAGS += -Wall -g -O2
 
 LDFLAGS +=
 
-LDLIBS += -lm $(STOPCOND_LIBS) $(STOPCONDMPI_LIBS) $(AMUSE_MPI_LIBS)
-LDLIBS += $(FORSOCKETS_LIBS)
+LDLIBS += -lm $(STOPCONDMPI_LIBS) $(AMUSE_MPI_LIBS)
 
 CODELIB = src/libsakura.a
 
 
 $(CODELIB): | src
-	$(MAKE) -C src CXX='$(MPICXX)' CXXFLAGS='$(CFLAGS)' all
+	$(MAKE) -C src -j $(CPU_COUNT) CXX='$(MPICXX)' CXXFLAGS='$(CFLAGS)' all
 
-interface.o: interface.cc worker_code.h
+interface.o: interface.cc sakura_worker.h
 	$(MPICXX) -I./src/ -c -o $@ $(CFLAGS) $<
 
 # Building the workers
-worker_code.h: interface.py
+sakura_worker.h: interface.py
 	amusifier --type=h -i amuse.community.interface.stopping_conditions.StoppingConditionInterface interface.py SakuraInterface -o $@
 
 sakura_worker.cc: interface.py
 	amusifier --type=c interface.py SakuraInterface -o $@
 
-sakura_worker.o: sakura_worker.cc worker_code.h
+sakura_worker.o: sakura_worker.cc sakura_worker.h
 	$(MPICXX) -c -o $@ $(CFLAGS) $<
 
 sakura_worker: sakura_worker.o interface.o $(CODELIB)
