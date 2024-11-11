@@ -9,7 +9,7 @@ extern "C" {
 #include "src/universal_variable_kepler.h"
 }
 
-#include "interface.h"
+#include "heplerorbiters_worker.h"
 
 using namespace std;
 

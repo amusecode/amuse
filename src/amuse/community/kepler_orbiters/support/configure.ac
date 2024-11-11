@@ -8,13 +8,13 @@ AMUSE_VENV()
 
 # Set CPU_COUNT
 AX_COUNT_CPUS()
+AC_SUBST(CPU_COUNT)
 
 # Set the worker language
 AC_PROG_CXX()
 
 # Find AMUSE libraries
 AMUSE_LIB_AMUSE_MPI()
-AMUSE_LIB_FORSOCKETS()
 
 # find mpi
 AC_LANG_PUSH([C++])
