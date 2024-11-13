@@ -22,7 +22,7 @@ class SmallNInterface(CodeInterface,
     def __init__(self, **options):
         CodeInterface.__init__(
             self,
-            name_of_the_worker='smallN_worker',
+            name_of_the_worker='smalln_worker',
             **options
         )
 
