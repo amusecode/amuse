@@ -11,7 +11,7 @@ support/config.mk:
 FFLAGS += $(FORSOCKETS_CFLAGS)
 LDLIBS += $(FORSOCKETS_LIBS)
 
-LDLIBS += $(LAPACK_LIBS) $(BLAS_LIBS)
+LDLIBS += $(LAPACK_LIBS) $(BLAS_LIBS) #-lblas
 
 # Building the workers
 interface.o: interface.f90
@@ -20,7 +20,7 @@ interface.o: interface.f90
 galaxia_worker.f90: interface.py
 	amusifier --type=f90 interface.py BarAndSpiralsInterface -o $@
 
-galaxia_worker.o: galaxia_worker.f90
+galaxia_worker.o: galaxia_worker.f90 interface.o
 	$(MPIFC) -c $(FFLAGS) $<
 
 galaxia_worker: galaxia_worker.o interface.o
