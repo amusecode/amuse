@@ -22,8 +22,7 @@ AC_PROG_RANLIB()
 AS_IF([test $RANLIB = ":"], [AC_MSG_ERROR([ranlib command not found.])])
 
 # Find AMUSE libraries
-AMUSE_LIB_STOPCONDMPI()
-AMUSE_LIB_AMUSE_MPI()
+AMUSE_LIB_STOPCOND()
 
 # Find external dependencies
 AC_LANG_PUSH([C])

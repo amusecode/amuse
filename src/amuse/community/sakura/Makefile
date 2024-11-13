@@ -8,14 +8,14 @@ support/config.mk:
 	cd support && ./configure
 
 # Building the code into a static library
-DEPFLAGS += $(STOPCONDMPI_CFLAGS) $(AMUSE_MPI_CFLAGS)
+DEPFLAGS += $(STOPCOND_CFLAGS)
 
 CFLAGS += $(DEPFLAGS)
 # CFLAGS += -Wall -g -O2
 
 LDFLAGS +=
 
-LDLIBS += -lm $(STOPCONDMPI_LIBS) $(AMUSE_MPI_LIBS)
+LDLIBS += -lm $(STOPCOND_LIBS)
 
 CODELIB = src/libsakura.a
 
