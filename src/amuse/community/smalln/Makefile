@@ -9,20 +9,20 @@ support/config.mk:
 
 
 # Building the code into a static library
-DEPFLAGS += $(STOPCONDMPI_CFLAGS) $(AMUSE_MPI_CFLAGS)
+DEPFLAGS += $(STOPCOND_CFLAGS)
 
 CFLAGS += $(DEPFLAGS)
 CFLAGS += -Wall -g -Isrc
 
 LDFLAGS +=
 
-LDLIBS += -lm $(STOPCONDMPI_LIBS) $(AMUSE_MPI_LIBS)
+LDLIBS += -lm $(STOPCOND_LIBS)
 
 
 CODELIB = src/libsmallN.a
 
 
-$(CODELIB): | src
+$(CODELIB):
 	$(MAKE) -C src -j $(CPU_COUNT) all CXXFLAGS='$(CFLAGS)' CXX='$(MPICXX)'
 
 # Building the workers
