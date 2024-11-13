@@ -27,7 +27,7 @@ void Communicator::make_two_groups() {
   MPI_Comm_group(MPI_COMM_WORLD, &orig_group);
 
   /* Divide tasks into two distinct groups based upon rank */
-  vector<int> v1, v2;
+  std::vector<int> v1, v2;
   for(int i=0; i<size/2; i++) v1.push_back(i);
   for(int i=size/2; i<size; i++) v2.push_back(i);
   int* ranks1 = &v1[0];
@@ -83,7 +83,7 @@ void Communicator::divide_work(int numElements) {
 //////////////////////////////////////////////////////////////////////////
 // Getters
 //////////////////////////////////////////////////////////////////////////
-string Communicator::get_name() {
+std::string Communicator::get_name() {
   return name;
 }
 
@@ -118,21 +118,21 @@ MPI_Comm Communicator::get_comm_group2() {
 void Communicator::bcast(int &x) {
   MPI_Bcast(&x, 1, MPI_INT, 0, MPI_COMM_WORLD);   
 }
-void Communicator::bcast(vector<int> &x) {
+void Communicator::bcast(std::vector<int> &x) {
   int N = x.size();
   bcast(N);
   x.resize(N);
   MPI_Bcast(&x.front(), N, MPI_INT, 0, MPI_COMM_WORLD);
 }
-void Communicator::gather(int &x, vector<int> &y) {
+void Communicator::gather(int &x, std::vector<int> &y) {
   y.resize(size);
   MPI_Gather(&x, 1, MPI_INT, &y.front(), 1, MPI_INT, 0, MPI_COMM_WORLD);  
 }
-void Communicator::gather(vector<int> &x, vector<int> &y) {
+void Communicator::gather(std::vector<int> &x, std::vector<int> &y) {
   int N = x.size();
-  vector<int> N_col;
+  std::vector<int> N_col;
   gather(N, N_col);
-  vector<int> i_col(size);
+  std::vector<int> i_col(size);
   for(int i=1; i<size; i++) {
     for(int j=i; j<size; j++) {
       i_col[j] += N_col[i-1];
@@ -143,14 +143,14 @@ void Communicator::gather(vector<int> &x, vector<int> &y) {
   y.resize(N_sum);
   MPI_Gatherv(&x.front(), N, MPI_INT, &y.front(), &N_col.front(), &i_col.front(), MPI_INT, 0, MPI_COMM_WORLD); 
 }
-void Communicator::join(vector<int> &x, vector<int> &y) {
+void Communicator::join(std::vector<int> &x, std::vector<int> &y) {
   int M = x.size();
   y.resize(M);
   int N = M/numStar;
   int begin = my_begin*N;
   int number = all_numbers[rank]*N;
-  vector<int> all_begin = all_begins;
-  vector<int> all_number = all_numbers;
+  std::vector<int> all_begin = all_begins;
+  std::vector<int> all_number = all_numbers;
   for(int i=0; i<size; i++) {
     all_begin[i] *= N;
     all_number[i] *= N;
@@ -161,21 +161,21 @@ void Communicator::join(vector<int> &x, vector<int> &y) {
 void Communicator::bcast(int &x, MPI_Comm comm) {
   MPI_Bcast(&x, 1, MPI_INT, 0, comm); 
 }
-void Communicator::bcast(vector<int> &x, MPI_Comm comm) {
+void Communicator::bcast(std::vector<int> &x, MPI_Comm comm) {
   int N = x.size();
   bcast(N, comm);
   x.resize(N);
   MPI_Bcast(&x.front(), N, MPI_INT, 0, comm);
 }
-void Communicator::gather(int &x, vector<int> &y, MPI_Comm comm) {
+void Communicator::gather(int &x, std::vector<int> &y, MPI_Comm comm) {
   y.resize(size);
   MPI_Gather(&x, 1, MPI_INT, &y.front(), 1, MPI_INT, 0, comm);  
 }
-void Communicator::gather(vector<int> &x, vector<int> &y, MPI_Comm comm) {
+void Communicator::gather(std::vector<int> &x, std::vector<int> &y, MPI_Comm comm) {
   int N = x.size();
-  vector<int> N_col;
+  std::vector<int> N_col;
   gather(N, N_col);
-  vector<int> i_col(size);
+  std::vector<int> i_col(size);
   for(int i=1; i<size; i++) {
     for(int j=i; j<size; j++) {
       i_col[j] += N_col[i-1];
@@ -186,14 +186,14 @@ void Communicator::gather(vector<int> &x, vector<int> &y, MPI_Comm comm) {
   y.resize(N_sum);
   MPI_Gatherv(&x.front(), N, MPI_INT, &y.front(), &N_col.front(), &i_col.front(), MPI_INT, 0, comm); 
 }
-void Communicator::join(vector<int> &x, vector<int> &y, MPI_Comm comm) {
+void Communicator::join(std::vector<int> &x, std::vector<int> &y, MPI_Comm comm) {
   int M = x.size();
   y.resize(M);
   int N = M/numStar;
   int begin = my_begin*N;
   int number = all_numbers[rank]*N;
-  vector<int> all_begin = all_begins;
-  vector<int> all_number = all_numbers;
+  std::vector<int> all_begin = all_begins;
+  std::vector<int> all_number = all_numbers;
   for(int i=0; i<size; i++) {
     all_begin[i] *= N;
     all_number[i] *= N;
@@ -206,21 +206,21 @@ void Communicator::join(vector<int> &x, vector<int> &y, MPI_Comm comm) {
 void Communicator::bcast(float &x) {
   MPI_Bcast(&x, 1, MPI_FLOAT, 0, MPI_COMM_WORLD);   
 }
-void Communicator::bcast(vector<float> &x) {
+void Communicator::bcast(std::vector<float> &x) {
   int N = x.size();
   bcast(N);
   x.resize(N);
   MPI_Bcast(&x.front(), N, MPI_FLOAT, 0, MPI_COMM_WORLD);
 }
-void Communicator::gather(float &x, vector<float> &y) {
+void Communicator::gather(float &x, std::vector<float> &y) {
   y.resize(size);
   MPI_Gather(&x, 1, MPI_FLOAT, &y.front(), 1, MPI_FLOAT, 0, MPI_COMM_WORLD);  
 }
-void Communicator::gather(vector<float> &x, vector<float> &y) {
+void Communicator::gather(std::vector<float> &x, std::vector<float> &y) {
   int N = x.size();
-  vector<int> N_col;
+  std::vector<int> N_col;
   gather(N, N_col);
-  vector<int> i_col(size);
+  std::vector<int> i_col(size);
   for(int i=1; i<size; i++) {
     for(int j=i; j<size; j++) {
       i_col[j] += N_col[i-1];
@@ -231,14 +231,14 @@ void Communicator::gather(vector<float> &x, vector<float> &y) {
   y.resize(N_sum);
   MPI_Gatherv(&x.front(), N, MPI_FLOAT, &y.front(), &N_col.front(), &i_col.front(), MPI_FLOAT, 0, MPI_COMM_WORLD); 
 }
-void Communicator::join(vector<float> &x, vector<float> &y) {
+void Communicator::join(std::vector<float> &x, std::vector<float> &y) {
   int M = x.size();
   y.resize(M);
   int N = M/numStar;
   int begin = my_begin*N;
   int number = all_numbers[rank]*N;
-  vector<int> all_begin = all_begins;
-  vector<int> all_number = all_numbers;
+  std::vector<int> all_begin = all_begins;
+  std::vector<int> all_number = all_numbers;
   for(int i=0; i<size; i++) {
     all_begin[i] *= N;
     all_number[i] *= N;
@@ -249,21 +249,21 @@ void Communicator::join(vector<float> &x, vector<float> &y) {
 void Communicator::bcast(float &x, MPI_Comm comm) {
   MPI_Bcast(&x, 1, MPI_FLOAT, 0, comm);   
 }
-void Communicator::bcast(vector<float> &x, MPI_Comm comm) {
+void Communicator::bcast(std::vector<float> &x, MPI_Comm comm) {
   int N = x.size();
   bcast(N);
   x.resize(N);
   MPI_Bcast(&x.front(), N, MPI_FLOAT, 0, comm);
 }
-void Communicator::gather(float &x, vector<float> &y, MPI_Comm comm) {
+void Communicator::gather(float &x, std::vector<float> &y, MPI_Comm comm) {
   y.resize(size);
   MPI_Gather(&x, 1, MPI_FLOAT, &y.front(), 1, MPI_FLOAT, 0, comm);  
 }
-void Communicator::gather(vector<float> &x, vector<float> &y, MPI_Comm comm) {
+void Communicator::gather(std::vector<float> &x, std::vector<float> &y, MPI_Comm comm) {
   int N = x.size();
-  vector<int> N_col;
+  std::vector<int> N_col;
   gather(N, N_col);
-  vector<int> i_col(size);
+  std::vector<int> i_col(size);
   for(int i=1; i<size; i++) {
     for(int j=i; j<size; j++) {
       i_col[j] += N_col[i-1];
@@ -274,14 +274,14 @@ void Communicator::gather(vector<float> &x, vector<float> &y, MPI_Comm comm) {
   y.resize(N_sum);
   MPI_Gatherv(&x.front(), N, MPI_FLOAT, &y.front(), &N_col.front(), &i_col.front(), MPI_FLOAT, 0, comm); 
 }
-void Communicator::join(vector<float> &x, vector<float> &y, MPI_Comm comm) {
+void Communicator::join(std::vector<float> &x, std::vector<float> &y, MPI_Comm comm) {
   int M = x.size();
   y.resize(M);
   int N = M/numStar;
   int begin = my_begin*N;
   int number = all_numbers[rank]*N;
-  vector<int> all_begin = all_begins;
-  vector<int> all_number = all_numbers;
+  std::vector<int> all_begin = all_begins;
+  std::vector<int> all_number = all_numbers;
   for(int i=0; i<size; i++) {
     all_begin[i] *= N;
     all_number[i] *= N;
@@ -294,21 +294,21 @@ void Communicator::join(vector<float> &x, vector<float> &y, MPI_Comm comm) {
 void Communicator::bcast(double &x) {
   MPI_Bcast(&x, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);   
 }
-void Communicator::bcast(vector<double> &x) {
+void Communicator::bcast(std::vector<double> &x) {
   int N = x.size();
   bcast(N);
   x.resize(N);
   MPI_Bcast(&x.front(), N, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 }
-void Communicator::gather(double &x, vector<double> &y) {
+void Communicator::gather(double &x, std::vector<double> &y) {
   y.resize(size);
   MPI_Gather(&x, 1, MPI_DOUBLE, &y.front(), 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);  
 }
-void Communicator::gather(vector<double> &x, vector<double> &y) {
+void Communicator::gather(std::vector<double> &x, std::vector<double> &y) {
   int N = x.size();
-  vector<int> N_col;
+  std::vector<int> N_col;
   gather(N, N_col);
-  vector<int> i_col(size);
+  std::vector<int> i_col(size);
   for(int i=1; i<size; i++) {
     for(int j=i; j<size; j++) {
       i_col[j] += N_col[i-1];
@@ -319,14 +319,14 @@ void Communicator::gather(vector<double> &x, vector<double> &y) {
   y.resize(N_sum);
   MPI_Gatherv(&x.front(), N, MPI_DOUBLE, &y.front(), &N_col.front(), &i_col.front(), MPI_DOUBLE, 0, MPI_COMM_WORLD); 
 }
-void Communicator::join(vector<double> &x, vector<double> &y) {
+void Communicator::join(std::vector<double> &x, std::vector<double> &y) {
   int M = x.size();
   y.resize(M);
   int N = M/numStar;
   int begin = my_begin*N;
   int number = all_numbers[rank]*N;
-  vector<int> all_begin = all_begins;
-  vector<int> all_number = all_numbers;
+  std::vector<int> all_begin = all_begins;
+  std::vector<int> all_number = all_numbers;
   for(int i=0; i<size; i++) {
     all_begin[i] *= N;
     all_number[i] *= N;
@@ -337,21 +337,21 @@ void Communicator::join(vector<double> &x, vector<double> &y) {
 void Communicator::bcast(double &x, MPI_Comm comm) {
   MPI_Bcast(&x, 1, MPI_DOUBLE, 0, comm);   
 }
-void Communicator::bcast(vector<double> &x, MPI_Comm comm) {
+void Communicator::bcast(std::vector<double> &x, MPI_Comm comm) {
   int N = x.size();
   bcast(N);
   x.resize(N);
   MPI_Bcast(&x.front(), N, MPI_DOUBLE, 0, comm);
 }
-void Communicator::gather(double &x, vector<double> &y, MPI_Comm comm) {
+void Communicator::gather(double &x, std::vector<double> &y, MPI_Comm comm) {
   y.resize(size);
   MPI_Gather(&x, 1, MPI_DOUBLE, &y.front(), 1, MPI_DOUBLE, 0, comm);  
 }
-void Communicator::gather(vector<double> &x, vector<double> &y, MPI_Comm comm) {
+void Communicator::gather(std::vector<double> &x, std::vector<double> &y, MPI_Comm comm) {
   int N = x.size();
-  vector<int> N_col;
+  std::vector<int> N_col;
   gather(N, N_col);
-  vector<int> i_col(size);
+  std::vector<int> i_col(size);
   for(int i=1; i<size; i++) {
     for(int j=i; j<size; j++) {
       i_col[j] += N_col[i-1];
@@ -362,14 +362,14 @@ void Communicator::gather(vector<double> &x, vector<double> &y, MPI_Comm comm) {
   y.resize(N_sum);
   MPI_Gatherv(&x.front(), N, MPI_DOUBLE, &y.front(), &N_col.front(), &i_col.front(), MPI_DOUBLE, 0, comm); 
 }
-void Communicator::join(vector<double> &x, vector<double> &y, MPI_Comm comm) {
+void Communicator::join(std::vector<double> &x, std::vector<double> &y, MPI_Comm comm) {
   int M = x.size();
   y.resize(M);
   int N = M/numStar;
   int begin = my_begin*N;
   int number = all_numbers[rank]*N;
-  vector<int> all_begin = all_begins;
-  vector<int> all_number = all_numbers;
+  std::vector<int> all_begin = all_begins;
+  std::vector<int> all_number = all_numbers;
   for(int i=0; i<size; i++) {
     all_begin[i] *= N;
     all_number[i] *= N;

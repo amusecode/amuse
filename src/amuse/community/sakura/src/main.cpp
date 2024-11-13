@@ -1,7 +1,6 @@
 #include "Communicator.h"
 
 #include <iostream>
-using namespace std;
 
 #include <fstream>
 #include <cstdlib>

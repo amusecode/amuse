@@ -4,7 +4,7 @@ Interaction::Interaction() {
   ;
 }
 
-void Interaction::calc_a(vector<Particle> &particle, Communicator &communicator) {
+void Interaction::calc_a(std::vector<Particle> &particle, Communicator &communicator) {
   int N = particle.size();
   for(int i=0; i<N; i++) {
     particle[i].set_ax(0.0);	  
@@ -12,7 +12,7 @@ void Interaction::calc_a(vector<Particle> &particle, Communicator &communicator)
     particle[i].set_az(0.0);	  
   }
 
-  vector<double> myacc(3*N, 0);
+  std::vector<double> myacc(3*N, 0);
 
   for(int i=communicator.get_my_begin(); i<communicator.get_my_end(); i++) {
     for(int j=0; j<N; j++) {
@@ -35,7 +35,7 @@ void Interaction::calc_a(vector<Particle> &particle, Communicator &communicator)
     }
   }
 
-  vector<double> acc(3*N, 0);
+  std::vector<double> acc(3*N, 0);
   communicator.join(myacc, acc);
   communicator.bcast(acc);
   

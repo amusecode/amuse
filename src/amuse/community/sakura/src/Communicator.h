@@ -2,7 +2,6 @@
 #include <mpi.h>
 #endif
 
-using namespace std;
 #include <vector>
 #include <string>
 
@@ -11,11 +10,11 @@ using namespace std;
 
 class Communicator {
   int rank, size;
-  string name;
+  std::string name;
 
   int numStar;
   int my_begin, my_end;
-  vector<int> all_begins, all_numbers;
+  std::vector<int> all_begins, all_numbers;
 
   int group, sendbuf_rank, recvbuf_sum;
   MPI_Group orig_group, new_group1, new_group2;  
@@ -37,7 +36,7 @@ class Communicator {
   void divide_work(int numElements);
 
   // getters
-  string get_name();
+  std::string get_name();
 
   int get_rank();
   int get_size();
@@ -51,42 +50,42 @@ class Communicator {
 
   // int
   void bcast(int &x);
-  void bcast(vector<int> &x);
-  void gather(int &x, vector<int> &y);
-  void gather(vector<int> &x, vector<int> &y);
-  void join(vector<int> &x, vector<int> &y);
+  void bcast(std::vector<int> &x);
+  void gather(int &x, std::vector<int> &y);
+  void gather(std::vector<int> &x, std::vector<int> &y);
+  void join(std::vector<int> &x, std::vector<int> &y);
 
   void bcast(int &x, MPI_Comm comm);
-  void bcast(vector<int> &x, MPI_Comm comm);
-  void gather(int &x, vector<int> &y, MPI_Comm comm);
-  void gather(vector<int> &x, vector<int> &y, MPI_Comm comm);
-  void join(vector<int> &x, vector<int> &y, MPI_Comm comm);
+  void bcast(std::vector<int> &x, MPI_Comm comm);
+  void gather(int &x, std::vector<int> &y, MPI_Comm comm);
+  void gather(std::vector<int> &x, std::vector<int> &y, MPI_Comm comm);
+  void join(std::vector<int> &x, std::vector<int> &y, MPI_Comm comm);
 
   // float
   void bcast(float &x);
-  void bcast(vector<float> &x);
-  void gather(float &x, vector<float> &y);
-  void gather(vector<float> &x, vector<float> &y);
-  void join(vector<float> &x, vector<float> &y);
+  void bcast(std::vector<float> &x);
+  void gather(float &x, std::vector<float> &y);
+  void gather(std::vector<float> &x, std::vector<float> &y);
+  void join(std::vector<float> &x, std::vector<float> &y);
 
   void bcast(float &x, MPI_Comm comm);
-  void bcast(vector<float> &x, MPI_Comm comm);
-  void gather(float &x, vector<float> &y, MPI_Comm comm);
-  void gather(vector<float> &x, vector<float> &y, MPI_Comm comm);
-  void join(vector<float> &x, vector<float> &y, MPI_Comm comm);
+  void bcast(std::vector<float> &x, MPI_Comm comm);
+  void gather(float &x, std::vector<float> &y, MPI_Comm comm);
+  void gather(std::vector<float> &x, std::vector<float> &y, MPI_Comm comm);
+  void join(std::vector<float> &x, std::vector<float> &y, MPI_Comm comm);
 
   // double
   void bcast(double &x);
-  void bcast(vector<double> &x);
-  void gather(double &x, vector<double> &y);
-  void gather(vector<double> &x, vector<double> &y);
-  void join(vector<double> &x, vector<double> &y);
+  void bcast(std::vector<double> &x);
+  void gather(double &x, std::vector<double> &y);
+  void gather(std::vector<double> &x, std::vector<double> &y);
+  void join(std::vector<double> &x, std::vector<double> &y);
 
   void bcast(double &x, MPI_Comm comm);
-  void bcast(vector<double> &x, MPI_Comm comm);
-  void gather(double &x, vector<double> &y, MPI_Comm comm);
-  void gather(vector<double> &x, vector<double> &y, MPI_Comm comm);
-  void join(vector<double> &x, vector<double> &y, MPI_Comm comm);
+  void bcast(std::vector<double> &x, MPI_Comm comm);
+  void gather(double &x, std::vector<double> &y, MPI_Comm comm);
+  void gather(std::vector<double> &x, std::vector<double> &y, MPI_Comm comm);
+  void join(std::vector<double> &x, std::vector<double> &y, MPI_Comm comm);
 };
 
 #endif
