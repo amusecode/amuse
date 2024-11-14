@@ -12,20 +12,21 @@ CC = $(MPICC)
 CXX = $(MPICXX)
 
 CXXFLAGS ?= -Wall -g -O2
+CXXFLAGS += -std=c++11
 
 
 CODELIB = src/libsakura.a
 OBJ = interface.o
 
-all: sakura_worker 
+all: sakura_worker
 
 clean:
-	rm -f *.so *.o *.pyc worker_code.cc worker_code.h 
+	rm -f *.so *.o *.pyc worker_code.cc worker_code.h
 	rm -f *~ sakura_worker
 	make -C src clean
 
 $(CODELIB):
-	make -C src all
+	make -C src all CXXFLAGS="$(CXXFLAGS)"
 
 worker_code.cc: interface.py
 	$(CODE_GENERATOR) --type=c interface.py SakuraInterface -o $@
@@ -37,5 +38,5 @@ sakura_worker: worker_code.cc worker_code.h $(CODELIB) $(OBJ)
 	$(MPICXX) $(CXXFLAGS) $(SC_FLAGS) $(LDFLAGS) -I./src $< $(CODELIB) $(OBJ) -o $@  -L./src -lsakura $(SC_CLIBS)
 
 interface.o: interface.cc
-	$(MPICXX) $(CXXFLAGS) $(SC_FLAGS) -I./src -c -o $@ $< 
+	$(MPICXX) $(CXXFLAGS) $(SC_FLAGS) -I./src -c -o $@ $<
 
