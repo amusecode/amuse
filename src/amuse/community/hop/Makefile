@@ -8,23 +8,13 @@ support/config.mk:
 	cd support && ./configure
 
 # Building the code into a static library
-DEPFLAGS += $(AMUSE_MPI_CFLAGS)
-
-CFLAGS += $(DEPFLAGS)
 CFLAGS += -DDIFFERENT_MASSES
-
-LDFLAGS +=
-
-LDLIBS += -lm $(AMUSE_MPI_LIBS)
-
 
 CODELIB = src/libhop.a
 
-$(CODELIB): | src
+$(CODELIB):
 	$(MAKE) -C src -j $(CPU_COUNT) all
 
-interface.o: interface.cc hop_worker.h
-	$(MPICXX) -c -o $@ $(CFLAGS) $<
 
 # Building the workers
 hop_worker.h: interface.py
@@ -38,6 +28,9 @@ hop_worker.o: hop_worker.cc hop_worker.h
 
 hop_worker: hop_worker.o interface.o $(CODELIB)
 	$(MPICXX) -o $@ $(LDFLAGS) $^ $(LDLIBS)
+
+interface.o: interface.cc hop_worker.h
+	$(MPICXX) -c -o $@ $(CFLAGS) $<
 
 
 # Which packages contain which workers?
