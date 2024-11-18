@@ -14,9 +14,9 @@ CODELIB = libMikkola.a
 
 CODEOBJS = Mikkola.o
 
-AR = ar ruv
-RANLIB = ranlib
-RM = rm
+AR ?= ar
+RANLIB ?= ranlib
+RM ?= rm
 
 all: $(CODELIB) 
 
@@ -25,7 +25,7 @@ clean:
 
 $(CODELIB): $(CODEOBJS)
 	$(RM) -f $@
-	$(AR) $@ $(CODEOBJS)
+	$(AR) ruv $@ $(CODEOBJS)
 	$(RANLIB) $@
 
 %.o: %.f90

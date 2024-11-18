@@ -9,31 +9,18 @@ support/config.mk:
 
 
 # Building the code into a static library
-DEPFLAGS += $(STOPCONDMPI_CFLAGS) $(AMUSE_MPI_CFLAGS)
-DEPFLAGS += $(FORSOCKETS_CFLAGS)
+DEPFLAGS += $(STOPCOND_CFLAGS) $(FORSOCKETS_CFLAGS)
 
-CFLAGS += $(DEPFLAGS)
 FFLAGS += $(DEPFLAGS)
 
-LDFLAGS +=
-
-LDLIBS += -lm $(STOPCONDMPI_LIBS) $(AMUSE_MPI_LIBS)
-LDLIBS += $(FORSOCKETS_LIBS)
-
-
-# flags from the original MakeFile
-#F77FLAGS += 
-#ifneq (,$(findstring xlf, $(notdir $(FORTRAN))))
-#F77FLAGS += -qfixed -qextname=flush
-#endif
-#export F77FLAGS
+LDLIBS += $(STOPCOND_LIBS) $(FORSOCKETS_LIBS)
 
 
 CODELIB = src/libMikkola.a
 
 
-$(CODELIB): | src
-	$(MAKE) -C src -j $(CPU_COUNT) all  # make -C src all F77FLAGS="$(F77FLAGS)"
+$(CODELIB):
+	$(MAKE) -C src -j $(CPU_COUNT) all
 
 
 # Building the workers
