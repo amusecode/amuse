@@ -10,12 +10,9 @@ AMUSE_VENV()
 AX_COUNT_CPUS()
 AC_SUBST(CPU_COUNT)
 
-# Set the worker language
+# Find the compiler(s)
 AC_PROG_CC()
 AC_PROG_CXX()
-
-# Find AMUSE libraries
-AMUSE_LIB_AMUSE_MPI()
 
 # Find external dependencies
 AC_LANG_PUSH([C])

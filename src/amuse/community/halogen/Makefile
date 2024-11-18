@@ -8,19 +8,11 @@ support/config.mk:
 	cd support && ./configure
 
 # Building the code into a static library
-DEPFLAGS += $(AMUSE_MPI_CFLAGS)
-
-CFLAGS += $(DEPFLAGS)
-CFLAGS += -Isrc
-
-LDFLAGS +=
-
-LDLIBS += -lm $(AMUSE_MPI_LIBS)
-
+LDLIBS += -lm
 
 CODELIB = src/libhalogen.a
 
-$(CODELIB): | src
+$(CODELIB):
 	$(MAKE) -C src -j $(CPU_COUNT) all CC='$(CC)'
 
 interface.o: interface.cc halogen_worker.h
