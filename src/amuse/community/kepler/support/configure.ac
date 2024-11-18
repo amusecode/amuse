@@ -13,11 +13,7 @@ AC_SUBST(CPU_COUNT)
 # Set the worker language
 AC_PROG_CXX()
 
-# Find AMUSE libraries
-AMUSE_LIB_AMUSE_MPI()
-AMUSE_LIB_FORSOCKETS()
-
-# find mpi
+# Find mpi
 AC_LANG_PUSH([C++])
 AX_MPI()
 AC_LANG_POP([C++])

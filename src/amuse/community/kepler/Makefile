@@ -8,30 +8,23 @@ support/config.mk:
 	cd support && ./configure
 
 # Building the code into a static library
-DEPFLAGS += $(AMUSE_MPI_CFLAGS)
-
-CFLAGS += $(DEPFLAGS)
 CFLAGS += -Isrc
-
-LDFLAGS +=
-
-LDLIBS += -lm $(AMUSE_MPI_LIBS)
 
 CODELIB = src/libkepler.a
 
 
 # Buildind the code lib
-$(CODELIB): | src
-	$(MAKE) -C src all CXX='$(MPICXX)'
+$(CODELIB):
+	$(MAKE) -C src -j $(CPU_COUNT) all CXX='$(MPICXX)'
 
 # Building the workers
-hepler_worker.h: interface.py
+kepler_worker.h: interface.py
 	amusifier --type=h interface.py KeplerInterface -o $@
 
 kepler_worker.cc: interface.py
 	amusifier --type=c interface.py KeplerInterface -o $@
 
-kepler_worker.o: kepler_worker.cc hepler_worker.h
+kepler_worker.o: kepler_worker.cc kepler_worker.h
 	$(MPICXX) -c -o $@ $(CFLAGS) $<
 
 kepler_worker: kepler_worker.o interface.o $(CODELIB)
