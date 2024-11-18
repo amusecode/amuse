@@ -39,7 +39,7 @@ class KeplerInterface(CodeInterface,
     .. [#] ... (HUAYNO, method 1))
     """
 
-    include_headers = ['heplerorbiters_worker.h']
+    include_headers = ['keplerorbiters_worker.h']
 
     def __init__(self, **options):
         CodeInterface.__init__(self,
