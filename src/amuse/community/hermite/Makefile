@@ -8,13 +8,13 @@ support/config.mk:
 	cd support && ./configure
 
 # Building the code into a static library
-DEPFLAGS += $(STOPCOND_CFLAGS) $(STOPCONDMPI_CFLAGS) $(AMUSE_MPI_CFLAGS)
+DEPFLAGS += $(STOPCONDMPI_CFLAGS) $(AMUSE_MPI_CFLAGS)
 
 CFLAGS += $(DEPFLAGS)
 
 LDFLAGS +=
 
-LDLIBS += -lm $(STOPCOND_LIBS) $(STOPCONDMPI_LIBS) $(AMUSE_MPI_LIBS)
+LDLIBS += -lm $(STOPCONDMPI_LIBS) $(AMUSE_MPI_LIBS)
 
 
 # Building the workers
@@ -62,3 +62,4 @@ clean:
 distclean: clean
 	rm -f support/config.mk support/config.log support/config.status
 	rm -rf support/autom4te.cache
+
