@@ -33,7 +33,6 @@ exclude = [
     "galactics/src",
     "galactics/tests"
     ]
-artifacts = ["galactics/galactics_worker"]
 
 [tool.hatch.build.targets.wheel.sources]
 "galactics" = "amuse/community/galactics"
