@@ -10,16 +10,15 @@
 #include <sys/time.h>
 #include <sys/types.h>
 
-#ifdef MPI_PARALLEL
-#include <mpi.h>
-#include <amuse_mpi.h>
-#endif
-
 #include "defs.h"
 #include "athena.h"
 #include "globals.h"
 #include "prototypes.h"
 
+#ifdef MPI_PARALLEL
+#include <mpi.h>
+#include <amuse_mpi.h>
+#endif
 
 #include <math.h>
 
