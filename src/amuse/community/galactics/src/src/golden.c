@@ -4,9 +4,7 @@
 #define C (1.0-R)
 #define SHFT(a,b,c,d) (a)=(b);(b)=(c);(c)=(d);
 
-float golden(ax,bx,cx,f,tol,xmin)
-float ax,bx,cx,tol,*xmin;
-float (*f)();	/* ANSI: float (*f)(float); */
+float golden(float ax, float bx, float cx, float (*f)(float), float tol, float *xmin)
 {
 	float f0,f1,f2,f3,x0,x1,x2,x3;
 
@@ -41,3 +39,4 @@ float (*f)();	/* ANSI: float (*f)(float); */
 
 #undef C
 #undef R
+

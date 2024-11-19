@@ -25,79 +25,61 @@
 #include <stdio.h>
 #include <string.h>
 
-cquery(prompt,c)
-char *c;
-char *prompt;
+void cquery(char *prompt, char *c)
 {
-	char *p, line[100], newprompt[200];
-	strcpy(newprompt,prompt);
-	strcat(newprompt," [%s]: ");
-	fprintf(stderr,newprompt,c);
-	fgets(line,100,stdin);
+	char *p, line[100];
+	fprintf(stderr, "%s [%s]: ", prompt, c);
+	fgets(line, 100, stdin);
 	if(*line != '\n')
 	{
+		/* overwrite what the user just typed with zeros and then copy?!! */
 		for(p=line; *p != '\n'; p++);
 			*p = '\0';
-		strcpy(c,line);
+		strcpy(c, line);
 	}
 }
 
-dquery(prompt,d)
-double *d;
-char prompt[100];
+void dquery(char *prompt, double *d)
 {
-	char line[100], newprompt[200];
-	strcpy(newprompt,prompt);
-	strcat(newprompt," [%g]: ");
-	fprintf(stderr,newprompt,*d);
-	fgets(line,100,stdin);
+	char line[100];
+	fprintf(stderr, "%s [%g]: ", prompt, *d);
+	fgets(line, 100, stdin);
 	if(*line != '\n')
 	{
-		sscanf(line,"%lf",d);
+		sscanf(line, "%lf", d);
 	}
 }
 
-fquery(prompt,f)
-float *f;
-char prompt[100];
+void fquery(char *prompt, float *f)
 {
-	char line[100], newprompt[200];
-	strcpy(newprompt,prompt);
-	strcat(newprompt," [%g]: ");
-	fprintf(stderr,newprompt,*f);
-	fgets(line,100,stdin);
+	char line[100];
+	fprintf(stderr, "%s [%g]: ", prompt, *f);
+	fgets(line, 100, stdin);
 	if(*line != '\n')
 	{
-		sscanf(line,"%e",f);
+		sscanf(line, "%e", f);
 	}
 }
 
-iquery(prompt,i)
-int *i;
-char prompt[100];
+void iquery(char *prompt, int *i)
 {
-	char line[100], newprompt[200];
-	strcpy(newprompt,prompt);
-	strcat(newprompt," [%d]: ");
-	fprintf(stderr,newprompt,*i);
-	fgets(line,100,stdin);
+	char line[100];
+	fprintf(stderr, "%s [%d]: ", prompt, *i);
+	fgets(line, 100, stdin);
 	if(*line != '\n')
 	{
-		sscanf(line,"%d",i);
+		sscanf(line, "%d", i);
 	}
 }
 
-llquery(prompt,i)
-long long *i;
-char prompt[100];
+void llquery(char *prompt, long long *i)
 {
-	char line[100], newprompt[200];
-	strcpy(newprompt,prompt);
-	strcat(newprompt," [%lld]: ");
-	fprintf(stderr,newprompt,*i);
-	fgets(line,100,stdin);
+	char line[100];
+	fprintf(stderr, "%s [%lld]: ", prompt, *i);
+	fgets(line, 100, stdin);
 	if(*line != '\n')
 	{
-		sscanf(line,"%lld",i);
+		sscanf(line, "%lld", i);
 	}
 }
+

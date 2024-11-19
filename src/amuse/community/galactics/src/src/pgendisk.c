@@ -1,4 +1,9 @@
 #include "main.h"
+#include "golden.h"
+#include "omekap.h"
+#include "readdiskdf.h"
+#include "simpson.h"
+
 #ifndef NOMPI
 #include <mpi.h>
 #endif
@@ -6,12 +11,17 @@
 // random skip factor, must be larger than the number of random draws per particle
 #define SKIP  100000
 
+float Fdisk(float vr, float vp, float vz, float R, float z);
+float invu(float u);
+float FindMax1(float R, float z, float *vpmax);
+float fgold(float vp);
+float denz(float z);
+float massring(float r);
+
 float rad;
 float Rc, zc;
 
-main(argc,argv)
-int argc;
-char **argv;
+int main(int argc, char **argv)
 {
 	int i, j, k, nobj=10000;
   long long lseed=0;
@@ -25,10 +35,8 @@ char **argv;
 	float E, Lz, rad, rad2;
 	float f0, frand, fmax, fmax1, vphimax1, psi, fnorm;
 	float fr;
-	float Fdisk();
 	float ran1();
   void ran_seed();
-	float invu();
 	float dr, rhomax1;
 	float t, mass;
 	float u1, v1, u1max, v1max;
@@ -45,8 +53,6 @@ char **argv;
 	float f1;
 	float gr, gp, gz, g2;
 	float diskdensf_(), sigr2_(), sigz2_(), pot();
-	float FindMax(), FindMax1(), Fmax();
-	float simpson(), massring(); 
 	float force_();
 	float rcirc_();
 	float vcirc, rpot, fz;
@@ -278,11 +284,10 @@ char **argv;
 #ifndef NOMPI
 	MPI_Finalize();
 #endif
-	exit(0);
+	return 0;
 }
 
-float Fdisk(vr, vp, vz, R, z)
-float vr, vp, vz, R, z;
+float Fdisk(float vr, float vp, float vz, float R, float z)
 {
   float vr0, vp0, vz0, R0, z0;
   float diskdf5ez_();
@@ -291,8 +296,7 @@ float vr, vp, vz, R, z;
   return diskdf5ez_(&vr0, &vp0, &vz0, &R0, &z0);
 }
 
-float invu(u)
-     float u;
+float invu(float u)
 {
   /* invert the u function to find R */
   int i;
@@ -313,13 +317,10 @@ float invu(u)
 
 /* A approximate estimate of the local maximum of the distribution function */
 
-float Fmax(R,z,vR,vz,vlimit, vpmax)
-     float R, z, vR, vz;
-     float *vpmax, vlimit;
+float Fmax(float R, float z, float vR, float vz, float vlimit, float *vpmax)
 {
   int i;
   float v, dv, fmax, vmax, v0;
-  float Fdisk();
   
   dv = 2.0*vlimit/100;
   v0 = *vpmax - 50*dv;
@@ -339,14 +340,11 @@ float Fmax(R,z,vR,vz,vlimit, vpmax)
   return fmax;
 }
 
-float FindMax1(R,z,vpmax)
-
-     float R, z, *vpmax;
+float FindMax1(float R, float z, float *vpmax)
 {
   int upflag, flag;
   float dv, vpm, vpmold, v0, v1;
   float f0, f1, ftmp, fmid;
-  float Fdisk();
   float zero;
   
   zero = 0.0;
@@ -384,13 +382,12 @@ float FindMax1(R,z,vpmax)
   return f0;
 }
 
-float FindMax(R,z,vpmax)
-     float R, z, *vpmax;
+float FindMax(float R, float z, float *vpmax)
 {
   float vpm;
   float v0, v1;
   float eps=0.01;
-  float fmax, golden(), fgold();
+  float fmax;
   
   Rc = R; zc = z;
   
@@ -403,8 +400,7 @@ float FindMax(R,z,vpmax)
   
 }
 
-float fgold(vp)
-     float vp;
+float fgold(float vp)
 {
   float R, z;
   float zero;
@@ -413,18 +409,13 @@ float fgold(vp)
     return( -Fdisk(0.0,vp,0.0,R,z) );
 }
 
-float massring(r)
-     float r;
+float massring(float r)
 {
-  float denz();
-  float simpson();
-  
   rad = r;
   return( rad*simpson(denz,0.0,5.0*zdisk,128) );
 }
 
-float denz(z)
-     float z;
+float denz(float z)
 {
   float z0;
   float diskdensf_();

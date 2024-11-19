@@ -2,6 +2,11 @@
 #include <stdlib.h>
 #include <math.h>
 
+#include "readharmfile.h"
+
+
+void plotv(float *rp, float *vp, int line, char *file);
+
 float ra[1000], va[1000];
 float rh[1000], vh[1000];
 float rd[1000], vd[1000];
@@ -10,9 +15,19 @@ float A, B, C, D1, D2, D3, q2, v0, v02, psi0;
 float rho1=100, sigb=0.3, sigb2, psicutb= -1.0, fbulgeconst;
 float rscale=.15, vscale=.8164866, mscale=0.1;
 
-main(argc,argv)
-int argc;
-char **argv;
+
+int main(int argc, char **argv) {
+    fprintf(stderr, "Sorry, this code is broken.\n");
+    exit(1);
+}
+
+/* This is broken, because readharmfile_ does not take that many parameters in
+ * this version of the code. To be fixed, if there's interest, disabled for now.
+ */
+
+/*
+
+int main(int argc, char **argv)
 {
 	int i;
 	float dr;
@@ -48,10 +63,7 @@ char **argv;
 #endif
 }
 
-plotv(rp,vp,line,file)
-float *rp, *vp;
-int line;
-char *file;
+void plotv(float *rp, float *vp, int line, char *file)
 {
 	int i;
 	float dr;
@@ -77,3 +89,6 @@ char *file;
 	pgline(1000,rp,vp);
 #endif
 }
+
+*/
+

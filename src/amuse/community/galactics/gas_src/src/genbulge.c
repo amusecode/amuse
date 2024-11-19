@@ -1,11 +1,16 @@
 #include "main.h"
+#include "main_common.h"
+#include "query.h"
+#include "readharmfile.h"
+#include "readmassrad.h"
+
+float Fbulge1(float E, float psi0);
+float Fbulge(float E, float psi0);
 
 // random skip factor, must be larger than the number of random draws per particle
 #define SKIP  100000
 
-main(argc,argv)
-int argc;
-char **argv;
+int main(int argc, char **argv)
 {
         int i, j, k, nobj=10000;
         long long lseed=0;
@@ -17,7 +22,6 @@ char **argv;
         float phi, cph, sph, cth, sth, vR, vp, vz;
         float E, Lz, rad, rad2;
         float f0, frand, fmax, psi;
-        float Fbulge();
         float ran1();
         void ran_seed();
         float t, mass;
@@ -185,8 +189,7 @@ char **argv;
 
 /* This defines the distribution function */
 
-float Fbulge1(E,psi0)
-float E,psi0;
+float Fbulge1(float E, float psi0)
 {
         float f0;
 
@@ -198,13 +201,12 @@ float E,psi0;
         return f0;
 }
 
-float Fbulge(E,psi0)
-float E, psi0;
+float Fbulge(float E, float psi0)
 {
   float fbulge3_();  
   if(bulgeflag == 1) return Fbulge1(E,psi0);
   if(bulgeflag == 3) return fbulge3_(&E,&psi0);
   printf("error2\n");
   exit(1);  
-  }
+}
 

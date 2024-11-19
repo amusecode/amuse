@@ -2,9 +2,7 @@
 #include <stdlib.h>
 #include <math.h>
 
-main(argc,argv)
-int argc;
-char *argv[];
+int main(int argc, char **argv)
 {
 	int i, nobj;
 	float r[7];
@@ -29,6 +27,6 @@ char *argv[];
 			r[0], r[1], r[2], r[3], r[4], r[5], r[6]);
 	}
 	fclose(rvfile);
+	return 0;
 }
-
 

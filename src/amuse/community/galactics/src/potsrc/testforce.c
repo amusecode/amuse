@@ -2,9 +2,9 @@
 #include <stdlib.h>
 #include <math.h>
 
-main(argc,argv)
-int argc;
-char **argv;
+#include "rigidpot.h"
+
+int main(int argc, char **argv)
 {
 
 	float x, y, z, ax, ay, az, pot;
@@ -34,4 +34,5 @@ exit(0);
 	fprintf(stdout,"ax ay az %g %g %g\n",ax,ay,az);
 	fprintf(stdout,"pot %g\n",pot);
 
+    return 0;
 }

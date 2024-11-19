@@ -1,4 +1,7 @@
 #include "main.h"
+#include "omekap.h"
+#include "query.h"
+#include "readdiskdf.h"
 
 // random skip factor, must be larger than the number of random draws per particle
 #define SKIP  100000
@@ -6,9 +9,7 @@
 float rad;
 float Rc, zc;
 
-main(argc,argv)
-int argc;
-char **argv;
+int main(int argc, char **argv)
 {
 	int i, j, k, nobj=10000;
   long long lseed=0;

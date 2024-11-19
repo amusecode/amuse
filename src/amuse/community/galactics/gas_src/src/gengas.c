@@ -1,9 +1,11 @@
 #include "main.h"
+#include "main_common.h"
+#include "query.h"
 
 void generate_gas_(int *nobj, float* vdisp, long long * seed, 
  float *m,float *x,float *y,float *z,float *vx,float *vy,float *vz, float *cs);
 
-main(int argc,char** argv)
+int main(int argc,char** argv)
 {
 	int i, j, k, nobj=10000;
   long long lseed=0;

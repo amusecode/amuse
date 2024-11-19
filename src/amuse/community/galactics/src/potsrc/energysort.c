@@ -2,6 +2,9 @@
 #include <stdlib.h>
 #include <math.h>
 
+#include "rigidpot.h"
+
+
 typedef struct {
 	float m, x, y, z, vx, vy, vz;
 } phase;
@@ -9,9 +12,7 @@ typedef struct {
 int *indx;
 double *be;
 
-main(argc,argv)
-int argc;
-char **argv;
+int main(int argc, char **argv)
 {
 
 	int i, j, nobj;
@@ -64,13 +65,13 @@ char **argv;
 	}
 	fwrite(r0,sizeof(phase),nobj,stdout);
 
-	exit(0);
+	return 0;
 }
 
-int cmp(a,b)
-int *a, *b;
+int cmp(int *a, int *b)
 {
 	if( be[*a] > be[*b]) return 1;
 	if( be[*a] < be[*b]) return -1;
 	return 0;
 }
+
