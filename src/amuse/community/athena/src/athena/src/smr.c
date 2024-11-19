@@ -2169,7 +2169,7 @@ void ProCon(const ConsS Uim1,const ConsS Ui,  const ConsS Uip1,
   Vfail = 0;
   fail = 0;
 
-#endif SPECIAL_RELATIVITY
+#endif /* SPECIAL_RELATIVITY */
 
 #endif /* FIRST_ORDER */
 }

@@ -21,6 +21,7 @@ void bvals_grav(DomainS *pDomain);
 
 /* selfg.c  */
 #ifdef SELF_GRAVITY
+void selfg_fc(DomainS *pD);
 VDFun_t selfg_init(MeshS *pM);
 void selfg_flux_correction(GridS *pG);
 #endif /* SELF_GRAVITY */
