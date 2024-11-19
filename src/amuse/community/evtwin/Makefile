@@ -13,33 +13,32 @@ LDFLAGS +=
 LDLIBS += $(FORSOCKETS_LIBS)
 
 SRCDIR = src/trunk
-EVTWINLIB=$(SRCDIR)/lib/libtwin.a $(SRCDIR)/lib/libtwincore.a
-BUILDDIR = build
+CODELIB=$(SRCDIR)/lib/libtwin.a $(SRCDIR)/lib/libtwincore.a
 CMAKE_DEPS = $(SRCDIR)/CMakeLists.txt $(SRCDIR)/cmake/CompilerFlags.cmake $(SRCDIR)/cmake/FileList.cmake
 CMAKE_GENERATOR ?= Unix Makefiles
 
 
-$(BUILDDIR):
-	mkdir -p $(BUILDDIR)
+build:
+	mkdir -p build
 
-$(BUILDDIR)/Makefile: $(CMAKE_DEPS) | $(BUILDDIR)
-	cd $(BUILDDIR) && FC="$(FC) $(FCFLAGS)" cmake ../src/trunk -DCMAKE_Fortran_FLAGS:STRING="$(FCFLAGS)"  -G "$(CMAKE_GENERATOR)" -DWANT_MKMERGERMOD=0 -DWANT_LIBRARY=1
+build/Makefile: $(CMAKE_DEPS) | build
+	cd build && FC="$(FC) $(FCFLAGS)" cmake ../src/trunk -DCMAKE_Fortran_FLAGS:STRING="$(FCFLAGS)"  -G "$(CMAKE_GENERATOR)" -DWANT_MKMERGERMOD=0 -DWANT_LIBRARY=1
 
-$(EVTWINLIB): $(BUILDDIR)/Makefile
-	$(MAKE) -C $(BUILDDIR) -j 1 all
+$(CODELIB) &: build/Makefile
+	$(MAKE) -C build -j 1 all
 
 # Building the workers
 evtwin_worker.f90: interface.py
 	amusifier --type=f90 interface.py EVtwinInterface -o $@
 
-evtwin_worker.o: evtwin_worker.f90 $(EVTWINLIB)
-	$(MPIFC) -c $(FFLAGS) -I$(BUILDDIR) $<
+evtwin_worker.o: evtwin_worker.f90 $(CODELIB)
+	$(MPIFC) -c $(FFLAGS) -Ibuild $<
 
-evtwin_worker: evtwin_worker.o $(SRCDIR)/code/libint.o $(EVTWINLIB)
+evtwin_worker: evtwin_worker.o $(SRCDIR)/code/libint.o $(CODELIB)
 	$(MPIFC) -o $@ $(LDFLAGS) $^ $(LDLIBS)
 
 %.o: %.f90
-	$(FC) -c -o $@ $(FFLAGS) -I$(BUILDDIR) $<
+	$(FC) -c -o $@ $(FFLAGS) -Ibuild $<
 
 
 # Which packages contain which workers?
@@ -65,7 +64,7 @@ test-%:
 # Cleaning up
 .PHONY: clean
 clean:
-	rm -rf $(BUILDDIR)
+	rm -rf build
 	rm -rf *.o *worker*
 
 .PHONY: distclean
