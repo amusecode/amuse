@@ -169,25 +169,28 @@ class TestCapreoleInterface(TestWithMPI):
     def test8(self):
         instance = CapreoleInterface()
         instance.initialize_code()
-        err = instance.set_boundary("periodic", "reflective",
-        "periodic", "reflective",
-        "periodic", "reflective")
+        err = instance.set_boundary(
+                "periodic", "reflective",
+                "periodic", "reflective",
+                "periodic", "reflective")
         self.assertEqual(err, -1)
         instance.stop()
 
         instance = CapreoleInterface()
         instance.initialize_code()
-        err = instance.set_boundary("reflective", "periodic",
-        "periodic", "reflective",
-        "periodic", "reflective")
-        self.assertEqual(err, -2)
+        err = instance.set_boundary(
+                "reflective", "periodic",
+                "periodic", "reflective",
+                "periodic", "reflective")
+        self.assertEqual(err, -1)
         instance.stop()
 
         instance = CapreoleInterface()
         instance.initialize_code()
-        err = instance.set_boundary("periodic", "periodic",
-        "periodic", "periodic",
-        "periodic", "periodic")
+        err = instance.set_boundary(
+                "periodic", "periodic",
+                "periodic", "periodic",
+                "periodic", "periodic")
         self.assertEqual(err, 0)
         instance.stop()
 
@@ -531,6 +534,7 @@ class TestCapreoleInterface(TestWithMPI):
         results = []
         instance = self.new_instance(CapreoleInterface)
         instance.initialize_code()
+        instance.setup_mesh(10, 30, 10, 100.0, 300.0, 100.0)
         instance.commit_parameters()
         nx, ny, nz, error = instance.get_parallel_decomposition()
         self.assertEqual(error, 0)
