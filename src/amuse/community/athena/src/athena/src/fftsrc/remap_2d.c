@@ -17,7 +17,7 @@
 
 #include "pack_2d.h"
 #include "remap_2d.h"
-#include "malloc.h"
+#include <stdlib.h>
 #include "assert.h"
 
 #define MIN(A,B) ((A) < (B)) ? (A) : (B)
