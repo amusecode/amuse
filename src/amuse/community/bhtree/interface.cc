@@ -1,6 +1,6 @@
 #include <iostream>
 #include "interface.h"
-#include "worker_code.h"
+#include "bhtree_worker.h"
 //#include "local.h"
 #include <vector>
 #include <algorithm>
@@ -82,7 +82,7 @@ int _new_particle(int *id, dynamics_state d)
 //         << d.radius << endl;
 
 
-    if (!initialized) 
+    if (!initialized)
       {
         // Defer reinitialization; save in ds.
         d.id =  ++counter;
@@ -90,17 +90,17 @@ int _new_particle(int *id, dynamics_state d)
         *id = d.id;
         //return ds.size();
         return 0;
-      } 
-    else 
+      }
+    else
       {
 
         // Add the new particle and reinitialize immediately.
-        
+
         int newId = ++counter;
         nbody_particle *np = bhtcs.get_particle_pointer();
         nbody_particle *np1 = new nbody_particle[bhtcs.n + 1];
         // Copy the system.
-        for (int i = 0; i < bhtcs.n; i++) 
+        for (int i = 0; i < bhtcs.n; i++)
           {
             np1[i] = np[i];
           }
@@ -119,15 +119,15 @@ int _new_particle(int *id, dynamics_state d)
         v[1] = d.vy;
         v[2] = d.vz;
         np1[bhtcs.n].set_vel(v);
-        
+
         indexMap[newId] = bhtcs.n;
-        
+
         bhtcs.mass += d.mass;
         bhtcs.n = bhtcs.n + 1;
         bhtcs.set_nsize(bhtcs.n);
         bhtcs.set_particle_pointer(np1);
         delete [] np;
-        
+
         real pos_scale = 1;
         real vel_scale = 1;
         bhtcs.apply_vf(&real_particle::scale_pos, pos_scale);
@@ -138,7 +138,7 @@ int _new_particle(int *id, dynamics_state d)
         // PRC(pos_scale); PRL(vel_scale);
       }
 
-    
+
     //return bhtcs.n;
 }
 
@@ -147,7 +147,7 @@ static void create_treecode_system()
     nbody_particle *np = new nbody_particle[ds.size()];
     bhtcs.n = 0;
     bhtcs.mass = 0;
-    
+
     for (unsigned int i=0; i<ds.size(); i++) {
         vec v;
         np[i].set_index(ds[i].id);
@@ -163,7 +163,7 @@ static void create_treecode_system()
         np[i].set_vel(v);
         bhtcs.n++;
         bhtcs.mass += ds[i].mass;
-        
+
         indexMap[ds[i].id] = i;
     }
     //cerr << "create_treecode_system: "; PRC(bhtcs.n); PRL(bhtcs.mass);
@@ -191,11 +191,11 @@ extern real r_collision_12;
 int get_mass(int id, double *mass)
 {
     int i = get_index_from_identity(id);
-    
-    if (i >= 0 && i < bhtcs.n) 
+
+    if (i >= 0 && i < bhtcs.n)
       {
         nbody_particle *np = bhtcs.get_particle_pointer();
-        *mass = np[i].get_mass(); 
+        *mass = np[i].get_mass();
         return 0;
       }
 
@@ -242,7 +242,7 @@ int evolve_model(real t_end)                // default sync = 0
     //     PRL(bhtcs.time);
     //     PRL(bhtcs.timestep);
     //     PRL(bhtcs.eps2_for_gravity);
- 
+
     //     PRL(bhtcs.use_self_gravity);
     //     PRL(bhtcs.get_particle_pointer());
     //     for (int j = 0; j < bhtcs.n; j++)
@@ -254,7 +254,7 @@ int evolve_model(real t_end)                // default sync = 0
     real KE0 = bhtcs.kinetic_energy();
     real PE0 = E0 - KE0;
     real Q0 = KE0/PE0;
-    if (debug) 
+    if (debug)
       {
         PRC(KE0); PRC(PE0); PRC(E0); PRL(Q0);
       }
@@ -274,7 +274,7 @@ int evolve_model(real t_end)                // default sync = 0
     get_stopping_condition_number_of_steps_parameter(&max_number_of_steps);
     // AMUSE STOPPING CONDITIONS
     reset_stopping_conditions();
-    
+
     while( bhtcs.time<t_end)
       {
 
@@ -282,7 +282,7 @@ int evolve_model(real t_end)                // default sync = 0
         if( bhtcs.time+dt >= t_end) dt=t_end-bhtcs.time;
         bhtcs.integrate(dt);                // advance the entire system by time dt
 
-        bhtcs.time += dt;                
+        bhtcs.time += dt;
 
         // AMUSE STOPPING CONDITIONS
         if(is_timeout_detection_enabled) {
@@ -318,10 +318,10 @@ int evolve_model(real t_end)                // default sync = 0
 
       }
 #if 0
-    if (id_primary >= 0) 
+    if (id_primary >= 0)
       {
         if (debug)
-          { 
+          {
             print_tree_counters();
           }
         bhtcs.calculate_cmterms();
@@ -329,7 +329,7 @@ int evolve_model(real t_end)                // default sync = 0
         real E = bhtcs.energy();
         real dE = E-E0;
         real Q = KE/(KE-E);
-        if (debug) 
+        if (debug)
           {
             PRL(bhtcs.time); PRC(KE); PRC(E); PRC(dE); PRL(Q);
             cerr << "CPU sec = " << cpusec() << endl;
@@ -357,11 +357,11 @@ int testme(int *id)
   return 0;
 }
 
-int new_particle(int *id, double mass, double x, double y, double z, double vx, double vy, double vz, double radius) 
+int new_particle(int *id, double mass, double x, double y, double z, double vx, double vy, double vz, double radius)
 {
   dynamics_state state;
   //state.id = id; do this if _new_particle if needed?
-  
+
   state.mass = mass;
   state.radius = radius;
   state.x = x;
@@ -440,9 +440,9 @@ int delete_particle(int id)
     //cerr << "Deleting particle " << id << endl;
 
     int i = get_index_from_identity(id);
-    
+
     indexMap[id] = -1;
-    if (i >= 0 && i < bhtcs.n) 
+    if (i >= 0 && i < bhtcs.n)
       {
 
         // Remove this particle from the tree N-body system
@@ -462,7 +462,7 @@ int delete_particle(int id)
         real vel_scale = 1;
         bhtcs.apply_vf(&real_particle::scale_pos, pos_scale);
         bhtcs.apply_vf(&real_particle::scale_vel, vel_scale);
-        
+
       }
 
     //return bhtcs.n;
@@ -492,8 +492,8 @@ int set_state(int index_of_the_particle, double mass, double x, double y, double
 {
   //Assumes initialization (initialized TRUE)
   int i = get_index_from_identity(index_of_the_particle);
-  
-  if (i >= 0 && i < bhtcs.n) 
+
+  if (i >= 0 && i < bhtcs.n)
     {
       nbody_particle *np = bhtcs.get_particle_pointer();
       np[i].set_mass(mass);
@@ -501,14 +501,14 @@ int set_state(int index_of_the_particle, double mass, double x, double y, double
       np[i].set_pos(vec(x, y, z));
       np[i].set_vel(vec(vx, vy, vz));
       return 0;
-    } 
+    }
   else
     {
       return -1;
     }
 }
 
-int get_state(int id, double *mass, double *x, double *y, double *z, double *vx, double *vy, double *vz, double *radius) 
+int get_state(int id, double *mass, double *x, double *y, double *z, double *vx, double *vy, double *vz, double *radius)
 {
     int i = get_index_from_identity(id);
 
@@ -561,7 +561,7 @@ int get_kinetic_energy(double *kinetic_energy)
 int get_number_of_particles(int *number_of_particles)
 {
   *number_of_particles = bhtcs.n;
-  return 0; 
+  return 0;
 }
 
 int get_center_of_mass_position(double *x, double *y, double *z)
@@ -631,7 +631,7 @@ int get_radius(int id, double *radius)
 int set_radius(int id, double radius)
 {
     int i = get_index_from_identity(id);
-    if (i >= 0 && i < bhtcs.n) 
+    if (i >= 0 && i < bhtcs.n)
       {
         nbody_particle *np = bhtcs.get_particle_pointer();
         np[i].set_radius(radius);
@@ -647,7 +647,7 @@ int initialize_code()
 {
     begin_time = 0.0;
     bhtcs.time = 0.0;
-    
+
     set_support_for_condition(COLLISION_DETECTION);
     set_support_for_condition(TIMEOUT_DETECTION);
     set_support_for_condition(NUMBER_OF_STEPS_DETECTION);
@@ -658,16 +658,16 @@ int cleanup_code()
 {
     if(initialized) {
         initialized = false;
-        
+
         nbody_particle *np = bhtcs.get_particle_pointer();
         delete np;
-        
+
         bhtcs.mass = 0;
         bhtcs.n = 0;
         bhtcs.set_nsize(0);
         bhtcs.set_particle_pointer(0);
     }
-    
+
     ds.clear();
     indexMap.clear();
     counter = 0;
@@ -696,7 +696,7 @@ int get_index_from_identity(int id)
   }
   return (*i).second;
   /*nbody_particle *np = bhtcs.get_particle_pointer();
-  for (int i = 0; i < bhtcs.n; i++) 
+  for (int i = 0; i < bhtcs.n; i++)
     {
       if (id == np[i].get_index())
         return i;
@@ -713,7 +713,7 @@ int initialize_particles()
 
 int get_potential_energy(double *potential_energy)
 {
-    if (!initialized) 
+    if (!initialized)
       {
         return 0;
       }
@@ -729,14 +729,14 @@ int get_gravity_at_point(double eps, double x, double y, double z,  double *forc
     p[0] = x;
     p[1] = y;
     p[2] = z;
-    
-    
+
+
     vec acc = bhtcs.calculate_gravity_at_point(p, bhtcs.eps2_for_gravity, bhtcs.theta_for_tree * bhtcs.theta_for_tree);
-    
+
     *forcex = acc[0];
     *forcey = acc[1];
     *forcez = acc[2];
-    
+
     return 0;
 }
 
@@ -746,8 +746,8 @@ int get_potential_at_point(double eps, double x, double y, double z, double * ph
     p[0] = x;
     p[1] = y;
     p[2] = z;
-    
-    
+
+
     *phi  = bhtcs.calculate_potential_at_point(p, bhtcs.eps2_for_gravity, bhtcs.theta_for_tree * bhtcs.theta_for_tree);
     //cerr << "phi : "<< *phi << endl;
     return 0;
@@ -784,8 +784,8 @@ int setup_module()
 int get_position(int id, double *x, double *y, double *z)
 {
     int i = get_index_from_identity(id);
-    
-    if (i >= 0 && i < bhtcs.n) 
+
+    if (i >= 0 && i < bhtcs.n)
     {
         nbody_particle *np = bhtcs.get_particle_pointer();
         vec v = np[i].get_pos();
@@ -801,13 +801,13 @@ int get_position(int id, double *x, double *y, double *z)
 int set_position(int id, double x, double y, double z)
 {
     int i = get_index_from_identity(id);
-    if (i >= 0 && i < bhtcs.n) 
+    if (i >= 0 && i < bhtcs.n)
     {
         nbody_particle *np = bhtcs.get_particle_pointer();
         vec pos(x, y, z);
         np[i].set_pos(pos);
         return 0;
-    } 
+    }
     else
     {
         return -1;
@@ -822,13 +822,13 @@ int get_acceleration(int id, double * ax, double * ay, double * az)
 int set_velocity(int id, double vx, double vy, double vz)
 {
     int i = get_index_from_identity(id);
-    if (i >= 0 && i < bhtcs.n) 
+    if (i >= 0 && i < bhtcs.n)
       {
         nbody_particle *np = bhtcs.get_particle_pointer();
         vec vel(vx, vy, vz);
         np[i].set_vel(vel);
         return 0;
-      } 
+      }
     else
       {
         return -1;
@@ -948,10 +948,10 @@ int recommit_particles(){
         create_treecode_system();        // note that ds is never used again after this
         initialized = true;
     }
-    
+
     bhtcs.setup_tree();
     bhtcs.calculate_gravity();
-    
+
     return 0;
 }
 
@@ -973,7 +973,7 @@ int commit_particles(){
 }
 
 int commit_parameters(){
-    
+
     bhtcs.time = begin_time;
     bhtcs.timestep = timestep;
     bhtcs.eps2_for_gravity = eps2_for_gravity;
