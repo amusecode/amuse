@@ -154,7 +154,6 @@ src/amuse/community/gadget2/interface.pngo
 src/amuse/community/gadget2/interface.po
 src/amuse/community/gadget2/worker_code.cc
 src/amuse/community/gadget2/worker_code.h
-src/amuse/community/galactics/gas_src/bin/
 src/amuse/community/galactics/gas_src/src/dbh
 src/amuse/community/galactics/gas_src/src/diskdf
 src/amuse/community/galactics/gas_src/src/genbulge
@@ -166,7 +165,6 @@ src/amuse/community/galactics/gas_src/src/plotforce
 src/amuse/community/galactics/gas_src/src/plothalo
 src/amuse/community/galactics/gas_src/src/toascii
 src/amuse/community/galactics/gas_src/src/vcirc
-src/amuse/community/galactics/src/bin/
 src/amuse/community/galactics/src/potsrc/checkvirial
 src/amuse/community/galactics/src/potsrc/energysort
 src/amuse/community/galactics/src/potsrc/testforce
