@@ -15,6 +15,8 @@ endif
 ALLFILES= dbh genhalo genbulge gendisk diskdf  \
      getfreqs vcirc plothalo plotforce gengas toascii
 
+INSTALLEDFILES = $(patsubst %,../bin/%,$(ALLFILES))
+
 #FFLAGS = -O -extend_source
 #CFLAGS = -O2 -DRINGASCII -DASCII -DTP
 #LIBS = -lm -lots -lfor
@@ -109,9 +111,10 @@ toascii: toascii.o
 
 clean:
 	rm -f *.o *.mod *.bck
+	rm -f $(ALLFILES)
+	rm -f $(INSTALLEDFILES)
 
 purge: clean
-	rm -f $(ALLFILES)
 
 install: all
 	cp -f $(ALLFILES) ../bin

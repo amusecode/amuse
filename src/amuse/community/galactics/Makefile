@@ -26,7 +26,7 @@ data/gbin:
 
 $(EXES) &: | data/bin
 	$(MAKE) -C src/src all CC="$(CC)" CFLAGS="$(CFLAGS)" F77="$(FC)" FFLAGS="$(FCFLAGS)" PGSTUB=1
-	$(MAKE)  -C src/src install
+	$(MAKE) -C src/src install
 	$(MAKE) -C src/potsrc all CC="$(CC)" CFLAGS="$(CFLAGS)" F77="$(FC)" FFLAGS="$(FCFLAGS)" PGSTUB=1
 	$(MAKE) -C src/potsrc install
 	cp src/bin/* data/bin/
