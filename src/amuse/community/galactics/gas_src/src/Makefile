@@ -23,7 +23,14 @@ INSTALLEDFILES = $(patsubst %,../bin/%,$(ALLFILES))
 FFLAGS ?=   -132 -O2   -ip -nofor-main
 FFLAGS2 ?= -O2  -ip 
 
-GENLIBS=-lstdc++
+
+CXX_VERSION := $(shell $(CXX) --version)
+ifeq ($(findstring clang, $(CXX_VERSION)),clang)
+    GENLIBS = -lc++
+else
+    GENLIBS = -lstdc++
+endif
+
 
 all: pgstub.o $(ALLFILES)
 
