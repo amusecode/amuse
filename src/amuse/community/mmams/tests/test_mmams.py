@@ -5,12 +5,21 @@ import numpy
 from math import pi
 from amusetest import get_path_to_results, TestWithMPI
 from amuse.support.exceptions import AmuseException, CodeException
-from amuse.community.mesa.interface import MESA
-from amuse.community.evtwin.interface import EVtwin
 from amuse.community.mmams.interface import MMAMSInterface, MMAMS
 from amuse.couple.collision_handler import CollisionHandler
 from amuse.units import units, constants
 from amuse.datamodel import Particles, Particle, ParticlesSubset
+
+try:
+    from amuse.community.mesa.interface import MESA
+    from amuse.community.evtwin.interface import EVtwin
+except ImportError:
+    # MESA and EVtwin are not available, which is ok as long as we're not trying to run
+    # the integration tests, which we're not because they're slowtests and pytest
+    # doesn't detect those anyway. Set them to None to avoid parser errors.
+    MESA = None
+    EVtwin = None
+
 
 # Change the default for some MMAMS(-Interface) keyword arguments:
 # default_options = dict(redirection="none")
@@ -84,7 +93,7 @@ class TestMMAMSInterface(TestWithMPI):
         instance = MMAMSInterface(**default_options)
         self.assertEqual(instance.initialize_code(), 0)
         self.assertEqual(instance.commit_parameters(), 0)
-        usm_file = os.path.join(instance.data_directory, 'primary.usm')
+        usm_file = os.path.join(os.path.dirname(__file__), 'primary.usm')
         id, error = instance.read_usm(usm_file)
         self.assertEqual(error, 0)
         self.assertEqual(id, 0)
@@ -120,12 +129,12 @@ class TestMMAMSInterface(TestWithMPI):
         self.assertEqual(instance.initialize_code(), 0)
         self.assertEqual(instance.set_dump_mixed_flag(0), 0)
         self.assertEqual(instance.commit_parameters(), 0)
-        usm_file = os.path.join(instance.data_directory, 'primary.usm')
+        usm_file = os.path.join(os.path.dirname(__file__), 'primary.usm')
         id, error = instance.read_usm(usm_file)
         self.assertEqual(error, 0)
         self.assertEqual(id, 0)
 
-        usm_file = os.path.join(instance.data_directory, 'secondary.usm')
+        usm_file = os.path.join(os.path.dirname(__file__), 'secondary.usm')
         id, error = instance.read_usm(usm_file)
         self.assertEqual(error, 0)
         self.assertEqual(id, 1)
@@ -257,7 +266,7 @@ class TestMMAMS(TestWithMPI):
         instance.commit_parameters()
 
         stars = Particles(4)
-        stars.usm_file = [os.path.join(instance.data_directory, filename) for
+        stars.usm_file = [os.path.join(os.path.dirname(__file__), filename) for
             filename in ['primary.usm', 'secondary.usm', '', '']]
         stars[2:].mass = [3.0, 4.0] | units.MSun
         instance.imported_stars.add_particles(stars[:2])
@@ -282,14 +291,14 @@ class TestMMAMS(TestWithMPI):
 
     def slowtest4(self):
         print("Test 4: merge particles (from usm files)")
-#        instance = MMAMS(debugger = 'gdb', **default_options)
+        # instance = MMAMS(debugger = 'gdb', **default_options)
         instance = MMAMS(**default_options)
         instance.initialize_code()
         instance.parameters.dump_mixed_flag = False
         instance.commit_parameters()
 
         stars = Particles(2)
-        stars.usm_file = [os.path.join(instance.data_directory, filename) for
+        stars.usm_file = [os.path.join(os.path.dirname(__file__), filename) for
             filename in ['primary.usm', 'secondary.usm']]
         instance.imported_stars.add_particles(stars)
 
