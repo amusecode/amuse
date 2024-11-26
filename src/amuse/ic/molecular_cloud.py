@@ -2,19 +2,35 @@
 Generate a molecular cloud of SPH particles
 """
 
+import warnings
 from amuse.ext.molecular_cloud import molecular_cloud
 
 
 def new_molecular_cloud(
     nf=32,
     power=-3.0,
-    targetN=10000,
+    target_number_of_stars=10000,
     ethep_ratio=0.01,
     convert_nbody=None,
     ekep_ratio=1.0,
     seed=None,
     base_grid=None,
+    targetN=None,
 ):
+    """
+    Creates a molecular cloud of SPH particles
+    """
+    if targetN is not None:
+        warnings.warn(
+            "targetN is deprecated, use target_number_of_stars instead",
+            category=FutureWarning,
+        )
+        if target_number_of_stars != targetN:
+            raise ValueError(
+                "targetN and target_number_of_stars have different values, "
+                "this is only allowed if targetN is None"
+            )
+        targetN = target_number_of_stars
     return molecular_cloud(
         nf=nf,
         power=power,
