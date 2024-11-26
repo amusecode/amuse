@@ -25,19 +25,18 @@ def new_molecular_cloud(
             "targetN is deprecated, use target_number_of_stars instead",
             category=FutureWarning,
         )
-        if target_number_of_stars != targetN:
+        if target_number_of_stars is not None and target_number_of_stars != targetN:
             raise ValueError(
                 "targetN and target_number_of_stars have different values, "
-                "this is only allowed if targetN is None and target_number_of_stars "
-                "is not None"
+                "this is only allowed if one of them is None"
             )
-        targetN = target_number_of_stars
+        target_number_of_stars = targetN
     if target_number_of_stars is None:
         raise ValueError("target_number_of_stars must be set")
     return molecular_cloud(
         nf=nf,
         power=power,
-        targetN=targetN,
+        targetN=target_number_of_stars,
         ethep_ratio=ethep_ratio,
         convert_nbody=convert_nbody,
         ekep_ratio=ekep_ratio,
