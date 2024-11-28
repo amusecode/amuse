@@ -21,7 +21,7 @@ AC_DEFUN([AMUSE_DOWNLOAD], [
     if test "x$WGET" != "x"
     then
         # The MESA SDK server rejects wget, this is the official work-around
-        DOWNLOAD="$WGET -O --user-agent='' -"
+        DOWNLOAD="$WGET --user-agent='' -O -"
         AC_MSG_RESULT([yes])
     else
         if test "x$CURL" != "x"
