@@ -19,6 +19,7 @@ PATCHES := $(patsubst %,%,$(PATCHES))    # replace newlines with spaces
 
 src/mpiamrvac: | mpiamrvac.tar.gz
 	tar xf $|
+	mkdir -p src
 	mv mpiamrvac src/
 	for p in $(PATCHES) ; do patch -p1 <patches/$$p ; done
 
