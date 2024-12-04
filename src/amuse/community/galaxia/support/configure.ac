@@ -13,12 +13,16 @@ AX_FC_ISO_C_BINDING()
 # Find AMUSE libraries
 AMUSE_LIB_FORSOCKETS()
 
+# The AX_LAPACK macro (which also calls AX_BLAS) is designed to be called by a C wrapper
+# So, we need to do this is order to detect blas/lapack even if we have a pure fortran code
+AC_LANG_PUSH([C])
+AX_LAPACK()
+AC_LANG_POP([C])
+
 AC_LANG_PUSH([Fortran])
 
 # Find MPI
 AX_MPI()
-
-AX_LAPACK()     # calls AX_BLAS automatically
 
 AC_LANG_POP([Fortran])
 
