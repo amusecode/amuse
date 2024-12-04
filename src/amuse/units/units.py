@@ -26,6 +26,12 @@ julianyr = named("julian yr", "julianyr", 365.25 * day)
 ms = named("meter per seconds", "ms", m / s)
 kms = named("kilometer per seconds", "kms", km / s)
 
+# cgs units
+g = named("gram", "g", 1e-3 * kg)
+cm = named("centimeter", "cm", 0.01 * m)
+erg = named("erg", "erg", 1e-7 * J)
+barye = named("barye", "Ba", 0.1 * Pa)
+
 # units based on measured quantities
 e = named("electron charge", "e", constants.elementary_charge.as_unit())
 eV = named("electron volt", "eV", e * V)
@@ -40,7 +46,9 @@ Ry = named(
     .as_quantity_in(eV)
     .as_unit(),
 )
-
+#New units used in chemical simulation
+cr_ion = named("cosmic ray ionisation rate", "cr_ion", 1.3e-17 * s**-1)
+habing = named("habing", "hab", 1.6e-3 * erg * cm**-2 * s**-1)
 # astronomical units
 angstrom = named("angstrom", "angstrom", 1e-10 * m)
 au = named("astronomical unit", "au", 149597870691.0 * m)
@@ -75,11 +83,7 @@ Rjupiter = RJupiter
 Mearth = MEarth
 Rearth = REarth
 
-# cgs units
-g = named("gram", "g", 1e-3 * kg)
-cm = named("centimeter", "cm", 0.01 * m)
-erg = named("erg", "erg", 1e-7 * J)
-barye = named("barye", "Ba", 0.1 * Pa)
+
 
 # imperial distance units
 inch = named("inch", "in", 0.0254 * m)
