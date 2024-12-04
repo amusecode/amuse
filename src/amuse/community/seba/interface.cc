@@ -486,17 +486,11 @@ int new_advanced_particle(int * index_of_the_star, double mass,  double relative
     
     stellar_type seba_stellar_type = translate_int_to_stellar_type(type_number);    
 
-    addstar(new_node, seba_time, seba_stellar_type, seba_metallicity, 0, false);
+    addstar(new_node, seba_time, seba_stellar_type, seba_metallicity, 0, false, seba_stellar_type, relative_mass, mass - core_mass, core_mass, COcore_mass, age);
     new_node->get_starbase()->set_time_offset(seba_time);
     *index_of_the_star = next_seba_id;
     
     next_seba_id++;
-    
-    new_node->get_starbase()->set_relative_age(age);
-    new_node->get_starbase()->set_core_mass(core_mass);
-    new_node->get_starbase()->set_COcore_mass(COcore_mass);
-    new_node->get_starbase()->set_effective_radius(radius);
-    
     
     return 0;
 }
