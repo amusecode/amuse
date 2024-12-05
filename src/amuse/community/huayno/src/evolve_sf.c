@@ -321,6 +321,7 @@ static struct particle *partition(FLOAT dt, struct particle *left, struct partic
 {
   UINT i,n;
   dt=fabs(dt);
+  i=0;
   n=right-left+1;
   while(1)
   {
