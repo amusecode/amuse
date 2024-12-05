@@ -9,7 +9,7 @@ from amuse.ext.molecular_cloud import molecular_cloud
 def new_molecular_cloud(
     nf=32,
     power=-3.0,
-    target_number_of_stars=None,
+    target_number_of_particles=None,
     ethep_ratio=0.01,
     convert_nbody=None,
     ekep_ratio=1.0,
@@ -22,21 +22,21 @@ def new_molecular_cloud(
     """
     if targetN is not None:
         warnings.warn(
-            "targetN is deprecated, use target_number_of_stars instead",
+            "targetN is deprecated, use target_number_of_particles instead",
             category=FutureWarning,
         )
-        if target_number_of_stars is not None and target_number_of_stars != targetN:
+        if target_number_of_particles is not None and target_number_of_particles != targetN:
             raise ValueError(
-                "targetN and target_number_of_stars have different values, "
+                "targetN and target_number_of_particles have different values, "
                 "this is only allowed if one of them is None"
             )
-        target_number_of_stars = targetN
-    if target_number_of_stars is None:
-        raise ValueError("target_number_of_stars must be set")
+        target_number_of_particles = targetN
+    if target_number_of_particles is None:
+        raise ValueError("target_number_of_particles must be set")
     return molecular_cloud(
         nf=nf,
         power=power,
-        targetN=target_number_of_stars,
+        targetN=target_number_of_particles,
         ethep_ratio=ethep_ratio,
         convert_nbody=convert_nbody,
         ekep_ratio=ekep_ratio,
