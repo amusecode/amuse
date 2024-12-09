@@ -23,124 +23,138 @@ then
     AS_ECHO(["Conda package build detected, skipping checks for dependencies."])
     ASSUME_FEATURES="c c++ fortran java python tar unzip gunzip bunzip2 unxz perl cmake install download mpi openmp cuda opencl blas lapack gsl gmp mpfr fftw hdf5 netcdf4 sapporo_light"
 
-elif test "x" != "x$CONDA_DEFAULT_ENV"
-then
-    AS_ECHO([])
-    AS_ECHO(['    Conda environment active, dependencies will be searched in Conda only,'])
-    AS_ECHO(['    and must be installed via Conda to be detected.'])
-    AS_ECHO([])
-
-    # Doesn't have a conda package yet, and needs to go before the compiler checks
-    # below because they mess up CC.
-    # AX_CONDA_PACKAGE(SAPPORO_LIGHT_LIBS, sapporo_light)
-    AMUSE_LIB_SAPPORO_LIGHT()
-
-    AX_CONDA_LIST()
-
-    if test "x$target_os" == "xlinux-gnu"
-    then
-        AX_CONDA_PACKAGE(CC, gcc)
-        AX_CONDA_PACKAGE(CXX, gxx)
-    else
-        AX_CONDA_PACKAGE(CC, clang)
-        AX_CONDA_PACKAGE(CXX, clangxx)
-    fi
-    AX_CONDA_PACKAGE(FC, gfortran)
-    AX_CONDA_PACKAGE(JAVAC, openjdk)
-    AX_CONDA_PACKAGE(PYTHON, python)
-    AX_CONDA_PACKAGE(INSTALL, coreutils)
-
-    AMUSE_DOWNLOAD()
-    AC_CHECK_TOOL(TAR, tar)
-    AC_CHECK_TOOL(UNZIP, unzip)
-    AC_CHECK_TOOL(GUNZIP, gunzip)
-    AC_CHECK_TOOL(BUNZIP2, bunzip2)
-    AC_CHECK_TOOL(UNXZ, unxz)
-    AC_CHECK_TOOL(PERL, perl)
-
-    AX_CONDA_PACKAGE(CMAKE, cmake)
-
-    AX_CONDA_PACKAGE(MPICC, mpi)
-    AX_CONDA_PACKAGE(HAVE_OPENMP, openmp)
-    AX_CONDA_PACKAGE(CUDA_TK, cuda-toolkit)
-    AX_CONDA_PACKAGE(FOUND_OPENCL, ocl-icd)
-    if test "$FOUND_OPENCL" == "no"
-    then
-        # ocl-icd is only for Linux, macOS and Windows use this one
-        AX_CONDA_PACKAGE(FOUND_OPENCL, khronos-opencl-icd-loader)
-    fi
-    AX_CONDA_PACKAGE(LAPACK_LIBS, liblapack)
-    AX_CONDA_PACKAGE(BLAS, libblas)
-    AX_CONDA_PACKAGE(FOUND_GSL, gsl)
-    AX_CONDA_PACKAGE(FOUND_GMP, gmp)
-    AX_CONDA_PACKAGE(FOUND_MPFR, mpfr)
-    AX_CONDA_PACKAGE(FOUND_FFTW, fftw)
-    AX_CONDA_PACKAGE(with_hdf5, hdf5)
-    AX_CONDA_PACKAGE(FOUND_NETCDF, netcdf4)
-
-    # Export conda list output so make doesn't have to rerun it to detect pip and wheel
-    CONDA_LIST="$ax_conda_list"
-    AC_SUBST(CONDA_LIST)
-
 else
-    AS_ECHO(['No Conda environment active, detecting dependencies from the system'])
-
-    # The standard compiler checks AC_PROG_* crash if the compiler is not found, which
-    # is not what we want here. Also, we only support specific compilers. So we use
-    # AC_CHECK_TOOL instead. If the user sets the corresponding variable explicitly,
-    # then this will just assume that it's a working compiler.
-    AC_CHECK_TOOL(CC, gcc)
-    AC_CHECK_TOOL(CXX, g++)
-    AC_CHECK_TOOL(FC, gfortran)
-    AC_CHECK_TOOL(JAVAC, javac)
-    AC_CHECK_TOOL(PYTHON, python)
-    AC_CHECK_TOOL(INSTALL, install)
-
-    # Not all compilers have a f77 symlink, so if you have more than one installed,
-    # you risk getting gcc and gfortran from one, and f77 from another, and then we
-    # crash on a link error when runnig AX_LAPACK() below. So we set f77 to be the same
-    # as FC, and avoid that problem, hopefully not causing any others...
-    F77=${FC}
-
-    AC_CHECK_TOOL(APT, apt)
-    AC_CHECK_TOOL(DNF, dnf)
-    AC_CHECK_TOOL(MACPORTS, port)
-    AC_CHECK_TOOL(HOMEBREW, brew)
-
-    AMUSE_DOWNLOAD()
-    AC_CHECK_TOOL(TAR, tar)
-    AC_CHECK_TOOL(UNZIP, unzip)
-    AC_CHECK_TOOL(GUNZIP, gunzip)
-    AC_CHECK_TOOL(BUNZIP2, bunzip2)
-    AC_CHECK_TOOL(UNXZ, unxz)
-    AC_CHECK_TOOL(PERL5, perl)
-
-    AC_CHECK_TOOL(CMAKE, cmake)
-
-    AX_MPI()
-    AX_OPENMP([HAVE_OPENMP="yes"])
-    AX_CUDA()
-    AMUSE_OPENCL()
-
-    # Avoid AX_BLAS crashing out due to lack of a Fortran compiler
-    if test "x" != "x$FC"
+    if test "x" != "x$CONDA_DEFAULT_ENV"
     then
-        AX_LAPACK()     # calls AX_BLAS automatically
+        AS_ECHO([])
+        AS_ECHO(['    Conda environment active, dependencies will be searched in Conda only,'])
+        AS_ECHO(['    and must be installed via Conda to be detected.'])
+        AS_ECHO([])
+
+        # Doesn't have a conda package yet, checked directly below.
+        # AX_CONDA_PACKAGE(SAPPORO_LIGHT_LIBS, sapporo_light)
+
+        AX_CONDA_LIST()
+
+        if test "x$target_os" == "xlinux-gnu"
+        then
+            AX_CONDA_PACKAGE(CC, gcc)
+            AX_CONDA_PACKAGE(CXX, gxx)
+        else
+            AX_CONDA_PACKAGE(CC, clang)
+            AX_CONDA_PACKAGE(CXX, clangxx)
+        fi
+        AX_CONDA_PACKAGE(FC, gfortran)
+        AX_CONDA_PACKAGE(JAVAC, openjdk)
+        AX_CONDA_PACKAGE(PYTHON, python)
+        AX_CONDA_PACKAGE(INSTALL, coreutils)
+
+        AMUSE_DOWNLOAD()
+        AC_CHECK_TOOL(TAR, tar)
+        AC_CHECK_TOOL(UNZIP, unzip)
+        AC_CHECK_TOOL(GUNZIP, gunzip)
+        AC_CHECK_TOOL(BUNZIP2, bunzip2)
+        AC_CHECK_TOOL(UNXZ, unxz)
+        AC_CHECK_TOOL(PERL, perl)
+
+        AX_CONDA_PACKAGE(CMAKE, cmake)
+
+        AX_CONDA_PACKAGE(HAVE_MPI, mpi)
+        AX_CONDA_PACKAGE(HAVE_OPENMP, openmp)
+        AX_CONDA_PACKAGE(CUDA_TK, cuda-toolkit)
+        AX_CONDA_PACKAGE(FOUND_OPENCL, ocl-icd)
+        if test "$FOUND_OPENCL" == "no"
+        then
+            # ocl-icd is only for Linux, macOS and Windows use this one
+            AX_CONDA_PACKAGE(FOUND_OPENCL, khronos-opencl-icd-loader)
+        fi
+        AX_CONDA_PACKAGE(HAVE_LAPACK, liblapack)
+        AX_CONDA_PACKAGE(BLAS, libblas)
+        AX_CONDA_PACKAGE(FOUND_GSL, gsl)
+        AX_CONDA_PACKAGE(FOUND_GMP, gmp)
+        AX_CONDA_PACKAGE(FOUND_MPFR, mpfr)
+        AX_CONDA_PACKAGE(FOUND_FFTW, fftw)
+        AX_CONDA_PACKAGE(with_hdf5, hdf5)
+        AX_CONDA_PACKAGE(FOUND_NETCDF, netcdf4)
+
+        # Export conda list output so make doesn't have to rerun it to detect pip and wheel
+        CONDA_LIST="$ax_conda_list"
+        AC_SUBST(CONDA_LIST)
+
     else
-        AS_ECHO(["Skipping LAPACK/BLAS detection because we don't have Fortran"])
+        AS_ECHO(['No Conda environment active, detecting dependencies from the system'])
+
+        # The standard compiler checks AC_PROG_* crash if the compiler is not found, which
+        # is not what we want here. Also, we only support specific compilers. So we use
+        # AC_CHECK_TOOL instead. If the user sets the corresponding variable explicitly,
+        # then this will just assume that it's a working compiler.
+        AC_CHECK_TOOL(CC, gcc)
+        AC_CHECK_TOOL(CXX, g++)
+        AC_CHECK_TOOL(FC, gfortran)
+        AC_CHECK_TOOL(JAVAC, javac)
+        AC_CHECK_TOOL(PYTHON, python)
+        AC_CHECK_TOOL(INSTALL, install)
+
+        # Not all compilers have a f77 symlink, so if you have more than one installed,
+        # you risk getting gcc and gfortran from one, and f77 from another, and then we
+        # crash on a link error when runnig AX_LAPACK() below. So we set f77 to be the same
+        # as FC, and avoid that problem, hopefully not causing any others...
+        F77=${FC}
+
+        AC_CHECK_TOOL(APT, apt)
+        AC_CHECK_TOOL(DNF, dnf)
+        AC_CHECK_TOOL(MACPORTS, port)
+        AC_CHECK_TOOL(HOMEBREW, brew)
+
+        AMUSE_DOWNLOAD()
+        AC_CHECK_TOOL(TAR, tar)
+        AC_CHECK_TOOL(UNZIP, unzip)
+        AC_CHECK_TOOL(GUNZIP, gunzip)
+        AC_CHECK_TOOL(BUNZIP2, bunzip2)
+        AC_CHECK_TOOL(UNXZ, unxz)
+        AC_CHECK_TOOL(PERL5, perl)
+
+        AC_CHECK_TOOL(CMAKE, cmake)
+
+        if test "x" != "x$CC"
+        then
+            # These tests require compiling things, so we need the compiler
+            AC_PROG_CC()
+            AC_LANG_PUSH([C])
+
+            AX_MPI([HAVE_MPI="yes"])
+            AX_OPENMP([HAVE_OPENMP="yes"])
+            AX_CUDA()
+            AMUSE_OPENCL()
+
+            # Avoid AX_BLAS crashing out due to lack of compilers
+            if test "x" != "x$FC"
+            then
+                AX_LAPACK([HAVE_LAPACK=yes])     # calls AX_BLAS automatically
+            else
+                AS_ECHO(["Skipping LAPACK/BLAS detection because we don't have Fortran"])
+            fi
+
+            AX_PATH_GSL(1.0, [FOUND_GSL=yes])
+            AX_GMP()
+            AX_MPFR()
+            AX_FFTW()
+            AX_LIB_HDF5()
+            AX_LIB_NETCDF4()
+
+            AC_LANG_POP([C])
+        else
+            AS_ECHO(["Skipping library detection because we don't have C"])
+        fi
     fi
 
-    AX_PATH_GSL(1.0, [FOUND_GSL=yes])
-    AX_GMP()
-    AX_MPFR()
-    AX_FFTW()
-    AX_LIB_HDF5()
-    AX_LIB_NETCDF4()
-
+    # This needs to be factored out, because autoconf won't instantiate the compiler
+    # checks this calls twice, causing the compiler to appear broken even though it
+    # works.
     AMUSE_LIB_SAPPORO_LIGHT()
 fi
 
-# Create the FEATURES variable used by amuse.mk to decide what to build
+# Create the FEATURES variable used by amuse.mk to decide what we can build
 
 # This macro adds its first argument to FEATURES if the variable
 # in the second argument is defined.
@@ -168,12 +182,12 @@ ENABLE_FEATURE_IF_DEFINED([gunzip], [GUNZIP])
 ENABLE_FEATURE_IF_DEFINED([bunzip2], [BUNZIP2])
 ENABLE_FEATURE_IF_DEFINED([unxz], [UNXZ])
 ENABLE_FEATURE_IF_DEFINED([perl], [PERL])
-ENABLE_FEATURE_IF_DEFINED([mpi], [MPICC])
+ENABLE_FEATURE_IF_DEFINED([mpi], [HAVE_MPI])
 ENABLE_FEATURE_IF_DEFINED([openmp], [HAVE_OPENMP])
 ENABLE_FEATURE_IF_DEFINED([cuda], [CUDA_TK])
 ENABLE_FEATURE_IF_EQUALS([opencl], [FOUND_OPENCL], [yes])
 ENABLE_FEATURE_IF_DEFINED([blas], [BLAS_LIBS])
-ENABLE_FEATURE_IF_DEFINED([lapack], [LAPACK_LIBS])
+ENABLE_FEATURE_IF_DEFINED([lapack], [HAVE_LAPACK])
 ENABLE_FEATURE_IF_DEFINED([gsl], [FOUND_GSL])
 ENABLE_FEATURE_IF_EQUALS([gmp], [FOUND_GMP], [yes])
 ENABLE_FEATURE_IF_EQUALS([mpfr], [FOUND_MPFR], [yes])

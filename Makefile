@@ -43,8 +43,10 @@ ifneq (,$(FW_MISSING_FEATURES)$(DISABLED_PACKAGES))
 	@printf '%b\n' '$(DISABLED_PACKAGES_MESSAGE)'
 endif
 ifeq (,$(NEED_PIP_WHEEL))
+ifeq (,$(FW_MISSING_FEATURES))
 ifneq (,$(ENABLED_PACKAGES))
 	@printf '%b\n' '$(INSTALL_HELP)'
+endif
 endif
 endif
 endif
