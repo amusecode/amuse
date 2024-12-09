@@ -67,6 +67,7 @@ $(MESA_DIR): src/mesa-$(MESA_VERSION).zip
 
 src/hdf5-$(HDF5_VERSION): src/hdf5-$(HDF5_VERSION).tar.bz2
 	cd src && tar xjf ../$< -m
+	cd src && patch -p1 <../patches/hdf5.patch
 
 src/hdf5-$(HDF5_VERSION)/src/.libs/libhdf5.a: | src/hdf5-$(HDF5_VERSION) $(MESA_DIR)
 	# We need to override CC and FC here because the HDF5 autoconf tries to compile an MPI program with them...
@@ -101,6 +102,7 @@ $(MESA_DIR)/lib/libcrmath.a: | src/crmath-1.2
 
 src/crlibm-1.0beta4: src/crlibm-1.0beta4.tar.gz
 	cd src && tar xzf ../$<
+	cd src && patch -p1 <../patches/crlibm.patch
 
 $(MESA_DIR)/lib/libcrlibm.a: | src/crlibm-1.0beta4
 	cd src/crlibm-1.0beta4 && ./configure --enable-static=yes --enable-shared=no
@@ -131,13 +133,15 @@ src/bin/fpx3_deps: | src/fpx3_deps
 $(MESA_DIR)/utils/makedepf90-2.8.8: | $(MESA_DIR)
 	cd $(MESA_DIR)/utils && tar xzf makedepf90-2.8.8.tar.gz -m
 
-$(MESA_DIR)/utils/makedepf90-2.8.8/makedepf90: | $(MESA_DIR)/utils/makedepf90-2.8.8 src/bin
+src/bin/makedepf90: | $(MESA_DIR)/utils/makedepf90-2.8.8 src/bin
 	cd $(MESA_DIR)/utils/makedepf90-2.8.8 && ./configure
 	cd $(MESA_DIR)/utils/makedepf90-2.8.8 && $(MAKE)
+	cp $(MESA_DIR)/utils/makedepf90-2.8.8/makedepf90 $@
 
 
 $(MESA_DIR)/utils/ndiff-2.00: | $(MESA_DIR)
 	cd $(MESA_DIR)/utils && tar xzf ndiff-2.00.tar.gz -m
+	cp patches/ndiff-configure $(MESA_DIR)/utils/ndiff-2.00/configure
 
 src/bin/ndiff: | $(MESA_DIR)/utils/ndiff-2.00 src/bin
 	cd $(MESA_DIR)/utils/ndiff-2.00 && ./configure
@@ -152,7 +156,7 @@ CODELIB := $(MESA_DIR)/lib/libstar.a
 MESA_DEPS := $(MESA_DIR)/lib/libhdf5.a $(MESA_DIR)/lib/liblapack95.a
 MESA_DEPS += $(MESA_DIR)/lib/libcrmath.a $(MESA_DIR)/lib/libcrlibm.a
 
-MESA_TOOLS := src/bin/fpx3 src/bin/fpx3_deps $(MESA_DIR)/utils/makedepf90-2.8.8/makedepf90 src/bin/ndiff
+MESA_TOOLS := src/bin/fpx3 src/bin/fpx3_deps src/bin/makedepf90 src/bin/ndiff
 
 MESA_ENV := MESA_DIR=$(MESA_DIR) FC=$(FC) MPIFC=$(MPIFC)
 MESA_ENV += CC=$(CC) MPICC=$(MPICC) OPENMP_FCFLAGS=$(OPENMP_FCFLAGS)
