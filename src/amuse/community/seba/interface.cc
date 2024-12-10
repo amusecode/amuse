@@ -464,10 +464,10 @@ int new_particle(int * index_of_the_star, double mass){
 }
 
 
-int new_advanced_particle(int * index_of_the_star, double mass,  double relative_mass, int type_number,  double age, double core_mass, double COcore_mass,  double radius){
+int new_advanced_particle(int * index_of_the_star, double mass,  double relative_mass, int type_number,  double relative_age, double core_mass, double COcore_mass,  double radius){
 
     if (relative_mass == 0) return new_particle(index_of_the_star, mass);
-    if (age < 0) return -1;
+    if (relative_age < 0) return -1;
  
     node * new_node = new node();
     new_node->set_label(next_seba_id);
@@ -486,7 +486,7 @@ int new_advanced_particle(int * index_of_the_star, double mass,  double relative
     
     stellar_type seba_stellar_type = translate_int_to_stellar_type(type_number);    
 
-    addstar(new_node, seba_time, seba_stellar_type, seba_metallicity, 0, false, , seba_stellar_type, relative_mass, mass - core_mass, core_mass, COcore_mass, age);
+    addstar(new_node, seba_time, seba_stellar_type, seba_metallicity, 0, false, seba_stellar_type, relative_mass, mass - core_mass, core_mass, COcore_mass, relative_age);
     new_node->get_starbase()->set_time_offset(seba_time);
     *index_of_the_star = next_seba_id;
     
