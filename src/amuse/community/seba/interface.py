@@ -69,8 +69,8 @@ class SeBaInterface(CodeInterface, se.StellarEvolutionInterface, LiteratureRefer
             'stellar_type', dtype='int32', direction=function.IN, default=0,
             description="The initial stellar type of the star")
         function.addParameter(
-            'age', dtype='float64', direction=function.IN, default=0,
-            description="The initial age of the star")
+            'relative_age', dtype='float64', direction=function.IN, default=0,
+            description="The relative initial age of the star")
         function.addParameter(
             'core_mass', dtype='float64', direction=function.IN, default=0, 
             description="The initial core mass of the star")
