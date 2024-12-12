@@ -8,3 +8,4 @@
 0001-Get-photo-loading-working.patch
 0001-Patch-error-messages.patch
 0005-fix_mesa_utils_c_system.patch
+0006-fix_cpp_and_lapack_template.patch
