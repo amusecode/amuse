@@ -6,7 +6,7 @@ ENV_TYPE :=
 ifneq (,$(VIRTUAL_ENV))
 ENV_TYPE := virtualenv
 ENV_NAME := $(VIRTUAL_ENV)
-ENV_LIBRARY_PATH :== $(VIRTUAL_ENV)/lib
+ENV_LIBRARY_PATH := $(VIRTUAL_ENV)/lib
 
 HAVE_WHEEL := $(shell pip list | grep '^wheel')
 HAVE_PIP := $(shell pip list | grep '^pip')

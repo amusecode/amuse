@@ -1,6 +1,6 @@
 define ENVIRONMENT_HELP :=
 
-$(BOLD)* Create and activate an environment *$(END_BOLD)
+$(BOLD)$(COLOR_YELLOW)* (1/4) Create and activate an environment *$(COLOR_END)$(END_BOLD)
 
 To install any packages, you need to create and activate a Conda environment
 or a Python virtualenv. If you have an environment into which you'd like to
@@ -39,7 +39,7 @@ ENVIRONMENT_HELP := $(subst $(newline),\n,$(subst ','\'',$(ENVIRONMENT_HELP)))
 
 define NO_PIP_WHEEL_MESSAGE :=
 
-$(BOLD)* Install pip and wheel *$(END_BOLD)
+$(BOLD)$(COLOR_YELLOW)* (2/4) Install pip and wheel *$(COLOR_END)$(END_BOLD)
 
 Installation is disabled due to a lack of the right pip and/or wheel in the
 environment. You can enable AMUSE installation by correctly installing pip and wheel.
@@ -94,7 +94,7 @@ NO_PIP_WHEEL_MESSAGE := $(subst $(newline),\n,$(subst ','\'',$(NO_PIP_WHEEL_MESS
 
 define DISABLED_PACKAGES_MESSAGE :=
 
-$(BOLD)* Enable more packages *$(END_BOLD)
+$(BOLD)$(COLOR_YELLOW)* (3/4) Enable more packages *$(COLOR_END)$(END_BOLD)
 
 Some packages are disabled due to missing features. You can enable more packages by
 installing additional software. Some software does require specific hardware, for
@@ -217,7 +217,7 @@ DISABLED_PACKAGES_MESSAGE := $(subst $(newline),\n,$(subst ','\'',$(DISABLED_PAC
 
 define INSTALL_HELP :=
 
-$(BOLD)* Install AMUSE *$(END_BOLD)
+$(BOLD)$(COLOR_YELLOW)* (4/4) Install AMUSE *$(COLOR_END)$(END_BOLD)
 
 To install the AMUSE framework and all of the enabled packages into the active
 $(ENV_TYPE) environment $(BOLD)$(ENV_NAME)$(END_BOLD), type

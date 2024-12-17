@@ -2,4 +2,4 @@ matplotlib
 pandoc
 rst2pdf
 Sphinx>=3.0
-sphinx-rtd-theme==0.5.2
+sphinx-rtd-theme

@@ -1,5 +1,3 @@
-INCLUDE 'stoppingconditions.f90'
-
 MODULE AmuseInterface
 CONTAINS
       FUNCTION initialize_code()

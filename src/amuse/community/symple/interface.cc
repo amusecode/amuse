@@ -897,18 +897,6 @@ int get_acceleration(int id, double *ax, double *ay, double *az)
 	return -2;
 }
 
-int set_acceleration(int id, double ax, double ay, double az)
-{
-    unsigned int i = find(ident.begin(), ident.end(), id) - ident.begin();
-    if (i < ident.size()) {
-	acc[i][0] = ax;
-	acc[i][1] = ay;
-	acc[i][2] = az;
-	return 0;
-    } else
-	return -2;
-}
-
 int evolve_model(double t_end)
 {
     evolve_system(t_end);
