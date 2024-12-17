@@ -2935,7 +2935,7 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
     if test "x$VIRTUAL_ENV" != x
 then :
 
-        LDFLAGS="$LDFLAGS -L${VIRTUAL_ENV} -Wl,-rpath ${VIRTUAL_ENV}/lib"
+        LDFLAGS="$LDFLAGS -L${VIRTUAL_ENV}/lib -Wl,-rpath ${VIRTUAL_ENV}/lib"
         PKG_CONFIG_PATH="$VIRTUAL_ENV/lib/pkg-config:$PKG_CONFIG_PATH"
 
 fi
@@ -2943,12 +2943,14 @@ fi
     if test "x$CONDA_PREFIX" != x
 then :
 
-        LDFLAGS="$LDFLAGS -L${CONDA_PREFIX} -Wl,-rpath ${CONDA_PREFIX}/lib"
+        LDFLAGS="$LDFLAGS -L${CONDA_PREFIX}/lib -Wl,-rpath ${CONDA_PREFIX}/lib"
         # Conda pkg-config includes this already, but in case we have one from
         # the system...
         PKG_CONFIG_PATH="$PKG_CONFIG_PATH:${CONDA_PREFIX}/lib/pkgconfig"
 
 fi
+    # Needs to be exported or the PKG_CHECK_MODULES macro won't see it
+    export PKG_CONFIG_PATH
 
 
 # Set CPU_COUNT
@@ -5695,11 +5697,17 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
     # If we have an active CONDA environment, assume that the lib is coming from
     # there and add an additional flag so that .mod files can be found. Only really
-    # needed for stopcond, and hopefully conda-forge will give us a better solution
-    # soon.
+    # needed for stopcond and forsockets, and hopefully conda-forge will give us a
+    # better solution soon.
     if test "${FOUND_FORSOCKETS}" == "yes" -a "x$CONDA_PREFIX" != "x"
     then
         FORSOCKETS_CFLAGS="${FORSOCKETS_CFLAGS} -I${CONDA_PREFIX}/include"
+    fi
+
+    # Same for a virtualenv.
+    if test "${FOUND_FORSOCKETS}" == "yes" -a "x$VIRTUAL_ENV" != "x"
+    then
+        FORSOCKETS_CFLAGS="${FORSOCKETS_CFLAGS} -I${VIRTUAL_ENV}/include"
     fi
 
     # If the user overrode the variables, go with what they set instead of
