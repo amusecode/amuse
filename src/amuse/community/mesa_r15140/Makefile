@@ -71,12 +71,12 @@ src/hdf5-$(HDF5_VERSION): src/hdf5-$(HDF5_VERSION).tar.bz2
 
 src/hdf5-$(HDF5_VERSION)/src/.libs/libhdf5.a: | src/hdf5-$(HDF5_VERSION) $(MESA_DIR)
 	# We need to override CC and FC here because the HDF5 autoconf tries to compile an MPI program with them...
-	cd src/hdf5-$(HDF5_VERSION) && ./configure --enable-fortran --enable-parallel --prefix=$(realpath $(MESA_DIR)) --enable-shared=no CC=$(MPICC) FC=$(MPIFC)
-	cd src/hdf5-$(HDF5_VERSION)/src && $(MAKE) -j $(CPU_COUNT) lib
-	cd src/hdf5-$(HDF5_VERSION)/src && $(MAKE)
+	cd src/hdf5-$(HDF5_VERSION) && ./configure --enable-fortran --enable-fortran-2003 --enable-parallel --prefix=$(realpath $(MESA_DIR)) --enable-shared=no CC=$(MPICC) FC=$(MPIFC)
+	cd src/hdf5-$(HDF5_VERSION) && $(MAKE) -j $(CPU_COUNT) lib
+	cd src/hdf5-$(HDF5_VERSION) && $(MAKE)
 
 $(MESA_DIR)/lib/libhdf5.a: src/hdf5-$(HDF5_VERSION)/src/.libs/libhdf5.a
-	cd src/hdf5-$(HDF5_VERSION)/src && $(MAKE) install
+	cd src/hdf5-$(HDF5_VERSION) && $(MAKE) install
 
 
 src/LAPACK95: src/lapack95.tgz
