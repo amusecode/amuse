@@ -13658,11 +13658,17 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
     # If we have an active CONDA environment, assume that the lib is coming from
     # there and add an additional flag so that .mod files can be found. Only really
-    # needed for stopcond, and hopefully conda-forge will give us a better solution
-    # soon.
+    # needed for stopcond and forsockets, and hopefully conda-forge will give us a
+    # better solution soon.
     if test "${FOUND_SAPPORO_LIGHT}" == "yes" -a "x$CONDA_PREFIX" != "x"
     then
         SAPPORO_LIGHT_CFLAGS="${SAPPORO_LIGHT_CFLAGS} -I${CONDA_PREFIX}/include"
+    fi
+
+    # Same for a virtualenv.
+    if test "${FOUND_SAPPORO_LIGHT}" == "yes" -a "x$VIRTUAL_ENV" != "x"
+    then
+        SAPPORO_LIGHT_CFLAGS="${SAPPORO_LIGHT_CFLAGS} -I${VIRTUAL_ENV}/include"
     fi
 
     # If the user overrode the variables, go with what they set instead of

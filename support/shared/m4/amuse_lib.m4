@@ -41,11 +41,17 @@ AC_DEFUN([AMUSE_LIB], [
 
     # If we have an active CONDA environment, assume that the lib is coming from
     # there and add an additional flag so that .mod files can be found. Only really
-    # needed for stopcond, and hopefully conda-forge will give us a better solution
-    # soon.
+    # needed for stopcond and forsockets, and hopefully conda-forge will give us a
+    # better solution soon.
     if test "${FOUND_$1}" == "yes" -a "x$CONDA_PREFIX" != "x"
     then
         $1_CFLAGS="${$1_CFLAGS} -I${CONDA_PREFIX}/include"
+    fi
+
+    # Same for a virtualenv.
+    if test "${FOUND_$1}" == "yes" -a "x$VIRTUAL_ENV" != "x"
+    then
+        $1_CFLAGS="${$1_CFLAGS} -I${VIRTUAL_ENV}/include"
     fi
 
     # If the user overrode the variables, go with what they set instead of
