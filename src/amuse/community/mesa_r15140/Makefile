@@ -56,7 +56,7 @@ $(MESA_DIR): src/mesa-$(MESA_VERSION).zip
 	cd src && unzip ../$<
 	mkdir -p $(MESA_DIR)/include
 	mkdir -p $(MESA_DIR)/lib
-	cd $(MESA_DIR) && for p in $(PATCHES) ; do patch -p1 <../../patches/$$p ; done
+	cd $(MESA_DIR) && for p in $(PATCHES) ; do patch -p1 <../../patches/$$p || exit 1 ; done
 	# This one should always be skipped
 	touch $(MESA_DIR)/adipls/skip_test
 	# We can't guarantee bit-for-bit agreement as we don't control the compiler used

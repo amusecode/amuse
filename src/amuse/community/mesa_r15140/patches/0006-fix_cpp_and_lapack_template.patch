@@ -1,20 +1,25 @@
 diff --color -urN a/mesa-r15140/mtx/make/makefile_base b/mesa-r15140/mtx/make/makefile_base
 --- a/mtx/make/makefile_base	2024-12-12 08:09:17
 +++ b/mtx/make/makefile_base	2024-12-12 08:11:09
-@@ -245,12 +245,12 @@
+@@ -245,12 +245,17 @@
     mtx_lib.f90 \
  
  ifneq ($(MAKECMDGOALS),clean)
 -   $(shell $(CPP) -DDBLE $(MOD_PRIVATE_DIR)/my_lapack95.F90 > my_lapack95_dble.f90)
 -   $(shell $(CPP)        $(MOD_PRIVATE_DIR)/my_lapack95.F90 > my_lapack95_quad.f90)
-+   $(shell $(CPP) -DDBLE $(MOD_PRIVATE_DIR)/my_lapack95.template -o my_lapack95_dble.f90)
-+   $(shell $(CPP)        $(MOD_PRIVATE_DIR)/my_lapack95.template -o my_lapack95_quad.f90)
++   # .F90 doesn't work because the file system is case-insensitive on Mac, clang
++   # won't preprocess .f90 because that's the extension for already preprocessed
++   # files, gcc takes anything with a non-recognised extension for a linker template,
++   # and so we're naming this Fortran template file .c because that's the only thing
++   # that will work. Best I can do - LV.
++   $(shell $(CPP) -DDBLE $(MOD_PRIVATE_DIR)/my_lapack95.c -o my_lapack95_dble.f90)
++   $(shell $(CPP)        $(MOD_PRIVATE_DIR)/my_lapack95.c -o my_lapack95_quad.f90)
     # Alter the timestamps so make wont force a recompile just because we copied the files,
     # instead we only recompile if the original .F90 file was changed
 -   $(shell touch -r $(MOD_PRIVATE_DIR)/my_lapack95.F90 my_lapack95_dble.f90)
 -   $(shell touch -r $(MOD_PRIVATE_DIR)/my_lapack95.F90 my_lapack95_quad.f90)
-+   $(shell touch -r $(MOD_PRIVATE_DIR)/my_lapack95.template my_lapack95_dble.f90)
-+   $(shell touch -r $(MOD_PRIVATE_DIR)/my_lapack95.template my_lapack95_quad.f90)
++   $(shell touch -r $(MOD_PRIVATE_DIR)/my_lapack95.c my_lapack95_dble.f90)
++   $(shell touch -r $(MOD_PRIVATE_DIR)/my_lapack95.c my_lapack95_quad.f90)
  endif
  
  #################################################################
@@ -1474,10 +1479,10 @@ diff --color -urN a/mesa-r15140/mtx/private/my_lapack95.F90 b/mesa-r15140/mtx/pr
 -#else
 -      end module my_lapack95_quad
 -#endif
-diff --color -urN a/mesa-r15140/mtx/private/my_lapack95.template b/mesa-r15140/mtx/private/my_lapack95.template
---- a/mtx/private/my_lapack95.template	1970-01-01 01:00:00
-+++ b/mtx/private/my_lapack95.template	2016-06-09 22:38:41
-@@ -0,0 +1,1443 @@
+diff --color -urN a/mesa-r15140/mtx/private/my_lapack95.c b/mesa-r15140/mtx/private/my_lapack95.c
+--- a/mtx/private/my_lapack95.c	1970-01-01 01:00:00
++++ b/mtx/private/my_lapack95.c	2016-06-09 22:38:41
+@@ -0,0 +1,1450 @@
 +   ! ***********************************************************************
 +!
 +!   copyright (c) 2012  bill paxton
@@ -1502,6 +1507,13 @@ diff --color -urN a/mesa-r15140/mtx/private/my_lapack95.template b/mesa-r15140/m
 +!   foundation, inc., 59 temple place, suite 330, boston, ma 02111-1307 usa
 +!
 +! ***********************************************************************
++
++#if 0
++! This is a Fortran file template with a .c extension because that's the only way
++! we can get it preprocessed on both Mac and Linux with both gcc and clang.
++!
++! Sorry. -LV
++#endif
 +
 +#ifdef DBLE
 +      module my_lapack95_dble
