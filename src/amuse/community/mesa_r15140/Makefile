@@ -57,8 +57,7 @@ $(MESA_DIR): src/mesa-$(MESA_VERSION).zip
 	mkdir -p $(MESA_DIR)/include
 	mkdir -p $(MESA_DIR)/lib
 	cd $(MESA_DIR) && for p in $(PATCHES) ; do patch -p1 <../../patches/$$p ; done
-	cp patches/makefile_header $(MESA_DIR)/utils/makefile_header
-	cp patches/makefile_header_non_mesasdk $(MESA_DIR)/utils/makefile_header_non_mesasdk
+	cp patches/makefile_header_non_mesasdk $(MESA_DIR)/utils/makefile_header
 	# This one should always be skipped
 	touch $(MESA_DIR)/adipls/skip_test
 	# We can't guarantee bit-for-bit agreement as we don't control the compiler used
