@@ -117,7 +117,7 @@ module mesa_interface
         s% job% saved_model_name = trim(filename)
 
         s% job% create_pre_main_sequence_model = .false.
-        
+
     end subroutine load_saved_model
 
 
@@ -132,7 +132,7 @@ module mesa_interface
 
         s% job% load_saved_model = .false.
         s% job% create_pre_main_sequence_model = .false.
-        
+
     end subroutine load_zams_model
 
 
@@ -167,7 +167,7 @@ module mesa_interface
         integer, intent(out) :: ierr
 
         call star_write_model(id, filename, ierr)
-        
+
     end subroutine save_mesa_model
 
 
@@ -210,7 +210,7 @@ module mesa_interface
         call star_ptr(id, s, ierr)
         if (failed('star_ptr',ierr)) return
 
-        call init_callback(id) ! Call here and in evolve_controls as there are options that 
+        call init_callback(id) ! Call here and in evolve_controls as there are options that
                                ! need to be set before and after the other inlist options get set
         id_from_read_star_job = id
 
@@ -232,7 +232,7 @@ module mesa_interface
             ierr = 0
             call star_ptr(id, s, ierr)
             if (ierr /= 0) return
-            
+
            ! This is a local copy of extras_controls,
            ! Plese add your changes to the version in run_star_extras.f90 not this one
 
@@ -242,30 +242,30 @@ module mesa_interface
             s% job% check_after_step_timing = 0
             s% job% time0_initial = 0
             s% calculate_Brunt_N2 = .true.
-    
+
             call init_callback(id)
 
             ! Set zbase if its not been set yet
-            if(s%kap_rq% zbase == -1) s%kap_rq% zbase = s%initial_z            
+            if(s%kap_rq% zbase == -1) s%kap_rq% zbase = s%initial_z
 
             ! Override photo_directory otherwise we look in photos/ instead of ./
-            ! This does nothing for 15140 but later versions can use this to set 
+            ! This does nothing for 15140 but later versions can use this to set
             ! the folder for the restart photo to the current directory.
             if(len_trim(restart_name(id)) > 0) then
                 s%photo_directory = '.'
             end if
 
             call rse_extras_controls(id, ierr)
-  
-        
+
+
          end subroutine extras_controls
 
-        
+
     end subroutine finish_init_star
 
     subroutine remove_star(id, ierr)
         integer, intent(in) :: id
-        integer, intent(out) :: ierr 
+        integer, intent(out) :: ierr
 
         call free_star(id, ierr)
         if (failed('free_star',ierr)) return
@@ -276,7 +276,7 @@ module mesa_interface
         integer, intent(out) :: num
 
         num =  max_star_handles
- 
+
     end subroutine max_num_stars
 
 
@@ -323,12 +323,12 @@ module mesa_interface
         !call chdir(output_folder)
 
         call star_ptr(id, s, ierr)
-        if (failed('star_ptr',ierr)) return   
+        if (failed('star_ptr',ierr)) return
 
         mesa_dir = mesa_dir_in
 
         call const_init(mesa_dir_in, ierr)
-        if (failed('const_init',ierr)) return 
+        if (failed('const_init',ierr)) return
 
         mesa_data_dir = mesa_data_dir_in
 
@@ -350,7 +350,7 @@ module mesa_interface
         s% terminal_interval = 1
         s% write_header_frequency = 100
 
-        mesa_temp_caches_dir = trim(temp_dir) 
+        mesa_temp_caches_dir = trim(temp_dir)
 
         s% report_ierr = .false.
 
@@ -364,7 +364,7 @@ module mesa_interface
     subroutine update_star_job(id, ierr)
         integer, intent(in) :: id
         integer, intent(out) :: ierr
-        type (star_info), pointer :: s 
+        type (star_info), pointer :: s
 
         ierr = MESA_SUCESS
 
@@ -382,7 +382,7 @@ module mesa_interface
         integer, intent(in) :: id
         character(len=*), intent(out) :: net_name
         integer, intent(out) :: ierr
-        type (star_info), pointer :: s 
+        type (star_info), pointer :: s
 
         ierr = MESA_SUCESS
 
@@ -398,7 +398,7 @@ module mesa_interface
         integer, intent(in) :: id
         character(len=*), intent(in) :: net_name
         integer, intent(out) :: ierr
-        type (star_info), pointer :: s 
+        type (star_info), pointer :: s
 
         ierr = MESA_SUCESS
 
@@ -502,7 +502,7 @@ module mesa_interface
     subroutine do_evolve_one_step(id, result, ierr)
         integer, intent(in) :: id
         integer, intent(out) :: result, ierr
-        type (star_info), pointer :: s 
+        type (star_info), pointer :: s
 
         integer :: model_number
         logical :: continue_evolve_loop, first_try
@@ -516,33 +516,33 @@ module mesa_interface
         call before_step_loop(s% id, ierr)
         if (failed('before_step_loop',ierr)) return
 
-        result = s% extras_start_step(id)  
-        if (result /= keep_going) return      
+        result = s% extras_start_step(id)
+        if (result /= keep_going) return
 
         first_try = .true.
-        
+
         step_loop: do ! may need to repeat this loop
-        
+
            if (stop_is_requested(s)) then
               continue_evolve_loop = .false.
               result = terminate
               exit
            end if
-        
+
            result = star_evolve_step(id, first_try)
            if (result == keep_going) result = star_check_model(id)
            if (result == keep_going) result = s% extras_check_model(id)
-           if (result == keep_going) result = star_pick_next_timestep(id)            
+           if (result == keep_going) result = star_pick_next_timestep(id)
            if (result == keep_going) exit step_loop
-           
+
            model_number = get_model_number(id, ierr)
            if (failed('get_model_number',ierr)) return
-                          
+
            if (result == retry .and. s% job% report_retries) then
               write(*,'(i6,3x,a,/)') model_number, &
                  'retry reason ' // trim(result_reason_str(s% result_reason))
            end if
-           
+
            if (result == redo) then
               result = star_prepare_to_redo(id)
            end if
@@ -560,7 +560,7 @@ module mesa_interface
         call after_step_loop(s% id, s% inlist_fname, &
             dbg, result, ierr)
         if (failed('after_step_loop',ierr)) return
-        
+
         call do_saves(id, ierr)
         if (failed('do_saves',ierr)) return
 
@@ -583,7 +583,7 @@ module mesa_interface
     subroutine do_solve_one_step_pre(id, result, ierr)
         integer, intent(in) :: id
         integer, intent(out) :: result, ierr
-        type (star_info), pointer :: s 
+        type (star_info), pointer :: s
 
         integer :: model_number
         logical :: continue_evolve_loop, first_try
@@ -597,8 +597,8 @@ module mesa_interface
         call before_step_loop(s% id, ierr)
         if (failed('before_step_loop',ierr)) return
 
-        result = s% extras_start_step(id)  
-        if (result /= keep_going) return      
+        result = s% extras_start_step(id)
+        if (result /= keep_going) return
 
 
     end subroutine do_solve_one_step_pre
@@ -608,7 +608,7 @@ module mesa_interface
         integer, intent(in) :: id
         logical, intent(in) :: first_try
         integer, intent(out) :: result, ierr
-        type (star_info), pointer :: s 
+        type (star_info), pointer :: s
 
         integer :: model_number
         logical :: continue_evolve_loop
@@ -623,7 +623,7 @@ module mesa_interface
         result = star_evolve_step(id, first_try)
         if (result == keep_going) result = star_check_model(id)
         if (result == keep_going) result = s% extras_check_model(id)
-        if (result == keep_going) result = star_pick_next_timestep(id)            
+        if (result == keep_going) result = star_pick_next_timestep(id)
         if (result == keep_going) return
 
     end subroutine do_solve_one_step
@@ -632,7 +632,7 @@ module mesa_interface
     subroutine do_solve_one_step_post(id, result, ierr)
         integer, intent(in) :: id
         integer, intent(out) :: result, ierr
-        type (star_info), pointer :: s 
+        type (star_info), pointer :: s
 
         integer :: model_number
         logical :: continue_evolve_loop, first_try
@@ -649,7 +649,7 @@ module mesa_interface
         call after_step_loop(s% id, s% inlist_fname, &
             dbg, result, ierr)
         if (failed('after_step_loop',ierr)) return
-        
+
         call do_saves(id, ierr)
         if (failed('do_saves',ierr)) return
 
@@ -662,41 +662,67 @@ module mesa_interface
         integer, intent(in) :: id
         real(dp), intent(in) :: delta_t
         integer, intent(out) :: ierr
-        type (star_info), pointer :: s  
-        integer :: result
+        type (star_info), pointer :: s
+        integer :: result, count
         logical,parameter :: dbg=.false.
-        real(dp) :: old_age
+        real(dp) :: end_time, dt_save
 
         call star_ptr(id, s, ierr)
         if (failed('star_ptr',ierr)) return
 
-        old_age = s% max_age 
+        ! (LS 2024)
+        ! Update of evolve_until in case subroutine is called several times subsequently.
 
-        s% max_age = s% star_age + delta_t
-        s% num_adjusted_dt_steps_before_max_age =  -1
+        ! In the previous version, the timestep was automatically reduced at the end of
+        ! the evolve loop so that the star age reach max_age. In a subsequent call to
+        ! evolve_until, the evolution would start again with this reduced timestep, which
+        ! could in some cases prevent the timestep from increasing.
 
-        evolve_loop: do 
+        ! End time of evolution
+        end_time = s% star_age + delta_t
+
+        ! To check whether the evolve loop was entered
+        count = 0
+
+        ! Evolve loop while end_time not reached
+        ! Use of epsilon(0.0d0) to avoid precision issues
+        do while (s% star_age + s% dt_next/secyer  < end_time*(1.0d0 - epsilon(0.0d0)))
             call do_evolve_one_step(id, result, ierr)
+            count = count + 1
             if (result /= keep_going) then
                 if (s% result_reason == result_reason_normal) then
-                    exit evolve_loop
+                    exit
                 else
                     ierr = -1
-                    exit evolve_loop
+                    exit
                 end if
             end if
             s% doing_first_model_of_run = .false.
-        end do evolve_loop
+        end do
 
-        ! In case you want to evolve further
-        s% max_age = old_age
-        if(s% dt_next==0) s% dt_next = s% dt
+        ! Save the next timestep MESA would have required if it was not imposed by end_time
+        dt_save = s% dt_next
+
+        ! Set the timestep required to reach end_time
+        s% dt_next = (end_time - s% star_age)*secyer
+
+        ! Evolve one last step to reach end_time
+        call do_evolve_one_step(id, result, ierr)
+        if (result /= keep_going) then
+            if (s% result_reason /= result_reason_normal) then
+                 ierr = -1
+            end if
+        end if
+
+        ! If several evolve steps were performed, set the timestep for the future evolution
+        ! to the value it would have reached without the condition to finish at end_time
+        if (count /= 0) then
+            s% dt_next = dt_save
+        endif
 
         s% doing_first_model_of_run = .false.
 
     end subroutine evolve_until
-
-
 
 
 ! ***********************************************************************
@@ -743,7 +769,7 @@ module mesa_interface
         integer, intent(in) :: id
         real(dp), intent(in) :: dt
         integer, intent(out) :: ierr
-        type (star_info), pointer :: s 
+        type (star_info), pointer :: s
 
         call star_ptr(id, s, ierr)
         if (failed('set_dt',ierr)) return
@@ -785,17 +811,17 @@ module mesa_interface
     subroutine relax_to_new_comp(id, xa, xqs, ierr)
         integer, intent(in) :: id
         real(dp), intent(in) :: xa(:,:), xqs(:)
-        type (star_info), pointer :: s   
+        type (star_info), pointer :: s
         integer, intent(out) :: ierr
         integer :: k
         real(dp) :: max_age
-        ierr=0 
+        ierr=0
         call star_ptr(id, s, ierr)
         if (failed('star_ptr',ierr)) return
 
         if(s%species /= size(xa,dim=1)) then
             ierr = -50
-            return 
+            return
         end if
 
         call star_relax_composition(id, s% job% num_steps_to_relax_composition, &
@@ -808,7 +834,7 @@ module mesa_interface
     subroutine relax_to_new_entropy(id, xqs, temperature, rho, ierr)
         integer, intent(in) :: id
         real(dp), intent(in) :: xqs(:), temperature(:), rho(:)
-        type (star_info), pointer :: s   
+        type (star_info), pointer :: s
         integer, intent(out) :: ierr
         real(dp), allocatable, dimension(:) :: entropy
         real(dp), dimension(num_eos_basic_results) :: res,d_dlnd, d_dlnT, d_dabar, d_dzbar
@@ -1039,7 +1065,7 @@ module mesa_interface
 
     end subroutine get_next_timestep
 
- 
+
     integer function reverse_zone_id(id, zone, ierr)
         integer, intent(in) :: id, zone
         integer, intent(out) :: ierr
@@ -1063,7 +1089,7 @@ module mesa_interface
         integer, intent(in) :: id, net_id
         character(*), intent(out) :: name
         integer, intent(out) :: ierr
-        type (star_info), pointer :: s    
+        type (star_info), pointer :: s
 
         name=''
 
@@ -1087,7 +1113,7 @@ module mesa_interface
         character(len=*), intent(in) :: iso_name
         integer, intent(out) :: ierr
         type (star_info), pointer :: s
-        integer :: k    
+        integer :: k
 
         call star_ptr(id, s, ierr)
         if (failed('star_ptr',ierr)) return
@@ -1108,8 +1134,8 @@ module mesa_interface
         integer, intent(in) :: net_id
         real(dp), intent(out) :: mass
         integer, intent(out) :: ierr
-        type (star_info), pointer :: s   
-        integer :: species_id 
+        type (star_info), pointer :: s
+        integer :: species_id
 
         call star_ptr(id, s, ierr)
         if (failed('star_ptr',ierr)) return
@@ -1129,8 +1155,8 @@ module mesa_interface
         integer, intent(in) :: net_id
         real(dp), intent(out) :: mass
         integer, intent(out) :: ierr
-        type (star_info), pointer :: s   
-        integer :: species_id 
+        type (star_info), pointer :: s
+        integer :: species_id
 
         call star_ptr(id, s, ierr)
         if (failed('star_ptr',ierr)) return
@@ -1140,7 +1166,7 @@ module mesa_interface
             return
         end if
 
-        mass = dot_product(s% xa(net_id,1:s% nz),s% dq(1:s% nz))/sum(s% dq(1:s% nz)) 
+        mass = dot_product(s% xa(net_id,1:s% nz),s% dq(1:s% nz))/sum(s% dq(1:s% nz))
         mass = mass*s% xmstar/Msun
 
     end subroutine get_total_mass_species
@@ -1150,8 +1176,8 @@ module mesa_interface
         integer, intent(in) :: net_id
         real(dp), intent(out) :: mass
         integer, intent(out) :: ierr
-        type (star_info), pointer :: s   
-        integer :: species_id 
+        type (star_info), pointer :: s
+        integer :: species_id
 
         mass = -1
 
@@ -1161,7 +1187,7 @@ module mesa_interface
         if(zone<0 .or. zone> s%nz) then
             ierr = -2
             return
-        end if 
+        end if
 
         if(net_id < 1 .or. net_id > s% species) then
             ierr =-3
@@ -1176,12 +1202,12 @@ module mesa_interface
         integer, intent(in) :: id
         integer, intent(out) :: time
         integer, intent(out) :: ierr
-        type (star_info), pointer :: s   
+        type (star_info), pointer :: s
 
         call star_ptr(id, s, ierr)
         if (failed('star_ptr',ierr)) return
 
-        time = s% job% after_step_timing 
+        time = s% job% after_step_timing
 
     end subroutine time_of_step
 
@@ -1192,7 +1218,7 @@ module mesa_interface
         character(len=*), intent(in) :: name
         real(dp), intent(out) :: val
         integer, intent(out) :: ierr
-        type (star_info), pointer :: s   
+        type (star_info), pointer :: s
 
         ierr = 0
         call star_ptr(id, s, ierr)
@@ -1204,7 +1230,7 @@ module mesa_interface
         end if
 
         select case(name)
-            case('extra_heat') 
+            case('extra_heat')
                 val = s% extra_heat(k)
             case default
                 ierr = -3
@@ -1219,7 +1245,7 @@ module mesa_interface
         character(len=*), intent(in) :: name
         real(dp), intent(in) :: val
         integer, intent(out) :: ierr
-        type (star_info), pointer :: s   
+        type (star_info), pointer :: s
 
         ierr = 0
         call star_ptr(id, s, ierr)
@@ -1231,7 +1257,7 @@ module mesa_interface
         end if
 
         select case(name)
-            case('extra_heat') 
+            case('extra_heat')
                 s% extra_heat(k) = val
             case default
                 ierr = -3
@@ -1256,15 +1282,15 @@ module mesa_interface
         call gyre_init(gyre_in)
 
         ! Set constants
-    
+
         call gyre_set_constant('G_GRAVITY', standard_cgrav)
         call gyre_set_constant('C_LIGHT', clight)
         call gyre_set_constant('A_RADIATION', crad)
-    
+
         call gyre_set_constant('M_SUN', Msun)
         call gyre_set_constant('R_SUN', Rsun)
         call gyre_set_constant('L_SUN', Lsun)
-    
+
         call gyre_set_constant('GYRE_DIR', TRIM(mesa_dir)//'/gyre/gyre')
 
 
@@ -1278,7 +1304,7 @@ module mesa_interface
         integer, intent(in) :: id, mode_l
         integer, intent(out) :: ierr
         logical, intent(in) :: add_center_point, keep_surface_point, add_atmosphere
-        type (star_info), pointer :: s  
+        type (star_info), pointer :: s
         real(dp), allocatable     :: global_data(:)
         real(dp), allocatable     :: point_data(:,:)
         integer                   :: ipar(1)
@@ -1310,18 +1336,18 @@ module mesa_interface
     contains
 
         subroutine process_mode_ (md, ipar, rpar, retcode)
-    
+
          type(mode_t), intent(in) :: md
          integer, intent(inout)   :: ipar(:)
          real(dp), intent(inout)  :: rpar(:)
          integer, intent(out)     :: retcode
-   
+
          integer               :: k, unit
          complex(dp)           :: cfreq
          real(dp)              :: freq, growth
          type(grid_t)          :: gr
-          
-         retcode= 0 
+
+         retcode= 0
          ipar(1) = 0
          cfreq = md% freq('HZ')
          gr = md%grid()
