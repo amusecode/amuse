@@ -13,6 +13,12 @@ from amuse.datamodel import Particle
 from amuse.ext.spherical_model import EnclosedMassInterpolator
 
 
+# At least on my 8 core / 16 thread laptop, these tests run extremely slowly (hours
+# rather than minutes) when run with the default 16 OpenMP threads. Setting the
+# OMP_NUM_THREADS environment variable to 7 works much better. This runs one OpenMP
+# thread per core for MESA, and leaves one core for pytest running this file.
+
+
 def set_mesa_paths_instance(instance):
     instance.set_MESA_paths(
         instance.default_path_to_inlist,
