@@ -12,15 +12,9 @@ support/config.mk:
 
 MESA_VERSION := r15140
 
-HDF5_SERIES := 1.12
-HDF5_VERSION := $(HDF5_SERIES).0
-
 
 src:
 	mkdir -p src
-
-src/hdf5-$(HDF5_VERSION).tar.bz2: | src
-	$(DOWNLOAD) https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-$(HDF5_SERIES)/hdf5-$(HDF5_VERSION)/src/hdf5-$(HDF5_VERSION).tar.bz2 >$@
 
 src/lapack95.tgz: | src
 	$(DOWNLOAD) http://user.astro.wisc.edu/~townsend/resource/download/sdk2/src/lapack95.tgz >$@
@@ -62,20 +56,6 @@ $(MESA_DIR): src/mesa-$(MESA_VERSION).zip
 	# We can't guarantee bit-for-bit agreement as we don't control the compiler used
 	# So everyone has to skip the build tests
 	touch $(MESA_DIR)/skip_test
-
-
-src/hdf5-$(HDF5_VERSION): src/hdf5-$(HDF5_VERSION).tar.bz2
-	cd src && tar xjf ../$< -m
-	cd src && patch -p1 <../patches/hdf5.patch
-
-src/hdf5-$(HDF5_VERSION)/src/.libs/libhdf5.a: | src/hdf5-$(HDF5_VERSION) $(MESA_DIR)
-	# We need to override CC and FC here because the HDF5 autoconf tries to compile an MPI program with them...
-	cd src/hdf5-$(HDF5_VERSION) && ./configure --enable-fortran --enable-fortran-2003 --enable-parallel --prefix=$(realpath $(MESA_DIR)) --enable-shared=no CC=$(MPICC) FC=$(MPIFC)
-	cd src/hdf5-$(HDF5_VERSION) && $(MAKE) -j $(CPU_COUNT) lib
-	cd src/hdf5-$(HDF5_VERSION) && $(MAKE)
-
-$(MESA_DIR)/lib/libhdf5.a: src/hdf5-$(HDF5_VERSION)/src/.libs/libhdf5.a
-	cd src/hdf5-$(HDF5_VERSION) && $(MAKE) install
 
 
 src/LAPACK95: src/lapack95.tgz
@@ -152,14 +132,15 @@ src/bin/ndiff: | $(MESA_DIR)/utils/ndiff-2.00 src/bin
 
 CODELIB := $(MESA_DIR)/lib/libstar.a
 
-MESA_DEPS := $(MESA_DIR)/lib/libhdf5.a $(MESA_DIR)/lib/liblapack95.a
+MESA_DEPS := $(MESA_DIR)/lib/liblapack95.a
 MESA_DEPS += $(MESA_DIR)/lib/libcrmath.a $(MESA_DIR)/lib/libcrlibm.a
 
 MESA_TOOLS := src/bin/fpx3 src/bin/fpx3_deps src/bin/makedepf90 src/bin/ndiff
 
 MESA_ENV := MESA_DIR=$(MESA_DIR) FC=$(FC) MPIFC=$(MPIFC)
 MESA_ENV += CC=$(CC) MPICC=$(MPICC) OPENMP_FCFLAGS=$(OPENMP_FCFLAGS)
-MESA_ENV += LAPACK_LIBS=$(LAPACK_LIBS) BLAS_LIBS=$(BLAS_LIBS)
+MESA_ENV += LAPACK_LIBS="$(LAPACK_LIBS)" BLAS_LIBS="$(BLAS_LIBS)"
+MESA_ENV += HDF5_FFLAGS="$(HDF5_FFLAGS)" HDF5_LDFLAGS="$(HDF5_LDFLAGS)"
 
 export PATH := $(realpath .)/src/bin:$(PATH)
 
@@ -175,7 +156,7 @@ FCFLAGS += $(OPENMP_FCFLAGS)
 LDLIBS += $(FORSOCKETS_LIBS)
 
 ## MESA libraries
-LDFLAGS += $(OPENMP_FCFLAGS) -L$(realpath $(MESA_DIR))/lib
+LDFLAGS += $(OPENMP_FCFLAGS) -L$(realpath $(MESA_DIR))/lib $(HDF5_LDFLAGS)
 LDLIBS += -lgyre -lionization -latm -lcolors -lstar_data -lnet -leos -lkap -lrates
 LDLIBS += -lneu -lchem -linterp_2d -linterp_1d -lnum -lauto_diff -lmtx -lconst
 LDLIBS += -lmath -lutils
@@ -232,7 +213,6 @@ clean_local:
 
 .PHONY: clean
 clean: clean_local
-	$(MAKE) -C src/hdf5-1.12.0 clean
 	$(MAKE) -C src/LAPACK95/SRC clean
 	$(MAKE) -C src/crmath-1.2 clean
 	$(MAKE) -C src/crlibm-1.0beta4 clean
@@ -241,7 +221,7 @@ clean: clean_local
 
 .PHONY: distclean
 distclean: clean_local
-	rm -rf src/hdf5-1.12.0 src/LAPACK95 src/crmath-1.2 src/crlibm-1.0beta4
+	rm -rf src/LAPACK95 src/crmath-1.2 src/crlibm-1.0beta4
 	rm -rf src/fpx3 src/bin src/mesa-$(MESA_VERSION)
 	rm -f support/config.mk support/config.log support/config.status
 	rm -rf support/autom4te.cache

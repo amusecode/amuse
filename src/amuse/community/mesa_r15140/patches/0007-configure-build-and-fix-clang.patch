@@ -223,9 +223,9 @@ diff -u -r mesa-r15140/utils/makefile_header mesa-r15140.new/utils/makefile_head
 +# And in your shell
 +# export LD_LIBRARY_PATH=$MESA_DIR/utils/hdf5/lib:$LD_LIBRARY_PATH
 +
-+# These are if you are using the sdk hdf5 implementation
-+LOAD_HDF5 = -L${MESA_DIR}/lib -lhdf5_fortran -lhdf5 -lz -ldl
-+INCLUDE_HDF5 = -I${MESA_DIR}/include
++# These get the location from the AMUSE bindings configure
++LOAD_HDF5 = $(HDF5_LDFLAGS) -lhdf5_fortran -lhdf5 -lz -ldl
++INCLUDE_HDF5 = $(HDF5_FFLAGS)
 +
 +# If not YES then we don't use HDF5, thus you wont have access to custom weak rates
 +# Also the rates test suite will not pass so do: /usr/bin/touch $MESA_DIR/rates/skip_test
