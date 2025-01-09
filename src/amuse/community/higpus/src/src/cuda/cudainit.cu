@@ -84,6 +84,9 @@ HostError CudaInit(unsigned int *M, int NGPU, int rank, string gpu_name, const b
 			else
 				return HNoDouble;
 		}
+        else {
+			*M = properties[to_use[0]].multiProcessorCount * properties[to_use[0]].maxThreadsPerMultiProcesssor;
+		}
 		cout<<" Maximum number of parallel threads on the gpu : "<<*M<<endl;
 	}
 
