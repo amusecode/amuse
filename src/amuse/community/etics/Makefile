@@ -1,75 +1,71 @@
-# standard amuse configuration include
-# config.mk will be made after ./configure has run
-ifeq ($(origin AMUSE_DIR), undefined)
-  AMUSE_DIR := $(shell amusifier --get-amuse-dir)
+ifneq (,$(filter-out clean distclean, $(MAKECMDGOALS)))
+include support/config.mk
 endif
--include $(AMUSE_DIR)/config.mk
-GPUARCH ?= 35
-CUDAFLAGS += -arch=sm_$(GPUARCH)
-######### ugly!!!! should be in the amuse base make file
 
 
-MPICXX   ?= mpicxx
-
-CFLAGS   += -Wall -g
-CXXFLAGS += $(CFLAGS) 
-LDFLAGS  += -lm $(MUSE_LD_FLAGS)
-
-OBJS = interface.o
-
-CODELIB = build/libetics.a
+# Detecting dependencies
+support/config.mk:
+	cd support && ./configure
 
 
-CUDA_TK ?= /usr/local/cuda/
-CUDA_LIBS ?= -L$(CUDA_TK)/lib -L$(CUDA_TK)/lib64 -lcuda 
+# Building the code into a static library
+DEPFLAGS += $(CUDA_FLAGS)
+CXXFLAGS += $(DEPFLAGS) -Wall
+LDFLAGS += $(CUDA_LDFLAGS)
+LDLIBS += -lcudart
 
-all: compile etics_worker
+CODELIB = src/libetics.a
 
-$(CUDA_TK):
-	@echo ""
-	@echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
-	@echo ""
-	@echo "Etics code"
-	@echo "------------"
-	@echo "CUDA_TK variable is not set to a valid path,"
-	@echo "please set the CUDA_TK variable to the directory"
-	@echo "where you installed CUDA"
-	@echo "the CUDA_TK directory must contain a bin directory with the <nvcc> executable"
-	@echo ""
-	@echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
-	@echo ""
-	@make -s --no-print-directory -C . raise_error
+src/config.mk:
+	cd src && ../src/configure
+
+$(CODELIB): src/config.mk
+	$(MAKE) -C src -j $(CPU_COUNT) libetics.a
 
 
+# Building the workers
+etics_worker.h: interface.py
+	amusifier --type=H interface.py EticsInterface -o $@
+
+etics_worker.cc: interface.py
+	amusifier --type=c interface.py EticsInterface -o $@
+
+etics_worker.o: etics_worker.cc etics_worker.h
+	$(MPICXX) -c -o $@ $(CXXFLAGS) $<
+
+etics_cuda_worker: interface.o etics_worker.o $(CODELIB)
+	$(MPICXX) -o $@ $(LDFLAGS) $^ $(LDLIBS)
+
+%.o: %.cu
+	$(NVCC) -o $@ -c -Xcompiler="$(CXXFLAGS)" $<
+
+# Which packages contain which workers?
+amuse-etics-cuda_contains: etics_cuda_worker
+
+
+# Building and installing packages
+develop-%: %_contains
+	support/shared/uninstall.sh $*
+	python -m pip install -e packages/$*
+
+install-%: %_contains
+	support/shared/uninstall.sh $*
+	python -m pip install packages/$*
+
+package-%: %_contains
+	python3 -m pip install -vv --no-cache-dir --no-deps --no-build-isolation --prefix ${PREFIX} packages/$*
+
+test-%:
+	cd packages/$* && pytest
+
+
+# Cleaning up
+.PHONY: clean
 clean:
-	$(RM) *.so *.o *.pyc worker_code.cc worker_code.h 
-	$(RM) *~ etics_worker worker_code.cc
-	make -C src clean
+	-$(MAKE) -C src clean
+	rm -rf *.o *worker*
 
-build/config.mk: 
-	-mkdir build
-	cd build && ../src/configure
-
-$(CODELIB): build/config.mk
-	make -C build libetics.a
-
-compile: $(CUDA_TK) $(CODELIB)
-
-worker_code.cc: interface.py
-	$(CODE_GENERATOR) --type=c interface.py EticsInterface -o $@
-
-worker_code.h: interface.py
-	$(CODE_GENERATOR) --type=H interface.py EticsInterface -o $@
-
-etics_worker: worker_code.cc worker_code.h $(CODELIB) $(OBJS)
-	$(MPICXX) $(CXXFLAGS) -L/usr/local/cuda/lib64 $< $(OBJS) $(CODELIB) -o $@ -lcudart
-	echo the above compilation directive is not nice
-
-.SUFFIXES: .cu .o
-
-.cu.o: $<
-	$(NVCC) -Xcompiler="$(CXXFLAGS)" -c -o $@ $<
-
-
-# .cc.o: $<
-# 	$(CXX) $(CXXFLAGS) -c -o $@ $<
+.PHONY: distclean
+distclean: clean
+	rm -f support/config.mk support/config.log support/config.status
+	rm -rf support/autom4te.cache

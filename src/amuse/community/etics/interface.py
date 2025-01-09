@@ -7,7 +7,7 @@ class EticsInterface(CodeInterface, GravitationalDynamicsInterface, LiteratureRe
         .. [#] ADS:2014ApJ...792...98M (Meiron, Y., Li, B., Holley-Bockelmann, K., & Spurzem, R. 2014, ApJ, 792, 98)
     """
 
-    include_headers = ['worker_code.h']
+    include_headers = ['etics_worker.h']
 
     def __init__(self, **keyword_arguments):
         CodeInterface.__init__(self, name_of_the_worker='etics_worker', **keyword_arguments)

@@ -49,10 +49,9 @@ AC_ARG_WITH(
 
 AC_ARG_WITH(
     [gpu-arch],
-    [AS_HELP_STRING([--with-gpu-arch=ARCH], [Specify device architechture [default=35]])],
+    [AS_HELP_STRING([--with-gpu-arch=ARCH], [Specify device architechture])],
     [GPU_ARCH="$withval"]
 )
-AS_IF([test -z $GPU_ARCH], [GPU_ARCH=35])
 
 # Some macros to help the script to detect libraries in unusual locations
 
@@ -174,13 +173,16 @@ H5CXX_SHOW=`h5c++ -show`
 MPICXX_SHOW=`mpic++ -show`
 
 MPICXX_COMPILER=`echo $MPICXX_SHOW | awk '{print $1;}'`
+MPICXX_COMPILER=`which ${MPICXX_COMPILER}`
+
 H5CXX_COMPILER=`echo $H5CXX_SHOW | awk '{print $1;}'`
+H5CXX_COMPILER=`which ${H5CXX_COMPILER}`
 
 H5CXX_SHOW=`echo "$H5CXX_SHOW" | cut -d " " -f2-`
 MPICXX_SHOW=`echo "$MPICXX_SHOW" | cut -d " " -f2-`
 
 AS_IF([test $MPICXX_COMPILER == $H5CXX_COMPILER], [], [AC_MSG_ERROR([mpic++ and h5c++ seem to wrap different compilers!])])
-AS_IF([test $MPICXX_COMPILER == $CXX], [], [AC_MSG_ERROR([mpic++ and h5c++ seem to wrap a different compiler than the requested $CXX])])
+AS_IF([test $MPICXX_COMPILER == `which $CXX`], [], [AC_MSG_ERROR([mpic++ and h5c++ seem to wrap a different compiler than the requested $CXX])])
 
 # MPICXX_SHOW_UNIQUE=""
 # for OPTION in $MPICXX_SHOW
