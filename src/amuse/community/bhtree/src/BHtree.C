@@ -1,4 +1,4 @@
-// 
+//
 // BHtree.C
 // Version 1999/1/1 --- cleaned up and some comments  added.
 //
@@ -41,17 +41,17 @@ extern "C" double cpusec();
 void dump_octal(BHlong x)
 {
     char st[256];
-    sprintf(st," %lo ",x);
+    snprintf(st,256," %lo ",x);
     cerr <<  st ;
 }
-    
+
 
 BHlong conv_to_morton(int ix, int keybits)
 {
     BHlong dum = 0;
     //    char st[256];
     //    cerr << "conv_to_morton "; PR(ix); PRL(keybits);
-    //    sprintf(st,"%lo",ix);
+    //    snprintf(st,256,"%lo",ix);
     //    cerr << "ix = " << st << endl;
     int i, j;
     for(i = j= 0; i<keybits; i++,j+=3){
@@ -59,12 +59,12 @@ BHlong conv_to_morton(int ix, int keybits)
 	    dum |= ((BHlong) 1)<<j;
 	}
     }
-    //sprintf(st,"%lo",dum);
+    //snprintf(st,256,"%lo",dum);
     //    cerr << "dum = " << st << endl;
     return dum;
 
 }
-    
+
 inline BHlong  construct_key(const vec & pos, real rscale, int ioffset, int keybits)
 {
     long ix[3];
@@ -76,13 +76,13 @@ inline BHlong  construct_key(const vec & pos, real rscale, int ioffset, int keyb
 	|(conv_to_morton(ix[1],keybits)<<1 )
 	|(conv_to_morton(ix[2],keybits));
 }
-    
+
 
 void bhparticle::set_key(real rscale, int ioffset, int keybits)
 {
     key =  construct_key(rp->get_pos(), rscale, ioffset, keybits);
     //    PRL(key);
-    
+
 }
 
 int compare_key(bhparticle * p1, bhparticle * p2)
@@ -147,7 +147,7 @@ real initialize_key(int nbody,
 	    bhparticle * p = bhp + i;
 	    p->set_rp(rp+i);
 	}
-#endif	
+#endif
     }
     real rmax = 1;
     for(int i = 0; i<nbody; i++){
@@ -157,12 +157,12 @@ real initialize_key(int nbody,
 	}
     }
     real rscale = 1.0/rmax*default_ix_offset;
-	
+
     for(int i = 0; i<nbody; i++){
 	bhparticle * p = bhp + i;
-#ifndef REUSE_PREVIOS_DATA	
+#ifndef REUSE_PREVIOS_DATA
 	p->set_rp(rp+i);
-#endif	
+#endif
 	p->set_key(rscale, default_ix_offset, default_key_length);
 	//	PR(i); PRL(p->get_key());
     }
@@ -188,7 +188,7 @@ void bhnode::assign_root(vec root_pos, real length, bhparticle * bp, int np)
 }
 
 
-    
+
 
 
 void bhnode::create_tree_recursive(bhnode * & heap_top, int & heap_remainder,
@@ -216,7 +216,7 @@ void bhnode::create_tree_recursive(bhnode * & heap_top, int & heap_remainder,
 	vec new_pos = pos + vec( ((i&4)*0.5-1)*l/4,
 				       ((i&2)    -1)*l/4,
 				       ((i&1)*2  -1)*l/4);
-	
+
 	if(bptmp->get_key() - new_key <keyscale){
 	    // current bptmp is actually in the current subnode
 	    // search for the end location
@@ -248,7 +248,7 @@ void bhnode::create_tree_recursive(bhnode * & heap_top, int & heap_remainder,
 	    bptmp += p1;
 	    npremain -= p1;
 	    if (npremain <= 0) return;
-				  
+
 	}
     }
 
@@ -265,7 +265,7 @@ void bhnode::dump(int indent = 0)
 {
     int i;
     spc(indent); cerr << "node pos " << pos ;
-#ifdef SPH    
+#ifdef SPH
     cerr << " h " << hmax_for_sph;
 #endif
     cerr << endl;
@@ -293,15 +293,15 @@ void bhnode::dump(int indent = 0)
 int inbox(vec  & cpos, // center of the box
 	  vec  & pos,  // position of the particle
 	  real l)         // length of one side of the box
-    
+
 {
     for(int  i = 0; i< ndim; i++){
 	if (fabs(pos[i]-cpos[i]) > l*0.5) return 1;
     }
     return 0;
 }
-	
-	
+
+
 int bhnode::sanity_check()
 {
     int i;
@@ -343,7 +343,7 @@ int bhnode::sanity_check()
     return iret;
 }
 
-#ifdef SPH	
+#ifdef SPH
 void  bhnode::set_hmax_for_sph()
 {
     int i;
@@ -453,7 +453,7 @@ int check_and_set_nbl(bhnode * p1,bhnode * p2)
 	if (p1->isleaf || (p2->isleaf == 0) && p2->l > p1->l){
 	    //
 	    // p1 is already leaf, or both are node but p2 is larger.
-	    // go down p2 by 
+	    // go down p2 by
 	    for(int i = 0; i<8;i++)
 		iret |= check_and_set_nbl(p1, p2->child[i]);
 	}else{
@@ -473,7 +473,7 @@ int check_and_set_nbl(bhnode * p1,bhnode * p2)
 		    //
 		    // here, comparison of key guarantee that a pair
 		    // is evaluated only once
-	  
+
 		    iret |=check_and_set_nbl(*((bpi+i)->get_rp()),
 					     *((bpj+j)->get_rp()));
 		}
@@ -508,19 +508,19 @@ void real_system::setup_tree()
     bhnode * btmp = bn+1;
     int heap_remainder = bnsize-1;
     BHlong key = 0;
-    
+
     bn->create_tree_recursive(btmp,heap_remainder,key,
 			      default_key_length, ncrit_for_tree);
-    //cello: last argument was 12 for some reason 
-                  
-    
+    //cello: last argument was 12 for some reason
+
+
     set_cm_quantities_for_default_tree();
 //    PR(bnsize);    PRL(heap_remainder);
     //    PRL(bn->sanity_check());
 }
 
-	
-#ifdef SPH	
+
+#ifdef SPH
 int sph_system::set_nnb_using_tree()
 {
     setup_tree();
@@ -533,7 +533,7 @@ int sph_system::set_nnb_using_tree()
 }
 #endif
 
-void accumulate_force_from_point(vec dx, real r2, real eps2, 
+void accumulate_force_from_point(vec dx, real r2, real eps2,
 				 vec & acc,
 				 real & phi,
 				 real jmass)
@@ -562,7 +562,7 @@ void print_tree_counters()
 }
 
 void calculate_force_from_interaction_list(const vec & pos,
-					   real eps2, 
+					   real eps2,
 					    vec & acc,
 					    real & phi,
 					    vec * poslist,
@@ -596,11 +596,11 @@ void bhnode::accumulate_force_from_tree(vec & ipos, real eps2, real theta2,
         int i;
         if (isleaf){
             bhparticle * bp = bpfirst;
-            
+
             for(i = 0; i < nparticle; i++){
                 vec dx = (bp+i)->get_rp()->get_pos()-ipos;
                 real r2 = dx*dx;
-        
+
                 // Added by Steve (8/07).
                 // Turned off by AVE (12/12)
                 if (r2 < r_nn_2) {
@@ -611,12 +611,12 @@ void bhnode::accumulate_force_from_tree(vec & ipos, real eps2, real theta2,
                       nn_ptr = (bp+i)->get_rp();
                     }
                 }
-                
-                
+
+
                 accumulate_force_from_point(dx, r2, eps2, acc, phi,
                                 (bp+i)->get_rp()->get_mass());
                 total_interactions += 1;
-            
+
             }
         }else{
             for(i=0;i<8;i++){
@@ -636,7 +636,7 @@ void bhnode::add_to_interaction_list(bhnode & dest_node, real theta2,
 				     int list_max,
 				     int & first_leaf)
 {
-#if 0    
+#if 0
     real r2 = separation_squared(this, &dest_node);
     if (r2*theta2 > l*l){
 #else
@@ -650,7 +650,7 @@ void bhnode::add_to_interaction_list(bhnode & dest_node, real theta2,
 	    cerr << "List length exceeded\n";
 	    exit(1);
 	}
-	
+
     }else{
 	int i;
 	if (isleaf || (this == (&dest_node))){
@@ -724,11 +724,11 @@ void calculate_force_from_interaction_list_using_grape4(vec * pos_list, real * m
 #ifdef GPU
 
 extern "C" {
-    
+
     int g6_open_(int *clusterid);
     int g6_close_(int *clusterid);
 
-    
+
     int g6_set_j_particle_(int *cluster_id,
          int *address,
          int *index,
@@ -736,26 +736,26 @@ extern "C" {
          double *mass,
          double k18[3], double j6[3],
          double a2[3], double v[3], double x[3]);
-    
+
     int g6_set_ti_(int *id, double *ti);
-    
-    
+
+
     void g6calc_firsthalf_(int *cluster_id,
          int *nj, int *ni,
-         int index[], 
+         int index[],
          double xi[][3], double vi[][3],
          double aold[][3], double j6old[][3],
-         double phiold[3], 
+         double phiold[3],
          double *eps2, double h2[]);
-			   
-    
+
+
     int g6calc_lasthalf_(int *cluster_id,
            int *nj, int *ni,
-           int index[], 
+           int index[],
            double xi[][3], double vi[][3],
            double *eps2, double h2[],
-           double acc[][3], double jerk[][3], double pot[]);  
-	   
+           double acc[][3], double jerk[][3], double pot[]);
+
     int g6_reset_(int* cluster_id);
     int g6_npipes_();
 }
@@ -774,18 +774,18 @@ void calculate_force_from_interaction_list_using_grape6(vec * pos_list, real * m
     } else {
 	//g6_reset_(&clusterid);
     }
-    
+
     double ti = 0.0;
     double zero = 0.0;
     g6_set_ti_(&clusterid,&ti);
     int max_ni = g6_npipes_();
-    
+
     nisum += ni;
     tree_walks += 1;
     total_interactions += ((real)ni)*list_length;
     //accel_by_harp3_separate_noopen_(&ni,pos_list+first_leaf, &list_length,pos_list, mass_list,
 //				    acc_list, phi_list, &eps2);
-//    
+//
     call_count += ni;
     double k18[3];
     double j6[3];
@@ -832,32 +832,32 @@ void calculate_force_from_interaction_list_using_grape6(vec * pos_list, real * m
 	    jerkout[i][k]=0.0;
 	}
 	zero1[i] = 0;
-	index[i] =i + first_leaf; 
-	
+	index[i] =i + first_leaf;
+
     }
-    
+
     for(int pi = 0; pi < ni; pi+=max_ni)
     {
 	int actualni = pi + max_ni > ni ? ni - pi : max_ni;
-	
+
 	g6calc_firsthalf_(
-	    &clusterid, 
-	    &list_length,  
-	    &actualni,  
-	    index + pi,  
+	    &clusterid,
+	    &list_length,
+	    &actualni,
+	    index + pi,
 	    positions + pi,
-	    zero3,  
 	    zero3,
-	    zero3,  
-	    zero1,  
+	    zero3,
+	    zero3,
+	    zero1,
 	    &eps2,
 	    zero1
-	);  
-	
+	);
+
 	g6calc_lasthalf_(
-	    &clusterid, 
-	    &list_length,  
-	    &actualni,  
+	    &clusterid,
+	    &list_length,
+	    &actualni,
 	    index + pi,
 	    positions + pi,
 	    zero3,
@@ -895,7 +895,7 @@ void bhnode::evaluate_gravity_using_tree_and_list(bhnode & source_node,
     static real mass_list[list_max];
     static vec pos_list[list_max];
     real epsinv = 1.0/sqrt(eps2);
-#ifdef HARP3   
+#ifdef HARP3
     static vec * acc_list = NULL;
     static real * phi_list = NULL;
     if (acc_list == NULL){
@@ -903,7 +903,7 @@ void bhnode::evaluate_gravity_using_tree_and_list(bhnode & source_node,
 	phi_list = new real[ncrit + 100];
     }
 #endif
-#ifdef GPU   
+#ifdef GPU
     static vec * acc_list = NULL;
     static real * phi_list = NULL;
     if (acc_list == NULL){
@@ -939,7 +939,7 @@ void bhnode::evaluate_gravity_using_tree_and_list(bhnode & source_node,
 	    exit(1);
 	}
 	bhparticle * bp = bpfirst;
-#ifndef HARP3	
+#ifndef HARP3
 #ifndef GPU
 	for(int i = 0; i < nparticle; i++){
 	    real_particle * p = (bp+i)->get_rp();
@@ -967,7 +967,7 @@ void bhnode::evaluate_gravity_using_tree_and_list(bhnode & source_node,
 	    p->set_acc_gravity(acc_list[i]);
 	    p->set_phi_gravity(phi_list[i] + p->get_mass()*epsinv);
 	}
-#endif	
+#endif
     }
 }
 
@@ -995,7 +995,7 @@ void real_particle::calculate_gravity_using_tree(real eps2, real theta2)
     bn->accumulate_force_from_tree(pos, eps2, theta2,
 				   acc_gravity, phi_gravity, index);
     nisum += 1;
-    
+
 // AMUSE STOPPING CONDITIONS SUPPORT (AVE May 2010)
     //if(nn_index >= 0 && (COLLISION_DETECTION_BITMAP & enabled_conditions) ) { // compare indices to prevent two detections for one collision: (NdV Feb 2012)
     if(nn_index > my_index && (COLLISION_DETECTION_BITMAP & enabled_conditions) ) {
@@ -1024,7 +1024,7 @@ vec real_system::calculate_gravity_at_point(vec pos, real eps2, real theta2)
     r_nn_2 = 0.0; // turn-off collision detection
 
     bn->accumulate_force_from_tree(pos, eps2, theta2, acc_gravity, phi_gravity, -1);
-    
+
     return acc_gravity;
 }
 
@@ -1038,7 +1038,7 @@ real real_system::calculate_potential_at_point(vec pos, real eps2, real theta2)
     r_nn_2 = 0.0; // turn-off collision detection
 
     bn->accumulate_force_from_tree(pos, eps2, theta2, acc_gravity, phi_gravity, -1);
-      
+
     return phi_gravity;
 }
 
@@ -1075,7 +1075,7 @@ int main()
 	if((psph+i)->get_nnb() != (psphcopy+i)->get_nnb()){
 	    cerr << "Neighbour count differs for "; PRL(i);
 	    err = 1;
-	    
+
 	}
 	if (err == 0){
 	    for(int j = 0; (j< (psph+i)->get_nnb()) && (err == 0); j++){
@@ -1145,7 +1145,7 @@ void main()
 	if((psph+i)->get_nnb() != (psphcopy+i)->get_nnb()){
 	    cerr << "Neighbour count differs for "; PRL(i);
 	    err = 1;
-	    
+
 	}
 	if (err == 0){
 	    for(int j = 0; (j< (psph+i)->get_nnb()) && (err == 0); j++){
@@ -1162,8 +1162,8 @@ void main()
     PRL(error);
     pb.use_self_gravity = 1;
     pb.eps2_for_gravity = 0.01;
-#define COMPARISON_WITH_DIRECT    
-#ifdef COMPARISON_WITH_DIRECT    
+#define COMPARISON_WITH_DIRECT
+#ifdef COMPARISON_WITH_DIRECT
     pb.calculate_uncorrected_gravity_direct();
     copy_sph_particles(&pb, &pbcopy);
     psphcopy = pbcopy.get_particle_pointer();
@@ -1176,7 +1176,7 @@ void main()
 #endif
 
 
-    
+
     cerr << "Tree   force \n";
     for(int j = 0; j<10; j++){
 	PRL(j);
@@ -1187,7 +1187,7 @@ void main()
     }
     pb.apply_vf(real_particle::clear_acc_phi_gravity);
     bn->evaluate_gravity_using_tree_and_list(*bn,0.4,pb.eps2_for_gravity,1);
-#ifdef COMPARISON_WITH_DIRECT    
+#ifdef COMPARISON_WITH_DIRECT
     real perrmax = 0;
     real ferrmax = 0;
     for(int i = 0; i<n; i++){
@@ -1206,15 +1206,15 @@ void main()
     for(int i = 0; i<n; i++){
 	real phi = (psph+i)->get_phi_gravity();
 	vec acc  = (psph+i)->get_acc_gravity();
-	PR(i); PR(phi); PRL(acc); 
+	PR(i); PR(phi); PRL(acc);
     }
-	
-#endif    
-    
+
+#endif
+
 }
 #endif
 
-	
+
 
 #ifdef TESTXX
 //
@@ -1248,14 +1248,14 @@ void main()
     real_particle * psph = pb.get_particle_pointer();
     real h0 = pow(1.0/n,0.33333);
     for(int i = 0; i<10; i++){
-	
+
 	pb.apply_vf(real_particle::set_h, h0);
 	pb.apply_vf(real_particle::clear_nnb);
 	bn->set_hmax_for_sph();
 	//    bn->dump();
 	PRL(check_and_set_nbl(bn, bn));
 	pb.apply_vf(real_particle::sort_nblist);
-		
+
     }
 }
 #endif

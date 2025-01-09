@@ -25,7 +25,7 @@ typedef nbody_RF_ptr real_RF_ptr;
 typedef nbody_RRF_ptr real_RRF_ptr;
 
 extern "C" double cpusec();
-int  pgetopt(int argc, char ** argv,  char * optstr);
+int  pgetopt(int argc, char ** argv,  char const * optstr);
 void pskipopt();
 
 //#endif //_MUSE_BHTC_

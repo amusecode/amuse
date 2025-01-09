@@ -5,7 +5,7 @@
 //
 // Change in the calling format for apply_vf, from function name to
 // add explicit address operator. This was necessary to pass g++ 2.8.1
-// 
+//
 // Version 1.1 Jun Makino : take parameters from command line argumensts
 //                          Coding for 1.1 started on 1998/12/31
 // Version 1.0 Jun Makino : First publisized version, parameters
@@ -50,7 +50,7 @@ int main(int argc, char ** argv)
 
     extern char *poptarg;
     int c;
-    char* param_string = "i:o:d:D:T:e:t:n:w:cx:v:s:S:h";
+    char const * param_string = "i:o:d:D:T:e:t:n:w:cx:v:s:S:h";
     foname[0] = '?';
     foname[1] = '\0';
     real eps = 0.025;
@@ -103,7 +103,7 @@ int main(int argc, char ** argv)
 		      break;
 	    case 'S': vel_scale = atof(poptarg);
 		      break;
-            case 'h':		      
+            case 'h':
 		      cerr << "list of options\n";
 		      cerr << "-i        name of snapshot input file       (no default)\n";
 		      cerr << "-o        name of snapshot output file      (default: no output)\n";
@@ -141,7 +141,7 @@ int main(int argc, char ** argv)
     cout << "n= " << pb.n << endl;
     pb.use_self_gravity = 1;
     fsnapin.close();
-    if (snapout) fsnapout.open(foname,ios::out); 
+    if (snapout) fsnapout.open(foname,ios::out);
     PR(eps); PR(theta); PR(ncrit);
     cout << "eps= " << eps << " theta=" << theta << " ncrit=" <<ncrit <<endl;
     pb.eps2_for_gravity = eps*eps;
@@ -165,7 +165,7 @@ int main(int argc, char ** argv)
     }
 
     cout << endl;
-#ifdef GRAPHICS    
+#ifdef GRAPHICS
     initgraph();
 #endif
     int nstep = (int)(tend/dt+0.1);
@@ -195,9 +195,9 @@ int main(int argc, char ** argv)
 	cout << "CPU sec = " <<cpusec() << endl <<endl;
     }
     if (snapout)fsnapout.close();
-    
+
 }
 
 
-//#endif 
+//#endif
 

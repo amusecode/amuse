@@ -13,36 +13,36 @@ class BHTreeInterface(
     """
         .. [#] ADS:1986Natur.324..446B (Barnes, J., Hut, P., *Nature*, **4**, 324 (1986))
     """
-    include_headers = ['interface.h', 'worker_code.h', 'stopcond.h']
-    
+    include_headers = ['interface.h', 'bhtree_worker.h', 'stopcond.h']
+
     def __init__(self, convert_nbody = None, mode = 'cpu', **kwargs):
         CodeInterface.__init__(self, name_of_the_worker=self.name_of_the_worker(mode), **kwargs)
         """
         self.parameters = parameters.Parameters(self.parameter_definitions, self)
         if convert_nbody is None:
             convert_nbody = nbody_system.nbody_to_si.get_default()
-            
+
         self.convert_nbody = convert_nbody
         """
         LiteratureReferencesMixIn.__init__(self)
 
     def name_of_the_worker(self, mode):
         if mode == "g6":
-            return 'bhtree_worker_g6'
+            return 'bhtree_worker_sapporo'
         elif mode == "gpu":
-            return 'bhtree_worker_gpu'
+            return 'bhtree_worker_sapporo'
         else:
             return 'bhtree_worker'
 
-       
-    
-    
-    @legacy_function  
+
+
+
+    @legacy_function
     def reinitialize_particles():
-        function = LegacyFunctionSpecification()  
+        function = LegacyFunctionSpecification()
         function.result_type = 'i'
         return function
-    
+
     @legacy_function
     def set_time_step():
         """
@@ -59,7 +59,7 @@ class BHTreeInterface(
             particle could not be found
         """
         return function
-    
+
     @legacy_function
     def get_epsilon_squared():
         """
@@ -77,7 +77,7 @@ class BHTreeInterface(
             could not retrieve parameter
         """
         return function
-        
+
     @legacy_function
     def set_epsilon_squared():
         """
@@ -95,7 +95,7 @@ class BHTreeInterface(
             could not set parameter
         """
         return function
-    
+
     @legacy_function
     def get_theta_for_tree():
         """
@@ -112,7 +112,7 @@ class BHTreeInterface(
             could not retrieve parameter
         """
         return function
-        
+
     @legacy_function
     def set_theta_for_tree():
         """
@@ -129,7 +129,7 @@ class BHTreeInterface(
             could not set parameter
         """
         return function
-    
+
     @legacy_function
     def get_use_self_gravity():
         """
@@ -146,7 +146,7 @@ class BHTreeInterface(
             could not retrieve parameter
         """
         return function
-        
+
     @legacy_function
     def set_use_self_gravity():
         """
@@ -163,7 +163,7 @@ class BHTreeInterface(
             could not set parameter
         """
         return function
-    
+
     @legacy_function
     def get_ncrit_for_tree():
         """
@@ -180,7 +180,7 @@ class BHTreeInterface(
             could not retrieve parameter
         """
         return function
-        
+
     @legacy_function
     def set_ncrit_for_tree():
         """
@@ -197,7 +197,7 @@ class BHTreeInterface(
             could not set parameter
         """
         return function
-    
+
     @legacy_function
     def get_dt_dia():
         """
@@ -215,7 +215,7 @@ class BHTreeInterface(
             could not retrieve parameter
         """
         return function
-        
+
     @legacy_function
     def set_dt_dia():
         """
@@ -233,64 +233,64 @@ class BHTreeInterface(
             could not set parameter
         """
         return function
-    
+
 class BHTree(GravitationalDynamics, GravityFieldCode):
 
     __interface__ = BHTreeInterface
-    
+
     def __init__(self, convert_nbody = None, **options):
         self.stopping_conditions = StoppingConditions(self)
-        
+
         legacy_interface = self.__interface__(**options)
-        
+
         GravitationalDynamics.__init__(
             self,
             legacy_interface,
             convert_nbody,
             **options
-        )     
-            
+        )
+
     def define_parameters(self, handler):
         handler.add_method_parameter(
             "get_epsilon_squared",
-            "set_epsilon_squared", 
-            "epsilon_squared", 
-            "smoothing parameter for gravity calculations", 
+            "set_epsilon_squared",
+            "epsilon_squared",
+            "smoothing parameter for gravity calculations",
             default_value = 0.125 | nbody_system.length * nbody_system.length
         )
         handler.add_method_parameter(
             "get_time_step",
             "set_time_step",
             "timestep",
-            "constant timestep for iteration", 
+            "constant timestep for iteration",
             default_value = 0.015625 | nbody_system.time
         )
         handler.add_method_parameter(
             "get_theta_for_tree",
             "set_theta_for_tree",
-            "opening_angle", 
-            "opening angle, theta, for building the tree: between 0 and 1", 
+            "opening_angle",
+            "opening angle, theta, for building the tree: between 0 and 1",
             default_value = 0.75
         )
         handler.add_method_parameter(
             "get_use_self_gravity",
             "set_use_self_gravity",
-            "use_self_gravity", 
-            "flag for usage of self gravity, 1 or 0 (true or false)", 
+            "use_self_gravity",
+            "flag for usage of self gravity, 1 or 0 (true or false)",
             default_value = 1
         )
         handler.add_method_parameter(
             "get_ncrit_for_tree",
             "set_ncrit_for_tree",
-            "ncrit_for_tree", 
-            "Ncrit, the maximum number of particles sharing an interaction list", 
+            "ncrit_for_tree",
+            "Ncrit, the maximum number of particles sharing an interaction list",
             default_value = 12
         )
         handler.add_method_parameter(
             "get_dt_dia",
             "set_dt_dia",
-            "dt_dia", 
-            "time interval between diagnostics output", 
+            "dt_dia",
+            "time interval between diagnostics output",
             default_value = 1.0 | nbody_system.time
         )
 
@@ -301,12 +301,12 @@ class BHTree(GravitationalDynamics, GravityFieldCode):
             "model time to start the simulation at",
             default_value = 0.0 | nbody_system.time
         )
-        
+
         self.stopping_conditions.define_parameters(handler)
-        
+
     def define_methods(self, handler):
         GravitationalDynamics.define_methods(self, handler)
-        
+
         handler.add_method(
             "get_time_step",
             (),
@@ -322,11 +322,11 @@ class BHTree(GravitationalDynamics, GravityFieldCode):
 
 
         self.stopping_conditions.define_methods(handler)
-        
+
     def define_state(self, handler):
         GravitationalDynamics.define_state(self, handler)
         GravityFieldCode.define_state(self, handler)
-        
+
         self.stopping_conditions.define_state(handler)
 
 
@@ -334,7 +334,7 @@ class BHTree(GravitationalDynamics, GravityFieldCode):
         GravitationalDynamics.define_particle_sets(self, handler)
         self.stopping_conditions.define_particle_set(handler)
 
-    
+
 
 
 Bhtree = BHTree
