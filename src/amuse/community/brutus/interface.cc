@@ -2,7 +2,6 @@
 // Includes
 ////////////////////////////////////////////////////////
 #include <iostream>
-using namespace std;
 
 #include <fstream>
 #include <cstdlib>
@@ -14,21 +13,21 @@ using namespace std;
 ////////////////////////////////////////////////////////
 // Declare global variables
 ////////////////////////////////////////////////////////
-ofstream odata;
+std::ofstream odata;
 
 int particle_id_counter = 0;
 
 int numBits = 64;  
 int numDigits = numBits/4;
 
-string out_directory;
+std::string out_directory;
 std::map<int, int> local_index_map;
 
 /*
  * We need this result_strings array to ensure that
  * C++ strings are not reclaimed before the function ends
  */
-string result_strings[10];
+std::string result_strings[10];
 
 Brutus *brutus = NULL;
 
@@ -38,11 +37,14 @@ mpreal t = "0";
 
 mpreal epsilon = "1e-6"; // Bulirsch-Stoer tolerance
 
-vector<mpreal> data, data_radius;
+std::vector<mpreal> data, data_radius;
 
 ////////////////////////////////////////////////////////
 // Amuse interface functions
 ////////////////////////////////////////////////////////
+
+extern "C" {
+
 int initialize_code() {
     odata.open("temp.log");
 
@@ -200,12 +202,12 @@ int get_bs_tolerance_string(char **bs_tolerance) {
 }
 int set_bs_tolerance(double bs_tolerance) {
 
-odata << t << ": changing e from " << epsilon << ", to " << bs_tolerance << endl;
+odata << t << ": changing e from " << epsilon << ", to " << bs_tolerance << std::endl;
 
     epsilon = (mpreal) bs_tolerance;
     brutus->set_tolerance(epsilon);
 
-odata << epsilon << " " << brutus->get_tolerance() << endl;
+odata << epsilon << " " << brutus->get_tolerance() << std::endl;
 
     return 0;
 }
@@ -215,14 +217,14 @@ int get_bs_tolerance(double *bs_tolerance) {
 }
 // Word-length, numBits in mantissa
 int set_word_length(int mynumBits) {
-odata << t << ": changing L from " << numBits << ", to " << mynumBits << endl;
+odata << t << ": changing L from " << numBits << ", to " << mynumBits << std::endl;
 
     numBits = mynumBits;
     mpreal::set_default_prec(numBits);
     numDigits = (int)abs(log10( pow("2.0", -numBits) )).toLong();
     brutus->set_numBits(numBits);
 
-odata << numBits << " " << brutus->get_numBits() << endl;
+odata << numBits << " " << brutus->get_numBits() << std::endl;
 
     return 0;
 }
@@ -640,7 +642,7 @@ int get_center_of_mass_position(double* x , double* y, double* z){
     Mtot += data[i*7];
   }
 
-  vector<mpreal> rcm(3,"0");
+  std::vector<mpreal> rcm(3,"0");
   for(int i=0; i<N; i++) {
     for(int j=0; j<3; j++) {
       rcm[j] += data[i*7]*data[i*7+(j+1)];
@@ -660,7 +662,7 @@ int get_center_of_mass_velocity(double* vx, double* vy, double* vz){
     Mtot += data[i*7];
   }
 
-  vector<mpreal> vcm(3,"0");
+  std::vector<mpreal> vcm(3,"0");
   for(int i=0; i<N; i++) {
     for(int j=0; j<3; j++) {
       vcm[j] += data[i*7]*data[i*7+(j+4)];
@@ -675,3 +677,6 @@ int get_center_of_mass_velocity(double* vx, double* vy, double* vz){
 }
 
 int get_acceleration(int id, double* ax, double* ay, double* az){return -2;}
+
+}       // extern "C"
+

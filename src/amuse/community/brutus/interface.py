@@ -19,7 +19,7 @@ class BrutusInterface(CodeInterface, GravitationalDynamicsInterface, LiteratureR
         .. [#] ADS:2015ComAC...2....2B (Boekholt, Tjarda and Portegies Zwart, Simon, Computational Astrophysics and Cosmology, Volume 2, article id.2, 21 pp.)
     
     """
-    include_headers = ['worker_code.h', 'stopcond.h']
+    include_headers = ['brutus_worker.h', 'stopcond.h']
 
     ####
     def __init__(self, **options):

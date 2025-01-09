@@ -8,7 +8,7 @@
 class Brutus {
   mpreal t;
   int N;  
-  vector<mpreal> data;
+  std::vector<mpreal> data;
 
   mpreal tolerance;
   int numBits;
@@ -21,11 +21,11 @@ class Brutus {
   public:
 
   Brutus();
-  Brutus(vector<mpreal> &data);
-  Brutus(mpreal &t, vector<mpreal> &data, mpreal &tolerance);
-  Brutus(mpreal &t, vector<mpreal> &data, mpreal &tolerance, int &numBits);
+  Brutus(std::vector<mpreal> &data);
+  Brutus(mpreal &t, std::vector<mpreal> &data, mpreal &tolerance);
+  Brutus(mpreal &t, std::vector<mpreal> &data, mpreal &tolerance, int &numBits);
 
-  void set_data(vector<mpreal> &data);
+  void set_data(std::vector<mpreal> &data);
   void set_eta(mpreal &eta);
   void set_tolerance(mpreal &tolerance);
   void set_numBits(int &numBits);
@@ -35,15 +35,15 @@ class Brutus {
   mpreal get_tolerance();
   int get_numBits();
   int get_numBits(mpreal tolerance);
-  mpreal fit_slope(vector<mpreal> &x, vector<mpreal> &y);
+  mpreal fit_slope(std::vector<mpreal> &x, std::vector<mpreal> &y);
 
   void setup();
   void evolve(mpreal t_end);
   
   mpreal get_t();
-  vector<mpreal> get_data();
-  vector<double> get_data_double();
-  vector<string> get_data_string();
+  std::vector<mpreal> get_data();
+  std::vector<double> get_data_double();
+  std::vector<std::string> get_data_string();
 };
 
 #endif

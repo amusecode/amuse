@@ -1,57 +1,73 @@
-# standard amuse configuration include
-# config.mk will be made after ./configure has run
-ifeq ($(origin AMUSE_DIR), undefined)
-  AMUSE_DIR := $(shell amusifier --get-amuse-dir)
+ifneq (,$(filter-out clean distclean, $(MAKECMDGOALS)))
+include support/config.mk
 endif
--include ${AMUSE_DIR}/config.mk
 
-###############################################################
-# Download and install the following libraries:
-# gmp: https://gmplib.org/
-# mpfr: http://www.mpfr.org/
-# mpfrc++: http://www.holoborodko.com/pavel/mpfr/
-# Change these paths in this Makefile and in src/makefile
-GMP_LIBS   ?= -L/usr/lib/x86_64-linux-gnu/ -lgmp  # libgmp.a
-MPFR_LIBS  ?= -L/usr/lib/x86_64-linux-gnu/ -lmpfr # libmpfr.a
-MPFR_FLAGS += -I./mpfrc++    # mpreal.h
-###############################################################
 
-LIBS += $(MPFR_LIBS) $(GMP_LIBS)
+# Detecting dependencies
+support/config.mk:
+	cd support && ./configure
 
-MPICXX ?= mpicxx
-MPICC ?= mpicc
 
-#CC = $(MPICC)
-#CXX = $(MPICXX)
+# Building the code into a static library
+DEPFLAGS += $(STOPCOND_CFLAGS) $(GMP_FLAGS) $(MPFR_FLAGS)
 
-CXXFLAGS ?= -Wall -g -O2 
+CFLAGS += $(DEPFLAGS)
 
-CXXFLAGS += $(MPFR_FLAGS) -std=c++0x -I../mpfrc++
+LDLIBS += $(STOPCOND_LIBS) $(GMP_LIBS) $(MPFR_LIBS)
 
 
 CODELIB = src/libbrutus.a
-OBJ = interface.o
 
-all: brutus_worker 
-
-clean:
-	rm -f *.so *.o *.pyc worker_code.cc worker_code.h 
-	rm -f *~ brutus_worker
-	make -C src clean
 
 $(CODELIB):
-	make -C src all CXXFLAGS="$(CXXFLAGS)"
+	$(MAKE) -C src -j $(CPU_COUNT) all CFLAGS='$(CFLAGS) -I../mpfrc++ -Wall'
 
-worker_code.cc: interface.py
-	$(CODE_GENERATOR) --type=c interface.py BrutusInterface -o $@
 
-worker_code.h: interface.py
-	$(CODE_GENERATOR) --type=H -i amuse.community.interface.stopping_conditions.StoppingConditionInterface interface.py BrutusInterface -o $@
+# Building the workers
+brutus_worker.h: interface.py
+	amusifier --type=h interface.py BrutusInterface -o $@
 
-brutus_worker: worker_code.cc worker_code.h $(CODELIB) $(OBJ)
-	$(MPICXX) $(CXXFLAGS) $(MPFR_FLAGS) $(SC_FLAGS) -I./src $< $(CODELIB) $(OBJ) -o $@  -L./src -lbrutus $(SC_CLIBS) $(LIBS)
+brutus_worker.cc: interface.py
+	amusifier --type=c interface.py BrutusInterface -o $@
 
-interface.o: interface.cc
-	$(MPICXX) $(CXXFLAGS) $(MPFR_FLAGS) $(SC_FLAGS) -Impfrc++ -I./src -c -o $@ $< 
+interface.o: interface.cc # $(CODELIB)
+	$(MPICXX) -c -o $@ $(CFLAGS) -Isrc -Impfrc++ $<
 
+brutus_worker.o: brutus_worker.cc brutus_worker.h
+	$(MPICXX) -c -o $@ $(CFLAGS) $<
+
+brutus_worker: brutus_worker.o interface.o $(CODELIB)
+	$(MPICXX) -o $@ $(LDFLAGS) $^ $(LDLIBS)
+
+
+# Which packages contain which workers?
+amuse-brutus_contains: brutus_worker
+
+
+# Building and installing packages
+develop-%: %_contains
+	support/shared/uninstall.sh $*
+	python -m pip install -e packages/$*
+
+install-%: %_contains
+	support/shared/uninstall.sh $*
+	python -m pip install packages/$*
+
+package-%: %_contains
+	python3 -m pip install -vv --no-cache-dir --no-deps --no-build-isolation --prefix ${PREFIX} packages/$*
+
+test-%:
+	cd packages/$* && pytest
+
+
+# Cleaning up
+.PHONY: clean
+clean:
+	$(MAKE) -C src clean
+	rm -rf *.o *worker*
+
+.PHONY: distclean
+distclean: clean
+	rm -f support/config.mk support/config.log support/config.status
+	rm -rf support/autom4te.cache
 
