@@ -1,46 +1,61 @@
-# standard amuse configuration include
-# config.mk will be made after ./configure has run
-ifeq ($(origin AMUSE_DIR), undefined)
-  AMUSE_DIR := $(shell amusifier --get-amuse-dir)
-endif
--include ${AMUSE_DIR}/config.mk
-
-MPIFC ?= mpif90
-FORTRAN ?= gfortran
-
-F77FLAGS = 
-ifneq (,$(findstring xlf, $(notdir $(FORTRAN))))
-F77FLAGS += -qfixed
+ifneq (,$(filter-out clean distclean, $(MAKECMDGOALS)))
+include support/config.mk
 endif
 
 
+# Detecting dependencies
+support/config.mk:
+	cd support && ./configure
 
-OBJ	= src/comenv.o src/corerd.o src/deltat.o src/dgcore.o \
-	  src/evolv1.o src/evolv2.o src/gntage.o src/hrdiag.o \
-	  src/instar.o src/kick.o src/mix.o src/mlwind.o \
-	  src/mrenv.o src/popbin.o src/ran3.o src/rl.o \
-	  src/sse.o src/star.o src/zcnsts.o src/zfuncs.o
-	  
+# Building the code into a static library
+FCFLAGS += $(FORSOCKETS_CFLAGS)
+LDLIBS += $(FORSOCKETS_LIBS) $(LIBS)
+
 BSEOBJ = src/comenv.o src/corerd.o src/deltat.o src/dgcore.o \
          src/evolv2.o src/gntage.o src/hrdiag.o src/instar.o \
          src/kick.o src/mix.o src/mlwind.o src/mrenv.o \
          src/ran3.o src/rl.o src/star.o src/zcnsts.o src/zfuncs.o
 
-all:    bse_worker
+# Building the workers
+bse_worker.f90: interface.py
+	amusifier --type=f90 interface.py BSEInterface -o $@
 
+bse_worker.o: bse_worker.f90
+	$(MPIFC) -c $(FCFLAGS) $<
+
+%.o: %.f
+	$(FC) -c -o $@ $(FCFLAGS) $<
+
+bse_worker: interface.o bse_worker.o $(BSEOBJ)
+	$(MPIFC) -o bse_worker $(LDFLAGS) $^ $(LDLIBS)
+
+
+# Which packages contain which workers?
+amuse-bse_contains: bse_worker
+
+# Building and installing packages
+develop-%: %_contains
+	support/shared/uninstall.sh $*
+	python -m pip install -e packages/$*
+
+install-%: %_contains
+	support/shared/uninstall.sh $*
+	python -m pip install packages/$*
+
+package-%: %_contains
+	python3 -m pip install -vv --no-cache-dir --no-deps --no-build-isolation --prefix ${PREFIX} packages/$*
+
+test-%:
+	cd packages/$* && pytest
+
+
+# Cleaning up
+.PHONY: clean
 clean:
-	$(RM) -f  *~ *.so *.o src/*.o 
-	$(RM) -f src/bse bse_worker worker_code worker_code.f90 
-	$(RM) -f worker_code-sockets.f90 bse_worker_sockets
-	$(RM) -f amuse_worker_module.mod
-	$(RM) -f forsockets.mod
-	
-bse_worker:	worker_code.f90  interface.o  $(BSEOBJ)
-	make -C src bse CMPLR=$(FORTRAN) FFLAGS="$(FFLAGS) $(F77FLAGS)"
-	$(MPIFC) $(FFLAGS) $(FS_FLAGS) $(LDFLAGS) $^ -o $@ $(FS_LIBS)  $(LIBS)
-	
-worker_code.f90: interface.py
-	$(CODE_GENERATOR) --type=f90 interface.py BSEInterface -o $@
-	
-.f.o: $<
-	$(FORTRAN) -c $(F77FLAGS) $(FFLAGS) -o $@ $< 
+	rm -rf *.o src/*.o *worker* *.mod
+
+.PHONY: distclean
+distclean: clean
+	rm -f support/config.mk support/config.log support/config.status
+	rm -rf support/autom4te.cache
+
