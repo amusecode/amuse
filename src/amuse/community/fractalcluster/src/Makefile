@@ -13,6 +13,6 @@ libfractal.a: $(LIBFILES)
 	$(FC) $(FFLAGS) -c -o $@ $<
 
 clean:
-	rm -f *.o *.mod
+	rm -f *.o *.mod *.a
 
 purge: clean

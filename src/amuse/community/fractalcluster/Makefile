@@ -1,57 +1,68 @@
-# standard amuse configuration include
-# config.mk will be made after ./configure has run
-ifeq ($(origin AMUSE_DIR), undefined)
-  AMUSE_DIR := $(shell amusifier --get-amuse-dir)
-endif
--include ${AMUSE_DIR}/config.mk
-
-MPIFC ?= mpif90
-MPIF90 ?= $(MPIFC)
-FC ?= gfortran
-FORTRAN ?= $(FC)
-
-SRC=src
-
-
-LIBS+=$(SRC)/libfractal.a
-
-PIC=#-fPIC
-
-# check for gfortran, this catches link and compiler wrappers
-ifeq ($(findstring GNU, $(shell $(FORTRAN) --version)), GNU)
-FFLAGS= $(FCFLAGS) -fdefault-real-8 -cpp -O3
+ifneq (,$(filter-out clean distclean, $(MAKECMDGOALS)))
+include support/config.mk
 endif
 
-ifeq ($(findstring ifort, $(notdir $(FORTRAN))), ifort)
-IFORTFLAGS= -r8 -u
-FFLAGS= $(FCFLAGS) $(IFORTFLAGS) -O2 
-endif
 
-FFLAGS2= -I./src/
+# Detecting dependencies
+support/config.mk:
+	cd support && ./configure
 
-CLASSNAME=FractalClusterInterface
+# Building the code into a static library
+FFLAGS += $(FORSOCKETS_CFLAGS)
+LDLIBS += $(FORSOCKETS_LIBS)
 
-all: fractal_worker
+FFLAGS += -fdefault-real-8 -cpp -fallow-argument-mismatch
 
-%.o: %.f90 Makefile
-	$(FC) $(FFLAGS) $(FFLAGS2)  -c -o $@ $<
+CODELIB=src/libfractal.a
 
-%.o: %.F90 Makefile
-	$(FC) $(FFLAGS) $(FFLAGS2) -c -o $@ $<
 
-fractal_worker: fractal_worker.f90 interface.o
-	$(MPIF90) $(FFLAGS) $(FFLAGS2) $(FS_FLAGS) $(LDFLAGS) $^ -o $@ $(LIBS) $(FS_LIBS)  $(LIBS)
+# Building the workers
+%.o: %.f90
+	$(FC) $(FFLAGS) -I./src/ -c -o $@ $<
 
-fractal_worker.f90: interface.py
-	make -C src amuse_interface FFLAGS="$(FFLAGS)" FC="$(FC)"
-	$(CODE_GENERATOR) --type=f90 $< $(CLASSNAME) -o $@
+interface.o: $(CODELIB)
 
+$(CODELIB): src/*.f90
+	$(MAKE) -C src amuse_interface
+
+fractalcluster_worker.f90: interface.py
+	amusifier --type=f90 interface.py FractalClusterInterface -o $@
+
+fractalcluster_worker.o: fractalcluster_worker.f90
+	$(MPIFC) -c $(FFLAGS) $<
+
+fractalcluster_worker: fractalcluster_worker.o interface.o $(CODELIB)
+	$(MPIFC) -o $@ $(LDFLAGS) $^ $(LDLIBS)
+
+# Which packages contain which workers?
+amuse-fractalcluster_contains: fractalcluster_worker
+
+
+# Building and installing packages
+develop-%: %_contains
+	support/shared/uninstall.sh $*
+	python -m pip install -e packages/$*
+
+install-%: %_contains
+	support/shared/uninstall.sh $*
+	python -m pip install packages/$*
+
+package-%: %_contains
+	python3 -m pip install -vv --no-cache-dir --no-deps --no-build-isolation --prefix ${PREFIX} packages/$*
+
+test-%:
+	cd packages/$* && pytest
+
+
+# Cleaning up
+.PHONY: clean
 clean:
-	make -C src clean
-	$(RM) -f *.o *.pyc *.bck
-	$(RM) -f fractal_worker fractal_worker.f90
-	$(RM) -f fractal_worker_sockets fractal_worker-sockets.f90
-	$(RM) -f forsockets.mod
-	$(RM) -f amuse_worker_module.mod
-	$(RM) -f src/lib*.a
+	$(MAKE) -C src clean
+	rm -rf *.o *worker*
+
+.PHONY: distclean
+distclean: clean
+	-$(MAKE) -C src clean
+	rm -f support/config.mk support/config.log support/config.status
+	rm -rf support/autom4te.cache
 
