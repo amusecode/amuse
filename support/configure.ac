@@ -69,7 +69,7 @@ else
             AX_CONDA_PACKAGE(FOUND_OPENCL, khronos-opencl-icd-loader)
         fi
         AX_CONDA_PACKAGE(HAVE_LAPACK, liblapack)
-        AX_CONDA_PACKAGE(BLAS, libblas)
+        AX_CONDA_PACKAGE(BLAS_LIBS, libblas)
         AX_CONDA_PACKAGE(FOUND_GSL, gsl)
         AX_CONDA_PACKAGE(FOUND_GMP, gmp)
         AX_CONDA_PACKAGE(FOUND_MPFR, mpfr)

@@ -3930,8 +3930,8 @@ printf %s "checking for conda package libblas... " >&6; }
     if test "$?" = "0"
 then :
 
-        # BLAS="$(AS_ECHO("$ax_conda_package_line") | tr -s ' ' | cut -f 2 -d ' ')"
-        BLAS="yes"
+        # BLAS_LIBS="$(AS_ECHO("$ax_conda_package_line") | tr -s ' ' | cut -f 2 -d ' ')"
+        BLAS_LIBS="yes"
         { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 printf "%s\n" "yes" >&6; }
 
