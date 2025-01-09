@@ -1,0 +1,40 @@
+[project]
+name = "amuse-fastkick-cuda"
+dynamic = ["version"]
+requires-python = ">=3.7"
+dependencies = [
+    "amuse-framework",
+    "amuse-fastkick"
+]
+
+[build-system]
+requires = ["hatchling", "versioningit"]
+build-backend = "hatchling.build"
+
+[tool.hatch.version]
+source = "versioningit"
+
+[tool.versioningit.next-version]
+method = "smallest"
+
+[tool.versioningit.format]
+distance = "{next_version}.dev{distance}+{vcs}{rev}"
+dirty = "{base_version}+d{build_date:%Y%m%d}"
+distance-dirty = "{next_version}.dev{distance}+{vcs}{rev}.d{build_date:%Y%m%d}"
+
+[tool.hatch.build]
+skip-excluded-dirs = true
+
+[tool.hatch.build.targets.wheel]
+include = ["fastkick"]
+exclude = ["fastkick/*"]
+artifacts = ["fastkick/fastkick_cuda_worker"]
+
+[tool.hatch.build.targets.wheel.sources]
+"fastkick" = "amuse/community/fastkick"
+
+[tool.pytest.ini_options]
+pythonpath = ["fastkick/tests/", "../../../../../tests"]
+
+testpaths = ["fastkick/tests"]
+
