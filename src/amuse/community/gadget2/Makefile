@@ -1,90 +1,98 @@
-# standard amuse configuration include
-# config.mk will be made after ./configure has run
-ifeq ($(origin AMUSE_DIR), undefined)
-  AMUSE_DIR := $(shell amusifier --get-amuse-dir)
-endif
--include ${AMUSE_DIR}/config.mk
-
-MPICXX ?= mpicxx
-
-SRCDIR		= src
-
-TARGETS := $(patsubst makefile_options_%, gadget2_worker_%, ${shell ls makefile_options_*})
-
-BUILDDIR = build
-
-
-#PROFLIBS ?= -L$(AMUSE_DIR)/lib/ibis/src/profiling -libisprofiling -lmpi
-
-ifneq ($(MAKEFILE_OPTIONS_FILE), )
-include $(MAKEFILE_OPTIONS_FILE)
+ifneq (,$(filter-out clean distclean, $(MAKECMDGOALS)))
+include support/config.mk
 endif
 
-GSL_FLAGS ?= $(shell gsl-config --cflags)
-GSL_LIBS ?= $(shell gsl-config --libs)
-GSL_INCL = $(GSL_FLAGS)
 
-ifeq ($(MPI_ENABLED),yes)
-AM_LIBS = -L$(AMUSE_DIR)/lib/amuse_mpi -lamuse_mpi
-AM_CFLAGS = -I$(AMUSE_DIR)/lib/amuse_mpi
-endif
+# Detecting dependencies
+support/config.mk:
+	cd support && ./configure
 
-LIBFILES = $(SRCDIR)/run.c  $(SRCDIR)/predict.c  $(SRCDIR)/begrun.c \
-	$(SRCDIR)/endrun.c  $(SRCDIR)/global.c  \
-	$(SRCDIR)/init.c  $(SRCDIR)/restart.c  $(SRCDIR)/io.c  \
-	$(SRCDIR)/accel.c  $(SRCDIR)/read_ic.c  $(SRCDIR)/ngb.c  \
-	$(SRCDIR)/system.c  $(SRCDIR)/allocate.c  $(SRCDIR)/density.c  \
-	$(SRCDIR)/gravtree.c  $(SRCDIR)/hydra.c  $(SRCDIR)/driftfac.c  \
-	$(SRCDIR)/domain.c  $(SRCDIR)/allvars.c  $(SRCDIR)/potential.c  \
-	$(SRCDIR)/forcetree.c  $(SRCDIR)/peano.c  $(SRCDIR)/gravtree_forcetest.c  \
-	$(SRCDIR)/pm_periodic.c  $(SRCDIR)/pm_nonperiodic.c  $(SRCDIR)/longrange.c  \
-	$(SRCDIR)/density_at_pos.c \
-	$(SRCDIR)/timestep_limit.c  $(SRCDIR)/sigvel.c
-#  ^^^ Durier & Dalla Vecchia timestepping fix ^^^
 
-#	$(SRCDIR)/timestep.c
-#  ^^^ original timestepping ^^^
+# Building the code into a static library
+DEPFLAGS += $(STOPCONDMPI_CFLAGS) $(AMUSE_MPI_CFLAGS) $(GSL_FLAGS)
 
-.SECONDARY:
+CFLAGS += $(DEPFLAGS)
+CXXFLAGS += $(DEPFLAGS)
 
-.PHONY: all 
+LDLIBS += $(STOPCONDMPI_LIBS) $(AMUSE_MPI_LIBS) $(GSL_LIBS)
 
-gadget2_worker: ${TARGETS}
+CODELIB = libgadget.a
 
-${TARGETS}: gadget2_worker_%: worker_code.cc interface_%.o $(BUILDDIR)_%/libgadget.a $(BUILDDIR)_%/allvars.o
-	$(MPICXX) $(CXXFLAGS) $(SC_FLAGS) $(GSL_FLAGS) $(LDFLAGS) -o $@ $^ $(SC_MPI_CLIBS) $(GSL_LIBS) $(AM_LIBS) $(LIBS)
- 
-$(BUILDDIR)_%:
-	-mkdir $@
+build_%:
+	mkdir -p $@
 
-$(BUILDDIR)_%/Makefile: $(SRCDIR)/Makefile | $(BUILDDIR)_%
-	cp $(SRCDIR)/Makefile $@
-
-$(BUILDDIR)_%/makefile_options: makefile_options_% | $(BUILDDIR)_%
+build_%/makefile_options: makefile_options_% | build_%
 	cp makefile_options_$* $@
 
-$(BUILDDIR)_%/libgadget.a: $(BUILDDIR)_%/Makefile $(BUILDDIR)_%/makefile_options
-	make -C $(BUILDDIR)_$* all VPATH=../src
+build_%/$(CODELIB) build_%/allvars.o &: build_%/makefile_options
+	$(MAKE) -C build_$* -f ../src/Makefile -j $(CPU_COUNT) all VPATH=../src
 
-$(BUILDDIR)_%/allvars.o: $(BUILDDIR)_%/libgadget.a ;
 
-interface_%.o:  interface.cc makefile_options_%  worker_code.h
-ifeq ($(MAKEFILE_OPTIONS_FILE), )
-	make -C . $@ MAKEFILE_OPTIONS_FILE=makefile_options_$*
-else
-	$(MPICXX) $(CXXFLAGS) -DTOOLBOX $(OPT) $(SC_FLAGS) $(AM_CFLAGS)  $(GSL_FLAGS) -c -o $@ $< 
-endif
+# Load code configuration
+OPT :=
+include makefile_options_normal
+OPT_normal := $(OPT)
 
+OPT :=
+include makefile_options_nogravity
+OPT_nogravity := $(OPT)
+
+OPT :=
+include makefile_options_periodic
+OPT_periodic := $(OPT)
+
+OPT :=
+include makefile_options_periodic_nogravity
+OPT_periodic_nogravity := $(OPT)
+
+
+# Building the workers
+
+gadget2_worker.h: interface.py
+	amusifier --type=h interface.py Gadget2Interface -o $@
+
+gadget2_worker.cc: interface.py gadget2_worker.h
+	amusifier --type=c interface.py Gadget2Interface -o $@
+
+gadget2_worker.o: gadget2_worker.cc gadget2_worker.h
+	$(MPICXX) -c -o $@ $(CFLAGS) $<
+
+gadget2_%_worker: gadget2_worker.o interface_%.o build_%/$(CODELIB) build_%/allvars.o
+	$(MPICXX) -o $@ $(LDFLAGS) $^ $(LDLIBS)
+
+interface_%.o: interface.cc makefile_options_% gadget2_worker.h
+	$(MPICXX) -c $(CXXFLAGS) -DTOOLBOX $(OPT_$*) $< -o $@
+
+
+# Which packages contain which workers?
+amuse-gadget2_contains: gadget2_normal_worker gadget2_nogravity_worker gadget2_periodic_worker gadget2_periodic_nogravity_worker
+
+
+# Building and installing packages
+develop-%: %_contains
+	support/shared/uninstall.sh $*
+	python -m pip install -e packages/$*
+
+install-%: %_contains
+	support/shared/uninstall.sh $*
+	python -m pip install packages/$*
+
+package-%: %_contains
+	python3 -m pip install -vv --no-cache-dir --no-deps --no-build-isolation --prefix ${PREFIX} packages/$*
+
+test-%:
+	cd packages/$* && pytest
+
+
+# Cleaning up
+.PHONY: clean
 clean:
-	-rm -f *.o worker_code.cc worker_code.h
-	-rm -f gadget2_worker* gadget2_worker_*.exe
-	-rm -rf *.dSYM
-	-rm -Rf build_*
-	-rm -Rf build
-    
-worker_code.cc: interface.py worker_code.h
-	$(CODE_GENERATOR) --type=c $< Gadget2Interface -o $@ 
+	$(MAKE) -C src clean
+	rm -rf *.o *.mod *worker*
 
-worker_code.h: interface.py
-	$(CODE_GENERATOR) --type=h $< -i amuse.community.interface.stopping_conditions.StoppingConditionInterface Gadget2Interface -o $@
+.PHONY: distclean
+distclean: clean
+	$(MAKE) -C src clean
+	rm -f support/config.mk support/config.log support/config.status
+	rm -rf support/autom4te.cache
 

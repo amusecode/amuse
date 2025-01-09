@@ -36,7 +36,7 @@ class Gadget2Interface(
         .. [#] ADS:2001NewA....6...79S (Springel V., Yoshida N., White S. D. M., 2001, New Astronomy, 6, 51  (GADGET-1))
         .. [#] ADS:2012MNRAS.419..465D (Durier F., Dalla Vecchia C., 2012, MNRAS (Time integration scheme fix))
     """
-    include_headers = ['interface.h', 'worker_code.h', 'stopcond.h']
+    include_headers = ['interface.h', 'gadget2_worker.h', 'stopcond.h']
 
     MODE_NORMAL = 'normal'
     MODE_PERIODIC_BOUNDARIES = 'periodic'
@@ -49,7 +49,7 @@ class Gadget2Interface(
         CodeWithDataDirectories.__init__(self)
         
     def name_of_the_worker(self, mode):
-        return 'gadget2_worker_'+mode
+        return f'gadget2_{mode}_worker'
     
     @legacy_function
     def new_dm_particle():

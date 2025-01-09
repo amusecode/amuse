@@ -8,7 +8,7 @@
 #include <map>
 #include <math.h>
 #include "interface.h"
-#include "worker_code.h"
+#include "gadget2_worker.h"
 //AMUSE STOPPING CONDITIONS
 #include "stopcond.h"
 
