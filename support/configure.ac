@@ -77,7 +77,7 @@ else
         AX_CONDA_PACKAGE(with_hdf5, hdf5)
         AX_CONDA_PACKAGE(FOUND_NETCDF, netcdf4)
 
-        # Export conda list output so make doesn't have to rerun it to detect pip and wheel
+        # Export conda list output so setup doesn't have to rerun it to detect pip and wheel
         CONDA_LIST="$ax_conda_list"
         AC_SUBST(CONDA_LIST)
 
@@ -196,7 +196,14 @@ ENABLE_FEATURE_IF_DEFINED([hdf5], [HDF5_VERSION])
 ENABLE_FEATURE_IF_EQUALS([netcdf4], [FOUND_NETCDF], [yes])
 ENABLE_FEATURE_IF_EQUALS([sapporo_light], [FOUND_SAPPORO_LIGHT], [yes])
 
+AC_SUBST(APT)
+AC_SUBST(DNF)
+AC_SUBST(MACPORTS)
+AC_SUBST(HOMEBREW)
+
 AC_SUBST(FEATURES)
 
-AC_CONFIG_FILES([features.mk])
+AC_SUBST(CONDA_LIST)
+
+AC_CONFIG_FILES([configuration.sh])
 AC_OUTPUT

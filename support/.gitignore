@@ -2,7 +2,7 @@ configure~
 autom4te.cache/
 config.status
 config.log
+config.out
 
-comm_deps_mk/
-features.mk
+configuration.sh
 

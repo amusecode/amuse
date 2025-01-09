@@ -4057,7 +4057,7 @@ printf "%s\n" "no" >&6; }
 fi
 
 
-        # Export conda list output so make doesn't have to rerun it to detect pip and wheel
+        # Export conda list output so setup doesn't have to rerun it to detect pip and wheel
         CONDA_LIST="$ax_conda_list"
 
 
@@ -13816,7 +13816,14 @@ fi
 
 
 
-ac_config_files="$ac_config_files features.mk"
+
+
+
+
+
+
+
+ac_config_files="$ac_config_files configuration.sh"
 
 cat >confcache <<\_ACEOF
 # This file is a shell script that caches the results of configure
@@ -14519,7 +14526,7 @@ cat >>$CONFIG_STATUS <<\_ACEOF || ac_write_fail=1
 for ac_config_target in $ac_config_targets
 do
   case $ac_config_target in
-    "features.mk") CONFIG_FILES="$CONFIG_FILES features.mk" ;;
+    "configuration.sh") CONFIG_FILES="$CONFIG_FILES configuration.sh" ;;
 
   *) as_fn_error $? "invalid argument: \`$ac_config_target'" "$LINENO" 5;;
   esac

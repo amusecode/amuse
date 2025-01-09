@@ -1,0 +1,503 @@
+#!/bin/sh
+
+# This script is written in POSIX-compliant shell, and should run with any shell
+# supporting this, including dash (/bin/sh on Ubuntu), bash (/bin/sh on many other
+# systems) and bash 3.2 (/bin/sh on macOS). Zsh should also work in POSIX mode, so if
+# macOS ever changes its /bin/sh then we should still be good.
+
+# This is written in an old-fashioned style with procedures and global variables. Please
+# don't write shell scripts this long if you can avoid it, and please don't use global
+# variables like this in any other language.
+
+
+. support/util.sh
+. support/format.sh
+. support/help.sh
+
+
+# Detect any active Conda or venv environments
+#
+# This uses the following variables:
+#
+# CONDA_LIST - output of conda list, as set by the configure script, for improved
+#              performance.
+#
+# This sets the following variables only if an environment is detected:
+#
+# ENV_TYPE - either "virtualenv" or "conda"
+# ENV_NAME - name of the environment
+# ENV_LIBRARY_PATH - location of /lib directory
+#
+detect_environments() {
+    if [ "a${VIRTUAL_ENV}" != "a" ] ; then
+        ENV_TYPE="virtualenv"
+        ENV_NAME="${VIRTUAL_ENV}"
+    fi
+
+    if [ "a${CONDA_DEFAULT_ENV}" != "a" ] ; then
+        ENV_TYPE="conda"
+        ENV_NAME="${CONDA_DEFAULT_ENV}"
+    fi
+}
+
+
+# Detect pip and wheel
+#
+# Checks that pip and wheel are installed, and if a Conda environment, that they were
+# installed using conda and not pip.
+#
+# This uses the following variables:
+#
+# ENV_TYPE - see detect_environments()
+#
+# This sets the following variables:
+#
+# HAVE_PYPI_PIP - if pip is installed from PyPI in a conda environment
+# HAVE_PYPI_WHEEL - if wheel is installed from PyPI in a conda environment
+# HAVE_PIP - if pip is installed correctly for the current environment
+# HAVE_WHEEL - if wheel is installed correctly for the current environment
+#
+detect_pip_wheel() {
+    if [ "a${ENV_TYPE}" = "avirtualenv" ] ; then
+        HAVE_PIP=$(python -m pip list | grep '^pip')
+        HAVE_WHEEL=$(python -m pip list | grep '^wheel')
+    fi
+
+    if [ "a${ENV_TYPE}" = "aconda" ] ; then
+        HAVE_PYPI_PIP=$(echo "${CONDA_LIST}" | tr '^' '\n' | grep pypi | grep '^pip')
+        HAVE_PYPI_WHEEL=$(echo "${CONDA_LIST}" | tr '^' '\n' | grep pypi | grep '^wheel')
+
+        HAVE_PIP=$(echo "${CONDA_LIST}" | tr '^' '\n' | grep -v pypi | grep '^pip')
+        HAVE_WHEEL=$(echo "${CONDA_LIST}" | tr '^' '\n' | grep -v pypi | grep '^wheel')
+    fi
+}
+
+
+# Determine if we have the required features to build the framework
+#
+# This uses the following variables:
+#
+# FEATURES - from configure
+#
+# This sets the following variables:
+#
+# ENABLED_PACKAGES - adds amuse-framework if all requirements are met
+# ENABLED_PACKAGES_TEXT - adds amuse-framework if all requirements are met
+# DISABLED_PACKAGES - adds amuse-framework if features are missing
+# DISABLED_PACKAGES_TEXT - adds amuse-framework if features are missing
+#
+check_build_framework() {
+    missing_features=$(filter_out "${FEATURES}" "c c++ fortran python install mpi")
+
+    if [ "a${missing_features}" = "a" ] ; then
+        ENABLED_PACKAGES="${ENABLED_PACKAGES}amuse-framework "
+        ENABLED_PACKAGES_TEXT="${ENABLED_PACKAGES_TEXT}amuse-framework\n"
+    else
+        DISABLED_PACKAGES="${DISABLED_PACKAGES}amuse-framework "
+        DISABLED_PACKAGES_TEXT="${DISABLED_PACKAGES_TEXT}amuse-framework (missing features:${COLOR_RED}${missing_features}${COLOR_END})\n"
+    fi
+}
+
+
+# Determine if we have the required features to build Sapporo Light
+#
+# This uses the following variables:
+#
+# FEATURES - from configure
+#
+# This sets the following variables:
+#
+# ENABLED_PACKAGES - adds sapporo_light if all requirements are met
+# ENABLED_PACKAGES_TEXT - adds sapporo_light if all requirements are met
+# DISABLED_PACKAGES - adds sapporo_light if features are missing
+# DISABLED_PACKAGES_TEXT - adds sapporo_light if features are missing
+#
+check_build_sapporo_light() {
+    missing_features=$(filter_out "${FEATURES}" "c c++ install cuda")
+    if [ "a${missing_features}" = "a" ] ; then
+        ENABLED_PACKAGES="${ENABLED_PACKAGES}sapporo_light "
+        ENABLED_PACKAGES_TEXT="${ENABLED_PACKAGES_TEXT}sapporo_light\n"
+    else
+        DISABLED_PACKAGES="${DISABLED_PACKAGES}sapporo_light "
+        DISABLED_PACKAGES_TEXT="${DISABLED_PACKAGES_TEXT}sapporo_light (missing features:${COLOR_RED}${missing_features}${COLOR_END})\n"
+    fi
+}
+
+
+# Check which packages can be built with the available dependencies
+#
+# This uses the following variables:
+#
+# FEATURES - from configure
+#
+# This sets the following variables:
+#
+# ENABLED_PACKAGES - adds packages for which all requirements are met
+# ENABLED_PACKAGES_TEXT - adds packages for which all requirements are met
+# DISABLED_PACKAGES - adds packages for which features are missing
+# DISABLED_PACKAGES_TEXT - adds packages for which features are missing
+#
+check_packages() {
+    for code in src/amuse/community/* ; do
+        for dep_file in "${code}"/packages/*.amuse_deps ; do
+            # If no file matches, the loop will still run with the pattern as dep_file
+            if [ ! -f "$dep_file" ] ; then
+                continue
+            fi
+            package=$(basename "${dep_file}" .amuse_deps)
+            deps=$(cat "${dep_file}")
+            missing_features=$(filter_out "${FEATURES}" "${deps}")
+
+            if [ "a${missing_features}" = "a" ] ; then
+                ENABLED_PACKAGES="${ENABLED_PACKAGES}${package} "
+                ENABLED_PACKAGES_TEXT="${ENABLED_PACKAGES_TEXT}${package}\n"
+            else
+                DISABLED_PACKAGES="${DISABLED_PACKAGES}${package} "
+                DISABLED_PACKAGES_TEXT="${DISABLED_PACKAGES_TEXT}${package} (missing features:${COLOR_RED}${missing_features}${COLOR_END})\n"
+            fi
+        done
+    done
+}
+
+
+# Show the current configuration
+#
+# This uses the following variables:
+#
+# FEATURES - from configure
+#
+configure() {
+    printf '\n'
+    printf '%b\n' "${COLOR_CYAN}*** Configuration complete ***${COLOR_END}"
+    printf 'Detected features:%s\n' "${FEATURES}"
+    printf '\n'
+    printf '%b\n' "${COLOR_GREEN}** Enabled packages **${COLOR_END}"
+    printf '\n%b' "${ENABLED_PACKAGES_TEXT}"
+    printf '\n'
+    printf '%b\n' "${COLOR_RED}** Disabled packages **${COLOR_END}"
+    printf '\n%b' "${DISABLED_PACKAGES_TEXT}"
+    printf '\n'
+    printf '%b\n\n' "${COLOR_CYAN}*** Next steps ***${COLOR_END}"
+
+    can_install="yes"
+    if [ "a${ENV_TYPE}" = "a" ] ; then
+        print_environment_step
+        can_install="no"
+    elif [ "a${HAVE_PIP}" = "a" ] || [ "a${HAVE_WHEEL}" = "a" ] ; then
+        print_pip_wheel_step
+        can_install="no"
+    elif [ "a${DISABLED_PACKAGES}" != "a" ] ; then
+        print_enable_packages_step
+    fi
+
+    if [ "a${ENABLED_PACKAGES}" = "a" ] ; then
+        can_install="no"
+    fi
+
+    if [ "${can_install}" = "yes" ] ; then
+        print_install_amuse_step
+    fi
+}
+
+
+# Install Sapporo Light
+#
+install_sapporo_light() {
+    if ! is_subset sapporo_light "${ENABLED_PACKAGES}" ; then
+        printf '%s\n' 'Sapporo light cannot be installed because tools or dependencies are missing.'
+        printf '%s\n' 'Please run ./setup and follow the instructions to enable it.'
+        exit 1
+    fi
+
+    make -C lib install-sapporo_light
+    printf '%s\n' 'Successfully installed Sapporo light'
+}
+
+
+# Check that the AMUSE framework can be installed and error out if not
+#
+check_framework() {
+    if ! is_subset amuse-framework "${ENABLED_PACKAGES}" ; then
+        printf '%s\n' 'The AMUSE framework cannot be installed because tools or dependencies are missing.'
+        printf '%s\n' 'Please run ./setup and follow the instructions to enable it.'
+        exit 1
+    fi
+}
+
+
+# Install the AMUSE framework
+#
+install_framework() {
+    check_framework
+    support/shared/uninstall.sh amuse-framework
+    make -C lib install
+    (cd src && pip --no-cache-dir --debug install .)
+}
+
+
+# Install the AMUSE framework in develop mode
+#
+develop_framework() {
+    check_framework
+    support/shared/uninstall.sh amuse-framework
+    make -C lib install
+    (cd src && pip -e install .)
+}
+
+
+# Install the AMUSE framework into a packager's build environment
+#
+# This is set up for building Conda packages, using their recommended pip options.
+#
+package_framework() {
+    check_framework
+    make -C lib install
+    (cd src && python3 -m pip install -vv --no-cache-dir --no-deps --no-build-isolation --prefix "${PREFIX}" .)
+}
+
+
+# Run tests for the AMUSE framework
+#
+test_framework() {
+    make -C src/tests all
+    (cd src/tests && pytest --pyargs core_tests compile_tests)
+}
+
+
+# Check whether a package can be installed and error out if not
+#
+check_package() {
+    package="$1"
+
+    if is_subset "${package}" "${DISABLED_PACKAGES}" ; then
+        printf '\n%s\n' "Package ${package} cannot be installed because tools or dependencies are missing."
+        printf '%s\n\n' 'Please run ./setup and follow the instructions to enable it.'
+        exit 1
+    fi
+
+    code_dir=$(code_directory "${package}")
+
+    if [ ! -f "${code_dir}/packages/${package}.amuse_deps" ] ; then
+        printf '\n%s\n' "Package ${package} was not found."
+        printf '%s\n\n' 'Please run ./setup to show enabled packages.'
+        exit 1
+    fi
+}
+
+
+# Forward an installation command to a package's build system
+#
+forward_to_package() {
+    cmd="$1"
+    package="$2"
+
+    check_package "${package}"
+    make -C "$(code_directory "${package}")" "${cmd}-${package}"
+
+}
+
+
+# Install the framework and all enabled packages
+#
+install_all() {
+    install_framework
+
+    if is_subset sapporo_light "${ENABLED_PACKAGES}" ; then
+        install_sapporo_light
+    fi
+
+    for package in ${ENABLED_PACKAGES} ; do
+        forward_to_package install "${package}"
+    done
+}
+
+
+# Run tests for the framework and all enabled packages
+#
+test_all() {
+    test_framework
+
+    for package in ${ENABLED_PACKAGES} ; do
+        if ! is_subset "${package}" "amuse-framework sapporo_light" ; then
+            forward_to_package test "${package}"
+        fi
+    done
+}
+
+
+# Install command
+#
+# This checks what we're supposed to install and dispatches accordingly.
+#
+install() {
+    target="$1"
+
+    case ${target} in
+        all )
+            install_all
+            ;;
+        amuse-framework )
+            install_framework
+            ;;
+        sapporo_light )
+            install_sapporo_light
+            ;;
+        * )
+            forward_to_package install "${target}"
+            ;;
+    esac
+}
+
+
+# Develop command
+#
+# Does a develop install of something.
+#
+# This checks what we're supposed to develop-install and dispatches accordingly.
+#
+develop() {
+    target="$1"
+
+    case ${target} in
+        amuse-framework )
+            develop_framework
+            ;;
+        * )
+            forward_to_package develop "${target}"
+            ;;
+    esac
+}
+
+
+# Package command
+#
+# Does a package building install of something.
+#
+# This checks what we're supposed to package-install and dispatches accordingly.
+#
+package() {
+    target="$1"
+
+    case ${target} in
+        amuse-framework )
+            package_framework
+            ;;
+        * )
+            forward_to_package package "${target}"
+            ;;
+    esac
+}
+
+
+# Test command
+#
+# Runs tests for a package or for the framework. The tests are run against the installed
+# package, so that they also test the installation procedure.
+#
+run_test() {
+    target="$1"
+
+    case ${target} in
+        all )
+            test_all
+            ;;
+        amuse-framework )
+            test_framework
+            ;;
+        * )
+            forward_to_package "test" "${target}"
+            ;;
+    esac
+}
+
+
+# Clean command
+#
+# Calls make clean on the entire codebase.
+#
+clean() {
+    make -C support clean
+    make -C lib clean
+    make -C lib clean-sapporo_light
+    make -C src/amuse/community clean
+    make -C src/tests clean
+}
+
+
+# Distclean command
+#
+# Calls make distclean on the entire codebase.
+#
+clean() {
+    make -C support distclean
+    make -C lib distclean
+    make -C lib distclean-sapporo_light
+    make -C src/amuse/community distclean
+    make -C src/tests distclean
+}
+
+
+### Main script ###
+
+cmd="$1"
+target="$2"
+
+case ${cmd} in
+    clean )
+        clean "$target"
+        exit 0
+        ;;
+    distclean )
+        distclean "$target"
+        exit 0
+        ;;
+    help )
+        print_help
+        exit 0
+        ;;
+    "" )
+        cmd="configure"
+        ;;
+esac
+
+
+printf '%s\n' 'Examining the system, one moment please...'
+
+if ! (cd support && ./configure >config.out 2>&1) ; then
+    printf '%s\n\n' 'An error occurred running configure. This should not happen.'
+    printf '%s\n' 'Please create an issue at http://github.com/amusecode/amuse/issues'
+    printf '%s\n' 'and attach the support/config.log file to it, or ask for help on'
+    printf '%s\n' 'the AMUSE Slack.'
+    exit 1
+fi
+
+. support/configuration.sh
+
+detect_environments
+detect_pip_wheel
+check_build_framework
+check_build_sapporo_light
+check_packages
+
+
+case ${cmd} in
+    configure | "" )
+        configure
+        ;;
+    install )
+        install "${target}"
+        ;;
+    develop )
+        develop "${target}"
+        ;;
+    package )
+        package "${target}"
+        ;;
+    "test" )
+        run_test "${target}"
+        ;;
+    * )
+        print_help "${cmd}"
+        ;;
+esac
+
