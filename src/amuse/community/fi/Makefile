@@ -1,198 +1,138 @@
-# standard amuse configuration include
-# config.mk will be made after ./configure has run
-ifeq ($(origin AMUSE_DIR), undefined)
-  AMUSE_DIR := $(shell amusifier --get-amuse-dir)
-endif
--include ${AMUSE_DIR}/config.mk
-
-MPIFC ?= mpif90
-FORTRAN=$(FC)
-PYTHON ?= python
-
-# provide location of f90gl lib here
-GL_PATH ?= $(realpath ./f90gl)
-
-SRC=src
-BUILDDIR = build
-PERIODIC_BUILDDIR = build_periodic
-OPENMP_BUILDDIR = build_mp
-
-
-
-GLOBJECTS=$(BUILDDIR)/fthread.o $(BUILDDIR)/fi_viewer.o $(BUILDDIR)/libpt.a
-PGLOBJECTS=$(PERIODIC_BUILDDIR)/fthread.o $(PERIODIC_BUILDDIR)/fi_viewer.o $(PERIODIC_BUILDDIR)/libpt.a
-GLINCLUDE = -I/usr/include/GL -I$(GL_PATH)/include/GL/
-GLLIB = -L$(GL_PATH)/lib -lf90GLU -lf90GL -lf90glut  -lGLU -lGL -lglut
-
-X11LIB = -L/usr/lib64 -lXaw -lXt -lXmu -lXi -lXext -lX11
-
-FFTW_LIBS ?= -lfftw3  -lfftw3_threads
-
-THREADLIB = -L. -lpthread $(BUILDDIR)/libpt.a
-PTHREADLIB = -L. -lpthread $(PERIODIC_BUILDDIR)/libpt.a
-
-OPENMP_FCFLAGS ?= -openmp -openmp_report0 
-
-PIC=#-fPIC
-
-F77FLAGS =
-# gfortran flags
-$(info  $(shell echo $(notdir $(FORTRAN)) |cut -f1 -d- ))
-$(info  $(findstring gfortran, $(shell echo $(notdir $(FORTRAN)) |cut -f1 -d- )))
-# check for gfortran, this catches link and compiler wrappers
-ifeq ($(findstring GNU, $(shell $(FC) --version)), GNU)
-FFLAGS = $(FCFLAGS) -fdefault-real-8 -O3 -ffree-line-length-256 -frecord-marker=4 $(PIC)
+ifneq (,$(filter-out clean distclean, $(MAKECMDGOALS)))
+include support/config.mk
 endif
 
 
-ifeq ($(findstring f95, $(notdir $(FORTRAN))), f95)
-FFLAGS = $(FCFLAGS) -fdefault-real-8  -O3 -ffree-line-length-256 -frecord-marker=4 $(PIC)
-endif
-
-ifeq ($(findstring xlf, $(notdir $(FORTRAN))), xlf)
-FFLAGS = -qrealsize=8 -O2 $(PIC)
-F77FLAGS += -qfixed
-endif
-
-ifeq ($(findstring ifort, $(notdir $(FORTRAN))), ifort)
-# ifort flags
-FFLAGS= $(FCFLAGS) -r8 -O2 -ip -u $(PIC)
-#GLLIB = $(GLLIB) -lguide 
-endif
-
-#FFLAGS= -fdefault-real-8 -O -ffree-line-length-256 -frecord-marker=4 $(PIC)
+# Detecting dependencies
+support/config.mk:
+	cd support && ./configure
 
 
+# Building the code into a static library
 
-#FFLAGS+= -I. -I..
+## Flags
+DEPFLAGS += $(STOPCOND_CFLAGS) $(FORSOCKETS_CFLAGS)
 
-LIBS+=$(FFTW_LIBS)
+CFLAGS += $(DEPFLAGS)
+FCFLAGS += $(DEPFLAGS) -fdefault-real-8 -ffree-line-length-256 -frecord-marker=4
 
-FILES=$(SRC)/muse_helpers.f90 $(SRC)/mem.f90 $(SRC)/elements.f90 $(SRC)/cooling.f90 \
-  $(SRC)/ionize.f90 $(SRC)/molecules.f90 $(SRC)/H2cool.f90 $(SRC)/starprop.f90 \
-  $(SRC)/random.f90 $(SRC)/io.f90 $(SRC)/io-old.f $(SRC)/diagnostics.f90 $(SRC)/readparam.f90 \
-  $(SRC)/ppread.f90 $(SRC)/blackhole.f90 $(SRC)/stepsystem.f90 $(SRC)/buildnearlist.f90 \
-  $(SRC)/pmgrav.f90 $(SRC)/search.f90 $(SRC)/feedback.f90 $(SRC)/fixedhalo.f90 $(SRC)/init.f90 \
-  $(SRC)/timestep.f90 $(SRC)/buildtree.f90 $(SRC)/density.f90 $(SRC)/io2.f90 $(SRC)/heating.f90 \
-  $(SRC)/entdot.f90 $(SRC)/heco.f90 $(SRC)/ethstep.f90 $(SRC)/stellar.f90 $(SRC)/fcco.f90 \
-  $(SRC)/makemapmod.f90 $(SRC)/project.f90 $(SRC)/clean.f90 $(SRC)/sort.f90 $(SRC)/util.f90 $(SRC)/gravity.f90 \
-  $(SRC)/tidalsum.f90 $(SRC)/treewalk.f90 $(SRC)/gravsum.f90 $(SRC)/fuvflux.f90
+LDFLAGS +=
 
-MAPFILES=$(SRC)/util.f90 $(SRC)/makemapmod.f90 $(SRC)/map_helpers.f90
+LDLIBS += $(STOPCOND_LIBS) $(FORSOCKETS_LIBS)
 
-AMUSE_INTERFACE_DEPS=
-
-all: fi_worker
-
-%.o: %.f90 Makefile
-	$(MPIFC) $(FFLAGS)  -c -o $@ $< 
-	
-$(BUILDDIR)/Makefile: 
-	mkdir -p $(BUILDDIR)
-	ln -s ../src/Makefile  $(BUILDDIR)/Makefile
-	
-$(BUILDDIR)/libfi.a: $(BUILDDIR)/Makefile $(FILES) Makefile
-	$(PYTHON) ./patch_globals_dot_h.py --input=src/globals_template.h --output $(BUILDDIR)/globals.h
-	make -C $(BUILDDIR) amuse_interface FFLAGS="-I$(realpath $(BUILDDIR)) $(FFLAGS)" FC="$(FC)" VPATH=../src  F77FLAGS="$(F77FLAGS)"
-
-fi_worker: worker_code.f90 $(BUILDDIR)/libfi.a interface.o 
-	$(MPIFC) $(FFLAGS) $(SC_FLAGS) $(FS_FLAGS) $(LDFLAGS) -I$(BUILDDIR) worker_code.f90 interface.o -o $@ $(BUILDDIR)/libfi.a  $(LIBS) $(SC_FCLIBS) $(FS_LIBS)  $(LIBS)
-
-fi_worker_gl: worker_code-gl.f90 $(BUILDDIR)/libfi.a interface.o 
-	make -C $(BUILDDIR) gl FFLAGS="-I$(realpath $(BUILDDIR)) $(FFLAGS)" FC="$(FC)" GLINCLUDE="$(GLINCLUDE)" GLLIB="$(GLLIB)" VPATH=../src  F77FLAGS="$(F77FLAGS)"
-	$(MPIFC) $(FFLAGS) $(SC_FLAGS) $(FS_FLAGS) $(LDFLAGS) -I$(BUILDDIR) worker_code-gl.f90 interface.o -o $@  $(GLOBJECTS) \
-	$(GLLIB)  $(X11LIB) $(THREADLIB) $(BUILDDIR)/libfi.a $(LIBS) $(SC_FCLIBS) $(FS_LIBS)  $(LIBS)
-
-$(PERIODIC_BUILDDIR)/Makefile:
-	mkdir -p $(PERIODIC_BUILDDIR)
-	ln -s ../src/Makefile $(PERIODIC_BUILDDIR)/Makefile
-	
-$(PERIODIC_BUILDDIR)/libfi.a: $(PERIODIC_BUILDDIR)/Makefile 
-	$(PYTHON) ./patch_globals_dot_h.py --periodic --input=src/globals_template.h --output $(PERIODIC_BUILDDIR)/globals.h
-	make -C $(PERIODIC_BUILDDIR) amuse_interface FFLAGS="-I$(realpath $(PERIODIC_BUILDDIR)) $(FFLAGS)" FC="$(FC)" VPATH=../src   F77FLAGS="$(F77FLAGS)"
-	
-fi_worker_periodic: worker_code.f90 $(PERIODIC_BUILDDIR)/libfi.a interface.po 
-	$(MPIFC) -I./$(PERIODIC_BUILDDIR) $(FFLAGS) $(SC_FLAGS) $(FS_FLAGS) $(LDFLAGS) worker_code.f90 interface.po -o $@  $(PERIODIC_BUILDDIR)/libfi.a $(SC_FCLIBS) $(FS_LIBS) $(FFTW_LIBS)  $(LIBS)
-
-fi_worker_periodic_gl: worker_code-gl.f90 $(PERIODIC_BUILDDIR)/libfi.a interface.po 
-	make -C $(PERIODIC_BUILDDIR) gl FFLAGS="-I$(realpath $(PERIODIC_BUILDDIR)) $(FFLAGS)" FC="$(FC)" GLINCLUDE="$(GLINCLUDE)" GLLIB="$(GLLIB)" VPATH=../src  F77FLAGS="$(F77FLAGS)"
-	$(MPIFC) -I./$(PERIODIC_BUILDDIR) $(FFLAGS) $(SC_FLAGS) $(FS_FLAGS) $(LDFLAGS) worker_code-gl.f90 interface.po -o $@  $(PGLOBJECTS) \
-	$(GLLIB)  $(X11LIB) $(PTHREADLIB) $(PERIODIC_BUILDDIR)/libfi.a $(LIBS) $(SC_FCLIBS) $(FS_LIBS) $(FFTW_LIBS)  $(LIBS)
-
-$(OPENMP_BUILDDIR)/Makefile:
-	mkdir -p $(OPENMP_BUILDDIR)
-	ln -s ../src/Makefile $(OPENMP_BUILDDIR)/Makefile
-	
-$(OPENMP_BUILDDIR)/libfi.a: $(OPENMP_BUILDDIR)/Makefile 
-	$(PYTHON) ./patch_globals_dot_h.py --input=src/globals_template.h --output $(OPENMP_BUILDDIR)/globals.h
-	make -C $(OPENMP_BUILDDIR) amuse_interface FFLAGS="-I$(realpath $(OPENMP_BUILDDIR)) $(FFLAGS) $(OPENMP_FCFLAGS)" FC="$(FC)" VPATH=../src   F77FLAGS="$(F77FLAGS) $(OPENMP_FCFLAGS)"
-
-fi_worker_mp: BUILDDIR = $(OPENMP_BUILDDIR)
-fi_worker_mp: worker_code.f90 $(OPENMP_BUILDDIR)/libfi.a interface.o 
-	$(MPIFC) $(FFLAGS) $(OPENMP_FCFLAGS) $(SC_FLAGS) $(FS_FLAGS) $(LDFLAGS) -I$(OPENMP_BUILDDIR) worker_code.f90 interface.o -o $@ $(OPENMP_BUILDDIR)/libfi.a  $(LIBS) $(SC_FCLIBS) $(FS_LIBS)  $(LIBS)
-
-worker_code.f90: interface.py $(AMUSE_INTERFACE_DEPS)
-	$(CODE_GENERATOR) --type=f90 --needs-mpi=false $< FiInterface -o $@
-
-worker_code-gl.f90: interface.py $(AMUSE_INTERFACE_DEPS)
-	$(CODE_GENERATOR) --type=f90 $< GlFiInterface -o $@
-
-interface.o:interface.f90
-	$(MPIFC) $(FFLAGS) $(SC_FLAGS) -I$(BUILDDIR) -c -o $@ $<
-	
-interface.po:interface.f90
-	$(MPIFC) $(FFLAGS) $(SC_FLAGS) -I./$(PERIODIC_BUILDDIR) -c -o $@ $<
+# The code build uses FFLAGS rather than FCFLAGS, and so does Conda
+CODE_MAKE_ARGS = FFLAGS="-I. $(FFLAGS) $(FCFLAGS)" FC="$(FC)" VPATH=../src
+CODE_MAKE_ARGS_MP = FFLAGS="-I. $(FFLAGS) $(FCFLAGS) $(OPENMP_FFLAGS)" FC="$(FC)" VPATH="../src"
+CODE_MAKE_ARGS_PERIODIC = FFLAGS="-I. $(FFLAGS) $(FCFLAGS) $(FFTW_FLAGS)" FC="$(FC)" VPATH=../src
 
 
-build_map/Makefile: 
-	mkdir -p build_map
-	ln -s ../src/Makefile  build_map/Makefile
-
-build_map/libmap.a: build_map/Makefile $(MAPFILES) Makefile
-	$(PYTHON) ./patch_globals_dot_h.py --input=src/globals_template.h --output build_map/globals.h
-	make -C build_map libmap.a FFLAGS="-I$(realpath ./build_map) $(FFLAGS)" FC="$(FC)" VPATH=../src  F77FLAGS="$(F77FLAGS)"
-
-fi_worker_map: BUILDDIR=./build_map
-fi_worker_map: map_worker_code.f90 build_map/libmap.a map_interface.o 
-	$(MPIFC) $(FFLAGS) $(SC_FLAGS) $(FS_FLAGS) $(LDFLAGS) -I./build_map/ map_worker_code.f90 map_interface.o \
-	  -o $@ build_map/libmap.a $(LIBS) $(SC_FCLIBS) $(FS_LIBS)
-
-map_worker_code.f90: interface.py $(AMUSE_INTERFACE_DEPS)
-	$(CODE_GENERATOR) --type=f90 --needs-mpi=false $< FiMapInterface -o $@
-
-map_interface.o:map_interface.f90
-	$(MPIFC) $(FFLAGS) $(SC_FLAGS) -I$(BUILDDIR) -c -o $@ $<
+## Sources and targets
+FILIB := libfi.a
+MAPLIB := libmap.a
 
 
-build_map_mp/Makefile: 
-	mkdir -p build_map_mp
-	ln -s ../src/Makefile  build_map_mp/Makefile
+## Building libfi.a plain, with mp and with periodic boundary conditions
+build build_mp build_periodic:
+	mkdir -p $@
 
-build_map_mp/libmap.a: build_map_mp/Makefile $(MAPFILES) Makefile
-	$(PYTHON) ./patch_globals_dot_h.py --input=src/globals_template.h --output build_map_mp/globals.h
-	make -C build_map_mp libmap.a FFLAGS="-I$(realpath ./build_map) $(FFLAGS) $(OPENMP_FCFLAGS)" FC="$(FC)" VPATH=../src  F77FLAGS="$(F77FLAGS)"
+%/globals.h: src/globals_template.h | %
+	cp $< $@
 
-fi_worker_map_mp: BUILDDIR=./build_map_mp
-fi_worker_map_mp: map_worker_code.f90 build_map_mp/libmap.a map_interface.o 
-	$(MPIFC) $(FFLAGS) $(OPENMP_FCFLAGS) $(SC_FLAGS) $(FS_FLAGS) $(LDFLAGS) -I./build_map_mp/ map_worker_code.f90 map_interface.o \
-	  -o $@ build_map_mp/libmap.a $(LIBS) $(SC_FCLIBS) $(FS_LIBS)
+build_periodic/globals.h: src/globals_template.h | build_periodic
+	cp $< $@
+	patch $@ <enable_periodic.patch
+
+MAKE_CODELIB = $(MAKE) -f ../src/Makefile
+
+# We don't know the full dependencies for these targets, so they are phony so that
+# we always call src/Makefile for them, which then decides whether to actually do
+# anything or not.
+
+.PHONY: build/$(FILIB)
+build/$(FILIB): build/globals.h | build 
+	$(MAKE_CODELIB) -C build amuse_interface $(CODE_MAKE_ARGS)
+
+.PHONY: build_mp/$(FILIB)
+build_mp/$(FILIB): build_mp/globals.h | build_mp
+	$(MAKE_CODELIB) -C build_mp amuse_interface $(CODE_MAKE_ARGS_MP)
+
+.PHONY: build_periodic/$(FILIB)
+build_periodic/$(FILIB): build_periodic/globals.h | build_periodic
+	$(MAKE_CODELIB) -C build_periodic amuse_interface $(CODE_MAKE_ARGS_PERIODIC)
 
 
+## Building libmap.a with and without mp
+.PHONY: build/$(MAPLIB)
+build/$(MAPLIB): build/globals.h | build
+	$(MAKE_CODELIB) -C build libmap.a $(CODE_MAKE_ARGS)
 
+.PHONY: build_mp/$(MAPLIB)
+build_mp/$(MAPLIB): build_mp/globals.h | build_mp
+	$(MAKE_CODELIB) -C build_mp libmap.a $(CODE_MAKE_ARGS_MP)
+
+
+# Building the workers
+fi_worker.f90: interface.py
+	amusifier --type=f90 --needs-mpi=false $< FiInterface -o $@
+
+fi_map_worker.f90: interface.py
+	amusifier --type=f90 --needs-mpi=false $< FiMapInterface -o $@
+
+%.o: %.f90 build/$(FILIB) build/$(MAPLIB)
+	$(MPIFC) -c -o $@ $(FCFLAGS) -Ibuild $<
+
+interface_periodic.o: interface.f90 build_periodic/$(FILIB)
+	$(MPIFC) -c -o $@ $(FCFLAGS) -Ibuild_periodic $<
+
+fi_worker: interface.o fi_worker.o build/$(FILIB)
+	$(MPIFC) -o $@ $(LDFLAGS) $^ $(LDLIBS)
+
+fi_mp_worker: interface.o fi_worker.o build_mp/$(FILIB)
+	$(MPIFC) -o $@ $(LDFLAGS) $(OPENMP_FFLAGS) $^ $(LDLIBS)
+
+fi_map_worker: map_interface.o fi_map_worker.o build/$(MAPLIB)
+	$(MPIFC) -o $@ $(LDFLAGS) $^ $(LDLIBS)
+
+fi_map_mp_worker: map_interface.o fi_map_worker.o build_mp/$(MAPLIB)
+	$(MPIFC) -o $@ $(LDFLAGS) $(OPENMP_FFLAGS) $^ $(LDLIBS)
+
+fi_periodic_worker: interface_periodic.o fi_worker.o build_periodic/$(FILIB)
+	$(MPIFC) -o $@ $(LDFLAGS) $^ $(LDLIBS) $(FFTW_LIBS)
+
+
+# Which packages contain which workers?
+amuse-fi_contains: fi_worker fi_mp_worker fi_map_worker fi_map_mp_worker fi_periodic_worker
+
+# TODO, if anyone's interested
+amuse-fi-gl_contains: fi_gl_worker fi_periodic_gl_worker
+
+
+# Building and installing packages
+develop-%: %_contains
+	support/shared/uninstall.sh $*
+	python -m pip install -e packages/$*
+
+install-%: %_contains
+	support/shared/uninstall.sh $*
+	python -m pip install packages/$*
+
+package-%: %_contains
+	python3 -m pip install -vv --no-cache-dir --no-deps --no-build-isolation --prefix ${PREFIX} packages/$*
+
+test-%:
+	cd packages/$* && pytest
+
+
+# Cleaning up
+.PHONY: clean
 clean:
-	make -C src purge
-	$(RM) -f *.o *.po *.pyc *.bck worker worker.f90 glworker glworker.f90
-	$(RM) -f worker_code.f90 worker_code_gl.f90 worker_code_sockets.f90 worker_code-gl.f90
-	$(RM) -f fi_worker_periodic fi_worker_gl fi_worker fi_worker_mp
-	$(RM) -f fi_worker_periodic_gl
-	$(RM) -f fi_worker_sockets worker-sockets.f90
-	$(RM) -f worker_code_periodic worker_code
-	$(RM) -f amuse_worker_module.mod
-	$(RM) -f amuseinterface.mod mapinterface.mod
-	$(RM) -f forsockets.mod
-	$(RM) -f map_worker_code.f90 fi_worker_map fi_worker_map_mp
-	$(RM) -Rf $(BUILDDIR)
-	$(RM) -Rf $(PERIODIC_BUILDDIR)
-	$(RM) -Rf $(OPENMP_BUILDDIR)
-	$(RM) -Rf build_map build_map_mp
+	$(MAKE) -C src purge
+	rm -rf *.o *.mod *worker* build*
+	rm -rf tests/output.del tests/__amuse_code_output
+
+.PHONY: distclean
+distclean: clean
+	$(MAKE) -C src purge
+	rm -f support/config.mk support/config.log support/config.status
+	rm -rf support/autom4te.cache
 
