@@ -176,6 +176,7 @@ enum {
 enum {LtoR_tag,
       RtoL_tag,
       boundary_particle_tag,
+      boundary_cells_tag,
       shearing_sheet_ix1_tag,
       shearing_sheet_ox1_tag,
       remapEy_tag,

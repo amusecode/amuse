@@ -1,176 +1,82 @@
-# standard amuse configuration include
-# config.mk will be made after ./configure has run
-ifeq ($(origin AMUSE_DIR), undefined)
-  AMUSE_DIR := $(shell amusifier --get-amuse-dir)
-endif
--include ${AMUSE_DIR}/config.mk
-
-MPICXX ?= mpicxx
-MPICC ?= mpicc
-PYTHON ?= python
-
-VERSION = 4.1
-
-ATHENA_DIR = src/athena
-
-CC = $(MPICC)
-CFLAGS   += -DAMUSE -g  
-CXXFLAGS += $(CFLAGS) 
-UNAME = $(shell uname)
-
-ifneq (,$(findstring MINGW,$(UNAME)))
-  LDFLAGS += -lm
-else
-  LDFLAGS += -ldl -lm
+ifneq (,$(filter-out clean distclean, $(MAKECMDGOALS)))
+include support/config.mk
 endif
 
-ifeq ($(MPI_ENABLED),yes)
-AM_LIBS = -L$(AMUSE_DIR)/lib/amuse_mpi -lamuse_mpi
-AM_CFLAGS = -I$(AMUSE_DIR)/lib/amuse_mpi
-endif
 
-BUILDDIR = build
-SELFGRAV_BUILDDIR = build_selfgrav
-MHD_BUILDDIR = build_mhd
-SCALAR_BUILDDIR = build_scalar
+# Detecting dependencies
+support/config.mk:
+	cd support && ./configure
 
-CODELIB = $(BUILDDIR)/bin/libathena.a
-SELFGRAV_CODELIB = $(SELFGRAV_BUILDDIR)/bin/libathena.a
-MHD_CODELIB = $(MHD_BUILDDIR)/bin/libathena.a
-SCALAR_CODELIB = $(SCALAR_BUILDDIR)/bin/libathena.a
+# Building the code into static libraries
+DEPFLAGS += $(STOPCOND_CFLAGS) $(AMUSE_MPI_CFLAGS) $(FFTW_FLAGS)
 
-AMUSE_OBJS = $(BUILDDIR)/interface_$(VERSION).o
-SELFGRAV_AMUSE_OBJS = $(SELFGRAV_BUILDDIR)/interface_$(VERSION).o
-MHD_AMUSE_OBJS = $(MHD_BUILDDIR)/interface_$(VERSION).o
-SCALAR_AMUSE_OBJS = $(SCALAR_BUILDDIR)/interface_$(VERSION).o
+CFLAGS += $(DEPFLAGS) -DAMUSE
 
-DOWNLOAD_FROM_WEB = $(PYTHON) ./download.py
-PATCH_FILES = $(PYTHON) ./patch_files.py
+LDLIBS += -lm $(STOPCOND_LIBS) $(AMUSE_MPI_LIBS) $(FFTW_LIBS)
 
-ATHENA_OBJS = $(subst $(ATHENA_DIR)/src/main.o,,$(wildcard $(ATHENA_DIR)/src/*.o $(ATHENA_DIR)/src/*/*.o))
+CODELIB = bin/libathena.a    # relative to build dir
 
-FFTW_LIBS ?= -L/usr/lib -lfftw3
-FFTW_FLAGS ?= -I/usr/include
-FFTWLIB = $(FFTW_LIBS)
-FFTWINC = $(FFTW_FLAGS)
- 
-.PHONY : download
+CONFIGOPTS_normal = --enable-mpi --with-gas=hydro --enable-smr
+CONFIGOPTS_selfgrav = --enable-mpi --with-gas=hydro --with-gravity=fft --enable-fft --disable-cooling
+CONFIGOPTS_mhd = --enable-mpi --with-gas=mhd --with-eos=adiabatic --enable-smr --with-order=3 --with-flux=hlld
+CONFIGOPTS_scalar = --enable-mpi --with-gas=hydro --enable-smr --with-nscalars=1
 
-all: athena_worker 
+build_%:
+	cp -r src/athena build_$*
+	cd build_$* && ln -fs ../../amuse_problem_4.1.c src/problem.c
 
+build_%/Makefile: | build_%
+	cd build_$* && ./configure $(CONFIGOPTS_$*)
+
+build%/$(CODELIB): | build%/Makefile
+	$(MAKE) -C build$* -j $(CPU_COUNT) all CC=$(MPICC) LDR=$(MPICC) OPT="$(CFLAGS)" FFTW_FLAGS="$(FFTW_FLAGS)" FFTW_LIBS="$(FFTW_LIBS)"
+
+
+# Building the workers
+athena_worker.h: interface.py
+	amusifier --type=h interface.py AthenaInterface -o $@
+
+athena_worker.cc: interface.py
+	amusifier --type=c interface.py AthenaInterface -o $@
+
+athena_worker.o: athena_worker.cc athena_worker.h
+	$(MPICXX) -c -o $@ $(CFLAGS) $<
+
+athena_%_worker: build_%/interface_4.1.o athena_worker.o build_%/$(CODELIB)
+	$(MPICXX) -o $@ $(LDFLAGS) $^ $(LDLIBS)
+
+build_%/interface_4.1.o: interface_4.1.c athena_worker.h | build_%/Makefile
+	$(MPICC) -o $@ -c $(CFLAGS) -Ibuild_$*/src $<
+
+
+# Which packages contain which workers?
+amuse-athena_contains: athena_normal_worker athena_selfgrav_worker athena_mhd_worker athena_scalar_worker
+
+
+# Building and installing packages
+develop-%: %_contains
+	support/shared/uninstall.sh $*
+	python -m pip install -e packages/$*
+
+install-%: %_contains
+	support/shared/uninstall.sh $*
+	python -m pip install packages/$*
+
+package-%: %_contains
+	python3 -m pip install -vv --no-cache-dir --no-deps --no-build-isolation --prefix ${PREFIX} packages/$*
+
+test-%:
+	cd packages/$* && pytest
+
+
+# Cleaning up
+.PHONY: clean
 clean:
-	$(RM) -f *.so *.o *.selfgrav_o *.pyc worker_code.cc worker_code.h 
-	$(RM) -f *~ athena_worker  athena_worker_selfgrav athena_worker_mhd
-	$(RM) -f athena_worker*.exe
-	$(RM) -f athena_worker_scalar
-	$(RM) -f worker_code-sockets.cc athena_worker_sockets
-	$(RM) -f $(CODELIB) $(AMUSE_OBJS_SELFGRAV)
-	$(RM) -f *.mhd_o
-	$(RM) -rf *.dSYM
-	$(RM) -rf $(BUILDDIR) $(SELFGRAV_BUILDDIR) $(MHD_BUILDDIR)
-	$(RM) -rf $(SCALAR_BUILDDIR)
-	
-codeclean: clean
-	make -C $(ATHENA_DIR) clean
+	-$(MAKE) -C src/athena/src clean
+	rm -rf build*
+	rm -rf *.o *worker*
 
+.PHONY: distclean
 distclean: clean
-	$(RM) -f *.so *.o *.pyc worker_code.cc worker_code.h 
-	$(RM) -Rf .pc
-	$(RM) *~ athena_worker
-
-worker_code.cc: interface.py
-	$(CODE_GENERATOR) --type=c interface.py AthenaInterface -o $@
-
-worker_code.h: interface.py
-	$(CODE_GENERATOR) --type=h interface.py -i amuse.community.interface.stopping_conditions.StoppingConditionInterface AthenaInterface -o $@
-
-$(BUILDDIR)/Makefile: $(ATHENA_DIR)/Makefile.in
-	cp -r $(ATHENA_DIR) $(BUILDDIR)
-
-$(CODELIB): $(BUILDDIR)/Makefile
-ifeq ($(MPI_ENABLED),no)
-	cd $(BUILDDIR); ./configure --with-gas=hydro --disable-mpi --enable-smr 
-else
-	cd $(BUILDDIR); ./configure --with-gas=hydro --enable-mpi --enable-smr 
-endif
-	cd $(BUILDDIR); ln -fs ../../amuse_problem_$(VERSION).c src/problem.c
-	exit
-	cd $(BUILDDIR); make all CC=$(MPICC) LDR=$(MPICC) OPT="$(CXXFLAGS)"
-	rm -f $(CODELIB)
-	cd $(BUILDDIR); make all CC=$(MPICC) LDR=$(MPICC) OPT="$(CXXFLAGS)"
-
-athena_worker: worker_code.cc worker_code.h $(CODELIB) $(AMUSE_OBJS)
-	$(MPICXX) $(CXXFLAGS) $(SC_FLAGS) $(LDFLAGS) worker_code.cc $(AMUSE_OBJS) $(CODELIB) $(LDFLAGS) -o $@ $(SC_CLIBS)  $(LIBS) $(AM_LIBS)
-
-athena_%.o: athena_%.c worker_code.h
-	$(MPICC) $(CXXFLAGS) $(SC_FLAGS) $(AM_CFLAGS) $(PYTHONDEV_CFLAGS) -c -o $@ $< 
-
-$(SELFGRAV_BUILDDIR)/Makefile: $(ATHENA_DIR)/Makefile.in
-	cp -r $(ATHENA_DIR) $(SELFGRAV_BUILDDIR)
-
-$(SELFGRAV_CODELIB): $(SELFGRAV_BUILDDIR)/Makefile
-ifeq ($(MPI_ENABLED),no)
-	cd $(SELFGRAV_BUILDDIR); ./configure --with-gas=hydro --disable-mpi --with-gravity=fft --enable-fft --disable-cooling CFLAGS="$(CXXFLAGS)"
-else
-	cd $(SELFGRAV_BUILDDIR); ./configure --with-gas=hydro --with-gravity=fft --enable-fft --disable-cooling CFLAGS="$(CXXFLAGS)"
-endif
-	cd $(SELFGRAV_BUILDDIR); ln -fs ../../amuse_problem_$(VERSION).c src/problem.c
-	exit
-	cd $(SELFGRAV_BUILDDIR); make all CC=$(MPICC) LDR=$(MPICC)  OPT="$(CXXFLAGS)"
-	rm -f $(CODELIB)
-	cd $(SELFGRAV_BUILDDIR); make all CC=$(MPICC) LDR=$(MPICC)  OPT="$(CXXFLAGS)"
-	
-athena_worker_selfgrav: worker_code.cc worker_code.h $(SELFGRAV_CODELIB) $(SELFGRAV_AMUSE_OBJS)
-	$(MPICXX) $(CXXFLAGS) $(FFTW_FLAGS) $(SC_FLAGS) $(LDFLAGS) worker_code.cc $(SELFGRAV_AMUSE_OBJS) $(SELFGRAV_CODELIB) $(LDFLAGS) -o $@ $(SC_CLIBS) $(FFTWLIB)  $(LIBS) $(AM_LIBS)
-
-$(MHD_BUILDDIR)/Makefile: $(ATHENA_DIR)/Makefile.in
-	cp -r $(ATHENA_DIR) $(MHD_BUILDDIR)
-
-$(MHD_CODELIB): $(MHD_BUILDDIR)/Makefile
-ifeq ($(MPI_ENABLED),no)
-	cd $(MHD_BUILDDIR); ./configure --with-gas=mhd --with-eos=adiabatic --disable-mpi --enable-smr --with-order=3 --with-flux=hlld
-else
-	cd $(MHD_BUILDDIR); ./configure --with-gas=mhd --with-eos=adiabatic --enable-mpi --enable-smr --with-order=3 --with-flux=hlld CFLAGS="$(CXXFLAGS)"
-endif
-	cd $(MHD_BUILDDIR); ln -fs ../../amuse_problem_$(VERSION).c src/problem.c
-	exit
-	cd $(MHD_BUILDDIR); make all CC=$(MPICC) LDR=$(MPICC)  OPT="$(CXXFLAGS)"
-	rm -f $(CODELIB)
-	cd $(MHD_BUILDDIR); make all CC=$(MPICC) LDR=$(MPICC)  OPT="$(CXXFLAGS)"
-
-athena_worker_mhd: worker_code.cc worker_code.h $(MHD_CODELIB) $(MHD_AMUSE_OBJS)
-	$(MPICXX) $(CXXFLAGS) $(SC_FLAGS) $(LDFLAGS) worker_code.cc $(MHD_AMUSE_OBJS) $(MHD_CODELIB) $(LDFLAGS) -o $@ $(SC_CLIBS)  $(LIBS) $(AM_LIBS)
-
-
-$(SCALAR_BUILDDIR)/Makefile: $(ATHENA_DIR)/Makefile.in
-	cp -r $(ATHENA_DIR) $(SCALAR_BUILDDIR)
-
-$(SCALAR_CODELIB): $(SCALAR_BUILDDIR)/Makefile
-ifeq ($(MPI_ENABLED),no)
-	cd $(SCALAR_BUILDDIR); ./configure --with-gas=hydro --disable-mpi --enable-smr --with-nscalars=1
-else
-	cd $(SCALAR_BUILDDIR); ./configure --with-gas=hydro --enable-mpi --enable-smr --with-nscalars=1
-endif
-	cd $(SCALAR_BUILDDIR); ln -fs ../../amuse_problem_$(VERSION).c src/problem.c
-	exit
-	cd $(SCALAR_BUILDDIR); make all CC=$(MPICC) LDR=$(MPICC)  OPT="$(CXXFLAGS)"
-	rm -f $(CODELIB)
-	cd $(SCALAR_BUILDDIR); make all CC=$(MPICC) LDR=$(MPICC)  OPT="$(CXXFLAGS)"
-
-athena_worker_scalar: worker_code.cc worker_code.h $(SCALAR_CODELIB) $(SCALAR_AMUSE_OBJS)
-	$(MPICXX) $(CXXFLAGS) $(SC_FLAGS) $(LDFLAGS) worker_code.cc $(SCALAR_AMUSE_OBJS) $(SCALAR_CODELIB) $(LDFLAGS) -o $@ $(SC_CLIBS)  $(LIBS) $(AM_LIBS)
-
-$(BUILDDIR)/%.o: %.c
-	$(CC) $(CXXFLAGS) -I$(BUILDDIR)/src $(SC_FLAGS) -c -o $@ $< 
-	
-$(SELFGRAV_BUILDDIR)/%.o: %.c
-	$(CC) $(CXXFLAGS) $(FFTW_FLAGS) -I$(SELFGRAV_BUILDDIR)/src $(SC_FLAGS) -c -o $@ $< 
-	
-$(MHD_BUILDDIR)/%.o: %.c
-	$(CC) $(CXXFLAGS) -I$(MHD_BUILDDIR)/src $(SC_FLAGS) -c -o $@ $< 
-	
-$(SCALAR_BUILDDIR)/%.o: %.c
-	$(CC) $(CXXFLAGS) -I$(SCALAR_BUILDDIR)/src $(SC_FLAGS) -c -o $@ $< 
-	
-
-
+	rm -f support/config.mk support/config.log support/config.status
+	rm -rf support/autom4te.cache

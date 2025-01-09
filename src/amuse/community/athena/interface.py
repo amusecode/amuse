@@ -42,7 +42,7 @@ class AthenaInterface(CodeInterface, MagnetohydrodynamicsInterface, LiteratureRe
         .. [#] ADS:2010ApJS..189..142S (Stone & Gardiner 2010, ApJS, 189, 142 (Shearing Box Method))
     """
     
-    include_headers = ['worker_code.h', 'stopcond.h']
+    include_headers = ['athena_worker.h', 'stopcond.h']
     
     MODE_NORMAL = 'normal'
     MODE_SELF_GRAVITY   = 'self-gravity'
@@ -60,15 +60,15 @@ class AthenaInterface(CodeInterface, MagnetohydrodynamicsInterface, LiteratureRe
         
     def name_of_the_worker(self, mode):
         if mode == self.MODE_NORMAL:
-            return 'athena_worker'
+            return 'athena_normal_worker'
         elif mode == self.MODE_SELF_GRAVITY:
-            return 'athena_worker_selfgrav'
+            return 'athena_selfgrav_worker'
         elif mode == self.MODE_MHD:
-            return 'athena_worker_mhd'
+            return 'athena_mhd_worker'
         elif mode == self.MODE_SCALAR:
-            return 'athena_worker_scalar'
+            return 'athena_scalar_worker'
         else:
-            return 'athena_worker'
+            return 'athena_normal_worker'
         
     @legacy_function
     def par_seti():

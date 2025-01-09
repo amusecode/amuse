@@ -17,7 +17,7 @@
 
 #include "stdio.h"
 #include "mpi.h"
-#include "malloc.h"
+#include <stdlib.h>
 
 #include "pack_3d.h"
 #include "remap_3d.h"

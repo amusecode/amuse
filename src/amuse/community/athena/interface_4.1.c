@@ -10,16 +10,15 @@
 #include <sys/time.h>
 #include <sys/types.h>
 
-#ifdef MPI_PARALLEL
-#include <mpi.h>
-#include <amuse_mpi.h>
-#endif
-
 #include "defs.h"
 #include "athena.h"
 #include "globals.h"
 #include "prototypes.h"
 
+#ifdef MPI_PARALLEL
+#include <mpi.h>
+#include <amuse_mpi.h>
+#endif
 
 #include <math.h>
 
@@ -1247,25 +1246,6 @@ int get_potential_at_point(double eps, double x, double y, double z, double *phi
     return 0;
 }
 
-int get_gravity_at_point(double eps, double x,double y, double z,
-                         double *fx, double *fy, double *fz)
-{
-    if(myID_Comm_world)     { // calculate only on the root mpi process, not on others
-        return 0;
-    }
-    double ii, jj, kk;
-    double dx, dy, dz;
-    int i, j, k;
-    int index_of_grid = 1; // supports only one grid!
-    
-    
-    ijk_pos_dom_for_potential_grid(x, y, z, &ii, &jj, &kk, &dx, &dy, &dz);
-    i = ii; j = jj; k = kk;
-    get_grid_gravitational_acceleration(&i, &j, &k, &index_of_grid, fx, fy, fz, 1);
-
-    return 0;
-}
-
 
 int get_grid_gravitational_acceleration(
     int * i, int * j, int * k,
@@ -1327,8 +1307,6 @@ int get_grid_gravitational_acceleration(
         }
     }
 
-
-
 #ifdef MPI_PARALLEL
     if(myID_Comm_world) {
         MPI_Reduce(fx, NULL, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
@@ -1342,6 +1320,26 @@ int get_grid_gravitational_acceleration(
 #endif
 
 #endif
+    return 0;
+}
+
+
+int get_gravity_at_point(double eps, double x,double y, double z,
+                         double *fx, double *fy, double *fz)
+{
+    if(myID_Comm_world)     { // calculate only on the root mpi process, not on others
+        return 0;
+    }
+    double ii, jj, kk;
+    double dx, dy, dz;
+    int i, j, k;
+    int index_of_grid = 1; // supports only one grid!
+    
+    
+    ijk_pos_dom_for_potential_grid(x, y, z, &ii, &jj, &kk, &dx, &dy, &dz);
+    i = ii; j = jj; k = kk;
+    get_grid_gravitational_acceleration(&i, &j, &k, &index_of_grid, fx, fy, fz, 1);
+
     return 0;
 }
 
