@@ -708,7 +708,7 @@ module amuse_helpers
       endif         
       if(domainboundaryconditions(i,1).NE.PERIODIC.AND. &
              domainboundaryconditions(i,2).EQ.PERIODIC) then
-         ret=-2
+         ret=-1
          return
       endif         
 #endif

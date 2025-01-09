@@ -30,10 +30,7 @@ class CapreoleInterface(
         LiteratureReferencesMixIn.__init__(self)
     
     def name_of_the_worker(self, number_of_workers):
-        if number_of_workers > 1:
-            return 'capreole_worker_mpi'
-        else:
-            return 'capreole_worker'
+        return 'capreole_worker'
     
     @legacy_function   
     def setup_mesh():
