@@ -6,7 +6,7 @@ from amuse.community.interface.stopping_conditions import *
 class HermitegrxInterface(
     CodeInterface, GravitationalDynamicsInterface, StoppingConditionInterface
 ):
-    include_headers = ["worker_code.h", "stopcond.h"]
+    include_headers = ["hermite_grx_worker.h", "stopcond.h"]
 
     def __init__(self, **keyword_arguments):
         CodeInterface.__init__(
