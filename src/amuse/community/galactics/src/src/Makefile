@@ -26,7 +26,15 @@ ICPROGS= dbh genhalo genbulge getfreqs gendisk diskdf toascii
 #CFLAGS = -O2 -DRINGASCII -DASCII -DTP
 #LIBS = -lm -lots -lfor
 
-GENLIBS=-lstdc++
+
+CXX_VERSION := $(shell $(CXX) --version)
+ifeq ($(findstring clang, $(CXX_VERSION)),clang)
+    GENLIBS = -lc++
+else
+    GENLIBS = -lstdc++
+endif
+
+
 
 all: ics parallel
 

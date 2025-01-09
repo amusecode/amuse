@@ -1,4 +1,8 @@
 #include "main.h"
+#include "readdenspsi.h"
+#include "readharmfile.h"
+#include "readmassrad.h"
+
 #ifndef NOMPI
 #include <mpi.h>
 #endif
@@ -6,9 +10,7 @@
 // random skip factor, must be larger than the number of random draws per particle
 #define SKIP  100000
 
-main(argc,argv)
-int argc;
-char **argv;
+int main(int argc, char **argv)
 {
 	int i, j, k, nobj=10000;
   long long lseed=0;
@@ -259,6 +261,6 @@ restart:
 #ifndef NOMPI
 	MPI_Finalize();
 #endif
-	exit(0);
+	return 0;
 }
 

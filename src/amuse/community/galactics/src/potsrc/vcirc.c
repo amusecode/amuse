@@ -2,14 +2,18 @@
 #include <stdlib.h>
 #include <math.h>
 
+#include "force.h"
+#include "rigidpot.h"
+
+void plotv(float *rp, float *vp, int line, char *file);
+
 float ra[10000], va[10000];
 float rh[10000], vh[10000];
 float rd0[10000], vd[10000], vd0[10000];
 float rb[10000], vb[10000];
 
-main(argc,argv)
-int argc;
-char **argv;
+
+int main(int argc, char **argv)
 {
 	int i;
 	float dr;
@@ -34,13 +38,10 @@ char **argv;
 		rd0[i] = ra[i];
 		fprintf(stdout,"%g %g %g %g %g\n",rd0[i],vd[i],vb[i],vh[i],va[i]);
 	}
-	exit(0);
+	return 0;
 }
 
-plotv(rp,vp,line,file)
-float *rp, *vp;
-int line;
-char *file;
+void plotv(float *rp, float *vp, int line, char *file)
 {
 	int i;
 	float dr;
@@ -63,8 +64,4 @@ char *file;
 	pgline(1000,rp,vp);
 #endif
 }
-
-
-
-
 

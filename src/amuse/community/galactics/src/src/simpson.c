@@ -2,10 +2,7 @@
 /*  x0, xn - limits of integrand
  		 n - number of divisions used in Simpson's rule */
 
-float simpson(fcn,x0,xn,n)
-float (*fcn)();
-float x0, xn;
-int n;
+float simpson(float (*fcn)(float), float x0, float xn, int n)
 {
 	int i;
 	float dx, x, sum;
@@ -18,3 +15,4 @@ int n;
 	}
 	return(sum*dx/3.0);
 }
+

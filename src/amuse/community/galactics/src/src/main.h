@@ -1,3 +1,6 @@
+#ifndef GALACTICS_MAIN_H
+#define GALACTICS_MAIN_H
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -67,3 +70,6 @@ float fcut_bulge;
 
 /* Blackhole Constants */
 float bhmass, bhsoft;
+
+#endif
+

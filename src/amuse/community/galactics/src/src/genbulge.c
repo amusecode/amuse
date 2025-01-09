@@ -1,11 +1,13 @@
 #include "main.h"
+#include "query.h"
+#include "readdenspsi.h"
+#include "readharmfile.h"
+#include "readmassrad.h"
 
 // random skip factor, must be larger than the number of random draws per particle
 #define SKIP  100000
 
-main(argc,argv)
-int argc;
-char **argv;
+int main(int argc, char **argv)
 {
 	int i, j, k, nobj=10000;
   long long lseed=0;
@@ -200,6 +202,6 @@ restart:
       fwrite(r+i,sizeof(phase),1,stdout);
     }
 #endif
-	exit(0);
+	return 0;
 }
 

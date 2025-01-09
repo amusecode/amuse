@@ -5,7 +5,7 @@ extern float diskmass, diskedge;
 extern float bulgemass, bulgeedge;
 extern float halomass, haloedge;
 
-readmassrad()
+void readmassrad()
 {
 	FILE *mrfile;
 
@@ -19,3 +19,4 @@ readmassrad()
 	fscanf(mrfile,"%f %f\n",&halomass,&haloedge);
 	fclose(mrfile);
 }
+

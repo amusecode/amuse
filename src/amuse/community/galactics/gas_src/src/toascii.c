@@ -2,9 +2,8 @@
 #include <stdlib.h>
 #include <math.h>
 
-main(argc,argv)
-int argc;
-char *argv[];
+
+int main(int argc, char **argv)
 {
 	int i, nobj;
 	float r[7];
@@ -30,5 +29,4 @@ char *argv[];
 	}
 	fclose(rvfile);
 }
-
 

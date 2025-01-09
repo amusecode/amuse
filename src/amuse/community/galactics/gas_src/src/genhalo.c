@@ -1,11 +1,17 @@
 #include "main.h"
+#include "main_common.h"
+#include "query.h"
+
+#include "readharmfile.h"
+#include "readmassrad.h"
+
+
+float Fhalo(float E, float lz);
 
 // random skip factor, must be larger than the number of random draws per particle
 #define SKIP  100000
 
-main(argc,argv)
-int argc;
-char **argv;
+int main(int argc, char **argv)
 {
         int i, j, k, nobj=10000;
         long long lseed=0;
@@ -16,7 +22,7 @@ char **argv;
         float phi, cph, sph, cth, sth, vR, vp, vz;
         float E, Lz, rad, rad2;
         float f0, frand, fmax, psi;
-        float Fhalo(), halodens_(), pot_();
+        float halodens_(), pot_();
         float ran1();
         void ran_seed();
         float dr, rhomax1;
@@ -198,8 +204,7 @@ char **argv;
 
 
 
-float Fhalo1(E, Lz)
-float E, Lz;
+float Fhalo1(float E, float Lz)
 {
         float f0;
 
@@ -212,12 +217,12 @@ float E, Lz;
 
 
 
-float Fhalo(E,lz)
-float E, lz;
+float Fhalo(float E, float lz)
 {
   float fhalo3_();
   if(haloflag == 1) return Fhalo1(E,lz);
   if(haloflag == 3) {E=-E;return fhalo3_(&E);}
   printf("error\n");
   exit(1);  
-  }
+}
+

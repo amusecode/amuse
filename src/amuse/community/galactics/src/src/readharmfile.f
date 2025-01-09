@@ -94,7 +94,7 @@ c
       do i=1,15
          ibuf1(i) = ibuf(i)
       enddo
-      do j=1,3
+      do j=1,2
          jbuf1(j) = jbuf(j)
       enddo
       do k=1,1

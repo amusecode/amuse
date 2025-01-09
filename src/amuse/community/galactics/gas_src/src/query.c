@@ -17,98 +17,79 @@
  *		strcpy(a,"hello there");
  *		cquery("Enter a phrase",a);
  *		fquery("Enter the value to be squared",&x);
- *      fprintf(stdout,"%s %g squared = %g\n",a,x*x);
+ *		fprintf(stdout,"%s %g squared = %g\n",a,x*x);
  * }
  */
 #include <string.h>
 #include <stdio.h>
-double atof();
+#include <stdlib.h>
 
-cquery(prompt,c)
-char *c;
-char *prompt;
+void cquery(char *prompt, char *c)
 {
 	char *p, line[100], newprompt[200];
-	strcpy(newprompt,prompt);
-	strcat(newprompt," [%s]: ");
-	fprintf(stderr,newprompt,c);
-	fgets(line,80,stdin);
-	if(*line != '\n')
+	fprintf(stderr, "%s [%s]: ", prompt, c);
+	fgets(line, 80, stdin);
+	if (*line != '\n')
 	{
-		for(p=line; *p != '\n' && *p != '#'; p++);
-		if( *p == '#' ) {
+		for (p=line; *p != '\n' && *p != '#'; p++);
+		if ( *p == '#' ) {
 			p--;
-			while( *p == ' ' || *p == '\t' ) p--;
+			while ( *p == ' ' || *p == '\t' ) p--;
 			p++;
 		}
 		*p = '\0';
 		
-		strcpy(c,line);
+		strcpy(c, line);
 	}
 }
 
-dquery(prompt,d)
-double *d;
-char prompt[100];
+void dquery(char *prompt, double *d)
 {
-	char *p, line[100], newprompt[200];
-	strcpy(newprompt,prompt);
-	strcat(newprompt," [%g]: ");
-	fprintf(stderr,newprompt,*d);
-	fgets(line,80,stdin);
-	if(*line != '\n')
+	char *p, line[100];
+	fprintf(stderr, "%s [%g]: ", prompt, *d);
+	fgets(line, 80, stdin);
+	if (*line != '\n')
 	{
-		for(p=line; *p !='\n' && *p !='#'; p++);
+		for (p=line; *p !='\n' && *p !='#'; p++);
 			*p = '\0';
 		*d = atof(line);
 	}
 }
 
-fquery(prompt,f)
-float *f;
-char prompt[100];
+void fquery(char *prompt, float *f)
 {
-	char *p, line[100], newprompt[200];
-	strcpy(newprompt,prompt);
-	strcat(newprompt," [%g]: ");
-	fprintf(stderr,newprompt,*f);
-	fgets(line,80,stdin);
-	if(*line != '\n')
+	char *p, line[100];
+	fprintf(stderr, "%s [%g]: ", prompt, *f);
+	fgets(line, 80, stdin);
+	if (*line != '\n')
 	{
-		for(p=line; *p!='\n' && *p!='#'; p++);
+		for (p=line; *p!='\n' && *p!='#'; p++);
 			*p = '\0';
 		*f = (float) atof(line);
 	}
 }
 
-iquery(prompt,i)
-int *i;
-char prompt[100];
+void iquery(char *prompt, int *i)
 {
-	char *p, line[100], newprompt[200];
-	strcpy(newprompt,prompt);
-	strcat(newprompt," [%d]: ");
-	fprintf(stderr,newprompt,*i);
+	char *p, line[100];
+	fprintf(stderr, "%s [%d]: ", prompt, *i);
 	fgets(line,80,stdin);
-	if(*line != '\n')
+	if (*line != '\n')
 	{
-		for(p=line; *p !='\n' && *p !='#'; p++);
+		for (p=line; *p !='\n' && *p !='#'; p++);
 			*p = '\0';
 		*i = atoi(line);
 	}
 }
 
-llquery(prompt,i)
-long long *i;
-char prompt[100];
+void llquery(char *prompt, long long *i)
 {
-	char line[100], newprompt[200];
-	strcpy(newprompt,prompt);
-	strcat(newprompt," [%lld]: ");
-	fprintf(stderr,newprompt,*i);
-	fgets(line,100,stdin);
-	if(*line != '\n')
+	char line[100];
+	fprintf(stderr, "%s [%lld]: ", prompt, *i);
+	fgets(line, 100, stdin);
+	if (*line != '\n')
 	{
-		sscanf(line,"%lld",i);
+		sscanf(line,"%lld", i);
 	}
 }
+

@@ -2,6 +2,9 @@
 #include <stdlib.h>
 #include <math.h>
 
+#include "force.h"
+#include "readharmfile.h"
+
 void InitRigidPotential(potname)
 char *potname;
 {

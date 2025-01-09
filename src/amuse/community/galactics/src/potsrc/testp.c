@@ -2,9 +2,7 @@
 #include <stdlib.h>
 #include <math.h>
 
-main(argc,argv)
-int argc;
-char **argv;
+int main(int argc, char **argv)
 {
 
 	int i, nobj;
@@ -48,3 +46,4 @@ char **argv;
 	fprintf(stdout,"pot %g\n",pot);
 
 }
+

@@ -2,9 +2,9 @@
 #include <stdlib.h>
 #include <math.h>
 
-main(argc,argv)
-int argc;
-char **argv;
+#include "rigidpot.h"
+
+int main(int argc, char **argv)
 {
 
 	float m, x, y, z, vx, vy, vz, ax, ay, az, pot;
@@ -35,6 +35,6 @@ char **argv;
 		pe += (double) (0.5*m*pot);
 	}
 	fprintf(stderr,"T %g W %g -2T/W %g\n",ke,pe,-2*ke/pe);
-	exit(0);
+	return 0;
 }
 

@@ -15,13 +15,22 @@ endif
 ALLFILES= dbh genhalo genbulge gendisk diskdf  \
      getfreqs vcirc plothalo plotforce gengas toascii
 
+INSTALLEDFILES = $(patsubst %,../bin/%,$(ALLFILES))
+
 #FFLAGS = -O -extend_source
 #CFLAGS = -O2 -DRINGASCII -DASCII -DTP
 #LIBS = -lm -lots -lfor
 FFLAGS ?=   -132 -O2   -ip -nofor-main
 FFLAGS2 ?= -O2  -ip 
 
-GENLIBS=-lstdc++
+
+CXX_VERSION := $(shell $(CXX) --version)
+ifeq ($(findstring clang, $(CXX_VERSION)),clang)
+    GENLIBS = -lc++
+else
+    GENLIBS = -lstdc++
+endif
+
 
 all: pgstub.o $(ALLFILES)
 
@@ -109,9 +118,10 @@ toascii: toascii.o
 
 clean:
 	rm -f *.o *.mod *.bck
+	rm -f $(ALLFILES)
+	rm -f $(INSTALLEDFILES)
 
 purge: clean
-	rm -f $(ALLFILES)
 
 install: all
 	cp -f $(ALLFILES) ../bin
