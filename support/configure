@@ -13801,7 +13801,7 @@ if test "x${FOUND_FFTW}" = "xyes"
 then :
   FEATURES="${FEATURES} fftw"
 fi
-if test "x" != "x${HDF5_VERSION}"
+if test "x" != "x${with_hdf5}"
 then :
   FEATURES="${FEATURES} hdf5"
 fi
