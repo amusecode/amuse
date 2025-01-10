@@ -1,55 +1,67 @@
-# standard amuse configuration include
-# config.mk will be made after ./configure has run
-ifeq ($(origin AMUSE_DIR), undefined)
-  AMUSE_DIR := $(shell amusifier --get-amuse-dir)
-endif
--include ${AMUSE_DIR}/config.mk
-
-MPIFC ?= openmpif90
-
-FC = $(MPIFC)
-SRC=src
-
-
-CODE_LIBS=$(SRC)/libmercury.a
-
-PIC=#-fPIC
-
-FFLAGSOLD = -O -ip -u -g -traceback $(PIC)
-
-FFLAGS2= -I./src/
-
-CLASSNAME=MercuryInterface
-
-#~ FFLAGS += -mcmodel=medium
-
-F77FLAGS +=
-ifneq (,$(findstring xlf, $(notdir $(FORTRAN))))
-F77FLAGS += -qfixed -qsuffix=f=for
+ifneq (,$(filter-out clean distclean, $(MAKECMDGOALS)))
+include support/config.mk
 endif
 
 
-all: mercury_worker
+# Detecting dependencies
+support/config.mk:
+	cd support && ./configure
 
-%.o: %.f90 Makefile
-	$(FC) $(FFLAGS) $(FFLAGS2) $(SC_FLAGS)  -c -o $@ $< 
 
-%.o: %.F90 Makefile
-	$(FC) $(FFLAGS) $(FFLAGS2) $(SC_FLAGS) -c -o $@ $< 
+# Building the code into a static library
+DEPFLAGS += $(STOPCOND_CFLAGS) $(FORSOCKETS_CFLAGS)
+FCFLAGS += $(DEPFLAGS)
 
-mercury_worker: worker.f90 interface.o
-	$(FC) $(FFLAGS) $(FFLAGS2) $(SC_FLAGS) $(FS_FLAGS) $(LDFLAGS) $^ -o $@ $(CODE_LIBS) $(SC_FCLIBS) $(FS_LIBS)  $(LIBS)
-	
-worker.f90: interface.py
-	make -C src amuse_interface FFLAGS="$(FFLAGS)" FC="$(FC)" F77FLAGS="$(F77FLAGS)"
-	$(CODE_GENERATOR) --type=f90 $< $(CLASSNAME) -o $@
-	
+LDLIBS += $(STOPCOND_LIBS) $(FORSOCKETS_LIBS)
+
+CODELIB = src/libmercury.a
+
+
+$(CODELIB):
+	$(MAKE) -C src -j $(CPU_COUNT) amuse_interface FFLAGS="$(FCFLAGS)" FC="$(FC)" F77FLAGS="$(F77FLAGS)"
+
+
+# Building the workers
+mercury_worker.f90: interface.py
+	amusifier --type=f90 interface.py MercuryInterface -o $@
+
+mercury_worker.o: mercury_worker.f90
+	$(MPIFC) -c -o $@ $(FCFLAGS) $<
+
+mercury_worker: interface.o mercury_worker.o $(CODELIB)
+	$(MPIFC) -o $@ $(LDFLAGS) $^ $(LDLIBS)
+
+%.o: %.f90 | $(CODELIB)
+	$(MPIFC) -o $@ -c $(FCFLAGS) -Isrc $<
+
+
+# Which packages contain which workers?
+amuse-mercury_contains: mercury_worker
+
+
+# Building and installing packages
+develop-%: %_contains
+	support/shared/uninstall.sh $*
+	python -m pip install -e packages/$*
+
+install-%: %_contains
+	support/shared/uninstall.sh $*
+	python -m pip install packages/$*
+
+package-%: %_contains
+	python3 -m pip install -vv --no-cache-dir --no-deps --no-build-isolation --prefix ${PREFIX} packages/$*
+
+test-%:
+	cd packages/$* && pytest
+
+
+# Cleaning up
+.PHONY: clean
 clean:
-	make -C src clean
-	rm -f *.o *.pyc *.bck worker worker.f90 glworker glworker.f90
-	rm -f mercury_worker mercury_worker_gl
-	rm -f mercury_worker_sockets worker-sockets.f90
-	rm -f amuse_worker_module.mod
-	rm -f amuseinterface.mod
-	rm -f forsockets.mod
-	rm -f src/lib*.a
+	$(MAKE) -C src clean
+	rm -rf *.o *.mod *worker* $(CODELIB)
+
+.PHONY: distclean
+distclean: clean
+	rm -f support/config.mk support/config.log support/config.status
+	rm -rf support/autom4te.cache
