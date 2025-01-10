@@ -1,6 +1,6 @@
 #include "stdinc.h"
 #include "kepler.h"
-#include "interface.h"
+#include "kepler_worker.h"
 
 static kepler *k;
 

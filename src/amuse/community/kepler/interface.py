@@ -16,7 +16,7 @@ class KeplerInterface(CodeInterface,
 
     # Interface specification.
 
-    include_headers = ['interface.h']
+    include_headers = ['kepler_worker.h']
     
     def __init__(self, **options):
         CodeInterface.__init__(self,

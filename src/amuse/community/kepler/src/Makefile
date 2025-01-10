@@ -11,7 +11,7 @@ GPU	  = -DGPU
 CXX	  ?= mpicxx
 MPICXX ?= mpicxx
 CFLAGS   += $(OPT)
-CXXFLAGS += $(CFLAGS) 
+CXXFLAGS = $(CFLAGS) 
 
 CODELIB = libkepler.a
 
