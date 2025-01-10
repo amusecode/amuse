@@ -1,106 +1,105 @@
-# standard amuse configuration include
-# config.mk will be made after ./configure has run
-ifeq ($(origin AMUSE_DIR), undefined)
-  AMUSE_DIR := $(shell amusifier --get-amuse-dir)
+ifneq (,$(filter-out clean distclean, $(MAKECMDGOALS)))
+include support/config.mk
 endif
--include ${AMUSE_DIR}/config.mk
 
-MPICXX ?= mpicxx
-MPICC ?= mpicc
 
-OPENMP_CFLAGS?= -fopenmp
+# Detecting dependencies
+support/config.mk:
+	cd support && ./configure
 
-ifneq (,$(findstring xlc, $(notdir $(CC))))
-CFLAGS += -qlanglvl=extc99
-else
-CFLAGS += -std=gnu99
-endif
-CFLAGS += 
-CXXFLAGS += 
-LIBS += -lm
-INCLUDE =
 
-#---------------------------------------------
+# Building the code into a static library
+DEPFLAGS += $(STOPCOND_CFLAGS) 
+CFLAGS += $(DEPFLAGS)
 
-OBJS = interface.o
+CFLAGS_CODELIB = $(CFLAGS) -std=gnu99
 
-SRCDIR = src
+LDLIBS += -lm $(STOPCOND_LIBS)
 
-BUILDDIR = build
-OPENCL_BUILDDIR = build_cl
-OPENMP_BUILDDIR = build_mp
+CODELIB = libhuayno.a    # relative to build dir
+CODELIB_OPENCL = build_opencl/libhuayno_cl.a
 
-AM_LIBS = -L$(AMUSE_DIR)/lib/amuse_mpi -lamuse_mpi
-AM_CFLAGS = -I$(AMUSE_DIR)/lib/amuse_mpi
+build:
+	mkdir build
 
-all:	huayno_worker
+build_%:
+	mkdir build_$*
 
+build/$(CODELIB): src/Makefile | build
+	$(MAKE) -C build -j $(CPU_COUNT) -f ../src/Makefile all VPATH=../src CFLAGS="$(CFLAGS_CODELIB)" CXXFLAGS="$(CXXFLAGS)"
+
+build_openmp/$(CODELIB): src/Makefile | build_openmp
+	$(MAKE) -C build_openmp -j $(CPU_COUNT) -f ../src/Makefile all VPATH=../src CFLAGS="$(CFLAGS_CODELIB)" CXXFLAGS="$(CXXFLAGS)" OPENMP_CFLAGS="$(OPENMP_CFLAGS)"
+
+$(CODELIB_OPENCL): src/Makefile | build_opencl
+	$(MAKE) -C build_opencl -j $(CPU_COUNT) -f ../src/Makefile libhuayno_cl.a VPATH=../src CFLAGS="$(CFLAGS_CODELIB) $(OPENCL_CFLAGS) -DEVOLVE_OPENCL -I." CXXFLAGS="$(CXXFLAGS)" LIBS="$(OPENCL_LIBS)"
+
+
+interface.o: interface.c
+	$(MPICC) -Isrc -c -o $@ $(CFLAGS) $<
+
+
+# Building the workers
+huayno_worker.h: interface.py
+	amusifier --type=h interface.py HuaynoInterface -o $@
+
+huayno_worker.cc: interface.py
+	amusifier --type=c interface.py HuaynoInterface -o $@
+
+huayno_worker.o: huayno_worker.cc huayno_worker.h
+	$(MPICXX) -c -o $@ $(CFLAGS) $<
+
+huayno_openmp_worker.o: huayno_worker.cc huayno_worker.h
+	$(MPICXX) -c -o $@ $(CFLAGS) $(OPENMP_CFLAGS) $<
+
+huayno_opencl_worker.o: huayno_worker.cc huayno_worker.h
+	$(MPICXX) -c -o $@ $(CFLAGS) -DEVOLVE_OPENCL $(OPENCL_CFLAGS) $<
+
+
+huayno_worker: huayno_worker.o interface.o build/$(CODELIB)
+	$(MPICXX) -o $@ $(LDFLAGS) $^ $(LDLIBS)
+
+huayno_openmp_worker: huayno_openmp_worker.o interface.o build_openmp/$(CODELIB)
+	$(MPICXX) -o $@ $(LDFLAGS) $(OPENMP_CFLAGS) $^ $(LDLIBS)
+
+huayno_opencl_worker: huayno_opencl_worker.o interface.o $(CODELIB_OPENCL)
+	$(MPICXX) -o $@ $(LDFLAGS) $^ $(LDLIBS) $(OPENCL_LIBS)
+
+
+# Which packages contain which workers?
+amuse-huayno_contains: huayno_worker
+
+amuse-huayno-openmp_contains: huayno_openmp_worker
+
+amuse-huayno-opencl_contains: huayno_opencl_worker
+
+
+# Building and installing packages
+develop-%: %_contains
+	support/shared/uninstall.sh $*
+	python -m pip install -e packages/$*
+
+install-%: %_contains
+	support/shared/uninstall.sh $*
+	python -m pip install packages/$*
+
+package-%: %_contains
+	python3 -m pip install -vv --no-cache-dir --no-deps --no-build-isolation --prefix ${PREFIX} packages/$*
+
+test-%:
+	cd packages/$* && pytest
+
+
+# Cleaning up
+.PHONY: clean
 clean:
-	rm -f *.o *.bck *.pyc *.clh worker_code.cc worker_code.h
-	rm -Rf $(BUILDDIR)
-	rm -Rf $(OPENCL_BUILDDIR)
-	rm -Rf $(OPENMP_BUILDDIR)
-	rm -f huayno_worker huayno_worker_cl huayno_worker_mp
-	-make -C $(SRCDIR) clean
+	$(MAKE) -C src clean
+	rm -rf *.o *worker*
+	rm -rf build*
 
+.PHONY: distclean
 distclean: clean
+	-$(MAKE) -C src distclean
+	rm -f support/config.mk support/config.log support/config.status
+	rm -rf support/autom4te.cache
 
-$(BUILDDIR)/Makefile: $(SRCDIR)/Makefile 
-	-mkdir $(BUILDDIR) 
-	cp $(SRCDIR)/Makefile $(BUILDDIR)/Makefile
-	
-$(BUILDDIR)/libhuayno.a: $(BUILDDIR)/Makefile $(LIBFILES) src/Makefile
-	make -C $(BUILDDIR) all VPATH=../src CFLAGS="$(CFLAGS)" CXXFLAGS="$(CXXFLAGS)"
-	
-$(OPENMP_BUILDDIR)/Makefile: $(SRCDIR)/Makefile 
-	-mkdir $(OPENMP_BUILDDIR) 
-	cp $(SRCDIR)/Makefile $(OPENMP_BUILDDIR)/Makefile
-	
-$(OPENMP_BUILDDIR)/libhuayno.a: $(OPENMP_BUILDDIR)/Makefile $(LIBFILES) src/Makefile
-	make -C $(OPENMP_BUILDDIR) all VPATH=../src  CFLAGS="$(CFLAGS)" CXXFLAGS="$(CXXFLAGS)" 
-	
-$(OPENCL_BUILDDIR)/Makefile: $(SRCDIR)/Makefile 
-	-mkdir $(OPENCL_BUILDDIR) 
-	cp $(SRCDIR)/Makefile $(OPENCL_BUILDDIR)/Makefile
-	
-$(OPENCL_BUILDDIR)/libhuayno_cl.a: $(OPENCL_BUILDDIR)/Makefile $(LIBFILES) src/Makefile
-	make -C $(OPENCL_BUILDDIR) libhuayno_cl.a VPATH=../src CFLAGS="$(CFLAGS)" CXXFLAGS="$(CXXFLAGS)" LIBS="$(LIBS)" INCLUDE="$(INCLUDE)"
- 	
-worker_code.cc: interface.py
-	$(CODE_GENERATOR) --type=c interface.py HuaynoInterface -o $@
-	
-worker_code.h: interface.py
-	$(CODE_GENERATOR) --type=h interface.py HuaynoInterface -o $@
-
-huayno_worker: __init__.py worker_code.cc worker_code.h  $(BUILDDIR)/libhuayno.a $(BUILDDIR)/interface.o
-	$(MPICXX) $(SC_FLAGS) $(CXXFLAGS) $(INCLUDE) $(LDFLAGS) worker_code.cc $(BUILDDIR)/interface.o $(BUILDDIR)/libhuayno.a -o $@ $(LIBS) $(SC_CLIBS)
-	
-huayno_worker_mp: CFLAGS   += $(OPENMP_CFLAGS) 
-huayno_worker_mp: CXXFLAGS   += $(OPENMP_CFLAGS)	
-huayno_worker_mp: __init__.py worker_code.cc worker_code.h $(OPENMP_BUILDDIR)/libhuayno.a $(OPENMP_BUILDDIR)/interface.o 
-	$(MPICXX) $(SC_FLAGS) $(CXXFLAGS) $(INCLUDE)  $(LDFLAGS) worker_code.cc $(OPENMP_BUILDDIR)/interface.o $(OPENMP_BUILDDIR)/libhuayno.a -o $@ $(LIBS) $(SC_CLIBS)
-	
-#~ huayno_worker_mp.so: CFLAGS   += $(OPENMP_CFLAGS) 
-#~ huayno_worker_mp.so: CXXFLAGS   += $(OPENMP_CFLAGS)	
-
-huayno_worker_cl: CFLAGS   += -DEVOLVE_OPENCL
-huayno_worker_cl: CXXFLAGS   += -DEVOLVE_OPENCL
-huayno_worker_cl: LIBS += $(CL_LIBS)
-huayno_worker_cl: INCLUDE += $(CL_FLAGS) -I.
-huayno_worker_cl: __init__.py worker_code.cc worker_code.h $(OPENCL_BUILDDIR)/libhuayno_cl.a $(OPENCL_BUILDDIR)/interface.o 
-	$(MPICXX) $(CXXFLAGS) $(INCLUDE) $(LDFLAGS) worker_code.cc $(OPENCL_BUILDDIR)/interface.o $(OPENCL_BUILDDIR)/libhuayno_cl.a -o $@ $(LIBS) $(SC_CLIBS)
-
-.cc.o: $<
-	$(MPICXX) -I$(SRCDIR)  $(SC_FLAGS) $(CXXFLAGS) $(INCLUDE) -c -o $@ $< 
-
-$(BUILDDIR)/%.o: %.c
-	$(CC) -I$(SRCDIR)  $(SC_FLAGS) $(CFLAGS) $(INCLUDE) -c -o $@ $< 
-	
-$(OPENMP_BUILDDIR)/%.o: %.c
-	$(CC) -I$(SRCDIR)  $(SC_FLAGS) $(CFLAGS) $(INCLUDE) -c -o $@ $< 
-	
-$(OPENCL_BUILDDIR)/%.o: %.c
-	$(CC) -I$(SRCDIR)  $(SC_FLAGS) $(CFLAGS) $(INCLUDE) -c -o $@ $< 
-	
-.c.o: $<
-	$(MPICC) -I$(SRCDIR)  $(SC_FLAGS) $(CFLAGS) $(INCLUDE) -c -o $@ $< 

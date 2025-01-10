@@ -18,16 +18,16 @@ class HuaynoInterface(CodeInterface,
     .. [#] ADS:2012NewA...17..711P (Pelupessy, Federico I.; J\"anes, J\"urgen; Portegies Zwart, Simon, New Astronomy, Volume 17, Issue 8, p. 711-719)
     .. [#] ADS:2014A&A...570A..20J (J\"anes, J\"urgen; Pelupessy, Federico I.; Portegies Zwart, Simon, A&A, Volume 570, October 2014 (for CC, OK methods))
     """
-    include_headers = ['worker_code.h']
+    include_headers = ['huayno_worker.h']
 
     MODE_OPENCL='opencl'
     MODE_OPENMP='openmp'
 
     def name_of_worker(self,mode):
         if mode==self.MODE_OPENCL:
-            return 'huayno_worker_cl'
+            return 'huayno_opencl_worker'
         if mode==self.MODE_OPENMP:
-            return 'huayno_worker_mp'
+            return 'huayno_openmp_worker'
         return 'huayno_worker'
 
     def __init__(self, mode=None, **options):
@@ -331,7 +331,7 @@ class Huayno(GravitationalDynamics,GravityFieldCode):
             "set_opencl_device_type",
             "opencl_device_type",
             "set preferred OpenCL device type (0=default, 1=cpu, 2=gpu)",
-            default_value = 0
+            default_value = 2
         )
 
     def define_methods(self, handler):
