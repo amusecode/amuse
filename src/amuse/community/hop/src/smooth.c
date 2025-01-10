@@ -23,6 +23,7 @@ the case of equal mass particles. */
 #include <assert.h>
 #include "smooth.h"
 #include "kd.h"
+#include <stdlib.h>
 
 #define IMARK 1		/* All particles are marked to be included */
 #define INFORM(string) printf(string); fflush(stdout)

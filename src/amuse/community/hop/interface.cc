@@ -18,7 +18,7 @@ extern "C" {
     void ReSizeSMX(SMX smx, int nSmooth);
     void PrepareKD(KD kd);
 }
-#include "worker_code.h"
+#include "hop_worker.h"
 
 #define INFORM(string) printf(string); fflush(stdout)
 

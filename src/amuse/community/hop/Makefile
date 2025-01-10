@@ -1,36 +1,66 @@
-# standard amuse configuration include
-# config.mk will be made after ./configure has run
-ifeq ($(origin AMUSE_DIR), undefined)
-  AMUSE_DIR := $(shell amusifier --get-amuse-dir)
+ifneq (,$(filter-out clean distclean, $(MAKECMDGOALS)))
+include support/config.mk
 endif
--include ${AMUSE_DIR}/config.mk
 
-CFLAGS   += -DDIFFERENT_MASSES
-CXXFLAGS += -DDIFFERENT_MASSES
 
-OBJ = interface.o
+# Detecting dependencies
+support/config.mk:
+	cd support && ./configure
+
+# Building the code into a static library
+CFLAGS += -DDIFFERENT_MASSES
 
 CODELIB = src/libhop.a
 
-all: hop_worker 
-
-clean:
-	$(RM) -f *.so *.o *.pyc worker_code.cc worker_code.h 
-	$(RM) -f *~ worker_code hop_worker hop_worker_sockets
-	$(RM) -f worker_code-sockets.cc
-	make -C src clean
-
 $(CODELIB):
-	make -C src all
+	$(MAKE) -C src -j $(CPU_COUNT) all
 
-worker_code.cc: interface.py
-	$(CODE_GENERATOR) --type=c interface.py HopInterface -o $@
-	
-worker_code.h: interface.py
-	$(CODE_GENERATOR) --type=h interface.py HopInterface -o $@
 
-hop_worker: worker_code.cc worker_code.h $(CODELIB) $(OBJ)
-	$(MPICXX) $(CXXFLAGS) $(LDFLAGS) $< $(OBJ) $(CODELIB) -o $@  $(LIBS)
-	
-.cc.o: $<
-	$(CXX) $(CXXFLAGS) -c -o $@ $< 
+# Building the workers
+hop_worker.h: interface.py
+	amusifier --type=h interface.py HopInterface -o $@
+
+hop_worker.cc: interface.py
+	amusifier --type=c interface.py HopInterface -o $@
+
+hop_worker.o: hop_worker.cc hop_worker.h
+	$(MPICXX) -c -o $@ $(CFLAGS) $<
+
+hop_worker: hop_worker.o interface.o $(CODELIB)
+	$(MPICXX) -o $@ $(LDFLAGS) $^ $(LDLIBS)
+
+interface.o: interface.cc hop_worker.h
+	$(MPICXX) -c -o $@ $(CFLAGS) $<
+
+
+# Which packages contain which workers?
+amuse-hop_contains: hop_worker
+
+
+# Building and installing packages
+develop-%: %_contains
+	support/shared/uninstall.sh $*
+	python -m pip install -e packages/$*
+
+install-%: %_contains
+	support/shared/uninstall.sh $*
+	python -m pip install packages/$*
+
+package-%: %_contains
+	python3 -m pip install -vv --no-cache-dir --no-deps --no-build-isolation --prefix ${PREFIX} packages/$*
+
+test-%:
+	cd packages/$* && pytest
+
+
+# Cleaning up
+.PHONY: clean
+clean:
+	$(MAKE) -C src clean
+	rm -rf *.o *worker*
+
+.PHONY: distclean
+distclean: clean
+	-$(MAKE) -C src clean
+	rm -f support/config.mk support/config.log support/config.status
+	rm -rf support/autom4te.cache

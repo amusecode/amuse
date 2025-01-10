@@ -1,0 +1,44 @@
+[project]
+name = "amuse-hop"
+dynamic = ["version"]
+requires-python = ">=3.7"
+dependencies = [
+    "amuse-framework"
+]
+
+[build-system]
+requires = ["hatchling", "versioningit"]
+build-backend = "hatchling.build"
+
+[tool.hatch.version]
+source = "versioningit"
+
+[tool.versioningit.next-version]
+method = "smallest"
+
+[tool.versioningit.format]
+distance = "{next_version}.dev{distance}+{vcs}{rev}"
+dirty = "{base_version}+d{build_date:%Y%m%d}"
+distance-dirty = "{next_version}.dev{distance}+{vcs}{rev}.d{build_date:%Y%m%d}"
+
+[tool.hatch.build]
+skip-excluded-dirs = true
+
+[tool.hatch.build.targets.wheel]
+include = ["hop/**/*.py"]
+exclude = [
+    "hop/packages",
+    "hop/support",
+    "hop/src",
+    "hop/tests"
+    ]
+artifacts = ["hop/hop_worker"]
+
+[tool.hatch.build.targets.wheel.sources]
+"hop" = "amuse/community/hop"
+
+[tool.pytest.ini_options]
+pythonpath = ["hop/tests/", "../../../../../tests"]
+
+testpaths = ["hop/tests"]
+
