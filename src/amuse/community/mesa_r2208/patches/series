@@ -6,3 +6,4 @@ filelen
 kaptestinit
 openmp
 warningisnoterror
+allow_legacy_code

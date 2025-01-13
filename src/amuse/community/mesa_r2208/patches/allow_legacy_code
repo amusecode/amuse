@@ -1,0 +1,11 @@
+--- mesa.orig/src/mesa/utils/makefile_header	2024-07-25 10:03:42.035145448 +0200
++++ mesa/src/mesa/utils/makefile_header	2024-07-25 10:03:56.747205508 +0200
+@@ -281,7 +281,7 @@
+ else
+ ifeq ($(findstring gfortran, $(notdir $(FC))), gfortran)
+ 
+-FCbasic = -fno-range-check $(SPECIAL_FC_FLAGS)
++FCbasic = -fno-range-check -fallow-invalid-boz -fallow-argument-mismatch $(SPECIAL_FC_FLAGS)
+ FCimpno = -fimplicit-none  
+ FCchecks = -fbounds-check
+ #FCwarn = -Wunused-value -Werror -W

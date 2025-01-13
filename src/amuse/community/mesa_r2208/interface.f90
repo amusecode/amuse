@@ -54,20 +54,28 @@
                return_var = errorcode
             endif
          end function evolve_failed
+         subroutine get_zams_dirname(str)
+            character (len=1024), intent(out) :: str
+
+            str = trim(AMUSE_local_data_dir) // '/star_data/starting_models'
+         end subroutine get_zams_dirname
          subroutine get_zams_filename(str, ierr)
             character (len=1024), intent(out) :: str
             integer, intent(out) :: ierr
+            character (len=1024) :: dirname
             character (len=1024) :: metallicity_str
             integer :: metallicity_exp, metallicity_factor
+
+            call get_zams_dirname(dirname)
             if (AMUSE_metallicity.eq.0.0d0) then
-               str = trim(AMUSE_local_data_dir) // '/star_data/starting_models/zams_z0m0'
+               str = trim(dirname) // '/zams_z0m0'
             else
                metallicity_exp = floor(log10(AMUSE_metallicity))-1
                metallicity_factor = floor(0.5 + AMUSE_metallicity/(1.0d1**metallicity_exp))
                write(metallicity_str,'(I0, A, I0)') metallicity_factor, "m", &
                   -metallicity_exp
-               str = trim(AMUSE_local_data_dir) // '/star_data/starting_models/zams_z' &
-                  // trim(metallicity_str)
+               str = trim(dirname) // '/zams_z' // trim(metallicity_str)
+               write (*, *) 'zams filename = ', str
             endif
             ierr = 0
          end subroutine get_zams_filename
@@ -134,6 +142,11 @@
       use run_star_support, only: run_create_zams, zams_inlist
       implicit none
       integer :: ierr
+      character (len=1024) :: dirname
+
+      call get_zams_dirname(dirname)
+      call system('mkdir -p ' // dirname)
+
       call get_zams_filename(AMUSE_zams_filename, ierr)
       if (failed('get_zams_filename', ierr)) return
       run_create_zams = .true. ! is this necessary?

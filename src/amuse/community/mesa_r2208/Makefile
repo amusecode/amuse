@@ -1,91 +1,115 @@
-# standard amuse configuration include
-# config.mk will be made after ./configure has run
-ifeq ($(origin AMUSE_DIR), undefined)
-  AMUSE_DIR := $(shell amusifier --get-amuse-dir)
-endif
--include ${AMUSE_DIR}/config.mk
-
-GFORTRAN_VERSION?=$(shell $(FC) -v 2>&1 | grep gcc\ version | cut -d\  -f3)
-GFORTRAN_MAJOR_MINOR=$(shell echo $(GFORTRAN_VERSION) | cut -s -d'.' -f1,2)
-#IFORT_VERSION?=$(shell $(FC) -v 2>&1 | cut -d\  -f2)
-#IFORT_MAJOR_MINOR=$(shell echo $(IFORT_VERSION) | cut -s -d'.' -f1,2)
-MPIF90 ?= mpif90
-FORTRAN ?= gfortran
-PYTHON ?= python
-FC      ?= $(FORTRAN)
-MPIFC += $(FCFLAGS)
-
-GFVERSION10PLUS := $(shell expr `${FC} -dumpversion | cut -f1 -d.` \>= 10)
-ifeq (${GFVERSION10PLUS}, 1)
-MPIFC += -fallow-invalid-boz -std=legacy
+ifneq (,$(filter-out clean distclean, $(MAKECMDGOALS)))
+include support/config.mk
 endif
 
-export FC MPIFC
 
-MESA_MAKE_DIR=./mesa_reqs
-INCLUDE_DIR=./src/mesa/star/make
-MESA_DIR = ./src/mesa
-MESA_LIB=$(MESA_DIR)/lib/libstar.a
+# Detecting dependencies
+support/config.mk:
+	cd support && ./configure
 
-export OPENMP_FCFLAGS=
-include $(MESA_MAKE_DIR)/makefile_header
-include $(MESA_MAKE_DIR)/makefile_include
 
-WORK_COMPILE = $(FC) $(FCbasic) $(FCopenmp) $(FCchecks) $(FCdebug) $(FCFLAGS)  $(FFLAGS)\
-   -I$(MESA_INCLUDE_DIR) -c $(FCfree)
-STAR_WORK_OBJS = \
-   $(MESA_MAKE_DIR)/run_star_support.o $(MESA_MAKE_DIR)/run_star_extras.o \
-   $(MESA_MAKE_DIR)/calibrate.o $(MESA_MAKE_DIR)/isochrone.o $(MESA_MAKE_DIR)/$(PGSTAR_OBJS) \
-   $(MESA_MAKE_DIR)/create_zams.o $(MESA_MAKE_DIR)/sample_zams.o \
-   $(MESA_MAKE_DIR)/run_star.o 
+# Downloading the code
+mesa_r2208.zip:
+	$(DOWNLOAD) https://zenodo.org/record/2603017/files/mesa-r2208.zip >$@
 
-ZAMS_DIR = ./data/input/star_data/starting_models
-ZAMS_DATA = zams_z20m3.data
+PATCHES := $(file < patches/series)
+PATCHES := $(patsubst %,%,$(PATCHES))    # replace newlines with spaces
 
-DOWNLOAD_FROM_WEB = $(PYTHON) ./download.py
-PATCH_FILES = $(PYTHON) ./patch_files.py
+src/mesa: mesa_r2208.zip
+	mkdir -p src
+	unzip $<
+	mv mesa-r2208 src/mesa
+	for p in $(PATCHES) ; do patch -p1 <patches/$$p || exit 1 ; done
+	cp patches/test_jina.f src/mesa/jina/test/src/test_jina.f
 
-all:	mesa_worker $(ZAMS_DATA) data/data
 
-$(MESA_DIR)/install:
-	make -C . download
+# Building the code into a set of static libraries
+DEPFLAGS += $(FORSOCKETS_CFLAGS) $(OPENMP_FFLAGS)
 
-download:
-	$(RM) -Rf src
-	-mkdir src
-	$(DOWNLOAD_FROM_WEB)
-	$(PATCH_FILES)
+FCFLAGS += $(DEPFLAGS)
+LDFLAGS += $(OPENMP_FCFLAGS) -Lsrc/mesa/lib
+LDLIBS += $(FORSOCKETS_LIBS)
 
-clean:
-	$(RM) -f *~ *.pyc *.mod *.o worker_code worker_code.f90 $(MESA_LIB)
-	$(RM) -f mesa_worker mesa_worker_sockets worker_code-sockets.f90
-	make -C $(MESA_MAKE_DIR) clean
+CODELIB = src/mesa/lib/libstar.a
 
-veryclean: clean
-	cd $(MESA_DIR); ./clean
+$(CODELIB): | src/mesa
+	cd src/mesa && FC=$(FC) MPIFC=$(MPIFC) ./install
 
-distclean: clean
-	$(RM) -Rf src
-	$(RM) -Rf src.*
-	$(RM) -Rf .pc
+# libstar.a depends on all these other libraries, which are built together with
+# it. So we need to link them all.
+LDLIBS += -lstar -ldiffusion -lionization -lmlt -latm -lkaro -lcolors
+LDLIBS += -leos -lkap -ljina -lweak -lnet -lscreen -lrates -lneu -lchem -lnum
+LDLIBS += -linterp_2d -linterp_1d -lutils -lalert -lconst -lmtx -lmesalapack
+LDLIBS += -lmesablas
 
-$(ZAMS_DATA):
-	gunzip -c $(ZAMS_DATA).gz > $(ZAMS_DIR)/$(ZAMS_DATA)
+# These test files are modified (see patches/test) and used by the interface (?!)
+STAR_TEST = src/mesa/star/test/make
 
-mesa_worker:	worker_code.f90 interface.o $(STAR_WORK_OBJS)
-	$(MPIF90) $(FCFLAGS) $(FFLAGS) $(LDFLAGS) $(FCopenmp) $(FS_FLAGS) $^ -o $@ $(LOAD_MESA_STAR) $(FS_LIBS)  $(LIBS)
+EXTRA_OBJS = $(STAR_TEST)/run_star_support.o $(STAR_TEST)/run_star_extras.o
+EXTRA_OBJS += $(STAR_TEST)/calibrate.o $(STAR_TEST)/isochrone.o
+EXTRA_OBJS += $(STAR_TEST)/pgstar_stub.o $(STAR_TEST)/create_zams.o
+EXTRA_OBJS += $(STAR_TEST)/sample_zams.o $(STAR_TEST)/run_star.o
 
-worker_code.f90: interface.py
-	$(CODE_GENERATOR) --type=f90 interface.py MESAInterface -o $@
+$(EXTRA_OBJS): $(CODELIB)
+# These are built already by the MESA build system when we build libstar.a
 
-$(MESA_LIB):  $(MESA_DIR)/install
-	cp -f ./install $(MESA_DIR)
-	cp -f ./test_jina.f $(MESA_DIR)/jina/test/src/test_jina.f
-	cd $(MESA_DIR); ./install MPIFC="$(MPIFC) $(FCFLAGS)" OPENMP_FCFLAGS=
 
-interface.o: interface.f $(MESA_LIB)
-	make -s --no-print-directory -C $(MESA_MAKE_DIR) star FFLAGS="$(FCFLAGS)"
-	$(WORK_COMPILE) -I$(INCLUDE_DIR) -I$(MESA_MAKE_DIR) -o $@ $<
+# Building the workers
+mesa_r2208_worker.f90: interface.py
+	amusifier --type=f90 interface.py MESAInterface -o $@
 
-data/data:
+mesa_r2208_worker.o: mesa_r2208_worker.f90
+	$(MPIFC) -c -o $@ $(FCFLAGS) $<
+
+mesa_r2208_worker: interface.o mesa_r2208_worker.o $(EXTRA_OBJS)
+	$(MPIFC) -o $@ $(LDFLAGS) $^ $(LDLIBS)
+
+interface.o: interface.f90 $(CODELIB)
+	$(MPIFC) -o $@ -c $(FCFLAGS) -Isrc/mesa/include -I$(STAR_TEST) -Isrc/mesa/star/make $<
+
+$(STAR_TEST)/%.o:
+	@# Keeps make from trying to recompile a .o from the .mod if the .mod is newer.
+	@# It thinks the .mod is a Modula-2 program, and the source for the .o...
+
+
+# Building the data
+ZAMS_DATA := data/input/star_data/starting_models/zams_z20m3.data
+
+$(ZAMS_DATA): zams_z20m3.data.gz
+	gunzip -c $< >$@
+
+data/data: | src/mesa
+	rm -rf data/data
 	cp -r src/mesa/data data/
+
+
+# Which packages contain which workers?
+amuse-mesa_r2208_contains: mesa_r2208_worker data/data $(ZAMS_DATA)
+
+
+# Building and installing packages
+develop-%: %_contains
+	support/shared/uninstall.sh $*
+	python -m pip install -e packages/$*
+
+install-%: %_contains
+	support/shared/uninstall.sh $*
+	python -m pip install packages/$*
+
+package-%: %_contains
+	python3 -m pip install -vv --no-cache-dir --no-deps --no-build-isolation --prefix ${PREFIX} packages/$*
+
+test-%:
+	cd packages/$* && pytest
+
+
+# Cleaning up
+.PHONY: clean
+clean:
+	cd src/mesa && ./clean
+	rm -rf *.o *.mod *worker* data/data $(ZAMS_DATA)
+
+.PHONY: distclean
+distclean: clean
+	rm -f support/config.mk support/config.log support/config.status
+	rm -rf support/autom4te.cache

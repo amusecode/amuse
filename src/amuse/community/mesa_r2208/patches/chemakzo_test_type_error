@@ -1,0 +1,6 @@
+79,80c79,80
+<       integer neqn,ierr,ipar(*)
+<       double precision t,y(neqn),yprime(neqn),f(neqn),rpar(*)
+---
+>       integer neqn,ierr,ipar
+>       double precision t,y(neqn),yprime(neqn),f(neqn),rpar

@@ -30,7 +30,7 @@ class MESAInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolutionIn
         .. [#] http://mesa.sourceforge.net/)
     """
     def __init__(self, **options):
-        CodeInterface.__init__(self, name_of_the_worker="mesa_worker", **options)
+        CodeInterface.__init__(self, name_of_the_worker="mesa_r2208_worker", **options)
         LiteratureReferencesMixIn.__init__(self)
         CodeWithDataDirectories.__init__(self)
         self.mesa_version = "2208"
