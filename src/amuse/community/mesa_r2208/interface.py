@@ -946,14 +946,6 @@ class MESA(StellarEvolution, InternalStellarStructure):
     def __init__(self, **options):
         InCodeComponentImplementation.__init__(self, MESAInterface(**options), **options)
         
-        output_dir = self.get_output_directory()
-        model_path = os.path.join(output_dir, 'star_data', 'starting_models')
-        if not self.channel_type == 'distributed':
-            self.ensure_data_directory_exists(model_path)
-        if not os.path.isfile(os.path.join(model_path, 'zams_z20m3.data')):
-            model_file=os.path.join(self.get_data_directory(), 'star_data', 'starting_models', 'zams_z20m3.data')
-            shutil.copy(model_file, model_path)
-
         if 'inlist' in options:
             inlist_path = options['inlist']
             if not os.path.exists(inlist_path):
@@ -964,7 +956,7 @@ class MESA(StellarEvolution, InternalStellarStructure):
         self.set_MESA_paths(
             inlist_path, 
             self.default_path_to_MESA_data, 
-            output_dir
+            self.get_output_directory()
         )
         self.model_time = 0.0 | units.yr
         self.mesa_version = "2208"

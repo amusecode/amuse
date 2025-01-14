@@ -3,7 +3,7 @@
          character (len=4096) :: AMUSE_inlist_path
          character (len=4096) :: AMUSE_mesa_data_dir
          character (len=4096) :: AMUSE_local_data_dir ! Used for output starting_models
-         character (len=4096) :: AMUSE_zams_filename = 'zams_z20m3'
+         character (len=4096) :: AMUSE_zams_filename = 'zams_z20m3.data'
          double precision :: AMUSE_metallicity = 0.02d0
          double precision :: AMUSE_dmass = 0.1d0
          double precision :: AMUSE_mlo = -1.0d0
@@ -54,31 +54,62 @@
                return_var = errorcode
             endif
          end function evolve_failed
-         subroutine get_zams_dirname(str)
-            character (len=1024), intent(out) :: str
 
-            str = trim(AMUSE_local_data_dir) // '/star_data/starting_models'
-         end subroutine get_zams_dirname
-         subroutine get_zams_filename(str, ierr)
-            character (len=1024), intent(out) :: str
-            integer, intent(out) :: ierr
-            character (len=1024) :: dirname
+!        Finds the directory the given zams file is in, or the local data dir
+!        it should be created in if it could not be found.
+         subroutine find_zams_dir(zams_filename, data_dir)
+            implicit none
+            character (len=*), intent(in) :: zams_filename
+            character (len=4096), intent(out) :: data_dir
+
+            data_dir = trim(AMUSE_mesa_data_dir) // '/star_data/starting_models/'
+            if (.not. file_exists(trim(data_dir) // trim(zams_filename))) then
+               data_dir = trim(AMUSE_local_data_dir) // '/star_data/starting_models/'
+            endif
+         end subroutine find_zams_dir
+
+!        Determine the name of the zams file for a given metallicity.
+         subroutine zams_filename_for_metallicity(metallicity, filename)
+            implicit none
+            double precision, intent(in) :: metallicity
+            character (len=*), intent(out) :: filename
+
             character (len=1024) :: metallicity_str
             integer :: metallicity_exp, metallicity_factor
 
-            call get_zams_dirname(dirname)
-            if (AMUSE_metallicity.eq.0.0d0) then
-               str = trim(dirname) // '/zams_z0m0'
+            if (metallicity .eq. 0.0d0) then
+               filename = 'zams_z0m0.data'
             else
                metallicity_exp = floor(log10(AMUSE_metallicity))-1
                metallicity_factor = floor(0.5 + AMUSE_metallicity/(1.0d1**metallicity_exp))
                write(metallicity_str,'(I0, A, I0)') metallicity_factor, "m", &
                   -metallicity_exp
-               str = trim(dirname) // '/zams_z' // trim(metallicity_str)
-               write (*, *) 'zams filename = ', str
+               filename = 'zams_z' // trim(metallicity_str) // '.data'
+               write (*, *) 'zams filename = ', trim(filename)
             endif
-            ierr = 0
-         end subroutine get_zams_filename
+         end subroutine zams_filename_for_metallicity
+
+!        Determine if the given file exists and can be opened.
+         logical function file_exists(filename)
+            use utils_lib, only: alloc_iounit, free_iounit
+
+            implicit none
+            character (len=*), intent(in) :: filename
+
+            integer :: ierr, iounit
+
+            iounit = alloc_iounit(ierr)
+            if (failed('alloc_iounit', ierr)) return
+
+            open(iounit, file=trim(filename), action='read', status='old', iostat=ierr)
+            file_exists = (ierr == 0)
+
+            if (ierr == 0) then
+               close(iounit)
+            endif
+            call free_iounit(iounit)
+         end function file_exists
+
       end module amuse_support
 
 ! Set the paths to the inlist and the data directory
@@ -136,21 +167,21 @@
       end function cleanup_code
 
 ! Create new ZAMS model for a different metallicity
-   subroutine new_zams_model(ierr)
+   subroutine new_zams_model(metallicity, data_dir, filename, ierr)
       use create_zams, only: AMUSE_do_create_zams
       use amuse_support
       use run_star_support, only: run_create_zams, zams_inlist
+
       implicit none
+      double precision, intent(in) :: metallicity
+      character (len=*), intent(in) :: data_dir
+      character (len=*), intent(in) :: filename
       integer :: ierr
-      character (len=1024) :: dirname
 
-      call get_zams_dirname(dirname)
-      call system('mkdir -p ' // dirname)
+      call system('mkdir -p ' // data_dir)
 
-      call get_zams_filename(AMUSE_zams_filename, ierr)
-      if (failed('get_zams_filename', ierr)) return
       run_create_zams = .true. ! is this necessary?
-      call AMUSE_do_create_zams(AMUSE_metallicity, AMUSE_zams_filename, &
+      call AMUSE_do_create_zams(metallicity, filename, &
          AMUSE_inlist_path, &
          AMUSE_dmass, AMUSE_mlo, AMUSE_mhi, ierr)
       if (failed('AMUSE_do_create_zams', ierr)) return
@@ -182,7 +213,7 @@
       ! Replace value of mass and metallicity just read, with supplied values.
       s% initial_mass = AMUSE_mass
       s% initial_z = AMUSE_metallicity
-      s% zams_filename = trim(AMUSE_zams_filename) // '.data'
+      s% zams_filename = trim(AMUSE_zams_filename)
       s% max_age = AMUSE_max_age_stop_condition
       s% min_timestep_limit = AMUSE_min_timestep_stop_condition
       s% max_model_number = AMUSE_max_iter_stop_condition
@@ -248,7 +279,7 @@
       ! Replace value of mass and metallicity just read, with supplied values.
       s% initial_mass = AMUSE_mass
       s% initial_z = AMUSE_metallicity
-      s% zams_filename = trim(AMUSE_zams_filename) // '.data'
+      s% zams_filename = trim(AMUSE_zams_filename)
       s% max_age = AMUSE_max_age_stop_condition
       s% min_timestep_limit = AMUSE_min_timestep_stop_condition
       s% max_model_number = AMUSE_max_iter_stop_condition
@@ -346,29 +377,29 @@
 ! Set the metallicity parameter
    integer function set_metallicity(AMUSE_value)
       use amuse_support, only: AMUSE_metallicity, &
-         AMUSE_zams_filename, failed, get_zams_filename
-      use utils_lib, only: alloc_iounit, free_iounit
+         AMUSE_zams_filename, zams_filename_for_metallicity, &
+         find_zams_dir, file_exists, failed
+
       implicit none
       double precision, intent(in) :: AMUSE_value
-      integer :: ierr, iounit
-      character (len=1024) :: file
+      integer :: ierr
+      character (len=4096) :: data_dir
+      character (len=4096) :: zams_filename
+
       set_metallicity = -1
-      AMUSE_metallicity = AMUSE_value
-      call get_zams_filename(AMUSE_zams_filename, ierr)
-      if (failed('get_zams_filename', ierr)) return
-      ! Check if the ZAMS model file exists
-      iounit = alloc_iounit(ierr)
-      if (failed('alloc_iounit', ierr)) return
-      file = trim(AMUSE_zams_filename) // '.data'
-      open(iounit, file=trim(file), action='read', status='old', iostat=ierr)
-      if (ierr == 0) then
-         close(iounit)
-         call free_iounit(iounit)
-      else
-         call free_iounit(iounit)
-         call new_zams_model(ierr) ! Have to create a new model otherwise.
+
+      call zams_filename_for_metallicity(AMUSE_value, zams_filename)
+      call find_zams_dir(zams_filename, data_dir)
+
+      if (.not. file_exists(trim(data_dir) // zams_filename)) then
+         ! zams file for this metallicity not found, we'll have to make it
+         call new_zams_model(AMUSE_value, data_dir, zams_filename, ierr)
          if (failed('new_zams_model', ierr)) return
       endif
+
+      AMUSE_metallicity = AMUSE_value
+      AMUSE_zams_filename = trim(data_dir) // trim(zams_filename)
+
       set_metallicity = 0
    end function
 
@@ -1805,7 +1836,6 @@
             end if
          evolve_for = do_evolve_one_step(AMUSE_id)
       end do evolve_loop
-
    end function evolve_for
 
 ! Return the maximum age stop condition
@@ -2108,7 +2138,7 @@
       ! Replace value of mass and metallicity just read, with supplied values.
       s% initial_mass = sum(d_mass)
       s% initial_z = AMUSE_metallicity
-      s% zams_filename = trim(AMUSE_zams_filename) // '.data'
+      s% zams_filename = trim(AMUSE_zams_filename)
       s% max_age = AMUSE_max_age_stop_condition
       s% min_timestep_limit = AMUSE_min_timestep_stop_condition
       s% max_model_number = AMUSE_max_iter_stop_condition

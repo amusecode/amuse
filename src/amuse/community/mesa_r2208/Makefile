@@ -73,7 +73,7 @@ $(STAR_TEST)/%.o:
 
 
 # Building the data
-ZAMS_DATA := data/input/star_data/starting_models/zams_z20m3.data
+ZAMS_DATA := data/data/star_data/starting_models/zams_z20m3.data
 
 $(ZAMS_DATA): zams_z20m3.data.gz
 	gunzip -c $< >$@
