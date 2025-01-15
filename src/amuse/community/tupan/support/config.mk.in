@@ -1,0 +1,5 @@
+# Tools
+DOWNLOAD = @DOWNLOAD@
+TAR = @TAR@
+BUNZIP2 = @BUNZIP2@
+
