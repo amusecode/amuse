@@ -428,7 +428,7 @@ clean() {
 #
 # Calls make distclean on the entire codebase.
 #
-clean() {
+distclean() {
     make -C support distclean
     make -C lib distclean
     make -C lib distclean-sapporo_light
