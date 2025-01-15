@@ -43,8 +43,7 @@ class SecularMultipleInterface(CodeInterface):
     ]
 
     def __init__(self, **options):
-        # CodeInterface.__init__(self, name_of_the_worker="secularmultiple_worker", **options)
-        CodeInterface.__init__(self, **options)
+        CodeInterface.__init__(self, name_of_the_worker="secularmultiple_worker", **options)
 
     #######################
     # basic interface
