@@ -285,7 +285,6 @@ src/amuse/community/sakura/sakura_worker
 src/amuse/community/sakura/src/main.exe
 src/amuse/community/sakura/worker_code.cc
 src/amuse/community/sakura/worker_code.h
-src/amuse/community/seba/src/Makefile.inc
 src/amuse/community/seba/worker_code.cc
 src/amuse/community/seba/worker_code.h
 src/amuse/community/seba/seba_worker

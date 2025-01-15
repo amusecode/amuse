@@ -1,59 +1,87 @@
-# standard amuse configuration include
-# config.mk will be made after ./configure has run
-ifeq ($(origin AMUSE_DIR), undefined)
-  AMUSE_DIR := $(shell amusifier --get-amuse-dir)
+ifneq (,$(filter-out clean distclean, $(MAKECMDGOALS)))
+include support/config.mk
 endif
--include ${AMUSE_DIR}/config.mk
-
-MPICXX ?= mpicxx
-
-CFLAGS   += -Isrc/SeBa/include -Isrc/SeBa/include/star $(SC_FLAGS)
-CXXFLAGS += $(CFLAGS)
-LDFLAGS  += -Lsrc/SeBa/node  -Lsrc/SeBa/std 
-LIBS = -lnode -lstd -lm
-# so that seba build process works
-unexport CFLAGS CXXFLAGS LDFLAGS
-
-AMUSE_OBJS = interface.o
-
-AM_LIBS = -L$(AMUSE_DIR)/lib/amuse_mpi -lamuse_mpi
-AM_CFLAGS = -I$(AMUSE_DIR)/lib/amuse_mpi
 
 
-CODELIB =  src/SeBa/sstar/libsstar.a src/SeBa/dstar/libdstar.a 
+# Detecting dependencies
+support/config.mk:
+	cd support && ./configure
 
 
-DOWNLOAD_FROM_WEB = $(PYTHON) ./download.py
+# Downloading the code
+VERSION = 94e9b1d6ba1466d288a12e3afaa1eba5bca6ddca
 
-all: seba_worker
+seba.tar.gz:
+	$(DOWNLOAD) https://github.com/amusecode/SeBa/archive/$(VERSION).tar.gz >$@
 
-download:
-	$(RM) -Rf .pc
-	$(RM) -Rf src
-	mkdir src
-	$(DOWNLOAD_FROM_WEB)
+src: seba.tar.gz
+	tar xf $<
+	mv SeBa-$(VERSION) src
+	# See https://github.com/amusecode/SeBa/pull/25
+	cd src && patch -p1 <../toolbox.patch
 
+
+# Building the code into a static library
+CFLAGS += $(STOPCOND_CFLAGS) $(AMUSE_MPI_CFLAGS)
+LDFLAGS +=
+LDLIBS += $(STOPCOND_LIBS) $(AMUSE_MPI_LIBS)
+
+CODELIBS = src/sstar/libsstar.a src/dstar/libdstar.a src/node/libnode.a src/std/libstd.a
+
+
+$(CODELIBS) &: | src
+	cd src && $(MAKE) -j $(CPU_COUNT) lib
+
+
+# Building the workers
+
+INTERFACE_CFLAGS = $(CFLAGS) -Isrc/include -Isrc/include/star
+
+seba_worker.h: interface.py
+	amusifier --type=h interface.py SeBaInterface -o $@
+
+seba_worker.cc: interface.py
+	amusifier --type=c interface.py SeBaInterface -o $@
+
+seba_worker.o: seba_worker.cc seba_worker.h | src
+	$(MPICXX) -c -o $@ $(CFLAGS) $<
+
+seba_worker: seba_worker.o interface.o $(CODELIBS)
+	$(MPICXX) -o $@ $(LDFLAGS) $^ $(LDLIBS)
+
+interface.o: interface.cc
+	$(CXX) -o $@ -c $(INTERFACE_CFLAGS) $<
+
+
+# Which packages contain which workers?
+amuse-seba_contains: seba_worker
+
+
+# Building and installing packages
+develop-%: %_contains
+	support/shared/uninstall.sh $*
+	python -m pip install -e packages/$*
+
+install-%: %_contains
+	support/shared/uninstall.sh $*
+	python -m pip install packages/$*
+
+package-%: %_contains
+	python3 -m pip install -vv --no-cache-dir --no-deps --no-build-isolation --prefix ${PREFIX} packages/$*
+
+test-%:
+	cd packages/$* && pytest
+
+
+# Cleaning up
+.PHONY: clean
 clean:
-	$(RM) -f *.so *.o *.pyc worker_code.cc worker_code.h
-	$(RM) *~ worker_code seba_worker
-	$(RM) -r *.dSYM
-	@-make -C src/SeBa clean
+	-$(MAKE) -C src clean
+	rm -rf *.o *worker*
 
-distclean:
-	$(RM) -f *.so *.o *.pyc worker_code.cc worker_code.h
-	$(RM) *~ worker_code
+.PHONY: distclean
+distclean: clean
+	-$(MAKE) -C src distclean
+	rm -f support/config.mk support/config.log support/config.status
+	rm -rf support/autom4te.cache
 
-$(CODELIB): download src/SeBa
-	cd src/SeBa; make -C. CXX="$(CXX) $(CXXFLAGS)"
-
-worker_code.cc: interface.py
-	CFLAGS="$(CFLAGS)" $(CODE_GENERATOR) --type=c interface.py SeBaInterface -o $@
-
-worker_code.h: interface.py
-	$(CODE_GENERATOR) --type=h -i amuse.community.interface.stopping_conditions.StoppingConditionInterface interface.py SeBaInterface -o $@
-
-seba_worker: worker_code.cc worker_code.h $(CODELIB) $(AMUSE_OBJS)
-	$(MPICXX) $(CXXFLAGS)  $(LDFLAGS) $< $(AMUSE_OBJS) $(CODELIB) $(LIBS) -o $@  $(LIBS) $(SC_CLIBS) 
-
-.cc.o: $<
-	$(CXX) $(CXXFLAGS) -c -o $@ $<
