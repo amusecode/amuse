@@ -22,7 +22,7 @@ enum {NEXCEED=10, FAILED, NEGATIVE_PRESSURE};
 
 /* This routine builds the merger product of the two parent stars */
 
-/* 
+/*
  #
  #  (a)  dP/dm = - 1.0/(4*pi) * Gm/r^4
  #  (b)  dr/dm = 1.0/(4*pi*r^2*rho)
@@ -32,7 +32,7 @@ enum {NEXCEED=10, FAILED, NEGATIVE_PRESSURE};
  #
  #  (c)  dP/dmu = - 3*G/(8*pi) * (mu/x)^2
  #  (d)  dx/dmu =   3/(4*pi) * (mu/x)^(1/2)/rho
- # 
+ #
  #  solving (c) & (d)
  #  with the following boundary conditions
  #  P(m = Mstar) = g/chi ~ 0
@@ -43,7 +43,7 @@ enum {NEXCEED=10, FAILED, NEGATIVE_PRESSURE};
  #
  #  Limitations: No angular momentum is taken into account. Only non-rotating products
  #
- # TODO LIST:      
+ # TODO LIST:
  #   Rotating stars
  #
 */
@@ -65,7 +65,7 @@ int hse_func(double mu, const double y[], double dydmu[], void *params) {
   hse_func_params *p = (hse_func_params*)params;
 
   double pressure = y[0];
-  double x        = y[1]; 
+  double x        = y[1];
 
   if (pressure < 0) {
     p->negative_pressure = 1;
@@ -73,19 +73,19 @@ int hse_func(double mu, const double y[], double dydmu[], void *params) {
   }
 
   double dm = pow(mu, 1.5);
-  if (p->eggleton_mu->size() > 0) 
+  if (p->eggleton_mu->size() > 0)
     dm -= pow(p->eggleton_mu->back(), 1.5);
-  
-  double mc_at = p->mcur_A + dm; 
+
+  double mc_at = p->mcur_A + dm;
   mc_at = min(mc_at, p->m_max_A);
-  double rho_A = compute_density(pressure*p_unit, 
-				 p->entr_A->eval(mc_at), 
+  double rho_A = compute_density(pressure*p_unit,
+				 p->entr_A->eval(mc_at),
 				 p->mmu_A->eval(mc_at))/rho_unit;
-  
+
   double mc_bt = p->mcur_B + dm;
   mc_bt = min(mc_bt, p->m_max_B);
-  double rho_B = compute_density(pressure*p_unit, 
-				 p->entr_B->eval(mc_bt), 
+  double rho_B = compute_density(pressure*p_unit,
+				 p->entr_B->eval(mc_bt),
 				 p->mmu_B->eval(mc_bt))/rho_unit;
 
   if (p->mcur_A == p->m_max_A) {
@@ -95,20 +95,20 @@ int hse_func(double mu, const double y[], double dydmu[], void *params) {
   }
 
   double density;
-  
+
   if (rho_A > rho_B) {
     density = rho_A;
     p->Morig_temp->push_back(mc_at);     /* track location of the shell */
     p->which_star = 1;
-  } else { 
+  } else {
     density = rho_B;
     p->Morig_temp->push_back(-mc_bt);    /* track location of the shell */
     p->which_star = 2;
   }
-  
+
   double mu_x = pow(4.0*PI/3 * density, 2.0/3.0);
   if (x > 0) mu_x = mu/x;
-  
+
   // dP/dmu
   dydmu[0] = -3.0/(8*PI) * mu_x*mu_x;
 
@@ -127,7 +127,7 @@ int solve_HSE(double p_centre, double m_product,
 	      gslInterp &entr_A, gslInterp &entr_B,
 	      double m_min_A, double m_min_B,
 	      double m_max_A, double m_max_B,
-	      vector<double> &Morig, 
+	      vector<double> &Morig,
 	      vector<double> &mass, vector<double> &radius, vector<double> &pressure,
 	      double relative_error, int n_shells) {
 
@@ -135,7 +135,7 @@ int solve_HSE(double p_centre, double m_product,
 
   double eps_abs = 1.0e-4;
   double eps_rel = 0;
-  eps_abs = 0; 
+  eps_abs = 0;
   eps_rel = relative_error;
 
   const gsl_odeiv_step_type *T = gsl_odeiv_step_rkf45;
@@ -145,7 +145,7 @@ int solve_HSE(double p_centre, double m_product,
 
   hse_func_params params;
 
-  vector<double> eggleton_mu;			
+  vector<double> eggleton_mu;
   eggleton_mu.push_back(0);
   params.eggleton_mu = &eggleton_mu;
 
@@ -153,29 +153,29 @@ int solve_HSE(double p_centre, double m_product,
   params.m_max_A = m_max_A;
   params.mmu_A   = &mmu_A;
   params.entr_A  = &entr_A;
-  
+
   params.mcur_B  = m_min_B;
   params.m_max_B = m_max_B;
   params.mmu_B   = &mmu_B;
   params.entr_B  = &entr_B;
-  
-  gsl_odeiv_system sys = {hse_func, hse_jac, n_dim, &params};
+
+  gsl_odeiv_system sys = {hse_func, hse_jac, static_cast<size_t>(n_dim), &params};
 
   double m_c = 0.0;
   double m_1 = pow(m_product, 2.0/3.0);
   double dm  = 1.0e-6;
   double y[2] = {p_centre/p_unit, 0.0};   // {pressure, x}
-  
+
   Morig.clear();
   mass.clear();
   pressure.clear();
   radius.clear();
-  
+
   params.negative_pressure = 0;
   while (m_c < m_1) {
     vector<double> Morig_temp;
     params.Morig_temp = &Morig_temp;
-    
+
     params.which_star = 0;
     int status  = gsl_odeiv_evolve_apply(e, c, s,
 					 &sys,
@@ -196,17 +196,17 @@ int solve_HSE(double p_centre, double m_product,
     } else {
       params.mcur_B += dm;
       params.mcur_B = min(params.mcur_B, m_max_B);
-    }    
+    }
     real mpr = pow(m_c, 1.5);
     real ma = params.mcur_A;
     real mb = params.mcur_B;
-//     PRC(dm); PRC(mpr); PRC(ma+mb); PRC(ma); PRC(m_max_A); PRC(mb); PRL(m_max_B); 
-  
+//     PRC(dm); PRC(mpr); PRC(ma+mb); PRC(ma); PRC(m_max_A); PRC(mb); PRL(m_max_B);
+
     if (params.negative_pressure == 1)  {
       pressure.push_back(-p_unit);
       return NEGATIVE_PRESSURE;
     }
-    
+
 
     /* if more than desired number of shells
        was generated, reduce relative accuracy of the solver
@@ -217,7 +217,7 @@ int solve_HSE(double p_centre, double m_product,
 
     if (status != GSL_SUCCESS)
       return FAILED;
-    
+
     mass.push_back(pow(m_c, 1.5));
     pressure.push_back(y[0]*p_unit);
     radius.push_back(sqrt(y[1]));
@@ -261,7 +261,7 @@ double merge_stars_eq(double p_centre, void *params) {
     pc++;
     if (p->status == NEXCEED)
         p->error_try *= ERROR_SCALE_INC;
-    else 
+    else
         if (p->mass.size() < p->n_shells)
             p->error_try *= 1.0/ERROR_SCALE_DEC;
         else
@@ -288,7 +288,7 @@ int mmas::merge_stars(double f_lost, int n_desired_shells) {
   double m_max_A = (1.0 - 1.0e-10)*Mass.back();
 
   vector<double> id_sB;
-  sort_model(*model_b, Mass, entr, m_mu, id_sB); 
+  sort_model(*model_b, Mass, entr, m_mu, id_sB);
   for (size_t i = 0; i < entr.size(); i++) {
     entr[i] *=  randx;
     m_mu[i] *=  randx;
@@ -320,11 +320,11 @@ int mmas::merge_stars(double f_lost, int n_desired_shells) {
   else
     p.n_shells = n_desired_shells;
 
-  
+
   gsl_function F;
   F.function = &merge_stars_eq;
   F.params   = &p;
-  
+
 //   const gsl_root_fsolver_type *T = gsl_root_fsolver_brent;
   const gsl_root_fsolver_type *T = gsl_root_fsolver_falsepos;
 //   const gsl_root_fsolver_type *T = gsl_root_fsolver_bisection;
@@ -342,7 +342,7 @@ int mmas::merge_stars(double f_lost, int n_desired_shells) {
   p.initial_error_try = ERROR_TRY0;
   merge_stars_eq(p_0, &p);
   p.initial_error_try = p.error_try;
-  
+
   double sgn = p.pressure.back();
 
   int iterb_max = 100;
@@ -367,7 +367,7 @@ int mmas::merge_stars(double f_lost, int n_desired_shells) {
 //    PRC(p.Morig.size()); PRL(p.mass.size());
 
     if (sgn*p.pressure.back() < 0) stop = 1;
-    
+
 //     PRC(p.error_try); PRC(p.mass.size());
 //     if (p.mass.size() < NTRY)   p.error_try *= 1.0/5;
 //     if (p.mass.size() > 5*NTRY) p.error_try *= 10;
@@ -379,16 +379,16 @@ int mmas::merge_stars(double f_lost, int n_desired_shells) {
   cerr << "p is in [" << p_min << ", " << p_max << "] \n";
 
   p.n_shells = n_desired_shells;
-    
+
   fprintf(stderr, "\n----------------------------------------------------\n");
-  fprintf(stderr, "Computing p_centre using %s method:\n", 
+  fprintf(stderr, "Computing p_centre using %s method:\n",
 	  gsl_root_fsolver_name (s));
 
   gsl_root_fsolver_set (s, &F, p_min, p_max);
 
   fprintf (stderr, "%5s [%9s, %9s] %9s %9s\n",
 	   "iter", "lower", "upper", "root", "err(est)");
-  
+
   int status;
   int iter = 0, iter_max = 1000;
   double rel_err = 1.0e-4;
@@ -405,10 +405,10 @@ int mmas::merge_stars(double f_lost, int n_desired_shells) {
 
     status = gsl_root_test_interval (x_lo, x_hi,
 				     0, rel_err);
-    
+
     if (status == GSL_SUCCESS)
       fprintf (stderr, "Converged in %u iterations:\n", iter+1);
-    
+
 //     if (iter%100 == 0 || status == GSL_SUCCESS)
       fprintf (stderr, "%5d [%.7f, %.7f] %.7f %.7f\n",
 	       iter, x_lo, x_hi,
@@ -431,7 +431,7 @@ int mmas::merge_stars(double f_lost, int n_desired_shells) {
      do not forget to modify the subsequent routine too in order
      to make it aware of the sorting.
   */
-  
+
   vector<double> mass, chemicals[NUMBER_OF_CHEMICAL_SPECIES];
 
   int n = model_a->get_num_shells();
@@ -481,7 +481,7 @@ int mmas::merge_stars(double f_lost, int n_desired_shells) {
 
   delete product;
   product = new usm;
-  
+
   mass_shell shell;
   int mass_size = p.mass.size();
   for (int i = 0; i < mass_size-1; i++) {
@@ -492,7 +492,7 @@ int mmas::merge_stars(double f_lost, int n_desired_shells) {
   product->star_radius = p.radius[p.mass.size()-1];
 
   PRL(mass_size);
-  
+
   for (int i = 0; i < mass_size-1; i++) {
     mass_shell &shell = product->get_shell(i);
     chemical_composition &che = shell.composition;
@@ -526,7 +526,7 @@ int mmas::merge_stars(double f_lost, int n_desired_shells) {
       che.Si28 = cheB[7]->eval(m);
       che.Fe56 = cheB[8]->eval(m);
     }
-    
+
     shell.density     = compute_density(shell.pressure, shell.entropy, shell.mean_mu);
     shell.temperature = compute_temperature(shell.density, shell.pressure, shell.mean_mu);
     if (i%100 == 101) {
