@@ -7,7 +7,7 @@ print_help() {
     cmd="$1"
 
     if [ "a${cmd}" != "a" ] ; then
-        printf '%s\n\n' "${cmd} was not recognised as a valid command."
+        printf '\n%s\n' "${cmd} was not recognised as a valid command."
     fi
 
     printf '\n%b\n' "${BOLD}${COLOR_CYAN}*** AMUSE setup help ***${COLOR_END}${END_BOLD}"
