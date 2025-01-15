@@ -1,16 +1,45 @@
-# standard amuse configuration include
-# config.mk will be made after ./configure has run
-ifeq ($(origin AMUSE_DIR), undefined)
-  AMUSE_DIR := $(shell amusifier --get-amuse-dir)
+ifneq (,$(filter-out clean distclean, $(MAKECMDGOALS)))
+include support/config.mk
 endif
--include ${AMUSE_DIR}/config.mk
 
 
-all:twobody_worker
+# Detecting dependencies
+support/config.mk:
+	cd support && ./configure
 
+
+# Building the workers
 twobody_worker: twobody.py
-	$(CODE_GENERATOR) --type=py --mode=mpi -x interface TwoBodyInterface TwoBodyImplementation -o $@
-	
+	PYTHONPATH=. amusifier --type=py --mode=mpi -x interface TwoBodyInterface TwoBodyImplementation -o $@
+
+
+# Which packages contain which workers?
+amuse-twobody_contains: twobody_worker
+
+
+# Building and installing packages
+develop-%: %_contains
+	support/shared/uninstall.sh $*
+	python -m pip install -e packages/$*
+
+install-%: %_contains
+	support/shared/uninstall.sh $*
+	python -m pip install packages/$*
+
+package-%: %_contains
+	python3 -m pip install -vv --no-cache-dir --no-deps --no-build-isolation --prefix ${PREFIX} packages/$*
+
+test-%:
+	cd packages/$* && pytest
+
+
+# Cleaning up
+.PHONY: clean
 clean:
-	$(RM) -f *.bck *.pyc
-	$(RM) -f twobody_worker twobody_worker_sockets
+	rm -rf *worker*
+
+.PHONY: distclean
+distclean: clean
+	rm -f support/config.mk support/config.log support/config.status
+	rm -rf support/autom4te.cache
+
