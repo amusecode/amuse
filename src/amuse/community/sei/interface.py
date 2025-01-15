@@ -6,7 +6,7 @@ from amuse.community.interface import common
 
 class SeiInterface(CodeInterface):
     
-    include_headers = ['worker_code.h']
+    include_headers = ['sei_worker.h']
     
     def __init__(self, **keyword_arguments):
         CodeInterface.__init__(self, name_of_the_worker="sei_worker", **keyword_arguments)

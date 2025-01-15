@@ -1,4 +1,4 @@
-from amuse.test.amusetest import TestWithMPI
+from amusetest import TestWithMPI
 from amuse.units import nbody_system
 from amuse.units import units
 import os

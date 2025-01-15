@@ -15,7 +15,7 @@ extern "C" {
 }
 #endif
 #include "interface.h"
-#include "worker_code.h"
+#include "sei_worker.h"
 
 static double time;
 static double dt;
