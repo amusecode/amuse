@@ -269,6 +269,11 @@ test_framework() {
 check_package() {
     package="$1"
 
+    # if the amuse- prefix is missing, add it
+    if [ "a${package#amuse-}" = "a${package}" ] ; then
+        package="amuse-${package}"
+    fi
+
     if is_subset "${package}" "${DISABLED_PACKAGES}" ; then
         printf '\n%s\n' "Package ${package} cannot be installed because tools or dependencies are missing."
         printf '%s\n\n' 'Please run ./setup and follow the instructions to enable it.'
@@ -336,7 +341,7 @@ install() {
         all )
             install_all
             ;;
-        amuse-framework )
+        amuse-framework | framework )
             install_framework
             ;;
         sapporo_light )
@@ -359,7 +364,7 @@ develop() {
     target="$1"
 
     case ${target} in
-        amuse-framework )
+        amuse-framework | framework )
             develop_framework
             ;;
         * )
@@ -379,7 +384,7 @@ package() {
     target="$1"
 
     case ${target} in
-        amuse-framework )
+        amuse-framework | framework )
             package_framework
             ;;
         * )
@@ -401,7 +406,7 @@ run_test() {
         all )
             test_all
             ;;
-        amuse-framework )
+        amuse-framework | framework )
             test_framework
             ;;
         * )
