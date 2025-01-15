@@ -24,7 +24,7 @@ class ph4Interface(CodeInterface,
 
     # Interface specification.
 
-    include_headers = ['interface.h', 'stopcond.h']
+    include_headers = ['ph4_worker.h', 'stopcond.h']
 
     MODE_GPU = 'gpu'
     MODE_CPU = 'cpu'
@@ -116,7 +116,7 @@ class ph4Interface(CodeInterface,
         if mode == self.MODE_CPU:
             return 'ph4_worker'
         elif mode == self.MODE_GPU:
-            return 'ph4_worker_gpu'
+            return 'ph4_sapporo_worker'
         else:
             return 'ph4_worker'
         

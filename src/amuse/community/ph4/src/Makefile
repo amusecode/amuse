@@ -8,7 +8,7 @@
 AMUSE_DIR?=../../../../..
 OPT	  = -I$(AMUSE_DIR)/lib/stopcond
 
-GPU	  = -DGPU
+GPU	  = -DGPU -DDEBUG=3
 MPICXX    ?= mpicxx
 MPICC     ?= mpicc
 CXX       ?= mpicxx
