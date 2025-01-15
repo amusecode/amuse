@@ -11,8 +11,6 @@ class Nbody6xxInterface(
     ):
     use_modules = ['AMUSE_INTERFACE']
 
-    include_headers = ['worker_code.h']
-
     def __init__(self, **keyword_arguments):
         CodeInterface.__init__(self, name_of_the_worker="nbody6xx_worker", **keyword_arguments)
 
