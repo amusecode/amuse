@@ -1,6 +1,5 @@
 #include "Communicator.h"
 
-using namespace std;
 #include <vector>
 #include <cmath>
 
@@ -15,7 +14,7 @@ class Interaction {
   public:
 
   Interaction();
-  void calc_a(vector<Particle> &particle, Communicator &communicator);
+  void calc_a(std::vector<Particle> &particle, Communicator &communicator);
 };
 
 #endif

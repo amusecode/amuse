@@ -438,10 +438,10 @@ void Twobody::denormalize(double &mu, double &x, double &y, double &z, double &v
 }
 bool Twobody::is_valid_number(double &x) {
   bool valid = true;
-  if(isinf(x)) {
+  if(std::isinf(x)) {
     valid = false;
   }
-  else if(isnan(x)) {
+  else if(std::isnan(x)) {
     valid = false;
   }
   return valid;

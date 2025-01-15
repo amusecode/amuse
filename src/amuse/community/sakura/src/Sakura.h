@@ -3,6 +3,7 @@
 #include <string>
 #include <cmath>
 #include <cstdlib>
+#include <vector>
 
 #include "Particle.h"
 #include "Particles.h"
@@ -46,17 +47,17 @@ class Sakura {
   Particle* get_pointer_to_star(int index);
 
   void evolve(double t, Communicator &communicator);
-  void step(vector<Particle> &particle, double dt, Communicator &communicator);
+  void step(std::vector<Particle> &particle, double dt, Communicator &communicator);
 
   void initial_calculations();
   double get_t();
   void set_t(double t);
   void step(double dt, Communicator &communicator);
 
-  vector<double> get_coordinates(vector<Particle> &particle);
-  void update_particles(vector<Particle> &particle, vector<double> &coordinates);
-  void update_particles(vector<double> &coordinates);
-  vector<double> get_data();
+  std::vector<double> get_coordinates(std::vector<Particle> &particle);
+  void update_particles(std::vector<Particle> &particle, std::vector<double> &coordinates);
+  void update_particles(std::vector<double> &coordinates);
+  std::vector<double> get_data();
 };
 
 #endif

@@ -2,7 +2,7 @@
 
 // Conserved quantities
 
-double Diagnostics::get_mass(vector<double> &data) {
+double Diagnostics::get_mass(std::vector<double> &data) {
   int N = data.size()/7;
   double M = 0;
   for(int i=0; i<N; i++) {
@@ -10,9 +10,9 @@ double Diagnostics::get_mass(vector<double> &data) {
   }
   return M;
 }
-vector<double> Diagnostics::get_rcm(vector<double> &data) {
+std::vector<double> Diagnostics::get_rcm(std::vector<double> &data) {
   double M = get_mass(data);
-  vector<double> rcm(3,0);
+  std::vector<double> rcm(3,0);
   int N = data.size()/7;
   for(int i=0; i<N; i++) {
     for(int j=0; j<3; j++) {
@@ -22,9 +22,9 @@ vector<double> Diagnostics::get_rcm(vector<double> &data) {
   for(int i=0; i<3; i++) rcm[i] /= M;
   return rcm;
 }
-vector<double> Diagnostics::get_vcm(vector<double> &data) {
+std::vector<double> Diagnostics::get_vcm(std::vector<double> &data) {
   double M = get_mass(data);
-  vector<double> vcm(3,0);
+  std::vector<double> vcm(3,0);
   int N = data.size()/7;
   for(int i=0; i<N; i++) {
     for(int j=0; j<3; j++) {
@@ -34,9 +34,9 @@ vector<double> Diagnostics::get_vcm(vector<double> &data) {
   for(int i=0; i<3; i++) vcm[i] /= M;
   return vcm;
 }
-vector<double> Diagnostics::get_lcm(vector<double> &data) {
+std::vector<double> Diagnostics::get_lcm(std::vector<double> &data) {
   double M = get_mass(data);
-  vector<double> lcm(3,0);
+  std::vector<double> lcm(3,0);
   int N = data.size()/7;
   for(int i=0; i<N; i++) {
     lcm[0] += data[i*7]*(data[i*7+2]*data[i*7+6]-data[i*7+3]*data[i*7+5]);
@@ -46,7 +46,7 @@ vector<double> Diagnostics::get_lcm(vector<double> &data) {
   for(int i=0; i<3; i++) lcm[i] /= M;
   return lcm;
 }
-double Diagnostics::get_kinetic_energy(vector<double> &data) {
+double Diagnostics::get_kinetic_energy(std::vector<double> &data) {
   int N = data.size()/7;
   double ek = 0;
   for(int i=0; i<N; i++) {
@@ -59,7 +59,7 @@ double Diagnostics::get_kinetic_energy(vector<double> &data) {
   }
   return ek;
 }
-double Diagnostics::get_potential_energy(vector<double> &data) {
+double Diagnostics::get_potential_energy(std::vector<double> &data) {
   int N = data.size()/7;
   double ep = 0;
   for(int i=0; i<N-1; i++) {
@@ -82,7 +82,7 @@ double Diagnostics::get_potential_energy(vector<double> &data) {
   }
   return ep;
 }
-double Diagnostics::get_energy(vector<double> &data) {
+double Diagnostics::get_energy(std::vector<double> &data) {
   double ek = get_kinetic_energy(data);
   double ep = get_potential_energy(data);
   return ek+ep;
@@ -90,13 +90,13 @@ double Diagnostics::get_energy(vector<double> &data) {
 
 // System properties
 
-double Diagnostics::get_virial_radius(vector<double> &data) {
+double Diagnostics::get_virial_radius(std::vector<double> &data) {
   double M = get_mass(data);
   double ep = get_potential_energy(data);
   double rv = -1*M*M / (2*ep);
   return rv;
 }
-double Diagnostics::get_harmonic_radius(vector<double> &data) {
+double Diagnostics::get_harmonic_radius(std::vector<double> &data) {
   int N = data.size()/7;
 
   double ep = 0;
@@ -122,7 +122,7 @@ double Diagnostics::get_harmonic_radius(vector<double> &data) {
   double rh = -1*M*M / (2*ep);
   return rh;
 }
-double Diagnostics::get_velocity_disperion(vector<double> &data) {
+double Diagnostics::get_velocity_disperion(std::vector<double> &data) {
   double M = get_mass(data);
   double ek = get_kinetic_energy(data);
   double sigma = sqrt(2*ek / M);

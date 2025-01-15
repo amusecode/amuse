@@ -4,7 +4,6 @@
 #include "Communicator.h"
 
 #include <iostream>
-using namespace std;
 
 #include <fstream>
 #include <cstdlib>
@@ -18,13 +17,13 @@ using namespace std;
 
 // AMUSE STOPPING CONDITIONS SUPPORT
 #include <stopcond.h>
-#include "worker_code.h"
+#include "sakura_worker.h"
 
 ////////////////////////////////////////////////////////
 // Declare global variables
 ////////////////////////////////////////////////////////
 int particle_id_counter = 0;
-vector<double> data, data_radius;
+std::vector<double> data, data_radius;
 
 double t_begin;
 double dt;
@@ -38,7 +37,7 @@ int mpi_size = 1;
 ////////////////////////////////////////////////////////
 // Declare global objects 
 ////////////////////////////////////////////////////////
-string out_directory;
+std::string out_directory;
 std::map<int, int> local_index_map;
 
 Sakura *sakura = NULL;
@@ -52,12 +51,12 @@ int initialize_code() {
     int error = 0;
     error = MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);
     if(error) {
-        cerr << error << endl;
+        std::cerr << error << std::endl;
         return -1;
     }
     error = MPI_Comm_size(MPI_COMM_WORLD, &mpi_size);
     if(error) {
-        cerr << error << endl;
+        std::cerr << error << std::endl;
         return -1;
     }
 #else
@@ -338,7 +337,7 @@ int get_potential_energy(double* ep) {
 }
 int get_center_of_mass_position(double* x , double* y, double* z){ 
   Diagnostics diag;
-  vector<double> rcm = diag.get_rcm(data);
+  std::vector<double> rcm = diag.get_rcm(data);
   *x = rcm[0];
   *y = rcm[1];
   *z = rcm[2];
@@ -346,7 +345,7 @@ int get_center_of_mass_position(double* x , double* y, double* z){
 }
 int get_center_of_mass_velocity(double* vx, double* vy, double* vz){ 
   Diagnostics diag;
-  vector<double> vcm = diag.get_vcm(data);
+  std::vector<double> vcm = diag.get_vcm(data);
   *vx = vcm[0];
   *vy = vcm[1];
   *vz = vcm[2];

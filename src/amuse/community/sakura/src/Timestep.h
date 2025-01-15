@@ -1,4 +1,3 @@
-using namespace std;
 #include <vector>
 #include <cmath>
 #include <algorithm>
@@ -32,7 +31,7 @@ class Timestep {
   double get_dt_param();
   double get_dt();
 
-  double get_dt(vector<Particle> &particle);
+  double get_dt(std::vector<Particle> &particle);
 
   double get_constant_dt();
 };

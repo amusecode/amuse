@@ -26,7 +26,7 @@ void Sakura::set_particles(Particles particles) {
 
   double t_begin = particles.get_t();
   int N = particles.get_N();
-  vector<Particle> particle = particles.get_particles();
+  std::vector<Particle> particle = particles.get_particles();
 
 }
 void Sakura::set_dt(double dt) {
@@ -64,7 +64,7 @@ Particle* Sakura::get_pointer_to_star(int index) {
 void Sakura::evolve(double t, Communicator &communicator) {
   double t_begin = particles.get_t();
   int N = particles.get_N();
-  vector<Particle> particle = particles.get_particles();
+  std::vector<Particle> particle = particles.get_particles();
 
   double t_end = t;
   t = t_begin;	
@@ -90,7 +90,7 @@ void Sakura::evolve(double t, Communicator &communicator) {
   particles.set_t(t);
   particles.set_particles(particle); 
 }
-void Sakura::step(vector<Particle> &particle, double dt, Communicator &communicator) {
+void Sakura::step(std::vector<Particle> &particle, double dt, Communicator &communicator) {
   int N = particle.size();  
 
   double Mtot = 0;
@@ -107,7 +107,7 @@ void Sakura::step(vector<Particle> &particle, double dt, Communicator &communica
   vycm /= Mtot;
   vzcm /= Mtot;
 
-  vector<double> mydp(6*N, 0);
+  std::vector<double> mydp(6*N, 0);
   for(int i=communicator.get_my_begin(); i<communicator.get_my_end(); i++) {
     for(int j=0; j<N; j++) {
       if(i != j) {
@@ -146,7 +146,7 @@ void Sakura::step(vector<Particle> &particle, double dt, Communicator &communica
     }
   }
 
-  vector<double> dp(6*N, 0);
+  std::vector<double> dp(6*N, 0);
   communicator.join(mydp, dp);
   communicator.bcast(dp);
 
@@ -180,13 +180,13 @@ void Sakura::set_t(double t) {
   particles.set_t(t);
 }
 void Sakura::step(double dt, Communicator &communicator) {
-  vector<Particle> particle = particles.get_particles();
+  std::vector<Particle> particle = particles.get_particles();
   step(particle, dt, communicator);
   particles.set_particles(particle);
 }
-vector<double> Sakura::get_coordinates(vector<Particle> &particle) {
+std::vector<double> Sakura::get_coordinates(std::vector<Particle> &particle) {
   int N = particle.size();
-  vector<double> coordinates(N*7);
+  std::vector<double> coordinates(N*7);
   int counter = 0;
   for(int i=0; i<N; i++) {
     coordinates[counter+0] = particle[i].get_mass();
@@ -200,7 +200,7 @@ vector<double> Sakura::get_coordinates(vector<Particle> &particle) {
   }
   return coordinates;
 }
-void Sakura::update_particles(vector<Particle> &particle, vector<double> &coordinates) {
+void Sakura::update_particles(std::vector<Particle> &particle, std::vector<double> &coordinates) {
   int N = particle.size();
   int counter = 0;
   for(int i=0; i<N; i++) {
@@ -214,9 +214,9 @@ void Sakura::update_particles(vector<Particle> &particle, vector<double> &coordi
     counter += 7;
   }
 }
-void Sakura::update_particles(vector<double> &coordinates) {
+void Sakura::update_particles(std::vector<double> &coordinates) {
   int N = particles.get_N();
-  vector<Particle> p(N);
+  std::vector<Particle> p(N);
   int counter = 0;
   for(int i=0; i<N; i++) {
     p[i].set_mass( coordinates[counter+0] );
@@ -229,10 +229,10 @@ void Sakura::update_particles(vector<double> &coordinates) {
     counter += 7;
   }
 }
-vector<double> Sakura::get_data() {
-  vector<Particle> p = particles.get_particles();
+std::vector<double> Sakura::get_data() {
+  std::vector<Particle> p = particles.get_particles();
   int N = p.size();
-  vector<double> data(7*N, 0);
+  std::vector<double> data(7*N, 0);
   for(int i=0; i<N; i++) {    
     data[i*7+0] = p[i].get_mass();
     data[i*7+1] = p[i].get_x();

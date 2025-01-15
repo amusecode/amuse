@@ -47,7 +47,7 @@ double Timestep::get_dt() {
   return dt_max*dt_param;
 }
 
-double Timestep::get_dt(vector<Particle> &particle) {
+double Timestep::get_dt(std::vector<Particle> &particle) {
   return get_constant_dt();
 }
 

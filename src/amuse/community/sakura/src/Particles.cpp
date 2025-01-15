@@ -5,17 +5,17 @@ Particles::Particles() {
   N = 0;
   particle.clear();
 }
-Particles::Particles(vector<Particle> particle) {
+Particles::Particles(std::vector<Particle> particle) {
   t = 0;
   N = particle.size();
   this->particle = particle;
 }
-Particles::Particles(double t, vector<Particle> particle) {
+Particles::Particles(double t, std::vector<Particle> particle) {
   this->t = t;
   N = particle.size();
   this->particle = particle;
 }
-Particles::Particles(double t, int N, vector<Particle> particle) {
+Particles::Particles(double t, int N, std::vector<Particle> particle) {
   this->t = t;
   this->N = N;
   this->particle = particle;
@@ -27,7 +27,7 @@ void Particles::set_t(double t) {
 void Particles::set_N(int N) {
   this->N = N;
 }
-void Particles::set_particles(vector<Particle> particle) {
+void Particles::set_particles(std::vector<Particle> particle) {
   this->particle = particle;
 }
 void Particles::set_particle(int index, Particle particle) {
@@ -40,7 +40,7 @@ double Particles::get_t() {
 int Particles::get_N() {
   return N;
 }
-vector<Particle> Particles::get_particles() {
+std::vector<Particle> Particles::get_particles() {
   return particle;
 }
 Particle Particles::get_particle(int index) {
@@ -50,7 +50,7 @@ Particle* Particles::get_pointer_to_star(int index) {
   return &particle[index];
 }
 
-void Particles::set_data(vector<double> &data) {
+void Particles::set_data(std::vector<double> &data) {
   N = data.size()/7;
   particle.resize(N);
   for(int i=0; i<N; i++) {
@@ -63,8 +63,8 @@ void Particles::set_data(vector<double> &data) {
     particle[i].set_vz(data[i*7+6]);
   }
 }  
-vector<double> Particles::get_data() {
-  vector<double> data;
+std::vector<double> Particles::get_data() {
+  std::vector<double> data;
   for(int i=0; i<N; i++) {
     data.push_back(particle[i].get_mass());
     data.push_back(particle[i].get_x());
@@ -90,40 +90,40 @@ void Particles::remove_particle(int index) {
 }
 
 void Particles::print() {
-  cout << t << " " << N << endl;
+  std::cout << t << " " << N << std::endl;
   for(int i=0; i<N; i++) {
-    cout << particle[i].get_mass() << " "
+    std::cout << particle[i].get_mass() << " "
          << particle[i].get_x() << " " << particle[i].get_y() << " " << particle[i].get_z() << " "
-         << particle[i].get_vx() << " " << particle[i].get_vy() << " " << particle[i].get_vz() << endl;
+         << particle[i].get_vx() << " " << particle[i].get_vy() << " " << particle[i].get_vz() << std::endl;
   }
-  cout << endl;
+  std::cout << std::endl;
 }
 void Particles::print(double t_cpu) {
-  cout << t << " " << N << " " << t_cpu << endl;
+  std::cout << t << " " << N << " " << t_cpu << std::endl;
   for(int i=0; i<N; i++) {
-    cout << particle[i].get_mass() << " "
+    std::cout << particle[i].get_mass() << " "
          << particle[i].get_x() << " " << particle[i].get_y() << " " << particle[i].get_z() << " "
-         << particle[i].get_vx() << " " << particle[i].get_vy() << " " << particle[i].get_vz() << endl;
+         << particle[i].get_vx() << " " << particle[i].get_vy() << " " << particle[i].get_vz() << std::endl;
   }
-  cout << endl;
+  std::cout << std::endl;
 }
-void Particles::print(ofstream &odata) {
-  odata << t << " " << N << endl;
+void Particles::print(std::ofstream &odata) {
+  odata << t << " " << N << std::endl;
   for(int i=0; i<N; i++) {
     odata << particle[i].get_mass() << " "
          << particle[i].get_x() << " " << particle[i].get_y() << " " << particle[i].get_z() << " "
-         << particle[i].get_vx() << " " << particle[i].get_vy() << " " << particle[i].get_vz() << endl;
+         << particle[i].get_vx() << " " << particle[i].get_vy() << " " << particle[i].get_vz() << std::endl;
   }
-  odata << endl;
+  odata << std::endl;
 }
-void Particles::print(double t_cpu, ofstream &odata) {
-  odata << t << " " << N << " " << t_cpu << endl;
+void Particles::print(double t_cpu, std::ofstream &odata) {
+  odata << t << " " << N << " " << t_cpu << std::endl;
   for(int i=0; i<N; i++) {
     odata << particle[i].get_mass() << " " 
          << particle[i].get_x() << " " << particle[i].get_y() << " " << particle[i].get_z() << " "
-         << particle[i].get_vx() << " " << particle[i].get_vy() << " " << particle[i].get_vz() << endl;
+         << particle[i].get_vx() << " " << particle[i].get_vy() << " " << particle[i].get_vz() << std::endl;
   }
-  odata << endl;
+  odata << std::endl;
 }
 
 
