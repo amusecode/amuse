@@ -1,7 +1,7 @@
-Index: mocassin/src/mocassin.2.02.70/makefile
+Index: mocassin/src/mocassin/makefile
 ===================================================================
---- mocassin.orig/src/mocassin.2.02.70/makefile
-+++ mocassin/src/mocassin.2.02.70/makefile
+--- mocassin.orig/src/mocassin/makefile
++++ mocassin/src/mocassin/makefile
 @@ -16,15 +16,13 @@ LDFLAGS += -lm -g
  #FFLAGS  += -fno-range-check
  

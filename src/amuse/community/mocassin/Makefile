@@ -1,97 +1,88 @@
-# standard amuse configuration include
-# config.mk will be made after ./configure has run
-ifeq ($(origin AMUSE_DIR), undefined)
-  AMUSE_DIR := $(shell amusifier --get-amuse-dir)
+ifneq (,$(filter-out clean distclean, $(MAKECMDGOALS)))
+include support/config.mk
 endif
-include ${AMUSE_DIR}/config.mk
-
-FORTRAN = $(FC)
-MPIF90 ?= $(MPIFC)
-PYTHON ?= python
-
-export FORTRAN
-
-OBJS = interface.o
 
 
+# Detecting dependencies
+support/config.mk:
+	cd support && ./configure
+
+
+# Downloading the code
 VERSION = 2.02.70
-CODEDIR = src/mocassin.$(VERSION)
-CODELIB = $(CODEDIR)/libmocassin.a
 
-SOURCEDIR = $(CODEDIR)/source
-SOURCES  = \
-	$(SOURCEDIR)/infnan.f90 $(SOURCEDIR)/constants_mod.f90 $(SOURCEDIR)/vector_mod.f90 \
-	$(SOURCEDIR)/common_mod.f90 $(SOURCEDIR)/interpolation_mod.f90 $(SOURCEDIR)/set_input_mod.f90 \
-	$(SOURCEDIR)/hydro_mod.f90 $(SOURCEDIR)/ph_mod.f90 $(SOURCEDIR)/composition_mod.f90 \
-	$(SOURCEDIR)/continuum_mod.f90 $(SOURCEDIR)/ionization_mod.f90 $(SOURCEDIR)/pathIntegration_mod.f90 \
-	$(SOURCEDIR)/grid_mod.f90 $(SOURCEDIR)/dust_mod.f90 $(SOURCEDIR)/emission_mod.f90 $(SOURCEDIR)/photon_mod.f90  \
-	$(SOURCEDIR)/update_mod.f90 $(SOURCEDIR)/output_mod.f90 $(SOURCEDIR)/iteration_mod.f90
-	
-OBJECTS = $(SOURCES:.f90=.o)
+mocassin.$(VERSION).tar.gz:
+	$(DOWNLOAD) https://amuse.strw.leidenuniv.nl/codes/mocassin.$(VERSION).tar.gz >$@
+
+PATCHES := $(file < patches/series)
+PATCHES := $(patsubst %,%,$(PATCHES))    # replace newlines with spaces
+
+src:
+	mkdir -p src
+
+src/mocassin: | mocassin.$(VERSION).tar.gz src
+	tar xf mocassin.$(VERSION).tar.gz
+	mv mocassin.$(VERSION) src/mocassin
+	for p in $(PATCHES) ; do patch -p1 <patches/$$p ; done
 
 
-DOWNLOAD_FROM_WEB = $(PYTHON) ./download.py
-PATCH_FILES = $(PYTHON) ./patch_files.py
+# Building the code into a static library
+DEPFLAGS += $(FORSOCKETS_CFLAGS)
+FCFLAGS += $(DEPFLAGS) -std=legacy -fallow-argument-mismatch -fallow-invalid-boz
+LDLIBS += $(FORSOCKETS_LIBS)
 
-DOWNLOAD_CODES?=1
+CODELIB = src/mocassin/libmocassin.a
 
-FFLAGS   += -Wall -g -I$(CODEDIR)/source -fallow-invalid-boz -std=legacy
-LDFLAGS  += -lm $(MUSE_LD_FLAGS)
+# Dependencies of interface.f90
+MOD_NAMES := common_mod constants_mod dust_mod grid_mod iteration_mod output_mod set_input_mod xsec_mod
+MOD_FILES := $(patsubst %,src/mocassin/%.mod,$(MOD_NAMES))
 
-all: mocassin_worker 
 
-ifdef DOWNLOAD_CODES
-$(CODEDIR)/makefile:
-	make -C . download
-else
-$(CODEDIR)/makefile:
-	@echo ""
-	@echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
-	@echo ""
-	@echo "DOWNLOAD_CODES is not set. Mocassin will not be downloaded and build."
-	@echo "If you do want Mocassin, set DOWNLOAD_CODES to 1."
-	@echo "bash> export DOWNLOAD_CODES=1"
-	@echo "csh> setenv DOWNLOAD_CODES 1"
-	@echo ""
-	@echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
-	@echo ""
-	@make -s --no-print-directory -C . raise_error
-endif
+$(CODELIB) $(MOD_FILES): | src/mocassin
+	$(MAKE) -C src/mocassin -j 1 all FFLAGS='$(FCFLAGS)'
 
-download:
-	$(RM) -Rf .pc
-	$(DOWNLOAD_FROM_WEB) --version $(VERSION)
-	$(PATCH_FILES)
-	make -C $(CODEDIR) clean
 
+# Building the workers
+mocassin_worker.f90: interface.py
+	amusifier --type=f90 interface.py MocassinInterface -o $@
+
+mocassin_worker.o: mocassin_worker.f90
+	$(MPIFC) -c -o $@ $(FCFLAGS) $<
+
+mocassin_worker: interface.o mocassin_worker.o $(CODELIB)
+	$(MPIFC) -o $@ $(LDFLAGS) $^ $(LDLIBS)
+
+interface.o: interface.f90 $(MOD_FILES)
+	$(MPIFC) -o $@ -c $(FCFLAGS) -Isrc/mocassin $<
+
+
+# Which packages contain which workers?
+amuse-mocassin_contains: mocassin_worker
+
+
+# Building and installing packages
+develop-%: %_contains
+	support/shared/uninstall.sh $*
+	python -m pip install -e packages/$*
+
+install-%: %_contains
+	support/shared/uninstall.sh $*
+	python -m pip install packages/$*
+
+package-%: %_contains
+	python3 -m pip install -vv --no-cache-dir --no-deps --no-build-isolation --prefix ${PREFIX} packages/$*
+
+test-%:
+	cd packages/$* && pytest
+
+
+# Cleaning up
+.PHONY: clean
 clean:
-	$(RM) -f *.mod *.so *.o *.pyc worker_code.cc worker_code.h 
-	$(RM) *~ worker_code worker_code.f90 worker_code-sockets.f90
-	$(RM) mocassin_worker mocassin_worker_sockets
-	-make -C $(CODEDIR) clean
-	
+	$(MAKE) -C src/mocassin clean
+	rm -rf *.o *.mod *worker*
+
+.PHONY: distclean
 distclean: clean
-	$(RM) -Rf src
-	$(RM) -Rf .pc
-	$(RM) -Rf src.*
-	$(RM) -Rf data
-
-$(CODELIB): $(CODEDIR)/makefile
-	echo $(FC)
-	echo $(FORTRAN)
-	make -C $(CODEDIR) clean
-	make -C $(CODEDIR) all FFLAGS="$(FFLAGS)"
-
-worker_code.f90: interface.py
-	$(CODE_GENERATOR) --type=f90 interface.py MocassinInterface -o $@
-
-mocassin_worker:  worker_code.f90 data $(CODELIB) $(OBJS)
-	$(MPIFC) $(FFLAGS) $(FS_FLAGS) $(LDFLAGS) worker_code.f90 $(OBJS) $(OBJECTS) $(FS_LIBS) -o $@  $(LIBS)
-
-data: $(CODEDIR)/makefile
-	mkdir data
-	cp -r $(CODEDIR) data/
-
-	
-%.mod %.o: %.f90
-	$(MPIFC) $(FFLAGS) -c -o $@ $<
+	rm -f support/config.mk support/config.log support/config.status
+	rm -rf support/autom4te.cache
