@@ -1,66 +1,80 @@
-# standard amuse configuration include
-# config.mk will be made after ./configure has run
-ifeq ($(origin AMUSE_DIR), undefined)
-  AMUSE_DIR := $(shell amusifier --get-amuse-dir)
+ifneq (,$(filter-out clean distclean, $(MAKECMDGOALS)))
+include support/config.mk
 endif
--include ${AMUSE_DIR}/config.mk
-
-MPICXX   ?= mpicxx
-CXXFLAGS ?= -Wall -g -O2
-
-SAPPORO_LIBS ?= -L$(AMUSE_DIR)/lib/sapporo_light -lsapporo
-CUDA_LIBS ?= -L$(CUDA_TK)/lib -L$(CUDA_TK)/lib64 -lcudart
 
 
+# Detecting dependencies
+support/config.mk:
+	cd support && ./configure
+
+
+# Building the code into a static library
+DEPFLAGS += $(STOPCOND_CFLAGS)
+
+CFLAGS += $(DEPFLAGS)
+
+LDLIBS += $(STOPCOND_LIBS)
 
 CODELIB = src/libmi6.a
 CODELIB_GPU = src/libmi6_gpu.a
 
-ifneq (,$(findstring g++, $(notdir $(CXX))))
-CXXFLAGS += -O3 -ffast-math -funroll-loops -fomit-frame-pointer
-endif
-
-
-ifeq ($(findstring gcc, $(notdir $(CXX))), gcc)
-CXXFLAGS += -O3 -ffast-math -funroll-loops -fomit-frame-pointer
-endif
-
-ifeq ($(findstring xlC, $(notdir $(CXX))), xlC)
-CXXFLAGS += -qunroll  
-endif
-
-ifeq ($(findstring ifort, $(notdir $(CXX))), ifort)
-CXXFLAGS += -O3 -ffast-math -funroll-loops -fomit-frame-pointer
-endif
-
-
-OBJS = interface.o
-
-all: mi6_worker 
-
-clean:
-	rm -f *.so *.o *.pyc worker_code.cc worker_code.h 
-	rm -f *~ mi6_worker mi6_worker_gpu
-	rm -f worker_code-sockets.cc mi6_worker_sockets mi6_worker_gpu_sockets
-	make -C src clean
-
 $(CODELIB):
-	make -C src emulib
+	$(MAKE) -C src -j $(CPU_COUNT) emulib
 
 $(CODELIB_GPU):
-	make -C src gpulib
+	$(MAKE) -C src -j $(CPU_COUNT) gpulib
 
-worker_code.cc: interface.py
-	$(CODE_GENERATOR) --type=c interface.py MI6Interface -o $@
 
-worker_code.h: interface.py
-	$(CODE_GENERATOR) --type=h -i amuse.community.interface.stopping_conditions.StoppingConditionInterface interface.py MI6Interface -o $@
+# Building the workers
+mi6_worker.h: interface.py
+	amusifier --type=h interface.py MI6Interface -o $@
 
-mi6_worker: worker_code.cc worker_code.h $(CODELIB) $(OBJS)
-	$(MPICXX) $(CXXFLAGS) $(SC_FLAGS) $(LDFLAGS) -I./src  $< $(OBJS) $(CODELIB) -o $@ -L./src -lmi6 $(SC_CLIBS)  $(LIBS)
+mi6_worker.cc: interface.py
+	amusifier --type=c interface.py MI6Interface -o $@
 
-mi6_worker_gpu: worker_code.cc worker_code.h $(CODELIB_GPU) $(OBJS)
-	$(MPICXX) $(CXXFLAGS) $(SC_FLAGS) -I./src  $< $(OBJS) $(CODELIB_GPU) -o $@ -L./src -lmi6_gpu $(SC_CLIBS) $(SAPPORO_LIBS) $(CUDA_LIBS)  $(LIBS)
+mi6_worker.o: mi6_worker.cc mi6_worker.h
+	$(MPICXX) -c -o $@ -Isrc $(CFLAGS) $<
 
-.cc.o: $<
-	$(MPICXX) $(CXXFLAGS) $(SC_FLAGS) -I./src -c -o $@ $< 
+mi6_worker: interface.o mi6_worker.o $(CODELIB)
+	$(MPICXX) -o $@ $(LDFLAGS) $^ $(LDLIBS)
+
+# TODO: Re-enable and make work when we have Sapporo2 packaged and available
+mi6_sapporo2_worker: mi6_worker.o interface.o $(CODELIB_GPU)
+	$(MPICXX) -o $@ $(LDFLAGS) $^ $(LDLIBS) $(SAPPORO2_LIBS)
+
+interface.o: interface.cc mi6_worker.h
+	$(MPICXX) -o $@ -c $(CFLAGS) -Isrc $<
+
+
+# Which packages contain which workers?
+amuse-mi6_contains: mi6_worker
+
+amuse-mi6-sapporo2_contains: mi6_sapporo2_worker
+
+
+# Building and installing packages
+develop-%: %_contains
+	support/shared/uninstall.sh $*
+	python -m pip install -e packages/$*
+
+install-%: %_contains
+	support/shared/uninstall.sh $*
+	python -m pip install packages/$*
+
+package-%: %_contains
+	python3 -m pip install -vv --no-cache-dir --no-deps --no-build-isolation --prefix ${PREFIX} packages/$*
+
+test-%:
+	cd packages/$* && pytest
+
+
+# Cleaning up
+.PHONY: clean
+clean:
+	$(MAKE) -C src clean
+	rm -rf *.o *worker*
+
+.PHONY: distclean
+distclean: clean
+	rm -f support/config.mk support/config.log support/config.status
+	rm -rf support/autom4te.cache

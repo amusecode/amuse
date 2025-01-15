@@ -27,7 +27,7 @@ class MI6Interface(
     order unity or greater, or when the center-of-mass (-velocity) does not 
     coincide with the origin.
     """
-    include_headers = ['worker_code.h', 'stopcond.h', 'interface.h']
+    include_headers = ['mi6_worker.h', 'stopcond.h', 'interface.h']
     
     MODE_GPU = 'gpu'
     MODE_CPU = 'cpu'
@@ -40,7 +40,7 @@ class MI6Interface(
         if mode == self.MODE_CPU:
             return 'mi6_worker'
         elif mode == self.MODE_GPU:
-            return 'mi6_worker_gpu'
+            return 'mi6_sapporo2_worker'
         else:
             print("Warning: unknown mode: '{0}' - using default ('{1}').".format(mode, self.MODE_CPU))
             return 'mi6_worker'
