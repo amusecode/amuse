@@ -164,7 +164,7 @@ check_packages() {
 #
 # This uses the following variables:
 #
-# FEATURES - from configure
+# FEATURES - from support/configuration.sh
 #
 configure() {
     printf '\n'
@@ -460,8 +460,15 @@ case ${cmd} in
         ;;
 esac
 
+detect_environments
+detect_pip_wheel
 
-printf '%s\n' 'Examining the system, one moment please...'
+if [ ${cmd} = "test" ] ; then
+    run_test "${target}"
+    exit $?
+fi
+
+printf '%s\n' 'Checking for dependencies, one moment please...'
 
 if ! (cd support && ./configure >config.out 2>&1) ; then
     printf '%s\n\n' 'An error occurred running configure. This should not happen.'
@@ -473,8 +480,6 @@ fi
 
 . support/configuration.sh
 
-detect_environments
-detect_pip_wheel
 check_build_framework
 check_build_sapporo_light
 check_packages
@@ -492,9 +497,6 @@ case ${cmd} in
         ;;
     package )
         package "${target}"
-        ;;
-    "test" )
-        run_test "${target}"
         ;;
     * )
         print_help "${cmd}"
