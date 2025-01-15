@@ -26,19 +26,19 @@ class MpiAmrVacInterface(CodeInterface, HydrodynamicsInterface, StoppingConditio
         
     def name_of_the_worker(self, mode):
         if mode == self.MODE_NORMAL or mode == self.MODE_3D:
-            return 'mpiamrvac_worker'
+            return 'mpiamrvac_3d_worker'
         elif mode == self.MODE_3D_ACC:
-            return 'mpiamrvac_worker_acc'
+            return 'mpiamrvac_3dacc_worker'
         elif mode == self.MODE_2D:
-            return 'mpiamrvac_worker_2d'
+            return 'mpiamrvac_2d_worker'
         elif mode == self.MODE_2D_ACC:
-            return 'mpiamrvac_worker_2dacc'
+            return 'mpiamrvac_2dacc_worker'
         elif mode == self.MODE_1D:
-            return 'mpiamrvac_worker_1d'
+            return 'mpiamrvac_1d_worker'
         elif mode == self.MODE_1D_ACC:
-            return 'mpiamrvac_worker_1dacc'
+            return 'mpiamrvac_1dacc_worker'
         else:
-            return 'mpiamrvac_worker'
+            return 'mpiamrvac_3d_worker'
     
     #
     # options
