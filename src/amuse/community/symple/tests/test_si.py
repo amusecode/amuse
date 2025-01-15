@@ -1,5 +1,5 @@
 from amuse.lab import *
-from .interface import symple
+from amuse.community.symple.interface import symple
 
 n = 10
 

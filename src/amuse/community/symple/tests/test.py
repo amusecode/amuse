@@ -1,5 +1,5 @@
 from amuse.lab import *
-from interface import symple
+from amuse.community.symple.interface import symple
 from matplotlib import pyplot as plt
 import sys, math
 
