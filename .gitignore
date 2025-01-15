@@ -31,6 +31,9 @@ setuptools-*.zip
 src/amuse.egg-info
 bin/amusifier
 
+# files generated running tests
+__amuse_code_output
+
 # directories and files generated in make
 *_worker
 *_worker.h
