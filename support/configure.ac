@@ -38,7 +38,8 @@ else
 
         if test "x$target_os" == "xlinux-gnu"
         then
-            AX_CONDA_PACKAGE(CC, gcc)
+            # CC needs to be a valid compiler for the sapporo check at the end
+            AX_CONDA_PACKAGE(CC, gcc, gcc)
             AX_CONDA_PACKAGE(CXX, gxx)
         else
             AX_CONDA_PACKAGE(CC, clang)

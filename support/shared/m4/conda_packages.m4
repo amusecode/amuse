@@ -11,19 +11,23 @@ AC_DEFUN([AX_CONDA_LIST],[
 ])
 
 
-# AX_CONDA_PACKAGE(VARIABLE, NAME)
+# AX_CONDA_PACKAGE(VARIABLE, NAME, VALUE)
 #
 # Checks that the given package is installed in the active conda environment.
 #
 # You must run AX_CONDA_LIST() before calling this macro.
 #
-# Sets $VARIABLE to "yes" if the package was found
+# Sets $VARIABLE to VALUE if the package was found, or "yes" if VALUE is not passed.
 AC_DEFUN([AX_CONDA_PACKAGE],[
     AC_MSG_CHECKING([for conda package $2])
     ax_conda_package_line="$(echo $ax_conda_list | tr '^' '\n' | grep '^$2 ')"
     AS_IF([test "$?" = "0"], [
         # $1="$(AS_ECHO("$ax_conda_package_line") | tr -s ' ' | cut -f 2 -d ' ')"
-        $1="yes"
+        m4_if([$3],[], [
+            $1="yes"
+        ], [
+            $1="$3"
+        ])
         AC_MSG_RESULT([yes])
     ], [
         AC_MSG_RESULT([no])

@@ -2790,6 +2790,7 @@ else
 
         if test "x$target_os" == "xlinux-gnu"
         then
+            # CC needs to be a valid compiler for the sapporo check at the end
 
     { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for conda package gcc" >&5
 printf %s "checking for conda package gcc... " >&6; }
@@ -2798,7 +2799,9 @@ printf %s "checking for conda package gcc... " >&6; }
 then :
 
         # CC="$(AS_ECHO("$ax_conda_package_line") | tr -s ' ' | cut -f 2 -d ' ')"
-        CC="yes"
+
+            CC="gcc"
+
         { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 printf "%s\n" "yes" >&6; }
 
@@ -2817,7 +2820,9 @@ printf %s "checking for conda package gxx... " >&6; }
 then :
 
         # CXX="$(AS_ECHO("$ax_conda_package_line") | tr -s ' ' | cut -f 2 -d ' ')"
-        CXX="yes"
+
+            CXX="yes"
+
         { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 printf "%s\n" "yes" >&6; }
 
@@ -2837,7 +2842,9 @@ printf %s "checking for conda package clang... " >&6; }
 then :
 
         # CC="$(AS_ECHO("$ax_conda_package_line") | tr -s ' ' | cut -f 2 -d ' ')"
-        CC="yes"
+
+            CC="yes"
+
         { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 printf "%s\n" "yes" >&6; }
 
@@ -2856,7 +2863,9 @@ printf %s "checking for conda package clangxx... " >&6; }
 then :
 
         # CXX="$(AS_ECHO("$ax_conda_package_line") | tr -s ' ' | cut -f 2 -d ' ')"
-        CXX="yes"
+
+            CXX="yes"
+
         { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 printf "%s\n" "yes" >&6; }
 
@@ -2876,7 +2885,9 @@ printf %s "checking for conda package gfortran... " >&6; }
 then :
 
         # FC="$(AS_ECHO("$ax_conda_package_line") | tr -s ' ' | cut -f 2 -d ' ')"
-        FC="yes"
+
+            FC="yes"
+
         { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 printf "%s\n" "yes" >&6; }
 
@@ -2895,7 +2906,9 @@ printf %s "checking for conda package openjdk... " >&6; }
 then :
 
         # JAVAC="$(AS_ECHO("$ax_conda_package_line") | tr -s ' ' | cut -f 2 -d ' ')"
-        JAVAC="yes"
+
+            JAVAC="yes"
+
         { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 printf "%s\n" "yes" >&6; }
 
@@ -2914,7 +2927,9 @@ printf %s "checking for conda package python... " >&6; }
 then :
 
         # PYTHON="$(AS_ECHO("$ax_conda_package_line") | tr -s ' ' | cut -f 2 -d ' ')"
-        PYTHON="yes"
+
+            PYTHON="yes"
+
         { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 printf "%s\n" "yes" >&6; }
 
@@ -2933,7 +2948,9 @@ printf %s "checking for conda package coreutils... " >&6; }
 then :
 
         # INSTALL="$(AS_ECHO("$ax_conda_package_line") | tr -s ' ' | cut -f 2 -d ' ')"
-        INSTALL="yes"
+
+            INSTALL="yes"
+
         { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 printf "%s\n" "yes" >&6; }
 
@@ -3793,7 +3810,9 @@ printf %s "checking for conda package cmake... " >&6; }
 then :
 
         # CMAKE="$(AS_ECHO("$ax_conda_package_line") | tr -s ' ' | cut -f 2 -d ' ')"
-        CMAKE="yes"
+
+            CMAKE="yes"
+
         { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 printf "%s\n" "yes" >&6; }
 
@@ -3813,7 +3832,9 @@ printf %s "checking for conda package mpi... " >&6; }
 then :
 
         # HAVE_MPI="$(AS_ECHO("$ax_conda_package_line") | tr -s ' ' | cut -f 2 -d ' ')"
-        HAVE_MPI="yes"
+
+            HAVE_MPI="yes"
+
         { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 printf "%s\n" "yes" >&6; }
 
@@ -3832,7 +3853,9 @@ printf %s "checking for conda package openmp... " >&6; }
 then :
 
         # HAVE_OPENMP="$(AS_ECHO("$ax_conda_package_line") | tr -s ' ' | cut -f 2 -d ' ')"
-        HAVE_OPENMP="yes"
+
+            HAVE_OPENMP="yes"
+
         { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 printf "%s\n" "yes" >&6; }
 
@@ -3851,7 +3874,9 @@ printf %s "checking for conda package cuda-toolkit... " >&6; }
 then :
 
         # CUDA_TK="$(AS_ECHO("$ax_conda_package_line") | tr -s ' ' | cut -f 2 -d ' ')"
-        CUDA_TK="yes"
+
+            CUDA_TK="yes"
+
         { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 printf "%s\n" "yes" >&6; }
 
@@ -3870,7 +3895,9 @@ printf %s "checking for conda package ocl-icd... " >&6; }
 then :
 
         # FOUND_OPENCL="$(AS_ECHO("$ax_conda_package_line") | tr -s ' ' | cut -f 2 -d ' ')"
-        FOUND_OPENCL="yes"
+
+            FOUND_OPENCL="yes"
+
         { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 printf "%s\n" "yes" >&6; }
 
@@ -3892,7 +3919,9 @@ printf %s "checking for conda package khronos-opencl-icd-loader... " >&6; }
 then :
 
         # FOUND_OPENCL="$(AS_ECHO("$ax_conda_package_line") | tr -s ' ' | cut -f 2 -d ' ')"
-        FOUND_OPENCL="yes"
+
+            FOUND_OPENCL="yes"
+
         { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 printf "%s\n" "yes" >&6; }
 
@@ -3912,7 +3941,9 @@ printf %s "checking for conda package liblapack... " >&6; }
 then :
 
         # HAVE_LAPACK="$(AS_ECHO("$ax_conda_package_line") | tr -s ' ' | cut -f 2 -d ' ')"
-        HAVE_LAPACK="yes"
+
+            HAVE_LAPACK="yes"
+
         { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 printf "%s\n" "yes" >&6; }
 
@@ -3931,7 +3962,9 @@ printf %s "checking for conda package libblas... " >&6; }
 then :
 
         # BLAS_LIBS="$(AS_ECHO("$ax_conda_package_line") | tr -s ' ' | cut -f 2 -d ' ')"
-        BLAS_LIBS="yes"
+
+            BLAS_LIBS="yes"
+
         { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 printf "%s\n" "yes" >&6; }
 
@@ -3950,7 +3983,9 @@ printf %s "checking for conda package gsl... " >&6; }
 then :
 
         # FOUND_GSL="$(AS_ECHO("$ax_conda_package_line") | tr -s ' ' | cut -f 2 -d ' ')"
-        FOUND_GSL="yes"
+
+            FOUND_GSL="yes"
+
         { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 printf "%s\n" "yes" >&6; }
 
@@ -3969,7 +4004,9 @@ printf %s "checking for conda package gmp... " >&6; }
 then :
 
         # FOUND_GMP="$(AS_ECHO("$ax_conda_package_line") | tr -s ' ' | cut -f 2 -d ' ')"
-        FOUND_GMP="yes"
+
+            FOUND_GMP="yes"
+
         { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 printf "%s\n" "yes" >&6; }
 
@@ -3988,7 +4025,9 @@ printf %s "checking for conda package mpfr... " >&6; }
 then :
 
         # FOUND_MPFR="$(AS_ECHO("$ax_conda_package_line") | tr -s ' ' | cut -f 2 -d ' ')"
-        FOUND_MPFR="yes"
+
+            FOUND_MPFR="yes"
+
         { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 printf "%s\n" "yes" >&6; }
 
@@ -4007,7 +4046,9 @@ printf %s "checking for conda package fftw... " >&6; }
 then :
 
         # FOUND_FFTW="$(AS_ECHO("$ax_conda_package_line") | tr -s ' ' | cut -f 2 -d ' ')"
-        FOUND_FFTW="yes"
+
+            FOUND_FFTW="yes"
+
         { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 printf "%s\n" "yes" >&6; }
 
@@ -4026,7 +4067,9 @@ printf %s "checking for conda package hdf5... " >&6; }
 then :
 
         # with_hdf5="$(AS_ECHO("$ax_conda_package_line") | tr -s ' ' | cut -f 2 -d ' ')"
-        with_hdf5="yes"
+
+            with_hdf5="yes"
+
         { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 printf "%s\n" "yes" >&6; }
 
@@ -4045,7 +4088,9 @@ printf %s "checking for conda package netcdf4... " >&6; }
 then :
 
         # FOUND_NETCDF="$(AS_ECHO("$ax_conda_package_line") | tr -s ' ' | cut -f 2 -d ' ')"
-        FOUND_NETCDF="yes"
+
+            FOUND_NETCDF="yes"
+
         { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 printf "%s\n" "yes" >&6; }
 
