@@ -1,7 +1,3 @@
-AMUSE_DIR?=../../../../..
--include ${AMUSE_DIR}/config.mk
-
-
 OPTS ?= -DNOMPI
 GL_PATH ?= /data/pelupes/libraries/f90gl-1.2.11
 
@@ -40,7 +36,7 @@ G6LIBS ?= -L$(AMUSE_DIR)/lib/g6 -lg6
 
 LIBS     = -lm
 
-LIBRARIES= $(LLIBSDIR) $(LIBS) $(G6LIBS) $(SC_MPI_CLIBS)
+LIBRARIES= $(LLIBSDIR) $(LIBS) $(G6LIBS) $(STOPCOND_LIBS)
 
 GLINCLUDE = -I/usr/include/GL -I$(GL_PATH)/include/GL/
 GLLIB = -L$(GL_PATH)/lib -lf90GLU -lf90GL -lf90glut  -lGLU -lGL -lglut
@@ -75,10 +71,10 @@ SAO     = $(SAF:.F=.o)
 all: debuginfo phiGRAPE $(CODELIB)
 
 debuginfo:
-	@echo "enetered phigrape source makefile"
+	@echo "entered phigrape source makefile"
 	@echo "OBJECTS  = " $(OBJECTS)
 	@echo "CODEOBJS = " $(CODEOBJS)
-	@echo $(SC_MPI_CLIBS)
+	@echo $(STOPCOND_LIBS)
 
 gl: start_viewer.o viewer.o libpt.a fthread.o
 
@@ -108,10 +104,10 @@ clean:
 	rm -f *.o .m* .n* *.lst *.L *~ phiGRAPE libpt.a *.mod $(CODELIB)
 
 .f.o:
-	$(FC) $(FFLAGS) $(SC_FLAGS) -c $<
+	$(FC) $(FFLAGS) $(STOPCOND_CFLAGS) -c $<
 
 .c.o:
-	$(CC) $(CFLAGS) $(SC_FLAGS) -c $<
+	$(CC) $(CFLAGS) $(STOPCOND_CFLAGS) -c $<
 
 .F.o:
-	$(FC) $(FFLAGS) $(SC_FLAGS) -c $<
+	$(FC) $(FFLAGS) $(STOPCOND_CFLAGS) -c $<

@@ -7,6 +7,8 @@ from amuse.community.interface.gd import GravitationalDynamicsInterface
 from amuse.community.interface.gd import GravitationalDynamics
 from amuse.community.interface.gd import GravityFieldInterface
 from amuse.community.interface.gd import GravityFieldCode
+from amuse.support.exceptions import AmuseException
+
 
 class PhiGRAPEInterface(
     CodeInterface, 
@@ -27,24 +29,24 @@ class PhiGRAPEInterface(
         LiteratureReferencesMixIn.__init__(self)
 
     def name_of_the_worker(self, mode, number_of_workers):
-        if number_of_workers > 1:
-            if mode == self.MODE_G6LIB:
-                return 'phigrape_worker_mpi'
-            elif mode == self.MODE_GPU:
-                return 'phigrape_worker_gpu'
-            elif mode == self.MODE_GRAPE:
-                return 'phigrape_worker_grape'
-            else:
-                return 'phigrape_worker_mpi'
+        if mode == self.MODE_G6LIB:
+            if number_of_workers > 1:
+                raise AmuseException(
+                        'number_of_workers > 1 is not supported, because phiGRAPE'
+                        ' MPI support is broken. See'
+                        ' https://github.com/amusecode/amuse/issues/1090'
+                        ' Please consider using Hermite or ph4 instead.')
+            return 'phigrape_worker'
+        elif mode == self.MODE_GPU:
+            raise AmuseException(
+                    'phiGRAPE GPU mode is broken. See'
+                     ' https://github.com/amusecode/amuse/issues/1090'
+                     ' Please consider using ph4 instead.')
+        elif mode == self.MODE_GRAPE:
+            raise AmuseException(
+                    'GRAPE is no longer supported in this version of AMUSE')
         else:
-            if mode == self.MODE_G6LIB:
-                return 'phigrape_worker'
-            elif mode == self.MODE_GPU:
-                return 'phigrape_worker_gpu'
-            elif mode == self.MODE_GRAPE:
-                return 'phigrape_worker_grape'
-            else:
-                return 'phigrape_worker'
+            return 'phigrape_worker'
 
     def initialize_particles(self, time):
         return self.commit_particles()
