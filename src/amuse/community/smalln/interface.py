@@ -4,7 +4,7 @@ from amuse.community.interface.gd import GravitationalDynamicsInterface
 
 # *** This script, together with the defaults in
 # *** GravitationalDynamicsInterface, will be used to generate both
-# *** the header file interface.h and the stub interface.cc.
+# *** the header file smalln_worker.h and the stub interface.cc.
 
 class SmallNInterface(CodeInterface,
                       StoppingConditionInterface,
@@ -17,12 +17,12 @@ class SmallNInterface(CodeInterface,
 
     # Interface specification.
 
-    include_headers = ['interface.h', 'stopcond.h']
+    include_headers = ['smalln_worker.h', 'stopcond.h']
 
     def __init__(self, **options):
         CodeInterface.__init__(
             self,
-            name_of_the_worker='smallN_worker',
+            name_of_the_worker='smalln_worker',
             **options
         )
 
@@ -78,7 +78,7 @@ class SmallNInterface(CodeInterface,
     # functions in the standard interface don't need to be defined.
 
     # Additional functions defined here will be reflected in
-    # interface.h and must be provided in interface.cc in order for
+    # smalln_worker.h and must be provided in interface.cc in order for
     # smallN_worker to build.
     @legacy_function
     def set_time():
