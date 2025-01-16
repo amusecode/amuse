@@ -12,6 +12,8 @@
 # PARTICULAR PURPOSE.
 
 m4_ifndef([AC_CONFIG_MACRO_DIRS], [m4_defun([_AM_CONFIG_MACRO_DIRS], [])m4_defun([AC_CONFIG_MACRO_DIRS], [_AM_CONFIG_MACRO_DIRS($@)])])
+m4_include([shared/m4/amuse_conda.m4])
+m4_include([shared/m4/amuse_cuda.m4])
 m4_include([shared/m4/amuse_download.m4])
 m4_include([shared/m4/amuse_lib.m4])
 m4_include([shared/m4/amuse_opencl.m4])
@@ -21,8 +23,6 @@ m4_include([shared/m4/ax_lib_hdf5.m4])
 m4_include([shared/m4/ax_lib_netcdf4.m4])
 m4_include([shared/m4/ax_mpi.m4])
 m4_include([shared/m4/ax_openmp.m4])
-m4_include([shared/m4/conda_packages.m4])
-m4_include([shared/m4/cuda.m4])
 m4_include([shared/m4/fftw.m4])
 m4_include([shared/m4/gmp.m4])
 m4_include([shared/m4/gsl.m4])

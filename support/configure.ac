@@ -32,23 +32,23 @@ else
         AS_ECHO([])
 
         # Doesn't have a conda package yet, checked directly below.
-        # AX_CONDA_PACKAGE(SAPPORO_LIGHT_LIBS, sapporo_light)
+        # AMUSE_CONDA_PACKAGE(SAPPORO_LIGHT_LIBS, sapporo_light)
 
-        AX_CONDA_LIST()
+        AMUSE_CONDA_LIST()
 
         if test "x$target_os" == "xlinux-gnu"
         then
             # CC needs to be a valid compiler for the sapporo check at the end
-            AX_CONDA_PACKAGE(CC, gcc, gcc)
-            AX_CONDA_PACKAGE(CXX, gxx)
+            AMUSE_CONDA_PACKAGE(CC, gcc, gcc)
+            AMUSE_CONDA_PACKAGE(CXX, gxx)
         else
-            AX_CONDA_PACKAGE(CC, clang)
-            AX_CONDA_PACKAGE(CXX, clangxx)
+            AMUSE_CONDA_PACKAGE(CC, clang)
+            AMUSE_CONDA_PACKAGE(CXX, clangxx)
         fi
-        AX_CONDA_PACKAGE(FC, gfortran)
-        AX_CONDA_PACKAGE(JAVAC, openjdk)
-        AX_CONDA_PACKAGE(PYTHON, python)
-        AX_CONDA_PACKAGE(INSTALL, coreutils)
+        AMUSE_CONDA_PACKAGE(FC, gfortran)
+        AMUSE_CONDA_PACKAGE(JAVAC, openjdk)
+        AMUSE_CONDA_PACKAGE(PYTHON, python)
+        AMUSE_CONDA_PACKAGE(INSTALL, coreutils)
 
         AMUSE_DOWNLOAD()
         AC_CHECK_TOOL(TAR, tar)
@@ -58,28 +58,28 @@ else
         AC_CHECK_TOOL(UNXZ, unxz)
         AC_CHECK_TOOL(PERL, perl)
 
-        AX_CONDA_PACKAGE(CMAKE, cmake)
+        AMUSE_CONDA_PACKAGE(CMAKE, cmake)
 
-        AX_CONDA_PACKAGE(HAVE_MPI, mpi)
-        AX_CONDA_PACKAGE(HAVE_OPENMP, openmp)
-        AX_CONDA_PACKAGE(CUDA_TK, cuda-toolkit)
-        AX_CONDA_PACKAGE(FOUND_OPENCL, ocl-icd)
+        AMUSE_CONDA_PACKAGE(HAVE_MPI, mpi)
+        AMUSE_CONDA_PACKAGE(HAVE_OPENMP, openmp)
+        AMUSE_CONDA_PACKAGE(CUDA_TK, cuda-toolkit)
+        AMUSE_CONDA_PACKAGE(FOUND_OPENCL, ocl-icd)
         if test "$FOUND_OPENCL" == "no"
         then
             # ocl-icd is only for Linux, macOS and Windows use this one
-            AX_CONDA_PACKAGE(FOUND_OPENCL, khronos-opencl-icd-loader)
+            AMUSE_CONDA_PACKAGE(FOUND_OPENCL, khronos-opencl-icd-loader)
         fi
-        AX_CONDA_PACKAGE(HAVE_LAPACK, liblapack)
-        AX_CONDA_PACKAGE(BLAS_LIBS, libblas)
-        AX_CONDA_PACKAGE(FOUND_GSL, gsl)
-        AX_CONDA_PACKAGE(FOUND_GMP, gmp)
-        AX_CONDA_PACKAGE(FOUND_MPFR, mpfr)
-        AX_CONDA_PACKAGE(FOUND_FFTW, fftw)
-        AX_CONDA_PACKAGE(with_hdf5, hdf5)
-        AX_CONDA_PACKAGE(FOUND_NETCDF, netcdf4)
+        AMUSE_CONDA_PACKAGE(HAVE_LAPACK, liblapack)
+        AMUSE_CONDA_PACKAGE(BLAS_LIBS, libblas)
+        AMUSE_CONDA_PACKAGE(FOUND_GSL, gsl)
+        AMUSE_CONDA_PACKAGE(FOUND_GMP, gmp)
+        AMUSE_CONDA_PACKAGE(FOUND_MPFR, mpfr)
+        AMUSE_CONDA_PACKAGE(FOUND_FFTW, fftw)
+        AMUSE_CONDA_PACKAGE(with_hdf5, hdf5)
+        AMUSE_CONDA_PACKAGE(FOUND_NETCDF, netcdf4)
 
         # Export conda list output so setup doesn't have to rerun it to detect pip and wheel
-        CONDA_LIST="$ax_conda_list"
+        CONDA_LIST="$amuse_conda_list"
         AC_SUBST(CONDA_LIST)
 
     else
@@ -125,7 +125,7 @@ else
 
             AX_MPI([HAVE_MPI="yes"])
             AX_OPENMP([HAVE_OPENMP="yes"])
-            AX_CUDA()
+            AMUSE_CUDA()
             AMUSE_OPENCL()
 
             # Avoid AX_BLAS crashing out due to lack of compilers

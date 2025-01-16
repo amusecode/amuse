@@ -16,7 +16,7 @@ AC_CONFIG_AUX_DIR([shared])
 AC_PROG_INSTALL()
 
 AC_ARG_VAR([CUDA_TK], [CUDA installation location])
-AX_CUDA()
+AMUSE_CUDA()
 
 AC_CONFIG_FILES([config.mk])
 AC_OUTPUT

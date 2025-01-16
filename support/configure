@@ -767,7 +767,7 @@ CUDA_LDFLAGS
 CUDA_FLAGS
 NVCC
 CUDA_TK
-ax_cuda_verify_NVCC
+amuse_cuda_verify_NVCC
 MPILIBS
 MPI_CLIBS
 MPI_CFLAGS
@@ -2782,10 +2782,10 @@ else
         printf "%s\n"
 
         # Doesn't have a conda package yet, checked directly below.
-        # AX_CONDA_PACKAGE(SAPPORO_LIGHT_LIBS, sapporo_light)
+        # AMUSE_CONDA_PACKAGE(SAPPORO_LIGHT_LIBS, sapporo_light)
 
 
-    ax_conda_list="$(conda list | tr '\n' '^')"
+    amuse_conda_list="$(conda list | tr '\n' '^')"
 
 
         if test "x$target_os" == "xlinux-gnu"
@@ -2794,7 +2794,7 @@ else
 
     { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for conda package gcc" >&5
 printf %s "checking for conda package gcc... " >&6; }
-    ax_conda_package_line="$(echo $ax_conda_list | tr '^' '\n' | grep '^gcc ')"
+    ax_conda_package_line="$(echo $amuse_conda_list | tr '^' '\n' | grep '^gcc ')"
     if test "$?" = "0"
 then :
 
@@ -2815,7 +2815,7 @@ fi
 
     { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for conda package gxx" >&5
 printf %s "checking for conda package gxx... " >&6; }
-    ax_conda_package_line="$(echo $ax_conda_list | tr '^' '\n' | grep '^gxx ')"
+    ax_conda_package_line="$(echo $amuse_conda_list | tr '^' '\n' | grep '^gxx ')"
     if test "$?" = "0"
 then :
 
@@ -2837,7 +2837,7 @@ fi
 
     { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for conda package clang" >&5
 printf %s "checking for conda package clang... " >&6; }
-    ax_conda_package_line="$(echo $ax_conda_list | tr '^' '\n' | grep '^clang ')"
+    ax_conda_package_line="$(echo $amuse_conda_list | tr '^' '\n' | grep '^clang ')"
     if test "$?" = "0"
 then :
 
@@ -2858,7 +2858,7 @@ fi
 
     { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for conda package clangxx" >&5
 printf %s "checking for conda package clangxx... " >&6; }
-    ax_conda_package_line="$(echo $ax_conda_list | tr '^' '\n' | grep '^clangxx ')"
+    ax_conda_package_line="$(echo $amuse_conda_list | tr '^' '\n' | grep '^clangxx ')"
     if test "$?" = "0"
 then :
 
@@ -2880,7 +2880,7 @@ fi
 
     { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for conda package gfortran" >&5
 printf %s "checking for conda package gfortran... " >&6; }
-    ax_conda_package_line="$(echo $ax_conda_list | tr '^' '\n' | grep '^gfortran ')"
+    ax_conda_package_line="$(echo $amuse_conda_list | tr '^' '\n' | grep '^gfortran ')"
     if test "$?" = "0"
 then :
 
@@ -2901,7 +2901,7 @@ fi
 
     { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for conda package openjdk" >&5
 printf %s "checking for conda package openjdk... " >&6; }
-    ax_conda_package_line="$(echo $ax_conda_list | tr '^' '\n' | grep '^openjdk ')"
+    ax_conda_package_line="$(echo $amuse_conda_list | tr '^' '\n' | grep '^openjdk ')"
     if test "$?" = "0"
 then :
 
@@ -2922,7 +2922,7 @@ fi
 
     { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for conda package python" >&5
 printf %s "checking for conda package python... " >&6; }
-    ax_conda_package_line="$(echo $ax_conda_list | tr '^' '\n' | grep '^python ')"
+    ax_conda_package_line="$(echo $amuse_conda_list | tr '^' '\n' | grep '^python ')"
     if test "$?" = "0"
 then :
 
@@ -2943,7 +2943,7 @@ fi
 
     { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for conda package coreutils" >&5
 printf %s "checking for conda package coreutils... " >&6; }
-    ax_conda_package_line="$(echo $ax_conda_list | tr '^' '\n' | grep '^coreutils ')"
+    ax_conda_package_line="$(echo $amuse_conda_list | tr '^' '\n' | grep '^coreutils ')"
     if test "$?" = "0"
 then :
 
@@ -3805,7 +3805,7 @@ fi
 
     { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for conda package cmake" >&5
 printf %s "checking for conda package cmake... " >&6; }
-    ax_conda_package_line="$(echo $ax_conda_list | tr '^' '\n' | grep '^cmake ')"
+    ax_conda_package_line="$(echo $amuse_conda_list | tr '^' '\n' | grep '^cmake ')"
     if test "$?" = "0"
 then :
 
@@ -3827,7 +3827,7 @@ fi
 
     { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for conda package mpi" >&5
 printf %s "checking for conda package mpi... " >&6; }
-    ax_conda_package_line="$(echo $ax_conda_list | tr '^' '\n' | grep '^mpi ')"
+    ax_conda_package_line="$(echo $amuse_conda_list | tr '^' '\n' | grep '^mpi ')"
     if test "$?" = "0"
 then :
 
@@ -3848,7 +3848,7 @@ fi
 
     { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for conda package openmp" >&5
 printf %s "checking for conda package openmp... " >&6; }
-    ax_conda_package_line="$(echo $ax_conda_list | tr '^' '\n' | grep '^openmp ')"
+    ax_conda_package_line="$(echo $amuse_conda_list | tr '^' '\n' | grep '^openmp ')"
     if test "$?" = "0"
 then :
 
@@ -3869,7 +3869,7 @@ fi
 
     { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for conda package cuda-toolkit" >&5
 printf %s "checking for conda package cuda-toolkit... " >&6; }
-    ax_conda_package_line="$(echo $ax_conda_list | tr '^' '\n' | grep '^cuda-toolkit ')"
+    ax_conda_package_line="$(echo $amuse_conda_list | tr '^' '\n' | grep '^cuda-toolkit ')"
     if test "$?" = "0"
 then :
 
@@ -3890,7 +3890,7 @@ fi
 
     { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for conda package ocl-icd" >&5
 printf %s "checking for conda package ocl-icd... " >&6; }
-    ax_conda_package_line="$(echo $ax_conda_list | tr '^' '\n' | grep '^ocl-icd ')"
+    ax_conda_package_line="$(echo $amuse_conda_list | tr '^' '\n' | grep '^ocl-icd ')"
     if test "$?" = "0"
 then :
 
@@ -3914,7 +3914,7 @@ fi
 
     { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for conda package khronos-opencl-icd-loader" >&5
 printf %s "checking for conda package khronos-opencl-icd-loader... " >&6; }
-    ax_conda_package_line="$(echo $ax_conda_list | tr '^' '\n' | grep '^khronos-opencl-icd-loader ')"
+    ax_conda_package_line="$(echo $amuse_conda_list | tr '^' '\n' | grep '^khronos-opencl-icd-loader ')"
     if test "$?" = "0"
 then :
 
@@ -3936,7 +3936,7 @@ fi
 
     { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for conda package liblapack" >&5
 printf %s "checking for conda package liblapack... " >&6; }
-    ax_conda_package_line="$(echo $ax_conda_list | tr '^' '\n' | grep '^liblapack ')"
+    ax_conda_package_line="$(echo $amuse_conda_list | tr '^' '\n' | grep '^liblapack ')"
     if test "$?" = "0"
 then :
 
@@ -3957,7 +3957,7 @@ fi
 
     { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for conda package libblas" >&5
 printf %s "checking for conda package libblas... " >&6; }
-    ax_conda_package_line="$(echo $ax_conda_list | tr '^' '\n' | grep '^libblas ')"
+    ax_conda_package_line="$(echo $amuse_conda_list | tr '^' '\n' | grep '^libblas ')"
     if test "$?" = "0"
 then :
 
@@ -3978,7 +3978,7 @@ fi
 
     { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for conda package gsl" >&5
 printf %s "checking for conda package gsl... " >&6; }
-    ax_conda_package_line="$(echo $ax_conda_list | tr '^' '\n' | grep '^gsl ')"
+    ax_conda_package_line="$(echo $amuse_conda_list | tr '^' '\n' | grep '^gsl ')"
     if test "$?" = "0"
 then :
 
@@ -3999,7 +3999,7 @@ fi
 
     { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for conda package gmp" >&5
 printf %s "checking for conda package gmp... " >&6; }
-    ax_conda_package_line="$(echo $ax_conda_list | tr '^' '\n' | grep '^gmp ')"
+    ax_conda_package_line="$(echo $amuse_conda_list | tr '^' '\n' | grep '^gmp ')"
     if test "$?" = "0"
 then :
 
@@ -4020,7 +4020,7 @@ fi
 
     { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for conda package mpfr" >&5
 printf %s "checking for conda package mpfr... " >&6; }
-    ax_conda_package_line="$(echo $ax_conda_list | tr '^' '\n' | grep '^mpfr ')"
+    ax_conda_package_line="$(echo $amuse_conda_list | tr '^' '\n' | grep '^mpfr ')"
     if test "$?" = "0"
 then :
 
@@ -4041,7 +4041,7 @@ fi
 
     { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for conda package fftw" >&5
 printf %s "checking for conda package fftw... " >&6; }
-    ax_conda_package_line="$(echo $ax_conda_list | tr '^' '\n' | grep '^fftw ')"
+    ax_conda_package_line="$(echo $amuse_conda_list | tr '^' '\n' | grep '^fftw ')"
     if test "$?" = "0"
 then :
 
@@ -4062,7 +4062,7 @@ fi
 
     { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for conda package hdf5" >&5
 printf %s "checking for conda package hdf5... " >&6; }
-    ax_conda_package_line="$(echo $ax_conda_list | tr '^' '\n' | grep '^hdf5 ')"
+    ax_conda_package_line="$(echo $amuse_conda_list | tr '^' '\n' | grep '^hdf5 ')"
     if test "$?" = "0"
 then :
 
@@ -4083,7 +4083,7 @@ fi
 
     { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for conda package netcdf4" >&5
 printf %s "checking for conda package netcdf4... " >&6; }
-    ax_conda_package_line="$(echo $ax_conda_list | tr '^' '\n' | grep '^netcdf4 ')"
+    ax_conda_package_line="$(echo $amuse_conda_list | tr '^' '\n' | grep '^netcdf4 ')"
     if test "$?" = "0"
 then :
 
@@ -4103,7 +4103,7 @@ fi
 
 
         # Export conda list output so setup doesn't have to rerun it to detect pip and wheel
-        CONDA_LIST="$ax_conda_list"
+        CONDA_LIST="$amuse_conda_list"
 
 
     else
@@ -7391,8 +7391,8 @@ then :
 
         # User set CUDA_TK, verify and use it if it works
 
-    ax_cuda_verify_headers_found=
-    ax_cuda_verify_libs_found=
+    amuse_cuda_verify_headers_found=
+    amuse_cuda_verify_libs_found=
 
     if test -d $CUDA_TK
 then :
@@ -7401,13 +7401,13 @@ then :
 set dummy nvcc; ac_word=$2
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
 printf %s "checking for $ac_word... " >&6; }
-if test ${ac_cv_path_ax_cuda_verify_NVCC+y}
+if test ${ac_cv_path_amuse_cuda_verify_NVCC+y}
 then :
   printf %s "(cached) " >&6
 else $as_nop
-  case $ax_cuda_verify_NVCC in
+  case $amuse_cuda_verify_NVCC in
   [\\/]* | ?:[\\/]*)
-  ac_cv_path_ax_cuda_verify_NVCC="$ax_cuda_verify_NVCC" # Let the user override the test with a path.
+  ac_cv_path_amuse_cuda_verify_NVCC="$amuse_cuda_verify_NVCC" # Let the user override the test with a path.
   ;;
   *)
   as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
@@ -7421,7 +7421,7 @@ do
   esac
     for ac_exec_ext in '' $ac_executable_extensions; do
   if as_fn_executable_p "$as_dir$ac_word$ac_exec_ext"; then
-    ac_cv_path_ax_cuda_verify_NVCC="$as_dir$ac_word$ac_exec_ext"
+    ac_cv_path_amuse_cuda_verify_NVCC="$as_dir$ac_word$ac_exec_ext"
     printf "%s\n" "$as_me:${as_lineno-$LINENO}: found $as_dir$ac_word$ac_exec_ext" >&5
     break 2
   fi
@@ -7432,10 +7432,10 @@ IFS=$as_save_IFS
   ;;
 esac
 fi
-ax_cuda_verify_NVCC=$ac_cv_path_ax_cuda_verify_NVCC
-if test -n "$ax_cuda_verify_NVCC"; then
-  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ax_cuda_verify_NVCC" >&5
-printf "%s\n" "$ax_cuda_verify_NVCC" >&6; }
+amuse_cuda_verify_NVCC=$ac_cv_path_amuse_cuda_verify_NVCC
+if test -n "$amuse_cuda_verify_NVCC"; then
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $amuse_cuda_verify_NVCC" >&5
+printf "%s\n" "$amuse_cuda_verify_NVCC" >&6; }
 else
   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
 printf "%s\n" "no" >&6; }
@@ -7443,30 +7443,30 @@ fi
 
 
 
-        if test x"$ax_cuda_verify_NVCC" != x
+        if test x"$amuse_cuda_verify_NVCC" != x
 then :
 
 
     if test "x$CUDA_TK" = x
 then :
 
-        ax_cuda_verify_msg="for cuda.h"
-        ax_cuda_flags=
+        amuse_cuda_verify_msg="for cuda.h"
+        amuse_cuda_flags=
 
 else $as_nop
 
-        ax_cuda_verify_msg="for cuda.h in $CUDA_TK/include"
-        ax_cuda_flags="-I$CUDA_TK/include"
+        amuse_cuda_verify_msg="for cuda.h in $CUDA_TK/include"
+        amuse_cuda_flags="-I$CUDA_TK/include"
 
 fi
 
-    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking $ax_cuda_verify_msg" >&5
-printf %s "checking $ax_cuda_verify_msg... " >&6; }
-    ax_cuda_verify_FLAGS=
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking $amuse_cuda_verify_msg" >&5
+printf %s "checking $amuse_cuda_verify_msg... " >&6; }
+    amuse_cuda_verify_FLAGS=
 
     ax_save_CFLAGS="$CFLAGS"
 
-    CFLAGS="$ax_cuda_flags"
+    CFLAGS="$amuse_cuda_flags"
     cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 #include <cuda.h>
@@ -7481,8 +7481,8 @@ _ACEOF
 if ac_fn_c_try_compile "$LINENO"
 then :
 
-        ax_cuda_verify_FLAGS="$CFLAGS"
-        ax_cuda_verify_headers_found="yes"
+        amuse_cuda_verify_FLAGS="$CFLAGS"
+        amuse_cuda_verify_headers_found="yes"
         { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 printf "%s\n" "yes" >&6; }
 
@@ -7499,33 +7499,33 @@ rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
 
 fi
 
-        if test x"$ax_cuda_verify_headers_found" != x
+        if test x"$amuse_cuda_verify_headers_found" != x
 then :
 
 
     if test "x$CUDA_TK" = x
 then :
 
-        ax_cuda_verify_msg="for libcudart"
-        ax_cuda_ldflags=
+        amuse_cuda_verify_msg="for libcudart"
+        amuse_cuda_ldflags=
 
 else $as_nop
 
-        ax_cuda_verify_msg="for libcudart in $CUDA_TK/lib"
-        ax_cuda_verify_msg64="for libcudart in $CUDA_TK/lib64"
-        ax_cuda_ldflags="-L$CUDA_TK/lib"
-        ax_cuda_ldflags64="-L$CUDA_TK/lib64"
+        amuse_cuda_verify_msg="for libcudart in $CUDA_TK/lib"
+        amuse_cuda_verify_msg64="for libcudart in $CUDA_TK/lib64"
+        amuse_cuda_ldflags="-L$CUDA_TK/lib"
+        amuse_cuda_ldflags64="-L$CUDA_TK/lib64"
 
 fi
 
-    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking $ax_cuda_verify_msg" >&5
-printf %s "checking $ax_cuda_verify_msg... " >&6; }
-    ax_cuda_verify_LDFLAGS=
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking $amuse_cuda_verify_msg" >&5
+printf %s "checking $amuse_cuda_verify_msg... " >&6; }
+    amuse_cuda_verify_LDFLAGS=
 
     ax_save_LDFLAGS="$LDFLAGS"
     ax_save_LIBS="$LIBS"
 
-    LDFLAGS="$ax_cuda_ldflags"
+    LDFLAGS="$amuse_cuda_ldflags"
     LIBS="-lcudart"
     cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
@@ -7541,8 +7541,8 @@ _ACEOF
 if ac_fn_c_try_link "$LINENO"
 then :
 
-        ax_cuda_verify_LDFLAGS="$LDFLAGS"
-        ax_cuda_verify_libs_found="yes"
+        amuse_cuda_verify_LDFLAGS="$LDFLAGS"
+        amuse_cuda_verify_libs_found="yes"
         { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 printf "%s\n" "yes" >&6; }
 
@@ -7555,12 +7555,12 @@ fi
 rm -f core conftest.err conftest.$ac_objext conftest.beam \
     conftest$ac_exeext conftest.$ac_ext
 
-    if test "x$ax_cuda_verify_libs_found" = x
+    if test "x$amuse_cuda_verify_libs_found" = x
 then :
 
-        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking $ax_cuda_verify_msg64" >&5
-printf %s "checking $ax_cuda_verify_msg64... " >&6; }
-        LDFLAGS="$ax_cuda_ldflags64"
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking $amuse_cuda_verify_msg64" >&5
+printf %s "checking $amuse_cuda_verify_msg64... " >&6; }
+        LDFLAGS="$amuse_cuda_ldflags64"
         cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 #include <cuda.h>
@@ -7575,8 +7575,8 @@ _ACEOF
 if ac_fn_c_try_link "$LINENO"
 then :
 
-            ax_cuda_verify_LDFLAGS="$LDFLAGS"
-            ax_cuda_verify_libs_found="yes"
+            amuse_cuda_verify_LDFLAGS="$LDFLAGS"
+            amuse_cuda_verify_libs_found="yes"
             { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 printf "%s\n" "yes" >&6; }
 
@@ -7598,13 +7598,13 @@ fi
 fi
 
 
-    if test \(x"$ax_cuda_verify_NVCC" != x\) -a \(x"$ax_cuda_verify_headers_found" != x\) -a \(x"$ax_cuda_verify_libs_found" != x\)
+    if test \(x"$amuse_cuda_verify_NVCC" != x\) -a \(x"$amuse_cuda_verify_headers_found" != x\) -a \(x"$amuse_cuda_verify_libs_found" != x\)
 then :
 
             CUDA_TK="$CUDA_TK"
-            NVCC="$ax_cuda_verify_NVCC"
-            CUDA_FLAGS="$ax_cuda_verify_FLAGS"
-            CUDA_LDFLAGS="$ax_cuda_verify_LDFLAGS"
+            NVCC="$amuse_cuda_verify_NVCC"
+            CUDA_FLAGS="$amuse_cuda_verify_FLAGS"
+            CUDA_LDFLAGS="$amuse_cuda_verify_LDFLAGS"
 
 
 fi
@@ -7633,13 +7633,13 @@ else $as_nop
 set dummy nvcc; ac_word=$2
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
 printf %s "checking for $ac_word... " >&6; }
-if test ${ac_cv_path_ax_cuda_verify_NVCC+y}
+if test ${ac_cv_path_amuse_cuda_verify_NVCC+y}
 then :
   printf %s "(cached) " >&6
 else $as_nop
-  case $ax_cuda_verify_NVCC in
+  case $amuse_cuda_verify_NVCC in
   [\\/]* | ?:[\\/]*)
-  ac_cv_path_ax_cuda_verify_NVCC="$ax_cuda_verify_NVCC" # Let the user override the test with a path.
+  ac_cv_path_amuse_cuda_verify_NVCC="$amuse_cuda_verify_NVCC" # Let the user override the test with a path.
   ;;
   *)
   as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
@@ -7653,7 +7653,7 @@ do
   esac
     for ac_exec_ext in '' $ac_executable_extensions; do
   if as_fn_executable_p "$as_dir$ac_word$ac_exec_ext"; then
-    ac_cv_path_ax_cuda_verify_NVCC="$as_dir$ac_word$ac_exec_ext"
+    ac_cv_path_amuse_cuda_verify_NVCC="$as_dir$ac_word$ac_exec_ext"
     printf "%s\n" "$as_me:${as_lineno-$LINENO}: found $as_dir$ac_word$ac_exec_ext" >&5
     break 2
   fi
@@ -7664,10 +7664,10 @@ IFS=$as_save_IFS
   ;;
 esac
 fi
-ax_cuda_verify_NVCC=$ac_cv_path_ax_cuda_verify_NVCC
-if test -n "$ax_cuda_verify_NVCC"; then
-  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ax_cuda_verify_NVCC" >&5
-printf "%s\n" "$ax_cuda_verify_NVCC" >&6; }
+amuse_cuda_verify_NVCC=$ac_cv_path_amuse_cuda_verify_NVCC
+if test -n "$amuse_cuda_verify_NVCC"; then
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $amuse_cuda_verify_NVCC" >&5
+printf "%s\n" "$amuse_cuda_verify_NVCC" >&6; }
 else
   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
 printf "%s\n" "no" >&6; }
@@ -7675,38 +7675,38 @@ fi
 
 
 
-    if test x"$ax_cuda_verify_NVCC" != x
+    if test x"$amuse_cuda_verify_NVCC" != x
 then :
 
         # Got nvcc, verify that we have the rest too
-        ax_cuda_verify_ctk_rel=$(dirname -- "$ax_cuda_verify_NVCC")/..
+        amuse_cuda_verify_ctk_rel=$(dirname -- "$amuse_cuda_verify_NVCC")/..
         # Canonicalise path portably so that it looks nicer
-        ax_cuda_verify_CUDA_TK=$(test -d "$ax_cuda_verify_ctk_rel" && CDPATH= cd -P -- "$ax_cuda_verify_ctk_rel" && pwd -P)
+        amuse_cuda_verify_CUDA_TK=$(test -d "$amuse_cuda_verify_ctk_rel" && CDPATH= cd -P -- "$amuse_cuda_verify_ctk_rel" && pwd -P)
 
-        if test x"$ax_cuda_verify_NVCC" != x
+        if test x"$amuse_cuda_verify_NVCC" != x
 then :
 
 
     if test "x" = x
 then :
 
-        ax_cuda_verify_msg="for cuda.h"
-        ax_cuda_flags=
+        amuse_cuda_verify_msg="for cuda.h"
+        amuse_cuda_flags=
 
 else $as_nop
 
-        ax_cuda_verify_msg="for cuda.h in /include"
-        ax_cuda_flags="-I/include"
+        amuse_cuda_verify_msg="for cuda.h in /include"
+        amuse_cuda_flags="-I/include"
 
 fi
 
-    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking $ax_cuda_verify_msg" >&5
-printf %s "checking $ax_cuda_verify_msg... " >&6; }
-    ax_cuda_verify_FLAGS=
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking $amuse_cuda_verify_msg" >&5
+printf %s "checking $amuse_cuda_verify_msg... " >&6; }
+    amuse_cuda_verify_FLAGS=
 
     ax_save_CFLAGS="$CFLAGS"
 
-    CFLAGS="$ax_cuda_flags"
+    CFLAGS="$amuse_cuda_flags"
     cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 #include <cuda.h>
@@ -7721,8 +7721,8 @@ _ACEOF
 if ac_fn_c_try_compile "$LINENO"
 then :
 
-        ax_cuda_verify_FLAGS="$CFLAGS"
-        ax_cuda_verify_headers_found="yes"
+        amuse_cuda_verify_FLAGS="$CFLAGS"
+        amuse_cuda_verify_headers_found="yes"
         { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 printf "%s\n" "yes" >&6; }
 
@@ -7739,33 +7739,33 @@ rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
 
 fi
 
-        if test x"$ax_cuda_verify_headers_found" != x
+        if test x"$amuse_cuda_verify_headers_found" != x
 then :
 
 
     if test "x" = x
 then :
 
-        ax_cuda_verify_msg="for libcudart"
-        ax_cuda_ldflags=
+        amuse_cuda_verify_msg="for libcudart"
+        amuse_cuda_ldflags=
 
 else $as_nop
 
-        ax_cuda_verify_msg="for libcudart in /lib"
-        ax_cuda_verify_msg64="for libcudart in /lib64"
-        ax_cuda_ldflags="-L/lib"
-        ax_cuda_ldflags64="-L/lib64"
+        amuse_cuda_verify_msg="for libcudart in /lib"
+        amuse_cuda_verify_msg64="for libcudart in /lib64"
+        amuse_cuda_ldflags="-L/lib"
+        amuse_cuda_ldflags64="-L/lib64"
 
 fi
 
-    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking $ax_cuda_verify_msg" >&5
-printf %s "checking $ax_cuda_verify_msg... " >&6; }
-    ax_cuda_verify_LDFLAGS=
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking $amuse_cuda_verify_msg" >&5
+printf %s "checking $amuse_cuda_verify_msg... " >&6; }
+    amuse_cuda_verify_LDFLAGS=
 
     ax_save_LDFLAGS="$LDFLAGS"
     ax_save_LIBS="$LIBS"
 
-    LDFLAGS="$ax_cuda_ldflags"
+    LDFLAGS="$amuse_cuda_ldflags"
     LIBS="-lcudart"
     cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
@@ -7781,8 +7781,8 @@ _ACEOF
 if ac_fn_c_try_link "$LINENO"
 then :
 
-        ax_cuda_verify_LDFLAGS="$LDFLAGS"
-        ax_cuda_verify_libs_found="yes"
+        amuse_cuda_verify_LDFLAGS="$LDFLAGS"
+        amuse_cuda_verify_libs_found="yes"
         { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 printf "%s\n" "yes" >&6; }
 
@@ -7795,12 +7795,12 @@ fi
 rm -f core conftest.err conftest.$ac_objext conftest.beam \
     conftest$ac_exeext conftest.$ac_ext
 
-    if test "x$ax_cuda_verify_libs_found" = x
+    if test "x$amuse_cuda_verify_libs_found" = x
 then :
 
-        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking $ax_cuda_verify_msg64" >&5
-printf %s "checking $ax_cuda_verify_msg64... " >&6; }
-        LDFLAGS="$ax_cuda_ldflags64"
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking $amuse_cuda_verify_msg64" >&5
+printf %s "checking $amuse_cuda_verify_msg64... " >&6; }
+        LDFLAGS="$amuse_cuda_ldflags64"
         cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 #include <cuda.h>
@@ -7815,8 +7815,8 @@ _ACEOF
 if ac_fn_c_try_link "$LINENO"
 then :
 
-            ax_cuda_verify_LDFLAGS="$LDFLAGS"
-            ax_cuda_verify_libs_found="yes"
+            amuse_cuda_verify_LDFLAGS="$LDFLAGS"
+            amuse_cuda_verify_libs_found="yes"
             { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 printf "%s\n" "yes" >&6; }
 
@@ -7838,13 +7838,13 @@ fi
 fi
 
 
-    if test \(x"$ax_cuda_verify_NVCC" != x\) -a \(x"$ax_cuda_verify_headers_found" != x\) -a \(x"$ax_cuda_verify_libs_found" != x\)
+    if test \(x"$amuse_cuda_verify_NVCC" != x\) -a \(x"$amuse_cuda_verify_headers_found" != x\) -a \(x"$amuse_cuda_verify_libs_found" != x\)
 then :
 
-            CUDA_TK="$ax_cuda_verify_CUDA_TK"
-            NVCC="$ax_cuda_verify_NVCC"
-            CUDA_FLAGS="$ax_cuda_verify_FLAGS"
-            CUDA_LDFLAGS="$ax_cuda_verify_LDFLAGS"
+            CUDA_TK="$amuse_cuda_verify_CUDA_TK"
+            NVCC="$amuse_cuda_verify_NVCC"
+            CUDA_FLAGS="$amuse_cuda_verify_FLAGS"
+            CUDA_LDFLAGS="$amuse_cuda_verify_LDFLAGS"
 
 
 fi
@@ -7863,8 +7863,8 @@ fi
 then :
 
 
-    ax_cuda_verify_headers_found=
-    ax_cuda_verify_libs_found=
+    amuse_cuda_verify_headers_found=
+    amuse_cuda_verify_libs_found=
 
     if test -d /usr/local/cuda
 then :
@@ -7873,13 +7873,13 @@ then :
 set dummy nvcc; ac_word=$2
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
 printf %s "checking for $ac_word... " >&6; }
-if test ${ac_cv_path_ax_cuda_verify_NVCC+y}
+if test ${ac_cv_path_amuse_cuda_verify_NVCC+y}
 then :
   printf %s "(cached) " >&6
 else $as_nop
-  case $ax_cuda_verify_NVCC in
+  case $amuse_cuda_verify_NVCC in
   [\\/]* | ?:[\\/]*)
-  ac_cv_path_ax_cuda_verify_NVCC="$ax_cuda_verify_NVCC" # Let the user override the test with a path.
+  ac_cv_path_amuse_cuda_verify_NVCC="$amuse_cuda_verify_NVCC" # Let the user override the test with a path.
   ;;
   *)
   as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
@@ -7893,7 +7893,7 @@ do
   esac
     for ac_exec_ext in '' $ac_executable_extensions; do
   if as_fn_executable_p "$as_dir$ac_word$ac_exec_ext"; then
-    ac_cv_path_ax_cuda_verify_NVCC="$as_dir$ac_word$ac_exec_ext"
+    ac_cv_path_amuse_cuda_verify_NVCC="$as_dir$ac_word$ac_exec_ext"
     printf "%s\n" "$as_me:${as_lineno-$LINENO}: found $as_dir$ac_word$ac_exec_ext" >&5
     break 2
   fi
@@ -7904,10 +7904,10 @@ IFS=$as_save_IFS
   ;;
 esac
 fi
-ax_cuda_verify_NVCC=$ac_cv_path_ax_cuda_verify_NVCC
-if test -n "$ax_cuda_verify_NVCC"; then
-  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ax_cuda_verify_NVCC" >&5
-printf "%s\n" "$ax_cuda_verify_NVCC" >&6; }
+amuse_cuda_verify_NVCC=$ac_cv_path_amuse_cuda_verify_NVCC
+if test -n "$amuse_cuda_verify_NVCC"; then
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $amuse_cuda_verify_NVCC" >&5
+printf "%s\n" "$amuse_cuda_verify_NVCC" >&6; }
 else
   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
 printf "%s\n" "no" >&6; }
@@ -7915,30 +7915,30 @@ fi
 
 
 
-        if test x"$ax_cuda_verify_NVCC" != x
+        if test x"$amuse_cuda_verify_NVCC" != x
 then :
 
 
     if test "x/usr/local/cuda" = x
 then :
 
-        ax_cuda_verify_msg="for cuda.h"
-        ax_cuda_flags=
+        amuse_cuda_verify_msg="for cuda.h"
+        amuse_cuda_flags=
 
 else $as_nop
 
-        ax_cuda_verify_msg="for cuda.h in /usr/local/cuda/include"
-        ax_cuda_flags="-I/usr/local/cuda/include"
+        amuse_cuda_verify_msg="for cuda.h in /usr/local/cuda/include"
+        amuse_cuda_flags="-I/usr/local/cuda/include"
 
 fi
 
-    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking $ax_cuda_verify_msg" >&5
-printf %s "checking $ax_cuda_verify_msg... " >&6; }
-    ax_cuda_verify_FLAGS=
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking $amuse_cuda_verify_msg" >&5
+printf %s "checking $amuse_cuda_verify_msg... " >&6; }
+    amuse_cuda_verify_FLAGS=
 
     ax_save_CFLAGS="$CFLAGS"
 
-    CFLAGS="$ax_cuda_flags"
+    CFLAGS="$amuse_cuda_flags"
     cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 #include <cuda.h>
@@ -7953,8 +7953,8 @@ _ACEOF
 if ac_fn_c_try_compile "$LINENO"
 then :
 
-        ax_cuda_verify_FLAGS="$CFLAGS"
-        ax_cuda_verify_headers_found="yes"
+        amuse_cuda_verify_FLAGS="$CFLAGS"
+        amuse_cuda_verify_headers_found="yes"
         { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 printf "%s\n" "yes" >&6; }
 
@@ -7971,33 +7971,33 @@ rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
 
 fi
 
-        if test x"$ax_cuda_verify_headers_found" != x
+        if test x"$amuse_cuda_verify_headers_found" != x
 then :
 
 
     if test "x/usr/local/cuda" = x
 then :
 
-        ax_cuda_verify_msg="for libcudart"
-        ax_cuda_ldflags=
+        amuse_cuda_verify_msg="for libcudart"
+        amuse_cuda_ldflags=
 
 else $as_nop
 
-        ax_cuda_verify_msg="for libcudart in /usr/local/cuda/lib"
-        ax_cuda_verify_msg64="for libcudart in /usr/local/cuda/lib64"
-        ax_cuda_ldflags="-L/usr/local/cuda/lib"
-        ax_cuda_ldflags64="-L/usr/local/cuda/lib64"
+        amuse_cuda_verify_msg="for libcudart in /usr/local/cuda/lib"
+        amuse_cuda_verify_msg64="for libcudart in /usr/local/cuda/lib64"
+        amuse_cuda_ldflags="-L/usr/local/cuda/lib"
+        amuse_cuda_ldflags64="-L/usr/local/cuda/lib64"
 
 fi
 
-    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking $ax_cuda_verify_msg" >&5
-printf %s "checking $ax_cuda_verify_msg... " >&6; }
-    ax_cuda_verify_LDFLAGS=
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking $amuse_cuda_verify_msg" >&5
+printf %s "checking $amuse_cuda_verify_msg... " >&6; }
+    amuse_cuda_verify_LDFLAGS=
 
     ax_save_LDFLAGS="$LDFLAGS"
     ax_save_LIBS="$LIBS"
 
-    LDFLAGS="$ax_cuda_ldflags"
+    LDFLAGS="$amuse_cuda_ldflags"
     LIBS="-lcudart"
     cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
@@ -8013,8 +8013,8 @@ _ACEOF
 if ac_fn_c_try_link "$LINENO"
 then :
 
-        ax_cuda_verify_LDFLAGS="$LDFLAGS"
-        ax_cuda_verify_libs_found="yes"
+        amuse_cuda_verify_LDFLAGS="$LDFLAGS"
+        amuse_cuda_verify_libs_found="yes"
         { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 printf "%s\n" "yes" >&6; }
 
@@ -8027,12 +8027,12 @@ fi
 rm -f core conftest.err conftest.$ac_objext conftest.beam \
     conftest$ac_exeext conftest.$ac_ext
 
-    if test "x$ax_cuda_verify_libs_found" = x
+    if test "x$amuse_cuda_verify_libs_found" = x
 then :
 
-        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking $ax_cuda_verify_msg64" >&5
-printf %s "checking $ax_cuda_verify_msg64... " >&6; }
-        LDFLAGS="$ax_cuda_ldflags64"
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking $amuse_cuda_verify_msg64" >&5
+printf %s "checking $amuse_cuda_verify_msg64... " >&6; }
+        LDFLAGS="$amuse_cuda_ldflags64"
         cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 #include <cuda.h>
@@ -8047,8 +8047,8 @@ _ACEOF
 if ac_fn_c_try_link "$LINENO"
 then :
 
-            ax_cuda_verify_LDFLAGS="$LDFLAGS"
-            ax_cuda_verify_libs_found="yes"
+            amuse_cuda_verify_LDFLAGS="$LDFLAGS"
+            amuse_cuda_verify_libs_found="yes"
             { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 printf "%s\n" "yes" >&6; }
 
@@ -8070,13 +8070,13 @@ fi
 fi
 
 
-    if test \(x"$ax_cuda_verify_NVCC" != x\) -a \(x"$ax_cuda_verify_headers_found" != x\) -a \(x"$ax_cuda_verify_libs_found" != x\)
+    if test \(x"$amuse_cuda_verify_NVCC" != x\) -a \(x"$amuse_cuda_verify_headers_found" != x\) -a \(x"$amuse_cuda_verify_libs_found" != x\)
 then :
 
             CUDA_TK="/usr/local/cuda"
-            NVCC="$ax_cuda_verify_NVCC"
-            CUDA_FLAGS="$ax_cuda_verify_FLAGS"
-            CUDA_LDFLAGS="$ax_cuda_verify_LDFLAGS"
+            NVCC="$amuse_cuda_verify_NVCC"
+            CUDA_FLAGS="$amuse_cuda_verify_FLAGS"
+            CUDA_LDFLAGS="$amuse_cuda_verify_LDFLAGS"
 
 
 fi
@@ -8097,38 +8097,38 @@ fi
 then :
 
             # List CUDA installations
-            ax_cuda_installs=$(ls -1 -d /usr/local/cuda-*.* 2>/dev/null)
+            amuse_cuda_installs=$(ls -1 -d /usr/local/cuda-*.* 2>/dev/null)
             # If there's more than one, the above will have newlines, and change when we do this
-            ax_cuda_installs2=$(echo "x${ax_cuda_installs}" | tr -d ':space:')
-            if test "x${ax_cuda_installs}" != x
+            amuse_cuda_installs2=$(echo "x${amuse_cuda_installs}" | tr -d ':space:')
+            if test "x${amuse_cuda_installs}" != x
 then :
 
-                if test "x${ax_cuda_installs}" = "${ax_cuda_installs2}"
+                if test "x${amuse_cuda_installs}" = "${amuse_cuda_installs2}"
 then :
 
                     # Here, there's exactly one match
 
-    ax_cuda_verify_headers_found=
-    ax_cuda_verify_libs_found=
+    amuse_cuda_verify_headers_found=
+    amuse_cuda_verify_libs_found=
 
-    if test -d $ax_cuda_installs
+    if test -d $amuse_cuda_installs
 then :
 
         # Extract the first word of "nvcc", so it can be a program name with args.
 set dummy nvcc; ac_word=$2
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
 printf %s "checking for $ac_word... " >&6; }
-if test ${ac_cv_path_ax_cuda_verify_NVCC+y}
+if test ${ac_cv_path_amuse_cuda_verify_NVCC+y}
 then :
   printf %s "(cached) " >&6
 else $as_nop
-  case $ax_cuda_verify_NVCC in
+  case $amuse_cuda_verify_NVCC in
   [\\/]* | ?:[\\/]*)
-  ac_cv_path_ax_cuda_verify_NVCC="$ax_cuda_verify_NVCC" # Let the user override the test with a path.
+  ac_cv_path_amuse_cuda_verify_NVCC="$amuse_cuda_verify_NVCC" # Let the user override the test with a path.
   ;;
   *)
   as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
-for as_dir in $ax_cuda_installs/bin
+for as_dir in $amuse_cuda_installs/bin
 do
   IFS=$as_save_IFS
   case $as_dir in #(((
@@ -8138,7 +8138,7 @@ do
   esac
     for ac_exec_ext in '' $ac_executable_extensions; do
   if as_fn_executable_p "$as_dir$ac_word$ac_exec_ext"; then
-    ac_cv_path_ax_cuda_verify_NVCC="$as_dir$ac_word$ac_exec_ext"
+    ac_cv_path_amuse_cuda_verify_NVCC="$as_dir$ac_word$ac_exec_ext"
     printf "%s\n" "$as_me:${as_lineno-$LINENO}: found $as_dir$ac_word$ac_exec_ext" >&5
     break 2
   fi
@@ -8149,10 +8149,10 @@ IFS=$as_save_IFS
   ;;
 esac
 fi
-ax_cuda_verify_NVCC=$ac_cv_path_ax_cuda_verify_NVCC
-if test -n "$ax_cuda_verify_NVCC"; then
-  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ax_cuda_verify_NVCC" >&5
-printf "%s\n" "$ax_cuda_verify_NVCC" >&6; }
+amuse_cuda_verify_NVCC=$ac_cv_path_amuse_cuda_verify_NVCC
+if test -n "$amuse_cuda_verify_NVCC"; then
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $amuse_cuda_verify_NVCC" >&5
+printf "%s\n" "$amuse_cuda_verify_NVCC" >&6; }
 else
   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
 printf "%s\n" "no" >&6; }
@@ -8160,30 +8160,30 @@ fi
 
 
 
-        if test x"$ax_cuda_verify_NVCC" != x
+        if test x"$amuse_cuda_verify_NVCC" != x
 then :
 
 
-    if test "x$ax_cuda_installs" = x
+    if test "x$amuse_cuda_installs" = x
 then :
 
-        ax_cuda_verify_msg="for cuda.h"
-        ax_cuda_flags=
+        amuse_cuda_verify_msg="for cuda.h"
+        amuse_cuda_flags=
 
 else $as_nop
 
-        ax_cuda_verify_msg="for cuda.h in $ax_cuda_installs/include"
-        ax_cuda_flags="-I$ax_cuda_installs/include"
+        amuse_cuda_verify_msg="for cuda.h in $amuse_cuda_installs/include"
+        amuse_cuda_flags="-I$amuse_cuda_installs/include"
 
 fi
 
-    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking $ax_cuda_verify_msg" >&5
-printf %s "checking $ax_cuda_verify_msg... " >&6; }
-    ax_cuda_verify_FLAGS=
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking $amuse_cuda_verify_msg" >&5
+printf %s "checking $amuse_cuda_verify_msg... " >&6; }
+    amuse_cuda_verify_FLAGS=
 
     ax_save_CFLAGS="$CFLAGS"
 
-    CFLAGS="$ax_cuda_flags"
+    CFLAGS="$amuse_cuda_flags"
     cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 #include <cuda.h>
@@ -8198,8 +8198,8 @@ _ACEOF
 if ac_fn_c_try_compile "$LINENO"
 then :
 
-        ax_cuda_verify_FLAGS="$CFLAGS"
-        ax_cuda_verify_headers_found="yes"
+        amuse_cuda_verify_FLAGS="$CFLAGS"
+        amuse_cuda_verify_headers_found="yes"
         { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 printf "%s\n" "yes" >&6; }
 
@@ -8216,33 +8216,33 @@ rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
 
 fi
 
-        if test x"$ax_cuda_verify_headers_found" != x
+        if test x"$amuse_cuda_verify_headers_found" != x
 then :
 
 
-    if test "x$ax_cuda_installs" = x
+    if test "x$amuse_cuda_installs" = x
 then :
 
-        ax_cuda_verify_msg="for libcudart"
-        ax_cuda_ldflags=
+        amuse_cuda_verify_msg="for libcudart"
+        amuse_cuda_ldflags=
 
 else $as_nop
 
-        ax_cuda_verify_msg="for libcudart in $ax_cuda_installs/lib"
-        ax_cuda_verify_msg64="for libcudart in $ax_cuda_installs/lib64"
-        ax_cuda_ldflags="-L$ax_cuda_installs/lib"
-        ax_cuda_ldflags64="-L$ax_cuda_installs/lib64"
+        amuse_cuda_verify_msg="for libcudart in $amuse_cuda_installs/lib"
+        amuse_cuda_verify_msg64="for libcudart in $amuse_cuda_installs/lib64"
+        amuse_cuda_ldflags="-L$amuse_cuda_installs/lib"
+        amuse_cuda_ldflags64="-L$amuse_cuda_installs/lib64"
 
 fi
 
-    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking $ax_cuda_verify_msg" >&5
-printf %s "checking $ax_cuda_verify_msg... " >&6; }
-    ax_cuda_verify_LDFLAGS=
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking $amuse_cuda_verify_msg" >&5
+printf %s "checking $amuse_cuda_verify_msg... " >&6; }
+    amuse_cuda_verify_LDFLAGS=
 
     ax_save_LDFLAGS="$LDFLAGS"
     ax_save_LIBS="$LIBS"
 
-    LDFLAGS="$ax_cuda_ldflags"
+    LDFLAGS="$amuse_cuda_ldflags"
     LIBS="-lcudart"
     cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
@@ -8258,8 +8258,8 @@ _ACEOF
 if ac_fn_c_try_link "$LINENO"
 then :
 
-        ax_cuda_verify_LDFLAGS="$LDFLAGS"
-        ax_cuda_verify_libs_found="yes"
+        amuse_cuda_verify_LDFLAGS="$LDFLAGS"
+        amuse_cuda_verify_libs_found="yes"
         { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 printf "%s\n" "yes" >&6; }
 
@@ -8272,12 +8272,12 @@ fi
 rm -f core conftest.err conftest.$ac_objext conftest.beam \
     conftest$ac_exeext conftest.$ac_ext
 
-    if test "x$ax_cuda_verify_libs_found" = x
+    if test "x$amuse_cuda_verify_libs_found" = x
 then :
 
-        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking $ax_cuda_verify_msg64" >&5
-printf %s "checking $ax_cuda_verify_msg64... " >&6; }
-        LDFLAGS="$ax_cuda_ldflags64"
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking $amuse_cuda_verify_msg64" >&5
+printf %s "checking $amuse_cuda_verify_msg64... " >&6; }
+        LDFLAGS="$amuse_cuda_ldflags64"
         cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 #include <cuda.h>
@@ -8292,8 +8292,8 @@ _ACEOF
 if ac_fn_c_try_link "$LINENO"
 then :
 
-            ax_cuda_verify_LDFLAGS="$LDFLAGS"
-            ax_cuda_verify_libs_found="yes"
+            amuse_cuda_verify_LDFLAGS="$LDFLAGS"
+            amuse_cuda_verify_libs_found="yes"
             { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 printf "%s\n" "yes" >&6; }
 
@@ -8315,13 +8315,13 @@ fi
 fi
 
 
-    if test \(x"$ax_cuda_verify_NVCC" != x\) -a \(x"$ax_cuda_verify_headers_found" != x\) -a \(x"$ax_cuda_verify_libs_found" != x\)
+    if test \(x"$amuse_cuda_verify_NVCC" != x\) -a \(x"$amuse_cuda_verify_headers_found" != x\) -a \(x"$amuse_cuda_verify_libs_found" != x\)
 then :
 
-            CUDA_TK="$ax_cuda_installs"
-            NVCC="$ax_cuda_verify_NVCC"
-            CUDA_FLAGS="$ax_cuda_verify_FLAGS"
-            CUDA_LDFLAGS="$ax_cuda_verify_LDFLAGS"
+            CUDA_TK="$amuse_cuda_installs"
+            NVCC="$amuse_cuda_verify_NVCC"
+            CUDA_FLAGS="$amuse_cuda_verify_FLAGS"
+            CUDA_LDFLAGS="$amuse_cuda_verify_LDFLAGS"
 
 
 fi
@@ -8329,8 +8329,8 @@ fi
 
 else $as_nop
 
-        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: $ax_cuda_installs does not exist or is not a directory, CUDA not found there" >&5
-printf "%s\n" "$as_me: $ax_cuda_installs does not exist or is not a directory, CUDA not found there" >&6;}
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: $amuse_cuda_installs does not exist or is not a directory, CUDA not found there" >&5
+printf "%s\n" "$as_me: $amuse_cuda_installs does not exist or is not a directory, CUDA not found there" >&6;}
 
 fi
 
@@ -8357,8 +8357,8 @@ fi
 then :
 
 
-    ax_cuda_verify_headers_found=
-    ax_cuda_verify_libs_found=
+    amuse_cuda_verify_headers_found=
+    amuse_cuda_verify_libs_found=
 
     if test -d $dir
 then :
@@ -8367,13 +8367,13 @@ then :
 set dummy nvcc; ac_word=$2
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
 printf %s "checking for $ac_word... " >&6; }
-if test ${ac_cv_path_ax_cuda_verify_NVCC+y}
+if test ${ac_cv_path_amuse_cuda_verify_NVCC+y}
 then :
   printf %s "(cached) " >&6
 else $as_nop
-  case $ax_cuda_verify_NVCC in
+  case $amuse_cuda_verify_NVCC in
   [\\/]* | ?:[\\/]*)
-  ac_cv_path_ax_cuda_verify_NVCC="$ax_cuda_verify_NVCC" # Let the user override the test with a path.
+  ac_cv_path_amuse_cuda_verify_NVCC="$amuse_cuda_verify_NVCC" # Let the user override the test with a path.
   ;;
   *)
   as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
@@ -8387,7 +8387,7 @@ do
   esac
     for ac_exec_ext in '' $ac_executable_extensions; do
   if as_fn_executable_p "$as_dir$ac_word$ac_exec_ext"; then
-    ac_cv_path_ax_cuda_verify_NVCC="$as_dir$ac_word$ac_exec_ext"
+    ac_cv_path_amuse_cuda_verify_NVCC="$as_dir$ac_word$ac_exec_ext"
     printf "%s\n" "$as_me:${as_lineno-$LINENO}: found $as_dir$ac_word$ac_exec_ext" >&5
     break 2
   fi
@@ -8398,10 +8398,10 @@ IFS=$as_save_IFS
   ;;
 esac
 fi
-ax_cuda_verify_NVCC=$ac_cv_path_ax_cuda_verify_NVCC
-if test -n "$ax_cuda_verify_NVCC"; then
-  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ax_cuda_verify_NVCC" >&5
-printf "%s\n" "$ax_cuda_verify_NVCC" >&6; }
+amuse_cuda_verify_NVCC=$ac_cv_path_amuse_cuda_verify_NVCC
+if test -n "$amuse_cuda_verify_NVCC"; then
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $amuse_cuda_verify_NVCC" >&5
+printf "%s\n" "$amuse_cuda_verify_NVCC" >&6; }
 else
   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
 printf "%s\n" "no" >&6; }
@@ -8409,30 +8409,30 @@ fi
 
 
 
-        if test x"$ax_cuda_verify_NVCC" != x
+        if test x"$amuse_cuda_verify_NVCC" != x
 then :
 
 
     if test "x$dir" = x
 then :
 
-        ax_cuda_verify_msg="for cuda.h"
-        ax_cuda_flags=
+        amuse_cuda_verify_msg="for cuda.h"
+        amuse_cuda_flags=
 
 else $as_nop
 
-        ax_cuda_verify_msg="for cuda.h in $dir/include"
-        ax_cuda_flags="-I$dir/include"
+        amuse_cuda_verify_msg="for cuda.h in $dir/include"
+        amuse_cuda_flags="-I$dir/include"
 
 fi
 
-    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking $ax_cuda_verify_msg" >&5
-printf %s "checking $ax_cuda_verify_msg... " >&6; }
-    ax_cuda_verify_FLAGS=
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking $amuse_cuda_verify_msg" >&5
+printf %s "checking $amuse_cuda_verify_msg... " >&6; }
+    amuse_cuda_verify_FLAGS=
 
     ax_save_CFLAGS="$CFLAGS"
 
-    CFLAGS="$ax_cuda_flags"
+    CFLAGS="$amuse_cuda_flags"
     cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 #include <cuda.h>
@@ -8447,8 +8447,8 @@ _ACEOF
 if ac_fn_c_try_compile "$LINENO"
 then :
 
-        ax_cuda_verify_FLAGS="$CFLAGS"
-        ax_cuda_verify_headers_found="yes"
+        amuse_cuda_verify_FLAGS="$CFLAGS"
+        amuse_cuda_verify_headers_found="yes"
         { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 printf "%s\n" "yes" >&6; }
 
@@ -8465,33 +8465,33 @@ rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
 
 fi
 
-        if test x"$ax_cuda_verify_headers_found" != x
+        if test x"$amuse_cuda_verify_headers_found" != x
 then :
 
 
     if test "x$dir" = x
 then :
 
-        ax_cuda_verify_msg="for libcudart"
-        ax_cuda_ldflags=
+        amuse_cuda_verify_msg="for libcudart"
+        amuse_cuda_ldflags=
 
 else $as_nop
 
-        ax_cuda_verify_msg="for libcudart in $dir/lib"
-        ax_cuda_verify_msg64="for libcudart in $dir/lib64"
-        ax_cuda_ldflags="-L$dir/lib"
-        ax_cuda_ldflags64="-L$dir/lib64"
+        amuse_cuda_verify_msg="for libcudart in $dir/lib"
+        amuse_cuda_verify_msg64="for libcudart in $dir/lib64"
+        amuse_cuda_ldflags="-L$dir/lib"
+        amuse_cuda_ldflags64="-L$dir/lib64"
 
 fi
 
-    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking $ax_cuda_verify_msg" >&5
-printf %s "checking $ax_cuda_verify_msg... " >&6; }
-    ax_cuda_verify_LDFLAGS=
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking $amuse_cuda_verify_msg" >&5
+printf %s "checking $amuse_cuda_verify_msg... " >&6; }
+    amuse_cuda_verify_LDFLAGS=
 
     ax_save_LDFLAGS="$LDFLAGS"
     ax_save_LIBS="$LIBS"
 
-    LDFLAGS="$ax_cuda_ldflags"
+    LDFLAGS="$amuse_cuda_ldflags"
     LIBS="-lcudart"
     cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
@@ -8507,8 +8507,8 @@ _ACEOF
 if ac_fn_c_try_link "$LINENO"
 then :
 
-        ax_cuda_verify_LDFLAGS="$LDFLAGS"
-        ax_cuda_verify_libs_found="yes"
+        amuse_cuda_verify_LDFLAGS="$LDFLAGS"
+        amuse_cuda_verify_libs_found="yes"
         { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 printf "%s\n" "yes" >&6; }
 
@@ -8521,12 +8521,12 @@ fi
 rm -f core conftest.err conftest.$ac_objext conftest.beam \
     conftest$ac_exeext conftest.$ac_ext
 
-    if test "x$ax_cuda_verify_libs_found" = x
+    if test "x$amuse_cuda_verify_libs_found" = x
 then :
 
-        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking $ax_cuda_verify_msg64" >&5
-printf %s "checking $ax_cuda_verify_msg64... " >&6; }
-        LDFLAGS="$ax_cuda_ldflags64"
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking $amuse_cuda_verify_msg64" >&5
+printf %s "checking $amuse_cuda_verify_msg64... " >&6; }
+        LDFLAGS="$amuse_cuda_ldflags64"
         cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 #include <cuda.h>
@@ -8541,8 +8541,8 @@ _ACEOF
 if ac_fn_c_try_link "$LINENO"
 then :
 
-            ax_cuda_verify_LDFLAGS="$LDFLAGS"
-            ax_cuda_verify_libs_found="yes"
+            amuse_cuda_verify_LDFLAGS="$LDFLAGS"
+            amuse_cuda_verify_libs_found="yes"
             { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 printf "%s\n" "yes" >&6; }
 
@@ -8564,13 +8564,13 @@ fi
 fi
 
 
-    if test \(x"$ax_cuda_verify_NVCC" != x\) -a \(x"$ax_cuda_verify_headers_found" != x\) -a \(x"$ax_cuda_verify_libs_found" != x\)
+    if test \(x"$amuse_cuda_verify_NVCC" != x\) -a \(x"$amuse_cuda_verify_headers_found" != x\) -a \(x"$amuse_cuda_verify_libs_found" != x\)
 then :
 
             CUDA_TK="$dir"
-            NVCC="$ax_cuda_verify_NVCC"
-            CUDA_FLAGS="$ax_cuda_verify_FLAGS"
-            CUDA_LDFLAGS="$ax_cuda_verify_LDFLAGS"
+            NVCC="$amuse_cuda_verify_NVCC"
+            CUDA_FLAGS="$amuse_cuda_verify_FLAGS"
+            CUDA_LDFLAGS="$amuse_cuda_verify_LDFLAGS"
 
 
 fi

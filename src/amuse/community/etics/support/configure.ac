@@ -25,7 +25,7 @@ AS_IF([test $RANLIB = ":"], [AC_MSG_ERROR([ranlib command not found.])])
 AC_LANG_PUSH([C++])
 
 AX_MPI()
-AX_CUDA()
+AMUSE_CUDA()
 AX_LIB_HDF5()
 
 AC_LANG_POP([C++])

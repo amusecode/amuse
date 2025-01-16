@@ -17,7 +17,7 @@ AC_PROG_CXX()
 AC_LANG_PUSH([C++])
 
 AX_MPI()
-AX_CUDA()
+AMUSE_CUDA()
 
 AC_LANG_POP([C++])
 
