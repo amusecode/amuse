@@ -1377,3 +1377,93 @@ class TestMESA(TestWithMPI):
         )
         self.assertAlmostEqual(composition[:, -1], [0.75, 0, 0, 0, 0, 0, 0, 0.25])
         instance.stop()
+
+    def test26(self):
+        print("Testing basic operations: evolve...")
+        instance = self.new_instance_of_an_optional_code(MESAInterface)
+        if instance is None:
+            print("MESA was not built. Skipping test.")
+            return
+        set_mesa_paths_instance(instance)
+        instance.initialize_code()
+        (index_of_the_star, error) = instance.new_particle(1.0)
+        self.assertEqual(0, error)
+        self.assertEqual(index_of_the_star, 1)
+        self.assertEqual(0, instance.commit_particles())
+
+
+        # Subsequent calls to evolve function (the updated function is evolve_until in mesa_interface.f90)
+        # To check that the timestep can increase
+        # In the previous version it would be prevented from increasing when the evolve function was called
+        # multiple times in a row
+
+        for i in range(10):
+            self.assertEqual(0,instance.evolve_for(index_of_the_star, 1.0e6))
+
+        # With the update, it increases freely up to the maximum allowed value, i.e. the value given as argument
+        # to evolve_for. In this example, evolve_for is called several time in a row with value 1 Myr
+        # After a few (6) calls to evolve_for, the MESA timestep has reached the maximum value it can, i.e. 1 Myr
+        # After the last call, the next timestep should be 1.2*previous_timestep, i.e. 1.2 Myr, if the timestep can
+        # increase freely. With the previous version of evolve_until, next_timestep would not be 1.2 Myr.
+
+        desired_next_timestep_yr = 1.2e6 #value in yr
+        desired_next_timestep_second = desired_next_timestep_yr * 365.25*24*3600 #value in seconds
+
+        obtained_next_time_step = instance.get_time_step(index_of_the_star).values()[0]
+
+        #check desired_next_timestep has the intended value (1.2 Myr)
+        self.assertEqual(desired_next_timestep_second, obtained_next_time_step)
+
+        instance.stop()
+
+    def test27(self):
+        print("Testing basic operations: evolve...")
+        instance = self.new_instance_of_an_optional_code(MESAInterface)
+        if instance is None:
+            print("MESA was not built. Skipping test.")
+            return
+        set_mesa_paths_instance(instance)
+        instance.initialize_code()
+        (index_of_the_star, error) = instance.new_particle(1.0)
+        self.assertEqual(0, error)
+        self.assertEqual(index_of_the_star, 1)
+        self.assertEqual(0, instance.commit_particles())
+
+        initial_dt = 1.0e5
+
+        instance.set_time_step(index_of_the_star, initial_dt)
+        self.assertEqual([initial_dt, 0], list(instance.get_time_step(index_of_the_star).values()))
+
+        self.assertEqual(0, instance.evolve_for(index_of_the_star, initial_dt))
+        self.assertEqual(
+            [initial_dt, 0],
+            list(instance.get_age(index_of_the_star).values())
+        )
+
+        target_end_time = 3.0e5  # (years)
+        self.assertEqual(
+            0, instance.evolve_for(
+                index_of_the_star, target_end_time-initial_dt
+            )
+        )
+
+        self.assertTrue(
+            instance.get_age(index_of_the_star)['age'] >= target_end_time
+        )
+        #Tests the functionality of new getters
+        (ML_of_the_star, error) = instance.get_wind_mass_loss_rate(index_of_the_star)
+        self.assertEqual(0, error)
+        self.assertAlmostEqual(ML_of_the_star, 0, -4)
+        (gyr_of_the_star, error) = instance.get_gyration_radius(index_of_the_star)
+        self.assertEqual(0, error)
+        self.assertAlmostEqual(gyr_of_the_star, 0.3, 1)
+        (k2_of_the_star, error) = instance.get_apsidal_motion_constant(index_of_the_star)
+        self.assertEqual(0, error)
+        self.assertAlmostEqual(k2_of_the_star, 0.024, 2)
+        (Renv_of_the_star, error) = instance.get_convective_envelope_radius(index_of_the_star)
+        self.assertEqual(0, error)
+        self.assertAlmostEqual(Renv_of_the_star, 0.12, 2)
+        (Menv_of_the_star, error) = instance.get_convective_envelope_mass(index_of_the_star)
+        self.assertEqual(0, error)
+        self.assertAlmostEqual(Menv_of_the_star, 0.08, 2)
+        instance.stop()
