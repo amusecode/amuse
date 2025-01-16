@@ -312,7 +312,9 @@ install_all() {
     fi
 
     for package in ${ENABLED_PACKAGES} ; do
-        forward_to_package install "${package}"
+        if ! is_subset "${package}" "amuse-framework sapporo_light" ; then
+            forward_to_package install "${package}"
+        fi
     done
 }
 
