@@ -41,10 +41,10 @@ detect_environments() {
 }
 
 
-# Detect pip and wheel
+# Detect installed packages
 #
-# Checks that pip and wheel are installed, and if a Conda environment, that they were
-# installed using conda and not pip.
+# Finds installed packages, and checks that pip and wheel are installed, and if in a
+# Conda environment, that they were installed using conda and not pip.
 #
 # This uses the following variables:
 #
@@ -52,18 +52,22 @@ detect_environments() {
 #
 # This sets the following variables:
 #
+# INSTALLED_PACKAGES - space-separated names of installed packages
 # HAVE_PYPI_PIP - if pip is installed from PyPI in a conda environment
 # HAVE_PYPI_WHEEL - if wheel is installed from PyPI in a conda environment
 # HAVE_PIP - if pip is installed correctly for the current environment
 # HAVE_WHEEL - if wheel is installed correctly for the current environment
 #
-detect_pip_wheel() {
+detect_packages() {
     if [ "a${ENV_TYPE}" = "avirtualenv" ] ; then
+        INSTALLED_PACKAGES="$(python -m pip list | tail -n +3 | cut -d ' ' -f 1)"
         HAVE_PIP=$(python -m pip list | grep '^pip')
         HAVE_WHEEL=$(python -m pip list | grep '^wheel')
     fi
 
     if [ "a${ENV_TYPE}" = "aconda" ] ; then
+        INSTALLED_PACKAGES="$(echo "${CONDA_LIST}" | tr '^' '\n' | grep -v '^#.*' | cut -d ' ' -f 1)"
+
         HAVE_PYPI_PIP=$(echo "${CONDA_LIST}" | tr '^' '\n' | grep pypi | grep '^pip')
         HAVE_PYPI_WHEEL=$(echo "${CONDA_LIST}" | tr '^' '\n' | grep pypi | grep '^wheel')
 
@@ -298,7 +302,6 @@ forward_to_package() {
 
     check_package "${package}"
     make -C "$(code_directory "${package}")" "${cmd}-${package}"
-
 }
 
 
@@ -323,12 +326,28 @@ install_all() {
 #
 test_all() {
     test_framework
+    # sapporo_light does not have tests
 
-    for package in ${ENABLED_PACKAGES} ; do
+    FAILED_TESTS=''
+    for package in ${INSTALLED_PACKAGES} ; do
         if ! is_subset "${package}" "amuse-framework sapporo_light" ; then
-            forward_to_package test "${package}"
+            code_dir=$(code_directory "${package}")
+            if [ -f "${code_dir}/packages/${package}.amuse_deps" ] ; then
+                forward_to_package test "${package}"
+                if [ $? != '0' ] ; then
+                    FAILED_TESTS="${FAILED_TESTS}\n${package}"
+                fi
+            fi
         fi
     done
+
+    printf '\n%b\n' "${COLOR_CYAN}*** Test results ***${COLOR_END}"
+    if [ "a${FAILED_TESTS}" != "a" ] ; then
+        printf '\nThe following packages failed their tests:\n'
+        printf '%b\n\n' "${COLOR_RED}${FAILED_TESTS}${COLOR_END}"
+    else
+        printf '\n%b\n\n' "${COLOR_GREEN}All installed packages completed their tests successfully${COLOR_END}"
+    fi
 }
 
 
@@ -467,14 +486,6 @@ case ${cmd} in
         ;;
 esac
 
-detect_environments
-detect_pip_wheel
-
-if [ ${cmd} = "test" ] ; then
-    run_test "${target}"
-    exit $?
-fi
-
 printf '%s\n' 'Checking for dependencies, one moment please...'
 
 if ! (cd support && ./configure >config.out 2>&1) ; then
@@ -487,10 +498,11 @@ fi
 
 . support/configuration.sh
 
+detect_environments
+detect_packages
 check_build_framework
 check_build_sapporo_light
 check_packages
-
 
 case ${cmd} in
     configure | "" )
@@ -498,6 +510,9 @@ case ${cmd} in
         ;;
     install )
         install "${target}"
+        ;;
+    test )
+        run_test "${target}"
         ;;
     develop )
         develop "${target}"
