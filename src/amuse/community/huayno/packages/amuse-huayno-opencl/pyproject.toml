@@ -42,3 +42,6 @@ artifacts = ["huayno/huayno_opencl_worker"]
 pythonpath = ["huayno/tests/", "../../../../../tests"]
 
 testpaths = ["huayno/tests"]
+
+addopts = "-k opencl"
+

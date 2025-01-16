@@ -44,3 +44,5 @@ pythonpath = ["ph4/tests/", "../../../../../tests"]
 
 testpaths = ["ph4/tests"]
 
+addopts = "-k 'not gpu'"
+

@@ -42,3 +42,6 @@ pythonpath = ["symple/tests/", "../../../../../tests"]
 
 testpaths = ["symple/tests"]
 
+# These files are not runnable by pytest
+addopts = "--ignore='symple/tests/test.py' --ignore='symple/tests/test_si.py'"
+

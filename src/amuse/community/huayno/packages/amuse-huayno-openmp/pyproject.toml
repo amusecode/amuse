@@ -42,3 +42,6 @@ artifacts = ["huayno/huayno_openmp_worker"]
 pythonpath = ["huayno/tests/", "../../../../../tests"]
 
 testpaths = ["huayno/tests"]
+
+addopts = "-k openmp"
+

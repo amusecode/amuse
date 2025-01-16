@@ -845,7 +845,7 @@ class TestPH4(TestWithMPI):
             self.assertAlmostRelativeEquals(potential0, potential, 8)
             instance.stop()
 
-    def test22(self):
+    def test22_gpu(self):
         particles = new_plummer_model(200)
         particles.scale_to_standard()
         try:

@@ -38,3 +38,5 @@ pythonpath = ["fastkick/tests/", "../../../../../tests"]
 
 testpaths = ["fastkick/tests"]
 
+addopts = "-k TestFastKickGPU"
+
