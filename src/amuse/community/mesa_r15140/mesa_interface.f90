@@ -663,7 +663,7 @@ module mesa_interface
         real(dp), intent(in) :: delta_t
         integer, intent(out) :: ierr
         type (star_info), pointer :: s
-        integer :: result, count
+        integer :: result, count_calls_to_evolve_one_step
         logical,parameter :: dbg=.false.
         real(dp) :: end_time, dt_save
 
@@ -681,14 +681,28 @@ module mesa_interface
         ! End time of evolution
         end_time = s% star_age + delta_t
 
-        ! To check whether the evolve loop was entered
-        count = 0
+        ! Counts the number of calls to evolve_one_step
+        count_calls_to_evolve_one_step = 0
+
+        ! If MESA delta_t (dt_next) >= AMUSE delta_t (delta_t), only one call to
+        ! evolve_one_step is needed (setting MESA_delta_t to AMUSE_delta_t). In this case
+        ! after the loop count_calls_to_evolve_one_step = 1
+        ! If MESA delta_t < AMUSE delta_t, several calls to evolve_one_step. At last step
+        ! MESA delta_t is set so that star_age reaches end_time. In this case after the loop
+        ! count_calls_to_evolve_one_step > 1 and MESA time_step is set to the value it was
+        ! before being set to reach end_time.
 
         ! Evolve loop while end_time not reached
         ! Use of epsilon(0.0d0) to avoid precision issues
-        do while (s% star_age + s% dt_next/secyer  < end_time*(1.0d0 - epsilon(0.0d0)))
+        do while (s% star_age < end_time*(1.0d0 - epsilon(0.0d0)))
+            if (s% star_age + s% dt_next/secyer > end_time*(1.0d0 - epsilon(0.0d0))) then
+                ! Last step: save the next timestep MESA would have required if it was not imposed by end_time
+                dt_save = s% dt_next
+
+                ! Set the last timestep so that star_age reaches end_time
+                s% dt_next = (end_time - s% star_age)*secyer
+            end if
             call do_evolve_one_step(id, result, ierr)
-            count = count + 1
             if (result /= keep_going) then
                 if (s% result_reason == result_reason_normal) then
                     exit
@@ -698,27 +712,15 @@ module mesa_interface
                 end if
             end if
             s% doing_first_model_of_run = .false.
+            count_calls_to_evolve_one_step = count_calls_to_evolve_one_step + 1
         end do
 
-        ! Save the next timestep MESA would have required if it was not imposed by end_time
-        dt_save = s% dt_next
-
-        ! Set the timestep required to reach end_time
-        s% dt_next = (end_time - s% star_age)*secyer
-
-        ! Evolve one last step to reach end_time
-        call do_evolve_one_step(id, result, ierr)
-        if (result /= keep_going) then
-            if (s% result_reason /= result_reason_normal) then
-                 ierr = -1
-            end if
-        end if
-
-        ! If several evolve steps were performed, set the timestep for the future evolution
-        ! to the value it would have reached without the condition to finish at end_time
-        if (count /= 0) then
+        ! In case evolve_until is called several times subsequently.
+        ! If there was more than one call to evolve_one_step, sets the next timestep
+        ! to the value it was before it was set for star_age to reach end_time.
+        if (count_calls_to_evolve_one_step > 1) then
             s% dt_next = dt_save
-        endif
+        end if
 
         s% doing_first_model_of_run = .false.
 
