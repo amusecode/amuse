@@ -204,15 +204,22 @@ configure() {
 }
 
 
-# Install Sapporo Light
+# Check Sapporo Light
 #
-install_sapporo_light() {
+check_sapporo_light() {
     if ! is_subset sapporo_light "${ENABLED_PACKAGES}" ; then
         printf '%s\n' 'Sapporo light cannot be installed because tools or dependencies are missing.'
         printf '%s\n' 'Please run ./setup and follow the instructions to enable it.'
         exit 1
     fi
+}
 
+
+# Install Sapporo Light
+#
+install_sapporo_light() {
+    check_sapporo_light
+    make -C lib/sapporo_light distclean
     make -C lib install-sapporo_light
     printf '%s\n' 'Successfully installed Sapporo light'
 }
@@ -234,6 +241,7 @@ check_framework() {
 install_framework() {
     check_framework
     support/shared/uninstall.sh amuse-framework
+    make -C lib distclean
     make -C lib install
     (cd src && pip --no-cache-dir --debug install .)
 }
@@ -244,6 +252,7 @@ install_framework() {
 develop_framework() {
     check_framework
     support/shared/uninstall.sh amuse-framework
+    make -C lib distclean
     make -C lib install
     (cd src && pip -e install .)
 }
@@ -255,6 +264,7 @@ develop_framework() {
 #
 package_framework() {
     check_framework
+    make -C lib distclean
     make -C lib install
     (cd src && python3 -m pip install -vv --no-cache-dir --no-deps --no-build-isolation --prefix "${PREFIX}" .)
 }
@@ -342,7 +352,14 @@ forward_to_package() {
     package="$2"
 
     check_package "${package}"
-    make -C "$(code_directory "${package}")" "${cmd}-${package}"
+
+    code_dir=$(code_directory "${package}")
+
+    if [ "a${cmd}" != "atest" ] ; then
+        make -C "${code_dir}" distclean
+    fi
+
+    make -C "${code_dir}" "${cmd}-${package}"
 }
 
 
