@@ -26,13 +26,8 @@ distance-dirty = "{next_version}.dev{distance}+{vcs}{rev}.d{build_date:%Y%m%d}"
 skip-excluded-dirs = true
 
 [tool.hatch.build.targets.wheel]
-include = ["huayno/**/*.py"]
-exclude = [
-    "huayno/packages",
-    "huayno/support",
-    "huayno/src",
-    "huayno/tests"
-    ]
+include = ["huayno"]
+exclude = ["huayno/*"]
 artifacts = ["huayno/huayno_opencl_worker"]
 
 [tool.hatch.build.targets.wheel.sources]
