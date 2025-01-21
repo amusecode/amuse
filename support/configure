@@ -797,6 +797,7 @@ BUNZIP2
 GUNZIP
 UNZIP
 TAR
+PATCH
 DOWNLOAD
 CURL
 WGET
@@ -3172,7 +3173,8 @@ fi
 printf %s "checking for a wget or curl to download files with... " >&6; }
     if test "x$WGET" != "x"
     then
-        DOWNLOAD="$WGET -O -"
+        # The MESA SDK server rejects wget, this is the official work-around
+        DOWNLOAD="$WGET --user-agent='' -O -"
         { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 printf "%s\n" "yes" >&6; }
     else
@@ -3188,6 +3190,108 @@ printf "%s\n" "no" >&6; }
     fi
 
 
+
+        if test -n "$ac_tool_prefix"; then
+  # Extract the first word of "${ac_tool_prefix}patch", so it can be a program name with args.
+set dummy ${ac_tool_prefix}patch; ac_word=$2
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+printf %s "checking for $ac_word... " >&6; }
+if test ${ac_cv_prog_PATCH+y}
+then :
+  printf %s "(cached) " >&6
+else $as_nop
+  if test -n "$PATCH"; then
+  ac_cv_prog_PATCH="$PATCH" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  case $as_dir in #(((
+    '') as_dir=./ ;;
+    */) ;;
+    *) as_dir=$as_dir/ ;;
+  esac
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir$ac_word$ac_exec_ext"; then
+    ac_cv_prog_PATCH="${ac_tool_prefix}patch"
+    printf "%s\n" "$as_me:${as_lineno-$LINENO}: found $as_dir$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+fi
+fi
+PATCH=$ac_cv_prog_PATCH
+if test -n "$PATCH"; then
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $PATCH" >&5
+printf "%s\n" "$PATCH" >&6; }
+else
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+fi
+
+
+fi
+if test -z "$ac_cv_prog_PATCH"; then
+  ac_ct_PATCH=$PATCH
+  # Extract the first word of "patch", so it can be a program name with args.
+set dummy patch; ac_word=$2
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+printf %s "checking for $ac_word... " >&6; }
+if test ${ac_cv_prog_ac_ct_PATCH+y}
+then :
+  printf %s "(cached) " >&6
+else $as_nop
+  if test -n "$ac_ct_PATCH"; then
+  ac_cv_prog_ac_ct_PATCH="$ac_ct_PATCH" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  case $as_dir in #(((
+    '') as_dir=./ ;;
+    */) ;;
+    *) as_dir=$as_dir/ ;;
+  esac
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir$ac_word$ac_exec_ext"; then
+    ac_cv_prog_ac_ct_PATCH="patch"
+    printf "%s\n" "$as_me:${as_lineno-$LINENO}: found $as_dir$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+fi
+fi
+ac_ct_PATCH=$ac_cv_prog_ac_ct_PATCH
+if test -n "$ac_ct_PATCH"; then
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_ct_PATCH" >&5
+printf "%s\n" "$ac_ct_PATCH" >&6; }
+else
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+fi
+
+  if test "x$ac_ct_PATCH" = x; then
+    PATCH=""
+  else
+    case $cross_compiling:$ac_tool_warned in
+yes:)
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: WARNING: using cross tools not prefixed with host triplet" >&5
+printf "%s\n" "$as_me: WARNING: using cross tools not prefixed with host triplet" >&2;}
+ac_tool_warned=yes ;;
+esac
+    PATCH=$ac_ct_PATCH
+  fi
+else
+  PATCH="$ac_cv_prog_PATCH"
+fi
 
         if test -n "$ac_tool_prefix"; then
   # Extract the first word of "${ac_tool_prefix}tar", so it can be a program name with args.
@@ -5351,7 +5455,8 @@ fi
 printf %s "checking for a wget or curl to download files with... " >&6; }
     if test "x$WGET" != "x"
     then
-        DOWNLOAD="$WGET -O -"
+        # The MESA SDK server rejects wget, this is the official work-around
+        DOWNLOAD="$WGET --user-agent='' -O -"
         { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 printf "%s\n" "yes" >&6; }
     else
@@ -5367,6 +5472,108 @@ printf "%s\n" "no" >&6; }
     fi
 
 
+
+        if test -n "$ac_tool_prefix"; then
+  # Extract the first word of "${ac_tool_prefix}patch", so it can be a program name with args.
+set dummy ${ac_tool_prefix}patch; ac_word=$2
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+printf %s "checking for $ac_word... " >&6; }
+if test ${ac_cv_prog_PATCH+y}
+then :
+  printf %s "(cached) " >&6
+else $as_nop
+  if test -n "$PATCH"; then
+  ac_cv_prog_PATCH="$PATCH" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  case $as_dir in #(((
+    '') as_dir=./ ;;
+    */) ;;
+    *) as_dir=$as_dir/ ;;
+  esac
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir$ac_word$ac_exec_ext"; then
+    ac_cv_prog_PATCH="${ac_tool_prefix}patch"
+    printf "%s\n" "$as_me:${as_lineno-$LINENO}: found $as_dir$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+fi
+fi
+PATCH=$ac_cv_prog_PATCH
+if test -n "$PATCH"; then
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $PATCH" >&5
+printf "%s\n" "$PATCH" >&6; }
+else
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+fi
+
+
+fi
+if test -z "$ac_cv_prog_PATCH"; then
+  ac_ct_PATCH=$PATCH
+  # Extract the first word of "patch", so it can be a program name with args.
+set dummy patch; ac_word=$2
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+printf %s "checking for $ac_word... " >&6; }
+if test ${ac_cv_prog_ac_ct_PATCH+y}
+then :
+  printf %s "(cached) " >&6
+else $as_nop
+  if test -n "$ac_ct_PATCH"; then
+  ac_cv_prog_ac_ct_PATCH="$ac_ct_PATCH" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  case $as_dir in #(((
+    '') as_dir=./ ;;
+    */) ;;
+    *) as_dir=$as_dir/ ;;
+  esac
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir$ac_word$ac_exec_ext"; then
+    ac_cv_prog_ac_ct_PATCH="patch"
+    printf "%s\n" "$as_me:${as_lineno-$LINENO}: found $as_dir$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+fi
+fi
+ac_ct_PATCH=$ac_cv_prog_ac_ct_PATCH
+if test -n "$ac_ct_PATCH"; then
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_ct_PATCH" >&5
+printf "%s\n" "$ac_ct_PATCH" >&6; }
+else
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+fi
+
+  if test "x$ac_ct_PATCH" = x; then
+    PATCH=""
+  else
+    case $cross_compiling:$ac_tool_warned in
+yes:)
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: WARNING: using cross tools not prefixed with host triplet" >&5
+printf "%s\n" "$as_me: WARNING: using cross tools not prefixed with host triplet" >&2;}
+ac_tool_warned=yes ;;
+esac
+    PATCH=$ac_ct_PATCH
+  fi
+else
+  PATCH="$ac_cv_prog_PATCH"
+fi
 
         if test -n "$ac_tool_prefix"; then
   # Extract the first word of "${ac_tool_prefix}tar", so it can be a program name with args.
@@ -13781,6 +13988,10 @@ fi
 if test "x" != "x${DOWNLOAD}"
 then :
   FEATURES="${FEATURES} download"
+fi
+if test "x" != "x${PATCH}"
+then :
+  FEATURES="${FEATURES} patch"
 fi
 if test "x" != "x${TAR}"
 then :

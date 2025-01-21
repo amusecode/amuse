@@ -18,8 +18,6 @@ krome.tar.gz:
 src/krome: krome.tar.gz
 	tar xf $<
 	mv tgrassi-krome-$(SHORT_VERSION) src/krome
-	##### Apply patches here, if needed #####
-	# patch <patch.patch
 
 
 # Building the code into a static library
