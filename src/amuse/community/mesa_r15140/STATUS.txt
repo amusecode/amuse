@@ -1,0 +1,9 @@
+This one is a bit tricky, and it's only somewhat working, so here are some notes.
+
+- The wrapper is currently set up to only work in develop mode, as it doesn't get the
+  data directories in the right way.
+- The standard hatchling-based installation can't do develop installs. We need a
+  solution for that. This has a hack in it, but that's not going to be good to releas.
+- The worker compiles, and the tests run against the hacked install, so at least the
+  wrapper build system has been replaced.
+
