@@ -69,6 +69,13 @@ be installed in the active environment.
 Runs tests for the framework. This requires the framework to be installed in the active
 environment.
 
+    ./setup test amuse-ext
+
+Runs tests for the amuse.ext scripts, and regression ('ticket') tests. This requires the
+framework to be installed as well as (currently) bhtree, evtwin, fi, fractalcluster,
+gadget2, galactics, halogen, hermite, hop, kepler, mesa_r14150, ph4, phigrape, seba, and
+sse.
+
     ./setup test ${ITALIC}package${END_ITALIC}
 
 Runs tests for the specified package. This requires the framework to be installed in the
