@@ -77,6 +77,17 @@ detect_packages() {
 }
 
 
+# Create a three-character prefix showing whether a package is installed or not.
+#
+is_installed() {
+    if is_subset "$1" "${INSTALLED_PACKAGES}" ; then
+        printf 'i) '
+    else
+        printf '   '
+    fi
+}
+
+
 # Determine if we have the required features to build the framework
 #
 # This uses the following variables:
@@ -94,8 +105,9 @@ check_build_framework() {
     missing_features=$(filter_out "${FEATURES}" "c c++ fortran python install mpi")
 
     if [ "a${missing_features}" = "a" ] ; then
+        installed="$(is_installed amuse-framework)"
         ENABLED_PACKAGES="${ENABLED_PACKAGES}amuse-framework "
-        ENABLED_PACKAGES_TEXT="${ENABLED_PACKAGES_TEXT}amuse-framework\n"
+        ENABLED_PACKAGES_TEXT="${ENABLED_PACKAGES_TEXT}${installed}amuse-framework\n"
     else
         DISABLED_PACKAGES="${DISABLED_PACKAGES}amuse-framework "
         DISABLED_PACKAGES_TEXT="${DISABLED_PACKAGES_TEXT}amuse-framework (missing features:${COLOR_RED}${missing_features}${COLOR_END})\n"
@@ -119,8 +131,9 @@ check_build_framework() {
 check_build_sapporo_light() {
     missing_features=$(filter_out "${FEATURES}" "c c++ install cuda")
     if [ "a${missing_features}" = "a" ] ; then
+        installed="$(is_installed sapporo_light)"
         ENABLED_PACKAGES="${ENABLED_PACKAGES}sapporo_light "
-        ENABLED_PACKAGES_TEXT="${ENABLED_PACKAGES_TEXT}sapporo_light\n"
+        ENABLED_PACKAGES_TEXT="${ENABLED_PACKAGES_TEXT}${installed}sapporo_light\n"
     else
         DISABLED_PACKAGES="${DISABLED_PACKAGES}sapporo_light "
         DISABLED_PACKAGES_TEXT="${DISABLED_PACKAGES_TEXT}sapporo_light (missing features:${COLOR_RED}${missing_features}${COLOR_END})\n"
@@ -153,8 +166,9 @@ check_packages() {
             missing_features=$(filter_out "${FEATURES}" "${deps}")
 
             if [ "a${missing_features}" = "a" ] ; then
+                installed="$(is_installed ${package})"
                 ENABLED_PACKAGES="${ENABLED_PACKAGES}${package} "
-                ENABLED_PACKAGES_TEXT="${ENABLED_PACKAGES_TEXT}${package}\n"
+                ENABLED_PACKAGES_TEXT="${ENABLED_PACKAGES_TEXT}${installed}${package}\n"
             else
                 DISABLED_PACKAGES="${DISABLED_PACKAGES}${package} "
                 DISABLED_PACKAGES_TEXT="${DISABLED_PACKAGES_TEXT}${package} (missing features:${COLOR_RED}${missing_features}${COLOR_END})\n"
@@ -171,13 +185,16 @@ check_packages() {
 # FEATURES - from support/configuration.sh
 #
 configure() {
+    en_pack_text="$(echo "${ENABLED_PACKAGES_TEXT}" | pr -3 -t -w 90)"
+
     printf '\n'
     printf '%b\n' "${COLOR_CYAN}*** Configuration complete ***${COLOR_END}"
     printf 'Detected features:%s\n' "${FEATURES}"
     printf '\n'
     printf '%b\n' "${COLOR_GREEN}** Enabled packages **${COLOR_END}"
-    printf '\n%b' "${ENABLED_PACKAGES_TEXT}"
-    printf '\n'
+    printf '\n%b\n' "Packages marked i) are currently installed."
+    printf '\n%b' "${en_pack_text}"
+    printf '\n\n'
     printf '%b\n' "${COLOR_RED}** Disabled packages **${COLOR_END}"
     printf '\n%b' "${DISABLED_PACKAGES_TEXT}"
     printf '\n'
