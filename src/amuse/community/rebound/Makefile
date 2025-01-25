@@ -34,6 +34,7 @@ OBJ_NAMES += output input
 
 OBJS := $(patsubst %,src/src/%.o,$(OBJ_NAMES))
 
+.PHONY: $(CODELIB)
 $(CODELIB): | src/rebound
 	$(MAKE) -C src -j $(CPU_COUNT) all CC='$(CC)' CFLAGS='$(CFLAGS)'
 	$(AR) rv $@ $(OBJS)
@@ -81,6 +82,7 @@ test-%:
 .PHONY: clean
 clean:
 	-$(MAKE) -C src clean
+	rm -f $(CODELIB)
 	rm -rf *.o *worker*
 
 .PHONY: distclean
