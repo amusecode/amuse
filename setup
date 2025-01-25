@@ -309,6 +309,11 @@ PYTEST_OPTS=''
 #
 test_framework() {
     make -C src/tests all
+    if [ "a$?" != "a0" ] ; then
+        printf '\n%b\n\n' "Test build failed, not starting the tests."
+        exit 1
+    fi
+
     # Tests for amuse.distributed won't be fixed as it is to be removed, disabled.
     (cd src/tests && pytest --pyargs core_tests compile_tests ${PYTEST_OPTS} -k 'not TestCDistributedImplementationInterface and not TestAsyncDistributed')
 }
