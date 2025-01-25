@@ -48,6 +48,7 @@ else
         AMUSE_CONDA_PACKAGE(FC, gfortran)
         AMUSE_CONDA_PACKAGE(JAVAC, openjdk)
         AMUSE_CONDA_PACKAGE(PYTHON, python)
+        AMUSE_CONDA_PACKAGE(PYTHON_DEV, python)
         AMUSE_CONDA_PACKAGE(INSTALL, coreutils)
 
         AMUSE_DOWNLOAD()
@@ -95,6 +96,7 @@ else
         AC_CHECK_TOOL(FC, gfortran)
         AC_CHECK_TOOL(JAVAC, javac)
         AC_CHECK_TOOL(PYTHON, python)
+        AC_CHECK_TOOL(PYTHON_DEV, python3-config)
         AC_CHECK_TOOL(INSTALL, install)
 
         # Not all compilers have a f77 symlink, so if you have more than one installed,
@@ -176,6 +178,7 @@ ENABLE_FEATURE_IF_DEFINED([c++], [CXX])
 ENABLE_FEATURE_IF_DEFINED([fortran], [FC])
 ENABLE_FEATURE_IF_DEFINED([java], [JAVAC])
 ENABLE_FEATURE_IF_DEFINED([python], [PYTHON])
+ENABLE_FEATURE_IF_DEFINED([python-dev], [PYTHON_DEV])
 ENABLE_FEATURE_IF_DEFINED([cmake], [CMAKE])
 ENABLE_FEATURE_IF_DEFINED([install], [INSTALL])
 ENABLE_FEATURE_IF_DEFINED([download], [DOWNLOAD])

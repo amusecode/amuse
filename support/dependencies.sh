@@ -44,17 +44,20 @@ sudo port select --set python3 python312
 sudo port select --set mpi openmpi-gcc12-fortran
 "
 
-DEPS_homebrew="gcc@12 gfortran@12 pkg-config curl gpatch gnu-tar unzip gzip bzip2 xz"
+DEPS_homebrew="gcc@12 gfortran@12 python pkg-config curl gpatch gnu-tar unzip gzip"
+DEPS_homebrew="${DEPS_homebrew} bzip2 xz"
 DEPS_homebrew="${DEPS_homebrew} perl cmake open-mpi gsl fftw gmp mpfr hdf5"
 DEPS_homebrew="${DEPS_homebrew} netcdf netcdf-cxx netcdf-fortran openblas lapack"
 
-DEPS_apt="gcc g++ gfortran python3 pkg-config curl patch tar unzip gzip bzip2 xz-utils"
+DEPS_apt="gcc g++ gfortran python3 python3-dev pkg-config curl patch tar unzip gzip"
+DEPS_apt="${DEPS_apt} bzip2 xz-utils"
 DEPS_apt="${DEPS_apt} perl cmake libopenmpi-dev openmpi-bin"
 DEPS_apt="${DEPS_apt} libgsl-dev libfftw3-3 libfftw3-dev libgmp3-dev libmpfr6"
 DEPS_apt="${DEPS_apt} libmpfr-dev libhdf5-serial-dev hdf5-tools libnetcdf-dev"
 DEPS_apt="${DEPS_apt} liblapack-dev libblas-dev"
 
-DEPS_dnf="gcc gcc-c++ gcc-gfortran python3 pkgconf-pkg-config curl patch tar unzip gzip"
+DEPS_dnf="gcc gcc-c++ gcc-gfortran python3 python3-devel pkgconf-pkg-config curl patch"
+DEPS_dnf="${DEPS_dnf} tar unzip gzip"
 DEPS_dnf="${DEPS_dnf} bzip2 xz perl-core cmake openmpi-devel"
 DEPS_dnf="${DEPS_dnf} gsl-devel fftw-devel gmp-devel mpfr-devel hdf5-devel netcdf-devel"
 DEPS_dnf="${DEPS_dnf} netcdf-cxx-devel netcdf-fortran-devel blas-devel lapack-devel"
