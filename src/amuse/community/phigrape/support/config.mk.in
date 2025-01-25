@@ -14,6 +14,7 @@ RANLIB = @RANLIB@
 
 # General flags and libraries
 CFLAGS = @CFLAGS@
+FFLAGS = @FFLAGS@
 FCFLAGS = @FCFLAGS@
 LDFLAGS = @LDFLAGS@
 

@@ -12,8 +12,12 @@ support/config.mk:
 FFLAGS += -fallow-argument-mismatch $(FORSOCKETS_CFLAGS)
 FCFLAGS = $(FFLAGS)
 
+export CFLAGS
+export FFLAGS
+export LDFLAGS
+
 FCFLAGS_NOMPI := $(FCFLAGS) $(G6LIB_CFLAGS) $(STOPCONDMPI_CFLAGS) -DNOMPI
-FCFLAGS_MPI := $(FCFLAGS) $(G6LIB_CFLAGS) $(STOPCONDMPI_CFLAGS) -DMPI
+FCFLAGS_MPI := $(FCFLAGS) $(G6LIB_CFLAGS) $(STOPCONDMPI_CFLAGS)
 FCFLAGS_SAPPORO := $(FCFLAGS) $(SAPPORO_LIGHT_CFLAGS) $(STOPCOND_CFLAGS) -DNOMPI
 
 LDLIBS += $(FORSOCKETS_LIBS)
@@ -31,19 +35,19 @@ build_nompi:
 	mkdir -p $@
 
 $(CODELIB_NOMPI): | build_nompi
-	$(MAKE) -C build_nompi -f ../src/Makefile -j 1 all FC="$(FC)" CC="$(CC)" OPTS="-DNOMPI" STOPCOND_CFLAGS="$(STOPCOND_CFLAGS)" STOPCOND_LIBS="$(STOPCOND_LIBS)" VPATH=../src
+	$(MAKE) -C build_nompi -f ../src/Makefile -j 1 all FC="$(FC)" CC="$(CC)" CFLAGS="$(CFLAGS) -DNOMPI" FFLAGS="$(FFLAGS) -DNOMPI" OPTS="-DNOMPI" STOPCOND_CFLAGS="$(STOPCOND_CFLAGS)" STOPCOND_LIBS="$(STOPCOND_LIBS)" G6LIBS="$(G6LIB_LIBS)" VPATH=../src
 
 build_mpi:
 	mkdir -p $@
 
 $(CODELIB_MPI): | build_mpi
-	$(MAKE) -C build_mpi -f ../src/Makefile -j 1 all FC="$(MPIFC)" CC="$(MPICC)" OPTS="-DMPI" STOPCOND_CFLAGS="$(STOPCONDMPI_CFLAGS)" STOPCOND_LIBS="$(STOPCONDMPI_LIBS)" VPATH=../src
+	$(MAKE) -C build_mpi -f ../src/Makefile -j 1 all FC="$(MPIFC)" CC="$(MPICC)" CFLAGS="$(CFLAGS)" FFLAGS="$(FFLAGS)" STOPCOND_CFLAGS="$(STOPCONDMPI_CFLAGS)" STOPCOND_LIBS="$(STOPCONDMPI_LIBS)" G6LIBS="$(G6LIB_LIBS)" VPATH=../src
 
 build_sapporo:
 	mkdir -p $@
 
 $(CODELIB_SAPPORO): | build_sapporo
-	$(MAKE) -C build_sapporo -f ../src/Makefile -j 1 all FC="$(FC)" CC="$(CC)" OPTS="-DNOMPI" STOPCOND_CFLAGS="$(STOPCOND_CFLAGS)" STOPCOND_LIBS="$(STOPCOND_LIBS)" VPATH=../src
+	$(MAKE) -C build_sapporo -f ../src/Makefile -j 1 all FC="$(FC)" CC="$(CC)" CFLAGS="$(CFLAGS) -DNOMPI" FFLAGS="$(FFLAGS) -DNOMPI"  STOPCOND_CFLAGS="$(STOPCOND_CFLAGS)" STOPCOND_LIBS="$(STOPCOND_LIBS)" VPATH=../src
 
 
 # Building the workers
@@ -108,7 +112,7 @@ test-%:
 clean:
 	$(MAKE) -C src clean
 	rm -rf *.o *.mod *worker*
-	rm -rf build_mpi build_sapporo
+	rm -rf build_nompi build_mpi build_sapporo
 
 .PHONY: distclean
 distclean: clean

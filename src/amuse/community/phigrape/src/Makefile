@@ -28,7 +28,7 @@ CUDA_LIBS ?= -lcudart
 SAPPORO_LIBDIRS ?= -L/data1/pelupes/libraries/sapporo_v1.5
 
 
-LLIBSDIR = $(SAPPORO_LIBDIRS) $(CUDA_LIBDIRS)
+LLIBSDIR = $(LDFLAGS) $(SAPPORO_LIBDIRS) $(CUDA_LIBDIRS)
 LIBS     =  $(CUDA_LIBS) -lsapporo -lm -lboost_thread-mt -lpthread
 
 

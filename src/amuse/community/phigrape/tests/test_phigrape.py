@@ -616,7 +616,6 @@ class TestPhigrape(TestWithMPI):
         instance.stop()
 
     def test15(self):
-        self.skip("MPI support is broken and disabled")
         instance = PhiGRAPE(number_of_workers=2, **default_test_options)  # , redirection = "none")
         instance.initialize_code()
         instance.parameters.set_defaults()
@@ -663,7 +662,6 @@ class TestPhigrape(TestWithMPI):
         instance.stop()
 
     def test16(self):
-        self.skip("MPI support is broken and disabled")
         instance = PhiGRAPE(number_of_workers=2, **default_test_options)
         instance.initialize_code()
         instance.parameters.set_defaults()
@@ -799,7 +797,6 @@ class TestPhigrape(TestWithMPI):
         instance.stop()
 
     def test19(self):
-        self.skip("MPI support is broken and disabled")
         converter = nbody_system.nbody_to_si(1 | units.MSun, 1 | units.parsec)
 
         particles = datamodel.Particles(2)
