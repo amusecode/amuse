@@ -27,8 +27,12 @@ src/mocassin: | mocassin.$(VERSION).tar.gz src
 
 
 # Building the code into a static library
+
+# Note that mocassin requires -O2, the tests crash without. Probably some memory
+# corruption somewhere...
+
 DEPFLAGS += $(FORSOCKETS_CFLAGS)
-FCFLAGS += $(DEPFLAGS) -std=legacy -fallow-argument-mismatch -fallow-invalid-boz
+FCFLAGS += $(DEPFLAGS) -O2 -std=legacy -fallow-argument-mismatch -fallow-invalid-boz
 LDLIBS += $(FORSOCKETS_LIBS)
 
 CODELIB = src/mocassin/libmocassin.a
