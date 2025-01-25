@@ -185,7 +185,7 @@ check_packages() {
 # FEATURES - from support/configuration.sh
 #
 configure() {
-    en_pack_text="$(echo "${ENABLED_PACKAGES_TEXT}" | pr -3 -t -w 90)"
+    en_pack_text="$(printf '%b' "${ENABLED_PACKAGES_TEXT}" | pr -3 -t -w 90)"
 
     printf '\n'
     printf '%b\n' "${COLOR_CYAN}*** Configuration complete ***${COLOR_END}"
