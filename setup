@@ -15,6 +15,26 @@
 . support/help.sh
 
 
+# When installing the framework into a conda environment, we install these conda
+# versions of its dependencies to minimise the number of pip-installed packages.
+# These must be single-quoted as shown, or the code below will get confused.
+#
+FRAMEWORK_CONDA_DEPS="'docutils>=0.6' 'mpi4py>=1.1.0' 'numpy>=1.2.2' 'h5py>=1.1.0'"
+
+
+# Disabled tests
+#
+# Some of the tests are currently broken, and we need to figure out what to do with them
+# and/or who needs to fix them how. Meanwhile, we want to have a set of passing tests
+# for our new CI, because we don't want to normalise failure. So we disable the broken
+# tests for now, but print a note whenever the tests are run. See issue #1103.
+#
+BAD_EXT_TESTS="test_jobserver TestLimepy TestRotatingBridge::test1"
+BAD_EXT_TESTS="${BAD_EXT_TESTS} TestHeatingWind::test_supernova"
+BAD_EXT_TESTS="${BAD_EXT_TESTS} TestHeatingWind::test_supernova_manual"
+BAD_EXT_TESTS="${BAD_EXT_TESTS} TestsForIssue123"
+
+
 # Detect any active Conda or venv environments
 #
 # This uses the following variables:
@@ -258,6 +278,22 @@ check_framework() {
 install_framework() {
     check_framework
     support/shared/uninstall.sh amuse-framework
+
+    # if we're in a conda env, install the dependecies using conda first rather than
+    # leaving it to pip.
+    if [ "a${ENV_TYPE}" = "aconda" ] ; then
+        to_install=''
+        for name_ver in ${FRAMEWORK_CONDA_DEPS}  ; do
+            name=$(echo "${name_ver}" | sed -e "s/'\([a-zA-Z0-9_-]*\).*/\1/")
+            if ! is_subset "$name" "${INSTALLED_PACKAGES}" ; then
+                to_install="${to_install} ${name_ver}"
+            fi
+        done
+        if [ -n "${to_install}" ] ; then
+            conda install -y ${to_install}
+        fi
+    fi
+
     make -C lib distclean
     make -C lib install
     (cd src && pip --no-cache-dir --debug install .)
@@ -285,19 +321,6 @@ package_framework() {
     make -C lib install
     (cd src && python3 -m pip install -vv --no-cache-dir --no-deps --no-build-isolation --prefix "${PREFIX}" .)
 }
-
-
-# Disabled tests
-#
-# Some of the tests are currently broken, and we need to figure out what to do with them
-# and/or who needs to fix them how. Meanwhile, we want to have a set of passing tests
-# for our new CI, because we don't want to normalise failure. So we disable the broken
-# tests for now, but print a note whenever the tests are run.
-#
-BAD_EXT_TESTS="test_jobserver TestLimepy TestRotatingBridge::test1"
-BAD_EXT_TESTS="${BAD_EXT_TESTS} TestHeatingWind::test_supernova"
-BAD_EXT_TESTS="${BAD_EXT_TESTS} TestHeatingWind::test_supernova_manual"
-BAD_EXT_TESTS="${BAD_EXT_TESTS} TestsForIssue123"
 
 
 # Extra pytest options for debugging

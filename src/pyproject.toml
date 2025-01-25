@@ -3,6 +3,7 @@ name = "amuse-framework"
 dynamic = ["version"]
 requires-python = ">=3.7"
 dependencies = [
+    # the conda-equivalents of these are in ./setup, so update there as well
     "docutils>=0.6",
     "mpi4py>=1.1.0",
     "numpy>=1.2.2",
