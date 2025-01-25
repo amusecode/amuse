@@ -13,11 +13,5 @@
 
 m4_ifndef([AC_CONFIG_MACRO_DIRS], [m4_defun([_AM_CONFIG_MACRO_DIRS], [])m4_defun([AC_CONFIG_MACRO_DIRS], [_AM_CONFIG_MACRO_DIRS($@)])])
 m4_include([shared/m4/amuse_lib.m4])
-m4_include([shared/m4/ax_check_classpath.m4])
 m4_include([shared/m4/ax_mpi.m4])
-m4_include([shared/m4/ax_prog_jar.m4])
-m4_include([shared/m4/ax_prog_java.m4])
-m4_include([shared/m4/ax_prog_java_works.m4])
-m4_include([shared/m4/ax_prog_javac.m4])
-m4_include([shared/m4/ax_prog_javac_works.m4])
 m4_include([shared/m4/pkg.m4])

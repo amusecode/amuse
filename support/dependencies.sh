@@ -28,7 +28,7 @@
 # - BLAS
 # - LAPACK
 
-DEPS_conda="gcc gxx gfortran openjdk python pkgconfig coreutils patch curl tar unzip"
+DEPS_conda="gcc gxx gfortran python pkgconfig coreutils patch curl tar unzip"
 DEPS_conda="${DEPS_conda} gzip bzip2 xz perl cmake openmpi"
 DEPS_conda="${DEPS_conda} openmpi-mpicc openmpi-mpicxx openmpi-mpifort openmp gsl fftw"
 DEPS_conda="${DEPS_conda} gmp mpfr hdf5 netcdf4 libopenblas liblapack"
