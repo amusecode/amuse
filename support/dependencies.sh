@@ -52,8 +52,8 @@ DEPS_homebrew="${DEPS_homebrew} netcdf netcdf-cxx netcdf-fortran openblas lapack
 DEPS_apt="gcc g++ gfortran python3 python3-dev pkg-config curl patch tar unzip gzip"
 DEPS_apt="${DEPS_apt} bzip2 xz-utils"
 DEPS_apt="${DEPS_apt} perl cmake libopenmpi-dev openmpi-bin"
-DEPS_apt="${DEPS_apt} libgsl-dev libfftw3-3 libfftw3-dev libgmp3-dev libmpfr6"
-DEPS_apt="${DEPS_apt} libmpfr-dev libhdf5-serial-dev hdf5-tools libnetcdf-dev"
+DEPS_apt="${DEPS_apt} libgsl-dev libfftw3-dev libgmp3-dev libmpfr6"
+DEPS_apt="${DEPS_apt} libmpfr-dev libhdf5-dev hdf5-tools libnetcdf-dev"
 DEPS_apt="${DEPS_apt} liblapack-dev libblas-dev"
 
 DEPS_dnf="gcc gcc-c++ gcc-gfortran python3 python3-devel pkgconf-pkg-config curl patch"
