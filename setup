@@ -78,7 +78,7 @@ detect_environments() {
 # HAVE_PIP - if pip is installed correctly for the current environment
 # HAVE_WHEEL - if wheel is installed correctly for the current environment
 #
-detect_packages() {
+detect_installed_packages() {
     if [ "a${ENV_TYPE}" = "avirtualenv" ] ; then
         INSTALLED_PACKAGES="$(python -m pip list | tail -n +3 | cut -d ' ' -f 1)"
         HAVE_PIP=$(python -m pip list | grep '^pip')
@@ -174,7 +174,7 @@ check_build_sapporo_light() {
 # DISABLED_PACKAGES - adds packages for which features are missing
 # DISABLED_PACKAGES_TEXT - adds packages for which features are missing
 #
-check_packages() {
+find_packages() {
     for code in src/amuse/community/* ; do
         for dep_file in "${code}"/packages/*.amuse_deps ; do
             # If no file matches, the loop will still run with the pattern as dep_file
@@ -410,13 +410,28 @@ check_package() {
 }
 
 
-# Forward an installation command to a package's build system
+# Forward a command to a package's build system
+#
+# This does a few extra things, which is a bit ugly but saves adding  more functions:
+#
+# - If we're installing a package and amuse-framework is not installed, then we install
+#   the framework first.
+#
+# - If we're installing or packaging, we run a distclean first. If you want an
+#   incremental build, and the code's build system supports them, then cd into the
+#   package's directory and run make directly there.
 #
 forward_to_package() {
     cmd="$1"
     package="$2"
 
     check_package "${package}"
+
+    if [ "a${cmd}" = "ainstall" ] ; then
+        if ! is_subset "amuse-framework" "${INSTALLED_PACKAGES}" ; then
+            install_framework
+        fi
+    fi
 
     code_dir=$(code_directory "${package}")
 
@@ -628,10 +643,10 @@ fi
 . support/configuration.sh
 
 detect_environments
-detect_packages
+detect_installed_packages
 check_build_framework
 check_build_sapporo_light
-check_packages
+find_packages
 
 case ${cmd} in
     configure | "" )
