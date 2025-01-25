@@ -304,6 +304,26 @@ BAD_EXT_TESTS="${BAD_EXT_TESTS} TestsForIssue123"
 PYTEST_OPTS=''
 # PYTEST_OPTS='-s -vvv --log-cli-level=debug'
 
+# Check that pytest is available and error out of not
+#
+ensure_pytest() {
+    if [ "a${PYTEST}" = "a" ] ; then
+        printf '\n%b\n' "To run the tests pytest is required, but it is not installed."
+        if [ "a${ENV_TYPE}" = "a" ] ; then
+            printf '%s\n\n' "Please activate a conda environment or virtual environment first."
+        elif [ "a${ENV_TYPE}" = "aconda" ] ; then
+            printf '\n%s\n' "Please use"
+            printf '\n    %b\n' "conda install pytest"
+            printf '\n%s\n\n' "to install pytest, then try again."
+        else
+            printf '\n%s\n' "Please use"
+            printf '\n    %b\n' "pip install pytest"
+            printf '\n%s\n\n' "to install pytest, then try again."
+        fi
+        exit 1
+    fi
+}
+
 
 # Run tests for the AMUSE framework
 #
@@ -503,6 +523,8 @@ package() {
 #
 run_test() {
     target="$1"
+
+    ensure_pytest
 
     case ${target} in
         all )

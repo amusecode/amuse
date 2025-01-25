@@ -50,6 +50,7 @@ else
         AMUSE_CONDA_PACKAGE(PYTHON, python)
         AMUSE_CONDA_PACKAGE(PYTHON_DEV, python)
         AMUSE_CONDA_PACKAGE(INSTALL, coreutils)
+        AMUSE_CONDA_PACKAGE(PYTEST, pytest)
 
         AMUSE_DOWNLOAD()
         AC_CHECK_TOOL(PATCH, patch)
@@ -98,6 +99,7 @@ else
         AC_CHECK_TOOL(PYTHON, python)
         AC_CHECK_TOOL(PYTHON_DEV, python3-config)
         AC_CHECK_TOOL(INSTALL, install)
+        AC_CHECK_TOOL(PYTEST, pytest)
 
         # Not all compilers have a f77 symlink, so if you have more than one installed,
         # you risk getting gcc and gfortran from one, and f77 from another, and then we
@@ -202,6 +204,8 @@ ENABLE_FEATURE_IF_EQUALS([fftw], [FOUND_FFTW], [yes])
 ENABLE_FEATURE_IF_DEFINED([hdf5], [with_hdf5])
 ENABLE_FEATURE_IF_EQUALS([netcdf4], [FOUND_NETCDF], [yes])
 ENABLE_FEATURE_IF_EQUALS([sapporo_light], [FOUND_SAPPORO_LIGHT], [yes])
+
+AC_SUBST(PYTEST)
 
 AC_SUBST(APT)
 AC_SUBST(DNF)
