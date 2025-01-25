@@ -650,6 +650,7 @@ CPPFLAGS
 LDFLAGS
 CFLAGS
 CC
+FFLAGS
 target_alias
 host_alias
 build_alias
@@ -2713,6 +2714,35 @@ ac_cpp='$CPP $CPPFLAGS'
 ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
 ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
 ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+
+
+
+    if test "x$VIRTUAL_ENV" != x
+then :
+
+        CFLAGS="$CFLAGS -I${VIRTUAL_ENV}/include"
+        CXXFLAGS="$CXXFLAGS -I${VIRTUAL_ENV}/include"
+        FFLAGS="$FFLAGS -I${VIRTUAL_ENV}/include"
+        FCFLAGS="$FCFLAGS -I${VIRTUAL_ENV}/include"
+        LDFLAGS="$LDFLAGS -L${VIRTUAL_ENV}/lib -Wl,-rpath ${VIRTUAL_ENV}/lib"
+        PKG_CONFIG_PATH="$VIRTUAL_ENV/lib/pkgconfig:$PKG_CONFIG_PATH"
+
+fi
+
+    if test "x$CONDA_PREFIX" != x
+then :
+
+        # Conda does not set FCFLAGS, so we copy from FFLAGS here
+        FCFLAGS="$FFLAGS"
+        LDFLAGS="$LDFLAGS -L${CONDA_PREFIX}/lib -Wl,-rpath ${CONDA_PREFIX}/lib"
+        # Conda pkg-config includes this already, but in case we have one from
+        # the system...
+        PKG_CONFIG_PATH="$PKG_CONFIG_PATH:${CONDA_PREFIX}/lib/pkgconfig"
+
+fi
+    # Needs to be exported or the PKG_CHECK_MODULES macro won't see it
+    export PKG_CONFIG_PATH
 
 
 

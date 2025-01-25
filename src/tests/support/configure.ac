@@ -1,6 +1,8 @@
 AC_CONFIG_MACRO_DIRS([shared/m4])
 AC_INIT([amuse-tests], [1.0])
 
+AMUSE_VENV()
+
 AC_PROG_CC()
 AC_SUBST(GCC)
 AC_PROG_CXX()
