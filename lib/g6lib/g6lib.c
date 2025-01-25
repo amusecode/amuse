@@ -91,7 +91,7 @@ void predict_positions_and_velocities_for_j_particles() {
     }
 }
 
-inline double vec_squared(vector3 v){
+static inline double vec_squared(vector3 v){
     int k;
     double result = 0.0;
     for(k = 0; k < 3; k++) {
@@ -100,7 +100,7 @@ inline double vec_squared(vector3 v){
     return result;
 }
 
-inline double vec_dot(vector3 va, vector3 vb){
+static inline double vec_dot(vector3 va, vector3 vb){
     int k;
     double result = 0.0;
     for(k = 0; k < 3; k++) {
@@ -109,7 +109,7 @@ inline double vec_dot(vector3 va, vector3 vb){
     return result;
 }
 
-inline void clear_i_particle(g6_i_particle * particle) {
+static inline void clear_i_particle(g6_i_particle * particle) {
     int k;
     for(k = 0; k < 3; k++) {
         particle->acc[k] = 0.0;
