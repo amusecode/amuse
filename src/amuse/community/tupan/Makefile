@@ -29,9 +29,9 @@ src/tupan: tupan.tar.gz
 .PHONY: install_tupan
 install_tupan: | src/tupan
 ifneq ($(CONDA_PREFIX),)
-	conda install --yes cffi numpy scipy matplotlib
+	conda install --yes cffi setuptools numpy scipy matplotlib
 else ifneq ($(VIRTUAL_ENV),)
-	pip install cffi numpy scipy matplotlib
+	pip install cffi setuptools numpy scipy matplotlib
 endif
 	cd src/tupan && pip install .
 
