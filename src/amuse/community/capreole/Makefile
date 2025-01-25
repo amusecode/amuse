@@ -9,7 +9,7 @@ support/config.mk:
 
 
 # Building the code into a static library
-FFLAGS += $(FORSOCKETS_CFLAGS) -fallow-argument-mismatch
+FCFLAGS += $(FORSOCKETS_CFLAGS) -fallow-argument-mismatch
 
 LDLIBS += $(STOPCOND_LIBS) $(FORSOCKETS_LIBS)
 
@@ -17,7 +17,7 @@ LDLIBS += $(STOPCOND_LIBS) $(FORSOCKETS_LIBS)
 CODELIB = src/libcapreole_mpi.a
 
 $(CODELIB):
-	$(MAKE) -C src -j 1 amuse_interface_mpi F90FLAGS1="$(FFLAGS)" FC="$(FC)"
+	$(MAKE) -C src -j 1 amuse_interface_mpi F90FLAGS1="$(FCFLAGS)" FC="$(FC)"
 
 
 # Building the workers
@@ -25,10 +25,10 @@ capreole_worker.f90: interface.py
 	amusifier --type=f90 interface.py -i amuse.community.interface.stopping_conditions.StoppingConditionInterface CapreoleInterface -o $@
 
 capreole_worker.o: capreole_worker.f90
-	$(MPIFC) -c -o$@ $(FFLAGS) $<
+	$(MPIFC) -c -o$@ $(FCFLAGS) $<
 
 interface.o: interface.F90 $(CODELIB)
-	$(FC) -c -o $@ $(FFLAGS) -I./src/ -DMPI $<
+	$(FC) -c -o $@ $(FCFLAGS) -I./src/ -DMPI $<
 
 capreole_worker: interface.o capreole_worker.o $(CODELIB)
 	$(MPIFC) -o $@ $(LDFLAGS) $^ $(LDLIBS)

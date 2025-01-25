@@ -18,7 +18,7 @@ LIBS = @LIBS@
 
 
 # AMUSE framework libraries
-STOPCOND_CFLAGS = @STOPCOND_CFLAGS@                                                                        new-amuse-dev  
+STOPCOND_CFLAGS = @STOPCOND_CFLAGS@
 STOPCOND_LIBS = @STOPCOND_LIBS@
 
 FORSOCKETS_CFLAGS = @FORSOCKETS_CFLAGS@

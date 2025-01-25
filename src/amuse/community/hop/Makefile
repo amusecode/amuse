@@ -13,7 +13,7 @@ CFLAGS += -DDIFFERENT_MASSES
 CODELIB = src/libhop.a
 
 $(CODELIB):
-	$(MAKE) -C src -j $(CPU_COUNT) all
+	$(MAKE) -C src -j $(CPU_COUNT) all CFLAGS="$(CFLAGS)"
 
 
 # Building the workers

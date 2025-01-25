@@ -89,7 +89,7 @@ petar_worker: petar_worker.o interface.o
 	$(MPICXX) -o $@ $(LDFLAGS) $^ $(LDLIBS)
 
 interface.o: interface.cc src/PeTar/src/get_version.hpp src/PeTar src/SDAR src/FDPS
-	$(CXX) -o $@ -c $(CXXFLAGS) $<
+	$(MPICXX) -o $@ -c $(CXXFLAGS) $<
 
 
 # Which packages contain which workers?

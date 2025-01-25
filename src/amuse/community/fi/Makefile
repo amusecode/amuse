@@ -18,7 +18,7 @@ FCFLAGS += $(DEPFLAGS) -fdefault-real-8 -ffree-line-length-256 -frecord-marker=4
 
 LDFLAGS +=
 
-LDLIBS += $(STOPCOND_LIBS) $(FORSOCKETS_LIBS)
+LDLIBS += $(STOPCOND_LIBS) $(FORSOCKETS_LIBS) $(FFTW_LIBS)
 
 # The code build uses FFLAGS rather than FCFLAGS, and so does Conda
 CODE_MAKE_ARGS = FFLAGS="-I. $(FFLAGS) $(FCFLAGS)" FC="$(FC)" VPATH=../src
@@ -97,7 +97,7 @@ fi_map_mp_worker: map_interface.o fi_map_worker.o build_mp/$(MAPLIB)
 	$(MPIFC) -o $@ $(LDFLAGS) $(OPENMP_FFLAGS) $^ $(LDLIBS)
 
 fi_periodic_worker: interface_periodic.o fi_worker.o build_periodic/$(FILIB)
-	$(MPIFC) -o $@ $(LDFLAGS) $^ $(LDLIBS) $(FFTW_LIBS)
+	$(MPIFC) -o $@ $(LDFLAGS) $^ $(LDLIBS)
 
 
 # Which packages contain which workers?

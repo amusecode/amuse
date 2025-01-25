@@ -8,7 +8,7 @@ support/config.mk:
 	cd support && ./configure
 
 # Building the code into a static library
-FFLAGS += $(FORSOCKETS_CFLAGS) -cpp
+FCFLAGS += $(FORSOCKETS_CFLAGS) -cpp
 LDFLAGS +=
 LDLIBS += $(FORSOCKETS_LIBS)
 
@@ -32,13 +32,13 @@ evtwin_worker.f90: interface.py
 	amusifier --type=f90 interface.py EVtwinInterface -o $@
 
 evtwin_worker.o: evtwin_worker.f90 $(CODELIB)
-	$(MPIFC) -c $(FFLAGS) -Ibuild $<
+	$(MPIFC) -c $(FCFLAGS) -Ibuild $<
 
 evtwin_worker: evtwin_worker.o $(SRCDIR)/code/libint.o $(CODELIB)
 	$(MPIFC) -o $@ $(LDFLAGS) $^ $(LDLIBS)
 
 %.o: %.f90
-	$(FC) -c -o $@ $(FFLAGS) -Ibuild $<
+	$(FC) -c -o $@ $(FCFLAGS) -Ibuild $<
 
 
 # Which packages contain which workers?

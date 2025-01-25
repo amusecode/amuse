@@ -23,7 +23,7 @@ CODELIB=src/libfractal.a
 interface.o: $(CODELIB)
 
 $(CODELIB): src/*.f90
-	$(MAKE) -C src amuse_interface
+	$(MAKE) -C src amuse_interface FFLAGS="$(FFLAGS)"
 
 fractalcluster_worker.f90: interface.py
 	amusifier --type=f90 interface.py FractalClusterInterface -o $@

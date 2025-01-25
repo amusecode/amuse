@@ -9,9 +9,11 @@ support/config.mk:
 
 
 # Building the code into a static library
-FFLAGS += $(AMUSE_MPI_CFLAGS) $(FORSOCKETS_CFLAGS)
+FCFLAGS += $(AMUSE_MPI_CFLAGS) $(FORSOCKETS_CFLAGS)
 LDFLAGS +=
 LDLIBS += -lm $(AMUSE_MPI_LIBS) $(FORSOCKETS_LIBS)
+
+export FCFLAGS
 
 CODELIB = src/libaarsethzare.a
 
@@ -31,10 +33,10 @@ cpu_worker: interface.o cpu_worker.o $(CODELIB)
 	$(MPIFC) -o cpu_worker $(LDFLAGS) $^ $(CODELIB) $(LDLIBS)
 
 cpu_worker.o: cpu_worker.f90
-	$(MPIFC) -c $(FFLAGS) $<
+	$(MPIFC) -c $(FCFLAGS) $<
 
 %.o: %.f90
-	$(FC) -c $(FFLAGS) $<
+	$(FC) -c $(FCFLAGS) $<
 
 
 # Which packages contain which workers?
