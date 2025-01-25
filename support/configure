@@ -4670,8 +4670,8 @@ else
 fi
 
         if test -n "$ac_tool_prefix"; then
-  # Extract the first word of "${ac_tool_prefix}python", so it can be a program name with args.
-set dummy ${ac_tool_prefix}python; ac_word=$2
+  # Extract the first word of "${ac_tool_prefix}python3", so it can be a program name with args.
+set dummy ${ac_tool_prefix}python3; ac_word=$2
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
 printf %s "checking for $ac_word... " >&6; }
 if test ${ac_cv_prog_PYTHON+y}
@@ -4692,7 +4692,7 @@ do
   esac
     for ac_exec_ext in '' $ac_executable_extensions; do
   if as_fn_executable_p "$as_dir$ac_word$ac_exec_ext"; then
-    ac_cv_prog_PYTHON="${ac_tool_prefix}python"
+    ac_cv_prog_PYTHON="${ac_tool_prefix}python3"
     printf "%s\n" "$as_me:${as_lineno-$LINENO}: found $as_dir$ac_word$ac_exec_ext" >&5
     break 2
   fi
@@ -4715,8 +4715,8 @@ fi
 fi
 if test -z "$ac_cv_prog_PYTHON"; then
   ac_ct_PYTHON=$PYTHON
-  # Extract the first word of "python", so it can be a program name with args.
-set dummy python; ac_word=$2
+  # Extract the first word of "python3", so it can be a program name with args.
+set dummy python3; ac_word=$2
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
 printf %s "checking for $ac_word... " >&6; }
 if test ${ac_cv_prog_ac_ct_PYTHON+y}
@@ -4737,7 +4737,7 @@ do
   esac
     for ac_exec_ext in '' $ac_executable_extensions; do
   if as_fn_executable_p "$as_dir$ac_word$ac_exec_ext"; then
-    ac_cv_prog_ac_ct_PYTHON="python"
+    ac_cv_prog_ac_ct_PYTHON="python3"
     printf "%s\n" "$as_me:${as_lineno-$LINENO}: found $as_dir$ac_word$ac_exec_ext" >&5
     break 2
   fi

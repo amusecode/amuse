@@ -96,7 +96,7 @@ else
         AC_CHECK_TOOL(CXX, g++)
         AC_CHECK_TOOL(FC, gfortran)
         AC_CHECK_TOOL(JAVAC, javac)
-        AC_CHECK_TOOL(PYTHON, python)
+        AC_CHECK_TOOL(PYTHON, python3)
         AC_CHECK_TOOL(PYTHON_DEV, python3-config)
         AC_CHECK_TOOL(INSTALL, install)
         AC_CHECK_TOOL(PYTEST, pytest)

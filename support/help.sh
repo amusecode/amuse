@@ -112,7 +112,7 @@ You can name the environment anything you like instead of my-amuse-env.
 
 To create a Python virtualenv, use
 
-    python -m venv venv
+    python3 -m venv venv
 
 Then you can activate it using
 
