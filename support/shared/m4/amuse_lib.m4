@@ -18,6 +18,13 @@ AC_DEFUN([AMUSE_LIB], [
     amuse_save_LIBS="$LIBS"
     amuse_save_LIB_CFLAGS="$[$1][_CFLAGS]"
     amuse_save_LIB_LIBS="$[$1][_LIBS]"
+    amuse_save_PKG_CONFIG_PATH="$PKG_CONFIG_PATH"
+
+    # If we have an active virtualenv, make sure pkg-config searches it
+    if test "a${VIRTUAL_ENV}" != "a"
+    then
+        PKG_CONFIG_PATH="${VIRTUAL_ENV}/lib/pkgconfig:${PKG_CONFIG_PATH}"
+    fi
 
     # All AMUSE libs export C symbols
     AC_LANG_PUSH([C])
@@ -37,6 +44,7 @@ AC_DEFUN([AMUSE_LIB], [
 
     AC_LANG_POP([C])
 
+    PKG_CONFIG_PATH="$amuse_save_PKG_CONFIG_PATH"
     LIBS="$amuse_save_LIBS"
 
     # If we have an active CONDA environment, assume that the lib is coming from
@@ -46,12 +54,6 @@ AC_DEFUN([AMUSE_LIB], [
     if test "${FOUND_$1}" == "yes" -a "x$CONDA_PREFIX" != "x"
     then
         $1_CFLAGS="${$1_CFLAGS} -I${CONDA_PREFIX}/include"
-    fi
-
-    # Same for a virtualenv.
-    if test "${FOUND_$1}" == "yes" -a "x$VIRTUAL_ENV" != "x"
-    then
-        $1_CFLAGS="${$1_CFLAGS} -I${VIRTUAL_ENV}/include"
     fi
 
     # If the user overrode the variables, go with what they set instead of

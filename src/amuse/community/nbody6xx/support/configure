@@ -652,6 +652,7 @@ build_os
 build_vendor
 build_cpu
 build
+FFLAGS
 target_alias
 host_alias
 build_alias
@@ -2379,20 +2380,29 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
     if test "x$VIRTUAL_ENV" != x
 then :
 
-        LDFLAGS="$LDFLAGS -L${VIRTUAL_ENV} -Wl,-rpath ${VIRTUAL_ENV}/lib"
-        PKG_CONFIG_PATH="$VIRTUAL_ENV/lib/pkg-config:$PKG_CONFIG_PATH"
+        CFLAGS="$CFLAGS -I${VIRTUAL_ENV}/include"
+        CXXFLAGS="$CXXFLAGS -I${VIRTUAL_ENV}/include"
+        FFLAGS="$FFLAGS -I${VIRTUAL_ENV}/include"
+        FCFLAGS="$FCFLAGS -I${VIRTUAL_ENV}/include"
+        LDFLAGS="$LDFLAGS -L${VIRTUAL_ENV}/lib -Wl,-rpath ${VIRTUAL_ENV}/lib"
+        PKG_CONFIG_PATH="$VIRTUAL_ENV/lib/pkgconfig:$PKG_CONFIG_PATH"
 
 fi
 
     if test "x$CONDA_PREFIX" != x
 then :
 
-        LDFLAGS="$LDFLAGS -L${CONDA_PREFIX} -Wl,-rpath ${CONDA_PREFIX}/lib"
+        # Conda does not set FCFLAGS, so we copy from FFLAGS here
+        FCFLAGS="$FFLAGS"
+        LDFLAGS="$LDFLAGS -L${CONDA_PREFIX}/lib -Wl,-rpath ${CONDA_PREFIX}/lib"
         # Conda pkg-config includes this already, but in case we have one from
         # the system...
         PKG_CONFIG_PATH="$PKG_CONFIG_PATH:${CONDA_PREFIX}/lib/pkgconfig"
 
 fi
+    # Needs to be exported or the PKG_CHECK_MODULES macro won't see it
+    export PKG_CONFIG_PATH
+
 
 
 # Set CPU_COUNT
@@ -4350,6 +4360,13 @@ fi
     amuse_save_LIBS="$LIBS"
     amuse_save_LIB_CFLAGS="$FORSOCKETS_CFLAGS"
     amuse_save_LIB_LIBS="$FORSOCKETS_LIBS"
+    amuse_save_PKG_CONFIG_PATH="$PKG_CONFIG_PATH"
+
+    # If we have an active virtualenv, make sure pkg-config searches it
+    if test "a${VIRTUAL_ENV}" != "a"
+    then
+        PKG_CONFIG_PATH="${VIRTUAL_ENV}/lib/pkgconfig:${PKG_CONFIG_PATH}"
+    fi
 
     # All AMUSE libs export C symbols
     ac_ext=c
@@ -4511,12 +4528,13 @@ ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $
 ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 
+    PKG_CONFIG_PATH="$amuse_save_PKG_CONFIG_PATH"
     LIBS="$amuse_save_LIBS"
 
     # If we have an active CONDA environment, assume that the lib is coming from
     # there and add an additional flag so that .mod files can be found. Only really
-    # needed for stopcond, and hopefully conda-forge will give us a better solution
-    # soon.
+    # needed for stopcond and forsockets, and hopefully conda-forge will give us a
+    # better solution soon.
     if test "${FOUND_FORSOCKETS}" == "yes" -a "x$CONDA_PREFIX" != "x"
     then
         FORSOCKETS_CFLAGS="${FORSOCKETS_CFLAGS} -I${CONDA_PREFIX}/include"

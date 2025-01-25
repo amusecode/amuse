@@ -686,8 +686,10 @@ MPILIBS
 MPI_CLIBS
 MPI_CFLAGS
 MPICC
+FOUND_AMUSE_MPI
 AMUSE_MPI_LIBS
 AMUSE_MPI_CFLAGS
+FOUND_STOPCONDMPI
 STOPCONDMPI_LIBS
 STOPCONDMPI_CFLAGS
 PKG_CONFIG_LIBDIR
@@ -720,6 +722,7 @@ build_os
 build_vendor
 build_cpu
 build
+FFLAGS
 target_alias
 host_alias
 build_alias
@@ -2815,20 +2818,29 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
     if test "x$VIRTUAL_ENV" != x
 then :
 
-        LDFLAGS="$LDFLAGS -L${VIRTUAL_ENV} -Wl,-rpath ${VIRTUAL_ENV}/lib"
-        PKG_CONFIG_PATH="$VIRTUAL_ENV/lib/pkg-config:$PKG_CONFIG_PATH"
+        CFLAGS="$CFLAGS -I${VIRTUAL_ENV}/include"
+        CXXFLAGS="$CXXFLAGS -I${VIRTUAL_ENV}/include"
+        FFLAGS="$FFLAGS -I${VIRTUAL_ENV}/include"
+        FCFLAGS="$FCFLAGS -I${VIRTUAL_ENV}/include"
+        LDFLAGS="$LDFLAGS -L${VIRTUAL_ENV}/lib -Wl,-rpath ${VIRTUAL_ENV}/lib"
+        PKG_CONFIG_PATH="$VIRTUAL_ENV/lib/pkgconfig:$PKG_CONFIG_PATH"
 
 fi
 
     if test "x$CONDA_PREFIX" != x
 then :
 
-        LDFLAGS="$LDFLAGS -L${CONDA_PREFIX} -Wl,-rpath ${CONDA_PREFIX}/lib"
+        # Conda does not set FCFLAGS, so we copy from FFLAGS here
+        FCFLAGS="$FFLAGS"
+        LDFLAGS="$LDFLAGS -L${CONDA_PREFIX}/lib -Wl,-rpath ${CONDA_PREFIX}/lib"
         # Conda pkg-config includes this already, but in case we have one from
         # the system...
         PKG_CONFIG_PATH="$PKG_CONFIG_PATH:${CONDA_PREFIX}/lib/pkgconfig"
 
 fi
+    # Needs to be exported or the PKG_CHECK_MODULES macro won't see it
+    export PKG_CONFIG_PATH
+
 
 
 # Set CPU_COUNT
@@ -4908,6 +4920,13 @@ fi
     amuse_save_LIBS="$LIBS"
     amuse_save_LIB_CFLAGS="$STOPCONDMPI_CFLAGS"
     amuse_save_LIB_LIBS="$STOPCONDMPI_LIBS"
+    amuse_save_PKG_CONFIG_PATH="$PKG_CONFIG_PATH"
+
+    # If we have an active virtualenv, make sure pkg-config searches it
+    if test "a${VIRTUAL_ENV}" != "a"
+    then
+        PKG_CONFIG_PATH="${VIRTUAL_ENV}/lib/pkgconfig:${PKG_CONFIG_PATH}"
+    fi
 
     # All AMUSE libs export C symbols
     ac_ext=c
@@ -4975,6 +4994,7 @@ if test "$ac_res" != no
 then :
   test "$ac_res" = "none required" || LIBS="$ac_res $LIBS"
 
+        FOUND_STOPCONDMPI="yes"
         STOPCONDMPI_LIBS="$LIBS"
         STOPCONDMPI_CFLAGS=""
 
@@ -5039,36 +5059,22 @@ fi
 	# Put the nasty error message in config.log where it belongs
 	echo "$STOPCONDMPI_PKG_ERRORS" >&5
 
-	as_fn_error $? "Package requirements (stopcondmpi) were not met:
 
-$STOPCONDMPI_PKG_ERRORS
+            FOUND_STOPCONDMPI="no"
 
-Consider adjusting the PKG_CONFIG_PATH environment variable if you
-installed software in a non-standard prefix.
-
-Alternatively, you may set the environment variables STOPCONDMPI_CFLAGS
-and STOPCONDMPI_LIBS to avoid the need to call pkg-config.
-See the pkg-config man page for more details." "$LINENO" 5
 elif test $pkg_failed = untried; then
      	{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
 printf "%s\n" "no" >&6; }
-	{ { printf "%s\n" "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
-printf "%s\n" "$as_me: error: in \`$ac_pwd':" >&2;}
-as_fn_error $? "The pkg-config script could not be found or is too old.  Make sure it
-is in your PATH or set the PKG_CONFIG environment variable to the full
-path to pkg-config.
 
-Alternatively, you may set the environment variables STOPCONDMPI_CFLAGS
-and STOPCONDMPI_LIBS to avoid the need to call pkg-config.
-See the pkg-config man page for more details.
+            FOUND_STOPCONDMPI="no"
 
-To get pkg-config, see <http://pkg-config.freedesktop.org/>.
-See \`config.log' for more details" "$LINENO" 5; }
 else
 	STOPCONDMPI_CFLAGS=$pkg_cv_STOPCONDMPI_CFLAGS
 	STOPCONDMPI_LIBS=$pkg_cv_STOPCONDMPI_LIBS
         { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 printf "%s\n" "yes" >&6; }
+
+            FOUND_STOPCONDMPI="yes"
 
 fi
 
@@ -5082,13 +5088,14 @@ ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $
 ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 
+    PKG_CONFIG_PATH="$amuse_save_PKG_CONFIG_PATH"
     LIBS="$amuse_save_LIBS"
 
     # If we have an active CONDA environment, assume that the lib is coming from
     # there and add an additional flag so that .mod files can be found. Only really
-    # needed for stopcond, and hopefully conda-forge will give us a better solution
-    # soon.
-    if test "x$CONDA_PREFIX" != "x"
+    # needed for stopcond and forsockets, and hopefully conda-forge will give us a
+    # better solution soon.
+    if test "${FOUND_STOPCONDMPI}" == "yes" -a "x$CONDA_PREFIX" != "x"
     then
         STOPCONDMPI_CFLAGS="${STOPCONDMPI_CFLAGS} -I${CONDA_PREFIX}/include"
     fi
@@ -5114,9 +5121,17 @@ fi
 
 
 
+
     amuse_save_LIBS="$LIBS"
     amuse_save_LIB_CFLAGS="$AMUSE_MPI_CFLAGS"
     amuse_save_LIB_LIBS="$AMUSE_MPI_LIBS"
+    amuse_save_PKG_CONFIG_PATH="$PKG_CONFIG_PATH"
+
+    # If we have an active virtualenv, make sure pkg-config searches it
+    if test "a${VIRTUAL_ENV}" != "a"
+    then
+        PKG_CONFIG_PATH="${VIRTUAL_ENV}/lib/pkgconfig:${PKG_CONFIG_PATH}"
+    fi
 
     # All AMUSE libs export C symbols
     ac_ext=c
@@ -5184,6 +5199,7 @@ if test "$ac_res" != no
 then :
   test "$ac_res" = "none required" || LIBS="$ac_res $LIBS"
 
+        FOUND_AMUSE_MPI="yes"
         AMUSE_MPI_LIBS="$LIBS"
         AMUSE_MPI_CFLAGS=""
 
@@ -5248,36 +5264,22 @@ fi
 	# Put the nasty error message in config.log where it belongs
 	echo "$AMUSE_MPI_PKG_ERRORS" >&5
 
-	as_fn_error $? "Package requirements (amuse_mpi) were not met:
 
-$AMUSE_MPI_PKG_ERRORS
+            FOUND_AMUSE_MPI="no"
 
-Consider adjusting the PKG_CONFIG_PATH environment variable if you
-installed software in a non-standard prefix.
-
-Alternatively, you may set the environment variables AMUSE_MPI_CFLAGS
-and AMUSE_MPI_LIBS to avoid the need to call pkg-config.
-See the pkg-config man page for more details." "$LINENO" 5
 elif test $pkg_failed = untried; then
      	{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
 printf "%s\n" "no" >&6; }
-	{ { printf "%s\n" "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
-printf "%s\n" "$as_me: error: in \`$ac_pwd':" >&2;}
-as_fn_error $? "The pkg-config script could not be found or is too old.  Make sure it
-is in your PATH or set the PKG_CONFIG environment variable to the full
-path to pkg-config.
 
-Alternatively, you may set the environment variables AMUSE_MPI_CFLAGS
-and AMUSE_MPI_LIBS to avoid the need to call pkg-config.
-See the pkg-config man page for more details.
+            FOUND_AMUSE_MPI="no"
 
-To get pkg-config, see <http://pkg-config.freedesktop.org/>.
-See \`config.log' for more details" "$LINENO" 5; }
 else
 	AMUSE_MPI_CFLAGS=$pkg_cv_AMUSE_MPI_CFLAGS
 	AMUSE_MPI_LIBS=$pkg_cv_AMUSE_MPI_LIBS
         { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 printf "%s\n" "yes" >&6; }
+
+            FOUND_AMUSE_MPI="yes"
 
 fi
 
@@ -5291,13 +5293,14 @@ ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $
 ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 
+    PKG_CONFIG_PATH="$amuse_save_PKG_CONFIG_PATH"
     LIBS="$amuse_save_LIBS"
 
     # If we have an active CONDA environment, assume that the lib is coming from
     # there and add an additional flag so that .mod files can be found. Only really
-    # needed for stopcond, and hopefully conda-forge will give us a better solution
-    # soon.
-    if test "x$CONDA_PREFIX" != "x"
+    # needed for stopcond and forsockets, and hopefully conda-forge will give us a
+    # better solution soon.
+    if test "${FOUND_AMUSE_MPI}" == "yes" -a "x$CONDA_PREFIX" != "x"
     then
         AMUSE_MPI_CFLAGS="${AMUSE_MPI_CFLAGS} -I${CONDA_PREFIX}/include"
     fi
@@ -5316,6 +5319,7 @@ then :
         AMUSE_MPI_LIBS="$amuse_save_LIB_LIBS"
 
 fi
+
 
 
 

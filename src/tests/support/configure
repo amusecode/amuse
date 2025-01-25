@@ -5212,6 +5212,13 @@ fi
     amuse_save_LIBS="$LIBS"
     amuse_save_LIB_CFLAGS="$STOPCOND_CFLAGS"
     amuse_save_LIB_LIBS="$STOPCOND_LIBS"
+    amuse_save_PKG_CONFIG_PATH="$PKG_CONFIG_PATH"
+
+    # If we have an active virtualenv, make sure pkg-config searches it
+    if test "a${VIRTUAL_ENV}" != "a"
+    then
+        PKG_CONFIG_PATH="${VIRTUAL_ENV}/lib/pkgconfig:${PKG_CONFIG_PATH}"
+    fi
 
     # All AMUSE libs export C symbols
     ac_ext=c
@@ -5373,6 +5380,7 @@ ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $
 ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 
+    PKG_CONFIG_PATH="$amuse_save_PKG_CONFIG_PATH"
     LIBS="$amuse_save_LIBS"
 
     # If we have an active CONDA environment, assume that the lib is coming from
@@ -5382,12 +5390,6 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
     if test "${FOUND_STOPCOND}" == "yes" -a "x$CONDA_PREFIX" != "x"
     then
         STOPCOND_CFLAGS="${STOPCOND_CFLAGS} -I${CONDA_PREFIX}/include"
-    fi
-
-    # Same for a virtualenv.
-    if test "${FOUND_STOPCOND}" == "yes" -a "x$VIRTUAL_ENV" != "x"
-    then
-        STOPCOND_CFLAGS="${STOPCOND_CFLAGS} -I${VIRTUAL_ENV}/include"
     fi
 
     # If the user overrode the variables, go with what they set instead of
@@ -5415,6 +5417,13 @@ fi
     amuse_save_LIBS="$LIBS"
     amuse_save_LIB_CFLAGS="$STOPCONDMPI_CFLAGS"
     amuse_save_LIB_LIBS="$STOPCONDMPI_LIBS"
+    amuse_save_PKG_CONFIG_PATH="$PKG_CONFIG_PATH"
+
+    # If we have an active virtualenv, make sure pkg-config searches it
+    if test "a${VIRTUAL_ENV}" != "a"
+    then
+        PKG_CONFIG_PATH="${VIRTUAL_ENV}/lib/pkgconfig:${PKG_CONFIG_PATH}"
+    fi
 
     # All AMUSE libs export C symbols
     ac_ext=c
@@ -5576,6 +5585,7 @@ ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $
 ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 
+    PKG_CONFIG_PATH="$amuse_save_PKG_CONFIG_PATH"
     LIBS="$amuse_save_LIBS"
 
     # If we have an active CONDA environment, assume that the lib is coming from
@@ -5585,12 +5595,6 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
     if test "${FOUND_STOPCONDMPI}" == "yes" -a "x$CONDA_PREFIX" != "x"
     then
         STOPCONDMPI_CFLAGS="${STOPCONDMPI_CFLAGS} -I${CONDA_PREFIX}/include"
-    fi
-
-    # Same for a virtualenv.
-    if test "${FOUND_STOPCONDMPI}" == "yes" -a "x$VIRTUAL_ENV" != "x"
-    then
-        STOPCONDMPI_CFLAGS="${STOPCONDMPI_CFLAGS} -I${VIRTUAL_ENV}/include"
     fi
 
     # If the user overrode the variables, go with what they set instead of
@@ -5618,6 +5622,13 @@ fi
     amuse_save_LIBS="$LIBS"
     amuse_save_LIB_CFLAGS="$FORSOCKETS_CFLAGS"
     amuse_save_LIB_LIBS="$FORSOCKETS_LIBS"
+    amuse_save_PKG_CONFIG_PATH="$PKG_CONFIG_PATH"
+
+    # If we have an active virtualenv, make sure pkg-config searches it
+    if test "a${VIRTUAL_ENV}" != "a"
+    then
+        PKG_CONFIG_PATH="${VIRTUAL_ENV}/lib/pkgconfig:${PKG_CONFIG_PATH}"
+    fi
 
     # All AMUSE libs export C symbols
     ac_ext=c
@@ -5779,6 +5790,7 @@ ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $
 ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 
+    PKG_CONFIG_PATH="$amuse_save_PKG_CONFIG_PATH"
     LIBS="$amuse_save_LIBS"
 
     # If we have an active CONDA environment, assume that the lib is coming from
@@ -5788,12 +5800,6 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
     if test "${FOUND_FORSOCKETS}" == "yes" -a "x$CONDA_PREFIX" != "x"
     then
         FORSOCKETS_CFLAGS="${FORSOCKETS_CFLAGS} -I${CONDA_PREFIX}/include"
-    fi
-
-    # Same for a virtualenv.
-    if test "${FOUND_FORSOCKETS}" == "yes" -a "x$VIRTUAL_ENV" != "x"
-    then
-        FORSOCKETS_CFLAGS="${FORSOCKETS_CFLAGS} -I${VIRTUAL_ENV}/include"
     fi
 
     # If the user overrode the variables, go with what they set instead of
