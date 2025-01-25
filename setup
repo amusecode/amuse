@@ -452,11 +452,23 @@ install_all() {
         install_sapporo_light
     fi
 
+    FAILED_BUILDS=''
     for package in ${ENABLED_PACKAGES} ; do
         if ! is_subset "${package}" "amuse-framework sapporo_light" ; then
             forward_to_package install "${package}"
+            if [ $? != '0' ] ; then
+                FAILED_BUILDS="${FAILED_BUILDS}\n${package}"
+            fi
         fi
     done
+
+    printf '\n%b\n' "${COLOR_CYAN}*** Build results ***${COLOR_END}"
+    if [ "a${FAILED_BUILDS}" != "a" ] ; then
+        printf '\nThe following packages failed to build:\n'
+        printf '%b\n\n' "${COLOR_RED}${FAILED_BUILDS}${COLOR_END}"
+    else
+        printf '\n%b\n\n' "${COLOR_GREEN}All packages were installed successfully${COLOR_END}"
+    fi
 }
 
 
