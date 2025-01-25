@@ -12,6 +12,7 @@ support/config.mk:
 VERSION = ca6907f5f9a95f866b1d7e520cc356ab8cec8dd0
 
 src/phantom.zip:
+	mkdir -p src
 	$(DOWNLOAD) https://github.com/rieder/phantom/archive/$(VERSION).zip >$@
 
 src/phantom: src/phantom.zip
