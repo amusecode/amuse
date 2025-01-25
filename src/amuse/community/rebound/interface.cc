@@ -178,6 +178,7 @@ int new_particle(int * index_of_the_particle, double mass, double x,
       pt.m = mass;
       pt.r = radius; 
       pt.hash = new_hash;
+      pt.sim = codes[code_index].code;
       reb_add(codes[code_index].code, pt);
       //std::cout<<"new particle :"<<pt.id<< " << "<<code_index<<" << "<<pt.x<<std::endl;
       *index_of_the_particle = new_hash;
