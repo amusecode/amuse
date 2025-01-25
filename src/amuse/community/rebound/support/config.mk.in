@@ -18,6 +18,7 @@ GUNZIP = @GUNZIP@
 
 # General flags and libraries
 CFLAGS = @CFLAGS@
+CXXFLAGS = @CXXFLAGS@
 LDFLAGS = @LDFLAGS@
 
 LIBS = @LIBS@
