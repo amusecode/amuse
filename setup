@@ -232,7 +232,9 @@ announce_activity() {
     package="$2"
 
     printf '\n'
-    if [ "a${cmd}" = "ainstall" ] ; then
+    if [ "a${cmd}" = "aclean" ] || [ "a${cmd}" = "adistclean" ] ; then
+        printf '%b\n' "${COLOR_CYAN}Cleaning ${package}...${COLOR_END}"
+    elif [ "a${cmd}" = "ainstall" ] ; then
         printf '%b\n' "${COLOR_CYAN}Building and installing ${package}...${COLOR_END}"
     elif [ "a${cmd}" = "adevelop" ] ; then
         printf '%b\n' "${COLOR_CYAN}Building and develop-installing ${package}...${COLOR_END}"
@@ -253,6 +255,7 @@ announce_activity() {
 #   command: What we did, e.g. install or test
 #   package: The package we did it to
 #   log_file: Location of the log file
+#   brief: If set to "brief", print only a short error, otherwise the full message.
 #
 handle_result() {
     exit_code=$1
@@ -261,16 +264,24 @@ handle_result() {
     log_file="$4"
 
     if [ "a${exit_code}" = "a0" ] ; then
-        if [ "a${cmd}" = "ainstall" ] ; then
+        if [ "a${cmd}" = "ainstall" ] || [ "a${cmd}" = "adevelop" ] ; then
             printf '\n%b\n' "${COLOR_GREEN}Package ${package} was installed successfully.${COLOR_END}"
         elif [ "a${cmd}" = "atest" ] ; then
             printf '\n%b\n' "${COLOR_GREEN}Package ${package} passed its tests.${COLOR_END}"
         fi
     else
-        if [ "a${cmd}" = "ainstall" ] ; then
-            print_install_failure "${package}" "${log_file}"
+        if [ "a${cmd}" = "ainstall" ] || [ "a${cmd}" = "adevelop" ] ; then
+            if [ "a${brief}" = "abrief" ] ; then
+                printf '\n%b\n' "${COLOR_RED}Package ${package} failed to install correctly.${COLOR_END}"
+            else
+                print_install_failure "${package}" "${log_file}"
+            fi
         elif [ "a${cmd}" = "atest" ] ; then
-            print_test_failure "${package}" "${log_file}"
+            if [ "a${brief}" = "abrief" ] ; then
+                printf '\n%b\n' "${COLOR_RED}Package ${package} failed its tests.${COLOR_END}"
+            else
+                print_test_failure "${package}" "${log_file}"
+            fi
         fi
     fi
 
@@ -574,53 +585,72 @@ check_package_installed_for_test() {
 
 # Forward a command to a package's build system
 #
-# This does a few extra things, which is a bit ugly but saves adding more functions:
-#
-# - If we're installing a package and amuse-framework is not installed, then we install
-#   the framework first.
-#
-# - If we're installing or packaging, we run a distclean first. If you want an
-#   incremental build, and the code's build system supports them, then cd into the
-#   package's directory and run make directly there.
-#
 # Args:
-#   cmd: The command to forward, e.g. install or test
+#   cmd: The command to forward, e.g. package, test, clean, distclean
 #   package: The name of the package to forward to
-#   silent: If set to "silent", return the error code from the forwarded-to make
-#           invocation, otherwise, print the result.
+#   brief: If set to "brief", print only a brief error rather than the full one
+#
+# Returns:
+#   The exit code from the build system
+#
 forward_to_package() {
     cmd="$1"
     package="$2"
-    silent="$3"
-
-    check_package "${package}"
-
-    if [ "a${cmd}" = "ainstall" ] ; then
-        if ! is_subset "amuse-framework" "${INSTALLED_PACKAGES}" ; then
-            save_package="${package}"
-            install_framework
-            package="${save_package}"
-        fi
-    fi
+    brief="$3"
 
     announce_activity ${cmd} ${package}
 
     code_dir=$(code_directory "${package}")
 
-    if [ "a${cmd}" != "atest" ] ; then
-        make -C "${code_dir}" distclean
-    fi
-
     ec_file="$(exit_code_file ${cmd} ${package})"
     log_file="$(log_file ${cmd} ${package})"
 
-    (make -C "${code_dir}" "${cmd}-${package}" ; echo "$?" >${ec_file}) 2>&1 | tee ${log_file}
-
-    if [ "a${silent}" = "asilent" ] ; then
-        return $(cat ${ec_file})
+    if [ "a${cmd}" = "aclean" ] || [ "a${cmd}" = "adistclean" ] ; then
+        maketarget="${cmd}"
     else
-        handle_result $(cat "$ec_file") "${cmd}" "${package}" "${log_file}"
+        maketarget="${cmd}-${package}"
     fi
+
+    (make -C "${code_dir}" "${maketarget}" ; echo "$?" >${ec_file}) 2>&1 | tee ${log_file}
+
+    handle_result $(cat "$ec_file") "${cmd}" "${package}" "${log_file}" "${brief}"
+    return $(cat "${ec_file}")
+}
+
+
+# Install a package
+#
+# This calls the package's build system to install it.
+#
+# If amuse-framework is not installed, then we install the framework first. Before
+# installing, make distclean is run to improve reliability. If you want to take your
+# chances with an incremental build and the native build system, cd into the package
+# directory and call make directly.
+#
+# Args:
+#    cmd: The type of installation, install or develop
+#    package: The name of the package to install
+#    brief: If set to "brief", print only a brief result, otherwise, print a full error.
+#
+install_package() {
+    cmd="$1"
+    package="$2"
+    brief="$3"
+
+    check_package "${package}"
+
+    if ! is_subset "amuse-framework" "${INSTALLED_PACKAGES}" ; then
+        save_package="${package}"
+        install_framework
+        package="${save_package}"
+    fi
+
+    save_cmd="${cmd}"
+    forward_to_package "distclean" "${package}" "${brief}"
+    cmd="${save_cmd}"
+
+    forward_to_package "${cmd}" "${package}" "${brief}"
+    return $?
 }
 
 
@@ -638,7 +668,7 @@ install_all() {
 
     for package in ${ENABLED_PACKAGES} ; do
         if ! is_subset "${package}" "amuse-framework sapporo_light" ; then
-            forward_to_package install "${package}" silent
+            install_package install "${package}" brief
             if [ $? != '0' ] ; then
                 FAILED_BUILDS="${FAILED_BUILDS}\n${package}"
             fi
@@ -677,7 +707,7 @@ test_all() {
         if ! is_subset "${package}" "amuse-framework sapporo_light" ; then
             code_dir=$(code_directory "${package}")
             if [ -f "${code_dir}/packages/${package}.amuse_deps" ] ; then
-                forward_to_package test "${package}"
+                forward_to_package test "${package}" brief
                 if [ $? != '0' ] ; then
                     FAILED_TESTS="${FAILED_TESTS}\n${package}"
                 fi
@@ -718,7 +748,7 @@ install() {
             ;;
         * )
             target="$(normalise_package_name ${target})"
-            forward_to_package install "${target}"
+            install_package install "${target}"
             ;;
     esac
 }
@@ -741,7 +771,7 @@ develop() {
             ;;
         * )
             target="$(normalise_package_name ${target})"
-            forward_to_package develop "${target}"
+            install_package develop "${target}"
             ;;
     esac
 }
