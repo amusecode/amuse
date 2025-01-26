@@ -103,6 +103,24 @@ normalise_package_name() {
 }
 
 
+# Determine installed package name
+#
+# Our package names are directories, with underscores and dashes in them. The pip and
+# conda packages we install have all dashes however, because that's the standard. This
+# converts from our directory names to installed package names, so that we can match
+# them correctly.
+#
+# Args:
+#   package: The given package name
+#
+# Returns:
+#   The installed name.
+#
+installed_package_name() {
+    printf '%s' "$1" | tr '_' '-'
+}
+
+
 # Forward a command to a package's build system
 #
 # Args:

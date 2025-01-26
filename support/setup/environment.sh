@@ -1,7 +1,8 @@
 # Create a three-character prefix showing whether a package is installed or not.
 #
 is_installed() {
-    if is_subset "$1" "${INSTALLED_PACKAGES}" ; then
+    installed_name=$(installed_package_name "$1")
+    if is_subset "${installed_name}" "${INSTALLED_PACKAGES}" ; then
         printf 'i) '
     else
         printf '   '
@@ -67,6 +68,11 @@ detect_installed_packages() {
 
         HAVE_PIP=$(echo "${CONDA_LIST}" | tr '^' '\n' | grep -v pypi | grep '^pip')
         HAVE_WHEEL=$(echo "${CONDA_LIST}" | tr '^' '\n' | grep -v pypi | grep '^wheel')
+    fi
+
+    if is_subset "sapporo_light" "${FEATURES}" ; then
+        # with a dash because is_installed converts before searching
+        INSTALLED_PACKAGES="${INSTALLED_PACKAGES} sapporo-light"
     fi
 }
 

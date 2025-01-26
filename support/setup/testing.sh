@@ -25,8 +25,9 @@ ensure_pytest() {
 #
 check_package_installed_for_test() {
     package="$1"
+    installed_name=$(installed_package_name "${package}")
 
-    if ! is_subset "${package}" "${INSTALLED_PACKAGES}" ; then
+    if ! is_subset "${installed_name}" "${INSTALLED_PACKAGES}" ; then
         printf '\n%s\n' "Package ${package} is not installed, so we cannot test it."
         printf '\n%s\n' "Please install the package first using ./setup install ${package}, then try again."
         exit 1
@@ -92,7 +93,7 @@ test_amuse_ext() {
 #
 test_all() {
     FAILED_TESTS=''
-    if is_subset amuse_framework "${INSTALLED_PACKAGES}" ; then
+    if is_subset "amuse-framework" "${INSTALLED_PACKAGES}" ; then
         if ! test_framework ; then
             FAILED_TESTS="${FAILED_TESTS}\namuse-framework"
         fi
