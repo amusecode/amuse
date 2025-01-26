@@ -59,13 +59,13 @@ standard:
 
 amuse: 
 	cp mpif.null.h mpif.h
-	$(MAKE) $(CODELIB) "FC = $(MPIFC)" "FFLAGS = $(FCFLAGS)" "SOURCE = energy.f $(SOURCE)"
+	$(MAKE) $(CODELIB) "FC = $(MPIFC)" "FFLAGS = $(FFLAGS)" "SOURCE = energy.f $(SOURCE)"
 
 # for now only seq, par does same as amuse
 amusepar: 
 	-rm -f mpif.h
 	cp mpif.null.h mpif.h
-	$(MAKE) $(CODELIB) "FC = $(MPIFC)" "FFLAGS = $(FCFLAGS)" "SOURCE = energy.f $(SOURCE)"
+	$(MAKE) $(CODELIB) "FC = $(MPIFC)" "FFLAGS = $(FFLAGS)" "SOURCE = energy.f $(SOURCE)"
 
 gpu:
 	cp mpif.null.h mpif.h

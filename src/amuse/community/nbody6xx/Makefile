@@ -11,7 +11,7 @@ support/config.mk:
 # Building the code into a static library
 DEPFLAGS += $(FORSOCKETS_CFLAGS)
 FCFLAGS += $(DEPFLAGS)
-FFLAGS += -ffixed-form -xf77-cpp-input
+CODE_FFLAGS += -ffixed-form -xf77-cpp-input
 
 LDLIBS += $(FORSOCKETS_LIBS)
 
@@ -19,7 +19,7 @@ CODELIB = src/libnbody6xx.a
 
 
 $(CODELIB):
-	$(MAKE) -C src -j $(CPU_COUNT) amusepar MPIFC="$(MPIFC)" FCFLAGS="$(FFLAGS) $(FCFLAGS)"
+	$(MAKE) -C src -j $(CPU_COUNT) amusepar MPIFC="$(MPIFC)" FCFLAGS="$(CODE_FFLAGS) $(FCFLAGS)"
 
 
 # Building the workers
@@ -33,7 +33,8 @@ nbody6xx_worker: interface.o nbody6xx_worker.o $(CODELIB)
 	$(MPIFC) -o $@ $(LDFLAGS) $^ $(LDLIBS)
 
 %.o: %.f90
-	$(MPIFC) -o $@ -c $(FFLAGS) $(FCFLAGS) $<
+	# interface.f90 includes fixed-form headers from the code, so we need the flags
+	$(MPIFC) -o $@ -c $(FCFLAGS) $(CODE_FFLAGS) $<
 
 
 # Which packages contain which workers?
