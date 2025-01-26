@@ -42,6 +42,7 @@ MOD_NAMES := common_mod constants_mod dust_mod grid_mod iteration_mod output_mod
 MOD_FILES := $(patsubst %,src/mocassin/%.mod,$(MOD_NAMES))
 
 
+.PHONY: $(CODELIB)
 $(CODELIB) $(MOD_FILES): | src/mocassin
 	$(MAKE) -C src/mocassin -j 1 all FFLAGS='$(FCFLAGS)'
 

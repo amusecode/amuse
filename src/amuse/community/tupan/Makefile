@@ -68,6 +68,5 @@ clean:
 
 .PHONY: distclean
 distclean: clean
-	rm -rf tupan.tar.gz src/tupan
 	rm -f support/config.mk support/config.log support/config.status
 	rm -rf support/autom4te.cache

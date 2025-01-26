@@ -16,8 +16,8 @@ MOBSEOBJ = src/comenv.o src/corerd.o src/deltat.o src/dgcore.o \
          src/evolv3.o src/gntage.o src/hrdiag.o src/instar.o \
          src/kick.o src/mix.o src/mlwind.o src/mrenv.o \
          src/ran3.o src/rl.o \
-		 src/pisn.f src/eddington.f src/fallback.f \
-		 src/star.o src/zcnsts.o src/zfuncs.o
+         src/pisn.f src/eddington.f src/fallback.f \
+         src/star.o src/zcnsts.o src/zfuncs.o
 
 # Building the workers
 mobse_worker.f90: interface.py

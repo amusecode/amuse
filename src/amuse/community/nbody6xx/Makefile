@@ -18,6 +18,7 @@ LDLIBS += $(FORSOCKETS_LIBS)
 CODELIB = src/libnbody6xx.a
 
 
+.PHONY: $(CODELIB)
 $(CODELIB):
 	$(MAKE) -C src -j $(CPU_COUNT) amusepar MPIFC="$(MPIFC)" FCFLAGS="$(CODE_FFLAGS) $(FCFLAGS)"
 

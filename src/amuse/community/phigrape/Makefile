@@ -34,18 +34,21 @@ CODELIB_SAPPORO = build_sapporo/libphigrape.a
 build_nompi:
 	mkdir -p $@
 
+.PHONY: $(CODELIB_NOMPI)
 $(CODELIB_NOMPI): | build_nompi
 	$(MAKE) -C build_nompi -f ../src/Makefile -j 1 all FC="$(FC)" CC="$(CC)" CFLAGS="$(CFLAGS) -DNOMPI" FFLAGS="$(FFLAGS) -DNOMPI" OPTS="-DNOMPI" STOPCOND_CFLAGS="$(STOPCOND_CFLAGS)" STOPCOND_LIBS="$(STOPCOND_LIBS)" G6LIBS="$(G6LIB_LIBS)" VPATH=../src
 
 build_mpi:
 	mkdir -p $@
 
+.PHONY: $(CODELIB_MPI)
 $(CODELIB_MPI): | build_mpi
 	$(MAKE) -C build_mpi -f ../src/Makefile -j 1 all FC="$(MPIFC)" CC="$(MPICC)" CFLAGS="$(CFLAGS)" FFLAGS="$(FFLAGS)" STOPCOND_CFLAGS="$(STOPCONDMPI_CFLAGS)" STOPCOND_LIBS="$(STOPCONDMPI_LIBS)" G6LIBS="$(G6LIB_LIBS)" VPATH=../src
 
 build_sapporo:
 	mkdir -p $@
 
+.PHONY: $(CODELIB_SAPPORO)
 $(CODELIB_SAPPORO): | build_sapporo
 	$(MAKE) -C build_sapporo -f ../src/Makefile -j 1 all FC="$(FC)" CC="$(CC)" CFLAGS="$(CFLAGS) -DNOMPI" FFLAGS="$(FFLAGS) -DNOMPI"  STOPCOND_CFLAGS="$(STOPCOND_CFLAGS)" STOPCOND_LIBS="$(STOPCOND_LIBS)" VPATH=../src
 

@@ -13,9 +13,9 @@ FCFLAGS += $(FORSOCKETS_CFLAGS)
 LDLIBS += $(FORSOCKETS_LIBS) $(LIBS)
 
 MOSSEOBJ = src/deltat.o src/evolv1.o src/hrdiag.o  \
-	 	   src/kick.o src/mlwind.o src/mrenv.o \
-	  	   src/ran3.o src/pisn.f src/eddington.f src/fallback.f \
-	  	   src/star.o src/zcnsts.o src/zfuncs.o
+           src/kick.o src/mlwind.o src/mrenv.o \
+           src/ran3.o src/pisn.f src/eddington.f src/fallback.f \
+           src/star.o src/zcnsts.o src/zfuncs.o
 
 # Building the workers
 mosse_worker.f90: interface.py

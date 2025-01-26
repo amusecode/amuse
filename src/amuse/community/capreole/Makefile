@@ -16,6 +16,7 @@ LDLIBS += $(STOPCOND_LIBS) $(FORSOCKETS_LIBS)
 
 CODELIB = src/libcapreole_mpi.a
 
+.PHONY: $(CODELIB)
 $(CODELIB):
 	$(MAKE) -C src -j 1 amuse_interface_mpi F90FLAGS1="$(FCFLAGS)" FC="$(FC)"
 
@@ -57,12 +58,11 @@ test-%:
 # Cleaning up
 .PHONY: clean
 clean:
-	$(MAKE) -C src clean
+	-$(MAKE) -C src clean
 	rm -rf *.o *worker*
 
 .PHONY: distclean
 distclean: clean
-	-$(MAKE) -C src clean
 	rm -f support/config.mk support/config.log support/config.status
 	rm -rf support/autom4te.cache
 

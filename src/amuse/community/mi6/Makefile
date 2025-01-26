@@ -18,9 +18,11 @@ LDLIBS += $(STOPCOND_LIBS)
 CODELIB = src/libmi6.a
 CODELIB_GPU = src/libmi6_gpu.a
 
+.PHONY: $(CODELIB)
 $(CODELIB):
 	$(MAKE) -C src -j $(CPU_COUNT) emulib
 
+.PHONY: $(CODELIB_GPU)
 $(CODELIB_GPU):
 	$(MAKE) -C src -j $(CPU_COUNT) gpulib
 

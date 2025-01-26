@@ -17,6 +17,7 @@ LDLIBS += $(FORSOCKETS_LIBS)
 CODELIB = src/libsphray.a
 
 
+.PHONY: $(CODELIB)
 $(CODELIB):
 	$(MAKE) -C src -j 1 amuse_interface FFLAGS="$(FCFLAGS)" FC="$(FC)"
 

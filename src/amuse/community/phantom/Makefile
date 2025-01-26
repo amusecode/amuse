@@ -27,6 +27,7 @@ LDFLAGS += $(OPENMP_FCFLAGS)
 
 CODELIB = src/phantom/bin/libphantom-amuse.a
 
+.PHONY: $(CODELIB)
 $(CODELIB): | src/phantom
 	$(MAKE) -C src/phantom libphantom-amuse SETUP=amuse SYSTEM=gfortran OPENMP=yes
 

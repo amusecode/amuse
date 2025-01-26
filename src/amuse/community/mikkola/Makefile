@@ -19,6 +19,7 @@ LDLIBS += $(STOPCOND_LIBS) $(FORSOCKETS_LIBS)
 CODELIB = src/libMikkola.a
 
 
+.PHONY: $(CODELIB)
 $(CODELIB):
 	$(MAKE) -C src -j $(CPU_COUNT) all
 
@@ -65,7 +66,6 @@ clean:
 
 .PHONY: distclean
 distclean: clean
-	-$(MAKE) -C src clean
 	rm -f support/config.mk support/config.log support/config.status
 	rm -rf support/autom4te.cache
 

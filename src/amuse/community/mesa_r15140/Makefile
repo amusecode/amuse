@@ -144,6 +144,7 @@ MESA_ENV += HDF5_FFLAGS="$(HDF5_FFLAGS)" HDF5_LDFLAGS="$(HDF5_LDFLAGS)"
 
 export PATH := $(realpath .)/src/bin:$(PATH)
 
+.PHONY: $(CODELIB)
 $(CODELIB): $(MESA_DEPS) $(MESA_TOOLS) | $(MESA_DIR)
 	cd $(MESA_DIR) && env $(MESA_ENV) ./install
 
@@ -221,7 +222,5 @@ clean: clean_local
 
 .PHONY: distclean
 distclean: clean_local
-	rm -rf src/LAPACK95 src/crmath-1.2 src/crlibm-1.0beta4
-	rm -rf src/fpx3 src/bin src/mesa-$(MESA_VERSION)
 	rm -f support/config.mk support/config.log support/config.status
 	rm -rf support/autom4te.cache

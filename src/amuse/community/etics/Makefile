@@ -19,6 +19,7 @@ CODELIB = src/libetics.a
 src/config.mk:
 	cd src && ../src/configure
 
+.PHONY: $(CODELIB)
 $(CODELIB): src/config.mk
 	$(MAKE) -C src -j $(CPU_COUNT) libetics.a
 

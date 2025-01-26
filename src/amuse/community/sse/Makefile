@@ -9,13 +9,12 @@ support/config.mk:
 
 
 # Building the code into a static library
-##### Remove anything not needed #####
 FCFLAGS += $(FORSOCKETS_CFLAGS)
 LDLIBS += $(FORSOCKETS_LIBS) $(LIBS)
 
 SSEOBJ = src/deltat.o src/evolv1.o src/hrdiag.o src/kick.o \
-		 src/mlwind.o src/mrenv.o src/ran3.o src/star.o \
-	  	 src/zcnsts.o src/zfuncs.o
+         src/mlwind.o src/mrenv.o src/ran3.o src/star.o \
+         src/zcnsts.o src/zfuncs.o
 
 # Building the workers
 sse_worker.f90: interface.py

@@ -24,6 +24,7 @@ CODELIB = build/libbhtree.a
 build:
 	mkdir build
 
+.PHONY: $(CODELIB)
 $(CODELIB): | build
 	$(MAKE) -C build -f ../src/Makefile -j $(CPU_COUNT) all VPATH=../src
 

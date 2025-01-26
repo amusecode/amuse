@@ -29,6 +29,7 @@ LDLIBS += $(STOPCOND_LIBS) $(AMUSE_MPI_LIBS)
 CODELIBS = src/sstar/libsstar.a src/dstar/libdstar.a src/node/libnode.a src/std/libstd.a
 
 
+.PHONY: $(CODELIBS)
 $(CODELIBS) &: | src
 	cd src && $(MAKE) -j $(CPU_COUNT) lib
 

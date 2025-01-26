@@ -22,6 +22,7 @@ LDLIBS += -lm $(AMUSE_MPI_LIBS)
 CODELIB = src/libsei.a
 
 
+.PHONY: $(CODELIB)
 $(CODELIB): | src
 	$(MAKE) -C src -j $(CPU_COUNT) CC='$(MPICC)' all
 
@@ -70,7 +71,6 @@ clean:
 
 .PHONY: distclean
 distclean: clean
-	-$(MAKE) -C src clean
 	rm -f support/config.mk support/config.log support/config.status
 	rm -rf support/autom4te.cache
 

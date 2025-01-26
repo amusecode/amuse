@@ -20,6 +20,7 @@ LDLIBS += -lm $(STOPCOND_LIBS)
 CODELIB = src/libsakura.a
 
 
+.PHONY: $(CODELIB)
 $(CODELIB): | src
 	$(MAKE) -C src -j $(CPU_COUNT) CXX='$(MPICXX)' CXXFLAGS='$(CFLAGS)' all
 
@@ -68,7 +69,6 @@ clean:
 
 .PHONY: distclean
 distclean: clean
-	-$(MAKE) -C src clean
 	rm -f support/config.mk support/config.log support/config.status
 	rm -rf support/autom4te.cache
 

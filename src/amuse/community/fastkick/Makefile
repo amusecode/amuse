@@ -13,6 +13,7 @@ CXXFLAGS += $(DEPFLAGS)
 
 LDFLAGS += $(CUDA_LDFLAGS)
 
+
 # Building the workers
 fastkick_worker.h: interface.py
 	amusifier --type=h interface.py FastKickInterface -o $@

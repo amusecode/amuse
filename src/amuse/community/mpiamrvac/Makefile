@@ -49,6 +49,8 @@ build%: | src/mpiamrvac
 	cp -r src/mpiamrvac/src build$*
 	cd build$* && ./setamrvac $(AMRVAC_OPTS$*)
 
+.PHONY: build_3d/$(CODELIB) build_3dacc/$(CODELIB) build_2d/$(CODELIB)
+.PHONY: build_2dacc/$(CODELIB) build_1d/$(CODELIB) build_1dacc/$(CODELIB)
 build%/$(CODELIB): | build%
 	make -C build$* amrvac $(CODELIB) F90FLAGS="$(FCFLAGS)" F90="$(MPIFC)"
 
@@ -106,6 +108,5 @@ clean:
 
 .PHONY: distclean
 distclean: clean
-	rm -rf mpiamrvac.tar.gz src
 	rm -f support/config.mk support/config.log support/config.status
 	rm -rf support/autom4te.cache

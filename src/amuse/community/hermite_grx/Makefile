@@ -32,6 +32,7 @@ LDLIBS += $(STOPCOND_LIBS)
 CODELIB = src/Hermite_GRX/src/libhermite_grx.a
 
 
+.PHONY: $(CODELIB)
 $(CODELIB): | src/Hermite_GRX
 	$(MAKE) -C src/Hermite_GRX/src -j $(CPU_COUNT) all CC_FLAGS='$(CFLAGS)' LD_FLAGS='$(LD_FLAGS)'
 

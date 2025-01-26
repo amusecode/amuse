@@ -23,6 +23,7 @@ LDLIBS += $(MPFR_LIBS)
 CODELIB = src/libadaptb.a
 
 
+.PHONY: $(CODELIB)
 $(CODELIB):
 	$(MAKE) -C src -j $(CPU_COUNT) all
 

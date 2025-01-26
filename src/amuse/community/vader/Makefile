@@ -34,6 +34,7 @@ LDLIBS += $(GSL_LIBS)
 
 CODELIB = src/libvader.a
 
+.PHONY: $(CODELIB)
 $(CODELIB): | src
 	$(MAKE) -C src -j $(CPU_COUNT) all MPICC='$(MPICC)' CXXFLAGS='$(CFLAGS)'
 
@@ -83,7 +84,6 @@ clean:
 
 .PHONY: distclean
 distclean: clean
-	-$(MAKE) -C src clean
 	rm -f support/config.mk support/config.log support/config.status
 	rm -rf support/autom4te.cache
 

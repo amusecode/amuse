@@ -16,9 +16,11 @@ CODELIB = src/libph4.a
 CODELIB_SAPPORO = src/libph4gpu.a
 
 
+.PHONY: $(CODELIB)
 $(CODELIB):
 	$(MAKE) -C src -j $(CPU_COUNT) all CXX='$(MPICXX)'
 
+.PHONY: $(CODELIB_SAPPORO)
 $(CODELIB_SAPPORO):
 	$(MAKE) -C src -j $(CPU_COUNT) gpulib CXX='$(MPICXX)' SAPPORO_LIBDIRS='$(SAPPORO_LIGHT_CFLAGS)' SAPPORO_LIBS='$(SAPPORO_LIGHT_LIBS)'
 
@@ -74,7 +76,6 @@ clean:
 
 .PHONY: distclean
 distclean: clean
-	$(MAKE) -C src clean
 	rm -f support/config.mk support/config.log support/config.status
 	rm -rf support/autom4te.cache
 

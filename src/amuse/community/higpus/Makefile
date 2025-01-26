@@ -22,6 +22,7 @@ LDLIBS += -lcudart
 
 CODELIB = src/libhigpus.a
 
+.PHONY: $(CODELIB)
 $(CODELIB):
 	$(MAKE) -C src -j $(CPU_COUNT) all NVCC="$(NVCC)" NVCCFLAGS='$(NVCCFLAGS)' CXX="$(MPICXX)"
 

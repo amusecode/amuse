@@ -30,6 +30,7 @@ $(BUILDDIR)/Makefile:
 	@-mkdir $(BUILDDIR)
 	cd $(BUILDDIR) && cmake ../src/mmas2 -DGSL_FLAGS="$(GSL_FLAGS)" -DGSL_LIBS="$(GSL_LIBS)"
 
+.PHONY: mmas2
 mmas2: $(BUILDDIR)/Makefile
 	$(MAKE) -C $(BUILDDIR) -j $(CPU_COUNT)
 

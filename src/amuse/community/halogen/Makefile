@@ -12,6 +12,7 @@ LDLIBS += -lm
 
 CODELIB = src/libhalogen.a
 
+.PHONY: $(CODELIB)
 $(CODELIB):
 	$(MAKE) -C src -j $(CPU_COUNT) all CC='$(CC)'
 
@@ -60,7 +61,6 @@ clean:
 
 .PHONY: distclean
 distclean: clean
-	-$(MAKE) -C src clean
 	rm -f support/config.mk support/config.log support/config.status
 	rm -rf support/autom4te.cache
 

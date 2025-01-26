@@ -24,6 +24,7 @@ build:
 build/Makefile: $(CMAKE_DEPS) | build
 	cd build && FC="$(FC) $(FCFLAGS)" cmake ../src/trunk -DCMAKE_Fortran_FLAGS:STRING="$(FCFLAGS)"  -G "$(CMAKE_GENERATOR)" -DWANT_MKMERGERMOD=0 -DWANT_LIBRARY=1
 
+.PHONY: $(CODELIB)
 $(CODELIB) &: build/Makefile
 	$(MAKE) -C build -j 1 all
 

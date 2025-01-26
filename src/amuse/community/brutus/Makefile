@@ -19,6 +19,7 @@ LDLIBS += $(STOPCOND_LIBS) $(GMP_LIBS) $(MPFR_LIBS)
 CODELIB = src/libbrutus.a
 
 
+.PHONY: $(CODELIB)
 $(CODELIB):
 	$(MAKE) -C src -j $(CPU_COUNT) all CFLAGS='$(CFLAGS) -I../mpfrc++ -Wall'
 

@@ -32,6 +32,7 @@ LDLIBS += $(FORSOCKETS_LIBS)
 
 CODELIB = src/mesa/lib/libstar.a
 
+.PHONY: $(CODELIB)
 $(CODELIB): | src/mesa
 	cd src/mesa && FC=$(FC) MPIFC=$(MPIFC) ./install
 

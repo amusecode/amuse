@@ -25,12 +25,15 @@ build:
 build_%:
 	mkdir build_$*
 
+.PHONY: build/$(CODELIB)
 build/$(CODELIB): src/Makefile | build
 	$(MAKE) -C build -j $(CPU_COUNT) -f ../src/Makefile all VPATH=../src CFLAGS="$(CFLAGS_CODELIB)" CXXFLAGS="$(CXXFLAGS)"
 
+.PHONY: build_openmp/$(CODELIB)
 build_openmp/$(CODELIB): src/Makefile | build_openmp
 	$(MAKE) -C build_openmp -j $(CPU_COUNT) -f ../src/Makefile all VPATH=../src CFLAGS="$(CFLAGS_CODELIB)" CXXFLAGS="$(CXXFLAGS)" OPENMP_CFLAGS="$(OPENMP_CFLAGS)"
 
+.PHONY: $(CODELIB_OPENCL)
 $(CODELIB_OPENCL): src/Makefile | build_opencl
 	$(MAKE) -C build_opencl -j $(CPU_COUNT) -f ../src/Makefile libhuayno_cl.a VPATH=../src CFLAGS="$(CFLAGS_CODELIB) $(OPENCL_CFLAGS) -DEVOLVE_OPENCL -I." CXXFLAGS="$(CXXFLAGS)" LIBS="$(OPENCL_LIBS)"
 

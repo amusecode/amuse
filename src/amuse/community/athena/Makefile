@@ -28,6 +28,7 @@ build_%:
 build_%/Makefile: | build_%
 	cd build_$* && ./configure $(CONFIGOPTS_$*)
 
+.PHONY: build_normal/$(CODELIB) build_selfgrav/$(CODELIB) build_mhd/$(CODELIB) build_scalar/$(CODELIB)
 build%/$(CODELIB): | build%/Makefile
 	$(MAKE) -C build$* -j $(CPU_COUNT) all CC=$(MPICC) LDR=$(MPICC) OPT="$(CFLAGS)" FFTW_FLAGS="$(FFTW_FLAGS)" FFTW_LIBS="$(FFTW_LIBS)"
 

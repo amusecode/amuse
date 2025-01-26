@@ -28,6 +28,7 @@ LDLIBS += $(FORSOCKETS_LIBS)
 
 CODELIB = src/libchem.a
 
+.PHONY: $(CODELIB)
 $(CODELIB): | src/krome
 	$(MAKE) -C src libchem.a
 

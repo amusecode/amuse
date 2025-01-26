@@ -17,6 +17,7 @@ LDLIBS += $(STOPCOND_LIBS) $(FORSOCKETS_LIBS)
 CODELIB = src/libmercury.a
 
 
+.PHONY: $(CODELIB)
 $(CODELIB):
 	$(MAKE) -C src -j $(CPU_COUNT) amuse_interface FFLAGS="$(FCFLAGS)" FC="$(FC)" F77FLAGS="$(F77FLAGS)"
 

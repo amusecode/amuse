@@ -22,6 +22,7 @@ LDLIBS += -lm $(STOPCOND_LIBS)
 CODELIB = src/libsmallN.a
 
 
+.PHONY: $(CODELIB)
 $(CODELIB):
 	$(MAKE) -C src -j $(CPU_COUNT) all CXXFLAGS='$(CFLAGS)' CXX='$(MPICXX)'
 
@@ -70,7 +71,6 @@ clean:
 
 .PHONY: distclean
 distclean: clean
-	-$(MAKE) -C src clean
 	rm -f support/config.mk support/config.log support/config.status
 	rm -rf support/autom4te.cache
 
