@@ -231,3 +231,30 @@ to show a complete overview.
 "
 }
 
+
+print_getting_help() {
+    printf '%s\n\n' 'This is not supposed to happen!'
+    printf '%s\n' 'Please contact the developers on Slack or make an issue on GitHub,'
+    printf '%s\n' 'so that we can fix this together.'
+    printf '%s\n' 'TODO: add links'
+}
+
+
+print_install_failure() {
+    package="$1"
+    log_file="$2"
+
+    printf '\n%b\n\n' "${COLOR_RED}${package} failed to build and install correctly.${COLOR_END}"
+    print_getting_help
+    printf '\n%s\n' "The output of the installation process was logged to $2"
+}
+
+
+print_test_failure() {
+    package="$1"
+    log_file="$2"
+
+    printf '\n%b\n\n' "${COLOR_RED}${package} failed its tests.${COLOR_END}"
+    print_getting_help
+}
+

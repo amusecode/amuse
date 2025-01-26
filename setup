@@ -198,6 +198,62 @@ find_packages() {
 }
 
 
+# Normalise a package name
+#
+# We allow the user to omit the amuse- prefix when referring to a package by name.
+# This function adds it back on if it's been omitted.
+#
+# Args:
+#   package: The given package name
+#
+# Returns:
+#   The name prefixed with amuse- if it wasn't already
+#
+normalise_package_name() {
+    package="$1"
+
+    if [ "a${package#amuse-}" = "a${package}" ] ; then
+        package="amuse-${package}"
+    fi
+    printf '%s' "${package}"
+}
+
+
+# Handle the result of an installation or test step
+#
+# These are never supposed to fail if you install from an official distribution, but of
+# course nothing is perfect. So we need to handle any errors gracefully.
+#
+# Args:
+#   exit_code: Exit code of the process
+#   command: What we did, e.g. install or test
+#   package: The package we did it to
+#   log_file: Location of the log file
+#
+handle_result() {
+    exit_code=$1
+    cmd=$2
+    package=$3
+    log_file="$4"
+
+    if [ "a${exit_code}" = "a0" ] ; then
+        if [ "a${cmd}" = "ainstall" ] ; then
+            printf '\n%b\n' "${COLOR_GREEN}Package ${package} was installed successfully.${COLOR_END}"
+        elif [ "a${cmd}" = "atest" ] ; then
+            printf '\n%b\n' "${COLOR_GREEN}Package ${package} passed its tests.${COLOR_END}"
+        fi
+    else
+        if [ "a${cmd}" = "ainstall" ] ; then
+            print_install_failure "${package}" "${log_file}"
+        elif [ "a${cmd}" = "atest" ] ; then
+            print_test_failure "${package}" "${log_file}"
+        fi
+    fi
+
+    return "${exit_code}"
+}
+
+
 # Show the current configuration
 #
 # This uses the following variables:
@@ -257,8 +313,13 @@ check_sapporo_light() {
 install_sapporo_light() {
     check_sapporo_light
     make -C lib/sapporo_light distclean
-    make -C lib install-sapporo_light
-    printf '%s\n' 'Successfully installed Sapporo light'
+
+    ec_file="$(exit_code_file install sapporo_light)"
+    log_file="$(log_file install sapporo_light)"
+
+    (make -C lib install-sapporo_light ; echo $? >"${ec_file}") 2>&1 | tee "${log_file}"
+
+    handle_result $(cat "$ec_file") install sapporo_light "${log_file}"
 }
 
 
@@ -294,9 +355,18 @@ install_framework() {
         fi
     fi
 
-    make -C lib distclean
-    make -C lib install
-    (cd src && pip --no-cache-dir --debug install .)
+    ec_file="$(exit_code_file install amuse-framework)"
+    log_file="$(log_file install amuse-framework)"
+
+    (
+        make -C lib distclean && \
+        make -C lib install && \
+        cd src && pip --no-cache-dir --debug install .
+
+        echo $? >"../${ec_file}"
+    ) 2>&1 | tee "${log_file}"
+
+    handle_result $(cat "$ec_file") install amuse-framework "${log_file}"
 }
 
 
@@ -305,9 +375,19 @@ install_framework() {
 develop_framework() {
     check_framework
     support/shared/uninstall.sh amuse-framework
-    make -C lib distclean
-    make -C lib install
-    (cd src && pip -e install .)
+
+    ec_file="$(exit_code_file install amuse-framework)"
+    log_file="$(log_file install amuse-framework)"
+
+    (
+        make -C lib distclean && \
+        make -C lib install && \
+        cd src && pip -e install .
+
+        echo $? >"../${ec_file}"
+    ) 2>&1 | tee "${log_file}"
+
+    handle_result $(cat "$ec_file") install amuse-framework "${log_file}"
 }
 
 
@@ -351,14 +431,18 @@ ensure_pytest() {
 # Run tests for the AMUSE framework
 #
 test_framework() {
-    make -C src/tests all
-    if [ "a$?" != "a0" ] ; then
-        printf '\n%b\n\n' "Test build failed, not starting the tests."
-        exit 1
-    fi
+    ec_file="$(exit_code_file test amuse-framework)"
+    log_file="$(log_file test amuse-framework)"
 
-    # Tests for amuse.distributed won't be fixed as it is to be removed, disabled.
-    (cd src/tests && pytest --pyargs core_tests compile_tests ${PYTEST_OPTS} -k 'not TestCDistributedImplementationInterface and not TestAsyncDistributed')
+    (
+        make -C src/tests all && \
+        # Tests for amuse.distributed won't be fixed as it is to be removed, disabled.
+        cd src/tests && pytest --pyargs core_tests compile_tests ${PYTEST_OPTS} -k 'not TestCDistributedImplementationInterface and not TestAsyncDistributed'
+
+        echo $? >"../${ec_file}"
+    ) 2>&1 | tee "${log_file}"
+
+    handle_result $(cat "$ec_file") test amuse-framework "${log_file}"
 }
 
 
@@ -376,7 +460,17 @@ test_amuse_ext() {
         bad_ext_tests="${bad_ext_tests}${sep} not ${bad_test_pt}"
         sep=' and'
     done
-    (cd src/tests && pytest --pyargs ext_tests ticket_tests ${PYTEST_OPTS}  -k "${bad_ext_tests}")
+
+    ec_file="$(exit_code_file test amuse-framework)"
+    log_file="$(log_file test amuse-framework)"
+
+    (
+        cd src/tests && pytest --pyargs ext_tests ticket_tests ${PYTEST_OPTS}  -k "${bad_ext_tests}"
+
+        echo $? >"${ec_file}"
+    ) 2>&1 | tee "${log_file}"
+
+    handle_result $(cat "$ec_file") test amuse-ext "${log_file}"
 
     printf "\n%s\n" "The following tests were disabled because they currently fail:"
     printf "\n%b\n\n" "${COLOR_RED}${BAD_EXT_TESTS}${COLOR_END}"
@@ -388,11 +482,6 @@ test_amuse_ext() {
 #
 check_package() {
     package="$1"
-
-    # if the amuse- prefix is missing, add it
-    if [ "a${package#amuse-}" = "a${package}" ] ; then
-        package="amuse-${package}"
-    fi
 
     if is_subset "${package}" "${DISABLED_PACKAGES}" ; then
         printf '\n%s\n' "Package ${package} cannot be installed because tools or dependencies are missing."
@@ -410,9 +499,24 @@ check_package() {
 }
 
 
+# Check whether a package is installed and can therefore be tested
+#
+# If not, print an error message and quit.
+#
+check_package_installed_for_test() {
+    package="$1"
+
+    if ! is_subset "${package}" "${INSTALLED_PACKAGES}" ; then
+        printf '\n%s\n' "Package ${package} is not installed, so we cannot test it."
+        printf '\n%s\n' "Please install the package first using ./setup install ${package}, then try again."
+        exit 1
+    fi
+}
+
+
 # Forward a command to a package's build system
 #
-# This does a few extra things, which is a bit ugly but saves adding  more functions:
+# This does a few extra things, which is a bit ugly but saves adding more functions:
 #
 # - If we're installing a package and amuse-framework is not installed, then we install
 #   the framework first.
@@ -421,15 +525,23 @@ check_package() {
 #   incremental build, and the code's build system supports them, then cd into the
 #   package's directory and run make directly there.
 #
+# Args:
+#   cmd: The command to forward, e.g. install or test
+#   package: The name of the package to forward to
+#   silent: If set to "silent", return the error code from the forwarded-to make
+#           invocation, otherwise, print the result.
 forward_to_package() {
     cmd="$1"
     package="$2"
+    silent="$3"
 
     check_package "${package}"
 
     if [ "a${cmd}" = "ainstall" ] ; then
         if ! is_subset "amuse-framework" "${INSTALLED_PACKAGES}" ; then
+            save_package="${package}"
             install_framework
+            package="${save_package}"
         fi
     fi
 
@@ -439,23 +551,34 @@ forward_to_package() {
         make -C "${code_dir}" distclean
     fi
 
-    make -C "${code_dir}" "${cmd}-${package}"
+    ec_file="$(exit_code_file ${cmd} ${package})"
+    log_file="$(log_file ${cmd} ${package})"
+
+    (make -C "${code_dir}" "${cmd}-${package}" ; echo "$?" >${ec_file}) 2>&1 | tee ${log_file}
+
+    if [ "a${silent}" = "asilent" ] ; then
+        return $(cat ${ec_file})
+    else
+        handle_result $(cat "$ec_file") "${cmd}" "${package}" "${log_file}"
+    fi
 }
 
 
 # Install the framework and all enabled packages
 #
 install_all() {
-    install_framework
-
-    if is_subset sapporo_light "${ENABLED_PACKAGES}" ; then
-        install_sapporo_light
-    fi
+    install_framework || exit 1
 
     FAILED_BUILDS=''
+    if is_subset sapporo_light "${ENABLED_PACKAGES}" ; then
+        if ! install_sapporo_light ; then
+            FAILED_BUILDS="${FAILED_BUILDS}\nsapporo_light"
+        fi
+    fi
+
     for package in ${ENABLED_PACKAGES} ; do
         if ! is_subset "${package}" "amuse-framework sapporo_light" ; then
-            forward_to_package install "${package}"
+            forward_to_package install "${package}" silent
             if [ $? != '0' ] ; then
                 FAILED_BUILDS="${FAILED_BUILDS}\n${package}"
             fi
@@ -466,20 +589,30 @@ install_all() {
     if [ "a${FAILED_BUILDS}" != "a" ] ; then
         printf '\nThe following packages failed to build:\n'
         printf '%b\n\n' "${COLOR_RED}${FAILED_BUILDS}${COLOR_END}"
+        print_getting_help
+        printf '\n%s\n' 'Output was saved to support/logs/.'
     else
         printf '\n%b\n\n' "${COLOR_GREEN}All packages were installed successfully${COLOR_END}"
     fi
 }
 
 
-# Run tests for the framework and all enabled packages
+# Run tests for the framework and all installed packages
 #
 test_all() {
-    test_framework
-    test_amuse_ext
+    FAILED_TESTS=''
+    if is_subset amuse_framework "${INSTALLED_PACKAGES}" ; then
+        if ! test_framework ; then
+            FAILED_TESTS="${FAILED_TESTS}\namuse-framework"
+        fi
+
+        if ! test_amuse_ext ; then
+            FAILED_TESTS="${FAILED_TESTS}\namuse-ext"
+        fi
+    fi
+
     # sapporo_light does not have tests
 
-    FAILED_TESTS=''
     for package in ${INSTALLED_PACKAGES} ; do
         if ! is_subset "${package}" "amuse-framework sapporo_light" ; then
             code_dir=$(code_directory "${package}")
@@ -496,6 +629,7 @@ test_all() {
     if [ "a${FAILED_TESTS}" != "a" ] ; then
         printf '\nThe following packages failed their tests:\n'
         printf '%b\n\n' "${COLOR_RED}${FAILED_TESTS}${COLOR_END}"
+        print_getting_help
     else
         printf '\n%b\n\n' "${COLOR_GREEN}All installed packages completed their tests successfully${COLOR_END}"
     fi
@@ -514,12 +648,14 @@ install() {
             install_all
             ;;
         amuse-framework | framework )
+            target="$(normalise_package_name ${target})"
             install_framework
             ;;
         sapporo_light )
             install_sapporo_light
             ;;
         * )
+            target="$(normalise_package_name ${target})"
             forward_to_package install "${target}"
             ;;
     esac
@@ -540,6 +676,7 @@ develop() {
             develop_framework
             ;;
         * )
+            target="$(normalise_package_name ${target})"
             forward_to_package develop "${target}"
             ;;
     esac
@@ -581,12 +718,16 @@ run_test() {
             test_all
             ;;
         amuse-framework | framework )
+            check_package_installed_for_test amuse-framework
             test_framework
             ;;
         amuse-ext | ext )
+            check_package_installed_for_test amuse-framework
             test_amuse_ext
             ;;
         * )
+            target="$(normalise_package_name ${target})"
+            check_package_installed_for_test "${target}"
             forward_to_package "test" "${target}"
             ;;
     esac

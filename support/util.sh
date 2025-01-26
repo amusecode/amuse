@@ -81,3 +81,38 @@ code_directory() {
     printf "src/amuse/community/${code}"
 }
 
+
+# Print the base name for the log and exit code files
+#
+log_file_base() {
+    printf '%s' "support/logs/${1}-${2}"
+}
+
+
+# Print the relative path to the exit code file for a command and target
+#
+# We show output on the terminal when installing and testing, but we also send it to a
+# file so that when something goes wrong, there's something for people to send us when
+# they ask for help. We also need to send the exit code to a file, otherwise we lose it
+# because of the pipe to tee and we need it to see if the operation was successful. So
+# this points to the file we'll use for that.
+#
+# Args:
+#   command: The command that's being executed
+#   package: The package the command is being executed for
+#
+exit_code_file() {
+    name="$(log_file_base $1 $2)"
+    printf '%s' "${name}.exit_code"
+}
+
+
+# Print the relative path to the log file for a command and target.
+#
+# See exit_code_file() above, this is the location for the log output.
+#
+log_file() {
+    name="$(log_file_base $1 $2)"
+    printf '%s' "${name}.log"
+}
+
