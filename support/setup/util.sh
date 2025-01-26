@@ -69,6 +69,22 @@ filter_out() {
 }
 
 
+# Check if any of the words in items starts with issue_
+#
+# Args:
+#   items: list of words (as a single argument, space separated) to search
+#
+has_issue() {
+    for item in $1 ; do
+        if [ "a${item#issue_}" != "a${item}" ] ; then
+            return 0
+        fi
+    done
+
+    return 1
+}
+
+
 # Print the main directory of the code for a given package
 #
 # Codes may have multiple packages, e.g. with and without CUDA support, so different

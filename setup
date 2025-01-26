@@ -64,7 +64,11 @@ configure() {
     printf '\n\n'
     printf '%b\n' "${COLOR_RED}** Disabled packages **${COLOR_END}"
     printf '\n%b' "${DISABLED_PACKAGES_TEXT}"
+    printf '%b' "${BROKEN_PACKAGES_TEXT}"
     printf '\n'
+    printf '%s\n' "For broken packages, you can find the listed issue at https://github.com/amusecode/amuse/issues"
+    printf '\n'
+
     printf '%b\n\n' "${COLOR_CYAN}*** Next steps ***${COLOR_END}"
 
     can_install="yes"

@@ -142,6 +142,7 @@ check_build_sapporo_light() {
 # ENABLED_PACKAGES_TEXT - adds packages for which all requirements are met
 # DISABLED_PACKAGES - adds packages for which features are missing
 # DISABLED_PACKAGES_TEXT - adds packages for which features are missing
+# BROKEN_PACKAGES - adds packages that are broken (issue_x dependency)
 #
 find_packages() {
     for code in src/amuse/community/* ; do
@@ -158,6 +159,8 @@ find_packages() {
                 installed="$(is_installed ${package})"
                 ENABLED_PACKAGES="${ENABLED_PACKAGES}${package} "
                 ENABLED_PACKAGES_TEXT="${ENABLED_PACKAGES_TEXT}${installed}${package}\n"
+            elif has_issue "${missing_features}" ; then
+                BROKEN_PACKAGES_TEXT="${BROKEN_PACKAGES_TEXT}${package} (reference:${COLOR_RED}${missing_features}${COLOR_END})\n"
             else
                 DISABLED_PACKAGES="${DISABLED_PACKAGES}${package} "
                 DISABLED_PACKAGES_TEXT="${DISABLED_PACKAGES_TEXT}${package} (missing features:${COLOR_RED}${missing_features}${COLOR_END})\n"
