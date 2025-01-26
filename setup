@@ -478,6 +478,29 @@ test_amuse_ext() {
 }
 
 
+# Check whether the basic conditions for installing things are met
+#
+# This checks for an environment with pip and wheel, and quits with an error if they're
+# not available.
+#
+# Args:
+#   target: Target the user wants to install
+#
+check_install() {
+    target="$1"
+
+    if [ "a${ENV_TYPE}" = "a" ] ; then
+        printf '\n%s\n\n' "Cannot install ${target}, because there is no active environment."
+        print_environment_step
+        exit 1
+    elif [ "a${HAVE_PIP}" = "a" ] || [ "a${HAVE_WHEEL}" = "a" ] ; then
+        printf '\n%s\n\n' "Cannot install ${target}, because pip and/or wheel are not available."
+        print_pip_wheel_step
+        exit 1
+    fi
+}
+
+
 # Check whether a package can be installed and error out if not
 #
 check_package() {
@@ -643,6 +666,8 @@ test_all() {
 install() {
     target="$1"
 
+    check_install "${target}"
+
     case ${target} in
         all )
             install_all
@@ -670,6 +695,8 @@ install() {
 #
 develop() {
     target="$1"
+
+    check_install "${target}"
 
     case ${target} in
         amuse-framework | framework )
