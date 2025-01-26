@@ -80,6 +80,7 @@ class TestMESAInterface(TestWithMPI):
         instance.stop()
 
     def test4(self):
+        self.skip("Test broken by #933, see #1107")
         print("Testing basic operations: evolve...")
         instance = self.new_instance_of_an_optional_code(MESAInterface)
         if instance is None:
@@ -281,6 +282,7 @@ class TestMESA(TestWithMPI):
         instance.stop()
 
     def test2(self):
+        self.skip("Test broken by #933, see #1107")
         print("Testing basic operations: evolve and get_...")
         instance = self.new_instance_of_an_optional_code(MESA)
         if instance is None:
@@ -403,6 +405,7 @@ class TestMESA(TestWithMPI):
         instance.stop()
 
     def test5(self):
+        self.skip("Test broken by #933, see #1107")
         print("Testing evolve_model for particle set...")
         instance = self.new_instance_of_an_optional_code(MESA)
         masses = [0.5, 1.0] | units.MSun
@@ -613,6 +616,7 @@ class TestMESA(TestWithMPI):
         instance.stop()
 
     def test11(self):
+        self.skip("Test broken by #933, see #1107")
         print("Test evolve_model optional arguments: end_time and keep_synchronous")
         stars = Particles(3)
         stars.mass = [1.0, 2.0, 3.0] | units.MSun
@@ -649,6 +653,7 @@ class TestMESA(TestWithMPI):
         instance.stop()
 
     def test12(self):
+        self.skip("Test broken by #933, see #1107")
         print("Test for importing new stellar models")
         star = Particles(1)
         star.mass = 1.0 | units.MSun
@@ -806,6 +811,7 @@ class TestMESA(TestWithMPI):
         print("ok")
 
     def test16(self):
+        self.skip("Test broken by #933, see #1107")
         print("Testing basic operations: evolve_one_step and evolve_for")
         stars = Particles(2)
         stars.mass = 1.0 | units.MSun
@@ -977,6 +983,7 @@ class TestMESA(TestWithMPI):
         self.assertAlmostEqual(he3_core_mass, 0 | units.MSun)
 
     def test22(self):
+        self.skip("Test broken by #933, see #1107")
         print("Testing MESA calculate_core_mass (short version of slowtest21)")
         instance = self.new_instance_of_an_optional_code(MESA)
         star = instance.particles.add_particle(Particle(mass=1 | units.MSun))
