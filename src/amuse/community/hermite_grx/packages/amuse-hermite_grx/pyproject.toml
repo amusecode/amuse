@@ -1,5 +1,5 @@
 [project]
-name = "amuse-hermite_grx"
+name = "amuse-hermite-grx"
 dynamic = ["version"]
 requires-python = ">=3.7"
 dependencies = [

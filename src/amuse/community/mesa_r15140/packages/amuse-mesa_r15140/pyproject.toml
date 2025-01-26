@@ -1,5 +1,5 @@
 [project]
-name = "amuse-mesa_r15140"
+name = "amuse-mesa-r15140"
 dynamic = ["version"]
 requires-python = ">=3.7"
 dependencies = [

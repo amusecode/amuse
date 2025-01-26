@@ -1,5 +1,5 @@
 [project]
-name = "amuse-kepler_orbiters"
+name = "amuse-kepler-orbiters"
 dynamic = ["version"]
 requires-python = ">=3.7"
 dependencies = [
