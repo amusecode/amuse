@@ -106,7 +106,7 @@ test-%:
 # Cleaning up
 .PHONY: clean
 clean:
-	cd src/mesa && ./clean
+	-cd src/mesa && ./clean
 	rm -rf *.o *.mod *worker* data/data $(ZAMS_DATA)
 
 .PHONY: distclean
