@@ -48,7 +48,7 @@ test_framework() {
         # Tests for amuse.distributed won't be fixed as it is to be removed, disabled.
         cd src/tests && pytest --pyargs core_tests compile_tests ${PYTEST_OPTS} -k 'not TestCDistributedImplementationInterface and not TestAsyncDistributed'
 
-        echo $? >"../${ec_file}"
+        echo $? >"../../${ec_file}"
     ) 2>&1 | tee "${log_file}"
 
     handle_result $(cat "$ec_file") test amuse-framework "${log_file}"
