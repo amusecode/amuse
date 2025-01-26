@@ -4115,7 +4115,7 @@ printf %s "checking for a wget or curl to download files with... " >&6; }
     if test "x$WGET" != "x"
     then
         # The MESA SDK server rejects wget, this is the official work-around
-        DOWNLOAD="$WGET --user-agent='' -O -"
+        DOWNLOAD="$WGET --progress=bar:force:noscroll --user-agent='' -O -"
         { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 printf "%s\n" "yes" >&6; }
     else

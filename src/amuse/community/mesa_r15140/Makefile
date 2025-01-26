@@ -47,7 +47,7 @@ PATCHES := $(patsubst %,%,$(PATCHES))    # replace newlines with spaces
 
 
 $(MESA_DIR): src/mesa-$(MESA_VERSION).zip
-	cd src && unzip ../$<
+	cd src && unzip -q ../$<
 	mkdir -p $(MESA_DIR)/include
 	mkdir -p $(MESA_DIR)/lib
 	cd $(MESA_DIR) && for p in $(PATCHES) ; do patch -p1 <../../patches/$$p || exit 1 ; done
@@ -70,7 +70,7 @@ $(MESA_DIR)/lib/liblapack95.a: | src/LAPACK95 $(MESA_DIR)
 
 
 src/crmath-1.2: src/crmath-1.2.zip
-	cd src && unzip ../$<
+	cd src && unzip -q ../$<
 
 $(MESA_DIR)/lib/libcrmath.a: | src/crmath-1.2
 	$(MAKE) -C src/crmath-1.2

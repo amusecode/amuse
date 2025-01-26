@@ -17,7 +17,7 @@ PATCHES := $(patsubst %,%,$(PATCHES))    # replace newlines with spaces
 
 src/mesa: mesa_r2208.zip
 	mkdir -p src
-	unzip $<
+	unzip -q $<
 	mv mesa-r2208 src/mesa
 	for p in $(PATCHES) ; do patch -p1 <patches/$$p || exit 1 ; done
 	cp patches/test_jina.f src/mesa/jina/test/src/test_jina.f
