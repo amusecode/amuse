@@ -219,6 +219,30 @@ normalise_package_name() {
 }
 
 
+# Announce that we're going to do something
+#
+# This is a counterpart to handle_result() below
+#
+# Args:
+#    cmd: Command that we're executing
+#    target: Affected package
+#
+announce_activity() {
+    cmd="$1"
+    package="$2"
+
+    printf '\n'
+    if [ "a${cmd}" = "ainstall" ] ; then
+        printf '%b\n' "${COLOR_CYAN}Building and installing ${package}...${COLOR_END}"
+    elif [ "a${cmd}" = "adevelop" ] ; then
+        printf '%b\n' "${COLOR_CYAN}Building and develop-installing ${package}...${COLOR_END}"
+    elif [ "a${cmd}" = "atest" ] ; then
+        printf '%b\n' "${COLOR_CYAN}Testing ${package}...${COLOR_END}"
+    fi
+    printf '\n'
+}
+
+
 # Handle the result of an installation or test step
 #
 # These are never supposed to fail if you install from an official distribution, but of
@@ -312,6 +336,9 @@ check_sapporo_light() {
 #
 install_sapporo_light() {
     check_sapporo_light
+
+    announce_activity install sapporo_light
+
     make -C lib/sapporo_light distclean
 
     ec_file="$(exit_code_file install sapporo_light)"
@@ -339,6 +366,8 @@ check_framework() {
 install_framework() {
     check_framework
     support/shared/uninstall.sh amuse-framework
+
+    announce_activity install amuse-framework
 
     # if we're in a conda env, install the dependecies using conda first rather than
     # leaving it to pip.
@@ -375,6 +404,8 @@ install_framework() {
 develop_framework() {
     check_framework
     support/shared/uninstall.sh amuse-framework
+
+    announce_activity develop amuse-framework
 
     ec_file="$(exit_code_file install amuse-framework)"
     log_file="$(log_file install amuse-framework)"
@@ -431,6 +462,8 @@ ensure_pytest() {
 # Run tests for the AMUSE framework
 #
 test_framework() {
+    announce_activity test amuse-framework
+
     ec_file="$(exit_code_file test amuse-framework)"
     log_file="$(log_file test amuse-framework)"
 
@@ -452,6 +485,8 @@ test_framework() {
 # tests that exercise coupled simulations.
 #
 test_amuse_ext() {
+    announce_activity test amuse-ext
+
     bad_ext_tests=''
     sep=''
     for bad_test in ${BAD_EXT_TESTS} ; do
@@ -567,6 +602,8 @@ forward_to_package() {
             package="${save_package}"
         fi
     fi
+
+    announce_activity ${cmd} ${package}
 
     code_dir=$(code_directory "${package}")
 
