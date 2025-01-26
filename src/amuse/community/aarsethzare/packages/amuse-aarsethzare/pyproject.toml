@@ -32,7 +32,7 @@ exclude = [
     "aarsethzare/src",
     "aarsethzare/tests"
     ]
-artifacts = ["aarsethzare/cpu_worker"]
+artifacts = ["aarsethzare/aarsethzare_worker"]
 
 [tool.hatch.build.targets.wheel.sources]
 "aarsethzare" = "amuse/community/aarsethzare"

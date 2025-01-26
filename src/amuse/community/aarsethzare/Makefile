@@ -23,16 +23,13 @@ $(CODELIB): src/*.f
 
 
 # Building the workers
-cpu_worker.h: interface.py
-	amusifier --type=h interface.py AarsethZareInterface -o $@
-
-cpu_worker.f90: interface.py
+aarsethzare_worker.f90: interface.py
 	amusifier --type=f90 interface.py AarsethZareInterface -o $@
 
-cpu_worker: interface.o cpu_worker.o $(CODELIB)
-	$(MPIFC) -o cpu_worker $(LDFLAGS) $^ $(CODELIB) $(LDLIBS)
+aarsethzare_worker: interface.o aarsethzare_worker.o $(CODELIB)
+	$(MPIFC) -o aarsethzare_worker $(LDFLAGS) $^ $(CODELIB) $(LDLIBS)
 
-cpu_worker.o: cpu_worker.f90
+aarsethzare_worker.o: aarsethzare_worker.f90
 	$(MPIFC) -c $(FCFLAGS) $<
 
 %.o: %.f90
@@ -40,7 +37,7 @@ cpu_worker.o: cpu_worker.f90
 
 
 # Which packages contain which workers?
-amuse-aarsethzare_contains: cpu_worker
+amuse-aarsethzare_contains: aarsethzare_worker
 
 
 # Building and installing packages
