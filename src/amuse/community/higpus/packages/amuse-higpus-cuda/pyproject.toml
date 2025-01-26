@@ -1,5 +1,5 @@
 [project]
-name = "amuse-higpus"
+name = "amuse-higpus-cuda"
 dynamic = ["version"]
 requires-python = ">=3.7"
 dependencies = [
