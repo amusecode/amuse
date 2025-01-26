@@ -5,14 +5,10 @@
 # systems) and bash 3.2 (/bin/sh on macOS). Zsh should also work in POSIX mode, so if
 # macOS ever changes its /bin/sh then we should still be good.
 
-# This is written in an old-fashioned style with procedures and global variables. Please
-# don't write shell scripts this long if you can avoid it, and please don't use global
-# variables like this in any other language.
-
-
-. support/util.sh
-. support/format.sh
-. support/help.sh
+# This is written in an old-fashioned style with procedures and global variables,
+# because that's all we can do in a shell. Please don't write shell scripts this long if
+# you can avoid it, and please don't use global variables like this in any other
+# language.
 
 
 # When installing the framework into a conda environment, we install these conda
@@ -35,258 +31,18 @@ BAD_EXT_TESTS="${BAD_EXT_TESTS} TestHeatingWind::test_supernova_manual"
 BAD_EXT_TESTS="${BAD_EXT_TESTS} TestsForIssue123"
 
 
-# Detect any active Conda or venv environments
-#
-# This uses the following variables:
-#
-# CONDA_LIST - output of conda list, as set by the configure script, for improved
-#              performance.
-#
-# This sets the following variables only if an environment is detected:
-#
-# ENV_TYPE - either "virtualenv" or "conda"
-# ENV_NAME - name of the environment
-# ENV_LIBRARY_PATH - location of /lib directory
-#
-detect_environments() {
-    if [ "a${VIRTUAL_ENV}" != "a" ] ; then
-        ENV_TYPE="virtualenv"
-        ENV_NAME="${VIRTUAL_ENV}"
-    fi
-
-    if [ "a${CONDA_DEFAULT_ENV}" != "a" ] ; then
-        ENV_TYPE="conda"
-        ENV_NAME="${CONDA_DEFAULT_ENV}"
-    fi
-}
+# Extra pytest options for debugging
+PYTEST_OPTS=''
+# PYTEST_OPTS='-s -vvv --log-cli-level=debug'
 
 
-# Detect installed packages
-#
-# Finds installed packages, and checks that pip and wheel are installed, and if in a
-# Conda environment, that they were installed using conda and not pip.
-#
-# This uses the following variables:
-#
-# ENV_TYPE - see detect_environments()
-#
-# This sets the following variables:
-#
-# INSTALLED_PACKAGES - space-separated names of installed packages
-# HAVE_PYPI_PIP - if pip is installed from PyPI in a conda environment
-# HAVE_PYPI_WHEEL - if wheel is installed from PyPI in a conda environment
-# HAVE_PIP - if pip is installed correctly for the current environment
-# HAVE_WHEEL - if wheel is installed correctly for the current environment
-#
-detect_installed_packages() {
-    if [ "a${ENV_TYPE}" = "avirtualenv" ] ; then
-        INSTALLED_PACKAGES="$(python -m pip list | tail -n +3 | cut -d ' ' -f 1)"
-        HAVE_PIP=$(python -m pip list | grep '^pip')
-        HAVE_WHEEL=$(python -m pip list | grep '^wheel')
-    fi
-
-    if [ "a${ENV_TYPE}" = "aconda" ] ; then
-        INSTALLED_PACKAGES="$(echo "${CONDA_LIST}" | tr '^' '\n' | grep -v '^#.*' | cut -d ' ' -f 1)"
-
-        HAVE_PYPI_PIP=$(echo "${CONDA_LIST}" | tr '^' '\n' | grep pypi | grep '^pip')
-        HAVE_PYPI_WHEEL=$(echo "${CONDA_LIST}" | tr '^' '\n' | grep pypi | grep '^wheel')
-
-        HAVE_PIP=$(echo "${CONDA_LIST}" | tr '^' '\n' | grep -v pypi | grep '^pip')
-        HAVE_WHEEL=$(echo "${CONDA_LIST}" | tr '^' '\n' | grep -v pypi | grep '^wheel')
-    fi
-}
-
-
-# Create a three-character prefix showing whether a package is installed or not.
-#
-is_installed() {
-    if is_subset "$1" "${INSTALLED_PACKAGES}" ; then
-        printf 'i) '
-    else
-        printf '   '
-    fi
-}
-
-
-# Determine if we have the required features to build the framework
-#
-# This uses the following variables:
-#
-# FEATURES - from configure
-#
-# This sets the following variables:
-#
-# ENABLED_PACKAGES - adds amuse-framework if all requirements are met
-# ENABLED_PACKAGES_TEXT - adds amuse-framework if all requirements are met
-# DISABLED_PACKAGES - adds amuse-framework if features are missing
-# DISABLED_PACKAGES_TEXT - adds amuse-framework if features are missing
-#
-check_build_framework() {
-    missing_features=$(filter_out "${FEATURES}" "c c++ fortran python python-dev install mpi")
-
-    if [ "a${missing_features}" = "a" ] ; then
-        installed="$(is_installed amuse-framework)"
-        ENABLED_PACKAGES="${ENABLED_PACKAGES}amuse-framework "
-        ENABLED_PACKAGES_TEXT="${ENABLED_PACKAGES_TEXT}${installed}amuse-framework\n"
-    else
-        DISABLED_PACKAGES="${DISABLED_PACKAGES}amuse-framework "
-        DISABLED_PACKAGES_TEXT="${DISABLED_PACKAGES_TEXT}amuse-framework (missing features:${COLOR_RED}${missing_features}${COLOR_END})\n"
-    fi
-}
-
-
-# Determine if we have the required features to build Sapporo Light
-#
-# This uses the following variables:
-#
-# FEATURES - from configure
-#
-# This sets the following variables:
-#
-# ENABLED_PACKAGES - adds sapporo_light if all requirements are met
-# ENABLED_PACKAGES_TEXT - adds sapporo_light if all requirements are met
-# DISABLED_PACKAGES - adds sapporo_light if features are missing
-# DISABLED_PACKAGES_TEXT - adds sapporo_light if features are missing
-#
-check_build_sapporo_light() {
-    missing_features=$(filter_out "${FEATURES}" "c c++ install cuda")
-    if [ "a${missing_features}" = "a" ] ; then
-        installed="$(is_installed sapporo_light)"
-        ENABLED_PACKAGES="${ENABLED_PACKAGES}sapporo_light "
-        ENABLED_PACKAGES_TEXT="${ENABLED_PACKAGES_TEXT}${installed}sapporo_light\n"
-    else
-        DISABLED_PACKAGES="${DISABLED_PACKAGES}sapporo_light "
-        DISABLED_PACKAGES_TEXT="${DISABLED_PACKAGES_TEXT}sapporo_light (missing features:${COLOR_RED}${missing_features}${COLOR_END})\n"
-    fi
-}
-
-
-# Check which packages can be built with the available dependencies
-#
-# This uses the following variables:
-#
-# FEATURES - from configure
-#
-# This sets the following variables:
-#
-# ENABLED_PACKAGES - adds packages for which all requirements are met
-# ENABLED_PACKAGES_TEXT - adds packages for which all requirements are met
-# DISABLED_PACKAGES - adds packages for which features are missing
-# DISABLED_PACKAGES_TEXT - adds packages for which features are missing
-#
-find_packages() {
-    for code in src/amuse/community/* ; do
-        for dep_file in "${code}"/packages/*.amuse_deps ; do
-            # If no file matches, the loop will still run with the pattern as dep_file
-            if [ ! -f "$dep_file" ] ; then
-                continue
-            fi
-            package=$(basename "${dep_file}" .amuse_deps)
-            deps=$(cat "${dep_file}")
-            missing_features=$(filter_out "${FEATURES}" "${deps}")
-
-            if [ "a${missing_features}" = "a" ] ; then
-                installed="$(is_installed ${package})"
-                ENABLED_PACKAGES="${ENABLED_PACKAGES}${package} "
-                ENABLED_PACKAGES_TEXT="${ENABLED_PACKAGES_TEXT}${installed}${package}\n"
-            else
-                DISABLED_PACKAGES="${DISABLED_PACKAGES}${package} "
-                DISABLED_PACKAGES_TEXT="${DISABLED_PACKAGES_TEXT}${package} (missing features:${COLOR_RED}${missing_features}${COLOR_END})\n"
-            fi
-        done
-    done
-}
-
-
-# Normalise a package name
-#
-# We allow the user to omit the amuse- prefix when referring to a package by name.
-# This function adds it back on if it's been omitted.
-#
-# Args:
-#   package: The given package name
-#
-# Returns:
-#   The name prefixed with amuse- if it wasn't already
-#
-normalise_package_name() {
-    package="$1"
-
-    if [ "a${package#amuse-}" = "a${package}" ] ; then
-        package="amuse-${package}"
-    fi
-    printf '%s' "${package}"
-}
-
-
-# Announce that we're going to do something
-#
-# This is a counterpart to handle_result() below
-#
-# Args:
-#    cmd: Command that we're executing
-#    target: Affected package
-#
-announce_activity() {
-    cmd="$1"
-    package="$2"
-
-    printf '\n'
-    if [ "a${cmd}" = "aclean" ] || [ "a${cmd}" = "adistclean" ] ; then
-        printf '%b\n' "${COLOR_CYAN}Cleaning ${package}...${COLOR_END}"
-    elif [ "a${cmd}" = "ainstall" ] ; then
-        printf '%b\n' "${COLOR_CYAN}Building and installing ${package}...${COLOR_END}"
-    elif [ "a${cmd}" = "adevelop" ] ; then
-        printf '%b\n' "${COLOR_CYAN}Building and develop-installing ${package}...${COLOR_END}"
-    elif [ "a${cmd}" = "atest" ] ; then
-        printf '%b\n' "${COLOR_CYAN}Testing ${package}...${COLOR_END}"
-    fi
-    printf '\n'
-}
-
-
-# Handle the result of an installation or test step
-#
-# These are never supposed to fail if you install from an official distribution, but of
-# course nothing is perfect. So we need to handle any errors gracefully.
-#
-# Args:
-#   exit_code: Exit code of the process
-#   command: What we did, e.g. install or test
-#   package: The package we did it to
-#   log_file: Location of the log file
-#   brief: If set to "brief", print only a short error, otherwise the full message.
-#
-handle_result() {
-    exit_code=$1
-    cmd=$2
-    package=$3
-    log_file="$4"
-
-    if [ "a${exit_code}" = "a0" ] ; then
-        if [ "a${cmd}" = "ainstall" ] || [ "a${cmd}" = "adevelop" ] ; then
-            printf '\n%b\n' "${COLOR_GREEN}Package ${package} was installed successfully.${COLOR_END}"
-        elif [ "a${cmd}" = "atest" ] ; then
-            printf '\n%b\n' "${COLOR_GREEN}Package ${package} passed its tests.${COLOR_END}"
-        fi
-    else
-        if [ "a${cmd}" = "ainstall" ] || [ "a${cmd}" = "adevelop" ] ; then
-            if [ "a${brief}" = "abrief" ] ; then
-                printf '\n%b\n' "${COLOR_RED}Package ${package} failed to install correctly.${COLOR_END}"
-            else
-                print_install_failure "${package}" "${log_file}"
-            fi
-        elif [ "a${cmd}" = "atest" ] ; then
-            if [ "a${brief}" = "abrief" ] ; then
-                printf '\n%b\n' "${COLOR_RED}Package ${package} failed its tests.${COLOR_END}"
-            else
-                print_test_failure "${package}" "${log_file}"
-            fi
-        fi
-    fi
-
-    return "${exit_code}"
-}
+. support/setup/util.sh
+. support/setup/log.sh
+. support/setup/format.sh
+. support/setup/help.sh
+. support/setup/environment.sh
+. support/setup/installing.sh
+. support/setup/testing.sh
 
 
 # Show the current configuration
@@ -328,400 +84,6 @@ configure() {
 
     if [ "${can_install}" = "yes" ] ; then
         print_install_amuse_step
-    fi
-}
-
-
-# Check Sapporo Light
-#
-check_sapporo_light() {
-    if ! is_subset sapporo_light "${ENABLED_PACKAGES}" ; then
-        printf '%s\n' 'Sapporo light cannot be installed because tools or dependencies are missing.'
-        printf '%s\n' 'Please run ./setup and follow the instructions to enable it.'
-        exit 1
-    fi
-}
-
-
-# Install Sapporo Light
-#
-install_sapporo_light() {
-    check_sapporo_light
-
-    announce_activity install sapporo_light
-
-    make -C lib/sapporo_light distclean
-
-    ec_file="$(exit_code_file install sapporo_light)"
-    log_file="$(log_file install sapporo_light)"
-
-    (make -C lib install-sapporo_light ; echo $? >"${ec_file}") 2>&1 | tee "${log_file}"
-
-    handle_result $(cat "$ec_file") install sapporo_light "${log_file}"
-}
-
-
-# Check that the AMUSE framework can be installed and error out if not
-#
-check_framework() {
-    if ! is_subset amuse-framework "${ENABLED_PACKAGES}" ; then
-        printf '%s\n' 'The AMUSE framework cannot be installed because tools or dependencies are missing.'
-        printf '%s\n' 'Please run ./setup and follow the instructions to enable it.'
-        exit 1
-    fi
-}
-
-
-# Install the AMUSE framework
-#
-install_framework() {
-    check_framework
-    support/shared/uninstall.sh amuse-framework
-
-    announce_activity install amuse-framework
-
-    # if we're in a conda env, install the dependecies using conda first rather than
-    # leaving it to pip.
-    if [ "a${ENV_TYPE}" = "aconda" ] ; then
-        to_install=''
-        for name_ver in ${FRAMEWORK_CONDA_DEPS}  ; do
-            name=$(echo "${name_ver}" | sed -e "s/'\([a-zA-Z0-9_-]*\).*/\1/")
-            if ! is_subset "$name" "${INSTALLED_PACKAGES}" ; then
-                to_install="${to_install} ${name_ver}"
-            fi
-        done
-        if [ -n "${to_install}" ] ; then
-            conda install -y ${to_install}
-        fi
-    fi
-
-    ec_file="$(exit_code_file install amuse-framework)"
-    log_file="$(log_file install amuse-framework)"
-
-    (
-        make -C lib distclean && \
-        make -C lib install && \
-        cd src && pip --no-cache-dir --debug install .
-
-        echo $? >"../${ec_file}"
-    ) 2>&1 | tee "${log_file}"
-
-    handle_result $(cat "$ec_file") install amuse-framework "${log_file}"
-}
-
-
-# Install the AMUSE framework in develop mode
-#
-develop_framework() {
-    check_framework
-    support/shared/uninstall.sh amuse-framework
-
-    announce_activity develop amuse-framework
-
-    ec_file="$(exit_code_file install amuse-framework)"
-    log_file="$(log_file install amuse-framework)"
-
-    (
-        make -C lib distclean && \
-        make -C lib install && \
-        cd src && pip -e install .
-
-        echo $? >"../${ec_file}"
-    ) 2>&1 | tee "${log_file}"
-
-    handle_result $(cat "$ec_file") install amuse-framework "${log_file}"
-}
-
-
-# Install the AMUSE framework into a packager's build environment
-#
-# This is set up for building Conda packages, using their recommended pip options.
-#
-package_framework() {
-    check_framework
-    make -C lib distclean
-    make -C lib install
-    (cd src && python3 -m pip install -vv --no-cache-dir --no-deps --no-build-isolation --prefix "${PREFIX}" .)
-}
-
-
-# Extra pytest options for debugging
-PYTEST_OPTS=''
-# PYTEST_OPTS='-s -vvv --log-cli-level=debug'
-
-# Check that pytest is available and error out of not
-#
-ensure_pytest() {
-    if [ "a${PYTEST}" = "a" ] ; then
-        printf '\n%b\n' "To run the tests pytest is required, but it is not installed."
-        if [ "a${ENV_TYPE}" = "a" ] ; then
-            printf '%s\n\n' "Please activate a conda environment or virtual environment first."
-        elif [ "a${ENV_TYPE}" = "aconda" ] ; then
-            printf '\n%s\n' "Please use"
-            printf '\n    %b\n' "conda install pytest"
-            printf '\n%s\n\n' "to install pytest, then try again."
-        else
-            printf '\n%s\n' "Please use"
-            printf '\n    %b\n' "pip install pytest"
-            printf '\n%s\n\n' "to install pytest, then try again."
-        fi
-        exit 1
-    fi
-}
-
-
-# Run tests for the AMUSE framework
-#
-test_framework() {
-    announce_activity test amuse-framework
-
-    ec_file="$(exit_code_file test amuse-framework)"
-    log_file="$(log_file test amuse-framework)"
-
-    (
-        make -C src/tests all && \
-        # Tests for amuse.distributed won't be fixed as it is to be removed, disabled.
-        cd src/tests && pytest --pyargs core_tests compile_tests ${PYTEST_OPTS} -k 'not TestCDistributedImplementationInterface and not TestAsyncDistributed'
-
-        echo $? >"../${ec_file}"
-    ) 2>&1 | tee "${log_file}"
-
-    handle_result $(cat "$ec_file") test amuse-framework "${log_file}"
-}
-
-
-# Run tests for the AMUSE ext scripts
-#
-# Note that these require some of the codes to be installed, as they're mostly scenario
-# tests that exercise coupled simulations.
-#
-test_amuse_ext() {
-    announce_activity test amuse-ext
-
-    bad_ext_tests=''
-    sep=''
-    for bad_test in ${BAD_EXT_TESTS} ; do
-        # PyTest doesn't match Class::test_name directly
-        bad_test_pt=$(echo "${bad_test}" | sed -e 's/\(.*\)::\(.*\)/(\1 and \2)/')
-        bad_ext_tests="${bad_ext_tests}${sep} not ${bad_test_pt}"
-        sep=' and'
-    done
-
-    ec_file="$(exit_code_file test amuse-framework)"
-    log_file="$(log_file test amuse-framework)"
-
-    (
-        cd src/tests && pytest --pyargs ext_tests ticket_tests ${PYTEST_OPTS}  -k "${bad_ext_tests}"
-
-        echo $? >"${ec_file}"
-    ) 2>&1 | tee "${log_file}"
-
-    handle_result $(cat "$ec_file") test amuse-ext "${log_file}"
-
-    printf "\n%s\n" "The following tests were disabled because they currently fail:"
-    printf "\n%b\n\n" "${COLOR_RED}${BAD_EXT_TESTS}${COLOR_END}"
-    printf "%s\n\n" "This issue is tracked at https://github.com/amusecode/amuse/issues/1103"
-}
-
-
-# Check whether the basic conditions for installing things are met
-#
-# This checks for an environment with pip and wheel, and quits with an error if they're
-# not available.
-#
-# Args:
-#   target: Target the user wants to install
-#
-check_install() {
-    target="$1"
-
-    if [ "a${ENV_TYPE}" = "a" ] ; then
-        printf '\n%s\n\n' "Cannot install ${target}, because there is no active environment."
-        print_environment_step
-        exit 1
-    elif [ "a${HAVE_PIP}" = "a" ] || [ "a${HAVE_WHEEL}" = "a" ] ; then
-        printf '\n%s\n\n' "Cannot install ${target}, because pip and/or wheel are not available."
-        print_pip_wheel_step
-        exit 1
-    fi
-}
-
-
-# Check whether a package can be installed and error out if not
-#
-check_package() {
-    package="$1"
-
-    if is_subset "${package}" "${DISABLED_PACKAGES}" ; then
-        printf '\n%s\n' "Package ${package} cannot be installed because tools or dependencies are missing."
-        printf '%s\n\n' 'Please run ./setup and follow the instructions to enable it.'
-        exit 1
-    fi
-
-    code_dir=$(code_directory "${package}")
-
-    if [ ! -f "${code_dir}/packages/${package}.amuse_deps" ] ; then
-        printf '\n%s\n' "Package ${package} was not found."
-        printf '%s\n\n' 'Please run ./setup to show enabled packages.'
-        exit 1
-    fi
-}
-
-
-# Check whether a package is installed and can therefore be tested
-#
-# If not, print an error message and quit.
-#
-check_package_installed_for_test() {
-    package="$1"
-
-    if ! is_subset "${package}" "${INSTALLED_PACKAGES}" ; then
-        printf '\n%s\n' "Package ${package} is not installed, so we cannot test it."
-        printf '\n%s\n' "Please install the package first using ./setup install ${package}, then try again."
-        exit 1
-    fi
-}
-
-
-# Forward a command to a package's build system
-#
-# Args:
-#   cmd: The command to forward, e.g. package, test, clean, distclean
-#   package: The name of the package to forward to
-#   brief: If set to "brief", print only a brief error rather than the full one
-#
-# Returns:
-#   The exit code from the build system
-#
-forward_to_package() {
-    cmd="$1"
-    package="$2"
-    brief="$3"
-
-    announce_activity ${cmd} ${package}
-
-    code_dir=$(code_directory "${package}")
-
-    ec_file="$(exit_code_file ${cmd} ${package})"
-    log_file="$(log_file ${cmd} ${package})"
-
-    if [ "a${cmd}" = "aclean" ] || [ "a${cmd}" = "adistclean" ] ; then
-        maketarget="${cmd}"
-    else
-        maketarget="${cmd}-${package}"
-    fi
-
-    (make -C "${code_dir}" "${maketarget}" ; echo "$?" >${ec_file}) 2>&1 | tee ${log_file}
-
-    handle_result $(cat "$ec_file") "${cmd}" "${package}" "${log_file}" "${brief}"
-    return $(cat "${ec_file}")
-}
-
-
-# Install a package
-#
-# This calls the package's build system to install it.
-#
-# If amuse-framework is not installed, then we install the framework first. Before
-# installing, make distclean is run to improve reliability. If you want to take your
-# chances with an incremental build and the native build system, cd into the package
-# directory and call make directly.
-#
-# Args:
-#    cmd: The type of installation, install or develop
-#    package: The name of the package to install
-#    brief: If set to "brief", print only a brief result, otherwise, print a full error.
-#
-install_package() {
-    cmd="$1"
-    package="$2"
-    brief="$3"
-
-    check_package "${package}"
-
-    if ! is_subset "amuse-framework" "${INSTALLED_PACKAGES}" ; then
-        save_package="${package}"
-        install_framework
-        package="${save_package}"
-    fi
-
-    save_cmd="${cmd}"
-    forward_to_package "distclean" "${package}" "${brief}"
-    cmd="${save_cmd}"
-
-    forward_to_package "${cmd}" "${package}" "${brief}"
-    return $?
-}
-
-
-# Install the framework and all enabled packages
-#
-install_all() {
-    install_framework || exit 1
-
-    FAILED_BUILDS=''
-    if is_subset sapporo_light "${ENABLED_PACKAGES}" ; then
-        if ! install_sapporo_light ; then
-            FAILED_BUILDS="${FAILED_BUILDS}\nsapporo_light"
-        fi
-    fi
-
-    for package in ${ENABLED_PACKAGES} ; do
-        if ! is_subset "${package}" "amuse-framework sapporo_light" ; then
-            install_package install "${package}" brief
-            if [ $? != '0' ] ; then
-                FAILED_BUILDS="${FAILED_BUILDS}\n${package}"
-            fi
-        fi
-    done
-
-    printf '\n%b\n' "${COLOR_CYAN}*** Build results ***${COLOR_END}"
-    if [ "a${FAILED_BUILDS}" != "a" ] ; then
-        printf '\nThe following packages failed to build:\n'
-        printf '%b\n\n' "${COLOR_RED}${FAILED_BUILDS}${COLOR_END}"
-        print_getting_help
-        printf '\n%s\n' 'Output was saved to support/logs/.'
-    else
-        printf '\n%b\n\n' "${COLOR_GREEN}All packages were installed successfully${COLOR_END}"
-    fi
-}
-
-
-# Run tests for the framework and all installed packages
-#
-test_all() {
-    FAILED_TESTS=''
-    if is_subset amuse_framework "${INSTALLED_PACKAGES}" ; then
-        if ! test_framework ; then
-            FAILED_TESTS="${FAILED_TESTS}\namuse-framework"
-        fi
-
-        if ! test_amuse_ext ; then
-            FAILED_TESTS="${FAILED_TESTS}\namuse-ext"
-        fi
-    fi
-
-    # sapporo_light does not have tests
-
-    for package in ${INSTALLED_PACKAGES} ; do
-        if ! is_subset "${package}" "amuse-framework sapporo_light" ; then
-            code_dir=$(code_directory "${package}")
-            if [ -f "${code_dir}/packages/${package}.amuse_deps" ] ; then
-                forward_to_package test "${package}" brief
-                if [ $? != '0' ] ; then
-                    FAILED_TESTS="${FAILED_TESTS}\n${package}"
-                fi
-            fi
-        fi
-    done
-
-    printf '\n%b\n' "${COLOR_CYAN}*** Test results ***${COLOR_END}"
-    if [ "a${FAILED_TESTS}" != "a" ] ; then
-        printf '\nThe following packages failed their tests:\n'
-        printf '%b\n\n' "${COLOR_RED}${FAILED_TESTS}${COLOR_END}"
-        print_getting_help
-    else
-        printf '\n%b\n\n' "${COLOR_GREEN}All installed packages completed their tests successfully${COLOR_END}"
     fi
 }
 
@@ -856,16 +218,16 @@ distclean() {
 
 ### Main script ###
 
-cmd="$1"
-target="$2"
+CMD="$1"
+TARGET="$2"
 
-case ${cmd} in
+case ${CMD} in
     clean )
-        clean "$target"
+        clean "$TARGET"
         exit 0
         ;;
     distclean )
-        distclean "$target"
+        distclean "$TARGET"
         exit 0
         ;;
     help )
@@ -873,7 +235,7 @@ case ${cmd} in
         exit 0
         ;;
     "" )
-        cmd="configure"
+        CMD="configure"
         ;;
 esac
 
@@ -889,30 +251,26 @@ fi
 
 . support/configuration.sh
 
-detect_environments
-detect_installed_packages
-check_build_framework
-check_build_sapporo_light
-find_packages
+analyse_environment
 
-case ${cmd} in
+case ${CMD} in
     configure | "" )
         configure
         ;;
     install )
-        install "${target}"
+        install "${TARGET}"
         ;;
     test )
-        run_test "${target}"
+        run_test "${TARGET}"
         ;;
     develop )
-        develop "${target}"
+        develop "${TARGET}"
         ;;
     package )
-        package "${target}"
+        package "${TARGET}"
         ;;
     * )
-        print_help "${cmd}"
+        print_help "${CMD}"
         ;;
 esac
 

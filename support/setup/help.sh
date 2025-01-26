@@ -1,6 +1,6 @@
-. support/format.sh
-. support/util.sh
-. support/dependencies.sh
+. support/setup/format.sh
+. support/setup/util.sh
+. support/setup/dependencies.sh
 
 
 print_help() {

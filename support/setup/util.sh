@@ -82,37 +82,58 @@ code_directory() {
 }
 
 
-# Print the base name for the log and exit code files
+# Normalise a package name
 #
-log_file_base() {
-    printf '%s' "support/logs/${1}-${2}"
-}
-
-
-# Print the relative path to the exit code file for a command and target
-#
-# We show output on the terminal when installing and testing, but we also send it to a
-# file so that when something goes wrong, there's something for people to send us when
-# they ask for help. We also need to send the exit code to a file, otherwise we lose it
-# because of the pipe to tee and we need it to see if the operation was successful. So
-# this points to the file we'll use for that.
+# We allow the user to omit the amuse- prefix when referring to a package by name.
+# This function adds it back on if it's been omitted.
 #
 # Args:
-#   command: The command that's being executed
-#   package: The package the command is being executed for
+#   package: The given package name
 #
-exit_code_file() {
-    name="$(log_file_base $1 $2)"
-    printf '%s' "${name}.exit_code"
+# Returns:
+#   The name prefixed with amuse- if it wasn't already
+#
+normalise_package_name() {
+    package="$1"
+
+    if [ "a${package#amuse-}" = "a${package}" ] ; then
+        package="amuse-${package}"
+    fi
+    printf '%s' "${package}"
 }
 
 
-# Print the relative path to the log file for a command and target.
+# Forward a command to a package's build system
 #
-# See exit_code_file() above, this is the location for the log output.
+# Args:
+#   cmd: The command to forward, e.g. package, test, clean, distclean
+#   package: The name of the package to forward to
+#   brief: If set to "brief", print only a brief error rather than the full one
 #
-log_file() {
-    name="$(log_file_base $1 $2)"
-    printf '%s' "${name}.log"
+# Returns:
+#   The exit code from the build system
+#
+forward_to_package() {
+    cmd="$1"
+    package="$2"
+    brief="$3"
+
+    announce_activity ${cmd} ${package}
+
+    code_dir=$(code_directory "${package}")
+
+    ec_file="$(exit_code_file ${cmd} ${package})"
+    log_file="$(log_file ${cmd} ${package})"
+
+    if [ "a${cmd}" = "aclean" ] || [ "a${cmd}" = "adistclean" ] ; then
+        maketarget="${cmd}"
+    else
+        maketarget="${cmd}-${package}"
+    fi
+
+    (make -C "${code_dir}" "${maketarget}" ; echo "$?" >${ec_file}) 2>&1 | tee ${log_file}
+
+    handle_result $(cat "$ec_file") "${cmd}" "${package}" "${log_file}" "${brief}"
+    return $(cat "${ec_file}")
 }
 
