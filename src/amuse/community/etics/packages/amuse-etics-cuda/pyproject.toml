@@ -1,5 +1,5 @@
 [project]
-name = "amuse-etics"
+name = "amuse-etics-cuda"
 dynamic = ["version"]
 requires-python = ">=3.7"
 dependencies = [
@@ -32,7 +32,7 @@ exclude = [
     "etics/src",
     "etics/tests"
     ]
-artifacts = ["etics/etics_worker"]
+artifacts = ["etics/etics_cuda_worker"]
 
 [tool.hatch.build.targets.wheel.sources]
 "etics" = "amuse/community/etics"
