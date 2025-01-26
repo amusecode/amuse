@@ -98,7 +98,12 @@ install_framework() {
         echo $? >"../${ec_file}"
     ) 2>&1 | tee "${log_file}"
 
-    handle_result $(cat "$ec_file") install amuse-framework "${log_file}"
+    result=$(cat "${ec_file}")
+    if [ "a${result}" = "a0" ] ; then
+        INSTALLED_PACKAGES="${INSTALLED_PACKAGES} amuse-framework"
+    fi
+
+    handle_result "${result}" install amuse-framework "${log_file}"
 }
 
 
