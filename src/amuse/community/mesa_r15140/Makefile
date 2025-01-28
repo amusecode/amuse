@@ -216,11 +216,11 @@ clean_local:
 clean: clean_local
 	$(MAKE) -C src/LAPACK95/SRC clean
 	$(MAKE) -C src/crmath-1.2 clean
-	$(MAKE) -C src/crlibm-1.0beta4 clean
+	-$(MAKE) -C src/crlibm-1.0beta4 clean
 	rm -f src/bin/*
 	cd src/mesa-$(MESA_VERSION) && ./clean
 
 .PHONY: distclean
-distclean: clean_local
+distclean: clean
 	rm -f support/config.mk support/config.log support/config.status
 	rm -rf support/autom4te.cache
