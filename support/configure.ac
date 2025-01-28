@@ -21,7 +21,7 @@ then
     # we assume that the conda metadata is correct, and that if it isn't there's
     # an expert packager who can fix things.
     AS_ECHO(["Conda package build detected, skipping checks for dependencies."])
-    ASSUME_FEATURES="c c++ fortran java python tar unzip gunzip bunzip2 unxz perl cmake install download mpi openmp cuda opencl blas lapack gsl gmp mpfr fftw hdf5 netcdf4 sapporo_light"
+    ASSUME_FEATURES="c c++ fortran java python tar unzip gunzip bunzip2 unxz perl gmake cmake install download mpi openmp cuda opencl blas lapack gsl gmp mpfr fftw hdf5 netcdf4 sapporo_light"
 
 else
     if test "x" != "x$CONDA_DEFAULT_ENV"
@@ -61,6 +61,8 @@ else
         AC_CHECK_TOOL(UNXZ, unxz)
         AC_CHECK_TOOL(PERL, perl)
 
+        # GMAKE is exported and used by setup, it needs to point to the command
+        AMUSE_CONDA_PACKAGE(GMAKE, make, make)
         AMUSE_CONDA_PACKAGE(CMAKE, cmake)
 
         AMUSE_CONDA_PACKAGE(HAVE_MPI, mpi)
@@ -121,6 +123,7 @@ else
         AC_CHECK_TOOL(UNXZ, unxz)
         AC_CHECK_TOOL(PERL5, perl)
 
+        AX_CHECK_GNU_MAKE([GMAKE=$ax_cv_gnu_make_command])
         AC_CHECK_TOOL(CMAKE, cmake)
 
         if test "x" != "x$CC"
@@ -181,6 +184,7 @@ ENABLE_FEATURE_IF_DEFINED([fortran], [FC])
 ENABLE_FEATURE_IF_DEFINED([java], [JAVAC])
 ENABLE_FEATURE_IF_DEFINED([python], [PYTHON])
 ENABLE_FEATURE_IF_DEFINED([python-dev], [PYTHON_DEV])
+ENABLE_FEATURE_IF_DEFINED([gmake], [GMAKE])
 ENABLE_FEATURE_IF_DEFINED([cmake], [CMAKE])
 ENABLE_FEATURE_IF_DEFINED([install], [INSTALL])
 ENABLE_FEATURE_IF_DEFINED([download], [DOWNLOAD])
@@ -205,6 +209,7 @@ ENABLE_FEATURE_IF_DEFINED([hdf5], [with_hdf5])
 ENABLE_FEATURE_IF_EQUALS([netcdf4], [FOUND_NETCDF], [yes])
 ENABLE_FEATURE_IF_EQUALS([sapporo_light], [FOUND_SAPPORO_LIGHT], [yes])
 
+AC_SUBST(GMAKE)
 AC_SUBST(PYTEST)
 
 AC_SUBST(APT)

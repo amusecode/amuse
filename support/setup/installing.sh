@@ -91,8 +91,8 @@ install_framework() {
     log_file="$(log_file install amuse-framework)"
 
     (
-        make -C lib distclean && \
-        make -C lib install && \
+        ${GMAKE} -C lib distclean && \
+        ${GMAKE} -C lib install && \
         cd src && pip --no-cache-dir --debug install .
 
         echo $? >"../${ec_file}"
@@ -114,12 +114,12 @@ install_sapporo_light() {
 
     announce_activity install sapporo_light
 
-    make -C lib/sapporo_light distclean
+    ${GMAKE} -C lib/sapporo_light distclean
 
     ec_file="$(exit_code_file install sapporo_light)"
     log_file="$(log_file install sapporo_light)"
 
-    (make -C lib install-sapporo_light ; echo $? >"${ec_file}") 2>&1 | tee "${log_file}"
+    (${GMAKE} -C lib install-sapporo_light ; echo $? >"${ec_file}") 2>&1 | tee "${log_file}"
 
     handle_result $(cat "$ec_file") install sapporo_light "${log_file}"
 }
@@ -137,8 +137,8 @@ develop_framework() {
     log_file="$(log_file install amuse-framework)"
 
     (
-        make -C lib distclean && \
-        make -C lib install && \
+        ${GMAKE} -C lib distclean && \
+        ${GMAKE} -C lib install && \
         cd src && pip -e install .
 
         echo $? >"../${ec_file}"
@@ -154,8 +154,8 @@ develop_framework() {
 #
 package_framework() {
     check_framework
-    make -C lib distclean
-    make -C lib install
+    ${GMAKE} -C lib distclean
+    ${GMAKE} -C lib install
     (cd src && python3 -m pip install -vv --no-cache-dir --no-deps --no-build-isolation --prefix "${PREFIX}" .)
 }
 

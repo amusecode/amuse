@@ -44,7 +44,7 @@ test_framework() {
     log_file="$(log_file test amuse-framework)"
 
     (
-        make -C src/tests all && \
+        ${GMAKE} -C src/tests all && \
         # Tests for amuse.distributed won't be fixed as it is to be removed, disabled.
         cd src/tests && pytest --pyargs core_tests compile_tests ${PYTEST_OPTS} -k 'not TestCDistributedImplementationInterface and not TestAsyncDistributed'
 

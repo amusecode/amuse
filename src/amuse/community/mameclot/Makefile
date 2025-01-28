@@ -17,7 +17,7 @@ CFLAGS += $(CUDA_FLAGS)
 LDFLAGS += $(CUDA_LDFLAGS)
 
 mameclot_worker:
-	make -C src -j $(CPU_COUNT) CC="$(CC)" CFLAGS="$(CFLAGS)" LDFLAGS="$(LDFLAGS)"
+	$(MAKE) -C src -j $(CPU_COUNT) CC="$(CC)" CFLAGS="$(CFLAGS)" LDFLAGS="$(LDFLAGS)"
 	cp src/mameclot mameclot_worker
 
 

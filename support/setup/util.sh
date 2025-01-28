@@ -165,7 +165,7 @@ forward_to_package() {
         maketarget="${cmd}-${package}"
     fi
 
-    (make -C "${code_dir}" "${maketarget}" ; echo "$?" >${ec_file}) 2>&1 | tee ${log_file}
+    (${GMAKE} -C "${code_dir}" "${maketarget}" ; echo "$?" >${ec_file}) 2>&1 | tee ${log_file}
 
     handle_result $(cat "$ec_file") "${cmd}" "${package}" "${log_file}" "${brief}"
     return $(cat "${ec_file}")

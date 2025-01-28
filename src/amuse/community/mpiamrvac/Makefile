@@ -50,7 +50,7 @@ build%: | src/mpiamrvac
 	cd build$* && ./setamrvac $(AMRVAC_OPTS$*)
 
 build%/$(CODELIB): FORCE | build%
-	make -C build$* amrvac $(CODELIB) F90FLAGS="$(FCFLAGS)" F90="$(MPIFC)"
+	$(MAKE) -C build$* amrvac $(CODELIB) F90FLAGS="$(FCFLAGS)" F90="$(MPIFC)"
 
 
 

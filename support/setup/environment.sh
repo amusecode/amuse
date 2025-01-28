@@ -153,6 +153,7 @@ find_packages() {
             fi
             package=$(basename "${dep_file}" .amuse_deps)
             deps=$(cat "${dep_file}")
+            deps="gmake ${deps}"
             missing_features=$(filter_out "${FEATURES}" "${deps}")
 
             if [ "a${missing_features}" = "a" ] ; then

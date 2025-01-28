@@ -708,6 +708,7 @@ ac_header_c_list=
 ac_subst_vars='LTLIBOBJS
 LIBOBJS
 FEATURES
+GMAKE
 FOUND_SAPPORO_LIGHT
 SAPPORO_LIGHT_LIBS
 SAPPORO_LIGHT_CFLAGS
@@ -733,7 +734,6 @@ HDF5_VERSION
 H5FC
 H5CC
 GREP
-AWK
 SED
 FFTW_FLAGS
 FOUND_FFTW
@@ -779,6 +779,9 @@ CPPFLAGS
 LDFLAGS
 CFLAGS
 CMAKE
+ifnGNUmake
+ifGNUmake
+AWK
 PERL5
 HOMEBREW
 MACPORTS
@@ -2774,7 +2777,7 @@ then
     # we assume that the conda metadata is correct, and that if it isn't there's
     # an expert packager who can fix things.
     printf "%s\n" "Conda package build detected, skipping checks for dependencies."
-    ASSUME_FEATURES="c c++ fortran java python tar unzip gunzip bunzip2 unxz perl cmake install download mpi openmp cuda opencl blas lapack gsl gmp mpfr fftw hdf5 netcdf4 sapporo_light"
+    ASSUME_FEATURES="c c++ fortran java python tar unzip gunzip bunzip2 unxz perl gmake cmake install download mpi openmp cuda opencl blas lapack gsl gmp mpfr fftw hdf5 netcdf4 sapporo_light"
 
 else
     if test "x" != "x$CONDA_DEFAULT_ENV"
@@ -3949,6 +3952,28 @@ else
   PERL="$ac_cv_prog_PERL"
 fi
 
+
+        # GMAKE is exported and used by setup, it needs to point to the command
+
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for conda package make" >&5
+printf %s "checking for conda package make... " >&6; }
+    ax_conda_package_line="$(echo $amuse_conda_list | tr '^' '\n' | grep '^make ')"
+    if test "$?" = "0"
+then :
+
+        # GMAKE="$(AS_ECHO("$ax_conda_package_line") | tr -s ' ' | cut -f 2 -d ' ')"
+
+            GMAKE="make"
+
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
+
+else $as_nop
+
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+
+fi
 
 
     { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for conda package cmake" >&5
@@ -6434,6 +6459,99 @@ esac
 else
   PERL5="$ac_cv_prog_PERL5"
 fi
+
+
+          for ac_prog in gawk mawk nawk awk
+do
+  # Extract the first word of "$ac_prog", so it can be a program name with args.
+set dummy $ac_prog; ac_word=$2
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+printf %s "checking for $ac_word... " >&6; }
+if test ${ac_cv_prog_AWK+y}
+then :
+  printf %s "(cached) " >&6
+else $as_nop
+  if test -n "$AWK"; then
+  ac_cv_prog_AWK="$AWK" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  case $as_dir in #(((
+    '') as_dir=./ ;;
+    */) ;;
+    *) as_dir=$as_dir/ ;;
+  esac
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir$ac_word$ac_exec_ext"; then
+    ac_cv_prog_AWK="$ac_prog"
+    printf "%s\n" "$as_me:${as_lineno-$LINENO}: found $as_dir$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+fi
+fi
+AWK=$ac_cv_prog_AWK
+if test -n "$AWK"; then
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $AWK" >&5
+printf "%s\n" "$AWK" >&6; }
+else
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+fi
+
+
+  test -n "$AWK" && break
+done
+
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for GNU make" >&5
+printf %s "checking for GNU make... " >&6; }
+if test ${_cv_gnu_make_command+y}
+then :
+  printf %s "(cached) " >&6
+else $as_nop
+      _cv_gnu_make_command="" ;
+    for a in "$MAKE" make gmake gnumake ; do
+      if test -z "$a" ; then continue ; fi ;
+      if "$a" --version 2> /dev/null | grep GNU 2>&1 > /dev/null ; then
+        _cv_gnu_make_command=$a ;
+        AX_CHECK_GNU_MAKE_HEADLINE=$("$a" --version 2> /dev/null | grep "GNU Make")
+        ax_check_gnu_make_version=$(echo ${AX_CHECK_GNU_MAKE_HEADLINE} | ${AWK} -F " " '{ print $(NF); }')
+        break ;
+      fi
+    done ;
+fi
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $_cv_gnu_make_command" >&5
+printf "%s\n" "$_cv_gnu_make_command" >&6; }
+  if test "x$_cv_gnu_make_command" = x""
+then :
+  ifGNUmake="#"
+else $as_nop
+  ifGNUmake=""
+fi
+  if test "x$_cv_gnu_make_command" = x""
+then :
+  ifnGNUmake=""
+else $as_nop
+  ifnGNUmake="#"
+fi
+  if test "x$_cv_gnu_make_command" = x""
+then :
+  { ax_cv_gnu_make_command=; unset ax_cv_gnu_make_command;}
+else $as_nop
+  ax_cv_gnu_make_command=${_cv_gnu_make_command}
+fi
+  if test "x$_cv_gnu_make_command" = x""
+then :
+
+else $as_nop
+  GMAKE=$ax_cv_gnu_make_command
+fi
+
 
 
         if test -n "$ac_tool_prefix"; then
@@ -13041,53 +13159,6 @@ printf "%s\n" "$ac_cv_path_SED" >&6; }
  SED="$ac_cv_path_SED"
   rm -f conftest.sed
 
-for ac_prog in gawk mawk nawk awk
-do
-  # Extract the first word of "$ac_prog", so it can be a program name with args.
-set dummy $ac_prog; ac_word=$2
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
-printf %s "checking for $ac_word... " >&6; }
-if test ${ac_cv_prog_AWK+y}
-then :
-  printf %s "(cached) " >&6
-else $as_nop
-  if test -n "$AWK"; then
-  ac_cv_prog_AWK="$AWK" # Let the user override the test.
-else
-as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
-for as_dir in $PATH
-do
-  IFS=$as_save_IFS
-  case $as_dir in #(((
-    '') as_dir=./ ;;
-    */) ;;
-    *) as_dir=$as_dir/ ;;
-  esac
-    for ac_exec_ext in '' $ac_executable_extensions; do
-  if as_fn_executable_p "$as_dir$ac_word$ac_exec_ext"; then
-    ac_cv_prog_AWK="$ac_prog"
-    printf "%s\n" "$as_me:${as_lineno-$LINENO}: found $as_dir$ac_word$ac_exec_ext" >&5
-    break 2
-  fi
-done
-  done
-IFS=$as_save_IFS
-
-fi
-fi
-AWK=$ac_cv_prog_AWK
-if test -n "$AWK"; then
-  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $AWK" >&5
-printf "%s\n" "$AWK" >&6; }
-else
-  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
-printf "%s\n" "no" >&6; }
-fi
-
-
-  test -n "$AWK" && break
-done
-
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for grep that handles long lines and -e" >&5
 printf %s "checking for grep that handles long lines and -e... " >&6; }
 if test ${ac_cv_path_GREP+y}
@@ -14231,6 +14302,10 @@ if test "x" != "x${PYTHON_DEV}"
 then :
   FEATURES="${FEATURES} python-dev"
 fi
+if test "x" != "x${GMAKE}"
+then :
+  FEATURES="${FEATURES} gmake"
+fi
 if test "x" != "x${CMAKE}"
 then :
   FEATURES="${FEATURES} cmake"
@@ -14323,6 +14398,7 @@ if test "x${FOUND_SAPPORO_LIGHT}" = "xyes"
 then :
   FEATURES="${FEATURES} sapporo_light"
 fi
+
 
 
 

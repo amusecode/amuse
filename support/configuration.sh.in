@@ -1,3 +1,4 @@
+GMAKE="@GMAKE@"
 PYTEST="@PYTEST@"
 
 APT="@APT@"
