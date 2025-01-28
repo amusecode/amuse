@@ -2480,9 +2480,6 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 
 
-echo "STOPCOND_CFLAGS = ${STOPCOND_CFLAGS}"
-
-
 # Pick up Conda env or virtualenv
 
     if test "x$VIRTUAL_ENV" != x

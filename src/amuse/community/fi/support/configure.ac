@@ -4,9 +4,6 @@ AC_CONFIG_MACRO_DIRS([shared/m4])
 AC_INIT([amuse-fi], [1.0])
 
 
-echo "STOPCOND_CFLAGS = ${STOPCOND_CFLAGS}"
-
-
 # Pick up Conda env or virtualenv
 AMUSE_VENV()
 
