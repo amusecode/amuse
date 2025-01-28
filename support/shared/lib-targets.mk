@@ -59,7 +59,10 @@ $(DYNAMIC_LIB): $(OBJS)
 %.o: %.c
 	$(CC) $(CFLAGS) -c -o $@ $<
 
-%.o %.mod &: %.f90
+%.o: %.f90
+	$(FC) $(FCFLAGS) -c -o $*.o $<
+
+%.mod: %.f90
 	$(FC) $(FCFLAGS) -c -o $*.o $<
 
 $(PKG_CONFIG_FILE):
@@ -74,7 +77,7 @@ endif
 %.mo: %.c
 	$(MPICC) $(CFLAGS) $(CFLAGS_MPI) -c -o $@ $<
 
-%.mo %.mod &: %.f90
+%.mo: %.f90
 	$(MPIFC) $(FCFLAGS) $(CFLAGS_MPI) -c -o $*.mo $<
 
 $(PKG_CONFIG_FILE_MPI):

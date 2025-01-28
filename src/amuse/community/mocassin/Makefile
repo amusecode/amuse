@@ -43,7 +43,7 @@ MOD_FILES := $(patsubst %,src/mocassin/%.mod,$(MOD_NAMES))
 
 
 .PHONY: $(CODELIB)
-$(CODELIB) $(MOD_FILES): | src/mocassin
+$(CODELIB) $(MOD_FILES) &: | src/mocassin
 	$(MAKE) -C src/mocassin -j 1 all FFLAGS='$(FCFLAGS)'
 
 
