@@ -28,8 +28,7 @@ build_%:
 build_%/Makefile: | build_%
 	cd build_$* && ./configure $(CONFIGOPTS_$*)
 
-.PHONY: build_normal/$(CODELIB) build_selfgrav/$(CODELIB) build_mhd/$(CODELIB) build_scalar/$(CODELIB)
-build%/$(CODELIB): | build%/Makefile
+build%/$(CODELIB): FORCE | build%/Makefile
 	$(MAKE) -C build$* -j $(CPU_COUNT) all CC=$(MPICC) LDR=$(MPICC) OPT="$(CFLAGS)" FFTW_FLAGS="$(FFTW_FLAGS)" FFTW_LIBS="$(FFTW_LIBS)"
 
 
@@ -81,3 +80,6 @@ clean:
 distclean: clean
 	rm -f support/config.mk support/config.log support/config.status
 	rm -rf support/autom4te.cache
+
+# PHONY doesn't work with pattern rules, so we do it the old-fashioned way
+FORCE:

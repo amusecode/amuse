@@ -18,7 +18,6 @@ export FCFLAGS
 CODELIB = src/libaarsethzare.a
 
 
-.PHONY: $(CODELIB)
 $(CODELIB): src/*.f
 	$(MAKE) -C src all
 

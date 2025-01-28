@@ -18,7 +18,7 @@ FCFLAGS += $(DEPFLAGS) -fdefault-real-8 -ffree-line-length-256 -frecord-marker=4
 
 LDFLAGS +=
 
-LDLIBS += $(STOPCOND_LIBS) $(FORSOCKETS_LIBS) $(FFTW_LIBS)
+LDLIBS += $(STOPCOND_LIBS) $(FORSOCKETS_LIBS) $(FFTW_LIBS) -lm
 
 # The code build uses FFLAGS rather than FCFLAGS, and so does Conda
 CODE_MAKE_ARGS = FFLAGS="-I. $(FFLAGS) $(FCFLAGS)" FC="$(FC)" VPATH=../src

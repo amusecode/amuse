@@ -24,8 +24,7 @@ build_%:
 build_%/makefile_options: makefile_options_% | build_%
 	cp makefile_options_$* $@
 
-.PHONY: build_normal/$(CODELIB) build_nogravity/$(CODELIB) build_periodic/$(CODELIB) build_periodic_nogravity/$(CODELIB)
-build_%/$(CODELIB) build_%/allvars.o &: build_%/makefile_options
+build_%/$(CODELIB) build_%/allvars.o &: build_%/makefile_options FORCE
 	$(MAKE) -C build_$* -f ../src/Makefile -j $(CPU_COUNT) all VPATH=../src
 
 
@@ -95,4 +94,7 @@ clean:
 distclean: clean
 	rm -f support/config.mk support/config.log support/config.status
 	rm -rf support/autom4te.cache
+
+# .PHONY doesn't work for pattern rules, so we do it the old-fashioned way
+FORCE:
 
