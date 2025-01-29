@@ -40,7 +40,7 @@ sse_worker:	worker_code.f90  interface.o  $(OBJ)
 	$(MPIF90) $(FCFLAGS) $(FS_FLAGS) $(LDFLAGS) $^ -o $@ $(FS_LIBS) $(LIBS)
 	
 worker_code.f90: interface.py
-	$(CODE_GENERATOR) --type=f90 interface.py SSEInterface -o $@
+	$(CODE_GENERATOR) --type=f90 interface.py SseInterface -o $@
 	
 .f.o: $<                                                                 
 	$(FORTRAN) -c $(F77FLAGS) $(FCFLAGS) -o $@ $< 
