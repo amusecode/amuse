@@ -208,3 +208,23 @@ analyse_environment() {
     find_packages
 }
 
+
+# Checks for any environment variables that may conflict with the build
+check_shell_environment() {
+    if [ "a${ENV_TYPE}" = "aconda" ] ; then
+        # There's a whole lot of OMPI_ variables and we don't want to check them all one
+        # by one. So we do it like this.
+        ompi_vars="$(env | grep '^OMPI_' 2>/dev/null)"
+        ompi_var_names="$(printf '%s' "${ompi_vars}" | cut -d '=' -f 1 | tr '\n' ' ')"
+        if [ "a${ompi_vars}" != "a" ] ; then
+            printf '%b\n' "${COLOR_RED}Warning:${COLOR_END} The following shell variables are set, and may"
+            printf '%s\n' "interfere with the build:"
+            printf '\n%s\n\n' "${ompi_vars}"
+            printf '%s\n' "When installing with Conda, we use Conda-installed tools"
+            printf '%s\n' "and MPI, and the OMPI_* variables are not needed and will"
+            printf '%s\n' "confuse the build system. Please unset them using"
+            printf '\n%s\n\n' "    unset ${ompi_var_names}"
+        fi
+    fi
+}
+

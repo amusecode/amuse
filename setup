@@ -71,6 +71,8 @@ configure() {
 
     printf '%b\n\n' "${COLOR_CYAN}*** Next steps ***${COLOR_END}"
 
+    check_shell_environment
+
     can_install="yes"
     if [ "a${ENV_TYPE}" = "a" ] ; then
         print_environment_step
