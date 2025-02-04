@@ -199,11 +199,11 @@ run_test() {
 # Calls make clean on the entire codebase.
 #
 clean() {
-    make -C support clean
-    make -C lib clean
-    make -C lib clean-sapporo_light
-    make -C src/amuse/community clean
-    make -C src/tests clean
+    ${GMAKE} -C support clean
+    ${GMAKE} -C lib clean
+    ${GMAKE} -C lib clean-sapporo_light
+    ${GMAKE} -C src/amuse/community clean
+    ${GMAKE} -C src/tests clean
 }
 
 
@@ -212,11 +212,11 @@ clean() {
 # Calls make distclean on the entire codebase.
 #
 distclean() {
-    make -C support distclean
-    make -C lib distclean
-    make -C lib distclean-sapporo_light
-    make -C src/amuse/community distclean
-    make -C src/tests distclean
+    ${GMAKE} -C support distclean
+    ${GMAKE} -C lib distclean
+    ${GMAKE} -C lib distclean-sapporo_light
+    ${GMAKE} -C src/amuse/community distclean
+    ${GMAKE} -C src/tests distclean
 }
 
 
