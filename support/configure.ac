@@ -94,8 +94,14 @@ else
         # is not what we want here. Also, we only support specific compilers. So we use
         # AC_CHECK_TOOL instead. If the user sets the corresponding variable explicitly,
         # then this will just assume that it's a working compiler.
-        AC_CHECK_TOOL(CC, gcc)
-        AC_CHECK_TOOL(CXX, g++)
+        if test "x$target_os" == "xlinux-gnu"
+        then
+            AC_CHECK_TOOL(CC, gcc)
+            AC_CHECK_TOOL(CXX, g++)
+        else
+            AC_CHECK_TOOL(CC, clang)
+            AC_CHECK_TOOL(CXX, clang++)
+        fi
         AC_CHECK_TOOL(FC, gfortran)
         AC_CHECK_TOOL(JAVAC, javac)
         AC_CHECK_TOOL(PYTHON, python3)
