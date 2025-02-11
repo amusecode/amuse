@@ -6,12 +6,15 @@
 // AMUSE STOPPING CONDITIONS SUPPORT
 #include <stopcond.h>
 
+// Get std::xxx to match SeBa commit 382b590
+// #include <stdinc.h>
+
 #include <map>
 
 static node * seba_root = 0;
 static node * seba_insertion_point = 0;
 static int next_seba_id = 1;
-static map<int, nodeptr> mapping_from_id_to_node;
+static std::map<int, nodeptr> mapping_from_id_to_node;
 static double seba_metallicity = 0.02;
 static double seba_time = 0.0;
 static stellar_type start_type = Main_Sequence;
@@ -505,7 +508,7 @@ int new_advanced_particle(int * index_of_the_star, double mass,  double relative
 
 int delete_star(int index_of_the_star){
     
-    map<int, nodeptr>::iterator i = mapping_from_id_to_node.find(index_of_the_star);
+    std::map<int, nodeptr>::iterator i = mapping_from_id_to_node.find(index_of_the_star);
     if(i == mapping_from_id_to_node.end()) {
         return -1;
     } else {
@@ -531,7 +534,7 @@ int recommit_particles(){
 
 node * get_seba_node_from_index(int index_of_the_star, int * errorcode)
 {
-    map<int, nodeptr>::iterator i = mapping_from_id_to_node.find(index_of_the_star);
+    std::map<int, nodeptr>::iterator i = mapping_from_id_to_node.find(index_of_the_star);
     if(i == mapping_from_id_to_node.end()) {
         *errorcode = -1;
         return 0;
@@ -929,7 +932,7 @@ int new_binary(
 
 int delete_binary(int index_of_the_star){
     
-    map<int, nodeptr>::iterator i = mapping_from_id_to_node.find(index_of_the_star);
+    std::map<int, nodeptr>::iterator i = mapping_from_id_to_node.find(index_of_the_star);
     if(i == mapping_from_id_to_node.end()) {
         return -1;
     } else {
@@ -997,7 +1000,7 @@ int get_children_of_binary(
     
     *child1_index = -1;
     *child2_index = -1;
-    map<int, nodeptr>::iterator i = mapping_from_id_to_node.find(index_of_the_star);
+    std::map<int, nodeptr>::iterator i = mapping_from_id_to_node.find(index_of_the_star);
     if(i == mapping_from_id_to_node.end()) {
         return -1;
     } else {
