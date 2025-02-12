@@ -44,16 +44,18 @@ def plot_column_density(
     plot_axes,
     maps,
     unit_col_density=units.MSun * units.pc**-2,
-    vmin=-1,
-    vmax=4,
+    vmin=None,
+    vmax=None,
     cmap='viridis',
 ):
+    print(f"{vmin} {vmax} VMINMAX")
     cmap = copy.copy(matplotlib.colormaps[cmap])
     cmap.set_bad('k', alpha=1.0)
 
     column_density = maps.column_density
     logscale = numpy.log10(column_density.value_in(unit_col_density))
     return plot_axes.imshow(
+        # column_density.number,
         logscale,
         extent=maps.extent,
         vmin=vmin,
@@ -79,6 +81,38 @@ def plot_temperature(
 
     return plot_axes.imshow(
         logscale_temperature_map,
+        extent=maps.extent,
+        vmin=2,
+        vmax=6,
+        cmap=cmap,
+        origin="lower",
+    )
+
+
+def plot_attribute(
+    plot_axes,
+    maps,
+    attribute_name=None,
+    vmin=0,
+    vmax=5,
+    cmap="inferno",
+    logscale=True,
+    unit=None,
+):
+    if attribute_name is None:
+        raise ValueError("need to name attribute")
+    cmap = copy.copy(matplotlib.colormaps[cmap])
+    cmap.set_bad('k', alpha=1.0)
+    attribute_map = getattr(maps, attribute_name)
+    if unit is not None:
+        attribute_map = attribute_map.value_in(unit)
+    if logscale:
+        attribute_map = numpy.log10(
+            attribute_map
+        )
+
+    return plot_axes.imshow(
+        attribute_map,
         extent=maps.extent,
         vmin=vmin,
         vmax=vmax,
@@ -216,6 +250,8 @@ def plot_hydro_and_stars(
     plot="column density",
     length_unit=units.parsec,
     colorbar=True,
+    vmin=None,
+    vmax=None,
     **kwargs
 ):
     "Plot gas and stars"
@@ -236,12 +272,12 @@ def plot_hydro_and_stars(
         else:
             fig, ax = new_figure()
             cax = False
-    if "stars" in plot:
-        ax.set_facecolor('black')
+    # if "stars" in plot:
+    #     ax.set_facecolor('black')
 
     gasplot = False
     if plot == "column density":
-        gasplot = plot_column_density(ax, maps)
+        gasplot = plot_column_density(ax, maps, vmin=vmin, vmax=vmax, **kwargs)
         gasplot_unit = units.MSun * units.pc**-2
     elif plot == "temperature":
         gasplot = plot_temperature(ax, maps)
@@ -276,6 +312,9 @@ def plot_hydro_and_stars(
             extent=maps.extent,
             origin="lower",
         )
+    else:
+        gasplot = plot_attribute(ax, maps, attribute_name=plot, vmin=vmin, vmax=vmax, **kwargs)
+        gasplot_unit = None
 
     cmap = copy.copy(matplotlib.colormaps["coolwarm"])
 
@@ -283,10 +322,10 @@ def plot_hydro_and_stars(
             (maps.stars is not None)
             and not maps.stars.is_empty()
     ):
-        s = 1 * (
+        s = 2 * (
             (maps.stars.mass / (7 | units.MSun))**(3.5 / 2)
         )
-        # s = 0.5
+        # s = 2
         x = getattr(maps.stars, 'x').value_in(length_unit)
         y = getattr(maps.stars, 'y').value_in(length_unit)
         z = getattr(maps.stars, 'z').value_in(length_unit)

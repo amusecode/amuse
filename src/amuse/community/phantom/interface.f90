@@ -1,11 +1,19 @@
-!MODULE PhantomInterface
-!    
-!CONTAINS
-
-function initialize_code()
+module AmuseInterface
+  use AmusePhantom
   use StoppingConditions
+
+contains
+!module amuseinterface
+!  use allocutils, only:allocate_array
+!  implicit none
+!  integer, allocatable:: sph_particle_map(:)
+!
+!  call allocate_array('sph_particle_map', sph_particle_map, maxp)
+!contains
+
+integer function initialize_code() result(ret)
   implicit none
-  integer :: initialize_code
+  !integer :: initialize_code
   integer :: error
   double precision :: polyk
   call amuse_initialize_code()
@@ -15,7 +23,7 @@ function initialize_code()
   !error = set_support_for_condition(OUT_OF_BOX_DETECTION)
   error = set_support_for_condition(DENSITY_LIMIT_DETECTION)
   !error = set_support_for_condition(INTERNAL_ENERGY_LIMIT_DETECTION)
-  initialize_code=0
+  ret=0
 end function
 
 function cleanup_code()
@@ -23,6 +31,14 @@ function cleanup_code()
   integer :: cleanup_code
   call amuse_cleanup_code()
   cleanup_code=0
+end function
+
+function reset_new_particles_counter()
+  use AmusePhantom, only: new_particles_since_last_update
+  implicit none
+  integer :: reset_new_particles_counter
+  new_particles_since_last_update = 0
+  reset_new_particles_counter = 0
 end function
 
 function commit_particles()
@@ -42,7 +58,7 @@ end function
 
 function get_mass(index_of_the_particle, mass)
   implicit none
-  integer :: index_of_the_particle
+  integer(kind=8) :: index_of_the_particle
   double precision :: mass
   integer :: get_mass
   call amuse_get_mass(index_of_the_particle, mass)
@@ -51,7 +67,7 @@ end function
 
 function set_mass(index_of_the_particle, mass)
   implicit none
-  integer :: index_of_the_particle
+  integer(kind=8) :: index_of_the_particle
   double precision :: mass
   integer :: set_mass
   call amuse_set_mass(index_of_the_particle, mass)
@@ -60,7 +76,7 @@ end function
 
 function set_smoothing_length(index_of_the_particle, h_smooth)
   implicit none
-  integer :: index_of_the_particle
+  integer(kind=8) :: index_of_the_particle
   double precision :: h_smooth
   integer :: set_smoothing_length
   call amuse_set_smoothing_length(index_of_the_particle, h_smooth)
@@ -69,7 +85,7 @@ end function
 
 function set_internal_energy(index_of_the_particle, u)
   implicit none
-  integer :: index_of_the_particle
+  integer(kind=8) :: index_of_the_particle
   double precision :: u
   integer :: set_internal_energy
   call amuse_set_internal_energy(index_of_the_particle, u)
@@ -78,7 +94,7 @@ end function
 
 function set_h2ratio(index_of_the_particle, h2ratio)
   implicit none
-  integer :: index_of_the_particle
+  integer(kind=8) :: index_of_the_particle
   double precision :: h2ratio
   integer :: set_h2ratio
   call amuse_set_h2ratio(index_of_the_particle, h2ratio)
@@ -87,7 +103,7 @@ end function
 
 function set_hi_abundance(index_of_the_particle, hi_abundance)
   implicit none
-  integer :: index_of_the_particle
+  integer(kind=8) :: index_of_the_particle
   double precision :: hi_abundance
   integer :: set_hi_abundance
   call amuse_set_hi_abundance(index_of_the_particle, hi_abundance)
@@ -96,7 +112,7 @@ end function
 
 function set_proton_abundance(index_of_the_particle, proton_abundance)
   implicit none
-  integer :: index_of_the_particle
+  integer(kind=8) :: index_of_the_particle
   double precision :: proton_abundance
   integer :: set_proton_abundance
   call amuse_set_proton_abundance(index_of_the_particle, proton_abundance)
@@ -105,7 +121,7 @@ end function
 
 function set_electron_abundance(index_of_the_particle, electron_abundance)
   implicit none
-  integer :: index_of_the_particle
+  integer(kind=8) :: index_of_the_particle
   double precision :: electron_abundance
   integer :: set_electron_abundance
   call amuse_set_electron_abundance(index_of_the_particle, electron_abundance)
@@ -114,7 +130,7 @@ end function
 
 function set_co_abundance(index_of_the_particle, co_abundance)
   implicit none
-  integer :: index_of_the_particle
+  integer(kind=8) :: index_of_the_particle
   double precision :: co_abundance
   integer :: set_co_abundance
   call amuse_set_co_abundance(index_of_the_particle, co_abundance)
@@ -123,7 +139,7 @@ end function
 
 function get_h2ratio(index_of_the_particle, h2ratio)
   implicit none
-  integer :: index_of_the_particle
+  integer(kind=8) :: index_of_the_particle
   double precision :: h2ratio
   integer :: get_h2ratio
   call amuse_get_h2ratio(index_of_the_particle, h2ratio)
@@ -132,7 +148,7 @@ end function
 
 function get_hi_abundance(index_of_the_particle, hi_abundance)
   implicit none
-  integer :: index_of_the_particle
+  integer(kind=8) :: index_of_the_particle
   double precision :: hi_abundance
   integer :: get_hi_abundance
   call amuse_get_hi_abundance(index_of_the_particle, hi_abundance)
@@ -141,7 +157,7 @@ end function
 
 function get_proton_abundance(index_of_the_particle, proton_abundance)
   implicit none
-  integer :: index_of_the_particle
+  integer(kind=8) :: index_of_the_particle
   double precision :: proton_abundance
   integer :: get_proton_abundance
   call amuse_get_proton_abundance(index_of_the_particle, proton_abundance)
@@ -150,7 +166,7 @@ end function
 
 function get_electron_abundance(index_of_the_particle, electron_abundance)
   implicit none
-  integer :: index_of_the_particle
+  integer(kind=8) :: index_of_the_particle
   double precision :: electron_abundance
   integer :: get_electron_abundance
   call amuse_get_electron_abundance(index_of_the_particle, electron_abundance)
@@ -159,7 +175,7 @@ end function
 
 function get_co_abundance(index_of_the_particle, co_abundance)
   implicit none
-  integer :: index_of_the_particle
+  integer(kind=8) :: index_of_the_particle
   double precision :: co_abundance
   integer :: get_co_abundance
   call amuse_get_co_abundance(index_of_the_particle, co_abundance)
@@ -168,7 +184,7 @@ end function
 
 function get_pressure(index_of_the_particle, p)
   implicit none
-  integer :: index_of_the_particle
+  integer(kind=8) :: index_of_the_particle
   double precision :: p
   integer :: get_pressure
   call amuse_get_pressure(index_of_the_particle, p)
@@ -177,7 +193,7 @@ end function
 
 function get_density(index_of_the_particle, rho)
   implicit none
-  integer :: index_of_the_particle
+  integer(kind=8) :: index_of_the_particle
   double precision :: rho
   integer :: get_density
   call amuse_get_density(index_of_the_particle, rho)
@@ -186,7 +202,7 @@ end function
 
 function get_smoothing_length(index_of_the_particle, h_smooth)
   implicit none
-  integer :: index_of_the_particle
+  integer(kind=8) :: index_of_the_particle
   double precision :: h_smooth
   integer :: get_smoothing_length
   call amuse_get_smoothing_length(index_of_the_particle, h_smooth)
@@ -195,16 +211,25 @@ end function
 
 function get_internal_energy(index_of_the_particle, u)
   implicit none
-  integer :: index_of_the_particle
+  integer(kind=8) :: index_of_the_particle
   double precision :: u
   integer :: get_internal_energy
   call amuse_get_internal_energy(index_of_the_particle, u)  
   get_internal_energy=0
 end function
 
+function get_particle_type(index_of_the_particle, itype)
+  implicit none
+  integer(kind=8) :: index_of_the_particle
+  integer :: itype
+  integer :: get_particle_type
+  !call amuse_get_particle_type(index_of_the_particle, itype)
+  get_particle_type = -1
+end function
+
 function get_index_of_first_particle(index_of_the_particle)
   implicit none
-  integer :: index_of_the_particle
+  integer(kind=8) :: index_of_the_particle
   integer :: get_index_of_first_particle
   get_index_of_first_particle=0
 end function
@@ -237,10 +262,12 @@ function evolve_model(tmax)
   double precision :: tmax
   integer :: evolve_model
   integer :: sc
-  integer :: i, nmax
+  integer(kind=8) :: i
+  integer :: nmax
   integer :: is_density_limit_detection_enabled, stopping_index
   integer :: error
   double precision :: minimum_density_parameter, maximum_density_parameter, rho, radius
+  double precision :: time
 
   error = reset_stopping_conditions()
   error = is_stopping_condition_enabled(&
@@ -248,11 +275,12 @@ function evolve_model(tmax)
   error = get_stopping_condition_minimum_density_parameter(minimum_density_parameter)
   error = get_stopping_condition_maximum_density_parameter(maximum_density_parameter)
 
+  call amuse_get_time(time)
   call amuse_evolve_model(tmax)
   if (is_density_limit_detection_enabled > 0) then
       call amuse_get_number_of_sph_particles(nmax)
-      do i=1, nmax
-          call amuse_get_radius(i, radius)
+      do i=1, nmax  ! need to loop over sph particles, excluding 'dead' particles!
+          call amuse_get_radius(i, radius)  ! if hsmooth <= 0, particle is dead
           if (radius > 0) then
               call amuse_get_density(i, rho)
               if (&
@@ -262,9 +290,11 @@ function evolve_model(tmax)
                   stopping_index = next_index_for_stopping_condition()
                   if (stopping_index > 0) then
                       error = set_stopping_condition_info(stopping_index, DENSITY_LIMIT_DETECTION)
-                      error = set_stopping_condition_particle_index(stopping_index, 0, i)
+                      error = set_stopping_condition_particle_index(stopping_index, 0, int(i, 4))
                   endif
               endif
+          ! else
+          ! nmax += 1
           endif
       enddo
   endif
@@ -274,7 +304,7 @@ end function
 function set_state_sph(index_of_the_particle, mass, x, y, z, &
         vx, vy, vz, u, h_smooth)
   implicit none
-  integer :: index_of_the_particle
+  integer(kind=8) :: index_of_the_particle
   double precision :: mass, x, y, z, vx, vy, vz, u, h_smooth
   integer :: set_state_sph
   call amuse_set_state_gas(index_of_the_particle, mass, x, y, z, &
@@ -292,7 +322,7 @@ end function
 function set_state_star(index_of_the_particle, mass, x, y, z, &
         vx, vy, vz, tform, radius)
   implicit none
-  integer :: index_of_the_particle
+  integer(kind=8) :: index_of_the_particle
   double precision :: mass, x, y, z, vx, vy, vz, tform, radius
   integer :: set_state_star
   set_state_star=-1
@@ -315,25 +345,42 @@ end function
 function get_index_of_next_particle(index_of_the_particle,  &
     index_of_the_next_particle)
   implicit none
-  integer :: index_of_the_particle, index_of_the_next_particle
+  integer(kind=8) :: index_of_the_particle, index_of_the_next_particle
   integer :: get_index_of_next_particle
   get_index_of_next_particle=-1
+end function
+
+function get_number_of_new_gas_particles(number)
+  use AmusePhantom, only: new_particles_since_last_update
+  implicit none
+  integer :: get_number_of_new_gas_particles
+  integer :: number
+  number = new_particles_since_last_update
+  get_number_of_new_gas_particles = 0
+end function
+
+function reset_number_of_new_gas_particles()
+  use AmusePhantom, only: new_particles_since_last_update
+  implicit none
+  integer :: reset_number_of_new_gas_particles
+  new_particles_since_last_update = 0
+  reset_number_of_new_gas_particles = 0
 end function
 
 function new_sph_particle(index_of_the_particle, mass, x, y, z, &
         vx, vy, vz, u, h_smooth)
   implicit none
-  integer :: index_of_the_particle
+  integer(kind=8) :: index_of_the_particle
   double precision :: mass, x, y, z, vx, vy, vz, u, h_smooth
   integer :: new_sph_particle
-  call amuse_new_sph_particle(index_of_the_particle, mass, x, y, z, &
+  call amuse_new_sph_particle(int(index_of_the_particle, 4), mass, x, y, z, &
       vx, vy, vz, u, h_smooth)
   new_sph_particle=0
 end function
 
 function delete_particle(index_of_the_particle)
   implicit none
-  integer :: index_of_the_particle
+  integer(kind=8) :: index_of_the_particle
   integer :: delete_particle
   call amuse_delete_particle(index_of_the_particle)
   delete_particle=0
@@ -341,7 +388,7 @@ end function
 
 function get_potential(index_of_the_particle, potential)
   implicit none
-  integer :: index_of_the_particle
+  integer(kind=8) :: index_of_the_particle
   double precision :: potential
   integer :: get_potential
   get_potential=0
@@ -354,31 +401,31 @@ function synchronize_model()
 end function
 
 function set_state_sink(index_of_the_particle, mass, x, y, z, &
-        vx, vy, vz, radius, h_smooth)
+        vx, vy, vz, radius, accretion_radius, h_smooth)
   implicit none
-  integer :: index_of_the_particle
-  double precision :: mass, x, y, z, vx, vy, vz, radius, h_smooth
+  integer(kind=8) :: index_of_the_particle
+  double precision :: mass, x, y, z, vx, vy, vz, radius, accretion_radius, h_smooth
   integer :: set_state_sink
   call amuse_set_state_sink(index_of_the_particle, mass, x, y, z, &
-      vx, vy, vz, radius, h_smooth)
+      vx, vy, vz, radius, accretion_radius)
   set_state_sink=0
 end function
 
 function get_state_sink(index_of_the_particle, mass, x, y, z, &
-        vx, vy, vz, radius, h_smooth)
+        vx, vy, vz, radius, accretion_radius, h_smooth)
   implicit none
-  integer :: index_of_the_particle
-  double precision :: mass, x, y, z, vx, vy, vz, radius, h_smooth
+  integer(kind=8) :: index_of_the_particle
+  double precision :: mass, x, y, z, vx, vy, vz, radius, accretion_radius, h_smooth
   integer :: get_state_sink
   call amuse_get_state_sink(index_of_the_particle, mass, x, y, z, &
-      vx, vy, vz, radius, h_smooth)
+      vx, vy, vz, radius, accretion_radius)
   get_state_sink=0
 end function
 
 function set_state_dm(index_of_the_particle, mass, x, y, z, &
         vx, vy, vz)
   implicit none
-  integer :: index_of_the_particle
+  integer(kind=8) :: index_of_the_particle
   double precision :: mass, x, y, z, vx, vy, vz
   integer :: set_state_dm
   call amuse_set_state_dm(index_of_the_particle, mass, x, y, z, &
@@ -389,7 +436,7 @@ end function
 function get_state_dm(index_of_the_particle, mass, x, y, z, &
         vx, vy, vz)
   implicit none
-  integer :: index_of_the_particle
+  integer(kind=8) :: index_of_the_particle
   double precision :: mass, x, y, z, vx, vy, vz
   integer :: get_state_dm
   call amuse_get_state_dm(index_of_the_particle, mass, x, y, z, &
@@ -436,6 +483,14 @@ function get_thermal_energy(thermal_energy)
   get_thermal_energy=0
 end function
 
+function get_maximum_particle_index(i)
+  implicit none
+  integer(kind=8) :: i
+  integer :: get_maximum_particle_index
+  call amuse_get_norig(i)
+  get_maximum_particle_index=0
+end function
+
 function get_number_of_particles(n)
   implicit none
   integer :: n
@@ -460,17 +515,44 @@ end function
 
 function get_radius(index_of_the_particle, radius)
   implicit none
-  integer :: index_of_the_particle
+  integer(kind=8) :: index_of_the_particle
   double precision :: radius
   integer :: get_radius
   call amuse_get_radius(index_of_the_particle, radius)
   get_radius=0
 end function
 
+function get_sink_accretion_radius(index_of_the_particle, radius)
+  implicit none
+  integer(kind=8) :: index_of_the_particle
+  double precision :: radius
+  integer :: get_sink_accretion_radius
+  call amuse_get_sink_accretion_radius(index_of_the_particle, radius)
+  get_sink_accretion_radius=0
+end function
+
+function get_sink_temperature(index_of_the_particle, temperature)
+  implicit none
+  integer(kind=8) :: index_of_the_particle
+  double precision :: temperature
+  integer :: get_sink_temperature
+  call amuse_get_sink_temperature(index_of_the_particle, temperature)
+  get_sink_temperature=0
+end function
+
+function get_sink_luminosity(index_of_the_particle, luminosity)
+  implicit none
+  integer(kind=8) :: index_of_the_particle
+  double precision :: luminosity
+  integer :: get_sink_luminosity
+  call amuse_get_sink_luminosity(index_of_the_particle, luminosity)
+  get_sink_luminosity=0
+end function
+
 function get_state_star(index_of_the_particle, mass, x, y, z, vx, vy, vz,  &
     tform, radius)
   implicit none
-  integer :: index_of_the_particle
+  integer(kind=8) :: index_of_the_particle
   double precision :: mass, x, y, z, vx, vy, vz, tform, radius
   integer :: get_state_star
   get_state_star=-1
@@ -483,34 +565,69 @@ function set_begin_time(time)
   set_begin_time=-1
 end function
 
+integer function set_phantom_option(name, value, match)
+  implicit none
+  character(*), intent(inout):: name, value
+  logical, intent(inout):: match
+  call amuse_set_phantom_option(name, value, match)
+  set_phantom_option = 0
+end function
+
 function new_dm_particle(index_of_the_particle, mass, x, y, z, vx, vy, vz)
   implicit none
-  integer :: index_of_the_particle
-  double precision :: mass, x, y, z, vx, vy, vz, radius
+  integer(kind=8) :: index_of_the_particle
+  double precision :: mass, x, y, z, vx, vy, vz
   integer :: new_dm_particle
-  call amuse_new_dm_particle(index_of_the_particle, mass, x, y, z, &
-      vx, vy, vz, radius)
+  call amuse_new_dm_particle(int(index_of_the_particle, 4), mass, x, y, z, &
+      vx, vy, vz)
   new_dm_particle=0
 end function
 
 function new_sink_particle(index_of_the_particle, mass, x, y, z, vx, vy, vz, &
-        radius, h_smooth)
+        radius, accretion_radius, h_smooth)
   implicit none
-  integer :: index_of_the_particle
-  double precision :: mass, x, y, z, vx, vy, vz, radius, h_smooth
+  integer(kind=8) :: index_of_the_particle
+  double precision :: mass, x, y, z, vx, vy, vz, radius, accretion_radius, h_smooth
   integer :: new_sink_particle
-  call amuse_new_sink_particle(index_of_the_particle, mass, x, y, z, &
-      vx, vy, vz, radius, h_smooth)
+  call amuse_new_sink_particle(int(index_of_the_particle, 4), mass, x, y, z, &
+      vx, vy, vz, radius, accretion_radius, h_smooth)
   new_sink_particle=0
 end function
 
 function set_radius(index_of_the_particle, radius)
   implicit none
-  integer :: index_of_the_particle
+  integer(kind=8) :: index_of_the_particle
   double precision :: radius
   integer :: set_radius
   call amuse_set_radius(index_of_the_particle, radius)
   set_radius=0
+end function
+
+function set_sink_accretion_radius(index_of_the_particle, radius)
+  implicit none
+  integer(kind=8) :: index_of_the_particle
+  double precision :: radius
+  integer :: set_sink_accretion_radius
+  call amuse_set_sink_accretion_radius(index_of_the_particle, radius)
+  set_sink_accretion_radius=0
+end function
+
+function set_sink_temperature(index_of_the_particle, temperature)
+  implicit none
+  integer(kind=8) :: index_of_the_particle
+  double precision :: temperature
+  integer :: set_sink_temperature
+  call amuse_set_sink_temperature(index_of_the_particle, temperature)
+  set_sink_temperature=0
+end function
+
+function set_sink_luminosity(index_of_the_particle, luminosity)
+  implicit none
+  integer(kind=8) :: index_of_the_particle
+  double precision :: luminosity
+  integer :: set_sink_luminosity
+  call amuse_set_sink_luminosity(index_of_the_particle, luminosity)
+  set_sink_luminosity=0
 end function
 
 function recommit_parameters()
@@ -527,14 +644,27 @@ function get_potential_energy(potential_energy)
   get_potential_energy=0
 end function
 
-function get_state_sph(index_of_the_particle, mass, x, y, z, vx, vy, vz, u,  &
+function get_state_sph(index_of_the_particle, mass, x, y, z, vx, vy, vz, u, &
     h_smooth)
   implicit none
-  integer :: index_of_the_particle
+  integer(kind=8) :: index_of_the_particle, n
   double precision :: mass, x, y, z, vx, vy, vz, u, h_smooth
   integer :: get_state_sph
-  call amuse_get_state_gas(index_of_the_particle, mass, x, y, z, vx, vy, vz, u, h_smooth)
-  get_state_sph=0
+  get_state_sph = -1
+  !call amuse_get_number_of_sph_particles(n)
+  call amuse_get_norig(n)
+  if (index_of_the_particle < 1) then
+     get_state_sph = -2
+  elseif (index_of_the_particle > n) then
+     !write(*,*) index_of_the_particle, n, "error?"
+     !call amuse_get_state_gas(index_of_the_particle, mass, x, y, z, vx, vy, vz, u, h_smooth, phantom_index)
+     !write(*,*) mass, x, y, z
+     get_state_sph = -3
+     !get_state_sph = 0
+  else
+     call amuse_get_state_gas(index_of_the_particle, mass, x, y, z, vx, vy, vz, u, h_smooth)
+     get_state_sph = 0
+  endif
 end function
 
 function get_gravity_at_point(eps, x, y, z, ax, ay, az, npoints)
@@ -547,7 +677,7 @@ end function
 
 function get_velocity(index_of_the_particle, vx, vy, vz)
   implicit none
-  integer :: index_of_the_particle
+  integer(kind=8) :: index_of_the_particle
   double precision :: vx, vy, vz
   integer :: get_velocity
   call amuse_get_velocity(index_of_the_particle, vx, vy, vz)
@@ -556,7 +686,7 @@ end function
 
 function get_acceleration(index_of_the_particle, ax, ay, az)
   implicit none
-  integer :: index_of_the_particle
+  integer(kind=8) :: index_of_the_particle
   double precision :: ax, ay, az
   integer :: get_acceleration
   call amuse_get_acceleration(index_of_the_particle, ax, ay, az)
@@ -566,7 +696,7 @@ end function
 function new_star_particle(index_of_the_particle, mass, x, y, z, vx, vy,  &
     vz, tform, radius)
   implicit none
-  integer :: index_of_the_particle
+  integer(kind=8) :: index_of_the_particle
   double precision :: mass, x, y, z, vx, vy, vz, tform, radius
   integer :: new_star_particle
   new_star_particle=-1
@@ -574,7 +704,7 @@ end function
 
 function get_position(index_of_the_particle, x, y, z)
   implicit none
-  integer :: index_of_the_particle, i
+  integer(kind=8) :: index_of_the_particle, i
   double precision :: x, y, z
   integer :: get_position
   call amuse_get_position(index_of_the_particle, x, y, z)
@@ -583,7 +713,7 @@ end function
 
 function set_position(index_of_the_particle, x, y, z)
   implicit none
-  integer :: index_of_the_particle
+  integer(kind=8) :: index_of_the_particle
   double precision :: x, y, z
   integer :: set_position
   call amuse_set_position(index_of_the_particle, x, y, z)
@@ -593,12 +723,13 @@ end function
 function commit_parameters()
   implicit none
   integer :: commit_parameters
+  call amuse_commit_parameters()
   commit_parameters=0
 end function
 
 function set_velocity(index_of_the_particle, vx, vy, vz)
     implicit none
-    integer :: index_of_the_particle
+    integer(kind=8) :: index_of_the_particle
     double precision :: vx, vy, vz
     integer :: set_velocity
     call amuse_set_velocity(index_of_the_particle, vx, vy, vz)
@@ -1125,4 +1256,25 @@ function get_constant_planckh(planckh)
     get_constant_planckh=0
 end function
 
-!END MODULE
+!integer function get_sonic_type(sonic_type)
+!    implicit none
+!    integer :: sonic_type
+!    call amuse_get_sonic_type(sonic_type)
+!    return 0
+!end function
+
+!integer function create_wind(time_step)
+!    use inject, only: inject_particles
+!    ! use inject_wind, only: inject_particles
+!    implicit none
+!    double precision :: time_step
+!
+!    ! Normally, Phantom would use/fill the position/velocity arrays of 
+!    ! gas/sink particles for this subroutine.
+!    ! We can just create a new array instead, and return the values to AMUSE
+!    !call inject_particles(time, dtlast, xyzh, vxyzu, xyzmh_ptmass, vxyz_ptmass,&
+!    !        npart, npart_old, npartoftype, dtinject)
+!    create_wind = 0
+!end function
+
+end module

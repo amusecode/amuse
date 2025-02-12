@@ -206,6 +206,8 @@ class MapHydro():
         self.__axis_x = axes[0]
         self.__axis_y = axes[1]
         self.__axis_z = axes[2]
+        # TODO: call rotate
+        # self.__state = "EDIT"
 
     @property
     def phi(self):
@@ -361,22 +363,25 @@ class MapHydro():
             self.__new_gas_mapper()
 
         gas = self.__gas
-        if hasattr(gas, "mu"):
-            print(f"h2ratio: {gas.mu.mean()}")
-            meanmwt = gas.mu
-        elif hasattr(gas, "h2ratio"):
-            print(f"h2ratio: {gas.h2ratio.mean()}")
-            meanmwt = gas_mean_molecular_weight(gas.h2ratio)
+        if hasattr(gas, "temperature"):
+            temperature = gas.temperature
         else:
-            meanmwt = gas_mean_molecular_weight()
-        temperature = u_to_temperature(gas.u, meanmwt=meanmwt)
+            if hasattr(gas, "mu"):
+                print(f"h2ratio: {gas.mu.mean()}")
+                meanmwt = gas.mu
+            elif hasattr(gas, "h2ratio"):
+                print(f"h2ratio: {gas.h2ratio.mean()}")
+                meanmwt = gas_mean_molecular_weight(gas.h2ratio)
+            else:
+                meanmwt = gas_mean_molecular_weight()
+            temperature = u_to_temperature(gas.u, meanmwt=meanmwt)
         print(f"temperature range: {min(temperature)} - {max(temperature)}")
         self.__mapper.particles.weight = temperature.value_in(
             self.__unit_temperature)
         # counts = self.counts
         self.__maps.temperature = numpy.nan_to_num(
-            self.__mapper.image.pixel_value.transpose(),
-            # / counts,
+            self.__mapper.image.pixel_value.transpose()
+            / self.counts,
             nan=0,
         ) | self.__unit_temperature
         print(
@@ -384,6 +389,36 @@ class MapHydro():
             f"- {self.__maps.temperature.max()}"
         )
         return self.__maps.temperature
+
+    @property
+    def h2o_abundance(self):
+        "Return a H2O map"
+        if self.__state != "RUN":
+            self.__new_gas_mapper()
+
+        self.__mapper.particles.weight = self.__gas.h2o_abundance
+        self.__maps.h2o = numpy.nan_to_num(
+            self.__mapper.image.pixel_value.transpose(),
+            # / self.counts,
+            nan=0,
+        )
+
+        return self.__maps.h2o
+
+    @property
+    def co_abundance(self):
+        "Return a CO map"
+        if self.__state != "RUN":
+            self.__new_gas_mapper()
+
+        self.__mapper.particles.weight = self.__gas.co_abundance
+        self.__maps.co = numpy.nan_to_num(
+            self.__mapper.image.pixel_value.transpose(),
+            # / self.counts,
+            nan=0,
+        )
+
+        return self.__maps.co
 
     @property
     def vx(self):
