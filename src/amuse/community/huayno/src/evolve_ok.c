@@ -7,8 +7,13 @@
 #include <tgmath.h>
 #include <stdio.h>
 #include <stdlib.h>
+#ifdef _OPENMP
+#include <omp.h>
+#endif
 #include "evolve.h"
 #include "evolve_ok.h"
+// AMUSE STOPPING CONDITIONS SUPPORT
+#include <stopcond.h>
 
 struct forces zeroforces = {0, NULL};
 
@@ -150,6 +155,8 @@ static void ok_kick(int clevel,struct forces f, DOUBLE dt)
 
 void evolve_ok2(int clevel,struct sys s, struct forces f, DOUBLE stime, DOUBLE etime, DOUBLE dt, int calc_timestep)
 {
+  int is_collision_detection_enabled;
+  is_stopping_condition_enabled(COLLISION_DETECTION, &is_collision_detection_enabled);
   if (IS_ZEROFORCES(f) && clevel == 0) { f = ok_main_forces; }
   CHECK_TIMESTEP(etime,stime,dt,clevel);
   // all particles are drifted together
@@ -165,5 +172,9 @@ void evolve_ok2(int clevel,struct sys s, struct forces f, DOUBLE stime, DOUBLE e
   ok_split((FLOAT) dt, f, &slowf, &fastf);
   evolve_ok2(clevel+1,s, fastf, stime, stime+dt/2, dt/2, 0);
   ok_kick(clevel,slowf, dt);
+  if (is_collision_detection_enabled) {
+    detect_collisions(s);
+    if (set_conditions & enabled_conditions) return;
+  }
   evolve_ok2(clevel+1,s, fastf, stime+dt/2, etime, dt/2, 1);
 }
