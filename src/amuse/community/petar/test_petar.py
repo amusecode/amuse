@@ -8,7 +8,7 @@ from amuse import datamodel
 from amuse.ic import plummer
 from amuse.ic.plummer import new_plummer_model
 
-from .gd_tests import _TestGravitationalDynamicsInterface
+amuse.test.suite.codes_tests import _TestGravitationalDynamicsInterface
 
 
 class TestPetarInterface(_TestGravitationalDynamicsInterface, TestWithMPI):

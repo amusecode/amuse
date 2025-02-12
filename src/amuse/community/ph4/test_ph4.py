@@ -1,356 +1,1194 @@
-#!/bin/env python
-
-import collections
-import getopt
-import numpy
 import os
-import random
 import sys
-import unittest 
-from time import process_time as cputime
-from time import time as wallclocktime
+import time
+from amuse.community.ph4.interface import ph4Interface, ph4
 
-from amuse.community.ph4.interface import ph4 as grav
+from amuse.test.amusetest import TestWithMPI
+
+import numpy
+import math
 from amuse.units import nbody_system
-from amuse.units import units
-from amuse.units.quantities import zero
-
+from amuse.units import units, constants
 from amuse import datamodel
-from amuse.datamodel import particle_attributes as pa
-from amuse.rfi.core import is_mpd_running
 from amuse.ic.plummer import new_plummer_model
-from amuse.ic.salpeter import new_salpeter_mass_distribution_nbody
 
-def print_log(pre, time, gravity, E0 = 0.0 | nbody_system.energy,
-              cpu0 = 0.0, wall0 = 0.0):
-    cpu = cputime()
-    wall = wallclocktime()
-    N = len(gravity.particles)
-    M = gravity.total_mass
+try:
+    from matplotlib import pyplot
 
-    print('')
-    print(pre+"time=", time.number)
-    print(pre+"cpu=", cpu-cpu0)
-    print(pre+"wall=", wall-wall0)
-    print(pre+"Ntot=", N)
-    print(pre+"mass=", M.number)
-    E = 0 | nbody_system.energy
+    HAS_MATPLOTLIB = True
+except ImportError:
+    HAS_MATPLOTLIB = False
+from amuse.test.suite.codes_tests.gd_tests import (
+    _TestGravitationalDynamicsInterface,
+)
 
-    if N > 0:
-        U = gravity.potential_energy
-        T = gravity.kinetic_energy
-        Etop = T + U
-        E = Etop
-        if E0 == 0 | nbody_system.energy: E0 = E
-        Rvir = -0.5*M*M/U
-        Q = -T/U
-        com = pa.center_of_mass(gravity.particles)
-        comv = pa.center_of_mass_velocity(gravity.particles)
-        if N > 15:
-            dcen,rcore,rhocore \
-              = pa.densitycentre_coreradius_coredens(gravity.particles)
-        else:
-            dcen = com
-            rcore = zero
-            rhocore = zero
-            cmx,cmy,cmz = dcen
-        lagr,mf = pa.LagrangianRadii(gravity.particles, cm=dcen)  # no units!
 
-        print(pre+"Etot=", E.number)
-        print(pre+"dE/E=", E/E0 - 1)
-        print(pre+"Rvir=", Rvir.number)
-        print(pre+"Qvir=", Q)
-        cmx,cmy,cmz = com
-        print(pre+"cmpos[3]= %.8f %.8f %.8f" % (cmx.number, cmy.number, cmz.number))
-        cmx,cmy,cmz = comv
-        print(pre+"cmvel[3]= %.8f %.8f %.8f" % (cmx.number, cmy.number, cmz.number))
-        cmx,cmy,cmz = dcen
-        print(pre+"dcpos[3]= %.8f %.8f %.8f" % (cmx.number, cmy.number, cmz.number))
-        print(pre+"Rcore=", rcore.number)
-        print(pre+"Mlagr[9]=", end=' ')
-        for m in mf: print("%.4f" % (m), end=' ')
-        print('')
-        print(pre+"Rlagr[9]=", end=' ')
-        for r in lagr.number: print("%.8f" % (r), end=' ')
-        print('')
+class TestPh4Interface(_TestGravitationalDynamicsInterface, TestWithMPI):
+    def gravity_code_interface(self):
+        return ph4Interface
 
-    sys.stdout.flush()
-    return E,cpu,wall
+    def test_reversed_time_allowed(self):
+        self.skip("not supported")
 
-def run_ph4(infile = None, number_of_stars = 40,
-             end_time = 10 | nbody_system.time,
-             delta_t = 1 | nbody_system.time,
-             n_workers = 1, use_gpu = 1, gpu_worker = 1, gpu_id = -1,
-             accuracy_parameter = 0.1,
-             softening_length = -1 | nbody_system.length,
-             manage_encounters = 1):
+    def starting_particle_index(self):
+        return 1
 
-    if infile != None: print("input file =", infile)
-    print("end_time =", end_time.number)
-    print("delta_t =", delta_t.number)
-    print("n_workers =", n_workers)
-    print("use_gpu =", use_gpu)
-    print("manage_encounters =", manage_encounters)
-    print("\ninitializing the gravity module")
-    sys.stdout.flush()
+    def test7(self):
+        instance = ph4Interface()
+        instance.initialize_code()
+        instance.set_eps2(0.1**2)
+        instance.commit_parameters()
+        id1, errorcode = instance.new_particle(
+            mass=10.0, radius=1.0, x=0.0, y=0.0, z=0.0, vx=0.0, vy=0.0, vz=0.0
+        )
+        id2, errorcode = instance.new_particle(
+            mass=10.0, radius=1.0, x=2.0, y=0.0, z=0.0, vx=10.0, vy=0.0, vz=0.0
+        )
 
-    # Note that there are actually three GPU options to test:
-    #
-    #	1. use the GPU code and allow GPU use (default)
-    #	2. use the GPU code but disable GPU use (-g)
-    #	3. use the non-GPU code (-G)
+        instance.commit_particles()
+        potential, errorcode = instance.get_potential(id1)
+        self.assertEqual(errorcode, 0)
+        self.assertAlmostRelativeEquals(
+            potential, -10.0 / numpy.sqrt(2.0**2 + 0.1**2), 8
+        )
+        total_potential, errorcode = instance.get_potential_energy()
+        potentials, errorcode = instance.get_potential([id1, id2])
 
-    #print "1"; sys.stdout.flush()
-    
-    gpu = 0
-    if gpu_worker == 1:
-        try:
-            gravity = grav(number_of_workers = n_workers,
-                           redirection = "none", mode = "gpu")
-            #              debugger='valgrind')
-            gpu = 1
-        except Exception as ex:
-            print('*** GPU worker code not found. Reverting to non-GPU code. ***')
-            gpu = 0
+        instance.cleanup_code()
+        instance.stop()
 
-    if gpu == 0:
-        gravity = grav(number_of_workers = n_workers,
-                       redirection = "none")
-        #              debugger='valgrind')
+        self.assertAlmostRelativeEquals(
+            total_potential, numpy.sum(potentials * [10.0, 10.0]) / 2.0
+        )
 
-    #print "2"; sys.stdout.flush()
-    gravity.initialize_code()
+    def test8(self):
+        instance = ph4Interface()
+        instance.initialize_code()
+        instance.set_eps2(0)
+        instance.commit_parameters()
+        id1, errorcode = instance.new_particle(
+            mass=10.0, radius=1.0, x=0.0, y=0.0, z=0.0, vx=0.0, vy=0.0, vz=0.0
+        )
+        id2, errorcode = instance.new_particle(
+            mass=1.0, radius=1.0, x=2.0, y=0.0, z=0.0, vx=10.0, vy=0.0, vz=0.0
+        )
 
-    #print "3"; sys.stdout.flush()
-    gravity.parameters.set_defaults()
+        instance.commit_particles()
+        potential, errorcode = instance.get_potential(id1)
+        self.assertEqual(errorcode, 0)
+        self.assertAlmostRelativeEquals(potential, -1.0 / numpy.sqrt(2.0**2), 8)
 
-    gravity.parameters.gpu_id = gpu_id
+        potential, errorcode = instance.get_potential(id2)
+        self.assertEqual(errorcode, 0)
+        self.assertAlmostRelativeEquals(potential, -10.0 / numpy.sqrt(2.0**2), 8)
 
-    #-----------------------------------------------------------------
+        total_potential, errorcode = instance.get_potential_energy()
+        potentials, errorcode = instance.get_potential([id1, id2])
 
-    #print "4"; sys.stdout.flush()
-    if infile == None:
+        instance.cleanup_code()
+        instance.stop()
 
-        print("making a Plummer model")
-        stars = new_plummer_model(number_of_stars)
+        self.assertAlmostRelativeEquals(
+            total_potential, numpy.sum(potentials * [10.0, 1.0]) / 2.0
+        )
 
-        id = numpy.arange(number_of_stars)
-        stars.id = id+1
+    def test9(self):
+        instance = ph4Interface()
+        instance.initialize_code()
+        instance.set_eta(0.01)
+        index, error = instance.new_particle(
+            11.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 2.0, 10
+        )
+        self.assertEqual(error, 0)
+        self.assertEqual(index, 10)
+        # index, error = instance.new_particle(12.0, 3.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 10)
+        # print index, error
+        # self.assertEquals(error, -1)
+        # self.assertEquals(index, 10)
+        error = instance.commit_particles()
+        self.assertEqual(error, 0)
 
-        print("setting particle masses and radii")
-        if number_of_stars > 0:
-            stars.mass = (1.0 / number_of_stars) | nbody_system.mass
-        if 0:
-            scaled_mass = new_salpeter_mass_distribution_nbody(number_of_stars) 
-            stars.mass = scaled_mass
-        stars.radius = 0.0 | nbody_system.length
+        retrieved_state = instance.get_state(index)
+        self.assertEqual(retrieved_state["__result"], 0)
+        self.assertEqual(11.0, retrieved_state["mass"])
+        self.assertEqual(2.0, retrieved_state["radius"])
+        self.assertEqual(instance.get_number_of_particles()["number_of_particles"], 1)
+        instance.cleanup_code()
+        instance.stop()
 
-        print("centering stars")
-        stars.move_to_center()
-        if 0:
-            print("scaling stars to virial equilibrium")
-            stars.scale_to_standard(smoothing_length_squared
-                                    = gravity.parameters.epsilon_squared)
 
-        time = 0.0 | nbody_system.time
-        sys.stdout.flush()
+class TestPH4(TestWithMPI):
+    def new_system_of_sun_and_earth(self):
+        stars = datamodel.Stars(2)
+        sun = stars[0]
+        sun.mass = units.MSun(1.0)
+        sun.position = units.m(numpy.array((0.0, 0.0, 0.0)))
+        sun.velocity = units.ms(numpy.array((0.0, 0.0, 0.0)))
+        sun.radius = units.RSun(1.0)
 
-    else:
+        earth = stars[1]
+        earth.mass = units.kg(5.9736e24)
+        earth.radius = units.km(6371)
+        earth.position = units.km(numpy.array((149.5e6, 0.0, 0.0)))
+        earth.velocity = units.ms(numpy.array((0.0, 29800, 0.0)))
 
-        # Read the input data.  Units are dynamical.
+        return stars
 
-        print("reading file", infile)
+    def test0(self):
+        instance = ph4()
+        instance.stop()
 
-        id = []
-        mass = []
-        pos = []
-        vel = []
+    def test1(self):
+        convert_nbody = nbody_system.nbody_to_si(1.0 | units.MSun, 149.5e6 | units.km)
+        instance = ph4(convert_nbody)  # , redirection="none")#, debugger="xterm")
+        instance.initialize_code()
 
-        f = open(infile, 'r')
-        count = 0
-        for line in f:
-            if len(line) > 0:
-                count += 1
-                cols = line.split()
-                if count == 1: snap = int(cols[0])
-                elif count == 2: number_of_stars = int(cols[0])
-                elif count == 3: time = float(cols[0]) | nbody_system.time
-                else:
-                    if len(cols) >= 8:
-                        id.append(int(cols[0]))
-                        mass.append(float(cols[1]))
-                        pos.append((float(cols[2]),
-                                    float(cols[3]), float(cols[4])))
-                        vel.append((float(cols[5]),
-                                    float(cols[6]), float(cols[7])))
-        f.close()
+        instance.parameters.epsilon_squared = 0.0 | units.AU**2
+        instance.parameters.timestep_parameter = 0.01
 
-        stars = datamodel.Particles(number_of_stars)
-        stars.id = id
-        stars.mass = mass | nbody_system.mass
-        stars.position = pos | nbody_system.length
-        stars.velocity = vel | nbody_system.speed
-        stars.radius = 0. | nbody_system.length
+        stars = self.new_system_of_sun_and_earth()
+        earth = stars[1]
 
-    # print "IDs:", stars.id.number
-    sys.stdout.flush()
+        instance.particles.add_particles(stars)
+        instance.commit_particles()
 
-    #-----------------------------------------------------------------
+        instance.evolve_model(365 | units.day)
 
-    #print "5"; sys.stdout.flush()
-    if softening_length == -1 | nbody_system.length and number_of_stars > 0:
-        eps2 = 0.25*(float(number_of_stars))**(-0.666667) \
-                | nbody_system.length**2
-    else:
-        eps2 = softening_length*softening_length
+        instance.particles.copy_values_of_all_attributes_to(stars)
 
-    #print "6"; sys.stdout.flush()
-    gravity.parameters.timestep_parameter = accuracy_parameter
-    gravity.parameters.epsilon_squared = eps2
-    gravity.parameters.use_gpu = use_gpu
-    gravity.parameters.manage_encounters = manage_encounters
+        position_at_start = earth.position.value_in(units.AU)[0]
+        position_after_full_rotation = earth.position.value_in(units.AU)[0]
+        self.assertAlmostEqual(position_at_start, position_after_full_rotation, 6)
 
-    print("adding particles")
-    # print stars
-    sys.stdout.flush()
-    gravity.particles.add_particles(stars)
-    gravity.commit_particles()
+        instance.evolve_model(365.0 + (365.0 / 2) | units.day)
 
-    print('Taking step')
-    sys.stdout.flush()
-    gravity.evolve_model(time)
+        instance.particles.copy_values_of_all_attributes_to(stars)
+        position_after_half_a_rotation = earth.position.value_in(units.AU)[0]
+        self.assertAlmostEqual(-position_at_start, position_after_half_a_rotation, 3)
 
-    print('')
-    print("number_of_stars =", number_of_stars)
-    print("evolving to time =", end_time.number, \
-          "in steps of", delta_t.number)
-    sys.stdout.flush()
+        instance.evolve_model(365.0 + (365.0 / 2) + (365.0 / 4) | units.day)
 
-    E0,cpu0,wall0 = print_log('', time, gravity)
-    
-    # Channel to copy values from the code to the set in memory.
-    channel = gravity.particles.new_channel_to(stars)
+        instance.particles.copy_values_of_all_attributes_to(stars)
+        position_after_half_a_rotation = earth.position.value_in(units.AU)[1]
+        self.assertAlmostEqual(-position_at_start, position_after_half_a_rotation, 3)
 
-    stopping_condition = gravity.stopping_conditions.collision_detection
-    stopping_condition.enable()
-    
-    while time < end_time:
-        time += delta_t
-        gravity.evolve_model(time)
+        instance.cleanup_code()
 
-        # Ensure that the stars list is consistent with the internal
-        # data in the module.
+        instance.stop()
 
-        ls = len(stars)
+    def test2(self):
+        convert_nbody = nbody_system.nbody_to_si(1.0 | units.MSun, 149.5e6 | units.km)
+        instance = ph4(convert_nbody)
 
-        # Update the bookkeeping: synchronize stars with the module data.
+        instance.initialize_code()
+        instance.parameters.epsilon_squared = 0.0 | units.AU**2
+        instance.parameters.timestep_parameter = 0.01
+        instance.dt_dia = 5000
 
-        try:
-            gravity.update_particle_set()
-            gravity.particles.synchronize_to(stars)
-        except:
-            pass
-    
-        # Copy values from the module to the set in memory.
+        stars = self.new_system_of_sun_and_earth()
+        earth = stars[1]
+        instance.particles.add_particles(stars)
+        instance.commit_particles()
 
-        channel.copy()
-    
-        # Copy the index (ID) as used in the module to the id field in
-        # memory.  The index is not copied by default, as different
-        # codes may have different indices for the same particle and
-        # we don't want to overwrite silently.
+        for x in range(1, 365, 30):
+            instance.evolve_model(x | units.day)
+            instance.particles.copy_values_of_all_attributes_to(stars)
+            stars.savepoint()
 
-        channel.copy_attribute("index_in_code", "id")
+        if HAS_MATPLOTLIB:
+            figure = pyplot.figure()
+            plot = figure.add_subplot(1, 1, 1)
 
-        if stopping_condition.is_set():
-            star1 = stopping_condition.particles(0)[0]
-            star2 = stopping_condition.particles(1)[0]
-            print('\nstopping condition set at time', \
-                gravity.get_time().number,'for:\n')
-            print(star1)
-            print('')
-            print(star2)
-            print('')
-            raise Exception("no encounter handling")
+            x_points = earth.get_timeline_of_attribute("x")
+            y_points = earth.get_timeline_of_attribute("y")
 
-        if len(stars) != ls:
-            if 0:
-                print("stars:")
-                for s in stars:
-                    print(" ", s.id.number, s.mass.number, \
-                    s.x.number, s.y.number, s.z.number)
+            x_points_in_AU = [t_x[1].value_in(units.AU) for t_x in x_points]
+            y_points_in_AU = [t_x1[1].value_in(units.AU) for t_x1 in y_points]
+
+            plot.scatter(x_points_in_AU, y_points_in_AU, color="b", marker="o")
+
+            plot.set_xlim(-1.5, 1.5)
+            plot.set_ylim(-1.5, 1.5)
+
+            test_results_path = self.get_path_to_results()
+            output_file = os.path.join(test_results_path, "ph4-earth-sun2.svg")
+            figure.savefig(output_file)
+
+        instance.cleanup_code()
+        instance.stop()
+
+    def test3(self):
+        convert_nbody = nbody_system.nbody_to_si(5.0 | units.kg, 10.0 | units.m)
+
+        instance = ph4(convert_nbody)
+
+        instance.initialize_code()
+
+        particles = datamodel.Particles(2)
+        self.assertEqual(len(instance.particles), 0)
+
+        particles.mass = [15.0, 30.0] | units.kg
+        particles.radius = [10.0, 20.0] | units.m
+        particles.position = [[10.0, 20.0, 30.0], [20.0, 40.0, 60.0]] | units.m
+        particles.velocity = [[0.0, 0.0, 0.0], [0.0, 0.0, 0.0]] | units.m / units.s
+
+        instance.particles.add_particles(particles)
+        self.assertEqual(len(instance.particles), 2)
+        instance.commit_particles()
+
+        instance.particles.mass = [17.0, 33.0] | units.kg
+
+        self.assertEqual(instance.get_mass(1), 17.0 | units.kg)
+        self.assertEqual(instance.get_mass(2), 33.0 | units.kg)
+
+        instance.cleanup_code()
+        instance.stop()
+
+    def test4(self):
+        instance = ph4()
+        instance.initialize_code()
+
+        particles = datamodel.Particles(6)
+        particles.mass = nbody_system.mass.new_quantity(range(1, 7))
+        particles.radius = 0.00001 | nbody_system.length
+        particles.position = [
+            [-1.0, 0.0, 0.0],
+            [1.0, 0.0, 0.0],
+            [0.0, -1.0, 0.0],
+            [0.0, 1.0, 0.0],
+            [0.0, 0.0, -1.0],
+            [0.0, 0.0, 1.0],
+        ] | nbody_system.length
+        particles.velocity = [
+            [0.0, 0.0, 0.0],
+            [0.0, 0.0, 0.0],
+            [0.0, 0.0, 0.0],
+            [0.0, 0.0, 0.0],
+            [0.0, 0.0, 0.0],
+            [0.0, 0.0, 0.0],
+        ] | nbody_system.speed
+        instance.particles.add_particles(particles)
+
+        instance.commit_particles()
+        copyof = instance.particles.copy()
+
+        instance.cleanup_code()
+        instance.stop()
+
+        self.assertEqual(2 | nbody_system.mass, copyof[1].mass)
+
+    def test5(self):
+        instance = ph4()
+        instance.initialize_code()
+        instance.parameters.manage_encounters = 2
+        instance.parameters.epsilon_squared = 0.0 | nbody_system.length**2
+        particles = datamodel.Particles(6)
+        particles.mass = [0.01, 0.1, 0.1, 0.1, 0.1, 0.1] | nbody_system.mass
+        particles.radius = 0.1 | nbody_system.length
+        particles.position = [
+            [-1.0, 0.0, 0.0],  # first two close together
+            [-1.2, 0.0, 0.0],
+            [0.0, 4.0, 0.0],  # rest far away
+            [0.0, 5.0, 0.0],
+            [0.0, 6.0, 0.0],
+            [0.0, 7.0, 0.0],
+        ] | nbody_system.length
+        particles.velocity = [
+            [0.0, 0.0, 0.0],
+            [0.0, 0.0, 0.0],
+            [0.0, 0.0, 0.0],
+            [0.0, 0.0, 0.0],
+            [0.0, 0.0, 0.0],
+            [0.0, 0.0, 0.0],
+        ] | nbody_system.speed
+
+        instance.particles.add_particles(particles)
+
+        instance.commit_particles()
+        instance.evolve_model(0.1 | nbody_system.time)
+
+        instance.update_particle_set()
+
+        self.assertEqual(len(instance.particles), 5)
+        self.assertEqual(instance.particles.index_in_code, [3, 4, 5, 6, 10])
+        self.assertEqual(
+            instance.particles.mass, [0.1, 0.1, 0.1, 0.1, 0.11] | nbody_system.mass
+        )
+
+        self.assertEqual(len(particles), 6)
+        instance.particles.synchronize_to(particles)
+        self.assertEqual(len(particles), 5)
+        self.assertEqual(particles.mass, [0.1, 0.1, 0.1, 0.1, 0.11] | nbody_system.mass)
+
+        binary_energy1, error = instance.legacy_interface.get_binary_energy()
+        self.assertEqual(error, 0)
+        self.assertTrue(binary_energy1 < 0)
+
+        binary_energy2 = instance.get_binary_energy()
+
+        instance.cleanup_code()
+        instance.stop()
+
+        self.assertEqual(binary_energy2.value_in(nbody_system.energy), binary_energy1)
+
+    def test6(self):
+        instance = ph4()
+        instance.initialize_code()
+        instance.parameters.epsilon_squared = 0.0 | nbody_system.length**2
+
+        particles = datamodel.Particles(2)
+        particles.mass = [1.0, 1.0] | nbody_system.mass
+        particles.radius = [0.0001, 0.0001] | nbody_system.length
+        particles.position = [[0.0, 0.0, 0.0], [2.0, 0.0, 0.0]] | nbody_system.length
+        particles.velocity = [[0.0, 0.0, 0.0], [0.0, 0.0, 0.0]] | nbody_system.speed
+        instance.particles.add_particles(particles)
+
+        instance.commit_particles()
+
+        zero = 0.0 | nbody_system.length
+        fx, fy, fz = instance.get_gravity_at_point(
+            zero, 1.0 | nbody_system.length, zero, zero
+        )
+        self.assertAlmostEqual(fx, 0.0 | nbody_system.acceleration, 3)
+        self.assertAlmostEqual(fy, 0.0 | nbody_system.acceleration, 3)
+        self.assertAlmostEqual(fz, 0.0 | nbody_system.acceleration, 3)
+        for x in (0.25, 0.5, 0.75):
+            x0 = x | nbody_system.length
+            x1 = (2.0 - x) | nbody_system.length
+            potential0 = instance.get_potential_at_point(zero, x0, zero, zero)
+            potential1 = instance.get_potential_at_point(zero, x1, zero, zero)
+            fx0, fy0, fz0 = instance.get_gravity_at_point(zero, x0, zero, zero)
+            fx1, fy1, fz1 = instance.get_gravity_at_point(zero, x1, zero, zero)
+
+            self.assertAlmostEqual(fy0, 0.0 | nbody_system.acceleration, 3)
+            self.assertAlmostEqual(fz0, 0.0 | nbody_system.acceleration, 3)
+            self.assertAlmostEqual(fy1, 0.0 | nbody_system.acceleration, 3)
+            self.assertAlmostEqual(fz1, 0.0 | nbody_system.acceleration, 3)
+
+            self.assertAlmostEqual(fx0, -1.0 * fx1, 5)
+            fx = (-1.0 / (x0**2) + 1.0 / (x1**2)) * (
+                1.0 | nbody_system.length**3 / nbody_system.time**2
+            )
+            self.assertAlmostEqual(fx, fx0, 2)
+            self.assertAlmostEqual(potential0, potential1, 5)
+
+        instance.stop()
+
+    def xtest7(self):
+        instance = ph4()
+        instance.initialize_code()
+        instance.parameters.epsilon_squared = 0.0 | nbody_system.length**2
+        instance.set_eta(0.01, 0.02)
+
+        particles = datamodel.Particles(2)
+        particles.mass = [1.0, 1.0] | nbody_system.mass
+        particles.radius = [0.0001, 0.0001] | nbody_system.length
+        particles.position = [[0.0, 0.0, 0.0], [2.0, 0.0, 0.0]] | nbody_system.length
+        particles.velocity = [[0.0, 0.0, 0.0], [0.0, 0.0, 0.0]] | nbody_system.speed
+        instance.particles.add_particles(particles)
+
+        instance.initialize_particles(0.0)
+
+        zero = [0.0, 0.0, 0.0] | nbody_system.length
+        fx, fy, fz = instance.get_gravity_at_point(
+            zero, [0.5, 1.0, 1.5] | nbody_system.length, zero, zero
+        )
+        self.assertAlmostRelativeEqual(
+            fx[0], -3.55555555556 | nbody_system.acceleration, 5
+        )
+        self.assertAlmostRelativeEqual(fy[0], 0.0 | nbody_system.acceleration, 3)
+        self.assertAlmostRelativeEqual(fz[0], 0.0 | nbody_system.acceleration, 3)
+        self.assertAlmostRelativeEqual(fx[1], 0.0 | nbody_system.acceleration, 3)
+        self.assertAlmostRelativeEqual(fy[1], 0.0 | nbody_system.acceleration, 3)
+        self.assertAlmostRelativeEqual(fz[1], 0.0 | nbody_system.acceleration, 3)
+        self.assertAlmostRelativeEqual(
+            fx[2], 3.55555555556 | nbody_system.acceleration, 5
+        )
+        self.assertAlmostRelativeEqual(fy[2], 0.0 | nbody_system.acceleration, 3)
+        self.assertAlmostRelativeEqual(fz[2], 0.0 | nbody_system.acceleration, 3)
+
+        n = 512
+        x = nbody_system.length.new_quantity(numpy.linspace(0.1, 1.9, n))
+        zero = nbody_system.length.new_quantity(numpy.zeros(n))
+        fx, fy, fz = instance.get_gravity_at_point(zero, x, zero, zero)
+        for i in range(n / 2):
+            self.assertAlmostRelativeEqual(fx[i], -fx[n - 1 - i], 5)
+
+        instance.stop()
+
+    def xtest8(self):
+        particles = datamodel.Particles(6)
+        particles.mass = nbody_system.mass.new_quantity(range(1, 7))
+        particles.radius = 0.00001 | nbody_system.length
+        particles.position = [
+            [-1.0, 0.0, 0.0],
+            [1.0, 0.0, 0.0],
+            [0.0, -1.0, 0.0],
+            [0.0, 1.0, 0.0],
+            [0.0, 0.0, -1.0],
+            [0.0, 0.0, 1.0],
+        ] | nbody_system.length
+        particles.velocity = [
+            [0.0, 0.0, 0.0],
+            [0.0, 0.0, 0.0],
+            [0.0, 0.0, 0.0],
+            [0.0, 0.0, 0.0],
+            [0.0, 0.0, 0.0],
+            [0.0, 0.0, 0.0],
+        ] | nbody_system.speed
+
+        for current_mode in ["gpu"]:
+            try:
+                instance = ph4(mode=current_mode)
+            except:
+                print("Running PhiGRAPE with mode=", current_mode, " was unsuccessful.")
             else:
-                print("number of stars =", len(stars))
-            sys.stdout.flush()
+                print("Running PhiGRAPE with mode=", current_mode, "... ", end=" ")
+                instance.initialize_code()
+                instance.particles.add_particles(particles)
+                instance.initialize_particles(0.0)
+                instance.evolve_model(0.1 | nbody_system.time)
+                instance.cleanup_code()
+                instance.stop()
+                print("ok")
 
-        print_log('', time, gravity, E0, cpu0, wall0)
-        sys.stdout.flush()
+    def test10(self):
+        instance = ph4()
+        instance.initialize_code()
 
-    print('')
-    gravity.stop()
+        instance.parameters.epsilon_squared = 0.0 | nbody_system.length**2
+        instance.parameters.timestep_parameter = 0.01
 
-if __name__ == '__main__':
+        stars = new_plummer_model(100)
 
-    infile = None
-    N = 250
-    t_end = 5.0 | nbody_system.time
-    delta_t = 1.0 | nbody_system.time
-    n_workers = 1
-    use_gpu = 1
-    gpu_worker = 1
-    gpu_id = -1
-    accuracy_parameter = 0.1
-    softening_length = -1  | nbody_system.length
-    random_seed = -1
-    manage_encounters = 1
+        instance.particles.add_particles(stars)
+        channel = stars.new_channel_to(instance.particles)
 
-    try:
-        opts, args = getopt.getopt(sys.argv[1:], "a:c:d:e:f:gGi:n:s:t:w:")
-    except getopt.GetoptError as err:
-        print(str(err))
-        sys.exit(1)
+        instance.evolve_model(0.001 | nbody_system.time)
 
-    for o, a in opts:
-        if o == "-a":
-            accuracy_parameter = float(a)
-        elif o == "-c":
-            manage_encounters = int(a)
-        elif o == "-d":
-            delta_t = float(a) | nbody_system.time 
-        elif o == "-e":
-            softening_length = float(a) | nbody_system.length
-        elif o == "-f":
-            infile = a
-        elif o == "-g":
-            use_gpu = 0
-        elif o == "-G":
-            use_gpu = 0
-            gpu_worker = 0
-        elif o == "-i":
-            gpu_id = int(a)
-        elif o == "-n":
-            N = int(a)
-        elif o == "-s":
-            random_seed = int(a)
-        elif o == "-t":
-            t_end = float(a) | nbody_system.time
-        elif o == "-w":
-            n_workers = int(a)
-        else:
-            print("unexpected argument", o)
+        e0 = instance.kinetic_energy + instance.potential_energy
 
-    if random_seed <= 0:
-        numpy.random.seed()
-        random_seed = numpy.random.randint(1, pow(2,31)-1)
-    numpy.random.seed(random_seed)
-    print("random seed =", random_seed)
+        stars.mass *= 0.9
+        channel.copy()
 
+        instance.synchronize_model()
 
-    #os.system('env')
+        e1 = instance.kinetic_energy + instance.potential_energy
 
+        instance.cleanup_code()
+        instance.stop()
 
-    assert is_mpd_running()
-    run_ph4(infile, N, t_end, delta_t, n_workers,
-             use_gpu, gpu_worker, gpu_id,
-             accuracy_parameter, softening_length,
-             manage_encounters)
+        delta_e = e1 - e0
+
+        self.assertTrue(e1 != e0)
+
+    def test10b(self):
+        instance = ph4(number_of_workers=4)
+        instance.initialize_code()
+
+        instance.parameters.epsilon_squared = 0.0 | nbody_system.length**2
+        instance.parameters.timestep_parameter = 0.01
+
+        stars = new_plummer_model(100)
+
+        instance.particles.add_particles(stars)
+        channel = stars.new_channel_to(instance.particles)
+
+        instance.evolve_model(0.001 | nbody_system.time)
+
+        e0 = instance.kinetic_energy + instance.potential_energy
+
+        stars.mass *= 0.9
+        channel.copy()
+
+        instance.synchronize_model()
+
+        e1 = instance.kinetic_energy + instance.potential_energy
+
+        instance.cleanup_code()
+        instance.stop()
+
+        delta_e = e1 - e0
+
+        self.assertTrue(e1 != e0)
+
+    def test11(self):
+        print("Testing PH4 collision_detection")
+        particles = datamodel.Particles(7)
+        particles.mass = 0.000001 | nbody_system.mass
+        particles.radius = 0.01 | nbody_system.length
+        particles.x = [
+            -101.0,
+            -100.0,
+            -0.5,
+            0.5,
+            100.0,
+            101.0,
+            104.0,
+        ] | nbody_system.length
+        particles.y = 0 | nbody_system.length
+        particles.z = 0 | nbody_system.length
+        particles.velocity = [[2, 0, 0], [-2, 0, 0]] * 3 + [
+            [-4, 0, 0]
+        ] | nbody_system.speed
+
+        instance = ph4()
+        instance.initialize_code()
+        instance.parameters.set_defaults()
+        instance.parameters.epsilon_squared = 0 | nbody_system.length**2
+        instance.particles.add_particles(particles)
+        collisions = instance.stopping_conditions.collision_detection
+        collisions.enable()
+
+        for i in range(3):  # PH4 can handle only one collision (=closest) at a time
+            instance.evolve_model(1.0 | nbody_system.time)
+
+            self.assertTrue(collisions.is_set())
+            self.assertTrue(instance.model_time < 0.5 | nbody_system.time)
+            self.assertEqual(len(collisions.particles(0)), 1)
+            self.assertEqual(len(collisions.particles(1)), 1)
+            self.assertEqual(
+                len(
+                    instance.particles
+                    - collisions.particles(0)
+                    - collisions.particles(1)
+                ),
+                5 - i,
+            )
+            self.assertEqual(
+                abs(collisions.particles(0).x - collisions.particles(1).x)
+                < (collisions.particles(0).radius + collisions.particles(1).radius),
+                True,
+            )
+
+            sticky_merged = datamodel.Particles(len(collisions.particles(0)))
+            sticky_merged.mass = (
+                collisions.particles(0).mass + collisions.particles(1).mass
+            )
+            sticky_merged.radius = collisions.particles(0).radius
+            for p1, p2, merged in zip(
+                collisions.particles(0), collisions.particles(1), sticky_merged
+            ):
+                merged.position = (p1 + p2).center_of_mass()
+                merged.velocity = (p1 + p2).center_of_mass_velocity()
+
+            print(instance.model_time)
+            print(instance.particles)
+            instance.particles.remove_particles(
+                collisions.particles(0) + collisions.particles(1)
+            )
+            instance.particles.add_particles(sticky_merged)
+
+        instance.evolve_model(1.0 | nbody_system.time)
+        print()
+        print(instance.model_time)
+        print(instance.particles)
+        self.assertTrue(collisions.is_set())
+        self.assertTrue(instance.model_time < 1.0 | nbody_system.time)
+        self.assertEqual(len(collisions.particles(0)), 1)
+        self.assertEqual(len(collisions.particles(1)), 1)
+        self.assertEqual(
+            len(instance.particles - collisions.particles(0) - collisions.particles(1)),
+            2,
+        )
+        self.assertEqual(
+            abs(collisions.particles(0).x - collisions.particles(1).x)
+            < (collisions.particles(0).radius + collisions.particles(1).radius),
+            [True],
+        )
+        instance.stop()
+
+    def xtest11(self):
+        particles = datamodel.Particles(2)
+        particles.x = [
+            0.0,
+            1.0,
+            # 5,7,
+            # 10,12,
+            # 15,17,
+            # 20,22
+        ] | nbody_system.length
+        particles.y = 0 | nbody_system.length
+        particles.z = 0 | nbody_system.length
+        particles.radius = 0.75 | nbody_system.length
+        particles.vx = 0.1 | nbody_system.speed
+        particles.vy = 0 | nbody_system.speed
+        particles.vz = 0 | nbody_system.speed
+        particles.mass = 0 | nbody_system.mass
+
+        instance = ph4()
+        instance.initialize_code()
+        instance.parameters.epsilon_squared = (0.01 | nbody_system.length) ** 2
+        instance.particles.add_particles(particles)
+        instance.stopping_conditions.collision_detection.enable()
+        instance.evolve_model(0.5 | nbody_system.time)
+        self.assertTrue(instance.stopping_conditions.collision_detection.is_set())
+        self.assertEqual(
+            len(instance.stopping_conditions.collision_detection.particles(0)), 2
+        )
+        p0 = instance.stopping_conditions.collision_detection.particles(0)[0]
+        p1 = instance.stopping_conditions.collision_detection.particles(1)[0]
+        self.assertNotEqual(p0, p1)
+        self.assertTrue(p1.x - p0.x < 1.5 | nbody_system.length)
+        instance.stop()
+
+    def xtest12(self):
+        particles = datamodel.Particles(2)
+        particles.x = [
+            0.0,
+            1.0,
+            # 5,7,
+            # 10,12,
+            # 15,17,
+            # 20,22
+        ] | nbody_system.length
+        particles.y = 0 | nbody_system.length
+        particles.z = 0 | nbody_system.length
+        particles.radius = 0.75 | nbody_system.length
+        particles.vx = 0 | nbody_system.speed
+        particles.vy = 0 | nbody_system.speed
+        particles.vz = 0 | nbody_system.speed
+        particles.mass = 1.0 | nbody_system.mass
+
+        instance = ph4()
+        instance.initialize_code()
+        instance.parameters.epsilon_squared = (0.01 | nbody_system.length) ** 2
+        instance.particles.add_particles(particles)
+        instance.stopping_conditions.pair_detection.enable()
+        instance.evolve_model(1.5 | nbody_system.time)
+        self.assertTrue(instance.stopping_conditions.pair_detection.is_set())
+        self.assertEqual(
+            len(instance.stopping_conditions.pair_detection.particles(0)), 2
+        )
+        p0 = instance.stopping_conditions.pair_detection.particles(0)[0]
+        p1 = instance.stopping_conditions.pair_detection.particles(1)[0]
+        self.assertNotEqual(p0, p1)
+        self.assertTrue(p1.x - p0.x < 1.5 | nbody_system.length)
+        instance.stop()
+
+    def xtest13(self):
+        particles = datamodel.Particles(2)
+        particles.x = [0.0, 10.0] | nbody_system.length
+        particles.y = 0 | nbody_system.length
+        particles.z = 0 | nbody_system.length
+        particles.radius = 0.005 | nbody_system.length
+        particles.vx = 0 | nbody_system.speed
+        particles.vy = 0 | nbody_system.speed
+        particles.vz = 0 | nbody_system.speed
+        particles.mass = 1.0 | nbody_system.mass
+
+        instance = ph4()
+        instance.initialize_code()
+        instance.parameters.stopping_conditions_number_of_steps = 2
+        self.assertEqual(instance.parameters.stopping_conditions_number_of_steps, 2)
+        instance.parameters.epsilon_squared = (0.01 | nbody_system.length) ** 2
+        instance.particles.add_particles(particles)
+        instance.stopping_conditions.number_of_steps_detection.enable()
+        instance.evolve_model(10 | nbody_system.time)
+        self.assertTrue(instance.stopping_conditions.number_of_steps_detection.is_set())
+        self.assertTrue(instance.model_time < 10 | nbody_system.time)
+
+        instance.stop()
+
+    def xtest14(self):
+        particles = datamodel.Particles(2)
+        particles.x = [0.0, 10.0] | nbody_system.length
+        particles.y = 0 | nbody_system.length
+        particles.z = 0 | nbody_system.length
+        particles.radius = 0.005 | nbody_system.length
+        particles.vx = 0 | nbody_system.speed
+        particles.vy = 0 | nbody_system.speed
+        particles.vz = 0 | nbody_system.speed
+        particles.mass = 1.0 | nbody_system.mass
+
+        very_short_time_to_evolve = 1 | units.s
+        very_long_time_to_evolve = 1e9 | nbody_system.time
+
+        instance = ph4()
+        instance.initialize_code()
+        instance.parameters.stopping_conditions_timeout = very_short_time_to_evolve
+        self.assertEqual(
+            instance.parameters.stopping_conditions_timeout, very_short_time_to_evolve
+        )
+        instance.parameters.epsilon_squared = (0.01 | nbody_system.length) ** 2
+        instance.particles.add_particles(particles)
+        instance.stopping_conditions.timeout_detection.enable()
+        start = time.time()
+        instance.evolve_model(very_long_time_to_evolve)
+        end = time.time()
+        self.assertTrue(instance.stopping_conditions.timeout_detection.is_set())
+        self.assertTrue(
+            (end - start) < very_short_time_to_evolve.value_in(units.s) + 2
+        )  # 2 = some overhead compensation
+
+        instance.stop()
+
+    def test15(self):
+        instance = ph4()
+        instance.initialize_code()
+
+        particles = datamodel.Particles(2)
+        particles.mass = [1.0, 1.0] | nbody_system.mass
+        particles.radius = [0.0001, 0.0001] | nbody_system.length
+        particles.position = [[0.0, 0.0, 0.0], [2.0, 0.0, 0.0]] | nbody_system.length
+        particles.velocity = [[0.0, 0.0, 0.0], [0.0, 0.0, 0.0]] | nbody_system.speed
+        instance.particles.add_particles(particles)
+
+        mass = instance.particles[0].mass
+
+        instance.cleanup_code()
+        instance.stop()
+
+        self.assertEqual(mass, 1.0 | nbody_system.mass)
+
+    def test16(self):
+        print("Testing ph4 states")
+        stars = new_plummer_model(100)
+        black_hole = datamodel.Particle()
+        black_hole.mass = 1.0 | nbody_system.mass
+        black_hole.radius = 0.0 | nbody_system.length
+        black_hole.position = [0.0, 0.0, 0.0] | nbody_system.length
+        black_hole.velocity = [0.0, 0.0, 0.0] | nbody_system.speed
+
+        print("First do everything manually:")
+        instance = ph4()
+        self.assertEqual(instance.get_name_of_current_state(), "UNINITIALIZED")
+        instance.initialize_code()
+        self.assertEqual(instance.get_name_of_current_state(), "INITIALIZED")
+        instance.parameters.epsilon_squared = 0.0 | nbody_system.length**2
+        instance.parameters.timestep_parameter = 0.01
+        instance.commit_parameters()
+        self.assertEqual(instance.get_name_of_current_state(), "EDIT")
+        instance.particles.add_particles(stars)
+        instance.commit_particles()
+        self.assertEqual(instance.get_name_of_current_state(), "RUN")
+        instance.particles.remove_particle(stars[0])
+        instance.particles.add_particle(black_hole)
+        self.assertEqual(instance.get_name_of_current_state(), "UPDATE")
+        instance.recommit_particles()
+        self.assertEqual(instance.get_name_of_current_state(), "RUN")
+        instance.evolve_model(0.001 | nbody_system.time)
+        self.assertEqual(instance.get_name_of_current_state(), "EVOLVED")
+        instance.synchronize_model()
+        self.assertEqual(instance.get_name_of_current_state(), "RUN")
+        instance.cleanup_code()
+        self.assertEqual(instance.get_name_of_current_state(), "END")
+        instance.stop()
+
+        print(
+            "initialize_code(), commit_parameters(), (re)commit_particles(), "
+            "synchronize_model(), and cleanup_code() should be called "
+            "automatically before editing parameters, new_particle(), get_xx(), and stop():"
+        )
+        instance = ph4()
+        self.assertEqual(instance.get_name_of_current_state(), "UNINITIALIZED")
+        instance.parameters.epsilon_squared = 0.0 | nbody_system.length**2
+        instance.parameters.timestep_parameter = 0.01
+        self.assertEqual(instance.get_name_of_current_state(), "INITIALIZED")
+        instance.particles.add_particles(stars)
+        self.assertEqual(instance.get_name_of_current_state(), "EDIT")
+        mass = instance.particles[0].mass
+        self.assertEqual(instance.get_name_of_current_state(), "RUN")
+        instance.particles.remove_particle(stars[0])
+        instance.particles.add_particle(black_hole)
+        self.assertEqual(instance.get_name_of_current_state(), "UPDATE")
+        mass = instance.particles[0].mass
+        self.assertEqual(instance.get_name_of_current_state(), "RUN")
+        instance.evolve_model(0.001 | nbody_system.time)
+        self.assertEqual(instance.get_name_of_current_state(), "EVOLVED")
+        mass = instance.particles[0].mass
+        self.assertEqual(instance.get_name_of_current_state(), "RUN")
+        instance.stop()
+        self.assertEqual(instance.get_name_of_current_state(), "STOPPED")
+
+    def test17(self):
+        print("Testing parameter defaults")
+
+        instance = ph4()
+        instance.parameters.epsilon_squared = (
+            0.5 | nbody_system.length * nbody_system.length
+        )
+
+        particles = datamodel.Particles(2)
+        particles.mass = [1.0, 1.0] | nbody_system.mass
+        particles.radius = [0.0001, 0.0001] | nbody_system.length
+        particles.position = [[0.0, 0.0, 0.0], [2.0, 0.0, 0.0]] | nbody_system.length
+        particles.velocity = [[0.0, 0.0, 0.0], [0.0, 0.0, 0.0]] | nbody_system.speed
+        instance.particles.add_particles(particles)
+
+        self.assertAlmostRelativeEquals(
+            instance.parameters.epsilon_squared,
+            0.5 | nbody_system.length * nbody_system.length,
+        )
+        self.assertAlmostRelativeEquals(instance.parameters.timestep_parameter, 0.14)
+        self.assertAlmostRelativeEquals(instance.parameters.use_gpu, 0)
+        self.assertAlmostRelativeEquals(instance.parameters.manage_encounters, 4)
+
+    def test18(self):
+        print("Testing effect of ph4 parameter epsilon_squared")
+        converter = nbody_system.nbody_to_si(1.0 | units.MSun, 1.0 | units.AU)
+        particles = datamodel.Particles(2)
+        particles.mass = [1.0, 3.0037e-6] | units.MSun
+        particles.radius = 1.0 | units.RSun
+        particles.position = [[0.0, 0.0, 0.0], [1.0, 0.0, 0.0]] | units.AU
+        particles.velocity = [[0.0, 0.0, 0.0], [0.0, 0.0, 0.0]] | units.km / units.s
+        particles[1].vy = (
+            constants.G * particles.total_mass() / (1.0 | units.AU)
+        ).sqrt()
+        particles.rotate(0.0, 0.0, math.pi / 4)
+        particles.move_to_center()
+
+        tan_initial_direction = particles[1].vy / particles[1].vx
+        self.assertAlmostEqual(tan_initial_direction, math.tan(-math.pi / 4))
+        tan_final_direction = []
+        for log_eps2 in range(-5, 6, 2):
+            instance = ph4(converter)
+            instance.initialize_code()
+            instance.parameters.epsilon_squared = 10.0**log_eps2 | units.AU**2
+            instance.parameters.timestep_parameter = 0.001
+            instance.commit_parameters()
+            instance.particles.add_particles(particles)
+            instance.commit_particles()
+            instance.evolve_model(0.25 | units.yr)
+            tan_final_direction.append(
+                instance.particles[1].velocity[1] / instance.particles[1].velocity[0]
+            )
+            instance.cleanup_code()
+            instance.stop()
+        # Small values of epsilon_squared should result in normal earth-sun dynamics: rotation of 90 degrees
+        self.assertAlmostEqual(tan_final_direction[0], math.tan(math.pi / 4.0), 2)
+        # Large values of epsilon_squared should result in ~ no interaction
+        self.assertAlmostEqual(tan_final_direction[-1], tan_initial_direction, 2)
+        # Outcome is most sensitive to epsilon_squared when epsilon_squared = d(earth, sun)^2
+        delta = [
+            abs(tan_final_direction[i + 1] - tan_final_direction[i])
+            for i in range(len(tan_final_direction) - 1)
+        ]
+        self.assertEqual(delta[len(tan_final_direction) // 2 - 1], max(delta))
+
+    def test19(self):
+        print("Testing ph4 properties")
+        particles = new_plummer_model(1000, do_scale=True)
+        particles.position += [1, 2, 3] | nbody_system.length
+        cluster_velocity = [4, 5, 6] | nbody_system.speed
+        particles.velocity += cluster_velocity
+        external_kinetic_energy = (
+            0.5 | nbody_system.mass
+        ) * cluster_velocity.length_squared()
+
+        instance = ph4()
+        instance.particles.add_particles(particles)
+
+        kinetic_energy = instance.kinetic_energy - external_kinetic_energy
+        potential_energy = instance.potential_energy
+        self.assertAlmostRelativeEqual(kinetic_energy, 0.25 | nbody_system.energy, 10)
+        self.assertAlmostRelativeEqual(potential_energy, -0.5 | nbody_system.energy, 10)
+        self.assertAlmostRelativeEqual(instance.total_mass, 1.0 | nbody_system.mass, 10)
+        self.assertAlmostRelativeEqual(
+            instance.center_of_mass_position, [1, 2, 3] | nbody_system.length, 10
+        )
+        self.assertAlmostRelativeEqual(
+            instance.center_of_mass_velocity, [4, 5, 6] | nbody_system.speed, 10
+        )
+        initial_total_energy = kinetic_energy + potential_energy
+
+        instance.evolve_model(0.1 | nbody_system.time)
+        self.assertAlmostRelativeEqual(instance.model_time, 0.1 | nbody_system.time, 3)
+        kinetic_energy = instance.kinetic_energy - external_kinetic_energy
+        potential_energy = instance.potential_energy
+        self.assertAlmostRelativeEqual(
+            kinetic_energy + potential_energy, -0.25 | nbody_system.energy, 3
+        )
+        self.assertAlmostRelativeEqual(instance.total_mass, 1.0 | nbody_system.mass, 3)
+        self.assertAlmostRelativeEqual(
+            instance.center_of_mass_position, [1.4, 2.5, 3.6] | nbody_system.length, 3
+        )
+        self.assertAlmostRelativeEqual(
+            instance.center_of_mass_velocity, [4, 5, 6] | nbody_system.speed, 3
+        )
+
+        instance.cleanup_code()
+        instance.stop()
+
+    def test20(self):
+        instance = ph4()
+        instance.initialize_code()
+        instance.parameters.epsilon_squared = 0.00001 | nbody_system.length**2
+
+        particles = datamodel.Particles(2)
+        particles.mass = [1.0, 1.0] | nbody_system.mass
+        particles.radius = [0.0001, 0.0001] | nbody_system.length
+        particles.position = [[0.0, 0.0, 0.0], [2.0, 0.0, 0.0]] | nbody_system.length
+        particles.velocity = [[0.0, 0.0, 0.0], [0.0, 0.0, 0.0]] | nbody_system.speed
+        instance.particles.add_particles(particles)
+
+        zero = 0.0 | nbody_system.length
+        fx, fy, fz = instance.get_gravity_at_point(
+            zero, 1.0 | nbody_system.length, zero, zero
+        )
+        self.assertAlmostEqual(fx, 0.0 | nbody_system.acceleration, 6)
+        self.assertAlmostEqual(fy, 0.0 | nbody_system.acceleration, 6)
+        self.assertAlmostEqual(fz, 0.0 | nbody_system.acceleration, 6)
+        potentials = [
+            -4.57110767688,
+            -2.66662518639,
+            -2.13331892165,
+        ] | nbody_system.length**2 / (nbody_system.time**2)
+        for x, pot in zip((0.25, 0.5, 0.75), potentials):
+            x0 = x | nbody_system.length
+            x1 = (2.0 - x) | nbody_system.length
+            potential0 = instance.get_potential_at_point(zero, x0, zero, zero)
+            potential1 = instance.get_potential_at_point(zero, x1, zero, zero)
+            fx0, fy0, fz0 = instance.get_gravity_at_point(zero, x0, zero, zero)
+            fx1, fy1, fz1 = instance.get_gravity_at_point(zero, x1, zero, zero)
+
+            self.assertAlmostRelativeEquals(fy0, 0.0 | nbody_system.acceleration, 6)
+            self.assertAlmostRelativeEquals(fz0, 0.0 | nbody_system.acceleration, 6)
+            self.assertAlmostRelativeEquals(fy1, 0.0 | nbody_system.acceleration, 6)
+            self.assertAlmostRelativeEquals(fz1, 0.0 | nbody_system.acceleration, 6)
+
+            self.assertAlmostRelativeEquals(fx0, -1.0 * fx1, 5)
+            fx = (-1.0 / (x0**2) + 1.0 / (x1**2)) * (
+                1.0 | nbody_system.length**3 / nbody_system.time**2
+            )
+            print(fx, fx0)
+            self.assertAlmostRelativeEquals(fx, fx0, 2)
+            self.assertAlmostRelativeEquals(potential0, potential1, 5)
+            self.assertAlmostRelativeEquals(potential0, pot, 5)
+        instance.stop()
+
+    def test21(self):
+        particles = new_plummer_model(200)
+        particles.scale_to_standard()
+        instance = ph4()
+        instance.initialize_code()
+        instance.parameters.epsilon_squared = 0.00000 | nbody_system.length**2
+        instance.particles.add_particles(particles)
+
+        x = numpy.arange(-1, 1, 0.1) | nbody_system.length
+        zero = numpy.zeros(len(x)) | nbody_system.length
+        potential0 = instance.get_potential_at_point(zero, x, zero, zero)
+        instance.stop()
+        for n in (2, 3, 4):
+            instance = ph4(number_of_workers=n)
+            instance.initialize_code()
+            instance.parameters.epsilon_squared = 0.00000 | nbody_system.length**2
+            instance.particles.add_particles(particles)
+            potential = instance.get_potential_at_point(zero, x, zero, zero)
+
+            self.assertAlmostRelativeEquals(potential0, potential, 8)
+            instance.stop()
+
+    def test22(self):
+        particles = new_plummer_model(200)
+        particles.scale_to_standard()
+        try:
+            instance = ph4(mode="gpu")
+        except:
+            self.skip("gpu mode is not available")
+
+        instance.initialize_code()
+        instance.parameters.epsilon_squared = 0.00000 | nbody_system.length**2
+        instance.particles.add_particles(particles)
+
+        x = numpy.arange(-1, 1, 0.1) | nbody_system.length
+        zero = numpy.zeros(len(x)) | nbody_system.length
+        gpu_potential = instance.get_potential_at_point(zero, x, zero, zero)
+        instance.stop()
+
+        instance = ph4()
+        instance.initialize_code()
+        instance.parameters.epsilon_squared = 0.00000 | nbody_system.length**2
+        instance.particles.add_particles(particles)
+        nogpu_potential = instance.get_potential_at_point(zero, x, zero, zero)
+
+        self.assertAlmostRelativeEquals(nogpu_potential, gpu_potential, 5)
+        instance.stop()
+
+    def test23(self):
+        particles = datamodel.Particles(
+            mass=[1, 2] | nbody_system.mass,
+            x=[-1, 1] | nbody_system.length,
+            y=[-1, 1] | nbody_system.length,
+            z=[-1, 1] | nbody_system.length,
+            vx=[-1, 1] | nbody_system.speed,
+            vy=[-1, 1] | nbody_system.speed,
+            vz=[-1, 1] | nbody_system.speed,
+        )
+
+        instance = ph4()
+
+        overlay = datamodel.ParticlesOverlay(instance.particles)
+
+        overlay.add_particles(particles)
+        all_attributes = overlay.get_values_in_store(
+            overlay.get_all_indices_in_store(),
+            ["mass", "x", "y", "z", "vx", "vy", "vz"],
+        )
+
+        self.assertEqual(all_attributes[0], [1, 2] | nbody_system.mass)
+        self.assertEqual(instance.particles.mass, [1, 2] | nbody_system.mass)
+        self.assertEqual(overlay.mass, [1, 2] | nbody_system.mass)
+        self.assertEqual(
+            overlay.position,
+            [[-1.0, -1.0, -1.0], [1.0, 1.0, 1.0]] | nbody_system.length,
+        )
+
+    def test24(self):
+        particles = datamodel.Particles(
+            mass=[1, 2] | nbody_system.mass,
+            x=[-1, 1] | nbody_system.length,
+            y=[-1, 1] | nbody_system.length,
+            z=[-1, 1] | nbody_system.length,
+            vx=[-1, 1] | nbody_system.speed,
+            vy=[-1, 1] | nbody_system.speed,
+            vz=[-1, 1] | nbody_system.speed,
+        )
+
+        instance = ph4()
+
+        instance.particles.add_particles(particles)
+        self.assertEqual(len(instance.particles), 2)
+        self.assertAlmostRelativeEquals(
+            instance.particles.mass, [1, 2] | nbody_system.mass
+        )
+
+        instance.cleanup_code()
+        instance.initialize_code()
+
+        instance.particles.add_particles(particles)
+        self.assertEqual(len(instance.particles), 2)
+        self.assertAlmostRelativeEquals(
+            instance.particles.mass, [1, 2] | nbody_system.mass
+        )
+
+    def test25(self):
+        particles = datamodel.Particles(
+            mass=[1, 2] | nbody_system.mass,
+            x=[-1, 1] | nbody_system.length,
+            y=[-1, 1] | nbody_system.length,
+            z=[-1, 1] | nbody_system.length,
+            vx=[-1, 1] | nbody_system.speed,
+            vy=[-1, 1] | nbody_system.speed,
+            vz=[-1, 1] | nbody_system.speed,
+            id=[3, 4],
+        )
+
+        instance = ph4()
+
+        instance.particles.add_particles(particles)
+        self.assertEqual(instance.particles.index_in_code, [3, 4])
+        instance.commit_particles()
+        instance.particles.remove_particle(particles[1])
+        instance.recommit_particles()
+        self.assertEqual(instance.particles.index_in_code, [3])
+        instance.particles.add_particle(particles[1])
+        instance.recommit_particles()
+        self.assertEqual(instance.particles.index_in_code, [3, 4])
+
+    def test26(self):
+        particles = datamodel.Particles(
+            mass=[1, 2] | nbody_system.mass,
+            x=[-1, 1] | nbody_system.length,
+            y=[0, 0] | nbody_system.length,
+            z=[0, 0] | nbody_system.length,
+            vx=[-1, 1] | nbody_system.speed,
+            vy=[-1, 1] | nbody_system.speed,
+            vz=[-1, 1] | nbody_system.speed,
+            id=[3, 4],
+        )
+
+        instance = ph4()
+
+        instance.particles.add_particles(particles)
+        self.assertEqual(instance.particles.index_in_code, [3, 4])
+        instance.commit_particles()
+        print(instance.particles[0].potential_in_code)
+        self.assertEqual(
+            instance.particles[0].potential(G=nbody_system.G),
+            -(nbody_system.G * (2 | nbody_system.mass)) / (2 | nbody_system.length),
+        )
+        self.assertEqual(
+            instance.particles[0].potential_in_code,
+            -(nbody_system.G * (2 | nbody_system.mass)) / (2 | nbody_system.length),
+        )
+
+    def test27(self):
+        print("Testing get timestep of particles")
+        with_softening = True
+
+        particles = datamodel.Particles(7)
+        particles.mass = 0.1 | nbody_system.mass
+        particles.radius = 0.01 | nbody_system.length
+        particles.x = [
+            -101.0,
+            -100.0,
+            -2.0,
+            2.0,
+            98.0,
+            102.0,
+            104.0,
+        ] | nbody_system.length
+        particles.y = 0 | nbody_system.length
+        particles.z = 0 | nbody_system.length
+        particles.velocity = [[2, 0, 0], [-2, 0, 0]] * 3 + [
+            [-5, 0, 0]
+        ] | nbody_system.speed
+        total_energy = (
+            particles.potential_energy(G=nbody_system.G) + particles.kinetic_energy()
+        )
+
+        instance = ph4()
+        instance.initialize_code()
+        instance.parameters.set_defaults()
+
+        if with_softening:
+            print(
+                "small amount of softening will prevent timesteps far below 1e-6 and huge energy errors..."
+            )
+            instance.parameters.epsilon_squared = 1.0e-10 | nbody_system.length**2
+        instance.particles.add_particles(particles)
+
+        for target_time, min_dt, n_digits in zip(
+            [0, 0.23, 0.24, 0.26, 0.27] | nbody_system.time,
+            [0.5**10, 0.5**11, 0.5**20, 0.5**10, 0.5**10] | nbody_system.time,
+            [10, 7, 4, 5, 5],
+        ):
+            instance.evolve_model(target_time)
+            if with_softening:
+                self.assertEqual(instance.particles.timestep.amin(), min_dt)
+                self.assertAlmostRelativeEquals(
+                    instance.potential_energy + instance.kinetic_energy,
+                    total_energy,
+                    n_digits,
+                )
+            else:
+                print("\ntarget_time:", target_time)
+                print("minimum timestep:", instance.particles.timestep.amin())
+                print(
+                    "energy error:",
+                    (instance.potential_energy + instance.kinetic_energy - total_energy)
+                    / total_energy,
+                )
+            total_energy = instance.potential_energy + instance.kinetic_energy
+        instance.stop()
+
+    def test28(self):
+        particles = datamodel.Particles(
+            mass=[1, 2] | nbody_system.mass,
+            x=[-2, 2] | nbody_system.length,
+            y=[0, 0] | nbody_system.length,
+            z=[0, 0] | nbody_system.length,
+            vx=[-1, 1] | nbody_system.speed,
+            vy=[-1, 1] | nbody_system.speed,
+            vz=[-1, 1] | nbody_system.speed,
+        )
+
+        instance = ph4()
+
+        instance.particles.add_particles(particles)
+        instance.evolve_model(0.1 | nbody_system.time)
+        self.assertEqual(len(instance.particles), 2)
+        instance.particles.remove_particle(particles[0])
+        instance.evolve_model(0.2 | nbody_system.time)
+        self.assertEqual(len(instance.particles), 1)
