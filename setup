@@ -99,26 +99,28 @@ configure() {
 # This checks what we're supposed to install and dispatches accordingly.
 #
 install() {
-    target="$1"
+    targets="$*"
 
-    check_install "${target}"
+    for target in ${targets} ; do
+        check_install "${target}"
 
-    case ${target} in
-        all )
-            install_all
-            ;;
-        amuse-framework | framework )
-            target="$(normalise_package_name ${target})"
-            install_framework
-            ;;
-        sapporo_light )
-            install_sapporo_light
-            ;;
-        * )
-            target="$(normalise_package_name ${target})"
-            install_package install "${target}"
-            ;;
-    esac
+        case ${target} in
+            all )
+                install_all
+                ;;
+            amuse-framework | framework )
+                target="$(normalise_package_name ${target})"
+                install_framework
+                ;;
+            sapporo_light )
+                install_sapporo_light
+                ;;
+            * )
+                target="$(normalise_package_name ${target})"
+                install_package install "${target}"
+                ;;
+        esac
+    done
 }
 
 
@@ -129,19 +131,21 @@ install() {
 # This checks what we're supposed to develop-install and dispatches accordingly.
 #
 develop() {
-    target="$1"
+    targets="$*"
 
-    check_install "${target}"
+    for target in ${targets} ; do
+        check_install "${target}"
 
-    case ${target} in
-        amuse-framework | framework )
-            develop_framework
-            ;;
-        * )
-            target="$(normalise_package_name ${target})"
-            install_package develop "${target}"
-            ;;
-    esac
+        case ${target} in
+            amuse-framework | framework )
+                develop_framework
+                ;;
+            * )
+                target="$(normalise_package_name ${target})"
+                install_package develop "${target}"
+                ;;
+        esac
+    done
 }
 
 
@@ -171,28 +175,30 @@ package() {
 # package, so that they also test the installation procedure.
 #
 run_test() {
-    target="$1"
+    targets="$*"
 
     ensure_pytest
 
-    case ${target} in
-        all )
-            test_all
-            ;;
-        amuse-framework | framework )
-            check_package_installed_for_test amuse-framework
-            test_framework
-            ;;
-        amuse-ext | ext )
-            check_package_installed_for_test amuse-framework
-            test_amuse_ext
-            ;;
-        * )
-            target="$(normalise_package_name ${target})"
-            check_package_installed_for_test "${target}"
-            forward_to_package "test" "${target}"
-            ;;
-    esac
+    for target in ${targets} ; do
+        case ${target} in
+            all )
+                test_all
+                ;;
+            amuse-framework | framework )
+                check_package_installed_for_test amuse-framework
+                test_framework
+                ;;
+            amuse-ext | ext )
+                check_package_installed_for_test amuse-framework
+                test_amuse_ext
+                ;;
+            * )
+                target="$(normalise_package_name ${target})"
+                check_package_installed_for_test "${target}"
+                forward_to_package "test" "${target}"
+                ;;
+        esac
+    done
 }
 
 
@@ -225,15 +231,16 @@ distclean() {
 ### Main script ###
 
 CMD="$1"
-TARGET="$2"
+shift
+TARGETS="$*"
 
 case ${CMD} in
     clean )
-        clean "$TARGET"
+        clean
         exit 0
         ;;
     distclean )
-        distclean "$TARGET"
+        distclean
         exit 0
         ;;
     help )
@@ -264,16 +271,16 @@ case ${CMD} in
         configure
         ;;
     install )
-        install "${TARGET}"
+        install ${TARGETS}
         ;;
     test )
-        run_test "${TARGET}"
+        run_test ${TARGETS}
         ;;
     develop )
-        develop "${TARGET}"
+        develop ${TARGETS}
         ;;
     package )
-        package "${TARGET}"
+        package ${TARGETS}
         ;;
     * )
         print_help "${CMD}"
