@@ -7,18 +7,25 @@ if test -z "${PACKAGE}" ; then
     exit 1
 fi
 
-echo "  Removing ${PACKAGE} if it is installed..."
+if test -n "${VIRTUAL_ENV}${CONDA_DEFAULT_ENV}" ; then
+    pip_package_line=$(pip list | grep "${PACKAGE} ")
+    if [ "a${pip_package_line}" = "a" ] ; then
+        printf '%s\n' "  Package ${PACKAGE} was not installed, not uninstalling."
+        exit 0
+    fi
+fi
 
 if test -n "${VIRTUAL_ENV}" ; then
     # grep -q stops reading when a match is found, which then crashes pip list, so we
     # redirect instead. With conda list we can use -q as usual.
-    if pip list | grep "^${PACKAGE} " >/dev/null 2>&1 ; then
+    if [ "a${pip_package_line}" != "a" ] ; then
         pip uninstall -y ${PACKAGE}
     fi
 fi
 
 if test -n "${CONDA_DEFAULT_ENV}" ; then
-    if conda list | grep "^${PACKAGE} " | grep -q "<develop>" ; then
+    conda_package_line=$(conda list | grep "^${PACKAGE} ")
+    if printf '%s' "${conda_package_line}" | grep "<develop>" >/dev/null 2>&1 ; then
         # Conda is showing a pip-installed develop package. However, there may be a
         # conda package hidden underneath, so we're going to try to conda uninstall
         # anyway to fix that if needed. This will fail if everything is as it should
@@ -26,9 +33,9 @@ if test -n "${CONDA_DEFAULT_ENV}" ; then
         EXPECTING_FAIL=true
     fi
 
-    if conda list | grep -q "^${PACKAGE} " | grep -q -v "pypi$" ; then
+    if printf '%s' "${conda_package_line}" | grep -v "pypi$" >/dev/null 2>&1 ; then
         TMPOUT=$(mktemp)
-        conda uninstall -y ${PACKAGE} >${TMPOUT} 2>&1
+        conda remove -y ${PACKAGE} >${TMPOUT} 2>&1
         err="$?"
         # If it failed and we were not expecting it to, print the output
         if test "$err" != 0 -a -z "${EXPECTING_FAIL}" ; then
@@ -37,7 +44,7 @@ if test -n "${CONDA_DEFAULT_ENV}" ; then
         rm ${TMPOUT}
     fi
 
-    if pip list | grep "^${PACKAGE} " >/dev/null 2>&1 ; then
+    if [ "a${pip_package_line}" != "a" ] ; then
         pip uninstall -y ${PACKAGE}
     fi
 fi
