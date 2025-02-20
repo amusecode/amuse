@@ -44,7 +44,7 @@ sudo port select --set python3 python312
 sudo port select --set mpi openmpi-gcc12-fortran
 "
 
-DEPS_homebrew="gcc@12 gfortran@12 python pkg-config curl gpatch gnu-tar unzip gzip"
+DEPS_homebrew="gcc python pkg-config curl gpatch gnu-tar unzip gzip"
 DEPS_homebrew="${DEPS_homebrew} bzip2 xz"
 DEPS_homebrew="${DEPS_homebrew} perl make cmake open-mpi gsl fftw gmp mpfr hdf5"
 DEPS_homebrew="${DEPS_homebrew} netcdf netcdf-cxx netcdf-fortran openblas lapack"
@@ -67,7 +67,7 @@ DEPS_dnf="${DEPS_dnf} netcdf-cxx-devel netcdf-fortran-devel blas-devel lapack-de
 
 CONDA_CMDS="${BOLD}conda install -c conda-forge ${DEPS_conda}${END_BOLD}\n"
 MACPORTS_CMDS="${BOLD}sudo port install ${DEPS_macports}\n${DEPS_POST_macports}${END_BOLD}\n"
-HOMEBREW_CMDS="${BOLD}sudo brew install ${DEPS_homebrew}${END_BOLD}\n"
+HOMEBREW_CMDS="${BOLD}brew install ${DEPS_homebrew}${END_BOLD}\n"
 APT_CMDS="${BOLD}sudo apt install ${DEPS_apt}${END_BOLD}\n"
 DNF_CMDS="${BOLD}sudo dnf install ${DEPS_dnf}${END_BOLD}\n"
 
