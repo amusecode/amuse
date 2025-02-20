@@ -3,13 +3,17 @@
 . support/setup/dependencies.sh
 
 
-print_help() {
+print_invalid_command() {
     cmd="$1"
 
-    if [ "a${cmd}" != "a" ] ; then
-        printf '\n%s\n' "${cmd} was not recognised as a valid command."
-    fi
+    printf '\n%b\n' "${COLOR_RED}\"${cmd}\" was not recognised as a valid command.${COLOR_END}"
+    printf '\n%s\n' 'Try'
+    printf '\n%s\n' '    ./setup help'
+    printf '\n%s\n' 'to see all available commands.'
+}
 
+
+print_help() {
     printf '\n%b\n' "${BOLD}${COLOR_CYAN}*** AMUSE setup help ***${COLOR_END}${END_BOLD}"
 
     printf '%b\n' "

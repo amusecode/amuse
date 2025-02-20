@@ -342,7 +342,8 @@ case ${CMD} in
         uninstall ${TARGETS}
         ;;
     * )
-        print_help "${CMD}"
+        print_invalid_command "${CMD}"
+        exit 1
         ;;
 esac
 
