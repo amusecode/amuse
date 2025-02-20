@@ -58,6 +58,15 @@ install: all $(PKG_CONFIG_FILE)
 	$(INSTALL) -m 644 $(PKG_CONFIG_FILE) $(PREFIX)/lib/pkgconfig/$(PKG_CONFIG_FILE)
 
 
+INSTALLED_HEADERS=$(foreach h,$(HEADERS),$(PREFIX)/include/$(h))
+
+.PHONY: uninstall
+uninstall:
+	rm -f $(INSTALLED_HEADERS)
+	rm -f $(PREFIX)/lib/$(DYNAMIC_LIB)
+	rm -f $(PREFIX)/lib/pkgconfig/$(PKG_CONFIG_FILE)
+
+
 # Build the library
 
 CFLAGS += -fPIC

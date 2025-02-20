@@ -38,6 +38,31 @@ ifdef PKG_CONFIG_FILE_MPI
 endif
 
 
+INSTALLED_HEADERS=$(foreach h,$(HEADERS),$(PREFIX)/include/$(h))
+INSTALLED_HEADERS_MPI=$(foreach h,$(HEADERS_MPI),$(PREFIX)/include/$(h))
+
+.PHONY: uninstall
+uninstall:
+ifdef HEADERS
+	rm -f $(INSTALLED_HEADERS)
+endif
+ifdef DYNAMIC_LIB
+	rm -f $(PREFIX)/lib/$(DYNAMIC_LIB)
+endif
+ifdef PKG_CONFIG_FILE
+	rm -f $(PREFIX)/lib/pkgconfig/$(PKG_CONFIG_FILE)
+endif
+ifdef HEADERS_MPI
+	rm -f $(INSTALLED_HEADERS_MPI)
+endif
+ifdef DYNAMIC_LIB_MPI
+	rm -f $(PREFIX)/lib/$(DYNAMIC_LIB_MPI)
+endif
+ifdef PKG_CONFIG_FILE_MPI
+	rm -f $(PREFIX)/lib/pkgconfig/$(PKG_CONFIG_FILE_MPI)
+endif
+
+
 # Build the library
 
 CFLAGS += -fPIC

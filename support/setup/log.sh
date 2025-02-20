@@ -54,6 +54,8 @@ announce_activity() {
         printf '%b\n' "${COLOR_CYAN}Building and develop-installing ${package}...${COLOR_END}"
     elif [ "a${cmd}" = "atest" ] ; then
         printf '%b\n' "${COLOR_CYAN}Testing ${package}...${COLOR_END}"
+    elif [ "a${cmd}" = "auninstall" ] ; then
+        printf '%b\n' "${COLOR_CYAN}Uninstalling ${package}...${COLOR_END}"
     fi
     printf '\n'
 }
@@ -76,12 +78,15 @@ handle_result() {
     cmd=$2
     package=$3
     log_file="$4"
+    brief="$5"
 
     if [ "a${exit_code}" = "a0" ] ; then
         if [ "a${cmd}" = "ainstall" ] || [ "a${cmd}" = "adevelop" ] ; then
             printf '\n%b\n' "${COLOR_GREEN}Package ${package} was installed successfully.${COLOR_END}"
         elif [ "a${cmd}" = "atest" ] ; then
             printf '\n%b\n' "${COLOR_GREEN}Package ${package} passed its tests.${COLOR_END}"
+        elif [ "a${cmd}" = "auninstall" ] ; then
+            printf '\n%b\n' "${COLOR_GREEN}Package ${package} uninstall successful.${COLOR_END}"
         fi
     else
         if [ "a${cmd}" = "ainstall" ] || [ "a${cmd}" = "adevelop" ] ; then
@@ -95,6 +100,12 @@ handle_result() {
                 printf '\n%b\n' "${COLOR_RED}Package ${package} failed its tests.${COLOR_END}"
             else
                 print_test_failure "${package}" "${log_file}"
+            fi
+        elif [ "a${cmd}" = "auninstall" ] ; then
+            if [ "a${brief}" = "abrief" ] ; then
+                printf '\n%b\n' "${COLOR_RED}Package ${package} failed to uninstall.${COLOR_END}"
+            else
+                print_uninstall_failure "${package}" "${log_file}"
             fi
         fi
     fi

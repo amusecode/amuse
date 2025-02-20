@@ -72,7 +72,7 @@ install_framework() {
 
     announce_activity install amuse-framework
 
-    # if we're in a conda env, install the dependecies using conda first rather than
+    # if we're in a conda env, install the dependencies using conda first rather than
     # leaving it to pip.
     if [ "a${ENV_TYPE}" = "aconda" ] ; then
         to_install=''
@@ -226,5 +226,92 @@ install_all() {
     else
         printf '\n%b\n\n' "${COLOR_GREEN}All packages were installed successfully${COLOR_END}"
     fi
+}
+
+
+# Check whether the basic conditions for uninstalling things are met
+#
+# This checks for an environment, and quits with an error if they're not available.
+#
+# Args:
+#   target: Target the user wants to install
+#
+check_uninstall() {
+    target="$1"
+
+    if [ "a${ENV_TYPE}" = "a" ] ; then
+        printf '\n%s\n\n' "Cannot uninstall ${target}, because there is no active environment."
+        print_environment_step
+        exit 1
+    fi
+}
+
+
+# Uninstall the AMUSE framework
+#
+uninstall_framework() {
+    announce_activity uninstall amuse-framework
+
+    ec_file="$(exit_code_file uninstall amuse-framework)"
+    log_file="$(log_file uninstall amuse-framework)"
+
+    (
+        printf '%s\n\n' "Removing stray libraries, if any..." && \
+        ${GMAKE} -C lib uninstall && \
+        printf '\n' && \
+        support/shared/uninstall.sh amuse-framework
+
+        echo $? >"${ec_file}"
+    ) 2>&1 | tee "${log_file}"
+
+    handle_result $(cat "${ec_file}") uninstall amuse-framework "${log_file}"
+}
+
+
+# Uninstall Sapporo Light
+#
+uninstall_sapporo_light() {
+    announce_activity uninstall sapporo_light
+
+    ec_file="$(exit_code_file uninstall sapporo_light)"
+    log_file="$(log_file uninstall sapporo_light)"
+
+    (${GMAKE} -C lib uninstall-sapporo_light ; echo $? >"${ec_file}") 2>&1 | tee "${log_file}"
+
+    handle_result $(cat "$ec_file") uninstall sapporo_light "${log_file}"
+}
+
+
+# Uninstall a package
+#
+# This calls the shared uninstall script to uninstall the package. That script will use
+# pip or conda to uninstall, as appropriate.
+#
+# Args:
+#    package: The name of the package to uninstall
+#    brief: If set to "brief", print only a brief result, otherwise, print a full error.
+#
+uninstall_package() {
+    package="$1"
+    brief="$2"
+
+    announce_activity uninstall "${package}"
+
+    ec_file="$(exit_code_file uninstall ${package})"
+    log_file="$(log_file uninstall ${package})"
+
+    (support/shared/uninstall.sh "${package}" ; echo $? >"${ec_file}") 2>&1 | tee "${log_file}"
+
+    handle_result $(cat "$ec_file") uninstall "${package}" "${log_file}" "${brief}"
+}
+
+
+# Uninstall all
+#
+# This uninstalls all community codes, the framework, and sapporo_light, where
+# installed.
+#
+uninstall_all() {
+    uninstall
 }
 

@@ -259,3 +259,13 @@ print_test_failure() {
     print_getting_help
 }
 
+
+print_uninstall_failure() {
+    package="$1"
+    log_file="$2"
+
+    printf '\n%b\n\n' "${COLOR_RED}${package} failed to uninstall correctly.${COLOR_END}"
+    print_getting_help
+    printf '\n%s\n' "The output of the uninstallation process was logged to $2"
+}
+

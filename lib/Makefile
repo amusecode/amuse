@@ -9,8 +9,8 @@ LIBS = $(filter-out Makefile sapporo_light, $(wildcard *))
 	$(MAKE) -C sapporo_light $*
 
 
-.PHONY: install clean distclean
-install clean distclean: $(LIBS)
+.PHONY: install uninstall clean distclean
+install uninstall clean distclean: $(LIBS)
 
 .PHONY: $(LIBS)
 $(LIBS):
