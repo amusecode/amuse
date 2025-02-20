@@ -32,6 +32,7 @@ DEPS_conda="c-compiler cxx-compiler fortran-compiler python pkgconfig coreutils 
 DEPS_conda="${DEPS_conda} curl tar unzip gzip bzip2 xz perl make cmake openmpi"
 DEPS_conda="${DEPS_conda} openmpi-mpicc openmpi-mpicxx openmpi-mpifort openmp gsl fftw"
 DEPS_conda="${DEPS_conda} gmp mpfr hdf5 netcdf4 libopenblas liblapack zlib"
+DEPS_conda="${DEPS_conda} 'docutils>=0.6' 'mpi4py>=1.1.0' 'numpy>=1.2.2' 'h5py>=1.1.0'"
 
 DEPS_macports="gcc12 python312 pkgconfig curl gpatch gnutar unzip gzip bzip2 xz perl5"
 DEPS_macports="${DEPS_macports} gmake cmake openmpi-gcc12 gsl fftw-3 gmp mpfr hdf5"
