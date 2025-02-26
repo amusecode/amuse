@@ -42,8 +42,8 @@ local void addbinary(
 
             id = bi->get_index();
 
-            // cerr << "Adding binary to "<< id << " at time = "
-            //      << stellar_time << endl;
+            cerr << "Adding binary to "<< id << " at time = "
+                 << stellar_time << endl;
 
             double_star* new_double
             = new_double_star(bi, sma, ecc, stellar_time, id, type);
@@ -53,7 +53,8 @@ local void addbinary(
             // Give the new binary the old star_story.
 
             new_double->set_star_story(old_story);
-
+	    // Assure that SeBa prints zero-age binary parameters (SPZ+FK Febr2025).
+	    new_double->dump("SeBa.data", true);
             
         }
         else {
@@ -456,7 +457,7 @@ int new_particle(int * index_of_the_star, double mass){
         new_node->set_elder_sister(seba_insertion_point);
         seba_insertion_point = new_node;
     }
-    
+
     addstar(new_node, seba_time, start_type, seba_metallicity, 0, false);
     new_node->get_starbase()->set_time_offset(seba_time);
     *index_of_the_star = next_seba_id;
@@ -919,6 +920,15 @@ int new_binary(
     child2->set_elder_sister(child1);
     child1->set_parent(new_node);
     child2->set_parent(new_node);
+    // We cannot access the stellar parameters from here, because the starbase class is in between.
+    // SPZ*FK Febr.2025
+    //cerr << "Set stelar id in new binary interface."<<endl;
+    //cerr << "Current interface "<< child1->get_star_id()<<"and "<< child1->get_star_id()<<endl;
+    //child2->set_star_id(1);
+    // set stellar id's
+    //child1->set_star_id(0);
+    //child2->set_star_id(1);
+    
     
     addbinary(new_node, seba_time, binary_start_type, semi_major_axis, eccentricity);
     
