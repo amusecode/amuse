@@ -456,8 +456,8 @@ int new_particle(int * index_of_the_star, double mass){
         new_node->set_elder_sister(seba_insertion_point);
         seba_insertion_point = new_node;
     }
-    
-    addstar(new_node, seba_time, start_type, seba_metallicity, 0, false);
+
+    addstar(new_node, seba_time, start_type, seba_metallicity, 0, false, start_type, mass, mass, 0, 0, 0);
     new_node->get_starbase()->set_time_offset(seba_time);
     *index_of_the_star = next_seba_id;
     
