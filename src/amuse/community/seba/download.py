@@ -93,8 +93,6 @@ def new_option_parser():
     result = OptionParser()
     result.add_option(
         "--seba-version",
-        #default='2d8088ad03a4323514780e19e5895fbcac42e0ec',
-        #default='9fb5af99199b369f58be9a18a1d023e960d923d4',
         default='a6f4b64f852249a0b66d52aa6f276be517dccb64',
 
         dest="seba_version",
