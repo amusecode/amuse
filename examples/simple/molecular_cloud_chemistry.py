@@ -16,8 +16,10 @@ from amuse.units import units, constants, nbody_system
 
 from amuse.community.fi.interface import Fi
 from amuse.community.krome.interface import Krome
+from amuse.community.uclchem.interface import UCLchem
 
 from amuse.ext.molecular_cloud import molecular_cloud
+from amuse.io import write_set_to_file
 
 gamma = 1.4
 meanmwt = 1.35 | units.amu
@@ -27,11 +29,12 @@ def get_n_T_xi(density, u):
     number_density=density/meanmwt
     temperature=((gamma - 1) * meanmwt * u / constants.kB)
     ionrate=ionization_rate*numpy.ones_like(density)
-    return (number_density, temperature, ionrate)
+    radfield = 1.0|units.habing
+    return (number_density, temperature, ionrate, radfield)
 
 def update_chem(sph_parts, chem_parts):
     channel = sph_parts.new_channel_to(chem_parts)
-    channel.transform(["number_density", "temperature", "ionrate"], get_n_T_xi, ["density", "u"])
+    channel.transform(["number_density", "temperature", "ionrate","radfield"], get_n_T_xi, ["density", "u"])
 
 def evolve_sph_with_chemistry(sph, chem, tend):
     sph.evolve_model(tend)
@@ -50,7 +53,7 @@ def run_mc(N=5000, Mcloud=10000. | units.MSun, Rcloud=1. | units.parsec):
 
     tff = 1 / (4 * numpy.pi * constants.G * rho_cloud)**0.5
     parts.density = rho_cloud
-
+    parts.radfield = 1.0|units.habing
     update_chem(parts, parts)
 
     print("Tcloud:", parts.temperature.max().in_(units.K))
@@ -58,8 +61,9 @@ def run_mc(N=5000, Mcloud=10000. | units.MSun, Rcloud=1. | units.parsec):
     print("freefall time:", tff.in_(units.Myr))
 
     sph = Fi(conv)
-    chem = Krome(redirection="none")
-
+    #chem = Krome(redirection="none")
+    chem = UCLchem()
+    print(parts)
     sph.parameters.self_gravity_flag = True
     sph.parameters.use_hydro_flag = True
     sph.parameters.isothermal_flag = True
@@ -71,8 +75,14 @@ def run_mc(N=5000, Mcloud=10000. | units.MSun, Rcloud=1. | units.parsec):
 
     sph.gas_particles.add_particles(parts)
     chem.particles.add_particles(parts)
-
+    chem.out_species = ["OH", "OCS", "CO", "CS", "CH3OH"]
+    H2_index = chem.get_index_of_species('H2')
+    CO_index = chem.get_index_of_species('CO')
     tnow = sph.model_time
+
+    sph_channel = sph.particles.new_channel_to(parts)
+    chem_channel = chem.particles.new_channel_to(parts)
+
 
     f = pyplot.figure()
     pyplot.ion()
@@ -82,13 +92,15 @@ def run_mc(N=5000, Mcloud=10000. | units.MSun, Rcloud=1. | units.parsec):
     while i < (end_time / timestep + 0.5):
         evolve_sph_with_chemistry(sph, chem, i * timestep)
         tnow = sph.model_time
+        sph_channel.copy()
+        chem_channel.copy()
         print("done with step:", i, tnow.in_(units.Myr))
         i += 1
 
         n = (sph.particles.density / meanmwt).value_in(units.cm**-3)
-        fh2 = chem.particles.abundances[:, chem.species["H2"]]
-        co = chem.particles.abundances[:, chem.species["CO"]]
-
+        fh2 = chem.particles.abundances[:, H2_index]
+        co = chem.particles.abundances[:, CO_index]
+        
         pyplot.clf()
         pyplot.loglog(n, fh2, 'r.')
         pyplot.loglog(n, co, 'g.')
@@ -97,7 +109,8 @@ def run_mc(N=5000, Mcloud=10000. | units.MSun, Rcloud=1. | units.parsec):
         pyplot.xlabel("density (cm**-3)")
         pyplot.ylabel("H_2,CO abundance")
         f.canvas.flush_events()
-
+        particles_to_save = parts.copy()
+        write_set_to_file(particles_to_save, "mol_cloud_uclchem_{}.txt".format(i), format='amuse',overwrite_file=True)
     print("done. press key to exit")
     input()
 
