@@ -3,7 +3,7 @@ module amuse_support
    character (len=4096) :: AMUSE_inlist_path
    character (len=4096) :: AMUSE_mesa_dir,AMUSE_mesa_data_dir ! Normally $MESA_DIR and $MESA_DIR/data
    character (len=4096) :: AMUSE_local_data_dir ! Used for output starting_models
-   character (len=4096) :: AMUSE_gyre_in_file 
+   character (len=4096) :: AMUSE_gyre_in_file
    character (len=4096) :: AMUSE_temp_dir ! Used for mesa_temp_caches support
    double precision :: AMUSE_mass
    double precision :: AMUSE_metallicity = 0.02d0
@@ -43,7 +43,7 @@ module amuse_mesa
          AMUSE_mesa_dir_in, AMUSE_mesa_data_dir_in, &
          AMUSE_local_data_dir_in, AMUSE_gyre_in_file_in,&
          AMUSE_temp_dir_in)
-      
+
       character(*), intent(in) :: AMUSE_inlist_path_in, &
          AMUSE_mesa_dir_in, AMUSE_local_data_dir_in,  AMUSE_gyre_in_file_in, &
          AMUSE_temp_dir_in, AMUSE_mesa_data_dir_in
@@ -60,7 +60,7 @@ module amuse_mesa
 
 ! Initialize the stellar evolution code
    integer function initialize_code()
-      
+
       initialize_code = 0
 
    end function initialize_code
@@ -82,11 +82,11 @@ module amuse_mesa
    integer function new_particle(AMUSE_id, AMUSE_value)
       integer, intent(out) :: AMUSE_id
       double precision, intent(in) :: AMUSE_value
-      
+
       new_particle = new_zams_particle(AMUSE_id, AMUSE_value)
    end function new_particle
 
-! load zams model 
+! load zams model
    integer function new_zams_particle(AMUSE_id, AMUSE_value)
       integer, intent(out) :: AMUSE_id
       double precision, intent(in) :: AMUSE_value
@@ -115,7 +115,7 @@ module amuse_mesa
 
    end function new_zams_particle
 
-! load an existing stellar model 
+! load an existing stellar model
    integer function load_model(AMUSE_id, AMUSE_filename)
       integer, intent(out) :: AMUSE_id
       character(len=*), intent(in) :: AMUSE_filename
@@ -123,7 +123,7 @@ module amuse_mesa
 
       load_model = -1
 
-      call allocate_star(AMUSE_id, ierr) 
+      call allocate_star(AMUSE_id, ierr)
       if(ierr/=MESA_SUCESS) return
 
       number_of_particles = AMUSE_id
@@ -206,7 +206,7 @@ module amuse_mesa
       call allocate_star(id, ierr)
       if(ierr/=MESA_SUCESS) return
 
-      AMUSE_mass = 1.0 
+      AMUSE_mass = 1.0
 
       AMUSE_id = id
       number_of_particles = AMUSE_id
@@ -222,7 +222,7 @@ module amuse_mesa
       load_photo = 0
 
    end function load_photo
-   
+
    subroutine set_amuse_options(AMUSE_id)
       ! Dont call this directly as variables will be reset during initlization
       ! Instead it must be used as a calback function in finish_init_star()
@@ -245,7 +245,7 @@ module amuse_mesa
    end subroutine set_amuse_options
 
 
-! Remove a particle 
+! Remove a particle
    integer function delete_star(AMUSE_id)
       integer, intent(in) :: AMUSE_id
       integer :: ierr
@@ -332,12 +332,81 @@ module amuse_mesa
       endif
    end function get_core_mass
 
+! Return the current core radius of the star, where hydrogen abundance is <= h1_boundary_limit
+   integer function get_core_radius(AMUSE_id, AMUSE_value)
+      integer, intent(in) :: AMUSE_id
+      double precision, intent(out) :: AMUSE_value
+      integer :: ierr
+
+      get_core_radius = 0
+      call get_history_value(AMUSE_id,'he_core_radius', AMUSE_value, ierr)
+
+      if (ierr /= MESA_SUCESS) then
+         AMUSE_value = -1.0
+         get_core_radius = -1
+      endif
+   end function get_core_radius
+
+! Return the current size (in mass) of the convective envelope of the star
+! It actually returns the mass size of the first convective region from surface to center
+! Not appropriate for a star with a radiative envelope.
+   integer function get_convective_envelope_mass(AMUSE_id, AMUSE_value)
+      integer, intent(in) :: AMUSE_id
+      double precision, intent(out) :: AMUSE_value
+      integer :: ierr
+      double precision :: conv_env_mtop,conv_env_mbot
+
+      get_convective_envelope_mass = 0
+      call get_history_value(AMUSE_id,'conv_mx1_top', conv_env_mtop, ierr)
+
+      if (ierr /= MESA_SUCESS) then
+         AMUSE_value = -1.0
+         get_convective_envelope_mass = -1
+      endif
+
+      call get_history_value(AMUSE_id,'conv_mx1_bot', conv_env_mbot, ierr)
+
+      if (ierr /= MESA_SUCESS) then
+         AMUSE_value = -1.0
+         get_convective_envelope_mass = -1
+      endif
+      AMUSE_value = conv_env_mtop - conv_env_mbot
+
+   end function get_convective_envelope_mass
+
+! Return the current size (in radius) of the convective envelope of the star
+! It actually returns the size in radius of the first convective region from surface to center
+! Not appropriate for a star with a radiative envelope.
+   integer function get_convective_envelope_radius(AMUSE_id, AMUSE_value)
+      integer, intent(in) :: AMUSE_id
+      double precision, intent(out) :: AMUSE_value
+      integer :: ierr
+      double precision :: conv_env_rtop,conv_env_rbot
+
+      get_convective_envelope_radius = 0
+      call get_history_value(AMUSE_id,'conv_mx1_top_r', conv_env_rtop, ierr)
+
+      if (ierr /= MESA_SUCESS) then
+         AMUSE_value = -1.0
+         get_convective_envelope_radius = -1
+      endif
+
+      call get_history_value(AMUSE_id,'conv_mx1_bot_r', conv_env_rbot, ierr)
+
+      if (ierr /= MESA_SUCESS) then
+         AMUSE_value = -1.0
+         get_convective_envelope_radius = -1
+      endif
+      AMUSE_value = conv_env_rtop - conv_env_rbot
+
+   end function get_convective_envelope_radius
+
 ! Return the current mass loss rate of the star
    integer function get_mass_loss_rate(AMUSE_id, AMUSE_value)
       integer, intent(in) :: AMUSE_id
       double precision, intent(out) :: AMUSE_value
       integer :: ierr
-      
+
       get_mass_loss_rate = 0
       call get_history_value(AMUSE_id,'star_mdot', AMUSE_value, ierr)
 
@@ -347,6 +416,135 @@ module amuse_mesa
       endif
 
    end function get_mass_loss_rate
+
+! Return the current mass loss rate of the star
+! Note: this getter is identical to get_mass_loss_rate.
+! In the SeBa interface, the corresponding getter is get_wind_mass_loss_rate, and is called
+! in triples simulations with TRES (which uses SeBa by default).
+! In order to run TRES with MESA, a getter with the same name is required.
+   integer function get_wind_mass_loss_rate(AMUSE_id, AMUSE_value)
+      integer, intent(in) :: AMUSE_id
+      double precision, intent(out) :: AMUSE_value
+      integer :: ierr
+
+      get_wind_mass_loss_rate = 0
+      call get_history_value(AMUSE_id,'star_mdot', AMUSE_value, ierr)
+
+      if (ierr /= MESA_SUCESS) then
+         AMUSE_value = -1.0
+         get_wind_mass_loss_rate = -1
+      endif
+
+   end function get_wind_mass_loss_rate
+
+! Return the current apsidal motion constant k2, assuming a spherical star without accounting for rotation
+   integer function get_apsidal_motion_constant(AMUSE_id, AMUSE_value)
+      integer, intent(in) :: AMUSE_id
+      double precision, intent(out) :: AMUSE_value
+      integer :: ierr
+
+      get_apsidal_motion_constant = 0
+      call get_history_value(AMUSE_id,'apsidal_constant_k2', AMUSE_value, ierr)
+
+      if (ierr /= MESA_SUCESS) then
+         AMUSE_value = -1.0
+         get_apsidal_motion_constant = -1
+      endif
+
+   end function get_apsidal_motion_constant
+
+! Return the current gyration radius
+   integer function get_gyration_radius(AMUSE_id, AMUSE_value)
+      integer, intent(in) :: AMUSE_id
+      double precision, intent(out) :: AMUSE_value
+      integer :: ierr, n_zone, i
+      double precision :: I_tot, R_star, M_tot, dm, rmid, mass1, mass2, n_zone_double
+      character :: rotating_star
+      ! NOTE (LS 2024): for a rotating star, the moment of inertia can simply be retrieved by
+      ! calling get_history_value with variable name 'i_rot_total'
+      !
+      ! However, when running non-rotating MESA stars, i_rot_total is not computed in MESA.
+      ! In the case where the moment of inertia of a non-rotating star is needed, it is
+      ! directly computed in the interface adding the contribution of spherical layers.
+      ! In this case, the formula i_rot = 2/3 dm r^2 for each layer is used.
+      ! For r, we use rmid, the radius value in middle of each shell.
+
+      ! If rotating star, set_initial_surface_rotation_v must be 'T'
+      call get_star_job_nml(AMUSE_id, 'set_initial_surface_rotation_v', rotating_star, ierr)
+      if (ierr /= MESA_SUCESS) then
+         AMUSE_value = -1.0
+         get_gyration_radius = -1
+      endif
+
+      ! If non-rotating star, calculate moment of inertia manually
+       if (rotating_star == 'F') then
+
+         call get_history_value(AMUSE_id,'num_zones', n_zone_double, ierr)
+         if (ierr /= MESA_SUCESS) then
+            AMUSE_value = -1.0
+            get_gyration_radius = -1
+         endif
+         n_zone = int(n_zone_double)
+
+         get_gyration_radius = 0
+         I_tot = 0.d0
+
+         i = 1
+         do while (i < n_zone)
+            call get_profile_value_zone(AMUSE_id, "mass", i, mass1, ierr)
+
+            if (ierr /= MESA_SUCESS) then
+               AMUSE_value = -1.0
+               get_gyration_radius = -1
+            endif
+
+            call get_profile_value_zone(AMUSE_id, "mass", i+1, mass2, ierr)
+
+            if (ierr /= MESA_SUCESS) then
+               AMUSE_value = -1.0
+               get_gyration_radius = -1
+            endif
+
+            dm = mass1 - mass2
+
+            call get_profile_value_zone(AMUSE_id, "rmid", i, rmid, ierr)
+
+            if (ierr /= MESA_SUCESS) then
+               AMUSE_value = -1.0
+               get_gyration_radius = -1
+            endif
+
+            I_tot = I_tot + (2.d0 * dm * rmid**2.d0)/3.d0
+            i = i + 1
+         end do
+
+      else  ! If rotating star, directly use i_rot_total
+         call get_history_value(AMUSE_id,'i_rot_total', I_tot, ierr)
+         if (ierr /= MESA_SUCESS) then
+            AMUSE_value = -1.0
+            get_gyration_radius = -1
+            write(*,*)'Issue in accessing i_rot_total'
+         endif
+      endif
+
+      call get_history_value(AMUSE_id,'radius', R_star, ierr)
+
+      if (ierr /= MESA_SUCESS) then
+        AMUSE_value = -1.0
+        get_gyration_radius = -1
+      endif
+
+      call get_history_value(AMUSE_id,'star_mass', M_tot, ierr)
+
+      if (ierr /= MESA_SUCESS) then
+        AMUSE_value = -1.0
+        get_gyration_radius = -1
+      endif
+
+      ! Gyration radius = sqrt(I/MR^2)
+      AMUSE_value = (I_tot/(M_tot * R_star**2.d0))**(0.5d0)
+
+   end function get_gyration_radius
 
 ! Return the current user-specified mass transfer rate of the star
    integer function get_manual_mass_transfer_rate(AMUSE_id, AMUSE_value)
@@ -374,7 +572,7 @@ module amuse_mesa
       character(len=128) :: tmp
       integer :: ierr
       set_manual_mass_transfer_rate = 0
-      
+
       write(tmp , *) AMUSE_value
 
       ierr =  set_opt(AMUSE_id, CONTROL_NML,'mass_change', tmp)
@@ -598,18 +796,18 @@ module amuse_mesa
       call get_history_value(AMUSE_id,'center he3',che3, ierr)
       if(ierr/=MESA_SUCESS) return
       call get_history_value(AMUSE_id,'center he4',che4, ierr)
-      if(ierr/=MESA_SUCESS) return      
+      if(ierr/=MESA_SUCESS) return
       call get_history_value(AMUSE_id,'center c12',cc12, ierr)
-      if(ierr/=MESA_SUCESS) return     
+      if(ierr/=MESA_SUCESS) return
       call get_history_value(AMUSE_id,'center ne20',cne20, ierr)
-      if(ierr/=MESA_SUCESS) return  
+      if(ierr/=MESA_SUCESS) return
 
       call get_history_value(AMUSE_id,'log_LH',lgLH, ierr)
-      if(ierr/=MESA_SUCESS) return     
+      if(ierr/=MESA_SUCESS) return
       call get_history_value(AMUSE_id,'log_LHe',lgLHe, ierr)
-      if(ierr/=MESA_SUCESS) return     
+      if(ierr/=MESA_SUCESS) return
       call get_history_value(AMUSE_id,'log_L',lgL, ierr)
-      if(ierr/=MESA_SUCESS) return  
+      if(ierr/=MESA_SUCESS) return
 
       call get_history_value(AMUSE_id,'average h1',ah1, ierr)
       if(ierr/=MESA_SUCESS) return
@@ -631,12 +829,12 @@ module amuse_mesa
                AMUSE_value = 0 ! Convective low mass star
             else
                AMUSE_value = 1 ! Main sequence star
-            endif                  
-         else 
+            endif
+         else
             if(lgLHe - lgL < -3) then
                AMUSE_value = 3 ! Red giant branch
             else
-               if(che4 > 1d-4) then 
+               if(che4 > 1d-4) then
                   AMUSE_value = 4 ! Core He burning
                   if(ah1 > 1d-5) then
                      if(ahe3+ahe4 < 0.75*ah1) then
@@ -741,7 +939,7 @@ module amuse_mesa
       if (ierr /= MESA_SUCESS) then
          AMUSE_value = -1
          get_number_of_species = -1
-      endif    
+      endif
       AMUSE_value = int(val)
 
    end function
@@ -753,13 +951,13 @@ module amuse_mesa
       double precision, intent(out) :: AMUSE_value
       integer :: ierr
       get_mass_of_species = 0
-      
+
       call get_mass_number_species(AMUSE_id, AMUSE_species, AMUSE_value, ierr)
 
       if (ierr /= MESA_SUCESS) then
          AMUSE_value = -1
          get_mass_of_species = ierr
-      endif   
+      endif
    end function
 
    ! Return the name of chemical abundance given by 'AMUSE_species' of the star
@@ -768,7 +966,7 @@ module amuse_mesa
       character(len=*), intent(out) :: AMUSE_value
 
       integer :: ierr
-      
+
       get_name_of_species = 0
 
       call get_species_name(AMUSE_id, AMUSE_species, AMUSE_value, ierr)
@@ -776,18 +974,18 @@ module amuse_mesa
       if (ierr /= MESA_SUCESS) then
          AMUSE_value = ''
          get_name_of_species = ierr
-      endif   
+      endif
 
    end function
-   
 
-   ! Return the chem_id of the species given by AMUSE_species 
+
+   ! Return the chem_id of the species given by AMUSE_species
    integer function get_id_of_species(AMUSE_id, AMUSE_species, AMUSE_value)
       integer, intent(in) :: AMUSE_id
       character(len=*), intent(in) :: AMUSE_species
       integer, intent(out) :: AMUSE_value
       integer :: ierr
-      
+
       get_id_of_species = 0
 
       call get_species_id(AMUSE_id, AMUSE_species, AMUSE_value, ierr)
@@ -795,7 +993,7 @@ module amuse_mesa
       if (ierr /= MESA_SUCESS) then
          AMUSE_value = -1
          get_id_of_species= ierr
-      endif   
+      endif
 
    end function
 
@@ -812,7 +1010,7 @@ module amuse_mesa
       if (ierr /= MESA_SUCESS) then
          AMUSE_value = ''
          get_nuclear_network= ierr
-      endif   
+      endif
 
    end function get_nuclear_network
 
@@ -828,7 +1026,7 @@ module amuse_mesa
 
       if (ierr /= MESA_SUCESS) then
          set_nuclear_network = ierr
-      endif   
+      endif
 
    end function set_nuclear_network
 
@@ -843,7 +1041,7 @@ module amuse_mesa
       evolve_one_step = -1
 
       call do_evolve_one_step(AMUSE_id, res, ierr)
-      if (ierr /= MESA_SUCESS) return   
+      if (ierr /= MESA_SUCESS) return
 
       evolve_one_step = res
 
@@ -862,7 +1060,7 @@ module amuse_mesa
          evolve_for = -1
          call flush()
          return
-      endif        
+      endif
 
       result = get_age(AMUSE_id, target_times(AMUSE_id))
    end function evolve_for
@@ -920,7 +1118,7 @@ module amuse_mesa
    ! This expects all arrays to be in MESA order (1==surface n==center)
       ! xq = 1-q (where q is mass fraction at zone i)
    ! star_mass needs to be an array for the interface to work but we only need the total star mass in star_mass(1)
-   
+
    ! Negative return value indicates an error while positive is the new id
    integer function new_stellar_model(star_mass, xq, rho, temperature, &
          XH1,XHe3,XHe4,XC12,XN14,XO16,XNe20,XMg24,XSi28,XS32, &
@@ -1107,20 +1305,20 @@ module amuse_mesa
       new_model_defined = .true.
 
 
-      contains 
-      
+      contains
+
          subroutine set_comp(iso,comp)
             character(len=*) :: iso
             double precision,dimension(n) :: comp
             integer :: net_id, ierr
-            
+
             call get_species_id(id, iso, net_id, ierr)
             if(ierr/=MESA_SUCESS) then
                new_stellar_model = ierr
                return
             end if
             xa(net_id,:) = max(1d-50,comp)
-            
+
          end subroutine set_comp
 
    end function new_stellar_model
@@ -1301,7 +1499,7 @@ module amuse_mesa
 
       call get_gyre_data(AMUSE_ID, mode_l, &
          add_center_point, keep_surface_point, add_atmosphere, &
-         fileout, ierr) 
+         fileout, ierr)
 
       get_gyre = ierr
 
@@ -1318,7 +1516,7 @@ module amuse_mesa
       integer, intent(in) :: AMUSE_ID
       logical, intent(in) :: first_try
       integer, intent(out) :: result
-      integer :: ierr 
+      integer :: ierr
 
       ierr = 0
 
@@ -1330,7 +1528,7 @@ module amuse_mesa
    integer function solve_one_step_pre(AMUSE_ID, result)
       integer, intent(in) :: AMUSE_ID
       integer, intent(out) :: result
-      integer :: ierr 
+      integer :: ierr
 
       call do_solve_one_step_pre(AMUSE_ID, result, ierr)
       solve_one_step_pre = ierr
@@ -1341,7 +1539,7 @@ module amuse_mesa
    integer function solve_one_step_post(AMUSE_ID, result)
       integer, intent(in) :: AMUSE_ID
       integer, intent(out) :: result
-      integer :: ierr 
+      integer :: ierr
 
       call do_solve_one_step_post(AMUSE_ID, result, ierr)
       solve_one_step_post = ierr
@@ -1355,7 +1553,7 @@ module amuse_mesa
       integer, intent(in) :: AMUSE_ID
       double precision,intent(in) :: dt
       integer, intent(out) :: result
-      integer :: ierr 
+      integer :: ierr
 
 
       call set_current_dt(AMUSE_ID, dt, ierr) ! Sets dt not dt_next
@@ -1372,10 +1570,10 @@ module amuse_mesa
 
    integer function prepare_redo_step(AMUSE_ID, result)
    ! Retake the same timestep with the same dt. Useful when mdot changes
-   ! Does not actualy redo the step 
+   ! Does not actualy redo the step
       integer, intent(in) :: AMUSE_ID
       integer, intent(out) :: result
-      integer :: ierr 
+      integer :: ierr
 
       result = do_prepare_for_redo(AMUSE_id)
       prepare_redo_step = 0

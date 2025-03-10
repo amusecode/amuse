@@ -238,14 +238,91 @@ class MESAInterface(
             , description="The current core mass of the star, where hydrogen abundance is <= h1_boundary_limit")
         function.result_type = 'int32'
         return function
+        
+    @legacy_function
+    def get_core_radius():
+        """
+        Retrieve the current core radius of the star, where hydrogen abundance is <= h1_boundary_limit
+        """
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
+        function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
+            , description="The index of the star to get the value of")
+        function.addParameter('core_radius', dtype='float64', direction=function.OUT
+            , description="The current core radius of the star, where hydrogen abundance is <= h1_boundary_limit")
+        function.result_type = 'int32'
+        return function
 
+    @legacy_function
+    def get_convective_envelope_mass():
+        """
+        Retrieve the size (in mass) of the convective envelope of the star
+        """
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
+        function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
+            , description="The index of the star to get the value of")
+        function.addParameter('convective_envelope_mass', dtype='float64', direction=function.OUT
+            , description="The current convective envelope mass of the star")
+        function.result_type = 'int32'
+        return function
+
+    @legacy_function
+    def get_convective_envelope_radius():
+        """
+        Retrieve the size (in radius) of the convective envelope of the star
+        """
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
+        function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
+            , description="The index of the star to get the value of")
+        function.addParameter('convective_envelope_radius', dtype='float64', direction=function.OUT
+            , description="The current convective envelope radius of the star")
+        function.result_type = 'int32'
+        return function
+        
     @remote_function(can_handle_array=True)
     def get_mass_loss_rate(index_of_the_star='i'):
         """
         Retrieve the current mass loss rate of the star. (positive for winds, negative for accretion)
         """
         returns (mass_change='d' | units.MSun/units.julianyr)
-
+    
+    @remote_function(can_handle_array=True)
+    def get_wind_mass_loss_rate(index_of_the_star='i'):
+        """
+        Retrieve the current mass loss rate of the star. (only winds)
+        """
+        returns (mass_change='d' | units.MSun/units.julianyr)
+    
+    @legacy_function
+    def get_apsidal_motion_constant():
+        """
+        Retrieve the apsidal motion constant k2, assuming a spherical star without accounting for rotation
+        """
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
+        function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
+            , description="The index of the star to get the value of")
+        function.addParameter('apsidal_motion_constant', dtype='float64', direction=function.OUT
+            , description="The current apsidal motion constant k2 of the star")
+        function.result_type = 'int32'
+        return function
+    
+    @legacy_function
+    def get_gyration_radius():
+        """
+        Retrieve the gyration radius I/MR**2
+        """
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
+        function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
+            , description="The index of the star to get the value of")
+        function.addParameter('gyration_radius', dtype='float64', direction=function.OUT
+            , description="The current gyration radius of the star")
+        function.result_type = 'int32'
+        return function
+    
     @remote_function(can_handle_array=True)
     def get_manual_mass_transfer_rate(index_of_the_star='i'):
         """
@@ -1306,7 +1383,13 @@ class MESA(StellarEvolution, InternalStellarStructure):
             handler.add_getter(particle_set_name, 'get_mass', names=('mass',))
             handler.add_setter(particle_set_name, 'set_mass', names=('mass',))
             handler.add_getter(particle_set_name, 'get_core_mass', names=('core_mass',))
+            handler.add_getter(particle_set_name, 'get_core_radius', names=('core_radius',))
+            handler.add_getter(particle_set_name, 'get_convective_envelope_mass', names = ('convective_envelope_mass',))
+            handler.add_getter(particle_set_name, 'get_convective_envelope_radius', names = ('convective_envelope_radius',))
             handler.add_getter(particle_set_name, 'get_mass_loss_rate', names=('wind',))
+            handler.add_getter(particle_set_name, 'get_wind_mass_loss_rate', names=('wind_mass_loss_rate',))
+            handler.add_getter(particle_set_name, 'get_apsidal_motion_constant', names=('apsidal_motion_constant',))
+            handler.add_getter(particle_set_name, 'get_gyration_radius', names=('gyration_radius',))
             handler.add_getter(particle_set_name, 'get_age', names=('age',))
             handler.add_setter(particle_set_name, 'set_age', names=('age',))
             handler.add_getter(particle_set_name, 'get_time_step', names=('time_step',))
@@ -1488,9 +1571,39 @@ class MESA(StellarEvolution, InternalStellarStructure):
             (units.MSun, handler.ERROR_CODE,)
         )
         handler.add_method(
+            "get_core_radius",
+            (handler.INDEX,),
+            (units.RSun, handler.ERROR_CODE,)
+        )
+        handler.add_method(
+            "get_convective_envelope_mass",
+            (handler.INDEX,),
+            (units.MSun, handler.ERROR_CODE,)
+        )
+        handler.add_method(
+            "get_convective_envelope_radius",
+            (handler.INDEX,),
+            (units.RSun, handler.ERROR_CODE,)
+        )
+        handler.add_method(
             "get_mass_loss_rate",
             (handler.INDEX,),
             (units.MSun / units.julianyr, handler.ERROR_CODE,)
+        )
+        handler.add_method(
+            "get_wind_mass_loss_rate",
+            (handler.INDEX,),
+            (units.MSun / units.julianyr, handler.ERROR_CODE,)
+        )
+        handler.add_method(
+            "get_apsidal_motion_constant",
+            (handler.INDEX,),
+            (handler.NO_UNIT, handler.ERROR_CODE,)
+        )
+        handler.add_method(
+            "get_gyration_radius",
+            (handler.INDEX,),
+            (handler.NO_UNIT, handler.ERROR_CODE,)
         )
         handler.add_method(
             "get_manual_mass_transfer_rate",
@@ -1557,6 +1670,12 @@ class MESA(StellarEvolution, InternalStellarStructure):
         handler.add_method(
             "evolve_for",
             (handler.INDEX, units.julianyr),
+            (handler.ERROR_CODE,)
+        )
+        
+        handler.add_method(
+            "evolve_one_step",
+            (handler.INDEX),
             (handler.ERROR_CODE,)
         )
 
