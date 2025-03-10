@@ -1,4 +1,9 @@
-from amuse.rfi.core import legacy_function, LegacyFunctionSpecification
+"""
+Interface for PeTar
+"""
+from amuse.rfi.core import (
+    legacy_function, LegacyFunctionSpecification, remote_function
+)
 from amuse.community import (
     CodeInterface,
     LiteratureReferencesMixIn,
@@ -82,6 +87,13 @@ class petarInterface(
             could not set parameter
         """
         return function
+
+    @remote_function(can_handle_array=True)
+    def get_binary_companion(index_of_the_particle='i'):
+        """
+        Returns the binary companion of a particle, or -1 if no such companion exists
+        """
+        returns (binary_companion='i')
 
     #@legacy_function
     #def get_gravitational_constant():
@@ -574,6 +586,17 @@ class petar(GravitationalDynamics, GravityFieldCode):
         )
 
         handler.add_method(
+            "get_binary_companion",
+            (
+                handler.NO_UNIT,
+            ),
+            (
+                handler.NO_UNIT,
+                handler.ERROR_CODE,
+            )
+        )
+
+        handler.add_method(
             "set_tree_step",
             (
                 nbody_system.time,
@@ -614,6 +637,7 @@ class petar(GravitationalDynamics, GravityFieldCode):
     def define_particle_sets(self, handler):
         GravitationalDynamics.define_particle_sets(self, handler)
         self.stopping_conditions.define_particle_set(handler)
+        handler.add_getter('particles', 'get_binary_companion')
 
 
 PetarInterface = petarInterface
