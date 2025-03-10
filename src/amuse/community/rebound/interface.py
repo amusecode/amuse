@@ -1,8 +1,17 @@
-from amuse.community import *
-from amuse.community.interface.gd import GravitationalDynamicsInterface
-from amuse.community.interface.gd import GravitationalDynamics
-from amuse.community.interface.gd import SinglePointGravityFieldInterface
-from amuse.community.interface.gd import GravityFieldCode
+from amuse.units import nbody_system
+from amuse.community import (
+    CodeInterface,
+    LiteratureReferencesMixIn,
+    StoppingConditionInterface,
+    StoppingConditions,
+    legacy_function,
+    LegacyFunctionSpecification,
+)
+from amuse.community.interface.gd import (
+    GravitationalDynamicsInterface,
+    GravitationalDynamics,
+    GravityFieldCode,
+)
 
 
 class ReboundInterface(
@@ -10,7 +19,6 @@ class ReboundInterface(
     LiteratureReferencesMixIn,
     GravitationalDynamicsInterface,
     StoppingConditionInterface,
-    # SinglePointGravityFieldInterface
 ):
     """
     REBOUND - An open-source multi-purpose N-body code
@@ -105,7 +113,10 @@ class ReboundInterface(
             "subset",
             dtype="int32",
             direction=function.IN,
-            description="The subset index of the particle (defaults to 0, use new_subset for higher indices)",
+            description=(
+                "The subset index of the particle "
+                "(defaults to 0, use new_subset for higher indices)"
+            ),
             default=0,
         )
         function.result_type = "int32"
@@ -180,10 +191,15 @@ class ReboundInterface(
         "whfast": 1,
         "sei": 2,
         "leapfrog": 4,
-        "hermes": 5,
-        "whfast-helio": 6,
+        "hermes": 5,  # removed
+        "whfast-helio": 6,  # removed
         "none": 7,
         "janus": 8,
+        "mercurius": 9,
+        "saba": 10,
+        "eos": 11,
+        "bs": 12,
+        "whfast512": 21,
     }
 
     def set_integrator(self, name, code_index=0):
@@ -226,7 +242,12 @@ class ReboundInterface(
         function.can_handle_array = False
         return function
 
-    SOLVERS = {"none": 0, "basic": 1, "compensated": 2, "tree": 3}
+    SOLVERS = {
+        "none": 0,
+        "basic": 1,
+        "compensated": 2,
+        "tree": 3,
+    }
 
     def set_solver(self, name, code_index=0):
         return self._set_solver(self.SOLVERS[name], code_index)
@@ -280,7 +301,8 @@ class ReboundInterface(
     def get_eps2():
         function = LegacyFunctionSpecification()
         """
-        Get epsilon^2, a softening parameter for gravitational potentials with point particles.
+        Get epsilon^2, a softening parameter for gravitational potentials with
+        point particles.
         """
         function = LegacyFunctionSpecification()
         function.addParameter(
@@ -294,7 +316,10 @@ class ReboundInterface(
             "epsilon_squared",
             dtype="float64",
             direction=function.OUT,
-            description="epsilon^2, a softening parameter for gravitational potentials with point particles",
+            description=(
+                "epsilon^2, a softening parameter for gravitational "
+                "potentials with point particles"
+            ),
             unit=nbody_system.length * nbody_system.length,
         )
         function.result_type = "int32"
@@ -309,14 +334,18 @@ class ReboundInterface(
     @legacy_function
     def set_eps2():
         """
-        Set epsilon^2, a softening parameter for gravitational potentials with point particles.
+        Set epsilon^2, a softening parameter for gravitational potentials with
+        point particles.
         """
         function = LegacyFunctionSpecification()
         function.addParameter(
             "epsilon_squared",
             dtype="float64",
             direction=function.IN,
-            description="epsilon^2, a softening parameter for gravitational potentials with point particles",
+            description=(
+                "epsilon^2, a softening parameter for gravitational "
+                "potentials with point particles"
+            ),
             unit=nbody_system.length * nbody_system.length,
         )
         function.addParameter(
@@ -338,7 +367,9 @@ class ReboundInterface(
     @legacy_function
     def _set_boundary():
         function = LegacyFunctionSpecification()
-        function.addParameter("boundary_name", dtype="i", direction=function.IN)
+        function.addParameter(
+            "boundary_name", dtype="i", direction=function.IN
+        )
         function.addParameter(
             "code_index",
             dtype="int32",
@@ -360,12 +391,19 @@ class ReboundInterface(
             description="Index of the code in rebound",
             default=0,
         )
-        function.addParameter("boundary_name", dtype="i", direction=function.OUT)
+        function.addParameter(
+            "boundary_name", dtype="i", direction=function.OUT
+        )
         function.result_type = "int32"
         function.can_handle_array = False
         return function
 
-    BOUNDARIES = {"none": 0, "open": 1, "periodic": 2, "shear": 3}
+    BOUNDARIES = {
+        "none": 0,
+        "open": 1,
+        "periodic": 2,
+        "shear": 3,
+    }
 
     def set_boundary(self, name, code_index=0):
         return self._set_boundary(self.BOUNDARIES[name], code_index)
@@ -443,7 +481,8 @@ class ReboundInterface(
         """
         function = LegacyFunctionSpecification()
         function.addParameter(
-            "timestep", dtype="float64", direction=function.IN, description="timestep"
+            "timestep", dtype="float64", direction=function.IN,
+            description="timestep"
         )
         function.addParameter(
             "code_index",
@@ -518,7 +557,8 @@ class ReboundInterface(
     @legacy_function
     def evolve_model():
         """
-        Evolve the model until the given time, or until a stopping condition is set.
+        Evolve the model until the given time, or until a stopping condition is
+        set.
         """
         function = LegacyFunctionSpecification()
         function.addParameter(
@@ -532,7 +572,9 @@ class ReboundInterface(
             "code_index",
             dtype="int32",
             direction=function.IN,
-            description="Index of the code in rebound (default -1, evolve all systems)",
+            description=(
+                "Index of the code in rebound (default -1, evolve all systems)"
+            ),
             default=-1,
         )
         function.result_type = "int32"
@@ -541,9 +583,9 @@ class ReboundInterface(
     @legacy_function
     def get_time():
         """
-        Retrieve the model time. This time should be close to the end time specified
-        in the evolve code. Or, when a collision was detected, it will be the
-        model time of the collision.
+        Retrieve the model time. This time should be close to the end time
+        specified in the evolve code. Or, when a collision was detected, it
+        will be the model time of the collision.
         """
         function = LegacyFunctionSpecification()
         function.addParameter(
@@ -599,7 +641,8 @@ class ReboundInterface(
     @legacy_function
     def new_subset():
         """
-        Create a new particle subset (and corresponding code). This subset will evolve seperately from others.
+        Create a new particle subset (and corresponding code). This subset will
+        evolve separately from others.
         """
         function = LegacyFunctionSpecification()
         function.can_handle_array = True
@@ -616,7 +659,9 @@ class ReboundInterface(
             "time_offset",
             dtype="float64",
             direction=function.IN,
-            description="Time of the system (defaults to the current model time)",
+            description=(
+                "Time of the system (defaults to the current model time)"
+            ),
             default=-1,
         )
         function.result_type = "int32"
@@ -629,8 +674,9 @@ class ReboundInterface(
     @legacy_function
     def get_state():
         """
-        Retrieve the current state of a particle. The *minimal* information of a stellar
-        dynamics particle (mass, radius, position and velocity) is returned.
+        Retrieve the current state of a particle. The *minimal* information of
+        a stellar dynamics particle (mass, radius, position and velocity) is
+        returned.
         """
         function = LegacyFunctionSpecification()
         function.can_handle_array = True
@@ -638,7 +684,10 @@ class ReboundInterface(
             "index_of_the_particle",
             dtype="int32",
             direction=function.IN,
-            description="Index of the particle to get the state from. This index must have been returned by an earlier call to :meth:`new_particle`",
+            description=(
+                "Index of the particle to get the state from. This index must "
+                "have been returned by an earlier call to :meth:`new_particle`"
+            ),
         )
         function.addParameter(
             "mass",
@@ -713,7 +762,10 @@ class ReboundInterface(
             "index_of_the_particle",
             dtype="int32",
             direction=function.IN,
-            description="Index of the particle to get the subset of. This index must have been returned by an earlier call to :meth:`new_particle`",
+            description=(
+                "Index of the particle to get the subset of. This index must "
+                "have been returned by an earlier call to :meth:`new_particle`"
+            ),
         )
         function.addParameter(
             "subset",
@@ -725,7 +777,7 @@ class ReboundInterface(
         function.can_handle_array = True
         function.result_doc = """
         0 - OK
-            particle was found in the model and the information was retreived
+            particle was found in the model and the information was retrieved
         -1 - ERROR
             particle could not be found
         """
@@ -764,19 +816,25 @@ class ReboundInterface(
             "index_of_the_particle",
             dtype="int32",
             direction=function.IN,
-            description="Index of the particle to get the subset of. This index must have been returned by an earlier call to :meth:`new_particle`",
+            description=(
+                "Index of the particle to get the subset of. This index must "
+                "have been returned by an earlier call to :meth:`new_particle`"
+            ),
         )
         function.addParameter(
             "subset",
             dtype="int32",
             direction=function.IN,
-            description="The new subset of the particle, as this is actually read only this will fail if changed!",
+            description=(
+                "The new subset of the particle, as this is actually read only "
+                "this will fail if changed!"
+            ),
         )
         function.result_type = "int32"
         function.can_handle_array = True
         function.result_doc = """
         0 - OK
-            particle was found in the model and the information was retreived
+            particle was found in the model and the information was retrieved
         -1 - ERROR
             particle could not be found
         """
@@ -828,8 +886,9 @@ class Rebound(GravitationalDynamics, GravityFieldCode):
             "get_solver",
             "set_solver",
             "solver",
-            "name of the gravity solver to use ({0})".format(
-                sorted(self.SOLVERS.keys())
+            (
+                f"name of the gravity solver to use "
+                f"({sorted(self.SOLVERS.keys())})"
             ),
             default_value="compensated",
         )
@@ -846,7 +905,10 @@ class Rebound(GravitationalDynamics, GravityFieldCode):
             "get_opening_angle2",
             "set_opening_angle2",
             "opening_angle2",
-            "opening angle, theta, for building the tree in case of tree solver: between 0 and 1",
+            (
+                "opening angle, theta, for building the tree in case of "
+                "tree solver: between 0 and 1"
+            ),
             default_value=0.5,
         )
 
@@ -854,8 +916,9 @@ class Rebound(GravitationalDynamics, GravityFieldCode):
             "get_boundary",
             "set_boundary",
             "boundary",
-            "name of the boundary type to use ({0}) (required for tree solver)".format(
-                sorted(self.BOUNDARIES.keys())
+            (
+                f"name of the boundary type to use "
+                f"({sorted(self.BOUNDARIES.keys())}) (required for tree solver)"
             ),
             default_value="none",
         )
@@ -907,7 +970,9 @@ class Rebound(GravitationalDynamics, GravityFieldCode):
             ),
         )
         handler.add_method(
-            "evolve_model", (nbody_system.time, handler.INDEX), (handler.ERROR_CODE,)
+            "evolve_model",
+            (nbody_system.time, handler.INDEX),
+            (handler.ERROR_CODE,)
         )
         handler.add_method(
             "get_time",
@@ -953,7 +1018,9 @@ class Rebound(GravitationalDynamics, GravityFieldCode):
             ),
         )
         handler.add_method(
-            "get_subset", (handler.NO_UNIT,), (handler.NO_UNIT, handler.ERROR_CODE)
+            "get_subset",
+            (handler.NO_UNIT,),
+            (handler.NO_UNIT, handler.ERROR_CODE),
         )
         handler.add_method(
             "set_subset",
