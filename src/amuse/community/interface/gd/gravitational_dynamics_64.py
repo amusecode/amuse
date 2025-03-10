@@ -2,16 +2,14 @@
 Stellar Dynamics Interface Definition
 """
 
-from amuse.support.interface import InCodeComponentImplementation
 from amuse.units import nbody_system
-from amuse.units import generic_unit_converter
 from amuse.community.interface import common
 
 from amuse.rfi.core import legacy_function
 from amuse.rfi.core import LegacyFunctionSpecification
 
 
-class GravitationalDynamicsInterface(common.CommonCodeInterface):
+class GravitationalDynamics64Interface(common.CommonCodeInterface):
 
     @legacy_function
     def new_particle():
@@ -24,7 +22,7 @@ class GravitationalDynamicsInterface(common.CommonCodeInterface):
         function.can_handle_array = True
         function.addParameter(
             "index_of_the_particle",
-            dtype="int32",
+            dtype="int64",
             direction=function.OUT,
             description=(
                 "An index assigned to the newly created particle. "
@@ -102,7 +100,7 @@ class GravitationalDynamicsInterface(common.CommonCodeInterface):
         function.can_handle_array = True
         function.addParameter(
             "index_of_the_particle",
-            dtype="int32",
+            dtype="int64",
             direction=function.IN,
             description=(
                 "Index of the particle to be removed. This index must have "
@@ -131,7 +129,7 @@ class GravitationalDynamicsInterface(common.CommonCodeInterface):
         function.can_handle_array = True
         function.addParameter(
             "index_of_the_particle",
-            dtype="int32",
+            dtype="int64",
             direction=function.IN,
             description=(
                 "Index of the particle to get the state from. This index must "
@@ -206,7 +204,7 @@ class GravitationalDynamicsInterface(common.CommonCodeInterface):
         function.can_handle_array = True
         function.addParameter(
             "index_of_the_particle",
-            dtype="int32",
+            dtype="int64",
             direction=function.IN,
             description=(
                 "Index of the particle for which the state is to be updated. "
@@ -285,7 +283,7 @@ class GravitationalDynamicsInterface(common.CommonCodeInterface):
         function = LegacyFunctionSpecification()
         function.addParameter(
             "index_of_the_particle",
-            dtype="int32",
+            dtype="int64",
             direction=function.IN,
             description=(
                 "Index of the particle to get the state from. This index must "
@@ -316,7 +314,7 @@ class GravitationalDynamicsInterface(common.CommonCodeInterface):
         function = LegacyFunctionSpecification()
         function.addParameter(
             "index_of_the_particle",
-            dtype="int32",
+            dtype="int64",
             direction=function.IN,
             description=(
                 "Index of the particle for which the state is to be updated. "
@@ -351,7 +349,7 @@ class GravitationalDynamicsInterface(common.CommonCodeInterface):
         function = LegacyFunctionSpecification()
         function.addParameter(
             "index_of_the_particle",
-            dtype="int32",
+            dtype="int64",
             direction=function.IN,
             description=(
                 "Index of the particle to get the radius of. This index must "
@@ -383,7 +381,7 @@ class GravitationalDynamicsInterface(common.CommonCodeInterface):
         function = LegacyFunctionSpecification()
         function.addParameter(
             "index_of_the_particle",
-            dtype="int32",
+            dtype="int64",
             direction=function.IN,
             description=(
                 "Index of the particle to get the radius of. This index must "
@@ -415,7 +413,7 @@ class GravitationalDynamicsInterface(common.CommonCodeInterface):
         function = LegacyFunctionSpecification()
         function.addParameter(
             "index_of_the_particle",
-            dtype="int32",
+            dtype="int64",
             direction=function.IN,
             description=(
                 "Index of the particle to get the state from. This index must "
@@ -460,7 +458,7 @@ class GravitationalDynamicsInterface(common.CommonCodeInterface):
         function = LegacyFunctionSpecification()
         function.addParameter(
             "index_of_the_particle",
-            dtype="int32",
+            dtype="int64",
             direction=function.IN,
             description=(
                 "Index of the particle for which the state is to be updated. "
@@ -507,7 +505,7 @@ class GravitationalDynamicsInterface(common.CommonCodeInterface):
         function = LegacyFunctionSpecification()
         function.addParameter(
             "index_of_the_particle",
-            dtype="int32",
+            dtype="int64",
             direction=function.IN,
             description=(
                 "Index of the particle to get the velocity from. This index "
@@ -559,7 +557,7 @@ class GravitationalDynamicsInterface(common.CommonCodeInterface):
         function = LegacyFunctionSpecification()
         function.addParameter(
             "index_of_the_particle",
-            dtype="int32",
+            dtype="int64",
             direction=function.IN,
             description=(
                 "Index of the particle to get the state from. This index must "
@@ -611,7 +609,7 @@ class GravitationalDynamicsInterface(common.CommonCodeInterface):
         function = LegacyFunctionSpecification()
         function.addParameter(
             "index_of_the_particle",
-            dtype="int32",
+            dtype="int64",
             direction=function.IN,
             description=(
                 "Index of the particle to get the state from. This index must "
@@ -658,7 +656,7 @@ class GravitationalDynamicsInterface(common.CommonCodeInterface):
 
         function.addParameter(
             "index_of_the_particle",
-            dtype="int32",
+            dtype="int64",
             direction=function.IN,
             description=(
                 "Index of the particle for which the state is to be updated. "
@@ -1085,7 +1083,7 @@ class GravitationalDynamicsInterface(common.CommonCodeInterface):
         function = LegacyFunctionSpecification()
         function.addParameter(
             "index_of_the_particle",
-            dtype="int32",
+            dtype="int64",
             direction=function.OUT,
             description="Index of the first particle",
         )
@@ -1107,13 +1105,13 @@ class GravitationalDynamicsInterface(common.CommonCodeInterface):
         function = LegacyFunctionSpecification()
         function.addParameter(
             "index_of_the_particle",
-            dtype="int32",
+            dtype="int64",
             direction=function.IN,
             description="Index of the particle",
         )
         function.addParameter(
             "index_of_the_next_particle",
-            dtype="int32",
+            dtype="int64",
             direction=function.OUT,
             description=(
                 "Index of the particle following the particle with the "
@@ -1132,105 +1130,7 @@ class GravitationalDynamicsInterface(common.CommonCodeInterface):
         return function
 
 
-class GravityFieldInterface:
-    """
-    Codes implementing the gravity field interface provide functions to
-    calculate the force and potential energy fields at any point.
-    """
-
-    @legacy_function
-    def get_gravity_at_point():
-        """
-        Get the gravitational acceleration at the given points. To calculate
-        the force on bodies at those points, multiply with the mass of the
-        bodies
-        """
-        function = LegacyFunctionSpecification()
-        for x in ["eps", "x", "y", "z"]:
-            function.addParameter(
-                x, dtype="float64", direction=function.IN, unit=nbody_system.length
-            )
-        for x in ["ax", "ay", "az"]:
-            function.addParameter(
-                x,
-                dtype="float64",
-                direction=function.OUT,
-                unit=nbody_system.acceleration,
-            )
-        function.addParameter("npoints", dtype="i", direction=function.LENGTH)
-        function.result_type = "int32"
-        function.must_handle_array = True
-        return function
-
-    @legacy_function
-    def get_potential_at_point():
-        """
-        Determine the gravitational potential on any given point
-        """
-        function = LegacyFunctionSpecification()
-        for x in ["eps", "x", "y", "z"]:
-            function.addParameter(
-                x, dtype="float64", direction=function.IN, unit=nbody_system.length
-            )
-        for x in ["phi"]:
-            function.addParameter(
-                x, dtype="float64", direction=function.OUT, unit=nbody_system.potential
-            )
-        function.addParameter("npoints", dtype="i", direction=function.LENGTH)
-        function.result_type = "int32"
-        function.must_handle_array = True
-        return function
-
-
-class SinglePointGravityFieldInterface:
-    """
-    Codes implementing the gravity field interface provide functions to
-    calculate the force and potential energy fields at any point.
-    """
-
-    @legacy_function
-    def get_gravity_at_point():
-        """
-        Get the gravitational acceleration at the given points. To calculate
-        the force on bodies at those points, multiply with the mass of the
-        bodies
-        """
-        function = LegacyFunctionSpecification()
-        for x in ["eps", "x", "y", "z"]:
-            function.addParameter(
-                x, dtype="float64", direction=function.IN, unit=nbody_system.length
-            )
-        for x in ["ax", "ay", "az"]:
-            function.addParameter(
-                x,
-                dtype="float64",
-                direction=function.OUT,
-                unit=nbody_system.acceleration,
-            )
-        function.result_type = "int32"
-        function.can_handle_array = True
-        return function
-
-    @legacy_function
-    def get_potential_at_point():
-        """
-        Determine the gravitational potential on any given point
-        """
-        function = LegacyFunctionSpecification()
-        for x in ["eps", "x", "y", "z"]:
-            function.addParameter(
-                x, dtype="float64", direction=function.IN, unit=nbody_system.length
-            )
-        for x in ["phi"]:
-            function.addParameter(
-                x, dtype="float64", direction=function.OUT, unit=nbody_system.potential
-            )
-        function.result_type = "int32"
-        function.can_handle_array = True
-        return function
-
-
-class GravitationalDynamicsDocumentation:
+class GravitationalDynamics64Documentation:
 
     def __get__(self, instance, owner):
 
@@ -1240,10 +1140,10 @@ class GravitationalDynamicsDocumentation:
         return string
 
 
-class GravitationalDynamics(common.CommonCode):
+class GravitationalDynamics64(common.CommonCode):
     NBODY = object()
 
-    __doc__ = GravitationalDynamicsDocumentation()
+    __doc__ = GravitationalDynamics64Documentation()
 
     def __init__(self, legacy_interface, unit_converter=None, **options):
         self.unit_converter = unit_converter
@@ -1610,10 +1510,3 @@ class GravitationalDynamics(common.CommonCode):
 
     def get_total_energy(self):
         return self.get_potential_energy() + self.get_kinetic_energy()
-
-
-class GravityFieldCode:
-
-    def define_state(self, handler):
-        handler.add_method("RUN", "get_gravity_at_point")
-        handler.add_method("RUN", "get_potential_at_point")
