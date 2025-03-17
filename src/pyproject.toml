@@ -32,6 +32,9 @@ distance = "{next_version}.dev{distance}+{vcs}{rev}"
 dirty = "{base_version}+d{build_date:%Y%m%d}"
 distance-dirty = "{next_version}.dev{distance}+{vcs}{rev}.d{build_date:%Y%m%d}"
 
+[tool.versioningit.write]
+file = "amuse/_version.py"
+
 [tool.hatch.build]
 skip-excluded-dirs = true
 
@@ -41,7 +44,13 @@ include = [
         "amuse/couple/**/*.py", "amuse/data/**/*.py", "amuse/datamodel/**/*.py",
         "amuse/ext/**/*.py", "amuse/ic/**/*.py", "amuse/io/**/*.py",
         "amuse/plot/**/*.py", "amuse/rfi/**/*.py", "amuse/rfi/tools/*.template",
-        "amuse/support/**/*.py", "amuse/units/**/*.py"]
+        "amuse/rfi/tools/dir_templates/*", "amuse/support/**/*.py",
+        "amuse/units/**/*.py"]
+
+artifacts = ["amuse/_version.py"]
+
+[tool.hatch.build.targets.wheel.force-include]
+"amuse/rfi/tools/dir_templates/support_shared_m4" = "amuse/rfi/tools/dir_templates/support_shared_m4"
 
 [tool.pytest.ini_options]
 pythonpath = ["tests/"]

@@ -54,3 +54,9 @@ except:
 
 def get_data(path):
     return os.path.join(_AMUSE_ROOT, "data", path)
+
+
+try:
+    from amuse._version import __version__
+except ImportError:
+    __version__ = "unknown version"
