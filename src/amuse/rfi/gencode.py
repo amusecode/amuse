@@ -7,7 +7,7 @@ from optparse import OptionParser
 from amuse.rfi.tools import create_c
 from amuse.rfi.tools import create_fortran
 from amuse.rfi.tools import create_java
-from amuse.rfi.tools import create_dir
+from amuse.rfi.tools.create_dir import create_code_dir
 from amuse.rfi.tools import create_python_worker
 
 from amuse.support import get_amuse_root_dir, get_amuse_package_dir
@@ -335,28 +335,13 @@ def make_file(uc):
 
 
 def make_directory(uc):
-    settings = uc.options
-
-    usecases = {
-        ("c", "dir"): create_dir.CreateADirectoryAndPopulateItWithFilesForACCode,
-        (
-            "f90",
-            "dir",
-        ): create_dir.CreateADirectoryAndPopulateItWithFilesForAFortranCode,
-    }
-
-    try:
-        builder = usecases[(settings.type, settings.mode)]()
-        builder.name_of_the_code_interface_class = settings.name_of_the_code
-        builder.path_of_the_root_directory = os.getcwd()
-    except:
+    language = uc.options.type
+    if language not in ("c", "f90"):
         uc.show_error_and_exit(
-            "'{0}' and '{1}' is not a valid combination of type and mode, cannot generate the code".format(
-                settings.type, settings.mode
-            )
-        )
+                f"'{language}' is not a valid language for making a directory. Try"
+                " either 'c' (also for C++) or 'f90'.")
 
-    builder.start()
+    create_code_dir(language, uc.options.name_of_the_code, os.getcwd())
 
 
 def amusifier():

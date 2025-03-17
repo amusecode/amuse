@@ -1,0 +1,132 @@
+ifneq (,$(filter-out clean distclean, $(MAKECMDGOALS)))
+include support/config.mk
+endif
+
+
+# Detecting dependencies
+support/config.mk:
+	cd support && ./configure
+
+
+# Downloading the code
+##### Remove if not needed #####
+VERSION = VERSION
+
+{code}.tar.gz:
+	##### Modify URL as needed #####
+	$(DOWNLOAD) https://github.com/{code}/{code}/archive/$(VERSION).tar.gz >$@
+
+PATCHES := $(file < patches/series)
+PATCHES := $(patsubst %,%,$(PATCHES))    # replace newlines with spaces
+
+src/{code}-$(VERSION): {code}.tar.gz
+	##### Modify as needed #####
+	tar xf $<
+	mv {code}-$(VERSION) src
+	##### Apply patches here, if needed #####
+	patch <patch.patch
+	for p in $(PATCHES) ; do patch -p1 <patches/$$p ; done
+
+
+# Building the code into a static library
+##### Remove anything not needed #####
+DEPFLAGS += $(STOPCOND_CFLAGS) $(STOPCONDMPI_CFLAGS) $(AMUSE_MPI_CFLAGS)
+DEPFLAGS += $(SIMPLE_HASH_CFLAGS) $(G6LIB_CFLAGS)
+DEPFLAGS += $(SAPPORO_LIGHT_CFLAGS)
+
+##### Pick whichever language is applicable for the code #####
+DEPFLAGS += $(OPENMP_CFLAGS) $(OPENMP_FFLAGS) $(OPENMP_CXXFLAGS)
+
+##### Remove anything not needed #####
+DEPFLAGS += $(CUDA_FLAGS)
+DEPFLAGS += $(CL_CFLAGS)
+##### LAPACK doesn't have flags, only libs... #####
+DEPFLAGS += $(GSL_FLAGS)
+DEPFLAGS += $(GMP_FLAGS)
+DEPFLAGS += $(MPFR_FLAGS)
+DEPFLAGS += $(FFTW_FLAGS)
+##### Pick whichever language is applicable for the code #####
+DEPFLAGS += $(HDF5_CFLAGS) $(HDF5_FFLAGS)
+##### Pick whichever language is applicable for the code #####
+DEPFLAGS += $(NETCDF4_CFLAGS) $(NETCDF4_FFLAGS)
+
+CFLAGS += $(DEPFLAGS)
+LDFLAGS += $(CUDA_LDFLAGS)
+
+LDLIBS += -lm $(STOPCOND_LIBS) $(STOPCONDMPI_LIBS) $(AMUSE_MPI_LIBS)
+LDLIBS += $(SIMPLE_HASH_LIBS) $(G6LIB_LIBS)
+LDLIBS += $(SAPPORO_LIGHT_LIBS)
+
+# TODO CUDA, anything else?
+LDLIBS += $(CL_LIBS)
+LDLIBS += $(LAPACK_LIBS) $(BLAS_LIBS) $(LIBS) $(FLIBS)
+LDLIBS += $(GSL_LIBS)
+LDLIBS += $(GMP_LIBS)
+LDLIBS += $(MPFR_LIBS)
+LDLIBS += $(FFTW_LIBS)
+##### Pick whichever language is applicable for the code #####
+LDLIBS += $(HDF5_LIBS) $(HDF5_FLIBS)
+##### Pick whichever language is applicable for the code #####
+LDLIBS += $(NETCDF4_LIBS) $(NETCDF4_FLIBS)
+
+
+CODELIB = src/lib{code}.a
+
+
+##### Modify build command as needed #####
+.PHONY: $(CODELIB)
+$(CODELIB): | src
+	$(MAKE) -C src -j $(CPU_COUNT) all
+
+
+# Building the workers
+{code}_worker.h: interface.py
+	amusifier --type=h interface.py {interface_class} -o $@
+
+{code}_worker.cc: interface.py
+	amusifier --type=c interface.py {interface_class} -o $@
+
+{code}_worker.o: {code}_worker.cc {code}_worker.h
+	$(MPICXX) -c -o $@ $(CFLAGS) $<
+
+{code}_worker: interface.o {code}_worker.o $(CODELIB)
+	$(MPICXX) -o $@ $(LDFLAGS) $^ $(LDLIBS)
+
+
+interface.o: interface.cc {code}_worker.h
+	$(MPICXX) -o $@ -c $(CFLAGS) $<
+
+
+# Which packages contain which workers?
+##### Add and/or remove as needed #####
+amuse-{code}_contains: {code}_worker
+
+amuse-{code}-PACKAGE_contains: {code}_PACKAGE_worker
+
+
+# Building and installing packages
+develop-%: %_contains
+	support/shared/uninstall.sh $*
+	python -m pip install -e packages/$*
+
+install-%: %_contains
+	support/shared/uninstall.sh $*
+	python -m pip install packages/$*
+
+package-%: %_contains
+	python3 -m pip install -vv --no-cache-dir --no-deps --no-build-isolation --prefix ${{PREFIX}} packages/$*
+
+test-%:
+	cd packages/$* && pytest
+
+
+# Cleaning up
+.PHONY: clean
+clean:
+	$(MAKE) -C src clean
+	rm -rf *.o *.mod *worker*
+
+.PHONY: distclean
+distclean: clean
+	rm -f support/config.mk support/config.log support/config.status
+	rm -rf support/autom4te.cache
