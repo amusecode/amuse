@@ -32,7 +32,7 @@ CODELIBS = src/sstar/libsstar.a src/dstar/libdstar.a src/node/libnode.a src/std/
 
 .PHONY: $(CODELIBS)
 $(CODELIBS) &: | src
-	cd src && $(MAKE) -j $(CPU_COUNT) lib
+	cd src && $(MAKE) -j 1 lib
 
 
 # Building the workers
