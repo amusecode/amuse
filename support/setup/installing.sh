@@ -204,10 +204,13 @@ install_package() {
         # We are installing an amuse-code-package extension package, so we need the
         # base package as well, if it exists.
         base_package="${package%-*}"
-        if ! is_subset "${base_package}" "${INSTALLED_PACKAGES}" ; then
-            save_package="${package}"
-            install_package "${cmd}" "${base_package}" "${brief}"
-            package="${save_package}"
+        # If the code is e.g. CUDA-only, then there may not be a base package.
+        if is_subset "${base_package}" "${EXTANT_PACKAGES}" ; then
+            if ! is_subset "${base_package}" "${INSTALLED_PACKAGES}" ; then
+                save_package="${package}"
+                install_package "${cmd}" "${base_package}" "${brief}"
+                package="${save_package}"
+            fi
         fi
     fi
 

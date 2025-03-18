@@ -138,6 +138,7 @@ check_build_sapporo_light() {
 #
 # This sets the following variables:
 #
+# EXTANT_PACKAGES - adds all packages that exist
 # ENABLED_PACKAGES - adds packages for which all requirements are met
 # ENABLED_PACKAGES_TEXT - adds packages for which all requirements are met
 # DISABLED_PACKAGES - adds packages for which features are missing
@@ -161,6 +162,8 @@ find_packages() {
             if is_subset "sapporo_light" "${deps}" ; then
                 NEEDS_SAPPORO_LIGHT="${NEEDS_SAPPORO_LIGHT} ${package}"
             fi
+
+            EXTANT_PACKAGES="${EXTANT_PACKAGES} ${package}"
 
             if [ "a${missing_features}" = "a" ] ; then
                 installed="$(is_installed ${package})"
