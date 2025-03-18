@@ -143,6 +143,7 @@ check_build_sapporo_light() {
 # DISABLED_PACKAGES - adds packages for which features are missing
 # DISABLED_PACKAGES_TEXT - adds packages for which features are missing
 # BROKEN_PACKAGES - adds packages that are broken (issue_x dependency)
+# NEEDS_SAPPORO_LIGHT - adds packages that need sapporo_light
 #
 find_packages() {
     for code in src/amuse/community/* ; do
