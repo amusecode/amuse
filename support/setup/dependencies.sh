@@ -29,9 +29,9 @@
 # - LAPACK
 
 DEPS_conda="c-compiler cxx-compiler fortran-compiler python pkgconfig coreutils patch"
-DEPS_conda="${DEPS_conda} curl tar unzip gzip bzip2 xz perl make cmake openmpi"
-DEPS_conda="${DEPS_conda} openmpi-mpicc openmpi-mpicxx openmpi-mpifort openmp gsl fftw"
-DEPS_conda="${DEPS_conda} gmp mpfr hdf5 netcdf4 libopenblas liblapack zlib"
+DEPS_conda="${DEPS_conda} curl tar unzip gzip bzip2 xz perl make cmake makedepf90"
+DEPS_conda="${DEPS_conda} openmpi openmpi-mpicc openmpi-mpicxx openmpi-mpifort openmp"
+DEPS_conda="${DEPS_conda} gsl fftw gmp mpfr hdf5 netcdf4 libopenblas liblapack zlib"
 DEPS_conda="${DEPS_conda} 'docutils>=0.6' 'mpi4py>=1.1.0' 'numpy>=1.2.2' 'h5py>=1.1.0'"
 
 DEPS_macports="gcc12 python312 pkgconfig curl gpatch gnutar unzip gzip bzip2 xz perl5"
@@ -52,14 +52,14 @@ DEPS_homebrew="${DEPS_homebrew} netcdf netcdf-cxx netcdf-fortran openblas lapack
 
 DEPS_apt="gcc g++ gfortran python3 python3-dev pkg-config curl patch tar unzip gzip"
 DEPS_apt="${DEPS_apt} bzip2 xz-utils"
-DEPS_apt="${DEPS_apt} perl make cmake libopenmpi-dev openmpi-bin"
+DEPS_apt="${DEPS_apt} perl make cmake makedepf90 libopenmpi-dev openmpi-bin"
 DEPS_apt="${DEPS_apt} libgsl-dev libfftw3-dev libgmp3-dev libmpfr6"
 DEPS_apt="${DEPS_apt} libmpfr-dev libhdf5-dev hdf5-tools libnetcdf-dev"
 DEPS_apt="${DEPS_apt} liblapack-dev libblas-dev"
 
 DEPS_dnf="gcc gcc-c++ gcc-gfortran python3 python3-devel pkgconf-pkg-config curl patch"
 DEPS_dnf="${DEPS_dnf} tar unzip gzip"
-DEPS_dnf="${DEPS_dnf} bzip2 xz perl-core make cmake openmpi-devel"
+DEPS_dnf="${DEPS_dnf} bzip2 xz perl-core make cmake makedepf90 openmpi-devel"
 DEPS_dnf="${DEPS_dnf} gsl-devel fftw-devel gmp-devel mpfr-devel hdf5-devel netcdf-devel"
 DEPS_dnf="${DEPS_dnf} netcdf-cxx-devel netcdf-fortran-devel blas-devel lapack-devel"
 
