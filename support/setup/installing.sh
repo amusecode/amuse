@@ -187,12 +187,36 @@ install_package() {
         package="${save_package}"
     fi
 
+    if is_subset "${package}" "${NEEDS_SAPPORO_LIGHT}" ; then
+        if ! is_subset "sapporo_light" "${INSTALLED_PACKAGES}" ; then
+            save_package="${package}"
+            install_sapporo_light
+            package="${save_package}"
+        fi
+    fi
+
+    if [ "a${package%-*-*}" != "a${package}" ] ; then
+        # we are installing an amuse-code-package extension package
+        base_package="${package%-*}"
+        if ! is_subset "${base_package}" "${INSTALLED_PACKAGES}" ; then
+            save_package="${package}"
+            install_package "${cmd}" "${base_package}" "${brief}"
+            package="${save_package}"
+        fi
+    fi
+
     save_cmd="${cmd}"
     forward_to_package "distclean" "${package}" "${brief}"
     cmd="${save_cmd}"
 
     forward_to_package "${cmd}" "${package}" "${brief}"
-    return $?
+
+    result="$?"
+    if [ "a${result}" = "a0" ] ; then
+        INSTALLED_PACKAGES="${INSTALLED_PACKAGES} ${package}"
+    fi
+
+    return "${result}"
 }
 
 
@@ -250,6 +274,21 @@ check_uninstall() {
 # Uninstall the AMUSE framework
 #
 uninstall_framework() {
+    for pkg in ${INSTALLED_PACKAGES} ; do
+        if [ "a${pkg#amuse-}" != "a${pkg}" ] ; then
+            if [ "a${pkg}" != "aamuse-framework" ] ; then
+                # We may have already uninstalled this as a dependency of another
+                # package that got uninstalled, in which case we skip.
+                # INSTALLED_PACKAGES is kept up-to-date as we go.
+                if is_subset "${pkg}" "${INSTALLED_PACKAGES}" ; then
+                    save_package="${package}"
+                    uninstall_package "${pkg}" brief
+                    package="${save_package}"
+                fi
+            fi
+        fi
+    done
+
     announce_activity uninstall amuse-framework
 
     ec_file="$(exit_code_file uninstall amuse-framework)"
@@ -271,6 +310,16 @@ uninstall_framework() {
 # Uninstall Sapporo Light
 #
 uninstall_sapporo_light() {
+    for pkg in ${INSTALLED_PACKAGES} ; do
+        if [ "a${pkg#amuse-}" != "a${pkg}" ] ; then
+            if is_subset "${pkg}" "${NEEDS_SAPPORO_LIGHT}" ; then
+                save_package="${package}"
+                uninstall_package "${pkg}" brief
+                package="${save_package}"
+            fi
+        fi
+    done
+
     announce_activity uninstall sapporo_light
 
     ec_file="$(exit_code_file uninstall sapporo_light)"
@@ -295,23 +344,29 @@ uninstall_package() {
     package="$1"
     brief="$2"
 
+    dependents=$(extra_packages "${package}" "${INSTALLED_PACKAGES}")
+
+    for pkg in $dependents ; do
+        save_package="${package}"
+        uninstall_package "${pkg}" brief
+        package="${save_package}"
+    done
+
     announce_activity uninstall "${package}"
 
     ec_file="$(exit_code_file uninstall ${package})"
     log_file="$(log_file uninstall ${package})"
 
-    (support/shared/uninstall.sh "${package}" ; echo $? >"${ec_file}") 2>&1 | tee "${log_file}"
+    pkg_name=$(installed_package_name "${package}")
 
-    handle_result $(cat "$ec_file") uninstall "${package}" "${log_file}" "${brief}"
-}
+    (support/shared/uninstall.sh "${pkg_name}" ; echo $? >"${ec_file}") 2>&1 | tee "${log_file}"
 
+    result=$(cat "$ec_file")
 
-# Uninstall all
-#
-# This uninstalls all community codes, the framework, and sapporo_light, where
-# installed.
-#
-uninstall_all() {
-    uninstall
+    if [ "a${result}" = "a0" ] ; then
+        INSTALLED_PACKAGES=$(filter_out "${package}" "${INSTALLED_PACKAGES}")
+    fi
+
+    handle_result ${result} uninstall "${package}" "${log_file}" "${brief}"
 }
 

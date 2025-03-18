@@ -16,7 +16,7 @@ trim() {
 
 
 # Determine whether a set of words is a subset of another set of words
-# 
+#
 # Args:
 #   needles: list of words (as a single argument, space separated) to find
 #   haystack: list of words (as a single argument, space separated) to find in
@@ -66,6 +66,27 @@ filter_out() {
     done
     filter_out_result=$(trim "$filter_out_result")
     printf '%s' "${filter_out_result}"
+}
+
+
+# Find any extra packages matching a base package
+#
+# Args:
+#   base_name: Package base name of the form amuse-<code>
+#   items: List of package names to search
+#
+# Given a base package name, e.g. amuse-ph4, this returns a list of all extra packages
+# in the given list of the form amuse-ph4-*.
+#
+extra_packages() {
+    extra_packages_result=''
+    for item in $2 ; do
+        if [ "a${1}" = "a${item%-*}" ] ; then
+            extra_packages_result="${extra_packages_result} ${item}"
+        fi
+    done
+    extra_packages_result=$(trim "${extra_packages_result}")
+    printf '%s' "${extra_packages_result}"
 }
 
 

@@ -153,8 +153,13 @@ find_packages() {
             fi
             package=$(basename "${dep_file}" .amuse_deps)
             deps=$(cat "${dep_file}")
-            deps="gmake ${deps}"
+            deps="amuse-framework gmake ${deps}"
             missing_features=$(filter_out "${FEATURES}" "${deps}")
+            missing_features=$(filter_out "${ENABLED_PACKAGES}" "${missing_features}")
+
+            if is_subset "sapporo_light" "${deps}" ; then
+                NEEDS_SAPPORO_LIGHT="${NEEDS_SAPPORO_LIGHT} ${package}"
+            fi
 
             if [ "a${missing_features}" = "a" ] ; then
                 installed="$(is_installed ${package})"

@@ -207,41 +207,18 @@ run_test() {
 # This checks what we're supposed to uninstall and dispatches accordingly.
 #
 uninstall() {
-    targets="$*"
-
-    if \
-        is_subset 'framework' "${targets}" || \
-        is_subset 'amuse-framework' "${targets}" || \
-        is_subset 'all' "${targets}"
-    then
-        # also remove all installed amuse-* packages, and do the framework last
-        new_targets=''
-        for pkg in ${INSTALLED_PACKAGES} ; do
-            if [ "a${pkg#amuse-}" != "a${pkg}" ] ; then
-                if [ "a${pkg}" != "aamuse-framework" ] ; then
-                    new_targets="${new_targets} ${pkg}"
-                fi
-            fi
-        done
-        new_targets="${new_targets} amuse-framework"
-
-        # don't forget to remove sapporo_light if the user asked for it
-        if is_subset 'sapporo_light' "${targets}" || is_subset 'all' "${targets}" ; then
-            new_targets="${new_targets} sapporo_light"
-        fi
-
-        targets="${new_targets}"
-    fi
-
-    for target in ${targets} ; do
+    for target in $* ; do
         check_uninstall "${target}"
 
         case ${target} in
             amuse-framework | framework )
-                target="$(normalise_package_name ${target})"
                 uninstall_framework
                 ;;
             sapporo_light )
+                uninstall_sapporo_light
+                ;;
+            all )
+                uninstall_framework
                 uninstall_sapporo_light
                 ;;
             * )
