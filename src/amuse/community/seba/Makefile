@@ -23,6 +23,7 @@ src: seba.tar.gz
 
 # Building the code into a static library
 CFLAGS += $(STOPCOND_CFLAGS) $(AMUSE_MPI_CFLAGS)
+CXXFLAGS += -std=c++11       # Used by the native code
 LDFLAGS +=
 LDLIBS += $(STOPCOND_LIBS) $(AMUSE_MPI_LIBS)
 
