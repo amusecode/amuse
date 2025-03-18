@@ -327,6 +327,8 @@ case ${CMD} in
         configure
         ;;
     install )
+        # Building MESA tends to crash with "Too many open files" without this
+        ulimit -n 10240
         install ${TARGETS}
         ;;
     test )
