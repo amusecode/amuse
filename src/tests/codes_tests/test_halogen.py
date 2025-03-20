@@ -357,21 +357,21 @@ class HalogenTests(TestWithMPI):
         instance = Halogen(**default_options)
         instance.initialize_code()
         self.assertRaises(exceptions.AmuseException, instance.commit_parameters, expected_message="Error when calling 'commit_parameters' of a 'Halogen', errorcode is -2, error is "
-            "'Missing or bad parameter for halo (see amuse/community/halogen/src/doc for details on required parameters).'")
+            "'Missing or bad parameter for halo (see src/amuse_halogen/src/doc for details on required parameters).'")
         instance.parameters.alpha = 2.0
         instance.parameters.beta = 5.0
         instance.parameters.gamma = 5.0
         instance.parameters.number_of_particles = number_of_particles
         instance.parameters.random_seed = 1
         self.assertRaises(exceptions.AmuseException, instance.commit_parameters, expected_message="Error when calling 'commit_parameters' of a 'Halogen', errorcode is -2, error is "
-            "'Missing or bad parameter for halo (see amuse/community/halogen/src/doc for details on required parameters).'")
+            "'Missing or bad parameter for halo (see src/amuse_halogen/src/doc for details on required parameters).'")
         instance.parameters.gamma = -0.5
         self.assertRaises(exceptions.AmuseException, instance.commit_parameters, expected_message="Error when calling 'commit_parameters' of a 'Halogen', errorcode is -2, error is "
-            "'Missing or bad parameter for halo (see amuse/community/halogen/src/doc for details on required parameters).'")
+            "'Missing or bad parameter for halo (see src/amuse_halogen/src/doc for details on required parameters).'")
         instance.parameters.gamma = 0.0
         instance.parameters.beta = 2.0
         self.assertRaises(exceptions.AmuseException, instance.commit_parameters, expected_message="Error when calling 'commit_parameters' of a 'Halogen', errorcode is -2, error is "
-            "'Missing or bad parameter for halo (see amuse/community/halogen/src/doc for details on required parameters).'")
+            "'Missing or bad parameter for halo (see src/amuse_halogen/src/doc for details on required parameters).'")
         instance.parameters.beta = 5.0
         instance.commit_parameters()
 

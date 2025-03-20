@@ -115,7 +115,7 @@ code_directory() {
     package="$1"
 
     code=$(printf '%s' "${package}" | sed -e 's/^amuse-\([^-]*\).*/\1/')
-    printf "src/amuse/community/${code}"
+    printf "src/amuse_${code}"
 }
 
 

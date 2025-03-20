@@ -1,0 +1,43 @@
+[project]
+name = "amuse-huayno"
+dynamic = ["version"]
+requires-python = ">=3.7"
+dependencies = [
+    "amuse-framework"
+]
+
+[build-system]
+requires = ["hatchling", "versioningit"]
+build-backend = "hatchling.build"
+
+[tool.hatch.version]
+source = "versioningit"
+
+[tool.versioningit.next-version]
+method = "smallest"
+
+[tool.versioningit.format]
+distance = "{next_version}.dev{distance}+{vcs}{rev}"
+dirty = "{base_version}+d{build_date:%Y%m%d}"
+distance-dirty = "{next_version}.dev{distance}+{vcs}{rev}.d{build_date:%Y%m%d}"
+
+[tool.hatch.build]
+skip-excluded-dirs = true
+
+[tool.hatch.build.targets.wheel]
+include = ["amuse_huayno/**/*.py"]
+exclude = [
+    "amuse_huayno/packages",
+    "amuse_huayno/support",
+    "amuse_huayno/src",
+    "amuse_huayno/tests"
+    ]
+artifacts = ["amuse_huayno/huayno_worker"]
+
+[tool.pytest.ini_options]
+pythonpath = ["amuse_huayno/tests/", "../../../tests"]
+
+testpaths = ["amuse_huayno/tests"]
+
+addopts = "-k 'not opencl and not openmp'"
+

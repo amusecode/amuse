@@ -1,0 +1,44 @@
+[project]
+name = "amuse-mocassin"
+dynamic = ["version"]
+requires-python = ">=3.7"
+dependencies = [
+    "amuse-framework"
+]
+
+[build-system]
+requires = ["hatchling", "versioningit"]
+build-backend = "hatchling.build"
+
+[tool.hatch.version]
+source = "versioningit"
+
+[tool.versioningit.next-version]
+method = "smallest"
+
+[tool.versioningit.format]
+distance = "{next_version}.dev{distance}+{vcs}{rev}"
+dirty = "{base_version}+d{build_date:%Y%m%d}"
+distance-dirty = "{next_version}.dev{distance}+{vcs}{rev}.d{build_date:%Y%m%d}"
+
+[tool.hatch.build]
+skip-excluded-dirs = true
+
+[tool.hatch.build.targets.wheel]
+include = ["amuse_mocassin/**/*.py"]
+exclude = [
+    "amuse_mocassin/packages",
+    "amuse_mocassin/support",
+    "amuse_mocassin/src",
+    "amuse_mocassin/tests"
+    ]
+artifacts = [
+    "amuse_mocassin/mocassin_worker",
+    "amuse_mocassin/data"
+    ]
+
+[tool.pytest.ini_options]
+pythonpath = ["amuse_mocassin/tests/", "../../../tests"]
+
+testpaths = ["amuse_mocassin/tests"]
+

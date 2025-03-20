@@ -19,7 +19,7 @@ def amuse_root_dir():
 def code_dir():
     """Returns the code dir.
 
-    Assumes that this script is in amuse/community/<code>.
+    Assumes that this script is in the AMUSE source tree.
     """
     return os.path.dirname(os.path.abspath(__file__))
 

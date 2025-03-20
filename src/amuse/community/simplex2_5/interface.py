@@ -1,5 +1,7 @@
-import os.path
-from amuse.community.interface.common import CommonCodeInterface, CommonCode
-from amuse.community import *
-from amuse.community.simplex.interface import *
+from amuse.support.import_helper import load_code
 
+
+ = load_code("simplex2_5", "")
+ = load_code("simplex2_5", "")
+
+ = 

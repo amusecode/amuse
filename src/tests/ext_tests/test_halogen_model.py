@@ -17,7 +17,7 @@ class NewHalogenModelTests(TestWithMPI):
             0.17345836639 | nbody_system.energy)  # for number_of_particles = 100
 
         self.assertRaises(AmuseException, new_halogen_model, number_of_particles, expected_message="Error when calling 'commit_parameters' of a 'Halogen', errorcode is -2, error is "
-            "'Missing or bad parameter for halo (see amuse/community/halogen/src/doc for details on required parameters).'")
+            "'Missing or bad parameter for halo (see src/amuse_halogen/src/doc for details on required parameters).'")
 
     def test2(self):
         number_of_particles = 1000

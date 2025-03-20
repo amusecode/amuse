@@ -10,7 +10,7 @@
 #
 # Run from the top directory, as support/update_configure_scripts.
 
-for support_dir in support src/tests/support lib/*/support src/amuse/community/*/support ; do
+for support_dir in support src/tests/support lib/*/support src/amuse_*/support ; do
     if (cd ${support_dir} && autoreconf) ; then
         printf '%s\n' "Updated ${support_dir}/configure"
     else

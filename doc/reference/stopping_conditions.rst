@@ -604,4 +604,4 @@ the following steps.
 
 A good example of a code implementing the stopping conditions
 is the "hermite" community code. The code can be found
-in the 'src/amuse/community/hermite' directory.
+in the 'src/amuse_hermite' directory.

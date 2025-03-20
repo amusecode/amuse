@@ -147,7 +147,7 @@ check_build_sapporo_light() {
 # NEEDS_SAPPORO_LIGHT - adds packages that need sapporo_light
 #
 find_packages() {
-    for code in src/amuse/community/* ; do
+    for code in src/amuse_* ; do
         for dep_file in "${code}"/packages/*.amuse_deps ; do
             # If no file matches, the loop will still run with the pattern as dep_file
             if [ ! -f "$dep_file" ] ; then

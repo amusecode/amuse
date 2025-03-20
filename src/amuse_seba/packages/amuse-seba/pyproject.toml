@@ -1,0 +1,41 @@
+[project]
+name = "amuse-seba"
+dynamic = ["version"]
+requires-python = ">=3.7"
+dependencies = [
+    "amuse-framework"
+]
+
+[build-system]
+requires = ["hatchling", "versioningit"]
+build-backend = "hatchling.build"
+
+[tool.hatch.version]
+source = "versioningit"
+
+[tool.versioningit.next-version]
+method = "smallest"
+
+[tool.versioningit.format]
+distance = "{next_version}.dev{distance}+{vcs}{rev}"
+dirty = "{base_version}+d{build_date:%Y%m%d}"
+distance-dirty = "{next_version}.dev{distance}+{vcs}{rev}.d{build_date:%Y%m%d}"
+
+[tool.hatch.build]
+skip-excluded-dirs = true
+
+[tool.hatch.build.targets.wheel]
+include = ["amuse_seba/**/*.py"]
+exclude = [
+    "amuse_seba/packages",
+    "amuse_seba/support",
+    "amuse_seba/src",
+    "amuse_seba/tests"
+    ]
+artifacts = ["amuse_seba/seba_worker"]
+
+[tool.pytest.ini_options]
+pythonpath = ["amuse_seba/tests/", "../../../tests"]
+
+testpaths = ["amuse_seba/tests"]
+

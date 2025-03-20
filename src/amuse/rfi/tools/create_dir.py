@@ -85,7 +85,7 @@ def _make_support(code_dir: Path, language: str, variables: Dict[str, str]) -> N
         _instantiate_template(tmpl, support_dir / path.format(**variables), variables)
 
     # TODO: this needs to be updated when we move the codes out of community/
-    shared_base = code_dir / ".." / ".." / ".." / ".." / "support" / "shared"
+    shared_base = code_dir / ".." / ".." / ".." / "support" / "shared"
     shared_dir = support_dir / "shared"
     if shared_base.exists():
         # We're probably inside the AMUSE tree, so we make a symlink like for the other
@@ -183,7 +183,7 @@ def create_code_dir(language: str, user_class: str, work_dir: str) -> None:
         work_dir: Directory inside of which the new directory will be made
     """
     code = user_class.lower()
-    code_dir = Path(work_dir) / code
+    code_dir = Path(work_dir) / f'amuse_{code}'
 
     variables = _variables(language, code, user_class)
 

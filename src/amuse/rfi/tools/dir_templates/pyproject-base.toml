@@ -28,20 +28,17 @@ distance-dirty = "{{next_version}}.dev{{distance}}+{{vcs}}{{rev}}.d{{build_date:
 skip-excluded-dirs = true
 
 [tool.hatch.build.targets.wheel]
-include = ["{code}/**/*.py"]
+include = ["amuse_{code}/**/*.py"]
 exclude = [
-    "{code}/packages",
-    "{code}/support",
-    "{code}/src",
-    "{code}/tests"
+    "amuse_{code}/packages",
+    "amuse_{code}/support",
+    "amuse_{code}/src",
+    "amuse_{code}/tests"
     ]
-artifacts = ["{code}/{code}_worker"]
-
-[tool.hatch.build.targets.wheel.sources]
-"{code}" = "amuse/community/{code}"
+artifacts = ["amuse_{code}/{code}_worker"]
 
 [tool.pytest.ini_options]
-pythonpath = ["{code}/tests/", "../../../../../tests"]
+pythonpath = ["amuse_{code}/tests/", "../../../../../tests"]
 
-testpaths = ["{code}/tests"]
+testpaths = ["amuse_{code}/tests"]
 
