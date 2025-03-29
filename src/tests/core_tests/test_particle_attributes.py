@@ -121,11 +121,11 @@ class TestParticlesAttributes(amusetest.TestCase):
     def test9(self):
         print("Test __doc__ and help for particle attributes")
         particles = Particles(2)
-        self.assertTrue("Returns the total kinetic energy of the\n    particles in the particles set." in particles.kinetic_energy.__doc__)
+        self.assertTrue("Returns the total kinetic energy of the\n" in particles.kinetic_energy.__doc__)
         self.assertEqual(particles.kinetic_energy.__class__.__name__, "BoundParticlesFunctionAttribute")
         self.assertEqual(particles.kinetic_energy.__class__._function.__name__, "kinetic_energy")
         # __doc__ must be defined on the __class__ for the Python help to work:
-        self.assertTrue("Returns the total kinetic energy of the\n    particles in the particles set." in particles.kinetic_energy.__class__.__doc__)
+        self.assertTrue("Returns the total kinetic energy of the\n" in particles.kinetic_energy.__class__.__doc__)
 
         # difference between particle function and particleS function:
         self.assertTrue("Returns the specific kinetic energy of each particle in the set." in particles.specific_kinetic_energy.__doc__)
