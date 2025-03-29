@@ -268,14 +268,6 @@ else
 fi
 
 case ${CMD} in
-    clean )
-        clean
-        exit 0
-        ;;
-    distclean )
-        distclean
-        exit 0
-        ;;
     help )
         print_help
         exit 0
@@ -319,6 +311,14 @@ case ${CMD} in
         ;;
     uninstall )
         uninstall ${TARGETS}
+        ;;
+    clean )
+        clean
+        exit 0
+        ;;
+    distclean )
+        distclean
+        exit 0
         ;;
     * )
         print_invalid_command "${CMD}"
