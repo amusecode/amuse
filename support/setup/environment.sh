@@ -222,8 +222,10 @@ analyse_environment() {
 check_shell_environment() {
     if [ "a${ENV_TYPE}" = "aconda" ] ; then
         # There's a whole lot of OMPI_ variables and we don't want to check them all one
-        # by one. So we do it like this.
-        ompi_vars="$(env | grep '^OMPI_' 2>/dev/null)"
+        # by one. So we do it like this. Note that OMPI_MCA_ variables are often needed
+        # to get MPI to work correctly, and setting them doesn't affect the compiler, so
+        # we allow those.
+        ompi_vars="$(env | grep '^OMPI_' | grep -v '^OMPI_MCA_' 2>/dev/null)"
         ompi_var_names="$(printf '%s' "${ompi_vars}" | cut -d '=' -f 1 | tr '\n' ' ')"
         if [ "a${ompi_vars}" != "a" ] ; then
             printf '%b\n' "${COLOR_RED}Warning:${COLOR_END} The following shell variables are set, and may"
