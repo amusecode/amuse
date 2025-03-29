@@ -155,7 +155,7 @@ find_packages() {
             fi
             package=$(basename "${dep_file}" .amuse_deps)
             deps=$(cat "${dep_file}")
-            deps="amuse-framework gmake ${deps}"
+            deps="amuse-framework gmake mpi ${deps}"
             missing_features=$(filter_out "${FEATURES}" "${deps}")
             missing_features=$(filter_out "${ENABLED_PACKAGES}" "${missing_features}")
 
