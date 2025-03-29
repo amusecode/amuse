@@ -41,7 +41,7 @@ skip-excluded-dirs = true
 [tool.hatch.build.targets.wheel]
 include = [
         "amuse/**/*.py", "amuse/rfi/tools/*.template",
-        "amuse/rfi/tools/dir_templates/*"]
+        "amuse/rfi/tools/dir_templates/*", "amuse/ext/bbr_color.txt"]
 
 artifacts = ["amuse/_version.py"]
 
