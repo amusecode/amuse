@@ -1,7 +1,5 @@
 """
-Units supported in AMUSE - 2025 version
-Values are taken to be the same as in Astropy (default unit set).
-If/when they are not, this file should be updated.
+Units supported in AMUSE
 """
 
 import numpy
@@ -23,7 +21,7 @@ from .stellar_types import stellar_type
 minute = named("minute", "min", 60.0 * s)
 hour = named("hour", "hr", 60.0 * minute)
 day = named("day", "day", 24.0 * hour)
-yr = named("year", "yr", 365.25 * day)
+yr = named("year", "yr", 365.242199 * day)
 julianyr = named("julian yr", "julianyr", 365.25 * day)
 ms = named("meter per seconds", "ms", m / s)
 kms = named("kilometer per seconds", "kms", km / s)
@@ -45,20 +43,20 @@ Ry = named(
 
 # astronomical units
 angstrom = named("angstrom", "angstrom", 1e-10 * m)
-au = named("astronomical unit", "au", 149597870700.0 * m)
-aud = named("au per day", "aud",  au / day)
+au = named("astronomical unit", "au", 149597870691.0 * m)
+aud = named("au per day", "aud", 149597870691.0 * m / day)
 parsec = named("parsec", "parsec", au / numpy.tan(numpy.pi / (180 * 60 * 60)))
 kpc = named("kilo parsec", "kpc", 10**3 * parsec)
 Mpc = named("mega parsec", "Mpc", 10**6 * parsec)
 Gpc = named("giga parsec", "Gpc", 10**9 * parsec)
-lightyear = named("light year", "ly", 9460730472580800.0 * m)
-LSun = named("solar luminosity", "LSun", 3.828e26 * W, latex=r"L_{\odot}")
-MSun = named("solar mass", "MSun", 1.988409870698051e+30 * kg, latex=r"M_{\odot}")
-RSun = named("solar radius", "RSun", 695700000.0 * m, latex=r"R_{\odot}")
-MJupiter = named("jupiter mass", "MJupiter", 1.8981245973360505e+27 * kg)
-RJupiter = named("jupiter radius", "RJupiter", 71492000.0 * m)
-MEarth = named("earth mass", "MEarth", 5.972167867791379e+24 * kg)
-REarth = named("earth radius", "REarth", 6378100.0 * m)  # IUGG mean radius
+lightyear = named("light year", "ly", 9460730472580.8 * km)
+LSun = named("solar luminosity", "LSun", 3.839e26 * W, latex=r"L_{\odot}")
+MSun = named("solar mass", "MSun", 1.98892e30 * kg, latex=r"M_{\odot}")
+RSun = named("solar radius", "RSun", 6.955e8 * m, latex=r"R_{\odot}")
+MJupiter = named("jupiter mass", "MJupiter", 1.8987e27 * kg)
+RJupiter = named("jupiter radius", "RJupiter", 71492.0 * km)
+MEarth = named("earth mass", "MEarth", 5.9722e24 * kg)
+REarth = named("earth radius", "REarth", 6371.0088 * km)  # IUGG mean radius
 kyr = named("kilo year", "kyr", 1000 * yr)
 myr = named("million year", "Myr", 1000000 * yr)
 gyr = named("giga (billion) year", "Gyr", 1000000000 * yr)
@@ -85,9 +83,8 @@ barye = named("barye", "Ba", 0.1 * Pa)
 
 # imperial distance units
 inch = named("inch", "in", 0.0254 * m)
-foot = named("foot", "ft", 12 * inch)
-yard = named("yard", "yd", 3 * foot)
-mile = named("mile", "mi", 5280 * foot)
+foot = named("foot", "ft", 0.3048 * m)
+mile = named("mile", "mi", 1609.344 * m)
 
 percent = named("percent", "%", 0.01 * none)
 metallicity = core.none_unit("metallicity", "metallicity")
