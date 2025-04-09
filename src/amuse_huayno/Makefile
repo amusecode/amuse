@@ -31,7 +31,7 @@ build/$(CODELIB): src/Makefile | build
 
 .PHONY: build_openmp/$(CODELIB)
 build_openmp/$(CODELIB): src/Makefile | build_openmp
-	$(MAKE) -C build_openmp -j $(CPU_COUNT) -f ../src/Makefile all VPATH=../src CFLAGS="$(CFLAGS_CODELIB)" CXXFLAGS="$(CXXFLAGS)" OPENMP_CFLAGS="$(OPENMP_CFLAGS)"
+	$(MAKE) -C build_openmp -j $(CPU_COUNT) -f ../src/Makefile all VPATH=../src CFLAGS="$(CFLAGS_CODELIB) $(OPENMP_CFLAGS)" CXXFLAGS="$(CXXFLAGS) $(OPENMP_CXXFLAGS)"
 
 .PHONY: $(CODELIB_OPENCL)
 $(CODELIB_OPENCL): src/Makefile | build_opencl
@@ -40,6 +40,10 @@ $(CODELIB_OPENCL): src/Makefile | build_opencl
 
 interface.o: interface.c
 	$(MPICC) -Isrc -c -o $@ $(CFLAGS) $<
+
+
+interface_openmp.o: interface.c
+	$(MPICC) -Isrc -c -o $@ $(CFLAGS) $(OPENMP_CFLAGS) $<
 
 
 # Building the workers
@@ -62,7 +66,7 @@ huayno_opencl_worker.o: huayno_worker.cc huayno_worker.h
 huayno_worker: huayno_worker.o interface.o build/$(CODELIB)
 	$(MPICXX) -o $@ $(LDFLAGS) $^ $(LDLIBS)
 
-huayno_openmp_worker: huayno_openmp_worker.o interface.o build_openmp/$(CODELIB)
+huayno_openmp_worker: huayno_openmp_worker.o interface_openmp.o build_openmp/$(CODELIB)
 	$(MPICXX) -o $@ $(LDFLAGS) $(OPENMP_CFLAGS) $^ $(LDLIBS)
 
 huayno_opencl_worker: huayno_opencl_worker.o interface.o $(CODELIB_OPENCL)
