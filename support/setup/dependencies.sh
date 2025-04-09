@@ -30,7 +30,7 @@
 
 DEPS_conda="c-compiler cxx-compiler fortran-compiler python pkgconfig coreutils patch"
 DEPS_conda="${DEPS_conda} curl tar unzip gzip bzip2 xz perl make cmake makedepf90"
-DEPS_conda="${DEPS_conda} openmpi openmpi-mpicc openmpi-mpicxx openmpi-mpifort openmp"
+DEPS_conda="${DEPS_conda} openmpi openmpi-mpicc openmpi-mpicxx openmpi-mpifort"
 DEPS_conda="${DEPS_conda} gsl fftw gmp mpfr hdf5 netcdf4 libopenblas liblapack zlib"
 DEPS_conda="${DEPS_conda} 'docutils>=0.6' 'mpi4py>=1.1.0' 'numpy>=1.2.2' 'h5py>=1.1.0'"
 

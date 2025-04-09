@@ -4039,6 +4039,7 @@ printf "%s\n" "no" >&6; }
 
 fi
 
+        HAVE_OPENMP="yes"           # conda-forge compilers have openmp built in
 
     { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for conda package cuda-toolkit" >&5
 printf %s "checking for conda package cuda-toolkit... " >&6; }
