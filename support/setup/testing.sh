@@ -78,7 +78,7 @@ test_amuse_ext() {
     (
         cd src/tests && pytest ext_tests --import-mode=append ticket_tests ${PYTEST_OPTS}  -k "${bad_ext_tests}"
 
-        echo $? >"${ec_file}"
+        echo $? >"../../${ec_file}"
     ) 2>&1 | tee "${log_file}"
 
     handle_result $(cat "$ec_file") test amuse-ext "${log_file}"
