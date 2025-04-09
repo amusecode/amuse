@@ -39,3 +39,5 @@ pythonpath = ["amuse_rebound/tests/", "../../../tests"]
 
 testpaths = ["amuse_rebound/tests"]
 
+addopts = "--import-mode=append"    # test the installed package
+

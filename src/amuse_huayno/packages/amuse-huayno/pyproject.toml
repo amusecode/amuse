@@ -39,5 +39,6 @@ pythonpath = ["amuse_huayno/tests/", "../../../tests"]
 
 testpaths = ["amuse_huayno/tests"]
 
-addopts = "-k 'not opencl and not openmp'"
+# Test the installed package, and only default CPU tests.
+addopts = "--import-mode=append -k 'not opencl and not openmp'"
 

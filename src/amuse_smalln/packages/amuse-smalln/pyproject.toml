@@ -39,3 +39,5 @@ pythonpath = ["amuse_smalln/tests/", "../../../tests"]
 
 testpaths = ["amuse_smalln/tests"]
 
+addopts = "--import-mode=append"    # test the installed package
+

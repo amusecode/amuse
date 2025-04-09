@@ -39,3 +39,5 @@ pythonpath = ["amuse_higpus/tests/", "../../../tests"]
 
 testpaths = ["amuse_higpus/tests"]
 
+addopts = "--import-mode=append"    # test the installed package
+

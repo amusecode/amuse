@@ -39,4 +39,6 @@ pythonpath = ["amuse_fastkick/tests/", "../../../tests"]
 
 testpaths = ["amuse_fastkick/tests"]
 
-addopts = "-k 'not TestFastKickGPU'"
+# Test the installed package, and only CPU tests
+addopts = "--import-mode=append -k 'not TestFastKickGPU'"
+

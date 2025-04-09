@@ -39,6 +39,6 @@ pythonpath = ["amuse_symple/tests/", "../../../tests"]
 
 testpaths = ["amuse_symple/tests"]
 
-# These files are not runnable by pytest
-addopts = "--ignore='symple/tests/test.py' --ignore='symple/tests/test_si.py'"
+# Test the installed package, and only files that are runnable by pytest
+addopts = "--import-mode=append --ignore='symple/tests/test.py' --ignore='symple/tests/test_si.py'"
 

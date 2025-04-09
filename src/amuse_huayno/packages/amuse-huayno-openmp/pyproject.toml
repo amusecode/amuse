@@ -35,5 +35,6 @@ pythonpath = ["amuse_huayno/tests/", "../../../tests"]
 
 testpaths = ["amuse_huayno/tests"]
 
-addopts = "-k openmp"
+# Test the installed package, and only OpenMP tests.
+addopts = "--import-mode=append -k openmp"
 

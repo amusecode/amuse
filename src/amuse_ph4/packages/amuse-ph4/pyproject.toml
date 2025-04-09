@@ -41,5 +41,6 @@ pythonpath = ["amuse_ph4/tests/", "../../../tests"]
 
 testpaths = ["amuse_ph4/tests"]
 
-addopts = "-k 'not gpu'"
+# Test the installed package, and only CPU tests.
+addopts = "--import-mode=append -k 'not gpu'"
 

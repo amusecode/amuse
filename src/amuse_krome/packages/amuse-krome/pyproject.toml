@@ -39,3 +39,5 @@ pythonpath = ["amuse_krome/tests/", "../../../tests"]
 
 testpaths = ["amuse_krome/tests"]
 
+addopts = "--import-mode=append"    # test the installed package
+

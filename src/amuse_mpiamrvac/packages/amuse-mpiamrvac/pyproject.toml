@@ -44,3 +44,5 @@ pythonpath = ["amuse_mpiamrvac/tests/", "../../../tests"]
 
 testpaths = ["amuse_mpiamrvac/tests"]
 
+addopts = "--import-mode=append"    # test the installed package
+

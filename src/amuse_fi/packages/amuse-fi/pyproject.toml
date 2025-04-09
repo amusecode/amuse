@@ -43,3 +43,5 @@ artifacts = [
 pythonpath = ["amuse_fi/tests/", "../../../tests"]
 
 testpaths = ["amuse_fi/tests"]
+addopts = "--import-mode=append"    # test the installed package
+

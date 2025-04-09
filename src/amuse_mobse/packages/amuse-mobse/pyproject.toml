@@ -38,3 +38,5 @@ artifacts = ["amuse_mobse/mobse_worker"]
 pythonpath = ["amuse_mobse/tests/", "../../../tests"]
 
 testpaths = ["amuse_mobse/tests"]
+addopts = "--import-mode=append"    # test the installed package
+

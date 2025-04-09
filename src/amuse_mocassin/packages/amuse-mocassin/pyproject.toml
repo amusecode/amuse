@@ -42,3 +42,5 @@ pythonpath = ["amuse_mocassin/tests/", "../../../tests"]
 
 testpaths = ["amuse_mocassin/tests"]
 
+addopts = "--import-mode=append"    # test the installed package
+

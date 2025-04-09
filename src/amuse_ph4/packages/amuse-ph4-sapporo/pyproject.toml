@@ -35,5 +35,6 @@ pythonpath = ["amuse_ph4/tests/", "../../../tests"]
 
 testpaths = ["amuse_ph4/tests"]
 
-addopts = "-k gpu"
+# Test the installed package, and only GPU tests.
+addopts = "--import-mode=append -k gpu"
 

@@ -35,5 +35,6 @@ pythonpath = ["amuse_huayno/tests/", "../../../tests"]
 
 testpaths = ["amuse_huayno/tests"]
 
-addopts = "-k opencl"
+# Test the installed package, and only OpenCL tests
+addopts = "--import-mode=append -k opencl"
 

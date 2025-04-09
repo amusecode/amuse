@@ -46,7 +46,7 @@ test_framework() {
     (
         ${GMAKE} -C src/tests all && \
         # Tests for amuse.distributed won't be fixed as it is to be removed, disabled.
-        cd src/tests && pytest --pyargs core_tests compile_tests ${PYTEST_OPTS} --ignore compile_tests/java_implementation -k 'not TestCDistributedImplementationInterface and not TestAsyncDistributed'
+        cd src/tests && pytest --import-mode=append core_tests compile_tests ${PYTEST_OPTS} --ignore compile_tests/java_implementation -k 'not TestCDistributedImplementationInterface and not TestAsyncDistributed'
 
         echo $? >"../../${ec_file}"
     ) 2>&1 | tee "${log_file}"
@@ -76,7 +76,7 @@ test_amuse_ext() {
     log_file="$(log_file test amuse-framework)"
 
     (
-        cd src/tests && pytest --pyargs ext_tests ticket_tests ${PYTEST_OPTS}  -k "${bad_ext_tests}"
+        cd src/tests && pytest ext_tests --import-mode=append ticket_tests ${PYTEST_OPTS}  -k "${bad_ext_tests}"
 
         echo $? >"${ec_file}"
     ) 2>&1 | tee "${log_file}"

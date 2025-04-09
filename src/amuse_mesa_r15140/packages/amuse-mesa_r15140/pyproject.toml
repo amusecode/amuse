@@ -39,3 +39,5 @@ pythonpath = ["../../../../../", "amuse/community/mesa_r15140/tests/", "../../..
 
 testpaths = ["amuse_mesa_r15140/tests"]
 
+addopts = "--import-mode=append"    # test the installed package
+

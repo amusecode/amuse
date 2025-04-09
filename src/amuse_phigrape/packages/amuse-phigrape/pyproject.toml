@@ -39,3 +39,5 @@ pythonpath = ["amuse_phigrape/tests/", "../../../tests"]
 
 testpaths = ["amuse_phigrape/tests"]
 
+addopts = "--import-mode=append"    # test the installed package
+
