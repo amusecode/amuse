@@ -11,7 +11,7 @@ support/config.mk:
 # Building the code into a static library
 CFLAGS += $(STOPCOND_CFLAGS)
 
-LDLIBS += -lm $(STOPCOND_LIBS)
+LDLIBS += -lm $(STOPCOND_LIBS) -ldl
 
 
 # Note: there seems to have been a g6/sapporo worker at some point, but it's been

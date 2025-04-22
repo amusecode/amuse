@@ -17,7 +17,7 @@ CFLAGS += $(DEPFLAGS)
 LDLIBS += $(STOPCOND_LIBS)
 
 LDLIBS += $(GMP_LIBS)
-LDLIBS += $(MPFR_LIBS)
+LDLIBS += $(MPFR_LIBS) -ldl
 
 
 CODELIB = src/libadaptb.a

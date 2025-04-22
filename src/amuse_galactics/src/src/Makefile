@@ -9,7 +9,7 @@ CC?=gcc
 #CC=icc
 #CFLAGS = -O3
 #CFLAGS = -O -DRINGASCII -DASCII
-LIBS = -lm
+LIBS = -lm -ldl
 #These flags for SunOS:
 #FFLAGS =  -e -C -O 
 #FLIBS = -L/usr/X11/lib/ -lX11 -lpgplot 
@@ -19,6 +19,7 @@ LIBS = -lm
 #FFLAGS += -O3 -132 -nofor-main
 #FLIBS  = -L/usr/X11R6/lib64/ -lX11
 #FLIBS  = -L/usr/X11R6/lib/ -lX11
+FLIBS = -ldl
 
 ICPROGS= dbh genhalo genbulge getfreqs gendisk diskdf toascii
 
@@ -29,9 +30,9 @@ ICPROGS= dbh genhalo genbulge getfreqs gendisk diskdf toascii
 
 CXX_VERSION := $(shell $(CXX) --version)
 ifeq ($(findstring clang, $(CXX_VERSION)),clang)
-    GENLIBS = -lc++
+    GENLIBS = -lc++ -ldl
 else
-    GENLIBS = -lstdc++
+    GENLIBS = -lstdc++ -ldl
 endif
 
 
