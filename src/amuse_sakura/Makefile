@@ -22,7 +22,7 @@ CODELIB = src/libsakura.a
 
 .PHONY: $(CODELIB)
 $(CODELIB): | src
-	$(MAKE) -C src -j $(CPU_COUNT) CXX='$(MPICXX)' CXXFLAGS='$(CFLAGS)' all
+	$(MAKE) -C src -j 1 CXX='$(MPICXX)' CXXFLAGS='$(CFLAGS)' all
 
 interface.o: interface.cc sakura_worker.h
 	$(MPICXX) -I./src/ -c -o $@ $(CFLAGS) $<

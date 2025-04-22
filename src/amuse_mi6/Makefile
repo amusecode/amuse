@@ -20,11 +20,11 @@ CODELIB_GPU = src/libmi6_gpu.a
 
 .PHONY: $(CODELIB)
 $(CODELIB):
-	$(MAKE) -C src -j $(CPU_COUNT) emulib
+	$(MAKE) -C src -j 1 emulib
 
 .PHONY: $(CODELIB_GPU)
 $(CODELIB_GPU):
-	$(MAKE) -C src -j $(CPU_COUNT) gpulib
+	$(MAKE) -C src -j 1 gpulib
 
 
 # Building the workers
