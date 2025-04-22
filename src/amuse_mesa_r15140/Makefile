@@ -82,11 +82,16 @@ $(MESA_DIR)/lib/libcrmath.a: | src/crmath-1.2
 src/crlibm-1.0beta4: src/crlibm-1.0beta4.tar.gz
 	cd src && tar xzf ../$<
 	cd src && patch -p1 <../patches/crlibm.patch
+	# Ensure that the timestamps are in the right order to keep make from trying to
+	# (unnecessarily) rerun automake, which fails if the user doesn't have the exact
+	# right version installed.
+	touch src/crlibm-1.0beta4/Makefile.in
+	touch src/crlibm-1.0beta4/Makefile
+	touch src/crlibm-1.0beta4/configure
 
 $(MESA_DIR)/lib/libcrlibm.a: | src/crlibm-1.0beta4
 	cd src/crlibm-1.0beta4 && ./configure --enable-static=yes --enable-shared=no
 	cd src/crlibm-1.0beta4 && $(MAKE)
-	# cd src/crlibm-1.0beta4 && $(MAKE)
 	$(AR) cru $@ src/crlibm-1.0beta4/*.o src/crlibm-1.0beta4/scs_lib/*.o
 
 
