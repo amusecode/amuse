@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.4 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.5 FATAL_ERROR)
 
 # Set build type. Do this *before* we set the project name
 if(NOT CMAKE_BUILD_TYPE)
