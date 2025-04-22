@@ -782,7 +782,6 @@ CMAKE
 ifnGNUmake
 ifGNUmake
 AWK
-PERL5
 HOMEBREW
 MACPORTS
 DNF
@@ -797,6 +796,7 @@ CXX
 CC
 CONDA_LIST
 PERL
+BISON
 UNXZ
 BUNZIP2
 GUNZIP
@@ -2777,7 +2777,7 @@ then
     # we assume that the conda metadata is correct, and that if it isn't there's
     # an expert packager who can fix things.
     printf "%s\n" "Conda package build detected, skipping checks for dependencies."
-    ASSUME_FEATURES="c c++ fortran java python tar unzip gunzip bunzip2 unxz perl gmake cmake install download mpi openmp cuda opencl blas lapack gsl gmp mpfr fftw hdf5 netcdf4 sapporo_light"
+    ASSUME_FEATURES="c c++ fortran java python tar unzip gunzip bunzip2 unxz bison perl gmake cmake install download mpi openmp cuda opencl blas lapack gsl gmp mpfr fftw hdf5 netcdf4 sapporo_light"
 
 else
     if test "x" != "x$CONDA_DEFAULT_ENV"
@@ -3848,6 +3848,108 @@ esac
   fi
 else
   UNXZ="$ac_cv_prog_UNXZ"
+fi
+
+        if test -n "$ac_tool_prefix"; then
+  # Extract the first word of "${ac_tool_prefix}bison", so it can be a program name with args.
+set dummy ${ac_tool_prefix}bison; ac_word=$2
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+printf %s "checking for $ac_word... " >&6; }
+if test ${ac_cv_prog_BISON+y}
+then :
+  printf %s "(cached) " >&6
+else $as_nop
+  if test -n "$BISON"; then
+  ac_cv_prog_BISON="$BISON" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  case $as_dir in #(((
+    '') as_dir=./ ;;
+    */) ;;
+    *) as_dir=$as_dir/ ;;
+  esac
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir$ac_word$ac_exec_ext"; then
+    ac_cv_prog_BISON="${ac_tool_prefix}bison"
+    printf "%s\n" "$as_me:${as_lineno-$LINENO}: found $as_dir$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+fi
+fi
+BISON=$ac_cv_prog_BISON
+if test -n "$BISON"; then
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $BISON" >&5
+printf "%s\n" "$BISON" >&6; }
+else
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+fi
+
+
+fi
+if test -z "$ac_cv_prog_BISON"; then
+  ac_ct_BISON=$BISON
+  # Extract the first word of "bison", so it can be a program name with args.
+set dummy bison; ac_word=$2
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+printf %s "checking for $ac_word... " >&6; }
+if test ${ac_cv_prog_ac_ct_BISON+y}
+then :
+  printf %s "(cached) " >&6
+else $as_nop
+  if test -n "$ac_ct_BISON"; then
+  ac_cv_prog_ac_ct_BISON="$ac_ct_BISON" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  case $as_dir in #(((
+    '') as_dir=./ ;;
+    */) ;;
+    *) as_dir=$as_dir/ ;;
+  esac
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir$ac_word$ac_exec_ext"; then
+    ac_cv_prog_ac_ct_BISON="bison"
+    printf "%s\n" "$as_me:${as_lineno-$LINENO}: found $as_dir$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+fi
+fi
+ac_ct_BISON=$ac_cv_prog_ac_ct_BISON
+if test -n "$ac_ct_BISON"; then
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_ct_BISON" >&5
+printf "%s\n" "$ac_ct_BISON" >&6; }
+else
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+fi
+
+  if test "x$ac_ct_BISON" = x; then
+    BISON=""
+  else
+    case $cross_compiling:$ac_tool_warned in
+yes:)
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: WARNING: using cross tools not prefixed with host triplet" >&5
+printf "%s\n" "$as_me: WARNING: using cross tools not prefixed with host triplet" >&2;}
+ac_tool_warned=yes ;;
+esac
+    BISON=$ac_ct_BISON
+  fi
+else
+  BISON="$ac_cv_prog_BISON"
 fi
 
         if test -n "$ac_tool_prefix"; then
@@ -6568,16 +6670,16 @@ else
 fi
 
         if test -n "$ac_tool_prefix"; then
-  # Extract the first word of "${ac_tool_prefix}perl", so it can be a program name with args.
-set dummy ${ac_tool_prefix}perl; ac_word=$2
+  # Extract the first word of "${ac_tool_prefix}bison", so it can be a program name with args.
+set dummy ${ac_tool_prefix}bison; ac_word=$2
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
 printf %s "checking for $ac_word... " >&6; }
-if test ${ac_cv_prog_PERL5+y}
+if test ${ac_cv_prog_BISON+y}
 then :
   printf %s "(cached) " >&6
 else $as_nop
-  if test -n "$PERL5"; then
-  ac_cv_prog_PERL5="$PERL5" # Let the user override the test.
+  if test -n "$BISON"; then
+  ac_cv_prog_BISON="$BISON" # Let the user override the test.
 else
 as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
 for as_dir in $PATH
@@ -6590,7 +6692,7 @@ do
   esac
     for ac_exec_ext in '' $ac_executable_extensions; do
   if as_fn_executable_p "$as_dir$ac_word$ac_exec_ext"; then
-    ac_cv_prog_PERL5="${ac_tool_prefix}perl"
+    ac_cv_prog_BISON="${ac_tool_prefix}bison"
     printf "%s\n" "$as_me:${as_lineno-$LINENO}: found $as_dir$ac_word$ac_exec_ext" >&5
     break 2
   fi
@@ -6600,10 +6702,10 @@ IFS=$as_save_IFS
 
 fi
 fi
-PERL5=$ac_cv_prog_PERL5
-if test -n "$PERL5"; then
-  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $PERL5" >&5
-printf "%s\n" "$PERL5" >&6; }
+BISON=$ac_cv_prog_BISON
+if test -n "$BISON"; then
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $BISON" >&5
+printf "%s\n" "$BISON" >&6; }
 else
   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
 printf "%s\n" "no" >&6; }
@@ -6611,18 +6713,18 @@ fi
 
 
 fi
-if test -z "$ac_cv_prog_PERL5"; then
-  ac_ct_PERL5=$PERL5
-  # Extract the first word of "perl", so it can be a program name with args.
-set dummy perl; ac_word=$2
+if test -z "$ac_cv_prog_BISON"; then
+  ac_ct_BISON=$BISON
+  # Extract the first word of "bison", so it can be a program name with args.
+set dummy bison; ac_word=$2
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
 printf %s "checking for $ac_word... " >&6; }
-if test ${ac_cv_prog_ac_ct_PERL5+y}
+if test ${ac_cv_prog_ac_ct_BISON+y}
 then :
   printf %s "(cached) " >&6
 else $as_nop
-  if test -n "$ac_ct_PERL5"; then
-  ac_cv_prog_ac_ct_PERL5="$ac_ct_PERL5" # Let the user override the test.
+  if test -n "$ac_ct_BISON"; then
+  ac_cv_prog_ac_ct_BISON="$ac_ct_BISON" # Let the user override the test.
 else
 as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
 for as_dir in $PATH
@@ -6635,7 +6737,7 @@ do
   esac
     for ac_exec_ext in '' $ac_executable_extensions; do
   if as_fn_executable_p "$as_dir$ac_word$ac_exec_ext"; then
-    ac_cv_prog_ac_ct_PERL5="perl"
+    ac_cv_prog_ac_ct_BISON="bison"
     printf "%s\n" "$as_me:${as_lineno-$LINENO}: found $as_dir$ac_word$ac_exec_ext" >&5
     break 2
   fi
@@ -6645,17 +6747,17 @@ IFS=$as_save_IFS
 
 fi
 fi
-ac_ct_PERL5=$ac_cv_prog_ac_ct_PERL5
-if test -n "$ac_ct_PERL5"; then
-  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_ct_PERL5" >&5
-printf "%s\n" "$ac_ct_PERL5" >&6; }
+ac_ct_BISON=$ac_cv_prog_ac_ct_BISON
+if test -n "$ac_ct_BISON"; then
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_ct_BISON" >&5
+printf "%s\n" "$ac_ct_BISON" >&6; }
 else
   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
 printf "%s\n" "no" >&6; }
 fi
 
-  if test "x$ac_ct_PERL5" = x; then
-    PERL5=""
+  if test "x$ac_ct_BISON" = x; then
+    BISON=""
   else
     case $cross_compiling:$ac_tool_warned in
 yes:)
@@ -6663,10 +6765,112 @@ yes:)
 printf "%s\n" "$as_me: WARNING: using cross tools not prefixed with host triplet" >&2;}
 ac_tool_warned=yes ;;
 esac
-    PERL5=$ac_ct_PERL5
+    BISON=$ac_ct_BISON
   fi
 else
-  PERL5="$ac_cv_prog_PERL5"
+  BISON="$ac_cv_prog_BISON"
+fi
+
+        if test -n "$ac_tool_prefix"; then
+  # Extract the first word of "${ac_tool_prefix}perl", so it can be a program name with args.
+set dummy ${ac_tool_prefix}perl; ac_word=$2
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+printf %s "checking for $ac_word... " >&6; }
+if test ${ac_cv_prog_PERL+y}
+then :
+  printf %s "(cached) " >&6
+else $as_nop
+  if test -n "$PERL"; then
+  ac_cv_prog_PERL="$PERL" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  case $as_dir in #(((
+    '') as_dir=./ ;;
+    */) ;;
+    *) as_dir=$as_dir/ ;;
+  esac
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir$ac_word$ac_exec_ext"; then
+    ac_cv_prog_PERL="${ac_tool_prefix}perl"
+    printf "%s\n" "$as_me:${as_lineno-$LINENO}: found $as_dir$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+fi
+fi
+PERL=$ac_cv_prog_PERL
+if test -n "$PERL"; then
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $PERL" >&5
+printf "%s\n" "$PERL" >&6; }
+else
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+fi
+
+
+fi
+if test -z "$ac_cv_prog_PERL"; then
+  ac_ct_PERL=$PERL
+  # Extract the first word of "perl", so it can be a program name with args.
+set dummy perl; ac_word=$2
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+printf %s "checking for $ac_word... " >&6; }
+if test ${ac_cv_prog_ac_ct_PERL+y}
+then :
+  printf %s "(cached) " >&6
+else $as_nop
+  if test -n "$ac_ct_PERL"; then
+  ac_cv_prog_ac_ct_PERL="$ac_ct_PERL" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  case $as_dir in #(((
+    '') as_dir=./ ;;
+    */) ;;
+    *) as_dir=$as_dir/ ;;
+  esac
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir$ac_word$ac_exec_ext"; then
+    ac_cv_prog_ac_ct_PERL="perl"
+    printf "%s\n" "$as_me:${as_lineno-$LINENO}: found $as_dir$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+fi
+fi
+ac_ct_PERL=$ac_cv_prog_ac_ct_PERL
+if test -n "$ac_ct_PERL"; then
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_ct_PERL" >&5
+printf "%s\n" "$ac_ct_PERL" >&6; }
+else
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+fi
+
+  if test "x$ac_ct_PERL" = x; then
+    PERL=""
+  else
+    case $cross_compiling:$ac_tool_warned in
+yes:)
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: WARNING: using cross tools not prefixed with host triplet" >&5
+printf "%s\n" "$as_me: WARNING: using cross tools not prefixed with host triplet" >&2;}
+ac_tool_warned=yes ;;
+esac
+    PERL=$ac_ct_PERL
+  fi
+else
+  PERL="$ac_cv_prog_PERL"
 fi
 
 
@@ -14554,6 +14758,10 @@ fi
 if test "x" != "x${PERL}"
 then :
   FEATURES="${FEATURES} perl"
+fi
+if test "x" != "x${BISON}"
+then :
+  FEATURES="${FEATURES} bison"
 fi
 if test "x" != "x${HAVE_MPI}"
 then :

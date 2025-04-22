@@ -21,7 +21,7 @@ then
     # we assume that the conda metadata is correct, and that if it isn't there's
     # an expert packager who can fix things.
     AS_ECHO(["Conda package build detected, skipping checks for dependencies."])
-    ASSUME_FEATURES="c c++ fortran java python tar unzip gunzip bunzip2 unxz perl gmake cmake install download mpi openmp cuda opencl blas lapack gsl gmp mpfr fftw hdf5 netcdf4 sapporo_light"
+    ASSUME_FEATURES="c c++ fortran java python tar unzip gunzip bunzip2 unxz bison perl gmake cmake install download mpi openmp cuda opencl blas lapack gsl gmp mpfr fftw hdf5 netcdf4 sapporo_light"
 
 else
     if test "x" != "x$CONDA_DEFAULT_ENV"
@@ -59,6 +59,7 @@ else
         AC_CHECK_TOOL(GUNZIP, gunzip)
         AC_CHECK_TOOL(BUNZIP2, bunzip2)
         AC_CHECK_TOOL(UNXZ, unxz)
+        AC_PROG_YACC()
         AC_CHECK_TOOL(PERL, perl)
 
         # GMAKE is exported and used by setup, it needs to point to the command
@@ -128,7 +129,8 @@ else
         AC_CHECK_TOOL(GUNZIP, gunzip)
         AC_CHECK_TOOL(BUNZIP2, bunzip2)
         AC_CHECK_TOOL(UNXZ, unxz)
-        AC_CHECK_TOOL(PERL5, perl)
+        AC_PROG_YACC()
+        AC_CHECK_TOOL(PERL, perl)
 
         AX_CHECK_GNU_MAKE([GMAKE=$ax_cv_gnu_make_command])
         AC_CHECK_TOOL(CMAKE, cmake)
@@ -202,6 +204,7 @@ ENABLE_FEATURE_IF_DEFINED([gunzip], [GUNZIP])
 ENABLE_FEATURE_IF_DEFINED([bunzip2], [BUNZIP2])
 ENABLE_FEATURE_IF_DEFINED([unxz], [UNXZ])
 ENABLE_FEATURE_IF_DEFINED([perl], [PERL])
+ENABLE_FEATURE_IF_DEFINED([bison], [YACC])
 ENABLE_FEATURE_IF_DEFINED([mpi], [HAVE_MPI])
 ENABLE_FEATURE_IF_DEFINED([openmp], [HAVE_OPENMP])
 ENABLE_FEATURE_IF_DEFINED([cuda], [CUDA_TK])

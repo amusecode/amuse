@@ -18,6 +18,9 @@ AC_PROG_CXX()
 AC_PROG_FC()
 AX_FC_ISO_C_BINDING()
 
+# Find bison/yacc for building makedepf90 with
+AC_PROG_YACC()
+
 # Find tools for creating static libraries
 AC_CHECK_TARGET_TOOL([AR], [ar], [:])
 AS_IF([test $AR = ":"], [AC_MSG_ERROR([ar command not found.])])
