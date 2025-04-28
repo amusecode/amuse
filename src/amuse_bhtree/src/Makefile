@@ -16,7 +16,7 @@ clean:
 	rm -f *.o BHTC *~ $(CODELIB)
 
 BHTC: $(OBJ)
-	$(CXX) $(CXXFLAGS) $(OBJ) -lm -o BHTC $(LDLIBS)
+	$(CXX) $(CXXFLAGS) $(LDFLAGS) $(OBJ) -lm -o BHTC $(LDLIBS)
 
 .c.o:
 	$(CC) $(CPPFLAGS) $(CFLAGS) -c $?
