@@ -796,7 +796,8 @@ CXX
 CC
 CONDA_LIST
 PERL
-BISON
+YFLAGS
+YACC
 UNXZ
 BUNZIP2
 GUNZIP
@@ -874,6 +875,8 @@ with_netcdf4
       ac_precious_vars='build_alias
 host_alias
 target_alias
+YACC
+YFLAGS
 CC
 CFLAGS
 LDFLAGS
@@ -1535,6 +1538,12 @@ Optional Packages:
                           base directory of NetCDF4 installation
 
 Some influential environment variables:
+  YACC        The `Yet Another Compiler Compiler' implementation to use.
+              Defaults to the first program found out of: `bison -y', `byacc',
+              `yacc'.
+  YFLAGS      The list of arguments that will be passed by default to $YACC.
+              This script will default YFLAGS to the empty string to avoid a
+              default value of `-d' given by some make applications.
   CC          C compiler command
   CFLAGS      C compiler flags
   LDFLAGS     linker flags, e.g. -L<lib dir> if you have libraries in a
@@ -3850,17 +3859,18 @@ else
   UNXZ="$ac_cv_prog_UNXZ"
 fi
 
-        if test -n "$ac_tool_prefix"; then
-  # Extract the first word of "${ac_tool_prefix}bison", so it can be a program name with args.
-set dummy ${ac_tool_prefix}bison; ac_word=$2
+        for ac_prog in 'bison -y' byacc
+do
+  # Extract the first word of "$ac_prog", so it can be a program name with args.
+set dummy $ac_prog; ac_word=$2
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
 printf %s "checking for $ac_word... " >&6; }
-if test ${ac_cv_prog_BISON+y}
+if test ${ac_cv_prog_YACC+y}
 then :
   printf %s "(cached) " >&6
 else $as_nop
-  if test -n "$BISON"; then
-  ac_cv_prog_BISON="$BISON" # Let the user override the test.
+  if test -n "$YACC"; then
+  ac_cv_prog_YACC="$YACC" # Let the user override the test.
 else
 as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
 for as_dir in $PATH
@@ -3873,7 +3883,7 @@ do
   esac
     for ac_exec_ext in '' $ac_executable_extensions; do
   if as_fn_executable_p "$as_dir$ac_word$ac_exec_ext"; then
-    ac_cv_prog_BISON="${ac_tool_prefix}bison"
+    ac_cv_prog_YACC="$ac_prog"
     printf "%s\n" "$as_me:${as_lineno-$LINENO}: found $as_dir$ac_word$ac_exec_ext" >&5
     break 2
   fi
@@ -3883,74 +3893,19 @@ IFS=$as_save_IFS
 
 fi
 fi
-BISON=$ac_cv_prog_BISON
-if test -n "$BISON"; then
-  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $BISON" >&5
-printf "%s\n" "$BISON" >&6; }
+YACC=$ac_cv_prog_YACC
+if test -n "$YACC"; then
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $YACC" >&5
+printf "%s\n" "$YACC" >&6; }
 else
   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
 printf "%s\n" "no" >&6; }
 fi
 
 
-fi
-if test -z "$ac_cv_prog_BISON"; then
-  ac_ct_BISON=$BISON
-  # Extract the first word of "bison", so it can be a program name with args.
-set dummy bison; ac_word=$2
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
-printf %s "checking for $ac_word... " >&6; }
-if test ${ac_cv_prog_ac_ct_BISON+y}
-then :
-  printf %s "(cached) " >&6
-else $as_nop
-  if test -n "$ac_ct_BISON"; then
-  ac_cv_prog_ac_ct_BISON="$ac_ct_BISON" # Let the user override the test.
-else
-as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
-for as_dir in $PATH
-do
-  IFS=$as_save_IFS
-  case $as_dir in #(((
-    '') as_dir=./ ;;
-    */) ;;
-    *) as_dir=$as_dir/ ;;
-  esac
-    for ac_exec_ext in '' $ac_executable_extensions; do
-  if as_fn_executable_p "$as_dir$ac_word$ac_exec_ext"; then
-    ac_cv_prog_ac_ct_BISON="bison"
-    printf "%s\n" "$as_me:${as_lineno-$LINENO}: found $as_dir$ac_word$ac_exec_ext" >&5
-    break 2
-  fi
+  test -n "$YACC" && break
 done
-  done
-IFS=$as_save_IFS
-
-fi
-fi
-ac_ct_BISON=$ac_cv_prog_ac_ct_BISON
-if test -n "$ac_ct_BISON"; then
-  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_ct_BISON" >&5
-printf "%s\n" "$ac_ct_BISON" >&6; }
-else
-  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
-printf "%s\n" "no" >&6; }
-fi
-
-  if test "x$ac_ct_BISON" = x; then
-    BISON=""
-  else
-    case $cross_compiling:$ac_tool_warned in
-yes:)
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: WARNING: using cross tools not prefixed with host triplet" >&5
-printf "%s\n" "$as_me: WARNING: using cross tools not prefixed with host triplet" >&2;}
-ac_tool_warned=yes ;;
-esac
-    BISON=$ac_ct_BISON
-  fi
-else
-  BISON="$ac_cv_prog_BISON"
-fi
+test -n "$YACC" || YACC="yacc"
 
         if test -n "$ac_tool_prefix"; then
   # Extract the first word of "${ac_tool_prefix}perl", so it can be a program name with args.
@@ -6669,17 +6624,18 @@ else
   UNXZ="$ac_cv_prog_UNXZ"
 fi
 
-        if test -n "$ac_tool_prefix"; then
-  # Extract the first word of "${ac_tool_prefix}bison", so it can be a program name with args.
-set dummy ${ac_tool_prefix}bison; ac_word=$2
+        for ac_prog in 'bison -y' byacc
+do
+  # Extract the first word of "$ac_prog", so it can be a program name with args.
+set dummy $ac_prog; ac_word=$2
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
 printf %s "checking for $ac_word... " >&6; }
-if test ${ac_cv_prog_BISON+y}
+if test ${ac_cv_prog_YACC+y}
 then :
   printf %s "(cached) " >&6
 else $as_nop
-  if test -n "$BISON"; then
-  ac_cv_prog_BISON="$BISON" # Let the user override the test.
+  if test -n "$YACC"; then
+  ac_cv_prog_YACC="$YACC" # Let the user override the test.
 else
 as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
 for as_dir in $PATH
@@ -6692,7 +6648,7 @@ do
   esac
     for ac_exec_ext in '' $ac_executable_extensions; do
   if as_fn_executable_p "$as_dir$ac_word$ac_exec_ext"; then
-    ac_cv_prog_BISON="${ac_tool_prefix}bison"
+    ac_cv_prog_YACC="$ac_prog"
     printf "%s\n" "$as_me:${as_lineno-$LINENO}: found $as_dir$ac_word$ac_exec_ext" >&5
     break 2
   fi
@@ -6702,74 +6658,19 @@ IFS=$as_save_IFS
 
 fi
 fi
-BISON=$ac_cv_prog_BISON
-if test -n "$BISON"; then
-  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $BISON" >&5
-printf "%s\n" "$BISON" >&6; }
+YACC=$ac_cv_prog_YACC
+if test -n "$YACC"; then
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $YACC" >&5
+printf "%s\n" "$YACC" >&6; }
 else
   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
 printf "%s\n" "no" >&6; }
 fi
 
 
-fi
-if test -z "$ac_cv_prog_BISON"; then
-  ac_ct_BISON=$BISON
-  # Extract the first word of "bison", so it can be a program name with args.
-set dummy bison; ac_word=$2
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
-printf %s "checking for $ac_word... " >&6; }
-if test ${ac_cv_prog_ac_ct_BISON+y}
-then :
-  printf %s "(cached) " >&6
-else $as_nop
-  if test -n "$ac_ct_BISON"; then
-  ac_cv_prog_ac_ct_BISON="$ac_ct_BISON" # Let the user override the test.
-else
-as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
-for as_dir in $PATH
-do
-  IFS=$as_save_IFS
-  case $as_dir in #(((
-    '') as_dir=./ ;;
-    */) ;;
-    *) as_dir=$as_dir/ ;;
-  esac
-    for ac_exec_ext in '' $ac_executable_extensions; do
-  if as_fn_executable_p "$as_dir$ac_word$ac_exec_ext"; then
-    ac_cv_prog_ac_ct_BISON="bison"
-    printf "%s\n" "$as_me:${as_lineno-$LINENO}: found $as_dir$ac_word$ac_exec_ext" >&5
-    break 2
-  fi
+  test -n "$YACC" && break
 done
-  done
-IFS=$as_save_IFS
-
-fi
-fi
-ac_ct_BISON=$ac_cv_prog_ac_ct_BISON
-if test -n "$ac_ct_BISON"; then
-  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_ct_BISON" >&5
-printf "%s\n" "$ac_ct_BISON" >&6; }
-else
-  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
-printf "%s\n" "no" >&6; }
-fi
-
-  if test "x$ac_ct_BISON" = x; then
-    BISON=""
-  else
-    case $cross_compiling:$ac_tool_warned in
-yes:)
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: WARNING: using cross tools not prefixed with host triplet" >&5
-printf "%s\n" "$as_me: WARNING: using cross tools not prefixed with host triplet" >&2;}
-ac_tool_warned=yes ;;
-esac
-    BISON=$ac_ct_BISON
-  fi
-else
-  BISON="$ac_cv_prog_BISON"
-fi
+test -n "$YACC" || YACC="yacc"
 
         if test -n "$ac_tool_prefix"; then
   # Extract the first word of "${ac_tool_prefix}perl", so it can be a program name with args.
@@ -14759,7 +14660,7 @@ if test "x" != "x${PERL}"
 then :
   FEATURES="${FEATURES} perl"
 fi
-if test "x" != "x${BISON}"
+if test "x" != "x${YACC}"
 then :
   FEATURES="${FEATURES} bison"
 fi
