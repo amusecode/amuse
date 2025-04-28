@@ -29,9 +29,11 @@
 # - BLAS
 # - LAPACK
 
-DEPS_conda="c-compiler cxx-compiler fortran-compiler python pkgconfig coreutils patch"
-DEPS_conda="${DEPS_conda} curl tar unzip gzip bzip2 xz perl bison make cmake"
-DEPS_conda="${DEPS_conda} openmpi openmpi-mpicc openmpi-mpicxx openmpi-mpifort"
+# MESA r15140 fails its tests when compiled with gfortran 14
+
+DEPS_conda="c-compiler cxx-compiler fortran-compiler 'gfortran<14' python pkgconfig"
+DEPS_conda="${DEPS_conda} coreutils patch"
+DEPS_conda="${DEPS_conda} curl tar unzip gzip bzip2 xz perl bison make cmake openmpi"
 DEPS_conda="${DEPS_conda} gsl fftw gmp mpfr hdf5 netcdf4 libopenblas liblapack zlib"
 DEPS_conda="${DEPS_conda} 'docutils>=0.6' 'mpi4py>=1.1.0' 'numpy>=1.2.2' 'h5py>=1.1.0'"
 
@@ -46,7 +48,7 @@ sudo port select --set python3 python312
 sudo port select --set mpi openmpi-gcc12-fortran
 "
 
-DEPS_homebrew="gcc python pkg-config curl gpatch gnu-tar unzip gzip"
+DEPS_homebrew="gcc@13 python pkg-config curl gpatch gnu-tar unzip gzip"
 DEPS_homebrew="${DEPS_homebrew} bzip2 xz"
 DEPS_homebrew="${DEPS_homebrew} perl bison make cmake open-mpi gsl fftw gmp mpfr hdf5"
 DEPS_homebrew="${DEPS_homebrew} netcdf netcdf-cxx netcdf-fortran openblas lapack"
