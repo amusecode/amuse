@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from amusetest import TestWithMPI
+from amuse.support.testing.amusetest import TestWithMPI
 from compile_tests.stopping_condition.interface import (
         ForTestingInterface, ForTestingInterfaceFortranModule)
 

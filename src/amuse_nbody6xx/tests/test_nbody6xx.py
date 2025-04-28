@@ -1,5 +1,5 @@
 from amuse.community import *
-from amusetest import TestWithMPI
+from amuse.support.testing.amusetest import TestWithMPI
 
 from amuse_nbody6xx.interface import Nbody6xxInterface
 from amuse_nbody6xx.interface import Nbody6xx

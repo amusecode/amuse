@@ -1,4 +1,4 @@
-import amusetest
+from amuse.support.testing import amusetest
 import os.path
 import numpy
 from amuse.io import nemotsf

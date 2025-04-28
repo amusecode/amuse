@@ -1,4 +1,4 @@
-import amusetest
+import amuse.support.testing.amusetest
 from amuse.units import units, nbody_system, constants
 
 from amuse_galaxia.interface import BarAndSpirals3D

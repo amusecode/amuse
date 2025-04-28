@@ -38,7 +38,7 @@ artifacts = [
     ]
 
 [tool.pytest.ini_options]
-pythonpath = ["amuse_mocassin/tests/", "../../../tests"]
+pythonpath = ["amuse_mocassin/tests/"]
 
 testpaths = ["amuse_mocassin/tests"]
 

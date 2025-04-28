@@ -1,7 +1,7 @@
 import numpy
 import time
 
-import amusetest
+from amuse.support.testing import amusetest
 from amuse.datamodel.memory_storage import InMemoryAttributeStorageUseDictionaryForKeySet
 from amuse.datamodel.memory_storage import InMemoryAttributeStorageUseSortedKeys
 from amuse.datamodel.memory_storage import get_in_memory_attribute_storage_factory

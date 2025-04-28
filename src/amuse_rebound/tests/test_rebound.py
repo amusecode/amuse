@@ -1,5 +1,5 @@
 from amuse.community import *
-from amusetest import TestWithMPI
+from amuse.support.testing.amusetest import TestWithMPI
 
 from amuse_rebound.interface import ReboundInterface
 from amuse_rebound.interface import Rebound

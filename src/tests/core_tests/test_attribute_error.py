@@ -2,7 +2,7 @@ import numpy
 import math
 import os
 
-import amusetest
+from amuse.support.testing import amusetest
 from amuse.io import store
 from amuse.units import units
 from amuse.units import nbody_system

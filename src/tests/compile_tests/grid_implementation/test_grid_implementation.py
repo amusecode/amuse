@@ -2,7 +2,7 @@ from amuse import datamodel
 from amuse.rfi.core import *
 from amuse.support import exceptions
 from amuse.support.interface import InCodeComponentImplementation
-from amusetest import TestWithMPI
+from amuse.support.testing.amusetest import TestWithMPI
 from compile_tests.grid_implementation.interface import ForTestingInterface
 from amuse.units import units
 

@@ -1,6 +1,6 @@
 import os.path
 
-from amusetest import TestWithMPI, get_path_to_results
+from amuse.support.testing.amusetest import TestWithMPI, get_path_to_results
 from amuse.support.exceptions import AmuseException
 from amuse.ext.galactics_model import new_galactics_model, new_galactics_gas_model
 from amuse.units import nbody_system, generic_unit_converter, constants, units

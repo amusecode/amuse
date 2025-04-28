@@ -1,4 +1,4 @@
-import amusetest
+from amuse.support.testing import amusetest
 from io import BytesIO
 from collections import namedtuple
 

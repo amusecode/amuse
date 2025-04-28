@@ -1,6 +1,6 @@
 
 # -*- coding: utf-8 -*-
-from amusetest import TestWithMPI
+from amuse.support.testing.amusetest import TestWithMPI
 import os
 import sys
 import numpy

@@ -3,7 +3,7 @@ import time
 import sys
 import pickle
 
-import amusetest
+from amuse.support.testing import amusetest
 from amuse.units import units
 from amuse.units import constants
 from amuse.units import nbody_system

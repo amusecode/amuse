@@ -4,7 +4,7 @@ from amuse.units import units, nbody_system
 from amuse.units.quantities import zero
 from amuse.datamodel import Particles, Particle
 from amuse.support.exceptions import AmuseException
-from amusetest import TestWithMPI
+from amuse.support.testing.amusetest import TestWithMPI
 from amuse.plot import pynbody_column_density_plot, HAS_PYNBODY
 
 from amuse.community.bhtree.interface import BHTree

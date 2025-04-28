@@ -1,4 +1,4 @@
-import amusetest
+from amuse.support.testing import amusetest
 
 from amuse.units import constants
 from amuse.units.generic_unit_converter import *

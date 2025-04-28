@@ -1,4 +1,4 @@
-import amusetest
+from amuse.support.testing import amusetest
 from amuse.units import units, nbody_system, constants
 from amuse.ic.isotropic_cloud import new_isotropic_cloud
 from amuse.ext.orbital_elements import orbital_elements_from_binary

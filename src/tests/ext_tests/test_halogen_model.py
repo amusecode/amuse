@@ -1,4 +1,4 @@
-from amusetest import TestWithMPI
+from amuse.support.testing.amusetest import TestWithMPI
 
 from amuse.support.exceptions import AmuseException
 from amuse.ext.halogen_model import new_halogen_model

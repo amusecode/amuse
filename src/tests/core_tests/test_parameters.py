@@ -1,6 +1,6 @@
 import warnings
 
-import amusetest
+from amuse.support.testing import amusetest
 from amuse.support.exceptions import AmuseException, AmuseWarning
 from amuse.units import nbody_system, generic_unit_system, generic_unit_converter
 from amuse.units import units

@@ -1,7 +1,7 @@
 import unittest
 from amuse.support.interface import InCodeComponentImplementation
 
-from amusetest import TestWithMPI
+from amuse.support.testing.amusetest import TestWithMPI
 from compile_tests.fortran_implementation.interface import ForTestingInterface
 import os
 from pathlib import Path

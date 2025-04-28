@@ -1,6 +1,6 @@
 import os.path
 import numpy
-from amusetest import TestWithMPI
+from amuse.support.testing.amusetest import TestWithMPI
 
 from amuse_krome.interface import KromeInterface, Krome, solar_abundances
 from amuse.units import units

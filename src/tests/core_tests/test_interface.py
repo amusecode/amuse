@@ -7,7 +7,7 @@ from amuse.datamodel.parameters import *
 from amuse.support.core import OrderedDictionary
 from amuse.support import exceptions
 
-import amusetest
+from amuse.support.testing import amusetest
 import numpy
 import pickle
 from amuse.units import units

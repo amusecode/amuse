@@ -7,7 +7,7 @@ from subprocess import call
 
 from amuse_sse.interface import SSEInterface, SSE
 
-from amusetest import get_path_to_results, TestWithMPI
+from amuse.support.testing.amusetest import get_path_to_results, TestWithMPI
 from amuse import io
 from amuse.units import units
 from amuse.datamodel import Particle, Particles

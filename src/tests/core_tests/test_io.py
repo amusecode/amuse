@@ -1,4 +1,4 @@
-import amusetest
+from amuse.support.testing import amusetest
 from amuse.support.exceptions import AmuseException
 
 import os

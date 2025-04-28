@@ -35,7 +35,7 @@ exclude = [
 artifacts = ["amuse_bhtree/bhtree_worker"]
 
 [tool.pytest.ini_options]
-pythonpath = ["amuse_bhtree/tests/", "../../../tests"]
+pythonpath = ["amuse_bhtree/tests/"]
 
 testpaths = ["amuse_bhtree/tests"]
 

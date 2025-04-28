@@ -1,7 +1,7 @@
 from amuse.rfi import async_request
 from amuse.rfi.core import *
 from amuse.support.interface import InCodeComponentImplementation
-from amusetest import TestWithMPI
+from amuse.support.testing.amusetest import TestWithMPI
 from compile_tests.async_implementation.interface import ForTestingInterface
 from amuse.units import units
 

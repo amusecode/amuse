@@ -1,7 +1,7 @@
 from amuse.units import units
 from amuse.datamodel import Particles, Particle
 from amuse.support.exceptions import AmuseException
-from amusetest import TestCase
+from amuse.support.testing.amusetest import TestCase
 
 from amuse.ext.sticky_spheres import StickySpheres
 from amuse.couple.collision_handler import CollisionHandler

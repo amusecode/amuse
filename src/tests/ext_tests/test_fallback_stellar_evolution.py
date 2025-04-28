@@ -5,7 +5,7 @@ import numpy
 from amuse.units import units
 from amuse.datamodel import Particles, Particle
 from amuse.support.exceptions import AmuseException
-from amusetest import TestCase, get_path_to_results
+from amuse.support.testing.amusetest import TestCase, get_path_to_results
 
 from amuse.community.mesa.interface import MESA
 from amuse.community.evtwin.interface import EVtwin

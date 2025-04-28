@@ -6,7 +6,7 @@ from amuse import io
 from amuse.io import starlab
 from amuse.units import units
 from amuse.units import nbody_system
-import amusetest
+from amuse.support.testing import amusetest
 from amuse import datamodel
 plummer_scaled_content = """(Particle
   N = 5

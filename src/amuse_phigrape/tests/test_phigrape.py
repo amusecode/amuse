@@ -3,7 +3,7 @@ import sys
 import time
 from amuse_phigrape.interface import PhiGRAPEInterface, PhiGRAPE
 
-from amusetest import TestWithMPI
+from amuse.support.testing.amusetest import TestWithMPI
 
 import numpy
 from amuse.units import nbody_system

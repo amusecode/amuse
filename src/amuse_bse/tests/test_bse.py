@@ -1,6 +1,6 @@
 from amuse_bse.interface import BSE, BSEInterface
 
-from amusetest import TestWithMPI
+from amuse.support.testing.amusetest import TestWithMPI
 from amuse.units import units
 from amuse.units import constants
 from amuse.datamodel import Particles

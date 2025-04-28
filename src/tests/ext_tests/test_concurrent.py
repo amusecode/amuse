@@ -1,6 +1,6 @@
 import os
 
-from amusetest import TestWithMPI
+from amuse.support.testing.amusetest import TestWithMPI
 from amuse.ext import concurrent
 
 from amuse.rfi.core import *

@@ -3,7 +3,7 @@ import sys
 import numpy
 
 
-from amusetest import TestWithMPI
+from amuse.support.testing.amusetest import TestWithMPI
 from amuse_capreole.interface import CapreoleInterface
 from amuse_capreole.interface import Capreole
 from amuse.units import generic_unit_system

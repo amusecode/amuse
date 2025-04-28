@@ -40,7 +40,7 @@ artifacts = [
     ]
 
 [tool.pytest.ini_options]
-pythonpath = ["amuse_athena/tests/", "../../../tests"]
+pythonpath = ["amuse_athena/tests/"]
 
 testpaths = ["amuse_athena/tests"]
 

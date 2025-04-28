@@ -35,7 +35,7 @@ exclude = [
 artifacts = ["amuse_mesa_r2208/mesa_r2208_worker", "amuse_mesa_r2208/data"]
 
 [tool.pytest.ini_options]
-pythonpath = ["amuse_mesa_r2208/tests/", "../../../tests"]
+pythonpath = ["amuse_mesa_r2208/tests/"]
 
 testpaths = ["amuse_mesa_r2208/tests"]
 

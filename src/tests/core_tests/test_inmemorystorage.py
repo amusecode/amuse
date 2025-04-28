@@ -1,7 +1,7 @@
 import numpy
 import time
 
-import amusetest
+from amuse.support.testing import amusetest
 from amuse.units import units
 from amuse.datamodel.memory_storage import InMemoryGridAttributeStorage
 from amuse.datamodel.memory_storage import InMemoryVectorQuantityAttribute

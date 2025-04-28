@@ -3,7 +3,7 @@ import os.path
 import math
 
 from amuse.community import *
-from amusetest import TestWithMPI
+from amuse.support.testing.amusetest import TestWithMPI
 from amuse.units import units, nbody_system, constants
 from amuse.datamodel import Particles
 

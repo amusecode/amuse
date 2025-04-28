@@ -3,7 +3,7 @@ import itertools
 import pickle
 import numpy
 from math import pi
-from amusetest import get_path_to_results, TestWithMPI
+from amuse.support.testing.amusetest import get_path_to_results, TestWithMPI
 from amuse.support.exceptions import AmuseException, CodeException
 from amuse_mmams.interface import MMAMSInterface, MMAMS
 from amuse.couple.collision_handler import CollisionHandler

@@ -1,4 +1,4 @@
-import amusetest
+from amuse.support.testing import amusetest
 from amuse.units import units, nbody_system, constants
 from amuse.ext.galactic_potentials import NFW_profile, MiyamotoNagai_profile, Plummer_profile, \
     PowerLawCutoff_profile, MWpotentialBovy2015, scipy_imported

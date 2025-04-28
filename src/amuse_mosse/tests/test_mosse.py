@@ -7,7 +7,7 @@ from subprocess import call
 
 from amuse_mosse.interface import MOSSEInterface, MOSSE
 
-from amusetest import get_path_to_results, TestWithMPI
+from amuse.support.testing.amusetest import get_path_to_results, TestWithMPI
 from amuse import io
 from amuse.units import units
 from amuse.datamodel import Particle, Particles

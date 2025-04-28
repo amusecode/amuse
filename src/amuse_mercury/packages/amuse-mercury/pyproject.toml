@@ -35,7 +35,7 @@ exclude = [
 artifacts = ["amuse_mercury/mercury_worker"]
 
 [tool.pytest.ini_options]
-pythonpath = ["amuse_mercury/tests/", "../../../tests"]
+pythonpath = ["amuse_mercury/tests/"]
 
 testpaths = ["amuse_mercury/tests"]
 

@@ -1,4 +1,4 @@
-import amusetest
+from amuse.support.testing import amusetest
 import numpy
 
 from amuse.support.exceptions import AmuseException

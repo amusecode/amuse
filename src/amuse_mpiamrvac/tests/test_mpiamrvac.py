@@ -1,5 +1,5 @@
 from amuse.community import *
-from amusetest import TestWithMPI
+from amuse.support.testing.amusetest import TestWithMPI
 from amuse import datamodel
 
 from amuse_mpiamrvac.interface import MpiAmrVacInterface

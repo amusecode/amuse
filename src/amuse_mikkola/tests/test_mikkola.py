@@ -1,7 +1,7 @@
 import numpy
 from numpy import pi
 from amuse.community import *
-from amusetest import TestWithMPI
+from amuse.support.testing.amusetest import TestWithMPI
 from amuse.units import constants
 
 from amuse_mikkola.interface import MikkolaInterface

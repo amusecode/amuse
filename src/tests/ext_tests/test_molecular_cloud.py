@@ -2,7 +2,7 @@ import sys
 import os
 import numpy.random
 
-import amusetest
+from amuse.support.testing import amusetest
 from amuse.units import units, nbody_system
 from amuse.ext.molecular_cloud import molecular_cloud, ism_cube
 from amuse.ext.evrard_test import sobol_unit_cube

@@ -35,7 +35,7 @@ exclude = [
     ]
 
 [tool.pytest.ini_options]
-pythonpath = ["amuse_galactics/tests/", "../../../tests"]
+pythonpath = ["amuse_galactics/tests/"]
 
 testpaths = ["amuse_galactics/tests"]
 

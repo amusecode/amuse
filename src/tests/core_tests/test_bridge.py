@@ -7,7 +7,7 @@ from amuse.datamodel import Particles
 from amuse.datamodel import parameters
 from amuse.ic.plummer import new_plummer_model
 
-import amusetest
+from amuse.support.testing import amusetest
 from amuse.couple import bridge
 
 

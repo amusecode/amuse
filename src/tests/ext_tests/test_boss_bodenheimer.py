@@ -2,7 +2,7 @@ import sys
 import os
 import numpy.random
 
-import amusetest
+from amuse.support.testing import amusetest
 from amuse.units import units, nbody_system
 from amuse.ext.boss_bodenheimer import bb79_cloud
 

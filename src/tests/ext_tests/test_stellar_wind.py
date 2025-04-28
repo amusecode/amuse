@@ -1,6 +1,6 @@
 import numpy
 
-import amusetest
+from amuse.support.testing import amusetest
 from amuse.units import units, quantities
 from amuse.datamodel.particles import Particles, Particle
 # from amuse.community.sse.interface import SSE

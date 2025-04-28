@@ -40,7 +40,7 @@ artifacts = [
     "amuse_fi/fi_mp_worker"]
 
 [tool.pytest.ini_options]
-pythonpath = ["amuse_fi/tests/", "../../../tests"]
+pythonpath = ["amuse_fi/tests/"]
 
 testpaths = ["amuse_fi/tests"]
 addopts = "--import-mode=append"    # test the installed package

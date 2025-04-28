@@ -1,7 +1,7 @@
 from pathlib import Path
 import unittest
 
-from amusetest import TestWithMPI
+from amuse.support.testing.amusetest import TestWithMPI
 from compile_tests.c_implementation.interface import ForTestingInterface
 from compile_tests.c_implementation.test_c_implementation import ForTesting
 from amuse.support import exceptions

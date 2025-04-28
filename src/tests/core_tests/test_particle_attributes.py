@@ -3,7 +3,7 @@ import numpy.random
 import sys
 import pytest
 
-import amusetest
+from amuse.support.testing import amusetest
 from amuse.units import units
 from amuse.units import constants
 from amuse.units import nbody_system

@@ -2,7 +2,7 @@ import os.path
 import numpy
 import subprocess
 from amuse.community import *
-from amusetest import TestWithMPI
+from amuse.support.testing.amusetest import TestWithMPI
 from amuse_halogen.interface import HalogenInterface, Halogen
 import amuse_halogen
 

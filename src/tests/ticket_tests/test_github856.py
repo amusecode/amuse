@@ -1,5 +1,5 @@
 import os
-import amusetest
+from amuse.support.testing import amusetest
 
 from amuse.datamodel import new_cartesian_grid, Particles
 

@@ -1,4 +1,4 @@
-import amusetest
+from amuse.support.testing import amusetest
 
 from amuse.ext.job_server import RemoteCodeInterface, JobServer
 

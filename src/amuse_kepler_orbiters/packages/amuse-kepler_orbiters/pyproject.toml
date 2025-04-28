@@ -35,7 +35,7 @@ exclude = [
 artifacts = ["amuse_kepler_orbiters/keplerorbiters_worker"]
 
 [tool.pytest.ini_options]
-pythonpath = ["amuse_kepler_orbiters/tests/", "../../../tests"]
+pythonpath = ["amuse_kepler_orbiters/tests/"]
 
 testpaths = ["amuse_kepler_orbiters/tests"]
 

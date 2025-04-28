@@ -2,7 +2,7 @@ import os
 import sys
 import numpy
 import time
-from amusetest import TestWithMPI
+from amuse.support.testing.amusetest import TestWithMPI
 
 from amuse_fi.interface import FiInterface, Fi
 from amuse.ext.evrard_test import new_evrard_gas_sphere, MakeEvrardTest

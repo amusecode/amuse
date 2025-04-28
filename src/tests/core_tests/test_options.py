@@ -1,5 +1,5 @@
 from amuse.support import options
-import amusetest
+from amuse.support.testing import amusetest
 import io
 import textwrap
 import os

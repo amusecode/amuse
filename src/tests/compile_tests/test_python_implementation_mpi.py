@@ -1,6 +1,6 @@
 from amuse.support.interface import InCodeComponentImplementation
 
-from amusetest import TestWithMPI
+from amuse.support.testing.amusetest import TestWithMPI
 
 from amuse import datamodel
 from amuse.rfi.core import PythonCodeInterface, legacy_function, LegacyFunctionSpecification

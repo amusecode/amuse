@@ -2,7 +2,7 @@ import os.path
 import numpy
 from time import sleep
 
-from amusetest import get_path_to_results, TestWithMPI
+from amuse.support.testing.amusetest import get_path_to_results, TestWithMPI
 try:
     from matplotlib import pyplot
     from amuse.plot import scatter, xlabel, ylabel, plot, loglog, semilogx, semilogy, sph_particles_plot

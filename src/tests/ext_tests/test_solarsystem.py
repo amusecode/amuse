@@ -1,5 +1,5 @@
 import numpy
-from amusetest import TestCase
+from amuse.support.testing.amusetest import TestCase
 
 
 from amuse.ext.solarsystem import new_solar_system, new_solar_system_for_mercury

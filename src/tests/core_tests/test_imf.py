@@ -1,6 +1,6 @@
 import numpy.random
 
-import amusetest
+from amuse.support.testing import amusetest
 from amuse.units import units
 
 from amuse.ic.brokenimf import new_kroupa_mass_distribution

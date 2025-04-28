@@ -1,6 +1,6 @@
 import numpy
 
-import amusetest
+from amuse.support.testing import amusetest
 from amuse.units import units, nbody_system, constants
 
 from amuse.ext.rotating_bridge import Rotating_Bridge, inertial_to_rotating, rotating_to_inertial

@@ -31,7 +31,7 @@ exclude = ["amuse_huayno/*"]
 artifacts = ["amuse_huayno/huayno_openmp_worker"]
 
 [tool.pytest.ini_options]
-pythonpath = ["amuse_huayno/tests/", "../../../tests"]
+pythonpath = ["amuse_huayno/tests/"]
 
 testpaths = ["amuse_huayno/tests"]
 

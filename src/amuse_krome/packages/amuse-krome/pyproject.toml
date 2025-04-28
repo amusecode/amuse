@@ -35,7 +35,7 @@ exclude = [
 artifacts = ["amuse_krome/krome_worker"]
 
 [tool.pytest.ini_options]
-pythonpath = ["amuse_krome/tests/", "../../../tests"]
+pythonpath = ["amuse_krome/tests/"]
 
 testpaths = ["amuse_krome/tests"]
 

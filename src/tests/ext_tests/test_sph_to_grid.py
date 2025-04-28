@@ -1,5 +1,5 @@
 import numpy
-from amusetest import TestWithMPI
+from amuse.support.testing.amusetest import TestWithMPI
 
 from amuse.support.exceptions import AmuseException
 from amuse.ext.sph_to_grid import convert_SPH_to_grid

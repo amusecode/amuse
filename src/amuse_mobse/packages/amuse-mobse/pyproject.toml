@@ -35,7 +35,7 @@ exclude = [
 artifacts = ["amuse_mobse/mobse_worker"]
 
 [tool.pytest.ini_options]
-pythonpath = ["amuse_mobse/tests/", "../../../tests"]
+pythonpath = ["amuse_mobse/tests/"]
 
 testpaths = ["amuse_mobse/tests"]
 addopts = "--import-mode=append"    # test the installed package

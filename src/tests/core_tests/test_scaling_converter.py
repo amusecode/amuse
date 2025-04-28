@@ -1,7 +1,7 @@
 from amuse.units import scaling_converter
 from amuse.units import nbody_system
 
-import amusetest
+from amuse.support.testing import amusetest
 
 
 class TestScalingConverter(amusetest.TestCase):

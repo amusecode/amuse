@@ -6,7 +6,7 @@ from amuse.datamodel import Particles, Particle
 from amuse.ic.plummer import new_plummer_model
 from amuse.couple.bridge import Bridge, CalculateFieldForCodesUsingReinitialize
 
-from amusetest import TestWithMPI
+from amuse.support.testing.amusetest import TestWithMPI
 from amuse_fastkick.interface import FastKickInterface, FastKick
 
 

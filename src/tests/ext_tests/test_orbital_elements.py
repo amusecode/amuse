@@ -1,6 +1,6 @@
 import numpy
 
-import amusetest
+from amuse.support.testing import amusetest
 
 from amuse.ext.orbital_elements import (
     generate_binaries,

@@ -35,7 +35,7 @@ exclude = [
 artifacts = ["amuse_fractalcluster/fractalcluster_worker"]
 
 [tool.pytest.ini_options]
-pythonpath = ["amuse_fractalcluster/tests/", "../../../tests"]
+pythonpath = ["amuse_fractalcluster/tests/"]
 
 testpaths = ["amuse_fractalcluster/tests"]
 

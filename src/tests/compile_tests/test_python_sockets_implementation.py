@@ -1,6 +1,6 @@
 from amuse.support.interface import InCodeComponentImplementation
 
-from amusetest import TestWithMPI, TestCase
+from amuse.support.testing.amusetest import TestWithMPI, TestCase
 
 import numpy
 import sys

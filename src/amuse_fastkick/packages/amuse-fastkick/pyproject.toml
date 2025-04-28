@@ -35,7 +35,7 @@ exclude = [
 artifacts = ["amuse_fastkick/fastkick_worker"]
 
 [tool.pytest.ini_options]
-pythonpath = ["amuse_fastkick/tests/", "../../../tests"]
+pythonpath = ["amuse_fastkick/tests/"]
 
 testpaths = ["amuse_fastkick/tests"]
 

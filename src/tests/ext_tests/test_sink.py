@@ -1,6 +1,6 @@
 import numpy
 
-from amusetest import TestCase
+from amuse.support.testing.amusetest import TestCase
 from amuse.support.exceptions import AmuseWarning, AmuseException
 from amuse.units import units, nbody_system, generic_unit_system, quantities
 from amuse.units.generic_unit_converter import ConvertBetweenGenericAndSiUnits

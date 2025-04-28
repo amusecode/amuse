@@ -3,7 +3,7 @@ import sys
 import time
 from amuse_ph4.interface import ph4Interface, ph4
 
-from amusetest import TestWithMPI
+from amuse.support.testing.amusetest import TestWithMPI
 
 import numpy
 import math

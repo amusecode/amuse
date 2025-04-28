@@ -1,4 +1,4 @@
-from amusetest import TestWithMPI, get_path_to_results
+from amuse.support.testing.amusetest import TestWithMPI, get_path_to_results
 import sys
 import os.path
 from numpy import pi, arange

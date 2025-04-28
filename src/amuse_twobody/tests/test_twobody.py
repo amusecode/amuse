@@ -2,7 +2,7 @@ import numpy
 
 from amuse_twobody import interface
 
-from amusetest import TestWithMPI
+from amuse.support.testing.amusetest import TestWithMPI
 from amuse.units import units
 from amuse.units import nbody_system
 from amuse.units.quantities import zero

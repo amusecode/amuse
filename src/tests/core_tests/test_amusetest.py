@@ -1,4 +1,4 @@
-from amusetest import TestCase
+from amuse.support.testing.amusetest import TestCase
 from amuse.support.exceptions import AmuseException
 from amuse.units import units
 import sys

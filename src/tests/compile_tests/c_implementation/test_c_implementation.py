@@ -1,6 +1,6 @@
 from amuse.support.interface import InCodeComponentImplementation
 
-from amusetest import TestWithMPI
+from amuse.support.testing.amusetest import TestWithMPI
 from amuse.support import exceptions
 
 from compile_tests.c_implementation.interface import ForTestingInterface

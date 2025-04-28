@@ -35,7 +35,7 @@ exclude = [
 artifacts = ["amuse_etics/etics_cuda_worker"]
 
 [tool.pytest.ini_options]
-pythonpath = ["amuse_etics/tests/", "../../../tests"]
+pythonpath = ["amuse_etics/tests/"]
 
 testpaths = ["amuse_etics/tests"]
 

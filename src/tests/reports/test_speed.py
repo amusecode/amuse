@@ -1,4 +1,4 @@
-from amusetest import get_path_to_results
+from amuse.support.testing.amusetest import get_path_to_results
 from reports.interface import TestCode
 import os
 from pathlib import Path

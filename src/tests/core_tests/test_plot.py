@@ -1,6 +1,6 @@
 import numpy
 
-import amusetest
+from amuse.support.testing import amusetest
 from amuse.units import units, quantities
 
 from amuse.support.console import set_printing_strategy

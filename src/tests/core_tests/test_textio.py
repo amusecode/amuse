@@ -10,7 +10,7 @@ from amuse.units import units
 from amuse.units import quantities, core
 from amuse.units import generic_unit_system
 from amuse import datamodel
-import amusetest
+from amuse.support.testing import amusetest
 
 
 class CursorTests(amusetest.TestCase):

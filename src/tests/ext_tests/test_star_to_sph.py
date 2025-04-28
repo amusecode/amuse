@@ -1,7 +1,7 @@
 import os.path
 import numpy
 
-from amusetest import get_path_to_results, TestWithMPI
+from amuse.support.testing.amusetest import get_path_to_results, TestWithMPI
 try:
     from matplotlib import pyplot
     HAS_MATPLOTLIB = True

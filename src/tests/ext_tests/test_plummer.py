@@ -1,6 +1,6 @@
 import numpy
 
-import amusetest
+from amuse.support.testing import amusetest
 from amuse.units import nbody_system
 from amuse.units import units
 from amuse.ic.plummer import new_plummer_model, MakePlummerModel

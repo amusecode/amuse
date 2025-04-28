@@ -1,7 +1,7 @@
 from amuse.units import units
 from amuse.datamodel import new_cartesian_grid
 from amuse.support.exceptions import AmuseException
-from amusetest import TestCase
+from amuse.support.testing.amusetest import TestCase
 
 try:
     from omuse.ext import grid_remappers

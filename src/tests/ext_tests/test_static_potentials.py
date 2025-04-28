@@ -1,5 +1,5 @@
 import numpy
-import amusetest
+from amuse.support.testing import amusetest
 from amuse.units import units, quantities
 
 from amuse.ext import static_potentials

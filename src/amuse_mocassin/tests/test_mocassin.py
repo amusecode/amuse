@@ -1,5 +1,5 @@
 import os
-from amusetest import TestWithMPI
+from amuse.support.testing.amusetest import TestWithMPI
 from amuse.units import units
 from amuse import datamodel
 from amuse_mocassin.interface import MocassinInterface, Mocassin, mocassin_rydberg_unit

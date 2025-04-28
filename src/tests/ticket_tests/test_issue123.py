@@ -1,4 +1,4 @@
-import amusetest
+from amuse.support.testing import amusetest
 
 from amuse.community.sse.interface import SSE
 from amuse.community.bhtree.interface import BHTree

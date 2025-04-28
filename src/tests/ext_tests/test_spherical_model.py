@@ -1,5 +1,5 @@
 import numpy
-from amusetest import TestCase
+from amuse.support.testing.amusetest import TestCase
 from amuse.support.exceptions import AmuseWarning, AmuseException
 from amuse.ext.spherical_model import *
 from amuse.units import units

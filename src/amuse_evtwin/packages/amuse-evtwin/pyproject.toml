@@ -35,7 +35,7 @@ exclude = [
 artifacts = ["amuse_evtwin/evtwin_worker", "amuse_evtwin/data/"]
 
 [tool.pytest.ini_options]
-pythonpath = ["amuse_evtwin/tests/", "../../../tests"]
+pythonpath = ["amuse_evtwin/tests/"]
 
 testpaths = ["amuse_evtwin/tests"]
 

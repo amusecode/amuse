@@ -1,7 +1,7 @@
 import numpy
 from numpy import random
 
-from amusetest import get_path_to_results, TestCase
+from amuse.support.testing.amusetest import get_path_to_results, TestCase
 from amuse.units import units, nbody_system
 from amuse.support.exceptions import AmuseException
 from amuse.datamodel.particles import Particles

@@ -1,5 +1,5 @@
 from amuse.datamodel import AbstractSet
-from amusetest import TestWithMPI
+from amuse.support.testing.amusetest import TestWithMPI
 from amuse.ext import concurrent
 from amuse import datamodel
 

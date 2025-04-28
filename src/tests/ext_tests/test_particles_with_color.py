@@ -1,5 +1,5 @@
 import numpy
-from amusetest import TestCase
+from amuse.support.testing.amusetest import TestCase
 from amuse.units import units
 from amuse.datamodel import Particles
 from amuse.ext.particles_with_color import *

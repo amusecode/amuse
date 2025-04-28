@@ -1,5 +1,5 @@
 import numpy
-import amusetest
+from amuse.support.testing import amusetest
 
 import os.path
 

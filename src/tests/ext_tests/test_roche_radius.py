@@ -1,6 +1,6 @@
 import numpy
 
-import amusetest
+from amuse.support.testing import amusetest
 from amuse.units import units
 
 from amuse.ext.roche_radius import Roche_Orbit, sepinsky_formula

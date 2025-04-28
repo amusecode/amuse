@@ -1,6 +1,6 @@
 import numpy
 
-from amusetest import TestWithMPI
+from amuse.support.testing.amusetest import TestWithMPI
 
 from amuse_seba.interface import SeBaInterface, SeBa
 

@@ -1,4 +1,4 @@
-import amusetest
+from amuse.support.testing import amusetest
 
 from amuse.ext.evrard_test import new_evrard_gas_sphere
 

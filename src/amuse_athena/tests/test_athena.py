@@ -3,7 +3,7 @@ import sys
 import numpy
 import math
 
-from amusetest import TestWithMPI
+from amuse.support.testing.amusetest import TestWithMPI
 from amuse_athena.interface import AthenaInterface, Athena
 from amuse.units.quantities import VectorQuantity
 from amuse.units import generic_unit_system

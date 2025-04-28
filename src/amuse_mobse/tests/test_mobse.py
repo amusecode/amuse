@@ -1,6 +1,6 @@
 from amuse_mobse.interface import MOBSE, MOBSEInterface
 
-from amusetest import TestWithMPI
+from amuse.support.testing.amusetest import TestWithMPI
 from amuse.units import units
 from amuse.units import constants
 from amuse.datamodel import Particles

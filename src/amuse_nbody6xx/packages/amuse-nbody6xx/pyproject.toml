@@ -36,7 +36,7 @@ exclude = [
 artifacts = ["amuse_nbody6xx/nbody6xx_worker"]
 
 [tool.pytest.ini_options]
-pythonpath = ["amuse_nbody6xx/tests/", "../../../tests"]
+pythonpath = ["amuse_nbody6xx/tests/"]
 
 testpaths = ["amuse_nbody6xx/tests"]
 

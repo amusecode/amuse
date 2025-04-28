@@ -1,7 +1,7 @@
 import numpy as np
 
 from amuse.community import *
-from amusetest import TestWithMPI
+from amuse.support.testing.amusetest import TestWithMPI
 from amuse.units import units, constants
 
 from amuse_vader.interface import VaderInterface, Vader

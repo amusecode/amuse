@@ -1,4 +1,4 @@
-import amusetest
+from amuse.support.testing import amusetest
 from amuse.units import units, nbody_system, constants
 
 from amuse.ic.fractalcluster import new_fractal_cluster_model

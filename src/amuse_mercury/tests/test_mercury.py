@@ -1,7 +1,7 @@
 import os
 import sys
 import numpy as np
-from amusetest import TestWithMPI
+from amuse.support.testing.amusetest import TestWithMPI
 
 from amuse_mercury.interface import MercuryInterface, MercuryWayWard, Mercury
 from amuse.ext.solarsystem import new_solar_system_for_mercury, new_solar_system

@@ -1,4 +1,4 @@
-from amusetest import TestWithMPI
+from amuse.support.testing.amusetest import TestWithMPI
 import numpy
 
 from amuse_petar.interface import PetarInterface, Petar
