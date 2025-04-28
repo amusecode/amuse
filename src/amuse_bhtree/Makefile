@@ -70,7 +70,7 @@ test-%:
 .PHONY: clean
 clean:
 	$(MAKE) -C src clean
-	rm -rf *.o *worker*
+	rm -rf build *.o *worker*
 
 .PHONY: distclean
 distclean: clean
