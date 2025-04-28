@@ -144,13 +144,13 @@ To do that, use
 "
 
     if [ "a${ENV_TYPE}" = "avirtualenv" ] ; then
-        printf '    %s\n' 'python -m pip install pip wheel'
+        printf '    %s\n' 'python3 -m pip install pip wheel'
     elif [ "a${ENV_TYPE}" = "aconda" ] ; then
         if [ "a${HAVE_PYPI_WHEEL}" != "a" ] ; then
-            printf '    %s\n' 'python -m pip uninstall wheel'
+            printf '    %s\n' 'python3 -m pip uninstall wheel'
         fi
         if [ "a${HAVE_PYPI_PIP}" != "a" ] ; then
-            printf '    %s\n' 'python -m pip uninstall pip'
+            printf '    %s\n' 'python3 -m pip uninstall pip'
         fi
         printf '    %s\n' 'conda install -c conda-forge pip wheel'
     fi
