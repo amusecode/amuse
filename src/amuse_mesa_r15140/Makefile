@@ -235,8 +235,8 @@ clean_local:
 
 .PHONY: clean
 clean: clean_local
-	$(MAKE) -C src/LAPACK95/SRC clean
-	$(MAKE) -C src/crmath-1.2 clean
+	-$(MAKE) -C src/LAPACK95/SRC clean
+	-$(MAKE) -C src/crmath-1.2 clean
 	-$(MAKE) -C src/crlibm-1.0beta4 clean
 	-$(MAKE) -C src/mesa-r15140/utils/makedepf90-2.8.8 clean
 	rm -f src/bin/*
