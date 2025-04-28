@@ -72,8 +72,8 @@ test_amuse_ext() {
         sep=' and'
     done
 
-    ec_file="$(exit_code_file test amuse-framework)"
-    log_file="$(log_file test amuse-framework)"
+    ec_file="$(exit_code_file test amuse-ext)"
+    log_file="$(log_file test amuse-ext)"
 
     (
         cd src/tests && pytest ext_tests --import-mode=append ticket_tests ${PYTEST_OPTS}  -k "${bad_ext_tests}"
@@ -81,11 +81,11 @@ test_amuse_ext() {
         echo $? >"../../${ec_file}"
     ) 2>&1 | tee "${log_file}"
 
-    handle_result $(cat "$ec_file") test amuse-ext "${log_file}"
-
     printf "\n%s\n" "The following tests were disabled because they currently fail:"
     printf "\n%b\n\n" "${COLOR_RED}${BAD_EXT_TESTS}${COLOR_END}"
     printf "%s\n\n" "This issue is tracked at https://github.com/amusecode/amuse/issues/1103"
+
+    handle_result $(cat "$ec_file") test amuse-ext "${log_file}"
 }
 
 
