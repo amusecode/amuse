@@ -1,7 +1,7 @@
 import os
 import sys
 import time
-from amuse.test.amusetest import TestWithMPI
+from amuse.support.testing.amusetest import TestWithMPI
 
 import numpy
 import math
