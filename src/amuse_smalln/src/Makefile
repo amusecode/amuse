@@ -5,13 +5,10 @@
 # Optimization may cause failure on some systems.  Replace by -O0 in
 # that case.
 
-AMUSE_DIR ?= ../../../../..
-OPT	 = -I$(AMUSE_DIR)/lib/stopcond
-
 MPICXX ?= mpicxx
 MPICC ?= mpicc
 CXX	 ?= mpicxx
-CFLAGS   += -g -Wall $(OPT)
+CFLAGS   += -g -Wall
 CXXFLAGS += $(CFLAGS) 
 
 CODELIB = libsmallN.a

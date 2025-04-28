@@ -26,7 +26,7 @@ build:
 
 .PHONY: $(CODELIB)
 $(CODELIB): | build
-	$(MAKE) -C build -f ../src/Makefile -j $(CPU_COUNT) all VPATH=../src
+	$(MAKE) -C build -f ../src/Makefile -j $(CPU_COUNT) all VPATH=../src CXXFLAGS="$(CFLAGS)"
 
 
 # Building the workers

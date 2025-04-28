@@ -24,7 +24,7 @@ CODELIB = src/libsmallN.a
 
 .PHONY: $(CODELIB)
 $(CODELIB):
-	$(MAKE) -C src -j $(CPU_COUNT) all CXXFLAGS='$(CFLAGS)' CXX='$(MPICXX)'
+	$(MAKE) -C src -j $(CPU_COUNT) all CFLAGS='$(CFLAGS)' CXX='$(MPICXX)'
 
 # Building the workers
 smalln_worker.h: interface.py
