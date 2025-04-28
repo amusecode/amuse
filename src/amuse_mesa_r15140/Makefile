@@ -197,11 +197,27 @@ amuse-mesa_$(MESA_VERSION)_contains: mesa_$(MESA_VERSION)_worker
 
 
 # Building and installing packages
+
+# MESA r15140 doesn't work with a non-develop install because it writes data all
+# over the place. This is an ugly hack to inform the user of that and to have them
+# install it using a develop install for the time being.
+install_disabled:
+	@echo
+	@echo 'Error: MESA r15140 only works with a develop install.'
+	@echo
+	@echo 'Please use'
+	@echo
+	@echo '    ./setup develop amuse-mesa_r15140'
+	@echo
+	@echo 'to install it'
+	@echo
+	@exit 1
+
 develop-%: %_contains
 	support/shared/uninstall.sh $*
 	python -m pip install -e packages/$*
 
-install-%: %_contains
+install-%: install_disabled %_contains
 	support/shared/uninstall.sh $*
 	python -m pip install packages/$*
 

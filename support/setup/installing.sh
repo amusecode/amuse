@@ -256,6 +256,17 @@ install_all() {
     done
 
     printf '\n%b\n' "${COLOR_CYAN}*** Build results ***${COLOR_END}"
+
+    if [ "${FAILED_BUILDS#*amuse-mesa_r15140}" != "${FAILED_BUILDS}" ] ; then
+        printf '\n%b\n' "${COLOR_RED}amuse-mesa_r15140 failed to install${COLOR_END}"
+        printf '\nMESA r15140 failed to install because it can only be installed in\n'
+        printf 'develop mode. This is expected, if unfortunate. Please use\n\n'
+        printf '    ./setup develop amuse-mesa_r15140\n\n'
+        printf 'to install it.\n\n'
+
+        FAILED_BUILDS="${FAILED_BUILDS#*amuse-mesa_r15140}"
+    fi
+
     if [ "a${FAILED_BUILDS}" != "a" ] ; then
         printf '\nThe following packages failed to build:\n'
         printf '%b\n\n' "${COLOR_RED}${FAILED_BUILDS}${COLOR_END}"
