@@ -12,7 +12,7 @@ VERSION = 0e6357b451e6
 
 # Downloading the code
 vader.tar.gz:
-	$(DOWNLOAD) https://bitbucket.org/MJCWilhelm/vader/get/$(VERSION).tar.gz -O $@
+	$(DOWNLOAD) https://bitbucket.org/MJCWilhelm/vader/get/$(VERSION).tar.gz >$@
 
 # Preparing source directory
 src: vader.tar.gz
