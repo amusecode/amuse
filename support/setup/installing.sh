@@ -93,7 +93,7 @@ install_framework() {
     (
         ${GMAKE} -C lib distclean && \
         ${GMAKE} -C lib install && \
-        cd src && pip --no-cache-dir --debug install .
+        cd src && pip --no-cache-dir install .
 
         echo $? >"../${ec_file}"
     ) 2>&1 | tee "${log_file}"
