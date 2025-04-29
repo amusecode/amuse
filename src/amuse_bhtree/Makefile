@@ -26,7 +26,7 @@ build:
 
 .PHONY: $(CODELIB)
 $(CODELIB): | build
-	CXXFLAGS="$(CFLAGS)" LDLIBS="$(LDLIBS)" $(MAKE) -C build -f ../src/Makefile -j $(CPU_COUNT) all VPATH=../src
+	CXXFLAGS="$(CFLAGS)" LDFLAGS="$(LDFLAGS)" LDLIBS="$(LDLIBS)" $(MAKE) -C build -f ../src/Makefile -j $(CPU_COUNT) all VPATH=../src
 
 # Building the workers
 bhtree_worker.h: interface.py
