@@ -1,4 +1,4 @@
-from amusetest import TestWithMPI
+from amuse.support.testing.amusetest import TestWithMPI
 
 from amuse.community.{code}.interface import {interface_class}, {user_class}
 
