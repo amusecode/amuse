@@ -22,7 +22,7 @@ will get you sorted. Next, you can get a local git repository with AMUSE in it u
 
 .. code-block:: bash
 
-    git clone https://github.com/amusecode/amuse
+    git clone https://github.com/amusecode/amuse.git
 
 
 This will create a directory called ``amuse`` with the latest development version of
