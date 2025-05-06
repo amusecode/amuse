@@ -50,3 +50,5 @@ artifacts = ["amuse/_version.py"]
 
 [tool.pytest.ini_options]
 pythonpath = ["tests/"]
+testpaths = ["tests/"]
+
