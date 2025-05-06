@@ -38,12 +38,12 @@ AMUSE is originally developed at the Leiden Observatory. The Leiden Observatory 
 a faculty of the Leiden University in the Netherlands. Funding is provided
 by a NOVA grant.
 
-.. image:: ../logos/universiteit_leiden_logo.png
+.. image:: ../../logos/universiteit_leiden_logo.png
    
-.. image:: ../logos/strw_logo.png
+.. image:: ../../logos/strw_logo.png
    :width: 2.5cm
 
    
-.. image:: ../logos/nova_logo.jpg
+.. image:: ../../logos/nova_logo.jpg
    :width: 2.5cm
 

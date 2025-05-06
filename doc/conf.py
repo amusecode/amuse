@@ -31,6 +31,7 @@ sys.path.append(os.path.abspath('sphinxext'))
 extensions = [
  'sphinx.ext.autodoc',
  'sphinx.ext.autosummary',
+ 'sphinx.ext.autosectionlabel',
  'sphinx.ext.doctest', 
  'sphinx.ext.todo',
  #'sphinx.ext.imgmath', 
