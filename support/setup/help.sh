@@ -168,7 +168,9 @@ print_enable_packages_step() {
 
 Some packages are disabled due to missing features. You can enable more packages by
 installing additional software. Some software does require specific hardware, for
-example CUDA requires an nVidia GPU to work."
+example CUDA requires an nVidia GPU to work. If you have one, see
+https://amuse.readthedocs.io/en/latest/install/cuda.html for help installing CUDA to
+enable those packages."
 
     if [ "a${ENV_TYPE}" = "aconda" ] ; then
         printf '%b\n' "
@@ -240,8 +242,9 @@ to show a complete overview.
 print_getting_help() {
     printf '%s\n\n' 'This is not supposed to happen!'
     printf '%s\n' 'Please contact the developers on Slack or make an issue on GitHub,'
-    printf '%s\n' 'so that we can fix this together.'
-    printf '%s\n' 'TODO: add links'
+    printf '%s\n\n' 'so that we can fix this together.'
+    printf '%s\n' 'https://amusecode.slack.com'
+    printf '%s\n' 'https://github.com/amusecode/amuse/issues/new/choose'
 }
 
 
