@@ -144,7 +144,7 @@ develop_framework() {
     (
         ${GMAKE} -C lib distclean && \
         ${GMAKE} -C lib install && \
-        cd src && pip -e install .
+        cd src && pip install -e .
 
         echo $? >"../${ec_file}"
     ) 2>&1 | tee "${log_file}"
