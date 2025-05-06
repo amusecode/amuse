@@ -238,7 +238,7 @@ clean() {
     ${GMAKE} -C support clean
     ${GMAKE} -C lib clean
     ${GMAKE} -C lib clean-sapporo_light
-    for code in src/amuse-* ; do ${GMAKE} -C "${code}" clean ; done
+    for code in src/amuse_* ; do ${GMAKE} -C "${code}" clean ; done
     ${GMAKE} -C src/tests clean
 }
 
@@ -251,7 +251,7 @@ distclean() {
     ${GMAKE} -C support distclean
     ${GMAKE} -C lib distclean
     ${GMAKE} -C lib distclean-sapporo_light
-    for code in src/amuse-* ; do ${GMAKE} -C "${code}" distclean ; done
+    for code in src/amuse_* ; do ${GMAKE} -C "${code}" distclean ; done
     ${GMAKE} -C src/tests distclean
 }
 
