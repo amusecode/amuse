@@ -18,7 +18,7 @@ from amuse.support.interface import InCodeComponentImplementation
 from amuse.support.options import option
 
 
-class MESAInterface(
+class MesaInterface(
     CodeInterface, LiteratureReferencesMixIn, StellarEvolutionInterface,
     InternalStellarStructureInterface, CodeWithDataDirectories
 ):
@@ -1202,7 +1202,7 @@ class MESAInterface(
         return function
 
 
-class MESA(StellarEvolution, InternalStellarStructure):
+class Mesa(StellarEvolution, InternalStellarStructure):
 
     def __init__(self, **options):
         InCodeComponentImplementation.__init__(self, MESAInterface(**options), **options)
@@ -2188,4 +2188,4 @@ class MESA(StellarEvolution, InternalStellarStructure):
         return self.imported_stars.add_particle(tmp_star)
 
 
-Mesa = MESA
+MESA = Mesa

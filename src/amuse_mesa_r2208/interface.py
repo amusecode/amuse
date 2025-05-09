@@ -11,7 +11,7 @@ from amuse.units.quantities import VectorQuantity
 from amuse.support.interface import InCodeComponentImplementation
 from amuse.support.options import option
 
-class MESAInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolutionInterface, 
+class MesaInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolutionInterface, 
         InternalStellarStructureInterface, CodeWithDataDirectories): 
     """
     The software project MESA (Modules for Experiments in Stellar Astrophysics, 
@@ -941,7 +941,7 @@ class MESAInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolutionIn
         function.result_type = 'int32'
         return function
 
-class MESA(StellarEvolution, InternalStellarStructure):
+class Mesa(StellarEvolution, InternalStellarStructure):
     
     def __init__(self, **options):
         InCodeComponentImplementation.__init__(self, MESAInterface(**options), **options)
@@ -1555,4 +1555,4 @@ class MESA(StellarEvolution, InternalStellarStructure):
 
 
 
-Mesa = MESA
+MESA = Mesa

@@ -1,7 +1,7 @@
 from amuse.support.import_helper import load_code
 
 
-MESAInterface = load_code("mesa_r15140", "MESAInterface")
-MESA = load_code("mesa_r15140", "MESA")
+MesaInterface = load_code("mesa_r15140", "MesaInterface")
+Mesa = load_code("mesa_r15140", "Mesa")
 
-Mesa = MESA
+MESA = Mesa
