@@ -57,7 +57,7 @@ $(EXTRA_OBJS): $(CODELIB)
 
 # Building the workers
 mesa_r2208_worker.f90: interface.py
-	amusifier --type=f90 interface.py MESAInterface -o $@
+	amusifier --type=f90 interface.py MesaInterface -o $@
 
 mesa_r2208_worker.o: mesa_r2208_worker.f90
 	$(MPIFC) -c -o $@ $(FCFLAGS) $<

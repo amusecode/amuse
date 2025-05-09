@@ -174,7 +174,7 @@ LDLIBS += -lhdf5_fortran -lhdf5 -lz -ldl
 
 
 mesa_$(MESA_VERSION)_worker.f90: interface.py
-	amusifier --type=f90 interface.py MESAInterface -o $@
+	amusifier --type=f90 interface.py MesaInterface -o $@
 
 mesa_$(MESA_VERSION)_worker.o: mesa_$(MESA_VERSION)_worker.f90
 	$(MPIFC) -c -o $@ $(FCFLAGS) $<
