@@ -944,7 +944,7 @@ class MesaInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolutionIn
 class Mesa(StellarEvolution, InternalStellarStructure):
     
     def __init__(self, **options):
-        InCodeComponentImplementation.__init__(self, MESAInterface(**options), **options)
+        InCodeComponentImplementation.__init__(self, MesaInterface(**options), **options)
         
         if 'inlist' in options:
             inlist_path = options['inlist']

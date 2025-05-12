@@ -4,7 +4,7 @@ import os.path
 from subprocess import PIPE, Popen
 import numpy
 
-from amuse_mesa_r15140.interface import MESA, MESAInterface
+from amuse_mesa_r15140.interface import MESA, MesaInterface
 
 from amuse.support.exceptions import AmuseException
 from amuse.units import units
@@ -30,11 +30,11 @@ def set_mesa_paths_instance(instance):
     )
 
 
-class TestMESAInterface(TestWithMPI):
+class TestMesaInterface(TestWithMPI):
 
     def test1(self):
         print("Testing initialization of the interface...")
-        instance = self.new_instance_of_an_optional_code(MESAInterface)
+        instance = self.new_instance_of_an_optional_code(MesaInterface)
         if instance is None:
             print("MESA was not built. Skipping test.")
             return
@@ -52,7 +52,7 @@ class TestMESAInterface(TestWithMPI):
             "The first time this test will take quite some time"
             " to generate new starting models."
         )
-        instance = self.new_instance_of_an_optional_code(MESAInterface)
+        instance = self.new_instance_of_an_optional_code(MesaInterface)
         if instance is None:
             print("MESA was not built. Skipping test.")
             return
@@ -72,7 +72,7 @@ class TestMESAInterface(TestWithMPI):
 
     def test3(self):
         print("Testing basic operations: new_particle...")
-        instance = self.new_instance_of_an_optional_code(MESAInterface)
+        instance = self.new_instance_of_an_optional_code(MesaInterface)
         if instance is None:
             print("MESA was not built. Skipping test.")
             return
@@ -95,7 +95,7 @@ class TestMESAInterface(TestWithMPI):
 
     def test4(self):
         print("Testing basic operations: evolve...")
-        instance = self.new_instance_of_an_optional_code(MESAInterface)
+        instance = self.new_instance_of_an_optional_code(MesaInterface)
         if instance is None:
             print("MESA was not built. Skipping test.")
             return
@@ -149,7 +149,7 @@ class TestMESAInterface(TestWithMPI):
             "If the required starting models do not exist, this test will "
             "take quite some time to generate them."
         )
-        instance = self.new_instance_of_an_optional_code(MESAInterface)
+        instance = self.new_instance_of_an_optional_code(MesaInterface)
         if instance is None:
             print("MESA was not built. Skipping test.")
             return
@@ -174,7 +174,7 @@ class TestMESAInterface(TestWithMPI):
 
     def test6(self):
         print("Testing MESA stop conditions...")
-        instance = self.new_instance_of_an_optional_code(MESAInterface)
+        instance = self.new_instance_of_an_optional_code(MesaInterface)
         if instance is None:
             print("MESA was not built. Skipping test.")
             return
@@ -201,7 +201,7 @@ class TestMESAInterface(TestWithMPI):
 
     def test7(self):
         print("Testing MESA parameters...")
-        instance = self.new_instance_of_an_optional_code(MESAInterface)
+        instance = self.new_instance_of_an_optional_code(MesaInterface)
         if instance is None:
             print("MESA was not built. Skipping test.")
             return
@@ -229,7 +229,7 @@ class TestMESAInterface(TestWithMPI):
 
     def test8(self):
         print("Testing MESA wind parameters...")
-        instance = self.new_instance_of_an_optional_code(MESAInterface)
+        instance = self.new_instance_of_an_optional_code(MesaInterface)
         if instance is None:
             print("MESA was not built. Skipping test.")
             return

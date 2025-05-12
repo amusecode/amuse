@@ -1205,7 +1205,7 @@ class MesaInterface(
 class Mesa(StellarEvolution, InternalStellarStructure):
 
     def __init__(self, **options):
-        InCodeComponentImplementation.__init__(self, MESAInterface(**options), **options)
+        InCodeComponentImplementation.__init__(self, MesaInterface(**options), **options)
 
         output_dir = self.get_output_directory()
 
