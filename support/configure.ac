@@ -69,7 +69,7 @@ else
         AMUSE_CONDA_PACKAGE(HAVE_MPI, mpi)
         AMUSE_CONDA_PACKAGE(HAVE_OPENMP, openmp)
         HAVE_OPENMP="yes"           # conda-forge compilers have openmp built in
-        AMUSE_CONDA_PACKAGE(CUDA_TK, cuda-toolkit)
+        AMUSE_CUDA()
         AMUSE_CONDA_PACKAGE(FOUND_OPENCL, ocl-icd)
         if test "$FOUND_OPENCL" == "no"
         then
