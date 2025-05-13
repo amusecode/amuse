@@ -36,7 +36,7 @@ keplerorbiters_worker: keplerorbiters_worker.o interface.o $(CODELIB)
 
 
 # Which packages contain which workers?
-amuse-kepler_orbiters_contains: keplerorbiters_worker
+amuse-kepler-orbiters_contains: keplerorbiters_worker
 
 
 # Building and installing packages

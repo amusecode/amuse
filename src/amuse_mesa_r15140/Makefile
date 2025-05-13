@@ -193,7 +193,7 @@ run_star_extras.o: $(CODELIB)
 
 
 # Which packages contain which workers?
-amuse-mesa_$(MESA_VERSION)_contains: mesa_$(MESA_VERSION)_worker
+amuse-mesa-$(MESA_VERSION)_contains: mesa_$(MESA_VERSION)_worker
 
 
 # Building and installing packages

@@ -109,13 +109,33 @@ has_issue() {
 # Print the main directory of the code for a given package
 #
 # Codes may have multiple packages, e.g. with and without CUDA support, so different
-# packages may have the same main directory.
+# packages may have the same main directory. Package names may have multiple dashes,
+# which separate the amuse- prefix from the code name and the -openmp or whatever is
+# it's package suffix, but then the package name can also contain a dash itself, e.g.
+# mesa-r15140, and maybe one day someone will put a dash/underscore in the suffix too.
+# So this is ambiguous, and the only way to find the right code directory is to try
+# different options and see if we have a matching directory.
+#
+# Package names always use dashes, not underscores, because that's the normalised form
+# in Python and because 'conda list' normalises them. The code directories have
+# underscores, because anything with a dash isn't a valid Python identifier and cannot
+# be imported from. Which is not great, but it is what it is and we can convert.
 #
 code_directory() {
     package="$1"
 
-    code=$(printf '%s' "${package}" | sed -e 's/^amuse-\([^-]*\).*/\1/')
-    printf "src/amuse_${code}"
+    code_dir=$(printf '%s' "src/${package}" | tr - _)
+    prev_code_dir="${code_dir}_dummy"
+
+    while [ "${prev_code_dir}" != "${code_dir}" ] ; do
+        if [ -f "${code_dir}/packages/${package}.amuse_deps" ] ; then
+            printf "${code_dir}"
+            return
+        fi
+
+        prev_code_dir="${code_dir}"
+        code_dir="${prev_code_dir%-*}"
+    done
 }
 
 

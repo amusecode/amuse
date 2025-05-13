@@ -143,6 +143,7 @@ def _variables(language: str, code: str, user_class: str) -> None:
     variables = {
             "framework_version": amuse_version,
             "code": code,
+            "package": code.replace("_", "-"),
             "interface_class": f"{user_class}Interface",
             "user_class": user_class}
 

@@ -99,9 +99,9 @@ interface.o: interface.cc {code}_worker.h
 
 # Which packages contain which workers?
 ##### Add and/or remove as needed #####
-amuse-{code}_contains: {code}_worker
+amuse-{package}_contains: {code}_worker
 
-amuse-{code}-PACKAGE_contains: {code}_PACKAGE_worker
+amuse-{package}-SUFFIX_contains: {code}_SUFFIX_worker
 
 
 # Building and installing packages

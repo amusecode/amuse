@@ -55,7 +55,7 @@ interface.o: interface.cc | src/Hermite_GRX
 
 
 # Which packages contain which workers?
-amuse-hermite_grx_contains: hermite_grx_worker
+amuse-hermite-grx_contains: hermite_grx_worker
 
 
 # Building and installing packages

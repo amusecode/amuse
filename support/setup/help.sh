@@ -78,7 +78,7 @@ environment.
 
 Runs tests for the amuse.ext scripts, and regression ('ticket') tests. This requires the
 framework to be installed as well as (currently) bhtree, evtwin, fi, fractalcluster,
-gadget2, galactics, halogen, hermite, hop, kepler, mesa_r14150, ph4, phigrape, seba, and
+gadget2, galactics, halogen, hermite, hop, kepler, mesa-r14150, ph4, phigrape, seba, and
 sse.
 
     ./setup test ${ITALIC}package1 package2...${END_ITALIC}
@@ -89,7 +89,7 @@ the active environment.
     ./setup clean
 
 Cleans up all the compiled code for both the framework and the community codes, so that
-you can (and have to!) rebuild everything from scratch. 
+you can (and have to!) rebuild everything from scratch.
 
     ./setup distclean
 

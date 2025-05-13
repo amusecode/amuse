@@ -85,7 +85,7 @@ data/data: | src/mesa
 
 
 # Which packages contain which workers?
-amuse-mesa_r2208_contains: mesa_r2208_worker data/data $(ZAMS_DATA)
+amuse-mesa-r2208_contains: mesa_r2208_worker data/data $(ZAMS_DATA)
 
 
 # Building and installing packages
