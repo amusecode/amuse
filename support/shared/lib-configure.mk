@@ -1,5 +1,5 @@
 # Run configure if needed
-ifeq (,$(filter clean distclean, $(MAKECMDGOALS)))
+ifeq (,$(filter clean distclean uninstall, $(MAKECMDGOALS)))
 
 include support/config.mk
 
