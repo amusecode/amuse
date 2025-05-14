@@ -134,7 +134,7 @@ code_directory() {
         fi
 
         prev_code_dir="${code_dir}"
-        code_dir="${prev_code_dir%-*}"
+        code_dir="${prev_code_dir%_*}"
     done
 }
 
