@@ -9,7 +9,7 @@ support/config.mk:
 
 
 # Downloading the code
-VERSION = 94e9b1d6ba1466d288a12e3afaa1eba5bca6ddca
+VERSION = a6f4b64f852249a0b66d52aa6f276be517dccb64
 
 seba.tar.gz:
 	$(DOWNLOAD) https://github.com/amusecode/SeBa/archive/$(VERSION).tar.gz >$@
@@ -28,6 +28,7 @@ LDFLAGS +=
 LDLIBS += $(STOPCOND_LIBS) $(AMUSE_MPI_LIBS)
 
 CODELIBS = src/sstar/libsstar.a src/dstar/libdstar.a src/node/libnode.a src/std/libstd.a
+CODELIBS += src/rdc/librdc.a
 
 
 .PHONY: $(CODELIBS)

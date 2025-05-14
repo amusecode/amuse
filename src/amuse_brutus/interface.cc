@@ -17,7 +17,7 @@ std::ofstream odata;
 
 int particle_id_counter = 0;
 
-int numBits = 64;  
+int numBits = 64;
 int numDigits = numBits/4;
 
 std::string out_directory;
@@ -48,7 +48,7 @@ extern "C" {
 int initialize_code() {
     odata.open("temp.log");
 
-    mpreal::set_default_prec(numBits);  
+    mpreal::set_default_prec(numBits);
 
     brutus = new Brutus();
 
@@ -64,7 +64,7 @@ int initialize_code() {
 
 // functions with "_string" assign strings to mpreals, and without "_string" assign doubles to mpreals
 
-int new_particle_string(int *particle_identifier, char* mass, 
+int new_particle_string(int *particle_identifier, char* mass,
         char* x, char* y, char* z, char* vx, char* vy, char* vz, char* radius) {
 
     data.push_back(mass);
@@ -82,7 +82,7 @@ int new_particle_string(int *particle_identifier, char* mass,
 
     return 0;
 }
-int new_particle_float64(int *particle_identifier, double mass, 
+int new_particle_float64(int *particle_identifier, double mass,
         double x, double y, double z, double vx, double vy, double vz, double radius) {
 
     data.push_back( (mpreal)mass );
@@ -141,7 +141,7 @@ int get_begin_time(double * output) {
 // Timestep parameter, eta
 int set_eta_string(char* myeta) {
     eta = myeta;
-    brutus->set_eta(eta); 
+    brutus->set_eta(eta);
     return 0;
 }
 int get_eta_string(char **myeta) {
@@ -265,7 +265,7 @@ int get_mass_string(int id, char **mass) {
   mass_string = data[id*7+0].toString();
   *mass = (char*) mass_string.c_str();
   return 0;
-} 
+}
 int set_mass_string(int id, char *mass) {
   if (id < 0 || id >= particle_id_counter){
     return -1;
@@ -279,7 +279,7 @@ int get_mass(int id, double* mass) {
   }
   *mass = data[id*7+0].toDouble();
   return 0;
-} 
+}
 int set_mass(int id, double mass) {
   if (id < 0 || id >= particle_id_counter){
     return -1;
@@ -381,7 +381,7 @@ std::string get_state_strings_vx;
 std::string get_state_strings_vy;
 std::string get_state_strings_vz;
 std::string get_state_strings_r;
-int get_state_string(int id, char** m, char** x, char** y, char** z, char** vx, char** vy, char** vz, char** radius) {  
+int get_state_string(int id, char** m, char** x, char** y, char** z, char** vx, char** vy, char** vz, char** radius) {
   if (id < 0 || id >= particle_id_counter){
     return -1;
   }
@@ -447,7 +447,7 @@ int set_state(int id, double m, double x, double y, double z, double vx, double 
 }
 
 std::string radius_string;
-int get_radius_string(int id, char** radius){ 
+int get_radius_string(int id, char** radius){
   if (id < 0 || id >= particle_id_counter){
     return -1;
   }
@@ -462,7 +462,7 @@ int set_radius_string(int id, char* radius) {
   data_radius[id] = radius;
   return 0;
 }
-int get_radius(int id, double* radius){ 
+int get_radius(int id, double* radius){
   if (id < 0 || id >= particle_id_counter){
     return -1;
   }
@@ -525,7 +525,7 @@ int get_index_of_first_particle(int* id){return -2;}
 int get_index_of_next_particle(int id, int* idnext){return -2;}
 
 std::string total_mass_string;
-int get_total_mass_string(char **M){ 
+int get_total_mass_string(char **M){
   int N = data.size()/7;
   mpreal Mtot = "0";
   for(int i=0; i<N; i++) {
@@ -536,7 +536,7 @@ int get_total_mass_string(char **M){
   return 0;
 }
 
-int get_total_mass(double* M){ 
+int get_total_mass(double* M){
   int N = data.size()/7;
   mpreal Mtot = "0";
   for(int i=0; i<N; i++) {
@@ -566,7 +566,7 @@ int get_potential_energy_m(mpreal* ep) {
 
       eptot -= mi*mj/sqrt(dr2);
     }
-  }  
+  }
 
   *ep = eptot;
   return 0;
@@ -610,8 +610,8 @@ int get_kinetic_energy_string( char **ep) {
 std::string total_energy_string;
 
 int get_total_energy_string( char **ep) {
-    mpreal ektot = "0";   
-    mpreal eptot = "0";   
+    mpreal ektot = "0";
+    mpreal eptot = "0";
     mpreal etot = "0";
     get_potential_energy_m(&eptot);
     get_kinetic_energy_m(&ektot);
@@ -635,7 +635,7 @@ int get_kinetic_energy(double* ek) {
   return 0;
 }
 
-int get_center_of_mass_position(double* x , double* y, double* z){ 
+int get_center_of_mass_position(double* x , double* y, double* z){
   int N = data.size()/7;
   mpreal Mtot = "0";
   for(int i=0; i<N; i++) {
@@ -648,14 +648,14 @@ int get_center_of_mass_position(double* x , double* y, double* z){
       rcm[j] += data[i*7]*data[i*7+(j+1)];
     }
   }
-  for(int i=0; i<3; i++) rcm[i] /= Mtot;  
+  for(int i=0; i<3; i++) rcm[i] /= Mtot;
 
   *x = rcm[0].toDouble();
   *y = rcm[1].toDouble();
   *z = rcm[2].toDouble();
   return 0;
 }
-int get_center_of_mass_velocity(double* vx, double* vy, double* vz){ 
+int get_center_of_mass_velocity(double* vx, double* vy, double* vz){
   int N = data.size()/7;
   mpreal Mtot = "0";
   for(int i=0; i<N; i++) {
@@ -668,7 +668,7 @@ int get_center_of_mass_velocity(double* vx, double* vy, double* vz){
       vcm[j] += data[i*7]*data[i*7+(j+4)];
     }
   }
-  for(int i=0; i<3; i++) vcm[i] /= Mtot;  
+  for(int i=0; i<3; i++) vcm[i] /= Mtot;
 
   *vx = vcm[0].toDouble();
   *vy = vcm[1].toDouble();

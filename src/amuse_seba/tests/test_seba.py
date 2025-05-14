@@ -134,8 +134,8 @@ class TestSeBaInterface(TestWithMPI):
         print(mass)
         self.assertEqual(error, 0)
         self.assertAlmostRelativeEqual(mass[0], 1.0, 6)
-        self.assertAlmostRelativeEqual(mass[1], 0.62973, 4)
-        self.assertAlmostRelativeEqual(mass[2], 0.75012, 4)
+        self.assertAlmostRelativeEqual(mass[1], 0.6306, 4)
+        self.assertAlmostRelativeEqual(mass[2], 0.7408, 4)
 
         instance.stop()
 
@@ -155,7 +155,7 @@ class TestSeBaInterface(TestWithMPI):
         mass, error = instance.get_mass(index)
         print(mass)
         self.assertEqual(error, 0)
-        self.assertAlmostRelativeEqual(mass, [1.0, 0.62973, 0.75072], 4)
+        self.assertAlmostRelativeEqual(mass, [1.0, 0.6306, 0.7408], 4)
 
         instance.stop()
 
@@ -284,7 +284,7 @@ class TestSeBaInterface(TestWithMPI):
         self.assertEqual(error, 0)
         mass, error = instance.get_mass(1)
         self.assertEqual(error, 0)
-        self.assertAlmostRelativeEqual(mass, 2.98777, 4)
+        self.assertAlmostRelativeEqual(mass,  2.9887, 4)
         mass, error = instance.get_mass(2)
         self.assertEqual(error, 0)
         self.assertAlmostRelativeEqual(mass, 0.29999, 4)
@@ -293,7 +293,7 @@ class TestSeBaInterface(TestWithMPI):
         self.assertEqual(error, 0)
         mass, error = instance.get_mass(1)
         self.assertEqual(error, 0)
-        self.assertAlmostRelativeEqual(mass, 0.902743, 4)
+        self.assertAlmostRelativeEqual(mass, 0.9019, 4)
         mass, error = instance.get_mass(2)
         self.assertEqual(error, 0)
         self.assertAlmostRelativeEqual(mass, 0.3, 4)
@@ -420,7 +420,7 @@ class TestSeBa(TestWithMPI):
             3.0000 | units.MSun,
             3.0000 | units.MSun,
             2.9983 | units.MSun,
-            2.9741 | units.MSun,
+            2.9797 | units.MSun,
             0.6710 | units.MSun,
             0.6596 | units.MSun,
         )
@@ -683,3 +683,53 @@ class TestSeBa(TestWithMPI):
         self.assertAlmostRelativeEqual(instance.particles[0].mass, 1.2507 | units.MSun, 4)
         self.assertAlmostRelativeEqual(instance.particles[1].mass, 1.2507 | units.MSun, 4)
         self.assertAlmostRelativeEqual(instance.particles[2].mass, 0.5 | units.MSun, 4)
+
+    def test_restart_for_different_stellar_type(self):
+        """ Test restart SeBa for different stellar types. """
+        instance = self.new_instance_of_an_optional_code(SeBa)
+
+        #a very specific case, which went wrong in Torch
+        stars = Particles(2)
+        stars.mass = [69.08994562, 69.40049406] | units.MSun
+        stars.relative_mass = [69.44820097, 69.40049406] | units.MSun
+        stars.age = [3.2865, 3.2865] | units.Myr
+        stars.relative_age = [3.68045615, 3.63104588] | units.Myr
+        stars.stellar_type = [2, 1] | units.stellar_type
+        stars.core_mass = [29.90683271, 0.] | units.MSun
+        stars.radius = [944.70734099, 94.874201] | units.RSun
+        stars.luminosity = [1517964.62534381, 1468414.68887237] | units.LSun
+        
+        instance.particles.add_particles(stars)
+        instance.evolve_model(0.1 | units.day)
+        
+        self.assertAlmostRelativeEqual(instance.particles[0].age, 0 | units.Myr, 4)
+        self.assertAlmostRelativeEqual(instance.particles[1].age, 0 | units.Myr, 4)
+        self.assertAlmostRelativeEqual(instance.particles[0].relative_age,  3.68045615 | units.Myr, 4)
+        self.assertAlmostRelativeEqual(instance.particles[1].relative_age,  3.63104588 | units.Myr, 4)
+        self.assertAlmostRelativeEqual(instance.particles[0].radius,  944.70734099 | units.RSun, 4)
+        self.assertAlmostRelativeEqual(instance.particles[1].radius,  94.874201 | units.RSun, 4)
+        self.assertAlmostRelativeEqual(instance.particles[0].core_mass, 29.90683275 | units.MSun, 4)
+        self.assertAlmostRelativeEqual(instance.particles[1].core_mass, 0 | units.MSun, 4)
+        self.assertAlmostRelativeEqual(instance.particles[0].luminosity, 1517964.62534381 | units.LSun, 4)
+        self.assertAlmostRelativeEqual(instance.particles[1].luminosity,  1468414.68887237 | units.LSun, 4)
+
+
+    def test_adding_zero_age_star_and_recover_with_channel(self):
+        """ Test restart SeBa for different stellar types. """
+        instance = self.new_instance_of_an_optional_code(SeBa)
+
+        #a very specific case, which went wrong in Torch
+        
+        stars = Particles(1)
+        stars.mass = 20|units.MSun
+        stars.radius = 10|units.RSun
+
+        instance.particles.add_particle(stars[0])
+        instance.evolve_model(1|units.yr)
+
+        channel = stars.new_channel_to(instance.particles)
+        channel.copy()
+
+        self.assertAlmostRelativeEqual(instance.particles[0].mass, 19.9999999903 | units.MSun, 4)
+        self.assertAlmostRelativeEqual(instance.particles[0].radius,  5.99895518242 | units.RSun, 4)
+

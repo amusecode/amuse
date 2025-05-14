@@ -46,6 +46,54 @@ class SeBaInterface(CodeInterface, se.StellarEvolutionInterface, LiteratureRefer
         return function
 
     @legacy_function
+    def new_advanced_particle():
+        """
+        Define a new star in the code. The star will start with the given mass.
+        """
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
+        function.addParameter(
+            'index_of_the_star', dtype='int32', direction=function.OUT,
+            description=(
+                "The new index for the star. This index can be used to refer "
+                "to this star in other functions"
+            )
+        )
+        function.addParameter(
+            'mass', dtype='float64', direction=function.IN,
+            description="The initial mass of the star")
+        function.addParameter(
+            'relative_mass', dtype='float64', direction=function.IN, default=0,
+            description="The initial relative mass of the star")
+        function.addParameter(
+            'stellar_type', dtype='int32', direction=function.IN, default=0,
+            description="The initial stellar type of the star")
+        function.addParameter(
+            'relative_age', dtype='float64', direction=function.IN, default=0,
+            description="The relative initial age of the star")
+        function.addParameter(
+            'core_mass', dtype='float64', direction=function.IN, default=0, 
+            description="The initial core mass of the star")
+        function.addParameter(
+            'COcore_mass', dtype='float64', direction=function.IN, default=0,
+            description="The initial CO core mass of the star")
+        function.addParameter(
+            'radius', dtype='float64', direction=function.IN, default=0,
+            description="The initial radius of the star")
+        # function.addParameter(
+        #     'age_tag', dtype='float64', direction=function.IN,
+        #     description="Starting age of the star *to be specified exactly*")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            New star was loaded and the index_of_the_star parameter set.
+        -1 - ERROR
+            New star could not be created.
+        """
+        return function
+
+
+    @legacy_function
     def new_binary():
         """
         Define a new star in the code. The star will start with the given mass.
@@ -137,6 +185,46 @@ class SeBaInterface(CodeInterface, se.StellarEvolutionInterface, LiteratureRefer
             , description="The index of the star to get the value of")
         function.addParameter('value', dtype='float64', direction=function.OUT
             , description="The current semi major axis.")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            The value has been set.
+        -1 - ERROR
+            A binary with the given index was not found.
+        """
+        return function
+        
+    @legacy_function
+    def get_binary_type():
+        """
+        Retrieve the current binary type of the binary star.
+        """
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
+        function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
+            , description="The index of the star to get the value of")
+        function.addParameter('value', dtype='float64', direction=function.OUT
+            , description="The current binary type.")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            The value has been set.
+        -1 - ERROR
+            A binary with the given index was not found.
+        """
+        return function
+
+    @legacy_function
+    def get_mass_transfer_type():
+        """
+        Retrieve the current mass transfer type of the binary star.
+        """
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
+        function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
+            , description="The index of the star to get the value of")
+        function.addParameter('value', dtype='float64', direction=function.OUT
+            , description="The current mass transfer type.")
         function.result_type = 'int32'
         function.result_doc = """
         0 - OK
@@ -875,6 +963,11 @@ class SeBa(se.StellarEvolution):
             (handler.ERROR_CODE,)
         )
         handler.add_method(
+            "new_advanced_particle",
+            (units.MSun, units.MSun, units.stellar_type, units.Myr, units.MSun, units.MSun, units.RSun),
+            (handler.INDEX, handler.ERROR_CODE)
+        )        
+        handler.add_method(
             "new_binary",
             (units.RSun, handler.NO_UNIT, handler.LINK('particles'), handler.LINK('particles')),
             (handler.INDEX, handler.ERROR_CODE,)
@@ -894,6 +987,16 @@ class SeBa(se.StellarEvolution):
             (handler.INDEX,),
             (units.RSun, handler.ERROR_CODE,)
         )
+        handler.add_method(
+            "get_binary_type",
+            (handler.INDEX,),
+            (handler.NO_UNIT, handler.ERROR_CODE,)
+        )
+        handler.add_method(
+            "get_mass_transfer_type",
+            (handler.INDEX,),
+            (handler.NO_UNIT, handler.ERROR_CODE,)
+        )        
         handler.add_method(
             "get_core_mass",
             (handler.INDEX,),
@@ -1074,7 +1177,8 @@ class SeBa(se.StellarEvolution):
     def define_particle_sets(self, handler):
 
         handler.define_set('particles', 'index_of_the_star')
-        handler.set_new('particles', 'new_particle')
+#        handler.set_new('particles', 'new_particle')
+        handler.set_new('particles', 'new_advanced_particle')        
         handler.set_delete('particles', 'delete_star')
         
         
@@ -1129,17 +1233,20 @@ class SeBa(se.StellarEvolution):
         handler.add_getter('binaries', 'get_time_step', names = ('time_step',))
         handler.add_getter('binaries', 'get_age', names = ('age',))
         handler.add_getter("binaries", 'get_children_of_binary')
+        handler.add_getter('binaries', 'get_binary_type', names = ('binary_type',))
+        handler.add_getter('binaries', 'get_mass_transfer_type', names = ('mass_transfer_type',))
 
         handler.add_method('binaries', 'merge_the_binary')
         
 
-        
     def define_state(self, handler):
         se.StellarEvolution.define_state(self, handler)
         
         self.stopping_conditions.define_state(handler)
         
-
+        handler.add_method('EDIT', 'new_advanced_particle')
+        handler.add_method('UPDATE', 'new_advanced_particle')
+        handler.add_transition('RUN', 'UPDATE', 'new_advanced_particle', False)
 
 
 Seba = SeBa

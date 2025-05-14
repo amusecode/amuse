@@ -13,7 +13,7 @@ def stellar_model(N, M, t=0.0|units.Myr):
     se_star = stellar_evolution.particles.add_particle(star)
     print("Evolving", star.mass, "to t=", t.in_(units.Myr))
     stellar_evolution.evolve_model(t)
-    print("Stellar type:", stellar_evolution.particles.stellar_type.number)
+    print("Stellar type:", se_star.stellar_type)
     print("Creating SPH particles from the (1D) stellar evolution model")
     sph_particles = convert_stellar_model_to_SPH(se_star, N).gas_particles
     stellar_evolution.stop()

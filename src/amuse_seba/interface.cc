@@ -6,12 +6,15 @@
 // AMUSE STOPPING CONDITIONS SUPPORT
 #include <stopcond.h>
 
+// Get std::xxx to match SeBa commit 382b590
+// #include <stdinc.h>
+
 #include <map>
 
 static node * seba_root = 0;
 static node * seba_insertion_point = 0;
 static int next_seba_id = 1;
-static map<int, nodeptr> mapping_from_id_to_node;
+static std::map<int, nodeptr> mapping_from_id_to_node;
 static double seba_metallicity = 0.02;
 static double seba_time = 0.0;
 static stellar_type start_type = Main_Sequence;
@@ -39,8 +42,8 @@ local void addbinary(
 
             id = bi->get_index();
 
-            // cerr << "Adding binary to "<< id << " at time = "
-            //      << stellar_time << endl;
+            cerr << "Adding binary to "<< id << " at time = "
+                 << stellar_time << endl;
 
             double_star* new_double
             = new_double_star(bi, sma, ecc, stellar_time, id, type);
@@ -50,7 +53,8 @@ local void addbinary(
             // Give the new binary the old star_story.
 
             new_double->set_star_story(old_story);
-
+	    // Assure that SeBa prints zero-age binary parameters (SPZ+FK Febr2025).
+	    new_double->dump("SeBa.data", true);
             
         }
         else {
@@ -453,8 +457,9 @@ int new_particle(int * index_of_the_star, double mass){
         new_node->set_elder_sister(seba_insertion_point);
         seba_insertion_point = new_node;
     }
-    
-    addstar(new_node, seba_time, start_type, seba_metallicity, 0, false);
+
+    addstar(new_node, seba_time, start_type, seba_metallicity, 0, false, start_type, mass, mass, 0, 0, 0);
+
     new_node->get_starbase()->set_time_offset(seba_time);
     *index_of_the_star = next_seba_id;
     
@@ -464,11 +469,48 @@ int new_particle(int * index_of_the_star, double mass){
 }
 
 
+int new_advanced_particle(int * index_of_the_star, double mass,  double relative_mass, int type_number,  double relative_age, double core_mass, double COcore_mass,  double radius){
+
+    if (relative_mass == 0) return new_particle(index_of_the_star, mass);
+    if (relative_age < 0) return -1;
+ 
+    node * new_node = new node();
+    new_node->set_label(next_seba_id);
+    new_node->set_parent(seba_root);
+    new_node->set_mass(mass);
+    mapping_from_id_to_node[next_seba_id] = new_node;
+    
+    if(seba_insertion_point == 0) {
+        seba_insertion_point = new_node;
+        seba_root->set_oldest_daughter(new_node);
+    } else {
+        seba_insertion_point->set_younger_sister(new_node);
+        new_node->set_elder_sister(seba_insertion_point);
+        seba_insertion_point = new_node;
+    }
+    
+    stellar_type seba_stellar_type = translate_int_to_stellar_type(type_number);
+
+    addstar(new_node, seba_time, seba_stellar_type, seba_metallicity, 0, false, seba_stellar_type, relative_mass, mass - core_mass, core_mass, COcore_mass, relative_age);
+    new_node->get_starbase()->set_time_offset(seba_time);
+    *index_of_the_star = next_seba_id;
+    
+    next_seba_id++;
+    
+    new_node->get_starbase()->set_relative_age(relative_age);
+    new_node->get_starbase()->set_core_mass(core_mass);
+    new_node->get_starbase()->set_COcore_mass(COcore_mass);
+    new_node->get_starbase()->set_effective_radius(radius);
+    
+    return 0;
+}
+
+
 
 
 int delete_star(int index_of_the_star){
     
-    map<int, nodeptr>::iterator i = mapping_from_id_to_node.find(index_of_the_star);
+    std::map<int, nodeptr>::iterator i = mapping_from_id_to_node.find(index_of_the_star);
     if(i == mapping_from_id_to_node.end()) {
         return -1;
     } else {
@@ -494,7 +536,7 @@ int recommit_particles(){
 
 node * get_seba_node_from_index(int index_of_the_star, int * errorcode)
 {
-    map<int, nodeptr>::iterator i = mapping_from_id_to_node.find(index_of_the_star);
+    std::map<int, nodeptr>::iterator i = mapping_from_id_to_node.find(index_of_the_star);
     if(i == mapping_from_id_to_node.end()) {
         *errorcode = -1;
         return 0;
@@ -879,6 +921,15 @@ int new_binary(
     child2->set_elder_sister(child1);
     child1->set_parent(new_node);
     child2->set_parent(new_node);
+    // We cannot access the stellar parameters from here, because the starbase class is in between.
+    // SPZ*FK Febr.2025
+    //cerr << "Set stelar id in new binary interface."<<endl;
+    //cerr << "Current interface "<< child1->get_star_id()<<"and "<< child1->get_star_id()<<endl;
+    //child2->set_star_id(1);
+    // set stellar id's
+    //child1->set_star_id(0);
+    //child2->set_star_id(1);
+    
     
     addbinary(new_node, seba_time, binary_start_type, semi_major_axis, eccentricity);
     
@@ -892,7 +943,7 @@ int new_binary(
 
 int delete_binary(int index_of_the_star){
     
-    map<int, nodeptr>::iterator i = mapping_from_id_to_node.find(index_of_the_star);
+    std::map<int, nodeptr>::iterator i = mapping_from_id_to_node.find(index_of_the_star);
     if(i == mapping_from_id_to_node.end()) {
         return -1;
     } else {
@@ -960,7 +1011,7 @@ int get_children_of_binary(
     
     *child1_index = -1;
     *child2_index = -1;
-    map<int, nodeptr>::iterator i = mapping_from_id_to_node.find(index_of_the_star);
+    std::map<int, nodeptr>::iterator i = mapping_from_id_to_node.find(index_of_the_star);
     if(i == mapping_from_id_to_node.end()) {
         return -1;
     } else {
@@ -1015,6 +1066,22 @@ int set_rotation_period(int index_of_the_star, double value){
     node * seba_node = get_seba_node_from_index(index_of_the_star, &error_code);
     if(error_code < 0) {return error_code;}
     seba_node->get_starbase()->set_rotation_period(value);
+    return error_code;
+}
+
+int get_binary_type(int index_of_the_star, double * value){
+    int error_code = 0;
+    node * seba_node = get_seba_node_from_index(index_of_the_star, &error_code);
+    if(error_code < 0) {return error_code;}
+    *value= seba_node->get_starbase()->get_bin_type();
+    return error_code;
+}
+
+int get_mass_transfer_type(int index_of_the_star, double * value){
+    int error_code = 0;
+    node * seba_node = get_seba_node_from_index(index_of_the_star, &error_code);
+    if(error_code < 0) {return error_code;}
+    *value= seba_node->get_starbase()->get_current_mass_transfer_type();
     return error_code;
 }
 

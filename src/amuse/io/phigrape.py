@@ -65,7 +65,7 @@ class Inp2Particles(object):
         """
            The regexp is grouping, therefore we add strings in the following code..
         """
-        values =  re.findall('([-+])?([0-9]+(\.[0-9]*)?|\.[0-9]+)([eE][-+]?[0-9]+)?',line)
+        values = re.findall(r'([-+])?([0-9]+(\.[0-9]*)?|\.[0-9]+)([eE][-+]?[0-9]+)?',line)
         args = ()
         n = int(values[0][1])
         m = float(values[1][1]+values[1][3])
