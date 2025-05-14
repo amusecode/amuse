@@ -257,14 +257,16 @@ install_all() {
 
     printf '\n%b\n' "${COLOR_CYAN}*** Build results ***${COLOR_END}"
 
-    if [ "${FAILED_BUILDS#*amuse-mesa-r15140}" != "${FAILED_BUILDS}" ] ; then
+    UNEXPECTED_FAILED_BUILDS=$(printf '%b' "${FAILED_BUILDS}" | grep -v mesa-r15140)
+    if [ "${UNEXPECTED_FAILED_BUILDS}" != "${FAILED_BUILDS}" ] ; then
         printf '\n%b\n' "${COLOR_RED}amuse-mesa-r15140 failed to install${COLOR_END}"
+
         printf '\nMESA r15140 failed to install because it can only be installed in\n'
         printf 'develop mode. This is expected, if unfortunate. Please use\n\n'
         printf '    ./setup develop amuse-mesa-r15140\n\n'
         printf 'to install it.\n\n'
 
-        FAILED_BUILDS="${FAILED_BUILDS#*amuse-mesa-r15140}"
+        FAILED_BUILDS="${UNEXPECTED_FAILED_BUILDS}"
     fi
 
     if [ "a${FAILED_BUILDS}" != "a" ] ; then
