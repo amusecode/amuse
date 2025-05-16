@@ -78,7 +78,7 @@ diskdf: diskdf.o diskdf5intez.o diskdensf.o splintd.o splined.o readharmfile.o \
 	fnamidden.o rcirc.o diskdens.o modstamp.o fixedhalopot.o \
 	thickdisk2.o bessj01.o erfcc.o sphericaldf_nfw.o \
 	fixedbulgepot.o sphericaldf_hernquist.o alldens.o
-	$(FC) $(FFLAGS) $(LIBS) -lstdc++ -o $@ $^   $(PGPLOTLIBS)
+	$(FC) $(FFLAGS) $(LIBS) $(GENLIBS) -o $@ $^   $(PGPLOTLIBS)
 	
 getfreqs: newfreqs.o pot.o appdiskpot.o plgndr1.o erfcen.o thickdisk2.o bessj01.o \
 	erfcc.o fixedhalopot.o\
