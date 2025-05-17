@@ -793,7 +793,7 @@ class TestMesa(TestWithMPI):
 
         print("initialize_code(), commit_parameters(), (re)commit_particles(), "
             "and cleanup_code() should be called automatically:", end=' ')
-        instance = MESA()
+        instance = Mesa()
         self.assertEqual(instance.get_name_of_current_state(), 'UNINITIALIZED')
         instance.parameters.RGB_wind_scheme = 1
         instance.parameters.reimers_wind_efficiency = 0.5
@@ -836,7 +836,7 @@ class TestMesa(TestWithMPI):
     def test17(self):
         print("MESA validation")
 
-        mesa_src_path = os.path.join(os.path.dirname(sys.modules[MESA.__module__].__file__), 'src', 'mesa')
+        mesa_src_path = os.path.join(os.path.dirname(sys.modules[Mesa.__module__].__file__), 'src', 'mesa')
         mesa_star_path = os.path.join(mesa_src_path, 'star', 'test', 'star')
 
         if not os.path.exists(mesa_star_path) or not os.access(mesa_star_path, os.X_OK):
