@@ -19,8 +19,10 @@ src/mesa: mesa_r2208.zip
 	mkdir -p src
 	unzip -q $<
 	mv mesa-r2208 src/mesa
+	cd src/mesa/utils && tar -xzf ndiff-2.00.tar.gz
 	for p in $(PATCHES) ; do patch -p1 <patches/$$p || exit 1 ; done
 	cp patches/test_jina.f src/mesa/jina/test/src/test_jina.f
+	cp patches/ndiff-configure src/mesa/utils/ndiff-2.00/configure
 
 
 # Building the code into a set of static libraries
