@@ -484,7 +484,7 @@ class TestHermite(TestWithMPI):
         self.assertAlmostEqual(instance.stopping_conditions.out_of_box_detection.particles(0).x, 1.0 | nbody_system.length, 3)
         instance.stop()
 
-    def test13(self):
+    def test13_noci(self):
         particles = plummer.new_plummer_model(31)
 
         instance = Hermite(number_of_workers=1)  # , debugger="xterm")

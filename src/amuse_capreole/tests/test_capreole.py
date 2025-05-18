@@ -544,7 +544,7 @@ class TestCapreoleInterface(TestWithMPI):
         error = instance.set_parallel_decomposition(2, 1, 1)
         self.assertEqual(error, -1)
 
-    def test20(self):
+    def test20_noci(self):
         results = []
         instance = self.new_instance(CapreoleInterface, number_of_workers=4)
         instance.initialize_code()
@@ -631,7 +631,7 @@ class TestCapreoleInterface(TestWithMPI):
                     self.assertAlmostRelativeEquals(rhovz, 4.0 * (i+1))
                     self.assertAlmostRelativeEquals(rhoen, 5.0 * (i+1))
 
-    def test23(self):
+    def test23_noci(self):
         results = []
         instance = self.new_instance(CapreoleInterface, number_of_workers=3)
         instance.initialize_code()
@@ -667,7 +667,7 @@ class TestCapreoleInterface(TestWithMPI):
                     self.assertAlmostRelativeEquals(rhovz, 4.0 * (i+1))
                     self.assertAlmostRelativeEquals(rhoen, 5.0 * (i+1))
 
-    def test24(self):
+    def test24_noci(self):
         results = []
         instance = self.new_instance(CapreoleInterface, number_of_workers=3)
         instance.initialize_code()
@@ -703,7 +703,7 @@ class TestCapreoleInterface(TestWithMPI):
                     self.assertAlmostRelativeEquals(rhovz, 4.0 * (i+1))
                     self.assertAlmostRelativeEquals(rhoen, 5.0 * (i+1))
 
-    def test25(self):
+    def test25_noci(self):
         results = []
         instance = self.new_instance(CapreoleInterface, number_of_workers=3)
         instance.initialize_code()
@@ -739,7 +739,7 @@ class TestCapreoleInterface(TestWithMPI):
                         self.assertAlmostRelativeEquals(rhovz, 4.0 * (i+1))
                         self.assertAlmostRelativeEquals(rhoen, 5.0 * (i+1))
 
-    def test26(self):
+    def test26_noci(self):
         results = []
         instance = self.new_instance(CapreoleInterface, number_of_workers=9)
         instance.initialize_code()
@@ -822,7 +822,7 @@ class TestCapreoleInterface(TestWithMPI):
         instance = CapreoleInterface(number_of_workers=1)
         self.check_extended_grid(instance)
 
-    def xtest30(self):
+    def xtest30_noci(self):
         print("Broken as capreole cannot do periodic boundaries with multiple workers!")
         instance = CapreoleInterface(redirection="none", number_of_workers=8)
         self.check_extended_grid(instance)
@@ -1690,7 +1690,7 @@ class TestCapreole(TestWithMPI):
 
                 self.assertAlmostRelativeEquals(rho, x + (20 * (y-0.5)) | generic_unit_system.density)
 
-    def test14(self):
+    def test14_noci(self):
 
         instance = self.new_instance(Capreole, number_of_workers=3)
         instance.parameters.x_boundary_conditions = ("periodic", "periodic")

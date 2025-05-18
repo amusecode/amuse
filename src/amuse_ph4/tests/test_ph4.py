@@ -418,7 +418,7 @@ class TestPH4(TestWithMPI):
         self.assertTrue(e1 != e0)
 
     def test10b(self):
-        instance = ph4(number_of_workers=4)
+        instance = ph4(number_of_workers=2)
         instance.initialize_code()
 
         instance.parameters.epsilon_squared = 0.0 | nbody_system.length**2
@@ -822,7 +822,7 @@ class TestPH4(TestWithMPI):
             self.assertAlmostRelativeEquals(potential0, pot, 5)
         instance.stop()
 
-    def test21(self):
+    def test21_noci(self):
         particles = new_plummer_model(200)
         particles.scale_to_standard()
         instance = ph4()

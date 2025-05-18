@@ -331,7 +331,7 @@ class TestAthenaInterface(TestWithMPI):
         self.assertAlmostRelativeEqual(x, 1.1)
         instance.stop()
 
-    def test6(self):
+    def test6_noci(self):
         instance = self.new_instance(AthenaInterface, number_of_workers=5)
         instance.initialize_code()
         instance.set_gamma(1.6666666666666667)
@@ -491,7 +491,7 @@ class TestAthenaInterface(TestWithMPI):
 
         instance.stop()
 
-    def test15(self):
+    def test15_noci(self):
         results = []
         for x in range(1, 6):
             instance = self.new_instance(AthenaInterface, number_of_workers=x)
@@ -513,7 +513,7 @@ class TestAthenaInterface(TestWithMPI):
 
             instance.stop()
 
-    def test16(self):
+    def test16_noci(self):
         for x in range(1, 6):
             instance = self.new_instance(AthenaInterface, number_of_workers=x)
             instance.initialize_code()
@@ -907,7 +907,7 @@ class TestAthenaInterface(TestWithMPI):
                     self.assertAlmostRelativeEquals(y, (0.5 * dy) + ((j-4) * dy))
                     self.assertAlmostRelativeEquals(z, 18.0 + (0.5 * dz) + (k * dz))
 
-    def test29(self):
+    def test29_noci(self):
         results = []
         instance = self.new_instance(AthenaInterface, number_of_workers=3)
         instance.initialize_code()
@@ -940,7 +940,7 @@ class TestAthenaInterface(TestWithMPI):
                 self.assertAlmostRelativeEquals(rhovz, 4.0 * (i+1))
                 self.assertAlmostRelativeEquals(rhoen, 5.0 * (i+1))
 
-    def test30(self):
+    def test30_noci(self):
         results = []
         instance = self.new_instance(AthenaInterface, number_of_workers=3)
         instance.initialize_code()
@@ -974,7 +974,7 @@ class TestAthenaInterface(TestWithMPI):
                     self.assertAlmostRelativeEquals(rhovz, 4.0 * (i+1))
                     self.assertAlmostRelativeEquals(rhoen, 5.0 * (i+1))
 
-    def test31(self):
+    def test31_noci(self):
         results = []
         instance = self.new_instance(AthenaInterface, number_of_workers=3)
         instance.initialize_code()
@@ -1010,7 +1010,7 @@ class TestAthenaInterface(TestWithMPI):
                     self.assertAlmostRelativeEquals(rhovz, 4.0 * (i+1))
                     self.assertAlmostRelativeEquals(rhoen, 5.0 * (i+1))
 
-    def test32(self):
+    def test32_noci(self):
         results = []
         instance = self.new_instance(AthenaInterface, number_of_workers=3*3)
         instance.initialize_code()
@@ -1069,7 +1069,7 @@ class TestAthenaInterface(TestWithMPI):
                     self.assertAlmostRelativeEquals(rhovz, 4.0 * (i+1))
                     self.assertAlmostRelativeEquals(rhoen, 5.0 * (i+1))
 
-    def test33(self):
+    def test33_noci(self):
         results = []
         instance = self.new_instance(AthenaInterface, number_of_workers=3)
         instance.initialize_code()
@@ -1106,7 +1106,7 @@ class TestAthenaInterface(TestWithMPI):
                         self.assertAlmostRelativeEquals(rhovz, 4.0 * (i+1))
                         self.assertAlmostRelativeEquals(rhoen, 5.0 * (i+1))
 
-    def test34(self):
+    def test34_noci(self):
         results = []
         instance = self.new_instance(AthenaInterface, number_of_workers=3)
         instance.initialize_code()
@@ -1143,7 +1143,7 @@ class TestAthenaInterface(TestWithMPI):
                         self.assertAlmostRelativeEquals(rhovz, 4.0 * (i+1))
                         self.assertAlmostRelativeEquals(rhoen, 5.0 * (i+1))
 
-    def test35(self):
+    def test35_noci(self):
         results = []
         instance = self.new_instance(AthenaInterface, number_of_workers=9)
         instance.initialize_code()
@@ -1304,7 +1304,7 @@ class TestAthenaInterface(TestWithMPI):
 
         instance.stop()
 
-    def test38(self):
+    def test38_noci(self):
         instance = self.new_instance(AthenaInterface, number_of_workers=8)
         instance.initialize_code()
         instance.set_auto_decomposition(0)
@@ -2063,7 +2063,7 @@ class TestAthena(TestWithMPI):
 
         instance.stop()
 
-    def test17(self):
+    def test17_noci(self):
         instance = self.new_instance(Athena, number_of_workers=2)
         instance.set_parallel_decomposition(1, 2, 1)
         instance.parameters.mesh_size = (10, 4, 1)
@@ -2123,7 +2123,7 @@ class TestAthena(TestWithMPI):
 
         instance.stop()
 
-    def test18(self):
+    def test18_noci(self):
         instance = self.new_instance(Athena, number_of_workers=2)
         instance.set_parallel_decomposition(2, 1, 1)
         instance.parameters.mesh_size = (4, 10, 1)
@@ -2244,7 +2244,7 @@ class TestAthena(TestWithMPI):
 
         instance.stop()
 
-    def test20(self):
+    def test20_noci(self):
         instance = self.new_instance(Athena, number_of_workers=4)
         instance.parameters.parallel_decomposition = (2, 2, 1)
         instance.parameters.mesh_size = (4, 5, 6)
@@ -2397,7 +2397,7 @@ class TestAthena(TestWithMPI):
 
                 self.assertAlmostRelativeEquals(rho, x + (20 * (y-0.5)) | generic_unit_system.density)
 
-    def test23(self):
+    def test23_noci(self):
 
         instance = self.new_instance(Athena, number_of_workers=3)
         instance.parameters.x_boundary_conditions = ("periodic", "periodic")

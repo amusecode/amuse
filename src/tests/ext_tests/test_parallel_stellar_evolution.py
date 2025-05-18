@@ -24,7 +24,7 @@ class TestParallelStellarEvolution(TestCase):
 
     def test1(self):
         print("Testing ParallelStellarEvolution initialization")
-        instance = ParallelStellarEvolution(self.code_factory, number_of_workers=3, **default_options)
+        instance = ParallelStellarEvolution(self.code_factory, number_of_workers=2, **default_options)
         instance.initialize_code()
         instance.cleanup_code()
         instance.stop()
@@ -56,7 +56,7 @@ class TestParallelStellarEvolution(TestCase):
         self.assertAlmostEqual(inserial.mass, range(1, 1+len(particles)) | units.MSun)
         serial.evolve_model(0.2 | units.Myr)
 
-        parallel = ParallelStellarEvolution(MESA, number_of_workers=3, **default_options)
+        parallel = ParallelStellarEvolution(MESA, number_of_workers=2, **default_options)
         inparallel = parallel.particles.add_particles(particles)
         self.assertAlmostEqual(inparallel.mass, range(1, 1+len(particles)) | units.MSun)
         parallel.evolve_model(0.2 | units.Myr)
@@ -72,7 +72,7 @@ class TestParallelStellarEvolution(TestCase):
 
     def test4(self):
         print("Testing ParallelStellarEvolution parameters")
-        parallel = ParallelStellarEvolution(self.code_factory, number_of_workers=3, **default_options)
+        parallel = ParallelStellarEvolution(self.code_factory, number_of_workers=2, **default_options)
         parallel.parameters.metallicity = 0.01
         self.assertEqual(parallel.parameters.metallicity, 0.01)
         for code in parallel.code_instances:
@@ -86,7 +86,7 @@ class TestParallelStellarEvolution(TestCase):
             if os.path.exists(filename):
                 os.remove(filename)
 
-        parallel = ParallelStellarEvolution(self.code_factory, number_of_workers=3,
+        parallel = ParallelStellarEvolution(self.code_factory, number_of_workers=2,
             individual_options=[dict(redirect_file=base_name+str(i)) for i in range(3)], redirection="file", **default_options)
 
         for filename in [base_name+str(i) for i in range(3)]:

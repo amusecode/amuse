@@ -785,7 +785,7 @@ class TestASyncDistributed(TestASync):
     def check_not_in_mpiexec(cls):
         """
         The tests will fork another process, if the test run
-        is itself an mpi process, the tests may fail. 
+        is itself an mpi process, the tests may fail.
 
         For the hydra process manager the tests will fail.
         So skip the tests if we detect hydra

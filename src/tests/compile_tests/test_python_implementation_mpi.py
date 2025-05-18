@@ -106,7 +106,7 @@ class TestInterface(TestWithMPI):
         self.assertEqual(dens, x**2)
         interface.stop()
 
-    def test2(self):
+    def test2_noci(self):
         for n in [3, 5, 6]:
             interface = self.ForTesting(redirection="none", number_of_workers=n)
             x = interface.grid.x

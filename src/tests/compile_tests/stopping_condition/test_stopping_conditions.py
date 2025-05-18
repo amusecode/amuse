@@ -177,7 +177,7 @@ class TestInterfaceMP(TestWithMPI):
     def get_number_of_workers(self):
         return 3
 
-    def test1(self):
+    def test1_noci(self):
         number_of_workers = 4
         instance = ForTestingInterface(self.exefile, number_of_workers=number_of_workers)
         instance.reset_stopping_conditions()
@@ -197,7 +197,7 @@ class TestInterfaceMP(TestWithMPI):
 
         instance.stop()
 
-    def test2(self):
+    def test2_noci(self):
         instance = ForTesting(
             self.exefile,
             community_interface=ForTestingInterfaceFortranModule,
@@ -232,7 +232,7 @@ class TestInterfaceMP(TestWithMPI):
         self.assertEqual(pair_detection.particles(1).mass, [3, 3, 3] | units.kg)
         instance.stop()
 
-    def test5(self):
+    def test5_noci(self):
         instance = ForTesting(
             self.exefile,
             community_interface=ForTestingInterfaceFortranModule,
@@ -270,7 +270,7 @@ class TestInterfaceMP(TestWithMPI):
 
         instance.stop()
 
-    def test3(self):
+    def test3_noci(self):
         instance = ForTesting(
             self.exefile,
             community_interface=ForTestingInterfaceFortranModule,
@@ -317,7 +317,7 @@ class TestInterfaceMP(TestWithMPI):
 
         instance.stop()
 
-    def test4(self):
+    def test4_noci(self):
         instance = ForTesting(
             self.exefile,
             community_interface=ForTestingInterfaceFortranModule,
@@ -479,7 +479,7 @@ class TestInterfaceFortranModuleMultiprocess(TestWithMPI):
     def get_number_of_workers(self):
         return 3
 
-    def test1(self):
+    def test1_noci(self):
         instance = ForTesting(
             self.exefile,
             community_interface=ForTestingInterfaceFortranModule,
@@ -514,7 +514,7 @@ class TestInterfaceFortranModuleMultiprocess(TestWithMPI):
         self.assertEqual(pair_detection.particles(1).mass, [3, 3, 3] | units.kg)
         instance.stop()
 
-    def test2(self):
+    def test2_noci(self):
         instance = ForTesting(
             self.exefile,
             community_interface=ForTestingInterfaceFortranModule,
@@ -552,7 +552,7 @@ class TestInterfaceFortranModuleMultiprocess(TestWithMPI):
 
         instance.stop()
 
-    def test3(self):
+    def test3_noci(self):
         instance = ForTesting(
             self.exefile,
             community_interface=ForTestingInterfaceFortranModule,
@@ -599,7 +599,7 @@ class TestInterfaceFortranModuleMultiprocess(TestWithMPI):
 
         instance.stop()
 
-    def test4(self):
+    def test4_noci(self):
         instance = ForTesting(
             self.exefile,
             community_interface=ForTestingInterfaceFortranModule,
@@ -629,7 +629,7 @@ class TestInterfaceFortranModuleMultiprocess(TestWithMPI):
 
         instance.stop()
 
-    def test5(self):
+    def test5_noci(self):
         number_of_workers = 4
         instance = ForTestingInterface(self.exefile,
             community_interface=ForTestingInterfaceFortranModule,

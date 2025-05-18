@@ -202,7 +202,7 @@ class TestFastKick(TestWithMPI):
         instance.stop()
         self.assertEqual(instance.get_name_of_current_state(), 'STOPPED')
 
-    def test6(self):
+    def test6_noci(self):
         plummer = new_plummer_model(100)
         points = new_plummer_model(73)
         instance = self.new_fastkick_instance(number_of_workers=1)

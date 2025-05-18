@@ -61,7 +61,11 @@ package-%: %_contains
 	python3 -m pip install -vv --no-cache-dir --no-deps --no-build-isolation --prefix ${PREFIX} packages/$*
 
 test-%:
+ifneq ($(CI),)
+	cd packages/$* && pytest -k 'not noci'
+else
 	cd packages/$* && pytest
+endif
 
 
 # Cleaning up

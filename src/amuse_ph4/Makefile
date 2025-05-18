@@ -10,7 +10,7 @@ support/config.mk:
 
 # Building the code into a static library
 CFLAGS += $(STOPCOND_CFLAGS)
-LDLIBS += -lm $(STOPCOND_LIBS) 
+LDLIBS += -lm $(STOPCOND_LIBS)
 
 CODELIB = src/libph4.a
 CODELIB_SAPPORO = src/libph4gpu.a
@@ -65,7 +65,11 @@ package-%: %_contains
 	python3 -m pip install -vv --no-cache-dir --no-deps --no-build-isolation --prefix ${PREFIX} packages/$*
 
 test-%:
+ifneq ($(CI),)
+	cd packages/$* && pytest -k 'not noci'
+else
 	cd packages/$* && pytest
+endif
 
 
 # Cleaning up

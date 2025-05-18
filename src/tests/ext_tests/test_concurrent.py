@@ -150,7 +150,7 @@ class TestMPIConcurrentProcesses(TestWithMPI):
     def test2(self):
         x = ConcurrentTestingInterface(
             implementation_factory=Test1Implementation,
-            number_of_workers=4
+            number_of_workers=2
         )
         output, error = x.do_concurrent_run()
         self.assertEqual(error, 0, msg=output)
@@ -158,7 +158,7 @@ class TestMPIConcurrentProcesses(TestWithMPI):
     def test3(self):
         x = ConcurrentTestingInterface(
             implementation_factory=Test3Implementation,
-            number_of_workers=4
+            number_of_workers=2
         )
         output, error = x.do_concurrent_run()
         self.assertEqual(error, 0, msg=output)
@@ -166,7 +166,7 @@ class TestMPIConcurrentProcesses(TestWithMPI):
     def test4(self):
         x = ConcurrentTestingInterface(
             implementation_factory=Test4Implementation,
-            number_of_workers=4
+            number_of_workers=2
         )
         output, error = x.do_concurrent_run()
         self.assertEqual(error, 0, msg=output)

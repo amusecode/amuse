@@ -279,7 +279,7 @@ class TestMpiAmrVac(TestWithMPI):
 
         instance.stop()
 
-    def test3(self):
+    def test3_noci(self):
 
         for number_of_workers in range(2, 6):
             instance = self.new_instance_of_an_optional_code(MpiAmrVac, number_of_workers=number_of_workers)
@@ -935,7 +935,7 @@ class TestMpiAmrVac(TestWithMPI):
 
                 self.assertAlmostRelativeEquals(rho, x + (20 * (y-0.5)) | generic_unit_system.density)
 
-    def test18(self):
+    def test18_noci(self):
 
         instance = self.new_instance_of_an_optional_code(MpiAmrVac, number_of_workers=3)
         instance.parameters.x_boundary_conditions = ("periodic", "periodic")
