@@ -28,7 +28,7 @@ src/mesa: mesa_r2208.zip
 # Building the code into a set of static libraries
 DEPFLAGS += $(FORSOCKETS_CFLAGS) $(OPENMP_FFLAGS)
 
-FCFLAGS += $(DEPFLAGS)
+FCFLAGS += $(DEPFLAGS) -fstack-protector-explicit
 LDFLAGS += $(OPENMP_FCFLAGS) -Lsrc/mesa/lib
 LDLIBS += $(FORSOCKETS_LIBS)
 
