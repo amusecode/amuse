@@ -3,7 +3,7 @@
 Calculates the Pythagorean 3-body problem using different values for
 the smoothing length in the n-body code.
 """
-from __future__ import print_function
+# from __future__ import print_function
 # import numpy
 # import time
 
@@ -57,11 +57,11 @@ def run_pyth(interface, tend=100, dt=0.125, parameters=[]):
 
 
 if __name__ == "__main__":
-    codes_to_run = [('Hermite0, $\eta=0.03$', Hermite, [("dt_param", 0.03)]),
-                    ('Hermite0, $\eta=0.01$', Hermite, [("dt_param", 0.01)]),
-                    ('Hermite0, $\eta=0.003$', Hermite, [("dt_param", 0.003)]),
-                    ('Hermite0, $\eta=0.001$', Hermite, [("dt_param", 0.001)])]
-    N = (len(codes_to_run) - 1) / 2 + 1
+    codes_to_run = [(r'Hermite0, $\eta=0.03$',  Hermite, [("dt_param", 0.03)]),
+                    (r'Hermite0, $\eta=0.01$',  Hermite, [("dt_param", 0.01)]),
+                    (r'Hermite0, $\eta=0.003$', Hermite, [("dt_param", 0.003)]),
+                    (r'Hermite0, $\eta=0.001$', Hermite, [("dt_param", 0.001)])]
+    N = (len(codes_to_run) - 1) // 2 + 1
     f = pyplot.figure(figsize=(8, 4 * N))
 
     for i, (label, interface, parameters) in enumerate(codes_to_run):
