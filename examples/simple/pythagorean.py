@@ -57,8 +57,8 @@ def run_pyth(interface, tend=100, dt=0.125, parameters=[]):
 
 
 if __name__ == "__main__":
-    codes_to_run = [(r'Hermite0, $\eta=0.03$',  Hermite, [("dt_param", 0.03)]),
-                    (r'Hermite0, $\eta=0.01$',  Hermite, [("dt_param", 0.01)]),
+    codes_to_run = [(r'Hermite0, $\eta=0.030$', Hermite, [("dt_param", 0.030)]),
+                    (r'Hermite0, $\eta=0.010$', Hermite, [("dt_param", 0.010)]),
                     (r'Hermite0, $\eta=0.003$', Hermite, [("dt_param", 0.003)]),
                     (r'Hermite0, $\eta=0.001$', Hermite, [("dt_param", 0.001)])]
     N = (len(codes_to_run) - 1) // 2 + 1
