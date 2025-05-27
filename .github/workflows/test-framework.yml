@@ -1,0 +1,85 @@
+name: Test AMUSE framework
+
+on:
+  push:
+    branches:
+     - main
+  pull_request:
+    branches:
+     - main
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-latest
+          - macos-latest
+
+    defaults:
+      run:
+        shell: bash -el {0}
+
+    steps:
+    - name: Set up conda
+      uses: conda-incubator/setup-miniconda@v3
+      with:
+        auto-update-conda: true
+        channels: conda-forge
+        channel-priority: strict
+
+    - name: Show conda info
+      run: |
+        conda info
+        conda list
+
+    - name: Install dependencies
+      run: |
+        conda install c-compiler cxx-compiler fortran-compiler 'gfortran<14' python pkgconfig coreutils patch curl tar unzip gzip bzip2 xz perl bison make cmake openmpi gsl fftw gmp mpfr hdf5 netcdf4 libopenblas liblapack zlib pip wheel 'docutils>=0.6' 'mpi4py>=1.1.0' 'numpy>=1.2.2' 'h5py>=1.1.0' pytest
+
+      # - name: Configure OpenMPI
+      #      run: |
+      #        mkdir -p "$HOME/.openmpi"
+      #        echo "rmaps_base_oversubscribe = true" >>"$HOME/.openmpi/mca-params.conf"
+      #        echo "mpi_yield_when_idle = true" >>"$HOME/.openmpi/mca-params.conf"
+      #        echo "btl_tcp_if_include = lo,eth0" >>"$HOME/.openmpi/mca-params.conf"
+      #        mkdir -p "$HOME/.prte"
+      #        echo "rmaps_default_mapping_policy = :oversubscribe" >>"$HOME/.prte/mca-params.conf"
+      #        echo "prte_if_include = lo,eth0" >>"$HOME/.prte/mca-params.conf"
+
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 100
+        fetch-tags: true
+
+    - name: Build framework
+      run: |
+        ./setup install amuse-framework
+
+    - name: Test framework
+      #      env:
+      #        OMPI_MCA_rmaps_base_oversubscribe: 1
+      #        PRTE_MCA_rmaps_base_oversubscribe: 1
+      #        PRTE_MCA_rmaps_default_mapping_policy: ":oversubscribe"
+      #        OMPI_MCA_mpi_yield_when_idle: 1
+      #        OMPI_MCA_btl_tcp_if_include: lo,eth0
+      #        PRTE_MCA_btl_tcp_if_include: lo,eth0
+      #        PRTE_MCA_if_include: lo,eth0
+      #        OMPI_MCA_pmix_server_max_wait: 10
+      run: |
+        ./setup test amuse-framework
+
+    - name: Save build logs
+      run: |
+        tar czf logs-${{ matrix.os }}.tar.gz support/logs
+
+    - name: Archive build logs
+      uses: actions/upload-artifact@v4
+      with:
+        name: logs-${{ matrix.os }}.tar.gz
+        path: logs-${{ matrix.os }}.tar.gz

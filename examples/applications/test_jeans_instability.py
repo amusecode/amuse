@@ -3,7 +3,7 @@ from amuse.units import generic_unit_converter
 # from amuse.units import generic_unit_system
 from amuse.units import units
 from amuse.units import constants
-from amuse.test import amusetest
+from amuse.support.testing import amusetest
 import numpy
 
 

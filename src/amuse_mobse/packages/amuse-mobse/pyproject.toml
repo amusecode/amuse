@@ -1,0 +1,42 @@
+[project]
+name = "amuse-mobse"
+dynamic = ["version"]
+requires-python = ">=3.7"
+dependencies = [
+    "amuse-framework"
+]
+
+[build-system]
+requires = ["hatchling", "versioningit"]
+build-backend = "hatchling.build"
+
+[tool.hatch.version]
+source = "versioningit"
+
+[tool.versioningit.next-version]
+method = "smallest"
+
+[tool.versioningit.format]
+distance = "{next_version}.dev{distance}+{vcs}{rev}"
+dirty = "{base_version}+d{build_date:%Y%m%d}"
+distance-dirty = "{next_version}.dev{distance}+{vcs}{rev}.d{build_date:%Y%m%d}"
+
+[tool.hatch.build]
+skip-excluded-dirs = true
+
+[tool.hatch.build.targets.wheel]
+include = ["amuse_mobse/**/*.py"]
+exclude = [
+    "amuse_mobse/packages",
+    "amuse_mobse/support",
+    "amuse_mobse/src",
+    "amuse_mobse/tests"
+    ]
+artifacts = ["amuse_mobse/mobse_worker"]
+
+[tool.pytest.ini_options]
+pythonpath = ["amuse_mobse/tests/"]
+
+testpaths = ["amuse_mobse/tests"]
+addopts = "--import-mode=append"    # test the installed package
+

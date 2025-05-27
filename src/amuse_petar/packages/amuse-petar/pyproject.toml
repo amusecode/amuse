@@ -1,0 +1,43 @@
+[project]
+name = "amuse-petar"
+dynamic = ["version"]
+requires-python = ">=3.7"
+dependencies = [
+    "amuse-framework"
+]
+
+[build-system]
+requires = ["hatchling", "versioningit"]
+build-backend = "hatchling.build"
+
+[tool.hatch.version]
+source = "versioningit"
+
+[tool.versioningit.next-version]
+method = "smallest"
+
+[tool.versioningit.format]
+distance = "{next_version}.dev{distance}+{vcs}{rev}"
+dirty = "{base_version}+d{build_date:%Y%m%d}"
+distance-dirty = "{next_version}.dev{distance}+{vcs}{rev}.d{build_date:%Y%m%d}"
+
+[tool.hatch.build]
+skip-excluded-dirs = true
+
+[tool.hatch.build.targets.wheel]
+include = ["amuse_petar/**/*.py"]
+exclude = [
+    "amuse_petar/packages",
+    "amuse_petar/support",
+    "amuse_petar/src",
+    "amuse_petar/tests"
+    ]
+artifacts = ["amuse_petar/petar_worker"]
+
+[tool.pytest.ini_options]
+pythonpath = ["amuse_petar/tests/", "../../../tests"]
+
+testpaths = ["amuse_petar/tests"]
+
+addopts = "--import-mode=append"    # test the installed package
+

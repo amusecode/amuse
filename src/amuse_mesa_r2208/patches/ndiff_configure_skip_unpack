@@ -1,0 +1,13 @@
+diff -u -r src/mesa/install_num_only src2/mesa/install_num_only
+--- mesa/src/mesa/install_num_only	2010-03-02 02:11:41.000000000 +0100
++++ mesa/src2/mesa/install_num_only	2025-05-17 08:58:05.150214108 +0200
+@@ -26,8 +26,7 @@
+ NDIFF_FOLDER=ndiff
+ 
+ cd utils
+-tar -xzvf ndiff-2.00.tar.gz
+-check_okay
++# unpack done by outer (AMUSE) build system so we can patch it
+ 
+ mkdir $NDIFF_FOLDER
+ mkdir $NDIFF_FOLDER/bin

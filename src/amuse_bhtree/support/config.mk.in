@@ -1,0 +1,30 @@
+# Compilers
+CC = @CC@
+CXX = @CXX@
+
+MPICC = @MPICC@
+MPICXX = @MPICXX@
+
+CPU_COUNT = @CPU_COUNT@
+
+# Tools
+AR = @AR@
+RANLIB = @RANLIB@
+
+
+# General flags and libraries
+CFLAGS = @CFLAGS@
+LDFLAGS = @LDFLAGS@
+
+LIBS = @LIBS@
+
+
+# AMUSE framework libraries
+STOPCOND_CFLAGS = @STOPCOND_CFLAGS@
+STOPCOND_LIBS = @STOPCOND_LIBS@
+
+
+# External dependencies
+SAPPORO_LIGHT_CFLAGS = @SAPPORO_LIGHT_CFLAGS@
+SAPPORO_LIGHT_LIBS = @SAPPORO_LIGHT_LIBS@
+

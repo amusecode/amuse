@@ -10,7 +10,7 @@ sapporo_multi_struct sapporo_multi_data[MAXCUDADEVICES];
 double get_time() {
   struct timeval Tvalue;
   struct timezone dummy;
-  
+
   gettimeofday(&Tvalue,&dummy);
   return ((double) Tvalue.tv_sec +
           1.e-6*((double) Tvalue.tv_usec));
@@ -26,17 +26,17 @@ int sapporo::open(int cluster_id) {
     fprintf(stderr, "sapporo::open - FATAL! No CUDA device found\n");
     exit(-1);
   }
-  
+
   nj_max = 131072;
   if(cluster_id >= nCUDAdevices) {
     fprintf(stderr, "sapporo::open - FATAL! Cluster id is too high, no cuda device with given id\n");
     return -1;
   }
-  
+
   device_id = cluster_id;
   cudaSetDevice(device_id);
   allocate_cuda_memory(device_id);
-  
+
   return 0;
 }
 
@@ -82,11 +82,11 @@ int sapporo::set_j_particle(int cluster_id,
     DS  Dmass = (DS){mass, INT_AS_FLOAT(id)};
     map<int,int>::iterator iterator = mapping_from_address_j_to_index_in_update_array.find(address);
     map<int,int>::iterator end = mapping_from_address_j_to_index_in_update_array.end();
-    
+
     if(iterator != end)
     {
         //int index = (*iterator).first;
-        int index = (*iterator).second; //Jeroen 1-march-2011, 
+        int index = (*iterator).second; //Jeroen 1-march-2011,
         //printf("found index: %d for address: %d\n", index, address);
         t_j[index] = (DS2){to_DS(tj), to_DS(dtj)};
         pos_j[index] = ( (DS4){to_DS(x[0]), to_DS(x[1]), to_DS(x[2]), Dmass} );
@@ -113,15 +113,15 @@ int sapporo::set_j_particle(int cluster_id,
 
 void sapporo::calc_firsthalf(int cluster_id,
                             int nj, int ni,
-                            int id[], 
+                            int id[],
                             double xi[][3], double vi[][3],
                             double aold[][3], double j6old[][3],
-                            double phiold[3], 
+                            double phiold[3],
                             double eps2, double h2[]) {
-                                
-    
-    
-  
+
+
+
+
   for (int i = 0; i < ni; i++) {
     DS Dmass = (DS){h2[i], INT_AS_FLOAT(id[i])};
     pos_i[i] = (DS4) { to_DS(xi[i][0]),
@@ -153,7 +153,7 @@ void sapporo::calc_firsthalf(int cluster_id,
 
 int sapporo::calc_lasthalf(int cluster_id,
                           int nj, int ni,
-                          int index[], 
+                          int index[],
                           double xi[][3], double vi[][3],
                           double eps2, double h2[],
                           double acc[][3], double jerk[][3], double pot[]) {
@@ -164,16 +164,16 @@ int sapporo::calc_lasthalf(int cluster_id,
     jerk[i][0] = jerk[i][1] = jerk[i][2] = 0;
   }
   fetch_data_from_device(device_id, ni);
-  
+
   for (int i = 0; i < ni; i++) {
       float4 acci = acc_i[i];
       float4 jrki = jrk_i[i];
       pot[i]    += acci.w;
-      
+
       acc[i][0] += acci.x;
       acc[i][1] += acci.y;
       acc[i][2] += acci.z;
-      
+
       jerk[i][0] += jrki.x;
       jerk[i][1] += jrki.y;
       jerk[i][2] += jrki.z;
@@ -184,12 +184,12 @@ int sapporo::calc_lasthalf(int cluster_id,
 
 int sapporo::calc_lasthalf2(int cluster_id,
                            int nj, int ni,
-                           int index[], 
+                           int index[],
                            double xi[][3], double vi[][3],
                            double eps2, double h2[],
                            double acc[][3], double jerk[][3], double pot[],
                            int nnbindex[]) {
-  
+
 
     float ds_min[NTHREADS];
     for (int i = 0; i < ni; i++) {
@@ -224,7 +224,7 @@ int sapporo::calc_lasthalf2(int cluster_id,
 
         if (ds < ds_min[i]) {
         int nnb = (int)(jrki.w);
-        nnbindex[i] = nnb; 
+        nnbindex[i] = nnb;
         ds_min[i] = ds;
     }
   }
@@ -240,7 +240,7 @@ int sapporo::read_ngb_list(int cluster_id) {
             overflow = true;
         }
     }
-    
+
 
     return overflow;
 }
@@ -256,7 +256,7 @@ int sapporo::get_ngb_list(int cluster_id,
                 ipipe, device.ni);
         exit(-1);
     }
-    
+
     bool overflow = false;
     nblen = 0;
     int offset = device_id*NGB_PP*n_pipes + NGB_PP*ipipe;

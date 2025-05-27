@@ -15,7 +15,7 @@ Contents:
    tutorial/index
    interactive_tutorial/index
    reference/index
-   design/index
+   developing/index
    
 .. htmlonly::
    - `Examples <examples/index.html>`_

@@ -17,20 +17,20 @@ In this tutorial we will create an interface to a code.
 
 Work directory
 ~~~~~~~~~~~~~~
-We start by making a directory for our code. This directory should
-be a subdirectory of the "src/amuse/community" directory. It also will be
-a python package and we need to create the file "__init__.py" in 
-this directory. So, let's open a shell and go to the AMUSE 
-root directory. To create the code directory we then do:
+we start by making a directory for our code. this directory should
+be a subdirectory of the "src/" directory named "amuse_<code>". it also
+will be a python package and we need to create the file "__init__.py" in 
+this directory. so, let's open a shell and go to the amuse 
+root directory. to create the code directory we then do:
 
 .. code-block:: bash
     
-    >> cd src/amuse/community
-    >> mkdir mycode
-    >> cd mycode
+    >> cd src/
+    >> mkdir amuse_mycode
+    >> cd amuse_mycode
     >> touch __init__.py
     >> pwd
-    ../src/amuse/community/mycode
+    ../src/amuse_mycode
     >> ls
     __init__.py
     

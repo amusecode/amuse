@@ -1,0 +1,54 @@
+[project]
+name = "amuse-framework"
+dynamic = ["version"]
+requires-python = ">=3.7"
+dependencies = [
+    # the conda-equivalents of these are in ./setup, so update there as well
+    "docutils>=0.6",
+    "mpi4py>=1.1.0",
+    "numpy>=1.2.2",
+    "h5py>=1.1.0"
+]
+
+[project.optional-dependencies]
+MPI = ["mpi4py>=1.1.0"]
+
+[project.scripts]
+amusifier = "amuse.rfi.gencode:amusifier"
+
+[build-system]
+requires = ["hatchling", "versioningit"]
+build-backend = "hatchling.build"
+
+[tool.hatch.version]
+source = "versioningit"
+
+# This configuration matches what setuptools_scm did before
+[tool.versioningit.next-version]
+method = "smallest"
+
+[tool.versioningit.format]
+distance = "{next_version}.dev{distance}+{vcs}{rev}"
+dirty = "{base_version}+d{build_date:%Y%m%d}"
+distance-dirty = "{next_version}.dev{distance}+{vcs}{rev}.d{build_date:%Y%m%d}"
+
+[tool.versioningit.write]
+file = "amuse/_version.py"
+
+[tool.hatch.build]
+skip-excluded-dirs = true
+
+[tool.hatch.build.targets.wheel]
+include = [
+        "amuse/**/*.py", "amuse/rfi/tools/*.template",
+        "amuse/rfi/tools/dir_templates/*", "amuse/ext/bbr_color.txt"]
+
+artifacts = ["amuse/_version.py"]
+
+[tool.hatch.build.targets.wheel.force-include]
+"amuse/rfi/tools/dir_templates/support_shared_m4" = "amuse/rfi/tools/dir_templates/support_shared_m4"
+
+[tool.pytest.ini_options]
+pythonpath = ["tests/"]
+testpaths = ["tests/"]
+

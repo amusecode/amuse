@@ -20,9 +20,9 @@ def new_halogen_model(number_of_particles, convert_nbody = None, do_scale = Fals
     :argument number_of_particles: Number of particles to generate in the model
     :argument convert_nbody:  When given will convert the resulting set to SI units
     :argument do_scale: scale the result to exact nbody units (M=1, K=0.25, U=-0.5)
-    :argument alpha: alpha parameter in density profile (see amuse/community/halogen/src/doc for details)
-    :argument beta:  beta parameter in density profile (see amuse/community/halogen/src/doc for details)
-    :argument gamma: gamma parameter in density profile (see amuse/community/halogen/src/doc for details)
+    :argument alpha: alpha parameter in density profile (see amuse_halogen/src/doc for details)
+    :argument beta:  beta parameter in density profile (see amuse_halogen/src/doc for details)
+    :argument gamma: gamma parameter in density profile (see amuse_halogen/src/doc for details)
     """
     instance = Halogen(unit_converter=convert_nbody, redirection=redirection)
     instance.parameters.number_of_particles = number_of_particles

@@ -1,40 +1,50 @@
-ifeq ($(origin AMUSE_DIR), undefined)
-  AMUSE_DIR := $(shell amusifier --get-amuse-dir)
-endif
--include $(AMUSE_DIR)/config.mk
+.PHONY: Makefile support/shared/lib-configure.mk
+include support/shared/lib-configure.mk
 
-MPICC ?= mpicc
 
-LIBNAME = libstopcond.a
-LIBNAMEMPI = libstopcondmpi.a
+HEADERS = stopcond.h stopcond.inc stoppingconditions.mod
+DYNAMIC_LIB = libstopcond.so
+PKG_CONFIG_FILE = stopcond.pc
 
-OBJS = stopcond.o
-OBJSMPI = stopcond.mo
-ifeq ($(FC_ISO_C_AVAILABLE), yes)
-OBJS += stopcondf_isoc.o
-OBJSMPI += stopcondf_isoc.o
-endif
+DYNAMIC_LIB_MPI = libstopcondmpi.so
+PKG_CONFIG_FILE_MPI = stopcondmpi.pc
 
-all:$(LIBNAME) $(LIBNAMEMPI)
+CFLAGS_MPI += -DMPILIB
+FCFLAGS_MPI += -DMPILIB
 
-CFLAGS += -O2
+OBJS = stopcond.o stoppingconditions.o
+OBJS_MPI = stopcond.mo stoppingconditions.mo
 
-$(LIBNAME): $(OBJS)
-	ar -r  $(LIBNAME) $^
-	ranlib $(LIBNAME)
-	
-$(LIBNAMEMPI): $(OBJSMPI)
-	ar -r  $(LIBNAMEMPI) $^
-	ranlib $(LIBNAMEMPI)
 
-%.mo: %.c
-	$(MPICC) $(CFLAGS) -DMPILIB  -c -o $@ $<
+# Define the pkg-config file
+define PKG_CONFIG_CONTENTS :=
+prefix=$(PREFIX)
+includedir=$${prefix}/include
+libdir=$${prefix}/lib
 
-%.o: %.c
-	$(CC) $(CFLAGS) -c -o $@ $<
-	
-%.o: %.F90
-	$(FC) $(FCFLAGS) -c -o $@ $<
+Name: stopcond
+Description: The stopping conditions library included with AMUSE
+Version: $(AMUSE_VERSION)
+Cflags: -I$${includedir}
+Libs: -L$${libdir} -lstopcond
 
-clean:
-	rm -Rf *.o *.lo *.a *.mo *.mod
+endef
+
+
+define PKG_CONFIG_CONTENTS_MPI :=
+prefix=$(PREFIX)
+includedir=$${prefix}/include
+libdir=$${prefix}/lib
+
+Name: stopcondmpi
+Description: The stopping conditions library included with AMUSE, MPI version
+Version: $(AMUSE_VERSION)
+Cflags: -I$${includedir}
+Libs: -L$${libdir} -lstopcondmpi
+
+endef
+
+
+.PHONY: support/shared/lib-targets.mk
+include support/shared/lib-targets.mk
+

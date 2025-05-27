@@ -1050,6 +1050,8 @@ class pow_unit(derived_unit):
     """
     def __init__(self, power, unit):
         self.power = power
+        if int(power) == power:
+            self.power = int(power)
         self.local_unit = unit
 
     def __str__(self):

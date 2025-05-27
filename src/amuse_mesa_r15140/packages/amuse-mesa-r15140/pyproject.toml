@@ -1,0 +1,43 @@
+[project]
+name = "amuse-mesa-r15140"
+dynamic = ["version"]
+requires-python = ">=3.7"
+dependencies = [
+    "amuse-framework"
+]
+
+[build-system]
+requires = ["hatchling", "versioningit"]
+build-backend = "hatchling.build"
+
+[tool.hatch.version]
+source = "versioningit"
+
+[tool.versioningit.next-version]
+method = "smallest"
+
+[tool.versioningit.format]
+distance = "{next_version}.dev{distance}+{vcs}{rev}"
+dirty = "{base_version}+d{build_date:%Y%m%d}"
+distance-dirty = "{next_version}.dev{distance}+{vcs}{rev}.d{build_date:%Y%m%d}"
+
+[tool.hatch.build]
+skip-excluded-dirs = true
+
+[tool.hatch.build.targets.wheel]
+include = ["amuse_mesa_r15140/**/*.py"]
+exclude = [
+    "amuse_mesa_r15140/packages",
+    "amuse_mesa_r15140/support",
+    "amuse_mesa_r15140/src",
+    "amuse_mesa_r15140/tests"
+    ]
+artifacts = ["amuse_mesa_r15140/mesa_r15140_worker"]
+
+[tool.pytest.ini_options]
+pythonpath = ["../../../../../", "amuse/community/mesa_r15140/tests/"]
+
+testpaths = ["amuse_mesa_r15140/tests"]
+
+addopts = "--import-mode=append"    # test the installed package
+

@@ -1,31 +1,29 @@
-ifeq ($(origin AMUSE_DIR), undefined)
-  AMUSE_DIR := $(shell amusifier --get-amuse-dir)
-endif
--include $(AMUSE_DIR)/config.mk
+.PHONY: Makefile support/shared/lib-configure.mk
+include support/shared/lib-configure.mk
 
-MPICC ?= mpicc
 
-LIBNAME = libamuse_mpi.a
+HEADERS_MPI = amuse_mpi.h
+DYNAMIC_LIB_MPI = libamuse_mpi.so
+PKG_CONFIG_FILE_MPI = amuse_mpi.pc
 
-OBJS = amuse_mpi.o
-#ifeq ($(FC_ISO_C_AVAILABLE), yes)
-#OBJS += stopcondf_isoc.o
-#OBJSMPI += stopcondf_isoc.o
-#endif
+CFLAGS += -std=c99
 
-all:$(LIBNAME)
+OBJS_MPI = amuse_mpi.mo
 
-CFLAGS += -fPIC
+define PKG_CONFIG_CONTENTS_MPI :=
+prefix=$(PREFIX)
+includedir=$${prefix}/include
+libdir=$${prefix}/lib
 
-$(LIBNAME): $(OBJS)
-	ar -r  $(LIBNAME) $^
-	ranlib $(LIBNAME)
-	
-%.o: %.c
-	$(MPICC) $(CFLAGS) -c -o $@ $<
-	
-%.o: %.F90
-	$(MPIFC) $(FCFLAGS) -c -o $@ $<
+Name: amuse_mpi
+Description: The amuse_mpi library
+Version: $(AMUSE_VERSION)
+Cflags: -I$${includedir}
+Libs: -L$${libdir} -lamuse_mpi
 
-clean:
-	rm -Rf *.o *.a *.mod
+endef
+
+
+.PHONY: support/shared/lib-targets.mk
+include support/shared/lib-targets.mk
+

@@ -1,0 +1,15 @@
+diff -ru mocassin.orig/src/mocassin/source/photon_mod.f90 mocassin/src/mocassin/source/photon_mod.f90
+--- mocassin.orig/src/mocassin/source/photon_mod.f90	2024-10-22 11:26:27.005777064 +0200
++++ mocassin/src/mocassin/source/photon_mod.f90	2024-10-22 11:29:34.723714586 +0200
+@@ -29,9 +29,9 @@
+         integer, intent(in)            :: n           ! number of energy packets 
+         integer, intent(in)            :: iStar       ! central star index 
+ 
+-        integer, intent(inout), optional &
++        integer, intent(in), optional &
+              & :: gpLoc                               ! local grid (only used for extra diffuse sources)
+-        integer, intent(inout), optional &
++        integer, intent(in), optional &
+              & :: cellLoc(3)                          ! local cell (only used for extra diffuse sources)
+        
+         type(plot_type), intent(inout), optional &
