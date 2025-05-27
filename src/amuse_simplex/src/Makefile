@@ -5,8 +5,6 @@ use_healpix = yes
 
 PLUGINS = ./plugins
 KEYVALUE_PATH = $(PLUGINS)/keyValue
-HEALPIX_PATH = $(PLUGINS)/HEALPix/
-QHULL_PATH = $(PLUGINS)/qhull-2012.1/
 
 HDF5_PLUGIN = $(PLUGINS)/hdf5
 
@@ -32,8 +30,8 @@ CXXCFLAGS := $(CXXCFLAGS_NO_C) -c
 export CXXCFLAGS
 
 MACRODEFS = -DH5_USE_16_API
-MYLIBS = -L$(QHULL_PATH)/lib -lqhull $(GSL_LIBS)  $(HDF5_LIBS)
-MYINCLUDE = -I$(KEYVALUE_PATH) -I$(QHULL_PATH)/src/libqhull $(HDF5_PLUGIN_FLAGS) $(HDF5_FLAGS) \
+MYLIBS = -lqhull $(GSL_LIBS)  $(HDF5_LIBS)
+MYINCLUDE = -I$(KEYVALUE_PATH) $(HDF5_PLUGIN_FLAGS) $(HDF5_FLAGS) \
             -I$(PLUGINS)/octree -I$(PLUGINS)/hilbert -I$(SRC) \
             -I$(PLUGINS)/unit_sphere_tess/include $(GSL_FLAGS)
 ifeq ($(use_parallel_hdf5),yes)
@@ -45,8 +43,7 @@ endif
 
 ifeq ($(use_healpix),yes)
   MACRODEFS += -DHEAL_PIX
-  MYINCLUDE += -I$(HEALPIX_PATH)/include
-  MYLIBS += -L$(HEALPIX_PATH)/lib  -lhealpix_cxx
+  MYLIBS += -lhealpix_cxx
 endif
 
 
@@ -54,25 +51,18 @@ OBJS += $(OBJ)SimpleX.o  $(OBJ)Structs.o $(OBJ)Common.o $(OBJ)rates.o	 \
         $(OBJ)keyValue.o $(OBJ)hilbert.o $(OBJ)tree_structures.o $(OBJ)Main.o
 
 
-all: HEALPix QHull SimpleX
+all: SimpleX
 
-amuse: HEALPix QHull SimpleX amuse_interface
+amuse: SimpleX amuse_interface
 
 obj:
 	mkdir obj
 
-HEALPix:
-	@cd $(HEALPIX_PATH)/src ; \
-	make all
-
-QHull:
-	make -C $(QHULL_PATH) all
-
-SimpleX: HEALPix $(OBJS)
+SimpleX: $(OBJS)
 	$(MPICXX) $(OBJS) -o $(BIN)SimpleX $(CXXCFLAGS_NO_C) -lm $(MYLIBS)
 
 $(OBJ)keyValue.o: $(KEYVALUE_PATH)/configfile.cpp $(KEYVALUE_PATH)/configfile.h
-	$(MPICXX) -o$(OBJ)keyValue.o -c $(KEYVALUE_PATH)/configfile.cpp $(CXXCFLAGS) 
+	$(MPICXX) -o$(OBJ)keyValue.o -c $(KEYVALUE_PATH)/configfile.cpp $(CXXCFLAGS)
 
 $(OBJ)tree_structures.o: $(PLUGINS)/octree/tree_structures.cpp $(PLUGINS)/octree/tree_structures.h $(SRC)Structs.h
 	$(MPICXX) -o$(OBJ)tree_structures.o $(MACRODEFS) -c $(PLUGINS)/octree/tree_structures.cpp $(CXXCFLAGS) $(MYINCLUDE)
@@ -90,7 +80,7 @@ $(OBJ)rates.o: $(SRC)rates.h $(SRC)rates.cpp
 	$(MPICXX) -o$(OBJ)rates.o -c $(SRC)rates.cpp $(CXXCFLAGS)
 
 $(OBJ)SimpleX.o: $(SRC)SimpleX.cpp $(SRC)SimpleX.h $(SRC)Structs.h $(SRC)Common.h $(SRC)rates.h
-	$(MPICXX) -o$(OBJ)SimpleX.o $(MYINCLUDE) $(MACRODEFS) -c $(SRC)SimpleX.cpp $(CXXCFLAGS) 
+	$(MPICXX) -o$(OBJ)SimpleX.o $(MYINCLUDE) $(MACRODEFS) -c $(SRC)SimpleX.cpp $(CXXCFLAGS)
 
 $(OBJ)Main.o: $(SRC)Main.cpp $(SRC)Main.h $(SRC)SimpleX.h $(SRC)Common.h
 	$(MPICXX) -o$(OBJ)Main.o $(MYINCLUDE) -c $(SRC)Main.cpp $(CXXCFLAGS) $(MACRODEFS)
@@ -101,8 +91,8 @@ $(OBJ)h5w_parallel.o: $(HDF5_PLUGIN)/h5w_parallel.cpp $(HDF5_PLUGIN)/h5w_paralle
 $(OBJ)h5w_serial.o: $(HDF5_PLUGIN)/h5w_serial.cpp $(HDF5_PLUGIN)/h5w_serial.h $(HDF5_PLUGIN)/array_class.h
 	$(MPICXX) -o$(OBJ)h5w_serial.o -c $(HDF5_PLUGIN)/h5w_serial.cpp $(CXXCFLAGS) $(MACRODEFS) $(HDF5_FLAGS) $(HDF5_PLUGIN_FLAGS)
 
-amuse_interface: $(OBJ)amuse_interface.o 
-amuse_interface_gl: $(OBJ)amuse_interface_gl.o 
+amuse_interface: $(OBJ)amuse_interface.o
+amuse_interface_gl: $(OBJ)amuse_interface_gl.o
 
 $(OBJ)amuse_interface.o: $(SRC)amuse_interface.cpp $(SRC)amuse_interface.h $(SRC)SimpleX.cpp $(SRC)SimpleX.h $(SRC)Structs.h $(SRC)Common.h $(PLUGINS)/octree/tree_structures.cpp
 	$(MPICXX) -o$(OBJ)amuse_interface.o $(MYINCLUDE) $(MACRODEFS) -c $(SRC)amuse_interface.cpp $(CXXCFLAGS)
@@ -114,9 +104,5 @@ clean:
 	rm -rf $(OBJ)*.o $(BIN)SimpleX $(BIN)SimpleX.exe
 
 veryclean: clean
-	@cd $(HEALPIX_PATH)/src ; \
-	make clean
-	@cd  $(QHULL_PATH) ; \
-	make clean
 
-distclean: clean veryclean
+distclean: clean

@@ -1,7 +1,7 @@
 /*************************************************************************
 
 description:
-This file contains the class that can do the actual radiative transport, 
+This file contains the class that can do the actual radiative transport,
 including routines for grid calculation, physics and the actual transport
 
 Copyright Jan-Pieter Paardekooper and Chael Kruip October 2011
@@ -33,7 +33,7 @@ along with SimpleX.  If not, see <http://www.gnu.org/licenses/>.
 #include "configfile.h"   //keyvalue input file
 
 #ifdef HEAL_PIX
-  #include "healpix_base.h" //healpix header
+  #include "healpix_cxx/healpix_base.h" //healpix header
 #endif
 
 
@@ -54,14 +54,14 @@ extern "C"
 #endif
 #include <stdio.h>
 #include <stdlib.h>
-#include <libqhull.h>
-#include <mem.h>
-#include <qset.h>
-#include <geom.h>
-#include <merge.h>
-#include <poly.h>
-#include <io.h>
-#include <stat.h>
+#include <libqhull/libqhull.h>
+#include <libqhull/mem.h>
+#include <libqhull/qset.h>
+#include <libqhull/geom.h>
+#include <libqhull/merge.h>
+#include <libqhull/poly.h>
+#include <libqhull/io.h>
+#include <libqhull/stat.h>
 #if defined(__cplusplus)
 }
 #endif
@@ -103,20 +103,20 @@ class SimpleX{
     //! Create orientations and mappings from correct header file
     void set_direction_bins();
 
-    //! Create a simple homogeneous point distribution 
-    
+    //! Create a simple homogeneous point distribution
+
     //! Points are placed using the gsl randoom number generator
     void poisson_square();
 
     //! Read in hdf5 file with site information
     void read_vertex_list();
-  
+
     //! Compute the largest index of all the vertices
     unsigned long long int computeMaxId();
-    
+
     //! Create boundary around computational domain
 
-    //! Width of the boundary is variable borderBox. 
+    //! Width of the boundary is variable borderBox.
     //! Number of points in the boundary is variable borderSites.
     void create_boundary();
 
@@ -129,10 +129,10 @@ class SimpleX{
 
     //! Decompose the domain
 
-    //! Count the number of sites contained in one subbox and add those until 
+    //! Count the number of sites contained in one subbox and add those until
     //! number of points is approximately equal per processor
     void decompose_domain();
-    
+
     //! Assign the correct process to vertices
     void assign_process();
 
@@ -158,9 +158,9 @@ class SimpleX{
     //! Give each site an id corresponding to place in local sites vector
     void assign_site_ids();
 
-    //! Determine which sites use ballistic transport and which sites 
+    //! Determine which sites use ballistic transport and which sites
     //! should use direction conserving transport at the start of the
-    //! simulation. 
+    //! simulation.
     void initiate_ballistic_sites();
 
     //! Shuffle list of sites
@@ -174,14 +174,14 @@ class SimpleX{
 
     //! Compute properties of the sites from the triangulation
 
-    //! Important properties like the neighbours, the volumes and 
+    //! Important properties like the neighbours, the volumes and
     //! the most straight paths are computed
     void compute_site_properties();
 
     //! Compute the neighbours of vertex
 
     //! Generate the neighbour vectors for each vertex from the simplex vector
-    //! Care should be taken so that no vertex is put twice in the neighbour list. 
+    //! Care should be taken so that no vertex is put twice in the neighbour list.
     //! Also get rid of vertices in the sub box boundary that are not connected to a site
     //! in the computational domain
     void compute_neighbours();
@@ -202,7 +202,7 @@ class SimpleX{
     //! Identify the place of every ballistic site in neighbour array
     //! of neighbouring site
     void match_neighbours();
- 
+
     //! Compute the solid angles into which the intensity is distributed
     void compute_solid_angles( const bool& rotate );
 
@@ -221,7 +221,7 @@ class SimpleX{
 
     //================ Grid Update Routines ============================//
 
-    //! Rotate the solid angles of the unit sphere 
+    //! Rotate the solid angles of the unit sphere
     //! to avoid preferential directions
     void rotate_solid_angles();
 
@@ -257,7 +257,7 @@ class SimpleX{
 
 
     //================ Send Routines ===================================//
-   
+
 
     //! Send vertices to processors
     void send_vertices();
@@ -265,15 +265,15 @@ class SimpleX{
     //! Send the domain decomposition to all procs
     void send_dom_dec();
 
-    //! Fill the list of indices of sites that contain information to be send 
+    //! Fill the list of indices of sites that contain information to be send
     //! to other procs
     void fill_send_list();
 
     //! Give every vertex its correct process (needed for vertices in boundary between procs)
     void send_site_properties();
 
-    //! Give every ballistic site its correct neighbour information 
-    
+    //! Give every ballistic site its correct neighbour information
+
     //! This is only needed for ballistic sites in boundary between procs, and is necessary because
     //! the order of the neighbours in the neighbour vector is not the same among procs.
     void send_neighbour_properties();
@@ -311,7 +311,7 @@ class SimpleX{
     //! Read metal line cooling data and initialize vectors
     void read_metals();
 
-    //! set homogeneous number density. 
+    //! set homogeneous number density.
 
     //! Use only in combination with Poisson_Square()
     void set_homogeneous_number_density( const float& nH );
@@ -337,9 +337,9 @@ class SimpleX{
     //! Return mean optical depth of total grid
     double output_optical_depth();
 
-    //! output relevant physical parameters to screen 
+    //! output relevant physical parameters to screen
     void parameter_output( const unsigned int& run );
-    
+
     //! Add more neighbours to vertices that have a flux, by adding the neighbours
     //! of neighbours.
     void make_source_isotropic();
@@ -366,7 +366,7 @@ class SimpleX{
     double update_temperature( Site& site, const vector<double>& N_ion, const double& t_end );
 
  //================= Radiative Transfer Functions ======================//
-    
+
     //! Solve the rate equation to determine ionisations and recombinations
     vector<double> solve_rate_equation( Site& site );
 
@@ -386,11 +386,11 @@ class SimpleX{
 
 
     //! Call the output routines
-    void generate_output( const unsigned int& run );    
+    void generate_output( const unsigned int& run );
 
     //! Write hdf5 output file
     void write_hdf5_output(char* name, const unsigned int& run);
-    
+
     //! calculate position of the I-Front for source in centre
     double calc_IFront( const unsigned int& run );
 
@@ -399,16 +399,16 @@ class SimpleX{
 
 
     //================ Generic Functions ==============================//
-   
+
     //! clear all temporary structures for the next run
     void clear_temporary();
-    
+
     //! Function to give diagnostic output about total number of photons in simulation
     double count_photons();
 
     //! return number of runs
     const unsigned int& get_numRuns() const{ return numRuns; }
-  
+
     //! Return number of outputs
     const unsigned int& get_numOutputs() const{ return numOutputs; }
 
@@ -456,11 +456,11 @@ class SimpleX{
     vector< float > temp_clumping_list;
     //! Temporary list of metallicity
     vector<float> temp_metallicity_list;
-    
+
     //! Cross section of hydrogen
     vector<double> cross_H;
     //! The photon excess energy used to heat the gas
-    vector<double> photon_excess_energy;  
+    vector<double> photon_excess_energy;
     //! The elemental abundances of metals (and Helium)
     vector<double> abundances;
     //! Vector of cooling curves
@@ -469,8 +469,8 @@ class SimpleX{
     //! Variable used by random number generator
     gsl_rng * ran;
     //! Output to logfile
-    ofstream simpleXlog; 
-    
+    ofstream simpleXlog;
+
   protected:
 
     unsigned long int numSites;            //!< Total number of sites in the simulation

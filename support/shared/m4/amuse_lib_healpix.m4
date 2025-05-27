@@ -10,27 +10,33 @@
 AC_DEFUN([AMUSE_LIB_HEALPIX_CXX], [
     amuse_lib_healpix_cxx_save_libs="$LIBS"
 
+    AC_MSG_CHECKING([for HEALPix])
+
     AC_LANG_PUSH([C++])
 
     LIBS="-lhealpix_cxx"
 
     AC_LINK_IFELSE([
         AC_LANG_PROGRAM([
-            #include <healpix_base.h>
+            #include <healpix_cxx/healpix_base.h>
         ], [
-            Healpix_Base hb();
+            Healpix_Base hb;
         ])
     ], [
         FOUND_HEALPIX_CXX="yes"
         HEALPIX_CXX_CFLAGS=""
         HEALPIX_CXX_LIBS="$LIBS"
+
+        AC_MSG_RESULT([yes])
     ],
     [
         # Not found, try pkg-config instead
         PKG_CHECK_MODULES([HEALPIX_CXX], [healpix_cxx], [
             FOUND_HEALPIX_CXX="yes"
+            AC_MSG_RESULT([yes])
         ], [
             FOUND_HEALPIX_CXX="no"
+            AC_MSG_RESULT([no])
         ])
     ])
 
