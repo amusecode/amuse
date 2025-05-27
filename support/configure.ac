@@ -84,6 +84,7 @@ else
         AMUSE_CONDA_PACKAGE(FOUND_FFTW, fftw)
         AMUSE_CONDA_PACKAGE(with_hdf5, hdf5)
         AMUSE_CONDA_PACKAGE(FOUND_NETCDF, netcdf4)
+        AMUSE_CONDA_PACKAGE(FOUND_QHULL, qhull)
 
         # Export conda list output so setup doesn't have to rerun it to detect pip and wheel
         CONDA_LIST="$amuse_conda_list"
@@ -160,6 +161,7 @@ else
             AX_FFTW()
             AX_LIB_HDF5()
             AX_LIB_NETCDF4()
+            AMUSE_LIB_QHULL()
 
             AC_LANG_POP([C])
         else
@@ -217,6 +219,7 @@ ENABLE_FEATURE_IF_EQUALS([mpfr], [FOUND_MPFR], [yes])
 ENABLE_FEATURE_IF_EQUALS([fftw], [FOUND_FFTW], [yes])
 ENABLE_FEATURE_IF_DEFINED([hdf5], [with_hdf5])
 ENABLE_FEATURE_IF_EQUALS([netcdf4], [FOUND_NETCDF], [yes])
+ENABLE_FEATURE_IF_EQUALS([qhull], [FOUND_QHULL], [yes])
 ENABLE_FEATURE_IF_EQUALS([sapporo_light], [FOUND_SAPPORO_LIGHT], [yes])
 
 AC_SUBST(GMAKE)

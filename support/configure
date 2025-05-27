@@ -712,6 +712,8 @@ GMAKE
 FOUND_SAPPORO_LIGHT
 SAPPORO_LIGHT_LIBS
 SAPPORO_LIGHT_CFLAGS
+QHULL_FLAGS
+QHULL_LIBS
 NETCDF4_FLIBS
 NETCDF4_FFLAGS
 NETCDF4_FC
@@ -4321,6 +4323,27 @@ then :
         # FOUND_NETCDF="$(AS_ECHO("$ax_conda_package_line") | tr -s ' ' | cut -f 2 -d ' ')"
 
             FOUND_NETCDF="yes"
+
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
+
+else $as_nop
+
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+
+fi
+
+
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for conda package qhull" >&5
+printf %s "checking for conda package qhull... " >&6; }
+    ax_conda_package_line="$(echo $amuse_conda_list | tr '^' '\n' | grep '^qhull ')"
+    if test "$?" = "0"
+then :
+
+        # FOUND_QHULL="$(AS_ECHO("$ax_conda_package_line") | tr -s ' ' | cut -f 2 -d ' ')"
+
+            FOUND_QHULL="yes"
 
         { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 printf "%s\n" "yes" >&6; }
@@ -14351,6 +14374,100 @@ printf "%s\n" "#define HAVE_NETCDF4 1" >>confdefs.h
 fi
 
 
+    amuse_lib_qhull_save_libs="$LIBS"
+
+    LIBS=""
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for library containing qh_freeqhull" >&5
+printf %s "checking for library containing qh_freeqhull... " >&6; }
+if test ${ac_cv_search_qh_freeqhull+y}
+then :
+  printf %s "(cached) " >&6
+else $as_nop
+  ac_func_search_save_LIBS=$LIBS
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+char qh_freeqhull ();
+#ifdef F77_DUMMY_MAIN
+
+#  ifdef __cplusplus
+     extern "C"
+#  endif
+   int F77_DUMMY_MAIN() { return 1; }
+
+#endif
+int
+main (void)
+{
+return qh_freeqhull ();
+  ;
+  return 0;
+}
+_ACEOF
+for ac_lib in '' qhull
+do
+  if test -z "$ac_lib"; then
+    ac_res="none required"
+  else
+    ac_res=-l$ac_lib
+    LIBS="-l$ac_lib  $ac_func_search_save_LIBS"
+  fi
+  if ac_fn_c_try_link "$LINENO"
+then :
+  ac_cv_search_qh_freeqhull=$ac_res
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext
+  if test ${ac_cv_search_qh_freeqhull+y}
+then :
+  break
+fi
+done
+if test ${ac_cv_search_qh_freeqhull+y}
+then :
+
+else $as_nop
+  ac_cv_search_qh_freeqhull=no
+fi
+rm conftest.$ac_ext
+LIBS=$ac_func_search_save_LIBS
+fi
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_cv_search_qh_freeqhull" >&5
+printf "%s\n" "$ac_cv_search_qh_freeqhull" >&6; }
+ac_res=$ac_cv_search_qh_freeqhull
+if test "$ac_res" != no
+then :
+  test "$ac_res" = "none required" || LIBS="$ac_res $LIBS"
+
+        FOUND_QHULL="yes"
+
+fi
+
+    QHULL_LIBS="$LIBS"
+    QHULL_FLAGS=""
+
+    LIBS="$amuse_lib_qhull_save_libs"
+
+           for ac_header in libqhull/libqhull.h
+do :
+  ac_fn_c_check_header_compile "$LINENO" "libqhull/libqhull.h" "ac_cv_header_libqhull_libqhull_h" "$ac_includes_default"
+if test "x$ac_cv_header_libqhull_libqhull_h" = xyes
+then :
+  printf "%s\n" "#define HAVE_LIBQHULL_LIBQHULL_H 1" >>confdefs.h
+
+else $as_nop
+  FOUND_QHULL="no"
+fi
+
+done
+
+
+
+
+
             ac_ext=c
 ac_cpp='$CPP $CPPFLAGS'
 ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
@@ -14711,6 +14828,10 @@ fi
 if test "x${FOUND_NETCDF}" = "xyes"
 then :
   FEATURES="${FEATURES} netcdf4"
+fi
+if test "x${FOUND_QHULL}" = "xyes"
+then :
+  FEATURES="${FEATURES} qhull"
 fi
 if test "x${FOUND_SAPPORO_LIGHT}" = "xyes"
 then :
