@@ -1,0 +1,22 @@
+# Compilers
+FC = @FC@
+MPIFC = @MPIFC@
+
+CPU_COUNT = @CPU_COUNT@
+
+# Tools
+AR = @AR@
+RANLIB = @RANLIB@
+
+
+# General flags and libraries
+FCFLAGS = @FCFLAGS@
+LDFLAGS = @LDFLAGS@
+
+LIBS = @LIBS@
+
+
+# AMUSE framework libraries
+FORSOCKETS_CFLAGS = @FORSOCKETS_CFLAGS@
+FORSOCKETS_LIBS = @FORSOCKETS_LIBS@
+

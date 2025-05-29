@@ -4,7 +4,9 @@ import numpy
 import scipy
 from numpy import exp, sqrt, pi, sin, cos
 from scipy.special import  gammainc, dawsn, erfi
-from scipy import random
+# SciPy no longer has random, and this code needs to be updated. The import is disabled
+# for now because it keeps the rest of the tests from running.
+# from scipy import random
 from scipy import optimize
 from math import factorial
 

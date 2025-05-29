@@ -6,3 +6,4 @@ Look into the interface packages for the interfacing to physical model simulatio
 You can also use AMUSE to convert common data formats.
 
 """
+from .interface import Mesa, MesaInterface

@@ -1,0 +1,20 @@
+#!/bin/sh
+
+# Run through the repository and update all configure scripts
+#
+# This is useful if you've made a change to a .m4 macro, for example because something
+# wasn't detected properly on some platform. This potentially affects all the configure
+# scripts in the repository, and it's easy to miss updating one, which leaves the
+# configure.ac, config.guess, config.sub and .m4 files out of sync with the generated
+# configure scripts and that's not good.
+#
+# Run from the top directory, as support/update_configure_scripts.
+
+for support_dir in support src/tests/support lib/*/support src/amuse_*/support ; do
+    if (cd ${support_dir} && autoreconf) ; then
+        printf '%s\n' "Updated ${support_dir}/configure"
+    else
+        printf '%s\n' "An error occurred while updating ${support_dir}/configure, see above."
+    fi
+done
+

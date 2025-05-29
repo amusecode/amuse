@@ -1,0 +1,8 @@
+configure~
+autom4te.cache/
+config.status
+config.log
+config.out
+
+configuration.sh
+

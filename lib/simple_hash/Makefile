@@ -1,34 +1,41 @@
-ifeq ($(origin AMUSE_DIR), undefined)
-  AMUSE_DIR := $(shell amusifier --get-amuse-dir)
-endif
--include $(AMUSE_DIR)/config.mk
+.PHONY: Makefile support/shared/lib-configure.mk
+include support/shared/lib-configure.mk
 
-MPICC ?= mpicc
+HEADERS = simple_hash.h
+DYNAMIC_LIB = libsimple_hash.so
+PKG_CONFIG_FILE = simple_hash.pc
 
-LIBNAME = libsimplehash.so
-STATIC_LIBNAME = libsimple_hash.a
+CFLAGS += -std=c99
 
 OBJS = simple_hash.o
 
-all: test_hash test $(LIBNAME) $(STATIC_LIBNAME)
+define PKG_CONFIG_CONTENTS :=
+prefix=$(PREFIX)
+includedir=$${prefix}/include
+libdir=$${prefix}/lib
 
-CFLAGS += -std=c99 -O2 -fPIC
+Name: simple_hash
+Description: The simple_hash hashmap library included with AMUSE
+Version: $(AMUSE_VERSION)
+Cflags: -I$${includedir}
+Libs: -L$${libdir} -lsimple_hash
 
-$(LIBNAME): $(OBJS)
-	$(CC) -shared -o $@ $^
-	
-$(STATIC_LIBNAME): $(OBJS)
-	ar -r  $(STATIC_LIBNAME) $^
-	ranlib $(STATIC_LIBNAME)
+endef
 
-test_hash: test.cpp $(OBJS)
-	$(CXX) -O2 -o $@ $^
+
+# Build and run tests
+test_hash: test_hash.o $(DYNAMIC_LIB)
+	$(CC) $(LDFLAGS) -L. -Wl,-rpath,$(PREFIX)/lib -o $@ $< -lsimple_hash
 
 test: test_hash
 	$(PYTHON) test.py ./test_hash 123456
 
-%.o: %.c
-	$(CC) $(CFLAGS) -c -o $@ $<
-	
-clean:
-	rm -Rf *.o *.so test_hash *.a
+.PHONY: test_clean
+test_clean:
+	rm -f test_hash
+
+clean: test_clean
+
+.PHONY: support/shared/lib-targets.mk
+include support/shared/lib-targets.mk
+

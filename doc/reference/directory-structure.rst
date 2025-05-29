@@ -30,14 +30,12 @@ The ``src`` directories
 
 The directories under the ``src`` directory are further split into:
 
+* ``amuse`` - contains the AMUSE framework, the *glue* that makes it
+  possible to access the community codes from a Python script and
+  combine them together
 
-* ``community`` - contains the source code of existing astrophysical
-  applications and *glue* code to the AMUSE interface classes. In other
-  words this directory contains the implementation of the interfaces.
-* ``support`` - contains the AMUSE generic code, defines the data
-  representation and input/output routines and also provides the generic
-  unit handling code. Code in the ``interface`` and ``community`` directories
-  use these functions and classes to provide their functionality.
+* ``amuse_<code>`` - contains the community codes and the AMUSE wrappers
+  that allow them to be used from AMUSE.
 
 
 The ``test`` directories

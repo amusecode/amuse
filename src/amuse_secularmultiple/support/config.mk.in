@@ -1,0 +1,20 @@
+# Compilers
+CC = @CC@
+CXX = @CXX@
+
+MPICC = @MPICC@
+MPICXX = @MPICXX@
+
+CPU_COUNT = @CPU_COUNT@
+
+# Tools
+AR = @AR@
+RANLIB = @RANLIB@
+DOWNLOAD = @DOWNLOAD@
+
+
+# General flags and libraries
+CFLAGS = @CFLAGS@
+LDFLAGS = @LDFLAGS@
+
+LIBS = @LIBS@

@@ -14,6 +14,7 @@ import socket
 import array
 import logging
 import shlex
+import shutil
 
 logger = logging.getLogger(__name__)
 
@@ -37,7 +38,6 @@ from amuse.support.core import late
 from amuse.support import exceptions
 from amuse.support import get_amuse_root_dir, get_amuse_package_dir
 from amuse.rfi import run_command_redirected
-from amuse.config import parse_configmk_lines
 
 from amuse.rfi import slurm
 
@@ -131,7 +131,7 @@ class MPIMessage(AbstractMessage):
 
     def receive_content(self, comm, header):
         # 4 flags as 8bit booleans in 1st 4 bytes of header
-        # endiannes(not supported by MPI channel), error, unused, unused
+        # endianness (not supported by MPI channel), error, unused, unused
 
         flags = header.view(dtype="bool_")
         self.big_endian = flags[0]
@@ -641,7 +641,11 @@ class AbstractMessageChannel(OptionalAttributes):
     @option(type="boolean", sections=("channel",))
     def initialize_mpi(self):
         """Is MPI initialized in the code or not. Defaults to True if MPI is available"""
-        return config.mpi.is_enabled
+        try:
+            MpiChannel.ensure_mpi_initialized()
+            return True
+        except ImportError:
+            return False
 
     @option(type="string", sections=("channel",))
     def worker_code_suffix(self):
@@ -689,7 +693,7 @@ class AbstractMessageChannel(OptionalAttributes):
 
     @option(type="boolean", sections=("channel",))
     def must_check_if_worker_is_up_to_date(self):
-        return True
+        return False
 
     @option(type="boolean", sections=("channel",))
     def check_worker_location(self):
@@ -720,6 +724,13 @@ class AbstractMessageChannel(OptionalAttributes):
                 continue
             value = getattr(my_class, x)
             if hasattr(value, "crc32"):
+                if 'CodeInterface' in str(value.specification_function):
+                    continue
+                if 'StoppingConditionInterface' in str(value.specification_function):
+                    continue
+                if 'simplified_function_specification' in str(
+                        value.specification_function):
+                    continue
                 is_up_to_date = value.is_compiled_file_up_to_date(
                     modificationtime_of_worker
                 )
@@ -1104,6 +1115,7 @@ class MpiChannel(AbstractMessageChannel):
 
     @classmethod
     def finialize_mpi_atexit(cls):
+        logger.debug('MPIChannel finializing MPI')
         if not MPI.Is_initialized():
             return
         if MPI.Is_finalized():
@@ -1138,7 +1150,7 @@ class MpiChannel(AbstractMessageChannel):
 
     @option(type="dict", sections=("channel",))
     def mpi_info_options(self):
-        return dict()
+        return {"map_by": "ppr:1:core:OVERSUBSCRIBE"}
 
     @option(type="int", sections=("channel",))
     def max_message_length(self):
@@ -1271,7 +1283,6 @@ class MpiChannel(AbstractMessageChannel):
         lengths = [get_length(x) for x in dtype_to_arguments.values()]
         if len(lengths) == 0:
             return 1
-
         return max(1, max(lengths))
 
     def send_message(
@@ -1991,9 +2002,7 @@ class SocketChannel(AbstractMessageChannel):
     @option(sections=("channel",))
     def mpiexec(self):
         """mpiexec with arguments"""
-        if len(config.mpi.mpiexec):
-            return config.mpi.mpiexec
-        return ""
+        return shutil.which("mpiexec")
 
     @option(sections=("channel",))
     def mpiexec_number_of_workers_flag(self):
@@ -2092,6 +2101,10 @@ class SocketChannel(AbstractMessageChannel):
             return "source " + self.remote_env + "\n"
 
     def generate_remote_command_and_arguments(self, hostname, server_address, port):
+        # Disabled when the new build system was introduced, because we need to make
+        # a new way of detecting the remote installation. The PyPI packages never
+        # included it anyway. TODO
+        raise Exception("Distributed AMUSE is disabled")
 
         # get remote config
         args = ["ssh", "-T", hostname]

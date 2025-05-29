@@ -1,0 +1,17 @@
+# Compilers
+CXX = @CXX@
+
+MPICXX = @MPICXX@
+
+CPU_COUNT = @CPU_COUNT@
+
+# General flags and libraries
+CFLAGS = @CFLAGS@
+LDFLAGS = @LDFLAGS@
+
+LIBS = @LIBS@
+
+
+# AMUSE framework libraries
+AMUSE_MPI_CFLAGS = @AMUSE_MPI_CFLAGS@
+AMUSE_MPI_LIBS = @AMUSE_MPI_LIBS@

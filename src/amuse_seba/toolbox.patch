@@ -1,0 +1,34 @@
+diff --git a/Makefile b/Makefile
+index 63009a5..f4f744f 100644
+--- a/Makefile
++++ b/Makefile
+@@ -1,4 +1,4 @@
+-CXXFLAGS  += -I./include -I./include/star -DHAVE_CONFIG_H -DTOOLBOX
++CXXFLAGS  += -I./include -I./include/star -DHAVE_CONFIG_H
+ LDLIBS	  += -Lsstar -lsstar -Lnode -lnode -Lstd -lstd -lm
+ CFLAGS    += -O
+ CXXFLAGS  += -O
+diff --git a/dstar/Makefile b/dstar/Makefile
+index 8db9c17..bb6df64 100755
+--- a/dstar/Makefile
++++ b/dstar/Makefile
+@@ -1,6 +1,6 @@
+ CXXFLAGS  += -I../include -I../include/star \
+ 	     -D_SRC_='"no_source_available"' \
+-	     -DHAVE_CONFIG_H  -DTOOLBOX 
++	     -DHAVE_CONFIG_H
+ LDLIBS	  += \
+ 	     -L. -ldstar \
+ 	     -L../sstar -lsstar \
+diff --git a/rdc/Makefile b/rdc/Makefile
+index 3113d41..585c7b1 100755
+--- a/rdc/Makefile
++++ b/rdc/Makefile
+@@ -1,6 +1,6 @@
+ CXXFLAGS  += -I../include -I../include/star \
+ 	     -D_SRC_='"no_source_available"' \
+-	     -DHAVE_CONFIG_H  -DTOOLBOX 
++	     -DHAVE_CONFIG_H
+ LDLIBS	  += \
+ 	     -L. -lrdc  \
+ 	     -L../dstar -ldstar  \

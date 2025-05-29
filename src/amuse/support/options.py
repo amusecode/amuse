@@ -27,16 +27,15 @@ class GlobalOptions:
                 self.config.read(resourcerc)
 
         rootrc = os.path.join(self.amuse_rootdirectory, self.rcfilename)
-        datarc = os.path.join(self.amuse_data_location, self.rcfilename)
-
-        homedirrc = os.path.join(self.homedirectory, "." + self.rcfilename)
-
         self.config.read(rootrc)
+
+        datarc = os.path.join(self.amuse_data_location, self.rcfilename)
         self.config.read(datarc)
 
         if preloadfp is not None:
             self.config.read_file(preloadfp, "<amuserc>")
 
+        homedirrc = os.path.join(self.homedirectory, '.' + self.rcfilename)
         self.config.read(homedirrc)
         self.config.read(
             os.path.join(
@@ -56,19 +55,19 @@ class GlobalOptions:
         result = os.path.abspath(
             os.path.join(this, "..", "..", "..", "..", "..", "share", "amuse")
         )
-        if os.path.exists(os.path.join(result, "config.mk")):
+        if os.path.isdir(result):
             return result
 
         # for some virtualenv setups
         result = os.path.abspath(
             os.path.join(this, "..", "..", "..", "..", "..", "..", "share", "amuse")
         )
-        if os.path.exists(os.path.join(result, "config.mk")):
+        if os.path.isdir(result):
             return result
 
         # in-place
-        result = os.path.abspath(os.path.join(this, "..", "..", ".."))
-        if os.path.exists(os.path.join(result, "config.mk")):
+        result = self.amuse_rootdirectory
+        if os.path.isdir(result):
             return result
 
         raise exceptions.AmuseException(
@@ -77,7 +76,8 @@ class GlobalOptions:
 
     @late
     def amuse_rootdirectory(self):
-        return os.path.dirname(os.path.dirname(__file__))
+        this = os.path.dirname(__file__)
+        return os.path.abspath(os.path.join(this, "..", "..", ".."))
 
     @late
     def rcfilepath(self):

@@ -1,18 +1,18 @@
 """
 The Astrophysical Multipurpose Software Environment
 
-The aim of AMUSE is to provide a software framework, in which existing codes for 
-dynamics, stellar evolution, hydrodynamics and radiative transfer can easily be 
-coupled, in order to perform state-of-the-art simulations of a wide range of 
+The aim of AMUSE is to provide a software framework, in which existing codes for
+dynamics, stellar evolution, hydrodynamics and radiative transfer can easily be
+coupled, in order to perform state-of-the-art simulations of a wide range of
 different astrophysical phenomena.
 
 It contains several packages, most notably:
-units     - AMUSE uses quantities, i.e. a number (or array) with a unit attached, 
+units     - AMUSE uses quantities, i.e. a number (or array) with a unit attached,
             instead of just numbers (vital when coupling different codes!)
 datamodel - defines particles and grids, on which data (quantities) can be stored
 ic        - a collection of routines to generate initial conditions
 io        - how to read and write data in several file formats
-community - a variety of existing codes of different physical domains, each with 
+community - a variety of existing codes of different physical domains, each with
             a uniform interface to enable coupling
 
 Help is available for each of these packages, e.g.:
@@ -43,23 +43,6 @@ def numpy_fix():
 numpy_fix()
 
 
-class NoConfig:
-    def __init__(self, message):
-        self._message = message
-
-    def __getattr__(self, attr):
-        raise AttributeError(self._message)
-
-
-try:
-    from . import config
-except FileNotFoundError as ex:
-    message = (
-        "Configuration not read in - or configuration invalid, exception:\n" + str(ex)
-    )
-    config = NoConfig(message)
-
-
 # always report AMUSE reference information
 try:
     from amuse.support.literature import TrackLiteratureReferences
@@ -71,3 +54,9 @@ except:
 
 def get_data(path):
     return os.path.join(_AMUSE_ROOT, "data", path)
+
+
+try:
+    from amuse._version import __version__
+except ImportError:
+    __version__ = "unknown version"

@@ -5,7 +5,8 @@ Tutorials
 
 .. toctree::
    :maxdepth: 2
-   
+
+   getting-started
    units
    most_massive_from_salpeter
    particle_sets
@@ -15,6 +16,4 @@ Tutorials
    legacy_code
    plot
    grid_boundary
-   documenting
-   
 

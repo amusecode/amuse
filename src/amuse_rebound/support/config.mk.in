@@ -1,0 +1,35 @@
+# Compilers
+CC = @CC@
+CXX = @CXX@
+
+MPICC = @MPICC@
+MPICXX = @MPICXX@
+
+CPU_COUNT = @CPU_COUNT@
+
+
+# Tools
+AR = @AR@
+RANLIB = @RANLIB@
+DOWNLOAD = @DOWNLOAD@
+TAR = @TAR@
+GUNZIP = @GUNZIP@
+
+
+# General flags and libraries
+CFLAGS = @CFLAGS@
+CXXFLAGS = @CXXFLAGS@
+LDFLAGS = @LDFLAGS@
+
+LIBS = @LIBS@
+
+
+# AMUSE framework libraries
+STOPCOND_CFLAGS = @STOPCOND_CFLAGS@
+STOPCOND_LIBS = @STOPCOND_LIBS@
+
+
+# External dependencies
+OPENMP_CFLAGS = @OPENMP_CFLAGS@
+OPENMP_CXXFLAGS = @OPENMP_CXXFLAGS@
+
