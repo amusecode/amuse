@@ -1,0 +1,6 @@
+# This file is used to record the version of AMUSE in a .tar.gz archive made using git
+# archive. The build system will pick it up from here if it is not building from a git
+# repository but from that tar.gz file.
+
+$Format:%(describe:match=v*)$
+
