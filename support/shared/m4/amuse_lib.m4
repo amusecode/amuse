@@ -11,7 +11,7 @@
 # appropriate values if it is found.
 #
 # prefix: prefix for the variables to be set
-# module: name of the pkg-config module to seach for if needed
+# module: name of the pkg-config module to search for if needed
 # library: name of the library to be searched for
 # function: name of a function in the library to use for the link check
 AC_DEFUN([AMUSE_LIB], [
