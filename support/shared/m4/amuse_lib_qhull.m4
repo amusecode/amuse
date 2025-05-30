@@ -22,7 +22,7 @@ AC_DEFUN([AMUSE_LIB_QHULL], [
 
     LIBS="$amuse_lib_qhull_save_libs"
 
-    AC_CHECK_HEADERS([libqhull/libqhull.h], [], [FOUND_QHULL="no"])
+    AC_CHECK_HEADERS([libqhull_r/libqhull_r.h], [], [FOUND_QHULL="no"])
 
     AC_SUBST([QHULL_LIBS])
     AC_SUBST([QHULL_FLAGS])

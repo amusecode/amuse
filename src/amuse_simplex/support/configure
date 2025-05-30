@@ -6039,12 +6039,12 @@ fi
 
     LIBS="$amuse_lib_qhull_save_libs"
 
-           for ac_header in libqhull/libqhull.h
+           for ac_header in libqhull_r/libqhull_r.h
 do :
-  ac_fn_cxx_check_header_compile "$LINENO" "libqhull/libqhull.h" "ac_cv_header_libqhull_libqhull_h" "$ac_includes_default"
-if test "x$ac_cv_header_libqhull_libqhull_h" = xyes
+  ac_fn_cxx_check_header_compile "$LINENO" "libqhull_r/libqhull_r.h" "ac_cv_header_libqhull_r_libqhull_r_h" "$ac_includes_default"
+if test "x$ac_cv_header_libqhull_r_libqhull_r_h" = xyes
 then :
-  printf "%s\n" "#define HAVE_LIBQHULL_LIBQHULL_H 1" >>confdefs.h
+  printf "%s\n" "#define HAVE_LIBQHULL_R_LIBQHULL_R_H 1" >>confdefs.h
 
 else $as_nop
   FOUND_QHULL="no"
