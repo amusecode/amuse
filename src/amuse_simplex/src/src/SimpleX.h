@@ -54,14 +54,8 @@ extern "C"
 #endif
 #include <stdio.h>
 #include <stdlib.h>
-#include <libqhull/libqhull.h>
-#include <libqhull/mem.h>
-#include <libqhull/qset.h>
-#include <libqhull/geom.h>
-#include <libqhull/merge.h>
-#include <libqhull/poly.h>
-#include <libqhull/io.h>
-#include <libqhull/stat.h>
+#include <libqhull_r/libqhull_r.h>
+#include <libqhull_r/geom_r.h>
 #if defined(__cplusplus)
 }
 #endif
@@ -542,6 +536,8 @@ class SimpleX{
     unsigned int*** maps;          //!< Array to hold the mappings between direction bins
     unsigned int number_of_directions; //!< Number of discretizations of the unit sphere for DCT
     unsigned int number_of_orientations;//!< Number of random rotations of the DCT discretization
+    qhT Qhull;                     //!< QHull main object
+    qhT *qh;                       //!< Points to Qhull, needed for Qhull macros to work
 };
 
 #endif

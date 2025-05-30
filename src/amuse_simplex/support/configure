@@ -5995,7 +5995,7 @@ return conftest::qh_freeqhull ();
   return 0;
 }
 _ACEOF
-for ac_lib in '' qhull
+for ac_lib in '' qhull_r
 do
   if test -z "$ac_lib"; then
     ac_res="none required"

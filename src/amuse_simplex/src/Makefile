@@ -30,7 +30,7 @@ CXXCFLAGS := $(CXXCFLAGS_NO_C) -c
 export CXXCFLAGS
 
 MACRODEFS = -DH5_USE_16_API
-MYLIBS = -lqhull $(GSL_LIBS)  $(HDF5_LIBS)
+MYLIBS = -lqhull_r $(GSL_LIBS)  $(HDF5_LIBS)
 MYINCLUDE = -I$(KEYVALUE_PATH) $(HDF5_PLUGIN_FLAGS) $(HDF5_FLAGS) \
             -I$(PLUGINS)/octree -I$(PLUGINS)/hilbert -I$(SRC) \
             -I$(PLUGINS)/unit_sphere_tess/include $(GSL_FLAGS)

@@ -14,7 +14,7 @@ AC_DEFUN([AMUSE_LIB_QHULL], [
     amuse_lib_qhull_save_libs="$LIBS"
 
     LIBS=""
-    AC_SEARCH_LIBS([qh_freeqhull], [qhull], [
+    AC_SEARCH_LIBS([qh_freeqhull], [qhull_r], [
         FOUND_QHULL="yes"
     ], [])
     QHULL_LIBS="$LIBS"

@@ -76,6 +76,9 @@ SimpleX::SimpleX(const string& output_path, const string& data_path){
   // Random number generator
   ran = gsl_rng_alloc (gsl_rng_taus);
 
+  // Qhull library
+  qh = &Qhull;
+
   // Method for RT
   ballisticTransport = 0;
   dirConsTransport = 0;
@@ -1183,7 +1186,7 @@ void SimpleX::compute_triangulation(){
       //assume for now the triangulation will be correct, check will follow
       correct = 1;      
       //call to qhull to do triangulation
-      int qh_error = qh_new_qhull(dimension, in_box.size(), pt_array, ismalloc, flags, NULL, errfile);
+      int qh_error = qh_new_qhull(qh, dimension, in_box.size(), pt_array, ismalloc, flags, NULL, errfile);
       if (!qh_error) {
 	//loop over all facets
 	FORALLfacets {
@@ -1192,11 +1195,11 @@ void SimpleX::compute_triangulation(){
 	    //store the simplex in simplices vector
 	    unsigned int r=0;
 	    Simpl tempSimpl;
-	    tempSimpl.set_volume( qh_facetarea(facet) );
+	    tempSimpl.set_volume( qh_facetarea(qh, facet) );
 
 	    FOREACHvertex_ (facet->vertices) {
 	      //store the indices of each simplex
-	      ids[r++]=idList[qh_pointid(vertex->point)];
+	      ids[r++]=idList[qh_pointid(qh, vertex->point)];
 	    }//for each facet
 
 	    tempSimpl.set_id1( in_box[ ids[0] ] );
@@ -1447,10 +1450,10 @@ void SimpleX::compute_triangulation(){
       }
 
       //free long memory
-      qh_freeqhull(!qh_ALL);
+      qh_freeqhull(qh, !qh_ALL);
 
       //free short memory and memory allocator
-      qh_memfreeshort (&curlong, &totlong);
+      qh_memfreeshort (qh, &curlong, &totlong);
       if (curlong || totlong) {
 	fprintf(errfile, "QHull: did not free %d bytes of long memory (%d pieces)", totlong, curlong);
       }

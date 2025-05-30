@@ -14745,7 +14745,7 @@ return qh_freeqhull ();
   return 0;
 }
 _ACEOF
-for ac_lib in '' qhull
+for ac_lib in '' qhull_r
 do
   if test -z "$ac_lib"; then
     ac_res="none required"
@@ -15216,6 +15216,9 @@ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
 
     amuse_lib_healpix_cxx_save_libs="$LIBS"
 
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for HEALPix" >&5
+printf %s "checking for HEALPix... " >&6; }
+
     ac_ext=cpp
 ac_cpp='$CXXCPP $CPPFLAGS'
 ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
@@ -15229,7 +15232,7 @@ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
 /* end confdefs.h.  */
 
 
-            #include <healpix_base.h>
+            #include <healpix_cxx/healpix_base.h>
 
 #ifdef F77_DUMMY_MAIN
 
@@ -15243,7 +15246,7 @@ int
 main (void)
 {
 
-            Healpix_Base hb();
+            Healpix_Base hb;
 
   ;
   return 0;
@@ -15256,6 +15259,9 @@ then :
         FOUND_HEALPIX_CXX="yes"
         HEALPIX_CXX_CFLAGS=""
         HEALPIX_CXX_LIBS="$LIBS"
+
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
 
 else $as_nop
 
@@ -15321,12 +15327,16 @@ fi
 
 
             FOUND_HEALPIX_CXX="no"
+            { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
 
 elif test $pkg_failed = untried; then
      	{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
 printf "%s\n" "no" >&6; }
 
             FOUND_HEALPIX_CXX="no"
+            { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
 
 else
 	HEALPIX_CXX_CFLAGS=$pkg_cv_HEALPIX_CXX_CFLAGS
@@ -15335,6 +15345,8 @@ else
 printf "%s\n" "yes" >&6; }
 
             FOUND_HEALPIX_CXX="yes"
+            { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
 
 fi
 
