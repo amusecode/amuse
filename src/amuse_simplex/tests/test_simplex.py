@@ -396,7 +396,7 @@ class TestSimpleX(TestWithMPI):
 
     def test_cooling(self):
         # tests whether the input data files are found correctly
-        instance = SimpleX(number_of_workers=1, redirection="file")
+        instance = SimpleX(number_of_workers=1)
 
         instance.parameters.metal_cooling_flag = 1
 

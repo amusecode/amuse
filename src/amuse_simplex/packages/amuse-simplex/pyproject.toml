@@ -39,4 +39,3 @@ pythonpath = ["amuse_simplex/tests/"]
 
 testpaths = ["amuse_simplex/tests"]
 
-addopts = "-vv -s -k test_cooling"
