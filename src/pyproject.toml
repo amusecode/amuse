@@ -35,6 +35,9 @@ distance-dirty = "{next_version}.dev{distance}+{vcs}{rev}.d{build_date:%Y%m%d}"
 [tool.versioningit.write]
 file = "amuse/_version.py"
 
+[tool.versioningit.vcs]
+method = { module = "version_helper", value = "get_amuse_version", module-dir = "../support/shared" }
+
 [tool.hatch.build]
 skip-excluded-dirs = true
 
