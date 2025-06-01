@@ -81,15 +81,20 @@ class TestParallelStellarEvolution(TestCase):
 
     def test5(self):
         print("Testing ParallelStellarEvolution individual options")
+        n_workers = 2
         base_name = os.path.join(get_path_to_results(), "parallel_stellar_evolution_out_")
-        for filename in [base_name+str(i) for i in range(3)]:
+        for filename in [base_name+str(i) for i in range(n_workers)]:
             if os.path.exists(filename):
                 os.remove(filename)
 
-        parallel = ParallelStellarEvolution(self.code_factory, number_of_workers=2,
-            individual_options=[dict(redirect_file=base_name+str(i)) for i in range(3)], redirection="file", **default_options)
+        parallel = ParallelStellarEvolution(
+                self.code_factory, number_of_workers=n_workers,
+                individual_options=[
+                    dict(redirect_file=base_name+str(i))
+                    for i in range(n_workers)],
+                redirection="file", **default_options)
 
-        for filename in [base_name+str(i) for i in range(3)]:
+        for filename in [base_name+str(i) for i in range(n_workers)]:
             self.assertTrue(os.path.exists(filename))
 
         parallel.stop()
