@@ -12,8 +12,7 @@ support/config.mk:
 mesa_r2208.zip:
 	$(DOWNLOAD) https://zenodo.org/record/2603017/files/mesa-r2208.zip >$@
 
-PATCHES := $(file < patches/series)
-PATCHES := $(patsubst %,%,$(PATCHES))    # replace newlines with spaces
+PATCHES := $(shell cat patches/series)
 
 src/mesa: mesa_r2208.zip
 	mkdir -p src

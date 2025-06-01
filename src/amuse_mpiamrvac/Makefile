@@ -14,8 +14,7 @@ VERSION = r187
 mpiamrvac.tar.gz:
 	$(DOWNLOAD) http://amuse.strw.leidenuniv.nl/codes/mpiamrvac-$(VERSION).tgz >$@
 
-PATCHES := $(file < patches/series)
-PATCHES := $(patsubst %,%,$(PATCHES))    # replace newlines with spaces
+PATCHES := $(shell cat patches/series)
 
 src/mpiamrvac: | mpiamrvac.tar.gz
 	tar xf $|

@@ -42,9 +42,7 @@ src/mesa-$(MESA_VERSION).zip:
 
 MESA_DIR := src/mesa-$(MESA_VERSION)
 
-PATCHES := $(file < patches/series_mesa)
-PATCHES := $(patsubst %,%,$(PATCHES))    # replace newlines with spaces
-
+PATCHES := $(shell cat patches/series)
 
 $(MESA_DIR): src/mesa-$(MESA_VERSION).zip
 	cd src && unzip -q ../$<
