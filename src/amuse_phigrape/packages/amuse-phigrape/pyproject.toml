@@ -1,0 +1,46 @@
+[project]
+name = "amuse-phigrape"
+dynamic = ["version"]
+requires-python = ">=3.7"
+dependencies = [
+    "amuse-framework"
+]
+
+[build-system]
+requires = ["hatchling", "versioningit"]
+build-backend = "hatchling.build"
+
+[tool.hatch.version]
+source = "versioningit"
+
+[tool.versioningit.next-version]
+method = "smallest"
+
+[tool.versioningit.format]
+distance = "{next_version}.dev{distance}+{vcs}{rev}"
+dirty = "{base_version}+d{build_date:%Y%m%d}"
+distance-dirty = "{next_version}.dev{distance}+{vcs}{rev}.d{build_date:%Y%m%d}"
+
+[tool.versioningit.vcs]
+method = { module = "version_helper", value = "get_amuse_version", module-dir = "amuse_phigrape/support/shared" }
+
+[tool.hatch.build]
+skip-excluded-dirs = true
+
+[tool.hatch.build.targets.wheel]
+include = ["amuse_phigrape/**/*.py"]
+exclude = [
+    "amuse_phigrape/packages",
+    "amuse_phigrape/support",
+    "amuse_phigrape/src",
+    "amuse_phigrape/tests"
+    ]
+artifacts = ["amuse_phigrape/phigrape_worker"]
+
+[tool.pytest.ini_options]
+pythonpath = ["amuse_phigrape/tests/"]
+
+testpaths = ["amuse_phigrape/tests"]
+
+addopts = "--import-mode=append"    # test the installed package
+

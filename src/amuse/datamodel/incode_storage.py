@@ -80,9 +80,10 @@ The InCode storage system is based on a number of classes:
 :py:class:`InCodeGridAttributeStorage`
     Subclass of AbstractInCodeAttributeStorage, manages grids
 
-    
-
 """
+
+import numpy
+import inspect
 
 from amuse.support.methods import AbstractCodeMethodWrapper
 from amuse.units import nbody_system
@@ -91,9 +92,6 @@ from amuse.units import quantities
 from amuse.units.quantities import is_quantity
 from amuse.support.core import late
 from amuse.support import exceptions
-
-import numpy
-import inspect
 
 from amuse.datamodel import parameters
 from amuse.datamodel import base
@@ -178,7 +176,7 @@ class ParticleGetAttributesMethod(ParticleMappingMethod):
                     "getter method {0} cannot handle arrays".format(self.method)
                 )
             elif self.method_is_code:
-                if not self.method.legacy_specification is None:
+                if self.method.legacy_specification is not None:
                     if not (
                         self.method.legacy_specification.can_handle_array
                         or self.method.legacy_specification.must_handle_array
@@ -398,13 +396,13 @@ class ParticleSetAttributesMethod(ParticleMappingMethod):
         for index, x in enumerate(list_arguments):
             if x is not_set_marker:
                 name_of_attribute = self.attribute_names[index]
-                if not name_of_attribute in self.optional_attribute_names:
+                if name_of_attribute not in self.optional_attribute_names:
                     missing_attributes.append(name_of_attribute)
                 else:
                     default_argument_found = True
             elif default_argument_found:
                 name_of_attribute = self.attribute_names[index]
-                if not name_of_attribute in self.optional_attribute_names:
+                if name_of_attribute not in self.optional_attribute_names:
                     raise exceptions.AmuseException(
                         "Optional before required arguments"
                     )
@@ -520,14 +518,12 @@ class ParticleSetGriddedAttributesMethod(ParticleSetAttributesMethod):
 
 class NewParticleMethod(ParticleSetAttributesMethod):
     """
-    Instances wrap a method to create particles. The method may
-    take attributes values to set initial values on
-    the created particles.
+    Instances wrap a method to create particles. The method may take attributes
+    values to set initial values on the created particles.
 
-    The new particle functions work a lot like
-    the set attribute methods, only the new particle
-    function is supposed to return an array
-    of the indices of the created particles.
+    The new particle functions work a lot like the set attribute methods, only
+    the new particle function is supposed to return an array of the indices of
+    the created particles.
 
     .. code-block:: python
 
@@ -549,7 +545,7 @@ class NewParticleMethod(ParticleSetAttributesMethod):
         return indices
 
 
-class ParticleQueryMethod(object):
+class ParticleQueryMethod:
     """
     Instances wrap a function that can take one or more arguments
     and returns an index (or a list of indices, if the arguments are
@@ -598,19 +594,18 @@ class ParticleQueryMethod(object):
         return ParticlesSuperset(subset_results)
 
 
-class ParticleSpecificSelectMethod(object):
+class ParticleSpecificSelectMethod:
     """
-    Instances wrap a function that can take a particle index
-    and returns one or more indices
-    (but a limited and fixed number of indices). This method is most
-    useful to return links between particles (subparticles or
-    nearest neighbors)
+    Instances wrap a function that can take a particle index and returns one or
+    more indices (but a limited and fixed number of indices). This method is
+    most useful to return links between particles (subparticles or nearest
+    neighbors)
 
     .. code-block:: python
 
-        output_index = instance.get_nearest_neigbord(input_index)
+        output_index = instance.get_nearest_neighbor(input_index)
 
-    The idex or indices are converted to a particle subset.
+    The index or indices are converted to a particle subset.
     """
 
     def __init__(self, method, names=(), public_name=None):
@@ -640,12 +635,12 @@ class ParticleSpecificSelectMethod(object):
 
         return result
 
-    def apply_on_one(self, set, particle):
-        index = set._private.attribute_storage.get_indices_of(particle.key)
+    def apply_on_one(self, particleset, particle):
+        index = particleset._private.attribute_storage.get_indices_of(particle.key)
 
         result = self.method(index)
 
-        keys = set._private.attribute_storage._get_keys_for_indices_in_the_code(result)
+        keys = particleset._private.attribute_storage._get_keys_for_indices_in_the_code(result)
 
         result = []
         return particle.as_set()._subset(keys)
@@ -653,9 +648,9 @@ class ParticleSpecificSelectMethod(object):
 
 class ParticleMethod(AbstractCodeMethodWrapper):
     """
-    Instances wrap a function that returns quanties given particle
-    indices and optional arguments. Instances have a lot in common
-    with attribute getters, but can take extra arguments.
+    Instances wrap a function that returns quantities given particle indices
+    and optional arguments. Instances have a lot in common with attribute
+    getters, but can take extra arguments.
 
     .. code-block:: python
 
@@ -673,13 +668,13 @@ class ParticleMethod(AbstractCodeMethodWrapper):
         )
         return self.method(all_indices, *list_arguments, **keyword_arguments)
 
-    def apply_on_one(self, set, particle, *list_arguments, **keyword_arguments):
+    def apply_on_one(self, particleset, particle, *list_arguments, **keyword_arguments):
         storage = particle.particles_set._private.attribute_storage
         index = storage.get_indices_of([particle.key])
         return self.method(index[0], *list_arguments, **keyword_arguments)
 
 
-class ParticleSetSelectSubsetMethod(object):
+class ParticleSetSelectSubsetMethod:
     """
     Generic method to query and retrieve particles from the
     set. This selection can have up to tree stages:
@@ -720,7 +715,7 @@ class ParticleSetSelectSubsetMethod(object):
 
     def apply_on_all(self, particles, *list_arguments, **keyword_arguments):
         query_identifiers = None
-        if not self.set_query_arguments_method is None:
+        if self.set_query_arguments_method is not None:
             query_identifiers = self.set_query_arguments_method(
                 *list_arguments, **keyword_arguments
             )
@@ -730,7 +725,7 @@ class ParticleSetSelectSubsetMethod(object):
         elif not hasattr(query_identifiers, "__iter__"):
             query_identifiers = (query_identifiers,)
 
-        if not self.get_number_of_particles_in_set_method is None:
+        if self.get_number_of_particles_in_set_method is not None:
             number_of_particles_in_set = self.get_number_of_particles_in_set_method(
                 *query_identifiers
             )
@@ -747,7 +742,7 @@ class ParticleSetSelectSubsetMethod(object):
         return particles._subset(keys)
 
 
-class ParticlesAddedUpdateMethod(object):
+class ParticlesAddedUpdateMethod:
     def __init__(
         self,
         get_number_of_particles_added_method=None,
@@ -758,7 +753,7 @@ class ParticlesAddedUpdateMethod(object):
 
     def apply_on_all(self, particles, *list_arguments, **keyword_arguments):
         query_identifiers = None
-        if not self.set_query_arguments_method is None:
+        if self.set_query_arguments_method is not None:
             query_identifiers = self.set_query_arguments_method(
                 *list_arguments, **keyword_arguments
             )
@@ -768,7 +763,7 @@ class ParticlesAddedUpdateMethod(object):
         elif not hasattr(query_identifiers, "__iter__"):
             query_identifiers = (query_identifiers,)
 
-        if not self.get_number_of_particles_in_set_method is None:
+        if self.get_number_of_particles_in_set_method is not None:
             number_of_particles_in_set = self.get_number_of_particles_in_set_method(
                 *query_identifiers
             )
@@ -785,7 +780,7 @@ class ParticlesAddedUpdateMethod(object):
         return particles._subset(keys)
 
 
-class ParticleGetIndexMethod(object):
+class ParticleGetIndexMethod:
     """
     Instances return the index of a particle in the code
     """
@@ -805,10 +800,9 @@ class ParticleGetIndexMethod(object):
 
 class AbstractInCodeAttributeStorage(base.AttributeStorage):
     """
-    Abstract base storage for incode attribute storage.
-    It provides functions to handle getters and setters of
-    attributes but not for creating or deleting of particles as
-    this differs between grids and particle sets.
+    Abstract base storage for incode attribute storage.  It provides functions
+    to handle getters and setters of attributes but not for creating or
+    deleting of particles as this differs between grids and particle sets.
 
     """
 
@@ -870,7 +864,7 @@ class AbstractInCodeAttributeStorage(base.AttributeStorage):
 
         if set_of_attributes:
             raise exceptions.AmuseException(
-                "Do not have attributes {0}".format(sorted(set_of_attributes))
+                f"Do not have attributes {sorted(set_of_attributes)}"
             )
 
         return result
@@ -961,7 +955,7 @@ class InCodeAttributeStorage(AbstractInCodeAttributeStorage):
         index = 0
         for key in keys:
             if key in self.mapping_from_particle_key_to_index_in_the_code:
-                raise Exception("particle with same key added twice: {0}".format(key))
+                raise Exception(f"particle with same key added twice: {key}")
             self.mapping_from_particle_key_to_index_in_the_code[key] = indices[index]
             self.mapping_from_index_in_the_code_to_particle_key[indices[index]] = key
             index = index + 1
@@ -1422,17 +1416,16 @@ class InCodeGridAttributeStorage(AbstractInCodeAttributeStorage):
         return sorted(self.writable_attributes)
 
 
-class ParticleSpecificSelectSubsetMethod(object):
+class ParticleSpecificSelectSubsetMethod:
     """
     Instances wrap a function that can take a particle index, plus a list
-    offset and returns one index. This method is most
-    useful to return links between particles (subparticles or
-    nearest neighbors). Instances also need a function to get
-    the number of links.
+    offset and returns one index. This method is most useful to return links
+    between particles (subparticles or nearest neighbors). Instances also need
+    a function to get the number of links.
 
     .. code-block:: python
 
-        output_index = instance.get_nearest_neigbors(index_of_the_particle, input_index)
+        output_index = instance.get_nearest_neighbors(index_of_the_particle, input_index)
 
     The index or indices are converted to a particle subset.
     """
@@ -1451,14 +1444,14 @@ class ParticleSpecificSelectSubsetMethod(object):
             "Getting all links to other particles from all particles in a set is not implemented yet"
         )
 
-    def apply_on_one(self, set, particle):
-        from_indices = set._private.attribute_storage.get_indices_of(
+    def apply_on_one(self, particleset, particle):
+        from_indices = particleset._private.attribute_storage.get_indices_of(
             [
                 particle.key,
             ]
         )
 
-        if not self.get_number_of_particles_in_set_method is None:
+        if self.get_number_of_particles_in_set_method is not None:
             number_of_particles_in_set = self.get_number_of_particles_in_set_method(
                 from_indices
             )[0]
@@ -1470,6 +1463,6 @@ class ParticleSpecificSelectSubsetMethod(object):
             index = self.method()
             indices = [index]
 
-        keys = set._private.attribute_storage._get_keys_for_indices_in_the_code(indices)
+        keys = particleset._private.attribute_storage._get_keys_for_indices_in_the_code(indices)
 
         return particle.as_set()._subset(keys)

@@ -1,0 +1,30 @@
+# Compilers
+CXX = @CXX@
+
+MPICXX = @MPICXX@
+
+CPU_COUNT = @CPU_COUNT@
+
+# Tools
+AR = @AR@
+RANLIB = @RANLIB@
+
+
+# General flags and libraries
+CFLAGS = @CFLAGS@
+LDFLAGS = @LDFLAGS@
+
+LIBS = @LIBS@
+
+
+# External dependencies
+MPI_CXXFLAGS = @MPI_CXXFLAGS@
+MPI_CXXLIBS = @MPI_CXXLIBS@
+
+OPENMP_CXXFLAGS = @OPENMP_CXXFLAGS@
+
+CUDA_TK = @CUDA_TK@
+NVCC = @NVCC@
+CUDA_FLAGS = @CUDA_FLAGS@
+CUDA_LDFLAGS = @CUDA_LDFLAGS@
+

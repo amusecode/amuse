@@ -1,0 +1,51 @@
+[project]
+name = "amuse-mpiamrvac"
+dynamic = ["version"]
+requires-python = ">=3.7"
+dependencies = [
+    "amuse-framework"
+]
+
+[build-system]
+requires = ["hatchling", "versioningit"]
+build-backend = "hatchling.build"
+
+[tool.hatch.version]
+source = "versioningit"
+
+[tool.versioningit.next-version]
+method = "smallest"
+
+[tool.versioningit.format]
+distance = "{next_version}.dev{distance}+{vcs}{rev}"
+dirty = "{base_version}+d{build_date:%Y%m%d}"
+distance-dirty = "{next_version}.dev{distance}+{vcs}{rev}.d{build_date:%Y%m%d}"
+
+[tool.versioningit.vcs]
+method = { module = "version_helper", value = "get_amuse_version", module-dir = "amuse_mpiamrvac/support/shared" }
+
+[tool.hatch.build]
+skip-excluded-dirs = true
+
+[tool.hatch.build.targets.wheel]
+include = [
+    "amuse_mpiamrvac/**/*.py", "amuse_mpiamrvac/data"]
+exclude = [
+    "amuse_mpiamrvac/packages",
+    "amuse_mpiamrvac/support",
+    "amuse_mpiamrvac/src",
+    "amuse_mpiamrvac/tests"
+    ]
+artifacts = [
+    "amuse_mpiamrvac/mpiamrvac_3d_worker", "amuse_mpiamrvac/mpiamrvac_3dacc_worker",
+    "amuse_mpiamrvac/mpiamrvac_2d_worker", "amuse_mpiamrvac/mpiamrvac_2dacc_worker",
+    "amuse_mpiamrvac/mpiamrvac_1d_worker", "amuse_mpiamrvac/mpiamrvac_1dacc_worker",
+    ]
+
+[tool.pytest.ini_options]
+pythonpath = ["amuse_mpiamrvac/tests/"]
+
+testpaths = ["amuse_mpiamrvac/tests"]
+
+addopts = "--import-mode=append"    # test the installed package
+

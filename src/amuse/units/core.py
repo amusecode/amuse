@@ -64,6 +64,8 @@ class unit(object):
 
     Units can also be named, by creating a named unit.
     """
+
+    _latex_representation = None
     __array_priority__ = 100
 
     def __mul__(self, other):
@@ -141,6 +143,12 @@ class unit(object):
 
     def __hash__(self):
         return self._hash
+
+    def latex(self):
+        if self._latex_representation is not None:
+            return self._latex_representation
+        else:
+            return self.symbol
 
     @late
     def _hash(self):
@@ -853,14 +861,15 @@ class named_unit(unit):
     >>> (20.0 | (60.0 * si.s)).as_quantity_in(minute)
     quantity<20.0 min>
     """
-    def __init__(self, name, symbol, unit):
+
+    def __init__(self, name, symbol, unit, latex=None):
         self.name = name
         self.symbol = symbol
         self.local_unit = unit
+        self._latex_representation = latex
 
     def __str__(self):
         return self.symbol
-
 
     def reference_string(self):
         return self.to_simple_form().reference_string()
@@ -1041,6 +1050,8 @@ class pow_unit(derived_unit):
     """
     def __init__(self, power, unit):
         self.power = power
+        if int(power) == power:
+            self.power = int(power)
         self.local_unit = unit
 
     def __str__(self):

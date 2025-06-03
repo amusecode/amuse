@@ -1,30 +1,27 @@
-ifeq ($(origin AMUSE_DIR), undefined)
-  AMUSE_DIR := $(shell amusifier --get-amuse-dir)
-endif
--include $(AMUSE_DIR)/config.mk
+.PHONY: Makefile support/shared/lib-configure.mk
+include support/shared/lib-configure.mk
 
-LIBNAME = libforsockets.a
+
+HEADERS = forsockets.h fortransocketsinterface.mod
+DYNAMIC_LIB = libforsockets.so
+PKG_CONFIG_FILE = forsockets.pc
+
 OBJS = forsockets.o
-ifeq ($(FC_ISO_C_AVAILABLE), yes)
-OBJS += forsocketsf.o
-endif
 
-MPIF90 ?= mpif90
-MPICC ?= openmpicc
+define PKG_CONFIG_CONTENTS :=
+prefix=$(PREFIX)
+includedir=$${prefix}/include
+libdir=$${prefix}/lib
 
-all:$(LIBNAME) 
+Name: forsockets
+Description: The Fortran sockets library included with AMUSE
+Version: $(AMUSE_VERSION)
+Cflags: -I$${includedir}
+Libs: -L$${libdir} -lforsockets
 
-CFLAGS += -O2
+endef
 
-$(LIBNAME): $(OBJS)
-	ar -r  $(LIBNAME) $^
-	ranlib $(LIBNAME)
 
-%.o: %.c
-	$(CC) $(CFLAGS) -Wall -c -o $@ $<
-	
-%.o: %.f90
-	$(FC) $(FCFLAGS) -c -o $@ $<
+.PHONY: support/shared/lib-targets.mk
+include support/shared/lib-targets.mk
 
-clean:
-	rm -Rf *.o *.lo *.a *.mo *.mod

@@ -1,0 +1,47 @@
+[project]
+name = "amuse-tupan"
+dynamic = ["version"]
+requires-python = ">=3.7"
+dependencies = [
+    "amuse-framework",
+    "amuse_tupan"
+]
+
+[build-system]
+requires = ["hatchling", "versioningit"]
+build-backend = "hatchling.build"
+
+[tool.hatch.version]
+source = "versioningit"
+
+[tool.versioningit.next-version]
+method = "smallest"
+
+[tool.versioningit.format]
+distance = "{next_version}.dev{distance}+{vcs}{rev}"
+dirty = "{base_version}+d{build_date:%Y%m%d}"
+distance-dirty = "{next_version}.dev{distance}+{vcs}{rev}.d{build_date:%Y%m%d}"
+
+[tool.versioningit.vcs]
+method = { module = "version_helper", value = "get_amuse_version", module-dir = "amuse_tupan/support/shared" }
+
+[tool.hatch.build]
+skip-excluded-dirs = true
+
+[tool.hatch.build.targets.wheel]
+include = ["amuse_tupan/**/*.py"]
+exclude = [
+    "amuse_tupan/packages",
+    "amuse_tupan/support",
+    "amuse_tupan/src",
+    "amuse_tupan/tests"
+    ]
+artifacts = ["amuse_tupan/tupan_worker"]
+
+[tool.pytest.ini_options]
+pythonpath = ["amuse_tupan/tests/"]
+
+testpaths = ["amuse_tupan/tests"]
+
+addopts = "--import-mode=append"    # test the installed package
+

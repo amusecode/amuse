@@ -1,5 +1,5 @@
 #ifndef __SIMPLE_HASH_H__
-#define __SIMPLE_HASH_H__ 
+#define __SIMPLE_HASH_H__
 
 #include <stdbool.h>
 
@@ -35,4 +35,5 @@ int hash_inserts(struct simple_hash *hash,size_t n, size_t *key, size_t *value);
 int hash_updates(struct simple_hash *hash,size_t n, size_t *key, size_t *value);
 int hash_deletes(struct simple_hash *hash,size_t n, size_t *key);
 
-#endif 
+#endif
+

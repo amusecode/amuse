@@ -5,7 +5,12 @@ import scipy
 from scipy.interpolate import BPoly, interp1d, UnivariateSpline
 from numpy import exp, sqrt, pi, sin, cos, log10
 from scipy.special import gamma, gammainc, hyp1f1
-from scipy.integrate import ode, simps, quad
+
+# This code needs to be updated, as simps is no longer available in scipy. As the broken
+# import keeps the rest of the tests from running, it's been commented out for now.
+# - LV 2025
+
+# from scipy.integrate import ode, simps, quad
 from math import factorial, sinh
 
 #     Authors: Mark Gieles, Alice Zocchi (Surrey 2015)

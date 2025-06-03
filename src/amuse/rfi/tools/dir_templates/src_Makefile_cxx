@@ -1,0 +1,24 @@
+CFLAGS   += -Wall -g
+CXXFLAGS += $(CFLAGS)
+
+CODELIB = lib{code}.a
+
+CODEOBJS = {code}.o
+
+
+all: $(CODELIB)
+
+
+clean:
+	rm -f *.o *.a
+
+distclean: clean
+
+$(CODELIB): $(CODEOBJS)
+	rm -f $@
+	$(AR) -ruv $@ $(CODEOBJS)
+	$(RANLIB) $@
+
+.cc.o: $<
+	$(CXX) $(CXXFLAGS) -c -o $@ $<
+
