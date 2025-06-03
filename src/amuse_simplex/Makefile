@@ -1,84 +1,76 @@
-# standard amuse configuration include
-# config.mk will be made after ./configure has run
-ifeq ($(origin AMUSE_DIR), undefined)
-  AMUSE_DIR := $(shell amusifier --get-amuse-dir)
+ifneq (,$(filter-out clean distclean, $(MAKECMDGOALS)))
+include support/config.mk
 endif
--include $(AMUSE_DIR)/config.mk
-
-MPICXX ?= mpicxx
-export MPICXX
 
 
-SRCDIR = src
-OBJDIR = $(SRCDIR)/obj
-APP		 = $(SRCDIR)/bin/SimpleX
-PLUGINS = $(SRCDIR)/plugins
+# Detecting dependencies
+support/config.mk:
+	cd support && ./configure
 
-OBJS = $(OBJDIR)/amuse_interface.o $(OBJDIR)/SimpleX.o \
-       $(OBJDIR)/Structs.o $(OBJDIR)/rates.o $(OBJDIR)/Common.o $(OBJDIR)/h5w_serial.o \
-       $(OBJDIR)/keyValue.o $(OBJDIR)/tree_structures.o $(OBJDIR)/hilbert.o 
 
-GLOBJS = $(OBJDIR)/amuse_interface_gl.o
+# Building the code into a static library
+DEPFLAGS += $(GSL_FLAGS) $(HDF5_CFLAGS) $(HEALPIX_CXX_CFLAGS) $(QHULL_FLAGS)
 
-HEALPIX_PATH = $(PLUGINS)/HEALPix/
-QHULL_PATH = $(PLUGINS)/qhull-2012.1/
+CFLAGS += $(DEPFLAGS)
 
-HDF5_FLAGS ?= -I$(HDF5_PATH)/include
-HDF5_LIBS  ?= -L$(HDF5_PATH)/lib -lhdf5 -lz
+LDFLAGS += $(HDF5_LDFLAGS)
 
-GSL_PATH = /usr/local/scisoft
+LDLIBS += $(GSL_LIBS) $(HDF5_LIBS) $(HEALPIX_CXX_LIBS) $(QHULL_LIBS)
 
-# here we use ?= to allow amuse configure to override these
-# variables
-GSL_FLAGS ?= -I$(GSL_PATH)/include
-GSL_LIBS ?= -L$(GSL_PATH)/lib -lgsl -lgslcblas
+CODELIB = libsimplex.a
 
-LIBS =  $(HDF5_LIBS) \
-        $(GSL_LIBS) \
-        -L$(QHULL_PATH)/lib -lqhullstatic \
-        -L$(HEALPIX_PATH)/lib  -lhealpix_cxx
+CODEOBJS = amuse_interface.o SimpleX.o Structs.o rates.o Common.o h5w_serial.o
+CODEOBJS += keyValue.o tree_structures.o hilbert.o
+CODEOBJS := $(patsubst %,src/obj/%,$(CODEOBJS))
 
-GLINCLUDE = -I/usr/include/GL -I$(GL_PATH)/include/GL/
-GLLIB = -L$(GL_PATH)/lib -lf90GLU -lf90GL -lf90glut  -lGLU -lGL -lglut  #-lguide 
-GLLIBS= $(GLLIB) -lGL -lGLU -L/home/inti/libraries/freeglut-2.4.0/src/.libs -lglut \
--L/usr/X11R6/lib -lXaw -lXt -lXmu -lXi -lXext -lX11 -ltiff
+.PHONY: $(CODELIB)
+$(CODELIB):
+	$(MAKE) -C src amuse MPICXX=$(MPICXX) HDF5_FLAGS="$(HDF5_CFLAGS) $(HDF5_CPPFLAGS)" HDF5_LIBS="$(HDF5_LDFLAGS) $(HDF5_LIBS)"
+	$(AR) ruv $@ $(CODEOBJS)
+	$(RANLIB) $@
 
-all:	compile simplex_worker
 
-compile: $(APP)
+# Building the workers
+simplex_worker.h: interface.py
+	amusifier --type=h interface.py SimpleXInterface -o $@
 
-$(APP):
-	cd $(SRCDIR) && $(MAKE) CC="$(CC) $(CFLAGS)" CXX="$(CXX) $(CXXFLAGS)"
+simplex_worker.cc: interface.py
+	amusifier --type=c interface.py SimpleXInterface -o $@
 
+simplex_worker.o: simplex_worker.cc simplex_worker.h
+	$(MPICXX) -c -o $@ $(CFLAGS) $<
+
+simplex_worker: simplex_worker.o $(CODELIB)
+	$(MPICXX) -o $@ $(LDFLAGS) $^ $(LDLIBS)
+
+
+# Which packages contain which workers?
+amuse-simplex_contains: simplex_worker
+
+
+# Building and installing packages
+develop-%: %_contains
+	support/shared/uninstall.sh $*
+	python -m pip install -e packages/$*
+
+install-%: %_contains
+	support/shared/uninstall.sh $*
+	python -m pip install packages/$*
+
+package-%: %_contains
+	python3 -m pip install -vv --no-cache-dir --no-deps --no-build-isolation --prefix ${PREFIX} packages/$*
+
+test-%:
+	cd packages/$* && pytest
+
+
+# Cleaning up
+.PHONY: clean
 clean:
-	$(RM) *.so *.o *.pyc worker.cc worker.h worker_gl.cc worker_gl.h
-	$(RM) worker_code.cc worker_code.h worker_code_gl.cc worker_code_gl.h
-	$(RM) simplex_worker simplex_worker_gl *~
-	cd $(SRCDIR) && $(MAKE) clean
+	$(MAKE) -C src clean
+	rm -rf *.o *worker*
 
+.PHONY: distclean
 distclean: clean
-	cd $(SRCDIR) && $(MAKE) veryclean
-	
-worker_code.cc: interface.py
-	$(CODE_GENERATOR) --type=c $< SimpleXInterface -o $@
-
-worker_code.h: interface.py
-	$(CODE_GENERATOR) --type=h $< SimpleXInterface -o $@
-
-worker_code-gl.cc: interface.py
-	$(CODE_GENERATOR) --type=c $< GlSimpleXInterface -o $@
-
-worker_code-gl.h: interface.py
-	$(CODE_GENERATOR) --type=h $< GlSimpleXInterface -o $@
-
-simplex_worker: worker_code.cc worker_code.h $(OBJS)
-	$(MPICXX) $(LDFLAGS) $< $(OBJS) -o $@ $(LIBS)
-
-#simplex_worker_gl: worker_code-gl.cc worker_code-gl.h $(OBJS) $(GLOBJS)
-#	$(MPICXX) $^ -o $@ $(LIBS) $(GLLIBS)
-
-$(OBJDIR)/amuse_interface.o: $(SRCDIR)/src/amuse_interface.cpp $(SRCDIR)/src/amuse_interface.h
-	cd $(SRCDIR) && $(MAKE) amuse_interface
-	
-$(OBJDIR)/amuse_interface_gl.o: $(SRCDIR)/src/amuse_interface_gl.cpp
-	cd $(SRCDIR) && $(MAKE) amuse_interface_gl
+	rm -f support/config.mk support/config.log support/config.status
+	rm -rf support/autom4te.cache

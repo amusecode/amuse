@@ -54,7 +54,7 @@ template <typename T> arr_1D<T>::arr_1D (unsigned long long int r, unsigned long
   rank = r;
   if (dims)
     delete [] dims;
-  dims = new int[rank];
+  dims = new unsigned long long[rank];
   for (i=0; i< d[i]; i++)
     dims[i] = d[i];
     
