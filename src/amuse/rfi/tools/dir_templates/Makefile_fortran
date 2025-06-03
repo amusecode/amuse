@@ -16,8 +16,7 @@ VERSION = VERSION
 	##### Modify URL as needed #####
 	$(DOWNLOAD) https://github.com/{code}/{code}/archive/$(VERSION).tar.gz >$@
 
-PATCHES := $(file < patches/series)
-PATCHES := $(patsubst %,%,$(PATCHES))    # replace newlines with spaces
+PATCHES := $(shell cat patches/series)
 
 src/{code}-$(VERSION): {code}.tar.gz
 	##### Modify as needed #####

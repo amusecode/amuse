@@ -86,7 +86,9 @@ $(DYNAMIC_LIB): $(OBJS) $(CUOBJS)
 	$(NVCC) $(NVCCFLAGS) -c $< -o $@
 
 $(PKG_CONFIG_FILE):
-	$(file >$@,$(PKG_CONFIG_CONTENTS))
+	# the file function is not available on old macOS make, so we make do with this
+	printf '' >$@
+	$(foreach line,$(PKG_CONFIG_CONTENTS),printf '%s\n' '$(line)' >>$@;)
 
 
 .PHONY: clean

@@ -14,8 +14,7 @@ VERSION = 2.02.70
 mocassin.$(VERSION).tar.gz:
 	$(DOWNLOAD) https://amuse.strw.leidenuniv.nl/codes/mocassin.$(VERSION).tar.gz >$@
 
-PATCHES := $(file < patches/series)
-PATCHES := $(patsubst %,%,$(PATCHES))    # replace newlines with spaces
+PATCHES := $(shell cat patches/series)
 
 src:
 	mkdir -p src

@@ -91,7 +91,9 @@ $(DYNAMIC_LIB): $(OBJS)
 	$(FC) $(FCFLAGS) -c -o $*.o $<
 
 $(PKG_CONFIG_FILE):
-	$(file >$@,$(PKG_CONFIG_CONTENTS))
+	# the file function is not available on old macOS make, so we make do with this
+	printf '' >$@
+	$(foreach line,$(PKG_CONFIG_CONTENTS),printf '%s\n' '$(line)' >>$@;)
 
 
 ifdef DYNAMIC_LIB_MPI
@@ -106,7 +108,9 @@ endif
 	$(MPIFC) $(FCFLAGS) $(CFLAGS_MPI) -c -o $*.mo $<
 
 $(PKG_CONFIG_FILE_MPI):
-	$(file >$@,$(PKG_CONFIG_CONTENTS_MPI))
+	# the file function is not available on old macOS make, so we make do with this
+	printf '' >$@
+	$(foreach line,$(PKG_CONFIG_CONTENTS_MPI),printf '%s\n' '$(line)' >>$@;)
 
 
 # Clean up
