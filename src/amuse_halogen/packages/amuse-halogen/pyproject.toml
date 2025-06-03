@@ -21,6 +21,9 @@ distance = "{next_version}.dev{distance}+{vcs}{rev}"
 dirty = "{base_version}+d{build_date:%Y%m%d}"
 distance-dirty = "{next_version}.dev{distance}+{vcs}{rev}.d{build_date:%Y%m%d}"
 
+[tool.versioningit.vcs]
+method = { module = "version_helper", value = "get_amuse_version", module-dir = "amuse_halogen/support/shared" }
+
 [tool.hatch.build]
 skip-excluded-dirs = true
 
