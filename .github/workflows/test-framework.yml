@@ -3,10 +3,10 @@ name: Test AMUSE framework
 on:
   push:
     branches:
-     - main
+      - issue-1144-new-continuous-integration
   pull_request:
     branches:
-     - main
+      - main
   workflow_dispatch:
 
 jobs:
@@ -18,7 +18,7 @@ jobs:
       matrix:
         os:
           - ubuntu-latest
-          - macos-latest
+          # - macos-latest
 
     defaults:
       run:
@@ -41,15 +41,27 @@ jobs:
       run: |
         conda install c-compiler cxx-compiler fortran-compiler 'gfortran<14' python pkgconfig coreutils patch curl tar unzip gzip bzip2 xz perl bison make cmake openmpi gsl fftw gmp mpfr hdf5 netcdf4 libopenblas liblapack zlib pip wheel 'docutils>=0.6' 'mpi4py>=1.1.0' 'numpy>=1.2.2' 'h5py>=1.1.0' pytest
 
-      # - name: Configure OpenMPI
-      #      run: |
-      #        mkdir -p "$HOME/.openmpi"
-      #        echo "rmaps_base_oversubscribe = true" >>"$HOME/.openmpi/mca-params.conf"
-      #        echo "mpi_yield_when_idle = true" >>"$HOME/.openmpi/mca-params.conf"
-      #        echo "btl_tcp_if_include = lo,eth0" >>"$HOME/.openmpi/mca-params.conf"
-      #        mkdir -p "$HOME/.prte"
-      #        echo "rmaps_default_mapping_policy = :oversubscribe" >>"$HOME/.prte/mca-params.conf"
-      #        echo "prte_if_include = lo,eth0" >>"$HOME/.prte/mca-params.conf"
+    - name: Configure OpenMPI
+      if: ${{ matrix.os == 'ubuntu-latest' }}
+      run: |
+        mkdir -p "$HOME/.openmpi"
+        # echo "rmaps_base_oversubscribe = true" >>"$HOME/.openmpi/mca-params.conf"
+        echo "mpi_yield_when_idle = true" >>"$HOME/.openmpi/mca-params.conf"
+        echo "mca_base_verbose = stdout,level:9" >> "$HOME/.openmpi/mca-params.conf"
+        echo "mpi_comm_verbose = 100" >> "$HOME/.openmpi/mca-params.conf"
+        echo "btl_base_verbose = 100" >> "$HOME/.openmpi/mca-params.conf"
+        echo "hwloc_base_verbose = 100" >> "$HOME/.openmpi/mca-params.conf"
+        echo "if_base_verbose = 100" >> "$HOME/.openmpi/mca-params.conf"
+        echo "pmix_base_verbose = 100" >> "$HOME/.openmpi/mca-params.conf"
+        # echo "btl_tcp_if_include = lo,eth0" >>"$HOME/.openmpi/mca-params.conf"
+        mkdir -p "$HOME/.prte"
+        echo "rmaps_default_mapping_policy = :oversubscribe" >>"$HOME/.prte/mca-params.conf"
+        echo "prte_if_include = lo,eth0" >>"$HOME/.prte/mca-params.conf"
+
+    - name: Test OpenMPI
+      run: |
+        mpicc -o $HOME/amuse/mpi_test $HOME/amuse/mpi_test.c
+        mpirun -n 1 $HOME/amuse/mpi_test
 
     - name: Checkout
       uses: actions/checkout@v4
@@ -75,10 +87,12 @@ jobs:
         ./setup test amuse-framework
 
     - name: Save build logs
+      if: always()
       run: |
         tar czf logs-${{ matrix.os }}.tar.gz support/logs
 
     - name: Archive build logs
+      if: always()
       uses: actions/upload-artifact@v4
       with:
         name: logs-${{ matrix.os }}.tar.gz

@@ -47,9 +47,11 @@ test_framework() {
         ${GMAKE} -C src/tests all
         # Tests for amuse.distributed won't be fixed as it is to be removed, disabled.
         if [ "x${CI}" = "x" ] ; then
-            cd src/tests && pytest --import-mode=append core_tests compile_tests --ignore compile_tests/java_implementation -k 'not TestCDistributedImplementationInterface and not TestAsyncDistributed' ${PYTEST_OPTS}
+            # cd src/tests && pytest --import-mode=append core_tests compile_tests --ignore compile_tests/java_implementation -k 'not TestCDistributedImplementationInterface and not TestAsyncDistributed' ${PYTEST_OPTS}
+            cd src/tests && pytest --import-mode=append core_tests compile_tests --ignore compile_tests/java_implementation -k 'TestAsync and test1' ${PYTEST_OPTS}
         else
-            cd src/tests && pytest --import-mode=append core_tests compile_tests --ignore compile_tests/java_implementation -k 'not TestCDistributedImplementationInterface and not TestAsyncDistributed and not noci' ${PYTEST_OPTS}
+            # cd src/tests && pytest --import-mode=append core_tests compile_tests --ignore compile_tests/java_implementation -k 'not TestCDistributedImplementationInterface and not TestAsyncDistributed and not noci' ${PYTEST_OPTS}
+            cd src/tests && pytest --import-mode=append core_tests compile_tests --ignore compile_tests/java_implementation -k 'TestAsync and test1 and not noci' ${PYTEST_OPTS}
 
         fi
 

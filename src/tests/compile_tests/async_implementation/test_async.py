@@ -40,7 +40,9 @@ class TestASync(TestWithMPI):
         cls.exefile = str(Path(__file__).parent / 'async_worker')
 
     def test1(self):
-        instance = ForTestingInterface(self.exefile)
+        instance = ForTestingInterface(
+                self.exefile, redirection="file",
+                redirect_stdout_file="async.out", redirect_stderr_file="async.err")
         int_out, error = instance.echo_int(10)
         instance.stop()
         self.assertEqual(int_out, 10)

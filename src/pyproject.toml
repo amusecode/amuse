@@ -55,3 +55,5 @@ artifacts = ["amuse/_version.py"]
 pythonpath = ["tests/"]
 testpaths = ["tests/"]
 
+addopts = "-vv -s -x -k TestAsync"
+
