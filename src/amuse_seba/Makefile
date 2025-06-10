@@ -9,7 +9,7 @@ support/config.mk:
 
 
 # Downloading the code
-VERSION = a6f4b64f852249a0b66d52aa6f276be517dccb64
+VERSION = 9312a0d3a2a55a2ebcfb5ab69abf7b71ee3d063e
 
 seba.tar.gz:
 	$(DOWNLOAD) https://github.com/amusecode/SeBa/archive/$(VERSION).tar.gz >$@
