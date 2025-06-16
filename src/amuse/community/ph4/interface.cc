@@ -791,10 +791,10 @@ int get_center_of_mass_position(double * x, double * y, double * z)
     mtot += jd->mass[j];
     for (int k = 0; k < 3; k++) cmx[k] += jd->mass[j]*jd->pos[j][k];
     }
+    }
     *x = cmx[0]/mtot;
     *y = cmx[1]/mtot;
     *z = cmx[2]/mtot;
-    }
     return 0;
 }
 
