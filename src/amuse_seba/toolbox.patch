@@ -3,8 +3,8 @@ index 63009a5..f4f744f 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -1,4 +1,4 @@
--CXXFLAGS  += -I./include -I./include/star -DHAVE_CONFIG_H -DTOOLBOX
-+CXXFLAGS  += -I./include -I./include/star -DHAVE_CONFIG_H
+-CXXFLAGS  += -I./include -I./include/star -DHAVE_CONFIG_H -DTOOLBOX -Wconversion
++CXXFLAGS  += -I./include -I./include/star -DHAVE_CONFIG_H -Wconversion
  LDLIBS	  += -Lsstar -lsstar -Lnode -lnode -Lstd -lstd -lm
  CFLAGS    += -O
  CXXFLAGS  += -O
