@@ -183,6 +183,40 @@ Slack <https://amusecode.slack.com>`_ or by `making an issue on
 GitHub <https://github.com/amusecode/amuse/issues/new/choose>`_.
 
 
+Installing from a Git repository
+````````````````````````````````
+
+If you plan to modify AMUSE or one of the codes in it, then you may want to install from
+a local git clone instead of from a tar file. This will take more disk space and more
+download time, so it shouldn't be the first option, but if you want to do it then you
+can. You'll need to gave `git` installed:
+
+.. code-block:: bash
+
+   git clone https://github.com/amusecode/amuse.git
+
+
+Then you can enter the source directory using:
+
+.. code-block:: bash
+
+   cd amuse
+
+
+Select a version to build (use either one of these, or whichever version is relevant):
+
+.. code-block:: bash
+
+   git switch main                          # current development version
+   git checkout checkout v2025.5.0          # tagged release
+
+And now you can start the installer as before:
+
+.. code-block:: bash
+
+   ./setup
+
+
 Additional packages
 ```````````````````
 
