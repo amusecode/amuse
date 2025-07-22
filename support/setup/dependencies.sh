@@ -74,7 +74,7 @@ DEPS_dnf="${DEPS_dnf} libqhull-devel blas-devel lapack-devel"
 
 # Help messages for the user, used by help.sh
 
-CONDA_CMDS="${BOLD}conda install -c conda-forge ${DEPS_conda}${END_BOLD}\n"
+CONDA_CMDS="${BOLD}conda install -c conda-forge --override-channels ${DEPS_conda}${END_BOLD}\n"
 MACPORTS_CMDS="${BOLD}sudo port install ${DEPS_macports}\n${DEPS_POST_macports}${END_BOLD}\n"
 HOMEBREW_CMDS="${BOLD}brew install ${DEPS_homebrew}${END_BOLD}\n"
 APT_CMDS="${BOLD}sudo apt install ${DEPS_apt}${END_BOLD}\n"
