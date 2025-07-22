@@ -90,10 +90,12 @@ $(DYNAMIC_LIB): $(OBJS)
 %.mod: %.f90
 	$(FC) $(FCFLAGS) -c -o $*.o $<
 
+export PKG_CONFIG_CONTENTS
+
 $(PKG_CONFIG_FILE):
-	# the file function is not available on old macOS make, so we make do with this
-	printf '' >$@
-	$(foreach line,$(PKG_CONFIG_CONTENTS),printf '%s\n' '$(line)' >>$@;)
+	@# the file function is not available on old macOS make, so we make do with this
+	printf '%b' "$${PKG_CONFIG_CONTENTS}" >$@
+
 
 
 ifdef DYNAMIC_LIB_MPI
@@ -107,10 +109,11 @@ endif
 %.mo: %.f90
 	$(MPIFC) $(FCFLAGS) $(CFLAGS_MPI) -c -o $*.mo $<
 
+export PKG_CONFIG_CONTENTS_MPI
+
 $(PKG_CONFIG_FILE_MPI):
-	# the file function is not available on old macOS make, so we make do with this
-	printf '' >$@
-	$(foreach line,$(PKG_CONFIG_CONTENTS_MPI),printf '%s\n' '$(line)' >>$@;)
+	@# the file function is not available on old macOS make, so we make do with this
+	printf '%b' "$${PKG_CONFIG_CONTENTS_MPI}" >$@
 
 
 # Clean up
