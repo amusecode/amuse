@@ -36,9 +36,9 @@ def get_amuse_version(project_dir, params):
     except (NotVCSError, NotSdistError):
         proj_dir = Path(project_dir)
 
-        version = load_version(proj_dir.parents[1] / 'VERSION')
+        version = load_version(proj_dir.parents[0] / 'VERSION')
 
         if version is None:
-            version = load_version(proj_dir.parents[4] / 'VERSION')
+            version = load_version(proj_dir.parents[3] / 'VERSION')
 
         return VCSDescription(version, 'exact', None, {})
