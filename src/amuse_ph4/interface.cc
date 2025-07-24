@@ -780,19 +780,22 @@ int get_center_of_mass_position(double * x, double * y, double * z)
     // (Could also use jdata::get_com.)
 
     if (!jd || jd->nj <= 0) {
-	*x = *y = *z = 0;
-	return 0;
+        *x = *y = *z = 0;
+        return 0;
     }
-	
+
     real mtot = 0;
     vec cmx(0,0,0);
     for (int j = 0; j < jd->nj; j++) {
-	mtot += jd->mass[j];
-	for (int k = 0; k < 3; k++) cmx[k] += jd->mass[j]*jd->pos[j][k];
+        if (jd->mass[j] > _TINY_){
+            mtot += jd->mass[j];
+            for (int k = 0; k < 3; k++) cmx[k] += jd->mass[j]*jd->pos[j][k];
+        }
     }
     *x = cmx[0]/mtot;
     *y = cmx[1]/mtot;
     *z = cmx[2]/mtot;
+
     return 0;
 }
 
@@ -808,12 +811,15 @@ int get_center_of_mass_velocity(double * vx, double * vy, double * vz)
     real mtot = 0;
     vec cmv(0,0,0);
     for (int j = 0; j < jd->nj; j++) {
-	mtot += jd->mass[j];
-	for (int k = 0; k < 3; k++) cmv[k] += jd->mass[j]*jd->vel[j][k];
+        if (jd->mass[j] > _TINY_){
+            mtot += jd->mass[j];
+            for (int k = 0; k < 3; k++) cmv[k] += jd->mass[j]*jd->vel[j][k];
+        }
     }
     *vx = cmv[0]/mtot;
     *vy = cmv[1]/mtot;
     *vz = cmv[2]/mtot;
+    
     return 0;
 }
 

@@ -204,30 +204,33 @@ void idata::get_partial_acc_and_jerk()
 	ldnn[i] = _INFINITY_;
 	for (int k = 0; k < 3; k++) lacc[i][k] = ljerk[i][k] = 0;
 	for (int j = j_start; j < j_end; j++) {
-	    r2 = xv = 0;
-	    for (int k = 0; k < 3; k++) {
-		dx[k] = jdat->pred_pos[j][k] - ipos[i][k];
-		dv[k] = jdat->pred_vel[j][k] - ivel[i][k];
-		r2 += dx[k]*dx[k];
-		xv += dx[k]*dv[k];
-	    }
-	    r2i = 1/(r2+eps2+_TINY_);
-	    ri = sqrt(r2i);
-	    mri = jdat->mass[j]*ri;
-	    mr3i = mri*r2i;
-	    a3 = -3*xv*r2i;
-	    // PRC(jdat->mpi_rank); PRC(ri); PRL(mri);
-	    if (r2 > _TINY_) {
-		lpot[i] -= mri;
-		if (r2 < ldnn[i]) {
-		    ldnn[i] = r2;
-		    lnn[i] = j;
+		// Skip particles with zero mass.
+		if (jdat->mass[j] > _TINY_){
+			r2 = xv = 0;
+			for (int k = 0; k < 3; k++) {
+				dx[k] = jdat->pred_pos[j][k] - ipos[i][k];
+				dv[k] = jdat->pred_vel[j][k] - ivel[i][k];
+				r2 += dx[k]*dx[k];
+				xv += dx[k]*dv[k];
+			}
+			r2i = 1/(r2+eps2+_TINY_);
+			ri = sqrt(r2i);
+			mri = jdat->mass[j]*ri;
+			mr3i = mri*r2i;
+			a3 = -3*xv*r2i;
+			// PRC(jdat->mpi_rank); PRC(ri); PRL(mri);
+			if (r2 > _TINY_) {
+				lpot[i] -= mri;
+				if (r2 < ldnn[i]) {
+					ldnn[i] = r2;
+					lnn[i] = j;
+				}
+			}
+			for (int k = 0; k < 3; k++) {
+				lacc[i][k] += mr3i*dx[k];
+				ljerk[i][k] += mr3i*(dv[k]+a3*dx[k]);
+			}
 		}
-	    }
-	    for (int k = 0; k < 3; k++) {
-		lacc[i][k] += mr3i*dx[k];
-		ljerk[i][k] += mr3i*(dv[k]+a3*dx[k]);
-	    }
 	}
 	ldnn[i] = sqrt(ldnn[i]);
     }
@@ -523,8 +526,11 @@ real idata::get_pot()
     // and called get_acc_and_jerk() for the entire system.
 
     real pot2 = 0;
-    for (int i = 0; i < ni; i++)
-	pot2 += jdat->mass[ilist[i]]*ipot[i];
+
+	// Ignore massless particles
+    for (int i = 0; i < ni; i++){
+			pot2 += jdat->mass[ilist[i]] * ipot[i];
+	}
     return pot2/2;
 }
 
@@ -538,9 +544,9 @@ real idata::get_kin()
 
     real kin2 = 0;
     for (int i = 0; i < ni; i++) {
-	real v2 = 0;
-	for (int k = 0; k < 3; k++) v2 += pow(ivel[i][k],2);
-	kin2 += jdat->mass[ilist[i]]*v2;
+		real v2 = 0;
+		for (int k = 0; k < 3; k++) v2 += pow(ivel[i][k],2);
+			kin2 += jdat->mass[ilist[i]]*v2;
     }
     return kin2/2;
 }
@@ -636,12 +642,13 @@ void idata::check_encounters()
 	for (int i = 0; i < ni; i++) {
 
 	    int jnn = inn[i];			// j index, note
-	    if (jnn >= 0) {			// valid neighbor
+	    if (jnn >= 0) {			    // valid neighbor
 
+		// Ignore collisions between two massless particles
+		if ((jdat->mass[jnn] > _TINY_) || (imass[i] > _TINY_)) {
 		// Note no dtmin test.
 
 		real r = rmin/idnn[i];
-
 		if (r > rmax_close) {
 		    rmax_close = r;
 		    imax_close = i;
@@ -658,6 +665,7 @@ void idata::check_encounters()
 		    imax_coll = i;
 		}
 	    }
+		}
 	}
 
 	if (rmax_close >= 1) {			// close criterion
