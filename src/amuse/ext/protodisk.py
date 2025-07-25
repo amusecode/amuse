@@ -1,5 +1,5 @@
 import numpy
-
+import warnings
 from amuse.ext.evrard_test import body_centered_grid_unit_cube
 from amuse.ext.evrard_test import regular_grid_unit_cube
 from amuse.ext.evrard_test import uniform_random_unit_cube
@@ -44,17 +44,46 @@ class uniform_unit_cylinder(object):
             return self.cutout_cylinder(*(self.base_grid(self.estimatedN)).make_xyz())
 
 
-class ProtoPlanetaryDisk(object):
+class ProtoPlanetaryDisk:
 
-    def __init__(self, targetN, convert_nbody = None, discfraction=0.1,
-                   densitypower=1., thermalpower=0.5, Rmin=1,Rmax=100,
-                   gamma=1.,q_out=2.,base_grid=None):
+    def __init__(
+        self, targetN, convert_nbody=None, discfraction=0.1,
+        densitypower=1., thermalpower=0.5, radius_min=1, radius_max=100,
+        gamma=1.,q_out=2.,base_grid=None, Rmin=None, Rmax=None,
+    ):
+        if Rmin is not None:
+            warnings.warn(
+                "Rmin is deprecated, use radius_min instead",
+                category=FutureWarning,
+            )
+            if radius_min is not None and radius_min != Rmin:
+                raise ValueError(
+                    "Rmin and radius_min have different values, "
+                    "this is only allowed if one of them is None"
+                )
+            radius_min = Rmin
+        if radius_min is None:
+            raise ValueError("radius_min must be set")
+        if Rmax is not None:
+            warnings.warn(
+                "Rmax is deprecated, use radius_max instead",
+                category=FutureWarning,
+            )
+            if radius_max is not None and radius_max != Rmax:
+                raise ValueError(
+                    "Rmax and radius_max have different values, "
+                    "this is only allowed if one of them is None"
+                )
+            radius_max = Rmax
+        if radius_max is None:
+            raise ValueError("radius_max must be set")
+
         self.targetN=targetN
         self.convert_nbody=convert_nbody
         self.densitypower=densitypower
         self.thermalpower=thermalpower
-        self.Rmin=Rmin
-        self.Rmax=Rmax
+        self.Rmin=radius_min
+        self.Rmax=radius_max
         self.gamma=gamma
         self.q_out=q_out
         self.discfraction=discfraction
