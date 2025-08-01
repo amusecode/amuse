@@ -1,0 +1,48 @@
+[project]
+name = "amuse-sphray"
+dynamic = ["version"]
+requires-python = ">=3.7"
+dependencies = [
+    "amuse-framework"
+]
+
+[build-system]
+requires = ["hatchling", "versioningit"]
+build-backend = "hatchling.build"
+
+[tool.hatch.version]
+source = "versioningit"
+
+[tool.versioningit.next-version]
+method = "smallest"
+
+[tool.versioningit.format]
+distance = "{next_version}.dev{distance}+{vcs}{rev}"
+dirty = "{base_version}+d{build_date:%Y%m%d}"
+distance-dirty = "{next_version}.dev{distance}+{vcs}{rev}.d{build_date:%Y%m%d}"
+
+[tool.versioningit.vcs]
+method = { module = "version_helper", value = "get_amuse_version", module-dir = "amuse_sphray/support/shared" }
+
+[tool.hatch.build]
+skip-excluded-dirs = true
+
+[tool.hatch.build.targets.wheel]
+include = [
+    "amuse_sphray/**/*.py",
+    "amuse_sphray/data/*"]
+exclude = [
+    "amuse_sphray/packages",
+    "amuse_sphray/support",
+    "amuse_sphray/src",
+    "amuse_sphray/tests"
+    ]
+artifacts = ["amuse_sphray/sphray_worker"]
+
+[tool.pytest.ini_options]
+pythonpath = ["amuse_sphray/tests/"]
+
+testpaths = ["amuse_sphray/tests"]
+
+addopts = "--import-mode=append"    # test the installed package
+

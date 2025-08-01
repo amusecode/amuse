@@ -1,6 +1,5 @@
 from amuse.support.core import late
 from amuse.support import exceptions, options
-from amuse import config
 from amuse.rfi.tools.create_code import GenerateASourcecodeString
 from amuse.rfi.tools.create_code import GenerateASourcecodeStringFromASpecificationClass
 from amuse.rfi.tools.create_code import DTypeSpec
@@ -1469,52 +1468,16 @@ class GenerateAJavaInterfaceStringFromASpecificationClass\
 class GenerateAJavaWorkerScript(GenerateASourcecodeString):
 
     @late
-    def amuse_root_dir(self):
-        return os.path.abspath(options.GlobalOptions.instance().amuse_rootdirectory)
-
-    @late
-    def code_dir(self):
-        codedir=os.path.split(self.code_directory())[-1]
-        return os.path.join("community", codedir)
-
-    @late
-    def java(self):
-        return config.java.java
-
-    @late
-    def template_dir(self):
-        return os.path.dirname(__file__)
-        
-    @late
     def template_string(self):
-        path = self.template_dir
+        path = os.path.dirname(__file__)
         path = os.path.join(path, 'java_code_script.template')
-            
+
         with open(path, "r") as f:
             template_string = f.read()
-        
-        return template_string
-    
-    @staticmethod
-    def classpath(classpath, code_dir):
-        return ":".join([os.path.join(code_dir, x) for x in classpath])
-    
-    def script_string(self):
-        return self.template_string.format(
-            executable = sys.executable,
-            java = self.java,
-            classpath = self.classpath(self.specification_class.classpath, self.code_dir),
-            code_dir = self.code_dir,
-            amuse_root_dir = self.amuse_root_dir
-            )
 
-
-    def code_directory(self):
-        interface_module = inspect.getmodule(self.specification_class).__name__
-        return os.path.dirname(inspect.getfile(self.specification_class))
+        return template_string.format(
+                classpath=":".join(self.specification_class.classpath))
     
     def start(self):
-        self.out + self.script_string()
-        
+        self.out + self.template_string
         self._result = self.out.string
-

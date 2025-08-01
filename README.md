@@ -1,6 +1,6 @@
 # AMUSE: The Astrophysical Multipurpose Software Environment
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.1435860.svg)](https://doi.org/10.5281/zenodo.1435860)
-[![PyPI version](https://badge.fury.io/py/amuse.svg)](https://badge.fury.io/py/amuse)
+[![Docs](https://readthedocs.org/projects/amuse/badge)](https://amuse.readthedocs.io)
 
 This repository contains the AMUSE software. With AMUSE you can write
 scripts to simulate astrophysical problems in different domains.
@@ -16,133 +16,17 @@ and the documentation can be found at:
 Getting Started
 ===============
 
-In short, most probably
+AMUSE runs on Linux and macOS, and on Windows using Windows Subsystem for Linux (WSL).
 
-```bash
-pip install amuse
-```
-should get you going if you have a linux or Mac were you compile 
-codes on (HDF5 and an MPI libraries must be installed). 
+We're working on getting AMUSE into conda-forge, but in the mean time it needs to be
+installed from source. See
+[the AMUSE installation
+instructions](https://amuse.readthedocs.io/en/latest/install/installing.html) for how to
+do that, or if you're reading this locally see the `doc/install/` directory.
 
-Below are some hints for a quick install, if these fail please 
-look for options at the detailed descriptions of the installation 
-procedure in the documents in the 'doc/install' directory.
+After that, have a look at the [AMUSE
+tutorial](https://amuse.readthedocs.io/en/latest/tutorial/index.html) to get started, or
+if you prefer notebooks, give the [interactive
+tutorial](https://amuse.readthedocs.io/en/latest/interactive_tutorial/index.html) a
+try. Those too can be found locally in `doc/`.
 
-Compilers
-=========
-
-To build AMUSE from source you need to have a working build
-environment. The AMUSE build system needs C/C++ and fortan 90
-compilers, we recommend a recent version of GCC. 
-
-In Ubuntu you can setup the environment with (as root):
-
-```bash
-apt-get install build-essential curl g++ gfortran gettext zlib1g-dev
-```
-
-Other distributions have similar package or package groups available.
-
-In macOS you can use the homebrew or macports package manager (both
-require the Apple Developer Tools and Xcode to be installed).
-
-For a Windows 10 machine, AMUSE can be installed in the Windows Subsystem
-for linux (WSL), and installing e.g. Ubuntu from the Microsoft store. 
-Its recommended to use WSL 2. For further installation instructions, see the 
-Linux install instructions.
-
-Python
-======
-
-AMUSE needs Python 3 version >=3.7 installed preferably with pip and 
-virtualenv. It may be necessary to update pip to a recent version.
-If you cannot use Python 3, legacy support for Python 2 is available in the 
-AMUSE 12 release and the python2 branch.
-
-Installing Prerequisites
-========================
-
-The following libraries need to be installed:
-
-* HDF (version 1.6.5 - 1.12.x)
-* MPI (OpenMPI or MPICH)
-
-The following are needed for some codes:
-* FFTW (version >= 3.0)
-* GSL
-* CMake (version >= 2.4)
-* GMP (version >= 4.2.1)
-* MPFR (version >= 2.3.1)
-
-Installing+building AMUSE
-=========================
-
-AMUSE can be installed through pip:
-
-```bash
-pip install [--user] amuse
-```
-
-This will build and install AMUSE with an extensive set of codes.
-If necessary this will also install some required Python packages:
-
-* Numpy (version >= 1.3.0)
-* h5py (version >= 1.2.2)
-* mpi4py (version >= 1.1.0)
-* pytest (version >= 5.0)
-* docutils (version >= 0.6)
-
-If you are not using pip these must be installed by hand.
-
-It is possible to install the minimal framework by:
-
-```bash
-pip install [--user] amuse-framework
-```
-
-This does not include any codes. These can be added
-```bash
-pip install [--user] amuse-<code name>
-```
-
-AMUSE Development 
-=================
-
-An AMUSE development install can also be handled through pip by executing (in the root of a clone of the 
-repository)
-
-```bash
-pip install -e .
-```
-
-after this the codes need to be build:
-
-```bash
-python setup.py develop_build
-```
-
-Running the tests
-=================
-AMUSE comes with a large set of tests, most can be run automatically.
-To run these tests start the py.test command from the main
-amuse directory (directory this README file lives in).
-
-To run these tests do:
-
-1. install the tests
-
-```bash
-pip install [--user] amuse-tests
-```
-(this will install all tests whether or not you have installed the full amuse package)
-
-2. Run the automatic tests
-
-```bash
-pytest --pyargs -v amuse.test.suite
-```
-you can also just run the tests for the specific packages you have installed e.g.
-```bash
-pytest --pyargs amuse.test.suite.codes_tests.test_huayno
-```
-you may have to prefix ```mpiexec -n 1 --oversubscribe``` to the pytest command.

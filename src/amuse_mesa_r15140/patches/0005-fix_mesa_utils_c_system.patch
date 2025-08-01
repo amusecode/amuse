@@ -1,0 +1,12 @@
+diff --color -urN a/mesa-r15140/utils/private/utils_c_system.c b/mesa-r15140/utils/private/utils_c_system.c
+--- a/utils/private/utils_c_system.c	2024-12-09 07:48:39
++++ b/utils/private/utils_c_system.c	2024-12-09 07:55:39
+@@ -39,7 +39,7 @@
+ static const int SUCCESS=0;
+ static const int PATHLEN=4096;
+ static const char TEMPLATE[]="/.temp-XXXXXX";
+-static const int LEN_TEMP=strlen(TEMPLATE);
++static const int LEN_TEMP = sizeof(TEMPLATE) - 1;
+ 
+ /* Makes a single directory at path (mkdir path) */
+ int c_mkdir(const char * restrict path) {

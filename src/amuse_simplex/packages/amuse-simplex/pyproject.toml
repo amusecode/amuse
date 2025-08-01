@@ -1,0 +1,41 @@
+[project]
+name = "amuse-simplex"
+dynamic = ["version"]
+requires-python = ">=3.7"
+dependencies = [
+    "amuse-framework"
+]
+
+[build-system]
+requires = ["hatchling", "versioningit"]
+build-backend = "hatchling.build"
+
+[tool.hatch.version]
+source = "versioningit"
+
+[tool.versioningit.next-version]
+method = "smallest"
+
+[tool.versioningit.format]
+distance = "{next_version}.dev{distance}+{vcs}{rev}"
+dirty = "{base_version}+d{build_date:%Y%m%d}"
+distance-dirty = "{next_version}.dev{distance}+{vcs}{rev}.d{build_date:%Y%m%d}"
+
+[tool.hatch.build]
+skip-excluded-dirs = true
+
+[tool.hatch.build.targets.wheel]
+include = ["amuse_simplex/**/*.py"]
+exclude = [
+    "amuse_simplex/packages",
+    "amuse_simplex/support",
+    "amuse_simplex/src",
+    "amuse_simplex/tests"
+    ]
+artifacts = ["amuse_simplex/simplex_worker", "amuse_simplex/data"]
+
+[tool.pytest.ini_options]
+pythonpath = ["amuse_simplex/tests/"]
+
+testpaths = ["amuse_simplex/tests"]
+

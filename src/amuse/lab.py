@@ -121,7 +121,7 @@ _community_codes = [
     "MOBSE",
     "SeBa",
     "EVtwin",
-    "MESA",
+    "Mesa",
     "MMAMS",
     "Hop",
     ]
@@ -138,6 +138,7 @@ def _placeholder(name):
 
 for _name in _community_codes:
     _interfacename = _name+"Interface"
+    # future fix: _interfacename = _name.title()+"Interface"
     _packagename = _name.lower()
     _standardisedname = _name.title()
     try:

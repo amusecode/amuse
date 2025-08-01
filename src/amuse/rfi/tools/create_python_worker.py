@@ -58,12 +58,22 @@ class CreateAPythonWorker(OptionalAttributes):
         return self.specification_class
         
     def new_executable_script_string(self):
+        facmod_name = inspect.getmodule(self.implementation_factory).__name__
+        ifmod_name = inspect.getmodule(self.interface_class).__name__
+
+        # Work-around for pytest affecting the import paths in ways that the worker
+        # doesn't see.
+        if facmod_name.startswith('tests.'):
+            facmod_name = facmod_name[6:]
+        if ifmod_name.startswith('tests.'):
+            ifmod_name = ifmod_name[6:]
+
         return self.template_string.format(
             executable = sys.executable,
             syspath = ','.join(map(repr, sys.path)),
-            factory_module = inspect.getmodule(self.implementation_factory).__name__,
+            factory_module = facmod_name,
             factory = self.implementation_factory.__name__,
-            interface_module = inspect.getmodule(self.interface_class).__name__,
+            interface_module = ifmod_name,
             interface = self.interface_class.__name__,
         )
     

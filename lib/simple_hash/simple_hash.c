@@ -13,7 +13,7 @@
 //  The hash table automatically doubles in size when it becomes 75% full.
 //  The hash table never shrinks in size, even after Clear(), unless you explicitly call Compact().
 //
-// code from 
+// code from
 //  http://preshing.com/20130107/this-hash-table-is-faster-than-a-judy-array/
 // adapted and translated to C
 //
@@ -300,7 +300,7 @@ int hash_inserts(struct simple_hash *hash,size_t n, size_t *key, size_t *value)
     if(err!=0) break;
   }
   return err;
-  
+
 }
 int hash_updates(struct simple_hash *hash,size_t n, size_t *key, size_t *value)
 {
@@ -310,7 +310,7 @@ int hash_updates(struct simple_hash *hash,size_t n, size_t *key, size_t *value)
     if(err!=0) break;
   }
   return err;
-  
+
 }
 int hash_deletes(struct simple_hash *hash,size_t n, size_t *key)
 {
@@ -320,5 +320,6 @@ int hash_deletes(struct simple_hash *hash,size_t n, size_t *key)
     if(err<errout) errout=err;
   }
   return errout;
-  
+
 }
+
