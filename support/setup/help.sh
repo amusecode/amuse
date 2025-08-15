@@ -152,7 +152,7 @@ To do that, use
         if [ "a${HAVE_PYPI_PIP}" != "a" ] ; then
             printf '    %s\n' 'python3 -m pip uninstall pip'
         fi
-        printf '    %s\n' 'conda install -c conda-forge pip wheel'
+        printf '    %s\n' 'conda install -c conda-forge --override-channels pip wheel'
     fi
 
     printf '\n%b\n' "and then run
