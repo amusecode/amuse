@@ -7,34 +7,33 @@ LDFLAGS  += -lm $(MUSE_LD_FLAGS)
 AA_M = 0
 CXXFLAGS += -DAA_M=$(AA_M)
 
+USERFUNCS := $(patsubst %,prob/userFunc_%.o,$(PROBS))
+
 CODELIB = libvader.a
 
-CODEOBJS = advanceBE.o advanceCN.o applyBC.o checkpoint.o driver.o getNextIterate.o init.o ppmExtrap.o rotCurveSpline.o testingMode.o userFunc.o vader.o
+CODEOBJS = advanceBE.o advanceCN.o applyBC.o checkpoint.o driver.o getNextIterate.o init.o ppmExtrap.o rotCurveSpline.o testingMode.o vader.o
 
-AR = ar ruv
-RANLIB = ranlib
-RM = rm
+AR ?= ar
+RANLIB ?= ranlib
+RM ?= rm
 
-PROB = none
-
-all: $(CODELIB) 
+all: $(CODELIB) $(USERFUNCS)
 
 
 clean:
 	$(RM) -f *.o *.a
 
-userFunc.c: prob/userFunc_$(PROB).c
-	cp $< $@
-
 $(CODELIB): $(CODEOBJS)
-	$(RM) -f userFunc.c
 	$(RM) -f $@
-	$(AR) $@ $(CODEOBJS)
+	$(AR) ruv $@ $(CODEOBJS)
 	$(RANLIB) $@
 
 
 .cc.o: $<
-	$(MPICC) $(CXXFLAGS) -c -o $@ $< 
+	$(MPICC) $(CXXFLAGS) -c -o $@ $<
 
 .c.o: $<
-	$(MPICC) $(CXXFLAGS) -c -o $@ $< 
+	$(MPICC) $(CXXFLAGS) -c -o $@ $<
+
+prob/%.o: prob/%.c
+	$(MPICC) $(CXXFLAGS) -I. -c -o $@ $<
