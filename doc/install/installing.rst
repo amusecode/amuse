@@ -10,8 +10,8 @@ To install AMUSE, we need to
 (AMUSE can also be installed without Conda if needed, as described below, but we
 recommend using Conda.)
 
-If you have a Mac, then you should skip to :ref:`Setting up macOS`, and if you're
-running Linux then you can go straight to :ref:`Installing Conda`. For Windows, continue
+If you have a Mac, then you should skip to :ref:`setting_up_macOS`, and if you're
+running Linux then you can go straight to :ref:`installing_conda`. For Windows, continue
 here with installing WSL.
 
 Installing WSL
@@ -55,9 +55,10 @@ updates. We can then install them using this:
    sudo apt -y upgrade
 
 
-Now you can continue with :ref:`Installing Conda`, using the Ubuntu terminal window to
+Now you can continue with :ref:`installing_conda`, using the Ubuntu terminal window to
 enter the instructions.
 
+.. _setting_up_macOS:
 
 Setting up macOS
 ----------------
@@ -99,6 +100,7 @@ loaded, and then you're ready to install Conda.
 If you use Bash instead of zsh, then you'll need to edit ``.bashrc`` instead. When in
 doubt, you can safely edit both files to be sure.
 
+.. _installing_conda:
 
 Installing Conda
 ----------------
@@ -108,10 +110,9 @@ available. Conda is a package manager, a program with which you can install othe
 programs. It's very widely used in science and beyond, so having a working Conda setup
 is very useful also outside of the world of AMUSE.
 
-If you already have a working Conda setup, then you can continue to :ref:`Installing
-AMUSE`.
+If you already have a working Conda setup, then you can continue to :ref:`installing_amuse`.
 
-If you cannot or don't want to use Conda, see :ref:`Using a virtualenv` below.
+If you cannot or don't want to use Conda, see :ref:`using_a_virtualenv` below.
 
 If you do not yet have Conda, then you can install it using the following commands in
 the terminal. (Linux users can open one from the menu, Windows and macOS users will
@@ -134,6 +135,22 @@ You can then run the installer using
 Finally, close your terminal window and open a new one to make the ``conda`` command
 properly available.
 
+Alternatively, if you have already installed Anaconda or Miniconda, make sure that you create your environment
+with the "channel" set to "conda-forge", e.g. for a Python 3.13 environment:
+
+.. code-block:: bash
+
+   conda create --name amuse_p313 python=3.13 --channel conda-forge --override-channels
+
+
+which you activate in the usual way:
+
+.. code-block:: bash 
+
+   conda activate amuse_p313
+
+
+.. _installing_amuse:
 
 Installing AMUSE
 ----------------
@@ -268,7 +285,7 @@ and then you can run it as before using
 
 
 You should now have a working AMUSE setup. To start
-using it, see :ref:`Getting started with AMUSE` or the :ref:`Interactive tutorial`
+using it, see :ref:`getting_started_with_amuse` or the :ref:`interactive_tutorial`
 
 
 Alternative installation options
@@ -276,9 +293,10 @@ Alternative installation options
 
 The above instructions are the easiest way to install AMUSE, and they should work for
 almost everyone wanting to use AMUSE to do astrophysics. Nevertheless, there may be
-cases where you need a different setup, for example because you cannot use Conda.  In
+cases where you need a different setup, for example because you cannot use Conda. In
 that case, you'll want one of these alternative installations.
 
+.. _using_a_virtualenv:
 
 Using a virtualenv
 ------------------

@@ -1,3 +1,5 @@
+.. _interactive_tutorial:
+
 Interactive tutorial
 ====================
 
