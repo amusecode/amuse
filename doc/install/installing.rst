@@ -136,7 +136,7 @@ Finally, close your terminal window and open a new one to make the ``conda`` com
 properly available.
 
 Alternatively, if you have already installed Anaconda or Miniconda, make sure that you create your environment
-in the appropriate manner, e.g. for a Python 3.13 environment:
+with the "channel" set to "conda-forge", e.g. for a Python 3.13 environment:
 
 .. code-block:: bash
 
