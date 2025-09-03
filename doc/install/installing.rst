@@ -110,9 +110,9 @@ available. Conda is a package manager, a program with which you can install othe
 programs. It's very widely used in science and beyond, so having a working Conda setup
 is very useful also outside of the world of AMUSE.
 
-If you already have a working Conda setup, then you can continue to :ref:`installing-amuse`.
+If you already have a working Conda setup, then you can continue to :ref:`installing_amuse`.
 
-If you cannot or don't want to use Conda, see :ref:`using-a-virtualenv` below.
+If you cannot or don't want to use Conda, see :ref:`using_a_virtualenv` below.
 
 If you do not yet have Conda, then you can install it using the following commands in
 the terminal. (Linux users can open one from the menu, Windows and macOS users will
@@ -150,7 +150,7 @@ which you activate in the usual way:
    conda activate amuse_p313
 
 
-.. _installing-amuse:
+.. _installing_amuse:
 
 Installing AMUSE
 ----------------
@@ -296,7 +296,7 @@ almost everyone wanting to use AMUSE to do astrophysics. Nevertheless, there may
 cases where you need a different setup, for example because you cannot use Conda. In
 that case, you'll want one of these alternative installations.
 
-.. _using-a-virtualenv:
+.. _using_a_virtualenv:
 
 Using a virtualenv
 ------------------
