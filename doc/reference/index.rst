@@ -26,7 +26,6 @@ Reference documentation
    legacy_support
    message-protocol
    distributed
-   cuda-setup
    cartesius
    slurm
    style_guide
