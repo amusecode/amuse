@@ -107,7 +107,7 @@ or a Python virtualenv. If you have an environment into which you'd like to
 install AMUSE, you should activate it now. To create a new Conda environment,
 use
 
-    conda create -n Amuse-env
+    conda create --channel conda-forge --override-channels -n Amuse-env
 
 Then you activate it using
 
