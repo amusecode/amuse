@@ -10,8 +10,8 @@ To install AMUSE, we need to
 (AMUSE can also be installed without Conda if needed, as described below, but we
 recommend using Conda.)
 
-If you have a Mac, then you should skip to :ref:`Setting up macOS`, and if you're
-running Linux then you can go straight to :ref:`Installing Conda`. For Windows, continue
+If you have a Mac, then you should skip to :ref:`setting_up_macOS`, and if you're
+running Linux then you can go straight to :ref:`installing_conda`. For Windows, continue
 here with installing WSL.
 
 Installing WSL
@@ -55,9 +55,10 @@ updates. We can then install them using this:
    sudo apt -y upgrade
 
 
-Now you can continue with :ref:`Installing Conda`, using the Ubuntu terminal window to
+Now you can continue with :ref:`installing_conda`, using the Ubuntu terminal window to
 enter the instructions.
 
+.. _setting_up_macOS:
 
 Setting up macOS
 ----------------
@@ -99,6 +100,7 @@ loaded, and then you're ready to install Conda.
 If you use Bash instead of zsh, then you'll need to edit ``.bashrc`` instead. When in
 doubt, you can safely edit both files to be sure.
 
+.. _installing_conda:
 
 Installing Conda
 ----------------
@@ -108,10 +110,9 @@ available. Conda is a package manager, a program with which you can install othe
 programs. It's very widely used in science and beyond, so having a working Conda setup
 is very useful also outside of the world of AMUSE.
 
-If you already have a working Conda setup, then you can continue to :ref:`Installing
-AMUSE`.
+If you already have a working Conda setup, then you can continue to :ref:`installing_amuse`.
 
-If you cannot or don't want to use Conda, see :ref:`Using a virtualenv` below.
+If you cannot or don't want to use Conda, see :ref:`using_a_virtualenv` below.
 
 If you do not yet have Conda, then you can install it using the following commands in
 the terminal. (Linux users can open one from the menu, Windows and macOS users will
@@ -135,6 +136,8 @@ Finally, close your terminal window and open a new one to make the ``conda`` com
 properly available.
 
 
+.. _installing_amuse:
+
 Installing AMUSE
 ----------------
 
@@ -145,7 +148,7 @@ command in your terminal to download it as above, for example:
 
 .. code-block:: bash
 
-   curl -L -O "https://github.com/amusecode/amuse/archive/refs/tags/v2025.5.0.tar.gz"
+   curl -L -O "https://github.com/amusecode/amuse/archive/refs/tags/v2025.9.0.tar.gz"
 
 
 This ``.tar.gz`` file needs to be unpacked first (you may need to change the version if
@@ -153,14 +156,14 @@ you downloaded a newer one):
 
 .. code-block:: bash
 
-   tar xf v2025.5.0.tar.gz
+   tar xf v2025.9.0.tar.gz
 
 
 Then we can enter the directory with the AMUSE source code:
 
 .. code-block:: bash
 
-   cd amuse-2025.5.0
+   cd amuse-2025.9.0
 
 
 And then you can start the installer:
@@ -181,40 +184,6 @@ When the installer is done installing, you should have a working AMUSE setup.
 If you encounter any problems, then you can ask for help in the `AMUSE
 Slack <https://amusecode.slack.com>`_ or by `making an issue on
 GitHub <https://github.com/amusecode/amuse/issues/new/choose>`_.
-
-
-Installing from a Git repository
-````````````````````````````````
-
-If you plan to modify AMUSE or one of the codes in it, then you may want to install from
-a local git clone instead of from a tar file. This will take more disk space and more
-download time, so it shouldn't be the first option, but if you want to do it then you
-can. You'll need to gave `git` installed:
-
-.. code-block:: bash
-
-   git clone https://github.com/amusecode/amuse.git
-
-
-Then you can enter the source directory using:
-
-.. code-block:: bash
-
-   cd amuse
-
-
-Select a version to build (use either one of these, or whichever version is relevant):
-
-.. code-block:: bash
-
-   git switch main                          # current development version
-   git checkout checkout v2025.5.0          # tagged release
-
-And now you can start the installer as before:
-
-.. code-block:: bash
-
-   ./setup
 
 
 Additional packages
@@ -268,7 +237,42 @@ and then you can run it as before using
 
 
 You should now have a working AMUSE setup. To start
-using it, see :ref:`Getting started with AMUSE` or the :ref:`Interactive tutorial`
+using it, see :ref:`getting_started_with_amuse` or the :ref:`interactive_tutorial`
+
+
+Debugging conda package installation
+````````````````````````````````````
+
+If you encounter problems with installing packages using ``conda``, or AMUSE doesn't
+compile correctly, then you should check that you are using the ``conda-forge`` channel
+rather than something else.
+
+Conda can use different sources of packages, which it calls channels. Different channels
+contain software packaged by different people, and packages from different channels are
+often incompatible. If you type
+
+.. code-block:: bash
+
+    conda list
+
+
+then you should see a list of packages that are installed in the active environment, and
+which channel they came from. Ideally, all of them have ``conda-forge`` as the channel.
+
+If not, then you can reinstall the package from ``conda-forge`` and see if that improves
+the situation.
+
+To reinstall a package from ``conda-forge``, use
+
+.. code-block:: bash
+
+    conda install -c conda-forge <package name>
+
+
+If you want to combine AMUSE with another package that isn't available from conda-forge,
+then you may have to install that from another channel, and hope that things work. Or
+ask the maintainers of that package to add it to conda-forge and be a bit more
+compatible with the rest of the world.
 
 
 Alternative installation options
@@ -276,9 +280,46 @@ Alternative installation options
 
 The above instructions are the easiest way to install AMUSE, and they should work for
 almost everyone wanting to use AMUSE to do astrophysics. Nevertheless, there may be
-cases where you need a different setup, for example because you cannot use Conda.  In
+cases where you need a different setup, for example because you cannot use Conda. In
 that case, you'll want one of these alternative installations.
 
+.. _installing_from_git:
+
+Installing from a Git repository
+--------------------------------
+
+If you plan to modify AMUSE or one of the codes in it, then you may want to install from
+a local git clone instead of from a tar file. This will take more disk space and more
+download time, so it shouldn't be the first option, but if you want to do it then you
+can. You'll need to gave `git` installed:
+
+.. code-block:: bash
+
+   git clone https://github.com/amusecode/amuse.git
+
+
+Then you can enter the source directory using:
+
+.. code-block:: bash
+
+   cd amuse
+
+
+Select a version to build (use either one of these, or whichever version is relevant):
+
+.. code-block:: bash
+
+   git switch main                          # current development version
+   git checkout checkout v2025.9.0          # tagged release
+
+And now you can start the installer as before:
+
+.. code-block:: bash
+
+   ./setup
+
+
+.. _using_a_virtualenv:
 
 Using a virtualenv
 ------------------

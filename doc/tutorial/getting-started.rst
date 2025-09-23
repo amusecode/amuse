@@ -1,3 +1,5 @@
+.. _getting_started_with_amuse:
+
 Getting started with AMUSE
 ==========================
 

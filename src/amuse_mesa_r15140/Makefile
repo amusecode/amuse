@@ -42,7 +42,7 @@ src/mesa-$(MESA_VERSION).zip:
 
 MESA_DIR := src/mesa-$(MESA_VERSION)
 
-PATCHES := $(shell cat patches/series)
+PATCHES := $(shell cat patches/series_mesa)
 
 $(MESA_DIR): src/mesa-$(MESA_VERSION).zip
 	cd src && unzip -q ../$<
