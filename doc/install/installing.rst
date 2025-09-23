@@ -162,7 +162,7 @@ command in your terminal to download it as above, for example:
 
 .. code-block:: bash
 
-   curl -L -O "https://github.com/amusecode/amuse/archive/refs/tags/v2025.5.0.tar.gz"
+   curl -L -O "https://github.com/amusecode/amuse/archive/refs/tags/v2025.9.0.tar.gz"
 
 
 This ``.tar.gz`` file needs to be unpacked first (you may need to change the version if
@@ -170,14 +170,14 @@ you downloaded a newer one):
 
 .. code-block:: bash
 
-   tar xf v2025.5.0.tar.gz
+   tar xf v2025.9.0.tar.gz
 
 
 Then we can enter the directory with the AMUSE source code:
 
 .. code-block:: bash
 
-   cd amuse-2025.5.0
+   cd amuse-2025.9.0
 
 
 And then you can start the installer:
@@ -225,7 +225,7 @@ Select a version to build (use either one of these, or whichever version is rele
 .. code-block:: bash
 
    git switch main                          # current development version
-   git checkout checkout v2025.5.0          # tagged release
+   git checkout checkout v2025.9.0          # tagged release
 
 And now you can start the installer as before:
 
