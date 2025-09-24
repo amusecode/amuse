@@ -1,0 +1,7 @@
+#ifndef VERSION_H
+#define VERSION_H
+
+const char* GIT_DATE   = "_DATE_";
+const char* GIT_COMMIT = "_COMMIT_";
+
+#endif
