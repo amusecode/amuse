@@ -10,8 +10,8 @@ arcsin = lambda x: numpy.arcsin(x) | rad
 arccos = lambda x: numpy.arccos(x) | rad
 arctan = lambda x: numpy.arctan(x) | rad
 arctan2 = lambda x, y: numpy.arctan2(
-    x.value_in(x.unit),
-    y.value_in(x.unit),
+    x.value_in(x.unit) if isinstance(x, quantities.Quantity) else x,
+    y.value_in(x.unit) if isinstance(x, quantities.Quantity) else y,
 ) | rad
 
 
