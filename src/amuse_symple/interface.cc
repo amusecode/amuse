@@ -7,10 +7,13 @@
 //
 //					Steve McMillan, 11/2017
 //
-// Added mass loss (dmdt).				         5/2018
+// Added mass loss (dmdt).				 5/2018
 // Expanded to multiple integrators.			 5/2018
+//                                       
+//                                       Erwan Hochart, 10/2025
 // Added test particle support.			        10/2025
-// Added collision support.             	    10/2025
+// Added collision support.             	        11/2025
+//
 //
 // Notes:
 //
@@ -112,6 +115,10 @@
 //
 // Someone should parallelize the acceleration calculation...
 
+#ifndef NOMPI
+#include <mpi.h>
+#endif
+
 #include <iostream>
 #include <cmath>
 #include <cstdlib>
@@ -130,6 +137,11 @@
 #include <stopcond.h>
 #include <time.h>
 
+#ifndef NOMPI
+#include <amuse_mpi.h>
+static MPI_Comm WORLD;
+#endif
+
 using namespace std;
 typedef double  real;
 
@@ -145,6 +157,10 @@ typedef double  real;
 const int NDIM = 3;             // number of spatial dimensions
 static int which_int;
 static void (*integrate)(real, real*, real*);
+
+// MPI Data
+static int mpi_rank = 0;
+static int mpi_size = 1;
 
 // N-body data (structure copied from hermite0):
 
@@ -197,7 +213,9 @@ real calculate_step(real coll_time)
 
 void get_acc_pot_coll(real *epot, real *coll_time, bool get_coll=false)
 {
-    int n = ident.size();
+    const int n = (int)ident.size();          // ident, mass, radius, pos, vel are your inputs
+    acc.resize(n);
+    potential.resize(n);
     
     *coll_time = 0.0;
     *epot = 0;
@@ -297,8 +315,8 @@ void get_acc_pot_coll(real *epot, real *coll_time, bool get_coll=false)
         }
     }
 
-    if (get_coll){
-        *coll_time = pow(coll_time_q, 0.25);
+    if (get_coll){                               // from q for quartic back
+        *coll_time = pow(coll_time_q, 0.25);     // to linear collision time
     }
 }
 
@@ -550,6 +568,7 @@ void evolve_step10(real dt, real *epot, real *coll_time)
     step_symp(ident.size(), k10, c10, d10, dt, epot, coll_time);
 }
 
+
 int evolve_system(real t_end)
 {
     reset_stopping_conditions();
@@ -736,11 +755,10 @@ int new_particle(int *id, double _mass,
 int delete_particle(int id)
 {
     unsigned int i = find(ident.begin(), ident.end(), id) - ident.begin();
-
     if (i < ident.size()) {
         ident.erase(ident.begin()+i);
         mass.erase(mass.begin()+i);
-        dmdt.erase(mass.begin()+i);
+        dmdt.erase(dmdt.begin()+i);
         radius.erase(radius.begin()+i);
         pos.erase(pos.begin()+i);
         vel.erase(vel.begin()+i);
@@ -1234,3 +1252,4 @@ int synchronize_model()
 {
     return 0;
 }
+
