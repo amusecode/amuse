@@ -7,13 +7,10 @@
 //
 //					Steve McMillan, 11/2017
 //
-// Added mass loss (dmdt).				 5/2018
+// Added mass loss (dmdt).				         5/2018
 // Expanded to multiple integrators.			 5/2018
-//                                       
-//                                       Erwan Hochart, 10/2025
 // Added test particle support.			        10/2025
-// Added collision support.             	        11/2025
-//
+// Added collision support.             	    10/2025
 //
 // Notes:
 //
