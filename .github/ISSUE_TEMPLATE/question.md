@@ -2,7 +2,7 @@
 name: Question
 about: Ask an AMUSE-related question
 title: ''
-labels: question
+labels: 'kind: question'
 assignees: ''
 
 ---
