@@ -1,10 +1,19 @@
 import numpy
 import pickle
-from amuse.lab import *
+
+from amuse.lab import (
+    units, nbody_system, 
+    new_plummer_model, write_set_to_file,
+    new_salpeter_mass_distribution, 
+)
 from amuse.community.fastkick.interface import FastKick
-from amuse.ext.relax_sph import relax
+from amuse.community.fi.interface import Fi
+from amuse.ext.relax_sph import relax, monitor_energy
 from amuse.ext.spherical_model import new_gas_plummer_distribution
 from amuse.community.fractalcluster.interface import new_fractal_cluster_model
+
+
+from prepare_figure import *
 
 ###BOOKLISTSTART1###
 def check_energy_conservation(system, i_step, time, n_steps):
@@ -163,7 +172,6 @@ def make_map(sph,N=100,L=1):
 def plot_hydro_and_stars(hydro, stars):
     x_label = "x [pc]"
     y_label = "y [pc]"
-    from prepare_figure import *
     fig = single_frame(x_label, y_label, logx=False, logy=False,
                        xsize=12, ysize=12)
 

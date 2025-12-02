@@ -173,6 +173,7 @@ class TestParticlesAttributes(amusetest.TestCase):
         particles.z = 0.0 | units.m
         self.assertEqual(particles.nearest_neighbour()[0], particles[1])
         self.assertEqual(particles.nearest_neighbour()[1:].key, particles[:-1].key)
+        self.assertEqual(particles.nearest_neighbour(self_search=True).key, particles.key)
 
         neighbours = Particles(3)
         neighbours.x = [1.0, 10.0, 100.0] | units.m
