@@ -923,7 +923,7 @@ def distances_squared(particles, other_particles):
     return (dxdydz**2).sum(-1)
 
 
-def nearest_neighbour(particles, neighbours=None, max_array_length=10000000):
+def nearest_neighbour(particles, neighbours=None, self_search=False, max_array_length=10000000):
     """
     Returns the nearest neighbour of each particle in this set. If the 'neighbours'
     particle set is supplied, the search is performed on the neighbours set, for
@@ -931,6 +931,7 @@ def nearest_neighbour(particles, neighbours=None, max_array_length=10000000):
     set is searched.
 
     :argument neighbours: the particle set in which to search for the nearest neighbour (optional)
+    :argument self_search: if True, the nearest neighbour can be the particle itself (default False)
 
     >>> from amuse.datamodel import Particles
     >>> particles = Particles(3)
@@ -964,7 +965,7 @@ def nearest_neighbour(particles, neighbours=None, max_array_length=10000000):
         )
         for indices in indices_in_each_batch:
             distances_squared = particles[indices].distances_squared(other_particles)
-            if neighbours is None:
+            if not self_search and neighbours is None:
                 diagonal_indices = (numpy.arange(len(indices)), indices)
                 distances_squared.number[
                     diagonal_indices
@@ -973,11 +974,11 @@ def nearest_neighbour(particles, neighbours=None, max_array_length=10000000):
         return other_particles[numpy.concatenate(neighbour_indices)]
 
     distances_squared = particles.distances_squared(other_particles)
-    if neighbours is None:
+    if not self_search and neighbours is None:  # can't be your own neighbour
         diagonal_indices = numpy.diag_indices(len(particles))
         distances_squared.number[
             diagonal_indices
-        ] = numpy.inf  # can't be your own neighbour
+        ] = numpy.inf  
     return other_particles[distances_squared.argmin(axis=1)]
 
 
