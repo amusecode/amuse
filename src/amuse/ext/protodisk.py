@@ -1,13 +1,12 @@
 import numpy
 import warnings
-from amuse.ext.evrard_test import body_centered_grid_unit_cube
-from amuse.ext.evrard_test import regular_grid_unit_cube
 from amuse.ext.evrard_test import uniform_random_unit_cube
 from amuse.units import nbody_system
-from amuse.units import units
 
 from amuse.datamodel import Particles
 from amuse.datamodel import ParticlesWithUnitsConverted
+
+
 def approximate_inverse_error_function(x):
   a=8*(numpy.pi-3)/3*numpy.pi*(4-numpy.pi)
   return numpy.sign(x)*numpy.sqrt(
@@ -45,7 +44,6 @@ class uniform_unit_cylinder(object):
 
 
 class ProtoPlanetaryDisk:
-
     def __init__(
         self, targetN, convert_nbody=None, discfraction=0.1,
         densitypower=1., thermalpower=0.5, radius_min=1, radius_max=100,
@@ -56,27 +54,21 @@ class ProtoPlanetaryDisk:
                 "Rmin is deprecated, use radius_min instead",
                 category=FutureWarning,
             )
-            if radius_min is not None and radius_min != Rmin:
-                raise ValueError(
-                    "Rmin and radius_min have different values, "
-                    "this is only allowed if one of them is None"
-                )
             radius_min = Rmin
         if radius_min is None:
             raise ValueError("radius_min must be set")
+
         if Rmax is not None:
             warnings.warn(
                 "Rmax is deprecated, use radius_max instead",
                 category=FutureWarning,
             )
-            if radius_max is not None and radius_max != Rmax:
-                raise ValueError(
-                    "Rmax and radius_max have different values, "
-                    "this is only allowed if one of them is None"
-                )
             radius_max = Rmax
         if radius_max is None:
             raise ValueError("radius_max must be set")
+
+        if type(targetN) != int:
+            targetN = int(targetN)
 
         self.targetN=targetN
         self.convert_nbody=convert_nbody
@@ -92,8 +84,8 @@ class ProtoPlanetaryDisk:
         self.a2=self.thermalpower/2
         self.g=densitypower
         self.g2=2-densitypower
-        self.k_out=((1+discfraction)/Rmax**3)**0.5
-        self.sigma_out=self.g2*discfraction/(2*numpy.pi*Rmax**self.g*(Rmax**self.g2-Rmin**self.g2))
+        self.k_out=((1+discfraction)/radius_max**3)**0.5
+        self.sigma_out=self.g2*discfraction/(2*numpy.pi*radius_max**self.g*(radius_max**self.g2-radius_min**self.g2))
         self.cs_out=self.q_out*numpy.pi*self.sigma_out/self.k_out
         
         self.base_cylinder=uniform_unit_cylinder(targetN,base_grid)   
