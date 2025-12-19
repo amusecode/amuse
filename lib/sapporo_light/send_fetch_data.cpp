@@ -23,7 +23,7 @@ void sapporo::free_cuda_memory(int ignore) {
     CUDA_SAFE_CALL(cudaFree( (void*)dev.ngb_list_i));
     
     
-    CUDA_SAFE_CALL(cudaThreadExit());
+    CUDA_SAFE_CALL(cudaDeviceReset());
     CUT_CHECK_ERROR("Failedn");
 }
 

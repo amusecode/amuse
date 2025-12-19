@@ -73,7 +73,11 @@ __device__ void body_body_interaction(float &ds_min,
     
   }
   
-  float inv_ds  = rsqrt(ds2 + EPS2) * (__float_as_int(pos_i.w.y) != __float_as_int(pos_j.w.y));
+  float inv_ds = 0.0f;
+  if (__float_as_int(pos_i.w.y) != __float_as_int(pos_j.w.y)) {
+      inv_ds = rsqrt(ds2 + EPS2);
+  }
+
   float mass    = pos_j.w.x;
   float inv_ds2 = inv_ds*inv_ds;                         // 1 FLOP
   float inv_ds3 = mass * inv_ds*inv_ds2;                 // 2 FLOP
