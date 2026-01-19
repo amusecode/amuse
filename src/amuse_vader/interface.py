@@ -18,7 +18,7 @@ class VaderInterface(CodeInterface,
 
 	def __init__(self, mode = 'none', **keyword_arguments):
 		CodeInterface.__init__(self,
-			name_of_the_worker="vader_worker",
+			name_of_the_worker=f"vader_{mode}_worker",
 			**keyword_arguments)
 		LiteratureReferencesMixIn.__init__(self)
 

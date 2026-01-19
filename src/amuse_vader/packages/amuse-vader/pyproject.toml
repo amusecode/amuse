@@ -35,7 +35,7 @@ exclude = [
     "amuse_vader/src",
     "amuse_vader/tests"
     ]
-artifacts = ["amuse_vader/vader_worker"]
+artifacts = ["amuse_vader/vader_*_worker"]
 
 [tool.pytest.ini_options]
 pythonpath = ["amuse_vader/tests/"]
