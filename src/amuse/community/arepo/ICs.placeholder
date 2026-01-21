@@ -1,0 +1,4 @@
+File ICs taken from arepo examples:
+
+ - Noh 3D example: arepo/examples/noh_3d/IC.hdf5
+ - isolated collisionless galaxy: arepo/examples/isolated_galaxy_collisionless_3d/ICs/ICs
