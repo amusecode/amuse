@@ -118,6 +118,9 @@ install() {
             sapporo_light )
                 install_sapporo_light
                 ;;
+            sapporo2 )
+                install_sapporo2
+                ;;
             * )
                 target="$(normalise_package_name ${target})"
                 install_package install "${target}"
@@ -187,6 +190,10 @@ run_test() {
             all )
                 test_all
                 ;;
+            sapporo2 )
+                check_package_installed_for_test sapporo2
+                test_sapporo2
+                ;;
             amuse-framework | framework )
                 check_package_installed_for_test amuse-framework
                 test_framework
@@ -220,9 +227,13 @@ uninstall() {
             sapporo_light )
                 uninstall_sapporo_light
                 ;;
+            sapporo2 )
+                uninstall_sapporo2
+                ;;
             all )
                 uninstall_framework
                 uninstall_sapporo_light
+                uninstall_sapporo2
                 ;;
             * )
                 target="$(normalise_package_name ${target})"
@@ -241,6 +252,7 @@ clean() {
     ${GMAKE} -C support clean
     ${GMAKE} -C lib clean
     ${GMAKE} -C lib clean-sapporo_light
+    ${GMAKE} -C lib clean-sapporo2
     for code in src/amuse_* ; do ${GMAKE} -C "${code}" clean ; done
     ${GMAKE} -C src/tests clean
 }
@@ -254,6 +266,7 @@ distclean() {
     ${GMAKE} -C support distclean
     ${GMAKE} -C lib distclean
     ${GMAKE} -C lib distclean-sapporo_light
+    ${GMAKE} -C lib distclean-sapporo2
     for code in src/amuse_* ; do ${GMAKE} -C "${code}" distclean ; done
     ${GMAKE} -C src/tests distclean
 }

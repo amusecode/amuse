@@ -34,7 +34,6 @@
 
 #ifdef GPU
 #include "grape.h"
-#include "sapporo.h"
 #endif
 
 // AMUSE STOPPING CONDITIONS SUPPORT

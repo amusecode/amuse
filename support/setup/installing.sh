@@ -43,6 +43,17 @@ check_sapporo_light() {
 }
 
 
+# Check Sapporo2
+#
+check_sapporo2() {
+    if ! is_subset "sapporo2" "${ENABLED_PACKAGES}" ; then
+        printf '%s\n' 'Sapporo2 cannot be installed because tools or dependencies are missing.'
+        printf '%s\n' 'Please run ./setup and follow the instructions to enable it.'
+        exit 1
+    fi
+}
+
+
 # Check whether a package can be installed and error out if not
 #
 check_package() {
@@ -136,6 +147,29 @@ install_sapporo_light() {
     fi
 
     handle_result "${result}" install sapporo_light "${log_file}"
+}
+
+
+# Install Sapporo2
+#
+install_sapporo2() {
+    check_sapporo2
+
+    announce_activity install sapporo2
+
+    ${GMAKE} -C lib/sapporo_2 distclean
+
+    ec_file="$(exit_code_file install sapporo2)"
+    log_file="$(log_file install sapporo2)"
+
+    (${GMAKE} -C lib install-sapporo2 ; echo $? >"${ec_file}") 2>&1 | tee "${log_file}"
+
+    result=$(cat "${ec_file}")
+    if [ "a${result}" = "a0" ] ; then
+        INSTALLED_PACKAGES="${INSTALLED_PACKAGES} sapporo2"
+    fi
+
+    handle_result "${result}" install sapporo2 "${log_file}"
 }
 
 
@@ -237,6 +271,14 @@ install_package() {
         fi
     fi
 
+    if is_subset "${package}" "${NEEDS_SAPPORO2}" ; then
+        if ! is_subset "sapporo2" "${INSTALLED_PACKAGES}" ; then
+            save_package="${package}"
+            install_sapporo2
+            package="${save_package}"
+        fi
+    fi
+
     if [ "a${package%-*-*}" != "a${package}" ] ; then
         # We are installing an amuse-code-package extension package, so we need the
         # base package as well, if it exists.
@@ -280,6 +322,14 @@ install_all() {
         if is_subset "sapporo_light" "${ENABLED_PACKAGES}" ; then
             if ! install_sapporo_light ; then
                 FAILED_BUILDS="${FAILED_BUILDS}\nsapporo_light"
+            fi
+        fi
+    fi
+
+    if ! is_subset "sapporo2" "${INSTALLED_PACKAGES}" ; then
+        if is_subset "sapporo2" "${ENABLED_PACKAGES}" ; then
+            if ! install_sapporo2 ; then
+                FAILED_BUILDS="${FAILED_BUILDS}\nsapporo2"
             fi
         fi
     fi
@@ -394,6 +444,30 @@ uninstall_sapporo_light() {
     (${GMAKE} -C lib uninstall-sapporo_light ; echo $? >"${ec_file}") 2>&1 | tee "${log_file}"
 
     handle_result $(cat "$ec_file") uninstall sapporo_light "${log_file}"
+}
+
+
+# Uninstall Sapporo2
+#
+uninstall_sapporo2() {
+    for pkg in ${INSTALLED_PACKAGES} ; do
+        if [ "a${pkg#amuse-}" != "a${pkg}" ] ; then
+            if is_subset "${pkg}" "${NEEDS_SAPPORO2}" ; then
+                save_package="${package}"
+                uninstall_package "${pkg}" brief
+                package="${save_package}"
+            fi
+        fi
+    done
+
+    announce_activity uninstall sapporo2
+
+    ec_file="$(exit_code_file uninstall sapporo2)"
+    log_file="$(log_file uninstall sapporo2)"
+
+    (${GMAKE} -C lib uninstall-sapporo2 ; echo $? >"${ec_file}") 2>&1 | tee "${log_file}"
+
+    handle_result $(cat "$ec_file") uninstall sapporo2 "${log_file}"
 }
 
 

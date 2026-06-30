@@ -1,5 +1,5 @@
 [project]
-name = "amuse-ph4-sapporo"
+name = "amuse-ph4-sapporo2"
 dynamic = ["version"]
 requires-python = ">=3.7"
 dependencies = [
@@ -31,7 +31,7 @@ skip-excluded-dirs = true
 [tool.hatch.build.targets.wheel]
 include = ["amuse_ph4"]
 exclude = ["amuse_ph4/*"]
-artifacts = ["amuse_ph4/ph4_sapporo_worker"]
+artifacts = ["amuse_ph4/ph4_sapporo2_worker"]
 
 [tool.pytest.ini_options]
 pythonpath = ["amuse_ph4/tests/", "../../../tests"]

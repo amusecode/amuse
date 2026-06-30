@@ -361,8 +361,8 @@ doc/amuse_examples
 /nbody6xx.input
 /test_results
 autom4te.cache/
-lib/sapporo_2/src/sapporo2-master
-lib/sapporo_2/src/master.tgz
+lib/sapporo_2/*.tar.gz
+lib/sapporo_2/src
 
 
 
