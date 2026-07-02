@@ -111,6 +111,7 @@ int sapporo::fetch_ngb_list_from_device(int ignore) {
 
 
 double sapporo::evaluate_gravity(int ni, int nj) {
+
 #ifdef NGB
     bool ngb = true;
 #else

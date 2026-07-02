@@ -79,6 +79,9 @@ int sapporo::set_j_particle(int cluster_id,
     exit(-1);
   }
 
+  // Skip test particles (massless particles) as they don't contribute to gravity
+  if (mass <= SAPPORO_TEST_PARTICLE_MASS) return 0;
+
     DS  Dmass = (DS){mass, INT_AS_FLOAT(id)};
     map<int,int>::iterator iterator = mapping_from_address_j_to_index_in_update_array.find(address);
     map<int,int>::iterator end = mapping_from_address_j_to_index_in_update_array.end();
@@ -134,6 +137,7 @@ void sapporo::calc_firsthalf(int cluster_id,
   }
 
   if (address_j.size() > 0) {
+    // Since we skip adding test particles, all particles in address_j are massive
     send_j_particles_to_device(device_id);
   }
 
@@ -147,7 +151,9 @@ void sapporo::calc_firsthalf(int cluster_id,
     acc_j.clear();
     jrk_j.clear();
   }
-  evaluate_gravity(ni, nj);
+  if (nj > 0) {
+    evaluate_gravity(ni, nj);
+  }
 
 }
 

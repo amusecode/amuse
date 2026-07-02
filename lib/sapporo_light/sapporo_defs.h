@@ -3,7 +3,7 @@
 
 #define MAXCUDADEVICES 4
 #define NBODIES_MAX 524288
-#define NBLOCKS 16        /* number of block which can be run simultaneously */
+#define NBLOCKS 256        /* number of block which can be run simultaneously */
 
 #ifdef NGB
 #define NTHREADS 256   /* max number of threads which can run per block */

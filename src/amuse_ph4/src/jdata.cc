@@ -139,6 +139,11 @@ int jdata::add_particle(real pmass, real pradius,
 			real dt)		// default = -1
 {
     const char *in_function = "jdata::add_particle";
+
+    if (pmass <= _TINY_) {
+        return -1;
+    }
+    
     if (DEBUG > 2 && mpi_rank == 0) PRL(in_function);
 
     if (nj >= njbuf) {
