@@ -1,0 +1,1 @@
+../support/shared/m4/amuse_lib_hdf5.m4

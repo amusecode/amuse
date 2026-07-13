@@ -704,32 +704,30 @@ ac_includes_default="\
 # include <unistd.h>
 #endif"
 
-ac_header_c_list=
+ac_header_cxx_list=
 ac_subst_vars='LTLIBOBJS
 LIBOBJS
+HDF5_HLFC_LIB
+HDF5_LDFLAGS
+HDF5_FCFLAGS
+HDF5_CXXFLAGS
+HDF5_CFLAGS
+HDF5_TYPE
+H5FC
+H5CXX
+H5CC
+ac_ct_FC
+FCFLAGS
+FC
 HEALPIX_CXX_LIBS
 HEALPIX_CXX_CFLAGS
 QHULL_FLAGS
 QHULL_LIBS
 LIBZ_LIBS
 LIBZ_CFLAGS
-HDF5_TYPE
-HDF5_FLIBS
-HDF5_FFLAGS
-HDF5_FC
-HDF5_LIBS
-HDF5_LDFLAGS
-HDF5_CPPFLAGS
-HDF5_CFLAGS
-HDF5_CC
-HDF5_VERSION
-H5FC
 ac_ct_CC
 CFLAGS
 CC
-H5CC
-AWK
-SED
 GSL_CONFIG
 GSL_LIBS
 GSL_CFLAGS
@@ -811,7 +809,6 @@ enable_option_checking
 with_gsl_prefix
 with_gsl_exec_prefix
 enable_gsltest
-with_hdf5
 '
       ac_precious_vars='build_alias
 host_alias
@@ -831,7 +828,9 @@ GSL_LIBS
 CC
 CFLAGS
 HEALPIX_CXX_CFLAGS
-HEALPIX_CXX_LIBS'
+HEALPIX_CXX_LIBS
+FC
+FCFLAGS'
 
 
 # Initialize some variables set by options.
@@ -1462,7 +1461,6 @@ Optional Packages:
   --without-PACKAGE       do not use PACKAGE (same as --with-PACKAGE=no)
   --with-gsl-prefix=PFX   Prefix where GSL is installed (optional)
   --with-gsl-exec-prefix=PFX Exec prefix where GSL is installed (optional)
-  --with-hdf5=yes/no/PATH location of h5cc or h5pcc for HDF5 configuration
 
 Some influential environment variables:
   CXX         C++ compiler command
@@ -1486,6 +1484,8 @@ Some influential environment variables:
               C compiler flags for HEALPIX_CXX, overriding pkg-config
   HEALPIX_CXX_LIBS
               linker flags for HEALPIX_CXX, overriding pkg-config
+  FC          Fortran compiler command
+  FCFLAGS     Fortran compiler flags
 
 Use these variables to override the choices made by `configure' or to help
 it to find libraries and programs with nonstandard names/locations.
@@ -1755,39 +1755,6 @@ fi
 
 } # ac_fn_c_try_compile
 
-# ac_fn_c_check_header_compile LINENO HEADER VAR INCLUDES
-# -------------------------------------------------------
-# Tests whether HEADER exists and can be compiled using the include files in
-# INCLUDES, setting the cache variable VAR accordingly.
-ac_fn_c_check_header_compile ()
-{
-  as_lineno=${as_lineno-"$1"} as_lineno_stack=as_lineno_stack=$as_lineno_stack
-  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $2" >&5
-printf %s "checking for $2... " >&6; }
-if eval test \${$3+y}
-then :
-  printf %s "(cached) " >&6
-else $as_nop
-  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-$4
-#include <$2>
-_ACEOF
-if ac_fn_c_try_compile "$LINENO"
-then :
-  eval "$3=yes"
-else $as_nop
-  eval "$3=no"
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
-fi
-eval ac_res=\$$3
-	       { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_res" >&5
-printf "%s\n" "$ac_res" >&6; }
-  eval $as_lineno_stack; ${as_lineno_stack:+:} unset as_lineno
-
-} # ac_fn_c_check_header_compile
-
 # ac_fn_c_try_link LINENO
 # -----------------------
 # Try to link conftest.$ac_ext, and return whether this succeeded.
@@ -1867,6 +1834,92 @@ printf "%s\n" "$ac_res" >&6; }
   eval $as_lineno_stack; ${as_lineno_stack:+:} unset as_lineno
 
 } # ac_fn_cxx_check_header_compile
+
+# ac_fn_fc_try_compile LINENO
+# ---------------------------
+# Try to compile conftest.$ac_ext, and return whether this succeeded.
+ac_fn_fc_try_compile ()
+{
+  as_lineno=${as_lineno-"$1"} as_lineno_stack=as_lineno_stack=$as_lineno_stack
+  rm -f conftest.$ac_objext conftest.beam
+  if { { ac_try="$ac_compile"
+case "(($ac_try" in
+  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
+  *) ac_try_echo=$ac_try;;
+esac
+eval ac_try_echo="\"\$as_me:${as_lineno-$LINENO}: $ac_try_echo\""
+printf "%s\n" "$ac_try_echo"; } >&5
+  (eval "$ac_compile") 2>conftest.err
+  ac_status=$?
+  if test -s conftest.err; then
+    grep -v '^ *+' conftest.err >conftest.er1
+    cat conftest.er1 >&5
+    mv -f conftest.er1 conftest.err
+  fi
+  printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; } && {
+	 test -z "$ac_fc_werror_flag" ||
+	 test ! -s conftest.err
+       } && test -s conftest.$ac_objext
+then :
+  ac_retval=0
+else $as_nop
+  printf "%s\n" "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+	ac_retval=1
+fi
+  eval $as_lineno_stack; ${as_lineno_stack:+:} unset as_lineno
+  as_fn_set_status $ac_retval
+
+} # ac_fn_fc_try_compile
+
+# ac_fn_fc_try_link LINENO
+# ------------------------
+# Try to link conftest.$ac_ext, and return whether this succeeded.
+ac_fn_fc_try_link ()
+{
+  as_lineno=${as_lineno-"$1"} as_lineno_stack=as_lineno_stack=$as_lineno_stack
+  rm -f conftest.$ac_objext conftest.beam conftest$ac_exeext
+  if { { ac_try="$ac_link"
+case "(($ac_try" in
+  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
+  *) ac_try_echo=$ac_try;;
+esac
+eval ac_try_echo="\"\$as_me:${as_lineno-$LINENO}: $ac_try_echo\""
+printf "%s\n" "$ac_try_echo"; } >&5
+  (eval "$ac_link") 2>conftest.err
+  ac_status=$?
+  if test -s conftest.err; then
+    grep -v '^ *+' conftest.err >conftest.er1
+    cat conftest.er1 >&5
+    mv -f conftest.er1 conftest.err
+  fi
+  printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; } && {
+	 test -z "$ac_fc_werror_flag" ||
+	 test ! -s conftest.err
+       } && test -s conftest$ac_exeext && {
+	 test "$cross_compiling" = yes ||
+	 test -x conftest$ac_exeext
+       }
+then :
+  ac_retval=0
+else $as_nop
+  printf "%s\n" "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+	ac_retval=1
+fi
+  # Delete the IPA/IPO (Inter Procedural Analysis/Optimization) information
+  # created by the PGI compiler (conftest_ipa8_conftest.oo), as it would
+  # interfere with the next link command; also delete a directory that is
+  # left behind by Apple's compiler.  We do this before executing the actions.
+  rm -rf conftest.dSYM conftest_ipa8_conftest.oo
+  eval $as_lineno_stack; ${as_lineno_stack:+:} unset as_lineno
+  as_fn_set_status $ac_retval
+
+} # ac_fn_fc_try_link
 ac_configure_args_raw=
 for ac_arg
 do
@@ -2686,15 +2739,15 @@ main (int argc, char **argv)
 }
 "
 
-as_fn_append ac_header_c_list " stdio.h stdio_h HAVE_STDIO_H"
-as_fn_append ac_header_c_list " stdlib.h stdlib_h HAVE_STDLIB_H"
-as_fn_append ac_header_c_list " string.h string_h HAVE_STRING_H"
-as_fn_append ac_header_c_list " inttypes.h inttypes_h HAVE_INTTYPES_H"
-as_fn_append ac_header_c_list " stdint.h stdint_h HAVE_STDINT_H"
-as_fn_append ac_header_c_list " strings.h strings_h HAVE_STRINGS_H"
-as_fn_append ac_header_c_list " sys/stat.h sys_stat_h HAVE_SYS_STAT_H"
-as_fn_append ac_header_c_list " sys/types.h sys_types_h HAVE_SYS_TYPES_H"
-as_fn_append ac_header_c_list " unistd.h unistd_h HAVE_UNISTD_H"
+as_fn_append ac_header_cxx_list " stdio.h stdio_h HAVE_STDIO_H"
+as_fn_append ac_header_cxx_list " stdlib.h stdlib_h HAVE_STDLIB_H"
+as_fn_append ac_header_cxx_list " string.h string_h HAVE_STRING_H"
+as_fn_append ac_header_cxx_list " inttypes.h inttypes_h HAVE_INTTYPES_H"
+as_fn_append ac_header_cxx_list " stdint.h stdint_h HAVE_STDINT_H"
+as_fn_append ac_header_cxx_list " strings.h strings_h HAVE_STRINGS_H"
+as_fn_append ac_header_cxx_list " sys/stat.h sys_stat_h HAVE_SYS_STAT_H"
+as_fn_append ac_header_cxx_list " sys/types.h sys_types_h HAVE_SYS_TYPES_H"
+as_fn_append ac_header_cxx_list " unistd.h unistd_h HAVE_UNISTD_H"
 
 # Auxiliary files required by this configure script.
 ac_aux_files="config.guess config.sub"
@@ -4743,128 +4796,6 @@ rm -f core conftest.err conftest.$ac_objext conftest.beam \
   rm -f conf.gsltest
 
 
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for a sed that does not truncate output" >&5
-printf %s "checking for a sed that does not truncate output... " >&6; }
-if test ${ac_cv_path_SED+y}
-then :
-  printf %s "(cached) " >&6
-else $as_nop
-            ac_script=s/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb/
-     for ac_i in 1 2 3 4 5 6 7; do
-       ac_script="$ac_script$as_nl$ac_script"
-     done
-     echo "$ac_script" 2>/dev/null | sed 99q >conftest.sed
-     { ac_script=; unset ac_script;}
-     if test -z "$SED"; then
-  ac_path_SED_found=false
-  # Loop through the user's path and test for each of PROGNAME-LIST
-  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
-for as_dir in $PATH
-do
-  IFS=$as_save_IFS
-  case $as_dir in #(((
-    '') as_dir=./ ;;
-    */) ;;
-    *) as_dir=$as_dir/ ;;
-  esac
-    for ac_prog in sed gsed
-   do
-    for ac_exec_ext in '' $ac_executable_extensions; do
-      ac_path_SED="$as_dir$ac_prog$ac_exec_ext"
-      as_fn_executable_p "$ac_path_SED" || continue
-# Check for GNU ac_path_SED and select it if it is found.
-  # Check for GNU $ac_path_SED
-case `"$ac_path_SED" --version 2>&1` in
-*GNU*)
-  ac_cv_path_SED="$ac_path_SED" ac_path_SED_found=:;;
-*)
-  ac_count=0
-  printf %s 0123456789 >"conftest.in"
-  while :
-  do
-    cat "conftest.in" "conftest.in" >"conftest.tmp"
-    mv "conftest.tmp" "conftest.in"
-    cp "conftest.in" "conftest.nl"
-    printf "%s\n" '' >> "conftest.nl"
-    "$ac_path_SED" -f conftest.sed < "conftest.nl" >"conftest.out" 2>/dev/null || break
-    diff "conftest.out" "conftest.nl" >/dev/null 2>&1 || break
-    as_fn_arith $ac_count + 1 && ac_count=$as_val
-    if test $ac_count -gt ${ac_path_SED_max-0}; then
-      # Best one so far, save it but keep looking for a better one
-      ac_cv_path_SED="$ac_path_SED"
-      ac_path_SED_max=$ac_count
-    fi
-    # 10*(2^10) chars as input seems more than enough
-    test $ac_count -gt 10 && break
-  done
-  rm -f conftest.in conftest.tmp conftest.nl conftest.out;;
-esac
-
-      $ac_path_SED_found && break 3
-    done
-  done
-  done
-IFS=$as_save_IFS
-  if test -z "$ac_cv_path_SED"; then
-    as_fn_error $? "no acceptable sed could be found in \$PATH" "$LINENO" 5
-  fi
-else
-  ac_cv_path_SED=$SED
-fi
-
-fi
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_cv_path_SED" >&5
-printf "%s\n" "$ac_cv_path_SED" >&6; }
- SED="$ac_cv_path_SED"
-  rm -f conftest.sed
-
-for ac_prog in gawk mawk nawk awk
-do
-  # Extract the first word of "$ac_prog", so it can be a program name with args.
-set dummy $ac_prog; ac_word=$2
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
-printf %s "checking for $ac_word... " >&6; }
-if test ${ac_cv_prog_AWK+y}
-then :
-  printf %s "(cached) " >&6
-else $as_nop
-  if test -n "$AWK"; then
-  ac_cv_prog_AWK="$AWK" # Let the user override the test.
-else
-as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
-for as_dir in $PATH
-do
-  IFS=$as_save_IFS
-  case $as_dir in #(((
-    '') as_dir=./ ;;
-    */) ;;
-    *) as_dir=$as_dir/ ;;
-  esac
-    for ac_exec_ext in '' $ac_executable_extensions; do
-  if as_fn_executable_p "$as_dir$ac_word$ac_exec_ext"; then
-    ac_cv_prog_AWK="$ac_prog"
-    printf "%s\n" "$as_me:${as_lineno-$LINENO}: found $as_dir$ac_word$ac_exec_ext" >&5
-    break 2
-  fi
-done
-  done
-IFS=$as_save_IFS
-
-fi
-fi
-AWK=$ac_cv_prog_AWK
-if test -n "$AWK"; then
-  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $AWK" >&5
-printf "%s\n" "$AWK" >&6; }
-else
-  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
-printf "%s\n" "no" >&6; }
-fi
-
-
-  test -n "$AWK" && break
-done
-
 
 
 
@@ -5606,384 +5537,6 @@ ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $
 ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 
-ac_header= ac_cache=
-for ac_item in $ac_header_c_list
-do
-  if test $ac_cache; then
-    ac_fn_c_check_header_compile "$LINENO" $ac_header ac_cv_header_$ac_cache "$ac_includes_default"
-    if eval test \"x\$ac_cv_header_$ac_cache\" = xyes; then
-      printf "%s\n" "#define $ac_item 1" >> confdefs.h
-    fi
-    ac_header= ac_cache=
-  elif test $ac_header; then
-    ac_cache=$ac_item
-  else
-    ac_header=$ac_item
-  fi
-done
-
-
-
-
-
-
-
-
-if test $ac_cv_header_stdlib_h = yes && test $ac_cv_header_string_h = yes
-then :
-
-printf "%s\n" "#define STDC_HEADERS 1" >>confdefs.h
-
-fi
-
-
-
-
-
-
-if   test "" = ""        ; then
-    : # Recognized value
-elif test "" = "serial"  ; then
-    : # Recognized value
-elif test "" = "parallel"; then
-    : # Recognized value
-else
-    as_fn_error $? "
-Unrecognized value for AX_LIB_HDF5 within configure.ac.
-If supplied, argument 1 must be either 'serial' or 'parallel'.
-" "$LINENO" 5
-fi
-
-
-# Check whether --with-hdf5 was given.
-if test ${with_hdf5+y}
-then :
-  withval=$with_hdf5; if test "$withval" = "no"; then
-     with_hdf5="no"
-   elif test "$withval" = "yes"; then
-     with_hdf5="yes"
-   else
-     with_hdf5="yes"
-     H5CC="$withval"
-   fi
-else $as_nop
-  with_hdf5="yes"
-
-fi
-
-
-HDF5_CC=""
-HDF5_VERSION=""
-HDF5_CFLAGS=""
-HDF5_CPPFLAGS=""
-HDF5_LDFLAGS=""
-HDF5_LIBS=""
-HDF5_FC=""
-HDF5_FFLAGS=""
-HDF5_FLIBS=""
-HDF5_TYPE=""
-
-if test "$with_hdf5" = "yes"; then
-    if test -z "$H5CC"; then
-                for ac_prog in h5cc h5pcc
-do
-  # Extract the first word of "$ac_prog", so it can be a program name with args.
-set dummy $ac_prog; ac_word=$2
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
-printf %s "checking for $ac_word... " >&6; }
-if test ${ac_cv_path_H5CC+y}
-then :
-  printf %s "(cached) " >&6
-else $as_nop
-  case $H5CC in
-  [\\/]* | ?:[\\/]*)
-  ac_cv_path_H5CC="$H5CC" # Let the user override the test with a path.
-  ;;
-  *)
-  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
-for as_dir in $PATH
-do
-  IFS=$as_save_IFS
-  case $as_dir in #(((
-    '') as_dir=./ ;;
-    */) ;;
-    *) as_dir=$as_dir/ ;;
-  esac
-    for ac_exec_ext in '' $ac_executable_extensions; do
-  if as_fn_executable_p "$as_dir$ac_word$ac_exec_ext"; then
-    ac_cv_path_H5CC="$as_dir$ac_word$ac_exec_ext"
-    printf "%s\n" "$as_me:${as_lineno-$LINENO}: found $as_dir$ac_word$ac_exec_ext" >&5
-    break 2
-  fi
-done
-  done
-IFS=$as_save_IFS
-
-  ;;
-esac
-fi
-H5CC=$ac_cv_path_H5CC
-if test -n "$H5CC"; then
-  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $H5CC" >&5
-printf "%s\n" "$H5CC" >&6; }
-else
-  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
-printf "%s\n" "no" >&6; }
-fi
-
-
-  test -n "$H5CC" && break
-done
-
-    else
-        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking Using provided HDF5 C wrapper" >&5
-printf %s "checking Using provided HDF5 C wrapper... " >&6; }
-        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $H5CC" >&5
-printf "%s\n" "$H5CC" >&6; }
-    fi
-    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for HDF5 type" >&5
-printf %s "checking for HDF5 type... " >&6; }
-    case $H5CC in #(
-  *h5pcc) :
-    HDF5_TYPE=parallel ;; #(
-  *h5cc) :
-    HDF5_TYPE=serial ;; #(
-  *) :
-    HDF5_TYPE=neither ;;
-esac
-    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $HDF5_TYPE" >&5
-printf "%s\n" "$HDF5_TYPE" >&6; }
-    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for HDF5 libraries" >&5
-printf %s "checking for HDF5 libraries... " >&6; }
-    if test ! -f "$H5CC" || test ! -x "$H5CC"; then
-        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
-printf "%s\n" "no" >&6; }
-        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: WARNING:
-Unable to locate HDF5 compilation helper scripts 'h5cc' or 'h5pcc'.
-Please specify --with-hdf5=<LOCATION> as the full path to h5cc or h5pcc.
-HDF5 support is being disabled (equivalent to --with-hdf5=no).
-" >&5
-printf "%s\n" "$as_me: WARNING:
-Unable to locate HDF5 compilation helper scripts 'h5cc' or 'h5pcc'.
-Please specify --with-hdf5=<LOCATION> as the full path to h5cc or h5pcc.
-HDF5 support is being disabled (equivalent to --with-hdf5=no).
-" >&2;}
-        with_hdf5="no"
-        with_hdf5_fortran="no"
-    else
-                HDF5_SHOW=$(eval $H5CC -show)
-
-                HDF5_CC=$(eval $H5CC -show | head -n 1 | $AWK '{print $1}')
-        if test "$HDF5_CC" = "ccache"; then
-            HDF5_CC=$(eval $H5CC -show | head -n 1 | $AWK '{print $2}')
-        fi
-
-
-                HDF5_VERSION=$(eval $H5CC -showconfig | $GREP 'HDF5 Version:' \
-            | $AWK '{print $3}')
-
-                                                                                HDF5_tmp_flags=$(eval $H5CC -showconfig \
-            | $GREP 'FLAGS\|Extra libraries:' \
-            | $AWK -F: '{printf("%s "), $2}' )
-
-                HDF5_tmp_inst=$(eval $H5CC -showconfig \
-            | $GREP 'Installation point:' \
-            | $AWK '{print $NF}' )
-
-                HDF5_CPPFLAGS="-I${HDF5_tmp_inst}/include"
-
-                for arg in $HDF5_SHOW $HDF5_tmp_flags ; do
-          case "$arg" in
-            -I*) echo $HDF5_CPPFLAGS | $GREP -e "$arg" 2>&1 >/dev/null \
-                  || HDF5_CPPFLAGS="$HDF5_CPPFLAGS $arg"
-              ;;
-            -L*) echo $HDF5_LDFLAGS | $GREP -e "$arg" 2>&1 >/dev/null \
-                  || HDF5_LDFLAGS="$HDF5_LDFLAGS $arg"
-              ;;
-            -l*) echo $HDF5_LIBS | $GREP -e "$arg" 2>&1 >/dev/null \
-                  || HDF5_LIBS="$HDF5_LIBS $arg"
-              ;;
-          esac
-        done
-
-        HDF5_LIBS="-lhdf5 $HDF5_LIBS"
-        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes (version $HDF5_VERSION)" >&5
-printf "%s\n" "yes (version $HDF5_VERSION)" >&6; }
-
-                ac_ext=c
-ac_cpp='$CPP $CPPFLAGS'
-ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
-ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
-ac_compiler_gnu=$ac_cv_c_compiler_gnu
-
-        ax_lib_hdf5_save_CC=$CC
-        ax_lib_hdf5_save_CPPFLAGS=$CPPFLAGS
-        ax_lib_hdf5_save_LIBS=$LIBS
-        ax_lib_hdf5_save_LDFLAGS=$LDFLAGS
-        CC=$HDF5_CC
-        CPPFLAGS=$HDF5_CPPFLAGS
-        LIBS=$HDF5_LIBS
-        LDFLAGS=$HDF5_LDFLAGS
-        ac_fn_c_check_header_compile "$LINENO" "hdf5.h" "ac_cv_header_hdf5_h" "$ac_includes_default"
-if test "x$ac_cv_header_hdf5_h" = xyes
-then :
-  ac_cv_hadf5_h=yes
-else $as_nop
-  ac_cv_hadf5_h=no
-fi
-
-        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for H5Fcreate in -lhdf5" >&5
-printf %s "checking for H5Fcreate in -lhdf5... " >&6; }
-if test ${ac_cv_lib_hdf5_H5Fcreate+y}
-then :
-  printf %s "(cached) " >&6
-else $as_nop
-  ac_check_lib_save_LIBS=$LIBS
-LIBS="-lhdf5  $LIBS"
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-/* Override any GCC internal prototype to avoid an error.
-   Use char because int might match the return type of a GCC
-   builtin and then its argument prototype would still apply.  */
-char H5Fcreate ();
-int
-main (void)
-{
-return H5Fcreate ();
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_link "$LINENO"
-then :
-  ac_cv_lib_hdf5_H5Fcreate=yes
-else $as_nop
-  ac_cv_lib_hdf5_H5Fcreate=no
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.beam \
-    conftest$ac_exeext conftest.$ac_ext
-LIBS=$ac_check_lib_save_LIBS
-fi
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_hdf5_H5Fcreate" >&5
-printf "%s\n" "$ac_cv_lib_hdf5_H5Fcreate" >&6; }
-if test "x$ac_cv_lib_hdf5_H5Fcreate" = xyes
-then :
-  ac_cv_libhdf5=yes
-else $as_nop
-  ac_cv_libhdf5=no
-fi
-
-        if test "$ac_cv_hadf5_h" = "no" && test "$ac_cv_libhdf5" = "no" ; then
-          { printf "%s\n" "$as_me:${as_lineno-$LINENO}: WARNING: Unable to compile HDF5 test program" >&5
-printf "%s\n" "$as_me: WARNING: Unable to compile HDF5 test program" >&2;}
-        fi
-                { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for main in -lhdf5_hl" >&5
-printf %s "checking for main in -lhdf5_hl... " >&6; }
-if test ${ac_cv_lib_hdf5_hl_main+y}
-then :
-  printf %s "(cached) " >&6
-else $as_nop
-  ac_check_lib_save_LIBS=$LIBS
-LIBS="-lhdf5_hl  $LIBS"
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-
-int
-main (void)
-{
-return main ();
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_link "$LINENO"
-then :
-  ac_cv_lib_hdf5_hl_main=yes
-else $as_nop
-  ac_cv_lib_hdf5_hl_main=no
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.beam \
-    conftest$ac_exeext conftest.$ac_ext
-LIBS=$ac_check_lib_save_LIBS
-fi
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_hdf5_hl_main" >&5
-printf "%s\n" "$ac_cv_lib_hdf5_hl_main" >&6; }
-if test "x$ac_cv_lib_hdf5_hl_main" = xyes
-then :
-  HDF5_LIBS="-lhdf5_hl $HDF5_LIBS"
-fi
-ac_cv_lib_hdf5_hl=ac_cv_lib_hdf5_hl_main
-
-
-        CC=$ax_lib_hdf5_save_CC
-        CPPFLAGS=$ax_lib_hdf5_save_CPPFLAGS
-        LIBS=$ax_lib_hdf5_save_LIBS
-        LDFLAGS=$ax_lib_hdf5_save_LDFLAGS
-        ac_ext=cpp
-ac_cpp='$CXXCPP $CPPFLAGS'
-ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
-ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
-ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
-
-
-        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for matching HDF5 Fortran wrapper" >&5
-printf %s "checking for matching HDF5 Fortran wrapper... " >&6; }
-                H5FC=$(eval echo -n $H5CC | $SED -n 's/cc$/fc/p')
-        if test -x "$H5FC"; then
-            { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $H5FC" >&5
-printf "%s\n" "$H5FC" >&6; }
-            with_hdf5_fortran="yes"
-
-
-                        for arg in `$H5FC -show`
-            do
-              case "$arg" in #(
-                -I*) echo $HDF5_FFLAGS | $GREP -e "$arg" >/dev/null \
-                      || HDF5_FFLAGS="$HDF5_FFLAGS $arg"
-                  ;;#(
-                -L*) echo $HDF5_FFLAGS | $GREP -e "$arg" >/dev/null \
-                      || HDF5_FFLAGS="$HDF5_FFLAGS $arg"
-                                                               echo $HDF5_FFLAGS | $GREP -e "-I${arg#-L}" >/dev/null \
-                      || HDF5_FFLAGS="$HDF5_FFLAGS -I${arg#-L}"
-                  ;;
-              esac
-            done
-
-                        for arg in $HDF5_LIBS
-            do
-              case "$arg" in #(
-                -lhdf5_hl) HDF5_FLIBS="$HDF5_FLIBS -lhdf5hl_fortran $arg"
-                  ;; #(
-                -lhdf5)    HDF5_FLIBS="$HDF5_FLIBS -lhdf5_fortran $arg"
-                  ;; #(
-                *) HDF5_FLIBS="$HDF5_FLIBS $arg"
-                  ;;
-              esac
-            done
-        else
-            { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
-printf "%s\n" "no" >&6; }
-            with_hdf5_fortran="no"
-        fi
-
-
-
-
-
-
-
-
-
-
-
-
-printf "%s\n" "#define HAVE_HDF5 1" >>confdefs.h
-
-    fi
-fi
-
 
     amuse_libz_save_libs="$LIBS"
 
@@ -6043,6 +5596,35 @@ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
 
 
 
+ac_header= ac_cache=
+for ac_item in $ac_header_cxx_list
+do
+  if test $ac_cache; then
+    ac_fn_cxx_check_header_compile "$LINENO" $ac_header ac_cv_header_$ac_cache "$ac_includes_default"
+    if eval test \"x\$ac_cv_header_$ac_cache\" = xyes; then
+      printf "%s\n" "#define $ac_item 1" >> confdefs.h
+    fi
+    ac_header= ac_cache=
+  elif test $ac_header; then
+    ac_cache=$ac_item
+  else
+    ac_header=$ac_item
+  fi
+done
+
+
+
+
+
+
+
+
+if test $ac_cv_header_stdlib_h = yes && test $ac_cv_header_string_h = yes
+then :
+
+printf "%s\n" "#define STDC_HEADERS 1" >>confdefs.h
+
+fi
 
     amuse_lib_qhull_save_libs="$LIBS"
 
@@ -6277,6 +5859,3891 @@ ac_cpp='$CPP $CPPFLAGS'
 ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
 ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
 ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+
+ac_ext=${ac_fc_srcext-f}
+ac_compile='$FC -c $FCFLAGS $ac_fcflags_srcext conftest.$ac_ext >&5'
+ac_link='$FC -o conftest$ac_exeext $FCFLAGS $LDFLAGS $ac_fcflags_srcext conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_fc_compiler_gnu
+if test -n "$ac_tool_prefix"; then
+  for ac_prog in gfortran g95 xlf95 f95 fort ifort ifc efc pgfortran pgf95 lf95 ftn nagfor xlf90 f90 pgf90 pghpf epcf90 g77 xlf f77 frt pgf77 cf77 fort77 fl32 af77
+  do
+    # Extract the first word of "$ac_tool_prefix$ac_prog", so it can be a program name with args.
+set dummy $ac_tool_prefix$ac_prog; ac_word=$2
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+printf %s "checking for $ac_word... " >&6; }
+if test ${ac_cv_prog_FC+y}
+then :
+  printf %s "(cached) " >&6
+else $as_nop
+  if test -n "$FC"; then
+  ac_cv_prog_FC="$FC" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  case $as_dir in #(((
+    '') as_dir=./ ;;
+    */) ;;
+    *) as_dir=$as_dir/ ;;
+  esac
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir$ac_word$ac_exec_ext"; then
+    ac_cv_prog_FC="$ac_tool_prefix$ac_prog"
+    printf "%s\n" "$as_me:${as_lineno-$LINENO}: found $as_dir$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+fi
+fi
+FC=$ac_cv_prog_FC
+if test -n "$FC"; then
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $FC" >&5
+printf "%s\n" "$FC" >&6; }
+else
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+fi
+
+
+    test -n "$FC" && break
+  done
+fi
+if test -z "$FC"; then
+  ac_ct_FC=$FC
+  for ac_prog in gfortran g95 xlf95 f95 fort ifort ifc efc pgfortran pgf95 lf95 ftn nagfor xlf90 f90 pgf90 pghpf epcf90 g77 xlf f77 frt pgf77 cf77 fort77 fl32 af77
+do
+  # Extract the first word of "$ac_prog", so it can be a program name with args.
+set dummy $ac_prog; ac_word=$2
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+printf %s "checking for $ac_word... " >&6; }
+if test ${ac_cv_prog_ac_ct_FC+y}
+then :
+  printf %s "(cached) " >&6
+else $as_nop
+  if test -n "$ac_ct_FC"; then
+  ac_cv_prog_ac_ct_FC="$ac_ct_FC" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  case $as_dir in #(((
+    '') as_dir=./ ;;
+    */) ;;
+    *) as_dir=$as_dir/ ;;
+  esac
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir$ac_word$ac_exec_ext"; then
+    ac_cv_prog_ac_ct_FC="$ac_prog"
+    printf "%s\n" "$as_me:${as_lineno-$LINENO}: found $as_dir$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+fi
+fi
+ac_ct_FC=$ac_cv_prog_ac_ct_FC
+if test -n "$ac_ct_FC"; then
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_ct_FC" >&5
+printf "%s\n" "$ac_ct_FC" >&6; }
+else
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+fi
+
+
+  test -n "$ac_ct_FC" && break
+done
+
+  if test "x$ac_ct_FC" = x; then
+    FC=""
+  else
+    case $cross_compiling:$ac_tool_warned in
+yes:)
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: WARNING: using cross tools not prefixed with host triplet" >&5
+printf "%s\n" "$as_me: WARNING: using cross tools not prefixed with host triplet" >&2;}
+ac_tool_warned=yes ;;
+esac
+    FC=$ac_ct_FC
+  fi
+fi
+
+
+# Provide some information about the compiler.
+printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for Fortran compiler version" >&5
+set X $ac_compile
+ac_compiler=$2
+for ac_option in --version -v -V -qversion; do
+  { { ac_try="$ac_compiler $ac_option >&5"
+case "(($ac_try" in
+  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
+  *) ac_try_echo=$ac_try;;
+esac
+eval ac_try_echo="\"\$as_me:${as_lineno-$LINENO}: $ac_try_echo\""
+printf "%s\n" "$ac_try_echo"; } >&5
+  (eval "$ac_compiler $ac_option >&5") 2>conftest.err
+  ac_status=$?
+  if test -s conftest.err; then
+    sed '10a\
+... rest of stderr output deleted ...
+         10q' conftest.err >conftest.er1
+    cat conftest.er1 >&5
+  fi
+  rm -f conftest.er1 conftest.err
+  printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }
+done
+rm -f a.out
+
+# If we don't use `.F' as extension, the preprocessor is not run on the
+# input file.  (Note that this only needs to work for GNU compilers.)
+ac_save_ext=$ac_ext
+ac_ext=F
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether the compiler supports GNU Fortran" >&5
+printf %s "checking whether the compiler supports GNU Fortran... " >&6; }
+if test ${ac_cv_fc_compiler_gnu+y}
+then :
+  printf %s "(cached) " >&6
+else $as_nop
+  cat > conftest.$ac_ext <<_ACEOF
+      program main
+#ifndef __GNUC__
+       choke me
+#endif
+
+      end
+_ACEOF
+if ac_fn_fc_try_compile "$LINENO"
+then :
+  ac_compiler_gnu=yes
+else $as_nop
+  ac_compiler_gnu=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
+ac_cv_fc_compiler_gnu=$ac_compiler_gnu
+
+fi
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_cv_fc_compiler_gnu" >&5
+printf "%s\n" "$ac_cv_fc_compiler_gnu" >&6; }
+ac_compiler_gnu=$ac_cv_fc_compiler_gnu
+
+ac_ext=$ac_save_ext
+ac_test_FCFLAGS=${FCFLAGS+y}
+ac_save_FCFLAGS=$FCFLAGS
+FCFLAGS=
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether $FC accepts -g" >&5
+printf %s "checking whether $FC accepts -g... " >&6; }
+if test ${ac_cv_prog_fc_g+y}
+then :
+  printf %s "(cached) " >&6
+else $as_nop
+  FCFLAGS=-g
+cat > conftest.$ac_ext <<_ACEOF
+      program main
+
+      end
+_ACEOF
+if ac_fn_fc_try_compile "$LINENO"
+then :
+  ac_cv_prog_fc_g=yes
+else $as_nop
+  ac_cv_prog_fc_g=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
+
+fi
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_cv_prog_fc_g" >&5
+printf "%s\n" "$ac_cv_prog_fc_g" >&6; }
+if test $ac_test_FCFLAGS; then
+  FCFLAGS=$ac_save_FCFLAGS
+elif test $ac_cv_prog_fc_g = yes; then
+  if test "x$ac_cv_fc_compiler_gnu" = xyes; then
+    FCFLAGS="-g -O2"
+  else
+    FCFLAGS="-g"
+  fi
+else
+  if test "x$ac_cv_fc_compiler_gnu" = xyes; then
+    FCFLAGS="-O2"
+  else
+    FCFLAGS=
+  fi
+fi
+
+if test $ac_compiler_gnu = yes; then
+  GFC=yes
+else
+  GFC=
+fi
+ac_ext=${ac_fc_srcext-f}
+ac_compile='$FC -c $FCFLAGS $ac_fcflags_srcext conftest.$ac_ext >&5'
+ac_link='$FC -o conftest$ac_exeext $FCFLAGS $LDFLAGS $ac_fcflags_srcext conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_fc_compiler_gnu
+
+
+
+    amuse_h5_detect_C="no"
+
+
+    amuse_h5_result="no"
+
+    if test -n "$CONDA_PREFIX"
+    then
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: Conda environment detected, ignoring HDF5_ROOT, HDF5_DIR and CMAKE_PREFIX_PATH" >&5
+printf "%s\n" "$as_me: Conda environment detected, ignoring HDF5_ROOT, HDF5_DIR and CMAKE_PREFIX_PATH" >&6;}
+    else
+
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether HDF5_ROOT points to an HDF5 installation" >&5
+printf %s "checking whether HDF5_ROOT points to an HDF5 installation... " >&6; }
+    if test -z "$HDF5_ROOT"
+    then
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+    elif test -f "$HDF5_ROOT/bin/h5pcc"
+    then
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no, because this seems to be a parallel build" >&5
+printf "%s\n" "no, because this seems to be a parallel build" >&6; }
+    else
+        if test -f "$HDF5_ROOT/include/hdf5.h" && test -f "$HDF5_ROOT/lib/libhdf5.so"
+        then
+            { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
+            amuse_h5_result="yes"
+            amuse_h5_root="$HDF5_ROOT"
+        else
+            { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+            amuse_h5_result="no"
+        fi
+    fi
+
+
+        if test "$amuse_h5_result" = "no"
+        then
+
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether HDF5_DIR points to an HDF5 installation" >&5
+printf %s "checking whether HDF5_DIR points to an HDF5 installation... " >&6; }
+    if test -z "$HDF5_DIR"
+    then
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+    elif test -f "$HDF5_DIR/bin/h5pcc"
+    then
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no, because this seems to be a parallel build" >&5
+printf "%s\n" "no, because this seems to be a parallel build" >&6; }
+    else
+        if test -f "$HDF5_DIR/include/hdf5.h" && test -f "$HDF5_DIR/lib/libhdf5.so"
+        then
+            { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
+            amuse_h5_result="yes"
+            amuse_h5_root="$HDF5_DIR"
+        else
+            { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+            amuse_h5_result="no"
+        fi
+    fi
+
+        fi
+
+        if test "$amuse_h5_result" = "no" && test -n "$CMAKE_PREFIX_PATH"
+        then
+            amuse_h5_save_IFS="$IFS"
+            IFS=:
+            for amuse_h5_path in $CMAKE_PREFIX_PATH
+            do
+                # restore IFS immediately as it may mess up the below
+                IFS="$amuse_h5_save_IFS"
+                if test -z "$amuse_h5_path"
+                then
+                    continue
+                fi
+
+
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether $amuse_h5_path from CMAKE_PREFIX_PATH points to an HDF5 installation" >&5
+printf %s "checking whether $amuse_h5_path from CMAKE_PREFIX_PATH points to an HDF5 installation... " >&6; }
+    if test -z "$amuse_h5_path"
+    then
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+    elif test -f "$amuse_h5_path/bin/h5pcc"
+    then
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no, because this seems to be a parallel build" >&5
+printf "%s\n" "no, because this seems to be a parallel build" >&6; }
+    else
+        if test -f "$amuse_h5_path/include/hdf5.h" && test -f "$amuse_h5_path/lib/libhdf5.so"
+        then
+            { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
+            amuse_h5_result="yes"
+            amuse_h5_root="$amuse_h5_path"
+        else
+            { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+            amuse_h5_result="no"
+        fi
+    fi
+
+
+                if test "$amuse_h5_result" = "yes"
+                then
+                    break
+                fi
+
+            done
+            IFS="$amuse_h5_save_IFS"
+        fi
+
+        if test "$amuse_h5_result" = "yes"
+        then
+
+    amuse_h5_LDFLAGS="-L$amuse_h5_root/lib"
+
+    ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+    amuse_h5_CFLAGS="-I$amuse_h5_root/include"
+
+    amuse_h5_name="C"
+    amuse_h5_prefix="C"
+    amuse_h5_target="C"
+    amuse_h5_program="#include <hdf5.h>
+int
+main (void)
+{
+H5open(); H5close();
+  ;
+  return 0;
+}"
+    amuse_h5_libs="-lhdf5"
+
+    amuse_h5_flags_var="${amuse_h5_prefix}FLAGS"
+    amuse_h5_flags_source_var="amuse_h5_${amuse_h5_flags_var}"
+    amuse_h5_flags_target_var="amuse_h5_detect_${amuse_h5_target}"
+
+    eval "amuse_h5_save_FLAGS=\"\$$amuse_h5_flags_var\""
+    amuse_h5_save_LDFLAGS="$LDFLAGS"
+    amuse_h5_save_LIBS="$LIBS"
+
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether we can build a program with HDF5 in $amuse_h5_name" >&5
+printf %s "checking whether we can build a program with HDF5 in $amuse_h5_name... " >&6; }
+
+    eval "$amuse_h5_flags_var=\"\$$amuse_h5_flags_source_var \$$amuse_h5_flags_var\""
+    LDFLAGS="$amuse_h5_LDFLAGS $LDFLAGS"
+    LIBS="$amuse_h5_libs"
+
+        cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+$amuse_h5_program
+_ACEOF
+if ac_fn_c_try_link "$LINENO"
+then :
+
+        eval "$amuse_h5_flags_target_var=\"yes\""
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
+
+else $as_nop
+
+        eval "$amuse_h5_flags_target_var=\"no\""
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
+
+    LIBS="$amuse_h5_save_LIBS"
+    LDFLAGS="$amuse_h5_save_LDFLAGS"
+    eval "$amuse_h5_flags_var=\"\$amuse_h5_save_FLAGS\""
+
+
+
+    amuse_h5_name="C with the high-level API"
+    amuse_h5_prefix="C"
+    amuse_h5_target="HL_C"
+    amuse_h5_program="#include <hdf5_hl.h>
+int
+main (void)
+{
+H5LTfind_dataset(0, \"test\")
+  ;
+  return 0;
+}"
+    amuse_h5_libs="-lhdf5_hl"
+
+    amuse_h5_flags_var="${amuse_h5_prefix}FLAGS"
+    amuse_h5_flags_source_var="amuse_h5_${amuse_h5_flags_var}"
+    amuse_h5_flags_target_var="amuse_h5_detect_${amuse_h5_target}"
+
+    eval "amuse_h5_save_FLAGS=\"\$$amuse_h5_flags_var\""
+    amuse_h5_save_LDFLAGS="$LDFLAGS"
+    amuse_h5_save_LIBS="$LIBS"
+
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether we can build a program with HDF5 in $amuse_h5_name" >&5
+printf %s "checking whether we can build a program with HDF5 in $amuse_h5_name... " >&6; }
+
+    eval "$amuse_h5_flags_var=\"\$$amuse_h5_flags_source_var \$$amuse_h5_flags_var\""
+    LDFLAGS="$amuse_h5_LDFLAGS $LDFLAGS"
+    LIBS="$amuse_h5_libs"
+
+        cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+$amuse_h5_program
+_ACEOF
+if ac_fn_c_try_link "$LINENO"
+then :
+
+        eval "$amuse_h5_flags_target_var=\"yes\""
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
+
+else $as_nop
+
+        eval "$amuse_h5_flags_target_var=\"no\""
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
+
+    LIBS="$amuse_h5_save_LIBS"
+    LDFLAGS="$amuse_h5_save_LDFLAGS"
+    eval "$amuse_h5_flags_var=\"\$amuse_h5_save_FLAGS\""
+
+    ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+
+    ac_ext=cpp
+ac_cpp='$CXXCPP $CPPFLAGS'
+ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
+
+    amuse_h5_CXXFLAGS="-I$amuse_h5_root/include"
+
+    amuse_h5_name="C++"
+    amuse_h5_prefix="CXX"
+    amuse_h5_target="CXX"
+    amuse_h5_program="#include <H5Cpp.h>
+int
+main (void)
+{
+H5::H5Library::open();
+  ;
+  return 0;
+}"
+    amuse_h5_libs="-lhdf5_cpp"
+
+    amuse_h5_flags_var="${amuse_h5_prefix}FLAGS"
+    amuse_h5_flags_source_var="amuse_h5_${amuse_h5_flags_var}"
+    amuse_h5_flags_target_var="amuse_h5_detect_${amuse_h5_target}"
+
+    eval "amuse_h5_save_FLAGS=\"\$$amuse_h5_flags_var\""
+    amuse_h5_save_LDFLAGS="$LDFLAGS"
+    amuse_h5_save_LIBS="$LIBS"
+
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether we can build a program with HDF5 in $amuse_h5_name" >&5
+printf %s "checking whether we can build a program with HDF5 in $amuse_h5_name... " >&6; }
+
+    eval "$amuse_h5_flags_var=\"\$$amuse_h5_flags_source_var \$$amuse_h5_flags_var\""
+    LDFLAGS="$amuse_h5_LDFLAGS $LDFLAGS"
+    LIBS="$amuse_h5_libs"
+
+        cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+$amuse_h5_program
+_ACEOF
+if ac_fn_cxx_try_link "$LINENO"
+then :
+
+        eval "$amuse_h5_flags_target_var=\"yes\""
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
+
+else $as_nop
+
+        eval "$amuse_h5_flags_target_var=\"no\""
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
+
+    LIBS="$amuse_h5_save_LIBS"
+    LDFLAGS="$amuse_h5_save_LDFLAGS"
+    eval "$amuse_h5_flags_var=\"\$amuse_h5_save_FLAGS\""
+
+    ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+
+    amuse_h5_FCFLAGS="-I$amuse_h5_root/include"
+
+    ac_ext=${ac_fc_srcext-f}
+ac_compile='$FC -c $FCFLAGS $ac_fcflags_srcext conftest.$ac_ext >&5'
+ac_link='$FC -o conftest$ac_exeext $FCFLAGS $LDFLAGS $ac_fcflags_srcext conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_fc_compiler_gnu
+
+
+    amuse_h5_name="Fortran with mods in /include"
+    amuse_h5_prefix="FC"
+    amuse_h5_target="FC"
+    amuse_h5_program="      program main
+
+            use h5lib
+
+            integer :: error
+
+            call h5open_f(error)
+            call h5close_f(error)
+      end"
+    amuse_h5_libs="-lhdf5_fortran"
+
+    amuse_h5_flags_var="${amuse_h5_prefix}FLAGS"
+    amuse_h5_flags_source_var="amuse_h5_${amuse_h5_flags_var}"
+    amuse_h5_flags_target_var="amuse_h5_detect_${amuse_h5_target}"
+
+    eval "amuse_h5_save_FLAGS=\"\$$amuse_h5_flags_var\""
+    amuse_h5_save_LDFLAGS="$LDFLAGS"
+    amuse_h5_save_LIBS="$LIBS"
+
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether we can build a program with HDF5 in $amuse_h5_name" >&5
+printf %s "checking whether we can build a program with HDF5 in $amuse_h5_name... " >&6; }
+
+    eval "$amuse_h5_flags_var=\"\$$amuse_h5_flags_source_var \$$amuse_h5_flags_var\""
+    LDFLAGS="$amuse_h5_LDFLAGS $LDFLAGS"
+    LIBS="$amuse_h5_libs"
+
+        cat > conftest.$ac_ext <<_ACEOF
+$amuse_h5_program
+_ACEOF
+if ac_fn_fc_try_link "$LINENO"
+then :
+
+        eval "$amuse_h5_flags_target_var=\"yes\""
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
+
+else $as_nop
+
+        eval "$amuse_h5_flags_target_var=\"no\""
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
+
+    LIBS="$amuse_h5_save_LIBS"
+    LDFLAGS="$amuse_h5_save_LDFLAGS"
+    eval "$amuse_h5_flags_var=\"\$amuse_h5_save_FLAGS\""
+
+
+
+    amuse_h5_name="Fortran with the high-level API in hdf5_hl_fortran with mods in /include"
+    amuse_h5_prefix="FC"
+    amuse_h5_target="HL_FC"
+    amuse_h5_program="      program main
+
+            use h5lt
+
+            integer :: error
+
+            error = h5ltfind_dataset_f(0_hid_t, 'test')
+
+      end"
+    amuse_h5_libs="-lhdf5_hl_fortran"
+
+    amuse_h5_flags_var="${amuse_h5_prefix}FLAGS"
+    amuse_h5_flags_source_var="amuse_h5_${amuse_h5_flags_var}"
+    amuse_h5_flags_target_var="amuse_h5_detect_${amuse_h5_target}"
+
+    eval "amuse_h5_save_FLAGS=\"\$$amuse_h5_flags_var\""
+    amuse_h5_save_LDFLAGS="$LDFLAGS"
+    amuse_h5_save_LIBS="$LIBS"
+
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether we can build a program with HDF5 in $amuse_h5_name" >&5
+printf %s "checking whether we can build a program with HDF5 in $amuse_h5_name... " >&6; }
+
+    eval "$amuse_h5_flags_var=\"\$$amuse_h5_flags_source_var \$$amuse_h5_flags_var\""
+    LDFLAGS="$amuse_h5_LDFLAGS $LDFLAGS"
+    LIBS="$amuse_h5_libs"
+
+        cat > conftest.$ac_ext <<_ACEOF
+$amuse_h5_program
+_ACEOF
+if ac_fn_fc_try_link "$LINENO"
+then :
+
+        eval "$amuse_h5_flags_target_var=\"yes\""
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
+
+else $as_nop
+
+        eval "$amuse_h5_flags_target_var=\"no\""
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
+
+    LIBS="$amuse_h5_save_LIBS"
+    LDFLAGS="$amuse_h5_save_LDFLAGS"
+    eval "$amuse_h5_flags_var=\"\$amuse_h5_save_FLAGS\""
+
+
+    if test $amuse_h5_detect_HL_FC = "yes"
+    then
+        amuse_h5_HL_FC_LIB="-lhdf5_hl_fortran"
+    else
+
+    amuse_h5_name="Fortran with the high-level API in hdf5hl_fortran with mods in /include"
+    amuse_h5_prefix="FC"
+    amuse_h5_target="HL_FC"
+    amuse_h5_program="      program main
+
+                use h5lt
+
+                integer :: error
+
+                error = h5ltfind_dataset_f(0_hid_t, 'test')
+
+      end"
+    amuse_h5_libs="-lhdf5hl_fortran"
+
+    amuse_h5_flags_var="${amuse_h5_prefix}FLAGS"
+    amuse_h5_flags_source_var="amuse_h5_${amuse_h5_flags_var}"
+    amuse_h5_flags_target_var="amuse_h5_detect_${amuse_h5_target}"
+
+    eval "amuse_h5_save_FLAGS=\"\$$amuse_h5_flags_var\""
+    amuse_h5_save_LDFLAGS="$LDFLAGS"
+    amuse_h5_save_LIBS="$LIBS"
+
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether we can build a program with HDF5 in $amuse_h5_name" >&5
+printf %s "checking whether we can build a program with HDF5 in $amuse_h5_name... " >&6; }
+
+    eval "$amuse_h5_flags_var=\"\$$amuse_h5_flags_source_var \$$amuse_h5_flags_var\""
+    LDFLAGS="$amuse_h5_LDFLAGS $LDFLAGS"
+    LIBS="$amuse_h5_libs"
+
+        cat > conftest.$ac_ext <<_ACEOF
+$amuse_h5_program
+_ACEOF
+if ac_fn_fc_try_link "$LINENO"
+then :
+
+        eval "$amuse_h5_flags_target_var=\"yes\""
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
+
+else $as_nop
+
+        eval "$amuse_h5_flags_target_var=\"no\""
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
+
+    LIBS="$amuse_h5_save_LIBS"
+    LDFLAGS="$amuse_h5_save_LDFLAGS"
+    eval "$amuse_h5_flags_var=\"\$amuse_h5_save_FLAGS\""
+
+
+        if test $amuse_h5_detect_HL_FC = "yes"
+        then
+            amuse_h5_HL_FC_LIB="-lhdf5hl_fortran"
+        fi
+    fi
+
+    ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+
+
+    if test $amuse_h5_detect_FC = "no"
+    then
+        amuse_h5_FCFLAGS="-I$amuse_h5_root/mod/shared"
+
+    ac_ext=${ac_fc_srcext-f}
+ac_compile='$FC -c $FCFLAGS $ac_fcflags_srcext conftest.$ac_ext >&5'
+ac_link='$FC -o conftest$ac_exeext $FCFLAGS $LDFLAGS $ac_fcflags_srcext conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_fc_compiler_gnu
+
+
+    amuse_h5_name="Fortran with mods in /mod/shared"
+    amuse_h5_prefix="FC"
+    amuse_h5_target="FC"
+    amuse_h5_program="      program main
+
+            use h5lib
+
+            integer :: error
+
+            call h5open_f(error)
+            call h5close_f(error)
+      end"
+    amuse_h5_libs="-lhdf5_fortran"
+
+    amuse_h5_flags_var="${amuse_h5_prefix}FLAGS"
+    amuse_h5_flags_source_var="amuse_h5_${amuse_h5_flags_var}"
+    amuse_h5_flags_target_var="amuse_h5_detect_${amuse_h5_target}"
+
+    eval "amuse_h5_save_FLAGS=\"\$$amuse_h5_flags_var\""
+    amuse_h5_save_LDFLAGS="$LDFLAGS"
+    amuse_h5_save_LIBS="$LIBS"
+
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether we can build a program with HDF5 in $amuse_h5_name" >&5
+printf %s "checking whether we can build a program with HDF5 in $amuse_h5_name... " >&6; }
+
+    eval "$amuse_h5_flags_var=\"\$$amuse_h5_flags_source_var \$$amuse_h5_flags_var\""
+    LDFLAGS="$amuse_h5_LDFLAGS $LDFLAGS"
+    LIBS="$amuse_h5_libs"
+
+        cat > conftest.$ac_ext <<_ACEOF
+$amuse_h5_program
+_ACEOF
+if ac_fn_fc_try_link "$LINENO"
+then :
+
+        eval "$amuse_h5_flags_target_var=\"yes\""
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
+
+else $as_nop
+
+        eval "$amuse_h5_flags_target_var=\"no\""
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
+
+    LIBS="$amuse_h5_save_LIBS"
+    LDFLAGS="$amuse_h5_save_LDFLAGS"
+    eval "$amuse_h5_flags_var=\"\$amuse_h5_save_FLAGS\""
+
+
+
+    amuse_h5_name="Fortran with the high-level API in hdf5_hl_fortran with mods in /mod/shared"
+    amuse_h5_prefix="FC"
+    amuse_h5_target="HL_FC"
+    amuse_h5_program="      program main
+
+            use h5lt
+
+            integer :: error
+
+            error = h5ltfind_dataset_f(0_hid_t, 'test')
+
+      end"
+    amuse_h5_libs="-lhdf5_hl_fortran"
+
+    amuse_h5_flags_var="${amuse_h5_prefix}FLAGS"
+    amuse_h5_flags_source_var="amuse_h5_${amuse_h5_flags_var}"
+    amuse_h5_flags_target_var="amuse_h5_detect_${amuse_h5_target}"
+
+    eval "amuse_h5_save_FLAGS=\"\$$amuse_h5_flags_var\""
+    amuse_h5_save_LDFLAGS="$LDFLAGS"
+    amuse_h5_save_LIBS="$LIBS"
+
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether we can build a program with HDF5 in $amuse_h5_name" >&5
+printf %s "checking whether we can build a program with HDF5 in $amuse_h5_name... " >&6; }
+
+    eval "$amuse_h5_flags_var=\"\$$amuse_h5_flags_source_var \$$amuse_h5_flags_var\""
+    LDFLAGS="$amuse_h5_LDFLAGS $LDFLAGS"
+    LIBS="$amuse_h5_libs"
+
+        cat > conftest.$ac_ext <<_ACEOF
+$amuse_h5_program
+_ACEOF
+if ac_fn_fc_try_link "$LINENO"
+then :
+
+        eval "$amuse_h5_flags_target_var=\"yes\""
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
+
+else $as_nop
+
+        eval "$amuse_h5_flags_target_var=\"no\""
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
+
+    LIBS="$amuse_h5_save_LIBS"
+    LDFLAGS="$amuse_h5_save_LDFLAGS"
+    eval "$amuse_h5_flags_var=\"\$amuse_h5_save_FLAGS\""
+
+
+    if test $amuse_h5_detect_HL_FC = "yes"
+    then
+        amuse_h5_HL_FC_LIB="-lhdf5_hl_fortran"
+    else
+
+    amuse_h5_name="Fortran with the high-level API in hdf5hl_fortran with mods in /mod/shared"
+    amuse_h5_prefix="FC"
+    amuse_h5_target="HL_FC"
+    amuse_h5_program="      program main
+
+                use h5lt
+
+                integer :: error
+
+                error = h5ltfind_dataset_f(0_hid_t, 'test')
+
+      end"
+    amuse_h5_libs="-lhdf5hl_fortran"
+
+    amuse_h5_flags_var="${amuse_h5_prefix}FLAGS"
+    amuse_h5_flags_source_var="amuse_h5_${amuse_h5_flags_var}"
+    amuse_h5_flags_target_var="amuse_h5_detect_${amuse_h5_target}"
+
+    eval "amuse_h5_save_FLAGS=\"\$$amuse_h5_flags_var\""
+    amuse_h5_save_LDFLAGS="$LDFLAGS"
+    amuse_h5_save_LIBS="$LIBS"
+
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether we can build a program with HDF5 in $amuse_h5_name" >&5
+printf %s "checking whether we can build a program with HDF5 in $amuse_h5_name... " >&6; }
+
+    eval "$amuse_h5_flags_var=\"\$$amuse_h5_flags_source_var \$$amuse_h5_flags_var\""
+    LDFLAGS="$amuse_h5_LDFLAGS $LDFLAGS"
+    LIBS="$amuse_h5_libs"
+
+        cat > conftest.$ac_ext <<_ACEOF
+$amuse_h5_program
+_ACEOF
+if ac_fn_fc_try_link "$LINENO"
+then :
+
+        eval "$amuse_h5_flags_target_var=\"yes\""
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
+
+else $as_nop
+
+        eval "$amuse_h5_flags_target_var=\"no\""
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
+
+    LIBS="$amuse_h5_save_LIBS"
+    LDFLAGS="$amuse_h5_save_LDFLAGS"
+    eval "$amuse_h5_flags_var=\"\$amuse_h5_save_FLAGS\""
+
+
+        if test $amuse_h5_detect_HL_FC = "yes"
+        then
+            amuse_h5_HL_FC_LIB="-lhdf5hl_fortran"
+        fi
+    fi
+
+    ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+
+    fi
+
+    if test $amuse_h5_detect_FC = "no"
+    then
+        amuse_h5_FCFLAGS=""
+    fi
+
+        fi
+    fi
+
+
+        if test "$amuse_h5_detect_C" = "no"
+    then
+
+    amuse_h5_LDFLAGS=""
+
+    ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+    amuse_h5_CFLAGS=""
+
+    amuse_h5_name="C with no additional flags"
+    amuse_h5_prefix="C"
+    amuse_h5_target="C"
+    amuse_h5_program="#include <hdf5.h>
+int
+main (void)
+{
+H5open(); H5close();
+  ;
+  return 0;
+}"
+    amuse_h5_libs="-lhdf5"
+
+    amuse_h5_flags_var="${amuse_h5_prefix}FLAGS"
+    amuse_h5_flags_source_var="amuse_h5_${amuse_h5_flags_var}"
+    amuse_h5_flags_target_var="amuse_h5_detect_${amuse_h5_target}"
+
+    eval "amuse_h5_save_FLAGS=\"\$$amuse_h5_flags_var\""
+    amuse_h5_save_LDFLAGS="$LDFLAGS"
+    amuse_h5_save_LIBS="$LIBS"
+
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether we can build a program with HDF5 in $amuse_h5_name" >&5
+printf %s "checking whether we can build a program with HDF5 in $amuse_h5_name... " >&6; }
+
+    eval "$amuse_h5_flags_var=\"\$$amuse_h5_flags_source_var \$$amuse_h5_flags_var\""
+    LDFLAGS="$amuse_h5_LDFLAGS $LDFLAGS"
+    LIBS="$amuse_h5_libs"
+
+        cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+$amuse_h5_program
+_ACEOF
+if ac_fn_c_try_link "$LINENO"
+then :
+
+        eval "$amuse_h5_flags_target_var=\"yes\""
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
+
+else $as_nop
+
+        eval "$amuse_h5_flags_target_var=\"no\""
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
+
+    LIBS="$amuse_h5_save_LIBS"
+    LDFLAGS="$amuse_h5_save_LDFLAGS"
+    eval "$amuse_h5_flags_var=\"\$amuse_h5_save_FLAGS\""
+
+    ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+
+    if test $amuse_h5_detect_C = "yes"
+    then
+        ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+
+    amuse_h5_name="C with the high-level API"
+    amuse_h5_prefix="C"
+    amuse_h5_target="HL_C"
+    amuse_h5_program="#include <hdf5_hl.h>
+int
+main (void)
+{
+H5LTfind_dataset(0, \"test\")
+  ;
+  return 0;
+}"
+    amuse_h5_libs="-lhdf5_hl"
+
+    amuse_h5_flags_var="${amuse_h5_prefix}FLAGS"
+    amuse_h5_flags_source_var="amuse_h5_${amuse_h5_flags_var}"
+    amuse_h5_flags_target_var="amuse_h5_detect_${amuse_h5_target}"
+
+    eval "amuse_h5_save_FLAGS=\"\$$amuse_h5_flags_var\""
+    amuse_h5_save_LDFLAGS="$LDFLAGS"
+    amuse_h5_save_LIBS="$LIBS"
+
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether we can build a program with HDF5 in $amuse_h5_name" >&5
+printf %s "checking whether we can build a program with HDF5 in $amuse_h5_name... " >&6; }
+
+    eval "$amuse_h5_flags_var=\"\$$amuse_h5_flags_source_var \$$amuse_h5_flags_var\""
+    LDFLAGS="$amuse_h5_LDFLAGS $LDFLAGS"
+    LIBS="$amuse_h5_libs"
+
+        cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+$amuse_h5_program
+_ACEOF
+if ac_fn_c_try_link "$LINENO"
+then :
+
+        eval "$amuse_h5_flags_target_var=\"yes\""
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
+
+else $as_nop
+
+        eval "$amuse_h5_flags_target_var=\"no\""
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
+
+    LIBS="$amuse_h5_save_LIBS"
+    LDFLAGS="$amuse_h5_save_LDFLAGS"
+    eval "$amuse_h5_flags_var=\"\$amuse_h5_save_FLAGS\""
+
+        ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+
+        ac_ext=cpp
+ac_cpp='$CXXCPP $CPPFLAGS'
+ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
+
+
+    amuse_h5_name="C++"
+    amuse_h5_prefix="CXX"
+    amuse_h5_target="CXX"
+    amuse_h5_program="#include <H5Cpp.h>
+int
+main (void)
+{
+H5::H5Library::open();
+  ;
+  return 0;
+}"
+    amuse_h5_libs="-lhdf5_cpp"
+
+    amuse_h5_flags_var="${amuse_h5_prefix}FLAGS"
+    amuse_h5_flags_source_var="amuse_h5_${amuse_h5_flags_var}"
+    amuse_h5_flags_target_var="amuse_h5_detect_${amuse_h5_target}"
+
+    eval "amuse_h5_save_FLAGS=\"\$$amuse_h5_flags_var\""
+    amuse_h5_save_LDFLAGS="$LDFLAGS"
+    amuse_h5_save_LIBS="$LIBS"
+
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether we can build a program with HDF5 in $amuse_h5_name" >&5
+printf %s "checking whether we can build a program with HDF5 in $amuse_h5_name... " >&6; }
+
+    eval "$amuse_h5_flags_var=\"\$$amuse_h5_flags_source_var \$$amuse_h5_flags_var\""
+    LDFLAGS="$amuse_h5_LDFLAGS $LDFLAGS"
+    LIBS="$amuse_h5_libs"
+
+        cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+$amuse_h5_program
+_ACEOF
+if ac_fn_cxx_try_link "$LINENO"
+then :
+
+        eval "$amuse_h5_flags_target_var=\"yes\""
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
+
+else $as_nop
+
+        eval "$amuse_h5_flags_target_var=\"no\""
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
+
+    LIBS="$amuse_h5_save_LIBS"
+    LDFLAGS="$amuse_h5_save_LDFLAGS"
+    eval "$amuse_h5_flags_var=\"\$amuse_h5_save_FLAGS\""
+
+        ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+
+
+    ac_ext=${ac_fc_srcext-f}
+ac_compile='$FC -c $FCFLAGS $ac_fcflags_srcext conftest.$ac_ext >&5'
+ac_link='$FC -o conftest$ac_exeext $FCFLAGS $LDFLAGS $ac_fcflags_srcext conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_fc_compiler_gnu
+
+
+    amuse_h5_name="Fortran "
+    amuse_h5_prefix="FC"
+    amuse_h5_target="FC"
+    amuse_h5_program="      program main
+
+            use h5lib
+
+            integer :: error
+
+            call h5open_f(error)
+            call h5close_f(error)
+      end"
+    amuse_h5_libs="-lhdf5_fortran"
+
+    amuse_h5_flags_var="${amuse_h5_prefix}FLAGS"
+    amuse_h5_flags_source_var="amuse_h5_${amuse_h5_flags_var}"
+    amuse_h5_flags_target_var="amuse_h5_detect_${amuse_h5_target}"
+
+    eval "amuse_h5_save_FLAGS=\"\$$amuse_h5_flags_var\""
+    amuse_h5_save_LDFLAGS="$LDFLAGS"
+    amuse_h5_save_LIBS="$LIBS"
+
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether we can build a program with HDF5 in $amuse_h5_name" >&5
+printf %s "checking whether we can build a program with HDF5 in $amuse_h5_name... " >&6; }
+
+    eval "$amuse_h5_flags_var=\"\$$amuse_h5_flags_source_var \$$amuse_h5_flags_var\""
+    LDFLAGS="$amuse_h5_LDFLAGS $LDFLAGS"
+    LIBS="$amuse_h5_libs"
+
+        cat > conftest.$ac_ext <<_ACEOF
+$amuse_h5_program
+_ACEOF
+if ac_fn_fc_try_link "$LINENO"
+then :
+
+        eval "$amuse_h5_flags_target_var=\"yes\""
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
+
+else $as_nop
+
+        eval "$amuse_h5_flags_target_var=\"no\""
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
+
+    LIBS="$amuse_h5_save_LIBS"
+    LDFLAGS="$amuse_h5_save_LDFLAGS"
+    eval "$amuse_h5_flags_var=\"\$amuse_h5_save_FLAGS\""
+
+
+
+    amuse_h5_name="Fortran with the high-level API in hdf5_hl_fortran "
+    amuse_h5_prefix="FC"
+    amuse_h5_target="HL_FC"
+    amuse_h5_program="      program main
+
+            use h5lt
+
+            integer :: error
+
+            error = h5ltfind_dataset_f(0_hid_t, 'test')
+
+      end"
+    amuse_h5_libs="-lhdf5_hl_fortran"
+
+    amuse_h5_flags_var="${amuse_h5_prefix}FLAGS"
+    amuse_h5_flags_source_var="amuse_h5_${amuse_h5_flags_var}"
+    amuse_h5_flags_target_var="amuse_h5_detect_${amuse_h5_target}"
+
+    eval "amuse_h5_save_FLAGS=\"\$$amuse_h5_flags_var\""
+    amuse_h5_save_LDFLAGS="$LDFLAGS"
+    amuse_h5_save_LIBS="$LIBS"
+
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether we can build a program with HDF5 in $amuse_h5_name" >&5
+printf %s "checking whether we can build a program with HDF5 in $amuse_h5_name... " >&6; }
+
+    eval "$amuse_h5_flags_var=\"\$$amuse_h5_flags_source_var \$$amuse_h5_flags_var\""
+    LDFLAGS="$amuse_h5_LDFLAGS $LDFLAGS"
+    LIBS="$amuse_h5_libs"
+
+        cat > conftest.$ac_ext <<_ACEOF
+$amuse_h5_program
+_ACEOF
+if ac_fn_fc_try_link "$LINENO"
+then :
+
+        eval "$amuse_h5_flags_target_var=\"yes\""
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
+
+else $as_nop
+
+        eval "$amuse_h5_flags_target_var=\"no\""
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
+
+    LIBS="$amuse_h5_save_LIBS"
+    LDFLAGS="$amuse_h5_save_LDFLAGS"
+    eval "$amuse_h5_flags_var=\"\$amuse_h5_save_FLAGS\""
+
+
+    if test $amuse_h5_detect_HL_FC = "yes"
+    then
+        amuse_h5_HL_FC_LIB="-lhdf5_hl_fortran"
+    else
+
+    amuse_h5_name="Fortran with the high-level API in hdf5hl_fortran "
+    amuse_h5_prefix="FC"
+    amuse_h5_target="HL_FC"
+    amuse_h5_program="      program main
+
+                use h5lt
+
+                integer :: error
+
+                error = h5ltfind_dataset_f(0_hid_t, 'test')
+
+      end"
+    amuse_h5_libs="-lhdf5hl_fortran"
+
+    amuse_h5_flags_var="${amuse_h5_prefix}FLAGS"
+    amuse_h5_flags_source_var="amuse_h5_${amuse_h5_flags_var}"
+    amuse_h5_flags_target_var="amuse_h5_detect_${amuse_h5_target}"
+
+    eval "amuse_h5_save_FLAGS=\"\$$amuse_h5_flags_var\""
+    amuse_h5_save_LDFLAGS="$LDFLAGS"
+    amuse_h5_save_LIBS="$LIBS"
+
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether we can build a program with HDF5 in $amuse_h5_name" >&5
+printf %s "checking whether we can build a program with HDF5 in $amuse_h5_name... " >&6; }
+
+    eval "$amuse_h5_flags_var=\"\$$amuse_h5_flags_source_var \$$amuse_h5_flags_var\""
+    LDFLAGS="$amuse_h5_LDFLAGS $LDFLAGS"
+    LIBS="$amuse_h5_libs"
+
+        cat > conftest.$ac_ext <<_ACEOF
+$amuse_h5_program
+_ACEOF
+if ac_fn_fc_try_link "$LINENO"
+then :
+
+        eval "$amuse_h5_flags_target_var=\"yes\""
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
+
+else $as_nop
+
+        eval "$amuse_h5_flags_target_var=\"no\""
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
+
+    LIBS="$amuse_h5_save_LIBS"
+    LDFLAGS="$amuse_h5_save_LDFLAGS"
+    eval "$amuse_h5_flags_var=\"\$amuse_h5_save_FLAGS\""
+
+
+        if test $amuse_h5_detect_HL_FC = "yes"
+        then
+            amuse_h5_HL_FC_LIB="-lhdf5hl_fortran"
+        fi
+    fi
+
+    ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+
+
+        if test $amuse_h5_detect_FC = "no"
+        then
+
+    amuse_h5_result=""
+    amuse_h5_in_isystem="no"
+    for flag in $FFLAGS
+    do
+        if test "$amuse_h5_in_isystem" = "yes"
+        then
+            if ! echo "$amuse_h5_result" | grep -e "$flag" >/dev/null 2>&1
+            then
+                amuse_h5_result="$amuse_h5_result:$flag"
+            fi
+            amuse_h5_in_isystem="no"
+            continue
+        fi
+
+        if test "$flag" = "-isystem"
+        then
+            amuse_h5_in_isystem="yes"
+        elif test "${flag#-I}" != "$flag"
+        then
+            amuse_h5_path="${flag#-I}"
+            if ! echo "$amuse_h5_result" | grep -e "$amuse_h5_path" >/dev/null 2>&1
+            then
+                amuse_h5_result="$amuse_h5_result:${flag#-I}"
+            fi
+        fi
+    done
+
+
+    amuse_h5_save_IFS="$IFS"
+    IFS=:
+    for amuse_h5_path in $amuse_h5_result
+    do
+        # need to restore IFS immediately as it messes up the below
+        IFS="$amuse_h5_save_IFS"
+        if test -z "$amuse_h5_path"
+        then
+            continue
+        fi
+
+        amuse_h5_FCFLAGS="$FCFLAGS -I$amuse_h5_path"
+
+    ac_ext=${ac_fc_srcext-f}
+ac_compile='$FC -c $FCFLAGS $ac_fcflags_srcext conftest.$ac_ext >&5'
+ac_link='$FC -o conftest$ac_exeext $FCFLAGS $LDFLAGS $ac_fcflags_srcext conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_fc_compiler_gnu
+
+
+    amuse_h5_name="Fortran with $amuse_h5_path from FFLAGS"
+    amuse_h5_prefix="FC"
+    amuse_h5_target="FC"
+    amuse_h5_program="      program main
+
+            use h5lib
+
+            integer :: error
+
+            call h5open_f(error)
+            call h5close_f(error)
+      end"
+    amuse_h5_libs="-lhdf5_fortran"
+
+    amuse_h5_flags_var="${amuse_h5_prefix}FLAGS"
+    amuse_h5_flags_source_var="amuse_h5_${amuse_h5_flags_var}"
+    amuse_h5_flags_target_var="amuse_h5_detect_${amuse_h5_target}"
+
+    eval "amuse_h5_save_FLAGS=\"\$$amuse_h5_flags_var\""
+    amuse_h5_save_LDFLAGS="$LDFLAGS"
+    amuse_h5_save_LIBS="$LIBS"
+
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether we can build a program with HDF5 in $amuse_h5_name" >&5
+printf %s "checking whether we can build a program with HDF5 in $amuse_h5_name... " >&6; }
+
+    eval "$amuse_h5_flags_var=\"\$$amuse_h5_flags_source_var \$$amuse_h5_flags_var\""
+    LDFLAGS="$amuse_h5_LDFLAGS $LDFLAGS"
+    LIBS="$amuse_h5_libs"
+
+        cat > conftest.$ac_ext <<_ACEOF
+$amuse_h5_program
+_ACEOF
+if ac_fn_fc_try_link "$LINENO"
+then :
+
+        eval "$amuse_h5_flags_target_var=\"yes\""
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
+
+else $as_nop
+
+        eval "$amuse_h5_flags_target_var=\"no\""
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
+
+    LIBS="$amuse_h5_save_LIBS"
+    LDFLAGS="$amuse_h5_save_LDFLAGS"
+    eval "$amuse_h5_flags_var=\"\$amuse_h5_save_FLAGS\""
+
+
+
+    amuse_h5_name="Fortran with the high-level API in hdf5_hl_fortran with $amuse_h5_path from FFLAGS"
+    amuse_h5_prefix="FC"
+    amuse_h5_target="HL_FC"
+    amuse_h5_program="      program main
+
+            use h5lt
+
+            integer :: error
+
+            error = h5ltfind_dataset_f(0_hid_t, 'test')
+
+      end"
+    amuse_h5_libs="-lhdf5_hl_fortran"
+
+    amuse_h5_flags_var="${amuse_h5_prefix}FLAGS"
+    amuse_h5_flags_source_var="amuse_h5_${amuse_h5_flags_var}"
+    amuse_h5_flags_target_var="amuse_h5_detect_${amuse_h5_target}"
+
+    eval "amuse_h5_save_FLAGS=\"\$$amuse_h5_flags_var\""
+    amuse_h5_save_LDFLAGS="$LDFLAGS"
+    amuse_h5_save_LIBS="$LIBS"
+
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether we can build a program with HDF5 in $amuse_h5_name" >&5
+printf %s "checking whether we can build a program with HDF5 in $amuse_h5_name... " >&6; }
+
+    eval "$amuse_h5_flags_var=\"\$$amuse_h5_flags_source_var \$$amuse_h5_flags_var\""
+    LDFLAGS="$amuse_h5_LDFLAGS $LDFLAGS"
+    LIBS="$amuse_h5_libs"
+
+        cat > conftest.$ac_ext <<_ACEOF
+$amuse_h5_program
+_ACEOF
+if ac_fn_fc_try_link "$LINENO"
+then :
+
+        eval "$amuse_h5_flags_target_var=\"yes\""
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
+
+else $as_nop
+
+        eval "$amuse_h5_flags_target_var=\"no\""
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
+
+    LIBS="$amuse_h5_save_LIBS"
+    LDFLAGS="$amuse_h5_save_LDFLAGS"
+    eval "$amuse_h5_flags_var=\"\$amuse_h5_save_FLAGS\""
+
+
+    if test $amuse_h5_detect_HL_FC = "yes"
+    then
+        amuse_h5_HL_FC_LIB="-lhdf5_hl_fortran"
+    else
+
+    amuse_h5_name="Fortran with the high-level API in hdf5hl_fortran with $amuse_h5_path from FFLAGS"
+    amuse_h5_prefix="FC"
+    amuse_h5_target="HL_FC"
+    amuse_h5_program="      program main
+
+                use h5lt
+
+                integer :: error
+
+                error = h5ltfind_dataset_f(0_hid_t, 'test')
+
+      end"
+    amuse_h5_libs="-lhdf5hl_fortran"
+
+    amuse_h5_flags_var="${amuse_h5_prefix}FLAGS"
+    amuse_h5_flags_source_var="amuse_h5_${amuse_h5_flags_var}"
+    amuse_h5_flags_target_var="amuse_h5_detect_${amuse_h5_target}"
+
+    eval "amuse_h5_save_FLAGS=\"\$$amuse_h5_flags_var\""
+    amuse_h5_save_LDFLAGS="$LDFLAGS"
+    amuse_h5_save_LIBS="$LIBS"
+
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether we can build a program with HDF5 in $amuse_h5_name" >&5
+printf %s "checking whether we can build a program with HDF5 in $amuse_h5_name... " >&6; }
+
+    eval "$amuse_h5_flags_var=\"\$$amuse_h5_flags_source_var \$$amuse_h5_flags_var\""
+    LDFLAGS="$amuse_h5_LDFLAGS $LDFLAGS"
+    LIBS="$amuse_h5_libs"
+
+        cat > conftest.$ac_ext <<_ACEOF
+$amuse_h5_program
+_ACEOF
+if ac_fn_fc_try_link "$LINENO"
+then :
+
+        eval "$amuse_h5_flags_target_var=\"yes\""
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
+
+else $as_nop
+
+        eval "$amuse_h5_flags_target_var=\"no\""
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
+
+    LIBS="$amuse_h5_save_LIBS"
+    LDFLAGS="$amuse_h5_save_LDFLAGS"
+    eval "$amuse_h5_flags_var=\"\$amuse_h5_save_FLAGS\""
+
+
+        if test $amuse_h5_detect_HL_FC = "yes"
+        then
+            amuse_h5_HL_FC_LIB="-lhdf5hl_fortran"
+        fi
+    fi
+
+    ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+
+        if test "$amuse_h5_detect_FC" = "yes"
+        then
+            amuse_h5_FCFLAGS="-I$amuse_h5_path"
+            break
+        fi
+
+        # The new Fortran CMake-based build system uses the non-standard and
+        # not-searched-unless-explicitly-specified /mod/shared subdirectory by
+        # default
+        amuse_h5_FCFLAGS="$FCFLAGS -I$amuse_h5_path/../mod/shared"
+
+    ac_ext=${ac_fc_srcext-f}
+ac_compile='$FC -c $FCFLAGS $ac_fcflags_srcext conftest.$ac_ext >&5'
+ac_link='$FC -o conftest$ac_exeext $FCFLAGS $LDFLAGS $ac_fcflags_srcext conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_fc_compiler_gnu
+
+
+    amuse_h5_name="Fortran with $amuse_h5_path from FFLAGS and /mod/shared"
+    amuse_h5_prefix="FC"
+    amuse_h5_target="FC"
+    amuse_h5_program="      program main
+
+            use h5lib
+
+            integer :: error
+
+            call h5open_f(error)
+            call h5close_f(error)
+      end"
+    amuse_h5_libs="-lhdf5_fortran"
+
+    amuse_h5_flags_var="${amuse_h5_prefix}FLAGS"
+    amuse_h5_flags_source_var="amuse_h5_${amuse_h5_flags_var}"
+    amuse_h5_flags_target_var="amuse_h5_detect_${amuse_h5_target}"
+
+    eval "amuse_h5_save_FLAGS=\"\$$amuse_h5_flags_var\""
+    amuse_h5_save_LDFLAGS="$LDFLAGS"
+    amuse_h5_save_LIBS="$LIBS"
+
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether we can build a program with HDF5 in $amuse_h5_name" >&5
+printf %s "checking whether we can build a program with HDF5 in $amuse_h5_name... " >&6; }
+
+    eval "$amuse_h5_flags_var=\"\$$amuse_h5_flags_source_var \$$amuse_h5_flags_var\""
+    LDFLAGS="$amuse_h5_LDFLAGS $LDFLAGS"
+    LIBS="$amuse_h5_libs"
+
+        cat > conftest.$ac_ext <<_ACEOF
+$amuse_h5_program
+_ACEOF
+if ac_fn_fc_try_link "$LINENO"
+then :
+
+        eval "$amuse_h5_flags_target_var=\"yes\""
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
+
+else $as_nop
+
+        eval "$amuse_h5_flags_target_var=\"no\""
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
+
+    LIBS="$amuse_h5_save_LIBS"
+    LDFLAGS="$amuse_h5_save_LDFLAGS"
+    eval "$amuse_h5_flags_var=\"\$amuse_h5_save_FLAGS\""
+
+
+
+    amuse_h5_name="Fortran with the high-level API in hdf5_hl_fortran with $amuse_h5_path from FFLAGS and /mod/shared"
+    amuse_h5_prefix="FC"
+    amuse_h5_target="HL_FC"
+    amuse_h5_program="      program main
+
+            use h5lt
+
+            integer :: error
+
+            error = h5ltfind_dataset_f(0_hid_t, 'test')
+
+      end"
+    amuse_h5_libs="-lhdf5_hl_fortran"
+
+    amuse_h5_flags_var="${amuse_h5_prefix}FLAGS"
+    amuse_h5_flags_source_var="amuse_h5_${amuse_h5_flags_var}"
+    amuse_h5_flags_target_var="amuse_h5_detect_${amuse_h5_target}"
+
+    eval "amuse_h5_save_FLAGS=\"\$$amuse_h5_flags_var\""
+    amuse_h5_save_LDFLAGS="$LDFLAGS"
+    amuse_h5_save_LIBS="$LIBS"
+
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether we can build a program with HDF5 in $amuse_h5_name" >&5
+printf %s "checking whether we can build a program with HDF5 in $amuse_h5_name... " >&6; }
+
+    eval "$amuse_h5_flags_var=\"\$$amuse_h5_flags_source_var \$$amuse_h5_flags_var\""
+    LDFLAGS="$amuse_h5_LDFLAGS $LDFLAGS"
+    LIBS="$amuse_h5_libs"
+
+        cat > conftest.$ac_ext <<_ACEOF
+$amuse_h5_program
+_ACEOF
+if ac_fn_fc_try_link "$LINENO"
+then :
+
+        eval "$amuse_h5_flags_target_var=\"yes\""
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
+
+else $as_nop
+
+        eval "$amuse_h5_flags_target_var=\"no\""
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
+
+    LIBS="$amuse_h5_save_LIBS"
+    LDFLAGS="$amuse_h5_save_LDFLAGS"
+    eval "$amuse_h5_flags_var=\"\$amuse_h5_save_FLAGS\""
+
+
+    if test $amuse_h5_detect_HL_FC = "yes"
+    then
+        amuse_h5_HL_FC_LIB="-lhdf5_hl_fortran"
+    else
+
+    amuse_h5_name="Fortran with the high-level API in hdf5hl_fortran with $amuse_h5_path from FFLAGS and /mod/shared"
+    amuse_h5_prefix="FC"
+    amuse_h5_target="HL_FC"
+    amuse_h5_program="      program main
+
+                use h5lt
+
+                integer :: error
+
+                error = h5ltfind_dataset_f(0_hid_t, 'test')
+
+      end"
+    amuse_h5_libs="-lhdf5hl_fortran"
+
+    amuse_h5_flags_var="${amuse_h5_prefix}FLAGS"
+    amuse_h5_flags_source_var="amuse_h5_${amuse_h5_flags_var}"
+    amuse_h5_flags_target_var="amuse_h5_detect_${amuse_h5_target}"
+
+    eval "amuse_h5_save_FLAGS=\"\$$amuse_h5_flags_var\""
+    amuse_h5_save_LDFLAGS="$LDFLAGS"
+    amuse_h5_save_LIBS="$LIBS"
+
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether we can build a program with HDF5 in $amuse_h5_name" >&5
+printf %s "checking whether we can build a program with HDF5 in $amuse_h5_name... " >&6; }
+
+    eval "$amuse_h5_flags_var=\"\$$amuse_h5_flags_source_var \$$amuse_h5_flags_var\""
+    LDFLAGS="$amuse_h5_LDFLAGS $LDFLAGS"
+    LIBS="$amuse_h5_libs"
+
+        cat > conftest.$ac_ext <<_ACEOF
+$amuse_h5_program
+_ACEOF
+if ac_fn_fc_try_link "$LINENO"
+then :
+
+        eval "$amuse_h5_flags_target_var=\"yes\""
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
+
+else $as_nop
+
+        eval "$amuse_h5_flags_target_var=\"no\""
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
+
+    LIBS="$amuse_h5_save_LIBS"
+    LDFLAGS="$amuse_h5_save_LDFLAGS"
+    eval "$amuse_h5_flags_var=\"\$amuse_h5_save_FLAGS\""
+
+
+        if test $amuse_h5_detect_HL_FC = "yes"
+        then
+            amuse_h5_HL_FC_LIB="-lhdf5hl_fortran"
+        fi
+    fi
+
+    ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+
+        if test "$amuse_h5_detect_FC" = "yes"
+        then
+            amuse_h5_FCFLAGS="-I$amuse_h5_path/../mod/shared"
+            break
+        fi
+
+        if test "$amuse_h5_detect_FC" = "no"
+        then
+            amuse_h5_FCFLAGS=""
+        fi
+    done
+    IFS="$amuse_h5_save_IFS"
+
+        fi
+
+        if test $amuse_h5_detect_FC = "no"
+        then
+
+    amuse_h5_result=""
+    amuse_h5_in_isystem="no"
+    for flag in $CFLAGS
+    do
+        if test "$amuse_h5_in_isystem" = "yes"
+        then
+            if ! echo "$amuse_h5_result" | grep -e "$flag" >/dev/null 2>&1
+            then
+                amuse_h5_result="$amuse_h5_result:$flag"
+            fi
+            amuse_h5_in_isystem="no"
+            continue
+        fi
+
+        if test "$flag" = "-isystem"
+        then
+            amuse_h5_in_isystem="yes"
+        elif test "${flag#-I}" != "$flag"
+        then
+            amuse_h5_path="${flag#-I}"
+            if ! echo "$amuse_h5_result" | grep -e "$amuse_h5_path" >/dev/null 2>&1
+            then
+                amuse_h5_result="$amuse_h5_result:${flag#-I}"
+            fi
+        fi
+    done
+
+
+    amuse_h5_save_IFS="$IFS"
+    IFS=:
+    for amuse_h5_path in $amuse_h5_result
+    do
+        # need to restore IFS immediately as it messes up the below
+        IFS="$amuse_h5_save_IFS"
+        if test -z "$amuse_h5_path"
+        then
+            continue
+        fi
+
+        amuse_h5_FCFLAGS="$FCFLAGS -I$amuse_h5_path"
+
+    ac_ext=${ac_fc_srcext-f}
+ac_compile='$FC -c $FCFLAGS $ac_fcflags_srcext conftest.$ac_ext >&5'
+ac_link='$FC -o conftest$ac_exeext $FCFLAGS $LDFLAGS $ac_fcflags_srcext conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_fc_compiler_gnu
+
+
+    amuse_h5_name="Fortran with $amuse_h5_path from CFLAGS"
+    amuse_h5_prefix="FC"
+    amuse_h5_target="FC"
+    amuse_h5_program="      program main
+
+            use h5lib
+
+            integer :: error
+
+            call h5open_f(error)
+            call h5close_f(error)
+      end"
+    amuse_h5_libs="-lhdf5_fortran"
+
+    amuse_h5_flags_var="${amuse_h5_prefix}FLAGS"
+    amuse_h5_flags_source_var="amuse_h5_${amuse_h5_flags_var}"
+    amuse_h5_flags_target_var="amuse_h5_detect_${amuse_h5_target}"
+
+    eval "amuse_h5_save_FLAGS=\"\$$amuse_h5_flags_var\""
+    amuse_h5_save_LDFLAGS="$LDFLAGS"
+    amuse_h5_save_LIBS="$LIBS"
+
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether we can build a program with HDF5 in $amuse_h5_name" >&5
+printf %s "checking whether we can build a program with HDF5 in $amuse_h5_name... " >&6; }
+
+    eval "$amuse_h5_flags_var=\"\$$amuse_h5_flags_source_var \$$amuse_h5_flags_var\""
+    LDFLAGS="$amuse_h5_LDFLAGS $LDFLAGS"
+    LIBS="$amuse_h5_libs"
+
+        cat > conftest.$ac_ext <<_ACEOF
+$amuse_h5_program
+_ACEOF
+if ac_fn_fc_try_link "$LINENO"
+then :
+
+        eval "$amuse_h5_flags_target_var=\"yes\""
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
+
+else $as_nop
+
+        eval "$amuse_h5_flags_target_var=\"no\""
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
+
+    LIBS="$amuse_h5_save_LIBS"
+    LDFLAGS="$amuse_h5_save_LDFLAGS"
+    eval "$amuse_h5_flags_var=\"\$amuse_h5_save_FLAGS\""
+
+
+
+    amuse_h5_name="Fortran with the high-level API in hdf5_hl_fortran with $amuse_h5_path from CFLAGS"
+    amuse_h5_prefix="FC"
+    amuse_h5_target="HL_FC"
+    amuse_h5_program="      program main
+
+            use h5lt
+
+            integer :: error
+
+            error = h5ltfind_dataset_f(0_hid_t, 'test')
+
+      end"
+    amuse_h5_libs="-lhdf5_hl_fortran"
+
+    amuse_h5_flags_var="${amuse_h5_prefix}FLAGS"
+    amuse_h5_flags_source_var="amuse_h5_${amuse_h5_flags_var}"
+    amuse_h5_flags_target_var="amuse_h5_detect_${amuse_h5_target}"
+
+    eval "amuse_h5_save_FLAGS=\"\$$amuse_h5_flags_var\""
+    amuse_h5_save_LDFLAGS="$LDFLAGS"
+    amuse_h5_save_LIBS="$LIBS"
+
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether we can build a program with HDF5 in $amuse_h5_name" >&5
+printf %s "checking whether we can build a program with HDF5 in $amuse_h5_name... " >&6; }
+
+    eval "$amuse_h5_flags_var=\"\$$amuse_h5_flags_source_var \$$amuse_h5_flags_var\""
+    LDFLAGS="$amuse_h5_LDFLAGS $LDFLAGS"
+    LIBS="$amuse_h5_libs"
+
+        cat > conftest.$ac_ext <<_ACEOF
+$amuse_h5_program
+_ACEOF
+if ac_fn_fc_try_link "$LINENO"
+then :
+
+        eval "$amuse_h5_flags_target_var=\"yes\""
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
+
+else $as_nop
+
+        eval "$amuse_h5_flags_target_var=\"no\""
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
+
+    LIBS="$amuse_h5_save_LIBS"
+    LDFLAGS="$amuse_h5_save_LDFLAGS"
+    eval "$amuse_h5_flags_var=\"\$amuse_h5_save_FLAGS\""
+
+
+    if test $amuse_h5_detect_HL_FC = "yes"
+    then
+        amuse_h5_HL_FC_LIB="-lhdf5_hl_fortran"
+    else
+
+    amuse_h5_name="Fortran with the high-level API in hdf5hl_fortran with $amuse_h5_path from CFLAGS"
+    amuse_h5_prefix="FC"
+    amuse_h5_target="HL_FC"
+    amuse_h5_program="      program main
+
+                use h5lt
+
+                integer :: error
+
+                error = h5ltfind_dataset_f(0_hid_t, 'test')
+
+      end"
+    amuse_h5_libs="-lhdf5hl_fortran"
+
+    amuse_h5_flags_var="${amuse_h5_prefix}FLAGS"
+    amuse_h5_flags_source_var="amuse_h5_${amuse_h5_flags_var}"
+    amuse_h5_flags_target_var="amuse_h5_detect_${amuse_h5_target}"
+
+    eval "amuse_h5_save_FLAGS=\"\$$amuse_h5_flags_var\""
+    amuse_h5_save_LDFLAGS="$LDFLAGS"
+    amuse_h5_save_LIBS="$LIBS"
+
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether we can build a program with HDF5 in $amuse_h5_name" >&5
+printf %s "checking whether we can build a program with HDF5 in $amuse_h5_name... " >&6; }
+
+    eval "$amuse_h5_flags_var=\"\$$amuse_h5_flags_source_var \$$amuse_h5_flags_var\""
+    LDFLAGS="$amuse_h5_LDFLAGS $LDFLAGS"
+    LIBS="$amuse_h5_libs"
+
+        cat > conftest.$ac_ext <<_ACEOF
+$amuse_h5_program
+_ACEOF
+if ac_fn_fc_try_link "$LINENO"
+then :
+
+        eval "$amuse_h5_flags_target_var=\"yes\""
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
+
+else $as_nop
+
+        eval "$amuse_h5_flags_target_var=\"no\""
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
+
+    LIBS="$amuse_h5_save_LIBS"
+    LDFLAGS="$amuse_h5_save_LDFLAGS"
+    eval "$amuse_h5_flags_var=\"\$amuse_h5_save_FLAGS\""
+
+
+        if test $amuse_h5_detect_HL_FC = "yes"
+        then
+            amuse_h5_HL_FC_LIB="-lhdf5hl_fortran"
+        fi
+    fi
+
+    ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+
+        if test "$amuse_h5_detect_FC" = "yes"
+        then
+            amuse_h5_FCFLAGS="-I$amuse_h5_path"
+            break
+        fi
+
+        # The new Fortran CMake-based build system uses the non-standard and
+        # not-searched-unless-explicitly-specified /mod/shared subdirectory by
+        # default
+        amuse_h5_FCFLAGS="$FCFLAGS -I$amuse_h5_path/../mod/shared"
+
+    ac_ext=${ac_fc_srcext-f}
+ac_compile='$FC -c $FCFLAGS $ac_fcflags_srcext conftest.$ac_ext >&5'
+ac_link='$FC -o conftest$ac_exeext $FCFLAGS $LDFLAGS $ac_fcflags_srcext conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_fc_compiler_gnu
+
+
+    amuse_h5_name="Fortran with $amuse_h5_path from CFLAGS and /mod/shared"
+    amuse_h5_prefix="FC"
+    amuse_h5_target="FC"
+    amuse_h5_program="      program main
+
+            use h5lib
+
+            integer :: error
+
+            call h5open_f(error)
+            call h5close_f(error)
+      end"
+    amuse_h5_libs="-lhdf5_fortran"
+
+    amuse_h5_flags_var="${amuse_h5_prefix}FLAGS"
+    amuse_h5_flags_source_var="amuse_h5_${amuse_h5_flags_var}"
+    amuse_h5_flags_target_var="amuse_h5_detect_${amuse_h5_target}"
+
+    eval "amuse_h5_save_FLAGS=\"\$$amuse_h5_flags_var\""
+    amuse_h5_save_LDFLAGS="$LDFLAGS"
+    amuse_h5_save_LIBS="$LIBS"
+
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether we can build a program with HDF5 in $amuse_h5_name" >&5
+printf %s "checking whether we can build a program with HDF5 in $amuse_h5_name... " >&6; }
+
+    eval "$amuse_h5_flags_var=\"\$$amuse_h5_flags_source_var \$$amuse_h5_flags_var\""
+    LDFLAGS="$amuse_h5_LDFLAGS $LDFLAGS"
+    LIBS="$amuse_h5_libs"
+
+        cat > conftest.$ac_ext <<_ACEOF
+$amuse_h5_program
+_ACEOF
+if ac_fn_fc_try_link "$LINENO"
+then :
+
+        eval "$amuse_h5_flags_target_var=\"yes\""
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
+
+else $as_nop
+
+        eval "$amuse_h5_flags_target_var=\"no\""
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
+
+    LIBS="$amuse_h5_save_LIBS"
+    LDFLAGS="$amuse_h5_save_LDFLAGS"
+    eval "$amuse_h5_flags_var=\"\$amuse_h5_save_FLAGS\""
+
+
+
+    amuse_h5_name="Fortran with the high-level API in hdf5_hl_fortran with $amuse_h5_path from CFLAGS and /mod/shared"
+    amuse_h5_prefix="FC"
+    amuse_h5_target="HL_FC"
+    amuse_h5_program="      program main
+
+            use h5lt
+
+            integer :: error
+
+            error = h5ltfind_dataset_f(0_hid_t, 'test')
+
+      end"
+    amuse_h5_libs="-lhdf5_hl_fortran"
+
+    amuse_h5_flags_var="${amuse_h5_prefix}FLAGS"
+    amuse_h5_flags_source_var="amuse_h5_${amuse_h5_flags_var}"
+    amuse_h5_flags_target_var="amuse_h5_detect_${amuse_h5_target}"
+
+    eval "amuse_h5_save_FLAGS=\"\$$amuse_h5_flags_var\""
+    amuse_h5_save_LDFLAGS="$LDFLAGS"
+    amuse_h5_save_LIBS="$LIBS"
+
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether we can build a program with HDF5 in $amuse_h5_name" >&5
+printf %s "checking whether we can build a program with HDF5 in $amuse_h5_name... " >&6; }
+
+    eval "$amuse_h5_flags_var=\"\$$amuse_h5_flags_source_var \$$amuse_h5_flags_var\""
+    LDFLAGS="$amuse_h5_LDFLAGS $LDFLAGS"
+    LIBS="$amuse_h5_libs"
+
+        cat > conftest.$ac_ext <<_ACEOF
+$amuse_h5_program
+_ACEOF
+if ac_fn_fc_try_link "$LINENO"
+then :
+
+        eval "$amuse_h5_flags_target_var=\"yes\""
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
+
+else $as_nop
+
+        eval "$amuse_h5_flags_target_var=\"no\""
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
+
+    LIBS="$amuse_h5_save_LIBS"
+    LDFLAGS="$amuse_h5_save_LDFLAGS"
+    eval "$amuse_h5_flags_var=\"\$amuse_h5_save_FLAGS\""
+
+
+    if test $amuse_h5_detect_HL_FC = "yes"
+    then
+        amuse_h5_HL_FC_LIB="-lhdf5_hl_fortran"
+    else
+
+    amuse_h5_name="Fortran with the high-level API in hdf5hl_fortran with $amuse_h5_path from CFLAGS and /mod/shared"
+    amuse_h5_prefix="FC"
+    amuse_h5_target="HL_FC"
+    amuse_h5_program="      program main
+
+                use h5lt
+
+                integer :: error
+
+                error = h5ltfind_dataset_f(0_hid_t, 'test')
+
+      end"
+    amuse_h5_libs="-lhdf5hl_fortran"
+
+    amuse_h5_flags_var="${amuse_h5_prefix}FLAGS"
+    amuse_h5_flags_source_var="amuse_h5_${amuse_h5_flags_var}"
+    amuse_h5_flags_target_var="amuse_h5_detect_${amuse_h5_target}"
+
+    eval "amuse_h5_save_FLAGS=\"\$$amuse_h5_flags_var\""
+    amuse_h5_save_LDFLAGS="$LDFLAGS"
+    amuse_h5_save_LIBS="$LIBS"
+
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether we can build a program with HDF5 in $amuse_h5_name" >&5
+printf %s "checking whether we can build a program with HDF5 in $amuse_h5_name... " >&6; }
+
+    eval "$amuse_h5_flags_var=\"\$$amuse_h5_flags_source_var \$$amuse_h5_flags_var\""
+    LDFLAGS="$amuse_h5_LDFLAGS $LDFLAGS"
+    LIBS="$amuse_h5_libs"
+
+        cat > conftest.$ac_ext <<_ACEOF
+$amuse_h5_program
+_ACEOF
+if ac_fn_fc_try_link "$LINENO"
+then :
+
+        eval "$amuse_h5_flags_target_var=\"yes\""
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
+
+else $as_nop
+
+        eval "$amuse_h5_flags_target_var=\"no\""
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
+
+    LIBS="$amuse_h5_save_LIBS"
+    LDFLAGS="$amuse_h5_save_LDFLAGS"
+    eval "$amuse_h5_flags_var=\"\$amuse_h5_save_FLAGS\""
+
+
+        if test $amuse_h5_detect_HL_FC = "yes"
+        then
+            amuse_h5_HL_FC_LIB="-lhdf5hl_fortran"
+        fi
+    fi
+
+    ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+
+        if test "$amuse_h5_detect_FC" = "yes"
+        then
+            amuse_h5_FCFLAGS="-I$amuse_h5_path/../mod/shared"
+            break
+        fi
+
+        if test "$amuse_h5_detect_FC" = "no"
+        then
+            amuse_h5_FCFLAGS=""
+        fi
+    done
+    IFS="$amuse_h5_save_IFS"
+
+        fi
+
+        if test $amuse_h5_detect_FC = "no"
+        then
+
+    amuse_h5_save_IFS="$IFS"
+    IFS=:
+    for amuse_h5_path in $CPATH
+    do
+        # need to restore IFS immediately as it messes up the below
+        IFS="$amuse_h5_save_IFS"
+        if test -z "$amuse_h5_path"
+        then
+            continue
+        fi
+
+        amuse_h5_FCFLAGS="$FCFLAGS -I$amuse_h5_path"
+
+    ac_ext=${ac_fc_srcext-f}
+ac_compile='$FC -c $FCFLAGS $ac_fcflags_srcext conftest.$ac_ext >&5'
+ac_link='$FC -o conftest$ac_exeext $FCFLAGS $LDFLAGS $ac_fcflags_srcext conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_fc_compiler_gnu
+
+
+    amuse_h5_name="Fortran with $amuse_h5_path from CPATH"
+    amuse_h5_prefix="FC"
+    amuse_h5_target="FC"
+    amuse_h5_program="      program main
+
+            use h5lib
+
+            integer :: error
+
+            call h5open_f(error)
+            call h5close_f(error)
+      end"
+    amuse_h5_libs="-lhdf5_fortran"
+
+    amuse_h5_flags_var="${amuse_h5_prefix}FLAGS"
+    amuse_h5_flags_source_var="amuse_h5_${amuse_h5_flags_var}"
+    amuse_h5_flags_target_var="amuse_h5_detect_${amuse_h5_target}"
+
+    eval "amuse_h5_save_FLAGS=\"\$$amuse_h5_flags_var\""
+    amuse_h5_save_LDFLAGS="$LDFLAGS"
+    amuse_h5_save_LIBS="$LIBS"
+
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether we can build a program with HDF5 in $amuse_h5_name" >&5
+printf %s "checking whether we can build a program with HDF5 in $amuse_h5_name... " >&6; }
+
+    eval "$amuse_h5_flags_var=\"\$$amuse_h5_flags_source_var \$$amuse_h5_flags_var\""
+    LDFLAGS="$amuse_h5_LDFLAGS $LDFLAGS"
+    LIBS="$amuse_h5_libs"
+
+        cat > conftest.$ac_ext <<_ACEOF
+$amuse_h5_program
+_ACEOF
+if ac_fn_fc_try_link "$LINENO"
+then :
+
+        eval "$amuse_h5_flags_target_var=\"yes\""
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
+
+else $as_nop
+
+        eval "$amuse_h5_flags_target_var=\"no\""
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
+
+    LIBS="$amuse_h5_save_LIBS"
+    LDFLAGS="$amuse_h5_save_LDFLAGS"
+    eval "$amuse_h5_flags_var=\"\$amuse_h5_save_FLAGS\""
+
+
+
+    amuse_h5_name="Fortran with the high-level API in hdf5_hl_fortran with $amuse_h5_path from CPATH"
+    amuse_h5_prefix="FC"
+    amuse_h5_target="HL_FC"
+    amuse_h5_program="      program main
+
+            use h5lt
+
+            integer :: error
+
+            error = h5ltfind_dataset_f(0_hid_t, 'test')
+
+      end"
+    amuse_h5_libs="-lhdf5_hl_fortran"
+
+    amuse_h5_flags_var="${amuse_h5_prefix}FLAGS"
+    amuse_h5_flags_source_var="amuse_h5_${amuse_h5_flags_var}"
+    amuse_h5_flags_target_var="amuse_h5_detect_${amuse_h5_target}"
+
+    eval "amuse_h5_save_FLAGS=\"\$$amuse_h5_flags_var\""
+    amuse_h5_save_LDFLAGS="$LDFLAGS"
+    amuse_h5_save_LIBS="$LIBS"
+
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether we can build a program with HDF5 in $amuse_h5_name" >&5
+printf %s "checking whether we can build a program with HDF5 in $amuse_h5_name... " >&6; }
+
+    eval "$amuse_h5_flags_var=\"\$$amuse_h5_flags_source_var \$$amuse_h5_flags_var\""
+    LDFLAGS="$amuse_h5_LDFLAGS $LDFLAGS"
+    LIBS="$amuse_h5_libs"
+
+        cat > conftest.$ac_ext <<_ACEOF
+$amuse_h5_program
+_ACEOF
+if ac_fn_fc_try_link "$LINENO"
+then :
+
+        eval "$amuse_h5_flags_target_var=\"yes\""
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
+
+else $as_nop
+
+        eval "$amuse_h5_flags_target_var=\"no\""
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
+
+    LIBS="$amuse_h5_save_LIBS"
+    LDFLAGS="$amuse_h5_save_LDFLAGS"
+    eval "$amuse_h5_flags_var=\"\$amuse_h5_save_FLAGS\""
+
+
+    if test $amuse_h5_detect_HL_FC = "yes"
+    then
+        amuse_h5_HL_FC_LIB="-lhdf5_hl_fortran"
+    else
+
+    amuse_h5_name="Fortran with the high-level API in hdf5hl_fortran with $amuse_h5_path from CPATH"
+    amuse_h5_prefix="FC"
+    amuse_h5_target="HL_FC"
+    amuse_h5_program="      program main
+
+                use h5lt
+
+                integer :: error
+
+                error = h5ltfind_dataset_f(0_hid_t, 'test')
+
+      end"
+    amuse_h5_libs="-lhdf5hl_fortran"
+
+    amuse_h5_flags_var="${amuse_h5_prefix}FLAGS"
+    amuse_h5_flags_source_var="amuse_h5_${amuse_h5_flags_var}"
+    amuse_h5_flags_target_var="amuse_h5_detect_${amuse_h5_target}"
+
+    eval "amuse_h5_save_FLAGS=\"\$$amuse_h5_flags_var\""
+    amuse_h5_save_LDFLAGS="$LDFLAGS"
+    amuse_h5_save_LIBS="$LIBS"
+
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether we can build a program with HDF5 in $amuse_h5_name" >&5
+printf %s "checking whether we can build a program with HDF5 in $amuse_h5_name... " >&6; }
+
+    eval "$amuse_h5_flags_var=\"\$$amuse_h5_flags_source_var \$$amuse_h5_flags_var\""
+    LDFLAGS="$amuse_h5_LDFLAGS $LDFLAGS"
+    LIBS="$amuse_h5_libs"
+
+        cat > conftest.$ac_ext <<_ACEOF
+$amuse_h5_program
+_ACEOF
+if ac_fn_fc_try_link "$LINENO"
+then :
+
+        eval "$amuse_h5_flags_target_var=\"yes\""
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
+
+else $as_nop
+
+        eval "$amuse_h5_flags_target_var=\"no\""
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
+
+    LIBS="$amuse_h5_save_LIBS"
+    LDFLAGS="$amuse_h5_save_LDFLAGS"
+    eval "$amuse_h5_flags_var=\"\$amuse_h5_save_FLAGS\""
+
+
+        if test $amuse_h5_detect_HL_FC = "yes"
+        then
+            amuse_h5_HL_FC_LIB="-lhdf5hl_fortran"
+        fi
+    fi
+
+    ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+
+        if test "$amuse_h5_detect_FC" = "yes"
+        then
+            amuse_h5_FCFLAGS="-I$amuse_h5_path"
+            break
+        fi
+
+        # The new Fortran CMake-based build system uses the non-standard and
+        # not-searched-unless-explicitly-specified /mod/shared subdirectory by
+        # default
+        amuse_h5_FCFLAGS="$FCFLAGS -I$amuse_h5_path/../mod/shared"
+
+    ac_ext=${ac_fc_srcext-f}
+ac_compile='$FC -c $FCFLAGS $ac_fcflags_srcext conftest.$ac_ext >&5'
+ac_link='$FC -o conftest$ac_exeext $FCFLAGS $LDFLAGS $ac_fcflags_srcext conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_fc_compiler_gnu
+
+
+    amuse_h5_name="Fortran with $amuse_h5_path from CPATH and /mod/shared"
+    amuse_h5_prefix="FC"
+    amuse_h5_target="FC"
+    amuse_h5_program="      program main
+
+            use h5lib
+
+            integer :: error
+
+            call h5open_f(error)
+            call h5close_f(error)
+      end"
+    amuse_h5_libs="-lhdf5_fortran"
+
+    amuse_h5_flags_var="${amuse_h5_prefix}FLAGS"
+    amuse_h5_flags_source_var="amuse_h5_${amuse_h5_flags_var}"
+    amuse_h5_flags_target_var="amuse_h5_detect_${amuse_h5_target}"
+
+    eval "amuse_h5_save_FLAGS=\"\$$amuse_h5_flags_var\""
+    amuse_h5_save_LDFLAGS="$LDFLAGS"
+    amuse_h5_save_LIBS="$LIBS"
+
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether we can build a program with HDF5 in $amuse_h5_name" >&5
+printf %s "checking whether we can build a program with HDF5 in $amuse_h5_name... " >&6; }
+
+    eval "$amuse_h5_flags_var=\"\$$amuse_h5_flags_source_var \$$amuse_h5_flags_var\""
+    LDFLAGS="$amuse_h5_LDFLAGS $LDFLAGS"
+    LIBS="$amuse_h5_libs"
+
+        cat > conftest.$ac_ext <<_ACEOF
+$amuse_h5_program
+_ACEOF
+if ac_fn_fc_try_link "$LINENO"
+then :
+
+        eval "$amuse_h5_flags_target_var=\"yes\""
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
+
+else $as_nop
+
+        eval "$amuse_h5_flags_target_var=\"no\""
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
+
+    LIBS="$amuse_h5_save_LIBS"
+    LDFLAGS="$amuse_h5_save_LDFLAGS"
+    eval "$amuse_h5_flags_var=\"\$amuse_h5_save_FLAGS\""
+
+
+
+    amuse_h5_name="Fortran with the high-level API in hdf5_hl_fortran with $amuse_h5_path from CPATH and /mod/shared"
+    amuse_h5_prefix="FC"
+    amuse_h5_target="HL_FC"
+    amuse_h5_program="      program main
+
+            use h5lt
+
+            integer :: error
+
+            error = h5ltfind_dataset_f(0_hid_t, 'test')
+
+      end"
+    amuse_h5_libs="-lhdf5_hl_fortran"
+
+    amuse_h5_flags_var="${amuse_h5_prefix}FLAGS"
+    amuse_h5_flags_source_var="amuse_h5_${amuse_h5_flags_var}"
+    amuse_h5_flags_target_var="amuse_h5_detect_${amuse_h5_target}"
+
+    eval "amuse_h5_save_FLAGS=\"\$$amuse_h5_flags_var\""
+    amuse_h5_save_LDFLAGS="$LDFLAGS"
+    amuse_h5_save_LIBS="$LIBS"
+
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether we can build a program with HDF5 in $amuse_h5_name" >&5
+printf %s "checking whether we can build a program with HDF5 in $amuse_h5_name... " >&6; }
+
+    eval "$amuse_h5_flags_var=\"\$$amuse_h5_flags_source_var \$$amuse_h5_flags_var\""
+    LDFLAGS="$amuse_h5_LDFLAGS $LDFLAGS"
+    LIBS="$amuse_h5_libs"
+
+        cat > conftest.$ac_ext <<_ACEOF
+$amuse_h5_program
+_ACEOF
+if ac_fn_fc_try_link "$LINENO"
+then :
+
+        eval "$amuse_h5_flags_target_var=\"yes\""
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
+
+else $as_nop
+
+        eval "$amuse_h5_flags_target_var=\"no\""
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
+
+    LIBS="$amuse_h5_save_LIBS"
+    LDFLAGS="$amuse_h5_save_LDFLAGS"
+    eval "$amuse_h5_flags_var=\"\$amuse_h5_save_FLAGS\""
+
+
+    if test $amuse_h5_detect_HL_FC = "yes"
+    then
+        amuse_h5_HL_FC_LIB="-lhdf5_hl_fortran"
+    else
+
+    amuse_h5_name="Fortran with the high-level API in hdf5hl_fortran with $amuse_h5_path from CPATH and /mod/shared"
+    amuse_h5_prefix="FC"
+    amuse_h5_target="HL_FC"
+    amuse_h5_program="      program main
+
+                use h5lt
+
+                integer :: error
+
+                error = h5ltfind_dataset_f(0_hid_t, 'test')
+
+      end"
+    amuse_h5_libs="-lhdf5hl_fortran"
+
+    amuse_h5_flags_var="${amuse_h5_prefix}FLAGS"
+    amuse_h5_flags_source_var="amuse_h5_${amuse_h5_flags_var}"
+    amuse_h5_flags_target_var="amuse_h5_detect_${amuse_h5_target}"
+
+    eval "amuse_h5_save_FLAGS=\"\$$amuse_h5_flags_var\""
+    amuse_h5_save_LDFLAGS="$LDFLAGS"
+    amuse_h5_save_LIBS="$LIBS"
+
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether we can build a program with HDF5 in $amuse_h5_name" >&5
+printf %s "checking whether we can build a program with HDF5 in $amuse_h5_name... " >&6; }
+
+    eval "$amuse_h5_flags_var=\"\$$amuse_h5_flags_source_var \$$amuse_h5_flags_var\""
+    LDFLAGS="$amuse_h5_LDFLAGS $LDFLAGS"
+    LIBS="$amuse_h5_libs"
+
+        cat > conftest.$ac_ext <<_ACEOF
+$amuse_h5_program
+_ACEOF
+if ac_fn_fc_try_link "$LINENO"
+then :
+
+        eval "$amuse_h5_flags_target_var=\"yes\""
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
+
+else $as_nop
+
+        eval "$amuse_h5_flags_target_var=\"no\""
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
+
+    LIBS="$amuse_h5_save_LIBS"
+    LDFLAGS="$amuse_h5_save_LDFLAGS"
+    eval "$amuse_h5_flags_var=\"\$amuse_h5_save_FLAGS\""
+
+
+        if test $amuse_h5_detect_HL_FC = "yes"
+        then
+            amuse_h5_HL_FC_LIB="-lhdf5hl_fortran"
+        fi
+    fi
+
+    ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+
+        if test "$amuse_h5_detect_FC" = "yes"
+        then
+            amuse_h5_FCFLAGS="-I$amuse_h5_path/../mod/shared"
+            break
+        fi
+
+        if test "$amuse_h5_detect_FC" = "no"
+        then
+            amuse_h5_FCFLAGS=""
+        fi
+    done
+    IFS="$amuse_h5_save_IFS"
+
+        fi
+
+        if test $amuse_h5_detect_FC = "no"
+        then
+
+    amuse_h5_save_IFS="$IFS"
+    IFS=:
+    for amuse_h5_path in $C_INCLUDE_PATH
+    do
+        # need to restore IFS immediately as it messes up the below
+        IFS="$amuse_h5_save_IFS"
+        if test -z "$amuse_h5_path"
+        then
+            continue
+        fi
+
+        amuse_h5_FCFLAGS="$FCFLAGS -I$amuse_h5_path"
+
+    ac_ext=${ac_fc_srcext-f}
+ac_compile='$FC -c $FCFLAGS $ac_fcflags_srcext conftest.$ac_ext >&5'
+ac_link='$FC -o conftest$ac_exeext $FCFLAGS $LDFLAGS $ac_fcflags_srcext conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_fc_compiler_gnu
+
+
+    amuse_h5_name="Fortran with $amuse_h5_path from C_INCLUDE_PATH"
+    amuse_h5_prefix="FC"
+    amuse_h5_target="FC"
+    amuse_h5_program="      program main
+
+            use h5lib
+
+            integer :: error
+
+            call h5open_f(error)
+            call h5close_f(error)
+      end"
+    amuse_h5_libs="-lhdf5_fortran"
+
+    amuse_h5_flags_var="${amuse_h5_prefix}FLAGS"
+    amuse_h5_flags_source_var="amuse_h5_${amuse_h5_flags_var}"
+    amuse_h5_flags_target_var="amuse_h5_detect_${amuse_h5_target}"
+
+    eval "amuse_h5_save_FLAGS=\"\$$amuse_h5_flags_var\""
+    amuse_h5_save_LDFLAGS="$LDFLAGS"
+    amuse_h5_save_LIBS="$LIBS"
+
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether we can build a program with HDF5 in $amuse_h5_name" >&5
+printf %s "checking whether we can build a program with HDF5 in $amuse_h5_name... " >&6; }
+
+    eval "$amuse_h5_flags_var=\"\$$amuse_h5_flags_source_var \$$amuse_h5_flags_var\""
+    LDFLAGS="$amuse_h5_LDFLAGS $LDFLAGS"
+    LIBS="$amuse_h5_libs"
+
+        cat > conftest.$ac_ext <<_ACEOF
+$amuse_h5_program
+_ACEOF
+if ac_fn_fc_try_link "$LINENO"
+then :
+
+        eval "$amuse_h5_flags_target_var=\"yes\""
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
+
+else $as_nop
+
+        eval "$amuse_h5_flags_target_var=\"no\""
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
+
+    LIBS="$amuse_h5_save_LIBS"
+    LDFLAGS="$amuse_h5_save_LDFLAGS"
+    eval "$amuse_h5_flags_var=\"\$amuse_h5_save_FLAGS\""
+
+
+
+    amuse_h5_name="Fortran with the high-level API in hdf5_hl_fortran with $amuse_h5_path from C_INCLUDE_PATH"
+    amuse_h5_prefix="FC"
+    amuse_h5_target="HL_FC"
+    amuse_h5_program="      program main
+
+            use h5lt
+
+            integer :: error
+
+            error = h5ltfind_dataset_f(0_hid_t, 'test')
+
+      end"
+    amuse_h5_libs="-lhdf5_hl_fortran"
+
+    amuse_h5_flags_var="${amuse_h5_prefix}FLAGS"
+    amuse_h5_flags_source_var="amuse_h5_${amuse_h5_flags_var}"
+    amuse_h5_flags_target_var="amuse_h5_detect_${amuse_h5_target}"
+
+    eval "amuse_h5_save_FLAGS=\"\$$amuse_h5_flags_var\""
+    amuse_h5_save_LDFLAGS="$LDFLAGS"
+    amuse_h5_save_LIBS="$LIBS"
+
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether we can build a program with HDF5 in $amuse_h5_name" >&5
+printf %s "checking whether we can build a program with HDF5 in $amuse_h5_name... " >&6; }
+
+    eval "$amuse_h5_flags_var=\"\$$amuse_h5_flags_source_var \$$amuse_h5_flags_var\""
+    LDFLAGS="$amuse_h5_LDFLAGS $LDFLAGS"
+    LIBS="$amuse_h5_libs"
+
+        cat > conftest.$ac_ext <<_ACEOF
+$amuse_h5_program
+_ACEOF
+if ac_fn_fc_try_link "$LINENO"
+then :
+
+        eval "$amuse_h5_flags_target_var=\"yes\""
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
+
+else $as_nop
+
+        eval "$amuse_h5_flags_target_var=\"no\""
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
+
+    LIBS="$amuse_h5_save_LIBS"
+    LDFLAGS="$amuse_h5_save_LDFLAGS"
+    eval "$amuse_h5_flags_var=\"\$amuse_h5_save_FLAGS\""
+
+
+    if test $amuse_h5_detect_HL_FC = "yes"
+    then
+        amuse_h5_HL_FC_LIB="-lhdf5_hl_fortran"
+    else
+
+    amuse_h5_name="Fortran with the high-level API in hdf5hl_fortran with $amuse_h5_path from C_INCLUDE_PATH"
+    amuse_h5_prefix="FC"
+    amuse_h5_target="HL_FC"
+    amuse_h5_program="      program main
+
+                use h5lt
+
+                integer :: error
+
+                error = h5ltfind_dataset_f(0_hid_t, 'test')
+
+      end"
+    amuse_h5_libs="-lhdf5hl_fortran"
+
+    amuse_h5_flags_var="${amuse_h5_prefix}FLAGS"
+    amuse_h5_flags_source_var="amuse_h5_${amuse_h5_flags_var}"
+    amuse_h5_flags_target_var="amuse_h5_detect_${amuse_h5_target}"
+
+    eval "amuse_h5_save_FLAGS=\"\$$amuse_h5_flags_var\""
+    amuse_h5_save_LDFLAGS="$LDFLAGS"
+    amuse_h5_save_LIBS="$LIBS"
+
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether we can build a program with HDF5 in $amuse_h5_name" >&5
+printf %s "checking whether we can build a program with HDF5 in $amuse_h5_name... " >&6; }
+
+    eval "$amuse_h5_flags_var=\"\$$amuse_h5_flags_source_var \$$amuse_h5_flags_var\""
+    LDFLAGS="$amuse_h5_LDFLAGS $LDFLAGS"
+    LIBS="$amuse_h5_libs"
+
+        cat > conftest.$ac_ext <<_ACEOF
+$amuse_h5_program
+_ACEOF
+if ac_fn_fc_try_link "$LINENO"
+then :
+
+        eval "$amuse_h5_flags_target_var=\"yes\""
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
+
+else $as_nop
+
+        eval "$amuse_h5_flags_target_var=\"no\""
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
+
+    LIBS="$amuse_h5_save_LIBS"
+    LDFLAGS="$amuse_h5_save_LDFLAGS"
+    eval "$amuse_h5_flags_var=\"\$amuse_h5_save_FLAGS\""
+
+
+        if test $amuse_h5_detect_HL_FC = "yes"
+        then
+            amuse_h5_HL_FC_LIB="-lhdf5hl_fortran"
+        fi
+    fi
+
+    ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+
+        if test "$amuse_h5_detect_FC" = "yes"
+        then
+            amuse_h5_FCFLAGS="-I$amuse_h5_path"
+            break
+        fi
+
+        # The new Fortran CMake-based build system uses the non-standard and
+        # not-searched-unless-explicitly-specified /mod/shared subdirectory by
+        # default
+        amuse_h5_FCFLAGS="$FCFLAGS -I$amuse_h5_path/../mod/shared"
+
+    ac_ext=${ac_fc_srcext-f}
+ac_compile='$FC -c $FCFLAGS $ac_fcflags_srcext conftest.$ac_ext >&5'
+ac_link='$FC -o conftest$ac_exeext $FCFLAGS $LDFLAGS $ac_fcflags_srcext conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_fc_compiler_gnu
+
+
+    amuse_h5_name="Fortran with $amuse_h5_path from C_INCLUDE_PATH and /mod/shared"
+    amuse_h5_prefix="FC"
+    amuse_h5_target="FC"
+    amuse_h5_program="      program main
+
+            use h5lib
+
+            integer :: error
+
+            call h5open_f(error)
+            call h5close_f(error)
+      end"
+    amuse_h5_libs="-lhdf5_fortran"
+
+    amuse_h5_flags_var="${amuse_h5_prefix}FLAGS"
+    amuse_h5_flags_source_var="amuse_h5_${amuse_h5_flags_var}"
+    amuse_h5_flags_target_var="amuse_h5_detect_${amuse_h5_target}"
+
+    eval "amuse_h5_save_FLAGS=\"\$$amuse_h5_flags_var\""
+    amuse_h5_save_LDFLAGS="$LDFLAGS"
+    amuse_h5_save_LIBS="$LIBS"
+
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether we can build a program with HDF5 in $amuse_h5_name" >&5
+printf %s "checking whether we can build a program with HDF5 in $amuse_h5_name... " >&6; }
+
+    eval "$amuse_h5_flags_var=\"\$$amuse_h5_flags_source_var \$$amuse_h5_flags_var\""
+    LDFLAGS="$amuse_h5_LDFLAGS $LDFLAGS"
+    LIBS="$amuse_h5_libs"
+
+        cat > conftest.$ac_ext <<_ACEOF
+$amuse_h5_program
+_ACEOF
+if ac_fn_fc_try_link "$LINENO"
+then :
+
+        eval "$amuse_h5_flags_target_var=\"yes\""
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
+
+else $as_nop
+
+        eval "$amuse_h5_flags_target_var=\"no\""
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
+
+    LIBS="$amuse_h5_save_LIBS"
+    LDFLAGS="$amuse_h5_save_LDFLAGS"
+    eval "$amuse_h5_flags_var=\"\$amuse_h5_save_FLAGS\""
+
+
+
+    amuse_h5_name="Fortran with the high-level API in hdf5_hl_fortran with $amuse_h5_path from C_INCLUDE_PATH and /mod/shared"
+    amuse_h5_prefix="FC"
+    amuse_h5_target="HL_FC"
+    amuse_h5_program="      program main
+
+            use h5lt
+
+            integer :: error
+
+            error = h5ltfind_dataset_f(0_hid_t, 'test')
+
+      end"
+    amuse_h5_libs="-lhdf5_hl_fortran"
+
+    amuse_h5_flags_var="${amuse_h5_prefix}FLAGS"
+    amuse_h5_flags_source_var="amuse_h5_${amuse_h5_flags_var}"
+    amuse_h5_flags_target_var="amuse_h5_detect_${amuse_h5_target}"
+
+    eval "amuse_h5_save_FLAGS=\"\$$amuse_h5_flags_var\""
+    amuse_h5_save_LDFLAGS="$LDFLAGS"
+    amuse_h5_save_LIBS="$LIBS"
+
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether we can build a program with HDF5 in $amuse_h5_name" >&5
+printf %s "checking whether we can build a program with HDF5 in $amuse_h5_name... " >&6; }
+
+    eval "$amuse_h5_flags_var=\"\$$amuse_h5_flags_source_var \$$amuse_h5_flags_var\""
+    LDFLAGS="$amuse_h5_LDFLAGS $LDFLAGS"
+    LIBS="$amuse_h5_libs"
+
+        cat > conftest.$ac_ext <<_ACEOF
+$amuse_h5_program
+_ACEOF
+if ac_fn_fc_try_link "$LINENO"
+then :
+
+        eval "$amuse_h5_flags_target_var=\"yes\""
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
+
+else $as_nop
+
+        eval "$amuse_h5_flags_target_var=\"no\""
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
+
+    LIBS="$amuse_h5_save_LIBS"
+    LDFLAGS="$amuse_h5_save_LDFLAGS"
+    eval "$amuse_h5_flags_var=\"\$amuse_h5_save_FLAGS\""
+
+
+    if test $amuse_h5_detect_HL_FC = "yes"
+    then
+        amuse_h5_HL_FC_LIB="-lhdf5_hl_fortran"
+    else
+
+    amuse_h5_name="Fortran with the high-level API in hdf5hl_fortran with $amuse_h5_path from C_INCLUDE_PATH and /mod/shared"
+    amuse_h5_prefix="FC"
+    amuse_h5_target="HL_FC"
+    amuse_h5_program="      program main
+
+                use h5lt
+
+                integer :: error
+
+                error = h5ltfind_dataset_f(0_hid_t, 'test')
+
+      end"
+    amuse_h5_libs="-lhdf5hl_fortran"
+
+    amuse_h5_flags_var="${amuse_h5_prefix}FLAGS"
+    amuse_h5_flags_source_var="amuse_h5_${amuse_h5_flags_var}"
+    amuse_h5_flags_target_var="amuse_h5_detect_${amuse_h5_target}"
+
+    eval "amuse_h5_save_FLAGS=\"\$$amuse_h5_flags_var\""
+    amuse_h5_save_LDFLAGS="$LDFLAGS"
+    amuse_h5_save_LIBS="$LIBS"
+
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether we can build a program with HDF5 in $amuse_h5_name" >&5
+printf %s "checking whether we can build a program with HDF5 in $amuse_h5_name... " >&6; }
+
+    eval "$amuse_h5_flags_var=\"\$$amuse_h5_flags_source_var \$$amuse_h5_flags_var\""
+    LDFLAGS="$amuse_h5_LDFLAGS $LDFLAGS"
+    LIBS="$amuse_h5_libs"
+
+        cat > conftest.$ac_ext <<_ACEOF
+$amuse_h5_program
+_ACEOF
+if ac_fn_fc_try_link "$LINENO"
+then :
+
+        eval "$amuse_h5_flags_target_var=\"yes\""
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
+
+else $as_nop
+
+        eval "$amuse_h5_flags_target_var=\"no\""
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
+
+    LIBS="$amuse_h5_save_LIBS"
+    LDFLAGS="$amuse_h5_save_LDFLAGS"
+    eval "$amuse_h5_flags_var=\"\$amuse_h5_save_FLAGS\""
+
+
+        if test $amuse_h5_detect_HL_FC = "yes"
+        then
+            amuse_h5_HL_FC_LIB="-lhdf5hl_fortran"
+        fi
+    fi
+
+    ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+
+        if test "$amuse_h5_detect_FC" = "yes"
+        then
+            amuse_h5_FCFLAGS="-I$amuse_h5_path/../mod/shared"
+            break
+        fi
+
+        if test "$amuse_h5_detect_FC" = "no"
+        then
+            amuse_h5_FCFLAGS=""
+        fi
+    done
+    IFS="$amuse_h5_save_IFS"
+
+        fi
+    fi
+
+    fi
+
+        if test "$amuse_h5_detect_C" = "no"
+    then
+
+    # Extract the first word of "h5cc", so it can be a program name with args.
+set dummy h5cc; ac_word=$2
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+printf %s "checking for $ac_word... " >&6; }
+if test ${ac_cv_path_H5CC+y}
+then :
+  printf %s "(cached) " >&6
+else $as_nop
+  case $H5CC in
+  [\\/]* | ?:[\\/]*)
+  ac_cv_path_H5CC="$H5CC" # Let the user override the test with a path.
+  ;;
+  *)
+  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  case $as_dir in #(((
+    '') as_dir=./ ;;
+    */) ;;
+    *) as_dir=$as_dir/ ;;
+  esac
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir$ac_word$ac_exec_ext"; then
+    ac_cv_path_H5CC="$as_dir$ac_word$ac_exec_ext"
+    printf "%s\n" "$as_me:${as_lineno-$LINENO}: found $as_dir$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+  ;;
+esac
+fi
+H5CC=$ac_cv_path_H5CC
+if test -n "$H5CC"; then
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $H5CC" >&5
+printf "%s\n" "$H5CC" >&6; }
+else
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+fi
+
+
+    if test -n "$H5CC"
+    then
+        amuse_h5_h5cc_flags=$(HDF5_USE_SHLIB=yes $H5CC -show)
+                        amuse_h5_h5cc_extra_flags=$(HDF5_USE_SHLIB=yes $H5CC -show -c)
+
+    amuse_h5_include_flags=""
+    amuse_h5_link_flags=""
+
+    for amuse_h5_flag in $amuse_h5_h5cc_flags $amuse_h5_h5cc_extra_flags
+    do
+        if test "${amuse_h5_flag#-I}" != "$amuse_h5_flag"
+        then
+            if ! echo "$amuse_h5_include_flags" | grep -e "$amuse_h5_flag" >/dev/null 2>&1
+            then
+                amuse_h5_include_flags="$amuse_h5_include_flags $amuse_h5_flag"
+            fi
+        elif test "${amuse_h5_flag#-L}" != "$amuse_h5_flag"
+        then
+            if ! echo "$amuse_h5_result" | grep -e "$amuse_h5_flag" >/dev/null 2>&1
+            then
+                amuse_h5_link_flags="$amuse_h5_link_flags $amuse_h5_flag"
+            fi
+        fi
+    done
+
+
+        ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+        amuse_h5_CFLAGS="$amuse_h5_include_flags"
+        amuse_h5_LDFLAGS="$amuse_h5_link_flags"
+
+    amuse_h5_name="C with flags from h5cc"
+    amuse_h5_prefix="C"
+    amuse_h5_target="C"
+    amuse_h5_program="#include <hdf5.h>
+int
+main (void)
+{
+H5open(); H5close();
+  ;
+  return 0;
+}"
+    amuse_h5_libs="-lhdf5"
+
+    amuse_h5_flags_var="${amuse_h5_prefix}FLAGS"
+    amuse_h5_flags_source_var="amuse_h5_${amuse_h5_flags_var}"
+    amuse_h5_flags_target_var="amuse_h5_detect_${amuse_h5_target}"
+
+    eval "amuse_h5_save_FLAGS=\"\$$amuse_h5_flags_var\""
+    amuse_h5_save_LDFLAGS="$LDFLAGS"
+    amuse_h5_save_LIBS="$LIBS"
+
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether we can build a program with HDF5 in $amuse_h5_name" >&5
+printf %s "checking whether we can build a program with HDF5 in $amuse_h5_name... " >&6; }
+
+    eval "$amuse_h5_flags_var=\"\$$amuse_h5_flags_source_var \$$amuse_h5_flags_var\""
+    LDFLAGS="$amuse_h5_LDFLAGS $LDFLAGS"
+    LIBS="$amuse_h5_libs"
+
+        cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+$amuse_h5_program
+_ACEOF
+if ac_fn_c_try_link "$LINENO"
+then :
+
+        eval "$amuse_h5_flags_target_var=\"yes\""
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
+
+else $as_nop
+
+        eval "$amuse_h5_flags_target_var=\"no\""
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
+
+    LIBS="$amuse_h5_save_LIBS"
+    LDFLAGS="$amuse_h5_save_LDFLAGS"
+    eval "$amuse_h5_flags_var=\"\$amuse_h5_save_FLAGS\""
+
+
+    amuse_h5_name="C with flags from h5cc and the high-level API"
+    amuse_h5_prefix="C"
+    amuse_h5_target="HL_C"
+    amuse_h5_program="#include <hdf5_hl.h>
+int
+main (void)
+{
+H5LTfind_dataset(0, \"test\")
+  ;
+  return 0;
+}"
+    amuse_h5_libs="-lhdf5_hl"
+
+    amuse_h5_flags_var="${amuse_h5_prefix}FLAGS"
+    amuse_h5_flags_source_var="amuse_h5_${amuse_h5_flags_var}"
+    amuse_h5_flags_target_var="amuse_h5_detect_${amuse_h5_target}"
+
+    eval "amuse_h5_save_FLAGS=\"\$$amuse_h5_flags_var\""
+    amuse_h5_save_LDFLAGS="$LDFLAGS"
+    amuse_h5_save_LIBS="$LIBS"
+
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether we can build a program with HDF5 in $amuse_h5_name" >&5
+printf %s "checking whether we can build a program with HDF5 in $amuse_h5_name... " >&6; }
+
+    eval "$amuse_h5_flags_var=\"\$$amuse_h5_flags_source_var \$$amuse_h5_flags_var\""
+    LDFLAGS="$amuse_h5_LDFLAGS $LDFLAGS"
+    LIBS="$amuse_h5_libs"
+
+        cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+$amuse_h5_program
+_ACEOF
+if ac_fn_c_try_link "$LINENO"
+then :
+
+        eval "$amuse_h5_flags_target_var=\"yes\""
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
+
+else $as_nop
+
+        eval "$amuse_h5_flags_target_var=\"no\""
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
+
+    LIBS="$amuse_h5_save_LIBS"
+    LDFLAGS="$amuse_h5_save_LDFLAGS"
+    eval "$amuse_h5_flags_var=\"\$amuse_h5_save_FLAGS\""
+
+        ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+    fi
+
+    # Extract the first word of "h5c++", so it can be a program name with args.
+set dummy h5c++; ac_word=$2
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+printf %s "checking for $ac_word... " >&6; }
+if test ${ac_cv_path_H5CXX+y}
+then :
+  printf %s "(cached) " >&6
+else $as_nop
+  case $H5CXX in
+  [\\/]* | ?:[\\/]*)
+  ac_cv_path_H5CXX="$H5CXX" # Let the user override the test with a path.
+  ;;
+  *)
+  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  case $as_dir in #(((
+    '') as_dir=./ ;;
+    */) ;;
+    *) as_dir=$as_dir/ ;;
+  esac
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir$ac_word$ac_exec_ext"; then
+    ac_cv_path_H5CXX="$as_dir$ac_word$ac_exec_ext"
+    printf "%s\n" "$as_me:${as_lineno-$LINENO}: found $as_dir$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+  ;;
+esac
+fi
+H5CXX=$ac_cv_path_H5CXX
+if test -n "$H5CXX"; then
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $H5CXX" >&5
+printf "%s\n" "$H5CXX" >&6; }
+else
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+fi
+
+
+    if test -n "$H5CXX"
+    then
+        amuse_h5_h5cxx_flags=$(HDF5_USE_SHLIB=yes $H5CXX -show)
+                                        echo "broken" >conftest.cpp
+        amuse_h5_h5cxx_extra_flags=$(HDF5_USE_SHLIB=yes $H5CXX -show -c conftest.cpp)
+        rm conftest.cpp
+
+    amuse_h5_include_flags=""
+    amuse_h5_link_flags=""
+
+    for amuse_h5_flag in $amuse_h5_h5cxx_flags $amuse_h5_h5cxx_extra_flags
+    do
+        if test "${amuse_h5_flag#-I}" != "$amuse_h5_flag"
+        then
+            if ! echo "$amuse_h5_include_flags" | grep -e "$amuse_h5_flag" >/dev/null 2>&1
+            then
+                amuse_h5_include_flags="$amuse_h5_include_flags $amuse_h5_flag"
+            fi
+        elif test "${amuse_h5_flag#-L}" != "$amuse_h5_flag"
+        then
+            if ! echo "$amuse_h5_result" | grep -e "$amuse_h5_flag" >/dev/null 2>&1
+            then
+                amuse_h5_link_flags="$amuse_h5_link_flags $amuse_h5_flag"
+            fi
+        fi
+    done
+
+
+        ac_ext=cpp
+ac_cpp='$CXXCPP $CPPFLAGS'
+ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
+
+        amuse_h5_CXXFLAGS="$amuse_h5_include_flags"
+        amuse_h5_LDFLAGS="$amuse_h5_link_flags"
+
+    amuse_h5_name="C++ with flags from h5c++"
+    amuse_h5_prefix="CXX"
+    amuse_h5_target="CXX"
+    amuse_h5_program="#include <H5Cpp.h>
+int
+main (void)
+{
+H5::H5Library::open();
+  ;
+  return 0;
+}"
+    amuse_h5_libs="-lhdf5_cpp"
+
+    amuse_h5_flags_var="${amuse_h5_prefix}FLAGS"
+    amuse_h5_flags_source_var="amuse_h5_${amuse_h5_flags_var}"
+    amuse_h5_flags_target_var="amuse_h5_detect_${amuse_h5_target}"
+
+    eval "amuse_h5_save_FLAGS=\"\$$amuse_h5_flags_var\""
+    amuse_h5_save_LDFLAGS="$LDFLAGS"
+    amuse_h5_save_LIBS="$LIBS"
+
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether we can build a program with HDF5 in $amuse_h5_name" >&5
+printf %s "checking whether we can build a program with HDF5 in $amuse_h5_name... " >&6; }
+
+    eval "$amuse_h5_flags_var=\"\$$amuse_h5_flags_source_var \$$amuse_h5_flags_var\""
+    LDFLAGS="$amuse_h5_LDFLAGS $LDFLAGS"
+    LIBS="$amuse_h5_libs"
+
+        cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+$amuse_h5_program
+_ACEOF
+if ac_fn_cxx_try_link "$LINENO"
+then :
+
+        eval "$amuse_h5_flags_target_var=\"yes\""
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
+
+else $as_nop
+
+        eval "$amuse_h5_flags_target_var=\"no\""
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
+
+    LIBS="$amuse_h5_save_LIBS"
+    LDFLAGS="$amuse_h5_save_LDFLAGS"
+    eval "$amuse_h5_flags_var=\"\$amuse_h5_save_FLAGS\""
+
+        ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+    fi
+
+    # Extract the first word of "h5fc", so it can be a program name with args.
+set dummy h5fc; ac_word=$2
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+printf %s "checking for $ac_word... " >&6; }
+if test ${ac_cv_path_H5FC+y}
+then :
+  printf %s "(cached) " >&6
+else $as_nop
+  case $H5FC in
+  [\\/]* | ?:[\\/]*)
+  ac_cv_path_H5FC="$H5FC" # Let the user override the test with a path.
+  ;;
+  *)
+  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  case $as_dir in #(((
+    '') as_dir=./ ;;
+    */) ;;
+    *) as_dir=$as_dir/ ;;
+  esac
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir$ac_word$ac_exec_ext"; then
+    ac_cv_path_H5FC="$as_dir$ac_word$ac_exec_ext"
+    printf "%s\n" "$as_me:${as_lineno-$LINENO}: found $as_dir$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+  ;;
+esac
+fi
+H5FC=$ac_cv_path_H5FC
+if test -n "$H5FC"; then
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $H5FC" >&5
+printf "%s\n" "$H5FC" >&6; }
+else
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+fi
+
+
+    if test -n "$H5FC"
+    then
+        amuse_h5_h5fc_flags=$(HDF5_USE_SHLIB=yes h5fc -show)
+                        amuse_h5_h5fc_extra_flags=$(HDF5_USE_SHLIB=yes $H5CC -show -c)
+
+    amuse_h5_include_flags=""
+    amuse_h5_link_flags=""
+
+    for amuse_h5_flag in $amuse_h5_h5fc_flags $amuse_h5_h5fc_extra_flags
+    do
+        if test "${amuse_h5_flag#-I}" != "$amuse_h5_flag"
+        then
+            if ! echo "$amuse_h5_include_flags" | grep -e "$amuse_h5_flag" >/dev/null 2>&1
+            then
+                amuse_h5_include_flags="$amuse_h5_include_flags $amuse_h5_flag"
+            fi
+        elif test "${amuse_h5_flag#-L}" != "$amuse_h5_flag"
+        then
+            if ! echo "$amuse_h5_result" | grep -e "$amuse_h5_flag" >/dev/null 2>&1
+            then
+                amuse_h5_link_flags="$amuse_h5_link_flags $amuse_h5_flag"
+            fi
+        fi
+    done
+
+
+        amuse_h5_FCFLAGS="$amuse_h5_include_flags"
+        amuse_h5_LDFLAGS="$amuse_h5_link_flags"
+
+    ac_ext=${ac_fc_srcext-f}
+ac_compile='$FC -c $FCFLAGS $ac_fcflags_srcext conftest.$ac_ext >&5'
+ac_link='$FC -o conftest$ac_exeext $FCFLAGS $LDFLAGS $ac_fcflags_srcext conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_fc_compiler_gnu
+
+
+    amuse_h5_name="Fortran with flags from h5fc"
+    amuse_h5_prefix="FC"
+    amuse_h5_target="FC"
+    amuse_h5_program="      program main
+
+            use h5lib
+
+            integer :: error
+
+            call h5open_f(error)
+            call h5close_f(error)
+      end"
+    amuse_h5_libs="-lhdf5_fortran"
+
+    amuse_h5_flags_var="${amuse_h5_prefix}FLAGS"
+    amuse_h5_flags_source_var="amuse_h5_${amuse_h5_flags_var}"
+    amuse_h5_flags_target_var="amuse_h5_detect_${amuse_h5_target}"
+
+    eval "amuse_h5_save_FLAGS=\"\$$amuse_h5_flags_var\""
+    amuse_h5_save_LDFLAGS="$LDFLAGS"
+    amuse_h5_save_LIBS="$LIBS"
+
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether we can build a program with HDF5 in $amuse_h5_name" >&5
+printf %s "checking whether we can build a program with HDF5 in $amuse_h5_name... " >&6; }
+
+    eval "$amuse_h5_flags_var=\"\$$amuse_h5_flags_source_var \$$amuse_h5_flags_var\""
+    LDFLAGS="$amuse_h5_LDFLAGS $LDFLAGS"
+    LIBS="$amuse_h5_libs"
+
+        cat > conftest.$ac_ext <<_ACEOF
+$amuse_h5_program
+_ACEOF
+if ac_fn_fc_try_link "$LINENO"
+then :
+
+        eval "$amuse_h5_flags_target_var=\"yes\""
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
+
+else $as_nop
+
+        eval "$amuse_h5_flags_target_var=\"no\""
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
+
+    LIBS="$amuse_h5_save_LIBS"
+    LDFLAGS="$amuse_h5_save_LDFLAGS"
+    eval "$amuse_h5_flags_var=\"\$amuse_h5_save_FLAGS\""
+
+
+
+    amuse_h5_name="Fortran with the high-level API in hdf5_hl_fortran with flags from h5fc"
+    amuse_h5_prefix="FC"
+    amuse_h5_target="HL_FC"
+    amuse_h5_program="      program main
+
+            use h5lt
+
+            integer :: error
+
+            error = h5ltfind_dataset_f(0_hid_t, 'test')
+
+      end"
+    amuse_h5_libs="-lhdf5_hl_fortran"
+
+    amuse_h5_flags_var="${amuse_h5_prefix}FLAGS"
+    amuse_h5_flags_source_var="amuse_h5_${amuse_h5_flags_var}"
+    amuse_h5_flags_target_var="amuse_h5_detect_${amuse_h5_target}"
+
+    eval "amuse_h5_save_FLAGS=\"\$$amuse_h5_flags_var\""
+    amuse_h5_save_LDFLAGS="$LDFLAGS"
+    amuse_h5_save_LIBS="$LIBS"
+
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether we can build a program with HDF5 in $amuse_h5_name" >&5
+printf %s "checking whether we can build a program with HDF5 in $amuse_h5_name... " >&6; }
+
+    eval "$amuse_h5_flags_var=\"\$$amuse_h5_flags_source_var \$$amuse_h5_flags_var\""
+    LDFLAGS="$amuse_h5_LDFLAGS $LDFLAGS"
+    LIBS="$amuse_h5_libs"
+
+        cat > conftest.$ac_ext <<_ACEOF
+$amuse_h5_program
+_ACEOF
+if ac_fn_fc_try_link "$LINENO"
+then :
+
+        eval "$amuse_h5_flags_target_var=\"yes\""
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
+
+else $as_nop
+
+        eval "$amuse_h5_flags_target_var=\"no\""
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
+
+    LIBS="$amuse_h5_save_LIBS"
+    LDFLAGS="$amuse_h5_save_LDFLAGS"
+    eval "$amuse_h5_flags_var=\"\$amuse_h5_save_FLAGS\""
+
+
+    if test $amuse_h5_detect_HL_FC = "yes"
+    then
+        amuse_h5_HL_FC_LIB="-lhdf5_hl_fortran"
+    else
+
+    amuse_h5_name="Fortran with the high-level API in hdf5hl_fortran with flags from h5fc"
+    amuse_h5_prefix="FC"
+    amuse_h5_target="HL_FC"
+    amuse_h5_program="      program main
+
+                use h5lt
+
+                integer :: error
+
+                error = h5ltfind_dataset_f(0_hid_t, 'test')
+
+      end"
+    amuse_h5_libs="-lhdf5hl_fortran"
+
+    amuse_h5_flags_var="${amuse_h5_prefix}FLAGS"
+    amuse_h5_flags_source_var="amuse_h5_${amuse_h5_flags_var}"
+    amuse_h5_flags_target_var="amuse_h5_detect_${amuse_h5_target}"
+
+    eval "amuse_h5_save_FLAGS=\"\$$amuse_h5_flags_var\""
+    amuse_h5_save_LDFLAGS="$LDFLAGS"
+    amuse_h5_save_LIBS="$LIBS"
+
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether we can build a program with HDF5 in $amuse_h5_name" >&5
+printf %s "checking whether we can build a program with HDF5 in $amuse_h5_name... " >&6; }
+
+    eval "$amuse_h5_flags_var=\"\$$amuse_h5_flags_source_var \$$amuse_h5_flags_var\""
+    LDFLAGS="$amuse_h5_LDFLAGS $LDFLAGS"
+    LIBS="$amuse_h5_libs"
+
+        cat > conftest.$ac_ext <<_ACEOF
+$amuse_h5_program
+_ACEOF
+if ac_fn_fc_try_link "$LINENO"
+then :
+
+        eval "$amuse_h5_flags_target_var=\"yes\""
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
+
+else $as_nop
+
+        eval "$amuse_h5_flags_target_var=\"no\""
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
+
+    LIBS="$amuse_h5_save_LIBS"
+    LDFLAGS="$amuse_h5_save_LDFLAGS"
+    eval "$amuse_h5_flags_var=\"\$amuse_h5_save_FLAGS\""
+
+
+        if test $amuse_h5_detect_HL_FC = "yes"
+        then
+            amuse_h5_HL_FC_LIB="-lhdf5hl_fortran"
+        fi
+    fi
+
+    ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+
+
+        if test "$amuse_h5_detect_FC" = "no"
+        then
+                        amuse_h5_extra_flags=$(echo "$amuse_h5_include_flags" | sed -e 's^\([[:graph:]]*\)\( \|$\)^\1/../mod/shared ^g')
+            amuse_h5_FCFLAGS="$amuse_h5_include_flags $amuse_h5_extra_flags"
+
+    ac_ext=${ac_fc_srcext-f}
+ac_compile='$FC -c $FCFLAGS $ac_fcflags_srcext conftest.$ac_ext >&5'
+ac_link='$FC -o conftest$ac_exeext $FCFLAGS $LDFLAGS $ac_fcflags_srcext conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_fc_compiler_gnu
+
+
+    amuse_h5_name="Fortran with flags from h5fc and mod/shared"
+    amuse_h5_prefix="FC"
+    amuse_h5_target="FC"
+    amuse_h5_program="      program main
+
+            use h5lib
+
+            integer :: error
+
+            call h5open_f(error)
+            call h5close_f(error)
+      end"
+    amuse_h5_libs="-lhdf5_fortran"
+
+    amuse_h5_flags_var="${amuse_h5_prefix}FLAGS"
+    amuse_h5_flags_source_var="amuse_h5_${amuse_h5_flags_var}"
+    amuse_h5_flags_target_var="amuse_h5_detect_${amuse_h5_target}"
+
+    eval "amuse_h5_save_FLAGS=\"\$$amuse_h5_flags_var\""
+    amuse_h5_save_LDFLAGS="$LDFLAGS"
+    amuse_h5_save_LIBS="$LIBS"
+
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether we can build a program with HDF5 in $amuse_h5_name" >&5
+printf %s "checking whether we can build a program with HDF5 in $amuse_h5_name... " >&6; }
+
+    eval "$amuse_h5_flags_var=\"\$$amuse_h5_flags_source_var \$$amuse_h5_flags_var\""
+    LDFLAGS="$amuse_h5_LDFLAGS $LDFLAGS"
+    LIBS="$amuse_h5_libs"
+
+        cat > conftest.$ac_ext <<_ACEOF
+$amuse_h5_program
+_ACEOF
+if ac_fn_fc_try_link "$LINENO"
+then :
+
+        eval "$amuse_h5_flags_target_var=\"yes\""
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
+
+else $as_nop
+
+        eval "$amuse_h5_flags_target_var=\"no\""
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
+
+    LIBS="$amuse_h5_save_LIBS"
+    LDFLAGS="$amuse_h5_save_LDFLAGS"
+    eval "$amuse_h5_flags_var=\"\$amuse_h5_save_FLAGS\""
+
+
+
+    amuse_h5_name="Fortran with the high-level API in hdf5_hl_fortran with flags from h5fc and mod/shared"
+    amuse_h5_prefix="FC"
+    amuse_h5_target="HL_FC"
+    amuse_h5_program="      program main
+
+            use h5lt
+
+            integer :: error
+
+            error = h5ltfind_dataset_f(0_hid_t, 'test')
+
+      end"
+    amuse_h5_libs="-lhdf5_hl_fortran"
+
+    amuse_h5_flags_var="${amuse_h5_prefix}FLAGS"
+    amuse_h5_flags_source_var="amuse_h5_${amuse_h5_flags_var}"
+    amuse_h5_flags_target_var="amuse_h5_detect_${amuse_h5_target}"
+
+    eval "amuse_h5_save_FLAGS=\"\$$amuse_h5_flags_var\""
+    amuse_h5_save_LDFLAGS="$LDFLAGS"
+    amuse_h5_save_LIBS="$LIBS"
+
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether we can build a program with HDF5 in $amuse_h5_name" >&5
+printf %s "checking whether we can build a program with HDF5 in $amuse_h5_name... " >&6; }
+
+    eval "$amuse_h5_flags_var=\"\$$amuse_h5_flags_source_var \$$amuse_h5_flags_var\""
+    LDFLAGS="$amuse_h5_LDFLAGS $LDFLAGS"
+    LIBS="$amuse_h5_libs"
+
+        cat > conftest.$ac_ext <<_ACEOF
+$amuse_h5_program
+_ACEOF
+if ac_fn_fc_try_link "$LINENO"
+then :
+
+        eval "$amuse_h5_flags_target_var=\"yes\""
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
+
+else $as_nop
+
+        eval "$amuse_h5_flags_target_var=\"no\""
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
+
+    LIBS="$amuse_h5_save_LIBS"
+    LDFLAGS="$amuse_h5_save_LDFLAGS"
+    eval "$amuse_h5_flags_var=\"\$amuse_h5_save_FLAGS\""
+
+
+    if test $amuse_h5_detect_HL_FC = "yes"
+    then
+        amuse_h5_HL_FC_LIB="-lhdf5_hl_fortran"
+    else
+
+    amuse_h5_name="Fortran with the high-level API in hdf5hl_fortran with flags from h5fc and mod/shared"
+    amuse_h5_prefix="FC"
+    amuse_h5_target="HL_FC"
+    amuse_h5_program="      program main
+
+                use h5lt
+
+                integer :: error
+
+                error = h5ltfind_dataset_f(0_hid_t, 'test')
+
+      end"
+    amuse_h5_libs="-lhdf5hl_fortran"
+
+    amuse_h5_flags_var="${amuse_h5_prefix}FLAGS"
+    amuse_h5_flags_source_var="amuse_h5_${amuse_h5_flags_var}"
+    amuse_h5_flags_target_var="amuse_h5_detect_${amuse_h5_target}"
+
+    eval "amuse_h5_save_FLAGS=\"\$$amuse_h5_flags_var\""
+    amuse_h5_save_LDFLAGS="$LDFLAGS"
+    amuse_h5_save_LIBS="$LIBS"
+
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether we can build a program with HDF5 in $amuse_h5_name" >&5
+printf %s "checking whether we can build a program with HDF5 in $amuse_h5_name... " >&6; }
+
+    eval "$amuse_h5_flags_var=\"\$$amuse_h5_flags_source_var \$$amuse_h5_flags_var\""
+    LDFLAGS="$amuse_h5_LDFLAGS $LDFLAGS"
+    LIBS="$amuse_h5_libs"
+
+        cat > conftest.$ac_ext <<_ACEOF
+$amuse_h5_program
+_ACEOF
+if ac_fn_fc_try_link "$LINENO"
+then :
+
+        eval "$amuse_h5_flags_target_var=\"yes\""
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
+
+else $as_nop
+
+        eval "$amuse_h5_flags_target_var=\"no\""
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
+
+    LIBS="$amuse_h5_save_LIBS"
+    LDFLAGS="$amuse_h5_save_LDFLAGS"
+    eval "$amuse_h5_flags_var=\"\$amuse_h5_save_FLAGS\""
+
+
+        if test $amuse_h5_detect_HL_FC = "yes"
+        then
+            amuse_h5_HL_FC_LIB="-lhdf5hl_fortran"
+        fi
+    fi
+
+    ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+
+        fi
+
+        if test "$amuse_h5_detect_FC" = "no"
+        then
+            amuse_h5_FCFLAGS=""
+        fi
+    fi
+
+    fi
+
+    if test "$amuse_h5_detect_C" = "yes"
+    then
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: HDF5 installation detected" >&5
+printf "%s\n" "$as_me: HDF5 installation detected" >&6;}
+
+        HDF5_C_FOUND="$amuse_h5_detect_C"
+        HDF5_HL_C_FOUND="$amuse_h5_detect_HL_C"
+        HDF5_CXX_FOUND="$amuse_h5_detect_CXX"
+        HDF5_FC_FOUND="$amuse_h5_detect_FC"
+        HDF5_HL_FC_FOUND="$amuse_h5_detect_HL_FC"
+
+        HDF5_TYPE="serial"
+        HDF5_CFLAGS="$amuse_h5_CFLAGS"
+        HDF5_CXXFLAGS="$amuse_h5_CXXFLAGS"
+        HDF5_FCFLAGS="$amuse_h5_FCFLAGS"
+        HDF5_LDFLAGS="$amuse_h5_LDFLAGS"
+        HDF5_HLFC_LIB="$amuse_h5_HL_FC_LIB"
+    else
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: WARNING: no HDF5 installation detected" >&5
+printf "%s\n" "$as_me: WARNING: no HDF5 installation detected" >&2;}
+    fi
+
+
+
+
+
+
+
 
 
 # Generate output
@@ -6882,7 +10349,6 @@ gives unlimited permission to copy, distribute and modify it."
 
 ac_pwd='$ac_pwd'
 srcdir='$srcdir'
-AWK='$AWK'
 test -n "\$AWK" || AWK=awk
 _ACEOF
 

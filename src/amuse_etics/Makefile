@@ -11,8 +11,8 @@ support/config.mk:
 # Building the code into a static library
 DEPFLAGS += $(CUDA_FLAGS)
 CXXFLAGS += $(DEPFLAGS) -Wall
-LDFLAGS += $(CUDA_LDFLAGS)
-LDLIBS += -lcudart
+LDFLAGS += $(CUDA_LDFLAGS) $(HDF5_LDFLAGS)
+LDLIBS += -lcudart -lhdf5_cpp -lhdf5
 
 CODELIB = src/libetics.a
 
