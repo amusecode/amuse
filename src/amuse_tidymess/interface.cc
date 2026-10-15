@@ -18,7 +18,6 @@
 
 std::unique_ptr<Tidy> tidymess;
 std::unique_ptr<Initializer> init;
-std::unique_ptr<Collision> collision;
 std::unique_ptr<Breakup> breakup;
 
 int particle_id_counter = 0;
@@ -51,7 +50,6 @@ int get_body_index_by_id(int index_of_the_particle) {
 int initialize_code() {
     tidymess = std::make_unique<Tidy>();
     init = std::make_unique<Initializer>();
-    collision = std::make_unique<Collision>();
     breakup = std::make_unique<Breakup>();
 
     particle_id_counter = 0;
@@ -71,8 +69,6 @@ int cleanup_code() {
     tidymess.reset();
     init.reset();
     breakup.reset();
-    collision.reset();
-
     return 0;
 }
 
@@ -150,21 +146,13 @@ int recommit_particles() {
  * index that can be used to refer to this particle.
  */
 int new_particle(
-    int* index_of_the_particle,
+    int *index_of_the_particle,
     double mass,
     double radius,
-    double x,
-    double y,
-    double z,
-    double vx,
-    double vy,
-    double vz,
-    double xi,
-    double kf,
-    double tau,
-    double wx,
-    double wy,
-    double wz,
+    double x, double y, double z,
+    double vx, double vy, double vz,
+    double xi, double kf, double tau,
+    double wx, double wy, double wz,
     double a_mb
 ) {
     if (!index_of_the_particle) return -1;
@@ -261,21 +249,13 @@ int evolve_model(double time) {
  */
 int get_state(
     int index_of_the_particle,
-    double* mass,
-    double* radius,
-    double* x,
-    double* y,
-    double* z,
-    double* vx,
-    double* vy,
-    double* vz,
-    double* xi,
-    double* kf,
-    double* tau,
-    double* wx,
-    double* wy,
-    double* wz,
-    double* a_mb
+    double *mass,
+    double *radius,
+    double *x, double *y, double *z,
+    double *vx, double *vy, double *vz,
+    double *xi, double *kf, double *tau,
+    double *wx, double *wy, double *wz,
+    double *a_mb
 ) {
     if (!mass || !radius || !x || !y || !z || !vx || !vy || !vz ||
         !xi || !kf || !tau || !wx || !wy || !wz || !a_mb)
@@ -314,18 +294,10 @@ int set_state(
     int index_of_the_particle,
     double mass,
     double radius,
-    double x,
-    double y,
-    double z,
-    double vx,
-    double vy,
-    double vz,
-    double xi,
-    double kf,
-    double tau,
-    double wx,
-    double wy,
-    double wz,
+    double x, double y, double z,
+    double vx, double vy, double vz,
+    double xi, double kf, double tau,
+    double wx, double wy, double wz,
     double a_mb
 ) {
     int i = get_body_index_by_id(index_of_the_particle);
@@ -349,7 +321,7 @@ int set_state(
 /**
  * Get mass of a particle
  */
-int get_mass(int index_of_the_particle, double* mass) {
+int get_mass(int index_of_the_particle, double *mass) {
     if (!mass) return -1;
 
     int i = get_body_index_by_id(index_of_the_particle);
@@ -373,7 +345,7 @@ int set_mass(int index_of_the_particle, double mass) {
 /**
  * Get radius of a particle
  */
-int get_radius(int index_of_the_particle, double* radius ) {
+int get_radius(int index_of_the_particle, double *radius ) {
     if (!radius) return -1;
 
     int i = get_body_index_by_id(index_of_the_particle);
@@ -399,9 +371,9 @@ int set_radius(int index_of_the_particle, double radius) {
  */
 int get_position(
     int index_of_the_particle,
-    double* x,
-    double* y,
-    double* z
+    double *x,
+    double *y,
+    double *z
 ) {
     if (!x || !y || !z) return -1;
 
@@ -439,9 +411,9 @@ int set_position(
  */
 int get_velocity(
     int index_of_the_particle,
-    double* vx,
-    double* vy,
-    double* vz
+    double *vx,
+    double *vy,
+    double *vz
 ) {
     if (!vx || !vy || !vz) return -1;
 
@@ -477,7 +449,7 @@ int set_velocity(
 /**
  * Get moment of inertia of a particle
  */
-int get_xi(int index_of_the_particle, double* xi) {
+int get_xi(int index_of_the_particle, double *xi) {
     if (!xi) return -1;
 
     int i = get_body_index_by_id(index_of_the_particle);
@@ -501,7 +473,7 @@ int set_xi(int index_of_the_particle, double xi) {
 /**
  * Get fluid love number of a particle
  */
-int get_kf(int index_of_the_particle, double* kf) {
+int get_kf(int index_of_the_particle, double *kf) {
     if (!kf) return -1;
 
     int i = get_body_index_by_id(index_of_the_particle);
@@ -525,7 +497,7 @@ int set_kf(int index_of_the_particle, double kf) {
 /**
  * Get fluid relaxation time of a particle
  */
-int get_tau(int index_of_the_particle, double* tau) {
+int get_tau(int index_of_the_particle, double *tau) {
     if (!tau) return -1;
 
     int i = get_body_index_by_id(index_of_the_particle);
@@ -551,9 +523,9 @@ int set_tau(int index_of_the_particle, double tau) {
  */
 int get_spin(
     int index_of_the_particle,
-    double* wx,
-    double* wy,
-    double* wz
+    double *wx,
+    double *wy,
+    double *wz
 ) {
     if (!wx || !wy || !wz) return -1;
 
@@ -593,7 +565,7 @@ int set_spin(
 /**
  * Get Tidymess tidal model parameter
  */
-int get_tidal_model(int* tidal_model) {
+int get_tidal_model(int *tidal_model) {
     if (!tidal_model) return -1;
 
     *tidal_model = tidymess->get_tidal_model();
@@ -611,7 +583,7 @@ int set_tidal_model(int tidal_model) {
 /**
  * Get Tidymess pn order parameter
  */
-int get_pn_order(int* pn_order) {
+int get_pn_order(int *pn_order) {
     if (!pn_order) return -1;
 
     *pn_order = tidymess->get_pn_order();
@@ -629,7 +601,7 @@ int set_pn_order(int pn_order) {
 /**
  * Get Tidymess magnetic braking parameter
  */
-int get_magnetic_braking(int* magnetic_braking) {
+int get_magnetic_braking(int *magnetic_braking) {
     if (!magnetic_braking) return -1;
 
     *magnetic_braking = tidymess->get_magnetic_braking();
@@ -647,7 +619,7 @@ int set_magnetic_braking(int magnetic_braking) {
 /**
  * Get Tidymess speed of light parameter
  */
-int get_speed_of_light(double* speed_of_light) {
+int get_speed_of_light(double *speed_of_light) {
     if (!speed_of_light) return -1;
 
     *speed_of_light = tidymess->get_speed_of_light();
@@ -665,7 +637,7 @@ int set_speed_of_light(double speed_of_light) {
 /**
  * Get Tidymess dt mode parameter
  */
-int get_dt_mode(int* dt_mode) {
+int get_dt_mode(int *dt_mode) {
     if (!dt_mode) return -1;
 
     *dt_mode = tidymess->get_dt_mode();
@@ -683,7 +655,7 @@ int set_dt_mode(int dt_mode) {
 /**
  * Get Tidymess constant dt parameter
  */
-int get_dt_const(double* dt_const) {
+int get_dt_const(double *dt_const) {
     if (!dt_const) return -1;
 
     *dt_const = tidymess->get_dt_const();
@@ -701,7 +673,7 @@ int set_dt_const(double dt_const) {
 /**
  * Get internal integrator dt value of previous timestep
  */
-int get_time_step(double* time_step) {
+int get_time_step(double *time_step) {
     if (!time_step) return -1;
 
     if (tidymess->get_dt_mode() > 0) {
@@ -717,7 +689,7 @@ int get_time_step(double* time_step) {
 /**
  * Get Tidymess eta (accuracy parameter)
  */
-int get_eta(double* eta) {
+int get_eta(double *eta) {
     if (!eta) return -1;
 
     *eta = tidymess->get_eta();
@@ -735,7 +707,7 @@ int set_eta(double eta) {
 /**
  * Get Tidymess n iter parameter
  */
-int get_n_iter(int* n_iter) {
+int get_n_iter(int *n_iter) {
     if (!n_iter) return -1;
 
     *n_iter = tidymess->n_iter;
@@ -753,7 +725,7 @@ int set_n_iter(int n_iter) {
 /**
  * Get Tidymess initial shape parameter
  */
-int get_initial_shape(int* initial_shape) {
+int get_initial_shape(int *initial_shape) {
     if (!initial_shape) return -1;
 
     *initial_shape = init_shape;
@@ -771,7 +743,7 @@ int set_initial_shape(int initial_shape) {
 /**
  * Get Tidymess collision mode
  */
-int get_collision_mode(int* collision_mode) {
+int get_collision_mode(int *collision_mode) {
     if (!collision_mode) return -1;
 
     *collision_mode = tidymess->get_collision_mode();
@@ -786,7 +758,7 @@ int set_collision_mode(int collision_mode) {
     return 0;
 }
 
-int get_roche_mode(int* roche_mode) {
+int get_roche_mode(int *roche_mode) {
     if (!roche_mode) return -1;
 
     *roche_mode = tidymess->roche_mode;
@@ -797,7 +769,7 @@ int set_roche_mode(int roche_mode) {
     return 0;
 }
 
-int get_breakup_mode(int* breakup_mode) {
+int get_breakup_mode(int *breakup_mode) {
     if (!breakup_mode) return -1;
     *breakup_mode = breakup->mode;
     return 0;
@@ -808,7 +780,7 @@ int set_breakup_mode(int breakup_mode) {
     return 0;
 }
 
-int get_num_integration_step(int* num_integration_step) {
+int get_num_integration_step(int *num_integration_step) {
     if (!num_integration_step) return -1;
 
     *num_integration_step = tidymess->get_num_integration_step();
@@ -819,7 +791,7 @@ int get_num_integration_step(int* num_integration_step) {
  * Needed to compile the interface;
  * not implemented yet
  */
-int get_eps2(double* epsilon_squared) {
+int get_eps2(double *epsilon_squared) {
     if (!epsilon_squared) return -1;
     return 0;
 }
@@ -835,7 +807,7 @@ int set_eps2(double epsilon_squared) {
 /**
  * Get total energy
  */
-int get_total_energy(double* total_energy) {
+int get_total_energy(double *total_energy) {
     if (!total_energy) return -1;
     *total_energy = tidymess->get_energy();
     return 0;
@@ -844,7 +816,7 @@ int get_total_energy(double* total_energy) {
 /**
  * Get kinetic energy
  */
-int get_kinetic_energy(double* kinetic_energy) {
+int get_kinetic_energy(double *kinetic_energy) {
     if (!kinetic_energy) return -1;
     *kinetic_energy = tidymess->get_orbital_kinetic_energy();
     return 0;
@@ -853,7 +825,7 @@ int get_kinetic_energy(double* kinetic_energy) {
 /**
  * Get potential energy
  */
-int get_potential_energy(double* potential_energy) {
+int get_potential_energy(double *potential_energy) {
     if (!potential_energy) return -1;
     *potential_energy = tidymess->get_potential_energy();
     return 0;
@@ -862,7 +834,7 @@ int get_potential_energy(double* potential_energy) {
 /**
  * Get current Tidymess model time
  */
-int get_time(double* time) {
+int get_time(double *time) {
     if (!time) return -1;
     *time = tidymess->get_model_time();
     return 0;
@@ -871,7 +843,7 @@ int get_time(double* time) {
 /**
  * Get Tidymess simulation start time
  */
-int get_begin_time(double* time) {
+int get_begin_time(double *time) {
     if (!time) return -1;
     *time = begin_time;
     return 0;
@@ -889,7 +861,7 @@ int set_begin_time(double time) {
 /**
  * Get total mass of all particles in Tidymess
  */
-int get_total_mass(double* mass) {
+int get_total_mass(double *mass) {
     if (!mass) return -1;
 
     const std::vector<Body>& bodies = tidymess->bodies;
@@ -907,9 +879,9 @@ int get_total_mass(double* mass) {
  * Get position center of mass of all particles
  */
 int get_center_of_mass_position(
-    double* x,
-    double* y,
-    double* z
+    double *x,
+    double *y,
+    double *z
 ) {
     if (!x || !y || !z) {
         return -1;
@@ -926,9 +898,9 @@ int get_center_of_mass_position(
  * Get velocity center of mass of all particles
  */
 int get_center_of_mass_velocity(
-    double* vx,
-    double* vy,
-    double* vz
+    double *vx,
+    double *vy,
+    double *vz
 ) {
     if (!vx || !vy || !vz) {
         return -1;
@@ -947,7 +919,7 @@ int get_center_of_mass_velocity(
  * the center of mass of all particles that contains
  * every particle within Tidymess
  */
-int get_total_radius(double* radius) {
+int get_total_radius(double *radius) {
     if (!radius) return -1;
 
     const std::vector<Body>& bodies = tidymess->bodies;
@@ -977,7 +949,7 @@ int get_total_radius(double* radius) {
 /**
  * Get total number of particles within Tidymess
  */
-int get_number_of_particles(int* number_of_particles) {
+int get_number_of_particles(int *number_of_particles) {
     if (!number_of_particles) return -1;
 
     const std::vector<Body>& bodies = tidymess->bodies;
@@ -989,7 +961,7 @@ int get_number_of_particles(int* number_of_particles) {
 /**
  * Get the index of the first inside of Tidymess
  */
-int get_index_of_first_particle(int* index_of_the_particle) {
+int get_index_of_first_particle(int *index_of_the_particle) {
     if (!index_of_the_particle) return -1;
 
     const std::vector<Body>& bodies = tidymess->bodies;
@@ -1004,7 +976,7 @@ int get_index_of_first_particle(int* index_of_the_particle) {
  */
 int get_index_of_next_particle(
     int index_of_the_particle,
-    int* index_of_the_next_particle
+    int *index_of_the_next_particle
 ) {
     if (!index_of_the_next_particle) return -1;
 
@@ -1027,9 +999,9 @@ int convert_spin_vectors_to_inertial(
     double P,
     double obl,
     double psi,
-    double* wx,
-    double* wy,
-    double* wz
+    double *wx,
+    double *wy,
+    double *wz
 ) {
     if (!wx || !wy || !wz)
         return -1;
@@ -1065,9 +1037,9 @@ int convert_spin_vectors_to_inertial(
  */
 int get_acceleration(
     int index_of_the_particle,
-    double* ax,
-    double* ay,
-    double* az
+    double *ax,
+    double *ay,
+    double *az
 ) {
     if (!ax || !ay || !az) return -1;
     return 0;
@@ -1077,7 +1049,7 @@ int get_acceleration(
  * Needed to compile the interface;
  * not implemented yet
  */
-int get_potential(int index_of_the_particle, double* potential) {
+int get_potential(int index_of_the_particle, double *potential) {
     if (!potential) return -1;
     return 0;
 }
@@ -1087,11 +1059,11 @@ int get_potential(int index_of_the_particle, double* potential) {
  * not implemented yet
  */
 int get_potential_at_point(
-    double* eps,
-    double* x,
-    double* y,
-    double* z,
-    double* phi,
+    double *eps,
+    double *x,
+    double *y,
+    double *z,
+    double *phi,
     int npoints
 ) {
     return 0;
@@ -1102,13 +1074,9 @@ int get_potential_at_point(
  * not implemented yet
  */
 int get_gravity_at_point(
-    double* eps,
-    double* x,
-    double* y,
-    double* z,
-    double* ax,
-    double* ay,
-    double* az,
+    double *eps,
+    double *x, double *y, double *z,
+    double *ax, double *ay, double *az,
     int npoints
 ) {
     return 0;
