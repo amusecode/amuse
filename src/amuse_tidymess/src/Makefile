@@ -1,6 +1,8 @@
 CFLAGS   += -Wall -g
 CXXFLAGS += $(CFLAGS)
 
+RANLIB = ranlib
+
 CODELIB := libtidymess.a
 
 SRCDIR := tidymess/integrator/src
