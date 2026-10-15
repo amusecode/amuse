@@ -691,7 +691,7 @@ class Tidymess(GravitationalDynamics, GravityFieldCode):
                 1 / nbody_system.time,
                 1 / nbody_system.time,
                 1 / nbody_system.time,
-                handler.NO_UNIT,
+                nbody_system.time,
             ),
             (handler.INDEX, handler.ERROR_CODE)
         )
@@ -714,7 +714,7 @@ class Tidymess(GravitationalDynamics, GravityFieldCode):
                 1 / nbody_system.time,
                 1 / nbody_system.time,
                 1 / nbody_system.time,
-                handler.NO_UNIT,
+                nbody_system.time,
                 handler.ERROR_CODE,
             )
         )
@@ -737,7 +737,7 @@ class Tidymess(GravitationalDynamics, GravityFieldCode):
                 1 / nbody_system.time,
                 1 / nbody_system.time,
                 1 / nbody_system.time,
-                handler.NO_UNIT,
+                nbody_system.time,
             ),
             (handler.ERROR_CODE,)
         )
