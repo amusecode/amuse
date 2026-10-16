@@ -388,10 +388,10 @@ class TidymessInterface(
             Speed of light. Only used in conjunction with
             N-body units and `pn_order>0`, otherwise equal to c.
         """
-        returns (speed_of_light='d')
+        returns (speed_of_light='d' | nbody_system.speed)
 
     @remote_function
-    def set_speed_of_light(speed_of_light='d'):
+    def set_speed_of_light(speed_of_light='d' | nbody_system.speed):
         """
         Set Tidymess speed of light parameter.
 
@@ -874,7 +874,7 @@ class Tidymess(GravitationalDynamics, GravityFieldCode):
             'set_speed_of_light',
             'speed_of_light',
             'Speed of light. Should be set depending on unit system being used, or if using post newtonian.',
-            default_value=1e100,
+            default_value=1e100 | nbody_system.speed,
             is_vector=False,
             must_set_before_get=False,
         )
