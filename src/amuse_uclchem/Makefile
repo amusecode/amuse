@@ -8,24 +8,24 @@ support/config.mk:
 	cd support && ./configure
 
 # Downloading the code
-VERSION = 70fa3545c4f2a541c34c7c663bea8c1814fe7374
+VERSION = fe9058605a009bebdf6c4b6a107dbcfc57671c96
 
 uclchem.tar.gz:
 	$(DOWNLOAD) https://github.com/uclchem/UCLCHEM/archive/$(VERSION).tar.gz >$@
 
-src/UCLCHEM-$(VERSION): uclchem.tar.gz
+src/UCLCHEM: uclchem.tar.gz
 	tar xf $<
-	mv UCLCHEM-$(VERSION) src/
+	mv UCLCHEM-$(VERSION) src/UCLCHEM
 
 
 # UCLCHEM is a fortran code which is compiled to a Python API using np.f2py
 # For this reason, the UCLCHEM interface only interacts with the Python side
 .PHONY: install_uclchem
-install_uclchem: | src/UCLCHEM-$(VERSION)
+install_uclchem: | src/UCLCHEM
 ifneq ($(CONDA_PREFIX),)
 	conda install --yes --channel conda-forge --override-channels pandas numpy pyyaml charset-normalizer matplotlib seaborn scipy tqdm joblib
 endif
-	pip install src/UCLCHEM-$(VERSION)
+	pip install src/UCLCHEM
 
 
 uclchem_worker: interface.py install_uclchem
