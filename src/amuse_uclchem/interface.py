@@ -4,6 +4,7 @@ import uclchem
 from uclchem.model import (
     get_species_names as _get_species_names, AbstractModel
 )
+from uclchem.utils import SuccessFlag
 
 from amuse.community.interface.chem import (
     ChemNumberDensityTemperature,
@@ -174,8 +175,29 @@ class UclchemImplementation(object):
             )
             new_model = self.model_class(
                 param_dict=params,
-                starting_chemistry=starting_chem
+                starting_chemistry=starting_chem,
+                run_type='external',
+                on_error='ignore',
             )
+            new_model.run()
+            flag = new_model.success_flag
+            if flag is None:
+                msg = (
+                    f"UCLCHEM model for particle {particle.id} "
+                    'has no success_flag after run(). '
+                    'run() did not complete.'
+                )
+                raise RuntimeError(msg)
+            if flag != SuccessFlag.SUCCESS:
+                detail = flag.check_error(only_error=True, raise_on_error=False)
+                msg = (
+                    f"UCLCHEM failed for particle {particle.id}: "
+                    f"{flag.name} ({flag.value}). {detail} "
+                    f"Inputs: n={params['initialDens']:.3e} cm^-3, "
+                    f"T={params['initialTemp']:.2f} K, dt={dt:.3e} yr."
+                )
+                raise RuntimeError(msg)
+
             physics = new_model.physics_array
             particle.number_density = physics[-1, 0, 1]
             particle.temperature = physics[-1, 0, 2]
@@ -214,15 +236,16 @@ class UclchemImplementation(object):
             0 on success.
         """
         p = Particle()
+
         p.number_density = number_density
         p.temperature = temperature
         p.ionrate = ionrate
         p.radfield = radfield
+        p.id = self._get_new_id()
 
-        id = self._get_new_id()
-        index_of_the_particle.value = id
+        index_of_the_particle.value = p.id
         self.uclchem_particles.add_particle(p)
-        self._ids = np.append(self._ids, id)
+        self._ids = np.append(self._ids, p.id)
 
         return 0
 
