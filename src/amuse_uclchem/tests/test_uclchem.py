@@ -664,6 +664,65 @@ class TestUclchem(TestWithMPI):
         instance.cleanup_code()
         instance.stop()
 
+    def test_state_leak(self):
+        """Test that the previous state does not leak into the next."""
+        p = Particles(3)
+        p[0].number_density = 10 | u.cm**-3
+        p[0].temperature = 300 | u.K
+        p[0].ionrate = 1.3e-17 | u.s**-1
+        p[0].radfield = 1 | u.habing
+        p[1].number_density = 1e4 | u.cm**-3
+        p[1].temperature = 50 | u.K
+        p[1].ionrate = 1.3e-17 | u.s**-1
+        p[1].radfield = 1 | u.habing
+        p[2].number_density = 10 | u.cm**-3
+        p[2].temperature = 300 | u.K
+        p[2].ionrate = 1.3e-17 | u.s**-1
+        p[2].radfield = 1 | u.habing
+
+        instance = self.new_instance_of_an_optional_code(Uclchem)
+        assert instance is not None
+
+        instance.particles.add_particles(p)
+        instance.commit_particles()
+        instance.evolve_model(10 | u.yr)
+
+        abundances = instance.particles.abundances
+        particles = instance.particles
+        assert abundances.shape == (3, len(instance.species))
+
+        self.assertAlmostRelativeEquals(abundances[0,:], abundances[2,:])
+        assert not np.array_equal(abundances[0, :], abundances[1, :])
+
+        self.assertAlmostEquals(particles[0].number_density, particles[2].number_density)
+        self.assertAlmostEquals(particles[0].temperature, particles[2].temperature)
+        self.assertAlmostEquals(particles[0].ionrate, particles[2].ionrate)
+        self.assertAlmostEquals(particles[0].radfield, particles[2].radfield)
+
+        instance.cleanup_code()
+        instance.stop()
+
+    def test_starting_abundances(self):
+        """Test that starting abundances are correctly set after each timestep."""
+        instance = self.new_instance_of_an_optional_code(Uclchem)
+        assert instance is not None
+
+        p = self.generate_two_particles()
+        instance.particles.add_particles(p)
+        instance.commit_particles
+
+        instance.evolve_model(10 | u.yr)
+        abundances_t1 = instance.particles.abundances
+
+        instance.evolve_model(20 | u.yr)
+        abundances_t2 = instance.particles.abundances
+
+        assert not np.array_equal(abundances_t1[0,:], abundances_t2[0,:])
+        assert not np.array_equal(abundances_t1[1,:], abundances_t2[1,:])
+
+        instance.cleanup_code()
+        instance.stop()
+
     def _cloud_abundances(self) -> NDArray:
         """Expected abundances for `test_evolve_abundances`."""
         return np.array([
