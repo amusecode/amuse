@@ -165,20 +165,29 @@ class UclchemImplementation(object):
             return -1
 
         for particle in self.uclchem_particles:
-            params = self._particle_to_dict(particle)
+            params = {**self.param_dict, **self._particle_to_dict(particle)}
             params['finalTime'] = dt
-            params.update(self.param_dict)
 
             starting_chem = (
                 particle.abundances[np.newaxis, :] if
                 np.any(particle.abundances) else None
             )
+            # run_type='external' runs Fortran in-process.
+            # 'managed' spawns a new process per call with greater overhead,
+            # which dominates when evolve_model is called every dt.
             new_model = self.model_class(
                 param_dict=params,
                 starting_chemistry=starting_chem,
                 run_type='external',
                 on_error='ignore',
             )
+            # hack to fix bug in Uclchem external mode
+            if starting_chem is not None:
+                object.__setattr__(
+                    new_model,
+                    'starting_chemistry_array',
+                    new_model.starting_chemistry_array,
+                )
             new_model.run()
             flag = new_model.success_flag
             if flag is None:
