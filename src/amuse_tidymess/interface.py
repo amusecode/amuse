@@ -14,7 +14,8 @@ from amuse.rfi.core import (
     remote_function
 )
 from amuse.support.literature import LiteratureReferencesMixIn
-from amuse.units import nbody_system, units as u
+from amuse.units import constants, nbody_system, units as u
+
 
 particle_attributes = [
     'mass',
@@ -658,6 +659,8 @@ class Tidymess(GravitationalDynamics, GravityFieldCode):
             **options
         )
 
+        if convert_nbody is not None:
+            self.parameters.speed_of_light = constants.c
 
     def define_state(self, handler):
         GravitationalDynamics.define_state(self, handler)
