@@ -4,7 +4,7 @@ from amuse.datamodel import Particles
 from amuse.ext.orbital_elements import generate_binaries
 from amuse.support.testing.amusetest import TestWithMPI
 from amuse_tidymess.interface import Tidymess, TidymessInterface
-from amuse.units import nbody_system, units as u
+from amuse.units import constants, nbody_system, units as u
 
 
 class TestTidymessInterface(TestWithMPI):
@@ -420,10 +420,12 @@ class TestTidymess(TestWithMPI):
         instance.parameters.magnetic_braking = 1
         self.assertEquals(instance.parameters.magnetic_braking, 1)
 
-        self.assertEquals(instance.parameters.speed_of_light, 1e100)
-        instance.parameters.speed_of_light = 2e100
-        self.assertEquals(instance.parameters.speed_of_light, 2e100)
-
+        self.assertEquals(instance.parameters.speed_of_light, constants.c)
+        instance.parameters.speed_of_light = 2e100 | u.m/u.s
+        self.assertAlmostRelativeEquals(
+            instance.parameters.speed_of_light.as_quantity_in(u.m / u.s),
+            2e100 | u.m/u.s,
+        )
         self.assertEquals(instance.parameters.dt_mode, 1)
         instance.parameters.dt_mode = 2
         self.assertEquals(instance.parameters.dt_mode, 2)
@@ -466,7 +468,10 @@ class TestTidymess(TestWithMPI):
         self.assertEquals(instance.parameters.tidal_model, 4)
         self.assertEquals(instance.parameters.pn_order, 1)
         self.assertEquals(instance.parameters.magnetic_braking, 1)
-        self.assertEquals(instance.parameters.speed_of_light, 2e100)
+        self.assertAlmostRelativeEquals(
+            instance.parameters.speed_of_light.as_quantity_in(u.m / u.s),
+            2e100 | u.m/u.s,
+        )
         self.assertEquals(instance.parameters.dt_mode, 2)
         self.assertAlmostEquals(instance.parameters.dt_const, 0.025625 | u.s, 3)
         self.assertEquals(instance.parameters.eta, 0.0726)
