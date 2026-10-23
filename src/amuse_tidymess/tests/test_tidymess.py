@@ -92,6 +92,10 @@ class TestTidymessInterface(TestWithMPI):
         self.assertEquals(result['wy'], 13.5)
         self.assertEquals(result['wz'], 14.5)
 
+        instance.set_amb(0, 16)
+        result = instance.get_amb(0)
+        self.assertEquals(result['a_mb'], 16)
+
         instance.set_tidal_model(3)
         result = instance.get_tidal_model()
         self.assertEquals(result['tidal_model'], 3)
