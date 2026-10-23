@@ -41,7 +41,7 @@ jobs:
 
     - name: Install dependencies
       run: |
-        conda install c-compiler cxx-compiler fortran-compiler 'gfortran<14' python-gil pkgconfig coreutils patch curl tar unzip gzip bzip2 xz perl bison make cmake 'openmpi<5' gsl fftw gmp mpfr hdf5 netcdf4 libopenblas liblapack zlib pip wheel 'docutils>=0.6' 'mpi4py>=1.1.0' 'numpy>=1.2.2' 'h5py>=1.1.0' pytest
+        conda install python=3.13 c-compiler cxx-compiler fortran-compiler 'gfortran<14' python-gil pkgconfig coreutils patch curl tar unzip gzip bzip2 xz perl bison make cmake 'openmpi<5' gsl fftw gmp mpfr hdf5 netcdf4 libopenblas liblapack zlib pip wheel 'docutils>=0.6' 'mpi4py>=1.1.0' 'numpy>=1.2.2' 'h5py>=1.1.0' pytest
 
     - name: Configure OpenMPI
       if: ${{ matrix.os == 'ubuntu-latest' }}
