@@ -720,6 +720,10 @@ class TestUclchem(TestWithMPI):
         assert not np.array_equal(abundances_t1[0,:], abundances_t2[0,:])
         assert not np.array_equal(abundances_t1[1,:], abundances_t2[1,:])
 
+        # 1e-30 is the default starting abundances in Uclchem
+        assert not np.all(abundances_t2[0, :] == 1e-30)
+        assert not np.all(abundances_t2[0, :] == abundances_t2.flat[0])
+
         instance.cleanup_code()
         instance.stop()
 
