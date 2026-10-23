@@ -886,6 +886,76 @@ class UclchemImplementation(object):
         )
         return 0
 
+    def get_freefall(self, freefall) -> int:
+        """
+        Retrieve the freefall flag value. Enables freefall collapse.
+
+        Parameters
+        ----------
+        chem_model : amuse.rfi.python_code.ValueHolder[bool]
+            Mutable container used to return the current
+            freefall flag value.
+
+        Returns
+        -------
+        int :
+            0 on success.
+        """
+        freefall.value = self.param_dict.get('freefall', False)
+        return 0
+
+    def set_freefall(self, freefall) -> int:
+        """
+        Set the freefall flag value. Enables freefall collapse.
+
+        Parameters
+        ----------
+        chem_model : bool
+            Freefall flag value.
+
+        Returns
+        -------
+        int :
+            0 on success.
+        """
+        self.param_dict['freefall'] = bool(freefall)
+        return 0
+
+    def get_heating(self, heating) -> int:
+        """
+        Retrieve the heating flag value. Enables chemical heating.
+
+        Parameters
+        ----------
+        chem_model : amuse.rfi.python_code.ValueHolder[bool]
+            Mutable container used to return the current
+            heating flag value.
+
+        Returns
+        -------
+        int :
+            0 on success.
+        """
+        heating.value = self.param_dict.get('heatingFlag', False)
+        return 0
+
+    def set_heating(self, heating) -> int:
+        """
+        Set the heating flag value. Enables chemical heating.
+
+        Parameters
+        ----------
+        chem_model : bool
+           Heating flag value.
+
+        Returns
+        -------
+        int :
+            0 on success.
+        """
+        self.param_dict['heatingFlag'] = bool(heating)
+        return 0
+
     def _validate_chemical_model(self, model: type[AbstractModel] | None) -> type[AbstractModel]:
         """
         Validate chemical model class.
@@ -1049,6 +1119,22 @@ class UclchemInterface(
     def set_chemical_model(chem_model='s'):
         returns ()
 
+    @remote_function
+    def get_freefall():
+        returns (freefall='b')
+
+    @remote_function
+    def set_freefall(freefall='b'):
+        returns ()
+
+    @remote_function
+    def get_heating():
+        returns (heating='b')
+
+    @remote_function
+    def set_heating(heating='b'):
+        returns ()
+
 
 class Uclchem(ChemicalEvolution, ChemNumberDensityTemperature):
     """Uclchem is a gas-grain chemical code for astrochemical modelling."""
@@ -1110,8 +1196,21 @@ class Uclchem(ChemicalEvolution, ChemNumberDensityTemperature):
             "'cloud', 'collapse', 'cshock', 'jshock', 'prestellarcore'",
             default_value='cloud'
         )
-        handler.add_interface_parameter(
-            'out_species', 'Array of molecules to use', default_value=['H', 'H2']
+
+        handler.add_method_parameter(
+            'get_freefall',
+            'set_freefall',
+            'freefall',
+            'Enable freefall collapse',
+            default_value=False
+        )
+
+        handler.add_method_parameter(
+            'get_heating',
+            'set_heating',
+            'heating',
+            'Enable heating',
+            default_value=False
         )
 
     def define_particle_sets(self, handler):
