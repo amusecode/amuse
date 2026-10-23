@@ -4,7 +4,7 @@ on:
   push:
     paths:
       - .github/workflows/test-kromesph.yml
-      - 'src/amuse_krome/**'
+      - 'src/amuse_kromesph/**'
   pull_request:
     paths:
       - .github/workflows/test-kromesph.yml
