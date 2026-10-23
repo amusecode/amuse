@@ -304,6 +304,37 @@ class TidymessInterface(
         """
         returns ()
 
+    @remote_function(can_handle_array=True)
+    def get_amb(index_of_the_particle='i'):
+        """
+        Retrieve the magnetic braking coefficient of a particle.
+
+        Parameters
+        ----------
+        index_of_the_particle : int
+            Particle index as returned by `new_particle`.
+
+        Returns
+        -------
+        a_mb : float
+            Magnetic braking coefficient of the particle.
+        """
+        returns (a_mb='d')
+
+    @remote_function(can_handle_array=True)
+    def set_amb(index_of_the_particle='i', a_mb='d'):
+        """
+        Set the magnetic braking coefficient of a particle.
+
+        Parameters
+        ----------
+        index_of_the_particle : int
+            Particle index as returned by `new_particle`.
+        a_mb : float
+            Magnetic braking coefficient of the particle.
+        """
+        returns ()
+
     @remote_function
     def get_tidal_model():
         """
