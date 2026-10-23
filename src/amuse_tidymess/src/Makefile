@@ -27,4 +27,3 @@ $(CODELIB): $(CODEOBJS)
 
 %.o: $(SRCDIR)/%.cpp
 	$(CXX) $(CXXFLAGS) -c -o $@ -I$(INCDIR) $<
-

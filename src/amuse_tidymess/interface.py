@@ -804,6 +804,18 @@ class Tidymess(GravitationalDynamics, GravityFieldCode):
         )
 
         handler.add_method(
+            'get_amb',
+            (handler.INDEX,),
+            (nbody_system.time, handler.ERROR_CODE,)
+        )
+
+        handler.add_method(
+            'set_amb',
+            (handler.INDEX, nbody_system.time),
+            (handler.ERROR_CODE,)
+        )
+
+        handler.add_method(
             'get_num_integration_step',
             (),
             (handler.INDEX, handler.ERROR_CODE)

@@ -559,6 +559,32 @@ int set_spin(
     return 0;
 }
 
+/**
+ * Get magnetic braking coefficient of a particle
+ */
+int get_amb(int index_of_the_particle, double *a_mb) {
+    if (!a_mb) return -1;
+
+    int i = get_body_index_by_id(index_of_the_particle);
+    if (i < 0) return -1;
+
+    const Body& body = tidymess->bodies[i];
+    *a_mb = body.a_mb;
+    return 0;
+}
+
+/**
+ * Set magnetic braking coefficient of a particle
+ */
+int set_amb(int index_of_the_particle, double a_mb) {
+    int i = get_body_index_by_id(index_of_the_particle);
+    if (i < 0) return -1;
+
+    Body& body = tidymess->bodies[i];
+    body.a_mb = a_mb;
+    return 0;
+}
+
 // PARAMETER GETTERS AND SETTERS
 // -----------------------------
 
