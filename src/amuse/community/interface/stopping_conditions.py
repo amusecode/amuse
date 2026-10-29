@@ -562,6 +562,14 @@ class StoppingConditions:
                 "when two a star goes supernova"
             )
         )
+        self.centrifugal_breakup_detection = StoppingCondition(
+            self,
+            10,
+            (
+                "If enabled, the code will stop when a body is "
+                "spinning beyond the breakup speed"
+            )
+        )
 
     def all_conditions(self):
         for name in dir(self):

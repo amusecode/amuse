@@ -634,7 +634,7 @@ class LegacyFunctionSpecification(object):
     """Used to specify that a parameter is used as an output parameter, passed by reference"""
 
     INOUT = object()
-    """Used to specify that a parameter is used as an input and an outpur parameter, passed by reference"""
+    """Used to specify that a parameter is used as an input and an output parameter, passed by reference"""
 
     LENGTH = object()
     """Used to specify that a parameter is used as the length parameter for the other parameters"""
