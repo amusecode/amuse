@@ -8,7 +8,7 @@ support/config.mk:
 	cd support && ./configure
 
 # Downloading the code
-VERSION = fe9058605a009bebdf6c4b6a107dbcfc57671c96
+VERSION = 54e445efa2f30cd96e53de8b3cddd37591262392
 
 uclchem.tar.gz:
 	$(DOWNLOAD) https://github.com/uclchem/UCLCHEM/archive/$(VERSION).tar.gz >$@
