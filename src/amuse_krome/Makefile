@@ -9,15 +9,14 @@ support/config.mk:
 
 
 # Downloading the code
-VERSION = 6a762de58a763026e708521ca2b4d68f9a90f669
-SHORT_VERSION = $(shell echo $(VERSION) | cut -c 1-12)
+VERSION = 8d545530e239b2cceb51c1eafed1e9a8561f8f5f
 
 krome.tar.gz:
-	$(DOWNLOAD) https://bitbucket.org/tgrassi/krome/get/$(VERSION).tar.gz >$@
+	$(DOWNLOAD) https://github.com/tgrassi/krome/archive/$(VERSION).tar.gz >$@
 
 src/krome: krome.tar.gz
 	tar xf $<
-	mv tgrassi-krome-$(SHORT_VERSION) src/krome
+	mv krome-$(VERSION) src/krome
 
 
 # Building the code into a static library

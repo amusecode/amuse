@@ -81,6 +81,9 @@ cm = named("centimeter", "cm", 0.01 * m)
 erg = named("erg", "erg", 1e-7 * J)
 barye = named("barye", "Ba", 0.1 * Pa)
 
+# radiation field
+habing = named("habing", "hab", 1.6e-3 * erg * cm**-2 * s**-1)
+
 # imperial distance units
 inch = named("inch", "in", 0.0254 * m)
 foot = named("foot", "ft", 0.3048 * m)

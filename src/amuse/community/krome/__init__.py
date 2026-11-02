@@ -1,1 +1,1 @@
-from .interface import Krome
+from amuse.community.krome.interface import Krome
