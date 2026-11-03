@@ -6,7 +6,7 @@ endif
 support/config.mk:
 	cd support && ./configure
 
-src/tsunami-master: | tsunami-master.tar.gz
+src/tsunami-master: tsunami-master.tar.gz
 	tar xf $<
 	mv tsunami-master src/
 
