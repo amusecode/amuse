@@ -16,4 +16,4 @@ Tutorials
    legacy_code
    plot
    grid_boundary
-
+   adding_example_code_tidymess
