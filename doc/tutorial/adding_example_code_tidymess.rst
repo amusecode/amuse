@@ -29,9 +29,11 @@ Please ensure that amuse is set up correctly, this can be verified by running th
 
     > amusifier --help
 
+
 Naming our project
 ~~~~~~~~~~~~~~~~~~
 PEP-8 naming conventions for classes follows PascalCase, so we will name our project ``Tidymess``.
+
 
 Creating the initial directory structure
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -52,10 +54,12 @@ Having run the ``amusifier``, we now have our new directory in ``amuse/src/amuse
 There should be all the required folders for building our interface, as well as a few code
 stubs to expand upon.
 
+
 Building the code
 =================
 Before we start working on the interface, we should try to install and compile TIDYMESS
 inside of ``AMUSE``.
+
 
 Defining dependencies
 ~~~~~~~~~~~~~~~~~~~~~
@@ -113,6 +117,7 @@ To test that we did everything properly, we can run ``./setup`` from the top-lev
 We can see that the AMUSE framework is correctly installed, indicated by the ``i)`` symbol. We can
 also see our package ``amuse-tidymess`` is listed meaning the AMUSE build system now knows of our project
 and we are ready to move on!
+
 
 Setting up Autoconf
 ~~~~~~~~~~~~~~~~~~~
@@ -187,6 +192,7 @@ for us in ``src/amuse_tidymess/``, which has most of the code we will need for t
 has several responsibilities: downloading and patching the community code source, compiling it into a static library,
 and linking that library with the auto-generated worker stub to produce the ``tidymess_worker``.
 
+
 Downloading and patching the source
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 AMUSE does not bundle community code sources. The ``Makefile`` downloads a
@@ -217,6 +223,7 @@ If for some reason the source code needs to be modified, the ``Makefile`` allows
 include ``.patch`` files to override the source code. Tidymess needs no patches, so we can
 safely skip this step.
 
+
 Selecting compiler flags
 ~~~~~~~~~~~~~~~~~~~~~~~~
 The generated ``Makefile`` adds the flags and libraries of every dependency
@@ -241,6 +248,7 @@ values come from ``config.mk``, which ``./configure`` generates. Edits:
 
     LDLIBS += -lm $(STOPCOND_LIBS)
 
+
 Building the static library
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -262,6 +270,7 @@ Building the static library
   this means we will only redownload the source code if it is missing. This is very important
   as otherwise any local edits would be overwritten when compiling!
 - ``-j $(CPU_COUNT)``: compile in parallel.
+
 
 The inner Makefile
 ~~~~~~~~~~~~~~~~~~
@@ -306,6 +315,7 @@ and ``INCDIR`` is passed to the compiler with ``-I`` so that ``#include``
 directives resolve. Both are relative to the inner ``Makefile`` and must be
 adapted to the layout of the community code.
 
+
 Building the worker
 ~~~~~~~~~~~~~~~~~~~
 The worker is the executable AMUSE spawns to communicate with the community
@@ -319,9 +329,6 @@ code. Building it takes three steps.
    Its ``-I`` flag must point to the code's headers. It depends on
    ``| src/tidymess`` so that the headers exist before compilation.
 3. Link. ``tidymess_worker`` combines both objects with ``$(CODELIB)``.
-
-Package targets
-~~~~~~~~~~~~~~~
 
 .. code-block:: make
 
@@ -341,11 +348,11 @@ Package targets
     interface.o: interface.cc tidymess_worker.h | src/tidymess
     	$(MPICXX) -o $@ -c -I src/tidymess/integrator/include $(CXXFLAGS) $<
 
-- ``amuse-tidymess_contains``: lists the workers the package ships. Add one worker per
-    line for multi-worker packages. It guarantees the workers are built before ``pip`` installs the package.
 
-The final bits of code at the end of the Makefile are for building and installing the package, as well
-as defining how to uninstall and cleanup the package.
+Package targets
+~~~~~~~~~~~~~~~
+The worker is the executable AMUSE spawns to communicate with the community
+code.
 
 .. code-block:: make
 
@@ -378,21 +385,26 @@ as defining how to uninstall and cleanup the package.
 	rm -f support/config.mk support/config.log support/config.status
 	rm -rf support/autom4te.cache
 
+- ``amuse-tidymess_contains``: lists the workers the package ships. For multi-worker packages, list each worker here.
+  It guarantees the workers are built before ``pip`` installs the package.
+- ``install`` and ``develop`` rules allow for both regular and develop install of the package. A develop install
+  means you do not need to recompile the code if any Python changes are made to either AMUSE or our interface.
+
 
 Creating the Interfaces
 =======================
-With ``TIDYMESS`` compiled into ``AMUSE``, we can now begin the process of creating our interface!
-The interface system allows community codes, which are all unique and depend on diverse libraries and
-programming languages, to communicate with the ``AMUSE`` framework, which is native Python. ``AMUSE``
-interfaces define a number of interface functions, which provide a standardized way for ``AMUSE`` to
-communicate with each community code. This way, the experience of using any ``AMUSE`` code is identical:
-all codes can be evolved with the ``evolve_model`` method, particles are represented as
-``amuse.datamodel.particles``, etc... The strength of ``AMUSE`` lies in its ability to prototype quickly:
-If the user wants to see what solution a different code would give for the same calculation, all they have
-to do is switch which code they are using, and the script most likely does not need to change.
+With TIDYMESS compiled into AMUSE, we can begin creating the interface. An AMUSE community code is accessed
+through two interfaces: a Python interface and a native interface. The user only calls the Python interface
+(i.e. ``tidymess.evolve_model``). AMUSE handles this call and translates it into a call to the native interface.
+The native interface is written in the language of the community code (here C++) and either calls the code or
+accesses its data.
 
-Therefore, our job when creating an interface is to map the community code functions to the ``AMUSE`` interface
-functions. The amusifier already created all the files we need: the ``interface.py`` and the ``interface.cc``.
+The first step is writing the Python interface. Community codes are all unique and depend on diverse libraries
+and programming languages. To make them interchangeable, AMUSE defines standard interfaces: sets of interface
+functions that each code is mapped onto. Consequently, using any AMUSE code is standardized.
+
+Our job is therefore to map the TIDYMESS functions onto the AMUSE interface functions. The amusifier already
+generated the required files: ``interface.py`` (Python interface) and ``interface.cc`` (native interface).
 
 
 Defining the Python interface
@@ -408,13 +420,15 @@ The process of defining our interface starts with figuring out what type of code
 +-----------------------------------+-------------------------------------------+
 | Interface:                        | Example codes:                            |
 +-----------------------------------+-------------------------------------------+
-| ``GravitationDynamicsInterface``  | N-body: Tidymess, Ph4, Huayno             |
+| ``GravitationDynamicsInterface``  | N-body: Tidymess, Ph4, Huayno, Fi         |
 +-----------------------------------+-------------------------------------------+
-| ``HydrodynamicsInterface``        | Hydrodynamical: Capreole                  |
+| ``HydrodynamicsInterface``        | Hydro: Capreole                           |
 +-----------------------------------+-------------------------------------------+
-| ``MagnetoHydrodynamicsInterface`` | MHD: Athena                               |
+| ``MagnetoHydrodynamicsInterface`` | Magneto Hydro: Athena                     |
 +-----------------------------------+-------------------------------------------+
 | ``StellarEvolutionInterface``     | Stellar: MESA, EVtwin, SeBa               |
++-----------------------------------+-------------------------------------------+
+| ``ChemicalEvolutionInterface``    | Chemistry: Krome, Uclchem, KromeSph       |
 +-----------------------------------+-------------------------------------------+
 
 These interfaces define many
