@@ -116,7 +116,7 @@ class ph4Interface(CodeInterface,
         if mode == self.MODE_CPU:
             return 'ph4_worker'
         elif mode == self.MODE_GPU:
-            return 'ph4_sapporo_worker'
+            return 'ph4_sapporo2_worker'
         else:
             return 'ph4_worker'
         

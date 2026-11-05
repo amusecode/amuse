@@ -76,6 +76,10 @@ detect_installed_packages() {
         # with a dash because is_installed converts before searching
         INSTALLED_PACKAGES="${INSTALLED_PACKAGES} sapporo-light"
     fi
+
+    if is_subset "sapporo2" "${FEATURES}" ; then
+        INSTALLED_PACKAGES="${INSTALLED_PACKAGES} sapporo2"
+    fi
 }
 
 
@@ -156,6 +160,32 @@ check_build_sapporo_light() {
 }
 
 
+# Determine if we have the required features to build Sapporo2
+#
+# This uses the following variables:
+#
+# FEATURES - from configure
+#
+# This sets the following variables:
+#
+# ENABLED_PACKAGES - adds sapporo2 if all requirements are met
+# ENABLED_PACKAGES_TEXT - adds sapporo2 if all requirements are met
+# DISABLED_PACKAGES - adds sapporo2 if features are missing
+# DISABLED_PACKAGES_TEXT - adds sapporo2 if features are missing
+#
+check_build_sapporo2() {
+    missing_features=$(filter_out "${FEATURES}" "c c++ install cuda")
+    if [ "a${missing_features}" = "a" ] ; then
+        installed="$(is_installed sapporo2)"
+        ENABLED_PACKAGES="${ENABLED_PACKAGES}sapporo2 "
+        ENABLED_PACKAGES_TEXT="${ENABLED_PACKAGES_TEXT}${installed}sapporo2\n"
+    else
+        DISABLED_PACKAGES="${DISABLED_PACKAGES}sapporo2 "
+        DISABLED_PACKAGES_TEXT="${DISABLED_PACKAGES_TEXT}sapporo2 (missing features:${COLOR_RED}${missing_features}${COLOR_END})\n"
+    fi
+}
+
+
 # Check which packages can be built with the available dependencies
 #
 # This uses the following variables:
@@ -171,6 +201,7 @@ check_build_sapporo_light() {
 # DISABLED_PACKAGES_TEXT - adds packages for which features are missing
 # BROKEN_PACKAGES - adds packages that are broken (issue_x dependency)
 # NEEDS_SAPPORO_LIGHT - adds packages that need sapporo_light
+# NEEDS_SAPPORO2 - adds packages that need sapporo2
 #
 find_packages() {
     for code in src/amuse_* ; do
@@ -187,6 +218,10 @@ find_packages() {
 
             if is_subset "sapporo_light" "${deps}" ; then
                 NEEDS_SAPPORO_LIGHT="${NEEDS_SAPPORO_LIGHT} ${package}"
+            fi
+
+            if is_subset "sapporo2" "${deps}" ; then
+                NEEDS_SAPPORO2="${NEEDS_SAPPORO2} ${package}"
             fi
 
             EXTANT_PACKAGES="${EXTANT_PACKAGES} ${package}"
@@ -209,8 +244,8 @@ find_packages() {
 # Analyse the environment and set variables
 #
 # This checks if we have an environment and if pip and wheel are available, detects
-# installed packages, checks whether we can build the framework and sapporo_light and
-# then finds which other packages can be installed.
+# installed packages, checks whether we can build the framework, sapporo_light and
+# sapporo2, and then finds which other packages can be installed.
 #
 # This uses the following variables:
 #
@@ -241,6 +276,7 @@ analyse_environment() {
     check_mixed_conda_packages
     check_build_framework
     check_build_sapporo_light
+    check_build_sapporo2
     find_packages
 }
 

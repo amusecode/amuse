@@ -47,6 +47,10 @@ Builds and installs only the framework into the active environment.
 
 Builds and installs the Sapporo light GPU nbody library into the active environment.
 
+    ./setup install sapporo2
+
+Builds and installs the Sapporo2 GPU nbody library into the active environment.
+
     ./setup install ${ITALIC}package1 package2...${END_ITALIC}
 
 Builds and installs specific package(s) into the active environment. Any number of

@@ -622,9 +622,9 @@ MPILIBS
 MPI_CLIBS
 MPI_CFLAGS
 MPICC
-FOUND_SAPPORO_LIGHT
-SAPPORO_LIGHT_LIBS
-SAPPORO_LIGHT_CFLAGS
+FOUND_SAPPORO2
+SAPPORO2_LIBS
+SAPPORO2_CFLAGS
 FOUND_STOPCOND
 STOPCOND_LIBS
 STOPCOND_CFLAGS
@@ -718,8 +718,8 @@ PKG_CONFIG_PATH
 PKG_CONFIG_LIBDIR
 STOPCOND_CFLAGS
 STOPCOND_LIBS
-SAPPORO_LIGHT_CFLAGS
-SAPPORO_LIGHT_LIBS
+SAPPORO2_CFLAGS
+SAPPORO2_LIBS
 MPICC
 MPICXX'
 
@@ -1360,10 +1360,10 @@ Some influential environment variables:
               C compiler flags for STOPCOND, overriding pkg-config
   STOPCOND_LIBS
               linker flags for STOPCOND, overriding pkg-config
-  SAPPORO_LIGHT_CFLAGS
-              C compiler flags for SAPPORO_LIGHT, overriding pkg-config
-  SAPPORO_LIGHT_LIBS
-              linker flags for SAPPORO_LIGHT, overriding pkg-config
+  SAPPORO2_CFLAGS
+              C compiler flags for SAPPORO2, overriding pkg-config
+  SAPPORO2_LIBS
+              linker flags for SAPPORO2, overriding pkg-config
   MPICC       MPI C compiler command
   MPICXX      MPI C++ compiler command
 
@@ -5052,8 +5052,8 @@ fi
 
 
     amuse_save_LIBS="$LIBS"
-    amuse_save_LIB_CFLAGS="$SAPPORO_LIGHT_CFLAGS"
-    amuse_save_LIB_LIBS="$SAPPORO_LIGHT_LIBS"
+    amuse_save_LIB_CFLAGS="$SAPPORO2_CFLAGS"
+    amuse_save_LIB_LIBS="$SAPPORO2_LIBS"
     amuse_save_PKG_CONFIG_PATH="$PKG_CONFIG_PATH"
 
     # If we have an active virtualenv, make sure pkg-config searches it
@@ -5071,9 +5071,9 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 
     # Search for the library, first directly then fall back to pkg-config
-    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for library containing get_device_count" >&5
-printf %s "checking for library containing get_device_count... " >&6; }
-if test ${ac_cv_search_get_device_count+y}
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for library containing numberOfGPUUsedBySapporo" >&5
+printf %s "checking for library containing numberOfGPUUsedBySapporo... " >&6; }
+if test ${ac_cv_search_numberOfGPUUsedBySapporo+y}
 then :
   printf %s "(cached) " >&6
 else $as_nop
@@ -5084,16 +5084,16 @@ cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* Override any GCC internal prototype to avoid an error.
    Use char because int might match the return type of a GCC
    builtin and then its argument prototype would still apply.  */
-char get_device_count ();
+char numberOfGPUUsedBySapporo ();
 int
 main (void)
 {
-return get_device_count ();
+return numberOfGPUUsedBySapporo ();
   ;
   return 0;
 }
 _ACEOF
-for ac_lib in '' sapporo
+for ac_lib in '' sapporo2
 do
   if test -z "$ac_lib"; then
     ac_res="none required"
@@ -5103,52 +5103,52 @@ do
   fi
   if ac_fn_c_try_link "$LINENO"
 then :
-  ac_cv_search_get_device_count=$ac_res
+  ac_cv_search_numberOfGPUUsedBySapporo=$ac_res
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.beam \
     conftest$ac_exeext
-  if test ${ac_cv_search_get_device_count+y}
+  if test ${ac_cv_search_numberOfGPUUsedBySapporo+y}
 then :
   break
 fi
 done
-if test ${ac_cv_search_get_device_count+y}
+if test ${ac_cv_search_numberOfGPUUsedBySapporo+y}
 then :
 
 else $as_nop
-  ac_cv_search_get_device_count=no
+  ac_cv_search_numberOfGPUUsedBySapporo=no
 fi
 rm conftest.$ac_ext
 LIBS=$ac_func_search_save_LIBS
 fi
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_cv_search_get_device_count" >&5
-printf "%s\n" "$ac_cv_search_get_device_count" >&6; }
-ac_res=$ac_cv_search_get_device_count
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_cv_search_numberOfGPUUsedBySapporo" >&5
+printf "%s\n" "$ac_cv_search_numberOfGPUUsedBySapporo" >&6; }
+ac_res=$ac_cv_search_numberOfGPUUsedBySapporo
 if test "$ac_res" != no
 then :
   test "$ac_res" = "none required" || LIBS="$ac_res $LIBS"
 
-        FOUND_SAPPORO_LIGHT="yes"
-        SAPPORO_LIGHT_LIBS="$LIBS"
-        SAPPORO_LIGHT_CFLAGS=""
+        FOUND_SAPPORO2="yes"
+        SAPPORO2_LIBS="$LIBS"
+        SAPPORO2_CFLAGS=""
 
 else $as_nop
 
 
 pkg_failed=no
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for SAPPORO_LIGHT" >&5
-printf %s "checking for SAPPORO_LIGHT... " >&6; }
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for SAPPORO2" >&5
+printf %s "checking for SAPPORO2... " >&6; }
 
-if test -n "$SAPPORO_LIGHT_CFLAGS"; then
-    pkg_cv_SAPPORO_LIGHT_CFLAGS="$SAPPORO_LIGHT_CFLAGS"
+if test -n "$SAPPORO2_CFLAGS"; then
+    pkg_cv_SAPPORO2_CFLAGS="$SAPPORO2_CFLAGS"
  elif test -n "$PKG_CONFIG"; then
     if test -n "$PKG_CONFIG" && \
-    { { printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"sapporo_light\""; } >&5
-  ($PKG_CONFIG --exists --print-errors "sapporo_light") 2>&5
+    { { printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"sapporo2\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "sapporo2") 2>&5
   ac_status=$?
   printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }; then
-  pkg_cv_SAPPORO_LIGHT_CFLAGS=`$PKG_CONFIG --cflags "sapporo_light" 2>/dev/null`
+  pkg_cv_SAPPORO2_CFLAGS=`$PKG_CONFIG --cflags "sapporo2" 2>/dev/null`
 		      test "x$?" != "x0" && pkg_failed=yes
 else
   pkg_failed=yes
@@ -5156,16 +5156,16 @@ fi
  else
     pkg_failed=untried
 fi
-if test -n "$SAPPORO_LIGHT_LIBS"; then
-    pkg_cv_SAPPORO_LIGHT_LIBS="$SAPPORO_LIGHT_LIBS"
+if test -n "$SAPPORO2_LIBS"; then
+    pkg_cv_SAPPORO2_LIBS="$SAPPORO2_LIBS"
  elif test -n "$PKG_CONFIG"; then
     if test -n "$PKG_CONFIG" && \
-    { { printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"sapporo_light\""; } >&5
-  ($PKG_CONFIG --exists --print-errors "sapporo_light") 2>&5
+    { { printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"sapporo2\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "sapporo2") 2>&5
   ac_status=$?
   printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }; then
-  pkg_cv_SAPPORO_LIGHT_LIBS=`$PKG_CONFIG --libs "sapporo_light" 2>/dev/null`
+  pkg_cv_SAPPORO2_LIBS=`$PKG_CONFIG --libs "sapporo2" 2>/dev/null`
 		      test "x$?" != "x0" && pkg_failed=yes
 else
   pkg_failed=yes
@@ -5186,29 +5186,29 @@ else
         _pkg_short_errors_supported=no
 fi
         if test $_pkg_short_errors_supported = yes; then
-	        SAPPORO_LIGHT_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "sapporo_light" 2>&1`
+	        SAPPORO2_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "sapporo2" 2>&1`
         else
-	        SAPPORO_LIGHT_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "sapporo_light" 2>&1`
+	        SAPPORO2_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "sapporo2" 2>&1`
         fi
 	# Put the nasty error message in config.log where it belongs
-	echo "$SAPPORO_LIGHT_PKG_ERRORS" >&5
+	echo "$SAPPORO2_PKG_ERRORS" >&5
 
 
-            FOUND_SAPPORO_LIGHT="no"
+            FOUND_SAPPORO2="no"
 
 elif test $pkg_failed = untried; then
      	{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
 printf "%s\n" "no" >&6; }
 
-            FOUND_SAPPORO_LIGHT="no"
+            FOUND_SAPPORO2="no"
 
 else
-	SAPPORO_LIGHT_CFLAGS=$pkg_cv_SAPPORO_LIGHT_CFLAGS
-	SAPPORO_LIGHT_LIBS=$pkg_cv_SAPPORO_LIGHT_LIBS
+	SAPPORO2_CFLAGS=$pkg_cv_SAPPORO2_CFLAGS
+	SAPPORO2_LIBS=$pkg_cv_SAPPORO2_LIBS
         { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 printf "%s\n" "yes" >&6; }
 
-            FOUND_SAPPORO_LIGHT="yes"
+            FOUND_SAPPORO2="yes"
 
 fi
 
@@ -5229,9 +5229,9 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
     # there and add an additional flag so that .mod files can be found. Only really
     # needed for stopcond and forsockets, and hopefully conda-forge will give us a
     # better solution soon.
-    if test "${FOUND_SAPPORO_LIGHT}" == "yes" -a "x$CONDA_PREFIX" != "x"
+    if test "${FOUND_SAPPORO2}" == "yes" -a "x$CONDA_PREFIX" != "x"
     then
-        SAPPORO_LIGHT_CFLAGS="${SAPPORO_LIGHT_CFLAGS} -I${CONDA_PREFIX}/include"
+        SAPPORO2_CFLAGS="${SAPPORO2_CFLAGS} -I${CONDA_PREFIX}/include"
     fi
 
     # If the user overrode the variables, go with what they set instead of
@@ -5239,13 +5239,13 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
     if test "x$amuse_save_LIB_CFLAGS" != "x"
 then :
 
-        SAPPORO_LIGHT_CFLAGS="$amuse_save_LIB_CFLAGS"
+        SAPPORO2_CFLAGS="$amuse_save_LIB_CFLAGS"
 
 fi
     if test "x$amuse_save_LIB_LIBS" != "x"
 then :
 
-        SAPPORO_LIGHT_LIBS="$amuse_save_LIB_LIBS"
+        SAPPORO2_LIBS="$amuse_save_LIB_LIBS"
 
 fi
 
