@@ -78,5 +78,5 @@ Services
 Some Gravitational Dynamics codes can provide services for other codes. Currently calculating
 the gravity at a given point is the only specified function.
 
-.. autoclass:: amuse.community.interface.gd.GravitationalDynamicsInterface
-   :members: get_gravity_at_point
+.. autoclass:: amuse.community.interface.gd.GravityFieldInterface
+   :members: get_gravity_at_point, get_potential_at_point
