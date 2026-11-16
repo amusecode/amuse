@@ -179,35 +179,41 @@ Note that pilots may not be started for a while. A function is available to wait
     >>> pilot.label='local'
     >>>
     >>> instance.pilots.add_pilot(pilot)
-    >>> 
+    >>>
     >>> print "Pilots:"
     >>> print instance.pilots
-    >>> 
+    >>>
     >>> print "Waiting for pilots"
     >>> instance.wait_for_pilots()
 
 Overview of all options:
 
-resource_name
+**resource_name**
 	name of the resource to start the pilot on
-queue_name
+
+**queue_name**
 	queue to use to run the pilot (cluster specific, not used in case of ssh)
-node_count
+
+**node_count**
 	number of nodes to start the pilot on
-time
+
+**time**
 	time to keep the pilot active
-slots_per_node
+
+**slots_per_node**
 	number of workers to start on a node. Usually the number of cores, but could be less if memory is a limiting factor, or workers are multi-core capable
-label
+
+**label**
 	label to attach to the pilot. Can be used when starting workers to run workers on specific pilots
-options
+
+**options**
 	Additional options. Usually not required.
 
 
 Starting jobs
 -------------
 
-When running remote workers, they can be started as normal. 
+When running remote workers, they can be started as normal.
 However, AMUSE needs to be signalled to use the distributed code to start them instead of the normal process.
 A function is available to enable and disable this.
 
@@ -230,37 +236,42 @@ Or, even pass the instance of the distributed code you would like to use, in the
 Worker options
 --------------
 
-This section lists all the relevant worker options for Distributed AMUSE. 
+This section lists all the relevant worker options for Distributed AMUSE.
 Most are new, some are also supported in the other channel implementations.
 You are normally not required to use any options.
 
-number_of_workers
-	Number of worker processes started (thus working as normally the case). 
+**number_of_workers**
+    Number of worker processes started (thus working as normally the case).
     Each worker takes up a slot of the pilot (see above)
-label
-	Label of the pilot to use. By default any pilot with enough free slots found will be used to start this worker. 
+
+**label**
+    Label of the pilot to use. By default any pilot with enough free slots found will be used to start this worker.
     Using the labels an explicit selection can be done.
-number_of_threads
-	Number of threads used in the process. 
+
+**number_of_threads**
+    Number of threads used in the process.
     This can be used to explicitly set the OMP_NUM_THREADS environment variable in the worker
-channel_type
-	Set this to "distributed" to start workers using the distributed code. 
+
+**channel_type**
+    Set this to "distributed" to start workers using the distributed code.
     Alternatively, use the use_for_all_workers functions as described above to set this by default
-distributed_instance
+
+**distributed_instance**
 	This is a reference to the distributed instance used to start the worker, in the rare case you have multiple distributed codes.
-dynamic_python_code
-	Boolean option stating if this code is a dynamic python code. 
+
+**dynamic_python_code**
+    Boolean option stating if this code is a dynamic python code.
     If so, all .py files in the worker directory will be copied to the remote machine before starting the code.
 
 
 Labels
 ------
 
-By default workers are started on any available pilot with enough slots available. 
+By default workers are started on any available pilot with enough slots available.
 However, sometimes you would like to have more control over which worker is started where, for instance if special hardware is present on some machines.
 
 The concept of labels can be used within Distributed AMUSE to get this functionality.
-If a label is attached to a worker (one of the parameters when starting a worker, see above), only pilots with exactly the same label (specified when the pilot is started) are considered candidates for running the worker. 
+If a label is attached to a worker (one of the parameters when starting a worker, see above), only pilots with exactly the same label (specified when the pilot is started) are considered candidates for running the worker.
 The name of labels is completely up to the user.
 
 For instance, say a simulation uses a number of workers running on a CPU, and a single GPU worker.
