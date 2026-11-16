@@ -503,15 +503,17 @@ interface, as in the following code snippet:
         include_headers = ['worker_code.h']
 
         def __init__ (self, **keyword_arguments):
-            CodeInterface.__init__(self, 
+            CodeInterface.__init__(self,
                 name_of_the_worker="simplegrav_worker",
                 **keyword_arguments)
             LiteratureReferencesMixIn.__init__(self)
 
 Upon finishing a script using ``SimpleGrav`` we will get the following warning:
 
-.. code-block::
-    /home/.../amuse/src/amuse/support/literature.py:78: AmuseWarning: 
+
+.. code-block:: text
+
+    /home/.../amuse/src/amuse/support/literature.py:78: AmuseWarning:
 
     You have used the following codes, which contain literature references:
 

@@ -81,7 +81,7 @@ Supported functions
 Example code
 ------------
 
-.. literalinclude:: ../../examples/applications/test_plot.py
+.. literalinclude:: ../../src/tests/core_tests/test_plot.py
 
 .. image:: plots/plot1.png
    :width: 18cm

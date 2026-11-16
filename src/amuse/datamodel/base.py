@@ -1251,12 +1251,12 @@ class AbstractSet(object):
 
         The history of the set is not copied over.
 
-
-        Keyword arguments:
-        memento -- internal, a dictionary to keep track of already copied sets in
-                   case of links between particles (default: None, will be created)
-        keep_structure -- internal, if True, in case of a sub or super set make a copy of
-                   the original set and return a new subset (default: False)
+        :parameter memento: internal, a dictionary to keep track of already copied sets in
+            case of links between particles (default: None, will be created)
+        :parameter keep_structure: internal, if True, in case of a sub or super set make a copy of
+            the original set and return a new subset (default: False)
+        :parameter filter_attributes: callable ``f(particles, attribute_name) -> bool``;
+            only attributes for which it returns True are copied
         """
         raise NotImplementedError()
 
