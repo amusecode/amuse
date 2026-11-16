@@ -29,26 +29,31 @@ To check if the installation is set-up properly, run all the tests related to th
 
 	> cd $AMUSE_DIR
 	> nosetests -v test/codes_tests/test*implementation.py
-	
-Note that Distributed AMUSE is mostly tested with the version of MPI includes in the amuse "prerequisites". 
-If you get MPI errors while running remote (parallel) workers, try using the install.py script included in AMUSE to install the prerequisites.  
+
+Note that Distributed AMUSE is mostly tested with the version of MPI includes in the amuse "prerequisites".
+If you get MPI errors while running remote (parallel) workers, try using the install.py script included in AMUSE to install the prerequisites.
 
 Overview
 --------
 
-Usage of Distributed Amuse is (by design) very close to the usage of any other code in AMUSE. 
+Usage of Distributed Amuse is (by design) very close to the usage of any other code in AMUSE.
 The main difference being it contains resources, pilots, and jobs, instead of particles.
 
-Resource
-	Description of a machine capable of running jobs. 
-    For each resource distributed AMUSE will launch a support process (HUB) to facilitate communication and coordination between the workers and AMUSE
-	
-Pilot
-	Process running on a resource (often within a reservation on a resource) waiting for jobs to run on behalf of AMUSE. 
+**Resource**
+    Description of a machine capable of running jobs.
+
+    For each resource distributed AMUSE will launch a support process (HUB)
+    to facilitate communication and coordination between the workers and AMUSE.
+
+**Pilot**
+    Process running on a resource (often within a reservation on a resource)
+    waiting for jobs to run on behalf of AMUSE.
+
     Can consist of multiple machines.
-	
-Job
-	Worker process.
+
+**Job**
+    Worker process.
+
     Will search for a suitable pilot to run on.
 
 In general, a user will first define resources, then deploy pilots on these resources, and finally create codes that make use of the machines offered by the pilots.
@@ -69,40 +74,48 @@ Distributed Amuse can be initialized like any other code:
 Parameters
 ----------
 
-Distributed AMUSE supports a few parameters to adjust settings. 
+Distributed AMUSE supports a few parameters to adjust settings.
 All parameters need to be set before any resource, pilot or job is made to have effect.
 
 Overview of settings:
 
-debug
-	Boolean parameters, defaults to False. 
+**debug**
+    Boolean parameters, defaults to False.
+
     If true/enabled, will output additional debugging information and logs, both in the code output, and in a `distributed-amuse-logs` folder on any target machine used.
-webinterface_port
-	Port on which a simple webinterface is available for monitoring. 
-    Defaults to "0", for a port determined automatically.
-start_hubs
-	To facilitate communication across different networks (with for instance firewalls), as hub is by default started on each resource. 
-    This can be turned off if needed, for instance if all resources are within the same network.
-worker_queue_timeout
-	The user is responsible for making sure enough slots are available to run a worker. 
-    If not, it will end up in the queue. 
-    The time the worker will wait before giving up can be set using this parameter.
-worker_startup_timeout
-	The distributed code starts AMUSE workers running the actual codes. 
-    This can take a while on some machines. 
+
+**webinterface_port**
+	Port on which a simple webinterface is available for monitoring.
+
+	Defaults to "0", for a port determined automatically.
+
+**start_hubs**
+	To facilitate communication across different networks (with for instance firewalls), as hub is by default started on each resource.
+
+	This can be turned off if needed, for instance if all resources are within the same network.
+
+**worker_queue_timeout**
+    The user is responsible for making sure enough slots are available to run a worker.
+
+    If not, it will end up in the queue. The time the worker will wait before giving up can be set using this parameter.
+
+**worker_startup_timeout**
+    The distributed code starts AMUSE workers running the actual codes.
+
+    This can take a while on some machines.
     If needed, this parameter can be used to increase the time waited.
-	
+
     >>> instance.parameters.debug = True
     >>> instance.parameters.webinterface_port = 5555
     >>> instance.commit_parameters()
     >>>
     >>> print instance.parameters.webinterface_port
-    
+
 
 Monitoring
 ----------
 
-Distributed Amuse has a small build-in webinterface for monitoring. 
+Distributed Amuse has a small build-in webinterface for monitoring.
 A utility function is available to get the url:
 
     >>> import webbrowser
@@ -126,21 +139,28 @@ As a side effect, a communication hub is also started on the (frontend of) the r
 
 Overview of all options:
 
-name
+**name**
 	Some user chosen name for the resource
-location
+
+**location**
 	Address of the resource. Usually a hostname (e.g. somehost.somedomain.com). Could also be an IP address
-amuse_dir
+
+**amuse_dir**
 	Location of amuse on the remote machine (e.g. /home/user/amuse-svn)
-tmp_dir
+
+**tmp_dir**
 	Where all temporary files will be put on the remote machine
-gateway
+
+**gateway**
 	Sometimes a machine is not reachable directly due to firewalls and such. Use this setting to provide an intermediate resource to route traffic via. This resource should already have been created.
-scheduler_type
+
+**scheduler_type**
 	The type of scheduler present on the remote machine. Defaults to 'ssh' useful for single machines. Current supported scheduler types: 'ssh', 'sge', 'slurm'
-hub_queue_name
+
+**hub_queue_name**
 	Normally the support process is started on the front end. However, it can also be submitted to a queue by specifying it here.
-hub_time_minutes
+
+**hub_time_minutes**
 	When a hub is submitted, this option denotes the time the hub will be available.
 
 
