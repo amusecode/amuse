@@ -48,17 +48,18 @@ Model evolution
 The stellar evolution codes evolve the properties of the star in time. The following functions
 are needed to control the evolution in the code.
 
-.. autoclass:: amuse.community.interface.se.StellarEvolution
-   :members: commit_particles, evolve
+.. autoclass:: amuse.community.interface.se.StellarEvolutionInterface
+   :no-index:
+   :members: commit_particles, evolve_for, evolve_one_step
 
 
 Diagnostics
 ~~~~~~~~~~~
-The state of the code can be queried, before, during and after the model calculations. 
+The state of the code can be queried, before, during and after the model calculations.
 *Currently no specific stellar evolution diagnostics functions have been defined*
 
 
 Services
 ~~~~~~~~
-Some stellar evolution codes can provide services for other codes. 
+Some stellar evolution codes can provide services for other codes.
 *Currently no specific stellar evolution service functions have been defined*

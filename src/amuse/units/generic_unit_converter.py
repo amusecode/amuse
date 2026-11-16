@@ -15,46 +15,46 @@ class NotAQuantityException(exceptions.AmuseException):
 
 class NotAScalarException(exceptions.AmuseException):
     formatstring = 'Converters need to be initialized with scalar quantities, argument[{0}] {1!r} is not a scalar'
-    
+
 class GenericToSiConverter(object):
     def __init__(self, generic_to_si):
         self.generic_to_si = generic_to_si
-    
+
     def from_source_to_target(self, quantity):
         if hasattr(quantity, 'unit') and not quantity.unit.is_non_numeric():
-            return self.generic_to_si.to_si(quantity) 
+            return self.generic_to_si.to_si(quantity)
         else:
             return quantity
-        
+
     def from_target_to_source(self, quantity):
         if hasattr(quantity, 'unit') and not quantity.unit.is_non_numeric():
             return self.generic_to_si.to_generic(quantity)
         else:
             return quantity
-            
+
 class SiToGenericConverter(object):
     def __init__(self, generic_to_si):
         self.generic_to_si = generic_to_si
-    
+
     def from_source_to_target(self, quantity):
         if hasattr(quantity, 'unit') and not quantity.unit.is_non_numeric():
-            return self.generic_to_si.to_generic(quantity) 
+            return self.generic_to_si.to_generic(quantity)
         else:
             return quantity
-        
+
     def from_target_to_source(self, quantity):
         if hasattr(quantity, 'unit') and not quantity.unit.is_non_numeric():
             return self.generic_to_si.to_si(quantity)
         else:
             return quantity
-                
+
 
 class ConvertBetweenGenericAndSiUnits(object):
     """
     A ConvertBetweenGenericAndSiUnits object is a converter from
     arbitrary units which user gives, to si units (and vice versa).
 
-    The ``generic_unit_converter'' **ConvertBetweenGenericAndSiUnits**
+    The ``generic_unit_converter`` **ConvertBetweenGenericAndSiUnits**
     is the actual class through which you define
     the unit system. Upon instantiation you choose the base units. In the
     example below we chose the speed of light as a unit: *c* = 1 unit length/second,
