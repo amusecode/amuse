@@ -49,7 +49,7 @@ Code comparison table
 
 Note: holds for AMUSE implementation.
 
-+---------+---------------------+-----------------+--------+---------+------+---------+--------------+-------------+ 
++---------+---------------------+-----------------+--------+---------+------+---------+--------------+-------------+
 |name     |approximation scheme |timestep scheme  |CPU     |GPU      |GRAPE |language |stopcond (1)  |parallel (2) |
 |         |                     |                 |        |         |      |         |              |             |
 +=========+=====================+=================+========+=========+======+=========+==============+=============+
@@ -78,13 +78,13 @@ Note: holds for AMUSE implementation.
 |mercury  |MVS symplectic       |                 |Y       |N        |N     |FORTRAN  |              |N            |
 |         |                     |                 |        |         |      |         |              |             |
 +---------+---------------------+-----------------+--------+---------+------+---------+--------------+-------------+
-|octgrav  |tree                 |shared           |N       |Y        |N     |C/C++    |S             |N            | 
+|octgrav  |tree                 |shared           |N       |Y        |N     |C/C++    |S             |N            |
 |         |                     |                 |        |         |      |         |              |             |
 +---------+---------------------+-----------------+--------+---------+------+---------+--------------+-------------+
 |rebound  |                     |                 |        |         |      |         |              |N            |
 |         |                     |                 |        |         |      |         |              |             |
 +---------+---------------------+-----------------+--------+---------+------+---------+--------------+-------------+
-|phigrape |direct               |block/variable   |Y g6    |Y        |Y     |FORTAN   |CSPT          |N            | 
+|phigrape |direct               |block/variable   |Y g6    |Y        |Y     |FORTAN   |CSPT          |N            |
 |         |                     |                 |        |sapporo  |      |         |              |             |
 +---------+---------------------+-----------------+--------+---------+------+---------+--------------+-------------+
 |smallN   |direct Hermite 4th   |individual       |Y       |N        |N     |C/C++    |              |N            |
@@ -98,10 +98,10 @@ Note: holds for AMUSE implementation.
 
 
 (1) stopping conditions
-   
+
     ==== ==========================
     code name of stopping condition
-    ==== ========================== 
+    ==== ==========================
     C    Collision detection
     E    Escaper detection
     S    Number of steps detection
@@ -908,7 +908,6 @@ Parameters
 |mass_galaxy                         |0.0            |mass           |total mass for     |
 |                                    |               |               |analytical galaxy  |
 |                                    |               |               |potential          |
-
 +------------------------------------+---------------+---------------+-------------------+
 |r_core_plummer                      |0.0            |length         |core radius for    |
 |                                    |               |               |analytical plummer |
@@ -931,10 +930,10 @@ Parameters
 |max_step                            |-3.0           |none           |exponent which defi|
 |                                    |               |               |nes the maximum    |
 |                                    |               |               |time step allowed  |
-|                                    |               |               |for stars          | 
+|                                    |               |               |for stars          |
 |                                    |               |               |(2^exponent)       |
 +------------------------------------+---------------+---------------+-------------------+
-|n_Print                             |1000000        |none           |maximum number of  | 
+|n_Print                             |1000000        |none           |maximum number of  |
 |                                    |               |               |snapshots          |
 |                                    |               |               |                   |
 +------------------------------------+---------------+---------------+-------------------+
@@ -943,15 +942,15 @@ Parameters
 |                                    |               |               |diagnostics        |
 |                                    |               |               |output             |
 +------------------------------------+---------------+---------------+-------------------+
-|n_gpu                               |2              |none           |number of GPUs per | 
+|n_gpu                               |2              |none           |number of GPUs per |
 |                                    |               |               |node               |
 |                                    |               |               |                   |
 +------------------------------------+---------------+---------------+-------------------+
-|gpu_name                            |GeForce GTX 480|none           |GPUs to use        | 
+|gpu_name                            |GeForce GTX 480|none           |GPUs to use        |
 |                                    |               |               |                   |
 |                                    |               |               |                   |
 +------------------------------------+---------------+---------------+-------------------+
-|Threads                             |128            |none           |number of gpus     | 
+|Threads                             |128            |none           |number of gpus     |
 |                                    |               |               |threads per block  |
 |                                    |               |               |                   |
 +------------------------------------+---------------+---------------+-------------------+
