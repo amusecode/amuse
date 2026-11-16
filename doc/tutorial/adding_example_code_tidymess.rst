@@ -4,17 +4,17 @@ Adding a C++ N-Body Code to AMUSE
 =================================
 
 In this tutorial, we will create an interface from scratch for the
-TIdal DYnamics of Multi-body ExtraSolar Systems code, or TIDYMESS,
-written by Dr. Tjarda Boekholt and Dr. Alexandre Correia
-(https://doi.org/10.48550/arXiv.2209.03955). This code implements detailed
-tidal forces into an N-body code to track the deformation of bodies.
+TIdal DYnamics of Multi-body ExtraSolar Systems code, or
+`TIDYMESS <https://doi.org/10.48550/arXiv.2209.03955>`_,
+written by Dr. Tjarda Boekholt and Dr. Alexandre Correia. This code implements
+detailed tidal forces into an N-body code to track the deformation of bodies.
 This community code has already been implemented into AMUSE so you
 can follow along this tutorial.
 
 .. NOTE::
 
     In this guide, TIDYMESS refers to the standalone simulation package,
-    while ``Tidymess`` refers to the TIDYMESS package inside of AMUSE.
+    while ``Tidymess`` refers to the TIDYMESS code inside of AMUSE.
 
 
 Getting Started
@@ -417,19 +417,19 @@ The process of defining our interface starts with figuring out what type of code
 ``AMUSE`` has a set of predefined Python interfaces we can use to build our interface from.
 
 
-+-----------------------------------+-------------------------------------------+
-| Interface:                        | Example codes:                            |
-+-----------------------------------+-------------------------------------------+
-| ``GravitationDynamicsInterface``  | N-body: Tidymess, Ph4, Huayno, Fi         |
-+-----------------------------------+-------------------------------------------+
-| ``HydrodynamicsInterface``        | Hydro: Capreole                           |
-+-----------------------------------+-------------------------------------------+
-| ``MagnetoHydrodynamicsInterface`` | Magneto Hydro: Athena                     |
-+-----------------------------------+-------------------------------------------+
-| ``StellarEvolutionInterface``     | Stellar: MESA, EVtwin, SeBa               |
-+-----------------------------------+-------------------------------------------+
-| ``ChemicalEvolutionInterface``    | Chemistry: Krome, Uclchem, KromeSph       |
-+-----------------------------------+-------------------------------------------+
++------------------------------------+---------------------------------------------------+
+| Interface:                         | Example codes:                                    |
++------------------------------------+---------------------------------------------------+
+| ``GravitationalDynamicsInterface`` | N-body: ``Tidymess``, ``Ph4``, ``Huayno``, ``Fi`` |
++------------------------------------+---------------------------------------------------+
+| ``HydrodynamicsInterface``         | Hydro: ``Capreole``                               |
++------------------------------------+---------------------------------------------------+
+| ``MagnetoHydrodynamicsInterface``  | Magneto Hydro: ``Athena``                         |
++------------------------------------+---------------------------------------------------+
+| ``StellarEvolutionInterface``      | Stellar: ``MESA``, ``EVtwin``, ``SeBa``           |
++------------------------------------+---------------------------------------------------+
+| ``ChemicalEvolutionInterface``     | Chemistry: ``Krome``, ``Uclchem``, ``KromeSph``   |
++------------------------------------+---------------------------------------------------+
 
 These interfaces define many
 of the required interface functions so that we don't have to.
