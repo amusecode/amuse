@@ -10,16 +10,17 @@ Contents:
 
 .. toctree::
    :maxdepth: 2
-   
+
    install/index
    tutorial/index
    interactive_tutorial/index
    reference/index
    developing/index
-   
-.. htmlonly::
+
+.. only:: html
+
    - `Examples <examples/index.html>`_
-   
+
 
 Indices and tables
 ==================
