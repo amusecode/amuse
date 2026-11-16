@@ -31,7 +31,7 @@ help:
 
 amuse_examples:
 	ln -s ../examples amuse_examples
-	
+
 clean:
 	-rm -rf $(BUILDDIR)/*
 	-rm -rf html
