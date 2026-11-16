@@ -4,12 +4,9 @@
 # You can set these variables from the command line.
 SPHINXOPTS    =
 SPHINXBUILD   = sphinx-build
-PAPER         = a4
 BUILDDIR      = build
 
 # Internal variables.
-PAPEROPT_a4     = -D latex_paper_size=a4
-PAPEROPT_letter = -D latex_paper_size=letter
 ALLSPHINXOPTS   = -d $(BUILDDIR)/doctrees $(PAPEROPT_$(PAPER)) $(SPHINXOPTS) .
 
 .PHONY: help clean html dirhtml pickle json htmlhelp qthelp latex changes linkcheck doctest
@@ -50,7 +47,7 @@ release: amuse_examples latexpdf
 	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) html
 	make -C build/latex tar FMT=pdf
 	rm -Rf pdf
-	tar -xvf build/latex/docs-pdf.tar 
+	tar -xvf build/latex/docs-pdf.tar
 	mv docs-pdf pdf
 #	cp -R build/plot_directive .
 
