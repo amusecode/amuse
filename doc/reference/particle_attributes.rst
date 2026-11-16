@@ -24,11 +24,12 @@ To access these functions as an attribute do:
 .. code-block:: python
 
     from amuse.lab import new_plummer_sphere
-    
+
     particles = new_plummer_sphere(100)
-    
+
     print particles.kinetic_energy()
-    
+
 
 .. automodule:: amuse.datamodel.particle_attributes
+    :no-index:
     :members:

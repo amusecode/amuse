@@ -245,29 +245,30 @@ data of a particle is stored in the set.
 
     .. autoclass:: Particle
         :members:
-        
+
         .. automethod:: __add__
         .. automethod:: __sub__
-    
+
     Methods to retreive physical properties of the particles set
     ------------------------------------------------------------
-    
-.. automodule:: amuse.datamodel.particle_attributes
 
-    .. autofunction:: center_of_mass 
+.. automodule:: amuse.datamodel.particle_attributes
+    :no-index:
+
+    .. autofunction:: center_of_mass
         :noindex:
     .. autofunction:: center_of_mass_velocity
         :noindex:
     .. autofunction:: kinetic_energy
         :noindex:
-    .. autofunction:: potential_energy 
+    .. autofunction:: potential_energy
         :noindex:
     .. autofunction:: particle_specific_kinetic_energy
         :noindex:
     .. autofunction:: particle_potential
         :noindex:
 
-    
+
 Implementation
 --------------
 
