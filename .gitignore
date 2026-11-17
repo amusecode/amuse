@@ -455,3 +455,5 @@ packages/dist
 
 # standard directory for a virtualenv
 env/
+src/amuse_metisse/data
+src/amuse_metisse/src/METISSE
