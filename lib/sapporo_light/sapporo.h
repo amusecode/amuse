@@ -22,6 +22,15 @@
 #include <map>
 
 #include <math.h>
+
+#ifndef SAPPORO_TEST_PARTICLE_MASS
+# if defined(_TINY_)
+#   define SAPPORO_TEST_PARTICLE_MASS ((float)(_TINY_))
+# else
+#   define SAPPORO_TEST_PARTICLE_MASS 1e-30f
+# endif
+#endif
+
 using namespace std;
 
 #include <cuda_runtime.h>

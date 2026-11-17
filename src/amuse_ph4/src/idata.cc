@@ -204,32 +204,29 @@ void idata::get_partial_acc_and_jerk()
 	ldnn[i] = _INFINITY_;
 	for (int k = 0; k < 3; k++) lacc[i][k] = ljerk[i][k] = 0;
 	for (int j = j_start; j < j_end; j++) {
-		// Skip particles with zero mass.
-		if (jdat->mass[j] > _TINY_){
-			r2 = xv = 0;
-			for (int k = 0; k < 3; k++) {
-				dx[k] = jdat->pred_pos[j][k] - ipos[i][k];
-				dv[k] = jdat->pred_vel[j][k] - ivel[i][k];
-				r2 += dx[k]*dx[k];
-				xv += dx[k]*dv[k];
+		r2 = xv = 0;
+		for (int k = 0; k < 3; k++) {
+			dx[k] = jdat->pred_pos[j][k] - ipos[i][k];
+			dv[k] = jdat->pred_vel[j][k] - ivel[i][k];
+			r2 += dx[k]*dx[k];
+			xv += dx[k]*dv[k];
+		}
+		r2i = 1/(r2+eps2+_TINY_);
+		ri = sqrt(r2i);
+		mri = jdat->mass[j]*ri;
+		mr3i = mri*r2i;
+		a3 = -3*xv*r2i;
+		// PRC(jdat->mpi_rank); PRC(ri); PRL(mri);
+		if (r2 > _TINY_) {
+			lpot[i] -= mri;
+			if (r2 < ldnn[i]) {
+				ldnn[i] = r2;
+				lnn[i] = j;
 			}
-			r2i = 1/(r2+eps2+_TINY_);
-			ri = sqrt(r2i);
-			mri = jdat->mass[j]*ri;
-			mr3i = mri*r2i;
-			a3 = -3*xv*r2i;
-			// PRC(jdat->mpi_rank); PRC(ri); PRL(mri);
-			if (r2 > _TINY_) {
-				lpot[i] -= mri;
-				if (r2 < ldnn[i]) {
-					ldnn[i] = r2;
-					lnn[i] = j;
-				}
-			}
-			for (int k = 0; k < 3; k++) {
-				lacc[i][k] += mr3i*dx[k];
-				ljerk[i][k] += mr3i*(dv[k]+a3*dx[k]);
-			}
+		}
+		for (int k = 0; k < 3; k++) {
+			lacc[i][k] += mr3i*dx[k];
+			ljerk[i][k] += mr3i*(dv[k]+a3*dx[k]);
 		}
 	}
 	ldnn[i] = sqrt(ldnn[i]);
