@@ -11,7 +11,7 @@ So, we have git write the version to a VERSION file in the root instead, and the
 have this plug-in for versioningit that checks that if we don't have a git repository.
 """
 from versioningit.core import VCSDescription
-from versioningit.errors import NotSdistError, NotVCSError
+from versioningit.errors import NoTagError, NotSdistError, NotVCSError
 from versioningit.git import describe_git
 
 from pathlib import Path
@@ -42,3 +42,5 @@ def get_amuse_version(project_dir, params):
             version = load_version(proj_dir.parents[3] / 'VERSION')
 
         return VCSDescription(version, 'exact', None, {})
+    except NoTagError:
+        return VCSDescription('9999.9.9', 'exact', None, {})
