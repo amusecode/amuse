@@ -20,6 +20,11 @@ extern "C" {
       return g6_npipes_();
   }
 
+  int g6_get_nj_max()
+  {
+      return g6_get_nj_max_();
+  }
+
   int g6_set_tunit(double t)
   {
       return g6_set_tunit_(&t);

@@ -136,3 +136,12 @@ AC_DEFUN([AMUSE_LIB_SAPPORO_LIGHT], [
     AMUSE_LIB([SAPPORO_LIGHT], [sapporo_light], [sapporo], [get_device_count])
 ])
 
+
+# AMUSE_LIB_SAPPORO2()
+#
+# Searches for the Sapporo2 library and sets SAPPORO2_CFLAGS and
+# SAPPORO2_LIBS to the appropriate values if it is found.
+AC_DEFUN([AMUSE_LIB_SAPPORO2], [
+    AMUSE_LIB([SAPPORO2], [sapporo2], [sapporo2], [numberOfGPUUsedBySapporo])
+])
+

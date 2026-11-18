@@ -93,6 +93,23 @@ test_amuse_ext() {
 }
 
 
+# Run tests for Sapporo2
+#
+test_sapporo2() {
+    announce_activity test amuse-sapporo2
+
+    ec_file="$(exit_code_file test sapporo2)"
+    log_file="$(log_file test sapporo2)"
+
+    (
+        ${GMAKE} -C lib/sapporo_2 test
+        echo $? >"${ec_file}"
+    ) 2>&1 | tee "${log_file}"
+
+    handle_result $(cat "$ec_file") test sapporo2 "${log_file}"
+}
+
+
 # Run tests for the framework and all installed packages
 #
 test_all() {
@@ -109,8 +126,14 @@ test_all() {
 
     # sapporo_light does not have tests
 
+    if is_subset "sapporo2" "${INSTALLED_PACKAGES}" ; then
+        if ! test_sapporo2 ; then
+            FAILED_TESTS="${FAILED_TESTS}\nsapporo2"
+        fi
+    fi
+
     for package in ${INSTALLED_PACKAGES} ; do
-        if ! is_subset "${package}" "amuse-framework sapporo_light" ; then
+        if ! is_subset "${package}" "amuse-framework sapporo_light sapporo2" ; then
             code_dir=$(code_directory "${package}")
             if [ -f "${code_dir}/packages/${package}.amuse_deps" ] ; then
                 forward_to_package test "${package}" brief

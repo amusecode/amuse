@@ -14,6 +14,9 @@ extern "C" {
   int g6_npipes_();
     int g6_npipes();
 
+  int g6_get_nj_max_();
+    int g6_get_nj_max();
+
   int g6_set_tunit_(double*);
     int g6_set_tunit(double t);
 

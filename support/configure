@@ -709,6 +709,9 @@ ac_subst_vars='LTLIBOBJS
 LIBOBJS
 FEATURES
 GMAKE
+FOUND_SAPPORO2
+SAPPORO2_LIBS
+SAPPORO2_CFLAGS
 FOUND_SAPPORO_LIGHT
 SAPPORO_LIGHT_LIBS
 SAPPORO_LIGHT_CFLAGS
@@ -909,7 +912,9 @@ CCC
 HEALPIX_CXX_CFLAGS
 HEALPIX_CXX_LIBS
 SAPPORO_LIGHT_CFLAGS
-SAPPORO_LIGHT_LIBS'
+SAPPORO_LIGHT_LIBS
+SAPPORO2_CFLAGS
+SAPPORO2_LIBS'
 
 
 # Initialize some variables set by options.
@@ -1589,6 +1594,10 @@ Some influential environment variables:
               C compiler flags for SAPPORO_LIGHT, overriding pkg-config
   SAPPORO_LIGHT_LIBS
               linker flags for SAPPORO_LIGHT, overriding pkg-config
+  SAPPORO2_CFLAGS
+              C compiler flags for SAPPORO2, overriding pkg-config
+  SAPPORO2_LIBS
+              linker flags for SAPPORO2, overriding pkg-config
 
 Use these variables to override the choices made by `configure' or to help
 it to find libraries and programs with nonstandard names/locations.
@@ -3119,7 +3128,7 @@ then
     # we assume that the conda metadata is correct, and that if it isn't there's
     # an expert packager who can fix things.
     printf "%s\n" "Conda package build detected, skipping checks for dependencies."
-    ASSUME_FEATURES="c c++ fortran java python tar unzip gunzip bunzip2 unxz bison perl gmake cmake install download mpi openmp cuda opencl blas lapack gsl gmp mpfr fftw hdf5 libz netcdf4 sapporo_light"
+    ASSUME_FEATURES="c c++ fortran java python tar unzip gunzip bunzip2 unxz bison perl gmake cmake install download mpi openmp cuda opencl blas lapack gsl gmp mpfr fftw hdf5 libz netcdf4 sapporo_light sapporo2"
 
 else
     if test "x" != "x$CONDA_DEFAULT_ENV"
@@ -3129,8 +3138,9 @@ else
         printf "%s\n" '    and must be installed via Conda to be detected.'
         printf "%s\n"
 
-        # Doesn't have a conda package yet, checked directly below.
+        # Don't have a conda package yet, checked directly below.
         # AMUSE_CONDA_PACKAGE(SAPPORO_LIGHT_LIBS, sapporo_light)
+        # AMUSE_CONDA_PACKAGE(SAPPORO2_LIBS, sapporo2)
 
 
     amuse_conda_list="$(conda list | tr '\n' '^')"
@@ -15474,6 +15484,219 @@ fi
 
 
 
+
+
+    amuse_save_LIBS="$LIBS"
+    amuse_save_LIB_CFLAGS="$SAPPORO2_CFLAGS"
+    amuse_save_LIB_LIBS="$SAPPORO2_LIBS"
+    amuse_save_PKG_CONFIG_PATH="$PKG_CONFIG_PATH"
+
+    # If we have an active virtualenv, make sure pkg-config searches it
+    if test "a${VIRTUAL_ENV}" != "a"
+    then
+        PKG_CONFIG_PATH="${VIRTUAL_ENV}/lib/pkgconfig:${PKG_CONFIG_PATH}"
+    fi
+
+    # All AMUSE libs export C symbols
+    ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+
+    # Search for the library, first directly then fall back to pkg-config
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for library containing numberOfGPUUsedBySapporo" >&5
+printf %s "checking for library containing numberOfGPUUsedBySapporo... " >&6; }
+if test ${ac_cv_search_numberOfGPUUsedBySapporo+y}
+then :
+  printf %s "(cached) " >&6
+else $as_nop
+  ac_func_search_save_LIBS=$LIBS
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+char numberOfGPUUsedBySapporo ();
+#ifdef F77_DUMMY_MAIN
+
+#  ifdef __cplusplus
+     extern "C"
+#  endif
+   int F77_DUMMY_MAIN() { return 1; }
+
+#endif
+int
+main (void)
+{
+return numberOfGPUUsedBySapporo ();
+  ;
+  return 0;
+}
+_ACEOF
+for ac_lib in '' sapporo2
+do
+  if test -z "$ac_lib"; then
+    ac_res="none required"
+  else
+    ac_res=-l$ac_lib
+    LIBS="-l$ac_lib  $ac_func_search_save_LIBS"
+  fi
+  if ac_fn_c_try_link "$LINENO"
+then :
+  ac_cv_search_numberOfGPUUsedBySapporo=$ac_res
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext
+  if test ${ac_cv_search_numberOfGPUUsedBySapporo+y}
+then :
+  break
+fi
+done
+if test ${ac_cv_search_numberOfGPUUsedBySapporo+y}
+then :
+
+else $as_nop
+  ac_cv_search_numberOfGPUUsedBySapporo=no
+fi
+rm conftest.$ac_ext
+LIBS=$ac_func_search_save_LIBS
+fi
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_cv_search_numberOfGPUUsedBySapporo" >&5
+printf "%s\n" "$ac_cv_search_numberOfGPUUsedBySapporo" >&6; }
+ac_res=$ac_cv_search_numberOfGPUUsedBySapporo
+if test "$ac_res" != no
+then :
+  test "$ac_res" = "none required" || LIBS="$ac_res $LIBS"
+
+        FOUND_SAPPORO2="yes"
+        SAPPORO2_LIBS="$LIBS"
+        SAPPORO2_CFLAGS=""
+
+else $as_nop
+
+
+pkg_failed=no
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for SAPPORO2" >&5
+printf %s "checking for SAPPORO2... " >&6; }
+
+if test -n "$SAPPORO2_CFLAGS"; then
+    pkg_cv_SAPPORO2_CFLAGS="$SAPPORO2_CFLAGS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"sapporo2\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "sapporo2") 2>&5
+  ac_status=$?
+  printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_SAPPORO2_CFLAGS=`$PKG_CONFIG --cflags "sapporo2" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+if test -n "$SAPPORO2_LIBS"; then
+    pkg_cv_SAPPORO2_LIBS="$SAPPORO2_LIBS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"sapporo2\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "sapporo2") 2>&5
+  ac_status=$?
+  printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_SAPPORO2_LIBS=`$PKG_CONFIG --libs "sapporo2" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+
+
+
+if test $pkg_failed = yes; then
+   	{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+
+if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
+        _pkg_short_errors_supported=yes
+else
+        _pkg_short_errors_supported=no
+fi
+        if test $_pkg_short_errors_supported = yes; then
+	        SAPPORO2_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "sapporo2" 2>&1`
+        else
+	        SAPPORO2_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "sapporo2" 2>&1`
+        fi
+	# Put the nasty error message in config.log where it belongs
+	echo "$SAPPORO2_PKG_ERRORS" >&5
+
+
+            FOUND_SAPPORO2="no"
+
+elif test $pkg_failed = untried; then
+     	{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+
+            FOUND_SAPPORO2="no"
+
+else
+	SAPPORO2_CFLAGS=$pkg_cv_SAPPORO2_CFLAGS
+	SAPPORO2_LIBS=$pkg_cv_SAPPORO2_LIBS
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
+
+            FOUND_SAPPORO2="yes"
+
+fi
+
+fi
+
+
+    ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+
+    PKG_CONFIG_PATH="$amuse_save_PKG_CONFIG_PATH"
+    LIBS="$amuse_save_LIBS"
+
+    # If we have an active CONDA environment, assume that the lib is coming from
+    # there and add an additional flag so that .mod files can be found. Only really
+    # needed for stopcond and forsockets, and hopefully conda-forge will give us a
+    # better solution soon.
+    if test "${FOUND_SAPPORO2}" == "yes" -a "x$CONDA_PREFIX" != "x"
+    then
+        SAPPORO2_CFLAGS="${SAPPORO2_CFLAGS} -I${CONDA_PREFIX}/include"
+    fi
+
+    # If the user overrode the variables, go with what they set instead of
+    # what we just detected.
+    if test "x$amuse_save_LIB_CFLAGS" != "x"
+then :
+
+        SAPPORO2_CFLAGS="$amuse_save_LIB_CFLAGS"
+
+fi
+    if test "x$amuse_save_LIB_LIBS" != "x"
+then :
+
+        SAPPORO2_LIBS="$amuse_save_LIB_LIBS"
+
+fi
+
+
+
+
+
+
 fi
 
 # Create the FEATURES variable used by amuse.mk to decide what we can build
@@ -15623,6 +15846,10 @@ fi
 if test "x${FOUND_SAPPORO_LIGHT}" = "xyes"
 then :
   FEATURES="${FEATURES} sapporo_light"
+fi
+if test "x${FOUND_SAPPORO2}" = "xyes"
+then :
+  FEATURES="${FEATURES} sapporo2"
 fi
 
 

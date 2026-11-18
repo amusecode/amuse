@@ -23,7 +23,7 @@ then
     # we assume that the conda metadata is correct, and that if it isn't there's
     # an expert packager who can fix things.
     AS_ECHO(["Conda package build detected, skipping checks for dependencies."])
-    ASSUME_FEATURES="c c++ fortran java python tar unzip gunzip bunzip2 unxz bison perl gmake cmake install download mpi openmp cuda opencl blas lapack gsl gmp mpfr fftw hdf5 libz netcdf4 sapporo_light"
+    ASSUME_FEATURES="c c++ fortran java python tar unzip gunzip bunzip2 unxz bison perl gmake cmake install download mpi openmp cuda opencl blas lapack gsl gmp mpfr fftw hdf5 libz netcdf4 sapporo_light sapporo2"
 
 else
     if test "x" != "x$CONDA_DEFAULT_ENV"
@@ -33,8 +33,9 @@ else
         AS_ECHO(['    and must be installed via Conda to be detected.'])
         AS_ECHO([])
 
-        # Doesn't have a conda package yet, checked directly below.
+        # Don't have a conda package yet, checked directly below.
         # AMUSE_CONDA_PACKAGE(SAPPORO_LIGHT_LIBS, sapporo_light)
+        # AMUSE_CONDA_PACKAGE(SAPPORO2_LIBS, sapporo2)
 
         AMUSE_CONDA_LIST()
 
@@ -179,6 +180,7 @@ else
     # checks this calls twice, causing the compiler to appear broken even though it
     # works.
     AMUSE_LIB_SAPPORO_LIGHT()
+    AMUSE_LIB_SAPPORO2()
 fi
 
 # Create the FEATURES variable used by amuse.mk to decide what we can build
@@ -229,6 +231,7 @@ ENABLE_FEATURE_IF_EQUALS([netcdf4], [FOUND_NETCDF], [yes])
 ENABLE_FEATURE_IF_EQUALS([qhull], [FOUND_QHULL], [yes])
 ENABLE_FEATURE_IF_EQUALS([healpix-cxx], [FOUND_HEALPIX_CXX], [yes])
 ENABLE_FEATURE_IF_EQUALS([sapporo_light], [FOUND_SAPPORO_LIGHT], [yes])
+ENABLE_FEATURE_IF_EQUALS([sapporo2], [FOUND_SAPPORO2], [yes])
 
 AC_SUBST(GMAKE)
 AC_SUBST(PYTEST)
