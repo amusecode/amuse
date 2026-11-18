@@ -1,0 +1,72 @@
+name: Test AMUSE higpus
+
+on:
+  push:
+    paths:
+      - .github/workflows/test-higpus-cuda.yml
+      - 'src/amuse_higpus/**'
+  pull_request:
+    paths:
+      - .github/workflows/test-higpus-cuda.yml
+      - 'src/amuse_higpus/**'
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: [self-hosted, amusebuilder]
+
+    strategy:
+      fail-fast: false
+
+    defaults:
+      run:
+        shell: bash -el {0}
+
+    steps:
+    - name: Set up conda
+      uses: conda-incubator/setup-miniconda@v3
+      with:
+        auto-update-conda: true
+        channels: conda-forge
+        channel-priority: strict
+
+    - name: Show conda info
+      run: |
+        conda info
+        conda list
+
+    - name: Install dependencies
+      run: |
+        conda install c-compiler cxx-compiler fortran-compiler gfortran python-gil pkgconfig coreutils patch curl tar unzip gzip bzip2 xz perl bison make cmake openmpi gsl fftw gmp mpfr hdf5 netcdf4 libopenblas liblapack zlib pip wheel 'docutils>=0.6' 'mpi4py>=1.1.0' 'numpy>=1.2.2' 'h5py>=1.1.0' cuda-toolkit pytest
+
+    - name: Configure OpenMPI
+      run: |
+        mkdir -p "$HOME/.openmpi"
+        echo "btl_tcp_if_include = lo" >>"$HOME/.openmpi/mca-params.conf"
+        echo "rmaps_base_oversubscribe = true" >>"$HOME/.openmpi/mca-params.conf"
+
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        fetch-tags: true
+
+    - name: Build higpus CUDA
+      run: |
+        ./setup install amuse-higpus-cuda
+
+    - name: Ensure we test only the installed package
+      run: |
+        ./setup distclean
+
+    - name: Test higpus
+      run: |
+        ./setup test amuse-higpus-cuda
+
+    - name: Archive build logs
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: logs-${{ matrix.os }}
+        path: ${{ github.workspace }}/support/logs/
+        if-no-files-found: warn
