@@ -383,7 +383,7 @@ class VectorAttributeValue(AbstractAttributeValue):
 
 class VectorAttribute(DerivedAttribute):
     """
-    Combine multiple attributes into a vecter attribute
+    Combine multiple attributes into a vector attribute
     """
 
     def __init__(self, attribute_names):
