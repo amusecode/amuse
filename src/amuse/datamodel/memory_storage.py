@@ -632,7 +632,7 @@ class InMemoryVectorQuantityAttribute(InMemoryAttribute):
         return self.quantity[index]
 
     def remove_indices(self, indices):
-        self.quantity._number = numpy.delete(self.quantity.number, indices)
+        self.quantity._number = numpy.delete(self.quantity.number, indices, axis=0)
 
     def has_units(self):
         return True
@@ -679,7 +679,7 @@ class InMemoryUnitlessAttribute(InMemoryAttribute):
         return self.values[index]
 
     def remove_indices(self, indices):
-        self.values = numpy.delete(self.values, indices)
+        self.values = numpy.delete(self.values, indices, axis=0)
 
     def has_units(self):
         return False
@@ -749,7 +749,7 @@ class InMemoryLinkedAttribute(InMemoryAttribute):
         return value
 
     def remove_indices(self, indices):
-        self.values = numpy.delete(self.values, indices)
+        self.values = numpy.delete(self.values, indices, axis=0)
 
     def has_units(self):
         return False
