@@ -6,7 +6,7 @@ Source Code Management
 
 
 Committing Code
---------------
+---------------
 
 
 Git repository location

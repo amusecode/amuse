@@ -29,26 +29,31 @@ To check if the installation is set-up properly, run all the tests related to th
 
 	> cd $AMUSE_DIR
 	> nosetests -v test/codes_tests/test*implementation.py
-	
-Note that Distributed AMUSE is mostly tested with the version of MPI includes in the amuse "prerequisites". 
-If you get MPI errors while running remote (parallel) workers, try using the install.py script included in AMUSE to install the prerequisites.  
+
+Note that Distributed AMUSE is mostly tested with the version of MPI includes in the amuse "prerequisites".
+If you get MPI errors while running remote (parallel) workers, try using the install.py script included in AMUSE to install the prerequisites.
 
 Overview
 --------
 
-Usage of Distributed Amuse is (by design) very close to the usage of any other code in AMUSE. 
+Usage of Distributed Amuse is (by design) very close to the usage of any other code in AMUSE.
 The main difference being it contains resources, pilots, and jobs, instead of particles.
 
-Resource
-	Description of a machine capable of running jobs. 
-    For each resource distributed AMUSE will launch a support process (HUB) to facilitate communication and coordination between the workers and AMUSE
-	
-Pilot
-	Process running on a resource (often within a reservation on a resource) waiting for jobs to run on behalf of AMUSE. 
+**Resource**
+    Description of a machine capable of running jobs.
+
+    For each resource distributed AMUSE will launch a support process (HUB)
+    to facilitate communication and coordination between the workers and AMUSE.
+
+**Pilot**
+    Process running on a resource (often within a reservation on a resource)
+    waiting for jobs to run on behalf of AMUSE.
+
     Can consist of multiple machines.
-	
-Job
-	Worker process.
+
+**Job**
+    Worker process.
+
     Will search for a suitable pilot to run on.
 
 In general, a user will first define resources, then deploy pilots on these resources, and finally create codes that make use of the machines offered by the pilots.
@@ -69,40 +74,48 @@ Distributed Amuse can be initialized like any other code:
 Parameters
 ----------
 
-Distributed AMUSE supports a few parameters to adjust settings. 
+Distributed AMUSE supports a few parameters to adjust settings.
 All parameters need to be set before any resource, pilot or job is made to have effect.
 
 Overview of settings:
 
-debug
-	Boolean parameters, defaults to False. 
+**debug**
+    Boolean parameters, defaults to False.
+
     If true/enabled, will output additional debugging information and logs, both in the code output, and in a `distributed-amuse-logs` folder on any target machine used.
-webinterface_port
-	Port on which a simple webinterface is available for monitoring. 
-    Defaults to "0", for a port determined automatically.
-start_hubs
-	To facilitate communication across different networks (with for instance firewalls), as hub is by default started on each resource. 
-    This can be turned off if needed, for instance if all resources are within the same network.
-worker_queue_timeout
-	The user is responsible for making sure enough slots are available to run a worker. 
-    If not, it will end up in the queue. 
-    The time the worker will wait before giving up can be set using this parameter.
-worker_startup_timeout
-	The distributed code starts AMUSE workers running the actual codes. 
-    This can take a while on some machines. 
+
+**webinterface_port**
+	Port on which a simple webinterface is available for monitoring.
+
+	Defaults to "0", for a port determined automatically.
+
+**start_hubs**
+	To facilitate communication across different networks (with for instance firewalls), as hub is by default started on each resource.
+
+	This can be turned off if needed, for instance if all resources are within the same network.
+
+**worker_queue_timeout**
+    The user is responsible for making sure enough slots are available to run a worker.
+
+    If not, it will end up in the queue. The time the worker will wait before giving up can be set using this parameter.
+
+**worker_startup_timeout**
+    The distributed code starts AMUSE workers running the actual codes.
+
+    This can take a while on some machines.
     If needed, this parameter can be used to increase the time waited.
-	
+
     >>> instance.parameters.debug = True
     >>> instance.parameters.webinterface_port = 5555
     >>> instance.commit_parameters()
     >>>
     >>> print instance.parameters.webinterface_port
-    
+
 
 Monitoring
 ----------
 
-Distributed Amuse has a small build-in webinterface for monitoring. 
+Distributed Amuse has a small build-in webinterface for monitoring.
 A utility function is available to get the url:
 
     >>> import webbrowser
@@ -126,21 +139,28 @@ As a side effect, a communication hub is also started on the (frontend of) the r
 
 Overview of all options:
 
-name
+**name**
 	Some user chosen name for the resource
-location
+
+**location**
 	Address of the resource. Usually a hostname (e.g. somehost.somedomain.com). Could also be an IP address
-amuse_dir
+
+**amuse_dir**
 	Location of amuse on the remote machine (e.g. /home/user/amuse-svn)
-tmp_dir
+
+**tmp_dir**
 	Where all temporary files will be put on the remote machine
-gateway
+
+**gateway**
 	Sometimes a machine is not reachable directly due to firewalls and such. Use this setting to provide an intermediate resource to route traffic via. This resource should already have been created.
-scheduler_type
+
+**scheduler_type**
 	The type of scheduler present on the remote machine. Defaults to 'ssh' useful for single machines. Current supported scheduler types: 'ssh', 'sge', 'slurm'
-hub_queue_name
+
+**hub_queue_name**
 	Normally the support process is started on the front end. However, it can also be submitted to a queue by specifying it here.
-hub_time_minutes
+
+**hub_time_minutes**
 	When a hub is submitted, this option denotes the time the hub will be available.
 
 
@@ -159,35 +179,41 @@ Note that pilots may not be started for a while. A function is available to wait
     >>> pilot.label='local'
     >>>
     >>> instance.pilots.add_pilot(pilot)
-    >>> 
+    >>>
     >>> print "Pilots:"
     >>> print instance.pilots
-    >>> 
+    >>>
     >>> print "Waiting for pilots"
     >>> instance.wait_for_pilots()
 
 Overview of all options:
 
-resource_name
+**resource_name**
 	name of the resource to start the pilot on
-queue_name
+
+**queue_name**
 	queue to use to run the pilot (cluster specific, not used in case of ssh)
-node_count
+
+**node_count**
 	number of nodes to start the pilot on
-time
+
+**time**
 	time to keep the pilot active
-slots_per_node
+
+**slots_per_node**
 	number of workers to start on a node. Usually the number of cores, but could be less if memory is a limiting factor, or workers are multi-core capable
-label
+
+**label**
 	label to attach to the pilot. Can be used when starting workers to run workers on specific pilots
-options
+
+**options**
 	Additional options. Usually not required.
 
 
 Starting jobs
 -------------
 
-When running remote workers, they can be started as normal. 
+When running remote workers, they can be started as normal.
 However, AMUSE needs to be signalled to use the distributed code to start them instead of the normal process.
 A function is available to enable and disable this.
 
@@ -210,37 +236,42 @@ Or, even pass the instance of the distributed code you would like to use, in the
 Worker options
 --------------
 
-This section lists all the relevant worker options for Distributed AMUSE. 
+This section lists all the relevant worker options for Distributed AMUSE.
 Most are new, some are also supported in the other channel implementations.
 You are normally not required to use any options.
 
-number_of_workers
-	Number of worker processes started (thus working as normally the case). 
+**number_of_workers**
+    Number of worker processes started (thus working as normally the case).
     Each worker takes up a slot of the pilot (see above)
-label
-	Label of the pilot to use. By default any pilot with enough free slots found will be used to start this worker. 
+
+**label**
+    Label of the pilot to use. By default any pilot with enough free slots found will be used to start this worker.
     Using the labels an explicit selection can be done.
-number_of_threads
-	Number of threads used in the process. 
+
+**number_of_threads**
+    Number of threads used in the process.
     This can be used to explicitly set the OMP_NUM_THREADS environment variable in the worker
-channel_type
-	Set this to "distributed" to start workers using the distributed code. 
+
+**channel_type**
+    Set this to "distributed" to start workers using the distributed code.
     Alternatively, use the use_for_all_workers functions as described above to set this by default
-distributed_instance
+
+**distributed_instance**
 	This is a reference to the distributed instance used to start the worker, in the rare case you have multiple distributed codes.
-dynamic_python_code
-	Boolean option stating if this code is a dynamic python code. 
+
+**dynamic_python_code**
+    Boolean option stating if this code is a dynamic python code.
     If so, all .py files in the worker directory will be copied to the remote machine before starting the code.
 
 
 Labels
 ------
 
-By default workers are started on any available pilot with enough slots available. 
+By default workers are started on any available pilot with enough slots available.
 However, sometimes you would like to have more control over which worker is started where, for instance if special hardware is present on some machines.
 
 The concept of labels can be used within Distributed AMUSE to get this functionality.
-If a label is attached to a worker (one of the parameters when starting a worker, see above), only pilots with exactly the same label (specified when the pilot is started) are considered candidates for running the worker. 
+If a label is attached to a worker (one of the parameters when starting a worker, see above), only pilots with exactly the same label (specified when the pilot is started) are considered candidates for running the worker.
 The name of labels is completely up to the user.
 
 For instance, say a simulation uses a number of workers running on a CPU, and a single GPU worker.

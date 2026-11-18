@@ -1,8 +1,13 @@
+import textwrap
+
 from amuse.community import *
-from amuse.community.interface.gd import GravitationalDynamicsInterface
-from amuse.community.interface.gd import GravitationalDynamics
-from amuse.community.interface.gd import SinglePointGravityFieldInterface
-from amuse.community.interface.gd import GravityFieldCode
+from amuse.community.interface.gd import (
+    GravitationalDynamics,
+    GravitationalDynamicsInterface,
+    GravityFieldCode,
+    SinglePointGravityFieldInterface,
+)
+
 
 class HermiteInterface(CodeInterface,
                        LiteratureReferencesMixIn,
@@ -152,14 +157,15 @@ class HermiteInterface(CodeInterface,
             could not retrieve parameter
         """
         return function
-    
+
     @legacy_function
     def get_end_time_accuracy_factor():
         """
         Get the end time accuracy factor:
-            < 0 will stop between factor * dt befor the end time and the end time
-              0 will stop at exactly the end time
-            > 0 will stop between the end time and factor * dt after the end time
+
+        - Negative values stop between ``factor * dt`` before the end time and after the end time.
+        - Zero stops exactly at the end time.
+        - Positive values stop between the end time and ``factor * dt`` after the end time.
         """
         function = LegacyFunctionSpecification()
         function.addParameter('value', dtype='float64',
@@ -219,52 +225,53 @@ class Hermite(GravitationalDynamics, GravityFieldCode):
         GravitationalDynamics.define_state(self, handler)
         GravityFieldCode.define_state(self, handler)
         self.stopping_conditions.define_state(handler)
-        
+
 
     def define_parameters(self, handler):
         handler.add_method_parameter(
             "get_eps2",
-            "set_eps2", 
-            "epsilon_squared", 
-            "smoothing parameter for gravity calculations", 
+            "set_eps2",
+            "epsilon_squared",
+            "smoothing parameter for gravity calculations",
             default_value = 0.0 | nbody_system.length * nbody_system.length
         )
         handler.add_method_parameter(
             "get_dt_param",
             "set_dt_param",
             "dt_param",
-            "timestep scaling factor", 
+            "timestep scaling factor",
             default_value = 0.03
         )
         handler.add_method_parameter(
             "get_end_time_accuracy_factor",
             "set_end_time_accuracy_factor",
             "end_time_accuracy_factor",
-            """
-            Get the end time accuracy factor:
-                < 0.0  will stop on or before the end time (larger factor, more before)
-                  0.0  will stop at exactly the end time
-                > 0.0  will stop on or after the end time
-                
-            Valid factors are between -1.0 and 1.0
-            """,
+            textwrap.dedent("""
+                Get the end time accuracy factor:
+
+                - Negative values will stop on or before the end time (larger factor, more before)
+                - Zero stops at exactly the end time
+                - Positive values will stop on or after the end time
+
+                Valid factors are between -1.0 and 1.0.
+            """),
             default_value = 0.0
         )
         handler.add_method_parameter(
             "get_dt_dia",
             "set_dt_dia",
-            "dt_dia", 
-            "time interval between diagnostics output", 
+            "dt_dia",
+            "time interval between diagnostics output",
             default_value = 1.0 | nbody_system.time
         )
         handler.add_method_parameter(
             "get_is_time_reversed_allowed",
             "set_is_time_reversed_allowed",
-            "is_time_reversed_allowed", 
-            "if True will calculate back in time when evolve_model end time is less than systemtime", 
+            "is_time_reversed_allowed",
+            "if True will calculate back in time when evolve_model end time is less than systemtime",
             default_value = False
         )
-        
+
         handler.add_method_parameter(
             "get_begin_time",
             "set_begin_time",

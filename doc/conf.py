@@ -32,10 +32,10 @@ extensions = [
  'sphinx.ext.autodoc',
  'sphinx.ext.autosummary',
  'sphinx.ext.autosectionlabel',
- 'sphinx.ext.doctest', 
+ 'sphinx.ext.doctest',
  'sphinx.ext.todo',
- #'sphinx.ext.imgmath', 
- 'sphinx.ext.ifconfig', 
+ #'sphinx.ext.imgmath',
+ 'sphinx.ext.ifconfig',
  'sphinx.ext.graphviz',
  'sphinx.ext.inheritance_diagram',
  'sphinx.ext.doctest',
@@ -43,6 +43,9 @@ extensions = [
  'autodoc_parameters',
  'sphinx_rtd_theme',
 ]
+
+autosectionlabel_prefix_document = True
+autosectionlabel_maxdepth = 2
 
 if not is_running_in_rtd:
     extensions.extend([
@@ -203,9 +206,9 @@ htmlhelp_basename = 'AMUSEdoc'
 
 
 # -- Options for LaTeX output --------------------------------------------------
-
-# The paper size ('letter' or 'a4').
-#latex_paper_size = 'letter'
+latex_elements = {
+    'papersize': 'a4paper',
+}
 
 # The font size ('10pt', '11pt' or '12pt').
 #latex_font_size = '10pt'

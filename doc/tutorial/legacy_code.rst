@@ -2,16 +2,16 @@
 Create an low-level Interface to a Code
 =======================================
 
-In this tutorial we will create an interface to a code. 
+In this tutorial we will create an interface to a code.
 
 .. warning::
-    
-    This tutorial does not use the build script provided with 
+
+    This tutorial does not use the build script provided with
     AMUSE. All files and directories need to be created "by hand".
     Use this tutorial if you want to get a deeper understanding of
     how the build process works and which steps are involved in
     creating a low level interface. To learn how to create
-    an interface to a code we recommend :doc:`c_code` and 
+    an interface to a code we recommend :doc:`c_code` and
     :doc:`fortran_code`.
 
 
@@ -61,39 +61,39 @@ The contents of the code.c file:
   }
 
 We need to access these function from another C file, so we need to
-define a header file. 
+define a header file.
 
 The contents of the code.h file:
 
 .. code-block:: cpp
 
     double sum(double x, double y);
-    
+
     int divide(double x, double y, double * result);
 
 
 The interface code
 ~~~~~~~~~~~~~~~~~~
-Now we can define the interface class for our code in python. An 
+Now we can define the interface class for our code in python. An
 interface needs to inherit from the class "CodeInterface".
 
 .. code-block:: python
     :linenos:
-    
+
     from amuse.community import *
-    
+
     class MyCode(CodeInterface):
         include_headers = ['code.h']
-        
+
         def __init__(self):
              CodeInterface.__init__(self)
-             
-In this example we first import names from the ``amuse.community`` 
-module on line 1. The ``amuse.community`` module defines the typical 
-classes and function needed to write a legacy interface. On line 3 
-we define our class and inherit from ``CodeInterface``. The class 
-will be used to generate a C++ file. In this file we will need the 
-definitions of our legacy functions. So, on line 4 we specify the 
+
+In this example we first import names from the ``amuse.community``
+module on line 1. The ``amuse.community`` module defines the typical
+classes and function needed to write a legacy interface. On line 3
+we define our class and inherit from ``CodeInterface``. The class
+will be used to generate a C++ file. In this file we will need the
+definitions of our legacy functions. So, on line 4 we specify the
 necessary include files in a array of strings. Each string will be
 converted to an include statement.
 
@@ -105,11 +105,12 @@ the build process.
 
 .. code-block:: make
     :linenos:
+
     ifeq ($(origin AMUSE_DIR), undefined)
       AMUSE_DIR := $(shell amusifier --get-amuse-dir)
     endif
     -include ${AMUSE_DIR}/config.mk
-  
+
     CXXFLAGS = -Wall -g -DTOOLBOX  $(MUSE_INCLUDE_DIR)
     LDFLAGS = -lm $(MUSE_LD_FLAGS)
 

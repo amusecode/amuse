@@ -49,7 +49,7 @@ Code comparison table
 
 Note: holds for AMUSE implementation.
 
-+---------+---------------------+-----------------+--------+---------+------+---------+--------------+-------------+ 
++---------+---------------------+-----------------+--------+---------+------+---------+--------------+-------------+
 |name     |approximation scheme |timestep scheme  |CPU     |GPU      |GRAPE |language |stopcond (1)  |parallel (2) |
 |         |                     |                 |        |         |      |         |              |             |
 +=========+=====================+=================+========+=========+======+=========+==============+=============+
@@ -78,13 +78,13 @@ Note: holds for AMUSE implementation.
 |mercury  |MVS symplectic       |                 |Y       |N        |N     |FORTRAN  |              |N            |
 |         |                     |                 |        |         |      |         |              |             |
 +---------+---------------------+-----------------+--------+---------+------+---------+--------------+-------------+
-|octgrav  |tree                 |shared           |N       |Y        |N     |C/C++    |S             |N            | 
+|octgrav  |tree                 |shared           |N       |Y        |N     |C/C++    |S             |N            |
 |         |                     |                 |        |         |      |         |              |             |
 +---------+---------------------+-----------------+--------+---------+------+---------+--------------+-------------+
 |rebound  |                     |                 |        |         |      |         |              |N            |
 |         |                     |                 |        |         |      |         |              |             |
 +---------+---------------------+-----------------+--------+---------+------+---------+--------------+-------------+
-|phigrape |direct               |block/variable   |Y g6    |Y        |Y     |FORTAN   |CSPT          |N            | 
+|phigrape |direct               |block/variable   |Y g6    |Y        |Y     |FORTAN   |CSPT          |N            |
 |         |                     |                 |        |sapporo  |      |         |              |             |
 +---------+---------------------+-----------------+--------+---------+------+---------+--------------+-------------+
 |smallN   |direct Hermite 4th   |individual       |Y       |N        |N     |C/C++    |              |N            |
@@ -98,10 +98,10 @@ Note: holds for AMUSE implementation.
 
 
 (1) stopping conditions
-   
+
     ==== ==========================
     code name of stopping condition
-    ==== ========================== 
+    ==== ==========================
     C    Collision detection
     E    Escaper detection
     S    Number of steps detection
@@ -908,7 +908,6 @@ Parameters
 |mass_galaxy                         |0.0            |mass           |total mass for     |
 |                                    |               |               |analytical galaxy  |
 |                                    |               |               |potential          |
-
 +------------------------------------+---------------+---------------+-------------------+
 |r_core_plummer                      |0.0            |length         |core radius for    |
 |                                    |               |               |analytical plummer |
@@ -931,10 +930,10 @@ Parameters
 |max_step                            |-3.0           |none           |exponent which defi|
 |                                    |               |               |nes the maximum    |
 |                                    |               |               |time step allowed  |
-|                                    |               |               |for stars          | 
+|                                    |               |               |for stars          |
 |                                    |               |               |(2^exponent)       |
 +------------------------------------+---------------+---------------+-------------------+
-|n_Print                             |1000000        |none           |maximum number of  | 
+|n_Print                             |1000000        |none           |maximum number of  |
 |                                    |               |               |snapshots          |
 |                                    |               |               |                   |
 +------------------------------------+---------------+---------------+-------------------+
@@ -943,15 +942,15 @@ Parameters
 |                                    |               |               |diagnostics        |
 |                                    |               |               |output             |
 +------------------------------------+---------------+---------------+-------------------+
-|n_gpu                               |2              |none           |number of GPUs per | 
+|n_gpu                               |2              |none           |number of GPUs per |
 |                                    |               |               |node               |
 |                                    |               |               |                   |
 +------------------------------------+---------------+---------------+-------------------+
-|gpu_name                            |GeForce GTX 480|none           |GPUs to use        | 
+|gpu_name                            |GeForce GTX 480|none           |GPUs to use        |
 |                                    |               |               |                   |
 |                                    |               |               |                   |
 +------------------------------------+---------------+---------------+-------------------+
-|Threads                             |128            |none           |number of gpus     | 
+|Threads                             |128            |none           |number of gpus     |
 |                                    |               |               |threads per block  |
 |                                    |               |               |                   |
 +------------------------------------+---------------+---------------+-------------------+
@@ -1052,13 +1051,18 @@ Eccentricity 0.0    1.0
 seba
 ----
 
-Single-star and binary evolution is performed by the **rapid** stellar evolution algorithm SeBa. Stars are evolved fromthe zero-age main sequence until remnant formation and beyond.
-Single stellar evolution is modeled with **analytical formulae** based on fits to detailed single star tracks at different metallicities (Hurley, Pols & Tout, 2000, 315, 543). Stars are parametrised by mass, radius, luminosity, core mass, etc. as functions of time and initial mass. Massloss from winds, which is substantial e.g. for massive stars andpost main-sequence stars, is included.
+Single-star and binary evolution is performed by the **rapid** stellar evolution algorithm SeBa. Stars are evolved from
+the zero-age main sequence until remnant formation and beyond.
+Single stellar evolution is modeled with **analytical formulae** based on fits to detailed single star tracks at different metallicities (Hurley, Pols & Tout, 2000, 315, 543). Stars are parametrised by mass, radius, luminosity, core mass, etc. as functions of time and initial mass. Mass
+loss from winds, which is substantial e.g. for massive stars and
+post main-sequence stars, is included.
 
 Furthermore, the SeBa package contains an algorithm for **rapid** binary evolution calculations. 
 Binary interactions such as wind accretion, tidal interaction and angular momentum loss through (wind) mass loss, magnetic braking, or gravitational radiation are taken into account at every timestep with appropriate recipes. 
-The stability and rate of mass transfer are dependent on the reaction to masschange of the stellar radii and the corresponding Roche lobes. If the mass transfer takes place on the dynamical timescale of the donor star, the mass transfer becomes quickly unstable, and a common-envelope phase follows. If mass transfer occurs in a stable way, SeBa models the response of the companion star and possible mass loss and angular momentum loss at every timestep.  
-After mass transfer ceases in a binary system, the donor star turns into a remnant or a helium-burningstar without a hydrogen envelope. When instead, the mass transfer leads to a merger between the binary stars, the resulting stellar product is estimated and the subsequent evolution is followed. 
+The stability and rate of mass transfer are dependent on the reaction to mass
+change of the stellar radii and the corresponding Roche lobes. If the mass transfer takes place on the dynamical timescale of the donor star, the mass transfer becomes quickly unstable, and a common-envelope phase follows. If mass transfer occurs in a stable way, SeBa models the response of the companion star and possible mass loss and angular momentum loss at every timestep.  
+After mass transfer ceases in a binary system, the donor star turns into a remnant or a helium-burning
+star without a hydrogen envelope. When instead, the mass transfer leads to a merger between the binary stars, the resulting stellar product is estimated and the subsequent evolution is followed. 
   
 More information on SeBa can be found in the papers:    
 

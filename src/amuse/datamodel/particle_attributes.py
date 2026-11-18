@@ -58,7 +58,7 @@ def scale_to_standard(
         when the particles are in si units a convert_nbody is needed
     :argument smoothing_length_squared: needed for calculating
         the potential energy correctly.
-    :argument virial_ratio: scale velocities to Q=K/|U|, (kinetic/potential energy);
+    :argument virial_ratio: scale velocities to ``Q = K/|U|``, (kinetic/potential energy);
         Q = virial_ratio > 0.5: supervirial, will expand
         Q = virial_ratio < 0.5: subvirial, will collapse
     """
@@ -1014,8 +1014,7 @@ def Qparameter(parts, distfunc=None):
     for a projection of the particle set.
 
     :argument distfunc:  distfunc is the distance function which can be used to select
-    the projection plane.
-
+        the projection plane.
     """
     if distfunc is None:
 

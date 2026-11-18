@@ -2,9 +2,12 @@
 Running AMUSE on The Cartesius supercomputer
 =============================================
 
-The Cartesius is the Dutch national supercomputer. For more information on e.g. obtaining an account, see the SURFSara website: https://userinfo.surfsara.nl/systems/cartesius.
+The Cartesius is the Dutch national supercomputer. For more information on e.g. obtaining an account,
+see the SURFSara website: https://userinfo.surfsara.nl/systems/cartesius.
 
-Using AMUSE on the Cartesius is relatively straightforward. Below is a tested method for installing and using AMUSE using the prerequisites, though other options (e.g. using only software pre-installed on the machine) should also be possible. For a generic description of the installation of prerequisites, see the :ref:`prerequisite-label` section.
+Using AMUSE on the Cartesius is relatively straightforward. Below is a tested method for installing and using AMUSE
+using the prerequisites, though other options (e.g. using only software pre-installed on the machine) should also be possible.
+For a generic description of the installation of prerequisites, see the :ref:`prerequisite-label` section.
 
 Obtaining AMUSE
 ---------------
@@ -48,6 +51,9 @@ Also make sure that .bashrc is loaded in your .bash_profile. This way, the envir
 	fi
 
 **Note: be sure to re-connect to the machine for these changes to take effect.**
+
+
+.. _prerequisite-label:
 
 Install AMUSE prerequisites
 ---------------------------

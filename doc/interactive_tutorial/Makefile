@@ -1,15 +1,15 @@
-# convert all ipynb to rst files for inclusion into the 
+# convert all ipynb to rst files for inclusion into the
 # amuse documentation
 #
-# makefile depends on nbconvert script 
+# makefile depends on nbconvert script
 #
 # nbconvert from github:
 # https://github.com/ipython/nbconvert
-# nbconvert depends on 
+# nbconvert depends on
 # ipython, markdown and pygments python modules
 # plus pandoc app (pandoc needs haskell platform installed)
 #
-# 
+#
 #
 
 AMUSE_DIR?=../..
@@ -20,6 +20,7 @@ NBCONVERT=jupyter nbconvert
 PYTHONPATH=$(AMUSE_DIR)/src
 
 PAGES=\
+	00-Welcome.ipynb\
 	01-Loading_AMUSE.ipynb\
 	02-Quantities_with_units.ipynb\
 	03-Generic_units.ipynb\
@@ -37,10 +38,10 @@ all: $(RSTPAGES)
 clean:
 	rm -f $(RSTPAGES)
 	rm -Rf $(RSTFILES)
-	
+
 %.rst:%.ipynb
 	$(NBCONVERT) --to rst "$<"
-	
+
 %.txt:%.rst
 	python create_title.py "$<" > "$@"
 	cat "$<" >> "$@"

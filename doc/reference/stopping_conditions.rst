@@ -446,11 +446,11 @@ based, i.e. the conditions are met if the outer loop took a certain time
 or a reached a certain number of steps (iterations). The parameters are
 accessed through the following procedures:
 
-.. c:function:: int set_stopping_condition_timeout_parameter(double value); 
+.. c:function:: int set_stopping_condition_timeout_parameter(double value);
 
     Sets the computer (wall-clock) time parameter.
 
-.. c:function:: get_stopping_condition_timeout_parameter(double *value);
+.. c:function:: int get_stopping_condition_timeout_parameter(double *value);
 
     Gets the computer (wall-clock) time parameter.
 

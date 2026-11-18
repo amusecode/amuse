@@ -138,8 +138,8 @@ properly available.
 
 .. _installing_amuse:
 
-Installing AMUSE
-----------------
+Installing the AMUSE Package
+----------------------------
 
 To get a copy of the most recent release of AMUSE, go to AMUSE_Releases_ and look up the
 most recent release. At the bottom of the description, you'll see a link **Source code
