@@ -69,11 +69,11 @@ AC_OPENMP()
 AC_SUBST(OPENMP_FCFLAGS)
 
 AX_LAPACK()
-AX_LIB_HDF5()
 AMUSE_LIBZ()
 
 AC_LANG_POP([Fortran])
 
+AMUSE_LIB_HDF5()
 
 # Generate output
 AC_CONFIG_FILES([config.mk])

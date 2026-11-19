@@ -130,43 +130,9 @@ AS_IF([test -z $MPI_ROOT],
     AS_IF([test "$MPICXX" == "no"], [AC_MSG_ERROR([Cound not find MPI compiler in $MPI_ROOT/bin])])
 ])
 
-AS_IF([test -z $HDF5_ROOT],
-[
-    AC_CHECK_PROG([H5CXX], [h5c++], [h5c++], [no])
-    AS_IF([test "$H5CXX" == "no"], [AC_MSG_ERROR([This package needs HDF5 (not really but this configure script does)])])
-    HDF5_ROOT=`which h5c++ | sed 's:/bin/h5c++$::'`
-],
-[
-    AC_CHECK_PROG([H5CXX], [h5c++], [$HDF5_ROOT/bin/h5c++], [no], [$HDF5_ROOT/bin])
-    AS_IF([test "$H5CXX" == "no"], [AC_MSG_ERROR([Cound not find HDF5 compiler in $HDF5_ROOT/bin])])
-])
+AMUSE_LIB_HDF5()
 
-
-# # Check HDF5
-# AS_IF([test -z $HDF5_ROOT],
-# [
-#     AC_CHECK_LIB([hdf5], [main], [],
-#     [
-#         AS_UNSET([ac_cv_lib_hdf5_main])
-#         AC_CHECK_PROG([HDF5CC], [h5cc], [h5cc], [:])
-#         AS_IF([test "$HDF5CC" == :], [AC_MSG_ERROR([This package needs HDF5])],
-#             [
-#             AC_PROG_SED
-#             AC_MSG_NOTICE([H5CC executable found, trying to find library nearby])
-#             HDF5_ROOT=`which h5cc | sed 's:/bin/h5cc$::'`
-#             AC_MSG_NOTICE([XXXXX $HDF5_ROOT])
-# #             AX_LDFLAGS_PUSH([dgsfgdfgd /home/ymeiron/local/lib/libhdf5.a])
-# #             AC_CHECK_LIB([hdf5], [main], [], [AC_MSG_ERROR([This package needs HDF5])])
-# #             AX_LDFLAGS_POP
-#         ])
-#     ])
-# ],
-# [
-#     AX_LDFLAGS_PUSH([-L$HDF5_ROOT/lib])
-#     AC_CHECK_LIB([hdf5], [main], [], [AC_MSG_ERROR([No compatible HDF5 library was found in $HDF5_ROOT/lib])])
-#     AX_LDFLAGS_POP
-# ])
-
+AS_IF([test "$HDF5_CXX_FOUND" == "no"], [AC_MSG_ERROR([Could not find HDF5 library with C++ support])])
 
 
 H5CXX_SHOW=`h5c++ -show`
@@ -246,7 +212,8 @@ AC_SUBST([CUDA_ROOT])
 AC_SUBST([NVCC])
 AC_SUBST([GPU_ARCH])
 AC_SUBST([STATICLIBS])
-AC_SUBST([HDF5_ROOT])
+AC_SUBST([HDF5_CXXFLAGS])
+AC_SUBST([HDF5_LDFLAGS])
 AC_SUBST([BOOSTINC])
 AC_CONFIG_FILES([Makefile])
 

@@ -28,9 +28,10 @@ AC_LANG_PUSH([C++])
 
 AX_MPI()
 AMUSE_CUDA()
-AX_LIB_HDF5()
 
 AC_LANG_POP([C++])
+
+AMUSE_LIB_HDF5()
 
 # Generate output
 AC_CONFIG_FILES([config.mk])
