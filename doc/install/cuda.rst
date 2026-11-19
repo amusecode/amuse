@@ -40,7 +40,7 @@ compile the codes to work with CUDA:
     sudo apt install nvidia-cuda-toolkit
 
 After this, you'll need to restart the computer, and then CUDA should be available and
-the installer should let you install CUDA packages..
+the installer should let you install CUDA packages.
 
 Other Linux distributions
 -------------------------
