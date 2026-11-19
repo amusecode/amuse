@@ -72,18 +72,56 @@
 AC_DEFUN([AX_OPENMP], [
 AC_PREREQ([2.69]) dnl for _AC_LANG_PREFIX
 
+case $target_os in
+  darwin*)
+    # Homebrew's libomp is keg-only, so Apple Clang will not find it unless we
+    # add its include and library directories explicitly.
+    if command -v brew >/dev/null 2>&1; then
+      ax_openmp_libomp_prefix=`brew --prefix libomp 2>/dev/null`
+      if test "x$ax_openmp_libomp_prefix" != x && test -d "$ax_openmp_libomp_prefix"; then
+        case " $CPPFLAGS " in
+          *" -I$ax_openmp_libomp_prefix/include "*) ;;
+          *) CPPFLAGS="$CPPFLAGS -I$ax_openmp_libomp_prefix/include" ;;
+        esac
+        case " $LDFLAGS " in
+          *" -L$ax_openmp_libomp_prefix/lib "*) ;;
+          *) LDFLAGS="$LDFLAGS -L$ax_openmp_libomp_prefix/lib" ;;
+        esac
+      fi
+    fi
+    ;;
+esac
+
 AC_CACHE_CHECK([for OpenMP flag of _AC_LANG compiler], ax_cv_[]_AC_LANG_ABBREV[]_openmp, [save[]_AC_LANG_PREFIX[]FLAGS=$[]_AC_LANG_PREFIX[]FLAGS
 ax_cv_[]_AC_LANG_ABBREV[]_openmp=unknown
 # Flags to try:  -fopenmp (gcc), -mp (SGI & PGI),
 #                -qopenmp (icc>=15), -openmp (icc),
 #                -xopenmp (Sun), -omp (Tru64),
 #                -qsmp=omp (AIX),
+#                -Xpreprocessor -fopenmp -lomp (Apple Clang w/ libomp),
 #                none
-ax_openmp_flags="-fopenmp -openmp -qopenmp -mp -xopenmp -omp -qsmp=omp none"
+ax_openmp_flags="-fopenmp
+-openmp
+-qopenmp
+-mp
+-xopenmp
+-omp
+-Xpreprocessor -fopenmp -lomp
+-Xclang -fopenmp -lomp
+-lomp
+-qsmp=omp
+none"
 if test "x$OPENMP_[]_AC_LANG_PREFIX[]FLAGS" != x; then
-  ax_openmp_flags="$OPENMP_[]_AC_LANG_PREFIX[]FLAGS $ax_openmp_flags"
+  ax_openmp_flags="$OPENMP_[]_AC_LANG_PREFIX[]FLAGS
+$ax_openmp_flags"
 fi
-for ax_openmp_flag in $ax_openmp_flags; do
+ax_openmp_save_IFS=$IFS
+IFS='
+'
+set x $ax_openmp_flags
+shift
+IFS=$ax_openmp_save_IFS
+for ax_openmp_flag do
   case $ax_openmp_flag in
     none) []_AC_LANG_PREFIX[]FLAGS=$save[]_AC_LANG_PREFIX[] ;;
     *) []_AC_LANG_PREFIX[]FLAGS="$save[]_AC_LANG_PREFIX[]FLAGS $ax_openmp_flag" ;;
